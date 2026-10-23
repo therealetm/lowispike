@@ -31,6 +31,7 @@
     /* what the tour gives way to: setup / sign-in, every other dialog, the Day card's list of sheets, Misty in flight */
     const OWN = '#ltTour';
     function busyBy() {
+        const stg = stage(), mine = el => !!(el.closest(OWN) || (stg && el.closest(stg)));
         if (H.classList.contains('gate-up') || H.classList.contains('gate-boot')) return 'setup';
         if (vis($('#r2ob')) || vis($('.hs-ivov.on'))) return 'setup';
         if (H.classList.contains('mf-on')) return 'flight';
@@ -39,12 +40,31 @@
         const list = (W.LowiRitualCore && LowiRitualCore.BUSY) || [];
         /* the Day card's BUSY list names the tour itself ('#ltTour:not(.lt-held)', so the Day card waits for it): never count our own
            overlay, or the tour hides itself, finds nothing, shows again, and flickers every tick (Oct 19 2026, Emmanuel's iPhone) */
-        for (const s of list) { let el = null; try { el = $(s); } catch (e) { } if (el && !el.closest(OWN) && vis(el)) return s; }
-        for (const el of D.querySelectorAll('[aria-modal="true"], [role="dialog"].on, [role="dialog"].open')) { if (el.closest(OWN)) continue; if (vis(el)) return '#' + (el.id || el.className || 'dialog'); }
+        for (const s of list) { let el = null; try { el = $(s); } catch (e) { } if (el && !mine(el) && vis(el)) return s; }
+        for (const el of D.querySelectorAll('[aria-modal="true"], [role="dialog"].on, [role="dialog"].open')) { if (mine(el)) continue; if (vis(el)) return '#' + (el.id || el.className || 'dialog'); }
         if (H.classList.contains('ss2-open')) return 'settings';
         return '';
     }
 
+    /* What's New as a mini tour (Oct 23 2026, Emmanuel: "take them to the place where you updated it and show them around ...
+       They can skip it or go through that mini tour"). mode 'news' plays only the release's own steps from part 'new' with
+       new-intro first, in this same card. It never touches the tour's saved place (store) and its events carry news: true, so
+       tutorial-auto / tutorial-resume ignore it. A step's `open` names a route below: the tour opens that place once when the
+       card comes up, the place's own sheet is its stage (busyBy does not wait behind it, the card sits above it), and the place
+       is closed again when the next card does not need it or the tour ends; then the user is back on Home. */
+    let mode = 'tour', opened = '';
+    const OPEN = {
+        move: { go() { if (typeof W.goTab === 'function') W.goTab('move'); }, stage: '', back() { goHome(); } },
+        shop: { go() { const P = W.LowiStorePicks; if (!P) return; goHome(); if (!P.isOpen()) P.open('tour'); try { P.setTab('sz'); } catch (e) { } }, stage: '.stp-card', back() { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
+        rooms: { go() { if (typeof W.goTab === 'function' && !(D.getElementById('tab-foryou') || { classList: { contains: () => true } }).classList.contains('active')) W.goTab('foryou'); setTimeout(() => { try { const s = step(); if (on && s && s.open === 'rooms' && W.LowiUserRooms && !LowiUserRooms.isOpen()) LowiUserRooms.open(); } catch (e) { } }, 450); }, stage: '.ur', back() { try { if (W.LowiUserRooms && LowiUserRooms.isOpen()) LowiUserRooms.close(); } catch (e) { } goHome(); } }
+    };
+    function stage() { const s = step(); return (on && s && s.open && opened === s.open && OPEN[s.open] && OPEN[s.open].stage) || ''; }
+    function leave() { const o = opened; opened = ''; if (o && OPEN[o]) { try { OPEN[o].back(); } catch (e) { } } }
+    function openFor(s) {
+        if (opened && (!s || s.open !== opened)) leave();
+        if (s && s.open && OPEN[s.open] && opened !== s.open) { opened = s.open; try { OPEN[s.open].go(); } catch (e) { } }
+        if (root) root.classList.toggle('lt-staged', !!(s && s.open));
+    }
     let on = false, list = [], i = 0, root = null, timer = 0, held = false, afterClaim = false, lastFocus = null, startedAt = 0;
     let tried = -1, secUntil = 0, tryNext = 0;
     /* hands-free (Oct 22 2026, Emmanuel: "would be nice if I don't have to press the next button every time. If I did turn on the
@@ -57,7 +77,7 @@
     const voiceOn = () => { try { return !!(W.LowiTutorialVoice && W.LowiTutorialVoice.isOn()); } catch (e) { return false; } };
     const clearT = id => { try { if (id) (W.clearTimeout || clearTimeout)(id); } catch (e) { } };
     const step = () => list[i] || null;
-    function emit(extra) { try { W.dispatchEvent(new CustomEvent('lowi:tutorial', { detail: Object.assign({ on, step: step() && step().id }, extra || {}) })); } catch (e) { } }
+    function emit(extra) { try { W.dispatchEvent(new CustomEvent('lowi:tutorial', { detail: Object.assign({ on, step: step() && step().id }, mode === 'news' ? { news: true } : {}, extra || {}) })); } catch (e) { } }
 
     /* item 38: a card the user can try on (the real control, or a practice pad on the card) */
     const canTry = s => !!(s && (s.tryIt || s.practice));
@@ -81,20 +101,21 @@
     function render() {
         const s = step(); if (!s || !root) return;
         const l = lang(), U = S.UI[l] || S.UI.en, vars = { name: companionName() }, last = i === list.length - 1;
-        const cta = s.cta ? S.text(s, 'cta', l, vars) : (last ? U.next : U.next);
+        const news = mode === 'news';
+        const cta = s.cta ? S.text(s, 'cta', l, vars) : (last && news ? (U.newsDone || U.next) : U.next);
         const card = root.querySelector('.lt-card');
         card.innerHTML =
             '<div class="lt-top"><span class="lt-guide" aria-label="' + esc(U.guide) + ': ' + esc(vars.name) + '">' + companionArt() + '</span>' +
-            '<span class="lt-meta"><small class="lt-count">' + esc(U.label + ' \u00b7 ' + S.fill(U.of, { i: i + 1, n: list.length })) + '</small>' +
+            '<span class="lt-meta"><small class="lt-count">' + esc((news ? (U.newsLabel || U.label) : U.label) + ' \u00b7 ' + S.fill(U.of, { i: i + 1, n: list.length })) + '</small>' +
             '<b class="lt-title" id="ltTitle">' + esc(S.text(s, 'title', l, vars)) + '</b></span>' +
-            (last ? '' : '<button type="button" class="lt-skipall" data-lt="skipall">' + esc(U.skipAll) + '</button>') + '</div>' +
+            (last ? '' : '<button type="button" class="lt-skipall" data-lt="skipall">' + esc(news ? (U.newsSkip || U.skip) : U.skipAll) + '</button>') + '</div>' +
             '<p class="lt-text" id="ltText">' + esc(S.text(s, 'text', l, vars)) + '</p>' + tryHtml(s, U) + peekHtml(s, U) + padHtml(s, U) + laterHtml(s, U) +
             '<div class="lt-btns"><span class="lt-left">' +
             (i > 0 ? '<button type="button" class="lt-btn lt-ghost" data-lt="back">' + esc(U.back) + '</button>' : '') +
             '<button type="button" class="lt-btn lt-ghost lt-pause" data-lt="pause" aria-pressed="' + paused + '" aria-label="' + esc(paused ? (U.play || 'Play') : (U.pause || 'Pause')) + '">' + (paused ? PLAY_SVG : PAUSE_SVG) + '</button></span>' +
-            '<span class="lt-right">' + (last ? '' : '<button type="button" class="lt-btn lt-ghost" data-lt="skip">' + esc(U.skip) + '</button>') +
+            '<span class="lt-right">' + (last || news ? '' : '<button type="button" class="lt-btn lt-ghost" data-lt="skip">' + esc(U.skip) + '</button>') +
             '<button type="button" class="lt-btn lt-go" data-lt="' + (s.action === 'claim' ? 'claim' : 'next') + '">' + esc(cta) + '</button></span></div>';
-        root.setAttribute('data-step', s.id);
+        root.setAttribute('data-step', s.id); root.classList.toggle('lt-news', news);
         renderTry(s, U);
         try { if (W.LowiTutorialShow) W.LowiTutorialShow.render(card, s, root); } catch (e) { }   /* item 42: finger, lit spots, card picture */
         root.classList.toggle('lt-voice', voiceOn()); root.classList.toggle('lt-paused', paused);
@@ -392,14 +413,15 @@
         const why = busyBy();
         if (why) { quiet = 0; hold(why); }
         else if (held) { if (++quiet >= QUIET_TICKS) { quiet = 0; unhold(); } }
-        else { if (Date.now() < secUntil && tried !== i) goSection(step()); place(); }
+        else { const s = step(); if (Date.now() < secUntil && tried !== i && !(s && s.open)) goSection(s); place(); }
     }
     function go(n, how) {
         if (n >= list.length) { stop('finished'); return; }
         cancelAuto();
         i = Math.max(0, n); held = false; if (root) { root.classList.remove('lt-held'); root.removeAttribute('aria-hidden'); }
-        const st = store.get(); st.last = step().id; store.set(st);
-        tried = -1; clearT(tryNext); secUntil = Date.now() + 2500; goSection(step());
+        if (mode !== 'news') { const st = store.get(); st.last = step().id; store.set(st); }
+        tried = -1; clearT(tryNext); secUntil = Date.now() + 2500;
+        openFor(step()); if (!step().open) goSection(step());
         emit({ how });
         if (busyBy()) { hold(busyBy()); return; }
         render();
@@ -448,6 +470,7 @@
     function start(opts) {
         const o = opts || {};
         if (on) stop('restart');
+        mode = 'tour'; opened = '';
         list = S.plan({ noOwnCompanion: !ownCompanion(), claimReady: !ownCompanion() && claimReady() });
         if (!list.length) return false;
         on = true; i = 0; held = false; afterClaim = false; startedAt = Date.now(); paused = false;
@@ -463,11 +486,32 @@
         go(at, 'start');
         return true;
     }
+    /* news: version.json's news entry. Plays new-intro + its tour steps, or one card with its own text (a fix). false when the
+       full tour is running (it already ends with part 'new') or there is nothing to show. */
+    function news(n) {
+        if (on || !n) return false;
+        const ids = S.tourOf ? S.tourOf(n) : [], byId = id => S.STEPS.find(x => x.id === id);
+        let l = ids.map(byId).filter(Boolean);
+        if (l.length) { const intro = byId('new-intro'); if (intro) l.unshift(intro); }
+        else if (S.newsCard) { const c = S.newsCard(n); if (!c.text.en) return false; l = [c]; }
+        if (!l.length) return false;
+        mode = 'news'; opened = ''; list = l;
+        on = true; i = 0; held = false; afterClaim = false; startedAt = Date.now(); paused = false;
+        lastFocus = D.activeElement;
+        goHome();
+        ensureRoot();
+        H.classList.add('lt-on'); if (reduced()) root.classList.add('lt-rm');
+        clearInterval(timer); timer = setInterval(tick, 350);
+        go(0, 'news');
+        return true;
+    }
     function stop(reason) {
         if (!on) return;
         on = false; clearInterval(timer); timer = 0; afterClaim = false; cancelAuto(); paused = false; keepAwake();
-        const st = store.get(); st.done = reason === 'finished'; st.skipped = reason === 'skipped' ? (step() && step().id) || '' : ''; st.v = S.VERSION; st.end = new Date().toISOString(); store.set(st);
+        if (mode !== 'news') { const st = store.get(); st.done = reason === 'finished'; st.skipped = reason === 'skipped' ? (step() && step().id) || '' : ''; st.v = S.VERSION; st.end = new Date().toISOString(); store.set(st); }
         emit({ reason });
+        if (opened) { leave(); goHome(); } else if (mode === 'news') goHome();
+        mode = 'tour';
         const r = root; root = null; H.classList.remove('lt-on');
         if (r) { r.classList.add('lt-out'); setTimeout(() => r.remove(), reduced() ? 0 : 220); }
         try { if (lastFocus && lastFocus.isConnected && lastFocus.focus) lastFocus.focus({ preventScroll: true }); } catch (e) { }
@@ -492,6 +536,6 @@
     if (!W.LowiTutorialShow && !D.querySelector('script[src^="tutorial-show.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-show.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     /* tutorial-resume.js (the floating "Continue tutorial" button until the tour is finished or skipped) loads the same way */
     if (!W.LowiTutorialResume && !D.querySelector('script[src^="tutorial-resume.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-resume.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
-    W.LowiTutorial = { start, stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S, ids: () => list.map(x => x.id),
+    W.LowiTutorial = { start, news, mode: () => (on ? mode : ''), opened: () => opened, stage: () => stage(), stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S, ids: () => list.map(x => x.id),
         paused: () => paused, pause: v => setPaused(v == null ? true : v), auto: () => !!autoT, tryNow, wiggles: () => (wig.at === i ? wig.n : 0) };
 })();

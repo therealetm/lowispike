@@ -2458,6 +2458,15 @@ const SEENB = "lowi.news.build", SEENB2 = "lowispike.news.seenbuild";
 function seenBuild(){ let a = "", b = ""; try { a = localStorage.getItem(SEENB) || ""; b = localStorage.getItem(SEENB2) || ""; } catch(e){} return a > b ? a : b; }
 function markBuild(b){ if (!b || seenBuild() >= b) return; try { localStorage.setItem(SEENB, b); localStorage.setItem(SEENB2, b); } catch(e){} }
 function buildSeen(){ const b = seenBuild(); return !!(BUILD_NOW && b && b >= BUILD_NOW); }
+/* Oct 23 mini tour: toured releases (ids, plus the newest toured build: lowi.news.tourbuild here, lowispike.news.tourbuild in the
+   account backup). A news id ends in its build (slug-YYYYMMDD-HHMMSS); any id of that build or older counts as toured. */
+const TSEEN = "lowi.news.tourseen", TSB = "lowi.news.tourbuild", TSB2 = "lowispike.news.tourbuild";
+function idBuild(id){ const m = /(\d{8}-\d{6})$/.exec(String(id || "")); return m ? m[1] : ""; }
+function tourList(){ try { const a = JSON.parse(localStorage.getItem(TSEEN) || "[]"); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
+function tourBuild(){ let a = "", b = ""; try { a = localStorage.getItem(TSB) || ""; b = localStorage.getItem(TSB2) || ""; } catch(e){} return a > b ? a : b; }
+function tourSeen(id){ if (!id) return true; if (tourList().indexOf(id) >= 0) return true; const b = idBuild(id), tb = tourBuild(); return !!(b && tb && b <= tb); }
+function markTour(ids){ const a = tourList(); let tb = tourBuild(); (ids || []).concat(NEWS && NEWS.id ? [NEWS.id] : []).forEach(id => { if (id && a.indexOf(id) < 0) a.push(id); const b = idBuild(id); if (b > tb) tb = b; });
+  if (BUILD_NOW && BUILD_NOW > tb) tb = BUILD_NOW; try { localStorage.setItem(TSEEN, JSON.stringify(a.slice(-40))); if (tb) { localStorage.setItem(TSB, tb); localStorage.setItem(TSB2, tb); } } catch(e){} }
 let newsLoaded = false, fromBanner = false;
 /* Oct 21 (open instantly): version.json carries every What's New text (about 290 KB, 100 KB gzipped) and this ran on every launch
    with no-store, so each open downloaded it in full while the app was still starting. Now it waits until the launch screen is gone
@@ -2808,12 +2817,23 @@ function tick(){ if (document.hidden) return; if (TOUR) { helpPlace(); return; }
   if (!appFree(true)) { freeSince = 0; return; } if (!freeSince) { freeSince = Date.now(); return; } if (Date.now() - freeSince < 1200) return;
   let go = ""; try { go = sessionStorage.getItem(GO) || ""; } catch(e){}
   if (go) { try { sessionStorage.removeItem(GO); } catch(e){} fromBanner = true; } /* b2-go: the banner already said what's new; after the refresh nothing repeats it */
-  if (!newsLoaded) return; if (fromBanner) { fromBanner = false; if (NEWS) markSeen(NEWS.id); }
+  if (!newsLoaded) return; if (fromBanner) { fromBanner = false; if (NEWS && !(window.LowiTutorial && LowiTutorial.news)) markSeen(NEWS.id); } /* Oct 23: with the mini tour the banner only announces; the tour shows */
   if (!onHome()) return; const m = mem();
   if (!m.t && window.LowiTutorial) { /* Oct 23: the Settings tutorial (tutorial.js) replaced this first-run tour, which had not auto-started since Oct 21; keep it off.
       A brand-new phone (no news ever seen) gets no What's New either: the current news counts as seen */
-    if (!seenList().length && NEWS && NEWS.id && !newsSeen(NEWS.id)) { markSeen(NEWS.id); try { localStorage.setItem(TOURED, NEWS.id); } catch(e){} remember({t:"skip"}); return; } }
+    if (!seenList().length && NEWS && NEWS.id && !newsSeen(NEWS.id)) { markSeen(NEWS.id); markTour([NEWS.id]); try { localStorage.setItem(TOURED, NEWS.id); } catch(e){} remember({t:"skip"}); return; } }
   else if (!m.t) { start(typeof m.s === "number" ? m.s : 0); return; }
+  /* Oct 23 2026 (Emmanuel: "every time I do an update it's not in the tutorial style ... take them to the place"): What's New
+     plays as a mini tour in the tutorial's own card (tutorial.js LowiTutorial.news): it opens each new place and points at the new
+     thing; Überspringen ends it. Exactly ONE per build: every release this phone (or account) has not toured is folded into one
+     tour, all of them are saved as toured BEFORE it shows (localStorage + account backup), so Skip, Alles klar, a reload or a crash
+     never bring it back, and the tick returns, so no second card follows. The tour has its own seen state (tourSeen): the update
+     bubble before the refresh only announces the version (it marks the news seen for the hotfix gate below), the tour shows it. */
+  if (NEWS && NEWS.id && window.LowiTutorial && LowiTutorial.news && window.LowiTutorialSteps && LowiTutorialSteps.unseenNews) {
+    if (LowiTutorial.isOn()) return;
+    const u = LowiTutorialSteps.unseenNews(NEWS, tourSeen);
+    if (u) { hush(); markTour(u.ids); u.ids.forEach(id => markSeen(id)); markSeen(NEWS.id); try { localStorage.setItem(TOURED, NEWS.id); } catch(e){} LowiTutorial.news(u); }
+    return; }
   /* Oct 23 hotfix: ONE gate. News already seen (the update bubble showed it before the refresh, Got it, Show me, another device)
      means nothing at all; unseen news gets exactly one card: with steps the Show me card, else the text with Got it. */
   if (NEWS && NEWS.id && !newsSeen(NEWS.id) && !toured(NEWS.id)) { if (newsGo() === "steps") offerTour(); else offerNews(); return; } } /* b2-offer: once per news id */
@@ -10646,7 +10666,7 @@ R2.boot = function(){
 "use strict";
 const R2 = window.LowiR2, $ = R2.$, $$ = R2.$$, esc = R2.esc;
 const GATE = "lowi.gate";            // "done" (has account) | "skip" (chose to try without) — per device
-const KEEP = k => k === "lowi.theme" || k === "lowi.atmos" || k === "lowi.atmos.css" || k === "lowi.a2hs" || k === "lowi.news.seen" || k === "lowi.news.build" || k === "lowi.news.toured" || k === "lowi.g1" || k === "lowi.g1.bn" || k === "lowi.upd.later" || k === "lowi.upd.snooze" || k === "lowispike.lang" || k.indexOf("lowi.health.") === 0 || k === "lowi.t";
+const KEEP = k => k === "lowi.theme" || k === "lowi.atmos" || k === "lowi.atmos.css" || k === "lowi.a2hs" || k === "lowi.news.seen" || k === "lowi.news.build" || k === "lowi.news.tourseen" || k === "lowi.news.tourbuild" || k === "lowi.news.toured" || k === "lowi.g1" || k === "lowi.g1.bn" || k === "lowi.upd.later" || k === "lowi.upd.snooze" || k === "lowispike.lang" || k.indexOf("lowi.health.") === 0 || k === "lowi.t";
 
 function session(){ try { const j = JSON.parse(localStorage.getItem("lowi.auth") || "null"); return j && j.user ? j : null; } catch(e){ return null; } }
 function isAccount(){ const s = session(); return !!(s && s.user && !s.user.is_anonymous && s.user.email); }

@@ -81,7 +81,7 @@
     function T() { return W.LowiTutorial; }
     function ids() { const t = T(); try { return t && t.ids ? t.ids() : []; } catch (e) { return []; } }
 
-    W.addEventListener('lowi:tutorial', e => { store.set(onEvent(store.get(), e.detail || {}, ids())); if (e.detail && e.detail.on) pendingUntil = 0; tick(); });
+    W.addEventListener('lowi:tutorial', e => { if (e.detail && e.detail.news) return; store.set(onEvent(store.get(), e.detail || {}, ids())); if (e.detail && e.detail.on) pendingUntil = 0; tick(); });
 
     let btn = null, spot = '', compact = false, pendingUntil = 0, shown = false, lastLang = '', lastFace = '';
     const SVG_PLAY = '<svg class="ltr-play" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M3.6 2.2v7.6L9.8 6z" fill="currentColor"/></svg>';

@@ -38,6 +38,11 @@ function checkTutorial(root, news) {
   if (news.tutorial == null) return 'news.json has no "tutorial" field. Every release must keep the tutorial current (TUTORIAL.md):\n' +
     '  add "tutorial": "<step id>" when a step explains this change (update that step in tutorial-steps.js if the feature changed;\n' +
     '  add a new step for a new feature), or "tutorial": {"none": "why no tutorial step is needed"}. Step ids: ' + ids;
+  if (news.tour != null) {
+    if (!Array.isArray(news.tour) || !news.tour.length) return 'news.json "tour" must be a list of step ids (part \'new\' in tutorial-steps.js), e.g. ["new-rooms"]; got ' + JSON.stringify(news.tour);
+    const bad = news.tour.filter(id => !S.STEPS.some(s => s.id === id));
+    if (bad.length) return 'news.json "tour" names steps that do not exist: ' + bad.join(', ') + '. Add them to part \'new\' in tutorial-steps.js. Step ids: ' + ids;
+  }
   if (!S.newsOk(news.tutorial)) return 'news.json "tutorial" must be an existing step id (' + ids + ') or {"none": "a reason of at least 8 characters"}; got ' + JSON.stringify(news.tutorial);
   return '';
 }
@@ -73,6 +78,14 @@ function applyBump(root, oldId, newId, news) {
     if (Array.isArray(news.steps) && news.steps.length) n.steps = news.steps;
     else n.steps = [{ tab: (news.go && news.go.tab) || 'home', text: { en: news.text.en, de: news.text.de, es: news.text.es } }];
     if (news.tutorial) n.tutorial = news.tutorial; else delete n.tutorial;
+    /* Oct 23 2026: What's New is a mini tour in the tutorial's card. tour = this release's step ids (part 'new' in tutorial-steps.js);
+       without "tour", a "tutorial" step id is the tour; with neither, the release shows one card with its own text. */
+    { let S = null; try { S = require(path.resolve(root, 'tutorial-steps.js')); } catch (e) { }
+      const tour = S && S.tourOf ? S.tourOf(news) : (Array.isArray(news.tour) ? news.tour : []);
+      if (tour.length) n.tour = tour; else delete n.tour;
+      /* the last releases' ids and tours, newest first, so a phone that skipped builds gets ONE tour with every unseen release's steps */
+      const prev = (Array.isArray(n.history) ? n.history : []).filter(h => h && h.id && h.id !== n.id);
+      n.history = [{ id: n.id, tour }].concat(prev).slice(0, 12); }
   }
   fs.writeFileSync(vp, JSON.stringify(d) + (raw.endsWith('\n') ? '\n' : ''));
   changed.push('version.json');
@@ -98,6 +111,7 @@ async function main() {
   const news = opt('--news') ? JSON.parse(fs.readFileSync(opt('--news'), 'utf8')) : null;
   const tutErr = checkTutorial(root, news);
   if (tutErr) { console.error('BLOCKER: ' + tutErr); process.exit(5); }
+  if (news && !Array.isArray(news.tour) && typeof news.tutorial !== 'string') console.warn('WARNING: this release has no tour step, so What\'s New shows only one card with its text. A user-visible change must ship a step in part \'new\' of tutorial-steps.js and list it in news.json "tour" (TUTORIAL.md, "What\'s New is a mini tour").');
   console.log('repo=' + oldId + ' live=' + live + ' new=' + newId);
   if (args.includes('--dry-run')) { console.log(newId); return; }
   const changed = applyBump(root, oldId, newId, news);

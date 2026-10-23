@@ -40,8 +40,8 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 18;  /* 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
-    const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
+    const VERSION = 19;  /* 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
         {
@@ -701,9 +701,69 @@
             id: 'whats-new', area: 'extras', target: null, covers: ['whats-new', 'update'], later: 'tap',
             title: { en: 'What’s new', de: 'Was ist neu', es: 'Novedades' },
             text: {
-                en: 'After the tour, when an update is ready, a banner says New version: tap it to update. Then I tell you once what’s new.',
-                de: 'Ist nach der Tour ein Update bereit, erscheint ein Banner „Neue Version“. Tipp drauf zum Aktualisieren. Danach sag ich dir einmal, was neu ist.',
-                es: 'Después del recorrido, cuando haya una actualización, aparece un aviso de Nueva versión. Tócalo para actualizar. Después te cuento una vez las novedades.'
+                en: 'After the tour, when an update is ready, a banner says New version: tap it to update. Then a short tour shows you what’s new, right where it is. You can skip it.',
+                de: 'Ist nach der Tour ein Update bereit, erscheint ein Banner „Neue Version“. Tipp drauf zum Aktualisieren. Danach zeigt dir eine kurze Tour, was neu ist, direkt an der Stelle. Du kannst sie überspringen.',
+                es: 'Después del recorrido, cuando haya una actualización, aparece un aviso de Nueva versión. Tócalo para actualizar. Después un recorrido corto te enseña las novedades, justo donde están. Puedes saltarlo.'
+            }
+        },
+        /* ---------- part: new (Oct 23 2026, Emmanuel: "every time I do an update it's not in the tutorial style ... take them to the
+           place where you updated it and show them around"). The newest features, last in the tour. A release's What's New plays
+           only its own steps from here (news.json "tour"), as a mini tour in this same card style: it opens the place (open),
+           points at the new thing, and goes back home at the end. open: a route in tutorial.js OPEN (move, shop, rooms). New
+           features add a step here; when this part grows past ~8 steps, move the oldest into their own area. ---------- */
+        {
+            id: 'new-intro', area: 'new', target: null, covers: ['whats-new-tour'],
+            title: { en: 'New in this update', de: 'Neu in diesem Update', es: 'Novedades de esta versión' },
+            text: {
+                en: 'A few new things. I’ll show you where they are. You can skip anytime.',
+                de: 'Ein paar neue Sachen. Ich zeig dir, wo sie sind. Überspringen geht jederzeit.',
+                es: 'Hay algunas novedades. Te enseño dónde están. Puedes saltarlo cuando quieras.'
+            },
+            cta: { en: 'Let’s go', de: 'Los geht’s', es: 'Vamos' }
+        },
+        {
+            id: 'new-rooms', area: 'new', where: 'community', open: 'rooms', target: ['.ur [data-ur="make"]', '.ur .ur-card'], covers: ['user-rooms'],
+            title: { en: 'Rooms', de: 'Räume', es: 'Salas' },
+            text: {
+                en: 'Make your own room for a goal. Everyone can read along, and you decide who joins. Up to 30 people.',
+                de: 'Mach deinen eigenen Raum für ein Ziel. Alle lesen mit, du entscheidest, wer reinkommt. Bis zu 30 Leute.',
+                es: 'Crea tu propia sala para una meta. Todos pueden leer y tú decides quién entra. Hasta 30 personas.'
+            }
+        },
+        {
+            id: 'new-deadlift', area: 'new', where: 'move', open: 'move', target: ['.mm-hero-dl'], covers: ['deadlift-mirror'],
+            title: { en: 'Deadlift in Mirror mode', de: 'Kreuzheben im Spiegel-Modus', es: 'Peso muerto en modo espejo' },
+            text: {
+                en: 'Stand sideways to your phone. The glowing outline shows the move and counts every clean rep.',
+                de: 'Stell dich seitlich zum Handy. Der leuchtende Umriss macht es vor und zählt jede saubere Wiederholung.',
+                es: 'Ponte de lado al móvil. La silueta brillante te enseña el movimiento y cuenta cada repetición limpia.'
+            }
+        },
+        {
+            id: 'new-seller', area: 'new', where: 'home', open: 'shop', target: ['.stp-card .stp-tab[data-stp-tab="sz"]', '.stp-card'], covers: ['seller-zone'],
+            title: { en: 'Seller Zone', de: 'Seller Zone', es: 'Seller Zone' },
+            text: {
+                en: 'Real snacks you can order: chips, chocolate, gummies. Strictly checked, with photo and price. Shops near you first.',
+                de: 'Echte Snacks zum Bestellen: Chips, Schoko, Gummis. Streng geprüft, mit Foto und Preis. Shops in deiner Nähe zuerst.',
+                es: 'Snacks de verdad para pedir: patatas, chocolate, gominolas. Revisados a fondo, con foto y precio. Primero las tiendas cerca de ti.'
+            }
+        },
+        {
+            id: 'new-sleep', area: 'new', where: 'home', target: ['#whHud .o8-sleep'], covers: ['sleep-ring'],
+            title: { en: 'Sleep in your ring', de: 'Sleep im Bubble-Ring', es: 'El sueño en tu anillo' },
+            text: {
+                en: 'Sleep now lives in the ring with your other bubbles, in the same living style.',
+                de: 'Sleep wohnt jetzt mit deinen anderen Bubbles im Ring, im selben lebendigen Stil.',
+                es: 'El sueño ahora vive en el anillo con tus otras burbujas, con el mismo estilo vivo.'
+            }
+        },
+        {
+            id: 'new-sync', area: 'new', where: 'home', target: null, covers: ['account-sync'],
+            title: { en: 'iPhone and iPad in sync', de: 'iPhone und iPad synchron', es: 'iPhone y iPad sincronizados' },
+            text: {
+                en: 'Signed in on both? Your companion, level and logs are the same on every device.',
+                de: 'Auf beiden angemeldet? Dein Begleiter, Level und Einträge sind auf jedem Gerät gleich.',
+                es: '¿Has iniciado sesión en los dos? Tu compañero, nivel y registros son iguales en cada dispositivo.'
             }
         },
         {
@@ -807,18 +867,18 @@
     }
 
     const UI = {
-        en: { next: 'Next', back: 'Back', skip: 'Skip', skipAll: 'Skip all', of: '{i} of {n}', label: 'Tutorial', guide: 'Your companion', tryIt: 'Try it now', nice: 'Nice, that’s it.', pause: 'Pause', play: 'Play',
+        en: { next: 'Next', back: 'Back', skip: 'Skip', skipAll: 'Skip all', of: '{i} of {n}', label: 'Tutorial', newsLabel: 'New', newsSkip: 'Skip', newsDone: 'Got it', newsTitle: 'New in this update', guide: 'Your companion', tryIt: 'Try it now', nice: 'Nice, that’s it.', pause: 'Pause', play: 'Play',
             practice: 'Practise here. Nothing in your app changes.', laterTag: 'After the tour', how: { tap: 'Tap', hold: 'Hold', touch: 'Touch', double: 'Tap twice', drag: 'Drag', swipe: 'Swipe', pinch: 'Pinch' }, looks: { ring: 'Bubbles', water: 'Water · 3', world: 'World', fade: 'Buttons', companion: 'Companion', mic: 'Mic', joystick: 'Joystick', galaxy: 'Galaxy', sun: 'Day', sheet: 'Window', edge: 'Page', cards: 'Cards' }, done: { water: 'Water · 0', sun: 'Night', fade: 'Back again', mic: 'Sent', sheet: 'Closed', edge: 'Home', ring: 'Stopped' },
             peek: { title: 'Scan a barcode', aim: 'Hold the barcode inside the frame', field: 'Barcode number', barcode: 'Barcode', deep: 'Deep analyze', deepS: 'Opens the LOWiSPIKE GPT in ChatGPT', note: 'A look inside. The camera stays off.' },
-            areas: { you: 'Me', home: 'Your day', food: 'Scan', play: 'Flying', companion: 'My card', together: 'Community', settings: 'Settings', extras: 'Good to know', end: 'Done' } },
-        de: { next: 'Weiter', back: 'Zurück', skip: 'Überspringen', skipAll: 'Alles überspringen', of: '{i} von {n}', label: 'Tutorial', guide: 'Dein Begleiter', tryIt: 'Probier’s jetzt', nice: 'Super, genau so.', pause: 'Pause', play: 'Abspielen',
+            areas: { you: 'Me', home: 'Your day', food: 'Scan', play: 'Flying', companion: 'My card', together: 'Community', settings: 'Settings', extras: 'Good to know', new: 'New', end: 'Done' } },
+        de: { next: 'Weiter', back: 'Zurück', skip: 'Überspringen', skipAll: 'Alles überspringen', of: '{i} von {n}', label: 'Tutorial', newsLabel: 'Neu', newsSkip: 'Überspringen', newsDone: 'Alles klar', newsTitle: 'Neu in diesem Update', guide: 'Dein Begleiter', tryIt: 'Probier’s jetzt', nice: 'Super, genau so.', pause: 'Pause', play: 'Abspielen',
             practice: 'Hier üben. In deiner App ändert sich nichts.', laterTag: 'Nach der Tour', how: { tap: 'Tippen', hold: 'Halten', touch: 'Berühren', double: 'Zweimal tippen', drag: 'Ziehen', swipe: 'Wischen', pinch: 'Zwei Finger' }, looks: { ring: 'Blasen', water: 'Wasser · 3', world: 'Welt', fade: 'Knöpfe', companion: 'Begleiter', mic: 'Mikro', joystick: 'Joystick', galaxy: 'Galaxie', sun: 'Tag', sheet: 'Fenster', edge: 'Seite', cards: 'Karten' }, done: { water: 'Wasser · 0', sun: 'Nacht', fade: 'Wieder da', mic: 'Gesendet', sheet: 'Zu', edge: 'Home', ring: 'Steht' },
             peek: { title: 'Barcode scannen', aim: 'Halte den Barcode in den Rahmen', field: 'Barcode-Nummer', barcode: 'Barcode', deep: 'Deep analyze', deepS: 'Öffnet den LOWiSPIKE GPT in ChatGPT', note: 'Ein Blick hinein. Die Kamera bleibt aus.' },
-            areas: { you: 'Ich', home: 'Dein Tag', food: 'Scan', play: 'Fliegen', companion: 'Meine Karte', together: 'Community', settings: 'Einstellungen', extras: 'Gut zu wissen', end: 'Fertig' } },
-        es: { next: 'Siguiente', back: 'Atrás', skip: 'Saltar', skipAll: 'Saltar todo', of: '{i} de {n}', label: 'Tutorial', guide: 'Tu compañero', tryIt: 'Pruébalo ahora', nice: 'Bien, así es.', pause: 'Pausa', play: 'Reproducir',
+            areas: { you: 'Ich', home: 'Dein Tag', food: 'Scan', play: 'Fliegen', companion: 'Meine Karte', together: 'Community', settings: 'Einstellungen', extras: 'Gut zu wissen', new: 'Neu', end: 'Fertig' } },
+        es: { next: 'Siguiente', back: 'Atrás', skip: 'Saltar', skipAll: 'Saltar todo', of: '{i} de {n}', label: 'Tutorial', newsLabel: 'Nuevo', newsSkip: 'Saltar', newsDone: 'Entendido', newsTitle: 'Novedades de esta versión', guide: 'Tu compañero', tryIt: 'Pruébalo ahora', nice: 'Bien, así es.', pause: 'Pausa', play: 'Reproducir',
             practice: 'Practica aquí. En tu app no cambia nada.', laterTag: 'Después del recorrido', how: { tap: 'Toca', hold: 'Mantén', touch: 'Toca', double: 'Toca dos veces', drag: 'Arrastra', swipe: 'Desliza', pinch: 'Pellizca' }, looks: { ring: 'Burbujas', water: 'Agua · 3', world: 'Mundo', fade: 'Botones', companion: 'Compañero', mic: 'Micro', joystick: 'Joystick', galaxy: 'Galaxia', sun: 'Día', sheet: 'Ventana', edge: 'Página', cards: 'Tarjetas' }, done: { water: 'Agua · 0', sun: 'Noche', fade: 'Ya están', mic: 'Enviado', sheet: 'Cerrada', edge: 'Inicio', ring: 'Parado' },
             peek: { title: 'Escanear código', aim: 'Pon el código dentro del marco', field: 'Número del código', barcode: 'Código', deep: 'Deep analyze', deepS: 'Abre el GPT de LOWiSPIKE en ChatGPT', note: 'Un vistazo dentro. La cámara sigue apagada.' },
-            areas: { you: 'Yo', home: 'Tu día', food: 'Scan', play: 'Volar', companion: 'Mi tarjeta', together: 'Comunidad', settings: 'Ajustes', extras: 'Bueno saber', end: 'Listo' } }
+            areas: { you: 'Yo', home: 'Tu día', food: 'Scan', play: 'Volar', companion: 'Mi tarjeta', together: 'Comunidad', settings: 'Ajustes', extras: 'Bueno saber', new: 'Nuevo', end: 'Listo' } }
     };
 
     /* pure helpers (tests + tutorial.js) */
@@ -836,6 +896,40 @@
         return !!(tut && typeof tut === 'object' && typeof tut.none === 'string' && tut.none.trim().length >= 8);
     }
 
+
+    /* What's New as a mini tour (Oct 23 2026). news.json / version.json news "tour": [step ids] (falls back to [tutorial] when that
+       is a step id). Returns the existing ids, in order, without repeats; the player puts new-intro first. */
+    function tourOf(news) {
+        const n = news || {}, raw = Array.isArray(n.tour) ? n.tour : (typeof n.tutorial === 'string' ? [n.tutorial] : []);
+        const out = []; raw.forEach(id => { if (typeof id === 'string' && id !== 'new-intro' && STEPS.some(s => s.id === id && !s.when) && out.indexOf(id) < 0) out.push(id); });
+        return out;
+    }
+    /* ONE What's New per launch (Oct 23 2026, Emmanuel: "keeps reappearing in a loop"): the news entry plus its history (bump-build
+       keeps the last releases' {id, tour}), minus the ids this phone has seen, folded into one entry: every unseen id (all of them get
+       marked seen together) and the union of their tours, newest release first. seen(id) -> true when already seen. null = nothing new. */
+    function unseenNews(news, seen) {
+        const n = news || {}, is = typeof seen === 'function' ? seen : () => false;
+        if (!n.id) return null;
+        const hist = (Array.isArray(n.history) ? n.history : []).filter(h => h && h.id);
+        const all = [{ id: n.id, tour: tourOf(n) }].concat(hist.filter(h => h.id !== n.id).map(h => ({ id: h.id, tour: tourOf({ tour: h.tour }) })));
+        const open = all.filter(h => !is(h.id));
+        if (!open.length) return null;
+        const tour = []; open.forEach(h => h.tour.forEach(id => { if (tour.indexOf(id) < 0) tour.push(id); }));
+        return Object.assign({}, n, { ids: open.map(h => h.id), tour, history: undefined });
+    }
+    /* a release with no step of its own (a fix): one card in the same style with the start of its own news text */
+    function newsCard(news) {
+        const n = news || {}, t = {}, title = {}, cta = {};
+        ['en', 'de', 'es'].forEach(l => {
+            let s = String(((n.text || {})[l] || (n.text || {}).en || '')).split(/\n\s*\n/)[0].trim();
+            const parts = s.match(/[^.!?]+[.!?]+(\s|$)/g) || [s]; let o = '';
+            for (const p of parts) { if ((o + p).trim().length > 200 && o) break; o += p; }
+            o = o.trim(); if (o.length > 220) o = o.slice(0, 217).replace(/\s+\S*$/, '') + '…';
+            t[l] = o; title[l] = UI[l].newsTitle; cta[l] = UI[l].newsDone;
+        });
+        return { id: 'news-card', area: 'new', target: null, covers: [], title, text: t, cta };
+    }
+
     /* item 38: what a card asks of the user. try = the real control (tryIt), practice = a practice pad on the card,
        later = done after the tour (worded so), info = no gesture asked for now */
     const PRACTICE_HOW = ['tap', 'hold', 'touch', 'double', 'drag', 'swipe', 'pinch'];
@@ -847,7 +941,7 @@
     /* GESTURES id -> the step id that teaches it */
     function taught() { const m = {}; STEPS.forEach(s => (s.teaches || []).forEach(g => { if (!m[g]) m[g] = s.id; })); return m; }
 
-    const api = { VERSION, AREAS, STEPS, NO_TUTORIAL, GESTURES, GESTURE_EXEMPT, UI, text, fill, plan, skipIndex, covered, newsOk, tryMatch, taught, TRY_CUE, tryResume, kind, PRACTICE_HOW, LATER_MARK, INSTRUCTION };
+    const api = { VERSION, AREAS, STEPS, NO_TUTORIAL, GESTURES, GESTURE_EXEMPT, UI, text, fill, plan, skipIndex, covered, newsOk, tourOf, newsCard, unseenNews, tryMatch, taught, TRY_CUE, tryResume, kind, PRACTICE_HOW, LATER_MARK, INSTRUCTION };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.LowiTutorialSteps = api;
 })(typeof window !== 'undefined' ? window : null);

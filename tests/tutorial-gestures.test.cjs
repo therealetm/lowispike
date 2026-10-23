@@ -71,7 +71,7 @@ test('every section of the app has a step and the tour visits it', () => {
     assert.ok(S.some(s => s.peek && s.peek.kind === 'scan'), 'a step shows what is inside Scan');
     for (const rm of ['room', 'chat', 'create', 'aff']) assert.ok(S.some(s => where(s) === 'community' && s.rm === rm), 'Community tab ' + rm + ' has a step');
     for (const s of S) {
-        assert.ok(['home', 'community'].includes(where(s)), s.id + ': where is home or community (never scan: it opens the camera)');
+        assert.ok(['home', 'community', 'move'].includes(where(s)), s.id + ': where is home, community or move (never scan: it opens the camera)');
         if (s.rm) assert.strictEqual(where(s), 'community', s.id + ': a Community tab step is shown in Community');
     }
     const gw = new Set(T.GESTURES.map(g => g.where));
@@ -123,7 +123,7 @@ test('every step reads in en, de and es and fits the card', () => {
 
 test('the card still shows only "Tutorial · X of N" (no progress dots)', () => {
     const js = read('tutorial.js');
-    assert.match(js, /esc\(U\.label \+ ' \\u00b7 ' \+ S\.fill\(U\.of, \{ i: i \+ 1, n: list\.length \}\)\)/);
+    assert.match(js, /\(news \? \(U\.newsLabel \|\| U\.label\) : U\.label\) \+ ' \\u00b7 ' \+ S\.fill\(U\.of, \{ i: i \+ 1, n: list\.length \}\)\)/);
     assert.doesNotMatch(js, /lt-dot/);
     assert.strictEqual(T.fill(T.UI.en.label + ' \u00b7 ' + T.UI.en.of, { i: 17, n: 41 }), 'Tutorial \u00b7 17 of 41');
 });

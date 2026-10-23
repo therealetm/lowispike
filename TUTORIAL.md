@@ -61,6 +61,31 @@ Example news.json:
 {"slug": "water-goal", "tutorial": "water", "text": {"en": "...", "de": "...", "es": "..."}}
 ```
 
+## What's New is a mini tour (Oct 23 2026, tutorial.js `LowiTutorial.news`)
+Emmanuel: "every time I do an update it's not in the tutorial style ... take them to the place where you updated it and show them
+around. They can skip it or go through that mini tutorial or the last page of the newest tutorial."
+- The newest features live in part `new` of `tutorial-steps.js` (right before `end`), so the full tour ends with them too.
+- A release's `news.json` lists its steps: `"tour": ["new-rooms", "new-deadlift"]`. Without `"tour"`, a `"tutorial"` step id is
+  the tour. With neither (`"tutorial": {"none": ...}`, a pure fix) the update shows ONE card in the same style with the start of
+  its own text. `bump-build.cjs` copies `tour` into `version.json` and keeps `news.history` (the last 12 releases' `{id, tour}`);
+  a tour id that does not exist blocks the release (exit 5), a release without a tour prints a WARNING.
+- **Every user-visible release ships a tour step**: add (or update) a step in part `new`, list it in `"tour"`, record its voice.
+- A step that lives behind a panel names a route: `open: 'rooms' | 'shop' | 'move'` (`OPEN` in `tutorial.js`). The tour opens the
+  place once when the card comes up, treats that sheet as its stage (does not wait behind it, the card sits above it), closes it
+  when the next card does not need it and goes back Home at the end. A new route = one line in `OPEN` (`go`, `stage`, `back`).
+- Exactly one announcement per launch: `index.html` folds every unseen release (`unseenNews`: news + history minus the seen ids)
+  into one tour, saves ALL those ids as seen in localStorage BEFORE it shows, and returns, so Skip, Got it, a reload or a crash
+  never bring it back and no second popup follows. The tour never touches the full tour's saved place (`mode === 'news'`, its
+  events carry `news: true`). Card: "Neu · 1 von 6", "Überspringen" top right, "Los geht's" on the intro, "Alles klar" at the end.
+- Checks: `tests/whats-new-tour.test.cjs` (format, one-per-launch, reload regression), and in a browser
+  `node tools/check-whats-new-tour.cjs <root|url> iphone|ipad [shotPrefix]` (goes through every step, skip, reload).
+
+Example news.json:
+
+```json
+{"slug": "rooms", "tutorial": "new-rooms", "tour": ["new-rooms"], "text": {"en": "...", "de": "...", "es": "..."}}
+```
+
 ## Auto-start for new accounts (Oct 19 2026, tutorial-auto.js)
 Emmanuel: "when someone makes a new account, they should automatically be taken through a tutorial phase ... with a skippable option".
 - Setup's `finishOb()` fires `lowi:setup-done`; only then is the account marked `pending` in `localStorage['lowispike.tutorial-auto.v1']`

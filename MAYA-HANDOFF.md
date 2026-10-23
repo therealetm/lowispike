@@ -983,6 +983,8 @@ every worktree with merged and dirty state.
 
 ### Release procedure
 
+**What's New = mini tour (Oct 23 2026, Emmanuel).** Every user-visible release ships a tour step: a step in part `new` of `tutorial-steps.js` (EN/DE/ES, short, voice recorded) and news.json `"tour": ["<step id>"]`. The update opens that place and points at the new thing in the tutorial card ("Überspringen" any time). Only one announcement per launch, all unseen releases folded in, seen saved before it shows. Text-only What's New is gone; a pure fix (`"tutorial": {"none": ...}`) shows one card in the same style. Details: `TUTORIAL.md`, "What's New is a mini tour". Live check: `node tools/check-whats-new-tour.cjs https://therealetm.github.io/lowispike/ iphone` (and `ipad`).
+
 ```bash
 # from the worktree, with the change committed
 scripts/release.sh "what users get, in one line" --news news.json

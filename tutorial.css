@@ -160,3 +160,6 @@
 @media (max-height: 600px) { .ltp-hint, .ltp-acts { display: none; } }
 @media (prefers-reduced-motion: reduce) { .ltp-laser { animation: none; } .lt-card.lt-autogo::after { animation: none; opacity: 0; } }
 .lt-tour.lt-rm .ltp-laser { animation: none; }
+
+/* What's New mini tour (Oct 23 2026): a card whose step opened a place sits above that place's sheet (Rooms is z 2147483000) */
+.lt-tour.lt-staged { z-index: 2147483400; }

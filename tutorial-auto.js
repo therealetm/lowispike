@@ -112,7 +112,7 @@
         else if (what === 'quit') set(Object.assign({}, st, { s: 'declined' }));
     }
     W.addEventListener('lowi:setup-done', () => set(markNew(get())));
-    W.addEventListener('lowi:tutorial', e => { const st = get(), n = onEvent(st, e && e.detail); if (n !== st) set(n); });
+    W.addEventListener('lowi:tutorial', e => { if (e.detail && e.detail.news) return; const st = get(), n = onEvent(st, e && e.detail); if (n !== st) set(n); });
     setInterval(tick, 1000);
     W.LowiTutorialAuto = Object.assign({ state: get, tick }, api);
 })(typeof window !== 'undefined' ? window : null);

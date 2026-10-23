@@ -49,6 +49,8 @@ html.wh-home.wh-away #whHud .wh-move { opacity: 0 !important; pointer-events: no
     transform: translate(var(--wm-dx, 0), var(--wm-dy, 0)) scale(.2); opacity: 0;
     transition: transform .42s cubic-bezier(.3, 1.6, .5, 1) calc(var(--wm-i, 0) * 40ms), opacity .2s ease calc(var(--wm-i, 0) * 40ms); }
 .wm-bloom.on .wm-orb { transform: none; opacity: 1; }
+/* Oct 23 2026: today's picked step range glows (aria-pressed=true) */
+.wm-orb.on { border-color: rgba(143,231,255,.95); box-shadow: 0 0 0 2px rgba(143,231,255,.95), 0 0 14px rgba(143,231,255,.5); }
 .wm-bloom.off .wm-orb { transform: translate(var(--wm-dx, 0), var(--wm-dy, 0)) scale(.2); opacity: 0; transition-duration: .3s, .25s; transition-delay: 0s; }
 .wm-bloom.off .wm-orb.wm-chosen { transform: translate(var(--wm-dx, 0), var(--wm-dy, 0)) scale(.55); opacity: 0; transition: transform .32s cubic-bezier(.5, 0, .8, .4), opacity .32s ease-in; }
 .wm-orb:active { scale: .9; transition: scale .1s; }

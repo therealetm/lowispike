@@ -61,3 +61,5 @@ old version of the app). The wordmark is the live `LOWiSPIKE` text, not an image
 ## Replay tutorial (19 Oct 2026)
 
 Settings > Tutorial replays a guided tour (`tutorial.js`, steps ONLY in `tutorial-steps.js`) as if the person were new, without touching their data. Its first step, for accounts that still have the standard Misty, opens the claim-your-own-companion step (owned by the own-companion work, `LowiBirthCompanion.claim` / `openCreator`). When onboarding copy changes, check that the matching tutorial step still says the same thing: every release's news.json names its `"tutorial"` step or `{"none": "why"}` (TUTORIAL.md).
+
+Move card (23 Oct 2026): the tour tells people to check the step counter on their own phone at the end of the day, tap Move and pick Casual, Steady or Epic (under 5k, 5k to 10k, 10k plus steps), in EN, DE and ES, with a new voice clip. The Move page step says today's step range is at the top. LOWiSPIKE does not count steps itself.

@@ -46,6 +46,8 @@ An XP ledger entry is:
 
 Do not change the meaning of an existing `src` or `eventId` prefix without migration and replay tests.
 
+Home Move step range (2026-10-23, `move-estimate-core.js`, replay tests in `tests/move-steps.test.cjs`): src `move:est` keeps its meaning (`mq` = quarters 0..4 of today's Move part, read by `sun-meter.js`, `world-health-core.js`, `world-mood-core.js`). New entries are one per day, `eventId: 'move:est:<day>:steps'`, with `lvl` `casual` | `steady` | `epic`, `steps` `lt5k` | `5to10k` | `10kplus` (under 5,000 / 5,000 to 9,999 / 10,000 or more, read off the user's own step counter, never verified), `mq` 4/3, 8/3 or 4 (fractions allowed) and 5 / 11 / 16 XP. Picking another range unawards today's `move:est` entries (the old Oct 17 `move:est:<day>:<n>` guesses included) and awards the new one; the same range again writes nothing. Older days' entries are never touched. A Move-page log (no `mq`) still fills the day and a range adds nothing on top.
+
 ## Local storage inventory
 
 | Key | Owner | Contents/lifetime |

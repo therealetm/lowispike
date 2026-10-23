@@ -216,19 +216,19 @@
             id: 'move', area: 'home', target: ['#whHud .wh-move'], covers: ['move'], teaches: ['move-tap'], later: 'tap',
             title: { en: 'Move', de: 'Bewegung', es: 'Movimiento' },
             text: {
-                en: 'After the tour, whenever you’ve been active, a walk, stairs, dancing, tap Move and pick Quick, Medium, Long or Epic.',
-                de: 'Nach der Tour tippst du nach allem Aktiven, ob Spaziergang, Treppen oder Tanzen, auf Bewegung und wählst kurz, mittel, lang oder episch.',
-                es: 'Después del recorrido, cuando hagas algo activo, un paseo, escaleras, bailar, toca Movimiento y elige corto, medio, largo o épico.'
+                en: 'After the tour, at the end of the day, check the step counter on your phone, tap Move and pick Casual, Steady or Epic: under 5k, 5k to 10k or 10k plus steps.',
+                de: 'Nach der Tour schaust du abends auf den Schrittzähler deines Handys, tippst auf Bewegung und wählst Locker, Stetig oder Episch: unter 5k, 5k bis 10k oder ab 10k Schritte.',
+                es: 'Después del recorrido, al final del día, mira el contador de pasos de tu móvil, toca Movimiento y elige Tranquilo, Constante o Épico: menos de 5k, de 5k a 10k o 10k o más pasos.'
             }
         },
         {
-            /* Oct 21 (Eman): hold Move = the full Move page (workouts, Care board, today's guesses). Cook and Move left Community's bar. */
+            /* Oct 21 (Eman): hold Move = the full Move page (workouts, Care board, today's guesses; Oct 23: today's step range). Cook and Move left Community's bar. */
             id: 'move-hold', area: 'home', target: ['#whHud .wh-move'], covers: ['move-page', 'workouts-page'], teaches: ['move-hold'], tryIt: { how: 'hold' },
             title: { en: 'Hold Move', de: 'Bewegung halten', es: 'Mantén Movimiento' },
             text: {
-                en: 'Hold Move to open the Move page with your workouts. Today\'s guesses are at the top, tap Edit to remove one. Try it, then close it.',
-                de: 'Halt Bewegung gedrückt für die Bewegungsseite mit deinen Workouts. Oben stehen deine heutigen Schätzungen, Bearbeiten löscht eine. Probier’s und schließ es.',
-                es: 'Mantén Movimiento para abrir su página con tus entrenos. Arriba están tus estimaciones de hoy, Editar quita una. Pruébalo y ciérralo.'
+                en: 'Hold Move to open the Move page with your workouts. Today\'s step range is at the top, tap Edit to remove it. Try it, then close it.',
+                de: 'Halt Bewegung gedrückt für die Bewegungsseite mit deinen Workouts. Oben steht dein Schrittbereich von heute, Bearbeiten löscht ihn. Probier’s und schließ es.',
+                es: 'Mantén Movimiento para abrir su página con tus entrenos. Arriba está tu rango de pasos de hoy, Editar lo quita. Pruébalo y ciérralo.'
             }
         },
         {
@@ -734,7 +734,7 @@
         G('water-hold', 'home', 'hold', ['world-home.js'], 'hold Water: today\'s water back to 0'),
         G('fuel-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Fuel: Log meal, Cook, Shop'),
         G('fuel-hold', 'home', 'hold', ['home-blooms-v2.js'], 'hold Fuel: Log meal opens'),
-        G('move-tap', 'home', 'tap', ['home-blooms-v2.js', 'move-bubble.js'], 'tap Move: Quick, Medium, Long, Epic'),
+        G('move-tap', 'home', 'tap', ['home-blooms-v2.js', 'move-bubble.js'], 'tap Move: Casual, Steady, Epic'),
         G('move-hold', 'home', 'hold', ['home-blooms-v2.js', 'move-bubble.js'], 'hold Move: the Move page (workouts, edit today\'s moves)'),
         G('gap-tap', 'home', 'tap', ['home-blooms-v2.js', 'fast-bubble.js'], 'tap Gap: the Gap view'),
         G('sleep-tap', 'home', 'tap', ['home-settings-sleep-v2.js'], 'tap Sleep: how long did you sleep'),

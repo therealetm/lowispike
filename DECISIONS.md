@@ -1016,3 +1016,11 @@ Emmanuel (Seven): "I don't understand the food journal section. Either remove it
 - Retired surfaces: the Move page's Care board card (nav-moves.js nm-lbcard) and its Milestones row (nm-milescard: people's levels & streaks, the board read as the "XP human" board). Every old way in now opens Community > Ranking: index.html openBoardTab (Profile row "Ranking", "See Ranking", the Top button), nav-moves open('lb'), Settings "Ranking" (id still 'care').
 - Kept: all care, sunbeam, XP and level data and code (care-board-core.js, sun meter, levels, the Milestones sheet code reached from the friends tree). Nothing in the database is removed.
 - Open: the database still accepts faked ranking rows until Eman runs the anti-cheat SQL in Supabase (see the queue item ranking-1).
+
+## 2026-10-23 Move bubble: three daily step ranges, like Sleep (decided by Eman on a call)
+
+- Eman: "People already have step counting apps. We don't have to be a step counting app ... at the end of the day someone can look at the phone and see how many steps they took, and then just tap a button ... just like with sleep." Then: three bubbles like Sleep, "casual, steady and epic", under 5k, 5k-10k and 10k+.
+- The Quick / Medium / Long / Epic minute guesses are replaced in the Home Move bloom (and the older Move bloom) by Casual (under 5,000 steps), Steady (5,000 to 9,999) and Epic (10,000 or more). Epic keeps Emmanuel's name. Mirror stays first in the bloom (its removal is the separate symmetry request).
+- One range a day, today's total: another pick replaces it (XP and energy go down too), the same pick again does nothing (no XP, no dance). Casual fills 1/3, Steady 2/3 and Epic all of today's Move part; XP 5 / 11 / 16 (16 was already the daily cap).
+- The ranges are draft defaults the agent suggested and Eman accepted; they are not health advice. Steps are the user's word: the app does not count or check them, and the copy says so. No native step sync is part of this.
+- Data contract: DATA_CONTRACTS.md (Home Move step range). Onboarding Move card and its voice clip updated in EN / DE / ES.

@@ -440,8 +440,12 @@ function directed(){ensureScope();if(!scope||!G)return {scope:'',list:[]};const 
  if(prefs.dmSeen==null){prefs.dmSeen=list.length?list[list.length-1].ts:Date.now();persist();} /* the room's own first-run rule (dmCheck): history before this device first looked is not new */
  for(const m of list)m.seen=m.ts<=prefs.dmSeen;
  return {scope,quiet:isQuiet(),quietSet:prefs.quietEnabled===true,list};}
-function dmBadge(n){const tb=D.querySelector('#tabbar .tb[data-tab="foryou"]');if(!tb||!tb.querySelector)return;let d=tb.querySelector('.cg-dm');if(!n){if(d)d.remove();return;}if(!d){d=D.createElement('span');d.className='cg-dm';d.setAttribute('aria-hidden','true');tb.appendChild(d);}d.textContent=n>9?'9+':String(n);}
-function dmAlert(m){const title=fill('dmTitle',m.by||'Member'),body=plain(m).slice(0,140);
+function dmBadge(n){if(DM_MUTED)n=0;const tb=D.querySelector('#tabbar .tb[data-tab="foryou"]');if(!tb||!tb.querySelector)return;let d=tb.querySelector('.cg-dm');if(!n){if(d)d.remove();return;}if(!d){d=D.createElement('span');d.className='cg-dm';d.setAttribute('aria-hidden','true');tb.appendChild(d);}d.textContent=n>9?'9+':String(n);}
+/* 23 Oct (Emmanuel): Replies & mentions is muted. The "is talking to you" card stuck half off screen at the top of every page
+   (it parked at -160% of its own height, which is less than the safe-area offset on notched phones and iPads), so no toast,
+   no tab badge and no system notification for replies/mentions any more. dmCheck still keeps dmSeen current; home-visit.js is untouched. */
+const DM_MUTED=true;
+function dmAlert(m){if(DM_MUTED){const t=D.getElementById('cgToast');if(t&&t.removeAttribute)t.removeAttribute('data-on');return;}const title=fill('dmTitle',m.by||'Member'),body=plain(m).slice(0,140);
  if(D.hidden){try{if(W.Notification&&Notification.permission==='granted'&&navigator.serviceWorker)navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,icon:'icon-192.png',badge:'icon-192.png',tag:'lowi-dm-'+m.id,data:{q:'',tab:'foryou'}})).catch(()=>{});}catch(e){}return;}
  if(active()||(W.LowiHomeVisit&&W.LowiHomeVisit.has(m.id)))return; /* on Home the sender's companion visits instead (home-visit.js) */
  let t=D.getElementById('cgToast');if(!t){t=D.createElement('div');t.id='cgToast';t.className='cg-toast-wrap';t.setAttribute('role','status');D.body.appendChild(t);}

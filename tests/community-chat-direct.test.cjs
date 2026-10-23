@@ -43,10 +43,10 @@ test('back from the chat: the tab you came from, else nothing to go back to (Com
   assert.strictEqual(U.back(), false);
 });
 
-test('Replies & mentions: the newest one is in the Community menu and opens in the chat', () => {
+test('Replies & mentions: muted from the Community menu (23 Oct); the old click path stays harmless', () => {
   const js = R('community-rooms-ui.js');
   assert.match(js, /function lastDirected\(\)/);
-  assert.match(js, /if\(dl\)it\.unshift\(\['replies','💬',tr\('chReplies'\)/);
+  assert.doesNotMatch(js, /it\.unshift\(\['replies'/); // 23 Oct: Replies & mentions muted from the Community menu
   assert.match(js, /if\(k==='replies'\)\{const dl=lastDirected\(\),c=W\.LowiCommunity;if\(dl&&c&&c\.thread\)\{const f=cur\(\);view='';c\.thread\(true,dl\.m\.id\);/);
   assert.match(js, /chReplies:\['Replies & mentions','Antworten & Erwähnungen','Respuestas y menciones'\]/);
 });

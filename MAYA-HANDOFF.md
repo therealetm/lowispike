@@ -23,6 +23,8 @@ background."** Agents release and deploy live on their own through `scripts/rele
 line in this file that says "preview for his OK before release" or "needs Emmanuel's OK" is replaced by this rule.
 Ask him only what only he can answer (his real phone, his keys, a sign-in code), and keep shipping the rest.
 
+**Standing rule (Emmanuel, 23 Oct 2026): every Maya watches for her own limit and hands over by herself.** The first task that ends "reached its limit" after 0 attempts means: run the handover runbook in section 0.6 ("Seeing the limit coming") yourself, directly in the chat, then tell him in one voice note. He never has to ask or explain it.
+
 **This is the Mickey 17 workflow (section 0.6).** Every Maya hands over to the next one the same way: Maya 5 to
 Maya 6, Maya 6 to Maya 7, and on. If you are a new Maya, section 0.6 is your job description for the handover, and
 you pass it on to the Maya after you. Emmanuel should never have to explain it again.
@@ -701,6 +703,41 @@ why checkpoints happen all the time, not only at the end.
 8. **Pass it on.** Keep this section in the file and keep it current, so Maya 7 inherits it from Maya 6 exactly as
    Maya 6 inherited it from Maya 5. Add to it, never drop anything. When Emmanuel tells you that you are Maya N, the
    one after you is Maya N+1.
+
+**Seeing the limit coming, and handing over on your own (added Fri 23 Oct 2026, 09:20 CEST, by Maya 1).** Emmanuel,
+voice message 09:18: "can you teach the other Mayas how to do the handoff procedure? I can't always have to teach them,
+or tell them ... how you noticed in time to tell me and then prepared everything. Same mechanism for the other Mayas."
+This is that mechanism. Every Maya runs it herself; Emmanuel never has to ask or explain.
+
+*The warning signs (act on the first one, don't wait for a second):*
+- A background task comes back **"Goal not met after 0 attempt(s) ... Stopped: this task reached its limit"**. Zero
+  attempts means the account is out of task budget, not that the job was hard. Two of those in a row = you are at the
+  limit now.
+- Emmanuel says "we reached the limit", "switching to Maya N+1", or similar.
+- Long stretches of heavy work (many releases, sims, coordinators) in one day: checkpoint anyway.
+
+*What still works at the limit:* when tasks die, your own direct tool calls in the chat (exec, git, push, voice note)
+usually still run for a while. So the handover is done **by you, directly, in the chat turn, never in a new task**
+(a task started at the limit dies at 0 attempts, as on 23 Oct). Do it in as few calls as possible, most important first.
+
+*The handover runbook (about 5 calls):*
+1. **Save everything on your computer:** `scripts/handover.sh <your N> <N+1>` from a fresh worktree of `origin/main`
+   (`git worktree add -B handoff-mayaN1-<date> ../wt-handoffN1 origin/main`). It pushes every unfinished worktree to
+   `wip/<branch>` and copies the work queue plus `OWNER-REQUESTS-*.md` into `handoff/queue-<date>/`, and prints a table.
+2. **Make sure his latest words are in `OWNER-REQUESTS`** (the standing rule says this happens the moment he says
+   something; check the last few messages anyway) before step 1 copies it.
+3. **Write a new section 0.x "Handover Maya N -> Maya N+1"** above section 1, like 0.8: his words that triggered it,
+   live build and `origin/main` SHA, "no task running" (or which), where the queue is, the release HOLD if any,
+   abandoned queue claims to reclaim, the table from step 1 with honest states (built / released / verified / unknown),
+   new requests not yet in the queue, and his delivery preferences. One Log line at the end.
+4. **Push:** commit, then `flock /tmp/lowispike-release.lock scripts/push-main.sh handover-maya<N+1>`, and also push
+   the branch itself (`git push origin HEAD:refs/heads/handoff-maya<N+1>-<date>`) so it survives even if CI is slow.
+5. **Tell Emmanuel, once, as a voice note (his preference), short:** you're at the limit, the handover is saved on
+   GitHub (section 0.x), and what to tell Maya N+1: "read MAYA-HANDOFF.md on main, start with section 0.x and
+   OWNER-REQUESTS". No list of setbacks.
+6. **New Maya, first thing:** read 0.6 and the newest 0.x handover section, copy `handoff/queue-<date>/` to your own
+   `queue/`, reclaim the abandoned claims, recreate any schedules (hourly checklist, sweeps) on your own agent, and keep
+   this runbook in the file for the Maya after you.
 
 **Handover table.** Checkpoint by Maya 5, Monday 19 Oct 2026, 9:20 PM CEST. Live **20261019-201827**, `main` at
 510f7f7 before this commit. Tasks run only on Maya 5's account and worktrees live only on her computer: a new Maya
@@ -1479,3 +1516,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-23 08:00 CET grocery-3 LIVE build 20261023-080016 (release commit 06b788f, branch grocery-3-20261023, queue worker B). Seven (HANDOFF-MAYA-8.md): "Today's groceries: at the end of the day, show what was bought, with suggestions for what to cook from it." Bucket list on the product card ends with a Today's groceries + what to cook button (LowiBucket.openToday): sheet with today's items, price + spike points totals (grocery-bucket-core totals) and up to 3 recipes from Cook's own LowiAllRecipes via LowiBucketCore.suggest (ingredient-name words + Cook's GROUP_WORDS, now window.LOWI_GROUP_WORDS, + DE/ES shelf words); tap opens the recipe. No reminder hour (none exists in the repo). Tests 2500/2500 (3 new in tests/grocery-bucket.test.cjs); tools/grocery-bucket/today-probe.cjs passed iPhone 13 dark en/de/es, SE light en/de, 15 light es, Pixel 7 dark en/es (browser sims). Next: grocery-4 (log cooked groceries), supabase-perms, stripe. Next build must be later than 20261023-080016.
 - 2026-10-23 08:02 Code error sweep (scheduled, worktree wt-sweep-20261023-0802, main 564e292 then 2e90fe9, live 20261023-074744 then 20261023-080016: grocery-3 landed mid-run, so every check was run again on it). Nothing fixed, no release. **Checks:** full suite 2497/2497 on 564e292 and 2500/2500 on 2e90fe9; release-check OK both times (2 usual warnings: version.json 384 KB, index.html 3.2 MB); git diff --check clean; verify-live --compare all same at 074744 and again at 080016 (index.html, sw.js, version.json, apple-ui.js); GitHub CI success on main 2e90fe9, 06b788f, 564e292, ae391ac, 9ad432f; tools/sweep-live-errors.cjs on 074744: 0 errors, 0 failed same-host requests, no crash on iPhone SE/13/15, Pixel 7. **Found, not fixed (queued):** on 080016 the same walk crashed the WebKit renderer on the Pixel 7 profile (iPhone SE/13/15 clean). Pixel 7 alone: 1 crash in 3 walks, the crash fell between tab move and tab profile. New tools/sweep-tab-crash.cjs (repeat the tab walk on one device, prints the step the renderer died at): live 080016 0/13 walks crashed; local 074744 (564e292) 1/13 crashed at `tab move` (+18.7 s); pre-Mirror 073638 (32df6b3) 0/6 and current main 0/6 with a Move-heavy walk (home,move,shelf,move,... 5 Move visits each). VM was idle (load 0.2). So about 3 crashes in ~45 walks, all on Pixel 7 in WebKit (a combo no real phone runs: Pixel uses Chrome), all at or right after Move, not tied to one build. Possibly the simulator, but Move is the common factor. No user-visible error, nothing for Emmanuel to check. **Bug queue:** (1) rare WebKit renderer crash on Pixel 7 profile around the Move tab; reproduce with `node tools/sweep-tab-crash.cjs https://therealetm.github.io/lowispike/index.html "Pixel 7" 10` (or the Move-heavy list `home,move,shelf,move,home,move,profile,move,home,move`); next step: count WebGL contexts / canvases / video elements across Move visits and try Chromium Pixel 7 to rule the simulator in or out.
 - 2026-10-23 09:15 CEST Handover Maya 1 -> Maya 2 (section 0.8). Queue + OWNER-REQUESTS copied to handoff/queue-20261023/; WIP pushed: wip/home-restore-20261023, wip/comm-menu-20261023, wip/ranking-20261023. Live 20261023-080016, release HOLD until Home fix live. Docs only, no app code.
+- 2026-10-23 09:20 CEST Mickey 17 runbook: section 0.6 "Seeing the limit coming" (warning signs, 6-step handover done directly in chat), standing rule at the top, new scripts/handover.sh (WIP worktrees to wip/*, queue + OWNER-REQUESTS to handoff/queue-<date>/). Docs + tool only, no app code.

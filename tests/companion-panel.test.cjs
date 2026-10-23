@@ -62,14 +62,15 @@ test('the card shows what each place still needs and whether you have been there
     assert.match(R('galaxy-bubbles.js'), /new CustomEvent\('lowi:galaxy-stream'/);
 });
 
-test('companion card: Forms and Glow come first, the mood check-in says what it does and comes last', () => {
+test('companion card: Forms and Glow come first, then energy, level, adventures; no mood check-in (Oct 23, E-man)', () => {
     const js = R('misty-hub.js'), h = js.slice(js.indexOf('function html('), js.indexOf('function advHtml'));
     const doors = h.indexOf('mh-doors'), say = h.indexOf('mh-say');
     assert.ok(doors > 0 && doors < say, 'doors come before her words, right under the name');
-    const scale = h.indexOf('scaleHtml()'), adv = h.indexOf('advHtml()'), mood = h.indexOf('mh-mood"');
-    assert.ok(doors > 0 && doors < scale && scale < adv && adv < mood, 'doors, then energy, level, adventures, mood');
+    const scale = h.indexOf('scaleHtml()'), adv = h.indexOf('advHtml()');
+    assert.ok(doors > 0 && doors < scale && scale < adv, 'doors, then energy, level, adventures');
     assert.match(h, /data-mh="forms"/); assert.match(h, /data-mh="glow"/); assert.doesNotMatch(h, /Your scanned cards/);
-    assert.match(h, /mirrors it: tired or unwell brings a calm, resting look/); assert.doesNotMatch(h.match(/'Optional\. For the next 8 hours ' \+ name\(\) \+ '[^']*'/)[0], /\b(she|her)\b/i, 'gender-neutral'); assert.match(h, /No XP/);
+    assert.doesNotMatch(h, /mh-mood|data-mh="mood"|how you feel|wie du dich f|c\\u00f3mo te sientes/, 'Tell Misty how you feel is gone');
+    assert.doesNotMatch(h, /data-mh="journal"/, 'Food journal door is gone');
 });
 
 test('the foods tally (kept for XP and fair play): foods you logged or scanned, newest first, with how those meals went', () => {

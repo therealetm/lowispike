@@ -165,3 +165,51 @@ test('grocery-3 view: Today\'s groceries sheet from the bucket list, recipes fro
     assert.doesNotMatch(js, /Notification|setHours|getHours/, 'no reminder hour invented');
     ['todayG', 'bought', 'cook', 'noCook', 'noneToday', 'uses', 'alsoNeed'].forEach(k => assert.equal(C.TX[k].length, 3, k));
 });
+
+/* grocery-4 (Seven): "Log what was cooked from those groceries, as text or a photo." */
+test('cooked links: a logged meal is linked to today\'s bucket items, per day, once per meal, removed with the meal', () => {
+    let s = C.add({ days: {} }, { barcode: '111', name: 'Chicken breast' }, T0);
+    s = C.add(s, { name: 'Spinach' }, T0);
+    s = C.addCooked(s, { id: 'meal:gc:1', t: 'Chicken spinach pan', via: 'text', used: ['bc:111', 'nm:spinach|'] }, T0 + 1000);
+    s = C.addCooked(s, { id: 'meal:gc:1', t: 'Chicken spinach pan', via: 'text', used: ['bc:111'] }, T0 + 2000);
+    s = C.addCooked(s, { id: 'meal:p:2', t: 'Photo meal', via: 'photo', used: [] }, T0 + 3000);
+    const c = C.cookedToday(s, T0);
+    assert.equal(c.length, 2, 'the same meal is linked once');
+    assert.deepEqual(c[0].used, ['bc:111'], 'the newest link for that meal wins');
+    assert.equal(c[1].via, 'photo');
+    assert.equal(C.cookedToday(s, T0 + 864e5).length, 0, 'tomorrow starts without cooked meals');
+    s = C.removeCooked(s, 'p:2'); /* lowi:meal-deleted reports the log id, the link keeps the eventId */
+    assert.equal(C.cookedToday(s, T0).length, 1);
+    const store = mem(); C.save(s, store); assert.equal(C.cookedToday(C.load(store), T0).length, 1, 'kept on the phone');
+    assert.equal(C.today(C.load(store), T0).length, 2, 'the bucket itself is untouched');
+});
+
+test('cooked links: junk is cleaned, via is text or photo only, no entry without a meal id', () => {
+    let s = C.addCooked({ days: {} }, { t: 'no id' }, T0);
+    assert.equal(C.cookedToday(s, T0).length, 0);
+    s = C.addCooked(s, { id: 'meal:x', t: 'x'.repeat(300), via: 'weird', used: 'nope' }, T0);
+    const c = C.cookedToday(s, T0)[0];
+    assert.equal(c.via, 'text'); assert.equal(c.t.length, 100); assert.deepEqual(c.used, []);
+    assert.ok(!('cooked' in C.add({ days: {} }, { barcode: '1', name: 'A' }, T0)), 'a bucket without cooked meals has no cooked key');
+});
+
+test('keysFor maps a suggested recipe\'s used item names back to bucket keys', () => {
+    const items = C.today(C.add(C.add({ days: {} }, { barcode: '9', name: 'Eggs' }, T0), { name: 'Spinach' }, T0), T0);
+    assert.deepEqual(C.keysFor(items, ['Spinach']), ['nm:spinach|']);
+    assert.deepEqual(C.keysFor(items, ['Nope']), []);
+});
+
+test('the Today\'s groceries sheet logs what was cooked through the one meal path, never a new meal store', () => {
+    const js = read('grocery-bucket.js');
+    assert.match(js, /logMeal\(Object.assign\(\{ id: 'gc:'/, 'text goes through LowiVitalsBridge.logMeal');
+    assert.match(js, /LowiSpirit\.photo\(\)/, 'the photo uses the app\'s own Snap');
+    assert.match(js, /lowi:meal-logged/); assert.match(js, /lowi:meal-deleted/);
+    assert.match(js, /LowiMealJournal\.thumbHTML/, 'cooked meals open in the meal journal');
+    assert.ok(!/localStorage\.setItem/.test(js), 'no store of its own besides the bucket core');
+    for (const k of ['cooked', 'cookedAsk', 'usedQ', 'logText', 'logPhoto', 'cookedThis', 'loggedC', 'dupC', 'needName']) {
+        assert.equal(C.TX[k].length, 3, k + ' in en/de/es'); C.TX[k].forEach(v => assert.ok(v && v.trim(), k));
+    }
+    const css = read('grocery-bucket.css').split('grocery-4')[1];
+    assert.ok(css && !/violet|purple|#(?:8b5cf6|a855f7|22c55e|10b981)/i.test(css), 'brand blues only');
+    assert.match(css, /\.gt-chip span\{min-height:44px/); assert.match(css, /\.gt-did\{min-height:44px/);
+});

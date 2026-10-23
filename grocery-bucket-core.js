@@ -8,7 +8,9 @@
    only kept when the card had a real estimate, never made up. Prices are NEVER invented: an item's price is the one the person typed
    for that day (`typed`, wins), else the newest price reported for that product at the picked shop by real data the app already
    has (community shelf sightings via LOWI_SHELF.priceReports and the person's own price contributions in LowiDiscovery). No shop
-   picked and nothing typed = no price. Words in en/de/es. */
+   picked and nothing typed = no price. Words in en/de/es.
+   grocery-4 (Seven: "Log what was cooked from those groceries, as text or a photo."): state.cooked = {"YYYY-MM-DD": [{id, t, via,
+   used, ts}]} links a logged meal (the one meal journal) to the bucket items that went into it. */
 (function (root) {
     'use strict';
     const KEY = 'lowi.bucket.v1', KEEP_DAYS = 14, MAX_ITEMS = 200, MAX_PRICE = 999;
@@ -50,7 +52,22 @@
         alsoNeed: ['Also needs: {s}', 'Brauchst noch: {s}', 'También necesitas: {s}'],
         noCook: ['No recipe in the app matches these yet. Add more groceries or browse Cook.', 'Noch kein Rezept in der App passt dazu. Kauf mehr ein oder stöbere in Kochen.', 'Aún no hay recetas en la app que encajen. Añade más compras o explora Cocinar.'],
         noneToday: ['Nothing in today\'s bucket yet. Scan a product and tap Add to bucket.', 'Noch nichts im heutigen Korb. Scanne ein Produkt und tippe In den Korb.', 'Nada en la cesta de hoy. Escanea un producto y toca Añadir a la cesta.'],
-        openRecipe: ['Open recipe', 'Rezept öffnen', 'Abrir receta']
+        openRecipe: ['Open recipe', 'Rezept öffnen', 'Abrir receta'],
+        cooked: ['What you cooked', 'Was du gekocht hast', 'Lo que cocinaste'],
+        cookedNote: ['Log it as text or a photo. It goes into your meals like any Log meal.', 'Trag es als Text oder Foto ein. Es landet bei deinen Mahlzeiten wie jedes Eintragen.', 'Regístralo con texto o una foto. Va a tus comidas como cualquier registro.'],
+        cookedAsk: ['What did you cook?', 'Was hast du gekocht?', '¿Qué cocinaste?'],
+        cookedPh: ['e.g. Chicken salad', 'z. B. Hähnchensalat', 'p. ej. Ensalada de pollo'],
+        usedQ: ['Which groceries went in?', 'Welche Einkäufe sind drin?', '¿Qué compras usaste?'],
+        logText: ['Log it', 'Eintragen', 'Registrar'],
+        logPhoto: ['Snap a photo', 'Foto machen', 'Hacer foto'],
+        cookedThis: ['Cooked this', 'Das gekocht', 'Cociné esto'],
+        loggedC: ['Logged with your meals', 'Bei deinen Mahlzeiten eingetragen', 'Registrado en tus comidas'],
+        dupC: ['Already logged today, it counts once', 'Heute schon eingetragen, zählt einmal', 'Ya registrado hoy, cuenta una vez'],
+        failC: ['Couldn\'t log it. Try again.', 'Konnte nicht eintragen. Versuch es nochmal.', 'No se pudo registrar. Inténtalo de nuevo.'],
+        needName: ['Type what you cooked first.', 'Schreib zuerst, was du gekocht hast.', 'Escribe primero qué cocinaste.'],
+        usedS: ['With: {s}', 'Mit: {s}', 'Con: {s}'],
+        viaPhoto: ['Photo', 'Foto', 'Foto'],
+        viaText: ['Text', 'Text', 'Texto']
     };
     function langIndex(l) { l = String(l || '').toLowerCase(); return l.indexOf('de') === 0 ? 1 : l.indexOf('es') === 0 ? 2 : 0; }
     function tx(k, i, n, s) { const r = TX[k] || [k]; let o = r[i] || r[0]; if (n != null) o = o.replace('{n}', String(n)); if (s != null) o = o.replace('{s}', String(s)).replace('{d}', String(s)); return o; }
@@ -64,13 +81,31 @@
         const d = s.days && typeof s.days === 'object' ? s.days : {}, sh = s.shops && typeof s.shops === 'object' ? s.shops : {}, out = {}, shops = {};
         Object.keys(d).forEach(k => { if (isDay(k) && Array.isArray(d[k])) out[k] = d[k].map(cleanItem).filter(Boolean).slice(0, MAX_ITEMS); });
         Object.keys(sh).forEach(k => { const v = String(sh[k] || '').trim().slice(0, 80); if (isDay(k) && v) shops[k] = v; });
-        return { days: out, shops };
+        const o = { days: out, shops }, ck = s.cooked && typeof s.cooked === 'object' ? s.cooked : null;
+        if (ck) { const c = {}; Object.keys(ck).forEach(k => { if (isDay(k) && Array.isArray(ck[k])) { const l = ck[k].map(cleanCooked).filter(Boolean).slice(-MAX_COOKED); if (l.length) c[k] = l; } }); if (Object.keys(c).length) o.cooked = c; }
+        return o;
     }
+    /* grocery-4: what was cooked from the day's groceries. The meal itself lives in the app's one meal journal (S.logs via
+       LowiVitalsBridge.logMeal, its photo in meal-journal.js); the bucket only keeps the link: {id: the meal's eventId, t, via:
+       'text'|'photo', used: [bucket item keys], ts}. */
+    const MAX_COOKED = 20;
+    function cleanCooked(x) {
+        if (!x || !x.id) return null;
+        const o = { id: String(x.id).slice(0, 120), t: String(x.t || '').trim().slice(0, 100), via: x.via === 'photo' ? 'photo' : 'text', used: Array.isArray(x.used) ? x.used.map(String).filter(Boolean).slice(0, 40) : [], ts: +x.ts || 0 };
+        return o;
+    }
+    function addCooked(s, e, now) { s = clean(s); const c = cleanCooked(Object.assign({ ts: now == null ? Date.now() : now }, e)); if (!c) return s; const d = dayKey(c.ts || now); s.cooked = s.cooked || {}; s.cooked[d] = (s.cooked[d] || []).filter(x => x.id !== c.id).concat(c).slice(-MAX_COOKED); return s; }
+    function cookedToday(s, now) { s = clean(s); return ((s.cooked || {})[dayKey(now)] || []).slice(); }
+    function removeCooked(s, id) { s = clean(s); const a = String(id || ''); if (!a || !s.cooked) return s; Object.keys(s.cooked).forEach(d => { s.cooked[d] = s.cooked[d].filter(x => x.id !== a && x.id !== 'meal:' + a); if (!s.cooked[d].length) delete s.cooked[d]; }); if (!Object.keys(s.cooked).length) delete s.cooked; return s; }
+    /* the bucket keys a suggested recipe uses (suggest() reports item names) */
+    function keysFor(items, names) { const set = new Set((names || []).map(String)); return (items || []).filter(it => set.has(it.name || it.code)).map(it => it.k); }
     function prune(s, now) {
         const keep = Object.keys(s.days).sort().reverse().slice(0, KEEP_DAYS); const cut = dayKey((now == null ? Date.now() : now) - KEEP_DAYS * 864e5); const out = {}, shops = {};
         keep.forEach(k => { if (k > cut) out[k] = s.days[k]; });
         Object.keys(s.shops || {}).forEach(k => { if (k > cut) shops[k] = s.shops[k]; });
-        return { days: out, shops };
+        const o = { days: out, shops };
+        if (s.cooked) { const c = {}; Object.keys(s.cooked).forEach(k => { if (k > cut) c[k] = s.cooked[k]; }); if (Object.keys(c).length) o.cooked = c; }
+        return o;
     }
     function ptsOf(p) { const v = { spike: 1, better: 1, ok: 1 }[p.verdict]; const sc = p.score != null ? p.score : p.facts && p.facts.score; return v && typeof sc === 'number' && isFinite(sc) ? Math.max(0, Math.min(100, Math.round(sc))) : null; }
     function item(p, now) {
@@ -154,7 +189,7 @@
     function fmtPrice(a, li) { const v = Number(a).toFixed(2); return li ? v.replace('.', ',') + ' €' : '€' + v; }
     function load(store) { try { return clean(JSON.parse((store || root.localStorage).getItem(KEY) || '{}')); } catch (e) { return { days: {}, shops: {} }; } }
     function save(s, store) { try { (store || root.localStorage).setItem(KEY, JSON.stringify(clean(s))); return true; } catch (e) { return false; } }
-    const api = { KEY, KEEP_DAYS, TX, langIndex, tx, dayKey, keyOf, add, remove, today, has, load, save, item, parsePrice, setPrice, setShop, shopOf, shopsFrom, priceFor, totals, fmtPrice, validReports, suggest };
+    const api = { KEY, KEEP_DAYS, TX, langIndex, tx, dayKey, keyOf, add, remove, today, has, load, save, item, parsePrice, setPrice, setShop, shopOf, shopsFrom, priceFor, totals, fmtPrice, validReports, suggest, addCooked, cookedToday, removeCooked, keysFor };
     root.LowiBucketCore = api;
     if (typeof module === 'object' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -4,7 +4,7 @@
    with a blue energy arc (.mp-ring), a dashed well (.mp-well) and a flat knob. It must read as one of the eight ring bubbles:
    - the same glass shell declarations as the ring bubbles (.o8-cell: background, rim, inner glow), no blur, no dark bottom shadow
    - with the 3D world: Misty's membrane drawn around it (registered with LowiBubbles as a control, kind 'joy') and its shell clear,
-     plus the same glint as the ring bubbles' .lb-bub::before
+     (Oct 23: no glint oval, like the ring bubbles)
    - no radar arc / dashed well; a glass knob
    - look only: no size / position / visibility rule for the joystick in the new block, misty-pad.* untouched.
    tests/joystick-bubble-style-live.cjs asserts the same on computed styles in Chromium and WebKit at iPhone and iPad sizes. */
@@ -49,12 +49,12 @@ test('the joystick shell uses the ring bubble glass (background, rim, inner glow
     for (const L of shadowLayers(decl(pad.body, 'box-shadow'))) assert.ok(L.inset && L.y === 0, 'no bottom shadow: ' + L.raw);
 });
 
-test('with the 3D world the joystick gets Misty\'s membrane and the ring bubbles\' clear shell + glint', () => {
+test('with the 3D world the joystick gets Misty\'s membrane and the ring bubbles\' clear shell (no glint oval, Oct 23)', () => {
     assert.ok(padLive, 'no html.o8.wh-home.lb3d #whHud #whPad.lb-live rule');
     assert.match(padLive.body, /background:\s*transparent/); assert.match(padLive.body, /border-color:\s*transparent/); assert.match(padLive.body, /box-shadow:\s*none/);
-    const lb = rules(read('living-bubbles.css')).find(r => /\.lb-bub::before/.test(r.sel) && !/light/.test(r.sel));
-    assert.ok(lb && padGlint, 'glint rules missing');
-    for (const p of ['left', 'top', 'width', 'height', 'background', 'transform']) assert.strictEqual(norm(decl(padGlint.body, p)), norm(decl(lb.body, p)), 'glint ' + p + ' differs from .lb-bub::before');
+    /* Oct 23 2026, Emmanuel: the flat white oval on every bubble reads as a shadow - neither the ring bubbles nor the joystick draw it */
+    const lb = rules(read('living-bubbles.css')).find(r => /\.lb-bub::before/.test(r.sel));
+    assert.ok(!lb && !padGlint, 'no glint oval rule on .lb-bub::before or #whPad.lb-live::before');
     const js = read('home-orbit-v2.js');
     assert.match(js, /LB\.add\(j,\s*\{\s*kind:\s*'joy',\s*ctl:\s*true\s*\}\)/, 'home-orbit-v2.js must register #whPad with LowiBubbles as a control');
     assert.match(js, /joyBubble\(\);/, 'joyBubble() must run from ensure()');

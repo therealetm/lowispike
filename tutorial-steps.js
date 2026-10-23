@@ -758,6 +758,15 @@
             }
         },
         {
+            id: 'new-humans', area: 'new', where: 'community', target: null, covers: ['humans-only-ranking'],
+            title: { en: 'Only real people', de: 'Nur echte Menschen', es: 'Solo personas reales' },
+            text: {
+                en: 'The Ranking and Add a friend now show only real people. The bots stay in the chat with their daily photos.',
+                de: 'Ranking und Freund hinzufügen zeigen jetzt nur echte Menschen. Die Bots bleiben mit ihren täglichen Fotos im Chat.',
+                es: 'El Ranking y Añadir un amigo muestran ahora solo personas reales. Los bots siguen en el chat con sus fotos diarias.'
+            }
+        },
+        {
             id: 'new-sync', area: 'new', where: 'home', target: null, covers: ['account-sync'],
             title: { en: 'iPhone and iPad in sync', de: 'iPhone und iPad synchron', es: 'iPhone y iPad sincronizados' },
             text: {

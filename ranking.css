@@ -140,6 +140,9 @@
 .rm-rank .rk-of{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:normal;word-break:keep-all;hyphens:none;line-height:1.2}
 .rm-rank .rk-pod-i .rk-of{text-align:center}
 @media (max-width:400px){.rm-rank .rk-pod-i .rk-own{font-size:11px}}
+/* 23 Oct, second pass: the board now sits inside the shared panel, a little narrower, so on phones the Your place card gives the
+   form name back the room ("Moss Guardian" must still fit on two lines at 360px) */
+@media (max-width:400px){.rm-rank .rk-me{padding:10px 10px 10px 8px}.rm-rank .rk-me-l{min-width:46px}}
 
 /* 23 Oct 2026 (Eman: "it has to be clear WHY"): what this board counts + compare the top 3 */
 .rm-rank .rk-per{margin:-4px 14px 12px;text-align:center;font:500 12px/1.4 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec)}

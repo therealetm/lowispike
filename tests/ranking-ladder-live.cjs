@@ -41,7 +41,7 @@ srv.listen(0, async () => {
     await page.evaluate(() => LowiRanking.open()); await page.waitForTimeout(1500);
     await page.evaluate(() => { const b = document.querySelector('#cmPaneChat [data-rk="per"][data-k="all"]'); if (b) b.click(); }); await page.waitForTimeout(500);
     const r = await page.evaluate(() => {
-      const box = document.querySelector('#cmPaneChat > .rm-rank'); if (!box) return null;
+      const box = document.querySelector('#cmPaneChat .rm-view > .rm-rank'); if (!box) return null;
       const items = [...box.querySelectorAll('.rk-pod-i, .rk-row')].map(e => ({ cn: (e.querySelector('.rk-cn') || {}).textContent, own: (e.querySelector('.rk-own') || {}).textContent, ownr: (e.querySelector('.rk-ownr') || {}).textContent }));
       return { items, me: !!box.querySelector('.rk-me[data-rk="ladder"]'), wide: document.documentElement.scrollWidth > innerWidth + 1 };
     });

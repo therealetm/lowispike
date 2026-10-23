@@ -67,10 +67,14 @@
 /* Creation + Affiliates tabs. The pane shows only the bar and that page (in a frame); the galaxy and chat are hidden, so they pause. */
 #cmPaneChat[data-spirit-chat]>.rm-view{display:none}
 #cmPaneChat[data-spirit-chat][data-rm-view]>*:not(.rm-bar):not(.rm-view):not(.rm-chans):not(.rm-rank){display:none!important}
-#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-view,#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-view{display:none!important}
-/* 23 Oct: the Ranking tab's box (ranking.js), drawn under the same bar; scrolls with the pane like the channel list */
-#cmPaneChat[data-spirit-chat]>.rm-rank{display:none}
-#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-rank:not([hidden]){display:block;position:relative;z-index:20;margin:0 2px;padding:0 4px calc(var(--sab,0px) + 120px)}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-view{display:none!important}
+/* 23 Oct, second pass (Eman on the iPad: "Bei Ranking ist auf einmal so ein rechteckiger schwarzer Rand und Ranking selber ist nicht in
+   so einer Box ... ich moechte, dass das immer gleich aussieht"): the Ranking (ranking.js) now sits in the same panel as Creation and
+   Affiliates, the shared .rm-view box with an .rm-frame panel (same width, edge, glow and radius, right under the tabs). Its list
+   scrolls inside that panel like a page in a frame, so the pane never scrolls, the bar stays put and needs no dark box of its own. */
+#cmPaneChat[data-spirit-chat] .rm-view>.rm-rank[hidden]{display:none}
+#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-view>.rm-rank:not([hidden]){display:block;position:relative;box-sizing:border-box;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:6px 12px 28px}
+@media (max-width:400px){#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-view>.rm-rank:not([hidden]){padding:4px 6px 24px}}
 #cmPaneChat[data-spirit-chat][data-rm-view]>.rm-view{display:flex;flex-direction:column;position:relative;z-index:20;height:calc(100vh - 196px);height:calc(100dvh - 196px);min-height:380px;margin:0 2px}
 .rm-frame{flex:1;width:100%;min-height:0;border:1px solid rgba(143,231,255,.4);border-radius:22px;background:#050b1e;color-scheme:dark;box-shadow:0 0 18px rgba(28,247,249,.16)}
 .rm-frame[hidden]{display:none}
@@ -221,9 +225,9 @@
 @media (max-height:600px){#app #main #cmPaneChat h2.rm-l-h{font-size:clamp(36px,11vw,44px)}.rm-l-hero{padding-top:10px}}
 @media (min-width:700px){.rm-l-hero{padding-top:56px}}
 /* the landing is taller than a short screen: it scrolls inside the pane (the pane clips everything else), the top bar floats */
-#cmPaneChat[data-spirit-chat][data-rm-view=chans],#cmPaneChat[data-spirit-chat][data-rm-view=rank]{overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar,#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-bar{position:sticky;top:0;z-index:5}
-#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar,#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-bar{padding-bottom:12px;margin-bottom:4px;background:linear-gradient(180deg,rgba(4,10,28,.97) 0%,rgba(4,10,28,.9) 78%,rgba(4,10,28,0) 100%)}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]{overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar{position:sticky;top:0;z-index:5}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar{padding-bottom:12px;margin-bottom:4px;background:linear-gradient(180deg,rgba(4,10,28,.97) 0%,rgba(4,10,28,.9) 78%,rgba(4,10,28,0) 100%)}
 /* Create and Affiliates: the frame fits the pane on short screens (it scrolls inside itself), and the bar stays pinned so the tabs never slide under the profile picture */
 #cmPaneChat[data-spirit-chat][data-rm-view]>.rm-bar{position:sticky;top:0}
 @media (max-height:600px){#cmPaneChat[data-spirit-chat][data-rm-view]>.rm-view{min-height:0}}
@@ -238,8 +242,8 @@ html.sec-open #cmPaneChat[data-spirit-chat]>.rm-bar .rm-head{padding-left:calc(5
    under it sits at 20, so the podium and the Your place card slid over the Community pill and the tabs. The bar now stays above what
    scrolls (30, as on Chat, Creation and Affiliates) and is one frosted glass sheet in the app's dark blue, solid down to its lower
    edge, with a soft shadow instead of a see-through fade. Nothing reads through it. */
-#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar,#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-bar{z-index:30;isolation:isolate;
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar{z-index:30;isolation:isolate;
  background:rgba(4,10,28,.95);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);
  box-shadow:0 1px 0 rgba(143,231,255,.16),0 12px 18px -10px rgba(0,0,0,.6);border-radius:0 0 22px 22px}
 /* the strip above the bar (the pane's own top padding) is covered too, so nothing peeks out over the Community pill */
-#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar::before,#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-bar::before{content:'';position:absolute;z-index:-1;left:0;right:0;top:-40px;height:40px;background:rgba(4,10,28,.95)}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar::before{content:'';position:absolute;z-index:-1;left:0;right:0;top:-40px;height:40px;background:rgba(4,10,28,.95)}

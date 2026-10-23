@@ -177,11 +177,19 @@ test('no code path pads the board: ranking.js has no bot or demo companion, rank
   assert.match(html, /top = L\.slice\(0, 10\)/);
 });
 
-test('scroll: on Ranking and the Room list the pinned Community bar sits above what scrolls and is a solid glass sheet', () => {
+test('scroll: the Room list keeps its solid pinned bar; Ranking sits in the shared Creation/Affiliates panel and scrolls inside it', () => {
   const css = R('community-rooms.css'), tail = css.slice(css.lastIndexOf('23 Oct (E-man on the live Ranking'));
-  assert.match(tail, /\[data-rm-view=rank\]>\.rm-bar\{z-index:30;/);
+  assert.match(tail, /\[data-rm-view=chans\]>\.rm-bar\{z-index:30;/);
   assert.match(tail, /background:rgba\(4,10,28,\.95\)/);
   assert.match(tail, /backdrop-filter:blur\(18px\)/);
   assert.match(tail, /\.rm-bar::before\{content:'';position:absolute;z-index:-1;[^}]*top:-40px/);
-  assert.match(css, /\[data-rm-view=rank\]>\.rm-rank:not\(\[hidden\]\)\{display:block;position:relative;z-index:20;/, 'the page stays below the bar (20 < 30)');
+  /* 23 Oct second pass (Eman on the iPad): no dark box behind the bar on Ranking, the board in the same panel as the others */
+  assert.doesNotMatch(css, /\[data-rm-view=rank\]>\.rm-bar/, 'the Ranking bar has no box of its own');
+  assert.doesNotMatch(css, /\[data-rm-view=rank\]\{overflow/, 'the pane itself does not scroll on Ranking');
+  assert.doesNotMatch(css, /\[data-rm-view=rank\]>\.rm-view\{display:none/, 'Ranking uses the shared .rm-view box');
+  assert.match(css, /\[data-rm-view=rank\]>\.rm-view>\.rm-rank:not\(\[hidden\]\)\{display:block;[^}]*overflow-y:auto;/, 'the board scrolls inside its panel');
+  const ui = R('community-rooms-ui.js');
+  assert.match(ui, /function paintRank\(pane\)\{[^\n]*:scope>\.rm-view>\.rm-rank/);
+  assert.match(ui, /const vw=ensureView\(pane\);/);
+  assert.match(ui, /box\.className='rm-frame rm-rank'/, 'the same .rm-frame panel class as Creation and Affiliates');
 });

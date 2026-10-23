@@ -14923,6 +14923,12 @@ function pfToday(){ const d = new Date().toDateString(); return Object.values(D.
    (the main button when the scan came from Log meal); it never shows in the shopping camera, so a shopping scan never logs a meal
    or touches the Gap clock. Catch only appears for products the community database doesn't have yet (Pathfinder). */
 function scanForMeal(){ return !!window.LowiScanMeal && !(typeof CAM !== "undefined" && CAM && CAM.shop); } /* Oct 21: see openScanner */
+/* Oct 23 (Eman: "they can only do this with insulin-friendly products"): a yellow or spike result gets no bubble. It shows why,
+   a Skip button and, when there is one, the best swap; nothing goes into the shared database or the Bubble Dex. */
+function noCatchHTML(p, noSkip){
+  let sw = ""; try { if (!p.nameEst && !p.noSwap) sw = nameSwapHTML(p); } catch(e){ sw = ""; } /* a name verdict card already shows its swap */
+  return '<div class="b3-nocatch v-' + esc(p.verdict || "spike") + '" role="status"><span class="nc-ic" aria-hidden="true"></span><div><b>' + esc(t("ncT")) + '</b><small>' + esc(t("ncS")) + '</small></div></div>' + sw +
+    (noSkip ? "" : '<button type="button" class="r2-btn ghost big b3-ncskip" data-b3="skip">' + esc(t("ncSkip")) + '</button>'); }
 function scActsHTML(p, mine, m){
   const logging = scanForMeal(); /* Oct 21: only a scan opened from Log meal offers "I ate this" (was: every non-shopping scan, ghost) */
   const eat = logging ? '<button type="button" class="r2-btn big sc-eat pri" data-b3="eat">' + esc(sct("ate")) + '</button>' : "";
@@ -14987,12 +14993,6 @@ function actsHTML(p){ const mine = isMine(p);
     '<button class="r2-btn pri big b3-catch" data-b3="catch" id="b3Catch"><span class="b3-bub" aria-hidden="true"></span>' + esc(pfVerifiable(p) ? sct("pfFirst") : t("catch")) + '</button>' +
     '<button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button>') +
     (p.id ? '<button class="r2-link b3-rep" data-b3="report">' + esc(t("report")) + '</button>' : "") + '</div>'; }
-/* Oct 23 (Eman: "they can only do this with insulin-friendly products"): a yellow or spike result gets no bubble. It shows why,
-   a Skip button and, when there is one, the best swap; nothing goes into the shared database or the Bubble Dex. */
-function noCatchHTML(p, noSkip){
-  let sw = ""; try { if (!p.nameEst && !p.noSwap) sw = nameSwapHTML(p); } catch(e){ sw = ""; } /* a name verdict card already shows its swap */
-  return '<div class="b3-nocatch v-' + esc(p.verdict || "spike") + '" role="status"><span class="nc-ic" aria-hidden="true"></span><div><b>' + esc(t("ncT")) + '</b><small>' + esc(t("ncS")) + '</small></div></div>' + sw +
-    (noSkip ? "" : '<button type="button" class="r2-btn ghost big b3-ncskip" data-b3="skip">' + esc(t("ncSkip")) + '</button>'); }
 /* Oct 23 (Eman: "I would like it so that they don't have to scroll down"): the not-found sheet fits one screen. Barcode in the
    sub line, name + Analyze in one row, Deep analyze and Label photos as two tiles in one row, ticks as two-line chips, and
    Don't save + Bubble catch side by side in a footer that stays above the keyboard. */

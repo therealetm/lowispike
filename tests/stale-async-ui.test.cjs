@@ -85,7 +85,7 @@ function sheetWith(manual) {
 function catchRig() {
   let release; const ctx = { REV: null, D: { mine: {} }, window: {}, res: {},
     sfx() { }, buzz() { }, esc: x => String(x), t: k => k, sct: k => k, myName: () => 'me', curTab: () => 'home', renderTab() { },
-    pkey: p => p.k, slim: p => p, pfAward: () => 100, pfCountText: () => 'badge', cardHTML: () => 'CARD', swapsHTML: () => '',
+    pkey: p => p.k, slim: p => p, pfAward: () => 100, pfCountText: () => 'badge', cardHTML: () => 'CARD', swapsHTML: () => '', bubbleFX: () => Promise.resolve(), /* Oct 23 bubble catch animation */
     CustomEvent: function () { }, doCatch: () => new Promise(r => { release = () => r({ first: true, pending: false }); }) };
   ctx.window.dispatchEvent = () => { };
   ctx.$ = (s, root) => { const f = n => { if (n.sel === s) return n; for (const k of n.kids) { const r = f(k); if (r) return r; } return null; }; return root ? f(root) : null; };
@@ -113,5 +113,5 @@ test('catch: when the card is still the one that asked, the burst and the caught
   const run = g.ctx.res.catchCur(A.btn, { k: 'a', barcode: '4000000000001' });
   g.go(); await run;
   assert.ok(A.card.classList.has('caught'), 'caught stamp missing');
-  assert.ok(A.acts.outerHTMLSet && /b3-caught first/.test(A.acts.outerHTMLSet), 'Pathfinder burst missing');
+  assert.ok(A.acts.outerHTMLSet && /b3-caught[^"]* first/.test(A.acts.outerHTMLSet) /* Oct 23: b3-caught bc first (bubble catch) */, 'Pathfinder burst missing');
 });

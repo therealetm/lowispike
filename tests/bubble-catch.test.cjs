@@ -51,7 +51,7 @@ test('only insulin-friendly products can be caught or published', () => {
   assert.match(html, /if \(!mine && p\.verdict !== "ok" && p\.verdict !== "unknown"\) cat = noCatchHTML\(/, 'scan card: no catch button for yellow/spike');
   assert.match(html, /if \(!mine && p\.verdict !== "ok"\) return '<div class="b3-acts">' \+ noCatchHTML\(p\) \+ '<\/div>';/, 'full card: same');
   // noCatchHTML renders the reason and Skip
-  const src = cut('function noCatchHTML(p, noSkip){', '/* Oct 23 (Eman: "I would like it so');
+  const src = cut('function noCatchHTML(p, noSkip){', '\nfunction ');
   const ctx = { esc: s => String(s), t: k => ({ ncT: 'No bubble for this one', ncS: 'Only insulin-friendly foods go into a bubble.', ncSkip: 'Skip it' })[k], nameSwapHTML: () => '<div class="ne-swap">Try strawberries</div>' };
   vm.createContext(ctx); vm.runInContext(src + ';this.noCatchHTML=noCatchHTML;', ctx);
   const a = ctx.noCatchHTML({ verdict: 'spike', name: 'Plantain chips' });

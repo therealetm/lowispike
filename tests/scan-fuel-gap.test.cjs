@@ -54,7 +54,7 @@ test('Deep analyze is a one-tap link to the custom GPT, never an in-app sheet (O
     assert.ok(!/deep-analyze|LowiDeep|deepOpen|data-b3="deepnf"/.test(html), 'nothing opens the old sheet');
     assert.ok(!sw.includes('deep-analyze'), 'not cached any more');
     assert.ok(/function deepLink\(cls, attrs, title, sub\)\{\n  return '<a class="' \+ cls \+ '" ' \+ attrs \+ ' href="' \+ esc\(deepURL\(\)\) \+ '" target="_blank" rel="noopener">'/.test(html), 'a real link that opens outside the app');
-    assert.ok(/deepLink\("b3-nfdeep", 'id="b3NfDeep"', t\("deepNf"\), t\("deepNfS"\)\)/.test(html), 'the not-found card uses the same link');
+    assert.ok(/deepLink\("b3-nfdeep[^"]*", 'id="b3NfDeep"', t\("deepNf"\), t\("(deepNfS|nfDeepS)"\)\)/.test(html), 'the not-found card uses the same link');
 });
 
 test('Fuel\'s "When did you eat?" backdates the meal, and that time is what ends the fast', () => {

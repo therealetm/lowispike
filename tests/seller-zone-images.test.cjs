@@ -127,6 +127,8 @@ test('styles: a shop shelf grid, photo windows in bubble style, no pulsing photo
   assert.match(css, /\.sz-ph::after \{[^}]*inset/);
   assert.match(css, /\.sz-ph\.sz-noimg \{/);
   assert.doesNotMatch(css.slice(css.indexOf('.sz-ph {')), /\.sz-ph[^{]*\{[^}]*animation/);
+  /* brand and shop wrap instead of being cut off in the narrow phone column */
+  assert.match(css, /\.sz-card \.sz-tt small \{[^}]*white-space: normal/);
   /* buttons stay thumb-sized */
   assert.match(css, /\.sz-buy, \.sz-amz \{[^}]*min-height: 44px/);
 });

@@ -103,10 +103,14 @@ const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path
       res.cases.push({ what: 'close', ok: !after.open && !after.paused, after });
       if (after.open || after.paused) await find('close did not end the zone or the pause', after);
     }
+  } else if (await P.locator('.stp-card [data-stp-tab="sz"].stp-tab').count()) {
+    /* since 20261023-185943 the zone lives in Shop as its own tab (tools/check-shop-seller.cjs and check-seller-images.cjs walk it) */
+    await R.shot(path.join(out, tag + '-shop-panel.png'));
+    res.cases.push({ what: 'shop panel has the Seller Zone tab', ok: true }); res.tabPath = true;
   } else { await R.shot(path.join(out, tag + '-shop-panel.png')); await find('no Seller Zone entry in the Shop panel', {}); }
   const errs = R.errs.slice(e0).filter(e => !/favicon|openfoodfacts|net::ERR|Failed to load resource|supabase|ERR_NAME|status of 4\d\d/i.test(String(e)));
   if (errs.length) await find('page errors', { errs: errs.slice(0, 5).map(String) });
-  res.ok = res.cases.length >= 6 && res.cases.every(c => c.ok) && !res.finds.length;
+  res.ok = res.cases.length >= (res.tabPath ? 4 : 6) && res.cases.every(c => c.ok) && !res.finds.length;
   fs.writeFileSync(path.join(out, tag + '.json'), JSON.stringify(res, null, 2));
   console.log('RESULT', tag, res.build, res.ok ? 'PASS' : 'FAIL', res.cases.filter(c => c.ok).length + '/' + res.cases.length, 'finds=' + res.finds.length);
   await R.close();

@@ -14,34 +14,38 @@ const J = f => JSON.parse(read('data/shop/' + f + '.json'));
 test('formula: plain meat passes as Best, white bread and sweets do not', () => {
     const chicken = C.rate({ n: 'Kyllingebryst', k: 'Kød & fisk > Kylling & fjerkræ > Kyllingebryst', c: 0, s: 0, f: 0, p: 23, fat: 2 });
     assert.equal(chicken.group, 'meat');
-    assert.equal(chicken.gl, 0);
+    assert.equal(chicken.impact, 'lower');
     assert.ok(chicken.pass && chicken.best);
     const toast = C.rate({ n: 'Toastbrød', k: 'Brød & kager > Brød & boller > Lyst & groft brød', c: 48, s: 4, f: 3, p: 9, fat: 3 });
     assert.equal(toast.group, 'bread');
     assert.equal(toast.serve, 40);
     assert.ok(!toast.pass);
-    assert.equal(toast.fail, 'gl');
+    assert.ok(toast.fail === 'impact' || toast.fail === 'policy', toast.fail);
+    assert.notEqual(toast.impact, 'lower');
     const choc = C.rate({ n: 'Mælkechokolade', k: 'Slik & snacks > Chokolade > Chokoladeplader', c: 56, s: 54, f: 2, p: 7, fat: 31 });
     assert.equal(choc.group, 'sweets');
     assert.ok(!choc.pass);
 });
 
-test('formula: GL = carbs per serving x estimated GI / 100; fibre, protein and fat lower the GI', () => {
+test('formula (scanfe-h4): no estimated GI; the impact is the engine category for the carbs in the serving', () => {
     const r = C.rate({ n: 'Test', k: 'Kolonial > Pasta > Pasta', c: 10, s: 0, f: 0, p: 0, fat: 0 });
     assert.equal(r.serve, 50);
-    assert.equal(r.gi, 65);
     assert.equal(r.carbs, 5);
-    assert.equal(r.gl, Math.round(5 * 65 / 100 * 10) / 10);
-    const fib = C.rate({ n: 'Test', k: 'Kolonial > Pasta > Pasta', c: 10, s: 0, f: 8, p: 30, fat: 40 });
-    assert.ok(fib.gi < r.gi);
-    assert.ok(fib.gi >= 20);
+    assert.equal(r.gi, undefined, 'no GI is guessed');
+    assert.equal(r.gl, undefined, 'no glycemic load from a guessed GI');
+    assert.equal(r.impact, 'lower');
+    // fibre, protein and fat no longer lower anything: the same carbs give the same impact
+    const fib = C.rate({ n: 'Test', k: 'Kolonial > Pasta > Pasta', c: 30, s: 0, f: 8, p: 20, fat: 20 });
+    assert.equal(fib.carbs, 15);
+    assert.equal(fib.impact, 'moderate');
+    assert.equal(fib.pass, false);
     // sugar guard: low load but lots of sugar per serving still fails
     const sweetDrink = C.rate({ n: 'Saft', k: 'Drikkevarer > Juice > Juice', c: 3, s: 3, f: 0, p: 0, fat: 0, u: 'ml' });
     assert.equal(sweetDrink.serve, 250);
     assert.ok(!sweetDrink.pass);
     const water = C.rate({ n: 'Kildevand', k: 'Drikkevarer > Vand > Kildevand', c: 0, s: 0, u: 'ml' });
     assert.ok(water.pass && water.best);
-    // milk drinks use the dairy GI, not soda's
+    // milk is rated by the glass
     const milk = C.rate({ n: 'Letmælk', k: 'Mejeri & køl > Mejeri > Mælk', c: 4.7, s: 4.7, f: 0, p: 3.5, fat: 1.5, u: 'ml' });
     assert.equal(milk.group, 'dairy');
     assert.equal(milk.serve, 200);

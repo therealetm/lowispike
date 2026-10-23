@@ -40,15 +40,15 @@ test('link(): Open Food Facts lists link the product page by barcode; Salling on
 test('explain(): Best/Good comes from the same numbers the list uses, with the limits spelled out', () => {
     const r = C.rate({ n: 'Bio-Linsen rot', b: 'Lidl', k: 'legumes|seeds|legume-seeds|pulses|lentils|red-lentils', c: 49, s: 1.5, f: 7.6, p: 27, fat: 1.4, kcal: 333, u: 'g' });
     const e = C.explain(r);
-    assert.equal(e.gl, r.gl);
-    assert.equal(e.gi, r.gi);
+    assert.equal(e.impact, r.impact);
+    assert.equal(e.check, r.verdict);
+    assert.equal(e.gl, undefined);
+    assert.equal(e.gi, undefined);
     assert.equal(e.serve, r.serve);
     assert.equal(e.carbs, r.carbs);
-    assert.equal(e.limits.best, 2);
-    assert.equal(e.limits.gl, 5);
     assert.equal(e.limits.sugar, 6);
-    assert.equal(e.verdict, r.best ? 'best' : r.pass ? 'good' : r.fail === 'sugar' ? 'sugar' : 'spikes');
-    assert.equal(e.estimatedGI, true);
+    assert.equal(e.verdict, r.best ? 'best' : r.pass ? 'good' : r.fail === 'policy' ? 'policy' : r.fail === 'sugar' ? 'sugar' : 'spikes');
+    assert.equal(e.estimatedGI, false);
     const chicken = C.explain(C.rate({ n: 'Hähnchenbrust', k: 'meats|poultries|chickens|chicken-breasts', c: 0, s: 0, f: 0, p: 23, fat: 2 }));
     assert.equal(chicken.verdict, 'best');
 });

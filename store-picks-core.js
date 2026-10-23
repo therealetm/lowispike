@@ -8,34 +8,36 @@
 
      serving   = a typical portion for its food group (100 g meat, 30 g cheese, 40 g bread, 250 ml drink ...)
      carbs     = label carbohydrate per 100 g x serving / 100   (EU labels already list fibre separately)
-     GI (est.) = a base for the food group, lowered by fibre, protein and fat (they slow the sugar down), 20 to 90
-     GL        = carbs x GI / 100   (glycemic load of one serving)
-     passes    = GL <= 5 and sugar <= 6 g per serving      best = GL <= 2
+     impact    = the Food Intelligence Engine's blood sugar impact for that serving (Lower / Moderate / Higher, carbohydrate
+                 exposure bands in food-engine-core.js; never an invented GI)
+     check     = the engine's Food check verdict (JA / SELTEN / NEIN), the same call the scanner card makes
+     passes    = impact Lower, sugar <= 6 g per serving, check not NEIN      best = passes, check JA (apart from the
+                 missing-ingredients cap: the range files have no ingredient lists), not a sweetened drink
 
-   Labels give carbs, sugar, fibre, protein and fat; the GI is an estimate, so the GL is an estimate made from real label data. */
+   Until Oct 23, 2026 this used an estimated GI per food group; the spec forbids invented GI values (scanfe-h4). */
 (function (root, factory) {
     const api = factory();
     if (typeof module === 'object' && module.exports) module.exports = api;
     else root.LowiStorePicksCore = api;
 })(typeof self !== 'undefined' ? self : this, function () {
     'use strict';
-    const LIMIT = { gl: 5, best: 2, sugar: 6 };
+    const LIMIT = { sugar: 6 };
 
-    /* food groups in the order the list shows them; serving in g (ml for drinks), GI base before fibre/protein/fat */
+    /* food groups in the order the list shows them; serving in g (ml for drinks) */
     const GROUPS = [
-        { id: 'snacks', serve: 30, gi: 55, ic: '\u{1F95C}', en: 'Snacks & nuts', de: 'Snacks & Nüsse', es: 'Snacks y frutos secos' },
-        { id: 'meat', serve: 100, gi: 50, ic: '\u{1F969}', en: 'Meat & cold cuts', de: 'Fleisch & Aufschnitt', es: 'Carne y embutidos' },
-        { id: 'fish', serve: 100, gi: 50, ic: '\u{1F41F}', en: 'Fish & seafood', de: 'Fisch & Meeresfrüchte', es: 'Pescado y marisco' },
-        { id: 'dairy', serve: 150, gi: 35, ic: '\u{1F95B}', en: 'Dairy & eggs', de: 'Milchprodukte & Eier', es: 'Lácteos y huevos' },
-        { id: 'cheese', serve: 30, gi: 35, ic: '\u{1F9C0}', en: 'Cheese', de: 'Käse', es: 'Queso' },
-        { id: 'veg', serve: 100, gi: 35, ic: '\u{1F966}', en: 'Vegetables', de: 'Gemüse', es: 'Verduras' },
-        { id: 'fruit', serve: 100, gi: 40, ic: '\u{1F353}', en: 'Fruit & berries', de: 'Obst & Beeren', es: 'Fruta y bayas' },
-        { id: 'bread', serve: 40, gi: 70, ic: '\u{1F35E}', en: 'Bread & crispbread', de: 'Brot & Knäcke', es: 'Pan y tostadas' },
-        { id: 'sweets', serve: 25, gi: 65, ic: '\u{1F36B}', en: 'Sweets, chocolate & ice cream', de: 'Süßes, Schokolade & Eis', es: 'Dulces, chocolate y helado' },
-        { id: 'drinks', serve: 250, gi: 65, ic: '\u{1F964}', en: 'Drinks', de: 'Getränke', es: 'Bebidas' },
-        { id: 'pantry', serve: 50, gi: 65, ic: '\u{1F96B}', en: 'Pantry, sauces & spreads', de: 'Vorrat, Soßen & Aufstriche', es: 'Despensa, salsas y untables' },
-        { id: 'meals', serve: 300, gi: 60, ic: '\u{1F372}', en: 'Ready meals', de: 'Fertiggerichte', es: 'Platos preparados' },
-        { id: 'other', serve: 50, gi: 60, ic: '\u{1F6D2}', en: 'Other', de: 'Sonstiges', es: 'Otros' }
+        { id: 'snacks', serve: 30, ic: '\u{1F95C}', en: 'Snacks & nuts', de: 'Snacks & Nüsse', es: 'Snacks y frutos secos' },
+        { id: 'meat', serve: 100, ic: '\u{1F969}', en: 'Meat & cold cuts', de: 'Fleisch & Aufschnitt', es: 'Carne y embutidos' },
+        { id: 'fish', serve: 100, ic: '\u{1F41F}', en: 'Fish & seafood', de: 'Fisch & Meeresfrüchte', es: 'Pescado y marisco' },
+        { id: 'dairy', serve: 150, ic: '\u{1F95B}', en: 'Dairy & eggs', de: 'Milchprodukte & Eier', es: 'Lácteos y huevos' },
+        { id: 'cheese', serve: 30, ic: '\u{1F9C0}', en: 'Cheese', de: 'Käse', es: 'Queso' },
+        { id: 'veg', serve: 100, ic: '\u{1F966}', en: 'Vegetables', de: 'Gemüse', es: 'Verduras' },
+        { id: 'fruit', serve: 100, ic: '\u{1F353}', en: 'Fruit & berries', de: 'Obst & Beeren', es: 'Fruta y bayas' },
+        { id: 'bread', serve: 40, ic: '\u{1F35E}', en: 'Bread & crispbread', de: 'Brot & Knäcke', es: 'Pan y tostadas' },
+        { id: 'sweets', serve: 25, ic: '\u{1F36B}', en: 'Sweets, chocolate & ice cream', de: 'Süßes, Schokolade & Eis', es: 'Dulces, chocolate y helado' },
+        { id: 'drinks', serve: 250, ic: '\u{1F964}', en: 'Drinks', de: 'Getränke', es: 'Bebidas' },
+        { id: 'pantry', serve: 50, ic: '\u{1F96B}', en: 'Pantry, sauces & spreads', de: 'Vorrat, Soßen & Aufstriche', es: 'Despensa, salsas y untables' },
+        { id: 'meals', serve: 300, ic: '\u{1F372}', en: 'Ready meals', de: 'Fertiggerichte', es: 'Platos preparados' },
+        { id: 'other', serve: 50, ic: '\u{1F6D2}', en: 'Other', de: 'Sonstiges', es: 'Otros' }
     ];
     const G = {};
     GROUPS.forEach(g => { G[g.id] = g; });
@@ -174,7 +176,16 @@
     const nz = v => (typeof v === 'number' && isFinite(v) ? v : 0);
 
     /* one product: {n,b,k,c,s,f,p,fat,kcal,u,q,g} -> rating, or {rated:false} when the label has no carbohydrate value */
+    /* the engine call is the slow part; a range file's rows are rated again on every list open, so each row object keeps its rating */
+    const MEMO = typeof WeakMap === 'function' ? new WeakMap() : null;
     function rate(prod) {
+        if (!prod || typeof prod !== 'object') return { group: null, rated: false, skip: true };
+        if (MEMO && MEMO.has(prod)) return MEMO.get(prod);
+        const r = rate1(prod);
+        if (MEMO && !r.noEngine) MEMO.set(prod, r);
+        return r;
+    }
+    function rate1(prod) {
         const group = /gavekurv|gave\u00e6ske|isterning|eiswürfel/i.test(String(prod.n)) ? null : groupOf(prod.k, prod.n);
         if (!group) return { group: null, rated: false, skip: true };
         let nu = prod, typ = false;
@@ -198,7 +209,7 @@
         /* a pudding, mousse or ice cream is eaten by the bowl, not by the 25 g piece (Open Food Facts writes "ice-creams") */
         if (group === 'sweets' && !/frozen-fruits/.test(tags) && /budding|pudding|dessert|mousse|\bis\b|isvaffel|eis\b|ice.?cream|yoghurt|joghurt|skyr|creme|cr\u00e8me/i.test(String(prod.n) + ' ' + String(prod.k))) serve = 125;
         else if (group === 'sweets' && !/lebkuchen|gingerbread|(linsen|reis|mais|dinkel|hirse|quinoa)waffel|cookie|keks|konfekt/.test(name) && (CAKE.test(name) || CAKE_TAG.test(tags))) serve = 80;
-        /* starchy staples (see STARCH_NAME): a starchy GI base, and a plate for ready potato, fries, rice or pasta */
+        /* starchy staples (see STARCH_NAME): a plate for ready potato, fries, rice or pasta */
         const starch = group !== 'drinks' && (STARCH_NAME.test(name) || STARCH_TAG.test(tags)) && !NOT_STARCH.test(name);
         if (starch) {
             const cv = nz(nu.c);
@@ -206,25 +217,58 @@
             else if ((/pommes|frites|\bfries\b|kroket/.test(name) || (!SNACK_STARCH.test(name) && !/potato-crisps|\|crisps\||popcorn|corn-chips/.test(tags))) && cv < 40) serve = Math.max(serve, 150);
         }
         const c = Math.max(0, nz(nu.c)), s = Math.max(0, nz(nu.s)), f = Math.max(0, nz(nu.f)), p = Math.max(0, nz(nu.p)), fat = Math.max(0, nz(nu.fat));
-        let base = starch ? Math.max(g.gi, 70) : g.gi;
-        /* milk drinks behave like dairy, not like soda */
-        if (group === 'drinks' && /mælk|milk|milch|kefir|skyr|protein/.test(String(prod.n + ' ' + prod.k).toLowerCase())) base = 35;
-        const gi = Math.round(clamp(base - Math.min(20, 2.5 * f) - Math.min(12, 0.4 * p) - Math.min(10, 0.25 * fat), 20, 90));
+        /* scanfe-h4 (Oct 23, 2026): no estimated GI any more (FOOD-ENGINE-SPEC: never invent GI values). The blood sugar impact
+           is the Food Intelligence Engine's carbohydrate-exposure category at this serving (Lower / Moderate / Higher), and the
+           Food check verdict (JA / SELTEN / NEIN) is the same call the scanner card makes. Passes = Lower impact, at most 6 g
+           sugar and not a Food check NO; Best = passes, Food check YES and not a sweetened drink. Without the engine: unrated. */
+        const E = engine();
+        if (!E) return { group, rated: false, noEngine: true };
+        const per100 = { carbs: c, sugar: s, fibre: f, protein: p, fat };
+        if (!typ && typeof prod.kcal === 'number' && prod.kcal > 0) per100.kcal = prod.kcal;
+        let chk;
+        try {
+            chk = E.scanFood({ name: String(prod.n || ''), brand: String(prod.b || ''), barcode: /^[0-9]{8,14}$/.test(String(prod.g || '')) ? String(prod.g) : '',
+                unit: liquid ? 'ml' : 'g', per100, ingredients: '', categories: String(prod.k || '').split(/\s*[|>]\s*/).filter(Boolean) }, serve);
+        } catch (e) { chk = null; }
+        const gk = chk && chk.glucose && chk.glucose.key;
+        if (!gk || gk === 'insufficient') return { group, rated: false, incomplete: true };
+        const verdict = chk.verdict === 'JA' || chk.verdict === 'SELTEN' || chk.verdict === 'NEIN' ? chk.verdict : null;
         const carbs = c * serve / 100, sugar = s * serve / 100;
-        const gl = r1(carbs * gi / 100);
-        const pass = gl <= LIMIT.gl && sugar <= LIMIT.sugar;
         const sweetened = group === 'drinks' && SWEETENED_DRINK.test(txt) && !/\|waters\||mineral|wasser|\|teas\||herbal-teas|coffees|kaffee/.test(txt);
+        const pass = gk === 'lower' && sugar <= LIMIT.sugar && verdict !== 'NEIN';
+        /* the range files carry no ingredient lists, so the policy caps every product at a provisional SELTEN
+           ("policy.incomplete"). Best reads the policy's other rules: YES apart from that missing-ingredients cap. */
+        const pol = chk.policy || {}, rules = Array.isArray(pol.rules) ? pol.rules.filter(x => x && x.id !== 'policy.incomplete') : [];
+        const VR = { JA: 0, SELTEN: 1, NEIN: 2 };
+        const ruleV = rules.reduce((w, x) => (VR[x.verdict] != null && VR[x.verdict] > VR[w] ? x.verdict : w), 'JA');
+        const provisional = !!pol.provisional;
+        const yes = verdict === 'JA' || (verdict === 'SELTEN' && pol.decidedBy === 'policy.incomplete' && ruleV === 'JA');
         return {
-            group, rated: true, typical: typ, serve, unit: liquid ? 'ml' : 'g', gi, gl, carbs: r1(carbs), sugar: r1(sugar),
-            protein: r1(p * serve / 100), fibre: r1(f * serve / 100), pass, best: pass && gl <= LIMIT.best && !sweetened, sweetened, starch,
-            fail: pass ? '' : (gl > LIMIT.gl ? 'gl' : 'sugar')
+            group, rated: true, typical: typ, serve, unit: liquid ? 'ml' : 'g', impact: gk, verdict, provisional, policyVersion: chk.policyVersion || null,
+            carbs: r1(carbs), sugar: r1(sugar), protein: r1(p * serve / 100), fibre: r1(f * serve / 100),
+            pass, best: pass && yes && !sweetened, sweetened, starch,
+            fail: pass ? '' : (verdict === 'NEIN' ? 'policy' : sugar > LIMIT.sugar ? 'sugar' : 'impact')
         };
+    }
+    /* the engine loads after this file in index.html, so it is looked up when a product is rated */
+    function engine() {
+        const g = typeof self !== 'undefined' ? self : (typeof globalThis !== 'undefined' ? globalThis : null);
+        if (g && g.LowiFoodEngine && typeof g.LowiFoodEngine.scanFood === 'function') return g.LowiFoodEngine;
+        if (typeof module === 'object' && typeof require === 'function') { try { return require('./food-engine-core.js'); } catch (e) { return null; } }
+        return null;
     }
 
     /* the JSON file's rows -> product objects */
+    const ROWS = typeof WeakMap === 'function' ? new WeakMap() : null;
     function rows(data) {
         const cols = (data && data.cols) || [];
-        return ((data && data.rows) || []).map(r => { const o = {}; cols.forEach((k, i) => { o[k] = r[i]; }); return o; });
+        /* the same row array gives the same product object, so rate()'s memo holds across list opens */
+        return ((data && data.rows) || []).map(r => {
+            if (ROWS && r && typeof r === 'object' && ROWS.has(r)) return ROWS.get(r);
+            const o = {}; cols.forEach((k, i) => { o[k] = r[i]; });
+            if (ROWS && r && typeof r === 'object') ROWS.set(r, o);
+            return o;
+        });
     }
 
     /* Oct 18, 2026 (E-man in Lidl: "a little window next to best. Just like Amazon, so we can actually see ... an image of the
@@ -254,9 +298,9 @@
     function explain(r) {
         if (!r || !r.rated) return null;
         return {
-            verdict: r.best ? 'best' : r.pass ? 'good' : r.fail === 'sugar' ? 'sugar' : 'spikes',
-            gl: r.gl, gi: r.gi, serve: r.serve, unit: r.unit, carbs: r.carbs, sugar: r.sugar, protein: r.protein, fibre: r.fibre,
-            typical: !!r.typical, sweetened: !!r.sweetened, starch: !!r.starch, estimatedGI: true, limits: { best: LIMIT.best, gl: LIMIT.gl, sugar: LIMIT.sugar }
+            verdict: r.best ? 'best' : r.pass ? 'good' : r.fail === 'policy' ? 'policy' : r.fail === 'sugar' ? 'sugar' : 'spikes',
+            impact: r.impact, check: r.verdict, policyVersion: r.policyVersion, serve: r.serve, unit: r.unit, carbs: r.carbs, sugar: r.sugar, protein: r.protein, fibre: r.fibre,
+            typical: !!r.typical, sweetened: !!r.sweetened, starch: !!r.starch, estimatedGI: false, limits: { sugar: LIMIT.sugar }
         };
     }
 
@@ -281,10 +325,11 @@
             const item = { p, r };
             if (r.pass) { bucket.pass.push(item); counts.pass++; } else { bucket.fail.push(item); counts.fail++; }
         });
-        const score = it => it.r.gl * 10 - Math.min(30, it.r.protein) * 0.15 - Math.min(10, it.r.fibre) * 0.2 + (it.r.typical ? 0.05 : 0);
+        const IR = { lower: 0, moderate: 1, higher: 2 };
+        const score = it => it.r.carbs * 2 + (it.r.best ? 0 : 1) - Math.min(30, it.r.protein) * 0.15 - Math.min(10, it.r.fibre) * 0.2 + (it.r.typical ? 0.05 : 0);
         GROUPS.forEach(g => {
             out[g.id].pass.sort((a, b) => score(a) - score(b) || a.p.n.localeCompare(b.p.n));
-            out[g.id].fail.sort((a, b) => a.r.gl - b.r.gl || a.p.n.localeCompare(b.p.n));
+            out[g.id].fail.sort((a, b) => (IR[a.r.impact] || 0) - (IR[b.r.impact] || 0) || a.r.carbs - b.r.carbs || a.p.n.localeCompare(b.p.n));
         });
         return { groups: GROUPS.map(g => out[g.id]), counts };
     }

@@ -102,7 +102,7 @@ async function run(name, launcher, ctxOpts, base) {
     const href = await page.locator('.stp-qv-link').getAttribute('href');
     ok(/^https:\/\/world\.openfoodfacts\.org\/product\/[0-9]+$/.test(href), 'product page link ' + href);
     const txt = await page.locator('.stp-qv').innerText();
-    ok(/glycemic load/.test(txt) && /× GI/.test(txt), 'why-rating text with the numbers');
+    ok(/blood sugar impact \(estimate\)/.test(txt) && /no glycemic index is guessed/.test(txt) && !/× GI/.test(txt), 'why-rating text: engine impact, no guessed GI');
     ok(/not checked against the shelf/.test(txt), 'says it is not checked against the shelf');
     ok(/not medical advice/.test(txt), 'says it is not medical advice');
     await page.waitForFunction(() => { const c = document.querySelector('.stp-qv-card'); return c && getComputedStyle(c).transform === 'none'; }, null, { timeout: 60000 }).catch(() => {});

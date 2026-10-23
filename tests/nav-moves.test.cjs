@@ -44,7 +44,7 @@ test('Oct 20: with the galaxy alone the chat pane is never made inert (2nd visit
     assert.match(html, /try \{ cmPanesInert\(i\); \} catch\(e\)\{\}/);
 });
 
-test('Community declutter (Oct 21): small privacy icon, labelled friends tree, Milestones in Move', () => {
+test('Community declutter (Oct 21): small privacy icon, labelled friends tree, Milestones row gone from Move (23 Oct)', () => {
     const js = read('nav-moves.js'), css = read('nav-moves.css');
     // Oct 22: the privacy shield badge next to the Community name is gone (Your presence lives in the profile panel)
     assert.doesNotMatch(js, /s\.className = 'nm-cpriv'/);
@@ -53,9 +53,8 @@ test('Community declutter (Oct 21): small privacy icon, labelled friends tree, M
     assert.match(js, /t\.className = 'nm-ctree'; t\.dataset\.cr = 'tree'/);
     assert.match(js, /T\('Friends tree', 'Freundesbaum', '\\u00c1rbol de amigos'\)/);
     assert.match(read('cell-room.js'), /if\(a==='tree'&&/);
-    // Milestones: a row in Move right under the Care board, opened by finch-extras.js through data-fx="miles"
-    assert.match(js, /m\.className = 'card nm-milescard'; m\.dataset\.fx = 'miles'/);
-    assert.match(js, /if \(m\.previousElementSibling !== c\) c\.after\(m\);/);
+    // 23 Oct (E-man: one board, the companion Ranking): the Milestones row and the Care board card are no longer in Move
+    assert.doesNotMatch(js, /m\.className = 'card nm-milescard'/);
     assert.match(read('finch-extras.js'), /if \(a === 'miles'\) \{ e\.preventDefault\(\); e\.stopPropagation\(\); openMiles\(\); \}/);
     // labels are only written when they change (tick() runs on every DOM change: no endless loop)
     assert.match(js, /if \(sp\.textContent !== tl\)/);

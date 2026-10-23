@@ -143,12 +143,16 @@
 #cmPaneChat[data-spirit-chat] .rm-live{font-size:12.5px}
 /* the sections: Eden's segmented pill. One glowing pill slides under the open section (--rm-i from community-rooms-ui.js paint). */
 #cmPaneChat[data-spirit-chat] .rm-tabs{position:relative;isolation:isolate;border-radius:999px;padding:4px;gap:4px}
-#cmPaneChat[data-spirit-chat] .rm-tabs::before{content:'';position:absolute;z-index:-1;top:4px;bottom:4px;left:4px;width:calc((100% - 20px)/4);border-radius:999px;
+#cmPaneChat[data-spirit-chat] .rm-tabs::before{content:'';position:absolute;z-index:-1;top:4px;bottom:4px;left:4px;width:calc((100% - (var(--rm-n,4) + 1) * 4px)/var(--rm-n,4));border-radius:999px;
  background:linear-gradient(180deg,rgba(47,149,255,.34),rgba(10,132,255,.26));box-shadow:inset 0 0 0 1px rgba(143,231,255,.8),0 0 16px rgba(47,149,255,.36);
  transform:translateX(calc(var(--rm-i,0) * (100% + 4px)));transition:transform .32s cubic-bezier(.2,.8,.2,1)}
 #cmPaneChat[data-spirit-chat] .rm-tabs .rm-tab{border-radius:999px;min-height:42px;background:transparent}
 #cmPaneChat[data-spirit-chat] .rm-tabs .rm-tab[aria-selected=true]{background:transparent;box-shadow:none}
 @media (prefers-reduced-motion:reduce){#cmPaneChat[data-spirit-chat] .rm-tabs::before{transition:none}}
+/* 23 Oct: five tabs (Ranking joined): the bar follows the tab count (community-rooms-ui.js sets --rm-n) and the labels get a bit smaller on phones */
+#cmPaneChat[data-spirit-chat] .rm-tabs{grid-template-columns:repeat(var(--rm-n,4),minmax(0,1fr))}
+@media (max-width:699px){#cmPaneChat[data-spirit-chat] .rm-tabs .rm-tab{font-size:13px;padding:0 3px}}
+@media (max-width:359px){#cmPaneChat[data-spirit-chat] .rm-tabs .rm-tab{font-size:11.5px;padding:0 2px}}
 /* Chat section = the Community landing (Eden's Plan): dark galaxy stage, faint star dots, glowing rings behind the headline */
 .rm-chans{position:relative;isolation:isolate}
 #cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-chans:not([hidden]){padding:0 4px calc(var(--sab,0px) + 120px)}

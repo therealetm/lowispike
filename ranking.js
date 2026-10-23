@@ -151,5 +151,19 @@
         if (b.__rkH !== key) { b.__rkH = key; b.innerHTML = '<div class="rk" data-noi18n>' + r.h + '</div>'; }
         fetchLooks(r.uids);
     }
-    W.LowiRanking = { render, period: () => per, setPeriod: k => { per = K.period(k); if (box && box.isConnected) render(box); }, _html: () => html().h };
+    /* 23 Oct (E-man: "we have a care board and some XP board ... nuke them"): Ranking is the one board. Every old way in (Profile's
+       board row, "See leaderboard", the Settings row, the old Move card) lands here: Community, Ranking tab. */
+    function open() {
+        try { const R2 = W.LowiR2; if (R2 && R2.top && R2.top() && R2.closeAll) R2.closeAll(); } catch (e) { }
+        try { const sw = D.getElementById('sheetwrap'); if (sw && sw.classList.contains('open') && typeof W.closeSheet === 'function') W.closeSheet(); } catch (e) { }
+        try { if (typeof W.goTab === 'function') W.goTab('foryou'); } catch (e) { console.error(e); }
+        let n = 0;
+        const go = () => {
+            const U = W.LowiRoomsUI;
+            try { if (U && U.showView && D.getElementById('cmPaneChat')) { U.showView('rank'); if (U.view && U.view() === 'rank') return; } } catch (e) { console.error(e); }
+            if (++n < 25) setTimeout(go, 120);
+        };
+        setTimeout(go, 60);
+    }
+    W.LowiRanking = { render, open, period: () => per, setPeriod: k => { per = K.period(k); if (box && box.isConnected) render(box); }, _html: () => html().h };
 })();

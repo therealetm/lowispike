@@ -226,9 +226,9 @@
             id: 'move-hold', area: 'home', target: ['#whHud .wh-move'], covers: ['move-page', 'workouts-page'], teaches: ['move-hold'], tryIt: { how: 'hold' },
             title: { en: 'Hold Move', de: 'Bewegung halten', es: 'Mantén Movimiento' },
             text: {
-                en: 'Hold Move to open the Move page with your workouts and the Care board. Today\'s guesses are at the top, tap Edit to remove one. Try it, then close it.',
-                de: 'Halt Bewegung gedrückt für die Bewegungsseite mit Workouts und Care-Board. Oben stehen deine heutigen Schätzungen, Bearbeiten löscht eine. Probier’s und schließ es.',
-                es: 'Mantén Movimiento para abrir su página con tus entrenos y el Care board. Arriba están tus estimaciones de hoy, Editar quita una. Pruébalo y ciérralo.'
+                en: 'Hold Move to open the Move page with your workouts. Today\'s guesses are at the top, tap Edit to remove one. Try it, then close it.',
+                de: 'Halt Bewegung gedrückt für die Bewegungsseite mit deinen Workouts. Oben stehen deine heutigen Schätzungen, Bearbeiten löscht eine. Probier’s und schließ es.',
+                es: 'Mantén Movimiento para abrir su página con tus entrenos. Arriba están tus estimaciones de hoy, Editar quita una. Pruébalo y ciérralo.'
             }
         },
         {
@@ -630,12 +630,12 @@
         },
         {
             id: 'settings-more', area: 'settings', target: ['#whHud .o8-settings'], covers: ['care', 'workouts', 'foryou', 'hunt'],
-            info: 'says where For You and the Care board live now; Swipe here is the name of a Cook view, not a gesture to do',
-            title: { en: 'For You and the Care board', de: 'Für dich und das Care-Board', es: 'Para ti y el tablero Care' },
+            info: 'says where For You and the Ranking live now; Swipe here is the name of a Cook view, not a gesture to do',
+            title: { en: 'For You and the Ranking', de: 'Für dich und die Rangliste', es: 'Para ti y el Ranking' },
             text: {
-                en: 'For You is in Cook, next to Shuffle and Swipe. The Care board is in Move, right under the Move title. Workouts are behind the Move bubble on Home.',
-                de: 'Für dich findest du in Kochen, neben Shuffle und Swipe. Das Care-Board ist in Bewegen, direkt unter dem Titel. Workouts liegen hinter der Bewegen-Blase auf Home.',
-                es: 'Para ti está en Cocina, junto a Shuffle y Swipe. El tablero Care está en Moverse, justo debajo del título. Los entrenos están tras la burbuja Moverse en Inicio.'
+                en: 'For You is in Cook, next to Shuffle and Swipe. The Ranking of everyone\'s companions is in Community, next to Rooms and Creation. Workouts are behind the Move bubble on Home.',
+                de: 'Für dich findest du in Kochen, neben Shuffle und Swipe. Die Rangliste aller Begleiter ist in der Community, neben Räume und Erstellen. Workouts liegen hinter der Bewegen-Blase auf Home.',
+                es: 'Para ti está en Cocina, junto a Shuffle y Swipe. El Ranking de los compañeros de todos está en Comunidad, junto a Salas y Creación. Los entrenos están tras la burbuja Moverse en Inicio.'
             }
         },
         {
@@ -735,7 +735,7 @@
         G('fuel-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Fuel: Log meal, Cook, Shop'),
         G('fuel-hold', 'home', 'hold', ['home-blooms-v2.js'], 'hold Fuel: Log meal opens'),
         G('move-tap', 'home', 'tap', ['home-blooms-v2.js', 'move-bubble.js'], 'tap Move: Quick, Medium, Long, Epic'),
-        G('move-hold', 'home', 'hold', ['home-blooms-v2.js', 'move-bubble.js'], 'hold Move: the Move page (workouts, Care board, edit today\'s moves)'),
+        G('move-hold', 'home', 'hold', ['home-blooms-v2.js', 'move-bubble.js'], 'hold Move: the Move page (workouts, edit today\'s moves)'),
         G('gap-tap', 'home', 'tap', ['home-blooms-v2.js', 'fast-bubble.js'], 'tap Gap: the Gap view'),
         G('sleep-tap', 'home', 'tap', ['home-settings-sleep-v2.js'], 'tap Sleep: how long did you sleep'),
         G('scan-tap', 'home', 'tap', ['home-orbit-v2.js'], 'tap Scan: the Scan screen'),

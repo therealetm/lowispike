@@ -144,6 +144,6 @@ test('a missing module leaves its orb out rather than showing a dead button', ()
 
 test('Water, Move and Gap blooms are untouched by the Fuel change', () => {
     const { api } = page();
-    assert.deepStrictEqual(api.actions('water').map(a => a.id), ['add', 'undo']);
+    assert.deepStrictEqual(api.actions('water').map(a => a.id), ['sips', 'cup', 'bottle']); /* Oct 23 water by sips (tests/water-sips.test.cjs) */
     assert.deepStrictEqual(api.actions('gap').map(a => a.id), []);
 });

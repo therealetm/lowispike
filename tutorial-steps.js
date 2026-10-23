@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 16;  /* 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 17;  /* 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -198,18 +198,18 @@
             id: 'water', area: 'home', target: ['#whHud .wh-water'], covers: ['water', 'hydration'], teaches: ['water-tap'], tryIt: { how: 'tap' },
             title: { en: 'Water', de: 'Wasser', es: 'Agua' },
             text: {
-                en: 'Tap Water, then +1 cup each time you drink. Undo takes one back if you tapped by mistake.',
-                de: 'Tipp auf Wasser und dann +1 Becher, wann immer du trinkst. Rückgängig nimmt einen zurück, falls du dich vertippt hast.',
-                es: 'Toca Agua y luego +1 vaso cada vez que bebas. Deshacer quita uno si te equivocaste.'
+                en: 'Tap Water, then pick what you just drank: a few sips, a cup or a whole bottle. Each tap fills Water up by that much.',
+                de: 'Tipp auf Wasser und wähl, was du gerade getrunken hast: ein paar Schlucke, ein Glas oder eine ganze Flasche. Jeder Tipp füllt Wasser um so viel auf.',
+                es: 'Toca Agua y elige lo que acabas de beber: unos sorbos, un vaso o una botella entera. Cada toque llena el Agua en esa cantidad.'
             }
         },
         {
             id: 'water-hold', area: 'home', target: ['#whHud .wh-water'], covers: [], teaches: ['water-hold'], practice: { how: 'hold', look: 'water' },
-            title: { en: 'Start water over', de: 'Wasser neu starten', es: 'Empezar el agua de nuevo' },
+            title: { en: 'Take water back', de: 'Wasser zurücknehmen', es: 'Quitar agua' },
             text: {
-                en: 'Tapped too many cups? Hold Water for a moment and today’s water goes back to 0.',
-                de: 'Zu viele Becher getippt? Halt Wasser kurz gedrückt, dann steht das Wasser von heute wieder auf 0.',
-                es: '¿Demasiados vasos? Mantén pulsado Agua un momento y el agua de hoy vuelve a 0.'
+                en: 'Tapped by mistake? Hold Water for a moment and your last sips, cup or bottle come off again.',
+                de: 'Vertippt? Halt Wasser kurz gedrückt, dann sind deine letzten Schlucke, dein Glas oder deine Flasche wieder weg.',
+                es: '¿Te equivocaste? Mantén pulsado Agua un momento y tus últimos sorbos, vaso o botella se quitan.'
             }
         },
         {

@@ -120,10 +120,10 @@
             '<span class="lv-vis">' + ring(v.progress) + '<i class="lv-ring-ico" data-lv-ico="leaf">' + icon('leaf') + '</i></span>' +
             '<span class="lv-tx"><small>' + esc(v.stage || tr('level')) + '</small><b class="num">' + v.xp + ' XP</b><em>' + (v.xpToday > 0 ? '+' + v.xpToday + ' ' + esc(tr('today')) : v.next ? v.left + ' ' + esc(tr('to')) + ' ' + esc(v.next) : esc(tr('maxStage'))) + '</em></span></button>';
         const wfill = Math.min(1, v.water / v.waterGoal);
-        const wat = '<button type="button" class="lv-tile lv-water' + (v.water >= v.waterGoal ? ' done' : '') + '" data-sp="water" data-lv-k="water" aria-label="' + esc(tr('water') + ' ' + v.water + '/' + v.waterGoal + ' ' + tr('cups') + ', ' + tr('glassAdd')) + '" style="--lv-fill:' + wfill.toFixed(3) + '">' +
+        const wat = '<button type="button" class="lv-tile lv-water' + (v.water >= v.waterGoal ? ' done' : '') + '" data-sp="water" data-lv-k="water" aria-label="' + esc(tr('water') + ' ' + (typeof LowiSpiritCore !== 'undefined' && LowiSpiritCore.waterFmt ? LowiSpiritCore.waterFmt(v.water) : v.water) + '/' + v.waterGoal + ' ' + tr('cups') + ', ' + tr('glassAdd')) + '" style="--lv-fill:' + wfill.toFixed(3) + '">' +
             '<span class="lv-liquid" aria-hidden="true"></span>' +
             '<span class="lv-vis"><i data-lv-ico="water">' + icon('water') + '</i></span>' +
-            '<span class="lv-tx"><small>' + esc(tr('water')) + '</small><b class="num">' + v.water + '/' + v.waterGoal + ' <u class="lv-unit">' + esc(tr('cups')) + '</u></b><em>' + (v.water >= v.waterGoal ? esc(tr('waterDone')) : v.warm ? esc(tr('warm')) + ' · ' + v.temp + '°' : esc(tr('glassAdd'))) + '</em></span></button>';
+            '<span class="lv-tx"><small>' + esc(tr('water')) + '</small><b class="num">' + (typeof LowiSpiritCore !== 'undefined' && LowiSpiritCore.waterFmt ? LowiSpiritCore.waterFmt(v.water) : v.water) + '/' + v.waterGoal + ' <u class="lv-unit">' + esc(tr('cups')) + '</u></b><em>' + (v.water >= v.waterGoal ? esc(tr('waterDone')) : v.warm ? esc(tr('warm')) + ' · ' + v.temp + '°' : esc(tr('glassAdd'))) + '</em></span></button>';
         const scan = '<button type="button" class="lv-tile lv-scan" data-lv="scan" data-lv-k="scan" aria-label="' + esc(tr('scan')) + '">' +
             '<span class="lv-vis"><i data-lv-ico="scan">' + icon('scan') + '</i></span>' +
             '<span class="lv-tx"><b>' + esc(tr('scan')) + '</b><em>' + esc(v.scanned ? tr('scanDone') : tr('scanSub')) + '</em></span></button>';

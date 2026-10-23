@@ -1,6 +1,6 @@
 # LOWiSPIKE work queue
 
-Generated from the queue tool (queue/q.py on the agent computer) at 2026-10-23T06:43:56+00:00. Edit through the tool, not by hand.
+Generated from the queue tool (queue/q.py on the agent computer) at 2026-10-23T08:11:33+00:00. Edit through the tool, not by hand.
 Limits: at most 2 steps active at once, at most one release (release-pipeline.sh holds an exclusive lock).
 A claim older than 2.5 hours is treated as abandoned and goes back to the queue with its checkpoint.
 Icons: ✅ live/done, 🔄 in progress, ⏸️ queued, waiting or blocked.
@@ -10,16 +10,48 @@ Icons: ✅ live/done, 🔄 in progress, ⏸️ queued, waiting or blocked.
 - 🔄 home-restore [claimed] URGENT BLOCKER: live Home shows old layout (Daily quest/VR/Since last meal); restore ring Home, regression test. All other releases held (queue/HOLD) until LIVE  owner urgent-53a9ab78
   - next: bisect, fix, release
   - last: 2026-10-23T06:43:56+00:00 release hold set: queue/HOLD makes release-pipeline.sh exit 75 for every other worker
-- 🔄 grocery-4 [claimed] Grocery: log cooked groceries by text/photo  after grocery-3  owner worker-B
-  - next: full suite, probe, release
-  - last: 2026-10-23T06:38:25+00:00 probe i13 dark en/de/es pass; running se/i15/pixel7
+- 🔄 ranking-1 [claimed] Community Ranking tab: companion leaderboard (period switch, your place, podium, list), shared top bar, privacy, EN/DE/ES  (branch ranking-20261023)  owner ranking-53a-task
+  - next: core+tests, tab, page, sims
+  - last: 2026-10-23T06:57:45+00:00 claimed by ranking-53a-task
 
 ## Queued
 
+- ⏸️ ranking-rel [queued] Release Ranking tab after Home freeze lifts  (branch ranking-20261023)  after ranking-1,home-restore
+  - next: wait for HOLD gone, then release-pipeline
+  - last: 2026-10-23T06:57:44+00:00 added
+- ⏸️ comm-menu [queued] Community header menu: remove 'Replies & mentions' entry (code kept harmless); nothing else changes  [E-man 23 Oct]  (branch comm-menu-20261023)
+  - next: worktree, hide entry, test, sims
+  - last: 2026-10-23T06:58:21+00:00 added
+- ⏸️ comm-menu-rel [queued] Release Community menu cleanup after Home freeze lifts  (branch comm-menu-20261023)  after comm-menu,home-restore
+  - next: wait for HOLD gone, rebase, release-pipeline
+  - last: 2026-10-23T06:58:21+00:00 added
+- ⏸️ rooms-rel [queued] Release user rooms after Home freeze lifts  (branch rooms-20261023)  after rooms-ui,comm-menu-rel
+  - last: 2026-10-23T06:58:21+00:00 added
+- ⏸️ rooms-sql [queued] User rooms (a): Supabase proposal SQL supabase/proposals/community_rooms_*.sql (rooms, members, join requests; RLS creator-only approve; 30 cap server-side; explicit grants) + tests  (branch rooms-20261023)
+  - next: read existing community schema, write SQL + test
+  - last: 2026-10-23T06:58:21+00:00 added
+- ⏸️ rooms-ui [queued] User rooms (b): Rooms & people -> public room list, create room (name/topic/emoji), read-only open, request to join, creator approves, Full 30/30; graceful 'coming soon' until SQL is run; EN/DE/ES, What's New  (branch rooms-20261023)  after rooms-sql
+  - next: core+tests, UI, sims
+  - last: 2026-10-23T06:58:21+00:00 added
+- ⏸️ grocery-4 [queued] Grocery: log cooked groceries by text/photo  after grocery-3
+  - next: full suite, probe, release
+  - last: 2026-10-23T06:44:07+00:00 unclaim:
 - ⏸️ supabase-perms [queued] Supabase: from 30 Oct new tables need explicit grants; inspect supabase/ migrations, prepare grants; owner-only apply -> block honestly
   - last: 2026-10-22T15:33:27+00:00 added
 - ⏸️ stripe [queued] Stripe outstanding: inspect repo for what is missing; owner-only account steps -> block honestly, no invented details
   - last: 2026-10-22T15:33:27+00:00 added
+- ⏸️ sweep-sheetwrap-rel [queued] Release sweep fix: back on Move with Milestones (#sheetwrap) open closes it and stays on Move; news file news-sweep-sheetwrap.json  (branch sweep-fix-20261023-1001)  after home-restore
+  - next: after HOLD is gone: rebase sweep-fix-20261023-1001, scripts/release.sh --news handoff/queue-20261023/news-sweep-sheetwrap.json
+  - last: 2026-10-23T08:11:33+00:00 added
+- ⏸️ sync-a [queued] Account sync (a): inventory local vs cloud keys, merge core account-sync-core.js (3-way field merge, day counters, ledger/meal unions, last meal = newest) + tests  (branch sync-20261023)
+  - next: claim when slot frees
+  - last: 2026-10-23T07:02:12+00:00 NO_SLOT at claim (home-restore, ranking-1). Task 7511f410 writes core+unit tests on branch sync-20261023 (wt-sync) meanwhile: node tests only, no sims/builds until a slot frees
+- ⏸️ sync-b [queued] Account sync (b): account-sync.js glue: pull on open/sign-in/foreground, debounced push with optimistic lock on user_state, safe apply+reload guard, offline, first-sync merge; sign-in merges instead of wiping  (branch sync-20261023)  after sync-a
+  - last: 2026-10-23T07:02:07+00:00 added
+- ⏸️ sync-c [queued] Account sync (c): two-context same-account sim + device sims SE/13/15/Pixel7 day/night EN/DE/ES  (branch sync-20261023)  after sync-b
+  - last: 2026-10-23T07:02:07+00:00 added
+- ⏸️ sync-rel [queued] Release account sync after Home freeze lifts  (branch sync-20261023)  after sync-c,home-restore
+  - last: 2026-10-23T07:02:07+00:00 added
 
 ## Blocked
 
@@ -29,6 +61,8 @@ Icons: ✅ live/done, 🔄 in progress, ⏸️ queued, waiting or blocked.
 - ⏸️ fairplay-sql [blocked] Leaderboard fair-play: DB still accepts forged scores; write SQL migration/policy in supabase/; applying needs owner Supabase access -> block honestly if unavailable
   - next: after main lands: block (owner applies in Supabase SQL editor)
   - last: 2026-10-23T04:13:36+00:00 block: SQL ready on main ade488c (supabase/proposals/leaderboard_fairplay_20261023.sql, tests/fairplay-sql.test.cjs, suite 2457/2457). Applying needs owner Supabase access: Emmanuel runs it in the Supabase SQL editor. No app code, no release.
+- ⏸️ rooms-sql-apply [blocked] OWNER: Emmanuel runs supabase/proposals community rooms SQL in Supabase SQL editor  after rooms-sql
+  - last: 2026-10-23T06:58:29+00:00 block: Owner-only: Emmanuel runs the rooms SQL in the Supabase SQL editor once rooms-sql is on main
 
 ## Finished
 

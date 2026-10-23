@@ -188,10 +188,9 @@ test('rerate / rerateRows make stored dex rows stricter with the Food check, nev
     assert.ok(S.text(['c_no'], 1).startsWith('Food-Check: NEIN'));
 });
 
-test('index.html re-rates stored dex rows on load and when a stored card opens', () => {
+test('index.html re-rates stored dex rows on load', () => {
     const html = require('fs').readFileSync(require('path').join(__dirname, '..', 'index.html'), 'utf8');
     assert.match(html, /const mineList = \(\) => \{ rerateDex\(\);/, 'My catches / stats read re-rated rows');
     assert.match(html, /function dexItems\(\)\{ rerateDex\(\);/, 'the Dex grid reads re-rated rows');
     assert.match(html, /D\.comm = \(r\.data \|\| \[\]\)\.map\(fromRow\);[^\n]*LowiSpikeCore\.rerateRows\(D\.comm\)/, 'fresh Community rows too');
-    assert.match(html, /p = rerateOne\(Object\.assign\(\{\}, p, \{verdict:r\.verdict/, 'opening a stored card');
 });

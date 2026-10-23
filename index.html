@@ -14098,11 +14098,11 @@ function save(){ try { D.comm = D.comm.slice(0, 400); localStorage.setItem(KEY, 
 const pkey = p => p.barcode ? "b" + p.barcode : "n" + nkey(p.name);
 /* scanfe-h6 (Oct 23, 2026): stored rows keep the verdict from the day they were caught; re-rate them once per load with the
    Food check (LowiSpikeCore.rerateRows: only ever stricter, manual and not-found rows keep theirs, nothing guessed). spike-core.js
-   loads after this script, so it runs on first use (mineList / dexItems) and again for each fresh Community list. */
+   loads after this script, so it runs on first use (mineList / dexItems) and again for each fresh Community list. The open card
+   keeps its own blood sugar estimate line (reveal), with the Food check card under it. */
 let DEX_RERATED = false;
 function rerateDex(){ if (DEX_RERATED || !window.LowiSpikeCore || typeof LowiSpikeCore.rerateRows !== "function") return; DEX_RERATED = true;
   let n = 0; try { n = LowiSpikeCore.rerateRows(Object.values(D.mine)) + LowiSpikeCore.rerateRows(D.comm); } catch(e){} if (n) save(); }
-function rerateOne(p, opts){ if (!p || !window.LowiSpikeCore || typeof LowiSpikeCore.rerateRows !== "function") return p; const q = Object.assign({}, p); try { return LowiSpikeCore.rerateRows([q], opts) ? q : p; } catch(e){ return p; } }
 window.addEventListener("load", () => rerateDex());
 const mineList = () => { rerateDex(); return Object.values(D.mine).sort((a, b) => (b.ts || 0) - (a.ts || 0)); };
 const isMine = p => !!D.mine[pkey(p)] || (p.id && Object.values(D.mine).some(m => m.id === p.id));
@@ -14609,7 +14609,7 @@ function scView(p, sv){
   const g = scUserG(sv); if (!g || !p || p.manual || !window.LowiSpikeCore || !LowiSpikeCore.assess) return p;
   let a = null; try { a = LowiSpikeCore.assess(p, {servingG:g}); } catch(e){ a = null; }
   if (!a || !{spike:1, better:1, ok:1}[a.verdict]) return p;
-  return rerateOne(Object.assign({}, p, {verdict:a.verdict, why:a.why, score:a.score}), {servingG:g});
+  return Object.assign({}, p, {verdict:a.verdict, why:a.why, score:a.score});
 }
 let scPortT = 0;
 function scRedrawServing(){
@@ -14726,7 +14726,7 @@ function reveal(p, quiet){
   if (REV) { try { R2.close(REV); } catch(e){} REV = null; }
   if (p && !p.notFound && !p.verdict) { p = Object.assign({}, p); }
   /* Oct 16: always re-rate with the current spike estimator, so older saved verdicts (e.g. a vegetable pan rated as a drink) are corrected */
-  if (p && !p.notFound && !p.manual && window.LowiSpikeCore) { const r = rate(p); if (r.verdict !== "unknown") { p = rerateOne(Object.assign({}, p, {verdict:r.verdict, why:r.why, score:r.score, est:true})); }
+  if (p && !p.notFound && !p.manual && window.LowiSpikeCore) { const r = rate(p); if (r.verdict !== "unknown") { p = Object.assign({}, p, {verdict:r.verdict, why:r.why, score:r.score, est:true}); }
     /* scanfe-b2: a label the engine can't estimate (numbers missing or not adding up) is never kept as an old saved ok */
     else if (r.why && r.why.length) { p = Object.assign({}, p, {verdict:"unknown", why:r.why, score:null, est:true}); } }
   if (p && !p.notFound && (!p.verdict || p.verdict === "unknown" || !p.why)) { const r = rate(p); p.verdict = p.verdict && p.verdict !== "unknown" ? p.verdict : r.verdict; p.why = p.why && p.why.length ? p.why : r.why; if (p.score == null) p.score = r.score; if (p.est == null) p.est = r.est; }

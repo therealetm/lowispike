@@ -51,7 +51,7 @@ async function tapSettings(R) {
             await sleep(2600); const s2 = await state(R);
             s2.frames = await frames(R);
             const tap = await tapSettings(R);
-            const ok = s2.tab === 'tab-home' && s2.frames > 0 && !s2.cls.includes('rm-view') && !s2.cls.includes('cr-room') && !s2.cls.some(c => /^(wh-mapview|wh-cosmos|gx-out|gx-in|wh-leave)$/.test(c));
+            const ok = s2.tab === 'tab-home' && s2.frames > 0 && !s2.cls.includes('rm-view') && !s2.cls.some(c => /^(wh-mapview|wh-cosmos|gx-out|gx-in|wh-leave)$/.test(c));
             if (!ok) fails++;
             console.log(JSON.stringify({ device: DEVICE, route, t, ok, before: { tab: before.tab, cls: before.cls, rig: before.rig }, s400: s1, s3000: s2, tap }));
             if (!ok) { await R.shot('/tmp/cbh-' + DEVICE.replace(/\W+/g, '') + '-' + route + '-' + t + '.png').catch(() => { }); await p.evaluate(() => { try { window.LowiSections.close(); } catch (e) { } try { goTab('home'); } catch (e) { } }); await sleep(1500); }

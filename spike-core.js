@@ -160,8 +160,40 @@
             const s = String(a == null ? '' : a); return s.charAt(0).toUpperCase() + s.slice(1);
         });
     }
+    /* foodVerdict (scanfe-h, Oct 23, 2026): the one verdict every consumer reads (Shuffle, Throw out, Buy picks, shopping
+       matches, stored dex rows). It is the blood sugar estimate above made stricter by the Food check card (LowiFoodEngine.scanFood,
+       the same call the card makes at the same serving): NEIN -> spike, SELTEN -> at least better, JA keeps the estimate.
+       It can only get stricter, never milder. Without label numbers the estimate stays unknown, unless the ingredient
+       rules already say spike. Returns 'ok' | 'better' | 'spike' | 'unknown'. Bug it fixes: the card said NO for
+       Ültje Süß & Salzig (sugar heavy) or cooked ham (pork) while Shuffle still used them as "Now and then" / "Low-spike". */
+    const RANK = {ok: 0, better: 1, spike: 2};
+    const FROM_CHECK = {JA: 'ok', SELTEN: 'better', NEIN: 'spike'};
+    function checkOf(p, a) {
+        const E = engine(), eng = a && a.engine;
+        if (!E || typeof E.scanFood !== 'function' || !eng || !eng.serving || eng.serving.g == null) return null;
+        const f = p.facts || {};
+        const per100 = {carbs: n(f.c), sugar: n(f.s), fibre: n(f.f), protein: n(f.p), fat: n(f.fat), kcal: n(f.kcal)};
+        if (n(f.salt) != null) per100.salt = n(f.salt);
+        try {
+            const o = E.scanFood({name: p.name, brand: p.brand, barcode: p.barcode, unit: eng.serving.unit, per100, ingredients: p.ingredients || '', categories: p.categories || []}, eng.serving.g);
+            return o && FROM_CHECK[o.verdict] ? o.verdict : null;
+        } catch (e) { return null; }
+    }
+    // tighten(p, a): the same, for an assess(p) result a consumer already has (scan-sort gets it from the scanner's rate()).
+    function tighten(p, a) {
+        if (!p || typeof p !== 'object' || p.notFound) return 'unknown';
+        const v = a && RANK[a.verdict] != null ? a.verdict : 'unknown';
+        if (v === 'unknown') return 'unknown';
+        const c = checkOf(p, a), cv = c ? FROM_CHECK[c] : null;
+        return cv && RANK[cv] > RANK[v] ? cv : v;
+    }
+    function foodVerdict(p, opts) {
+        if (!p || typeof p !== 'object' || p.notFound) return 'unknown';
+        let a; try { a = assess(p, opts); } catch (e) { return 'unknown'; }
+        return tighten(p, a);
+    }
     /* "looks healthy" words: spiky foods with these in the name are the ones worth warning about */
     const HEALTHY = /\bbio\b|organic|vollkorn|whole|protein|fit\b|fitness|light|natur|vegan|smoothie|granola|müsli|muesli|hafer|oat|reiswaffel|rice cake|dinkel|spelt|superfood|chia|frucht|fruit|joghurt|yogurt|zero|diet|balance|vital|integral|ecológico/i;
     const looksHealthy = p => HEALTHY.test(String((p && p.name) || '') + ' ' + String((p && p.brand) || ''));
-    return {assess, text, TX, looksHealthy, list};
+    return {assess, foodVerdict, tighten, text, TX, looksHealthy, list};
 });

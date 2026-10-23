@@ -12,11 +12,29 @@
 })(typeof window !== 'undefined' ? window : globalThis, function () {
     'use strict';
     const KNOWN = { ok: 1, better: 1, spike: 1 };
+    /* scanfe-h (Oct 23, 2026): the live rating is the engine verdict (LowiSpikeCore.foodVerdict: the blood sugar estimate made
+       stricter by the Food check card, NEIN -> spike, SELTEN -> at least better), so Shuffle, Throw out, Buy picks and shopping
+       matches agree with the card. It reads the scanner's rate(p) result; when that is an engine result (it carries .engine), the
+       Food check verdict tightens it. Manual entries keep the scanner's own rate(). */
+    let SC = null;
+    function spikeCore() {
+        if (SC) return SC;
+        if (typeof window !== 'undefined' && window.LowiSpikeCore) return window.LowiSpikeCore;
+        if (typeof require === 'function') { try { SC = require('./spike-core.js'); } catch (e) { SC = null; } }
+        return SC;
+    }
     function verdictOf(p, rate, rateName) {
         if (!p || p.notFound) return 'unknown';
         const stored = KNOWN[p.verdict] ? p.verdict : 'unknown';
         let live = 'unknown';
-        if (typeof rate === 'function') { try { const r = rate(p); if (r && KNOWN[r.verdict]) live = r.verdict; } catch (e) {} }
+        if (typeof rate === 'function') {
+            try {
+                const r = rate(p);
+                if (r && KNOWN[r.verdict]) live = r.verdict;
+                const S = r && r.engine && !p.manual ? spikeCore() : null;
+                if (S && typeof S.tighten === 'function') { const v = S.tighten(p, r); if (KNOWN[v]) live = v; }
+            } catch (e) {}
+        }
         if (stored === 'spike' || live === 'spike') return 'spike';
         if (live !== 'unknown') return live;
         if (stored !== 'unknown') return stored;

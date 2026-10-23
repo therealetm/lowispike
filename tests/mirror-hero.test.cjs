@@ -52,5 +52,8 @@ test('tutorial: the Mirror card comes right after the basic Misty gestures, as a
     assert.ok(s.covers.includes('mirror-mode'));
     for (const l of ['en', 'de', 'es']) assert.ok(s.text[l].length < 230 && s.title[l], l);
     assert.ok(S.VERSION >= 14);
-    assert.ok(/mirror: \{ g: 'tap', vis: 'mirror' \}/.test(read('tutorial-show.js')));
+    assert.ok(/mirror: \{ g: 'hold', vis: 'mirror' \}/.test(read('tutorial-show.js')), 'Oct 23: hold Move (Mirror left the Move bloom)');
+    /* Oct 23 (Mirror orb out of the Move bloom): the card points to the Move page, never to "tap Move, then Mirror" */
+    assert.ok(/hold Move/.test(s.text.en) && /gedrückt/.test(s.text.de) && /mantén Movimiento/i.test(s.text.es), 'hold Move in every language');
+    for (const l of ['en', 'de', 'es']) assert.ok(!/then Mirror|dann auf Spiegel|luego Espejo/.test(s.text[l]), l + ': no old two-tap path');
 });

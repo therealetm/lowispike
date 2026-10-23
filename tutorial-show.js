@@ -25,7 +25,7 @@
         touch: { g: 'tap' },
         'misty-hold': { g: 'hold' },
         'misty-turn': { g: 'drag' },
-        mirror: { g: 'tap', vis: 'mirror' },
+        mirror: { g: 'hold', vis: 'mirror' },  /* Oct 23: Mirror left the Move bloom; hold Move opens the Move page, Mirror is its first card */
         energy: { vis: 'energy' },
         mood: { vis: 'mood' },
         'energy-peak': { vis: 'peak' },
@@ -75,7 +75,7 @@
             case 'water0': return b('lts-row lts-cups', [0, 1, 2, 3, 4].map(k => b('lts-cup' + (k < 2 ? ' on' : '') + (k === 2 ? ' lts-fillin' : ''))).join('')) + b('lts-cap', '\u21ba ' + esc(T.reset));
             case 'move': return b('lts-row', T.moves.map((m, k) => b('lts-pill' + (k === 1 ? ' on' : ''), esc(m))).join(''));
             /* Oct 22 2026: Mirror is the first bubble of the Move bloom */
-            case 'mirror': return b('lts-cap lts-top', esc(T.move)) + b('lts-row', b('lts-pill on', '\ud83c\udfa5 ' + esc(T.mirror)) + T.moves.slice(0, 2).map(m => b('lts-pill', esc(m))).join(''));
+            case 'mirror': return b('lts-cap lts-top', esc(T.move)) + b('lts-row', b('lts-pill on', '\ud83c\udfa5 ' + esc(T.mirror)) + b('lts-pill', esc(T.workouts)));
             case 'movepage': return b('lts-cap lts-top', esc(T.today) + ' \u00b7 ' + esc(T.edit)) + b('lts-row', b('lts-pill on', esc(T.workouts)) + b('lts-pill', esc(T.care)));
             case 'sleep': return b('lts-row', T.sleep.map((m, k) => b('lts-pill' + (k === 0 ? ' on' : ''), (k === 0 ? '\ud83c\udf19 ' : k === 1 ? '\u2601\ufe0f ' : '\u23f0 ') + esc(m))).join(''));
         }

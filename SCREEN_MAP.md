@@ -75,7 +75,7 @@ Purpose: start an accessible session immediately.
 Phone hierarchy:
 
 0. Mirror mode hero card (Oct 22 2026, mirror-move.js `heroHTML`): one-line pitch, animated outline preview, Start opens the
-   routine chooser. Mirror mode is also the first bubble of the Move bloom on Home (tap Move, then Mirror: two taps), and the
+   routine chooser. Oct 23: Mirror left the Move bloom (the bloom is the step ranges only); hold Move on Home opens this page, and the
    tutorial's `mirror` card comes right after the basic Misty gestures.
 1. Recommended session hero and duration.
 2. Duration chips.

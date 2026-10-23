@@ -84,6 +84,17 @@
             }
         },
         {
+            /* Oct 23 2026 (Emmanuel: "when I tap my companion's bubble with two fingers, it should be a shortcut that opens all of them"),
+               bloom-ring.js: every secondary bubble opens in one symmetrical circle and the view zooms out to fit them */
+            id: 'misty-two', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: [], teaches: ['misty-two'], later: 'tap',
+            title: { en: 'Two fingers', de: 'Zwei Finger', es: 'Dos dedos' },
+            text: {
+                en: 'After the tour, tap me with two fingers at once. Every bubble opens in one circle round me, and the view steps back to make room. Tap the empty space to close it.',
+                de: 'Nach der Tour: Tipp mich mit zwei Fingern gleichzeitig an. Alle Bubbles gehen in einem Kreis um mich auf, und die Ansicht zoomt raus. Tipp daneben, dann schließt es.',
+                es: 'Después del recorrido, tócame con dos dedos a la vez. Todas las burbujas se abren en un círculo a mi alrededor y la vista se aleja. Toca fuera para cerrarlo.'
+            }
+        },
+        {
             id: 'misty-turn', sayTitle: { es: false }, area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: [], teaches: ['misty-turn'], tryIt: { how: 'drag' },
             title: { en: 'Turn me', de: 'Dreh mich', es: 'Gírame' },
             text: {
@@ -94,13 +105,14 @@
         },
         {
             /* Oct 22 2026 (Emmanuel: Mirror mode is "the most impressive part in the whole app"): right after the basic gestures.
+               Oct 23: the Mirror orb left the Move bloom, so the card points to the Move page (hold Move), where Mirror is the first card.
                A "later" card: opening the camera mid-tour would raise the camera prompt over the tour. */
             id: 'mirror', area: 'you', target: ['#whHud .wh-move'], covers: ['mirror-mode'], teaches: [], later: 'tap',
             title: { en: 'Mirror mode', de: 'Spiegel-Modus', es: 'Modo espejo' },
             text: {
-                en: 'My favorite part. After the tour, tap Move, then Mirror. You copy the moves, I watch through the camera and coach you out loud. Nothing is recorded.',
-                de: 'Mein Lieblingsteil. Nach der Tour tippst du auf Bewegung, dann auf Spiegel. Du machst die Bewegungen nach, ich schaue durch die Kamera und coache dich laut. Nichts wird aufgenommen.',
-                es: 'Mi parte favorita. Después del recorrido, toca Movimiento y luego Espejo. Copias los movimientos, te miro por la cámara y te guío en voz alta. No se graba nada.'
+                en: 'My favorite part. After the tour, hold Move: Mirror is the first card on the Move page. You copy the moves, I watch through the camera and coach you out loud. Nothing is recorded.',
+                de: 'Mein Lieblingsteil. Nach der Tour hältst du Bewegung gedrückt: Spiegel ist die erste Karte auf der Bewegungsseite. Du machst die Bewegungen nach, ich schaue durch die Kamera und coache dich laut. Nichts wird aufgenommen.',
+                es: 'Mi parte favorita. Después del recorrido, mantén Movimiento: Espejo es la primera tarjeta de su página. Copias los movimientos, te miro por la cámara y te guío en voz alta. No se graba nada.'
             }
         },
         {
@@ -718,6 +730,7 @@
     const GESTURES = [
         G('misty-tap', 'home', 'tap', ['body-world-3d.js'], 'tap Misty: she plays'),
         G('misty-hold', 'home', 'hold', ['body-world-3d.js', 'world-home.js'], 'hold Misty: her card (energy, forms, Evolution path, home)'),
+        G('misty-two', 'home', 'tap', ['bloom-ring.js', 'home-blooms-v2.js'], 'tap Misty with two fingers: every bubble opens in one circle, the view zooms out'),
         G('misty-squish', 'home', 'hold', ['herb-touch.js', 'spirit.js', 'living-bubbles.js'], 'press Misty: her bubble squishes under your finger'),
         G('misty-turn', 'home', 'drag', ['misty-turn.js'], 'drag starting on Misty: she turns'),
         G('ring-still', 'home', 'hold', ['sym-home.js', 'home-orbit-v2.js'], 'touch an orbiting bubble: the ring stops'),

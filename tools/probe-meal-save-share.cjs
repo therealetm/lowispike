@@ -14,7 +14,7 @@ const res = {};
     const R = await H.open(o), P = R.page, fails = []; res.device = device; res.theme = theme; res.lang = lang;
     /* the sheets spring in (apple-ui au-physics, ~1.5 s to settle on a slow sim): wait until the top sheet stops moving */
     const settle = async () => { await H.sleep(400); let last = null; for (let k = 0; k < 30; k++) { const y = await P.evaluate(() => { const s = [...document.querySelectorAll('.r2-ov.on:not(.r2-parked) .r2-sh')].pop(); return s ? Math.round(s.getBoundingClientRect().top) : -1; }); if (y === last) return; last = y; await H.sleep(150); } };
-    const tapLast = async sel => { let box = null; for (let k = 0; k < 20 && !box; k++) { box = await P.evaluate(sel => { const els = [...document.querySelectorAll(sel)].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; }); const e = els.pop(); if (!e) return null; e.scrollIntoView({ block: 'center' }); const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, sel); if (!box) await H.sleep(300); } if (!box) throw new Error('no visible ' + sel); await H.sleep(350); try { await P.touchscreen.tap(box.x, box.y); } catch (e) { await P.mouse.click(box.x, box.y); } };
+    const tapLast = async sel => { let box = null; for (let k = 0; k < 20 && !box; k++) { box = await P.evaluate(sel => { const els = [...document.querySelectorAll(sel)].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; }); const e = els.pop(); if (!e) return null; e.scrollIntoView({ block: 'center' }); const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, sel); if (!box) await H.sleep(300); } if (!box) throw new Error('no visible ' + sel); await H.sleep(350); try { await P.locator(sel + ' >> visible=true').last().tap({ timeout: 5000 }); return; } catch (e) { } let top = null; for (let k = 0; k < 4; k++) { if (k) { await H.sleep(700); try { await P.locator(sel + ' >> visible=true').last().tap({ timeout: 2500 }); return; } catch (e) { } } top = await P.evaluate(sel => { const e = [...document.querySelectorAll(sel)].filter(e => e.getBoundingClientRect().width > 0).pop(); if (!e) return null; const r = e.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2, h = document.elementFromPoint(x, y); return h && (h === e || e.contains(h)) ? { x, y } : { covered: h ? (h.className || h.tagName) + ' in ' + ((h.closest('[class]') || {}).className || '') : 'nothing', x, y, ovs: [...document.querySelectorAll('.r2-ov')].map(o => o.className) }; }, sel); if (top && !top.covered) break; } if (!top || top.covered) throw new Error('covered ' + sel + ' ' + JSON.stringify(top)); try { await P.touchscreen.tap(top.x, top.y); } catch (e) { await P.mouse.click(top.x, top.y); } };
     const errors = []; P.on('pageerror', e => errors.push(String(e.message || e).slice(0, 160)));
     await R.goto(); await H.sleep(4000);
     for (let i = 0; i < 3; i++) { await P.keyboard.press('Escape'); await H.sleep(200); }
@@ -67,8 +67,8 @@ const res = {};
 
     /* 3. Share to Community: caption, Post */
     R.step = 'share';
-    /* a WebKit sim tap right after a sheet settles sometimes lands on <html> (no click at all): tap again until the share sheet shows */
-    for (let k = 0; k < 3; k++) { await tapLast('.mj-sheet [data-mj=share]'); await settle(); if (await P.evaluate(() => !!document.querySelector('.mj-share'))) break; res.shareRetries = k + 1; }
+    /* a raw WebKit sim touch right after a sheet settles can land on <html>: tapLast uses Playwright's own tap (waits until the button is stable and gets the events); retry only while the meal sheet is still on top, so a retry never hits a scrim */
+    for (let k = 0; k < 3; k++) { if (await P.evaluate(() => !!document.querySelector('.mj-share'))) break; const onTop = await P.evaluate(() => { const o = [...document.querySelectorAll('.r2-ov.on:not(.r2-parked)')].pop(); return !!(o && o.querySelector('.mj-sheet')); }); if (!onTop) break; if (k) res.shareRetries = k; await tapLast('.mj-sheet [data-mj=share]'); await settle(); }
     res.shareSheet = await P.evaluate(() => { const s = [...document.querySelectorAll('.mj-share')].pop(); return s ? { name: (s.querySelector('.mj-card b') || {}).textContent, bs: (s.querySelector('.mj-bs') || {}).textContent, foot: (s.querySelector('.mj-foot') || {}).textContent, input: !!s.querySelector('.mj-cap input') } : null; });
     if (!res.shareSheet) {
         res.shareDiag = await P.evaluate(async id => { const o = { ovs: [...document.querySelectorAll('.r2-ov')].map(x => x.className), toast: (document.querySelector('.r2-toast,.toast,#toast') || {}).textContent || '' };
@@ -84,8 +84,8 @@ const res = {};
     await R.shot(OUT + '/' + tag + '-3-share.png');
     await tapLast('.mj-share [data-mj=post]'); await H.sleep(3500);
     const w = R.sim ? R.sim.writes.slice(before) : [];
-    res.writes = w.map(x => x.m + ' ' + String(x.p).slice(0, 90));
-    res.shareMsg = await P.evaluate(() => { const m = [...document.querySelectorAll('.mj-msg')].pop(); return m ? m.textContent : 'closed'; });
+    res.writes = w.map(x => x.m + ' ' + String(x.p || x.t).slice(0, 90));
+    res.shareMsg = await P.evaluate(() => { const m = [...document.querySelectorAll('.r2-ov:not(.off) .mj-msg')].pop(); return m ? m.textContent : 'closed'; });
     const up = w.find(x => /\/storage\/v1\/object\/media\/[^/]+\/meal-p[0-9a-f]+\.jpg/.test(x.p));
     if (!up) fails.push('no meal photo upload: ' + JSON.stringify(res.writes) + ' msg=' + res.shareMsg);
     /* nothing else went out: no weight, no state backup with the full photo */
@@ -94,8 +94,9 @@ const res = {};
 
     /* 4. the card in the Chat room */
     R.step = 'chat';
-    await P.evaluate(() => { try { goTab('community'); } catch (e) { } }); await H.sleep(2500);
-    try { await R.tap('.rm-tab[data-rm=chat]'); } catch (e) { try { await R.tapText(/^Chat$/); } catch (x) { } } await H.sleep(2500);
+    /* Community is the 'foryou' tab now (the top bubble on Home); then the Chat room tab */
+    await P.evaluate(() => { try { goTab('foryou'); } catch (e) { } }); await P.waitForFunction(() => !!document.querySelector('.rm-tab[data-rm="chat"]'), null, { timeout: 15000 }).catch(() => { }); await H.sleep(1500);
+    await P.locator('.rm-tab[data-rm="chat"]').first().click({ force: true }).catch(() => { }); await P.waitForFunction(() => !!document.querySelector('.cs-meal'), null, { timeout: 8000 }).catch(() => { }); await H.sleep(800);
     res.card = await P.evaluate(() => { const c = [...document.querySelectorAll('.cs-meal')].pop(); if (!c) return null; c.scrollIntoView({ block: 'center' }); const b = c.closest('.cm-bub,.cm-msg,li,article') || c.parentElement; const img = b && b.querySelector('img'); const cap = b && b.querySelector('.cm-t,.cs-cap'); return { name: (c.querySelector('.cs-meal-n') || {}).textContent, bs: (c.querySelector('.cs-meal-bs') || {}).textContent, img: !!img, cap: cap ? cap.textContent : '', color: getComputedStyle(c.querySelector('.cs-meal-n')).color, bg: getComputedStyle(b).backgroundColor }; });
     await H.sleep(1200);
     if (!res.card) fails.push('no meal card in the chat'); else if (!/Chicken salad bowl/.test(res.card.name)) fails.push('card name: ' + res.card.name);

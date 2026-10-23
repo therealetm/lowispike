@@ -65,3 +65,13 @@
 .ur-quietbtn{flex:none;align-self:center;background:none;border-color:rgba(170,215,255,.2);opacity:.8}.ur-quietbtn.ur-del{color:#ffb4b4;border-color:rgba(255,160,160,.3)}
 @media (min-width:700px){.ur{align-items:center;padding-bottom:12px}.ur-card{border-radius:30px;border-bottom:1px solid rgba(160,210,255,.22);height:min(86dvh,900px)}.ur-grid{grid-template-columns:repeat(auto-fill,minmax(124px,1fr))}.ur-orb{width:92px;height:92px}.ur-orb i{font-size:38px}}
 html.ur-open body{overflow:hidden}
+/* Circles: Add people (creator only) */
+.ur-addbtn{flex:none;align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px 0 8px;border-radius:99px;font:inherit;font-size:15px;font-weight:700;cursor:pointer;color:#eaf4ff;border:1px solid rgba(120,240,190,.4);background:rgba(120,240,190,.1)}
+.ur-addbtn i{font-style:normal;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;font-size:20px;line-height:1;background:radial-gradient(circle,rgba(150,255,210,.06) 50%,rgba(150,245,205,.4) 95%)}
+.ur-addbtn[disabled]{opacity:.45;cursor:default}
+.ur-ok{margin:0;flex:none;padding:9px 12px;border-radius:14px;background:rgba(120,240,190,.12);border:1px solid rgba(120,240,190,.3);font-size:14px}
+.ur-find{flex:none}
+.ur-cands{list-style:none;margin:0;padding:0;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:6px}
+.ur-cand{display:flex;align-items:center;gap:10px;padding:6px 6px 6px 4px;border-radius:18px;background:rgba(120,170,255,.05)}
+.ur-cand .ur-p{width:auto}.ur-cand b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}
+.ur-cands .ur-quiet{padding:14px 4px;opacity:.75;font-size:14px}

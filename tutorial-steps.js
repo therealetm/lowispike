@@ -722,7 +722,7 @@
         G('misty-turn', 'home', 'drag', ['misty-turn.js'], 'drag starting on Misty: she turns'),
         G('ring-still', 'home', 'hold', ['sym-home.js', 'home-orbit-v2.js'], 'touch an orbiting bubble: the ring stops'),
         G('water-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Water: +1 cup, Undo'),
-        G('water-hold', 'home', 'hold', ['world-home.js'], 'hold Water: today\'s water back to 0'),
+        G('water-hold', 'home', 'hold', ['world-home.js'], 'hold Water: the last entry comes off'),
         G('fuel-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Fuel: Log meal, Cook, Shop'),
         G('fuel-hold', 'home', 'hold', ['home-blooms-v2.js'], 'hold Fuel: Log meal opens'),
         G('move-tap', 'home', 'tap', ['home-blooms-v2.js', 'move-bubble.js'], 'tap Move: Casual, Steady, Epic'),

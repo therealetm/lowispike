@@ -1,7 +1,7 @@
 'use strict';
 /* Browser check for home-settings-sleep-v2.js (Oct 18 2026): Sleep and Settings blooms on the one-page Home, in the real app.
    Real taps on the Sleep and Settings bubbles; chips must bloom outward, stay on screen and never cover Misty; Sleep logs, corrects
-   and clears today's entry, survives a reload; Settings runs the real routes (Profile, Look & sound, Account, Community, Care board,
+   (no Clear chip since 23 Oct 2026), survives a reload; Settings runs the real routes (Profile, Look & sound, Account, Community, Care board,
    Today) and the menu bar switch follows the shell contract (localStorage lowi.home.menubar + window lowi:home-menubar).
    Since 18 Oct 2026 one tap on Settings opens the full Settings page (Emmanuel's call): the real tap checks the page, and the chip
    bloom and More panel, kept for the queued double tap and hold gestures, are opened through LowiHomeSettingsSleepV2.open().

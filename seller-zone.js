@@ -1,5 +1,5 @@
 /* Oct 23, 2026: Seller Zone (Eman: "our own Amazon within our app"). Real snacks you can order online that pass the strict scanner
-   standard, in living bubble style. Opens from the Shop panel (Fuel > Shop) and from the scanner card: scan chips, chocolate,
+   standard, in living bubble style. Lives in the Shop panel (Fuel > Shop) as its own tab and a swipe shelf, and opens from the scanner card: scan chips, chocolate,
    Haribo or biscuits and the card shows buyable swaps from here. Data: seller-zone-data.js; logic: seller-zone-core.js.
    The section's name lives only in LowiSellerZoneData.NAME. Links open the shop's own product page; no affiliate links. */
 (function (W, D) {
@@ -55,7 +55,9 @@
             '<div class="sz-acts"><a class="sz-buy" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer">' + esc(T('Open shop', 'Zum Shop', 'Ir a la tienda')) + ext + '</a>' +
             '<a class="sz-amz" href="' + esc(C.amazonUrl(x.amz, r)) + '" target="_blank" rel="noopener noreferrer">' + esc(T('Find on Amazon', 'Bei Amazon suchen', 'Buscar en Amazon')) + ext + '</a></div></article>';
     }
-    function html() {
+    /* the zone's shelves, regions, cards and checked-and-failed list, without a frame: the overlay (html) and the Shop panel's
+       Seller Zone tab (inlineHTML, Oct 23 Eman: "Pack ihn mal auch in Shop. Mit dem selben Design") show the same thing */
+    function bodyHTML() {
         const r = myRegion();
         const cats = '<button type="button" class="sz-chip' + (cat === 'all' ? ' on' : '') + '" data-sz-cat="all">\u2728 ' + esc(T('All', 'Alle', 'Todo')) + '</button>' +
             DATA.CATS.map(c => '<button type="button" class="sz-chip' + (cat === c.id ? ' on' : '') + '" data-sz-cat="' + c.id + '">' + c.e + ' ' + esc(tx(c.t)) + '</button>').join('');
@@ -64,15 +66,41 @@
         const note = cat !== 'all' && DATA.NOTE[cat] ? '<p class="sz-note sz-note-l">' + esc(tx(DATA.NOTE[cat])) + '</p>' : '';
         const failed = '<details class="sz-failed"><summary>' + esc(T('Checked and not passing', 'Geprüft und durchgefallen', 'Revisado y no pasa')) + ' (' + DATA.FAILED.length + ')</summary><ul>' +
             DATA.FAILED.map(f => '<li><b>' + esc(tx(f.n)) + '</b> ' + esc(tx(f.why)) + '</li>').join('') + '</ul></details>';
-        return '<div class="sz-box" role="dialog" aria-modal="true" aria-labelledby="szTitle">' +
-            '<div class="sz-head"><span class="sz-orb sz-orb-h" aria-hidden="true">\u{1F6CD}\uFE0F</span><div><h3 id="szTitle">' + esc(NAME()) + '</h3><p>' +
-            esc(T('Real snacks you can order. Each one checked against our strict scanner rules.', 'Echte Snacks zum Bestellen. Jeder nach unseren strengen Scanner-Regeln geprüft.', 'Snacks reales para pedir. Cada uno revisado con nuestras reglas estrictas del escáner.')) + '</p></div></div>' +
-            '<div class="sz-scroll"><div class="sz-chips" role="group" aria-label="' + esc(T('Kind', 'Art', 'Tipo')) + '">' + cats + '</div>' +
+        return '<div class="sz-chips" role="group" aria-label="' + esc(T('Kind', 'Art', 'Tipo')) + '">' + cats + '</div>' +
             '<div class="sz-chips sz-regs" role="group" aria-label="' + esc(T('Ships to', 'Liefert nach', 'Envía a')) + '">' + regs + '</div>' + note +
             '<div class="sz-grid">' + items.map(card).join('') + '</div>' + failed +
-            '<p class="sz-fine">' + esc(T('Checked on 23 Oct 2026 on each shop’s own page. Prices and stock can change. No paid placements.', 'Geprüft am 23.10.2026 auf der Seite des jeweiligen Shops. Preise und Verfügbarkeit können sich ändern. Keine bezahlten Platzierungen.', 'Revisado el 23/10/2026 en la página de cada tienda. Precios y stock pueden cambiar. Sin colocaciones pagadas.')) + '</p></div>' +
+            '<p class="sz-fine">' + esc(T('Checked on 23 Oct 2026 on each shop’s own page. Prices and stock can change. No paid placements.', 'Geprüft am 23.10.2026 auf der Seite des jeweiligen Shops. Preise und Verfügbarkeit können sich ändern. Keine bezahlten Platzierungen.', 'Revisado el 23/10/2026 en la página de cada tienda. Precios y stock pueden cambiar. Sin colocaciones pagadas.')) + '</p>';
+    }
+    const LEAD = () => T('Real snacks you can order. Each one checked against our strict scanner rules.', 'Echte Snacks zum Bestellen. Jeder nach unseren strengen Scanner-Regeln geprüft.', 'Snacks reales para pedir. Cada uno revisado con nuestras reglas estrictas del escáner.');
+    function html() {
+        return '<div class="sz-box" role="dialog" aria-modal="true" aria-labelledby="szTitle">' +
+            '<div class="sz-head"><span class="sz-orb sz-orb-h" aria-hidden="true">\u{1F6CD}\uFE0F</span><div><h3 id="szTitle">' + esc(NAME()) + '</h3><p>' + esc(LEAD()) + '</p></div></div>' +
+            '<div class="sz-scroll">' + bodyHTML() + '</div>' +
             '<div class="sz-foot"><button type="button" class="sz-close" data-sz="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button></div></div>';
     }
+    /* ---- inside the Shop panel (store-picks.js): the head line, the whole zone, and a swipe shelf on the supermarket tab ---- */
+    function inlineHeadHTML() {
+        return '<div class="sz-head sz-head-in"><span class="sz-orb sz-orb-h" aria-hidden="true">\u{1F6CD}\uFE0F</span><div><h3>' + esc(NAME()) + '</h3><p>' + esc(LEAD()) + '</p></div></div>';
+    }
+    function inlineHTML() { return '<div class="sz-inline" data-sz-inline="1">' + bodyHTML() + '</div>'; }
+    /* a tap on a shelf or region chip inside the panel: true when it changed something (the panel repaints, keeping its scroll) */
+    function inlineClick(t) {
+        if (!t || !t.closest || !t.closest('[data-sz-inline]')) return false;
+        const c = t.closest('[data-sz-cat]'); if (c) { cat = c.getAttribute('data-sz-cat'); return true; }
+        const r = t.closest('[data-sz-reg]'); if (r) { region = r.getAttribute('data-sz-reg'); try { localStorage.setItem(RKEY, region); } catch (x) {} return true; }
+        return false;
+    }
+    /* the supermarket tab shows the zone as a shelf you swipe through, same orbs and pills; a tap opens that card on the zone tab */
+    function stripHTML() {
+        const items = C.list(DATA, 'all', myRegion());
+        if (!items.length) return '';
+        return '<section class="sz-strip" aria-label="' + esc(NAME()) + '"><div class="sz-strip-h"><span class="sz-orb" aria-hidden="true">\u{1F6CD}\uFE0F</span><span class="sz-strip-t"><b>' + esc(NAME()) + '</b><small>' +
+            esc(T('Snacks to order online, all checked', 'Snacks online bestellen, alle geprüft', 'Snacks para pedir online, todos revisados')) + '</small></span>' +
+            '<button type="button" class="sz-strip-all" data-stp-tab="sz">' + esc(T('All ', 'Alle ', 'Todos ')) + items.length + ' \u203a</button></div>' +
+            '<div class="sz-strip-row">' + items.map(x => '<button type="button" class="sz-mini sz-strip-it" data-stp-tab="sz" data-sz-focus="' + esc(x.id) + '">' +
+                '<span class="sz-orb" aria-hidden="true">' + x.e + '</span><b>' + esc(x.n) + '</b><small>' + esc(x.b) + '</small>' + verdictPill(x.v) + '</button>').join('') + '</div></section>';
+    }
+    function setCat(k) { cat = k && (k === 'all' || DATA.CATS.some(c => c.id === k)) ? k : 'all'; }
     function paint(keep) {
         if (!ov) return;
         const sc = ov.querySelector('.sz-scroll'), top = keep && sc ? sc.scrollTop : 0;
@@ -87,7 +115,7 @@
         const r = t.closest('[data-sz-reg]'); if (r) { region = r.getAttribute('data-sz-reg'); try { localStorage.setItem(RKEY, region); } catch (x) {} paint('keep'); return; }
     }
     function open(kind) {
-        cat = kind && (kind === 'all' || DATA.CATS.some(c => c.id === kind)) ? kind : 'all';
+        setCat(kind);
         lastFocus = D.activeElement;
         if (!ov) {
             ov = D.createElement('div'); ov.className = 'sz-ov'; ov.id = 'sellerZone';
@@ -116,5 +144,5 @@
         if (a) e.stopPropagation();
     }, true);
     W.addEventListener('pagehide', () => D.documentElement.classList.remove('sz-open'));
-    W.LowiSellerZone = { open, close, swapHTML, entryHTML, isOpen: () => !!ov, name: NAME };
+    W.LowiSellerZone = { open, close, swapHTML, entryHTML, stripHTML, inlineHTML, inlineHeadHTML, inlineClick, setCat, count: () => ((DATA && DATA.P) || []).length, isOpen: () => !!ov, name: NAME };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

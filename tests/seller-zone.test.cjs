@@ -98,7 +98,8 @@ test('wired: scanner card, Shop panel entry, files cached, world paused while op
     assert.ok(body.indexOf('szSwapHTML(p)') > 0 && body.indexOf('szSwapHTML(p)') < body.indexOf('sc-prices'), 'buys sit under the verdict, above prices');
     assert.ok(html.indexOf('<script src="seller-zone.js') > html.indexOf('<script src="seller-zone-core.js'));
     const sp = read('store-picks.js');
-    assert.match(sp, /LowiSellerZone\.entryHTML/);
+    /* Oct 23: the one-line entry became a swipe shelf + its own tab (tests/seller-zone-in-shop.test.cjs); entryHTML stays the fallback */
+    assert.match(sp, /Z\.stripHTML \? Z\.stripHTML\(\) : Z && Z\.entryHTML \? Z\.entryHTML\(\)/);
     assert.match(sp, /a === 'sellerzone'/);
     assert.match(read('body-world-3d.js'), /sz-open/);
     const ui = read('seller-zone.js');

@@ -192,3 +192,51 @@ button.stp-item:active { transform: scale(.985); }
 .stp-skip { display: block; width: 100%; margin-top: 12px; padding: 10px 14px; border-radius: 999px; font-weight: 700; font-size: 14px; }
 .stp-fine a { color: var(--mb-acc, #8fe7ff); }
 .stp-gen { margin: 6px 4px 10px; }
+
+/* Oct 23, 2026 (Eman: "Wo ist der Seller Zone versteckt? Pack ihn mal auch in Shop. Mit dem selben Design damit man da durch
+   scrollen kann."): Supermarket | Seller Zone tabs on top of the panel, one living-bubble pill, 44 px for the thumb. */
+.stp-tabs {
+  flex: 0 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 14px 14px 0; padding: 5px; border-radius: 999px;
+  border: 1.2px solid var(--mb-pill-rim, rgba(143, 231, 255, .42)); background: rgba(255, 255, 255, .06);
+  box-shadow: inset 0 0 14px rgba(155, 135, 210, .32), 0 0 16px rgba(143, 231, 255, .14);
+}
+.stp-tab {
+  display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 44px; padding: 6px 10px; border-radius: 999px;
+  font: inherit; color: inherit; cursor: pointer; border: 0; background: transparent; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: background .2s ease, color .2s ease, box-shadow .2s ease;
+}
+.stp-tab span { font-size: 17px; line-height: 1; }
+.stp-tab b { font-size: 14.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.stp-tab i { font-style: normal; font-size: 11px; font-weight: 900; padding: 2px 7px; border-radius: 999px; background: rgba(143, 231, 255, .22); }
+.stp-tab.on { background: radial-gradient(circle at 35% 30%, #c9f5ff, #6fd6ff); color: #062033; box-shadow: 0 0 16px rgba(143, 231, 255, .45), inset 0 0 8px rgba(255, 255, 255, .5); }
+.stp-tab.on i { background: rgba(6, 32, 51, .16); }
+.stp-tab:focus-visible { outline: 2px solid #c9f5ff; outline-offset: 2px; }
+.stp-card .sz-head-in { flex: 0 0 auto; padding: 14px 18px 6px; }
+.stp-card .sz-head-in h3 { font-size: 21px; font-weight: 800; }
+.stp-sz { padding-top: 2px; }
+.stp-sz .sz-glow { animation: szGlow 1.5s ease-out 1; }
+@keyframes szGlow { 0% { box-shadow: 0 0 0 2px rgba(201, 245, 255, .95), 0 0 34px rgba(143, 231, 255, .7); } 100% { box-shadow: 0 0 0 1px rgba(255, 255, 255, .03) inset; } }
+/* the swipe shelf on the Supermarket tab: the zone's snacks as orbs you scroll through sideways */
+.sz-strip {
+  margin: 0 0 14px; padding: 12px 0 12px; border-radius: 26px;
+  background: radial-gradient(120% 140% at 10% 0%, rgba(143, 231, 255, .18), rgba(143, 231, 255, .04)); border: 1px solid rgba(143, 231, 255, .32);
+  box-shadow: 0 0 18px rgba(143, 231, 255, .14);
+}
+.sz-strip-h { display: flex; align-items: center; gap: 10px; padding: 0 12px 10px 14px; }
+.sz-strip-t { flex: 1 1 auto; min-width: 0; }
+.sz-strip-t b { display: block; font-size: 15px; font-weight: 900; }
+.sz-strip-t small { display: block; font-size: 13px; opacity: .78; line-height: 1.3; }
+.sz-strip-all {
+  flex: 0 0 auto; min-height: 40px; padding: 8px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 900; cursor: pointer; color: #062033;
+  border: 0; background: radial-gradient(circle at 35% 30%, #c9f5ff, #6fd6ff); box-shadow: 0 0 14px rgba(143, 231, 255, .35); touch-action: manipulation;
+}
+.sz-strip-row {
+  display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; padding: 2px 14px 4px; scroll-snap-type: x proximity; scroll-padding: 0 14px;
+  -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scrollbar-width: none;
+}
+.sz-strip-row::-webkit-scrollbar { display: none; }
+.sz-strip-it { flex: 0 0 116px; scroll-snap-align: start; font: inherit; color: inherit; cursor: pointer; touch-action: pan-x pan-y; }
+.sz-strip-it b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.4em; }
+@media (min-width: 700px) { .sz-strip-it { flex-basis: 132px; } }
+@media (max-width: 360px) { .stp-tab b { font-size: 13px; } .stp-tab span { display: none; } }
+@media (prefers-reduced-motion: reduce) { .stp-sz .sz-glow { animation: none; outline: 2px solid #c9f5ff; } .stp-tab { transition: none; } }

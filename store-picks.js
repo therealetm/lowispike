@@ -3,7 +3,10 @@
    The "What can I buy here?" button and its Move-style panel. Logic and the formula live in store-picks-core.js; product ranges in
    data/shop/<range>.json; built by tools/shop-data/build.py. Shops near the person come live from OpenStreetMap (store-picks-core.js lookup), no keys on the phone.
    Oct 21, 2026 (Eman: "Does it make sense to also have it in there again? If not, remove it."): one entry point only, the Shop orb
-   in Home's Fuel bubble (home-blooms-v2.js). The old card under Cook it / Shop it, in the shopping list, cart and Meals sheets is gone. */
+   in Home's Fuel bubble (home-blooms-v2.js). The old card under Cook it / Shop it, in the shopping list, cart and Meals sheets is gone.
+   Oct 23, 2026 (Eman: "Wo ist der Seller Zone versteckt? Pack ihn mal auch in Shop. Mit dem selben Design damit man da durch scrollen
+   kann."): two tabs on top, Supermarket and Seller Zone. The Seller Zone tab is the whole zone (seller-zone.js inlineHTML: shelves,
+   regions, every card) in this panel's own scroll; the Supermarket tab starts with a swipe shelf of the zone's snacks. */
 (function (W, D) {
     'use strict';
     if (!W || !D || W.LowiStorePicks) return;
@@ -52,6 +55,11 @@
     let where = null, place = null, placeMine = false, near = null, busy = false, finder = null;
     const look = () => finder || (finder = C.lookup((u, o) => fetch(u, o)));
     let ov = null, view = 'list', data = null, built = null, q = '', showFail = false, open = {};
+    const TKEY = 'lowi.storePicks.tab';
+    const SZ = () => W.LowiSellerZone && W.LowiSellerZone.inlineHTML ? W.LowiSellerZone : null;
+    let tab = 'shop';
+    try { tab = localStorage.getItem(TKEY) === 'sz' ? 'sz' : 'shop'; } catch (e) { tab = 'shop'; }
+    const onSz = () => tab === 'sz' && !!SZ();
     const ic = {
         x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
         pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/></svg>',
@@ -116,13 +124,24 @@
     }
 
     function shell(inner) {
-        return '<div class="stp-card" role="dialog" aria-modal="true" aria-label="' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '">' + inner + '</div>';
+        return '<div class="stp-card' + (onSz() ? ' stp-on-sz' : '') + '" role="dialog" aria-modal="true" aria-label="' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '">' + tabsHTML() + inner + '</div>';
+    }
+    /* Oct 23: the two tabs, a living-bubble pill on top of the panel; the thumb reaches both */
+    function tabsHTML() {
+        const Z = SZ(); if (!Z) return '';
+        const b = (id, icon, txt, n) => '<button type="button" class="stp-tab' + (tab === id ? ' on' : '') + '" role="tab" aria-selected="' + (tab === id) + '" data-stp-tab="' + id + '"><span aria-hidden="true">' + icon + '</span><b>' + esc(txt) + '</b>' + (n ? '<i>' + n + '</i>' : '') + '</button>';
+        return '<div class="stp-tabs" role="tablist" aria-label="' + esc(T('Shop', 'Einkaufen', 'Comprar')) + '">' +
+            b('shop', '\u{1F6D2}', T('Supermarket', 'Supermarkt', 'Supermercado')) + b('sz', '\u{1F6CD}\uFE0F', Z.name(), Z.count ? Z.count() : 0) + '</div>';
+    }
+    function szHTML() {
+        const Z = SZ();
+        return shell(Z.inlineHeadHTML() + '<div class="stp-scroll stp-sz">' + Z.inlineHTML() + '</div>' + footBtns(''));
     }
     /* Oct 19 food paths (E-man: Shop "so complicated and so hidden"): Shop is the one place for shopping. Two plain ways on from
        here: scan products in the shop (the shopping camera: check and add to your list, it never logs a meal) and your shopping list. */
     function shopActs() {
         const scan = W.LowiShopScan && W.LowiShopScan.open, list = typeof W.tdShopOpen === 'function';
-        const sz = W.LowiSellerZone && W.LowiSellerZone.entryHTML ? W.LowiSellerZone.entryHTML() : '';
+        const Z = W.LowiSellerZone, sz = Z && Z.stripHTML ? Z.stripHTML() : Z && Z.entryHTML ? Z.entryHTML() : '';
         if (!scan && !list) return sz;
         return sz + '<div class="stp-foot-acts">' +
             (scan ? '<button type="button" class="stp-go stp-scanshop" data-stp="scanshop">' + ic.cart + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>' : '') +
@@ -385,7 +404,7 @@
         const sc = ov.querySelector('.stp-scroll'), top = sc ? sc.scrollTop : 0;
         const hadQ = D.activeElement && D.activeElement.classList && D.activeElement.classList.contains('stp-q');
         qv = null;
-        ov.innerHTML = view === 'pick' ? pickHTML(state) : listHTML(state);
+        ov.innerHTML = onSz() ? szHTML() : view === 'pick' ? pickHTML(state) : listHTML(state);
         watchThumbs();
         const sc2 = ov.querySelector('.stp-scroll'); if (sc2 && state === 'keep') sc2.scrollTop = top;
         if (hadQ) { const i = ov.querySelector('.stp-q'); if (i) { i.focus(); try { i.setSelectionRange(i.value.length, i.value.length); } catch (e) {} } }
@@ -393,8 +412,9 @@
     function showList() {
         view = 'list';
         if (!S.range) { view = 'pick'; paint(); return; }
-        data = null; paint('loading');
-        loadRange(S.range).then(d => { data = d; if (ov && view === 'list') paint(); }).catch(() => { if (ov && view === 'list') paint('error'); });
+        data = null; if (!onSz()) paint('loading');
+        /* the list loads behind the Seller Zone tab without repainting it (that would throw the person back to the top) */
+        loadRange(S.range).then(d => { data = d; if (ov && view === 'list' && !onSz()) paint(); }).catch(() => { if (ov && view === 'list' && !onSz()) paint('error'); });
     }
     function focusWhere() { const i = ov && ov.querySelector('.stp-wq'); if (i) try { i.focus(); } catch (e) {} }
     const lang = () => ['en', 'de', 'es'][li()];
@@ -446,6 +466,9 @@
         if (qv && qv.contains(t)) { snackClick(t); return; }
         if (snackClick(t)) return;
         if (e.target === ov) { close(); return; }
+        const tb = t.closest('[data-stp-tab]');
+        if (tb) { setTab(tb.getAttribute('data-stp-tab'), tb.getAttribute('data-sz-focus')); return; }
+        if (onSz() && SZ().inlineClick(t)) { paint('keep'); return; }
         const row = t.closest('[data-stp-item]');
         if (row) { openQuick(+row.getAttribute('data-stp-item')); return; }
         const b = t.closest('[data-stp],[data-stp-store],[data-stp-range],[data-stp-more],[data-stp-jump]');
@@ -453,7 +476,7 @@
         const a = b.getAttribute('data-stp');
         if (a === 'close') return close();
         if (a === 'scanshop') { close(); setTimeout(() => { try { W.LowiShopScan.open(); } catch (x) {} }, 200); return; }
-        if (a === 'sellerzone') { try { W.LowiSellerZone.open(); } catch (x) {} return; }
+        if (a === 'sellerzone') { setTab('sz'); return; }
         if (a === 'mylist') { close(); setTimeout(() => { try { W.tdShopOpen(); } catch (x) {} }, 200); return; }
         if (a === 'pick') { view = 'pick'; return paint(); }
         if (a === 'list') return showList();
@@ -472,6 +495,21 @@
             const g = ov.querySelector('#stpg-' + b.getAttribute('data-stp-jump')), sc = ov.querySelector('.stp-scroll');
             if (g && sc) sc.scrollTo({ top: g.offsetTop - sc.offsetTop - 6, behavior: 'smooth' });
         }
+    }
+    /* switch tabs; from a snack on the swipe shelf, the zone opens on that snack's card and it glows once */
+    function setTab(id, focus) {
+        const next = id === 'sz' && SZ() ? 'sz' : 'shop';
+        const same = next === tab;
+        tab = next; try { localStorage.setItem(TKEY, tab); } catch (e) {}
+        if (tab === 'sz') { if (focus) SZ().setCat('all'); if (!same || focus) paint(); if (focus) focusCard(focus); }
+        else if (!same) { if (view === 'list' && S.range && !data) showList(); else paint(); }
+        try { const on = ov && ov.querySelector('.stp-tab.on'); if (on && !focus) on.focus({ preventScroll: true }); } catch (e) {}
+    }
+    function focusCard(id) {
+        const sc = ov && ov.querySelector('.stp-scroll'); if (!sc) return;
+        const c = [...sc.querySelectorAll('[data-sz-id]')].find(x => x.getAttribute('data-sz-id') === id); if (!c) return;
+        sc.scrollTop = Math.max(0, c.offsetTop - sc.offsetTop - 8);
+        c.classList.add('sz-glow'); setTimeout(() => { try { c.classList.remove('sz-glow'); } catch (e) {} }, 1600);
     }
     let qt = 0;
     function onInput(e) {
@@ -501,6 +539,7 @@
         requestAnimationFrame(() => { if (ov) ov.classList.add('in'); });
         q = ''; showFail = false; open = {};
         if (S.range) showList(); else { view = 'pick'; paint(); }
+        if (onSz()) paint();
         try { W.dispatchEvent(new CustomEvent('lowi:storepicks', { detail: { open: true, from: from || '' } })); } catch (e) {}
     }
     function close() {
@@ -520,5 +559,5 @@
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiStorePicks = { open: openPanel, close, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)) };
+    W.LowiStorePicks = { open: openPanel, close, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)), tab: () => (onSz() ? 'sz' : 'shop'), setTab: id => { if (ov) setTab(id); else { tab = id === 'sz' ? 'sz' : 'shop'; try { localStorage.setItem(TKEY, tab); } catch (e) {} } } };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

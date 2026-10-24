@@ -4813,7 +4813,7 @@ function bgHTML(p, thumb){
 }
 function recChip(p){
   const r = recipe(p.rec); if (!r) return "";
-  return '<button class="fyv-rec" data-sh="open-shelf" data-t="kochen" data-sub="recipe" data-r="' + esc(r.id) + '">' + (img(r.id) ? '<img src="' + img(r.id) + '" alt="">' : IC.book) + '<span><small>' + esc(window.LowiLang && LowiLang.t ? LowiLang.t("Recipe") : "Recipe") + '</small>' + esc(r.n) + '</span></button>';
+  return '<button class="fyv-rec" data-sh="open-shelf" data-t="kochen" data-sub="recipe" data-r="' + esc(r.id) + '">' + (img(r.id) ? '<img src="' + img(r.id) + '" alt="">' : IC.book) + '<span><small>' + esc(window.LowiLang && LowiLang.t ? LowiLang.t("Recipe") : "Recipe") + '</small>' + esc(window.LowiLang && LowiLang.t ? LowiLang.t(r.n) : r.n) + '</span></button>';
 }
 function fabHTML(){ if (window.LowiR3F && LowiR3F.fabHTML) return LowiR3F.fabHTML(); return '<button class="fyv-fab" data-fyv="pick" aria-label="Upload a video">' + IC.plus + '<span>Video</span></button>'; }
 function postCardHTML(){ return '<button class="fyv-big" data-fyv="pick">' + IC.vid + '<span><b>Upload a video</b><small>From your camera roll. It plays in your For You.</small></span></button>'; }

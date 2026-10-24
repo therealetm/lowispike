@@ -198,7 +198,8 @@ D.addEventListener('keydown',e=>{const ov=I.ov||T.ov||R.ov;if(!ov)return;if(D.qu
  if(e.key==='Tab'){const f=[...ov.querySelectorAll('button:not([disabled]),input')];if(!f.length)return;const i=f.indexOf(D.activeElement);if(e.shiftKey&&i<=0){e.preventDefault();f[f.length-1].focus();}else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus();}else if(i<0){e.preventDefault();f[0].focus();}e.stopImmediatePropagation();}},true);
 root.addEventListener('lowi:shop',e=>{if(e.detail&&e.detail.open===false&&R.ov){R.msg='';paintRoom();}});
 root.addEventListener('storage',e=>{if(e.key===K.RKEY&&R.ov)paintRoom();if(e.key===K.FKEY&&T.ov)paintTree();});
-if(!D.getElementById('crCss')){const l=D.createElement('link');l.id='crCss';l.rel='stylesheet';l.href='cell-room.css?v='+(((D.querySelector('meta[name="lowi-build"]')||{}).content)||'');D.head.appendChild(l);}
+/* Oct 24: own id. index.html's community-room.css link is also id="crCss", so whenever that link was parsed first (Chromium) cell-room.css never loaded and the Friends tree came up unstyled, its Add friend button squeezed under the galaxy. */
+if(!D.getElementById('cellRoomCss')){const l=D.createElement('link');l.id='cellRoomCss';l.rel='stylesheet';l.href='cell-room.css?v='+(((D.querySelector('meta[name="lowi-build"]')||{}).content)||'');D.head.appendChild(l);}
 function boot(){if(!D.body){setTimeout(boot,50);return;}new MutationObserver(queue).observe(D.body,{childList:true,subtree:true});queue();checkInvite();}
 boot();
 /* openRoom is no longer exported: Misty's room is retired (Oct 15), so no screen offers a door to it. */

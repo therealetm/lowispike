@@ -30,6 +30,12 @@ test('add list: real people only, not you, not already in or asked, one row each
   assert.ok(L.every(p => p.id && p.name));
 });
 
+test('add list: test accounts only show to other test accounts (same rule as bot-accounts.js); bots never', () => {
+  const people = [{ id: B, name: 'Jonas Test 1234', test: true }, { id: D, name: 'Crowd 12', bot: true, test: true }, { id: E, name: 'Antje' }];
+  assert.deepStrictEqual(K.addable(people, room, [], A).map(p => p.name), ['Antje']);
+  assert.deepStrictEqual(K.addable(people, room, [], A, null, true).map(p => p.name), ['Antje', 'Jonas Test 1234']);
+});
+
 test('add list: an extra bot check (demo bots, LowiBotAccounts, hidden accounts) leaves those out too', () => {
   const people = [{ id: B, name: 'Kiko' }, { id: E, name: 'Antje' }];
   const L = K.addable(people, room, [mem(A, 'member')], A, p => p.name === 'Kiko');
@@ -72,7 +78,7 @@ test('the server rule is saved: creator adds as member, everyone else only asks 
 test('the app calls them Circles in English, German and Spanish; the menu too', () => {
   const src = R('user-rooms.js');
   const T = src.slice(src.indexOf('const T={'), src.indexOf('};', src.indexOf('const T={')) + 2);
-  const obj = vm.runInNewContext('(' + T.slice('const T='.length, -1) + ')');
+  const obj = JSON.parse(JSON.stringify(vm.runInNewContext('(' + T.slice('const T='.length, -1) + ')')));
   assert.deepStrictEqual(obj.rooms, ['Circles', 'Circles', 'C\u00edrculos']);
   assert.deepStrictEqual(obj.make, ['Create a circle', 'Circle erstellen', 'Crear c\u00edrculo']);
   for (const k of ['add', 'addOne', 'added', 'find', 'noPeople', 'e_owner', 'e_bot']) assert.ok(obj[k] && obj[k].length === 3, k);
@@ -82,7 +88,7 @@ test('the app calls them Circles in English, German and Spanish; the menu too', 
   assert.match(R('community-rooms-ui.js'), /mRooms:\['Circles','Circles','Círculos'\]/);
   const tut = R('tutorial-steps.js'), i = tut.indexOf("id: 'new-rooms'"), step = tut.slice(i, tut.indexOf('},\n        {', i));
   assert.match(step, /title: \{ en: 'Circles', de: 'Circles', es: 'Círculos' \}/);
-  assert.doesNotMatch(step, /Räume|Raum|\broom|sala/i);
+  assert.doesNotMatch(step.slice(step.indexOf('title:')), /Räume|Raum|\broom|sala/i, 'the words people see and hear');
 });
 
 test('in the circle: the creator gets an Add people button, a member does not', () => {
@@ -92,4 +98,12 @@ test('in the circle: the creator gets an Add people button, a member does not', 
   assert.match(src, /data-ur="addp"/);
   assert.match(src, /status:'member'/, 'the creator adds straight in as a member');
   assert.match(src, /select\('id,name,bot,test'\)/, 'the add list reads the server bot and test flags');
+});
+
+test('circles made by test accounts are hidden from real people, shown to other test accounts', () => {
+  const rooms = [{ id: B, owner_id: C, name: 'Typ 2 gemeinsam 3511' }, { id: E, owner_id: A, name: 'H.B - Human Beings' }];
+  assert.deepStrictEqual(K.visible(rooms, new Set([C]), A).map(r => r.name), ['H.B - Human Beings']);
+  assert.strictEqual(K.visible(rooms, new Set([C]), C).length, 2, 'a test account still sees test circles');
+  assert.strictEqual(K.visible(rooms, null, A).length, 2);
+  assert.match(R('user-rooms.js'), /K\.visible\(r\|\|\[\],testIds,me\(\)\)/);
 });

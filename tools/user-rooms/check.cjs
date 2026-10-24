@@ -56,7 +56,7 @@ const seed = ({ lang, name, day }) => { try {
   const phone = await open('iphone', 390, 844, 'Lena'), ipad = await open('ipad', 820, 1180, 'Jonas');
   ok(out.uids.iphone && out.uids.ipad && out.uids.iphone !== out.uids.ipad, 'two separate signed-in accounts');
   await viaMenu(phone);
-  let t = await text(phone); ok(/Räume/.test(t) && /Raum erstellen/.test(t), 'iPhone: Rooms opens in German with "Raum erstellen"');
+  let t = await text(phone); ok(/Circles/.test(t) && /Circle erstellen/.test(t), 'iPhone: Circles (formerly Rooms) opens in German with "Circle erstellen"');
   await phone.page.click('[data-ur="make"]'); await phone.page.waitForSelector('.ur-name');
   await phone.page.fill('.ur-name', roomName); await phone.page.fill('.ur-topic', 'Für alle mit Typ-2-Diabetes. Tipps, Fragen, Mut.');
   await phone.page.locator('[data-ur="icon"]').nth(5).click(); await phone.page.waitForTimeout(300); await shot(phone, 'iphone-create');

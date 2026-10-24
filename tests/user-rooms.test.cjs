@@ -107,7 +107,7 @@ test('every Rooms text has English, German and Spanish', () => {
     assert.strictEqual(obj[k].length, 3, k);
     for (const s of obj[k]) assert.ok(s && s.trim(), k);
   }
-  assert.match(obj.rooms[1], /Räume/);
+  assert.match(obj.rooms[1], /Circles/); /* renamed from Räume, Emmanuel 23 Oct 2026 */
   assert.match(obj.ask[1], /anfragen/);
 });
 
@@ -122,7 +122,7 @@ test('the UI opens without a server and says sign in instead of breaking', () =>
   vm.runInContext(R('user-rooms.js'), ctx);
   W.LowiUserRooms.open();
   const card = els[0]._card;
-  assert.match(card.innerHTML, /Rooms/);
+  assert.match(card.innerHTML, /Circles/); /* renamed from Rooms, Emmanuel 23 Oct 2026 */
   assert.ok(W.LowiUserRooms.isOpen());
   return new Promise(r => setImmediate(r)).then(() => { assert.strictEqual(W.LowiUserRooms._state().err, 'sign'); W.LowiUserRooms.close(); });
 });

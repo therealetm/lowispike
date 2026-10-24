@@ -38,10 +38,11 @@ function me(){try{const x=X();return (x&&x.state().uid)||'';}catch(e){return '';
 function myName(){try{const s=JSON.parse(localStorage.getItem('lowispike.v2')||'{}');const n=s&&s.user&&s.user.name;if(n)return String(n).trim().slice(0,40);}catch(e){}return 'Member';}
 async function sb(){const x=X();if(!x||!x.client)throw new Error('offline');return x.client();}
 async function q(p){const r=await Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),12000))]);if(r&&r.error)throw r.error;return r?r.data:null;}
-let el=null,rooms=[],members=[],msgs=[],cur='',mode='list',err='',busy=false,poll=0,origin='50% 30%',loaded=false,soon=false,draft='',mkIcon=K.ICONS[0],mkName='',mkTopic='',cands=null,find='',addedName='';
+let el=null,rooms=[],members=[],msgs=[],cur='',mode='list',err='',busy=false,poll=0,origin='50% 30%',loaded=false,soon=false,draft='',mkIcon=K.ICONS[0],mkName='',mkTopic='',cands=null,find='',addedName='',testIds=null;
 async function load(){if(!me()){err='sign';return;}
  try{const c=await sb();const [r,m]=await Promise.all([q(c.from('user_rooms').select('id,owner_id,owner_name,name,topic,icon,created_at').order('created_at',{ascending:false}).limit(300)),q(c.from('user_room_members').select('room_id,user_id,who,status,created_at').limit(9000))]);
-  rooms=r||[];members=m||[];loaded=true;soon=false;if(err==='soon'||err==='offline'||err==='sign')err='';}
+  if(!testIds){try{testIds=new Set((await q(c.from('profiles').select('id').eq('test',true).limit(5000))||[]).map(x=>x.id));}catch(x){testIds=new Set();}}
+  rooms=K.visible(r||[],testIds,me());members=m||[];loaded=true;soon=false;if(err==='soon'||err==='offline'||err==='sign')err='';}
  catch(e){const w=K.why(e);if(w==='soon')soon=true;err=w;}}
 async function loadMsgs(){if(!cur)return;try{const c=await sb();const r=await q(c.from('messages').select('id,user_id,who,body,created_at').eq('room',K.chan(cur)).order('created_at',{ascending:false}).limit(100));msgs=(r||[]).reverse();}catch(e){}}
 function room(){return rooms.find(r=>r.id===cur)||null;}
@@ -89,7 +90,7 @@ async function loadCands(){try{const c=await sb();let r;
   cands=r||[];}
  catch(e){try{cands=(W.LOWI_CLOUD&&W.LOWI_CLOUD.people?W.LOWI_CLOUD.people():[])||[];}catch(x){cands=[];}}}
 function addHtml(){const r=room();if(!r)return listHtml();const id=me(),st=K.status(r,members,id),inn=K.inside(r,members,id);if(st!=='owner')return roomHtml();
- const all=cands?K.addable(cands,r,members,id,botCheck()):[],L=K.match(all,find);
+ const mine=cands&&cands.find(p=>p&&p.id===id),all=cands?K.addable(cands,r,members,id,botCheck(),!!(mine&&mine.test===true)):[],L=K.match(all,find);
  let h='<header class="ur-top"><button type="button" class="ur-back" data-ur="room" aria-label="'+esc(tr('back'))+'">‹</button><div class="ur-title">'+orb(K.icon(r.icon),'ur-sm ur-mine')+'<span><h2 class="ur-h">'+esc(tr('add'))+'</h2><small>'+esc(r.name)+' · '+esc(tr('count',{c:inn.count}))+'</small></span></div><button type="button" class="ur-x" data-ur="close" aria-label="'+esc(tr('close'))+'">×</button></header>';
  h+='<p class="ur-sub">'+esc(inn.full?tr('fullLong'):tr('addSub'))+'</p>';
  if(addedName)h+='<p class="ur-ok" role="status">'+esc(tr('added',{n:addedName}))+'</p>';
@@ -133,7 +134,7 @@ function onKey(e){if(e.key==='Escape'){e.stopPropagation();if(mode==='list')clos
 function open(roomId){if(!el){el=D.createElement('div');el.className='ur';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('data-noi18n','');el.innerHTML='<div class="ur-card"></div>';
   el.addEventListener('click',onClick);el.addEventListener('submit',onSubmit);el.addEventListener('input',onInput);el.addEventListener('keydown',onKey);}
  el.setAttribute('aria-label',tr('rooms'));if(!el.isConnected)D.body.appendChild(el);D.documentElement.classList.add('ur-open');
- mode=roomId?'room':'list';cur=roomId||'';err='';paint();const card=el.querySelector('.ur-card');card.classList.remove('ur-zoom-out');void card.offsetWidth;card.classList.add('ur-zoom-in');
+ mode=roomId?'room':'list';cur=roomId||'';err='';testIds=null;paint();const card=el.querySelector('.ur-card');card.classList.remove('ur-zoom-out');void card.offsetWidth;card.classList.add('ur-zoom-in');
  load().then(()=>{paint();if(mode==='room')loadMsgs().then(paint);});
  clearInterval(poll);poll=setInterval(()=>{if(!el||!el.isConnected||D.hidden)return;load().then(()=>{if(mode==='room')return loadMsgs();}).then(paint);},6000);
  setTimeout(()=>{const x=el&&el.querySelector('.ur-x');if(x)x.focus({preventScroll:true});},60);}

@@ -37,14 +37,17 @@ function canCreate(rooms,me){return !!me&&ownCount(rooms,me)<MAX_OWN;}
 /* Circles: only the creator adds people directly, and only while there is room (the server enforces the same) */
 function canAdd(st,full){return st==='owner'&&!full;}
 /* who the creator can add: real accounts only (server bot/test flags, plus an optional extra check for demo bots and hidden
-   accounts), never you or the creator, nobody already in or asked, one row per account, A to Z */
-function addable(people,room,members,me,isBot){if(!room)return [];
+   accounts), never you or the creator, nobody already in or asked, one row per account, A to Z. Test accounts from our check
+   scripts are only shown to other test accounts (seeTests), the same rule as bot-accounts.js. */
+function addable(people,room,members,me,isBot,seeTests){if(!room)return [];
  const taken=new Set((members||[]).filter(x=>x&&x.room_id===room.id).map(x=>x.user_id));taken.add(me);taken.add(room.owner_id);
  const seen=new Set(),out=[];
  for(const p of people||[]){if(!p)continue;const id=String(p.id||p.uid||p.user_id||''),name=squash(p.name||p.n||'').slice(0,40);
-  if(!id||!name||taken.has(id)||seen.has(id))continue;if(p.bot===true||p.test===true||p.demo||(isBot&&isBot({id,uid:id,name,n:name})))continue;
+  if(!id||!name||taken.has(id)||seen.has(id))continue;if(p.bot===true||(p.test===true&&!seeTests)||p.demo||(isBot&&isBot({id,uid:id,name,n:name})))continue;
   seen.add(id);out.push({id,name});}
  return out.sort((a,b)=>a.name.localeCompare(b.name));}
+/* circles made by test accounts (our check scripts) are only seen by other test accounts, like everywhere else in the app */
+function visible(rooms,testIds,me){const T=testIds instanceof Set?testIds:new Set(testIds||[]);if(!T.size||T.has(me))return rooms||[];return (rooms||[]).filter(r=>r&&!T.has(r.owner_id));}
 function match(list,qs){const s=squash(qs).toLowerCase();return s?(list||[]).filter(p=>p.name.toLowerCase().includes(s)):(list||[]);}
 /* server answers -> a short reason the app can say */
 function why(err){const m=String((err&&(err.message||err.msg))||err||'').toLowerCase();
@@ -52,6 +55,6 @@ function why(err){const m=String((err&&(err.message||err.msg))||err||'').toLower
  if(/\bbots?\b/.test(m))return 'bot';if(/row-level security|permission denied/.test(m))return 'owner';
  if(/does not exist|relation|schema cache|42p01|pgrst205/.test(m))return 'soon';if(/fetch|network|offline|timeout|abort/.test(m))return 'offline';return 'error';}
 function initials(n){const p=squash(n).split(' ').filter(Boolean);return ((p[0]||'?')[0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase();}
-const api={CAP,MAX_OWN,NAME_MIN,NAME_MAX,TOPIC_MAX,BODY_MAX,ICONS,cleanName,cleanTopic,cleanBody,icon,chan,isChan,status,canWrite,list,inside,action,ownCount,canCreate,canAdd,addable,match,why,initials};
+const api={CAP,MAX_OWN,NAME_MIN,NAME_MAX,TOPIC_MAX,BODY_MAX,ICONS,cleanName,cleanTopic,cleanBody,icon,chan,isChan,status,canWrite,list,inside,action,ownCount,canCreate,canAdd,addable,visible,match,why,initials};
 if(typeof module==='object'&&module.exports)module.exports=api;root.LowiUserRoomsCore=api;
 })(typeof window!=='undefined'?window:globalThis);

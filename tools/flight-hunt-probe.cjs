@@ -25,7 +25,9 @@ const within = (p, ms, what) => Promise.race([p, new Promise((_, no) => setTimeo
         const b = document.getElementById('whPad'), F = window.LowiMistyFlight, RG = window.LowiWorldRegions, W3 = window.LowiWorld3D;
         let pad = 'missing';
         if (b) { const r = b.getBoundingClientRect(), s = getComputedStyle(b); const on = r.width > 20 && r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight;
-            pad = { on, hidden: s.display === 'none' || s.visibility === 'hidden' || +s.opacity < 0.05, x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), glass: /blur/.test(s.backdropFilter || s.webkitBackdropFilter || ''), radius: s.borderRadius }; }
+            pad = { on, hidden: s.display === 'none' || s.visibility === 'hidden' || +s.opacity < 0.05, x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), glass: /blur/.test(s.backdropFilter || s.webkitBackdropFilter || ''), radius: s.borderRadius };
+            /* when it is hidden, say by what: the pad's own classes and the html state classes that can hide it */
+            if (pad.hidden || !on) { pad.pc = b.className; pad.op = s.opacity; pad.cls = document.documentElement.className.split(/\s+/).filter(c => /^(wh-|lw-|mf-|gx-|o8)/.test(c)).join(' '); } }
         const st = F ? F.state() : {};
         return { pad, st: st.st, flew: st.flew, transit: st.transit, cur: RG && RG.current && RG.current(), busy: RG && RG.state && RG.state.busy, fps: W3 && W3.fps ? +W3.fps().toFixed(1) : null, lost: !!(W3 && W3.lost), w3: W3 && W3.state,
             regions: W3 && W3.regions ? W3.regions.length : null, padMode: window.LowiPad ? window.LowiPad.state().pad : null, tab: document.documentElement.dataset.tab || (document.querySelector('.tab.on,.tb-on') || {}).id || '', nodes: document.getElementsByTagName('*').length, vw: innerWidth, vh: innerHeight };

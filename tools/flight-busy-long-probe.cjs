@@ -21,7 +21,7 @@ const ENGINE = arg('engine', 'chromium'), SECS = +arg('secs', 120);
         await R.goto(); await H.sleep(7000);
         await P.evaluate(() => { window.__fpN = 0; const f = () => { window.__fpN++; requestAnimationFrame(f); }; requestAnimationFrame(f); });
         console.log('start', JSON.stringify(await snap()));
-        await P.evaluate(() => window.LowiWorldRegions.travel('brain')); await H.sleep(900); await goTab('foryou'); await H.sleep(1500); await goTab('home'); await H.sleep(6000);
+        await P.evaluate(() => window.LowiWorldRegions.travel('brain')); await H.sleep(900); if (arg('tab', '1') === '1') { await goTab('foryou'); await H.sleep(1500); await goTab('home'); } await H.sleep(6000);   /* --tab 0: let the trip run (14:01) */
         console.log(R.el(), 'after trip + tab', JSON.stringify(await snap()));
         await P.evaluate(() => window.LowiWorldRegions.travel('hub', false, 0, { wide: true }));
         const t0 = Date.now();

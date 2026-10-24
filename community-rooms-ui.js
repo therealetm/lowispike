@@ -41,11 +41,11 @@ function open(){const t=D.getElementById('cgThread');return !!(t&&t.hasAttribute
    menu; the people in your room are in the menu too (Rooms & people). Back from the chat (its arrow, an edge swipe, the phone's back
    button, Escape) goes to the Community tab you came from (`from`), else leaves Community. `entry` = opened as Community's first
    tab, so there is nothing to go back to. */
-let from='';
+let from='',wasOpen=false,roomTapAt=0;
 function cur(){return open()?'chat':view==='chans'?'chat':view||'room';}
 function setTab(chat,entry){const c=W.LowiCommunity;
- if(chat){const was=cur();from=entry?'':(was!=='chat'?was:from);view='';if(c&&c.thread&&!open())c.thread(true);paint();return;}
- from='';view='';if(c&&c.thread&&open())c.thread(false);paint();}
+ if(chat){const was=cur();from=entry?'':(was!=='chat'?was:from);view='';if(c&&c.thread&&!open())c.thread(true);wasOpen=open();paint();return;}
+ from='';view='';if(c&&c.thread&&open())c.thread(false);wasOpen=open();paint();}
 /* back from the chat: true when it went to the tab you came from; false = nothing to go back to (the caller leaves Community) */
 function back(){if(!open())return false;const f=from;from='';if(f==='create'||f==='aff'||f==='rank'){showView(f);return true;}if(f==='room'){setTab(false);return true;}return false;}
 function goBack(){const S=W.LowiSections;if(S&&typeof S.back==='function'&&D.documentElement.classList.contains('rm-room-open')){S.back();return;}if(!back())setTab(false);}
@@ -242,7 +242,13 @@ function paintSheet(){if(!sheet||!sheet.isConnected)return;const r=R(),cap=r.cap
 D.addEventListener('lowi:room',e=>{const t=e.detail&&e.detail.type;if(t==='knock'&&W.LowiSfx&&W.LowiSfx.play)try{W.LowiSfx.play('ping');}catch(x){}paint();try{W.LowiCommunity&&W.LowiCommunity.refresh();}catch(x){}});
 D.addEventListener('lowi:chat',()=>paint());
 /* keep the tab state honest when other code opens or closes the message room (history button, Escape, back) */
-const mo=typeof MutationObserver==='function'?new MutationObserver(()=>paint()):null;
+/* Oct 24 (button sweep): a tap on a speech bubble or a companion in the Room opens the chat through LowiCommunity.thread() itself,
+   not through setTab(), so `from` stayed empty and back (edge swipe, phone back, Escape) closed Community for Home instead of
+   going back to the Room. When the chat opens right after a tap inside the Community page and nobody set `from`, the tab under
+   it is where back goes. setTab() keeps wasOpen in step, so the Chat tab and Community's first tab (`entry`) are unchanged. */
+D.addEventListener('pointerdown',e=>{const t=e.target;roomTapAt=t&&t.closest&&t.closest('#tab-foryou')&&!t.closest('.rm-tab,.rm-menu,.rm-menu-btn')?Date.now():0;},true);
+function threadMoved(){const o=open();if(o&&!wasOpen&&!from&&roomTapAt&&Date.now()-roomTapAt<2500)from=(view==='create'||view==='aff'||view==='rank')?view:'room';wasOpen=o;}
+const mo=typeof MutationObserver==='function'?new MutationObserver(()=>{threadMoved();paint();}):null;
 function watch(){const t=D.getElementById('cgThread');if(t&&mo&&!t.__rmWatch){t.__rmWatch=1;mo.observe(t,{attributes:true,attributeFilter:['data-open']});}paint();}
 setInterval(watch,1500);if(D.readyState!=='loading')watch();else D.addEventListener('DOMContentLoaded',watch);
 /* Oct 22 (item 33): when the Community page is rebuilt, the tab bar comes back in the same frame (it used to wait up to 1.5 s for

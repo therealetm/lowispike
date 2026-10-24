@@ -21,7 +21,10 @@
         return H.className + '|' + D.body.className + '|' + activeTab() + '|' +
             D.querySelectorAll('.on, .open, [open], .r2-ov, [role="dialog"], [aria-modal="true"]').length + '|' +
             D.querySelectorAll('.r2-ov.on').length + '|' +
-            D.querySelectorAll('.on, .open, [open]').length;
+            D.querySelectorAll('.on, .open, [open]').length + '|' +
+            /* Oct 24 (button sweep): the Community chat is open while #cgThread has data-open. Back closed it through its own
+               Escape handler, but this signature did not change, so section-nav.js closed Community for Home as well. */
+            D.querySelectorAll('#cgThread[data-open]').length;
     }
     /* Oct 24 (back and close sweep): some layers listen for Escape on themselves only (the Circles list, user-rooms.js, keys on
        its own .ur element). Escape sent to the document never reached it: back from Community with Circles open went Home and

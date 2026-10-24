@@ -45,7 +45,25 @@ const LIST = () => {
     await P.addInitScript(t => { try { localStorage.setItem('lowi.theme', t); } catch (e) { } }, theme);
     const report = { device, engine, theme, lang, screens: {}, errors: [] };
     const ready = async () => { await R.goto(); await H.sleep(5000); await P.evaluate(t => { try { window.LowiR2 && window.LowiR2.applyTheme && window.LowiR2.applyTheme(t); } catch (e) { } }, theme).catch(() => { }); await H.sleep(600); };
-    const openScreen = async s => { await within(P.evaluate(t => { if (t !== 'home') window.goTab(t); }, s), 15000, 'goTab ' + s); await H.sleep(2200); };
+    /* overlays opened from Home the way a player does (tap / long press), or through the module's own open() */
+    const tapSel = async sel => { const b = await P.evaluate(sel => { const e = [...document.querySelectorAll(sel)].find(e => { const r = e.getBoundingClientRect(); return r.width > 2 && r.height > 2; }); if (!e) return null; const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }, sel); if (!b) return false; await P.touchscreen.tap(b[0], b[1]); return true; };
+    const holdSel = (sel, ms = 900) => P.evaluate(async ([sel, ms]) => {
+        const e = document.querySelector(sel); if (!e) return false; const r = e.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const t = document.elementFromPoint(x, y) || e;
+        const pe = type => t.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, composed: true, pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, buttons: type === 'pointerup' ? 0 : 1 }));
+        let te = () => { }; try { const tt = new Touch({ identifier: 7, target: t, clientX: x, clientY: y }); te = type => t.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, composed: true, touches: type === 'touchend' ? [] : [tt], targetTouches: type === 'touchend' ? [] : [tt], changedTouches: [tt] })); } catch (x) { }
+        pe('pointerdown'); te('touchstart'); await new Promise(r => setTimeout(r, ms)); pe('pointerup'); te('touchend'); return true;
+    }, [sel, ms]);
+    const api = f => P.evaluate(f);
+    const OPEN = {
+        'misty-hold': () => holdSel('#spBubble'), 'misty-tap': () => tapSel('#spBubble'), gap: () => tapSel('#spFast'), 'gap-hold': () => holdSel('#spFast'),
+        'move-bloom': () => tapSel('[data-orbit="move"]'), 'sleep-bloom': () => tapSel('[data-orbit="sleep"]'), 'water-bloom': () => tapSel('[data-orbit="water"]'),
+        'fuel-tap': () => tapSel('[data-orbit="fuel"]'), 'fuel-hold': () => holdSel('[data-orbit="fuel"]'), 'scan-hold': () => holdSel('[data-orbit="scan"]'), 'comm-hold': () => holdSel('[data-orbit="settings"]'),
+        circles: () => api(() => { goTab('foryou'); setTimeout(() => window.LowiUserRooms && LowiUserRooms.open(), 1500); }), people: () => api(() => { goTab('foryou'); setTimeout(() => window.LowiPeopleDir && LowiPeopleDir.open(), 1500); }),
+        ranking: () => api(() => { goTab('move'); setTimeout(() => window.LowiRanking && LowiRanking.open && LowiRanking.open(), 1500); }),
+        'comm-menu': async () => { await api(() => goTab('foryou')); await H.sleep(2000); return tapSel('.rm-menu-btn'); },
+    };
+    const resetAll = () => within(P.evaluate(() => { for (let i = 0; i < 3; i++) { try { window.LowiBackSwipe && LowiBackSwipe.escape(); } catch (e) { } } try { LowiUserRooms.close(); } catch (e) { } try { LowiPeopleDir.close(); } catch (e) { } try { LowiRanking.closeLadder(); } catch (e) { } try { LowiR2.closeAll(); } catch (e) { } try { window.closeSheet && closeSheet(); } catch (e) { } try { LowiSections.close(); } catch (e) { } try { goTab('home'); } catch (e) { } }), 8000, 'reset').catch(() => { });
+    const openScreen = async s => { if (OPEN[s]) { await resetAll(); await H.sleep(1200); await within(OPEN[s](), 15000, 'open ' + s); await H.sleep(2600); return; } await within(P.evaluate(t => { if (t !== 'home') window.goTab(t); }, s), 15000, 'goTab ' + s); await H.sleep(2200); };
     try {
         await ready(); report.build = await P.evaluate(() => (document.querySelector('meta[name="lowi-build"]') || {}).content || window.LOWI_BUILD || '').catch(() => '');
         for (const s of screens) {
@@ -63,7 +81,7 @@ const LIST = () => {
                 try {
                     await within(P.evaluate(() => { const x = document.documentElement.classList.contains('b3-camon') && document.querySelector('#b3Cam [data-b3="camclose"]'); if (x) x.click(); document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); }), 5000, 'esc').catch(() => { }); await H.sleep(400);
                     for (let k = 0; k < 3; k++) { const pt = await P.evaluate(() => { const o = [...document.querySelectorAll('.r2-ov.on')].pop(); if (!o) return null; const sc = o.querySelector('.r2-scrim'), r = sc ? sc.getBoundingClientRect() : null; return r && r.height ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + 12) } : { x: 195, y: 12 }; }).catch(() => null); if (!pt) break; await P.touchscreen.tap(pt.x, pt.y); await H.sleep(700); if (k === 2) S.stuckSheets = (S.stuckSheets || []).concat(c.key); }
-                    await within(P.evaluate(() => window.goTab('home')), 15000, 'home').catch(() => { }); await H.sleep(700);
+                    if (OPEN[s]) await resetAll(); else await within(P.evaluate(() => window.goTab('home')), 15000, 'home').catch(() => { }); await H.sleep(700);
                     await openScreen(s);
                     const now = await within(P.evaluate(LIST), 15000, 'list');
                     const m = now.find(x => x.key === c.key);

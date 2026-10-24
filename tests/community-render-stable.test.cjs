@@ -56,7 +56,7 @@ test('paint() patches the galaxy and the chat list instead of replacing their in
   const paint = fn('paint');
   assert.doesNotMatch(paint, /field\.innerHTML=/); assert.doesNotMatch(paint, /list\.innerHTML=/);
   assert.match(paint, /patchKids\(field,/); assert.match(paint, /patchKids\(list,/);
-  assert.match(fn('galaxy'), /parts\.push\(button\(me\?'to-all':'person'/);
+  assert.match(fn('galaxy'), /parts\.push\(button\(me\?'to-all':off\?'person-off':'person'/);
 });
 
 test('E-man: "sent you energy" lines are gone: nothing posts them and old or crowd ones are hidden', () => {

@@ -168,19 +168,35 @@ function mapSlot(i,c){c=c||MAP_C;const r=c*Math.sqrt(i+1.6),a=i*2.399963+0.6;ret
    tablet computes the same seats for the same people; the frame is then only SHIFTED so that you are at (0,0). A shift keeps
    every direction and distance the same, so an angle or a vector between two people means the same thing on every device.
    (cx,cy) is the room centre in this shifted frame and radius is measured from it: the camera limits and the cushion use it. */
+/* Oct 24 (offline companions): a member marked off:true (friend or room member whose person is not here right now) still gets a
+   seat, but only AFTER everyone who is here has taken theirs, in the seats that are left. So the seats of the people who are here,
+   and with them the shared room frame the energy blasts use, are exactly what they were without anyone resting on the map. */
 function mapLayout(members,meId){
- const me=meId||'me',list=[{uid:me,me:true}],seen=new Set([me]);
- for(const m of members||[]){if(!m||!m.uid||seen.has(m.uid))continue;seen.add(m.uid);list.push(m);}
+ const me=meId||'me',list=[{uid:me,me:true}],rest=[],seen=new Set([me]);
+ for(const m of members||[]){if(!m||!m.uid||seen.has(m.uid))continue;seen.add(m.uid);(m.off?rest:list).push(m);}
  /* insertion order is by id hash, so who is first in the caller's list (selected, newest talker) can never change a spot */
- list.sort((a,b)=>hash(a.uid)-hash(b.uid)||(a.uid<b.uid?-1:a.uid>b.uid?1:0));
- const P=mapPool(list.length),taken=new Set(),abs=new Map();
- for(const m of list){let k=hash('slot:'+m.uid)%P;while(taken.has(k))k=(k+1)%P;taken.add(k);
-  const s=mapSlot(k+1),r=rng(hash(m.uid)+11),jx=(r()-.5)*MAP_C*.5,jy=(r()-.5)*MAP_C*.5;abs.set(m.uid,{x:Math.round(s.x+jx),y:Math.round(s.y+jy)});}
+ const byHash=(a,b)=>hash(a.uid)-hash(b.uid)||(a.uid<b.uid?-1:a.uid>b.uid?1:0);
+ list.sort(byHash);rest.sort(byHash);
+ const P=mapPool(list.length),P2=Math.max(P,mapPool(list.length+rest.length)),taken=new Set(),abs=new Map();
+ const seat=(m,pool)=>{let k=hash('slot:'+m.uid)%pool;while(taken.has(k))k=(k+1)%pool;taken.add(k);
+  const s=mapSlot(k+1),r=rng(hash(m.uid)+11),jx=(r()-.5)*MAP_C*.5,jy=(r()-.5)*MAP_C*.5;abs.set(m.uid,{x:Math.round(s.x+jx),y:Math.round(s.y+jy)});};
+ for(const m of list)seat(m,P);
+ for(const m of rest)seat(m,P2);
  const o=abs.get(me),spots=[{uid:me,me:true,x:0,y:0}];let R=0;
  for(const m of list){if(m.uid===me)continue;const a=abs.get(m.uid);spots.push({uid:m.uid,me:false,x:a.x-o.x,y:a.y-o.y});}
+ for(const m of rest){const a=abs.get(m.uid);spots.push({uid:m.uid,me:false,off:true,x:a.x-o.x,y:a.y-o.y});}
  for(const a of abs.values())R=Math.max(R,Math.hypot(a.x,a.y));
  return {spots,radius:Math.round(R),pool:P,cx:-o.x,cy:-o.y};
 }
+/* Oct 24 (Emmanuel: one continuous zoom from your companion's world out to the community): the room opens zoomed out on everyone,
+   framed on the middle of all the seats, and never closer than a step back from the normal zoom. Pinch or double-tap brings you in. */
+function mapFit(spots,radius,w,h,pad){w=Math.max(200,+w||360);h=Math.max(200,+h||500);const Z=mapZooms(radius,w,h),list=(spots||[]).filter(s=>s&&isFinite(s.x)&&isFinite(s.y));
+ if(!list.length)return {x:0,y:0,z:Z.z0};
+ let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const s of list){x0=Math.min(x0,s.x);x1=Math.max(x1,s.x);y0=Math.min(y0,s.y);y1=Math.max(y1,s.y);}
+ const p=pad||{},px=+p.x||56,pt=+p.top||96,pb=+p.bottom||150,z=Math.min((w-2*px)/Math.max(1,x1-x0),(h-pt-pb)/Math.max(1,y1-y0)),
+  zz=Math.max(Z.zmin,Math.min(Z.z0*.82,z));
+ /* the empty band at the top and the composer at the bottom are not the same size: shift so the crowd sits in the free part */
+ return {x:Math.round((x0+x1)/2),y:Math.round((y0+y1)/2+((pb-pt)/2)/zz),z:zz};}
 /* Camera limits for a w x h view: z0 = the zoom you arrive at, zmin shows everyone, zmax is a close look. */
 function mapZooms(radius,w,h){w=Math.max(200,+w||360);h=Math.max(200,+h||500);const z0=Math.max(.85,Math.min(1.25,Math.min(w,h)/400)),fit=Math.min(w,h)/(2*((+radius||0)+90));
  return {z0,zmin:Math.max(.18,Math.min(z0*.55,fit)),zmax:z0*2.4};}
@@ -210,7 +226,7 @@ function mapLabels(items,view){
   if(got)r.bub=got;else r.dot=true;}
  return out;
 }
-const api={BOT_KEEP,hash,mapPool,mapSlot,mapLayout,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
+const api={BOT_KEEP,hash,mapPool,mapSlot,mapLayout,mapFit,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
 if(typeof module==='object'&&module.exports)module.exports=api;
 root.LowiGalaxy=api;
 })(typeof window!=='undefined'?window:globalThis);

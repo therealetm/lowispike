@@ -175,3 +175,12 @@ html.lg #cmPaneChat[data-spirit-chat] .cg-snap :is(.cg-to, .cg-t .cm-mention) { 
 html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap[data-side=b]::after{top:-7px!important;bottom:auto!important;transform:rotate(225deg)!important}
 html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap[data-side=r]::after{left:-6px!important;top:calc(50% + .5px)!important;bottom:auto!important;transform:rotate(135deg)!important}
 html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap[data-side=l]::after{left:auto!important;right:-6px!important;top:calc(50% + .5px)!important;bottom:auto!important;transform:rotate(-45deg)!important}
+/* Oct 24 (offline companions): a friend's or room member's companion whose person is offline rests on the map: faded, greyed, still,
+   a small moon on the orb and "offline" under the name. Tapping it opens the profile card ("Resting · offline"), never a live line. */
+html #cmPaneChat[data-spirit-chat] .cg-body.resting{opacity:.6}
+html #cmPaneChat[data-spirit-chat] .cg-body.resting .cg-orb.cg-orb{filter:saturate(.3) brightness(.9);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.22) !important}
+html #cmPaneChat[data-spirit-chat] .cg-body.resting .cg-orb .cp-form{filter:grayscale(.55) brightness(.88) !important}
+html #cmPaneChat[data-spirit-chat] .cg-body.resting .cg-orb,html #cmPaneChat[data-spirit-chat] .cg-body.resting .cg-orb *{animation:none !important}
+html #cmPaneChat[data-spirit-chat] .cg-body.resting .cg-name.cg-name{font-weight:650;line-height:12px;padding:2px 7px}
+#cmPaneChat[data-spirit-chat] .cg-resttag{display:block;font-size:9px;font-weight:600;line-height:10px;opacity:.8;letter-spacing:.02em}
+#cmPaneChat[data-spirit-chat] .cg-zz{position:absolute;top:-2px;right:-2px;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 62% 38%,rgba(14,20,40,.95) 0 4.2px,transparent 4.6px),radial-gradient(circle at 50% 50%,#e9ecff 0 5.4px,transparent 5.8px),rgba(14,20,40,.92);box-shadow:0 0 0 1.5px rgba(255,255,255,.45);pointer-events:none}

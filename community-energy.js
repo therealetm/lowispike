@@ -125,7 +125,7 @@ function table(opts){
   if(Math.hypot(b.hx+b.ox-x,b.hy+b.oy-y)<3)return false;b.ox=x-b.hx;b.oy=y-b.hy;b.vx=b.vy=0;if(b.me)b.knock=true;remember(b);return true;}
  function room(uid){const b=bodies.get(uid);return b?{x:Math.round(b.hx+b.ox-bcx),y:Math.round(b.hy+b.oy-bcy)}:null;}
  function pos(uid){const b=bodies.get(uid);return b?{x:b.hx+b.ox,y:b.hy+b.oy,r:b.r,me:b.me}:null;}
- return {sync,fire,predict,step,offset,busy,reset,halt,snap,restore,setAt,room,has:uid=>bodies.has(uid),landed:uid=>land.has(uid),pos,shot:()=>shots[0]||null,shots:()=>shots.slice(),mode:()=>mode,bodies:()=>[...bodies.values()].map(b=>({...b})),tune:T};
+ return {sync,fire,predict,step,offset,busy,reset,halt,snap,restore,setAt,room,has:uid=>bodies.has(uid),landed:uid=>land.has(uid),landAt:uid=>{const l=land.get(uid);return l?{x:l.x,y:l.y}:null;},pos,shot:()=>shots[0]||null,shots:()=>shots.slice(),mode:()=>mode,bodies:()=>[...bodies.values()].map(b=>({...b})),tune:T};
 }
 /* ---------- real-time sync helpers (pure) ---------- */
 /* token bucket per player: at most max shots in win ms and never closer than gap ms */
@@ -197,7 +197,7 @@ function wire(){
  ['click','dblclick','touchstart','touchmove','touchend','mousedown','contextmenu'].forEach(t=>joy.addEventListener(t,e=>{stop(e);if(t==='contextmenu'||t==='dblclick')e.preventDefault();},{passive:false}));
  joy.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;e.preventDefault();e.stopPropagation();const g=geom(),me=meSpot(g);if(!g||!me)return;
   const t=ensureTable();syncT(t,g);const at=t.pos(me.uid)||me;
-  let best=null,bd=1e9;for(const s0 of g.spots){if(s0.me)continue;const s=t.pos(s0.uid)||s0,d=Math.hypot(s.x-at.x,s.y-at.y);if(d<bd){bd=d;best=s;}}if(best)fireAt(Math.atan2(best.y-at.y,best.x-at.x),.7);});
+  let best=null,bd=1e9;for(const s0 of g.spots){if(s0.me||s0.off)continue;const s=t.pos(s0.uid)||s0,d=Math.hypot(s.x-at.x,s.y-at.y);if(d<bd){bd=d;best=s;}}if(best)fireAt(Math.atan2(best.y-at.y,best.x-at.x),.7);});
 }
 function move(e){const a=aim(e.clientX-drag.c.x,e.clientY-drag.c.y,knobR());aimNow=a;knob.style.transform='translate('+a.kx.toFixed(1)+'px,'+a.ky.toFixed(1)+'px)';joy.classList.toggle('armed',a.ok);setAim(a.ok?a:null);}
 function meEl(){return gal&&gal.querySelector('.cg-body.me');}
@@ -235,7 +235,8 @@ function remote(raw){const m=unpack(raw);if(!m)return false;const now=Date.now()
 /* Oct 24: the physics size of a companion is the same on every device (the drawn orb is bigger on an iPad and at other zooms), so
    collisions, reach and landing spots match everywhere */
 const PHYS_R=24;
-function syncT(t,g){t.sync(g.spots.map(s=>({uid:s.uid,me:s.me,x:s.x,y:s.y,r:PHYS_R})),g.radius,{x:g.rcx||0,y:g.rcy||0});}
+/* Oct 24: a resting companion (its person is offline, s.off) is not on the table: it cannot be aimed at, hit or knocked by a chain */
+function syncT(t,g){t.sync(g.spots.filter(s=>!s.off).map(s=>({uid:s.uid,me:s.me,x:s.x,y:s.y,r:PHYS_R})),g.radius,{x:g.rcx||0,y:g.rcy||0});}
 function settle(t){let n=0;while(t.busy()&&n++<1800)t.step(1/60);t.halt();saveLand();const m=map();if(m&&m.place)m.place();}
 D.addEventListener('lowi:energy-shot',e=>{try{remote(e.detail);}catch(x){}});
 function kick(){if(raf)return;lastT=0;raf=requestAnimationFrame(frame);}
@@ -287,6 +288,7 @@ function draw(g,now,fdt){if(!ctx||!g)return;const {w,h}=size();ctx.setTransform(
 function keepOut(g){if(!joy||!joy.isConnected||!g||joy.offsetParent===null)return null;const a=joy.getBoundingClientRect(),b=g.getBoundingClientRect();if(!a.width)return null;return {x:a.left-b.left+a.width/2,y:a.top-b.top+a.height/2,s:a.width+12};}
 /* place() asks this for every companion it draws. After a reload (or someone coming back on the map) the table catches up once with
    the map, so a companion that was knocked earlier is drawn where it came to rest, not on its old spot. */
-function offset(uid){if(!tb||(!tb.has(uid)&&tb.landed(uid))){const g=geom();if(!g)return null;syncT(ensureTable(),g);}return tb.offset(uid);}
+/* a resting companion (off the table) that was knocked before its person went offline stays where it landed */
+function offset(uid){if(!tb||(!tb.has(uid)&&tb.landed(uid))){const g=geom();if(!g)return null;syncT(ensureTable(),g);if(!tb.has(uid)){const s=g.spots.find(x=>x.uid===uid),l=tb.landAt(uid);if(s&&s.off&&l)return {x:l.x+(g.rcx||0)-s.x,y:l.y+(g.rcy||0)-s.y};}}return tb.offset(uid);}
 W.LowiEnergy={mount,offset,keepOut,fire:fireAt,remote,stats:()=>({...stats,lat:stats.lat.slice()}),balls:()=>tb?tb.shots().map(x=>({id:x.id,by:x.by,to:x.to,x:Math.round(x.x),y:Math.round(x.y),remote:x.remote})):[],busy:()=>!!(tb&&tb.busy()),state:()=>tb?{mode:tb.mode(),shot:!!tb.shot(),balls:tb.shots().length,bodies:tb.bodies().filter(b=>b.ox||b.oy||b.vx||b.vy).map(b=>({uid:b.uid,ox:Math.round(b.ox),oy:Math.round(b.oy),vx:Math.round(b.vx),vy:Math.round(b.vy)}))}:null,core:api};
 })(typeof window==='object'?window:globalThis);

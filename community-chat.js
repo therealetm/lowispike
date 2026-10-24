@@ -100,6 +100,7 @@ const COPY={
  writeTo:['Write to {n}','Schreib {n}','Escribe a {n}'],
  hintTo:['Everyone can read it; {n} gets a notification that you are talking to them.','Alle können es lesen; {n} bekommt eine Nachricht, dass du mit ihm sprichst.','Todos pueden leerlo; {n} recibe un aviso de que le estás hablando.'],
  talkTo:['Talk to {n} directly','Direkt mit {n} sprechen','Hablar directamente con {n}'],
+ restTag:['Resting · offline','Ruht · offline','Descansa · sin conexión'],restShort:['offline','offline','desconectado'],restAria:['{n} · offline, their companion is resting. Open profile','{n} · offline, der Begleiter ruht. Profil öffnen','{n} · sin conexión, su compañero descansa. Abrir perfil'],restNote:['{n} is offline right now, so their companion is resting here. Talking live and energy blasts come back when {n} is online again.','{n} ist gerade offline, darum ruht der Begleiter hier. Live reden und Energiestöße gehen wieder, sobald {n} online ist.','{n} no está conectado ahora, así que su compañero descansa aquí. Hablar en directo y los rayos de energía vuelven cuando {n} esté conectado.'],
  talking:['Talking to {n} · tap again for everyone','Du sprichst mit {n} · nochmal tippen für alle','Hablas con {n} · toca de nuevo para todos'],
  toEveryone:['Write to everyone instead','Stattdessen an alle schreiben','Escribir a todos'],
  youAll:['You · talking to everyone','Du · sprichst mit allen','Tú · hablas con todos'],
@@ -252,11 +253,29 @@ function roster(){const real=[];for(const p of (H.people&&H.people())||[]){if(p&
  for(const p of uniq)map.set(p.uid,p);
  for(const b of (G&&G.withBots?G.withBots(uniq,botList(),ownName):[]))if(!blocked(b.uid))map.set(b.uid,{uid:b.uid,n:b.n,lv:b.lv,bot:true});
  return map;}
+/* Oct 24 (Emmanuel, handoff: "offline companions"): friends and members of this room whose person is not here right now still show on
+   the map, resting: greyed, still, a small moon, "Resting · offline". Only real people (never a bot or a test account), never anyone
+   blocked or hidden, never someone who is in another room right now (they are online, just elsewhere). Friends first, then people who
+   wrote in this room, newest first, at most REST_MAX so the room stays calm. Only while the live room is on: without it the room shows
+   everyone anyway and nothing here knows who is online. A resting companion has no live actions: no talk line, no energy blasts. */
+const REST_MAX=24;let restIds=new Set();
+function resting(r,ms){const R=W.LowiRooms;if(!(R&&R.active&&R.active()))return [];
+ const BA=W.LowiBotAccounts,isBot=u=>!!(BA&&BA.isBot&&BA.isBot(u))||!!botOf(u),out=[],seen=new Set(),pm=new Map();
+ for(const p of (H.people&&H.people())||[])if(p&&p.uid)pm.set(p.uid,p);
+ const away=new Set(),now=Date.now(),here=R.room?R.room():'';try{for(const d of (R.rooms?R.rooms():[]))if(d&&Array.isArray(d.u)&&now-(+d.t||0)<5*60e3&&!(R.num&&d.n===R.num()))d.u.forEach(u=>away.add(u));}catch(e){}
+ const add=(uid,n)=>{if(out.length>=REST_MAX||!uid||uid===scope||seen.has(uid)||(r&&r.has(uid))||blocked(uid)||hiddenAcct(uid)||away.has(uid)||isBot(uid))return;const p=pm.get(uid);if(p&&p.bot)return;
+  const name=String((p&&p.n)||n||'').trim();if(!name)return;seen.add(uid);out.push({uid,n:name.slice(0,40),lv:(p&&p.lv)||1,off:true});};
+ try{for(const f of (W.LowiCellRoom&&W.LowiCellRoom.friends?W.LowiCellRoom.friends():[]))if(f&&f.uid)add(f.uid,f.n);}catch(e){}
+ const lastBy=new Map();for(const m of ms||[])if(m&&m.uid&&!m.demo&&!m.bot&&!m.status)lastBy.set(m.uid,m);
+ [...lastBy.values()].sort((a,b)=>(+b.ts||0)-(+a.ts||0)).forEach(m=>add(m.uid,m.by));
+ void here;return out;}
 function nameIdx(r){const list=[...(r||roster()).values()];if(scope&&own().n)list.push({uid:scope,n:own().n});return G?G.nameIndex(list):[];}
 function latestBy(ms){const last=new Map();for(const m of ms){if(!m||m.demo||m.bot||!m.uid||blocked(m.uid))continue;last.set(m.uid,m);}return last;}
 function crowd(ms,r,idx){const last=latestBy(ms),order=[],seen=new Set();const add=uid=>{if(!uid||uid===scope||seen.has(uid)||!r.has(uid))return;seen.add(uid);order.push(r.get(uid));};
  if(sel)add(sel);[...last.values()].sort((x,y)=>y.ts-x.ts).forEach(m=>{add(m.uid);const t=G&&G.targetOf(m,ms,idx);if(t)add(t.uid);});
- Object.keys(botStore()).forEach(add);[...r.values()].sort((x,y)=>(x.bot?1:0)-(y.bot?1:0)||(y.lv||0)-(x.lv||0)||String(x.n).localeCompare(String(y.n))).forEach(p=>add(p.uid));return order;}
+ Object.keys(botStore()).forEach(add);[...r.values()].sort((x,y)=>(x.bot?1:0)-(y.bot?1:0)||(y.lv||0)-(x.lv||0)||String(x.n).localeCompare(String(y.n))).forEach(p=>add(p.uid));
+ /* resting companions last: mapLayout seats them only in the seats left over, so they never move anyone who is here */
+ const rest=resting(r,ms);restIds=new Set(rest.map(p=>p.uid));return order.concat(rest);}
 function fill(k,n){return tr(k).replace('{n}',n);}
 /* The active conversation (you and the person you picked): its newest message rides on the one line between you two. */
 function convo(ms,idx){if(!sel||!G)return null;const b=botOf(sel);
@@ -272,21 +291,23 @@ function galaxy(ms,w,h,quiet){
   /* Oct 16, round 5 (E-man: "tapping Joseph selected Bastian", "everyone changes places"): a map, not a seating plan. Each person
      has one fixed spot (G.mapLayout); selecting, typing, new messages and the keyboard never move anyone. place() draws the spots
      through the camera (drag to pan, pinch / double-tap to zoom), so the HTML here carries no positions at all. */
-  const r=roster(),idx=nameIdx(r),order=crowd(ms,r,idx),L=G.mapLayout(order,scope||'me'),last=latestBy(ms),now=Date.now(),spot=new Map(L.spots.map(x=>[x.uid,x])),meSpot=L.spots[0],names=[],labels=[],lineDefs=[];
+  const r=roster(),idx=nameIdx(r),order=crowd(ms,r,idx),L=G.mapLayout(order,scope||'me'),last=latestBy(ms),now=Date.now(),spot=new Map(L.spots.map(x=>[x.uid,x])),meSpot=L.spots[0],names=[],labels=[],lineDefs=[],restP=new Map(order.filter(p=>p&&p.off).map(p=>[p.uid,p]));
   const big=w>=640,bodyS=big?56:46,meS=big?64:54;
   /* Oct 16: chats with the galaxy bots live on this phone; their newest words go in the same avatar bubbles */
   try{const bs=botStore();for(const u in bs){const arr=bs[u];const m=arr&&arr[arr.length-1];if(!m||!m.t)continue;const k=m.from==='me'?scope:u,cur=last.get(k);if(!cur||(+cur.ts||0)<=(+m.ts||0))last.set(k,{id:'',uid:k,t:m.t,ts:m.ts||now});}}catch(e){}
-  if(sel&&!spot.has(sel))sel='';
+  if(sel&&(!spot.has(sel)||restP.has(sel)))sel='';
   const cv=convo(ms,idx);
   const parts=[];
   /* drawing order only (real people before bots); the spots themselves never depend on it */
-  const drawOrder=L.spots.slice().sort((a,b)=>(b.me?1:0)-(a.me?1:0)||((r.get(a.uid)||{}).bot?1:0)-((r.get(b.uid)||{}).bot?1:0));
-  drawOrder.forEach((x,i)=>{const me=x.me,p=me?{uid:scope,n:own().n||tr('you')}:r.get(x.uid);if(!p)return;const label=me?tr('you'):p.n;names.push(label);
+  const drawOrder=L.spots.slice().sort((a,b)=>(b.me?1:0)-(a.me?1:0)||(a.off?1:0)-(b.off?1:0)||((r.get(a.uid)||{}).bot?1:0)-((r.get(b.uid)||{}).bot?1:0));
+  drawOrder.forEach((x,i)=>{const me=x.me,off=!me&&!!x.off,p=me?{uid:scope,n:own().n||tr('you')}:off?restP.get(x.uid):r.get(x.uid);if(!p)return;const label=me?tr('you'):p.n;names.push(label);
    const picked=!me&&sel===x.uid,talking=speak&&speak===x.uid,size=me?meS:bodyS;
-   const aria=me?(sel?tr('toEveryone'):tr('youAll')):(picked?fill('talking',p.n):fill('talkTo',p.n));
-   const attrs='data-uid="'+esc(x.uid)+'" data-name="'+esc(me?own().n||'':p.n)+'" aria-label="'+esc(aria)+'"'+(me?'':' aria-pressed="'+picked+'"')+' style="--s:'+size+'px;--i:'+(i%24)+';--c:'+hueColor(x.uid,me)+'"';
-   const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>';
-   parts.push(button(me?'to-all':'person',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(me&&!scope?' cg-off':'')));
+   const aria=me?(sel?tr('toEveryone'):tr('youAll')):off?fill('restAria',p.n):(picked?fill('talking',p.n):fill('talkTo',p.n));
+   const attrs='data-uid="'+esc(x.uid)+'" data-name="'+esc(me?own().n||'':p.n)+'" aria-label="'+esc(aria)+'"'+(me||off?'':' aria-pressed="'+picked+'"')+' style="--s:'+size+'px;--i:'+(i%24)+';--c:'+hueColor(x.uid,me)+'"';
+   const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+(off?'<i class="cg-zz" aria-hidden="true"></i>':'')+'</span><span class="cg-name">'+esc(label)+(off?'<small class="cg-resttag">'+esc(tr('restShort'))+'</small>':'')+'</span>';
+   parts.push(button(me?'to-all':off?'person-off':'person',inner,attrs,'cg-body'+(me?' me':'')+(off?' resting':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(me&&!scope?' cg-off':'')));
+   /* resting: no message bubble (nothing live to show), just the name */
+   if(off){labels.push({id:x.uid,pri:4,ts:0,bw:0,size});return;}
    /* Oct 16 (E-man: "like Snapchat's map"): every companion's newest message sits in one small bubble next to their round avatar:
       their name, then the words (or "New picture" for a photo, which opens it). Your own words always sit next to YOUR avatar.
       place() picks the side so a bubble never covers another person or name; when there is no room it shrinks to a dot. */
@@ -315,7 +336,12 @@ function galaxy(ms,w,h,quiet){
   return {html:parts.join(''),parts,map:L,spot,labels,lineDefs,lines:[],names,me:meSpot};
 }
 /* ---- the map camera: pins stay put, the camera moves ---- */
-let cam=null,camFrozen=null,placeRaf=0,camAnim=0;
+let cam=null,camFrozen=null,placeRaf=0,camAnim=0,camAuto=true,camFitN=-1;
+/* Oct 24 (offline companions + zoomed-out Circle entry): the room opens zoomed out on everyone (G.mapFit). While people are still
+   arriving in the first seconds and you have not touched the map, the view follows the crowd as it fills in; your first touch,
+   pinch, wheel or aim hands the camera to you. */
+const camFitOK=()=>camAuto&&Date.now()-enterAt<7000;
+function camFit(gx,v){return G.mapFit?G.mapFit(gx.map.spots,gx.map.radius,v.w,v.h,{x:v.w>=640?90:48,top:v.w>=640?110:92,bottom:v.w>=640?170:150}):{x:0,y:0,z:mapZ(gx,v).z0};}
 function mapView(gal){const typing=D.documentElement.classList.contains('cs-chat-map-typing');const w=gal.clientWidth||360,h=gal.clientHeight||480;
   /* the centre of the map is fixed: the composer growing a chip row, or the keyboard coming up, never slides the pins.
      Only a real change of screen (rotation, iPad split view) re-centres it. */
@@ -329,7 +355,7 @@ function epos(s,id){const e=W.LowiEnergy,o=s&&e&&e.offset?e.offset(id):null;retu
 function place(){
   const gx=W.__lgGx,field=D.getElementById('cgField'),gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!field||!gal)return;
   mapGestures(gal);if(W.LowiEnergy&&W.LowiEnergy.mount)W.LowiEnergy.mount(gal);
-  const v=mapView(gal),Z=mapZ(gx,v);if(!cam)cam={x:0,y:0,z:Z.z0};cam=G.mapClamp(cam,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy});
+  const v=mapView(gal),Z=mapZ(gx,v),nSp=gx.map.spots.length;if(!cam){cam=camFit(gx,v);camFitN=nSp;}else if(nSp!==camFitN&&camFitOK()&&!camAnim){camFitN=nSp;const fz=camFit(gx,v);if(typeof requestAnimationFrame!=='function'||typeof cancelAnimationFrame!=='function'||(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches))cam=fz;else{camTo(fz,420);return;}}cam=G.mapClamp(cam,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy});
   const f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),fn=Math.max(.8,f),cx=v.w/2,cy=v.h*.5,scr=s=>({x:cx+(s.x-cam.x)*cam.z,y:cy+(s.y-cam.y)*cam.z});
   const bodies=new Map(),bubs=new Map();
   for(const el of field.querySelectorAll('.cg-body'))bodies.set(el.getAttribute('data-uid'),el);
@@ -355,7 +381,7 @@ function place(){
   gal.setAttribute('data-zoom',cam.z>=Z.zmax*.995?'max':cam.z<=Z.zmin*1.005?'min':'mid');
 }
 function camTo(target,ms){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gal||!cam)return;cancelAnimationFrame(camAnim);const v=mapView(gal),to=G.mapClamp(target,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy}),from={...cam},t0=performance.now(),dur=ms||280;
-  const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);cam={x:from.x+(to.x-from.x)*e,y:from.y+(to.y-from.y)*e,z:from.z*Math.pow(to.z/from.z,e)};place();if(k<1)camAnim=requestAnimationFrame(step);};camAnim=requestAnimationFrame(step);}
+  const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);cam={x:from.x+(to.x-from.x)*e,y:from.y+(to.y-from.y)*e,z:from.z*Math.pow(to.z/from.z,e)};place();if(k<1)camAnim=requestAnimationFrame(step);else camAnim=0;};camAnim=requestAnimationFrame(step);}
 /* zoom by k keeping the world point under (px,py) (galaxy px) under the finger */
 function zoomAt(c0,k,px,py,v){const gx=W.__lgGx,Z=gx&&gx.map?mapZ(gx,v):{zmin:.18,zmax:3},z=Math.max(Z.zmin,Math.min(Z.zmax,c0.z*k)),wx=c0.x+(px-v.w/2)/c0.z,wy=c0.y+(py-v.h*.5)/c0.z;return {x:wx-(px-v.w/2)/z,y:wy-(py-v.h*.5)/z,z};}
 function mapGestures(gal){if(gal.__map)return;gal.__map=1;
@@ -367,7 +393,7 @@ function mapGestures(gal){if(gal.__map)return;gal.__map=1;
   const lpOpen=body=>{lpHeld=true;lpAt=Date.now();try{if(navigator.vibrate)navigator.vibrate(12);}catch(x){}body.classList.add('cg-held');setTimeout(()=>body.classList.remove('cg-held'),420);const u=body.getAttribute('data-uid');if(u&&u!=='me')openProfile(u,body.getAttribute('data-name')||'');};
   const local=e=>{const r=gal.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
   const inUi=t=>!!(t&&t.closest&&t.closest('.cm-compose,input,textarea,#cgThread,.cg-empty,.ce-joy'));
-  gal.addEventListener('pointerdown',e=>{if(inUi(e.target)||(e.pointerType==='mouse'&&e.button!==0))return;cancelAnimationFrame(camAnim);pts.set(e.pointerId,local(e));
+  gal.addEventListener('pointerdown',e=>{camAuto=false;if(inUi(e.target)||(e.pointerType==='mouse'&&e.button!==0))return;cancelAnimationFrame(camAnim);pts.set(e.pointerId,local(e));
    lpStop();lpHeld=false;
    if(pts.size===1){const body=e.target.closest&&e.target.closest('.cg-body');g={kind:'tap',p0:local(e),cam0:{...cam},t0:Date.now(),onBody:!!(e.target.closest&&e.target.closest('.cg-body,.cg-bub')),body:body||null};if(body)lpT=setTimeout(()=>{lpT=0;if(g&&g.kind==='tap'&&pts.size===1)lpOpen(body);},450);}
    else if(pts.size===2){const [a,b]=[...pts.values()];g={kind:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},cam0:{...cam}};}});
@@ -392,7 +418,7 @@ function mapGestures(gal){if(gal.__map)return;gal.__map=1;
   gal.addEventListener('dblclick',e=>e.preventDefault());
   /* Right-click, the keyboard's context-menu key or Android's long-press menu: the same person card; never the browser menu on a companion. */
   gal.addEventListener('contextmenu',e=>{const body=e.target.closest&&e.target.closest('.cg-body');if(!body)return;e.preventDefault();if(Date.now()-lpAt<1500)return;lpAt=Date.now();const u=body.getAttribute('data-uid');if(u&&u!=='me')openProfile(u,body.getAttribute('data-name')||'');});
-  gal.addEventListener('wheel',e=>{const gx=W.__lgGx;if(!gx||!gx.map||!cam||inUi(e.target))return;const v=mapView(gal),Z=mapZ(gx,v);
+  gal.addEventListener('wheel',e=>{camAuto=false;const gx=W.__lgGx;if(!gx||!gx.map||!cam||inUi(e.target))return;const v=mapView(gal),Z=mapZ(gx,v);
    if(e.deltaY<0&&cam.z>=Z.zmax*.995)return;/* fully zoomed in: galaxy-zoom.js may dive you back into Home */
    e.preventDefault();const p=local(e);cam=zoomAt(cam,Math.exp(-e.deltaY*.0022),p.x,p.y,v);schedulePlace();},{passive:false});
   gal.addEventListener('gesturestart',e=>e.preventDefault());
@@ -401,7 +427,7 @@ W.LowiCgMap={atMax(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||
   cam(){return cam&&{...cam};},reset(){cam=null;schedulePlace();},place,
   /* Oct 16 (energy hits): the camera and every companion's home spot and radius in map units, for community-energy.js */
   geom(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!gal||!cam)return null;const v=mapView(gal),Z=mapZ(gx,v),f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),big=v.w>=640,sz=new Map((gx.labels||[]).map(L=>[L.id,L.size]));
-   return {cam:{...cam},w:v.w,h:v.h,cx:v.w/2,cy:v.h*.5,f,radius:gx.map.radius,rcx:gx.map.cx||0,rcy:gx.map.cy||0,spots:gx.map.spots.filter(s=>gx.spot.has(s.uid)).map(s=>({uid:s.uid,me:!!s.me,x:s.x,y:s.y,r:((sz.get(s.uid)||(s.me?(big?64:54):(big?56:46)))*f/2)/cam.z}))};},
+   return {cam:{...cam},w:v.w,h:v.h,cx:v.w/2,cy:v.h*.5,f,radius:gx.map.radius,rcx:gx.map.cx||0,rcy:gx.map.cy||0,spots:gx.map.spots.filter(s=>gx.spot.has(s.uid)).map(s=>({uid:s.uid,me:!!s.me,off:!!s.off,x:s.x,y:s.y,r:((sz.get(s.uid)||(s.me?(big?64:54):(big?56:46)))*f/2)/cam.z}))};},
   /* an energy hit on a real member: checks only (Oct 19: the "@Name ⚡ Eman sent you energy" chat line is gone) */
   energy(uid){if(!uid||uid===scope||uid==='me')return 'self';if(botOf(uid))return 'bot';const p=roster().get(uid);if(!p||!G)return 'gone';if(blocked(uid))return 'blocked';
    if(!store||!store.submitLine||!scope||navigator.onLine===false)return 'offline';const name=String(own().n||'').trim();if(!name)return 'name';
@@ -413,7 +439,7 @@ function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)r
    snapshot of Home any more). From anywhere else the galaxy just settles in from a little closer. */
 function intro(){const g=D.getElementById('cgGalaxy');if(!g||!g.removeAttribute)return;g.__intro=1;if(D.documentElement.classList.contains('gx-out'))return;if(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches)return;g.removeAttribute('data-intro');void g.offsetWidth;g.setAttribute('data-intro','1');clearTimeout(introT);introT=setTimeout(()=>{g.removeAttribute('data-intro');},1100);}
 let enterAt=0,ro=null;
-function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();cam=null;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();}}
+function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();cam=null;camAuto=true;camFitN=-1;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();}}
 function watch(){if(watching||!W.MutationObserver)return;const t=D.getElementById('tab-foryou');if(!t)return;watching=true;new W.MutationObserver(onShow).observe(t,{attributes:true,attributeFilter:['class']});}
 function roomFlag(){const p=D.getElementById('cmPaneChat'),on=threadOpen&&!!(p&&p.hasAttribute&&p.hasAttribute('data-spirit-chat'));if(p&&p.dataset){if(on)p.dataset.room='1';else delete p.dataset.room;}try{D.documentElement.classList.toggle('cr-room',on);}catch(e){}roomDress(p,on);}
 /* Oct 22 (item 37): the room's composer floats over the messages (community-tg.css). The list keeps its last message clear of it, and of a reply bar or photo
@@ -784,7 +810,7 @@ function pcDate(v,year){const d=pcParse(v);if(!d)return '';const o={day:'numeric
 function pcRow(label,value,muted){return '<div class="cp-row"><span>'+esc(label)+'</span><b'+(muted?' class="cp-muted"':'')+'>'+esc(value)+'</b></div>';}
 function openPerson(id,name){if(!id)return;const bt=botOf(id),mine=id===scope;const p=bt?null:profile(id,name),n=bt?bt.n:p.n,key='pc'+sid(id);
  const art=!bt&&p.avatar?'<img class="cp-pic" alt="" src="'+esc(p.avatar)+'">':mate(id,key);
- let st,cls;if(bt){st=tr('botTag');cls='bot';}else if(mine){st=tr('pcYou');cls='me';}else{const ts=lastSeen(id);if(ts&&Date.now()-ts<6048e5){st=fill('pcLast',ago(ts));cls=Date.now()-ts<6e5?'recent':'seen';}else{st=tr('pcQuiet');cls='quiet';}}
+ const rest=!bt&&!mine&&restIds.has(id);let st,cls;if(bt){st=tr('botTag');cls='bot';}else if(mine){st=tr('pcYou');cls='me';}else if(rest){st=tr('restTag');cls='rest';}else{const ts=lastSeen(id);if(ts&&Date.now()-ts<6048e5){st=fill('pcLast',ago(ts));cls=Date.now()-ts<6e5?'recent':'seen';}else{st=tr('pcQuiet');cls='quiet';}}
  const PS=W.LowiProfileShare,L=['en','de','es'][Math.max(0,lang())],me=mine?own():null,myMd=mine&&PS?PS.monthDay(me.bday):null,md=bt?null:mine?myMd:p.md;
  const sign=bt?bt.sign:mine?(PS?PS.signOf(myMd):(K.SIGNS.includes(me.s)?me.s:'')):p.s,type=bt?'':mine?K.type(me.t):p.t;
  /* 24 Oct 08:30 (Emmanuel): always visible, no consent and no hide toggle, so no shared / not-shared tags. */
@@ -802,9 +828,9 @@ function openPerson(id,name){if(!id)return;const bt=botOf(id),mine=id===scope;co
  if(bt&&pcDate(bt.since,1))rows+=pcRow(tr('withUs'),pcDate(bt.since,1));
  const care=!bt&&!mine&&W.LowiMicroBook&&typeof W.LowiMicroBook.openCare==='function';
  const acts=mine?button('settings','<i aria-hidden="true">⚙︎</i><span>'+tr('controls')+'</span>','','cp-act'):
-  button('select-close','<i aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" focusable="false"><path d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v6a2.5 2.5 0 0 1-2.5 2.5H11l-4 4v-4h0A2 2 0 0 1 5 13z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></i><span>'+tr('pcChat')+'</span>','data-uid="'+esc(id)+'" aria-label="'+esc(fill('talkBtn',n))+'"','cp-act cp-act-pri')+
+  (rest?'':button('select-close','<i aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" focusable="false"><path d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v6a2.5 2.5 0 0 1-2.5 2.5H11l-4 4v-4h0A2 2 0 0 1 5 13z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></i><span>'+tr('pcChat')+'</span>','data-uid="'+esc(id)+'" aria-label="'+esc(fill('talkBtn',n))+'"','cp-act cp-act-pri'))+
   button('energy','<i aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" focusable="false"><path d="M13 3 6 13.5h5L10 21l7-10.5h-5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></i><span>'+tr('pcEnergy')+'</span>','data-uid="'+esc(id)+'" data-name="'+esc(n)+'"'+(care?'':' disabled aria-disabled="true" title="'+esc(tr('pcEnergyNo'))+'"'),'cp-act');
- const foot=bt?(bt.line&&bt.line[Math.max(0,lang())]?'<p class="cg-pline">“'+esc(bt.line[Math.max(0,lang())])+'”</p>':'')+'<p class="cp-note">'+tr('botNote')+'</p>':(!mine&&!md?'<p class="cp-note">'+tr('pcSoon')+'</p>':'')+'<p class="cp-note">'+tr('pcSharedNote')+(mine?'':' '+tr('pcLiveNote'))+'</p>'+(!mine?'<p>'+tr('blockNote')+'</p>'+button('block',tr('block'),'data-uid="'+esc(id)+'" data-name="'+esc(n)+'"')+'<p class="cs-result" id="csBlockResult" role="status"></p>':'');
+ const foot=bt?(bt.line&&bt.line[Math.max(0,lang())]?'<p class="cg-pline">“'+esc(bt.line[Math.max(0,lang())])+'”</p>':'')+'<p class="cp-note">'+tr('botNote')+'</p>':(rest?'<p class="cp-note cp-restnote">'+esc(fill('restNote',n).split('{n}').join(n))+'</p>':'')+(!mine&&!md?'<p class="cp-note">'+tr('pcSoon')+'</p>':'')+'<p class="cp-note">'+tr('pcSharedNote')+(mine?'':' '+tr('pcLiveNote'))+'</p>'+(!mine?'<p>'+tr('blockNote')+'</p>'+button('block',tr('block'),'data-uid="'+esc(id)+'" data-name="'+esc(n)+'"')+'<p class="cs-result" id="csBlockResult" role="status"></p>':'');
  return sheet('<div class="cp-card" data-person="'+esc(id)+'"><div class="cp-hero"><div class="cp-photo'+(!bt&&p.avatar?' has-pic':'')+'">'+art+'</div><h2>'+esc(n)+(bt?' <span class="cg-bottag">'+tr('botTag')+'</span>':'')+'</h2><p class="cp-live cp-'+cls+'"><i aria-hidden="true"></i><span>'+esc(st)+'</span></p></div><div class="cp-acts">'+acts+'</div><div class="cp-rows">'+rows+'</div>'+foot+'</div>');}
 /* 24 Oct 2026 08:30 (Emmanuel: birthday and star sign always on the Community card, no consent ask, no hide toggle). Only an account
    with no birthday saved gets this sheet, from "Add my birthday" on its own card; it says what shows and saves the date (setBday). */
@@ -890,7 +916,7 @@ D.addEventListener('input',e=>{if(e.target.id!=='cmInput')return;typeDraft(e.tar
 D.addEventListener('keydown',e=>{if(e.key==='Escape'&&threadOpen&&active()&&!D.querySelector('.r2-ov.on')){/* Oct 22 (item 33): Escape in a room goes to the channel list, like its back arrow *//* item 36: no channel list any more: the tab you came from, else Community closes (section-nav.js back) */const U=W.LowiRoomsUI,S=W.LowiSections;if(U&&U.back&&S&&S.back&&D.documentElement.classList.contains('rm-room-open'))S.back();else thread(false);refresh();const h=D.querySelector('#cgTo .cg-hist');if(h&&h.focus)h.focus({preventScroll:true});return;}if(e.target.id==='cmInput'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();send();}});
 D.addEventListener('submit',e=>{const f=e.target;if(!f.matches('form[data-chat-form]'))return;e.preventDefault();e.stopPropagation();if(f.dataset.sent!=='1')submitForm(f);});
 D.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-chat]');if(!b){const bub=e.target.closest&&e.target.closest('#cmPaneChat [data-chat-bub]');if(bub&&!(W.getSelection&&String(W.getSelection()).trim())){const mid=bub.getAttribute('data-chat-bub'),m=messages().find(x=>x.id===mid);if(m&&!m.status){openId=openId===mid?'':mid;if(pick&&pick!==openId)pick='';refresh();}}return;}e.preventDefault();e.stopPropagation();const a=b.dataset.chat,id=b.dataset.id;
- if(a==='send'){if(sendKeep||D.activeElement===D.getElementById('cmInput'))focusInput();sendKeep=false;send();}else if(a==='reload'){transport.reload();loadExtras(true);}else if(a==='settings')settings();else if(a==='bday-add'){try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}setTimeout(askBday,260);}else if(a==='type-pick'){try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}setTimeout(()=>{const t=D.createElement('button');t.setAttribute('data-r5','mbti-pick');t.style.display='none';D.body.appendChild(t);t.click();t.remove();},260);}else if(a==='profile')openProfile(b.dataset.uid,b.dataset.name);else if(a==='person'){connect(b.dataset.uid,b.dataset.name);}else if(a==='voice'){voicePlay(b);}else if(a==='mic'){if(Date.now()-micDownAt>700){if(rec)recStop(true);else recStart('tap',0);}}else if(a==='rec-send'){recStop(true);}else if(a==='rec-cancel'){recStop(false);}else if(a==='mic-retry'){micCard('');recStart('tap',0);}else if(a==='mic-close'){micCard('');}else if(a==='photo-pick'){pickPhoto();}else if(a==='photo-clear'){clearPhoto();notice='';refresh();focusInput();}else if(a==='energy'){const u=b.dataset.uid,nm=b.dataset.name;if(!u||botOf(u)||!(W.LowiMicroBook&&W.LowiMicroBook.openCare))return;try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}setTimeout(()=>{try{W.LowiMicroBook.openCare({uid:u,n:nm},{top:true});}catch(x){}},260);}else if(a==='select'){sel=sel===b.dataset.uid?'':b.dataset.uid;refresh();}else if(a==='to-all'){sel='';refresh();}else if(a==='select-close'){const u=b.dataset.uid||'',nm=b.dataset.name||'';try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}setTimeout(()=>connect(u,nm),260);}else if(a==='thread'){thread(true,id);refresh();}else if(a==='photo'){photoView(b.dataset.src,b.dataset.name);}else if(a==='history'){thread(!threadOpen);refresh();}else if(a==='members'){crewOpen=!crewOpen;refresh();}else if(a==='pin-go'){goPinned(id);}else if(a==='pin-msg'){openId='';pick='';pinMessage(id);}else if(a==='unpin'){openId='';pick='';unpinRoom();}else if(a==='close-thread'){crewOpen=false;/* the room's back button goes back to the channel list, like Telegram *//* item 36: no channel list any more: the tab you came from, else Community closes (section-nav.js back) */const U=W.LowiRoomsUI,S=W.LowiSections;if(U&&U.back&&S&&S.back&&D.documentElement.classList.contains('rm-room-open'))S.back();else thread(false);refresh();const h=D.querySelector('#cgTo .cg-hist');if(h&&h.focus)h.focus({preventScroll:true});}else if(a==='open-galaxy')openGalaxy(b.dataset.uid);else if(a==='hello'){draft(tr('hiText'),null);refresh();focusInput();}else if(a==='more'){openId=openId===id?'':id;if(pick&&pick!==openId)pick='';refresh();}else if(a==='pick'){pick=pick===id?'':id;if(pick)openId=id;refresh();}else if(a==='reply'){openId='';pick='';draft(draftState().draft.text,id);refresh();focusInput();}else if(a==='noreply'){draft(draftState().draft.text,null);refresh();focusInput();}else if(a==='mention'){draft((D.getElementById('cmInput').value||'').replace(/@[\p{L}\p{N}_-]*$/u,'@'+b.dataset.name+' '),draftState().draft.reply);refresh();focusInput();}else if(a==='earlier'){const l=D.getElementById('cmList'),fromBottom=l?l.scrollHeight-l.scrollTop:0;roomRows+=ROOM_ROWS;paint(D.getElementById('cmPaneChat'));if(l)l.scrollTop=l.scrollHeight-fromBottom;}else if(a==='latest'){const l=D.getElementById('cmList');l.scrollTop=l.scrollHeight;newCount=0;refresh();}else if(a==='retry-send')send(id);else if(a==='discard'){store.discard(id);refresh();}else if(a==='react'){pick='';openId='';try{await transport.react(id,b.dataset.emoji,own().n);}catch(x){notice=tr('reactFailed');}refresh();}else if(a==='report')openReport(id);else if(a==='block')blockPerson(b.dataset.uid,b.dataset.name,true);else if(a==='unblock')blockPerson(b.dataset.uid,'',false);else if(a==='delete'){
+ if(a==='send'){if(sendKeep||D.activeElement===D.getElementById('cmInput'))focusInput();sendKeep=false;send();}else if(a==='reload'){transport.reload();loadExtras(true);}else if(a==='settings')settings();else if(a==='bday-add'){try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}setTimeout(askBday,260);}else if(a==='type-pick'){try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}setTimeout(()=>{const t=D.createElement('button');t.setAttribute('data-r5','mbti-pick');t.style.display='none';D.body.appendChild(t);t.click();t.remove();},260);}else if(a==='profile')openProfile(b.dataset.uid,b.dataset.name);else if(a==='person'){connect(b.dataset.uid,b.dataset.name);}else if(a==='person-off'){openProfile(b.dataset.uid,b.dataset.name||'');}else if(a==='voice'){voicePlay(b);}else if(a==='mic'){if(Date.now()-micDownAt>700){if(rec)recStop(true);else recStart('tap',0);}}else if(a==='rec-send'){recStop(true);}else if(a==='rec-cancel'){recStop(false);}else if(a==='mic-retry'){micCard('');recStart('tap',0);}else if(a==='mic-close'){micCard('');}else if(a==='photo-pick'){pickPhoto();}else if(a==='photo-clear'){clearPhoto();notice='';refresh();focusInput();}else if(a==='energy'){const u=b.dataset.uid,nm=b.dataset.name;if(!u||botOf(u)||!(W.LowiMicroBook&&W.LowiMicroBook.openCare))return;try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}setTimeout(()=>{try{W.LowiMicroBook.openCare({uid:u,n:nm},{top:true});}catch(x){}},260);}else if(a==='select'){sel=sel===b.dataset.uid?'':b.dataset.uid;refresh();}else if(a==='to-all'){sel='';refresh();}else if(a==='select-close'){const u=b.dataset.uid||'',nm=b.dataset.name||'';try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}setTimeout(()=>connect(u,nm),260);}else if(a==='thread'){thread(true,id);refresh();}else if(a==='photo'){photoView(b.dataset.src,b.dataset.name);}else if(a==='history'){thread(!threadOpen);refresh();}else if(a==='members'){crewOpen=!crewOpen;refresh();}else if(a==='pin-go'){goPinned(id);}else if(a==='pin-msg'){openId='';pick='';pinMessage(id);}else if(a==='unpin'){openId='';pick='';unpinRoom();}else if(a==='close-thread'){crewOpen=false;/* the room's back button goes back to the channel list, like Telegram *//* item 36: no channel list any more: the tab you came from, else Community closes (section-nav.js back) */const U=W.LowiRoomsUI,S=W.LowiSections;if(U&&U.back&&S&&S.back&&D.documentElement.classList.contains('rm-room-open'))S.back();else thread(false);refresh();const h=D.querySelector('#cgTo .cg-hist');if(h&&h.focus)h.focus({preventScroll:true});}else if(a==='open-galaxy')openGalaxy(b.dataset.uid);else if(a==='hello'){draft(tr('hiText'),null);refresh();focusInput();}else if(a==='more'){openId=openId===id?'':id;if(pick&&pick!==openId)pick='';refresh();}else if(a==='pick'){pick=pick===id?'':id;if(pick)openId=id;refresh();}else if(a==='reply'){openId='';pick='';draft(draftState().draft.text,id);refresh();focusInput();}else if(a==='noreply'){draft(draftState().draft.text,null);refresh();focusInput();}else if(a==='mention'){draft((D.getElementById('cmInput').value||'').replace(/@[\p{L}\p{N}_-]*$/u,'@'+b.dataset.name+' '),draftState().draft.reply);refresh();focusInput();}else if(a==='earlier'){const l=D.getElementById('cmList'),fromBottom=l?l.scrollHeight-l.scrollTop:0;roomRows+=ROOM_ROWS;paint(D.getElementById('cmPaneChat'));if(l)l.scrollTop=l.scrollHeight-fromBottom;}else if(a==='latest'){const l=D.getElementById('cmList');l.scrollTop=l.scrollHeight;newCount=0;refresh();}else if(a==='retry-send')send(id);else if(a==='discard'){store.discard(id);refresh();}else if(a==='react'){pick='';openId='';try{await transport.react(id,b.dataset.emoji,own().n);}catch(x){notice=tr('reactFailed');}refresh();}else if(a==='report')openReport(id);else if(a==='block')blockPerson(b.dataset.uid,b.dataset.name,true);else if(a==='unblock')blockPerson(b.dataset.uid,'',false);else if(a==='delete'){
   if(armed!==id){armed=id;clearTimeout(armTimer);armTimer=setTimeout(()=>{armed='';refresh();},3500);refresh();return;}armed='';b.disabled=true;b.textContent=tr('deleting');try{await transport.remove(id);}catch(x){notice=tr('deleteFailed');}refresh();}
 });
 D.addEventListener('focusin',fit);D.addEventListener('focusout',()=>requestAnimationFrame(fit));W.addEventListener('resize',()=>{fit();clearTimeout(W.__cpResize);W.__cpResize=setTimeout(()=>{if(active()){refresh();if(sk)sk.resize();}},120);});if(W.visualViewport){W.visualViewport.addEventListener('resize',fit);W.visualViewport.addEventListener('scroll',fit);}roomVV();

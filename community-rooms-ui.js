@@ -6,12 +6,6 @@
 (function(W,D){
 'use strict';
 const T={room:['Room','Raum','Sala'],chat:['Chat','Chat','Chat'],
- 
- 
- 
- 
- 
- 
  close:['Close','Schließen','Cerrar'],
  create:['Creation','Erstellen','Crear'],rank:['Ranking','Rangliste','Ranking'],aff:['Affiliates','Affiliates','Afiliados'],fy:['For You','Für dich','Para ti'],studio:['Studio','Studio','Estudio'],studioSw:['Studio: Affiliates or Creation','Studio: Affiliates oder Erstellen','Estudio: Afiliados o Crear'],copyLink:['Copy link','Link kopieren','Copiar enlace'],copied:['Link copied','Link kopiert','Enlace copiado'],
  tabs:['Community sections','Community-Bereiche','Secciones de la comunidad'],community:['Community','Community','Comunidad'],hereNow:['{c} here now','{c} gerade da','{c} aquí ahora'],

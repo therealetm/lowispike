@@ -134,3 +134,17 @@ html.o8.wh-home #whHud #whPad.mp-back .mp-knob svg { filter: drop-shadow(0 0 6px
 @media (max-height: 420px) and (orientation: landscape) {
     :root { --wh-bs: clamp(116px, 42vh, 190px); --wh-cy: 50%; }
 }
+
+/* ---- symbols only (24 Oct 2026, Emmanuel: in German "Eintragen", "Bewegung", "Mahlzeiten" were squeezed into the bubbles and looked
+   like another font; "remove the text labels entirely, symbol first, only the numbers that matter"). One rule for every language: the
+   icon and real numbers stay (0/6, 0/3, the time since a meal, steps, sleep hours); word labels, units and the "Log" word go. Each
+   button keeps its full aria-label, so screen readers still say what it is. Bloom orbs (after a tap) keep their labels. */
+html.o8.wh-home #whHud [data-orbit] .wh-cell-tx small,
+html.o8.wh-home #whHud [data-orbit] .wh-unit,
+html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy small,
+html.o8.wh-home #whHud [data-orbit] b.o8-word { display: none !important; }
+html.o8.wh-home #whHud [data-orbit] .wh-cell-tx::after,
+html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::after { content: none !important; display: none !important; }
+html.o8.wh-home #whHud [data-orbit] .wh-cell-tx::before,
+html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::before { width: calc(var(--o8-d) * .30); height: calc(var(--o8-d) * .30); }
+html.o8.wh-home #whHud .o8-cell .o8-ico { width: calc(var(--o8-d) * .34); height: calc(var(--o8-d) * .34); }

@@ -310,8 +310,13 @@
     let t1 = 0;
     function soon() { clearTimeout(t1); t1 = setTimeout(() => requestAnimationFrame(() => layout(false)), 120); }
 
+    /* 24 Oct 2026 symbols only: a ring value that is a word ("Log", "Eintragen") is hidden by CSS (b.o8-word); numbers stay */
+    function isWord(t) { return !/\d/.test(String(t || '')); }
+    function markWords() { try { D.querySelectorAll('#whHud [data-orbit] .wh-cell-tx > b').forEach(b => { const w = isWord(b.textContent); if (b.classList.contains('o8-word') !== w) b.classList.toggle('o8-word', w); }); } catch (e) { } }
     function boot() {
         layout(false);
+        markWords();
+        try { const hud = D.getElementById('whHud'); if (hud) new MutationObserver(markWords).observe(hud, { childList: true, subtree: true, characterData: true }); } catch (e) { }
         root.addEventListener('resize', soon, { passive: true });
         root.addEventListener('orientationchange', soon, { passive: true });
         if (root.visualViewport) root.visualViewport.addEventListener('resize', soon, { passive: true });
@@ -319,7 +324,7 @@
         D.addEventListener('lowi:lang', () => { relabel(); labelLang = lang(); paintSleep(); }); /* BH-004 */
         D.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
         try { new MutationObserver(soon).observe(H, { attributes: true, attributeFilter: ['class', 'lang'] }); } catch (e) { }
-        setInterval(() => { if (!D.hidden) layout(false); }, 1500);
+        setInterval(() => { if (!D.hidden) { layout(false); markWords(); } }, 1500);
     }
     root.LowiHomeOrbitV2 = Object.assign({}, core, { layout: () => layout(true), current: () => last, entries, openSettings, openSleep, closeSheet, sleepToday: sleepNow });
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();

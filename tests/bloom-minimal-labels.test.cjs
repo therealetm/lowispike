@@ -95,7 +95,7 @@ test('the small second line is a number only (steps, ten sips), never a second w
 test('the German bubbles are the words Emmanuel saw, made minimal', () => {
     const actions = page('de');
     assert.deepStrictEqual(actions('fuel').map(a => a.label), ['Einkaufen', 'Kochen', 'Mahlzeit']);
-    assert.deepStrictEqual(actions('water').map(a => a.label), ['Schlucke', 'Glas', 'Flasche']);
+    assert.deepStrictEqual(actions('water').map(a => a.label), ['Sips', 'Glas', 'Flasche']);
     assert.deepStrictEqual(actions('move').map(a => a.label), ['Locker', 'Stetig', 'Episch']);
     assert.deepStrictEqual(actions('move').map(a => a.sub), ['<5k', '5k\u201310k', '10k+']);
     assert.deepStrictEqual(actions('sleep').map(a => a.label.replace(/\u00a0/g, ' ')), ['<6 Std.', '6\u20137 Std.', '7 Std.+']);
@@ -130,10 +130,20 @@ test('Sips is ten sips: half a cup, honest XP, and the undo names it "10 sips"',
     assert.strictEqual(K.waterXpDue(0.5, 0), 0, 'ten sips alone earn no XP yet');
     assert.strictEqual(K.waterXpDue(1, 0), 1, 'twenty sips complete a cup');
     const wh = fs.readFileSync(path.join(ROOT, 'world-home.js'), 'utf8');
-    assert.ok(wh.includes("a === 0.5 ? T('10 sips', '10 Schlucke', '10 sorbos')"), 'undo toast says 10 sips');
+    assert.ok(wh.includes("a === 0.5 ? T('10 sips', '10 Sips', '10 sorbos')"), 'undo toast says 10 sips');
     assert.ok(wh.includes("a === 0.25 ? T('a few sips', 'ein paar Schlucke', 'unos sorbos')"), 'old entries still undo by name');
     const steps = fs.readFileSync(path.join(ROOT, 'tutorial-steps.js'), 'utf8');
-    assert.ok(steps.includes('10 sips, a cup') && steps.includes('10 Schlucke, ein Glas') && steps.includes('10 sorbos, un vaso'), 'the tutorial says ten sips too');
+    assert.ok(steps.includes('10 sips, a cup') && steps.includes('10 Sips, ein Glas') && steps.includes('10 sorbos, un vaso'), 'the tutorial says ten sips too');
+});
+
+test('German says "Sips" where it names the water bubble (Emmanuel, Oct 24: "Sips", not "Schlucke")', () => {
+    const sp = fs.readFileSync(path.join(ROOT, 'spirit.js'), 'utf8');
+    assert.ok(sp.includes("'Zehn Sips, ungefähr. Jeder Sip füllt mich auf!'"), 'the companion reply says Sips');
+    const show = fs.readFileSync(path.join(ROOT, 'tutorial-show.js'), 'utf8');
+    assert.ok(show.includes("sips: 'Sips'") && !show.includes("sips: 'Schlucke'"), 'the tutorial water card shows Sips');
+    const steps = fs.readFileSync(path.join(ROOT, 'tutorial-steps.js'), 'utf8');
+    assert.ok(!steps.includes('10 Schlucke'), 'no 10 Schlucke left in the tour');
+    assert.ok(!SRC.includes("T('Sips', 'Schlucke'"), 'the bubble label is Sips in German');
 });
 
 test('one bloom, one type size: fitLabels gives every orb the size the longest word needs', () => {

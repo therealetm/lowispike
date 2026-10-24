@@ -242,7 +242,7 @@
                ten sips (a rough estimate, sip size varies, never a glass); Cup and Bottle need no number */
             const add = k => () => { if (fn(W.LowiSpirit, 'water')) W.LowiSpirit.water(k); else W.LowiVitalsBridge.water('hb2-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), k); };
             if (can) {
-                A.push({ id: 'sips', label: T('Sips', 'Schlucke', 'Sorbos'), sub: '\u00d7' + SIPS_N, aria: T('10 sips, roughly', '10 Schlucke, ungefähr', '10 sorbos, más o menos'), icon: 'sips', keep: true, q: 0.2, run: add('sips') });
+                A.push({ id: 'sips', label: T('Sips', 'Sips', 'Sorbos'), sub: '\u00d7' + SIPS_N, aria: T('10 sips, roughly', '10 Schlucke, ungefähr', '10 sorbos, más o menos'), icon: 'sips', keep: true, q: 0.2, run: add('sips') });
                 A.push({ id: 'cup', label: T('Cup', 'Glas', 'Vaso'), aria: T('One cup', 'Ein Glas', 'Un vaso'), icon: 'cup', keep: true, q: 0.5, run: add('cup') });
                 A.push({ id: 'bottle', label: T('Bottle', 'Flasche', 'Botella'), aria: T('One whole bottle', 'Eine ganze Flasche', 'Una botella entera'), icon: 'bottle', keep: true, q: 0.9, run: add('bottle') });
             }

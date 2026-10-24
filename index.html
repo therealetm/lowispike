@@ -4490,6 +4490,8 @@ function fyBg(p, thumb){
   const a = p.art || ["✨", 40, 280];
   return '<div class="fy-bg fy-art" style="--h1:' + a[1] + ';--h2:' + a[2] + '">' + (p.meta && p.meta.thumb ? '<img src="' + esc(p.meta.thumb) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">' : "") + '</div>';
 }
+/* button sweep 16:20: For You sits in a data-noi18n pane (posts stay as written), so its own buttons and end card ask LowiLang for their words */
+const fyT = s => { try { return window.LowiLang && LowiLang.t ? LowiLang.t(s) : s; } catch (e) { return s; } };
 function slideHTML(p){
   if (p.bot && window.LowiForYou) return LowiForYou.slideHTML(p, {bg: fyBg(p), saved: !!(T.saved || {})[p.id], FIC, chip: p.rec && window.FYV ? FYV.recChip(p) : ""});
   const h = H(), u = h.user(), d = describe(p.meta), liked = !!T.likes[p.id], saved = !!(T.saved || {})[p.id], n = (p.likes || 0) + (liked ? 1 : 0), pl = PLAT[p.plat] || PLAT.web;
@@ -4498,12 +4500,12 @@ function slideHTML(p){
     (textOnly ? '<div class="fy-big">' + esc(cap) + '</div>' : "") +
     (p.url && p.plat !== "web" ? '<button class="fy-play" data-tr="open" data-id="' + p.id + '" aria-label="' + pl.open + '">' + IC.play + '</button>' : "") +
     '<div class="fy-rail">' +
-      '<button class="fy-act' + (liked ? " on" : "") + '" data-tr="like" data-id="' + p.id + '" aria-label="Like">' + FIC.heart + '<span class="num">' + n + '</span></button>' +
-      '<button class="fy-act" data-tr="comment" data-id="' + p.id + '" aria-label="Comment">' + FIC.chat + '<span>Chat</span></button>' +
-      '<button class="fy-act' + (saved ? " on" : "") + '" data-tr="save" data-id="' + p.id + '" aria-label="Save">' + FIC.save + '<span>' + (saved ? "Saved" : "Save") + '</span></button>' +
-      '<button class="fy-act" data-tr="share" data-id="' + p.id + '" aria-label="Share">' + FIC.share + '<span>Share</span></button>' +
+      '<button class="fy-act' + (liked ? " on" : "") + '" data-tr="like" data-id="' + p.id + '" aria-label="' + fyT("Like") + '">' + FIC.heart + '<span class="num">' + n + '</span></button>' +
+      '<button class="fy-act" data-tr="comment" data-id="' + p.id + '" aria-label="' + fyT("Comment") + '">' + FIC.chat + '<span>' + fyT("Chat") + '</span></button>' +
+      '<button class="fy-act' + (saved ? " on" : "") + '" data-tr="save" data-id="' + p.id + '" aria-label="' + fyT("Save") + '">' + FIC.save + '<span>' + fyT(saved ? "Saved" : "Save") + '</span></button>' +
+      '<button class="fy-act" data-tr="share" data-id="' + p.id + '" aria-label="' + fyT("Share") + '">' + FIC.share + '<span>' + fyT("Share") + '</span></button>' +
       (window.LowiFood && LowiFood.isFoodPost(p, FY_IMG[p.id]) ? LowiFood.railBtn(p.id) : "") +
-      '<button class="fy-act fy-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="More">' + IC.more + '</button></div>' +
+      '<button class="fy-act fy-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="' + fyT("More") + '">' + IC.more + '</button></div>' +
     '<div class="fy-meta"><div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b><span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
       (p.meta && p.meta.meal && window.LowiMealSnap ? LowiMealSnap.cardHTML(p.meta.meal, {compact:true, noName:!!cap && cap === p.meta.meal.name}) : "") +
@@ -4515,7 +4517,7 @@ function renderForYou(el){
   el = el || $("#cmFeed"); if (!el) return; load(); const list = feed();
   const prev = $("#fyFeed"), y = prev ? prev.scrollTop : 0;
   el.innerHTML = (window.FYV ? FYV.fabHTML() : "") + '<div class="fy-feed" id="fyFeed">' + list.map(slideHTML).join("") +
-    '<section class="fy-slide fy-end"><div class="fy-endin"><b>That\'s everyone</b><span class="small muted">Newest first. No algorithm.</span><button class="btn primary sm" data-r3f="post" data-sfx="open">Post something</button></div></section></div>';
+    '<section class="fy-slide fy-end"><div class="fy-endin"><b>' + esc(fyT("That's everyone")) + '</b><span class="small muted">' + esc(fyT("Newest first. No algorithm.")) + '</span><button class="btn primary sm" data-r3f="post" data-sfx="open">' + esc(fyT("Post something")) + '</button></div></section></div>';
   const f = $("#fyFeed"); if (f) { f.scrollTop = y; if (!f.dataset.dbl) { f.dataset.dbl = "1"; f.addEventListener("dblclick", e => { const s = e.target.closest(".fy-slide[data-id]"); if (!s || e.target.closest("button")) return; const b = s.querySelector('[data-tr="like"]'); if (b && !b.classList.contains("on")) b.click(); fyBurst(s, e); }); } if (window.FYV) FYV.attach(f); }
 }
 function fyBurst(s, e){ const r = s.getBoundingClientRect(), x = document.createElement("span"); x.className = "fy-burst"; x.innerHTML = FIC.heart; x.style.left = (e.clientX - r.left) + "px"; x.style.top = (e.clientY - r.top) + "px"; s.appendChild(x); setTimeout(() => x.remove(), 800); }
@@ -4678,7 +4680,7 @@ document.addEventListener("click", e => {
     case "share-recipe": shareRecipe(b.dataset.r); break;
     case "filter": T.filter = b.dataset.f; save(); rerender(); break;
     case "save": { T.saved = T.saved || {}; if (T.saved[id]) delete T.saved[id]; else T.saved[id] = 1; save(); const on = !!T.saved[id];
-      $$('[data-tr="save"][data-id="' + id + '"]').forEach(x => { x.classList.toggle("on", on); const sp = x.querySelector("span"); if (sp) sp.textContent = on ? "Saved" : "Save"; });
+      $$('[data-tr="save"][data-id="' + id + '"]').forEach(x => { x.classList.toggle("on", on); const sp = x.querySelector("span"); if (sp) sp.textContent = fyT(on ? "Saved" : "Save"); });
       if (b.classList.contains("fy-lbtn")) { const r = b.closest(".fy-lrow"); if (r) r.remove(); } else h.toast(on ? "Saved to Profile" : "Removed from Saved"); break; }
     case "comment": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (window.cmComment) window.cmComment(p && !p.me ? p.who : ""); break; }
     case "share": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id) || (window.LowiForYou && LowiForYou.botPost(id)); if (!p) break; const rr = p.rec && postRecipe(p.rec); const txt = (p.cap || describe(p.meta).line || (rr && rr.n) || "LOWiSPIKE") + (p.url ? " " + p.url : "");
@@ -4807,7 +4809,7 @@ function bgHTML(p, thumb){
 }
 function recChip(p){
   const r = recipe(p.rec); if (!r) return "";
-  return '<button class="fyv-rec" data-sh="open-shelf" data-t="kochen" data-sub="recipe" data-r="' + esc(r.id) + '">' + (img(r.id) ? '<img src="' + img(r.id) + '" alt="">' : IC.book) + '<span><small>Recipe</small>' + esc(r.n) + '</span></button>';
+  return '<button class="fyv-rec" data-sh="open-shelf" data-t="kochen" data-sub="recipe" data-r="' + esc(r.id) + '">' + (img(r.id) ? '<img src="' + img(r.id) + '" alt="">' : IC.book) + '<span><small>' + esc(window.LowiLang && LowiLang.t ? LowiLang.t("Recipe") : "Recipe") + '</small>' + esc(r.n) + '</span></button>';
 }
 function fabHTML(){ if (window.LowiR3F && LowiR3F.fabHTML) return LowiR3F.fabHTML(); return '<button class="fyv-fab" data-fyv="pick" aria-label="Upload a video">' + IC.plus + '<span>Video</span></button>'; }
 function postCardHTML(){ return '<button class="fyv-big" data-fyv="pick">' + IC.vid + '<span><b>Upload a video</b><small>From your camera roll. It plays in your For You.</small></span></button>'; }
@@ -8113,6 +8115,7 @@ const T = [
   ["Channels", "Kanäle", "Canales"],
   ["Save", "Merken", "Guardar"], ["Saved", "Gemerkt", "Guardado"], ["Share", "Teilen", "Compartir"], ["Everyone", "Alle", "Todos"],
   ["one room, newest at the bottom", "ein Raum, Neuestes unten", "una sala, lo nuevo abajo"], ["Message everyone", "Nachricht an alle", "Mensaje para todos"],
+  /* button sweep 16:20: For You rail buttons for screen readers */ ["Like", "Gefällt mir", "Me gusta"], ["Comment", "Kommentieren", "Comentar"], ["More", "Mehr", "Más"],
   ["That's everyone", "Das war's", "Eso es todo"], ["Newest first. No algorithm.", "Neueste zuerst. Kein Algorithmus.", "Lo más nuevo primero. Sin algoritmo."], ["Post something", "Etwas posten", "Publica algo"],
   ["Saved to Profile", "Im Profil gemerkt", "Guardado en tu perfil"], ["Removed from Saved", "Aus Gemerkt entfernt", "Quitado de guardados"], ["Copied to share", "Zum Teilen kopiert", "Copiado para compartir"],
   ["For You and Chat show sample members until launch.", "Für dich und Chat zeigen bis zum Start Beispiel-Mitglieder.", "Para ti y Chat muestran miembros de ejemplo hasta el lanzamiento."],

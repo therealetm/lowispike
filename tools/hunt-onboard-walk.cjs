@@ -94,7 +94,7 @@ const EN = /\b(the|your|you|Next|Add|Pick|Later|Choose|Use my|Skip|Birthday|Name
     d = await dump('after-setup');
     /* whatever comes next (starter plan / tutorial cards): read and press the primary button up to 40 times */
     let idle = 0;
-    for (let k = 0; k < 80; k++) {
+    for (let k = 0; k < (+process.env.HUNT_K || 80); k++) {
       await H.sleep(1500);
       const st = await P.evaluate(() => {
         const vis = el => { const r = el.getBoundingClientRect(); const cs = getComputedStyle(el); return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none' && +cs.opacity > 0.05; };

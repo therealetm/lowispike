@@ -10,7 +10,9 @@ function server(opts) {
   const stats = { frames: 0, joins: 0, presenceMsgs: 0, broadcasts: 0 };
   /* Oct 24 2026: frames to one channel arrive in the order they were sent, as on one Supabase socket. Random latency per frame
      let an older presence snapshot land after a newer one, so a phone could end up missing someone who was there. */
-  const at = (ch, f) => { const now = Date.now(), t = Math.max(now + lat(), (ch.nextAt || 0) + 1); ch.nextAt = t; setTimeout(f, t - now); };
+  const pump = ch => { if (ch.timer || !ch.q.length) return; ch.timer = setTimeout(() => { ch.timer = null; const now = Date.now(); while (ch.q.length && ch.q[0].t <= now) ch.q.shift().f(); pump(ch); }, Math.max(0, ch.q[0].t - Date.now())); };
+  /* one queue per channel, drained by one timer: separate timers can fire out of order when the event loop is busy */
+  const at = (ch, f, due) => { const t = Math.max(due || (Date.now() + lat()), (ch.nextAt || 0) + 1); ch.nextAt = t; (ch.q = ch.q || []).push({ t, f }); pump(ch); };
   const T = name => { let t = topics.get(name); if (!t) { t = { subs: new Set(), presence: new Map() }; topics.set(name, t); } return t; };
   function syncAll(name) {
     const t = topics.get(name); if (!t) return; stats.presenceMsgs++;
@@ -30,7 +32,7 @@ function server(opts) {
         setTimeout(() => { if (ch.joined) ch.fire('presence', 'sync', {}); }, 5);
         /* the snapshot is the room as it is when presence_state arrives (Oct 24 2026: it was taken at subscribe time, so a
            phone that joined first lost everyone who tracked in between, which real Supabase never does) */
-        { const snapAt = Date.now() + lat() + (opts.stateMs || 150); ch.nextAt = Math.max(ch.nextAt || 0, snapAt); setTimeout(() => { if (!ch.joined) return; const t = T(name), snap = {}; for (const [k, p] of t.presence) snap[k] = [Object.assign({}, p)]; ch.state = JSON.parse(JSON.stringify(snap)); c.frames++; stats.frames++; ch.fire('presence', 'sync', {}); }, snapAt - Date.now()); } }, lat()); return ch; };
+        at(ch, () => { if (!ch.joined) return; const t = T(name), snap = {}; for (const [k, p] of t.presence) snap[k] = [Object.assign({}, p)]; ch.state = JSON.parse(JSON.stringify(snap)); c.frames++; stats.frames++; ch.fire('presence', 'sync', {}); }, Date.now() + lat() + (opts.stateMs || 150)); }, lat()); return ch; };
       ch.presenceState = () => ch.state;
       ch.track = async p => { if (!ch.joined) return 'error'; await new Promise(r => setTimeout(r, lat())); if (!ch.joined) return 'error'; T(name).presence.set(key, Object.assign({}, p)); syncAll(name); return 'ok'; };
       ch.untrack = async () => { const t = topics.get(name); if (t && t.presence.delete(key)) syncAll(name); return 'ok'; };

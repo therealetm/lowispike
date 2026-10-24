@@ -126,19 +126,10 @@ test('a code for another series says so, and that note does not follow you to th
   assert.equal(P.$('gateMsg').textContent, '', 'back on UGC the note is gone');
 });
 
-test('the 30-day card keeps focus on the button that was tapped', async () => {
+test('LOWiSPIKE shows the free-track note and no day stepper (24 Oct 2026)', async () => {
   const { list } = await testList();
   const P = await openPage('#lowispike', list);
-  assert.ok(P.$('dayNext'), 'day card shown');
-  P.$('dayNext').click(); P.$('dayNext').click();
-  assert.equal(P.doc.activeElement && P.doc.activeElement.id, 'dayNext');
-  P.$('dayPrev').click();
-  assert.equal(P.$('dayNow').textContent, B.t('en', 'dayOf', { n: 2 }));
-  assert.equal(P.doc.activeElement && P.doc.activeElement.id, 'dayPrev', 'minus keeps focus on minus');
-  P.$('dayPrev').click();
-  assert.ok(P.$('dayPrev').disabled, 'day 1: minus is off');
-  assert.equal(P.doc.activeElement && P.doc.activeElement.id, 'dayNext', 'at day 1 focus moves to plus instead of a disabled button');
-  for (let i = 0; i < 40 && !P.$('dayNext').disabled; i++) P.$('dayNext').click();
-  assert.equal(P.$('dayNow').textContent, B.t('en', 'dayOf', { n: 30 }));
-  assert.equal(P.doc.activeElement && P.doc.activeElement.id, 'dayPrev', 'at day 30 focus moves to minus');
+  assert.equal(P.$('dayNext'), null, 'no day stepper');
+  assert.equal(P.$('freeCard').textContent, B.t('en', 'freeTrack'));
+  assert.ok(P.$('copyScript'), 'the free track is open');
 });

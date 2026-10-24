@@ -16,7 +16,7 @@ test('two series: Webdesign (AI Website Client System) and UGC (AI Sponsoren-Age
 test('each script is complete: on-screen title, talking head opening, laptop scenes, outro with the keyword CTA', () => {
   for (const id of B.ORDER) {
     const s = B.SERIES[id];
-    assert.match(s.onScreen, id === 'lowispike' ? /^Tag \[X\] von 30 Tagen/ : /^Tag \[X\] auf dem Weg zu 30\.000/);
+    assert.match(s.onScreen, id === 'lowispike' ? /^Tag \[X\] \u00b7 \[Ziel\] Kilo weniger in \[Zeitraum\]/ : /^Tag \[X\] auf dem Weg zu 30\.000/);
     assert.equal(s.scenes[0].shot, 'talk'); assert.equal(s.scenes.at(-1).shot, 'outro');
     assert.ok(s.scenes.slice(1, -1).every(x => x.shot === 'screen' || (id === 'lowispike' && (x.shot === 'cook' || x.shot === 'talk'))));
     assert.ok(s.scenes.every(x => x.lines.length && x.lines.every(l => l.trim().length > 0)));

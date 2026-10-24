@@ -865,6 +865,10 @@ Emmanuel, voice message about 19:10: "since you've noticed it, that means it's t
 
 **Delivery preferences (Emmanuel):** voice notes for talk and approvals, never PDFs to approve. App work updates are a checklist, ✅ done and live, ❌ not, carrying ❌ forward. For LOWiSPIKE, update only once something is LIVE, no progress reports. Say "the companion", not "Misty", when describing features (Misty is only his own companion's name). Whenever you need his input or action, send an alert image with the message.
 
+### 0.10 Affiliates LOWiSPIKE script rewritten (Sat 24 Oct 2026, about 23:10 CEST)
+
+Emmanuel: the old creator script ("the guy who built this app lost 45 kilos in 7 months", 30-day challenge, 20 follow lines) was "komplett Blödsinn". Now his six steps in EN/DE/ES: 1. "Tag [X]: [Ziel] Kilo abnehmen innerhalb von [Zeitraum]" (own goal, days or months) while Shuffle runs, 2. Shuffle stops, 3. "Nice. Die heutige insulinfreundliche Mahlzeit ist [Mahlzeit].", 4. cut to cooking (yourself or AI video tool), 5. cut to the mukbang, rate it, 6. CTA "kommentier Rezept" for the e-book. No 45/55 or any figure of his. No day stepper any more; a free-track note explains the model (only the e-book is sold, creators earn when their people use the app and upgrade). Voice clips re-recorded, old ones removed. See DECISIONS 2026-10-24 "Affiliates LOWiSPIKE script".
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

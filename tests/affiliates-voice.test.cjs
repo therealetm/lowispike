@@ -28,15 +28,11 @@ test('the free preview reads scene 1 only; the unlocked script reads every scene
   }
 });
 
-test('the LOWiSPIKE day line reads exactly the line on screen for that day (day 30 = the finale)', () => {
+test('LOWiSPIKE has no day line any more (24 Oct 2026: Eman\'s six-step script, no 30-day follow lines)', () => {
   for (const lang of ['en', 'de', 'es']) {
     const s = B.series(lang).lowispike;
-    for (const day of [1, 7, 29, 30]) {
-      const p = AV.plan(B, s, { open: true, pick: 'lowispike', lang, day });
-      const want = B.fill(day === 30 ? s.outro30 : B.followLine('lowispike', lang, day), s.vars, { day });
-      assert.deepEqual(p.day, [{ key: 'day', text: want, scene: -1 }]);
-    }
-    assert.equal(AV.plan(B, B.series(lang).webdesign, { open: true, pick: 'webdesign', lang, day: 1 }).day, null, 'no day line without a follow list');
+    assert.equal(AV.plan(B, s, { open: true, pick: 'lowispike', lang, day: 7 }).day, null);
+    assert.ok(AV.sayable(B, lang).every(l => !/\b45\b/.test(l)), lang + ': no old 45-kilo line is read aloud');
   }
 });
 
@@ -47,7 +43,7 @@ test('every line the page can read has a recorded clip in the tutorial voice (no
   let n = 0;
   for (const lang of ['en', 'de', 'es']) {
     const all = AV.sayable(B, lang);
-    assert.ok(all.length > 30, lang + ' has script lines');
+    assert.ok(all.length > 20, lang + ' has script lines');
     for (const line of all) for (const piece of V.pieces(line)) {
       const id = V.idOf(lang, piece);
       assert.ok(DATA.clips[lang] && DATA.clips[lang][id], lang + ' missing clip for: ' + piece);
@@ -55,7 +51,7 @@ test('every line the page can read has a recorded clip in the tutorial voice (no
       n++;
     }
   }
-  assert.ok(n > 150);
+  assert.ok(n > 60);
 });
 
 test('the recorder harvests the Affiliates lines', () => {

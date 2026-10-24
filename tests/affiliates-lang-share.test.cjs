@@ -36,7 +36,8 @@ test('scripts, shots and captions are translated, not German, in English and Spa
       assert.equal(s.scenes.length, d.scenes.length); assert.equal(s.shots.length, d.shots.length);
       assert.notEqual(s.caption, d.caption, lang + ' ' + id + ' caption'); assert.notEqual(s.onScreen, d.onScreen, lang + ' ' + id + ' on-screen');
       s.scenes.forEach((sc, i) => { assert.equal(sc.shot, d.scenes[i].shot); assert.ok(sc.lines.length && sc.lines.every(l => l.trim())); });
-      assert.equal(s.keyword, d.keyword); assert.equal(s.product, d.product);
+      if (id === 'lowispike') assert.equal(s.keyword, { en: 'recipe', es: 'receta' }[lang], 'the CTA word is translated'); else assert.equal(s.keyword, d.keyword);
+      assert.equal(s.product, d.product);
     }
     assert.ok(B.scriptText('webdesign', lang).length > 100);
   }

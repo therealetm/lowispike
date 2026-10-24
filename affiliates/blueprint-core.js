@@ -75,96 +75,79 @@
       caption: 'Tag [X] auf dem Weg zu 30.000\u00a0\u20ac im Monat mit UGC. Kommentiere \u201eSponsor\u201c f\u00fcr meinen Agency-Skill. #werbung #ki #chatgpt #ugc'
     }
     ,
-    /* Third track (21 Oct 2026, Eman): same shell, but it sells the free LOWiSPIKE app itself. The "30" is the 30-DAY shuffle
-       challenge, never 30 kg: the kilos lost are the day-30 payoff, with no promised number (see DECISIONS.md). The generator is the
-       app's own "Shuffle my food" in Cook. Creators earn when people who sign up through their link buy the coming AI cooking-video
-       plan (Creation tab); until it exists the page shows no prices. Written in English, German and Spanish. */
+    /* Third track, rewritten 24 Oct 2026 to Eman's exact six steps (the old 30-day script was "komplett Blödsinn"). The creator
+       uses the app and really loses weight; each video is one day of their own series:
+         1. "Day X: lose [kg] within [time]" (their own goal; time in days OR months), while the app's Shuffle runs
+         2. the Shuffle stops
+         3. "Nice. Today's insulin-friendly meal is [dish]."
+         4. cut to cooking (cook it yourself or with our AI video tool)
+         5. cut to the mukbang, rate the food
+         6. CTA: the e-book, comment "Rezept" / "recipe" / "receta".
+       No figure of Eman's in the script, and never a weight promise for viewers (see DECISIONS.md). Business model: only one
+       thing is sold, Eman's e-book; the Shuffle and the app stay free, and creators earn when people who come through their
+       link use the app and upgrade (freeTrack). */
     lowispike: {
-      id: 'lowispike', title: 'LOWiSPIKE', product: 'LOWiSPIKE App + KI-Kochvideo', price: null, free: true, keyword: 'LOWISPIKE', altKeyword: 'RECIPE',
+      id: 'lowispike', title: 'LOWiSPIKE', product: 'LOWiSPIKE App + E-Book', price: null, free: true, keyword: 'Rezept',
       langs: {
         en: {
-          blurb: 'A game picks what you eat for 30 days. You film it, people comment and get the app.',
-          onScreen: 'Day [X] of 30 days of letting a game pick what I eat',
-          vars: { day: '[X]', goal: '30 days of letting a game pick what I eat', food: '[Food]', rating: '[Rating]', spike: '[Spike]', keyword: 'LOWISPIKE' },
+          keyword: 'recipe',
+          blurb: 'You lose weight with the app and film it: your goal, the shuffle, cooking, eating, your rating. People comment \u201crecipe\u201d for the e-book.',
+          onScreen: 'Day [X] \u00b7 [Goal] kilos down within [Time]',
+          vars: { day: '[X]', kg: '[Goal]', time: '[Time]', food: '[Meal]', rating: '[Rating]', keyword: 'recipe' },
           scenes: [
-            { shot: 'talk', label: 'Opening \u00b7 Talking head, phone shows LOWiSPIKE', lines: ['Day [X] of my challenge: for 30 days, a game decides what I eat.', 'The guy who built this app lost 45 kilos in 7 months. Let\u2019s see what it does for me.'], note: 'Keep the 45 kilos line exactly like this: it is Eman\u2019s real result. Never promise your own number.' },
-            { shot: 'screen', label: 'POV phone \u00b7 Shuffle', lines: ['I open LOWiSPIKE, go to Cook and hit Shuffle my food.', '[Food]. Okay. Let\u2019s go.'] },
-            { shot: 'screen', label: 'POV phone \u00b7 AI cooking preview', lines: ['No idea how to make this. So the AI in the app shows me cooking it first, step by step.'], note: 'Optional: Creation tab. Leave the scene out while the AI tool is not on your account yet.' },
-            { shot: 'cook', label: 'Real dish \u00b7 cooking clips or straight to the plate', lines: ['And this is the real thing.'] },
-            { shot: 'talk', label: 'Taste test \u00b7 eat on camera', lines: ['[Rating] out of 10.', 'And the app shows me what it does to my blood sugar: [Spike].'] },
-            { shot: 'outro', label: 'Outro \u00b7 Talking head, phone shows \u201cComment LOWISPIKE\u201d', lines: ['Follow me to find out on day 30 how many kilos I really lost.', 'Comment \u201cLOWISPIKE\u201d and I\u2019ll send you the app and the whole workflow you just saw.'] }
+            { shot: 'talk', label: 'Opening \u00b7 Talking head, the shuffle runs on your phone', lines: ['Day [X]: losing [Goal] kilos within [Time].'], note: 'Your own goal: you pick the kilos and the time, in days or months, for example 10 kilos within 90 days or within 3 months. Start Shuffle my food while you say it. Never promise viewers a number.' },
+            { shot: 'screen', label: 'POV phone \u00b7 The shuffle stops', lines: ['And stop.'] },
+            { shot: 'screen', label: 'POV phone \u00b7 Today\u2019s meal', lines: ['Nice. Today\u2019s insulin-friendly meal is [Meal].'] },
+            { shot: 'cook', label: 'Cut to cooking \u00b7 yourself or with our AI video tool', lines: ['Time to cook.'], note: 'Cook it yourself and film cooking clips, or use our AI video tool in the Creation tab to show how it\u2019s cooked.' },
+            { shot: 'talk', label: 'Cut to the mukbang \u00b7 eat and rate it', lines: ['Let\u2019s try it.', '[Rating] out of 10.'], note: 'Eat on camera and talk about whatever you like, or nothing at all. Rate the food at the end.' },
+            { shot: 'outro', label: 'Ending \u00b7 CTA, phone shows \u201cComment recipe\u201d', lines: ['If you want the e-book with the recipes from the shuffle, comment \u201crecipe\u201d.'], note: 'One video a day: your series shows how much you lose along the way.' }
           ],
           shots: [
-            { title: 'Opening', how: 'Talking head. Hold the phone with LOWiSPIKE open to the camera, title text on top.' },
-            { title: 'POV phone, one screen recording', how: 'Record the phone screen, speak the voiceover yourself or with an AI voice.', beats: ['Cook, then Shuffle my food', 'The shuffle lands on the food', 'Optional: AI preview of you cooking it (Creation)', 'Cooking clips, or cut straight to the finished plate'] },
-            { title: 'Taste and outro', how: 'Back on camera: eat, rate it out of 10, show the spike result, then the phone with \u201cComment LOWISPIKE\u201d.' }
+            { title: 'Opening', how: 'Talking head. Hold the phone to the camera while the shuffle runs, title text on top.' },
+            { title: 'Phone and kitchen', how: 'Record the phone screen, then cut to the kitchen. Speak the voiceover yourself or with an AI voice.', beats: ['The shuffle stops', 'Nice: today\u2019s meal', 'Cut to cooking: yourself or with our AI video tool (Creation)', 'The finished plate'] },
+            { title: 'Mukbang and CTA', how: 'Back on camera: eat, talk or just enjoy it, rate it out of 10, then the phone with \u201cComment recipe\u201d.' }
           ],
-          caption: 'Day [X] of 30 days of letting a game pick what I eat. Today: [Food]. Comment \u201cLOWISPIKE\u201d for the app and the workflow. #ad #lowispike #shufflechallenge #whatieatinaday',
-          follow: [
-            'how many kilos I really lost.', 'which food the game picked most often.', 'the worst thing the shuffle ever gave me.', 'what the best meal of the 30 days was.',
-            'how many times I almost quit.', 'whether I cheated even once.', 'which meal spiked my blood sugar the most.', 'which meal had the lowest spike.',
-            'how my body changed in 30 days.', 'whether I can actually cook by day 30.', 'how much money I saved on takeaway.', 'what I will never eat again.',
-            'which dish I\u2019ll keep cooking after the challenge.', 'how often the AI preview saved my dinner.', 'how many foods I tried for the first time.', 'whether my cravings changed.',
-            'what my friends said about this challenge.', 'what surprised me the most.', 'whether letting a game decide actually works.', 'what I learned in 30 days.'
-          ],
-          followLead: 'Follow me to find out at the end of the challenge ',
-          outro30: 'Day 30 is done. 30 days of letting a game pick what I eat. How many kilos do you think I lost? Drop your guess, and comment \u201cLOWISPIKE\u201d for the app and the workflow.'
+          caption: 'Day [X] \u00b7 my goal: [Goal] kilos down within [Time]. Today: [Meal]. Comment \u201crecipe\u201d for the e-book with the recipes from the shuffle. #ad #lowispike #insulinfriendly #weightlossjourney'
         },
         de: {
-          blurb: 'Ein Spiel bestimmt 30 Tage, was du isst. Du filmst es, die Leute kommentieren und bekommen die App.',
-          onScreen: 'Tag [X] von 30 Tagen, an denen ein Spiel bestimmt, was ich esse',
-          vars: { day: '[X]', goal: '30 Tage, an denen ein Spiel bestimmt, was ich esse', food: '[Essen]', rating: '[Note]', spike: '[Spike]', keyword: 'LOWISPIKE' },
+          keyword: 'Rezept',
+          blurb: 'Du nimmst mit der App ab und filmst es: dein Ziel, der Shuffle, kochen, essen, bewerten. Die Leute kommentieren \u201eRezept\u201c für das E-Book.',
+          onScreen: 'Tag [X] \u00b7 [Ziel] Kilo weniger in [Zeitraum]',
+          vars: { day: '[X]', kg: '[Ziel]', time: '[Zeitraum]', food: '[Mahlzeit]', rating: '[Note]', keyword: 'Rezept' },
           scenes: [
-            { shot: 'talk', label: 'Opening \u00b7 Talking Head, Handy zeigt LOWiSPIKE', lines: ['Tag [X] meiner Challenge: 30 Tage lang bestimmt ein Spiel, was ich esse.', 'Der Typ, der diese App gebaut hat, hat in 7 Monaten 45 Kilo abgenommen. Mal sehen, was sie bei mir macht.'], note: 'Den 45-Kilo-Satz genau so lassen: Das ist Emans echtes Ergebnis. Versprich nie eine eigene Zahl.' },
-            { shot: 'screen', label: 'POV Handy \u00b7 Mischen', lines: ['Ich \u00f6ffne LOWiSPIKE, gehe auf Kochen und dr\u00fccke Essen mischen.', '[Essen]. Okay. Los geht\u2019s.'] },
-            { shot: 'screen', label: 'POV Handy \u00b7 KI-Kochvorschau', lines: ['Keine Ahnung, wie man das macht. Also zeigt mir die KI in der App zuerst, wie ich es koche, Schritt f\u00fcr Schritt.'], note: 'Optional: Tab Creation. Lass die Szene weg, solange das KI-Tool noch nicht auf deinem Konto ist.' },
-            { shot: 'cook', label: 'Echtes Gericht \u00b7 Kochclips oder direkt zum Teller', lines: ['Und das ist das echte Ergebnis.'] },
-            { shot: 'talk', label: 'Probieren \u00b7 vor der Kamera essen', lines: ['[Note] von 10.', 'Und die App zeigt mir, was es mit meinem Blutzucker macht: [Spike].'] },
-            { shot: 'outro', label: 'Outro \u00b7 Talking Head, Handy zeigt \u201eKommentiere LOWISPIKE\u201c', lines: ['Folgt mir, um an Tag 30 herauszufinden, wie viele Kilo ich wirklich abgenommen habe.', 'Kommentiert \u201eLOWISPIKE\u201c und ich schicke euch die App und den ganzen Ablauf, den ihr gerade gesehen habt.'] }
+            { shot: 'talk', label: 'Opening \u00b7 Talking Head, auf dem Handy läuft der Shuffle', lines: ['Tag [X]: [Ziel] Kilo abnehmen innerhalb von [Zeitraum].'], note: 'Dein eigenes Ziel: Kilo und Zeitraum wählst du selbst, in Tagen oder Monaten, zum Beispiel 10 Kilo innerhalb von 90 Tagen oder 3 Monaten. Während du das sagst, läuft in der App Essen mischen. Versprich Zuschauern nie eine Zahl.' },
+            { shot: 'screen', label: 'POV Handy \u00b7 Der Shuffle bleibt stehen', lines: ['Und stopp.'] },
+            { shot: 'screen', label: 'POV Handy \u00b7 Die Mahlzeit von heute', lines: ['Nice. Die heutige insulinfreundliche Mahlzeit ist [Mahlzeit].'] },
+            { shot: 'cook', label: 'Cut zum Kochen \u00b7 selbst oder mit dem KI-Video-Tool', lines: ['Jetzt wird gekocht.'], note: 'Koch selbst und film Kochclips, oder nutz unser KI-Video-Tool im Tab Creation, das zeigt, wie es gekocht wird.' },
+            { shot: 'talk', label: 'Cut zum Mukbang \u00b7 essen und bewerten', lines: ['Mal probieren.', '[Note] von 10.'], note: 'Iss vor der Kamera und rede, worüber du willst, oder gar nicht. Am Ende bewertest du das Essen.' },
+            { shot: 'outro', label: 'Ende \u00b7 CTA, Handy zeigt \u201eKommentiere Rezept\u201c', lines: ['Wenn du das E-Book mit den Rezepten aus dem Shuffle willst, kommentier \u201eRezept\u201c.'], note: 'Jeden Tag ein Video: Deine Serie zeigt, wie viel du nach und nach abnimmst.' }
           ],
           shots: [
-            { title: 'Opening', how: 'Talking Head. Halte das Handy mit LOWiSPIKE in die Kamera, Text oben einblenden.' },
-            { title: 'POV Handy, eine Bildschirmaufnahme', how: 'Handybildschirm aufnehmen, Voiceover selbst sprechen oder per KI-Stimme.', beats: ['Kochen, dann Essen mischen', 'Das Mischen landet auf dem Essen', 'Optional: KI-Vorschau, wie du es kochst (Creation)', 'Kochclips oder direkt Schnitt auf den fertigen Teller'] },
-            { title: 'Probieren und Outro', how: 'Zur\u00fcck vor die Kamera: essen, von 1 bis 10 bewerten, Spike-Ergebnis zeigen, dann das Handy mit \u201eKommentiere LOWISPIKE\u201c.' }
+            { title: 'Opening', how: 'Talking Head. Halte das Handy in die Kamera, während der Shuffle läuft. Text oben einblenden.' },
+            { title: 'Handy und Küche', how: 'Handybildschirm aufnehmen, dann Cut in die Küche. Voiceover selbst sprechen oder per KI-Stimme.', beats: ['Der Shuffle bleibt stehen', 'Nice: die Mahlzeit von heute', 'Cut zum Kochen: selbst oder mit dem KI-Video-Tool (Creation)', 'Der fertige Teller'] },
+            { title: 'Mukbang und CTA', how: 'Zurück vor die Kamera: essen, reden oder einfach genießen, von 1 bis 10 bewerten, dann das Handy mit \u201eKommentiere Rezept\u201c.' }
           ],
-          caption: 'Tag [X] von 30 Tagen, an denen ein Spiel bestimmt, was ich esse. Heute: [Essen]. Kommentiere \u201eLOWISPIKE\u201c f\u00fcr die App und den Ablauf. #werbung #lowispike #shufflechallenge #wasichessetag',
-          follow: [
-            'wie viele Kilo ich wirklich abgenommen habe.', 'welches Essen das Spiel am h\u00e4ufigsten gezogen hat.', 'was das Schlimmste war, das mir das Mischen gegeben hat.', 'was das beste Essen der 30 Tage war.',
-            'wie oft ich fast aufgegeben h\u00e4tte.', 'ob ich auch nur ein einziges Mal geschummelt habe.', 'welches Essen meinen Blutzucker am st\u00e4rksten hochgetrieben hat.', 'welches Essen den kleinsten Spike hatte.',
-            'wie sich mein K\u00f6rper in 30 Tagen ver\u00e4ndert hat.', 'ob ich an Tag 30 wirklich kochen kann.', 'wie viel Geld ich beim Essenbestellen gespart habe.', 'was ich nie wieder essen werde.',
-            'welches Gericht ich nach der Challenge weiter koche.', 'wie oft mir die KI-Vorschau das Abendessen gerettet hat.', 'wie viele Lebensmittel ich zum ersten Mal probiert habe.', 'ob sich meine Hei\u00dfhungerattacken ver\u00e4ndert haben.',
-            'was meine Freunde zu dieser Challenge gesagt haben.', 'was mich am meisten \u00fcberrascht hat.', 'ob es wirklich funktioniert, ein Spiel entscheiden zu lassen.', 'was ich aus den 30 Tagen gelernt habe.'
-          ],
-          followLead: 'Folge mir, um am Ende der Challenge herauszufinden, ',
-          outro30: 'Tag 30 ist geschafft. 30 Tage, an denen ein Spiel bestimmt hat, was ich esse. Wie viele Kilo, glaubt ihr, habe ich abgenommen? Schreibt eure Sch\u00e4tzung und kommentiert \u201eLOWISPIKE\u201c f\u00fcr die App und den Ablauf.'
+          caption: 'Tag [X] \u00b7 mein Ziel: [Ziel] Kilo weniger in [Zeitraum]. Heute: [Mahlzeit]. Kommentiere \u201eRezept\u201c für das E-Book mit den Rezepten aus dem Shuffle. #werbung #lowispike #insulinfreundlich #abnehmen'
         },
         es: {
-          blurb: 'Un juego elige lo que comes durante 30 d\u00edas. Lo grabas, la gente comenta y recibe la app.',
-          onScreen: 'D\u00eda [X] de 30 d\u00edas dejando que un juego elija lo que como',
-          vars: { day: '[X]', goal: '30 d\u00edas dejando que un juego elija lo que como', food: '[Comida]', rating: '[Nota]', spike: '[Spike]', keyword: 'LOWISPIKE' },
+          keyword: 'receta',
+          blurb: 'Adelgazas con la app y lo grabas: tu meta, la mezcla, cocinar, comer y puntuar. La gente comenta \u201creceta\u201d para el e-book.',
+          onScreen: 'Día [X] \u00b7 [Meta] kilos menos en [Tiempo]',
+          vars: { day: '[X]', kg: '[Meta]', time: '[Tiempo]', food: '[Comida]', rating: '[Nota]', keyword: 'receta' },
           scenes: [
-            { shot: 'talk', label: 'Apertura \u00b7 A c\u00e1mara, el m\u00f3vil muestra LOWiSPIKE', lines: ['D\u00eda [X] de mi reto: durante 30 d\u00edas, un juego decide lo que como.', 'El que cre\u00f3 esta app perdi\u00f3 45 kilos en 7 meses. Vamos a ver qu\u00e9 hace por m\u00ed.'], note: 'Deja la frase de los 45 kilos tal cual: es el resultado real de Eman. Nunca prometas una cifra tuya.' },
-            { shot: 'screen', label: 'POV m\u00f3vil \u00b7 Mezclar', lines: ['Abro LOWiSPIKE, voy a Cocinar y pulso Mezclar comida.', '[Comida]. Vale. Vamos all\u00e1.'] },
-            { shot: 'screen', label: 'POV m\u00f3vil \u00b7 Vista previa con IA', lines: ['Ni idea de c\u00f3mo se hace esto. As\u00ed que la IA de la app primero me muestra cocin\u00e1ndolo, paso a paso.'], note: 'Opcional: pesta\u00f1a Creation. Qu\u00edtala mientras la herramienta de IA no est\u00e9 en tu cuenta.' },
-            { shot: 'cook', label: 'Plato real \u00b7 clips cocinando o directo al plato', lines: ['Y esto es el plato de verdad.'] },
-            { shot: 'talk', label: 'Prueba \u00b7 comer a c\u00e1mara', lines: ['Un [Nota] de 10.', 'Y la app me ense\u00f1a lo que le hace a mi az\u00facar en sangre: [Spike].'] },
-            { shot: 'outro', label: 'Cierre \u00b7 A c\u00e1mara, el m\u00f3vil muestra \u201cComenta LOWISPIKE\u201d', lines: ['S\u00edgueme para descubrir el d\u00eda 30 cu\u00e1ntos kilos he perdido de verdad.', 'Comenta \u201cLOWISPIKE\u201d y te mando la app y todo el proceso que acabas de ver.'] }
+            { shot: 'talk', label: 'Apertura \u00b7 A cámara, la mezcla corre en el móvil', lines: ['Día [X]: perder [Meta] kilos en [Tiempo].'], note: 'Tu propia meta: los kilos y el tiempo los eliges tú, en días o en meses, por ejemplo 10 kilos en 90 días o en 3 meses. Mientras lo dices, pon Mezclar comida en la app. Nunca prometas una cifra a quien te ve.' },
+            { shot: 'screen', label: 'POV móvil \u00b7 La mezcla se para', lines: ['Y para.'] },
+            { shot: 'screen', label: 'POV móvil \u00b7 La comida de hoy', lines: ['¡Genial! La comida de hoy, amigable con la insulina, es [Comida].'] },
+            { shot: 'cook', label: 'Corte a cocinar \u00b7 tú o con nuestra herramienta de vídeo con IA', lines: ['A cocinar.'], note: 'Cocina tú y graba clips, o usa nuestra herramienta de vídeo con IA en la pestaña Creation para mostrar cómo se cocina.' },
+            { shot: 'talk', label: 'Corte al mukbang \u00b7 comer y puntuar', lines: ['A probarlo.', 'Un [Nota] de 10.'], note: 'Come a cámara y habla de lo que quieras, o de nada. Al final, puntúa la comida.' },
+            { shot: 'outro', label: 'Cierre \u00b7 CTA, el móvil muestra \u201cComenta receta\u201d', lines: ['Si quieres el e-book con las recetas de la mezcla, comenta \u201creceta\u201d.'], note: 'Un vídeo al día: tu serie enseña cuánto adelgazas por el camino.' }
           ],
           shots: [
-            { title: 'Apertura', how: 'A c\u00e1mara. Sost\u00e9n el m\u00f3vil con LOWiSPIKE abierto frente a la c\u00e1mara, t\u00edtulo arriba.' },
-            { title: 'POV m\u00f3vil, una grabaci\u00f3n de pantalla', how: 'Graba la pantalla del m\u00f3vil y pon la voz t\u00fa o con una voz de IA.', beats: ['Cocinar y luego Mezclar comida', 'La mezcla cae en la comida', 'Opcional: vista previa con IA de ti cocin\u00e1ndolo (Creation)', 'Clips cocinando o corte directo al plato terminado'] },
-            { title: 'Prueba y cierre', how: 'Vuelve a c\u00e1mara: come, pon nota del 1 al 10, ense\u00f1a el resultado del spike y luego el m\u00f3vil con \u201cComenta LOWISPIKE\u201d.' }
+            { title: 'Apertura', how: 'A cámara. Sostén el móvil frente a la cámara mientras corre la mezcla, título arriba.' },
+            { title: 'Móvil y cocina', how: 'Graba la pantalla del móvil y luego corta a la cocina. Pon la voz tú o con una voz de IA.', beats: ['La mezcla se para', '¡Genial!: la comida de hoy', 'Corte a cocinar: tú o con nuestra herramienta de vídeo con IA (Creation)', 'El plato terminado'] },
+            { title: 'Mukbang y cierre', how: 'Vuelve a cámara: come, habla o simplemente disfruta, pon nota del 1 al 10 y luego el móvil con \u201cComenta receta\u201d.' }
           ],
-          caption: 'D\u00eda [X] de 30 d\u00edas dejando que un juego elija lo que como. Hoy: [Comida]. Comenta \u201cLOWISPIKE\u201d para la app y el proceso. #publicidad #lowispike #shufflechallenge #loquecomoenundia',
-          follow: [
-            'cu\u00e1ntos kilos he perdido de verdad.', 'qu\u00e9 comida sac\u00f3 el juego m\u00e1s veces.', 'qu\u00e9 fue lo peor que me toc\u00f3 al mezclar.', 'cu\u00e1l fue la mejor comida de los 30 d\u00edas.',
-            'cu\u00e1ntas veces estuve a punto de rendirme.', 'si hice trampa aunque fuera una vez.', 'qu\u00e9 comida me dispar\u00f3 m\u00e1s el az\u00facar.', 'qu\u00e9 comida tuvo el spike m\u00e1s bajo.',
-            'c\u00f3mo cambi\u00f3 mi cuerpo en 30 d\u00edas.', 'si de verdad s\u00e9 cocinar el d\u00eda 30.', 'cu\u00e1nto dinero me ahorr\u00e9 en comida a domicilio.', 'qu\u00e9 no volver\u00e9 a comer nunca.',
-            'qu\u00e9 plato seguir\u00e9 cocinando despu\u00e9s del reto.', 'cu\u00e1ntas veces la vista previa con IA me salv\u00f3 la cena.', 'cu\u00e1ntos alimentos prob\u00e9 por primera vez.', 'si cambiaron mis antojos.',
-            'qu\u00e9 dijeron mis amigos de este reto.', 'qu\u00e9 fue lo que m\u00e1s me sorprendi\u00f3.', 'si dejar que un juego decida funciona de verdad.', 'qu\u00e9 aprend\u00ed en 30 d\u00edas.'
-          ],
-          followLead: 'S\u00edgueme para descubrir al final del reto ',
-          outro30: 'D\u00eda 30 superado. 30 d\u00edas dejando que un juego elija lo que como. \u00bfCu\u00e1ntos kilos crees que he perdido? Deja tu apuesta y comenta \u201cLOWISPIKE\u201d para la app y el proceso.'
+          caption: 'Día [X] \u00b7 mi meta: [Meta] kilos menos en [Tiempo]. Hoy: [Comida]. Comenta \u201creceta\u201d para el e-book con las recetas de la mezcla. #publicidad #lowispike #amigableconlainsulina #adelgazar'
         }
       }
     }
@@ -173,7 +156,7 @@
   const ORDER = ['webdesign', 'ugc', 'lowispike'];
   /* LOWiSPIKE carries its own copy per language (langs.en/de/es). Its top level mirrors the German copy, like the other two
      series, so callers that read SERIES[id].scenes / .shots / .caption keep working. */
-  (function () { const L = SERIES.lowispike, LD = L.langs.de; L.blurb = LD.blurb; L.onScreen = LD.onScreen; L.scenes = LD.scenes; L.shots = LD.shots; L.caption = LD.caption; L.vars = LD.vars; L.follow = LD.follow; L.followLead = LD.followLead; L.outro30 = LD.outro30; })();
+  (function () { const L = SERIES.lowispike, LD = L.langs.de; L.blurb = LD.blurb; L.onScreen = LD.onScreen; L.scenes = LD.scenes; L.shots = LD.shots; L.caption = LD.caption; L.vars = LD.vars; L.keyword = LD.keyword; })();
   function langsOf(id) { const s = SERIES[id]; return s && s.langs ? LANGS.filter(l => s.langs[l]) : LANGS.slice(); }
   function copyOf(id, lang) { const s = SERIES[id]; if (!s) return null; return s.langs ? (s.langs[normLang(lang)] || s.langs.de) : (series(lang)[id]); }
   /* Swap the plug-in variables into a text: { day: 7, food: 'Lachs', rating: 8, spike: 'Low spike' }. Unknown ones stay bracketed. */
@@ -373,7 +356,7 @@
     dayPrev: ['Previous day', 'Tag davor', 'D\u00eda anterior'],
     dayNext: ['Next day', 'N\u00e4chster Tag', 'D\u00eda siguiente'],
     followToday: ['Today\u2019s follow line:', 'Folge-Zeile f\u00fcr heute:', 'Frase de seguir de hoy:'],
-    freeTrack: ['The app is free for your viewers. You earn when people who join through your link buy inside LOWiSPIKE.', 'Die App ist f\u00fcr deine Zuschauer gratis. Du verdienst, wenn Leute, die \u00fcber deinen Link kommen, in LOWiSPIKE etwas kaufen.', 'La app es gratis para tus espectadores. Ganas cuando quien entra por tu enlace compra dentro de LOWiSPIKE.']
+    freeTrack: ['Your viewers get the app and the shuffle for free. Only one thing is sold: Eman\u2019s e-book. You earn when people who join through your link use the app and upgrade.', 'App und Shuffle sind f\u00fcr deine Zuschauer gratis. Verkauft wird nur eins: Emans E-Book. Du verdienst mit, wenn Leute \u00fcber deinen Link die App nutzen und upgraden.', 'La app y la mezcla son gratis para quien te ve. Solo se vende una cosa: el e-book de Eman. Ganas cuando quien entra por tu enlace usa la app y hace el upgrade.']
   };
   function t(lang, key, vars) {
     const i = Math.max(0, LANGS.indexOf(normLang(lang)));

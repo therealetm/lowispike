@@ -193,6 +193,7 @@
     if (open) v.appendChild(h('div', { class: 'card onscreen-card' }, h('div', { class: 'label', text: T('onScreen') }), h('div', { class: 'onscreen' }, withPh(s.onScreen))));
     else v.appendChild(h('span', { class: 'pill preview', text: T('preview') }));
     if (open && s.follow) v.appendChild(dayCard(s));
+    else if (open && s.free) v.appendChild(h('div', { class: 'card day-card', id: 'freeCard' }, h('p', { class: 'note', text: T('freeTrack') })));
     v.appendChild(h('div', { class: 'card list', id: 'scriptCard' }, scenes));
     if (!open) { v.appendChild(gate('')); return; }
     v.appendChild(h('button', { type: 'button', class: 'primary', id: 'copyScript', onclick: () => copy(B.scriptText(pick, lang, s.follow ? { day } : null), T('scriptCopied')) }, T('copyScript')));

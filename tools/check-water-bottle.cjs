@@ -39,18 +39,18 @@ srv.listen(0, async () => {
     await page.evaluate(() => window.LowiHomeBloomsV2 && LowiHomeBloomsV2.open('water')); await page.waitForTimeout(1200);
     let o = await orbR();
     ok(o.map(x => x.id).join() === 'sips,cup,bottle,bsize', name + ': Water bloom = ' + o.map(x => x.id).join());
-    const words = de ? ['Schlucke', 'Glas', 'Flasche', 'Größe'] : ['Sips', 'Glass', 'Bottle', 'Size'];
+    const words = de ? ['Sips', 'Glas', 'Flasche', 'Größe'] : lang === 'es' ? ['Sorbos', 'Vaso', 'Botella', 'Tamaño'] : ['Sips', 'Glass', 'Bottle', 'Size'];
     ok(words.every((wd, i) => o[i] && o[i].txt.indexOf(wd) >= 0), name + ': labels ' + o.map(x => x.txt).join(' | '));
-    ok(o[2] && o[2].txt.indexOf(de ? '0,75' : '0.75') >= 0, name + ': Bottle shows its size (' + (o[2] && o[2].txt) + ')');
+    ok(o[2] && o[2].txt.indexOf(lang === 'en' ? '0.75' : '0,75') >= 0, name + ': Bottle shows its size (' + (o[2] && o[2].txt) + ')');
     ok(o.length === 4 && o.every(x => x.in), name + ': every Water bubble on screen');
-    let lap = 0; for (let i = 0; i < o.length; i++) for (let j = i + 1; j < o.length; j++) { const a = o[i], b = o[j]; if (Math.min(a.r, b.r) - Math.max(a.l, b.l) > 2 && Math.min(a.b, b.b) - Math.max(a.t, b.t) > 2) lap++; }
+    let lap = 0; for (let i = 0; i < o.length; i++) for (let j = i + 1; j < o.length; j++) { const a = o[i], b = o[j]; /* the orbs are round: compare the circles, not their square boxes (boxes touch at the corners on a ring) */ const d = Math.hypot((a.l + a.r) / 2 - (b.l + b.r) / 2, (a.t + a.b) / 2 - (b.t + b.b) / 2); if (d < ((a.r - a.l) + (b.r - b.l)) / 4 - 2) { lap++; console.log('     overlap', a.id, b.id, Math.round(d), Math.round((a.r - a.l) / 2), Math.round((b.r - b.l) / 2)); } }
     ok(!lap, name + ': no two Water bubbles overlap (' + lap + ')');
     await page.screenshot({ path: SHOT + '/' + name + '-bloom-075.png' });
     const key = () => page.evaluate(() => localStorage.getItem('lowispike.water.bottle.v1'));
     const seen = [];
     for (let i = 0; i < 4; i++) { await tap('bsize'); await page.waitForTimeout(700); o = await orbR(); seen.push((await key()) + '=' + (o[2] ? o[2].txt.replace(/^\D+/, '') : '?')); }
     ok(seen.map(s => s.split('=')[0]).join() === '1000,1500,330,500', name + ': Size steps 1 / 1.5 / 0.33 / 0.5 l (' + seen.join(' ; ') + ')');
-    ok(o.length === 4 && o.every(x => x.in) && o[2].txt.indexOf(de ? '0,5' : '0.5') >= 0, name + ': bloom stays open, Bottle now says ' + (o[2] && o[2].txt));
+    ok(o.length === 4 && o.every(x => x.in) && o[2].txt.indexOf(lang === 'en' ? '0.5' : '0,5') >= 0, name + ': bloom stays open, Bottle now says ' + (o[2] && o[2].txt));
     await page.screenshot({ path: SHOT + '/' + name + '-bloom-05.png' });
     const s0 = await st();
     await tap('bottle'); await page.waitForTimeout(900);
@@ -59,14 +59,14 @@ srv.listen(0, async () => {
     ok(s1.cups === s0.cups + 2 && fb.indexOf(500) >= 0, name + ': a 0.5 l bottle = +2 glasses and remembers 500 ml (' + s0.cups + ' -> ' + s1.cups + ', sizes ' + fb.join() + ')');
     await page.evaluate(() => LowiHomeBloomsV2.close && LowiHomeBloomsV2.close()); await page.waitForTimeout(1500);
     const bub = await page.evaluate(() => { const c = document.querySelector('#whHud .wh-water'), b = c && c.querySelector('b'); return c ? { t: b.textContent.replace(/\s+/g, ' ').trim(), a: c.getAttribute('aria-label') || '' } : null; });
-    ok(bub && /^[\d¼½¾]+\/6$/.test(bub.t) && bub.a.indexOf(de ? 'Gläsern' : 'glasses') >= 0 && !/cup/i.test(bub.a), name + ': Home Water bubble "' + (bub && bub.t) + '", aria "' + (bub && bub.a) + '"');
+    ok(bub && /^[\d¼½¾]+\/6$/.test(bub.t) && bub.a.indexOf(de ? 'Gläsern' : lang === 'es' ? 'vasos' : 'glasses') >= 0 && !/cup/i.test(bub.a), name + ': Home Water bubble "' + (bub && bub.t) + '", aria "' + (bub && bub.a) + '"');
     await page.screenshot({ path: SHOT + '/' + name + '-home.png' });
     const hold = () => page.evaluate(() => new Promise(res => { const el = document.querySelector('#whHud .wh-water'); if (!el) return res(false); const r = el.getBoundingClientRect(), o = { bubbles: true, cancelable: true, pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 };
       el.dispatchEvent(new PointerEvent('pointerdown', o)); setTimeout(() => { el.dispatchEvent(new PointerEvent('pointerup', o)); res(true); }, 800); }));
     await hold(); await page.waitForTimeout(500);
     const tt = await toastTxt(); const s2 = await st();
     ok(s2.cups === s1.cups - 2, name + ': hold takes the bottle off (' + s1.cups + ' -> ' + s2.cups + ')');
-    ok(tt.indexOf(de ? 'eine Flasche (0,5' : 'a bottle (0.5') >= 0, name + ': toast names the size: "' + tt.slice(0, 120) + '"');
+    ok(tt.indexOf(de ? 'eine Flasche (0,5' : lang === 'es' ? 'una botella (0,5' : 'a bottle (0.5') >= 0, name + ': toast names the size: "' + tt.slice(0, 120) + '"');
     await page.waitForTimeout(1600);
     const all = await page.evaluate(() => { try { LowiHomeBloomsV2.openAll(); } catch (e) { return 'err ' + e.message; } return null; }); await page.waitForTimeout(1500);
     const ao = await orbR();

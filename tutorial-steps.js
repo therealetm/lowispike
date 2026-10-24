@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 21;  /* 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 22;  /* 22: Oct 24 2026, new-companion-hints in part 'new' (quiet habit cues from your companion); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -721,6 +721,16 @@
                 es: 'Hay algunas novedades. Te enseño dónde están. Puedes saltarlo cuando quieras.'
             },
             cta: { en: 'Let’s go', de: 'Los geht’s', es: 'Vamos' }
+        },
+        {
+            id: 'new-companion-hints', area: 'new', where: 'home', target: ['#whHud .wh-water'], covers: ['companion-habit-hints'],
+            info: 'nothing to do here: the hints appear on their own when they fit the day, and the off switch sits in Bubble reminders (Erinnerungen der Blase / Avisos de la burbuja)',
+            title: { en: 'Little hints from me', de: 'Kleine Hinweise von mir', es: 'Pistas m\u00edas' },
+            text: {
+                en: 'Now and then I leave a hint: dew on Water when a sip fits your day, a basket on Scan on shop day. Off in Bubble reminders.',
+                de: 'Ab und zu ein Hinweis von mir: Tau auf Wasser, wenn ein Schluck passt, ein Korb auf Scannen am Einkaufstag. Aus: Erinnerungen der Blase.',
+                es: 'A veces te dejo una pista: roc\u00edo en Agua si toca un sorbo, una cestita en Escanear el d\u00eda de compras. Se apagan en Avisos de la burbuja.'
+            }
         },
         {
             id: 'new-voice-speed', area: 'new', target: null, covers: ['tutorial-voice-speed'],

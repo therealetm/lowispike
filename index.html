@@ -20423,7 +20423,8 @@ function pick(now, opts){ now = now || new Date(); opts = opts || {}; const L = 
   if (opts.open && !seen("hello")) return mk("hello", w("hello", {q:nx.t, n:open.length}), GO[nx.id], nx.id);
   if (fi && !fi.done && fq && !seen("fastOn")) return mk("fastOn", w("fastOn", {h:fi.h, t:clock(fi.end, now), r:dur(fi.end - now.getTime())}), "goFast", "fast");
   for (const q of open) { if (q.id === "fast") continue; if (!seen(q.id)) {
-    if (q.id === "water") { const p = q.p || [0, 2]; return mk("water", w("water", {g:p[0], w:p[1]}), "goWater", "water"); }
+    if (q.id === "water") { if (window.LowiHabitNudge && LowiHabitNudge.ownsWater && LowiHabitNudge.ownsWater() && !opts.any) continue; /* Oct 24: the companion handles water at moments that fit the day (habit-nudges.js) */
+      const p = q.p || [0, 2]; return mk("water", w("water", {g:p[0], w:p[1]}), "goWater", "water"); }
     return mk(q.id, w(q.id), GO[q.id], q.id); } }
   return null; }
 function log(now){ const l = js(LOG), t = dk(now || new Date()); return {day:t, last:+l.last || 0, shown:+l.shown || 0, ids:l.day === t && Array.isArray(l.ids) ? l.ids : []}; }
@@ -20516,6 +20517,7 @@ function sheetHTML(){ const s = get();
     '<div class="n1-row n1-dim' + (s.on ? "" : " dis") + '"><b>' + esc(w("quietL")) + '</b><div class="n1-q"><span>' + esc(w("from")) + '</span>' + sel("qs", 18, 24, s.qs) + '<span>' + esc(w("to")) + '</span>' + sel("qe", 4, 11, s.qe) + '</div></div>' +
     (window.LowiN1P ? LowiN1P.rowHTML() : "") +
     (window.LowiMealSnap ? LowiMealSnap.rowHTML() : "") +
+    (window.LowiHabitNudge ? LowiHabitNudge.rowHTML() : "") +
     '</div><div class="sheetfoot n1-foot"><button class="btn ghost" data-n1="try">' + esc(w("try")) + '</button><button class="btn primary" data-act="close-sheet">' + esc(w("done")) + '</button></div>'; }
 function openSet(){ hide(true); try { if (window.LowiHost && LowiHost.openSheet) LowiHost.openSheet(sheetHTML()); } catch(e){} }
 function repaintSheet(){ const sh = D.querySelector(".n1-sheet"); if (!sh) return; const t = D.createElement("div"); t.innerHTML = sheetHTML(); const nb = t.querySelector(".n1-sheet"); sh.innerHTML = nb.innerHTML; }
@@ -21251,6 +21253,10 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="splCss" href="shop-plan.css?v=20261024-111506">
 <script src="shop-plan-core.js?v=20261024-111506"></script>
 <script src="shop-plan.js?v=20261024-111506"></script>
+<!-- Oct 24: personal habit nudges from the person's own companion (water, groceries, a meal log): quiet cues in the Home bubbles, a rare line (habit-nudges.js, COORD-nudges.md) -->
+<link rel="stylesheet" id="hnCss" href="habit-nudges.css?v=20261024-111506">
+<script src="habit-nudges-core.js?v=20261024-111506"></script>
+<script src="habit-nudges.js?v=20261024-111506"></script>
 <link rel="stylesheet" id="ghCss" href="grocery-hunt.css?v=20261024-111506">
 <script src="grocery-hunt-core.js?v=20261024-111506"></script>
 <script src="grocery-hunt.js?v=20261024-111506"></script>

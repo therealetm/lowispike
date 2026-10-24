@@ -34,7 +34,7 @@ test('bottom layer of Community only: a readability veil over the live world, ne
 test('the world goes on past the World Map: other bubbles linked by light threads, and Home re-layout never clamps it back', () => {
     const sc = read('body-world-3d-scene.js');
     assert.ok(sc.includes('function buildCosmos()') && sc.includes('function cosmosStep(t, dt)') && sc.includes("threads.name = 'cosmos-threads'"));
-    assert.ok(sc.includes("const hiD = rig.outer && rig.dist > rig.maxD ? (rig.outerD || 300) : rig.maxD;"), 'setMode(home) keeps the spirit-world distance');
+    assert.ok(sc.includes("const hiD = pastMap ? (outerD || 300) : next.maxD;") && sc.includes('rig.dist = homeRelayoutDist(prev, rig, HOME_OUT, rig.outerD)'), 'setMode(home) keeps the spirit-world distance'); /* Oct 24: rule moved into homeRelayoutDist */
     assert.ok(sc.includes("if (rig.mode === 'home' && rig.outer && (rig.dist >= rig.maxD * 0.999 && f > 1 || rig.dist > rig.maxD))"), 'pinch keeps going out');
 });
 

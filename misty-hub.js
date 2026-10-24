@@ -109,6 +109,9 @@
                 '<button type="button" data-mh="forms">' + ICO.forms + '<b>' + esc(T('Forms', 'Formen', 'Formas')) + '</b><small>' + esc(T('How it evolves', 'Wie es sich entwickelt', 'C\u00f3mo evoluciona')) + '</small></button>' +
                 '<button type="button" data-mh="glow">' + ICO.glow + '<b>' + esc(T('Glow', 'Leuchten', 'Brillo')) + '</b><small>' + esc(T('Aura and finds', 'Aura und Funde', 'Aura y hallazgos')) + '</small></button>' +
             '</nav>' +
+            /* Oct 24 2026 (Emmanuel): with cycle tracking on, a small "Your cycle" section right under the doors opens My cycle
+               (cycle-world.js hubHtml / hubOpen). Tracking off: nothing here. */
+            cycleHtml() +
             (say ? '<p class="mh-say" role="status" aria-live="polite">' + esc(say) + '</p>' : '<p class="mh-say" role="status" aria-live="polite" hidden></p>') +
             (night ? '<button type="button" class="mh-pri" data-mh="goodnight"' + (gn ? ' aria-pressed="true"' : '') + '>' + ICO.moon + '<span>' + esc(gn ? T('Tucked in for the night', 'F\u00fcr die Nacht eingekuschelt', 'Arropada para la noche') : T('Say goodnight', 'Gute Nacht sagen', 'Dar las buenas noches')) + '</span></button>' : '') +
             scaleHtml() +
@@ -123,6 +126,7 @@
     }
     /* Oct 17: Misty's energy scale and her way back (misty-scale.js), right under her words */
     /* adventure tiers (adventure-tiers.js): what her timed adventure reaches at this level; autopilot is never gated */
+    function cycleHtml() { try { return W.LowiCycleWorld && W.LowiCycleWorld.hubHtml ? W.LowiCycleWorld.hubHtml() : ''; } catch (e) { return ''; } }
     function advHtml() { try { return W.LowiAdventureTiers && W.LowiAdventureTiers.html ? W.LowiAdventureTiers.html() : ''; } catch (e) { return ''; } }
     function rankHtml() { try { return W.LowiMistyRank && W.LowiMistyRank.html ? W.LowiMistyRank.html() : ''; } catch (e) { return ''; } }
     function peakHtml() { try { return W.LowiMistyPeak && W.LowiMistyPeak.html ? W.LowiMistyPeak.html() : ''; } catch (e) { return ''; } }
@@ -163,6 +167,7 @@
         else if (k === 'forms') { try { if (W.LowiCompanion && W.LowiCompanion.open && W.LowiCompanion.open()) return; } catch (x) { } openDetails('grow'); }
         else if (k === 'glow') openDetails('aura');
         else if (k === 'rename') renameOpen();
+        else if (k === 'cycle') { try { W.LowiCycleWorld && W.LowiCycleWorld.hubOpen && W.LowiCycleWorld.hubOpen(); } catch (x) { } }
     });
 
     /* ---------- rename (Oct 19, aura-rename task; Emmanuel's friend: "change the name manually ... when their companion gets a

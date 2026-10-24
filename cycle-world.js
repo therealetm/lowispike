@@ -6,7 +6,8 @@
    (rest, grow, glow, gather), says the day, and logs the first day of a period. The data is the round 3D cycle data
    (S.health.cyc, private like the other health logs; LowiCycle in index.html does the maths: model(), markStart(), setShow()).
    Not medical: no hormones, no fertility, no diagnosis; it says it is a rough guide from her own dates.
-   API window.LowiCycleWorld {open(), close(), isOpen(), enabled(), eligible(), tileSub(), rule(state), cellOf(ph, lang), scene(m, lang)}.
+   API window.LowiCycleWorld {open(), close(), isOpen(), enabled(), eligible(), tileSub(), rule(state), cellOf(ph, lang), scene(m, lang),
+   homeRing(m, on, lang), hubHtml(), hubOpen(), paintRing()} (the Home part, Oct 24 2026, see the bottom).
    rule / eligible / cellOf / scene are pure for node tests. EN / DE / ES. */
 (function (root, factory) {
     const api = factory(root);
@@ -18,7 +19,7 @@
     const PH = ['menstrual', 'follicular', 'ovulation', 'luteal'];
     const CELL = { menstrual: 'rest', follicular: 'grow', ovulation: 'glow', luteal: 'gather' };
     const STR = {
-        en: { title: 'Your cycle', day: 'Day {d}', close: 'Close',
+        en: { title: 'Your cycle', day: 'Day {d}', close: 'Close', ringL: 'Estimated cycle phase: {n}', hubOpen: 'Open your cycle',
             rest: 'Rest', grow: 'Grow', glow: 'Glow', gather: 'Gather',
             restP: 'Period', growP: 'After your period', glowP: 'Mid-cycle', gatherP: 'Before your period',
             restL: 'Your cells rest and recharge. Go easy on yourself today.', growL: 'New little cells bud and grow.',
@@ -30,7 +31,7 @@
             turnOff: 'Turn off cycle tracking', offDone: 'Cycle tracking is off. You can turn it on again here any time.',
             hedge: 'A rough guide from your own dates, not medical advice. Every body has its own rhythm.',
             tileOff: 'Off', tileStart: 'Log your first day', svgL: 'Your cycle as a cell world: rest, grow, glow, gather' },
-        de: { title: 'Dein Zyklus', day: 'Tag {d}', close: 'Schließen',
+        de: { title: 'Dein Zyklus', day: 'Tag {d}', close: 'Schließen', ringL: 'Geschätzte Zyklusphase: {n}', hubOpen: 'Deinen Zyklus öffnen',
             rest: 'Ruhen', grow: 'Wachsen', glow: 'Leuchten', gather: 'Sammeln',
             restP: 'Periode', growP: 'Nach der Periode', glowP: 'Zyklusmitte', gatherP: 'Vor der Periode',
             restL: 'Deine Zellen ruhen und tanken auf. Mach heute sanft.', growL: 'Neue kleine Zellen knospen und wachsen.',
@@ -42,7 +43,7 @@
             turnOff: 'Zyklus-Tracking ausschalten', offDone: 'Zyklus-Tracking ist aus. Du kannst es hier jederzeit wieder einschalten.',
             hedge: 'Eine grobe Orientierung aus deinen eigenen Daten, kein medizinischer Rat. Jeder Körper hat seinen eigenen Rhythmus.',
             tileOff: 'Aus', tileStart: 'Ersten Tag eintragen', svgL: 'Dein Zyklus als Zellwelt: ruhen, wachsen, leuchten, sammeln' },
-        es: { title: 'Tu ciclo', day: 'Día {d}', close: 'Cerrar',
+        es: { title: 'Tu ciclo', day: 'Día {d}', close: 'Cerrar', ringL: 'Fase estimada del ciclo: {n}', hubOpen: 'Abrir tu ciclo',
             rest: 'Reposo', grow: 'Crecer', glow: 'Brillo', gather: 'Juntarse',
             restP: 'Regla', growP: 'Después de la regla', glowP: 'Mitad del ciclo', gatherP: 'Antes de la regla',
             restL: 'Tus células descansan y recargan. Tómatelo con calma hoy.', growL: 'Nuevas celulitas brotan y crecen.',
@@ -175,7 +176,7 @@
         const R2 = W.LowiR2; if (!D || !R2 || !R2.sheet || !isFem()) return false;
         other = false; msg = '';
         if (ov && D.body.contains(ov)) { try { R2.close(ov); } catch (e) {} }
-        ov = R2.sheet('<div class="cw" id="cwSheet" data-noi18n></div>', { cls: 'cw-ov one-sheet', onClose: () => { ov = null; refreshTile(); } });
+        ov = R2.sheet('<div class="cw" id="cwSheet" data-noi18n></div>', { cls: 'cw-ov one-sheet', onClose: () => { ov = null; refreshTile(); paintRing(); } });
         paint();
         return true;
     }
@@ -197,10 +198,69 @@
         D.addEventListener('click', e => {
             const t = e.target && e.target.closest ? e.target : null; if (!t) return;
             const o = t.closest('[data-cw="open"]'); if (o) { e.preventDefault(); e.stopPropagation(); open(); return; }
-            const b = t.closest('#cwSheet [data-cw]'); if (b) { e.preventDefault(); act(b.getAttribute('data-cw'), b); }
+            const b = t.closest('#cwSheet [data-cw]'); if (b) { e.preventDefault(); act(b.getAttribute('data-cw'), b); setTimeout(paintRing, 0); }
         }, true);
         const addL = () => { try { if (W.LowiLang && W.LowiLang.add) { W.LowiLang.add(LANG_ROWS); return true; } } catch (e) {} return false; };
         if (!addL()) W.addEventListener && W.addEventListener('load', addL);
     }
-    return { open, close, isOpen: () => !!(ov && D && D.body.contains(ov)), enabled, eligible: st => eligible(st === undefined ? S() : st), tileSub, rule, cellOf, scene, strings: STR };
+
+    /* ---------- Home (Oct 24 2026): the cycle shows up where you are, not only in a sheet ----------
+       Emmanuel: "an information window alone isn't a real benefit". With cycle tracking on, and only then:
+       1) Misty's card (hold Misty, misty-hub.js) gets a small "Your cycle" section right under her two doors: day, estimated
+          phase in its colour, and a tap opens My cycle. That is the way in from Home (Emmanuel, Oct 24: "a section within the
+          existing long-press menu on Misty, rather than its own separate trigger"). No new gesture anywhere.
+       2) a thin ring on Misty's Home bubble in the estimated phase colour, the cell world's own (rest rose, grow mint, glow gold,
+          gather violet). The ring is decoration (aria-hidden); screen readers get "Estimated cycle phase: Grow" as the bubble's
+          description. Written only when the phase or language changes. Nothing is announced: no toast, push or post. */
+    function homeRing(m, on, l) {
+        if (!on || !m || !m.ph) return null;
+        const c = cellOf(m.ph, l); if (!c) return null;
+        return { id: c.id, ph: m.ph, label: s('ringL', { n: c.name }, l) };
+    }
+    /* the section in Misty's card: '' with tracking off (nothing hints at the feature then) */
+    function hubHtml() {
+        if (!enabled()) return '';
+        const m = model(), c = m && m.ph ? cellOf(m.ph) : null;
+        return '<section class="mh-card cyh-hub" aria-label="' + esc(s('title')) + '">' +
+            '<button type="button" class="cyh-hub-b" data-mh="cycle"' + (c ? ' data-ph="' + c.id + '"' : '') + ' aria-label="' + esc(s('hubOpen') + ': ' + tileSub()) + '">' +
+            '<span class="cyh-dot" aria-hidden="true"></span>' +
+            '<span class="cyh-hub-t"><b>' + esc(s('title')) + '</b><small>' + esc(tileSub()) + '</small></span>' +
+            '<span class="cyh-hub-go" aria-hidden="true">\u203a</span></button></section>';
+    }
+    /* tapped in Misty's card: her card slides away, My cycle opens */
+    function hubOpen() {
+        if (!enabled()) return false;
+        try { W.LowiMistyHub && W.LowiMistyHub.close && W.LowiMistyHub.close(); } catch (e) {}
+        setTimeout(() => { try { open(); } catch (e) { console.warn('cycle open', e && e.message); } }, 260);
+        return true;
+    }
+    const RING_DESC = 'cyhDesc';
+    function paintRing() {
+        if (!D) return;
+        const el = D.getElementById('spBubble'); if (!el) return;
+        const on = enabled(), r = homeRing(on ? model() : null, on, lang());
+        const key = r ? r.id + '|' + r.label : '';
+        let ring = el.querySelector(':scope > .cyh-ring'), desc = D.getElementById(RING_DESC);
+        if (el.dataset.cyh === key && (r ? (ring && desc && desc.parentNode === el) : (!ring && !desc))) return;
+        el.dataset.cyh = key;
+        const ids = (el.getAttribute('aria-describedby') || '').split(/\s+/).filter(x => x && x !== RING_DESC);
+        if (!r) {
+            if (ring) ring.remove();
+            if (desc) desc.remove();
+            if (ids.length) el.setAttribute('aria-describedby', ids.join(' ')); else el.removeAttribute('aria-describedby');
+            return;
+        }
+        if (!ring) { ring = D.createElement('span'); ring.className = 'cyh-ring'; ring.setAttribute('aria-hidden', 'true'); el.appendChild(ring); }
+        ring.setAttribute('data-ph', r.id);
+        if (!desc || desc.parentNode !== el) { if (desc) desc.remove(); desc = D.createElement('span'); desc.id = RING_DESC; desc.className = 'cyh-sr'; desc.setAttribute('data-noi18n', ''); el.appendChild(desc); }
+        desc.textContent = r.label;
+        el.setAttribute('aria-describedby', ids.concat(RING_DESC).join(' '));
+    }
+    if (D && typeof W.setInterval === 'function') {
+        /* Home is rebuilt now and then (spirit.js): put the ring back; only while Home is the page you see */
+        const homeOn = () => { const t = D.getElementById('tab-home'); return !t || t.classList.contains('active'); };
+        W.setInterval(() => { if (!D.hidden && homeOn()) { try { paintRing(); } catch (e) {} } }, 1500);
+        D.addEventListener('visibilitychange', () => { if (!D.hidden) { try { paintRing(); } catch (e) {} } });
+    }
+    return { open, close, isOpen: () => !!(ov && D && D.body.contains(ov)), enabled, eligible: st => eligible(st === undefined ? S() : st), tileSub, rule, cellOf, scene, strings: STR, homeRing, hubHtml, hubOpen, paintRing };
 });

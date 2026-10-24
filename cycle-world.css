@@ -55,3 +55,30 @@
 @media (prefers-reduced-motion: reduce) { .cw-svg *, .cw-btn { animation: none !important; transition: none !important; } }
 /* iPad and wide screens: a bit more room for the world, same sheet */
 @media (min-width: 700px) { .cw-hero { width: 340px; } }
+/* Oct 24 2026, the cycle on Home (cycle-world.js paintRing): a thin ring on Misty's Home bubble in the estimated phase colour,
+   only with cycle tracking on. Discreet: 2px, soft glow, no pulse; never catches a touch; gone while the map or the full world
+   is up. Screen readers get the phase as the bubble's description (.cyh-sr). */
+.cyh-ring { position: absolute; inset: 3px; border-radius: 50%; pointer-events: none; z-index: 3; box-sizing: border-box;
+    border: 2px solid color-mix(in srgb, var(--cyh, #8fd8ff) 78%, transparent);
+    box-shadow: 0 0 9px color-mix(in srgb, var(--cyh, #8fd8ff) 38%, transparent), inset 0 0 7px color-mix(in srgb, var(--cyh, #8fd8ff) 22%, transparent);
+    opacity: .9; transition: opacity .6s ease; animation: cyhIn .8s ease both; }
+.cyh-ring[data-ph="rest"] { --cyh: var(--cw-rest); }
+.cyh-ring[data-ph="grow"] { --cyh: var(--cw-grow); }
+.cyh-ring[data-ph="glow"] { --cyh: var(--cw-glow); }
+.cyh-ring[data-ph="gather"] { --cyh: var(--cw-gather); }
+html.wh-home.wh-mapview #spBubble .cyh-ring, html.wh-snap #spBubble .cyh-ring { opacity: 0; }
+.cyh-sr { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
+@keyframes cyhIn { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cyh-ring { transition: none; animation: none; } }
+/* Oct 24 2026: the "Your cycle" section in Misty's card (misty-hub.js), tracking on only: one quiet row, the phase colour as a dot */
+.cyh-hub { padding: 0; overflow: hidden; }
+.cyh-hub-b { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 12px 16px; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.cyh-dot { flex: 0 0 auto; width: 14px; height: 14px; border-radius: 50%; background: var(--cyh, rgba(255,255,255,.35)); box-shadow: 0 0 8px color-mix(in srgb, var(--cyh, #fff) 45%, transparent); }
+.cyh-hub-b[data-ph="rest"] { --cyh: var(--cw-rest); }
+.cyh-hub-b[data-ph="grow"] { --cyh: var(--cw-grow); }
+.cyh-hub-b[data-ph="glow"] { --cyh: var(--cw-glow); }
+.cyh-hub-b[data-ph="gather"] { --cyh: var(--cw-gather); }
+.cyh-hub-t { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cyh-hub-t b { font-size: 15px; font-weight: 600; line-height: 1.2; }
+.cyh-hub-t small { font-size: 12.5px; line-height: 1.25; color: var(--mh-ink-2, rgba(235,245,255,.78)); overflow-wrap: anywhere; }
+.cyh-hub-go { flex: 0 0 auto; font-size: 22px; line-height: 1; opacity: .7; }

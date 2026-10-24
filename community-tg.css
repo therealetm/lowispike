@@ -240,6 +240,8 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] #csJump .cs-jump{positio
   color:var(--cr-send-ic)!important;background:var(--cr-send-c)!important;background-image:var(--cr-send-g)!important;box-shadow:var(--cr-float-sh)!important}
 
 /* ---- composer: floats over the bottom of the room, above the home indicator ---- */
+/* 24 Oct: the field also sets -webkit-text-fill-color from the theme; community-composer.css paints glyphs #fff with it, which
+   made typed text white on the day room's light field (tests/chat-composer-light.test.cjs) */
 /* in the room everything goes to the room: the "To the whole galaxy" chip and the empty-field note step aside (a chosen person still shows) */
 html.cr-room #cmPaneChat[data-spirit-chat][data-room] #cgTo:not(:has(.cg-chip:not(:has(.cg-dotc.all)))){display:none!important}
 html.cr-room #cmPaneChat[data-spirit-chat][data-room] #cgTo .cg-chip:has(.cg-dotc.all){display:none!important}
@@ -258,8 +260,8 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose::before{cont
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose::after{display:none!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-inrow{position:relative;display:flex!important;align-items:flex-end!important;gap:8px!important;margin:0!important;padding:0 12px!important;background:none!important;border:0!important;box-shadow:none!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-inrow textarea#cmInput{position:static!important;flex:1 1 auto!important;min-width:0;width:auto!important;min-height:44px!important;margin:0!important;padding:11px 16px!important;border:0!important;border-radius:22px!important;font-size:16px!important;line-height:22px!important;
-  color:var(--cr-text)!important;background:var(--cr-field)!important;box-shadow:inset 0 0 0 .5px var(--cr-hair),var(--cr-float-sh)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;caret-color:var(--cr-acc-strong)}
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-inrow textarea#cmInput::placeholder{color:var(--cr-ph)!important;opacity:1}
+  color:var(--cr-text)!important;background:var(--cr-field)!important;box-shadow:inset 0 0 0 .5px var(--cr-hair),var(--cr-float-sh)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;caret-color:var(--cr-acc-strong);-webkit-text-fill-color:var(--cr-text)!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-inrow textarea#cmInput::placeholder{color:var(--cr-ph)!important;-webkit-text-fill-color:var(--cr-ph)!important;opacity:1}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-inrow :is(#cmPhoto,#cmMic,#cmSend){position:static!important;flex:none!important;display:grid!important;place-items:center;width:44px!important;height:44px!important;min-height:44px!important;margin:0!important;padding:0!important;border:0!important;border-radius:50%!important;transform:none!important;inset:auto!important;
   color:var(--cr-ic)!important;background:var(--cr-glass)!important;background-image:none!important;box-shadow:inset 0 0 0 .5px var(--cr-hair),var(--cr-float-sh)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;opacity:1}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-inrow #cmSend:not([hidden]):not([disabled]){color:var(--cr-send-ic)!important;background:var(--cr-send-c)!important;background-image:var(--cr-send-g)!important;font-weight:800;font-size:19px}

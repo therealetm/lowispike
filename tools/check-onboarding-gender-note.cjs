@@ -15,7 +15,7 @@ const fails = [], ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if 
 const noX = async (R, sel, what) => { const o = await R.page.evaluate(s => { let bad = 0; document.querySelectorAll(s + ' *').forEach(e => { const r = e.getBoundingClientRect(); if (r.width && (r.right > innerWidth + 1 || r.left < -1)) bad++; }); return bad; }, sel); ok(o === 0, what + ': nothing sticks out (' + o + ')'); };
 (async () => {
   const ipad = /ipad/i.test(device);
-  const R = await H.open({ url, lang, device, fresh: true, engine: 'chromium', viewport: ipad ? { width: 820, height: 1180 } : /SE/.test(device) ? { width: 375, height: 667 } : { width: 390, height: 844 }, dpr: ipad ? 2 : 3 });
+  const R = await H.open({ url, lang, device, fresh: true, engine: process.env.ENGINE || 'chromium', viewport: ipad ? { width: 820, height: 1180 } : /SE/.test(device) ? { width: 375, height: 667 } : { width: 390, height: 844 }, dpr: ipad ? 2 : 3 });
   const p = R.page;
   const tap = async sel => { await p.evaluate(q => { const e = document.querySelector(q); if (e) e.scrollIntoView({ block: 'center' }); }, sel); await H.sleep(250); await R.tap(sel); };
   try {
@@ -31,7 +31,8 @@ const noX = async (R, sel, what) => { const o = await R.page.evaluate(s => { let
     await tap('#r2obRev [data-lc="go"]'); await H.sleep(1500);
     await p.waitForSelector('[data-r2o="initial"],[data-r2o="next"]', { timeout: 20000 });
     if (await p.$('[data-r2o="initial"]')) { await tap('[data-r2o="initial"]'); await H.sleep(1200); }
-    await p.waitForSelector('#r2ob .r2-gender', { timeout: 20000 });
+    await p.waitForSelector('#r2ob .r2-gender', { timeout: 20000 }); { const t0 = Date.now(); const want = { de: 'Über dich', en: 'About you', es: 'Sobre ti' }[lang]; while (Date.now() - t0 < 15000) { const t = await p.evaluate(() => { const e = document.querySelector('#r2ob .r2-obt'); return e ? e.textContent.trim() : ''; }); if (t === want) break; await H.sleep(250); } console.log('INFO translated after ' + (Date.now() - t0) + ' ms'); await H.sleep(500); }
+    console.log('INFO step text: ' + JSON.stringify(await p.evaluate(() => [...document.querySelectorAll('#r2ob .r2-obt, #r2ob .r2-obs, #r2ob .r2-obsub')].map(e => e.textContent.trim()))) + ' lang=' + await p.evaluate(() => { try { return localStorage.getItem('lowispike.lang') + '/' + (window.LowiLang && LowiLang.get && LowiLang.get()); } catch (e) { return '?'; } }));
     const labels = await p.$$eval('#r2ob .r2-gender [data-r2g]', bs => bs.map(b => [b.getAttribute('data-r2g'), b.textContent.trim()]));
     ok(JSON.stringify(labels.map(l => l[1])) === JSON.stringify(T.g) && labels.map(l => l[0]).join('') === 'fmnx', 'four choices: ' + JSON.stringify(labels));
     const head = await p.evaluate(() => { const g = document.querySelector('#r2ob .r2-gender'); const h = g && g.previousElementSibling; return h ? h.textContent.trim() : ''; });
@@ -43,7 +44,12 @@ const noX = async (R, sel, what) => { const o = await R.page.evaluate(s => { let
     ok(field && field.max === 120 && field.h >= 44 && field.fs >= 16, 'field: max 120, thumb-sized, no iOS zoom ' + JSON.stringify(field));
     const lines = await p.$$eval('#r2ob .r2-gender [data-r2g]', bs => bs.map(b => { const cs = getComputedStyle(b); const r = b.getBoundingClientRect(); const range = document.createRange(); range.selectNodeContents(b); const rects = [...range.getClientRects()].map(x => Math.round(x.top)); return { t: b.textContent.trim(), h: Math.round(r.height), rows: new Set(rects).size, hy: cs.hyphens }; }));
     ok(lines.every(l => l.rows === 1 && l.h >= 36), 'each gender chip on one line, as tall as the other setup chips (40, or 36 on short screens): ' + JSON.stringify(lines));
+    await tap('#r2ob [data-r2g="f"]'); await H.sleep(400);
+    ok(await p.$('#r2ob .r2-cyq') !== null, 'cycle question still asked after Woman (unchanged)');
+    await tap('#r2ob [data-r2g="m"]'); await H.sleep(400);
+    ok(await p.$('#r2ob .r2-cyq') === null, 'no cycle question after Man');
     await tap('#r2ob [data-r2g="n"]'); await H.sleep(400);
+    ok(await p.$('#r2ob .r2-cyq') === null, 'non-binary: no setup cycle question, same as prefer not to say before');
     ok(await p.$('#r2ob [data-r2tag="PCOS"]') !== null, 'PCOS stays a free pick for non-binary');
     await p.evaluate(() => { const i = document.getElementById('r2obCondNote'); i && i.scrollIntoView({ block: 'center' }); }); await H.sleep(500);
     const hit = await p.evaluate(() => { const i = document.getElementById('r2obCondNote'); const r = i.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const e = document.elementFromPoint(x, y); return { top: Math.round(r.top), vh: innerHeight, on: e === i, el: e ? (e.id || String(e.className) || e.tagName) : null }; });

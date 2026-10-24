@@ -1,0 +1,38 @@
+/* Nibblo, the community food bot: one daily card in the Community room.
+ * Uses the room's own colour variables so day and dark mode both work. */
+#cmPaneChat .ins-msg .ins-bub{max-width:min(440px,100%);color:var(--cr-text,var(--text,#f1f3f6))}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cp-msg.ins-msg .cp-av,
+#cmPaneChat .ins-msg .ins-av{display:flex!important;align-items:flex-end;justify-content:center;width:36px!important;height:36px!important;min-width:36px;min-height:36px}
+#cmPaneChat .ins-msg .ins-av-svg{width:36px;height:36px;display:block;border-radius:50%;
+  background:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 8px rgba(0,0,0,.18);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#cmPaneChat .ins-msg .ins-by{display:flex;align-items:center;gap:6px;margin:0 0 4px;line-height:1.2}
+#cmPaneChat .ins-msg .ins-name{font-weight:700;font-size:14px;color:#2fbf71}
+#cmPaneChat .ins-msg .ins-bot{display:inline-block;padding:1px 7px;border-radius:7px;font-size:10.5px;font-weight:800;letter-spacing:.04em;
+  color:var(--cr-text,#f1f3f6);background:var(--cr-chip,rgba(255,255,255,.12));border:1px solid var(--cr-hair,rgba(255,255,255,.22))}
+#cmPaneChat .ins-msg p{margin:0}
+#cmPaneChat .ins-msg .ins-welcome{margin:0 0 6px;font-weight:600;line-height:1.35}
+#cmPaneChat .ins-msg .ins-hi{margin:0 0 8px;line-height:1.35}
+#cmPaneChat .ins-msg section{border-radius:14px;padding:9px 10px;margin:0 0 6px;
+  background:var(--cr-chip,rgba(255,255,255,.08));border:1px solid var(--cr-hair,rgba(255,255,255,.14))}
+#cmPaneChat .ins-msg .ins-k{margin:0 0 6px;font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--cr-sub,#a9b0bc)}
+#cmPaneChat .ins-msg .ins-k small{font-weight:600;letter-spacing:0;text-transform:none;margin-left:4px}
+#cmPaneChat .ins-msg .ins-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 6px}
+#cmPaneChat .ins-msg .ins-from,#cmPaneChat .ins-msg .ins-to{display:flex;flex-direction:column;min-width:0;line-height:1.25;overflow-wrap:anywhere}
+#cmPaneChat .ins-msg .ins-from{opacity:.8}
+#cmPaneChat .ins-msg .ins-to{font-weight:700;flex:1 1 140px}
+#cmPaneChat .ins-msg .ins-row small{font-size:11px;font-weight:600;color:var(--cr-sub,#a9b0bc)}
+#cmPaneChat .ins-msg .ins-arrow{font-weight:700;color:#2fbf71}
+#cmPaneChat .ins-msg .ins-why{line-height:1.35;font-size:14px}
+#cmPaneChat .ins-msg .ins-src{margin-top:4px;font-size:11.5px;color:var(--cr-sub,#a9b0bc)}
+#cmPaneChat .ins-msg .ins-gold{background:rgba(255,200,40,.10);border-color:rgba(242,183,5,.45)}
+#cmPaneChat .ins-msg .ins-gk span{color:#f2b705}
+#cmPaneChat .ins-msg .ins-prod{display:flex;gap:10px;align-items:center;margin:0 0 6px}
+#cmPaneChat .ins-msg .ins-img{width:52px;height:52px;flex:none;object-fit:contain;border-radius:10px;background:#fff}
+#cmPaneChat .ins-msg .ins-pt{display:flex;flex-direction:column;min-width:0;line-height:1.3;overflow-wrap:anywhere}
+#cmPaneChat .ins-msg .ins-pt span{font-size:12.5px;color:var(--cr-sub,#a9b0bc)}
+#cmPaneChat .ins-msg .ins-pt .ins-nums{color:var(--cr-text,#f1f3f6);font-weight:600}
+html[data-theme=light] #cmPaneChat .ins-msg .ins-name,html[data-theme=light] #cmPaneChat .ins-msg .ins-arrow{color:#16834a}
+html[data-theme=light] #cmPaneChat .ins-msg .ins-gk span{color:#a87a00}
+html[data-theme=light] #cmPaneChat .ins-msg .ins-gold{background:rgba(242,183,5,.12);border-color:rgba(168,122,0,.35)}
+#cmPaneChat .ins-msg .ins-row small,#cmPaneChat .ins-msg .ins-k small{color:var(--cr-sub,#a9b0bc)!important;background:none!important;-webkit-text-fill-color:currentColor;opacity:1}

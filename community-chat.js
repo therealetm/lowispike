@@ -500,12 +500,16 @@ function roomHead(q,ms,state,el){const rp=roomPeople(ms),meta=q('#crMeta'),link=
  if(meta){const t=rp.voices===1?tr('roomVoice'):rp.voices>1?fill('roomVoices',rp.voices):tr('roomOpen');if(meta.textContent!==t)meta.textContent=t;}
  if(link){const k={live:'linkLive',connecting:'linkSync',loading:'linkSync',offline:'linkOff',error:'linkErr',auth:'linkAuth'}[state]||'linkLive',h='<i aria-hidden="true"></i>'+esc(tr(k));if(link.dataset)link.dataset.state=state;if(link.innerHTML!==h)link.innerHTML=h;}
  if(crew){const h=rp.crew.length?'<span class="cr-crewl">'+esc(tr('roomCrew'))+'</span><div class="cr-crews">'+rp.crew.map(p=>button('profile',mate(p.uid,'cr'+sid(p.uid)),'data-uid="'+esc(p.uid)+'" data-name="'+esc(p.n)+'" aria-label="'+esc(p.n)+' · '+tr('profile')+'" style="--chat-color:'+hueColor(p.uid,false)+'"','cr-mate')).join('')+'</div>':'<span class="cr-crewl">'+esc(tr('roomCrew'))+'</span><p class="cr-crewnone">'+esc(tr('roomNoCrew'))+'</p>';if(crew.__html!==h){crew.innerHTML=h;crew.__html=h;}}}
+/* Nibblo, the community food bot: one local card a day (inspo.js). */
+function inspoLines(){try{return W.LowiInspo&&W.LowiInspo.lines?W.LowiInspo.lines({lang:['en','de','es'][Math.max(0,lang())]}):[];}catch(e){return [];}}
+function inspoCard(m){try{return W.LowiInspo?W.LowiInspo.render(m):'';}catch(e){return '';}}
 function renderLocal(m,prev,next){const mine=m.uid===scope,start=!prev||prev.uid!==m.uid||m.ts-prev.ts>300000,end=!next||next.uid!==m.uid||next.ts-m.ts>300000;
  const who=end?'<span class="cs-avatar cp-av" aria-hidden="true">'+mate(mine?(scope||'me'):m.uid,'l'+sid(m.id))+'</span>':'<span class="cp-av cp-gap" aria-hidden="true"></span>';
  const head='<div class="cs-by">'+(start&&!mine?'<b class="cs-name">'+esc(m.by)+'</b><span class="cr-bot">'+tr('botTag')+'</span>':'<span class="cp-sr">'+esc(mine?tr('you'):m.by)+' '+tr('says')+'</span>')+'</div>';
  const foot='<div class="cm-foot"><time datetime="'+new Date(m.ts).toISOString()+'">'+esc(time(m.ts))+'</time></div>';
  return '<article class="cm-msg cp-msg cp-local'+(mine?' mine':'')+(start?' cp-start':'')+(end?' cp-end':'')+'" id="cm-'+esc(m.id)+'" data-who="'+esc(m.by)+'" style="--chat-color:'+(mine?'#9cdac7':hueColor(m.uid,false))+'">'+who+'<div class="cm-bub">'+head+msgBody(m)+foot+'</div></article>';}
 function renderMessage(m,all,prev,next){
+ if(m.inspo)return inspoCard(m);
  if(m.local)return renderLocal(m,prev,next);
  if(m.demo||m.bot||blocked(m.uid))return '';
  const mine=m.uid===scope,p=profile(m.uid,m.by),re=m.re&&all.find(x=>x.id===m.re),pending=!!m.status,open=openId===m.id||pick===m.id;
@@ -577,7 +581,7 @@ function paint(el){
  dmCheck(ms);
  if(!W.LowiCompanionCore&&mateTries<20){mateTries++;setTimeout(refresh,1500);}
  const empty=st.phase==='ready'?(Object.values(prefs.blocks).some(x=>x.blocked)?tr('filtered'):tr('empty')):tr('waiting');
- const shown=ms.filter(x=>!x.demo&&!x.bot&&!blocked(x.uid)).concat(botLines()).sort((a,b)=>(+a.ts||0)-(+b.ts||0));
+ const shown=ms.filter(x=>!x.demo&&!x.bot&&!blocked(x.uid)).concat(botLines(),inspoLines()).sort((a,b)=>(+a.ts||0)-(+b.ts||0));
  let from=Math.max(0,shown.length-roomRows);if(roomFocus){const fi=shown.findIndex(x=>x.id===roomFocus);if(fi>=0&&fi<from)from=fi;}
  const rows=shown.slice(from).map((m,j)=>{const i=from+j;return dayLine(m,shown[i-1])+renderMessage(m,ms,shown[i-1],shown[i+1]);});if(from>0)rows.unshift('<div class="cm-more">'+button('earlier',tr('earlier'),'','cs-action cm-morebtn')+'</div>');const html=shown.length?rows.join(''):'<div class="cs-empty"><span class="cs-lantern" aria-hidden="true">✧</span><b>'+tr('emptyTitle')+'</b><p>'+empty+'</p>'+(st.phase==='ready'?button('hello',tr('hi')):'')+'</div>';
  if(!threadOpen&&W.LowiRooms){if(list.__html!==''){list.textContent='';list.__html='';}}else if(list.__html!==html){patchKids(list,shown.length?rows:[html]);list.__html=html;if(near||ownNew)list.scrollTop=list.scrollHeight;else if(list.scrollTop!==y)list.scrollTop=y;if(fk&&!list.contains(D.activeElement)){const b=[...list.querySelectorAll('[data-chat]')].find(b=>b.dataset.chat===fk.a&&b.dataset.id===fk.id&&b.dataset.uid===fk.uid&&b.dataset.emoji===fk.em);if(b)b.focus({preventScroll:true});}}

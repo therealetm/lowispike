@@ -8976,7 +8976,7 @@ function auChapters(){
 }
 function auBookSheet(){
   const ch = auChapters(); AU.book = {ch, i:0, on:false};
-  sheet('<button class="xbtn" data-act="close-sheet" aria-label="Close">' + ICO.x + '</button><div class="sheetbody"><div class="tiny gold">Listen and learn</div><div class="h2" style="margin:4px 40px 4px 0">Your session, as an audiobook</div><div class="small muted">' + ch.length + ' short chapters. Play it before you move, and again tomorrow. Hearing it twice is how it sticks.</div>' +
+  sheet('<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button><div class="sheetbody"><div class="tiny gold">Listen and learn</div><div class="h2" style="margin:4px 40px 4px 0">Your session, as an audiobook</div><div class="small muted">' + ch.length + ' short chapters. Play it before you move, and again tomorrow. Hearing it twice is how it sticks.</div>' +
     '<ol class="r5-chs" id="r5Chs">' + ch.map((c, i) => '<li><button class="r5-ch" data-r5="ch" data-i="' + i + '"><span class="tiny dim">' + esc(c.k) + '</span><b>' + esc(c.t) + '</b></button></li>').join("") + '</ol></div>' +
     '<div class="sheetfoot"><button class="btn primary" data-r5="book-play" id="r5BookPlay">' + R5IC.play.replace("<svg", '<svg width="20" height="20"') + ' Play from the start</button></div>');
   if (!auSupported()) { const b = r5$("#r5BookPlay"); if (b) b.insertAdjacentHTML("afterend", '<div class="small muted" style="margin-top:8px;text-align:center">This browser can\'t speak. Open it in Safari or Chrome.</div>'); }
@@ -9444,7 +9444,7 @@ function openProfile(name, me, push){
   const nS = z ? all.filter(x => x.s === p.s && x.n !== p.n).length + (p.me ? 0 : (meP().s === p.s ? 1 : 0)) : 0;
   const nT = t ? all.filter(x => x.t === t && x.n !== p.n).length + (p.me ? 0 : (R5.mbti === t ? 1 : 0)) : 0;
   let title = ""; try { title = titleOf(window.LowiCareBoard ? LowiCareBoard.shownLevel(p) : p.lv); } catch(e){}
-  sheet('<button class="xbtn" data-act="close-sheet" aria-label="Close">' + ICO.x + '</button>' + (PST.length > 1 ? '<button class="r5-sback" data-r5="pback" aria-label="Back">' + R5IC.back + '</button>' : "") +
+  sheet('<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button>' + (PST.length > 1 ? '<button class="r5-sback" data-r5="pback" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + R5IC.back + '</button>' : "") +
     '<div class="sheetbody r5-prof" id="r5Prof" data-who="' + esc(p.n) + '">' + bubbleHTML(p) +
     '<div class="h2" style="margin-top:14px">' + esc(p.n) + (p.founder ? ' <span class="cm-tag">founder</span>' : "") + (p.bot ? ' <span class="cm-tag r3z-bot">demo bot</span>' : "") + (p.me ? ' <span class="small gold">· you</span>' : "") + '</div>' +
     '<div class="small muted">Level ' + (window.LowiCareBoard ? LowiCareBoard.shownLevel(p) : p.lv) + (title ? " · " + esc(title) : "") + ' · ' + (p.streak || 0) + '-day streak</div>' + (p.bio ? '<div class="p r5-bio">' + esc(p.bio) + '</div>' : "") +
@@ -9460,14 +9460,14 @@ function openGroup(kind, v, push){
   const all = people(), me = meP(), list = all.filter(x => (kind === "sign" ? x.s : x.t) === v && x.n !== me.n).sort((a, b) => b.lv - a.lv);
   const z = kind === "sign" ? sgn(v) : null, mine = (kind === "sign" ? me.s : me.t) === v;
   if (!push) PST.length = 0; PST.push({k:"g", kind, v});
-  sheet('<button class="xbtn" data-act="close-sheet" aria-label="Close">' + ICO.x + '</button>' + (PST.length > 1 ? '<button class="r5-sback" data-r5="pback" aria-label="Back">' + R5IC.back + '</button>' : "") +
+  sheet('<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button>' + (PST.length > 1 ? '<button class="r5-sback" data-r5="pback" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + R5IC.back + '</button>' : "") +
     '<div class="sheetbody"><div class="r5-gh" style="--b1:' + pal(kind === "sign" ? v : "")[0] + '"><span class="r5-tg big' + (kind === "type" ? " r5-mb" : "") + '">' + (z ? z.g : esc(v)) + '</span><div><div class="h2" id="r5GroupTitle">' + list.length + ' ' + esc(kind === "sign" ? v : v) + (kind === "sign" ? "" : "s") + ' are also members</div><div class="small muted">' + (kind === "sign" ? esc(z ? z.el : "") + " sign" : esc(MBTI[v])) + (mine ? " · same as you" : "") + '</div></div></div>' +
     '<div class="r5-plist" id="r5PList">' + list.slice(0, 60).map(x => { const zz = sgn(x.s); return '<button class="r5-prow" data-r5="profile" data-who="' + esc(x.n) + '" data-push="1"><span class="r5-pav" style="--b1:' + pal(x.s)[0] + ';--b2:' + pal(x.s)[1] + '">' + esc(x.n.charAt(0)) + '</span><span style="flex:1;min-width:0;text-align:left"><b>' + esc(x.n) + '</b><small>Lv ' + x.lv + ' · ' + (kind === "sign" ? x.t + " " + esc(MBTI[x.t]) : (zz ? zz.g + " " : "") + esc(x.s)) + '</small></span><span class="dim">›</span></button>'; }).join("") +
     (list.length > 60 ? '<div class="small muted" style="padding:10px 4px">and ' + (list.length - 60) + ' more</div>' : "") + '</div></div>');
 }
 function pBack(){ PST.pop(); const t = PST.pop(); if (!t) return closeSheet(); if (t.k === "p") openProfile(t.name, t.me, true); else openGroup(t.kind, t.v, true); }
 function mbtiSheet(){
-  sheet('<button class="xbtn" data-act="close-sheet" aria-label="Close">' + ICO.x + '</button><div class="sheetbody"><div class="h2" style="margin:4px 40px 4px 0">Your personality type</div><div class="small muted">Shown on your profile so people who tick like you can find you. Optional.</div>' +
+  sheet('<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button><div class="sheetbody"><div class="h2" style="margin:4px 40px 4px 0">Your personality type</div><div class="small muted">Shown on your profile so people who tick like you can find you. Optional.</div>' +
     '<div class="r5-mbgrid">' + Object.keys(MBTI).map(k => '<button class="r5-mbc' + (R5.mbti === k ? " on" : "") + '" data-r5="mbti" data-v="' + k + '"><b>' + k + '</b><small>' + MBTI[k] + '</small></button>').join("") + '</div>' +
     (R5.mbti ? '<button class="btn ghost" data-r5="mbti" data-v="" style="margin-top:12px">Remove it</button>' : "") + '<div class="small dim" style="margin-top:10px">Don\'t know yours? A free 16-type test takes about 10 minutes.</div></div>');
 }
@@ -9911,7 +9911,7 @@ function cardHTML(){
 }
 function paintCard(){ const c = $("#lcAcct"); if (!c) return; const w = document.createElement("div"); w.innerHTML = cardHTML(); const n = w.querySelector("#lcAcct"); if (n) c.replaceWith(n); }
 function formSheet(kind){ const h = H(); if (!h) return; const add = kind === "add";
-  h.openSheet('<button class="xbtn" data-act="close-sheet" aria-label="Close">' + h.icon.x + '</button><div class="sheetbody"><div class="h2">' + (add ? "Keep your account" : "Sign in to your account") + '</div>' +
+  h.openSheet('<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + h.icon.x + '</button><div class="sheetbody"><div class="h2">' + (add ? "Keep your account" : "Sign in to your account") + '</div>' +
     '<p class="small muted" style="margin:6px 0 10px">' + (add ? "With an email and password you can sign in on any phone and get everything back." : "Your posts, name and settings come back on this phone. Health details never leave the phone they were typed on.") + '</p>' +
     '<div class="field"><label for="lcEmail">Email</label><input class="input" id="lcEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="off"></div>' +
     '<div class="field"><label for="lcPass">' + (add ? "Password (8+ characters)" : "Password") + '</label><input class="input" id="lcPass" type="password" autocomplete="' + (add ? "new-password" : "current-password") + '"></div>' +
@@ -10675,7 +10675,7 @@ R2.sheet = function(html, opts){
   const ov = document.createElement("div");
   ov.className = "r2-ov" + (opts.full ? " full" : "") + (opts.cls ? " " + opts.cls : "");
   ov.innerHTML = '<div class="r2-scrim"></div><div class="r2-sh" role="dialog" aria-modal="true">' + (opts.full ? "" : '<div class="r2-grab"></div>') +
-    (opts.noClose ? "" : '<button class="r2-x" data-r2="close" aria-label="Close">' + R2.ico.x + '</button>') + '<div class="r2-shb">' + html + '</div></div>';
+    (opts.noClose ? "" : '<button class="r2-x" data-r2="close" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + R2.ico.x + '</button>') + '<div class="r2-shb">' + html + '</div></div>';
   document.body.appendChild(ov);
   const item = {ov, onClose: opts.onClose, full: !!opts.full, noBack: !!opts.noBack || !!opts.noClose};
   ovStack.push(item);
@@ -10859,7 +10859,7 @@ function formHTML(mode){
   const up = mode === "signup";
   const s = R2.S(), nm = s && s.user && s.user.name ? s.user.name : "";
   return '<div class="r2-start form">' +
-    '<button class="r2-back" data-r2a="home" aria-label="Back">' + R2.ico.back + '</button>' +
+    '<button class="r2-back" data-r2a="home" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + R2.ico.back + '</button>' +
     '<div class="r2-st-top"><h1>' + (up ? "Create your account" : "Welcome back") + '</h1><p>' + (up ? (nm ? "Two fields. That's it." : "Three fields. That's it.") : "Sign in to get all your stuff back.") + '</p></div>' +
     '<form class="r2-form" data-r2form="' + mode + '" novalidate autocomplete="on">' +
     /* Oct 21 (TikTok advice: fewer fields convert better): the start already asked the first name, so the form doesn't ask it twice */
@@ -11985,7 +11985,7 @@ function ckPaint(dir){ if (!CK) return; const r = CK.r, n = r.steps.length, i = 
   else { const t = r.steps[i], kind = sceneOf(t), mm = ckMinutes(t);
     body = sceneHTML(kind, itemOf(t, r)) + '<div class="tiny gold">Step ' + (i + 1) + ' of ' + n + '</div><div class="h2 p2-cktx">' + esc(t) + '</div>' +
       (mm && mm <= 90 ? '<button class="p2-timer" data-p2="timer" data-m="' + mm + '" id="p2Timer">' + IC.clock + '<span>Start a ' + mm + ' min timer</span></button>' : ""); }
-  const nav = '<div class="p2-cknav">' + (i >= 0 ? '<button class="r2-btn ghost p2-ckb" data-p2="prev" aria-label="Back">' + IC.back + '</button>' : "") +
+  const nav = '<div class="p2-cknav">' + (i >= 0 ? '<button class="r2-btn ghost p2-ckb" data-p2="prev" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + IC.back + '</button>' : "") +
     (i >= n ? (window.LowiAte ? LowiAte.doneNav(r) : r.book ? '<button class="r2-btn pri big" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="all">Add to today</button>' : '<button class="r2-btn pri big" data-p2="closeall">Close</button>')
       : '<button class="r2-btn pri big" data-p2="next" id="p2Next"><span>' + (i < 0 ? "Let's go" : i === n - 1 ? "Finish" : "Next") + '</span>' + IC.go + '</button>') + '</div>';
   box.innerHTML = '<div class="p2-cktop"><span class="small muted p2-ckname">' + esc(r.swapName || r.n) + '</span></div>' + bar + '<div class="p2-ckbody ' + (dir > 0 ? "from-r" : dir < 0 ? "from-l" : "") + '">' + body + '</div>' + nav;
@@ -20550,7 +20550,7 @@ function act(q){ if (!q) return; try {
 function opt(v, l, on){ return '<button type="button" class="chip n1-opt' + (on ? " on" : "") + '" data-n1v="' + esc(v) + '" aria-pressed="' + (on ? "true" : "false") + '">' + l + '</button>'; }
 function sel(k, a, b, v){ let o = ""; for (let i = a; i <= b; i++) o += '<option value="' + i + '"' + (i === v ? " selected" : "") + '>' + hh(i) + '</option>'; return '<select class="input n1-sel" data-n1s="' + k + '">' + o + '</select>'; }
 function sheetHTML(){ const s = get();
-  return '<button class="xbtn" data-act="close-sheet" aria-label="Close">' + XI + '</button><div class="sheetbody n1-sheet" data-noi18n><div class="h2" style="margin:4px 40px 6px 0">' + esc(w("h")) + '</div>' +
+  return '<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + XI + '</button><div class="sheetbody n1-sheet" data-noi18n><div class="h2" style="margin:4px 40px 6px 0">' + esc(w("h")) + '</div>' +
     '<div class="small muted" style="margin:0 0 14px">' + esc(w("sub")) + '</div>' +
     '<div class="n1-row"><b>' + esc(w("onL")) + '</b><div class="n1-opts" data-n1g="on">' + opt("1", esc(w("on")), s.on) + opt("0", esc(w("off")), !s.on) + '</div></div>' +
     '<div class="n1-row n1-dim' + (s.on ? "" : " dis") + '"><b>' + esc(w("freqL")) + '</b><div class="n1-opts n1-freq" data-n1g="freq">' + ["few", "normal", "more"].map(k => opt(k, esc(w(k)) + '<small>' + esc(w(k + "S")) + '</small>', s.freq === k)).join("") + '</div></div>' +

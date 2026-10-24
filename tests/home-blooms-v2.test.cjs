@@ -103,8 +103,9 @@ test('labels are the plain words E-man asked for, no Again / Photo, no emoji any
   /* Fuel words changed Oct 18 evening (E-man: "only Shop and Cook, plus a meal log button you can actually see", Swap removed
      for good): Today's step / Snack / Swap became Shop / Log meal. Behaviour is checked in tests/ui-fuel-navigation.test.cjs. */
   /* Move words changed Oct 23 2026 (Eman: three step ranges like Sleep, "casual, steady and epic"): tests/move-steps.test.cjs */
-  for (const w of ["'Shop'", "'Log meal'", "'Cook'", /* Water words changed Oct 23 2026 (Eman: sips, a cup or a whole bottle; undo = long press): tests/water-sips.test.cjs */
-  "'Sips'", "'Cup'", "'Bottle'", "'Casual'", "'Steady'", "'Epic'", "'under 5k'", "'10k+'"]) assert.ok(src.includes(w), w);
+  /* Oct 24 2026 (Emmanuel: one word per bubble): Log meal -> Meal, the Move sublines are numbers only (<5k): tests/bloom-minimal-labels.test.cjs */
+  for (const w of ["'Shop'", "'Meal'", "'Cook'", /* Water words changed Oct 23 2026 (Eman: sips, a cup or a whole bottle; undo = long press): tests/water-sips.test.cjs */
+  "'Sips'", "'Cup'", "'Bottle'", "'Casual'", "'Steady'", "'Epic'", "'<5k'", "'10k+'"]) assert.ok(src.includes(w), w);
   assert.doesNotMatch(src, /T\('Quick'|T\('Medium'|T\('Long'/, 'the Oct 17 minute guesses are gone from the Move bloom');
   assert.doesNotMatch(src, /T\('Again'|T\('Photo'|label: *'Again'|label: *'Photo'/);
   assert.doesNotMatch(src, /T\('Swap'|T\("Today's step"|T\('Snack'/, 'Swap, Today\'s step and Snack are gone from Fuel');

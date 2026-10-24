@@ -49,7 +49,7 @@
         meals: ['meals logged', 'Mahlzeiten eingetragen', 'comidas registradas'],
         meal1: ['meal logged', 'Mahlzeit eingetragen', 'comida registrada'],
         drink: ['Cup logged. I drink with you!', 'Glas eingetragen. Ich trinke mit!', 'Vaso registrado. ¡Bebo contigo!'],
-        drinkSips: ['A few sips. Every sip fills me up!', 'Ein paar Schlucke. Jeder Schluck füllt mich auf!', 'Unos sorbos. ¡Cada sorbo me llena!'],
+        drinkSips: ['Ten sips, roughly. Every sip fills me up!', 'Zehn Schlucke, ungefähr. Jeder Schluck füllt mich auf!', 'Diez sorbos, más o menos. ¡Cada sorbo me llena!'],
         drinkBottle: ['A whole bottle! I am glowing.', 'Eine ganze Flasche! Ich leuchte.', '¡Una botella entera! Estoy brillando.'],
         waterSaved: ['Water logged', 'Wasser eingetragen', 'Agua registrada'],
         captured: ['Caught for Misty', 'Für Misty eingefangen', 'Capturado para Misty'],

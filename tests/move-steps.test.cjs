@@ -131,7 +131,8 @@ test('sun-meter, world health and world mood read the thirds unchanged (mq is st
 test('the bloom: three step orbs after Mirror, the picked one marked (aria-pressed), plain words in EN / DE / ES, honest copy', () => {
     const hb = read('home-blooms-v2.js'), mb = read('move-bubble.js'), css = read('home-blooms-v2.css') + read('move-bubble.css');
     assert.match(hb, /casual: \(\) => T\('Casual', 'Locker', 'Tranquilo'\), steady: \(\) => T\('Steady', 'Stetig', 'Constante'\), epic: \(\) => T\('Epic', 'Episch', 'Épico'\)/);
-    assert.match(hb, /casual: \(\) => T\('under 5k', 'unter 5k', 'menos de 5k'\), steady: \(\) => '5k\\u201310k', epic: \(\) => '10k\+'/);
+    /* Oct 24 2026 (Emmanuel: no second word on a bubble): the range is a number only, the same in every language */
+    assert.match(hb, /casual: \(\) => '<5k', steady: \(\) => '5k\\u201310k', epic: \(\) => '10k\+'/);
     assert.match(hb, /on: cur === L\.id/); assert.match(hb, /aria-pressed="' \+ !!a\.on/); assert.match(hb, /hb2-on/);
     assert.match(css, /\.hb2-orb\.hb2-on \{/); assert.match(css, /\.wm-orb\.on \{/);
     assert.ok(hb.indexOf("id: 'mirror'") < hb.indexOf('C.LEVELS.forEach'), 'Mirror stays first');

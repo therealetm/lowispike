@@ -83,7 +83,9 @@ test('wiring: Sleep joins the bloom ring and the two-finger ring', () => {
     assert.match(hb, /const ALL = \['fuel', 'water', 'move', 'sleep'\]/, 'two fingers open Sleep too');
     assert.match(hb, /R\.place\(groups, \{ even: true \}\)/, 'the two-finger ring is one even circle');
     assert.match(hb, /kind === 'sleep'[\s\S]{0,1600}SL\.set\(b\)/, 'Sleep answers write through LowiHomeSettingsSleepV2.sleep.set');
-    assert.match(hb, /sub: T\('last night', 'letzte Nacht', 'anoche'\)/, 'the question lives inside each bubble');
+    /* Oct 24 2026 (Emmanuel: "letzte Nacht" three times was the repeated second word): no subline, the aria-label keeps "last night" */
+    assert.doesNotMatch(hb, /sub: T\('last night', 'letzte Nacht', 'anoche'\)/, 'no repeated "last night" line on every bubble');
+    assert.match(hb, /aria: T\('Sleep last night', 'Schlaf letzte Nacht', 'Sueño anoche'\)/, 'the question stays for screen readers');
     assert.match(hb, /D\.addEventListener\('lowi:sleep', onData\)/, 'a new answer refreshes the open ring');
     assert.match(ss, /if \(k === 'sleep'\) \{ const B = ringBlooms\(\);/, 'a tap on Sleep opens the shared ring, not the old loose row');
     assert.match(ss, /if \(kind === 'sleep'\) \{ const B = ringBlooms\(\); if \(B\) \{ close\(false\); if \(B\.open\('sleep'\)\) return true; \} \}/, 'show(sleep) uses the ring too');

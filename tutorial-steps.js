@@ -199,9 +199,9 @@
             id: 'water', area: 'home', target: ['#whHud .wh-water'], covers: ['water', 'hydration'], teaches: ['water-tap'], tryIt: { how: 'tap' },
             title: { en: 'Water', de: 'Wasser', es: 'Agua' },
             text: {
-                en: 'Tap Water, then pick what you just drank: a few sips, a cup or a whole bottle. Each tap fills Water up by that much.',
-                de: 'Tipp auf Wasser und wähl, was du gerade getrunken hast: ein paar Schlucke, ein Glas oder eine ganze Flasche. Jeder Tipp füllt Wasser um so viel auf.',
-                es: 'Toca Agua y elige lo que acabas de beber: unos sorbos, un vaso o una botella entera. Cada toque llena el Agua en esa cantidad.'
+                en: 'Tap Water, then pick what you just drank: 10 sips, a cup or a whole bottle. Each tap fills Water up by that much.',
+                de: 'Tipp auf Wasser und wähl, was du gerade getrunken hast: 10 Schlucke, ein Glas oder eine ganze Flasche. Jeder Tipp füllt Wasser um so viel auf.',
+                es: 'Toca Agua y elige lo que acabas de beber: 10 sorbos, un vaso o una botella entera. Cada toque llena el Agua en esa cantidad.'
             }
         },
         {

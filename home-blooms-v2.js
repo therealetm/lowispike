@@ -30,6 +30,7 @@
     /* ---------------- pure part (also loaded by node tests) ---------------- */
     const KINDS = ['fuel', 'water', 'move', 'gap'];
     const WATER_GOAL = 6; /* same as spirit.js WATER_GOAL (E-man: six cups a day) */
+    const SIPS_N = 10; /* Oct 24 2026: the Sips orb is ten sips (spirit-core WATER.amounts.sips, about half a cup, rough) */
 
     function dayKey(t) { const d = new Date(t == null ? Date.now() : t); const p = n => (n < 10 ? '0' : '') + n; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
 
@@ -52,7 +53,7 @@
         const out = JSON.parse(JSON.stringify(f));
         out.water = out.water || {};
         /* the newest water event of today goes with it (keeps waterEvents and the count telling the same story).
-           wsip (Oct 23): it takes off its own amount (out.waterAmt[id]: sips 0.25, bottle 3; no entry = one cup, as before) */
+           wsip (Oct 23): it takes off its own amount (out.waterAmt[id]: ten sips 0.5 (a few sips 0.25 before Oct 24), bottle 3; no entry = one cup, as before) */
         let amt = 1;
         const ev = out.waterEvents && typeof out.waterEvents === 'object' ? out.waterEvents : null;
         if (ev) {
@@ -159,7 +160,7 @@
         return Math.max(min, Math.floor(base * maxPx / wordPx * 2) / 2);
     }
 
-    const core = { KINDS, WATER_GOAL, dayKey, gapText, waterUndo, layout, noteSpot, labelSize };
+    const core = { KINDS, WATER_GOAL, SIPS_N, dayKey, gapText, waterUndo, layout, noteSpot, labelSize };
     if (typeof module === 'object' && module.exports) { module.exports = core; return; }
     if (!root || !root.document) return;
 
@@ -218,28 +219,32 @@
 
     /* Oct 23 2026 (Eman): three step ranges like Sleep's three, "casual, steady and epic", under 5k, 5k-10k and 10k+ */
     const MOVE_NAMES = { casual: () => T('Casual', 'Locker', 'Tranquilo'), steady: () => T('Steady', 'Stetig', 'Constante'), epic: () => T('Epic', 'Episch', 'Épico') };
-    const MOVE_HINTS = { casual: () => T('under 5k', 'unter 5k', 'menos de 5k'), steady: () => '5k\u201310k', epic: () => '10k+' };
+    /* Oct 24 2026 (Emmanuel, German Home: "repetitive two words", "words way too long and big", "minimal"): the small line is a
+       number only, the same in every language, never a second word */
+    const MOVE_HINTS = { casual: () => '<5k', steady: () => '5k\u201310k', epic: () => '10k+' };
     const MOVE_RANGES = { casual: () => T('under 5,000 steps', 'unter 5.000 Schritte', 'menos de 5.000 pasos'), steady: () => T('5,000 to 9,999 steps', '5.000 bis 9.999 Schritte', 'de 5.000 a 9.999 pasos'), epic: () => T('10,000 steps or more', '10.000 Schritte oder mehr', '10.000 pasos o más') };
 
     /* the orbs for one bubble: [{id, label, sub, icon, run, keep, disabled, q}] (missing modules -> left out) */
     function actionsFor(kind) {
         const A = [];
         if (kind === 'fuel') {
-            /* only Shop, Cook and a visible meal log (E-man, Oct 18): no Swap, no Today's step */
-            if (fn(W.LowiStorePicks, 'open')) A.push({ id: 'shop', label: T('Shop', 'Einkaufen', 'Comprar'), sub: T('what to buy', 'was kaufen?', '¿qué compro?'), icon: 'shop', run: () => W.LowiStorePicks.open('home-bloom') });
-            if (fn(W.LowiHost, 'go')) A.push({ id: 'cook', label: T('Cook', 'Kochen', 'Cocinar'), sub: T('recipes', 'Rezepte', 'recetas'), icon: 'cook', run: () => W.LowiHost.go('shelf') });
-            if (fn(W.LowiSpirit, 'meal')) A.push({ id: 'log', label: T('Log meal', 'Mahlzeit eintragen', 'Anotar comida'), icon: 'log', run: mealLog });
+            /* only Shop, Cook and a visible meal log (E-man, Oct 18): no Swap, no Today's step.
+               Oct 24 2026 (Emmanuel: "Kochen" + "Rezepte" say the same thing twice, every bubble one word): one word each, no subline;
+               the full meaning stays in the aria-label */
+            if (fn(W.LowiStorePicks, 'open')) A.push({ id: 'shop', label: T('Shop', 'Einkaufen', 'Comprar'), aria: T('Shop: what to buy', 'Einkaufen: was kaufen?', 'Comprar: ¿qué compro?'), icon: 'shop', run: () => W.LowiStorePicks.open('home-bloom') });
+            if (fn(W.LowiHost, 'go')) A.push({ id: 'cook', label: T('Cook', 'Kochen', 'Cocinar'), aria: T('Cook: recipes', 'Kochen: Rezepte', 'Cocinar: recetas'), icon: 'cook', run: () => W.LowiHost.go('shelf') });
+            if (fn(W.LowiSpirit, 'meal')) A.push({ id: 'log', label: T('Meal', 'Mahlzeit', 'Comida'), aria: T('Log a meal', 'Mahlzeit eintragen', 'Anotar comida'), icon: 'log', run: mealLog });
         } else if (kind === 'water') {
             /* wsip (Oct 23, Eman: "x amount of sip, or one cup, or one whole bottle"): three estimates, each tap fills the bubble by that much.
-               Amounts live in LowiSpiritCore.WATER (sips 1/4 cup, cup, bottle 3 cups; 1 cup ~250 ml). Undo = long press on the Water bubble. */
+               Amounts live in LowiSpiritCore.WATER (ten sips 1/2 cup since Oct 24, cup, bottle 3 cups; 1 cup ~250 ml). Undo = long press on the Water bubble. */
             const can = fn(W.LowiSpirit, 'water') || fn(W.LowiVitalsBridge, 'water');
-            const K = W.LowiSpiritCore, amt = k => (K && K.waterAmount ? K.waterAmount(k) : ({ sips: 0.25, cup: 1, bottle: 3 })[k]);
-            const ml = k => '\u2248 ' + Math.round(amt(k) * ((K && K.WATER && K.WATER.ml) || 250) / 10) * 10 + ' ml';
+            /* Oct 24 2026 (Emmanuel: "Sips, so it's based on sips, like 10 sips, not milliliters"): no ml on the orbs. Sips is
+               ten sips (a rough estimate, sip size varies, never a glass); Cup and Bottle need no number */
             const add = k => () => { if (fn(W.LowiSpirit, 'water')) W.LowiSpirit.water(k); else W.LowiVitalsBridge.water('hb2-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), k); };
             if (can) {
-                A.push({ id: 'sips', label: T('Sips', 'Schlucke', 'Sorbos'), sub: ml('sips'), aria: T('A few sips', 'Ein paar Schlucke', 'Unos sorbos') + ', ' + ml('sips'), icon: 'sips', keep: true, q: 0.2, run: add('sips') });
-                A.push({ id: 'cup', label: T('Cup', 'Glas', 'Vaso'), sub: ml('cup'), aria: T('One cup', 'Ein Glas', 'Un vaso') + ', ' + ml('cup'), icon: 'cup', keep: true, q: 0.5, run: add('cup') });
-                A.push({ id: 'bottle', label: T('Bottle', 'Flasche', 'Botella'), sub: ml('bottle'), aria: T('One whole bottle', 'Eine ganze Flasche', 'Una botella entera') + ', ' + ml('bottle'), icon: 'bottle', keep: true, q: 0.9, run: add('bottle') });
+                A.push({ id: 'sips', label: T('Sips', 'Schlucke', 'Sorbos'), sub: '\u00d7' + SIPS_N, aria: T('10 sips, roughly', '10 Schlucke, ungefähr', '10 sorbos, más o menos'), icon: 'sips', keep: true, q: 0.2, run: add('sips') });
+                A.push({ id: 'cup', label: T('Cup', 'Glas', 'Vaso'), aria: T('One cup', 'Ein Glas', 'Un vaso'), icon: 'cup', keep: true, q: 0.5, run: add('cup') });
+                A.push({ id: 'bottle', label: T('Bottle', 'Flasche', 'Botella'), aria: T('One whole bottle', 'Eine ganze Flasche', 'Una botella entera'), icon: 'bottle', keep: true, q: 0.9, run: add('bottle') });
             }
         } else if (kind === 'move') {
             const C = W.LowiMoveEstimateCore;
@@ -253,8 +258,7 @@
         } else if (kind === 'sleep') {
             /* Oct 23, 18:03 (Eman's iPhone: Sleep's three options sat as a loose row bottom left with a question line under them, "Sleeping
                isn't aligned"): Sleep blooms exactly like Fuel, Water and Move. Its three answers are bubbles on the same circle round
-               Misty, short to long like Sips / Cup / Bottle, the question lives inside each bubble ("last night"), last night's answer is
-               marked. Writing stays in home-settings-sleep-v2.js (LowiHomeSettingsSleepV2.sleep.set: same store, same XP, same event). */
+               Misty, short to long like Sips / Cup / Bottle, last night's answer is marked. Writing stays in home-settings-sleep-v2.js (LowiHomeSettingsSleepV2.sleep.set: same store, same XP, same event). */
             const S = W.LowiHomeSettingsSleepV2, SL = S && S.sleep;
             if (SL && fn(SL, 'set') && Array.isArray(S.BANDS)) {
                 let cur = null; try { const t = fn(SL, 'today') ? SL.today() : null; cur = t && t.band; } catch (e) { }
@@ -264,7 +268,8 @@
                     const lab = (TXl && TXl.short && TXl.short[b]) || short[b] || b;
                     const long = (TXl && TXl[b]) || lab;
                     const q = S.FILL && S.FILL[b] != null ? S.FILL[b] : ({ under6: 1 / 3, '6to7': 2 / 3, '7plus': 1 })[b];
-                    A.push({ id: 's-' + b, band: b, label: lab, sub: T('last night', 'letzte Nacht', 'anoche'), aria: T('Sleep last night', 'Schlaf letzte Nacht', 'Sueño anoche') + ': ' + long, icon: 'moon', q, on: cur === b, run: () => SL.set(b) });
+                    /* Oct 24 2026 (Emmanuel: "letzte Nacht" x3 was the repetition): no subline (aria keeps it); nbsp keeps "6–7 Std." whole */
+                    A.push({ id: 's-' + b, band: b, label: String(lab).replace(/ /g, '\u00a0'), aria: T('Sleep last night', 'Schlaf letzte Nacht', 'Sueño anoche') + ': ' + long, icon: 'moon', q, on: cur === b, run: () => SL.set(b) });
                 });
             }
         }
@@ -309,15 +314,18 @@
         return { x: vw / 2, y: vh / 2, r: Math.min(vw, vh) * 0.16 };
     }
 
-    /* measure each orb label's widest single word once, when the bloom is in the page (no frame loop), and shrink only that label */
+    /* measure each orb label's widest single word once, when the bloom is in the page (no frame loop).
+       Oct 24 2026 (Emmanuel: some bubbles had "one large word" next to squeezed ones): every orb of one bloom gets the SAME size,
+       the size the longest word needs, so "Glas" never looks bigger than "Einkaufen". A non-breaking space keeps "6–7 Std." whole. */
     function fitLabels(ov) {
         if (!ov || !ov.isConnected) return;
-        let meter = null;
+        let meter = null, common = Infinity;
+        const bs = [];
         ov.querySelectorAll('.hb2-tx b').forEach(b => {
             b.style.fontSize = '';
             const cs = getComputedStyle(b);
             const max = parseFloat(cs.maxWidth) || b.clientWidth;
-            const words = (b.textContent || '').split(/\s+/).filter(Boolean);
+            const words = (b.textContent || '').split(/[ \t\n]+/).filter(Boolean);
             if (!max || !words.length) return;
             if (!meter) { meter = D.createElement('span'); meter.setAttribute('aria-hidden', 'true'); meter.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;left:-9999px;top:0;font:inherit;letter-spacing:inherit'; }
             b.appendChild(meter);
@@ -327,9 +335,12 @@
             meter.remove();
             const base = parseFloat(cs.fontSize) || 12.5;
             const size = labelSize(widest + 1, max, base, 10);
-            if (size < base) b.style.fontSize = size + 'px';
+            bs.push({ b, base });
+            common = Math.min(common, size);
         });
+        bs.forEach(x => { if (common < x.base) x.b.style.fontSize = common + 'px'; });
     }
+
 
     function render(kind, src) {
         const acts = actionsFor(kind);
@@ -631,7 +642,7 @@
 
     const api = {
         mount, unmount, open: k => open(k), close: () => close(), isOpen: () => st.open, openAll, isAll: () => st.open === 'all',
-        actions: k => actionsFor(k).map(a => ({ id: a.id, label: a.label, sub: a.sub, disabled: !!a.disabled })),
+        actions: k => actionsFor(k).map(a => ({ id: a.id, label: a.label, sub: a.sub, aria: a.aria, disabled: !!a.disabled })),
         layout: () => (st.ov && st.ov.__layout) || null,
         undoWater: waterUndoNow, fitLabels: ov => fitLabels(ov || st.ov), core
     };

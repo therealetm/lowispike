@@ -17,7 +17,8 @@ const PHONE = (w, h) => ({ viewport: { width: w, height: h }, deviceScaleFactor:
 /* TESTING.md matrix: 390x844, 375x812, 375x667, plus the separate iPad layout; each in default motion and reduced motion */
 const VIEWS = { iphone_chromium: ['chromium', PHONE(390, 844)], iphone375x812_chromium: ['chromium', PHONE(375, 812)], iphone375x667_chromium: ['chromium', PHONE(375, 667)], iphone13_webkit: ['webkit', 'iPhone 13'], ipad_landscape_webkit: ['webkit', IPAD] };
 const MOTIONS = ['reduce', 'no-preference'];
-const WORDS = { en: ['Shop', 'Cook', 'Log meal'], de: ['Einkaufen', 'Kochen', 'Mahlzeit eintragen'], es: ['Comprar', 'Cocinar', 'Anotar comida'] };
+/* Oct 24 2026 (Emmanuel: one word per bubble): Log meal became Meal */
+const WORDS = { en: ['Shop', 'Cook', 'Meal'], de: ['Einkaufen', 'Kochen', 'Mahlzeit'], es: ['Comprar', 'Cocinar', 'Comida'] };
 const INIT = `try {
   const d = new Date(), k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   localStorage.setItem('lowi.daily.seen', k); sessionStorage.setItem('lowi.a2hs.x', '1'); localStorage.setItem('lowi.gate', 'done'); localStorage.setItem('lowi.news.seen', '99999');

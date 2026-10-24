@@ -9,8 +9,10 @@ const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const DAY = B.dayKey(new Date(2026, 9, 23, 15, 0).getTime());
 const ts = (h, m) => new Date(2026, 9, 23, h, m || 0).getTime();
 
-test('amounts: a few sips = 1/4 cup, a cup = 1, a whole bottle = 3 cups; 1 cup is about 250 ml; goal stays 6', () => {
-  assert.strictEqual(K.waterAmount('sips'), 0.25);
+/* Oct 24 2026 (Emmanuel: "Sips ... based on sips, like 10 sips, not milliliters"): Sips is now TEN sips, counted as half a cup */
+test('amounts: ten sips = 1/2 cup, a cup = 1, a whole bottle = 3 cups; 1 cup is about 250 ml; goal stays 6', () => {
+  assert.strictEqual(K.waterAmount('sips'), 0.5);
+  assert.strictEqual(K.waterAmount(0.25), 0.25, 'old "a few sips" entries keep their own amount');
   assert.strictEqual(K.waterAmount('cup'), 1);
   assert.strictEqual(K.waterAmount('bottle'), 3);
   assert.strictEqual(K.waterAmount(), 1, 'no kind = one cup, as before');
@@ -54,10 +56,10 @@ function bridge() {
   return { obj, S, events, fast: () => JSON.parse(store.lowi_fast_v1 || '{}') };
 }
 
-test('four sips fill one cup and earn the same 2 XP as one cup, not 8', () => {
+test('two taps of ten sips fill one cup and earn the same 2 XP as one cup, not 4', () => {
   const { obj, S, fast } = bridge();
-  const got = [1, 2, 3, 4].map(i => obj.water('s' + i, 'sips'));
-  assert.deepStrictEqual(got, [0, 0, 0, 2]);
+  const got = [1, 2].map(i => obj.water('s' + i, 'sips'));
+  assert.deepStrictEqual(got, [0, 2]);
   assert.strictEqual(fast().water[DAY], 1);
   assert.strictEqual(S.ledger.length, 1);
 });
@@ -136,7 +138,7 @@ test('the Home bubble shows one short value and no unit word', () => {
 
 test('Misty says a line per amount in EN/DE/ES', () => {
   const src = read('spirit.js');
-  assert.match(src, /drinkSips: \['A few sips/);
+  assert.match(src, /drinkSips: \['Ten sips, roughly/);
   assert.match(src, /drinkBottle: \['A whole bottle/);
   assert.match(src, /V\.water\(uid\(\), kind\)/);
 });

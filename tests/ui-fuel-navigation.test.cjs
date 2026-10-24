@@ -76,9 +76,10 @@ function page(opts) {
 }
 
 const LABELS = {
-    en: ['Shop', 'Cook', 'Log meal'],
-    de: ['Einkaufen', 'Kochen', 'Mahlzeit eintragen'],
-    es: ['Comprar', 'Cocinar', 'Anotar comida']
+    /* Oct 24 2026 (Emmanuel: one word per bubble, "Mahlzeit eintragen" was too long): Log meal became Meal */
+    en: ['Shop', 'Cook', 'Meal'],
+    de: ['Einkaufen', 'Kochen', 'Mahlzeit'],
+    es: ['Comprar', 'Cocinar', 'Comida']
 };
 
 test('Fuel blooms exactly Shop, Cook and Log meal, in that order, with every module present', () => {
@@ -93,6 +94,8 @@ test('Fuel orbs use the same plain words in English, German and Spanish', () => 
         /* sublines are 9px and one line in a 71px orb (375-wide phones): longer than about 12 characters gets cut with an
            ellipsis (seen live: "was kann ich kaufen?", "was du gegessen hast", "what can I buy?" at 375), so short or none */
         api.actions('fuel').forEach(a => assert.ok(!a.sub || a.sub.length <= 12, lang + ' ' + a.id + ' subline short enough to show whole: ' + a.sub));
+        /* Oct 24 2026 (Emmanuel: "Kochen" + "Rezepte" said it twice): no Fuel orb has a subline any more, one word each */
+        api.actions('fuel').forEach(a => { assert.ok(!a.sub, lang + ' ' + a.id + ' has no second line: ' + a.sub); assert.ok(!/\s/.test(a.label), lang + ' one word: ' + a.label); });
     }
 });
 

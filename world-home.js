@@ -1155,7 +1155,7 @@
         let plan = null;
         try { plan = B.undoWater(); } catch (e) { plan = null; }
         const a = plan && +plan.amt, K = W.LowiSpiritCore;
-        const what = !plan ? '' : a === 0.25 ? T('a few sips', 'ein paar Schlucke', 'unos sorbos') : a === 3 ? T('a bottle', 'eine Flasche', 'una botella') : a === 1 ? T('a cup', 'ein Glas', 'un vaso') : (K && K.waterFmt ? K.waterFmt(a) : String(a));
+        const what = !plan ? '' : a === 0.5 ? T('10 sips', '10 Schlucke', '10 sorbos') : a === 0.25 ? T('a few sips', 'ein paar Schlucke', 'unos sorbos') : a === 3 ? T('a bottle', 'eine Flasche', 'una botella') : a === 1 ? T('a cup', 'ein Glas', 'un vaso') : (K && K.waterFmt ? K.waterFmt(a) : String(a));
         const msg = plan ? T('Taken off: ', 'Zurückgenommen: ', 'Quitado: ') + what : T('No water logged today', 'Heute noch kein Wasser', 'Hoy no hay agua');
         try { if (navigator.vibrate) navigator.vibrate(plan ? 30 : [10, 40, 10]); } catch (e) { }
         try { if (W.LowiR2 && W.LowiR2.toast) W.LowiR2.toast(msg); else if (W.toast) W.toast(msg); } catch (e) { }

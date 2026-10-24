@@ -14618,16 +14618,19 @@ function rate(p){
   if (v === "ok") score = Math.min(score, 34); else if (v === "spike" && !why.some(w => /sweet|pork/.test(w[0]))) score = Math.max(score, 60); else if (v === "better") score = Math.max(30, Math.min(score, 64));
   return {verdict:v, why:why.slice(0, 5), score, est};
 }
-/* typed names: a quick estimate from the words */
+/* typed names: a quick estimate from the words.
+   Oct 24 bug hunt: words must not fire inside other words or the wrong language: "chocolate" held "cola" (drink reason), "jamón"
+   held "jam", "marzipan" and "japan" held "pan", "pan-fried salmon" read as bread (spike); "Süßkartoffel" was stricter than "sweet
+   potato"/"batata", and Spanish protein bars, espaguetis, palomitas and cruasán got a friendlier or no verdict than EN/DE. */
 const NAMES = [
-  ["n_sweet", "spike", /\bzero\b|\blight\b|\bdiet\b|protein ?riegel|protein ?bar/],
-  ["n_drink", "spike", /cola|saft|juice|limo|fanta|sprite|eistee|ice tea|smoothie|energy|zumo|refresco/],
+  ["n_sweet", "spike", /\bzero\b|\blight\b|\bdiet\b|protein ?riegel|protein ?bar|barrita (de )?protein|barrita proteica|barra (de )?protein|barra proteica/],
+  ["n_drink", "spike", /(?<!cho)cola|saft|juice|limo|fanta|sprite|eistee|ice tea|smoothie|energy|zumo|refresco/],
   ["n_rice", "spike", /reiswaffel|rice cake|reis|rice|arroz|sushi/],
-  ["n_potato", "spike", /chips|kartoffel|pommes|fries|patata|crisps/],
-  ["n_corn", "spike", /cornflakes|popcorn|tortilla|nachos|polenta|maíz|mais/],
+  ["n_potato", "spike", /chips|(?<!s(?:u|ü|ue)(?:ss|ß))kartoffel|pommes|fries|patata|crisps/],
+  ["n_corn", "spike", /cornflakes|popcorn|palomitas|tortilla|nachos|polenta|maíz|mais/],
   ["n_oats", "better", /müsli|muesli|granola|hafer|oat|avena/],
-  ["n_sugar", "spike", /schoko|chocolate|gummi|haribo|bonbon|kuchen|cake|eis\b|ice cream|nutella|marmelade|jam|keks|cookie|donut|croissant|waffel|candy|dulce|galleta/],
-  ["n_flour", "spike", /brot|bread|toast|brötchen|nudeln|pasta|spaghetti|pizza|cracker|brezel|wrap|baguette|pan\b|bagel/],
+  ["n_sugar", "spike", /schoko|chocolate|gummi|haribo|bonbon|kuchen|cake|eis\b|ice cream|nutella|marmelade|\bjams?(?![a-z\u00e0-\u00ff])|marzipan|mazapan|keks|cookie|donut|croissant|cruasan|waffel|candy|dulce|galleta/],
+  ["n_flour", "spike", /brot|bread|toast|brötchen|nudeln|pasta|spaghetti|espagueti|macarron|pizza|cracker|brezel|wrap|baguette|(?<![a-z\u00e0-\u00ff])pan\b(?![ -]?(?:fried|fry|seared|roasted|grilled|cooked))|bagel/],
   ["n_ok", "ok", /skyr|quark|\beier?\b|\beggs?\b|käse|kase|cheese|nüsse|nuss|nuts|avocado|wasser|water|butter|oliven|olive|lachs|salmon|thunfisch|tuna|hähnchen|chicken|gemüse|brokkoli|broccoli|spinat|salat|frischkäse|joghurt natur|griechisch|kaffee|coffee|tee\b|tea\b|huevo|queso/]
 ];
 function rateName(name){ const k = nkey(name) + " " + String(name || "").toLowerCase();

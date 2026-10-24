@@ -54,6 +54,10 @@
         if (/kokos|coconut|\bcoco\b/.test(text)) delete cats.milk;
         if (cats.sweet_fruit) delete cats.fruit_whole;
         if (/\bpatty\b|bunless|ohne brötchen|lettuce wrap|salatblatt|sin pan/.test(text)) delete cats.starch_bread;
+        // Oct 24 bug hunt: "pan-fried salmon" is a cooking method, not bread (\bpan\b): drop bread when "pan" only appears as
+        // pan-fried / pan-seared / ... and nothing else (name or tags) says bread.
+        const PAN_COOK = /\bpan[ -]?(?:fried|fry|seared|roasted|grilled|cooked)\b/g;
+        if (cats.starch_bread && PAN_COOK.test(text) && !CAT_RX.starch_bread.test(text.replace(PAN_COOK, ' ')) && !(POLICY.categories.starch_bread.off || []).some(t => tags.includes(t))) delete cats.starch_bread;
         if (/(erdbeer|himbeer|kirsch|pfirsich|vanille|strawberry|raspberry|cherry|vanilla|frucht|fresa|sabor)\s*-?\s*(joghurt|yog|quark|skyr)|fruchtjoghurt|fruit yog|yogur de/.test(text)) { cats.candy_dessert = true; delete cats.berries; delete cats.fruit_whole; delete cats.plain_yoghurt_quark; }
         if (/grüne bohnen|gruene bohnen|green beans|string beans|judías verdes|brechbohnen|prinzessbohnen|stangenbohnen|haricots verts/.test(text)) delete cats.legumes;
         if (/(puten|geflügel|hähnchen|rinder|turkey|chicken|beef|pavo|pollo)\s*-?\s*(schinken|ham|jamón)|jamón de pavo/.test(text)) { delete cats.pork; cats.processed_meat = true; }

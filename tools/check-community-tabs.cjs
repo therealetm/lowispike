@@ -33,6 +33,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
         if (!localStorage.getItem('lowispike.v2')) localStorage.setItem('lowispike.v2', JSON.stringify({ setupDone: true, onboarded: true, xp: 2311, ledger: [], user: { name: 'eman', bday: '1990-01-01' } }));
       } catch (e) {}
     }, [lang]);
+    const tap = async sel => { try { await page.click(sel, { timeout: 8000 }); } catch (e) {
+        const who = await page.evaluate(sel => { const b = document.querySelector(sel); if (!b) return 'missing'; const q = b.getBoundingClientRect(); const t = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2); return JSON.stringify([q.left, q.top, q.width, q.height]) + ' covered by ' + (t ? t.tagName + '#' + t.id + '.' + String(t.className).slice(0, 80) + ' in ' + (t.closest('[id]') || {}).id : 'nothing'); }, sel);
+        throw new Error('tap ' + sel + ': ' + who); } };
     try {
       await page.goto(URL0, { waitUntil: 'domcontentloaded', timeout: 60000 });
       await page.waitForFunction(() => typeof window.goTab === 'function' && window.LowiRoomsUI, null, { timeout: 45000 });
@@ -51,7 +54,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       ok(r.bar[0] >= 0 && r.bar[1] <= w + 0.5, name + ': bar on screen ' + r.bar);
       ok(r.view === 'rank', name + ': opens on the first tab (Ranking) ' + r.view);
       /* For You */
-      await page.click('#tab-foryou .rm-tab[data-rm="fy"]'); await sleep(1400);
+      await tap('#tab-foryou .rm-tab[data-rm="fy"]'); await sleep(1400);
       r = await page.evaluate(() => {
         const box = document.querySelector('#tab-foryou .rm-view > .rm-fy'), bb = box && box.getBoundingClientRect();
         const feed = document.getElementById('fyFeed'), sl = feed ? [...feed.querySelectorAll('.fy-slide')] : [];
@@ -71,7 +74,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       /* swipe the feed */
       if (r.n >= 2) { const y0 = await page.evaluate(() => { const f = document.getElementById('fyFeed'); f.scrollTop = f.clientHeight; return f.scrollTop; }); await sleep(500); ok(y0 > 0, name + ': feed scrolls to the next post'); }
       /* Studio */
-      await page.click('#tab-foryou .rm-tab[data-rm="studio"]'); await sleep(1400);
+      await tap('#tab-foryou .rm-tab[data-rm="studio"]'); await sleep(1400);
       r = await page.evaluate(() => { const sw = document.querySelector('#tab-foryou .rm-sw'), b = [...(sw ? sw.querySelectorAll('.rm-swb') : [])]; const fr = document.querySelector('#tab-foryou .rm-view > iframe.rm-frame:not([hidden])') || [...document.querySelectorAll('#tab-foryou .rm-view > .rm-frame')].find(f => !f.hidden && f.tagName === 'IFRAME'); const sel = document.querySelector('#tab-foryou .rm-tab[aria-selected=true]'); return { view: LowiRoomsUI.view(), sw: !!sw && !sw.hidden, lab: b.map(x => x.textContent), on: b.filter(x => x.getAttribute('aria-selected') === 'true').map(x => x.dataset.rmsw), cut: b.filter(x => x.scrollWidth > x.clientWidth + 1).map(x => x.textContent), src: fr ? fr.getAttribute('src') || fr.src : '', fyHidden: (() => { const x = document.querySelector('#tab-foryou .rm-fy'); return !x || x.hidden; })(), sel: sel && sel.dataset.rm, swb: sw && (() => { const q = sw.getBoundingClientRect(); return [q.left, q.right, q.height]; })(), playing: [...document.querySelectorAll('#cmPaneFeed video')].filter(v => !v.paused).length, gap: (() => { const q = sw && sw.getBoundingClientRect(), t = document.querySelector('#tab-foryou .rm-tabs').getBoundingClientRect(), f = fr && fr.getBoundingClientRect(); return q && f ? [q.top - t.bottom, f.top - q.bottom, f.bottom <= innerHeight + 1] : null; })() }; });
       ok(r.gap && r.gap[0] >= 0 && r.gap[1] >= 0 && r.gap[2], name + ': switch between tab bar and page, page on screen ' + JSON.stringify(r.gap));
       ok(r.view === 'aff' && r.sel === 'studio', name + ': Studio opens on Affiliates ' + r.view + '/' + r.sel);
@@ -79,14 +82,14 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       ok(r.cut.length === 0 && r.swb && r.swb[0] >= 0 && r.swb[1] <= w, name + ': switch fits ' + JSON.stringify(r.swb));
       ok(/affiliates\//.test(r.src), name + ': Affiliates page in the panel ' + r.src);
       ok(r.fyHidden && r.playing === 0, name + ': For You hidden and silent');
-      await page.click('#tab-foryou .rm-sw [data-rmsw="create"]'); await sleep(1200);
+      await tap('#tab-foryou .rm-sw [data-rmsw="create"]'); await sleep(1200);
       r = await page.evaluate(() => { const fr = [...document.querySelectorAll('#tab-foryou .rm-view > iframe.rm-frame')].find(f => !f.hidden); const sel = document.querySelector('#tab-foryou .rm-tab[aria-selected=true]'); return { view: LowiRoomsUI.view(), src: fr ? fr.getAttribute('src') : '', sel: sel && sel.dataset.rm, mem: localStorage.getItem('lowispike.community.studio') }; });
       ok(r.view === 'create' && r.sel === 'studio' && /create\//.test(r.src) && r.mem === 'create', name + ': Creation half ' + JSON.stringify(r));
-      await page.click('#tab-foryou .rm-tab[data-rm="room"]'); await sleep(900);
-      await page.click('#tab-foryou .rm-tab[data-rm="studio"]'); await sleep(900);
+      await tap('#tab-foryou .rm-tab[data-rm="room"]'); await sleep(900);
+      await tap('#tab-foryou .rm-tab[data-rm="studio"]'); await sleep(900);
       ok(await page.evaluate(() => LowiRoomsUI.view()) === 'create', name + ': Studio remembers Creation');
       /* back from Community goes Home and the app stays */
-      await page.click('#tab-foryou .rm-tab[data-rm="fy"]'); await sleep(800);
+      await tap('#tab-foryou .rm-tab[data-rm="fy"]'); await sleep(800);
       await page.evaluate(() => history.back()); await sleep(1400);
       r = await page.evaluate(() => ({ home: !document.querySelector('#tab-foryou.active'), url: location.href, playing: [...document.querySelectorAll('#cmPaneFeed video')].filter(v => !v.paused).length }));
       ok(r.home && r.url.startsWith(URL0.replace(/\/$/, '')), name + ': back leaves Community, app still open ' + JSON.stringify(r));

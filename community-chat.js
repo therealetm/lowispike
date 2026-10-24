@@ -329,7 +329,7 @@ function epos(s,id){const e=W.LowiEnergy,o=s&&e&&e.offset?e.offset(id):null;retu
 function place(){
   const gx=W.__lgGx,field=D.getElementById('cgField'),gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!field||!gal)return;
   mapGestures(gal);if(W.LowiEnergy&&W.LowiEnergy.mount)W.LowiEnergy.mount(gal);
-  const v=mapView(gal),Z=mapZ(gx,v);if(!cam)cam={x:0,y:0,z:Z.z0};cam=G.mapClamp(cam,gx.map.radius,v.w,v.h);
+  const v=mapView(gal),Z=mapZ(gx,v);if(!cam)cam={x:0,y:0,z:Z.z0};cam=G.mapClamp(cam,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy});
   const f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),fn=Math.max(.8,f),cx=v.w/2,cy=v.h*.5,scr=s=>({x:cx+(s.x-cam.x)*cam.z,y:cy+(s.y-cam.y)*cam.z});
   const bodies=new Map(),bubs=new Map();
   for(const el of field.querySelectorAll('.cg-body'))bodies.set(el.getAttribute('data-uid'),el);
@@ -354,7 +354,7 @@ function place(){
   const streamed=streamDraw(gx.lines,v)&&!!sel;if(sk){if(streamed)sk.set(gx.lines.filter(l=>!l.sel),false,gx.orbits);else sk.set(gx.lines,false,gx.orbits);}
   gal.setAttribute('data-zoom',cam.z>=Z.zmax*.995?'max':cam.z<=Z.zmin*1.005?'min':'mid');
 }
-function camTo(target,ms){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gal||!cam)return;cancelAnimationFrame(camAnim);const v=mapView(gal),to=G.mapClamp(target,gx.map.radius,v.w,v.h),from={...cam},t0=performance.now(),dur=ms||280;
+function camTo(target,ms){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gal||!cam)return;cancelAnimationFrame(camAnim);const v=mapView(gal),to=G.mapClamp(target,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy}),from={...cam},t0=performance.now(),dur=ms||280;
   const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);cam={x:from.x+(to.x-from.x)*e,y:from.y+(to.y-from.y)*e,z:from.z*Math.pow(to.z/from.z,e)};place();if(k<1)camAnim=requestAnimationFrame(step);};camAnim=requestAnimationFrame(step);}
 /* zoom by k keeping the world point under (px,py) (galaxy px) under the finger */
 function zoomAt(c0,k,px,py,v){const gx=W.__lgGx,Z=gx&&gx.map?mapZ(gx,v):{zmin:.18,zmax:3},z=Math.max(Z.zmin,Math.min(Z.zmax,c0.z*k)),wx=c0.x+(px-v.w/2)/c0.z,wy=c0.y+(py-v.h*.5)/c0.z;return {x:wx-(px-v.w/2)/z,y:wy-(py-v.h*.5)/z,z};}
@@ -401,7 +401,7 @@ W.LowiCgMap={atMax(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||
   cam(){return cam&&{...cam};},reset(){cam=null;schedulePlace();},place,
   /* Oct 16 (energy hits): the camera and every companion's home spot and radius in map units, for community-energy.js */
   geom(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!gal||!cam)return null;const v=mapView(gal),Z=mapZ(gx,v),f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),big=v.w>=640,sz=new Map((gx.labels||[]).map(L=>[L.id,L.size]));
-   return {cam:{...cam},w:v.w,h:v.h,cx:v.w/2,cy:v.h*.5,f,radius:gx.map.radius,spots:gx.map.spots.filter(s=>gx.spot.has(s.uid)).map(s=>({uid:s.uid,me:!!s.me,x:s.x,y:s.y,r:((sz.get(s.uid)||(s.me?(big?64:54):(big?56:46)))*f/2)/cam.z}))};},
+   return {cam:{...cam},w:v.w,h:v.h,cx:v.w/2,cy:v.h*.5,f,radius:gx.map.radius,rcx:gx.map.cx||0,rcy:gx.map.cy||0,spots:gx.map.spots.filter(s=>gx.spot.has(s.uid)).map(s=>({uid:s.uid,me:!!s.me,x:s.x,y:s.y,r:((sz.get(s.uid)||(s.me?(big?64:54):(big?56:46)))*f/2)/cam.z}))};},
   /* an energy hit on a real member: checks only (Oct 19: the "@Name ⚡ Eman sent you energy" chat line is gone) */
   energy(uid){if(!uid||uid===scope||uid==='me')return 'self';if(botOf(uid))return 'bot';const p=roster().get(uid);if(!p||!G)return 'gone';if(blocked(uid))return 'blocked';
    if(!store||!store.submitLine||!scope||navigator.onLine===false)return 'offline';const name=String(own().n||'').trim();if(!name)return 'name';

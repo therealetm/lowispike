@@ -45,17 +45,22 @@ function placeDue(last,now,force){return !!force||!(last>0)||now-last>=PLACE_MS|
    and when the phone leaves Community or reloads (the page saves land, see snap()/restore()). The table only works while something
    moves: busy() means a ball is flying or a companion is rolling, never just "someone is off their spot". */
 function table(opts){
- const T=Object.assign(tune(opts&&opts.reduced),opts&&opts.tune||{});const bodies=new Map(),land=new Map();let shots=[],mode='idle',still=0,bound=1e9,acc=0,pend=[],catching=false;
+ const T=Object.assign(tune(opts&&opts.reduced),opts&&opts.tune||{});const bodies=new Map(),land=new Map();let shots=[],mode='idle',still=0,bound=1e9,bcx=0,bcy=0,acc=0,pend=[],catching=false;
  const MAX_LAND=400;
- function remember(b){if(b.ox||b.oy)land.set(b.uid,{x:b.hx+b.ox,y:b.hy+b.oy});else land.delete(b.uid);if(land.size>MAX_LAND){for(const k of land.keys()){if(land.size<=MAX_LAND)break;if(!bodies.has(k))land.delete(k);}}}
- function sync(spots,radius){const seen=new Set();if(radius!=null)bound=(+radius||0)+90;
+ function remember(b){if(b.ox||b.oy)land.set(b.uid,{x:b.hx+b.ox-bcx,y:b.hy+b.oy-bcy});else land.delete(b.uid);if(land.size>MAX_LAND){for(const k of land.keys()){if(land.size<=MAX_LAND)break;if(!bodies.has(k))land.delete(k);}}}
+ function sync(spots,radius,c){const seen=new Set();if(radius!=null)bound=(+radius||0)+90;
+  /* Oct 24: knocked companions rest in ROOM coordinates (relative to the room centre c), the same numbers on every device; when
+     the room centre moves on screen (your own seat changed with the crowd band) every knocked companion moves with the room */
+  if(c){const nx=+c.x||0,ny=+c.y||0;if(nx!==bcx||ny!==bcy){for(const b of bodies.values())if(b.ox||b.oy){b.ox+=nx-bcx;b.oy+=ny-bcy;}bcx=nx;bcy=ny;}}
   for(const s of spots||[]){if(!s||!s.uid)continue;seen.add(s.uid);const hx=+s.x||0,hy=+s.y||0;let b=bodies.get(s.uid);
-   if(!b){b={uid:s.uid,ox:0,oy:0,vx:0,vy:0,knock:false,hx,hy};bodies.set(s.uid,b);const l=land.get(s.uid);if(l){b.ox=l.x-hx;b.oy=l.y-hy;}}
+   if(!b){b={uid:s.uid,ox:0,oy:0,vx:0,vy:0,knock:false,hx,hy};bodies.set(s.uid,b);const l=land.get(s.uid);if(l){b.ox=l.x+bcx-hx;b.oy=l.y+bcy-hy;}}
    /* the pin moved (crowd size band changed): a companion that was knocked keeps its place on the map instead of jumping with it */
    else if((b.ox||b.oy)&&(b.hx!==hx||b.hy!==hy)){b.ox+=b.hx-hx;b.oy+=b.hy-hy;}
    b.hx=hx;b.hy=hy;b.r=Math.max(6,+s.r||20);b.me=!!s.me;if(b.me&&(b.ox||b.oy))b.knock=true;}
-  for(const k of [...bodies.keys()])if(!seen.has(k)){const b=bodies.get(k);if(b.ox||b.oy)land.set(k,{x:b.hx+b.ox,y:b.hy+b.oy});bodies.delete(k);}}
- const pinned=b=>b.me&&!b.knock;
+  for(const k of [...bodies.keys()])if(!seen.has(k)){const b=bodies.get(k);if(b.ox||b.oy)land.set(k,{x:b.hx+b.ox-bcx,y:b.hy+b.oy-bcy});bodies.delete(k);}}
+ /* Oct 24: nobody is pinned. Your own companion used to be a fixed post on YOUR screen only, while every other device let it roll, so
+    any chain that touched you played out differently per device. Now the same physics runs everywhere. */
+ const pinned=b=>false;
  const speedOf=b=>Math.hypot(b.vx,b.vy);
  const shotSpeed=power=>(620+620*power)*T.speed,shotRange=power=>(150+520*power)*T.range;
  /* the shooter's phone: which companion does this aim hit first (bodies where they stand now), and after how many ms */
@@ -95,7 +100,7 @@ function table(opts){
    for(const b of bodies.values()){if(pinned(b)){b.vx=b.vy=0;continue;}b.ox+=b.vx*dt;b.oy+=b.vy*dt;const s=speedOf(b);
     if(s>0){const ns=Math.max(0,s*Math.exp(-T.friction*dt)-T.roll*dt),k=ns/s;b.vx*=k;b.vy*=k;}
     /* the only wall is the edge of the map (no pull back towards its own spot any more): it bounces back in, like a cushion */
-    const px=b.hx+b.ox,py=b.hy+b.oy,pd=Math.hypot(px,py);if(pd>bound){const nx=px/pd,ny=py/pd,out=b.vx*nx+b.vy*ny;if(out>0){b.vx-=1.6*out*nx;b.vy-=1.6*out*ny;}b.ox-=nx*(pd-bound);b.oy-=ny*(pd-bound);}}
+    const px=b.hx+b.ox-bcx,py=b.hy+b.oy-bcy,pd=Math.hypot(px,py);if(pd>bound){const nx=px/pd,ny=py/pd,out=b.vx*nx+b.vy*ny;if(out>0){b.vx-=1.6*out*nx;b.vy-=1.6*out*ny;}b.ox-=nx*(pd-bound);b.oy-=ny*(pd-bound);}}
    const list=[...bodies.values()];for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++)if(collide(list[i],list[j])&&(speedOf(list[i])>40||speedOf(list[j])>40))ev.push({type:'bump',a:list[i].uid,b:list[j].uid});
    let max=0;for(const b of list)max=Math.max(max,speedOf(b));
    /* everything stopped: everyone stays exactly where they are */
@@ -112,11 +117,15 @@ function table(opts){
  /* Community went out of sight mid-roll: stop the balls and the rolling, but leave everyone where they are */
  function halt(){shots=[];pend=[];acc=0;mode='idle';still=0;for(const b of bodies.values()){b.vx=b.vy=0;remember(b);}}
  /* where knocked companions rest, as map positions, for the page to keep across a reload */
- function snap(){const out={};for(const [k,v] of land)out[k]=[Math.round(v.x),Math.round(v.y)];for(const b of bodies.values())if(b.ox||b.oy)out[b.uid]=[Math.round(b.hx+b.ox),Math.round(b.hy+b.oy)];else delete out[b.uid];return out;}
+ function snap(){const out={};for(const [k,v] of land)out[k]=[Math.round(v.x),Math.round(v.y)];for(const b of bodies.values())if(b.ox||b.oy)out[b.uid]=[Math.round(b.hx+b.ox-bcx),Math.round(b.hy+b.oy-bcy)];else delete out[b.uid];return out;}
  function restore(o){if(!o||typeof o!=='object')return;let n=0;for(const k in o){const v=o[k];if(n>=MAX_LAND||!Array.isArray(v)||!isFinite(v[0])||!isFinite(v[1])||k.length>80)continue;n++;land.set(k,{x:+v[0],y:+v[1]});
-   const b=bodies.get(k);if(b&&!b.vx&&!b.vy){b.ox=+v[0]-b.hx;b.oy=+v[1]-b.hy;if(b.me)b.knock=true;}}}
+   const b=bodies.get(k);if(b&&!b.vx&&!b.vy){b.ox=+v[0]+bcx-b.hx;b.oy=+v[1]+bcy-b.hy;if(b.me)b.knock=true;}}}
+ /* Oct 24: put one companion where the shooter's device had it (room coordinates), so a shot flies the same way everywhere */
+ function setAt(uid,rx,ry){const b=bodies.get(uid);if(!b||!isFinite(rx)||!isFinite(ry))return false;const x=+rx+bcx,y=+ry+bcy;
+  if(Math.hypot(b.hx+b.ox-x,b.hy+b.oy-y)<3)return false;b.ox=x-b.hx;b.oy=y-b.hy;b.vx=b.vy=0;if(b.me)b.knock=true;remember(b);return true;}
+ function room(uid){const b=bodies.get(uid);return b?{x:Math.round(b.hx+b.ox-bcx),y:Math.round(b.hy+b.oy-bcy)}:null;}
  function pos(uid){const b=bodies.get(uid);return b?{x:b.hx+b.ox,y:b.hy+b.oy,r:b.r,me:b.me}:null;}
- return {sync,fire,predict,step,offset,busy,reset,halt,snap,restore,has:uid=>bodies.has(uid),landed:uid=>land.has(uid),pos,shot:()=>shots[0]||null,shots:()=>shots.slice(),mode:()=>mode,bodies:()=>[...bodies.values()].map(b=>({...b})),tune:T};
+ return {sync,fire,predict,step,offset,busy,reset,halt,snap,restore,setAt,room,has:uid=>bodies.has(uid),landed:uid=>land.has(uid),pos,shot:()=>shots[0]||null,shots:()=>shots.slice(),mode:()=>mode,bodies:()=>[...bodies.values()].map(b=>({...b})),tune:T};
 }
 /* ---------- real-time sync helpers (pure) ---------- */
 /* token bucket per player: at most max shots in win ms and never closer than gap ms */
@@ -124,10 +133,14 @@ function bucket(st,now,max,win,gap){now=+now||Date.now();const ts=((st&&st.ts)||
  if(ts.length>=max||(last&&now-last<gap))return {ok:false,st:{ts}};ts.push(now);return {ok:true,st:{ts}};}
 const SEND={max:4,win:2000,gap:250},RECV={max:6,win:2000,gap:120},INBOX={max:40,win:1000,gap:0};
 /* one compact shot event (about 120 bytes): who fired, angle, power, target, ms to impact, sender time */
-function pack(s){const r=(v,n)=>+(+v||0).toFixed(n);return {v:1,id:String(s.id||'').slice(0,24),by:String(s.by||'').slice(0,64),a:r(s.a,3),p:r(Math.max(0,Math.min(1,s.p)),2),to:String(s.to||'').slice(0,64),ht:Math.max(0,Math.min(5000,Math.round(+s.ht||0))),t:Math.round(+s.t||0)};}
+function pack(s){const r=(v,n)=>+(+v||0).toFixed(n);return {v:1,id:String(s.id||'').slice(0,24),by:String(s.by||'').slice(0,64),a:r(s.a,3),p:r(Math.max(0,Math.min(1,s.p)),2),to:String(s.to||'').slice(0,64),ht:Math.max(0,Math.min(5000,Math.round(+s.ht||0))),t:Math.round(+s.t||0),...rp(s)};}
+/* Oct 24: where the shooter (f) and the target (g) stood in ROOM coordinates when the shot left, so every device starts the ball
+   from the same place toward the same place. Optional on the wire: an event from an older build has none and still plays. */
+function rp(s){const ok=v=>v&&isFinite(v.x)&&isFinite(v.y)&&Math.abs(v.x)<2e4&&Math.abs(v.y)<2e4,o={};if(ok(s.f))o.f=[Math.round(s.f.x),Math.round(s.f.y)];if(ok(s.g))o.g=[Math.round(s.g.x),Math.round(s.g.y)];return o;}
+function pt(v){return Array.isArray(v)&&v.length===2&&isFinite(v[0])&&isFinite(v[1])&&Math.abs(v[0])<2e4&&Math.abs(v[1])<2e4?{x:+v[0],y:+v[1]}:null;}
 function unpack(m){if(!m||typeof m!=='object'||m.v!==1)return null;const id=typeof m.id==='string'?m.id:'',by=typeof m.by==='string'?m.by:'';
  if(!id||!by||id.length>24||by.length>64||!isFinite(m.a)||!isFinite(m.p)||!isFinite(m.t))return null;
- return {id,by,a:Math.max(-7,Math.min(7,+m.a)),p:Math.max(0,Math.min(1,+m.p)),to:typeof m.to==='string'&&m.to.length<=64?m.to:'',ht:Math.max(0,Math.min(5000,+m.ht||0)),t:+m.t};}
+ return {id,by,a:Math.max(-7,Math.min(7,+m.a)),p:Math.max(0,Math.min(1,+m.p)),to:typeof m.to==='string'&&m.to.length<=64?m.to:'',ht:Math.max(0,Math.min(5000,+m.ht||0)),t:+m.t,f:pt(m.f),g:pt(m.g)};}
 /* how long ago (ms) a shot was fired, from the sender's timestamp. Phone clocks are network-synced, so the plain difference is used
    while it is believable (-1.5 s .. +4 s); a phone with a wrong clock falls back to its own smallest seen delay (base) as zero. */
 function shotAge(t,now,base){const d=(+now||Date.now())-(+t||0);
@@ -156,7 +169,7 @@ function geom(){const m=map();return m&&m.geom?m.geom():null;}
 function scr(g,p){return {x:g.cx+(p.x-g.cam.x)*g.cam.z,y:g.cy+(p.y-g.cam.y)*g.cam.z};}
 function meSpot(g){return g&&g.spots.find(s=>s.me);}
 /* Oct 19: where knocked companions came to rest survives leaving Community and a reload (per account on this phone) */
-const LAND_KEY='lowi.energy.land.v1';
+const LAND_KEY='lowi.energy.land.v2'; /* Oct 24: v2 = room coordinates (v1 was each device's own frame) */
 function landKey(){const c=W.LOWI_CLOUD_X,st=c&&c.state?c.state():null;return LAND_KEY+':'+((st&&st.uid)||'me');}
 function loadLand(){try{const o=JSON.parse(localStorage.getItem(landKey())||'{}');return o&&typeof o==='object'?o:{};}catch(e){return {};}}
 function saveLand(){if(!tb)return;try{const o=tb.snap();if(Object.keys(o).length)localStorage.setItem(landKey(),JSON.stringify(o));else localStorage.removeItem(landKey());}catch(e){}}
@@ -183,7 +196,7 @@ function wire(){
  joy.addEventListener('pointerup',end);joy.addEventListener('pointercancel',end);joy.addEventListener('lostpointercapture',end);
  ['click','dblclick','touchstart','touchmove','touchend','mousedown','contextmenu'].forEach(t=>joy.addEventListener(t,e=>{stop(e);if(t==='contextmenu'||t==='dblclick')e.preventDefault();},{passive:false}));
  joy.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;e.preventDefault();e.stopPropagation();const g=geom(),me=meSpot(g);if(!g||!me)return;
-  const t=ensureTable();t.sync(g.spots,g.radius);const at=t.pos(me.uid)||me;
+  const t=ensureTable();syncT(t,g);const at=t.pos(me.uid)||me;
   let best=null,bd=1e9;for(const s0 of g.spots){if(s0.me)continue;const s=t.pos(s0.uid)||s0,d=Math.hypot(s.x-at.x,s.y-at.y);if(d<bd){bd=d;best=s;}}if(best)fireAt(Math.atan2(best.y-at.y,best.x-at.x),.7);});
 }
 function move(e){const a=aim(e.clientX-drag.c.x,e.clientY-drag.c.y,knobR());aimNow=a;knob.style.transform='translate('+a.kx.toFixed(1)+'px,'+a.ky.toFixed(1)+'px)';joy.classList.toggle('armed',a.ok);setAim(a.ok?a:null);}
@@ -195,10 +208,10 @@ function rid(){return Date.now().toString(36).slice(-6)+Math.random().toString(3
 function flash(el){if(!el)return;el.classList.remove('ce-shot');requestAnimationFrame(()=>{el.classList.add('ce-shot');setTimeout(()=>el.classList.remove('ce-shot'),420);});}
 function bodyEl(uid){return gal&&gal.querySelector('.cg-body[data-uid="'+(W.CSS&&CSS.escape?CSS.escape(uid):uid)+'"]');}
 function fireAt(ang,power){const g=geom(),me=meSpot(g);if(!g||!me)return;const now=Date.now(),b=bucket(sendSt,now,SEND.max,SEND.win,SEND.gap);sendSt=b.st;if(!b.ok)return;
- const t=ensureTable();t.sync(g.spots,g.radius);const at=t.pos(me.uid)||me,from={x:at.x,y:at.y,uid:me.uid},r0=me.r*.9,pr=t.predict(from,ang,power,r0),id=rid();
+ const t=ensureTable();syncT(t,g);const at=t.pos(me.uid)||me,from={x:at.x,y:at.y,uid:me.uid},r0=PHYS_R*.9,pr=t.predict(from,ang,power,r0),id=rid(),f=t.room(me.uid),gg=pr.to?t.room(pr.to):null;
  t.fire(from,ang,power,r0,{id,to:pr.to,ht:pr.ht});
  /* one compact event on the Community's shared realtime channel; every other phone flies the same ball from my companion */
- const by=myUid(me),c=W.LOWI_CLOUD_X;if(by&&c&&c.energyShot){try{if(c.energyShot(pack({id,by,a:ang,p:power,to:pr.to,ht:pr.ht,t:now})))stats.sent++;}catch(e){}}
+ const by=myUid(me),c=W.LOWI_CLOUD_X;if(by&&c&&c.energyShot){try{if(c.energyShot(pack({id,by,a:ang,p:power,to:pr.to,ht:pr.ht,t:now,f,g:gg})))stats.sent++;}catch(e){}}
  try{if(navigator.vibrate)navigator.vibrate(12);}catch(e){}flash(meEl());kick();}
 /* a shot from someone else in the Community (lowi:energy-shot from the shared channel) */
 function remote(raw){const m=unpack(raw);if(!m)return false;const now=Date.now();
@@ -207,17 +220,28 @@ function remote(raw){const m=unpack(raw);if(!m)return false;const now=Date.now()
  const rb=bucket(recvSt.get(m.by),now,RECV.max,RECV.win,RECV.gap);recvSt.set(m.by,rb.st);if(!rb.ok){stats.dropped++;return false;}
  if(recvSt.size>2000)recvSt.clear();
  const d=now-m.t,base=bases.has(m.by)?Math.min(bases.get(m.by),d):d;bases.set(m.by,base);const ag=shotAge(m.t,now,base);stats.got++;stats.lat.push(Math.round(d));if(stats.lat.length>500)stats.lat.shift();
- if(ag.stale||!visible()){stats.dropped++;return false;}
- const g=geom(),me=meSpot(g);if(!g)return false;if(m.by===myUid(me))return false;
- const t=ensureTable();t.sync(g.spots,g.radius);const sp=g.spots.find(x=>x.uid===m.by);if(!sp){stats.dropped++;return false;}
- const at=t.pos(m.by)||sp,to=me&&m.to&&m.to===myUid(me)?me.uid:m.to;
- const s=t.fire({x:at.x,y:at.y,uid:m.by},m.a,m.p,sp.r*.9,{id:m.id,to,ht:m.ht,remote:true,age:ag.age});if(!s){stats.dropped++;return false;}
+ if(ag.stale){stats.dropped++;return false;}
+ const g=geom(),me=meSpot(g);if(!g){stats.dropped++;return false;}if(m.by===myUid(me))return false;
+ const t=ensureTable();syncT(t,g);const sp=g.spots.find(x=>x.uid===m.by);if(!sp){stats.dropped++;return false;}
+ const to=me&&m.to&&m.to===myUid(me)?me.uid:m.to;
+ /* Oct 24: start from where the shooter's device had both companions, so direction and distance match on every device */
+ if(m.f)t.setAt(m.by,m.f.x,m.f.y);if(to&&m.g)t.setAt(to,m.g.x,m.g.y);
+ const at=t.pos(m.by)||sp;
+ const s=t.fire({x:at.x,y:at.y,uid:m.by},m.a,m.p,PHYS_R*.9,{id:m.id,to,ht:m.ht,remote:true,age:ag.age});if(!s){stats.dropped++;return false;}
+ /* Oct 24: Community not on screen (another tab, the app in the background): the shot still lands. Play it out at once without
+    drawing, so when you come back the companion sits where it was knocked, like on the other device, not back on its seat. */
+ if(!visible()){settle(t);stats.offscreen=(stats.offscreen||0)+1;return true;}
  stats.shown++;flash(bodyEl(m.by));kick();return true;}
+/* Oct 24: the physics size of a companion is the same on every device (the drawn orb is bigger on an iPad and at other zooms), so
+   collisions, reach and landing spots match everywhere */
+const PHYS_R=24;
+function syncT(t,g){t.sync(g.spots.map(s=>({uid:s.uid,me:s.me,x:s.x,y:s.y,r:PHYS_R})),g.radius,{x:g.rcx||0,y:g.rcy||0});}
+function settle(t){let n=0;while(t.busy()&&n++<1800)t.step(1/60);t.halt();saveLand();}
 D.addEventListener('lowi:energy-shot',e=>{try{remote(e.detail);}catch(x){}});
 function kick(){if(raf)return;lastT=0;raf=requestAnimationFrame(frame);}
 function size(){const w=gal.clientWidth,h=gal.clientHeight;dpr=Math.min(2,W.devicePixelRatio||1);if(fx.width!==Math.round(w*dpr)||fx.height!==Math.round(h*dpr)){fx.width=Math.round(w*dpr);fx.height=Math.round(h*dpr);}return {w,h};}
 function frame(now){raf=0;if(!visible()){if(tb){tb.halt();saveLand();}fxList=[];if(ctx&&fx)ctx.clearRect(0,0,fx.width,fx.height);const m=map();if(m&&m.place)m.place();return;}
- const dt=lastT?Math.min(.25,(now-lastT)/1000):1/60;lastT=now;const g=geom();const t=ensureTable();if(g)t.sync(g.spots,g.radius);
+ const dt=lastT?Math.min(.25,(now-lastT)/1000):1/60;lastT=now;const g=geom();const t=ensureTable();if(g)syncT(t,g);
  slow=dt>SLOW_DT;const was=t.busy(),ev=t.step(dt);for(const e of ev)onEvent(e,g);fxList=capFx(fxList);
  const nowBusy=t.busy();if((was||nowBusy)&&placeDue(lastPlace,now,!nowBusy)){lastPlace=now;const m=map();if(m&&m.place)m.place();}
  if(was&&!nowBusy)saveLand();
@@ -263,6 +287,6 @@ function draw(g,now,fdt){if(!ctx||!g)return;const {w,h}=size();ctx.setTransform(
 function keepOut(g){if(!joy||!joy.isConnected||!g||joy.offsetParent===null)return null;const a=joy.getBoundingClientRect(),b=g.getBoundingClientRect();if(!a.width)return null;return {x:a.left-b.left+a.width/2,y:a.top-b.top+a.height/2,s:a.width+12};}
 /* place() asks this for every companion it draws. After a reload (or someone coming back on the map) the table catches up once with
    the map, so a companion that was knocked earlier is drawn where it came to rest, not on its old spot. */
-function offset(uid){if(!tb||(!tb.has(uid)&&tb.landed(uid))){const g=geom();if(!g)return null;ensureTable().sync(g.spots,g.radius);}return tb.offset(uid);}
+function offset(uid){if(!tb||(!tb.has(uid)&&tb.landed(uid))){const g=geom();if(!g)return null;syncT(ensureTable(),g);}return tb.offset(uid);}
 W.LowiEnergy={mount,offset,keepOut,fire:fireAt,remote,stats:()=>({...stats,lat:stats.lat.slice()}),balls:()=>tb?tb.shots().map(x=>({id:x.id,by:x.by,to:x.to,x:Math.round(x.x),y:Math.round(x.y),remote:x.remote})):[],busy:()=>!!(tb&&tb.busy()),state:()=>tb?{mode:tb.mode(),shot:!!tb.shot(),balls:tb.shots().length,bodies:tb.bodies().filter(b=>b.ox||b.oy||b.vx||b.vy).map(b=>({uid:b.uid,ox:Math.round(b.ox),oy:Math.round(b.oy),vx:Math.round(b.vx),vy:Math.round(b.vy)}))}:null,core:api};
 })(typeof window==='object'?window:globalThis);

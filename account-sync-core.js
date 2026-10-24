@@ -22,7 +22,7 @@
     /* account data that lives under lowi.* (and the two older lowi_ keys: fasting + water, the reward book) (lowispike.* is synced whole, minus chat). Device settings (theme, sound, hints,
        update prompts, caches, the Apple Health bridge) stay per device on purpose. */
     const LOWI_KEYS = Object.freeze([
-        'lowi.herb.tamagotchi.v2:', 'lowi.energy.v1', 'lowi.energy.land.v1', 'lowi.lvFloor', 'lowi.hs.v1', 'lowi.f2.v1',
+        'lowi.herb.tamagotchi.v2:', 'lowi.energy.v1', 'lowi.energy.land.v2', 'lowi.lvFloor', 'lowi.hs.v1', 'lowi.f2.v1',
         'lowi.n1.log', 'lowi.dex.v1', 'lowi.bucket.v1', 'lowi.xptap.v1', 'lowi.sleep.v1', 'lowi.discovery.v1:', 'lowi.guides.v1',
         'lowi.mealsnap.log', 'lowi.portion.v1', 'lowi.grocery.v1', 'lowi.recipe-book.', 'lowi.cm.profile.v1', 'lowi.snackBuy.v1',
         'lowi.storePicks.v1', 'lowi_fast_v1', 'lowi_r3w_v1'

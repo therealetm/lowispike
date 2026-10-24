@@ -70,7 +70,7 @@ test('wiring: energy rides the room channel (support rooms, 20 Oct), one compact
   assert.ok(html.includes('onEnergy:p => { try { document.dispatchEvent(new CustomEvent("lowi:energy-shot"'));
   assert.ok(html.includes('energyShot(p){ if (window.LowiRooms) return LowiRooms.sendEnergy(p);'));
   assert.ok(html.includes('if (!rooms) chan = chan.on("postgres_changes", {event:"INSERT"'),'lowi-all only carries chat/energy for an app without rooms');
-  assert.match(js,/D\.addEventListener\('lowi:energy-shot'/);assert.match(js,/c\.energyShot\(pack\(\{id,by,a:ang,p:power,to:pr\.to,ht:pr\.ht,t:now\}\)\)/);
+  assert.match(js,/D\.addEventListener\('lowi:energy-shot'/);assert.match(js,/c\.energyShot\(pack\(\{id,by,a:ang,p:power,to:pr\.to,ht:pr\.ht,t:now,f,g:gg\}\)\)/);
   assert.match(js,/if\(e\.own\)ping\(e\.uid\)/,'only the shooter sends the energy line');assert.match(js,/const flying=tb\?tb\.shots\(\):\[\],cheap=flying\.length>6(\|\|slow)?;/);assert.match(js,/for\(const sh of flying\)/);
   assert.match(js,/flash\(bodyEl\(m\.by\)\)/,'the shooter\'s own companion flashes on everyone\'s map');
 });

@@ -407,7 +407,7 @@ W.LowiCgMap={atMax(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||
    /* Oct 19 (E-man: "it says [Damon] sent you energy ... That's a useless text message ... Remove that specific line"): the hit
       itself is the message; no chat line is posted any more. */
    return 'sent';}};
-function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)return;if(!sk||sk.canvas!==c){if(sk)sk.stop();sk=G.sky(c);if(sk){sk.canvas=c;const g0=W.__lgGx;if(g0)sk.set(g0.lines,false,g0.orbits);}}if(sk&&active()&&!D.hidden)sk.start();}
+function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)return;if(!sk||sk.canvas!==c){if(sk)sk.stop();sk=G.sky(c);if(sk){sk.canvas=c;const g0=W.__lgGx;if(g0)sk.set(g0.lines,false,g0.orbits);}}/* Oct 24 bug hunt (item 29): the open chat room covers the galaxy, so its sky stays stopped (thread(true) stops it; every repaint used to start it again at the full screen rate) */if(sk&&threadOpen){sk.stop();return;}if(sk&&active()&&!D.hidden)sk.start();}
 /* Arriving in Community: coming from Home, galaxy-zoom.js pulls the one camera out of Misty's world into the galaxy (no boxed
    snapshot of Home any more). From anywhere else the galaxy just settles in from a little closer. */
 function intro(){const g=D.getElementById('cgGalaxy');if(!g||!g.removeAttribute)return;g.__intro=1;if(D.documentElement.classList.contains('gx-out'))return;if(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches)return;g.removeAttribute('data-intro');void g.offsetWidth;g.setAttribute('data-intro','1');clearTimeout(introT);introT=setTimeout(()=>{g.removeAttribute('data-intro');},1100);}

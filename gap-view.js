@@ -22,21 +22,21 @@
             pts: 'So far +{x} XP. You get them when your next meal is logged in Fuel.', recent: 'Recent gaps', log: 'Log a meal in Fuel',
             hedge: 'A general guide from typical patterns, not a measurement. Every body runs its own clock. On diabetes medication? Ask your doctor before long gaps.',
             hexL: 'Six markers on a hexagon; the lit trail shows the time since your last meal', today: 'Today', yday: 'Yesterday',
-            mcH: 'After your meal', mcTyp: 'Typical, not measured', mcLever: 'Lower the spike', mcMove: 'Open Move', mcRow: 'After-meal phases', mcPrev: 'Previous phase', mcNext: 'Next phase',
+            mcH: 'After your meal', mcTyp: 'Typical, not measured', mcLever: 'Lower the spike', mcMove: 'Open Move', mcRow: 'After-meal phases', mcPrev: 'Previous phase', mcNext: 'Next phase', mcSay: 'Read this phase aloud', mcStop: 'Stop reading', mcRate: 'Voice speed {r}',
             mcCare: 'On insulin or diabetes medication? Talk to your care team before changing meals or exercise: these tips can lower your blood sugar.' },
         de: { title: 'Essenspause', since: 'seit deiner letzten Mahlzeit', none: 'Noch keine Mahlzeit eingetragen', noneSub: 'Trag deine nächste Mahlzeit in Fuel ein. Die Pause zählt ab dem Essen.', close: 'Schließen',
             last: 'Letzte Mahlzeit', fix: 'Zeit ändern', now: 'Jetzt', next: 'Als Nächstes: {n} in etwa {d}', past: 'Über die letzte Marke hinaus. Hör auf deinen Körper.', markers: 'Typische Marken',
             pts: 'Bisher +{x} XP. Du bekommst sie, wenn du deine nächste Mahlzeit in Fuel einträgst.', recent: 'Letzte Pausen', log: 'Mahlzeit in Fuel eintragen',
             hedge: 'Eine grobe Orientierung aus typischen Verläufen, keine Messung. Jeder Körper hat seine eigene Uhr. Nimmst du Diabetes-Medikamente? Frag vor langen Pausen deine Ärztin oder deinen Arzt.',
             hexL: 'Sechs Marken auf einem Sechseck; die leuchtende Spur zeigt die Zeit seit deiner letzten Mahlzeit', today: 'Heute', yday: 'Gestern',
-            mcH: 'Nach dem Essen', mcTyp: 'Typisch, nicht gemessen', mcLever: 'Spike senken', mcMove: 'Zu Bewegung', mcRow: 'Phasen nach dem Essen', mcPrev: 'Vorherige Phase', mcNext: 'Nächste Phase',
+            mcH: 'Nach dem Essen', mcTyp: 'Typisch, nicht gemessen', mcLever: 'Spike senken', mcMove: 'Zu Bewegung', mcRow: 'Phasen nach dem Essen', mcPrev: 'Vorherige Phase', mcNext: 'Nächste Phase', mcSay: 'Diese Phase vorlesen', mcStop: 'Vorlesen stoppen', mcRate: 'Sprechtempo {r}',
             mcCare: 'Nimmst du Insulin oder Diabetes-Medikamente? Sprich mit deinem Behandlungsteam, bevor du Essen oder Bewegung umstellst: Diese Tipps können deinen Blutzucker senken.' },
         es: { title: 'Pausa entre comidas', since: 'desde tu última comida', none: 'Aún no hay comidas', noneSub: 'Registra tu próxima comida en Fuel. La pausa cuenta desde la hora en que comiste.', close: 'Cerrar',
             last: 'Última comida', fix: 'Cambiar hora', now: 'Ahora', next: 'Después: {n} en unas {d}', past: 'Más allá del último marcador. Escucha a tu cuerpo.', markers: 'Marcadores típicos',
             pts: 'Por ahora +{x} XP. Los recibes al registrar tu próxima comida en Fuel.', recent: 'Pausas recientes', log: 'Registrar comida en Fuel',
             hedge: 'Una guía general según patrones típicos, no una medición. Cada cuerpo tiene su propio reloj. ¿Tomas medicación para la diabetes? Consulta a tu médico antes de pausas largas.',
             hexL: 'Seis marcadores en un hexágono; el rastro iluminado muestra el tiempo desde tu última comida', today: 'Hoy', yday: 'Ayer',
-            mcH: 'Después de comer', mcTyp: 'Típico, no medido', mcLever: 'Baja el pico', mcMove: 'Ir a Movimiento', mcRow: 'Fases después de comer', mcPrev: 'Fase anterior', mcNext: 'Fase siguiente',
+            mcH: 'Después de comer', mcTyp: 'Típico, no medido', mcLever: 'Baja el pico', mcMove: 'Ir a Movimiento', mcRow: 'Fases después de comer', mcPrev: 'Fase anterior', mcNext: 'Fase siguiente', mcSay: 'Leer esta fase en voz alta', mcStop: 'Dejar de leer', mcRate: 'Velocidad de voz {r}',
             mcCare: '¿Usas insulina o medicación para la diabetes? Habla con tu equipo médico antes de cambiar comidas o ejercicio: estos consejos pueden bajar tu azúcar.' }
     };
     /* the soft-ms markers (index.html STAGES), used only when LowiFast is not there (node tests) */
@@ -222,6 +222,69 @@
     }
     /* ---------- After your meal: the strip ---------- */
     let mcSel = -1; /* the phase the user picked; -1 follows the clock */
+    /* Oct 24 2026 (Emmanuel's screenshot 18:52, last meal 16:11: the 2 h phase glowed, the card under it still showed "Zucker steigt"):
+       a pick only held while the sheet stayed open, so a phase tapped earlier stayed open after the clock had moved on (the sheet
+       survives the app going to the background). Now the card follows the phase you are in: a pick holds only while the clock is
+       still in the phase it was made in, and coming back to the app or saving a new meal time drops it. */
+    let mcSelCur = -1; /* the clock's phase when the pick was made */
+    const selFor = (pick, pickCur, cur) => (pick >= 0 && pickCur === cur ? pick : Math.max(0, cur));
+    const selOf = m => { if (mcSel >= 0 && mcSelCur !== m.mcCur) mcSel = -1; return selFor(mcSel, mcSelCur, m.mcCur); };
+
+    /* ---------- read aloud (Oct 24 2026, Emmanuel: "for the people who don't want to read they can just click on the speaker.
+       Same voice as the tutorial girl") ----------
+       A round glass speaker on the open card reads it: title, typical time, the two lines and the levers. Tap again to stop; another
+       phase, a swipe or closing Gap stops it. The voice is app-voice.js (LowiVoice): the tutorial's own neural voices, recorded clips
+       per sentence (tools/app-voice/build.py records mcSpoken() through tools/app-voice/phrases.cjs), never the device voice
+       (onlyClips). While it reads, the tutorial's speed pill (1x / 1.5x / 2x) sits next to it and shares its setting. */
+    const SAY_TO = { en: ' to ', de: ' bis ', es: ' a ' };
+    const SAY_UNIT = { en: [[/\bmin\b/g, 'minutes'], [/(\d) h\b/g, '$1 hours']], de: [[/\bMin\./g, 'Minuten'], [/\bStd\./g, 'Stunden']], es: [[/\bmin\b/g, 'minutos'], [/(\d) h\b/g, '$1 horas']] };
+    function sayable(t, l) {
+        t = String(t || '').replace(/<\/?b>/g, '').replace(/(\d)\s*[\u2013-]\s*(\d)/g, '$1' + SAY_TO[l] + '$2');
+        (SAY_UNIT[l] || []).forEach(r => { t = t.replace(r[0], r[1]); });
+        t = t.trim(); return /[.!?:]$/.test(t) ? t : t + '.';
+    }
+    /* what the speaker says for phase i, one sentence per line (pure: the clip recorder and the tests use it) */
+    function mcSpoken(i, l) {
+        l = ['en', 'de', 'es'].indexOf(l) >= 0 ? l : 'en'; const k = ['en', 'de', 'es'].indexOf(l), p = MC[i]; if (!p) return '';
+        return [p.n[k], p.p[k], p.t[k], (STR[l] || STR.en).mcLever].concat(p.l[k]).map(x => sayable(x, l)).join('\n');
+    }
+    const RATE_KEY = 'lowi.tutorial.voice.rate.v1', RATES = [1, 1.5, 2]; /* tutorial-voice.js RATE_KEY / RATES: one speed for both */
+    const sayRate = () => { try { const v = parseFloat(W.localStorage.getItem(RATE_KEY)); return RATES.indexOf(v) >= 0 ? v : 1; } catch (e) { return 1; } };
+    const rateText = r => (lang() === 'en' ? String(r) : String(r).replace('.', ',')) + '\u00d7';
+    let say = null; /* {i, h}: the phase being read and its LowiVoice handle */
+    const SPK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="mc-sb" d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path class="mc-w1" d="M15.2 9.2a4 4 0 0 1 0 5.6"/><path class="mc-w2" d="M17.8 6.8a7.4 7.4 0 0 1 0 10.4"/></svg>';
+    function sayBtns(i) {
+        const on = !!(say && say.i === i), r = sayRate(), rl = s('mcRate').replace('{r}', rateText(r));
+        return '<span class="mc-say">' + (on ? '<button type="button" class="mc-rate' + (r !== 1 ? ' fast' : '') + '" data-gv="mcrate" aria-label="' + esc(rl) + '" title="' + esc(rl) + '">' + esc(rateText(r)) + '</button>' : '') +
+            '<button type="button" class="mc-spk' + (on ? ' on' : '') + '" data-gv="mcsay" aria-pressed="' + on + '" aria-label="' + esc(s(on ? 'mcStop' : 'mcSay')) + '"><span class="mc-spkc">' + SPK_SVG + '</span></button></span>';
+    }
+    function paintSay() {
+        const c = el && el.querySelector('.mc-card'); if (!c) return;
+        const old = c.querySelector('.mc-say'), i = +c.dataset.i, f = D.activeElement && old && old.contains(D.activeElement) ? D.activeElement.dataset.gv : '';
+        const t = D.createElement('div'); t.innerHTML = sayBtns(i);
+        if (old) old.replaceWith(t.firstChild);
+        if (f) { const b = c.querySelector('.mc-say [data-gv="' + f + '"]') || c.querySelector('.mc-spk'); if (b) b.focus({ preventScroll: true }); }
+    }
+    function sayStop() {
+        const x = say; say = null;
+        if (x && x.h && !x.h.ended && W.LowiVoice) { try { LowiVoice.cancel(); } catch (e) { } }
+        paintSay();
+    }
+    function sayStart(i) {
+        if (!W.LowiVoice || !MC[i]) return;
+        const l = lang().slice(0, 2), done = () => { if (say && say.h === h) { say = null; paintSay(); } };
+        let h = null;
+        h = W.LowiVoice.speak(mcSpoken(i, l), { lang: l, playRate: sayRate(), onlyClips: true, onend: done, onerror: done });
+        if (h && !h.ended) say = { i, h }; else say = null;
+        paintSay();
+    }
+    function sayToggle(i) { if (say && say.i === i) sayStop(); else sayStart(i); }
+    function sayNextRate() {
+        const r = sayRate(), n = RATES[(RATES.indexOf(r) + 1) % RATES.length];
+        try { W.localStorage.setItem(RATE_KEY, String(n)); } catch (e) { }
+        try { if (W.LowiVoice && LowiVoice.setRate) LowiVoice.setRate(n); } catch (e) { }
+        paintSay();
+    }
     const li = () => Math.max(0, ['en', 'de', 'es'].indexOf(lang()));
     const MC_ICON = ['M12 18V7M7.5 11.5 12 7l4.5 4.5', 'M4 17c4 0 5-11 8-11s4 11 8 11', 'M12 6v11m-4.5-4.5L12 17l4.5-4.5', 'M4 13c2.7-2.4 5.3-2.4 8 0s5.3 2.4 8 0', 'M15.5 5.2a7 7 0 1 0 3.3 12.3A6 6 0 0 1 15.5 5.2z'];
     const MC_CLIP = [[0, 30], [24, 46], [40, 66], [62, 90], [86, 120]];
@@ -240,16 +303,16 @@
             '<path class="mc-seg" d="' + MC_PATH + '" clip-path="url(#mcClip' + i + ')"/><g class="mc-motif" style="fill:' + p.c + '">' + motif + '</g></svg>';
     }
     function curve(m) {
-        const k = li(), cur = m.mcCur, sel = mcSel >= 0 ? mcSel : Math.max(0, cur), p = MC[sel];
+        const k = li(), cur = m.mcCur, sel = selOf(m), p = MC[sel];
         const row = MC.map((x, i) => (i ? '<i class="mc-link' + (cur >= i ? ' lit' : '') + '" aria-hidden="true"></i>' : '') +
             '<button type="button" class="mc-ph' + (i === sel ? ' sel' : '') + (i === cur ? ' now' : '') + (cur > i ? ' past' : '') + '" data-gv="mc" data-i="' + i + '" style="--c:' + x.c + '"' +
             ' aria-pressed="' + (i === sel) + '" aria-label="' + esc(x.n[k] + ', ' + x.p[k] + (i === cur ? ', ' + s('now') : '')) + '">' +
             '<span class="mc-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + MC_ICON[i] + '"/></svg></span><small>' + esc(MC_TICK[i]) + '</small></button>').join('');
         return '<section class="mc" aria-label="' + esc(s('mcH')) + '"><div class="mc-head"><h4 class="gv-h">' + esc(s('mcH')) + '</h4><small>' + esc(s('mcTyp')) + '</small></div>' +
             '<div class="mc-row" role="group" aria-label="' + esc(s('mcRow')) + '">' + row + '</div>' +
-            '<div class="mc-card' + (sel === cur ? ' is-now' : '') + '" style="--c:' + p.c + '" data-mc-card>' +
+            '<div class="mc-card' + (sel === cur ? ' is-now' : '') + '" style="--c:' + p.c + '" data-mc-card data-i="' + sel + '">' +
             '<div class="mc-art">' + mcArt(sel) + '</div>' +
-            '<div class="mc-title"><h3>' + esc(p.n[k]) + '</h3>' + (sel === cur ? '<em>' + esc(s('now')) + '</em>' : '') + '</div>' +
+            '<div class="mc-title"><h3>' + esc(p.n[k]) + '</h3>' + (sel === cur ? '<em>' + esc(s('now')) + '</em>' : '') + sayBtns(sel) + '</div>' +
             '<span class="mc-pill">' + esc(p.p[k]) + '</span><p class="mc-t">' + rich(p.t[k]) + '</p>' +
             '<div class="mc-lever"><small>' + esc(s('mcLever')) + '</small><ul>' + p.l[k].map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' +
             (p.mv && sel === cur ? '<button type="button" class="mc-move" data-gv="move">' + esc(s('mcMove')) + '</button>' : '') + '</div>' +
@@ -260,11 +323,13 @@
     }
     function mcPick(i) {
         if (!el) return;
-        mcSel = Math.max(0, Math.min(MC.length - 1, i));
+        const m = model();
+        mcSel = Math.max(0, Math.min(MC.length - 1, i)); mcSelCur = m.mcCur;
+        if (say && say.i !== mcSel) sayStop();
         const sec = el.querySelector('.mc');
         if (!sec) return;
         const focusI = D.activeElement && D.activeElement.closest && D.activeElement.closest('.mc') ? (D.activeElement.dataset.gv || '') + ':' + (D.activeElement.dataset.i || '') : '';
-        const t = D.createElement('div'); t.innerHTML = curve(model());
+        const t = D.createElement('div'); t.innerHTML = curve(m);
         sec.replaceWith(t.firstChild);
         if (focusI) { const [g, n] = focusI.split(':'); const b = el.querySelector('.mc [data-gv="' + g + '"]' + (n ? '[data-i="' + n + '"]' : '')); if (b && !b.disabled) b.focus({ preventScroll: true }); else { const s2 = el.querySelector('.mc-ph.sel'); if (s2) s2.focus({ preventScroll: true }); } }
     }
@@ -291,19 +356,23 @@
     }
 
     /* ---------- the sheet ---------- */
-    let el = null, tick = 0, back = null;
+    let el = null, tick = 0, back = null, openedAt = 0;
     function paint() {
         if (!el) return;
         const sc = el.querySelector('.gv-scroll'), y = sc ? sc.scrollTop : 0, open = Array.from(el.querySelectorAll('.gv-list details')).map(d => d.open);
         el.querySelector('.gv-body').innerHTML = body(model());
         if (open.length) el.querySelectorAll('.gv-list details').forEach((d, i) => { if (i in open) d.open = open[i]; });
         if (sc) sc.scrollTop = y;
+        const c = el.querySelector('.mc-card'); if (say && (!c || +c.dataset.i !== say.i)) sayStop();
     }
+    /* a new meal time, or coming back to the app: the card goes back to the phase you are in */
+    function onFresh() { if (!el) return; mcSel = -1; paint(); }
+    function onVis() { if (D && !D.hidden) onFresh(); }
     function open() {
         if (!D) return false;
         close(true);
         back = D.activeElement;
-        mcSel = -1;
+        mcSel = -1; openedAt = Date.now();
         el = D.createElement('div'); el.className = 'gv-ov'; el.id = 'gvSheet'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'gvTitle');
         el.setAttribute('data-noi18n', '');
         el.innerHTML = '<div class="gv-card"><div class="gv-top"><button type="button" class="gv-x" data-gv="close" aria-label="' + esc(s('close')) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
@@ -317,13 +386,16 @@
         mcSwipe(el);
         D.addEventListener('keydown', onKey, true);
         W.addEventListener('lowi:fast', paint); W.addEventListener('storage', paint);
+        W.addEventListener('lowi:fast-start', onFresh); D.addEventListener('visibilitychange', onVis);
         tick = setInterval(paint, 30000);
         setTimeout(() => { const x = el && el.querySelector('.gv-x'); if (x) x.focus({ preventScroll: true }); }, 60);
         return true;
     }
     function close(quick) {
         clearInterval(tick); tick = 0;
+        if (say) sayStop();
         D && D.removeEventListener('keydown', onKey, true);
+        W.removeEventListener && W.removeEventListener('lowi:fast-start', onFresh); D && D.removeEventListener('visibilitychange', onVis);
         W.removeEventListener && W.removeEventListener('lowi:fast', paint); W.removeEventListener && W.removeEventListener('storage', paint);
         const e = el; el = null;
         if (!e) return;
@@ -388,10 +460,11 @@
         if (k === 'close') close();
         else if (k === 'fix') { try { W.LowiFastEdit.open(); } catch (x) { console.error(x); } }
         else if (k === 'log') { close(); setTimeout(() => { try { W.LowiSpirit.meal(); } catch (x) { console.error(x); } }, 60); }
-        else if (k === 'mc') mcPick(+b.dataset.i || 0);
+        else if (k === 'mc') { if (Date.now() - openedAt < 450) return; mcPick(+b.dataset.i || 0); } /* not the tap that opened Gap landing on the row */
+        else if (k === 'mcsay') { const c = b.closest('[data-mc-card]'); sayToggle(c ? +c.dataset.i : 0); }
+        else if (k === 'mcrate') sayNextRate();
         else if (k === 'mcprev' || k === 'mcnext') { const cur = mcSel >= 0 ? mcSel : Math.max(0, model().mcCur); mcPick(cur + (k === 'mcnext' ? 1 : -1)); }
         else if (k === 'move') { close(); setTimeout(() => { try { if (typeof W.lowiOpen === 'function') W.lowiOpen('move'); else if (typeof W.goTab === 'function') W.goTab('move'); } catch (x) { console.error(x); } }, 60); }
     }
-    if (W.addEventListener) W.addEventListener('lowi:fast-start', paint); /* LowiFastEdit saved a new last meal time */
-    return { open, close, isOpen: () => !!el, model, strings: STR, _trail: trail, phases: MC, curvePhase, _curve: curve };
+    return { open, close, isOpen: () => !!el, model, strings: STR, _trail: trail, phases: MC, curvePhase, _curve: curve, mcSpoken, selFor, speaking: () => !!say };
 });

@@ -123,13 +123,25 @@
     function playBlob(blob) {
         return new Promise(res => {
             const a = A(); if (blobUrl) { try { URL.revokeObjectURL(blobUrl); } catch (e) { } }
-            blobUrl = URL.createObjectURL(blob); a.src = blobUrl;
+            blobUrl = URL.createObjectURL(blob); a.src = blobUrl; clipRate(a, cur && cur.o.playRate);
             let fin = false; const end = v => { if (fin) return; fin = true; a.onended = a.onerror = null; res(v); };
             a.onended = () => end('ok'); a.onerror = () => end('err');
             const p = a.play(); if (cur) cur.audio = end;
             if (p && p.catch) p.catch(e => end(e && e.name === 'NotAllowedError' ? 'blocked' : 'err'));
         });
     }
+
+    /* opts.playRate (Oct 24 2026, Gap's "After your meal" speaker): the clip plays faster with its natural pitch, like the tutorial's
+       speed pill (tutorial-voice.js applyRate). Anything else plays at 1x, so one caller's speed never leaks into the next one's clip.
+       setRate(r) changes the voice that is reading right now, without starting the clip again.
+       opts.onlyClips: only the recorded neural voice, never the device voice (Emmanuel, 24 Oct: "Only utilize that voice"); a sentence
+       whose clip cannot load is skipped. */
+    function clipRate(a, r) {
+        r = [1, 1.5, 2].indexOf(Number(r)) >= 0 ? Number(r) : 1;
+        try { a.preservesPitch = true; a.webkitPreservesPitch = true; a.mozPreservesPitch = true; } catch (e) { }
+        try { a.defaultPlaybackRate = r; a.playbackRate = r; } catch (e) { }
+    }
+    function setRate(r) { if (!cur || cur.o.playRate == null) return false; cur.o.playRate = Number(r); if (audio) clipRate(audio, r); return true; }
 
     /* ---- the queue: one utterance at a time ---- */
     let cur = null; const queue = [];
@@ -148,12 +160,12 @@
         const d = await data(); if (cur !== h) return;
         const lang = h.lang, ps = pieces(h.text);
         const blobs = ps.map(p => clipFor(d, lang, p)); /* all fetched at once; played in order */
-        let first = true, rate = h.o.rate;
+        let first = true;
         for (let i = 0; i < ps.length; i++) {
             const b = await blobs[i]; if (cur !== h) return;
             if (first) { first = false; media(true); try { h.o.onstart && h.o.onstart({ type: 'start' }); } catch (e) { } }
             let r = b ? await playBlob(b) : 'none'; if (cur !== h) return;
-            if (r === 'blocked' || r === 'err' || r === 'none') { h.device = (h.device || 0) + 1; await sayDevice(ps[i], lang, rate); if (cur !== h) return; }
+            if (r === 'blocked' || r === 'err' || r === 'none') { if (h.o.onlyClips) { h.skipped = (h.skipped || 0) + 1; continue; } h.device = (h.device || 0) + 1; await sayDevice(ps[i], lang, h.o.rate || h.o.playRate); if (cur !== h) return; }
             else h.clips = (h.clips || 0) + 1;
         }
         finish(h);
@@ -172,7 +184,7 @@
         cancel(); run(h); return h;
     }
     const speaking = () => !!(cur || queue.length);
-    W.LowiVoice = Object.assign({}, api, { speak, cancel, speaking, unlock, supported: () => typeof Audio === 'function' || !!W.speechSynthesis, current: () => cur, prefetch: (text, lang) => { lang = L(lang || appLang()); data().then(d => pieces(text).forEach(p => clipFor(d, lang, p))); } });
+    W.LowiVoice = Object.assign({}, api, { speak, cancel, speaking, unlock, setRate, supported: () => typeof Audio === 'function' || !!W.speechSynthesis, current: () => cur, prefetch: (text, lang) => { lang = L(lang || appLang()); data().then(d => pieces(text).forEach(p => clipFor(d, lang, p))); } });
     /* the tutorial's own voice starting stops this one (one voice at a time) */
     W.addEventListener('lowi:media', e => { const d = e.detail || {}; if (d.on && d.id && d.id !== 'app-voice' && /voice/.test(d.id) && speaking()) cancel(); });
     /* the app going to the background stops the voice, like the tutorial */

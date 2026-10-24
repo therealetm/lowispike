@@ -49,7 +49,7 @@
     ['jacket potato', 'potato baked peel eaten'], ['baked potato', 'potato baked'], ['backkartoffel', 'potato baked'], ['ofenkartoffel', 'potato baked'],
     ['mashed potato', 'potato mashed'], ['kartoffelpuree', 'potato mashed'], ['kartoffelbrei', 'potato mashed'], ['pure de papa', 'potato mashed'],
     ['bratkartoffeln', 'potato home fries'], ['chips', 'chip'], ['crisps', 'potato chips'], ['scrambled eggs', 'egg scrambled'], ['fried egg', 'egg fried'],
-    ['boiled egg', 'egg boiled'], ['porridge', 'oatmeal'], ['overnight oats', 'oatmeal'], ['rolled oats', 'oatmeal'], ['oats', 'oatmeal'], ['mince', 'ground beef'], ['minced beef', 'ground beef'], ['courgette', 'zucchini'],
+    ['boiled egg', 'egg boiled'], ['porridge', 'oatmeal'], ['overnight oats', 'oatmeal'], ['rolled oats', 'oatmeal'], ['oats', 'oatmeal'], ['muesli bar', 'granola bar'], ['musli bar', 'granola bar'], ['musliriegel', 'granola bar'], ['barrita de muesli', 'granola bar'], ['mince', 'ground beef'], ['minced beef', 'ground beef'], ['courgette', 'zucchini'],
     ['aubergine', 'eggplant'], ['prawns', 'shrimp'], ['prawn', 'shrimp'], ['omelette', 'omelet'], ['tortilla de huevo', 'omelet'], ['mac and cheese', 'macaroni and cheese'], ['mac n cheese', 'macaroni and cheese'],
     ['chilli', 'chili'], ['chili con carne', 'chili con carne'], ['yoghurt', 'yogurt'], ['bap', 'roll'], ['butty', 'sandwich'], ['sarnie', 'sandwich'],
     ['coriander', 'cilantro'], ['rocket', 'arugula'], ['beetroot', 'beet'], ['swede', 'rutabaga'], ['gammon', 'ham'], ['rasher', 'bacon']
@@ -103,6 +103,7 @@
     { k: ['steak and chips', 'steak frites', 'steak with chips'], n: 'Steak and chips', mix: [['Beef, steak, NFS', 170], ['Potato, french fries, restaurant', 150]] },
     { k: ['spaghetti bolognese', 'spag bol', 'pasta bolognese', 'spaghetti with meat sauce', 'spaghetti mit hackfleischsosse', 'espaguetis a la bolonesa'], n: 'Spaghetti bolognese', mix: [['Pasta, cooked', 200], ['Spaghetti sauce with meat', 190]] },
     { k: ['chicken salad', 'hahnchensalat', 'ensalada de pollo'], n: 'Chicken salad', mix: [['Chicken or turkey garden salad, chicken and/or turkey, tomato and/or carrots, other vegetables, no dressing', 300], ['Olive oil', 7]] },
+    { k: ['muesli', 'musli', 'bircher muesli', 'bircher musli', 'birchermuesli', 'birchermusli', 'swiss muesli'], n: 'Muesli', mix: [['Oats, raw', 40], ['Raisins', 10], ['Nuts, NFS', 10]] },
     { k: ['salad', 'green salad', 'side salad', 'mixed salad', 'gemischter salat', 'ensalada mixta'], n: 'Green salad', mix: [['Lettuce, raw', 100], ['Tomatoes, raw', 60], ['Olive oil', 7]] }
   ];
 

@@ -869,6 +869,18 @@ Emmanuel, voice message about 19:10: "since you've noticed it, that means it's t
 
 Emmanuel: the old creator script ("the guy who built this app lost 45 kilos in 7 months", 30-day challenge, 20 follow lines) was "komplett Blödsinn". Now his six steps in EN/DE/ES: 1. "Tag [X]: [Ziel] Kilo abnehmen innerhalb von [Zeitraum]" (own goal, days or months) while Shuffle runs, 2. Shuffle stops, 3. "Nice. Die heutige insulinfreundliche Mahlzeit ist [Mahlzeit].", 4. cut to cooking (yourself or AI video tool), 5. cut to the mukbang, rate it, 6. CTA "kommentier Rezept" for the e-book. No 45/55 or any figure of his. No day stepper any more; a free-track note explains the model (only the e-book is sold, creators earn when their people use the app and upgrade). Voice clips re-recorded, old ones removed. See DECISIONS 2026-10-24 "Affiliates LOWiSPIKE script".
 
+### 0.11 Nutrition audit is the content rule: docs/NUTRITION-POLICY.md (Sat 24 Oct 2026, about 23:15 CEST)
+
+Emmanuel sent a nutrition audit of five experts (Bikman, Jamnadas, Fung, Dr. Boz, Glucose Goddess) plus screenshots of the Gap
+cards "After eating": "Update this bc it's wrong". From now on **docs/NUTRITION-POLICY.md is binding for every food, health and
+fasting text** (cards, spike tips, scanner, tutorial, voice lines, creator scripts, bot posts, Cook, Shop). Read it before you
+write such a text. In short: strict on sugar, flour, bread, rice, pasta, potatoes, juice, soft drinks; protein and non-starchy
+veg first; no liquid sugar; sweets only as dessert; 10-minute walk helps (never "helps most"); vinegar only optional; no
+small-portion tips for craving food; never diagnose, "remission" not "cure"; no keto/fasting/ketone/supplement healing claims.
+**Cooled rice or potatoes (resistant starch) are NOT LOWiSPIKE-friendly.** Applied: the five Gap cards (EN/DE/ES, voice
+re-recorded), herb spike tips (kidneys line out, vinegar optional), the scan card's "Eating it anyway?" line, the cauli_mash
+swap. Guarded by tests/gap-meal-curve.test.cjs and tests/nutrition-policy.test.cjs. Do not bring the old lines back.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday
@@ -1148,6 +1160,9 @@ scripts/release.sh "what users get, in one line" --news news.json
 ## 5. Emmanuel's preferences and standing decisions
 
 **How to work with him**
+
+- **Food, health and fasting texts follow docs/NUTRITION-POLICY.md** (his nutrition audit, 24 Oct 2026). No cooled-rice
+  pass, no small-portion tips for craving food, vinegar only optional, "remission" not "cure".
 
 - **Updates: a voice note plus a text checklist** with ✅ done, ⏳ in progress, 📝 to do, and the done items stay in
   the list. This is his current instruction (19 Oct) and replaces the older "no voice recordings" line.

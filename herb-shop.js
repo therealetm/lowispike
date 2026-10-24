@@ -119,9 +119,9 @@ const FACTS=[
  ['A ten-minute walk after eating flattens the sugar curve.','Zehn Minuten Gehen nach dem Essen glätten die Zuckerkurve.','Caminar diez minutos después de comer suaviza la curva de azúcar.'],
  ['Fibre first, carbs last: the same meal spikes less.','Erst Ballaststoffe, dann Kohlenhydrate: dieselbe Mahlzeit steigt weniger an.','Primero fibra, luego carbohidratos: la misma comida sube menos.'],
  ['Working muscles take up sugar even without much insulin.','Arbeitende Muskeln nehmen Zucker auch mit wenig Insulin auf.','Los músculos en movimiento absorben azúcar incluso con poca insulina.'],
- ['Water helps your kidneys clear extra sugar.','Wasser hilft deinen Nieren, überschüssigen Zucker loszuwerden.','El agua ayuda a tus riñones a eliminar el azúcar sobrante.'],
+ ['Water instead of juice or soda: no liquid sugar.','Wasser statt Saft oder Limo: kein flüssiger Zucker.','Agua en vez de zumo o refresco: nada de azúcar líquido.'],
  ['Deep sleep makes your cells more sensitive to insulin the next day.','Tiefer Schlaf macht deine Zellen am nächsten Tag empfindlicher für Insulin.','El sueño profundo hace tus células más sensibles a la insulina al día siguiente.'],
- ['A little vinegar before a meal can soften the spike.','Etwas Essig vor dem Essen kann den Anstieg abmildern.','Un poco de vinagre antes de comer puede suavizar el pico.']];
+ ['Optional: a little vinegar with a meal may help some people a bit.','Optional: Etwas Essig zum Essen kann bei manchen etwas helfen.','Opcional: un poco de vinagre con la comida puede ayudar algo a algunas personas.']];
 function giftRead(){try{const g=JSON.parse(localStorage.getItem(GKEY)||'null');return g&&typeof g==='object'?g:{};}catch(e){return{};}}
 function giftTaken(now){return giftRead().day===K.dayKey(now||Date.now());}
 /* Oct 17 (E-man): a fact is only "taken" after a deliberate tap (Nice or Support). Opening it, an outside tap, Escape,

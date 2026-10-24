@@ -42,7 +42,8 @@ test('the funny-frisch chips: one verdict, Skip it, matching the higher spike es
     const de = C.cardHTML(clone(CHIPS), 1, 30, { swaps: true });
     assert.match(de, /<strong class="fc-word">Lieber nicht<\/strong>/);
     assert.match(de, /Höhere Spike-Schätzung/);
-    assert.match(de, /Isst du es trotzdem\? Kleine Portion direkt nach einer Mahlzeit, danach zehn Minuten gehen\./);
+    assert.match(de, /Isst du es trotzdem\? Direkt nach einer Mahlzeit, nie allein, danach zehn Minuten gehen\./);
+    assert.doesNotMatch(de, /Kleine Portion direkt/, 'nutrition audit: no small-portion tip for a Skip-it food');
     assert.doesNotMatch(de, /Ab und zu|SELTEN/);
     assert.doesNotMatch(de, /Zugesetzter Zucker/, '3 g sugar per 100 g is low sugar: no added sugar reason');
     assert.doesNotMatch(de, /\(zucker\)/);

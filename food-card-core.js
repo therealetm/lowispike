@@ -33,7 +33,7 @@
             NEIN: [['Skip it', 'Not a LOWiSPIKE choice. Pick a swap'], ['Lieber nicht', 'Keine LOWiSPIKE-Wahl. Nimm lieber einen Tausch'], ['Mejor no', 'No es una opción LOWiSPIKE. Elige un cambio']]
         },
         nein_spike: ['Higher spike estimate. Pick a swap', 'Höhere Spike-Schätzung. Nimm lieber einen Tausch', 'Estimación de pico más alta. Elige un cambio'],
-        anyway: ['Eating it anyway? A small portion right after a meal, then a ten-minute walk.', 'Isst du es trotzdem? Kleine Portion direkt nach einer Mahlzeit, danach zehn Minuten gehen.', '¿Te lo comes igual? Una porción pequeña justo después de comer y luego camina diez minutos.'],
+        anyway: ['Eating it anyway? Right after a meal, never on its own, then a ten-minute walk.', 'Isst du es trotzdem? Direkt nach einer Mahlzeit, nie allein, danach zehn Minuten gehen.', '¿Te lo comes igual? Justo después de comer, nunca solo, y luego camina diez minutos.'],
         provisional: ['Provisional: some data is missing', 'Vorläufig: es fehlen Daten', 'Provisional: faltan datos'],
         impact: ['Blood sugar impact', 'Wirkung auf den Blutzucker', 'Impacto en el azúcar'],
         impactKey: {lower: ['Lower', 'Niedriger', 'Más bajo'], moderate: ['Moderate', 'Mittel', 'Moderado'], higher: ['Higher', 'Höher', 'Más alto']},

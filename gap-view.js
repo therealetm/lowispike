@@ -67,14 +67,14 @@
            -> insulin, insulin low (from about 4 h).
        Levers Emmanuel approved (his list, Oct 24 2026: "Yeah, I like it. We can do that. Go ahead."), each with its source:
        veggies and protein first, carbs last [S]; never carbs alone, add protein, fat or fiber, and sweets right after a meal rather
-       than alone [S][F]; whole over processed and fiber: Reynolds A et al. Carbohydrate quality and human health. Lancet
-       2019;393:434-445; smaller carb portions [F]; cooked and cooled starch: Sonia S et al. Effect of cooling of cooked white rice on
-       resistant starch content and glycemic response. Asia Pac J Clin Nutr 2015;24(4):620-625 (cooled 24 h at 4 C and reheated:
-       lower glycemic response); vinegar: Shishehbor F et al. Vinegar consumption can attenuate postprandial glucose and insulin
-       responses. Diabetes Res Clin Pract 2017;127:1-9; savory breakfast: Chang CR et al. Restricting carbohydrates at breakfast is
+       than alone [S][F]; swap sugar, flour, bread, rice, pasta and potatoes for veggies and protein (fiber and whole food: Reynolds A et al.
+       Carbohydrate quality and human health. Lancet 2019;393:434-445; docs/NUTRITION-POLICY.md, Eman's nutrition
+       audit Oct 24 2026: resistant starch / cooked-and-cooled rice or potatoes do NOT make them LOWiSPIKE-friendly, no smaller-carb-portion
+       tips); vinegar only as an optional, partial tip: Shishehbor F et al. Vinegar consumption can attenuate postprandial glucose and
+       insulin responses. Diabetes Res Clin Pract 2017;127:1-9; savory first meal: Chang CR et al. Restricting carbohydrates at breakfast is
        sufficient to reduce 24-hour exposure to postprandial hyperglycemia. Am J Clin Nutr 2019;109:1302-1309 (type 2 diabetes);
        bigger meals earlier: Jakubowicz D et al. High-energy breakfast with low-energy dinner decreases overall daily hyperglycaemia.
-       Diabetologia 2015;58:912-919 (type 2 diabetes); water over sugary drinks [F]; a 10-15 min walk after eating, and even 2-5 min
+       Diabetologia 2015;58:912-919 (type 2 diabetes); water, no liquid sugar, whole fruit over juice [F]; a 10 min walk after eating (helps, not "helps most"), and even 2-5 min
        of light walking [B]; regular strength training: Colberg SR et al. Physical activity/exercise and diabetes, ADA position
        statement. Diabetes Care 2016;39:2065-2079, and [R]; sleep: Spiegel K et al. Impact of sleep debt on metabolic and endocrine
        function. Lancet 1999;354:1435-1439; stress: stress hormones (cortisol, adrenaline) raise blood glucose, OpenStax Anatomy and
@@ -88,17 +88,17 @@
             t: ['Soon after you start eating, sugar from the meal reaches your blood. <b>Fiber, protein and fat</b> slow it down.',
                 'Kurz nach dem ersten Bissen kommt Zucker aus dem Essen ins Blut. <b>Ballaststoffe, Eiweiß und Fett</b> bremsen ihn.',
                 'Poco después de empezar a comer, el azúcar de la comida llega a la sangre. <b>La fibra, la proteína y la grasa</b> lo frenan.'],
-            l: [['Veggies and protein first, carbs last.', 'Never carbs alone: add protein, fat or fiber.', 'Whole over processed, smaller carb portions. Cooked and cooled rice or potatoes often rise less.', 'Vinegar in a dressing, before or with the meal, may help.'],
-                ['Erst Gemüse und Eiweiß, Kohlenhydrate zuletzt.', 'Nie Kohlenhydrate allein: dazu Eiweiß, Fett oder Ballaststoffe.', 'Vollwertig statt verarbeitet, kleinere Kohlenhydrat-Portionen. Gekochter und abgekühlter Reis oder Kartoffeln steigen oft weniger.', 'Essig im Dressing, vor oder zum Essen, kann helfen.'],
-                ['Primero verduras y proteína, los carbohidratos al final.', 'Nunca carbohidratos solos: añade proteína, grasa o fibra.', 'Integral mejor que procesado, y raciones de carbohidratos más pequeñas. El arroz o la patata cocidos y enfriados suelen subir menos.', 'Vinagre en el aliño, antes o con la comida, puede ayudar.']] },
+            l: [['Veggies, protein and fat first, starch and sweets last.', 'No naked carbs: always with protein, fat or fiber.', 'Swap sugar, bread, rice, pasta and potatoes for veggies and protein.', 'Optional: vinegar in a dressing may help a little for some people.'],
+                ['Erst Gemüse, Eiweiß und Fett, Stärke und Süßes zuletzt.', 'Keine nackten Kohlenhydrate: immer mit Eiweiß, Fett oder Ballaststoffen.', 'Zucker, Brot, Reis, Nudeln und Kartoffeln lieber durch Gemüse und Eiweiß ersetzen.', 'Optional: Essig im Dressing kann bei manchen etwas helfen.'],
+                ['Primero verduras, proteína y grasa; almidón y dulce al final.', 'Nada de carbohidratos solos: siempre con proteína, grasa o fibra.', 'Cambia azúcar, pan, arroz, pasta y patata por verduras y proteína.', 'Opcional: el vinagre en el aliño puede ayudar un poco a algunas personas.']] },
         { id: 'peak', m: 30, c: '#ffe08a', mv: true,
             n: ['Peak', 'Höhepunkt', 'Pico'], p: ['About 30–60 min after eating', 'Etwa 30–60 Min. nach dem Essen', 'Unos 30–60 min después de comer'],
             t: ['For many people, blood sugar peaks <b>around 30 to 60 minutes</b> after eating. Fast carbs peak higher.',
                 'Bei vielen ist der Blutzucker <b>etwa 30 bis 60 Minuten</b> nach dem Essen am höchsten. Schnelle Kohlenhydrate steigen höher.',
                 'En muchas personas, el azúcar llega a su pico <b>unos 30 a 60 minutos</b> después de comer. Los carbohidratos rápidos suben más.'],
-            l: [['Walk 10–15 minutes after eating. It helps most.', 'No time? Even 2–5 minutes of moving helps.'],
-                ['Geh 10–15 Minuten nach dem Essen. Das hilft am meisten.', 'Keine Zeit? Schon 2–5 Minuten Bewegung helfen.'],
-                ['Camina 10–15 minutos después de comer. Es lo que más ayuda.', '¿Sin tiempo? Incluso 2–5 minutos de movimiento ayudan.']] },
+            l: [['A 10-minute walk after eating helps.', 'No time? Even 2–5 minutes of moving helps.'],
+                ['10 Minuten gehen nach dem Essen hilft.', 'Keine Zeit? Schon 2–5 Minuten Bewegung helfen.'],
+                ['Caminar 10 minutos después de comer ayuda.', '¿Sin tiempo? Incluso 2–5 minutos de movimiento ayudan.']] },
         { id: 'insulin', m: 60, c: '#a8ffd8', mv: true,
             n: ['Insulin brings it down', 'Insulin senkt ihn', 'La insulina lo baja'], p: ['About 1–2 h after eating', 'Etwa 1–2 Std. nach dem Essen', 'Unas 1–2 h después de comer'],
             t: ['<b>Insulin</b> helps your muscles, liver and fat cells take up the sugar, so the level falls again.',
@@ -112,17 +112,17 @@
             t: ['In people without diabetes, blood sugar is usually <b>close to where it started</b> about 2 to 3 hours after eating.',
                 'Bei Menschen ohne Diabetes ist der Blutzucker etwa 2 bis 3 Stunden nach dem Essen meist <b>wieder nahe am Ausgangswert</b>.',
                 'En personas sin diabetes, el azúcar suele estar <b>cerca del punto de partida</b> unas 2 o 3 horas después de comer.'],
-            l: [['Thirsty? Water over sugary drinks.', 'Craving sweets? Have them right after a meal, not on their own.', 'A snack starts a new rise.'],
-                ['Durst? Lieber Wasser als süße Getränke.', 'Lust auf Süßes? Lieber direkt nach dem Essen als allein.', 'Ein Snack startet einen neuen Anstieg.'],
-                ['¿Sed? Mejor agua que bebidas azucaradas.', '¿Antojo de dulce? Mejor justo después de comer que solo.', 'Un snack empieza otra subida.']] },
+            l: [['Thirsty? Water, no liquid sugar: no juice, smoothies or soda.', 'Sweets only as dessert right after a meal, never on their own.', 'Fruit? Whole fruit, not juice.', 'A snack starts a new rise.'],
+                ['Durst? Wasser statt flüssigem Zucker: kein Saft, kein Smoothie, keine Limo.', 'Süßes nur als Nachtisch direkt nach dem Essen, nie allein.', 'Obst? Lieber ganz als Saft.', 'Ein Snack startet einen neuen Anstieg.'],
+                ['¿Sed? Agua, nada de azúcar líquido: ni zumo, ni batidos, ni refrescos.', 'Lo dulce, solo de postre justo después de comer, nunca por sí solo.', '¿Fruta? Mejor entera que en zumo.', 'Un snack empieza otra subida.']] },
         { id: 'low', m: 240, c: '#c4b5ff', mv: false,
             n: ['Insulin low', 'Insulin niedrig', 'Insulina baja'], p: ['From about 4 h after eating', 'Ab etwa 4 Std. nach dem Essen', 'Desde unas 4 h después de comer'],
             t: ['A few hours after eating, <b>insulin is low</b> again and your body draws more on stored energy.',
                 'Einige Stunden nach dem Essen ist <b>Insulin wieder niedrig</b> und dein Körper nutzt mehr gespeicherte Energie.',
                 'Unas horas después de comer, <b>la insulina vuelve a estar baja</b> y tu cuerpo usa más energía guardada.'],
-            l: [['Bigger meals earlier in the day, a lighter dinner.', 'A savory breakfast with protein rather than a sweet one.', 'Good sleep and less stress help: short sleep and stress can raise blood sugar.'],
-                ['Größere Mahlzeiten früher am Tag, abends leichter.', 'Ein herzhaftes Frühstück mit Eiweiß statt einem süßen.', 'Guter Schlaf und weniger Stress helfen: Schlafmangel und Stress können den Blutzucker erhöhen.'],
-                ['Comidas más grandes antes en el día, una cena más ligera.', 'Un desayuno salado con proteína mejor que uno dulce.', 'Dormir bien y menos estrés ayudan: dormir poco y el estrés pueden subir el azúcar.']] }
+            l: [['If it suits you: eat more earlier in the day, and a light dinner without starch.', 'Make your first meal of the day savory, with protein.', 'Good sleep and less stress help: short sleep and stress can raise blood sugar.'],
+                ['Wenn es passt: früher am Tag mehr essen, abends leicht und ohne Stärke.', 'Das erste Essen des Tages herzhaft und mit Eiweiß.', 'Guter Schlaf und weniger Stress helfen: Schlafmangel und Stress können den Blutzucker erhöhen.'],
+                ['Si te va bien: come más temprano y cena ligero, sin almidón.', 'Que tu primera comida del día sea salada y con proteína.', 'Dormir bien y menos estrés ayudan: dormir poco y el estrés pueden subir el azúcar.']] }
     ];
     const MC_TICK = ['0', '30 min', '1 h', '2 h', '4 h'];
     const MC_WIN = 4; /* hours: inside this window the strip leads and the hexagon's own Now card steps back (same story twice) */

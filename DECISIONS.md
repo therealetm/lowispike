@@ -1162,3 +1162,13 @@ Emmanuel (Seven): "I don't understand the food journal section. Either remove it
 **Decision:** `affiliates/blueprint-core.js` lowispike is exactly those six scenes in EN/DE/ES (talk, screen, screen, cook, talk, outro). The creator uses the app and really loses weight; the goal is their own (kilos and time they pick, in days or months), never a promise for viewers. No figure of Emmanuel's anywhere in the script (not 45, not 55). CTA word per language: Rezept / recipe / receta. No 30-day stepper, follow lines or day-30 outro any more; the page shows the free-track note instead: only one thing is sold, Emmanuel's e-book; app and Shuffle are free; creators earn when people from their link use the app and upgrade. The read-aloud clips were re-recorded in the tutorial voices and the old ones removed, so no 45-kilo line can play.
 
 **Consequences:** `tests/affiliates-shuffle.test.cjs` locks the six steps and their order, the CTA words, the no-promise note and blocks 45/55/7-months/founder lines. Creator texts outside the page were not touched.
+
+## 2026-10-24 — Emmanuel's nutrition audit is the content rule for every food text
+
+**Status:** Accepted
+
+**Context:** Emmanuel sent a nutrition audit of five experts (Bikman, Jamnadas, Fung, Dr. Boz, Glucose Goddess) with screenshots of the Gap cards "After eating": "Update this bc it's wrong". The cards said cooked-and-cooled rice or potatoes rise less, advised smaller carb portions, and called the walk "what helps most".
+
+**Decision:** `docs/NUTRITION-POLICY.md` is binding for every user-facing food, health and fasting text (Gap cards, spike tips, scanner and food engine, tutorial, voice lines, creator scripts, bot posts, Cook, Shop). Rice, pasta and potatoes stay strict (resistant starch is no pass), no small-portion tips for craving food, vinegar only optional, a 10-minute walk "helps", "remission" never "cure", no keto/fasting/ketone/supplement healing claims, no diagnosis.
+
+**Consequences:** `tests/gap-meal-curve.test.cjs` locks the new card levers in all three languages and `tests/nutrition-policy.test.cjs` scans the app for the banned claims. A new food text that conflicts with the policy is a bug; change the policy only with Emmanuel's word, as a new entry here.

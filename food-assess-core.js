@@ -346,7 +346,7 @@
         cauli_rice: {en: 'Cauliflower rice or extra vegetables', de: 'Blumenkohlreis oder mehr Gemüse', es: 'Arroz de coliflor o más verduras', portionG: null},
         veg_noodles: {en: 'Zucchini noodles, or a small portion of lentil pasta', de: 'Zucchininudeln oder eine kleine Portion Linsennudeln', es: 'Espaguetis de calabacín o una porción pequeña de pasta de lentejas', portionG: null},
         protein_breakfast: {en: 'Eggs or plain quark instead of bread', de: 'Eier oder Naturquark statt Brot', es: 'Huevos o quark natural en vez de pan', portionG: null},
-        cauli_mash: {en: 'Cauliflower mash, or a small portion of sweet potato', de: 'Blumenkohlpüree oder eine kleine Portion Süßkartoffel', es: 'Puré de coliflor o una porción pequeña de boniato', portionG: null},
+        cauli_mash: {en: 'Cauliflower or celeriac mash', de: 'Blumenkohl- oder Selleriepüree', es: 'Puré de coliflor o de apionabo', portionG: null},
         yoghurt_nuts: {en: 'Plain yoghurt with a few plain nuts', de: 'Naturjoghurt mit ein paar Nüssen', es: 'Yogur natural con unos frutos secos', portionG: null},
         crunchy_veg: {en: 'Cucumber or pepper sticks, or 25–30 g plain nuts', de: 'Gurken- oder Paprikasticks oder 25–30 g reine Nüsse', es: 'Palitos de pepino o pimiento, o 25–30 g de frutos secos naturales', portionG: [25, 30]},
         herb_dip: {en: 'Mustard, herbs or a plain yoghurt dip', de: 'Senf, Kräuter oder ein Naturjoghurt-Dip', es: 'Mostaza, hierbas o una salsa de yogur natural', portionG: null},

@@ -48,7 +48,7 @@ test('no invented effects and nothing about insulin dosing', () => {
 });
 
 test('each statement keeps its source in the code', () => {
-    for (const ref of ['Freckmann', 'Shukla', 'Buffey', 'Reynolds', 'Richter', 'OpenStax', 'Sonia', 'Shishehbor', 'Chang CR', 'Jakubowicz', 'Colberg', 'Spiegel', 'Carbohydrate quality'])
+    for (const ref of ['Freckmann', 'Shukla', 'Buffey', 'Reynolds', 'Richter', 'OpenStax', 'Shishehbor', 'Chang CR', 'Jakubowicz', 'Colberg', 'Spiegel', 'Carbohydrate quality'])
         assert.ok(src.includes(ref), 'cites ' + ref);
 });
 
@@ -84,14 +84,17 @@ test('the animation is small, transform and opacity only, and off with reduced m
     assert.ok(/\.mc-card \{[^}]*touch-action: pan-y/.test(css), 'sideways swipes reach the card, vertical scroll stays');
 });
 
-test('Emmanuel\'s approved levers sit in the right phase, the walk is the strongest, and people on insulin get a caution', () => {
+test('Emmanuel\'s levers follow the nutrition audit (docs/NUTRITION-POLICY.md), and people on insulin get a caution', () => {
     const en = id => G.phases.find(p => p.id === id).l[0].join(' ');
-    assert.ok(/Veggies and protein first, carbs last/.test(en('rise')) && /Never carbs alone/.test(en('rise')) && /Whole over processed/.test(en('rise')) && /cooled/.test(en('rise')) && /Vinegar/.test(en('rise')));
-    assert.ok(/^Walk 10\u201315 minutes after eating\. It helps most\./.test(G.phases[1].l[0][0]) && /2\u20135 minutes/.test(en('peak')), 'the walk leads the peak, even 2-5 min helps');
+    assert.ok(/Veggies, protein and fat first, starch and sweets last/.test(en('rise')) && /No naked carbs/.test(en('rise')) && /Swap sugar, bread, rice, pasta and potatoes/.test(en('rise')) && /^Optional: vinegar/m.test(G.phases[0].l[0][3]));
+    assert.ok(/^A 10-minute walk after eating helps\.$/.test(G.phases[1].l[0][0]) && /2\u20135 minutes/.test(en('peak')), 'the walk leads the peak, even 2-5 min helps');
     assert.ok(/strength training/.test(en('insulin')));
-    assert.ok(/Water over sugary drinks/.test(en('base')) && /sweets\? Have them right after a meal/.test(en('base')));
-    assert.ok(/earlier in the day/.test(en('low')) && /savory breakfast/.test(en('low')) && /sleep/.test(en('low')) && /stress/.test(en('low')));
+    assert.ok(/no liquid sugar/.test(en('base')) && /Sweets only as dessert right after a meal/.test(en('base')) && /Whole fruit, not juice/.test(en('base')));
+    assert.ok(/earlier in the day/.test(en('low')) && /first meal of the day savory/.test(en('low')) && /sleep/.test(en('low')) && /stress/.test(en('low')));
+    // Audit, Oct 24 2026: cooled rice/potatoes (resistant starch), smaller carb portions and "helps most" are out in every language.
+    const all = G.phases.map(p => p.l.flat().join(' ') + ' ' + p.t.join(' ')).join(' ');
+    assert.doesNotMatch(all, /cooled|abgek\u00fchlt|enfriad|resistant|resistente|smaller carb|kleinere Kohlenhydrat|m\u00e1s peque\u00f1as|helps most|am meisten|m\u00e1s ayuda|\bcure|Heilung|curaci/i);
     assert.ok(/insulin or diabetes medication/.test(G.strings.en.mcCare) && /Insulin oder Diabetes-Medikamente/.test(G.strings.de.mcCare) && /insulina o medicaci/.test(G.strings.es.mcCare));
     const html = G._curve({ mcCur: 1 });
-    assert.ok(/<ul><li>Walk 10/.test(html) && /class="mc-care"/.test(html), 'levers render as a list, the caution under the card');
+    assert.ok(/<ul><li>A 10-minute walk/.test(html) && /class="mc-care"/.test(html), 'levers render as a list, the caution under the card');
 });

@@ -26,15 +26,15 @@
         en: {JA: {name: 'Everyday', sub: 'A good everyday choice'},
             SELTEN: {name: 'Small portion', sub: 'Stick to the portion, best with a meal'},
             NEIN: {name: 'Skip it', sub: 'Not a LOWiSPIKE choice. Pick a swap', subSpike: 'Higher spike estimate. Pick a swap'},
-            anyway: 'Eating it anyway? A small portion right after a meal, then a ten-minute walk.'},
+            anyway: 'Eating it anyway? Right after a meal, never on its own, then a ten-minute walk.'},
         de: {JA: {name: 'Alltag', sub: 'Gute Alltagswahl'},
             SELTEN: {name: 'Kleine Portion', sub: 'Bei der Portion bleiben, am besten zu einer Mahlzeit'},
             NEIN: {name: 'Lieber nicht', sub: 'Keine LOWiSPIKE-Wahl. Nimm lieber einen Tausch', subSpike: 'Höhere Spike-Schätzung. Nimm lieber einen Tausch'},
-            anyway: 'Isst du es trotzdem? Kleine Portion direkt nach einer Mahlzeit, danach zehn Minuten gehen.'},
+            anyway: 'Isst du es trotzdem? Direkt nach einer Mahlzeit, nie allein, danach zehn Minuten gehen.'},
         es: {JA: {name: 'Diario', sub: 'Buena opción para el día a día'},
             SELTEN: {name: 'Porción pequeña', sub: 'Quédate en la porción, mejor con una comida'},
             NEIN: {name: 'Mejor no', sub: 'No es una opción LOWiSPIKE. Elige un cambio', subSpike: 'Estimación de pico más alta. Elige un cambio'},
-            anyway: '¿Te lo comes igual? Una porción pequeña justo después de comer y luego camina diez minutos.'}
+            anyway: '¿Te lo comes igual? Justo después de comer, nunca solo, y luego camina diez minutos.'}
     };
     const LABELS = {
         en: {JA: 'EVERYDAY', SELTEN: 'SMALL PORTION', NEIN: 'SKIP IT'},

@@ -21,11 +21,15 @@ test('the clock picks the phase: none without a meal, then each from its typical
 });
 
 test('every phase has a title, a time pill, a text and a lever in English, German and Spanish', () => {
-    for (const p of G.phases) for (const f of ['n', 'p', 't', 'l']) {
+    for (const p of G.phases) {
+        assert.strictEqual(p.l.length, 3, p.id + '.l languages');
+        p.l.forEach((a, i) => { assert.ok(Array.isArray(a) && a.length >= 2 && a.length <= 4, p.id + '.l[' + i + '] has 2-4 levers'); assert.strictEqual(a.length, p.l[0].length, p.id + ' same lever count in every language'); a.forEach(v => assert.ok(v.trim().length > 3)); });
+    }
+    for (const p of G.phases) for (const f of ['n', 'p', 't']) {
         assert.strictEqual(p[f].length, 3, p.id + '.' + f);
         p[f].forEach((v, i) => assert.ok(typeof v === 'string' && v.trim().length > 1, p.id + '.' + f + '[' + i + ']'));
     }
-    for (const k of ['mcH', 'mcTyp', 'mcLever', 'mcMove', 'mcRow', 'mcPrev', 'mcNext'])
+    for (const k of ['mcH', 'mcTyp', 'mcLever', 'mcMove', 'mcRow', 'mcPrev', 'mcNext', 'mcCare'])
         for (const l of ['en', 'de', 'es']) assert.ok(G.strings[l][k], l + '.' + k);
 });
 
@@ -38,13 +42,13 @@ test('times and effects are hedged as typical, never a reading or a promise', ()
 });
 
 test('no invented effects and nothing about insulin dosing', () => {
-    const all = G.phases.flatMap(p => [...p.n, ...p.p, ...p.t, ...p.l]).join(' ');
+    const all = G.phases.flatMap(p => [...p.n, ...p.p, ...p.t, ...p.l.flat()]).join(' ') + ' ' + ['en', 'de', 'es'].map(l => G.strings[l].mcCare).join(' ');
     for (const bad of [/brain/i, /Gehirn/i, /cerebro/i, /autophag/i, /ketos/i, /ketone/i, /dose|dosis|dosier/i, /\bunits?\b|Einheit|unidades/i, /burns? fat|Fett verbrenn|quema grasa/i, /detox|entgift/i, /cure|heilt|cura\b/i])
         assert.ok(!bad.test(all), 'no claim matching ' + bad);
 });
 
 test('each statement keeps its source in the code', () => {
-    for (const ref of ['Freckmann', 'Shukla', 'Buffey', 'Reynolds', 'Richter', 'OpenStax'])
+    for (const ref of ['Freckmann', 'Shukla', 'Buffey', 'Reynolds', 'Richter', 'OpenStax', 'Sonia', 'Shishehbor', 'Chang CR', 'Jakubowicz', 'Colberg', 'Spiegel', 'Carbohydrate quality'])
         assert.ok(src.includes(ref), 'cites ' + ref);
 });
 
@@ -78,4 +82,16 @@ test('the animation is small, transform and opacity only, and off with reduced m
     const rm = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
     assert.ok(/\.mc-motif \*/.test(rm) && /\.mc-card/.test(rm) && /animation: none/.test(rm), 'reduced motion stops the strip');
     assert.ok(/\.mc-card \{[^}]*touch-action: pan-y/.test(css), 'sideways swipes reach the card, vertical scroll stays');
+});
+
+test('Emmanuel\'s approved levers sit in the right phase, the walk is the strongest, and people on insulin get a caution', () => {
+    const en = id => G.phases.find(p => p.id === id).l[0].join(' ');
+    assert.ok(/Veggies and protein first, carbs last/.test(en('rise')) && /Never carbs alone/.test(en('rise')) && /Whole over processed/.test(en('rise')) && /cooled/.test(en('rise')) && /Vinegar/.test(en('rise')));
+    assert.ok(/^Walk 10\u201315 minutes after eating\. It helps most\./.test(G.phases[1].l[0][0]) && /2\u20135 minutes/.test(en('peak')), 'the walk leads the peak, even 2-5 min helps');
+    assert.ok(/strength training/.test(en('insulin')));
+    assert.ok(/Water over sugary drinks/.test(en('base')) && /sweets\? Have them right after a meal/.test(en('base')));
+    assert.ok(/earlier in the day/.test(en('low')) && /savory breakfast/.test(en('low')) && /sleep/.test(en('low')) && /stress/.test(en('low')));
+    assert.ok(/insulin or diabetes medication/.test(G.strings.en.mcCare) && /Insulin oder Diabetes-Medikamente/.test(G.strings.de.mcCare) && /insulina o medicaci/.test(G.strings.es.mcCare));
+    const html = G._curve({ mcCur: 1 });
+    assert.ok(/<ul><li>Walk 10/.test(html) && /class="mc-care"/.test(html), 'levers render as a list, the caution under the card');
 });

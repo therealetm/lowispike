@@ -22,19 +22,22 @@
             pts: 'So far +{x} XP. You get them when your next meal is logged in Fuel.', recent: 'Recent gaps', log: 'Log a meal in Fuel',
             hedge: 'A general guide from typical patterns, not a measurement. Every body runs its own clock. On diabetes medication? Ask your doctor before long gaps.',
             hexL: 'Six markers on a hexagon; the lit trail shows the time since your last meal', today: 'Today', yday: 'Yesterday',
-            mcH: 'After your meal', mcTyp: 'Typical, not measured', mcLever: 'Lower the spike', mcMove: 'Open Move', mcRow: 'After-meal phases', mcPrev: 'Previous phase', mcNext: 'Next phase' },
+            mcH: 'After your meal', mcTyp: 'Typical, not measured', mcLever: 'Lower the spike', mcMove: 'Open Move', mcRow: 'After-meal phases', mcPrev: 'Previous phase', mcNext: 'Next phase',
+            mcCare: 'On insulin or diabetes medication? Talk to your care team before changing meals or exercise: these tips can lower your blood sugar.' },
         de: { title: 'Essenspause', since: 'seit deiner letzten Mahlzeit', none: 'Noch keine Mahlzeit eingetragen', noneSub: 'Trag deine nächste Mahlzeit in Fuel ein. Die Pause zählt ab dem Essen.', close: 'Schließen',
             last: 'Letzte Mahlzeit', fix: 'Zeit ändern', now: 'Jetzt', next: 'Als Nächstes: {n} in etwa {d}', past: 'Über die letzte Marke hinaus. Hör auf deinen Körper.', markers: 'Typische Marken',
             pts: 'Bisher +{x} XP. Du bekommst sie, wenn du deine nächste Mahlzeit in Fuel einträgst.', recent: 'Letzte Pausen', log: 'Mahlzeit in Fuel eintragen',
             hedge: 'Eine grobe Orientierung aus typischen Verläufen, keine Messung. Jeder Körper hat seine eigene Uhr. Nimmst du Diabetes-Medikamente? Frag vor langen Pausen deine Ärztin oder deinen Arzt.',
             hexL: 'Sechs Marken auf einem Sechseck; die leuchtende Spur zeigt die Zeit seit deiner letzten Mahlzeit', today: 'Heute', yday: 'Gestern',
-            mcH: 'Nach dem Essen', mcTyp: 'Typisch, nicht gemessen', mcLever: 'Spike senken', mcMove: 'Zu Bewegung', mcRow: 'Phasen nach dem Essen', mcPrev: 'Vorherige Phase', mcNext: 'Nächste Phase' },
+            mcH: 'Nach dem Essen', mcTyp: 'Typisch, nicht gemessen', mcLever: 'Spike senken', mcMove: 'Zu Bewegung', mcRow: 'Phasen nach dem Essen', mcPrev: 'Vorherige Phase', mcNext: 'Nächste Phase',
+            mcCare: 'Nimmst du Insulin oder Diabetes-Medikamente? Sprich mit deinem Behandlungsteam, bevor du Essen oder Bewegung umstellst: Diese Tipps können deinen Blutzucker senken.' },
         es: { title: 'Pausa entre comidas', since: 'desde tu última comida', none: 'Aún no hay comidas', noneSub: 'Registra tu próxima comida en Fuel. La pausa cuenta desde la hora en que comiste.', close: 'Cerrar',
             last: 'Última comida', fix: 'Cambiar hora', now: 'Ahora', next: 'Después: {n} en unas {d}', past: 'Más allá del último marcador. Escucha a tu cuerpo.', markers: 'Marcadores típicos',
             pts: 'Por ahora +{x} XP. Los recibes al registrar tu próxima comida en Fuel.', recent: 'Pausas recientes', log: 'Registrar comida en Fuel',
             hedge: 'Una guía general según patrones típicos, no una medición. Cada cuerpo tiene su propio reloj. ¿Tomas medicación para la diabetes? Consulta a tu médico antes de pausas largas.',
             hexL: 'Seis marcadores en un hexágono; el rastro iluminado muestra el tiempo desde tu última comida', today: 'Hoy', yday: 'Ayer',
-            mcH: 'Después de comer', mcTyp: 'Típico, no medido', mcLever: 'Baja el pico', mcMove: 'Ir a Movimiento', mcRow: 'Fases después de comer', mcPrev: 'Fase anterior', mcNext: 'Fase siguiente' }
+            mcH: 'Después de comer', mcTyp: 'Típico, no medido', mcLever: 'Baja el pico', mcMove: 'Ir a Movimiento', mcRow: 'Fases después de comer', mcPrev: 'Fase anterior', mcNext: 'Fase siguiente',
+            mcCare: '¿Usas insulina o medicación para la diabetes? Habla con tu equipo médico antes de cambiar comidas o ejercicio: estos consejos pueden bajar tu azúcar.' }
     };
     /* the soft-ms markers (index.html STAGES), used only when LowiFast is not there (node tests) */
     const FALLBACK = [{ h: 0, n: 'Blood sugar rises', t: 'Right after your last meal', x: '' }, { h: 3, n: 'Blood sugar often settles', t: 'For most people, around 3 h in', x: '' },
@@ -62,6 +65,21 @@
        [O] OpenStax Anatomy and Physiology 2e, 24.3 Metabolic States of the Body: insulin moves glucose into muscle, liver and fat
            cells in the absorptive state (about 4 h); afterwards insulin falls and the body draws on stored glycogen and fat.
            -> insulin, insulin low (from about 4 h).
+       Levers Emmanuel approved (his list, Oct 24 2026: "Yeah, I like it. We can do that. Go ahead."), each with its source:
+       veggies and protein first, carbs last [S]; never carbs alone, add protein, fat or fiber, and sweets right after a meal rather
+       than alone [S][F]; whole over processed and fiber: Reynolds A et al. Carbohydrate quality and human health. Lancet
+       2019;393:434-445; smaller carb portions [F]; cooked and cooled starch: Sonia S et al. Effect of cooling of cooked white rice on
+       resistant starch content and glycemic response. Asia Pac J Clin Nutr 2015;24(4):620-625 (cooled 24 h at 4 C and reheated:
+       lower glycemic response); vinegar: Shishehbor F et al. Vinegar consumption can attenuate postprandial glucose and insulin
+       responses. Diabetes Res Clin Pract 2017;127:1-9; savory breakfast: Chang CR et al. Restricting carbohydrates at breakfast is
+       sufficient to reduce 24-hour exposure to postprandial hyperglycemia. Am J Clin Nutr 2019;109:1302-1309 (type 2 diabetes);
+       bigger meals earlier: Jakubowicz D et al. High-energy breakfast with low-energy dinner decreases overall daily hyperglycaemia.
+       Diabetologia 2015;58:912-919 (type 2 diabetes); water over sugary drinks [F]; a 10-15 min walk after eating, and even 2-5 min
+       of light walking [B]; regular strength training: Colberg SR et al. Physical activity/exercise and diabetes, ADA position
+       statement. Diabetes Care 2016;39:2065-2079, and [R]; sleep: Spiegel K et al. Impact of sleep debt on metabolic and endocrine
+       function. Lancet 1999;354:1435-1439; stress: stress hormones (cortisol, adrenaline) raise blood glucose, OpenStax Anatomy and
+       Physiology 2e, 17.6 The Adrenal Glands. Caution line (mcCare) for people on insulin or diabetes medication: activity and
+       eating changes can lower their glucose, so they talk to their care team first. Never dosing advice.
        Back near the start after 2-3 h in people without diabetes: same statement as body-trips.js, consistent with [F].
        Times are where a phase typically begins (minutes after the meal); the strip never claims to know the user's own curve. */
     const MC = [
@@ -70,31 +88,41 @@
             t: ['Soon after you start eating, sugar from the meal reaches your blood. <b>Fiber, protein and fat</b> slow it down.',
                 'Kurz nach dem ersten Bissen kommt Zucker aus dem Essen ins Blut. <b>Ballaststoffe, Eiweiß und Fett</b> bremsen ihn.',
                 'Poco después de empezar a comer, el azúcar de la comida llega a la sangre. <b>La fibra, la proteína y la grasa</b> lo frenan.'],
-            l: ['Veggies and protein first, carbs last.', 'Erst Gemüse und Eiweiß, Kohlenhydrate zuletzt.', 'Primero verduras y proteína, los carbohidratos al final.'] },
+            l: [['Veggies and protein first, carbs last.', 'Never carbs alone: add protein, fat or fiber.', 'Whole over processed, smaller carb portions. Cooked and cooled rice or potatoes often rise less.', 'Vinegar in a dressing, before or with the meal, may help.'],
+                ['Erst Gemüse und Eiweiß, Kohlenhydrate zuletzt.', 'Nie Kohlenhydrate allein: dazu Eiweiß, Fett oder Ballaststoffe.', 'Vollwertig statt verarbeitet, kleinere Kohlenhydrat-Portionen. Gekochter und abgekühlter Reis oder Kartoffeln steigen oft weniger.', 'Essig im Dressing, vor oder zum Essen, kann helfen.'],
+                ['Primero verduras y proteína, los carbohidratos al final.', 'Nunca carbohidratos solos: añade proteína, grasa o fibra.', 'Integral mejor que procesado, y raciones de carbohidratos más pequeñas. El arroz o la patata cocidos y enfriados suelen subir menos.', 'Vinagre en el aliño, antes o con la comida, puede ayudar.']] },
         { id: 'peak', m: 30, c: '#ffe08a', mv: true,
             n: ['Peak', 'Höhepunkt', 'Pico'], p: ['About 30–60 min after eating', 'Etwa 30–60 Min. nach dem Essen', 'Unos 30–60 min después de comer'],
             t: ['For many people, blood sugar peaks <b>around 30 to 60 minutes</b> after eating. Fast carbs peak higher.',
                 'Bei vielen ist der Blutzucker <b>etwa 30 bis 60 Minuten</b> nach dem Essen am höchsten. Schnelle Kohlenhydrate steigen höher.',
                 'En muchas personas, el azúcar llega a su pico <b>unos 30 a 60 minutos</b> después de comer. Los carbohidratos rápidos suben más.'],
-            l: ['Walk for 10 minutes now. Working muscles pull sugar from your blood.', 'Geh jetzt 10 Minuten. Arbeitende Muskeln holen Zucker aus dem Blut.', 'Camina 10 minutos ahora. Los músculos activos sacan azúcar de la sangre.'] },
+            l: [['Walk 10–15 minutes after eating. It helps most.', 'No time? Even 2–5 minutes of moving helps.'],
+                ['Geh 10–15 Minuten nach dem Essen. Das hilft am meisten.', 'Keine Zeit? Schon 2–5 Minuten Bewegung helfen.'],
+                ['Camina 10–15 minutos después de comer. Es lo que más ayuda.', '¿Sin tiempo? Incluso 2–5 minutos de movimiento ayudan.']] },
         { id: 'insulin', m: 60, c: '#a8ffd8', mv: true,
             n: ['Insulin brings it down', 'Insulin senkt ihn', 'La insulina lo baja'], p: ['About 1–2 h after eating', 'Etwa 1–2 Std. nach dem Essen', 'Unas 1–2 h después de comer'],
             t: ['<b>Insulin</b> helps your muscles, liver and fat cells take up the sugar, so the level falls again.',
                 '<b>Insulin</b> hilft Muskeln, Leber und Fettzellen, den Zucker aufzunehmen. So sinkt der Wert wieder.',
                 '<b>La insulina</b> ayuda a los músculos, el hígado y las células de grasa a tomar el azúcar, y el nivel baja.'],
-            l: ['Stay a little active: stairs, tidying up, a few squats.', 'Bleib etwas aktiv: Treppe, Aufräumen, ein paar Kniebeugen.', 'Sigue algo activo: escaleras, ordenar, unas sentadillas.'] },
+            l: [['Stay a little active: stairs, tidying up, a few squats.', 'Regular strength training helps your muscles take up sugar.'],
+                ['Bleib etwas aktiv: Treppe, Aufräumen, ein paar Kniebeugen.', 'Regelmäßiges Krafttraining hilft deinen Muskeln, Zucker aufzunehmen.'],
+                ['Sigue algo activo: escaleras, ordenar, unas sentadillas.', 'El entrenamiento de fuerza regular ayuda a tus músculos a tomar azúcar.']] },
         { id: 'base', m: 120, c: '#9fd8ff', mv: false,
             n: ['Back to baseline', 'Zurück am Ausgangswert', 'De vuelta al inicio'], p: ['About 2–3 h after eating', 'Etwa 2–3 Std. nach dem Essen', 'Unas 2–3 h después de comer'],
             t: ['In people without diabetes, blood sugar is usually <b>close to where it started</b> about 2 to 3 hours after eating.',
                 'Bei Menschen ohne Diabetes ist der Blutzucker etwa 2 bis 3 Stunden nach dem Essen meist <b>wieder nahe am Ausgangswert</b>.',
                 'En personas sin diabetes, el azúcar suele estar <b>cerca del punto de partida</b> unas 2 o 3 horas después de comer.'],
-            l: ['Thirsty? Water or unsweetened tea add no sugar. A snack starts a new rise.', 'Durst? Wasser oder ungesüßter Tee bringen keinen Zucker. Ein Snack startet einen neuen Anstieg.', '¿Sed? El agua o el té sin azúcar no aportan azúcar. Un snack empieza otra subida.'] },
+            l: [['Thirsty? Water over sugary drinks.', 'Craving sweets? Have them right after a meal, not on their own.', 'A snack starts a new rise.'],
+                ['Durst? Lieber Wasser als süße Getränke.', 'Lust auf Süßes? Lieber direkt nach dem Essen als allein.', 'Ein Snack startet einen neuen Anstieg.'],
+                ['¿Sed? Mejor agua que bebidas azucaradas.', '¿Antojo de dulce? Mejor justo después de comer que solo.', 'Un snack empieza otra subida.']] },
         { id: 'low', m: 240, c: '#c4b5ff', mv: false,
             n: ['Insulin low', 'Insulin niedrig', 'Insulina baja'], p: ['From about 4 h after eating', 'Ab etwa 4 Std. nach dem Essen', 'Desde unas 4 h después de comer'],
             t: ['A few hours after eating, <b>insulin is low</b> again and your body draws more on stored energy.',
                 'Einige Stunden nach dem Essen ist <b>Insulin wieder niedrig</b> und dein Körper nutzt mehr gespeicherte Energie.',
                 'Unas horas después de comer, <b>la insulina vuelve a estar baja</b> y tu cuerpo usa más energía guardada.'],
-            l: ['Nothing to do. Gap keeps counting.', 'Nichts zu tun. Gap zählt weiter.', 'Nada que hacer. Gap sigue contando.'] }
+            l: [['Bigger meals earlier in the day, a lighter dinner.', 'A savory breakfast with protein rather than a sweet one.', 'Good sleep and less stress help: short sleep and stress can raise blood sugar.'],
+                ['Größere Mahlzeiten früher am Tag, abends leichter.', 'Ein herzhaftes Frühstück mit Eiweiß statt einem süßen.', 'Guter Schlaf und weniger Stress helfen: Schlafmangel und Stress können den Blutzucker erhöhen.'],
+                ['Comidas más grandes antes en el día, una cena más ligera.', 'Un desayuno salado con proteína mejor que uno dulce.', 'Dormir bien y menos estrés ayudan: dormir poco y el estrés pueden subir el azúcar.']] }
     ];
     const MC_TICK = ['0', '30 min', '1 h', '2 h', '4 h'];
     const MC_WIN = 4; /* hours: inside this window the strip leads and the hexagon's own Now card steps back (same story twice) */
@@ -223,12 +251,12 @@
             '<div class="mc-art">' + mcArt(sel) + '</div>' +
             '<div class="mc-title"><h3>' + esc(p.n[k]) + '</h3>' + (sel === cur ? '<em>' + esc(s('now')) + '</em>' : '') + '</div>' +
             '<span class="mc-pill">' + esc(p.p[k]) + '</span><p class="mc-t">' + rich(p.t[k]) + '</p>' +
-            '<div class="mc-lever"><small>' + esc(s('mcLever')) + '</small><p>' + esc(p.l[k]) + '</p>' +
+            '<div class="mc-lever"><small>' + esc(s('mcLever')) + '</small><ul>' + p.l[k].map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' +
             (p.mv && sel === cur ? '<button type="button" class="mc-move" data-gv="move">' + esc(s('mcMove')) + '</button>' : '') + '</div>' +
             '<div class="mc-nav"><button type="button" class="mc-arrow" data-gv="mcprev" aria-label="' + esc(s('mcPrev')) + '"' + (sel ? '' : ' disabled') + '><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6 8.5 12l6 6"/></svg></button>' +
             '<span class="mc-dots" aria-hidden="true">' + MC.map((x, i) => '<i' + (i === sel ? ' class="on"' : '') + '></i>').join('') + '</span>' +
             '<button type="button" class="mc-arrow" data-gv="mcnext" aria-label="' + esc(s('mcNext')) + '"' + (sel < MC.length - 1 ? '' : ' disabled') + '><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></button></div>' +
-            '</div></section>';
+            '</div><p class="mc-care">' + esc(s('mcCare')) + '</p></section>';
     }
     function mcPick(i) {
         if (!el) return;

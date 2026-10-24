@@ -47,8 +47,9 @@ const lang = process.argv[5] || 'de', mins = +(process.argv[6] || 40);
   s = await st(); res.push(['swipe left-to-right goes back one phase', s.sel === '3', s.title]);
   await tap('[data-gv="mcprev"]'); s = await st(); res.push(['back arrow', s.sel === '2']);
   await P.screenshot({ path: '/tmp/mc-' + engine + '-' + dev + '-' + lang + '-c.png' });
-  await P.evaluate(() => LowiGapView.close()); await H.sleep(500);
-  res.push(['closes clean', await P.evaluate(() => !LowiGapView.isOpen() && !document.querySelector('.gv-ov'))]);
+  await P.evaluate(() => LowiGapView.close()); await H.sleep(1200);
+  const cc = await P.evaluate(() => ({ open: LowiGapView.isOpen(), ov: document.querySelectorAll('.gv-ov').length, ae: document.activeElement && document.activeElement.className }));
+  res.push(['closes clean', !cc.open && !cc.ov, JSON.stringify(cc)]);
   res.push(['no page errors', errs.length === 0, errs.slice(0, 3).join(' | ')]);
   let bad = 0; for (const [n, ok, d] of res) { if (!ok) bad++; console.log((ok ? 'PASS ' : 'FAIL ') + n + (d ? '  (' + d + ')' : '')); }
   await R.close(); process.exit(bad ? 1 : 0);

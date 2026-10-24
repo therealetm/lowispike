@@ -727,9 +727,9 @@
             info: 'points at the Gap bubble on Home; the After your meal strip is at the top of the Gap card once it is open',
             title: { en: 'After your meal', de: 'Nach dem Essen', es: 'Después de comer' },
             text: {
-                en: 'New in Gap: what your blood sugar typically does after a meal, phase by phase, and one easy way to lower the spike in each.',
-                de: 'Neu in Gap: was dein Blutzucker nach dem Essen typischerweise macht, Phase für Phase, und je ein einfacher Weg, den Spike zu senken.',
-                es: 'Nuevo en Gap: lo que suele hacer tu azúcar después de comer, fase a fase, y una forma fácil de bajar el pico en cada una.'
+                en: 'New in Gap: what your blood sugar typically does after a meal, phase by phase, and easy ways to lower the spike.',
+                de: 'Neu in Gap: was dein Blutzucker nach dem Essen typischerweise macht, Phase für Phase, und einfache Wege, den Spike zu senken.',
+                es: 'Nuevo en Gap: lo que suele hacer tu azúcar después de comer, fase a fase, y formas fáciles de bajar el pico.'
             }
         },
         {

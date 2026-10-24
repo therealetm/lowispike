@@ -2853,7 +2853,7 @@ window.LowiG1 = {mini, steps:() => stepList().map(x => x.k), start, close, line,
   state:() => TOUR ? {kind:TOUR.kind, i:TOUR.i, n:TOUR.steps.length, k:TOUR.steps[TOUR.i].k} : (OB ? {kind:"ob", k:OB.kind, i:0, n:1} : null), orbNews:() => OB ? {kind:OB.kind, build:OB.build || "", mode:($("#g1Ob") || {dataset:{}}).dataset.mode || ""} : null, fairy:() => fz ? {on:fz.classList.contains("on"), home:fzHome, pos:fzPos} : null};
 })();
 </script>
-<script src="kitchen-core.js?v=20261024-110742"></script>
+<script src="kitchen-core.js?v=20261024-130022"></script>
 <style id="homecss">
 /* ===== G1 part 2: simpler Today ===== */
 #tab-home .g1-lead{margin-top:6px;font-size:15px;line-height:1.35;font-weight:600;color:var(--muted,rgba(255,255,255,.72))}

@@ -11,4 +11,3 @@ Log line (kept here, not appended to MAYA-HANDOFF.md, so parallel releases never
 - Not done on purpose: the Seller Zone Category/Region rows stay on sz-filters-20261024 (not merged here); the separate Seller Zone "Snacks to buy" list was left as it is.
 - Open design questions (proposals, not built): amounts and units per item; best-before dates and "use soon"; grouping (fridge, freezer, pantry) or by food group; using what's at home in Cook suggestions; scanning a receipt or barcode straight into the kitchen; merging "Snacks to buy" into the cart; a shared household kitchen (consent per member); removal sync across two devices editing at the same time (the account merge joins lists by id, so an item taken out on one device can come back if the other device changed the list too).
 - Tests: tests/kitchen.test.cjs. Browser check: tools/check-kitchen.cjs <w> <h> <root|url> <out> <en|de|es> [day].
-

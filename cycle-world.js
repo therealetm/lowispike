@@ -227,12 +227,12 @@
             '<span class="cyh-hub-t"><b>' + esc(s('title')) + '</b><small>' + esc(tileSub()) + '</small></span>' +
             '<span class="cyh-hub-go" aria-hidden="true">\u203a</span></button></section>';
     }
-    /* tapped in Misty's card: her card slides away, My cycle opens */
+    /* tapped in Misty's card: My cycle opens on top of her card, like her Companions door; closing it brings her card back.
+       (Note for testers: headless WebKit on the VM crashes on ANY button click inside Misty's card, the old doors too; check this
+       tap in Chromium, or call LowiCycleWorld.hubOpen() in WebKit.) */
     function hubOpen() {
         if (!enabled()) return false;
-        try { W.LowiMistyHub && W.LowiMistyHub.close && W.LowiMistyHub.close(); } catch (e) {}
-        setTimeout(() => { try { open(); } catch (e) { console.warn('cycle open', e && e.message); } }, 260);
-        return true;
+        return open() === true;
     }
     const RING_DESC = 'cyhDesc';
     function paintRing() {

@@ -12,3 +12,6 @@ html.br-zoom #spHome .sp-heroes, html.br-zoom #bw3Stage, html.br-zoom #bw3Stage 
 /* Oct 23, 18:03 (Eman: "every bubble needs to look like the bubble of our bubble style"): no hard tinted rim per group any more.
    Every orb is the same living Home bubble (home-blooms-v2.css, section "bubble style"); a group shows only in its liquid colour. */
 @media (prefers-reduced-motion: reduce) { html.br-zoom #whHud, html.br-zoom #spHome .sp-heroes > :not(.bw3-stage) { transition: none !important; } }
+/* Oct 24 2026: holding Scan opens every bubble; a light glow while the finger is down (same cue as holding Community) */
+html.o8 #whHud [data-orbit="scan"].br-scan-holding { filter: brightness(1.18) drop-shadow(0 0 10px rgba(143,231,255,.75)); transition: filter .35s ease; }
+@media (prefers-reduced-motion: reduce) { html.o8 #whHud [data-orbit="scan"].br-scan-holding { transition: none; } }

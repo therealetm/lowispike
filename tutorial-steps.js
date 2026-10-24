@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 19;  /* 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 20;  /* 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -81,17 +81,6 @@
                 en: 'Now keep your finger on me for a second. My card opens: my energy, my forms and my home. Close it to come back here.',
                 de: 'Jetzt lass deinen Finger kurz auf mir. Meine Karte geht auf: Energie, Formen und mein Zuhause. Schließ sie, dann geht’s hier weiter.',
                 es: 'Ahora deja el dedo sobre mí un segundo. Se abre mi tarjeta: mi energía, mis formas y mi casa. Ciérrala para volver aquí.'
-            }
-        },
-        {
-            /* Oct 23 2026 (Emmanuel: "when I tap my companion's bubble with two fingers, it should be a shortcut that opens all of them"),
-               bloom-ring.js: every secondary bubble opens in one symmetrical circle and the view zooms out to fit them */
-            id: 'misty-two', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: [], teaches: ['misty-two'], later: 'tap',
-            title: { en: 'Two fingers', de: 'Zwei Finger', es: 'Dos dedos' },
-            text: {
-                en: 'After the tour, tap me with two fingers at once. Every bubble opens in one circle round me, and the view steps back to make room. Tap the empty space to close it.',
-                de: 'Nach der Tour: Tipp mich mit zwei Fingern gleichzeitig an. Alle Bubbles gehen in einem Kreis um mich auf, und die Ansicht zoomt raus. Tipp daneben, dann schließt es.',
-                es: 'Después del recorrido, tócame con dos dedos a la vez. Todas las burbujas se abren en un círculo a mi alrededor y la vista se aleja. Toca fuera para cerrarlo.'
             }
         },
         {
@@ -263,6 +252,18 @@
                 en: 'This is Scan, for checking a product, like in the shop. After the tour, tap it and point your camera at a barcode. For now, I’ll just show you what’s inside.',
                 de: 'Das ist Scan, zum Prüfen von Produkten, zum Beispiel im Laden. Nach der Tour tippst du darauf und hältst die Kamera auf einen Barcode. Jetzt zeig ich dir nur, was drin ist.',
                 es: 'Esto es Scan, para revisar un producto, por ejemplo en la tienda. Después del recorrido lo tocas y apuntas la cámara a un código de barras. Por ahora solo te enseño lo que hay dentro.'
+            }
+        },
+        {
+            /* Oct 24 2026 (Emmanuel: holding Scan on Home opens all the bubbles at once; the old card taught a two-finger tap on the
+               companion, which the tour no longer teaches). bloom-ring.js: hold Scan = every bubble opens in one circle round the
+               companion, the view zooms out; a quick tap still opens Scan; a hold never also opens Scan. */
+            id: 'scan-hold', area: 'food', target: ['#whHud .o8-scan'], covers: ['scan-hold-all'], teaches: ['scan-hold'], later: 'hold',
+            title: { en: 'Hold Scan', de: 'Scan gedrückt halten', es: 'Mantén Scan' },
+            text: {
+                en: 'Scan has a second trick. After the tour, hold it for a moment: every bubble opens at once in one circle round me. A quick tap still opens Scan. Tap the empty space to close the circle.',
+                de: 'Scan kann noch mehr. Nach der Tour: Halt Scan kurz gedrückt, dann gehen alle Bubbles auf einmal in einem Kreis um mich auf. Kurz tippen öffnet weiter Scan. Tipp daneben, dann schließt es.',
+                es: 'Scan tiene otro truco. Después del recorrido, mantén pulsado Scan un momento: todas las burbujas se abren a la vez en un círculo a mi alrededor. Un toque rápido sigue abriendo Scan. Toca fuera para cerrarlo.'
             }
         },
         {
@@ -722,6 +723,15 @@
             cta: { en: 'Let’s go', de: 'Los geht’s', es: 'Vamos' }
         },
         {
+            id: 'new-scan-hold', area: 'new', where: 'home', target: ['#whHud .o8-scan'], covers: ['scan-hold-all'], later: 'hold',
+            title: { en: 'Hold Scan for every bubble', de: 'Scan halten für alle Bubbles', es: 'Mantén Scan para todas las burbujas' },
+            text: {
+                en: 'After the tour, hold Scan for a moment and every bubble opens at once. A quick tap still opens Scan.',
+                de: 'Nach der Tour: Halt Scan kurz gedrückt, dann gehen alle Bubbles auf einmal auf. Kurz tippen öffnet weiter Scan.',
+                es: 'Después del recorrido, mantén pulsado Scan un momento y se abren todas las burbujas a la vez. Un toque rápido sigue abriendo Scan.'
+            }
+        },
+        {
             id: 'new-rooms', area: 'new', where: 'community', open: 'rooms', target: ['.ur [data-ur="make"]', '.ur .ur-card'], covers: ['user-rooms'],
             title: { en: 'Circles', de: 'Circles', es: 'Círculos' },
             text: {
@@ -799,7 +809,6 @@
     const GESTURES = [
         G('misty-tap', 'home', 'tap', ['body-world-3d.js'], 'tap Misty: she plays'),
         G('misty-hold', 'home', 'hold', ['body-world-3d.js', 'world-home.js'], 'hold Misty: her card (energy, forms, Evolution path, home)'),
-        G('misty-two', 'home', 'tap', ['bloom-ring.js', 'home-blooms-v2.js'], 'tap Misty with two fingers: every bubble opens in one circle, the view zooms out'),
         G('misty-squish', 'home', 'hold', ['herb-touch.js', 'spirit.js', 'living-bubbles.js'], 'press Misty: her bubble squishes under your finger'),
         G('misty-turn', 'home', 'drag', ['misty-turn.js'], 'drag starting on Misty: she turns'),
         G('ring-still', 'home', 'hold', ['sym-home.js', 'home-orbit-v2.js'], 'touch an orbiting bubble: the ring stops'),
@@ -812,6 +821,9 @@
         G('gap-tap', 'home', 'tap', ['home-blooms-v2.js', 'fast-bubble.js'], 'tap Gap: the Gap view'),
         G('sleep-tap', 'home', 'tap', ['home-settings-sleep-v2.js'], 'tap Sleep: how long did you sleep'),
         G('scan-tap', 'home', 'tap', ['home-orbit-v2.js'], 'tap Scan: the Scan screen'),
+        /* Oct 24 2026: hold Scan opens every bubble at once (replaces the taught two-finger tap on Misty; bloom-ring.js still answers a
+           two-finger tap on Misty as a quiet duplicate of this shortcut, untaught on Emmanuel's word: the tour teaches hold Scan) */
+        G('scan-hold', 'home', 'hold', ['bloom-ring.js', 'home-blooms-v2.js'], 'hold Scan: every bubble opens in one circle round the companion, the view zooms out; a quick tap still opens Scan'),
         G('community-tap', 'home', 'tap', ['home-settings-sleep-v2.js'], 'tap Community: Community'),
         G('community-hold', 'home', 'hold', ['home-settings-sleep-v2.js'], 'hold Community: slim Settings'),
         G('theme-tap', 'home', 'tap', ['top-bar.js'], 'tap the moon/sun: day or night'),

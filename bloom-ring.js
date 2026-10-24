@@ -279,6 +279,52 @@
         const t = e.target; if (!t || !t.closest || !t.closest('#spBubble, #spHome .sp-heroes')) return;
         e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation();
     }
+    /* ---- hold Scan = every bubble at once (Oct 24 2026, Emmanuel: holding the Scan button on Home opens all the bubbles; a normal
+       tap on Scan still opens Scan). Same feel as holding Community: SCAN_HOLD_MS still, under SCAN_DRIFT px of drift; touch, pen
+       and mouse. A light cue (.br-scan-holding) while the finger is down. Once the hold fired, the click that ends it (and on
+       iOS the synthetic click after touchend) is swallowed, so a recognised hold never also opens Scan. ---- */
+    const SCAN_HOLD_MS = 480, SCAN_DRIFT = 12;
+    /* pure: what a press on Scan was. held = ms the finger stayed down, moved = px it drifted */
+    function scanPress(p) {
+        const held = +(p && p.held) || 0, moved = +(p && p.moved) || 0;
+        if (moved > SCAN_DRIFT) return 'drag';
+        return held >= SCAN_HOLD_MS ? 'hold' : 'tap';
+    }
+    const sh = { t: 0, at: null, el: null, down: 0, fired: false, swallowUntil: 0 };
+    /* when the finger moved, by the event's own clock (a busy page runs the handlers late, the timestamps stay true) */
+    function stamp(e) { const t = e && +e.timeStamp; return t > 0 ? t : Date.now(); }
+    function scanEl(t) { return t && t.closest ? t.closest('#whHud [data-orbit="scan"]') : null; }
+    function scanCue(on) { if (sh.el) sh.el.classList.toggle('br-scan-holding', !!on); if (!on) sh.el = null; }
+    function scanCancel() { if (sh.t) { W.clearTimeout(sh.t); sh.t = 0; } sh.at = null; scanCue(false); }
+    function onScanDown(e) {
+        if (!sh.fired) sh.swallowUntil = 0;
+        const el = scanEl(e.target);
+        if (!el || (e.button && e.button !== 0) || e.isPrimary === false || !homeUp()) return;
+        scanCancel(); sh.at = { x: e.clientX, y: e.clientY }; sh.down = stamp(e); sh.el = el; scanCue(true);
+        sh.t = W.setTimeout(scanFire, SCAN_HOLD_MS);
+    }
+    function scanFire() {
+        if (sh.t) { W.clearTimeout(sh.t); sh.t = 0; }
+        sh.at = null; scanCue(false);
+        if (!homeUp()) return;
+        sh.fired = true; sh.swallowUntil = Date.now() + 60000;
+        toggleAll();
+    }
+    function onScanMove(e) { if (sh.at && scanPress({ held: 0, moved: Math.hypot(e.clientX - sh.at.x, e.clientY - sh.at.y) }) === 'drag') scanCancel(); }
+    /* the finger lifted after a hold that fired: the click it makes comes right after; swallow only that one */
+    function onScanLift(e) {
+        /* the page was too busy for the timer, but the finger really stayed down long enough: still a hold, never Scan */
+        if (!sh.fired && sh.t && sh.at && e && e.type === 'pointerup' &&
+            scanPress({ held: stamp(e) - sh.down, moved: Math.hypot(e.clientX - sh.at.x, e.clientY - sh.at.y) }) === 'hold') scanFire();
+        if (sh.fired) { sh.fired = false; sh.swallowUntil = Date.now() + 450; }
+        scanCancel();
+    }
+    function onScanClick(e) {
+        if (!sh.fired && !(sh.swallowUntil && Date.now() < sh.swallowUntil)) return;
+        sh.fired = false; sh.swallowUntil = 0;
+        e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    }
+    function onScanTouchEnd(e) { if (sh.fired || (sh.swallowUntil && Date.now() < sh.swallowUntil)) { try { if (e.cancelable) e.preventDefault(); } catch (x) { } } }
     function toggleAll() {
         const B = W.LowiHomeBloomsV2;
         if (!B || typeof B.openAll !== 'function') return false;
@@ -299,8 +345,16 @@
         W.addEventListener('touchcancel', onEnd, { capture: true, passive: true });
         W.addEventListener('click', onClick, true);
         W.addEventListener('dblclick', onClick, true);
+        /* hold Scan: before every other click handler (the window sees a click first) */
+        D.addEventListener('pointerdown', onScanDown, true);
+        D.addEventListener('pointermove', onScanMove, true);
+        D.addEventListener('scroll', scanCancel, true);
+        ['pointerup', 'pointercancel'].forEach(n => D.addEventListener(n, onScanLift, true));
+        W.addEventListener('click', onScanClick, true);
+        D.addEventListener('touchend', onScanTouchEnd, { capture: true, passive: false });
+        D.addEventListener('contextmenu', e => { if (scanEl(e.target)) e.preventDefault(); }, true);
         W.addEventListener('resize', () => { if (z.on) { const B = W.LowiHomeBloomsV2; try { if (B && B.close) B.close(); } catch (e) { } try { const S = W.LowiHomeSettingsSleepV2; if (S && S.close) S.close(); } catch (e) { } unzoom(); } });
     }
     const state = () => ({ on: z.on, s: z.s, owner: z.owner });
-    return { solve, pack, layoutAt, isTwoFingerTap, TAP, stepFor, place, zoom, unzoom, state, toggleAll, mount: typeof window !== 'undefined' ? mount : null, _ring: ring, _layers: typeof window !== 'undefined' ? layers : null, _layoutBox: typeof window !== 'undefined' ? layoutBox : null };
+    return { solve, pack, layoutAt, isTwoFingerTap, TAP, scanPress, SCAN_HOLD_MS, SCAN_DRIFT, stepFor, place, zoom, unzoom, state, toggleAll, mount: typeof window !== 'undefined' ? mount : null, _ring: ring, _layers: typeof window !== 'undefined' ? layers : null, _layoutBox: typeof window !== 'undefined' ? layoutBox : null };
 });

@@ -1,0 +1,20 @@
+{
+ "slug": "scan-hold",
+ "tutorial": "scan-hold",
+ "tour": [
+  "new-scan-hold"
+ ],
+ "go": {
+  "tab": "home"
+ },
+ "lead": {
+  "en": "Hold Scan to open every bubble",
+  "de": "Scan halten öffnet alle Bubbles",
+  "es": "Mantén Scan para abrir todas las burbujas"
+ },
+ "text": {
+  "en": "Hold Scan to open every bubble. On Home, hold the Scan button for a moment and every bubble opens at once in one circle round Misty. A quick tap still opens Scan. Tap the empty space to close them.",
+  "de": "Scan halten öffnet alle Bubbles. Halt auf Home den Scan-Knopf kurz gedrückt, dann gehen alle Bubbles auf einmal in einem Kreis um Misty auf. Kurz tippen öffnet weiter Scan. Tipp daneben, um sie zu schließen.",
+  "es": "Mantén Scan para abrir todas las burbujas. En Inicio, mantén pulsado el botón Scan un momento y todas las burbujas se abren a la vez en un círculo alrededor de Misty. Un toque rápido sigue abriendo Scan. Toca fuera para cerrarlas."
+ }
+}

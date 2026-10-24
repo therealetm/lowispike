@@ -880,6 +880,9 @@ small-portion tips for craving food; never diagnose, "remission" not "cure"; no 
 **Cooled rice or potatoes (resistant starch) are NOT LOWiSPIKE-friendly.** Applied: the five Gap cards (EN/DE/ES, voice
 re-recorded), herb spike tips (kidneys line out, vinegar optional), the scan card's "Eating it anyway?" line, the cauli_mash
 swap. Guarded by tests/gap-meal-curve.test.cjs and tests/nutrition-policy.test.cjs. Do not bring the old lines back.
+Live since build 20261024-232602 (quiet, no news). Live check: `node tools/check-nutrition-cards.cjs webkit "iPhone 13" "" de` (also
+"iPad (gen 7)", en): all five cards show the new levers, nothing overflows, the speaker fetches the new recorded clips, never the
+device voice, no page errors: 16/16 on iPhone 13 and iPad, DE and EN. Not yet seen on Emmanuel's real iPhone/iPad.
 
 ## 1. What LOWiSPIKE is
 

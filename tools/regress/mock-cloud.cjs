@@ -51,7 +51,21 @@ function world(opts) {
     messages.forEach(m => { if (m.body.indexOf('/media/') > 0) m.body = m.body.replace(/media\/[0-9a-f]+\//, 'media/' + m.user_id + '/'); });
     const posts = [];
     for (let i = 0; i < (opts.posts == null ? 40 : opts.posts); i++) { const p = pick(others); posts.push({ id: uuid(50000 + i), user_id: p.id, who: p.name, created_at: new Date(now - i * 3600000).toISOString(), cap: pick(LINES), photo_url: rnd() < .6 ? 'https://' + HOST + '/storage/v1/object/public/media/' + p.id + '/post-' + i + '.jpg' : '', url: '', plat: '', lv: p.lv }); }
-    return { me, profiles, others, messages, reactions, posts, rnd, pick };
+    /* Circles (chat redesign 24 Oct 2026, opt-in with opts.circles): one circle someone else made that you are in, with a
+       short conversation and reactions; one you made with a new message from a friend (unread in the switcher). */
+    const circles = [], circleMembers = [];
+    if (opts.circles) {
+        const a = others[0], b = others[1], c = others[2];
+        circles.push({ id: uuid(80001), owner_id: a.id, owner_name: a.name, name: 'Typ 2 walkers', topic: 'Evening walks after dinner', icon: '\u{1F319}', created_at: new Date(now - 5 * 864e5).toISOString() });
+        circles.push({ id: uuid(80002), owner_id: me.id, owner_name: me.name, name: 'Night owls', topic: '', icon: '\u{1F989}', created_at: new Date(now - 2 * 864e5).toISOString() });
+        circleMembers.push({ room_id: circles[0].id, user_id: a.id, who: a.name, status: 'member' }, { room_id: circles[0].id, user_id: me.id, who: me.name, status: 'member' }, { room_id: circles[0].id, user_id: b.id, who: b.name, status: 'member' },
+            { room_id: circles[1].id, user_id: c.id, who: c.name, status: 'member' }, { room_id: circles[1].id, user_id: b.id, who: b.name, status: 'pending' });
+        const conv = [[a, 'Walk at 6 tonight?'], [a, 'Same loop as Monday'], [me, 'I\'m in!'], [b, 'Me too, bringing the dog \u{1F415}'], [a, 'Perfect'], [me, 'My sugar stayed flat after yesterday\'s walk, this works'], [b, 'Nice!! \u{1F44F}']];
+        conv.forEach(([p, body], i) => { const id = 'u-sim-c1-' + i; messages.push({ id, user_id: p.id, who: p.name, body, reply_to: null, created_at: new Date(now - (conv.length - i) * 4 * 60e3 - 864e5 * (i < 2 ? 1 : 0)).toISOString(), room: 'u:' + circles[0].id }); });
+        reactions.push({ message_id: 'u-sim-c1-2', user_id: a.id, who: a.name, emoji: '\u{1F44D}' }, { message_id: 'u-sim-c1-2', user_id: b.id, who: b.name, emoji: '\u{1F44D}' }, { message_id: 'u-sim-c1-5', user_id: a.id, who: a.name, emoji: '\u2764\uFE0F' });
+        messages.push({ id: 'u-sim-c2-0', user_id: c.id, who: c.name, body: 'Anyone awake? Late snack ideas?', reply_to: null, created_at: new Date(now - 6 * 60e3).toISOString(), room: 'u:' + circles[1].id });
+    }
+    return { me, profiles, others, messages, reactions, posts, rnd, pick, circles, circleMembers };
 }
 
 async function install(ctx, opts) {
@@ -69,6 +83,8 @@ async function install(ctx, opts) {
     function table(name) {
         switch (name) {
             case 'messages': return W.messages.slice().reverse();
+            case 'user_rooms': return W.circles || [];
+            case 'user_room_members': return W.circleMembers || [];
             case 'reactions': return W.reactions;
             case 'profiles': return W.profiles;
             case 'posts': return W.posts;
@@ -100,6 +116,12 @@ async function install(ctx, opts) {
             sim.rest[m + ' ' + t] = (sim.rest[m + ' ' + t] || 0) + 1;
             if (m === 'GET' || m === 'HEAD') {
                 let rows = table(t);
+                /* circle filters: u:<id> messages only show in their circle, never in the community room */
+                const F = (k, v) => { if (!v) return; if (/^eq\./.test(v)) { const x = v.slice(3); rows = rows.filter(r => String(r[k]) === x); } else if (/^in\.\(/.test(v)) { const xs = v.slice(4, -1).split(',').map(z => z.replace(/^"|"$/g, '')); rows = rows.filter(r => xs.includes(String(r[k]))); } };
+                if (t === 'messages') { const rv = u.searchParams.get('room') || ''; if (/u:/.test(rv)) F('room', rv); else rows = rows.filter(r => !/^u:/.test(r.room || '')); }
+                if (t === 'reactions') F('message_id', u.searchParams.get('message_id'));
+                if (t === 'user_rooms') { F('owner_id', u.searchParams.get('owner_id')); F('id', u.searchParams.get('id')); }
+                if (t === 'user_room_members') { F('user_id', u.searchParams.get('user_id')); F('room_id', u.searchParams.get('room_id')); F('status', u.searchParams.get('status')); }
                 const lim = +u.searchParams.get('limit'); if (lim) rows = rows.slice(0, lim);
                 const eqId = u.searchParams.get('id'); if (eqId && /^eq\./.test(eqId)) rows = rows.filter(r => r.id === eqId.slice(3));
                 const accept = q.headers()['accept'] || '';

@@ -79,8 +79,8 @@ async function run(engine, device, light) {
   finally { await R.close(); }
 }
 (async () => {
-  if (!process.env.ONLY_DAY) for (const d of DEVICES) await run('webkit', d, false);
-  if (!process.env.NO_DAY) await run('webkit', 'iPhone 13', true);
+  if (!process.env.ONLY_DAY) for (const d of DEVICES) await run(process.env.ENGINE || 'webkit', d, false);
+  if (!process.env.NO_DAY) await run(process.env.ENGINE || 'webkit', 'iPhone 13', true);
   fs.writeFileSync(path.join(OUT, 'report.json'), JSON.stringify({ fails, notes }, null, 1));
   console.log(notes.join('\n')); console.log(fails.length ? fails.length + ' FAIL' : '0 FAIL');
   process.exit(fails.length ? 1 : 0);

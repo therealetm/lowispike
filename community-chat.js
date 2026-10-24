@@ -513,7 +513,7 @@ function renderMessage(m,all,prev,next){
  const start=!prev||prev.uid!==m.uid||m.ts-prev.ts>300000,end=!next||next.uid!==m.uid||next.ts-m.ts>300000;
  const rx=H.reactions().filter(x=>x.message_id===m.id&&!blocked(x.user_id));
  const quote=m.re?'<div class="cm-quote">'+(re?'<b>'+esc(re.by)+'</b> '+esc(plain(re).slice(0,90)):tr('gone'))+'</div>':'';
- const reacts=K.EMOJI.map(em=>{const rows=rx.filter(x=>x.emoji===em);return rows.length?button('react',esc(em)+' '+rows.length,'data-id="'+esc(m.id)+'" data-emoji="'+esc(em)+'" aria-pressed="'+rows.some(x=>x.user_id===scope)+'"'+(transport.reactionBusy(m.id,em)?' disabled':''),'cm-chip'+(rows.some(x=>x.user_id===scope)?' on':'')):'';}).join('');
+ const reacts=(K.ALL_EMOJI||K.EMOJI).map(em=>{const rows=rx.filter(x=>x.emoji===em);return rows.length?button('react',esc(em)+' '+rows.length,'data-id="'+esc(m.id)+'" data-emoji="'+esc(em)+'" aria-pressed="'+rows.some(x=>x.user_id===scope)+'"'+(transport.reactionBusy(m.id,em)?' disabled':''),'cm-chip'+(rows.some(x=>x.user_id===scope)?' on':'')):'';}).join('');
  const who=end?button('profile',mate(m.uid,'m'+sid(m.id)),'data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'" aria-label="'+esc(mine?tr('you'):m.by)+' · '+tr('profile')+'"','cs-avatar cp-av'):'<span class="cp-av cp-gap" aria-hidden="true"></span>';
  const head='<div class="cs-by">'+(start&&!mine?'<b class="cs-name" data-chat="profile" data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'">'+esc(m.by)+'</b>':'<span class="cp-sr">'+esc(mine?tr('you'):m.by)+' '+tr('says')+'</span>')+'</div>';
  /* time sits bottom-right inside the bubble, Telegram-style; the ··· actions button rides next to it */

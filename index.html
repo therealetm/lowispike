@@ -6689,7 +6689,7 @@ document.addEventListener("click", e => {
 const CM_KEY = "lowispike.chat.v1";
 const CM_MEMBERS = [];
 const CM_ROOMS = [{id:"all", e:"✧", n:"Spirit square", d:"One shared gathering place"}];
-const CM_EMOJI = ["❤️", "👏", "🙏", "🌱", "✨"];
+const CM_EMOJI = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 let CM = null, CMV = {view:"feed", room:"", reply:null, pick:""};
 function cmLoad(){ if (CM) return CM; try { CM = JSON.parse(localStorage.getItem(CM_KEY)); } catch(e){ CM = null; }
   if (!CM || !CM.msgs) CM = {msgs:{all:[]}, read:{}, intro:false};
@@ -21155,6 +21155,7 @@ window.LowiCommunityHost = {
 <script src="community-tab-order.js?v=20261024-104917"></script>
 <script src="user-rooms-core.js?v=20261024-104917"></script>
 <script src="user-rooms.js?v=20261024-104917"></script>
+<script src="chat-switcher.js?v=20261024-104917"></script>
 <script src="community-rooms-ui.js?v=20261024-104917"></script>
 <script src="hidden-accounts.js?v=20261024-104917"></script>
 <script src="bot-accounts.js?v=20261024-104917"></script>
@@ -21230,6 +21231,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="crCss" href="community-room.css?v=20261024-104917">
 <link rel="stylesheet" href="community-rooms.css?v=20261024-104917">
 <link rel="stylesheet" href="user-rooms.css?v=20261024-104917">
+<link rel="stylesheet" href="chat-switcher.css?v=20261024-104917">
 <link rel="stylesheet" href="people-directory.css?v=20261024-104917">
 <link rel="stylesheet" href="ranking.css?v=20261024-104917">
 <link rel="stylesheet" href="community-tab-order.css?v=20261024-104917">

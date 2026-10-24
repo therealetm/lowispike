@@ -1,0 +1,26 @@
+/* LOWiSPIKE room switcher strip (chat-switcher.js, chat redesign 24 Oct 2026): round glass chips, the open chat filled in
+   blue like your own bubbles, a mint dot when a Circle has something new. Scrolls sideways, never wraps. */
+.cs-strip{flex:none;min-width:0}
+.cs-row{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 2px 4px;scroll-padding-inline:12px}
+.cs-row::-webkit-scrollbar{display:none}
+.cs-chip{flex:none;position:relative;display:inline-flex;align-items:center;gap:7px;height:38px;max-width:180px;padding:0 14px 0 5px;border-radius:99px;cursor:pointer;
+ font:inherit;font-size:14px;font-weight:700;letter-spacing:-.005em;color:#eaf4ff;border:1px solid rgba(170,215,255,.22);background:rgba(120,180,255,.09);
+ -webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);-webkit-tap-highlight-color:transparent;transition:background .18s,border-color .18s,transform .12s}
+.cs-chip:active{transform:scale(.96)}
+.cs-chip i{font-style:normal;flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;font-size:15px;line-height:1;background:radial-gradient(circle,rgba(140,210,255,.06) 50%,rgba(170,225,255,.28) 96%)}
+.cs-chip b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.cs-chip[aria-current]{color:#fff;border-color:transparent;background:linear-gradient(180deg,#2b7fff,#1668dc);box-shadow:0 4px 14px rgba(22,104,220,.35)}
+.cs-chip[aria-current] i{background:rgba(255,255,255,.18)}
+.cs-all{padding-right:12px}.cs-all i{background:none;font-size:14px;opacity:.85}
+.cs-dot{position:absolute;top:2px;right:3px;width:10px;height:10px;border-radius:50%;background:#5fe0b0;box-shadow:0 0 0 2px rgba(8,16,36,.9)}
+.cs-chip:focus-visible{outline:2px solid #7fd8ff;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.cs-chip{transition:none}.cs-chip:active{transform:none}}
+/* in the community chat: floats over the top of the thread in the room's own glass; the list and the pinned bar move down */
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] #cgThread[data-cs]{--cr-top:58px}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room][data-pinned] #cgThread[data-cs]{--cr-top:110px}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] #cgThread[data-cs] .cr-pin{top:56px}
+html body #tab-foryou #cmPaneChat#cmPaneChat #cgThread>.cs-strip{position:absolute;top:8px;left:0;right:0;z-index:7;pointer-events:none}
+html body #tab-foryou #cmPaneChat#cmPaneChat #cgThread>.cs-strip .cs-row{pointer-events:auto;padding-inline:12px;width:max-content;max-width:100%;box-sizing:border-box}
+html body #tab-foryou #cmPaneChat#cmPaneChat #cgThread>.cs-strip .cs-chip{color:var(--cr-text,#f1f3f6);border:0;background:var(--cr-glass,rgba(40,42,48,.72));box-shadow:inset 0 0 0 .5px var(--cr-hair,rgba(255,255,255,.14)),var(--cr-float-sh,0 6px 18px rgba(0,0,0,.3))}
+html body #tab-foryou #cmPaneChat#cmPaneChat #cgThread>.cs-strip .cs-chip[aria-current]{color:#fff;background:linear-gradient(180deg,#2b7fff,#1668dc)}
+html body #tab-foryou #cmPaneChat#cmPaneChat #cgThread>.cs-strip .cs-dot{box-shadow:0 0 0 2px var(--cr-glass-solid,#1c1d21)}

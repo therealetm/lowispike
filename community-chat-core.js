@@ -1,7 +1,11 @@
 /* Community-only rules. No health, XP, contacts, or room-routing decisions. */
 (function(root){
 'use strict';
-const EMOJI = ['❤️','👏','🙏','🌱','✨'];
+/* 24 Oct 2026 chat redesign: the standard WhatsApp reaction row. OLD_EMOJI are the earlier presets (the 🌱 read as a
+   confusing flower): reactions already given with them still show with their count and can still be taken back. */
+const EMOJI = ['👍','❤️','😂','😮','😢','🙏'];
+const OLD_EMOJI = ['👏','🌱','✨'];
+const ALL_EMOJI = EMOJI.concat(OLD_EMOJI);
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 const type = v => /^[IE][NS][TF][JP]$/.test(String(v || '').toUpperCase()) ? String(v).toUpperCase() : '';
 const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -80,6 +84,6 @@ function afterCaption(sent, cur){
  let text=ct;if(st.trim()){if(ct===st||ct.trim()===st.trim())text='';else if(ct.startsWith(st))text=ct.slice(st.length).replace(/^\s+/,'');}
  return {text,reply:cr&&cr!==sr?cr:null};
 }
-const api={EMOJI,SIGNS,type,esc,image,photo,photoBody,voice,voiceBody,meal,mealBody,pinOf,pinBody,unpinBody,pinned,identity,quiet,message,visible,read,write,session,afterCaption};
+const api={EMOJI,OLD_EMOJI,ALL_EMOJI,SIGNS,type,esc,image,photo,photoBody,voice,voiceBody,meal,mealBody,pinOf,pinBody,unpinBody,pinned,identity,quiet,message,visible,read,write,session,afterCaption};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiChatCore=api;
 })(typeof window==='object'?window:globalThis);

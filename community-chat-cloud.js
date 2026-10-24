@@ -46,7 +46,7 @@ function create(host, changed){
   if(!still(id)||!rows||!rows.some(r=>r.id===mid))throw new Error('missing-delete-ack');host.remove(mid);changed();
  }
  async function react(mid,emoji,name){
-  const id=uid(),key=mid+':'+emoji;if(!id||!root.LowiChatCore.EMOJI.includes(emoji)||reactionBusy.has(key))return;
+  const id=uid(),key=mid+':'+emoji;if(!id||!(root.LowiChatCore.ALL_EMOJI||root.LowiChatCore.EMOJI).includes(emoji)||reactionBusy.has(key))return;
   if(!host.messages().some(m=>m.id===mid))return;reactionBusy.add(key);
   const before=host.reactions().filter(x=>x.message_id===mid&&x.user_id===id&&x.emoji===emoji),had=before.length>0;
   const without=()=>host.reactions().filter(x=>!(x.message_id===mid&&x.user_id===id&&x.emoji===emoji));

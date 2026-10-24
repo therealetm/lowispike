@@ -24,7 +24,11 @@
             D.querySelectorAll('.on, .open, [open]').length + '|' +
             /* Oct 24 (button sweep): the Community chat is open while #cgThread has data-open. Back closed it through its own
                Escape handler, but this signature did not change, so section-nav.js closed Community for Home as well. */
-            D.querySelectorAll('#cgThread[data-open]').length;
+            D.querySelectorAll('#cgThread[data-open]').length + '|' +
+            /* Oct 24 17:02 (bug hunt): a small layer inside a sheet that closes on Escape without changing any open marker (the
+               rename field on Misty's card) left the app: back cancelled the rename, nothing in this signature changed, so it
+               went on and left. Such layers carry data-back-layer; one gone = back closed something. */
+            D.querySelectorAll('[data-back-layer]').length;
     }
     /* Oct 24 (back and close sweep): a layer can listen for Escape on itself only (keys on its own element). Escape sent to the
        document never reached it: back from Community went Home and left that layer on top of Home, and the next back left the

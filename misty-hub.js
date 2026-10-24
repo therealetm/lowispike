@@ -179,7 +179,7 @@
     function renameOpen() {
         const box = q('.mh-name'); if (!box || renaming()) return;
         const cur = name(), auto = autoName();
-        box.insertAdjacentHTML('afterend', '<form class="mh-rnf" novalidate><label class="mh-rnl"><span>' + esc(T('Name', 'Name', 'Nombre')) + '</span><input name="n" type="text" maxlength="24" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" value="' + esc(cur) + '"></label>' +
+        box.insertAdjacentHTML('afterend', '<form class="mh-rnf" data-back-layer novalidate><label class="mh-rnl"><span>' + esc(T('Name', 'Name', 'Nombre')) + '</span><input name="n" type="text" maxlength="24" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" value="' + esc(cur) + '"></label>' +
             '<div class="mh-rnb"><button type="submit" class="mh-rns">' + esc(T('Save', 'Speichern', 'Guardar')) + '</button><button type="button" class="mh-rnx" data-mhrnx>' + esc(T('Cancel', 'Abbrechen', 'Cancelar')) + '</button></div>' +
             (auto && auto !== cur ? '<small class="mh-rnh">' + esc(T('Leave it empty to go back to ' + auto + '.', 'Leer lassen, dann hei\u00dft es wieder ' + auto + '.', 'D\u00e9jalo en blanco para volver a ' + auto + '.')) + '</small>' : '') +
             '<p class="mh-rne" role="alert" hidden></p></form>');
@@ -209,7 +209,8 @@
     }
     D.addEventListener('submit', e => { const f = e.target && e.target.closest && e.target.closest('#mistyHub .mh-rnf'); if (!f) return; e.preventDefault(); renameSave(f); });
     D.addEventListener('click', e => { if (e.target.closest && e.target.closest('#mistyHub [data-mhrnx]')) { e.preventDefault(); renameClose(true); } });
-    /* Escape cancels the rename, not the whole card */
+    /* Escape cancels the rename, not the whole card. Back (Safari swipe / Android back) sends Escape too: the form carries
+       data-back-layer so back-swipe.js sees that back closed it and stays in the app (bug hunt Oct 24 17:02). */
     D.addEventListener('keydown', e => { if (e.key !== 'Escape' || !e.target || !e.target.closest || !e.target.closest('#mistyHub .mh-rnf')) return; e.preventDefault(); e.stopImmediatePropagation(); renameClose(true); }, true);
     function openDetails(tab) { try { if (W.LowiWorldHome && W.LowiWorldHome.openDetails) return W.LowiWorldHome.openDetails(tab); } catch (e) { } return false; }
     /* lowi:aura / lowi:companion (Oct 19): a new aura or name shows on the card right away; a background repaint never wipes a

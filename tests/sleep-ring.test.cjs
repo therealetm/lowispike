@@ -78,10 +78,10 @@ for (const v of VIEWS) {
     });
 }
 
-test('wiring: Sleep joins the bloom ring and the two-finger ring', () => {
+test('wiring: Sleep joins the bloom ring and the all-at-once ring (hold Scan)', () => {
     const hb = read('home-blooms-v2.js'), ss = read('home-settings-sleep-v2.js');
-    assert.match(hb, /const ALL = \['fuel', 'water', 'move', 'sleep'\]/, 'two fingers open Sleep too');
-    assert.match(hb, /R\.place\(groups, \{ even: true \}\)/, 'the two-finger ring is one even circle');
+    assert.match(hb, /const ALL = \['fuel', 'water', 'move', 'sleep'\]/, 'hold Scan opens Sleep too');
+    assert.match(hb, /R\.place\(groups, \{ even: true \}\)/, 'the all-at-once ring is one even circle');
     assert.match(hb, /kind === 'sleep'[\s\S]{0,1600}SL\.set\(b\)/, 'Sleep answers write through LowiHomeSettingsSleepV2.sleep.set');
     /* Oct 24 2026 (Emmanuel: "letzte Nacht" three times was the repeated second word): no subline, the aria-label keeps "last night" */
     assert.doesNotMatch(hb, /sub: T\('last night', 'letzte Nacht', 'anoche'\)/, 'no repeated "last night" line on every bubble');

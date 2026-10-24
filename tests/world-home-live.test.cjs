@@ -6,7 +6,7 @@ const scene = read('body-world-3d-scene.js'), bw = read('body-world-3d.js'), wh 
 
 test('Home world: free orbit, two-finger zoom from Misty out to the whole world, zoom kept across re-layouts', () => {
   assert(scene.includes('rig.minD = rig.homeDist * 0.72; rig.maxD = Math.max(14, rig.homeDist * 2.5); rig.pMax = 1.1;'));
-  assert(scene.includes('rig.homeDist * was'));
+  assert(scene.includes('next.homeDist * was') && scene.includes('homeRelayoutDist(prev, rig, HOME_OUT, rig.outerD)')); // Oct 24: rule moved into homeRelayoutDist
   assert(scene.includes('halo.visible = false'), 'no outer glow shell around Misty on Home');
   assert(!bw.includes("mode === 'home' ? dy * 0.4"), 'vertical drag is no longer damped on Home');
   assert(/bindGestures\(stage, \(x, y\) => \{ if \(!world\) return; const id = world\.pick\(x, y\);[^\n]*api\.flyTo\(id\); \}, true,/.test(bw), 'tap a glowing place warps, pinch allowed');

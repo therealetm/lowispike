@@ -71,7 +71,7 @@ test('orbit runs inside the world frame, holds still for touch / sheets / flight
 test('zoomed-out Home is the default: the scene rests pulled back, everything that returns home lands there', () => {
     assert.ok(scene.includes('const HOME_OUT = 1.4;'));
     assert.ok(scene.includes('rig.homeRest = rig.homeDist * HOME_OUT;'));
-    assert.ok(scene.includes(': HOME_OUT;'), 'first arrival on Home starts at the rest view');
+    assert.ok(scene.includes(': homeOut;') && scene.includes('homeRelayoutDist(prev, rig, HOME_OUT, rig.outerD)'), 'first arrival on Home starts at the rest view'); /* Oct 24: the re-layout rule moved into homeRelayoutDist */
     assert.ok(1 / 1.4 > 0.6, 'rest zoom stays above wh-mapview (Misty keeps her name)');
     assert.ok(wh.includes("function baseDist(r) { return r && r.mode === 'home' ? (r.homeRest || r.homeDist || 3.2) : 6.5; }"));
     assert.ok(mf.includes('S.dHome = r.homeRest || r.homeDist || 3.2;'), 'flying back from outer worlds lands on the rest view');

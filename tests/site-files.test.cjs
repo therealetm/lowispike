@@ -20,7 +20,7 @@ test('the shell, the service worker list, the manifest icons and the public page
   assert.ok(STATIC.length > 50);
   for (const f of STATIC) assert.ok(pub.has(f), 'service worker caches ' + f + ' but it is not published');
   const man = JSON.parse(fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8'));
-  for (const i of man.icons) assert.ok(pub.has(i.src), 'manifest icon ' + i.src);
+  for (const i of man.icons) assert.ok(pub.has(i.src.split('?')[0]), 'manifest icon ' + i.src);
 });
 
 test('every local file the published code names is itself published', () => {

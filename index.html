@@ -14720,8 +14720,12 @@ function nameSwap(p){
   const m = mealRead(String(q).split(", ")[0]) || mealRead(p.name || "");
   const sw = m && m.swap;
   if (sw && sw.n) { let rb = null; try { rb = sw.rb && typeof RECIPE_BOOK !== "undefined" && typeof norm === "function" ? RECIPE_BOOK.find(b => norm(b.n) === norm(sw.rb)) : null; } catch(e){ rb = null; }
-    /* no recipe named: a Recipe Book recipe built on the swap's main food (berries -> Lemon Ricotta Berry Cups) */
-    try { if (!rb && typeof RECIPE_BOOK !== "undefined") { const st = String(sw.n).toLowerCase().split(/[^a-z]+/).filter(w => w.length >= 5).map(w => w.replace(/ies$/, "y").replace(/s$/, "")); rb = st.length ? RECIPE_BOOK.find(b => st.some(w => String(b.n).toLowerCase().indexOf(w) >= 0)) || null : null; } } catch(e){ rb = null; }
+    /* no recipe named: the Recipe Book recipe that shares the most words with the swap, and at least two of them
+       (Oct 24 sweep: one shared word anywhere sent popcorn's 'Cucumber and pepper sticks' to Pepper Pizza Boats, fries'
+       'Parmesan zucchini fries' to the Turkey Burger Melt and granola's 'nut-and-seed crunch' to the Sushi Crunch Bowl) */
+    try { if (!rb && typeof RECIPE_BOOK !== "undefined") { const ws = s => String(s).toLowerCase().split(/[^a-z]+/).filter(w => w.length >= 5).map(w => w.replace(/ies$/, "y").replace(/s$/, ""));
+      const st = ws(sw.n).filter((w, i, a) => a.indexOf(w) === i); let hit = 1;
+      RECIPE_BOOK.forEach(b => { const bw = ws(b.n), k = st.filter(w => bw.indexOf(w) >= 0).length; if (k > hit) { hit = k; rb = b; } }); } } catch(e){ rb = null; }
     return {e:sw.e || "🌿", n:sw.n, r:sw.r || "ja", rb}; }
   try { const alt = Object.values(D.comm || {}).find(x => x && x.verdict === "ok" && x.cat && x.cat === p.cat && pkey(x) !== pkey(p)); if (alt) return {e:CAT_E[alt.cat] || "🌿", n:alt.name, prod:alt}; } catch(e){}
   return null;

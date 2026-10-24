@@ -40,6 +40,11 @@
             let best = null, bz = -Infinity;
             all.forEach(e => {
                 if (!e || !e.getBoundingClientRect || e.hidden || e.isConnected === false) return;
+                /* Oct 24 21:02 (bug hunt): a sheet still sliding out (.r2-ov.off), a parked sheet or an inert layer is not the top
+                   layer. My Recipe Book > Browse recipes closes the book (z 250) while All recipes (z 29) opens; back during the
+                   book's slide-out sent Escape to the dying book, All recipes stayed open, back switched Cook to Home under it,
+                   and the next back left the app. */
+                try { if (typeof e.closest === 'function' && e.closest('.r2-ov.off, .r2-parked, [inert]')) return; } catch (x) { }
                 const r = e.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return;
                 const cs = typeof W.getComputedStyle === 'function' ? W.getComputedStyle(e) : null;
                 if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return;

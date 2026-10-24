@@ -45,3 +45,22 @@
 #ltTour .lt-top .lt-side .lt-skipall { max-width: 96px; white-space: normal; text-align: right; line-height: 1.15; }
 #ltTour .lt-top .lt-meta { min-width: 0; }
 #ltTour .lt-top .lt-title { -webkit-hyphens: auto; hyphens: auto; overflow-wrap: anywhere; }
+/* the speed pill (Oct 24 2026, Emmanuel: "like on WhatsApp ... click on 2X and then it goes faster"): 1× → 1.5× → 2× → 1×, right after
+   Pause in the card's bottom row, and shown only while the speaker is on (like Pause). The Daily Quest glass (world-home.css --wh-glass-*,
+   the dark values, because the tour card is always the dark glass): 1.5 px light-blue rim, the wide glass fill, inner glow, blur.
+   A fixed 54 × 44 px so the tap area is full size and nothing next to it moves when the number changes; bold tabular digits. */
+#ltTour .lt-rate { display: none; place-items: center; box-sizing: border-box; flex: none; width: 54px; height: 44px; min-height: 44px; padding: 0; margin: 0;
+    border-radius: 22px; border: 1.5px solid rgba(160, 220, 255, .55);
+    background: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .18), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, rgba(80, 170, 255, .14), rgba(28, 74, 150, .34));
+    box-shadow: inset 0 0 18px rgba(140, 210, 255, .32), 0 8px 26px -12px rgba(40, 120, 255, .5);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4);
+    color: #fff; font: inherit; font-size: 15px; line-height: 1; font-weight: 800; letter-spacing: .01em; font-variant-numeric: tabular-nums; text-shadow: 0 1px 4px rgba(0, 20, 60, .4);
+    cursor: pointer; -webkit-appearance: none; appearance: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    transition: transform .12s ease, border-color .2s ease, box-shadow .2s ease; }
+#ltTour.lt-voice .lt-rate { display: grid; }
+#ltTour .lt-rate .lt-ratev { pointer-events: none; white-space: nowrap; }
+#ltTour .lt-rate:active { transform: scale(.95); }
+#ltTour .lt-rate:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+/* sped up (1.5× / 2×): the card's mint-cyan rim, like the speaker when it is on, so a glance shows the voice is faster */
+#ltTour .lt-rate.lt-rate-fast { border-color: rgba(170, 255, 230, .85); box-shadow: inset 0 0 18px rgba(140, 230, 220, .34), 0 0 12px rgba(120, 240, 210, .35); }
+@media (prefers-reduced-motion: reduce) { #ltTour .lt-rate { transition: none !important; } }

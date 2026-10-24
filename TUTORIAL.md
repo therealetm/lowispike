@@ -137,3 +137,11 @@ Emmanuel: "I just clicked on tutorial but I have to read through it, that's not 
   or remove.
 - First-visit screens (Add to Home Screen guide, companion setup) have no speaker: they are short, sound cannot start before the
   first tap there, and the plain-words funnel work owns them. Decision in DECISIONS.md.
+- **Voice speed pill (Oct 24 2026).** Emmanuel: "you know how on WhatsApp when you listen to a voice note you can kind of like click on
+  2X and then it goes faster. I want that for the tutorial voiceover". `.lt-rate`, right after Pause in the card's bottom row, shown
+  only while the speaker is on (`#ltTour.lt-voice`). Each tap: 1× → 1.5× → 2× → 1× (`RATES`; 1,5× in de/es). The talking clip changes
+  at once on the same element (`playbackRate`, `preservesPitch`, no new src, no seek); the device voice goes on from the current word at
+  the new rate. Saved in `localStorage['lowi.tutorial.voice.rate.v1']`, so every next card and the next session use it. Daily Quest
+  glass, fixed 54 × 44 px. On a 320 px phone in German the bottom row wraps on cards without Back (no overlap). Tour step
+  `new-voice-speed` (part `new`). Checks: `tests/tutorial-voice-speed.test.cjs`, in a browser
+  `node tools/tutorial-voice/speed-check.cjs [--url LIVE] [--engines chromium]`.

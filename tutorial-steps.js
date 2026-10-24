@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 20;  /* 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 21;  /* 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -721,6 +721,16 @@
                 es: 'Hay algunas novedades. Te enseño dónde están. Puedes saltarlo cuando quieras.'
             },
             cta: { en: 'Let’s go', de: 'Los geht’s', es: 'Vamos' }
+        },
+        {
+            id: 'new-voice-speed', area: 'new', target: null, covers: ['tutorial-voice-speed'],
+            info: 'the speed pill is on this very card, right after Pause while the voice is on, so the card itself is where you tap it',
+            title: { en: 'Voice speed', de: 'Sprechtempo', es: 'Velocidad de voz' },
+            text: {
+                en: 'Tap my picture and I read aloud. Tap the speed next to Pause for 1.5 or 2 times as fast, like a voice note. I remember it.',
+                de: 'Tipp auf mein Bild, dann lese ich vor. Tipp aufs Tempo neben Pause für 1,5- oder 2-mal so schnell. Ich merke es mir.',
+                es: 'Toca mi imagen y leo en voz alta. Toca la velocidad junto a Pausa para 1,5 o 2 veces más rápido. Lo recuerdo.'
+            }
         },
         {
             id: 'new-scan-hold', area: 'new', where: 'home', target: ['#whHud .o8-scan'], covers: ['scan-hold-all'], later: 'hold',

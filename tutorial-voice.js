@@ -74,7 +74,14 @@
         for (const p of phrases || []) { const k = t.lastIndexOf(n(p)); if (k >= 0 && (at < 0 || k < at)) at = k; }
         return at;
     }
-    const api = { VOICES, BCP, NAME, spoken, plan, titleAdds, cueIndex, KEY: 'lowi.tutorial.voice.v1', CACHE: 'lowi-voice-v1', DIR: 'tutorial-voice/' };
+    /* playback speed (Oct 24 2026, Emmanuel: "you know how on WhatsApp when you listen to a voice note you can kind of like click on 2X
+       and then it goes faster. I want that for the tutorial voiceover"): one pill, each tap goes 1x -> 1.5x -> 2x -> 1x like WhatsApp.
+       German and Spanish write the decimal with a comma (1,5x), as WhatsApp does there. */
+    const RATES = [1, 1.5, 2];
+    const okRate = r => RATES.indexOf(Number(r)) >= 0;
+    const nextRate = r => { const k = RATES.indexOf(Number(r)); return RATES[(k + 1) % RATES.length]; };   /* unknown -> 1x */
+    const rateLabel = (r, lang) => { const v = okRate(r) ? Number(r) : 1, l = L(lang); return (l === 'en' ? String(v) : String(v).replace('.', ',')) + '\u00d7'; };
+    const api = { VOICES, BCP, NAME, spoken, plan, titleAdds, cueIndex, RATES, nextRate, rateLabel, KEY: 'lowi.tutorial.voice.v1', RATE_KEY: 'lowi.tutorial.voice.rate.v1', CACHE: 'lowi-voice-v1', DIR: 'tutorial-voice/' };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (!root || !root.document || root.LowiTutorialVoice) return;
 
@@ -85,6 +92,7 @@
         de: { on: 'Vorlesen', off: 'Vorlesen ausschalten' },
         es: { on: 'Leer en voz alta', off: 'Dejar de leer en voz alta' }
     };
+    const RATE_UI = { en: 'Voice speed {r}', de: 'Sprechtempo {r}', es: 'Velocidad de voz {r}' };   /* the speed pill's label */
     const SILENT = 'data:audio/mpeg;base64,SUQzBAAAAAAAIlRTU0UAAAAOAAADTGF2ZjYyLjMuMTAwAAAAAAAAAAAAAAD/83DAAAAAAAAAAAAASW5mbwAAAA8AAAAIAAAD+gBHR0dHR0dHR0dHR0diYmJiYmJiYmJiYmJ8fHx8fHx8fHx8fHx8lpaWlpaWlpaWlpaWsbGxsbGxsbGxsbGxscvLy8vLy8vLy8vLy+Xl5eXl5eXl5eXl5eX///////////////8AAAAATGF2YzYyLjExAAAAAAAAAAAAAAAAJALUAAAAAAAAA/qOiXBeAAAAAAAAAAAAAAAAAP/zQMQAAAADSAAAAABMQU1FMy4xMDEgKGJldGEgMylVTEFNRTMuMTAxIChiZXRhIDMpVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxFsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAxIChiZXRhIDMpVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NAxKQAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDEgKGJldGEgMylVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80LEowAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDEgKGJldGEgMylVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80DEpAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMSAoYmV0YSAzKVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsSjAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMSAoYmV0YSAzKVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxKMAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
     const SPK = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="currentColor"/>' +
         '<path class="lt-wave1" d="M15.2 9.2a4 4 0 0 1 0 5.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
@@ -95,7 +103,21 @@
     let saidKey = '';   /* the card that was already read to the end: a repaint of it (try-it done, Pause) does not read it again */
     let on = pref.get() === '1', unlocked = false, seq = 0, cur = null, words = [], raf = 0, blobUrl = '', blocked = false, card = null, lastKey = '';
     let audio = null;
-    const A = () => { if (!audio) { audio = new Audio(); audio.preload = 'auto'; audio.setAttribute('playsinline', ''); audio.addEventListener('ended', onEnded); } return audio; };
+    /* the chosen speed is kept for the rest of the tour and for next time (localStorage RATE_KEY: '1', '1.5' or '2'; anything else = 1x) */
+    const ratePref = {
+        get() { try { const v = parseFloat(localStorage.getItem(api.RATE_KEY)); return okRate(v) ? v : 1; } catch (e) { return 1; } },
+        set(v) { try { localStorage.setItem(api.RATE_KEY, String(v)); } catch (e) { } }
+    };
+    let rate = ratePref.get(), devAt = 0;
+    /* the clip plays at the chosen speed with its natural pitch (preservesPitch, webkit/moz names for older Safari / Firefox). Setting
+       the rate on the playing element changes the voice at once, without starting the clip again. defaultPlaybackRate too, because a
+       new src resets playbackRate to it. */
+    function applyRate(a) {
+        if (!a) return;
+        try { a.preservesPitch = true; a.webkitPreservesPitch = true; a.mozPreservesPitch = true; } catch (e) { }
+        try { a.defaultPlaybackRate = rate; a.playbackRate = rate; } catch (e) { }
+    }
+    const A = () => { if (!audio) { audio = new Audio(); audio.preload = 'auto'; audio.setAttribute('playsinline', ''); audio.addEventListener('ended', onEnded); applyRate(audio); } return audio; };
     /* only the card's own clip ending counts. Oct 22 2026: the silent unlock sound (same element) ended while the card's clip was
        still loading, the card counted as read, and hands-free cut the real clip off 1.2 s in to move on */
     function onEnded() { if (cur && cur.how === 'file' && cur.playing && blobUrl && audio && audio.src === blobUrl) finished(seq); }
@@ -235,13 +257,15 @@
         }
         return best;
     }
-    function sayDevice(my, sp) {
+    /* from: start part way into the card (a speed change while the device voice talks goes on from the word it was at) */
+    function sayDevice(my, sp, from) {
         if (!W.speechSynthesis || !W.SpeechSynthesisUtterance) { done(); return; }
         try {
             speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance(sp.s); u.lang = BCP[L(sp.lang)]; const v = bestVoice(sp.lang); if (v) u.voice = v;
-            u.rate = 1; u.pitch = 1.05;
-            u.onboundary = e => { if (my === seq && typeof e.charIndex === 'number') { mark(e.charIndex); cueCheck(e.charIndex); } };
+            const at = from > 0 && from < sp.s.length ? from : 0; devAt = at;
+            const u = new SpeechSynthesisUtterance(at ? sp.s.slice(at) : sp.s); u.lang = BCP[L(sp.lang)]; const v = bestVoice(sp.lang); if (v) u.voice = v;
+            u.rate = rate; u.pitch = 1.05;
+            u.onboundary = e => { if (my === seq && typeof e.charIndex === 'number') { devAt = at + e.charIndex; mark(devAt); cueCheck(devAt); } };
             u.onend = () => finished(my);
             u.onerror = () => { if (my === seq) done(); };
             cur.how = 'device'; cur.playing = true; media(true); paintBtn();
@@ -258,7 +282,7 @@
         const blob = await fetchClip(urlOf(sp.lang, c)); if (my !== seq) return;
         if (!blob) { sayDevice(my, sp); return; }
         cur.clip = c; blobUrl = URL.createObjectURL(blob);
-        const a = A(); a.src = blobUrl;
+        const a = A(); a.src = blobUrl; applyRate(a);
         try {
             await a.play(); if (my !== seq) { a.pause(); return; }
             blocked = false; cur.playing = true; media(true); paintBtn(); loop();
@@ -279,6 +303,38 @@
         else stop();
         paintBtn(); emit({ state: on ? 'on' : 'off' });
     }
+    /* the speed pill (Oct 24 2026): WhatsApp's 1x / 1.5x / 2x, in the card's bottom row right after Pause, the Daily Quest glass.
+       Shown only while the speaker is on, like Pause (tutorial-voice.css, #ltTour.lt-voice). A tap changes the voice that is talking
+       right now (clip: playbackRate on the same element, no restart; device voice: goes on from the current word at the new speed). */
+    function paintRate() {
+        if (!card) return;
+        const b = card.querySelector('.lt-rate'); if (!b) return;
+        const l = L(cur ? cur.lang : 'en'), r = rateLabel(rate, l), lab = fill(RATE_UI[l], { r });
+        const t = b.querySelector('.lt-ratev'); if (t && t.textContent !== r) t.textContent = r;
+        b.setAttribute('aria-label', lab); b.title = lab; b.setAttribute('data-rate', String(rate));
+        b.classList.toggle('lt-rate-fast', rate !== 1);
+    }
+    function setRate(r) {
+        if (!okRate(r)) return;
+        rate = Number(r); ratePref.set(rate);
+        if (audio) applyRate(audio);
+        if (cur && cur.playing && cur.how === 'device' && W.speechSynthesis) { seq++; const my = seq; sayDevice(my, cur, devAt); }
+        paintRate(); emit({ state: 'rate', rate });
+    }
+    function onRate(ev) {
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+        setRate(nextRate(rate));
+    }
+    function rateBtn(el) {
+        const row = el.querySelector('.lt-btns .lt-left'); if (!row) return null;
+        let b = row.querySelector('.lt-rate'); if (b) return b;
+        b = D.createElement('button'); b.type = 'button'; b.className = 'lt-rate';
+        b.innerHTML = '<span class="lt-ratev" aria-hidden="true"></span>';
+        b.addEventListener('click', onRate);
+        const p = row.querySelector('.lt-pause');
+        if (p && p.nextSibling) row.insertBefore(b, p.nextSibling); else row.appendChild(b);
+        return b;
+    }
     /* the speaker: its own small glass button in the card's top row, right column under Skip all (.lt-side). The companion picture stays
        a picture. Returns the button (made once per card render). */
     function speaker(el) {
@@ -295,13 +351,14 @@
     /* after every render of a tutorial card: add the speaker button, wrap the words, read the card when sound is on.
        ctx: { lang, name, next: [steps to prefetch], onEnd(key): called once the card was read to the end by itself,
               quiet: true = paint only, say nothing (the hands-free tour is paused) }. Also fires window 'lowi:tutorial-voice'
-       { on, state: 'on' | 'off' | 'end' }. Public interface (used beyond the tour): render, stop, toggle, isOn, playing, how, paused,
-       word, bestVoice, data, spoken, plan, titleAdds, VOICES, BCP, NAME, KEY, CACHE, DIR. Add to it; do not rename or remove. */
+       { on, state: 'on' | 'off' | 'end' | 'rate' }. Public interface (used beyond the tour): render, stop, toggle, isOn, playing, how,
+       paused, word, bestVoice, data, spoken, plan, titleAdds, VOICES, BCP, NAME, KEY, CACHE, DIR; since Oct 24 2026 also rate, setRate,
+       playbackRate, clipTime, RATES, nextRate, rateLabel, RATE_KEY (the speed pill). Add to it; do not rename or remove. */
     function render(el, step, ctx) {
         if (!el || !step) return;
         const c = ctx || {}, lang = L(c.lang), sp = Object.assign({ lang }, spoken(step, lang, c.name));
         card = el; words = [];
-        speaker(el);
+        speaker(el); rateBtn(el);
         if (sp.t >= 0) wrap(el.querySelector('#ltTitle'), sp.s.slice(0, sp.t), 0);
         wrap(el.querySelector('#ltText'), sp.s.slice(sp.b), sp.b);
         const next = (c.next || []).map(s => spoken(s, lang, c.name).key);
@@ -311,7 +368,7 @@
         ctxNow = { sp, next, key, onEnd: typeof c.onEnd === 'function' ? c.onEnd : null,
             onCue: typeof c.onCue === 'function' ? c.onCue : null, cueAt: c.cue ? cueIndex(sp.s, c.cue) : -1, cued: !!was };
         if (!cur || cur.lang !== lang) cur = Object.assign({ playing: false, how: '' }, sp);
-        paintBtn();
+        paintBtn(); paintRate();
         quietNow = !!c.quiet;
         if (c.quiet) { lastKey = ''; saidKey = ''; stop(); return; }   /* paused: paint the card, say nothing */
         if (key === lastKey && cur && (cur.playing || (on && saidKey === key))) { return; }
@@ -334,6 +391,7 @@
     W.addEventListener('pageshow', e => { if (e && e.persisted) comeBack(); });
     W.LowiTutorialVoice = Object.assign({}, api, {
         render, stop: halt, toggle: () => toggle(), isOn: () => on, playing: () => !!(cur && cur.playing), how: () => (cur && cur.how) || '',
-        paused: () => !audio || audio.paused, word: () => { const w = card && card.querySelector('.lt-say'); return w ? w.textContent : ''; }, bestVoice, data
+        paused: () => !audio || audio.paused, word: () => { const w = card && card.querySelector('.lt-say'); return w ? w.textContent : ''; }, bestVoice, data,
+        rate: () => rate, setRate, playbackRate: () => (audio ? audio.playbackRate : rate), clipTime: () => (audio ? audio.currentTime : 0)
     });
 })(typeof window !== 'undefined' ? window : null);

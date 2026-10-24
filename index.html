@@ -6609,7 +6609,7 @@ function renderHome(){ const d = tdEnsure(), sl = tdSlots(), needs = tdNeeds(), 
       '<div class="card td-card td-havecard' + (TD_HAVE_OPEN ? " open" : "") + '" id="tdHave">' +
         '<button class="td-havesum" data-td="havetog" aria-expanded="' + (TD_HAVE_OPEN ? "true" : "false") + '"><span class="td-havesumtx"><b class="num" id="tdHaveSum">' + (needs.length ? atHome + " at home · " + toBuy.length + " to buy" : listN + " on your list") + '</b><span class="tiny muted">' + (TD_HAVE_OPEN ? "Tap to hide" : "Tap to check what\'s at home") + '</span></span><span class="td-chev">' + (TD_HAVE_OPEN ? "▴" : "▾") + '</span></button>' +
         '<div class="td-havelist">' + (needs.length ? '<div class="small muted" style="margin:10px 0 8px">Tick what\'s already at home. The rest is your shopping list.</div>' +
-        needs.map(i => '<button class="td-ing' + (tdHave(i) ? " on" : "") + '" data-td="have" data-k="' + esc(i.k) + '"><span class="td-tick sm">' + (tdHave(i) ? ICO.chk : "") + '</span><span class="td-ingtx"><b>' + esc(i.n) + '</b><span class="tiny muted">' + esc(i.for.join(" · ")) + '</span></span><span class="tiny ' + (tdHave(i) ? "gold" : "dim") + '">' + (tdHave(i) ? (S.td.got[i.k] ? "bought" : "have it") : "need") + "</span></button>").join("") : "") +
+        needs.map(i => '<button class="td-ing' + (tdHave(i) ? " on" : "") + '" data-td="have" data-k="' + esc(i.k) + '"><span class="td-tick sm">' + (tdHave(i) ? ICO.chk : "") + '</span><span class="td-ingtx"><b>' + esc(i.n) + '</b><span class="tiny muted">' + esc(i.for.map(n => window.LowiLang ? LowiLang.t(n) : n).join(" · ")) + '</span></span><span class="tiny ' + (tdHave(i) ? "gold" : "dim") + '">' + (tdHave(i) ? (S.td.got[i.k] ? "bought" : "have it") : "need") + "</span></button>").join("") : "") +
         (listN ? '<div class="small muted" style="margin-top:10px">+ ' + listN + " more on your list from scans and recipes</div>" : "") +
         '</div><div class="td-buy"><button class="btn primary" data-td="shop" id="tdShopBtn"' + (toBuy.length + listN ? "" : " disabled") + ">" + (toBuy.length + listN ? "Go shopping" : "You have everything") + '</button><button class="btn ghost" data-lc="open" id="tdCartBtn">' + (toBuy.length ? "Cart · " + toBuy.length : "Cart") + '</button></div></div>' : "") +
     '<div class="sec" style="margin-top:28px"><span class="h3">Check-in & extras</span><span class="small muted">optional</span></div>' + homeExtrasHTML();
@@ -7709,7 +7709,11 @@ function openCart(opts){ opts = opts || {}; tdEnsure(); const td = S.td, base = 
   lcRender(); requestAnimationFrame(() => el.classList.add("open")); }
 function closeCart(){ const el = $("#lsCart"); if (el) el.classList.remove("open"); const sh = $("#lcShop"); if (sh) sh.classList.remove("open"); if (typeof TAB !== "undefined" && TAB === "home") renderHome(); }
 
-function lcTile(i, where){ return '<button class="lc-t' + (lcFx.k === i.k ? " " + lcFx.how : "") + '" data-lc="tile" data-k="' + esc(i.k) + '" data-w="' + where + '" aria-label="' + esc(i.n) + '">' + lcFace(i, "lc-e") + '<span class="lc-n">' + esc(i.n) + "</span></button>"; }
+/* Oct 24 button sweep: in de/es Shop it read English: "Nori Smash Burger Stack · Cabbage Egg Okonomiyaki" under a list item (the page
+   translator only knows each recipe name, not two joined), "Lidl is €0,10 cheaper" (split by the <b>), and every product tile's aria-label.
+   lcT translates one row, lcFor the recipes an item is for, name by name. */
+const lcT = s => (window.LowiLang ? LowiLang.t(s) : s), lcFor = (i, sep) => i.for.map(lcT).join(sep);
+function lcTile(i, where){ return '<button class="lc-t' + (lcFx.k === i.k ? " " + lcFx.how : "") + '" data-lc="tile" data-k="' + esc(i.k) + '" data-w="' + where + '" aria-label="' + esc(lcT(i.n)) + '">' + lcFace(i, "lc-e") + '<span class="lc-n">' + esc(i.n) + "</span></button>"; }
 /* Oct 8 fix: a tap in the cart never jumps the list back to the top. Keep every scroller's position. */
 function lcRender(){ const el = $("#lsCart"); if (!el) return lcRender0(); const keep = [el].concat(Array.from(el.querySelectorAll("*"))).filter(x => x.scrollTop || x.scrollLeft).map(x => [x === el ? null : (x.id ? "#" + x.id : "." + String(x.className).trim().split(/\s+/)[0]), x.scrollTop, x.scrollLeft]);
   lcRender0(); keep.forEach(([sel, t, l]) => { const x = sel ? el.querySelector(sel) : el; if (x) { x.scrollTop = t; x.scrollLeft = l; } }); }
@@ -7724,6 +7728,8 @@ function csPair(id, o){ o = o || {}; const cook = o.cook || ('data-p2="recipe" d
     '<button type="button" class="cs-btn cs-shop" data-lc="open" data-id="' + esc(id) + '"' + (o.close ? ' data-p2close="1"' : "") + (o.shopId ? ' id="' + o.shopId + '"' : "") + '>' + CS_IC.cart + '<span>Shop it</span></button></div>'; }
 window.LowiCS = {pair:csPair, ic:CS_IC};
 const lcGot = () => { const st = lcState(); if (!st.got || typeof st.got !== "object") st.got = {}; return st.got; };
+function lcCheaper(store, eur){ const l = window.LowiLang ? LowiLang.get() : "en", t = l === "de" ? "{s} ist {e} günstiger" : l === "es" ? "{s} es {e} más barato" : "{s} is {e} cheaper";
+  return esc(t).replace("{s}", esc(store)).replace("{e}", '<b class="num">' + esc(eur) + "</b>"); }
 function lcRender0(){ const el = $("#lsCart"); if (!el || !LC) return; const st = lcState(), items = lcItems(), inC = items.filter(lcIn), out = items.filter(i => !lcIn(i));
   const tots = LC_STORES.map(s => [s, lcTotal(items, s[0], true)]), cheap = tots.slice().sort((a, b) => a[1] - b[1])[0];
   const cur = lcStore(st.store), curT = lcTotal(items, cur[0]), curPure = lcTotal(items, cur[0], true), save = curPure - cheap[1], got = lcGot();
@@ -7736,7 +7742,7 @@ function lcRender0(){ const el = $("#lsCart"); if (!el || !LC) return; const st 
     // 1 store: compact chips, the cheapest says so
     '<div class="lc-lab">Where are you shopping?</div><div class="hscroll lc-stores">' + tots.map(t => { const s = t[0];
       return '<button class="lc-st' + (s[0] === cur[0] ? " on" : "") + '" data-lc="store" data-s="' + s[0] + '" aria-pressed="' + (s[0] === cur[0]) + '"><span class="lc-dot" style="background:' + s[2] + '"></span><b>' + s[1] + '</b><span class="num lc-stp">≈ ' + lcEur(t[1]) + "</span>" + (inC.length && s[0] === cheap[0][0] ? '<span class="lc-cheap">cheapest</span>' : "") + "</button>"; }).join("") + "</div>" +
-    (inC.length && cur[0] !== cheap[0][0] && save >= .05 ? '<button class="cs-save" data-lc="store" data-s="' + cheap[0][0] + '"><span>' + cheap[0][1] + ' is <b class="num">' + lcEur(save) + '</b> cheaper</span><b>Switch</b></button>' : "") +
+    (inC.length && cur[0] !== cheap[0][0] && save >= .05 ? '<button class="cs-save" data-lc="store" data-s="' + cheap[0][0] + '"><span>' + lcCheaper(cheap[0][1], lcEur(save)) + '</span><b>Switch</b></button>' : "") +
     // 2 meals
     '<div class="lc-lab">Which meals?</div><div class="hscroll lc-meals">' + LC.shown.map(id => { const r = lcRec(id); if (!r) return ""; const pic = lcMealPic(id, r);
       return '<button class="lc-m' + (LC.on[id] ? " on" : "") + '" data-lc="meal" data-id="' + esc(id) + '">' + (pic ? '<img alt="" src="' + pic + '">' : '<span class="lc-me">' + esc(r.e || "🍽️") + "</span>") + '<span class="lc-ck">' + (LC.on[id] ? ICO.chk : "") + '</span><span class="lc-mn">' + esc(r.swapName || r.n) + "</span></button>"; }).join("") +
@@ -7750,7 +7756,7 @@ function lcRender0(){ const el = $("#lsCart"); if (!el || !LC) return; const st 
     // 4 the list: tick it off in the store
     (inC.length ? '<div class="lc-lab cs-listlab"><span>Shopping list for ' + cur[1] + '</span><span class="num cs-gotn" id="lcGotN">' + nGot + " / " + inC.length + '</span></div><div class="card lc-list cs-list">' + sorted.map(i => { const a = aisle(i.g), on = !!got[i.k], at = lcAt(i, cur[0]);
         const head = a !== lastA ? '<div class="cs-aisle">' + esc(a) + "</div>" : ""; lastA = a;
-        return head + '<button type="button" class="lc-row cs-row' + (on ? " got" : "") + '" data-lc="tick" data-k="' + esc(i.k) + '" aria-pressed="' + on + '"><span class="cs-tick">' + (on ? ICO.chk : "") + "</span>" + lcFace(i, "lc-re") + '<span class="lc-rt"><b>' + esc(i.n) + '</b><span class="tiny muted">' + esc(i.for.join(" · ")) + '</span></span><span class="num lc-rp">≈ ' + lcEur(lcPx(i, at)) + (at !== cur[0] ? '<span class="rs-at">at ' + lcStore(at)[1] + "</span>" : "") + "</span></button>"; }).join("") +
+        return head + '<button type="button" class="lc-row cs-row' + (on ? " got" : "") + '" data-lc="tick" data-k="' + esc(i.k) + '" aria-pressed="' + on + '"><span class="cs-tick">' + (on ? ICO.chk : "") + "</span>" + lcFace(i, "lc-re") + '<span class="lc-rt"><b>' + esc(i.n) + '</b><span class="tiny muted">' + esc(lcFor(i, " · ")) + '</span></span><span class="num lc-rp">≈ ' + lcEur(lcPx(i, at)) + (at !== cur[0] ? '<span class="rs-at">at ' + lcStore(at)[1] + "</span>" : "") + "</span></button>"; }).join("") +
       '<div class="lc-row lc-rowt"><span class="lc-rt"><b>Total</b></span><span class="num lc-rp"><b>≈ ' + lcEur(curT) + "</b></span></div></div>" +
       '<div class="tiny muted cs-tickhint">Tap an item to tick it off while you shop.</div>' : "") +
     (window.LowiK9 ? LowiK9.entry() : "") + /* k9-cart */
@@ -7766,11 +7772,11 @@ function lcShopClose(){ const el = $("#lcShop"); if (el) el.classList.remove("op
 function lcShopRender(){ const el = $("#lcShop"); if (!el || !LC) return; const st = lcState(), cur = lcStore(st.store), got = lcGot(), aisle = g => typeof tdAisle === "function" ? tdAisle(g) : "Other";
   const inC = lcItems().filter(lcIn).sort((a, b) => aisle(a.g) < aisle(b.g) ? -1 : aisle(a.g) > aisle(b.g) ? 1 : 0), n = inC.filter(i => got[i.k]).length, left = inC.filter(i => !got[i.k]);
   let lastA = "";
-  el.innerHTML = '<div class="cs-shd"><button class="cs-x" data-lc="shopback" aria-label="Back to the cart">' + ICO.x + '</button><div class="cs-ht"><div class="small cs-hsub"><span class="lc-dot" style="background:' + cur[2] + '"></span> <span>Shopping at ' + cur[1] + '</span></div><div class="h2 num" id="lcShopN">' + n + " of " + inC.length + '</div></div><button class="cs-chip" data-lc="copy">Copy</button></div>' +
+  el.innerHTML = '<div class="cs-shd"><button class="cs-x" data-lc="shopback" aria-label="' + esc(lcT("Back to the cart")) + '">' + ICO.x + '</button><div class="cs-ht"><div class="small cs-hsub"><span class="lc-dot" style="background:' + cur[2] + '"></span> <span>Shopping at ' + cur[1] + '</span></div><div class="h2 num" id="lcShopN">' + n + " " + ({de:"von", es:"de"}[window.LowiLang ? LowiLang.get() : "en"] || "of") + " " + inC.length + '</div></div><button class="cs-chip" data-lc="copy">Copy</button></div>' +
     '<div class="cs-bar"><b style="width:' + (inC.length ? Math.round(n / inC.length * 100) : 0) + '%"></b></div><div class="cs-sbody">' +
     (window.LowiShopScan && LowiShopScan.entryHTML ? LowiShopScan.entryHTML("in-shop") : "") + /* scan a product while you shop (shop-scan.js) */
     (inC.length ? inC.map(i => { const a = aisle(i.g), on = !!got[i.k], head = a !== lastA ? '<div class="cs-aisle">' + esc(a) + "</div>" : ""; lastA = a;
-        return head + '<button type="button" class="cs-si' + (on ? " got" : "") + '" data-lc="stick" data-k="' + esc(i.k) + '" aria-pressed="' + on + '"><span class="cs-tick big">' + (on ? ICO.chk : "") + "</span>" + lcFace(i, "lc-re") + '<span class="lc-rt"><b>' + esc(i.n) + '</b><span class="tiny muted">' + esc(i.for.join(" · ")) + '</span></span><span class="num lc-rp">≈ ' + lcEur(lcPx(i, lcAt(i, cur[0]))) + "</span></button>"; }).join("")
+        return head + '<button type="button" class="cs-si' + (on ? " got" : "") + '" data-lc="stick" data-k="' + esc(i.k) + '" aria-pressed="' + on + '"><span class="cs-tick big">' + (on ? ICO.chk : "") + "</span>" + lcFace(i, "lc-re") + '<span class="lc-rt"><b>' + esc(i.n) + '</b><span class="tiny muted">' + esc(lcFor(i, " · ")) + '</span></span><span class="num lc-rp">≈ ' + lcEur(lcPx(i, lcAt(i, cur[0]))) + "</span></button>"; }).join("")
       : '<div class="lc-empty"><div class="h3">Nothing to buy</div><div class="small muted">Your cart is empty.</div></div>') +
     '</div><div class="cs-sft"><span class="small muted cs-left">' + (left.length ? '<span>Still to get</span> <b class="num">≈ ' + lcEur(lcTotal(left, cur[0])) + "</b>" : "<span>All in the basket</span>") + '</span><button class="btn primary cs-done" data-lc="shopdone">' + (n >= inC.length ? "Done shopping" : "Done for now") + "</button></div>"; }
 function lcTick(k){ const g = lcGot(); if (g[k]) delete g[k]; else g[k] = 1; save(); try { navigator.vibrate && navigator.vibrate(8); } catch(e){} }
@@ -8157,6 +8163,7 @@ const T = [
   ["Copy list", "Liste kopieren", "Copiar lista"],
   ["Shop it", "Einkaufen", "Comprarlo"], ["Pick meals. The list fills itself.", "Gerichte wählen. Die Liste füllt sich.", "Elige comidas. La lista se llena sola."],
   ["Tap an item to tick it off while you shop.", "Tippe ein Teil an, um es beim Einkaufen abzuhaken.", "Toca un producto para marcarlo mientras compras."],
+  ["Nothing to buy", "Nichts zu kaufen", "Nada que comprar"], /* Oct 24 button sweep: the in-store list's empty state */
   ["Switch", "Wechseln", "Cambiar"], ["Still to get", "Noch zu holen", "Falta comprar"], ["All in the basket", "Alles im Korb", "Todo en la cesta"],
   ["Nice. Your shopping is done.", "Super. Dein Einkauf ist erledigt.", "Genial. Tu compra está hecha."],
   ["Back to the cart", "Zurück zum Wagen", "Volver al carrito"], ["Your cart is empty.", "Dein Wagen ist leer.", "Tu carrito está vacío."],
@@ -8217,6 +8224,7 @@ const P = [
   [/^Switch to (.+)$/, "Wechsel zu $1", "Cambiar a $1"],
   [/^Shopping list for (.+)$/, "Einkaufsliste für $1", "Lista de compra para $1"],
   [/^Shop at (.+)$/, "Einkaufen bei $1", "Comprar en $1"],
+  [/^Shopping at (.+)$/, "Einkaufen bei $1", "Comprando en $1"], /* Oct 24 button sweep: the in-store list header */
   [/^(\d+) of 7 days moved$/, "$1 von 7 Tagen bewegt", "$1 de 7 días en movimiento"],
   [/^day streak · best (\d+)$/, "Tage Serie · Rekord $1", "días de racha · récord $1"],
   [/^Next badge: (\d+) days$/, "Nächstes Badge: $1 Tage", "Próxima insignia: $1 días"],

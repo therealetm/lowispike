@@ -11,7 +11,7 @@ const html = read('index.html');
 const OLD_LOGO = ['9e0c7e2aea47238636122294a164c52a', 'f2d254f3a4b14b5c55321d8a18574acf', 'c9894c82902242879fe54bd59eeefc0c'];
 const pngSize = b => ({ sig: b.slice(1, 4).toString(), w: b.readUInt32BE(16), h: b.readUInt32BE(20), colorType: b[25] });
 
-test('app icons are the current Misty cell, not the old pulse-line logo', () => {
+test('app icons are the generic LOWiSPIKE mark, not the old pulse-line logo', () => {
   for (const n of [180, 192, 512]) {
     const b = fs.readFileSync(path.join(root, 'icon-' + n + '.png'));
     assert.ok(!OLD_LOGO.includes(md5(b)), 'icon-' + n + '.png is still the old logo');
@@ -23,8 +23,9 @@ test('app icons are the current Misty cell, not the old pulse-line logo', () => 
   assert.equal(links.length, 2, 'favicon + apple-touch-icon stay inline');
   for (const m of links) assert.ok(!OLD_LOGO.includes(md5(Buffer.from(m[2], 'base64'))), m[1] + ' is still the old logo');
   const man = JSON.parse(read('manifest.webmanifest'));
-  for (const i of man.icons) assert.ok(fs.existsSync(path.join(root, i.src)), i.src);
-  assert.ok(fs.existsSync(path.join(root, 'tools/brand/make-icons.cjs')), 'the icon maker stays, so the icon can be redrawn from Misty');
+  for (const i of man.icons) assert.ok(fs.existsSync(path.join(root, i.src.split('?')[0])), i.src);
+  /* Oct 24 (Eman): the icon is a generic LOWiSPIKE mark for everyone, not his companion; drawn by make-generic-icon.cjs */
+  assert.ok(fs.existsSync(path.join(root, 'tools/brand/make-generic-icon.cjs')), 'the generic icon maker stays, so the icon can be redrawn');
 });
 
 test('launch screen: none any more (Oct 21), so no gold orb, gold i or old logo can come back on it', () => {

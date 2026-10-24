@@ -300,6 +300,12 @@ request survived, it says "(his request, as the task summed it up)". All times a
       EN/DE/ES) plus OCR of the crops: "LOWiSPIKE" and the menu rows read in full. Chromium/WebKit emulation only.
       OPEN (Eman's remark, not this fix): after Add to Home Screen the icon is the static app icon (his companion Misty);
       he wants each user's OWN companion as the icon. Needs a per-user apple-touch-icon/manifest icon set at install time.
+      2026-10-24 DONE the generic way (task from the Oct 23 call: "a different or generic logo"): icon-180/192/512 and both
+      inline icons are now one LOWiSPIKE mark for everyone (six planets on a hexagon in a glass bubble, no companion), drawn by
+      tools/brand/make-generic-icon.cjs + .py; manifest link and icon srcs carry ?v=generic2. The "Made by Eman, who lost 45 kg
+      in 7 months" line is removed from the manifest, share/SEO tags, the first setup screen and the founder bio (affiliate
+      creator scripts in affiliates/ still quote 45 kg / 7 months: not touched, Eman's real figure is 55 kg in 8 months).
+      Per-user companion icon stays possible later (swap the apple-touch-icon data URI before Add to Home Screen).
 
 **(d) Mentioned, never started**
 

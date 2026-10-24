@@ -82,7 +82,8 @@ test('gate is 3 plain screens (Oct 21 TikTok advice): what it is + why + proof f
     const s = read('herb-start.js');
     assert.ok(!/play:\[/.test(s), 'how-you-play is taught in the app, not before the account');
     assert.match(s, /plantH:'Eat smarter and lose weight, as a game\.'/);
-    assert.strictEqual((s.match(/proof:'[^']*45 kg[^']*7 /g) || []).length, 3, 'founder proof in EN, DE, ES');
+    /* Oct 24 (Eman): the "Made by Eman, who lost 45 kg in 7 months" line is gone everywhere, not corrected */
+    assert.ok(!/proof:'/.test(s) && !s.includes('hs-proof') && !/45 kg/.test(s), 'no founder weight-loss line on the first screen');
     for (const cute of ['Say hi', 'Got it', 'Nice to meet you', "Save your companion"]) assert.ok(!s.includes("'" + cute + "'") && !s.includes("'" + cute + ":"), 'plain button words, not cute ones: ' + cute);
     assert.match(s, /saveBtn:'Create free account'/);
     assert.match(s, /\[0,1,2\]\.map\(/, '3 dots');

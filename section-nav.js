@@ -111,6 +111,26 @@
     }
     function back() { if (innerBack()) return; if (isSec(history.state)) { try { history.back(); return; } catch (e) { } } close(); }
 
+    /* ---------- Escape (a hardware keyboard: iPad with a keyboard, a computer) ----------
+       Oct 24 2026 (back and close sweep 14:40): Escape closed a sheet over a page, but on the page itself (Move, Cook, Profile,
+       Community) it did nothing, while back and the X go home. Escape on a page with nothing open over it is now one back,
+       the same as the edge swipe. It stays out when anything else handled this Escape: a sheet was open when the key went down,
+       a handler stopped or prevented it, or the open layers / the tab changed while it ran (the chat closing itself). The
+       Escape that back-swipe.js sends to close a sheet on a back is synthetic (not trusted) and never counts here. */
+    let escSnap = null;
+    const isEsc = e => !!e && (e.key === 'Escape' || e.key === 'Esc');
+    function layersNow() { try { const B = W.LowiBackSwipe; return B && typeof B.sig === 'function' ? B.sig().split('|').slice(2).join('|') : ''; } catch (e) { return ''; } }
+    function onKeyFirst(e) { if (isEsc(e)) escSnap = { e, tab: tabOf(), sheet: openSheet(), layers: layersNow() }; }
+    function onKeyLast(e) {
+        if (!isEsc(e)) return;
+        const s = escSnap; escSnap = null;
+        if (!e.isTrusted || !s || s.e !== e || e.defaultPrevented) return;
+        if (s.tab === 'home' || s.sheet || tabOf() !== s.tab || layersNow() !== s.layers) return;
+        if (H.classList.contains('mf-on') || H.classList.contains('b3-camon') || D.querySelector('#mv-player.on')) return;
+        const t = e.target; if (t && t.closest && t.closest('input, textarea, select, [contenteditable]')) return;
+        back();
+    }
+
     /* ---------- system / browser back ---------- */
     function onPop(e) {
         if (swallow > 0) { swallow--; swallowedEvt = e; return; }
@@ -195,6 +215,8 @@
         W.addEventListener('pointermove', onMove, { capture: true, passive: false });
         W.addEventListener('pointerup', onUp, true);
         W.addEventListener('pointercancel', onUp, true);
+        W.addEventListener('keydown', onKeyFirst, true);   /* the window sees a key first (capture) and last (bubble) */
+        W.addEventListener('keydown', onKeyLast);
         try { new MutationObserver(label).observe(H, { attributes: true, attributeFilter: ['lang'] }); } catch (e) { }
     }
     api.close = close; api.back = back; api.tab = tabOf; api.wrap = wrap;

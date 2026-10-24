@@ -11,7 +11,7 @@ const where = args[0] && !args[0].startsWith('--') ? args[0] : 'https://thereale
 const device = opt('device', 'iPhone 13'), engine = opt('engine', 'webkit'), theme = opt('theme', 'dark'), lang = opt('lang', 'en');
 const screens = opt('screens', 'home,move,shelf,profile,foryou').split(','), doTap = args.includes('--tap'), cap = +opt('cap', 30);
 const vp = opt('viewport', ''); // WxH for chromium
-const SKIP = /delete|löschen|borrar|sign ?out|log ?out|abmelden|reset|zurücksetzen|send|senden|enviar|post|posten|publicar|energy|energie|energía|blast|camera|kamera|cámara|block|blockieren|bloquear|report|melden|install|share|teilen|compartir|scan$/i;
+const SKIP = /delete|löschen|borrar|sign ?out|log ?out|abmelden|cerrar sesi[oó]n|password|passwort|contrase[nñ]a|reset|zurücksetzen|send|senden|enviar|post|posten|publicar|energy|energie|energía|blast|camera|kamera|cámara|block|blockieren|bloquear|report|melden|install|share|teilen|compartir|scan$/i;
 const within = (p, ms, what) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(what + ' timed out after ' + ms + ' ms')), ms))]);
 /* page side: list controls with a key, readability and coverage */
 const LIST = () => {

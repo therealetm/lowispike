@@ -1125,3 +1125,12 @@ Emmanuel (Seven): "I don't understand the food journal section. Either remove it
 **Decision:** The photo result's fix field (meal-result.js) suggests, max 5: Kitchen "At home" (newest first), then the shopping cart, then your scans, logged foods, the shared list and the built-in table, ranked by match strength first (prefix/word-prefix beats inside-word beats typo) and source second. Matching is case-, accent- and umlaut-blind (ae/oe/ue = a/o/u), with typos allowed from 4 letters. A Kitchen name only borrows the numbers of a product you scanned or logged when all its words are whole words of that product; otherwise one typical portion from the meal database; otherwise it fills the name only and is estimated like typed text. Never a made-up number. "+ Add food" adds what the photo missed.
 
 **Consequences:** All local (works offline). Kitchen items still hold names only; if the Kitchen ever stores nutrition, use it in fromKitchen() before kitchenHit().
+## 2026-10-24 — One Community chat and one Raum for everyone; Circles and the room split are gone
+
+**Status:** Accepted (supersedes the 2026-10-23/24 Circles and "rooms of up to 30" entries)
+
+**Context:** Emmanuel, Oct 24: nuke Circles and the multiple rooms, "we just have one chat". Circles (user-rooms*.js/.css), the room split into Room 2, 3 and so on, find/join/knock/let in/move, the room number in the live line and the Circles tour step made Community feel like a maze.
+
+**Decision:** Everyone, older app versions included, lands in the one shared presence room `lowi-room-all` with one chat and one Raum. Send energy reaches everyone. The live line says "N here now / N gerade da / N aquí ahora" with no room number. The Community menu starts with People (with search); Circles, "Chat rooms & people" and "Find someone" are removed. The tour has no Circles step; cm-name says "People and profile". The old What's New lines about Circles and rooms are removed from the news history. Emmanuel's own Circle data ("H.B - Human Beings": Christabel, Eleonora, Joseph Castellar, 2 messages) stays in the database untouched and hidden: not moved, not deleted. No database change blocks old app versions from creating Circles; that stays open until Emmanuel says otherwise.
+
+**Consequences:** Do not bring back rooms, Circles or a room switcher without Emmanuel asking. tests/one-chat-no-circles.test.cjs blocks the Circles files, menu entries, room API and room-number text. tools/sim/fake-realtime.cjs now delivers frames to one channel in order, as one Supabase socket does.

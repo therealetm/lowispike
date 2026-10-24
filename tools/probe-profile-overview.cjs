@@ -90,7 +90,7 @@ const H = require('./sim/harness.cjs'), path = require('path');
     /* day mode + DE/ES header */
     await ev(() => { try { LowiR2.applyTheme && LowiR2.applyTheme('light'); } catch (e) { } document.documentElement.setAttribute('data-ui', 'light'); document.documentElement.setAttribute('data-theme', 'light'); }); await H.sleep(400);
     await R.shot(out + '-' + device.replace(/\s+/g, '') + '-overview-day.png');
-    await R.tap('#g2eTiles [data-g2e-open="acct"]'); await H.sleep(600);
+    await R.tap('#g2eTiles [data-g2e-open="app"]'); await H.sleep(600);
     res.dayAcct = await header(); if (res.dayAcct.overlap.length || res.dayAcct.backs.length !== 1) fail('day acct: ' + JSON.stringify(res.dayAcct));
     await R.shot(out + '-' + device.replace(/\s+/g, '') + '-acct-day.png');
     for (const lang of ['de', 'es']) {

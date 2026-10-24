@@ -25,6 +25,18 @@ export function frameGuard(report, clock) {
         get count() { return count; }, get streak() { return streak; }, get last() { return last; }
     };
 }
+/* Oct 24 2026 (hourly flight crash hunt): Home's camera distance after a re-layout (a turn, a new bubble size). prev = the rig before
+   (home: was it Home's own framing; dist, homeDist, maxD; outer: may it go past the World Map), next = the new homeDist / minD / maxD.
+   It keeps the zoom as a share of Misty's close-up distance. Only a camera that really was out past the OLD World Map edge (in the
+   spirit world) keeps its own distance. The bug: this compared with the NEW edge, so on iPad, zoomed out to the World Map in portrait
+   (edge 23) and turned to landscape (edge 16), 23 read as 'past the map' and was kept: Home stuck in the far spirit view, controller gone. */
+export function homeRelayoutDist(prev, next, homeOut, outerD) {
+    const prevHome = !!(prev.home && prev.homeDist > 0);
+    const was = prevHome ? prev.dist / prev.homeDist : homeOut;
+    const pastMap = !!prev.outer && (prevHome ? prev.dist > prev.maxD * 1.0005 : prev.dist > next.maxD);
+    const hiD = pastMap ? (outerD || 300) : next.maxD;
+    return Math.min(hiD, Math.max(next.minD, pastMap ? prev.dist : next.homeDist * was));
+}
 export function createWorld(THREE, canvas, opts) {
     opts = opts || {};
     const small = !!opts.small, places = opts.places || [];
@@ -222,13 +234,13 @@ export function createWorld(THREE, canvas, opts) {
                A re-layout keeps the current zoom (scaled to the new size) instead of snapping back to Misty. */
             /* Oct 17 (handoff 6, E-man: zoomed-out Home is the default): Home rests a little pulled back (rig.homeRest), Misty smaller in
                the middle with her four bubbles circling her (sym-home.js). homeDist stays the distance where her cell fits her DOM bubble. */
-            const was = rig.mode === 'home' && rig.homeDist > 0 && rig.lastHome ? rig.dist / rig.homeDist : HOME_OUT;
+            const prev = { home: rig.mode === 'home' && rig.lastHome, dist: rig.dist, homeDist: rig.homeDist, maxD: rig.maxD, outer: rig.outer };
             rig.homeDist = homeDistFor(o.radiusPx || 100); rig.homeOut = HOME_OUT; rig.homeRest = rig.homeDist * HOME_OUT; rig.lastHome = true;
             rig.minD = rig.homeDist * 0.72; rig.maxD = Math.max(14, rig.homeDist * 2.5); rig.pMax = 1.1;
             /* Oct 16 (task 1 fix): Home re-lays itself out every frame; past the World Map (rig.outer) the camera may be out in the
-               spirit world, so the re-layout must not pull it back to the World Map limit */
-            const hiD = rig.outer && rig.dist > rig.maxD ? (rig.outerD || 300) : rig.maxD;
-            rig.dist = Math.min(hiD, Math.max(rig.minD, was > 0 && rig.dist > rig.maxD && rig.outer ? rig.dist : rig.homeDist * was)); rig.fly = null; rig.target.set(0, 0, 0);
+               spirit world, so the re-layout must not pull it back to the World Map limit. Oct 24: "past" is judged against the edge
+               it was at before the re-layout (homeRelayoutDist), so turning the iPad on the World Map stays on the World Map */
+            rig.dist = homeRelayoutDist(prev, rig, HOME_OUT, rig.outerD); rig.fly = null; rig.target.set(0, 0, 0);
             rig.mode = m; inner.visible = false; halo.visible = false; /* one bubble: Misty's own cell, no extra glow shell */
         }
         else { rig.mode = m; rig.lastHome = false; rig.pullT = 1; rig.minD = 2.4; rig.maxD = 13; rig.pMax = 1.2; if (rig.dist < 4) rig.dist = 6.5; inner.visible = true; halo.visible = true; }

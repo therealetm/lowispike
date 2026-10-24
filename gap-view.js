@@ -155,6 +155,7 @@
         paint();
         requestAnimationFrame(() => { if (el) el.classList.add('on'); });
         el.addEventListener('click', onClick);
+        dragDown(el);
         D.addEventListener('keydown', onKey, true);
         W.addEventListener('lowi:fast', paint); W.addEventListener('storage', paint);
         tick = setInterval(paint, 30000);
@@ -170,6 +171,42 @@
         if (quick) { e.remove(); return; }
         e.classList.remove('on'); setTimeout(() => e.remove(), 260);
         try { if (back && back.focus && D.contains(back)) back.focus({ preventScroll: true }); } catch (x) {}
+    }
+    /* Oct 24 2026 (back and close sweep): on a phone the Gap card is a bottom sheet, but a swipe down did nothing (only back,
+       X, Escape and a tap outside closed it), unlike the app's other sheets. A drag down on its header (title row, not the X)
+       now follows the finger and closes it past a quarter of the card or on a quick flick; a short drag springs back. No new
+       element: the header itself is the handle, as on the other sheets. The X still works the same. */
+    function dragDown(ov) {
+        const card = ov.querySelector('.gv-card'), top = ov.querySelector('.gv-top');
+        if (!card || !top || !W.PointerEvent) return;
+        top.style.touchAction = 'none';
+        let d = null;
+        top.addEventListener('pointerdown', e => {
+            if (d || (e.button != null && e.button > 0) || (e.target.closest && e.target.closest('button'))) return;
+            d = { id: e.pointerId, y0: e.clientY, y: 0, ly: e.clientY, t: e.timeStamp, v: 0 };
+            try { top.setPointerCapture(e.pointerId); } catch (x) { }
+        });
+        top.addEventListener('pointermove', e => {
+            if (!d || e.pointerId !== d.id) return;
+            const dt = Math.max(1, e.timeStamp - d.t);
+            d.v = .6 * d.v + .4 * ((e.clientY - d.ly) / dt * 1000); d.ly = e.clientY; d.t = e.timeStamp;
+            d.y = Math.max(0, e.clientY - d.y0);
+            if (d.y > 2) { card.style.transition = 'none'; card.style.transform = 'translateY(' + d.y + 'px)'; }
+        });
+        const end = (e, cancelled) => {
+            if (!d || e.pointerId !== d.id) return;
+            const g = d; d = null;
+            try { top.releasePointerCapture(e.pointerId); } catch (x) { }
+            const h = card.getBoundingClientRect().height || 400;
+            const v = e.timeStamp - g.t > 100 ? 0 : g.v;
+            card.style.transition = '';
+            if (!cancelled && el === ov && (g.y > Math.min(140, h * .25) || (v > 650 && g.y > 18))) {
+                card.style.transform = 'translateY(' + Math.round(h + 40) + 'px)';
+                close();
+            } else card.style.transform = '';
+        };
+        top.addEventListener('pointerup', e => end(e, false));
+        top.addEventListener('pointercancel', e => end(e, true));
     }
     function onKey(e) {
         if (!el) return;

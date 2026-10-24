@@ -7,8 +7,12 @@
      (localStorage 'lowi.tutorial.voice.v1' = '1' on, '0' off; unset = never tried, the badge breathes so it gets noticed).
    - The voice: natural neural voices recorded ahead of time, one clip per card and language (tutorial-voice/<lang>/<key>.mp3, made by
      tools/tutorial-voice/build.py; English Ava, German Seraphina, Spanish Ximena), with each word's timing in tutorial-voice-data.js,
-     so the word being said lights up on the card. A clip only plays when its words are exactly the card's words; a changed card, or
-     no connection for a clip never heard before, falls back to the device's own best voice (Web Speech) with the same highlight.
+     so the word being said lights up on the card. A clip only plays when its words are exactly the card's words.
+   - ONLY THE RECORDED VOICE (Oct 24 2026, Emmanuel: "make sure the voice that takes us through the tutorial is not that old
+     text-to-speech voice ... Only utilize that voice from now on going, and make sure it's saved in the files."). The tutorial never
+     uses the device voice (Web Speech / speechSynthesis): a card with no clip, a changed card, or no connection for a clip never heard
+     before (tried twice) stays silent with its words on the card. The What's New card of a release without a tour step ('news-card')
+     is recorded too (cards(), tools/tutorial-voice/build.py, scripts/release.sh). tests/tutorial-voice-only.test.cjs guards it.
      Clips heard once are kept on the phone (Cache 'lowi-voice-v1'), and the next two cards are fetched ahead, so it works offline.
    - Back, Skip, Skip all, Esc, closing the tour, the tour hiding behind a sheet and the app going to the background stop the voice at
      once. The world sound pauses while the voice talks (lowi:media).
@@ -58,6 +62,13 @@
         return { key: step.id, s: title + sep + body, t: title.length, b: title.length + sep.length };
     }
     /* every clip the generator records: each step in each language, plus the text-only clip where the title names the companion */
+    /* every card the tour can show: the steps, plus the What's New card of the current release (version.json news) when it has words.
+       The generator records all of them and the tests check all of them have a clip (Oct 24 2026: the news card had none and was read
+       by the device voice). */
+    function cards(S, news) {
+        const c = news && S && typeof S.newsCard === 'function' ? S.newsCard(news) : null;
+        return (S && S.STEPS ? S.STEPS : []).concat(c && c.text && c.text.en ? [c] : []);
+    }
     function plan(steps) {
         const out = [];
         for (const l of ['en', 'de', 'es']) for (const st of steps) {
@@ -81,7 +92,7 @@
     const okRate = r => RATES.indexOf(Number(r)) >= 0;
     const nextRate = r => { const k = RATES.indexOf(Number(r)); return RATES[(k + 1) % RATES.length]; };   /* unknown -> 1x */
     const rateLabel = (r, lang) => { const v = okRate(r) ? Number(r) : 1, l = L(lang); return (l === 'en' ? String(v) : String(v).replace('.', ',')) + '\u00d7'; };
-    const api = { VOICES, BCP, NAME, spoken, plan, titleAdds, cueIndex, RATES, nextRate, rateLabel, KEY: 'lowi.tutorial.voice.v1', RATE_KEY: 'lowi.tutorial.voice.rate.v1', CACHE: 'lowi-voice-v1', DIR: 'tutorial-voice/' };
+    const api = { VOICES, BCP, NAME, ONLY_CLIPS: true, spoken, cards, plan, titleAdds, cueIndex, RATES, nextRate, rateLabel, KEY: 'lowi.tutorial.voice.v1', RATE_KEY: 'lowi.tutorial.voice.rate.v1', CACHE: 'lowi-voice-v1', DIR: 'tutorial-voice/' };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (!root || !root.document || root.LowiTutorialVoice) return;
 
@@ -108,7 +119,7 @@
         get() { try { const v = parseFloat(localStorage.getItem(api.RATE_KEY)); return okRate(v) ? v : 1; } catch (e) { return 1; } },
         set(v) { try { localStorage.setItem(api.RATE_KEY, String(v)); } catch (e) { } }
     };
-    let rate = ratePref.get(), devAt = 0;
+    let rate = ratePref.get();
     /* the clip plays at the chosen speed with its natural pitch (preservesPitch, webkit/moz names for older Safari / Firefox). Setting
        the rate on the playing element changes the voice at once, without starting the clip again. defaultPlaybackRate too, because a
        new src resets playbackRate to it. */
@@ -234,43 +245,17 @@
     function stop() {
         seq++; cancelAnimationFrame(raf);
         if (audio) { try { audio.pause(); } catch (e) { } }
-        try { if (W.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending)) speechSynthesis.cancel(); } catch (e) { }
         if (blobUrl) { try { URL.revokeObjectURL(blobUrl); } catch (e) { } blobUrl = ''; }
         if (cur) cur.playing = false;
         clearMark(); media(false); paintBtn();
     }
 
-    /* the device's own voice when there is no clip: the most natural one it has for this language */
-    function bestVoice(lang) {
-        let vs = []; try { vs = speechSynthesis.getVoices() || []; } catch (e) { }
-        const want = L(lang), bad = /compact|eloquence|espeak|novelty|zarvox|trinoids|albert|bahh|boing|bubbles|cellos|jester|organ|superstar|wobble|whisper|bells|grandma|grandpa|rocko|shelley|eddy|reed|sandy|flo\b|junior|ralph|fred|kathy/i;
-        let best = null, score = -1e9;
-        for (const v of vs) {
-            const vl = String(v.lang || '').toLowerCase().replace('_', '-'); if (vl.slice(0, 2) !== want) continue;
-            let s = 0;
-            if (/natural|neural|premium|enhanced|siri/i.test(v.name)) s += 6;
-            if (/google/i.test(v.name)) s += 3;
-            if (vl === BCP[want].toLowerCase()) s += 2;
-            if (/ava|samantha|allison|zoe|anna|petra|helena|marlene|monica|paulina|m[oó]nica|lucia|susan|karen|serena/i.test(v.name)) s += 1;
-            if (bad.test(v.name)) s -= 20;
-            if (s > score) { score = s; best = v; }
-        }
-        return best;
-    }
-    /* from: start part way into the card (a speed change while the device voice talks goes on from the word it was at) */
-    function sayDevice(my, sp, from) {
-        if (!W.speechSynthesis || !W.SpeechSynthesisUtterance) { done(); return; }
-        try {
-            speechSynthesis.cancel();
-            const at = from > 0 && from < sp.s.length ? from : 0; devAt = at;
-            const u = new SpeechSynthesisUtterance(at ? sp.s.slice(at) : sp.s); u.lang = BCP[L(sp.lang)]; const v = bestVoice(sp.lang); if (v) u.voice = v;
-            u.rate = rate; u.pitch = 1.05;
-            u.onboundary = e => { if (my === seq && typeof e.charIndex === 'number') { devAt = at + e.charIndex; mark(devAt); cueCheck(devAt); } };
-            u.onend = () => finished(my);
-            u.onerror = () => { if (my === seq) done(); };
-            cur.how = 'device'; cur.playing = true; media(true); paintBtn();
-            speechSynthesis.speak(u);
-        } catch (e) { done(); }
+    /* Oct 24 2026: the tutorial never talks with the device voice. bestVoice stays in the public interface and always says null. */
+    function bestVoice() { return null; }
+    /* no recorded clip for this card (or it could not be fetched / played): silence, the words stay on the card */
+    function silent(my) {
+        if (my !== seq) return;
+        cur.how = 'none'; done();
     }
     async function say(sp) {
         stop();
@@ -278,9 +263,10 @@
         unlock();
         const d = await data(); if (my !== seq) return;
         const c = clipOf(d, sp.lang, sp.key);
-        if (!c || c.s !== sp.s) { sayDevice(my, sp); return; }
-        const blob = await fetchClip(urlOf(sp.lang, c)); if (my !== seq) return;
-        if (!blob) { sayDevice(my, sp); return; }
+        if (!c || c.s !== sp.s) { silent(my); return; }
+        let blob = await fetchClip(urlOf(sp.lang, c)); if (my !== seq) return;
+        if (!blob) { blob = await fetchClip(urlOf(sp.lang, c)); if (my !== seq) return; }   /* one more try (a network blip) */
+        if (!blob) { silent(my); return; }
         cur.clip = c; blobUrl = URL.createObjectURL(blob);
         const a = A(); a.src = blobUrl; applyRate(a);
         try {
@@ -290,7 +276,7 @@
             if (my !== seq) return;
             /* the browser wants a tap first (tour opened by itself after a reload): the badge pulses, a tap on it plays */
             if (e && e.name === 'NotAllowedError') { blocked = true; unlocked = false; done(); }
-            else sayDevice(my, sp);
+            else silent(my);
         }
     }
 
@@ -305,7 +291,7 @@
     }
     /* the speed pill (Oct 24 2026): WhatsApp's 1x / 1.5x / 2x, in the card's bottom row right after Pause, the Daily Quest glass.
        Shown only while the speaker is on, like Pause (tutorial-voice.css, #ltTour.lt-voice). A tap changes the voice that is talking
-       right now (clip: playbackRate on the same element, no restart; device voice: goes on from the current word at the new speed). */
+       right now (clip: playbackRate on the same element, no restart). */
     function paintRate() {
         if (!card) return;
         const b = card.querySelector('.lt-rate'); if (!b) return;
@@ -318,7 +304,6 @@
         if (!okRate(r)) return;
         rate = Number(r); ratePref.set(rate);
         if (audio) applyRate(audio);
-        if (cur && cur.playing && cur.how === 'device' && W.speechSynthesis) { seq++; const my = seq; sayDevice(my, cur, devAt); }
         paintRate(); emit({ state: 'rate', rate });
     }
     function onRate(ev) {
@@ -353,7 +338,8 @@
               quiet: true = paint only, say nothing (the hands-free tour is paused) }. Also fires window 'lowi:tutorial-voice'
        { on, state: 'on' | 'off' | 'end' | 'rate' }. Public interface (used beyond the tour): render, stop, toggle, isOn, playing, how,
        paused, word, bestVoice, data, spoken, plan, titleAdds, VOICES, BCP, NAME, KEY, CACHE, DIR; since Oct 24 2026 also rate, setRate,
-       playbackRate, clipTime, RATES, nextRate, rateLabel, RATE_KEY (the speed pill). Add to it; do not rename or remove. */
+       playbackRate, clipTime, RATES, nextRate, rateLabel, RATE_KEY (the speed pill), cards, ONLY_CLIPS (only recorded clips).
+       Add to it; do not rename or remove. */
     function render(el, step, ctx) {
         if (!el || !step) return;
         const c = ctx || {}, lang = L(c.lang), sp = Object.assign({ lang }, spoken(step, lang, c.name));

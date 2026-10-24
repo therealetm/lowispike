@@ -8,7 +8,7 @@ const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const FIX = 'run: python3 tools/tutorial-voice/build.py (records only the changed cards) and commit tutorial-voice-data.js + tutorial-voice/';
 
 test('every card in every language has a clip with exactly its words', () => {
-    const plan = V.plan(S.STEPS);
+    const plan = V.plan(V.cards(S, require('../version.json').news));   /* the steps + the current What's New card */
     assert.ok(plan.length >= S.STEPS.length * 3);
     for (const p of plan) {
         const c = DATA.clips[p.lang] && DATA.clips[p.lang][p.key];
@@ -71,7 +71,7 @@ test('tutorial.js hands every card to the voice and silences it when the tour st
     assert.match(v, /'lowi\.tutorial\.voice\.v1'/, 'the choice is remembered');
     assert.match(v, /lowi:media/, 'world sound pauses while the voice talks');
     for (const l of ['en', 'de', 'es']) assert.match(v, new RegExp(l + ": \\{ on: '[^']+', off: '[^']+' \\}"), 'speaker label ' + l);
-    assert.match(v, /speechSynthesis/, 'falls back to the device voice');
+    assert.doesNotMatch(v.replace(/\/\*[\s\S]*?\*\//g, ''), /speechSynthesis|SpeechSynthesisUtterance/, 'never the device voice (Oct 24 2026)');
     const css = read('tutorial-voice.css');
     assert.match(css, /\.lt-w\.lt-say \{/); assert.doesNotMatch(css.match(/\.lt-w\.lt-say \{[^}]*\}/)[0], /padding|font-size|margin/, 'highlight must not move text');
 });

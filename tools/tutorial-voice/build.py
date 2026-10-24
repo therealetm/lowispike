@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """Records the tutorial's voice clips (tutorial-voice.js reads them; TUTORIAL.md "Voice").
 
+THE TUTORIAL VOICE (Oct 24 2026, Emmanuel: "Only utilize that voice from now on going, and make sure it's saved in the files"):
+only these recorded Microsoft neural voices, made only with this script, never the old text-to-speech (device / Web Speech) voice:
+    en  en-US-AvaNeural                    de  de-DE-SeraphinaMultilingualNeural          es  es-ES-XimenaNeural
+    engine edge-tts (pip, tested with 7.x), rate +0%, pitch +0Hz, volume +0%, its default 24 kHz mono 48 kbit/s mp3, WordBoundary
+    timings. Every tour card is recorded, including the What's New card of the current release (version.json news) that a release
+    without a tour step shows. tests/tutorial-voice-only.test.cjs fails when a card has no clip from these voices.
+
 Usage:  python3 tools/tutorial-voice/build.py            # records only cards whose words changed, removes clips no card uses
         python3 tools/tutorial-voice/build.py --all      # records everything again
 Needs:  pip install --user edge-tts   (Microsoft's neural voices; the clips are committed, so the app needs nothing at runtime)
@@ -11,6 +18,8 @@ each word's start in ms with its place in the words). tests/tutorial-voice.test.
 """
 import asyncio, hashlib, json, os, subprocess, sys
 
+APPROVED = {'en': 'en-US-AvaNeural', 'de': 'de-DE-SeraphinaMultilingualNeural', 'es': 'es-ES-XimenaNeural'}
+SETTINGS = {'rate': '+0%', 'pitch': '+0Hz', 'volume': '+0%'}
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'tutorial-voice')
 DATA = os.path.join(ROOT, 'tutorial-voice-data.js')
@@ -18,9 +27,13 @@ SIDE = '/tmp/lowi-tutorial-voice'  # each clip's timings as soon as it is record
 
 
 def plan():
-    js = ("const V=require('./tutorial-voice.js'),S=require('./tutorial-steps.js');"
-          "process.stdout.write(JSON.stringify({voices:V.VOICES,plan:V.plan(S.STEPS)}))")
-    return json.loads(subprocess.check_output(['node', '-e', js], cwd=ROOT))
+    """every tour card in every language, plus the current What's New card (tutorial-voice.js cards())"""
+    js = ("const V=require('./tutorial-voice.js'),S=require('./tutorial-steps.js'),ver=require('./version.json');"
+          "process.stdout.write(JSON.stringify({voices:V.VOICES,plan:V.plan(V.cards(S,ver.news))}))")
+    p = json.loads(subprocess.check_output(['node', '-e', js], cwd=ROOT))
+    if p['voices'] != APPROVED:  # the voice is fixed; a different one needs Emmanuel's say-so (DECISIONS.md, Oct 24 2026)
+        sys.exit('tutorial-voice.js VOICES %r are not the approved tutorial voices %r' % (p['voices'], APPROVED))
+    return p
 
 
 def load_old():
@@ -51,7 +64,7 @@ async def record(voice, text, path):
     import edge_tts
     for attempt in range(4):
         try:
-            com = edge_tts.Communicate(text, voice, boundary='WordBoundary')
+            com = edge_tts.Communicate(text, voice, boundary='WordBoundary', **SETTINGS)
             words, audio = [], bytearray()
             async for ch in com.stream():
                 if ch['type'] == 'audio':

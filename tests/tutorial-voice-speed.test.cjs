@@ -55,7 +55,7 @@ test('a speed change goes to the playing element, never reloads the clip, and ke
     assert.match(sr, /if \(audio\) applyRate\(audio\)/);
     assert.ok(!/\.src\s*=|\.load\(|\.play\(|currentTime\s*=/.test(sr), 'no restart: no new src, load, play or seek');
     assert.match(js, /a\.src = blobUrl; applyRate\(a\);/, 'each new card plays at the chosen speed');
-    assert.match(js, /u\.rate = rate;/, 'the device voice too');
+    assert.doesNotMatch(js, /speechSynthesis|SpeechSynthesisUtterance/, 'no device voice to speed up: the tutorial only plays recorded clips (Oct 24 2026)');
 });
 
 /* the real tutorial-voice.js in a tiny fake page (as tests/tutorial-handsfree.test.cjs), with a fake speechSynthesis */
@@ -113,16 +113,13 @@ test('the saved speed is used from the first card of the next session', async ()
     assert.strictEqual(page({ store: { 'lowi.tutorial.voice.rate.v1': 'fast' } }).api.rate(), 1, 'junk = 1x');
 });
 
-test('device voice (no recorded clip): a speed change goes on from the current word at the new speed', async () => {
+test('no recorded clip: silence, never the device voice, and a speed change stays silent (Oct 24 2026)', async () => {
     const p = page({ noClip: true }), st = S.STEPS[2];
     p.api.render(p.card, st, { lang: 'en' }); await tick(); await tick(); await tick();
-    assert.strictEqual(p.api.how(), 'device'); assert.strictEqual(p.spoken.length, 1);
-    const u = p.spoken[0], full = u.text; assert.strictEqual(u.rate, 1);
-    const at = full.indexOf(' ', 8) + 1; u.onboundary({ charIndex: at });
-    p.api.setRate(2);
-    assert.strictEqual(p.spoken.length, 2, 'spoken again'); const u2 = p.spoken[1];
-    assert.strictEqual(u2.rate, 2); assert.strictEqual(u2.text, full.slice(at), 'from the word it was at, not from the start');
-    u.onend && u.onend(); await tick(); assert.ok(p.api.playing(), 'the old utterance ending does not stop the new one');
+    assert.strictEqual(p.api.how(), 'none'); assert.strictEqual(p.spoken.length, 0, 'the device voice never speaks');
+    assert.ok(!p.api.playing());
+    p.api.setRate(2); await tick();
+    assert.strictEqual(p.spoken.length, 0); assert.strictEqual(p.api.rate(), 2, 'the speed is still remembered for the clips');
 });
 
 test('the public interface keeps everything and adds the speed', () => {

@@ -42,6 +42,13 @@ if [ "$BUMP" = 1 ] && [ -n "$NEWS" ] && [ -f tools/app-voice/build.py ]; then
   timeout 240 python3 tools/app-voice/build.py --news >/tmp/app-voice-news.log 2>&1 && tail -1 /tmp/app-voice-news.log \
     || echo "warning: news voice not recorded (see /tmp/app-voice-news.log); the guide reads it with the device voice"
 fi
+# Oct 24 2026: the tour's What's New card (a release with no tour step) is read by the recorded tutorial voice only, never the
+# device voice. Record it in the approved voice (tools/tutorial-voice/build.py; TUTORIAL.md "Voice"). Without it
+# tests/tutorial-voice-only.test.cjs fails below and the bump is undone: a news release does not go out with an unvoiced card.
+if [ "$BUMP" = 1 ] && [ -n "$NEWS" ] && [ -f tools/tutorial-voice/build.py ]; then
+  timeout 300 python3 tools/tutorial-voice/build.py >/tmp/tutorial-voice-news.log 2>&1 && tail -1 /tmp/tutorial-voice-news.log \
+    || echo "warning: What's New card not recorded in the tutorial voice (see /tmp/tutorial-voice-news.log); the tests will block"
+fi
 node scripts/release-check.cjs
 LOG=$(mktemp /tmp/lowispike-tests.XXXX.log)
 if ! node --test tests/*.test.cjs >"$LOG" 2>&1; then
@@ -55,6 +62,7 @@ git diff --check "$BASE"
 if [ -n "$(git status --porcelain)" ]; then
   git add index.html sw.js apple-ui.js version.json
   [ -f app-voice-data.js ] && git add app-voice-data.js app-voice
+  [ -f tutorial-voice-data.js ] && git add tutorial-voice-data.js tutorial-voice
   if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then echo "BLOCKER: unexpected files changed:"; git status --short; exit 6; fi
   git commit -qm "Release $NEW: $SUMMARY (tests $PASS/$TOTAL)"
 fi

@@ -1112,6 +1112,11 @@ scripts/release.sh "what users get, in one line" --news news.json
 - Plain, short words. He often speaks by voice and mixes English and German. Name the build, say what changed for
   the user, and give one exact thing to try on his iPhone or iPad.
 - He tests on his own iPhone and iPad. Don't ask questions the repo, the site or the data can answer.
+- **Tutorial voice: only** `en-US-AvaNeural`, `de-DE-SeraphinaMultilingualNeural`, `es-ES-XimenaNeural`, generated with
+  `tools/tutorial-voice/build.py` (edge-tts, rate +0%, pitch +0Hz, volume +0%); never the old TTS (device / Web Speech voice).
+  Emmanuel, 24 Oct: "Only utilize that voice from now on going, and make sure it's saved in the files." New or changed tour card or
+  What's New text: run `python3 tools/tutorial-voice/build.py` and commit tutorial-voice-data.js + tutorial-voice/
+  (release.sh does it for --news). `tests/tutorial-voice-only.test.cjs` guards it. DECISIONS.md 2026-10-24.
 - Understand the whole app before changing code. He expects you to figure out how to learn it yourself.
 - Small, frequent, visible releases; he wants to see changes live quickly.
 - **Ship without asking (21 Oct 2026):** standing approval to release and deploy live autonomously once the tests

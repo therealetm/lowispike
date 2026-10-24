@@ -972,8 +972,10 @@
         const n = news || {}, t = {}, title = {}, cta = {};
         ['en', 'de', 'es'].forEach(l => {
             let s = String(((n.text || {})[l] || (n.text || {}).en || '')).split(/\n\s*\n/)[0].trim();
-            const parts = s.match(/[^.!?]+[.!?]+(\s|$)/g) || [s]; let o = '';
-            for (const p of parts) { if ((o + p).trim().length > 200 && o) break; o += p; }
+            /* sentences end at . ! ? followed by a space (Oct 24 2026: "How are you today?, plus ..." used to lose its first sentence,
+               so the card started with ", plus") */
+            const parts = s.replace(/([.!?\u2026])\s+/g, '$1\n').split('\n').filter(Boolean); let o = '';
+            for (const p of parts) { if ((o + ' ' + p).trim().length > 200 && o) break; o = (o ? o + ' ' : '') + p; }
             o = o.trim(); if (o.length > 220) o = o.slice(0, 217).replace(/\s+\S*$/, '') + '…';
             t[l] = o; title[l] = UI[l].newsTitle; cta[l] = UI[l].newsDone;
         });

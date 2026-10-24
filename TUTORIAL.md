@@ -116,11 +116,18 @@ Emmanuel: "I just clicked on tutorial but I have to read through it, that's not 
   by itself: the claim card, the last card, a card hidden behind a sheet, a card the browser would not play (no tap yet on iPhone, the
   badge pulses), the app in the background. While it reads by itself the screen is asked to stay on (Screen Wake Lock, Safari 16.4+,
   best effort). `LowiTutorial.paused() / pause(v) / auto()` for checks.
-- The voice: clips recorded ahead with Microsoft neural voices (en Ava, de Seraphina, es Ximena) in `tutorial-voice/<lang>/<key>.mp3`,
-  word timings in `tutorial-voice-data.js` (loaded when the tour opens). The word being said lights up (`.lt-w.lt-say`, no layout
-  change). A clip plays only when its words equal the card's words; otherwise, or offline with a clip never heard, the device's best
-  voice (Web Speech, natural/enhanced voices preferred) reads it with the same highlight. Heard clips stay on the phone (Cache
-  `lowi-voice-v1`) and the next two cards are fetched ahead.
+- **Tutorial voice: only** the recorded Microsoft neural voices `en-US-AvaNeural`, `de-DE-SeraphinaMultilingualNeural`,
+  `es-ES-XimenaNeural`, generated with `tools/tutorial-voice/build.py` (edge-tts, rate +0%, pitch +0Hz, volume +0%, 24 kHz mono 48 kbit/s
+  mp3); never the old text-to-speech (device / Web Speech) voice (Oct 24 2026, Emmanuel: "make sure the voice that takes us through the
+  tutorial is not that old text-to-speech voice ... Only utilize that voice from now on going, and make sure it's saved in the files").
+- The voice: clips in `tutorial-voice/<lang>/<key>.mp3`, word timings in `tutorial-voice-data.js` (loaded when the tour opens). The word
+  being said lights up (`.lt-w.lt-say`, no layout change). A clip plays only when its words equal the card's words; otherwise, or
+  offline with a clip never heard (fetched twice), the card stays silent with its words on screen (`how()` = 'none'). Heard clips stay
+  on the phone (Cache `lowi-voice-v1`) and the next two cards are fetched ahead.
+- Every card is recorded, including the What's New card of a release without a tour step (`news-card`, from version.json `news`;
+  `LowiTutorialVoice.cards(S, news)` lists them). `scripts/release.sh` records it for every `--news` release.
+  `tests/tutorial-voice-only.test.cjs` fails when a card has no clip from the approved voices, a clip is not edge-tts's format, or a
+  tutorial file uses speechSynthesis.
 - iPhone: sound needs a tap. The first tap plays a silent sound on the one audio element; after that clips play on their own. When
   the tour opens by itself after a reload with sound on, the badge pulses (`.lt-spk-tap`) and one tap plays.
 - Silence at once on Back/Next (old clip stops), Skip all, Esc, closing, the tour hiding behind a sheet (`hold()`), the app going to
@@ -133,15 +140,15 @@ Emmanuel: "I just clicked on tutorial but I have to read through it, that's not 
   a camera the user opens hides the tour, iPhone SE layout in en/de/es), `tests/tutorial-handsfree.test.cjs`.
 - Public interface, also used outside the tour (Affiliate scripts task, Oct 22 2026): `window.LowiTutorialVoice` = render(el, step,
   { lang, name, next, onEnd, quiet }), stop, toggle, isOn, playing, how, paused, word, bestVoice, data, spoken, plan, titleAdds, VOICES,
-  BCP, NAME, KEY, CACHE, DIR, plus the window event `lowi:tutorial-voice` { on, state: 'on' | 'off' | 'end' }. Add to it; never rename
+  BCP, NAME, KEY, CACHE, DIR, cards, ONLY_CLIPS (Oct 24 2026; bestVoice always returns null), plus the window event `lowi:tutorial-voice` { on, state: 'on' | 'off' | 'end' }. Add to it; never rename
   or remove.
 - First-visit screens (Add to Home Screen guide, companion setup) have no speaker: they are short, sound cannot start before the
   first tap there, and the plain-words funnel work owns them. Decision in DECISIONS.md.
 - **Voice speed pill (Oct 24 2026).** Emmanuel: "you know how on WhatsApp when you listen to a voice note you can kind of like click on
   2X and then it goes faster. I want that for the tutorial voiceover". `.lt-rate`, right after Pause in the card's bottom row, shown
   only while the speaker is on (`#ltTour.lt-voice`). Each tap: 1× → 1.5× → 2× → 1× (`RATES`; 1,5× in de/es). The talking clip changes
-  at once on the same element (`playbackRate`, `preservesPitch`, no new src, no seek); the device voice goes on from the current word at
-  the new rate. Saved in `localStorage['lowi.tutorial.voice.rate.v1']`, so every next card and the next session use it. Daily Quest
+  at once on the same element (`playbackRate`, `preservesPitch`, no new src, no seek); there is no device voice any more (Oct 24
+  2026). Saved in `localStorage['lowi.tutorial.voice.rate.v1']`, so every next card and the next session use it. Daily Quest
   glass, fixed 54 × 44 px. On a 320 px phone in German the bottom row wraps on cards without Back (no overlap). Tour step
   `new-voice-speed` (part `new`). Checks: `tests/tutorial-voice-speed.test.cjs`, in a browser
   `node tools/tutorial-voice/speed-check.cjs [--url LIVE] [--engines chromium]`.

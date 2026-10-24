@@ -5,8 +5,8 @@ const STATIC = ["community-room.css", "community-tg.css", "one-sheet.css", "cycl
 /* Oct 15 clean start: files the page asks for with ?v=<this build> never change, so they come straight from this build's cache
    (filled at install, or on first use) instead of a network round trip per file on every launch. A page from another build
    (?v=other) still goes to the network first, so old and new files never mix. */
-STATIC.push("kitchen-core.js"); /* Oct 24 Kitchen in Shop: on its own line so it never collides with the build stamp next to the STATIC line */
 STATIC.push("foryou.css", "foryou-core.js", "inspo-core.js", "foryou.js"); /* Oct 24 For You: insulin-friendly rule + inspiration bot */
+STATIC.push("kitchen-core.js"); /* Oct 24 Kitchen in Shop: on its own line so it never collides with the build stamp next to the STATIC line */
 const OWN = STATIC.filter(f => /\.(js|css)$/.test(f) && f.indexOf("vendor/") !== 0), PLAIN = STATIC.filter(f => OWN.indexOf(f) < 0);
 self.addEventListener("install", e => {
   self.skipWaiting();

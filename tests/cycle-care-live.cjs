@@ -37,6 +37,9 @@ const SEED = () => {
         await ctx.route('**/*', r => { const q = r.request(), u = new URL(q.url()); if (u.protocol === 'data:' || u.protocol === 'blob:' || (u.host === host && q.method() === 'GET')) return r.continue(); return r.abort(); });
         await ctx.addInitScript(SEED);
         await ctx.addInitScript(INIT);
+        /* this VM's headless WebKit renderer dies when a page starts an <audio> (any first tap unlocks sound), on the live build too:
+           silent media stub as in tools/check-scan-hold.cjs. Sim workaround only, not shipped, not an iPhone problem. */
+        if (eng === 'webkit') await ctx.addInitScript({ path: path.join(__dirname, '..', 'tools', 'sim', 'no-media-init.js') });
         const page = await ctx.newPage(), errs = [], P = [], steps = { view: v, reducedMotion: rm };
         page.on('pageerror', e => errs.push(e.message.slice(0, 160)));
         const shot = n => page.screenshot({ path: `${OUT}/${TAG}-${v}-${rm}-${n}.png` }).catch(() => { });
@@ -80,7 +83,8 @@ const SEED = () => {
             steps.energy = [e0, e1];
             if (!(e1 > e0)) P.push('rest did not raise energy: ' + e0 + ' -> ' + e1);
             t = await sheet();
-            if (!/Rest counted for Misty today/.test(t)) P.push('rest not confirmed');
+            if (!/Rest counted for \S.* today/.test(t)) P.push('rest not confirmed');
+            if (/Misty/.test(t) && !/Misty/.test(await page.evaluate(() => { try { return (window.LowiBirthCompanion.get() || {}).name || ''; } catch (e) { return ''; } }))) P.push('My cycle hard-codes Misty');
             const restTs = await page.evaluate(() => window.LowiCycleCare.gentle(window.LowiCycle.data(), window.LowiCycleCare.dayKey()).rest);
             await page.evaluate(() => { const b = document.querySelector('#cwSheet [data-cw="rest"]'); if (b) b.click(); });
             await sleep(200);

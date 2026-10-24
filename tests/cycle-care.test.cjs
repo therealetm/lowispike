@@ -144,3 +144,18 @@ test('the old phase tips are retired: no unsourced hormone or nutrition text lef
 test('nothing about cycles goes public: no push, community or post calls in cycle care', () => {
     assert.doesNotMatch(cw + R('cycle-care-core.js'), /pushSoon|sendPush|LowiPush|community|LowiCircle|postMessage\(|feed\.add|whatsNew/i);
 });
+
+test('companion name: cycle copy never hard-codes "Misty"; it uses her own companion name or a neutral "your companion"', () => {
+    for (const l of Object.keys(CW.strings)) for (const [k, v] of Object.entries(CW.strings[l])) assert.ok(!/Misty/.test(String(v)), l + '.' + k + ' hard-codes Misty: ' + v);
+    for (const k of ['gAskS', 'restDone', 'restS', 'calmS', 'irrS']) for (const l of ['en', 'de', 'es']) {
+        const neutral = CW.text(k, l, ''), named = CW.text(k, l, 'Luna');
+        assert.ok(!/[{}]/.test(neutral) && !/[{}]/.test(named), 'token left in ' + l + '.' + k + ': ' + neutral + ' / ' + named);
+        assert.ok(/Luna/.test(named), l + '.' + k + ' should use her own name: ' + named);
+        assert.ok(/companion|Begleiter|compañero/.test(neutral), l + '.' + k + ' should say your companion: ' + neutral);
+    }
+    assert.strictEqual(CW.text('restDone', 'en', ''), 'Rest counted for your companion today');
+    assert.strictEqual(CW.text('restS', 'en', 'Luna'), 'Counts as today\u2019s Move for Luna\u2019s energy, once a day.');
+    assert.strictEqual(CW.text('restS', 'en', 'Marcus'), 'Counts as today\u2019s Move for Marcus\u2019 energy, once a day.');
+    assert.strictEqual(CW.text('calmS', 'de', ''), 'Weicheres Licht, eine langsamere Welt und leiserer Klang. Dein Begleiter bleibt in der Nähe.');
+    assert.strictEqual(CW.text('calmS', 'es', 'Luna'), 'Luz más suave, un mundo más lento y un sonido más bajo. Luna se queda cerca.');
+});

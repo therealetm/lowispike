@@ -1,0 +1,57 @@
+/* LOWiSPIKE cycle world (Oct 23 2026), cycle-world.js. Lives inside the shared one-sheet glass (one-sheet.css tokens: --one-*),
+   so it looks like every other sheet. The phase is a little cell world: rest (rose), grow (mint), glow (gold), gather (violet).
+   Soft membranes, a nucleus, a shine; calm motion only, none at all with reduced motion. */
+:root { --cw-rest: #f0839b; --cw-grow: #55d6ad; --cw-glow: #f2c75e; --cw-gather: #ad92f2; --cw-none: #8fd8ff; }
+.cw { color: #eef6ff; padding: 2px 2px 6px; }
+.cw-head { display: flex; align-items: center; padding: 0 2px 4px; }
+.cw-head h2 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: .01em; color: #fff; }
+.cw-hero { width: min(80vw, 320px); margin: 0 auto 4px; }
+.cw-svg { display: block; width: 100%; height: auto; overflow: visible; color: var(--c); }
+.cw-mem { fill: url(#cwG); stroke: color-mix(in srgb, currentColor 75%, #fff); stroke-width: 1.8; filter: drop-shadow(0 0 10px color-mix(in srgb, currentColor 55%, transparent)); }
+.cw-nuc { fill: color-mix(in srgb, currentColor 70%, #0b1d4a); opacity: .85; }
+.cw-org { fill: #fff; opacity: .7; }
+.cw-shine { fill: #fff; opacity: .5; }
+.cw-cell { transform-box: fill-box; transform-origin: center; }
+.cw-main { animation: cwBreathe 5.5s ease-in-out infinite; }
+.cw-rest .cw-main { animation-duration: 8s; opacity: .9; }
+.cw-rest .cw-dust circle { fill: currentColor; opacity: .45; animation: cwSettle 7s ease-in-out infinite; animation-delay: var(--d); }
+.cw-bud { animation: cwBud 4.5s ease-in-out infinite; animation-delay: var(--d); }
+.cw-halo { fill: currentColor; opacity: .14; transform-box: fill-box; transform-origin: center; animation: cwHalo 4s ease-in-out infinite; }
+.cw-spark { fill: #fff; opacity: .2; animation: cwTwinkle 2.8s ease-in-out infinite; animation-delay: var(--d); }
+.cw-near { opacity: .82; animation: cwDrift 7s ease-in-out infinite; animation-delay: var(--d); }
+.cw-none .cw-mem, .cw-wait .cw-mem { fill: rgba(143, 216, 255, .08); stroke-dasharray: 4 6; filter: none; }
+.cw-none .cw-nuc { opacity: .35; }
+.cw-track { fill: none; stroke: rgba(170, 214, 255, .3); stroke-width: 1.6; stroke-dasharray: 2 5; stroke-linecap: round; }
+.cw-mini .cw-md { fill: rgba(11, 29, 74, .85); stroke: color-mix(in srgb, var(--c) 70%, transparent); stroke-width: 1.6; }
+.cw-mini .cw-mh { fill: var(--c); opacity: .22; }
+.cw-mini.on .cw-md { fill: var(--c); stroke: #fff; stroke-width: 1.4; }
+.cw-mini text { font-size: 12px; font-weight: 700; text-anchor: middle; fill: rgba(225, 240, 255, .72); }
+.cw-mini.on text { fill: #fff; }
+.cw-now { margin: 6px 0 10px; padding: 14px; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--c, var(--cw-none)) 50%, transparent);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--c, var(--cw-none)) 16%, transparent), rgba(255, 255, 255, .04)); }
+.cw-now small { display: block; font-size: 13px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--c, var(--cw-none)); }
+.cw-now h3 { margin: 2px 0 6px; font-size: 19px; font-weight: 750; color: #fff; }
+.cw-now h3 span { font-size: 15px; font-weight: 600; color: rgba(236, 246, 255, .82); }
+.cw-now p { margin: 0; font-size: 15px; line-height: 1.45; color: rgba(236, 246, 255, .92); }
+.cw-now .cw-next { margin-top: 8px; font-weight: 650; color: #8fe7ff; }
+.cw-acts { display: flex; flex-direction: column; gap: 8px; }
+.cw-btn { min-height: 48px; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--one-cell-line, rgba(170, 214, 255, .26)); background: var(--one-cell, rgba(255, 255, 255, .08));
+  color: #fff; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.cw-btn.pri { border-color: rgba(143, 231, 255, .7); background: linear-gradient(180deg, rgba(143, 231, 255, .34), rgba(80, 160, 255, .22)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25); }
+.cw-btn:active { transform: scale(.98); }
+.cw-btn:focus-visible, .cw-off:focus-visible, .cw-date input:focus-visible { outline: 2px solid #8fe7ff; outline-offset: 2px; }
+.cw-date { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 8px; margin-top: 10px; padding: 12px; border-radius: 18px; border: 1px solid var(--one-cell-line, rgba(170, 214, 255, .26)); background: rgba(255, 255, 255, .05); }
+.cw-date label { grid-column: 1 / -1; font-size: 13px; font-weight: 700; color: rgba(225, 240, 255, .78); }
+.cw-date input { min-width: 0; min-height: 46px; padding: 0 12px; border-radius: 14px; border: 1px solid rgba(170, 214, 255, .4); background: rgba(5, 13, 41, .55); color: #fff; font: inherit; font-size: 16px; color-scheme: dark; }
+.cw-msg { margin: 10px 2px 0; font-size: 14px; font-weight: 650; color: #a8ffd8; text-align: center; }
+.cw-hedge { margin: 14px 4px 4px; font-size: 13px; line-height: 1.4; color: rgba(225, 240, 255, .66); text-align: center; }
+.cw-off { display: block; margin: 2px auto 0; min-height: 44px; padding: 0 12px; border: 0; background: none; color: rgba(225, 240, 255, .7); font: inherit; font-size: 13.5px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+@keyframes cwBreathe { 50% { transform: scale(1.04); } }
+@keyframes cwBud { 0%, 100% { transform: scale(.82); } 50% { transform: scale(1.08); } }
+@keyframes cwHalo { 50% { transform: scale(1.1); opacity: .22; } }
+@keyframes cwTwinkle { 50% { opacity: .95; } }
+@keyframes cwDrift { 50% { transform: translate(2px, -3px); } }
+@keyframes cwSettle { 50% { transform: translateY(3px); opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .cw-svg *, .cw-btn { animation: none !important; transition: none !important; } }
+/* iPad and wide screens: a bit more room for the world, same sheet */
+@media (min-width: 700px) { .cw-hero { width: 340px; } }

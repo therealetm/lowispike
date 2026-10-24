@@ -10885,7 +10885,7 @@ R2.onboard = function(opts){
   const s = R2.S(); s.user = s.user || {};
   /* BH-011 (Oct 19): the companion is saved only when Continue is tapped on the reveal. A reload during the reveal left setupMid set but no companion, so resuming at step 1 skipped the reveal for good and the account stayed on the standard Misty. Resume at the birthday step (filled in) until the companion exists. */
   const bc = window.LowiBirthCompanion, needReveal = !!(bc && bc.has && bc.reveal && !bc.has());
-  ob = { step: (s.setupMid && !s.setupDone && s.user.bday && !needReveal) ? 1 : 0, bday: s.user.bday || "", btime: s.user.btime || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), noCond: !!s.user.noCond, name: s.user.name || "", gender: s.user.gender || "", pcos: !!(s.health && s.health.pcos), askName: !s.user.name || opts.askName };
+  ob = { step: (s.setupMid && !s.setupDone && s.user.bday && !needReveal) ? 1 : 0, bday: s.user.bday || "", btime: s.user.btime || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), noCond: !!s.user.noCond, name: s.user.name || "", gender: s.user.gender || "", pcos: !!(s.health && s.health.pcos), cycle: (s.health && s.health.cyc && typeof s.health.cyc.show === "boolean") ? s.health.cyc.show : null, askName: !s.user.name || opts.askName };
   if (ob.pcos && ob.gender === "f" && !ob.tags.includes("PCOS")) ob.tags.push("PCOS");   /* old PCOS checkbox -> PCOS condition */
   const ov = R2.sheet('<div class="r2-ob" id="r2ob"></div>', { full: true, noClose: true, cls: "r2-obov" });
   paintOb();
@@ -10919,6 +10919,8 @@ function paintOb(){
     h = dots() + '<div class="r2-obt">About you</div><div class="r2-obs">So your tips fit you. Change it any time in Profile.</div>' +
       /* round 3A: gender, and PCOS for women (tailors tips; stays on this phone) */
       '<div class="r2-obsub">I am</div><div class="r2-chips r2-gender">' + [["f", "A woman"], ["m", "A man"], ["x", "Prefer not to say"]].map(g => '<button type="button" class="r2-chip' + (ob.gender === g[0] ? " on" : "") + '" aria-pressed="' + (ob.gender === g[0]) + '" data-r2g="' + g[0] + '">' + g[1] + '</button>').join("") + '</div>' +
+      /* Oct 23 2026, cycle tracking stage 1: only women are asked, and only a yes turns it on (off for everyone else) */
+      (ob.gender === "f" ? '<div class="r2-obsub r2-cyq">Track your cycle? <span>(optional)</span></div><div class="r2-obhint">See your phase as a little cell world. Private on this phone.</div><div class="r2-chips r2-cycle">' + [["1", "Yes, track it", true], ["0", "No thanks", false]].map(c => '<button type="button" class="r2-chip' + (ob.cycle === c[2] ? " on" : "") + '" aria-pressed="' + (ob.cycle === c[2]) + '" data-r2cy="' + c[0] + '">' + c[1] + '</button>').join("") + '</div>' : "") +
       '<div class="r2-obsub">I want</div>' +
       '<div class="r2-chips r2-goals">' + goalList().map(t => '<button type="button" class="r2-chip' + (ob.tags.includes(t[0]) ? " on" : "") + '" aria-pressed="' + ob.tags.includes(t[0]) + '" data-r2tag="' + esc(t[0]) + '">' + esc(t[1]) + '</button>').join("") + '</div>' +
       condBlock("data-r2tag", "data-r2none", ob.tags, ob.noCond, ob.gender) +
@@ -10946,6 +10948,7 @@ function saveOb(final){
   s.user.noCond = !!ob.noCond && !ob.tags.some(isCond);
   if (ob.gender) s.user.gender = ob.gender;
   s.health = s.health || {}; s.health.pcos = ob.gender === "f" && ob.tags.includes("PCOS");
+  if (ob.gender === "f" && ob.cycle !== null && window.LowiCycle && LowiCycle.setShow) LowiCycle.setShow(ob.cycle);   /* cycle stage 1: her answer to Track your cycle? */
   if (final) { s.setupDone = true; s.onboarded = true; delete s.autoSkipped; delete s.setupMid; }
   else if (!s.setupDone) s.setupMid = 1;
   R2.save();
@@ -11165,7 +11168,9 @@ document.addEventListener("click", e => {
     if (v === "shoplater") { try { const r = LowiShopPlan.readForm($("#r2ob")); if (r.ok) LowiShopPlan.saveForm($("#r2ob")); else if (!LowiShopPlan.isSet()) LowiShopPlan.set({ skipped: true }); } catch(x){} return finishOb(); }
   }
   const gg = e.target.closest("[data-r2g]");
-  if (gg && ob) { ob.gender = gg.getAttribute("data-r2g"); if (ob.gender !== "f") ob.pcos = false; const sc = ($("#r2ob .r2-obpane") || {}).scrollTop || 0; paintOb(); const pn = $("#r2ob .r2-obpane"); if (pn) { pn.style.animation = "none"; pn.scrollTop = sc; } return; } /* hunt Oct 23: same step, no fade-in again */
+  if (gg && ob) { ob.gender = gg.getAttribute("data-r2g"); if (ob.gender !== "f") { ob.pcos = false; ob.cycle = null; } const sc = ($("#r2ob .r2-obpane") || {}).scrollTop || 0; paintOb(); const pn = $("#r2ob .r2-obpane"); if (pn) { pn.style.animation = "none"; pn.scrollTop = sc; } return; } /* hunt Oct 23: same step, no fade-in again */
+  const cyq = e.target.closest("[data-r2cy]");
+  if (cyq && ob) { ob.cycle = cyq.getAttribute("data-r2cy") === "1"; $$("#r2ob [data-r2cy]").forEach(b => { const on = (b.getAttribute("data-r2cy") === "1") === ob.cycle; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); }); return; }
   const pc = e.target.closest("[data-r2pcos]");
   if (pc && ob) { ob.pcos = !ob.pcos; pc.classList.toggle("on", ob.pcos); return; }
   /* Oct 15: every chip toggle keeps .on and aria-pressed in step */
@@ -17185,7 +17190,16 @@ function C(){ const s = gS(); if (!s) return null; s.health = s.health || {};
   c.days = c.days || {}; c.xp = c.xp || {}; c.swaps = c.swaps || {}; c.pcos = !!s.health.pcos;
   return c; }
 function isFem(){ const s = gS(); return !!(s && s.user && s.user.gender === "f"); }
-function enabled(){ const c = C(); if (!c) return false; if (c.show === true) return true; if (c.show === false) return false; const s = gS(); return isFem() || !!(s.health && s.health.cycleOn); }
+/* Oct 23 2026, cycle stage 1 (rebuilt from the previous Maya's notes): only for women, and only after a yes (setup asks, or the My cycle tile). Off for everyone else, even with old data. A woman who tracked before the question existed keeps it. The same rule lives in cycle-world.js (rule) for the tests. */
+function enabled(){ const c = C(); if (!c || !isFem()) return false; if (c.show === true) return true; if (c.show === false) return false; const s = gS(); return !!c.setup || starts().length > 0 || !!(s.health && s.health.cycleOn); }
+/* setup (Track your cycle?) and the cell world turn it on or off */
+function setShow(v){ const c = C(); if (!c) return; c.show = !!v; persist(); try { refreshHome(); } catch(e){} }
+/* log a first day: the first two days medium, then light, then spotting (as the old Set button did). fix=true moves the last start (a wrong date) instead of adding one */
+function markStart(k, fix){ const c = C(); if (!c || !k || k > todayK()) return false;
+  if (fix) { const st = starts(), last = st[st.length - 1]; if (last && last !== k && Math.abs(diff(last, k)) <= 14) for (let j = 0; j < 7; j++) { const kk = add(last, j), d = c.days[kk]; if (!d || !d.p || d.p === "none") { if (j > 0) break; continue; } const nd = Object.assign({}, d); delete nd.p; if (Object.keys(nd).length) c.days[kk] = nd; else delete c.days[kk]; } }
+  for (let j = 0; j < 5; j++) { const kk = add(k, j); if (kk <= todayK()) c.days[kk] = Object.assign({}, c.days[kk] || {}, {p: j < 2 ? "med" : j < 4 ? "light" : "spot"}); }
+  if (!c.setup) { c.setup = true; setTimeout(() => awardX(25, t("xpSetup")), 400); }
+  giveLogXP(k); persist(); try { paint(); refreshHome(); } catch(e){} return true; }
 const isP = d => !!(d && d.p && d.p !== "none");
 function persist(){ const c = C(), s = gS(); if (!c || !s) return;
   const st = starts(); s.health.cycleOn = enabled(); s.health.pcos = !!c.pcos; s.health.irregular = !!c.irregular;
@@ -17243,6 +17257,7 @@ function cycleInfoX(){
   try { if (enabled()) { const m = model(); if (m && m.ph && CY_PH[m.ph]) { const p = CY_PH[m.ph], c = C(); let tip = tr(p.tip);
       if (c.pcos) tip += " " + tr(CY_PCOS[new Date().getDate() % (CY_PCOS.length - 1)]);
       return {on: true, ph: m.ph, label: tr(p.name), tip: tip, quest: tr(p.quest)}; } } } catch(e){}
+  if (!enabled()) return {on: false, ph: "", label: "", tip: "", quest: ""};   /* stage 1: no cycle tips or quests when it is off */
   return origCycleInfo ? origCycleInfo() : {on: false, ph: "", label: "", tip: "", quest: ""}; }
 if (typeof origCycleInfo === "function") { try { window.cycleInfo = cycleInfoX; } catch(e){} }
 
@@ -17442,9 +17457,9 @@ function mountProfile(){ const root = profRoot(); if (!root) return;
   const host = (old && old.closest(".setrow")) || null; const w = document.createElement("div"); w.innerHTML = profHTML(); const node = w.firstChild;
   if (host && host.parentNode) host.parentNode.insertBefore(node, host);
   else { const cards = root.querySelectorAll(".card"); if (cards.length) cards[Math.min(1, cards.length - 1)].after(node); else root.appendChild(node); } }
-function profHTML(){ const s0 = gS(); if (s0 && s0.user && s0.user.gender === "m" && !enabled()) return '<span id="cyProf" hidden></span>'; const m = enabled() ? model() : null; const c = C();
+function profHTML(){ if (!isFem()) return '<span id="cyProf" hidden></span>'; const m = enabled() ? model() : null; const c = C();
   const sub = m && m.ph ? tr(CY_PH[m.ph].name) + (m.day ? " · " + t("dayOf", {d: m.day}) : "") : t("profRowSub");
-  return '<button id="cyProf" class="cy-prof" data-cy="open" data-noi18n><span class="cy-dotbig" style="--cy:' + col(m && m.ph ? m.ph : "menstrual") + '"></span><span class="cy-cardtx"><b>' + esc(t("profRow")) + '</b><span class="cy-sub">' + esc(sub) + (c && c.sync ? "" : " · " + esc(t("privacy").split(":")[0])) + '</span></span><span class="cy-chev">›</span></button>'; }
+  return '<button id="cyProf" class="cy-prof" data-cw="open" data-noi18n><span class="cy-dotbig" style="--cy:' + col(m && m.ph ? m.ph : "menstrual") + '"></span><span class="cy-cardtx"><b>' + esc(t("profRow")) + '</b><span class="cy-sub">' + esc(sub) + (c && c.sync ? "" : " · " + esc(t("privacy").split(":")[0])) + '</span></span><span class="cy-chev">›</span></button>'; }
 
 function watch(){ const h = homeRoot(); if (h) new MutationObserver(() => { if (!h.querySelector("#cyToday")) mountHome(); }).observe(h, {childList: true});
   const p = profRoot(); if (p) new MutationObserver(() => { if (!p.querySelector("#cyProf") || p.querySelector("#cycleToggle:not([data-cy-seen])")) { const o = p.querySelector("#cycleToggle"); if (o) o.setAttribute("data-cy-seen", "1"); mountProfile(); } }).observe(p, {childList: true});
@@ -17454,7 +17469,7 @@ new MutationObserver(() => { if (document.getElementById("cySheet")) paint(); re
 window.addEventListener("online", () => { const c = C(); if (c && c.sync) pushSoon(); });
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watch); else watch();
 
-window.LowiCycle = {phaseNow, model, enabled, open: openSheet, cardHTML, tips: () => { const p = phaseNow(); return p ? {tip: p.tip, move: p.move} : null; }};
+window.LowiCycle = {phaseNow, model, enabled, setShow, markStart, open: openSheet, cardHTML, tips: () => { const p = phaseNow(); return p ? {tip: p.tip, move: p.move} : null; }};
 })();
 
 </script>
@@ -19783,13 +19798,17 @@ const IC = {
   look: sv('<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>'),
   app: sv('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/>'),
   back: sv('<path d="M15 5l-7 7 7 7"/>'),
+  cycle: sv('<circle cx="12" cy="12" r="7.5"/><circle cx="10.6" cy="10.8" r="2.6"/><circle cx="15.3" cy="14.6" r="1"/><circle cx="8.6" cy="15.2" r=".8"/>'),
   details: sv('<circle cx="10" cy="8" r="3.6"/><path d="M3.5 20a6.5 6.5 0 0111.2-4.5"/><path d="M18.6 12.6l2.3 2.3-5.4 5.4-2.9.6.6-2.9z"/>')
 };
 const ORDER = ["app", "todo", "comm", "swaps", "glow", "about", "health", "acct", "look"];
 /* Oct 22 account UI step 1: the grid shows Your details first; About you, Health and Account are reached from there
    (their panels and LowiG2E.open() stay exactly as they were), so every piece of personal data has one home */
-const GRID = ["details", "app", "todo", "comm", "swaps", "glow", "look"];
-const NAME = {details:"Your details", todo:"Finish profile", comm:"Community", swaps:"My swaps", glow:"Your glow", about:"About you", health:"Health", acct:"Account", look:"Look & sound", app:"Settings"};
+const GRID = ["details", "cycle", "app", "todo", "comm", "swaps", "glow", "look"];
+/* Oct 23 2026, cycle stage 1: My cycle sits right after Your details, for women only (cycle-world.js opens the cell world).
+   When she said no, the tile says Off and tapping it lets her turn it on; everyone else never sees it. */
+const cyOn = () => { try { return !!(window.LowiCycleWorld && LowiCycleWorld.eligible()); } catch(e){ return false; } };
+const NAME = {details:"Your details", cycle:"My cycle", todo:"Finish profile", comm:"Community", swaps:"My swaps", glow:"Your glow", about:"About you", health:"Health", acct:"Account", look:"Look & sound", app:"Settings"};
 const SUB = {details:"Weight, name, health", comm:"Posts, ranking", swaps:"Your favourites", glow:"Daily check-in", about:"Blood pressure", health:"Only on this phone", acct:"Email, password", look:"Theme, sounds", app:"Reminders"};
 const q = (r, s) => r ? r.querySelector(s) : null;
 const tab = () => D.getElementById("tab-profile");
@@ -19823,11 +19842,12 @@ function tag(t){
   return have;
 }
 function subOf(k, t){
+  if (k === "cycle") { try { return LowiCycleWorld.tileSub(); } catch(e){ return ""; } }
   if (k === "todo") { const s = q(t, ".r3-todo .r3-todo-h small"); return s ? (s.textContent || "").split("·")[0].trim() : ""; }
   return SUB[k] || "";
 }
 function tilesHTML(have, t){
-  return GRID.filter(k => k === "details" || have[k]).map(k => '<button type="button" class="g2h-tile g2e-tile g2e-' + k + '" ' + (k === "details" ? 'data-yd="open"' : 'data-g2e-open="' + k + '"') + ' data-sfx="open"><span class="g2h-ic">' + IC[k] + '</span><b>' + esc(NAME[k]) + '</b><small' + (k === "todo" ? " data-noi18n" : "") + '>' + esc(subOf(k, t)) + '</small></button>').join("");
+  return GRID.filter(k => k === "details" || (k === "cycle" ? cyOn() : have[k])).map(k => '<button type="button" class="g2h-tile g2e-tile g2e-' + k + '" ' + (k === "details" ? 'data-yd="open"' : k === "cycle" ? 'data-cw="open"' : 'data-g2e-open="' + k + '"') + ' data-sfx="open"><span class="g2h-ic">' + IC[k] + '</span><b>' + esc(NAME[k]) + '</b><small' + (k === "todo" || k === "cycle" ? " data-noi18n" : "") + '>' + esc(subOf(k, t)) + '</small></button>').join("");
 }
 
 /* ---- open a part as its own screen ---- */
@@ -21229,6 +21249,9 @@ window.LowiCommunityHost = {
 <!-- Oct 21 Scan / Fuel / Gap: tapping Gap opens this passive view (time since the last meal, six markers on the hexagon); Deep analyze = in-app AI for a product the barcode did not find -->
 <link rel="stylesheet" id="gvCss" href="gap-view.css?v=20261024-031844">
 <script src="gap-view.js?v=20261024-031844"></script>
+<!-- Oct 23 2026: cycle tracking stage 1, women only and opt-in; the phase as a cell world (cycle-world.js) -->
+<link rel="stylesheet" id="cwCss" href="cycle-world.css?v=20261024-031844">
+<script src="cycle-world.js?v=20261024-031844"></script>
 <!-- Oct 19: replayable tutorial from Settings > Tutorial; steps live ONLY in tutorial-steps.js (TUTORIAL.md, COORD-tutorial.md) -->
 <link rel="stylesheet" id="ltCss" href="tutorial.css?v=20261024-031844">
 <!-- Oct 19: Settings > Weight & BMI: weigh-in, BMI, body-fat estimate, Then/Now level-up track (body-stats*.js, COORD-stats.md) -->

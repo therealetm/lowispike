@@ -794,7 +794,7 @@ function openPerson(id,name){if(!id)return;const bt=botOf(id),mine=id===scope;co
  /* 24 Oct 08:30 (Emmanuel): always visible, no consent and no hide toggle, so no shared / not-shared tags. */
  const signTxt=v=>v?(PS?(PS.glyph(v)+'\uFE0E '+PS.signName(v,L)):v):'';
  let rows='',form='';
- if(bt){try{const C=W.LowiCompanionCore;form=C&&C.formName?C.formName(bt.stage,bt.el,['en','de','es'][Math.max(0,lang())]):'';}catch(e){}rows+=pcRow(tr('companion'),bt.mate+(form?' · '+form:''));}
+ if(bt){try{const C=W.LowiCompanionCore;form=C&&C.formName?C.formName(bt.stage,bt.el,['en','de','es'][Math.max(0,lang())]):'';}catch(e){}rows+=pcRow(tr('companion'),bt.mate);}/* 24 Oct (Eman: "What does Tide Radiant even mean?"): the companion's name only, no evolution form word next to it */
  rows+=pcRow(tr('pcSign'),sign?(bt?sign:signTxt(sign)):tr('pcNotYet'),!sign);
  if(bt)rows+=pcRow(tr('born'),[pcDate(bt.bday),fill('ageN',bt.age)].filter(Boolean).join(' · '));
  else if(md&&PS){const nx=PS.next(md);rows+=pcRow(tr('pcBday'),PS.dayMonth(md,L)+' · '+PS.countdown(nx.days,L));}
@@ -822,8 +822,8 @@ function matePref(){try{let v=JSON.parse(localStorage.getItem('lowispike.compani
 function botProfile(b){const C=W.LowiCompanionCore,l=lang(),loc=['en-GB','de-DE','es-ES'][Math.max(0,l)];let form='';try{form=C&&C.formName?C.formName(b.stage,b.el,['en','de','es'][Math.max(0,l)]):'';}catch(e){}
  const d=s=>pcDate(s,1);
  const row=(k,v)=>'<div class="cg-prow"><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>';
- return sheet('<h2>'+esc(b.n)+' <span class="cg-bottag">'+tr('botTag')+'</span></h2><div class="cs-pub cg-pbot">'+mate(b.uid,'sh'+sid(b.uid))+'<div><b>'+esc(b.mate)+'</b><br>'+esc(form)+' · '+esc(fill('levelN',b.lv))+'</div></div>'+
-  '<div class="cg-prows">'+row(tr('companion'),b.mate+(form?' · '+form:''))+row(tr('levelN').replace('{n}','').trim()||'Level',String(b.lv)+' · '+b.xp+' XP')+row(tr('born'),[d(b.bday),fill('ageN',b.age)].filter(Boolean).join(' · '))+row(tr('sign'),b.sign)+(d(b.since)?row(tr('withUs'),d(b.since)):'')+'</div>'+
+ return sheet('<h2>'+esc(b.n)+' <span class="cg-bottag">'+tr('botTag')+'</span></h2><div class="cs-pub cg-pbot">'+mate(b.uid,'sh'+sid(b.uid))+'<div><b>'+esc(b.mate)+'</b><br>'+esc(fill('levelN',b.lv))+'</div></div>'+
+  '<div class="cg-prows">'+row(tr('companion'),b.mate)+row(tr('levelN').replace('{n}','').trim()||'Level',String(b.lv)+' · '+b.xp+' XP')+row(tr('born'),[d(b.bday),fill('ageN',b.age)].filter(Boolean).join(' · '))+row(tr('sign'),b.sign)+(d(b.since)?row(tr('withUs'),d(b.since)):'')+'</div>'+
   '<p class="cg-pline">“'+esc(b.line[Math.max(0,l)])+'”</p><p>'+tr('botNote')+'</p>'+button('select-close',esc(fill('talkBtn',b.n)),'data-uid="'+esc(b.uid)+'"','cs-action'));}
 function openProfile(id,name){if(!blocked(id))return openPerson(id,name);const bt=botOf(id);if(bt)return botProfile(bt);const p=profile(id,name);return sheet('<h2>'+tr('profile')+'</h2><div class="cs-pub">'+mate(id,'sh'+sid(id))+'<div><b>'+esc(p.n)+'</b><br>'+esc([p.t,p.s].filter(Boolean).join(' · ')||tr('noDetails'))+'</div></div><p>'+tr('profileNote')+'</p>'+(id!==scope?'<p>'+tr('blockNote')+'</p>'+button('block',tr('block'),'data-uid="'+esc(id)+'" data-name="'+esc(p.n)+'"')+'<p class="cs-result" id="csBlockResult" role="status"></p>':button('settings',tr('controls'))));}
 function openReport(mid){const m=messages().find(x=>x.id===mid);if(!m||m.uid===scope)return;sheet('<h2>'+tr('report')+'</h2><p>'+tr('reportDesc')+'</p><form data-chat-form="report" data-mid="'+esc(mid)+'"><select name="reason" aria-label="'+tr('report')+'">'+['harassment','spam','privacy','unsafe'].map(v=>'<option value="'+v+'">'+tr(v)+'</option>').join('')+'</select><button class="cs-submit" data-sfx="none">'+tr('sendReport')+'</button><p class="cs-result" role="status"></p></form>'+button('block',tr('block'),'data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'"')+'<p class="cs-result" id="csBlockResult" role="status"></p>');}

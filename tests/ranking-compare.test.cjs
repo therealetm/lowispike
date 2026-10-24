@@ -239,11 +239,49 @@ test('page: the sun is the app\'s own sun icon, labelled "sunbeams", when the ic
   assert.match(R('ranking.css'), /\.rk-sun,\.rk-sun svg\{color:#ffd666;/);
 });
 
-test('layout: one type scale, names stay on one line, game motion with a reduced-motion fallback', () => {
+test('layout: one type scale, names stay on one line, the Week/Month/All time switch keeps its motion with a reduced-motion fallback', () => {
   const css = R('ranking.css');
   assert.match(css, /\.rk \.rk-cn\{font-weight:700;font-size:15px;line-height:1\.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis\}/);
-  for (const k of ['rk-rise', 'rk-pop', 'rk-slide', 'rk-glow', 'rk-grow', 'rk-slam']) assert.match(css, new RegExp('@keyframes ' + k + '\\{'), k);
+  for (const k of ['rk-slide', 'rk-bob', 'rk-grow', 'rk-slam']) assert.match(css, new RegExp('@keyframes ' + k + '\\{'), k);
   assert.match(css, /@media \(prefers-reduced-motion:reduce\)/);
+});
+
+// 24 Oct 2026 (Eman: "this page right here doesn't need any animation ... it slows it down when it's opening"; then "when I go from
+// week to month to Gesamt ... that's fine actually. I just don't want, when I enter that room, some weird animation going on"):
+test('open: the board is drawn finished and still; only a Week/Month/All time switch moves', () => {
+  const css = R('ranking.css'), js = R('ranking.js');
+  for (const k of ['rk-rise', 'rk-pop', 'rk-glow', 'rk-float']) assert.doesNotMatch(css, new RegExp('@keyframes ' + k + '\\{'), k + ' is gone');
+  assert.doesNotMatch(css, /\.rk-intro [^{]*\{[^}]*animation:rk-/, 'no opening entrance');
+  assert.match(css, /\.rm-rank \.rk-orb,\.rm-rank \.rk-orb \*\{animation:none!important\}/, 'companions on the board stand still');
+  assert.match(css, /\.rm-rank \.rk-me,\.rm-rank \.rk-row,\.rm-rank \.rk-seg\{-webkit-backdrop-filter:none;backdrop-filter:none\}/, 'no blur work on open');
+  assert.match(css, /\.rk-seg::before\{[^}]*transition:/, 'the period pill still slides');
+  assert.doesNotMatch(js, /classList\.add\('rk-intro'\)/, 'no intro class');
+  assert.match(js, /const sw = !fresh && !!b\.__rkH && b\.__rkPer != null && b\.__rkPer !== per && !!b\.querySelector\('\.rk'\);/);
+  assert.match(js, /if \(first\) play\(b, first\);/);
+});
+
+// 24 Oct 2026 (Eman: "when you read your own, it just says you ... it should say my name"; "What does Tide Radiant even mean? ...
+// Ideally we only see the names of their companion and their own names"):
+test('names: your own entry carries your name (never you / du / tú), and nobody gets an extra form line', () => {
+  const now = Date.now();
+  for (const lg of ['en', 'de', 'es']) {
+    const W = page(screenshot(now), { lang: lg });
+    W.LowiR2.S = () => ({ ledger: [], user: { name: 'Emmanuel' } });
+    for (const k of ['w', 'm', 'all']) {
+      W.LowiRanking.setPeriod(k); const h = W.LowiRanking._html();
+      assert.match(h, /class="rk-ownr">Emmanuel</, lg + ' ' + k + ': your name');
+      assert.doesNotMatch(h, /class="rk-ownr">(you|You|du|Du|t\u00fa|T\u00fa)</, lg + ' ' + k + ': never "you"');
+      assert.doesNotMatch(h, /aria-label="[^"]*, (you|du|t\u00fa), /, lg + ' ' + k + ': not in the spoken label either');
+    }
+    const c = W.LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
+    assert.match(c, /class="rk-ownr">Emmanuel</, lg + ': compare sheet, your side'); assert.doesNotMatch(c, /rk-form|Guardian/, lg + ': no form line');
+    assert.doesNotMatch(W.LowiRanking._ladder(), /Guardian/, lg + ': no form word on the level path');
+  }
+  const W = page(screenshot(now).map(p => (p.me ? Object.assign({}, p, { n: 'You' }) : p)), { lang: 'de' });
+  W.LOWI_CLOUD_X = { state: () => ({ email: 'eman.k@example.invalid' }) };
+  assert.match(W.LowiRanking._html(), /class="rk-ownr">eman\.k</, 'no profile name: the account user name');
+  const src = R('community-chat.js');
+  assert.doesNotMatch(src, /bt\.mate\+\(form\?|b\.mate\+\(form\?|esc\(form\)\+' · '/, 'Community profile cards: companion name only');
 });
 
 test('every string of the Ranking exists in English, German and Spanish', () => {

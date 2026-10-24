@@ -60,13 +60,12 @@
 .rk-mv{display:inline-block;font-weight:800;font-size:10px;line-height:1;white-space:nowrap}
 .rk-mv.up{color:#5ff2a2;text-shadow:0 0 8px rgba(95,242,162,.5)}
 .rk-mv.dn{color:#ff8a8a}
-.rk-intro .rk-mv,.rk-in .rk-mv{animation:rk-bob .9s .5s ease-out both}
+.rk-in .rk-mv{animation:rk-bob .9s .5s ease-out both}
 @keyframes rk-bob{0%{opacity:0;transform:translateY(6px)}60%{opacity:1;transform:translateY(-2px)}100%{opacity:1;transform:none}}
 
 /* Your place: one compact glowing row, rank · Misty with her level ring · name · score · › */
-.rm-rank .rk-me{padding:8px 12px 8px 10px;margin:0 0 12px;border-color:rgba(143,231,255,.75);box-shadow:0 0 0 1px rgba(143,231,255,.25),0 0 22px rgba(47,149,255,.35),inset 0 1px 0 rgba(255,255,255,.1);
- animation:rk-glow 2.8s ease-in-out infinite}
-.rm-rank .rk-me.off{animation:none;border-color:var(--rm-edge,rgba(143,231,255,.34))}
+.rm-rank .rk-me{padding:8px 12px 8px 10px;margin:0 0 12px;border-color:rgba(143,231,255,.75);box-shadow:0 0 0 1px rgba(143,231,255,.25),0 0 22px rgba(47,149,255,.35),inset 0 1px 0 rgba(255,255,255,.1)}
+.rm-rank .rk-me.off{border-color:var(--rm-edge,rgba(143,231,255,.34))}
 .rm-rank .rk-me-rk{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:38px}
 .rm-rank .rk-me-rk b{font-weight:800;font-size:22px;line-height:1;color:#fff;text-shadow:0 0 12px rgba(143,231,255,.55)}
 .rm-rank .rk-me-art{position:relative;flex:none}
@@ -77,16 +76,14 @@
 .rm-rank .rk-lvr b{position:relative;font-weight:800;font-size:10px;line-height:1;color:#fff}
 .rm-rank .rk-me-go{flex:none;display:grid;place-items:center;color:var(--rm-cyan,#8fe7ff);font-weight:700;font-size:20px;line-height:1}
 .rm-rank .rk-me-go svg,.rm-rank .rk-me-go .rk-fb{width:16px;height:16px}
-@keyframes rk-glow{0%,100%{box-shadow:0 0 0 1px rgba(143,231,255,.25),0 0 16px rgba(47,149,255,.28),inset 0 1px 0 rgba(255,255,255,.1)}50%{box-shadow:0 0 0 1px rgba(143,231,255,.45),0 0 28px rgba(47,149,255,.5),inset 0 1px 0 rgba(255,255,255,.1)}}
 
 /* podium: 2nd left, 1st centre and raised with a crown, 3rd right; the steps rise when the board opens */
 .rm-rank .rk-pod{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:8px;margin:4px 0 12px}
 .rm-rank .rk-pod.n1{grid-template-columns:minmax(0,1fr);max-width:200px;margin-left:auto;margin-right:auto}
 .rm-rank .rk-pod.n2{grid-template-columns:repeat(2,minmax(0,1fr));max-width:380px;margin-left:auto;margin-right:auto}
 .rm-rank .rk-pod-i{position:relative;appearance:none;border:0;background:transparent;color:inherit;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:0;transition:transform .15s}
-.rm-rank .rk-crown{display:grid;place-items:center;height:20px;color:#ffd666;font-size:18px;line-height:1;filter:drop-shadow(0 0 6px rgba(255,214,102,.6));animation:rk-float 2.6s ease-in-out infinite}
+.rm-rank .rk-crown{display:grid;place-items:center;height:20px;color:#ffd666;font-size:18px;line-height:1;filter:drop-shadow(0 0 6px rgba(255,214,102,.6))}
 .rm-rank .rk-crown svg{width:22px;height:22px}
-@keyframes rk-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 .rm-rank .rk-pod-art{position:relative;display:block}
 .rm-rank .rk-pod-art .rk-mv{position:absolute;left:-4px;top:0}
 .rm-rank .rk-pod-i .rk-orb{width:68px;height:68px}
@@ -110,26 +107,20 @@
 /* numbered list */
 .rm-rank .rk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .rm-rank .rk-row{padding:8px 12px 8px 8px}
-.rm-rank .rk-row.me{border-color:rgba(143,231,255,.75);animation:rk-glow 2.8s ease-in-out infinite}
+.rm-rank .rk-row.me{border-color:rgba(143,231,255,.75);box-shadow:0 0 0 1px rgba(143,231,255,.25),0 0 22px rgba(47,149,255,.35),inset 0 1px 0 rgba(255,255,255,.1)}
 .rm-rank .rk-n{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:26px;font-weight:700;font-size:15px;line-height:1;color:var(--rm-ink2,#c3d5ec)}
 .rm-rank .rk-empty{display:flex;flex-direction:column;align-items:center;gap:8px;margin:18px 10px 0;text-align:center;font-weight:500;font-size:13px;line-height:1.4;color:var(--rm-ink2,#c3d5ec)}
 .rm-rank .rk-empty svg{width:34px;height:34px;color:#ffd666}
 
-/* game motion: the podium rises (2nd, then 1st, then 3rd), the rest slides in one after another */
-.rm-rank .rk-intro .rk-step{animation:rk-rise .55s cubic-bezier(.2,.9,.25,1.15) both}
-.rm-rank .rk-intro .rk-pod-i{animation:rk-pop .5s cubic-bezier(.2,.9,.25,1.2) both}
-.rm-rank .rk-intro .rk-p2,.rm-rank .rk-intro .rk-p2 .rk-step{animation-delay:.08s}
-.rm-rank .rk-intro .rk-p1,.rm-rank .rk-intro .rk-p1 .rk-step{animation-delay:.2s}
-.rm-rank .rk-intro .rk-p3,.rm-rank .rk-intro .rk-p3 .rk-step{animation-delay:.32s}
-.rm-rank .rk-intro .rk-me{animation:rk-slide .45s ease-out both,rk-glow 2.8s .45s ease-in-out infinite}
-.rm-rank .rk-intro .rk-me.off{animation:rk-slide .45s ease-out both}
-.rm-rank .rk-intro .rk-list li{animation:rk-slide .4s ease-out both;animation-delay:calc(.35s + var(--rk-d,0s))}
-.rm-rank .rk-intro .rk-list li:nth-child(1){--rk-d:0s}.rm-rank .rk-intro .rk-list li:nth-child(2){--rk-d:.05s}.rm-rank .rk-intro .rk-list li:nth-child(3){--rk-d:.1s}
-.rm-rank .rk-intro .rk-list li:nth-child(4){--rk-d:.15s}.rm-rank .rk-intro .rk-list li:nth-child(5){--rk-d:.2s}.rm-rank .rk-intro .rk-list li:nth-child(6){--rk-d:.25s}
-.rm-rank .rk-intro .rk-list li:nth-child(n+7){--rk-d:.3s}
+/* 24 Oct 2026 (Eman: "this page right here doesn't need any animation ... it slows it down when it's opening"; "when I go from week
+   to month to Gesamt ... that's fine actually. I just don't want, when I enter that room, some weird animation going on"): the board
+   opens fully drawn and still. No podium rise, no slide-in, no breathing companions, no pulsing glow or floating crown; your own entry
+   keeps a steady glow. The board sits on the opaque .rm-frame panel, so the bubbles' backdrop blur showed nothing and only cost time on
+   open: dropped here (the sheets keep theirs). What stays: the Week / Month / All time switch (the pill slides, rows sort into place
+   with .rk-in, the numbers count) and the press feedback on a tap. */
+.rm-rank .rk-orb,.rm-rank .rk-orb *{animation:none!important}
+.rm-rank .rk-me,.rm-rank .rk-row,.rm-rank .rk-seg{-webkit-backdrop-filter:none;backdrop-filter:none}
 .rm-rank .rk-in{animation:rk-slide .4s ease-out both}
-@keyframes rk-rise{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-@keyframes rk-pop{0%{opacity:0;transform:translateY(18px) scale(.85)}100%{opacity:1;transform:none}}
 @keyframes rk-slide{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
 
 @media (max-width:359px){.rm-rank .rk-pod-i .rk-orb{width:56px;height:56px}.rm-rank .rk-pod-i.rk-p1 .rk-orb{width:70px;height:70px}.rm-rank .rk-me-rk{min-width:30px}.rm-rank .rk-me{gap:8px}}

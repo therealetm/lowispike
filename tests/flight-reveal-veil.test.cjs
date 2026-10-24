@@ -1,7 +1,7 @@
 /* Oct 23, 23:40 (Eman): (1) flying Misty out of her bubble, the universe popped in ("boop") instead of showing through gradually;
    (2) every time she flew into a world, it disappeared (the body-place veil faded the place she was heading to behind a bubble
-   that the clean flight view had already hidden). Source checks; the browser probes are tools/cosmos-reveal-probe.cjs and
-   tools/veil-entry-probe.cjs. */
+   that the clean flight view had already hidden). Source checks; the browser probe is tools/cosmos-reveal-probe.cjs.
+   Oct 24, 10:45: the body-place veil is removed entirely (tests/places-stay.test.cjs), so tools/veil-entry-probe.cjs went with it. */
 'use strict';
 const test = require('node:test'), assert = require('node:assert');
 const fs = require('fs'), path = require('path');
@@ -17,8 +17,7 @@ test('the spirit world fades in through one eased reveal instead of switching on
     assert.match(scene, /const rvT = homeish \? Math\.max\(smoothC\(m0, m0 \+ 36, d\), gxOn \? 0\.16 : 0\) : 0;/);
 });
 
-test('a place Misty flies to is never veiled', () => {
-    assert.match(scene, /if \(rig\.fly \|\| document\.documentElement\.classList\.contains\('mf-on'\)\) return false;/);
-    assert.match(shell, /if \(H\.classList\.contains\('mf-on'\) \|\| H\.classList\.contains\('mf-galaxy'\)\) return \[\];/);
-    assert.match(shell, /if \(!veilVisible\(el\)\) return;/);
+test('a place Misty flies to is never veiled (Oct 24, 10:45: the veil is gone entirely, so no place is ever veiled)', () => {
+    assert.doesNotMatch(scene, /beaconVeiled|function setVeil\(/);
+    assert.doesNotMatch(shell, /veilCircles|VEIL_SEL|world\.setVeil/);
 });

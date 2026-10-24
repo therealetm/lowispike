@@ -151,65 +151,25 @@ export function createWorld(THREE, canvas, opts) {
         const g = new THREE.Group(), col = new THREE.Color(p.hue);
         const a = (i / places.length) * Math.PI * 2 + 0.4, el = (i % 2 ? 0.35 : -0.25), r = 7.2;
         g.position.set(Math.sin(a) * Math.cos(el) * r, Math.sin(el) * r * 0.8, Math.cos(a) * Math.cos(el) * r);
-        const core = new THREE.Mesh(new THREE.SphereGeometry(0.32, 20, 14), new THREE.MeshBasicMaterial({ color: col, fog: true, transparent: true, opacity: 1 }));
+        const core = new THREE.Mesh(new THREE.SphereGeometry(0.32, 20, 14), new THREE.MeshBasicMaterial({ color: col, fog: true }));
         const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: col, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending }));
         glow.scale.set(2.4, 2.4, 1);
         const ring = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.025, 8, 48), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.7, fog: true }));
         const hit = new THREE.Mesh(new THREE.SphereGeometry(1.0, 8, 6), new THREE.MeshBasicMaterial({ visible: false }));
         hit.userData.place = p.id;
         g.add(glow, core, ring, hit); scene.add(g); hitMeshes.push(hit);
-        beacons[p.id] = { g, ring, glow, core, hue: col, pos: g.position.clone(), veil: 1, off: new THREE.Vector3(), aside: 0 };
+        beacons[p.id] = { g, ring, glow, core, hue: col, pos: g.position.clone() };
     });
     /* hub for other builds (regions, cell ride, living cell) to add their meshes */
     const hub = new THREE.Group(); hub.name = 'lowi-hub'; scene.add(hub);
     const regions = places.map(p => ({ id: p.id, pos: beacons[p.id].pos.clone(), hue: p.hue }));
-    /* Oct 23, 18:03 (Eman's iPhone: a red dot with a pink ring sat right on the edge of the Sleep bubble): a body place that drifts in
-       behind a Home bubble or a bloom orb fades out until it is clear again. The bubbles come from body-world-3d.js as screen circles
-       (canvas px, {x, y, r}); the world itself stays exactly as full. */
-    let veilCircles = [];
+    /* Oct 24, 10:45 (Eman: "now they're just moving around really fast. It looks like they're trying to dodge things ... make the
+       cellular world as it was when it was working"): the body places are back to how they were before Oct 23. A place sits at its
+       real spot in the world (b.pos), moves on screen only as the world turns and the camera drifts, and is never faded, hidden,
+       pushed aside or made untappable by a Home bubble. The Oct 23 veil (fade behind bubbles, which made them vanish) and the Oct 24
+       step-aside (which made them dodge) are both gone; do not bring either back. placesLook() is a read-only probe for tests. */
     const vTmp = new THREE.Vector3();
-    function setVeil(list) { veilCircles = Array.isArray(list) ? list.filter(c => c && isFinite(c.x) && isFinite(c.y) && c.r > 0) : []; }
-    function beaconVeiled(b) {
-        if (!veilCircles.length) return false;
-        /* Oct 23, 23:40: never while the camera flies to a place, nor while Misty is out flying (she may be heading into it) */
-        if (rig.fly || document.documentElement.classList.contains('mf-on')) return false;
-        vTmp.copy(b.pos).project(camera);
-        if (vTmp.z > 1 || vTmp.z < -1) return false;
-        const x = (vTmp.x + 1) / 2 * W, y = (1 - vTmp.y) / 2 * H;
-        const dist = camera.position.distanceTo(b.pos) || 1;
-        const rad = (b.glow.scale.x * 0.3) / dist * (H / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-        for (let i = 0; i < veilCircles.length; i++) { const c = veilCircles[i]; if (Math.hypot(x - c.x, y - c.y) < c.r + rad) return true; }
-        return false;
-    }
-    /* Oct 24 (Eman: "the cells keep disappearing ... the brain and the heart and all of that stuff, they keep just disappearing"):
-       the Oct 23 veil faded a body place to nothing and made it untappable whenever it drifted behind one of the eight Home bubbles,
-       and the camera's idle drift keeps carrying places behind them, so on the live build a place on screen was hidden in 292 of
-       408 samples on an iPhone-size screen (tools/home-places-probe.cjs). A place now never fades: it steps aside instead. Its drawn
-       position (the group, with its tap target) glides to just outside the bubble's edge, at the same depth, and glides home again
-       when the bubble is clear; its real position (b.pos: regions, flights, Misty's trips) never moves. */
-    const aTmp = new THREE.Vector3(), aOff = new THREE.Vector3();
-    function beaconAside(b, out) {
-        out.set(0, 0, 0);
-        if (!beaconVeiled(b)) return 0;
-        vTmp.copy(b.pos).project(camera);
-        const z = vTmp.z; let x = (vTmp.x + 1) / 2 * W, y = (1 - vTmp.y) / 2 * H; const x0 = x, y0 = y;
-        const dist = camera.position.distanceTo(b.pos) || 1;
-        const rad = (b.glow.scale.x * 0.3) / dist * (H / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-        for (let pass = 0; pass < 4; pass++) {
-            let hit = false;
-            for (let i = 0; i < veilCircles.length; i++) {
-                const c = veilCircles[i], need = c.r + rad + 2, d = Math.hypot(x - c.x, y - c.y);
-                if (d >= need) continue;
-                let ux, uy; if (d < 0.5) { ux = x < W / 2 ? -1 : 1; uy = 0; } else { ux = (x - c.x) / d; uy = (y - c.y) / d; }
-                x = c.x + ux * need; y = c.y + uy * need; hit = true;
-            }
-            if (!hit) break;
-        }
-        aTmp.set(x / W * 2 - 1, 1 - y / H * 2, z).unproject(camera);
-        out.copy(aTmp).sub(b.pos);
-        return Math.hypot(x - x0, y - y0);
-    }
-    function veilLook() { return Object.keys(beacons).map(id => { const b = beacons[id]; vTmp.copy(b.g.position).project(camera); return { id, x: +((vTmp.x + 1) / 2 * W).toFixed(1), y: +((1 - vTmp.y) / 2 * H).toFixed(1), z: +vTmp.z.toFixed(3), veil: +(b.g.visible ? b.core.material.opacity : 0).toFixed(3), under: beaconVeiled(b), aside: +b.aside.toFixed(1) }; }); }
+    function placesLook() { return Object.keys(beacons).map(id => { const b = beacons[id]; vTmp.copy(b.g.position).project(camera); return { id, x: +((vTmp.x + 1) / 2 * W).toFixed(1), y: +((1 - vTmp.y) / 2 * H).toFixed(1), z: +vTmp.z.toFixed(3), visible: b.g.visible, opacity: +b.core.material.opacity.toFixed(3), off: +b.g.position.distanceTo(b.pos).toFixed(5) }; }); }
     const frameFns = new Set();
     function onFrame(fn) { if (typeof fn !== 'function') return () => {}; frameFns.add(fn); return () => frameFns.delete(fn); }
     /* (the little microbe buddies that bobbed next to the gut were removed Oct 16, user decision) */
@@ -746,10 +706,6 @@ export function createWorld(THREE, canvas, opts) {
             b.ring.rotation.x = t * 0.6 + i; b.ring.rotation.y = t * 0.4; const s = (2.2 + Math.sin(t * 1.6 + i) * 0.25) * (1 + 0.45 * tend) * (1 + 0.15 * pk); b.glow.scale.set(s, s, 1);
             b.glow.material.opacity = Math.min(1, 0.85 + 0.15 * tend + 0.1 * pk); b.ring.material.opacity = 0.7 + 0.3 * tend; const rs = 1 + 0.3 * tend; b.ring.scale.set(rs, rs, rs);
             b.core.material.color.copy(b.hue).lerp(tendWhite, 0.4 * tend);
-            /* never faded, never hidden: behind a Home bubble a place steps aside (beaconAside) and stays fully lit */
-            b.aside = beaconAside(b, aOff); b.off.lerp(aOff, Math.min(1, dt * 6)); if (b.off.lengthSq() < 1e-8) b.off.set(0, 0, 0);
-            b.g.position.copy(b.pos).add(b.off);
-            b.veil = 1; b.core.material.opacity = 1; b.g.visible = true;
         });
         /* place tint */
         tintAmt += (tintT - tintAmt) * Math.min(1, dt * 2.5);
@@ -840,5 +796,5 @@ export function createWorld(THREE, canvas, opts) {
     }
     function dispose() { stop(); renderer.dispose(); }
     setTheme(opts.theme || 'dark');
-    return { scene, camera, hub, regions, onFrame, memU, resize, setVeil, veilLook, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, cosmosLook: () => ({ vis: !!(cosmos && cosmos.g.visible), rv: typeof cosmosRv === 'number' ? +cosmosRv.toFixed(3) : -1, gx: +cosmosGx.toFixed(3), d: +rig.dist.toFixed(2), m: +((rig.maxD || 14) * 1.05).toFixed(2), stars: cosmos ? +cosmos.stars.material.uniforms.uO.value.toFixed(3) : 0, oth: cosmos && cosmos.others[0] ? +cosmos.others[0].material.uniforms.uO.value.toFixed(3) : 0 }), rig, renderer };
+    return { scene, camera, hub, regions, onFrame, memU, resize, placesLook, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, cosmosLook: () => ({ vis: !!(cosmos && cosmos.g.visible), rv: typeof cosmosRv === 'number' ? +cosmosRv.toFixed(3) : -1, gx: +cosmosGx.toFixed(3), d: +rig.dist.toFixed(2), m: +((rig.maxD || 14) * 1.05).toFixed(2), stars: cosmos ? +cosmos.stars.material.uniforms.uO.value.toFixed(3) : 0, oth: cosmos && cosmos.others[0] ? +cosmos.others[0].material.uniforms.uO.value.toFixed(3) : 0 }), rig, renderer };
 }

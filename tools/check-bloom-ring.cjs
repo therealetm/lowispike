@@ -27,7 +27,7 @@ const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path
       scale: hud ? getComputedStyle(hud).scale : '', misty: mr ? { x: mr.left + mr.width / 2, y: mr.top + mr.height / 2, r: Math.min(mr.width, mr.height) / 2 } : null,
       lay: (document.getElementById('hb2Bloom') || {}).__layout ? { c: document.getElementById('hb2Bloom').__layout.ring && document.getElementById('hb2Bloom').__layout.ring.c, rho: document.getElementById('hb2Bloom').__layout.ring && document.getElementById('hb2Bloom').__layout.ring.rho } : null,
       orbs, vw: innerWidth, vh: innerHeight, lb3d: document.documentElement.classList.contains('lb3d'), fan: [...document.querySelectorAll('#ss2Bloom .ss2-chip')].filter(e => e.getBoundingClientRect().width > 0).length,
-      veil: (window.LowiWorld3D && LowiWorld3D.veilLook) ? LowiWorld3D.veilLook() : null, circles: (window.LowiWorld3D && LowiWorld3D.veilCircles) ? LowiWorld3D.veilCircles() : null, stats: !!document.querySelector('.ms-sheet.on, #msSheet.on, [data-misty-sheet].on, .misty-sheet.open') };
+      stats: !!document.querySelector('.ms-sheet.on, #msSheet.on, [data-misty-sheet].on, .misty-sheet.open') };
   });
   const settle = async () => { let a = '', b = ''; for (let i = 0; i < 40; i++) { b = await P.evaluate(() => JSON.stringify([getComputedStyle(document.getElementById('whHud') || document.body).scale, ...[...document.querySelectorAll('#hb2Bloom .hb2-orb')].map(e => { const r = e.getBoundingClientRect(); return Math.round(r.left) + ',' + Math.round(r.top); })])); if (b === a && i > 2) return i; a = b; await H.sleep(250); } return -1; };
   const judge = async (name, s, ringNow, expectN) => {
@@ -60,13 +60,7 @@ const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path
       if (st.some(x => Math.abs(x - want) > 0.05)) bad.push('two-finger ring not one even full circle: ' + st.map(x => Math.round(x * 180 / Math.PI)).join(','));
       if (!s.orbs.some(p => p.g === 'sleep')) bad.push('Sleep missing from the two-finger ring');
     }
-    if (s.veil && s.circles) {
-      await H.sleep(700);
-      const v2 = await P.evaluate(() => LowiWorld3D.veilLook());
-      const shown = v2.filter(b => b.z < 1 && b.z > -1 && b.veil > 0.3 && s_in(b));
-      function s_in(b) { return s.circles.some(c => Math.hypot(b.x - c.x, b.y - c.y) < c.r - 2); }
-      if (shown.length) bad.push('body place shows on a bubble: ' + shown.map(b => b.id + '@' + Math.round(b.x) + ',' + Math.round(b.y)).join(' '));
-    }
+    /* (Oct 24, 10:45: body places may sit behind a bubble again, as before Oct 23; no veil check) */
     res.cases.push({ name, ok: !bad.length, n: s.orbs.length, scale: s.scale, bad });
     await R.shot(path.join(out, tag + '-' + name.replace(/\W+/g, '_') + '.png'));
     if (bad.length) await find(name, { bad: bad.slice(0, 8) });

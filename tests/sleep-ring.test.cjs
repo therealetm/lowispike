@@ -106,12 +106,9 @@ test('bubble style: every orb wears the Home bubble membrane, no navy disc, no h
     assert.match(css, /\.hb2-orb\[data-group="sleep"\] \.hb2-fill/, 'Sleep keeps its violet liquid');
 });
 
-test('body places step aside from a bubble instead of sitting on its edge (Oct 24: and never vanish)', () => {
+test('body places are left alone by the bubbles (Oct 24, 10:45: no fade, no step-aside; see places-stay.test.cjs)', () => {
     const sc = read('body-world-3d-scene.js'), bw = read('body-world-3d.js');
-    assert.match(sc, /function setVeil\(list\)/);
-    assert.match(sc, /b\.aside = beaconAside\(b, aOff\);/);
-    assert.doesNotMatch(sc, /const vT = beaconVeiled\(b\) \? 0 : 1;/, 'Oct 24: the fade-to-nothing veil is gone');
-    assert.match(sc, /resize, setVeil, veilLook, setFocus/, 'exported');
-    assert.match(bw, /const VEIL_SEL = '\.lb-bub, \.lb-ctl, \.hb2-orb, \.ss2-chip';/);
-    assert.match(bw, /world\.setVeil\(veilCircles\(\)\)/);
+    assert.doesNotMatch(sc, /function setVeil\(|beaconVeiled|beaconAside/, 'no veil and no dodge in the scene');
+    assert.doesNotMatch(bw, /VEIL_SEL|world\.setVeil/, 'the shell no longer reports bubbles to the scene');
+    assert.match(sc, /resize, placesLook, setFocus/, 'probe exported');
 });

@@ -3,7 +3,8 @@
 // Moves every build id to a new one and (optionally) prepends a What's New entry.
 // Replaces the bump block that was copy-pasted into each one-off release script.
 // Usage:
-//   node scripts/bump-build.cjs [--build YYYYMMDD-HHMMSS] [--live URL|--no-live] [--news news.json] [--dry-run]
+//   node scripts/bump-build.cjs [--build YYYYMMDD-HHMMSS] [--live URL|--no-live] [--news news.json | --quiet] [--dry-run]
+//   --quiet = a silent bug fix: no "New version" ask, no "Update loaded", no What's New (see applyBump)
 // news.json: {"slug":"care-board","tutorial":"<step id>"|{"none":"why"},"go":{"tab":"home"},"lead":{en,de,es},"steps":[...],"text":{"en":"..","de":"..","es":".."}}
 // Prints the new build id on the last line.
 const fs = require('fs');
@@ -47,7 +48,14 @@ function checkTutorial(root, news) {
   return '';
 }
 
-function applyBump(root, oldId, newId, news) {
+/* Oct 24 2026 (Emmanuel: "if you find a bug and you fix it, don't send out an update notification that annoys the people. They
+   don't need to know that."): a quiet release (--quiet) is a silent bug fix. version.json keeps "loud" = the newest build that
+   announces itself, right after "build" so the app's 64-byte update poll sees it. The app asks to update (and says "Update
+   loaded") only when "loud" is newer than the build it runs; a quiet build just arrives the next time the app opens. A normal
+   release sets loud = its own build. A quiet release cannot carry What's New (--news). */
+function applyBump(root, oldId, newId, news, opts) {
+  const quiet = !!(opts && opts.quiet);
+  if (quiet && news) throw new Error('a quiet release (silent bug fix) has no What\'s New: drop --news or --quiet');
   const changed = [];
   for (const f of ID_FILES) {
     const p = path.join(root, f);
@@ -58,8 +66,9 @@ function applyBump(root, oldId, newId, news) {
   }
   const vp = path.join(root, 'version.json');
   const raw = fs.readFileSync(vp, 'utf8');
-  const d = JSON.parse(raw);
-  d.build = newId;
+  const d0 = JSON.parse(raw);
+  const loud = quiet ? (BUILD_RE.test(d0.loud || '') ? d0.loud : oldId) : newId;
+  const d = Object.assign({ build: newId, loud }, d0, { build: newId, loud });
   if (news) {
     const n = d.news = d.news || {};
     n.text = n.text || {};
@@ -109,12 +118,13 @@ async function main() {
   if (!BUILD_RE.test(newId)) { console.error('bad --build ' + newId); process.exit(2); }
   if (newId <= oldId || (live && newId <= live)) { console.error('new build ' + newId + ' must be after repo ' + oldId + ' and live ' + live); process.exit(2); }
   const news = opt('--news') ? JSON.parse(fs.readFileSync(opt('--news'), 'utf8')) : null;
+  if (news && args.includes('--quiet')) { console.error('BLOCKER: a quiet release (silent bug fix) has no What\'s New: drop --news or --quiet'); process.exit(5); }
   const tutErr = checkTutorial(root, news);
   if (tutErr) { console.error('BLOCKER: ' + tutErr); process.exit(5); }
   if (news && !Array.isArray(news.tour) && typeof news.tutorial !== 'string') console.warn('WARNING: this release has no tour step, so What\'s New shows only one card with its text. A user-visible change must ship a step in part \'new\' of tutorial-steps.js and list it in news.json "tour" (TUTORIAL.md, "What\'s New is a mini tour").');
   console.log('repo=' + oldId + ' live=' + live + ' new=' + newId);
   if (args.includes('--dry-run')) { console.log(newId); return; }
-  const changed = applyBump(root, oldId, newId, news);
+  const changed = applyBump(root, oldId, newId, news, { quiet: args.includes('--quiet') });
   const after = buildIds(root);
   if (new Set(Object.values(after)).size !== 1) { console.error('bump left ids disagreeing: ' + JSON.stringify(after)); process.exit(4); }
   for (const f of ID_FILES) { const p = path.join(root, f); if (fs.existsSync(p) && fs.readFileSync(p, 'utf8').includes(oldId)) { console.error('old build left in ' + f); process.exit(4); } }

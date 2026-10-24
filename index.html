@@ -9930,17 +9930,24 @@ function showUpd(){ if (!document.body) return; /* on <html>, not <body>: sheets
    the poll below runs every 60 s, which was about 4 MB an hour on mobile data. The build id is the file's first key, so the poll asks for
    the first 64 bytes only (GitHub Pages answers 206). The whole file is fetched only when that answer has no build id,
    when the server sends the whole file anyway (then that answer is used), or when the small request fails. */
-async function liveBuild(){
+/* Oct 24 (Emmanuel: "if you find a bug and you fix it, don't send out an update notification that annoys the people. They don't
+   need to know that."): version.json carries "loud", the newest build that announces itself (scripts/bump-build.cjs --quiet).
+   A quiet build (a silent bug fix) never asks "New version", never says "Update loaded" and never shows the orb's update
+   bubble: it just arrives the next time the app opens. No "loud" (an older version.json) = every build is loud, as before. */
+const loudOf = (t, build) => { const m = /"loud"\s*:\s*"(\d{8}-\d{6})"/.exec(String(t || "")); return m ? m[1] : build; };
+async function liveInfo(){
   try { const r = await fetch("version.json?t=" + Date.now(), {cache:"no-store", headers:{Range:"bytes=0-63"}});
-    if (r && r.status === 206 && r.text) { const m = /"build"\s*:\s*"(\d{8}-\d{6})"/.exec(await r.text()); if (m) return m[1]; }
-    else if (r && r.ok) { const v = await r.json(); return v && v.build; }
-    else return "";
+    if (r && r.status === 206 && r.text) { const t = await r.text(), m = /"build"\s*:\s*"(\d{8}-\d{6})"/.exec(t); if (m) return { build: m[1], loud: loudOf(t, m[1]) }; }
+    else if (r && r.ok) { const v = await r.json(); return { build: v && v.build, loud: (v && validBuild(v.loud)) ? v.loud : (v && v.build) }; }
+    else return { build: "", loud: "" };
   } catch(e){}
-  const r = await fetch("version.json?t=" + Date.now(), {cache:"no-store"}); if (!r.ok) return ""; const v = await r.json(); return v && v.build; }
+  const r = await fetch("version.json?t=" + Date.now(), {cache:"no-store"}); if (!r.ok) return { build: "", loud: "" }; const v = await r.json(); return { build: v && v.build, loud: (v && validBuild(v.loud)) ? v.loud : (v && v.build) }; }
+async function liveBuild(){ return (await liveInfo()).build; }
 async function checkUpdate(force){ if (!validBuild(BUILD) || location.protocol === "file:" || checking || updating) return; if (force !== true && Date.now() - lastCheck < 10000) return; lastCheck = Date.now(); checking = true;
-  try { const v = { build: await liveBuild() };
+  try { const v = await liveInfo();
     if (!validBuild(v.build)) return;
     if (v.build <= BUILD || failedRecently(v.build)) { clearUpd(); return; }
+    if (validBuild(v.loud) && v.loud <= BUILD) { clearUpd(); return; } /* only silent bug fixes since this build: no ask, they load on the next open */
     try { if (localStorage.getItem("lowi.upd.later") === v.build) { clearUpd(); return; } } catch(e){} /* "Later" on the orb's bubble: not again for this build */
     try { const z = +localStorage.getItem("lowi.upd.snooze") || 0; if (z && Date.now() - z < 3 * 3600 * 1000) { clearUpd(); return; } } catch(e){} /* Oct 23: and no other build asks for 3 hours */
     newBuild = v.build; showUpd(); } catch(e){} finally { checking = false; } }
@@ -9976,7 +9983,7 @@ function afterUpdate(){ let want = ""; try { want = sessionStorage.getItem("lowi
     clearUpd();
     if (validBuild(BUILD) && BUILD >= want) { try { localStorage.removeItem(FAIL_KEY); } catch(e){} updNote(updTxt()[1]); }
     else { failedBuild = want; try { localStorage.setItem(FAIL_KEY, JSON.stringify({build:want,at:Date.now()})); } catch(e){} updNote(updTxt()[2], 9000); }
-  } else { let seen = ""; try { seen = localStorage.getItem("lowi.build") || ""; } catch(e){} if (validBuild(seen) && validBuild(BUILD) && seen < BUILD) updNote(updTxt()[1]); }
+  } else { let seen = ""; try { seen = localStorage.getItem("lowi.build") || ""; } catch(e){} if (validBuild(seen) && validBuild(BUILD) && seen < BUILD) liveInfo().then(v => { if (!validBuild(v.loud) || v.loud > seen) updNote(updTxt()[1]); }).catch(() => {}); } /* Oct 24: a silent bug fix opens without "Update loaded" */
   try { if (BUILD) localStorage.setItem("lowi.build", BUILD); } catch(e){} }
 function sw(){ if (!("serviceWorker" in navigator) || location.protocol !== "https:") return;
   navigator.serviceWorker.register("sw.js", {scope:"./", updateViaCache:"none"}).then(reg => { try { reg.update(); } catch(e){} }).catch(() => {}); }

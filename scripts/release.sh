@@ -2,21 +2,25 @@
 # One release path for every agent. Run it from a worktree whose branch holds the finished,
 # committed change. It never force-pushes and never touches files you did not commit.
 #
-#   scripts/release.sh "Short summary of what users get" [--news news.json] [--no-bump] [--no-verify]
+#   scripts/release.sh "Short summary of what users get" [--news news.json | --quiet] [--no-bump] [--no-verify]
+#   --quiet: a silent bug fix (Oct 24, Emmanuel): no "New version" ask, no "Update loaded", no What's New;
+#            the fix just arrives the next time the app opens (scripts/bump-build.cjs applyBump, "loud" in version.json).
 #
 # Steps: shared lock -> fetch -> rebase on origin/main -> bump build (+ What's New) ->
 # release-check -> full test suite -> whitespace check -> commit -> scripts/push-main.sh (CI must
 # pass on the exact commit on a ci/ branch, then main fast-forwards; the main ruleset requires it) ->
 # release lock freed -> wait until GitHub Pages (deployed by CI after its tests) serves the build.
 set -euo pipefail
-SUMMARY="${1:?usage: scripts/release.sh \"summary\" [--news news.json] [--no-bump] [--no-verify]}"; shift
-NEWS=""; BUMP=1; VERIFY=1
+SUMMARY="${1:?usage: scripts/release.sh \"summary\" [--news news.json | --quiet] [--no-bump] [--no-verify]}"; shift
+NEWS=""; BUMP=1; VERIFY=1; QUIET=""
 while [ $# -gt 0 ]; do case "$1" in
   --news) NEWS="$(realpath "$2")"; shift 2;;
+  --quiet) QUIET="--quiet"; shift;;
   --no-bump) BUMP=0; shift;;
   --no-verify) VERIFY=0; shift;;
   *) echo "unknown option $1"; exit 2;;
 esac; done
+if [ -n "$QUIET" ] && [ -n "$NEWS" ]; then echo "BLOCKER: a quiet release (silent bug fix) has no What's New: drop --news or --quiet"; exit 2; fi
 cd "$(git rev-parse --show-toplevel)"
 if [ -n "$(git status --porcelain)" ]; then echo "BLOCKER: commit or stash your changes first:"; git status --short; exit 6; fi
 
@@ -28,7 +32,7 @@ git rebase -q origin/main || { git rebase --abort; echo "BLOCKER: rebase conflic
 BASE=$(git rev-parse origin/main)
 
 if [ "$BUMP" = 1 ]; then
-  NEW=$(node scripts/bump-build.cjs ${NEWS:+--news "$NEWS"} | tail -1)
+  NEW=$(node scripts/bump-build.cjs ${NEWS:+--news "$NEWS"} $QUIET | tail -1)
 else
   NEW=$(node -e "console.log(require('./version.json').build)")
 fi

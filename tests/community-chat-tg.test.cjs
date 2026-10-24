@@ -27,13 +27,7 @@ test('bubble: sender name on top, reply quote, time bottom-right inside the bubb
  assert.doesNotMatch(out,/class="cs-by"[^]*?<time[^]*?<\/div>[^]*?cm-foot/,'the time is no longer in the name row');
 });
 test('room strings exist in English, German and Spanish',()=>{
- for(const k of ['roomCommunity','roomMembers','roomPinned','pinMsg','unpinMsg','pinGo','pinFailed','pinGone','roomMsg','roomJoined','roomJoinedMany','roomWave','roomNoCrew']){const m=js.match(new RegExp('[ ,]'+k+":\\['([^']+)','([^']+)','([^']+)'\\]"));assert(m,k);}
- assert.match(js,/roomJoinedMany:\['\{n\} and \{c\} others joined'/);
-});
-test('join pills come only from real room presence and carry a Wave button that greets that person',()=>{
- assert.match(js,/function joinTrack\(\)\{const R=W\.LowiRooms;if\(!R\|\|!R\.active\|\|!R\.active\(\)/);
- assert.match(js,/joinSeen=new Set\(cur\);return;/,'people already in the room when you arrive are not announced');
- assert.match(js,/button\('wave'/);assert.match(js,/a==='wave'\)\{draft\('\\u\{1F44B\} @'/);
+ for(const k of ['roomCommunity','roomMembers','roomPinned','pinMsg','unpinMsg','pinGo','pinFailed','pinGone','roomMsg','roomNoCrew']){const m=js.match(new RegExp('[ ,]'+k+":\\['([^']+)','([^']+)','([^']+)'\\]"));assert(m,k);}
 });
 test('room composer: photo button moves left of the field in the room (DOM order too), right of it in the galaxy',()=>{
  assert.match(js,/const left=!!threadOpen&&!selN;if\(left&&ph\.nextElementSibling!==inp\)inp\.parentNode\.insertBefore\(ph,inp\)/);

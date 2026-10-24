@@ -60,10 +60,10 @@ async function run(engine, device, light) {
     /* headless WebKit sometimes holds the chat's animation-frame paint; paint once directly so the room is measured with its messages */
     await p.evaluate(() => { const l = document.getElementById('cmList'); if (l && !l.children.length && window.LowiCommunity) LowiCommunity.mount(document.getElementById('cmPaneChat')); });
     await p.evaluate(() => { const l = document.getElementById('cmList'); if (l) l.scrollTop = l.scrollHeight; }); await sleep(600);
-    /* simulate people walking into the room (the real LowiRooms presence list grows) so the "X and N others joined" pill + Wave show */
+    /* simulate people walking into the room (the real LowiRooms presence list grows). Since 24 Oct 2026 no "joined" line may appear */
     const joined = await p.evaluate(() => { const R = window.LowiRooms, Hh = window.LowiCommunityHost; if (!R || !Hh) return 'no rooms'; const base = R.members(); const extra = Hh.people().map(x => x.uid).filter(u => u && !base.includes(u)).slice(0, 4); R.active = () => true; R.members = () => base; LowiCommunity.mount(document.getElementById('cmPaneChat')); R.members = () => base.concat(extra); LowiCommunity.mount(document.getElementById('cmPaneChat')); const l = document.getElementById('cmList'); l.scrollTop = l.scrollHeight; return extra.length; });
     await sleep(300); notes.push(W + ' joined ' + joined);
-    { const wv = await p.evaluate(() => { const s = document.querySelector('#cgThread .cr-sys'); const w = s && s.querySelector('[data-chat=wave]'); return s ? (w ? Math.round(w.getBoundingClientRect().height) + ' ' + w.className : 'no wave: ' + s.outerHTML.slice(0, 300)) : 'no pill'; }); if (!/^(3[6-9]|[4-9]\d)/.test(wv)) fail(W, 'join pill/Wave: ' + wv); }
+    { const jl = await p.evaluate(() => { const t = document.getElementById('cgThread'); return (t && /joined|beigetreten|se uni(ó|eron)/i.test(t.textContent || '')) || !!document.querySelector('#cgThread .cr-sys, #cgThread [data-chat=wave]'); }); if (jl) fail(W, 'a joined line showed up'); }
     const tag = device.replace(/\W+/g, '-').toLowerCase() + (light ? '-day' : '');
     await R.shot(path.join(OUT, tag + '-room.png'));
     const L = await p.evaluate(layout); notes.push(W + ' ' + JSON.stringify({ bubbles: L.bubbles, sys: L.sys, list: L.list }));

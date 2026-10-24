@@ -4164,9 +4164,13 @@ const ES_MEAL = {pollo:"chicken", pechuga:"chicken", pavo:"turkey", huevos:"eggs
      did not know these words (palomitas, espaguetis, cruasán, batata, barrita de proteína). Same foods as their English words. */
   palomitas:"popcorn", espaguetis:"spaghetti", espagueti:"spaghetti", macarrones:"macaroni", cruasan:"croissant", cruasanes:"croissants",
   batata:"sweet potato", batatas:"sweet potatoes", boniato:"sweet potato", boniatos:"sweet potatoes", magdalena:"muffin", magdalenas:"muffins",
-  gominolas:"gummy bears", barrita:"bar", barritas:"bars"};
+  gominolas:"gummy bears", barrita:"bar", barritas:"bars",
+  /* Oct 24 sweep 18:02: "tortitas" (pancakes) typed in Scan got no verdict and no swap; "gofres" (waffles) neither */
+  tortitas:"pancakes", tortita:"pancake", gofres:"waffles", gofre:"waffle"};
 /* "barrita de proteína" / "barrita de cereales" put the food word last; read them as "protein bar" / "cereal bar" */
-const ES_PHRASE = [[/\bbarritas? (?:de )?proteinas?\b/g, "protein bar"], [/\bbarritas? (?:de )?cereales\b/g, "cereal bar"]];
+const ES_PHRASE = [[/\bbarritas? (?:de )?proteinas?\b/g, "protein bar"], [/\bbarritas? (?:de )?cereales\b/g, "cereal bar"],
+  /* "tortitas de arroz" / "tortitas de maiz" are rice / corn cakes, not pancakes; they were read as a rice dish (curry swap) */
+  [/\btortitas? (?:de )?arroz\b/g, "rice cakes"], [/\btortitas? (?:de )?maiz\b/g, "corn cakes"]];
 const esMealToks = toks => { const out = []; toks.forEach((t, i) => {
   if (!Object.prototype.hasOwnProperty.call(ES_MEAL, t) || (t === "pan" && /^(fried|seared|roasted|fry|frying)$/.test(toks[i + 1] || ""))) { out.push(t); return; }
   if (ES_MEAL[t]) ES_MEAL[t].split(" ").forEach(x => out.push(x)); }); return out; };

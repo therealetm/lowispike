@@ -40,7 +40,7 @@
             askT: 'When did your last period start?', askS: 'Log the first day and your cell world shows where you are.',
             offT: 'Track your cycle?', offS: 'See where you are in your cycle as a little cell world. Private on this phone.', turnOn: 'Turn on',
             turnOff: 'Turn off cycle tracking', offDone: 'Cycle tracking is off. You can turn it on again here any time.',
-            hedge: 'A rough guide from your own dates, not medical advice. Every body has its own rhythm.',
+            hedge: 'A rough guide from your own dates, not medical advice. Not for birth control. Every body has its own rhythm.',
             tileOff: 'Off', tileStart: 'Log your first day', svgL: 'Your cycle as a cell world: rest, grow, glow, gather' },
         de: { est: 'geschätzt', wide: 'Dein Zyklus schwankt, das ist nur eine grobe Schätzung.',
             feelT: 'Wie geht es dir heute?', feelS: 'Freiwillig. Nur du siehst das.', f_cramps: 'Krämpfe', f_strong: 'Starke Krämpfe', f_tired: 'Wenig Energie', f_bloat: 'Blähbauch', f_crave: 'Heißhunger', f_head: 'Kopfweh', f_low: 'Gedrückt', f_anx: 'Ängstlich', f_good: 'Alles gut', f_skip: 'Lieber nicht sagen',
@@ -63,7 +63,7 @@
             askT: 'Wann hat deine letzte Periode angefangen?', askS: 'Trag den ersten Tag ein und deine Zellwelt zeigt, wo du stehst.',
             offT: 'Zyklus verfolgen?', offS: 'Sieh als kleine Zellwelt, wo du in deinem Zyklus stehst. Privat auf diesem Handy.', turnOn: 'Einschalten',
             turnOff: 'Zyklus-Tracking ausschalten', offDone: 'Zyklus-Tracking ist aus. Du kannst es hier jederzeit wieder einschalten.',
-            hedge: 'Eine grobe Orientierung aus deinen eigenen Daten, kein medizinischer Rat. Jeder Körper hat seinen eigenen Rhythmus.',
+            hedge: 'Eine grobe Orientierung aus deinen eigenen Daten, kein medizinischer Rat. Nicht zur Verhütung. Jeder Körper hat seinen eigenen Rhythmus.',
             tileOff: 'Aus', tileStart: 'Ersten Tag eintragen', svgL: 'Dein Zyklus als Zellwelt: ruhen, wachsen, leuchten, sammeln' },
         es: { est: 'estimada', wide: 'Tu ciclo varía, así que es una estimación amplia.',
             feelT: '¿Cómo estás hoy?', feelS: 'Opcional. Solo tú lo ves.', f_cramps: 'Cólicos', f_strong: 'Cólicos fuertes', f_tired: 'Poca energía', f_bloat: 'Hinchazón', f_crave: 'Antojos', f_head: 'Dolor de cabeza', f_low: 'Ánimo bajo', f_anx: 'Ansiedad', f_good: 'Todo bien', f_skip: 'Prefiero no decirlo',
@@ -86,7 +86,7 @@
             askT: '¿Cuándo empezó tu última regla?', askS: 'Apunta el primer día y tu mundo celular te muestra dónde estás.',
             offT: '¿Seguir tu ciclo?', offS: 'Mira en qué punto de tu ciclo estás como un pequeño mundo celular. Privado en este móvil.', turnOn: 'Activar',
             turnOff: 'Desactivar el seguimiento del ciclo', offDone: 'El seguimiento del ciclo está desactivado. Puedes activarlo aquí cuando quieras.',
-            hedge: 'Una guía aproximada con tus propias fechas, no un consejo médico. Cada cuerpo tiene su propio ritmo.',
+            hedge: 'Una guía aproximada con tus propias fechas, no un consejo médico. No sirve como anticonceptivo. Cada cuerpo tiene su propio ritmo.',
             tileOff: 'Desactivado', tileStart: 'Apunta tu primer día', svgL: 'Tu ciclo como mundo celular: reposo, crecer, brillo, juntarse' }
     };
     /* setup step 2 and the profile tile are translated by LowiLang (the setup sheet is not data-noi18n) */

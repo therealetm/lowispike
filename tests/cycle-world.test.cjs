@@ -62,7 +62,8 @@ test('the four phases are a cell world: rest, grow, glow, gather; never weather 
 });
 
 test('gentle and non-clinical: no hormones, fertility or diagnosis talk, and it says it is a rough guide', () => {
-    const words = JSON.stringify(CW.strings).toLowerCase();
+    /* the hedge alone may say it is not for birth control (Emmanuel's scope, Oct 24 2026); every other line stays free of it */
+    const words = JSON.stringify(['en', 'de', 'es'].map(l => Object.assign({}, CW.strings[l], { hedge: '' }))).toLowerCase();
     for (const w of ['estrogen', 'östrogen', 'estrógeno', 'progesteron', 'hormon', 'fertil', 'ovulat', 'eisprung', 'ovulación', 'diagnos', 'pregnan', 'schwanger', 'embaraz', 'contracept', 'verhütung'])
         assert.ok(!words.includes(w), 'no ' + w);
     for (const lang of ['en', 'de', 'es']) assert.ok(CW.strings[lang].hedge.length > 20, lang + ' has the rough-guide line');

@@ -266,7 +266,7 @@
   function card(opts){
     const o=opts||{};const now=typeof o.now==='number'?o.now:Date.now();const lang=o.lang||'en';
     const key=dayKey(now);const sw=swapFor(key);const gd=goldFor(key);
-    
+
     const c={
       id:'inspo-'+key,day:key,ts:cardDate(now).getTime(),uid:BOT_ID,by:NAME,lang:LANGS[li(lang)],
       label:{bot:pick(L.bot,lang),recipe:pick(L.recipe,lang),aria:pick(L.aria,lang),swap:pick(L.swap,lang),craving:pick(L.craving,lang),tryIt:pick(L.tryIt,lang),book:pick(L.book,lang)},

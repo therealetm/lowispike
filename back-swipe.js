@@ -23,8 +23,29 @@
             D.querySelectorAll('.r2-ov.on').length + '|' +
             D.querySelectorAll('.on, .open, [open]').length;
     }
+    /* Oct 24 (back and close sweep): some layers listen for Escape on themselves only (the Circles list, user-rooms.js, keys on
+       its own .ur element). Escape sent to the document never reached it: back from Community with Circles open went Home and
+       left Circles on top of Home, and the next back left the app. Send Escape to the top open layer unless focus is already in
+       it; it still bubbles up to the document, so layers that listen there close exactly as before. */
+    function topLayer() {
+        try {
+            const all = Array.prototype.slice.call(D.querySelectorAll('[aria-modal="true"], dialog[open]') || []);
+            let best = null, bz = -Infinity;
+            all.forEach(e => {
+                if (!e || !e.getBoundingClientRect || e.hidden || e.isConnected === false) return;
+                const r = e.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return;
+                const cs = typeof W.getComputedStyle === 'function' ? W.getComputedStyle(e) : null;
+                if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return;
+                const z = cs ? (parseInt(cs.zIndex, 10) || 0) : 0;
+                if (z >= bz) { bz = z; best = e; }
+            });
+            return best;
+        } catch (e) { return null; }
+    }
     function escape() {
-        const t = D.activeElement && D.activeElement !== D.body ? D.activeElement : D;
+        const a = D.activeElement && D.activeElement !== D.body ? D.activeElement : null;
+        const top = topLayer();
+        const t = top && !(a && typeof top.contains === 'function' && top.contains(a)) ? top : (a || D);
         try { t.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true, cancelable: true })); } catch (e) { }
     }
     function home() {
@@ -53,5 +74,5 @@
     }
     W.addEventListener('popstate', onPop);
     D.addEventListener('pointerdown', guard, true);
-    W.LowiBackSwipe = { guard, onPop, sig, closed: e => !!e && e === closedEvt };
+    W.LowiBackSwipe = { guard, onPop, sig, escape, topLayer, closed: e => !!e && e === closedEvt };
 })(window, document);

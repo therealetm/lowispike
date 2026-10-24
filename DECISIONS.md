@@ -92,7 +92,6 @@ This file is append-only. Add decisions with a date, status, context, decision, 
 
 **Consequences:** Generic RPG panels, flat clip-art plants, and decoration without behavior are out of scope. A separate whole-app “biopunk mode” remains unshipped and undecided.
 
-
 ## 2026-10-14 — One spirit world and honest nutrition
 
 **Status:** Accepted by the requested release.
@@ -109,7 +108,6 @@ This file is append-only. Add decisions with a date, status, context, decision, 
 
 **Consequences:** The sky is one non-interactive layer behind every screen, built from transforms and opacity only, hidden while the camera is open and still under Reduce Motion. It never requests location by itself and adds no page scroll.
 
-
 ## 2026-10-14 20:52 — Scan answers first: likely-spike estimate before evidence
 
 **Status:** Accepted (owner request after a failed grocery scan).
@@ -117,7 +115,6 @@ This file is append-only. Add decisions with a date, status, context, decision, 
 **Decision:** A barcode scan always ends on the LOWiSPIKE verdict card: red / yellow / green likely-spike estimate from the existing rules, the silhouette-to-verdict animation, the herb reacting to that same estimate, and "Ate it, log it" / "Skip" directly under the verdict. The evidence-first field guide (discovery.js, tiers, missing label fields) is a secondary "Label details & evidence" link, never the scan result. No "Tier pending" badge on the scan card. Logging a meal earns the normal meal XP whatever the estimate. Photos are for saving and manual upload to the separate custom GPT; there is no in-app vision analysis.
 
 **Consequences:** rate(), rateName(), cardHTML() and reveal() must not be short-circuited by LowiDiscovery again (regression: b70d05a). tests/scan-verdict.test.cjs guards it.
-
 
 ## 2026-10-14 21:35 CEST — Cook > Produkte picks open the spike verdict, not the label evidence page
 
@@ -171,7 +168,6 @@ This file is append-only. Add decisions with a date, status, context, decision, 
 - Feedback: tiny pop at the finger (tap), a mint pop (new place), a banner (streak 3 and 5), a full fanfare (streak 8 and the existing day-streak badges). Variants rotate, never the same twice in a row; reduced motion gets still fades. `award()` takes an optional 6th argument `{quiet:true}` that skips only its own toast.
 - Minor entries (src tap/combo) are skipped by sun meter, herb praise, herb care kinds, the evolution card and the daily-ritual active days.
 
-
 ## 2026-10-15 15:00 CEST: XP only for completed, meaningful actions (replaces 14:15)
 - User feedback: random taps and tab switches gave points, and tapping Move showed an explore reward. That rule is gone. Taps, tab switches, opening sheets or menus and plain navigation earn 0 XP; xp-tap.js has no tap listener. Pending tap points from build 141500 are dropped, never paid; old ledger entries (src tap) and all saved XP stay.
 - XP comes from completed actions: the app's own meal, water, Move session, steps, fast, body-journey, scan, swap, cooking, check-in and quest rewards (unchanged, each capped or eventId'd), plus four that had none: first-ever discovery of a body region (5 XP, once per region), a microbe joining the crew (5, once per microbe), care sent (5, max 3 a day), a corrected fasting start (3, max 1 a day; the fast's own points stay once, when it ends).
@@ -189,7 +185,6 @@ This file is append-only. Add decisions with a date, status, context, decision, 
 - After a load that still shows the old build, the note now says to close and reopen the app (shown 9 s), cooldown unchanged.
 - sw.js install also caches the page itself, so an offline launch right after an update still opens (activate deletes the old cache that held the last page).
 - Users still on a build before 151500 run the old button once; if it hangs for them, closing and reopening the app once gets them onto the fixed one.
-
 
 ## 2026-10-15 — Publish recovered world-first Home for review
 The user explicitly requested deploying the recovered Home implementation without waiting for browser setup, and will review its appearance in the app. This permits publication for review; it does not establish completion of visual or physical-device acceptance.
@@ -290,7 +285,6 @@ The user explicitly requested deploying the recovered Home implementation withou
 **Decision:** `galaxy-bubbles.js` takes over from the solid-glass bump in `misty-galaxy.js`. Every thread flows one way (its sparks show which); near one she is carried along it (strongest mid-thread, up to 60 % of her own top speed) and drawn gently to its core; a full push against it still gets through, a weak one is carried back, steering sideways frees her. Pushing into a membrane for about half a second (a little longer on a tired day) lets her in; the camera comes in close and the bubble's inside walls glow; pushing out for a moment lets her out; the way home lets her straight out. With the limitless spirit world (same day) every hand-made world can be reached; the made-up worlds of the new space stay fly-through. While she is out there the other worlds and threads stay clearly visible.
 
 **Consequences:** Only your own steering is carried (autopilot and the way home never), so home is always reachable. Nothing here pays XP, crumbs or energy. `tests/galaxy-bubbles.test.cjs` guards the rules; `tests/galaxy-bubbles-live.cjs` (Playwright, not in the offline suite) flies the real 3D world at phone and iPad sizes.
-
 
 ## 2026-10-17 — Holding forward shows Misty's stretchy flight skin, not a constant light in front of her
 
@@ -504,7 +498,6 @@ The user explicitly requested deploying the recovered Home implementation withou
 
 **Consequences:** `tests/newuser-walkthrough.test.cjs` (6, all failed on 20261019-130951). Browser: `tests/newuser-hint-live.cjs` FAILS on live 20261019-140135 (hint never shows), PASSES on the branch in WebKit iPhone 13 and Chrome 390x844 (docked at the top, on screen, on nothing). No test removed or loosened. Open, not in this release: a new user sees a guessed fast already running; the day card stacks over the starter plan right after setup.
 
-
 ## 2026-10-19 Old-design purge, round 4: a phone on its side keeps the 8-bubble ring, never the old Home
 
 **Context:** `home-orbit-v2.js fit()` turns the ring off when the bubbles would fall below 56px, and Home then showed the old layout: greeting, weather, VR, world map, a "Today" pill naming the herb, Meals, the Daily Quest card and the old tab bar. On live 20261019-141244 that happened on short landscape screens (568x320 and 480x320; Chromium and WebKit), because `world-home.css` keeps Misty's Home bubble at a 190px minimum (`--wh-bs`), which a 320px-tall screen cannot ring.
@@ -512,7 +505,6 @@ The user explicitly requested deploying the recovered Home implementation withou
 **Decision:** (1) `home-orbit-v2.css`: on `max-height: 420px` landscape, `--wh-bs: clamp(116px, 42vh, 190px)` and `--wh-cy: 50%`, so Misty shrinks with the height and sits in the middle; the normal ring then fits (80px bubbles at 568x320). (2) `fit()`: before giving up it tries once more with a 6px gap and bubbles down to 44px (`tight: true`), still never overlapping Misty or leaving the screen. Only a screen that cannot hold even that keeps `ok:false` (the existing "says so instead of overlapping" test stands unchanged). Portrait and roomy screens are untouched.
 
 **Consequences:** `tests/oct19-old-design-purge-4.test.cjs` (5; 3 failed on 20261019-141244). `playtest/probe-ring-short.cjs`: on live 20261019-141244 568x320 and 480x320 FAILED (ring off, old Home visible); after the fix (local) 568x320, 480x320, 640x360, 390x844 Chromium and 568x320 WebKit all pass: ring on, 8 controls on screen, no overlaps, no old chrome. Suite 1544/1544. The old ring-off Home itself is still in the code as the last resort for impossible sizes; deleting it touches world-home.* (claimed by other tasks), left for later.
-
 
 ## 2026-10-19 Crash squad: the world-exit copy of the 3D canvas is small and freed at once (iOS canvas memory crash)
 
@@ -569,7 +561,6 @@ The user explicitly requested deploying the recovered Home implementation withou
 **Decision:** No meal known = no gap. `LOWI_FAST.st()` no longer writes a default; `hours()` is 0 and its card stays hidden without a known last meal. `LowiFastStop`: the "Ate earlier" sheet with no known meal asks "When did you last eat?" (no duration, no goal, no points) and the first answer starts the clock ("Gap clock started at ..."); the first meal saved anywhere else (Log meal / planned meal ticked, window `lowi:meal-logged`) also starts it, but only when no clock is known (a running clock is never restarted by Log meal). Gap bubble empty state shows "—" (was "Start a fast", which also did not fit the 70 px ring bubble). One-time clean-up per device (`noGuess` flag): a stored `last` that is exactly the old guess (local 20:00:00.000) with no logged fast, no start edit and no points paid is moved to `guess` (kept, never read); everything else, and any later real 20:00 entry, stays.
 
 **Consequences:** `tests/no-fake-fast.test.cjs` (14; 10 failed on the old index.html/spirit.js). Browser: `tests/no-fake-fast-live.cjs` (fresh account, Log meal, reload, old-guess device, Gap sheet "I just ate"); FAILS on 20261019-150120 (Gap "Fasting 17 h 14 min ... Goal reached" in the UTC test browser), PASSES on the branch in WebKit iPhone 13 (EN/DE/ES), WebKit iPad portrait/landscape and Chrome 390x844. Limits: a fake fast someone already ended (points paid, entry in `hist`) is left as history; the rare person who typed exactly 20:00 as a last meal with nothing else logged, before this build, loses that start once (kept in `guess`).
-
 
 ## 2026-10-19 New accounts start at 100% energy; energy is felt in the world (peak look, world pace, flight speed)
 
@@ -661,14 +652,12 @@ Four forms follow Legendary at 4500, 7000, 10000 and 14000 XP (Nova, Titan, Mona
 piece; the first six thresholds and every user's own look and earned progress are unchanged. Following his Collection
 decision, evolving never requires a specific food, a full Collection or a Catch: XP thresholds only. Details: EVOLUTION.md.
 
-
 ## Oct 19, 2026: Companion card: no "spirit", adventure places you earn, nothing hidden, Collection becomes a Food journal
 Emmanuel walked through the companion card (long press on the companion) on a call: "Don't use the word spirit" (a friend: scientists, doctors and schools will use this app); adventure places "should only be unlocked if the person went there themselves ... and also depending on ... at what level their companion is"; "How do you feel? Why is that there?"; Forms and Collection were "hidden"; "I don't even understand what collection is for" (he let Maya decide).
 
 **Decision:** the places are Home world, Cell worlds, Galaxy, Other worlds, Streams (the space outside your world is the galaxy, as the Community title says). The timed adventure reaches a place only when the companion's level is high enough AND you have been there yourself once (your steering or your tap; autopilot and the timed trip never count). Your own flying and autopilot stay ungated, so nothing locks a first visit. Visits live in S.advSeen (account) with a device copy; first cell-world arrivals already in the XP ledger count. The card shows, per place, what is still missing (level, your visit, the place before it) and whether you have been there. Forms, Food journal and Glow come first on the card; the mood check-in comes last and says what it does (the companion mirrors it for 8 hours, no XP, only the look and mood change); the stored mood is untouched. The Collection is now a Food journal: foods you logged or scanned, newest first, how often, first date, and how those meals went (likely blood sugar response), then your scanned products. No "???" tiles, no n / total, nothing in it is needed to evolve.
 
 **Consequences:** existing players at level 4+ see Galaxy / Other worlds / Streams as "Go there yourself" until they fly there once; autopilot still shows them everything. Remaining "spirit" wording was also removed from onboarding, the tutorial's galaxy step, the Community title (now "Community galaxy") and one companion line. Code identifiers (spirit.js, LowiSpirit) stay; users never read them.
-
 
 ## Oct 19, 2026: Care is free, the sparks currency is gone
 A code check found sparks were the only thing in the app you could spend: 3 a day plus 1 per logged meal, water or Move (up
@@ -949,7 +938,6 @@ Eman on the simplified page: "No, it looks shit. I wanted to be like this. It sh
 
 **Consequences:** Cook it / Shop it flow straight into the recipe cards. A new place for the panel needs a new decision entry and an update to that test.
 
-
 ## 2026-10-21 — The tutorial reads itself aloud with recorded natural voices
 
 **Status:** Accepted
@@ -1050,6 +1038,16 @@ Emmanuel (Seven): "I don't understand the food journal section. Either remove it
 - The way in from Home is a "Your cycle" section in Misty's hold card (misty-hub.js), right under her two doors: day, phase, tap opens My cycle on top of her card (like her Companions door; closing it brings her card back). First planned as a long press on Gap, but that gesture was taken (the last meal time editor, fast-edit.js), and Emmanuel moved it into Misty's card: "a section within the existing long-press menu on Misty, rather than being its own separate trigger". The Gap long press is unchanged.
 - Discreet: no push, no Community post, no What's New line for this. Tracking off: no ring, no section, nothing hints at it. The profile opt-in stays.
 - Checked: a first day entered 7 days ago is day 8 (also when moved with "started another day", and across the Oct 25 clock change). Test: tests/cycle-home.test.cjs. Probe: tools/probe-gap-hold.cjs. Benefits audit (proposals only, nothing built): /home/sprite/lowispike-cycle-benefits-audit.md on the VM.
+
+## 2026-10-24 — Deadlift splits into Romanian, Conventional and Sumo (one entry, three pills)
+
+**Status:** Accepted
+
+**Context:** Emmanuel: "Add these to deadlift. Deadlift (Romanian, conventional und sumo) separat aufteil als options". The only Deadlift in the app is the Mirror-mode one (mirror-hinge*.js): the Move hero button "Kreuzheben · Neu" and the Mirror chooser card.
+
+**Decision:** Deadlift stays ONE entry (hero button and chooser card, sub "Rumänisch, konventionell oder Sumo"). Its setup sheet opens with a centred row of three one-word glass pills (a radio group): Rumänisch / Konventionell / Sumo (EN Romanian / Conventional / Sumo, ES Rumano / Convencional / Sumo). Screen readers and the sheet title, the set card and the done sheet use the full names: Rumänisches Kreuzheben, Kreuzheben (konventionell), Sumo-Kreuzheben (EN Romanian/Conventional/Sumo Deadlift, ES Peso muerto rumano/convencional/sumo), following the app's convention of translated lift names. Each variant has its own cue, outline (pose), anchor and rep rules (LowiHingeCore.VARIANTS; conventional and sumo allow the knee bend they need; sumo counts a more upright chest). The pick is remembered on the device (`lowi.mm.dl`, set in mirror-hinge.js only; mirror-move.js still stores nothing). No pick or an unknown value = conventional.
+
+**Consequences:** No deadlift session was ever stored, so there is no history to migrate; `lowi:mirror-done` keeps `routine: 'hinge'` and adds `variant`. Tests: tests/mirror-hinge.test.cjs (variants); live check tools/check-hinge-mirror.cjs runs all three variants at iPhone, small iPhone, iPad portrait and landscape in de/en/es. Released quietly (no What's New).
 
 ## 2026-10-24 Hold Scan opens every bubble; the tutorial teaches it instead of two fingers on Misty (Emmanuel, via his agent)
 - Holding the Scan button on Home (about half a second, finger still, under 12 px drift; touch, pen or mouse) opens every bubble at once in one circle round the companion (bloom-ring.js, same toggle as before: hold again closes, a tap on the empty space closes). A quick tap still opens Scan. A recognised hold never also opens Scan: the click after it (and the iOS touchend) is swallowed. If the page is too busy for the timer, the lift still counts as a hold by the events' own timestamps.

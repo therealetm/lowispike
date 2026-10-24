@@ -3,9 +3,11 @@
 # Switch it off: Actions > community crowd > Disable workflow, or set the repository variable CROWD_OFF to 1.
 name: community crowd
 
+# OFF since 24 Oct 2026: Emmanuel wants only real people in the chat; one labelled inspiration bot replaces the crowd.
+# The schedule is removed, so it never runs on its own. To bring it back, put the schedule back:
+#   schedule:
+#     - cron: '*/10 * * * *'
 on:
-  schedule:
-    - cron: '*/10 * * * *'
   workflow_dispatch:
 
 concurrency:
@@ -17,7 +19,7 @@ permissions:
 
 jobs:
   crowd:
-    if: vars.CROWD_OFF != '1'
+    if: vars.CROWD_OFF != '1' && vars.CROWD_ON == '1'
     runs-on: ubuntu-latest
     timeout-minutes: 14
     steps:

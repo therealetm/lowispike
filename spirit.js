@@ -48,7 +48,7 @@
         start: ['A fresh start', 'Ein neuer Anfang', 'Un nuevo comienzo'],
         meals: ['meals logged', 'Mahlzeiten eingetragen', 'comidas registradas'],
         meal1: ['meal logged', 'Mahlzeit eingetragen', 'comida registrada'],
-        drink: ['Cup logged. I drink with you!', 'Glas eingetragen. Ich trinke mit!', 'Vaso registrado. ¡Bebo contigo!'],
+        drink: ['Glass logged. I drink with you!', 'Glas eingetragen. Ich trinke mit!', 'Vaso registrado. ¡Bebo contigo!'],
         drinkSips: ['Ten sips, roughly. Every sip fills me up!', 'Zehn Sips, ungefähr. Jeder Sip füllt mich auf!', 'Diez sorbos, más o menos. ¡Cada sorbo me llena!'],
         drinkBottle: ['A whole bottle! I am glowing.', 'Eine ganze Flasche! Ich leuchte.', '¡Una botella entera! Estoy brillando.'],
         waterSaved: ['Water logged', 'Wasser eingetragen', 'Agua registrada'],
@@ -193,7 +193,7 @@
         oneTap: ['Log again', 'Nochmal eintragen', 'Registrar de nuevo'],
         manual: ['Manual', 'Manuell', 'Manual'],
         waterLabel: ['Water', 'Wasser', 'Agua'],
-        glasses: ['cups', 'Gläser', 'vasos'],
+        glasses: ['glasses', 'Gläser', 'vasos'],
         mealLabel: ['Food', 'Essen', 'Comida'],
         mealOne: ['meal', 'Mahlzeit', 'comida'],
         mealMany: ['meals', 'Mahlzeiten', 'comidas'],
@@ -1182,7 +1182,9 @@
     function water(kind) {
         kind = kind === 'sips' || kind === 'bottle' ? kind : 'cup';
         const gained = V.water(uid(), kind);
-        feedback('water', tr(kind === 'sips' ? 'drinkSips' : kind === 'bottle' ? 'drinkBottle' : 'drink'), gained);
+        /* Oct 24: the bottle line names the size you picked (Water bloom, Size) */
+        const K = window.LowiSpiritCore, lit = kind === 'bottle' && K && typeof K.bottleLitres === 'function' && typeof K.bottleMl === 'function' ? K.bottleLitres(K.bottleMl(), lang()) : '';
+        feedback('water', tr(kind === 'sips' ? 'drinkSips' : kind === 'bottle' ? 'drinkBottle' : 'drink') + (lit ? ' (' + lit + ')' : ''), gained);
         return gained;
     }
     /* Oct 16 (E-man: Scan's photo screen like the rest: black space, iOS blue glass, clear flow, camera permission that makes sense):

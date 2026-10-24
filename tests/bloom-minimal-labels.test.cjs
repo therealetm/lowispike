@@ -81,21 +81,23 @@ test('the small second line is a number only (steps, ten sips), never a second w
         const actions = page(lang);
         for (const k of KINDS) for (const a of actions(k)) {
             if (!a.sub) continue;
+            /* Oct 24 (bottle size picker): Bottle's small line is its size in litres, a number with its unit symbol ("0,75 l") */
+            if (k === 'water' && a.id === 'bottle') { assert.match(a.sub, /^\d+([.,]\d+)?\u00a0l$/, lang + ' bottle size: "' + a.sub + '"'); continue; }
             assert.match(a.sub, /^[<>\u00d7]?\d+k?(\u2013\d+k)?\+?$/, lang + ' ' + k + ' ' + a.id + ' subline is a number: "' + a.sub + '"');
             assert.doesNotMatch(a.sub, /ml/i, 'no milliliters on a bubble');
         }
         /* Fuel and Sleep have no subline at all ("Rezepte", "was kaufen?", "letzte Nacht" x3 are gone) */
         for (const k of ['fuel', 'sleep']) actions(k).forEach(a => assert.ok(!a.sub, lang + ' ' + k + ' ' + a.id + ' has no second line'));
-        /* Water: only Sips carries a number, ten */
+        /* Water: Sips carries ten, Bottle its size (Oct 24, no size picked = 0.75 l); Glass and Size no number */
         const w = actions('water');
-        assert.deepStrictEqual(w.map(a => a.sub || ''), ['\u00d710', '', ''], lang + ' water sublines');
+        assert.deepStrictEqual(w.map(a => a.sub || ''), ['\u00d710', '', lang === 'en' ? '0.75\u00a0l' : '0,75\u00a0l', ''], lang + ' water sublines');
     }
 });
 
 test('the German bubbles are the words Emmanuel saw, made minimal', () => {
     const actions = page('de');
     assert.deepStrictEqual(actions('fuel').map(a => a.label), ['Einkaufen', 'Kochen', 'Mahlzeit']);
-    assert.deepStrictEqual(actions('water').map(a => a.label), ['Sips', 'Glas', 'Flasche']);
+    assert.deepStrictEqual(actions('water').map(a => a.label), ['Sips', 'Glas', 'Flasche', 'Gr\u00f6\u00dfe']);
     assert.deepStrictEqual(actions('move').map(a => a.label), ['Locker', 'Stetig', 'Episch']);
     assert.deepStrictEqual(actions('move').map(a => a.sub), ['<5k', '5k\u201310k', '10k+']);
     assert.deepStrictEqual(actions('sleep').map(a => a.label.replace(/\u00a0/g, ' ')), ['<6 Std.', '6\u20137 Std.', '7 Std.+']);
@@ -133,7 +135,7 @@ test('Sips is ten sips: half a cup, honest XP, and the undo names it "10 sips"',
     assert.ok(wh.includes("a === 0.5 ? T('10 sips', '10 Sips', '10 sorbos')"), 'undo toast says 10 sips');
     assert.ok(wh.includes("a === 0.25 ? T('a few sips', 'ein paar Schlucke', 'unos sorbos')"), 'old entries still undo by name');
     const steps = fs.readFileSync(path.join(ROOT, 'tutorial-steps.js'), 'utf8');
-    assert.ok(steps.includes('10 sips, a cup') && steps.includes('10 Sips, ein Glas') && steps.includes('10 sorbos, un vaso'), 'the tutorial says ten sips too');
+    assert.ok(steps.includes('10 sips, a glass') && steps.includes('10 Sips, ein Glas') && steps.includes('10 sorbos, un vaso'), 'the tutorial says ten sips too');
 });
 
 test('German says "Sips" where it names the water bubble (Emmanuel, Oct 24: "Sips", not "Schlucke")', () => {

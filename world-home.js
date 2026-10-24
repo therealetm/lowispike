@@ -149,7 +149,7 @@
         let hud = D.getElementById('whHud');
         if (hud && hud.isConnected) return hud;
         hud = D.createElement('div'); hud.id = 'whHud'; hud.className = 'wh-hud';
-        const water = btn('wh-cell wh-water', T('Water, add a cup', 'Wasser, ein Glas dazu', 'Agua, un vaso más'), '<span class="wh-cell-fill" aria-hidden="true"></span><span class="wh-cell-tx"><small></small><b><span class="wh-num"></span> <u class="wh-unit"></u></b></span>', { 'data-sp': 'water' });
+        const water = btn('wh-cell wh-water', T('Water: 10 sips, a glass or a bottle', 'Wasser: 10 Schlucke, ein Glas oder eine Flasche', 'Agua: 10 sorbos, un vaso o una botella'), '<span class="wh-cell-fill" aria-hidden="true"></span><span class="wh-cell-tx"><small></small><b><span class="wh-num"></span> <u class="wh-unit"></u></b></span>', { 'data-sp': 'water' });
         const today = btn('wh-todaybtn', T('Open today', 'Heute öffnen', 'Abrir hoy'), ICO.today + '<span><b></b><small></small></span>', { 'data-wh': 'today', 'aria-expanded': 'false', 'aria-controls': 'whToday' });
         /* Oct 22 2026 (Emmanuel: "There's a World map button, that's old. It's from before the cell world. We should just remove it
            completely."): no World map / zoom stick any more. Inside a cell world the bottom-centre X (syncX) is the way back to Misty. */
@@ -205,7 +205,7 @@
         /* Misty's bubble itself is her name card: no second "Misty · stage · XP" pill on Home */
         const oldName = hud.querySelector('.wh-name'); if (oldName) oldName.remove();
         paintZoom(); paintHint();
-        /* the water cell mirrors the water tile (same data, same +1 glass action) */
+        /* the water cell mirrors the water tile's count (same data); a tap opens the Water bloom (home-blooms-v2.js) */
         const tile = D.querySelector('#lvDash .lv-water'), wc = hud.querySelector('.wh-water');
         if (tile && wc) {
             const f = parseFloat(tile.style.getPropertyValue('--lv-fill')) || 0;
@@ -219,7 +219,12 @@
             if (small.textContent !== sm) small.textContent = sm;
             if (num.textContent !== bv) num.textContent = bv;
             if (unit.textContent !== uv) unit.textContent = uv;
-            { const al = (lab || sm) + ''; if (wc.getAttribute('aria-label') !== al) wc.setAttribute('aria-label', al); }
+            /* Oct 24 (water model, HANDOFF-hydration.md): the bubble counts glasses like everything else about water (10 sips about
+               half a glass, a bottle its own size in glasses), and its words say what a tap and a hold really do (the tile's "+1 glass" is the Today tile's own tap) */
+            { const al = m ? T('Water: ' + m[1] + ' of ' + m[2] + ' glasses. Tap for 10 sips, a glass or a bottle, hold to take the last one off',
+                'Wasser: ' + m[1] + ' von ' + m[2] + ' Gläsern. Tippen für 10 Schlucke, ein Glas oder eine Flasche, halten nimmt das Letzte zurück',
+                'Agua: ' + m[1] + ' de ' + m[2] + ' vasos. Toca para 10 sorbos, un vaso o una botella, mantén para quitar lo último') : (lab || sm) + '';
+              if (wc.getAttribute('aria-label') !== al) wc.setAttribute('aria-label', al); }
         }
         const tb = hud.querySelector('.wh-todaybtn b'), ts = hud.querySelector('.wh-todaybtn small');
         const head = D.querySelector('#whToday .sp-status b'), tt = T('Today', 'Heute', 'Hoy');
@@ -1155,7 +1160,7 @@
         let plan = null;
         try { plan = B.undoWater(); } catch (e) { plan = null; }
         const a = plan && +plan.amt, K = W.LowiSpiritCore;
-        const what = !plan ? '' : a === 0.5 ? T('10 sips', '10 Sips', '10 sorbos') : a === 0.25 ? T('a few sips', 'ein paar Schlucke', 'unos sorbos') : a === 3 ? T('a bottle', 'eine Flasche', 'una botella') : a === 1 ? T('a cup', 'ein Glas', 'un vaso') : (K && K.waterFmt ? K.waterFmt(a) : String(a));
+        const what = !plan ? '' : plan.bottle > 0 ? T('a bottle', 'eine Flasche', 'una botella') + (K && K.bottleLitres ? ' (' + K.bottleLitres(plan.bottle, lang()) + ')' : '') : a === 0.5 ? T('10 sips', '10 Sips', '10 sorbos') : a === 0.25 ? T('a few sips', 'ein paar Schlucke', 'unos sorbos') : a === 3 ? T('a bottle', 'eine Flasche', 'una botella') : a === 1 ? T('a glass', 'ein Glas', 'un vaso') : (K && K.waterFmt ? K.waterFmt(a) : String(a));
         const msg = plan ? T('Taken off: ', 'Zurückgenommen: ', 'Quitado: ') + what : T('No water logged today', 'Heute noch kein Wasser', 'Hoy no hay agua');
         try { if (navigator.vibrate) navigator.vibrate(plan ? 30 : [10, 40, 10]); } catch (e) { }
         try { if (W.LowiR2 && W.LowiR2.toast) W.LowiR2.toast(msg); else if (W.toast) W.toast(msg); } catch (e) { }

@@ -21,15 +21,15 @@ test('starter plan and onboarding use the same 6-cup default', () => {
     assert.equal(C.isDone('water', { water: 5 }), false);
     assert.equal(C.isDone('water', { water: 6 }), true);
     assert.match(read('herb-start.js'), /waterGoal\)\|\|6\}/);
-    assert.match(R.pickGoal({ water: 5, hour: 9 }, 'en').text, /1 cup of water/);
+    assert.match(R.pickGoal({ water: 5, hour: 9 }, 'en').text, /1 glass of water/);
 });
 
-test('every water counter shows 6 and says cups', () => {
+test('every water counter shows 6 and says glasses (Oct 24: one word for the unit, glass, like Glas / vaso)', () => {
     assert.match(read('living-home.js'), /WATER_GOAL = 6/);
-    assert.match(read('living-home.js'), /cups: \['cups', 'Gl\u00e4ser', 'vasos'\]/);
+    assert.match(read('living-home.js'), /cups: \['glasses', 'Gl\u00e4ser', 'vasos'\]/);
     assert.match(read('living-home.js'), /lv-unit/);
     assert.match(read('spirit.js'), /const WATER_GOAL = 6;/);
-    assert.match(read('spirit.js'), /glasses: \['cups', /);
+    assert.match(read('spirit.js'), /glasses: \['glasses', /);
     /* Oct 23 one text rule for every Home bubble (Emmanuel): the Home Water bubble shows 1/6 alone, the label says Water; no "cups" */
     assert.match(read('world-home.js'), /uv = ''; \/\* Oct 23 one text rule/);
     assert.match(read('world-home.css'), /\.wh-unit/);

@@ -13700,7 +13700,7 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
     ["Look after Misty this week to get on it", "Kümmer dich diese Woche um Misty, um draufzukommen", "Cuida a Misty esta semana para aparecer"],
     ["Misty's growth", "Mistys Wachstum", "El crecimiento de Misty"],
     ["Forms, glows, adventures", "Formen, Leuchten, Abenteuer", "Formas, brillos, aventuras"],
-    [/^No sunbeams yet this (week|month)\. Log a meal, a cup of water or a Move and Misty's sun starts to fill\.$/, "Noch keine Sonnenstrahlen. Trag eine Mahlzeit, ein Glas Wasser oder einen Move ein, dann füllt sich Mistys Sonne.", "Aún no hay rayos de sol. Registra una comida, un vaso de agua o un Move y el sol de Misty empieza a llenarse."],
+    [/^No sunbeams yet this (week|month)\. Log a meal, a glass of water or a Move and Misty's sun starts to fill\.$/, "Noch keine Sonnenstrahlen. Trag eine Mahlzeit, ein Glas Wasser oder einen Move ein, dann füllt sich Mistys Sonne.", "Aún no hay rayos de sol. Registra una comida, un vaso de agua o un Move y el sol de Misty empieza a llenarse."],
     [/^You're #(\d+) on the care board this week$/, "Du bist #$1 auf dem Fürsorge-Board diese Woche", "Eres el #$1 en la tabla de cuidado esta semana"],
     [/^\u2600 (\d+) full days?$/, "\u2600 $1 volle Tage", "\u2600 $1 días llenos"],
     [/^Level (\d+)$/, "Level $1", "Nivel $1"],
@@ -16229,7 +16229,7 @@ function boardHTML(){
   return '<div class="r3-lb r3-cb"><h2>Care board</h2><p class="r2-p">Who looks after their companion best. Meals, water, Moves and scans give Misty sunbeams, up to 12 a day.</p>' +
     careCardHTML(m.care) +
     '<div class="r2-seg r3-lbseg" role="tablist">' + [["w", "This week"], ["m", "This month"]].map(o => '<button role="tab" data-r3lb="' + o[0] + '" class="' + (k === o[0] ? "on" : "") + '">' + o[1] + '</button>').join("") + '</div>' +
-    '<div class="r3-lbl">' + (top.length ? top.map(row).join("") : '<div class="r3-empty">' + (k === "w" ? "No sunbeams yet this week." : "No sunbeams yet this month.") + ' Log a meal, a cup of water or a Move and Misty\'s sun starts to fill.</div>') + '</div>' +
+    '<div class="r3-lbl">' + (top.length ? top.map(row).join("") : '<div class="r3-empty">' + (k === "w" ? "No sunbeams yet this week." : "No sunbeams yet this month.") + ' Log a meal, a glass of water or a Move and Misty\'s sun starts to fill.</div>') + '</div>' +
     (mi >= 50 ? '<div class="r3-lbme">' + row(L[mi], mi) + '</div>' : "") +
     '<p class="r3-cbnote">Each habit has a daily cap, so a mix fills her sun, not one thing over and over. Eating less never counts. Bots show made-up numbers.</p></div>';
 }
@@ -20812,7 +20812,7 @@ window.LowiVitalsBridge = {
   bonus(id,amt,label){return award(amt,label,null,"macro-goal",id);},
   /* wsip (Oct 23, Eman): water by estimate. kind = "sips" | "cup" | "bottle" (default one cup). The day's count stays in cups (quarters allowed);
      XP = 2 per whole cup reached, at most 6 a day (LowiSpiritCore.waterXpDue), so tapping sips can't earn more than the same water in cups. */
-  water(id,kind){let f={};try{f=JSON.parse(localStorage.getItem("lowi_fast_v1")||"{}");}catch(e){}f.waterEvents=f.waterEvents||{};if(f.waterEvents[id])return 0;const K=window.LowiSpiritCore,d=today(),amt=K&&K.waterAmount?K.waterAmount(kind):1;f.waterEvents[id]=Date.now();f.water=f.water||{};f.water[d]=K&&K.waterSum?K.waterSum(f.water[d],amt):(+f.water[d]||0)+1;f.waterAmt=f.waterAmt||{};Object.keys(f.waterAmt).forEach(k=>{if(!f.waterEvents[k])delete f.waterAmt[k];});if(amt!==1)f.waterAmt[id]=amt;try{localStorage.setItem("lowi_fast_v1",JSON.stringify(f));}catch(e){return 0;}
+  water(id,kind){let f={};try{f=JSON.parse(localStorage.getItem("lowi_fast_v1")||"{}");}catch(e){}f.waterEvents=f.waterEvents||{};if(f.waterEvents[id])return 0;const K=window.LowiSpiritCore,d=today(),amt=K&&K.waterAmount?K.waterAmount(kind):1;f.waterEvents[id]=Date.now();f.water=f.water||{};f.water[d]=K&&K.waterSum?K.waterSum(f.water[d],amt):(+f.water[d]||0)+1;f.waterAmt=f.waterAmt||{};Object.keys(f.waterAmt).forEach(k=>{if(!f.waterEvents[k])delete f.waterAmt[k];});if(amt!==1)f.waterAmt[id]=amt;f.waterBottle=f.waterBottle||{};Object.keys(f.waterBottle).forEach(k=>{if(!f.waterEvents[k])delete f.waterBottle[k];});if(kind==="bottle")f.waterBottle[id]=K&&K.bottleMl?K.bottleMl():750;try{localStorage.setItem("lowi_fast_v1",JSON.stringify(f));}catch(e){return 0;}
     const pre="herb-care:"+d+":water:",have=(S.ledger||[]).filter(e=>e&&e.day===d&&e.src==="water"&&String(e.eventId||"").indexOf(pre)===0).length,due=K&&K.waterXpDue?K.waterXpDue(f.water[d],have):Math.max(0,Math.min(6,Math.floor(f.water[d]))-have);
     if(!due){try{window.dispatchEvent(new CustomEvent("lowi:care",{detail:{kind:"water",id:pre+id,amt}}));}catch(e){}return 0;}
     let g=0;for(let k=0;k<due;k++)g+=this.complete("water","water:"+id+(k?":"+(k+1):""),{amt:2,perDay:6,src:"water",label:"Water logged"})||0;return g;},

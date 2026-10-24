@@ -8,7 +8,8 @@
             Cook         -> the Cook tab (LowiHost.go('shelf')). The right-side Cook panel is a separate, later change.
             Log meal     -> the meal log sheet (LowiSpirit.meal: photo, barcode, recent meals), now a visible orb.
             Hold Fuel    -> still the meal log sheet, as a shortcut only.
-   - Water: Sips / Cup / Bottle -> LowiSpirit.water(kind) (wsip, Oct 23: estimates; XP 2 per whole cup, at most 6 cups = 12 XP a day). Long press Water = undo the last one.
+   - Water: Sips / Glass / Bottle -> LowiSpirit.water(kind) (wsip, Oct 23: estimates; XP 2 per whole glass, at most 6 glasses = 12 XP a day). Long press Water = undo the last one.
+            Size         -> (Oct 24) steps the bottle size 0.33 / 0.5 / 0.75 / 1 / 1.5 l; the one thing this file stores (lowispike.water.bottle.v1 via LowiSpiritCore).
             Undo         -> takes ONE cup off today (never below 0, never another day) and, if today's water XP entries are now
                             more than today's cups, takes back the newest one (unaward), so add / undo loops net zero.
    - Move:  (Mirror orb removed Oct 23, Emmanuel: "remove mirror from the bubble")
@@ -54,7 +55,7 @@
         out.water = out.water || {};
         /* the newest water event of today goes with it (keeps waterEvents and the count telling the same story).
            wsip (Oct 23): it takes off its own amount (out.waterAmt[id]: ten sips 0.5 (a few sips 0.25 before Oct 24), bottle 3; no entry = one cup, as before) */
-        let amt = 1;
+        let amt = 1, bottle = 0;
         const ev = out.waterEvents && typeof out.waterEvents === 'object' ? out.waterEvents : null;
         if (ev) {
             let best = null;
@@ -63,6 +64,9 @@
                 delete ev[best.k];
                 const am = out.waterAmt && typeof out.waterAmt === 'object' ? out.waterAmt : null;
                 if (am && +am[best.k] > 0) { amt = q4(am[best.k]) || 1; delete am[best.k]; }
+                /* Oct 24: a bottle remembers its size (out.waterBottle[id] = ml) so Undo can name it ("a bottle, 0.5 l") */
+                const bt = out.waterBottle && typeof out.waterBottle === 'object' ? out.waterBottle : null;
+                if (bt && bt[best.k] != null) { bottle = +bt[best.k] || 0; delete bt[best.k]; }
             }
         }
         const left = q4(cups - Math.min(cups, amt));
@@ -71,7 +75,7 @@
         const xp = (Array.isArray(ledger) ? ledger : []).filter(e => e && e.day === day && e.src === 'water' && e.eventId && String(e.eventId).indexOf(pre) === 0)
             .sort((a, b) => (+b.ts || 0) - (+a.ts || 0));
         const extra = Math.max(0, xp.length - Math.floor(left + 1e-9));
-        return { f: out, cups: left, amt: Math.min(cups, amt), unaward: xp.slice(0, extra).map(e => e.eventId) };
+        return { f: out, cups: left, amt: Math.min(cups, amt), bottle, unaward: xp.slice(0, extra).map(e => e.eventId) };
     }
 
     /* Fan layout. b = bubble {x,y,r}, m = Misty {x,y,r}, n orbs of size orb, viewport vw x vh.
@@ -190,6 +194,7 @@
         undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
         sips: '<path d="M12 4c-2.2 3-4 5.4-4 7.6a4 4 0 0 0 8 0C16 9.4 14.2 7 12 4z"/><path d="M7 17.5h.01M12 19.5h.01M17 17.5h.01"/>',
         bottle: '<path d="M10 2.5h4v3l1.6 2.2a3 3 0 0 1 .6 1.8V20a1.5 1.5 0 0 1-1.5 1.5h-5.4A1.5 1.5 0 0 1 7.8 20V9.5a3 3 0 0 1 .6-1.8L10 5.5z"/><path d="M8 12h8"/>',
+        bsize: '<path d="M7.5 6h3v2.2l1.2 1.6a2 2 0 0 1 .4 1.2V19a1 1 0 0 1-1 1H6.9a1 1 0 0 1-1-1v-8a2 2 0 0 1 .4-1.2L7.5 8.2z"/><path d="M18 4v16M15.5 6.5L18 4l2.5 2.5M15.5 17.5L18 20l2.5-2.5"/>',
         walk: '<circle cx="13" cy="4.5" r="1.8"/><path d="M11 21l2-6-2.5-2.5L12 8l3 3h3"/><path d="M10.5 12.5L8 15H5"/>',
         ate: '<path d="M7 3v8a2 2 0 0 0 2 2v8M7 3v5M11 3v8a2 2 0 0 1-2 2"/><path d="M17 3c-2 2-2.5 5-2.5 7.5H17V21"/>',
         clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M4.5 4.5l2 2"/>',
@@ -243,8 +248,16 @@
             const add = k => () => { if (fn(W.LowiSpirit, 'water')) W.LowiSpirit.water(k); else W.LowiVitalsBridge.water('hb2-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), k); };
             if (can) {
                 A.push({ id: 'sips', label: T('Sips', 'Sips', 'Sorbos'), sub: '\u00d7' + SIPS_N, aria: T('10 sips, roughly', '10 Schlucke, ungefähr', '10 sorbos, más o menos'), icon: 'sips', keep: true, q: 0.2, run: add('sips') });
-                A.push({ id: 'cup', label: T('Cup', 'Glas', 'Vaso'), aria: T('One cup', 'Ein Glas', 'Un vaso'), icon: 'cup', keep: true, q: 0.5, run: add('cup') });
-                A.push({ id: 'bottle', label: T('Bottle', 'Flasche', 'Botella'), aria: T('One whole bottle', 'Eine ganze Flasche', 'Una botella entera'), icon: 'bottle', keep: true, q: 0.9, run: add('bottle') });
+                A.push({ id: 'cup', label: T('Glass', 'Glas', 'Vaso'), aria: T('One glass', 'Ein Glas', 'Un vaso'), icon: 'cup', keep: true, q: 0.5, run: add('cup') });
+                /* Oct 24 2026 (HANDOFF-hydration.md, bottle size picker): Bottle logs one finished bottle of the size you picked; its small
+                   line is that size (a number, like every small line). Size steps through 0.33 / 0.5 / 0.75 / 1 / 1.5 l on each tap, no
+                   sheet, remembered on this device (synced with the account). It is a setting, not a log, so the Hold Scan overview
+                   (every bubble at once, 3 + 3 + 3 + 3) leaves it out: extra. */
+                const K = W.LowiSpiritCore, bk = K && fn(K, 'bottleMl') && fn(K, 'bottleLitres');
+                const bml = bk ? K.bottleMl() : 0, lit = bk ? K.bottleLitres(bml, ['en', 'de', 'es'][li()]) : '';
+                A.push({ id: 'bottle', label: T('Bottle', 'Flasche', 'Botella'), sub: lit || undefined, aria: lit ? T('One whole bottle, ', 'Eine ganze Flasche, ', 'Una botella entera, ') + lit : T('One whole bottle', 'Eine ganze Flasche', 'Una botella entera'), icon: 'bottle', keep: true, q: 0.9, run: add('bottle') });
+                if (bk) A.push({ id: 'bsize', extra: true, label: T('Size', 'Größe', 'Tamaño'), aria: T('Bottle size ', 'Flaschengröße ', 'Tamaño de botella ') + lit + T(', tap to change', ', tippen zum Ändern', ', toca para cambiar'), icon: 'bsize', keep: true,
+                    run: () => { const n = K.setBottleMl(K.nextBottleMl(K.bottleMl())); toast(T('Bottle: ', 'Flasche: ', 'Botella: ') + K.bottleLitres(n, ['en', 'de', 'es'][li()])); } });
             }
         } else if (kind === 'move') {
             const C = W.LowiMoveEstimateCore;
@@ -392,7 +405,7 @@
         ALL.forEach(k => {
             const el = scope.querySelector('[data-orbit="' + k + '"]');
             if (!el || !el.getBoundingClientRect().width) return;
-            const a = actionsFor(k);
+            const a = actionsFor(k).filter(x => !x.extra);
             if (!a.length) return;
             groups.push({ key: k, n: a.length });
             a.forEach(x => acts.push(Object.assign({ group: k }, x)));

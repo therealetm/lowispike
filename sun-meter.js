@@ -286,7 +286,7 @@
         eThriving: ['Full of energy', 'Voller Energie', 'Llena de energía'], eOk: ['Doing okay', 'Geht so', 'Bien'], eTired: ['Low on energy', 'Wenig Energie', 'Poca energía'], eWeak: ['Worn out', 'Erschöpft', 'Agotada'],
         eFood: ['Food', 'Essen', 'Comida'], eWater: ['Water', 'Wasser', 'Agua'], eMove: ['Move', 'Bewegung', 'Movimiento'],
         notYet: ['not tracked yet', 'noch nicht eingetragen', 'aún sin registrar'],
-        mealsN: ['logged', 'eingetragen', 'registradas'], spikyN: ['spiky', 'mit Spike', 'con pico'], glasses: ['cups', 'Gläser', 'vasos'], moved: ['logged', 'eingetragen', 'registrado'],
+        mealsN: ['logged', 'eingetragen', 'registradas'], spikyN: ['spiky', 'mit Spike', 'con pico'], glasses: ['glasses', 'Gläser', 'vasos'], moved: ['logged', 'eingetragen', 'registrado'],
         eNote: ['“Not tracked yet” only means Misty gets no energy from it yet, not that you didn’t do it. Energy is what sends Misty out on adventures.', '„Noch nicht eingetragen“ heißt nur, dass Misty daraus noch keine Kraft bekommt, nicht dass du es nicht gemacht hast. Für Abenteuer braucht Misty Energie.', '“Aún sin registrar” solo significa que Misty aún no recibe energía de eso, no que no lo hayas hecho. Necesita energía para sus aventuras.'],
         meal: ['Meal', 'Mahlzeit', 'Comida'], scan: ['Scan', 'Scan', 'Escaneo'], move: ['Move', 'Bewegung', 'Movimiento'], fast: ['Fasting milestone', 'Fasten-Etappe', 'Etapa de ayuno'],
         macro: ['Macro goal', 'Makro-Ziel', 'Meta de macros'], water: ['Glass of water', 'Glas Wasser', 'Vaso de agua'], other: ['Other action', 'Andere Aktion', 'Otra acción']

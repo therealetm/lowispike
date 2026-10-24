@@ -66,7 +66,7 @@ const within = (p, ms, what) => Promise.race([p, new Promise((_, no) => setTimeo
     const tapPlace = async (id) => {
         for (let i = 0; i < 12; i++) {
             const p = await ev(id => {
-                const W3 = window.LowiWorld3D, L = W3 && W3.veilLook && W3.veilLook(); if (!L) return null;
+                const W3 = window.LowiWorld3D, L = W3 && (W3.placesLook ? W3.placesLook() : W3.veilLook && W3.veilLook()); if (!L) return null;
                 const b = L.find(x => x.id === id); if (!b || b.z > 1 || b.z < -1) return null;
                 const cv = document.querySelector('.bw3-stage canvas, #whHud canvas, canvas'); if (!cv) return null;
                 const r = cv.getBoundingClientRect(), x = r.left + b.x, y = r.top + b.y;
@@ -103,7 +103,7 @@ const within = (p, ms, what) => Promise.race([p, new Promise((_, no) => setTimeo
                 const F = window.LowiMistyFlight, W3 = window.LowiWorld3D, RG = window.LowiWorldRegions; if (!F || !W3) return null;
                 const st = F.state(); if (st.st === 'warp' || st.st === 'inside' || st.st === 'pull' || st.st === 'orbit' || (RG && RG.state.busy)) return { st: st.st, into: true, flew: st.flew };
                 const me = F.touchSpot(); const cv = document.querySelector('.bw3-stage canvas, #whHud canvas, canvas'); const r = cv.getBoundingClientRect();
-                const L = W3.veilLook && W3.veilLook(); const b = L && L.find(x => x.id === id);
+                const L = W3.placesLook ? W3.placesLook() : W3.veilLook && W3.veilLook(); const b = L && L.find(x => x.id === id);
                 let from = me ? { x: me.x, y: me.y } : null; if (!from) { const sb = document.getElementById('spBubble'); if (sb) { const q = sb.getBoundingClientRect(); from = { x: q.left + q.width / 2 - r.left, y: q.top + q.height / 2 - r.top }; } }
                 return { st: st.st, near: st.near, nearD: st.nearD, from, to: b ? { x: b.x, y: b.y, z: b.z } : null };
             }, id);

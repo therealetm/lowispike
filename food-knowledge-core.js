@@ -18,12 +18,32 @@
     const RANK = {JA: 0, SELTEN: 1, NEIN: 2};
     const LIGHT = {JA: 'green', SELTEN: 'yellow', NEIN: 'red'};
     const FROM_LIGHT = {green: 'JA', yellow: 'SELTEN', red: 'NEIN'};
-    /* The three labels per app language. German keeps the owner's original JA / SELTEN / NEIN. */
-    const LABELS = {
-        en: {JA: 'YES', SELTEN: 'RARELY', NEIN: 'NO'},
-        de: {JA: 'JA', SELTEN: 'SELTEN', NEIN: 'NEIN'},
-        es: {JA: 'SÍ', SELTEN: 'A VECES', NEIN: 'NO'}
+    /* One verdict per food, three tiers, the same words everywhere in the app (24 Oct 2026, Emmanuel: "It says spike, but then it
+       tells the person they can eat it sometimes ... what is sometimes?"). No frequency: SELTEN is about the amount, never "now and
+       then". Internal codes stay JA / SELTEN / NEIN. TIERS holds the names, the one-line meaning and the "eating it anyway" line,
+       reusing wording the app already had ("Eating it anyway? Then move right after.", "a square or two after a meal"). */
+    const TIERS = {
+        en: {JA: {name: 'Everyday', sub: 'A good everyday choice'},
+            SELTEN: {name: 'Small portion', sub: 'Stick to the portion, best with a meal'},
+            NEIN: {name: 'Skip it', sub: 'Not a LOWiSPIKE choice. Pick a swap', subSpike: 'Higher spike estimate. Pick a swap'},
+            anyway: 'Eating it anyway? A small portion right after a meal, then a ten-minute walk.'},
+        de: {JA: {name: 'Alltag', sub: 'Gute Alltagswahl'},
+            SELTEN: {name: 'Kleine Portion', sub: 'Bei der Portion bleiben, am besten zu einer Mahlzeit'},
+            NEIN: {name: 'Lieber nicht', sub: 'Keine LOWiSPIKE-Wahl. Nimm lieber einen Tausch', subSpike: 'Höhere Spike-Schätzung. Nimm lieber einen Tausch'},
+            anyway: 'Isst du es trotzdem? Kleine Portion direkt nach einer Mahlzeit, danach zehn Minuten gehen.'},
+        es: {JA: {name: 'Diario', sub: 'Buena opción para el día a día'},
+            SELTEN: {name: 'Porción pequeña', sub: 'Quédate en la porción, mejor con una comida'},
+            NEIN: {name: 'Mejor no', sub: 'No es una opción LOWiSPIKE. Elige un cambio', subSpike: 'Estimación de pico más alta. Elige un cambio'},
+            anyway: '¿Te lo comes igual? Una porción pequeña justo después de comer y luego camina diez minutos.'}
     };
+    const LABELS = {
+        en: {JA: 'EVERYDAY', SELTEN: 'SMALL PORTION', NEIN: 'SKIP IT'},
+        de: {JA: 'ALLTAG', SELTEN: 'KLEINE PORTION', NEIN: 'LIEBER NICHT'},
+        es: {JA: 'DIARIO', SELTEN: 'PORCIÓN PEQUEÑA', NEIN: 'MEJOR NO'}
+    };
+    /* The spike estimate as a tier: a higher estimate is never milder than Skip it, a moderate one never milder than Small portion. */
+    const IMPACT_TIER = {lower: 'JA', moderate: 'SELTEN', higher: 'NEIN'};
+    const tierFor = (verdict, impact) => { const i = IMPACT_TIER[impact] || null; return !verdict ? i : !i ? verdict : RANK[i] > RANK[verdict] ? i : verdict; };
     const LIGHT_WORD = {
         en: {green: 'GREEN', yellow: 'YELLOW', red: 'RED'},
         de: {green: 'GRÜN', yellow: 'GELB', red: 'ROT'},
@@ -50,11 +70,11 @@
         'policy.processed_meat': R('Processed meat: check what was added', 'Verarbeitetes Fleisch: Zutaten prüfen', 'Carne procesada: revisa lo añadido'),
         'policy.protein_product': R('Protein product: processed, check the label', 'Proteinprodukt: verarbeitet, Etikett prüfen', 'Producto proteico: procesado, revisa la etiqueta'),
         'policy.sweet_salty': R('Sweet and salty snack', 'Süß-salziger Snack', 'Snack dulce y salado'),
-        'policy.fruit_whole': R('Whole fruit: a small portion now and then', 'Ganzes Obst: ab und zu eine kleine Portion', 'Fruta entera: una porción pequeña de vez en cuando'),
+        'policy.fruit_whole': R('Whole fruit: a small portion', 'Ganzes Obst: eine kleine Portion', 'Fruta entera: una porción pequeña'),
         'policy.berries_large': R('Berries: a bowlful is more sugar than a handful', 'Beeren: eine Schüssel ist mehr Zucker als eine Handvoll', 'Frutos rojos: un bol es más azúcar que un puñado'),
         'ja.milk': R('A splash of milk, no sugar added', 'Ein Schuss Milch ohne Zuckerzusatz', 'Un chorrito de leche sin az\u00facar a\u00f1adido'),
         'policy.milk_glass': R('Milk by the glass: a lot of milk sugar as a drink', 'Milch im Glas: viel Milchzucker als Getr\u00e4nk', 'Leche por vaso: mucho az\u00facar de la leche al beberla'),
-        'policy.halloumi': R('Halloumi: salty and rich, keep it occasional', 'Halloumi: salzig und reichhaltig, lieber selten', 'Halloumi: salado y contundente, mejor de vez en cuando'),
+        'policy.halloumi': R('Halloumi: salty and rich, keep the portion small', 'Halloumi: salzig und reichhaltig, kleine Portion', 'Halloumi: salado y contundente, porción pequeña'),
         'policy.nut_butter': R('Nut butter: one spoon fits, the jar goes fast', 'Nussmus: ein Löffel passt, das Glas ist schnell leer', 'Crema de frutos secos: una cucharada vale, el bote vuela'),
         'policy.nuts_large': R('Nuts: a big portion is a lot of energy', 'Nüsse: eine große Portion ist viel Energie', 'Frutos secos: una porción grande es mucha energía'),
         'policy.cheese_large': R('Cheese: a big portion is a lot of energy', 'Käse: eine große Portion ist viel Energie', 'Queso: una porción grande es mucha energía'),
@@ -78,6 +98,9 @@
 
     const lang = l => (/^de/i.test(l || '') ? 'de' : /^es/i.test(l || '') ? 'es' : 'en');
     const label = (verdict, l) => (LABELS[lang(l)] || LABELS.en)[verdict] || '';
+    const tier = (verdict, l) => ((TIERS[lang(l)] || TIERS.en)[verdict]) || null;
+    const tierName = (verdict, l) => (tier(verdict, l) || {}).name || '';
+    const anywayLine = l => (TIERS[lang(l)] || TIERS.en).anyway;
     const lightWord = (light, l) => (LIGHT_WORD[lang(l)] || LIGHT_WORD.en)[light] || '';
     const reasonText = (id, l) => { const r = REASON[id]; return r ? r[lang(l)] || r.en : ''; };
     const stricter = (a, b) => (!a ? b : !b ? a : RANK[b] > RANK[a] ? b : a);
@@ -167,6 +190,6 @@
     /* Scanner scale used by the scan card, the database and the grocery list: ok / better / spike. */
     const SCALE = {JA: 'ok', SELTEN: 'better', NEIN: 'spike'};
 
-    return {VERSION, RANK, LIGHT, LABELS, SCALE, label, lightWord, reasonText, gramsOf, rateFood, rateMeal,
+    return {VERSION, RANK, LIGHT, LABELS, TIERS, IMPACT_TIER, SCALE, label, tier, tierName, tierFor, stricter, anywayLine, lightWord, reasonText, gramsOf, rateFood, rateMeal,
         block, format, parse, merge, stricter, OPEN, CLOSE};
 });

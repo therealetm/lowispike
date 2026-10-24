@@ -55,7 +55,7 @@
         captured: ['Caught for Misty', 'Für Misty eingefangen', 'Capturado para Misty'],
         glow: ['Caught! My leaves are glowing.', 'Eingefangen! Meine Blätter leuchten.', '¡Capturado! Mis hojas brillan.'],
         scanOk: ['Yes, I like this one! Likely only a small spike.', 'Ja, das mag ich! Wahrscheinlich nur ein kleiner Spike.', '¡Sí, me gusta! Probablemente solo un pico pequeño.'],
-        scanBetter: ['Hmm, okay now and then. Pair it with protein or fiber.', 'Hmm, ab und zu okay. Am besten mit Eiweiß oder Ballaststoffen.', 'Hmm, de vez en cuando. Mejor con proteína o fibra.'],
+        scanBetter: ['Hmm, a small portion. Pair it with protein or fiber.', 'Hmm, lieber eine kleine Portion. Am besten mit Eiweiß oder Ballaststoffen.', 'Hmm, mejor una porción pequeña. Con proteína o fibra.'],
         scanSpike: ['Oof, that one makes me wobble. Likely a spike. Catch it so others know too.', 'Uff, da wackle ich. Wahrscheinlich ein Spike. Fang es, damit andere es auch wissen.', 'Uf, eso me hace temblar. Probablemente un pico. Atrápalo para que otros también lo sepan.'],
         photoTitle: ['Your photo', 'Dein Foto', 'Tu foto'],
         savePhoto: ['Save photo', 'Foto speichern', 'Guardar foto'],

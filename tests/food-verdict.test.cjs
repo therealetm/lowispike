@@ -185,7 +185,7 @@ test('rerate / rerateRows make stored dex rows stricter with the Food check, nev
     assert.deepEqual(nuts.why[0], ['c_rare']);
     assert.equal(manual.why[0][0], 's_low', 'untouched rows keep their reasons');
     assert.equal(S.rerateRows(rows), 0, 'running it again changes nothing');
-    assert.ok(S.text(['c_no'], 1).startsWith('Food-Check: NEIN'));
+    assert.ok(S.text(['c_no'], 1).startsWith('Food-Check: Lieber nicht'));
 });
 
 test('index.html re-rates stored dex rows on load', () => {

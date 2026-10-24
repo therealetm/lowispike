@@ -113,7 +113,7 @@ test('card wiring: the scanned card is rated for the portion block amount and re
     const idx = read('index.html');
     const card = idx.slice(idx.indexOf('function simpleCardHTML(p){'), idx.indexOf('function actsHTML(p)'));
     assert.match(card, /const sv = scServing\(p\), g = scUserG\(sv\); p = scView\(p, sv\);/);
-    assert.match(card, /LowiFoodCard\.cardHTML\(p, LI\(\), g\)/);
+    assert.match(card, /LowiFoodCard\.cardHTML\(p, LI\(\), g(, \{swaps: !!szs\})?\)/);
     assert.match(card, /LowiFoodCard\.detailsHTML\(p, LI\(\), g\)/);
     assert.match(idx, /function scUserG\(sv\)\{ return sv && \(sv\.from === "last" \|\| sv\.from === "mine"\)/, 'the default amount keeps the stored verdict');
     assert.match(idx, /addEventListener\("lowi:portion", \(\) => \{ clearTimeout\(scPortT\); scPortT = setTimeout\(scRedrawServing, 120\); \}\)/);

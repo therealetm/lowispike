@@ -38,3 +38,5 @@
 .sc-sec .fc-dr dd { margin: 0; font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
 .sc-sec .fc-lc, .sc-sec .fc-ver { margin: 6px 0 0; font-size: 11.5px; line-height: 1.3; color: #9fb8dc; overflow-wrap: anywhere; }
 .fc-det, .fc-det * { color: #e6f0ff; }
+/* 24 Oct 2026: Skip it with a higher spike estimate gets one plain "eating it anyway" line, never "okay sometimes" */
+.sc-sec .fc-anyway { margin: 10px 0 0; font-size: 13px; line-height: 1.35; color: #dce9ff; opacity: .9; }

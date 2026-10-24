@@ -51,7 +51,7 @@
         processed_protein_product: {en: 'Processed protein product', de: 'Verarbeitetes Proteinprodukt', es: 'Producto proteico procesado'},
         processed_meat_snack: {en: 'Processed meat snack', de: 'Verarbeiteter Fleischsnack', es: 'Snack de carne procesada'},
         added_sugar_and_honey: {en: 'Added sugar and honey', de: 'Zugesetzter Zucker und Honig', es: 'Azúcar añadido y miel'},
-        added_sugar: {en: 'Added sugar ({0})', de: 'Zugesetzter Zucker ({0})', es: 'Azúcar añadido ({0})'},
+        added_sugar: {en: 'Added sugar', de: 'Zugesetzter Zucker', es: 'Azúcar añadido'},
         dried_fruit_sugar: {en: 'Dried fruit adds concentrated sugar', de: 'Trockenobst bringt konzentrierten Zucker', es: 'La fruta seca aporta azúcar concentrado'},
         sweetener: {en: 'Sweetened with {0}', de: 'Gesüßt mit {0}', es: 'Endulzado con {0}'},
         refined_starch_top: {en: 'Refined starch near the top ({0})', de: 'Raffinierte Stärke weit vorne ({0})', es: 'Almidón refinado entre los primeros ({0})'},
@@ -71,9 +71,9 @@
         sugar_itself: {en: 'Sugar or syrup: added sugar', de: 'Zucker oder Sirup: zugesetzter Zucker', es: 'Azúcar o sirope: azúcar añadido'},
         sweet_fruit: {en: 'Very sweet fruit: a lot of sugar at once', de: 'Sehr süßes Obst: viel Zucker auf einmal', es: 'Fruta muy dulce: mucho azúcar de golpe'},
         breaded_fried: {en: 'Breaded or fried: a crust of fast starch', de: 'Paniert oder frittiert: eine Hülle aus schneller Stärke', es: 'Rebozado o frito: una capa de almidón rápido'},
-        whole_fruit_small: {en: 'Whole fruit: a small portion now and then', de: 'Ganzes Obst: ab und zu eine kleine Portion', es: 'Fruta entera: una porción pequeña de vez en cuando'},
+        whole_fruit_small: {en: 'Whole fruit: a small portion', de: 'Ganzes Obst: eine kleine Portion', es: 'Fruta entera: una porción pequeña'},
         milk_plain: {en: 'Milk without added sugar', de: 'Milch ohne Zuckerzusatz', es: 'Leche sin azúcar añadido'},
-        halloumi_occasional: {en: 'Halloumi: salty and rich, keep it occasional', de: 'Halloumi: salzig und reichhaltig, lieber selten', es: 'Halloumi: salado y contundente, mejor de vez en cuando'},
+        halloumi_occasional: {en: 'Halloumi: salty and rich, keep the portion small', de: 'Halloumi: salzig und reichhaltig, kleine Portion', es: 'Halloumi: salado y contundente, porción pequeña'},
         nut_butter_spoon: {en: 'Nut butter: one spoon fits, the jar goes fast', de: 'Nussmus: ein Löffel passt, das Glas ist schnell leer', es: 'Crema de frutos secos: una cucharada vale, el bote vuela'},
         berries_small: {en: 'Berries in a small handful', de: 'Beeren, eine kleine Handvoll', es: 'Frutos rojos, un puñado pequeño'},
         berries_bowl: {en: 'Berries: a bowlful is more sugar than a handful', de: 'Beeren: eine Schüssel ist mehr Zucker als eine Handvoll', es: 'Frutos rojos: un bol es más azúcar que un puñado'},
@@ -103,11 +103,15 @@
         'carbs_serving', 'carbs_low_serving'];
     const ORANK = Object.fromEntries(ORDER.map((k, i) => [k, i]));
 
+    /* an ingredient word from the label reads as a name, not raw lowercase ("Kartoffeln", not "kartoffeln") */
+    const cap = w => { const t = String(w || ''); return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; };
     function fmt(t, args) { return String(t).replace(/\{(\d)\}/g, (m, i) => (args && args[+i] != null ? String(args[+i]) : '')); }
     function text(key, args) {
         const t = TEXT[key];
         if (!t) return null;
-        return {en: fmt(t.en, args), de: fmt(t.de, args), es: fmt(t.es, args)};
+        /* numbers read the way each language writes them: 14.7 in English, 14,7 in German and Spanish (24 Oct 2026) */
+        const loc = (args || []).map(v => typeof v === 'number' && !Number.isInteger(v) ? String(v).replace('.', ',') : v);
+        return {en: fmt(t.en, args), de: fmt(t.de, loc), es: fmt(t.es, loc)};
     }
 
     // Shared facts every assessment reads, worked out once.
@@ -133,6 +137,10 @@
         const honey = sugarHits.some(h => HONEY.test(low(h.w)));
         const sugarOther = sugarHits.some(h => !HONEY.test(low(h.w)));
         const sweetener = !!S.sweetener;
+        /* 24 Oct 2026: at or under 5 g sugar per 100 g (2.5 g per 100 ml) EU law calls a food low in sugar (Regulation (EC) 1924/2006).
+           Then a pinch of sugar in a spice mix is not shown as a reason, a concern or a "plain version" swap. */
+        const lowSugar = sugar != null && sugar <= (liquid ? 2.5 : 5);
+        const sugarMatters = addedSugar && !lowSugar;
         const sweetSalty = !!cats.sweet_salty || /süß\s*(&|und|-)\s*salzig|sweet\s*(&|and|n)\s*salty|dulce y salado/.test(name);
         const nutsCore = !!(cats.nuts || cats.coated_nuts || (S.nutsTop && S.nutsTop.i === 0));
         const plainNuts = nutsCore && complete && !addedSugar && !sweetener && !cats.coated_nuts && !sweetSalty && !cats.candy_dessert;
@@ -143,7 +151,7 @@
             (nutsCore || (F.nuts || []).length > 0 || /trocken|dried|getrocknet|seca|mix/.test(name));
         const processedMeat = !!cats.processed_meat || (!!(cats.pork || S.pork) && /salami|stick|wurst|chorizo|mortadella|speck|bacon|cabanossi|schinken|\bham\b/.test(name));
         return {a, p, per, ing, F, S, pol, rules, has, cats, name, liquid, complete, servingG, kcal, sugar, protein, fibre, salt, fat,
-            addedSugar, honey, sugarOther, sweetener, sweetSalty, nutsCore, plainNuts, wholeFoodJA, driedFruit, processedMeat,
+            addedSugar, sugarMatters, lowSugar, honey, sugarOther, sweetener, sweetSalty, nutsCore, plainNuts, wholeFoodJA, driedFruit, processedMeat,
             verdict: pol.verdict || null, glucose: a.glucose || {}};
     }
     const isFacts = x => !!(x && Array.isArray(x.rules) && typeof x.has === 'function');
@@ -159,8 +167,8 @@
         let strong = false;
         const c = (k, s) => { if (!concerns.includes(k)) concerns.push(k); if (s) strong = true; };
         if (f.S.sugarFirst) c('sugar_first', true);
-        else if (f.S.addedSugarTop) c('added_sugar_top', true);
-        else if (f.addedSugar) c('added_sugar');
+        else if (f.S.addedSugarTop && f.sugarMatters) c('added_sugar_top', true);
+        else if (f.sugarMatters) c('added_sugar');
         if (f.S.refinedTop) c('refined_starch_top');
         if (f.sweetener) c('sweetener');
         if (f.S.proteinIsolate) c('protein_isolate');
@@ -275,11 +283,11 @@
         if (H('policy.protein_product')) add('processed_protein_product');
         if (f.processedMeat) add('processed_meat_snack');
         if (f.honey && f.sugarOther) add('added_sugar_and_honey');
-        if (f.addedSugar) add('added_sugar', [(f.S.addedSugarTop || f.F.addedSugar[0]).w]);
+        if (f.sugarMatters) add('added_sugar');
         if (f.driedFruit) add('dried_fruit_sugar');
         const sw = (f.F.sweeteners || []).concat(f.F.sugarAlcohols || []);
-        if (f.sweetener) add('sweetener', [((sw.find(h => h.depth > 0) || f.S.sweetenerHit || {}).w) || '']);
-        if (f.S.refinedTop && !H('policy.starch_staple')) add('refined_starch_top', [f.S.refinedTop.w]);
+        if (f.sweetener) add('sweetener', [cap(((sw.find(h => h.depth > 0) || f.S.sweetenerHit || {}).w) || '')]);
+        if (f.S.refinedTop && !H('policy.starch_staple')) add('refined_starch_top', [cap(f.S.refinedTop.w)]);
         const g = f.glucose;
         const notLower = g.key === 'moderate' || g.key === 'higher';
         const mods = g.modifiers || [];
@@ -374,7 +382,7 @@
         else if (c.chips_snack) key = 'crunchy_veg';
         else if (c.sweet_sauce) key = 'herb_dip';
         else if (c.legumes || c.sweet_potato || c.wholegrain_pasta) key = 'legumes_portion';
-        else if (c.plain_yoghurt_quark || c.cheese || f.addedSugar || f.sweetener) key = 'plain_version';
+        else if (c.plain_yoghurt_quark || c.cheese || f.sugarMatters || f.sweetener) key = 'plain_version';
         else key = 'whole_food_choice';
         const t = ALT[key];
         return {key, text: {en: t.en, de: t.de, es: t.es}, portionG: t.portionG, products: []};

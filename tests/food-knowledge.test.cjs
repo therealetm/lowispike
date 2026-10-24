@@ -113,9 +113,9 @@ test('anti-cheat: the model block can tighten the app verdict but never loosen i
   assert.strictEqual(K.merge(null, clean).verdict, 'JA');
 });
 
-test('labels in every app language, German keeps JA / SELTEN / NEIN', () => {
-  assert.deepStrictEqual(K.LABELS.de, {JA: 'JA', SELTEN: 'SELTEN', NEIN: 'NEIN'});
-  assert.strictEqual(K.label('JA', 'en'), 'YES'); assert.strictEqual(K.label('SELTEN', 'es'), 'A VECES'); assert.strictEqual(K.label('NEIN', 'es-ES'), 'NO');
+test('labels in every app language: the three tiers Everyday / Small portion / Skip it, no frequency (24 Oct 2026)', () => {
+  assert.deepStrictEqual(K.LABELS.de, {JA: 'ALLTAG', SELTEN: 'KLEINE PORTION', NEIN: 'LIEBER NICHT'});
+  assert.strictEqual(K.label('JA', 'en'), 'EVERYDAY'); assert.strictEqual(K.label('SELTEN', 'es'), 'PORCIÓN PEQUEÑA'); assert.strictEqual(K.label('NEIN', 'es-ES'), 'MEJOR NO');
   assert.strictEqual(K.lightWord('red', 'de'), 'ROT');
   for (const id of Object.keys(P.POLICY.rules.reduce((o, r) => (o[r.id] = 1, o), {}))) {
     if (!/^(policy|ja)\./.test(id) || /incomplete|unclear|wholegrain_bread/.test(id)) continue;

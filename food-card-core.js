@@ -25,11 +25,15 @@
 
     const TX = {
         title: ['Food check', 'Food-Check', 'Análisis del alimento'],
+        /* 24 Oct 2026: the tier words come from LowiFoodKnowledge.TIERS (Everyday / Small portion / Skip it), the same everywhere.
+           No frequency (the old "sometimes okay" label is gone): the card never tells someone a spike food is fine sometimes. */
         verdict: {
-            JA: [['YES', 'A good everyday choice'], ['JA', 'Gute Alltagswahl'], ['SÍ', 'Buena opción para el día a día']],
-            SELTEN: [['RARELY', 'Fine now and then'], ['SELTEN', 'Ab und zu okay'], ['A VECES', 'Bien de vez en cuando']],
-            NEIN: [['NO', 'Not a standard choice'], ['NEIN', 'Keine Standardwahl'], ['NO', 'No es una opción habitual']]
+            JA: [['Everyday', 'A good everyday choice'], ['Alltag', 'Gute Alltagswahl'], ['Diario', 'Buena opción para el día a día']],
+            SELTEN: [['Small portion', 'Stick to the portion, best with a meal'], ['Kleine Portion', 'Bei der Portion bleiben, am besten zu einer Mahlzeit'], ['Porción pequeña', 'Quédate en la porción, mejor con una comida']],
+            NEIN: [['Skip it', 'Not a LOWiSPIKE choice. Pick a swap'], ['Lieber nicht', 'Keine LOWiSPIKE-Wahl. Nimm lieber einen Tausch'], ['Mejor no', 'No es una opción LOWiSPIKE. Elige un cambio']]
         },
+        nein_spike: ['Higher spike estimate. Pick a swap', 'Höhere Spike-Schätzung. Nimm lieber einen Tausch', 'Estimación de pico más alta. Elige un cambio'],
+        anyway: ['Eating it anyway? A small portion right after a meal, then a ten-minute walk.', 'Isst du es trotzdem? Kleine Portion direkt nach einer Mahlzeit, danach zehn Minuten gehen.', '¿Te lo comes igual? Una porción pequeña justo después de comer y luego camina diez minutos.'],
         provisional: ['Provisional: some data is missing', 'Vorläufig: es fehlen Daten', 'Provisional: faltan datos'],
         impact: ['Blood sugar impact', 'Wirkung auf den Blutzucker', 'Impacto en el azúcar'],
         impactKey: {lower: ['Lower', 'Niedriger', 'Más bajo'], moderate: ['Moderate', 'Mittel', 'Moderado'], higher: ['Higher', 'Höher', 'Más alto']},
@@ -114,17 +118,24 @@
         } catch (e) { return null; }
         if (!o || !o.verdict) return null;
         const ci = o.confidenceInfo || {};
+        /* One verdict per food: the stricter of the food rules and the spike estimate on the card above, so the traffic light can never
+           be milder than the estimate (a higher estimate is Skip it, a moderate one at least Small portion), the same as meals. */
+        const impact = TO_KEY[a.verdict];
+        const FK = lib('LowiFoodKnowledge', './food-knowledge-core.js');
+        const RK = {JA: 0, SELTEN: 1, NEIN: 2}, IT = {lower: 'JA', moderate: 'SELTEN', higher: 'NEIN'};
+        const tier = FK && FK.tierFor ? FK.tierFor(o.verdict, impact) : (RK[IT[impact]] > RK[o.verdict] ? IT[impact] : o.verdict);
         return {
-            verdict: o.verdict,
+            verdict: tier,
+            policyVerdict: o.verdict,
             provisional: !!(o.policy && o.policy.provisional),
-            impact: TO_KEY[a.verdict],
+            impact,
             serving: {g: o.serving.g, unit: o.serving.unit, shown: o.serving.shown || {}},
             glucose: {carbs: o.glucose ? o.glucose.availableCarbsG : null, sugar: o.glucose ? o.glucose.sugarG : null, modifiers: o.glucose ? o.glucose.modifiers : []},
             reasons: (o.reasons || []).slice(0, 3),
             quality: o.quality || null,
             cravings: o.cravings ? o.cravings.key : null,
             satiety: o.satiety || null,
-            alternative: (o.verdict === 'NEIN' || o.verdict === 'SELTEN') && o.alternative ? o.alternative : null,
+            alternative: (tier === 'NEIN' || tier === 'SELTEN') && o.alternative ? o.alternative : null,
             confidence: ci.key || null,
             confidenceReasons: ci.reasonText || [],
             policyVersion: o.policyVersion || null,
@@ -142,15 +153,22 @@
         return '<div class="fc-srv"><small>' + esc(fmt(T(TX.serving, li), [dec(m.serving.g, li) + ' ' + u])) + '</small><div class="fc-srvn">' + parts.join('') + '</div></div>';
     }
 
-    function cardHTML(p, li, g) {
+    /* opts.swaps: the scan card already shows swaps to buy (Seller Zone), so the generic "Better choice" line would repeat them. */
+    function cardHTML(p, li, g, opts) {
         li = li === 1 || li === 2 ? li : 0;
+        const o = opts || {};
         const m = model(p, g);
         if (!m) return '';
-        const v = TX.verdict[m.verdict] ? m.verdict : 'SELTEN', vt = TX.verdict[v][li];
+        const v = TX.verdict[m.verdict] ? m.verdict : 'SELTEN', vt = [TX.verdict[v][li][0], v === 'NEIN' && m.impact === 'higher' ? T(TX.nein_spike, li) : TX.verdict[v][li][1]];
         const cls = {JA: 'fc-ja', SELTEN: 'fc-selten', NEIN: 'fc-nein'}[v];
         const unc = m.confidence ? TX.unc[m.confidence] : null;
         const reasons = m.reasons.map(r => loc(r.text, li)).filter(Boolean);
-        const q = m.quality && m.quality.key !== 'unknown' ? loc(m.quality.label, li) : '';
+        /* Food quality only where it adds something and never against the tier: "Good everyday choice" under Skip it, or "Not a good
+           everyday choice" under Everyday, would contradict the light; under Skip it the light already says it. */
+        const qk = m.quality ? m.quality.key : 'unknown';
+        const qShow = qk !== 'unknown' && (v === 'JA' ? qk === 'mixed' : v === 'SELTEN' ? (qk === 'mixed' || qk === 'poor') : false);
+        const q = qShow ? loc(m.quality.label, li) : '';
+        const alt = m.alternative && !o.swaps ? loc(m.alternative.text, li) : '';
         return '<section class="sc-sec fc-card ' + cls + '" data-fc-verdict="' + esc(v) + '" aria-label="' + esc(T(TX.title, li)) + '">' +
             '<div class="fc-head"><span class="fc-light" aria-hidden="true"><i></i><i></i><i></i></span>' +
             '<div class="fc-vt"><strong class="fc-word">' + esc(vt[0]) + '</strong><span class="fc-sub">' + esc(vt[1]) + '</span></div></div>' +
@@ -160,7 +178,8 @@
             (reasons.length ? '<div class="fc-why"><h5>' + esc(T(TX.why, li)) + '</h5><ul>' + reasons.map(r => '<li>' + esc(r) + '</li>').join('') + '</ul></div>' : '') +
             servingLine(m, li) +
             (q ? '<div class="fc-row fc-q fc-q-' + esc(m.quality.key) + '"><small>' + esc(T(TX.quality, li)) + '</small><span>' + esc(q) + '</span></div>' : '') +
-            (m.alternative ? '<div class="fc-row fc-alt"><small>' + esc(T(TX.better, li)) + '</small><span>' + esc(loc(m.alternative.text, li)) + '</span></div>' : '') +
+            (alt ? '<div class="fc-row fc-alt"><small>' + esc(T(TX.better, li)) + '</small><span>' + esc(alt) + '</span></div>' : '') +
+            (v === 'NEIN' && m.impact === 'higher' ? '<p class="fc-anyway">' + esc(T(TX.anyway, li)) + '</p>' : '') +
             '</section>';
     }
 

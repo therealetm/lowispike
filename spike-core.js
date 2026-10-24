@@ -151,8 +151,8 @@
         s_sugar_i: ['Added sugar up front ({0})', 'Zugesetzter Zucker weit vorne ({0})', 'Azúcar añadido al principio ({0})'],
         s_whole_i: ['Whole grain up front ({0})', 'Vollkorn weit vorne ({0})', 'Integral al principio ({0})'],
         s_clean_i: ['No added sugar or refined starch up front', 'Kein zugesetzter Zucker, keine raffinierte Stärke vorne', 'Sin azúcar añadido ni almidón refinado al principio'],
-        c_no: ['Food check: NO, not a standard choice', 'Food-Check: NEIN, keine Standardwahl', 'Food check: NO, no es una opción habitual'],
-        c_rare: ['Food check: RARELY, fine now and then', 'Food-Check: SELTEN, ab und zu okay', 'Food check: A VECES, bien de vez en cuando']
+        c_no: ['Food check: Skip it', 'Food-Check: Lieber nicht', 'Análisis del alimento: Mejor no'],
+        c_rare: ['Food check: Small portion', 'Food-Check: Kleine Portion', 'Análisis del alimento: Porción pequeña']
     };
     function text(w, li) {
         const k = w && w[0], row = TX[k]; if (!row) return '';

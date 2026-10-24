@@ -1134,3 +1134,13 @@ Emmanuel (Seven): "I don't understand the food journal section. Either remove it
 **Decision:** Everyone, older app versions included, lands in the one shared presence room `lowi-room-all` with one chat and one Raum. Send energy reaches everyone. The live line says "N here now / N gerade da / N aquí ahora" with no room number. The Community menu starts with People (with search); Circles, "Chat rooms & people" and "Find someone" are removed. The tour has no Circles step; cm-name says "People and profile". The old What's New lines about Circles and rooms are removed from the news history. Emmanuel's own Circle data ("H.B - Human Beings": Christabel, Eleonora, Joseph Castellar, 2 messages) stays in the database untouched and hidden: not moved, not deleted. No database change blocks old app versions from creating Circles; that stays open until Emmanuel says otherwise.
 
 **Consequences:** Do not bring back rooms, Circles or a room switcher without Emmanuel asking. tests/one-chat-no-circles.test.cjs blocks the Circles files, menu entries, room API and room-number text. tools/sim/fake-realtime.cjs now delivers frames to one channel in order, as one Supabase socket does.
+
+## 2026-10-24 — Food verdicts: one tier per food, no frequency
+
+**Status:** Accepted
+
+**Context:** Emmanuel, Oct 24, on the funny-frisch "Sweet & Spicy Curry Style" chips: "It says spike, but then it tells the person they can eat it sometimes... what is sometimes? ... really confusing." The Food check said "Ab und zu okay" under a top card that said higher spike.
+
+**Decision:** Three tiers that describe an amount, never a frequency, with the same words everywhere: Everyday / Small portion / Skip it (Alltag / Kleine Portion / Lieber nicht; Diario / Porción pequeña / Mejor no). Internal codes JA / SELTEN / NEIN and ok / better / spike stay. The Food check light takes the stricter of the food rules and the spike estimate; a higher estimate is always Skip it ("Höhere Spike-Schätzung. Nimm lieber einen Tausch") with one "if you eat it anyway" line built from existing tips. Rule-only skips (pork, alcohol) say "Keine LOWiSPIKE-Wahl", not spike. Old What's New entries keep their old words.
+
+**Consequences:** tests/verdict-tiers.test.cjs blocks frequency words in what people read. Emmanuel may still rename the middle or bottom tier.

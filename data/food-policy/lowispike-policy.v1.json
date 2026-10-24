@@ -4,9 +4,9 @@
   "source": "Master Knowledge v3 (data/food-policy/master-knowledge.v3.md), sections 4 to 8 and 20, plus the everyday food list in data/food-policy/everyday-foods.v1.json. Owner-written logic; additions by Maya are marked there for owner review.",
   "expertReviewed": false,
   "verdicts": {
-    "JA": "Standard choice in normal amounts",
-    "SELTEN": "Occasional, small amounts, context-dependent",
-    "NEIN": "Not recommended as a regular choice"
+    "JA": "Everyday choice in normal amounts (shown as Everyday / Alltag / Diario)",
+    "SELTEN": "Small portion: keep to the portion, best with a meal (shown as Small portion / Kleine Portion / Porción pequeña; no frequency)",
+    "NEIN": "Skip it: pick a swap instead (shown as Skip it / Lieber nicht / Mejor no)"
   },
   "priority": [
     "safety",
@@ -358,7 +358,9 @@
     "sugarHeavySolidPer100": 15,
     "sugarDrinkPer100ml": 2.5,
     "unsweetenedSugarMaxPer100": 0.5,
-    "plainYoghurtSugarMaxPer100": 6
+    "plainYoghurtSugarMaxPer100": 6,
+    "lowSugarMaxPer100": 5,
+    "lowSugarMaxPer100ml": 2.5
   },
   "rules": [
     {
@@ -527,7 +529,7 @@
       "stage": "policy",
       "verdict": "SELTEN",
       "when": "apples, pears, citrus, stone fruit, melon, berries: whole fruit in a small portion (Master Knowledge sections 6 and 20)",
-      "why": "Whole fruit: a small portion now and then"
+      "why": "Whole fruit: a small portion"
     },
     {
       "id": "policy.berries_large",
@@ -541,7 +543,7 @@
       "stage": "policy",
       "verdict": "SELTEN",
       "when": "halloumi and grilling cheese (Master Knowledge section 6)",
-      "why": "Halloumi: salty and rich, keep it occasional"
+      "why": "Halloumi: salty and rich, keep the portion small"
     },
     {
       "id": "policy.nut_butter",
@@ -582,8 +584,8 @@
       "id": "quality.added_sugar_top",
       "stage": "quality",
       "verdict": "SELTEN",
-      "when": "added sugar in the first three ingredients",
-      "why": "Added sugar near the top ({0})"
+      "when": "added sugar in the first three ingredients, and more than 5 g sugar per 100 g (2.5 g per 100 ml); at or under that the EU calls it low sugar, Regulation (EC) 1924/2006",
+      "why": "Added sugar near the top"
     },
     {
       "id": "quality.sweetener",
@@ -609,8 +611,8 @@
     {
       "id": "glucose.higher",
       "stage": "glucose",
-      "verdict": "SELTEN",
-      "when": "Higher estimated blood sugar impact for the serving",
+      "verdict": "NEIN",
+      "when": "Higher estimated blood sugar impact for the serving (24 Oct 2026: the Food check never says a higher spike estimate is fine, same as meals)",
       "why": "Higher estimated blood sugar impact for this serving"
     },
     {

@@ -43,6 +43,8 @@ const LIST = () => {
     if (engine === 'chromium' && vp) { const [w, h] = vp.split('x').map(Number); o.viewport = { width: w, height: h }; o.dpr = 2; }
     const R = await H.open(o); const P = R.page;
     await P.addInitScript(t => { try { localStorage.setItem('lowi.theme', t); } catch (e) { } }, theme);
+    /* the app's language lives in lowispike.lang (LowiLang), not in the harness's settings.lang: without this --lang de ran in English */
+    await P.addInitScript(l => { try { if (!localStorage.getItem('lowispike.lang')) localStorage.setItem('lowispike.lang', l); } catch (e) { } }, lang);
     const report = { device, engine, theme, lang, screens: {}, errors: [] };
     const ready = async () => { await R.goto(); await H.sleep(5000); await P.evaluate(t => { try { window.LowiR2 && window.LowiR2.applyTheme && window.LowiR2.applyTheme(t); } catch (e) { } }, theme).catch(() => { }); await H.sleep(600); };
     /* overlays opened from Home the way a player does (tap / long press), or through the module's own open() */
@@ -61,8 +63,12 @@ const LIST = () => {
         circles: () => api(() => { goTab('foryou'); setTimeout(() => window.LowiUserRooms && LowiUserRooms.open(), 1500); }), people: () => api(() => { goTab('foryou'); setTimeout(() => window.LowiPeopleDir && LowiPeopleDir.open(), 1500); }),
         ranking: () => api(() => { goTab('move'); setTimeout(() => window.LowiRanking && LowiRanking.open && LowiRanking.open(), 1500); }),
         'comm-menu': async () => { await api(() => goTab('foryou')); await H.sleep(2000); return tapSel('.rm-menu-btn'); },
+        tour: () => api(() => { try { LowiTutorial.start({ from: 'sweep' }); } catch (e) { } }),
+        details: async () => { await api(() => goTab('profile')); await H.sleep(2000); return tapSel('[data-yd="open"]'); },
     };
-    const resetAll = () => within(P.evaluate(() => { for (let i = 0; i < 3; i++) { try { window.LowiBackSwipe && LowiBackSwipe.escape(); } catch (e) { } } try { LowiUserRooms.close(); } catch (e) { } try { LowiPeopleDir.close(); } catch (e) { } try { LowiRanking.closeLadder(); } catch (e) { } try { LowiR2.closeAll(); } catch (e) { } try { window.closeSheet && closeSheet(); } catch (e) { } try { LowiSections.close(); } catch (e) { } try { goTab('home'); } catch (e) { } }), 8000, 'reset').catch(() => { });
+    /* profile tiles (Settings, Look & sound, Community, My swaps, Your glow, Finish profile) as screens: --screens g2e:app,g2e:look */
+    screens.filter(s => /^g2e:/.test(s)).forEach(s => { OPEN[s] = async () => { await api(() => goTab('profile')); await H.sleep(2000); return P.evaluate(k => { try { return LowiG2E.open(k); } catch (e) { return String(e); } }, s.slice(4)); }; });
+    const resetAll = () => within(P.evaluate(() => { for (let i = 0; i < 3; i++) { try { window.LowiBackSwipe && LowiBackSwipe.escape(); } catch (e) { } } try { LowiUserRooms.close(); } catch (e) { } try { LowiPeopleDir.close(); } catch (e) { } try { LowiRanking.closeLadder(); } catch (e) { } try { LowiR2.closeAll(); } catch (e) { } try { window.closeSheet && closeSheet(); } catch (e) { } try { LowiSections.close(); } catch (e) { } try { LowiG2E.close(); } catch (e) { } try { LowiTutorial.isOn() && LowiTutorial.stop('sweep'); } catch (e) { } try { goTab('home'); } catch (e) { } }), 8000, 'reset').catch(() => { });
     const openScreen = async s => { if (OPEN[s]) { await resetAll(); await H.sleep(1200); await within(OPEN[s](), 15000, 'open ' + s); await H.sleep(2600); return; } await within(P.evaluate(t => { if (t !== 'home') window.goTab(t); }, s), 15000, 'goTab ' + s); await H.sleep(2200); };
     try {
         await ready(); report.build = await P.evaluate(() => (document.querySelector('meta[name="lowi-build"]') || {}).content || window.LOWI_BUILD || '').catch(() => '');
@@ -71,7 +77,7 @@ const LIST = () => {
             R.step = 'open ' + s; const e0 = R.errs.length;
             await openScreen(s);
             const list = await within(P.evaluate(LIST), 15000, 'list').catch(e => { R.errs.push({ step: R.step, m: e.message }); return []; });
-            const S = report.screens[s] = { controls: list.length, covered: list.filter(c => c.covered).map(c => c.key + ' under ' + c.covered + ' @' + c.x + ',' + c.y), unreadable: list.filter(c => c.ratio != null && c.ratio < 2).map(c => c.key + ' ratio ' + c.ratio), openErrs: R.errs.slice(e0).map(e => e.m), taps: [] };
+            const S = report.screens[s] = { controls: list.length, covered: list.filter(c => c.covered).map(c => c.key + ' under ' + c.covered + ' @' + c.x + ',' + c.y), unreadable: list.filter(c => c.ratio != null && c.ratio < 2).map(c => c.key + ' ratio ' + c.ratio), openErrs: R.errs.slice(e0).map(e => e.m), taps: [] }; if (args.includes('--labels')) S.labels = list.map(c => c.txt);
             await within(P.evaluate(() => { const x = document.documentElement.classList.contains('b3-camon') && document.querySelector('#b3Cam [data-b3="camclose"]'); if (x) x.click(); }), 5000, 'camclose').catch(() => { });
             if (!doTap) { await H.sleep(500); continue; }
             const todo = list.filter(c => !c.covered && !SKIP.test(c.txt) && !SKIP.test(c.key)).slice(0, cap);

@@ -8907,12 +8907,12 @@ function auStop(){ try { if (window.LowiVoice) LowiVoice.cancel(); else if (auSu
 function auSet(v){ R5.audio = !!v; if (v) R5.mute = false; r5save(); r5$$('[data-r5="audio"]').forEach(b => { b.classList.toggle("on", R5.audio); b.setAttribute("aria-pressed", R5.audio); });
   if (R5.audio) auSpeak("Audio mode on. I'll keep it short."); else auStop(); }
 function auMoveRow(){
-  return '<div class="r5-audio"><div class="r5-arow"><span class="r5-aic">' + R5IC.ear + '</span><span class="r5-at"><b>Audio mode</b><small>Cues spoken out loud, short and well spaced. Eyes free.</small></span><button class="toggle' + (R5.audio ? " on" : "") + '" data-r5="audio" aria-pressed="' + R5.audio + '" aria-label="Audio mode"></button></div>' +
+  return '<div class="r5-audio"><div class="r5-arow"><span class="r5-aic">' + R5IC.ear + '</span><span class="r5-at"><b>Audio mode</b><small>Cues spoken out loud, short and well spaced. Eyes free.</small></span><button class="toggle' + (R5.audio ? " on" : "") + '" data-r5="audio" aria-pressed="' + R5.audio + '" aria-label="' + (window.LowiLang ? LowiLang.t("Audio mode") : "Audio mode") + '"></button></div>' +
     '<button class="r5-listen" data-r5="listen"><span class="r5-lic">' + R5IC.play + '</span><span style="flex:1;text-align:left"><b>Listen and learn</b><small>Today\'s moves and the body science, read like an audiobook</small></span><span class="dim">›</span></button></div>';
 }
 function auProfileRows(){
-  return '<div class="setrow"><div class="t"><b>Audio mode</b><div class="small muted">Workouts are spoken out loud, short and well spaced. For eyes-free or low-vision use.</div></div><button class="toggle' + (R5.audio ? " on" : "") + '" data-r5="audio" aria-pressed="' + R5.audio + '" aria-label="Audio mode"></button></div>' +
-    '<div class="setrow"><div class="t"><b>Read notifications aloud</b><div class="small muted">Only when audio mode is on.</div></div><button class="toggle' + (R5.notify ? " on" : "") + '" data-r5="notify" aria-pressed="' + R5.notify + '" aria-label="Read notifications aloud"></button></div>';
+  return '<div class="setrow"><div class="t"><b>Audio mode</b><div class="small muted">Workouts are spoken out loud, short and well spaced. For eyes-free or low-vision use.</div></div><button class="toggle' + (R5.audio ? " on" : "") + '" data-r5="audio" aria-pressed="' + R5.audio + '" aria-label="' + (window.LowiLang ? LowiLang.t("Audio mode") : "Audio mode") + '"></button></div>' +
+    '<div class="setrow"><div class="t"><b>Read notifications aloud</b><div class="small muted">Only when audio mode is on.</div></div><button class="toggle' + (R5.notify ? " on" : "") + '" data-r5="notify" aria-pressed="' + R5.notify + '" aria-label="' + (window.LowiLang ? LowiLang.t("Read notifications aloud") : "Read notifications aloud") + '"></button></div>';
 }
 /* Listen and learn: chapters built from the current Move session + its body-science track */
 function auChapters(){
@@ -13599,9 +13599,9 @@ function onKey(e){ if ((e.key === "Enter" || e.key === " ") && e.target && e.tar
 function tapable(el, label){ if (el.getAttribute("aria-label") !== label) el.setAttribute("aria-label", label); if (el.getAttribute("data-r3m-t")) return; el.setAttribute("data-r3m-t", "1"); el.setAttribute("role", "button"); el.setAttribute("tabindex", "0"); }
 function decorate(root){
   root = root || document;
-  root.querySelectorAll(".lvchip").forEach(c => tapable(c, "Your level: " + (c.textContent || "").trim() + ". Open Misty's growth"));
+  root.querySelectorAll(".lvchip").forEach(c => tapable(c, pk(["Your level: ", "Dein Level: ", "Tu nivel: "]) + (c.textContent || "").trim() + pk([". Open Misty's growth", ". Mistys Wachstum öffnen", ". Abrir el crecimiento de Misty"])));
   const card = document.getElementById("lvCard");
-  if (card) { tapable(card, "Level " + lvOf(xpNow()).L + ", " + N(xpNow()) + " XP. Open Misty's growth"); card.classList.add("r3m-tap");
+  if (card) { tapable(card, pk(["Level ", "Level ", "Nivel "]) + lvOf(xpNow()).L + ", " + N(xpNow()) + pk([" XP. Open Misty's growth", " XP. Mistys Wachstum öffnen", " XP. Abrir el crecimiento de Misty"])); card.classList.add("r3m-tap");
     const h = hintHTML(), ex = card.querySelector(".r3m-hint"); if (!ex) card.insertAdjacentHTML("beforeend", h); else if (ex.getAttribute("data-k") !== hintKey()) ex.outerHTML = h; }
   root.querySelectorAll(".r3-lvcard").forEach(c => { c.classList.add("r3m-tap");
     const mp = c.closest(".r3-mp"), mine = !mp || !!(mp.querySelector('[data-r3="edit"]'));
@@ -16047,7 +16047,7 @@ function bubble(p, size, o){
   const sg = g && size >= 28 && o.badge !== false ? '<span class="lb3-sg"' + (o.signTap ? ' data-r3="sign" data-sign="' + esc(p.s) + '" role="button" tabindex="0" aria-label="About ' + esc(p.s) + '"' : ' aria-hidden="true"') + '>' + g + '</span>' : "";
   /* Oct 9 (round 3A): the water inside shows level progress: fuller = closer to the next level */
   let lvl = 0.15, lvN = 1; try { const lo = levelOf(xpOf(p)); lvN = Math.max(lo.L, lvShow(p)); lvl = 0.16 + 0.74 * Math.max(0, Math.min(1, lo.pct || 0)); } catch(e){}
-  const lvPct = Math.round(lvl * 100), lvTxt = (p.n || "Member") + (p.s ? ", " + p.s : "") + ", level " + lvN;
+  const lvPct = Math.round(lvl * 100), lvTxt = (p.n || "Member") + (p.s ? ", " + p.s : "") + (({de:", Level ", es:", nivel "})[window.LowiLang && LowiLang.get ? LowiLang.get() : "en"] || ", level ") + lvN;
   return '<span class="lb3 lb3-glow' + (lite ? " lite" : "") + (o.cls ? " " + o.cls : "") + '" style="' + st + ';--lvl:' + lvPct + '%" role="img" aria-label="' + esc(lvTxt) + '">' +
     '<span class="lb3-in">' + ph + '<i class="lb3-w"></i><i class="lb3-lvl" aria-hidden="true"><i class="lb3-wave"></i><i class="lb3-wave w2"></i></i><i class="lb3-c"></i>' + bb + '<i class="lb3-g"></i></span>' + sg + '</span>';
 }
@@ -16079,7 +16079,7 @@ function hookTabs(){
 function markTab(){ const m = document.getElementById("main"); if (!m) return; let t = ""; try { t = TAB; } catch(e){} m.setAttribute("data-r3tab", t || ""); }
 function backBtn(){
   const m = document.getElementById("main"); if (!m || document.getElementById("r3Back")) return;
-  const b = document.createElement("button"); b.id = "r3Back"; b.type = "button"; b.setAttribute("aria-label", "Close profile"); b.innerHTML = R2.ico.x;
+  const b = document.createElement("button"); b.id = "r3Back"; b.type = "button"; b.setAttribute("aria-label", "Close profile"); b.__lbl = () => b.setAttribute("aria-label", ({de:"Profil schließen", es:"Cerrar perfil"})[window.LowiLang && LowiLang.get ? LowiLang.get() : "en"] || "Close profile"); b.__lbl(); window.addEventListener("lowi:lang", b.__lbl); /* sweep 13:20: screen readers heard English in de/es */ b.innerHTML = R2.ico.x;
   b.addEventListener("click", () => { try { goTab(lastTab && lastTab !== "profile" ? lastTab : "home"); } catch(e){} });
   m.appendChild(b);
 }
@@ -16087,7 +16087,7 @@ function backBtn(){
 /* ---------- profile: big bubble, obvious photo + birthday, community card ---------- */
 function heroHTML(){
   const m = me(), S_ = R2.S(), u = S_.user || {}, bits = detailsBits(m, {signName:true}), hasPic = !!m.avatar;
-  return '<button class="r3-hav" data-r2p="photo" aria-label="' + (hasPic ? "Change profile photo" : "Add a profile photo") + '">' + bubble(m, 140) + '</button>' +
+  return '<button class="r3-hav" data-r2p="photo" aria-label="' + ((t => window.LowiLang ? LowiLang.t(t) : t)(hasPic ? "Change profile photo" : "Add a profile photo")) + '">' + bubble(m, 140) + '</button>' +
     '<button class="r3-plink" data-r2p="photo">' + (hasPic ? "Change photo" : "Add a profile photo") + '</button>' +
     '<div class="r2-hn">' + esc(u.name || "Add your name") + '</div>' +
     (bits.length ? '<div class="r3-det">' + bits.map((b, i) => (m.s && b.indexOf(m.s) >= 0) ? '<button class="r3-signchip" data-r3="sign" data-sign="' + esc(m.s) + '">' + esc(window.LowiHerbIdentity ? LowiHerbIdentity.signLabel(m.s) : b) + '</button>' :
@@ -16110,7 +16110,7 @@ function commHTML(){
   return '<div class="sec r3-sec">In Community</div><div class="card r3-comm">' +
     '<div class="r3-prev"><small>Next to your messages</small><div class="r3-prevrow">' + bubble(m, 36) + '<div><b>' + esc(m.n) + '</b><span>' + (bits.length ? esc(bits.join(" · ")) : "Add birthday and type to show more") + '</span></div></div></div>' +
     '<div class="r3-set"><div><b>Show my weight</b><small>' + (hw ? (u.showWeight ? "On · others see " + esc(String(S_.health.weight)) + " kg next to your name" : "Off · only you see it") : "Off · add your weight first") + '</small></div>' +
-      '<button class="toggle' + (u.showWeight && hw ? " on" : "") + '" data-r3="showweight" role="switch" aria-checked="' + (u.showWeight && hw ? "true" : "false") + '" aria-label="Show my weight"></button></div>' +
+      '<button class="toggle' + (u.showWeight && hw ? " on" : "") + '" data-r3="showweight" role="switch" aria-checked="' + (u.showWeight && hw ? "true" : "false") + '" aria-label="' + (window.LowiLang ? LowiLang.t("Show my weight") : "Show my weight") + '"></button></div>' +
     '<button class="r3-boardrow" data-r3="board"><span class="r3-ti">🏆</span><div><b>Ranking</b><small>' + (rk ? "You're #" + rk + " in the Ranking this week" : "Look after Misty this week to get in the Ranking") + '</small></div>' + R2.ico.chev + '</button></div>';
 }
 function decorate(){
@@ -16295,7 +16295,7 @@ function decorateEdit(root){
   const save = root.querySelector('[data-r2p="saveedit"]'); if (!save || root.querySelector(".r3-ewt")) return;
   const S_ = R2.S(), u = S_.user || {}, hw = !!(S_.health && S_.health.weight);
   const d = document.createElement("div"); d.className = "r3-set r3-ewt";
-  d.innerHTML = '<div><b>Show my weight in Community</b><small>' + (hw ? "Optional · off by default" : "Add your weight in Profile first") + '</small></div><button class="toggle' + (u.showWeight && hw ? " on" : "") + '" data-r3="showweight" role="switch" aria-label="Show my weight"></button>';
+  d.innerHTML = '<div><b>Show my weight in Community</b><small>' + (hw ? "Optional · off by default" : "Add your weight in Profile first") + '</small></div><button class="toggle' + (u.showWeight && hw ? " on" : "") + '" data-r3="showweight" role="switch" aria-label="' + (window.LowiLang ? LowiLang.t("Show my weight") : "Show my weight") + '"></button>';
   save.parentNode.insertBefore(d, save);
   const n = root.querySelector("#r2eB"); if (n && !root.querySelector(".r3-bnote")) n.closest("label").insertAdjacentHTML("afterend", '<div class="r3-bnote">Your birthday shows on your profile with your age and sign.</div>');
 }
@@ -19922,7 +19922,8 @@ function pass(){
     if (!hd || !t.contains(hd)) { hd = D.createElement("div"); hd.id = "g2eHead"; hd.className = "g2e-head"; hd.__k = null; }
     if (hd.previousElementSibling !== hero) hero.insertAdjacentElement("afterend", hd);
     const k = H.getAttribute("data-g2e-k") || "";
-    if (hd.__k !== k) { hd.__k = k; hd.innerHTML = '<button type="button" class="g2e-back" data-g2e-back data-sfx="close" aria-label="Back">' + IC.back + '<span>Back</span></button><div class="h2 g2e-ht">' + esc(NAME[k] || "") + '</div>'; }
+    const kl = k + "|" + ((window.LowiLang && LowiLang.get && LowiLang.get()) || "en");
+    if (hd.__k !== kl) { hd.__k = kl; hd.innerHTML = '<button type="button" class="g2e-back" data-g2e-back data-sfx="close" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + IC.back + '<span>Back</span></button><div class="h2 g2e-ht">' + esc(NAME[k] || "") + '</div>'; }
     /* tiles after the streak row (or the level card) */
     let ti = D.getElementById("g2eTiles");
     if (!ti || !t.contains(ti)) { ti = D.createElement("div"); ti.id = "g2eTiles"; ti.className = "g2e-tiles"; ti.__h = ""; }

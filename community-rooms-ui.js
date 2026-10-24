@@ -13,7 +13,7 @@ const T={room:['Room','Raum','Sala'],chat:['Chat','Chat','Chat'],rooms:['Rooms',
  wants:['{name} would like to join your room','{name} möchte in deinen Raum','{name} quiere entrar en tu sala'],letIn:['Let in','Reinlassen','Dejar entrar'],notNow:['Not now','Jetzt nicht','Ahora no'],
  moved:['You’re in Room {n} now','Du bist jetzt in Raum {n}','Ahora estás en la sala {n}'],offline:['Rooms are offline. Chat shows the last messages.','Räume sind offline. Der Chat zeigt die letzten Nachrichten.','Las salas están sin conexión.'],
  nobody:['Not in a room right now','Gerade in keinem Raum','Ahora no está en ninguna sala'],close:['Close','Schließen','Cerrar'],joining:['Finding your room…','Suche deinen Raum…','Buscando tu sala…'],
- create:['Creation','Erstellen','Crear'],rank:['Ranking','Rangliste','Ranking'],aff:['Affiliates','Affiliates','Afiliados'],copyLink:['Copy link','Link kopieren','Copiar enlace'],copied:['Link copied','Link kopiert','Enlace copiado'],
+ create:['Creation','Erstellen','Crear'],rank:['Ranking','Rangliste','Ranking'],aff:['Affiliates','Affiliates','Afiliados'],fy:['For You','Für dich','Para ti'],studio:['Studio','Studio','Estudio'],studioSw:['Studio: Affiliates or Creation','Studio: Affiliates oder Erstellen','Estudio: Afiliados o Crear'],copyLink:['Copy link','Link kopieren','Copiar enlace'],copied:['Link copied','Link kopiert','Enlace copiado'],
  tabs:['Community sections','Community-Bereiche','Secciones de la comunidad'],community:['Community','Community','Comunidad'],hereNow:['{c} here now','{c} gerade da','{c} aquí ahora'],
  menu:['Community menu','Community-Menü','Menú de la comunidad'],mRooms:['Circles','Circles','Círculos'],mPeople:['Chat rooms & people','Chat-Räume & Leute','Salas de chat y gente'],mDir:['People','Leute','Personas'],mProfile:['Edit profile','Profil bearbeiten','Editar perfil'],mInvite:['Copy invite link','Einladungslink kopieren','Copiar enlace de invitación'],
  mCopyAff:['Copy Affiliates link','Affiliates-Link kopieren','Copiar enlace de Afiliados'],mCopyCreate:['Copy Creation link','Erstellen-Link kopieren','Copiar enlace de Crear'],mSettings:['Chat settings','Chat-Einstellungen','Ajustes del chat'],mWelcome:['Welcome & rules','Willkommen & Regeln','Bienvenida y normas'],
@@ -32,7 +32,7 @@ function people(){try{const B=W.LowiBotAccounts;return ((H()&&H().people&&H().pe
 function nameOf(uid){const p=people().find(x=>x&&x.uid===uid);return p&&p.n?String(p.n):'';}
 function me(){try{return (H()&&H().uid&&H().uid())||'';}catch(e){return '';}}
 /* tab order is the user's (community-tab-order.js: hold a tab to move it) */
-function tabOrder(){const O=W.LowiCommunityTabs;try{return O&&O.order?O.order():['room','chat','create','aff','rank'];}catch(e){return ['room','chat','create','aff','rank'];}}
+function tabOrder(){const O=W.LowiCommunityTabs;try{return O&&O.order?O.order():['room','chat','fy','studio','rank'];}catch(e){return ['room','chat','fy','studio','rank'];}}
 function open(){const t=D.getElementById('cgThread');return !!(t&&t.hasAttribute('data-open'));}
 /* 21 Oct evening (Eden's Chat): the Chat tab opens the channel list; a channel opens its thread, "‹ Channels" comes back. */
 /* 22 Oct (item 36, Emmanuel: "I don't understand what all these rooms are. Remove it so they get straight to the chat group."):
@@ -47,7 +47,7 @@ function setTab(chat,entry){const c=W.LowiCommunity;
  if(chat){const was=cur();from=entry?'':(was!=='chat'?was:from);view='';if(c&&c.thread&&!open())c.thread(true);wasOpen=open();paint();return;}
  from='';view='';if(c&&c.thread&&open())c.thread(false);wasOpen=open();paint();}
 /* back from the chat: true when it went to the tab you came from; false = nothing to go back to (the caller leaves Community) */
-function back(){if(!open())return false;const f=from;from='';if(f==='create'||f==='aff'||f==='rank'){showView(f);return true;}if(f==='room'){setTab(false);return true;}return false;}
+function back(){if(!open())return false;const f=from;from='';if(f==='create'||f==='aff'||f==='rank'||f==='fy'){showView(f);return true;}if(f==='room'){setTab(false);return true;}return false;}
 function goBack(){const S=W.LowiSections;if(S&&typeof S.back==='function'&&D.documentElement.classList.contains('rm-room-open')){S.back();return;}if(!back())setTab(false);}
 function openThread(){view='';const c=W.LowiCommunity;if(c&&c.thread&&!open())c.thread(true);paint();}
 /* Oct 21: two more tabs, Creation (LOWiSPIKE Create, being built) and Affiliates (the Master Blueprint). Each is its own page with its
@@ -58,8 +58,16 @@ function openThread(){view='';const c=W.LowiCommunity;if(c&&c.thread&&!open())c.
    people in it, a green dot, "12 here now"); nothing is invented, so with no room it just says Rooms. Row 2: the four sections as
    one glass segmented control. The old separate "Copy link" button now lives in the menu. The Day/Night switch and the profile
    picture keep floating top right; row 1 reserves their width (--rm-tr), so nothing ever sits under them. */
-const VIEWS={create:'create/',aff:'affiliates/'},PANES={chans:1,rank:1};let view='';const frames={};
-function showView(v){if(v==='chans'){setTab(true);return;}if(!VIEWS[v]&&!PANES[v])return;const c=W.LowiCommunity;if(open()&&c&&c.thread)c.thread(false);view=v;paint();}
+/* 24 Oct 2026 (Emmanuel: "Let's put the fyp here. And fuse Erstellen & Affiliates zusammen"): For You is a tab here ('fy', a pane
+   like Ranking that holds the feed, moved out of Cook), and Creation + Affiliates are one tab, Studio, with a small
+   Affiliates | Creation switch at the top of its panel. Both pages keep their own frame and address; Studio opens the half you
+   used last (STUDIO_KEY, Affiliates first). */
+const VIEWS={create:'create/',aff:'affiliates/'},PANES={chans:1,rank:1,fy:1};let view='';const frames={};
+const STUDIO_KEY='lowispike.community.studio';
+function studioLast(){try{return localStorage.getItem(STUDIO_KEY)==='create'?'create':'aff';}catch(e){return 'aff';}}
+function tabOfView(v){return v==='aff'||v==='create'?'studio':v;}
+function showView(v){if(v==='chans'){setTab(true);return;}if(v==='studio')v=studioLast();if(!VIEWS[v]&&!PANES[v])return;
+ if(VIEWS[v]){try{if(localStorage.getItem(STUDIO_KEY)!==v)localStorage.setItem(STUDIO_KEY,v);}catch(e){}}const c=W.LowiCommunity;if(open()&&c&&c.thread)c.thread(false);view=v;paint();}
 function viewUrl(v){try{return new URL(VIEWS[v],location.href.split('#')[0]).href;}catch(e){return VIEWS[v];}}
 function inviteUrl(){try{return location.href.split('#')[0].split('?')[0]+'#community';}catch(e){return '#community';}}
 /* Oct 22 (item 33 sweep): a rebuilt Community page (renderCommunity) left the cached frames detached: frames[view] still existed,
@@ -70,11 +78,20 @@ function pageActive(){const p=D.getElementById('tab-foryou');return !p||p.classL
 function dropFrames(keep){for(const k in frames){if(k===keep)continue;const f=frames[k];delete frames[k];try{f.src='about:blank';}catch(e){}if(f.parentNode)f.parentNode.removeChild(f);}}
 function ensureView(pane){let box=pane.querySelector(':scope>.rm-view');
  if(!box){box=D.createElement('section');box.className='rm-view';box.setAttribute('data-noi18n','');pane.appendChild(box);}
+ studioSwitch(box);
  for(const k in frames)if(frames[k].parentNode!==box){const f=frames[k];delete frames[k];if(f.parentNode)f.parentNode.removeChild(f);}
  if(VIEWS[view]&&!frames[view]&&pageActive()){/* never load a page while Community is closed (a repaint after leaving made it again) */const f=D.createElement('iframe');f.className='rm-frame';f.src=VIEWS[view]+'?embed=1';/* not lazy: it is only made when its tab is opened, and lazy frames in WebKit can wait for a scroll */f.dataset.view=view;frames[view]=f;box.appendChild(f);}
  for(const k in frames)frames[k].hidden=k!==view;
  for(const k in frames)frames[k].title=k==='aff'?tr('aff'):tr('create');
  return box;}
+/* Studio's switch: two halves in the same glass as the tab bar, only while Studio is open */
+function studioSwitch(box){let sw=box.querySelector(':scope>.rm-sw');const on=!!VIEWS[view];
+ if(!sw){sw=D.createElement('div');sw.className='rm-sw';sw.setAttribute('role','tablist');sw.innerHTML=['aff','create'].map(k=>'<button type="button" role="tab" class="rm-swb" data-rmsw="'+k+'"></button>').join('');box.insertBefore(sw,box.firstChild);
+  sw.addEventListener('click',e=>{const b=e.target.closest('[data-rmsw]');if(!b)return;e.preventDefault();showView(b.dataset.rmsw);const n=sw.querySelector('[data-rmsw="'+view+'"]');if(n&&D.activeElement===b)n.focus({preventScroll:true});});
+  sw.addEventListener('keydown',e=>{if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;e.preventDefault();showView(view==='aff'?'create':'aff');const n=sw.querySelector('[data-rmsw="'+view+'"]');if(n)n.focus({preventScroll:true});});}
+ sw.hidden=!on;if(sw.getAttribute('aria-label')!==tr('studioSw'))sw.setAttribute('aria-label',tr('studioSw'));
+ sw.style.setProperty('--rm-sw-i',view==='create'?'1':'0');
+ sw.querySelectorAll('[data-rmsw]').forEach(b=>{const k=b.dataset.rmsw,t=tr(k),sel=k===view;if(b.textContent!==t)b.textContent=t;b.setAttribute('aria-selected',sel?'true':'false');b.tabIndex=sel?0:-1;});}
 function copyText(u,label){const done=()=>note(label+': '+u);
  if(navigator.clipboard&&W.isSecureContext)navigator.clipboard.writeText(u).then(done,()=>note(u));else note(u);}
 function copyView(v){v=v||view;if(PANES[v])v='';if(!VIEWS[v])return copyText(inviteUrl(),tr('copied'));copyText(viewUrl(v),tr('copied'));}
@@ -87,7 +104,7 @@ function ensure(){const pane=D.getElementById('cmPaneChat');if(!pane||!pane.hasA
  pane.insertBefore(bar,pane.firstChild);banner=bar.querySelector('.rm-banner');
  for(const ms of [60,250,600,1100])setTimeout(()=>fit(bar),ms);setTimeout(maybeWelcome,1200);
  bar.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const a=b.dataset.rm;
-  if(a==='back')goBack();else if(a==='room')setTab(false);else if(a==='chat')setTab(true);else if(a==='create'||a==='aff'||a==='rank')showView(a);else if(a==='copy')copyView();else if(a==='sheet')openSheet();else if(a==='menu')toggleMenu();
+  if(a==='back')goBack();else if(a==='room')setTab(false);else if(a==='chat')setTab(true);else if(a==='create'||a==='aff'||a==='rank'||a==='fy'||a==='studio')showView(a);else if(a==='copy')copyView();else if(a==='sheet')openSheet();else if(a==='menu')toggleMenu();
   else if(a==='letin'){R()&&R().letIn(b.dataset.uid).then(paint);}else if(a==='notnow'){R()&&R().dismiss(b.dataset.uid);paint();}});
  bar.querySelector('.rm-tabs').addEventListener('keydown',e=>{if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;const ts=[...bar.querySelectorAll('.rm-tab')],i=ts.indexOf(D.activeElement);if(i<0)return;e.preventDefault();const n=ts[(i+(e.key==='ArrowRight'?1:ts.length-1))%ts.length];n.focus();n.click();});
  return bar;}
@@ -103,7 +120,7 @@ function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  if(chat&&view)view='';/* the message room was opened by other code: Chat wins */
  if(chat)dropFrames('');
  D.documentElement.classList.toggle('rm-room-open',!!(chat&&pageActive()));/* item 33: the Home X steps aside in a chat room (see community-rooms.css) */
- const pane=b.parentNode,sel=view==='chans'?'chat':view||(chat?'chat':'room');
+ const pane=b.parentNode,sel=view==='chans'?'chat':tabOfView(view)||(chat?'chat':'room');
  const tabs=b.querySelectorAll('.rm-tab');tabs.forEach(t=>{t.textContent=tr(t.dataset.rm);});b.querySelector('.rm-tabs').setAttribute('aria-label',tr('tabs'));
  tabs.forEach(t=>{const on=t.dataset.rm===sel;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;});
  /* Phase E: one glowing pill slides under the open section (CSS .rm-tabs::before reads --rm-i) */
@@ -112,7 +129,7 @@ function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  else{pane.removeAttribute('data-rm-view');D.documentElement.classList.remove('rm-view');if(pane.querySelector(':scope>.rm-view'))ensureView(pane);}
  /* a new section starts at the top: a pane left scrolled by the last one slid the tabs under the floating profile picture (iPhone SE) */
  if(pane.__rmV!==(view||'')){pane.__rmV=view||'';if(pane.scrollTop)pane.scrollTop=0;}
- paintChans(pane);paintRank(pane);
+ paintChans(pane);paintRank(pane);paintFy(pane);
  const cr=b.querySelector('.rm-crumb');cr.hidden=!(chat&&!view);if(!cr.hidden){const bk=cr.querySelector('.rm-back');if(bk.getAttribute('aria-label')!==tr('back')){bk.innerHTML='<i aria-hidden="true"></i>';bk.setAttribute('aria-label',tr('back'));}cr.querySelector('.rm-crumb-t').textContent=tr('chGalaxy');}
  const nm=b.querySelector('.rm-name');if(nm.textContent!==tr('community'))nm.textContent=tr('community');
  const lv=b.querySelector('.rm-live'),lh=liveHTML();if(lv.__h!==lh){lv.innerHTML=lh;lv.__h=lh;}
@@ -132,6 +149,19 @@ function paintRank(pane){let box=pane.querySelector(':scope>.rm-view>.rm-rank');
  const vw=ensureView(pane);
  if(!box){box=D.createElement('section');box.className='rm-frame rm-rank';box.setAttribute('data-noi18n','');box.hidden=true;vw.appendChild(box);}
  const fresh=box.hidden;if(box.hidden){box.hidden=false;box.scrollTop=0;}try{if(W.LowiRanking)W.LowiRanking.render(box,fresh);}catch(e){console.error(e);}}
+/* 24 Oct 2026: For You, the feed (index.html TRIBE.renderForYou, fy-embed.js inline videos) in the same .rm-frame panel as Ranking.
+   The live pane #cmPaneFeed is moved, not copied, so its renderer, likes, comments and video player keep working. Leaving the tab
+   stops every video and closes an open inline player. */
+function feedPane(){let p=D.getElementById('cmPaneFeed');if(!p){p=D.createElement('div');p.className='ls-pane fy-pane';p.id='cmPaneFeed';p.innerHTML='<div id="cmFeed"></div>';}else if(!p.querySelector('#cmFeed')){p.innerHTML='<div id="cmFeed"></div>';}return p;}
+function stopFeed(){try{if(W.LowiFyEmbed)W.LowiFyEmbed.closeAll(null);D.querySelectorAll('#cmPaneFeed video.fyv-v').forEach(v=>{v.dataset.want='';v.pause();});}catch(e){}}
+function paintFyFeed(){try{const f=D.getElementById('cmFeed');if(f&&W.TRIBE&&W.TRIBE.renderForYou)W.TRIBE.renderForYou(f);}catch(e){console.error(e);}}
+function paintFy(pane){let box=pane.querySelector(':scope>.rm-view>.rm-fy');const on=view==='fy'&&pageActive();if(!on){if(box&&!box.hidden){box.hidden=true;stopFeed();}return;}
+ const vw=ensureView(pane);
+ if(!box){box=D.createElement('section');box.className='rm-frame rm-fy';box.setAttribute('data-noi18n','');box.hidden=true;vw.appendChild(box);}
+ const p=feedPane();let moved=false;if(p.parentElement!==box){D.querySelectorAll('#cmPaneFeed').forEach(o=>{if(o!==p)o.remove();});box.appendChild(p);moved=true;}
+ p.removeAttribute('inert');p.hidden=false;
+ if(box.getAttribute('aria-label')!==tr('fy'))box.setAttribute('aria-label',tr('fy'));
+ if(box.hidden||moved||!D.getElementById('fyFeed')){box.hidden=false;paintFyFeed();}}
 /* Channel list (Eden's channels), only from data the app has: the galaxy chat's newest message and unread count, replies and
    mentions addressed to you (LowiCommunity.directed), the people in your room, and the two pages. Empty means an honest line. */
 function ago(ts){const s=Math.max(0,(Date.now()-(+ts||0))/1000);if(!ts)return '';if(s<60)return tr('now');if(s<3600)return Math.floor(s/60)+tr('min');if(s<86400)return Math.floor(s/3600)+tr('hr');
@@ -169,7 +199,7 @@ function menuItems(){const it=[['people','👥',tr('mPeople')],['find','🔎',tr
  /* 23 Oct (Emmanuel: "Replies & mentions doesn't work and doesn't make sense, so you can mute it"): no Replies & mentions entry.
     lastDirected() and the 'replies' click branch stay as harmless dead paths (nothing renders that key any more). */
  if(D.getElementById('pfBtn'))it.push(['profile','👤',tr('mProfile')]);
- it.push(['invite','🔗',tr('mInvite')]);if(view)it.push(['copyview','📋',tr(view==='aff'?'mCopyAff':'mCopyCreate')]);
+ it.push(['invite','🔗',tr('mInvite')]);if(VIEWS[view])it.push(['copyview','📋',tr(view==='aff'?'mCopyAff':'mCopyCreate')]);
  if(W.LowiCommunity&&W.LowiCommunity.settings)it.push(['settings','⚙️',tr('mSettings')]);
  if(W.LowiCommunityWelcome&&W.LowiCommunityWelcome.open)it.push(['welcome','📜',tr('mWelcome')]);
  return it;}
@@ -247,7 +277,7 @@ D.addEventListener('lowi:chat',()=>paint());
    going back to the Room. When the chat opens right after a tap inside the Community page and nobody set `from`, the tab under
    it is where back goes. setTab() keeps wasOpen in step, so the Chat tab and Community's first tab (`entry`) are unchanged. */
 D.addEventListener('pointerdown',e=>{const t=e.target;roomTapAt=t&&t.closest&&t.closest('#tab-foryou')&&!t.closest('.rm-tab,.rm-menu,.rm-menu-btn')?Date.now():0;},true);
-function threadMoved(){const o=open();if(o&&!wasOpen&&!from&&roomTapAt&&Date.now()-roomTapAt<2500)from=(view==='create'||view==='aff'||view==='rank')?view:'room';wasOpen=o;}
+function threadMoved(){const o=open();if(o&&!wasOpen&&!from&&roomTapAt&&Date.now()-roomTapAt<2500)from=(view==='create'||view==='aff'||view==='rank'||view==='fy')?view:'room';wasOpen=o;}
 const mo=typeof MutationObserver==='function'?new MutationObserver(()=>{threadMoved();paint();}):null;
 function watch(){const t=D.getElementById('cgThread');if(t&&mo&&!t.__rmWatch){t.__rmWatch=1;mo.observe(t,{attributes:true,attributeFilter:['data-open']});}paint();}
 setInterval(watch,1500);if(D.readyState!=='loading')watch();else D.addEventListener('DOMContentLoaded',watch);
@@ -343,10 +373,15 @@ function maybeWelcome(){if(ob||lsGet(OBK)||(navigator&&navigator.webdriver))retu
  if(W.LowiTutorial&&W.LowiTutorial.isOn&&W.LowiTutorial.isOn())return;openWelcome();}
 W.LowiCommunityWelcome={open:openWelcome,close:()=>obClose(false),seen:()=>!!lsGet(OBK)};
 /* Invite links (menu > Copy invite link): …/lowispike/#community opens Community; #community/affiliates and #community/create open that tab. */
-(function deep(){let h='';try{h=location.hash||'';}catch(e){}const m=h.match(/^#community(?:\/(affiliates|create|ranking))?$/);if(!m)return;let n=0;
+(function deep(){let h='';try{h=location.hash||'';}catch(e){}const m=h.match(/^#community(?:\/(affiliates|create|ranking|foryou))?$/);if(!m)return;let n=0;
  const tick=()=>{n++;if(typeof W.goTab!=='function'||!D.getElementById('whPad')){if(n<60)setTimeout(tick,500);return;}
-  try{W.goTab('foryou');}catch(e){}const v=m[1]==='affiliates'?'aff':m[1]==='create'?'create':m[1]==='ranking'?'rank':'';
+  try{W.goTab('foryou');}catch(e){}const v=m[1]==='affiliates'?'aff':m[1]==='create'?'create':m[1]==='ranking'?'rank':m[1]==='foryou'?'fy':'';
   let k=0;const t2=()=>{k++;if(!ensure()){if(k<30)setTimeout(t2,300);return;}if(v)showView(v);try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}};setTimeout(t2,400);};
  setTimeout(tick,600);})();
-W.LowiRoomsUI={paint,openSheet,closeSheet,setTab,back,from:()=>from,fit,showView,view:()=>view,frames:()=>Object.keys(frames),menu:toggleMenu,copyView,inviteUrl,_chanRows:chanRows};
+/* open Community right on one tab (For You after a post, Settings > For You); the first-tab rule leaves it */
+function openOn(v){try{if(W.LowiCommunityTabs&&W.LowiCommunityTabs.want)W.LowiCommunityTabs.want();}catch(e){}
+ const on=()=>{const p=D.getElementById('tab-foryou');return !!(p&&p.classList.contains('active'));};
+ if(!on()){try{W.goTab('foryou');}catch(e){}}
+ let k=0;const t=()=>{k++;if(!ensure()||!on()){if(k<30)setTimeout(t,100);return;}const was=view;showView(v);if(v==='fy'&&was==='fy')paintFyFeed();/* already there: show the newest post */};setTimeout(t,on()?0:60);}
+W.LowiRoomsUI={paint,openSheet,closeSheet,setTab,back,from:()=>from,fit,showView,openOn,tab:()=>open()?'chat':tabOfView(view)||'room',view:()=>view,frames:()=>Object.keys(frames),menu:toggleMenu,copyView,inviteUrl,_chanRows:chanRows};
 })(window,document);

@@ -490,9 +490,9 @@
             id: 'cm-tabs', area: 'together', where: 'community', rm: 'room', target: ['.rm-tabs', '.rm-tab[data-rm="room"]'], covers: ['community-tabs'], teaches: ['cm-tabs'], tryIt: { how: 'tap' },
             title: { en: 'Community tabs', de: 'Community-Tabs', es: 'Pestañas de Comunidad' },
             text: {
-                en: 'Tap these tabs to switch: Room is the galaxy with everyone’s companions, Chat is the messages, Creation is for making content and Affiliates is for earning with LOWiSPIKE.',
-                de: 'Tipp auf diese Tabs zum Wechseln: Raum ist die Galaxie mit allen Begleitern, Chat sind die Nachrichten, Erstellen ist für Content und Affiliates zum Verdienen mit LOWiSPIKE.',
-                es: 'Toca estas pestañas para cambiar: Sala es la galaxia con los compañeros de todos, Chat son los mensajes, Crear es para hacer contenido y Afiliados para ganar con LOWiSPIKE.'
+                en: 'Tap these tabs to switch: Room is the galaxy with everyone’s companions, Chat is the messages, For You is everyone’s posts, and Studio is for making content and earning with LOWiSPIKE.',
+                de: 'Tipp auf diese Tabs zum Wechseln: Raum ist die Galaxie mit allen Begleitern, Chat sind die Nachrichten, Für dich sind die Beiträge aller, und im Studio machst du Content und verdienst mit LOWiSPIKE.',
+                es: 'Toca estas pestañas para cambiar: Sala es la galaxia con los compañeros de todos, Chat son los mensajes, Para ti son las publicaciones de todos, y en Estudio haces contenido y ganas con LOWiSPIKE.'
             }
         },
         {
@@ -554,9 +554,9 @@
             id: 'community-order', area: 'together', where: 'community', rm: 'room', target: ['.rm-tabs'], covers: ['community-tab-order'], teaches: ['cm-tab-order'], tryIt: { how: 'hold' },
             title: { en: 'Your tab order', de: 'Deine Reihenfolge', es: 'Tu orden' },
             text: {
-                en: 'Hold Room, Chat, Creation or Affiliates until the tabs wiggle, then slide it where you want it and let go. Community always opens on your first tab.',
-                de: 'Halt Raum, Chat, Erstellen oder Affiliates gedrückt, bis die Tabs wackeln, schieb ihn an seinen Platz und lass los. Die Community öffnet immer mit deinem ersten Tab.',
-                es: 'Mantén Sala, Chat, Crear o Afiliados hasta que las pestañas tiemblen, deslízala adonde quieras y suelta. Comunidad siempre abre en tu primera pestaña.'
+                en: 'Hold Room, Chat, For You or Studio until the tabs wiggle, then slide it where you want it and let go. Community always opens on your first tab.',
+                de: 'Halt Raum, Chat, Für dich oder Studio gedrückt, bis die Tabs wackeln, schieb ihn an seinen Platz und lass los. Die Community öffnet immer mit deinem ersten Tab.',
+                es: 'Mantén Sala, Chat, Para ti o Estudio hasta que las pestañas tiemblen, deslízala adonde quieras y suelta. Comunidad siempre abre en tu primera pestaña.'
             }
         },
         {
@@ -570,16 +570,16 @@
         },
         /* ---------- part: settings ---------- */
         {
-            id: 'creation', area: 'together', where: 'community', rm: 'create', target: ['.rm-tab[data-rm="create"]', '.rm-tabs'], covers: ['creation'], teaches: [], later: 'tap',
+            id: 'creation', area: 'together', where: 'community', rm: 'create', target: ['.rm-sw [data-rmsw="create"]', '.rm-tab[data-rm="studio"]', '.rm-tabs'], covers: ['creation'], teaches: [], later: 'tap',
             title: { en: 'Creation', de: 'Erstellen', es: 'Crear' },
             text: {
-                en: 'Creation is where you make content for your videos. After the tour, tap a tool to open it.',
-                de: 'Unter Erstellen machst du Content für deine Videos. Nach der Tour tippst du ein Werkzeug an, um es zu öffnen.',
-                es: 'En Crear haces contenido para tus vídeos. Después del recorrido, toca una herramienta para abrirla.'
+                en: 'In Studio, Creation is where you make content for your videos. After the tour, tap a tool to open it.',
+                de: 'Im Studio machst du unter Erstellen Content für deine Videos. Nach der Tour tippst du ein Werkzeug an, um es zu öffnen.',
+                es: 'En Estudio, en Crear haces contenido para tus vídeos. Después del recorrido, toca una herramienta para abrirla.'
             }
         },
         {
-            id: 'affiliates', area: 'together', where: 'community', rm: 'aff', target: ['.rm-tab[data-rm="aff"]', '.rm-tabs'], covers: ['affiliates'], teaches: ['aff-card'], later: 'tap',
+            id: 'affiliates', area: 'together', where: 'community', rm: 'aff', target: ['.rm-sw [data-rmsw="aff"]', '.rm-tab[data-rm="studio"]', '.rm-tabs'], covers: ['affiliates'], teaches: ['aff-card'], later: 'tap',
             title: { en: 'Affiliates', de: 'Affiliates', es: 'Afiliados' },
             text: {
                 en: 'Earn by sharing LOWiSPIKE. After the tour, tap a product card to see its video script: Listen reads it to you, the copy button copies it. Below it you see your level and what you earn.',
@@ -634,12 +634,12 @@
         },
         {
             id: 'settings-more', area: 'settings', target: ['#whHud .o8-settings'], covers: ['care', 'workouts', 'foryou', 'hunt'],
-            info: 'says where For You and the Ranking live now; Swipe here is the name of a Cook view, not a gesture to do',
+            info: 'says where For You and the Ranking live now (both Community tabs since 24 Oct 2026)',
             title: { en: 'For You and the Ranking', de: 'Für dich und die Rangliste', es: 'Para ti y el Ranking' },
             text: {
-                en: 'For You is in Cook, next to Shuffle and Swipe. The Ranking of everyone\'s companions is in Community, next to Rooms and Creation. Workouts are behind the Move bubble on Home.',
-                de: 'Für dich findest du in Kochen, neben Shuffle und Swipe. Die Rangliste aller Begleiter ist in der Community, neben Räume und Erstellen. Workouts liegen hinter der Bewegen-Blase auf Home.',
-                es: 'Para ti está en Cocina, junto a Shuffle y Swipe. El Ranking de los compañeros de todos está en Comunidad, junto a Salas y Creación. Los entrenos están tras la burbuja Moverse en Inicio.'
+                en: 'For You and the Ranking of everyone\'s companions are tabs in Community. Workouts are behind the Move bubble on Home.',
+                de: 'Für dich und die Rangliste aller Begleiter sind Tabs in der Community. Workouts liegen hinter der Bewegen-Blase auf Home.',
+                es: 'Para ti y el Ranking de los compañeros de todos son pestañas en Comunidad. Los entrenos están tras la burbuja Moverse en Inicio.'
             }
         },
         {
@@ -675,9 +675,9 @@
             id: 'cook-swipe', area: 'extras', target: null, covers: [], teaches: ['cook-swipe', 'foryou-swipe'], practice: { how: 'swipe', look: 'cards' },
             title: { en: 'Meal ideas', de: 'Essensideen', es: 'Ideas de comida' },
             text: {
-                en: 'In Fuel, Cook has meal ideas. In Swipe, swipe the cards sideways to go through them. For You is a feed: swipe up and down.',
-                de: 'In Fuel hat Kochen Essensideen. Bei Swipe wischst du die Karten zur Seite, um sie durchzugehen. Für dich ist ein Feed: wisch nach oben und unten.',
-                es: 'En Fuel, Cocinar tiene ideas de comida. En Swipe, desliza las tarjetas de lado para verlas. Para ti es un feed: desliza arriba y abajo.'
+                en: 'In Fuel, Cook has meal ideas. In Swipe, swipe the cards sideways to go through them. In Community, For You is a feed: swipe up and down.',
+                de: 'In Fuel hat Kochen Essensideen. Bei Swipe wischst du die Karten zur Seite, um sie durchzugehen. In der Community ist Für dich ein Feed: wisch nach oben und unten.',
+                es: 'En Fuel, Cocinar tiene ideas de comida. En Swipe, desliza las tarjetas de lado para verlas. En Comunidad, Para ti es un feed: desliza arriba y abajo.'
             }
         },
         {
@@ -879,7 +879,7 @@
         G('page-swipe', 'home', 'swipe', ['liquid-glass.js', 'community-spirit.js'], 'swipe sideways: between Home and Community'),
         G('back-swipe', 'any', 'swipe', ['back-swipe.js', 'section-nav.js'], 'swipe in from the left edge: back'),
         G('sheet-drag', 'any', 'drag', ['apple-ui.js'], 'drag a sheet\'s top bar down: close it'),
-        G('cm-tabs', 'community', 'tap', ['community-rooms-ui.js'], 'tap Room, Chat, Creation, Affiliates'),
+        G('cm-tabs', 'community', 'tap', ['community-rooms-ui.js'], 'tap Room, Chat, For You, Studio, Ranking'),
         G('cm-tab-order', 'community', 'hold', ['community-tab-order.js'], 'hold a Community tab until it wiggles, slide it: new tab order'),
         G('cm-name', 'community', 'tap', ['community-rooms-ui.js', 'community-me.js'], 'tap the Community name / your picture: rooms, profile, invite'),
         G('cm-pan', 'community', 'drag', ['community-chat.js'], 'drag the galaxy: move around'),
@@ -891,7 +891,7 @@
         G('cm-energy', 'community', 'drag', ['community-energy.js'], 'drag the small joystick and let go: send energy'),
         G('aff-card', 'community', 'tap', ['community-rooms-ui.js'], 'Affiliates: tap a card for its script, copy it'),
         G('cook-swipe', 'home', 'swipe', ['nav-moves.js', 'swaflo.js'], 'Cook Swipe: swipe the cards'),
-        G('foryou-swipe', 'home', 'swipe', ['nav-moves.js', 'fy-embed.js'], 'For You: swipe up and down'),
+        G('foryou-swipe', 'community', 'swipe', ['community-rooms-ui.js', 'fy-embed.js'], 'For You (Community tab): swipe up and down'),
         G('visit-reply', 'home', 'tap', ['home-visit.js'], 'a visiting companion: tap Reply')
     ];
     /* files the gesture scan matches that teach nothing new, with the reason */

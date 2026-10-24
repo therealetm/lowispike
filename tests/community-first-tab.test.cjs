@@ -9,25 +9,30 @@ const C = require('../community-tab-order.js');
 
 test('firstAction: every opening lands on the first tab of the order', () => {
   const A = C.firstAction;
-  /* first = Affiliates: from Room, from Chat, from a chat room left open, already there */
-  assert.strictEqual(A('aff', '', false, false, false), 'aff');
-  assert.strictEqual(A('aff', 'chans', false, false, false), 'aff');
-  assert.strictEqual(A('aff', '', true, false, false), 'aff', 'a chat room left open on the last visit no longer wins');
-  assert.strictEqual(A('aff', 'aff', false, false, false), null);
+  /* first = Studio (Affiliates + Creation since 24 Oct 2026): from Room, from Chat, from a chat room left open, already there */
+  assert.strictEqual(A('studio', '', false, false, false), 'studio');
+  assert.strictEqual(A('studio', 'chans', false, false, false), 'studio');
+  assert.strictEqual(A('studio', '', true, false, false), 'studio', 'a chat room left open on the last visit no longer wins');
+  assert.strictEqual(A('studio', 'aff', false, false, false), null, 'already in Studio (Affiliates half)');
+  assert.strictEqual(A('studio', 'create', false, false, false), null, 'already in Studio (Creation half)');
+  assert.strictEqual(A('aff', 'chans', false, false, false), 'studio', 'an old saved first tab reads as Studio');
+  /* first = For You */
+  assert.strictEqual(A('fy', '', false, false, false), 'fy');
+  assert.strictEqual(A('fy', 'fy', false, false, false), null);
+  assert.strictEqual(A('fy', 'aff', false, false, false), 'fy');
   /* first = Room */
   assert.strictEqual(A('room', '', false, false, false), null);
   assert.strictEqual(A('room', 'chans', false, false, false), 'room');
   assert.strictEqual(A('room', '', true, false, false), 'room', 'the old chat room closes: Room shows');
   assert.strictEqual(A('room', 'create', false, false, false), 'room');
+  assert.strictEqual(A('room', 'fy', false, false, false), 'room');
   /* first = Chat: the galaxy chat room itself since item 36 (there is no channel list any more) */
   assert.strictEqual(A('chat', '', false, false, false), 'chat');
   assert.strictEqual(A('chat', 'chans', false, false, false), 'chat');
   assert.strictEqual(A('chat', 'aff', false, false, false), 'chat');
   assert.strictEqual(A('chat', '', true, false, false), null, 'already in the chat room: leave it');
-  /* first = Creation */
-  assert.strictEqual(A('create', 'aff', false, false, false), 'create');
   /* only a chat room opened for this visit (a reply from a Home visit) or a deep link is left alone */
-  assert.strictEqual(A('aff', '', true, true, false), null);
+  assert.strictEqual(A('studio', '', true, true, false), null);
   assert.strictEqual(A('room', 'chans', false, false, true), null);
   /* nonsense order falls back to Room */
   assert.strictEqual(A('cook', 'chans', false, false, false), 'room');

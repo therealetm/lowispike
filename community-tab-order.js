@@ -13,15 +13,24 @@
    tests/community-tab-order.test.cjs. */
 (function (root) {
     'use strict';
-    const IDS = ['room', 'chat', 'create', 'aff', 'rank'];   /* 23 Oct: + Ranking (ranking.js); a saved order without it gets it at the end */
+    /* 23 Oct: + Ranking (ranking.js); a saved order without it gets it at the end.
+       24 Oct 2026 (Emmanuel: "Let's put the fyp here. And fuse Erstellen & Affiliates zusammen"): For You ('fy') moved here from
+       Cook, and Creation + Affiliates are one tab, Studio ('studio'), with a small Affiliates | Creation switch inside. Still five
+       tabs. A saved order from before keeps its places: 'create' / 'aff' become 'studio' where the first of them was, and For You
+       goes right before Studio (rank, chat, room, aff, create -> rank, chat, room, fy, studio). */
+    const IDS = ['room', 'chat', 'fy', 'studio', 'rank'];
+    const LEGACY = { create: 'studio', aff: 'studio' };
     const KEY = 'lowispike.community.tabs';
     const HOLD_MS = 450, SLOP = 10;
     function normalize(list) {
-        const out = [];
-        (Array.isArray(list) ? list : []).forEach(k => { if (IDS.includes(k) && !out.includes(k)) out.push(k); });
+        const src = Array.isArray(list) ? list : [], out = [];
+        src.forEach(k => { k = LEGACY[k] || k; if (IDS.includes(k) && !out.includes(k)) out.push(k); });
+        if (src.length && !src.includes('fy')) { const i = out.indexOf('studio'); if (i >= 0) out.splice(i, 0, 'fy'); }
         IDS.forEach(k => { if (!out.includes(k)) out.push(k); });
         return out;
     }
+    /* the tab a view belongs to: Affiliates and Creation are the two halves of Studio */
+    function tabOf(view) { return view === 'aff' || view === 'create' ? 'studio' : view; }
     function parse(raw) { try { return normalize(JSON.parse(raw || 'null')); } catch (e) { return IDS.slice(); } }
     /* move the tab `id` to position `to` (0-based, clamped) */
     function moveTo(list, id, to) {
@@ -43,12 +52,12 @@
     function firstAction(first, view, room, fresh, deep) {
         if (deep) return null;
         if (room && fresh) return null;
-        first = IDS.includes(first) ? first : IDS[0];
+        first = IDS.includes(LEGACY[first] || first) ? (LEGACY[first] || first) : IDS[0];
         if (first === 'room') return room || view !== '' ? 'room' : null;
         if (first === 'chat') return room ? null : 'chat';   /* item 36: Chat opens the galaxy chat itself, no channel list first */
-        return room || view !== first ? first : null;
+        return room || tabOf(view) !== first ? first : null;
     }
-    const core = { IDS, KEY, HOLD_MS, SLOP, FRESH_MS, normalize, parse, moveTo, slotAt, firstAction };
+    const core = { IDS, LEGACY, KEY, HOLD_MS, SLOP, FRESH_MS, normalize, parse, moveTo, slotAt, firstAction, tabOf };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root || !root.document) return;
 
@@ -189,7 +198,7 @@
        first visit of a session the tabs were not built yet, so the first tab waited for a 100 ms retry while the default showed.
        Now the first tab is set inside the class change itself (a MutationObserver runs before the browser draws the next frame),
        the tab bar is built on the spot if it is missing, and only a chat room opened for this visit (stamped below) is kept. */
-    let wasOpen = false, roomStamp = 0;
+    let wasOpen = false, roomStamp = 0, wantStamp = 0;
     function isOpen() { const p = D.getElementById('tab-foryou'); return !!(p && p.classList.contains('active')); }
     function stampWrap() {
         const C = W.LowiCommunity; if (!C || C.__tabStamp) return;
@@ -208,7 +217,7 @@
             if (!R || !t) { if (++tries < 40) setTimeout(tryIt, 100); return; }
             wire(t); apply();
             const th = D.getElementById('cgThread'), room = !!(th && th.hasAttribute('data-open'));
-            const act = firstAction(order()[0], R.view ? R.view() : null, room, Date.now() - roomStamp < FRESH_MS, deep);
+            const act = firstAction(order()[0], R.view ? R.view() : null, room, Date.now() - roomStamp < FRESH_MS, deep || Date.now() - wantStamp < FRESH_MS * 2);
             try {
                 if (act === 'room') R.setTab(false);
                 else if (act === 'chat') R.setTab(true, true);   /* opened as the first tab: back from it leaves Community */
@@ -237,6 +246,8 @@
         setInterval(() => { stampWrap(); const t = tabsEl(); if (t && t.dataset.order !== '1') { wire(t); apply(); } }, 1500);
     }
     W.addEventListener('storage', e => { if (e.key === KEY) apply(); });
-    W.LowiCommunityTabs = Object.assign({ order, save, apply, haptic, _drag: () => g && { id: g.id, lifted: g.lifted, rm: g.b.dataset.rm } }, core);
+    /* something opens one tab on purpose (For You after posting, Settings > For You): the first-tab rule leaves it alone */
+    function want() { wantStamp = Date.now(); }
+    W.LowiCommunityTabs = Object.assign({ order, save, apply, haptic, want, _drag: () => g && { id: g.id, lifted: g.lifted, rm: g.b.dataset.rm } }, core);
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })(typeof window !== 'undefined' ? window : null);

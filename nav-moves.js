@@ -1,5 +1,6 @@
 /* LOWiSPIKE navigation moves (Oct 15, 2026)
-   - For You lives in Cook: a "For You" button top right in Cook opens the feed right there.
+   - For You lived in Cook (Oct 15 - Oct 24). Since 24 Oct 2026 (Emmanuel: "Let's put the fyp here") it is a tab in Community
+     (community-rooms-ui.js, 'fy'): open('fy') / show('fy', true) go there, Cook has no For You button or window any more.
    - Leaderboard lives in Move: a "Leaderboard" button top right in Move opens the board right there.
    - Community is the spirit galaxy alone: no For You / Leaderboard tabs, no big title, no Privacy & quiet button.
    - Oct 21 declutter: privacy & quiet hours is a small shield icon next to the Community name, the friends tree is a labelled
@@ -93,8 +94,12 @@
         if (L.__nmAria !== label) { L.__nmAria = label; L.setAttribute('aria-label', label); }
         return L;
     }
-    const isOpen = k => { const L = layer(k); return !!(L && !L.hidden); };
+    /* For You lives in Community now: the Cook window is never made; this is true only while that tab is on screen */
+    const fyHere = () => !!(W.LowiRoomsUI && typeof W.LowiRoomsUI.openOn === 'function');
+    const fyOpen = () => { try { const p = D.getElementById('tab-foryou'); return !!(p && p.classList.contains('active') && W.LowiRoomsUI.view() === 'fy'); } catch (e) { return false; } };
+    const isOpen = k => { if (k === 'fy' && fyHere()) return false; const L = layer(k); return !!(L && !L.hidden); };
     function show(k, on) {
+        if (k === 'fy' && fyHere()) { if (on) W.LowiRoomsUI.openOn('fy'); else if (LAY.fy && !LAY.fy.hidden) { LAY.fy.hidden = true; H.classList.remove('nm-open-fy'); } return; }
         const L = layer(k); if (!L) return;
         if (on) { const rt = $(SPOTS[k].root); if (rt && !L.classList.contains('fyw')) rt.scrollTop = 0; adopt(k); paint(k); L.hidden = false; H.classList.add('nm-open-' + k); }
         else { L.hidden = true; H.classList.remove('nm-open-' + k); if (k === 'fy') { try { if (W.LowiFyEmbed) W.LowiFyEmbed.closeAll(null); D.querySelectorAll('video.fyv-v').forEach(v => v.pause()); } catch (e) { } } }
@@ -119,6 +124,7 @@
     }
     function open(k) {
         if (k === 'lb' && W.LowiRanking && W.LowiRanking.open) { W.LowiRanking.open(); return; }
+        if (k === 'fy' && fyHere()) { W.LowiRoomsUI.openOn('fy'); return; }
         const s = SPOTS[k];
         if (activeTab() !== s.tab) go(s.tab);
         setTimeout(() => { show(k, true); align(); }, 30);
@@ -126,6 +132,7 @@
     /* the entry button sits on the right of the Cook / Move title row, vertically centred on it */
     function align() {
         Object.keys(SPOTS).forEach(k => {
+            if (k === 'fy' && fyHere()) { const old = D.querySelector('#tab-shelf > .nm-pill-fy'); if (old) old.remove(); return; }
             const b = pill(k); if (!b) return;
             const root = $(SPOTS[k].root);
             const row = k === 'fy' ? $('#shTop .sh-row') : $('#mv-screen .mv-head');
@@ -144,7 +151,9 @@
     function solo() {
         const el = D.getElementById('tab-foryou'); if (!el) return;
         el.classList.add('nm-solo');
-        if (D.getElementById('cmPaneFeed') && D.getElementById('cmPaneFeed').closest('#cmTrack')) adopt('fy');
+        if (fyHere()) { /* a fresh Community render made a new feed pane in the old swipe track: Community's For You tab makes its own */
+            const tr = D.getElementById('cmTrack'); if (tr) tr.querySelectorAll(':scope > #cmPaneFeed').forEach(o => o.remove());
+        } else if (D.getElementById('cmPaneFeed') && D.getElementById('cmPaneFeed').closest('#cmTrack')) adopt('fy');
         if (D.getElementById('cmPaneBoard') && D.getElementById('cmPaneBoard').closest('#cmTrack')) adopt('lb');
         const ch = D.getElementById('cmPaneChat'); if (ch) ch.removeAttribute('inert');
     }
@@ -207,7 +216,7 @@
     }, true);
     /* Chat on a post: the chat lives in Community, so go there with the @name ready to type (it used to fill a hidden box) */
     D.addEventListener('click', e => {
-        const b = e.target && e.target.closest && e.target.closest('.nm-layer-fy [data-tr="comment"]'); if (!b || typeof W.cmComment !== 'function') return;
+        const b = e.target && e.target.closest && e.target.closest('.nm-layer-fy [data-tr="comment"], .rm-fy [data-tr="comment"]'); if (!b || typeof W.cmComment !== 'function') return;
         e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation();
         let who = ''; try { const p = W.TRIBE && W.TRIBE.post ? W.TRIBE.post(b.dataset.id) : null; who = p && !p.me ? (p.who || '') : ''; } catch (x) { }
         go('foryou'); setTimeout(() => { try { W.cmComment(who); } catch (x) { console.error(x); } }, 160);
@@ -220,7 +229,7 @@
     /* the feed's filter chips and the board's switches only re-render on the old Community tab; re-render them here too */
     D.addEventListener('click', e => {
         const t = e.target; if (!t || !t.closest) return;
-        if (t.closest('.nm-layer-fy [data-tr="filter"]')) setTimeout(() => paint('fy'), 0);
+        if (t.closest('.nm-layer-fy [data-tr="filter"], .rm-fy [data-tr="filter"]')) setTimeout(() => paint('fy'), 0);
         if (t.closest('.nm-layer-lb [data-r3lb]')) setTimeout(() => paint('lb'), 0);
     });
     ['pointerdown', 'pointerup', 'pointercancel'].forEach(n => D.addEventListener(n, e => {
@@ -277,18 +286,19 @@
     function tick() {
         raf = 0; hook(); align(); privacy(); communityTools(); moveCard();
         /* a Cook re-render replaces its page: put the open For You window back under the new top row */
-        if (LAY.fy && (!LAY.fy.hidden || LAY.fy.classList.contains('fyw'))) { layer('fy'); marks(); fit(); }
+        if (fyHere()) { if (LAY.fy && LAY.fy.isConnected) { LAY.fy.remove(); H.classList.remove('nm-open-fy', 'nm-fyw'); } }
+        else if (LAY.fy && (!LAY.fy.hidden || LAY.fy.classList.contains('fyw'))) { layer('fy'); marks(); fit(); }
         const el = D.getElementById('tab-foryou');
-        if (el && D.getElementById('cmTrack') && (!el.classList.contains('nm-solo') || (D.getElementById('cmPaneFeed') || {}).parentElement === D.getElementById('cmTrack') || (D.getElementById('cmPaneBoard') || {}).parentElement === D.getElementById('cmTrack'))) solo();
+        if (el && D.getElementById('cmTrack') && (!el.classList.contains('nm-solo') || !!D.querySelector('#cmTrack > #cmPaneFeed') || (D.getElementById('cmPaneBoard') || {}).parentElement === D.getElementById('cmTrack'))) solo();
     }
     const soon = () => { if (!raf) raf = requestAnimationFrame(tick); };
     function boot() {
         H.classList.add('nm-on');
-        hook(); pill('fy'); pill('lb'); layer('fy'); layer('lb'); tick();
+        hook(); if (!fyHere()) { pill('fy'); layer('fy'); } pill('lb'); layer('lb'); tick();
         try { new MutationObserver(soon).observe(D.getElementById('main') || D.body, { childList: true, subtree: true }); } catch (e) { }
         W.addEventListener('resize', soon);
         setInterval(soon, 1500);
     }
-    W.LowiNavMoves = { open, show, isOpen, solo, align, fit };
+    W.LowiNavMoves = { open, show, isOpen, fyOpen, solo, align, fit };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })();

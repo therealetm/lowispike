@@ -254,3 +254,28 @@ html.sec-open #cmPaneChat[data-spirit-chat]>.rm-bar .rm-head{padding-left:calc(5
 .rm-sheet .rm-list .rm-who small button.rm-nm-s{display:inline;padding:6px 0;color:inherit;font:inherit;font-weight:500;text-decoration:underline;text-decoration-color:rgba(143,231,255,.35);text-underline-offset:3px}
 .rm-sheet .rm-list .rm-who button.rm-nm:active{color:#8fe7ff}
 .rm-sheet button.rm-p:focus-visible,.rm-sheet button.rm-nm:focus-visible{outline:2px solid #8fe7ff;outline-offset:2px}
+/* 24 Oct 2026 (Emmanuel: "Let's put the fyp here. And fuse Erstellen & Affiliates zusammen"):
+   Studio = Affiliates + Creation in one tab. Its switch is a small copy of the tab pill (same glass, same sliding glow), right above
+   the page, centred and only as wide as its two words. */
+#cmPaneChat[data-spirit-chat] .rm-view>.rm-sw[hidden]{display:none}
+#cmPaneChat[data-spirit-chat] .rm-view>.rm-sw{position:relative;isolation:isolate;flex:none;align-self:center;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;width:min(320px,100%);box-sizing:border-box;margin:0 0 8px;padding:3px;border-radius:999px;background:var(--rm-glass,rgba(16,26,58,.62));border:1px solid var(--rm-edge,rgba(143,231,255,.22));box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 4px 14px rgba(0,0,0,.22);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%)}
+#cmPaneChat[data-spirit-chat] .rm-view>.rm-sw::before{content:'';position:absolute;z-index:-1;top:3px;bottom:3px;left:3px;width:calc((100% - 10px)/2);border-radius:999px;background:linear-gradient(180deg,rgba(47,149,255,.3),rgba(10,132,255,.22));box-shadow:inset 0 0 0 1px rgba(143,231,255,.7),0 0 12px rgba(47,149,255,.3);transform:translateX(calc(var(--rm-sw-i,0) * (100% + 4px)));transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+#cmPaneChat[data-spirit-chat] .rm-view>.rm-sw>.rm-swb{appearance:none;min-width:0;min-height:36px;padding:0 8px;border:0;border-radius:999px;background:transparent;box-shadow:none;color:var(--rm-ink2,rgba(235,235,245,.7));font:600 13.5px/1 inherit;font-family:inherit;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .2s}
+#cmPaneChat[data-spirit-chat] .rm-view>.rm-sw>.rm-swb[aria-selected=true]{color:#fff}
+#cmPaneChat[data-spirit-chat] .rm-view>.rm-sw>.rm-swb:focus-visible{outline:2px solid var(--rm-cyan,#8fe7ff);outline-offset:2px}
+@media (max-width:359px){#cmPaneChat[data-spirit-chat] .rm-view>.rm-sw>.rm-swb{font-size:12.5px;padding:0 4px}}
+@media (prefers-reduced-motion:reduce){#cmPaneChat[data-spirit-chat] .rm-view>.rm-sw::before{transition:none}}
+/* For You: the feed in the same glowing panel as Ranking, Creation and Affiliates. Each post fills the panel and snaps; the overlay
+   offsets match the old Cook window (the panel is not under the notch or the menu bar). */
+#cmPaneChat[data-spirit-chat] .rm-view>.rm-fy[hidden]{display:none}
+#cmPaneChat[data-spirit-chat][data-rm-view=fy]>.rm-view>.rm-fy:not([hidden]){display:block;position:relative;overflow:hidden;padding:0;contain:layout paint}
+#cmPaneChat .rm-fy>#cmPaneFeed{display:block!important;position:absolute;inset:0;width:100%;height:100%;min-width:0;margin:0;padding:0;overflow:hidden;opacity:1;visibility:visible;transform:none}
+#cmPaneChat .rm-fy #cmFeed{height:100%;max-height:none}
+#cmPaneChat .rm-fy .fy-feed{height:100%;max-height:none}
+#cmPaneChat .rm-fy .fy-slide{height:100%;min-height:0}
+#cmPaneChat .rm-fy .fyv-fab{top:12px;left:12px;right:auto}
+#cmPaneChat .rm-fy .fy-rail,#cmPaneChat .rm-fy .fy-meta{bottom:16px}
+#cmPaneChat .rm-fy .fy-endin{padding-bottom:0}
+#cmPaneChat .rm-fy .fy-rail{gap:10px;right:6px}
+#cmPaneChat .rm-fy .fy-feed{touch-action:pan-y;overscroll-behavior:contain}
+#cmPaneChat .rm-fy .fy-slide{width:100%;margin:0;border-radius:0;outline:0;box-shadow:none}

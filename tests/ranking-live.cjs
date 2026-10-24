@@ -50,7 +50,7 @@ srv.listen(0, async () => {
       };
     });
     ok(r.view === 'rank' && r.shown, name + ': the old board link opens Community > Ranking (view ' + r.view + ' ' + r.dbg + ')');
-    ok(r.tabs.join() === 'room,chat,create,aff,rank', name + ': five tabs ' + r.tabs.join());
+    ok(r.tabs.join() === 'room,chat,fy,studio,rank', name + ': five tabs ' + r.tabs.join());
     ok(r.sel && r.sel.rm === 'rank', name + ': Ranking tab is the selected one');
     ok(!r.cut.length, name + ': every tab label fits (' + r.labels.join(' | ') + ')' + (r.cut.length ? ' cut: ' + r.cut.join(',') : ''));
     ok(r.pod === 3 && r.rows >= 2 && r.me, name + ': Your place, podium of ' + r.pod + ', ' + r.rows + ' rows');

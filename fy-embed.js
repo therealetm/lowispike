@@ -89,7 +89,7 @@
         const sr = slide.getBoundingClientRect(); if (!sr.width || !sr.height) return;
         const meta = slide.querySelector('.fy-meta'), rail = slide.querySelector('.fy-rail');
         const layer = slide.closest('.nm-layer'), head = layer && layer.querySelector('.nm-head, .nm-top, header');
-        const sat = layer && layer.classList.contains('fyw') ? 48 /* Cook's For You window: no notch, clear the Post button */ : (parseFloat(getComputedStyle(D.documentElement).getPropertyValue('--sat')) || 0);
+        const sat = (layer && layer.classList.contains('fyw')) || slide.closest('.rm-fy') ? 48 /* the For You panel (Community since 24 Oct, Cook before): no notch, clear the Post button */ : (parseFloat(getComputedStyle(D.documentElement).getPropertyValue('--sat')) || 0);
         let top = Math.max(12, sat + 12), bottom = 120, right = 12;
         if (head) { const hr = head.getBoundingClientRect(); if (hr.height && hr.bottom > sr.top) top = Math.max(top, hr.bottom - sr.top + 10); }
         if (rail) { const rr = rail.getBoundingClientRect(); if (rr.width) right = Math.max(12, sr.right - rr.left + 8); }

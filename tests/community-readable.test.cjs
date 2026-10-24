@@ -56,7 +56,7 @@ test('the Copy link button moved into the community menu; the menu only offers t
   const js = read('community-rooms-ui.js');
   assert.doesNotMatch(js, /rm-view-top|class="rm-copy"/);
   assert.match(js, /\['invite','🔗',tr\('mInvite'\)\]/);
-  assert.match(js, /if\(view\)it\.push\(\['copyview'/);
+  assert.match(js, /if\(VIEWS\[view\]\)it\.push\(\['copyview'/);
   for (const k of ['community', 'hereNow', 'menu', 'mPeople', 'mProfile', 'mInvite', 'mCopyAff', 'mCopyCreate', 'mSettings', 'mWelcome']) assert.match(js, new RegExp(k + ":\\['[^']+','[^']+','[^']+'\\]"), 'EN/DE/ES ' + k);
 });
 

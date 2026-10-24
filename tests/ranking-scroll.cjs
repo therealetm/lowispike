@@ -54,7 +54,7 @@ srv.listen(0, async () => {
       ok(b && /15/.test(b.me), name + ' ' + per + ': Your place shows the real place 15 (' + (b && b.me.replace(/\s+/g, ' ').slice(0, 60)) + ')');
     }
     /* scroll every Community tab and look at what is on top inside the bar and above it */
-    for (const tab of ['rank', 'room', 'chat', 'create', 'aff', 'chans']) {
+    for (const tab of ['rank', 'room', 'chat', 'fy', 'studio', 'chans']) {
       await page.evaluate(t => { if (t === 'chans') { try { LowiRoomsUI.showView('chans'); } catch (e) {} return; } const b = document.querySelector('#cmPaneChat .rm-tab[data-rm="' + t + '"]'); if (b) b.click(); }, tab);
       await page.waitForTimeout(900);
       const r = await page.evaluate(() => {

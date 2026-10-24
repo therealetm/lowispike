@@ -4,12 +4,12 @@
    For each Community tab: open Community from Home, open the tab, leave by the X (back button) or by system back (the edge
    swipe ends there too), then check Home: tab, classes that hold the zoomed-out / leaving state, the camera rig, and a real
    finger tap on the Settings bubble that must open its panel.
-   Usage: node tools/regress/p-community-back-home.cjs [--device "iPhone 13"] [--route x|back] [--tabs room,chat,create,aff,rank] [--url URL] */
+   Usage: node tools/regress/p-community-back-home.cjs [--device "iPhone 13"] [--route x|back] [--tabs room,chat,fy,studio,rank] [--url URL] */
 'use strict';
 const H = require('./harness.cjs'), N = require('./nav.cjs');
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const DEVICE = arg('device', 'iPhone 13'), ROUTES = arg('route', 'x,back').split(','), URL_ = arg('url', '');
-const TABS = arg('tabs', 'room,chat,create,aff,rank').split(','), ENGINE = arg('engine', 'chromium'), LAND = arg('land', '');
+const TABS = arg('tabs', 'room,chat,fy,studio,rank').split(','), ENGINE = arg('engine', 'chromium'), LAND = arg('land', '');
 const sleep = N.sleep;
 const state = R => R.page.evaluate(() => {
     const Hc = document.documentElement.classList, WH = window.LowiWorldHome;

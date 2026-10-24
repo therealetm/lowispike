@@ -41,7 +41,7 @@ test('community-rooms-ui.js: a chat opened by a tap inside Community goes back t
     assert.match(RUI, /addEventListener\('pointerdown',[^\n]*closest\('#tab-foryou'\)/, 'taps inside the Community page are noted');
     const fn = RUI.match(/function threadMoved\(\)\{[^\n]*\}/);
     assert.ok(fn, 'threadMoved() exists');
-    assert.match(fn[0], /from=\(view==='create'\|\|view==='aff'\|\|view==='rank'\)\?view:'room'/);
+    assert.match(fn[0], /from=\(view==='create'\|\|view==='aff'\|\|view==='rank'\|\|view==='fy'\)\?view:'room'/);
     assert.match(fn[0], /!wasOpen&&!from/, 'only when the chat just opened and nobody set from (Chat tab / entry unchanged)');
     assert.match(RUI, /new MutationObserver\(\(\)=>\{threadMoved\(\);paint\(\);\}\)/, 'runs when #cgThread data-open changes');
     /* setTab keeps wasOpen in step so its own from (or entry = no from) is kept */

@@ -23,7 +23,7 @@ const H = require('./sim/harness.cjs');
     const active = [...document.querySelectorAll('#cmPaneChat .rm-tab')].filter(t => t.classList.contains('on') || t.getAttribute('aria-selected') === 'true').map(t => t.dataset.rm);
     return { active, text: [...new Set(txt)].join(' | ').slice(0, 1400), wide, sx: document.scrollingElement.scrollWidth > innerWidth + 1 };
   });
-  for (const tab of ['room', 'chat', 'create', 'aff', 'rank']) {
+  for (const tab of ['room', 'chat', 'fy', 'studio', 'rank']) {
     const sel = '#cmPaneChat .rm-tab[data-rm="' + tab + '"]';
     const has = await P.locator(sel).count();
     if (!has) { log('tab ' + tab, 'missing'); continue; }

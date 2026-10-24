@@ -68,19 +68,20 @@ test('after posting, the feed opens where it lives (Cook window), not through th
     assert.match(html, /if \(nm && nm\.isOpen && nm\.isOpen\("fy"\)\) return !h \|\| h\.tab\(\) === "shelf";/);
 });
 
-test('For You is a window in Cook, in the spot of the Shuffle game and the Swipe cards', () => {
+test('For You is a Community tab since 24 Oct 2026: nav-moves sends every open there and never builds the Cook window', () => {
     const js = read('nav-moves.js');
-    assert.match(js, /return k === 'fy' \? \$\('#tab-shelf #shBody > #ckBar'\) : null;/, 'it lives right under Cook\'s top row');
-    assert.match(js, /bar\.after\(L\)/);
-    assert.match(js, /L\.classList\.toggle\('fyw', !!bar\)/);
-    assert.match(js, /H\.classList\.toggle\('nm-fyw', !!bar\)/);
-    // Shuffle or Swipe closes it; a Cook re-render puts it back under the new top row
-    assert.match(js, /closest\('#tab-shelf #ckBar \[data-ck="view"\]'\)/);
-    assert.match(js, /if \(LAY\.fy && \(!LAY\.fy\.hidden \|\| LAY\.fy\.classList\.contains\('fyw'\)\)\) \{ layer\('fy'\); marks\(\); fit\(\); \}/);
-    // the For You button lights up while the window is open, and closing it stops any playing video
-    assert.match(js, /D\.querySelectorAll\('#tab-shelf \.ck-fy'\)\.forEach\(b => \{ b\.classList\.toggle\('on', on\)/);
+    assert.match(js, /const fyHere = \(\) => !!\(W\.LowiRoomsUI && typeof W\.LowiRoomsUI\.openOn === 'function'\);/);
+    assert.match(js, /if \(k === 'fy' && fyHere\(\)\) \{ W\.LowiRoomsUI\.openOn\('fy'\); return; \}/, 'open(fy) goes to the Community tab');
+    assert.match(js, /if \(k === 'fy' && fyHere\(\)\) \{ if \(on\) W\.LowiRoomsUI\.openOn\('fy'\);/, 'show(fy, true) too');
+    assert.match(js, /const isOpen = k => \{ if \(k === 'fy' && fyHere\(\)\) return false;/, 'the Cook window is never open, so onFeed() plays videos on the Community tab');
+    assert.match(js, /hook\(\); if \(!fyHere\(\)\) \{ pill\('fy'\); layer\('fy'\); \}/, 'no Cook window or pill is made');
+    assert.match(js, /tr\.querySelectorAll\(':scope > #cmPaneFeed'\)\.forEach\(o => o\.remove\(\)\)/, 'a fresh Community render does not move the feed into Cook');
     assert.match(js, /W\.LowiFyEmbed\.closeAll\(null\)/);
-    assert.match(js, /W\.LowiNavMoves = \{ open, show, isOpen, solo, align, fit \};/);
+    assert.match(js, /W\.LowiNavMoves = \{ open, show, isOpen, fyOpen, solo, align, fit \};/);
+    const rui = read('community-rooms-ui.js');
+    assert.match(rui, /function paintFy\(pane\)\{/);
+    assert.match(rui, /box\.className='rm-frame rm-fy'/, 'the feed sits in the same glowing panel as Ranking');
+    assert.match(rui, /function stopFeed\(\)\{try\{if\(W\.LowiFyEmbed\)W\.LowiFyEmbed\.closeAll\(null\)/, 'leaving the tab stops videos');
 });
 
 test('the window keeps Cook on screen and uses the blue liquid glass; posts swipe up and down inside it', () => {
@@ -99,8 +100,8 @@ test('the window keeps Cook on screen and uses the blue liquid glass; posts swip
 
 test('the inline video player ignores the notch inside the window and Chat on a post goes to the Community chat', () => {
     const emb = read('fy-embed.js');
-    assert.match(emb, /classList\.contains\('fyw'\) \? 48 /);
+    assert.match(emb, /classList\.contains\('fyw'\)\) \|\| slide\.closest\('\.rm-fy'\) \? 48 /);
     const js = read('nav-moves.js');
-    assert.match(js, /closest\('\.nm-layer-fy \[data-tr="comment"\]'\)/);
+    assert.match(js, /closest\('\.nm-layer-fy \[data-tr="comment"\], \.rm-fy \[data-tr="comment"\]'\)/);
     assert.match(js, /go\('foryou'\); setTimeout\(\(\) => \{ try \{ W\.cmComment\(who\);/);
 });

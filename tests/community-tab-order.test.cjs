@@ -6,17 +6,25 @@ const R = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const C = require('../community-tab-order.js');
 
 test('order helpers: unknown, duplicate and missing tabs are fixed, moves land where dropped', () => {
-  assert.deepStrictEqual(C.IDS, ['room', 'chat', 'create', 'aff', 'rank']);
-  assert.deepStrictEqual(C.normalize(['chat', 'chat', 'cook', 'aff']), ['chat', 'aff', 'room', 'create', 'rank']);
+  /* 24 Oct 2026: For You moved here ('fy'), Creation + Affiliates are one tab, Studio ('studio'): still five tabs */
+  assert.deepStrictEqual(C.IDS, ['room', 'chat', 'fy', 'studio', 'rank']);
+  assert.deepStrictEqual(C.normalize(['chat', 'chat', 'cook', 'studio']), ['chat', 'fy', 'studio', 'room', 'rank'], 'an order without For You gets it right before Studio');
   assert.deepStrictEqual(C.normalize(null), C.IDS);
   assert.deepStrictEqual(C.parse('not json'), C.IDS);
-  assert.deepStrictEqual(C.parse('["aff","room"]'), ['aff', 'room', 'chat', 'create', 'rank']);
+  assert.deepStrictEqual(C.parse('["studio","room"]'), ['fy', 'studio', 'room', 'chat', 'rank']);
+  assert.deepStrictEqual(C.parse('["room","fy","chat","studio","rank"]'), ['room', 'fy', 'chat', 'studio', 'rank'], 'a new saved order is kept as it is');
+  /* an order saved before 24 Oct keeps its places: Affiliates/Creation become Studio where the first of them was, For You before it */
+  assert.deepStrictEqual(C.parse('["rank","chat","room","aff","create"]'), ['rank', 'chat', 'room', 'fy', 'studio'], "Emmanuel's order");
+  assert.deepStrictEqual(C.parse('["room","chat","create","aff","rank"]'), ['room', 'chat', 'fy', 'studio', 'rank'], 'the old default');
+  assert.deepStrictEqual(C.parse('["create","rank","aff"]'), ['fy', 'studio', 'rank', 'room', 'chat']);
   /* 23 Oct: an order saved before Ranking existed keeps its order and gets Ranking at the end */
-  assert.deepStrictEqual(C.parse('["chat","room","aff","create"]'), ['chat', 'room', 'aff', 'create', 'rank']);
-  assert.deepStrictEqual(C.moveTo(C.IDS, 'chat', 0), ['chat', 'room', 'create', 'aff', 'rank']);
-  assert.deepStrictEqual(C.moveTo(C.IDS, 'room', 9), ['chat', 'create', 'aff', 'rank', 'room']);
-  assert.deepStrictEqual(C.moveTo(C.IDS, 'aff', -3), ['aff', 'room', 'chat', 'create', 'rank']);
+  assert.deepStrictEqual(C.parse('["chat","room","aff","create"]'), ['chat', 'room', 'fy', 'studio', 'rank']);
+  assert.deepStrictEqual(C.moveTo(C.IDS, 'chat', 0), ['chat', 'room', 'fy', 'studio', 'rank']);
+  assert.deepStrictEqual(C.moveTo(C.IDS, 'room', 9), ['chat', 'fy', 'studio', 'rank', 'room']);
+  assert.deepStrictEqual(C.moveTo(C.IDS, 'studio', -3), ['studio', 'room', 'chat', 'fy', 'rank']);
   assert.deepStrictEqual(C.moveTo(C.IDS, 'move', 0), C.IDS, 'Cook/Move can never become Community tabs');
+  assert.deepStrictEqual(C.moveTo(C.IDS, 'aff', 0), C.IDS, 'the old half-tabs are not tabs any more');
+  assert.strictEqual(C.tabOf('aff'), 'studio'); assert.strictEqual(C.tabOf('create'), 'studio'); assert.strictEqual(C.tabOf('fy'), 'fy');
   /* drop slot = how many of the other tabs' centres are left of the finger */
   assert.strictEqual(C.slotAt([65, 151, 237], 30), 0);
   assert.strictEqual(C.slotAt([65, 151, 237], 160), 2);
@@ -40,10 +48,10 @@ test('the order is saved per user and read back on the next open (lowispike.* ke
   const store = {};
   let T = boot(store);
   assert.deepStrictEqual(Array.from(T.order()), C.IDS, 'first visit: the default order');
-  T.save(['chat', 'room', 'aff', 'create', 'rank']);
-  assert.strictEqual(store[C.KEY], '["chat","room","aff","create","rank"]');
+  T.save(['chat', 'room', 'studio', 'fy', 'rank']);
+  assert.strictEqual(store[C.KEY], '["chat","room","studio","fy","rank"]');
   T = boot(store);   /* a reload / another device after restore */
-  assert.deepStrictEqual(Array.from(T.order()), ['chat', 'room', 'aff', 'create', 'rank']);
+  assert.deepStrictEqual(Array.from(T.order()), ['chat', 'room', 'studio', 'fy', 'rank']);
   assert.strictEqual(T.order()[0], 'chat', 'Community opens on this tab');
   store[C.KEY] = '{broken';
   assert.deepStrictEqual(Array.from(boot(store).order()), C.IDS, 'a broken value falls back instead of breaking Community');

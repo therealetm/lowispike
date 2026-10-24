@@ -348,7 +348,7 @@
                 else { const b = $('#tabbar .tb[data-tab="' + tab + '"]'); if (b) b.click(); }
                 return;
             }
-            if (s.rm) { const b = $('.rm-tab[data-rm="' + s.rm + '"]'); if (b && b.getAttribute('aria-selected') !== 'true' && !b.classList.contains('on')) b.click(); }
+            if (s.rm) { const b = $('.rm-tab[data-rm="' + s.rm + '"]'); if (b && b.getAttribute('aria-selected') !== 'true' && !b.classList.contains('on')) b.click(); else if (!b && W.LowiRoomsUI && W.LowiRoomsUI.showView && W.LowiRoomsUI.view() !== s.rm) W.LowiRoomsUI.showView(s.rm); /* Creation / Affiliates: halves of the Studio tab since 24 Oct 2026 */ }
         } catch (e) { }
     }
     function renderTry(s, U) {

@@ -6,12 +6,13 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 
-test('Cook: eBook | Recipes | Products, and For You sits between Shuffle and Swipe', () => {
+test('Cook: eBook | Recipes | Products, and Shuffle | Swipe (For You moved to a Community tab on 24 Oct 2026)', () => {
     const html = read('index.html');
     assert.match(html, /seg\("src", "community", ckT\("Recipes", "Rezepte", "Recetas"\), s === "community"\)/);
     assert.ok(!html.includes('seg("src", "community", "Community"'), 'no Community segment in Cook');
-    const i = html.indexOf('seg("view", "shuffle"'), j = html.indexOf('class="ck-b ck-fy" data-nm="fy"'), k = html.indexOf('seg("view", "swipe"');
-    assert.ok(i > 0 && j > i && k > j, 'Shuffle | For You | Swipe');
+    const i = html.indexOf('seg("view", "shuffle"'), k = html.indexOf('seg("view", "swipe"');
+    assert.ok(i > 0 && k > i, 'Shuffle | Swipe');
+    assert.ok(!html.includes('class="ck-b ck-fy" data-nm="fy"'), 'no For You button in Cook any more');
 });
 
 test('the old top-right For You / Leaderboard pills are gone', () => {

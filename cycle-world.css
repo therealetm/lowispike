@@ -82,3 +82,40 @@ html.wh-home.wh-mapview #spBubble .cyh-ring, html.wh-snap #spBubble .cyh-ring { 
 .cyh-hub-t b { font-size: 15px; font-weight: 600; line-height: 1.2; }
 .cyh-hub-t small { font-size: 12.5px; line-height: 1.25; color: var(--mh-ink-2, rgba(235,245,255,.78)); overflow-wrap: anywhere; }
 .cyh-hub-go { flex: 0 0 auto; font-size: 22px; line-height: 1; opacity: .7; }
+
+/* ---------- Oct 24 2026: care in My cycle (check-in, gentle day, calm world, cycle settings). cycle-care-core.js has the rules ---------- */
+.cw-now .cw-wide { margin-top: 6px; font-size: 13.5px; color: rgba(236, 246, 255, .74); }
+.cw-care { margin: 14px 0 4px; padding: 14px; border-radius: 20px; border: 1px solid var(--one-cell-line, rgba(170, 214, 255, .26)); background: rgba(255, 255, 255, .05); }
+.cw-care h4 { margin: 0; font-size: 16px; font-weight: 750; color: #fff; }
+.cw-sub { margin: 4px 2px 8px; font-size: 13px; line-height: 1.4; color: rgba(225, 240, 255, .7); }
+.cw-lab { margin: 12px 2px 6px; font-size: 13px; font-weight: 700; color: rgba(225, 240, 255, .82); }
+.cw-chips, .cw-seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.cw-chip { min-height: 44px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--one-cell-line, rgba(170, 214, 255, .26)); background: rgba(255, 255, 255, .06); color: #eef6ff; font: inherit; font-size: 14.5px; font-weight: 650; }
+.cw-chip.on { border-color: rgba(143, 231, 255, .8); background: rgba(143, 231, 255, .22); color: #fff; }
+.cw-seg .cw-chip { flex: 1 1 0; }
+.cw-chip:focus-visible, .cw-step:focus-visible, .cw-del:focus-visible, .cw-set summary:focus-visible, .cw-tog input:focus-visible { outline: 2px solid #8fe7ff; outline-offset: 2px; }
+.cw-doc { margin: 10px 2px 0; font-size: 13.5px; line-height: 1.4; color: #ffd9c2; }
+.cw-gentle { margin-top: 12px; padding: 12px; border-radius: 18px; border: 1px solid rgba(255, 200, 150, .4); background: rgba(255, 190, 130, .08); }
+.cw-gentle > b { display: block; font-size: 15.5px; color: #fff; }
+.cw-gentle .cw-btn { width: 100%; margin-top: 6px; }
+.cw-btn.done { border-color: rgba(168, 255, 216, .6); background: rgba(168, 255, 216, .14); color: #d9ffef; }
+.cw-set { margin: 12px 0 6px; border-radius: 18px; border: 1px solid var(--one-cell-line, rgba(170, 214, 255, .26)); background: rgba(255, 255, 255, .04); }
+.cw-set summary { min-height: 48px; display: flex; align-items: center; padding: 0 14px; font-size: 15px; font-weight: 700; color: #eef6ff; cursor: pointer; list-style: none; }
+.cw-set summary::-webkit-details-marker { display: none; }
+.cw-set summary::after { content: '\203a'; margin-left: auto; font-size: 20px; transform: rotate(90deg); color: rgba(225, 240, 255, .7); }
+.cw-set[open] summary::after { transform: rotate(-90deg); }
+.cw-set-in { padding: 0 14px 12px; }
+.cw-len { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cw-len output { min-width: 128px; text-align: center; font-size: 15px; font-weight: 700; color: #fff; }
+.cw-step { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--one-cell-line, rgba(170, 214, 255, .3)); background: rgba(255, 255, 255, .07); color: #fff; font: inherit; font-size: 20px; font-weight: 700; }
+.cw-tog { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-top: 12px; font-size: 15px; font-weight: 650; color: #eef6ff; }
+.cw-tog input { width: 22px; height: 22px; accent-color: #8fe7ff; }
+.cw-del { display: block; width: 100%; min-height: 46px; margin-top: 8px; border-radius: 999px; border: 1px solid rgba(255, 150, 150, .45); background: rgba(255, 120, 120, .08); color: #ffc9c9; font: inherit; font-size: 14.5px; font-weight: 700; }
+.cw-del.armed { background: rgba(255, 110, 110, .28); color: #fff; border-color: rgba(255, 140, 140, .9); }
+/* the ring is a guess: dimmer when cycles vary, she marked them irregular, or the period is late */
+.cyh-ring[data-wide] { opacity: .45; }
+/* calm world: a soft warm light over the world, only while she switched it on (cycle-world.js applyCalm) */
+.bw3-stage::before, .bw3-view::before, #bw3Back::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 1.4s ease;
+  background: radial-gradient(120% 90% at 50% 30%, rgba(255, 196, 140, .16), rgba(255, 150, 110, .1) 60%, rgba(40, 20, 30, .14)); }
+html.cc-calm .bw3-stage::before, html.cc-calm .bw3-view::before, html.cc-calm #bw3Back::before { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .bw3-stage::before, .bw3-view::before, #bw3Back::before { transition: none; } }

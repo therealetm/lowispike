@@ -75,7 +75,7 @@
         let ctx; try { ctx = new AC({ latencyHint: 'interactive' }); } catch (e) { try { ctx = new AC(); } catch (x) { return null; } }
         const lim = ctx.createDynamicsCompressor(), L = C.MIX.limiter;
         lim.threshold.value = L.threshold; lim.knee.value = L.knee; lim.ratio.value = L.ratio; lim.attack.value = L.attack; lim.release.value = L.release;
-        const tone = ctx.createBiquadFilter(); tone.type = 'lowpass'; tone.frequency.value = C.MIX.tone; tone.Q.value = 0.5;
+        const tone = ctx.createBiquadFilter(); tone.type = 'lowpass'; tone.frequency.value = C.MIX.tone * (st.calm ? CALM_TONE : 1); tone.Q.value = 0.5;
         const master = ctx.createGain(); master.gain.value = 0;
         const ambBus = ctx.createGain(); ambBus.gain.value = C.MIX.bus;
         const fxBus = ctx.createGain(); fxBus.gain.value = C.WARP.gain;
@@ -207,7 +207,17 @@
         a.srcs.forEach(s => { try { s.stop(end); } catch (e) { } });
         setTimeout(() => { a.srcs.concat(a.nodes).forEach(n => { try { n.disconnect(); } catch (e) { } }); }, ((fade || 0) + 0.2) * 1000);
     }
-    function fadeIn() { if (st.master) ramp(st.master.gain, C.masterGain(prefs.vol), C.FADE_IN / 3); }
+    /* Oct 24 2026 calm world (My cycle, cycle-world.js): her switch, today only. The world sounds quieter (CALM_GAIN of her own
+       volume, which is never changed) and softer (the tone filter at CALM_TONE). Switching back restores both. */
+    const CALM_GAIN = 0.6, CALM_TONE = 0.55;
+    const calmK = () => (st.calm ? CALM_GAIN : 1);
+    function calm(on) {
+        st.calm = !!on;
+        if (st.on && st.master && running()) ramp(st.master.gain, C.masterGain(prefs.vol) * calmK(), 0.8);
+        if (st.out && st.out.frequency) ramp(st.out.frequency, C.MIX.tone * (st.calm ? CALM_TONE : 1), 0.8);
+        return st.calm;
+    }
+    function fadeIn() { if (st.master) ramp(st.master.gain, C.masterGain(prefs.vol) * calmK(), C.FADE_IN / 3); }
     function fadeOut(s) { if (st.master) ramp(st.master.gain, 0, (s || C.FADE_OUT) / 4); }
     /* begin (or continue) sound: must run inside a tap the first time (iOS) */
     function begin() {
@@ -366,7 +376,7 @@
             else if (b.dataset.wa === 'warp') { prefs.warp = !prefs.warp; save(); if (!prefs.warp) killWarp(0.2); paint(); }
         });
         const r = p.querySelector('input[data-wa=vol]');
-        r.addEventListener('input', () => { prefs.vol = C.clampVol(r.value); if (st.on && st.master && running()) ramp(st.master.gain, C.masterGain(prefs.vol), 0.06); paint(); });
+        r.addEventListener('input', () => { prefs.vol = C.clampVol(r.value); if (st.on && st.master && running()) ramp(st.master.gain, C.masterGain(prefs.vol) * calmK(), 0.06); paint(); });
         r.addEventListener('change', save);
         host.appendChild(p); paint();
         const sp = p.querySelector('[data-wa-strings]');
@@ -444,7 +454,7 @@
         get on() { return st.on; }, get state() { return st.ctx ? st.ctx.state : 'none'; }, get ambient() { return !!st.amb; }, get uneasy() { return st.amb ? +st.amb.uneasyBus.gain.value.toFixed(4) : 0; }, get light() { return st.amb ? +st.amb.lightBus.gain.value.toFixed(4) : 0; }, get mood() { return st.amb ? st.amb.level : null; }, get warp() { return st.warp ? st.warp.phase : null; },
         get plays() { return Object.assign({}, st.plays); }, get gain() { return st.master ? st.master.gain.value : 0; }, prefs: () => Object.assign({}, prefs),
         setOn, open: () => togglePanel(true), close: () => togglePanel(false), instrument, get bowls() { return st.bowlN; },
-        tune: () => Object.assign({}, tune), setTune, resetTune,
+        tune: () => Object.assign({}, tune), setTune, resetTune, calm, get calmOn() { return !!st.calm; },
         /* what is really playing (for checks): pad frequencies, filter and level read back from the audio graph */
         get playing() { const a = st.amb; return a ? { chord: a.pad.map(v => +v[0].frequency.value.toFixed(2)), lp: Math.round(a.pad.lp.frequency.value), level: +a.padLvl.gain.value.toFixed(3) } : null; }
     };

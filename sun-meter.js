@@ -164,7 +164,11 @@
         /* glasses past the daily water XP limit still count (the counter knows them), rapid-fire repeats the ledger caught do not */
         const water = tapped ? (raw ? Math.min(tapped, counted + Math.max(0, tapped - raw)) : tapped) : counted;
         const moveList = ledger.filter(e => +e.amt > 0 && classify(e) === 'move'), moves = moveList.length;
-        const moveSum = Math.min(1, moveList.reduce((n, e) => n + mqOf(e), 0));
+        /* Oct 24 2026 (cycle care, cycle-care-core.js): on a gentle day she switched on herself the Move goal is smaller
+           (input.moveGoal 0.25 / 0.5 / 1) and "I rested" (input.rest, once a day) counts as one full Move goal. Energy only:
+           no XP, no sunbeams. Without a gentle day both are absent and nothing changes. */
+        const goal = input.moveGoal > 0 ? Math.max(0.25, Math.min(1, +input.moveGoal)) : 1, rested = !!input.rest;
+        const moveSum = Math.min(1, (moveList.reduce((n, e) => n + mqOf(e), 0) + (rested ? goal : 0)) / goal);
         const spikes = logs.filter(l => verdict(l) <= 0.15).length;
         const food = logs.length ? logs.reduce((a, l) => a + verdict(l), 0) / logs.length : 0;
         const parts = { food, water: Math.min(1, water / ENERGY.waterGoal), move: moveSum };
@@ -176,7 +180,7 @@
         const value = welcome > 0 ? Math.min(1, real + (1 - real) * welcome) : real;
         const tier = value >= ENERGY.strong ? 'thriving' : value >= ENERGY.travel ? 'ok' : spikes ? 'weak' : 'tired';
         const welcomeEnd = welcome > 0 && wStart ? wStart + (WELCOME.HOLD_H + WELCOME.FADE_H) * 36e5 : 0;
-        return { value, tier, canTravel: value >= ENERGY.travel, meals: logs.length, spikes, water, moves, boost, parts, known: { food: logs.length > 0, water: water > 0, move: moves > 0 }, real, welcome, welcomeEnd };
+        return { value, tier, canTravel: value >= ENERGY.travel, meals: logs.length, spikes, water, moves, boost, parts, known: { food: logs.length > 0, water: water > 0, move: moves > 0 || rested }, rested, moveGoal: goal, real, welcome, welcomeEnd };
     }
     /* a trip may start today only once the sun bonus is in, nothing is out, and Misty has the energy */
     const mayDepart = (v, en) => !!(v && v.fullDone && !v.trip && !v.away && en && en.canTravel);
@@ -304,7 +308,9 @@
     const live = () => { const s = S(); return model({ now: Date.now(), ledger: s.ledger || [], garden: s.garden }); };
     function waterToday(now) { try { const f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}; return +((f.water || {})[dayKey(now)]) || 0; } catch (e) { return 0; } }
     const powerBoost = () => { try { const P = W.LowiMistyPower, r = P && P.read && P.read(); return r ? +r.boost || 0 : 0; } catch (e) { return 0; } };
-    const energyNow = () => { const s = S(), now = Date.now(); return energy({ now, logs: s.logs || [], ledger: s.ledger || [], water: waterToday(now), boost: powerBoost() }); };
+    /* the gentle day (My cycle): only with cycle tracking on and a gentle day she switched on for today */
+    const careInput = now => { try { const L = W.LowiCycle, CC = W.LowiCycleCare; if (!L || !CC || !L.enabled || !L.enabled() || !L.data) return {}; return CC.energyInput(L.data(), dayKey(now)); } catch (e) { return {}; } };
+    const energyNow = () => { const s = S(), now = Date.now(), ci = careInput(now); return energy({ now, logs: s.logs || [], ledger: s.ledger || [], water: waterToday(now), boost: powerBoost(), moveGoal: ci.moveGoal, rest: ci.rest }); };
 
     /* ---------- bar on Today ---------- */
     let row = null, last = '';

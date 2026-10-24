@@ -152,3 +152,19 @@ html[data-theme="light"] .sz-pic .sz-sel { color: #ffd877; }
 @media (min-width: 700px) { .sz-grid { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); } }
 @media (max-width: 330px) { .sz-grid { grid-template-columns: 1fr 1fr; gap: 8px; } .sz-pic .sz-v { font-size: 9px; padding: 2px 6px; } }
 @media (prefers-reduced-motion: reduce) { .sz-more summary::after { transition: none; } }
+/* 24 Oct 2026: Category and Region as two labelled rows (Emmanuel: one mixed strip was confusing). Shelves pick cyan, regions pick warm gold. */
+.sz-filters { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 6px; }
+.sz-filter { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 4px; border-radius: 18px; background: rgba(143, 231, 255, .05); border: 1px solid rgba(143, 231, 255, .12); }
+.sz-flabel { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; opacity: .78; padding-left: 4px; }
+.sz-filter .sz-chips { padding: 4px 0 6px; gap: 6px 8px; }
+.sz-filter-reg { background: rgba(255, 216, 119, .05); border-color: rgba(255, 216, 119, .16); }
+.sz-reg { background: transparent; border: 1px solid rgba(255, 216, 119, .4); }
+.sz-reg.on { background: #ffd877; color: #2b1d00; border-color: transparent; box-shadow: 0 0 14px rgba(255, 216, 119, .4); }
+.sz-chip:focus-visible { outline: 2px solid #8fe7ff; outline-offset: 2px; }
+html[data-theme="light"] .sz-filter { background: rgba(10, 70, 110, .05); border-color: rgba(10, 70, 110, .14); }
+html[data-theme="light"] .sz-filter-reg { background: rgba(150, 100, 0, .06); border-color: rgba(150, 100, 0, .18); }
+html[data-theme="light"] .sz-flabel { color: #12324a; opacity: .85; }
+html[data-theme="light"] .sz-chip { color: #0b2236; background: rgba(255, 255, 255, .75); border-color: rgba(10, 70, 110, .28); }
+html[data-theme="light"] .sz-chip.on { background: #0f6f9c; color: #fff; box-shadow: none; }
+html[data-theme="light"] .sz-reg { background: rgba(255, 255, 255, .75); border-color: rgba(150, 100, 0, .4); }
+html[data-theme="light"] .sz-reg.on { background: #8a5a00; color: #fff; box-shadow: none; }

@@ -76,15 +76,16 @@
        Seller Zone tab (inlineHTML, Oct 23 Eman: "Pack ihn mal auch in Shop. Mit dem selben Design") show the same thing */
     function bodyHTML() {
         const r = myRegion();
-        const cats = '<button type="button" class="sz-chip' + (cat === 'all' ? ' on' : '') + '" data-sz-cat="all">\u2728 ' + esc(T('All', 'Alle', 'Todo')) + '</button>' +
-            DATA.CATS.map(c => '<button type="button" class="sz-chip' + (cat === c.id ? ' on' : '') + '" data-sz-cat="' + c.id + '">' + c.e + ' ' + esc(tx(c.t)) + '</button>').join('');
+        const cats = '<button type="button" class="sz-chip' + (cat === 'all' ? ' on' : '') + '" data-sz-cat="all" aria-pressed="' + (cat === 'all') + '">\u2728 ' + esc(T('All', 'Alle', 'Todo')) + '</button>' +
+            DATA.CATS.map(c => '<button type="button" class="sz-chip' + (cat === c.id ? ' on' : '') + '" data-sz-cat="' + c.id + '" aria-pressed="' + (cat === c.id) + '">' + c.e + ' ' + esc(tx(c.t)) + '</button>').join('');
         const regs = REGIONS.map(([id, f, l]) => '<button type="button" class="sz-chip sz-reg' + (r === id ? ' on' : '') + '" data-sz-reg="' + id + '" aria-pressed="' + (r === id) + '">' + f + ' ' + esc(l()) + '</button>').join('');
         const items = C.list(DATA, cat, r);
         const note = cat !== 'all' && DATA.NOTE[cat] ? '<p class="sz-note sz-note-l">' + esc(tx(DATA.NOTE[cat])) + '</p>' : '';
         const failed = '<details class="sz-failed"><summary>' + esc(T('Checked and not passing', 'Geprüft und durchgefallen', 'Revisado y no pasa')) + ' (' + DATA.FAILED.length + ')</summary><ul>' +
             DATA.FAILED.map(f => '<li><b>' + esc(tx(f.n)) + '</b> ' + esc(tx(f.why)) + '</li>').join('') + '</ul></details>';
-        return '<div class="sz-chips" role="group" aria-label="' + esc(T('Kind', 'Art', 'Tipo')) + '">' + cats + '</div>' +
-            '<div class="sz-chips sz-regs" role="group" aria-label="' + esc(T('Ships to', 'Liefert nach', 'Envía a')) + '">' + regs + '</div>' + note +
+        /* 24 Oct 2026 (Emmanuel: shelves and regions were one mixed strip): two rows, each labelled, each with its own selected look */
+        return '<div class="sz-filters"><div class="sz-filter sz-filter-cat"><span class="sz-flabel" id="sz-fl-cat">' + esc(T('Category', 'Kategorie', 'Categoría')) + '</span><div class="sz-chips" role="group" aria-labelledby="sz-fl-cat">' + cats + '</div></div>' +
+            '<div class="sz-filter sz-filter-reg"><span class="sz-flabel" id="sz-fl-reg">' + esc(T('Region', 'Region', 'Región')) + '</span><div class="sz-chips sz-regs" role="group" aria-labelledby="sz-fl-reg">' + regs + '</div></div></div>' + note +
             '<div class="sz-grid">' + items.map(card).join('') + '</div>' + failed +
             '<p class="sz-fine">' + esc(T('Checked on 23 Oct 2026 on each shop’s own page. Prices and stock can change. No paid placements.', 'Geprüft am 23.10.2026 auf der Seite des jeweiligen Shops. Preise und Verfügbarkeit können sich ändern. Keine bezahlten Platzierungen.', 'Revisado el 23/10/2026 en la página de cada tienda. Precios y stock pueden cambiar. Sin colocaciones pagadas.')) + '</p>';
     }

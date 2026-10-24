@@ -1,6 +1,6 @@
 'use strict';
 /* Oct 23 2026, bloom ring (bloom-ring.js + home-blooms-v2.js): Emmanuel's "Rundung" symmetry for the secondary bubbles on Home,
-   the zoom-out that makes room for them, and the two-finger tap on Misty that opens all of them at once.
+   the zoom-out that makes room for them, and the hold on Scan that opens all of them at once (was a two-finger tap on Misty).
    "Right now it looks very just scattered. It doesn't look symmetrical ... It's just a mess." / "Add a zoom out effect when the
    secondary bubbles open, so the view expands rather than cramping the elements on the screen."
    Browser check: tools/sim/bloom-ring.cjs (360x640, 390x844, iPad 820x1180). */
@@ -88,16 +88,13 @@ test('pack keeps groups apart by one step and moves the bigger group less', () =
     assert.ok(Math.abs(ang(A.c, 0)) < Math.abs(ang(B.c, 0.2)), 'bigger group moved less');
 });
 
-test('two-finger tap: both fingers on Misty, close together in time, short and still', () => {
-    const base = { downs: [{ x: 0, y: 0, t: 0 }, { x: 30, y: 0, t: 60 }], onTarget: [true, true], upAt: 300, moved: 4, spreadChange: 3 };
-    assert.equal(BR.isTwoFingerTap(base), true, 'a clean two-finger tap');
-    assert.equal(BR.isTwoFingerTap(Object.assign({}, base, { moved: 40 })), false, 'fingers moving = a drag');
-    assert.equal(BR.isTwoFingerTap(Object.assign({}, base, { spreadChange: 60 })), false, 'a pinch is never a two-finger tap');
-    assert.equal(BR.isTwoFingerTap(Object.assign({}, base, { upAt: 900 })), false, 'held too long = not a tap');
-    assert.equal(BR.isTwoFingerTap(Object.assign({}, base, { onTarget: [true, false] })), false, 'one finger off Misty');
-    assert.equal(BR.isTwoFingerTap(Object.assign({}, base, { extra: true })), false, 'three fingers');
-    assert.equal(BR.isTwoFingerTap(Object.assign({}, base, { downs: [base.downs[0]] })), false, 'one finger');
-    assert.equal(BR.isTwoFingerTap(Object.assign({}, base, { downs: [{ x: 0, y: 0, t: 0 }, { x: 30, y: 0, t: 500 }] })), false, 'second finger far later');
+/* Oct 24 2026: the two-finger tap on Misty is gone; holding Scan opens every bloom. Its full behaviour (tap = Scan once, hold = every
+   bloom once, drift / early lift cancel, trailing click swallowed, two fingers on Misty open nothing) is tests/scan-hold.test.cjs. */
+test('all blooms at once: hold Scan, no two-finger tap left', () => {
+    assert.equal(BR.isTwoFingerTap, undefined, 'the two-finger decision is gone');
+    assert.equal(BR.TAP, undefined);
+    assert.equal(typeof BR.scanPress, 'function', 'the Scan hold decision is there');
+    assert.equal(BR.scanPress({ held: BR.SCAN_HOLD_MS, moved: 0 }), 'hold');
 });
 
 test('wiring: shipped, precached, loaded after the blooms, and the blooms use it', () => {
@@ -110,17 +107,16 @@ test('wiring: shipped, precached, loaded after the blooms, and the blooms use it
     assert.match(hb, /LowiBloomRing/, 'blooms use the ring');
     assert.match(hb, /openAll, isAll: \(\) => st\.open === 'all'/, 'openAll / isAll in the API');
     assert.match(hb, /unzoom\('blooms'\)/, 'closing a bloom brings the view back');
-    assert.match(br, /B\.openAll\(\)/, 'two-finger tap opens every bloom');
-    assert.match(br, /getElementById\('spBubble'\)/, 'the two-finger tap is on Misty');
+    assert.match(br, /B\.openAll\(\)/, 'hold Scan opens every bloom');
+    assert.match(br, /closest\('#whHud \[data-orbit="scan"\]'\)/, 'the hold is on the Home Scan bubble');
 });
 
 test('Misty keeps her gestures: hold = stats, double tap = talk + heart; a second finger cancels the hold', () => {
     const wh = read('world-home.js'), br = read('bloom-ring.js');
     assert.match(wh, /if \(t && pid != null && e\.pointerId !== pid\) \{ stop\(\); pid = null; return; \}/, 'second finger cancels the hold');
     assert.match(wh, /openMisty\('aura'\); \}, 520\)/, 'hold still opens her stats');
-    /* a two-finger tap swallows the click that follows, so it never counts as a tap or a double tap on Misty */
-    assert.match(br, /addEventListener\('dblclick', onClick, true\)/, 'double tap after a two-finger tap is swallowed');
-    assert.match(br, /swallowUntil = Date\.now\(\) \+ 600/, 'only right after the two-finger tap');
+    /* nothing in bloom-ring.js listens on Misty any more (the two-finger tap is gone), so her tap and double tap are never swallowed */
+    assert.ok(!/getElementById\('spBubble'\)|onMisty|addEventListener\('dblclick'|addEventListener\('touchstart'/.test(br), 'bloom-ring.js never touches Misty\'s own taps');
 });
 
 test('the ring holds still while the view is pulled back (never re-measured from a scaled Misty)', () => {

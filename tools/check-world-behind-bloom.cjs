@@ -2,7 +2,7 @@
 /* Browser check (Oct 23 2026, Eman's iPhone screenshot at 14:57): with the bloom ring open the world behind it must stay the full,
    living 3D world. Before the fix bloom-ring.js scaled #spHome .sp-heroes, which holds the 3D stage (#bw3Stage + its canvas), so the
    whole universe shrank into a hard-edged phone-shaped box with the bare page gradient around it.
-   For Home, a single bloom (Fuel / Water / Move) and the two-finger round it records:
+   For Home, a single bloom (Fuel / Water / Move) and the all-at-once round (hold Scan) it records:
    - the 3D canvas rect (must cover the viewport, no scale on the stage or any of its ancestors),
    - whether the world keeps rendering (frames advance), and the camera distance (pulled back while the ring is open),
    - a screenshot and how much of the edge strip differs from the centre (a flat box shows as a hard step).
@@ -61,15 +61,15 @@ const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path
     await closeIt();
     await judge(k + ' closed');
   }
-  /* the two-finger round, sent from inside the page (CDP can deliver the fingers too far apart on a loaded machine) */
+  /* the all-at-once round: hold Scan (Oct 24 2026; was a two-finger tap on Misty), sent from inside the page; the scanner open is caught */
   await P.evaluate(() => new Promise(ok => {
-    const el = document.getElementById('spBubble'); if (!el) return ok(); const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
-    const mk = (dx, id) => new Touch({ identifier: id, target: el, clientX: x + dx, clientY: y }); const t1 = mk(-r.width * .15, 1), t2 = mk(r.width * .15, 2);
-    const fire = (type, touches, changed) => el.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, touches, targetTouches: touches, changedTouches: changed }));
-    fire('touchstart', [t1], [t1]); fire('touchstart', [t1, t2], [t2]); fire('touchend', [t2], [t1]); fire('touchend', [], [t2]); ok();
+    window.__opens = []; const real = window.lowiOpen; window.lowiOpen = t => { window.__opens.push(t); if (t !== 'scan' && typeof real === 'function') real(t); };
+    const el = document.querySelector('#whHud .o8-scan'); if (!el) return ok(); const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const o = { bubbles: true, cancelable: true, clientX: x, clientY: y, pointerId: 9, pointerType: 'touch', isPrimary: true, button: 0 };
+    el.dispatchEvent(new PointerEvent('pointerdown', o)); setTimeout(() => { el.dispatchEvent(new PointerEvent('pointerup', o)); el.click(); ok(); }, 900);
   }));
   await H.sleep(800);
-  await judge('two-finger all');
+  await judge('hold Scan all');
   await closeIt();
   await judge('all closed');
   /* pinch in and out on Home (wheel = the desktop pinch, same world.zoom): the world stays full screen, the ring keeps every bubble

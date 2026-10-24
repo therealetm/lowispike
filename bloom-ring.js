@@ -1,7 +1,7 @@
 /* bloom-ring.js - Oct 23, 2026: one round, symmetrical layout for every secondary bubble on Home, the zoom-out that makes room for
-   them, and the two-finger tap on Misty that opens all of them at once.
+   them, and the hold on Scan that opens all of them at once.
 
-   Emmanuel (voice, Oct 23): "two fingers on the bubble makes all the secondary bubbles open"; "the Rundung symmetry. Right now it
+   Emmanuel (voice, Oct 23): "the Rundung symmetry. Right now it
    looks very just scattered. It doesn't look symmetrical with the bubbles. The secondary bubbles, they all don't even look aligned.
    They all have different styles. It's just a mess." Then: "Add a zoom out effect when the secondary bubbles open, so the view
    expands rather than cramping the elements on the screen."
@@ -13,8 +13,9 @@
        touch, both slide apart along the circle just enough (the bigger group moves less), so they keep their shape and spacing;
      - the orbs keep one readable size; to make room, the ring and Misty pull back towards Misty's centre (the camera backs off),
        never the orbs shrinking, never anything leaving the screen.
-   Kept as they were (Emmanuel likes them): a hold on Misty opens her stats, a double tap makes her talk and gives a heart. A
-   two-finger tap is its own gesture: both fingers on Misty, still, short. A pinch (fingers moving) is never a two-finger tap.
+   Kept as they were (Emmanuel likes them): a hold on Misty opens her stats, a double tap makes her talk and gives a heart.
+   Oct 24 2026 (Emmanuel: "very simple: long press on Scan opens all those secondary bubbles"): holding Scan opens them all; the old
+   two-finger tap on Misty is removed (not kept as a hidden duplicate). Pinch zoom on the world is world-home.js and is untouched.
 
    solve() is pure (tests/bloom-ring.test.cjs). The DOM half reads the ring from home-orbit-v2.js and scales #whHud and Misty's layer
    with the CSS scale property (no flat page is scaled: both layers are transparent and hold only round bubbles). */
@@ -63,7 +64,7 @@
         const raw = o.groups.filter(g => ringBy[g.key]).map(g => ({ key: g.key, n: g.n, a: Math.atan2(ringBy[g.key].y - c.y, ringBy[g.key].x - c.x) }));
         if (o.even && raw.length > 1) {
             /* Oct 23, 18:03 (Eman, two fingers on Misty: Sleep's options were missing, "da fehlt doch was", the ring was a lopsided arc):
-               the two-finger ring is ONE full, even circle. Every orb sits exactly 360/n degrees from the next, each group stays together in
+               the all-at-once ring (hold Scan) is ONE full, even circle. Every orb sits exactly 360/n degrees from the next, each group stays together in
                the order of its bubble round Misty, and the whole circle turns so every group sits as close to its own bubble as it can. */
             const n = raw.reduce((t, g) => t + Math.max(1, g.n | 0), 0), est = TAU / n;
             rho = Math.max(rho, (d + between) / (2 * Math.sin(Math.PI / n)));
@@ -115,21 +116,9 @@
         return Object.assign(layoutAt(Object.assign({}, o, { d }), minS), { fit: false });
     }
 
-    /* two-finger tap: pure decision from the touch story (tests use it too) */
-    const TAP = { maxGapMs: 300, maxMs: 520, maxMove: 16, maxSpread: 26 };
-    function isTwoFingerTap(t) {
-        /* t: { downs:[{x,y,t}x2], ups at ms, moved px (max finger travel), spreadChange px, onTarget:[bool,bool], extra:bool } */
-        if (!t || t.extra || !t.downs || t.downs.length !== 2) return false;
-        if (!t.onTarget || !t.onTarget[0] || !t.onTarget[1]) return false;
-        if (Math.abs(t.downs[1].t - t.downs[0].t) > TAP.maxGapMs) return false;
-        if ((t.upAt - t.downs[0].t) > TAP.maxMs) return false;
-        if ((t.moved || 0) > TAP.maxMove || Math.abs(t.spreadChange || 0) > TAP.maxSpread) return false;
-        return true;
-    }
-
     /* ---------------- DOM ---------------- */
     let W = null, D = null, H = null;
-    const z = { on: false, s: 1, saved: null, t: 0, owner: null, gest: null, swallowUntil: 0 };
+    const z = { on: false, s: 1, saved: null, t: 0, owner: null };
     const reduced = () => { try { return W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
     /* Oct 23, 14:57 (Eman's iPhone screenshot: a flat dark box in the middle, a pale gradient round it, "everything has disappeared.
        There's nothing in my universe"): #spHome .sp-heroes also holds the 3D stage (#bw3Stage and its canvas), so scaling it shrank the
@@ -231,54 +220,7 @@
         if (reduced()) done(); else W.setTimeout(done, 520);
     }
 
-    /* the two-finger tap on Misty */
-    function mistyEl() { return D.getElementById('spBubble'); }
-    function onMisty(x, y) {
-        const el = mistyEl(); if (!el) return false;
-        const r = el.getBoundingClientRect(); if (!r.width) return false;
-        /* two fingertips side by side are wider than they look: the hit circle is Misty's own plus a fingertip */
-        return Math.hypot(x - (r.left + r.width / 2), y - (r.top + r.height / 2)) <= Math.max(r.width, r.height) / 2 + 22;
-    }
     const homeUp = () => H.classList.contains('o8') && H.classList.contains('wh-home') && !H.classList.contains('wh-away') && !D.querySelector('.ss-sheet.on, .hl-sheet.on');
-    function onStart(e) {
-        const ts = e.touches;
-        if (!ts) return;
-        if (ts.length === 1) {
-            const t = ts[0];
-            z.gest = homeUp() && onMisty(t.clientX, t.clientY) ? { downs: [{ x: t.clientX, y: t.clientY, t: performance.now(), id: t.identifier }], onTarget: [true], moved: 0, extra: false } : null;
-            return;
-        }
-        const g = z.gest; if (!g) return;
-        if (ts.length === 2 && g.downs.length === 1) {
-            const t = [...ts].find(x => x.identifier !== g.downs[0].id) || ts[1];
-            g.downs.push({ x: t.clientX, y: t.clientY, t: performance.now(), id: t.identifier });
-            g.onTarget.push(onMisty(t.clientX, t.clientY));
-            g.spread0 = Math.hypot(g.downs[1].x - g.downs[0].x, g.downs[1].y - g.downs[0].y);
-        } else g.extra = true;
-    }
-    function onMove(e) {
-        const g = z.gest; if (!g || !e.touches) return;
-        const pos = {};
-        [...e.touches].forEach(t => { pos[t.identifier] = t; });
-        g.downs.forEach(d => { const t = pos[d.id]; if (t) g.moved = Math.max(g.moved, Math.hypot(t.clientX - d.x, t.clientY - d.y)); });
-        if (g.downs.length === 2) { const a = pos[g.downs[0].id], b = pos[g.downs[1].id]; if (a && b) g.spreadChange = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) - g.spread0; }
-    }
-    function onEnd(e) {
-        const g = z.gest; if (!g) return;
-        if (e.touches && e.touches.length) return;
-        z.gest = null;
-        g.upAt = performance.now();
-        if (e.type === 'touchcancel' || !isTwoFingerTap(g)) return;
-        z.swallowUntil = Date.now() + 600;
-        try { if (e.cancelable) e.preventDefault(); } catch (x) { }
-        toggleAll();
-    }
-    /* a two-finger tap must never also count as a tap or a double tap on Misty */
-    function onClick(e) {
-        if (Date.now() > z.swallowUntil) return;
-        const t = e.target; if (!t || !t.closest || !t.closest('#spBubble, #spHome .sp-heroes')) return;
-        e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-    }
     /* ---- hold Scan = every bubble at once (Oct 24 2026, Emmanuel: holding the Scan button on Home opens all the bubbles; a normal
        tap on Scan still opens Scan). Same feel as holding Community: SCAN_HOLD_MS still, under SCAN_DRIFT px of drift; touch, pen
        and mouse. A light cue (.br-scan-holding) while the finger is down. Once the hold fired, the click that ends it (and on
@@ -339,12 +281,6 @@
             const me = D.currentScript, q = me && me.src && me.src.indexOf('?') > 0 ? me.src.slice(me.src.indexOf('?')) : '';
             const l = D.createElement('link'); l.id = 'brCss'; l.rel = 'stylesheet'; l.href = 'bloom-ring.css' + q; (D.head || H).appendChild(l);
         }
-        W.addEventListener('touchstart', onStart, { capture: true, passive: true });
-        W.addEventListener('touchmove', onMove, { capture: true, passive: true });
-        W.addEventListener('touchend', onEnd, { capture: true, passive: false });
-        W.addEventListener('touchcancel', onEnd, { capture: true, passive: true });
-        W.addEventListener('click', onClick, true);
-        W.addEventListener('dblclick', onClick, true);
         /* hold Scan: before every other click handler (the window sees a click first) */
         D.addEventListener('pointerdown', onScanDown, true);
         D.addEventListener('pointermove', onScanMove, true);
@@ -356,5 +292,5 @@
         W.addEventListener('resize', () => { if (z.on) { const B = W.LowiHomeBloomsV2; try { if (B && B.close) B.close(); } catch (e) { } try { const S = W.LowiHomeSettingsSleepV2; if (S && S.close) S.close(); } catch (e) { } unzoom(); } });
     }
     const state = () => ({ on: z.on, s: z.s, owner: z.owner });
-    return { solve, pack, layoutAt, isTwoFingerTap, TAP, scanPress, SCAN_HOLD_MS, SCAN_DRIFT, stepFor, place, zoom, unzoom, state, toggleAll, mount: typeof window !== 'undefined' ? mount : null, _ring: ring, _layers: typeof window !== 'undefined' ? layers : null, _layoutBox: typeof window !== 'undefined' ? layoutBox : null };
+    return { solve, pack, layoutAt, scanPress, SCAN_HOLD_MS, SCAN_DRIFT, stepFor, place, zoom, unzoom, state, toggleAll, mount: typeof window !== 'undefined' ? mount : null, _ring: ring, _layers: typeof window !== 'undefined' ? layers : null, _layoutBox: typeof window !== 'undefined' ? layoutBox : null };
 });

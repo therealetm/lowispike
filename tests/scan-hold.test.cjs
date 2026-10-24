@@ -30,7 +30,8 @@ function page() {
     const el = (orbit) => { const cls = new Set(); const e = { orbit, cls, classList: { toggle: (c, on) => { if (on) cls.add(c); else cls.delete(c); }, contains: c => cls.has(c) } };
         e.closest = sel => (sel.includes('data-orbit="' + orbit + '"') || (orbit === 'scan' && sel.includes('o8-scan'))) ? e : null; return e; };
     const scan = el('scan'), water = el('water'), empty = { closest: () => null };
-    const D = { documentElement: H, getElementById: id => (id === 'brCss' ? {} : null), querySelector: () => null, querySelectorAll: () => [], addEventListener: add(L.doc), head: { appendChild() { } } };
+    const misty = { id: 'spBubble', closest: sel => (sel.includes('spBubble') ? misty : null), getBoundingClientRect: () => ({ left: 145, top: 372, width: 100, height: 100 }) };
+    const D = { documentElement: H, getElementById: id => (id === 'brCss' ? {} : id === 'spBubble' ? misty : null), querySelector: () => null, querySelectorAll: () => [], addEventListener: add(L.doc), head: { appendChild() { } } };
     const st = { all: false, opens: 0, closes: 0, scanOpened: 0, waterTapped: 0 };
     const W = {
         document: D, addEventListener: add(L.win), navigator: {},
@@ -41,8 +42,8 @@ function page() {
     const ev = (type, target, x, y) => ({ type, target, clientX: x || 100, clientY: y || 100, button: 0, isPrimary: true, cancelable: true, timeStamp: 1000 + now,
         prevented: false, stopped: false, preventDefault() { this.prevented = true; }, stopPropagation() { this.stopped = true; }, stopImmediatePropagation() { this.stopped = true; } });
     /* a browser's order: window capture, then document capture, then the button's own handler (home-orbit-v2.js tap -> open) */
-    const fire = (type, target, x, y) => {
-        const e = ev(type, target, x, y);
+    const fire = (type, target, x, y, extra) => {
+        const e = Object.assign(ev(type, target, x, y), extra || {});
         for (const fn of (L.win[type] || [])) { if (e.stopped) break; fn(e); }
         for (const fn of (L.doc[type] || [])) { if (e.stopped) break; fn(e); }
         if (type === 'click' && !e.stopped) { if (target === scan) st.scanOpened++; if (target === water) st.waterTapped++; }
@@ -61,7 +62,7 @@ function page() {
     };
     /* a busy page: time passes but no timer gets to run */
     const stall = ms => { now += ms; };
-    return { W, D, H: set, st, scan, water, empty, fire, wait, stall, press };
+    return { W, D, H: set, st, scan, water, misty, empty, fire, wait, stall, press };
 }
 function mounted() { const R = loadRing(), p = page(); assert.strictEqual(typeof R.mount, 'function', 'mount is exported in a browser'); R.mount(p.W); return { R, p }; }
 
@@ -74,6 +75,27 @@ test('scanPress: still for SCAN_HOLD_MS is a hold, a drift is a drag, shorter is
     assert.strictEqual(R.scanPress({ held: 2000, moved: R.SCAN_DRIFT }), 'hold', 'a little wobble is still a hold');
     assert.strictEqual(R.scanPress({ held: 2000, moved: R.SCAN_DRIFT + 1 }), 'drag', 'a finger that slides away is not a hold');
     assert.strictEqual(R.scanPress({}), 'tap');
+});
+
+/* Oct 24 2026 (Emmanuel: "very simple: long press on Scan opens all those secondary bubbles"): the old two-finger tap on Misty is
+   removed, not kept as a hidden duplicate. Pinch zoom on the world, Misty's own hold (stats) and double tap stay elsewhere. */
+test('the old two-finger tap on Misty no longer opens the bubbles', () => {
+    const { R, p } = mounted();
+    const t1 = { identifier: 1, clientX: 180, clientY: 420 }, t2 = { identifier: 2, clientX: 210, clientY: 420 };
+    p.fire('touchstart', p.misty, 180, 420, { touches: [t1] });
+    p.wait(30);
+    p.fire('touchstart', p.misty, 210, 420, { touches: [t1, t2] });
+    p.wait(120);
+    p.fire('touchend', p.misty, 180, 420, { touches: [t1] });
+    const end = p.fire('touchend', p.misty, 210, 420, { touches: [] });
+    p.wait(1000);
+    assert.strictEqual(p.st.opens, 0, 'two fingers on Misty open nothing');
+    assert.strictEqual(end.prevented, false, 'and her own tap / double tap are not blocked');
+    assert.strictEqual(R.isTwoFingerTap, undefined, 'the two-finger decision is gone');
+    assert.strictEqual(R.TAP, undefined, 'its timing table too');
+    const br = read('bloom-ring.js');
+    assert.doesNotMatch(br, /addEventListener\('touchstart'/, 'no touch-story listener left for it');
+    assert.doesNotMatch(br, /function onMisty\(/, 'no Misty hit test for it');
 });
 
 test('a normal tap on Scan opens Scan and nothing else', () => {

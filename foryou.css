@@ -1,0 +1,25 @@
+/* For You: the inspiration bot's daily slide (foryou.js). Glass on the slide photo, same text colours as the other slides. */
+.fyb-slide .fy-meta.fyb-meta{display:flex;flex-direction:column;gap:6px;max-height:calc(100% - var(--sab, 0px) - 190px);overflow:hidden}
+.fyb-by .fyb-av-svg{width:30px;height:30px;flex:none;border-radius:50%;background:rgba(255,255,255,.12);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+.fyb-by b{font-weight:700}
+.fy-by .fyb-tag{opacity:1;font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:1px 7px;border-radius:7px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);text-shadow:none}
+.fyb-k{margin:2px 0 0;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.9}
+.fyb-k small{font-weight:600;letter-spacing:0;text-transform:none;margin-left:4px;opacity:.85}
+.fyb-swap{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border-radius:16px;background:rgba(10,18,40,.38);border:1px solid rgba(255,255,255,.18);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);text-shadow:none}
+.fyb-from,.fyb-to{display:flex;flex-direction:column;min-width:0;line-height:1.25;overflow-wrap:anywhere}
+.fyb-from{opacity:.82;font-size:14px}
+.fyb-to{flex:1 1 140px;font-weight:700;font-size:15.5px}
+.fyb-swap small{font-size:11px;font-weight:600;opacity:.75}
+.fyb-arrow{font-weight:800;color:#5fe39a;font-size:18px}
+.fyb-why{margin:0;font-size:14px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.fyb-meta .fyv-rec{margin-top:2px}
+.fyb-gold{margin-top:2px;padding:9px 11px;border-radius:16px;background:rgba(60,44,0,.42);border:1px solid rgba(242,183,5,.5);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);text-shadow:none}
+.fyb-gold .fyb-k span{color:#f5c84b}
+.fyb-prod{display:flex;gap:10px;align-items:center;margin:6px 0 4px}
+.fyb-img{width:46px;height:46px;flex:none;object-fit:contain;border-radius:10px;background:#fff}
+.fyb-pt{display:flex;flex-direction:column;min-width:0;line-height:1.3;overflow-wrap:anywhere;font-size:13.5px}
+.fyb-pt span{font-size:12px;opacity:.8}
+.fyb-pt .fyb-nums{opacity:1;font-weight:600}
+.fyb-gold .fyb-why{font-size:13px;-webkit-line-clamp:2}
+.fyb-src{margin:3px 0 0;font-size:11px;opacity:.75}
+@media (max-height:700px){.fyb-slide .fyb-why{-webkit-line-clamp:2}.fyb-gold .fyb-why{display:none}}

@@ -4433,7 +4433,9 @@ const DEMO = (() => {
   return L;
 })();
 
-function feed(){
+/* For You shows only insulin-friendly items, plus the inspiration bot's daily slides (foryou-core.js, DECISIONS 24 Oct 2026). */
+function feed(){ const all = feedAll(); return window.LowiForYou ? LowiForYou.feed(all).filter(p => !T.hidden.includes(p.id)) : all; }
+function feedAll(){
   const hidden = T.hidden.concat(T.reported), blocked = T.blocked;
   const me = T.posts.map(p => Object.assign({me:true}, p));
   const CL = window.LOWI_CLOUD, on = !!(CL && CL.live());
@@ -4473,6 +4475,7 @@ const FIC = {
 function fyBg(p, thumb){
   if (p.vid && window.FYV) return FYV.bgHTML(p, thumb);
   if (p.photo) return '<img class="fy-bg" src="' + p.photo + '" alt="">';
+  if (p.bot && p.img && /^fy-img\/[a-z_]+\.webp$/.test(p.img)) return '<img class="fy-bg" src="' + p.img + '" alt="" decoding="async">';
   if (p.rec && typeof FOOD_IMG !== "undefined" && FOOD_IMG[p.rec]) return '<img class="fy-bg" src="' + FOOD_IMG[p.rec] + '" alt="" decoding="async">';
   const k = FY_IMG[p.id];
   if (k && k.indexOf("i-") === 0) return '<div class="fy-bg mv-ms-img ' + k + '"></div>';
@@ -4481,6 +4484,7 @@ function fyBg(p, thumb){
   return '<div class="fy-bg fy-art" style="--h1:' + a[1] + ';--h2:' + a[2] + '">' + (p.meta && p.meta.thumb ? '<img src="' + esc(p.meta.thumb) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">' : "") + '</div>';
 }
 function slideHTML(p){
+  if (p.bot && window.LowiForYou) return LowiForYou.slideHTML(p, {bg: fyBg(p), saved: !!(T.saved || {})[p.id], FIC, chip: p.rec && window.FYV ? FYV.recChip(p) : ""});
   const h = H(), u = h.user(), d = describe(p.meta), liked = !!T.likes[p.id], saved = !!(T.saved || {})[p.id], n = (p.likes || 0) + (liked ? 1 : 0), pl = PLAT[p.plat] || PLAT.web;
   const name = p.me ? (u.name || "You") : p.who, cap = p.cap || d.line || "", textOnly = !p.url && !p.photo && !p.vid && !p.rec && !FY_IMG[p.id];
   return '<section class="fy-slide' + (textOnly ? " fy-text" : "") + (p.vid ? " fyv-slide" : "") + '" data-id="' + p.id + '">' + fyBg(p) + '<div class="fy-shade"></div>' +
@@ -4514,10 +4518,10 @@ function profileHTML(){ load(); const mine = T.posts.length, sv = Object.keys(T.
     '<button class="fy-prow" data-tr="list-mine"><b>My posts</b><span class="num muted">' + mine + '</span>' + chev + '</button>' +
     '<button class="fy-prow" data-tr="list-saved"><b>Saved</b><span class="num muted">' + sv + '</span>' + chev + '</button>' +
     '<div class="tiny dim" style="margin-top:6px">' + (window.LOWI_CLOUD && LOWI_CLOUD.live() ? 'For You and Chat are live: real members, shared.' : 'For You and Chat show sample members until launch.') + '</div></div>'; }
-function listSheet(kind){ const h = H(); load(); const all = DEMO.concat(T.posts.map(p => Object.assign({me:true}, p)));
+function listSheet(kind){ const h = H(); load(); const all = DEMO.concat(T.posts.map(p => Object.assign({me:true}, p)), window.LowiForYou ? LowiForYou.botPosts() : []);
   const list = (kind === "mine" ? all.filter(p => p.me) : all.filter(p => (T.saved || {})[p.id])).sort((a, b) => b.ts - a.ts);
   h.openSheet('<div class="h2" style="margin-bottom:10px">' + (kind === "mine" ? "My posts" : "Saved") + '</div>' + (list.length ? list.map(p => { const d = describe(p.meta), rr = p.rec && postRecipe(p.rec), cap = p.cap || d.line || (rr && rr.n) || PLAT[p.plat || "web"].n;
-    return '<div class="fy-lrow"><div class="fy-lth">' + fyBg(p, true) + '</div><div style="flex:1;min-width:0"><div class="small fy-lcap">' + esc(cap) + '</div><div class="tiny dim">' + (p.me ? (p.vid ? "Video · " : "") + (p.vis === "tribe" ? "In For You" : "Only you") : esc(p.who)) + " · " + ago(p.ts) + '</div></div>' +
+    return '<div class="fy-lrow"><div class="fy-lth">' + fyBg(p, true) + '</div><div style="flex:1;min-width:0"><div class="small fy-lcap">' + esc(cap) + '</div><div class="tiny dim">' + (p.me ? (p.vid ? "Video · " : "") + (p.vis === "tribe" && (!window.LowiForYou || LowiForYou.passes(p)) ? "In For You" : "Only you") : esc(p.who)) + " · " + ago(p.ts) + '</div></div>' +
       (kind === "mine" ? '<button class="fy-lbtn" data-tr="post-menu" data-id="' + p.id + '" aria-label="More">' + IC.more + '</button>' : '<button class="fy-lbtn" data-tr="save" data-id="' + p.id + '" aria-label="Remove">' + FIC.save + '</button>') + '</div>'; }).join("")
     : '<div class="small muted">' + (kind === "mine" ? "Nothing yet. Your posts show up here." : "Tap Save on any post in For You.") + '</div>')); }
 
@@ -4627,9 +4631,12 @@ function doPost(btn){
   T.posts.unshift(p); if (T.posts.length > 80) T.posts.length = 80;
   if (p.vis !== "tribe") T.filter = "mine"; else if (T.filter === "orig" && !p.mine) T.filter = "all";
   save(); C = null; h.closeSheet(); showFeed();
-  if (p.vis === "tribe" && window.LOWI_CLOUD) LOWI_CLOUD.publish(p);
-  if (p.vis === "tribe") { h.award("tribe-post", null, POST_XP); if (p.mine) setTimeout(() => h.toast("Live as a Tribe Original"), 2300); }
-  else h.toast("Saved. Only you can see it.");
+  /* For You only shows insulin-friendly items: a post without that verdict stays in My posts, is not published and earns no XP. */
+  const fyOk = !window.LowiForYou || LowiForYou.passes(p);
+  if (p.vis === "tribe" && !fyOk) h.toast(LowiForYou.note("post"));
+  else if (p.vis === "tribe" && window.LOWI_CLOUD) LOWI_CLOUD.publish(p);
+  if (p.vis === "tribe" && fyOk) { h.award("tribe-post", null, POST_XP); if (p.mine) setTimeout(() => h.toast("Live as a Tribe Original"), 2300); }
+  else if (p.vis !== "tribe") h.toast("Saved. Only you can see it.");
   setTimeout(() => { const el = $('.fy-slide[data-id="' + p.id + '"]'), f = $("#fyFeed"); if (el && f) f.scrollTop = el.offsetTop; }, 220);
 }
 function postMenu(id){
@@ -4667,14 +4674,14 @@ document.addEventListener("click", e => {
       $$('[data-tr="save"][data-id="' + id + '"]').forEach(x => { x.classList.toggle("on", on); const sp = x.querySelector("span"); if (sp) sp.textContent = on ? "Saved" : "Save"; });
       if (b.classList.contains("fy-lbtn")) { const r = b.closest(".fy-lrow"); if (r) r.remove(); } else h.toast(on ? "Saved to Profile" : "Removed from Saved"); break; }
     case "comment": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (window.cmComment) window.cmComment(p && !p.me ? p.who : ""); break; }
-    case "share": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p) break; const rr = p.rec && postRecipe(p.rec); const txt = (p.cap || describe(p.meta).line || (rr && rr.n) || "LOWiSPIKE") + (p.url ? " " + p.url : "");
+    case "share": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id) || (window.LowiForYou && LowiForYou.botPost(id)); if (!p) break; const rr = p.rec && postRecipe(p.rec); const txt = (p.cap || describe(p.meta).line || (rr && rr.n) || "LOWiSPIKE") + (p.url ? " " + p.url : "");
       if (navigator.share && !p.demo) { navigator.share({text:txt}).catch(() => {}); } else { try { navigator.clipboard.writeText(txt).then(() => h.toast("Copied to share"), () => h.toast("Copied to share")); } catch(err){ h.toast("Copied to share"); } } break; }
     case "list-mine": listSheet("mine"); break;
     case "list-saved": listSheet("saved"); break;
     case "like": { if (T.likes[id]) delete T.likes[id]; else T.likes[id] = 1; save(); const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); b.classList.toggle("on", !!T.likes[id]); b.querySelector("span").textContent = ((p && p.likes) || 0) + (T.likes[id] ? 1 : 0); if (T.likes[id]) { b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); } if (window.LOWI_CLOUD) LOWI_CLOUD.like(id, !!T.likes[id]); break; }
     case "open": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p || !p.url) break; if (p.demo) { h.toast("Sample post. Real videos play right here."); break; } window.open(p.url, "_blank", "noopener"); break; }
     case "post-menu": postMenu(id); break;
-    case "toggle-vis": { const p = T.posts.find(x => x.id === id); if (p) { p.vis = p.vis === "tribe" ? "me" : "tribe"; save(); h.toast(p.vis === "tribe" ? "Now in For You" : "Now only visible to you"); if (window.LOWI_CLOUD) { if (p.vis === "tribe") LOWI_CLOUD.publish(p); else LOWI_CLOUD.unpublish(p.id); } } h.closeSheet(); rerender(); break; }
+    case "toggle-vis": { const p = T.posts.find(x => x.id === id); if (p) { p.vis = p.vis === "tribe" ? "me" : "tribe"; save(); const fyOk = !window.LowiForYou || LowiForYou.passes(p); h.toast(p.vis === "tribe" ? (fyOk ? "Now in For You" : LowiForYou.note("post")) : "Now only visible to you"); if (window.LOWI_CLOUD) { if (p.vis === "tribe" && fyOk) LOWI_CLOUD.publish(p); else LOWI_CLOUD.unpublish(p.id); } } h.closeSheet(); rerender(); break; }
     case "toggle-mine": { const p = T.posts.find(x => x.id === id); if (p) { p.mine = !p.mine; save(); if (window.LOWI_CLOUD && p.vis === "tribe") LOWI_CLOUD.publish(p); } h.closeSheet(); rerender(); break; }
     case "del": { const gone = T.posts.find(x => x.id === id); T.posts = T.posts.filter(x => x.id !== id); save(); if (window.LOWI_CLOUD) LOWI_CLOUD.unpublish(id); if (gone && gone.vid && window.FYV) FYV.remove(id); h.closeSheet(); rerender(); if (gone && gone.vid) h.toast("Video deleted from this phone"); break; }
     case "hide": T.hidden.push(id); save(); h.closeSheet(); rerender(); h.toast("Hidden for you"); break;
@@ -4713,7 +4720,7 @@ window.TRIBE = {
   /* Oct 19 meal photos (meal-photo.js): Snap food's "Also share to Community" attaches the read it already has */
   setMeal:m => { if (C) { C.meal = m && window.LowiMealSnap ? LowiMealSnap.clean(m) : null; C.mealErr = ""; paintRest(); } },
   addPost:p => { load(); T.posts.unshift(p); while (T.posts.length > 80) { const x = T.posts.pop(); if (x && x.vid && window.FYV) FYV.remove(x.id); } try { localStorage.setItem(KEY, JSON.stringify(T)); return true; } catch(e){ T.posts.shift(); const h = H(); if (h) h.toast("Storage is full on this phone."); return false; } }, checkShareHash, profileHTML, shareRecipe,
-  post:id => T.posts.map(x => Object.assign({me:true}, x)).find(x => x.id === id) || DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)), imgKey:id => FY_IMG[id] || "", demoNames:() => DEMO.map(x => x.who),
+  post:id => T.posts.map(x => Object.assign({me:true}, x)).find(x => x.id === id) || DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || (window.LowiForYou && LowiForYou.botPost(id)), imgKey:id => FY_IMG[id] || "", demoNames:() => DEMO.map(x => x.who),
   reset:() => { localStorage.removeItem(KEY); },
   _t:{describe, parseUrl, fetchMeta, feed, state:() => T, reload:load, DEMO}
 };
@@ -4884,11 +4891,13 @@ async function doPost(btn){
   URLS.set(id, u.url); U = null;
   const p = {id, ts:Date.now(), plat:"", url:"", meta:null, vid:1, cap:(u.cap || "").trim().slice(0, 150), rec:u.rec || "", vis:"tribe", mine:true, poster:meta.poster || "", w:meta.w || 0, h:meta.h || 0, dur:meta.dur || 0};
   if (!TRIBE.addPost(p)) { delVid(id).catch(() => {}); return; }
-  if (window.LOWI_CLOUD) LOWI_CLOUD.publish(p, u.file);
+  const fyOk = !window.LowiForYou || LowiForYou.passes(p); /* For You only shows insulin-friendly items (a video with a Recipe Book recipe) */
+  if (fyOk && window.LOWI_CLOUD) LOWI_CLOUD.publish(p, u.file);
   h.closeSheet();
   if (window.LowiNavMoves && TRIBE.showFeed) TRIBE.showFeed(); /* Oct 16: For You is a window in Cook */
   else { if (window.cmSetView) cmSetView("feed");
   if (h.tab() !== "foryou") h.go("foryou"); else if (window.cmSeg && $("#cmTrack")) { cmSeg("feed"); TRIBE.renderForYou(); } else TRIBE.renderForYou(); }
+  if (!fyOk) { setTimeout(() => h.toast(LowiForYou.note("post")), 160); return; }
   h.award("tribe-post", null, {amt:10, perDay:2, label:"Shared to For You"});
   setTimeout(() => { const f = $("#fyFeed"); if (f) f.scrollTop = 0; h.toast("Live in your For You"); }, 160);
 }
@@ -21295,6 +21304,10 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="nsCss" href="nutri-stats.css?v=20261024-142924">
 <script src="nutri-stats-core.js?v=20261024-142924"></script>
 <script src="nutri-stats.js?v=20261024-142924"></script>
+<link rel="stylesheet" id="fybCss" href="foryou.css?v=20261024-142924">
+<script src="foryou-core.js?v=20261024-142924"></script>
+<script src="inspo-core.js?v=20261024-142924"></script>
+<script src="foryou.js?v=20261024-142924"></script>
 <link rel="stylesheet" id="gnCss" href="glass-nav.css?v=20261024-142924">
 <link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261024-142924">
 <link rel="stylesheet" id="symCss" href="sym-home.css?v=20261024-142924">

@@ -40,7 +40,7 @@ function checkTutorial(root, news) {
     '  add "tutorial": "<step id>" when a step explains this change (update that step in tutorial-steps.js if the feature changed;\n' +
     '  add a new step for a new feature), or "tutorial": {"none": "why no tutorial step is needed"}. Step ids: ' + ids;
   if (news.tour != null) {
-    if (!Array.isArray(news.tour) || !news.tour.length) return 'news.json "tour" must be a list of step ids (part \'new\' in tutorial-steps.js), e.g. ["new-rooms"]; got ' + JSON.stringify(news.tour);
+    if (!Array.isArray(news.tour) || !news.tour.length) return 'news.json "tour" must be a list of step ids (part \'new\' in tutorial-steps.js), e.g. ["new-kitchen"]; got ' + JSON.stringify(news.tour);
     const bad = news.tour.filter(id => !S.STEPS.some(s => s.id === id));
     if (bad.length) return 'news.json "tour" names steps that do not exist: ' + bad.join(', ') + '. Add them to part \'new\' in tutorial-steps.js. Step ids: ' + ids;
   }

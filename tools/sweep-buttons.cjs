@@ -60,7 +60,7 @@ const LIST = () => {
         'misty-hold': () => holdSel('#spBubble'), 'misty-tap': () => tapSel('#spBubble'), gap: () => tapSel('#spFast'), 'gap-hold': () => holdSel('#spFast'),
         'move-bloom': () => tapSel('[data-orbit="move"]'), 'sleep-bloom': () => tapSel('[data-orbit="sleep"]'), 'water-bloom': () => tapSel('[data-orbit="water"]'),
         'fuel-tap': () => tapSel('[data-orbit="fuel"]'), 'fuel-hold': () => holdSel('[data-orbit="fuel"]'), 'scan-hold': () => holdSel('[data-orbit="scan"]'), 'comm-hold': () => holdSel('[data-orbit="settings"]'),
-        circles: () => api(() => { goTab('foryou'); setTimeout(() => window.LowiUserRooms && LowiUserRooms.open(), 1500); }), people: () => api(() => { goTab('foryou'); setTimeout(() => window.LowiPeopleDir && LowiPeopleDir.open(), 1500); }),
+        people: () => api(() => { goTab('foryou'); setTimeout(() => window.LowiPeopleDir && LowiPeopleDir.open(), 1500); }),
         ranking: () => api(() => { goTab('move'); setTimeout(() => window.LowiRanking && LowiRanking.open && LowiRanking.open(), 1500); }),
         'comm-menu': async () => { await api(() => goTab('foryou')); await H.sleep(2000); return tapSel('.rm-menu-btn'); },
         tour: () => api(() => { try { LowiTutorial.start({ from: 'sweep' }); } catch (e) { } }),
@@ -68,7 +68,7 @@ const LIST = () => {
     };
     /* profile tiles (Settings, Look & sound, Community, My swaps, Your glow, Finish profile) as screens: --screens g2e:app,g2e:look */
     screens.filter(s => /^g2e:/.test(s)).forEach(s => { OPEN[s] = async () => { await api(() => goTab('profile')); await H.sleep(2000); return P.evaluate(k => { try { return LowiG2E.open(k); } catch (e) { return String(e); } }, s.slice(4)); }; });
-    const resetAll = () => within(P.evaluate(() => { for (let i = 0; i < 3; i++) { try { window.LowiBackSwipe && LowiBackSwipe.escape(); } catch (e) { } } try { LowiUserRooms.close(); } catch (e) { } try { LowiPeopleDir.close(); } catch (e) { } try { LowiRanking.closeLadder(); } catch (e) { } try { LowiR2.closeAll(); } catch (e) { } try { window.closeSheet && closeSheet(); } catch (e) { } try { LowiSections.close(); } catch (e) { } try { LowiG2E.close(); } catch (e) { } try { LowiTutorial.isOn() && LowiTutorial.stop('sweep'); } catch (e) { } try { goTab('home'); } catch (e) { } }), 8000, 'reset').catch(() => { });
+    const resetAll = () => within(P.evaluate(() => { for (let i = 0; i < 3; i++) { try { window.LowiBackSwipe && LowiBackSwipe.escape(); } catch (e) { } } try { LowiPeopleDir.close(); } catch (e) { } try { LowiRanking.closeLadder(); } catch (e) { } try { LowiR2.closeAll(); } catch (e) { } try { window.closeSheet && closeSheet(); } catch (e) { } try { LowiSections.close(); } catch (e) { } try { LowiG2E.close(); } catch (e) { } try { LowiTutorial.isOn() && LowiTutorial.stop('sweep'); } catch (e) { } try { goTab('home'); } catch (e) { } }), 8000, 'reset').catch(() => { });
     const openScreen = async s => { if (OPEN[s]) { await resetAll(); await H.sleep(1200); await within(OPEN[s](), 15000, 'open ' + s); await H.sleep(2600); return; } await within(P.evaluate(t => { if (t !== 'home') window.goTab(t); }, s), 15000, 'goTab ' + s); await H.sleep(2200); };
     try {
         await ready(); report.build = await P.evaluate(() => (document.querySelector('meta[name="lowi-build"]') || {}).content || window.LOWI_BUILD || '').catch(() => '');

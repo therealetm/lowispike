@@ -124,7 +124,7 @@
         /* a sheet open on top of the section closes first, and the section stays */
         const BS = W.LowiBackSwipe, before = BS && BS.sig ? BS.sig() : '';
         if (openSheet()) {
-            /* Oct 24 (back and close sweep): through back-swipe.js, so a layer that listens for Escape on itself (Circles) closes too */
+            /* Oct 24 (back and close sweep): through back-swipe.js, so a layer that listens for Escape on itself closes too */
             try { if (BS && typeof BS.escape === 'function') BS.escape(); else { const t = D.activeElement && D.activeElement !== D.body ? D.activeElement : D; t.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true, cancelable: true })); } } catch (x) { }
             setTimeout(() => {
                 if (BS && BS.sig && BS.sig() !== before && tabOf() !== 'home') { try { history.pushState({ lowiSec: tabOf() }, ''); } catch (x) { } }

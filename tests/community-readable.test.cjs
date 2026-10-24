@@ -57,7 +57,7 @@ test('the Copy link button moved into the community menu; the menu only offers t
   assert.doesNotMatch(js, /rm-view-top|class="rm-copy"/);
   assert.match(js, /\['invite','🔗',tr\('mInvite'\)\]/);
   assert.match(js, /if\(VIEWS\[view\]\)it\.push\(\['copyview'/);
-  for (const k of ['community', 'hereNow', 'menu', 'mPeople', 'mProfile', 'mInvite', 'mCopyAff', 'mCopyCreate', 'mSettings', 'mWelcome']) assert.match(js, new RegExp(k + ":\\['[^']+','[^']+','[^']+'\\]"), 'EN/DE/ES ' + k);
+  for (const k of ['community', 'hereNow', 'menu', 'mDir', 'mProfile', 'mInvite', 'mCopyAff', 'mCopyCreate', 'mSettings', 'mWelcome']) assert.match(js, new RegExp(k + ":\\['[^']+','[^']+','[^']+'\\]"), 'EN/DE/ES ' + k);
 });
 
 /* Channel list: built only from real data; with none it shows honest empty lines, never invented people, counts or messages. */
@@ -70,10 +70,10 @@ function rows(community) {
 }
 test('channels: empty data gives honest empty states, no invented members or counts', () => {
   const r = rows({ latest: () => null, unread: () => 0, directed: () => ({ list: [] }) });
-  assert.deepEqual(r.map(x => x.k), ['galaxy', 'replies', 'room', 'aff', 'create']);
+  assert.deepEqual(r.map(x => x.k), ['galaxy', 'replies', 'aff', 'create'], 'one chat for everyone: no room row (Oct 24 2026)');
   assert.equal(r[0].p, 'No messages yet. Say hi to everyone.'); assert.equal(r[0].n, 0);
   assert.equal(r[1].p, 'Nothing for you yet.'); assert.equal(r[1].dis, true);
-  assert.ok(!/here now/.test(r[2].p), 'no presence count without a room');
+  assert.ok(!r.some(x => /here now|Room \d/.test(x.p || '')), 'no presence count or room number invented');
 });
 test('channels: real newest message, unread count and replies are shown as they are', () => {
   const r = rows({ latest: () => ({ uid: 'u1', by: 'Ana', text: 'Day 3 done', ts: Date.now() - 120000 }), unread: () => 3, directed: () => ({ list: [{ uid: 'u2', by: 'Ben', text: '@you nice', ts: Date.now(), seen: false }, { uid: 'u3', by: 'Cy', text: 'old', ts: 1, seen: true }].reverse() }) });

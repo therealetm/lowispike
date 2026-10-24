@@ -26,10 +26,10 @@
                Escape handler, but this signature did not change, so section-nav.js closed Community for Home as well. */
             D.querySelectorAll('#cgThread[data-open]').length;
     }
-    /* Oct 24 (back and close sweep): some layers listen for Escape on themselves only (the Circles list, user-rooms.js, keys on
-       its own .ur element). Escape sent to the document never reached it: back from Community with Circles open went Home and
-       left Circles on top of Home, and the next back left the app. Send Escape to the top open layer unless focus is already in
-       it; it still bubbles up to the document, so layers that listen there close exactly as before. */
+    /* Oct 24 (back and close sweep): a layer can listen for Escape on itself only (keys on its own element). Escape sent to the
+       document never reached it: back from Community went Home and left that layer on top of Home, and the next back left the
+       app. Send Escape to the top open layer unless focus is already in it; it still bubbles up to the document, so layers that
+       listen there close exactly as before. (The layer that showed this first, Circles, was removed on Oct 24 2026.) */
     function topLayer() {
         try {
             const all = Array.prototype.slice.call(D.querySelectorAll('[aria-modal="true"], dialog[open]') || []);

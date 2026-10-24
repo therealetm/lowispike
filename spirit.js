@@ -1130,7 +1130,9 @@
         const J = window.LowiMealJournal, flyURL = photoURL;
         let pic = null;
         if (J && photoURL && !form.dataset.edit) {
-            try { const m = typeof form.__lowiMeal === 'function' ? form.__lowiMeal() : null; const ai = m && J.estimate(m, { lvl: seed.lvl, note: m.note, low: m.low }); if (ai) seed.ai = ai; } catch (e) {}
+            /* Oct 24: plus the spike check exactly as the photo screen showed it (meal-result.js writeForm), for sharing */
+            const scan = { level: String(data.get('spike') || ''), net: data.get('spikeNet'), score: data.get('spikeScore'), drink: data.get('spikeDrink') === '1', fv: String(data.get('foodVerdict') || '') };
+            try { const m = typeof form.__lowiMeal === 'function' ? form.__lowiMeal() : null; const ai = m && J.estimate(m, { lvl: seed.lvl, note: m.note, low: m.low, scan }); if (ai) seed.ai = ai; } catch (e) {}
             pic = await Promise.race([J.prepare(photoFile || photoURL), new Promise(r => setTimeout(() => r(null), 4000))]);
             if (pic && pic.thumb) seed.photo = pic.thumb;
         }

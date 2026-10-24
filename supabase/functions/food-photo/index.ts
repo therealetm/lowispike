@@ -207,6 +207,75 @@ const SCHEMA = {
   required: ["is_food", "dishes", "confidence", "note", "lowispike"],
 };
 
+// Oct 24 (Emmanuel: a meal shared in Community showed English foods in a German chat): when someone shares a scanned meal,
+// the app asks once for the food names and portions in English, German and Spanish, so each viewer reads them in their
+// own language. Only names and portions go in, only their translations come out; nothing is estimated or stored. It
+// shares the name-read guard (12 per 10 minutes, 60 a day) and never uses a photo read.
+const TR_MAX = 12, TR_LEN = 60;
+export function trList(v: unknown): string[] {
+  return (Array.isArray(v) ? v : []).slice(0, TR_MAX).map((s) => String(s == null ? "" : s).replace(/[\u0000-\u001f<>{}`]/g, " ").replace(/\s+/g, " ").trim().slice(0, TR_LEN));
+}
+const TR_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    items: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          en: { type: "STRING" }, de: { type: "STRING" }, es: { type: "STRING" },
+          en_portion: { type: "STRING" }, de_portion: { type: "STRING" }, es_portion: { type: "STRING" },
+        },
+        required: ["en", "de", "es", "en_portion", "de_portion", "es_portion"],
+      },
+    },
+  },
+  required: ["items"],
+};
+function trPrompt(names: string[], portions: string[]): string {
+  const rows = names.map((n, i) => (i + 1) + ". " + JSON.stringify(n) + " | " + JSON.stringify(portions[i] || "")).join("\n");
+  return "Translate each food name and its portion into English (en), German (de) and Spanish (es). Keep the same order and " +
+    "exactly " + names.length + " items. Use short everyday food words a home cook would write, natural capitalisation for " +
+    "each language (German nouns capitalised), no brand names, no notes. Keep numbers and units as they are (2 eggs -> 2 Eier). " +
+    "If a portion is empty, return an empty string for it. Items (name | portion):\n" + rows;
+}
+async function translate(key: string, names: string[], portions: string[]) {
+  for (const model of MODELS) {
+    const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: trPrompt(names, portions) }] }],
+        generationConfig: { temperature: 0, maxOutputTokens: 1024, responseMimeType: "application/json", responseSchema: TR_SCHEMA },
+      }),
+    });
+    if (r.status === 404 || r.status === 400 && /not found|not supported|unknown model/i.test(await r.clone().text())) continue;
+    if (r.status === 429) return { status: 429, body: { error: "busy", mode: "translate" } };
+    if (!r.ok) return { status: 502, body: { error: "ai_failed", mode: "translate" } };
+    const j = await r.json();
+    const text = j?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || "").join("") || "";
+    try {
+      const data = JSON.parse(text);
+      const items = Array.isArray(data?.items) ? data.items : [];
+      if (items.length !== names.length) return { status: 502, body: { error: "ai_failed", mode: "translate" } };
+      const clip = (s: unknown) => String(s == null ? "" : s).replace(/[\u0000-\u001f<>{}`]/g, " ").replace(/\s+/g, " ").trim().slice(0, TR_LEN);
+      return {
+        status: 200,
+        body: {
+          mode: "translate", model,
+          items: items.map((x: Record<string, unknown>) => ({
+            en: clip(x.en), de: clip(x.de), es: clip(x.es),
+            en_portion: clip(x.en_portion), de_portion: clip(x.de_portion), es_portion: clip(x.es_portion),
+          })),
+        },
+      };
+    } catch (_e) {
+      return { status: 502, body: { error: "ai_failed", mode: "translate" } };
+    }
+  }
+  return { status: 502, body: { error: "no_model", mode: "translate" } };
+}
+
 async function gemini(key: string, image: string, mime: string, lang: string, name = "") {
   let last = 0;
   for (const model of MODELS) {
@@ -242,7 +311,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
   const key = Deno.env.get("GEMINI_API_KEY") || "";
   if (req.method === "GET") {
-    const base = { ok: true, configured: !!key, limit: DAY_MAX, name: true };
+    const base = { ok: true, configured: !!key, limit: DAY_MAX, name: true, translate: true };
     const u = await who(req);
     if (!u) return out(req, 200, base);
     const tz = zone(new URL(req.url).searchParams.get("tz"));
@@ -255,8 +324,20 @@ Deno.serve(async (req) => {
   if (!key) return out(req, 503, { error: "not_configured" });
   const u = await who(req);
   if (!u) return out(req, 401, { error: "sign_in" });
-  let body: { image?: string; mime?: string; lang?: string; tz?: string; text?: string };
+  let body: { image?: string; mime?: string; lang?: string; tz?: string; text?: string; translate?: { names?: unknown; portions?: unknown } };
   try { body = await req.json(); } catch (_e) { return out(req, 400, { error: "bad_request" }); }
+  if (body.translate && !body.image) {
+    const names = trList(body.translate.names), portions = trList(body.translate.portions);
+    if (!names.length || names.some((n) => n.length < 1)) return out(req, 400, { error: "bad_request", mode: "translate" });
+    if (!nameBurst(u.id)) return out(req, 429, { error: "busy", mode: "translate" });
+    try {
+      const r = await translate(key, names, portions);
+      return out(req, r.status, r.body);
+    } catch (_e) {
+      console.error("food-photo: translate failed");
+      return out(req, 502, { error: "ai_failed", mode: "translate" });
+    }
+  }
   if (body.text != null && !body.image) {
     const name = nameText(body.text), nl = ["en", "de", "es"].includes(String(body.lang)) ? String(body.lang) : "en";
     if (name.length < 2) return out(req, 400, { error: "bad_name" });

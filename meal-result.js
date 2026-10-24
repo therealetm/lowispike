@@ -498,6 +498,15 @@
             };
             for (const k of KEYS) put(k, fv.macros ? String(fv.macros[k]) : '');
             put('lvl', fv.lvl || '');
+            /* Oct 24 (Emmanuel: "it told them it doesn't spike, but in the community it says Wahrscheinlich Spike"): lvl above is
+               the XP level (a NEIN meal is logged like a spike). The spike check this screen showed is kept on its own, so a meal
+               shared to Community carries exactly this verdict and is never re-estimated there. */
+            const vv = fv.verdict || {};
+            put('spike', fv.macros && /^(low|mid|high)$/.test(vv.level) ? vv.level : '');
+            put('spikeNet', fv.macros && Number.isFinite(+vv.net) ? String(Math.round(+vv.net)) : '');
+            put('spikeScore', fv.macros && Number.isFinite(+vv.score) ? String(Math.round(+vv.score)) : '');
+            put('spikeDrink', fv.macros && vv.drink ? '1' : '');
+            put('foodVerdict', fv.macros && vv.food && /^(JA|SELTEN|NEIN)$/.test(vv.food.verdict) ? vv.food.verdict : '');
             if (titleIn && (!typed || !titleIn.value.trim())) { titleIn.value = fv.title; typed = false; }
             form.classList.toggle('mr-has', !!fv.macros);
         };

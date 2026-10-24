@@ -2,6 +2,29 @@
    Look: VISUAL-MASTER.md (navy fog depth from Cellscape VR, friendly cell from "What is a Cell?", glow language from Kurzgesagt).
    The user's see-through cell floats in the middle of a 360 bloodstream: flowing red cells (instanced), plasma particles,
    light shafts, exponential fog. Orbit with drag, pinch/wheel zoom, gyro offsets, glides to body places. */
+/* Oct 24 2026 (Emmanuel: "I tried to fly into a world and it crashed"): one frame that throws must never end the world. Before this,
+   frame() asked for the next screen refresh only at its very end, so a single error in step() or renderer.render() stopped the loop
+   for good: the companion, the camera and every trip froze until the app was closed. Each part of a frame now runs through this guard:
+   the error is caught, logged (the first three, then at most once every 5 s) and reported, and the next frame runs as normal.
+   streak = frames in a row that failed; ok() ends a streak. Pure (no DOM): tests/frame-guard.test.cjs. */
+export function frameGuard(report, clock) {
+    const now = clock || (() => (typeof performance !== 'undefined' ? performance.now() : Date.now()));
+    let count = 0, streak = 0, lastLog = -1e9, last = null;
+    return {
+        run(part, fn) {
+            try { fn(); return true; } catch (e) {
+                count++; streak++;
+                const message = String((e && e.message) || e).slice(0, 200), t = now();
+                last = { part, message, count, streak, at: t };
+                if (count <= 3 || t - lastLog > 5000) { lastLog = t; try { console.warn('world3d frame error, the world keeps running (' + part + '):', message); } catch (x) { } }
+                if (typeof report === 'function') { try { report(last); } catch (x) { } }
+                return false;
+            }
+        },
+        ok() { streak = 0; },
+        get count() { return count; }, get streak() { return streak; }, get last() { return last; }
+    };
+}
 export function createWorld(THREE, canvas, opts) {
     opts = opts || {};
     const small = !!opts.small, places = opts.places || [];
@@ -713,8 +736,22 @@ export function createWorld(THREE, canvas, opts) {
         scene.background.copy(curBg); scene.fog.color.copy(curBg);
         cosmosStep(t, dt);
     }
+    /* a step() that keeps failing while the camera is gliding somewhere (half a second of bad frames in a row) finishes the glide at
+       once, so a trip can never hang half-way with the camera parked between two places */
+    const guard = frameGuard(e => {
+        if (e.streak === 30 && rig.fly) { try { const to = rig.fly.to; if (to && to.t) rig.target.copy(to.t); if (to && isFinite(to.d)) rig.dist = to.d; } catch (x) { } rig.fly = null; rig.flyYaw = null; rig.vy = 0; rig.vp = 0; }
+        if (typeof opts.onFrameError === 'function') { try { opts.onFrameError(e); } catch (x) { } }
+    });
+    /* a frame hook (the companion's flight, a trip, Home's camera) that throws is skipped for that frame, as before, now with the same
+       quiet logging, so one broken hook can't flood the console 60 times a second */
+    const hookGuard = frameGuard(e => { if (typeof opts.onFrameError === 'function') { try { opts.onFrameError(e); } catch (x) { } } });
     function frame(now) {
         raf = 0; if (!running) return;
+        /* the next refresh is asked for first: whatever this frame throws, the world keeps running (frameGuard above) */
+        raf = requestAnimationFrame(frame);
+        guard.run('frame', () => frameWork(now));
+    }
+    function frameWork(now) {
         const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60; last = now;
         frames.push(dt); if (frames.length > 90) frames.shift();
         if (frames.length >= 90) {
@@ -739,10 +776,14 @@ export function createWorld(THREE, canvas, opts) {
         odd = calm(now) && !paintNow && !inTransit() ? !odd : false;
         paintNow = false;
         if (!odd) {
-            if (!opts.shouldRender || opts.shouldRender()) { const d = Math.min(0.1, acc); step(d); frameFns.forEach(fn => { try { fn(d, now); } catch (e) { console.warn('world3d onFrame', e && e.message); } }); renderer.render(scene, camera); }
-            acc = 0;
+            const d = Math.min(0.1, acc); acc = 0; /* reset before the work: a failing frame does not pile its time onto the next one */
+            if (!opts.shouldRender || opts.shouldRender()) {
+                const stepped = guard.run('step', () => step(d));
+                frameFns.forEach(fn => hookGuard.run('onFrame', () => fn(d, now)));
+                const drawn = guard.run('render', () => renderer.render(scene, camera));
+                if (stepped && drawn) guard.ok();
+            }
         }
-        raf = requestAnimationFrame(frame);
     }
     let acc = 0, odd = false, lastIn = 0;
     /* a world transition is running (a fly-to / leaving a place: body-world-regions.js html.bwr-warping; Misty going through a wall,

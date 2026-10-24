@@ -134,7 +134,7 @@
             canvas = D.createElement('canvas'); canvas.className = 'bw3-canvas'; canvas.setAttribute('aria-hidden', 'true');
             canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); ctxLost(); });
             canvas.addEventListener('webglcontextrestored', () => ctxBack());
-            world = S.createWorld(THREE, canvas, { places: PLACES, small: W.innerWidth < 380, dprCap: dprCap({ w: W.innerWidth, mem: navigator.deviceMemory }), theme: themeNow(), shouldRender });
+            world = S.createWorld(THREE, canvas, { places: PLACES, small: W.innerWidth < 380, dprCap: dprCap({ w: W.innerWidth, mem: navigator.deviceMemory }), theme: themeNow(), shouldRender, onFrameError });
             Object.assign(api, { THREE, scene: world.scene, camera: world.camera, renderer: world.renderer, hub: world.hub, regions: world.regions, rig: world.rig, memU: world.memU || null });
             pendingFrames.forEach(fn => { const t = pendingBind.get(fn); const off = world.onFrame(fn); if (t) t.bind(off); }); pendingFrames.clear(); pendingBind.clear();
             api.ready = true; api.state = 'ready'; H.classList.add('bw3-ready');
@@ -147,6 +147,10 @@
     /* Oct 24: the Oct 23 veil that faded body places behind Home bubbles is gone (see body-world-3d-scene.js placesLook) */
     api.placesLook = () => (world && world.placesLook ? world.placesLook() : null);
     api.cosmosLook = () => (world && world.cosmosLook ? world.cosmosLook() : null);
+    /* Oct 24 (Emmanuel: "I tried to fly into a world and it crashed"): a frame that throws no longer stops the world (scene frameGuard).
+       Here we only count it, so a check (or the next agent) can see it happened: LowiWorld3D.frameErrors / lastFrameError. */
+    api.frameErrors = 0; api.lastFrameError = null;
+    function onFrameError(e) { api.frameErrors++; api.lastFrameError = e ? { part: e.part, message: e.message, streak: e.streak } : null; }
     /* graphics taken away: keep everything (Misty, the camera, the flight) frozen in place, and pick up again when they come back */
     let lostTimes = [], lostWait = 0, lostSeen = 0;
     function ctxLost() {
@@ -165,7 +169,10 @@
         api.lost = false; clearInterval(lostWait); H.classList.remove('bw3-lost');
         if (!world) return;
         api.restored = (api.restored || 0) + 1;
-        try { if (!D.hidden) world.start(); } catch (e) { }
+        /* three.js rebuilds every buffer, texture and shader on its own restore handler (it runs right after this one, in the same
+           event), and they upload again with the next draw. So the scene is drawn once at once (no blank or black frame on the way
+           back) and the loop picks up where it stopped. */
+        try { if (!D.hidden) { world.start(); setTimeout(() => { try { if (world && !api.lost && world.renderOnce) world.renderOnce(); } catch (e) { } }, 0); } } catch (e) { }
         try { W.dispatchEvent(new CustomEvent('lowi:world3d-restored', { detail: api })); } catch (e) { }
     }
     function fail(why) {

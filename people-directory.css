@@ -1,0 +1,45 @@
+/* LOWiSPIKE People directory (Oct 24, 2026), people-directory.js. Dark Liquid Glass like the Community sheets (.rm-card):
+   deep blue glass, the cyan glass edge, light ink. A tall sheet on the iPhone, a centred panel on the iPad, safe areas kept.
+   The person card (the app's .cs-overlay sheet) opens above it. Own --pd-* tokens only: no shared custom property names. */
+.pd-ov{--pd-ink:#f2f8ff;--pd-ink2:#b9cce6;--pd-edge:rgba(143,231,255,.38);--pd-glass:linear-gradient(180deg,rgba(14,28,64,.92),rgba(6,12,32,.95));
+  position:fixed;inset:0;z-index:2147482990;display:flex;align-items:flex-end;justify-content:center;background:rgba(2,4,14,.55);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding-top:calc(env(safe-area-inset-top,0px) + 24px);box-sizing:border-box;
+  animation:pdFade .2s ease both}
+.cs-overlay.pd-above{z-index:2147482995!important}
+.pd-card{width:min(560px,100%);height:min(86vh,760px);max-height:100%;display:flex;flex-direction:column;gap:12px;box-sizing:border-box;
+  padding:18px max(18px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));
+  border-radius:26px 26px 0 0;background:var(--pd-glass);color:var(--pd-ink);border:1px solid var(--pd-edge);border-bottom:0;
+  box-shadow:0 -14px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.12);-webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4);
+  animation:pdUp .28s cubic-bezier(.2,.8,.2,1) both}
+@media (min-width:700px){.pd-ov{align-items:center;padding:calc(env(safe-area-inset-top,0px) + 24px) 24px calc(env(safe-area-inset-bottom,0px) + 24px)}
+  .pd-card{height:min(80vh,780px);border-radius:26px;border-bottom:1px solid var(--pd-edge);padding-bottom:16px}}
+.pd-head{display:flex;align-items:flex-start;gap:12px}
+.pd-ht{flex:1;min-width:0}
+.pd-title{margin:0;font-size:22px;line-height:1.2;font-weight:700;letter-spacing:-.01em;color:var(--pd-ink)}
+.pd-sub{margin:4px 0 0;font-size:14px;line-height:1.35;color:var(--pd-ink2)}
+.pd-ov button.pd-x{appearance:none;flex:none;width:44px;height:44px;min-height:44px;padding:0;margin:0;border-radius:50%;display:grid;place-items:center;
+  border:1px solid var(--pd-edge);background:rgba(143,231,255,.1);color:var(--pd-ink);cursor:pointer;box-shadow:none;-webkit-tap-highlight-color:transparent}
+.pd-x svg{width:20px;height:20px}
+.pd-search{display:flex;align-items:center;gap:8px;padding:0 14px;border-radius:14px;border:1px solid var(--pd-edge);background:rgba(3,8,24,.7);color:var(--pd-ink2)}
+.pd-search svg{width:18px;height:18px;flex:none}
+.pd-ov input.pd-q{appearance:none;-webkit-appearance:none;flex:1;min-width:0;min-height:44px;border:0;outline:0;background:transparent;color:var(--pd-ink);font:16px/1.2 inherit;font-family:inherit;padding:10px 0;box-shadow:none}
+.pd-q::placeholder{color:#9fb6d3;opacity:1}
+.pd-q::-webkit-search-cancel-button{filter:invert(1) brightness(1.4)}
+.pd-search:focus-within{border-color:#9fe6ff;box-shadow:0 0 0 2px rgba(159,230,255,.35)}
+.pd-msg{margin:6px 2px;font-size:15px;line-height:1.4;color:var(--pd-ink2)}
+.pd-list{list-style:none;margin:0 -6px;padding:0 6px 6px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.pd-list li{margin:0;padding:0}
+.pd-ov button.pd-row{appearance:none;width:100%;display:flex;align-items:center;gap:12px;min-height:60px;padding:8px 12px;margin:0;box-sizing:border-box;text-align:left;
+  border-radius:16px;border:1px solid rgba(143,231,255,.16);background:rgba(143,231,255,.06);color:var(--pd-ink);font:inherit;font-family:inherit;box-shadow:none;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;transition:background .12s ease,transform .12s ease}
+.pd-ov button.pd-row:active{background:rgba(143,231,255,.16);transform:scale(.985)}
+.pd-ov button.pd-row:focus-visible,.pd-ov button.pd-x:focus-visible{outline:2px solid #9fe6ff;outline-offset:2px}
+.pd-pic{flex:none;width:44px;height:44px;border-radius:50%;object-fit:cover;background:rgba(143,231,255,.12);border:1px solid rgba(143,231,255,.3)}
+.pd-ini{display:grid;place-items:center;font-size:16px;font-weight:700;color:#0b1d3f;background:var(--pd-h,#9fe6ff);border-color:rgba(255,255,255,.35)}
+.pd-n{flex:1;min-width:0;font-size:16px;font-weight:600;line-height:1.25;color:var(--pd-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pd-tag{flex:none;font-size:12px;line-height:1;padding:5px 8px;border-radius:999px;color:#c9ffe9;background:rgba(124,240,196,.14);border:1px solid rgba(124,240,196,.4)}
+.pd-chev{flex:none;width:18px;height:18px;color:var(--pd-ink2)}
+html[data-theme=light] .pd-ov{background:rgba(10,20,40,.35)}
+@keyframes pdFade{from{opacity:0}to{opacity:1}}
+@keyframes pdUp{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.pd-ov,.pd-card{animation:none}.pd-ov button.pd-row{transition:none}.pd-ov button.pd-row:active{transform:none}}

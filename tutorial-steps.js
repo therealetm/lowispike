@@ -768,6 +768,15 @@
             }
         },
         {
+            id: 'new-people', area: 'new', where: 'community', target: ['.rm-menu-btn', '.rm-name'], covers: ['people-directory'],
+            title: { en: 'Everyone in LOWiSPIKE', de: 'Alle bei LOWiSPIKE', es: 'Todos en LOWiSPIKE' },
+            text: {
+                en: 'New: People in the Community menu lists everyone in the app, offline too, with name and photo. Pick one for their profile.',
+                de: 'Neu: Leute im Community-Menü zeigt alle in der App, auch offline, mit Name und Foto. Wähle jemanden für das Profil.',
+                es: 'Nuevo: Personas, en el menú de Comunidad, muestra a todos en la app, también sin conexión, con nombre y foto. Elige a alguien.'
+            }
+        },
+        {
             id: 'new-humans', area: 'new', where: 'community', target: null, covers: ['humans-only-ranking'],
             title: { en: 'Only real people', de: 'Nur echte Menschen', es: 'Solo personas reales' },
             text: {

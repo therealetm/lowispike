@@ -202,5 +202,5 @@ if(!D.getElementById('crCss')){const l=D.createElement('link');l.id='crCss';l.re
 function boot(){if(!D.body){setTimeout(boot,50);return;}new MutationObserver(queue).observe(D.body,{childList:true,subtree:true});queue();checkInvite();}
 boot();
 /* openRoom is no longer exported: Misty's room is retired (Oct 15), so no screen offers a door to it. */
-root.LowiCellRoom={onePerName,closeRoom,openTree,closeTree,isOpen:()=>!!(R.ov||T.ov),friends:()=>friends().list.slice(),room:()=>read(K.RKEY,K.cleanRoom)};
+root.LowiCellRoom={onePerName,closeRoom,openTree,closeTree,people:()=>onePerName(roomPeople()),isOpen:()=>!!(R.ov||T.ov),friends:()=>friends().list.slice(),room:()=>read(K.RKEY,K.cleanRoom)};
 })(window);

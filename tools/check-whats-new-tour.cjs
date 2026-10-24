@@ -1,6 +1,6 @@
 'use strict';
 /* What's New mini tour, in a real browser (Oct 23 2026). node tools/check-whats-new-tour.cjs [root|url] [iphone|ipad] [shotPrefix]
-   A: an unseen release plays ONE tour in the tutorial card: intro, then each step opens its place (Rooms, Move, Seller Zone, Home)
+   A: an unseen release plays ONE tour in the tutorial card: intro, then each step opens its place (Move, Seller Zone, Home)
       and points at the new thing; the last card goes back home with nothing left open. Reload: nothing shows again.
    B: Skip on the first card ends it at once; reload: nothing shows again.
    Locally a test news entry is injected into version.json; against the live site the real one is used. */
@@ -19,7 +19,7 @@ async function run(name, fn) {
   await R.ctx.addInitScript(KEEP);
   if (!live) await P.route(u => /\/version\.json/.test(String(u)), async r => {
     const res = await r.fetch(); const v = await res.json();
-    v.news = Object.assign({}, v.news, { id: 'wnt-' + v.build, tour: ['new-rooms', 'new-deadlift', 'new-seller', 'new-sleep', 'new-sync'], history: [{ id: 'wnt-' + v.build, tour: ['new-rooms', 'new-deadlift', 'new-seller'] }, { id: 'wnt-older', tour: ['new-sleep', 'new-sync'] }] });
+    v.news = Object.assign({}, v.news, { id: 'wnt-' + v.build, tour: ['new-deadlift', 'new-seller', 'new-sleep', 'new-sync'], history: [{ id: 'wnt-' + v.build, tour: ['new-deadlift', 'new-seller'] }, { id: 'wnt-older', tour: ['new-sleep', 'new-sync'] }] });
     r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(v) });
   });
   console.log(name, size);
@@ -41,8 +41,7 @@ const noRepeat = async (R, P) => { await P.reload({ waitUntil: 'load' }); await 
     ok(s.on && s.mode === 'news' && s.step === 'new-intro', 'one mini tour opens on its own: ' + s.step + ' / ' + s.title);
     ok(/^Neu ·/.test(s.count) && s.skip === 'Überspringen' && /Los geht/.test(s.cta), 'tutorial card: "' + s.count + '", "' + s.skip + '", "' + s.cta + '"');
     await shot(R, '1-intro');
-    s = await next(P, 'new-rooms'); ok(s.step === 'new-rooms' && s.ur && s.hole && !s.held, 'Räume: Rooms open, card above it, spotlight on Create (ur ' + s.ur + ', held ' + s.held + ')'); await shot(R, '2-rooms');
-    s = await next(P, 'new-deadlift'); ok(s.step === 'new-deadlift' && !s.ur && s.tab === 'tab-move' && s.dl && s.hole, 'Kreuzheben: Rooms closed, Move open, spotlight on Kreuzheben (' + s.tab + ')'); await shot(R, '3-deadlift');
+    s = await next(P, 'new-deadlift'); ok(s.step === 'new-deadlift' && !s.ur && s.tab === 'tab-move' && s.dl && s.hole, 'Kreuzheben: Move open, spotlight on Kreuzheben (' + s.tab + ')'); await shot(R, '3-deadlift');
     s = await next(P, 'new-seller'); ok(s.step === 'new-seller' && s.shop && s.sz === 'sz' && s.hole && !s.held, 'Seller Zone: shop open on the Seller Zone tab, card above it (' + s.sz + ')'); await shot(R, '4-seller');
     s = await next(P, 'new-sleep'); ok(s.step === 'new-sleep' && !s.shop && s.tab === 'tab-home' && s.hole, 'Sleep: shop closed, Home, spotlight on Sleep'); await shot(R, '5-sleep');
     s = await next(P, 'new-sync'); ok(s.step === 'new-sync' && s.cta === 'Alles klar' && !s.skip, 'last card: "' + s.cta + '", no skip'); await shot(R, '6-sync');

@@ -67,12 +67,11 @@ test('Freund hinzufügen: one entry per name (Sim, Fixture, T showed up to six t
   assert.ok(/function personOf\(uid\)\{return roomPeople\(\)\.find/.test(s), 'friends you already have are still found by id');
 });
 
-test('server: flag from our own tools\' sign-up e-mails, trigger-owned, Circles refuse bots', () => {
+test('server: flag from our own tools\' sign-up e-mails, trigger-owned', () => {
   const q = R('supabase/proposals/bot_flag_20261023.sql');
   assert.ok(q.includes("u.email like 'crowd%@crowd.lowispike.invalid'"));
   assert.ok(q.includes("u.email like 'lowispike.gatetest+%@gmail.com'"));
   assert.ok(q.includes('create trigger profiles_zz_botflag before insert or update on public.profiles'));
-  assert.ok(q.includes('create trigger user_room_members_zz_nobots'));
   assert.ok(!/delete from public\.profiles|delete from auth\.users|delete from public\.community/i.test(q), 'no account or message is deleted');
   const crowd = R('tools/community-crowd/crowd.cjs');
   assert.ok(crowd.includes('@crowd.lowispike.invalid'), 'the crowd tool signs up with that domain');
@@ -83,7 +82,7 @@ test('test accounts (Lena / Jonas / Mia Test from the check scripts): hidden by 
   const H = require('../hidden-accounts.js');
   B.setSelf(HUMAN); B.set([BOT], [TEST]);
   assert.equal(B.isTest({ uid: TEST, n: 'Lena' }), true);
-  assert.equal(B.isBot({ uid: TEST, n: 'Lena' }), true, 'off the Ranking and the friend / Circle lists');
+  assert.equal(B.isBot({ uid: TEST, n: 'Lena' }), true, 'off the Ranking and the friend lists');
   assert.equal(H.isHidden({ uid: TEST, n: 'Lena' }), true, 'hidden everywhere, like the known test accounts');
   assert.equal(H.isHidden({ uid: BOT, n: 'Crowd' }), false, 'bots stay in the Community');
   assert.equal(B.isBot({ uid: TEST2, n: 'Lena' }), false, 'a real Lena without the marker stays');
@@ -94,10 +93,10 @@ test('test accounts (Lena / Jonas / Mia Test from the check scripts): hidden by 
 });
 
 test('check scripts mark their accounts and clean up', () => {
-  const ta = R('tools/user-rooms/test-account.cjs'), ck = R('tools/user-rooms/check.cjs'), q = R('supabase/proposals/bot_flag_20261023.sql');
+  const ta = R('tools/test-account.cjs'), ck = R('tools/one-chat/check.cjs'), q = R('supabase/proposals/bot_flag_20261023.sql');
   assert.ok(ta.includes("updateUser({ data: { lowi_test: true } })"));
   assert.ok(ta.includes(".from('profiles').delete().eq('id', uid)"));
-  assert.ok(ck.includes('await TA.markTest(page)') && ck.includes('TA.cleanup(d.page)'));
+  assert.ok(ck.includes('await TA.markTest(page)') && ck.includes('TA.cleanup(page)'));
   assert.ok(q.includes("(u.raw_user_meta_data->>'lowi_test')='true'"));
   assert.ok(q.includes('create trigger auth_users_lowiflags after update of raw_user_meta_data on auth.users'));
 });

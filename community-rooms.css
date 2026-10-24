@@ -1,4 +1,4 @@
-/* Community header, menu and rooms sheet (community-rooms-ui.js).
+/* Community header and menu (community-rooms-ui.js).
    21 Oct 2026 evening rebuild (Eman: "cramped, old, not futuristic, we can't even see the writing"; inspiration: Eden's community):
    Eden's structure in LOWiSPIKE's own look. Dark translucent glass on the galaxy, glowing cyan edges instead of white ones,
    high-contrast type (every text >= WCAG AA 4.5:1, checked by tools/community-hub/probe.cjs), lots of air, no white pills.
@@ -37,7 +37,6 @@
 .rm-banner{display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-radius:16px;background:var(--rm-glass-hi);color:var(--rm-ink);font-size:14px;line-height:1.35;border:1px solid var(--rm-edge);box-shadow:0 0 14px var(--rm-glow)}
 .rm-banner[data-on]{display:flex}.rm-banner span{flex:1 1 160px;overflow-wrap:anywhere}
 #cmPaneChat[data-spirit-chat] .rm-banner button{appearance:none;border:0;border-radius:999px;padding:8px 16px;min-height:36px;font:600 14px/1 inherit;font-family:inherit;cursor:pointer}
-#cmPaneChat[data-spirit-chat] .rm-yes{background:#7cf0c4;color:#062218}#cmPaneChat[data-spirit-chat] .rm-no{background:rgba(143,231,255,.14);color:var(--rm-ink);box-shadow:inset 0 0 0 1px var(--rm-edge)}
 /* Chat tab: the galaxy game is not drawn at all underneath (its energy loop sees it hidden and stops) */
 #cmPaneChat[data-spirit-chat][data-room] #cgGalaxy{display:none}
 /* Community menu (Eden's dropdown) */
@@ -49,21 +48,9 @@
 .rm-menu-card button{appearance:none;display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:0 14px;border:0;border-radius:14px;background:transparent;color:var(--rm-ink);font:500 15px/1.2 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;text-align:left;cursor:pointer}
 .rm-menu-card button:hover,.rm-menu-card button:focus-visible{background:rgba(143,231,255,.12);outline:none;box-shadow:inset 0 0 0 1px rgba(143,231,255,.45)}
 .rm-mi{width:24px;text-align:center;font-size:18px}
-/* Rooms sheet: dark glass like the rest */
+/* bottom sheet base (the Community welcome sheet, .rm-ob) */
 .rm-sheet{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:flex-end;justify-content:center;background:rgba(2,4,14,.55)}
-.rm-card{width:min(560px,100%);max-height:min(78vh,640px);display:flex;flex-direction:column;gap:12px;padding:18px 18px calc(18px + var(--sab,0px));border-radius:26px 26px 0 0;background:var(--rm-glass-hi);color:var(--rm-ink);border:1px solid rgba(143,231,255,.38);border-bottom:0;box-shadow:0 -14px 44px rgba(0,0,0,.5),0 0 26px rgba(28,247,249,.18);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px)}
-.rm-card header{display:flex;align-items:center;justify-content:space-between}.rm-h{margin:0;font-size:20px;letter-spacing:-.01em}
 .rm-x{appearance:none;border:1px solid var(--rm-edge);background:rgba(143,231,255,.08);color:var(--rm-ink);width:40px;height:40px;border-radius:50%;font-size:22px;cursor:pointer}
-.rm-you{margin:0;color:var(--rm-ink2);font-size:14px}.rm-crew{display:flex;flex-wrap:wrap;gap:6px;font-size:13px}.rm-lab{color:var(--rm-ink2);flex-basis:100%}
-.rm-p{padding:6px 10px;border-radius:999px;background:rgba(143,231,255,.1);border:1px solid rgba(143,231,255,.22)}
-.rm-find{appearance:none;width:100%;box-sizing:border-box;padding:12px 14px;border-radius:14px;border:1px solid var(--rm-edge);background:rgba(3,8,24,.7);color:var(--rm-ink);font:16px/1.2 inherit;font-family:inherit}
-.rm-find::placeholder{color:#9fb6d3}
-.rm-list{list-style:none;margin:0;padding:0;overflow:auto;display:flex;flex-direction:column;gap:8px}
-.rm-list li{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;background:rgba(143,231,255,.06);border:1px solid rgba(143,231,255,.14)}
-.rm-list li.rm-mine{background:rgba(124,240,196,.1);border-color:rgba(124,240,196,.4)}
-.rm-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.rm-who small{color:var(--rm-ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rm-list button{appearance:none;border:1px solid rgba(143,231,255,.7);border-radius:999px;padding:9px 16px;min-height:36px;background:linear-gradient(180deg,rgba(28,247,249,.24),rgba(48,120,255,.18));color:#fff;font:600 13px/1 inherit;font-family:inherit;cursor:pointer;box-shadow:0 0 10px rgba(28,247,249,.25)}
-.rm-list em{font-style:normal;color:var(--rm-ink2);font-size:13px}
 /* Creation + Affiliates tabs. The pane shows only the bar and that page (in a frame); the galaxy and chat are hidden, so they pause. */
 #cmPaneChat[data-spirit-chat]>.rm-view{display:none}
 #cmPaneChat[data-spirit-chat][data-rm-view]>*:not(.rm-bar):not(.rm-view):not(.rm-chans):not(.rm-rank){display:none!important}
@@ -181,7 +168,6 @@
 #cmPaneChat[data-spirit-chat] .rm-ch-list .rm-ch:hover,#cmPaneChat[data-spirit-chat] .rm-ch-list .rm-ch:focus-visible{background:rgba(143,231,255,.08);box-shadow:inset 0 0 0 1px rgba(143,231,255,.4)}
 .rm-chans .rm-ch-ic{width:46px;height:46px;border-radius:15px;font-size:22px;background:linear-gradient(145deg,rgba(28,247,249,.34),rgba(48,120,255,.24));box-shadow:inset 0 0 0 1px rgba(143,231,255,.5),0 0 16px rgba(28,247,249,.22)}
 .rm-chans .rm-ch-ic[data-ic=replies]{background:linear-gradient(145deg,rgba(170,128,255,.38),rgba(80,90,255,.24));box-shadow:inset 0 0 0 1px rgba(196,170,255,.55),0 0 16px rgba(150,110,255,.24)}
-.rm-chans .rm-ch-ic[data-ic=room]{background:linear-gradient(145deg,rgba(62,240,160,.32),rgba(28,160,200,.24));box-shadow:inset 0 0 0 1px rgba(124,240,196,.5),0 0 16px rgba(62,240,160,.2)}
 .rm-chans .rm-ch-top b{font-size:16px;font-weight:650}
 .rm-chans .rm-ch-p{font-size:13.5px;-webkit-line-clamp:1}
 .rm-ch-go{flex:none;width:8px;height:8px;margin-right:4px;border-right:2px solid var(--rm-ink2);border-bottom:2px solid var(--rm-ink2);transform:rotate(-45deg);opacity:.8}
@@ -202,19 +188,7 @@
 /* menu */
 .rm-menu-card{border-radius:24px;padding:8px}
 .rm-menu-card button{min-height:50px;border-radius:16px}
-/* members (Rooms & people): Eden bottom sheet with a grabber, big title, avatar chips, rooms in ONE card with thin dividers */
-.rm-card{border-radius:30px 30px 0 0;padding:10px 20px calc(20px + var(--sab,0px));gap:14px}
-.rm-grab{display:block;flex:none;width:40px;height:5px;margin:0 auto;border-radius:3px;background:rgba(195,213,236,.45)}
-.rm-h{font-size:26px;font-weight:800;letter-spacing:-.03em}
 .rm-x{border-radius:50%}
-.rm-p{display:inline-flex;align-items:center;gap:7px;padding:4px 12px 4px 4px;font-size:13.5px;color:var(--rm-ink)}
-.rm-p i{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font:700 10px/1 inherit;font-family:inherit;font-style:normal;color:#06122c;background:var(--fc,#8fe7ff)}
-.rm-find{border-radius:999px;padding:13px 18px}
-.rm-list{gap:0;border-radius:22px;background:rgba(143,231,255,.05);border:1px solid rgba(143,231,255,.2)}
-.rm-list li{border:0;border-radius:0;background:transparent;padding:14px 16px;min-height:64px;box-sizing:border-box}
-.rm-list li+li{box-shadow:inset 0 1px 0 rgba(143,231,255,.14)}
-.rm-list li.rm-mine{background:rgba(124,240,196,.08);border:0}
-.rm-list:empty{display:none}
 /* the app's tab headings rule (html.lg #app #main .tab h2) would shrink the landing headline to 20px: this one wins */
 #app #main #cmPaneChat h2.rm-l-h{margin:20px 0 12px;font-size:clamp(42px,13vw,60px);line-height:.96;font-weight:800;letter-spacing:-.04em;color:#fff;text-transform:none}
 #app #main #cmPaneChat p.rm-l-sub{margin:0 auto;font-size:15px;line-height:1.5;color:var(--rm-ink2)}
@@ -247,13 +221,6 @@ html.sec-open #cmPaneChat[data-spirit-chat]>.rm-bar .rm-head{padding-left:calc(5
  box-shadow:0 1px 0 rgba(143,231,255,.16),0 12px 18px -10px rgba(0,0,0,.6);border-radius:0 0 22px 22px}
 /* the strip above the bar (the pane's own top padding) is covered too, so nothing peeks out over the Community pill */
 #cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar::before{content:'';position:absolute;z-index:-1;left:0;right:0;top:-40px;height:40px;background:rgba(4,10,28,.95)}
-/* 23 Oct 2026: names in the Rooms & people sheet open that person's profile (community-rooms-ui.js openCard) */
-.rm-sheet button.rm-p{appearance:none;font-family:inherit;line-height:1.2;min-height:36px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s ease,background .12s ease}
-.rm-sheet button.rm-p:active{transform:scale(.95);background:rgba(143,231,255,.2)}
-.rm-sheet .rm-list .rm-who button.rm-nm{appearance:none;border:0;border-radius:6px;background:none;box-shadow:none;min-height:0;padding:0;margin:0;color:var(--rm-ink);font:700 15px/1.3 inherit;font-family:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rm-sheet .rm-list .rm-who small button.rm-nm-s{display:inline;padding:6px 0;color:inherit;font:inherit;font-weight:500;text-decoration:underline;text-decoration-color:rgba(143,231,255,.35);text-underline-offset:3px}
-.rm-sheet .rm-list .rm-who button.rm-nm:active{color:#8fe7ff}
-.rm-sheet button.rm-p:focus-visible,.rm-sheet button.rm-nm:focus-visible{outline:2px solid #8fe7ff;outline-offset:2px}
 /* 24 Oct 2026 (Emmanuel: "Let's put the fyp here. And fuse Erstellen & Affiliates zusammen"):
    Studio = Affiliates + Creation in one tab. Its switch is a small copy of the tab pill (same glass, same sliding glow), right above
    the page, centred and only as wide as its two words. */

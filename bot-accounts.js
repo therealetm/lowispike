@@ -1,16 +1,16 @@
 /* LOWiSPIKE bot and test accounts (Oct 23, 2026). Emmanuel, call, 11:18 PM: "Können wir bitte die ganzen Bots in der
    Leaderboard rausschmeißen und nur noch die Menschen da drin haben?" and "ich möchte auch die Bots aus mein Circle haben"
    (the Freund hinzufügen list showed bot names and his own name many times). Later: Lena, Jonas and "Mia Test ####" are
-   anonymous accounts our own Circles check scripts create on the live app; hide them completely too, by a reliable
+   anonymous accounts our own check scripts create on the live app; hide them completely too, by a reliable
    marker, never by name, so a real Lena, Jonas or Mia stays.
 
    The SERVER decides, from data a name cannot fake (supabase/proposals/bot_flag_20261023.sql):
    - profiles.bot  = the sign-up e-mail is one only our tools use: crowdNNN@crowd.lowispike.invalid
                      (tools/community-crowd/crowd.cjs) or lowispike.gatetest+N@gmail.com (Gatey / Guesty).
                      Bots stay in the Community (galaxy, chat, daily photos); they only leave the Ranking and the
-                     add-friend / Circle lists, and the database refuses them as Circle members.
+                     add-friend list.
    - profiles.test = the account carries lowi_test:true in its auth metadata, set by our check scripts
-                     (tools/user-rooms/check*.cjs). Test accounts are hidden everywhere (hidden-accounts.js asks here),
+                     (tools/test-account.cjs). Test accounts are hidden everywhere (hidden-accounts.js asks here),
                      except to another test account, so the check scripts can still find each other.
    Both columns are written by triggers; no client can set or clear them.
    API: set(botIds, testIds), setSelf(uid), isBot(p) (bot, or test seen by a real person), isTest(p), humans(list),

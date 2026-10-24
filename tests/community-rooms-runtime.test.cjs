@@ -1,64 +1,42 @@
 'use strict';
-/* Runs the real community-rooms.js for simulated phones against tools/sim/fake-realtime.cjs (no network). */
+/* Runs the real community-rooms.js for simulated phones against tools/sim/fake-realtime.cjs (no network).
+   Oct 24 2026 (Emmanuel: "we just have one chat ... Nuke everything that has to do with being able to open multiple rooms"):
+   everyone is in the one room, however many arrive; chat and energy reach everyone. */
 const test = require('node:test'), assert = require('node:assert');
 const rn = require('../tools/sim/rooms-node.cjs');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-async function settle(w, cap, ms) { const end = Date.now() + ms; while (Date.now() < end) { await sleep(400); const c = w.census(); if (!c.get(0) && [...c.entries()].every(([n, k]) => n === 0 || k <= cap)) return c; } return w.census(); }
 
-test('a burst of 45 arrivals settles into rooms of at most the cap, all chat and energy scoped to the room', { timeout: 30000 }, async () => {
-  const cap = 10, w = rn.world({ cap, minMs: 10, maxMs: 60 });
+test('a burst of 45 arrivals all land in the one room; chat and energy reach everyone', { timeout: 30000 }, async () => {
+  const w = rn.world({ minMs: 10, maxMs: 60 });
   const ps = []; for (let i = 0; i < 45; i++) ps.push(w.phone('u' + String(i).padStart(3, '0')));
   await Promise.all(ps.map(p => new Promise(r => setTimeout(() => p.start().then(r, r), Math.random() * 1500))));
-  const c = await settle(w, cap, 15000);
-  assert.ok(!c.get(0), 'everyone is in a room');
-  for (const [n, k] of c) assert.ok(k <= cap, 'room ' + n + ' has ' + k);
-  assert.strictEqual([...c.values()].reduce((a, b) => a + b, 0), 45);
-  /* Ideal packing is five rooms of ten. On a slow machine (GitHub's runner during the full suite) presence syncs arrive late,
-     movers see stale room counts and one extra room can open; rooms never merge, so it stays (seen twice on CI, 22 Oct:
-     [[1,10],[2,10],[3,9],[5,8],[4,7],[6,1]]). Five or six rooms is the promise; seven would mean the spreading broke. */
-  const ideal = Math.ceil(45 / cap);
-  assert.ok(c.size >= ideal && c.size <= ideal + 1, 'five rooms of ten, at most one extra: ' + JSON.stringify([...c]));
-  // a message in room 2 reaches only room 2
-  const r2 = ps.filter(p => p.rooms.num() === 2).length;
-  const reached = w.srv.insert({ id: 'm1', room: 'r2', body: 'hi' });
-  assert.strictEqual(reached, r2);
-  // an energy shot reaches only the shooter's room
-  const shooter = ps.find(p => p.rooms.num() === 3); const before = ps.map(p => p.got.energy);
+  const end = Date.now() + 15000; let c = w.census();
+  while (Date.now() < end && c.get(1) !== 45) { await sleep(300); c = w.census(); }
+  assert.deepStrictEqual([...c], [[1, 45]], 'one room for everyone, nobody waiting or moved');
+  ps.forEach(p => { assert.strictEqual(p.rooms.room(), 'all'); assert.strictEqual(p.rooms.num(), 1); });
+  const seen = () => ps.filter(p => p.rooms.members().length === 45).length;
+  for (let t = Date.now() + 8000; Date.now() < t && seen() < 45;) await sleep(250);
+  assert.strictEqual(seen(), 45, 'everyone sees everyone here: ' + JSON.stringify(ps.map(p => p.rooms.members().length)));
+  assert.ok(ps.every(p => !p.events.some(e => /move|full|knock|reassign/.test(e.type))), 'no moves, no full rooms, no knocks');
+  assert.deepStrictEqual([...w.srv.topics.keys()], ['lowi-room-all'], 'one channel only: no rooms directory, no extra rooms');
+  const reached = w.srv.insert({ id: 'm1', room: 'all', body: 'hi' });
+  assert.strictEqual(reached, 45, 'a chat message reaches every phone');
+  const shooter = ps[7], before = ps.map(p => p.got.energy);
   assert.ok(shooter.rooms.sendEnergy({ id: 's1' })); await sleep(300);
-  ps.forEach((p, i) => { const d = p.got.energy - before[i]; if (p === shooter) assert.strictEqual(d, 0); else assert.strictEqual(d, p.rooms.num() === 3 ? 1 : 0); });
-  ps.forEach(p => p.rooms.stop());
-});
-
-test('few people: everyone shares room 1 (the old shared room id), a new room opens only when it is full', { timeout: 20000 }, async () => {
-  const cap = 4, w = rn.world({ cap, minMs: 10, maxMs: 40 });
-  const ps = []; for (let i = 0; i < 6; i++) { const p = w.phone('p' + i); ps.push(p); await p.start(); await sleep(250); }
-  const c = await settle(w, cap, 8000);
-  assert.strictEqual(c.get(1), 4); assert.strictEqual(c.get(2), 2);
-  assert.strictEqual(ps[0].rooms.room(), 'all');
+  ps.forEach((p, i) => assert.strictEqual(p.got.energy - before[i], p === shooter ? 0 : 1));
   ps.forEach(p => p.rooms.stop()); await sleep(200);
-  assert.strictEqual(w.srv.topics.size, 0, 'empty rooms close: no channel left');
+  assert.strictEqual(w.srv.topics.size, 0, 'no channel left once everyone leaves');
 });
 
-test('join a person: direct when there is space, knock + let in when full', { timeout: 30000 }, async () => {
-  const cap = 3, w = rn.world({ cap, minMs: 10, maxMs: 40 });
-  const ps = []; for (let i = 0; i < 6; i++) { const p = w.phone('k' + i); ps.push(p); await p.start(); await sleep(200); }
-  await settle(w, cap, 8000); await sleep(1200);
-  const a = ps.find(p => p.rooms.num() === 1), b = ps.find(p => p.rooms.num() === 2);
-  const extra = w.phone('late'); await extra.start(); await settle(w, cap, 6000); await sleep(1200);
-  const host = ps.find(p => p.rooms.num() === 1 && p !== extra);
-  assert.strictEqual(extra.rooms.num(), 3, 'rooms 1 and 2 are full, so a third room opened');
-  const pending = extra.rooms.joinPerson(host.uid);
-  for (let i = 0; i < 40 && !host.rooms.knocks().length; i++) await sleep(100);
-  assert.strictEqual(host.rooms.knocks().length, 1, 'host sees the knock');
-  assert.ok(await host.rooms.letIn('late'));
-  const res = await pending; assert.ok(res.ok, JSON.stringify(res)); assert.strictEqual(res.why, 'let-in');
-  await sleep(1500);
-  assert.strictEqual(extra.rooms.num(), 1, 'guest stays in the full room');
-  assert.strictEqual(host.rooms.members().length, cap + 1);
-  // direct join where there is space: one person leaves room 2, a newcomer joins someone there directly
-  const two = ps.filter(p => p.rooms.num() === 2); two[0].rooms.stop(); await sleep(1500);
-  const solo = w.phone('solo'); await solo.start(); await sleep(1500);
-  const r = await solo.rooms.joinPerson(two[1].uid); assert.ok(r.ok, JSON.stringify(r)); assert.ok(r.why === 'joined' || r.why === 'here');
-  await sleep(800); assert.strictEqual(solo.rooms.num(), 2);
-  [...ps, extra, solo].forEach(p => p.rooms.stop()); void a; void b;
+test('the one room keeps the id older installed apps already talk in, and the old multi-room API is gone', { timeout: 15000 }, async () => {
+  const w = rn.world({ minMs: 10, maxMs: 40 });
+  const a = w.phone('a'), b = w.phone('b');
+  await a.start(); await b.start(); await sleep(400);
+  assert.strictEqual(a.rooms.room(), 'all');
+  assert.ok(a.rooms.has('b') && b.rooms.has('a'));
+  for (const k of ['joinPerson', 'joinRoom', 'letIn', 'dismiss', 'knocks', 'rooms', 'readDirectory']) assert.strictEqual(a.rooms[k], undefined, k + ' is gone');
+  assert.strictEqual(await a.start({ client: async () => a.client, uid: () => 'a' }), true, 'starting again while in is a no-op');
+  a.rooms.stop(); await sleep(300);
+  assert.ok(!b.rooms.has('a'), 'leaving drops you from the room');
+  b.rooms.stop();
 });

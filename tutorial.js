@@ -58,7 +58,6 @@
         shop: { go() { const P = W.LowiStorePicks; if (!P) return; goHome(); if (!P.isOpen()) P.open('tour'); try { P.setTab('sz'); } catch (e) { } }, stage: '.stp-card', back() { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
         /* Oct 24: the Kitchen tab in Shop (new-kitchen) */
         kitchen: { go() { const P = W.LowiStorePicks; if (!P) return; goHome(); if (!P.isOpen()) P.open('tour'); try { P.setTab('kitchen'); } catch (e) { } }, stage: '.stp-card', back() { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
-        rooms: { go() { if (typeof W.goTab === 'function' && !(D.getElementById('tab-foryou') || { classList: { contains: () => true } }).classList.contains('active')) W.goTab('foryou'); setTimeout(() => { try { const s = step(); if (on && s && s.open === 'rooms' && W.LowiUserRooms && !LowiUserRooms.isOpen()) LowiUserRooms.open(); } catch (e) { } }, 450); }, stage: '.ur', back() { try { if (W.LowiUserRooms && LowiUserRooms.isOpen()) LowiUserRooms.close(); } catch (e) { } goHome(); } }
     };
     function stage() { const s = step(); return (on && s && s.open && opened === s.open && OPEN[s.open] && OPEN[s.open].stage) || ''; }
     function leave() { const o = opened; opened = ''; if (o && OPEN[o]) { try { OPEN[o].back(); } catch (e) { } } }

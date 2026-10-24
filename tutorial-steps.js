@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 23;  /* 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 24;  /* 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -497,11 +497,11 @@
         },
         {
             id: 'cm-name', area: 'together', where: 'community', rm: 'room', target: ['.rm-menu-btn', '.rm-name'], covers: [], teaches: ['cm-name', 'cm-room'], tryIt: { how: 'tap' },
-            title: { en: 'Circles and profile', de: 'Circles und Profil', es: 'Círculos y perfil' },
+            title: { en: 'People and profile', de: 'Leute und Profil', es: 'Personas y perfil' },
             text: {
-                en: 'Tap the Community name up here for circles and invite links. Tap your picture for your profile.',
-                de: 'Tipp oben auf den Community-Namen für Circles und Einladungslinks. Tipp auf dein Bild für dein Profil.',
-                es: 'Toca arriba el nombre de Comunidad para círculos y enlaces de invitación. Toca tu foto para tu perfil.'
+                en: 'Tap the Community name up here for People and invite links. Tap your picture for your profile.',
+                de: 'Tipp oben auf den Community-Namen für Leute und Einladungslinks. Tipp auf dein Bild für dein Profil.',
+                es: 'Toca arriba el nombre de Comunidad para Personas y enlaces de invitación. Toca tu foto para tu perfil.'
             }
         },
         {
@@ -749,15 +749,6 @@
                 en: 'After the tour, hold Scan for a moment and every bubble opens at once. A quick tap still opens Scan.',
                 de: 'Nach der Tour: Halt Scan kurz gedrückt, dann gehen alle Bubbles auf einmal auf. Kurz tippen öffnet weiter Scan.',
                 es: 'Después del recorrido, mantén pulsado Scan un momento y se abren todas las burbujas a la vez. Un toque rápido sigue abriendo Scan.'
-            }
-        },
-        {
-            id: 'new-rooms', area: 'new', where: 'community', open: 'rooms', target: ['.ur [data-ur="make"]', '.ur .ur-card'], covers: ['user-rooms'],
-            title: { en: 'Circles', de: 'Circles', es: 'Círculos' },
-            text: {
-                en: 'Make your own circle for a goal. Everyone can read along. You decide who joins, or add people yourself. Up to 30 people.',
-                de: 'Mach deinen eigenen Circle für ein Ziel. Alle lesen mit. Du entscheidest, wer reinkommt, oder fügst Leute selbst hinzu. Bis zu 30 Leute.',
-                es: 'Crea tu propio círculo para una meta. Todos pueden leer. Tú decides quién entra o añades gente tú mismo. Hasta 30 personas.'
             }
         },
         {

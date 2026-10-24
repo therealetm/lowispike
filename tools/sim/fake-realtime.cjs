@@ -25,8 +25,9 @@ function server(opts) {
       ch.subscribe = cb => { stats.joins++; setTimeout(() => { if (ch.removed) return cb && cb('CLOSED'); ch.joined = true; T(name).subs.add(ch); c.channels.add(ch); cb && cb('SUBSCRIBED');
         /* like Supabase: an empty sync can come first, the real presence_state a moment later */
         setTimeout(() => { if (ch.joined) ch.fire('presence', 'sync', {}); }, 5);
-        const t = T(name), snap = {}; for (const [k, p] of t.presence) snap[k] = [Object.assign({}, p)];
-        setTimeout(() => { if (!ch.joined) return; ch.state = JSON.parse(JSON.stringify(snap)); c.frames++; stats.frames++; ch.fire('presence', 'sync', {}); }, lat() + (opts.stateMs || 150)); }, lat()); return ch; };
+        /* the snapshot is the room as it is when presence_state arrives (Oct 24 2026: it was taken at subscribe time, so a
+           phone that joined first lost everyone who tracked in between, which real Supabase never does) */
+        setTimeout(() => { if (!ch.joined) return; const t = T(name), snap = {}; for (const [k, p] of t.presence) snap[k] = [Object.assign({}, p)]; ch.state = JSON.parse(JSON.stringify(snap)); c.frames++; stats.frames++; ch.fire('presence', 'sync', {}); }, lat() + (opts.stateMs || 150)); }, lat()); return ch; };
       ch.presenceState = () => ch.state;
       ch.track = async p => { if (!ch.joined) return 'error'; await new Promise(r => setTimeout(r, lat())); if (!ch.joined) return 'error'; T(name).presence.set(key, Object.assign({}, p)); syncAll(name); return 'ok'; };
       ch.untrack = async () => { const t = topics.get(name); if (t && t.presence.delete(key)) syncAll(name); return 'ok'; };

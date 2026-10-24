@@ -566,6 +566,7 @@
     }
 
     function onClick(e) {
+        if (Date.now() - dragAt < 450) return; /* the click a drag down on the top bar leaves behind */
         const t = e.target.closest ? e.target : null; if (!t) return;
         if (qv && (e.target === qv || (t.closest('[data-stp="qv-close"]') && qv.contains(t)))) { closeQuick(); return; }
         if (qv && qv.contains(t) && qvCart(t)) return;
@@ -640,6 +641,7 @@
         ov.addEventListener('input', onInput);
         ov.addEventListener('change', onChange);
         ov.addEventListener('submit', onSubmit);
+        dragDown(ov);
         D.addEventListener('keydown', onKey);
         D.body.appendChild(ov);
         /* the panel covers the screen: body-world-3d.js draws no world frames under it (html.stp-open), like Mirror mode */
@@ -649,6 +651,47 @@
         if (S.range) showList(); else { view = 'pick'; paint(); }
         if (!onShop()) { kitMsg = ''; kitGone = null; paint(); }
         try { W.dispatchEvent(new CustomEvent('lowi:storepicks', { detail: { open: true, from: from || '' } })); } catch (e) {}
+    }
+    /* Oct 24 2026 (back and close sweep 18:40): on a phone Shop fills the screen like the app's other sheets, but a swipe down
+       did nothing (only back, X, Escape and a tap outside closed it). A drag down on its top bar (the tabs and the title block,
+       never another button, a field or a link, never the list) now follows the finger and closes it past a quarter of the card or on a
+       quick flick; a short drag springs back. The panel repaints its insides, so the drag is read on the panel itself. No drag
+       on a wide screen (centred card on iPad) or while a product card is open over it. */
+    let dragAt = 0;
+    function dragDown(o) {
+        if (!W.PointerEvent) return;
+        const narrow = () => !(W.matchMedia && W.matchMedia('(min-width:700px)').matches);
+        let d = null;
+        o.addEventListener('pointerdown', e => {
+            if (d || qv || ov !== o || !narrow() || (e.button != null && e.button > 0)) return;
+            const t = e.target && e.target.closest ? e.target : null; if (!t) return;
+            const card = t.closest('.stp-card'), zone = t.closest('.stp-tabs, .stp-head, .sz-head');
+            if (!card || !zone || !card.contains(zone)) return;
+            /* a tab can start the drag (the tab bar is nearly all tabs, and a phone moves a touch near it onto one); a plain tap
+               on it still switches tabs. Other buttons, fields and links never start one. */
+            if (t.closest('input,select,textarea,label,a,summary,[contenteditable]') || (t.closest('button') && !t.closest('.stp-tab'))) return;
+            d = { id: e.pointerId, y0: e.clientY, y: 0, ly: e.clientY, t: e.timeStamp, v: 0, card, zone, cap: false };
+        });
+        o.addEventListener('pointermove', e => {
+            if (!d || e.pointerId !== d.id) return;
+            const dt = Math.max(1, e.timeStamp - d.t);
+            d.v = .6 * d.v + .4 * ((e.clientY - d.ly) / dt * 1000); d.ly = e.clientY; d.t = e.timeStamp;
+            d.y = Math.max(0, e.clientY - d.y0);
+            if (d.y > 6 && !d.cap) { d.cap = true; try { d.zone.setPointerCapture(e.pointerId); } catch (x) {} }
+            if (d.y > 2) { d.card.style.animation = 'none'; d.card.style.transition = 'none'; d.card.style.transform = 'translateY(' + d.y + 'px)'; }
+        });
+        const end = (e, cancelled) => {
+            if (!d || e.pointerId !== d.id) return;
+            const g = d; d = null;
+            if (g.cap) try { g.zone.releasePointerCapture(e.pointerId); } catch (x) {}
+            if (g.y > 6) dragAt = Date.now();
+            const h = g.card.getBoundingClientRect().height || 600;
+            const v = e.timeStamp - g.t > 100 ? 0 : g.v;
+            if (!cancelled && ov === o && (g.y > Math.min(160, h * .25) || (v > 650 && g.y > 18))) { close(); return; }
+            g.card.style.transition = 'transform .22s ease'; g.card.style.transform = '';
+        };
+        o.addEventListener('pointerup', e => end(e, false));
+        o.addEventListener('pointercancel', e => end(e, true));
     }
     function close() {
         if (!ov) return;

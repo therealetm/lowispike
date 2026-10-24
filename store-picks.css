@@ -267,3 +267,5 @@ button.stp-item:active { transform: scale(.985); }
 .stp-kit-add { margin-top: 2px; }
 .stp-kit-qv { margin: 10px 0 0; }
 .stp-kit-qv:disabled { opacity: .7; }
+/* Oct 24 2026 (back and close sweep): on a phone the top bar is the handle, a drag down closes Shop (store-picks.js dragDown) */
+@media (max-width: 699.98px) { .stp-card > .stp-tabs, .stp-card > .stp-head > h3, .stp-card > .stp-head > p, .stp-card > .sz-head { touch-action: none; } }

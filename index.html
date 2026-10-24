@@ -9490,6 +9490,7 @@ window.LowiFood = {fitDeck:ckFitDeck, source:fSrc, setSource:ckSource, category:
 </style>
 <script src="read-time-core.js?v=20261024-082117"></script>
 <script src="community-chat-core.js?v=20261024-082117"></script>
+<script src="profile-share-core.js?v=20261024-082117"></script>
 <script src="account-sync-core.js?v=20261024-082117"></script>
 <script>
 window.LOWI_CFG = {"url": "https://vnfwmifmsfecascwaody.supabase.co", "key": "sb_publishable_iVA3wCYxzfWu2q8SSgieWw_adXbx4Qd"};
@@ -9585,7 +9586,10 @@ function mapPost(r){
 }
 function mapMsg(r){ return {id:r.id, uid:r.user_id, by:r.who || "Member", t:r.body || "", ts:ts(r.created_at), re:r.reply_to || null, rx:rxOf(r.id)}; }
 function rxOf(mid){ const o = {}; (RX[mid] || []).forEach(x => { (o[x.emoji] = o[x.emoji] || []).push(x.who || "Member"); }); return o; }
-function mapPerson(r){ return {n:r.name, s:r.sign || "", t:r.mbti || "", lv:r.lv || 1, streak:r.streak || 0, bio:r.bio || "", avatar:r.avatar_url || r.avatar || "", uid:r.id, bday:r.bday || "", xp:r.xp || 0, xpw:r.xp_week || 0, wk:r.wk || "", xpm:r.xp_month || 0, mo:r.mo || "", w:r.weight || ""}; }
+/* 24 Oct 2026: a person's birthday, sign and type count only in the shared form (day + month, year 0004, after consent). An older row with a
+   real birth year stays private, and the year/age of anyone else never reaches the app. */
+function sharedOf(r){ if (r.bot) return {s:r.sign || "", t:r.mbti || "", bday:r.bday || ""}; const P = window.LowiProfileShare; if (!P) return {s:"", t:"", bday:""}; const x = P.readPublic(r); return {s:x.s, t:x.t, bday:x.bday}; }
+function mapPerson(r){ const sh = sharedOf(r); return {n:r.name, s:sh.s, t:sh.t, lv:r.lv || 1, streak:r.streak || 0, bio:r.bio || "", avatar:r.avatar_url || r.avatar || "", uid:r.id, bday:sh.bday, xp:r.xp || 0, xpw:r.xp_week || 0, wk:r.wk || "", xpm:r.xp_month || 0, mo:r.mo || "", w:r.weight || ""}; }
 
 /* ---------- boot ---------- */
 function loadLib(){ return new Promise((ok, no) => { if (window.supabase && window.supabase.createClient) return ok();
@@ -9731,8 +9735,11 @@ function pushProfile(){ clearTimeout(profT); profT = setTimeout(async () => { if
   let av = ""; try { av = S.user.avatarUrl || S.user.avatar || ""; } catch(e){} if (av.length > 120000) av = "";
   const row = {id:uid, name:myName(), sign:me ? me.s || "" : "", mbti:me ? me.t || "" : "", lv:me ? me.lv || 1 : 1, streak:me ? me.streak || 0 : 0, avatar:av};
   try { if (window.LowiR3 && LowiR3.profileExtra) Object.assign(row, LowiR3.profileExtra()); } catch(e){}
-  /* Community identity has its own explicit consent table; birthdays never become public profile metadata. */
+  /* Nothing personal is public by default (an old full birthday never is). */
   row.bday = ""; row.mbti = ""; row.sign = "";
+  /* 24 Oct 2026 (Emmanuel: birthday with a countdown, star sign, and personality if set, shared on the Community card): only after the person
+     agreed (S.user.shareProfile), and only day + month (year 0004 marker, never the birth year), the sign worked out from that day, and their type. */
+  try { if (window.LowiProfileShare) Object.assign(row, LowiProfileShare.publicRow(S.user, S.user.shareProfile, (me && me.t) || S.user.mbti || "")); } catch(e){}
   const j = JSON.stringify(row); if (j === lastProf) return; lastProf = j;
   const r = await sb.from("profiles").upsert(Object.assign({updated_at:new Date().toISOString()}, row)); if (r.error) lastProf = ""; }, 1500); }
 const SYNC = () => window.LowiSyncCore || null;
@@ -10938,6 +10945,7 @@ function paintOb(){
       '<label class="r2-fl date"><span>Birthday</span><input id="r2obB" type="date" max="' + todayISO() + '" min="1920-01-01" value="' + esc(ob.bday) + '"></label>' +
       '<label class="r2-fl date r2ob-btime"><span>Birth time (optional)</span><input id="r2obT" type="time" value="' + esc(ob.btime || "") + '"></label>' +
       '<div id="r2obSign">' + signReveal() + '</div>' +
+      '<p class="r2-obs r2ob-share" style="font-size:13px;opacity:.8;margin:8px 2px 0">Your day and month (never the year) show on your Community card with a birthday countdown and your star sign.</p>' + /* 24 Oct 2026: birthday + sign are shared on the Community card; said here, before Next */
       '<div class="r2-err" id="r2obErr" role="alert"></div><div class="r2-obacts"><button class="r2-btn pri big" data-r2o="next">Next</button></div>';
   } else if (ob.step === 1) {
     h = dots() + '<div class="r2-obt">Add a photo</div><div class="r2-obs">People in Community see it next to your messages.</div>' +
@@ -10970,6 +10978,9 @@ function saveOb(final){
   const s = R2.S(); s.user = s.user || {};
   if (ob.name) s.user.name = ob.name.slice(0, 40);
   s.user.bday = ob.bday || s.user.bday || "";
+  /* 24 Oct 2026: the birthday step says day + month and star sign go on the Community card; going past it with a birthday is the yes.
+     A choice made before (yes or no, in Community settings) is never overwritten. */
+  if (ob.bday && !s.user.shareProfile) s.user.shareProfile = {v:1, at:Date.now(), via:"onboarding"};
   /* BQ-2 (sweep Oct 23): keep the optional birth time with the birthday, so a reload during the sign reveal (BH-011 resumes at the birthday step) still has it */
   if (typeof ob.btime === "string") { if (ob.btime) s.user.btime = ob.btime.slice(0, 5); else delete s.user.btime; }
   if (ob.avatar && ob.avatar !== s.user.avatar) { s.user.avatar = ob.avatar; delete s.user.avatarUrl; }
@@ -12246,6 +12257,7 @@ const ROWS = [
   ["Nice to meet you", "Schön, dich kennenzulernen", "Encantados de conocerte"],
   [/^Hi (.+)!$/, "Hi $1!", "¡Hola, $1!"],
   ["When's your birthday?", "Wann hast du Geburtstag?", "¿Cuándo es tu cumpleaños?"],
+  ["Your day and month (never the year) show on your Community card with a birthday countdown and your star sign.", "Tag und Monat (nie das Jahr) erscheinen auf deiner Community-Karte, mit Geburtstags-Countdown und deinem Sternzeichen.", "El día y el mes (nunca el año) aparecen en tu tarjeta de la Comunidad, con la cuenta atrás de tu cumpleaños y tu signo."],
   ["Birthday", "Geburtstag", "Cumpleaños"],
   ["Your star sign shows up here", "Hier erscheint dein Sternzeichen", "Aquí aparecerá tu signo del zodiaco"],
   ["It sets the colour of your app.", "Es bestimmt die Farbe deiner App.", "Decide el color de tu app."],
@@ -15954,9 +15966,9 @@ const safeImg = u => (typeof u === "string" && /^(data:image\/|https:\/\/)/.test
 const fmtN = n => { try { return Number(n || 0).toLocaleString("en-US"); } catch(e){ return String(n || 0); } };
 function ageOf(b){ if (!b || !/^\d{4}-\d{2}-\d{2}$/.test(b)) return null; const p = b.split("-").map(Number), t = new Date();
   let a = t.getFullYear() - p[0]; if (t.getMonth() + 1 < p[1] || (t.getMonth() + 1 === p[1] && t.getDate() < p[2])) a--; return a >= 5 && a < 120 ? a : null; }
-function daysToBday(b){ if (!b || !/^\d{4}-\d{2}-\d{2}$/.test(b)) return null; const p = b.split("-").map(Number), t = new Date(); t.setHours(0, 0, 0, 0);
+function daysToBday(b){ if (!b || !/^\d{4}-\d{2}-\d{2}$/.test(b)) return null; const PS = window.LowiProfileShare, md = PS && (PS.decode(b) || PS.monthDay(b)); if (md) return PS.next(md).days; /* 24 Oct: 29 Feb kept on 28 Feb in other years */ const p = b.split("-").map(Number), t = new Date(); t.setHours(0, 0, 0, 0);
   let n = new Date(t.getFullYear(), p[1] - 1, p[2]); if (n < t) n = new Date(t.getFullYear() + 1, p[1] - 1, p[2]); return Math.round((n - t) / 864e5); }
-function bdayLong(b){ const p = b.split("-").map(Number); const M = ["January","February","March","April","May","June","July","August","September","October","November","December"]; return p[2] + " " + M[p[1] - 1] + " " + p[0]; }
+function bdayLong(b){ const p = b.split("-").map(Number); const M = ["January","February","March","April","May","June","July","August","September","October","November","December"]; return p[2] + " " + M[p[1] - 1] + (p[0] >= 1900 ? " " + p[0] : ""); } /* a shared birthday (year 0004) is day + month only */
 
 /* ---------- care by period (Oct 17, 2026): the care board ranks the sunbeams Misty got from you, care-board-core.js ---------- */
 const CB = () => window.LowiCareBoard || null;
@@ -21117,7 +21129,9 @@ window.LowiCommunityHost = {
   replace:(m,r) => LOWI_CLOUD_X.community.replace(m,r), upsert:m => LOWI_CLOUD_X.community.upsert(m),
   remove:id => LOWI_CLOUD_X.community.remove(id), setReactions:r => LOWI_CLOUD_X.community.setReactions(r),
   people:() => LOWI_CLOUD.people(), room:() => LOWI_CLOUD_X.room ? LOWI_CLOUD_X.room() : "all",
-  identity(){ const p = LowiR3.me(), u = S.user || {}; return {n:u.name || "", s:p.s, t:u.mbti || u.personality || p.t || "", avatar:p.avatar, lv:p.lv, xp:p.xp, bday:/^\d{4}-\d{2}-\d{2}$/.test(u.bday || "") ? u.bday : ""}; }, /* bday: own person card only, never synced */
+  identity(){ const p = LowiR3.me(), u = S.user || {}; return {n:u.name || "", s:p.s, t:u.mbti || u.personality || p.t || "", avatar:p.avatar, lv:p.lv, xp:p.xp, bday:/^\d{4}-\d{2}-\d{2}$/.test(u.bday || "") ? u.bday : "", share:!!(window.LowiProfileShare && LowiProfileShare.consented(u.shareProfile)), asked:!!u.shareProfile}; }, /* bday: own card; only day + month go public, after consent */
+  /* 24 Oct 2026: the person's yes/no to sharing birthday (day + month), star sign and personality. Saving S syncs it and pushProfile publishes. */
+  setShare(on, bday){ const u = S.user = S.user || {}; if (bday && window.LowiProfileShare && LowiProfileShare.monthDay(bday)) u.bday = bday; u.shareProfile = on ? {v:1, at:Date.now()} : {v:1, at:Date.now(), off:true}; save(); try { if (window.LOWI_CLOUD_X && LOWI_CLOUD_X.pushProfile) LOWI_CLOUD_X.pushProfile(); } catch(e){} return this.identity(); },
   bubble:(p,size) => LowiR3.bubble(p,size), color:sign => LowiGlass.palette(String(sign || "none").toLowerCase())[0],
   typeLabel:(type,lang) => window.LowiHerbIdentityCore ? LowiHerbIdentityCore.typeLabel(type,lang) : "",
   sheet:html => LowiR2.sheet(html, {cls:"cs-overlay"}), active:() => TAB === "foryou" && (CMV.view === "chat" || !!document.querySelector("#tab-foryou.nm-solo")), /* Oct 16: Community is the galaxy alone (nav-moves.js), so it is live whatever the old segment says */

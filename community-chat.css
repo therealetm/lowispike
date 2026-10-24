@@ -212,3 +212,14 @@ html.cs-chat-map-typing #cmPaneChat[data-spirit-chat] .cm-compose{transform:tran
 .cs-meal-high i{background:var(--hi,#f0a08a)}
 /* 23 Oct 2026: the name above a message opens that person's profile, like the avatar */
 #cmPaneChat .cp-msg .cs-by .cs-name[data-chat=profile]{cursor:pointer}
+/* 24 Oct 2026: shared birthday countdown, star sign and personality on the person card */
+.cp-typeacts{display:flex;flex-wrap:wrap;gap:8px;padding:2px 14px 12px;border-bottom:1px solid rgba(160,220,255,.12)}
+.cp-typeacts:last-child{border-bottom:0}
+.cs-sheet .cp-test{display:inline-flex;align-items:center;justify-content:center;min-height:40px;margin:0;padding:8px 14px;border-radius:999px;border:1px solid rgba(160,220,255,.32);background:rgba(96,160,255,.16);color:#dff2ff;font:inherit;font-size:14px;font-weight:600;text-decoration:none}
+.cs-sheet .cp-test-set{background:transparent}
+.cp-share{padding:12px 14px 14px}
+.cp-share p{margin:0 0 10px;font-size:13px;line-height:1.45;color:rgba(223,242,255,.78)}
+.cs-sheet .cp-share .cp-share-btn{max-width:none;width:100%;min-height:48px}
+.cp-ask form{margin-top:14px}
+.cp-ask .cp-rows{margin-top:6px}
+.cs-sheet .cp-ask .cp-later{width:100%;margin-top:8px;background:transparent}

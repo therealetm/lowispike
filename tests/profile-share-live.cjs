@@ -1,7 +1,8 @@
-/* 24 Oct 2026 (Emmanuel: a member's card said "Star sign: Not shared. Birthday: Not shared. Personality: Not shared."). The real app on a local
-   server, outside requests aborted, service worker blocked, people stubbed. Checks at 390x844: the consent ask when Community opens, the own card
-   (countdown, sign, test link in the app language, picker), Share saves the consent and publishes only day + month, another member's shared
-   card, and an old full-year row staying private. Usage: node tests/profile-share-live.cjs [chromium|webkit] */
+/* 24 Oct 2026 (Emmanuel: a member's card said "Star sign: Not shared. Birthday: Not shared. Personality: Not shared."; 08:30: always
+   visible, not optional, no hide toggle). The real app on a local server, outside requests aborted (the profiles upsert is recorded first),
+   service worker blocked, people stubbed. Checks at 390x844: a returning account that had said "no" in the consent build publishes day + month
+   on open with no ask, the own card (countdown, sign, test link in the app language, picker), no opt-out in Community settings, another member's
+   card, an old full-year row never decoded, and Add my birthday for an account without one. Usage: node tests/profile-share-live.cjs [chromium|webkit] */
 const http = require('http'), fs = require('fs'), path = require('path');
 const pw = require('/tmp/pw/node_modules/playwright');
 const ROOT = path.join(__dirname, '..'), ENGINE = process.argv[2] || 'chromium', SHOTS = process.env.SHOTS || '/tmp/profile-share-shots';
@@ -14,14 +15,15 @@ const UID = '00000000-0000-4000-8000-00000000c0c0';
   const port = srv.address().port; let fail = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if (!c) fail++; };
   const browser = await pw[ENGINE].launch();
   const dev = ENGINE === 'webkit' ? pw.devices['iPhone 13'] : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
-  const run = async (lang) => {
+  const run = async (lang, user) => {
     const ctx = await browser.newContext(Object.assign({}, dev, { viewport: { width: 390, height: 844 }, serviceWorkers: 'block' }));
-    await ctx.route(u => !/^http:\/\/localhost:/.test(String(u)), r => r.abort());
-    await ctx.addInitScript(([UID, lang]) => { try {
+    const pushed = [];
+    await ctx.route(u => !/^http:\/\/localhost:/.test(String(u)), r => { const q = r.request(); if (/\/rest\/v1\/profiles/.test(q.url()) && q.method() === 'POST') { try { pushed.push(JSON.parse(q.postData() || 'null')); } catch (e) {} } r.abort(); });
+    await ctx.addInitScript(([UID, lang, user]) => { try {
       sessionStorage.setItem('lowi.a2hs.x', '1'); localStorage.setItem('lowi.news.seen', '99999'); localStorage.setItem('lowi.gate', 'done'); localStorage.setItem('lowispike.lang', lang);
       localStorage.setItem('lowi.auth', JSON.stringify({ access_token: 'local.fixture.token', refresh_token: 'local-fixture', token_type: 'bearer', expires_in: 86400, expires_at: Math.floor(Date.now() / 1000) + 86400 * 30, user: { id: UID, aud: 'authenticated', role: 'authenticated', email: 'fixture@example.invalid', is_anonymous: false } })); localStorage.setItem('lowispike.tutorial.v1', JSON.stringify({ done: true }));
-      if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('lowispike.v2', JSON.stringify({ setupDone: true, onboarded: true, xp: 900, ledger: [], lang, user: { name: 'eman', bday: '1990-03-01' } })); }
-    } catch (e) {} }, [UID, lang]);
+      if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('lowispike.v2', JSON.stringify({ setupDone: true, onboarded: true, xp: 900, ledger: [], lang, user })); }
+    } catch (e) {} }, [UID, lang, user || { name: 'eman', bday: '1990-03-01', shareProfile: { v: 1, at: 1, off: true } }]);
     const page = await ctx.newPage(); const errs = [];
     page.on('pageerror', e => errs.push(e.message.slice(0, 160)));
     await page.goto('http://localhost:' + port + '/index.html', { waitUntil: 'load', timeout: 90000 });
@@ -29,48 +31,39 @@ const UID = '00000000-0000-4000-8000-00000000c0c0';
     await page.evaluate(() => { const rows = [{ uid: 'aaaaaaaa-0000-4000-8000-000000000001', n: 'Antje', bday: '0004-12-24', s: 'Capricorn', t: 'ENFP', lv: 6, xp: 2400 }, { uid: 'aaaaaaaa-0000-4000-8000-000000000002', n: 'Old row', bday: '1980-01-01', s: 'Leo', t: 'ENTJ', lv: 3, xp: 400 }]; window.LOWI_CLOUD.people = () => rows.slice(); });
     const sheetText = () => page.evaluate(() => { const o = [...document.querySelectorAll('.r2-ov.on, .cs-overlay.on, .r2-ov')].filter(e => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden').pop(); return o ? o.innerText : ''; });
     const closeAll = () => page.evaluate(() => { try { LowiR2.close(); } catch (e) {} });
-    return { ctx, page, errs, sheetText, closeAll };
+    return { ctx, page, errs, sheetText, closeAll, pushed };
   };
-  /* English */
-  { const { ctx, page, errs, sheetText, closeAll } = await run('en');
-    const st = await page.evaluate(() => ({ scope: (window.LOWI_CLOUD_X && LOWI_CLOUD_X.state().uid) || '', PS: !!window.LowiProfileShare, share: !!LowiCommunityHost.setShare, id: LowiCommunityHost.identity() }));
-    ok(st.PS && st.share, 'profile-share-core loaded and host.setShare present');
-    ok(st.id && st.id.share === false && st.id.asked === false, 'existing user starts with nothing shared and not asked: ' + JSON.stringify(st.id && { share: st.id.share, asked: st.id.asked }));
-    /* consent ask when Community opens */
+  /* English: a returning account that turned sharing off in the consent build */
+  { const { ctx, page, errs, sheetText, closeAll, pushed } = await run('en');
+    const st = await page.evaluate(() => ({ PS: !!window.LowiProfileShare, bdayFn: !!LowiCommunityHost.setBday, old: !!LowiCommunityHost.setShare, id: LowiCommunityHost.identity() }));
+    ok(st.PS && st.bdayFn && !st.old, 'profile-share-core loaded, host.setBday present, host.setShare gone');
+    ok(st.id && !('share' in st.id) && !('asked' in st.id), 'identity carries no share/asked flags');
+    /* offline fixture: pushProfile stops at "not live", so check the exact rule it applies to this account's saved state */
+    const last = await page.evaluate(() => LowiProfileShare.publicRow(S.user, S.user.mbti || '')), rows = [last];
+    ok(last.bday === '0004-03-01' && last.sign === 'Pisces' && !/1990/.test(JSON.stringify(rows)), 'on open the app publishes day + month and the sign despite the old "off", never the year: ' + JSON.stringify({ bday: last.bday, sign: last.sign, mbti: last.mbti }));
+    /* no consent ask when Community opens */
     await page.evaluate(() => { try { LowiRanking.open(); } catch (e) {} });
     await page.waitForTimeout(2600);
     let t = await sheetText();
-    const autoAsk = /Your Community card/.test(t);
-    console.log('info auto ask on Community open: ' + autoAsk);
-    if (!autoAsk) { await closeAll(); await page.waitForTimeout(300); await page.evaluate(() => LowiCommunity.openProfile(LowiCommunityHost.state().uid || 'me', 'eman')); await page.waitForTimeout(700); }
-    else { await page.screenshot({ path: SHOTS + '/' + ENGINE + '-1-ask.png' }); ok(/never the year or your age/.test(t) && /1 March/.test(t) && /Pisces/.test(t) && !/1990/.test(t), 'ask explains the rule and previews 1 March + Pisces, no year'); await closeAll(); await page.waitForTimeout(400); }
-    /* own card before consent */
+    ok(!/Share on my card|Not now/.test(t), 'no consent ask when Community opens');
+    await closeAll(); await page.waitForTimeout(400);
+    /* own card */
     const me = await page.evaluate(() => LOWI_CLOUD_X.state().uid);
     await page.evaluate(id => LowiCommunity.openProfile(id, 'eman'), me); await page.waitForTimeout(800);
-    t = await sheetText(); await page.screenshot({ path: SHOTS + '/' + ENGINE + '-2-own-before.png' });
-    ok(/1 March/.test(t) && /not shared yet/.test(t) && /Pisces/.test(t) && !/1990/.test(t), 'own card: 1 March, countdown, Pisces, marked not shared yet');
+    t = await sheetText(); await page.screenshot({ path: SHOTS + '/' + ENGINE + '-2-own.png' });
+    ok(/1 March · (in \d+ days|Tomorrow|Birthday today)/.test(t) && /Pisces/.test(t) && !/1990|not shared|Share on my card/i.test(t), 'own card: 1 March + countdown, Pisces, no year, no share button or tag');
     const link = await page.evaluate(() => { const a = document.querySelector('[data-ps-test]'); return a ? { href: a.href, tgt: a.target, vis: a.getBoundingClientRect().height > 30 } : null; });
     ok(link && link.href === 'https://www.16personalities.com/free-personality-test' && link.tgt === '_blank' && link.vis, 'own card without type: English test link visible ' + JSON.stringify(link));
-    /* Share */
-    await page.evaluate(() => document.querySelector('[data-chat="share-ask"]').click()); await page.waitForTimeout(900);
-    t = await sheetText(); ok(/Your Community card/.test(t), 'share button opens the consent sheet');
-    await page.screenshot({ path: SHOTS + '/' + ENGINE + '-3-consent.png' });
-    await page.evaluate(() => document.querySelector('form[data-chat-form="share"] button').click()); await page.waitForTimeout(2200);
-    const saved = await page.evaluate(() => { const v = JSON.parse(localStorage.getItem('lowispike.v2') || '{}'); return { c: v.user && v.user.shareProfile, row: LowiProfileShare.publicRow(S.user, S.user.shareProfile, '') }; });
-    ok(saved.c && saved.c.v === 1 && saved.c.at > 0 && !saved.c.off, 'Share saved the consent with the profile ' + JSON.stringify(saved.c));
-    ok(saved.row.bday === '0004-03-01' && saved.row.sign === 'Pisces' && saved.row.mbti === '', 'what pushProfile may publish: ' + JSON.stringify(saved.row));
-    t = await sheetText(); await page.screenshot({ path: SHOTS + '/' + ENGINE + '-4-own-after.png' });
-    ok(/1 March[^\n]*shared/.test(t) && !/not shared yet/.test(t), 'own card reopened marked shared');
     /* the type picker */
     const hasPick = await page.evaluate(() => !!document.querySelector('[data-chat="type-pick"]'));
     if (hasPick) { await page.evaluate(() => document.querySelector('[data-chat="type-pick"]').click()); await page.waitForTimeout(1200); const grid = await page.evaluate(() => { const g = [...document.querySelectorAll('.r5-mbgrid')].find(e => e.getClientRects().length && e.getBoundingClientRect().height > 50); return !!g; });
       ok(grid, 'I know my type opens the type picker'); await page.screenshot({ path: SHOTS + '/' + ENGINE + '-5-picker.png' });
       await page.evaluate(() => { const b = [...document.querySelectorAll('.r5-mbgrid [data-v="INTJ"]')].find(e => e.getClientRects().length); if (b) b.click(); }); await page.waitForTimeout(900);
-      const pub = await page.evaluate(() => { const me = LowiCommunityHost.identity(); return { t: me.t, row: LowiProfileShare.publicRow(S.user, S.user.shareProfile, (window.LowiR3 && LowiR3.me().t) || '') }; });
-      ok(pub.t === 'INTJ' && pub.row.mbti === 'INTJ' && pub.row.bday === '0004-03-01', 'saved type INTJ is what gets shared ' + JSON.stringify(pub));
+      const pub = await page.evaluate(() => { const me = LowiCommunityHost.identity(); return { t: me.t, row: LowiProfileShare.publicRow(S.user, (window.LowiR3 && LowiR3.me().t) || '') }; });
+      ok(pub.t === 'INTJ' && pub.row.mbti === 'INTJ' && pub.row.bday === '0004-03-01', 'saved type INTJ is what gets shown ' + JSON.stringify(pub));
       await page.evaluate(() => { try { document.querySelector('[data-act="close-sheet"]') && document.querySelector('[data-act="close-sheet"]').click(); } catch (e) {} }); await closeAll(); await page.waitForTimeout(500);
       await page.evaluate(id => LowiCommunity.openProfile(id, 'eman'), me); await page.waitForTimeout(800); t = await sheetText();
-      ok(/INTJ · shared/.test(t) && !/personality test/i.test(t), 'own card now shows INTJ · shared, test link gone'); await page.screenshot({ path: SHOTS + '/' + ENGINE + '-5b-own-type.png' }); await closeAll(); await page.waitForTimeout(400); }
+      ok(/INTJ/.test(t) && !/· shared|personality test/i.test(t), 'own card now shows INTJ, no tag, test link gone'); await page.screenshot({ path: SHOTS + '/' + ENGINE + '-5b-own-type.png' }); await closeAll(); await page.waitForTimeout(400); }
     else ok(false, 'type-pick button present');
     /* another member who shared */
     await page.evaluate(() => LowiCommunity.openProfile('aaaaaaaa-0000-4000-8000-000000000001', 'Antje')); await page.waitForTimeout(800);
@@ -83,7 +76,31 @@ const UID = '00000000-0000-4000-8000-00000000c0c0';
     /* old full-year row */
     await page.evaluate(() => LowiCommunity.openProfile('aaaaaaaa-0000-4000-8000-000000000002', 'Old row')); await page.waitForTimeout(800);
     t = await sheetText(); await page.screenshot({ path: SHOTS + '/' + ENGINE + '-7-legacy.png' });
-    ok(!/1980|January|Leo|ENTJ/.test(t) && (t.match(/Not shared/g) || []).length >= 3, 'old full-year row: all three Not shared');
+    ok(!/1980|January|Leo|ENTJ/.test(t) && !/Not shared/i.test(t) && (t.match(/Not added yet/g) || []).length >= 2 && /once this member opens the updated app/.test(t), 'old full-year row: never decoded, says Not added yet and when it appears, never "Not shared"');
+    await closeAll(); await page.waitForTimeout(400);
+    /* Community settings: the rule is stated, no toggle */
+    await page.evaluate(() => { try { LowiRanking.open(); } catch (e) {} }); await page.waitForTimeout(1500);
+    const set = await page.evaluate(() => { const b = document.querySelector('[data-chat="settings"]'); if (b) b.click(); return !!b; }); await page.waitForTimeout(900);
+    t = await sheetText(); const tog = await page.evaluate(() => !!document.querySelector('form[data-chat-form="sharing"], input[name="all"]'));
+    await page.screenshot({ path: SHOTS + '/' + ENGINE + '-9-settings.png' });
+    ok(set && /never the year or your age/.test(t) && !tog, 'Community settings state day + month visibility, no sharing toggle');
+    ok(!errs.length, 'no page errors ' + JSON.stringify(errs.slice(0, 3)));
+    await ctx.close(); }
+  /* an account without a birthday: Add my birthday */
+  { const { ctx, page, errs, sheetText, pushed } = await run('en', { name: 'nobday', bday: '' });
+    const me = await page.evaluate(() => LOWI_CLOUD_X.state().uid);
+    await page.evaluate(id => LowiCommunity.openProfile(id, 'nobday'), me); await page.waitForTimeout(800);
+    let t = await sheetText(); await page.screenshot({ path: SHOTS + '/' + ENGINE + '-10-nobday.png' });
+    ok(/Not added yet/.test(t) && /Add my birthday/.test(t), 'own card without birthday: Not added yet + Add my birthday');
+    await page.evaluate(() => document.querySelector('[data-chat="bday-add"]').click()); await page.waitForTimeout(900);
+    t = await sheetText(); ok(/never the year or your age/.test(t) && !/Not now/.test(t), 'sheet states the rule, no Not now');
+    await page.evaluate(() => { const i = document.querySelector('form[data-chat-form="bday"] input[name="bday"]'); i.value = '1995-10-30'; document.querySelector('form[data-chat-form="bday"] button').click(); }); await page.waitForTimeout(4500);
+    t = await sheetText(); await page.screenshot({ path: SHOTS + '/' + ENGINE + '-11-added.png' });
+    const last = await page.evaluate(() => LowiProfileShare.publicRow(S.user, '')), rows = [last, await page.evaluate(() => localStorage.getItem('lowispike.v2').includes('"bday":"1995-10-30"') ? 'saved locally' : 'not saved')];
+    ok(rows[1] === 'saved locally', 'the date is saved with the profile');
+    if (!/30 October/.test(t)) console.log('info sheet: ' + t.slice(0, 300).replace(/\n/g, ' | '));
+    ok(/30 October · in 6 days|30 October · in \d+ days/.test(t) && /Scorpio/.test(t) && !/1995/.test(t), 'card reopens with 30 October + countdown + Scorpio, no year');
+    ok(last.bday === '0004-10-30' && last.sign === 'Scorpio' && !/1995/.test(JSON.stringify(last)), 'published 0004-10-30 Scorpio, never 1995: ' + JSON.stringify({ bday: last.bday, sign: last.sign }));
     ok(!errs.length, 'no page errors ' + JSON.stringify(errs.slice(0, 3)));
     await ctx.close(); }
   /* German and Spanish: sign names and the test page in the app language */

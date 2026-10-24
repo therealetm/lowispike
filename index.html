@@ -9737,9 +9737,10 @@ function pushProfile(){ clearTimeout(profT); profT = setTimeout(async () => { if
   try { if (window.LowiR3 && LowiR3.profileExtra) Object.assign(row, LowiR3.profileExtra()); } catch(e){}
   /* Nothing personal is public by default (an old full birthday never is). */
   row.bday = ""; row.mbti = ""; row.sign = "";
-  /* 24 Oct 2026 (Emmanuel: birthday with a countdown, star sign, and personality if set, shared on the Community card): only after the person
-     agreed (S.user.shareProfile), and only day + month (year 0004 marker, never the birth year), the sign worked out from that day, and their type. */
-  try { if (window.LowiProfileShare) Object.assign(row, LowiProfileShare.publicRow(S.user, S.user.shareProfile, (me && me.t) || S.user.mbti || "")); } catch(e){}
+  /* 24 Oct 2026 (Emmanuel: birthday with a countdown, star sign, and personality if set, always on the Community card, no opt-out): every
+     account with a birthday publishes day + month (year 0004 marker, never the birth year), the sign worked out from that day, and their type.
+     boot() calls this on every open, so returning accounts publish too. */
+  try { if (window.LowiProfileShare) Object.assign(row, LowiProfileShare.publicRow(S.user, (me && me.t) || S.user.mbti || "")); } catch(e){}
   const j = JSON.stringify(row); if (j === lastProf) return; lastProf = j;
   const r = await sb.from("profiles").upsert(Object.assign({updated_at:new Date().toISOString()}, row)); if (r.error) lastProf = ""; }, 1500); }
 const SYNC = () => window.LowiSyncCore || null;
@@ -10978,9 +10979,6 @@ function saveOb(final){
   const s = R2.S(); s.user = s.user || {};
   if (ob.name) s.user.name = ob.name.slice(0, 40);
   s.user.bday = ob.bday || s.user.bday || "";
-  /* 24 Oct 2026: the birthday step says day + month and star sign go on the Community card; going past it with a birthday is the yes.
-     A choice made before (yes or no, in Community settings) is never overwritten. */
-  if (ob.bday && !s.user.shareProfile) s.user.shareProfile = {v:1, at:Date.now(), via:"onboarding"};
   /* BQ-2 (sweep Oct 23): keep the optional birth time with the birthday, so a reload during the sign reveal (BH-011 resumes at the birthday step) still has it */
   if (typeof ob.btime === "string") { if (ob.btime) s.user.btime = ob.btime.slice(0, 5); else delete s.user.btime; }
   if (ob.avatar && ob.avatar !== s.user.avatar) { s.user.avatar = ob.avatar; delete s.user.avatarUrl; }
@@ -21129,9 +21127,9 @@ window.LowiCommunityHost = {
   replace:(m,r) => LOWI_CLOUD_X.community.replace(m,r), upsert:m => LOWI_CLOUD_X.community.upsert(m),
   remove:id => LOWI_CLOUD_X.community.remove(id), setReactions:r => LOWI_CLOUD_X.community.setReactions(r),
   people:() => LOWI_CLOUD.people(), room:() => LOWI_CLOUD_X.room ? LOWI_CLOUD_X.room() : "all",
-  identity(){ const p = LowiR3.me(), u = S.user || {}; return {n:u.name || "", s:p.s, t:u.mbti || u.personality || p.t || "", avatar:p.avatar, lv:p.lv, xp:p.xp, bday:/^\d{4}-\d{2}-\d{2}$/.test(u.bday || "") ? u.bday : "", share:!!(window.LowiProfileShare && LowiProfileShare.consented(u.shareProfile)), asked:!!u.shareProfile}; }, /* bday: own card; only day + month go public, after consent */
+  identity(){ const p = LowiR3.me(), u = S.user || {}; return {n:u.name || "", s:p.s, t:u.mbti || u.personality || p.t || "", avatar:p.avatar, lv:p.lv, xp:p.xp, bday:/^\d{4}-\d{2}-\d{2}$/.test(u.bday || "") ? u.bday : ""}; }, /* bday: own card; only day + month go public (always, 24 Oct) */
   /* 24 Oct 2026: the person's yes/no to sharing birthday (day + month), star sign and personality. Saving S syncs it and pushProfile publishes. */
-  setShare(on, bday){ const u = S.user = S.user || {}; if (bday && window.LowiProfileShare && LowiProfileShare.monthDay(bday)) u.bday = bday; u.shareProfile = on ? {v:1, at:Date.now()} : {v:1, at:Date.now(), off:true}; save(); try { if (window.LOWI_CLOUD_X && LOWI_CLOUD_X.pushProfile) LOWI_CLOUD_X.pushProfile(); } catch(e){} return this.identity(); },
+  setBday(bday){ const u = S.user = S.user || {}; if (!(window.LowiProfileShare && LowiProfileShare.monthDay(bday))) return null; u.bday = bday; save(); try { if (window.LOWI_CLOUD_X && LOWI_CLOUD_X.pushProfile) LOWI_CLOUD_X.pushProfile(); } catch(e){} return this.identity(); }, /* 24 Oct: own card "Add my birthday" for accounts without one */
   bubble:(p,size) => LowiR3.bubble(p,size), color:sign => LowiGlass.palette(String(sign || "none").toLowerCase())[0],
   typeLabel:(type,lang) => window.LowiHerbIdentityCore ? LowiHerbIdentityCore.typeLabel(type,lang) : "",
   sheet:html => LowiR2.sheet(html, {cls:"cs-overlay"}), active:() => TAB === "foryou" && (CMV.view === "chat" || !!document.querySelector("#tab-foryou.nm-solo")), /* Oct 16: Community is the galaxy alone (nav-moves.js), so it is live whatever the old segment says */

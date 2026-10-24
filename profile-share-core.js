@@ -1,6 +1,7 @@
 /* Shared profile details (24 Oct 2026, Emmanuel: "Birthday mandatory shared with a countdown to the next birthday, star sign mandatory
    shared, personality shared if they have one, else a link to the personality test in their language").
-   Pure rules, no DOM. What goes public, only after the person agreed (consent record {v:1,at}):
+   Pure rules, no DOM. Since 24 Oct 2026 08:30 (Emmanuel: "always visible, not optional, no hide toggle") this goes public for every
+   account that has a birthday saved, with no consent step and no opt-out (the setup and Community settings say so):
      profiles.bday = '0004-MM-DD'  day and month only. Year 0004 is a marker, never a birth year (the column's check wants YYYY-MM-DD;
                                    0004 is a leap year, so 29 February fits). Nobody's age or birth year ever leaves the phone.
      profiles.sign = the star sign worked out from that day (never typed in or guessed)
@@ -41,11 +42,10 @@ function dayMonth(md,lang){if(!md)return '';try{return new Date(2000,md.m-1,md.d
 const CD={en:['Birthday today! 🎉','Tomorrow','in {n} days'],de:['Heute Geburtstag! 🎉','Morgen','in {n} Tagen'],es:['¡Cumpleaños hoy! 🎉','Mañana','en {n} días']};
 function countdown(days,lang){const c=CD[L(lang)];return days===0?c[0]:days===1?c[1]:c[2].replace('{n}',String(days));}
 function testLink(lang){return TEST[L(lang)];}
-function consented(c){return !!(c&&c.v===1&&+c.at>0&&!c.off);}
-/* what pushProfile may publish for this person: all '' unless they agreed and have a valid birthday */
-function publicRow(user,consent,mbti){user=user||{};const b=consented(consent)?encode(user.bday):'';if(!b)return {bday:'',sign:'',mbti:''};return {bday:b,sign:signOf(decode(b)),mbti:type(mbti)};}
+/* what pushProfile publishes for this person: day/month, the sign from it and their type; all '' without a valid birthday (nothing invented) */
+function publicRow(user,mbti){user=user||{};const b=encode(user.bday);if(!b)return {bday:'',sign:'',mbti:''};return {bday:b,sign:signOf(decode(b)),mbti:type(mbti)};}
 /* what the app may show for someone else's profile row: their shared day/month, sign and type, or nothing */
 function readPublic(row){row=row||{};const md=decode(row.bday);if(!md)return {bday:'',s:'',t:'',md:null};return {bday:encode(YEAR+row.bday.slice(4)),s:signOf(md),t:type(row.mbti||row.t),md};}
-const api={YEAR,SIGNS,TEST,type,monthDay,encode,decode,signOf,signName,glyph,next,dayMonth,countdown,testLink,consented,publicRow,readPublic,leap};
+const api={YEAR,SIGNS,TEST,type,monthDay,encode,decode,signOf,signName,glyph,next,dayMonth,countdown,testLink,publicRow,readPublic,leap};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiProfileShare=api;
 })(typeof window==='object'?window:globalThis);

@@ -67,14 +67,29 @@ test('the personality test opens in the user\'s own language (pages checked 24 O
   assert.equal(P.testLink('fr'), P.TEST.en);
 });
 
-test('nothing is published without consent; with consent only day/month, the derived sign and a real type', () => {
+test('always published, no opt-out (Emmanuel, 24 Oct 08:30): day/month, the derived sign and a real type for every account with a birthday', () => {
   const u = { bday: '1990-12-24' };
-  assert.deepEqual(P.publicRow(u, null, 'INTJ'), { bday: '', sign: '', mbti: '' });
-  assert.deepEqual(P.publicRow(u, { v: 1, at: 5, off: true }, 'INTJ'), { bday: '', sign: '', mbti: '' }, 'withdrawn consent publishes nothing');
-  assert.deepEqual(P.publicRow(u, { v: 1, at: 5 }, 'intj'), { bday: '0004-12-24', sign: 'Capricorn', mbti: 'INTJ' });
-  assert.deepEqual(P.publicRow(u, { v: 1, at: 5 }, ''), { bday: '0004-12-24', sign: 'Capricorn', mbti: '' }, 'no type -> none invented');
-  assert.deepEqual(P.publicRow({ bday: '' }, { v: 1, at: 5 }, 'INTJ'), { bday: '', sign: '', mbti: '' }, 'no birthday -> nothing');
-  assert.doesNotMatch(JSON.stringify(P.publicRow(u, { v: 1, at: 5 }, 'INTJ')), /1990/);
+  assert.deepEqual(P.publicRow(u, 'INTJ'), { bday: '0004-12-24', sign: 'Capricorn', mbti: 'INTJ' }, 'no consent record needed');
+  assert.deepEqual(P.publicRow(Object.assign({ shareProfile: { v: 1, at: 5, off: true } }, u), 'intj'), { bday: '0004-12-24', sign: 'Capricorn', mbti: 'INTJ' }, 'an old "off" from the consent build is ignored');
+  assert.deepEqual(P.publicRow(u, ''), { bday: '0004-12-24', sign: 'Capricorn', mbti: '' }, 'no type -> none invented');
+  assert.deepEqual(P.publicRow({ bday: '' }, 'INTJ'), { bday: '', sign: '', mbti: '' }, 'no birthday -> nothing invented');
+  assert.deepEqual(P.publicRow({ bday: '1999-02-29' }, 'INTJ'), { bday: '', sign: '', mbti: '' }, 'an impossible date is not published');
+  assert.doesNotMatch(JSON.stringify(P.publicRow(u, 'INTJ')), /1990|\b3[0-9]\b/, 'no birth year, no age');
+  assert.equal(P.consented, undefined, 'the consent gate is gone from the rules');
+});
+
+test('every stored birthday gives day/month, a countdown that matches a day-by-day count, and the sign', () => {
+  const start = new Date(2026, 9, 24, 9, 0).getTime();
+  for (const iso of ['1990-01-01', '1985-10-24', '2001-10-25', '1977-10-23', '2000-02-29', '1999-12-31', '1960-06-15']) {
+    const pub = P.readPublic(P.publicRow({ bday: iso }, ''));
+    assert.ok(pub.md, iso);
+    assert.equal(pub.bday.slice(0, 5), '0004-');
+    let n = 0; const d = new Date(start); d.setHours(0, 0, 0, 0);
+    const m = +iso.slice(5, 7), day = +iso.slice(8, 10);
+    while (!(d.getMonth() + 1 === m && (d.getDate() === day || (m === 2 && day === 29 && d.getDate() === 28 && !P.leap(d.getFullYear()))))) { d.setDate(d.getDate() + 1); n++; }
+    assert.equal(P.next(pub.md, start).days, n, iso + ' countdown');
+    assert.ok(pub.s, iso + ' sign');
+  }
 });
 
 test('reading someone else: only the shared form counts; an old full-year row stays private', () => {

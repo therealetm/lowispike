@@ -119,8 +119,35 @@ const STATE = () => {
     { n: 'Profile overview', open: api('LowiG2E.overview()') },
     { n: 'For You', open: api("LowiNavMoves.open('fy')") },
   ];
-  if (process.env.ONLY_EXTRA) SC.length = 0;
+  /* DEEP=1 (Oct 24 13:40 run): the places the earlier runs had not reached, as stacks a player builds (screen inside screen),
+     each left with the same method until Home: Community chat, a person card from inside the chat, Send energy from that card
+     (opens the Adventure log care sheet; nothing is sent, the fake cloud keeps everything on the VM), the new For You / Studio /
+     Ranking tabs, a chat opened from Studio / For You, the People directory, Shop's Supermarket / Seller Zone / Kitchen tabs,
+     Settings, and the What's New mini tour. ONLY_DEEP=1 runs just these. */
+  const comm = async (expr) => { await P.evaluate(() => goTab('foryou')); await sleep(2200); if (expr) { await api(expr)(); await sleep(1600); } };
+  const clickIn = (sel) => P.evaluate(sel => { const b = [...document.querySelectorAll(sel)].find(e => { const r = e.getBoundingClientRect(); return r.width > 2 && r.height > 2 && !e.disabled; }); if (!b) return false; b.click(); return true; }, sel);
+  const personCard = async () => { await comm('LowiRoomsUI.setTab(true)'); if (!(await clickIn('#tab-foryou [data-chat="profile"]'))) await api("(()=>{const el=document.querySelector('#tab-foryou [data-uid]');return el?LowiCommunity.openProfile(el.getAttribute('data-uid'),''):'none'})()")(); await sleep(1500); };
+  const shop = async (t) => { await api("(localStorage.setItem('lowi.storePicks.tab','" + t + "'),LowiStorePicks.open('sweep'))")(); await sleep(1200); await clickIn('.stp-ov [data-stp-tab="' + t + '"]'); };
+  const DEEP = [
+    { n: 'Community > Chat tab', deep: 1, open: () => comm('LowiRoomsUI.setTab(true)') },
+    { n: 'Community > Chat > person card', deep: 1, open: personCard },
+    { n: 'Community > Chat > person card > Send energy', deep: 1, open: async () => { await personCard(); await clickIn('[data-chat="energy"]'); await sleep(1500); } },
+    { n: 'Community > For You tab', deep: 1, open: () => comm("LowiRoomsUI.showView('fy')") },
+    { n: 'Community > Studio tab', deep: 1, open: () => comm("LowiRoomsUI.showView('studio')") },
+    { n: 'Community > Studio > chat', deep: 1, open: async () => { await comm("LowiRoomsUI.showView('studio')"); await api('LowiRoomsUI.setTab(true)')(); await sleep(1500); } },
+    { n: 'Community > Ranking tab', deep: 1, open: () => comm("LowiRoomsUI.showView('rank')") },
+    { n: 'Community > For You > chat', deep: 1, open: async () => { await comm("LowiRoomsUI.showView('fy')"); await api('LowiRoomsUI.setTab(true)')(); await sleep(1500); } },
+    { n: 'People directory', deep: 1, open: api('LowiPeopleDir.open()') },
+    { n: 'Shop > Supermarket', deep: 1, open: () => shop('shop') },
+    { n: 'Shop > Seller Zone', deep: 1, open: () => shop('sz') },
+    { n: 'Shop > Kitchen', deep: 1, open: () => shop('kitchen') },
+    { n: 'Settings sheet', deep: 1, open: api('LowiHomeOrbitV2.openSettings()') },
+    { n: "What's New", deep: 1, open: api("fetch('version.json?'+Date.now()).then(r=>r.json()).then(v=>LowiTutorial.news(LowiTutorialSteps.unseenNews(v.news,()=>false)))") },
+  ];
+  if (process.env.ONLY_EXTRA || process.env.ONLY_DEEP) SC.length = 0;
   if (process.env.EXTRA || process.env.ONLY_EXTRA) SC.push(...EXTRA);
+  if (process.env.DEEP || process.env.ONLY_DEEP) SC.push(...DEEP);
+  if (process.env.MATCH) { const re = new RegExp(process.env.MATCH, 'i'); const keep = SC.filter(s => re.test(s.n)); SC.length = 0; SC.push(...keep); }
   /* Community menu entries, found on the page */
   const commMenu = async () => {
     await P.evaluate(() => goTab('foryou')); await sleep(2500);
@@ -135,9 +162,9 @@ const STATE = () => {
   };
 
   await boot();
-  const comm = process.env.NOCOMM ? [] : await commMenu(); console.log('COMMUNITY MENU', JSON.stringify(comm));
+  const commItems = process.env.NOCOMM || process.env.ONLY_DEEP ? [] : await commMenu(); console.log('COMMUNITY MENU', JSON.stringify(commItems));
   await toHome();
-  for (const it of comm) {
+  for (const it of commItems) {
     if (/invite|einladen|invitar|sign out|abmelden|log out|delete|l\u00f6sch/i.test(it)) continue;
     SC.push({ n: 'Community menu > ' + it, deep: 1, open: async () => { await P.evaluate(() => goTab('foryou')); await sleep(2000); await tapSel('.rm-menu-btn'); await sleep(1000); await P.evaluate(t => { const m = [...document.querySelectorAll('[role=menu], .rm-menu, .rm-pop, .rm-sheet, .r2-ov.on')].filter(e => e.getBoundingClientRect().height > 20).pop(); const b = m && [...m.querySelectorAll('button,[role=menuitem],a')].find(b => (b.textContent || b.getAttribute('aria-label') || '').trim().replace(/\s+/g, ' ').slice(0, 30) === t); if (b) b.click(); }, it); } });
   }
@@ -154,7 +181,7 @@ const STATE = () => {
       if (!opened(s1)) { console.log('-', sc.n, m, 'nothing opened'); sc.none = 1; break; }
       const path = [];
       let s = s1, done = false;
-      for (let k = 0; k < 4; k++) {
+      for (let k = 0; k < +(process.env.MAXSTEPS || (sc.deep ? 6 : 4)); k++) {
         const how = await closeOnce(m); if (!how) { path.push(m + ':none'); break; }
         path.push(how); await sleep(1100);
         if (!alive()) { note('left', sc.n + ': ' + m + ' left the app / crashed', { path, url: P.url(), crashed: R.crashed }); break; }

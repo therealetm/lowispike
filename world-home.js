@@ -303,6 +303,11 @@
         H.classList.toggle('wh-x-on', on);
         H.classList.toggle('wh-r2-on', !!r);
         if (r) glassSheet(r);
+        /* Oct 24 back & close sweep: a few R2 sheets sit far above this X's z-index 300 (Send energy's care sheet is 99995, so it
+           opens over the person card). Their own X is hidden here (wh-r2-on), so the one X sat under that sheet's scrim: dimmed, and
+           a tap on it landed on the scrim. Lift the X one above the sheet it closes; back to the stylesheet's 300 otherwise. */
+        const rz = r ? (parseInt(getComputedStyle(r).zIndex, 10) || 0) : 0, xz = rz >= 300 ? String(rz + 1) : '';
+        if (x.style.zIndex !== xz) x.style.zIndex = xz;
         if (x.hidden !== !on) x.hidden = !on; /* Oct 18 game-perf: runs every 700 ms, write only on change */
     }
 

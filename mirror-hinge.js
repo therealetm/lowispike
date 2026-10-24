@@ -120,7 +120,7 @@
         }
     }
     function ui(ov, s, flow, d) {
-        const T = d.T, l = d.lang, R = HC.ROUTINE;
+        const T = d.T, l = d.lang, R = flow.R || HC.ROUTINE;
         ensure(ov);
         const evs = flow.drain(); if (evs.length) events(evs, d);
         const aligning = s.phase === 'align' || s.phase === 'hold', resting = s.phase === 'rest', going = s.phase === 'follow' || s.phase === 'lost';
@@ -157,11 +157,27 @@
         const line = cam ? T(reps + ' reps in ' + s.sets + ' sets, ' + clean + ' of them clean.', reps + ' Wiederholungen in ' + s.sets + ' Sätzen, ' + clean + ' davon sauber.', reps + ' repeticiones en ' + s.sets + ' series, ' + clean + ' limpias.')
             : T(reps + ' reps in ' + s.sets + ' sets with the outline.', reps + ' Wiederholungen in ' + s.sets + ' Sätzen mit dem Umriss.', reps + ' repeticiones en ' + s.sets + ' series con la silueta.');
         const sets = (s.history || []).map(h => '<li><b>' + esc(T('Set ', 'Satz ', 'Serie ') + h.set) + '</b><span>' + h.reps + ' ' + esc(T('reps', 'Wdh.', 'rep.')) + (cam ? ' · ' + h.clean + ' ' + esc(T('clean', 'sauber', 'limpias')) : '') + '</span></li>').join('');
-        return '<header class="mm-ph"><b>' + esc(T('Deadlifts done', 'Kreuzheben geschafft', 'Peso muerto hecho')) + '</b><button type="button" class="mm-ic" data-mm="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + d.ICON.x + '</button></header>' +
+        const name = HC.txt(HC.routineFor(s.variant).n, d.lang);
+        return '<header class="mm-ph"><b>' + esc(T(name + ' done', name + ' geschafft', name + ' hecho')) + '</b><button type="button" class="mm-ic" data-mm="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + d.ICON.x + '</button></header>' +
             '<div class="mh-done"><i class="mh-orb" aria-hidden="true"><em></em><em></em></i><p><b>' + esc(compName()) + ':</b> ' + esc(T('That is how you look after yourself.', 'So passt du gut auf dich auf.', 'Así te cuidas.')) + '</p></div>' +
             '<p class="mm-lead">' + esc(line) + ' ' + esc(T('Your camera is off again.', 'Deine Kamera ist wieder aus.', 'Tu cámara está apagada.')) + '</p><ul class="mh-sets">' + sets + '</ul>' +
-            '<div class="mm-acts"><button type="button" class="mm-btn mm-pri" data-mm="close">' + esc(T('Close', 'Schließen', 'Cerrar')) + '</button><button type="button" class="mm-btn mm-ghostbtn" data-mm="open">' + esc(T('Another one', 'Noch eine', 'Otra')) + '</button></div>';
+            '<div class="mm-acts"><button type="button" class="mm-btn mm-pri" data-mm="close">' + esc(T('Close', 'Schließen', 'Cerrar')) + '</button><button type="button" class="mm-btn mm-ghostbtn" data-mm="hinge">' + esc(T('Another one', 'Noch eine', 'Otra')) + '</button></div>';
     }
 
-    W.LowiMirrorHinge = { ID: HC.ID, ROUTINE: HC.ROUTINE, ICON, placeArt, paint, ui, finishHTML, reset, makeFlow: (mode, lang) => new HC.Flow({ mode, lang }), measure: HC.measure };
+    /* Oct 24 2026: the three deadlifts as one centred row of one-word glass pills in the setup sheet (a radio group: the screen
+       reader hears the full name, e.g. "Rumänisches Kreuzheben"), with the picked one's short line under it. */
+    function pickHTML(v, T, esc, l) {
+        v = HC.vid(v);
+        return '<div class="mh-var" role="radiogroup" aria-label="' + esc(T('Deadlift style', 'Kreuzheben-Variante', 'Tipo de peso muerto')) + '">' +
+            HC.VORDER.map(k => { const V = HC.VARIANTS[k], on = k === v; return '<button type="button" class="mh-vb' + (on ? ' on' : '') + '" role="radio" aria-checked="' + on + '" tabindex="' + (on ? 0 : -1) + '" data-mm="dlv" data-v="' + k + '" aria-label="' + esc(HC.txt(V.n, l)) + '">' + esc(HC.txt(V.w, l)) + '</button>'; }).join('') +
+            '</div><p class="mh-vsub">' + esc(HC.txt(HC.VARIANTS[v].sub, l)) + '</p>';
+    }
+
+    /* the last deadlift you picked, on this device: just 'rdl' / 'conv' / 'sumo' */
+    const PICK = 'lowi.mm.dl';
+    const getPick = () => { let v = null; try { v = W.localStorage.getItem(PICK); } catch (e) {} return HC.vid(v); };
+    const setPick = v => { try { W.localStorage.setItem(PICK, HC.vid(v)); } catch (e) {} };
+
+    W.LowiMirrorHinge = { ID: HC.ID, getPick, setPick, ROUTINE: HC.ROUTINE, VORDER: HC.VORDER, vid: HC.vid, routineFor: HC.routineFor, ICON, placeArt, paint, ui, finishHTML, pickHTML, reset,
+        makeFlow: (mode, lang, variant) => new HC.Flow({ mode, lang, variant }), measure: HC.measure };
 })();

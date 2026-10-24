@@ -226,3 +226,15 @@ html:not(.mm-cam) .mm-video { display: none; }
     .mh-rep, .mh-orb, .mh-rep.pop, .mh-rep.setpop, .mh-misty.party .mh-orb { animation: none; }
     .mh-rep.pop .mh-burst, .mh-rep.setpop .mh-burst, .mh-misty.party .mh-cells em { animation: none; }
 }
+
+/* Oct 24 2026: the three deadlifts (Romanian, Conventional, Sumo) as one centred row of one-word glass pills in the setup sheet */
+.mh-var { display: flex; justify-content: center; gap: 4px; width: fit-content; max-width: 100%; margin: 12px auto 4px; padding: 4px; box-sizing: border-box;
+    border: 1.5px solid rgba(200, 235, 255, .32); border-radius: 26px; background: rgba(255, 255, 255, .07); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18); }
+.mh-vb { flex: 1 1 auto; min-width: 0; min-height: 44px; padding: 0 clamp(8px, 3vw, 16px); border: 0; border-radius: 22px; font: inherit; font-size: clamp(13px, 3.7vw, 15px);
+    font-weight: 650; white-space: nowrap; color: rgba(234, 246, 255, .78); background: transparent; cursor: pointer; transition: background .2s, color .2s, box-shadow .2s; }
+.mh-vb.on { color: #fff; background: radial-gradient(120% 140% at 30% 0%, rgba(255, 255, 255, .28), rgba(90, 169, 255, .26) 60%, rgba(10, 60, 140, .22));
+    box-shadow: inset 0 0 0 1.5px rgba(200, 240, 255, .55), inset 0 1px 0 rgba(255, 255, 255, .35); }
+.mh-vb:active { transform: scale(.97); }
+.mh-vb:focus-visible { outline: 2px solid #8fe7ff; outline-offset: 2px; }
+.mh-vsub { margin: 4px 0 2px; text-align: center; font-size: 13px; line-height: 1.35; color: rgba(234, 246, 255, .72); }
+@media (prefers-reduced-motion: reduce) { .mh-vb { transition: none; } .mh-vb:active { transform: none; } }

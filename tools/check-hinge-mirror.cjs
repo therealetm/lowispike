@@ -29,14 +29,15 @@ const INIT = (lang) => {
         return c.captureStream(15);
     };
     /* the fake person: depth 0..1 from __fake (cycle = hinge every 3.6 s), faults, front-on, hidden */
-    window.__fake = { mode: 'side', cycle: false, depth: 0, round: 0, hands: 0, knees: 0, t0: 0 };
+    addEventListener('lowi:mirror-done', e => { window.__lastDone = e.detail; });
+    window.__fake = { v: 'conv', mode: 'side', cycle: false, depth: 0, round: 0, hands: 0, knees: 0, t0: 0 };
     window.__fakeLms = () => {
         const F = window.__fake, HC = window.LowiHingeCore; if (!HC || F.mode === 'none') return null;
         const st = document.querySelector('.mm-stage'); const Wv = st ? st.clientWidth : innerWidth, Hv = st ? st.clientHeight : innerHeight;
         let d = F.depth;
         if (F.cycle) { const per = 3.6, c = ((performance.now() - F.t0) / 1000) % per; d = c < 0.8 ? 0 : c < 2.0 ? (c - 0.8) / 1.2 : c < 2.3 ? 1 : c < 3.2 ? 1 - (c - 2.3) / 0.9 : 0; }
-        const A = HC.defaultAnchor(Wv, Hv, 1); A.ankle = [A.ankle[0] + 10, A.ankle[1] - 6];
-        const P = HC.pose(d); if (F.knees && d > 0.5) P.s += F.knees;
+        const A = HC.defaultAnchor(Wv, Hv, 1, F.v); A.ankle = [A.ankle[0] + 10, A.ankle[1] - 6];
+        const P = HC.pose(d, F.v); if (F.knees && d > 0.5) P.s += F.knees;
         const G = HC.ghost(A, P);
         let head = G.head;
         if (F.round && d > 0.5) { const v = [head[0] - G.sh[0], head[1] - G.sh[1]], a = F.round * Math.PI / 180; head = [G.sh[0] + v[0] * Math.cos(a) - v[1] * Math.sin(a), G.sh[1] + v[0] * Math.sin(a) + v[1] * Math.cos(a)]; }
@@ -80,6 +81,21 @@ async function run(name, vp, opt) {
     } else await page.evaluate(() => { window.LowiMirror.open(); document.querySelector('[data-r="hinge"]').click(); });
     const sheet = await waitFor(() => /Kreuzheben|Deadlift|Peso muerto/.test((document.querySelector('.mm-sheet') || document.body).textContent) && !!document.querySelector('[data-mm="cam"]'), 8000);
     ck('one tap opens the deadlift setup (side-on placement, camera button)', sheet, (await txt('.mm-sheet')).slice(0, 120));
+    /* Oct 24 2026: the three deadlifts. A centred row of three one-word pills; the one you pick names the sheet, is remembered and drives the outline */
+    const V = opt.v || 'conv', NAMES = { de: { rdl: 'Rumänisches Kreuzheben', conv: 'Kreuzheben (konventionell)', sumo: 'Sumo-Kreuzheben' }, en: { rdl: 'Romanian Deadlift', conv: 'Conventional Deadlift', sumo: 'Sumo Deadlift' }, es: { rdl: 'Peso muerto rumano', conv: 'Peso muerto convencional', sumo: 'Peso muerto sumo' } }[opt.lang];
+    const WORDS = { de: ['Rumänisch', 'Konventionell', 'Sumo'], en: ['Romanian', 'Conventional', 'Sumo'], es: ['Rumano', 'Convencional', 'Sumo'] }[opt.lang];
+    const pills = await page.evaluate(() => { const g = document.querySelector('.mh-var'), sh = document.querySelector('.mm-sheet'); if (!g) return null; const gr = g.getBoundingClientRect(), sr = sh.getBoundingClientRect();
+        return { role: g.getAttribute('role'), centre: Math.round(Math.abs((gr.left + gr.right) / 2 - (sr.left + sr.right) / 2)), inside: gr.left >= sr.left - 1 && gr.right <= sr.right + 1,
+            b: [...g.querySelectorAll('.mh-vb')].map(b => { const r = b.getBoundingClientRect(); return { t: b.textContent, a: b.getAttribute('aria-label'), on: b.getAttribute('aria-checked'), h: Math.round(r.height), w: Math.round(r.width), cut: b.scrollWidth > b.clientWidth + 1, top: Math.round(r.top) }; }) }; });
+    ck('three deadlift pills, one word each, in order', !!pills && pills.b.length === 3 && pills.b.every((b, i) => b.t === WORDS[i]), JSON.stringify(pills && pills.b.map(b => b.t)));
+    ck('pills: radio group, centred in the sheet, on one row, thumb-sized, no word cut off', !!pills && pills.role === 'radiogroup' && pills.centre <= 2 && pills.inside && new Set(pills.b.map(b => b.top)).size === 1 && pills.b.every(b => b.h >= 44 && !b.cut), JSON.stringify(pills));
+    ck('screen reader hears the full names', !!pills && ['rdl', 'conv', 'sumo'].every((k, i) => pills.b[i].a === NAMES[k]), JSON.stringify(pills && pills.b.map(b => b.a)));
+    ck('no pick yet: Conventional is picked', !!pills && pills.b[1].on === 'true' && pills.b[0].on === 'false' && pills.b[2].on === 'false');
+    await page.click('.mh-vb[data-v="' + V + '"]');
+    await sleep(250);
+    const picked = await page.evaluate(() => ({ on: (document.querySelector('.mh-vb.on') || {}).dataset, title: document.querySelector('.mm-sheet .mm-ph b').textContent, store: localStorage.getItem('lowi.mm.dl'), cam: !!document.querySelector('[data-mm="cam"]'), focus: document.activeElement && document.activeElement.classList.contains('mh-vb') }));
+    ck('picking ' + V + ': it lights up, names the sheet, is remembered, focus stays on it', picked.on && picked.on.v === V && picked.title === NAMES[V] && picked.store === V && picked.cam && picked.focus, JSON.stringify(picked));
+    await page.evaluate(v => { window.__fake.v = v; }, V);
     await sleep(300); await shot('2-setup');
     await page.click('[data-mm="cam"]');
     await page.evaluate(() => { window.__fake.mode = 'front'; });
@@ -96,8 +112,8 @@ async function run(name, vp, opt) {
     await waitFor(() => (document.querySelector('.mm-left') || {}).textContent.startsWith('2/'), 6000);
     await sleep(1300); await shot('4-hinge');
     const lay = await page.evaluate(() => { const r = s => { const e = document.querySelector(s); if (!e) return null; const b = e.getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.right), Math.round(b.bottom)]; };
-        const st = document.querySelector('.mm-stage'), HC = window.LowiHingeCore, A = HC.defaultAnchor(st.clientWidth, st.clientHeight, 1), G = HC.ghost(A, HC.pose(1));
-        return { rep: r('.mh-rep'), misty: r('.mh-misty'), pill: r('.mm-pill'), card: r('.mm-card'), title: r('.mm-title'), W: st.clientWidth, H: st.clientHeight, headX: Math.round(G.head[0] + G.headR), hipX: Math.round(G.hip[0] - G.w * 0.6), headY: Math.round(HC.ghost(A, HC.pose(0)).head[1] - A.headR) }; });
+        const st = document.querySelector('.mm-stage'), HC = window.LowiHingeCore, v = window.__fake.v, A = HC.defaultAnchor(st.clientWidth, st.clientHeight, 1, v), G = HC.ghost(A, HC.pose(1, v));
+        return { rep: r('.mh-rep'), misty: r('.mh-misty'), pill: r('.mm-pill'), card: r('.mm-card'), title: r('.mm-title'), W: st.clientWidth, H: st.clientHeight, headX: Math.round(G.head[0] + G.headR), hipX: Math.round(G.hip[0] - G.w * 0.6), headY: Math.round(HC.ghost(A, HC.pose(0, v)).head[1] - A.headR) }; });
     const ov = (a, b) => a && b && a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
     ck('rep bubble clear of the title, the cue pill and the card', !ov(lay.rep, lay.pill) && !ov(lay.rep, lay.card) && !ov(lay.rep, lay.title), JSON.stringify(lay));
     ck('whole hinge fits on screen (head forward at the bottom, hips back)', lay.headX <= lay.W && lay.hipX >= 0 && lay.headY >= 0, lay.hipX + '..' + lay.headX + ' of ' + lay.W);
@@ -122,6 +138,8 @@ async function run(name, vp, opt) {
         for (let i = 0; i < 2; i++) { await waitFor(() => /Pause|Rest/.test(document.querySelector('.mm-move b').textContent) || !!document.querySelector('.mh-sets'), 45000); if (await page.$('.mh-sets')) break; await page.click('[data-mm="skiprest"]').catch(() => { }); }
         const done = await waitFor(() => !!document.querySelector('.mh-sets') && document.querySelectorAll('.mh-sets li').length === 3, 45000);
         ck('3 sets: done sheet with sets, reps and clean reps, camera off', done, (await txt('.mm-sheet')).slice(0, 160));
+        ck('done sheet names the deadlift you did', (await txt('.mm-sheet .mm-ph b')).indexOf(NAMES[V]) === 0, await txt('.mm-sheet .mm-ph b'));
+        ck('done event carries routine hinge + variant', await page.evaluate(v => window.__lastDone && window.__lastDone.routine === 'hinge' && window.__lastDone.variant === v, V), await page.evaluate(() => JSON.stringify(window.__lastDone || null)));
         await sleep(400); await shot('7-done');
         await page.click('.mm-sheet [data-mm="close"]').catch(() => { });
     } else {
@@ -139,7 +157,9 @@ async function run(name, vp, opt) {
 }
 
 (async () => {
-    const runs = [['iphone-de', { width: 390, height: 844 }, { lang: 'de', full: true }], ['ipad-de', { width: 820, height: 1180 }, { lang: 'de', full: false }]];
+    const runs = [['iphone-de-rdl', { width: 390, height: 844 }, { lang: 'de', full: true, v: 'rdl' }], ['iphone-de-sumo', { width: 390, height: 844 }, { lang: 'de', full: true, v: 'sumo' }],
+        ['small-en-conv', { width: 375, height: 667 }, { lang: 'en', full: true, v: 'conv' }], ['small-de-sumo', { width: 375, height: 667 }, { lang: 'de', full: false, v: 'sumo' }],
+        ['ipad-es-sumo', { width: 820, height: 1180 }, { lang: 'es', full: false, v: 'sumo' }], ['ipadland-de-conv', { width: 1180, height: 820 }, { lang: 'de', full: false, v: 'conv' }]];
     if (process.env.ONLY) runs.splice(0, runs.length, ...runs.filter(r => r[0] === process.env.ONLY));
     let bad = 0;
     for (const [n, vp, o] of runs) { const r = await run(n, vp, o).catch(e => ({ name: n, ok: 0, fail: 1, cases: ['FAIL crashed: ' + e.message] })); console.log('\n' + r.name + ': ' + r.ok + '/' + (r.ok + r.fail)); r.cases.forEach(c => console.log('  ' + c)); bad += r.fail; }

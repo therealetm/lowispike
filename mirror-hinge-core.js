@@ -31,14 +31,60 @@
     const T = { down: 32, deep: 40, top: 14, tallHip: 160, minRep: 0.7, back: 40, knee: 0.03, kneeAng: 118, hands: 0.32, leanBack: -12, hold: 0.25 };
 
     const ROUTINE = { id: ID, icon: 'hinge',
-        n: L3('Deadlift (hip hinge)', 'Kreuzheben (Hüftbeuge)', 'Peso muerto (bisagra de cadera)'),
+        n: L3('Deadlift', 'Kreuzheben', 'Peso muerto'),
         short: L3('Deadlift', 'Kreuzheben', 'Peso muerto'),
-        sub: L3('Standing, side-on, 3 × 8 reps. Bodyweight, dumbbells or a bar', 'Im Stehen, seitlich, 3 × 8 Wdh. Ohne Gewicht, Kurzhanteln oder Stange', 'De pie, de lado, 3 × 8 rep. Sin peso, mancuernas o barra'),
+        sub: L3('Romanian, conventional or sumo. Side-on, 3 × 8 reps', 'Rumänisch, konventionell oder Sumo. Seitlich, 3 × 8 Wdh.', 'Rumano, convencional o sumo. De lado, 3 × 8 rep.'),
         place: [L3('Put the phone or iPad upright on the floor or a low chair, at about knee to hip height.', 'Stell Handy oder iPad hochkant auf den Boden oder einen niedrigen Stuhl, etwa auf Knie- bis Hüfthöhe.', 'Pon el móvil o iPad de pie en el suelo o en una silla baja, más o menos a la altura de la rodilla o la cadera.'),
             L3('Step back about 2.5 m and turn sideways, so the camera sees you from the side.', 'Geh etwa 2,5 m zurück und dreh dich seitlich, damit die Kamera dich von der Seite sieht.', 'Aléjate unos 2,5 m y ponte de lado, para que la cámara te vea de perfil.'),
             L3('Your whole body, head to feet, should be in view. Start light: form first, weight later.', 'Dein ganzer Körper, Kopf bis Füße, sollte zu sehen sein. Fang leicht an: erst die Haltung, dann das Gewicht.', 'Debe verse todo tu cuerpo, de la cabeza a los pies. Empieza ligero: primero la técnica, luego el peso.')],
         cue: L3('Hips back, back long and flat, hands close to your legs. Stand tall at the top.', 'Hüfte nach hinten, Rücken lang und flach, Hände nah an den Beinen. Oben ganz aufrichten.', 'Cadera atrás, espalda larga y plana, manos cerca de las piernas. Arriba, bien erguido.'),
         fine: L3('The camera only estimates your posture from the side and cannot see your spine. Go light and stop if anything hurts.', 'Die Kamera schätzt deine Haltung nur grob von der Seite und sieht deine Wirbelsäule nicht. Nimm wenig Gewicht und hör auf, wenn etwas weh tut.', 'La cámara solo estima tu postura de lado y no ve tu columna. Usa poco peso y para si algo duele.') };
+
+    /* Oct 24 2026 (Emmanuel: "Deadlift (Romanian, conventional und sumo) separat aufteil als options"): three deadlifts, one group.
+       The Deadlift button and the Mirror card stay one entry; its setup sheet has a centred row of three one-word glass pills.
+       Each variant has its own name, cue, outline (pose) and rep thresholds; the camera flow, sets and rest are shared.
+       - rdl:  Romanian. Standing start, soft knees that barely bend, long hip hinge, hands to just below the knee.
+       - conv: Conventional. From the floor: knees bend more, hips stay above the knees, hips and shoulders rise together.
+       - sumo: Sumo. Wide stance, toes out: the most knee bend and the most upright chest of the three.
+       A deadlift with no variant (older calls, a stored pick that is gone) is conventional, the classic one. Nothing was ever
+       stored per deadlift session, so there is no history to move: lowi:mirror-done keeps routine 'hinge' and adds variant. */
+    const VORDER = ['rdl', 'conv', 'sumo'], VDEF = 'conv';
+    const VARIANTS = {
+        rdl: { id: 'rdl',
+            w: L3('Romanian', 'Rumänisch', 'Rumano'),
+            n: L3('Romanian Deadlift', 'Rumänisches Kreuzheben', 'Peso muerto rumano'),
+            sub: L3('From standing, soft knees, down to just below the knee', 'Aus dem Stand, Knie leicht gebeugt, bis knapp unters Knie', 'Desde de pie, rodillas suaves, hasta justo debajo de la rodilla'),
+            cue: L3('Soft knees, hips back, back long and flat. Hands slide down to just below the knee, then stand tall.', 'Knie leicht gebeugt, Hüfte nach hinten, Rücken lang und flach. Hände bis knapp unters Knie, dann ganz aufrichten.', 'Rodillas suaves, cadera atrás, espalda larga y plana. Manos hasta justo debajo de la rodilla, luego bien erguido.'),
+            pose: { tau: 70, phi: 24, s: 9 }, back: 0.16,
+            T: {},
+            hints: {} },
+        conv: { id: 'conv',
+            w: L3('Conventional', 'Konventionell', 'Convencional'),
+            n: L3('Conventional Deadlift', 'Kreuzheben (konventionell)', 'Peso muerto convencional'),
+            sub: L3('From the floor, feet hip-width, hips above the knees', 'Vom Boden, Füße hüftbreit, Hüfte über den Knien', 'Desde el suelo, pies a la anchura de la cadera, cadera sobre las rodillas'),
+            cue: L3('Feet hip-width, flat back, push the floor away. Hips and shoulders rise together, stand tall at the top.', 'Füße hüftbreit, Rücken flach, drück den Boden weg. Hüfte und Schultern kommen zusammen hoch, oben ganz aufrichten.', 'Pies a la anchura de la cadera, espalda plana, empuja el suelo. Cadera y hombros suben juntos, arriba bien erguido.'),
+            pose: { tau: 58, phi: 46, s: 17 }, back: 0.1,
+            T: { down: 28, deep: 36, kneeAng: 92, knee: 0.1 },
+            hints: {
+                knees: L3('Knees over your feet, not past your toes', 'Knie über den Füßen, nicht über die Zehen hinaus', 'Rodillas sobre los pies, sin pasar las puntas'),
+                deeper: L3('Go lower: hands down to your shins', 'Weiter runter: Hände bis zu den Schienbeinen', 'Baja más: manos hasta las espinillas') } },
+        sumo: { id: 'sumo',
+            w: L3('Sumo', 'Sumo', 'Sumo'),
+            n: L3('Sumo Deadlift', 'Sumo-Kreuzheben', 'Peso muerto sumo'),
+            sub: L3('Wide stance, toes out, chest more upright', 'Breiter Stand, Zehen nach außen, Brust aufrechter', 'Postura amplia, puntas hacia fuera, pecho más erguido'),
+            cue: L3('Feet wide, toes out, knees push out over the toes. Chest up, push the floor apart, stand tall at the top.', 'Füße breit, Zehen nach außen, Knie über die Zehen nach außen. Brust hoch, Boden auseinanderdrücken, oben ganz aufrichten.', 'Pies separados, puntas fuera, rodillas hacia fuera sobre las puntas. Pecho arriba, separa el suelo, arriba bien erguido.'),
+            pose: { tau: 44, phi: 50, s: 14 }, back: 0.06,
+            T: { down: 22, deep: 28, top: 12, kneeAng: 82, knee: 0.12 },
+            hints: {
+                knees: L3('Push your knees out over the toes, not forward', 'Knie nach außen über die Zehen, nicht nach vorn', 'Rodillas hacia fuera sobre las puntas, no adelante'),
+                deeper: L3('Sit a little lower, chest up', 'Etwas tiefer setzen, Brust hoch', 'Baja un poco más, pecho arriba') } }
+    };
+    const vid = v => VARIANTS[v] ? v : VDEF;
+    const variant = v => VARIANTS[vid(v)];
+    const thresholds = v => Object.assign({}, T, variant(v).T);
+    const hintFor = (key, v) => (variant(v).hints[key]) || HINTS[key];
+    /* the routine as the setup sheet, the card and the done sheet see it: the group's placement and fine print, the variant's name and cue */
+    function routineFor(v) { const V = variant(v); return Object.assign({}, ROUTINE, { variant: V.id, n: V.n, short: V.n, w: V.w, sub: V.sub, cue: V.cue }); }
 
     const HINTS = {
         find: L3('Step into the picture, side-on to the phone', 'Stell dich ins Bild, seitlich zum Handy', 'Ponte en la imagen, de lado al móvil'),
@@ -74,15 +120,15 @@
         return ease(1 - (c - p.top - p.down - p.bottom) / p.up);
     }
     /* the outline's joint angles for a depth: tau = torso lean forward, phi = thigh tilt back (hips back), s = shin tilt forward */
-    function pose(d) { d = clamp(d, 0, 1); return { d, tau: 70 * d, phi: 4 + 24 * d, s: 3 + 9 * d }; }
+    function pose(d, v) { d = clamp(d, 0, 1); const P = variant(v).pose; return { d, tau: P.tau * d, phi: 4 + P.phi * d, s: 3 + P.s * d }; }
 
     /* ---------- the outline (side view) ---------- */
     /* A: { ankle:[x,y], dir: +1 facing screen right / -1 left, shin, thigh, torso, neck, headR, ua, fa, foot } */
-    function defaultAnchor(W, H, dir) {
+    function defaultAnchor(W, H, dir, v) {
         const h = Math.min(0.7 * H, 1.45 * W);
         /* stand a bit behind the middle: at the bottom of the hinge the head goes far forward, so the whole hinge stays on screen */
         const dr = dir === -1 ? -1 : 1;
-        return { ankle: [0.5 * W - dr * 0.16 * h, Math.min(H - 0.06 * H, 0.5 * H + 0.5 * h)], dir: dr, h,
+        return { ankle: [0.5 * W - dr * variant(v).back * h, Math.min(H - 0.06 * H, 0.5 * H + 0.5 * h)], dir: dr, h,
             shin: 0.25 * h, thigh: 0.245 * h, torso: 0.3 * h, neck: 0.12 * h, headR: 0.062 * h, ua: 0.17 * h, fa: 0.16 * h, foot: 0.13 * h };
     }
     function ghost(A, P) {
@@ -163,10 +209,11 @@
     }
 
     /* ---------- rep counter ---------- */
-    function Reps() { this.state = 'up'; this.n = 0; this.clean = 0; this.since = {}; this.faults = {}; this.t0 = 0; this.maxTau = 0; this.nearTop = null; this.last = null; this.flag = null; }
+    function Reps(v) { this.T = thresholds(v); this.state = 'up'; this.n = 0; this.clean = 0; this.since = {}; this.faults = {}; this.t0 = 0; this.maxTau = 0; this.nearTop = null; this.last = null; this.flag = null; }
     /* feed one measurement; returns an event or null: {type:'rep', n, clean, faults[], depth} | {type:'cue', cue} */
     Reps.prototype.feed = function (t, a) {
         if (!a) return null;
+        const T = this.T;
         const held = (key, on) => { if (on) { if (this.since[key] == null) this.since[key] = t; return t - this.since[key] >= T.hold; } this.since[key] = null; return false; };
         if (this.state === 'up') {
             if (held('leanb', a.tau < T.leanBack)) { this.since.leanb = null; return { type: 'cue', cue: 'leanb' }; }
@@ -203,10 +250,11 @@
         this.kind = ID;
         this.mode = opt.mode === 'free' ? 'free' : 'camera';
         this.lang = opt.lang || 'en';
+        this.variant = vid(opt.variant); this.R = routineFor(this.variant);
         this.plan = Object.assign({}, PLAN, opt.plan || {});
         this.phase = this.mode === 'free' ? 'count' : 'align';
         this.phaseAt = 0; this.last = null; this.now = 0; this.okSince = null; this.seenSince = null; this.missSince = null;
-        this.set = 1; this.reps = new Reps(); this.setStartN = 0; this.setClean = 0; this.sets = []; this.gt = 0; this.restLeft = 0;
+        this.set = 1; this.reps = new Reps(this.variant); this.setStartN = 0; this.setClean = 0; this.sets = []; this.gt = 0; this.restLeft = 0;
         this.anchor = null; this.samples = []; this.dir = 1; this.dark = false; this.here = false; this.canHere = false; this.paused = false;
         this.view = { W: 390, H: 844 }; this.events = []; this.cue = ''; this.cueAt = -1e9; this.cueLast = {}; this.a = null; this.hint = '';
     }
@@ -216,7 +264,7 @@
     Flow.prototype.go = function (ph, now) { this.phase = ph; this.phaseAt = now; };
     Flow.prototype.toFree = function () { this.mode = 'free'; if (this.phase === 'align' || this.phase === 'hold' || this.phase === 'lost') this.go('count', this.now || 0); };
     Flow.prototype.skipRest = function () { if (this.phase === 'rest') this.restLeft = 0; };
-    Flow.prototype.target = function () { return defaultAnchor(this.view.W, this.view.H, this.dir); };
+    Flow.prototype.target = function () { return defaultAnchor(this.view.W, this.view.H, this.dir, this.variant); };
     Flow.prototype.repsInSet = function () { return this.reps.n - this.setStartN; };
     Flow.prototype.totalReps = function () { return this.plan.sets * this.plan.reps; };
     Flow.prototype.framing = function (m) {
@@ -229,7 +277,7 @@
         const V = this.view;
         if (m.height > 0.94 * V.H || m.top < 0.01 * V.H || m.ankle[1] > 0.995 * V.H) return 'back';
         if (m.height < 0.42 * V.H) return 'closer';
-        const dx = (m.ankle[0] - defaultAnchor(V.W, V.H, m.dir).ankle[0]) / V.W;
+        const dx = (m.ankle[0] - defaultAnchor(V.W, V.H, m.dir, this.variant).ankle[0]) / V.W;
         if (dx < -0.2) return 'right';
         if (dx > 0.2) return 'left';
         const a = angles(m);
@@ -251,10 +299,10 @@
     Flow.prototype.say = function (cue, now) {
         /* one form cue at a time, the same one at most every 6 s */
         if (this.cueLast[cue] != null && now - this.cueLast[cue] < 6000) return;
-        this.cueLast[cue] = now; this.cue = cue; this.cueAt = now; this.events.push({ type: 'cue', cue, text: txt(HINTS[cue], this.lang) });
+        this.cueLast[cue] = now; this.cue = cue; this.cueAt = now; this.events.push({ type: 'cue', cue, text: txt(hintFor(cue, this.variant), this.lang) });
     };
     Flow.prototype.rep = function (ev, now) {
-        this.events.push(Object.assign({}, ev, { set: this.set, inSet: this.repsInSet(), text: ev.clean ? txt(HINTS.good, this.lang) : txt(HINTS[ev.faults[0]], this.lang) }));
+        this.events.push(Object.assign({}, ev, { set: this.set, inSet: this.repsInSet(), text: ev.clean ? txt(HINTS.good, this.lang) : txt(hintFor(ev.faults[0], this.variant), this.lang) }));
         if (ev.clean) this.setClean++;
         else if (ev.faults && ev.faults[0]) this.say(ev.faults[0], now);
         if (this.repsInSet() >= this.plan.reps) {
@@ -341,13 +389,13 @@
         const d = this.phase === 'follow' || this.phase === 'lost' ? depthAt(this.gt) : 0;
         const A = this.phase === 'align' || this.phase === 'hold' || !this.anchor ? this.target() : this.anchor;
         const done = this.reps.n;
-        return { kind: ID, phase: this.phase, hint, hintText: txt(HINTS[hint], this.lang), mode: this.mode, paused: this.paused,
+        return { kind: ID, phase: this.phase, hint, hintText: txt(hintFor(hint, this.variant), this.lang), mode: this.mode, paused: this.paused,
             i: this.set - 1, n: this.plan.sets, set: this.set, sets: this.plan.sets, rep: inSet, reps: this.plan.reps, done, totalReps: total,
             clean: this.reps.clean + 0, setClean: this.setClean, restLeft: Math.ceil(this.restLeft), restTotal: this.plan.rest,
-            moveName: txt(ROUTINE.short, this.lang), cue: txt(ROUTINE.cue, this.lang), form: FORM.indexOf(hint) >= 0,
+            moveName: txt(this.R.short, this.lang), cue: txt(this.R.cue, this.lang), variant: this.variant, form: FORM.indexOf(hint) >= 0,
             count: this.phase === 'count' ? Math.max(1, 3 - Math.floor((this.now - this.phaseAt) / 1000)) : 0,
-            elapsed: done, total, canHere: this.canHere && this.phase === 'align', anchor: A, pose: pose(d), depth: d, a: this.a, dir: A.dir, history: this.sets.slice() };
+            elapsed: done, total, canHere: this.canHere && this.phase === 'align', anchor: A, pose: pose(d, this.variant), depth: d, a: this.a, dir: A.dir, history: this.sets.slice() };
     };
 
-    return { ID, ROUTINE, PLAN, PER, T, HINTS, FORM, depthAt, pose, defaultAnchor, ghost, measure, angles, Reps, Flow, txt };
+    return { ID, ROUTINE, VARIANTS, VORDER, VDEF, vid, routineFor, thresholds, hintFor, PLAN, PER, T, HINTS, FORM, depthAt, pose, defaultAnchor, ghost, measure, angles, Reps, Flow, txt };
 });

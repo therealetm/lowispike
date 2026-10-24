@@ -15,6 +15,9 @@
     /* Oct 23 2026: deadlift / hip hinge lives in mirror-hinge-core.js + mirror-hinge.js (side view, rep counting, form cues) */
     const HG = () => W.LowiMirrorHinge || null;
     const isHinge = () => routine === 'hinge' && !!HG();
+    /* Oct 24 2026: which deadlift (rdl / conv / sumo); mirror-hinge.js remembers the pick (only that word, never a frame); none or unknown = conventional */
+    const dlv = () => { const G = HG(); return G ? G.getPick() : 'conv'; };
+    const setDlv = v => { const G = HG(); if (G) G.setPick(v); };
     const MP_BASE = 'vendor/mediapipe-0.10.14/';
     const lang = () => { try { return ((W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || H.lang || 'en').slice(0, 2); } catch (e) { return 'en'; } };
     const T = (en, de, es) => ({ de, es })[lang()] || en;
@@ -77,7 +80,7 @@
     const hd = () => ({ T, esc, lang: lang(), ICON, say, live: t => { if (live) live.textContent = t; } });
     function newFlow(mode) {
         const G = HG(); if (G) G.reset();
-        return isHinge() ? G.makeFlow(mode, lang()) : new C.Flow({ routine, mode, lang: lang() });
+        return isHinge() ? G.makeFlow(mode, lang(), dlv()) : new C.Flow({ routine, mode, lang: lang() });
     }
     function build() {
         if (ov) return ov;
@@ -118,10 +121,10 @@
     }
     function setup(id) {
         routine = id === 'hinge' && HG() ? 'hinge' : C.ROUTINES[id] ? id : 'chair';
-        const R = isHinge() ? HG().ROUTINE : C.ROUTINES[routine], l = lang();
+        const R = isHinge() ? HG().routineFor(dlv()) : C.ROUTINES[routine], l = lang();
         const fine = ov && ov.querySelector('.mm-fine'); if (fine) fine.textContent = isHinge() ? C.txt(R.fine, l) : FINE();
         showSheet('<header class="mm-ph"><button type="button" class="mm-ic" data-mm="back" aria-label="' + esc(T('Back', 'Zurück', 'Atrás')) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><b>' + esc(C.txt(R.n, l)) + '</b><button type="button" class="mm-ic" data-mm="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + ICON.x + '</button></header>' +
-            (isHinge() ? HG().placeArt(T, esc) : placeArt(routine)) +
+            (isHinge() ? HG().pickHTML(dlv(), T, esc, l) + HG().placeArt(T, esc) : placeArt(routine)) +
             '<ol class="mm-steps">' + R.place.map(p => '<li>' + esc(C.txt(p, l)) + '</li>').join('') + '</ol>' + privacy(routine) +
             '<div class="mm-acts"><button type="button" class="mm-btn mm-pri" data-mm="cam">' + ICON.cam + '<span>' + esc(T('Turn on camera', 'Kamera einschalten', 'Activar cámara')) + '</span></button>' +
             '<button type="button" class="mm-btn mm-ghostbtn" data-mm="nocam">' + esc(T('Follow without camera', 'Ohne Kamera mitmachen', 'Seguir sin cámara')) + '</button></div>');
@@ -147,7 +150,16 @@
         hushVoice();
         const s = D.querySelector('#mv-screen .mm-hero-go, .mm-strip'); if (s && s.offsetParent) try { s.focus({ preventScroll: true }); } catch (e) {}
     }
-    function onKey(e) { if (e.key === 'Escape') close(); }
+    function onKey(e) {
+        if (e.key === 'Escape') return close();
+        /* the deadlift pills are a radio group: arrow keys move the pick */
+        const cur = e.target && e.target.closest && e.target.closest('.mh-vb'), G = HG();
+        if (cur && G && /^Arrow(Left|Right|Up|Down)$/.test(e.key)) {
+            e.preventDefault();
+            const L = G.VORDER, i = L.indexOf(cur.getAttribute('data-v')), n = L[(i + (/Right|Down/.test(e.key) ? 1 : L.length - 1)) % L.length];
+            setDlv(n); setup('hinge'); const on = ov && ov.querySelector('.mh-vb.on'); if (on) try { on.focus({ preventScroll: true }); } catch (x) {}
+        }
+    }
     function stopCamera() {
         camGen++;
         clearTimeout(detT); clearInterval(briT); detT = 0; briT = 0;
@@ -356,7 +368,7 @@
     function finish(s) {
         running = false; cancelAnimationFrame(raf); raf = 0; stopCamera();
         if (s.kind === 'hinge' && HG()) {
-            try { W.dispatchEvent(new CustomEvent('lowi:mirror-done', { detail: { routine: 'hinge', reps: s.done, clean: s.clean, sets: s.sets, camera: s.mode === 'camera' } })); } catch (e) {}
+            try { W.dispatchEvent(new CustomEvent('lowi:mirror-done', { detail: { routine: 'hinge', variant: s.variant, reps: s.done, clean: s.clean, sets: s.sets, camera: s.mode === 'camera' } })); } catch (e) {}
             return showSheet(HG().finishHTML(s, hd()));
         }
         const mins = Math.max(1, Math.round(s.total / 60));
@@ -398,6 +410,7 @@
         else if (k === 'close') close();
         else if (k === 'pick') setup(b.getAttribute('data-r'));
         else if (k === 'hinge') { if (flow || stream) stopAll(); open(); setup('hinge'); }
+        else if (k === 'dlv') { setDlv(b.getAttribute('data-v')); setup('hinge'); const on = ov && ov.querySelector('.mh-vb.on'); if (on) try { on.focus({ preventScroll: true }); } catch (x) {} }
         else if (k === 'skiprest') { if (flow && flow.skipRest) flow.skipRest(); }
         else if (k === 'back') chooser();
         else if (k === 'cam') goCamera();

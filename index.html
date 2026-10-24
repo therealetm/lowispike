@@ -4159,7 +4159,14 @@ const ES_MEAL = {pollo:"chicken", pechuga:"chicken", pavo:"turkey", huevos:"eggs
   papas:"potatoes", fritas:"fries", maiz:"corn", lentejas:"lentils", garbanzos:"chickpeas", frijoles:"beans", alubias:"beans", galletas:"cookies", galleta:"cookie",
   azucar:"sugar", miel:"honey", mermelada:"jam", tarta:"cake", pastel:"cake", helado:"ice cream", zumo:"juice", jugo:"juice", refresco:"soda", cerveza:"beer",
   vino:"wine", agua:"water", cafe:"coffee", te:"tea", hamburguesa:"burger", bocadillo:"sandwich", sopa:"soup",
-  con:"with", y:"and", de:"", del:"", el:"", la:"", los:"", las:"", un:"", una:"", unos:"", unas:""};
+  con:"with", y:"and", de:"", del:"", el:"", la:"", los:"", las:"", un:"", una:"", unos:"", unas:"",
+  /* Oct 24 bug hunt: typed Spanish names in Scan had a verdict but no Best swap, because the swap comes from this engine and it
+     did not know these words (palomitas, espaguetis, cruasán, batata, barrita de proteína). Same foods as their English words. */
+  palomitas:"popcorn", espaguetis:"spaghetti", espagueti:"spaghetti", macarrones:"macaroni", cruasan:"croissant", cruasanes:"croissants",
+  batata:"sweet potato", batatas:"sweet potatoes", boniato:"sweet potato", boniatos:"sweet potatoes", magdalena:"muffin", magdalenas:"muffins",
+  gominolas:"gummy bears", barrita:"bar", barritas:"bars"};
+/* "barrita de proteína" / "barrita de cereales" put the food word last; read them as "protein bar" / "cereal bar" */
+const ES_PHRASE = [[/\bbarritas? (?:de )?proteinas?\b/g, "protein bar"], [/\bbarritas? (?:de )?cereales\b/g, "cereal bar"]];
 const esMealToks = toks => { const out = []; toks.forEach((t, i) => {
   if (!Object.prototype.hasOwnProperty.call(ES_MEAL, t) || (t === "pan" && /^(fried|seared|roasted|fry|frying)$/.test(toks[i + 1] || ""))) { out.push(t); return; }
   if (ES_MEAL[t]) ES_MEAL[t].split(" ").forEach(x => out.push(x)); }); return out; };
@@ -4208,7 +4215,7 @@ function scanMealToks(toks, foods, dishes, dropped){
   return {used, hit};
 }
 function parseMeal(text){
-  const toks = normText(text).split(" ").filter(Boolean);
+  const toks = ES_PHRASE.reduce((s, [rx, to]) => s.replace(rx, to), normText(text)).split(" ").filter(Boolean);
   const foods = [], dishes = [], dropped = [];
   const one = scanMealToks(toks, foods, dishes, dropped);
   /* Oct 24: what the first pass did not match is read once more with the Spanish words (ES_MEAL) as English ones;

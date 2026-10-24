@@ -111,7 +111,8 @@ const within = (p, ms, what) => Promise.race([p, new Promise((_, no) => setTimeo
             if (s.into) { await ev(() => window.LowiPad && window.LowiPad.steer(0, 0)); return 'dove in (' + s.st + ' ' + s.flew + ')'; }
             let vx = 0, vy = -1;
             if (s.from && s.to && s.to.z < 1) { const dx = s.to.x - s.from.x, dy = s.to.y - s.from.y, d = Math.hypot(dx, dy) || 1; vx = dx / d; vy = dy / d; }
-            await ev(([vx, vy]) => window.LowiPad && window.LowiPad.steer(vx, vy), [vx, vy]);
+            /* screen y grows downward, the controller's vy grows upward (misty-pad.js steer: vy = -ky / R) */
+            await ev(([vx, vy]) => window.LowiPad && window.LowiPad.steer(vx, vy), [vx, -vy]);
             last = s; await H.sleep(250);
         }
         await ev(() => window.LowiPad && window.LowiPad.steer(0, 0));

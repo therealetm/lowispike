@@ -1115,3 +1115,13 @@ Emmanuel (Seven): "I don't understand the food journal section. Either remove it
 - Share -> Community (meal journal) keeps posting to the Community room and, when the meal is low spike, also posts it to For You (same photo url, dish name, caption, meta.spike). Otherwise it stays in Community with a gentle note. Share -> Chat is unchanged.
 - The inspiration bot "Nibblo" (inspo-core.js, built locally, no server rows): one slide a day at 07:00 with a swap of the day from the Recipe Book, and a Gold Rush product every other day (numbers checked against data/shop). For You shows today's slide and the four before it. It posts nowhere else: no Chat card, no People entry, no push, no badge. Its slides carry a ja recipe and pass the same rule. Photos: the Recipe Book's own generated photos, plus 13 photos generated for the app on 24 Oct 2026 in fy-img/. No medical claims beyond the app's existing verdicts.
 - Quiet release: no What's New, no update banner. Tests: tests/foryou-rule.test.cjs, tests/inspo.test.cjs.
+
+## 2026-10-24 — Fixing a food scan: your Kitchen comes first
+
+**Status:** Accepted
+
+**Context:** Emmanuel: "As I'm manually typing it in, I'd like the things I caught, that live in my Kitchen, to appear as I'm typing, so it's faster ... a shortcut to the right stuff already in their kitchen, or something they already bought." (He said "wardrobe"; in the code the wardrobe is the companion's clothes, and kitchen-core.js calls the Kitchen "a wardrobe for food", so it is the Kitchen.)
+
+**Decision:** The photo result's fix field (meal-result.js) suggests, max 5: Kitchen "At home" (newest first), then the shopping cart, then your scans, logged foods, the shared list and the built-in table, ranked by match strength first (prefix/word-prefix beats inside-word beats typo) and source second. Matching is case-, accent- and umlaut-blind (ae/oe/ue = a/o/u), with typos allowed from 4 letters. A Kitchen name only borrows the numbers of a product you scanned or logged when all its words are whole words of that product; otherwise one typical portion from the meal database; otherwise it fills the name only and is estimated like typed text. Never a made-up number. "+ Add food" adds what the photo missed.
+
+**Consequences:** All local (works offline). Kitchen items still hold names only; if the Kitchen ever stores nutrition, use it in fromKitchen() before kitchenHit().

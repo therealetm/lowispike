@@ -453,6 +453,7 @@
         void ov.offsetWidth; ov.classList.add('on');
         const f = ov.querySelector('.hb2-orb:not([disabled])'); if (f) try { f.focus({ preventScroll: true }); } catch (e) { }
         ov.addEventListener('click', onBloomClick);
+        swipeShut(ov);
         ov.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); close(); } });
         try { D.dispatchEvent(new CustomEvent('lowi:bloom-v2', { detail: { kind: 'all', open: true, owner: 'blooms' } })); } catch (e) { }
         return true;
@@ -523,6 +524,7 @@
         /* flush the folded start state, then open (no rAF: WebKit can hold frames back while the 3D world is busy) */
         void ov.offsetWidth; show();
         ov.addEventListener('click', onBloomClick);
+        swipeShut(ov);
         ov.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); close(); } });
         try { D.dispatchEvent(new CustomEvent('lowi:bloom-v2', { detail: { kind, open: true, owner: 'blooms' } })); } catch (e) { }
         return true;
@@ -550,6 +552,20 @@
         else { ov.classList.remove('on'); ov.classList.add('off'); setTimeout(() => { ov.remove(); unskin(ov); }, 340); }
         try { D.dispatchEvent(new CustomEvent('lowi:bloom-v2', { detail: { kind, open: false, owner: 'blooms' } })); } catch (e) { }
         return true;
+    }
+    /* Oct 24 (back and close sweep): a swipe down on the empty space round the orbs folds the bloom, like a swipe down closes the
+       sheets. Only on the scrim, never on an orb; a tap there still closes it as before (onBloomClick). */
+    function swipeShut(ov) {
+        let d = null;
+        ov.addEventListener('pointerdown', e => { d = e.target && e.target.classList && e.target.classList.contains('hb2-scrim') ? { id: e.pointerId, x: e.clientX, y: e.clientY } : null; });
+        const end = e => {
+            const s = d; d = null;
+            if (!s || e.pointerId !== s.id || st.ov !== ov) return;
+            const dx = e.clientX - s.x, dy = e.clientY - s.y;
+            if (dy > 56 && dy > Math.abs(dx) * 1.4) close();
+        };
+        ov.addEventListener('pointerup', end);
+        ov.addEventListener('pointercancel', end);
     }
     function onBloomClick(e) {
         const t = e.target.closest('[data-hb2]');

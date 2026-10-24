@@ -58,7 +58,7 @@ const STATE = () => {
   }, [sel, ms]);
   const findX = () => P.evaluate(() => {
     const vis = e => { const r = e.getBoundingClientRect(), s = getComputedStyle(e); return r.width > 6 && r.height > 6 && s.visibility !== 'hidden' && s.display !== 'none' && +s.opacity > .1 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth; };
-    const c = [...document.querySelectorAll('button,[role=button],a')].filter(b => vis(b) && (/^(close|schlie|cerrar|back|zur\u00fcck|volver|done|fertig|listo)/i.test((b.getAttribute('aria-label') || '').trim()) || /(^|[\s-])(x|close|r2-close|sec-x|pd-x|cs-close|back)([\s-]|$)/i.test(String(b.className)) || /^[\u00d7\u2715\u2716]$/.test((b.textContent || '').trim())));
+    const c = [...document.querySelectorAll('button,[role=button],a')].filter(b => vis(b) && (/^(close|schlie|cerrar|back|zur\u00fcck|volver|done|fertig|listo)/i.test((b.getAttribute('aria-label') || '').trim()) && !b.closest('.mc-row, [class*="mc-ph"]') /* Gap's 'Back to baseline' phase is not a back button */ || /(^|[\s-])(x|close|r2-close|sec-x|pd-x|cs-close|back)([\s-]|$)/i.test(String(b.className)) || /^[\u00d7\u2715\u2716]$/.test((b.textContent || '').trim())));
     const hitOk = b => { const r = b.getBoundingClientRect(); const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return t && (t === b || b.contains(t)); };
     const h = c.filter(hitOk); const b = h[h.length - 1]; if (!b) return null; const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, what: b.id || String(b.className).slice(0, 40) || b.getAttribute('aria-label') };
   });

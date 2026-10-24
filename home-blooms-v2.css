@@ -2,7 +2,7 @@
    Same membrane glass as the Move bloom (move-bubble.css .wm-orb), so every bubble opens the same way.
    The scrim stays light so Misty is always visible; the orbs never sit on her (layout in home-blooms-v2.js). */
 .hb2-bloom { position: fixed; inset: 0; z-index: 9000; pointer-events: none; }
-.hb2-bloom .hb2-scrim { position: absolute; inset: 0; border: 0; padding: 0; margin: 0; background: rgba(4, 10, 30, .1); opacity: 0; transition: opacity .25s ease;
+.hb2-bloom .hb2-scrim { position: absolute; inset: 0; border: 0; padding: 0; margin: 0; touch-action: none; background: rgba(4, 10, 30, .1); opacity: 0; transition: opacity .25s ease;
     pointer-events: auto; cursor: default; -webkit-tap-highlight-color: transparent; }
 .hb2-bloom.on .hb2-scrim { opacity: 1; }
 /* while it folds away, taps already belong to whatever the chosen orb opened */

@@ -63,14 +63,22 @@
         try { if (W.LowiSections && W.LowiSections.swallowed && W.LowiSections.swallowed(e)) return; } catch (x) { }                 /* the Move player's own entry popped down to ours: not for us */
         if (D.querySelector('#mv-player.on')) return;      /* the Move player handles its own back */
         const before = sig();
+        /* Oct 24 12:40 (back and close sweep): Body stats and Weight journey (body-stats.js) keep role=dialog / aria-modal and
+           add .bs-out while they fade, and use no .on marker, so the signature did not change: the sheet closed and back left the
+           app too (open Body stats, back, open it again, back = out of LOWiSPIKE). Shop finds (grocery-hunt.js) the same: its
+           aria-modal card sits in an overlay that swaps .in for .out. The top layer itself tells: once Escape closed it, it is
+           gone, it or a box around it changed its classes (.bs-out, .out, lost .on) or it is no longer on top. */
+        const chain = el => { let s = '', n = el, k = 0; while (n && n !== D.body && n !== H && k++ < 12) { s += '|' + String(n.className); n = n.parentElement || n.parentNode; } return s; };
+        const top0 = topLayer(), cls0 = top0 ? chain(top0) : '';
+        const topClosed = () => { try { return !!top0 && (top0.isConnected === false || chain(top0) !== cls0 || topLayer() !== top0); } catch (x) { return false; } };
         escape();
         /* Oct 23 (bug hunt): tell section-nav.js (its popstate runs after this one) that this back already closed a layer,
            so it keeps the section open. It reads the page after this Escape, saw nothing open any more, and closed Cook for
            Home under a sheet just closed (the add-a-meal sheet over Shop it). */
         /* only the open layers count here, not the page's classes: any key press adds a class (nm-f) to the page */
-        try { if (layers(sig()) !== layers(before)) closedEvt = e; } catch (x) { }
+        try { if (layers(sig()) !== layers(before) || topClosed()) closedEvt = e; } catch (x) { }
         setTimeout(() => {
-            if (sig() !== before) { guard(); return; }
+            if (sig() !== before || topClosed()) { guard(); return; }
             if (activeTab() !== 'home') { home(); guard(); return; }
             try { history.back(); } catch (e) { }            /* Today with nothing open: back leaves, as it always did */
         }, 80);

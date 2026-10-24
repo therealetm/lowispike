@@ -101,6 +101,26 @@ const STATE = () => {
     { n: 'Profile tab', open: () => P.evaluate(() => goTab('profile')) },
     { n: 'Today sheet', open: () => tapSel('.wh-today, #whToday, [data-orbit="today"]') },
   ];
+  /* EXTRA=1 (Oct 24 12:40 run): the places Settings / More and the hubs open by their own APIs, so the parts the earlier runs
+     could not reach by a Home tap get the same round trips: tour, weather, body stats, weight, Ranking, grocery hunt, world sound,
+     World Map zoom, Today, Misty's details, profile overview, For You. ONLY_EXTRA=1 runs just these. */
+  const api = (expr) => () => P.evaluate(e => { try { return (0, eval)(e); } catch (x) { return 'ERR ' + x.message; } }, expr);
+  const EXTRA = [
+    { n: 'Tour (Settings > replay tour)', open: api("LowiTutorial.start({ from: 'settings' })") },
+    { n: 'Weather', open: api('LowiTopBar.openWeather()') },
+    { n: 'Body stats', open: api('LowiBodyStats.open()') },
+    { n: 'Weight journey', open: api('LowiWeightJourney.open()') },
+    { n: 'Ranking', open: api('LowiRanking.open()') },
+    { n: 'Grocery hunt', open: api('LowiGrocery.open()') },
+    { n: 'World sound', open: api('LowiWorldAudio.open()') },
+    { n: 'World Map (zoom out whole)', open: api('LowiWorldHome.zoomOutWhole()') },
+    { n: 'Today (API)', open: api('LowiWorldHome.openToday()') },
+    { n: 'Misty details', open: api('LowiWorldHome.openDetails()') },
+    { n: 'Profile overview', open: api('LowiG2E.overview()') },
+    { n: 'For You', open: api("LowiNavMoves.open('fy')") },
+  ];
+  if (process.env.ONLY_EXTRA) SC.length = 0;
+  if (process.env.EXTRA || process.env.ONLY_EXTRA) SC.push(...EXTRA);
   /* Community menu entries, found on the page */
   const commMenu = async () => {
     await P.evaluate(() => goTab('foryou')); await sleep(2500);

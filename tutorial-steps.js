@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 21;  /* 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 22;  /* 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -710,7 +710,7 @@
         /* ---------- part: new (Oct 23 2026, Emmanuel: "every time I do an update it's not in the tutorial style ... take them to the
            place where you updated it and show them around"). The newest features, last in the tour. A release's What's New plays
            only its own steps from here (news.json "tour"), as a mini tour in this same card style: it opens the place (open),
-           points at the new thing, and goes back home at the end. open: a route in tutorial.js OPEN (move, shop, rooms). New
+           points at the new thing, and goes back home at the end. open: a route in tutorial.js OPEN (move, shop, kitchen, rooms). New
            features add a step here; when this part grows past ~8 steps, move the oldest into their own area. ---------- */
         {
             id: 'new-intro', area: 'new', target: null, covers: ['whats-new-tour'],
@@ -721,6 +721,16 @@
                 es: 'Hay algunas novedades. Te enseño dónde están. Puedes saltarlo cuando quieras.'
             },
             cta: { en: 'Let’s go', de: 'Los geht’s', es: 'Vamos' }
+        },
+        {
+            id: 'new-kitchen', area: 'new', where: 'home', open: 'kitchen', target: ['.stp-card .stp-tab[data-stp-tab="kitchen"]', '.stp-card'], covers: ['kitchen'],
+            info: 'the Kitchen tab is open right behind this card; Bought is on each cart row there, so the card only says what it does',
+            title: { en: 'Your kitchen', de: 'Deine Küche', es: 'Tu cocina' },
+            text: {
+                en: 'New in Shop: Kitchen. Keep track of what you have at home, plus a shopping cart for later. Tap Bought and it moves into your kitchen.',
+                de: 'Neu im Shop: Küche. Hier steht, was du zu Hause hast, plus ein Einkaufswagen für später. Tipp auf Gekauft, dann kommt es in deine Küche.',
+                es: 'Nuevo en Shop: Cocina. Apunta lo que tienes en casa y usa un carrito para más tarde. Toca Comprado y pasa a tu cocina.'
+            }
         },
         {
             id: 'new-voice-speed', area: 'new', target: null, covers: ['tutorial-voice-speed'],

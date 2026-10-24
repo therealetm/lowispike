@@ -91,7 +91,7 @@ test('wired into the Shop panel: tabs on top, zone tab, shelf, remembered tab, n
   assert.match(sp, /ov\.innerHTML = onSz\(\) \? szHTML\(\) :/);
   assert.match(sp, /Z\.stripHTML \? Z\.stripHTML\(\)/, 'the shelf replaces the old one-line entry');
   assert.match(sp, /'lowi\.storePicks\.tab'/);
-  assert.match(sp, /if \(ov && view === 'list' && !onSz\(\)\) paint\(\)/, 'the list loading behind the zone tab never throws you back to the top');
+  assert.match(sp, /if \(ov && view === 'list' && (!onSz\(\)|onShop\(\))\) paint\(\)/, 'the list loading behind the zone tab never throws you back to the top');
   assert.match(sp, /if \(onSz\(\) && SZ\(\)\.inlineClick\(t\)\) \{ paint\('keep'\)/);
   assert.match(sp, /a === 'sellerzone'\) \{ setTab\('sz'\)/, 'the old entry button also goes to the tab');
   assert.match(sp, /function focusCard\(id\)/);

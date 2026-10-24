@@ -2853,6 +2853,7 @@ window.LowiG1 = {mini, steps:() => stepList().map(x => x.k), start, close, line,
   state:() => TOUR ? {kind:TOUR.kind, i:TOUR.i, n:TOUR.steps.length, k:TOUR.steps[TOUR.i].k} : (OB ? {kind:"ob", k:OB.kind, i:0, n:1} : null), orbNews:() => OB ? {kind:OB.kind, build:OB.build || "", mode:($("#g1Ob") || {dataset:{}}).dataset.mode || ""} : null, fairy:() => fz ? {on:fz.classList.contains("on"), home:fzHome, pos:fzPos} : null};
 })();
 </script>
+<script src="kitchen-core.js?v=20261024-110742"></script>
 <style id="homecss">
 /* ===== G1 part 2: simpler Today ===== */
 #tab-home .g1-lead{margin-top:6px;font-size:15px;line-height:1.35;font-weight:600;color:var(--muted,rgba(255,255,255,.72))}
@@ -7597,6 +7598,8 @@ function shBoot(){
         .map(p => { const sg = bestSighting(p); return {n:p.n, store:sg ? storeById(sg.s).n : "", price:sg && ["fresh", "check"].indexOf(priceState(sg)) >= 0 ? eur(sg.p) : ""}; }); },
     listOpen:withDone => SH.list.filter(i => withDone || !i.done).map(i => ({id:i.id, n:i.n, done:i.done, store:i.s === "any" ? "" : storeById(i.s).n})),
     tickList:id => { const i = SH.list.find(x => x.id === id); if (i) { i.done = !i.done; shSave(); } },
+    /* Oct 24 Kitchen (kitchen-core.js, Shop > Kitchen tab): take one thing off the list (removed, or moved into the Kitchen) */
+    dropList:id => { const n = SH.list.length; SH.list = SH.list.filter(x => x.id !== id); if (SH.list.length === n) return false; shSave(); return true; },
     /* Oct 16 in-store scan (shop-scan.js): a scanned product goes on the list as in the cart; undo puts it back */
     addScanned:p => { const C = window.LowiShopScanCore, r = C && C.cartAdd(SH.list, p, uid); if (!r) return null; shSave(); return {action:r.action, n:r.item.n, q:r.item.q || 1, count:C.cartCount(SH.list), undo:() => { r.undo(SH.list); shSave(); }}; },
     cartCount:() => window.LowiShopScanCore ? LowiShopScanCore.cartCount(SH.list) : 0};

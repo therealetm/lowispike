@@ -39,7 +39,7 @@ test('the pair is on the Cook tab, the shuffle pick and every recipe', () => {
 
 test('Shop it: glass close in the header, never over an action', () => {
     const r = fnSrc('lcRender0');
-    assert.ok(r.includes('<button class="cs-x" data-lc="close" aria-label="Close">'), 'own close in the header');
+    assert.ok(r.includes('<button class="cs-x" data-lc="close" aria-label="\' + (window.LowiLang ? LowiLang.t("Close") : "Close") + \'">'), 'own close in the header, labelled in the user\'s language');
     assert.ok(r.indexOf('cs-x') < r.indexOf('lc-body'), 'close sits above the body, not in the footer');
     assert.ok(css.includes('html:has(#lsCart.open) #whX, html:has(#lcShop.open) #whX { display: none !important; }'), 'the Today X never floats over Shop at ...');
     assert.match(css, /:is\(#lsCart, #lcShop\) \.cs-x \{[^}]*width: 44px; height: 44px;[^}]*border-radius: 50%/);

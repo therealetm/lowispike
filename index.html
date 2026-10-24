@@ -6639,7 +6639,7 @@ function tdShopOpen(){ let el = $("#tdShop"); if (!el) { el = document.createEle
 function tdShopClose(){ const el = $("#tdShop"); if (el) el.classList.remove("open"); if (TAB === "home") renderHome(); }
 function tdShopRender(){ const el = $("#tdShop"); if (!el) return; const groups = tdListItems(), extra = window.LOWI_SHELF && LOWI_SHELF.listOpen ? LOWI_SHELF.listOpen(true) : [];
   const all = groups.reduce((a, g) => a + g.items.length, 0) + extra.length, got = groups.reduce((a, g) => a + g.items.filter(i => S.td.got[i.k]).length, 0) + extra.filter(i => i.done).length;
-  el.innerHTML = '<div class="td-shophd"><button class="td-x big" data-td="shopclose" aria-label="Close">' + ICO.x + '</button><div style="flex:1"><div class="small muted">Shopping</div><div class="h2 num" id="tdShopCount">' + got + " of " + all + '</div></div><button class="chip" data-td="copylist">Copy</button></div>' +
+  el.innerHTML = '<div class="td-shophd"><button class="td-x big" data-td="shopclose" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button><div style="flex:1"><div class="small muted">Shopping</div><div class="h2 num" id="tdShopCount">' + got + " of " + all + '</div></div><button class="chip" data-td="copylist">Copy</button></div>' +
     '<div class="td-bar"><b style="width:' + (all ? Math.round(got / all * 100) : 0) + '%"></b></div><div class="td-shopbody">' +
     (all ? groups.map(g => '<div class="td-aisle">' + esc(g.a) + "</div>" + g.items.map(i => { const f = tdFind(i), on = !!S.td.got[i.k];
         return '<button class="td-si' + (on ? " on" : "") + '" data-td="got" data-k="' + esc(i.k) + '"><span class="td-tick big">' + (on ? ICO.chk : "") + '</span><span class="td-ingtx"><b>' + esc(i.n) + '</b><span class="tiny muted">' + (f ? "Members found: " + esc(f.n) + " at " + esc(f.store) + (f.price ? " · " + esc(f.price) : "") : "for " + esc(i.for.join(", "))) + "</span></span></button>"; }).join("")).join("") +
@@ -7258,17 +7258,17 @@ function render(){
   }
   const nq = pending().length, nl = listCount();
   if (V.tab === "pruefen") {
-    top.innerHTML = '<div class="sh-row"><button class="sh-back" data-sh="tab" data-t="regal" aria-label="Back">' + ICON.back + '</button><div><div class="small muted">Unser Regal</div><div class="sh-title">Check new finds</div></div></div>';
+    top.innerHTML = '<div class="sh-row"><button class="sh-back" data-sh="tab" data-t="regal" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + ICON.back + '</button><div><div class="small muted">Unser Regal</div><div class="sh-title">Check new finds</div></div></div>';
     body.innerHTML = pruefenHTML(); fab.innerHTML = ""; return;
   }
   /* Oct 8: Unser Regal is no longer its own tab. Member finds live in the scan result, the recipe and the shop mode on Today. */
-  top.innerHTML = V.tab === "regal" ? '<div class="sh-row"><button class="sh-back" data-sh="tab" data-t="kochen" aria-label="Back">' + ICON.back + '</button><div><div class="small muted">What members found, store and price</div><div class="sh-title">Member finds</div></div></div>' : V.tab === "liste" ? '<div class="sh-row"><button class="sh-back" data-sh="tab" data-t="kochen" aria-label="Back">' + ICON.back + '</button><div><div class="small muted">Saved from scans</div><div class="sh-title">Extra list</div></div></div>' :
-    V.tab === "alle" ? '<div class="sh-row"><button class="sh-back" data-sh="tab" data-t="kochen" aria-label="Back">' + ICON.back + '</button><div><div class="small muted">LOWiSPIKE Recipe Book</div><div class="sh-title">All recipes</div></div></div>' :
+  top.innerHTML = V.tab === "regal" ? '<div class="sh-row"><button class="sh-back" data-sh="tab" data-t="kochen" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + ICON.back + '</button><div><div class="small muted">What members found, store and price</div><div class="sh-title">Member finds</div></div></div>' : V.tab === "liste" ? '<div class="sh-row"><button class="sh-back" data-sh="tab" data-t="kochen" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + ICON.back + '</button><div><div class="small muted">Saved from scans</div><div class="sh-title">Extra list</div></div></div>' :
+    V.tab === "alle" ? '<div class="sh-row"><button class="sh-back" data-sh="tab" data-t="kochen" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + ICON.back + '</button><div><div class="small muted">LOWiSPIKE Recipe Book</div><div class="sh-title">All recipes</div></div></div>' :
     '<div class="sh-row"><div><div class="small muted">Don\'t know what to eat?</div><div class="sh-title">Cook</div></div></div>';
   /* Oct 8 (round 5): Cook opens on the food shuffle. The full recipe list moved one tap away ("alle"). */
   /* r3k-render (Oct 10): Cook is one scroll (shuffle, swipe foods, all recipes). Re-renders keep the page and the filter row where they were. */
   const r3kK = render.r3kKeep, r3kSame = render.r3kTab === V.tab && !render.r3kSub, r3kY = body.scrollTop, r3kC = body.querySelector(".sh-cats"), r3kX = r3kC ? r3kC.scrollLeft : 0, r3kA = r3kAnchor(body);
-  body.innerHTML = ({regal:regalHTML, kochen:() => window.LowiFood ? LowiFood.homeHTML() + '<section class="r3k-all" id="r3kAll" aria-label="All recipes">' + kochenHTML() + '</section>' : kochenHTML(), alle:kochenHTML, liste:listeHTML})[V.tab]();
+  body.innerHTML = ({regal:regalHTML, kochen:() => window.LowiFood ? LowiFood.homeHTML() + '<section class="r3k-all" id="r3kAll" aria-label="' + (window.LowiLang ? LowiLang.t("All recipes") : "All recipes") + '">' + kochenHTML() + '</section>' : kochenHTML(), alle:kochenHTML, liste:listeHTML})[V.tab]();
   { const c = body.querySelector(".sh-cats"); if (r3kSame) { body.scrollTop = r3kY; if (c) c.scrollLeft = r3kX; r3kHold(body, r3kA, r3kX); } else if (render.r3kSub && r3kK && r3kK.tab === V.tab) { body.scrollTop = r3kK.y; if (c) c.scrollLeft = r3kK.x; r3kHold(body, r3kK.a, r3kK.x); } else body.scrollTop = 0;
     if (c && V.cat) { const on = c.querySelector(".chip.on"); if (on) { const r = on.getBoundingClientRect(), cr = c.getBoundingClientRect(); if (r.left < cr.left) c.scrollLeft -= cr.left - r.left + 16; else if (r.right > cr.right) c.scrollLeft += r.right - cr.right + 16; } } }
   render.r3kTab = V.tab; render.r3kSub = false;
@@ -7720,7 +7720,7 @@ function lcRender0(){ const el = $("#lsCart"); if (!el || !LC) return; const st 
   const aisle = g => typeof tdAisle === "function" ? tdAisle(g) : "Other";
   const sorted = inC.slice().sort((a, b) => aisle(a.g) < aisle(b.g) ? -1 : aisle(a.g) > aisle(b.g) ? 1 : 0), nGot = inC.filter(i => got[i.k]).length;
   let lastA = "";
-  el.innerHTML = '<div class="lc-hd cs-hd"><button class="cs-x" data-lc="close" aria-label="Close">' + ICO.x + '</button><div class="cs-ht"><div class="h2">Shop it</div><div class="small cs-hsub">' +
+  el.innerHTML = '<div class="lc-hd cs-hd"><button class="cs-x" data-lc="close" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button><div class="cs-ht"><div class="h2">Shop it</div><div class="small cs-hsub">' +
       (inC.length ? '<span class="num">' + inC.length + '</span> <span>items</span> · <span class="num">≈ ' + lcEur(curT) + '</span> <span>at ' + cur[1] + '</span>' : '<span>Pick meals. The list fills itself.</span>') + '</div></div><span class="cs-est">Estimates</span></div>' +
     '<div class="lc-body">' +
     // 1 store: compact chips, the cheapest says so
@@ -7872,7 +7872,7 @@ function rsSheet(k){ if (!RS) return; const items = rsItems(RS.rec), i = items.f
   const own = LC_OWN[sid], ownP = own ? lcRound(i.p * .9) : 0;
   const diff = d => Math.abs(d) < .005 ? '<span class="rs-d">same price</span>' : d < 0 ? '<span class="rs-d good">' + lcEur(-d) + " cheaper</span>" : '<span class="rs-d">' + lcEur(d) + " more</span>";
   rsOpen('<div class="rs-shd">' + lcFace(i, "rs-big") + '<div style="flex:1;min-width:0"><div class="h2">' + esc(i.n) + "</div>" + (i.q ? '<div class="small muted">' + esc(i.q) + "</div>" : "") +
-      '<div class="small rs-here"><span>At ' + cur[1] + '</span> <b class="num">' + lcEur(here) + "</b></div></div>" + '<button class="td-x big" data-lc="rs-close" aria-label="Close">' + ICO.x + "</button></div>" +
+      '<div class="small rs-here"><span>At ' + cur[1] + '</span> <b class="num">' + lcEur(here) + "</b></div></div>" + '<button class="td-x big" data-lc="rs-close" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + "</button></div>" +
     '<div class="sh-lab"><span>Same item at other stores</span><span>cheapest first</span></div><div class="card rs-cmp">' +
     rows.map((t, n) => { const s = t[0], mine = s[0] === sid, picked = !mine && s[0] === at;
       return '<div class="rs-cr' + (mine ? " mine" : "") + (picked ? " picked" : "") + '" data-s="' + s[0] + '"><span class="lc-dot" style="background:' + s[2] + '"></span><span class="rs-cn"><b>' + s[1] + "</b>" + (n === 0 ? '<span class="lc-cheap">cheapest</span>' : "") + (mine ? '<span class="rs-d">your store</span>' : diff(t[1] - here)) + '</span><span class="num rs-cp">' + lcEur(t[1]) + "</span>" +
@@ -9113,7 +9113,7 @@ function fHomeHTML(){
   const last = fLast();
   return ckBarHTML() + '<div class="r5-shuf" id="r5Shuf">' +
     (window.LowiSwaflo ? LowiSwaflo.toolbarHTML() : '') +
-    '<div class="r5-stage' + (last ? " has" : "") + '" id="r5Stage" data-r5="shuffle" role="button" aria-label="Shuffle a food"><i class="r5-ring"></i><i class="r5-ring r2"></i><i class="r5-grid"></i>' +
+    '<div class="r5-stage' + (last ? " has" : "") + '" id="r5Stage" data-r5="shuffle" role="button" aria-label="' + (window.LowiLang ? LowiLang.t("Shuffle a food") : "Shuffle a food") + '"><i class="r5-ring"></i><i class="r5-ring r2"></i><i class="r5-grid"></i>' +
       '<div class="r5-win"><div class="r5-strip" id="r5Strip">' + (last ? fCell(last) : '<div class="r5-cell r5-idle"><span class="r5-q">?</span></div>') + '</div></div>' +
       '<i class="r5-scan"></i><i class="r5-flash"></i></div>' +
     '<button class="btn primary r5-go" data-r5="shuffle" id="r5Go">' + R5IC.shuffle.replace("<svg", '<svg width="20" height="20"') + '<span>' + (last ? "Shuffle again" : "Shuffle my food") + '</span></button>' +
@@ -9237,12 +9237,12 @@ function dkSync(){
 function dkLeft(){ return Math.max(0, DK.order.length - DK.i); }
 function dkSectionHTML(){
   dkSync();
-  const b = (dir, cls) => { const D = DKDIR[dir]; return '<button class="r3k-b ' + cls + '" data-r5="swipe-' + dir + '" data-sfx="none" aria-label="' + D.lab + '"><span class="r3k-bi">' + DKIC[D.k] + '</span><span class="r3k-bl">' + D.lab + '</span></button>'; };
-  return '<section class="r3k-sec" id="r3kSwipe" aria-label="Swipe foods">' +
+  const b = (dir, cls) => { const D = DKDIR[dir]; return '<button class="r3k-b ' + cls + '" data-r5="swipe-' + dir + '" data-sfx="none" aria-label="' + (window.LowiLang ? LowiLang.t(D.lab) : D.lab) + '"><span class="r3k-bi">' + DKIC[D.k] + '</span><span class="r3k-bl">' + D.lab + '</span></button>'; };
+  return '<section class="r3k-sec" id="r3kSwipe" aria-label="' + (window.LowiLang ? LowiLang.t("Swipe foods") : "Swipe foods") + '">' +
     '<div class="r3k-head"><span class="r3k-hic">' + R5IC.cards + '</span><span class="r3k-ht">Swipe foods</span><span class="r3k-n num" id="r5DkN"></span></div>' +
     '<div class="r3k-legend"><span class="lt"><b>' + DKARROW.up + '</b>Today</span><span class="lr"><b>' + DKARROW.right + '</b>Soon</span><span class="ll"><b>' + DKARROW.left + '</b>Not today</span><span class="ld"><b>' + DKARROW.down + '</b>Never</span></div>' +
     '<div class="r5-dk-stack r3k-stack" id="r5Stack"></div>' +
-    '<div class="r3k-btns">' + b("down", "never") + b("left", "skip") + '<button class="r3k-b undo" data-r5="swipe-undo" data-sfx="none" aria-label="Undo"><span class="r3k-bi">' + DKIC.undo + '</span><span class="r3k-bl">Undo</span></button>' + b("right", "soon") + b("up", "today") + '</div>' +
+    '<div class="r3k-btns">' + b("down", "never") + b("left", "skip") + '<button class="r3k-b undo" data-r5="swipe-undo" data-sfx="none" aria-label="' + (window.LowiLang ? LowiLang.t("Undo") : "Undo") + '"><span class="r3k-bi">' + DKIC.undo + '</span><span class="r3k-bl">Undo</span></button>' + b("right", "soon") + b("up", "today") + '</div>' +
     '<div class="r3k-foot small muted" id="r3kFoot">' + dkFootHTML() + '</div>' +
   '</section>';
 }
@@ -9318,7 +9318,7 @@ function dkDrag(c){ if (!c) return; let x0 = 0, y0 = 0, dx = 0, dy = 0, t0 = 0, 
     if (dist > (hz ? TH.x : TH.y) || (dist > 40 && v > 0.55)) return dkDecide(d); reset(); });
   c.addEventListener("pointercancel", () => { if (!on) return; on = false; reset(); });
   c.addEventListener("keydown", e => { const m = {ArrowUp:"up", ArrowRight:"right", ArrowLeft:"left", ArrowDown:"down"}[e.key]; if (m) { e.preventDefault(); dkDecide(m); } });
-  c.tabIndex = 0; c.setAttribute("role", "group"); c.setAttribute("aria-label", (fById(c.dataset.id) || {}).n + ". Up: cook today, right: cook soon, left: not today, down: never");
+  c.tabIndex = 0; c.setAttribute("role", "group"); c.setAttribute("aria-label", (fById(c.dataset.id) || {}).n + ". " + (window.LowiLang ? LowiLang.t("Up: cook today, right: cook soon, left: not today, down: never") : "Up: cook today, right: cook soon, left: not today, down: never"));
 }
 function fYesHTML(){ const liked = R5.liked.map(fById).filter(Boolean).reverse(); if (!liked.length) return "";
   return '<div class="r5-yes"><div class="r5-yh"><span class="tiny dim">Your yes pile</span><span class="small muted">' + liked.length + '</span></div><div class="r5-ystrip">' + liked.map(f => '<button class="r5-yi' + (R5.today.indexOf(f.id) >= 0 ? " r3k-td" : "") + '" data-r5="pick" data-id="' + esc(f.id) + '">' + (f.img ? '<img alt="" loading="lazy" src="' + f.img + '">' : '<span>🍽️</span>') + (R5.today.indexOf(f.id) >= 0 ? '<i class="r3k-tdb">Today</i>' : "") + '<span class="r5-yn">' + esc(f.n) + '</span></button>').join("") + '</div></div>'; }
@@ -15735,6 +15735,8 @@ window.LowiSwipeSFX = {play, kit:Object.keys(KIT), state:() => ({ctx:ac ? ac.sta
 /* r3k strings, German and Spanish */
 (function(){ if (!window.LowiLang || !LowiLang.add) return; LowiLang.add([
 ["Swipe foods", "Essen swipen", "Desliza comidas"],
+["Shuffle a food", "Ein Essen mischen", "Mezclar una comida"],
+["Up: cook today, right: cook soon, left: not today, down: never", "Hoch: heute kochen, rechts: bald kochen, links: heute nicht, runter: nie", "Arriba: cocinar hoy, derecha: cocinar pronto, izquierda: hoy no, abajo: nunca"],
 ["Today", "Heute", "Hoy"],
 ["Soon", "Bald", "Pronto"],
 ["Not today", "Heute nicht", "Hoy no"],

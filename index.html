@@ -8171,6 +8171,7 @@ const T = [
   ["Read notifications aloud", "Mitteilungen vorlesen", "Leer avisos en voz alta"], ["Only when audio mode is on.", "Nur wenn der Audio-Modus an ist.", "Solo con el modo audio activado."],
   ["Personality type", "Persönlichkeitstyp", "Tipo de personalidad"], ["Your community profile", "Dein Community-Profil", "Tu perfil en la comunidad"], ["What others see when they tap you", "Was andere sehen, wenn sie dich antippen", "Lo que ven los demás al tocarte"], ["View", "Ansehen", "Ver"],
   /* Oct 24 bug hunt: the swap foods and food names that build the "Best swap" line ("A small handful of berries & a palm of protein") */
+  ["sparkling water with lime", "Sprudelwasser mit Limette", "agua con gas y lima"], /* Oct 24 2026: this row used to live in the retired cycle drink tips */
   ["halloumi, one palm-sized portion", "Halloumi, eine handtellergroße Portion", "halloumi, una porción del tamaño de la palma"], ["a splash of milk in coffee or tea", "ein Schuss Milch in Kaffee oder Tee", "un chorrito de leche en el café o el té"], ["a small handful of berries", "eine kleine Handvoll Beeren", "un puñado pequeño de frutos rojos"], ["sparkling water with lime and mint", "Sprudelwasser mit Limette und Minze", "agua con gas con lima y menta"], ["lettuce or nori wraps", "Salat- oder Nori-Wraps", "wraps de lechuga o nori"], ["zucchini noodles or shirataki", "Zucchininudeln oder Shirataki", "fideos de calabacín o shirataki"], ["roasted cauliflower", "gerösteter Blumenkohl", "coliflor asada"], ["oven zucchini fries", "Zucchini-Pommes aus dem Ofen", "bastones de calabacín al horno"], ["Greek yogurt with chia and almonds", "Griechischer Joghurt mit Chia und Mandeln", "yogur griego con chía y almendras"], ["cucumber rounds", "Gurkenscheiben", "rodajas de pepino"], ["egg and cottage cheese pancakes", "Pfannkuchen aus Ei und Hüttenkäse", "tortitas de huevo y requesón"], ["cucumber and pepper sticks", "Gurken- und Paprikasticks", "bastones de pepino y pimiento"], ["sweet potato, one fist", "Süßkartoffel, eine Faust voll", "boniato, un puño"], ["lentils or hummus, a small portion", "Linsen oder Hummus, eine kleine Portion", "lentejas o hummus, una porción pequeña"], ["cinnamon, vanilla and a few berries", "Zimt, Vanille und ein paar Beeren", "canela, vainilla y unos frutos rojos"], ["parmesan crisps or olives", "Parmesan-Chips oder Oliven", "crujientes de parmesano o aceitunas"], ["jammy eggs or a handful of almonds", "wachsweiche Eier oder eine Handvoll Mandeln", "huevos a medio cocer o un puñado de almendras"], ["chicken, turkey or beef", "Hähnchen, Pute oder Rind", "pollo, pavo o ternera"], ["grilled or pan-fried, no breading", "gegrillt oder angebraten, ohne Panade", "a la plancha o a la sartén, sin rebozar"], ["yogurt dip, mustard or hot sauce", "Joghurt-Dip, Senf oder scharfe Soße", "salsa de yogur, mostaza o salsa picante"], ["a palm of protein", "eine Handfläche Eiweiß", "una palma de proteína"], ["veg first", "Gemüse zuerst", "verdura primero"], ["eggs", "Eier", "huevos"], ["plain Greek yogurt", "Griechischer Naturjoghurt", "yogur griego natural"], ["milk, a splash", "Milch, ein Schuss", "leche, un chorrito"], ["milk, a glass", "Milch, ein Glas", "leche, un vaso"], ["coffee with milk", "Kaffee mit Milch", "café con leche"], ["vegetables", "Gemüse", "verduras"], ["nut butter", "Nussmus", "crema de frutos secos"], ["fruit", "Obst", "fruta"], ["sweet fruit", "süßes Obst", "fruta dulce"], ["zero or diet drink", "Zero- oder Light-Getränk", "bebida zero o light"], ["sugary drink", "zuckerhaltiges Getränk", "bebida azucarada"], ["beer or cocktail", "Bier oder Cocktail", "cerveza o cóctel"], ["alcohol", "Alkohol", "alcohol"], ["potatoes", "Kartoffeln", "patatas"], ["oats or cereal", "Haferflocken oder Müsli", "avena o cereales"], ["lentils or chickpeas", "Linsen oder Kichererbsen", "lentejas o garbanzos"], ["added sugar", "zugesetzter Zucker", "azúcar añadido"], ["sweets", "Süßigkeiten", "dulces"], ["breaded or deep-fried", "paniert oder frittiert", "rebozado o frito"], ["sweet sauce", "süße Soße", "salsa dulce"], ["cucumber-mint sparkling water", "Gurken-Minz-Sprudelwasser", "agua con gas de pepino y menta"], ["iced matcha lime water", "eisgekühltes Matcha-Limettenwasser", "agua helada de matcha y lima"], ["tofu", "Tofu", "tofu"], ["sauce", "Soße", "salsa"],
 ];
 /* Lines with a number in them. */
@@ -12981,7 +12982,7 @@ function morningHTML(){
     {k:"food", ic:"🍽️", t:T("Today's food"), v:d.meals === 0 && !nPlan ? esc(T("No meals today · fasting")) : esc(T("{n} planned · see picks", {n: nPlan})), sub:"", bar:-1, done:loggedToday("r3a_plan") || loggedToday("r3a_cart")}
   ].filter(Boolean);
   const nd = tiles.filter(t => t.done).length;
-  const tip = h.pcos && S.user.gender === "f" ? pick3(PCOS_TIPS[(new Date().getDate()) % PCOS_TIPS.length]) : "";
+  const tip = ""; /* Oct 24 2026 (cycle audit): PCOS tips retired, unsourced medical claims */
   return '<div class="r3a-morn card" id="r3aMorn" data-noi18n><div class="r3a-mhd"><div class="tiny gold">' + esc(new Date().getHours() < 12 ? T("Your morning") : T("Today's check-ins")) + '</div><div class="r3a-msum">' + esc(T("{n} of {m} done · +{x} XP today", {n: nd, m: tiles.length, x: xpToday()})) + '</div></div>' +
     '<div class="r3a-mgrid">' + tiles.map(t => '<button class="r3a-mt' + (t.done ? " done" : "") + '" data-r3a="m-' + t.k + '"><span class="r3a-mic" aria-hidden="true">' + t.ic + '</span><span class="r3a-mtt">' + esc(t.t) + (t.done ? ' <i class="r3a-ok">✓</i>' : "") + '</span><span class="r3a-mv">' + t.v + '</span>' + (t.sub ? '<span class="r3a-msub">' + t.sub + '</span>' : "") + (t.bar >= 0 ? '<span class="r3a-bar"><i style="width:' + t.bar.toFixed(0) + '%"></i></span>' : "") + '</button>').join("") + '</div>' +
     (tip ? '<div class="r3a-tip"><b>' + esc(T("PCOS tip")) + '</b> ' + esc(tip) + '</div>' : "") + '</div>';
@@ -17018,83 +17019,37 @@ html[data-ui=light] .cy-del.armed{background:#b3261e}
 /* LOWiSPIKE round 3 D: cycle content. Every text is [English, Deutsch, Español].
    Food follows the LOWiSPIKE rules: whole food, protein + fibre + fat, no bread, rice, pasta, oats, pork, sweeteners or zero drinks.
    Educational only. No diagnosis, no contraception or fertility claims. */
+/* Oct 24 2026 (cycle audit): the phase body, tip, food, drink and Move texts were removed. They made hormone and nutrition claims by phase without a source. Names and colours stay. */
 const CY_PH = {
   menstrual: {
     name: ["Period", "Periode", "Regla"],
     when: ["Days 1 to about 5", "Tag 1 bis etwa 5", "Días 1 a 5 aprox."],
-    body: ["Hormones are at their lowest. Many women feel tired, crampy and cold. You lose iron with the blood.", "Die Hormone sind ganz unten. Viele Frauen sind müde, haben Krämpfe und frieren. Mit dem Blut geht Eisen verloren.", "Las hormonas están en su punto más bajo. Muchas mujeres se sienten cansadas, con cólicos y frío. Con la sangre se pierde hierro."],
-    tip: ["Go gentle. Warm meals with protein and iron: eggs, beef stew, salmon with spinach.", "Sanft bleiben. Warme Mahlzeiten mit Eiweiß und Eisen: Eier, Rindereintopf, Lachs mit Spinat.", "Con calma. Comidas calientes con proteína y hierro: huevos, guiso de ternera, salmón con espinacas."],
-    quest: ["Have one warm protein meal", "Iss eine warme Eiweiß-Mahlzeit", "Toma una comida caliente con proteína"],
-    eat: [["Beef and vegetable stew", "Rindereintopf mit Gemüse", "Guiso de ternera con verduras"], ["Salmon with spinach and lemon", "Lachs mit Spinat und Zitrone", "Salmón con espinacas y limón"], ["Omelette with sautéed spinach and feta", "Omelett mit Spinat und Feta", "Tortilla con espinacas salteadas y feta"]],
-    snack: [["Skyr with berries and pumpkin seeds (iron, magnesium)", "Skyr mit Beeren und Kürbiskernen (Eisen, Magnesium)", "Skyr con frutos rojos y pipas de calabaza (hierro, magnesio)"], ["Two boiled eggs", "Zwei gekochte Eier", "Dos huevos cocidos"], ["A handful of almonds", "Eine Handvoll Mandeln", "Un puñado de almendras"]],
-    drink: [["Ginger tea", "Ingwertee", "Té de jengibre"], ["Warm bone broth (beef or chicken)", "Warme Knochenbrühe (Rind oder Huhn)", "Caldo de huesos caliente (ternera o pollo)"], ["Chamomile tea", "Kamillentee", "Manzanilla"]],
-    move: ["Slow 10-minute walk, gentle stretches, a heat pad on your belly. Skip anything that hurts.", "Langsamer 10-Minuten-Spaziergang, sanftes Dehnen, Wärmflasche auf den Bauch. Lass weg, was weh tut.", "Paseo lento de 10 minutos, estiramientos suaves, calor en el vientre. Evita lo que duela."],
     moveKey: "gentle", col: "#e0607a", colL: "#b3324f"
   },
   follicular: {
     name: ["Follicular", "Follikelphase", "Fase folicular"],
     when: ["After your period until mid-cycle", "Nach der Periode bis zur Zyklusmitte", "Después de la regla hasta mitad del ciclo"],
-    body: ["Estrogen rises. Energy and mood often climb, and many women handle carbs a bit better now.", "Östrogen steigt. Energie und Laune gehen oft hoch, und viele Frauen vertragen Kohlenhydrate jetzt etwas besser.", "Sube el estrógeno. La energía y el ánimo suelen mejorar, y muchas mujeres toleran algo mejor los carbohidratos."],
-    tip: ["Energy is coming back. A good week to try a new swap and a bit more strength.", "Die Energie kommt zurück. Gute Woche für einen neuen Swap und etwas mehr Kraft.", "Vuelve la energía. Buena semana para probar un swap nuevo y algo más de fuerza."],
-    quest: ["Try one swap you've never made", "Probier einen Swap, den du noch nie gemacht hast", "Prueba un swap que nunca hayas hecho"],
-    eat: [["Chicken stir-fry with lots of veg and cauliflower rice", "Hähnchen-Pfanne mit viel Gemüse und Blumenkohlreis", "Salteado de pollo con mucha verdura y arroz de coliflor"], ["Big salad with eggs, avocado and olive oil", "Großer Salat mit Eiern, Avocado und Olivenöl", "Ensalada grande con huevos, aguacate y aceite de oliva"], ["Prawns with courgette and garlic", "Garnelen mit Zucchini und Knoblauch", "Gambas con calabacín y ajo"]],
-    snack: [["Cucumber with cottage cheese", "Gurke mit Hüttenkäse", "Pepino con requesón"], ["Berries with skyr", "Beeren mit Skyr", "Frutos rojos con skyr"], ["Walnuts and a few olives", "Walnüsse und ein paar Oliven", "Nueces y unas aceitunas"]],
-    drink: [["Water with mint and cucumber", "Wasser mit Minze und Gurke", "Agua con menta y pepino"], ["Green tea", "Grüner Tee", "Té verde"], ["Sparkling water with lemon", "Sprudelwasser mit Zitrone", "Agua con gas y limón"]],
-    move: ["Good time for strength: squats, wall push-ups, brisk walks. Add a little more each session.", "Gute Zeit für Kraft: Kniebeugen, Wand-Liegestütze, zügiges Gehen. Jedes Mal ein bisschen mehr.", "Buen momento para fuerza: sentadillas, flexiones en la pared, caminar rápido. Un poco más cada vez."],
     moveKey: "strength", col: "#3fbf9a", colL: "#16775c"
   },
   ovulation: {
     name: ["Ovulation", "Eisprung", "Ovulación"],
     when: ["Around mid-cycle, about 3 days", "Um die Zyklusmitte, etwa 3 Tage", "Hacia mitad del ciclo, unos 3 días"],
-    body: ["Estrogen peaks. For many this is the most energetic, social time of the month.", "Östrogen ist ganz oben. Für viele die energiereichste, geselligste Zeit im Monat.", "El estrógeno llega al máximo. Para muchas es la época con más energía y ganas de gente."],
-    tip: ["Peak energy for many. Protein and greens on every plate, and plenty of water.", "Für viele die stärksten Tage. Eiweiß und Grünes auf jeden Teller, viel Wasser.", "Para muchas, máxima energía. Proteína y verde en cada plato, y mucha agua."],
-    quest: ["Protein and greens at lunch", "Eiweiß und Grünes zum Mittag", "Proteína y verde en la comida"],
-    eat: [["Steak with broccoli and butter", "Steak mit Brokkoli und Butter", "Filete con brócoli y mantequilla"], ["Baked fish with a colourful salad", "Ofenfisch mit buntem Salat", "Pescado al horno con ensalada de colores"], ["Chicken thighs with roasted peppers", "Hähnchenschenkel mit Ofenpaprika", "Muslos de pollo con pimientos asados"]],
-    snack: [["Crunchy veg sticks with guacamole", "Gemüsesticks mit Guacamole", "Palitos de verdura con guacamole"], ["Mixed nuts", "Gemischte Nüsse", "Frutos secos variados"], ["Cheese cubes and cherry tomatoes", "Käsewürfel und Kirschtomaten", "Dados de queso y tomates cherry"]],
-    drink: [["Lots of water", "Viel Wasser", "Mucha agua"], ["Sparkling water with lime", "Sprudelwasser mit Limette", "Agua con gas y lima"], ["Iced green tea, no sugar", "Eisgekühlter grüner Tee ohne Zucker", "Té verde frío sin azúcar"]],
-    move: ["Your strongest days for many: a longer walk, a full session, dancing. Have fun with it.", "Für viele die stärksten Tage: längerer Spaziergang, eine volle Session, Tanzen. Hab Spaß dabei.", "Para muchas, los días más fuertes: paseo largo, una sesión completa, bailar. Disfrútalo."],
     moveKey: "full", col: "#d9a640", colL: "#8a6212"
   },
   luteal: {
     name: ["Luteal", "Lutealphase", "Fase lútea"],
     when: ["After ovulation until your period", "Nach dem Eisprung bis zur Periode", "Después de la ovulación hasta la regla"],
-    body: ["Progesterone rises. Appetite and cravings often get louder, blood sugar can swing more, and you may feel bloated.", "Progesteron steigt. Hunger und Heißhunger werden oft lauter, der Blutzucker kann stärker schwanken, vielleicht bist du aufgebläht.", "Sube la progesterona. El hambre y los antojos suelen aumentar, el azúcar en sangre puede oscilar más y puede haber hinchazón."],
-    tip: ["Cravings get louder now. Protein, fibre and fat at every meal, and have a craving fix ready.", "Heißhunger wird jetzt lauter. Eiweiß, Ballaststoffe und Fett zu jeder Mahlzeit, und halte einen Heißhunger-Snack bereit.", "Los antojos aumentan. Proteína, fibra y grasa en cada comida, y ten listo un snack para el antojo."],
-    quest: ["Prep one craving snack for later", "Bereite einen Heißhunger-Snack vor", "Prepara un snack para el antojo"],
-    eat: [["Beef meatballs with cauliflower mash", "Rinderhackbällchen mit Blumenkohlpüree", "Albóndigas de ternera con puré de coliflor"], ["Egg muffins with vegetables and cheese", "Eier-Muffins mit Gemüse und Käse", "Muffins de huevo con verduras y queso"], ["Salmon with green beans and almonds", "Lachs mit grünen Bohnen und Mandeln", "Salmón con judías verdes y almendras"]],
-    snack: [["Skyr with unsweetened cocoa and berries (for chocolate cravings)", "Skyr mit ungesüßtem Kakao und Beeren (bei Schoko-Lust)", "Skyr con cacao sin azúcar y frutos rojos (antojo de chocolate)"], ["Celery with almond butter", "Staudensellerie mit Mandelmus", "Apio con crema de almendras"], ["Cheese and cucumber", "Käse und Gurke", "Queso y pepino"]],
-    drink: [["Peppermint tea (helps with bloating for many)", "Pfefferminztee (hilft vielen bei Blähbauch)", "Té de menta (a muchas les ayuda con la hinchazón)"], ["Warm milk with cinnamon and cocoa, no sugar", "Warme Milch mit Zimt und Kakao, ohne Zucker", "Leche caliente con canela y cacao, sin azúcar"], ["Water, a bit more than usual", "Wasser, etwas mehr als sonst", "Agua, un poco más de lo normal"]],
-    move: ["Lazy but powerful: a 10-minute walk after meals, seated calf raises, easy yoga. Less intensity, same habit.", "Faul, aber wirksam: 10 Minuten gehen nach dem Essen, Wadenheben im Sitzen, leichtes Yoga. Weniger Intensität, gleiche Gewohnheit.", "Vago pero eficaz: paseo de 10 minutos después de comer, elevaciones de talón sentada, yoga suave. Menos intensidad, mismo hábito."],
     moveKey: "lazy", col: "#9b7fe0", colL: "#5d3fb0"
   }
 };
 
-const CY_CRAVE = [
-  ["Eat protein first: two eggs, skyr or cheese.", "Zuerst Eiweiß: zwei Eier, Skyr oder Käse.", "Primero proteína: dos huevos, skyr o queso."],
-  ["Wait 10 minutes with a big glass of water or tea.", "10 Minuten warten, mit einem großen Glas Wasser oder Tee.", "Espera 10 minutos con un vaso grande de agua o té."],
-  ["Still want sweet? Berries with skyr and cocoa, or a handful of nuts.", "Immer noch Lust auf Süßes? Beeren mit Skyr und Kakao, oder eine Handvoll Nüsse.", "¿Sigues con ganas de dulce? Frutos rojos con skyr y cacao, o un puñado de frutos secos."],
-  ["Eat it after a meal, never on an empty stomach, then walk 10 minutes.", "Nach dem Essen, nie auf leeren Magen, danach 10 Minuten gehen.", "Después de comer, nunca con el estómago vacío, y luego camina 10 minutos."],
-  ["No guilt. Cravings before a period are hormones, not weakness.", "Kein schlechtes Gewissen. Heißhunger vor der Periode sind Hormone, keine Schwäche.", "Sin culpa. Los antojos antes de la regla son hormonas, no debilidad."]
-];
+const CY_CRAVE = [];
 
-const CY_SYMTIP = {
-  cramps: [["For cramps", "Bei Krämpfen", "Para los cólicos"], ["Warmth on your belly, a slow walk, ginger tea, and magnesium-rich food like pumpkin seeds, spinach and almonds. Oily fish twice a week helps many women over time.", "Wärme auf den Bauch, langsam gehen, Ingwertee und magnesiumreiches Essen wie Kürbiskerne, Spinat und Mandeln. Fetter Fisch zweimal pro Woche hilft vielen Frauen auf Dauer.", "Calor en el vientre, un paseo lento, té de jengibre y alimentos ricos en magnesio como pipas de calabaza, espinacas y almendras. El pescado azul dos veces por semana ayuda a muchas con el tiempo."]],
-  bloating: [["For bloating", "Bei Blähbauch", "Para la hinchazón"], ["Peppermint or fennel tea, a short walk after meals, fewer salty processed snacks, and enough water. Cooked veg is often easier than raw now.", "Pfefferminz- oder Fencheltee, kurz gehen nach dem Essen, weniger salzige Fertigsnacks, genug Wasser. Gegartes Gemüse ist jetzt oft leichter als rohes.", "Té de menta o hinojo, un paseo corto tras comer, menos snacks procesados salados y suficiente agua. La verdura cocinada suele sentar mejor que la cruda."]],
-  cravings: [["For cravings", "Bei Heißhunger", "Para los antojos"], ["Protein first, wait 10 minutes, then berries with skyr and cocoa if you still want sweet.", "Zuerst Eiweiß, 10 Minuten warten, dann Beeren mit Skyr und Kakao, wenn du noch Lust auf Süßes hast.", "Primero proteína, espera 10 minutos y, si aún quieres dulce, frutos rojos con skyr y cacao."]],
-  acne: [["For your skin", "Für deine Haut", "Para tu piel"], ["Many women notice calmer skin with fewer sugar spikes: whole food, less sweet stuff, enough water and sleep. For painful or lasting acne, a dermatologist can help.", "Viele Frauen merken ruhigere Haut mit weniger Zuckerspitzen: echtes Essen, weniger Süßes, genug Wasser und Schlaf. Bei schmerzhafter oder anhaltender Akne hilft eine Hautärztin.", "Muchas notan la piel más tranquila con menos picos de azúcar: comida real, menos dulce, agua y sueño suficientes. Si el acné duele o no se va, un dermatólogo puede ayudar."]],
-  lowEnergy: [["For low energy", "Bei wenig Energie", "Para la poca energía"], ["A savoury protein breakfast, daylight in the morning and a 10-minute walk. Coffee after food, not instead of it.", "Ein herzhaftes Eiweiß-Frühstück, Tageslicht am Morgen und 10 Minuten gehen. Kaffee nach dem Essen, nicht statt Essen.", "Un desayuno salado con proteína, luz del día por la mañana y un paseo de 10 minutos. El café después de comer, no en lugar de comer."]],
-  lowMood: [["For a low mood", "Bei gedrückter Stimmung", "Para el ánimo bajo"], ["Be kind to yourself today. Regular meals keep blood sugar steadier, which helps mood for many. Fresh air, and text someone you like. If low moods hit hard every month, talk to a doctor.", "Sei heute lieb zu dir. Regelmäßige Mahlzeiten halten den Blutzucker ruhiger, das hilft vielen bei der Stimmung. Frische Luft, und schreib jemandem, den du magst. Wenn es dich jeden Monat stark runterzieht, sprich mit einer Ärztin.", "Sé amable contigo hoy. Comer a horas regulares mantiene el azúcar más estable y eso ayuda al ánimo de muchas. Aire fresco, y escribe a alguien que te guste. Si cada mes te hunde mucho, habla con un médico."]]
-};
+/* Oct 24 2026: symptom tips removed (unsourced nutrition claims). My cycle answers what she reports without medical claims. */
+const CY_SYMTIP = {};
 
-const CY_PCOS = [
-  ["Savoury protein breakfast (about 25 to 30 g): eggs, skyr, cottage cheese. No sweet breakfast.", "Herzhaftes Eiweiß-Frühstück (etwa 25 bis 30 g): Eier, Skyr, Hüttenkäse. Kein süßes Frühstück.", "Desayuno salado con proteína (unos 25 a 30 g): huevos, skyr, requesón. Nada de desayuno dulce."],
-  ["Eat in this order: vegetables first, then protein and fat, carbs last.", "Iss in dieser Reihenfolge: zuerst Gemüse, dann Eiweiß und Fett, Kohlenhydrate zuletzt.", "Come en este orden: primero verdura, luego proteína y grasa, los carbohidratos al final."],
-  ["Walk 10 minutes after each meal. It's one of the strongest everyday levers for blood sugar.", "Geh 10 Minuten nach jeder Mahlzeit. Einer der stärksten Alltagshebel für den Blutzucker.", "Camina 10 minutos después de cada comida. Es una de las palancas diarias más fuertes para el azúcar."],
-  ["Strength 2 to 3 times a week. Muscle soaks up sugar from your blood.", "Kraft 2- bis 3-mal pro Woche. Muskeln nehmen Zucker aus dem Blut auf.", "Fuerza 2 a 3 veces por semana. El músculo absorbe el azúcar de la sangre."],
-  ["Two or three real meals with breaks in between, rather than grazing all day.", "Zwei oder drei echte Mahlzeiten mit Pausen dazwischen, statt den ganzen Tag zu snacken.", "Dos o tres comidas de verdad con pausas, en lugar de picar todo el día."],
-  ["Sleep 7 to 9 hours. Short nights make insulin resistance worse.", "Schlaf 7 bis 9 Stunden. Kurze Nächte verschlechtern die Insulinresistenz.", "Duerme de 7 a 9 horas. Dormir poco empeora la resistencia a la insulina."],
-  ["Talk to your doctor about tests and before you try any supplement.", "Sprich mit deiner Ärztin über Untersuchungen und bevor du Nahrungsergänzungsmittel ausprobierst.", "Habla con tu médico sobre análisis y antes de probar cualquier suplemento."]
-];
+/* Oct 24 2026: PCOS tips removed (unsourced medical claims). */
+const CY_PCOS = [];
 
 const CY_GIRL = [
   {id: "board", trend: ["The classic girl dinner", "Das klassische Girl Dinner", "La girl dinner clásica"],
@@ -17237,7 +17192,8 @@ function C(){ const s = gS(); if (!s) return null; s.health = s.health || {};
   return c; }
 function isFem(){ const s = gS(); return !!(s && s.user && s.user.gender === "f"); }
 /* Oct 23 2026, cycle stage 1 (rebuilt from the previous Maya's notes): only for women, and only after a yes (setup asks, or the My cycle tile). Off for everyone else, even with old data. A woman who tracked before the question existed keeps it. The same rule lives in cycle-world.js (rule) for the tests. */
-function enabled(){ const c = C(); if (!c || !isFem()) return false; if (c.show === true) return true; if (c.show === false) return false; const s = gS(); return !!c.setup || starts().length > 0 || !!(s.health && s.health.cycleOn); }
+/* Oct 24 2026 (cycle audit, Emmanuel approved): her own yes counts whatever gender she picked ("x" and others can turn it on in My cycle); without a yes it stays a women-only default, as before. */
+function enabled(){ const c = C(); if (!c) return false; if (c.show === true) return true; if (!isFem()) return false; if (c.show === false) return false; const s = gS(); return !!c.setup || starts().length > 0 || !!(s.health && s.health.cycleOn); }
 /* setup (Track your cycle?) and the cell world turn it on or off */
 function setShow(v){ const c = C(); if (!c) return; c.show = !!v; persist(); try { refreshHome(); } catch(e){} }
 /* log a first day: the first two days medium, then light, then spotting (as the old Set button did). fix=true moves the last start (a wrong date) instead of adding one */
@@ -17299,17 +17255,13 @@ function flags(m){ const c = C(), out = []; if (!c || !m) return out;
 
 /* ---------- hook: daily tip + quest everywhere the app reads cycleInfo() ---------- */
 const origCycleInfo = window.cycleInfo;
-function cycleInfoX(){
-  try { if (enabled()) { const m = model(); if (m && m.ph && CY_PH[m.ph]) { const p = CY_PH[m.ph], c = C(); let tip = tr(p.tip);
-      if (c.pcos) tip += " " + tr(CY_PCOS[new Date().getDate() % (CY_PCOS.length - 1)]);
-      return {on: true, ph: m.ph, label: tr(p.name), tip: tip, quest: tr(p.quest)}; } } } catch(e){}
-  if (!enabled()) return {on: false, ph: "", label: "", tip: "", quest: ""};   /* stage 1: no cycle tips or quests when it is off */
-  return origCycleInfo ? origCycleInfo() : {on: false, ph: "", label: "", tip: "", quest: ""}; }
+/* Oct 24 2026 (cycle audit): the phase tips and "Cycle mode" quest are retired. Their text made hormone and nutrition claims by phase with no source, and support now responds to what she reports (cycle-care-core.js), never to the estimated phase. */
+function cycleInfoX(){ return {on: false, ph: "", label: "", tip: "", quest: ""}; }
 if (typeof origCycleInfo === "function") { try { window.cycleInfo = cycleInfoX; } catch(e){} }
 
 /* ---------- public API for other parts (Today, Move) ---------- */
-function phaseNow(){ if (!enabled()) return null; const m = model(); if (!m || !m.ph) return null; const p = CY_PH[m.ph]; const c = C();
-  return {ph: m.ph, name: tr(p.name), tip: tr(p.tip), move: tr(p.move), moveKey: p.moveKey, pcos: !!c.pcos, day: m.day || 0, col: col(m.ph)}; }
+/* Oct 24 2026: retired with the phase tips (see cycleInfoX). Nothing reads a phase tip or a phase Move any more. */
+function phaseNow(){ return null; }
 const light = () => document.documentElement.getAttribute("data-theme") === "light";
 const col = ph => CY_PH[ph] ? (light() ? CY_PH[ph].colL : CY_PH[ph].col) : "var(--gold)";
 
@@ -17334,7 +17286,9 @@ function headline(m){ const c = C(); if (!m.has) return "";
   return t("nextIn", {n: m.toNext}); }
 
 /* ---------- Today card ---------- */
-function cardHTML(){ if (!enabled()) return ""; const m = model(), c = C(); const logged = !!c.days[todayK()];
+/* Oct 24 2026: the old Today card (hidden, 0x0) is retired: My cycle (cycle-world.js) is the one place. */
+function cardHTML(){ return ""; }
+function cardHTMLOld(){ if (!enabled()) return ""; const m = model(), c = C(); const logged = !!c.days[todayK()];
   if (!m.has && !m.ph) return '<div class="card cy-card" data-cy="open" role="button" tabindex="0"><div class="cy-cardrow"><span class="cy-dotbig" style="--cy:' + col("menstrual") + '"></span><span class="cy-cardtx"><b>' + esc(t("title")) + '</b><span class="cy-sub">' + esc(t("cardSub")) + '</span></span><span class="cy-chev">›</span></div><button class="r2-btn pri cy-wide" data-cy="open">' + esc(t("start")) + "</button></div>";
   const p = CY_PH[m.ph];
   return '<div class="card cy-card" style="--cy:' + col(m.ph) + '"><button class="cy-cardrow" data-cy="open"><span class="cy-mini">' + ringSVG(m, 56) + '<b>' + (m.day ? m.day : "–") + '</b></span><span class="cy-cardtx"><span class="cy-k">' + esc(t("phaseNow")) + '</span><b>' + esc(tr(p.name)) + '</b><span class="cy-sub">' + esc(headline(m) || tr(p.when)) + '</span></span><span class="cy-chev">›</span></button>' +
@@ -17343,7 +17297,8 @@ function cardHTML(){ if (!enabled()) return ""; const m = model(), c = C(); cons
 
 /* ---------- main sheet ---------- */
 let ov = null, logDay = "", delArm = 0, openSec = {};
-function openSheet(sec){ if (!R2 || !R2.sheet) return; logDay = todayK(); delArm = 0;
+function openSheet(sec){ if (window.LowiCycleWorld && LowiCycleWorld.open) { LowiCycleWorld.open(); return; } /* Oct 24 2026: the old sheet is retired, its controls live in My cycle */
+  if (!R2 || !R2.sheet) return; logDay = todayK(); delArm = 0;
   if (ov && document.body.contains(ov)) R2.close(ov);
   ov = R2.sheet('<div class="cy" id="cySheet" data-noi18n></div>', {full: true, cls: "cy-ov", onClose: () => { ov = null; refreshHome(); }});
   paint(); if (sec) setTimeout(() => { const el = document.getElementById("cy-" + sec); if (el) el.scrollIntoView({block: "start", behavior: "smooth"}); }, 380); }
@@ -17515,7 +17470,9 @@ new MutationObserver(() => { if (document.getElementById("cySheet")) paint(); re
 window.addEventListener("online", () => { const c = C(); if (c && c.sync) pushSoon(); });
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watch); else watch();
 
-window.LowiCycle = {phaseNow, model, enabled, setShow, markStart, open: openSheet, cardHTML, tips: () => { const p = phaseNow(); return p ? {tip: p.tip, move: p.move} : null; }};
+window.LowiCycle = {phaseNow, model, enabled, setShow, markStart, open: openSheet, cardHTML, tips: () => null,
+  /* Oct 24 2026: My cycle (cycle-world.js) edits the cycle data directly (check-in, length, irregular, own phase, gentle day) and saves through here */
+  data: () => C(), save: () => { persist(); try { refreshHome(); } catch(e){} }, delAll};
 })();
 
 </script>
@@ -21302,6 +21259,7 @@ window.LowiCommunityHost = {
 <script src="gap-view.js?v=20261024-104917"></script>
 <!-- Oct 23 2026: cycle tracking stage 1, women only and opt-in; the phase as a cell world (cycle-world.js) -->
 <link rel="stylesheet" id="cwCss" href="cycle-world.css?v=20261024-104917">
+<script src="cycle-care-core.js?v=20261024-104917"></script>
 <script src="cycle-world.js?v=20261024-104917"></script>
 <!-- Oct 19: replayable tutorial from Settings > Tutorial; steps live ONLY in tutorial-steps.js (TUTORIAL.md, COORD-tutorial.md) -->
 <link rel="stylesheet" id="ltCss" href="tutorial.css?v=20261024-104917">

@@ -1,5 +1,5 @@
 /* Cycle tracking, stage 1 (Oct 23 2026, rebuilt from the previous Maya's notes; her branch never reached GitHub).
-   Only for women, opt-in during setup, off for everyone else. Phases are a cell world (no weather, no seasons).
+   Opt-in (women are asked during setup; since Oct 24 2026 anyone but "man" can turn it on in My cycle). Phases are a cell world (no weather, no seasons).
    Log the first day of a period, see the phase. Gentle, no medical claims, data in S.health.cyc like the other private logs. */
 const test = require('node:test');
 const assert = require('node:assert');
@@ -23,12 +23,19 @@ test('the new files load with the build tag and are cached offline', () => {
     }
 });
 
-test('only women can have it: men, prefer-not-to-say and unknown never do, even with old data', () => {
+/* Oct 24 2026 (cycle audit, Emmanuel approved): no longer women only. People who chose "x" (or nothing) and do menstruate never
+   saw it. Anyone but "man" finds the quiet tile; turning it on is still always their own tap, and without that tap only the old
+   women default applies. Someone who turned it on keeps it whatever gender they pick. */
+test('anyone can turn it on; without their own yes it stays off for everyone but the old women default', () => {
     const st = (gender, cyc, cycleOn) => ({ user: { gender }, health: Object.assign({ cyc }, cycleOn ? { cycleOn: true } : {}) });
-    assert.strictEqual(CW.eligible(st('f')), true);
+    for (const g of ['f', 'x', '', undefined]) assert.strictEqual(CW.eligible(st(g)), true, String(g) + ' finds My cycle');
+    assert.strictEqual(CW.eligible(st('m')), false, 'men do not get the tile by default');
+    assert.strictEqual(CW.eligible(st('m', { show: true })), true, 'but whoever turned it on keeps it');
+    assert.strictEqual(CW.eligible(null), false); assert.strictEqual(CW.eligible({}), false);
     for (const g of ['m', 'x', '', undefined]) {
-        assert.strictEqual(CW.eligible(st(g)), false, String(g));
-        assert.strictEqual(CW.rule(st(g, { show: true, setup: true, days: { '2026-10-01': { p: 'med' } } }, true)), false, String(g) + ' stays off even with old cycle data');
+        assert.strictEqual(CW.rule(st(g, { show: null, setup: true, days: { '2026-10-01': { p: 'med' } } }, true)), false, String(g) + ' stays off with old data and no yes');
+        assert.strictEqual(CW.rule(st(g, { show: true, days: {} })), true, String(g) + ' on after their own yes');
+        assert.strictEqual(CW.rule(st(g, { show: false, days: {} })), false, String(g) + ' off after no');
     }
 });
 
@@ -80,11 +87,11 @@ test('setup asks women only, after "I am", and the answer is saved through LowiC
     assert.match(html, /cycle: \(s\.health && s\.health\.cyc && typeof s\.health\.cyc\.show === "boolean"\) \? s\.health\.cyc\.show : null/, 'a returning woman sees her earlier answer');
 });
 
-test('the cycle module is off for everyone but opted-in women, and its tips stop too', () => {
-    assert.match(r3d, /function enabled\(\)\{ const c = C\(\); if \(!c \|\| !isFem\(\)\) return false;/);
+test('the cycle module is off unless someone said yes (or the old women default), and its phase tips are retired', () => {
+    assert.match(r3d, /function enabled\(\)\{ const c = C\(\); if \(!c\) return false; if \(c\.show === true\) return true; if \(!isFem\(\)\) return false;/);
     assert.match(r3d, /setShow\(v\)/, 'LowiCycle.setShow exists for setup');
     assert.match(r3d, /markStart/, 'LowiCycle.markStart logs a first day');
-    assert.match(r3d, /if \(!enabled\(\)\) return \{on: false/, 'no cycle tips or quests when off');
+    assert.match(r3d, /function cycleInfoX\(\)\{ return \{on: false, ph: "", label: "", tip: "", quest: ""\}; \}/, 'no phase tips or quests at all (retired, Oct 24 2026)');
     assert.match(r3d, /function profHTML\(\)\{ if \(!isFem\(\)\) return '<span id="cyProf" hidden><\/span>';/, 'no Profile row for anyone else');
 });
 

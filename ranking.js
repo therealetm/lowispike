@@ -142,6 +142,10 @@
         /* 23 Oct 2026 (Eman: "show their name, the names they chose for their companions. And beneath that, the ranks."): the
            chosen name when the owner's app has shared it, else the evolution form as before */
         const form = C.formName(g.st, g.el, L);
+        /* 24 Oct 2026 (Eman: "What does Tide Radiant even mean? ... Ideally we only see the names of their companion and their own
+           names"): "Tide Radiant", "Breeze Drifter" are the evolution form (element word + stage word, companion-core.js formName).
+           Ranking and the compare sheet no longer print the form as an extra line: each person is their companion's name and their
+           own name, plus the level. A companion whose owner never shared a name still shows its form here, once, as its name. */
         return g.nm ? { g, name: g.nm, form, named: true } : { g, name: form, form: '', named: false };
     }
     function art(c, key, big) {
@@ -164,8 +168,21 @@
     function pIco(k) { return k === 'all' ? ico('star', '', 'rk-star', '\u2605') : k === 'm' ? ico('calendar', '', 'rk-cal', '\u25a6') : ico('sun', '', 'rk-sun', '\u2600'); }
     /* under the companion's name: a small level chip and the owner (the evolution form is in the versus view and the levels) */
     function ownerLine(p, lv, c) {
-        return '<small class="rk-own"><span class="rk-lv num">' + esc(tr('lv', { n: lv })) + '</span><span class="rk-ownr">' + esc(p.me ? tr('you') : (p.n || '')) + '</span></small>';
+        const o = ownerOf(p);
+        return '<small class="rk-own"><span class="rk-lv num">' + esc(tr('lv', { n: lv })) + '</span>' + (o ? '<span class="rk-ownr">' + esc(o) + '</span>' : '') + '</small>';
     }
+    /* 24 Oct 2026 (Eman: "when you read your own, it just says you ... If I'm looking at my own self, it should say my name"): your own
+       entry shows your name like everyone else's: the profile name, else the account's user name (the part of the sign-in email before
+       the @), never "you" / "du" / "tú". With neither, the owner line is left out. Your row keeps its glow. */
+    function myName(p) {
+        const ok = v => { v = v == null ? '' : String(v).trim(); return v && !/^(you|du|t\u00fa|tu)$/i.test(v) ? v.slice(0, 32) : ''; };
+        let n = '';
+        try { const S = W.LowiR2 && W.LowiR2.S && W.LowiR2.S(); n = ok(S && S.user && S.user.name); } catch (e) { }
+        if (!n) n = ok(p && p.n);
+        if (!n) try { const X = W.LOWI_CLOUD_X, st = X && X.state && X.state(); n = ok(st && st.email ? String(st.email).split('@')[0] : ''); } catch (e) { }
+        return n;
+    }
+    function ownerOf(p) { return p && p.me ? myName(p) : String((p && p.n) || ''); }
     /* ▲▼: places won or lost since your last day on this board (kept on this phone, per board and period) */
     const MV = 'lowispike.ranking.moves';
     const idOf = p => p && p.me ? 'me' : p && p.uid ? 'u:' + p.uid : 'n:' + String((p && p.n) || '').toLowerCase();
@@ -185,7 +202,7 @@
     function attrs(x, c, d) {
         const p = x.p, nm = c ? c.name : tr('hidden');
         return ' data-rk="open" data-key="' + esc(idOf(p)) + '" data-who="' + esc(p.n || '') + '"' + (p.uid ? ' data-uid="' + esc(p.uid) + '"' : '') + (p.me ? ' data-me="1"' : '') +
-            ' aria-label="' + esc(tr('place', { n: x.rank }) + ', ' + nm + (c && c.named && c.form ? ', ' + c.form : '') + ', ' + tr('lv', { n: x.lv }) + ', ' + (p.me ? tr('you') : p.n) + ', ' + score(x) + ' ' + unitLong() + (d ? ', ' + tr(d > 0 ? 'up' : 'down', { n: Math.abs(d) }) : '')) + '"';
+            ' aria-label="' + esc(tr('place', { n: x.rank }) + ', ' + nm + ', ' + tr('lv', { n: x.lv }) + (ownerOf(p) ? ', ' + ownerOf(p) : '') + ', ' + score(x) + ' ' + unitLong() + (d ? ', ' + tr(d > 0 ? 'up' : 'down', { n: Math.abs(d) }) : '')) + '"';
     }
     function ptsHTML(x) { return '<span class="rk-pts"><b class="num" data-v="' + x.pts + '">' + score(x) + '</b>' + uIco(per) + '</span>'; }
     function podHTML(x, slot, mv) {
@@ -209,7 +226,7 @@
         const x = K.mine(list), self = people().find(p => p && p.me) || { me: true, n: '' }, L = myLevel(), lv = x ? x.lv : (L ? L.lv : K.level(self)), c = companion(self, lv), d = x ? mv.me : 0;
         const ring = '<span class="rk-lvr" style="--p:' + (L ? L.prog : 0).toFixed(3) + '" aria-hidden="true"><b class="num">' + lv + '</b></span>';
         const sub = !x ? '<small class="rk-own"><span class="rk-ownr">' + sunHTML(esc(per === 'all' ? tr('notYetA') : tr('notYetW'))) + '</span></small>' :
-            '<small class="rk-own"><span class="rk-lv num">' + esc(tr('lv', { n: lv })) + '</span>' + (shared() ? '' : '<span class="rk-ownr">' + ico('eye', '', 'rk-eye', '') + esc(tr('hiddenMe')) + '</span>') + '</small>';
+            '<small class="rk-own"><span class="rk-lv num">' + esc(tr('lv', { n: lv })) + '</span>' + (shared() ? (myName(self) ? '<span class="rk-ownr">' + esc(myName(self)) + '</span>' : '') : '<span class="rk-ownr">' + ico('eye', '', 'rk-eye', '') + esc(tr('hiddenMe')) + '</span>') + '</small>';
         return '<button type="button" class="rk-me' + (x ? '' : ' off') + '" data-rk="ladder" data-me="1" data-key="_me" aria-haspopup="dialog" aria-label="' + esc(tr('yourPlace') + ', ' + (x ? '#' + x.rank + ', ' + score(x) + ' ' + unitLong() : tr('notYet')) + ', ' + (c ? c.name : 'Misty') + ', ' + tr('lv', { n: lv }) + (d ? ', ' + tr(d > 0 ? 'up' : 'down', { n: Math.abs(d) }) : '') + ', ' + tr('levels')) + '" data-who="' + esc(self.n || '') + '">' +
             '<span class="rk-me-rk"><b class="num">' + (x ? '#' + x.rank : '\u2013') + '</b>' + mvHTML(d) + '</span>' +
             '<span class="rk-me-art">' + art(c, 'rkme', false) + ring + '</span>' +
@@ -257,7 +274,7 @@
             '<p class="rk-lad-next">' + esc(tr('ladNext', { x: K.fmt(d.toNext, lang()), n: d.my + 1 })) + '</p>';
         const lo = d.my > 1 ? d.steps[d.my - 1].xp : 0, prog = d.next == null ? 1 : Math.max(0, Math.min(1, (d.xp - lo) / Math.max(1, d.next - lo)));
         let h = '<div class="rk-lad-h">' + art(c, 'rklad', true) +
-            '<div class="rk-lad-hw"><b class="rk-lad-cn">' + esc(c ? c.name : 'Misty') + '</b><span class="rk-lad-lv">' + esc(tr('ladLv', { n: d.my })) + (c && c.form ? ' \u00b7 ' + esc(c.form) : '') + '</span>' + next +
+            '<div class="rk-lad-hw"><b class="rk-lad-cn">' + esc(c ? c.name : 'Misty') + '</b><span class="rk-lad-lv">' + esc(tr('ladLv', { n: d.my })) + '</span>' + next +
             '<span class="rk-lad-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(prog * 100) + '"><i style="width:' + (prog * 100).toFixed(1) + '%"></i></span></div>' +
             '<button type="button" class="rk-lad-x" data-lad="close" aria-label="' + esc(tr('close')) + '">\u00d7</button></div>';
         h += '<ol class="rk-lad-l">' + d.steps.map(st => {
@@ -422,8 +439,8 @@
         const self = ppl.find(p => p && p.me) || { me: true, n: '' }, lvM = me ? me.lv : K.level(self), lvT = them ? them.lv : K.level(tp), cM = companion(self, lvM), cT = companion(tp, lvT);
         const nm = nameOf(tp), aM = K.across(ppl, now, mc, self), aT = K.across(ppl, now, mc, tp), sp = K.span(k, now);
         const side = (c, key, owner, lv, cls) => '<div class="rk-vs-s ' + cls + '">' + art(c, key, true) + '<b class="rk-cn">' + esc(c ? c.name : tr('hidden')) + '</b>' +
-            '<small class="rk-own"><span class="rk-lv num">' + esc(tr('lv', { n: lv })) + '</span><span class="rk-ownr">' + esc(owner) + '</span></small>' + (c && c.named && c.form ? '<small class="rk-form">' + esc(c.form) + '</small>' : '') + '</div>';
-        let h = '<div class="rk-vs-h">' + side(cM, 'rkcm', tr('you'), lvM, 'me') + '<b class="rk-vs-b" aria-hidden="true">' + esc(tr('vs')) + '</b>' + side(cT, 'rkct', nm, lvT, 'them') +
+            '<small class="rk-own"><span class="rk-lv num">' + esc(tr('lv', { n: lv })) + '</span><span class="rk-ownr">' + esc(owner) + '</span></small></div>';
+        let h = '<div class="rk-vs-h">' + side(cM, 'rkcm', myName(self) || tr('you'), lvM, 'me') + '<b class="rk-vs-b" aria-hidden="true">' + esc(tr('vs')) + '</b>' + side(cT, 'rkct', nm, lvT, 'them') +
             '<button type="button" class="rk-lad-x" data-cmp="close" aria-label="' + esc(tr('close')) + '">\u00d7</button></div>';
         const a = aM[k] || { pts: 0 }, b = aT[k] || { pts: 0 }, sum = a.pts + b.pts, share = sum ? a.pts / sum : .5;
         const duelV = (x, cls, win) => '<span class="rk-duel-v ' + cls + (win ? ' win' : '') + '"><small class="rk-rk num">' + (x.rank ? '#' + x.rank : '\u2013') + '</small><span class="rk-duel-n"><b class="num" data-v="' + x.pts + '">' + fmt(x.pts) + '</b>' + uIco(k) + '</span></span>';
@@ -517,17 +534,21 @@
             });
         });
     }
-    /* fresh: the tab was just shown (community-rooms-ui.js), so the podium rises again even when nothing changed */
+    /* fresh: the tab was just shown (community-rooms-ui.js).
+       24 Oct 2026 (Eman: "this page right here doesn't need any animation ... it slows it down when it's opening ... I would rather
+       focus on speed of opening"; then: "when I go from week to month to Gesamt ... that's fine actually. I just don't want, when I
+       enter that room, some weird animation going on"): opening the Ranking draws the finished board at once: no podium rise, no
+       slide-in, no numbers counting up from 0, no layout read before it is drawn. Only a Week / Month / All time switch on a board
+       already on screen keeps its motion (rows sort into their new places, the numbers count to the new values). A repaint for any
+       other reason (looks or bots arriving, a language change) swaps the board in place without motion. */
     function render(b, fresh) {
         if (!b) return; box = b; wire(b);
-        const r = html(), key = per + '|' + lang() + '|' + r.h.length + '|' + r.h, vis = !!(b.isConnected && b.getClientRects && b.getClientRects().length);
+        const r = html(), key = per + '|' + lang() + '|' + r.h.length + '|' + r.h;
         if (b.__rkH !== key) {
-            const intro = !b.__rkH || !b.querySelector('.rk') || !!fresh, first = !intro && vis ? snap(b) : null;
-            b.__rkH = key; b.innerHTML = '<div class="rk' + (intro ? ' rk-intro' : '') + '" data-noi18n>' + r.h + '</div>';
-            if (vis) play(b, intro ? null : first || {});
-        } else if (fresh && vis) {
-            const el = b.querySelector('.rk');
-            if (el) { el.classList.remove('rk-intro'); void el.offsetWidth; el.classList.add('rk-intro'); play(b, null); }
+            const sw = !fresh && !!b.__rkH && b.__rkPer != null && b.__rkPer !== per && !!b.querySelector('.rk');
+            const first = sw && b.isConnected && b.getClientRects && b.getClientRects().length ? snap(b) : null;
+            b.__rkH = key; b.__rkPer = per; b.innerHTML = '<div class="rk" data-noi18n>' + r.h + '</div>';
+            if (first) play(b, first);
         }
         fetchLooks(r.uids);
     }

@@ -4143,7 +4143,25 @@ const DISHES = [
 const LEVELS = ["low", "medium", "high"];
 const RANK_R = {ja:0, selten:1, nein:2};
 const STOP = new Set("a an the and with some of my i had ate eating for on in at to plus or no without ohne mit und ein eine einen einem einer zwei drei vier one two three four five six half little bit big small large extra side cup cups glass glasses glas slice slices scheibe scheiben piece pieces stuck handful bowl plate teller portion portions serving dazu oder breakfast lunch dinner snack fruhstuck mittag abendessen today heute just only also too lots lot of x very really homemade selbstgemacht fresh frisch grilled gegrillt baked roasted gebraten boiled gekocht raw roh cold warm hot cooked air fried fryer airfryer some tbsp tsp spoon spoons loffel el tl g gram grams ml can dose bottle flasche mini large medium regular normal plain natur classic cup mug becher tasse".split(" "));
-const NEG = new Set(["no", "without", "ohne", "kein", "keine", "keinen", "minus", "hold"]);
+const NEG = new Set(["no", "without", "ohne", "kein", "keine", "keinen", "minus", "hold", "sin"]);
+/* Oct 24 sweep: Spanish food words (accents already stripped by normText) read as the English keywords above, so a meal
+   typed in Spanish gets the same verdict and the same XP as in English or German. Before, "Avena con leche" was read as
+   milk alone (avena unknown) and earned +15 XP, while "Oats with milk" / "Haferflocken mit Milch" are spiky and earn none.
+   "" drops a filler word. "pan" stays itself before fried/seared (English "pan fried"). */
+const ES_MEAL = {pollo:"chicken", pechuga:"chicken", pavo:"turkey", huevos:"eggs", huevo:"egg", carne:"beef", ternera:"beef", cordero:"lamb",
+  cerdo:"pork", jamon:"ham", salchicha:"sausage", salchichas:"sausages", tocino:"bacon", pescado:"fish", atun:"tuna", gambas:"shrimp", langostinos:"prawns",
+  queso:"cheese", yogur:"yogurt", leche:"milk", nata:"cream", mantequilla:"butter", aceite:"oil", aguacate:"avocado", nueces:"nuts", almendras:"almonds",
+  verduras:"vegetables", verdura:"vegetables", ensalada:"salad", espinacas:"spinach", pepino:"cucumber", tomate:"tomato", tomates:"tomatoes",
+  zanahoria:"carrot", zanahorias:"carrots", cebolla:"onion", pimiento:"pepper", setas:"mushrooms", champinones:"mushrooms", brocoli:"broccoli", calabacin:"zucchini",
+  fruta:"fruit", manzana:"apple", pera:"pear", platano:"banana", fresas:"strawberries", arandanos:"blueberries", frutos:"", rojos:"berries", uvas:"grapes",
+  avena:"oats", copos:"", cereales:"cereal", arroz:"rice", pan:"bread", tostada:"toast", tostadas:"toast", fideos:"noodles", patata:"potato", patatas:"potatoes",
+  papas:"potatoes", fritas:"fries", maiz:"corn", lentejas:"lentils", garbanzos:"chickpeas", frijoles:"beans", alubias:"beans", galletas:"cookies", galleta:"cookie",
+  azucar:"sugar", miel:"honey", mermelada:"jam", tarta:"cake", pastel:"cake", helado:"ice cream", zumo:"juice", jugo:"juice", refresco:"soda", cerveza:"beer",
+  vino:"wine", agua:"water", cafe:"coffee", te:"tea", hamburguesa:"burger", bocadillo:"sandwich", sopa:"soup",
+  con:"with", y:"and", de:"", del:"", el:"", la:"", los:"", las:"", un:"", una:"", unos:"", unas:""};
+const esMealToks = toks => { const out = []; toks.forEach((t, i) => {
+  if (!Object.prototype.hasOwnProperty.call(ES_MEAL, t) || (t === "pan" && /^(fried|seared|roasted|fry|frying)$/.test(toks[i + 1] || ""))) { out.push(t); return; }
+  if (ES_MEAL[t]) ES_MEAL[t].split(" ").forEach(x => out.push(x)); }); return out; };
 
 const normText = s => String(s || "").toLowerCase()
   .replace(/ä/g, "a").replace(/ö/g, "o").replace(/ü/g, "u").replace(/ß/g, "ss")
@@ -4166,11 +4184,11 @@ const tokMatch = (tok, kw) => {
   return false;
 };
 
-function parseMeal(text){
-  const toks = normText(text).split(" ").filter(Boolean);
+/* one pass of the keyword index over toks; fills foods / dishes / dropped, returns which tokens a keyword matched */
+function scanMealToks(toks, foods, dishes, dropped){
   const used = toks.map(() => false), neg = toks.map(() => false);
   toks.forEach((t, i) => { if (NEG.has(t)) { used[i] = true; for (let j = i + 1; j < Math.min(toks.length, i + 4); j++) { if (toks[j] === "and" || toks[j] === "und" || toks[j] === "with" || toks[j] === "mit") break; neg[j] = true; } } });
-  const foods = [], dishes = [], dropped = [];
+  const hit = toks.map(() => false);
   for (const kw of KW) {
     const n = kw.toks.length;
     for (let i = 0; i + n <= toks.length; i++) {
@@ -4178,7 +4196,7 @@ function parseMeal(text){
       if (n === 1 && STOP.has(toks[i]) && toks[i] !== kw.k) continue;
       for (let j = 0; j < n; j++) { if (used[i + j] || !(n === 1 ? tokMatch(toks[i], kw.k) : toks[i + j] === kw.toks[j])) { ok = false; break; } }
       if (!ok) continue;
-      for (let j = 0; j < n; j++) used[i + j] = true;
+      for (let j = 0; j < n; j++) { used[i + j] = true; hit[i + j] = true; }
       const isNeg = neg[i];
       const label = toks.slice(i, i + n).join(" ");
       if (isNeg) { dropped.push(label); continue; }
@@ -4186,7 +4204,18 @@ function parseMeal(text){
       else { const ex = foods.find(f => f.food === kw.food); if (ex) { if (ex.labels.indexOf(label) < 0) ex.labels.push(label); } else foods.push({food: kw.food, labels: [label]}); }
     }
   }
-  const unknown = toks.filter((t, i) => !used[i] && !STOP.has(t) && !/^\d+$/.test(t) && t.length > 1);
+  return {used, hit};
+}
+function parseMeal(text){
+  const toks = normText(text).split(" ").filter(Boolean);
+  const foods = [], dishes = [], dropped = [];
+  const one = scanMealToks(toks, foods, dishes, dropped);
+  /* Oct 24: what the first pass did not match is read once more with the Spanish words (ES_MEAL) as English ones;
+     Spanish keywords that already exist ("chili con carne", "cafe con leche") match in the first pass and stay as they are */
+  let left = toks.filter((t, i) => !one.used[i]), free = left.map(() => true);
+  const rest = toks.filter((t, i) => !one.hit[i]);
+  if (rest.some(t => Object.prototype.hasOwnProperty.call(ES_MEAL, t))) { left = esMealToks(rest); free = scanMealToks(left, foods, dishes, dropped).used.map(x => !x); }
+  const unknown = left.filter((t, i) => free[i] && !STOP.has(t) && !/^\d+$/.test(t) && t.length > 1);
   return {toks, foods, dishes, unknown, dropped};
 }
 

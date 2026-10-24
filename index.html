@@ -2023,6 +2023,8 @@ let SKIP = "";
 function lastMeal(s){ try { const L = (typeof S !== "undefined" && S && Array.isArray(S.logs)) ? S.logs : [], now = Date.now() + 60000; let b = 0, bl = null;
   for (let i = L.length - 1; i >= 0; i--) { const l = L[i], ts = l ? +l.ts || 0 : 0; if (!ts || ts > now || ts <= b) continue; if (SKIP && (l.eventId === SKIP || l.id === SKIP)) continue; b = ts; bl = l; }
   return bl ? {ts:b, log:bl} : null; } catch(e){ return null; } }
+/* Oct 24 gaptime: the logged meals as LowiFastEditCore.plan reads them, so Gap > Zeit ändern can move the meal the Gap counts from */
+function mealList(){ try { const L = (typeof S !== "undefined" && S && Array.isArray(S.logs)) ? S.logs : []; return L.filter(l => l && +l.ts > 0).map(l => ({id:String(l.id || l.eventId || l.ts), ev:String(l.eventId || l.id || ""), ts:+l.ts, t:l.t || ""})); } catch(e){ return []; } }
 function ownStart(s){ const h = s.hist, pe = h.length ? +h[h.length - 1].e || 0 : 0; return Math.max(+s.last || 0, pe); }
 function startOf(s){ s = s || st(); if (!Array.isArray(s.hist)) s.hist = []; const m = lastMeal(s); return Math.max(ownStart(s), m ? m.ts : 0); }
 function points(hours, g){
@@ -2199,7 +2201,7 @@ const bigBtn = cls => '<button type="button" class="btn primary fst-btn' + (cls 
 const LV = {en:"Level {n} \u00b7 {t}", de:"Level {n} \u00b7 {t}", es:"Nivel {n} \u00b7 {t}"};
 /* Oct 16: the level toast names Misty's cell stage (Little cell, Glow cell ...), not the old herb titles */
 const lvl = (n, t) => { try { const c = window.LowiWorldHomeCore, s = c && c.STAGES && c.STAGES[n - 1]; if (s) t = c.pick(s.n, lang()); } catch (e) {} return (LV[lang()] || LV.en).replace("{n}", n).replace("{t}", t); };
-window.LowiFastStop = {lvl, open, end, mealTicked, mealLogged, mealNote, catchUp, unmeal, remeal, lastMeal, SITTING, firstMeal, guessed, unguess, points, startOf, stopPill, bigBtn, histHTML, reward, paint, _st:st, w};
+window.LowiFastStop = {lvl, open, end, mealTicked, mealLogged, mealNote, catchUp, unmeal, remeal, lastMeal, mealList, SITTING, firstMeal, guessed, unguess, points, startOf, stopPill, bigBtn, histHTML, reward, paint, _st:st, w};
 })();
 </script>
 <style id="g1css">
@@ -20878,11 +20880,11 @@ window.LowiVitalsBridge = {
   deleteMeal(id){const i=S.logs.findIndex(l=>l&&(l.id===id||l.eventId===id));if(i<0)return false;const log=S.logs[i];S.logs.splice(i,1);if(!save()){S.logs.splice(i,0,log);return false;}if(log.eventId)this.unaward(log.eventId);try{window.dispatchEvent(new CustomEvent("lowi:meal-removed",{detail:{id:log.eventId||log.id,ts:+log.ts||0}}));}catch(x){}/* gapfix: the Gap goes back if this meal started it */try{window.dispatchEvent(new CustomEvent("lowi:state",{detail:{mealDeleted:log.id}}));}catch(x){}return log;},
   /* edit a meal in place (Oct 23, E-man: "5 minutes after, I add another chicken piece"): the same meal, so no new XP, no second
      gap close. data.ts moves its time (same day, never in the future) and the Gap follows it (lowi:meal-moved); data.slot = meal | snack. */
-  editMeal(data){const log=S.logs.find(l=>l.id===data.id||l.eventId===data.id||String(l.ts)===data.id);if(!log)return false;const previous={t:log.t,macros:log.macros,est:log.est,ts:log.ts,slot:log.slot,lvl:log.lvl,r:log.r};
+  editMeal(data){const log=S.logs.find(l=>l.id===data.id||l.eventId===data.id||String(l.ts)===data.id);if(!log)return false;const previous={t:log.t,macros:log.macros,est:log.est,ts:log.ts,slot:log.slot,lvl:log.lvl,r:log.r,day:log.day};
     if(data.t!=null&&String(data.t).trim())log.t=String(data.t).trim();if(data.macros)log.macros=data.macros;if(data.est)log.est=data.est;else if(data.macros)delete log.est;
     if(data.slot&&/^(meal|snack)$/.test(data.slot))log.slot=data.slot;
     if(log.t!==previous.t&&log.via!=="barcode"&&!log.ai&&typeof analyseMeal==="function")try{const a=analyseMeal(String(log.t),{trig:S.trig||[]});if(a&&a.ok){log.lvl=a.lvl||log.lvl;log.r=a.r||log.r;}}catch(e){}
-    let moved=0;const nts=+data.ts||0;if(nts&&Math.abs(nts-(+log.ts||0))>=60000){const d0=new Date(+log.ts||Date.now()),d1=new Date(nts);if(d1.toDateString()===d0.toDateString()&&nts<=Date.now()+60000){log.ts=Math.min(Date.now(),nts);log.ateSet=1;moved=1;}}
+    let moved=0;const nts=+data.ts||0;if(nts&&Math.abs(nts-(+log.ts||0))>=60000){const d0=new Date(+log.ts||Date.now()),d1=new Date(nts);if((d1.toDateString()===d0.toDateString()||(data.anyDay&&nts>=Date.now()-7*864e5-60000))&&nts<=Date.now()+60000){log.ts=Math.min(Date.now(),nts);log.ateSet=1;moved=1;/* Oct 24 gaptime: Gap > Zeit \u00e4ndern may move the last meal to another day (up to 7 days back); its day goes with it */if(log.day&&d1.toDateString()!==d0.toDateString()){const q=new Date(log.ts),z=n=>(n<10?"0":"")+n;log.day=q.getFullYear()+"-"+z(q.getMonth()+1)+"-"+z(q.getDate());}}}
     if(!save()){Object.assign(log,previous);return false;}
     if(moved)try{window.dispatchEvent(new CustomEvent("lowi:meal-moved",{detail:{id:log.eventId||log.id,ts:log.ts,oldTs:+previous.ts||0}}));}catch(x){}
     try{window.dispatchEvent(new CustomEvent("lowi:state",{detail:{mealEdited:log.id}}));}catch(x){}return{log,xp:0,moved:!!moved};},

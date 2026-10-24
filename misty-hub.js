@@ -361,7 +361,9 @@
         try { ppl = r.everyone() || []; const m = r.me && r.me(); care = m && m.care; } catch (e) { return null; }
         try { return k.peek(ppl, Date.now(), care); } catch (e) { return null; }
     }
-    function myName() { try { const H = W.LowiHerbTamagotchi, c = H && H.current && H.current(); if (H && H.name && c) return H.name(c.p, c.m) || 'Misty'; } catch (e) { } return 'Misty'; }
+    /* Bug hunt Oct 24: the pill's label (read out by VoiceOver) named the old herb auto name ("Sunny Leaf is number 2 worldwide")
+       while the card above it says "Misty" or the name you gave. Same BH-006 chain as the card: own companion > a typed name > Misty. */
+    function myName() { try { const B = W.LowiBirthCompanion; if (B && B.displayName) { const n = B.displayName(); if (n) return n; } } catch (e) { } const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(W.LowiHerbIdentity && W.LowiHerbIdentity.autoName && W.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const t = W.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = W.LowiR2, st = R && R.S && R.S(); n = typed(st && st.herb && st.herb.name); } catch (e) { } return n || 'Misty'; }
     function genomeOf(p) {
         const C = CC(); if (!C || !p) return null;
         if (p.me) { try { return LC() && LC().genome ? LC().genome() : null; } catch (e) { return null; } }

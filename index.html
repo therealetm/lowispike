@@ -9800,7 +9800,13 @@ function snapshot(){ const o = {};
    three-way per field, no clocks), apply here, push. On open and on coming back to the app it pulls first; when the other
    device changed something this one reloads once, so the screen shows the merged data (a short note says why). */
 const SYNC_META = "lowi.sync.v1";
-let syncing = null, syncFrozen = false, lastSyncAt = 0;
+let syncing = null, syncFrozen = false, lastSyncAt = 0, syncWaiting = false;
+/* 24 Oct 2026 (Emmanuel: "I tried to fly into a world and it crashed", iPhone + iPad on one account): the background backup after a write
+   (arriving in a world writes the guide's memory; cell worlds, herbs and the wardrobe call backupNow) used to merge the other device's copy
+   and reload the whole page right there, mid-flight, which looks exactly like a crash. A background sync ("backup" / "now") now never
+   reloads: when the other device changed something it stops there (nothing is pushed over it, nothing is lost here) and syncWaiting
+   holds the merge for the next time the app leaves or comes back to the front, which does it with the one reload as before. */
+const syncInBackground = why => why === "backup" || why === "now";
 function syncMeta(){ try { const m = JSON.parse(localStorage.getItem(SYNC_META) || "null"); if (m && m.uid === uid) return m; } catch(e){} return {uid, base:{}, at:""}; }
 function saveSyncMeta(m){ try { _set.call(localStorage, SYNC_META, JSON.stringify({uid, base:m.base || {}, at:m.at || ""})); } catch(e){} }
 function syncLang(){ const l = (localStorage.getItem("lowi.lang") || document.documentElement.lang || "en").slice(0, 2); return l === "de" || l === "es" ? l : "en"; }
@@ -9812,9 +9818,10 @@ function applyMerged(res){
   res.removedKeys.forEach(k => { try { localStorage.removeItem(k); } catch(e){} });
 }
 async function pushState(o){ const at = new Date().toISOString(); const r = await sb.from("user_state").upsert({id:uid, data:o, updated_at:at}); if (r.error) return null; lastBack = JSON.stringify(o); return at; }
-/* why: "open" | "resume" | "backup" | "now". Resolves true when the cloud copy matches this device afterwards. */
+/* why: "open" | "resume" | "hide" | "backup" | "now" | "final" (sign out). Resolves true when the cloud copy matches this device afterwards. */
 function syncNow(why){
   if (!live || !uid || syncFrozen) return Promise.resolve(false);
+  if (syncWaiting && syncInBackground(why)) return Promise.resolve(false);   /* the merge waits for the app to leave or come back to the front */
   if (syncing) return syncing.then(() => syncNow(why));
   const C = SYNC(), me = uid;
   syncing = (async () => {
@@ -9842,6 +9849,7 @@ function syncNow(why){
       const res = C.merge(local, remote, legacy ? {} : meta.base);
       const here = res.changedKeys.length + res.removedKeys.length > 0;
       try { window.__lowiSync = {why, units:res.changedUnits.slice(0, 40), push:res.pushNeeded, legacy, conflicts:res.conflicts}; sessionStorage.setItem("lowi.sync.last", JSON.stringify(window.__lowiSync)); } catch(e){}
+      if (here && syncInBackground(why)) { syncWaiting = true; return false; }   /* never reload mid-use (the fly-in "crash") */
       if (here && !canReload()) return false;          /* never a reload loop: try again on the next open */
       let at = r.data.updated_at || "";
       if (res.pushNeeded) { if (JSON.stringify(res.merged).length > 4e6) return false; at = await pushState(res.merged); }
@@ -9861,7 +9869,11 @@ function syncNow(why){
 function syncNote(){ let n = ""; try { n = sessionStorage.getItem("lowi.sync.note") || ""; sessionStorage.removeItem("lowi.sync.note"); } catch(e){} if (!n) return;
   const t = {en:"Up to date with your other device", de:"Auf dem Stand deines anderen Geräts", es:"Al día con tu otro dispositivo"}[syncLang()];
   window.__lowiSyncNote = t; setTimeout(() => toast(t, 2600), 900); }
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && live && Date.now() - lastSyncAt > 15000) syncNow("resume"); });
+document.addEventListener("visibilitychange", () => {
+  if (!live) return;
+  if (document.visibilityState === "hidden") { if (syncWaiting) { syncWaiting = false; syncNow("hide").then(ok => { if (!ok && !syncFrozen) syncWaiting = true; }); } return; }
+  if (document.visibilityState === "visible" && (syncWaiting || Date.now() - lastSyncAt > 15000)) { syncWaiting = false; syncNow("resume"); }
+});
 function backupSoon(ms){ clearTimeout(backT); backT = setTimeout(() => { if (!live) return; const o = snapshot(), j = JSON.stringify(o); if (j === lastBack) return; syncNow("backup"); }, ms || 5000); }
 async function restore(){ const r = await sb.from("user_state").select("data,updated_at").eq("id", uid).maybeSingle(); if (r.error || !r.data || !r.data.data) return false;
   const o = r.data.data; let keepHealth = null; try { keepHealth = JSON.parse(localStorage.getItem("lowispike.v2") || "{}").health || null; } catch(e){}
@@ -10062,7 +10074,7 @@ window.LOWI_CLOUD_X = {
   pushProfile(){ try { pushProfile(); } catch(e){} },
   room:() => ROOM(),
   energyShot(p){ if (window.LowiRooms) return LowiRooms.sendEnergy(p); if (!chan || chatRealtime !== "SUBSCRIBED" || !p) return false; try { Promise.resolve(chan.send({type:"broadcast", event:"energy", payload:p})).catch(() => {}); return true; } catch(e){ return false; } },
-  async backupNow(){ if (!live || !uid) return false; clearTimeout(backT); return syncNow("now"); },
+  async backupNow(final){ if (!live || !uid) return false; clearTimeout(backT); return syncNow(final === true ? "final" : "now"); },
   syncNow(why){ return syncNow(why || "now"); },
   paint(){ try { paintCard(); } catch(e){} try { refreshUI(); } catch(e){} },
   async delMsg(id){ if (!live) throw new Error("offline"); const r = await sb.from("messages").delete().eq("id", id).eq("user_id", uid); if (r.error) throw r.error;
@@ -11162,7 +11174,7 @@ async function signOut(){
   const x = R2.X(), btn = $('[data-r2p="dosignout"]');
   if (btn) { btn.disabled = true; btn.textContent = "Saving your stuff…"; }
   let ok = true;
-  try { if (x) ok = await Promise.race([x.backupNow(), new Promise(r => setTimeout(() => r(false), 6000))]); } catch(e){ ok = false; }
+  try { if (x) ok = await Promise.race([x.backupNow(true), new Promise(r => setTimeout(() => r(false), 6000))]); } catch(e){ ok = false; }
   if (!ok && btn && !btn.dataset.force) { btn.disabled = false; btn.dataset.force = "1"; btn.textContent = "Couldn't sync · sign out anyway"; return; }
   try { const st = x && x.state(); const v = JSON.parse(localStorage.getItem("lowispike.v2") || "{}"); if (st && st.uid && v.health) localStorage.setItem("lowi.health." + st.uid, JSON.stringify(v.health)); } catch(e){}
   try { if (window.LowiHandoff) await LowiHandoff.revoke(); } catch(e){}   /* hof-hook: kill open sign-in codes */

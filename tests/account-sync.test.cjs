@@ -120,8 +120,9 @@ test('index.html: backups are syncs, open and resume pull first, old builds can 
   assert.ok(core > 0 && core < cloud, 'core loads before the cloud script');
   assert.match(html, /function backupSoon\(ms\)\{[^\n]*syncNow\("backup"\)/);
   assert.match(html, /setTimeout\(\(\) => syncNow\("open"\), 600\)/);
-  assert.match(html, /visibilitychange", \(\) => \{ if \(document\.visibilityState === "visible" && live[^\n]*syncNow\("resume"\)/);
-  assert.match(html, /async backupNow\(\)\{[^\n]*return syncNow\("now"\)/);
+  /* 24 Oct 2026 (fly-in crash): resume still pulls first; a merge a background backup held back runs on resume or on hide */
+  assert.match(html, /document\.visibilityState === "visible" && \(syncWaiting \|\| Date\.now\(\) - lastSyncAt > 15000\)\) \{ syncWaiting = false; syncNow\("resume"\)/);
+  assert.match(html, /async backupNow\(final\)\{[^\n]*return syncNow\(final === true \? "final" : "now"\)/);
   assert.match(html, /const legacy = remote\["lowispike\.sync\.v"\] !== "1"/);
   assert.match(html, /C\.merge\(local, remote, legacy \? \{\} : meta\.base\)/);
   assert.match(html, /o\["lowispike\.sync\.v"\] = "1"/);

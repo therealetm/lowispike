@@ -7,7 +7,7 @@
    drawing, Misty and Home's UI back after returning, canvas / GL memory (tools/soak/crash-probe.js).
    Usage: node tools/fly-into-world-probe.cjs [url|root] [--engine webkit|chromium] [--device 'iPhone 13'] [--size 820x1180] [--rounds 2]
           modes: (default) every way in and out | --steer (fly the companion in with the Home controller) | --zoomed (zoomed out first)
-                 | --auto [secs] (autopilot, watch it fly) | --resilience (a bad frame + a lost and restored WebGL context mid-trip)
+                 | --auto [secs] (autopilot, watch it fly) | --resilience [--quick] (a bad frame + a lost and restored WebGL context mid-trip; --quick: the bad frame on Home only)
           --full: the test account's companion at full energy (a stand-in for LowiSun.energyNow in the page, nothing is saved)
    Oct 24 (frame guard): every check also says whether the 3D world is still drawing (frames since the last check, on Home) and
    how many frame errors the world caught (LowiWorld3D.frameErrors).
@@ -61,7 +61,7 @@ const within = (p, ms, what) => Promise.race([p, new Promise((_, no) => setTimeo
     };
     const goTab = t => ev(t => { window.goTab(t); }, t);
     const wait = async (fn, a, ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { const v = await ev(fn, a); if (v === true) return true; await H.sleep(400); } return false; };
-    const settled = (id) => wait(id => { const s = window.LowiWorldRegions && window.LowiWorldRegions.state; return !!s && s.cur === id && !s.busy && !s.warp; }, id, 25000);
+    const settled = (id) => wait(id => { const s = window.LowiWorldRegions && window.LowiWorldRegions.state; return !!s && s.cur === id && !s.busy && !s.warp; }, id, (+arg('settle', 25) || 25) * 1000);
     /* a real tap on a glowing place: its projected spot on the canvas, only where the canvas itself is on top */
     const tapPlace = async (id) => {
         for (let i = 0; i < 12; i++) {
@@ -135,6 +135,8 @@ const within = (p, ms, what) => Promise.race([p, new Promise((_, no) => setTimeo
             await ev(() => { const r = window.LowiWorld3D.renderer, f = r.render; let n = 1; r.render = function () { if (n-- > 0) throw new Error('probe: one bad frame'); return f.apply(this, arguments); }; });
             await H.sleep(3000); errs.splice(0).forEach(e => { if (!/probe: one bad frame/.test(e)) errs.push(e); });
             await check('after one bad frame on Home');
+            await H.sleep(3000); await check('3 s later, still drawing?');
+            if (arg('quick', false)) throw new Error('resilience quick run done');
             /* 2) a bad frame in the middle of a trip into a world */
             R.step = 'bad frame mid-trip';
             await enterWorld('heart', 'map'); await H.sleep(700);
@@ -156,8 +158,13 @@ const within = (p, ms, what) => Promise.race([p, new Promise((_, no) => setTimeo
                 await H.sleep(1500); errs.splice(0).forEach(e => { if (!/context|CONTEXT_LOST/i.test(e)) errs.push(e); });
                 const s = await check('context lost (' + JSON.stringify(lost) + ', while lost ' + JSON.stringify(mid) + ') and restored ' + (where === 'hub' ? 'on Home' : 'flying into ' + where), where === 'hub' ? null : { cur: where, idle: true });
                 if (s && !s.rest) found.push('context restore not seen (' + where + ')');
-                const px = await ev(() => { try { const c = document.querySelector('canvas.bw3-canvas'); const t = document.createElement('canvas'); t.width = 24; t.height = 24; const x = t.getContext('2d'); x.drawImage(c, 0, 0, 24, 24); const d = x.getImageData(0, 0, 24, 24).data; let lit = 0; for (let i = 0; i < d.length; i += 4) if (d[i] + d[i + 1] + d[i + 2] > 30) lit++; return lit; } catch (e) { return 'err ' + e.message; } });
-                console.log('   canvas pixels lit after restore:', px, '/ 576');
+                /* the picture really comes back: draw once and read a 24x24 grid of pixels straight off the restored GL context */
+                const px = await ev(() => { try { const W3 = window.LowiWorld3D, r = W3.renderer, g = r.getContext(); r.render(W3.scene, W3.camera);
+                    const w = g.drawingBufferWidth, h = g.drawingBufferHeight, one = new Uint8Array(4); let lit = 0;
+                    for (let i = 0; i < 24; i++) for (let j = 0; j < 24; j++) { g.readPixels(Math.floor((i + 0.5) * w / 24), Math.floor((j + 0.5) * h / 24), 1, 1, g.RGBA, g.UNSIGNED_BYTE, one); if (one[0] + one[1] + one[2] > 24) lit++; }
+                    return { lit, of: 576, glErr: g.getError(), lostNow: g.isContextLost() }; } catch (e) { return 'err ' + e.message; } });
+                console.log('   picture after restore (pixels with colour):', JSON.stringify(px));
+                if (px && typeof px === 'object' && px.lit < 50) found.push('picture blank after restore (' + where + '): ' + JSON.stringify(px));
                 if (where !== 'hub') { await toHub('map'); await settled('hub'); await H.sleep(1500); await check('home after restore', { cur: 'hub', idle: true }); }
             }
             /* 4) and she can still fly into a world after all that */

@@ -49,7 +49,7 @@
     ['jacket potato', 'potato baked peel eaten'], ['baked potato', 'potato baked'], ['backkartoffel', 'potato baked'], ['ofenkartoffel', 'potato baked'],
     ['mashed potato', 'potato mashed'], ['kartoffelpuree', 'potato mashed'], ['kartoffelbrei', 'potato mashed'], ['pure de papa', 'potato mashed'],
     ['bratkartoffeln', 'potato home fries'], ['chips', 'chip'], ['crisps', 'potato chips'], ['scrambled eggs', 'egg scrambled'], ['fried egg', 'egg fried'],
-    ['boiled egg', 'egg boiled'], ['porridge', 'oatmeal'], ['mince', 'ground beef'], ['minced beef', 'ground beef'], ['courgette', 'zucchini'],
+    ['boiled egg', 'egg boiled'], ['porridge', 'oatmeal'], ['overnight oats', 'oatmeal'], ['rolled oats', 'oatmeal'], ['oats', 'oatmeal'], ['mince', 'ground beef'], ['minced beef', 'ground beef'], ['courgette', 'zucchini'],
     ['aubergine', 'eggplant'], ['prawns', 'shrimp'], ['prawn', 'shrimp'], ['omelette', 'omelet'], ['tortilla de huevo', 'omelet'], ['mac and cheese', 'macaroni and cheese'], ['mac n cheese', 'macaroni and cheese'],
     ['chilli', 'chili'], ['chili con carne', 'chili con carne'], ['yoghurt', 'yogurt'], ['bap', 'roll'], ['butty', 'sandwich'], ['sarnie', 'sandwich'],
     ['coriander', 'cilantro'], ['rocket', 'arugula'], ['beetroot', 'beet'], ['swede', 'rutabaga'], ['gammon', 'ham'], ['rasher', 'bacon']
@@ -138,7 +138,7 @@
   function prep(text) {
     var s = ' ' + fold(text).replace(/[^a-z0-9.,+&' ]+/g, ' ').replace(/'/g, '').replace(/\s+/g, ' ') + ' ';
     PHRASES.slice().sort(function (a, b) { return b[0].length - a[0].length; }).forEach(function (p) {
-      s = s.split(' ' + p[0] + ' ').join(' ' + p[1] + ' ');
+      s = s.split(' ' + p[0] + ' ').join(' ' + p[1] + ' ').split(' ' + p[0] + ', ').join(' ' + p[1] + ', ');
     });
     return s.trim();
   }
@@ -180,11 +180,12 @@
   var DB = null;   // { rows, ing, idf, byName }
   function load(json) {
     var rows = [], df = {}, byName = {};
+    /* added vitamins and minerals ("vitamin d as ingredient") are left out of the ingredients: nobody names them in a meal */
     (json.f || []).forEach(function (r) {
       var segs = r[0].split(','), toks = {}, head = {};
       tokens(fold(r[0]).replace(/[^a-z0-9, ]+/g, ' ')).t.forEach(function (x) { toks[x] = 1; });
       tokens(fold(segs[0]).replace(/[^a-z0-9 ]+/g, ' ')).t.forEach(function (x) { head[x] = 1; });
-      var row = { name: r[0], g: r[1], u: r[9] || 0, v: [r[2], r[3], r[4], r[5], r[6], r[7]], ing: (r[8] || []).map(function (i) { return json.ing[i]; }), tok: toks, head: head,
+      var row = { name: r[0], g: r[1], u: r[9] || 0, v: [r[2], r[3], r[4], r[5], r[6], r[7]], ing: (r[8] || []).map(function (i) { return json.ing[i]; }).filter(function (x) { return x && !/ as ingredient$/.test(x); }), tok: toks, head: head,
         nfs: /\bNFS\b|\bNS as to\b/.test(r[0]), len: Object.keys(toks).length };
       rows.push(row); byName[r[0].toLowerCase()] = row;
       Object.keys(toks).forEach(function (x) { df[x] = (df[x] || 0) + 1; });

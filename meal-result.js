@@ -382,7 +382,7 @@
 
     /* The one verdict. Same estimate as the shared meal card (LowiMealSnap.bloodSugar); a drink list holding 20 g of
        sugar or more is a likely spike on its own (the same rule bloodSugar uses for sugary drinks). */
-    function verdict(items, drinks, aiBlock) {
+    function verdict(items, drinks, aiBlock, l) {
         const all = (items || []).concat(drinks || []);
         const tot = totals(all);
         const MS = snap();
@@ -396,7 +396,7 @@
            no meal XP and no eat quest, the rule Misty already follows on the scanner. The spike line stays honest, so plain
            pork still reads "No spike" while its LOWiSPIKE verdict says NO. The model's verdict block can only tighten it. */
         const K = fk();
-        let food = K ? K.rateMeal(all, { level, score: bs.score }) : null;
+        let food = K ? K.rateMeal(all, { level, score: bs.score }, l) : null;   // in the user's language, not always English
         if (K && food && aiBlock) food = K.merge(K.parse(aiBlock), food);
         const nein = !!(food && food.verdict === 'NEIN');
         return { level, lvl: LVL[nein ? 'high' : level], spike: level === 'high', nein, food, score: bs.score, net: bs.net, drink: byDrink, total: tot, empty: !all.length };
@@ -443,7 +443,7 @@
     // What Log as meal saves: totals, the verdict level (the log's lvl, so XP matches) and the name.
     function formValues(items, drinks, l, aiBlock) {
         const all = (items || []).concat(drinks || []);
-        const v = verdict(items, drinks, aiBlock);
+        const v = verdict(items, drinks, aiBlock, l);
         return { title: title(all, l), lvl: all.length ? v.lvl : '', macros: all.length ? totals(all) : null, verdict: v };
     }
 

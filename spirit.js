@@ -1998,8 +1998,18 @@
     const emoji = /(?:\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\uFE0F|\uFE0E)?\p{Emoji_Modifier}?(?:\u200D(?:\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\uFE0F|\uFE0E)?\p{Emoji_Modifier}?)*|[\u2648-\u2653]\uFE0F?|[0-9#*]\uFE0F?\u20E3/gu;
     const symbolKind = s => window.LowiIcons ? LowiIcons.kind(s) : (/[💧🥤🚰]/u.test(s) ? 'water' : /[📷📸🤳]/u.test(s) ? 'camera' : /[🍽🥗🥣🍳🍎🍲🍱]/u.test(s) ? 'plate' : /[👑🎩🎀]/u.test(s) ? 'hat' : /[⭐🌟✨💫]/u.test(s) ? 'star' : /[🌞☀]/u.test(s) ? 'sun' : /[🌙🌚🌜]/u.test(s) ? 'moon' : /[🛒🛍]/u.test(s) ? 'bag' : /[💊]/u.test(s) ? 'medicine' : /[❤️💜💙💕]/u.test(s) ? 'heart' : 'leaf');
 
+    /* sweep Oct 24 22:02: the companion's own name keeps the emoji the user typed EVERYWHERE it shows (Home bubble, today line,
+       journey bar, Ranking, the 'Now called' toast, her world title), not only on Misty's card: 'Lumi ✨' showed as 'Lumi' + an
+       outline sparkle there. '' when the name has no emoji, so nothing changes for everyone else. */
+    function ownName() {
+        try {
+            const B = window.LowiBirthCompanion, n = B && typeof B.displayName === 'function' ? String(B.displayName() || '').trim() : '';
+            return n && (emoji.lastIndex = 0, emoji.test(n)) ? n : '';
+        } catch (e) { return ''; }
+    }
     function symbols(node) {
         if (!node || !node.isConnected) return;
+        const keep = ownName(), outside = s => keep ? s.split(keep).join(' ') : s;
         const walker = D.createTreeWalker(node, NodeFilter.SHOW_TEXT),
             nodes = [];
         while (walker.nextNode()) {
@@ -2007,9 +2017,9 @@
                 p = n.parentElement;
             /* user-typed text keeps its own emoji: chat, captions and the companion's name on Misty's card (.mh-name, sweep Oct 24 20:02:
                'Lumi ✨' showed as 'Lumi' + an outline sparkle icon) */
-            if (!p || p.closest('script,style,svg,input,textarea,option,code,pre,.cm-t,.cm-quote,.fy-cap,.fy-caption,.tr-cap,.sp-profile-sign,.mh-name,[contenteditable]')) continue;
+            if (!p || p.closest('script,style,svg,input,textarea,option,code,pre,.cm-t,.cm-quote,.fy-cap,.fy-caption,.tr-cap,.sp-profile-sign,.mh-name,.rk-cn,[contenteditable]')) continue;
             emoji.lastIndex = 0;
-            if ((emoji.lastIndex = 0, emoji.test(n.data)) || (!window.LowiIcons && /\b(Pisces|Fische|Piscis)\b/.test(n.data))) nodes.push(n);
+            if ((emoji.lastIndex = 0, emoji.test(outside(n.data))) || (!window.LowiIcons && /\b(Pisces|Fische|Piscis)\b/.test(n.data))) nodes.push(n);
         }
         for (const n of nodes) {
             const fragment = D.createElement('span');
@@ -2021,8 +2031,12 @@
               try { const k = raw.trim(), tt = window.LowiLang && LowiLang.t(k); if (tt && tt !== k) raw = raw.replace(k, tt); } catch (e) {}
               const alone = !raw.replace(emoji, '').trim(),
                 named = alone && n.parentElement && n.parentElement.closest('[aria-label],[title],[aria-hidden="true"]');
-              fragment.innerHTML = esc(raw).replace(emoji, s => /^[\u00A9\u00AE\u2122]/.test(s) ? s : LowiIcons.fromEmoji(s, { alone: alone && !named }));
-            } else fragment.innerHTML = esc(n.data).replace(emoji, s => icon(symbolKind(s))).replace(/\b(Pisces|Fische|Piscis)\b/g, icon('Pisces'));
+              const swap = t => esc(t).replace(emoji, s => /^[\u00A9\u00AE\u2122]/.test(s) ? s : LowiIcons.fromEmoji(s, { alone: alone && !named }));
+              fragment.innerHTML = keep && raw.includes(keep) ? raw.split(keep).map(swap).join(esc(keep)) : swap(raw);
+            } else {
+              const swap = t => esc(t).replace(emoji, s => icon(symbolKind(s))).replace(/\b(Pisces|Fische|Piscis)\b/g, icon('Pisces'));
+              fragment.innerHTML = keep && n.data.includes(keep) ? n.data.split(keep).map(swap).join(esc(keep)) : swap(n.data);
+            }
             n.replaceWith(fragment);
         }
     }

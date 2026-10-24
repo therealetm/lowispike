@@ -2005,7 +2005,9 @@
         while (walker.nextNode()) {
             const n = walker.currentNode,
                 p = n.parentElement;
-            if (!p || p.closest('script,style,svg,input,textarea,option,code,pre,.cm-t,.cm-quote,.fy-cap,.fy-caption,.tr-cap,.sp-profile-sign,[contenteditable]')) continue;
+            /* user-typed text keeps its own emoji: chat, captions and the companion's name on Misty's card (.mh-name, sweep Oct 24 20:02:
+               'Lumi ✨' showed as 'Lumi' + an outline sparkle icon) */
+            if (!p || p.closest('script,style,svg,input,textarea,option,code,pre,.cm-t,.cm-quote,.fy-cap,.fy-caption,.tr-cap,.sp-profile-sign,.mh-name,[contenteditable]')) continue;
             emoji.lastIndex = 0;
             if ((emoji.lastIndex = 0, emoji.test(n.data)) || (!window.LowiIcons && /\b(Pisces|Fische|Piscis)\b/.test(n.data))) nodes.push(n);
         }

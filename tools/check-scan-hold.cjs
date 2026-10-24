@@ -41,9 +41,11 @@ const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path
   let s = await st();
   await judge('hold opens every bubble, not Scan', s.all && s.orbs > 4 && !s.opened.length && s.home, s);
   /* 2. tap the empty space closes it */
-  await P.touchscreen.tap(Math.round(size[0] / 2), 70); await H.sleep(1300);
+  /* the empty space: the first spot whose top element is the bloom's scrim (what a finger tapping beside the bubbles hits) */
+  const spot = await P.evaluate(([w, h]) => { const xs = [.5, .2, .8, .1, .9], ys = [.12, .2, .85, .3, .7, .08]; for (const fy of ys) for (const fx of xs) { const x = Math.round(w * fx), y = Math.round(h * fy), e = document.elementFromPoint(x, y); if (e && e.closest && e.closest('.hb2-scrim')) return { x, y, hit: 'scrim' }; } const e = document.elementFromPoint(w / 2, 70); return { x: Math.round(w / 2), y: 70, hit: e ? String(e.className).slice(0, 40) : null }; }, size);
+  await P.touchscreen.tap(spot.x, spot.y); await H.sleep(1300);
   s = await st();
-  await judge('tap the empty space closes it', !s.all && !s.open, s);
+  await judge('tap the empty space closes it', !s.all && !s.open, s, { spot });
   await home();
   /* 3. hold, then hold again: open, then closed; Scan never opens */
   await spy(false); await hold(900); await H.sleep(1200); const s1 = await st(); await hold(900); await H.sleep(1300); s = await st();

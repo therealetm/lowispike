@@ -733,6 +733,16 @@
             }
         },
         {
+            id: 'new-meal-speaker', area: 'new', where: 'home', target: ['#spFast'], covers: ['gap'],
+            info: 'points at the Gap bubble on Home; each After your meal phase card inside Gap has a round speaker next to its title (Oct 24 2026)',
+            title: { en: 'Listen instead of reading', de: 'Hören statt lesen', es: 'Escuchar en vez de leer' },
+            text: {
+                en: 'New in Gap: tap the speaker on an After your meal card and the tutorial voice reads it to you. Tap again to stop.',
+                de: 'Neu in Gap: Tippe bei Nach dem Essen auf den Lautsprecher, dann liest dir die Tutorial-Stimme die Karte vor. Nochmal tippen stoppt.',
+                es: 'Nuevo en Gap: toca el altavoz en una tarjeta de Después de comer y la voz del tutorial te la lee. Toca otra vez para parar.'
+            }
+        },
+        {
             id: 'new-kitchen', area: 'new', where: 'home', open: 'kitchen', target: ['.stp-card .stp-tab[data-stp-tab="kitchen"]', '.stp-card'], covers: ['kitchen'],
             info: 'the Kitchen tab is open right behind this card; Bought is on each cart row there, so the card only says what it does',
             title: { en: 'Your kitchen', de: 'Deine Küche', es: 'Tu cocina' },

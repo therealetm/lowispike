@@ -107,6 +107,27 @@
 .mc-title { display: flex; align-items: center; gap: 8px; }
 .mc-title h3 { margin: 0; font-size: 18px; line-height: 1.2; }
 .mc-title em { font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; color: #06122c; background: var(--c); }
+/* read aloud (Oct 24 2026): a round glass speaker at the end of the title row, the tutorial speaker's size and look (32 px glass in a
+   44 px tap area, tutorial-voice.css .lt-spk), tinted with the phase colour when it reads. While it reads, the tutorial's speed pill
+   (1x / 1.5x / 2x) sits just left of it. The negative margins keep the row as tall as the title, so nothing below moves. */
+.mc-title h3 { min-width: 0; overflow-wrap: anywhere; }
+.mc-say { margin: -8px -10px -8px auto; display: flex; align-items: center; flex: none; }
+.mc-spk, .mc-rate { -webkit-appearance: none; appearance: none; font: inherit; color: #fff; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.mc-spk { width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: none; display: grid; place-items: center; }
+.mc-spkc { width: 32px; height: 32px; box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; pointer-events: none;
+    background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .32); transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.mc-spkc svg { width: 17px; height: 17px; display: block; overflow: visible; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.mc-spkc .mc-sb { fill: rgba(255, 255, 255, .9); stroke: none; }
+.mc-spk:not(.on) .mc-w2 { opacity: .55; }
+.mc-spk:active .mc-spkc { background: rgba(255, 255, 255, .2); }
+.mc-spk:focus-visible, .mc-rate:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+.mc-spk.on .mc-spkc { border-color: color-mix(in srgb, var(--c) 85%, #fff); background: color-mix(in srgb, var(--c) 30%, rgba(30, 120, 200, .3)); box-shadow: 0 0 12px color-mix(in srgb, var(--c) 45%, transparent); }
+.mc-spk.on .mc-w1 { animation: mcWave 1s ease-in-out infinite; }
+.mc-spk.on .mc-w2 { animation: mcWave 1s ease-in-out .25s infinite; }
+.mc-rate { min-width: 44px; height: 30px; margin-right: -2px; padding: 0 8px; border-radius: 15px; border: 1px solid rgba(160, 220, 255, .5);
+    background: linear-gradient(160deg, rgba(80, 170, 255, .14), rgba(28, 74, 150, .34)); font-size: 13px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.mc-rate.fast { border-color: color-mix(in srgb, var(--c) 85%, #fff); }
+@keyframes mcWave { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
 .mc-pill { display: inline-block; margin: 7px 0 6px; padding: 4px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: rgba(236, 246, 255, .92); background: rgba(255, 255, 255, .08); border: 1px solid rgba(143, 216, 255, .2); }
 .mc-t { margin: 0; font-size: 14.5px; line-height: 1.45; color: rgba(236, 246, 255, .9); }
 .mc-t b { color: #fff; }
@@ -133,4 +154,4 @@
 @keyframes mcBob { 0%, 100% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
 @media (max-width: 360px) { .mc-ic { width: 40px; height: 40px; } .mc-ph small { font-size: 10.5px; } }
 @media (min-width: 700px) { .gv-ov { align-items: center; } .gv-card { border-radius: 28px; border-bottom: 1px solid rgba(143, 216, 255, .42); max-height: min(88vh, 900px); } }
-@media (prefers-reduced-motion: reduce) { .gv-ov, .gv-card, .gv-liq { transition: none; } .gv-wave, .gv-pl.here .gv-halo, .mc-card, .mc-motif *, .mc-ic { animation: none; transition: none; } .mc-up circle, .mc-in circle { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .gv-ov, .gv-card, .gv-liq { transition: none; } .gv-wave, .gv-pl.here .gv-halo, .mc-card, .mc-motif *, .mc-ic, .mc-spk .mc-w1, .mc-spk .mc-w2, .mc-spkc { animation: none; transition: none; } .mc-up circle, .mc-in circle { opacity: 1; } }

@@ -6,6 +6,7 @@
    - the Move player cues (index.html MOVES), Audio mode, Listen and learn (FORMATS, MOVES, BODY), food picks       en
    - Learn while you move (index.html R3W_BOOK and the coach lines around it)                                   en
    - Audio mode reading notifications aloud: every fixed toast("...") text                                          en
+   - Gap's "After your meal" phase cards (gap-view.js mcSpoken)                                                       en de es
    Usage: node tools/app-voice/phrases.cjs            -> JSON {sources:{name:count}, pieces:{lang:[sentence...]}}
           node tools/app-voice/phrases.cjs --news     -> only version.json's news (what a release adds) */
 'use strict';
@@ -103,6 +104,9 @@ function harvest(newsOnly) {
     /* ---- Affiliates page: every script line read aloud (22 Oct 2026, affiliates/script-voice.js) ---- */
     const AB = require(path.join(ROOT, 'affiliates', 'blueprint-core.js')), AV = require(path.join(ROOT, 'affiliates', 'script-voice.js'));
     for (const l of LANGS) AV.sayable(AB, l).forEach(x => add('affiliates', l, x));
+    /* ---- Gap's "After your meal" cards read aloud (24 Oct 2026, gap-view.js mcSpoken: title, time, the two lines, the levers) ---- */
+    const GV = require(path.join(ROOT, 'gap-view.js'));
+    for (const l of LANGS) GV.phases.forEach((p, i) => add('gap', l, GV.mcSpoken(i, l)));
     return { out, src };
 }
 

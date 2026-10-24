@@ -236,7 +236,7 @@ function remote(raw){const m=unpack(raw);if(!m)return false;const now=Date.now()
    collisions, reach and landing spots match everywhere */
 const PHYS_R=24;
 function syncT(t,g){t.sync(g.spots.map(s=>({uid:s.uid,me:s.me,x:s.x,y:s.y,r:PHYS_R})),g.radius,{x:g.rcx||0,y:g.rcy||0});}
-function settle(t){let n=0;while(t.busy()&&n++<1800)t.step(1/60);t.halt();saveLand();}
+function settle(t){let n=0;while(t.busy()&&n++<1800)t.step(1/60);t.halt();saveLand();const m=map();if(m&&m.place)m.place();}
 D.addEventListener('lowi:energy-shot',e=>{try{remote(e.detail);}catch(x){}});
 function kick(){if(raf)return;lastT=0;raf=requestAnimationFrame(frame);}
 function size(){const w=gal.clientWidth,h=gal.clientHeight;dpr=Math.min(2,W.devicePixelRatio||1);if(fx.width!==Math.round(w*dpr)||fx.height!==Math.round(h*dpr)){fx.width=Math.round(w*dpr);fx.height=Math.round(h*dpr);}return {w,h};}

@@ -66,3 +66,22 @@ test('shelf and region filter together, exactly as before', () => {
     assert.equal((h.match(/class="sz-card/g) || []).length, want, cat + ' + ' + reg);
   }
 });
+
+/* 24 Oct 2026 (Emmanuel: minimal, consistent, one word per bubble). Every filter chip shows one word after its emoji, in en/de/es;
+   the full name stays for screen readers. */
+for (const lang of ['en', 'de', 'es']) {
+  test('every filter chip shows one word in ' + lang + ', full name for screen readers', () => {
+    const { Z, D } = load(lang, { 'lowi.sellerZone.region': 'eu' });
+    const h = Z.inlineHTML();
+    const chips = [...h.matchAll(/<button type="button" class="sz-chip[^"]*"([^>]*)>([^<]*)<\/button>/g)];
+    assert.equal(chips.length, D.CATS.length + 1 + 4);
+    for (const [, attrs, text] of chips) {
+      const words = text.trim().split(/\s+/).slice(1).join(' ');
+      assert.ok(words.length > 0, 'label after the emoji');
+      assert.ok(!/\s/.test(words.replace('EE. UU.', 'EEUU')), lang + ': one word, got "' + words + '"');
+      assert.ok(!/[&]| y /.test(words), lang + ': no joined pair, got "' + words + '"');
+    }
+    for (const c of D.CATS) assert.match(h, new RegExp('data-sz-cat="' + c.id + '"[^>]*aria-label="' + c.t[lang].replace(/&/g, '&amp;').replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '"'));
+    assert.match(h, /data-sz-reg="eu"[^>]*aria-label="(Germany &amp; EU|Deutschland &amp; EU|Alemania y UE)"/);
+  });
+}

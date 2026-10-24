@@ -10,12 +10,13 @@
     const NAME = { en: 'Seller Zone', de: 'Seller Zone', es: 'Seller Zone' };
     const CHECKED = '2026-10-23';
     /* regions: eu = ships in Germany / EU, uk = United Kingdom, us = USA. The shop's own page decides; Amazon is a search link */
+    /* s = the one-word chip label (24 Oct 2026, Emmanuel: minimal, one word per bubble); t stays the full name for screen readers */
     const CATS = [
-        { id: 'chips', e: '\u{1F9C0}', t: { en: 'Chips & crisps', de: 'Chips', es: 'Patatas fritas' } },
-        { id: 'choc', e: '\u{1F36B}', t: { en: 'Chocolate', de: 'Schokolade', es: 'Chocolate' } },
-        { id: 'gummy', e: '\u{1F36C}', t: { en: 'Gummies & chewy', de: 'Gummis & Kaubares', es: 'Gominolas y masticables' } },
-        { id: 'biscuit', e: '\u{1F36A}', t: { en: 'Biscuits & crackers', de: 'Kekse & Cracker', es: 'Galletas y crackers' } },
-        { id: 'nuts', e: '\u{1F95C}', t: { en: 'Nuts & on the go', de: 'Nüsse & unterwegs', es: 'Frutos secos y para llevar' } }
+        { id: 'chips', e: '\u{1F9C0}', t: { en: 'Chips & crisps', de: 'Chips', es: 'Patatas fritas' }, s: { en: 'Chips', de: 'Chips', es: 'Patatas' } },
+        { id: 'choc', e: '\u{1F36B}', t: { en: 'Chocolate', de: 'Schokolade', es: 'Chocolate' }, s: { en: 'Chocolate', de: 'Schokolade', es: 'Chocolate' } },
+        { id: 'gummy', e: '\u{1F36C}', t: { en: 'Gummies & chewy', de: 'Gummis & Kaubares', es: 'Gominolas y masticables' }, s: { en: 'Gummies', de: 'Gummis', es: 'Gominolas' } },
+        { id: 'biscuit', e: '\u{1F36A}', t: { en: 'Biscuits & crackers', de: 'Kekse & Cracker', es: 'Galletas y crackers' }, s: { en: 'Crackers', de: 'Kekse', es: 'Galletas' } },
+        { id: 'nuts', e: '\u{1F95C}', t: { en: 'Nuts & on the go', de: 'Nüsse & unterwegs', es: 'Frutos secos y para llevar' }, s: { en: 'Nuts', de: 'Nüsse', es: 'Nueces' } }
     ];
     const L = (en, de, es) => ({ en, de, es });
     const EU = L('Ships in Germany and the EU', 'Lieferung in Deutschland und der EU', 'Envío en Alemania y la UE');

@@ -21,7 +21,7 @@
         if (!region) { let tz = ''; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (x) { } region = C.regionOf((navigator.languages && navigator.languages[0]) || navigator.language || D.documentElement.lang, tz); }
         return region;
     }
-    const REGIONS = [['eu', '\u{1F1EA}\u{1F1FA}', () => T('Germany & EU', 'Deutschland & EU', 'Alemania y UE')], ['uk', '\u{1F1EC}\u{1F1E7}', () => 'UK'], ['us', '\u{1F1FA}\u{1F1F8}', () => T('USA', 'USA', 'EE. UU.')], ['ww', '\u{1F30D}', () => T('All', 'Alle', 'Todos')]];
+    const REGIONS = [['eu', '\u{1F1EA}\u{1F1FA}', () => T('EU', 'EU', 'UE'), () => T('Germany & EU', 'Deutschland & EU', 'Alemania y UE')], ['uk', '\u{1F1EC}\u{1F1E7}', () => 'UK'], ['us', '\u{1F1FA}\u{1F1F8}', () => T('USA', 'USA', 'EE. UU.')], ['ww', '\u{1F30D}', () => T('All', 'Alle', 'Todos')]];
     const verdictPill = v => v === 'ja'
         ? '<span class="sz-v sz-ja">' + esc(T('Everyday', 'Alltag', 'Diario')) + '</span>'
         : '<span class="sz-v sz-sel">' + esc(T('Sometimes', 'Ab und zu', 'A veces')) + '</span>';
@@ -77,8 +77,8 @@
     function bodyHTML() {
         const r = myRegion();
         const cats = '<button type="button" class="sz-chip' + (cat === 'all' ? ' on' : '') + '" data-sz-cat="all" aria-pressed="' + (cat === 'all') + '">\u2728 ' + esc(T('All', 'Alle', 'Todo')) + '</button>' +
-            DATA.CATS.map(c => '<button type="button" class="sz-chip' + (cat === c.id ? ' on' : '') + '" data-sz-cat="' + c.id + '" aria-pressed="' + (cat === c.id) + '">' + c.e + ' ' + esc(tx(c.t)) + '</button>').join('');
-        const regs = REGIONS.map(([id, f, l]) => '<button type="button" class="sz-chip sz-reg' + (r === id ? ' on' : '') + '" data-sz-reg="' + id + '" aria-pressed="' + (r === id) + '">' + f + ' ' + esc(l()) + '</button>').join('');
+            DATA.CATS.map(c => '<button type="button" class="sz-chip' + (cat === c.id ? ' on' : '') + '" data-sz-cat="' + c.id + '" aria-pressed="' + (cat === c.id) + '" aria-label="' + esc(tx(c.t)) + '">' + c.e + ' ' + esc(tx(c.s || c.t)) + '</button>').join('');
+        const regs = REGIONS.map(([id, f, l, full]) => '<button type="button" class="sz-chip sz-reg' + (r === id ? ' on' : '') + '" data-sz-reg="' + id + '" aria-pressed="' + (r === id) + '"' + (full ? ' aria-label="' + esc(full()) + '"' : '') + '>' + f + ' ' + esc(l()) + '</button>').join('');
         const items = C.list(DATA, cat, r);
         const note = cat !== 'all' && DATA.NOTE[cat] ? '<p class="sz-note sz-note-l">' + esc(tx(DATA.NOTE[cat])) + '</p>' : '';
         const failed = '<details class="sz-failed"><summary>' + esc(T('Checked and not passing', 'Geprüft und durchgefallen', 'Revisado y no pasa')) + ' (' + DATA.FAILED.length + ')</summary><ul>' +

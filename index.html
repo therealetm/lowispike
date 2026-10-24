@@ -6569,7 +6569,7 @@ function tdHaveRow(k){ const td = S.td, b = document.querySelector('#tdHave .td-
 function tdShopRow(k){ const b = document.querySelector('#tdShop .td-si[data-td="got"][data-k="' + CSS.escape(k) + '"]'); if (!b) return false;
   const on = !!S.td.got[k]; b.classList.toggle("on", on); const t = b.querySelector(".td-tick"); if (t) t.innerHTML = on ? ICO.chk : "";
   const all = document.querySelectorAll("#tdShop .td-si").length, got = document.querySelectorAll("#tdShop .td-si.on").length;
-  const c = $("#tdShopCount"); if (c) c.textContent = got + " of " + all; const bar = document.querySelector("#tdShop .td-bar b"); if (bar) bar.style.width = (all ? Math.round(got / all * 100) : 0) + "%";
+  const c = $("#tdShopCount"); if (c) c.textContent = tdOfTx(got, all); const bar = document.querySelector("#tdShop .td-bar b"); if (bar) bar.style.width = (all ? Math.round(got / all * 100) : 0) + "%";
   const d = $("#tdShopDone"); if (d) d.textContent = got >= all ? "Done shopping" : "Done for now";
   return true; }
 function renderHome(){ const d = tdEnsure(), sl = tdSlots(), needs = tdNeeds(), toBuy = needs.filter(i => !tdHave(i)), atHome = needs.length - toBuy.length;
@@ -6649,14 +6649,20 @@ function tdOrderSheet(){ const n = tdNeeds().filter(i => !tdHave(i)).length;
     '<div class="tiny dim" style="margin-top:10px;text-align:center">Opens their website. We don\'t get paid for these links.</div>'); }
 
 /* ---------- shop mode: full screen, big ticks, sorted by aisle ---------- */
+/* Oct 24 button sweep (18:20): the in-store list read "0 of 11", "for Nori Smash Burger Stack, …" and "Members found: … at REWE" in English
+   in German and Spanish (the translator matches whole rows, not a count or recipe names joined). Built per language here, name by name. */
+const tdLang = () => (window.LowiLang && LowiLang.get ? LowiLang.get() : "en"), tdTx = s => (window.LowiLang ? LowiLang.t(s) : s);
+const tdOfTx = (got, all) => got + " " + ({de:"von", es:"de"}[tdLang()] || "of") + " " + all;
+const tdForTx = i => ({de:"für ", es:"para "}[tdLang()] || "for ") + i.for.map(tdTx).join(", ");
+const tdFoundTx = f => ({de:"Von Mitgliedern gefunden: {n} bei {s}", es:"Encontrado por miembros: {n} en {s}"}[tdLang()] || "Members found: {n} at {s}").replace("{n}", () => f.n).replace("{s}", () => f.store) + (f.price ? " · " + f.price : "");
 function tdShopOpen(){ let el = $("#tdShop"); if (!el) { el = document.createElement("div"); el.id = "tdShop"; ($("#app") || document.body).appendChild(el); } tdShopRender(); el.classList.add("open"); }
 function tdShopClose(){ const el = $("#tdShop"); if (el) el.classList.remove("open"); if (TAB === "home") renderHome(); }
 function tdShopRender(){ const el = $("#tdShop"); if (!el) return; const groups = tdListItems(), extra = window.LOWI_SHELF && LOWI_SHELF.listOpen ? LOWI_SHELF.listOpen(true) : [];
   const all = groups.reduce((a, g) => a + g.items.length, 0) + extra.length, got = groups.reduce((a, g) => a + g.items.filter(i => S.td.got[i.k]).length, 0) + extra.filter(i => i.done).length;
-  el.innerHTML = '<div class="td-shophd"><button class="td-x big" data-td="shopclose" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button><div style="flex:1"><div class="small muted">Shopping</div><div class="h2 num" id="tdShopCount">' + got + " of " + all + '</div></div><button class="chip" data-td="copylist">Copy</button></div>' +
+  el.innerHTML = '<div class="td-shophd"><button class="td-x big" data-td="shopclose" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button><div style="flex:1"><div class="small muted">Shopping</div><div class="h2 num" id="tdShopCount">' + tdOfTx(got, all) + '</div></div><button class="chip" data-td="copylist">Copy</button></div>' +
     '<div class="td-bar"><b style="width:' + (all ? Math.round(got / all * 100) : 0) + '%"></b></div><div class="td-shopbody">' +
     (all ? groups.map(g => '<div class="td-aisle">' + esc(g.a) + "</div>" + g.items.map(i => { const f = tdFind(i), on = !!S.td.got[i.k];
-        return '<button class="td-si' + (on ? " on" : "") + '" data-td="got" data-k="' + esc(i.k) + '"><span class="td-tick big">' + (on ? ICO.chk : "") + '</span><span class="td-ingtx"><b>' + esc(i.n) + '</b><span class="tiny muted">' + (f ? "Members found: " + esc(f.n) + " at " + esc(f.store) + (f.price ? " · " + esc(f.price) : "") : "for " + esc(i.for.join(", "))) + "</span></span></button>"; }).join("")).join("") +
+        return '<button class="td-si' + (on ? " on" : "") + '" data-td="got" data-k="' + esc(i.k) + '"><span class="td-tick big">' + (on ? ICO.chk : "") + '</span><span class="td-ingtx"><b>' + esc(i.n) + '</b><span class="tiny muted">' + esc(f ? tdFoundTx(f) : tdForTx(i)) + "</span></span></button>"; }).join("")).join("") +
       (extra.length ? '<div class="td-aisle">Also on your list</div>' + extra.map(i => '<button class="td-si' + (i.done ? " on" : "") + '" data-td="gotx" data-id="' + esc(i.id) + '"><span class="td-tick big">' + (i.done ? ICO.chk : "") + '</span><span class="td-ingtx"><b>' + esc(i.n) + '</b><span class="tiny muted">' + esc(i.store || "Any store") + "</span></span></button>").join("") : "")
     : '<div class="td-empty" style="margin-top:40px"><div class="h3">Nothing to buy</div><div class="small muted">You have everything for today.</div></div>') +
     '</div><div class="td-shopft"><button class="btn primary" data-td="shopdone" id="tdShopDone">' + (got >= all ? "Done shopping" : "Done for now") + "</button></div>"; }
@@ -7681,7 +7687,8 @@ const LC_GIMG = {gemuese:"cucumber", salat:"lettuce", paprika:"pepper", hack:"mi
 const lcPic = i => { const k = LC_IMG[i.k] || LC_GIMG[i.g]; return window.PROD_IMG && k && window.PROD_IMG[k] ? window.PROD_IMG[k] : ""; };
 const lcFace = (i, cls) => { const src = lcPic(i); return src ? '<img class="' + cls + ' lc-img" alt="" draggable="false" src="' + src + '">' : '<span class="' + cls + '">' + i.e + "</span>"; };
 const LC_FREE = ["cold water", "ice"];   // from the tap or the freezer: never on a shopping list
-const lcEur = n => "€" + (Math.round(n * 100) / 100).toFixed(2).replace(".", ",");
+/* Oct 24 button sweep (18:20): English read "€1,89"; a decimal point in English, a comma in German and Spanish. */
+const lcEur = n => { const v = (Math.round(n * 100) / 100).toFixed(2), l = window.LowiLang && LowiLang.get ? LowiLang.get() : "en"; return "€" + (l === "de" || l === "es" ? v.replace(".", ",") : v); };
 const lcRec = id => (typeof recById === "function" ? recById(id) : null) || RECIPE_BOOK.find(x => x.id === id) || /* cs: Shop it from any recipe */ (window.LowiP2 && LowiP2.rec && /^(m_|t_)/.test(String(id)) ? LowiP2.rec(id) : null);
 const lcMealPic = (id, r) => FOOD_IMG[id] || (r && r.img) || "";
 const lcStore = id => LC_STORES.find(s => s[0] === id) || LC_STORES[0];
@@ -8011,6 +8018,7 @@ const T = [
   ["Pantry, nuts & spices", "Vorrat, Nüsse & Gewürze", "Despensa, frutos secos y especias"],
   ["Drinks", "Getränke", "Bebidas"],
   ["Also on your list", "Auch auf deiner Liste", "También en tu lista"],
+  ["Any store", "Jeder Laden", "Cualquier tienda"],
   ["Groceries to your door", "Einkauf an die Tür", "La compra a tu puerta"],
   ["Or order a meal", "Oder ein Essen bestellen", "O pide una comida"],
   ["What to order", "Was bestellen", "Qué pedir"],

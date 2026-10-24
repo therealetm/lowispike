@@ -60,11 +60,17 @@ const INIT = () => {
     let bpid = 0;
     const browser = await pw[ENGINE].launch({ args: ENGINE === 'chromium' ? ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--js-flags=--expose-gc'] : [] });
     try { const out = require('child_process').execSync('ps -eo pid,etimes,args', { encoding: 'utf8' }); const me = out.split('\n').map(l => l.trim().split(/\s+/)).filter(x => x[2] && /chrome-headless-shell$|headless_shell$/.test(x[2]) && !x.join(' ').includes('--type=')).sort((a, b) => +a[1] - +b[1])[0]; if (me) bpid = +me[0]; } catch (e) { }
-    const dev = ENGINE === 'webkit' ? Object.assign({}, pw.devices['iPhone 13']) : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true };
+    /* --device 'iPhone SE' (WebKit profile) or --size 1180x820 (any engine; touch, DPR 2 unless --dpr): the flight crash hunt flies
+       Misty at iPhone, small iPhone and both iPad sizes */
+    const SIZE = String(arg('size', '')).match(/^(\d+)x(\d+)$/), DPR = +arg('dpr', 2);
+    let dev = ENGINE === 'webkit' ? Object.assign({}, pw.devices[arg('device', 'iPhone 13')]) : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true };
+    if (SIZE) dev = Object.assign({}, dev, { viewport: { width: +SIZE[1], height: +SIZE[2] }, screen: { width: +SIZE[1], height: +SIZE[2] }, deviceScaleFactor: DPR, hasTouch: true, isMobile: true });
     const ctx = await browser.newContext(Object.assign(dev, { serviceWorkers: 'block' }));
     await ctx.route('**/*', r => { const q = r.request(), u = new URL(q.url()); if (u.protocol === 'data:' || u.protocol === 'blob:' || (u.host === host && q.method() === 'GET')) return r.continue(); return r.abort(); });
     await ctx.addInitScript(INIT);
     await ctx.addInitScript({ content: PROBE });
+    /* this VM's headless WebKit dies when a page starts an <audio> (not an iPhone problem): silent media stub, as check-scan-hold */
+    if (ENGINE === 'webkit' && !arg('media', false)) await ctx.addInitScript({ content: fs.readFileSync(path.join(__dirname, '..', 'sim', 'no-media-init.js'), 'utf8') });
     const page = await ctx.newPage();
     const errs = [], warns = new Map(); let loads = 0, crashed = false, closed = false;
     page.on('pageerror', e => errs.push({ at: el(), m: (e.message || '').slice(0, 300), st: String(e.stack || '').split('\n').slice(1, 4).join(' | ').slice(0, 400) }));

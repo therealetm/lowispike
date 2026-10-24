@@ -496,11 +496,11 @@
         },
         {
             id: 'cm-name', area: 'together', where: 'community', rm: 'room', target: ['.rm-menu-btn', '.rm-name'], covers: [], teaches: ['cm-name', 'cm-room'], tryIt: { how: 'tap' },
-            title: { en: 'Rooms and profile', de: 'Räume und Profil', es: 'Salas y perfil' },
+            title: { en: 'Circles and profile', de: 'Circles und Profil', es: 'Círculos y perfil' },
             text: {
-                en: 'Tap the Community name up here for rooms and invite links. Tap your picture for your profile.',
-                de: 'Tipp oben auf den Community-Namen für Räume und Einladungslinks. Tipp auf dein Bild für dein Profil.',
-                es: 'Toca arriba el nombre de Comunidad para salas y enlaces de invitación. Toca tu foto para tu perfil.'
+                en: 'Tap the Community name up here for circles and invite links. Tap your picture for your profile.',
+                de: 'Tipp oben auf den Community-Namen für Circles und Einladungslinks. Tipp auf dein Bild für dein Profil.',
+                es: 'Toca arriba el nombre de Comunidad para círculos y enlaces de invitación. Toca tu foto para tu perfil.'
             }
         },
         {
@@ -723,11 +723,11 @@
         },
         {
             id: 'new-rooms', area: 'new', where: 'community', open: 'rooms', target: ['.ur [data-ur="make"]', '.ur .ur-card'], covers: ['user-rooms'],
-            title: { en: 'Rooms', de: 'Räume', es: 'Salas' },
+            title: { en: 'Circles', de: 'Circles', es: 'Círculos' },
             text: {
-                en: 'Make your own room for a goal. Everyone can read along, and you decide who joins. Up to 30 people.',
-                de: 'Mach deinen eigenen Raum für ein Ziel. Alle lesen mit, du entscheidest, wer reinkommt. Bis zu 30 Leute.',
-                es: 'Crea tu propia sala para una meta. Todos pueden leer y tú decides quién entra. Hasta 30 personas.'
+                en: 'Make your own circle for a goal. Everyone can read along. You decide who joins, or add people yourself. Up to 30 people.',
+                de: 'Mach deinen eigenen Circle für ein Ziel. Alle lesen mit. Du entscheidest, wer reinkommt, oder fügst Leute selbst hinzu. Bis zu 30 Leute.',
+                es: 'Crea tu propio círculo para una meta. Todos pueden leer. Tú decides quién entra o añades gente tú mismo. Hasta 30 personas.'
             }
         },
         {

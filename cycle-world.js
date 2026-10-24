@@ -22,12 +22,12 @@
         en: { est: 'estimated', wide: 'Your cycle varies, so this is a wide guess.',
             feelT: 'How are you today?', feelS: 'Optional. Only you see this.', f_cramps: 'Cramps', f_strong: 'Strong cramps', f_tired: 'Low energy', f_bloat: 'Bloating', f_crave: 'Cravings', f_head: 'Headache', f_low: 'Low mood', f_anx: 'Anxious', f_good: 'All good', f_skip: 'Rather not say',
             doc: 'If cramps are severe or keep coming back, talk to a doctor.',
-            gAsk: 'Make today a gentle day?', gAskS: 'A smaller Move goal, rest counts for Misty, and nothing is lost. Just for today.', gYes: 'Yes, gentle day',
+            gAsk: 'Make today a gentle day?', gAskS: 'A smaller Move goal, rest counts for {n}, and nothing is lost. Just for today.', gYes: 'Yes, gentle day',
             gOn: 'Gentle day', gOnS: 'Just for today. Tomorrow is a normal day again.', goalL: 'Move goal today', goal_tiny: 'One short Move', goal_half: 'Half', goal_usual: 'Usual',
-            rest: 'I rested', restDone: 'Rest counted for Misty today', restS: 'Counts as today\u2019s Move for Misty\u2019s energy, once a day.',
-            worldL: 'World today', calm: 'Calm', normal: 'Normal', calmS: 'Softer light, a slower world and quieter sound. Misty stays close.', gEnd: 'End gentle day',
+            rest: 'I rested', restDone: 'Rest counted for {n} today', restS: 'Counts as today\u2019s Move for {ns} energy, once a day.',
+            worldL: 'World today', calm: 'Calm', normal: 'Normal', calmS: 'Softer light, a slower world and quieter sound. {N} stays close.', gEnd: 'End gentle day',
             setT: 'Cycle settings', lenL: 'Cycle length', auto: 'Auto', lenDays: '{n} days', lenAuto: 'Auto, about {n} days', lenLess: 'Shorter', lenMore: 'Longer',
-            irr: 'My cycles are irregular', irrS: 'The colour on Misty\u2019s bubble dims, and you can pick your phase yourself.', pickL: 'My phase right now',
+            irr: 'My cycles are irregular', irrS: 'The colour on {ns} bubble dims, and you can pick your phase yourself.', pickL: 'My phase right now',
             na: 'Not relevant to me', naDone: 'Okay. Nothing about cycles shows anywhere now. You can turn it on again here.',
             del: 'Delete all cycle data', delAgain: 'Tap again to delete everything', delDone: 'All cycle data is deleted.', delS: 'Erases your cycle days, check-ins and gentle days from this phone, and from your account if you synced it.',
             title: 'Your cycle', day: 'Day {d}', close: 'Close', ringL: 'Estimated cycle phase: {n}', hubOpen: 'Open your cycle',
@@ -45,12 +45,12 @@
         de: { est: 'geschätzt', wide: 'Dein Zyklus schwankt, das ist nur eine grobe Schätzung.',
             feelT: 'Wie geht es dir heute?', feelS: 'Freiwillig. Nur du siehst das.', f_cramps: 'Krämpfe', f_strong: 'Starke Krämpfe', f_tired: 'Wenig Energie', f_bloat: 'Blähbauch', f_crave: 'Heißhunger', f_head: 'Kopfweh', f_low: 'Gedrückt', f_anx: 'Ängstlich', f_good: 'Alles gut', f_skip: 'Lieber nicht sagen',
             doc: 'Wenn Krämpfe sehr stark sind oder immer wiederkommen, sprich mit einer Ärztin oder einem Arzt.',
-            gAsk: 'Heute ein sanfter Tag?', gAskS: 'Ein kleineres Bewegungsziel, Ruhe zählt für Misty, und nichts geht verloren. Nur für heute.', gYes: 'Ja, sanfter Tag',
+            gAsk: 'Heute ein sanfter Tag?', gAskS: 'Ein kleineres Bewegungsziel, Ruhe zählt für {acc}, und nichts geht verloren. Nur für heute.', gYes: 'Ja, sanfter Tag',
             gOn: 'Sanfter Tag', gOnS: 'Nur für heute. Morgen ist wieder ein normaler Tag.', goalL: 'Bewegungsziel heute', goal_tiny: 'Eine kurze Bewegung', goal_half: 'Halb', goal_usual: 'Wie immer',
-            rest: 'Ich habe mich ausgeruht', restDone: 'Ruhe zählt heute für Misty', restS: 'Zählt einmal am Tag als Bewegung für Mistys Energie.',
-            worldL: 'Welt heute', calm: 'Ruhig', normal: 'Normal', calmS: 'Weicheres Licht, eine langsamere Welt und leiserer Klang. Misty bleibt in der Nähe.', gEnd: 'Sanften Tag beenden',
+            rest: 'Ich habe mich ausgeruht', restDone: 'Ruhe zählt heute für {acc}', restS: 'Zählt einmal am Tag als Bewegung für die Energie von {dat}.',
+            worldL: 'Welt heute', calm: 'Ruhig', normal: 'Normal', calmS: 'Weicheres Licht, eine langsamere Welt und leiserer Klang. {Nom} bleibt in der Nähe.', gEnd: 'Sanften Tag beenden',
             setT: 'Zyklus-Einstellungen', lenL: 'Zykluslänge', auto: 'Auto', lenDays: '{n} Tage', lenAuto: 'Auto, etwa {n} Tage', lenLess: 'Kürzer', lenMore: 'Länger',
-            irr: 'Meine Zyklen sind unregelmäßig', irrS: 'Die Farbe an Mistys Blase wird blasser, und du kannst deine Phase selbst wählen.', pickL: 'Meine Phase gerade',
+            irr: 'Meine Zyklen sind unregelmäßig', irrS: 'Die Farbe an der Blase von {dat} wird blasser, und du kannst deine Phase selbst wählen.', pickL: 'Meine Phase gerade',
             na: 'Betrifft mich nicht', naDone: 'Okay. Nichts zum Zyklus wird mehr angezeigt. Du kannst es hier wieder einschalten.',
             del: 'Alle Zyklusdaten löschen', delAgain: 'Nochmal tippen, um alles zu löschen', delDone: 'Alle Zyklusdaten sind gelöscht.', delS: 'Löscht deine Zyklustage, Check-ins und sanften Tage von diesem Handy und aus deinem Konto, falls synchronisiert.',
             title: 'Dein Zyklus', day: 'Tag {d}', close: 'Schließen', ringL: 'Geschätzte Zyklusphase: {n}', hubOpen: 'Deinen Zyklus öffnen',
@@ -68,12 +68,12 @@
         es: { est: 'estimada', wide: 'Tu ciclo varía, así que es una estimación amplia.',
             feelT: '¿Cómo estás hoy?', feelS: 'Opcional. Solo tú lo ves.', f_cramps: 'Cólicos', f_strong: 'Cólicos fuertes', f_tired: 'Poca energía', f_bloat: 'Hinchazón', f_crave: 'Antojos', f_head: 'Dolor de cabeza', f_low: 'Ánimo bajo', f_anx: 'Ansiedad', f_good: 'Todo bien', f_skip: 'Prefiero no decirlo',
             doc: 'Si los cólicos son muy fuertes o vuelven una y otra vez, habla con un médico.',
-            gAsk: '¿Hoy un día tranquilo?', gAskS: 'Una meta de movimiento más pequeña, descansar cuenta para Misty y no pierdes nada. Solo por hoy.', gYes: 'Sí, día tranquilo',
+            gAsk: '¿Hoy un día tranquilo?', gAskS: 'Una meta de movimiento más pequeña, descansar cuenta para {n} y no pierdes nada. Solo por hoy.', gYes: 'Sí, día tranquilo',
             gOn: 'Día tranquilo', gOnS: 'Solo por hoy. Mañana vuelve a ser un día normal.', goalL: 'Meta de movimiento hoy', goal_tiny: 'Un movimiento corto', goal_half: 'La mitad', goal_usual: 'Como siempre',
-            rest: 'He descansado', restDone: 'El descanso cuenta hoy para Misty', restS: 'Cuenta una vez al día como movimiento para la energía de Misty.',
-            worldL: 'El mundo hoy', calm: 'Calma', normal: 'Normal', calmS: 'Luz más suave, un mundo más lento y un sonido más bajo. Misty se queda cerca.', gEnd: 'Terminar el día tranquilo',
+            rest: 'He descansado', restDone: 'El descanso cuenta hoy para {n}', restS: 'Cuenta una vez al día como movimiento para la energía de {n}.',
+            worldL: 'El mundo hoy', calm: 'Calma', normal: 'Normal', calmS: 'Luz más suave, un mundo más lento y un sonido más bajo. {N} se queda cerca.', gEnd: 'Terminar el día tranquilo',
             setT: 'Ajustes del ciclo', lenL: 'Duración del ciclo', auto: 'Auto', lenDays: '{n} días', lenAuto: 'Auto, unos {n} días', lenLess: 'Más corto', lenMore: 'Más largo',
-            irr: 'Mis ciclos son irregulares', irrS: 'El color en la burbuja de Misty se atenúa y puedes elegir tu fase.', pickL: 'Mi fase ahora',
+            irr: 'Mis ciclos son irregulares', irrS: 'El color en la burbuja de {n} se atenúa y puedes elegir tu fase.', pickL: 'Mi fase ahora',
             na: 'No va conmigo', naDone: 'Vale. Ya no se muestra nada del ciclo. Puedes volver a activarlo aquí.',
             del: 'Borrar todos los datos del ciclo', delAgain: 'Toca otra vez para borrarlo todo', delDone: 'Todos los datos del ciclo están borrados.', delS: 'Borra tus días del ciclo, check-ins y días tranquilos de este móvil, y de tu cuenta si lo sincronizaste.',
             title: 'Tu ciclo', day: 'Día {d}', close: 'Cerrar', ringL: 'Fase estimada del ciclo: {n}', hubOpen: 'Abrir tu ciclo',
@@ -99,7 +99,12 @@
 
     const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const lang = () => { try { const l = (W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || (D && D.documentElement.lang) || 'en'; const k = String(l).slice(0, 2); return STR[k] ? k : 'en'; } catch (e) { return 'en'; } };
-    const s = (k, v, l) => { let t = (STR[l || lang()] || STR.en)[k] || STR.en[k] || k; if (v) Object.keys(v).forEach(x => { t = t.replace('{' + x + '}', v[x]); }); return t; };
+    /* Oct 24 2026 (Emmanuel): "Misty" is only his companion's name; every user names theirs. Cycle copy never hard-codes it:
+       {n}/{N}/{ns} (en, es), {acc}/{dat}/{Nom} (de) become the user's own companion name, or a neutral "your companion". */
+    const compName = () => { const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(W.LowiHerbIdentity && W.LowiHerbIdentity.autoName && W.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = W.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = W.LowiR2, st = R && R.S && R.S(); n = typed(st && st.herb && st.herb.name); } catch (e) { } return n; };
+    const COMP = { en: { n: 'your companion', N: 'Your companion', ns: 'your companion\u2019s' }, de: { acc: 'deinen Begleiter', dat: 'deinem Begleiter', Nom: 'Dein Begleiter' }, es: { n: 'tu compañero', N: 'Tu compañero' } };
+    const compTokens = (t, l, nm) => { if (t.indexOf('{') < 0) return t; const name = nm == null ? compName() : nm, set = COMP[l] || COMP.en; return t.replace(/\{(ns|n|N|acc|dat|Nom)\}/g, (m, k) => { if (!name) return set[k] != null ? set[k] : m; if (k === 'ns') return name + (/s$/i.test(name) ? '\u2019' : '\u2019s'); return name; }); };
+    const s = (k, v, l) => { const L = l || lang(); let t = (STR[L] || STR.en)[k] || STR.en[k] || k; if (v) Object.keys(v).forEach(x => { t = t.replace('{' + x + '}', v[x]); }); return compTokens(t, (STR[L] ? L : 'en'), v && v.__name); };
 
     /* ---------- pure rules ---------- */
     /* Oct 24 2026 (cycle audit, Emmanuel approved): who may find My cycle is no longer women only. Anyone who did not pick
@@ -410,5 +415,5 @@
         W.setInterval(() => { if (!D.hidden) { try { applyCalm(); } catch (e) {} if (homeOn()) { try { paintRing(); } catch (e) {} } } }, 1500);
         D.addEventListener('visibilitychange', () => { if (!D.hidden) { try { applyCalm(); paintRing(); } catch (e) {} } });
     }
-    return { open, close, isOpen: () => !!(ov && D && D.body.contains(ov)), enabled, eligible: st => eligible(st === undefined ? S() : st), tileSub, rule, cellOf, scene, strings: STR, homeRing, hubHtml, hubOpen, paintRing, applyCalm, calmNow };
+    return { open, close, isOpen: () => !!(ov && D && D.body.contains(ov)), enabled, eligible: st => eligible(st === undefined ? S() : st), tileSub, rule, cellOf, scene, strings: STR, text: (k, l, name) => s(k, { __name: name == null ? '' : name }, l), homeRing, hubHtml, hubOpen, paintRing, applyCalm, calmNow };
 });

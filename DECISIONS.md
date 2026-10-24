@@ -1075,3 +1075,14 @@ Emmanuel (Seven): "I don't understand the food journal section. Either remove it
 - Still five tabs. Default order: Room · Chat · For You · Studio · Ranking. A saved order keeps its places: Affiliates/Creation become Studio where the first of them was, and For You goes right before Studio (Emmanuel's Rangliste · Chat · Raum · Affiliates · Erstellen -> Rangliste · Chat · Raum · Für dich · Studio).
 - Tour: cm-tabs, community-order, creation, affiliates, settings-more and cook-swipe say where things are now (voices re-recorded in en/de/es). Quiet release, no What's New.
 - Tests: tests/community-tabs-fy.test.cjs, tests/community-tab-order.test.cjs, tests/community-first-tab.test.cjs, tests/foryou-window.test.cjs. Browser check: tools/check-community-tabs.cjs (one browser; iPhone, small iPhone, iPhone SE, iPad both ways; de/en/es).
+
+
+## 2026-10-24: Cycle care (gentle day, calm world, recovered cycle controls)
+
+- Emmanuel approved the cycle audit: the app responds to what she SAYS ("How are you today?" in My cycle, stored on the old S.health.cyc day keys sym/mood/en), never to the estimated phase alone. No hormone, food or PCOS claims without a source; the old phase tips and "Cycle mode" quest are retired.
+- Gentle day: offered only after a not-great answer, switched on only by her tap, today only. She picks the Move goal size (one short Move, half, usual). "I rested" counts as today's Move for the companion's energy once per local day, only on that day, with no XP and no sunbeams; a gentle day can only raise energy (sun-meter.js energy()).
+- Calm world: her own one-day toggle. Softer warmer light (html.cc-calm), slower world (LowiWorldSpeed, her saved speed never overwritten, restored on Normal), quieter and softer sound (LowiWorldAudio.calm), the companion leaves autopilot and comes home. Reduced motion: colour and light only.
+- Recovered controls in My cycle: cycle length, irregular, pick my phase, "Not relevant to me", delete all cycle data (two taps; also erases check-ins and gentle days). The phase is labelled "estimated"; the Home ring dims when irregular or late.
+- Who sees the My cycle tile: anyone whose profile is not set to man; setup still asks only women; turning it on is always her own tap. Nothing goes out through push or Community, and no What's New line.
+- Companion names (Emmanuel, Oct 24): "Misty" is only his companion's name; every user names theirs. Cycle copy never hard-codes it: cycle-world.js resolves {n}/{N}/{ns} (EN, ES) and {acc}/{dat}/{Nom} (DE) to her own companion name, or a neutral "your companion" / "deinen Begleiter" / "tu compañero". tests/cycle-care.test.cjs guards it.
+- Testers: headless WebKit on this VM crashes on the first tap of ANY page that starts audio (live too); use tools/sim/no-media-init.js. "Failed to start the audio device" is the VM having no audio device.

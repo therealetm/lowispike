@@ -30,7 +30,7 @@
             whyDrink: 'The sugary drink alone is enough to spike.',
             est: 'Estimate from the photo, not a measurement.', lowConf: 'The photo was hard to read, so check the foods below.',
             see: 'What I see', tapFix: 'Tap a food to fix it', edit: 'Fix', what: 'What is it really?', many: 'How many pieces?', manyD: 'How many? (optional)', manyServ: 'How many servings? (1 = {g})', manyEach: 'How many servings?', manyPh: 'e.g. 2',
-            sugL: 'Products the app knows', srcScan: 'Scanned', srcLog: 'Logged before', srcDex: 'LOWiSPIKE products', srcTable: 'Known product', perPc: '{kcal} kcal / piece', perSrv: '{kcal} kcal / {g}', perEach: '{kcal} kcal / serving', srvOne: 'serving', srvMany: 'servings',
+            sugL: 'Products the app knows', srcScan: 'Scanned', srcLog: 'Logged before', srcDex: 'LOWiSPIKE products', srcTable: 'Known product', srcHome: 'In your kitchen', srcCart: 'In your shopping cart', addFood: 'Add food', addWhat: 'What else is on the plate?', addPh: 'e.g. pesto, 2 eggs', new0: 'I don’t know “{name}” yet, so it counts as 0 kcal.', perPc: '{kcal} kcal / piece', perSrv: '{kcal} kcal / {g}', perEach: '{kcal} kcal / serving', srvOne: 'serving', srvMany: 'servings',
             save: 'Update', cancel: 'Cancel', remove: 'Remove', kept: 'I don’t know “{name}” yet, so I kept the photo’s amounts.',
             drinks: 'Drinking anything?', addDrink: 'Add a drink', drinkWhat: 'What are you drinking?', drinkPh: 'e.g. cola, 0.5 l beer', add: 'Add',
             chips: ['Water', 'Coffee', 'Cola', 'Juice', 'Beer', 'Wine'],
@@ -45,7 +45,7 @@
             whyDrink: 'Allein das süße Getränk reicht für einen Spike.',
             est: 'Schätzung aus dem Foto, keine Messung.', lowConf: 'Das Foto war schwer zu erkennen, prüf die Lebensmittel unten.',
             see: 'Das sehe ich', tapFix: 'Tipp ein Lebensmittel an, um es zu korrigieren', edit: 'Ändern', what: 'Was ist es wirklich?', many: 'Wie viele Stück?', manyD: 'Wie viele? (optional)', manyServ: 'Wie viele Portionen? (1 = {g})', manyEach: 'Wie viele Portionen?', manyPh: 'z. B. 2',
-            sugL: 'Produkte, die die App kennt', srcScan: 'Gescannt', srcLog: 'Schon mal geloggt', srcDex: 'LOWiSPIKE-Produkte', srcTable: 'Bekanntes Produkt', perPc: '{kcal} kcal / Stück', perSrv: '{kcal} kcal / {g}', perEach: '{kcal} kcal / Portion', srvOne: 'Portion', srvMany: 'Portionen',
+            sugL: 'Produkte, die die App kennt', srcScan: 'Gescannt', srcLog: 'Schon mal geloggt', srcDex: 'LOWiSPIKE-Produkte', srcTable: 'Bekanntes Produkt', srcHome: 'In deiner Küche', srcCart: 'Im Einkaufswagen', addFood: 'Lebensmittel hinzufügen', addWhat: 'Was ist noch auf dem Teller?', addPh: 'z. B. Pesto, 2 Eier', new0: 'Ich kenne „{name}“ noch nicht, also zählt es mit 0 kcal.', perPc: '{kcal} kcal / Stück', perSrv: '{kcal} kcal / {g}', perEach: '{kcal} kcal / Portion', srvOne: 'Portion', srvMany: 'Portionen',
             save: 'Übernehmen', cancel: 'Abbrechen', remove: 'Entfernen', kept: 'Ich kenne „{name}“ noch nicht, also habe ich die Mengen aus dem Foto behalten.',
             drinks: 'Trinkst du etwas dazu?', addDrink: 'Getränk hinzufügen', drinkWhat: 'Was trinkst du?', drinkPh: 'z. B. Cola, 0,5 l Bier', add: 'Hinzufügen',
             chips: ['Wasser', 'Kaffee', 'Cola', 'Saft', 'Bier', 'Wein'],
@@ -60,7 +60,7 @@
             whyDrink: 'Solo la bebida azucarada ya basta para un pico.',
             est: 'Estimación a partir de la foto, no una medición.', lowConf: 'La foto era difícil de leer, revisa los alimentos.',
             see: 'Lo que veo', tapFix: 'Toca un alimento para corregirlo', edit: 'Corregir', what: '¿Qué es en realidad?', many: '¿Cuántas piezas?', manyD: '¿Cuántos? (opcional)', manyServ: '¿Cuántas raciones? (1 = {g})', manyEach: '¿Cuántas raciones?', manyPh: 'p. ej. 2',
-            sugL: 'Productos que la app conoce', srcScan: 'Escaneado', srcLog: 'Registrado antes', srcDex: 'Productos LOWiSPIKE', srcTable: 'Producto conocido', perPc: '{kcal} kcal / pieza', perSrv: '{kcal} kcal / {g}', perEach: '{kcal} kcal / ración', srvOne: 'ración', srvMany: 'raciones',
+            sugL: 'Productos que la app conoce', srcScan: 'Escaneado', srcLog: 'Registrado antes', srcDex: 'Productos LOWiSPIKE', srcTable: 'Producto conocido', srcHome: 'En tu cocina', srcCart: 'En tu carrito', addFood: 'Añadir alimento', addWhat: '¿Qué más hay en el plato?', addPh: 'p. ej. pesto, 2 huevos', new0: 'Aún no conozco «{name}», así que cuenta como 0 kcal.', perPc: '{kcal} kcal / pieza', perSrv: '{kcal} kcal / {g}', perEach: '{kcal} kcal / ración', srvOne: 'ración', srvMany: 'raciones',
             save: 'Actualizar', cancel: 'Cancelar', remove: 'Quitar', kept: 'Aún no conozco «{name}», así que mantuve las cantidades de la foto.',
             drinks: '¿Bebes algo?', addDrink: 'Añadir bebida', drinkWhat: '¿Qué bebes?', drinkPh: 'p. ej. cola, 0,5 l de cerveza', add: 'Añadir',
             chips: ['Agua', 'Café', 'Cola', 'Zumo', 'Cerveza', 'Vino'],
@@ -236,7 +236,17 @@
         return d[m][n];
     }
     // 100 starts with it, 90 every typed word starts a word, 70 inside it, 50/40 one or two typos at a word start, 0 no match
+    /* Kitchen autocomplete (Oct 24 2026): "Kaese" finds "Käse" and "Muesli" finds "Müsli" too (German typed without umlauts:
+       ae/oe/ue read as a/o/u on both sides, after the plain match). */
+    const unUml = (s) => s.replace(/([aou])e/g, '$1');
     function matchScore(q, name, brand) {
+        const a = matchScore0(q, name, brand);
+        if (a >= 100) return a;
+        const k = skey(q);
+        if (!/[aou]e/.test(k + ' ' + skey((name || '') + ' ' + (brand || '')))) return a;
+        return Math.max(a, matchScore0(unUml(k), unUml(skey(name)), unUml(skey(brand))));
+    }
+    function matchScore0(q, name, brand) {
         q = skey(q);
         if (q.length < 2) return 0;
         const hay = skey((name || '') + ' ' + (brand || ''));
@@ -308,7 +318,48 @@
     function fromTable(e) {
         return e && e.nm && !e.drink ? { key: 'n' + skey(e.nm), code: '', name: e.nm, brand: e.brand || '', per: e.per, piece: e.serve, serve: 0, unit: e.unit || 'g', src: 'table', ts: 0 } : null;
     }
-    const SRC_RANK = { scan: 0, log: 1, dex: 2, table: 3 };
+    /* ---------- Kitchen first (Oct 24 2026, Emmanuel: "the things I caught, that live in my Kitchen, should appear as I'm
+       typing, so it's faster") ----------
+       The Kitchen (Shop -> Fuel -> Kitchen: "At home", lowispike.kitchen.v1, and the shopping cart, LOWI_SHELF) holds names
+       only. A Kitchen name takes the nutrition of the same product you scanned or logged (or a named product in TABLE) when
+       every word of it is a whole word of that product ("Babybel" -> your "Mini Babybel Original" scan, never "Milch" ->
+       "Milchreis"). The shared list only counts on an exact name. No such product: est is set and estFor() reads one typical
+       portion from the meal database the first time the row is shown, so a pick still recalculates the stats. */
+    const OWN = { scan: 1, log: 1, table: 1 };
+    // the product list read once (names folded) so 300 Kitchen names against 400 logs stay a few milliseconds
+    const prepHits = (list) => (list || []).filter(Boolean).map(p => ({ p, k: skey(p.name), hw: skey(p.name + ' ' + (p.brand || '')).split(' '), own: !!OWN[p.src] }));
+    function kitchenHit(name, list, pre) {
+        const k = skey(name), words = k.split(' ');
+        // exact name first, then your scans before logs before TABLE, then the newest
+        const ok = (pre || prepHits(list)).filter(x => x.k === k || (x.own && words.every(w => w.length > 1 && x.hw.indexOf(w) >= 0)));
+        ok.sort((a, b) => (b.k === k) - (a.k === k) || (SRC_RANK[a.p.src] || 0) - (SRC_RANK[b.p.src] || 0) || (+b.p.ts || 0) - (+a.p.ts || 0));
+        return ok.length ? ok[0].p : null;
+    }
+    function fromKitchen(n, src, ts, list, pre) {
+        const name = cap1(String(n || '').split(' · ')[0].replace(/^[\u{1F300}-\u{1FAFF}\u2600-\u27BF\uFE0F\s]+/u, ''));
+        const k = skey(name);
+        if (k.length < 2) return null;
+        const hit = kitchenHit(name, list, pre);
+        if (hit) return Object.assign({}, hit, { key: 'k' + k, src, via: hit.src, viaKey: hit.key, kname: name, ts: +ts || 0 });
+        return { key: 'k' + k, code: '', name, brand: '', src, ts: +ts || 0, est: true };
+    }
+    const hasNut = (p) => !!(p && (p.each || p.per));
+    const EST = {};
+    // one typical portion from the meal database, once per name (cached), for a Kitchen name nothing else knows
+    function estFor(p, db, cachedOnly) {
+        if (!p || !p.est || hasNut(p)) return p;
+        const k = skey(p.name);
+        if (!(k in EST)) {
+            if (cachedOnly) return p;
+            let r = null;
+            if (db && typeof db.parse === 'function' && (!db.ready || db.ready())) { try { r = db.parse(p.name); } catch (e) { r = null; } }
+            else return p;        // the database is still loading: try again next keystroke
+            EST[k] = r && r.how !== 'rough' && r.grams > 0 && r.kcal >= 0 ? { per: scaled(r, 100 / r.grams), serve: Math.min(1000, Math.round(r.grams)) } : null;
+        }
+        if (EST[k]) Object.assign(p, { per: EST[k].per, serve: EST[k].serve, piece: 0, unit: 'g', via: 'db' });
+        return p;
+    }
+    const SRC_RANK = { home: 0, cart: 1, scan: 2, log: 3, dex: 4, table: 5 };
     const tier = (s) => (s >= 90 ? 100 : s);   // "starts with" and "a word starts with" are equally good: then your scans come first
     const rankOf = (p) => (p && p.src in SRC_RANK ? SRC_RANK[p.src] : 9);
     /* everything the app knows, one entry per product: scans first, then logged foods (a log of a scanned barcode is that
@@ -326,7 +377,14 @@
         (src.logs || []).slice().sort((a, b) => (+b.ts || 0) - (+a.ts || 0)).forEach(lg => add(fromLog(lg)));
         (src.comm || []).forEach(p => add(fromProduct(p, 'dex')));
         TABLE.forEach(e => { if (!out.some(x => e.re.test(fold(x.name)))) add(fromTable(e)); });   // your own Babybel scan beats the built-in one
-        return out;
+        /* Kitchen first: "At home" newest first, then the shopping cart (src.home [{n, at}], src.cart [{n, done}]). A Kitchen
+           row that took a product's nutrition replaces that product's own row, so nothing shows twice. */
+        const kit = [], kseen = {}, used = {}, pre = (src.home || []).length || (src.cart || []).length ? prepHits(out) : null;
+        const kadd = (x) => { if (!x || kseen[x.key]) return; kseen[x.key] = 1; if (x.viaKey) used[x.viaKey] = 1; kit.push(x); };
+        (src.home || []).slice().sort((a, b) => (+b.at || 0) - (+a.at || 0)).slice(0, 300).forEach(i => kadd(fromKitchen(i && (i.n || i.name), 'home', i && i.at, out, pre)));
+        (src.cart || []).slice(0, 300).forEach(i => kadd(fromKitchen(i && (i.n || i.name), 'cart', 0, out, pre)));
+        if (!kit.length) return out;
+        return kit.concat(out.filter(x => !used[x.key] && !kseen['k' + skey(x.name)]));
     }
     function suggest(q, list, max) {
         const a = parseAmount(q), text = a.rest || String(q || '');
@@ -336,16 +394,18 @@
     }
     // kcal for one piece / one serving, and what that one is ("piece", "30 g", "serving")
     function oneOf(p) {
+        if (!hasNut(p)) return { kcal: 0, kind: 'none', size: 0 };
         if (p.each) return { kcal: Math.round(p.each.kcal), kind: 'each', size: 0 };
         const size = p.piece || p.serve || 100;
         return { kcal: Math.round(p.per.kcal * size / 100), kind: p.piece ? 'piece' : 'serve', size };
     }
     function perText(p, l) {
         const o = oneOf(p);
+        if (o.kind === 'none') return '';
         return o.kind === 'piece' ? t('perPc', l, { kcal: o.kcal }) : o.kind === 'each' ? t('perEach', l, { kcal: o.kcal }) : t('perSrv', l, { kcal: o.kcal, g: Math.round(o.size) + ' ' + p.unit });
     }
     function manyLabel(p, l) {
-        if (!p) return t('many', l);
+        if (!p || !hasNut(p)) return t('many', l);
         const o = oneOf(p);
         return o.kind === 'piece' ? t('many', l) : o.kind === 'each' ? t('manyEach', l) : t('manyServ', l, { g: Math.round(o.size) + ' ' + p.unit });
     }
@@ -451,26 +511,26 @@
     function macroLine(d, l) {
         return [['protein', d.protein], ['carbs', d.carbs], ['fat', d.fat]].map(([k, v]) => '<span><b>' + Math.round(v) + ' g</b> ' + esc(t(k, l)) + '</span>').join('');
     }
-    function cardHTML(d, i, kind, editing, l, pick) {
+    function cardHTML(d, i, kind, editing, l, pick, fresh) {
         const id = kind + i;
         if (editing) {
-            const f = kind === 'f';
-            return '<li class="mr-item mr-editing" data-mr="' + id + '"><div class="mr-ed" role="group" aria-label="' + esc(t('what', l)) + '">' +
-                '<label>' + esc(t(f ? 'what' : 'drinkWhat', l)) + '<input data-mr-name value="' + esc(d.name) + '" maxlength="60" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done"' +
+            const f = kind === 'f', lab = t(fresh ? 'addWhat' : f ? 'what' : 'drinkWhat', l);
+            return '<li class="mr-item mr-editing' + (fresh ? ' mr-fresh' : '') + '" data-mr="' + id + '"><div class="mr-ed" role="group" aria-label="' + esc(lab) + '">' +
+                '<label>' + esc(lab) + '<input data-mr-name value="' + esc(d.name) + '"' + (fresh ? ' placeholder="' + esc(t('addPh', l)) + '"' : '') + ' maxlength="60" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done"' +
                 (f ? ' role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="mr-sug-' + id + '"' : '') + '></label>' +
                 (f ? '<div class="mr-sug" id="mr-sug-' + id + '" role="listbox" aria-label="' + esc(t('sugL', l)) + '" hidden></div>' : '') +
                 '<label><span data-mr-many>' + esc(f ? manyLabel(pick, l) : t('manyD', l)) + '</span><input data-mr-count type="number" inputmode="decimal" min="0" max="' + MAX_COUNT + '" step="any" placeholder="' + esc(t('manyPh', l)) + '" value="' + (d.count ? esc(d.count) : '') + '"></label>' +
                 (f ? '<p class="mr-live" data-mr-live aria-live="polite"' + (pick ? '' : ' hidden') + '>' + (pick ? esc(d.portion + ' · ' + Math.round(d.kcal) + ' ' + t('kcal', l)) : '') + '</p>' : '') +
                 '<div class="mr-ed-acts"><button type="button" class="mr-save" data-mr-save="' + id + '">' + esc(t('save', l)) + '</button><button type="button" class="mr-cancel" data-mr-cancel="' + id + '">' + esc(t('cancel', l)) + '</button></div></div></li>';
         }
-        return '<li class="mr-item' + (d.src === 'kept' || d.src === 'unknown' ? ' mr-kept' : '') + '" data-mr="' + id + '">' +
+        return '<li class="mr-item' + (d.src === 'kept' || d.src === 'unknown' || d.src === 'new0' ? ' mr-kept' : '') + '" data-mr="' + id + '">' +
             '<button type="button" class="mr-tap" data-mr-edit="' + id + '" aria-label="' + esc(t('edit', l) + ': ' + d.name) + '">' +
             '<span class="mr-nm"><b>' + esc(d.name) + '</b>' + (d.portion ? '<small>' + esc(d.portion) + '</small>' : '') + '</span>' +
             '<span class="mr-kc"><b>' + Math.round(d.kcal) + '</b><small>' + esc(t('kcal', l)) + '</small></span>' +
             '<span class="mr-pen" aria-hidden="true">' + esc(t('edit', l)) + '</span></button>' +
             '<button type="button" class="mr-x" data-mr-rm="' + id + '" aria-label="' + esc(t('remove', l) + ' ' + d.name) + '">×</button>' +
             '<p class="mr-mac">' + macroLine(d, l) + '</p>' +
-            (d.src === 'kept' || d.src === 'unknown' ? '<p class="mr-note">' + esc(t('kept', l, { name: d.name })) + '</p>' : '') + '</li>';
+            (d.src === 'kept' || d.src === 'unknown' ? '<p class="mr-note">' + esc(t('kept', l, { name: d.name })) + '</p>' : d.src === 'new0' ? '<p class="mr-note">' + esc(t('new0', l, { name: d.name })) + '</p>' : '') + '</li>';
     }
 
     /* box: where the result goes (the sheet's .sp-ai). form: the Log as meal form (name="title" + hidden macro inputs).
@@ -479,7 +539,7 @@
         opts = opts || {};
         if (!box) return null;
         const l = opts.lang || lang();
-        const st = { items: (opts.dishes || []).slice(0, MAX_FOODS).map(clean).filter(d => d.name), drinks: [], edit: '', adding: false, pick: null, orig: null, sugs: [], sugAct: -1 };
+        const st = { items: (opts.dishes || []).slice(0, MAX_FOODS).map(clean).filter(d => d.name), drinks: [], edit: '', adding: false, pick: null, orig: null, sugs: [], sugAct: -1, fresh: '' };
         const titleIn = form && form.querySelector('[name="title"]');
         let typed = false;
         if (titleIn) titleIn.addEventListener('input', () => { typed = true; });
@@ -517,7 +577,8 @@
                 '</div>' +
                 (opts.photo ? '<img class="mr-thumb" alt="" src="' + esc(opts.photo) + '">' : '') + '</section>';
             const foods = st.items.length ? '<div class="mr-sec"><p class="mr-h"><b>' + esc(t('see', l)) + '</b><small>' + esc(t('tapFix', l)) + '</small></p><ul class="mr-list">' +
-                st.items.map((d, i) => cardHTML(d, i, 'f', st.edit === 'f' + i, l, st.pick && st.pick.id === 'f' + i ? st.pick.p : null)).join('') + '</ul></div>' : '';
+                st.items.map((d, i) => cardHTML(d, i, 'f', st.edit === 'f' + i, l, st.pick && st.pick.id === 'f' + i ? st.pick.p : null, st.fresh === 'f' + i)).join('') + '</ul>' +
+                (st.items.length < MAX_FOODS && !st.fresh ? '<button type="button" class="mr-add-btn mr-add-food" data-mr-add-food><span aria-hidden="true">+</span> ' + esc(t('addFood', l)) + '</button>' : '') + '</div>' : '';
             const drinks = '<div class="mr-sec mr-drinks"><p class="mr-h"><b>' + esc(t('drinks', l)) + '</b></p>' +
                 (st.drinks.length ? '<ul class="mr-list">' + st.drinks.map((d, i) => cardHTML(d, i, 'd', st.edit === 'd' + i, l)).join('') + '</ul>' : '') +
                 (st.drinks.length >= MAX_DRINKS ? '' : st.adding ?
@@ -573,16 +634,28 @@
         const keepOf = (id) => '[data-mr="' + id + '"]';
 
         /* suggestions for "What is it really?" (known products, see knownList) */
-        let known = null, knownAt = 0, rTimer = 0;
+        let known = null, knownAt = 0, rTimer = 0, eTimer = 0;
         const remote = {};
-        const SRC_KEY = { scan: 'srcScan', log: 'srcLog', dex: 'srcDex', table: 'srcTable' };
+        const SRC_KEY = { home: 'srcHome', cart: 'srcCart', scan: 'srcScan', log: 'srcLog', dex: 'srcDex', table: 'srcTable' };
+        // the Kitchen: "At home" (lowispike.kitchen.v1, read through LowiKitchenCore when it is there) and the shopping cart
+        const kitchenNow = () => {
+            let home = [], cart = [];
+            try {
+                const raw = root.localStorage.getItem('lowispike.kitchen.v1');
+                const KC = root.LowiKitchenCore;
+                home = KC && KC.parse ? KC.parse(raw).items : ((JSON.parse(raw || 'null') || {}).items || []);
+            } catch (e) { home = []; }
+            try { const sh = root.LOWI_SHELF; cart = sh && typeof sh.listOpen === 'function' ? sh.listOpen(true) || [] : []; } catch (e) { cart = []; }
+            return { home: Array.isArray(home) ? home : [], cart: Array.isArray(cart) ? cart : [] };
+        };
         const knownNow = () => {
             if (opts.known) return typeof opts.known === 'function' ? opts.known() : opts.known;
             if (known && Date.now() - knownAt < 4000) return known;
             let dex = null, logs = [];
             try { dex = root.LowiDex && root.LowiDex.state ? root.LowiDex.state() : JSON.parse(root.localStorage.getItem('lowi.dex.v1') || 'null'); } catch (e) { dex = null; }
             try { const S = JSON.parse(root.localStorage.getItem('lowispike.v2') || 'null'); logs = S && Array.isArray(S.logs) ? S.logs.slice(-400) : []; } catch (e) { logs = []; }
-            known = knownList({ mine: dex && dex.mine ? Object.values(dex.mine) : [], logs, comm: dex && Array.isArray(dex.comm) ? dex.comm : [] });
+            const kn = kitchenNow();
+            known = knownList({ mine: dex && dex.mine ? Object.values(dex.mine) : [], logs, comm: dex && Array.isArray(dex.comm) ? dex.comm : [], home: kn.home, cart: kn.cart });
             knownAt = Date.now();
             return known;
         };
@@ -596,16 +669,34 @@
         const paintSug = (li, id, list) => {
             const el = li.querySelector('.mr-sug'), inp = li.querySelector('[data-mr-name]');
             if (!el || !inp) return;
+            list.forEach(p => estFor(p, db(), true));   // names already read once: their portion right away
             st.sugs = list; st.sugAct = -1;
             el.innerHTML = list.map((p, k) => {
                 const sub = [p.brand && skey(p.name).indexOf(skey(p.brand)) < 0 ? p.brand : '', t(SRC_KEY[p.src] || 'srcDex', l)].filter(Boolean).join(' · ');
-                return '<button type="button" role="option" aria-selected="false" class="mr-opt" id="mr-o-' + id + '-' + k + '" data-mr-pick="' + k + '">' +
+                return '<button type="button" role="option" aria-selected="false" class="mr-opt' + (p.src === 'home' || p.src === 'cart' ? ' mr-opt-kit' : '') + '" id="mr-o-' + id + '-' + k + '" data-mr-pick="' + k + '">' +
                     '<span class="mr-opt-n"><b>' + esc(p.name) + '</b><small>' + esc(sub) + '</small></span><span class="mr-opt-k">' + esc(perText(p, l)) + '</span></button>';
             }).join('');
             el.hidden = !list.length;
             inp.setAttribute('aria-expanded', list.length ? 'true' : 'false');
             inp.removeAttribute('aria-activedescendant');
-            if (list.length) reveal(el, inp);
+            // the scroll that keeps the list above the keyboard waits for the next frame, so the keystroke itself never waits on layout
+            if (list.length) { const raf = root.requestAnimationFrame || (f => setTimeout(f, 16)); raf(() => { if (!el.hidden && st.sugs === list) reveal(el, inp); }); }
+            // Kitchen names nothing knows: read their typical portion just after the keystroke, never during it
+            clearTimeout(eTimer);
+            let tries = 0;
+            const fill = () => {
+                if (st.sugs !== list || el.hidden) return;
+                const d = db();
+                list.forEach((p, k) => {
+                    if (!p.est || hasNut(p)) return;
+                    estFor(p, d);
+                    const o = hasNut(p) && el.querySelector('#mr-o-' + id + '-' + k + ' .mr-opt-k');
+                    if (o) o.textContent = perText(p, l);
+                });
+                // the meal database may still be loading right after the photo: look again a little later
+                if (d && d.ready && !d.ready() && ++tries < 8) eTimer = setTimeout(fill, 500);
+            };
+            if (list.some(p => p.est && !hasNut(p))) eTimer = setTimeout(fill, 140);
         };
         // the list sits under the field: scroll the sheet so it is above the keyboard, without pushing the field off the top
         const reveal = (el, inp) => {
@@ -619,11 +710,20 @@
                 sc.scrollTop += Math.max(0, Math.min(over, inp.getBoundingClientRect().top - top - 12));
             } catch (e) { }
         };
-        const sugFor = (li, id) => {
+        const KIT = { home: 1, cart: 1 }, MINE = { home: 1, cart: 1, scan: 1, log: 1 };
+        // own: when the editor opens on the scanner's name, only your Kitchen, scans and logged foods are offered
+        const sugFor = (li, id, own) => {
             const inp = li && li.querySelector('[data-mr-name]');
             if (!inp || !li.querySelector('.mr-sug')) return;
             const q = parseAmount(inp.value).rest || inp.value, k = skey(q);
-            if (k.length < 2 || (st.pick && st.pick.id === id)) { closeSug(li); return; }
+            if (st.pick && st.pick.id === id) { closeSug(li); return; }
+            if (k.length < 2) {
+                // a food you are adding, nothing typed yet: the newest things in your Kitchen are one tap away
+                const kit = id === st.fresh && !inp.value.trim() ? knownNow().filter(p => KIT[p.src]).slice(0, 5) : [];
+                if (kit.length) paintSug(li, id, kit); else closeSug(li);
+                return;
+            }
+            if (own) { const L = suggest(q, knownNow().filter(p => MINE[p.src]), 5); if (L.length) paintSug(li, id, L); else closeSug(li); return; }
             paintSug(li, id, suggest(q, merged(knownNow(), remote[k]), 5));
             const LD = root.LowiDex;
             if (k.length >= 3 && !remote[k] && LD && typeof LD.search === 'function') {
@@ -643,6 +743,13 @@
             const id = li.dataset.mr, i = indexOf(id);
             const nameIn = li.querySelector('[data-mr-name]'), countIn = li.querySelector('[data-mr-count]');
             const orig = st.orig && st.orig.id === id ? st.orig.item : st.items[i];
+            estFor(p, db());
+            if (!hasNut(p)) {          // a Kitchen name nothing knows yet: fill it in, Update estimates it like typed text
+                if (nameIn) nameIn.value = p.name;
+                closeSug(li);
+                if (countIn) { try { countIn.focus({ preventScroll: true }); } catch (e) { } }
+                return;
+            }
             const n = countOf(countIn && countIn.value) || parseAmount(nameIn ? nameIn.value : '').count || (oneOf(p).kind === 'piece' && orig ? piecesOf(orig.portion) : 0) || 1;
             if (nameIn) nameIn.value = p.name;
             if (countIn) countIn.value = n;
@@ -662,6 +769,7 @@
                 if (st.pick && st.pick.id === id && fold(inp.value.trim()) !== fold(st.pick.p.name)) {
                     st.pick = null;
                     if (st.orig && st.orig.id === id) st.items[i] = Object.assign({}, st.orig.item);
+                    else if (id === st.fresh) st.items[i] = clean({ name: '' });
                     setMany(li, null);
                     render(null, keepOf(id));
                 }
@@ -687,13 +795,39 @@
             const sameName = fold(text) === fold(prev.name) && countOf(count) === countOf(prev.count || 0);
             if (pk) list[i] = clean(itemFrom(pk, count, l));
             else if (!sameName) list[i] = clean(id[0] === 'd' ? (estimateDrink(text, count, db(), l) || prev) : estimateItem(text, count, prev, db(), l));
-            st.edit = ''; st.pick = null; st.orig = null; st.sugs = [];
+            if (id === st.fresh && list[i].src === 'kept') list[i].src = 'new0';   // an added food nothing knows: 0 kcal, said so
+            st.edit = ''; st.pick = null; st.orig = null; st.sugs = []; st.fresh = '';
             render('[data-mr-edit="' + id + '"]');
         };
         // Cancel puts back what the card said before a suggestion was tried
         const restore = (id) => {
             if (st.pick && st.pick.id === id && st.orig && st.orig.id === id) listOf(id)[indexOf(id)] = Object.assign({}, st.orig.item);
             st.pick = null; st.orig = null; st.sugs = [];
+        };
+        /* "+ Add food" (Oct 24 2026): the scan missed the sauce. A blank card opens at the end of the list with the same
+           field and suggestions; until Update it is only a placeholder (never leaves the screen; a picked suggestion shows
+           live in the totals), and Cancel or opening anything else removes it. */
+        const dropFresh = () => {
+            if (!st.fresh) return false;
+            const i = indexOf(st.fresh);
+            if (st.items[i]) st.items.splice(i, 1);
+            if (st.pick && st.pick.id === st.fresh) st.pick = null;
+            st.fresh = '';
+            return true;
+        };
+        const cancelEdit = () => {
+            const id = st.edit;
+            if (id && id === st.fresh) { st.pick = null; st.orig = null; st.sugs = []; st.items.splice(indexOf(id), 1); st.fresh = ''; st.edit = ''; render('[data-mr-add-food]'); return; }
+            restore(id); st.edit = ''; render('[data-mr-edit="' + id + '"]');
+        };
+        const addFood = () => {
+            if (st.items.length >= MAX_FOODS) return;
+            dropFresh();
+            const id = 'f' + st.items.length;
+            st.items.push(clean({ name: '' }));
+            st.fresh = id; st.edit = id; st.orig = null; st.pick = null; st.sugs = []; st.adding = false;
+            render('[data-mr="' + id + '"] [data-mr-name]');
+            sugFor(box.querySelector(keepOf(id)), id);
         };
         const addDrink = (text) => {
             const d = estimateDrink(text, '', db(), l);
@@ -707,11 +841,19 @@
             if (!el || !box.contains(el)) return;
             const ds = el.dataset;
             if (ds.mrPick != null) { ev.preventDefault(); pick(+ds.mrPick, el.closest('[data-mr]')); }
-            else if (ds.mrEdit != null) { ev.preventDefault(); const it = listOf(ds.mrEdit)[indexOf(ds.mrEdit)]; st.orig = it ? { id: ds.mrEdit, item: Object.assign({}, it) } : null; st.pick = null; st.sugs = []; st.edit = ds.mrEdit; st.adding = false; render('[data-mr="' + ds.mrEdit + '"] [data-mr-name]'); }
+            else if (ds.mrEdit != null) {
+                ev.preventDefault();
+                dropFresh();
+                const eid = ds.mrEdit, it = listOf(eid)[indexOf(eid)];
+                st.orig = it ? { id: eid, item: Object.assign({}, it) } : null; st.pick = null; st.sugs = []; st.edit = eid; st.adding = false;
+                render('[data-mr="' + eid + '"] [data-mr-name]');
+                if (eid[0] === 'f') sugFor(box.querySelector(keepOf(eid)), eid, true);   // the right thing may already be in your Kitchen
+            }
+            else if (ds.mrAddFood != null) { ev.preventDefault(); addFood(); }
             else if (ds.mrSave != null) { ev.preventDefault(); save(ds.mrSave); }
-            else if (ds.mrCancel != null) { ev.preventDefault(); const id = st.edit; restore(id); st.edit = ''; render('[data-mr-edit="' + id + '"]'); }
-            else if (ds.mrRm != null) { ev.preventDefault(); st.pick = null; st.orig = null; listOf(ds.mrRm).splice(indexOf(ds.mrRm), 1); st.edit = ''; render(); }
-            else if (ds.mrAdd != null) { ev.preventDefault(); st.adding = true; st.edit = ''; render('[data-mr-drink]'); }
+            else if (ds.mrCancel != null) { ev.preventDefault(); cancelEdit(); }
+            else if (ds.mrRm != null) { ev.preventDefault(); dropFresh(); st.pick = null; st.orig = null; listOf(ds.mrRm).splice(indexOf(ds.mrRm), 1); st.edit = ''; render(); }
+            else if (ds.mrAdd != null) { ev.preventDefault(); dropFresh(); st.adding = true; st.edit = ''; render('[data-mr-drink]'); }
             else if (ds.mrAddX != null) { ev.preventDefault(); st.adding = false; render('[data-mr-add]'); }
             else if (ds.mrChip != null) { ev.preventDefault(); addDrink(ds.mrChip); }
             else if (ds.mrAddGo != null) { ev.preventDefault(); const inp = box.querySelector('[data-mr-drink]'); addDrink(inp ? inp.value : ''); }
@@ -739,11 +881,11 @@
             if (inp.hasAttribute('data-mr-drink')) { if (ev.key === 'Enter') addDrink(inp.value); else { st.adding = false; render('[data-mr-add]'); } return; }
             const li = inp.closest('[data-mr]');
             if (!li) return;
-            if (ev.key === 'Enter') save(li.dataset.mr); else { const id = st.edit; restore(id); st.edit = ''; render('[data-mr-edit="' + id + '"]'); }
+            if (ev.key === 'Enter') save(li.dataset.mr); else cancelEdit();
         });
         render();
         return {
-            items: () => st.items.slice(), drinks: () => st.drinks.slice(), all: () => st.items.concat(st.drinks),
+            items: () => st.items.filter(d => d.name), drinks: () => st.drinks.slice(), all: () => st.items.filter(d => d.name).concat(st.drinks),
             values: () => formValues(st.items, st.drinks, l, opts.verdictBlock), refresh: () => render(),
             _edit(i, text, count) { st.items[i] = clean(estimateItem(text, count, st.items[i], db(), l)); return render(); },
             _pick(q, k) { const li = box.querySelector('.mr-editing'); const inp = li && li.querySelector('[data-mr-name]'); if (!inp) return null; inp.value = q; sugFor(li, li.dataset.mr); const list = st.sugs.slice(); if (k != null) pick(k, li); return list; },
@@ -751,5 +893,5 @@
         };
     }
 
-    return { KEYS, STR, TABLE, lookup, parseAmount, estimateItem, estimateDrink, matchScore, pieceOf, fromProduct, fromLog, knownList, suggest, itemFrom, perText, manyLabel, clean, totals, title, verdict, xpFor, xpText, formValues, mount };
+    return { KEYS, STR, TABLE, lookup, parseAmount, estimateItem, estimateDrink, matchScore, pieceOf, fromProduct, fromLog, fromKitchen, kitchenHit, estFor, knownList, suggest, itemFrom, perText, manyLabel, clean, totals, title, verdict, xpFor, xpText, formValues, mount };
 });

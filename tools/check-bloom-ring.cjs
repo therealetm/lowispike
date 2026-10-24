@@ -2,8 +2,9 @@
 /* Browser check for the bloom ring (Oct 23 2026, bloom-ring.js + home-blooms-v2.js), like a user on Home:
    - taps Fuel, Water, Move: the orbs sit on one circle round Misty, the same distance apart, fully on screen, never on a Home bubble
      or on Misty, the view pulls back (html.br-zoom, scale < 1); Move has no Mirror orb; closing brings the ring back where it was;
-   - a real two-finger tap on Misty (CDP multi-touch): every bloom opens in one round, same checks; tap the empty space closes it;
-   - Misty's hold still opens her stats and is not set off by the two-finger tap.
+   - a real hold on Scan (CDP touch, Oct 24 2026; was a two-finger tap on Misty): every bloom opens in one round, same checks; tap the
+     empty space closes it; the scanner is not opened by the hold (tools/check-scan-hold.cjs checks tap vs hold in detail);
+   - Misty's hold still opens her stats.
    node tools/check-bloom-ring.cjs <w>x<h> [root|url] [outdir] [lang]   (chromium, touch) */
 const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path');
 (async () => {
@@ -49,16 +50,16 @@ const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path
     ringNow.forEach(b => s.orbs.forEach(p => { if (Math.hypot(p.x - b.x, p.y - b.y) < p.d / 2 + b.r - 2) bad.push(p.id + ' covers ' + b.k); }));
     if (s.misty) s.orbs.forEach(p => { if (Math.hypot(p.x - s.misty.x, p.y - s.misty.y) < p.d / 2 + s.misty.r * 0.8) bad.push(p.id + ' on Misty'); });
     if (s.orbs.some(p => p.id === 'mirror')) bad.push('Mirror orb still in the bloom');
-    /* Oct 23, 18:03 (Eman): Sleep blooms on the ring too, the two-finger ring is one full even circle, every orb wears the Home bubble
+    /* Oct 23, 18:03 (Eman): Sleep blooms on the ring too, the all-at-once ring is one full even circle, every orb wears the Home bubble
        membrane (living-bubbles), the old loose Sleep row is gone, and no glowing body place shows on a bubble's edge */
     if (s.fan) bad.push('old loose Sleep row visible (' + s.fan + ' chips)');
     if (s.lb3d && s.orbs.some(p => !p.lb)) bad.push('orb without the bubble membrane: ' + s.orbs.filter(p => !p.lb).map(p => p.id).join(','));
-    if (/^two-finger/.test(name) && c && s.orbs.length > 2) {
+    if (/^hold Scan/.test(name) && c && s.orbs.length > 2) {
       const a = s.orbs.map(p => Math.atan2(p.y - c.y, p.x - c.x)).sort((x, y) => x - y), st = [];
       for (let i = 0; i < a.length; i++) st.push(((a[(i + 1) % a.length] - a[i]) + Math.PI * 4) % (Math.PI * 2));
       const want = Math.PI * 2 / a.length;
-      if (st.some(x => Math.abs(x - want) > 0.05)) bad.push('two-finger ring not one even full circle: ' + st.map(x => Math.round(x * 180 / Math.PI)).join(','));
-      if (!s.orbs.some(p => p.g === 'sleep')) bad.push('Sleep missing from the two-finger ring');
+      if (st.some(x => Math.abs(x - want) > 0.05)) bad.push('all-at-once ring not one even full circle: ' + st.map(x => Math.round(x * 180 / Math.PI)).join(','));
+      if (!s.orbs.some(p => p.g === 'sleep')) bad.push('Sleep missing from the all-at-once ring');
     }
     /* (Oct 24, 10:45: body places may sit behind a bubble again, as before Oct 23; no veil check) */
     res.cases.push({ name, ok: !bad.length, n: s.orbs.length, scale: s.scale, bad });
@@ -77,7 +78,7 @@ const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path
     await P.touchscreen.tap(b.x, b.y); await H.sleep(600); await settle();
     const s = await state(); const rn = await ring();
     if (s.open !== k) { await find(k + ' bloom did not open', { open: s.open }); await closeIt(); continue; }
-    singles[k] = s.orbs.length;  /* Oct 23: two fingers must open exactly the sum of the single blooms (Water by sips made Water 3) */
+    singles[k] = s.orbs.length;  /* Oct 23: the all-at-once round must open exactly the sum of the single blooms (Water by sips made Water 3) */
     await judge(k + ' bloom', s, rn, 0);
     await closeIt();
     const s2 = await state(), r2 = await ring();
@@ -85,39 +86,24 @@ const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path
     if (s2.zoom || s2.open || moved.length) await find(k + ': closing did not bring Home back', { zoom: s2.zoom, open: s2.open, moved });
     else res.cases.push({ name: k + ' close', ok: true });
   }
-  /* the two-finger tap on Misty, real multi-touch through CDP */
-  R.step = 'two-finger';
+  /* Oct 24 2026: hold Scan (real touch through CDP) opens every bloom; the open call is caught so no camera starts */
+  R.step = 'hold Scan';
   const cdp = await R.ctx.newCDPSession(P);
-  const m0 = (await state()).misty;
-  if (!m0) await find('no Misty on Home', {});
+  await P.evaluate(() => { window.__opens = []; const real = window.lowiOpen; window.lowiOpen = t => { window.__opens.push(t); if (t !== 'scan' && typeof real === 'function') real(t); }; });
+  const sp = await P.evaluate(() => { const e = document.querySelector('#whHud .o8-scan'); if (!e) return null; const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+  if (!sp) await find('no Scan bubble on Home', {});
   else {
-    const pts = [{ x: m0.x - m0.r * 0.3, y: m0.y, id: 1 }, { x: m0.x + m0.r * 0.3, y: m0.y, id: 2 }];
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: pts[0].x, y: pts[0].y, id: 1 }] });
-    await H.sleep(40);
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: pts.map(p => ({ x: p.x, y: p.y, id: p.id })) });
-    await H.sleep(160);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: sp.x, y: sp.y, id: 1 }] });
+    await H.sleep(1100);
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-    await H.sleep(2200);
+    await H.sleep(2200); await settle();
     let s = await state(), rn = await ring();
-    if (s.open !== 'all') {
-      /* on a loaded test machine CDP can deliver the two touches far apart (seen: 937 ms between the fingers), which the tap rule
-         rightly refuses (a slow second finger is not a tap). Then the same two touches are sent from inside the page, on time. */
-      const tl = await P.evaluate(([a, b]) => new Promise(ok => {
-        const el = document.getElementById('spBubble'), mk = (p, id) => new Touch({ identifier: id, target: el, clientX: p.x, clientY: p.y });
-        const t1 = mk(a, 1), t2 = mk(b, 2), fire = (type, touches, changed) => el.dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true, touches, targetTouches: touches, changedTouches: changed }));
-        /* back to back: a loaded machine can stall even a 30 ms timer for seconds, which the tap rule would refuse */
-        const t0 = performance.now(); fire('touchstart', [t1], [t1]); fire('touchstart', [t1, t2], [t2]); fire('touchend', [t2], [t1]); fire('touchend', [], [t2]);
-        ok(Math.round(performance.now() - t0));
-      }), [pts[0], pts[1]]);
-      await H.sleep(600); await settle();
-      s = await state(); rn = await ring();
-      res.cases.push({ name: 'two-finger via CDP refused as too slow on this machine, sent in-page instead', ok: true, ms: tl });
-      console.log('INPAGE two-finger', tl, 'ms ->', s.open);
-    }
+    const opens = await P.evaluate(() => window.__opens.slice());
     if (s.open !== 'all') console.log('BRSTATE', JSON.stringify(await P.evaluate(() => { try { return LowiBloomRing.state(); } catch (e) { return String(e); } })));
-    if (s.open !== 'all') await find('two-finger tap on Misty did not open every bloom', { open: s.open, zoom: s.zoom });
-    else await judge('two-finger: all blooms', s, rn, Object.values(singles).reduce((x, y) => x + y, 0) || 8);
-    if (s.stats) await find('two-finger tap opened Misty stats (hold)', {});
+    if (s.open !== 'all') await find('hold on Scan did not open every bloom', { open: s.open, zoom: s.zoom });
+    else await judge('hold Scan: all blooms', s, rn, Object.values(singles).reduce((x, y) => x + y, 0) || 8);
+    if (opens.includes('scan')) await find('hold on Scan also opened the scanner', { opens });
+    if (s.stats) await find('hold on Scan opened Misty stats', {});
     /* tap the empty space: closes and the view comes back */
     const sc = await P.evaluate(() => { const v = innerWidth, h = innerHeight; for (const [x, y] of [[8, h * 0.5], [v - 8, h * 0.5], [v * 0.5, h - 14], [8, h - 14]]) { const e = document.elementFromPoint(x, y); if (e && e.classList.contains('hb2-scrim')) return { x, y }; } return null; });
     if (sc) { await P.touchscreen.tap(sc.x, sc.y); await H.sleep(800); await settleRing(); } else await closeIt();

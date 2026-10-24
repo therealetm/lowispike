@@ -3,6 +3,7 @@
    - a quick tap on Scan opens Scan (lowiOpen('scan')) and opens no bubbles
    - holding Scan (~0.9 s, finger still) opens every bubble (LowiHomeBloomsV2.isAll()) and does NOT open Scan, also after the finger lifts
    - a tap on the empty space closes the circle again; holding again closes it too
+   - the old two-finger tap on Misty opens nothing (removed Oct 24 2026; chromium: real two-point CDP touch)
    - with engine chromium the hold is a real CDP touch (touchstart ... touchend, so the browser's own click after touchend is tested)
    SIMULATED browser, not a physical device.
    node tools/check-scan-hold.cjs [root|url] [webkit|chromium] [WxH] [outdir] */
@@ -50,6 +51,24 @@ const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path
   /* 3. hold, then hold again: open, then closed; Scan never opens */
   await spy(false); await hold(900); await H.sleep(1200); const s1 = await st(); await hold(900); await H.sleep(1300); s = await st();
   await judge('hold again closes it', s1.all && !s.all && !s.opened.length, s, { first: s1 });
+  await home();
+  /* 3b. two fingers on Misty, still and short (the old gesture): no bubbles */
+  await spy(false);
+  const m = await P.evaluate(() => { const e = document.getElementById('spBubble'); if (!e) return null; const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width }; });
+  if (m && cdp) {
+    const a = { x: m.x - m.w * .15, y: m.y, id: 1, radiusX: 8, radiusY: 8, force: 1 }, b2 = { x: m.x + m.w * .15, y: m.y, id: 2, radiusX: 8, radiusY: 8, force: 1 };
+    /* the same touch story the old two-finger check sent (it opened every bubble before the removal) */
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [a] }); await H.sleep(40);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [a, b2] }); await H.sleep(160);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  } else if (m) {
+    await P.evaluate(([x, y, w]) => { const el = document.getElementById('spBubble'); const po = (dx, id, pr) => ({ bubbles: true, cancelable: true, clientX: x + dx, clientY: y, pointerId: id, pointerType: 'touch', isPrimary: pr, button: 0 });
+      el.dispatchEvent(new PointerEvent('pointerdown', po(-w * .15, 11, true))); el.dispatchEvent(new PointerEvent('pointerdown', po(w * .15, 12, false)));
+      el.dispatchEvent(new PointerEvent('pointerup', po(w * .15, 12, false))); el.dispatchEvent(new PointerEvent('pointerup', po(-w * .15, 11, true))); }, [m.x, m.y, m.w]);
+  }
+  await H.sleep(1300); s = await st();
+  await judge('two fingers on Misty open no bubbles', !!m && !s.all && s.open !== 'all', s, { how: cdp ? 'CDP two-point touch' : 'pointer events' });
+  await P.evaluate(() => { try { document.querySelectorAll('.ms-x, .stats-close, [data-close]').forEach(b => b.click()); } catch (e) { } });
   await home();
   /* 4. a quick tap opens Scan (the real one) and no bubbles */
   await spy(engine !== 'webkit'); await tap(); await H.sleep(1500);  /* WebKit sim: the camera page crashes headless WebKit here, so it only records the open('scan') call */

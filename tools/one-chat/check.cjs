@@ -33,7 +33,7 @@ const CIRCLE = /\bCircles?\b|Círculos?\b|\bKreise\b|Room \d|Raum \d|Sala \d|Cha
       let uid = ''; for (let i = 0; i < 120 && !uid; i++) { uid = await ev(() => { try { return LOWI_CLOUD_X.state().uid || ''; } catch (e) { return ''; } }); if (!uid) await sleep(500); }
       if (!uid) fails.push('no cloud sign-in'); else if (!(await TA.markTest(page))) fails.push('could not mark the test account');
       /* the sign-in gate is not what this checks: close it the way the other sweeps do */
-      await ev(l => { try { LowiR2.closeAll(); } catch (e) {} const g = document.getElementById('r2gate'); if (g) g.remove(); try { LowiLang.set(l); } catch (e) {} try { goTab('foryou'); } catch (e) {} }, lang);
+      await ev(l => { try { LowiR2.closeAll(); } catch (e) {} const g = document.getElementById('r2gate'); if (g) g.remove(); const un = () => { document.querySelectorAll('[inert]').forEach(e => e.removeAttribute('inert')); document.documentElement.classList.remove('gate-up', 'gate-boot'); }; un(); try { new MutationObserver(un).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['inert', 'class'] }); } catch (e) {} try { LowiLang.set(l); } catch (e) {} try { goTab('foryou'); } catch (e) {} }, lang);
       const tabsOk = await page.waitForFunction(() => { const t = document.querySelector('.rm-tabs'); return t && t.getBoundingClientRect().width > 0; }, null, { timeout: 30000 }).then(() => 1).catch(() => 0);
       if (!tabsOk) fails.push('Community tabs did not show');
       await sleep(1500);

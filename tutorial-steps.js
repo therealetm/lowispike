@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 24;  /* 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 25;  /* 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -721,6 +721,16 @@
                 es: 'Hay algunas novedades. Te enseño dónde están. Puedes saltarlo cuando quieras.'
             },
             cta: { en: 'Let’s go', de: 'Los geht’s', es: 'Vamos' }
+        },
+        {
+            id: 'new-meal-curve', area: 'new', where: 'home', target: ['#spFast'], covers: ['gap'],
+            info: 'points at the Gap bubble on Home; the After your meal strip is at the top of the Gap card once it is open',
+            title: { en: 'After your meal', de: 'Nach dem Essen', es: 'Después de comer' },
+            text: {
+                en: 'New in Gap: what your blood sugar typically does after a meal, phase by phase, and one easy way to lower the spike in each.',
+                de: 'Neu in Gap: was dein Blutzucker nach dem Essen typischerweise macht, Phase für Phase, und je ein einfacher Weg, den Spike zu senken.',
+                es: 'Nuevo en Gap: lo que suele hacer tu azúcar después de comer, fase a fase, y una forma fácil de bajar el pico en cada una.'
+            }
         },
         {
             id: 'new-kitchen', area: 'new', where: 'home', open: 'kitchen', target: ['.stp-card .stp-tab[data-stp-tab="kitchen"]', '.stp-card'], covers: ['kitchen'],

@@ -65,5 +65,68 @@
 .gv-hedge { margin: 14px 2px 4px; font-size: 12.5px; line-height: 1.45; color: rgba(225, 240, 255, .7); }
 .gv-log { display: block; width: 100%; min-height: 52px; margin: 14px 0 4px; border-radius: 999px; border: 1px solid rgba(143, 216, 255, .7); background: linear-gradient(180deg, rgba(143, 216, 255, .32), rgba(90, 150, 255, .22)); color: #fff; font: inherit; font-size: 16px; font-weight: 700; box-shadow: 0 0 18px rgba(143, 216, 255, .28); }
 .gv-log:active, .gv-fix:active, .gv-x:active { transform: scale(.97); }
+/* After your meal (Oct 24 2026): five round phases on a line, the current one glows, one small animated card; only that card moves */
+.mc { margin: 14px 0 0; }
+.mc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.mc-head .gv-h { margin-top: 6px; }
+.mc-head small { font-size: 11.5px; color: rgba(225, 240, 255, .62); white-space: nowrap; }
+.mc-row { display: flex; align-items: flex-start; gap: 0; padding: 2px 0 6px; }
+.mc-link { flex: 1 1 auto; min-width: 6px; height: 2px; margin-top: 21px; border-radius: 2px; background: rgba(143, 216, 255, .2); position: relative; }
+.mc-link::after { content: ""; position: absolute; right: -1px; top: -3px; width: 6px; height: 6px; border-top: 2px solid rgba(143, 216, 255, .32); border-right: 2px solid rgba(143, 216, 255, .32); transform: rotate(45deg); }
+.mc-link.lit { background: rgba(143, 216, 255, .55); }
+.mc-ph { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.mc-ic { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .06); border: 1px solid rgba(143, 216, 255, .24); transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.mc-ic svg { width: 22px; height: 22px; fill: none; stroke: rgba(225, 240, 255, .72); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mc-ph small { font-size: 11px; font-weight: 600; color: rgba(225, 240, 255, .62); white-space: nowrap; }
+.mc-ph.past .mc-ic svg { stroke: color-mix(in srgb, var(--c) 70%, #fff); }
+.mc-ph.sel .mc-ic { background: color-mix(in srgb, var(--c) 22%, transparent); border-color: color-mix(in srgb, var(--c) 70%, transparent); transform: scale(1.06); }
+.mc-ph.sel .mc-ic svg { stroke: #fff; }
+.mc-ph.sel small { color: #fff; }
+.mc-ph.now .mc-ic { border: 2px solid var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent), 0 0 16px color-mix(in srgb, var(--c) 45%, transparent); }
+.mc-ph:focus-visible { outline: none; }
+.mc-ph:focus-visible .mc-ic { outline: 2px solid #fff; outline-offset: 3px; }
+.mc-card { margin-top: 6px; padding: 12px 14px 10px; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); background: linear-gradient(160deg, color-mix(in srgb, var(--c) 12%, transparent), rgba(255, 255, 255, .03)); touch-action: pan-y; animation: mcIn .26s ease both; }
+.mc-art { height: 92px; margin: -2px -4px 6px; border-radius: 14px; background: radial-gradient(120% 90% at 30% 20%, rgba(80, 140, 230, .22), rgba(6, 18, 48, .25)); overflow: hidden; }
+.mc-svg { width: 100%; height: 100%; display: block; }
+.mc-base { stroke: rgba(143, 216, 255, .18); stroke-width: 1; stroke-dasharray: 2 3; }
+.mc-curve { fill: none; stroke: rgba(225, 240, 255, .22); stroke-width: 2; stroke-linecap: round; }
+.mc-seg { fill: none; stroke: var(--c); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 3px var(--c)); }
+.mc-motif * { transform-box: fill-box; transform-origin: center; }
+.mc-up circle { animation: mcUp 2.4s ease-in infinite; opacity: 0; }
+.mc-up circle:nth-child(2) { animation-delay: .8s; }
+.mc-up circle:nth-child(3) { animation-delay: 1.6s; }
+.mc-halo { opacity: .25; animation: mcPulse 2.2s ease-in-out infinite; }
+.mc-step circle { animation: mcStep 1.2s ease-in-out infinite; }
+.mc-step circle:nth-child(2) { animation-delay: .6s; }
+.mc-cell { fill: none; stroke: currentColor; stroke-width: 1.6; opacity: .7; color: inherit; stroke: var(--c); }
+.mc-in circle { animation: mcIn2 2.4s ease-in infinite; opacity: 0; }
+.mc-in circle:nth-child(2) { animation-delay: .8s; }
+.mc-in circle:nth-child(3) { animation-delay: 1.6s; }
+.mc-bob { animation: mcBob 3.2s ease-in-out infinite; }
+.mc-orb { opacity: .22; animation: mcPulse 4s ease-in-out infinite; }
+.mc-title { display: flex; align-items: center; gap: 8px; }
+.mc-title h3 { margin: 0; font-size: 18px; line-height: 1.2; }
+.mc-title em { font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; color: #06122c; background: var(--c); }
+.mc-pill { display: inline-block; margin: 7px 0 6px; padding: 4px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: rgba(236, 246, 255, .92); background: rgba(255, 255, 255, .08); border: 1px solid rgba(143, 216, 255, .2); }
+.mc-t { margin: 0; font-size: 14.5px; line-height: 1.45; color: rgba(236, 246, 255, .9); }
+.mc-t b { color: #fff; }
+.mc-lever { margin-top: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .05); }
+.mc-lever small { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c); }
+.mc-lever p { margin: 2px 0 0; font-size: 14px; line-height: 1.4; color: rgba(236, 246, 255, .92); }
+.mc-move { margin-top: 8px; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--c) 60%, transparent); background: color-mix(in srgb, var(--c) 18%, transparent); color: #fff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.mc-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+.mc-arrow { width: 36px; height: 36px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .06); display: grid; place-items: center; cursor: pointer; }
+.mc-arrow svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mc-arrow:disabled { opacity: .3; cursor: default; }
+.mc-dots { display: flex; gap: 6px; }
+.mc-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(225, 240, 255, .3); }
+.mc-dots i.on { background: #fff; }
+@keyframes mcIn { from { opacity: .4; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes mcUp { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-34px); } }
+@keyframes mcPulse { 0%, 100% { transform: scale(.85); opacity: .18; } 50% { transform: scale(1.15); opacity: .36; } }
+@keyframes mcStep { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes mcIn2 { 0% { opacity: 0; transform: translate(0, 0); } 20% { opacity: 1; } 85% { opacity: .9; } 100% { opacity: 0; transform: translate(32px, -8px); } }
+@keyframes mcBob { 0%, 100% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
+@media (max-width: 360px) { .mc-ic { width: 40px; height: 40px; } .mc-ph small { font-size: 10.5px; } }
 @media (min-width: 700px) { .gv-ov { align-items: center; } .gv-card { border-radius: 28px; border-bottom: 1px solid rgba(143, 216, 255, .42); max-height: min(88vh, 900px); } }
-@media (prefers-reduced-motion: reduce) { .gv-ov, .gv-card, .gv-liq { transition: none; } .gv-wave, .gv-pl.here .gv-halo { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .gv-ov, .gv-card, .gv-liq { transition: none; } .gv-wave, .gv-pl.here .gv-halo, .mc-card, .mc-motif *, .mc-ic { animation: none; transition: none; } .mc-up circle, .mc-in circle { opacity: 1; } }

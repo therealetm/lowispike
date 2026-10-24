@@ -7,6 +7,7 @@
    hexagon, a light trail along it for the hours gone by, and the liquid in the glass rising with them. The markers and their notes
    are the soft-ms texts the fasting sheet already uses (LowiFast.stagesFull), framed as typical, never as a reading.
    The only actions: fix the last meal time (LowiFastEdit, the time was wrong) and "Log a meal in Fuel" (Fuel restarts the gap).
+   Oct 24 2026: an "After your meal" strip leads the card (see MC below), and its walk lever may open Move.
    API window.LowiGapView {open(), close(), isOpen(), model(now)}; model is pure enough for node tests. EN / DE / ES. */
 (function (root, factory) {
     const api = factory(root);
@@ -20,23 +21,89 @@
             last: 'Last meal', fix: 'Fix time', now: 'Now', next: 'Next: {n} in about {d}', past: 'Past the last marker. Listen to your body.', markers: 'Typical markers',
             pts: 'So far +{x} XP. You get them when your next meal is logged in Fuel.', recent: 'Recent gaps', log: 'Log a meal in Fuel',
             hedge: 'A general guide from typical patterns, not a measurement. Every body runs its own clock. On diabetes medication? Ask your doctor before long gaps.',
-            hexL: 'Six markers on a hexagon; the lit trail shows the time since your last meal', today: 'Today', yday: 'Yesterday' },
+            hexL: 'Six markers on a hexagon; the lit trail shows the time since your last meal', today: 'Today', yday: 'Yesterday',
+            mcH: 'After your meal', mcTyp: 'Typical, not measured', mcLever: 'Lower the spike', mcMove: 'Open Move', mcRow: 'After-meal phases', mcPrev: 'Previous phase', mcNext: 'Next phase' },
         de: { title: 'Essenspause', since: 'seit deiner letzten Mahlzeit', none: 'Noch keine Mahlzeit eingetragen', noneSub: 'Trag deine nächste Mahlzeit in Fuel ein. Die Pause zählt ab dem Essen.', close: 'Schließen',
             last: 'Letzte Mahlzeit', fix: 'Zeit ändern', now: 'Jetzt', next: 'Als Nächstes: {n} in etwa {d}', past: 'Über die letzte Marke hinaus. Hör auf deinen Körper.', markers: 'Typische Marken',
             pts: 'Bisher +{x} XP. Du bekommst sie, wenn du deine nächste Mahlzeit in Fuel einträgst.', recent: 'Letzte Pausen', log: 'Mahlzeit in Fuel eintragen',
             hedge: 'Eine grobe Orientierung aus typischen Verläufen, keine Messung. Jeder Körper hat seine eigene Uhr. Nimmst du Diabetes-Medikamente? Frag vor langen Pausen deine Ärztin oder deinen Arzt.',
-            hexL: 'Sechs Marken auf einem Sechseck; die leuchtende Spur zeigt die Zeit seit deiner letzten Mahlzeit', today: 'Heute', yday: 'Gestern' },
+            hexL: 'Sechs Marken auf einem Sechseck; die leuchtende Spur zeigt die Zeit seit deiner letzten Mahlzeit', today: 'Heute', yday: 'Gestern',
+            mcH: 'Nach dem Essen', mcTyp: 'Typisch, nicht gemessen', mcLever: 'Spike senken', mcMove: 'Zu Bewegung', mcRow: 'Phasen nach dem Essen', mcPrev: 'Vorherige Phase', mcNext: 'Nächste Phase' },
         es: { title: 'Pausa entre comidas', since: 'desde tu última comida', none: 'Aún no hay comidas', noneSub: 'Registra tu próxima comida en Fuel. La pausa cuenta desde la hora en que comiste.', close: 'Cerrar',
             last: 'Última comida', fix: 'Cambiar hora', now: 'Ahora', next: 'Después: {n} en unas {d}', past: 'Más allá del último marcador. Escucha a tu cuerpo.', markers: 'Marcadores típicos',
             pts: 'Por ahora +{x} XP. Los recibes al registrar tu próxima comida en Fuel.', recent: 'Pausas recientes', log: 'Registrar comida en Fuel',
             hedge: 'Una guía general según patrones típicos, no una medición. Cada cuerpo tiene su propio reloj. ¿Tomas medicación para la diabetes? Consulta a tu médico antes de pausas largas.',
-            hexL: 'Seis marcadores en un hexágono; el rastro iluminado muestra el tiempo desde tu última comida', today: 'Hoy', yday: 'Ayer' }
+            hexL: 'Seis marcadores en un hexágono; el rastro iluminado muestra el tiempo desde tu última comida', today: 'Hoy', yday: 'Ayer',
+            mcH: 'Después de comer', mcTyp: 'Típico, no medido', mcLever: 'Baja el pico', mcMove: 'Ir a Movimiento', mcRow: 'Fases después de comer', mcPrev: 'Fase anterior', mcNext: 'Fase siguiente' }
     };
     /* the soft-ms markers (index.html STAGES), used only when LowiFast is not there (node tests) */
     const FALLBACK = [{ h: 0, n: 'Blood sugar rises', t: 'Right after your last meal', x: '' }, { h: 3, n: 'Blood sugar often settles', t: 'For most people, around 3 h in', x: '' },
         { h: 8, n: 'Liver often takes over', t: 'For many people, around 8 h in', x: '' }, { h: 12, n: 'Fat burning often picks up', t: 'For many people, around 12 h in', x: '' },
         { h: 14, n: 'Ketones may start rising', t: 'For some people, around 14 h in', x: '' }, { h: 16, n: 'Cell cleanup, maybe', t: 'Maybe from about 16 h, nobody knows exactly', x: '' }];
     const COL = ['#8fe7ff', '#a8ffd8', '#9fd8ff', '#d6c8ff', '#c4b5ff', '#f0d7ff'];
+
+    /* ---------- After your meal (Oct 24 2026) ----------
+       Emmanuel, with six screenshots of Fastic's Body status: "similar to Fastic, but everything bezüglich lowering insulin spike
+       after a meal" and "their picture is a lil animation". So the first hours of the Gap get their own strip: five round phases
+       on a timeline from the logged last meal (the same start the hexagon uses), the current one glows, tap or swipe shows a small
+       animated card, a "typical time" pill, two short sentences and one lever that lowers the spike. Text stays general and hedged
+       ("for many people", "about"); no insulin dosing, no promises, nothing like Fastic's brain-cell or exact-16-h autophagy claims.
+       Sources behind every statement and time:
+       [F] Freckmann G et al. Continuous glucose profiles in healthy subjects under everyday life conditions and after different
+           meals. J Diabetes Sci Technol 2007;1(5):695-703. Mean time to the after-meal peak 46-50 min; fast carbs peaked higher,
+           meals with more fiber, protein and fat rose less and slower. -> rise, peak (30-60 min), "fast carbs peak higher".
+       [S] Shukla AP et al. Food order has a significant impact on postprandial glucose and insulin levels. Diabetes Care
+           2015;38(7):e98-e99. Vegetables and protein before carbs: glucose about 29/37/17 % lower at 30/60/120 min. -> rise lever.
+       [B] Buffey AJ et al. The acute effects of interrupting prolonged sitting time in adults with standing and light-intensity
+           walking on biomarkers of cardiometabolic health. Sports Med 2022;52:1765-1787. Light walking after eating lowered
+           glucose and insulin vs sitting. Reynolds AN et al. Diabetologia 2016;59:2572-2578 (a 10-min walk after meals). -> peak lever.
+       [R] Richter EA, Hargreaves M. Exercise, GLUT4, and skeletal muscle glucose uptake. Physiol Rev 2013;93:993-1017. Working
+           muscles take up glucose. -> peak and insulin levers.
+       [O] OpenStax Anatomy and Physiology 2e, 24.3 Metabolic States of the Body: insulin moves glucose into muscle, liver and fat
+           cells in the absorptive state (about 4 h); afterwards insulin falls and the body draws on stored glycogen and fat.
+           -> insulin, insulin low (from about 4 h).
+       Back near the start after 2-3 h in people without diabetes: same statement as body-trips.js, consistent with [F].
+       Times are where a phase typically begins (minutes after the meal); the strip never claims to know the user's own curve. */
+    const MC = [
+        { id: 'rise', m: 0, c: '#8fe7ff', mv: false,
+            n: ['Sugar rises', 'Zucker steigt', 'Sube el azúcar'], p: ['From the first bites', 'Ab den ersten Bissen', 'Desde los primeros bocados'],
+            t: ['Soon after you start eating, sugar from the meal reaches your blood. <b>Fiber, protein and fat</b> slow it down.',
+                'Kurz nach dem ersten Bissen kommt Zucker aus dem Essen ins Blut. <b>Ballaststoffe, Eiweiß und Fett</b> bremsen ihn.',
+                'Poco después de empezar a comer, el azúcar de la comida llega a la sangre. <b>La fibra, la proteína y la grasa</b> lo frenan.'],
+            l: ['Veggies and protein first, carbs last.', 'Erst Gemüse und Eiweiß, Kohlenhydrate zuletzt.', 'Primero verduras y proteína, los carbohidratos al final.'] },
+        { id: 'peak', m: 30, c: '#ffe08a', mv: true,
+            n: ['Peak', 'Höhepunkt', 'Pico'], p: ['About 30–60 min after eating', 'Etwa 30–60 Min. nach dem Essen', 'Unos 30–60 min después de comer'],
+            t: ['For many people, blood sugar peaks <b>around 30 to 60 minutes</b> after eating. Fast carbs peak higher.',
+                'Bei vielen ist der Blutzucker <b>etwa 30 bis 60 Minuten</b> nach dem Essen am höchsten. Schnelle Kohlenhydrate steigen höher.',
+                'En muchas personas, el azúcar llega a su pico <b>unos 30 a 60 minutos</b> después de comer. Los carbohidratos rápidos suben más.'],
+            l: ['Walk for 10 minutes now. Working muscles pull sugar from your blood.', 'Geh jetzt 10 Minuten. Arbeitende Muskeln holen Zucker aus dem Blut.', 'Camina 10 minutos ahora. Los músculos activos sacan azúcar de la sangre.'] },
+        { id: 'insulin', m: 60, c: '#a8ffd8', mv: true,
+            n: ['Insulin brings it down', 'Insulin senkt ihn', 'La insulina lo baja'], p: ['About 1–2 h after eating', 'Etwa 1–2 Std. nach dem Essen', 'Unas 1–2 h después de comer'],
+            t: ['<b>Insulin</b> helps your muscles, liver and fat cells take up the sugar, so the level falls again.',
+                '<b>Insulin</b> hilft Muskeln, Leber und Fettzellen, den Zucker aufzunehmen. So sinkt der Wert wieder.',
+                '<b>La insulina</b> ayuda a los músculos, el hígado y las células de grasa a tomar el azúcar, y el nivel baja.'],
+            l: ['Stay a little active: stairs, tidying up, a few squats.', 'Bleib etwas aktiv: Treppe, Aufräumen, ein paar Kniebeugen.', 'Sigue algo activo: escaleras, ordenar, unas sentadillas.'] },
+        { id: 'base', m: 120, c: '#9fd8ff', mv: false,
+            n: ['Back to baseline', 'Zurück am Ausgangswert', 'De vuelta al inicio'], p: ['About 2–3 h after eating', 'Etwa 2–3 Std. nach dem Essen', 'Unas 2–3 h después de comer'],
+            t: ['In people without diabetes, blood sugar is usually <b>close to where it started</b> about 2 to 3 hours after eating.',
+                'Bei Menschen ohne Diabetes ist der Blutzucker etwa 2 bis 3 Stunden nach dem Essen meist <b>wieder nahe am Ausgangswert</b>.',
+                'En personas sin diabetes, el azúcar suele estar <b>cerca del punto de partida</b> unas 2 o 3 horas después de comer.'],
+            l: ['Thirsty? Water or unsweetened tea add no sugar. A snack starts a new rise.', 'Durst? Wasser oder ungesüßter Tee bringen keinen Zucker. Ein Snack startet einen neuen Anstieg.', '¿Sed? El agua o el té sin azúcar no aportan azúcar. Un snack empieza otra subida.'] },
+        { id: 'low', m: 240, c: '#c4b5ff', mv: false,
+            n: ['Insulin low', 'Insulin niedrig', 'Insulina baja'], p: ['From about 4 h after eating', 'Ab etwa 4 Std. nach dem Essen', 'Desde unas 4 h después de comer'],
+            t: ['A few hours after eating, <b>insulin is low</b> again and your body draws more on stored energy.',
+                'Einige Stunden nach dem Essen ist <b>Insulin wieder niedrig</b> und dein Körper nutzt mehr gespeicherte Energie.',
+                'Unas horas después de comer, <b>la insulina vuelve a estar baja</b> y tu cuerpo usa más energía guardada.'],
+            l: ['Nothing to do. Gap keeps counting.', 'Nichts zu tun. Gap zählt weiter.', 'Nada que hacer. Gap sigue contando.'] }
+    ];
+    const MC_TICK = ['0', '30 min', '1 h', '2 h', '4 h'];
+    const MC_WIN = 4; /* hours: inside this window the strip leads and the hexagon's own Now card steps back (same story twice) */
+    /* which phase the clock is in: -1 with no meal, else the last phase whose start has passed */
+    function curvePhase(min) {
+        if (typeof min !== 'number' || !(min >= 0)) return -1;
+        let k = 0; MC.forEach((p, i) => { if (min >= p.m) k = i; });
+        return k;
+    }
     const FULL_H = 16; /* the liquid is full at the last marker, the same 16 h the gap points stop at */
     const lang = () => { try { return (W.LowiLang.get() || 'en').slice(0, 2); } catch (e) { return ((D && D.documentElement.lang) || 'en').slice(0, 2); } };
     const s = k => (STR[lang()] || STR.en)[k] || STR.en[k];
@@ -80,7 +147,8 @@
         const nx = start ? L.find(m => m.h > h) : null;
         let x = 0; try { if (start && W.LowiFastStop && W.LowiFastStop.points) x = +W.LowiFastStop.points(h, 0).x || 0; } catch (e) {}
         const hist = (Array.isArray(f.hist) ? f.hist : []).filter(r => r && +r.s && +r.e > +r.s).slice(-3).reverse().map(r => ({ s: +r.s, e: +r.e, ms: +r.e - +r.s }));
-        return { start, elapsed: el, hours: h, fill: start ? Math.min(1, h / FULL_H) : 0, trail: start ? trail(h, L) : 0, cur, next: nx || null, nextIn: nx ? nx.h * 36e5 - el : 0,
+        const mcCur = start ? curvePhase(el / 60000) : -1;
+        return { mcCur, start, elapsed: el, hours: h, fill: start ? Math.min(1, h / FULL_H) : 0, trail: start ? trail(h, L) : 0, cur, next: nx || null, nextIn: nx ? nx.h * 36e5 - el : 0,
             stages: L, xp: x, meal: mealAt(start), hist };
     }
 
@@ -111,17 +179,78 @@
         const L = m.stages;
         if (!m.start) {
             return '<div class="gv-hero">' + hero(m) + '<div class="gv-mid"><b class="gv-none">' + esc(s('none')) + '</b></div></div>' +
-                '<p class="gv-sub">' + esc(s('noneSub')) + '</p>' + markers(m) + '<p class="gv-hedge">' + esc(s('hedge')) + '</p>';
+                '<p class="gv-sub">' + esc(s('noneSub')) + '</p>' + curve(m) + markers(m) + '<p class="gv-hedge">' + esc(s('hedge')) + '</p>';
         }
         const curM = m.cur >= 0 ? L[m.cur] : null;
         const nextLine = m.next ? s('next').replace('{n}', m.next.n.charAt(0).toLowerCase() + m.next.n.slice(1)).replace('{d}', dur(m.nextIn)) : s('past');
         return '<div class="gv-hero">' + hero(m) + '<div class="gv-mid"><b class="gv-time" data-gv="time">' + esc(dur(m.elapsed)) + '</b><small>' + esc(s('since')) + '</small></div></div>' +
             '<div class="gv-last"><span><small>' + esc(s('last')) + '</small><b>' + (m.meal ? esc(m.meal) + ' · ' : '') + esc(clock(m.start)) + '</b></span>' +
             (W.LowiFastEdit && W.LowiFastEdit.open ? '<button type="button" class="gv-fix" data-gv="fix">' + esc(s('fix')) + '</button>' : '') + '</div>' +
-            (curM ? '<section class="gv-now" style="--c:' + COL[m.cur] + '"><small>' + esc(s('now')) + '</small><h3>' + esc(curM.n) + '</h3>' + (curM.x ? '<p>' + rich(curM.x) + '</p>' : '<p>' + esc(curM.t) + '</p>') +
+            curve(m) +
+            (curM && m.hours >= MC_WIN ? '<section class="gv-now" style="--c:' + COL[m.cur] + '"><small>' + esc(s('now')) + '</small><h3>' + esc(curM.n) + '</h3>' + (curM.x ? '<p>' + rich(curM.x) + '</p>' : '<p>' + esc(curM.t) + '</p>') +
                 '<p class="gv-next">' + esc(nextLine) + '</p></section>' : '') +
             (m.xp > 0 ? '<p class="gv-pts">' + esc(s('pts').replace('{x}', m.xp)) + '</p>' : '') +
             markers(m) + recent(m) + '<p class="gv-hedge">' + esc(s('hedge')) + '</p>';
+    }
+    /* ---------- After your meal: the strip ---------- */
+    let mcSel = -1; /* the phase the user picked; -1 follows the clock */
+    const li = () => Math.max(0, ['en', 'de', 'es'].indexOf(lang()));
+    const MC_ICON = ['M12 18V7M7.5 11.5 12 7l4.5 4.5', 'M4 17c4 0 5-11 8-11s4 11 8 11', 'M12 6v11m-4.5-4.5L12 17l4.5-4.5', 'M4 13c2.7-2.4 5.3-2.4 8 0s5.3 2.4 8 0', 'M15.5 5.2a7 7 0 1 0 3.3 12.3A6 6 0 0 1 15.5 5.2z'];
+    const MC_CLIP = [[0, 30], [24, 46], [40, 66], [62, 90], [86, 120]];
+    const MC_PATH = 'M6 56C16 56 24 14 34 14S52 50 64 53 78 58 86 57 106 56 114 56';
+    /* one small motif per phase, transform and opacity only, and only the open card moves (reduced motion: none) */
+    function mcArt(i) {
+        const p = MC[i], cl = MC_CLIP[i];
+        const motif = [
+            '<g class="mc-up"><circle cx="14" cy="60" r="2.4"/><circle cx="20" cy="62" r="2"/><circle cx="26" cy="60" r="1.7"/></g>',
+            '<circle class="mc-halo" cx="34" cy="14" r="9"/><circle class="mc-dot" cx="34" cy="14" r="3.6"/><g class="mc-step"><circle cx="18" cy="64" r="1.8"/><circle cx="26" cy="64" r="1.8"/></g>',
+            '<circle class="mc-cell" cx="84" cy="26" r="9"/><g class="mc-in"><circle cx="52" cy="34" r="2.2"/><circle cx="56" cy="42" r="1.8"/><circle cx="48" cy="26" r="1.6"/></g>',
+            '<circle class="mc-bob" cx="76" cy="56" r="3.4"/>',
+            '<circle class="mc-orb" cx="102" cy="34" r="8"/><circle class="mc-dot" cx="102" cy="34" r="3"/>'][i];
+        return '<svg class="mc-svg" viewBox="0 0 120 72" aria-hidden="true" focusable="false"><defs><clipPath id="mcClip' + i + '"><rect x="' + cl[0] + '" y="0" width="' + (cl[1] - cl[0]) + '" height="72"/></clipPath></defs>' +
+            '<line class="mc-base" x1="4" y1="56" x2="116" y2="56"/><path class="mc-curve" d="' + MC_PATH + '"/>' +
+            '<path class="mc-seg" d="' + MC_PATH + '" clip-path="url(#mcClip' + i + ')"/><g class="mc-motif" style="fill:' + p.c + '">' + motif + '</g></svg>';
+    }
+    function curve(m) {
+        const k = li(), cur = m.mcCur, sel = mcSel >= 0 ? mcSel : Math.max(0, cur), p = MC[sel];
+        const row = MC.map((x, i) => (i ? '<i class="mc-link' + (cur >= i ? ' lit' : '') + '" aria-hidden="true"></i>' : '') +
+            '<button type="button" class="mc-ph' + (i === sel ? ' sel' : '') + (i === cur ? ' now' : '') + (cur > i ? ' past' : '') + '" data-gv="mc" data-i="' + i + '" style="--c:' + x.c + '"' +
+            ' aria-pressed="' + (i === sel) + '" aria-label="' + esc(x.n[k] + ', ' + x.p[k] + (i === cur ? ', ' + s('now') : '')) + '">' +
+            '<span class="mc-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + MC_ICON[i] + '"/></svg></span><small>' + esc(MC_TICK[i]) + '</small></button>').join('');
+        return '<section class="mc" aria-label="' + esc(s('mcH')) + '"><div class="mc-head"><h4 class="gv-h">' + esc(s('mcH')) + '</h4><small>' + esc(s('mcTyp')) + '</small></div>' +
+            '<div class="mc-row" role="group" aria-label="' + esc(s('mcRow')) + '">' + row + '</div>' +
+            '<div class="mc-card' + (sel === cur ? ' is-now' : '') + '" style="--c:' + p.c + '" data-mc-card>' +
+            '<div class="mc-art">' + mcArt(sel) + '</div>' +
+            '<div class="mc-title"><h3>' + esc(p.n[k]) + '</h3>' + (sel === cur ? '<em>' + esc(s('now')) + '</em>' : '') + '</div>' +
+            '<span class="mc-pill">' + esc(p.p[k]) + '</span><p class="mc-t">' + rich(p.t[k]) + '</p>' +
+            '<div class="mc-lever"><small>' + esc(s('mcLever')) + '</small><p>' + esc(p.l[k]) + '</p>' +
+            (p.mv && sel === cur ? '<button type="button" class="mc-move" data-gv="move">' + esc(s('mcMove')) + '</button>' : '') + '</div>' +
+            '<div class="mc-nav"><button type="button" class="mc-arrow" data-gv="mcprev" aria-label="' + esc(s('mcPrev')) + '"' + (sel ? '' : ' disabled') + '><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6 8.5 12l6 6"/></svg></button>' +
+            '<span class="mc-dots" aria-hidden="true">' + MC.map((x, i) => '<i' + (i === sel ? ' class="on"' : '') + '></i>').join('') + '</span>' +
+            '<button type="button" class="mc-arrow" data-gv="mcnext" aria-label="' + esc(s('mcNext')) + '"' + (sel < MC.length - 1 ? '' : ' disabled') + '><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></button></div>' +
+            '</div></section>';
+    }
+    function mcPick(i) {
+        if (!el) return;
+        mcSel = Math.max(0, Math.min(MC.length - 1, i));
+        const sec = el.querySelector('.mc');
+        if (!sec) return;
+        const focusI = D.activeElement && D.activeElement.closest && D.activeElement.closest('.mc') ? (D.activeElement.dataset.gv || '') + ':' + (D.activeElement.dataset.i || '') : '';
+        const t = D.createElement('div'); t.innerHTML = curve(model());
+        sec.replaceWith(t.firstChild);
+        if (focusI) { const [g, n] = focusI.split(':'); const b = el.querySelector('.mc [data-gv="' + g + '"]' + (n ? '[data-i="' + n + '"]' : '')); if (b && !b.disabled) b.focus({ preventScroll: true }); else { const s2 = el.querySelector('.mc-ph.sel'); if (s2) s2.focus({ preventScroll: true }); } }
+    }
+    /* swipe the card sideways for the next or previous phase, like Fastic; vertical drags stay the scroll */
+    function mcSwipe(ov) {
+        if (!W.PointerEvent) return;
+        let d = null;
+        ov.addEventListener('pointerdown', e => { const c = e.target.closest && e.target.closest('[data-mc-card]'); if (!c || (e.target.closest('button'))) return; d = { id: e.pointerId, x: e.clientX, y: e.clientY }; });
+        ov.addEventListener('pointerup', e => {
+            if (!d || e.pointerId !== d.id) return;
+            const dx = e.clientX - d.x, dy = e.clientY - d.y; d = null;
+            if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy) * 1.5) { const cur = mcSel >= 0 ? mcSel : Math.max(0, model().mcCur); mcPick(cur + (dx < 0 ? 1 : -1)); }
+        });
+        ov.addEventListener('pointercancel', () => { d = null; });
     }
     function markers(m) {
         return '<h4 class="gv-h">' + esc(s('markers')) + '</h4><ol class="gv-list">' + m.stages.map((x, i) => '<li class="' + (i < m.cur ? 'past' : i === m.cur ? 'cur' : '') + '" style="--c:' + COL[i] + '">' +
@@ -146,6 +275,7 @@
         if (!D) return false;
         close(true);
         back = D.activeElement;
+        mcSel = -1;
         el = D.createElement('div'); el.className = 'gv-ov'; el.id = 'gvSheet'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'gvTitle');
         el.setAttribute('data-noi18n', '');
         el.innerHTML = '<div class="gv-card"><div class="gv-top"><button type="button" class="gv-x" data-gv="close" aria-label="' + esc(s('close')) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
@@ -156,6 +286,7 @@
         requestAnimationFrame(() => { if (el) el.classList.add('on'); });
         el.addEventListener('click', onClick);
         dragDown(el);
+        mcSwipe(el);
         D.addEventListener('keydown', onKey, true);
         W.addEventListener('lowi:fast', paint); W.addEventListener('storage', paint);
         tick = setInterval(paint, 30000);
@@ -211,6 +342,10 @@
     function onKey(e) {
         if (!el) return;
         if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+        if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && D.activeElement && D.activeElement.closest && D.activeElement.closest('.mc-row')) {
+            e.preventDefault(); const cur = mcSel >= 0 ? mcSel : Math.max(0, model().mcCur); mcPick(cur + (e.key === 'ArrowRight' ? 1 : -1));
+            const b = el && el.querySelector('.mc-ph.sel'); if (b) b.focus({ preventScroll: true }); return;
+        }
         if (e.key === 'Tab') {
             const f = Array.from(el.querySelectorAll('button, summary, [href]')).filter(x => x.offsetParent !== null);
             if (!f.length) return;
@@ -225,7 +360,10 @@
         if (k === 'close') close();
         else if (k === 'fix') { try { W.LowiFastEdit.open(); } catch (x) { console.error(x); } }
         else if (k === 'log') { close(); setTimeout(() => { try { W.LowiSpirit.meal(); } catch (x) { console.error(x); } }, 60); }
+        else if (k === 'mc') mcPick(+b.dataset.i || 0);
+        else if (k === 'mcprev' || k === 'mcnext') { const cur = mcSel >= 0 ? mcSel : Math.max(0, model().mcCur); mcPick(cur + (k === 'mcnext' ? 1 : -1)); }
+        else if (k === 'move') { close(); setTimeout(() => { try { if (typeof W.lowiOpen === 'function') W.lowiOpen('move'); else if (typeof W.goTab === 'function') W.goTab('move'); } catch (x) { console.error(x); } }, 60); }
     }
     if (W.addEventListener) W.addEventListener('lowi:fast-start', paint); /* LowiFastEdit saved a new last meal time */
-    return { open, close, isOpen: () => !!el, model, strings: STR, _trail: trail };
+    return { open, close, isOpen: () => !!el, model, strings: STR, _trail: trail, phases: MC, curvePhase, _curve: curve };
 });

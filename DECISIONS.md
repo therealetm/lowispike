@@ -1144,3 +1144,11 @@ Emmanuel (Seven): "I don't understand the food journal section. Either remove it
 **Decision:** Three tiers that describe an amount, never a frequency, with the same words everywhere: Everyday / Small portion / Skip it (Alltag / Kleine Portion / Lieber nicht; Diario / Porción pequeña / Mejor no). Internal codes JA / SELTEN / NEIN and ok / better / spike stay. The Food check light takes the stricter of the food rules and the spike estimate; a higher estimate is always Skip it ("Höhere Spike-Schätzung. Nimm lieber einen Tausch") with one "if you eat it anyway" line built from existing tips. Rule-only skips (pork, alcohol) say "Keine LOWiSPIKE-Wahl", not spike. Old What's New entries keep their old words.
 
 **Consequences:** tests/verdict-tiers.test.cjs blocks frequency words in what people read. Emmanuel may still rename the middle or bottom tier.
+
+## 2026-10-24 — After your meal: the first hours of Gap, Fastic-style, about lowering the spike
+
+**Context:** Emmanuel sent six screenshots of Fastic's Body status ("similar to Fastic, but everything bezüglich lowering insulin spike after a meal"; "their picture is a lil animation"). Fastic's phases run to ketosis and autophagy with shaky claims.
+
+**Decision:** No new screen. The Gap card leads with an "After your meal" strip: five round phases on a line from the logged last meal (Sugar rises, Peak at about 30–60 min, Insulin brings it down at about 1–2 h, Back to baseline at about 2–3 h, Insulin low from about 4 h). The current phase glows; tap, swipe or the arrows open a small animated card with a typical-time pill, two hedged sentences and one spike lever (veggies and protein first; a 10-minute walk, with a link to Move while it is the peak or the insulin phase; stay a little active; water or unsweetened tea; nothing to do). Inside the first 4 h the hexagon's own Now card steps back so the story is not told twice. Sources (Freckmann 2007, Shukla 2015, Buffey 2022, Reynolds 2016, Richter & Hargreaves 2013, OpenStax A&P 24.3) sit in the code comment above MC in gap-view.js.
+
+**Consequences:** tests/gap-meal-curve.test.cjs keeps the times, the hedging, the sources and blocks brain, ketosis, autophagy, fat-burning and dosing words. Only the open card animates (transform and opacity), and reduced motion stops it. Any new statement needs a source in that comment.

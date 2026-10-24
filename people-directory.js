@@ -100,6 +100,7 @@
         D.addEventListener('keydown', onKey, true);
         D.addEventListener('click', onCardClick, true);
         W.addEventListener('lowi-bots', paint);
+        dragDown(ov);
         D.body.appendChild(ov);
         D.documentElement.classList.add('pd-open');
         paint();
@@ -107,6 +108,41 @@
         poll = setInterval(() => { if (!ov) { clearInterval(poll); return; } paint(); }, 2500);
         try { ov.querySelector('.pd-x').focus({ preventScroll: true }); } catch (e) {}
         return ov;
+    }
+    /* Oct 24 2026 (back and close sweep): on a phone People is a bottom sheet, but a swipe down did nothing (only back, X,
+       Escape and a tap outside closed it), unlike the app's other sheets. A drag down on its header (title row, not the X)
+       now follows the finger and closes it past a quarter of the card or on a quick flick; a short drag springs back. The
+       list and the search field are not handles, so scrolling the list never closes it. On a wide screen (iPad, centred
+       card) there is no drag, as with the other sheets. */
+    function dragDown(o) {
+        const card = o.querySelector('.pd-card'), top = o.querySelector('.pd-head');
+        if (!card || !top || !W.PointerEvent) return;
+        const narrow = () => !(W.matchMedia && W.matchMedia('(min-width:700px)').matches);
+        top.style.touchAction = 'none';
+        let d = null;
+        top.addEventListener('pointerdown', e => {
+            if (d || !narrow() || (e.button != null && e.button > 0) || (e.target.closest && e.target.closest('button'))) return;
+            d = { id: e.pointerId, y0: e.clientY, y: 0, ly: e.clientY, t: e.timeStamp, v: 0 };
+            try { top.setPointerCapture(e.pointerId); } catch (x) { }
+        });
+        top.addEventListener('pointermove', e => {
+            if (!d || e.pointerId !== d.id) return;
+            const dt = Math.max(1, e.timeStamp - d.t);
+            d.v = .6 * d.v + .4 * ((e.clientY - d.ly) / dt * 1000); d.ly = e.clientY; d.t = e.timeStamp;
+            d.y = Math.max(0, e.clientY - d.y0);
+            if (d.y > 2) { card.style.animation = 'none'; card.style.transition = 'none'; card.style.transform = 'translateY(' + d.y + 'px)'; }
+        });
+        const end = (e, cancelled) => {
+            if (!d || e.pointerId !== d.id) return;
+            const g = d; d = null;
+            try { top.releasePointerCapture(e.pointerId); } catch (x) { }
+            const h = card.getBoundingClientRect().height || 400;
+            const v = e.timeStamp - g.t > 100 ? 0 : g.v;
+            if (!cancelled && ov === o && (g.y > Math.min(140, h * .25) || (v > 650 && g.y > 18))) { close(); return; }
+            card.style.transition = 'transform .22s ease'; card.style.transform = '';
+        };
+        top.addEventListener('pointerup', e => end(e, false));
+        top.addEventListener('pointercancel', e => end(e, true));
     }
     function close() {
         if (!ov) return;

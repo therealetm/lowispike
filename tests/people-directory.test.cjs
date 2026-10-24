@@ -106,7 +106,11 @@ test('dialog semantics, reduced motion, safe areas and touch sizes', () => {
     assert.match(css, /\.pd-x\{[^}]*width:44px;height:44px/);
     assert.match(css, /min-height:60px/);
     assert.ok(!/--ms-|--rm-/.test(css.replace(/\/\*[\s\S]*?\*\//g, '')), 'own --pd-* tokens only');
-    assert.ok(!/pointerdown|touchstart|mousedown/.test(js), 'click and keyboard only (no new gestures to teach)');
+    /* Oct 24 2026 back and close sweep: the only gesture is the sheet's swipe down on its header (dragDown), the same one the
+       tutorial teaches as sheet-drag; everything else stays click and keyboard. */
+    const noDrag = js.slice(0, js.indexOf('function dragDown(')) + js.slice(js.indexOf('function close('));
+    assert.ok(!/pointerdown|touchstart|mousedown/.test(noDrag), 'click and keyboard only, apart from the sheet swipe down');
+    assert.ok(require('../tutorial-steps.js').GESTURES.find(g => g.id === 'sheet-drag').src.includes('people-directory.js'), 'the swipe down is the taught sheet-drag');
 });
 
 test('files are loaded by the page and cached by the service worker', () => {

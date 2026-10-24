@@ -16,7 +16,7 @@ test('a burst of 45 arrivals all land in the one room; chat and energy reach eve
   ps.forEach(p => { assert.strictEqual(p.rooms.room(), 'all'); assert.strictEqual(p.rooms.num(), 1); });
   const seen = () => ps.filter(p => p.rooms.members().length === 45).length;
   for (let t = Date.now() + 8000; Date.now() < t && seen() < 45;) await sleep(250);
-  assert.strictEqual(seen(), 45, 'everyone sees everyone here: ' + JSON.stringify(ps.map(p => p.rooms.members().length)));
+  assert.strictEqual(seen(), 45, 'everyone sees everyone here: ' + JSON.stringify(ps.map(p => p.rooms.members().length)) + ' missing ' + JSON.stringify(ps.filter(p => p.rooms.members().length !== 45).map(p => [p.uid, ps.filter(q => !p.rooms.has(q.uid)).map(q => q.uid), p.client.channels.size, w.srv.topics.get('lowi-room-all').presence.size])));
   assert.ok(ps.every(p => !p.events.some(e => /move|full|knock|reassign/.test(e.type))), 'no moves, no full rooms, no knocks');
   assert.deepStrictEqual([...w.srv.topics.keys()], ['lowi-room-all'], 'one channel only: no rooms directory, no extra rooms');
   const reached = w.srv.insert({ id: 'm1', room: 'all', body: 'hi' });

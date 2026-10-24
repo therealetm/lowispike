@@ -39,7 +39,7 @@ const ACTIONS={
  scan:{ic:'scan',mod:'scan',t:t3('Scan before you eat','Scannen, bevor du isst','Escanea antes de comer')},
  meal:{ic:'plate',mod:'meal',t:t3('Log your first meal','Erste Mahlzeit eintragen','Registra tu primera comida')},
  meals3:{ic:'plate',mod:'meal',t:t3('Log 3 meals today','3 Mahlzeiten eintragen','Registra 3 comidas hoy')},
- water:{ic:'water',mod:'water',t:t3('Fill your water: {goal} cups','Wasser voll machen: {goal} Gl\u00e4ser','Completa tu agua: {goal} vasos')},
+ water:{ic:'water',mod:'water',t:t3('Fill your water: {goal} glasses','Wasser voll machen: {goal} Gl\u00e4ser','Completa tu agua: {goal} vasos')},
  move:{ic:'move',mod:'move',t:t3('Move a little, any amount','Ein bisschen bewegen, egal wie viel','Mu\u00e9vete un poco, lo que sea')},
  fast12:{ic:'hourglass',mod:'fast',h:12,t:t3('Fast 12 hours overnight','12 Stunden \u00fcber Nacht fasten','Ayuna 12 horas de noche')},
  fast14:{ic:'hourglass',mod:'fast',h:14,t:t3('Fast 14 hours','14 Stunden fasten','Ayuna 14 horas')},

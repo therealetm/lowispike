@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 21;  /* 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 22;  /* 22: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -199,16 +199,16 @@
             id: 'water', area: 'home', target: ['#whHud .wh-water'], covers: ['water', 'hydration'], teaches: ['water-tap'], tryIt: { how: 'tap' },
             title: { en: 'Water', de: 'Wasser', es: 'Agua' },
             text: {
-                en: 'Tap Water, then pick what you just drank: 10 sips, a cup or a whole bottle. Each tap fills Water up by that much.',
-                de: 'Tipp auf Wasser und wähl, was du gerade getrunken hast: 10 Schlucke, ein Glas oder eine ganze Flasche. Jeder Tipp füllt Wasser um so viel auf.',
-                es: 'Toca Agua y elige lo que acabas de beber: 10 sorbos, un vaso o una botella entera. Cada toque llena el Agua en esa cantidad.'
+                en: 'Tap Water, then pick what you just drank: 10 sips, a glass or a whole bottle. Size sets how big your bottle is. Each tap fills Water up by that much.',
+                de: 'Tipp auf Wasser und wähl, was du gerade getrunken hast: 10 Schlucke, ein Glas oder eine ganze Flasche. Mit Größe stellst du ein, wie groß deine Flasche ist. Jeder Tipp füllt Wasser um so viel auf.',
+                es: 'Toca Agua y elige lo que acabas de beber: 10 sorbos, un vaso o una botella entera. Con Tamaño eliges cuánto cabe en tu botella. Cada toque llena el Agua en esa cantidad.'
             }
         },
         {
             id: 'water-hold', area: 'home', target: ['#whHud .wh-water'], covers: [], teaches: ['water-hold'], practice: { how: 'hold', look: 'water' },
             title: { en: 'Take water back', de: 'Wasser zurücknehmen', es: 'Quitar agua' },
             text: {
-                en: 'Tapped by mistake? Hold Water for a moment and your last sips, cup or bottle come off again.',
+                en: 'Tapped by mistake? Hold Water for a moment and your last sips, glass or bottle come off again.',
                 de: 'Vertippt? Halt Wasser kurz gedrückt, dann sind deine letzten Schlucke, dein Glas oder deine Flasche wieder weg.',
                 es: '¿Te equivocaste? Mantén pulsado Agua un momento y tus últimos sorbos, vaso o botella se quitan.'
             }
@@ -831,7 +831,7 @@
         G('misty-squish', 'home', 'hold', ['herb-touch.js', 'spirit.js', 'living-bubbles.js'], 'press Misty: her bubble squishes under your finger'),
         G('misty-turn', 'home', 'drag', ['misty-turn.js'], 'drag starting on Misty: she turns'),
         G('ring-still', 'home', 'hold', ['sym-home.js', 'home-orbit-v2.js'], 'touch an orbiting bubble: the ring stops'),
-        G('water-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Water: +1 cup, Undo'),
+        G('water-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Water: 10 sips, a glass or a bottle (Size picks the bottle)'),
         G('water-hold', 'home', 'hold', ['world-home.js'], 'hold Water: the last entry comes off'),
         G('fuel-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Fuel: Log meal, Cook, Shop'),
         G('fuel-hold', 'home', 'hold', ['home-blooms-v2.js'], 'hold Fuel: Log meal opens'),

@@ -114,7 +114,7 @@ test('undo never goes below 0 (bottle logged on top of a hand-reset day)', () =>
 
 test('the Water bloom offers Sips, Cup and Bottle in EN/DE/ES, each with its ml estimate; no Undo orb', () => {
   const src = read('home-blooms-v2.js');
-  for (const w of ["T('Sips', 'Schlucke', 'Sorbos')", "T('Cup', 'Glas', 'Vaso')", "T('Bottle', 'Flasche', 'Botella')"]) assert.ok(src.includes(w), w);
+  for (const w of ["T('Sips', 'Schlucke', 'Sorbos')", "T('Glass', 'Glas', 'Vaso')", "T('Bottle', 'Flasche', 'Botella')"]) assert.ok(src.includes(w), w);
   assert.match(src, /W\.LowiSpirit\.water\(k\)/);
   assert.doesNotMatch(src, /take 1 cup off/);
   assert.match(src, /sips: '<path/); assert.match(src, /bottle: '<path/);

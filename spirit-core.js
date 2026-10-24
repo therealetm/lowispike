@@ -49,9 +49,19 @@ function scanVerdict(p,rate,SC){let v=p&&p.verdict&&p.verdict!=='unknown'?p.verd
    (sip size varies; ten sips are never called a glass). Entries stored before keep their own amount (waterAmt 0.25).
    XP stays honest: 2 XP per whole cup reached, at most 6 a day, so sip taps can never earn more than the same water in cups. */
 const WATER={goal:6,ml:250,xpCap:6/* whole cups that earn XP a day; 2 XP each = 12 XP max */,amounts:{sips:0.5/* ten sips, rough: sip size varies, never a glass */,cup:1,bottle:3}};
-function waterAmount(k){if(typeof k==='number'&&isFinite(k)&&k>0)return Math.max(0.25,Math.round(k*4)/4);return WATER.amounts[k]||1;}
+/* Oct 24 2026 (Emmanuel, HANDOFF-hydration.md): a finished bottle at a size the person picks. Sizes in ml, one per device in a
+   lowispike.* key (account sync carries it, sign-out wipes it like every lowispike.* key). The day stays counted in glasses
+   (1 glass ~ 250 ml, quarters), so a bottle adds its own share: 330 ml = 1\u00bc, 500 = 2, 750 = 3 (the old bottle), 1 l = 4, 1.5 l = 6. */
+const BOTTLE={sizes:[330,500,750,1000,1500],def:750,key:'lowispike.water.bottle.v1'};
+function bottleOk(ml){ml=Math.round(+ml||0);return BOTTLE.sizes.indexOf(ml)>=0?ml:0;}
+function bottleMl(ml){if(ml!=null)return bottleOk(ml)||BOTTLE.def;let v=0;try{if(typeof localStorage!=='undefined'&&localStorage)v=bottleOk(JSON.parse(localStorage.getItem(BOTTLE.key)||'0'));}catch(e){v=0;}return v||BOTTLE.def;}
+function setBottleMl(ml){ml=bottleOk(ml)||BOTTLE.def;try{if(typeof localStorage!=='undefined'&&localStorage)localStorage.setItem(BOTTLE.key,JSON.stringify(ml));}catch(e){}return ml;}
+function nextBottleMl(ml){const i=BOTTLE.sizes.indexOf(bottleOk(ml)||BOTTLE.def);return BOTTLE.sizes[(i+1)%BOTTLE.sizes.length];}
+function bottleLitres(ml,lang){const l=(bottleOk(ml)||BOTTLE.def)/1000,t=String(Math.round(l*100)/100);return(/^(de|es)/.test(String(lang||''))?t.replace('.',','):t)+'\u00a0l';}
+function bottleGlasses(ml){return Math.max(0.25,Math.round((bottleOk(ml)||BOTTLE.def)/WATER.ml*4)/4);}
+function waterAmount(k,ml){if(typeof k==='number'&&isFinite(k)&&k>0)return Math.max(0.25,Math.round(k*4)/4);if(k==='bottle')return bottleGlasses(bottleMl(ml));return WATER.amounts[k]||1;}
 function waterSum(a,b){return Math.max(0,Math.round(((+a||0)+(+b||0))*4)/4);}
 function waterFmt(n){n=Math.max(0,Math.round((+n||0)*4)/4);const w=Math.floor(n),fr=['','\u00bc','\u00bd','\u00be'][Math.round((n-w)*4)]||'';return(w||!fr?String(w):'')+fr;}
 function waterXpDue(cups,have,cap){cap=cap==null?WATER.xpCap:cap;return Math.max(0,Math.min(cap,Math.floor((+cups||0)+1e-9))-Math.max(0,+have||0));}
-const api={WATER,waterAmount,waterSum,waterFmt,waterXpDue,SLOTS,kind,slotOk,slotFor,slotRecent,scanVerdict,estimate,pickFor,day,macros,totals,bonuses,vitality,personalityName,mergeFeed,bound,step,release,icon,paths};if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiSpiritCore=api;
+const api={WATER,BOTTLE,bottleMl,setBottleMl,nextBottleMl,bottleLitres,bottleGlasses,waterAmount,waterSum,waterFmt,waterXpDue,SLOTS,kind,slotOk,slotFor,slotRecent,scanVerdict,estimate,pickFor,day,macros,totals,bonuses,vitality,personalityName,mergeFeed,bound,step,release,icon,paths};if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiSpiritCore=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -68,7 +68,9 @@
     return h('span', { class: 'tile' }, s);
   }
   /* Placeholders like [Branche] stay plain bracketed text, only tinted so they are easy to spot. */
-  function withPh(text) { return String(text).split(/(\[[^\]]+\])/).filter(Boolean).map(p => /^\[[^\]]+\]$/.test(p) ? h('span', { class: 'ph', text: p }) : p); }
+  /* Hyphenated words (E-Book, KI-Video-Tool) stay on one line: no "E-" at a line end (24 Oct 2026, Eman: no ugly word breaks) */
+  function nb(text) { return String(text).split(/(\S+-\S+)/).filter(Boolean).map(p => /^\S+-\S+$/.test(p) ? h('span', { class: 'nb', text: p }) : p); }
+  function withPh(text) { return [].concat(...String(text).split(/(\[[^\]]+\])/).filter(Boolean).map(p => /^\[[^\]]+\]$/.test(p) ? h('span', { class: 'ph', text: p }) : nb(p))); }
   let toastT = 0;
   function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2400); }
   function copy(text, done) {
@@ -179,7 +181,7 @@
     const sayBtn = i => VO && (open || i === 0) ? VO.sceneButton(said, i, lang) : null;
     const scenes = s.scenes.map((x, i, _, sb = sayBtn(i)) => open || i === 0 ? h('div', { class: 'row scene' + (sb ? ' voiced' : '') },
       h('span', { class: 'tile num', text: String(i + 1) }),
-      h('span', { class: 'txt' }, h('b', { class: 'shot ' + x.shot, text: x.label }), x.lines.map((l, j) => h('p', { 'data-say': 's' + i + '-' + j }, withPh(l))), x.note ? h('span', { class: 'note', text: x.note }) : null),
+      h('span', { class: 'txt' }, h('b', { class: 'shot ' + x.shot }, nb(x.label)), x.lines.map((l, j) => h('p', { 'data-say': 's' + i + '-' + j }, withPh(l))), x.note ? h('span', { class: 'note' }, nb(x.note)) : null),
       sb)
       : h('div', { class: 'row scene locked' }, h('span', { class: 'tile num', text: String(i + 1) }),
           h('span', { class: 'txt' }, h('b', { class: 'shot ' + x.shot, text: x.label }), h('span', { class: 'note', text: T('lockedScene') }))));
@@ -193,7 +195,7 @@
     if (open) v.appendChild(h('div', { class: 'card onscreen-card' }, h('div', { class: 'label', text: T('onScreen') }), h('div', { class: 'onscreen' }, withPh(s.onScreen))));
     else v.appendChild(h('span', { class: 'pill preview', text: T('preview') }));
     if (open && s.follow) v.appendChild(dayCard(s));
-    else if (open && s.free) v.appendChild(h('div', { class: 'card day-card', id: 'freeCard' }, h('p', { class: 'note', text: T('freeTrack') })));
+    else if (open && s.free) v.appendChild(h('div', { class: 'card day-card', id: 'freeCard' }, h('p', { class: 'note' }, nb(T('freeTrack')))));
     v.appendChild(h('div', { class: 'card list', id: 'scriptCard' }, scenes));
     if (!open) { v.appendChild(gate('')); return; }
     v.appendChild(h('button', { type: 'button', class: 'primary', id: 'copyScript', onclick: () => copy(B.scriptText(pick, lang, s.follow ? { day } : null), T('scriptCopied')) }, T('copyScript')));

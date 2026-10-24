@@ -228,3 +228,4 @@ footer{color:var(--muted);font-size:13px;margin:22px 4px 0;line-height:1.5}
 [data-say]{border-radius:10px;transition:background-color .2s ease,box-shadow .2s ease}
 .saying{background:rgba(28,247,249,.16);box-shadow:0 0 0 4px rgba(28,247,249,.16)}
 @media (max-width:360px){.listen-main{font-size:16px;padding-right:12px;gap:10px}}
+.nb{white-space:nowrap}

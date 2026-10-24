@@ -54,6 +54,7 @@ test('page: three-track switch, the free-track note says what is sold and how cr
   const js = read('affiliates/blueprint.js'), css = read('affiliates/blueprint.css');
   assert.ok(js.includes("else if (open && s.free) v.appendChild(h('div', { class: 'card day-card', id: 'freeCard' }"));
   assert.match(css, /\.bar \.seg\{flex:1 1 auto;min-width:0/); assert.match(css, /\.scene \.shot\.cook\{/);
+  assert.ok(js.includes('function nb(text)') && /\.nb\{white-space:nowrap\}/.test(css), 'E-Book / KI-Video-Tool never break at the hyphen');
   assert.equal(B.STRINGS.freeTrack.length, 3);
   const [en, de, es] = B.STRINGS.freeTrack;
   assert.match(en, /e-book/); assert.match(en, /free/); assert.match(en, /upgrade/);

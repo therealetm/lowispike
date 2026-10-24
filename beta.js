@@ -10,7 +10,8 @@
             return 'de';
         }
     };
-    const L = (en, de) => lang() === 'de' ? de : en;
+    /* Oct 24 bug hunt: L() knew only English and German, so Spanish showed the Swap ingredients tile in English. */
+    const L = (en, de, es) => { const l = lang(); return l === 'de' ? de : l === 'es' && es ? es : en; };
     const svg = (d, extra) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + (extra || '') + '>' + d + '</svg>';
 
     /* 1. Scan tab: a real icon where the old orb used to be */
@@ -45,7 +46,7 @@
             ov.id = 'bSheet';
             ov.className = 'b-ov';
             ov.hidden = true;
-            ov.innerHTML = '<div class="b-scrim" data-b-close></div><section class="b-sh" role="dialog" aria-modal="true"><i class="b-grab" aria-hidden="true"></i><header><b></b><button type="button" class="b-x" data-b-close aria-label="Close">' + svg('<path d="M6 6l12 12M18 6L6 18"/>') + '</button></header><div class="b-body"></div></section>';
+            ov.innerHTML = '<div class="b-scrim" data-b-close></div><section class="b-sh" role="dialog" aria-modal="true"><i class="b-grab" aria-hidden="true"></i><header><b></b><button type="button" class="b-x" data-b-close aria-label="' + L('Close', 'Schließen', 'Cerrar') + '">' + svg('<path d="M6 6l12 12M18 6L6 18"/>') + '</button></header><div class="b-body"></div></section>';
             D.body.appendChild(ov);
             ov.addEventListener('click', e => {
                 if (e.target.closest('[data-b-close]')) closeSheet();
@@ -68,14 +69,19 @@
     }
 
     /* 3. Cook: one screen. The swap tool lives in a sheet behind its own tile. */
+    const swapLabel = () => '<span class="g2h-ic">' + svg('<path d="M7 7h11l-3-3M17 17H6l3 3"/>') + '</span><b>' + L('Swap ingredients', 'Zutatentausch', 'Cambiar ingredientes') + '</b><small>' + L('Healthier swaps', 'Gesündere Swaps', 'Cambios más sanos') + '</small>';
     function fixCook() {
         const tiles = D.getElementById('g2cTiles');
-        if (!tiles || tiles.querySelector('[data-b-open="swap"]')) return;
+        if (!tiles) return;
+        const had = tiles.querySelector('[data-b-open="swap"]');
+        /* a language switch repaints the label in the new language */
+        if (had) { if (had.dataset.bLang !== lang()) { had.dataset.bLang = lang(); had.innerHTML = swapLabel(); } return; }
         const b = D.createElement('button');
         b.type = 'button';
         b.className = 'g2h-tile g2c-tile b-swap-tile';
         b.dataset.bOpen = 'swap';
-        b.innerHTML = '<span class="g2h-ic">' + svg('<path d="M7 7h11l-3-3M17 17H6l3 3"/>') + '</span><b>' + L('Swap ingredients', 'Zutatentausch') + '</b><small>' + L('Healthier swaps', 'Gesündere Swaps') + '</small>';
+        b.dataset.bLang = lang();
+        b.innerHTML = swapLabel();
         const gpt = tiles.querySelector('.g2c-gpt');
         tiles.insertBefore(b, gpt || null);
         tiles.classList.remove('g2c-odd');
@@ -84,7 +90,7 @@
         const t = e.target.closest('[data-b-open="swap"]');
         if (!t) return;
         const tb = D.querySelector('#tab-shelf .sf-toolbar');
-        if (tb) openSheet(L('Swap ingredients', 'Zutatentausch'), tb);
+        if (tb) openSheet(L('Swap ingredients', 'Zutatentausch', 'Cambiar ingredientes'), tb);
     });
     // a swap search that navigates away must close the sheet and put the panel back
     D.addEventListener('submit', e => {
@@ -124,6 +130,7 @@
         lang
     };
 
+    D.addEventListener('lowi:lang', schedule);
     new MutationObserver(schedule).observe(D.body, {
         childList: true,
         subtree: true

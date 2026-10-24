@@ -8242,6 +8242,9 @@ function trText(en){
   if (out === undefined) { const col = LANG === "de" ? 1 : 2; for (const p of P) { if (p[0].test(key)) { out = key.replace(p[0], p[col]); break; } } }
   if (out === undefined) { const l = trList(key); if (l !== null) out = l; }
   if (out === undefined) { const lo = key.charAt(0).toLowerCase() + key.slice(1), d = lo !== key ? DICT[LANG][lo] : undefined; if (typeof d === "string" && d) out = d.charAt(0).toUpperCase() + d.slice(1); } /* "A splash of milk…": the same line with a capital first letter */
+  /* Oct 24 11:02 bug hunt: recipe rows in Cook are "<b>15 min</b> · " + blurb, so the blurb's text node is " · Fried rice craving, rebuilt
+     with cauliflower." and was never looked up (stayed English in de/es). Translate what follows a leading separator dot or dash. */
+  if (out === undefined) { const m = key.match(/^([·•–—|]\s*)(\S.*)$/); if (m) { const r = trText(m[2]); if (r !== null) out = m[1] + r; } }
   return out === undefined ? null : en.replace(key, out);
 }
 function doNode(n){

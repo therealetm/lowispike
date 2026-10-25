@@ -1210,4 +1210,3 @@ Emmanuel (Seven): "I don't understand the food journal section. Either remove it
 - Your own age is no longer shown next to your name (the 24 Oct birthday cards promise no age anywhere).
 
 **Consequences:** `tests/foryou-public.test.cjs`; `tests/interface-polish.test.cjs`, `tests/glass-controls.test.cjs` and `tests/foryou-window.test.cjs` now assert the link-out instead of the Oct 16 inline players; `tests/foryou-rule.test.cjs` keeps the insulin rule for bots and crowd posts. Quiet release, no news card, no push.
-

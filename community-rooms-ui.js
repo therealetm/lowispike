@@ -117,10 +117,11 @@ function colorOf(uid){try{return (W.LowiCommunity&&W.LowiCommunity.colorOf&&W.Lo
 function hereNow(){const r=R();if(!r||!C()||r.status()!=='in')return {me:false,rows:[],count:0};const P=W.LowiPeopleDir;
  if(P&&P.here){try{return P.here();}catch(e){return {me:false,rows:[],count:0};}}
  const ms=r.members(),id=me(),rows=ms.filter(u=>u!==id).map(u=>({uid:u,n:nameOf(u)})).filter(x=>x.n);return {me:ms.includes(id),rows,count:rows.length+(ms.includes(id)?1:0)};}
-function liveHTML(h){h=h||hereNow();if(!h.count)return '<span class="rm-sub">'+esc(tr('community'))+'</span>';
+function liveHTML(h){h=h||hereNow();const ms=(h.me?[{uid:me()}]:[]).concat(h.rows);/* everyone here, you first: ms.length === h.count */
+ if(!ms.length)return '<span class="rm-sub">'+esc(tr('community'))+'</span>';
  const faces=h.rows.slice(0,3);
  return (faces.length?'<span class="rm-faces" aria-hidden="true">'+faces.map(f=>'<i style="'+(colorOf(f.uid)?'--fc:'+esc(colorOf(f.uid)):'')+'">'+esc(initials(f.n))+'</i>').join('')+'</span>':'')
-  +'<span class="rm-dot" aria-hidden="true"></span><span class="rm-sub">'+esc(tr('hereNow',{c:h.count}))+'</span>';}
+  +'<span class="rm-dot" aria-hidden="true"></span><span class="rm-sub">'+esc(tr('hereNow',{c:ms.length}))+'</span>';}
 function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  if(chat&&view)view='';/* the message room was opened by other code: Chat wins */
  if(chat)dropFrames('');

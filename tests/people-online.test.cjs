@@ -105,7 +105,7 @@ test('the header count and faces come from the same list, and tapping "N here no
     const ui = code(read('community-rooms-ui.js'));
     assert.match(ui, /const P=W\.LowiPeopleDir;\s*if\(P&&P\.here\)\{try\{return P\.here\(\);/);
     assert.ok(!/tr\('hereNow',\{c:r\.members\(\)\.length\}\)/.test(ui), 'no raw presence count in the header, the menu label or the pill');
-    assert.match(ui, /tr\('hereNow',\{c:h\.count\}\)/);
+    assert.match(ui, /const ms=\(h\.me\?\[\{uid:me\(\)\}\]:\[\]\)\.concat\(h\.rows\);/, 'the live line counts you + the people listed');
     assert.match(ui, /tr\('hereNow',\{c:hn\.count\}\)/);
     assert.match(ui, /tr\('hereNow',\{c:hc\}\)/);
     assert.match(ui, /lv\.toggleAttribute\('data-here',!!hn\.count\)/);

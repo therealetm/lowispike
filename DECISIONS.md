@@ -1224,3 +1224,8 @@ Read-only check of his real account (eman, therealetm@gmail.com) and his phone's
 - The bot list now loads even when the connection beats the scripts, so the crowd's "Just ate" posts no longer bury his.
 
 **Consequences:** `tests/foryou-fix.test.cjs` (new); `tests/foryou-public.test.cjs` one assertion now checks the reverse.
+
+## 25 Oct 2026: Deep analyze opens the Custom GPT in the ChatGPT app (gpt-open.js)
+- Emmanuel (urgent): tapping Deep analyze showed chatgpt.com in the Home Screen app's in-app Safari sheet ("Content failed to load"); it must open his Custom GPT directly in the ChatGPT app.
+- The links were already right: `DEEP_GPT` / the Cook card `URL` = `https://chatgpt.com/g/g-69481a874bf08191b8118f8d88c9c90e-lowispike` (unchanged since Oct 10; the only chatgpt.com/g/ URL in git history). The problem was how iOS opens a `target="_blank"` link in a Home Screen web app: in its in-app sheet, where universal links never reach the app.
+- `gpt-open.js` (one capture click listener, no timers except a 2.5 s check per tap): only in the iOS Home Screen app, a tap on any `https://chatgpt.com/g/g-…` link goes to `com.openai.chat://chatgpt.com/g/g-…` (the ChatGPT app's own scheme, same path). If the page never goes to the background within 2.5 s (no app), the link's subtitle says "Keine ChatGPT-App? Nochmal tippen für den Browser" (de/en/es) for 30 s and the next tap is the plain link to the Custom GPT. Never bare chatgpt.com, never an iframe. Safari tabs, Android and desktop keep the plain link. Test: tests/gpt-open-app.test.cjs.

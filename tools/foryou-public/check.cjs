@@ -121,10 +121,11 @@ async function myPosts(P) {
     /* 25 Oct: clear the Share toast first (it also says "For You", so the wait below stopped at once), then give a slow
        engine up to 15 s to write the post before reading it */
     await A.ev(() => document.querySelectorAll('.toast, #toast').forEach(t => { t.textContent = ''; }));
+    info.beforePost = await A.ev(() => { const b = document.querySelector('#trPost'), u = document.querySelector('#trUrl'), c = document.querySelector('#trCap'); return { btn: b ? b.textContent + (b.disabled ? ' (disabled)' : '') : 'none', url: u ? u.value.slice(0, 40) : 'none', cap: c ? c.value.slice(0, 40) : 'none', prev: (document.querySelector('#trPrev') || {}).textContent ? document.querySelector('#trPrev').textContent.slice(0, 60) : '' }; });
     await tap(A, '#trPost', fails, 'tap Post');
     for (let i = 0; i < 30; i++) { await sleep(500); if (await A.ev(run => (JSON.parse(localStorage.getItem('lowispike.foryou.v1') || '{}').posts || []).some(x => (x.cap || '').includes(run) && x.id.indexOf('old-') !== 0 && (x.pub || x.fail)), RUN)) break; }
     let toast = ''; for (let i = 0; i < 30; i++) { await sleep(400); toast = await A.ev(() => { const t = document.querySelector('.toast, #toast'); return t ? t.textContent.trim() : ''; }); if (toast && /For You|Für dich|Para ti/.test(toast)) break; }
-    info.toast = toast;
+    info.toast = toast; info.afterPost = await A.ev(() => { const b = document.querySelector('#trPost'); return { btn: b ? b.textContent + (b.disabled ? ' (disabled)' : '') : 'gone', sheet: !!document.querySelector('.sheet.open, #sheet.open') }; });
     const mine = await A.ev(run => { const t = JSON.parse(localStorage.getItem('lowispike.foryou.v1') || '{}'); const p = (t.posts || []).find(x => (x.cap || '').includes(run) && x.id.indexOf('old-') !== 0); return p ? { id: p.id, vis: p.vis, pub: !!p.pub, fail: !!p.fail } : null; }, RUN);
     info.newPost = mine; newId = mine && mine.id;
     if (!mine) fails.push('the composer made no post'); else if (!mine.pub) fails.push('the fresh post did not reach For You: ' + JSON.stringify(mine));

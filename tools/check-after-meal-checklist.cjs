@@ -55,7 +55,9 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
             }
             return { ev, sheetUp, shownUnder };
         }
-        const card = () => P.evaluate(() => { const c = document.getElementById('pmcCard'); if (!c || c.hidden) return null; const r = c.getBoundingClientRect();
+        const card = () => P.evaluate(async () => { const c = document.getElementById('pmcCard'); if (!c || c.hidden) return null;
+            await Promise.race([Promise.all(c.getAnimations().map(a => a.finished.catch(() => { }))), new Promise(r => setTimeout(r, 3000))]);   /* measure after the slide-in: a busy VM can catch it mid-way */
+            const r = c.getBoundingClientRect();
             const hits = [...document.querySelectorAll('.wh-cell, #whPad, #spBubble, #spFast')].filter(b => { const q = b.getBoundingClientRect(), cs = getComputedStyle(b); if (q.width < 10 || cs.visibility === 'hidden' || +cs.opacity < .1) return false; return !(q.right <= r.left || q.left >= r.right || q.bottom <= r.top || q.top >= r.bottom); }).map(b => b.id || b.className.split(' ').slice(0, 3).join('.'));
             return { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left), right: Math.round(r.right), title: (c.querySelector('.pmc-ht b') || {}).textContent, tiles: c.querySelectorAll('[data-pmc][role="checkbox"]').length, labels: [...c.querySelectorAll('.pmc-tx b')].map(b => b.textContent), cut: [...c.querySelectorAll('.pmc-tx b, .pmc-tx small, .pmc-ht b')].filter(b => b.scrollWidth > b.clientWidth + 1).map(b => b.textContent), h: Math.round(r.height), hits, ach: !!c.querySelector('.pmc-ach'), achName: (c.querySelector('.pmc-ach b') || {}).textContent || '', text: c.innerText.replace(/\s+/g, ' ').slice(0, 300) }; });
 
@@ -84,7 +86,9 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
         let w = await tile('walk');
         ok('first tap only starts the walk timer: no XP', (await xp()) === xp1, (await xp()) - xp1);
         ok('walk tile counts down, not ticked', w && /\brun\b/.test(w.cls) && w.on === 'false' && /\d:\d\d/.test(w.small), w);
-        ok('card says it is only a timer', (await P.evaluate(() => (document.querySelector('#pmcCard .pmc-ft') || {}).textContent || '')).includes(await S('honest')));
+        ok('card says it is only a timer, in the intro line (no extra line)', (await P.evaluate(() => (document.querySelector('#pmcCard .pmc-say') || {}).textContent || '')).includes(await S('honest')) && !(await P.evaluate(() => (document.querySelector('#pmcCard .pmc-ft') || {}).textContent || '')));
+        const hRun = (await card() || {}).h;
+        ok('a running timer does not make the card taller', c && hRun <= c.h + 1, { before: c && c.h, running: hRun });
         await R.shot(out + '/2-timer-' + engine + '-' + lang + '.png');
         R.step = 'tap storm';
         for (let r = 0; r < 3; r++) for (const k of ['walk', 'muscle', 'stairs', 'upright']) { await R.tap('#pmcCard [data-pmc="' + k + '"]'); await H.sleep(150); }

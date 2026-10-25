@@ -101,16 +101,18 @@
             const m = b.querySelector('small'), want = line(it, now); if (m && m.textContent !== want) m.textContent = want;
         }
     }
+    /* while a timer runs, the honest line takes the place of the intro line (same two-line slot), so a started timer never makes
+       the card taller: a taller card overlapped a Home bubble in DE/ES and mount() folded it after a reload */
     function paint() {
         if (!el || !P) return;
-        const now = Date.now();
+        const now = Date.now(), honest = note === s('honest') || C.running(P, now).length > 0, foot = note === s('honest') ? '' : note;
         el.classList.toggle('fold', !!P.fold);
         el.innerHTML =
             '<div class="pmc-hd"><button type="button" class="pmc-hb" data-pmc="fold" aria-expanded="' + !P.fold + '" aria-label="' + esc(s(P.fold ? 'open' : 'fold')) + '">' +
             '<span class="pmc-wave">' + ICON.wave + '</span><span class="pmc-ht"><b>' + esc(s('title')) + '</b><small>' + esc(sub(now)) + '</small></span></button>' +
             '<button type="button" class="pmc-x" data-pmc="skip" aria-label="' + esc(s('skip')) + '" title="' + esc(s('skip')) + '">' + ICON.x + '</button></div>' +
-            (P.fold ? '' : '<p class="pmc-say"><b>' + esc(name()) + '</b> \u00b7 ' + esc(s(P.spike ? 'subSpike' : 'sub')) + '</p><div class="pmc-grid">' + tiles(now) + '</div>' +
-                '<p class="pmc-ft" aria-live="polite">' + esc(note || (C.running(P, now).length ? s('honest') : '')) + '</p>');
+            (P.fold ? '' : '<p class="pmc-say" aria-live="polite"><b>' + esc(name()) + '</b> \u00b7 ' + esc(s(honest ? 'honest' : P.spike ? 'subSpike' : 'sub')) + '</p><div class="pmc-grid">' + tiles(now) + '</div>' +
+                '<p class="pmc-ft" aria-live="polite">' + esc(foot) + '</p>');
     }
     function paintFinal(ach) {
         if (!el) return;
@@ -131,10 +133,24 @@
         el.addEventListener('click', onTap);
         D.body.appendChild(el);
         paint();
-        if (!P.fold && !P.opened && coversRing()) { P.fold = true; save(); paint(); }
+        settleFold(0);
         return el;
     }
-    function remove() { clearTimeout(hideT); if (el) { el.remove(); el = null; } }
+    /* the fold is decided once the Home ring has settled: html.wh-home places the joystick in the ring; before that it sits at
+       its boot spot low on the screen, and an early check folded the card for good although nothing was covered. A real
+       overlap has to show on two checks in a row. */
+    let foldT = 0;
+    function settleFold(n, seen) {
+        clearTimeout(foldT);
+        foldT = setTimeout(() => {
+            if (!el || !P || P.fold || P.opened || el.classList.contains('fin')) return;
+            if (el.hidden || !D.documentElement.classList.contains('wh-home')) { if (n < 20) settleFold(n + 1, 0); return; }
+            if (!coversRing()) return;
+            if (!seen) { settleFold(n + 1, 1); return; }
+            P.fold = true; save(); paint();
+        }, 450);
+    }
+    function remove() { clearTimeout(hideT); clearTimeout(foldT); if (el) { el.remove(); el = null; } }
 
     function onTap(e) {
         const b = e.target.closest('[data-pmc]'); if (!b || !P) { if (b && b.dataset.pmc === 'close') remove(); return; }

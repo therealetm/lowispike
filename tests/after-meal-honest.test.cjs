@@ -161,7 +161,7 @@ test('the card only folds itself once the Home ring has settled, never on a joys
     /* Oct 25 (Maya 10, browser check, iPhone 13 390x844): after a reload with timers running, mount() measured the joystick
        at its boot spot (y 700-760, before html.wh-home places it in the ring at y 473-561), saw an overlap and folded the card
        for good, so the tiles were hidden although nothing covered anything once Home was laid out. */
-    const mount = ui.slice(ui.indexOf('function mount()'), ui.indexOf('function remove()'));
+    const m0 = ui.indexOf('function mount()'), mount = ui.slice(m0, ui.indexOf('return el;\n    }', m0));
     assert.ok(mount.length > 50, 'mount() found');
     assert.doesNotMatch(mount, /coversRing\(\)/, 'mount() does not decide the fold at once');
     const settle = ui.slice(ui.indexOf('function settleFold('), ui.indexOf('function settleFold(') + 900);

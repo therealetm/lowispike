@@ -72,7 +72,7 @@ test('first screens: Spanish bubble names match the real bubbles, and the shoppi
     assert.match(s, /'Movimiento','Pausa \(ayuno\)'/);
     assert.match(decode(read('move-bubble.js')), /'Move', 'Bewegung', 'Movimiento'/, 'the Move bubble on Home reads "Movimiento"');
     const shop = decode(read('shop-plan.js'));
-    assert.match(shop, /¿Cada cuántos días sueles hacer la compra\? Escribe el número\./);
+    assert.match(shop, /¿Con qué frecuencia sueles hacer la compra\?/); /* Oct 25: bubbles replaced the typed number */
 });
 
 test('meal photo checks: Spanish singular "Te queda 1", no "Hora del Cena", and English untouched', () => {

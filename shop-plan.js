@@ -2,7 +2,8 @@
    - formHTML(): the "Your grocery shopping" form. The setup (onboarding) shows it as its last step; Profile > About you
      opens the same form in a sheet, so it can be changed any time.
    - Setup (opts.first): one plain line on what it's for. The editor in Profile also explains the shopping glow.
-   - The person types their own number of days. Weekdays and a shop name are optional. Nothing is guessed or pre-filled.
+   - Oct 25 (Eman): the person picks a bubble: once / twice / 3 times / more per week, or it varies. Weekdays are optional and
+     pick the bubble for them (Tue + Sat = twice a week); a summary line says it back. Shop name optional. Nothing is pre-picked.
    - Saved to localStorage 'lowispike.shopplan.v1' (in the account backup). Fires window event 'lowi:shopplan'.
    ONE shared API: window.LowiShopPlan = {get, set, isSet, summary, formHTML, readForm, bind, openEditor, refresh}. */
 (function () {
@@ -15,31 +16,35 @@
     const lang = () => { let l = ''; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem('lowispike.lang') || D.documentElement.lang || 'en'; } catch (e) { l = 'en'; } l = String(l).slice(0, 2).toLowerCase(); return C.LANGS.indexOf(l) >= 0 ? l : 'en'; };
     const TX = {
         en: {
-            over: 'GROCERY SHOPPING', h: 'Healthy days start in the shop', p: 'How often do you usually go grocery shopping? Type your own number.',
-            every: 'I shop every', days: 'days', daysQ: 'Usual days', opt: '(optional)', store: 'Usual shop', storePh: 'e.g. Edeka on Main Street',
+            over: 'GROCERY SHOPPING', h: 'Healthy days start in the shop', p: 'How often do you usually go grocery shopping?',
+            perWeek: 'Per week', fl: { '1': 'Once', '2': 'Twice', '3': '3 times', more: 'More', varies: 'It varies' },
+            daysHint: 'Tap your usual days and we count them for you.', daysQ: 'Usual days', opt: '(optional)', store: 'Usual shop', storePh: 'e.g. Edeka on Main Street',
             does: 'Scan two different products on a shopping day and your worlds glow brighter until about a day after your next shop is due, then slowly fade back to normal.',
             first: 'So the app knows when to reward your shopping trip. No pressure: change it any time in Profile \u203a About you.',
             note: 'Missing a shop never means you ate badly. Change it any time in Profile \u203a About you.',
-            need: 'Type a number from 1 to 60, or tap Later.', save: 'Save', later: 'Later', saved: 'Shopping rhythm saved.', profT: 'Grocery shopping', profSet: 'Set my rhythm', profEdit: 'Change', close: 'Close'
+            need: 'Pick how often you shop, or tap Later.', save: 'Save', later: 'Later', saved: 'Shopping rhythm saved.', profT: 'Grocery shopping', profSet: 'Set my rhythm', profEdit: 'Change', close: 'Close'
         },
         de: {
-            over: 'EINKAUFEN', h: 'Gesunde Tage beginnen im Laden', p: 'Wie oft gehst du normalerweise einkaufen? Trag deine eigene Zahl ein.',
-            every: 'Ich kaufe ein alle', days: 'Tage', daysQ: 'Meist an diesen Tagen', opt: '(freiwillig)', store: 'Dein Laden', storePh: 'z. B. Edeka in der Hauptstra\u00dfe',
+            over: 'EINKAUFEN', h: 'Gesunde Tage beginnen im Laden', p: 'Wie oft gehst du normalerweise einkaufen?',
+            perWeek: 'Pro Woche', fl: { '1': 'Einmal', '2': 'Zweimal', '3': 'Dreimal', more: '\u00d6fter', varies: 'Unterschiedlich' },
+            daysHint: 'Tipp deine \u00fcblichen Tage an, wir z\u00e4hlen f\u00fcr dich mit.', daysQ: 'Meist an diesen Tagen', opt: '(freiwillig)', store: 'Dein Laden', storePh: 'z. B. Edeka in der Hauptstra\u00dfe',
             does: 'Scannst du an einem Einkaufstag zwei verschiedene Produkte, leuchten deine Welten heller, bis etwa einen Tag nach deinem n\u00e4chsten Einkauf, und werden dann langsam wieder normal.',
             first: 'So wei\u00df die App, wann sie dich f\u00fcr deinen Einkauf belohnt. Kein Druck: \u00c4ndern kannst du es jederzeit unter Profil \u203a \u00dcber dich.',
             note: 'Ein verpasster Einkauf hei\u00dft nie, dass du schlecht gegessen hast. \u00c4ndern kannst du es jederzeit unter Profil \u203a \u00dcber dich.',
-            need: 'Trag eine Zahl von 1 bis 60 ein oder tippe auf Sp\u00e4ter.', save: 'Speichern', later: 'Sp\u00e4ter', saved: 'Einkaufsrhythmus gespeichert.', profT: 'Einkaufen', profSet: 'Rhythmus eintragen', profEdit: '\u00c4ndern', close: 'Schlie\u00dfen'
+            need: 'W\u00e4hl aus, wie oft du einkaufst, oder tippe auf Sp\u00e4ter.', save: 'Speichern', later: 'Sp\u00e4ter', saved: 'Einkaufsrhythmus gespeichert.', profT: 'Einkaufen', profSet: 'Rhythmus eintragen', profEdit: '\u00c4ndern', close: 'Schlie\u00dfen'
         },
         es: {
-            over: 'LA COMPRA', h: 'Los d\u00edas sanos empiezan en la tienda', p: '\u00bfCada cu\u00e1ntos d\u00edas sueles hacer la compra? Escribe el n\u00famero.',
-            every: 'Compro cada', days: 'd\u00edas', daysQ: 'D\u00edas habituales', opt: '(opcional)', store: 'Tu tienda', storePh: 'p. ej. Edeka de la calle Mayor',
+            over: 'LA COMPRA', h: 'Los d\u00edas sanos empiezan en la tienda', p: '\u00bfCon qu\u00e9 frecuencia sueles hacer la compra?',
+            perWeek: 'Por semana', fl: { '1': 'Una vez', '2': 'Dos veces', '3': 'Tres veces', more: 'M\u00e1s', varies: 'Var\u00eda' },
+            daysHint: 'Toca tus d\u00edas habituales y los contamos por ti.', daysQ: 'D\u00edas habituales', opt: '(opcional)', store: 'Tu tienda', storePh: 'p. ej. Edeka de la calle Mayor',
             does: 'Si escaneas dos productos distintos el d\u00eda de la compra, tus mundos brillar\u00e1n m\u00e1s hasta un d\u00eda despu\u00e9s de tu siguiente compra. Luego vuelven poco a poco a la normalidad.',
             first: 'As\u00ed la app sabe cu\u00e1ndo premiarte por tu compra. Sin presi\u00f3n: puedes cambiarlo cuando quieras en Perfil \u203a Sobre ti.',
             note: 'Saltarte una compra no significa que hayas comido mal. Puedes cambiarlo cuando quieras en Perfil \u203a Sobre ti.',
-            need: 'Escribe un n\u00famero del 1 al 60, o toca M\u00e1s tarde.', save: 'Guardar', later: 'M\u00e1s tarde', saved: 'Ritmo de compra guardado.', profT: 'La compra', profSet: 'Definir mi ritmo', profEdit: 'Cambiar', close: 'Cerrar'
+            need: 'Elige cada cu\u00e1nto compras, o toca M\u00e1s tarde.', save: 'Guardar', later: 'M\u00e1s tarde', saved: 'Ritmo de compra guardado.', profT: 'La compra', profSet: 'Definir mi ritmo', profEdit: 'Cambiar', close: 'Cerrar'
         }
     };
     const t = k => (TX[lang()] || TX.en)[k] || TX.en[k] || k;
+    const fl = f => ((TX[lang()] || TX.en).fl || TX.en.fl)[f] || f;
 
     function get() { try { return C.normalize(JSON.parse(localStorage.getItem(C.KEY) || 'null')); } catch (e) { return C.normalize(null); } }
     function set(part) {
@@ -59,12 +64,12 @@
         const order = [1, 2, 3, 4, 5, 6, 0];
         return '<div class="spl-form" data-spl-form data-noi18n>' +
             (opts.head === false ? '' : '<p class="spl-over">' + esc(t('over')) + '</p><div class="r2-obt spl-h">' + esc(t('h')) + '</div><div class="r2-obs spl-p">' + esc(t('p')) + '</div>') +
-            '<label class="spl-every" for="' + id + 'Every"><span>' + esc(t('every')) + '</span>' +
-            '<input id="' + id + 'Every" class="spl-num" type="number" inputmode="numeric" pattern="[0-9]*" min="' + C.MIN + '" max="' + C.MAX + '" step="1" enterkeyhint="done" autocomplete="off" value="' + (p.every || '') + '" aria-describedby="' + id + 'Err">' +
-            '<span>' + esc(t('days')) + '</span></label>' +
-            '<p class="spl-plain" aria-live="polite">' + esc(C.plainEvery(p.every, lang())) + '</p>' +
+            '<div class="r2-obsub spl-sub spl-fq">' + esc(t('perWeek')) + '</div>' +
+            '<div class="spl-freqs" role="radiogroup" aria-label="' + esc(t('perWeek')) + '"' + (p.was ? ' data-spl-was="' + p.was + '"' : '') + '>' + C.FREQS.map(f => { const on = p.freq === f; return '<button type="button" role="radio" class="r2-chip spl-freq' + (on ? ' on' : '') + '" aria-checked="' + on + '" aria-label="' + esc(C.freqLabel(f, lang())) + '" data-spl-freq="' + f + '">' + esc(fl(f)) + '</button>'; }).join('') + '</div>' +
             '<div class="r2-obsub spl-sub">' + esc(t('daysQ')) + ' <span>' + esc(t('opt')) + '</span></div>' +
+            '<p class="spl-hint">' + esc(t('daysHint')) + '</p>' +
             '<div class="r2-chips spl-days" role="group" aria-label="' + esc(t('daysQ')) + '">' + order.map(i => '<button type="button" class="r2-chip spl-day' + (p.days.indexOf(i) >= 0 ? ' on' : '') + '" aria-pressed="' + (p.days.indexOf(i) >= 0) + '" data-spl-day="' + i + '">' + esc(names[i]) + '</button>').join('') + '</div>' +
+            '<p class="spl-sum" aria-live="polite">' + (p.freq ? esc(C.summary({ freq: p.freq, days: p.days, was: p.was }, lang())) : '') + '</p>' +
             '<label class="r2-fl spl-store"><span>' + esc(t('store')) + ' ' + esc(t('opt')) + '</span><input id="' + id + 'Store" maxlength="60" autocomplete="off" placeholder="' + esc(t('storePh')) + '" value="' + esc(p.store) + '"></label>' +
             /* Oct 23 (Emmanuel): in the setup a new user doesn't know worlds or scanning yet, so the setup says only what it's for,
                in one line. The glow rule ('does') and the no-guilt note stay in the Profile editor, where they make sense. */
@@ -73,37 +78,62 @@
                 '<p class="spl-note">' + esc(t('note')) + '</p>') +
             '<div class="r2-err spl-err" id="' + id + 'Err" role="alert"></div></div>';
     }
-    /* reads a form; returns {ok, plan, empty}. Empty number = not set (fine for "Later"), a bad number = not ok */
+    /* reads a form; returns {ok, plan, empty}. Nothing picked = not set (fine for "Later") */
+    function formState(f) {
+        const b = f.querySelector('.spl-freq.on');
+        const days = Array.prototype.map.call(f.querySelectorAll('.spl-day.on'), x => +x.getAttribute('data-spl-day'));
+        const box = f.querySelector('.spl-freqs');
+        return { freq: b ? b.getAttribute('data-spl-freq') : (days.length ? C.freqFromDays(days) : null), days, was: box && box.getAttribute('data-spl-was') ? +box.getAttribute('data-spl-was') : null };
+    }
     function readForm(root) {
         root = root || D;
         const f = root.querySelector('[data-spl-form]'); if (!f) return { ok: false, empty: true, plan: null };
-        const raw = (f.querySelector('.spl-num') || {}).value || '';
-        const every = C.parseEvery(raw);
-        const days = Array.prototype.map.call(f.querySelectorAll('.spl-day.on'), b => +b.getAttribute('data-spl-day'));
+        const st = formState(f);
         const store = (f.querySelector('.spl-store input') || {}).value || '';
-        const empty = !String(raw).trim();
-        return { ok: !!every, empty, plan: { every, days, store } };
+        return { ok: !!st.freq, empty: !st.freq, plan: { freq: st.freq, days: st.days, was: st.was, store } };
     }
     function showErr(root) {
         const f = (root || D).querySelector('[data-spl-form]'); if (!f) return;
         const e = f.querySelector('.spl-err'); if (e) { e.textContent = t('need'); e.classList.remove('shake'); void e.offsetWidth; e.classList.add('shake'); }
-        const i = f.querySelector('.spl-num'); if (i) try { i.focus(); } catch (x) { }
+        const b = f.querySelector('.spl-freq'); if (b) try { b.focus(); } catch (x) { }
+    }
+    /* the summary line under the days follows every tap ("Twice a week · usually Tue, Sat") */
+    function syncSum(f) {
+        const st = formState(f), o = f.querySelector('.spl-sum');
+        const txt = st.freq ? C.summary({ freq: st.freq, days: st.days, was: st.was }, lang()) : '';
+        if (o && o.textContent !== txt) o.textContent = txt;
+        const e = f.querySelector('.spl-err'); if (e && st.freq && e.textContent) e.textContent = '';
+    }
+    function pickFreq(f, val) {
+        Array.prototype.forEach.call(f.querySelectorAll('.spl-freq'), x => { const on = x.getAttribute('data-spl-freq') === val; x.classList.toggle('on', on); x.setAttribute('aria-checked', on); });
     }
     /* save from a form: true when saved */
     function saveForm(root) { const r = readForm(root); if (!r.ok) { showErr(root); return false; } set(Object.assign({}, r.plan, { skipped: false })); return true; }
 
     /* weekday chips toggle in place (both in setup and in the editor) */
     D.addEventListener('click', e => {
-        const b = e.target.closest('[data-spl-day]');
-        if (b && b.closest('[data-spl-form]')) { const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); return; }
+        /* a weekday tap counts the picked days into the bubble (Tue + Sat -> Twice) */
+        const b = e.target.closest('[data-spl-day]'), bf = b && b.closest('[data-spl-form]');
+        if (bf) {
+            const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
+            const n = C.freqFromDays(formState(bf).days); if (n) pickFreq(bf, n);
+            syncSum(bf); return;
+        }
+        /* a bubble tap; picked days that no longer match it are cleared, so the two never disagree */
+        const q = e.target.closest('[data-spl-freq]'), qf = q && q.closest('[data-spl-form]');
+        if (qf) {
+            const val = q.getAttribute('data-spl-freq'); pickFreq(qf, val);
+            const days = formState(qf).days;
+            if (days.length && C.freqFromDays(days) !== val) Array.prototype.forEach.call(qf.querySelectorAll('.spl-day.on'), x => { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); });
+            const box = qf.querySelector('.spl-freqs'); if (box && val !== 'varies') box.removeAttribute('data-spl-was');
+            syncSum(qf); return;
+        }
         const a = e.target.closest('[data-spl]'); if (!a) return;
         const v = a.getAttribute('data-spl'), ov = a.closest('.r2-ov');
         if (v === 'save') { if (saveForm(ov)) { try { R().close(ov); } catch (x) { } try { R().toast && R().toast(t('saved')); } catch (x) { } refresh(); } return; }
         if (v === 'close') { try { R().close(ov); } catch (x) { } return; }
         if (v === 'open') { e.preventDefault(); openEditor(); }
     }, false);
-    /* the typed number is read back in plain words as you type: 7 -> "Once a week", 30 -> "Once a month" */
-    D.addEventListener('input', e => { const i = e.target; if (!i || !i.classList || !i.classList.contains('spl-num')) return; const f = i.closest('[data-spl-form]'), o = f && f.querySelector('.spl-plain'); if (o) o.textContent = C.plainEvery(i.value, lang()); }, false);
     D.addEventListener('keydown', e => { if (e.key !== 'Enter') return; const i = e.target; if (!i || !i.closest || !i.closest('[data-spl-form]') || i.tagName !== 'INPUT') return; e.preventDefault(); try { i.blur(); } catch (x) { } }, true);
 
     function openEditor() {

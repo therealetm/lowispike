@@ -11075,7 +11075,7 @@ function paintOb(){
       condBlock("data-r2tag", "data-r2none", ob.tags, ob.noCond, ob.gender, ob.condNote, "r2obCondNote") +
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="' + (obShop() ? "next" : "finish") + '">' + (obShop() ? "Next" : "Let\'s go") + '</button></div>';
   } else {
-    /* step 3 (Oct 17): grocery shopping rhythm. The person types their own number; weekdays and shop are optional; Later skips */
+    /* step 3 (Oct 17): grocery shopping rhythm. Oct 25: times-per-week bubbles (or It varies); weekdays and shop are optional; Later skips */
     h = dots() + LowiShopPlan.formHTML(null, { prefix: "r2obSp", first: true }) +
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="shopdone">Let\'s go</button><button class="r2-btn ghost big spl-later" data-r2o="shoplater">Later</button></div>';
   }

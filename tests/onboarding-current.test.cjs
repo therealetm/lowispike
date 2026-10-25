@@ -46,14 +46,15 @@ test('shopping rhythm: summary in English, German and Spanish', () => {
     assert.strictEqual(C.summary(p, 'en'), 'Once a week \u00b7 usually Sat \u00b7 at Edeka');
     assert.strictEqual(C.summary(p, 'de'), 'Einmal pro Woche \u00b7 meist Sa \u00b7 bei Edeka');
     assert.match(C.summary(p, 'es'), /^Una vez por semana/);
-    assert.strictEqual(C.summary({ every: 10 }, 'en'), 'Every 10 days');
-    assert.match(C.summary({ every: 9 }, 'es'), /^Cada 9 d\u00edas/);
+    /* Oct 25 (Eman): bubbles replaced the typed number; an old long rhythm stays visible under "It varies" */
+    assert.strictEqual(C.summary({ every: 10 }, 'en'), 'It varies \u00b7 about every 10 days');
+    assert.match(C.summary({ every: 9 }, 'es'), /^Var\u00eda \u00b7 aproximadamente cada 9 d\u00edas/);
     assert.strictEqual(C.plainEvery(30, 'en'), 'Once a month');
     assert.strictEqual(C.plainEvery(14, 'de'), 'Alle zwei Wochen');
     assert.strictEqual(C.plainEvery(10, 'en'), '');
     assert.strictEqual(C.plainEvery('', 'en'), '');
     assert.strictEqual(C.summary({}, 'en'), 'Not set yet');
-    assert.strictEqual(C.summary({ every: 1 }, 'de'), 'Jeden Tag');
+    assert.strictEqual(C.summary({ every: 1 }, 'de'), '\u00d6fter als dreimal pro Woche'); /* Oct 25: an old daily rhythm migrates to the More bubble */
 });
 
 test('setup has a 4th step where the person types their shopping rhythm, with Later to skip', () => {
@@ -71,7 +72,8 @@ test('setup has a 4th step where the person types their shopping rhythm, with La
 
 test('the shopping form never pre-fills a number and is editable later from Profile', () => {
     const s = read('shop-plan.js');
-    assert.match(s, /value="' \+ \(p\.every \|\| ''\) \+ '"/);
+    /* Oct 25 (Eman): the typed number became frequency bubbles; a bubble is only "on" when the saved plan says so */
+    assert.match(s, /const on = p\.freq === f;/);
     assert.match(s, /data-spl="open"/);
     assert.match(s, /function openEditor/);
     assert.match(s, /'lowi:shopplan'/);

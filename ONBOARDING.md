@@ -19,7 +19,7 @@ file and the onboarding copy in the same commit.**
 | 5 | Setup 1: birthday | `index.html` `paintOb` step 0 | birthday gives the companion its face and name | `companion-birth.js` |
 | 6 | Setup 2: photo | `paintOb` step 1 | optional avatar | |
 | 7 | Setup 3: goals | `paintOb` step 2 | what you want most | `S.profile.goals` |
-| 8 | Setup 4: grocery shopping | `paintOb` step 3, `shop-plan.js` | the person TYPES how often they shop, read back in plain words (7 = "Once a week", 30 = "Once a month", `plainEvery`); weekdays + shop optional; Later skips; what the shopping glow does | `shop-plan-core.js`, `grocery-hunt-core.js` (reads the rhythm) |
+| 8 | Setup 4: grocery shopping | `paintOb` step 3, `shop-plan.js` | the person picks a bubble: Once / Twice / 3 times / More per week, or It varies (Oct 25, Eman). Optional weekdays pick the bubble for them (Tue + Sat = Twice) and a summary line says it back; shop optional; Later skips; what the shopping glow does | `shop-plan-core.js`, `grocery-hunt-core.js` (reads the rhythm) |
 | 9 | Starter plan (optional) | `herb-start.js` `ivOpen` | up to 4 optional questions, first steps on Today | `starter-core.js` |
 
 Existing users never see this flow again (`S.setupDone`). Their shopping rhythm is set or changed in
@@ -27,8 +27,10 @@ Profile > About you > Grocery shopping (`shop-plan.js` card), never forced.
 
 ## Facts the copy must keep true
 
-- **Shopping rhythm:** only the number the person typed (1 to 60 days). No default, no guess. Missing a shop never means
-  someone ate badly. Stored in `lowispike.shopplan.v1`; read it through `LowiShopPlan` / `LowiShopPlanCore` only.
+- **Shopping rhythm:** only what the person picked: a times-per-week bubble or It varies, plus optional weekdays (picked days
+  are the frequency). No default, no guess. The glow timing (`every`) is derived (1x = 7 days, 2x = 4, 3x = 3, More = 2, days =
+  longest gap, It varies = none); old typed numbers migrate on read to a bubble that is never stricter, and 8 to 60 days stay
+  as they were under It varies. Missing a shop never means someone ate badly. Stored in `lowispike.shopplan.v1`; read it through `LowiShopPlan` / `LowiShopPlanCore` only.
 - **Shopping glow + hunt** (`grocery-hunt-core.js`, `grocery-hunt.js`): two different products caught on one day (barcode
   in the shopping scanner or a fresh product photo) is a shopping check-in. The worlds glow brighter for the rhythm plus a day,
   then fade over one rhythm back to the normal look, never below it. Pause and "couldn't scan" exist. The hunt reads the

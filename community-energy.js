@@ -177,7 +177,7 @@ function saveLand(){if(!tb)return;try{const o=tb.snap();if(Object.keys(o).length
 try{W.addEventListener('pagehide',saveLand);D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='hidden')saveLand();});}catch(e){}
 function ensureTable(){const r=reduced();if(!tb||tbReduced!==r){const old=tb?tb.snap():null;tb=table({reduced:r});tbReduced=r;tb.restore(old||loadLand());}return tb;}
 function visible(){return !!(gal&&gal.isConnected&&gal.offsetParent!==null&&!D.hidden&&gal.clientWidth>0);}
-function mount(g){if(!g||!g.appendChild)return;if(gal===g&&joy&&joy.isConnected)return;gal=g;
+function mount(g){if(!g||!g.appendChild)return;if(gal===g&&joy&&joy.isConnected)return;gal=g;restLoad();
  fx=D.createElement('canvas');fx.className='ce-fx';fx.setAttribute('aria-hidden','true');g.appendChild(fx);ctx=fx.getContext&&fx.getContext('2d');
  joy=D.createElement('div');joy.className='ce-joy';joy.id='ceJoy';joy.setAttribute('role','button');joy.setAttribute('tabindex','0');joy.setAttribute('data-sfx','none');joy.setAttribute('aria-label',tr('joy'));
  joy.innerHTML='<span class="ce-ring" aria-hidden="true"></span><span class="ce-knob" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" focusable="false"><path d="M13 3 6 13.5h5L10 21l7-10.5h-5z" fill="currentColor"/></svg></span>';
@@ -207,7 +207,7 @@ function rid(){return Date.now().toString(36).slice(-6)+Math.random().toString(3
 /* no forced layout here: in a crowd many companions flash in the same frame */
 function flash(el){if(!el)return;el.classList.remove('ce-shot');requestAnimationFrame(()=>{el.classList.add('ce-shot');setTimeout(()=>el.classList.remove('ce-shot'),420);});}
 function bodyEl(uid){return gal&&gal.querySelector('.cg-body[data-uid="'+(W.CSS&&CSS.escape?CSS.escape(uid):uid)+'"]');}
-function fireAt(ang,power){const g=geom(),me=meSpot(g);if(!g||!me)return;const now=Date.now(),b=bucket(sendSt,now,SEND.max,SEND.win,SEND.gap);sendSt=b.st;if(!b.ok)return;
+function fireAt(ang,power){const g=geom(),me=meSpot(g);if(!g||!me)return;const now=Date.now(),b=bucket(sendSt,now,SEND.max,SEND.win,SEND.gap);sendSt=b.st;if(!b.ok)return;restMark();
  const t=ensureTable();syncT(t,g);const at=t.pos(me.uid)||me,from={x:at.x,y:at.y,uid:me.uid},r0=PHYS_R*.9,pr=t.predict(from,ang,power,r0),id=rid(),f=t.room(me.uid),gg=pr.to?t.room(pr.to):null;
  t.fire(from,ang,power,r0,{id,to:pr.to,ht:pr.ht});
  /* one compact event on the Community's shared realtime channel; every other phone flies the same ball from my companion */
@@ -240,11 +240,11 @@ function settle(t){let n=0;while(t.busy()&&n++<1800)t.step(1/60);t.halt();saveLa
 D.addEventListener('lowi:energy-shot',e=>{try{remote(e.detail);}catch(x){}});
 function kick(){if(raf)return;lastT=0;raf=requestAnimationFrame(frame);}
 function size(){const w=gal.clientWidth,h=gal.clientHeight;dpr=Math.min(2,W.devicePixelRatio||1);if(fx.width!==Math.round(w*dpr)||fx.height!==Math.round(h*dpr)){fx.width=Math.round(w*dpr);fx.height=Math.round(h*dpr);}return {w,h};}
-function frame(now){raf=0;if(!visible()){if(tb){tb.halt();saveLand();}fxList=[];if(ctx&&fx)ctx.clearRect(0,0,fx.width,fx.height);const m=map();if(m&&m.place)m.place();return;}
+function frame(now){raf=0;if(!visible()){if(tb){tb.halt();saveLand();}restFlush();fxList=[];if(ctx&&fx)ctx.clearRect(0,0,fx.width,fx.height);const m=map();if(m&&m.place)m.place();return;}
  const dt=lastT?Math.min(.25,(now-lastT)/1000):1/60;lastT=now;const g=geom();const t=ensureTable();if(g)syncT(t,g);
  slow=dt>SLOW_DT;const was=t.busy(),ev=t.step(dt);for(const e of ev)onEvent(e,g);fxList=capFx(fxList);
  const nowBusy=t.busy();if((was||nowBusy)&&placeDue(lastPlace,now,!nowBusy)){lastPlace=now;const m=map();if(m&&m.place)m.place();}
- if(was&&!nowBusy)saveLand();
+ if(was&&!nowBusy)saveLand();if(was&&!nowBusy)restFlush();
  draw(g,now,dt);
  if(t.busy()||drag||fxList.length)raf=requestAnimationFrame(frame);else if(ctx)ctx.clearRect(0,0,fx.width,fx.height);}
 function onEvent(e,g){if(!g)return;
@@ -258,7 +258,34 @@ function nameOf(uid){const b=gal&&gal.querySelector('.cg-body[data-uid="'+(W.CSS
 function ping(uid){const m=map(),n=nameOf(uid);if(!m||!m.energy)return;const st=load(),c=canPing(st,uid,Date.now());
  if(!c.ok){if(c.why==='recent'&&live)live.textContent=tr('soon',n);return;}
  let r='';try{r=m.energy(uid);}catch(e){r='';}
- if(r==='sent'){store(notePing(st,uid,Date.now()));if(live)live.textContent=tr('sent',n);}}
+ if(r==='sent'){store(notePing(st,uid,Date.now()));if(live)live.textContent=tr('sent',n);gift(uid);}}
+/* Oct 25 (Emmanuel: "real people can send energy to offline companions too"): every landed hit on a real person is one row in
+   public.energy_gifts (to_online says whether they were in the room). The server enforces the spam limits (1 per person per
+   5 min, 20 sent / 30 received per hour, no bots, test only to test); a refused row is simply dropped. The push task reads the
+   offline rows; LisPush.energySent (notifications task) is called too when it exists. */
+function isOnline(uid){const R=W.LowiRooms;try{return !!(R&&R.active&&R.active()&&R.has(uid));}catch(e){return false;}}
+function realUid(uid){return typeof uid==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uid);}
+function gift(uid){if(!realUid(uid))return;const on=isOnline(uid);stats.gifts=(stats.gifts||0)+1;
+ try{const c=W.LOWI_CLOUD_X;if(c&&c.client)Promise.resolve(c.client()).then(sb=>sb&&sb.from('energy_gifts').insert({to_id:uid,to_online:on})).then(r=>{if(r&&r.error)stats.giftErr=(stats.giftErr||0)+1;else stats.giftOk=(stats.giftOk||0)+1;}).catch(()=>{stats.giftErr=(stats.giftErr||0)+1;});}catch(e){}
+ try{const P=W.LisPush;if(P&&typeof P.energySent==='function'){const h=W.LowiCommunityHost,me=h&&h.identity?h.identity():null;P.energySent(uid,{n:String((me&&me.n)||'')});}}catch(e){}}
+/* Oct 25 (Emmanuel, iPad + iPhone: "the companions don't sit the same, and after they move they snap back"): where a knocked
+   companion came to rest is shared. The shooter's phone writes every companion its shot moved to public.companion_rest (room
+   coordinates, the same frame on every device) once the play settles; every phone reads it when Community opens, when the app
+   wakes and when the network comes back, and puts those companions there. Nothing is written for a shot from someone else. */
+let restPre=null,restT=0;
+function restMark(){if(!tb||restPre)return;restPre=new Map();for(const b of tb.bodies())restPre.set(b.uid,tb.room(b.uid));}
+function restFlush(){const pre=restPre;restPre=null;if(!pre||!tb)return;const rows=[];
+ for(const b of tb.bodies()){if(!realUid(b.uid))continue;const now=tb.room(b.uid),was=pre.get(b.uid);if(!now)continue;if(was&&Math.hypot(now.x-was.x,now.y-was.y)<2)continue;
+  rows.push({user_id:b.uid,rx:Math.max(-6000,Math.min(6000,now.x)),ry:Math.max(-6000,Math.min(6000,now.y))});}
+ if(!rows.length)return;stats.restSent=(stats.restSent||0)+rows.length;
+ try{const c=W.LOWI_CLOUD_X;if(c&&c.client)Promise.resolve(c.client()).then(sb=>sb&&sb.from('companion_rest').upsert(rows.slice(0,40),{onConflict:'user_id'})).then(r=>{if(r&&r.error)stats.restErr=(stats.restErr||0)+1;}).catch(()=>{stats.restErr=(stats.restErr||0)+1;});}catch(e){}}
+function restLoad(force){const now=Date.now();if(!force&&now-restT<4000)return Promise.resolve(false);restT=now;
+ try{const c=W.LOWI_CLOUD_X,st=c&&c.state?c.state():null;if(!c||!c.client||!st||!st.uid)return Promise.resolve(false);
+  return Promise.resolve(c.client()).then(sb=>sb&&sb.from('companion_rest').select('user_id,rx,ry,updated_at').order('updated_at',{ascending:false}).limit(400)).then(r=>{
+   if(!r||r.error||!Array.isArray(r.data))return false;const o={};for(const x of r.data)if(x&&x.user_id&&isFinite(x.rx)&&isFinite(x.ry))o[x.user_id]=[+x.rx,+x.ry];
+   const t=ensureTable();if(t.busy())return false;t.restore(o);saveLand();stats.restLoaded=Object.keys(o).length;const m=map();if(m&&m.place)m.place();return true;}).catch(()=>false);}catch(e){return Promise.resolve(false);}}
+try{D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='visible')restLoad();});W.addEventListener('online',()=>restLoad(true));W.addEventListener('pageshow',()=>restLoad());
+ D.addEventListener('lowi:chat',e=>{const d=e&&e.detail;if(d&&(d.type==='ready'||d.type==='reconnect'))restLoad(d.type==='reconnect');});}catch(e){}
 function draw(g,now,fdt){if(!ctx||!g)return;const {w,h}=size();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);const z=g.cam.z,red=reduced();
  /* aiming: your companion becomes a pointed energy form facing the aim, with a faint aim line as long as the throw */
  const me=meSpot(g);

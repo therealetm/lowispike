@@ -50,10 +50,12 @@ test('reply quotes and the avatar label carry the mark too',()=>{
  const h=f.win.LowiCommunity.messageHTML(reply,[orig,reply]);assert.match(h,/class="cm-quote"><b>Lena - bot<\/b>/);
  assert.match(f.win.LowiCommunity.messageHTML(orig,[]),/aria-label="Lena - bot · /);
 });
-test('galaxy bots: the chat line and the galaxy name say "- bot", their profile keeps the Galaxy bot tag',()=>{
+/* Oct 25 (Emmanuel: "remove the bots from the galaxy"): the made-up galaxy bots are still bots by id and their chat lines still say
+   "- bot", but they no longer get a body in the galaxy at all, so no "Name - bot" name label is drawn there */
+test('galaxy bots: the chat line still says "- bot", but no bot has a body or a "- bot" name in the galaxy',()=>{
  const f=fixture();f.scope('a');const b=f.win.LowiCommunity.bots()[0];assert.ok(b&&b.uid.startsWith('bot:'));
  assert.equal(f.win.LowiBotLabel.isBot(b.uid),true);assert.equal(f.win.LowiBotLabel.isBot('bot:not-a-real-one'),false,'a made-up bot: id is not enough');
- assert.match(f.nodes.cgField.innerHTML,new RegExp('<span class="cg-name">'+b.n+' - bot</span>'));
+ for(const x of f.win.LowiCommunity.bots()){assert.ok(!f.nodes.cgField.innerHTML.includes('data-uid="'+x.uid+'"'),x.n+' has no body');assert.doesNotMatch(f.nodes.cgField.innerHTML,new RegExp('<span class="cg-name">'+x.n+'( - bot)?</span>'));}
  const js=read('community-chat.js');assert.match(js,/'<b class="cs-name">'\+esc\(m\.by\)\+'<\/b>'\+botDash\(m\.uid,m\.by\)/);
 });
 test('the server list arriving repaints the room (lowi-bots event)',()=>{

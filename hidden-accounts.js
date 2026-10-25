@@ -24,6 +24,8 @@
         'cc171b56-0b38-4a54-b304-ee005fe53cb1', 'd8138a1f-be78-4b82-967f-8c91a930fda0', 'e12bf277-db09-4e63-a017-97dcf39b51d6',
         'e329a188-8f0f-4878-b166-334459064295', 'eec2e9c3-dc85-4968-9a82-f2203f05b55a', 'f0879eb8-1b20-4302-ae00-f106ecf7338d',
         'f45d926d-ac5e-4b6f-a40f-c5b8469cc370', 'f78c98d9-f19c-42fb-bcfd-276f9020bf74',
+        /* One Chat Test: made by our own test tool (tools/one-chat/check.cjs) on Oct 24 19:53, not real people (the third is server-flagged test) */
+        'b0f67f50-1fac-4bf0-b874-f19d3856ea72', 'e635ae48-da7d-4ae9-a0c5-9a10a96b181f',
         /* Gatey: 16 sign-ups on Oct 10, all level 1 */
         '0767e8ef-17e3-43d7-8c5d-9c9207822b48', '097095f5-eadf-4e53-9ed5-af8e6f1c47d5', '152635eb-b97d-438c-8e76-2f2d6c44ea10',
         '28070ba2-b87b-40ab-8766-faa08e3416b5', '58c76896-3575-4045-b866-f72475fa2f67', '73976d5e-2f3a-49a0-a61b-5135b6b52cf5',

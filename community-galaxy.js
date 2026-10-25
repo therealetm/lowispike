@@ -97,17 +97,21 @@ function uniqueNames(list,ownName,lastTs){const own=String(ownName||'').trim().t
 /* Oct 25, 2026 (Emmanuel: "remove the bots from the galaxy; every real companion stays parked there like a car, even offline").
    The Room galaxy's members, built only from data every device shares (the profiles list), never from what one phone saw:
    - no made-up bots (uid "bot:..."), no account the server flags as a bot or test (isBot, by flag or id, never by name), no hidden id, no blank name;
-   - one entry per name (the same person signed in twice), the winner picked by level, then xp, then id, so every phone picks the same one;
+   - one entry per name (the same person signed in twice), the winner picked by online-now, then level, xp, id, so every phone picks the same one;
    - online is only a glow (p.on), never a reason to be in or out.
    o: {isBot(uid), isHidden(uid), online(uid), me:{uid,n,...}}. Returns {layout, shown}: layout seats everyone (blocked people and
    people sharing your own name too) so seats come from the full room and are the same on every phone; shown is what your screen draws. */
 function roomMembers(people,o){o=o||{};const isBot=o.isBot||(()=>false),isHidden=o.isHidden||(()=>false),online=o.online||(()=>false),blocked=o.blocked||(()=>false);
- const me=o.me&&o.me.uid?o.me:null,best=new Map();
+ const me=o.me&&o.me.uid?o.me:null,best=new Map(),anyOn=new Set();
+ /* the same name signed in on several accounts: the one that is online right now wins (presence is the same on every phone), then
+    level, xp, id; the group glows when any of its accounts is online */
+ const rank=q=>[online(q.uid)?1:0,+q.lv||0,+q.xp||0];
  for(const p of people||[]){if(!p||!p.uid)continue;const uid=String(p.uid),n=String(p.n||'').trim();
-  if(!n||/^bot:/.test(uid)||p.bot||isBot(uid)||isHidden(uid))continue;const k=n.toLocaleLowerCase(),cur=best.get(k);
-  if(!cur){best.set(k,p);continue;}const a=[+p.lv||0,+p.xp||0],b=[+cur.lv||0,+cur.xp||0];
-  if(a[0]>b[0]||(a[0]===b[0]&&(a[1]>b[1]||(a[1]===b[1]&&uid<String(cur.uid)))))best.set(k,p);}
- const all=[...best.values()].filter(p=>!me||p.uid!==me.uid).map(p=>Object.assign({},p,{on:!!online(p.uid)}));
+  if(!n||/^bot:/.test(uid)||p.bot||p.test||isBot(uid)||isHidden(uid))continue;const k=n.toLocaleLowerCase(),cur=best.get(k);
+  if(online(uid))anyOn.add(k);
+  if(!cur){best.set(k,p);continue;}const a=rank(p),b=rank(cur);
+  if(a[0]>b[0]||(a[0]===b[0]&&(a[1]>b[1]||(a[1]===b[1]&&(a[2]>b[2]||(a[2]===b[2]&&uid<String(cur.uid)))))))best.set(k,p);}
+ const all=[...best.values()].filter(p=>!me||p.uid!==me.uid).map(p=>Object.assign({},p,{on:anyOn.has(String(p.n).trim().toLocaleLowerCase())}));
  all.sort((a,b)=>String(a.uid)<String(b.uid)?-1:1);
  const own=me?String(me.n||'').trim().toLocaleLowerCase():'',mine=me?Object.assign({},me,{me:true,on:true}):null;
  const layout=mine?all.concat([mine]):all;
@@ -209,16 +213,20 @@ function overlaps(a,b){return a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h
 /* Labels on the map: items = [{id,x,y,s,nw,bw,bh,bub}] in screen px (x,y = orb centre, s = orb size, nw = name width,
    bw/bh = bubble size when it has one) in PRIORITY order. Orbs never move. A name hides when it would cover a higher
    priority orb or name; a bubble tries above, beside, below and shifted spots and takes the first that covers no orb,
-   no shown name and no earlier bubble, else it shrinks to a dot. Returns Map id -> {name,bub:{x,y,side,tail}|null,dot}. */
+   no shown name and no earlier bubble, else it shrinks to a dot. Returns Map id -> {name,at:"b"|"t"|"i"|"",bub:{x,y,side,tail}|null,dot}. */
 function mapLabels(items,view){
  const W0=view.w,H0=view.h,pad=4,out=new Map(),orbs=[],names=[],bubs=[];
  const vis=it=>it.x>-it.s&&it.x<W0+it.s&&it.y>-it.s&&it.y<H0+it.s;
  for(const it of items){const s=it.s;orbs.push({id:it.id,x:it.x-s/2-2,y:it.y-s/2-2,w:s+4,h:s+4});}
  for(const it of items){const nm={id:it.id,x:it.x-it.nw/2,y:it.y+it.s/2+3,w:it.nw,h:16};
-  const ok=vis(it)&&!orbs.some(o=>o.id!==it.id&&overlaps(o,nm))&&!names.some(n=>overlaps(n,nm));
-  if(ok)names.push(nm);out.set(it.id,{name:ok,bub:null,dot:false});}
+  const free=b=>!orbs.some(o=>o.id!==it.id&&overlaps(o,b))&&!names.some(n=>overlaps(n,b));
+  /* Oct 25 (the "bubble with no name"): a name that would cover someone tries ABOVE its orb, then a one-letter tag
+     under it; only when even that covers an orb does it hide (the name is still on the button for screen readers and on tap) */
+  const up={id:it.id,x:nm.x,y:it.y-it.s/2-19,w:it.nw,h:16},ini={id:it.id,x:it.x-9,y:nm.y,w:18,h:16};
+  let at='';if(vis(it)){if(free(nm)){at='b';names.push(nm);}else if(free(up)){at='t';names.push(up);}else if(free(ini)){at='i';names.push(ini);}}
+  out.set(it.id,{name:at==='b'||at==='t',at,bub:null,dot:false});}
  for(const it of items){if(!it.bub)continue;const r=out.get(it.id);if(!vis(it))continue;
-  const s=it.s,bw=it.bw,bh=it.bh,gap=9,ny=r.name?it.y+s/2+21:it.y+s/2+2;
+  const s=it.s,bw=it.bw,bh=it.bh,gap=9,ny=r.at==='b'||r.at==='i'?it.y+s/2+21:it.y+s/2+2;
   const cands=[['t',it.x-bw/2,it.y-s/2-gap-bh],['r',it.x+s/2+gap+2,it.y-bh/2-6],['l',it.x-s/2-gap-2-bw,it.y-bh/2-6],
    ['t',it.x-bw*.15,it.y-s/2-gap-bh],['t',it.x-bw*.85,it.y-s/2-gap-bh],['b',it.x-bw/2,ny+gap],['b',it.x-bw*.15,ny+gap],['b',it.x-bw*.85,ny+gap]];
   let got=null;

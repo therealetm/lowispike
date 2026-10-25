@@ -176,3 +176,13 @@ html.lg #cmPaneChat[data-spirit-chat] .cg-snap :is(.cg-to, .cg-t .cm-mention) { 
 html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap[data-side=b]::after{top:-7px!important;bottom:auto!important;transform:rotate(225deg)!important}
 html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap[data-side=r]::after{left:-6px!important;top:calc(50% + .5px)!important;bottom:auto!important;transform:rotate(135deg)!important}
 html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap[data-side=l]::after{left:auto!important;right:-6px!important;top:calc(50% + .5px)!important;bottom:auto!important;transform:rotate(-45deg)!important}
+/* Oct 25 (Emmanuel: "every companion stays parked, offline too"): online companions glow, offline ones rest dimmer at their seat */
+html #cmPaneChat[data-spirit-chat] .cg-body.cg-live:not(.sel) .cg-orb.cg-orb{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 70%,#fff),0 0 22px 4px var(--c),0 0 44px 8px color-mix(in srgb,var(--c) 45%,transparent) !important}
+html #cmPaneChat[data-spirit-chat] .cg-body.cg-away .cg-orb.cg-orb{opacity:.5;filter:saturate(.45)}
+#cmPaneChat[data-spirit-chat] .cg-body.cg-away:not(.cg-nn) .cg-name{opacity:.8}
+html #cmPaneChat[data-spirit-chat] .cg-body.cg-away.sel .cg-orb.cg-orb{opacity:.85}
+/* a name that had no room below sits above the orb, or shrinks to its first letter, so no companion is left without a name */
+html #cmPaneChat[data-spirit-chat] .cg-body.cg-nt .cg-name.cg-name{position:absolute;left:50%;bottom:calc(100% + 3px);transform:translateX(-50%) scale(var(--nk,1));transform-origin:50% 100%}
+#cmPaneChat[data-spirit-chat] .cg-ini{display:none}
+html #cmPaneChat[data-spirit-chat] .cg-body.cg-ni .cg-name.cg-name{display:none !important}
+#cmPaneChat[data-spirit-chat] .cg-body.cg-ni .cg-ini{display:block;min-width:8px;padding:0 5px;border-radius:8px;font-size:11px;font-weight:700;line-height:14px;text-align:center;color:#fff;background:rgba(3,8,22,.5);text-shadow:0 1px 2px #000;transform:scale(var(--nk,1));transform-origin:50% 0}

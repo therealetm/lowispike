@@ -44,7 +44,10 @@ test('hidden list: every test account id is listed, no real person and not your 
   for (const p of REAL) assert.ok(!HA.isHidden(p), p.n + ' stays');
   assert.ok(!HA.isHidden(REAL_EMAN), 'your real eman account stays');
   assert.ok(!HA.isHidden({ n: 'eman', uid: REAL_EMAN, me: true }));
-  assert.equal(HA.IDS.length, 29 + 16 + 16 + 1 + 1 + 2);
+  assert.equal(HA.IDS.length, 29 + 16 + 16 + 1 + 1 + 2 + 2);
+  /* Oct 25: the two "One Chat Test" accounts our own test tool made are hidden; "Nuke Test" stays (origin not proven) */
+  for (const id of ['b0f67f50-1fac-4bf0-b874-f19d3856ea72', 'e635ae48-da7d-4ae9-a0c5-9a10a96b181f']) assert.ok(HA.isHidden(id), id + ' (One Chat Test) is hidden');
+  assert.ok(!HA.isHidden('1953ba3e-68d8-4753-9d31-3c5f3f384293'), 'Nuke Test stays visible');
   assert.equal(new Set(HA.IDS).size, HA.IDS.length, 'no id twice');
   for (const id of HA.IDS) assert.match(id, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
   assert.ok(Object.isFrozen(HA.IDS));
@@ -108,9 +111,11 @@ test('Community galaxy leaves out the test accounts, also when they posted in th
   const g = galaxy(TEST.concat(REAL), msgs);
   for (const n of HIDDEN_NAMES) assert.ok(!g.names.includes(n), n + ' has no bubble');
   for (const id of HA.IDS.slice(0, 3).concat(['bb1788fa-a11e-4ee9-ac28-4beef63248ae', 'e3cce12d-b025-4385-89f7-704595a8c06c'])) assert.ok(!g.html.includes('data-uid="' + id + '"'));
-  /* Oct 24: the galaxy bots (Mateo, Jonas, Samir) keep their bubble and read "Name - bot" (bot-label, community-chat.js) */
-  for (const n of KEPT_NAMES) assert.equal(g.names.filter(x => x === n || x === n + ' - bot').length, 1, n + ' has one bubble');
-  for (const n of ['Mateo', 'Jonas', 'Samir']) assert.ok(g.names.includes(n + ' - bot'), n + ' is marked as a bot');
+  /* Oct 25 (Emmanuel: "remove the bots from the galaxy"): the made-up galaxy bots (Mateo, Jonas, Samir) no longer get a bubble at
+     all, not even one marked "- bot"; every real person keeps exactly one */
+  for (const n of KEPT_NAMES.filter(n => !['Mateo', 'Jonas', 'Samir'].includes(n))) assert.equal(g.names.filter(x => x === n).length, 1, n + ' has one bubble');
+  for (const n of ['Mateo', 'Jonas', 'Samir']) { assert.ok(!g.names.includes(n) && !g.names.includes(n + ' - bot'), n + ' has no bubble'); }
+  assert.ok(!/data-uid="bot:/.test(g.html) && !/ - bot</.test(g.html), 'no bot body and no "- bot" label in the galaxy');
   for (const n of ['Joseph Castellar', 'Q', 'Emmanuel']) assert.ok(g.names.includes(n), n + ' is not marked');
   assert.ok(g.names.includes('You'));
 });

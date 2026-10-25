@@ -9713,7 +9713,7 @@ function rxOf(mid){ const o = {}; (RX[mid] || []).forEach(x => { (o[x.emoji] = o
 /* 24 Oct 2026: a person's birthday, sign and type count only in the shared form (day + month, year 0004, after consent). An older row with a
    real birth year stays private, and the year/age of anyone else never reaches the app. */
 function sharedOf(r){ if (r.bot) return {s:r.sign || "", t:r.mbti || "", bday:r.bday || ""}; const P = window.LowiProfileShare; if (!P) return {s:"", t:"", bday:""}; const x = P.readPublic(r); return {s:x.s, t:x.t, bday:x.bday}; }
-function mapPerson(r){ const sh = sharedOf(r); return {n:r.name, s:sh.s, t:sh.t, lv:r.lv || 1, streak:r.streak || 0, bio:r.bio || "", avatar:r.avatar_url || r.avatar || "", uid:r.id, bday:sh.bday, xp:r.xp || 0, xpw:r.xp_week || 0, wk:r.wk || "", xpm:r.xp_month || 0, mo:r.mo || "", w:r.weight || ""}; }
+function mapPerson(r){ const sh = sharedOf(r); return {n:r.name, s:sh.s, t:sh.t, lv:r.lv || 1, streak:r.streak || 0, bio:r.bio || "", avatar:r.avatar_url || r.avatar || "", uid:r.id, bday:sh.bday, xp:r.xp || 0, xpw:r.xp_week || 0, wk:r.wk || "", xpm:r.xp_month || 0, mo:r.mo || "", w:r.weight || "", bot:!!r.bot, test:!!r.test}; }
 
 /* ---------- boot ---------- */
 function loadLib(){ return new Promise((ok, no) => { if (window.supabase && window.supabase.createClient) return ok();
@@ -9741,7 +9741,7 @@ async function start(){
     sb.from("post_likes").select("post_id,user_id").limit(10000),
     sb.from("messages").select("id,user_id,who,body,reply_to,created_at,room").eq("room", ROOM()).order("created_at", {ascending:false}).limit(300),
     sb.from("reactions").select("message_id,user_id,who,emoji").limit(10000),
-    sb.from("profiles").select("id,name,sign,mbti,lv,streak,bio,avatar,bday,xp,xp_week,wk,xp_month,mo,weight").neq("name", "").limit(2000)
+    sb.from("profiles").select("id,name,sign,mbti,lv,streak,bio,avatar,bday,xp,xp_week,wk,xp_month,mo,weight,bot,test").neq("name", "").limit(2000)
   ]);
   if (uid !== chatOwner) return;
   const bad = q.find(r => r.error); if (bad) throw bad.error;

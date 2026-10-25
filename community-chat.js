@@ -257,13 +257,20 @@ function hiddenAcct(uid){const A=W.LowiHiddenAccounts;return !!(A&&A.isHidden(ui
 function inRoom(id){const R=W.LowiRooms;return !(R&&R.active&&R.active())||R.has(id);}
 /* in a room, people who wrote count as "in the room" for 30 minutes (the crowd and older apps do not hold presence); at most the room cap of them */
 function recentWriter(m){const R=W.LowiRooms;return !(R&&R.active&&R.active())||Date.now()-(+m.ts||0)<30*60e3;}
-function roster(){const real=[];for(const p of (H.people&&H.people())||[]){if(p&&p.uid&&p.uid!==scope&&p.n&&!blocked(p.uid)&&!hiddenAcct(p.uid)&&inRoom(p.uid))real.push({uid:p.uid,n:String(p.n).trim(),lv:p.lv||1});}
- const have=new Set(real.map(p=>p.uid)),wcap=W.LowiRooms&&W.LowiRooms.active&&W.LowiRooms.active()?W.LowiRooms.cap():1e9;let wn=0;const ms=messages();for(let i=ms.length-1;i>=0;i--){const m=ms[i];if(m&&m.uid&&!m.demo&&!m.bot&&m.uid!==scope&&!blocked(m.uid)&&!hiddenAcct(m.uid)&&!have.has(m.uid)&&recentWriter(m)&&wn<wcap){wn++;have.add(m.uid);real.push({uid:m.uid,n:String(m.by||'Member').trim(),lv:1});}}
- const last=new Map();for(const m of messages())if(m&&m.uid)last.set(m.uid,+m.ts||0);
- const ownName=scope?String(own().n||'').trim():'',uniq=G&&G.uniqueNames?G.uniqueNames(real,ownName,last):real,map=new Map();
- for(const p of uniq)map.set(p.uid,p);
- for(const b of (G&&G.withBots?G.withBots(uniq,botList(),ownName):[]))if(!blocked(b.uid))map.set(b.uid,{uid:b.uid,n:b.n,lv:b.lv,bot:true});
- return map;}
+/* Oct 25, 2026 (Emmanuel: "remove the bots from the galaxy; every real companion stays parked there, even offline"): the Room
+   galaxy is built from the shared profiles list only (G.roomMembers): no made-up bots, no account the server flags as a bot or
+   test, no hidden id, one body per name. Offline people stay parked at their seat; being online only makes them glow (p.on).
+   Seats come from the whole room (blocked people and your own other accounts too), so blocking someone only changes your screen.
+   Chat writers with no profile row (an empty profile name, an offline start) stand in with the name they wrote under. */
+function online(uid){const R=W.LowiRooms;try{if(R&&R.active&&R.active()&&R.has(uid))return true;}catch(e){}const t=recentTs.get(uid);return !!t&&Date.now()-t<10*60e3;}
+let recentTs=new Map();
+function roomOf(){const ms=messages();recentTs=new Map();for(const m of ms)if(m&&m.uid&&!m.demo&&!m.bot)recentTs.set(m.uid,+m.ts||0);
+ const B=W.LowiBotAccounts,selfTest=(()=>{try{return !!(B&&B.isTest&&scope&&B.isTest(scope));}catch(e){return false;}})();
+ let people=((H.people&&H.people())||[]).map(p=>p&&p.uid?{uid:p.uid,n:String(p.n||'').trim(),lv:p.lv||1,xp:+p.xp||0,bot:!!p.bot,test:!!p.test&&!selfTest}:null).filter(Boolean);
+ {const seen=new Set(people.map(p=>p.uid));for(let i=ms.length-1;i>=0;i--){const m=ms[i];if(m&&m.uid&&!m.demo&&!m.bot&&!seen.has(m.uid)){seen.add(m.uid);people.push({uid:m.uid,n:String(m.by||'').trim(),lv:1});}}}
+ const me=scope?{uid:scope,n:String(own().n||'').trim()}:null;
+ return G&&G.roomMembers?G.roomMembers(people,{isBot:u=>{if(botOf(u))return true;try{return !!(B&&B.isBot&&B.isBot(u));}catch(e){return false;}},isHidden:hiddenAcct,online,blocked,me}):{layout:people,shown:people};}
+function roster(){const map=new Map();for(const p of roomOf().shown)if(p&&!p.me&&p.uid!==scope)map.set(p.uid,p);return map;}
 function nameIdx(r){const list=[...(r||roster()).values()];if(scope&&own().n)list.push({uid:scope,n:own().n});return G?G.nameIndex(list):[];}
 function latestBy(ms){const last=new Map();for(const m of ms){if(!m||m.demo||m.bot||!m.uid||blocked(m.uid))continue;last.set(m.uid,m);}return last;}
 function crowd(ms,r,idx){const last=latestBy(ms),order=[],seen=new Set();const add=uid=>{if(!uid||uid===scope||seen.has(uid)||!r.has(uid))return;seen.add(uid);order.push(r.get(uid));};
@@ -284,7 +291,7 @@ function galaxy(ms,w,h,quiet){
   /* Oct 16, round 5 (E-man: "tapping Joseph selected Bastian", "everyone changes places"): a map, not a seating plan. Each person
      has one fixed spot (G.mapLayout); selecting, typing, new messages and the keyboard never move anyone. place() draws the spots
      through the camera (drag to pan, pinch / double-tap to zoom), so the HTML here carries no positions at all. */
-  const r=roster(),idx=nameIdx(r),order=crowd(ms,r,idx),L=G.mapLayout(order,scope||'me'),last=latestBy(ms),now=Date.now(),spot=new Map(L.spots.map(x=>[x.uid,x])),meSpot=L.spots[0],names=[],labels=[],lineDefs=[];
+  const RM=roomOf(),r=new Map(RM.shown.filter(p=>!p.me&&p.uid!==scope).map(p=>[p.uid,p])),idx=nameIdx(r),LA=G.mapLayout(RM.layout.filter(p=>!p.me&&p.uid!==scope),scope||'me'),L=Object.assign({},LA,{spots:LA.spots.filter(x=>x.me||r.has(x.uid))}),last=latestBy(ms),now=Date.now(),spot=new Map(L.spots.map(x=>[x.uid,x])),meSpot=L.spots[0],names=[],labels=[],lineDefs=[];
   const big=w>=640,bodyS=big?56:46,meS=big?64:54;
   /* Oct 16: chats with the galaxy bots live on this phone; their newest words go in the same avatar bubbles */
   try{const bs=botStore();for(const u in bs){const arr=bs[u];const m=arr&&arr[arr.length-1];if(!m||!m.t)continue;const k=m.from==='me'?scope:u,cur=last.get(k);if(!cur||(+cur.ts||0)<=(+m.ts||0))last.set(k,{id:'',uid:k,t:m.t,ts:m.ts||now});}}catch(e){}
@@ -293,12 +300,12 @@ function galaxy(ms,w,h,quiet){
   const parts=[];
   /* drawing order only (real people before bots); the spots themselves never depend on it */
   const drawOrder=L.spots.slice().sort((a,b)=>(b.me?1:0)-(a.me?1:0)||((r.get(a.uid)||{}).bot?1:0)-((r.get(b.uid)||{}).bot?1:0));
-  drawOrder.forEach((x,i)=>{const me=x.me,p=me?{uid:scope,n:own().n||tr('you')}:r.get(x.uid);if(!p)return;const label=me?tr('you'):botName(p.n,x.uid);names.push(label);
+  drawOrder.forEach((x,i)=>{const me=x.me,p=me?{uid:scope,n:own().n||tr('you')}:r.get(x.uid);if(!p)return;const label=me?tr('you'):p.n;names.push(label);
    const picked=!me&&sel===x.uid,talking=speak&&speak===x.uid,size=me?meS:bodyS;
    const aria=me?(sel?tr('toEveryone'):tr('youAll')):(picked?fill('talking',label):fill('talkTo',label));
    const attrs='data-uid="'+esc(x.uid)+'" data-name="'+esc(me?own().n||'':p.n)+'" aria-label="'+esc(aria)+'"'+(me?'':' aria-pressed="'+picked+'"')+' style="--s:'+size+'px;--i:'+(i%24)+';--c:'+hueColor(x.uid,me)+'"';
-   const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>';
-   parts.push(button(me?'to-all':'person',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(me&&!scope?' cg-off':'')));
+   const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>'+(me?'':'<span class="cg-ini" aria-hidden="true">'+esc(Array.from(String(label||'?').trim())[0]||'?')+'</span>');
+   parts.push(button(me?'to-all':'person',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(me?(!scope?' cg-off':''):(p.on?' cg-live':' cg-away'))));
    /* Oct 16 (E-man: "like Snapchat's map"): every companion's newest message sits in one small bubble next to their round avatar:
       their name, then the words (or "New picture" for a photo, which opens it). Your own words always sit next to YOUR avatar.
       place() picks the side so a bubble never covers another person or name; when there is no room it shrinks to a dot. */
@@ -355,7 +362,7 @@ function place(){
    el.style.setProperty('--nk',(fn/f).toFixed(3));el.classList.toggle('cg-out',p.x<-80||p.x>v.w+80||p.y<-80||p.y>v.h+80);}
   const ko=W.LowiEnergy&&W.LowiEnergy.keepOut?W.LowiEnergy.keepOut(gal):null;if(ko)items.push({id:'__ce',x:ko.x,y:ko.y,s:ko.s,nw:0,bw:0,bh:0,bub:false});
   const lab=G.mapLabels(items,{w:v.w,h:v.hb||v.h});
-  for(const it of items){const r=lab.get(it.id),el=bodies.get(it.id),b=bubs.get(it.id);if(!r||!el)continue;el.classList.toggle('cg-nn',!r.name);el.classList.toggle('cg-dot',!!r.dot);
+  for(const it of items){const r=lab.get(it.id),el=bodies.get(it.id),b=bubs.get(it.id);if(!r||!el)continue;el.classList.toggle('cg-nn',!r.name&&r.at!=='i');el.classList.toggle('cg-nt',r.at==='t');el.classList.toggle('cg-ni',r.at==='i');el.classList.toggle('cg-dot',!!r.dot);
    if(!b)continue;if(r.bub){b.style.display='';b.style.left=r.bub.x+'px';b.style.setProperty('top',r.bub.y+'px','important');b.style.setProperty('bottom','auto','important');b.style.setProperty('--tail',r.bub.tail+'px');b.setAttribute('data-side',r.bub.side);}else b.style.display='none';}
   /* Oct 19: knocked by an energy burst, YOU stay where you landed too, so your glow and rings follow your companion */
   const me=gx.me&&epos(gx.spot.get(gx.me.uid),gx.me.uid),mp=me?scr(me):{x:cx,y:cy};

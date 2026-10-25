@@ -37,6 +37,19 @@ test('tapping Give a hand opens its panel on top of Shop and is never saved as t
   assert.match(sp, /const next = id === 'sz' && SZ\(\) \? 'sz' : id === 'kitchen' && K \? 'kitchen' : 'shop';/);
 });
 
+test('What\'s New mini tour: new-give-hand opens Shop on Kitchen and points at the Give a hand tab, in en/de/es', () => {
+  const S = require('../tutorial-steps.js');
+  const s = S.STEPS.find(x => x.id === 'new-give-hand');
+  assert.ok(s, 'step new-give-hand exists');
+  assert.strictEqual(s.area, 'new');
+  assert.strictEqual(s.open, 'kitchen', 'Shop opens on Kitchen, the Give a hand tab sits right beside it');
+  assert.strictEqual(s.target[0], '.stp-card .stp-tab[data-stp-tab="gift"]');
+  assert.strictEqual(s.target[s.target.length - 1], '.stp-card', 'falls back to Shop while the server gate is shut');
+  assert.deepStrictEqual([s.title.en, s.title.de, s.title.es], ['Give a hand', 'Hilf mit', 'Echa una mano'], 'same name as the tab');
+  assert.ok(S.VERSION >= 27);
+  assert.deepStrictEqual(S.tourOf({ tour: ['new-give-hand'] }), ['new-give-hand']);
+});
+
 test('Give a hand is no longer a row inside Kitchen or the Supermarket pane: one place only', () => {
   assert.doesNotMatch(sp, /giftEntry\(\)/, 'no Give a hand row in kitHTML or shopActs');
   assert.doesNotMatch(sp, /entryHTML\(\) : ''; \} catch/, 'the row helper is gone');

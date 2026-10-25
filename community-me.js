@@ -16,7 +16,7 @@
         es: { more: 'M\u00e1s lugares', title: 'T\u00fa', you: 'T\u00fa', settings: 'Ajustes', account: 'Cuenta', close: 'Cerrar', level: 'Nivel', guest: 'T\u00fa', hold: 'Consejo: mant\u00e9n la burbuja Comunidad en Inicio para abrir esto desde cualquier sitio.' }
     };
     /* the places that only work on Home (they press a Home control): go Home first, then run */
-    const HOME_FIRST = ['gift'];
+    const HOME_FIRST = ['gift', 'myday'];  /* myday: its bubbles open Home's old day panels (index.html g2h) */
     const LABELS = {
         en: { me: 'Profile', presence: 'Your presence', body: 'Weight & BMI', weight: 'Weight journey' }, de: { me: 'Profil', presence: 'Dein Auftritt', body: 'Gewicht & BMI', weight: 'Gewichtsreise' }, es: { me: 'Perfil', presence: 'Tu presencia', body: 'Peso e IMC', weight: 'Tu camino de peso' }
     };

@@ -24,17 +24,17 @@
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'not logged',
             settings: 'Settings', me: 'Me', look: 'Look & sound', account: 'Account', on: 'on', off: 'off', more: 'More', back: 'Back', close: 'Close',
             moreTitle: 'Everything else', today: 'Today & history', community: 'Community', care: 'Ranking', cook: 'Cook', workouts: 'Workouts',
-            vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest', goTo: 'Go to', settingsGroup: 'Settings', tutorial: 'Tutorial', body: 'Weight & BMI', weight: 'Weight journey', version: 'Version' },
+            vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest', goTo: 'Go to', settingsGroup: 'Settings', tutorial: 'Tutorial', body: 'Weight & BMI', myday: 'My day', weight: 'Weight journey', version: 'Version' },
         de: { sleep: 'Schlaf', log: 'Eintragen', ask: 'Wie lange hast du letzte Nacht geschlafen?', under6: 'Unter 6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std. oder mehr',
             short: { under6: '<6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std.+' }, notLogged: 'nicht eingetragen',
             settings: 'Einstellungen', me: 'Ich', look: 'Aussehen & Ton', account: 'Konto', on: 'an', off: 'aus', more: 'Mehr', back: 'Zur\u00fcck', close: 'Schlie\u00dfen',
             moreTitle: 'Alles andere', today: 'Heute & Verlauf', community: 'Community', care: 'Rangliste', cook: 'Kochen', workouts: 'Workouts',
-            vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest', goTo: 'Gehe zu', settingsGroup: 'Einstellungen', tutorial: 'Tutorial', body: 'Gewicht & BMI', weight: 'Gewichtsreise', version: 'Version' },
+            vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest', goTo: 'Gehe zu', settingsGroup: 'Einstellungen', tutorial: 'Tutorial', body: 'Gewicht & BMI', myday: 'Mein Tag', weight: 'Gewichtsreise', version: 'Version' },
         es: { sleep: 'Sue\u00f1o', log: 'Anotar', ask: '\u00bfCu\u00e1nto dormiste anoche?', under6: 'Menos de 6 h', '6to7': '6\u20137 h', '7plus': '7 h o m\u00e1s',
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'sin anotar',
             settings: 'Ajustes', me: 'Yo', look: 'Aspecto y sonido', account: 'Cuenta', on: 's\u00ed', off: 'no', more: 'M\u00e1s', back: 'Atr\u00e1s', close: 'Cerrar',
             moreTitle: 'Todo lo dem\u00e1s', today: 'Hoy e historial', community: 'Comunidad', care: 'Ranking', cook: 'Cocinar', workouts: 'Entrenos',
-            vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', tutorial: 'Tutorial', body: 'Peso e IMC', weight: 'Tu camino de peso', version: 'Versi\u00f3n' }
+            vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', tutorial: 'Tutorial', body: 'Peso e IMC', myday: 'Mi d\u00eda', weight: 'Tu camino de peso', version: 'Versi\u00f3n' }
     };
     /* Oct 21 2026 (Emmanuel: the Home bubble is Community now, a hold opens a slim Settings with only what is needed) */
     Object.assign(TX.en, { language: 'Language', deleteAccount: 'Delete account', hint: 'Hold Community for profile & settings', day: 'Day', night: 'Night', foryou: 'For You', hunt: 'Shopping hunt',
@@ -144,7 +144,9 @@
     /* Oct 22 2026 (Emmanuel: "remove the explore things and have the more important things in there"): the profile hub drops its
        Explore list and carries the Settings instead (community-me.js). Each former Explore place keeps its own way in: EXPLORE_MOVED
        says where (checked in tools/community-settings/hub-b.js). */
-    const COMMUNITY_PLACES = { you: ['me', 'body'], places: [] };  /* Oct 22 2026: Weight journey lives inside Weight & BMI now, so no own row */
+    /* Oct 25 2026: 'myday' = the old Today parts that had no other way in once the Today sheet was retired (Eman: "Nuke it"):
+       Check-ins, Meals, Your plate, Medicine, Shopping, Extras, macro goals, Your inside, as one small sheet of bubbles (misty-hub.js LowiMyDay) */
+    const COMMUNITY_PLACES = { you: ['me', 'body', 'myday'], places: [] };  /* Oct 22 2026: Weight journey lives inside Weight & BMI now, so no own row */
     /* Workouts is the Move tab behind the Home Move bubble. The other five have no visible way in on Home or the tabs today (the
        iPhone run found the Home zoom and gift hidden, the For You and Care board pills hidden, and no Finds chip in the scanner), so
        they keep a light way in: one folded "More places" row under YOU (EXPLORE_LIGHT). */
@@ -257,6 +259,7 @@
         account: '<rect x="5" y="10.5" width="14" height="9.5" rx="2" ' + P + '/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" ' + P + '/>',
         tutorial: '<circle cx="12" cy="12" r="8.5" ' + P + '/><path d="M10 8.8v6.4l5.2-3.2z" ' + P + '/>',
         body: '<rect x="4" y="5" width="16" height="14" rx="4" ' + P + '/><path d="M8.5 10a4.5 4.5 0 0 1 7 0L12 12.5" ' + P + '/>',
+        myday: '<circle cx="12" cy="12" r="8" ' + P + '/><path d="M12 7.5V12l3 2" ' + P + '/>',
         more: '<path d="M6 12h.01M12 12h.01M18 12h.01" ' + P + ' stroke-width="3"/>',
         theme: '<path d="M19 14.5A7.5 7.5 0 1 1 9.5 5a6 6 0 0 0 9.5 9.5z" ' + P + '/>',
         worldSound: '<path d="M3 12h2l2-5 3 10 3-12 3 9 2-2h3" ' + P + '/>',
@@ -313,6 +316,7 @@
         tutorial: { has: () => !!(root.LowiTutorial && fn(root.LowiTutorial, 'start')), run: () => root.LowiTutorial.start({ from: 'settings' }) },
         /* Oct 19 2026 (Emmanuel): weigh in, BMI with its category, body-fat estimate and the Then/Now level-up track (body-stats.js) */
         body: { has: () => !!(root.LowiBodyStats && fn(root.LowiBodyStats, 'open')), run: () => root.LowiBodyStats.open() },
+        myday: { has: () => !!(root.LowiMyDay && fn(root.LowiMyDay, 'open')), run: () => root.LowiMyDay.open() },
         /* Oct 22 2026 (Emmanuel: "set starting time and see a graphic"): start date, weigh-ins and the chart (weight-journey.js) */
         weight: { has: () => !!(root.LowiWeightJourney && fn(root.LowiWeightJourney, 'open')), run: () => root.LowiWeightJourney.open() },
         quest: { has: () => !!$('#f3Board'), run: () => H.classList.toggle('o8-quest'), toggle: () => H.classList.contains('o8-quest') }

@@ -80,7 +80,13 @@
         forms: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18c2-6 5-9 8-9s6 3 8 9"/><circle cx="6" cy="18" r="1.6"/><circle cx="12" cy="9" r="2.4"/><circle cx="18" cy="18" r="1.6"/></svg>',
         glow: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>',
         moon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
-        pen: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>'
+        pen: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
+        trip: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c1-5 4-6 7-6s5-2 5-5"/><circle cx="17" cy="6" r="2.2"/><circle cx="5" cy="19" r="1.4"/></svg>',
+        gift: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="9" width="15" height="10.5" rx="2"/><path d="M3.5 9h17M12 9v10.5M12 9c-1.5-3.5-5.5-3.5-5-1 .3 1 2.5 1 5 1zm0 0c1.5-3.5 5.5-3.5 5-1-.3 1-2.5 1-5 1z"/></svg>',
+        sun: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg>',
+        flame: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-3.6 0-6-2.4-6-5.6 0-3.6 3-5.4 3.6-9.4 2.4 1.6 3.4 3.6 3.4 5.4 1-.6 1.6-1.6 1.8-2.8C17 10.4 18 12.8 18 15.4 18 18.6 15.6 21 12 21z"/></svg>',
+        macro: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l6.2 5"/></svg>',
+        inside: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.3-7-9.4A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.6C19 15.7 12 20 12 20z"/><path d="M8.6 12.4h2l1-2 1.6 4 1-2h1.4"/></svg>'
     };
     function html(sayOverride) {
         const xp = xpNow(), s = stageOf(xp), a = aura(), v = cell(), st = status();
@@ -112,6 +118,7 @@
             /* Oct 24 2026 (Emmanuel): with cycle tracking on, a small "Your cycle" section right under the doors opens My cycle
                (cycle-world.js hubHtml / hubOpen). Tracking off: nothing here. */
             cycleHtml() +
+            todayHtml() +
             (say ? '<p class="mh-say" role="status" aria-live="polite">' + esc(say) + '</p>' : '<p class="mh-say" role="status" aria-live="polite" hidden></p>') +
             (night ? '<button type="button" class="mh-pri" data-mh="goodnight"' + (gn ? ' aria-pressed="true"' : '') + '>' + ICO.moon + '<span>' + esc(gn ? T('Tucked in for the night', 'F\u00fcr die Nacht eingekuschelt', 'Arropada para la noche') : T('Say goodnight', 'Gute Nacht sagen', 'Dar las buenas noches')) + '</span></button>' : '') +
             scaleHtml() +
@@ -126,6 +133,42 @@
     }
     /* Oct 17: Misty's energy scale and her way back (misty-scale.js), right under her words */
     /* adventure tiers (adventure-tiers.js): what her timed adventure reaches at this level; autopilot is never gated */
+    /* Oct 25 2026 (Eman: "Nuke it" about the Today sheet): the three things of hers that only lived in Today come to her card as
+       three small round bubbles, the living-bubble look, nothing else: Journeys (her body trips; "I'm back, open your surprise" when
+       she is home with one), Sun (x/12) and Weekly goal. Each one reads the live row its own module still renders (hidden) and a
+       tap closes the card and does exactly what that row did (body-trips.js data-bt=bar, sun-meter.js data-ls=info,
+       daily-ritual.js data-dr=chip). A module that is not there leaves its bubble out. */
+    function srcLabel(sel) { const e = D.querySelector(sel); return e ? String(e.getAttribute('aria-label') || e.textContent || '').replace(/\s+/g, ' ').trim() : ''; }
+    function todayItems() {
+        const out = [], bt = D.getElementById('btBar');
+        if (bt || W.LowiBodyTrips) {
+            const back = !!(bt && bt.classList.contains('back'));
+            out.push({ k: 'trip', on: back, ico: back ? ICO.gift : ICO.trip, b: back ? T('Surprise!', '\u00dcberraschung!', '\u00a1Sorpresa!') : T('Journeys', 'Reisen', 'Viajes'), sub: srcLabel('#btBar') });
+        }
+        if (D.getElementById('lsSun') || W.LowiSun) {
+            const ls = D.getElementById('lsSun'), m = ls ? String(ls.textContent || '').match(/(\d+)\s*\/\s*(\d+)/) : null;
+            out.push({ k: 'sun', on: !!(ls && ls.classList.contains('full')), ico: ICO.sun, n: m ? m[1] + '/' + m[2] : '', b: T('Sun', 'Sonne', 'Sol'), sub: srcLabel('#lsSun') });
+        }
+        if (D.getElementById('drChip') || W.LowiRitual) {
+            const dc = D.getElementById('drChip'), m = dc ? String(dc.textContent || '').match(/(\d+)\s*\/\s*(\d+)/) : null;
+            out.push({ k: 'goal', on: !!(dc && dc.classList.contains('won')), ico: ICO.flame, n: m ? m[1] + '/' + m[2] : '', b: T('Weekly goal', 'Wochenziel', 'Meta semanal'), sub: srcLabel('#drChip') });
+        }
+        return out;
+    }
+    function orb(it, attr) {
+        return '<button type="button" class="mh-orb' + (it.on ? ' on' : '') + '" ' + attr + ' aria-label="' + esc(it.b + (it.sub && it.sub !== it.b ? ': ' + it.sub : '')) + '">' +
+            '<span class="mh-ob" aria-hidden="true">' + (it.n ? '<span class="mh-on num">' + esc(it.n) + '</span>' : it.ico) + '</span><b>' + esc(it.b) + '</b></button>';
+    }
+    function todayHtml() {
+        const its = todayItems(); if (!its.length) return '';
+        return '<nav class="mh-today" aria-label="' + esc(T('Today with ' + name(), 'Heute mit ' + name(), 'Hoy con ' + name())) + '">' + its.map(it => orb(it, 'data-mh="t-' + it.k + '"')).join('') + '</nav>';
+    }
+    /* a tap on a bubble does what the hidden row did, from outside any sheet (body-trips.js treats a tap inside a sheet differently) */
+    function proxy(attr, val) {
+        const t = D.createElement('button'); t.type = 'button'; t.hidden = true; t.setAttribute(attr, val);
+        D.body.appendChild(t); try { t.click(); } finally { t.remove(); }
+    }
+    const TODAY_ACT = { trip: () => proxy('data-bt', 'bar'), sun: () => proxy('data-ls', 'info'), goal: () => proxy('data-dr', 'chip') };
     function cycleHtml() { try { return W.LowiCycleWorld && W.LowiCycleWorld.hubHtml ? W.LowiCycleWorld.hubHtml() : ''; } catch (e) { return ''; } }
     function advHtml() { try { return W.LowiAdventureTiers && W.LowiAdventureTiers.html ? W.LowiAdventureTiers.html() : ''; } catch (e) { return ''; } }
     function rankHtml() { try { return W.LowiMistyRank && W.LowiMistyRank.html ? W.LowiMistyRank.html() : ''; } catch (e) { return ''; } }
@@ -168,6 +211,7 @@
         else if (k === 'glow') openDetails('aura');
         else if (k === 'rename') renameOpen();
         else if (k === 'cycle') { try { W.LowiCycleWorld && W.LowiCycleWorld.hubOpen && W.LowiCycleWorld.hubOpen(); } catch (x) { } }
+        else if (k.indexOf('t-') === 0 && TODAY_ACT[k.slice(2)]) { const go = TODAY_ACT[k.slice(2)]; close(); setTimeout(() => { try { go(); } catch (x) { console.error(x); } }, 360); }
     });
 
     /* ---------- rename (Oct 19, aura-rename task; Emmanuel's friend: "change the name manually ... when their companion gets a
@@ -218,6 +262,12 @@
     ['lowi:herb-xp', 'lowi:cell-state', 'lowi:meal-logged', 'lowi:lang', 'lowi:aura', 'lowi:companion'].forEach(ev => W.addEventListener(ev, () => { if (sheet() && !renaming()) repaint(); }));
 
     /* ---------- Misty's nudges on Home ---------- */
+    /* Oct 25 2026, 08:01 (Eman, iPhone screenshot of the little bubble and the Today sheet it opened: "Nuke it. I don't know what
+       this is for anymore."): the nudge is retired. It popped up and faded before anyone knew it was tappable, and it only ever led
+       into the overloaded Today sheet, which is retired too (world-home.js TODAY_RETIRED). What it pointed at stays reachable with
+       no bubble: the surprise after a journey, the sun and the weekly goal are round bubbles on Misty's card (todayHtml below),
+       Goodnight stays on her card at night. The code below is kept for its pure helpers (candidates, nudgeSpot) but never shows. */
+    const NUDGES_RETIRED = true;
     const NUDGE_GAP = 90e3, NUDGE_SHOW = 11e3, NUDGE_DAY_MAX = 4, SETTLE = 3500;
     let nudge = null, nudgeEl = null, hideT = 0, homeSince = 0, lastShown = 0;
     const NUDGE_RETRY = 10 * 60e3, NUDGE_SHOWS_MAX = 8, retry = {}, shows = [];
@@ -324,6 +374,7 @@
         }, 260);
     }
     function tick() {
+        if (NUDGES_RETIRED) { if (nudge) hideNudge(); return; }
         if (quiet()) { homeSince = 0; if (nudge) hideNudge(); return; }
         if (!homeSince) { homeSince = Date.now(); return; }
         if (nudge) { place(); return; }
@@ -335,10 +386,69 @@
         const s = seen(), n = candidates().find(c => !s[c.key] && !(retry[c.key] && now - retry[c.key] < NUDGE_RETRY));
         if (n) showNudge(n);
     }
-    function boot() { setInterval(tick, 1500); W.addEventListener('resize', place); }
+    /* retired: no 1.5 s timer any more (one less wake-up for the battery) */
+    function boot() { if (NUDGES_RETIRED) { const old = D.getElementById('mhNudge'); if (old) old.remove(); return; } setInterval(tick, 1500); W.addEventListener('resize', place); }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiMistyHub = { open, close, repaint, goodnight, saidGoodnight, nightKey, candidates, tick, quiet, nudgeSpot, _html: html };
+    /* ---------- My day (Oct 25 2026) ----------
+       The other things that only lived in the retired Today sheet: the six old day shortcuts (Check-ins, Meals, Your plate,
+       Medicine, Shopping, Extras: index.html g2h panels), the macro goals (spirit.js data-sp=goals) and the "Your inside" row
+       (inside-row.js #brRow). Reached from Community hold -> You -> My day (home-settings-sleep-v2.js route 'myday'): one small
+       sheet of round bubbles, nothing else on it. The bubbles mirror whatever #g2hTiles holds right now (index.html shows a tile
+       only when its part has something), and a tap closes the sheet and does exactly what the old tile did. */
+    const DAY_ICO = { macro: ICO.macro, inside: ICO.inside };
+    function dayItems() {
+        const out = [];
+        D.querySelectorAll('#g2hTiles [data-g2h-open]').forEach(b => {
+            const k = b.dataset.g2hOpen, lab = b.querySelector('b'), ic = b.querySelector('.g2h-ic'), sm = b.querySelector('small');
+            if (!k || out.some(o => o.k === 'g-' + k)) return;
+            out.push({ k: 'g-' + k, b: lab ? lab.textContent.trim() : k, sub: sm ? sm.textContent.trim() : '', ico: ic ? ic.innerHTML : ICO.macro });
+        });
+        if (W.LowiSpirit) out.push({ k: 'macro', b: T('Macro goals', 'Makro-Ziele', 'Metas de macros'), sub: '', ico: DAY_ICO.macro });
+        if (D.getElementById('brRow')) out.push({ k: 'inside', b: T('Your inside', 'Dein Inneres', 'Tu interior'), sub: '', ico: DAY_ICO.inside });
+        return out;
+    }
+    function dayAct(k) {
+        if (k.indexOf('g-') === 0) return proxy('data-g2h-open', k.slice(2));
+        if (k === 'macro') return proxy('data-sp', 'goals');
+        if (k === 'inside') { const r = D.getElementById('brRow'); if (r) r.click(); }
+    }
+    function dayHtml() {
+        const its = dayItems();
+        const a = aura() || {};
+        return '<div class="mh mh-day" id="myDay" data-noi18n style="--a:' + esc(a.a || '#7cf0c0') + ';--b:' + esc(a.b || '#5ab0ff') + '">' +
+            '<h2 class="mh-day-t">' + esc(T('My day', 'Mein Tag', 'Mi d\u00eda')) + '</h2>' +
+            (its.length ? '<nav class="mh-today mh-day-grid">' + its.map(it => orb(it, 'data-myday="' + esc(it.k) + '"')).join('') + '</nav>'
+                : '<p class="mh-day-none">' + esc(T('Nothing here yet.', 'Hier ist noch nichts.', 'A\u00fan no hay nada.')) + '</p>') + '</div>';
+    }
+    function daySheet() { return Array.from(D.querySelectorAll('#myDay')).find(e => !(e.closest && e.closest('.r2-ov.off'))) || null; }
+    function dayOpen() {
+        const R2 = W.LowiR2; if (!R2 || !R2.sheet) return false;
+        dayClose();
+        R2.sheet(dayHtml(), { cls: 'wh-ms-ov mh-ov mh-day-ov' });
+        try { W.LowiWorldHome && W.LowiWorldHome.syncX && setTimeout(W.LowiWorldHome.syncX, 20); } catch (e) { }
+        if (!hasTiles()) refill(0);
+        return true;
+    }
+    /* index.html re-renders the shortcut tiles when Home comes back (Community -> Home first): for a moment there are none, so the
+       sheet fills them in as soon as they are back (a few short looks, then it stops) */
+    function hasTiles() { return !!D.querySelector('#g2hTiles [data-g2h-open]'); }
+    function refill(n) {
+        setTimeout(() => {
+            const ex = daySheet(); if (!ex) return;
+            if (!hasTiles()) { if (n < 8) refill(n + 1); return; }
+            const t = D.createElement('div'); t.innerHTML = dayHtml(); const fresh = t.firstElementChild;
+            if (fresh) { ex.innerHTML = fresh.innerHTML; }
+        }, 250);
+    }
+    function dayClose() { const ex = daySheet(); const ov = ex && ex.closest('.r2-ov'); try { if (ov && W.LowiR2 && W.LowiR2.close) W.LowiR2.close(ov); else if (ov) ov.remove(); } catch (e) { ov && ov.remove(); } }
+    D.addEventListener('click', e => {
+        const b = e.target.closest && e.target.closest('[data-myday]'); if (!b || !b.closest('#myDay')) return;
+        const k = b.dataset.myday; dayClose(); setTimeout(() => { try { dayAct(k); } catch (x) { console.error(x); } }, 360);
+    });
+    W.LowiMyDay = { open: dayOpen, close: dayClose, items: dayItems, _html: dayHtml };
+
+    W.LowiMistyHub = { open, close, repaint, goodnight, saidGoodnight, nightKey, candidates, tick, quiet, nudgeSpot, nudgesRetired: NUDGES_RETIRED, todayItems, _html: html };
 })();
 
 /* Oct 23 2026 (Eman: "when we check our own Misty stats, that's where we see where Misty's ranked, worldwide basically. So people get

@@ -35,7 +35,7 @@ test('the slim Settings holds only switches, language and the account; places an
     assert.deepStrictEqual(C.pageGroups({ has: () => false }), [], 'nothing to show: no empty groups');
     assert.deepStrictEqual(C.pageGroups({ has: id => id === 'tutorial' || id === 'account' }), [{ key: 'main', ids: ['tutorial'] }, { key: 'account', ids: ['account'] }]);
     assert.strictEqual(C.rowAction('language'), 'lang'); assert.strictEqual(C.rowAction('deleteAccount'), 'confirm'); assert.strictEqual(C.rowAction('theme'), 'toggle');
-    assert.deepStrictEqual(C.COMMUNITY_PLACES.you, ['me', 'body'], 'Weight journey merged into Weight & BMI, no own row (Oct 22 2026)');
+    assert.deepStrictEqual(C.COMMUNITY_PLACES.you, ['me', 'body', 'myday'], 'Weight journey merged into Weight & BMI, no own row (Oct 22 2026); My day holds the retired Today sheet\'s parts (Oct 25 2026)');
     /* Oct 22 2026: the hub's Explore list is gone; each place keeps its own way in (community-hub-settings.test.cjs) */
     for (const id of ['care', 'workouts', 'gift', 'foryou', 'hunt']) assert.ok(C.EXPLORE_MOVED[id], id + ' has a way in outside the hub');
     for (const id of ['vr', 'weather']) assert.strictEqual(C.MORE_REMOVED[id], 'removed', id + ' is out of every menu');

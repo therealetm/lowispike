@@ -10,7 +10,7 @@ const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const all = { has: () => true };
 
 test('Oct 21 2026: what no bubble reaches lives in Community (profile first, then the places); World sound is a Settings row', () => {
-    assert.deepStrictEqual(C.MORE_GROUPS.go, ['me', 'body', 'foryou', 'care', 'workouts', 'gift', 'hunt']);
+    assert.deepStrictEqual(C.MORE_GROUPS.go, ['me', 'body', 'myday', 'foryou', 'care', 'workouts', 'gift', 'hunt']);
     assert.deepStrictEqual(C.MORE_GROUPS.set, []);
     assert.deepStrictEqual(C.MORE, C.MORE_GROUPS.go.concat(C.MORE_GROUPS.set));
     assert.deepStrictEqual(C.moreGroups({ has: id => id === 'care' || id === 'worldSound' }), { go: ['care'], set: [] });

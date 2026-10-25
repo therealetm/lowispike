@@ -247,7 +247,17 @@
         if (row.__h !== html) { row.__h = html; row.innerHTML = html; }
     }
     /* ---------- the today sheet ---------- */
+    /* Oct 25 2026, 08:01 (Eman, iPhone screenshot): the Today sheet is retired. The pill was already gone from Home and the only way
+       left in was Misty's little nudge (misty-hub.js, retired too); the sheet itself was a pile of everything (status, six old
+       shortcuts, day goal, inside row, journeys, sun, level, water, scan, food, macros, move). "Nuke it. I don't know what this is
+       for anymore." It never opens again: openToday(true) only closes. The box stays built and hidden, because spirit.js,
+       body-trips.js, sun-meter.js, daily-ritual.js, inside-row.js and index.html (g2h tiles) still render into it and their state
+       lives there. Every part is reached another way: Fuel, Water, Move, Scan bubbles; level and XP on Misty's card; journeys,
+       surprise, sun and weekly goal as round bubbles on Misty's card; the six old shortcuts, macro goals and Your inside under
+       Community hold -> You -> My day (LowiMyDay in misty-hub.js). DECISIONS.md, 25 Oct. */
+    const TODAY_RETIRED = true;
     function openToday(on) {
+        if (TODAY_RETIRED) on = false;
         const box = ensureToday(); if (!box) return;
         if (on) mirrorTiles();
         st.today = !!on;
@@ -1238,7 +1248,7 @@
     /* auraLook(): what Misty wears now, for any other place that draws her (a Community / leaderboard avatar: put fxHTML(fx) inside
        an element with position:relative and --a/--b set) */
     function auraLook() { const a = C.aura(auraId()); return { id: a.id, a: a.a, b: a.b, fx: a.fx || '' }; }
-    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, heroTurn, state: st, auraId, sparks: sparksNow, wallet: walletNow, buyAura, fxHTML, ensureFx, auraLook, syncX, rig };
+    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, todayRetired: TODAY_RETIRED, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, heroTurn, state: st, auraId, sparks: sparksNow, wallet: walletNow, buyAura, fxHTML, ensureFx, auraLook, syncX, rig };
     W.LowiWorldHome.mistyFaceArt = mistyFaceArt;
     W.LowiWorldHome.pad = pad;
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();

@@ -884,6 +884,26 @@ Live since build 20261024-232602 (quiet, no news). Live check: `node tools/check
 "iPad (gen 7)", en): all five cards show the new levers, nothing overflows, the speaker fetches the new recorded clips, never the
 device voice, no page errors: 16/16 on iPhone 13 and iPad, DE and EN. Not yet seen on Emmanuel's real iPhone/iPad.
 
+### 0.12 Home nudge bubble and the Today sheet are gone (Sun 25 Oct 2026, about 09:30 CEST)
+
+Emmanuel (08:01, iPhone screenshot): a small bubble on Home pops up so fast he barely sees it and does not know it is tappable;
+a tap opened an overloaded sheet (Misty status + "Log food", six tiles Check-ins/Meals/Your plate/Medicine/Shopping/Extras,
+"TODAY", goal chip, "Your inside", "Back! Open surprise", "Sun 0/12", Legend XP, Water, Scan, Food, Macros, Move).
+"Nuke it. I don't know what this is for anymore." The bubble was Misty's nudge (`misty-hub.js` #mhNudge), the sheet was the
+old Today sheet (`world-home.js` #whToday; its pill had been hidden on Home since home-orbit-v2, the nudge was the last way in).
+Now: `NUDGES_RETIRED` (no nudge, no 1.5 s timer) and `TODAY_RETIRED` (openToday(true) only closes; the box stays built and
+hidden because spirit.js, body-trips.js, sun-meter.js, daily-ritual.js, inside-row.js and index.html g2h tiles render into it).
+Where every part lives now (nothing lost):
+- Log food / Food: Fuel bubble. Water: Water bubble. Scan: Scan bubble. Move: Move bubble. Level + XP: Misty's card.
+- Journeys (start, list, **"Surprise!" when she is back**), Sun x/12, Weekly goal: three round bubbles on Misty's card
+  (`todayHtml`, a tap closes the card and fires the same action the old row had: data-bt=bar, data-ls=info, data-dr=chip).
+- Check-ins, Meals, Your plate, Medicine, Shopping, Extras, Macro goals, Your inside: Community hold -> You -> **My day**
+  (`LowiMyDay` in misty-hub.js, route `myday` in home-settings-sleep-v2.js): one small sheet of round bubbles, nothing else.
+- Goodnight: Misty's card at night (unchanged). Daily card ("Today · goal"): still shows itself once a day (daily-ritual.js).
+- Scan hold: still the bloom ring with every bubble's choices (bloom-ring.js), it never opened the Today sheet. Untouched.
+Guarded by tests/home-today-retired.test.cjs. Live check: `node /home/sprite/hn-check.cjs <url> "iPhone 13"|"iPad (gen 7)" de|en`
+(kept in the VM, not in the repo). Do not bring the nudge or the Today sheet back.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

@@ -154,3 +154,26 @@ html #cmPaneChat .cs-compose-meta, html #cmPaneChat[data-spirit-chat] .cg-chip:n
 @keyframes mh-rk-pulse { 50% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 0 20px rgba(90, 169, 255, .30); } }
 /* the Ranking's Your place card glows for a moment when you come from the peek */
 .rk-me.mh-rk-hi { box-shadow: 0 0 0 2px #8fe7ff, 0 0 22px rgba(143, 231, 255, .55) !important; transition: box-shadow .3s; }
+
+/* Oct 25 2026 (Eman: "Nuke it" about the little Home bubble and the Today sheet behind it): what only lived in Today comes back
+   as small round living bubbles: three on Misty's card (Journeys/Surprise, Sun, Weekly goal) and the "My day" sheet
+   (Community hold -> You). Same glass bubble as Home: soft rim, inner light, the aura colour; the label sits under the bubble and
+   wraps, never clipped. Only a bubble that needs you (surprise waiting, full sun, goal won) breathes, and only when motion is allowed. */
+.mh-today { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 8px; justify-items: center; }
+.mh-orb { all: unset; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; min-height: 44px; padding: 4px 2px; border-radius: 18px; cursor: pointer; color: var(--mh-ink); text-align: center; -webkit-tap-highlight-color: transparent; }
+.mh-orb:focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
+.mh-ob { position: relative; display: grid; place-items: center; width: 60px; height: 60px; border-radius: 50%;
+    background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .34), rgba(255, 255, 255, .07) 46%, color-mix(in srgb, var(--a) 16%, transparent) 100%);
+    border: .5px solid var(--mh-rim); box-shadow: inset 0 0 14px color-mix(in srgb, var(--a) 26%, transparent), 0 0 16px color-mix(in srgb, var(--a) 14%, transparent); color: var(--a);
+    transition: transform .18s ease; }
+.mh-ob svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.mh-ob .num { font-size: 15px; font-weight: 700; color: var(--mh-ink); letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.mh-orb:active .mh-ob { transform: scale(.94); }
+.mh-orb b { font-size: 13px; font-weight: 600; line-height: 1.2; color: var(--mh-ink); overflow-wrap: break-word; hyphens: manual; max-width: 100%; }
+.mh-orb.on .mh-ob { border-color: color-mix(in srgb, var(--a) 70%, white); box-shadow: inset 0 0 16px color-mix(in srgb, var(--a) 40%, transparent), 0 0 22px color-mix(in srgb, var(--a) 40%, transparent); }
+@media (prefers-reduced-motion: no-preference) { .mh-orb.on .mh-ob { animation: mh-breathe 2.8s ease-in-out infinite; } }
+@keyframes mh-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+.mh-day-t { margin: 2px 0 6px; font-size: 22px; font-weight: 700; letter-spacing: -.01em; color: var(--mh-ink); }
+.mh-day-grid { gap: 14px 8px; }
+.mh-day-none { margin: 0; font-size: 15px; color: var(--mh-ink-2); }
+.mh-day .mh-ob .g2h-ic, .mh-day .mh-ob .g2h-ic svg { display: grid; place-items: center; }

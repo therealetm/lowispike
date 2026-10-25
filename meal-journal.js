@@ -15,7 +15,7 @@
         en: {
             title: 'Your meal', share: 'Share to Community', shareT: 'Share this meal', del: 'Delete meal', delQ: 'Delete this meal and its photo?',
             delS: 'The XP it earned goes with it.', keep: 'Keep', delGo: 'Delete', deleted: 'Meal deleted', post: 'Post to Community',
-            cap: 'Caption (optional)', capPh: 'Say something about it', foot: 'Only this meal is shared: the photo, its name and the spike rating. Low-spike meals also show in For You. Never your weight or other health data.',
+            cap: 'Caption (optional)', capPh: 'Say something about it', foot: 'Only this meal is shared: the photo, its name, the spike rating and what the photo check found (foods, numbers, tip). Low-spike meals also show in For You. Never your weight or other health data.',
             posting: 'Posting…', posted: 'Shared to Community', noPhoto: 'This meal has no photo to share.', signin: 'Sign in to share in Community.',
             name: 'Pick a nickname in Community first.', offline: 'You are offline. Try again when you are back online.', failed: 'Could not share it. Try again.',
             low: 'Low spike', mid: 'Medium spike', high: 'Likely spike', bs: 'Blood sugar', ing: 'Foods', est: 'Estimate from your photo. Not medical advice.',
@@ -25,7 +25,7 @@
         de: {
             title: 'Deine Mahlzeit', share: 'In der Community teilen', shareT: 'Diese Mahlzeit teilen', del: 'Mahlzeit löschen', delQ: 'Diese Mahlzeit und ihr Foto löschen?',
             delS: 'Die XP dafür werden mit entfernt.', keep: 'Behalten', delGo: 'Löschen', deleted: 'Mahlzeit gelöscht', post: 'In der Community posten',
-            cap: 'Text (optional)', capPh: 'Schreib etwas dazu', foot: 'Geteilt wird nur diese Mahlzeit: das Foto, ihr Name und die Spike-Einschätzung. Mahlzeiten mit wenig Spike erscheinen auch in Für dich. Nie dein Gewicht oder andere Gesundheitsdaten.',
+            cap: 'Text (optional)', capPh: 'Schreib etwas dazu', foot: 'Geteilt wird nur diese Mahlzeit: das Foto, ihr Name, die Spike-Einschätzung und was der Foto-Check gefunden hat (Lebensmittel, Zahlen, Tipp). Mahlzeiten mit wenig Spike erscheinen auch in Für dich. Nie dein Gewicht oder andere Gesundheitsdaten.',
             posting: 'Wird gepostet…', posted: 'In der Community geteilt', noPhoto: 'Diese Mahlzeit hat kein Foto zum Teilen.', signin: 'Melde dich an, um in der Community zu teilen.',
             name: 'Wähle zuerst einen Spitznamen in der Community.', offline: 'Du bist offline. Versuch es wieder, wenn du online bist.', failed: 'Teilen hat nicht geklappt. Versuch es noch einmal.',
             low: 'Kleiner Spike', mid: 'Mittlerer Spike', high: 'Wahrscheinlich Spike', bs: 'Blutzucker', ing: 'Lebensmittel', est: 'Schätzung aus deinem Foto. Keine medizinische Beratung.',
@@ -35,7 +35,7 @@
         es: {
             title: 'Tu comida', share: 'Compartir en la Comunidad', shareT: 'Compartir esta comida', del: 'Borrar comida', delQ: '¿Borrar esta comida y su foto?',
             delS: 'La XP que ganaste con ella también se quita.', keep: 'Conservar', delGo: 'Borrar', deleted: 'Comida borrada', post: 'Publicar en la Comunidad',
-            cap: 'Texto (opcional)', capPh: 'Escribe algo sobre ella', foot: 'Solo se comparte esta comida: la foto, su nombre y la estimación del pico. Las comidas de pico bajo también salen en Para ti. Nunca tu peso ni otros datos de salud.',
+            cap: 'Texto (opcional)', capPh: 'Escribe algo sobre ella', foot: 'Solo se comparte esta comida: la foto, su nombre, la estimación del pico y lo que encontró el análisis (alimentos, números, consejo). Las comidas de pico bajo también salen en Para ti. Nunca tu peso ni otros datos de salud.',
             posting: 'Publicando…', posted: 'Compartida en la Comunidad', noPhoto: 'Esta comida no tiene foto para compartir.', signin: 'Inicia sesión para compartir en la Comunidad.',
             name: 'Elige primero un apodo en la Comunidad.', offline: 'No tienes conexión. Inténtalo cuando vuelvas a estar en línea.', failed: 'No se pudo compartir. Inténtalo de nuevo.',
             low: 'Pico bajo', mid: 'Pico medio', high: 'Pico probable', bs: 'Azúcar en sangre', ing: 'Alimentos', est: 'Estimación a partir de tu foto. No es consejo médico.',
@@ -71,7 +71,8 @@
     // any spike word the app uses -> low | mid | high ('' when unknown)
     function level(v) { const s = String(v || '').toLowerCase(); return s === 'low' ? 'low' : s === 'mid' || s === 'medium' ? 'mid' : s === 'high' ? 'high' : ''; }
     function levelOf(log) { return log ? (level(log.lvl) || level(log.ai && log.ai.bs)) : ''; }
-    // what a share carries: never weight, macros, goals or anything else, only this meal's photo, name, spike rating and the caption typed
+    // what a share carries: never weight, goals or anything else, only this meal's photo, name, spike rating, the caption typed
+    // and (Oct 25) this meal's own photo check via LowiMealDetailCore.fromLog (whitelisted)
     function shareOf(log, caption) {
         if (!log) return null;
         const name = str(log.ai && log.ai.name || log.t, 80), lvl = levelOf(log);
@@ -212,7 +213,9 @@
                 const C = root.LowiCommunity; if (!C || !C.shareMeal) throw new Error('signin');
                 const blob = await photoBlob(log); if (!blob) throw new Error('photo');
                 const s = shareOf(log, inp && inp.value);
-                const row = await C.shareMeal({ blob, name: s.name, lvl: s.lvl, caption: s.caption });
+                /* Oct 25: this one meal's own photo check rides along (meal-detail-core.js whitelist: name, verdict, foods, numbers, tip), so friends can tap the spike label */
+                let detail = null; try { const MD = root.LowiMealDetailCore; detail = MD ? MD.fromLog(log, s.lvl) : null; } catch (x) { detail = null; }
+                const row = await C.shareMeal({ blob, name: s.name, lvl: s.lvl, caption: s.caption, detail });
                 try { r.close(ov); } catch (x) {}
                 /* Share -> Community also lands in For You when it passes the insulin-friendly rule (foryou.js, DECISIONS 24 Oct 2026). */
                 let fy = null;

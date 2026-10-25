@@ -1,0 +1,50 @@
+/* LOWiSPIKE meal details (Oct 25 2026): the tappable spike label on meal posts and the glass detail sheet (meal-detail.js).
+   Text is var(--r2-ink) / var(--r2-mut) of the R2 sheet (day #161c2e/#5d6478 on white, dark #f8f5ed/#a19c90 on #0e111a) (AA in day and dark, checked in tools/meal-detail/live.cjs);
+   colour is only ever a dot next to words, never the only signal. */
+.md-sheet{display:flex;flex-direction:column;gap:10px;min-width:0;color:var(--r2-ink,#f8f5ed);padding-bottom:max(4px,env(safe-area-inset-bottom))}
+.md-photo{margin:0;border-radius:18px;overflow:hidden;background:color-mix(in srgb,var(--r2-ink,#f8f5ed) 6%,transparent)}
+.md-photo img{display:block;width:100%;max-height:min(34vh,320px);object-fit:cover}
+.md-k{margin:2px 0 -6px;font-size:12px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:var(--r2-mut,#a19c90)}
+.md-name{margin:0;font-size:20px;line-height:1.25;font-weight:700;overflow-wrap:anywhere}
+.md-by{margin:-6px 0 0;font-size:13.5px;line-height:1.35;color:var(--r2-mut,#a19c90);overflow-wrap:anywhere}
+.md-lv{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 8px;border-radius:999px;font-size:13px;font-weight:650;line-height:1.4;color:var(--r2-ink,#f8f5ed);background:color-mix(in srgb,var(--r2-ink,#f8f5ed) 9%,transparent);border:1px solid color-mix(in srgb,var(--r2-ink,#f8f5ed) 16%,transparent)}
+.md-lv i,.md-ing i{width:9px;height:9px;border-radius:50%;flex:none;background:var(--lo,#a9dcb2)}
+.md-lv-mid i,.md-ing .md-i-selten i{background:var(--mid,#e6c98a)}
+.md-lv-high i,.md-ing .md-i-nein i{background:var(--hi,#f0a08a)}
+.md-ing li:not([class]) i{background:color-mix(in srgb,var(--r2-ink,#f8f5ed) 35%,transparent)}
+.md-sec{display:flex;flex-direction:column;gap:6px;padding:11px 12px;border-radius:16px;background:color-mix(in srgb,var(--r2-ink,#f8f5ed) 6%,transparent);border:1px solid color-mix(in srgb,var(--r2-ink,#f8f5ed) 10%,transparent);min-width:0}
+.md-sec h4{margin:0;font-size:12.5px;font-weight:650;letter-spacing:.02em;color:var(--r2-mut,#a19c90)}
+.md-sec p{margin:0;font-size:14.5px;line-height:1.45;overflow-wrap:anywhere}
+.md-verdict{display:flex;flex-direction:column;gap:2px}
+.md-verdict b{font-size:14.5px}
+.md-verdict span{font-size:13.5px;color:var(--r2-mut,#a19c90)}
+.md-ing{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.md-ing li{display:flex;align-items:baseline;gap:8px;font-size:14.5px;line-height:1.4;min-width:0}
+.md-ing li i{transform:translateY(-1px)}
+.md-ing span{min-width:0;overflow-wrap:anywhere}
+.md-ing small{font-size:12.5px;color:var(--r2-mut,#a19c90)}
+.md-nut{display:flex;flex-wrap:wrap;gap:6px}
+.md-n{display:inline-flex;flex-direction:column;align-items:flex-start;min-width:64px;padding:6px 10px;border-radius:12px;font-size:12px;line-height:1.25;color:var(--r2-mut,#a19c90);background:color-mix(in srgb,var(--r2-ink,#f8f5ed) 7%,transparent)}
+.md-n b{font-size:16px;color:var(--r2-ink,#f8f5ed);font-weight:700}
+.md-note{margin:0;font-size:14px;line-height:1.45;overflow-wrap:anywhere}
+.md-est{margin:0;font-size:12.5px;line-height:1.4;color:var(--r2-mut,#a19c90)}
+.md-none{margin:4px 0 0;display:flex;flex-direction:column;gap:3px;padding:12px;border-radius:16px;background:color-mix(in srgb,var(--r2-ink,#f8f5ed) 6%,transparent)}
+.md-none b{font-size:15px;font-weight:650}
+.md-none small{font-size:13px;line-height:1.4;color:var(--r2-mut,#a19c90)}
+
+/* the visible tap hint: "Details" + chevron next to every spike label */
+.md-hint{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:650;line-height:1;opacity:.92}
+.md-hint svg{flex:none}
+/* Chat / Circles: the label itself is a button now */
+button.cs-meal-bs{font:inherit;font-size:12px;font-weight:600;cursor:pointer;min-height:28px;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button.cs-meal-bs .md-hint{margin-left:3px;padding-left:6px;border-left:1px solid color-mix(in srgb,currentColor 30%,transparent)}
+button.cs-meal-bs:active{transform:scale(.97)}
+button.cs-meal-bs:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+/* For You: on the dark slide shade, white words on a dark glass pill (AA) */
+.md-fy{display:inline-flex;align-items:center;gap:8px;margin:8px 0 2px;padding:5px 10px 5px 6px;min-height:34px;border-radius:999px;font:inherit;color:#fff;background:rgba(8,12,20,.62);border:1px solid rgba(255,255,255,.28);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);cursor:pointer;max-width:100%;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.md-fy .md-lv{color:#fff;background:transparent;border:0;padding:0 0 0 2px}
+.md-fy .md-hint{padding-left:8px;border-left:1px solid rgba(255,255,255,.35)}
+.md-fy.md-fy-hint .md-hint{padding:0 2px 0 4px;border:0}
+.md-fy:active{transform:scale(.97)}
+.md-fy:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.fy-slide .ms-bs,.tr-post .ms-bs{cursor:pointer}

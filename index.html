@@ -4585,6 +4585,7 @@ function slideHTML(p){
     '<div class="fy-meta"><div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b>' + (p.nb ? '<span class="fy-bot" title="Bot">Bot</span>' : '') + '<span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
       (p.meta && p.meta.meal && window.LowiMealSnap ? LowiMealSnap.cardHTML(p.meta.meal, {compact:true, noName:!!cap && cap === p.meta.meal.name}) : "") +
+      (window.LowiMealDetail ? LowiMealDetail.fyChip(p) : "") + /* Oct 25: tap the spike label for the meal details (meal-detail.js, task 31c545da) */
       (p.rec && window.FYV ? FYV.recChip(p) : "") +
       (ex ? fyOut(p, ex) : p.url ? '<button class="fy-src" data-tr="open" data-id="' + p.id + '">' + PICON[p.plat || "web"] + '<span>' + esc(byline(p.meta, p.plat || "web")) + '</span></button>' : "") +
     '</div></section>';
@@ -9820,7 +9821,7 @@ function mapPostRow(r){
     cap:r.cap || "", photo:r.photo_url || r.photo || "", avatar:r.avatar_url || r.avatar || avatarOf(r.user_id), vid:r.video_url ? 1 : 0, vurl:r.video_url || "", poster:r.poster || "", w:r.w || 0, h:r.h || 0, dur:r.dur || 0,
     rec:r.rec || "", mine:!!r.mine, art:r.art || ["✨", 40, 280], vis:"tribe", rank:r.lv ? "Lv " + r.lv : "", get likes(){ return likeCount(this.id); }};
 }
-function mapMsg(r){ return {id:r.id, uid:r.user_id, by:r.who || "Member", t:r.body || "", ts:ts(r.created_at), re:r.reply_to || null, rx:rxOf(r.id)}; }
+function mapMsg(r){ return {id:r.id, uid:r.user_id, by:r.who || "Member", t:r.body || "", ts:ts(r.created_at), re:r.reply_to || null, rx:rxOf(r.id), md:(r.meal && typeof r.meal === "object") ? r.meal : null}; } /* Oct 25: md = meal details (messages.meal) */
 function rxOf(mid){ const o = {}; (RX[mid] || []).forEach(x => { (o[x.emoji] = o[x.emoji] || []).push(x.who || "Member"); }); return o; }
 /* 24 Oct 2026: a person's birthday, sign and type count only in the shared form (day + month, year 0004, after consent). An older row with a
    real birth year stays private, and the year/age of anyone else never reaches the app. */
@@ -9851,7 +9852,7 @@ async function start(){
   const q = await Promise.all([
     sb.from("posts").select("*").order("created_at", {ascending:false}).limit(150),
     sb.from("post_likes").select("post_id,user_id").limit(10000),
-    sb.from("messages").select("id,user_id,who,body,reply_to,created_at,room").eq("room", ROOM()).order("created_at", {ascending:false}).limit(300),
+    sb.from("messages").select("id,user_id,who,body,reply_to,created_at,room,meal").eq("room", ROOM()).order("created_at", {ascending:false}).limit(300),
     sb.from("reactions").select("message_id,user_id,who,emoji").limit(10000),
     sb.from("profiles").select("id,name,sign,mbti,lv,streak,bio,avatar,bday,xp,xp_week,wk,xp_month,mo,weight,bot,test,joined_at").neq("name", "").limit(2000) /* Oct 25: joined_at seats the Room galaxy in rows, newest on top */
   ]);
@@ -21562,6 +21563,8 @@ window.LowiCommunityHost = {
 <script src="food-photo-ai.js?v=20261025-201810"></script>
 <script src="meal-result.js?v=20261025-201810"></script>
 <script src="meal-journal.js?v=20261025-201810"></script>
+<script src="meal-detail-core.js?v=20261025-201810"></script>
+<script src="meal-detail.js?v=20261025-201810"></script>
 <script src="grocery-bucket-core.js?v=20261025-201810"></script>
 <script src="grocery-bucket.js?v=20261025-201810"></script>
 <script src="string-pov.js?v=20261025-201810"></script>
@@ -21622,6 +21625,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="scrCss" href="scan-screens.css?v=20261025-201810">
 <link rel="stylesheet" href="meal-photo.css?v=20261025-201810">
 <link rel="stylesheet" href="meal-journal.css?v=20261025-201810">
+<link rel="stylesheet" href="meal-detail.css?v=20261025-201810">
 <link rel="stylesheet" href="grocery-bucket.css?v=20261025-201810">
 <link rel="stylesheet" id="mpopCss" href="misty-pop.css?v=20261025-201810">
 <link rel="stylesheet" id="mpnCss" href="misty-panels.css?v=20261025-201810">

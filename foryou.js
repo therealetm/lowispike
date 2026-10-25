@@ -77,6 +77,8 @@
     if (!src) return { ok: false, text: '' }; /* nothing came back from the room (a companion room, a busy retry): plain "Shared" */
     const p = C.sharePost({ src, name: o.name, lvl: o.lvl, caption: o.caption, id: o.id });
     if (!p || !passes(p)) return { ok: false, text: C.note('only', l) };
+    /* Oct 25 (task 31c545da): the poster's own meal details, whitelisted, so the For You spike label opens them too */
+    try { const MD = root.LowiMealDetailCore, src0 = o.detail || (o.row && o.row.md), d = MD && src0 ? MD.clean(src0) : null; if (d) p.meta.detail = d; } catch (e) {}
     try {
       const T = root.TRIBE;
       if (T && T.post && T.post(p.id)) return { ok: true, post: p, text: C.note('both', l) }; /* the same meal shared twice: one For You post */

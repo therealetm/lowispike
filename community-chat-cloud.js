@@ -10,8 +10,8 @@ function create(host, changed){
  const state=()=>({uid:uid(),phase,error,realtime:host.state().chatRealtime||'connecting'});
  async function request(query){const ctl=new AbortController();let timer;try{return await Promise.race([typeof query.abortSignal==='function'?query.abortSignal(ctl.signal):query,new Promise((_,reject)=>{timer=setTimeout(()=>{ctl.abort();reject(new Error('timeout'));},12000);})]);}finally{clearTimeout(timer);}}
  const result=async q=>{const r=await request(q);if(r.error)throw r.error;return r.data;};
- function map(r,reactions){const rx={};(reactions||[]).filter(x=>x.message_id===r.id).forEach(x=>(rx[x.emoji]=rx[x.emoji]||[]).push(x.who||'Member'));return {id:r.id,uid:r.user_id,by:r.who||'Member',t:r.body||'',ts:Date.parse(r.created_at)||Date.now(),re:r.reply_to||null,rx};}
- const fields='id,user_id,who,body,reply_to,created_at,room';
+ function map(r,reactions){const rx={};(reactions||[]).filter(x=>x.message_id===r.id).forEach(x=>(rx[x.emoji]=rx[x.emoji]||[]).push(x.who||'Member'));return {id:r.id,uid:r.user_id,by:r.who||'Member',t:r.body||'',ts:Date.parse(r.created_at)||Date.now(),re:r.reply_to||null,rx,md:r.meal&&typeof r.meal==='object'?r.meal:null};}
+ const fields='id,user_id,who,body,reply_to,created_at,room,meal'; /* Oct 25: meal = the poster's meal details (messages.meal jsonb) */
  function notify(event){if(flight&&event&&event.id){const m=host.messages().find(m=>m.id===event.id);edits.push({id:event.id,type:event.type,message:m||null});}changed();}
  /* 22 Oct: the room's newest pin markers, also when they are older than the last 300 messages (a failed lookup just means no extra rows) */
  async function pinRows(sb,rm){try{return await result(sb.from('messages').select(fields).eq('room',rm).like('body','\u{1F4CC}\u2060%').order('created_at',{ascending:false}).limit(3));}catch(e){return [];}}
@@ -36,7 +36,7 @@ function create(host, changed){
   const id=uid();if(!still(m.uid)||!id)throw new Error('auth');const sb=await host.client();if(!still(id))throw new Error('auth');
   // A prior insert may have committed even when its response never arrived.
   let row=await result(sb.from('messages').select(fields).eq('id',m.id).eq('user_id',id).maybeSingle());
-  if(!row){row=await result(sb.from('messages').insert({id:m.id,user_id:id,room:room(),who:m.by.slice(0,40),body:m.t,reply_to:m.re}).select(fields).single());}
+  if(!row){row=await result(sb.from('messages').insert(Object.assign({id:m.id,user_id:id,room:room(),who:m.by.slice(0,40),body:m.t,reply_to:m.re},m.md&&typeof m.md==='object'?{meal:m.md}:{})).select(fields).single());}
   if(!still(id)||!row||row.id!==m.id||row.user_id!==id||row.body!==m.t||row.reply_to!==(m.re||null))throw new Error('missing-ack');
   const msg=map(row,host.reactions());host.upsert(msg);changed();return msg;
  }

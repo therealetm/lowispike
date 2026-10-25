@@ -22,6 +22,12 @@ const ALL = {
   'webkit-phone': { engine: 'webkit', device: 'iPhone 13' },
   'webkit-ipad': { engine: 'webkit', device: 'iPad (gen 7)' },
 };
+/* CHAT_NEWEST_DPR=1: WebKit at 1x pixels (same 390x844 / 810x1080 iPhone/iPad viewport, touch, Safari UA). On the shared test VM
+   WebKit's software renderer at 3x drops to one frame every 10-60 s under load, which says nothing about the scroll behaviour. */
+if (process.env.CHAT_NEWEST_DPR) {
+  const os = require('os'); let pw; for (const q of [process.env.PW, path.join(os.homedir(), '.pw/node_modules/playwright'), '/tmp/pw/node_modules/playwright', 'playwright']) { try { if (q) { pw = require(q); break; } } catch (e) { } }
+  for (const k of ['webkit-phone', 'webkit-ipad']) { const n = ALL[k].device, nn = n + ' @' + process.env.CHAT_NEWEST_DPR + 'x'; pw.devices[nn] = Object.assign({}, pw.devices[n], { deviceScaleFactor: +process.env.CHAT_NEWEST_DPR }); ALL[k].device = nn; }
+}
 const CASES = (process.argv[4] || Object.keys(ALL).join(',')).split(',').filter(k => ALL[k]);
 const fails = [], notes = [];
 const fail = (w, m) => { fails.push(w + ': ' + m); console.log('FAIL', w, m); };

@@ -200,13 +200,18 @@
     }
     /* capture phase on window: runs before the world's own gestures on the stage, so a touch on Misty never reaches them */
     W.addEventListener('pointerdown', e => {
+        /* BH-024 (bug hunt run 25): another finger landing while one rests on Misty (a world drag, the controller) is no hold:
+           her card never opens in the middle of a two-finger gesture */
+        if (S.own && e.pointerId !== S.own.id && !S.own.long) { clearTimeout(S.own.lp); S.own.lp = 0; }
         if (S.own || (e.button != null && e.button !== 0)) return;
         const t = e.target, st = t && t.closest ? t.closest('#bw3Stage') : null; if (!st) return;
         const sp = spot(); if (!sp || !hits(e.clientX, e.clientY, sp)) return;
         e.stopPropagation(); if (e.cancelable) e.preventDefault();
         const o = S.own = { id: e.pointerId, el: st, x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t0: now(), turned: false, long: false, lp: 0 };
         try { st.setPointerCapture(e.pointerId); } catch (er) { }
-        o.lp = setTimeout(() => { if (S.own !== o || o.turned) return; o.long = true; try { navigator.vibrate && navigator.vibrate(12); } catch (er) { } try { W.dispatchEvent(new CustomEvent('lowi:misty-open')); } catch (er) { } }, K.LONG_MS);
+        /* a press while the controller is held, or by a second finger, is steering / the energy shot, never her card
+           (the world's own hold already skips padHeld(), body-world-3d.js) */
+        if (e.isPrimary !== false && !padHeld()) o.lp = setTimeout(() => { if (S.own !== o || o.turned || padHeld()) return; o.long = true; try { navigator.vibrate && navigator.vibrate(12); } catch (er) { } try { W.dispatchEvent(new CustomEvent('lowi:misty-open')); } catch (er) { } }, K.LONG_MS);
     }, true);
     W.addEventListener('pointermove', e => {
         const o = S.own; if (!o || e.pointerId !== o.id) return;

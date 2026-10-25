@@ -1032,6 +1032,9 @@
         const stop = () => { clearTimeout(t); t = 0; };
         const unEat = () => { clearTimeout(eatT); eatT = 0; if (eat) { D.removeEventListener('click', eat, true); eat = null; } st.lpOpened = false; };
         D.addEventListener('pointerdown', e => {
+            /* BH-024 (bug hunt run 25): a hold is one finger. A second finger anywhere (a pinch, a two-finger tap) drops a hold in
+               progress and never arms one of its own, so a pinch whose second finger lands on Misty no longer opens her card */
+            if (e.isPrimary === false) { if (t) { stop(); pid = null; } return; }
             const b = e.target && e.target.closest && e.target.closest('#spBubble'); if (!b || !H.classList.contains('wh-on')) return;
             /* Oct 23 bloom ring: a second finger on Misty is the two-finger tap (bloom-ring.js opens every bloom), never her hold */
             if (t && pid != null && e.pointerId !== pid) { stop(); pid = null; return; }

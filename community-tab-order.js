@@ -157,9 +157,11 @@
     function onUp(e) { if (g && e.pointerId === g.id) { if (g.lifted) e.stopPropagation(); end(true); } }
     function onCancel(e) { if (g && e.pointerId === g.id) end(!!g.lifted); }
     function onTouchMove(e) { if (g && g.lifted && e.cancelable) e.preventDefault(); }
+    /* BH-024 (bug hunt run 25): a second finger before the tab lifts (a pinch on the galaxy with a thumb resting on a tab) is not a hold */
+    function onOther(e) { if (g && e.pointerId !== g.id && !g.lifted) end(false); }
     function listen(on) {
         const f = on ? 'addEventListener' : 'removeEventListener';
-        W[f]('pointermove', onMove, true); W[f]('pointerup', onUp, true); W[f]('pointercancel', onCancel, true);
+        W[f]('pointermove', onMove, true); W[f]('pointerup', onUp, true); W[f]('pointercancel', onCancel, true); W[f]('pointerdown', onOther, true);
         W[f]('touchmove', onTouchMove, { capture: true, passive: false });
     }
     function wire(t) {

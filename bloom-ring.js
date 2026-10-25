@@ -240,8 +240,10 @@
     function scanCancel() { if (sh.t) { W.clearTimeout(sh.t); sh.t = 0; } sh.at = null; scanCue(false); }
     function onScanDown(e) {
         if (!sh.fired) sh.swallowUntil = 0;
+        /* BH-024 (bug hunt run 25): a second finger anywhere (a pinch with a thumb resting on Scan) ends the hold, it never waits on drift */
+        if (e.isPrimary === false) { scanCancel(); return; }
         const el = scanEl(e.target);
-        if (!el || (e.button && e.button !== 0) || e.isPrimary === false || !homeUp()) return;
+        if (!el || (e.button && e.button !== 0) || !homeUp()) return;
         scanCancel(); sh.at = { x: e.clientX, y: e.clientY }; sh.down = stamp(e); sh.el = el; scanCue(true);
         sh.t = W.setTimeout(scanFire, SCAN_HOLD_MS);
     }

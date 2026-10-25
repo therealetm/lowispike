@@ -53,20 +53,17 @@ test('only the Community card switches tabs: its finger taps the real Community 
     assert.match(read('tutorial.js'), /'community-tab': \{/, 'tutorial.js knows how to open and close the Community tab');
 });
 
-test('tutorial.js: practice pad and later motion are drawn, hands-free still moves on, nothing passes through on practice cards', () => {
+test('GUARD (Oct 25 2026): the practice pad and the touch watchers are gone from tutorial.js; "After the tour" (What\'s New) still draws', () => {
     const src = read('tutorial.js'), css = read('tutorial.css');
-    assert.match(src, /padHtml\(s, U\) \+ laterHtml\(s, U\)/);
-    assert.match(src, /function padWire\(card\)/);
-    assert.match(src, /if \(s && s\.practice\) return null;/, 'practice cards have no spotlight on a control that ignores touches');
-    assert.match(src, /const wait = s\.tryIt \? Math\.max\(AUTO\.GAP, AUTO\.TRY - [^;]*: canTry\(s\) \? AUTO\.TRY : AUTO\.GAP;/, 'practice cards get the try-it time in hands-free mode, then move on by themselves');
-    assert.match(src, /root\.classList\.toggle\('lt-try', real && !done\)/, 'only real try-it cards let touches through the dim');
-    assert.match(src, /!S\.tryMatch\(wants\(s\), kind\)/);
-    assert.match(css, /\.lt-pad \{[^}]*touch-action: none/);
+    assert.match(src, /peekHtml\(s, U\) \+ laterHtml\(s, U\)/, 'only the later motion is drawn under the text');
+    assert.doesNotMatch(src, /function padHtml|function padWire|function didGesture|function renderTry|s\.practice|lt-pad/, 'no practice pad code');
+    assert.doesNotMatch(src, /addEventListener\('pointerdown', tDown|function watching\(\)/, 'the tour no longer listens to the user\'s touches');
+    assert.match(src, /root\.classList\.toggle\('lt-later-on', !!\(s && s\.later\)\)/, 'the What\'s New "After the tour" card still gets its look');
+    assert.doesNotMatch(css, /\.lt-pad|\.lt-tour\.lt-try|\.lt-padnote|\.lt-joy/, 'no practice or try-it styles');
     assert.match(css, /\.lt-later \{/);
     assert.match(css, /prefers-reduced-motion: reduce\) \{ \.lt-hand > span/);
-    /* the pad never asks for the mic or camera, and never touches app data */
-    const pad = src.slice(src.indexOf('function padHtml'), src.indexOf('const PAUSE_SVG'));
-    assert.doesNotMatch(pad, /getUserMedia|localStorage|goTab|\.click\(\)/);
+    /* the tour's own code never asks for the mic or camera */
+    assert.doesNotMatch(src.replace(/\/\*[\s\S]*?\*\//g, ''), /getUserMedia|mediaDevices/);
 });
 
 /* Oct 22 2026: the energy-shot card says "keep one on the joystick, and tap the world twice quickly with the other". On the practice pad

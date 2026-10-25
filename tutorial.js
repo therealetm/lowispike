@@ -86,24 +86,20 @@
         if (!(s && s.open) && !(s && s.demo && opened)) room('');
     }
     let on = false, list = [], i = 0, root = null, timer = 0, held = false, afterClaim = false, lastFocus = null, startedAt = 0;
-    let tried = -1, secUntil = 0, tryNext = 0;
+    let secUntil = 0;
     /* hands-free (Oct 22 2026, Emmanuel: "would be nice if I don't have to press the next button every time. If I did turn on the
        mic, I should be able to just place my phone somewhere and just listen as it goes, by itself"): with the speaker on, each card
        moves on by itself a short pause after it was read to the end. Next / Back still work. Pause on the card stops the voice and
        the moving on until Play (or the speaker) is tapped. Narration still only ever starts from a tap (iOS); a card the browser
        would not play (no tap yet) never moves on by itself. The last card and the claim card wait for the user. */
-    const AUTO = { GAP: 1200, TRY: 4500 };
+    const AUTO = { GAP: 1200 };
     let paused = false, autoT = 0, wake = null;
     const voiceOn = () => { try { return !!(W.LowiTutorialVoice && W.LowiTutorialVoice.isOn()); } catch (e) { return false; } };
     const clearT = id => { try { if (id) (W.clearTimeout || clearTimeout)(id); } catch (e) { } };
     const step = () => list[i] || null;
     function emit(extra) { try { W.dispatchEvent(new CustomEvent('lowi:tutorial', { detail: Object.assign({ on, step: step() && step().id }, mode === 'news' ? { news: true } : {}, extra || {}) })); } catch (e) { } }
 
-    /* item 38: a card the user can try on (the real control, or a practice pad on the card) */
-    const canTry = s => !!(s && (s.tryIt || s.practice));
-    const wants = s => (s && (s.tryIt || s.practice) || {}).how;
     function target(s) {
-        if (s && s.practice) return null;   /* the practice pad is the thing to touch: no spotlight on a real control that ignores touches */
         for (const sel of (s && s.target) || []) { let el = null; try { el = $(sel); } catch (e) { } if (el && vis(el)) { const r = el.getBoundingClientRect(); if (r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth) return el; } }
         return null;
     }
@@ -129,28 +125,21 @@
             '<span class="lt-meta"><small class="lt-count">' + esc((news ? (U.newsLabel || U.label) : U.label) + ' \u00b7 ' + S.fill(U.of, { i: i + 1, n: list.length })) + '</small>' +
             '<b class="lt-title" id="ltTitle">' + esc(S.text(s, 'title', l, vars)) + '</b></span>' +
             (last ? '' : '<button type="button" class="lt-skipall" data-lt="skipall">' + esc(news ? (U.newsSkip || U.skip) : U.skipAll) + '</button>') + '</div>' +
-            '<p class="lt-text" id="ltText">' + esc(S.text(s, 'text', l, vars)) + '</p>' + tryHtml(s, U) + peekHtml(s, U) + padHtml(s, U) + laterHtml(s, U) +
+            '<p class="lt-text" id="ltText">' + esc(S.text(s, 'text', l, vars)) + '</p>' + peekHtml(s, U) + laterHtml(s, U) +
             '<div class="lt-btns"><span class="lt-left">' +
             (i > 0 ? '<button type="button" class="lt-btn lt-ghost" data-lt="back">' + esc(U.back) + '</button>' : '') +
             '<button type="button" class="lt-btn lt-ghost lt-pause" data-lt="pause" aria-pressed="' + paused + '" aria-label="' + esc(paused ? (U.play || 'Play') : (U.pause || 'Pause')) + '">' + (paused ? PLAY_SVG : PAUSE_SVG) + '</button></span>' +
             '<span class="lt-right">' + (last || news ? '' : '<button type="button" class="lt-btn lt-ghost" data-lt="skip">' + esc(U.skip) + '</button>') +
             '<button type="button" class="lt-btn lt-go" data-lt="' + (s.action === 'claim' ? 'claim' : 'next') + '">' + esc(cta) + '</button></span></div>';
         root.setAttribute('data-step', s.id); root.classList.toggle('lt-news', news);
-        renderTry(s, U);
+        root.classList.toggle('lt-later-on', !!(s && s.later));
         if (!(s.demo && mode !== 'news')) { try { if (W.LowiTutorialShow) W.LowiTutorialShow.render(card, s, root); } catch (e) { } }   /* item 42: finger, lit spots, card picture */
         else { try { if (W.LowiTutorialShow && W.LowiTutorialShow.clear) W.LowiTutorialShow.clear(root); } catch (e) { } }
         demoStart(s);
         root.classList.toggle('lt-voice', voiceOn()); root.classList.toggle('lt-paused', paused);
-        /* Try it now: the voice tells us when it says the cue words, so the button wiggles right then */
-        const cueing = !!(s.tryIt && tried !== i), cue = cueing ? (S.TRY_CUE && S.TRY_CUE[l]) || null : null, onCue = cueing ? () => wiggle('cue') : null;
         place();
         /* tutorial-voice.js: the companion picture is the speaker; reads the card aloud when sound is on (Oct 21 2026); onEnd = hands-free */
-        try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.render(card, s, { lang: l, name: vars.name, next: list.slice(i + 1, i + 3), cue, onCue, onEnd: said, quiet: paused }); } catch (e) { }
-        /* no voice reading this card (speaker off or paused): the Try it now button wiggles once when the card appears */
-        if (cueing && (!voiceOn() || paused) && !(wig.at === i && wig.appear)) {
-            wig = wig.at === i ? Object.assign(wig, { appear: true }) : { at: i, n: 0, t: 0, appear: true };
-            const at = i; setTimeout(() => { if (on && i === at) wiggle('appear'); }, reduced() ? 300 : 700);
-        }
+        try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.render(card, s, { lang: l, name: vars.name, next: list.slice(i + 1, i + 3), onEnd: said, quiet: paused }); } catch (e) { }
         try { (card.querySelector(focusSel || '[data-lt="claim"],[data-lt="next"]') || card).focus({ preventScroll: true }); } catch (e) { }
         focusSel = '';
         keepAwake();
@@ -169,75 +158,13 @@
             '</div><p class="lt-peeknote">' + esc(P.note) + '</p>';
     }
     /* item 38 (Oct 22 2026, Emmanuel: "In tutorial it tells the person to do stuff but then you can't actually do the stuff so either make
-       sure they understand they can play after tutorial or let them actually do the gesture"). practice: a small look-alike on the card
-       that takes the gesture (nothing in the app changes, no mic, no camera). later: a small looping hand showing the motion, tagged
+       sure they understand they can play after tutorial or let them actually do the gesture"). later: a small looping hand showing the motion, tagged
        "After the tour", on cards whose text says it is done after the tour. */
     const HAND = '<span class="lt-hand" aria-hidden="true"><span class="lt-hand1"></span><span class="lt-hand2"></span></span>';
-    function padHtml(s, U) {
-        const k = s && s.practice; if (!k) return '';
-        const E = S.UI.en, done = tried === i, how = k.how, look = k.look;
-        const name = ((U.looks || E.looks)[look]) || look, after = ((U.done || E.done)[look]) || name;
-        const verb = ((U.how || E.how)[how]) || how;
-        return '<div class="lt-pad' + (done ? ' lt-done' : '') + '" data-how="' + esc(how) + '" data-look="' + esc(look) + '" role="button" tabindex="0" aria-label="' + esc(verb + ': ' + name) + '">' +
-            (k.joy ? '<span class="lt-joy" aria-hidden="true"><span></span></span>' : '') +   /* energy shot: a joystick to keep one finger on */
-            '<span class="lt-obj"><b>' + esc(done ? after : name) + '</b></span>' + (done ? '' : HAND) +
-            '<small class="lt-padhow">' + esc(done ? U.nice : verb) + '</small></div>' +
-            '<p class="lt-padnote">' + esc(U.practice || E.practice) + '</p>';
-    }
     function laterHtml(s, U) {
         const how = s && s.later; if (!how || s.peek) return '';
         return '<div class="lt-later" data-how="' + esc(how) + '" aria-hidden="true"><span class="lt-latertag">' + esc(U.laterTag || S.UI.en.laterTag) + '</span>' +
             '<span class="lt-laterbox"><span class="lt-obj"></span>' + HAND + '</span></div>';
-    }
-    /* the practice pad's own gesture detection (the window watchers ignore touches on the card) */
-    let pad = null, padTaps = [], padT = 0;
-    function padWire(card) {
-        const el = card && card.querySelector('.lt-pad'); pad = null; if (!el || tried === i) return;
-        /* every finger is tracked on its own: a finger resting on the pad (the joystick on the energy-shot pad: "keep one on the joystick,
-           and tap the world twice quickly with the other") never blocks the other finger's taps. Two fingers only count as a pinch on a
-           pinch pad, and only when they move apart or together. */
-        const P = new Map(); let D = new Map(), pinch0 = 0;
-        const fire = k => { clearT(padT); D = new Map(); didGesture(k); };
-        const pinchPad = () => wants(step()) === 'pinch';
-        /* the event's own time, not the time the handler runs: behind the card the 3D world can keep the page busy for a moment, and a quick
-           tap measured late looked like a slow press (energy-shot: two quick taps were not counted) */
-        const ts = e => (e && e.timeStamp > 0 ? e.timeStamp : (W.performance ? W.performance.now() : Date.now()));
-        el.addEventListener('pointerdown', e => {
-            try { el.setPointerCapture(e.pointerId); } catch (x) { }
-            P.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            if (P.size >= 2 && pinchPad()) { const a = [...P.values()]; pinch0 = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); D = new Map(); clearT(padT); return; }
-            const first = D.size === 0;
-            D.set(e.pointerId, { x: e.clientX, y: e.clientY, t: ts(e), moved: false });
-            el.classList.add('lt-press');
-            didGesture('touch');
-            if (first) { clearT(padT); const id = e.pointerId; padT = setTimeout(() => { const d = D.get(id); if (d && !d.moved && D.size === 1) didGesture('hold'); }, TRY.HOLD);   /* not fire(): a resting finger stays tracked */ }
-            else clearT(padT);   /* a second finger: the first one is resting, not holding */
-        });
-        el.addEventListener('pointermove', e => {
-            if (!P.has(e.pointerId)) return;
-            P.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            if (P.size >= 2 && pinchPad()) { const a = [...P.values()]; if (Math.abs(Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) - pinch0) > 18) fire('pinch'); return; }
-            const d = D.get(e.pointerId); if (!d) return;
-            const dx = e.clientX - d.x, dy = e.clientY - d.y, m = Math.hypot(dx, dy);
-            if (m > TRY.MOVE) { d.moved = true; if (D.size === 1) clearT(padT); }
-            const w = wants(step()); if (w === 'double' || w === 'tap') return;   /* a tap pad: a resting finger that drifts is not a drag */
-            if (Math.abs(dx) > 34 && Math.abs(dx) > Math.abs(dy) * 1.5) fire('swipe');
-            else if (m > TRY.DRAG && w !== 'swipe') fire('drag');   /* a swipe pad waits for the sideways move */
-        });
-        const up = e => {
-            P.delete(e.pointerId); const x = D.get(e.pointerId); D.delete(e.pointerId);
-            if (!P.size) el.classList.remove('lt-press');
-            if (!D.size) clearT(padT);
-            if (!x || x.moved || ts(e) - x.t > TRY.TAP || e.type === 'pointercancel') return;
-            const now = ts(e); padTaps = padTaps.filter(t => now - t < TRY.MULTI * 2); padTaps.push(now);
-            if (padTaps.length >= 2 && padTaps[padTaps.length - 1] - padTaps[padTaps.length - 2] < TRY.MULTI) { padTaps = []; didGesture('double'); }
-            didGesture('tap');
-        };
-        el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
-        el.addEventListener('gesturestart', e => { try { e.preventDefault(); } catch (x) { } fire('pinch'); });
-        el.addEventListener('wheel', e => { if (e.ctrlKey) { try { e.preventDefault(); } catch (x) { } fire('pinch'); } }, { passive: false });
-        el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); didGesture(wants(step())); } });
-        pad = el;
     }
     const PAUSE_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="6" y="5" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.2" fill="currentColor"/></svg>';
     const PLAY_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>';
@@ -347,55 +274,12 @@
         clearT(autoT); autoT = 0;
         const s = step(), at = i;
         if (s && s.demo && mode !== 'news') { voiceDone = at; demoGo(); return; }
-        /* a Try it now card read to the end without its cue words (or long after them): the button wiggles now, at most twice per card */
-        if (on && !held && s && s.tryIt && tried !== at && (wig.at !== at || wig.n === 0 || (wig.n === 1 && Date.now() - wig.t > 2500))) wiggle('end');
         if (!on || held || paused || !s || !voiceOn() || at >= list.length - 1 || s.action === 'claim') return;
-        if (tried === at) return;   /* tried: didGesture already moves on (or waits behind the sheet it opened) */
-        /* hands-free never moves past a Try it now card sooner than AUTO.TRY after its last wiggle; a practice card gets AUTO.TRY too */
-        const wait = s.tryIt ? Math.max(AUTO.GAP, AUTO.TRY - (wig.at === at && wig.t ? Date.now() - wig.t : 0)) : canTry(s) ? AUTO.TRY : AUTO.GAP;
+        const wait = AUTO.GAP;
         const card = root && root.querySelector('.lt-card');
         if (card && !reduced()) { card.style.setProperty('--lt-auto', wait + 'ms'); card.classList.remove('lt-autogo'); void card.offsetWidth; card.classList.add('lt-autogo'); }
         autoT = setTimeout(() => { autoT = 0; if (on && !held && !paused && i === at && voiceOn()) go(at + 1, 'auto'); }, wait);
         emit({ auto: s.id, wait });
-    }
-    /* ---------- Try it now (Oct 22 2026, Emmanuel: "There is a try it now button that does nothing. Wiggle when try it now is said so
-       they click on it which closes the tutorial for them to try it.") ----------
-       The line under a try-it card's text is a real button. It wiggles (reduced motion: glows) when the voice says "Try it now"
-       (S.TRY_CUE), when the card was read to the end without those words, or once on appearing when no voice reads it; never more
-       than twice per card. Tapping it: voice off, card closed, the user stays on the screen the card is about, and the place is
-       saved in lowi.tutorial.v1 .resume (tutorial-resume.js's shape: the "Continue tutorial" button brings them to the next card). */
-    let wig = { at: -1, n: 0, t: 0, appear: false };
-    function tryHtml(s, U) {
-        if (!s || !s.tryIt) return '';
-        if (tried === i) return '<p class="lt-tryline" role="status">' + esc(U.nice) + '</p>';
-        return '<button type="button" class="lt-trybtn" data-lt="tryit"><span class="lt-tryhand" aria-hidden="true">\u{1F446}</span>' + esc(U.tryIt) + '</button>';
-    }
-    function wiggle(why) {
-        const s = step(); if (!on || held || !s || !s.tryIt || tried === i) return false;
-        if (wig.at !== i) wig = { at: i, n: 0, t: 0, appear: false };
-        if (wig.n >= 2) return false;
-        wig.n++; wig.t = Date.now();
-        const b = root && root.querySelector('.lt-trybtn'), cls = reduced() ? 'lt-glow' : 'lt-wiggle';
-        if (b) { b.classList.remove('lt-wiggle', 'lt-glow'); void b.offsetWidth; b.classList.add(cls); }
-        emit({ wiggle: s.id, why, n: wig.n });
-        return true;
-    }
-    function tryNow() {
-        const s = step(); if (!on || !s || !s.tryIt) return;
-        const at = i, ids = list.map(x => x.id);
-        cancelAuto(); clearT(tryNext);
-        try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.stop(); } catch (e) { }
-        emit({ tryNow: s.id });
-        const st = store.get(); st.resume = S.tryResume(ids, at, Date.now()); store.set(st);
-        stop('tryit');
-        /* the screen the card is about (Home, or Community on its Room tab), visible and free to touch */
-        goSection(s); setTimeout(() => goSection(s), 450);
-    }
-    /* the place saved by Try it now, when nothing else (tutorial-resume.js) has taken the user back yet: Settings > Tutorial picks it up */
-    function savedTry() {
-        const r = store.get().resume;
-        if (!r || r.via !== 'tryit' || !r.at || Date.now() - (r.t || 0) > 6 * 3600e3) return '';
-        return r.fin && r.next ? r.next : r.at;
     }
     function cancelAuto() { clearT(autoT); autoT = 0; const c = root && root.querySelector('.lt-card'); if (c) c.classList.remove('lt-autogo'); }
     function setPaused(v) {
@@ -476,16 +360,14 @@
     function unhold() {
         if (!held || !root) return; held = false; root.classList.remove('lt-held'); root.removeAttribute('aria-hidden'); root.removeAttribute('data-held');
         if (afterClaim) { afterClaim = false; go(i + 1, 'claim-closed'); return; }
-        if (tried === i && i < list.length - 1) { go(i + 1, 'tried'); return; }
         render();
     }
 
-    /* ---------- sections and "try it" (Oct 21 2026, Emmanuel: "taking us to honestly every section ... Pinch, click, long
+    /* ---------- sections (Oct 21 2026, Emmanuel: "taking us to honestly every section ... Pinch, click, long
        click, press, all this stuff, how are people supposed to know?") ----------
        A step's `where` / `rm` say which screen it belongs on; the tour takes the user there for a moment after each step change
-       and then leaves them alone. A step's `tryIt` lets touches through the dimmed screen and watches for that one gesture.
-       When it happens the card says so; if the gesture opened a sheet, the tour waits behind it and moves on once it closes,
-       otherwise it moves on by itself. Listening is passive: it never blocks or changes what the app does with the touch. */
+       and then leaves them alone. (Try it now and the practice pads were retired with the long tour on Oct 25 2026: the demo finger
+       shows each gesture instead, so the tour no longer listens to the user's touches at all.) */
     /* No 'scan' here on purpose: goTab('scan') opens the scanner camera at once, and the tour calls goSection on every tick for
        2.5 s, so it kept opening the camera and iOS kept asking for permission; a tour left on a Scan card reopened it on the next
        start (Emmanuel's iPhone, Oct 21 2026). The Scan cards show a picture of the inside instead (peek). */
@@ -503,62 +385,6 @@
             if (s.rm) { const b = $('.rm-tab[data-rm="' + s.rm + '"]'); if (b && b.getAttribute('aria-selected') !== 'true' && !b.classList.contains('on')) b.click(); else if (!b && W.LowiRoomsUI && W.LowiRoomsUI.showView && W.LowiRoomsUI.view() !== s.rm) W.LowiRoomsUI.showView(s.rm); /* Creation / Affiliates: halves of the Studio tab since 24 Oct 2026 */ }
         } catch (e) { }
     }
-    function renderTry(s, U) {
-        const card = root && root.querySelector('.lt-card'); if (!card) return;
-        const real = !!(s && s.tryIt), can = canTry(s), done = can && tried === i;
-        root.classList.toggle('lt-try', real && !done); root.classList.toggle('lt-tried', real && done);
-        root.classList.toggle('lt-practice', !!(s && s.practice)); root.classList.toggle('lt-later-on', !!(s && s.later));
-        if (s && s.practice) padWire(card);
-        if (!can) return;
-    }
-    function didGesture(kind) {
-        const s = step();
-        if (!on || held || !canTry(s) || tried === i || !S.tryMatch(wants(s), kind)) return;
-        cancelAuto();
-        tried = i; render(); emit({ tried: s.id, gesture: kind });
-        const at = i; clearT(tryNext);
-        tryNext = setTimeout(() => { if (on && !held && tried === at && i === at && at < list.length - 1) go(at + 1, 'tried'); }, 1500);
-    }
-    const TRY = { HOLD: 480, TAP: 320, MULTI: 450, MOVE: 12, DRAG: 26, SWIPE: 60 };
-    const pts = new Map(); let down = null, holdT = 0, taps = [];
-    function onTarget(x, y) {
-        const s = step(); if (!s || !s.tryIt) return false; if (s.tryIt.anywhere) return true;
-        const el = target(s); if (!el) return true;
-        const r = el.getBoundingClientRect(), p = 16;
-        return x >= r.left - p && x <= r.right + p && y >= r.top - p && y <= r.bottom + p;
-    }
-    function watching() { const s = step(); return !!(on && !held && s && s.tryIt && tried !== i); }
-    function tDown(e) {
-        if (!watching() || (e.target && e.target.closest && e.target.closest('.lt-card'))) return;
-        pts.set(e.pointerId, 1); if (pts.size >= 2) { down = null; clearT(holdT); didGesture('pinch'); return; }
-        down = { x: e.clientX, y: e.clientY, t: Date.now(), on: onTarget(e.clientX, e.clientY), moved: false };
-        clearT(holdT); holdT = setTimeout(() => { if (down && down.on && !down.moved) didGesture('hold'); }, TRY.HOLD);
-    }
-    function tMove(e) {
-        if (!down || !watching()) return;
-        const dx = e.clientX - down.x, dy = e.clientY - down.y, d = Math.hypot(dx, dy);
-        if (d > TRY.MOVE) { down.moved = true; clearT(holdT); }
-        if (Math.abs(dx) > TRY.SWIPE && Math.abs(dx) > Math.abs(dy) * 1.5) didGesture('swipe');
-        if (d > TRY.DRAG && down && down.on) didGesture('drag');
-    }
-    function tUp(e) {
-        pts.delete(e.pointerId); clearT(holdT);
-        const d = down; down = null;
-        if (!d || !watching() || d.moved || !d.on || Date.now() - d.t > TRY.TAP) return;
-        const now = Date.now(); taps = taps.filter(t => now - t < TRY.MULTI * 2); taps.push(now);
-        didGesture('tap');
-        if (taps.length >= 3) { taps = []; didGesture('triple'); }
-        else if (taps.length === 2 && taps[1] - taps[0] < TRY.MULTI) didGesture('double');
-    }
-    function tCancel(e) { pts.delete(e.pointerId); clearT(holdT); down = null; }
-    try {
-        W.addEventListener('pointerdown', tDown, { capture: true, passive: true });
-        W.addEventListener('pointermove', tMove, { capture: true, passive: true });
-        W.addEventListener('pointerup', tUp, { capture: true, passive: true });
-        W.addEventListener('pointercancel', tCancel, { capture: true, passive: true });
-        W.addEventListener('gesturestart', () => { if (watching()) didGesture('pinch'); }, { capture: true, passive: true });
-        W.addEventListener('wheel', e => { if (e.ctrlKey && watching()) didGesture('pinch'); }, { capture: true, passive: true });
-    } catch (e) { }
     /* hide at once, but come back only after QUIET_TICKS quiet ticks in a row, so a sheet's closing animation can't blink it */
     const QUIET_TICKS = 2;
     let quiet = 0;
@@ -567,14 +393,14 @@
         const why = busyBy();
         if (why) { quiet = 0; hold(why); }
         else if (held) { if (++quiet >= QUIET_TICKS) { quiet = 0; unhold(); } }
-        else { const s = step(); if (Date.now() < secUntil && tried !== i && !(s && s.open) && !(s && s.demo)) goSection(s); place(); }
+        else { const s = step(); if (Date.now() < secUntil && !(s && s.open) && !(s && s.demo)) goSection(s); place(); }
     }
     function go(n, how) {
         if (n >= list.length) { stop('finished'); return; }
         cancelAuto();
         i = Math.max(0, n); held = false; if (root) { root.classList.remove('lt-held'); root.removeAttribute('aria-hidden'); }
         if (mode !== 'news') { const st = store.get(); st.last = step().id; store.set(st); }
-        tried = -1; clearT(tryNext); secUntil = Date.now() + 2500;
+        secUntil = Date.now() + 2500;
         const wasOpen = !!opened; demoReset(); demoWait = wasOpen ? DEMO.CLOSE_PAUSE : 0;
         openFor(step()); if (!step().open) goSection(step());
         emit({ how });
@@ -602,7 +428,6 @@
         else if (a === 'skipall') stop('skipped');
         else if (a === 'claim') claim();
         else if (a === 'pause') setPaused(!paused);
-        else if (a === 'tryit') tryNow();
     }
     function onKey(e) {
         if (held) return;
@@ -636,7 +461,7 @@
         store.set(Object.assign(store.get(), { v: S.VERSION, at: new Date().toISOString(), done: false, from: o.from || '' }));
         clearInterval(timer); timer = setInterval(tick, 350);
         /* opts.at: begin at that step id (tutorial-auto.js: continue a tour that was left halfway) */
-        let at = 0; const want = o.at || (o.fresh ? '' : savedTry()); if (want) { const k = list.findIndex(x => x.id === want); if (k > 0) at = k; }
+        let at = 0; const want = o.at; if (want) { const k = list.findIndex(x => x.id === want); if (k > 0) at = k; }
         { const st0 = store.get(); if (st0.resume && st0.resume.via === 'tryit') { delete st0.resume.via; store.set(st0); } }   /* picked up once */
         go(at, 'start');
         return true;
@@ -696,6 +521,6 @@
        the first finished tour) load the same way */
     ['tutorial-demo.js', 'tutorial-flight.js'].forEach(f => { if (!D.querySelector('script[src^="' + f + '"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = f + '?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); } });
     W.LowiTutorial = { start, news, mode: () => (on ? mode : ''), opened: () => opened, stage: () => stage(), stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S, ids: () => list.map(x => x.id),
-        paused: () => paused, pause: v => setPaused(v == null ? true : v), auto: () => !!autoT, tryNow, wiggles: () => (wig.at === i ? wig.n : 0),
+        paused: () => paused, pause: v => setPaused(v == null ? true : v), auto: () => !!autoT,
         demo: () => ({ at: demoAt, shown: demoDone, voice: voiceDone, read: readDone, opened: demoOpened }) };
 })();

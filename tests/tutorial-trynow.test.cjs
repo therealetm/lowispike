@@ -83,7 +83,9 @@ test('GUARD (Oct 25 2026): no card has a Try it now button in any language, and 
     for (const s of S.STEPS) assert.ok(!s.tryIt, s.id + ': "Try it now" was retired with the long tour; the demo finger shows the gesture instead');
     for (const s of S.STEPS) for (const l of ['en', 'de', 'es']) assert.doesNotMatch(s.text[l], /Try it now|Jetzt ausprobieren|Pruébalo ahora/i, s.id + '/' + l);
     const js = read('tutorial.js');
-    assert.match(js, /function tryHtml\(s, U\) \{\n\s+if \(!s \|\| !s\.tryIt\) return '';/, 'no try-it, no button');
+    /* Oct 25 2026: the button's code is gone too, so nothing can draw it again */
+    assert.doesNotMatch(js, /function tryHtml|lt-trybtn|data-lt="tryit"|function tryNow|function wiggle|S\.TRY_CUE/, 'no Try it now code left in tutorial.js');
+    assert.doesNotMatch(read('tutorial.css'), /\.lt-trybtn|\.lt-tryline|@keyframes lt-wiggle/, 'no Try it now styles left');
 });
 
 test('GUARD: no base card says "after the tour" and no base card is a later card; Continue tutorial still resumes a saved place', () => {

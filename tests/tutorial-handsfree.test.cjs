@@ -99,7 +99,8 @@ test('tutorial.js moves on by itself after a card was read, and can be paused', 
     assert.match(said, /if \(!on \|\| held \|\| paused \|\| !s \|\| !voiceOn\(\) \|\| at >= list\.length - 1 \|\| s\.action === 'claim'\) return;/, 'only with the speaker on, never on the last or the claim card');
     assert.match(said, /go\(at \+ 1, 'auto'\)/);
     assert.match(said, /i === at/, 'only when still on that card');
-    assert.match(js, /const AUTO = \{ GAP: 1200, TRY: 4500 \}/, 'a short natural pause; try-it cards leave time to try');
+    assert.match(js, /const AUTO = \{ GAP: 1200 \}/, 'a short natural pause (the try-it wait went with Try it now, Oct 25 2026)');
+    assert.match(said, /const wait = AUTO\.GAP;/, 'every card waits the same short pause');
     assert.match(js, /data-lt="pause"/, 'a Pause / Play button on the card');
     assert.match(js, /a === 'pause'\) setPaused\(!paused\)/);
     assert.match(js, /function hold\(why\) \{ if \(held \|\| !root\) return; cancelAuto\(\);/, 'a panel on top stops the countdown');

@@ -20673,23 +20673,23 @@ const st = () => js(KEY);
 const save = p => { const s = Object.assign(st(), p || {}); try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e){} return s; };
 
 const W = {
-  en: {ask:"Want me to reach you when the app is closed too? A morning hello, the clock time your fast ends and a streak saver in the evening. Never in your quiet hours.",
+  en: {ask:"Can I message you now and then when the app is closed? Energy from friends, a recipe from For You, a good product find, the clock time your fast ends and the odd note from your companion. Never in your quiet hours.",
     yes:"Turn on", no:"Not now", ok:"Done. I'll nudge you on your phone now. Change it any time with the gear.",
-    row:"Phone notifications", sub:"Morning hello, fast end with the clock time, evening streak saver. Also when LOWiSPIKE is closed.",
+    row:"Phone notifications", sub:"Energy from friends, For You, product finds, your fast end and your companion. Also when LOWiSPIKE is closed.",
     on:"On", off:"Off", test:"Send a test", sent:"Sent. Check your lock screen.", wait:"One moment, then try again.", fail:"Couldn't reach your phone. Try again in a moment.",
     home:"On iPhone this works once LOWiSPIKE is on your Home Screen: tap Share, then Add to Home Screen, and open it from there.",
     denied:"Notifications are blocked for LOWiSPIKE. Allow them in your phone settings, then switch this on.",
     unsup:"This browser can't show phone notifications."},
-  de: {ask:"Soll ich dich auch erreichen, wenn die App zu ist? Ein Guten-Morgen, die Uhrzeit, wann dein Fasten endet, und abends ein Serien-Retter. Nie in deiner Ruhezeit.",
+  de: {ask:"Darf ich dir ab und zu schreiben, wenn die App zu ist? Energie von Freunden, ein Rezept aus For You, ein guter Produktfund, die Uhrzeit, wann dein Fasten endet, und ab und zu was von deinem Begleiter. Nie in deiner Ruhezeit.",
     yes:"Einschalten", no:"Nicht jetzt", ok:"Erledigt. Ab jetzt stupse ich dich auf dem Handy an. Ändern geht jederzeit über das Zahnrad.",
-    row:"Handy-Benachrichtigungen", sub:"Guten-Morgen, Fastenende mit Uhrzeit, Serien-Retter am Abend. Auch wenn LOWiSPIKE zu ist.",
+    row:"Handy-Benachrichtigungen", sub:"Energie von Freunden, For You, Produktfunde, dein Fastenende und dein Begleiter. Auch wenn LOWiSPIKE zu ist.",
     on:"An", off:"Aus", test:"Test senden", sent:"Gesendet. Schau auf deinen Sperrbildschirm.", wait:"Einen Moment, dann nochmal.", fail:"Dein Handy war gerade nicht erreichbar. Gleich nochmal versuchen.",
     home:"Auf dem iPhone klappt das, sobald LOWiSPIKE auf deinem Home-Bildschirm ist: Teilen tippen, dann Zum Home-Bildschirm, und von dort öffnen.",
     denied:"Benachrichtigungen sind für LOWiSPIKE blockiert. Erlaube sie in den Handy-Einstellungen und schalte das hier dann ein.",
     unsup:"Dieser Browser kann keine Handy-Benachrichtigungen zeigen."},
-  es: {ask:"¿Quieres que te avise también con la app cerrada? Un buenos días, la hora a la que termina tu ayuno y un salvavidas de racha por la noche. Nunca en tus horas de silencio.",
+  es: {ask:"¿Te puedo escribir de vez en cuando con la app cerrada? Energía de amigos, una receta de For You, un buen hallazgo de producto, la hora a la que termina tu ayuno y alguna nota de tu compañero. Nunca en tus horas de silencio.",
     yes:"Activar", no:"Ahora no", ok:"Listo. A partir de ahora te aviso en el móvil. Cámbialo cuando quieras con el engranaje.",
-    row:"Notificaciones del móvil", sub:"Buenos días, fin del ayuno con la hora, salvavidas de racha por la noche. También con LOWiSPIKE cerrada.",
+    row:"Notificaciones del móvil", sub:"Energía de amigos, For You, hallazgos de productos, fin del ayuno y tu compañero. También con LOWiSPIKE cerrada.",
     on:"Sí", off:"No", test:"Enviar prueba", sent:"Enviado. Mira tu pantalla de bloqueo.", wait:"Un momento y vuelve a probar.", fail:"No se pudo llegar a tu móvil. Prueba de nuevo en un momento.",
     home:"En iPhone funciona cuando LOWiSPIKE está en tu pantalla de inicio: toca Compartir, luego Añadir a pantalla de inicio, y ábrela desde allí.",
     denied:"Las notificaciones están bloqueadas para LOWiSPIKE. Permítelas en los ajustes del móvil y luego activa esto.",
@@ -20711,8 +20711,12 @@ function key(){ let s = PUB.replace(/-/g, "+").replace(/_/g, "/"); while (s.leng
 function reg(){ const sw = navigator.serviceWorker;
   return Promise.race([sw.getRegistration().then(r => r || sw.register("sw.js", {scope:"./", updateViaCache:"none"})).then(() => sw.ready), new Promise((_, no) => setTimeout(() => no(new Error("sw timeout")), 8000))]); }
 async function getSub(){ try { const r = await reg(); return await r.pushManager.getSubscription(); } catch(e){ return null; } }
-function post(a, sub, snap, keepalive){
-  return fetch(FN, {method:"POST", headers:{"Content-Type":"text/plain;charset=UTF-8"}, body:JSON.stringify({a, sub:sub.toJSON ? sub.toJSON() : sub, st:snap || {}}), keepalive:!!keepalive, mode:"cors"})
+/* 25 Oct 2026, four pillars (lis-push.js): the login token ties the phone to the account (energy can reach you offline),
+   plus the companion name and the four switches */
+async function post(a, sub, snap, keepalive){
+  const L = window.LisPush; let tok = ""; try { tok = L && a !== "unsub" ? await L.tok() : ""; } catch(e){}
+  const st2 = Object.assign({}, snap || {}, L && a !== "unsub" ? L.extra() : {});
+  return fetch(FN, {method:"POST", headers:{"Content-Type":"text/plain;charset=UTF-8"}, body:JSON.stringify(Object.assign({a, sub:sub.toJSON ? sub.toJSON() : sub, st:st2}, tok ? {tok} : {})), keepalive:!!keepalive, mode:"cors"})
     .then(r => r.json()).catch(() => ({ok:false})); }
 
 /* ---------- the snapshot the nudges need ---------- */
@@ -20783,7 +20787,7 @@ function rowHTML(){ const m = mode();
   let h = '<div class="n1-row n1p-row" data-n1p-mode="' + m + '"><b>' + esc(w("row")) + '</b><div class="small muted n1p-sub">' + esc(w("sub")) + '</div>';
   if (m === "on" || m === "off") {
     h += '<div class="n1-opts">' + ['on', 'off'].map(k => '<button type="button" class="chip n1-opt' + (m === k ? " on" : "") + '" data-n1p="' + k + '" aria-pressed="' + (m === k) + '">' + esc(w(k)) + '</button>').join("") + '</div>';
-    if (m === "on") h += '<div class="n1p-tr"><button type="button" class="chip n1p-test" data-n1p="test">' + esc(w("test")) + '</button><span class="small n1p-msg" aria-live="polite"></span></div>'; }
+    if (m === "on") h += '<div class="n1p-tr"><button type="button" class="chip n1p-test" data-n1p="test">' + esc(w("test")) + '</button><span class="small n1p-msg" aria-live="polite"></span></div>' + (window.LisPush ? LisPush.pillarHTML() : ""); }
   else h += '<div class="n1p-hint">' + esc(w(m)) + '</div>';
   return h + '</div>'; }
 function repaint(){ try { const n = N(); n && n.repaintSheet(); } catch(e){} }
@@ -20797,6 +20801,7 @@ D.addEventListener("click", e => { const a = e.target && e.target.closest && e.t
 
 /* ---------- tapping a notification ---------- */
 function go(q, tries){ const n = N(); tries = tries || 0;
+  if (window.LisPush && LisPush.route(q)) return;
   if (q === "close") { setTimeout(() => { try { if (window.LowiE1 && !D.documentElement.classList.contains("e1-up")) LowiE1.open(); } catch(e){} }, tries ? 0 : 900); return; }
   if (!n || !n.appFree()) { if (tries < 40) setTimeout(() => go(q, tries + 1), 500); return; }
   if (!q || q === "quest") { const h = D.getElementById("tab-home"); if (h && !h.classList.contains("active")) window.goTab("home"); return; }
@@ -21422,6 +21427,8 @@ window.LowiCommunityHost = {
 <script src="sym-home.js?v=20261025-095815"></script>
 <link rel="stylesheet" id="secCss" href="section-nav.css?v=20261025-095815">
 <script src="section-nav.js?v=20261025-095815"></script>
+<link rel="stylesheet" href="lis-push.css?v=20261025-095815">
+<script src="lis-push.js?v=20261025-095815" defer></script>
 </body>
 </html>
 

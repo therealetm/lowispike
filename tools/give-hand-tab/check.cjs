@@ -27,8 +27,8 @@ const NM = { en: 'Give a hand', de: 'Hilf mit', es: 'Echa una mano' };
         localStorage.setItem('lowispike.lang', a.l); localStorage.setItem('lowi.lang', a.l); localStorage.setItem('lowi.storePicks.tab', 'kitchen');
         if (a.gate) localStorage.removeItem('lowi.giftBasket.server.v1'); else localStorage.setItem('lowi.giftBasket.server.v1', JSON.stringify({ ok: true, at: Date.now() })); } catch (e) { } }, { l: lang, gate: gateTest });
       /* offline fake server for the panel itself (the panel is gift-basket.js, unchanged) */
-      await R.ctx.addInitScript(() => { const t = setInterval(() => { if (window.LowiGiftBasket) { clearInterval(t);
-        window.LowiGiftBasket._api = { uid: () => 'me', ready: async () => !!JSON.parse(localStorage.getItem('lowi.giftBasket.server.v1') || '{}').ok, open: async () => [], mine: async () => [], given: async () => [], trust: async () => [] }; } }, 50); });
+      await R.ctx.addInitScript(g => { window.__gbReady = !g; const t = setInterval(() => { if (window.LowiGiftBasket) { clearInterval(t);
+        window.LowiGiftBasket._api = { uid: () => 'me', ready: async () => !!window.__gbReady, open: async () => [], mine: async () => [], given: async () => [], trust: async () => [] }; } }, 50); }, gateTest);
       await R.goto(); await H.sleep(6000);
       const build = await P.evaluate(() => (document.querySelector('meta[name="lowi-build"]') || {}).content || window.LOWI_BUILD || '');
       console.log(tag, 'build', build, 'viewport', JSON.stringify(P.viewportSize()));
@@ -43,7 +43,7 @@ const NM = { en: 'Give a hand', de: 'Hilf mit', es: 'Echa una mano' };
       let t = await bar();
       if (gateTest) {
         ok('0 server gate shut: three tabs, no Give a hand row', t.tabs.map(x => x.id).join() === 'shop,sz,kitchen' && !t.rows, t);
-        await P.evaluate(() => { localStorage.setItem('lowi.giftBasket.server.v1', JSON.stringify({ ok: false, at: 0 })); }); await P.evaluate(() => { localStorage.removeItem('lowi.giftBasket.server.v1'); return LowiGiftBasket.probe(); }); await H.sleep(1500);
+        await P.evaluate(() => { window.__gbReady = true; localStorage.removeItem('lowi.giftBasket.server.v1'); return LowiGiftBasket.probe(); }); await H.sleep(1500);
         t = await bar();
         ok('0b the server answers ready while Shop is open: Give a hand appears without reopening', t.tabs.map(x => x.id).join() === 'shop,sz,kitchen,gift', t.tabs.map(x => x.id));
       }

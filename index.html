@@ -1482,6 +1482,11 @@ html[data-lay=desktop] #cmPaneChat.cm-pane{padding-bottom:16px}
 .r5-prow small{display:block;font-size:12px;color:rgba(255,255,255,.55)}
 .r5-pav{width:38px;height:38px;flex:0 0 38px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.45),transparent 50%),linear-gradient(160deg,var(--b1),var(--b2));color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.4)}
 .r5-mbgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+/* 25 Oct 2026: "Don't know yours? Take the free test" (setup, type picker, own card): text colour of its sheet (not a low-contrast accent), underlined, a 44px tap row */
+.ps-testbox{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-top:12px;max-width:100%}
+.ps-test{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 2px;color:inherit;font-size:15px;font-weight:650;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;overflow-wrap:anywhere;-webkit-tap-highlight-color:transparent}
+.ps-test:focus-visible{outline:2px solid currentColor;outline-offset:2px;border-radius:6px}
+.ps-test-note{display:block;font-size:13px;line-height:1.35;color:inherit;opacity:.82;padding:0 2px}
 .r5-mbc{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:inherit;font:inherit;cursor:pointer}
 .r5-mbc small{font-size:10px;color:rgba(255,255,255,.55)}
 .r5-mbc.on{border-color:var(--acc,#ffd36e);background:color-mix(in srgb,var(--acc,#ffd36e) 16%,transparent)}
@@ -9628,7 +9633,9 @@ function pBack(){ PST.pop(); const t = PST.pop(); if (!t) return closeSheet(); i
 function mbtiSheet(){
   sheet('<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button><div class="sheetbody"><div class="h2" style="margin:4px 40px 4px 0">Your personality type</div><div class="small muted">Shown on your profile so people who tick like you can find you. Optional.</div>' +
     '<div class="r5-mbgrid">' + Object.keys(MBTI).map(k => '<button class="r5-mbc' + (R5.mbti === k ? " on" : "") + '" data-r5="mbti" data-v="' + k + '"><b>' + k + '</b><small>' + MBTI[k] + '</small></button>').join("") + '</div>' +
-    (R5.mbti ? '<button class="btn ghost" data-r5="mbti" data-v="" style="margin-top:12px">Remove it</button>' : "") + '<div class="small dim" style="margin-top:10px">Don\'t know yours? A free 16-type test takes about 10 minutes.</div></div>');
+    (R5.mbti ? '<button class="btn ghost" data-r5="mbti" data-v="" style="margin-top:12px">Remove it</button>' : "") +
+    /* 25 Oct 2026 (Emmanuel: "did you add a link for them to go do the personality type test?"): no type yet -> the free test in the app language, about 10 minutes */
+    (R5.mbti ? "" : (window.LowiProfileShare && LowiProfileShare.testHTML ? LowiProfileShare.testHTML((window.LowiLang && LowiLang.get && LowiLang.get()) || "en") : "")) + '</div>');
 }
 function profRowHTML(){ return '<div class="setrow"><div class="t"><b>Personality type</b><div class="small muted">' + (R5.mbti ? R5.mbti + " · " + MBTI[R5.mbti] : "Not set · helps people find you") + '</div></div><button class="chip" data-r5="mbti-pick">' + (R5.mbti ? "Change" : "Add") + '</button></div>' +
   '<div class="setrow"><div class="t"><b>Your community profile</b><div class="small muted">What others see when they tap you</div></div><button class="chip" data-r5="profile" data-me="1" id="r5MyProfile">View</button></div>'; }
@@ -10664,6 +10671,12 @@ html[data-ui=light] .r2-logo span{color:#a8792e}
 .r2-fl input::placeholder{color:var(--r2-mut);opacity:.7}
 .r2-fl.date input{display:block;line-height:52px;min-height:52px}
 .r2-fl.pw input{padding-right:52px}
+/* 25 Oct 2026: setup's optional personality type (a native picker: big, readable, 16px+ so iOS doesn't zoom) and the free test link under it */
+.r2-fl.r2ob-type{margin-top:12px}
+.r2-fl select{width:100%;box-sizing:border-box;height:52px;border-radius:16px;border:1px solid var(--r2-line);background:var(--r2-field);color:var(--r2-ink);font:inherit;font-size:17px;padding:0 44px 0 16px;outline:none;-webkit-appearance:none;appearance:none}
+.r2-fl select:focus{border-color:rgba(var(--acc-rgb,159,216,255),.8);box-shadow:0 0 0 4px rgba(var(--acc-rgb,159,216,255),.16)}
+.r2-fl.r2ob-type::after{content:"";position:absolute;right:18px;bottom:22px;width:8px;height:8px;border-right:2px solid var(--r2-ink);border-bottom:2px solid var(--r2-ink);transform:rotate(45deg);pointer-events:none;opacity:.8}
+.r2ob-test .ps-testbox{margin:8px 2px 0}
 .r2-eye{position:absolute;right:6px;bottom:6px;width:40px;height:40px;border:0;border-radius:12px;background:none;color:var(--r2-mut);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .r2-eye.on{color:var(--r2-ink)}
 .r2-err{min-height:18px;font-size:14px;color:var(--r2-danger);padding:0 4px;line-height:1.35}
@@ -11233,7 +11246,8 @@ R2.onboard = function(opts){
   /* BH-011 (Oct 19): the companion is saved only when Continue is tapped on the reveal. A reload during the reveal left setupMid set but no companion, so resuming at step 1 skipped the reveal for good and the account stayed on the standard Misty. Resume at the birthday step (filled in) until the companion exists. */
   const bc = window.LowiBirthCompanion, needReveal = !!(bc && bc.has && bc.reveal && !bc.has());
   ob = { step: (s.setupMid && !s.setupDone && s.user.bday && !needReveal) ? 1 : 0, bday: s.user.bday || "", btime: s.user.btime || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), noCond: !!s.user.noCond, name: s.user.name || "", gender: s.user.gender || "", pcos: !!(s.health && s.health.pcos), condNote: (s.health && typeof s.health.condNote === "string") ? s.health.condNote : "", cycle: (s.health && s.health.cyc && typeof s.health.cyc.show === "boolean") ? s.health.cyc.show : null, askName: !s.user.name || opts.askName };
-  if (ob.pcos && ob.gender !== "m" && !ob.tags.includes("PCOS")) ob.tags.push("PCOS");   /* old PCOS checkbox -> PCOS condition */
+  if (ob.pcos && ob.gender !== "m" && !ob.tags.includes("PCOS")) ob.tags.push("PCOS");
+  ob.mbti = (() => { try { const P = window.LowiProfileShare, r5 = window.LowiFood && LowiFood.state && LowiFood.state(); return P ? P.type((r5 && r5.mbti) || s.user.mbti || "") : ""; } catch(e){ return ""; } })();   /* Oct 25: a type set before is kept */   /* old PCOS checkbox -> PCOS condition */
   { const OE = window.LowiOwnEntries, o = OE ? OE.fold(s.health) : { goals: [], conds: [], left: ob.condNote }; ob.ownGoals = o.goals; ob.ownConds = o.conds; ob.condNote = o.left; }   /* Oct 25: own entries; the old note line folded into own chips, ob.condNote keeps only what did not fit */
   const ov = R2.sheet('<div class="r2-ob" id="r2ob"></div>', { full: true, noClose: true, cls: "r2-obov" });
   paintOb();
@@ -11252,12 +11266,18 @@ function paintOb(){
   const el = $("#r2ob"); if (!el) return;
   let h = "";
   if (ob.step === 0) {
+    const PS = window.LowiProfileShare, obL = ownLang();
     h = dots() + '<div class="r2-obt">' + (ob.askName ? "Nice to meet you" : "Hi " + esc(ob.name) + "!") + '</div><div class="r2-obs">When\'s your birthday?</div>' +
       (ob.askName ? '<label class="r2-fl"><span>Name</span><input id="r2obName" maxlength="40" placeholder="Your first name" value="' + esc(ob.name) + '"></label>' : "") +
       '<label class="r2-fl date"><span>Birthday</span><input id="r2obB" type="date" max="' + todayISO() + '" min="1920-01-01" value="' + esc(ob.bday) + '"></label>' +
       '<label class="r2-fl date r2ob-btime"><span>Birth time (optional)</span><input id="r2obT" type="time" value="' + esc(ob.btime || "") + '"></label>' +
       '<div id="r2obSign">' + signReveal() + '</div>' +
       '<p class="r2-obs r2ob-share" style="font-size:13px;opacity:.8;margin:8px 2px 0">Your day and month (never the year) show on your Community card with a birthday countdown and your star sign.</p>' + /* 24 Oct 2026: birthday + sign are shared on the Community card; said here, before Next */
+      /* 25 Oct 2026 (Emmanuel: a link to the personality test for people who don't know their type): the type is optional, next to the sign it sits beside on the card;
+         "Not sure yet" shows the free test link (app language, about 10 minutes); the pick is saved in saveOb. Text comes in the app language from profile-share-core.js. */
+      (PS && PS.TYPES ? '<label class="r2-fl r2ob-type"><span data-noi18n>' + esc(PS.testUI(obL).pick) + '</span><select id="r2obType" data-noi18n><option value="">' + esc(PS.testUI(obL).none) + '</option>' +
+        PS.TYPES.map(t => '<option value="' + t + '"' + (ob.mbti === t ? " selected" : "") + '>' + t + ' · ' + esc(PS.typeName(t, obL)) + '</option>').join("") + '</select></label>' +
+        '<div id="r2obTest" class="r2ob-test">' + (ob.mbti ? "" : PS.testHTML(obL)) + '</div>' : "") +
       '<div class="r2-err" id="r2obErr" role="alert"></div><div class="r2-obacts"><button class="r2-btn pri big" data-r2o="next">Next</button></div>';
   } else if (ob.step === 1) {
     h = dots() + '<div class="r2-obt">Add a photo</div><div class="r2-obs">People in Community see it next to your messages.</div>' +
@@ -11285,6 +11305,7 @@ function paintOb(){
   const b = $("#r2obB"); if (b) { const onB = () => { ob.bday = b.value; $("#r2obSign").innerHTML = signReveal(); obErrClear(); }; b.addEventListener("input", onB); b.addEventListener("change", onB); }
   const n = $("#r2obName"); if (n) n.addEventListener("input", () => { ob.name = n.value.trim(); obErrClear(); });
   const bt = $("#r2obT"); if (bt) bt.addEventListener("input", () => { ob.btime = bt.value; });
+  const ty = $("#r2obType"); if (ty) ty.addEventListener("change", () => { ob.mbti = ty.value; const tb = $("#r2obTest"), PS = window.LowiProfileShare; if (tb) tb.innerHTML = ob.mbti || !PS ? "" : PS.testHTML(ownLang()); });
 }
 function saveOb(final){
   const s = R2.S(); s.user = s.user || {};
@@ -11296,6 +11317,8 @@ function saveOb(final){
   s.user.tags = ob.tags.slice();
   s.user.noCond = !!ob.noCond && !ob.tags.some(isCond) && !(ob.ownConds || []).length;
   if (ob.gender) s.user.gender = ob.gender;
+  /* 25 Oct 2026: the type picked in setup ("Not sure yet" leaves it as it is); setType writes Profile (R5), S.user and the herb in one go */
+  if (ob.mbti) { try { if (window.LowiHerbIdentity && LowiHerbIdentity.setType) LowiHerbIdentity.setType(ob.mbti); else { s.user.mbti = ob.mbti; const r5 = window.LowiFood && LowiFood.state && LowiFood.state(); if (r5) { r5.mbti = ob.mbti; localStorage.setItem("lowispike.r5.v1", JSON.stringify(r5)); } } } catch(e){} }
   s.health = s.health || {}; s.health.pcos = ob.gender !== "m" && ob.tags.includes("PCOS");
   { const OE = window.LowiOwnEntries; if (OE && (ob.ownGoals || ob.ownConds)) OE.write(s.health, { goals: ob.ownGoals, conds: ob.ownConds }); }   /* Oct 25: own entries, this phone only */
   if (ob.gender === "f" && ob.cycle !== null && window.LowiCycle && LowiCycle.setShow) LowiCycle.setShow(ob.cycle);   /* cycle stage 1: her answer to Track your cycle? */

@@ -836,7 +836,7 @@ function openPerson(id,name){if(!id)return;const bt=botOf(id),mine=id===scope;co
  else rows+=pcRow(tr('pcBday'),tr('pcNotYet'),true)+(mine&&H.setBday?'<div class="cp-share">'+button('bday-add',esc(tr('psAddBday')),'','cp-act cp-act-pri cp-share-btn')+'</div>':'');
  if(!bt&&!mine)rows+=pcRow(tr('pcType'),type||tr('psNoType'),!type);
  /* own card without a type: the free test in the user's language, and the picker to save the result. Never on someone else's card. */
- if(mine)rows+=type?pcRow(tr('pcType'),type):'<div class="cp-row cp-row-type"><span>'+esc(tr('pcType'))+'</span><b class="cp-muted">'+esc(tr('psNoType'))+'</b></div><div class="cp-typeacts">'+(PS?'<a class="cp-test" href="'+esc(PS.testLink(L))+'" target="_blank" rel="noopener" data-ps-test>'+esc(tr('psTest'))+' ↗</a>':'')+button('type-pick',esc(tr('psSetType')),'','cp-test cp-test-set')+'</div>';
+ if(mine)rows+=type?pcRow(tr('pcType'),type):'<div class="cp-row cp-row-type"><span>'+esc(tr('pcType'))+'</span><b class="cp-muted">'+esc(tr('psNoType'))+'</b></div><div class="cp-typeacts">'+(PS?'<a class="cp-test" href="'+esc(PS.testLink(L))+'" target="_blank" rel="noopener" data-ps-test>'+esc(tr('psTest'))+' ↗</a>':'')+button('type-pick',esc(tr('psSetType')),'','cp-test cp-test-set')+(PS&&PS.testNoteHTML?PS.testNoteHTML(L):'')+'</div>';
  rows+=pcRow(tr('pcLevel'),String(bt?bt.lv+' · '+bt.xp+' XP':p.lv));
  if(bt&&pcDate(bt.since,1))rows+=pcRow(tr('withUs'),pcDate(bt.since,1));
  const care=!bt&&!mine&&W.LowiMicroBook&&typeof W.LowiMicroBook.openCare==='function';

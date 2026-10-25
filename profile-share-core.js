@@ -46,6 +46,23 @@ function testLink(lang){return TEST[L(lang)];}
 function publicRow(user,mbti){user=user||{};const b=encode(user.bday);if(!b)return {bday:'',sign:'',mbti:''};return {bday:b,sign:signOf(decode(b)),mbti:type(mbti)};}
 /* what the app may show for someone else's profile row: their shared day/month, sign and type, or nothing */
 function readPublic(row){row=row||{};const md=decode(row.bday);if(!md)return {bday:'',s:'',t:'',md:null};return {bday:encode(YEAR+row.bday.slice(4)),s:signOf(md),t:type(row.mbti||row.t),md};}
-const api={YEAR,SIGNS,TEST,type,monthDay,encode,decode,signOf,signName,glyph,next,dayMonth,countdown,testLink,publicRow,readPublic,leap};
+/* 25 Oct 2026 (Emmanuel: "For the people who don't know their personality type, did you add a link for them to go do the test?"):
+   one link block for setup, the profile editor's type picker and the own Community card. It opens the free test in the app language
+   in the browser (target _blank: Safari from the Home Screen app), says it takes about 10 minutes, and is already in the app language,
+   so data-noi18n keeps the app's text translator off it. Afterwards the person picks one of the 16 types in the app. */
+const TYPES=['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
+const TYPE_NAMES={
+ en:['Architect','Logician','Commander','Debater','Advocate','Mediator','Protagonist','Campaigner','Logistician','Defender','Executive','Consul','Virtuoso','Adventurer','Entrepreneur','Entertainer'],
+ de:['Architekt','Logiker','Kommandeur','Debattierer','Advokat','Mediator','Protagonist','Aktivist','Logistiker','Verteidiger','Geschäftsführer','Konsul','Virtuose','Abenteurer','Unternehmer','Entertainer'],
+ es:['Arquitecto','Lógico','Comandante','Innovador','Abogado','Mediador','Protagonista','Activista','Logístico','Defensor','Ejecutivo','Cónsul','Virtuoso','Aventurero','Emprendedor','Animador']};
+const TEST_UI={
+ en:{ask:"Don't know yours? Take the free test",note:'About 10 minutes · opens in your browser',pick:'Personality type (optional)',none:'Not sure yet'},
+ de:{ask:'Du kennst deinen nicht? Mach den kostenlosen Test',note:'Dauert etwa 10 Minuten · öffnet sich in deinem Browser',pick:'Persönlichkeitstyp (optional)',none:'Weiß ich noch nicht'},
+ es:{ask:'¿No sabes el tuyo? Haz el test gratis',note:'Unos 10 minutos · se abre en tu navegador',pick:'Tipo de personalidad (opcional)',none:'Aún no lo sé'}};
+function typeName(t,lang){const i=TYPES.indexOf(type(t));return i<0?'':TYPE_NAMES[L(lang)][i];}
+function testUI(lang){return TEST_UI[L(lang)];}
+function testNoteHTML(lang){return '<small class="ps-test-note" data-noi18n>'+TEST_UI[L(lang)].note+'</small>';}
+function testHTML(lang){const l=L(lang);return '<div class="ps-testbox" data-noi18n><a class="ps-test" href="'+TEST[l]+'" target="_blank" rel="noopener noreferrer" data-ps-test>'+TEST_UI[l].ask+' <span aria-hidden="true">↗</span></a><small class="ps-test-note">'+TEST_UI[l].note+'</small></div>';}
+const api={YEAR,SIGNS,TEST,TYPES,type,typeName,testUI,testHTML,testNoteHTML,monthDay,encode,decode,signOf,signName,glyph,next,dayMonth,countdown,testLink,publicRow,readPublic,leap};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiProfileShare=api;
 })(typeof window==='object'?window:globalThis);

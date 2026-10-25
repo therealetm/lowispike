@@ -44,13 +44,16 @@
         try { W.dispatchEvent(new CustomEvent('lowi:studio-lock', { detail: { open } })); } catch (e) { }
         refresh();
     }
-    function local() { return C.decide(ST.server, get(C.OK_KEY), pass(), uid()); }
+    /* the Lock button (25 Oct): this device stays locked, even for the owner, until the right PIN */
+    function preview() { return get(C.PREVIEW_KEY) === '1'; }
+    function local() { return C.decide(ST.server, get(C.OK_KEY), pass(), uid(), preview()); }
 
     /* ask the server; a missing answer (offline, no SQL yet) keeps the remembered verdict */
     async function check(force) {
         const p = pass(), id = liveUid(), key = id + '|' + p;
         if (!force && key === ST.key) return ST.open;
         ST.key = key; ST.checkedAt = Date.now();
+        if (preview()) { set(false); return ST.open; }
         const res = await rpc('studio_access', { pass: p || null });
         if (key !== liveUid() + '|' + pass()) return ST.open; /* account, session or pass changed meanwhile: the next check answers */
         const v = C.accessFromRpc(res);
@@ -70,7 +73,7 @@
         const r = C.unlockFromRpc(await rpc('studio_unlock', { pin }));
         ST.busy = false;
         if (r.ok) {
-            put(C.PASS_KEY, r.pass); put(C.OK_KEY, C.okMark(true, uid()));
+            put(C.PASS_KEY, r.pass); put(C.OK_KEY, C.okMark(true, uid())); put(C.PREVIEW_KEY, '');
             ST.server = true; ST.key = liveUid() + '|' + r.pass; ST.msg = '';
             set(true);
             return true;
@@ -127,11 +130,34 @@
     }
     function refresh() { D.querySelectorAll('.sl-lock:not([hidden])').forEach(fill); }
 
+    /* Lock: forget this device's pass and keep it locked here (the owner too) until the right PIN; nothing changes elsewhere */
+    function lockDevice() {
+        put(C.PASS_KEY, ''); put(C.OK_KEY, ''); put(C.PREVIEW_KEY, '1');
+        ST.server = null; ST.key = liveUid() + '|'; ST.formOpen = false; ST.msg = '';
+        set(false);
+    }
+    /* community-rooms-ui.js ensureView: on = Studio is the open tab and unlocked. A small "Private · only you" badge + Lock */
+    function paintOpen(box, on) {
+        if (!box) return null;
+        let bar = box.querySelector(':scope>.sl-open');
+        if (!on) { if (bar) bar.hidden = true; return bar; }
+        if (!bar) {
+            bar = D.createElement('div'); bar.className = 'sl-open'; bar.setAttribute('data-noi18n', ''); bar.setAttribute('role', 'group');
+            bar.addEventListener('click', e => { const b = e.target.closest('[data-sl="lock"]'); if (!b) return; e.preventDefault(); lockDevice(); });
+            const sw = box.querySelector(':scope>.rm-sw');
+            box.insertBefore(bar, sw ? sw.nextSibling : box.firstChild);
+        }
+        const L = lang();
+        if (bar.__sig !== L) { bar.innerHTML = C.openHtml(L); bar.__sig = L; bar.setAttribute('aria-label', t().badge); }
+        bar.hidden = false;
+        return bar;
+    }
+
     ST.open = local();
     setInterval(() => { if (liveUid() + '|' + pass() !== ST.key) check(false); }, 2000);
     W.addEventListener('online', () => check(true));
     D.addEventListener('visibilitychange', () => { if (D.visibilityState === 'visible' && Date.now() - ST.checkedAt > 30000) check(true); });
     setTimeout(() => check(false), 0);
 
-    W.LowiStudioLock = { locked: () => !ST.open, isOpen: () => ST.open, paint, check, unlock, _st: ST };
+    W.LowiStudioLock = { locked: () => !ST.open, isOpen: () => ST.open, paint, paintOpen, lockDevice, check, unlock, _st: ST };
 })(window, document);

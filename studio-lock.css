@@ -40,3 +40,20 @@
 .sl-key svg{width:18px;height:18px;fill:none;stroke:#b8cce4;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 @media (max-height:640px){.sl-ic{width:68px;height:68px}.sl-ic svg{width:30px;height:30px}.sl-t{font-size:24px}.sl-lock{padding-top:18px}}
 @media (prefers-reduced-motion:reduce){.sl-pin.sl-no{animation:none}}
+/* 25 Oct: unlocked Studio says it is private, with a Lock button that locks this device again (in the app above the page;
+   on the standalone pages a small bar at the top) */
+.sl-open{flex:none;align-self:center;display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 8px;max-width:100%;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.sl-open[hidden]{display:none}
+.sl-badge{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;font-size:12.5px;line-height:1;font-weight:650;
+  white-space:nowrap;color:#e9f6ff;background:rgba(9,20,52,.74);border:1px solid rgba(143,231,255,.42);box-shadow:0 0 12px rgba(28,247,249,.14)}
+.sl-lockbtn{appearance:none;-webkit-appearance:none;min-height:30px;min-width:44px;padding:0 14px;border-radius:999px;cursor:pointer;font:650 12.5px/1 inherit;
+  font-family:inherit;color:#03122e;border:0;background:linear-gradient(135deg,#8ff8f9 0%,#46c8ff 48%,#5b8cff 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 12px rgba(48,140,255,.26);-webkit-tap-highlight-color:transparent}
+.sl-lockbtn:focus-visible{outline:2px solid #8fe7ff;outline-offset:2px}
+/* the standalone Affiliates and Creation pages (studio-gate.js): the lock fills the page */
+.sl-lock.sl-page{position:fixed;inset:0;z-index:2147483000;padding:calc(28px + env(safe-area-inset-top)) 22px calc(76px + env(safe-area-inset-bottom))}
+.sl-lock.sl-page .sl-key{right:calc(14px + env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom))}
+.sl-lock.sl-wait>*{visibility:hidden}
+html.sl-gated,html.sl-gated body{background:#050b1e;color-scheme:dark}
+.sl-open.sl-top{display:flex;position:relative;z-index:30;margin:0 auto;padding:calc(8px + env(safe-area-inset-top)) 12px 6px}

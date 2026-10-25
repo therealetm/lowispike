@@ -17,18 +17,23 @@
 })(typeof self !== 'undefined' ? self : this, function () {
     'use strict';
     const PASS_KEY = 'lowi.studio.pass', OK_KEY = 'lowi.studio.ok';
+    /* 25 Oct: the Lock button. Set on this device only; while it is there Studio stays locked here, even for the owner, until the right PIN */
+    const PREVIEW_KEY = 'lowi.studio.locked';
     const PASS_RE = /^[0-9a-f]{32,128}$/;
 
     const TXT = {
         en: { pill: 'Locked', title: 'Under construction', sub: 'Studio is being built. It opens here as soon as it’s ready.',
             lockBtn: 'Unlock with PIN', pinLabel: 'PIN', pinHint: 'Enter PIN', open: 'Open', cancel: 'Cancel', checking: 'Checking…',
-            wrong: 'Wrong PIN.', wait: 'Too many tries. Try again later.', offline: 'No connection. Try again.', failed: 'That didn’t work. Try again.', short: 'At least 4 digits.' },
+            wrong: 'Wrong PIN.', wait: 'Too many tries. Try again later.', offline: 'No connection. Try again.', failed: 'That didn’t work. Try again.', short: 'At least 4 digits.',
+            badge: 'Private · only you', lockNow: 'Lock', lockAria: 'Lock Studio on this device' },
         de: { pill: 'Gesperrt', title: 'Im Aufbau', sub: 'Studio wird gerade gebaut. Es öffnet sich hier, sobald es fertig ist.',
             lockBtn: 'Mit PIN entsperren', pinLabel: 'PIN', pinHint: 'PIN eingeben', open: 'Öffnen', cancel: 'Abbrechen', checking: 'Wird geprüft…',
-            wrong: 'Falsche PIN.', wait: 'Zu viele Versuche. Versuch es später nochmal.', offline: 'Keine Verbindung. Versuch es nochmal.', failed: 'Das hat nicht geklappt. Versuch es nochmal.', short: 'Mindestens 4 Ziffern.' },
+            wrong: 'Falsche PIN.', wait: 'Zu viele Versuche. Versuch es später nochmal.', offline: 'Keine Verbindung. Versuch es nochmal.', failed: 'Das hat nicht geklappt. Versuch es nochmal.', short: 'Mindestens 4 Ziffern.',
+            badge: 'Privat · nur du', lockNow: 'Sperren', lockAria: 'Studio auf diesem Gerät sperren' },
         es: { pill: 'Bloqueado', title: 'En construcción', sub: 'Estamos construyendo Estudio. Se abrirá aquí en cuanto esté listo.',
             lockBtn: 'Desbloquear con PIN', pinLabel: 'PIN', pinHint: 'Introduce el PIN', open: 'Abrir', cancel: 'Cancelar', checking: 'Comprobando…',
-            wrong: 'PIN incorrecto.', wait: 'Demasiados intentos. Inténtalo más tarde.', offline: 'Sin conexión. Inténtalo de nuevo.', failed: 'No funcionó. Inténtalo de nuevo.', short: 'Al menos 4 dígitos.' }
+            wrong: 'PIN incorrecto.', wait: 'Demasiados intentos. Inténtalo más tarde.', offline: 'Sin conexión. Inténtalo de nuevo.', failed: 'No funcionó. Inténtalo de nuevo.', short: 'Al menos 4 dígitos.',
+            badge: 'Privado · solo tú', lockNow: 'Bloquear', lockAria: 'Bloquear Estudio en este dispositivo' }
     };
     const text = lang => TXT[lang] || TXT.en;
 
@@ -67,11 +72,31 @@
         return !!(uid && mark === 'uid:' + uid);
     }
     /* open or locked: the server's answer wins; without one, only a remembered yes for this device / account opens it */
-    function decide(server, mark, pass, uid) {
+    function decide(server, mark, pass, uid, preview) {
+        if (preview) return false; /* locked on this device with the Lock button */
         if (server === true) return true;
         if (server === false) return false;
         return cachedOk(mark, pass, uid);
     }
 
-    return { PASS_KEY, OK_KEY, TXT, text, normalizePin, pinReady, validPass, accessFromRpc, unlockFromRpc, reasonText, okMark, cachedOk, decide };
+    /* the lock panel and the open badge, shared by studio-lock.js (in the app) and studio-gate.js (affiliates/, create/) */
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const LOCK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="10.5" width="14" height="10" rx="3"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>';
+    function lockHtml(lang, formOpen, msg) {
+        const x = text(lang);
+        return '<div class="sl-in"><span class="sl-pill"><i aria-hidden="true"></i>' + esc(x.pill) + '</span>'
+            + '<span class="sl-ic" aria-hidden="true">' + LOCK_SVG + '</span>'
+            + '<h2 class="sl-t">' + esc(x.title) + '</h2><p class="sl-s">' + esc(x.sub) + '</p>'
+            + '<form class="sl-pin" novalidate' + (formOpen ? '' : ' hidden') + '><input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-label="' + esc(x.pinLabel) + '" placeholder="' + esc(x.pinHint) + '">'
+            + '<span class="sl-row"><button type="button" class="sl-b sl-cancel" data-sl="cancel">' + esc(x.cancel) + '</button><button type="submit" class="sl-b sl-go">' + esc(x.open) + '</button></span>'
+            + '<span class="sl-msg" role="status" aria-live="polite">' + esc(msg) + '</span></form></div>'
+            + '<button type="button" class="sl-key" data-sl="pin" aria-label="' + esc(x.lockBtn) + '" aria-expanded="' + (formOpen ? 'true' : 'false') + '"' + (formOpen ? ' hidden' : '') + '>' + LOCK_SVG + '</button>';
+    }
+    function openHtml(lang) {
+        const x = text(lang);
+        return '<span class="sl-badge"><span aria-hidden="true">\u{1F512}</span> ' + esc(x.badge) + '</span>'
+            + '<button type="button" class="sl-lockbtn" data-sl="lock" aria-label="' + esc(x.lockAria) + '">' + esc(x.lockNow) + '</button>';
+    }
+
+    return { PASS_KEY, OK_KEY, PREVIEW_KEY, TXT, lockHtml, openHtml, esc, text, normalizePin, pinReady, validPass, accessFromRpc, unlockFromRpc, reasonText, okMark, cachedOk, decide };
 });

@@ -6,21 +6,27 @@
 <meta name="theme-color" content="#03050a">
 <meta name="color-scheme" content="dark">
 <meta name="robots" content="noindex">
-<title>Affiliates · Video-Template · LOWiSPIKE</title>
-<meta name="description" content="Wähle Webdesign oder UGC und hol dir das fertige Video-Skript. Dazu siehst du, was du pro Verkauf verdienst und wie du im Level aufsteigst.">
+<title>LOWiSPIKE Studio · Im Aufbau</title>
+<meta name="description" content="Privat · im Aufbau.">
 <link rel="canonical" href="https://therealetm.github.io/lowispike/affiliates/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LOWiSPIKE">
-<meta property="og:title" content="LOWiSPIKE Affiliates · Video-Template">
-<meta property="og:description" content="Webdesign oder UGC wählen, Skript holen, mit deiner Persönlichkeit aufnehmen. Dazu deine Provision pro Level.">
+<meta property="og:title" content="LOWiSPIKE Studio">
+<meta property="og:description" content="Privat · im Aufbau.">
 <meta property="og:url" content="https://therealetm.github.io/lowispike/affiliates/">
 <meta property="og:image" content="https://therealetm.github.io/lowispike/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="/lowispike/icon-192.png">
 <link rel="apple-touch-icon" href="/lowispike/icon-180.png">
-<link rel="stylesheet" href="blueprint.css">
+<!-- 25 Oct 2026: Studio is private. Only the lock below runs; the page's styles (rel="studio-stylesheet"), content (<template>)
+     and scripts (type="text/x-studio") are not fetched or shown until the server says yes (studio-gate.js) -->
+<link rel="stylesheet" href="../studio-lock.css">
+<link rel="studio-stylesheet" href="blueprint.css">
+<script src="../studio-lock-core.js"></script>
+<script src="../studio-gate.js"></script>
 </head>
 <body>
+<template id="studioPage">
 <div class="rings" aria-hidden="true"></div>
 <div class="wrap" id="app">
   <noscript><p class="card">Diese Seite braucht JavaScript.</p></noscript>
@@ -75,12 +81,13 @@
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-<script src="blueprint-core.js"></script>
-<script src="access-core.js"></script>
-<script src="access-list.js"></script>
-<script src="recruits.js"></script>
-<script src="script-voice.js"></script>
-<script src="../app-voice.js"></script>
-<script src="blueprint.js"></script>
+</template>
+<script type="text/x-studio" src="blueprint-core.js"></script>
+<script type="text/x-studio" src="access-core.js"></script>
+<script type="text/x-studio" src="access-list.js"></script>
+<script type="text/x-studio" src="recruits.js"></script>
+<script type="text/x-studio" src="script-voice.js"></script>
+<script type="text/x-studio" src="../app-voice.js"></script>
+<script type="text/x-studio" src="blueprint.js"></script>
 </body>
 </html>

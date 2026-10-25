@@ -75,7 +75,7 @@ function ensureView(pane){let box=pane.querySelector(':scope>.rm-view');
  for(const k in frames)if(frames[k].parentNode!==box){const f=frames[k];delete frames[k];if(f.parentNode)f.parentNode.removeChild(f);}
  /* 25 Oct 2026 (Emmanuel: "Studio under construction. I want it locked. So no one can see inside."): while Studio is locked no
     Affiliates / Creation frame is made (any made before goes), only the lock panel (studio-lock.js; the server decides) */
- const lk=!!VIEWS[view]&&studioLocked();if(lk)dropFrames('');const SL=W.LowiStudioLock;if(SL&&SL.paint)SL.paint(box,lk&&pageActive());
+ const lk=!!VIEWS[view]&&studioLocked();if(lk)dropFrames('');const SL=W.LowiStudioLock;if(SL&&SL.paint)SL.paint(box,lk&&pageActive());if(SL&&SL.paintOpen)SL.paintOpen(box,!!VIEWS[view]&&!lk&&pageActive());
  if(VIEWS[view]&&!lk&&!frames[view]&&pageActive()){/* never load a page while Community is closed (a repaint after leaving made it again) */const f=D.createElement('iframe');f.className='rm-frame';f.src=VIEWS[view]+'?embed=1';/* not lazy: it is only made when its tab is opened, and lazy frames in WebKit can wait for a scroll */f.dataset.view=view;frames[view]=f;box.appendChild(f);}
  for(const k in frames)frames[k].hidden=k!==view;
  for(const k in frames)frames[k].title=k==='aff'?tr('aff'):tr('create');

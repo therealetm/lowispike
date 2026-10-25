@@ -54,6 +54,19 @@ for (const q of ['protein bar', 'Proteinriegel', 'barrita de proteína', 'barrit
 for (const q of ['spaghetti', 'Spaghetti', 'espaguetis', 'macarrones']) assert.strictEqual(why(q), 'n_flour', q);
 for (const q of ['popcorn', 'Popcorn', 'palomitas']) assert.strictEqual(why(q), 'n_corn', q);
 for (const q of ['croissant', 'Croissant', 'cruasán']) assert.strictEqual(why(q), 'n_sugar', q);
+/* Oct 25 bug hunt: Spanish "limón" fired the German "Limo" drink word (spike), "tortilla francesa" (omelette) the corn tortilla;
+   common Spanish names had no verdict where EN/DE had one */
+for (const q of ['limón', 'limon', 'Limones', 'lima limón']) assert.notStrictEqual(why(q), 'n_drink', q + ' is a lemon, not a drink');
+for (const q of ['Limo', 'Zitronenlimo', 'Limonade', 'limonada', 'zumo de limón', 'Coca-Cola']) assert.strictEqual(why(q), 'n_drink', q);
+assert.strictEqual(why('tortilla francesa'), 'n_ok', 'a plain omelette is not a corn tortilla');
+for (const q of ['tortilla', 'Tortilla chips', 'tortillas de maíz']) assert.ok(['n_corn', 'n_potato'].includes(why(q)), q);
+assert.strictEqual(why('tortilla de patatas'), 'n_potato');
+for (const q of ['bebida energética', 'batido', 'batido de frutas']) assert.strictEqual(why(q), 'n_drink', q);
+assert.notStrictEqual(why('batido de proteína'), 'n_drink', 'protein shake is not read as a sugary drink in only one language');
+for (const q of ['lasaña', 'lasagna', 'Lasagne', 'ñoquis']) assert.strictEqual(why(q), 'n_flour', q);
+assert.strictEqual(why('natillas'), 'n_sugar');
+for (const q of ['mayonesa', 'mostaza', 'frutos secos', 'coco']) assert.strictEqual(why(q), 'n_ok', q);
+assert.notStrictEqual(why('chocolate'), 'n_ok', 'coco only as a whole word');
 /* the policy layer (Master Knowledge classify) must not read pan-fried as bread either */
 const P = require(path.join(__dirname, '..', 'food-policy-core.js'));
 const cats = q => Object.keys(P.classify({ name: q }) || {});
@@ -61,4 +74,7 @@ assert.ok(!cats('pan-fried salmon').includes('starch_bread'), 'policy: pan-fried
 assert.ok(!cats('Pan seared chicken breast').includes('starch_bread'), 'policy: pan seared chicken is not bread');
 assert.ok(cats('pan integral').includes('starch_bread'), 'policy: pan integral stays bread');
 assert.ok(cats('pan-fried bread').includes('starch_bread'), 'policy: pan-fried bread stays bread');
+/* Oct 25: the policy layer must not read a Spanish omelette as a wrap either; a plain tortilla stays bread */
+assert.ok(!cats('tortilla francesa').includes('starch_bread'), 'policy: tortilla francesa is an omelette');
+assert.ok(cats('Tortilla wrap').includes('starch_bread'), 'policy: a tortilla wrap stays bread');
 console.log('name-rate-words: ok');

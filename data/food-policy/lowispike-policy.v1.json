@@ -174,7 +174,7 @@
       ]
     },
     "starch_bread": {
-      "name": "brot\\b|brötchen|broetchen|toast|bread|baguette|ciabatta|semmel|wrap|tortilla|\\bpan\\b|pita|bagel|knäckebrot|zwieback|pizza|flammkuchen|calzone|burrito|quesadilla|\\btacos?\\b|knödel|klöße|kloesse|dumplings?|blätterteig|puff pastry|pfannkuchen|pancakes?|crêpes?|crepes?|empanadas?|samosas?|frühlingsrolle|spring rolls?|burger bun|hamburger|cheeseburger|döner|doner|kebab im brot|sandwich|bocadillo|\\bnaan\\b|chapati|roti\\b|arepa|\\bburgers?\\b",
+      "name": "brot\\b|brötchen|broetchen|toast|bread|baguette|ciabatta|semmel|wrap|tortilla(?! francesa)|\\bpan\\b|pita|bagel|knäckebrot|zwieback|pizza|flammkuchen|calzone|burrito|quesadilla|\\btacos?\\b|knödel|klöße|kloesse|dumplings?|blätterteig|puff pastry|pfannkuchen|pancakes?|crêpes?|crepes?|empanadas?|samosas?|frühlingsrolle|spring rolls?|burger bun|hamburger|cheeseburger|döner|doner|kebab im brot|sandwich|bocadillo|\\bnaan\\b|chapati|roti\\b|arepa|\\bburgers?\\b",
       "off": [
         "en:breads",
         "en:sliced-breads",

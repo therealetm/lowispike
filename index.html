@@ -4172,7 +4172,9 @@ const ES_MEAL = {pollo:"chicken", pechuga:"chicken", pavo:"turkey", huevos:"eggs
 /* "barrita de proteína" / "barrita de cereales" put the food word last; read them as "protein bar" / "cereal bar" */
 const ES_PHRASE = [[/\bbarritas? (?:de )?proteinas?\b/g, "protein bar"], [/\bbarritas? (?:de )?cereales\b/g, "cereal bar"],
   /* "tortitas de arroz" / "tortitas de maiz" are rice / corn cakes, not pancakes; they were read as a rice dish (curry swap) */
-  [/\btortitas? (?:de )?arroz\b/g, "rice cakes"], [/\btortitas? (?:de )?maiz\b/g, "corn cakes"]];
+  [/\btortitas? (?:de )?arroz\b/g, "rice cakes"], [/\btortitas? (?:de )?maiz\b/g, "corn cakes"],
+  /* Oct 25 bug hunt: "limón" was read as German "Limo" + n (lemonade, spike); "tortilla francesa" is a plain omelette, not a wrap */
+  [/\blimon(?:es)?\b/g, "lemon"], [/\btortillas? francesas?\b/g, "omelette"]];
 const esMealToks = toks => { const out = []; toks.forEach((t, i) => {
   if (!Object.prototype.hasOwnProperty.call(ES_MEAL, t) || (t === "pan" && /^(fried|seared|roasted|fry|frying)$/.test(toks[i + 1] || ""))) { out.push(t); return; }
   if (ES_MEAL[t]) ES_MEAL[t].split(" ").forEach(x => out.push(x)); }); return out; };
@@ -14721,17 +14723,19 @@ function rate(p){
 /* typed names: a quick estimate from the words.
    Oct 24 bug hunt: words must not fire inside other words or the wrong language: "chocolate" held "cola" (drink reason), "jamón"
    held "jam", "marzipan" and "japan" held "pan", "pan-fried salmon" read as bread (spike); "Süßkartoffel" was stricter than "sweet
-   potato"/"batata", and Spanish protein bars, espaguetis, palomitas and cruasán got a friendlier or no verdict than EN/DE. */
+   potato"/"batata", and Spanish protein bars, espaguetis, palomitas and cruasán got a friendlier or no verdict than EN/DE.
+   Oct 25 bug hunt: Spanish "limón" read as German "Limo" (drink reason, spike) and "tortilla francesa" (plain omelette) as a
+   corn tortilla; bebida energética, batido, lasaña, ñoquis, natillas, mayonesa, mostaza, frutos secos, coco had no verdict. */
 const NAMES = [
   ["n_sweet", "spike", /\bzero\b|\blight\b|\bdiet\b|protein ?riegel|protein ?bar|barrita (de )?protein|barrita proteica|barra (de )?protein|barra proteica/],
-  ["n_drink", "spike", /(?<!cho)cola|saft|juice|limo|fanta|sprite|eistee|ice tea|smoothie|energy|zumo|refresco/],
+  ["n_drink", "spike", /(?<!cho)cola|saft|juice|limo(?:nade|nada|s)?\b|fanta|sprite|eistee|ice tea|smoothie|energy|energ[eé]tic|zumo|refresco|batido(?! de prote)/],
   ["n_rice", "spike", /reiswaffel|rice cake|reis|rice|arroz|sushi/],
   ["n_potato", "spike", /chips|(?<!s(?:u|ü|ue)(?:ss|ß))kartoffel|pommes|fries|patata|crisps/],
-  ["n_corn", "spike", /cornflakes|popcorn|palomitas|tortilla|nachos|polenta|maíz|mais/],
+  ["n_corn", "spike", /cornflakes|popcorn|palomitas|tortilla(?! francesa)|nachos|polenta|maíz|mais/],
   ["n_oats", "better", /müsli|muesli|granola|hafer|oat|avena/],
-  ["n_sugar", "spike", /schoko|chocolate|gummi|haribo|bonbon|kuchen|cake|eis\b|ice cream|nutella|marmelade|\bjams?(?![a-z\u00e0-\u00ff])|marzipan|mazapan|keks|cookie|donut|croissant|cruasan|waffel|candy|dulce|galleta/],
-  ["n_flour", "spike", /brot|bread|toast|brötchen|nudeln|pasta|spaghetti|espagueti|macarron|pizza|cracker|brezel|wrap|baguette|(?<![a-z\u00e0-\u00ff])pan\b(?![ -]?(?:fried|fry|seared|roasted|grilled|cooked))|bagel/],
-  ["n_ok", "ok", /skyr|quark|\beier?\b|\beggs?\b|käse|kase|cheese|nüsse|nuss|nuts|avocado|wasser|water|butter|oliven|olive|lachs|salmon|thunfisch|tuna|hähnchen|chicken|gemüse|brokkoli|broccoli|spinat|salat|frischkäse|joghurt natur|griechisch|kaffee|coffee|tee\b|tea\b|huevo|queso/]
+  ["n_sugar", "spike", /schoko|chocolate|gummi|haribo|bonbon|kuchen|cake|eis\b|ice cream|nutella|marmelade|\bjams?(?![a-z\u00e0-\u00ff])|marzipan|mazapan|keks|cookie|donut|croissant|cruasan|waffel|candy|dulce|galleta|natillas/],
+  ["n_flour", "spike", /brot|bread|toast|lasa(?:gn|ñ|n)[ae]|[ñn]oquis|brötchen|nudeln|pasta|spaghetti|espagueti|macarron|pizza|cracker|brezel|wrap|baguette|(?<![a-z\u00e0-\u00ff])pan\b(?![ -]?(?:fried|fry|seared|roasted|grilled|cooked))|bagel/],
+  ["n_ok", "ok", /skyr|quark|\beier?\b|\beggs?\b|käse|kase|cheese|nüsse|nuss|nuts|avocado|wasser|water|butter|oliven|olive|lachs|salmon|thunfisch|tuna|hähnchen|chicken|gemüse|brokkoli|broccoli|spinat|salat|frischkäse|joghurt natur|griechisch|kaffee|coffee|tee\b|tea\b|huevo|queso|tortilla francesa|mayonesa|mostaza|frutos secos|\bcoco\b/]
 ];
 function rateName(name){ const k = nkey(name) + " " + String(name || "").toLowerCase();
   let hit = null;

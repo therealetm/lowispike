@@ -1,0 +1,62 @@
+/* tutorial-demo.css: the short tour's demo finger and the mocked Scan screen (tutorial-demo.js). */
+.lt-tour { --lt-skin: #8d5524; --lt-skin-shade: #6a3b17; --lt-nail: #e8c3a4; }
+.ltd-hand { --ltd-size: 64px; position: fixed; left: 0; top: 0; width: var(--ltd-size); height: calc(var(--ltd-size) * 1.25); z-index: 3; pointer-events: none;
+    transition-property: transform, opacity; transition-timing-function: cubic-bezier(.3, .8, .3, 1); will-change: transform;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .45)) drop-shadow(0 0 2px rgba(255, 255, 255, .5)); }
+.ltd-hand.ltd-hide { opacity: 0; transition-duration: .2s !important; }
+.ltd-svg { width: 100%; height: 100%; display: block; transform-origin: 47% 4%; transition: transform .16s ease; }
+.ltd-hand.ltd-down .ltd-svg { transform: scale(.88) translateY(3px); }
+.ltd-skin { fill: var(--lt-skin); stroke: var(--lt-skin-shade); stroke-width: 1.6; }
+.ltd-nail { fill: var(--lt-nail); opacity: .9; }
+.ltd-line { fill: none; stroke: var(--lt-skin-shade); stroke-width: 1.6; stroke-linecap: round; opacity: .75; }
+.ltd-ring { position: fixed; z-index: 2; pointer-events: none; border-radius: 50%; box-sizing: border-box; opacity: 0; }
+.ltd-ring.ltd-tapping { border: 3px solid rgba(255, 255, 255, .95); box-shadow: 0 0 18px rgba(143, 231, 255, .8); animation: ltd-tap .5s ease-out both; }
+.ltd-ring.ltd-holding { border: 4px solid rgba(143, 231, 255, .35); box-shadow: 0 0 22px rgba(143, 231, 255, .6); opacity: 1;
+    background: conic-gradient(rgba(255, 255, 255, .55) var(--ltd-p, 0%), transparent 0); animation-name: ltd-hold; animation-timing-function: linear; animation-fill-mode: both;
+    -webkit-mask: radial-gradient(circle, transparent 58%, #000 60%); mask: radial-gradient(circle, transparent 58%, #000 60%); }
+@property --ltd-p { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+.ltd-knob { position: fixed; z-index: 2; width: 34px; height: 34px; border-radius: 50%; pointer-events: none; opacity: 0; transition-property: transform;
+    background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .95), rgba(143, 231, 255, .55)); box-shadow: 0 0 16px rgba(143, 231, 255, .8); }
+.ltd-knob.ltd-on { opacity: .9; }
+@keyframes ltd-tap { 0% { opacity: 1; transform: scale(.7); } 100% { opacity: 0; transform: scale(1.35); } }
+@keyframes ltd-hold { from { --ltd-p: 0%; } to { --ltd-p: 100%; } }
+
+/* a page the tour opened: the spotlight dim gets light so the real page is readable; touches still stay on the tour (nothing is logged) */
+.lt-tour.lt-staged .lt-hole { box-shadow: 0 0 0 200vmax rgba(3, 10, 32, .16); width: 0 !important; height: 0 !important; }
+.lt-tour.lt-staged .lt-hole::after { display: none; }
+/* "the tour card must slide up when a page is open, not cover content": the card goes to the free edge (tutorial.js place), and the
+   opened sheet gives it room (--lt-ch is the card's height plus a gap) */
+.lt-tour.lt-staged .lt-card { z-index: 4; transition: left .32s cubic-bezier(.2, .9, .25, 1), top .38s cubic-bezier(.2, .9, .25, 1); }
+html.lt-room-top .r2-ov .r2-sh, html.lt-room-top .cme-ov .r2-sh, html.lt-room-top #gvSheet .gv-card, html.lt-room-top .wh-ms-ov .r2-sh {
+    max-height: calc(100dvh - var(--lt-ch, 180px) - env(safe-area-inset-top, 0px)) !important; }
+html.lt-room-bottom .lt-scan .lts-bar { margin-bottom: var(--lt-ch, 180px); }
+
+/* ---------- the mocked Scan screen (never the camera) ---------- */
+.lt-scan { position: fixed; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 12px;
+    padding: calc(var(--lt-ch, 170px) + 10px) 18px calc(18px + env(safe-area-inset-bottom, 0px)); box-sizing: border-box;
+    background: radial-gradient(120% 80% at 50% 40%, rgba(10, 30, 60, .92), rgba(2, 6, 18, .97)); animation: lt-fade .25s ease both; }
+.lts-frame { position: relative; flex: 1 1 auto; min-height: 0; width: min(100%, 420px); border-radius: 24px; overflow: hidden; background: #000;
+    box-shadow: 0 0 0 1px rgba(143, 231, 255, .35), 0 10px 30px rgba(0, 0, 0, .5); }
+.lts-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-select: none; }
+.lts-corner { position: absolute; width: 34px; height: 34px; border: 3px solid rgba(255, 255, 255, .9); }
+.lts-tl { left: 14px; top: 14px; border-right: 0; border-bottom: 0; border-radius: 10px 0 0 0; }
+.lts-tr { right: 14px; top: 14px; border-left: 0; border-bottom: 0; border-radius: 0 10px 0 0; }
+.lts-bl { left: 14px; bottom: 14px; border-right: 0; border-top: 0; border-radius: 0 0 0 10px; }
+.lts-br { right: 14px; bottom: 14px; border-left: 0; border-top: 0; border-radius: 0 0 10px 0; }
+.lts-tag { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); padding: 5px 12px; border-radius: 14px; font-size: 12px; font-weight: 700;
+    white-space: nowrap; color: #fff; background: rgba(0, 0, 0, .55); border: 1px solid rgba(255, 255, 255, .35); }
+.lts-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.lt-scan.lts-shot .lts-flash { animation: lts-flash .45s ease-out both; }
+.lts-bar { flex: none; height: 76px; display: grid; place-items: center; }
+.lts-shutter { width: 66px; height: 66px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 5px rgba(255, 255, 255, .35), 0 0 20px rgba(143, 231, 255, .6); }
+.lts-verdict { position: absolute; left: 50%; bottom: calc(110px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); width: min(86%, 360px);
+    box-sizing: border-box; padding: 12px 16px; border-radius: 22px; text-align: center; color: #06261c; opacity: 0; pointer-events: none;
+    background: linear-gradient(160deg, #c9ffe8, #8ff0c8); box-shadow: 0 10px 30px rgba(0, 0, 0, .45); transition: opacity .3s ease, transform .35s cubic-bezier(.2, .9, .25, 1.15); }
+.lt-scan.lts-done .lts-verdict { opacity: 1; transform: translate(-50%, 0); }
+.lts-demo { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    color: #fff; background: #0b6b4f; }
+.lts-score { display: block; margin-top: 6px; font-size: 20px; line-height: 26px; }
+.lts-food { display: block; font-size: 14px; font-weight: 600; opacity: .85; }
+.lts-note { display: block; margin-top: 4px; font-size: 12px; opacity: .75; }
+@keyframes lts-flash { 0% { opacity: .9; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ltd-hand, .ltd-knob { transition-duration: 0ms !important; } .ltd-ring.ltd-tapping { animation: none; opacity: .8; } .lt-scan.lts-shot .lts-flash { animation: none; } }

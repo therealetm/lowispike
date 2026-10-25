@@ -59,12 +59,28 @@
         /* Oct 24: the Kitchen tab in Shop (new-kitchen) */
         kitchen: { go() { const P = W.LowiStorePicks; if (!P) return; goHome(); if (!P.isOpen()) P.open('tour'); try { P.setTab('kitchen'); } catch (e) { } }, stage: '.stp-card', back() { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
     };
-    function stage() { const s = step(); return (on && s && s.open && opened === s.open && OPEN[s.open] && OPEN[s.open].stage) || ''; }
+    function stage() {
+        const s = step(), r = s && (s.open || (s.demo && mode !== 'news' && s.demo.open));   /* a demo card's page is its stage too */
+        return (on && r && opened === r && OPEN[r] && OPEN[r].stage) || '';
+    }
+    /* the short base tour's demo routes (Oct 25 2026): the finger taps or holds the real bubble, then the tour opens the real place
+       read-only through the same API the bubble uses. Only open/close calls: never a log, a water, a sleep or a meal entry. */
+    const bloom = k => ({ stage: '#hb2Bloom', go: () => { if (W.LowiHomeBloomsV2) W.LowiHomeBloomsV2.open(k); }, back: () => { if (W.LowiHomeBloomsV2) W.LowiHomeBloomsV2.close(); } });
+    Object.assign(OPEN, {
+        'misty-card': { stage: '.wh-ms-ov', go: () => { if (W.LowiWorldHome && W.LowiWorldHome.openMisty) W.LowiWorldHome.openMisty('aura'); }, back: () => { if (vis($('.wh-ms-ov')) && W.LowiWorldHome && W.LowiWorldHome.closeTop) W.LowiWorldHome.closeTop(); } },
+        'gap-view': { stage: '#gvSheet', go: () => { if (W.LowiGapView) W.LowiGapView.open(); }, back: () => { if (W.LowiGapView) W.LowiGapView.close(); } },
+        'fuel-bloom': bloom('fuel'), 'water-bloom': bloom('water'), 'move-bloom': bloom('move'), 'sleep-bloom': bloom('sleep'),
+        'community-tab': { stage: '', go: () => { if (typeof W.goTab === 'function') W.goTab('foryou'); }, back: goHome },
+        'settings-sheet': { stage: '.cme-ov', go: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.open(); }, back: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.close(); } },
+        /* never the camera: the mocked Scan screen inside the tour's own layer (tutorial-demo.js) */
+        'scan-demo': { stage: '.lt-scan', go: () => { if (W.LowiTutorialDemo && root) W.LowiTutorialDemo.scanOpen(root, lang()); }, back: () => { if (W.LowiTutorialDemo) W.LowiTutorialDemo.scanClose(); } }
+    });
     function leave() { const o = opened; opened = ''; if (o && OPEN[o]) { try { OPEN[o].back(); } catch (e) { } } }
     function openFor(s) {
         if (opened && (!s || s.open !== opened)) leave();
         if (s && s.open && OPEN[s.open] && opened !== s.open) { opened = s.open; try { OPEN[s.open].go(); } catch (e) { } }
-        if (root) root.classList.toggle('lt-staged', !!(s && s.open));
+        if (root) root.classList.toggle('lt-staged', !!(s && (s.open || (s.demo && opened && opened === s.demo.open))));
+        if (!(s && s.open) && !(s && s.demo && opened)) room('');
     }
     let on = false, list = [], i = 0, root = null, timer = 0, held = false, afterClaim = false, lastFocus = null, startedAt = 0;
     let tried = -1, secUntil = 0, tryNext = 0;
@@ -118,7 +134,9 @@
             '<button type="button" class="lt-btn lt-go" data-lt="' + (s.action === 'claim' ? 'claim' : 'next') + '">' + esc(cta) + '</button></span></div>';
         root.setAttribute('data-step', s.id); root.classList.toggle('lt-news', news);
         renderTry(s, U);
-        try { if (W.LowiTutorialShow) W.LowiTutorialShow.render(card, s, root); } catch (e) { }   /* item 42: finger, lit spots, card picture */
+        if (!(s.demo && mode !== 'news')) { try { if (W.LowiTutorialShow) W.LowiTutorialShow.render(card, s, root); } catch (e) { } }   /* item 42: finger, lit spots, card picture */
+        else { try { if (W.LowiTutorialShow && W.LowiTutorialShow.clear) W.LowiTutorialShow.clear(root); } catch (e) { } }
+        demoStart(s);
         root.classList.toggle('lt-voice', voiceOn()); root.classList.toggle('lt-paused', paused);
         /* Try it now: the voice tells us when it says the cue words, so the button wiggles right then */
         const cueing = !!(s.tryIt && tried !== i), cue = cueing ? (S.TRY_CUE && S.TRY_CUE[l]) || null : null, onCue = cueing ? () => wiggle('cue') : null;
@@ -222,9 +240,97 @@
     const PLAY_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>';
     let focusSel = '';
     /* hands-free: the card was read to the end; move on after a short pause unless something changed meanwhile */
+    /* ---------- the auto demo (Oct 25 2026, Emmanuel: "the tour auto-advances when the voice and demo finish. Pause, Back and Skip must
+       stop cleanly"). Each base card: the finger (tutorial-demo.js) taps or holds the real bubble, the real place opens read-only, and
+       the card moves on by itself once BOTH the demo has shown the page (demoDone) AND the card was read: the voice ended (voiceDone)
+       or, with the speaker off, the reading time passed (readDone). A page the user closes is never opened again on the same card
+       (demoAt), and the next card waits DEMO.CLOSE_PAUSE after a page closed, so the tour never jumps straight into the next demo. */
+    const DEMO = { CLOSE_PAUSE: 650, READ_MIN: 2600, READ_PER_CHAR: 55, START: 450 };
+    let demoAt = -1, demoDone = -1, voiceDone = -1, readDone = -1, readT = 0, demoT = 0, demoWait = 0, demoOpened = -1;
+    const Demo = () => W.LowiTutorialDemo || null;
+    function demoReset() {
+        clearT(readT); clearT(demoT); readT = demoT = 0;
+        demoAt = demoDone = voiceDone = readDone = demoOpened = -1;
+        try { if (Demo()) Demo().stop(); } catch (e) { }
+    }
+    function readMs(s) { const t = S.text(s, 'text', lang(), { name: companionName() }) || ''; return Math.max(DEMO.READ_MIN, t.length * DEMO.READ_PER_CHAR); }
+    function demoOpen(s) {
+        const r = s && s.demo && s.demo.open; if (!r || !OPEN[r]) return;
+        if (opened && opened !== r) leave();
+        if (opened !== r) { opened = r; try { OPEN[r].go(); } catch (e) { } }
+        demoOpened = i;
+        if (root) root.classList.add('lt-staged');
+        place(); setTimeout(place, 380);
+    }
+    function demoStart(s) {
+        if (!s || !s.demo || mode === 'news' || !on || held || paused) return;
+        if (demoAt === i) return;   /* a re-render (language, speaker, coming back from hidden) never restarts the demo */
+        demoAt = i; const at = i;
+        readAfter(at, readMs(s) + (demoWait || 0) + (voiceOn() ? 1500 : 0));
+        clearT(demoT);
+        demoT = setTimeout(() => {
+            demoT = 0; if (!on || held || paused || i !== at) return;
+            const D2 = Demo(), el = target(s);
+            if (!D2) { demoOpen(s); demoDone = at; demoGo(); return; }
+            D2.run({
+                root, el, g: s.demo.g,
+                onGesture: () => { if (on && i === at && !paused) demoOpen(s); },
+                then: s.demo.open === 'scan-demo' ? (done, m) => D2.scanThen(done, m) : null,
+                onShown: () => { if (on && i === at) { demoDone = at; demoGo(); } }
+            });
+        }, DEMO.START + (demoWait || 0));
+        demoWait = 0;
+    }
+    /* the reading time: with the speaker off it is what moves the card on; with the speaker on it is the safety net for a voice the
+       browser blocked (no tap yet) and waits while a clip is still playing, so a card is never cut off mid-sentence */
+    function readAfter(at, ms) {
+        clearT(readT);
+        readT = setTimeout(function chk() {
+            readT = 0; if (!on || i !== at || paused) return;
+            let talking = false; try { talking = voiceOn() && !!(W.LowiTutorialVoice && W.LowiTutorialVoice.playing()); } catch (e) { }
+            if (talking) { readT = setTimeout(chk, 500); return; }
+            readDone = at; demoGo();
+        }, ms);
+    }
+    function demoGo() {
+        const s = step(), at = i;
+        if (!on || held || paused || !s || !s.demo || mode === 'news' || at >= list.length - 1) return;
+        if (demoDone !== at || (voiceDone !== at && readDone !== at)) return;
+        if (autoT) return;
+        const wait = AUTO.GAP, card = root && root.querySelector('.lt-card');
+        if (card && !reduced()) { card.style.setProperty('--lt-auto', wait + 'ms'); card.classList.remove('lt-autogo'); void card.offsetWidth; card.classList.add('lt-autogo'); }
+        autoT = setTimeout(() => { autoT = 0; if (on && !held && !paused && i === at) go(at + 1, 'auto'); }, wait);
+        emit({ auto: s.id, wait, demo: true });
+    }
+    function demoPause(p) {
+        const s = step(); if (!s || !s.demo) return;
+        clearT(readT); readT = 0; clearT(demoT); demoT = 0;
+        if (p) {
+            try { if (Demo()) Demo().stop(); } catch (e) { }
+            /* the page stays as it is: already shown counts as shown; a demo cut off before the page opened plays again on Play */
+            if (demoOpened === i) demoDone = i; else demoAt = -1;
+            return;
+        }
+        if (demoAt === i && readDone !== i) readAfter(i, DEMO.READ_MIN);
+        if (demoAt === i) demoGo();
+    }
+    /* where the card sits while a page is open: the free edge, and the page gives it room (tutorial-demo.css) */
+    function room(where) {
+        H.classList.toggle('lt-room-top', where === 'top'); H.classList.toggle('lt-room-bottom', where === 'bottom');
+        if (!where) H.style.removeProperty('--lt-ch');
+    }
+    function stageRect() {
+        const r = opened && OPEN[opened]; if (!r || !r.stage) return null;
+        let el = null; try { el = $(r.stage); } catch (e) { } if (!el || !vis(el)) return null;
+        let L = 1e9, T2 = 1e9, R = -1e9, B = -1e9, n = 0;
+        const pool = el.querySelectorAll('.r2-sh, .gv-card, button, .lts-frame, .lts-verdict');
+        for (const c of (pool.length ? pool : [el])) { if (!vis(c)) continue; const q = c.getBoundingClientRect(); if (q.width < 4 || q.height < 4) continue; L = Math.min(L, q.left); T2 = Math.min(T2, q.top); R = Math.max(R, q.right); B = Math.max(B, q.bottom); n++; }
+        return n ? { left: L, top: T2, right: R, bottom: B } : null;
+    }
     function said() {
         clearT(autoT); autoT = 0;
         const s = step(), at = i;
+        if (s && s.demo && mode !== 'news') { voiceDone = at; demoGo(); return; }
         /* a Try it now card read to the end without its cue words (or long after them): the button wiggles now, at most twice per card */
         if (on && !held && s && s.tryIt && tried !== at && (wig.at !== at || wig.n === 0 || (wig.n === 1 && Date.now() - wig.t > 2500))) wiggle('end');
         if (!on || held || paused || !s || !voiceOn() || at >= list.length - 1 || s.action === 'claim') return;
@@ -279,6 +385,7 @@
     function setPaused(v) {
         paused = !!v; cancelAuto();
         if (paused) { try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.stop(); } catch (e) { } }
+        demoPause(paused);
         focusSel = '[data-lt="pause"]';
         if (on && !held) render();
         emit({ paused });
@@ -300,6 +407,19 @@
         const vw = H.clientWidth || innerWidth, vh = innerHeight, m = 12;
         const cw = Math.min(360, vw - 2 * m); card.style.width = cw + 'px';
         const ch = card.offsetHeight || 200;
+        const sd = s && s.demo && mode !== 'news' && opened && opened === s.demo.open;
+        if (sd) {
+            /* a page is open: the card slides to the free edge (top unless the page's content sits in the upper half) */
+            const sr = stageRect(), sat = parseFloat(getComputedStyle(H).getPropertyValue('--sat')) || 0;
+            const where = opened === 'community-tab' ? 'bottom' : (sr && (sr.top + sr.bottom) / 2 < vh * 0.45 ? 'bottom' : 'top');
+            H.style.setProperty('--lt-ch', Math.round(ch + 2 * m + 8) + 'px'); room(where);
+            root.classList.remove('lt-center'); hole.style.cssText = '';
+            card.style.left = Math.round((vw - cw) / 2) + 'px';
+            card.style.top = Math.round(where === 'top' ? Math.max(m, m + sat) : vh - ch - m - (parseFloat(getComputedStyle(H).getPropertyValue('--sab')) || 0)) + 'px';
+            card.setAttribute('data-room', where);
+            return;
+        }
+        card.removeAttribute('data-room');
         if (!el) {
             root.classList.add('lt-center'); hole.style.cssText = '';
             card.style.left = Math.round((vw - cw) / 2) + 'px'; card.style.top = Math.round(Math.max(m, (vh - ch) / 2)) + 'px';
@@ -414,7 +534,7 @@
         const why = busyBy();
         if (why) { quiet = 0; hold(why); }
         else if (held) { if (++quiet >= QUIET_TICKS) { quiet = 0; unhold(); } }
-        else { const s = step(); if (Date.now() < secUntil && tried !== i && !(s && s.open)) goSection(s); place(); }
+        else { const s = step(); if (Date.now() < secUntil && tried !== i && !(s && s.open) && !(s && s.demo)) goSection(s); place(); }
     }
     function go(n, how) {
         if (n >= list.length) { stop('finished'); return; }
@@ -422,6 +542,7 @@
         i = Math.max(0, n); held = false; if (root) { root.classList.remove('lt-held'); root.removeAttribute('aria-hidden'); }
         if (mode !== 'news') { const st = store.get(); st.last = step().id; store.set(st); }
         tried = -1; clearT(tryNext); secUntil = Date.now() + 2500;
+        const wasOpen = !!opened; demoReset(); demoWait = wasOpen ? DEMO.CLOSE_PAUSE : 0;
         openFor(step()); if (!step().open) goSection(step());
         emit({ how });
         if (busyBy()) { hold(busyBy()); return; }
@@ -509,8 +630,9 @@
     function stop(reason) {
         if (!on) return;
         on = false; clearInterval(timer); timer = 0; afterClaim = false; cancelAuto(); paused = false; keepAwake();
+        demoReset(); room('');
         if (mode !== 'news') { const st = store.get(); st.done = reason === 'finished'; st.skipped = reason === 'skipped' ? (step() && step().id) || '' : ''; st.v = S.VERSION; st.end = new Date().toISOString(); store.set(st); }
-        emit({ reason });
+        emit({ reason, news: mode === 'news' });
         if (opened) { leave(); goHome(); } else if (mode === 'news') goHome();
         mode = 'tour';
         const r = root; root = null; H.classList.remove('lt-on');
@@ -537,6 +659,10 @@
     if (!W.LowiTutorialShow && !D.querySelector('script[src^="tutorial-show.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-show.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     /* tutorial-resume.js (the floating "Continue tutorial" button until the tour is finished or skipped) loads the same way */
     if (!W.LowiTutorialResume && !D.querySelector('script[src^="tutorial-resume.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-resume.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
+    /* tutorial-demo.js (the short tour's brown finger and the mocked Scan) and tutorial-flight.js (her first real autopilot flight after
+       the first finished tour) load the same way */
+    ['tutorial-demo.js', 'tutorial-flight.js'].forEach(f => { if (!D.querySelector('script[src^="' + f + '"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = f + '?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); } });
     W.LowiTutorial = { start, news, mode: () => (on ? mode : ''), opened: () => opened, stage: () => stage(), stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S, ids: () => list.map(x => x.id),
-        paused: () => paused, pause: v => setPaused(v == null ? true : v), auto: () => !!autoT, tryNow, wiggles: () => (wig.at === i ? wig.n : 0) };
+        paused: () => paused, pause: v => setPaused(v == null ? true : v), auto: () => !!autoT, tryNow, wiggles: () => (wig.at === i ? wig.n : 0),
+        demo: () => ({ at: demoAt, shown: demoDone, voice: voiceDone, read: readDone, opened: demoOpened }) };
 })();

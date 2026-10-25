@@ -74,6 +74,13 @@ const log = (...a) => console.log(...a);
   const mine = POSTS.filter(p => p.user_id === ME).map(p => p.id);
   const shown = new Set(await page.evaluate(() => [...document.querySelectorAll('#fyFeed .fy-slide[data-id]')].map(s => s.dataset.id)));
   log('his posts in DB:', mine.length, 'shown in For You:', mine.filter(i => shown.has(i)).length, 'missing:', mine.filter(i => !shown.has(i)).join(','));
+  if (STEPS.includes('overlap')) log('overlap', JSON.stringify(await page.evaluate(() => {
+    const m = document.querySelector('.fy-mine'); if (!m) return { mine: 'missing' };
+    const r = m.getBoundingClientRect(), hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    const over = [...document.querySelectorAll('#cmFeed *, .rm-tabs, .rm-tabs *')].filter(e => { const q = e.getBoundingClientRect(); return q.width < 250 && q.height < 200; }).filter(e => e !== m && !m.contains(e)).filter(e => { const q = e.getBoundingClientRect(); return q.width && q.height && q.left < r.right && q.right > r.left && q.top < r.bottom && q.bottom > r.top && getComputedStyle(e).visibility !== 'hidden'; }).map(e => (e.className || e.tagName) + '');
+    const st = document.querySelector('.fy-state'); const sr = st && st.getBoundingClientRect();
+    const fb = document.querySelector('.fyv-fab'), fr = fb && fb.getBoundingClientRect(), box = document.querySelector('.rm-fy'), br = box && box.getBoundingClientRect(); return { fab: fr ? [fr.left, fr.top, fr.width, fr.height].map(Math.round) : null, box: br ? [br.left, br.top, br.width, br.height].map(Math.round) : null, rect: [r.left, r.top, r.width, r.height].map(Math.round), text: m.textContent, topHit: hit === m || m.contains(hit), over, state: sr ? [sr.left, sr.top, sr.width].map(Math.round) : null };
+  })));
   if (STEPS.includes('post')) {
     await page.evaluate(() => { LowiR3F.postSheet('', 'Probe text post ' + Date.now()); });
     await page.waitForTimeout(1500);

@@ -1494,13 +1494,12 @@ html[data-lay=desktop] #cmPaneChat.cm-pane{padding-bottom:16px}
   background:linear-gradient(135deg,rgba(var(--acc-rgb),.34),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 24px rgba(0,0,0,.35),0 0 18px rgba(var(--acc-rgb),.28);
   backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);cursor:pointer}
 .fyv-fab svg{width:20px;height:20px}
-/* 25 Oct 2026: My posts on the For You feed (top left, the same glass as + Post) and the "not out yet" label on his own slides */
-.fy-mine{position:absolute;top:12px;left:12px;z-index:6;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:999px;color:#fff;font:inherit;font-size:14px;font-weight:700;
+/* 25 Oct 2026: My posts on the For You feed (top right, opposite + Post, the same glass) and the "not out yet" label on his own slides */
+.fy-mine{position:absolute;top:12px;right:12px;z-index:6;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:999px;color:#fff;font:inherit;font-size:14px;font-weight:700;
   background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 24px rgba(0,0,0,.3);
   backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);cursor:pointer}
 .fy-mine b{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:rgba(var(--acc-rgb),.55);font-size:12px;line-height:20px;text-align:center}
 .fy-mine:active{transform:scale(.95)}
-html:not([data-lay=phone]) .fy-mine{left:calc(50% - min(260px,50%) + 12px)}
 html[data-ui=light] .fy-mine{color:#111318;background:linear-gradient(135deg,rgba(255,255,255,.7),rgba(255,255,255,.4));border:1px solid rgba(22,28,46,.3)}
 .fy-state{position:absolute;top:62px;left:12px;z-index:4;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:650;color:#fff;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.22);
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}

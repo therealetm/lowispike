@@ -60,6 +60,7 @@
         photoTitle: ['Your photo', 'Dein Foto', 'Tu foto'],
         savePhoto: ['Save photo', 'Foto speichern', 'Guardar foto'],
         photoSaved: ['Photo ready', 'Foto bereit', 'Foto lista'],
+        photoHold: ['Press and hold the photo to save it to your Photos.', 'Halte das Foto gedr\u00fcckt, um es in deinen Fotos zu sichern.', 'Mant\u00e9n pulsada la foto para guardarla en tus Fotos.'],
         photoGptHint: ['Save it, then upload it in the LOWiSPIKE GPT for a deeper analysis or to create content.', 'Speichere es und lade es dann im LOWiSPIKE GPT hoch, für eine tiefere Analyse oder für Inhalte.', 'Guárdala y súbela al GPT de LOWiSPIKE para un análisis más profundo o para crear contenido.'],
         photoLog: ['Log as meal', 'Als Mahlzeit eintragen', 'Registrar comida'],
         photoName: ['What is it?', 'Was ist das?', '¿Qué es?'],
@@ -1305,23 +1306,53 @@
         for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
         return new File([arr], 'lowispike-' + Date.now() + '.jpg', { type: 'image/jpeg' });
     }
+    /* Oct 25 evening (Emmanuel: Fuel > snack > photo, then "Save photo" restarted the app). The old fallback after the share sheet
+       was a download link to a blob: URL. In the iPhone Home Screen app a download is a navigation: the image replaces the app,
+       and going back loads LOWiSPIKE fresh (photo, AI read and typed name gone). It ran whenever navigator.share threw anything but
+       a cancel, e.g. a second tap while the share sheet was still opening (iOS rejects the second share). Now: one share at a time,
+       and on iPhone / iPad / any Home Screen app the fallback is an in-app view of the photo (press and hold to save), never a
+       download. A plain browser on a computer keeps the download. Tested in tests/save-photo.test.cjs. */
+    let photoSaving = false;
+    function noDownload() {
+        const n = navigator || {}, u = n.userAgent || '';
+        try { if (n.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches)) return true; } catch (e) {}
+        return /iPhone|iPad|iPod/.test(u) || (n.platform === 'MacIntel' && n.maxTouchPoints > 1);
+    }
+    function photoView(f) {
+        const old = D.getElementById('spPhotoSave'); if (old) old.remove();
+        const url = URL.createObjectURL(f), ov = D.createElement('div');
+        ov.id = 'spPhotoSave'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', tr('savePhoto'));
+        ov.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:max(20px,env(safe-area-inset-top)) 16px max(20px,env(safe-area-inset-bottom));box-sizing:border-box';
+        ov.innerHTML = '<img alt="" src="' + esc(url) + '" style="max-width:100%;max-height:68vh;border-radius:16px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto">' +
+            '<p style="margin:0;max-width:320px;color:#fff;font:600 15px/1.35 -apple-system,system-ui,sans-serif;text-align:center">' + esc(tr('photoHold')) + '</p>' +
+            '<button type="button" class="r2-btn pri" style="min-width:140px">' + esc(tr('close')) + '</button>';
+        ov.querySelector('button').addEventListener('click', () => { ov.remove(); setTimeout(() => URL.revokeObjectURL(url), 500); });
+        D.body.appendChild(ov);
+    }
     async function savePhoto() {
+        if (photoSaving) return;   /* the share sheet is still opening or open: a second tap does nothing */
         const f = photoAsFile();
         if (!f) return;
-        if (navigator.canShare && navigator.share) {
-            let ok = false;
-            try { ok = navigator.canShare({ files: [f] }); } catch (e) {}
-            if (ok) {
-                try { await navigator.share({ files: [f] }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+        photoSaving = true;
+        try {
+            if (navigator.canShare && navigator.share) {
+                let ok = false;
+                try { ok = navigator.canShare({ files: [f] }); } catch (e) {}
+                if (ok) {
+                    try { await navigator.share({ files: [f] }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+                }
             }
+            if (noDownload()) { photoView(f); return; }   /* never a download in the Home Screen app: it would leave the app */
+            const a = D.createElement('a');
+            a.href = URL.createObjectURL(f);
+            a.download = f.name;
+            D.body.append(a);
+            a.click();
+            setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+            R.toast(tr('photoSaved'));
+        } finally {
+            photoSaving = false;
         }
-        const a = D.createElement('a');
-        a.href = URL.createObjectURL(f);
-        a.download = f.name;
-        D.body.append(a);
-        a.click();
-        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
-        R.toast(tr('photoSaved'));
     }
     async function onPhotoFile(file) {
         if (!file) return;

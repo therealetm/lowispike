@@ -3,8 +3,11 @@
    node tools/check-after-meal-checklist.cjs [--engine chromium|webkit] [--lang en|de|es] [--url https://therealetm.github.io/lowispike/index.html]
    1. Log a meal eaten "Now" through Fuel's Log meal: after the "Meal logged" sheet closes, the card shows in the language, docked
       under the bubble ring, with four tiles and no overlap with a Home bubble.
-   2. Tap a tile: +3 XP once (a second tap pays nothing); the ledger entry is pmc:<meal>:<item>.
-   3. Tap the other three: +9 XP, the hidden achievement appears (+20 XP) and is in the ledger once.
+   2. (Oct 25 evening, honest rewards) Tap walk: its timer starts, NO XP; tapping all four tiles again and again pays nothing,
+      no achievement; a reload keeps the timers.
+   3. The page clock is moved on (sessionStorage __pmcSkew, read by an init script): at +6.5 min squats and stairs wait for
+      a confirm (+3 XP each), walk still runs; at +11 min walk confirms; at +31 min upright confirms, the hidden achievement
+      appears (+20 XP) and is in the ledger once. No water tile.
    4. A meal logged "1 h ago" opens no card.
    5. Another meal "Now", then the x: the card goes and stays gone after a reload.
    WebKit on this VM: run with SIM_WK_VIEWPORT=1 SIM_REDUCED_MOTION=1 SIM_WK_NOSHOT=1 and one WebKit run at a time. */
@@ -17,6 +20,8 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
 (async () => {
     const R = await H.open({ engine, lang, url, probe: false, fresh: false, viewport: { width: 390, height: 844 }, cloud: url ? undefined : undefined });
     const P = R.page;
+    await P.addInitScript(() => { const n = Date.now.bind(Date); Date.now = () => n() + (+sessionStorage.getItem('__pmcSkew') || 0); });
+    const skew = async min => { await P.evaluate(m => sessionStorage.setItem('__pmcSkew', String(m * 60000)), min); await H.sleep(1600); };
     try {
         R.step = 'boot'; await R.goto(); await H.sleep(engine === 'webkit' ? 12000 : 7000);
         const tidy = () => P.evaluate(() => { try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); try { if (window.LowiTutorial && LowiTutorial.stop) LowiTutorial.stop(); } catch (e) { } });
@@ -71,33 +76,64 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
         const pend = await P.evaluate(() => LowiAfterMeal.state());
         ok('pending checklist kept for this meal', pend && a.ev && pend.id === a.ev.id, pend);
         /* 2 */
-        R.step = 'tick walk'; const xp1 = await xp();
+        R.step = 'start walk'; const xp1 = await xp();
         ok('meal itself still pays (its own 15 XP plus any day bonus)', xp1 - xp0 >= (a.ev.xp || 0), xp1 - xp0);
-        await R.tap('#pmcCard [data-pmc="walk"]'); await H.sleep(900);
-        const xp2 = await xp();
-        ok('walk tick pays +3 XP', xp2 - xp1 === 3, xp2 - xp1);
-        ok('ledger has pmc:<meal>:walk', (await ledgerIds()).includes('pmc:' + a.ev.id + ':walk'), await ledgerIds());
-        ok('tile shows ticked', await P.evaluate(() => document.querySelector('#pmcCard [data-pmc="walk"]').getAttribute('aria-checked') === 'true'));
-        await R.tap('#pmcCard [data-pmc="walk"]'); await H.sleep(700);
-        ok('second tap pays nothing', (await xp()) === xp2, (await xp()) - xp2);
-        await R.shot(out + '/2-ticked-' + engine + '-' + lang + '.png');
+        ok('four tiles: walk, squats, stairs, upright (no water)', JSON.stringify(await P.evaluate(() => [...document.querySelectorAll('#pmcCard [data-pmc][role="checkbox"]')].map(b => b.dataset.pmc))) === '["walk","muscle","stairs","upright"]');
+        await R.tap('#pmcCard [data-pmc="walk"]'); await H.sleep(1400);
+        const tile = k => P.evaluate(k => { const b = document.querySelector('#pmcCard [data-pmc="' + k + '"]'); return b ? { cls: b.className, on: b.getAttribute('aria-checked'), small: (b.querySelector('small') || {}).textContent } : null; }, k);
+        let w = await tile('walk');
+        ok('first tap only starts the walk timer: no XP', (await xp()) === xp1, (await xp()) - xp1);
+        ok('walk tile counts down, not ticked', w && /\brun\b/.test(w.cls) && w.on === 'false' && /\d:\d\d/.test(w.small), w);
+        ok('card says it is only a timer', (await P.evaluate(() => (document.querySelector('#pmcCard .pmc-ft') || {}).textContent || '')).includes(await S('honest')));
+        await R.shot(out + '/2-timer-' + engine + '-' + lang + '.png');
+        R.step = 'tap storm';
+        for (let r = 0; r < 3; r++) for (const k of ['walk', 'muscle', 'stairs', 'upright']) { await R.tap('#pmcCard [data-pmc="' + k + '"]'); await H.sleep(150); }
+        await H.sleep(1200);
+        ok('tapping all four again and again pays nothing', (await xp()) === xp1, (await xp()) - xp1);
+        ok('no achievement, nothing in the ledger', (await ledgerIds()).length === 0 || !(await ledgerIds()).some(i => i.indexOf('pmc:' + a.ev.id) === 0 || i === 'pmc:ach:spike-tamer'), await ledgerIds());
+        const run0 = (await P.evaluate(() => LowiAfterMeal.state())).run;
+        ok('four timers running', Object.keys(run0 || {}).length === 4, run0);
+        R.step = 'reload keeps timers';
+        await R.goto(); await H.sleep(engine === 'webkit' ? 10000 : 6000); await tidy(); await H.sleep(2500);
+        const run1 = (await P.evaluate(() => LowiAfterMeal.state())).run;
+        ok('a reload keeps every timer start', JSON.stringify(run1) === JSON.stringify(run0), { run0, run1 });
+        ok('card back after the reload', !!(await card()));
         /* 3 */
-        R.step = 'tick rest';
-        for (const k of ['muscle', 'water', 'upright']) { await R.tap('#pmcCard [data-pmc="' + k + '"]'); await H.sleep(700); }
+        R.step = 'squats and stairs done';
+        await skew(6.5);
+        ok('squats and stairs wait for a confirm', /\bready\b/.test((await tile('muscle')).cls) && /\bready\b/.test((await tile('stairs')).cls) && (await tile('stairs')).small === await S('confirm'), [await tile('muscle'), await tile('stairs')]);
+        await R.shot(out + '/3-confirm-' + engine + '-' + lang + '.png');
+        const xp2 = await xp();
+        await R.tap('#pmcCard [data-pmc="muscle"]'); await H.sleep(800);
+        await R.tap('#pmcCard [data-pmc="stairs"]'); await H.sleep(800);
+        await R.tap('#pmcCard [data-pmc="walk"]'); await H.sleep(800);
+        ok('confirmed squats + stairs: +6 XP; walk at 6.5 min: nothing', (await xp()) - xp2 === 6, (await xp()) - xp2);
+        ok('ledger has pmc:<meal>:muscle and :stairs once', (await ledgerIds()).filter(i => i === 'pmc:' + a.ev.id + ':muscle' || i === 'pmc:' + a.ev.id + ':stairs').length === 2, await ledgerIds());
+        await R.tap('#pmcCard [data-pmc="stairs"]'); await H.sleep(700);
+        ok('a second confirm pays nothing', (await xp()) - xp2 === 6, (await xp()) - xp2);
+        R.step = 'walk done';
+        await skew(11);
+        await R.tap('#pmcCard [data-pmc="walk"]'); await H.sleep(900);
+        ok('walk confirmed after 10 min: +3 XP, upright still running, no achievement', (await xp()) - xp2 === 9 && !(await ledgerIds()).includes('pmc:ach:spike-tamer'), (await xp()) - xp2);
+        R.step = 'upright done';
+        await skew(31);
+        await R.tap('#pmcCard [data-pmc="upright"]'); await H.sleep(900);
         await H.sleep(900);
-        c = await card();
-        await R.shot(out + '/3-achievement-' + engine + '-' + lang + '.png');
+        let c2 = await card();
+        await R.shot(out + '/4-achievement-' + engine + '-' + lang + '.png');
         const xp3 = await xp(), ids = await ledgerIds();
-        ok('three more ticks + achievement = +29 XP', xp3 - xp2 === 9 + 20, xp3 - xp2);
-        ok('secret achievement revealed in ' + lang, c && c.ach && c.achName === await S('achName'), c && c.text);
+        ok('upright after 30 min + achievement: +3 +20 XP', xp3 - xp2 === 12 + 20, xp3 - xp2);
+        ok('secret achievement revealed in ' + lang, c2 && c2.ach && c2.achName === await S('achName'), c2 && c2.text);
         ok('achievement in the ledger once', ids.filter(i => i === 'pmc:ach:spike-tamer').length === 1, ids);
+        c = c2;
         /* 4 */
         R.step = 'log 1h ago';
         await R.tap('#pmcCard [data-pmc="close"]'); await H.sleep(700);
         ok('x closes the achievement card', !(await card()));
         const b = await logMeal(lang === 'de' ? 'Omelett' : lang === 'es' ? 'Tortilla francesa' : 'Omelette', 60);
         await H.sleep(1500);
-        ok('backdated meal logged 1 h ago', b.ev && Date.now() - b.ev.ts > 50 * 60000, b.ev && { ts: b.ev.ts, ateSet: b.ev.ateSet });
+        const pageNow = await P.evaluate(() => Date.now());
+        ok('backdated meal logged 1 h ago', b.ev && pageNow - b.ev.ts > 50 * 60000, b.ev && { ts: b.ev.ts, ateSet: b.ev.ateSet });
         ok('no card for a backdated meal', !(await card()), await card());
         /* 5 */
         R.step = 'skip';

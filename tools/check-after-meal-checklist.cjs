@@ -98,6 +98,7 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
         const run1 = (await P.evaluate(() => LowiAfterMeal.state())).run;
         ok('a reload keeps every timer start', JSON.stringify(run1) === JSON.stringify(run0), { run0, run1 });
         ok('card back after the reload', !!(await card()));
+        ok('card open after the reload (not folded by a ring that is still moving in)', !(await P.evaluate(() => (LowiAfterMeal.state() || {}).fold)), await P.evaluate(() => LowiAfterMeal.state()));
         /* 3 */
         R.step = 'squats and stairs done';
         await skew(6.5);

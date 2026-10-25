@@ -144,3 +144,15 @@ test('honest, kind copy: no tracking claim, no promise that it fixes the meal, n
     assert.strictEqual(C.t('de', 'run', { t: '9:41' }), 'noch 9:41');
     assert.strictEqual(C.t('en', 'start', { d: C.durText('walk', 'en') }), 'Tap to start \u00b7 10 min');
 });
+
+test('a started timer never makes the card taller: the honest line takes the place of the intro line, not a new footer line', () => {
+    /* Oct 25 (Maya 10, browser check after the rebase): with timers running, a reload drew the card with an extra footer line
+       ("Just a timer, nothing is tracked ..."). In German and Spanish that line wraps, the taller card then overlapped a Home
+       bubble at 390x844, and mount() folded the card for good: after reopening the app the tiles were hidden. */
+    const paint = ui.slice(ui.indexOf('function paint()'), ui.indexOf('function paintFinal('));
+    assert.ok(paint.length > 50, 'paint() found');
+    const say = paint.slice(paint.indexOf('pmc-say'), paint.indexOf('pmc-grid'));
+    const ft = paint.slice(paint.indexOf('pmc-ft'));
+    assert.match(say, /'honest'/, 'the intro line turns into the honest line while a timer runs');
+    assert.doesNotMatch(ft, /'honest'/, 'the footer never adds the honest line on top');
+});

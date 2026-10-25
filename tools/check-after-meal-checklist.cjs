@@ -147,6 +147,9 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
         R.step = 'log 1h ago';
         await R.tap('#pmcCard [data-pmc="close"]'); await H.sleep(700);
         ok('x closes the achievement card', !(await card()));
+        /* page clock back to real time first: the skew moves Date.now but not new Date(), so from 23:29 to 00:29 the +31 min skew
+           put "now" after midnight and index.html refused the 1 h ago time as another day (Oct 26 live run, not an app bug) */
+        await skew(0);
         const b = await logMeal(lang === 'de' ? 'Omelett' : lang === 'es' ? 'Tortilla francesa' : 'Omelette', 60);
         await H.sleep(1500);
         const pageNow = await P.evaluate(() => Date.now());

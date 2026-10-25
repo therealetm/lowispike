@@ -65,8 +65,12 @@ test('Low Power Mode / hot phone is recognised from 30 Hz full-speed frames and 
 });
 
 test('the busy list covers flights, warps, world trips, Mirror camera and the movement player', () => {
-    ['mf-transit', 'mf-roam', 'wh-padfly', 'bwr-warping', 'gx-in', 'wh-cosmos', 'mm-cam', 'mp-on', 'lt-on'].forEach(c => assert.ok(P.BUSY.test('wh-home ' + c + ' x'), c));
+    ['mf-transit', 'mf-roam', 'wh-padfly', 'bwr-warping', 'gx-in', 'gx-out', 'gx-hold', 'mm-cam', 'mp-on', 'lt-on'].forEach(c => assert.ok(P.BUSY.test('wh-home ' + c + ' x'), c));
     assert.ok(!P.BUSY.test('wh-home wb-on'));
+    /* places you stay in are not motion: with these busy, the world never slowed down behind the Room (measured Oct 25) */
+    ['wh-cosmos', 'wh-away', 'wh-leave', 'wh-mapview'].forEach(c => assert.ok(!P.BUSY.test('wb-on wb-comm ' + c + ' x'), c + ' is a place, not motion'));
+    /* the 2 s after crossing into the spirit world are still drawn every refresh by the scene itself */
+    assert.match(read('body-world-3d-scene.js'), /now - cosAt < 2000/);
 });
 
 /* ---------- power-saver.js: running in a stand-in page ---------- */

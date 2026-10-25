@@ -34,8 +34,11 @@
         saver: { home: { active: 0, calm: 20, rest: 10, deep: 6 }, back: { active: 0, calm: 12, rest: 6, deep: 4 } }
     };
     const DPR_SAVER = 1.5;
-    /* html classes that mean something is moving on purpose (a flight, a warp, a world transition): never rest while they are on */
-    const BUSY = /(^|\s)(mf-transit|mf-roam|wh-padfly|bwr-warping|gx-in|gx-out|gx-hold|wh-cosmos|wh-leave|wh-away|lw-clean|lw-clean-out|mm-cam|mp-on|lc-burst|mt-turning|lt-on)(\s|$)/;
+    /* html classes that mean something is moving on purpose (a flight, a warp, a world transition): never rest while they are on.
+       Not here: wh-cosmos (on for as long as the camera is out in the spirit world / behind the Room), wh-away (visiting another world)
+       and wh-leave (Home tab left): those are places you stay, not motion; measured Oct 25, with them here the world never slowed
+       down in Community. The 2 s right after crossing into the spirit world are still drawn every refresh (the scene's inTransit). */
+    const BUSY = /(^|\s)(mf-transit|mf-roam|wh-padfly|bwr-warping|gx-in|gx-out|gx-hold|lw-clean|lw-clean-out|mm-cam|mp-on|lc-burst|mt-turning|lt-on)(\s|$)/;
     function stateFor(idleMs, saver, busy) {
         if (busy || idleMs < T.ACTIVE) return 'active';
         if (idleMs >= (saver ? T.SAVER_DEEP : T.DEEP)) return 'deep';

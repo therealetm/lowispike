@@ -384,6 +384,8 @@
         /* blooms out of the weather pill you tapped, like Move's choices (misty-bloom.js) */
         try { root.LowiBloom && root.LowiBloom.prep(ov.querySelector('.tbw-sheet')); } catch (e) {}
         void ov.offsetWidth; ov.classList.add('in');
+        /* Oct 25 (iOS feel): open() drives it with spring.js, so a close while it is still growing turns around from where it is */
+        try { root.LowiBloom && root.LowiBloom.open(ov.querySelector('.tbw-sheet')); } catch (e) {}
         const x = ov.querySelector('[data-tbw=close].tbw-btn'); try { x.focus({ preventScroll: true }); } catch (e) {}
         load(false);
     }
@@ -391,6 +393,7 @@
         if (!ov) return;
         const o = ov; ov = null;
         H.classList.remove('tbw-open');
+        try { root.LowiBloom && root.LowiBloom.close(o.querySelector('.tbw-sheet')); } catch (e) {}
         o.classList.remove('in');
         setTimeout(() => o.remove(), reduced() ? 0 : 260);
         try { lastFocus && lastFocus.focus && lastFocus.focus({ preventScroll: true }); } catch (e) {}

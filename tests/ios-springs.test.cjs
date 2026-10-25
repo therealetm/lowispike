@@ -222,6 +222,32 @@ test('bloom: opening settles on the plain panel (no leftover inline motion); red
   let d = 0; Wr.LowiBloom.close(q, () => d++); assert.equal(d, 1);
 });
 
+test('bloom: a reused panel (#sheet) that shows something else afterwards keeps no spring or inline motion', () => {
+  const W = bloomPage(false), p = panel();
+  W.LowiBloom.open(p); W.run(3);
+  W.LowiBloom.close(p); W.run(2);
+  assert.ok(p.props.scale !== undefined, 'mid-fold it is painted by the spring');
+  p.classList.remove('wa-panel');/* the same element now holds a panel that does not bloom */
+  assert.equal(W.LowiBloom.prep(p), false);
+  assert.equal(p.props.scale, undefined); assert.equal(p.props.opacity, undefined); assert.equal(p.props.translate, undefined);
+  assert.equal(p.classList.contains('mb-sp'), false);
+  W.run(60);
+  assert.equal(p.props.opacity, undefined, 'the old spring does not paint it again');
+  assert.equal(W.pending(), 0, 'nothing keeps running');
+});
+
+test('Weather and Fasting panels open and close on the spring (open/close, not the timed keyframes)', () => {
+  const tb = read('top-bar.js'), html = read('index.html');
+  assert.match(tb, /LowiBloom\.open\(ov\.querySelector\('\.tbw-sheet'\)\)/, 'Weather opens with LowiBloom.open');
+  assert.match(tb, /LowiBloom\.close\(o\.querySelector\('\.tbw-sheet'\)\)/, 'Weather folds back with LowiBloom.close');
+  const sh = html.match(/function sheet\(html\)\{[^\n]*/)[0], cs = html.match(/function closeSheet\(\)\{[^\n]*/)[0];
+  assert.match(sh, /LowiBloom\.open\(\$\("#sheet"\)\)/, 'Fasting (#sheet) opens with LowiBloom.open');
+  assert.match(sh, /const fresh = !\$\("#sheetwrap"\)\.classList\.contains\("open"\)/, 'a re-render of an open sheet does not bloom again');
+  assert.match(sh, /if \(fresh && window\.LowiBloom\) LowiBloom\.open/);
+  assert.match(cs, /LowiBloom\.close\(\$\("#sheet"\)\)/, 'Fasting folds back with LowiBloom.close');
+  assert.match(cs, /classList\.remove\("open"\)/, 'closing still closes at once (nothing waits for the spring)');
+});
+
 test('bloom CSS: the keyframes step aside while the spring drives it', () => {
   const css = read('misty-panels.css');
   assert.match(css, /html:root body \.mb-on\.mb-sp \{ animation: none !important; \}/);

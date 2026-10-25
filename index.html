@@ -6370,8 +6370,9 @@ const CLASSIC_IMG = {"apfelschorle":"data:image/webp;base64,UklGRkQHAABXRUJQVlA4
 /* UI helpers, Home, check-in, glow */
 let toastT;
 function toast(msg, ms){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), window.LowiReadTime ? LowiReadTime.atLeast(msg, ms || 2200, {kind:"toast"}) : (ms || 2200)); }
-function sheet(html){ $("#sheet").innerHTML = '<div class="grab"></div>' + html; try{ window.LowiBloom && LowiBloom.prep($("#sheet")); }catch(e){} $("#sheetwrap").classList.add("open"); }
-function closeSheet(){ $("#sheetwrap").classList.remove("open"); }
+function sheet(html){ $("#sheet").innerHTML = '<div class="grab"></div>' + html; const fresh = !$("#sheetwrap").classList.contains("open"); try{ window.LowiBloom && LowiBloom.prep($("#sheet")); }catch(e){} $("#sheetwrap").classList.add("open"); try{ if (fresh && window.LowiBloom) LowiBloom.open($("#sheet")); }catch(e){} }
+/* Oct 25 (iOS feel): the Fasting panel folds back on its spring from wherever it is; the backdrop fades as before, nothing waits */
+function closeSheet(){ try{ window.LowiBloom && LowiBloom.close($("#sheet")); }catch(e){} $("#sheetwrap").classList.remove("open"); }
 /* sheetwrap-escape: Oct 23 (code error sweep). Nothing closed the legacy #sheetwrap sheet (Milestones on Move and the other
    LowiHost.openSheet sheets) on Escape, and back (Safari swipe / phone back) closes the top sheet by sending Escape. So back on
    Move with Milestones open closed the sheet AND left Move for Home; on Home it would have left the app. Escape now closes

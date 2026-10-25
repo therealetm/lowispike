@@ -89,7 +89,12 @@
     /* 3. aim: centre of the panel -> the finger, in px (the CSS keyframes start the panel there, small and round) */
     function prep(el) {
         if (!el) return false;
-        if (!wants(el, { cls: el.parentNode && el.parentNode.className })) { el.classList.remove('mb-on', 'mb-in', 'mb-out'); return false; }
+        if (!wants(el, { cls: el.parentNode && el.parentNode.className })) {
+            el.classList.remove('mb-on', 'mb-in', 'mb-out', 'mb-sp');
+            /* Oct 25 (springs): a reused panel (#sheet) that bloomed before and now shows something else: no spring left on it */
+            if (el.__mbS) { try { el.__mbS.stop(); } catch (e) { } el.__mbS = null; el.__mbFin = null; unpaint(el); }
+            return false;
+        }
         el.classList.add('mb-on', 'mb-measure');
         el.classList.remove('mb-out');
         dock(el);

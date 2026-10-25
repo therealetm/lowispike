@@ -292,7 +292,7 @@ function galaxy(ms,w,h,quiet){
   /* Oct 16, round 5 (E-man: "tapping Joseph selected Bastian", "everyone changes places"): a map, not a seating plan. Each person
      has one fixed spot (G.mapLayout); selecting, typing, new messages and the keyboard never move anyone. place() draws the spots
      through the camera (drag to pan, pinch / double-tap to zoom), so the HTML here carries no positions at all. */
-  const RM=roomOf(),r=new Map(RM.shown.filter(p=>!p.me&&p.uid!==scope).map(p=>[p.uid,p])),idx=nameIdx(r),LA=G.mapLayout(RM.layout.filter(p=>!p.me&&p.uid!==scope),scope||'me',{meJ:(RM.layout.find(p=>p.me)||{}).j||0}),L=Object.assign({},LA,{spots:LA.spots.filter(x=>x.me||r.has(x.uid))}),last=latestBy(ms),now=Date.now(),spot=new Map(L.spots.map(x=>[x.uid,x])),meSpot=L.spots[0],names=[],labels=[],lineDefs=[];
+  const RM=roomOf(),r=new Map(RM.shown.filter(p=>!p.me&&p.uid!==scope).map(p=>[p.uid,p])),idx=nameIdx(r),LA=G.mapLayout(RM.layout.filter(p=>!p.me&&p.uid!==scope),scope||'me',{meJ:(RM.layout.find(p=>p.me)||{}).j||0,view:{w,h}}),L=Object.assign({},LA,{spots:LA.spots.filter(x=>x.me||r.has(x.uid))}),last=latestBy(ms),now=Date.now(),spot=new Map(L.spots.map(x=>[x.uid,x])),meSpot=L.spots[0],names=[],labels=[],lineDefs=[];
   const big=w>=640,bodyS=big?56:46,meS=big?64:54;
   /* Oct 16: chats with the galaxy bots live on this phone; their newest words go in the same avatar bubbles */
   try{const bs=botStore();for(const u in bs){const arr=bs[u];const m=arr&&arr[arr.length-1];if(!m||!m.t)continue;const k=m.from==='me'?scope:u,cur=last.get(k);if(!cur||(+cur.ts||0)<=(+m.ts||0))last.set(k,{id:'',uid:k,t:m.t,ts:m.ts||now});}}catch(e){}
@@ -342,8 +342,9 @@ let cam=null,camFrozen=null,placeRaf=0,camAnim=0,camUser=false,fitMemo=null,camA
 function mapView(gal){const typing=D.documentElement.classList.contains('cs-chat-map-typing');const w=gal.clientWidth||360,h=gal.clientHeight||480;
   /* the centre of the map is fixed: the composer growing a chip row, or the keyboard coming up, never slides the pins.
      Only a real change of screen (rotation, iPad split view) re-centres it. */
-  if(typing&&camFrozen)return camFrozen;
-  if(!camFrozen||Math.abs(w-camFrozen.w)>40||h>camFrozen.h||camFrozen.h-h>160)camFrozen={w,h,hb:h};else camFrozen={w:camFrozen.w,h:camFrozen.h,hb:h};
+  /* Oct 25 (readability + fit): the rule lives in G.mapViewSize. It keeps the size only while typing or for a small chip row; the
+     old rule kept the first, taller size from while the Room was laying out, so the bottom row sat below the Room on small phones. */
+  camFrozen=G.mapViewSize(camFrozen,w,h,typing,Date.now());
   return camFrozen;}
 /* Oct 25 (Emmy shrank to "E" next to You): the energy pad's corner is kept free too (mapFit avoid), so no name lands on it */
 let koRetry=0;
@@ -351,8 +352,12 @@ function fitCam(gx,v){const spots=(gx.map.spots||[]).filter(s=>gx.spot.has(s.uid
   let ko=null;try{ko=gal&&W.LowiEnergy&&W.LowiEnergy.keepOut?W.LowiEnergy.keepOut(gal):null;}catch(e){ko=null;}
   const avoid=ko&&ko.s>0?{x:Math.round(ko.x-ko.s/2),y:Math.round(ko.y-ko.s/2),w:Math.round(ko.s),h:Math.round(ko.s)}:null;
   if(avoid)koRetry=0;else if(gal&&W.LowiEnergy&&koRetry<10){koRetry++;setTimeout(schedulePlace,400);}/* pad hidden or not laid out yet (zoom-out from Home): look again shortly */
-  const key=v.w+'x'+v.h+':'+(avoid?avoid.x+','+avoid.y+','+avoid.w:'-')+':'+spots.map(s=>s.uid+'@'+s.x+','+s.y).join('|');
-  if(!fitMemo||fitMemo.key!==key)fitMemo={key,cam:G.mapFit(spots,v.w,v.h,{side:v.w>=640?54:46,top:v.w>=640?44:36,bot:v.w>=640?64:56,big:v.w>=640,avoid})};return {...fitMemo.cam};}
+  /* Oct 25 (readability + fit, Emmanuel's iPhone: a companion hidden behind the Friends tree button): that button sits over the
+     Room's bottom-left corner, so it is kept free as well, in Room pixels with a 4 px margin. */
+  const av=avoid?[avoid]:[];try{const tb=gal&&gal.parentNode&&gal.parentNode.querySelector('.nm-ctree');if(tb&&tb.offsetParent){const a=tb.getBoundingClientRect(),g=gal.getBoundingClientRect();
+    const r={x:Math.round(a.left-g.left-4),y:Math.round(a.top-g.top-4),w:Math.round(a.width+8),h:Math.round(a.height+8)};if(r.w>8&&r.x<v.w&&r.y<v.h&&r.x+r.w>0&&r.y+r.h>0)av.push(r);}}catch(e){}
+  const key=v.w+'x'+v.h+':'+av.map(a=>a.x+','+a.y+','+a.w+','+a.h).join(';')+':'+spots.map(s=>s.uid+'@'+s.x+','+s.y).join('|');
+  if(!fitMemo||fitMemo.key!==key)fitMemo={key,cam:G.mapFit(spots,v.w,v.h,{side:v.w>=640?54:46,top:v.w>=640?44:36,bot:v.w>=640?64:56,big:v.w>=640,avoid:av})};return {...fitMemo.cam};}
 function mapZ(gx,v){return G.mapZooms(gx.map.radius,v.w,v.h,fitCam(gx,v).z);}
 function schedulePlace(){if(placeRaf)return;placeRaf=requestAnimationFrame(()=>{placeRaf=0;place();});}
 /* Oct 16 (energy hits, community-energy.js): a knocked companion rolls away from its spot for a moment; epos() adds that offset */

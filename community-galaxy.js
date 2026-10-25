@@ -242,7 +242,13 @@ function mapLayout(members,meId,o){o=o||{};
  for(const m of members||[]){if(!m||!m.uid||seen.has(m.uid))continue;seen.add(m.uid);list.push(m);}
  /* oldest first, then id hash: who is first in the caller's list (selected, newest talker) can never change a seat */
  list.sort((a,b)=>jt(a.j)-jt(b.j)||hash(a.uid)-hash(b.uid)||(a.uid<b.uid?-1:a.uid>b.uid?1:0));
- const K=mapCols(list.length),abs=new Map();
+ /* Oct 25 (readability + fit): with o.view {w,h} a short, wide Room (iPhone SE) gets one more seat per row when that lets the
+    fit zoom in further, so names keep room; rows stay in join order. Without o.view, or where it does not help, mapCols as before. */
+ let K=mapCols(list.length);
+ if(o.view&&o.view.w>0&&o.view.h>0){const n=list.length,vw=Math.max(200,o.view.w)-92,vh=Math.max(200,o.view.h)-92,z0=Math.max(.85,Math.min(1.25,Math.min(o.view.w,o.view.h)/400));
+  const zOf=k=>Math.min(z0,vw/Math.max(1,(k-.5)*ROW_DX),vh/Math.max(1,(Math.ceil(n/k)-1)*ROW_DY));let bz=zOf(K)+1e-6;
+  for(let k=K+1;k<=Math.min(n,K+3);k++){const z=zOf(k);if(z>bz+.02){bz=z;K=k;}}}
+ const abs=new Map();
  list.forEach((m,i)=>{const row=Math.floor(i/K),k=i%K,r=rng(hash(m.uid)+11),jx=(r()-.5)*6,jy=(r()-.5)*6;/* Oct 25: a small wobble (was 14 px) so a name never just grazes the companion below it */
   abs.set(m.uid,{x:Math.round((rowOff(k,K)+(row%2?.25:-.25))*ROW_DX+jx),y:Math.round(-row*ROW_DY+jy)});});
  const a0=abs.get(me),spots=[{uid:me,me:true,x:0,y:0}];let R=0;
@@ -259,24 +265,50 @@ function mapFit(spots,w,h,o){o=o||{};w=Math.max(200,+w||360);h=Math.max(200,+h||
  const side=o.side!=null?o.side:46,top=o.top!=null?o.top:36,bot=o.bot!=null?o.bot:56,z0=Math.max(.85,Math.min(1.25,Math.min(w,h)/400));
  const fit=(l,r,t,b)=>{let z=Math.min((w-l-r)/Math.max(1,x1-x0),(h-t-b)/Math.max(1,y1-y0));z=Math.max(.18,Math.min(z0,z));
   return {x:(x0+x1)/2-((l+(w-r))/2-w/2)/z,y:(y0+y1)/2-((t+(h-b))/2-h/2)/z,z};};
- const base=fit(side,side,top,bot),A=o.avoid;
- if(!A||!(A.w>0)||!(A.h>0))return base;
+ const base=fit(side,side,top,bot),AV=(Array.isArray(o.avoid)?o.avoid:[o.avoid]).filter(a=>a&&a.w>0&&a.h>0);
+ if(!AV.length)return base;
  /* Oct 25 (live check: "Emmy" shrank to "E" next to You): the energy pad sits in a corner of the Room and mapLabels keeps names
     off it. The view tries leaving the pad's corner free (the bottom rows lifted above it, or the right column moved left of it,
     in steps) and runs the same label pass the page runs (page sizes: orb 46*f, 54 for you, 56/64 on a big screen, name up to
     size+30 wide, f from the zoom as in place()). It keeps the view that loses the fewest names to a letter, then the closest
-    zoom; with nothing lost it stays the plain fit. */
- const big=!!o.big,ax0=A.x,ay0=A.y,ax1=A.x+A.w,ay1=A.y+A.h,pad={id:'__pad',x:(ax0+ax1)/2,y:(ay0+ay1)/2,s:Math.max(A.w,A.h),nw:0,bw:0,bh:0,bub:false};
+    zoom; with nothing lost it stays the plain fit.
+    Oct 25 (readability + fit, Emmanuel's iPhone: a companion "hidden behind the Friends tree button"): o.avoid may be a list
+    (the energy pad and the Friends tree button). Each rectangle is kept free; a companion or its name under one, or outside
+    the Room, counts as lost too. */
+ const big=!!o.big,pads=[];
+ /* a square (the pad) is one block for the label pass; a wide one (the Friends tree button) is a row of squares, not one huge square */
+ AV.forEach((A,i)=>{const sq=Math.min(A.w,A.h),n=Math.max(1,Math.round(Math.max(A.w,A.h)/sq));for(let j=0;j<n;j++){const along=(j+.5)/n;pads.push({id:'__pad'+i+'_'+j,x:A.w>=A.h?A.x+A.w*along:A.x+A.w/2,y:A.w>=A.h?A.y+A.h/2:A.y+A.h*along,s:n===1?Math.max(A.w,A.h):sq,nw:0,bw:0,bh:0,bub:false});}});
+ const hits=(b,A)=>Math.min(b.x+b.w,A.x+A.w)-Math.max(b.x,A.x)>1&&Math.min(b.y+b.h,A.y+A.h)-Math.max(b.y,A.y)>1;
  const lost=c=>{const ff=Math.max(.68,Math.min(1.2,Math.sqrt(c.z/z0))),fnn=Math.max(.8,ff),items=[];
   for(const q of spots||[]){if(!q)continue;const sz=(q.me?(big?64:54):(big?56:46));items.push({id:String(q.uid),x:w/2+(q.x-c.x)*c.z,y:h/2+(q.y-c.y)*c.z,s:sz*ff,nw:(sz+30)*fnn,bw:0,bh:0,bub:false});}
-  items.push(pad);const lab=mapLabels(items,{w,h});let k=0;for(const it of items)if(it!==pad&&lab.get(it.id).at!=='b')k++;return k;};
+  const lab=mapLabels(items.concat(pads),{w,h});let k=0;
+  for(const it of items){const orb={x:it.x-it.s/2,y:it.y-it.s/2,w:it.s,h:it.s},nm={x:it.x-it.nw/2,y:it.y+it.s/2+2,w:it.nw,h:13};
+   if(lab.get(it.id).at!=='b'||AV.length>1&&(AV.some(A=>hits(orb,A)||hits(nm,A))||orb.y<-.5||nm.y+nm.h>h+.5||nm.x<-.5||nm.x+nm.w>w+.5))k++;}
+  return k;};
  let best=base,bl=lost(base);if(!bl)return base;
  const f0=Math.max(.68,Math.min(1.2,Math.sqrt(base.z/z0))),fn0=Math.max(.8,f0),hw=((big?56:46)+30)*fn0/2+1,dn=((big?56:46)/2)*f0+21,up=((big?56:46)/2)*f0+2;
- const bMax=ay0>h/2?Math.max(bot,h-ay0+dn):0,tMax=ay0>h/2?0:Math.max(top,ay1+up),rMax=ax0>w/2?Math.max(side,w-ax0+hw):0,lMax=ax0>w/2?0:Math.max(side,ax1+hw);
+ let bMax=0,tMax=0,rMax=0,lMax=0;
+ for(const A of AV){const ax0=A.x,ay0=A.y,ax1=A.x+A.w,ay1=A.y+A.h;
+  if(ay0>h/2)bMax=Math.max(bMax,bot,h-ay0+dn);else tMax=Math.max(tMax,top,ay1+up);
+  if(ax0>w/2)rMax=Math.max(rMax,side,w-ax0+hw);else if(AV.length===1||ax1<w/2)lMax=Math.max(lMax,side,ax1+hw);}
+ const cand=[];
  for(const k of [.25,.5,.75,1]){
-  const cs=[fit(side,side,tMax?top+(tMax-top)*k:top,bMax?bot+(bMax-bot)*k:bot),fit(lMax?side+(lMax-side)*k:side,rMax?side+(rMax-side)*k:side,top,bot)];
-  for(const c of cs){const l=lost(c);if(l<bl||(l===bl&&best!==base&&c.z>best.z)){best=c;bl=l;}}}
+  const tt=tMax?top+(tMax-top)*k:top,bb=bMax?bot+(bMax-bot)*k:bot,ll=lMax?side+(lMax-side)*k:side,rr=rMax?side+(rMax-side)*k:side;
+  cand.push([side,side,tt,bb],[ll,rr,top,bot]);if(AV.length>1)cand.push([ll,rr,tt,bb]);}
+ /* with two corners taken (pad and Friends tree button) the bottom row may fit between them: the same zoom, moved sideways and up */
+ if(AV.length>1)for(const k of [0,.25,.5,.75,1])for(const dx of [-90,-60,-40,-20,20,40,60,90]){const bb=bMax?bot+(bMax-bot)*k:bot;cand.push([Math.max(8,side+dx),Math.max(8,side-dx),top,bb]);}
+ for(const m of cand){const c=fit(m[0],m[1],m[2],m[3]),l=lost(c);if(l<bl||(l===bl&&best!==base&&c.z>best.z)){best=c;bl=l;}}
  return best;}
+/* Oct 25 (readability + fit: on iPhone SE / small Android the bottom row sat below the Room and behind the Friends tree button):
+   the size the Room camera works with. prev = the last answer, w/h = the Room's size now, typing = the keyboard is up.
+   While typing, or for a small chip row (To: name, up to 60 px), the camera keeps its size so the pins never slide; hb is what is
+   visible. Any other change is taken, and for the first 2.5 s after the Room was first measured every change is taken (the
+   composer and bar are still laying out: the old rule kept that first, taller size for good). */
+function mapViewSize(prev,w,h,typing,now){now=+now||0;
+ if(!prev||Math.abs(w-prev.w)>40)return {w,h,hb:h,t:now};
+ if(typing)return {w:prev.w,h:prev.h,hb:h,t:prev.t};
+ if(now-prev.t<2500||h>prev.h||prev.h-h>60)return {w,h,hb:h,t:prev.t};
+ return {w:prev.w,h:prev.h,hb:h,t:prev.t};}
 /* Camera limits for a w x h view: z0 = the zoom you arrive at, zmin shows everyone, zmax is a close look. */
 /* fz (Oct 25): the fitted zoom (mapFit), so the furthest you can zoom out always still includes the view that shows everyone */
 function mapZooms(radius,w,h,fz){w=Math.max(200,+w||360);h=Math.max(200,+h||500);const z0=Math.max(.85,Math.min(1.25,Math.min(w,h)/400)),fit=Math.min(w,h)/(2*((+radius||0)+90)),f2=+fz>0?+fz:Infinity;
@@ -311,7 +343,7 @@ function mapLabels(items,view){
   if(got)r.bub=got;else r.dot=true;}
  return out;
 }
-const api={BOT_KEEP,idleGap,hash,mapPool,mapSlot,mapCols,mapLayout,mapFit,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,roomMembers,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
+const api={BOT_KEEP,idleGap,hash,mapPool,mapSlot,mapCols,mapLayout,mapFit,mapViewSize,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,roomMembers,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
 if(typeof module==='object'&&module.exports)module.exports=api;
 root.LowiGalaxy=api;
 })(typeof window!=='undefined'?window:globalThis);

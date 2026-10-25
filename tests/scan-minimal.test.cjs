@@ -161,3 +161,10 @@ test('the app loads the swap module before the page script runs, and the offline
     assert.match(html, /<script src="scan-swap-core\.js\?v=/);
     assert.match(fs.readFileSync(path.join(root, 'sw.js'), 'utf8'), /"scan-swap-core\.js"/);
 });
+
+test('honey-coated nuts written as one German word are a Skip it too (live check: "Honigmandeln" came out Lower impact)', () => {
+    for (const q of ['Honigmandeln', 'Honig-Mandeln', 'Honignüsse', 'Honigerdnüsse', 'Honig-Cashews', 'honey-roasted peanuts', 'almendras con miel'])
+        assert.equal(nameRate(q).verdict, 'spike', q + ' is a coated / honey nut');
+    for (const q of ['Mandeln', 'Nüsse', 'nuts', 'almendras', 'Erdnüsse']) assert.equal(nameRate(q).verdict, 'ok', q + ' stays a plain nut');
+    assert.equal(ctxFor({}, 'de').nameSwap({ name: 'Honigmandeln', verdict: nameRate('Honigmandeln').verdict }).n, 'Mandeln, natur');
+});

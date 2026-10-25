@@ -49,7 +49,8 @@ function decodePNG(buf) { let pos = 8, w = 0, h = 0, type = 0; const idat = []; 
   /* one link/note: inside the screen, a real tap row, AA contrast against what is behind it */
   const checkEl = async (page, sel, label, W) => {
     await page.evaluate(sel => { const e = [...document.querySelectorAll(sel)].filter(x => x.getClientRects().length).pop(); if (e) e.scrollIntoView({ block: 'center' }); }, sel);
-    await page.waitForTimeout(450);
+    /* wait until it stops moving (sheets slide in; WebKit on a loaded test computer draws only a few frames a second) */
+    await page.waitForFunction(sel => { const e = [...document.querySelectorAll(sel)].filter(x => x.getClientRects().length).pop(); if (!e) return false; const y = Math.round(e.getBoundingClientRect().top); const ok = window.__ptY === y; window.__ptY = y; return ok; }, sel, { polling: 400, timeout: 20000 }).catch(() => {});
     const m = await page.evaluate(sel => { const e = [...document.querySelectorAll(sel)].filter(x => x.getClientRects().length).pop(); if (!e) return null; const r = e.getBoundingClientRect(), cs = getComputedStyle(e);
       let op = 1; for (let n = e; n && n !== document.documentElement; n = n.parentElement) op *= +getComputedStyle(n).opacity;
       const c = cs.color.match(/[\d.]+/g).map(Number); return { x: r.x, y: r.y, w: r.width, h: r.height, fg: [c[0], c[1], c[2], (c[3] == null ? 1 : c[3]) * op], vw: innerWidth, vh: innerHeight, font: parseFloat(cs.fontSize), text: e.innerText.trim() }; }, sel);
@@ -72,6 +73,7 @@ function decodePNG(buf) { let pos = 8, w = 0, h = 0, type = 0; const idat = []; 
     /* setup, birthday step */
     await page.evaluate(() => { const s = LowiR2.S(); s.setupDone = false; s.setupMid = 0; LowiR2.onboard(); });
     await page.waitForTimeout(1200);
+    await page.waitForFunction(() => { const s = document.querySelector('.r2-obov .r2-sh'), pn = document.querySelector('.r2-obpane'); return s && Math.abs(s.getBoundingClientRect().top) < 2 && (!pn || +getComputedStyle(pn).opacity > 0.99); }, null, { timeout: 25000 }).catch(() => console.log('info setup sheet still moving'));
     console.log('info setup copies: ' + await page.evaluate(() => document.querySelectorAll('#r2obType').length + ' / overlays ' + [...document.querySelectorAll('#r2ob')].map(o => o.getClientRects().length).join(',') + ' ' + (() => { let n = document.querySelector('#r2obType'), hid = []; while (n && n !== document.documentElement) { const c = getComputedStyle(n); if (c.display === 'none' || c.visibility !== 'visible' || +c.opacity < 0.1 || c.contentVisibility === 'hidden') hid.push((n.id || n.className) + '|' + c.display + '|' + c.visibility + '|' + c.opacity); n = n.parentElement; } return hid.join(' ; ') + ' html:' + document.documentElement.className + ' body:' + document.body.className; })()));
     const st = await page.evaluate(() => { const s = document.querySelector('#r2obType'), a = document.querySelector('#r2obTest [data-ps-test]'); return { opts: s ? s.options.length : 0, first: s ? s.options[0].text : '', label: s ? s.closest('label').querySelector('span').innerText : '', href: a ? a.href : '', tgt: a ? a.target : '', rel: a ? a.rel : '', h: a ? a.getBoundingClientRect().height : 0, note: (document.querySelector('#r2obTest .ps-test-note') || {}).innerText || '' }; });
     ok(st.opts === 17, tag + ' setup: type picker with "' + st.first + '" + the 16 types, label "' + st.label + '"');

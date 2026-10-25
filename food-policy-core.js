@@ -39,6 +39,10 @@
     const fmt = (s, args) => String(s).replace(/\{(\d)\}/g, (m, i) => (args && args[i] != null ? args[i] : ''));
 
     // Category keys for a product, from its name/brand and Open Food Facts category tags.
+    const COATED_NUT_WORD_RX = /garrapiñad|garrapinad|\bman[ií](?![a-zñ])|\bnuez\b|frutos secos|anacardo|avellana|almendra|pistacho|pecana|cacahuete|macadamia|\bnut\b|mandel|nüss|nuss/;
+    const CANDIED_RX = /candied|kandiert|gebrannt|dragee/;
+    const SAVOURY_CATS = ['nonstarchy_veg', 'fish', 'poultry', 'lean_beef', 'pork', 'processed_meat', 'eggs', 'legumes', 'plant_protein',
+        'cheese', 'fresh_cheese', 'halloumi', 'starch_potato', 'sweet_potato', 'protein_product'];
     function classify(product) {
         const p = product || {};
         const text = low([p.name, p.genericName].filter(Boolean).join(' '));
@@ -49,6 +53,16 @@
             if ((text && CAT_RX[k].test(text)) || (def.off || []).some(t => tags.includes(t))) cats[k] = true;
         }
         if (cats.sweet_potato) delete cats.starch_potato;
+        // Oct 25 2026 (Emmanuel, steady-onion task): the coated_nuts pattern also matches bare coating words (caramel, karamell,
+        // glazed, glasiert, candied, kandiert, gebrannt, dragee), so "caramelized onions", "karamellisierte Zwiebeln" and
+        // "cebolla caramelizada" read as coated nuts and got a Skip it. Coated nuts need a nut: keep the category only when a nut
+        // word (or a nut-only word like garrapiñado / maní) is there, or Open Food Facts tags the pack as coated nuts. Without a
+        // nut, a sugar-preserve word (candied, kandiert, gebrannt, dragee) or a sweet with no savoury food in it (caramel, a
+        // caramel latte, caramelized bananas) is sweets; on onions, carrots, salmon, duck... it is only how it was cooked.
+        if (cats.coated_nuts && !cats.nuts && !COATED_NUT_WORD_RX.test(text) && !(POLICY.categories.coated_nuts.off || []).some(t => tags.includes(t))) {
+            delete cats.coated_nuts;
+            if (CANDIED_RX.test(text) || !SAVOURY_CATS.some(k => cats[k])) cats.candy_dessert = true;
+        }
         // Master Knowledge v3: vegetable swaps are not the starch they replace (cauliflower rice, konjac or zucchini noodles),
         // coconut milk is a cooking fat and not a glass of milk, and fresh cheese is never a "large portion of cheese".
         if (/blumenkohl|cauliflower|coliflor|brokkoli|broccoli|konjac|konjak|shirataki|zucchini|zoodle|gemüsenudel|palmito|hearts of palm/.test(text)) { delete cats.starch_rice; delete cats.starch_pasta; }

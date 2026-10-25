@@ -48,7 +48,7 @@ test('pork gets the food verdict and its reason even when the glucose level alon
     const d = M.fromLog({ t: 'Pork chop', ai: J.estimate({ name: 'Pork chop', items: [{ name: 'Pork chop', portion: '200 g' }], total: { kcal: 480, carbs: 0, protein: 50, fat: 30 } }, { lvl: 'high' }) }, 'high');
     assert.equal(d.verdict, 'NEIN'); assert.match(d.rule, /pork/);
     const h = M.sheetHTML(d, { by: 'Antje', l: 'en' });
-    assert.match(h, /Likely spike/); assert.match(h, /Pork/i);
+    assert.match(h, /Spike likely/); assert.match(h, /Pork/i);
 });
 
 test('clean() is the gate on read too: unknown keys, nested extras, bad numbers and markup are dropped', () => {
@@ -138,7 +138,7 @@ test('For You: the chip is a real button, reads meta.detail or the meal card dat
     };
     delete require.cache[require.resolve('../meal-detail.js')]; require('../meal-detail.js');
     const D = global.LowiMealDetail;
-    assert.match(D.fyChip(posts.a), /^<button type="button" class="md-fy" data-md-post="a" aria-haspopup="dialog" aria-label="Low spike\. Show meal details"/);
+    assert.match(D.fyChip(posts.a), /^<button type="button" class="md-fy" data-md-post="a" aria-haspopup="dialog" aria-label="Lower impact\. Show meal details"/);
     assert.match(D.fyChip(posts.c), /md-fy-hint/);
     assert.equal(D.fyChip(posts.d), '');
     D.openPost('a'); assert.ok(opened.includes('Salmon') && opened.includes('From Antje'));

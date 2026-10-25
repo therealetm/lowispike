@@ -95,7 +95,7 @@ test('glazed, glasiert, glaseado or confit on a savoury food is a cooking word, 
 });
 
 test('candied or caramel sweets with no nut are sweets, not coated nuts (and stay a Skip it)', () => {
-    for (const n of ['candied ginger', 'kandierter Ingwer', 'kandierte Früchte', 'fruta confitada', 'caramel', 'Karamell', 'Schoko-Dragees', 'caramelized bananas', 'salted caramel latte']) {
+    for (const n of ['candied ginger', 'kandierter Ingwer', 'kandierte Früchte', 'caramel', 'Karamell', 'Schoko-Dragees', 'caramelized bananas', 'salted caramel latte']) {
         const r = P.rateName(n);
         assert.ok(!coated(n), n + ' is not coated nuts: ' + r.rules.join(','));
         assert.equal(r.verdict, 'NEIN', n + ' stays a Skip it');

@@ -9547,7 +9547,7 @@ async function swPush(t, quiet){ const X = swCloud(); if (!X || !t) return; cons
     if (!quiet) swPull(true); } catch(e){} }
 async function swDrop(postId){ const X = swCloud(); if (!X) return; try { const sb = await X.client(), u = X.state().uid; if (!u) return; await sb.from("swipe_foods").delete().eq("post_id", postId).eq("user_id", u); swPull(true); } catch(e){} }
 function fHintTxt(){ /* ck-src */ { const n = fSrcPool().length, s = fSrc();
-  return s === "products" ? ckT(n + " caught products that won't spike", n + " gefangene Produkte, die nicht spiken", n + " productos atrapados") : s === "community" ? ckT(n + " recipes people shared", n + " geteilte Rezepte", n + " recetas compartidas") : ckT(n + " eBook recipes", n + " E-Book-Rezepte", n + " recetas del eBook"); } const cm = fPool().filter(f => f.com).length; return "Picks something you can eat, from " + fPool().length + " foods" + (cm ? ", community ones too" : "") + "."; }
+  return s === "products" ? ckT(n + " caught products with a lower impact", n + " gefangene Produkte mit niedrigerer Wirkung", n + " productos atrapados de menor impacto") : s === "community" ? ckT(n + " recipes people shared", n + " geteilte Rezepte", n + " recetas compartidas") : ckT(n + " eBook recipes", n + " E-Book-Rezepte", n + " recetas del eBook"); } const cm = fPool().filter(f => f.com).length; return "Picks something you can eat, from " + fPool().length + " foods" + (cm ? ", community ones too" : "") + "."; }
 
 /* ---------- community posts go into the mix ---------- */
 function isFoodPost(p, k){ return !!(p && (p.me || p.photo || /^(rb_|m_)/.test(k || ""))); }
@@ -13258,7 +13258,7 @@ dict([
 ]);
 
 const PCOS_TIPS = [
-  ["Start the day with protein: eggs, skyr or cottage cheese. It keeps blood sugar steadier.", "Starte mit Eiweiß: Eier, Skyr oder Hüttenkäse. Das hält den Blutzucker ruhiger.", "Empieza el día con proteína: huevos, skyr o requesón. Mantiene el azúcar más estable."],
+  ["Start the day with protein: eggs, skyr or cottage cheese. It can help keep blood sugar steadier.", "Starte mit Eiweiß: Eier, Skyr oder Hüttenkäse. Das kann den Blutzucker ruhiger halten.", "Empieza el día con proteína: huevos, skyr o requesón. Puede ayudar a mantener el azúcar más estable."],
   ["Eat vegetables and protein first, carbs last. Your blood sugar rises less.", "Erst Gemüse und Eiweiß, Kohlenhydrate zuletzt. Dein Blutzucker steigt weniger.", "Come primero verdura y proteína, los hidratos al final. El azúcar sube menos."],
   ["A 10-minute walk after a meal helps your body use insulin.", "10 Minuten gehen nach dem Essen helfen deinem Körper, Insulin zu nutzen.", "Caminar 10 minutos después de comer ayuda a tu cuerpo a usar la insulina."],
   ["Spearmint tea, 2 cups a day, is popular with PCOS. The studies are small, but it is cheap to try.", "Minztee (Krauseminze), 2 Tassen am Tag, ist bei PCOS beliebt. Die Studien sind klein, aber es ist günstig.", "El té de hierbabuena, 2 tazas al día, es popular con SOP. Los estudios son pequeños, pero es barato probarlo."],
@@ -17544,7 +17544,7 @@ const T = {
   craveT: ["Craving help", "Hilfe bei Heißhunger", "Ayuda con los antojos"],
   craveS: ["For the days before your period", "Für die Tage vor der Periode", "Para los días antes de la regla"],
   pcosT: ["PCOS mode", "PCOS-Modus", "Modo SOP"],
-  pcosS: ["Insulin resistance is common with PCOS. These habits keep blood sugar steadier:", "Insulinresistenz ist bei PCOS häufig. Diese Gewohnheiten halten den Blutzucker ruhiger:", "La resistencia a la insulina es frecuente con el SOP. Estos hábitos mantienen el azúcar más estable:"],
+  pcosS: ["Insulin resistance is common with PCOS. These habits can help keep blood sugar steadier:", "Insulinresistenz ist bei PCOS häufig. Diese Gewohnheiten können helfen, den Blutzucker ruhiger zu halten:", "La resistencia a la insulina es frecuente con el SOP. Estos hábitos pueden ayudar a mantener el azúcar más estable:"],
   pcosOn: ["I have PCOS, or think I might", "Ich habe PCOS oder vermute es", "Tengo SOP o creo que podría tenerlo"],
   pcosHint: ["Adds insulin-resistance tips to your days.", "Fügt Tipps gegen Insulinresistenz hinzu.", "Añade consejos para la resistencia a la insulina."],
   girlT: ["Girl dinner, low-spike", "Girl Dinner, low-spike", "Girl dinner, sin picos"],
@@ -18780,7 +18780,7 @@ const W = {
     retake:"New photo", scanning:"Looking at your plate…",
     pickT:"Let's find your meal", pickSub:"Two quick ways to pick something low-spike.", shuf:"Shuffle", shufS:"The slot machine picks a meal for you", swipe:"Swipe", swipeS:"Swipe through meals, keep the ones you like",
     doneT:"Meal logged!", low:"Low spike", medium:"Medium spike", high:"High spike",
-    lowL:"Clean refuel. Steady energy ahead.", mediumL:"Solid. A short walk after it helps.", highL:"Big spike. A 10-minute walk now softens it.",
+    lowL:"Clean refuel. A gentler rise is likely.", mediumL:"Solid. A short walk after it helps.", highL:"Big spike. A 10-minute walk now softens it.",
     xpBreak:"Logged the meal that broke your fast", xpNone:"No meal XP: 5 meals a day is the max.", share:"Share to For You", shareS:"Show the community what you ate",
     skipShare:"Skip · back to Today", today:"Back to Today", nextFast:"Your next fast is running since {t}.", cap:"Just ate: {m}",
     ate:"I ate this · log it", other:"Something else", typeIt:"Can't rate it? Type it instead", meal:"Meal checked"},
@@ -18793,7 +18793,7 @@ const W = {
     retake:"Neues Foto", scanning:"Ich schaue mir deinen Teller an…",
     pickT:"Lass uns dein Essen finden", pickSub:"Zwei schnelle Wege zu etwas mit wenig Spike.", shuf:"Shuffle", shufS:"Der Spielautomat sucht dir ein Essen aus", swipe:"Swipen", swipeS:"Wisch durch Gerichte, behalte, was dir gefällt",
     doneT:"Mahlzeit eingetragen!", low:"Niedriger Spike", medium:"Mittlerer Spike", high:"Hoher Spike",
-    lowL:"Sauber getankt. Ruhige Energie voraus.", mediumL:"Solide. Ein kurzer Spaziergang danach hilft.", highL:"Großer Spike. 10 Minuten gehen jetzt dämpft ihn.",
+    lowL:"Sauber getankt. Wahrscheinlich ein sanfterer Anstieg.", mediumL:"Solide. Ein kurzer Spaziergang danach hilft.", highL:"Großer Spike. 10 Minuten gehen jetzt dämpft ihn.",
     xpBreak:"Die Mahlzeit nach dem Fasten eingetragen", xpNone:"Keine Mahlzeit-XP: 5 Mahlzeiten am Tag sind das Maximum.", share:"Auf For You teilen", shareS:"Zeig der Community, was du gegessen hast",
     skipShare:"Überspringen · zurück zu Heute", today:"Zurück zu Heute", nextFast:"Dein nächstes Fasten läuft seit {t}.", cap:"Gerade gegessen: {m}",
     ate:"Hab ich gegessen · eintragen", other:"Etwas anderes", typeIt:"Keine Bewertung? Dann tipp es ein", meal:"Mahlzeit geprüft"},
@@ -18806,7 +18806,7 @@ const W = {
     retake:"Otra foto", scanning:"Mirando tu plato…",
     pickT:"Busquemos tu comida", pickSub:"Dos formas rápidas de elegir algo con poco pico.", shuf:"Shuffle", shufS:"La tragaperras elige una comida por ti", swipe:"Deslizar", swipeS:"Desliza platos y quédate con los que te gusten",
     doneT:"¡Comida registrada!", low:"Pico bajo", medium:"Pico medio", high:"Pico alto",
-    lowL:"Recarga limpia. Energía estable por delante.", mediumL:"Bien. Un paseo corto después ayuda.", highL:"Pico alto. Caminar 10 minutos ahora lo suaviza.",
+    lowL:"Recarga limpia. Probablemente una subida más suave.", mediumL:"Bien. Un paseo corto después ayuda.", highL:"Pico alto. Caminar 10 minutos ahora lo suaviza.",
     xpBreak:"Registraste la comida que rompió tu ayuno", xpNone:"Sin XP de comida: 5 comidas al día es el máximo.", share:"Compartir en For You", shareS:"Muestra a la comunidad lo que comiste",
     skipShare:"Saltar · volver a Hoy", today:"Volver a Hoy", nextFast:"Tu próximo ayuno corre desde las {t}.", cap:"Acabo de comer: {m}",
     ate:"Me lo comí · registrar", other:"Otra cosa", typeIt:"¿Sin valoración? Escríbelo", meal:"Comida revisada"}

@@ -69,7 +69,7 @@
         less: ['Show fewer', 'Weniger zeigen', 'Ver menos'],
         yours: ['your scan', 'dein Scan', 'tu escaneo'],
         emptyT: ['No low-spike products to shuffle yet', 'Noch keine Low-Spike-Produkte zum Mischen', 'Aún no hay productos de pico bajo para mezclar'],
-        emptyS: ['Shuffle only uses products that won\u2019t spike. Scan a few more, or shuffle the eBook recipes.', 'Der Shuffle nimmt nur Produkte, die nicht spiken. Scanne noch ein paar oder misch die E-Book-Rezepte.', 'El shuffle solo usa productos que no disparan tu insulina. Escanea algunos más o mezcla las recetas del eBook.'],
+        emptyS: ['Shuffle only uses products with a lower impact. Scan a few more, or shuffle the eBook recipes.', 'Der Shuffle nimmt nur Produkte mit niedrigerer Wirkung. Scanne noch ein paar oder misch die E-Book-Rezepte.', 'El shuffle solo usa productos de menor impacto. Escanea algunos más o mezcla las recetas del eBook.'],
         scan: ['Scan a product', 'Produkt scannen', 'Escanear un producto'],
         book: ['Shuffle the eBook', 'E-Book mischen', 'Mezclar el eBook']
     };

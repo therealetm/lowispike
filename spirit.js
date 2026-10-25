@@ -813,7 +813,10 @@
         }
         return '<div class="sp-macro-grid">' + Object.keys(values).map(k => {
             const v = values[k] === null ? 0 : Math.round(values[k] * 10) / 10;
-            return '<div' + (filled.indexOf(k) >= 0 ? ' class="est"' : '') + '><small>' + esc(tr(k)) + '</small><b>' + (filled.indexOf(k) >= 0 ? '\u2248 ' : '') + esc(v + (k === 'kcal' ? ' kcal' : ' g')) + '</b></div>';
+            /* Oct 25 2026 bug hunt: German and Spanish write a decimal comma ("9,5 g"), like Today's stats on the same sheet */
+            let l = 'en'; try { l = lang(); } catch (e) { }
+            const vs = l === 'de' || l === 'es' ? String(v).replace('.', ',') : String(v);
+            return '<div' + (filled.indexOf(k) >= 0 ? ' class="est"' : '') + '><small>' + esc(tr(k)) + '</small><b>' + (filled.indexOf(k) >= 0 ? '\u2248 ' : '') + esc(vs + (k === 'kcal' ? ' kcal' : ' g')) + '</b></div>';
         }).join('') + '</div>';
     }
     function estHTML(log) {

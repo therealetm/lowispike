@@ -724,7 +724,7 @@ function photoBar(toBot){const el=D.getElementById('csPhoto'),btn=D.getElementBy
  if(!el)return;
  if(!pendingPhoto){if(el.innerHTML)el.innerHTML='';return;}
  if(el.dataset.pid===pendingPhoto.id&&el.innerHTML)return;el.dataset.pid=pendingPhoto.id;
- el.innerHTML='<div class="cs-photo-ready"><img alt="" src="'+esc(pendingPhoto.preview)+'"><div><b>'+tr('photoReady')+'</b><small>'+tr('photoNote')+'</small></div>'+button('photo-clear','×','aria-label="'+tr('photoRemove')+'"','cs-photo-x')+'</div>';}
+ el.innerHTML='<div class="cs-photo-ready"><img alt="" src="'+esc(pendingPhoto.preview)+'"><div><b>'+tr('photoReady')+'</b><small>'+tr('photoNote')+'</small><span class="cs-ai" role="status" aria-live="polite" hidden></span></div>'+button('photo-clear','×','aria-label="'+tr('photoRemove')+'"','cs-photo-x')+'</div>';aiLine();}
 /* Oct 16: while the field is empty (no text, no photo) the mic stands where Send is, like Messages; as soon as you type, Send comes back. */
 function micSwap(){const row=D.querySelector('#cmPaneChat .cm-inrow'),inp=D.getElementById('cmInput');if(!row||!row.classList)return;row.classList.toggle('cs-empty',!pendingPhoto&&!String(inp&&inp.value||'').trim());}
 function newPhotoId(){try{if(W.crypto&&W.crypto.randomUUID)return 'p'+W.crypto.randomUUID().replace(/-/g,'');}catch(e){}return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,10);}
@@ -737,16 +737,25 @@ function shrinkPhoto(file){return new Promise((res,rej)=>{if(!file)return rej(ne
 /* Runs synchronously inside the tap's click handler (iOS only opens the picker from a real user gesture), on an input that stays in the
    layout (never display:none or [hidden]). No capture attribute, so iOS offers both Take Photo and Photo Library. Bots get photos too. */
 function pickPhoto(){if(photoBusy)return;if(!scope){notice=tr('mediaSignIn');refresh();return;}const f=D.getElementById('cmPhotoFile');if(f){try{f.value='';}catch(e){}f.click();}}
-async function takePhoto(file){if(!file)return;try{const p=await shrinkPhoto(file);pendingPhoto={id:newPhotoId(),blob:p.blob,preview:p.preview,w:p.w,h:p.h,src:''};notice='';}catch(e){pendingPhoto=null;notice=tr(e&&e.message==='big'?'photoBig':'photoBad');}refresh();focusInput();}
+async function takePhoto(file){if(!file)return;try{const p=await shrinkPhoto(file);pendingPhoto={id:newPhotoId(),blob:p.blob,preview:p.preview,w:p.w,h:p.h,src:''};notice='';aiStart();}catch(e){pendingPhoto=null;notice=tr(e&&e.message==='big'?'photoBig':'photoBad');}refresh();focusInput();}
+/* Oct 25 (Emmanuel: a food photo sent into Community is read by the AI, no typing): community-photo-meal.js reads the picked photo
+   with the Snap food AI; Send posts a meal post with its details when it is food, else the plain photo with one line saying why. */
+function aiStart(){const pin=pendingPhoto,CM=W.LowiChatMeal;if(!pin||!CM||(sel&&botOf(sel)))return;CM.start(pin.id,pin.blob,{lang:['en','de','es'][lang()]||'en',onChange:()=>{if(pendingPhoto===pin)aiLine();}});}
+function aiLine(){const el=D.querySelector('#csPhoto .cs-ai'),CM=W.LowiChatMeal;if(!el||!CM||!pendingPhoto)return;const st=CM.state(pendingPhoto.id);if(!st){el.innerHTML='';el.hidden=true;return;}const b=CM.bar(st,['en','de','es'][lang()]||'en');el.hidden=false;el.dataset.phase=st.phase+(st.code?' '+st.code:'');el.innerHTML='<b>'+esc(b[0])+'</b><small>'+esc(b[1])+'</small>';}
 function clearPhoto(){pendingPhoto=null;const el=D.getElementById('csPhoto');if(el){el.innerHTML='';el.dataset.pid='';}}
 async function sendPhoto(){if(photoBusy||!pendingPhoto)return;const bot=sel&&botOf(sel);if(!scope){notice=tr('mediaSignIn');refresh();return;}if((!bot&&!store)||navigator.onLine===false){notice=tr('offline');refresh();return;}const m=own(),name=String(m.n||'').trim();if(!name&&!bot){notice=tr('name');refresh();return;}
  const ds=draftState(),pin=pendingPhoto,p=sel&&roster().get(sel);let cap=String(ds.draft.text||'').trim(),tag='';
  if(p&&G){const t=G.direct(cap,p.n),at='@'+String(p.n).trim();if(t.toLocaleLowerCase().startsWith(at.toLocaleLowerCase())){tag=t.slice(0,at.length);cap=t.slice(at.length).trim();}}
  photoBusy=true;notice=tr('photoSending');refresh();
- try{const path=scope+'/chat-'+pin.id+'.jpg';if(!pin.src)pin.src=await mediaUpload(path,pin.blob,['image/jpeg']);
-  const body=(tag?tag+' ':'')+K.photoBody(pin.src,cap);if(!K.photo(body,scope))throw new Error('url');
-  if(pendingPhoto===pin)clearPhoto();const left=K.afterCaption(ds.draft,draftState().draft);draft(left.text,left.reply);const inp=D.getElementById('cmInput');if(inp)inp.value=left.text;notice='';photoBusy=false;
-  if(bot){botSay(bot.uid,'me',body);botAnswer(bot,tr('botPicR'));}else await store.submitPhoto(name,body,pin.id,ds.draft.reply||null);}
+ try{const CM=!bot&&W.LowiChatMeal,lc=['en','de','es'][lang()]||'en';let ai=null,body='',md=null;
+  if(CM){const st0=CM.state(pin.id);if(!st0||st0.phase==='look'){notice=CM.t('wait',lc);refresh();}ai=await CM.settle(pin.id,pin.blob,{lang:lc});aiLine();}
+  const ml=ai&&ai.phase==='meal'?ai.meal:null;
+  if(ml){if(!pin.msrc)pin.msrc=await mediaUpload(scope+'/meal-'+pin.id+'.jpg',pin.blob,['image/jpeg']);const mb=K.mealBody(pin.msrc,ml.name,ml.lvl,cap);
+   if(mb&&K.meal(mb,scope)){body=(tag?tag+' ':'')+mb;const MD=W.LowiMealDetailCore;md=MD&&MD.clean&&ml.detail?MD.clean(ml.detail):null;}}
+  if(!body){const path=scope+'/chat-'+pin.id+'.jpg';if(!pin.src)pin.src=await mediaUpload(path,pin.blob,['image/jpeg']);
+   body=(tag?tag+' ':'')+K.photoBody(pin.src,cap);if(!K.photo(body,scope))throw new Error('url');}
+  if(pendingPhoto===pin)clearPhoto();const left=K.afterCaption(ds.draft,draftState().draft);draft(left.text,left.reply);const inp=D.getElementById('cmInput');if(inp)inp.value=left.text;notice=CM&&ai?CM.postedNote(ai,lc):'';photoBusy=false;
+  if(bot){botSay(bot.uid,'me',body);botAnswer(bot,tr('botPicR'));}else{await store.submitPhoto(name,body,pin.id,ds.draft.reply||null,md);if(CM)CM.forget(pin.id);}}
  catch(e){photoBusy=false;notice=tr('photoFailed');}
  photoBusy=false;refresh();}
 /* ---- Oct 16 (E-man on iPad): shared media upload, voice notes, the connection stream ---- */

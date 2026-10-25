@@ -11,6 +11,7 @@ STATIC.push("gift-basket-core.js", "gift-basket.js", "gift-basket.css"); /* Oct 
 STATIC.push("after-meal-checklist-core.js", "after-meal-checklist.js", "after-meal-checklist.css"); /* Oct 25 after-meal checklist: own line */
 STATIC.push("studio-lock-core.js", "studio-lock.js", "studio-lock.css"); /* Oct 25 Studio lock: own line */
 STATIC.push("meal-detail-core.js", "meal-detail.js", "meal-detail.css"); /* Oct 25 meal details on the spike label: own line */
+STATIC.push("community-photo-meal.js"); /* Oct 25 food photos in Community read by the meal AI: own line */
 STATIC.push("community-remove-core.js", "community-remove.js", "community-remove.css"); /* Oct 25 admin Remove from community: own line */
 STATIC.push("tutorial-demo.js", "tutorial-demo.css", "tutorial-flight.js", "tutorial-img/scan-sample.webp"); /* Oct 25 short tour: the demo finger, the mocked Scan photo and her first flight */
 STATIC.push("kitchen-core.js"); /* Oct 24 Kitchen in Shop: on its own line so it never collides with the build stamp next to the STATIC line */

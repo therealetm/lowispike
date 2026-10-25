@@ -225,3 +225,8 @@ html.cs-chat-map-typing #cmPaneChat[data-spirit-chat] .cm-compose{transform:tran
 .cp-ask form{margin-top:14px}
 .cp-ask .cp-rows{margin-top:6px}
 .cs-sheet .cp-ask .cp-later{width:100%;margin-top:8px;background:transparent}
+/* Oct 25 food photos in Community: what the meal AI read, under "Photo ready" (community-photo-meal.js) */
+#csPhoto .cs-ai{display:block;margin-top:6px;padding-top:6px;border-top:1px solid rgba(160,220,255,.24)}
+#csPhoto .cs-ai[hidden]{display:none}
+#csPhoto .cs-ai b{font-size:13px;font-weight:650;overflow-wrap:anywhere}
+#csPhoto .cs-ai small{color:rgba(223,242,255,.86)}

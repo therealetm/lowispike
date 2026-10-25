@@ -20,7 +20,7 @@
     const STR = {
         en: {
             title: 'Meal details', from: 'From {n}’s photo check', low: 'Low spike', mid: 'Medium spike', high: 'Likely spike',
-            why: 'Why', whyLow: 'Only about {net} g net carbs. Blood sugar should stay steady.', whyMid: 'About {net} g net carbs. A moderate rise, not a spike.',
+            why: 'Why', whyLow: 'Only about {net} g net carbs (estimate). Lower impact on blood sugar.', whyMid: 'About {net} g net carbs. A moderate rise, not a spike.',
             whyHigh: 'About {net} g net carbs. That’s enough to spike.', whyDrink: 'The sugary drink alone is enough to spike.',
             ing: 'What the photo check saw', nut: 'Numbers from the photo', tip: 'Tip', est: 'Estimate from the photo, not a measurement.',
             lowConf: 'The photo was hard to read, so this is a rough guess.', none: 'No details for this meal.', noneS: 'It was shared before meal details were saved with posts.',
@@ -29,7 +29,7 @@
         },
         de: {
             title: 'Mahlzeit-Details', from: 'Aus dem Foto-Check von {n}', low: 'Kleiner Spike', mid: 'Mittlerer Spike', high: 'Wahrscheinlich Spike',
-            why: 'Warum', whyLow: 'Nur etwa {net} g Netto-Kohlenhydrate. Der Blutzucker sollte ruhig bleiben.', whyMid: 'Etwa {net} g Netto-Kohlenhydrate. Eher ein mäßiger Anstieg, kein Spike.',
+            why: 'Warum', whyLow: 'Nur etwa {net} g Netto-Kohlenhydrate (geschätzt). Geringere Wirkung auf den Blutzucker.', whyMid: 'Etwa {net} g Netto-Kohlenhydrate. Eher ein mäßiger Anstieg, kein Spike.',
             whyHigh: 'Etwa {net} g Netto-Kohlenhydrate. Das reicht für einen Spike.', whyDrink: 'Allein das süße Getränk reicht für einen Spike.',
             ing: 'Was der Foto-Check erkannt hat', nut: 'Zahlen aus dem Foto', tip: 'Tipp', est: 'Schätzung aus dem Foto, keine Messung.',
             lowConf: 'Das Foto war schwer zu erkennen, daher nur eine grobe Schätzung.', none: 'Keine Details zu dieser Mahlzeit.', noneS: 'Sie wurde geteilt, bevor Details mit Posts gespeichert wurden.',
@@ -38,7 +38,7 @@
         },
         es: {
             title: 'Detalles de la comida', from: 'Del análisis de foto de {n}', low: 'Pico bajo', mid: 'Pico medio', high: 'Pico probable',
-            why: 'Por qué', whyLow: 'Solo unos {net} g de carbohidratos netos. El azúcar debería mantenerse estable.', whyMid: 'Unos {net} g de carbohidratos netos. Una subida moderada, no un pico.',
+            why: 'Por qué', whyLow: 'Solo unos {net} g de carbohidratos netos (estimado). Menor impacto en el azúcar.', whyMid: 'Unos {net} g de carbohidratos netos. Una subida moderada, no un pico.',
             whyHigh: 'Unos {net} g de carbohidratos netos. Suficiente para un pico.', whyDrink: 'Solo la bebida azucarada ya basta para un pico.',
             ing: 'Lo que vio el análisis', nut: 'Números de la foto', tip: 'Consejo', est: 'Estimación a partir de la foto, no una medición.',
             lowConf: 'La foto era difícil de leer, así que es una estimación aproximada.', none: 'No hay detalles de esta comida.', noneS: 'Se compartió antes de que los detalles se guardaran con las publicaciones.',

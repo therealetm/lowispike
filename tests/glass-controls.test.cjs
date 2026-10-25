@@ -1,6 +1,6 @@
 'use strict';
 /* Oct 16, 2026 (Emmanuel: "everything should conform"): the Today Day/Night (sun/moon) button and the For You inline-video
-   Close / Open on ... buttons wear the same blue liquid glass as the weather pill and Daily Quest. */
+   Close / Open on ... buttons (since 25 Oct 2026 the "Watch on ..." pill) wear the same blue liquid glass as the weather pill and Daily Quest. */
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
@@ -30,22 +30,24 @@ test('Today: the sun/moon button is the weather pill glass, round, 44 px, same p
     assert.ok(css.indexOf('html #tbTheme#tbTheme{') > css.indexOf('html[data-ui=light] #tbTheme{'));
 });
 
-test('For You: Close and Open on ... are blue liquid-glass pills, 44 px, readable', () => {
+/* 25 Oct 2026: the inline players are gone (a creator's video opens on their platform). Their Close / Open buttons are
+   replaced by one "Watch on ..." pill, which wears the same glass. */
+test('For You: "Watch on ..." wears the same blue liquid glass, 44px, readable in light mode', () => {
     const css = read('fy-embed.css');
-    const b = rule(css, '.fy-slide > .fye .fye-btn');
-    for (const t of ['min-height: 44px', 'min-width: 44px', 'border: 1.5px solid var(--wh-glass-rim', 'background: var(--wh-glass-wide', 'box-shadow: var(--wh-glass-sh', 'color: var(--wh-glass-ink',
-        'backdrop-filter: blur(10px) saturate(1.4)', 'font-weight: 700', 'rgba(8, 20, 48, .42)']) assert.ok(b.includes(t), t);
-    assert.ok(!css.includes('rgba(246, 251, 255, .96)'), 'the old white pill is gone');
-    assert.match(css, /html\[data-theme="light"\] \.fy-slide > \.fye \.fye-btn \{ background: var\(--wh-glass-wide\), rgba\(235, 243, 255, \.66\)/);
-    assert.match(css, /\.fye\.fye-narrow \.fye-x \{ width: 44px; padding: 0; \}/);
+    const b = rule(css, '.fy-meta .fy-out');
+    for (const t of ['var(--wh-glass-ink, #fff)', 'var(--wh-glass-rim', 'var(--wh-glass-wide', 'var(--wh-glass-sh', 'blur(10px)', 'min-height: 44px', 'border-radius: 22px'])
+        assert.ok(b.includes(t), t);
+    assert.ok(css.includes('html[data-theme="light"] .fy-meta .fy-out {'), 'light mode keeps it readable');
+    assert.ok(css.includes('.fy-meta .fy-out:focus-visible'), 'visible keyboard focus');
 });
 
-test('For You: the buttons get their room above the caption and never reach the like rail', () => {
-    const js = read('fy-embed.js');
-    assert.ok(js.includes("let bar = 52;"), '44 px buttons + 8 px gap reserved');
-    assert.ok(js.includes("barEl.style.width = Math.round(availW) + 'px'"), 'the bar spans the free column left of the rail');
-    assert.ok(js.includes("right = Math.max(12, sr.right - rr.left + 8)"), 'the free column ends before the rail');
-    assert.ok(js.includes("box.classList.add('fye-narrow')") && js.includes('bar = barEl.offsetHeight + 8'), 'two rows are compacted or reserved');
+test('For You: the creator card sits in the caption column, under the caption, never over the slide', () => {
+    const html = read('index.html');
+    const i = html.indexOf('function slideHTML'), slide = html.slice(i, html.indexOf('function sharePost', i));
+    assert.ok(slide.indexOf('<div class="fy-meta">') > 0 && slide.indexOf('<div class="fy-meta">') < slide.indexOf('fyOut(p, ex)'), 'inside the caption column');
+    const css = read('fy-embed.css');
+    assert.ok(!/position: (absolute|fixed)/.test(rule(css, '.fy-meta .fy-out')), 'in the flow');
+    assert.ok(rule(css, '.fy-meta .fy-love').includes('max-width: 34ch'));
 });
 
 test('For You: the Back button over the player wears the same glass', () => {

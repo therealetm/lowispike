@@ -99,15 +99,19 @@ test('Share -> Community also posts to For You when it passes; otherwise Communi
   assert.match(mj, /también salen en Para ti/);
 });
 
-test('the composer keeps posts that fail in My posts: not published, no XP, a gentle note', () => {
-  assert.match(html, /const fyOk = !window\.LowiForYou \|\| LowiForYou\.passes\(p\);\n  if \(p\.vis === "tribe" && !fyOk\) h\.toast\(LowiForYou\.note\("post"\)\);\n  else if \(p\.vis === "tribe" && window\.LOWI_CLOUD\) LOWI_CLOUD\.publish\(p\);/);
-  assert.match(html, /if \(fyOk && window\.LOWI_CLOUD\) LOWI_CLOUD\.publish\(p, u\.file\);/);
-  assert.match(html, /if \(p\.vis === "tribe" && fyOk\) LOWI_CLOUD\.publish\(p\); else LOWI_CLOUD\.unpublish\(p\.id\);/);
+/* 25 Oct 2026 (Emmanuel: "when someone, me or anyone, posts on the For You page, it's actually there"): the composer no
+   longer holds a member's own post back by the food rule. The full behaviour is in foryou-public.test.cjs. */
+test('the composer publishes a member\'s own For You post (no food gate) and tells the poster when it could not go', () => {
+  assert.ok(!/const fyOk = /.test(html), 'no food gate left in the composer, the video upload or the visibility switch');
+  assert.match(html, /if \(p\.vis === "tribe"\) \{\n    h\.award\("tribe-post", null, POST_XP\);\n    sharePost\(p\)\.then\(ok => \{ h\.toast\(window\.LowiForYou \? LowiForYou\.note\(ok \? "shared" : "post"\)/);
+  assert.match(html, /const shared = TRIBE\.sharePost \? TRIBE\.sharePost\(p, u\.file\)/);
+  assert.match(html, /p\.vis = "tribe"; sharePost\(p\)\.then\(ok => \{ h\.toast\(ok \? fn\("nowIn", "Now in For You"\) : fn\("post", "Saved in My posts\."\)\)/);
 });
 
 test('the rule is written down and every new file ships with the build', () => {
   const d = read('DECISIONS.md');
   assert.match(d, /For You only shows insulin-friendly items/);
+  assert.match(d, /A member's own post to For You always shows/);
   const sw = read('sw.js');
   for (const f of ['foryou.css', 'foryou-core.js', 'inspo-core.js', 'foryou.js']) {
     assert.ok(sw.includes('"' + f + '"'), f + ' in the offline list');

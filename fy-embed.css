@@ -1,58 +1,36 @@
-/* LOWiSPIKE For You: the inline video player (fy-embed.js). Misty-blue glass frame around the platform's own
-   player; it sits in the slide's free space, so the like rail and the caption stay usable beside it. */
-.fy-slide > .fye {
-    position: absolute; z-index: 3; left: 12px; top: 80px; width: calc(100% - 96px);
-    display: flex; flex-direction: column; gap: 8px;
-    opacity: 0; transform: translateY(8px) scale(.985); transition: opacity .24s ease, transform .28s cubic-bezier(.2, .8, .2, 1);
-}
-.fy-slide > .fye.fye-in { opacity: 1; transform: none; }
-.fy-slide > .fye .fye-frame {
-    position: relative; width: 100%; height: 220px; overflow: hidden; border-radius: 20px;
-    background: #02050c; border: 1.5px solid var(--wh-glass-rim, rgba(160, 220, 255, .55));
-    box-shadow: inset 0 0 18px rgba(140, 210, 255, .22), 0 16px 40px -14px rgba(0, 0, 0, .8), 0 0 0 6px rgba(80, 170, 255, .08);
-}
-.fy-slide > .fye .fye-if { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: #000; opacity: 0; transition: opacity .3s ease; }
-.fy-slide > .fye.fye-ready .fye-if { opacity: 1; }
-.fy-slide > .fye .fye-load {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px;
-    color: rgba(235, 245, 255, .86); font-size: 14px; font-weight: 600; text-align: center; line-height: 1.35;
-}
-.fy-slide > .fye.fye-ready .fye-load { display: none; }
-.fy-slide > .fye .fye-spin {
-    width: 18px; height: 18px; flex: none; border-radius: 50%; border: 2px solid rgba(160, 220, 255, .3); border-top-color: #9fd6ff;
-    animation: fye-spin .9s linear infinite;
-}
-.fy-slide > .fye.fye-fail .fye-spin { display: none; }
-@keyframes fye-spin { to { transform: rotate(360deg); } }
-/* Oct 16 (Emmanuel: "everything should conform"): Close and Open on ... are the app's blue liquid-glass pills, the same tokens as
-   the weather pill and Daily Quest (fill --wh-glass-wide, rim --wh-glass-rim, glow --wh-glass-sh, ink --wh-glass-ink, blur 10px),
-   44 px tall. A soft tint under the glass keeps the words readable over a bright video poster. fy-embed.js gives the bar the
-   free width between the left edge and the like rail (never past the rail) and reserves its 44 px + 8 px gap above the caption,
-   so one row fits even beside a narrow TikTok/Reels player; if it still can't fit, Close becomes a 44 px round icon button. */
-.fy-slide > .fye .fye-bar { display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; box-sizing: border-box; }
-.fy-slide > .fye .fye-btn {
-    position: relative; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: 22px;
-    font-family: inherit; font-size: 14px; font-weight: 700; line-height: 1; text-decoration: none; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent;
+/* LOWiSPIKE For You: a creator's video opens on their platform (fy-embed.js, 25 Oct 2026).
+   "Watch on YouTube" is the app's blue liquid-glass pill (fill --wh-glass-wide, rim --wh-glass-rim, glow --wh-glass-sh,
+   ink --wh-glass-ink, blur 10px), 44 px tall, with the creator's name under it and the support line below. */
+.fy-meta .fy-out {
+    position: relative; box-sizing: border-box; display: inline-flex; align-items: center; gap: 9px; min-height: 44px; max-width: 100%; margin-top: 8px; padding: 6px 14px 6px 12px; border-radius: 22px;
+    font-family: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
     color: var(--wh-glass-ink, #fff); border: 1.5px solid var(--wh-glass-rim, rgba(160, 220, 255, .55));
     background: var(--wh-glass-wide, linear-gradient(160deg, rgba(80, 170, 255, .14), rgba(28, 74, 150, .34))), rgba(8, 20, 48, .42);
     box-shadow: var(--wh-glass-sh, inset 0 0 18px rgba(140, 210, 255, .32), 0 8px 26px -12px rgba(40, 120, 255, .5));
     -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4); text-shadow: 0 1px 4px rgba(0, 20, 60, .45);
     transition: transform .15s ease;
 }
-html[data-theme="light"] .fy-slide > .fye .fye-btn { background: var(--wh-glass-wide), rgba(235, 243, 255, .66); text-shadow: none; }
-.fy-slide > .fye .fye-btn:active { transform: scale(.96); }
-.fy-slide > .fye .fye-btn svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-.fy-slide > .fye .fye-btn:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 2px; }
-.fy-slide > .fye .fye-btn::before { content: ""; position: absolute; inset: -2px; }
-/* last resort on a very narrow free column: Close keeps its label for screen readers (aria-label) and shows only the X */
-.fy-slide > .fye.fye-narrow .fye-x { width: 44px; padding: 0; }
-.fy-slide > .fye.fye-narrow .fye-x > span { display: none; }
-/* while a player is open, the big play button and the dimmed artwork step back */
-.fy-slide.fye-on > .fy-play { opacity: 0 !important; pointer-events: none !important; }
-.fy-slide.fye-on > .fy-bg { filter: blur(10px) brightness(.55); transform: scale(1.06); transition: filter .3s ease, transform .3s ease; }
-.fy-slide.fye-on > .fy-big { opacity: 0; }
-.fy-slide.fye-tall > .fy-meta { opacity: 0; pointer-events: none; transition: opacity .2s ease; }
-@media (prefers-reduced-motion: reduce) {
-    .fy-slide > .fye, .fy-slide > .fye .fye-if, .fy-slide.fye-on > .fy-bg, .fy-slide > .fye .fye-btn { transition: none !important; transform: none !important; }
-    .fy-slide > .fye .fye-spin { animation: none; border-top-color: rgba(160, 220, 255, .3); }
-}
+html[data-theme="light"] .fy-meta .fy-out { background: var(--wh-glass-wide), rgba(235, 243, 255, .66); text-shadow: none; }
+.fy-meta .fy-out:active { transform: scale(.97); }
+.fy-meta .fy-out:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 2px; }
+.fy-meta .fy-out svg { width: 18px; height: 18px; flex: none; }
+.fy-meta .fy-out > svg:last-child { width: 15px; height: 15px; opacity: .8; }
+.fy-meta .fy-out-t { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+.fy-meta .fy-out-t b { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fy-meta .fy-out-t small { font-size: 12px; font-weight: 600; opacity: .82; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fy-meta .fy-love { margin: 7px 0 0; font-size: 12.5px; line-height: 1.38; font-weight: 600; color: rgba(240, 248, 255, .9); text-shadow: 0 1px 5px rgba(0, 10, 30, .7); max-width: 34ch; }
+html[data-theme="light"] .fy-meta .fy-love { color: #fff; }
+/* the creator platform's colours and name behind the still, so a missing preview is never the plain placeholder */
+.fy-art.fy-art-ext { display: flex; align-items: center; justify-content: center; }
+.fy-art.fy-art-ext > .fy-art-pl { display: flex; flex-direction: column; align-items: center; gap: 6px; color: rgba(255, 255, 255, .9); font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+.fy-art.fy-art-ext > .fy-art-pl svg { width: 34%; max-width: 64px; min-width: 18px; height: auto; }
+.fy-art.fy-art-ext > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.fy-lth .fy-art.fy-art-ext > .fy-art-pl b { display: none; }
+/* My posts: where each post is, and the one-tap share for posts the old food rule kept back */
+.fy-where.held { color: #ffcf6e; font-weight: 700; }
+html[data-theme="light"] .fy-where.held { color: #9a5b00; }
+.fy-held { display: flex; flex-direction: column; gap: 10px; margin: 0 0 12px; padding: 12px 14px; border-radius: 16px; border: 1.5px solid var(--wh-glass-rim, rgba(160, 220, 255, .55)); background: var(--wh-glass-wide, rgba(80, 170, 255, .12)); }
+.fy-held p { margin: 0; line-height: 1.4; }
+.fy-held .btn { align-self: flex-start; min-height: 44px; }
+.fy-held-why { margin: 0 0 10px; line-height: 1.4; }
+@media (prefers-reduced-motion: reduce) { .fy-meta .fy-out { transition: none; } .fy-meta .fy-out:active { transform: none; } }

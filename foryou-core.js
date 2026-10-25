@@ -9,7 +9,15 @@
  *   - rec: a Recipe Book recipe, by its own verdict (r: "ja" -> low, "selten" -> mid, "nein" -> high).
  * Only "low" (the app's "Low spike" / "No spike") passes. An item that carries none of these (a plain link, a video, a
  * text, a crowd "Just ate" post) has no verdict and does not show. The inspiration bot's slides carry a Recipe Book recipe
- * and pass the same rule; nothing gets a free pass. */
+ * and pass the same rule; nothing gets a free pass.
+ *
+ * 25 Oct 2026, Emmanuel (voice, 10:02): "I post stuff to the For You page and it automatically goes to only for you ...
+ * when someone, me or anyone, posts on the For You page, it's actually there." and "if it's a video from someone else, it
+ * shouldn't play in our platform. It should take them to their platform ... We're a supportive tribe."
+ * So (DECISIONS.md, 25 Oct 2026) the rule above now holds for what the APP adds on its own (the inspiration bot, the crowd
+ * accounts, a meal shared to Community that also lands in For You). A real member's own post to For You always shows:
+ * shows(p). A post that is kept back is labelled and the poster can share it from My posts (held(p)). Videos from
+ * another platform never play inside LOWiSPIKE: external(url) names the creator's platform, the tap opens the original. */
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -41,10 +49,10 @@
   const passes = (p, ctx) => verdict(p, ctx) === 'low';
   const filter = (list, ctx) => (Array.isArray(list) ? list : []).filter(p => passes(p, ctx));
 
-  /* The For You feed: posts that pass, plus the bot's slides (bot posts pass the same rule), newest first, no duplicates. */
+  /* The For You feed: members' posts (shows, 25 Oct), plus the bot's slides (bot posts pass the insulin rule), newest first, no duplicates. */
   function merge(list, bot, ctx) {
     const seen = new Set(), out = [];
-    for (const p of (bot || []).concat(list || [])) { if (!p || !p.id || seen.has(p.id)) continue; seen.add(p.id); if (passes(p, ctx)) out.push(p); }
+    for (const p of (bot || []).concat(list || [])) { if (!p || !p.id || seen.has(p.id)) continue; seen.add(p.id); if (shows(p, ctx)) out.push(p); }
     return out.sort((a, b) => (+b.ts || 0) - (+a.ts || 0));
   }
 
@@ -67,20 +75,128 @@
     return '';
   }
 
+  /* ---------- 25 Oct 2026: what For You shows ----------
+   * ctx may add: botAccount(p) -> true for the app's own crowd/bot accounts (LowiBotAccounts), hidden(p) -> true for
+   * accounts the app keeps out (LowiHiddenAccounts), inCloud(id) -> true when the post is in the shared posts table. */
+  /* An own post the member meant for For You that is not in it: publishing failed, or it was kept back by the old rule
+   * (before 25 Oct only low-spike items were published; those posts carry none of the new pub / pend / fail marks). */
+  function held(p, ctx) {
+    ctx = ctx || {};
+    if (!p || p.vis !== 'tribe' || p.cloud || p.bot) return false;
+    if (p.pub) return false;
+    if (p.fail) return true;
+    if (p.pend) return false;
+    if (ctx.inCloud && p.id && ctx.inCloud(p.id)) return false;
+    return verdict(p, ctx) !== 'low';
+  }
+  function shows(p, ctx) {
+    ctx = ctx || {};
+    if (!p || typeof p !== 'object' || !p.id) return false;
+    if (p.bot) return passes(p, ctx);
+    if (ctx.hidden && ctx.hidden(p)) return false;
+    if (ctx.botAccount && ctx.botAccount(p)) return passes(p, ctx);
+    if (p.me) return p.vis !== 'me' && !held(p, ctx);
+    if (p.uid) return true; /* a real member's post from the shared table */
+    return passes(p, ctx); /* no known author (old samples, seeded rows): the insulin rule */
+  }
+
+  /* ---------- videos from other platforms open there, never here ---------- */
+  const PLAT = [
+    ['youtube', 'YouTube', /^(?:[\w-]+\.)?(?:youtube\.com|youtu\.be|youtube-nocookie\.com)$/i],
+    ['tiktok', 'TikTok', /^(?:[\w-]+\.)?tiktok\.com$/i],
+    ['instagram', 'Instagram', /^(?:[\w-]+\.)?(?:instagram\.com|instagr\.am)$/i],
+    ['vimeo', 'Vimeo', /^(?:[\w-]+\.)?vimeo\.com$/i],
+    ['facebook', 'Facebook', /^(?:[\w-]+\.)?(?:facebook\.com|fb\.watch)$/i],
+    ['x', 'X', /^(?:[\w-]+\.)?(?:x\.com|twitter\.com)$/i],
+    ['twitch', 'Twitch', /^(?:[\w-]+\.)?twitch\.tv$/i],
+    ['pinterest', 'Pinterest', /^(?:[\w-]+\.)?(?:pinterest\.[a-z.]+|pin\.it)$/i],
+    ['threads', 'Threads', /^(?:[\w-]+\.)?threads\.(?:net|com)$/i],
+    ['snapchat', 'Snapchat', /^(?:[\w-]+\.)?snapchat\.com$/i]
+  ];
+  function httpUrl(u) {
+    try { const x = new URL(String(u || '').trim()); return /^https?:$/.test(x.protocol) && x.hostname ? x : null; } catch (e) { return null; }
+  }
+  /* {plat, name, url} for a link on a creator platform (the url is the original, http(s) only), else null */
+  function external(url) {
+    const x = httpUrl(url); if (!x) return null;
+    const h = x.hostname.toLowerCase();
+    for (const [plat, name, re] of PLAT) if (re.test(h)) return { plat, name, url: x.href };
+    return null;
+  }
+  function ytId(url) {
+    const x = httpUrl(url); if (!x) return '';
+    const h = x.hostname.replace(/^(www|m|music)\./i, '').toLowerCase(); let id = '';
+    if (h === 'youtu.be') id = x.pathname.slice(1).split('/')[0];
+    else if (/youtube(-nocookie)?\.com$/.test(h)) { const m = /^\/(shorts|embed|live|v)\/([\w-]{11})/.exec(x.pathname); id = m ? m[2] : (x.searchParams.get('v') || ''); }
+    return /^[\w-]{11}$/.test(id) ? id : '';
+  }
+  /* the picture for a link post: YouTube's own still (stable, works for everyone), else the https preview the link gave */
+  function thumbOf(p) {
+    if (!p || !p.url) return '';
+    const id = ytId(p.url); if (id) return 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg';
+    const t = p.meta && typeof p.meta.thumb === 'string' ? p.meta.thumb : '';
+    return /^https:\/\//.test(t) ? t : '';
+  }
+  /* the creator's name as the link preview gave it ("@handle" or the channel), else '' */
+  function creatorOf(p) {
+    const m = p && p.meta && typeof p.meta === 'object' ? p.meta : {};
+    return str(m.author || m.handle || '', 60);
+  }
+
   const NOTE = {
     both: ['Shared to Community and For You', 'In der Community und in Für dich geteilt', 'Compartida en la Comunidad y en Para ti'],
     only: ['Shared to Community. For You only shows low-spike meals, so this one stays in Community.',
       'In der Community geteilt. Für dich zeigt nur Mahlzeiten mit wenig Spike, darum bleibt diese in der Community.',
       'Compartida en la Comunidad. Para ti solo muestra comidas de pico bajo, así que esta se queda en la Comunidad.'],
-    post: ['Saved in My posts. For You only shows insulin-friendly food: a low-spike meal photo or a Recipe Book recipe.',
-      'In Meine Posts gespeichert. Für dich zeigt nur insulinfreundliches Essen: ein Mahlzeitfoto mit wenig Spike oder ein Rezept aus dem Rezeptbuch.',
-      'Guardado en Mis publicaciones. Para ti solo muestra comida amigable con la insulina: una foto de comida de pico bajo o una receta del recetario.'],
+    post: ['Saved in My posts, but it could not reach For You yet (no connection). It tries again by itself, or tap ··· and Share to For You.',
+      'In Meine Posts gespeichert, aber noch nicht in Für dich (keine Verbindung). Es versucht es von selbst noch einmal, oder tippe auf ··· und In Für dich teilen.',
+      'Guardado en Mis publicaciones, pero aún no llegó a Para ti (sin conexión). Lo intenta de nuevo solo, o toca ··· y Compartir en Para ti.'],
+    shared: ['Posted. It\'s in For You for everyone.', 'Gepostet. Es ist jetzt für alle in Für dich.', 'Publicado. Ya está en Para ti para todos.'],
+    nowIn: ['Now in For You', 'Jetzt in Für dich', 'Ya está en Para ti'],
+    onlyNow: ['Now only visible to you', 'Jetzt nur für dich sichtbar', 'Ahora solo lo ves tú'],
+    inFy: ['In For You', 'In Für dich', 'En Para ti'],
+    onlyYou: ['Only you', 'Nur du', 'Solo tú'],
+    sending: ['Sharing…', 'Wird geteilt…', 'Compartiendo…'],
+    heldTag: ['Not in For You yet', 'Noch nicht in Für dich', 'Aún no está en Para ti'],
+    shareNow: ['Share to For You', 'In Für dich teilen', 'Compartir en Para ti'],
+    onlyMe: ['Only show it to me', 'Nur mir zeigen', 'Mostrármelo solo a mí'],
+    heldWhy: ['{n} of your posts are not in For You yet. Until today For You only took low-spike meals, so they stayed private. Want them in For You?',
+      '{n} deiner Posts sind noch nicht in Für dich. Bis heute nahm Für dich nur Mahlzeiten mit wenig Spike, darum blieben sie privat. Sollen sie in Für dich?',
+      '{n} de tus publicaciones aún no están en Para ti. Hasta hoy Para ti solo aceptaba comidas de pico bajo, así que se quedaron privadas. ¿Las quieres en Para ti?'],
+    heldOne: ['This post is not in For You yet. Until today For You only took low-spike meals, so it stayed private. Want it in For You?',
+      'Dieser Post ist noch nicht in Für dich. Bis heute nahm Für dich nur Mahlzeiten mit wenig Spike, darum blieb er privat. Soll er in Für dich?',
+      'Esta publicación aún no está en Para ti. Hasta hoy Para ti solo aceptaba comidas de pico bajo, así que se quedó privada. ¿La quieres en Para ti?'],
+    shareAll: ['Share all {n} to For You', 'Alle {n} in Für dich teilen', 'Compartir las {n} en Para ti'],
+    sharedN: ['{n} posts are now in For You', '{n} Posts sind jetzt in Für dich', '{n} publicaciones ya están en Para ti'],
+    watchOn: ['Watch on {p}', 'Auf {p} ansehen', 'Ver en {p}'],
+    openOn: ['Open on {p}', 'Auf {p} öffnen', 'Abrir en {p}'],
+    byWho: ['by {who}', 'von {who}', 'de {who}'],
+    love: ['Show {who} some love: watch it on {p}, follow them and like the original. We\'re a supportive tribe.',
+      'Zeig {who} etwas Liebe: schau es auf {p}, folge und like das Original. Wir sind ein Tribe, der zusammenhält.',
+      'Dale amor a {who}: míralo en {p}, síguele y dale like al original. Somos una tribu que se apoya.'],
+    loveAnon: ['Show the creator some love: watch it on {p}, follow them and like the original. We\'re a supportive tribe.',
+      'Zeig dem Creator etwas Liebe: schau es auf {p}, folge und like das Original. Wir sind ein Tribe, der zusammenhält.',
+      'Dale amor a quien lo creó: míralo en {p}, síguele y dale like al original. Somos una tribu que se apoya.'],
+    opening: ['Opening on {p}. Follow and like the original, so the creator feels the love.',
+      'Öffnet auf {p}. Folge und like das Original, damit der Creator die Liebe spürt.',
+      'Se abre en {p}. Sigue y dale like al original, para que quien lo creó sienta el amor.'],
     foot: ['Only this meal is shared: the photo, its name and the spike rating. Low-spike meals also show in For You. Never your weight or other health data.',
       'Geteilt wird nur diese Mahlzeit: das Foto, ihr Name und die Spike-Einschätzung. Mahlzeiten mit wenig Spike erscheinen auch in Für dich. Nie dein Gewicht oder andere Gesundheitsdaten.',
       'Solo se comparte esta comida: la foto, su nombre y la estimación del pico. Las comidas de pico bajo también salen en Para ti. Nunca tu peso ni otros datos de salud.'],
     badge: ['Low spike', 'Wenig Spike', 'Pico bajo']
   };
-  function note(key, lang) { const i = ['en', 'de', 'es'].indexOf(String(lang || 'en').slice(0, 2).toLowerCase()); const a = NOTE[key] || []; return a[i < 0 ? 0 : i] || a[0] || ''; }
+  function note(key, lang, vars) {
+    const i = ['en', 'de', 'es'].indexOf(String(lang || 'en').slice(0, 2).toLowerCase()); const a = NOTE[key] || [];
+    let t = a[i < 0 ? 0 : i] || a[0] || '';
+    if (vars) t = t.replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? String(vars[k]) : m));
+    return t;
+  }
+  /* the support line under a creator's video: their name when the link gave one, else "the creator" */
+  function love(p, lang) {
+    const e = external(p && p.url); if (!e) return '';
+    const who = creatorOf(p);
+    return note(who ? 'love' : 'loveAnon', lang, { who, p: e.name });
+  }
 
-  return { level, recipeLevel, verdict, passes, filter, merge, sharePost, srcOfRow, NOTE, note };
+  return { level, recipeLevel, verdict, passes, filter, merge, sharePost, srcOfRow, NOTE, note, held, shows, external, ytId, thumbOf, creatorOf, love };
 });

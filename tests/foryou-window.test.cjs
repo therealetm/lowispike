@@ -98,9 +98,9 @@ test('the window keeps Cook on screen and uses the blue liquid glass; posts swip
     assert.match(css, /prefers-reduced-motion: reduce\) \{ #tab-shelf \.nm-layer-fy\.fyw \{ animation: none; \}/);
 });
 
-test('the inline video player ignores the notch inside the window and Chat on a post goes to the Community chat', () => {
-    const emb = read('fy-embed.js');
-    assert.match(emb, /classList\.contains\('fyw'\)\) \|\| slide\.closest\('\.rm-fy'\) \? 48 /);
+test('no in-app player sits under the notch (25 Oct: other platforms\' videos open there) and Chat on a post goes to the Community chat', () => {
+    const emb = read('fy-embed.js').replace(/\/\*[\s\S]*?\*\//g, '');
+    assert.ok(!/iframe|createElement/.test(emb), 'a creator\'s video is never played inside the window');
     const js = read('nav-moves.js');
     assert.match(js, /closest\('\.nm-layer-fy \[data-tr="comment"\], \.rm-fy \[data-tr="comment"\]'\)/);
     assert.match(js, /go\('foryou'\); setTimeout\(\(\) => \{ try \{ W\.cmComment\(who\);/);

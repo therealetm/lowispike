@@ -1,6 +1,6 @@
 /* LOWiSPIKE For You glue (browser). Rule and data are pure in foryou-core.js and inspo-core.js; this file wires them into
  * the For You feed (index.html feed()/slideHTML), the composer (doPost) and Share -> Community (meal-journal.js).
- *  - feed(list): the For You list, filtered by the insulin-friendly rule, plus the inspiration bot's daily slides.
+ *  - feed(list): the For You list (25 Oct: every real member's post; the app's own bot/crowd posts keep the insulin-friendly rule), plus the inspiration bot's daily slides.
  *  - slideHTML(p, env): the bot's slide (no like/chat/menu: there is nobody to like or chat with; Save and Share stay).
  *  - fromCommunityShare({row,name,lvl,caption}): a meal shared to Community also posts to For You when it passes.
  * The bot never posts to Chat, never appears in People, never pushes. */
@@ -15,7 +15,11 @@
   function foodImg(id) { try { return typeof FOOD_IMG !== 'undefined' && FOOD_IMG[id] ? FOOD_IMG[id] : ''; } catch (e) { return ''; } } // eslint-disable-line no-undef
   const ctx = {
     meal(m) { try { const S = root.LowiMealSnap; const c = S && S.clean ? S.clean(m) : null; return c && c.bs || ''; } catch (e) { return ''; } },
-    recipe(id) { return recipes().find(r => r && r.id === id) || null; }
+    recipe(id) { return recipes().find(r => r && r.id === id) || null; },
+    /* 25 Oct: the app's own crowd/bot accounts keep the insulin rule; hidden test accounts never show; a real member's post shows */
+    botAccount(p) { try { const B = root.LowiBotAccounts; return !!(B && p && !p.me && p.uid && B.isBot(p)); } catch (e) { return false; } },
+    hidden(p) { try { const Hd = root.LowiHiddenAccounts; return !!(Hd && p && !p.me && p.uid && Hd.isHidden(p.uid)); } catch (e) { return false; } },
+    inCloud(id) { try { const CL = root.LOWI_CLOUD; return !!(CL && CL.live && CL.live() && CL.post && CL.post(id)); } catch (e) { return false; } }
   };
 
   let botCache = { k: '', list: [] };
@@ -82,7 +86,12 @@
     } catch (e) { return { ok: false, text: C.note('only', l) }; }
     return { ok: true, post: p, text: C.note('both', l) };
   }
-  const note = k => C.note(k, lang());
+  const note = (k, vars) => C.note(k, lang(), vars);
+  const held = p => C.held(p, ctx);
+  const shows = p => C.shows(p, ctx);
+  const love = p => C.love(p, lang());
+  /* the For You list re-checks when the server's bot list arrives (a crowd account's post then follows the insulin rule) */
+  try { root.addEventListener && root.addEventListener('lowi-bots', () => { try { const T = root.TRIBE; if (T && T.renderForYou && doc().getElementById('fyFeed')) T.renderForYou(); } catch (e) { /* not on screen */ } }); } catch (e) { /* no window */ }
 
-  root.LowiForYou = { feed, botPosts, botPost, verdict, passes, slideHTML, fromCommunityShare, note, ctx };
+  root.LowiForYou = { feed, botPosts, botPost, verdict, passes, held, shows, love, external: C.external, thumbOf: C.thumbOf, creatorOf: C.creatorOf, slideHTML, fromCommunityShare, note, ctx };
 })(typeof window !== 'undefined' ? window : this);

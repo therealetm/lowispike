@@ -4495,8 +4495,16 @@ function fyBg(p, thumb){
   const k = FY_IMG[p.id];
   if (k && k.indexOf("i-") === 0) return '<div class="fy-bg mv-ms-img ' + k + '"></div>';
   if (k && typeof FOOD_IMG !== "undefined" && FOOD_IMG[k]) return '<img class="fy-bg" src="' + FOOD_IMG[k] + '" alt="" decoding="async">';
-  const a = p.art || ["✨", 40, 280];
-  return '<div class="fy-bg fy-art" style="--h1:' + a[1] + ';--h2:' + a[2] + '">' + (p.meta && p.meta.thumb ? '<img src="' + esc(p.meta.thumb) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">' : "") + '</div>';
+  /* 25 Oct: a creator's video shows its real still (YouTube's own picture, else the link's preview) over that platform's colours, never the plain placeholder */
+  const FYX = window.LowiForYou, ex = p.url && FYX ? FYX.external(p.url) : null, th = FYX ? FYX.thumbOf(p) : (p.meta && p.meta.thumb) || "";
+  const a = p.art || (ex && FY_PLAT_ART[ex.plat]) || ["✨", 40, 280];
+  return '<div class="fy-bg fy-art' + (ex ? ' fy-art-ext' : '') + '" style="--h1:' + a[1] + ';--h2:' + a[2] + '">' + (ex ? '<span class="fy-art-pl" aria-hidden="true">' + (PICON[ex.plat] || PICON.web) + '<b>' + esc(ex.name) + '</b></span>' : '') + (th ? '<img src="' + esc(th) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">' : "") + '</div>';
+}
+const FY_PLAT_ART = {youtube:["▶", 0, 350], tiktok:["▶", 178, 335], instagram:["▶", 330, 30], vimeo:["▶", 195, 215], facebook:["▶", 215, 230], x:["▶", 220, 250]};
+/* 25 Oct (Emmanuel): a video from someone else never plays here. The card names the creator and their platform, opens the original there, and asks the tribe to follow and like it. */
+function fyOut(p, ex){
+  const FYX = window.LowiForYou, who = FYX.creatorOf(p);
+  return '<button class="fy-out" data-tr="open" data-id="' + esc(p.id) + '" data-plat="' + ex.plat + '">' + (PICON[ex.plat] || PICON.web) + '<span class="fy-out-t"><b>' + esc(FYX.note("watchOn", {p: ex.name})) + '</b>' + (who ? '<small>' + esc(FYX.note("byWho", {who})) + '</small>' : '') + '</span>' + IC.ext + '</button><p class="fy-love">' + esc(FYX.love(p)) + '</p>';
 }
 /* button sweep 16:20: For You sits in a data-noi18n pane (posts stay as written), so its own buttons and end card ask LowiLang for their words */
 const fyT = s => { try { return window.LowiLang && LowiLang.t ? LowiLang.t(s) : s; } catch (e) { return s; } };
@@ -4504,9 +4512,10 @@ function slideHTML(p){
   if (p.bot && window.LowiForYou) return LowiForYou.slideHTML(p, {bg: fyBg(p), saved: !!(T.saved || {})[p.id], FIC, chip: p.rec && window.FYV ? FYV.recChip(p) : ""});
   const h = H(), u = h.user(), d = describe(p.meta), liked = !!T.likes[p.id], saved = !!(T.saved || {})[p.id], n = (p.likes || 0) + (liked ? 1 : 0), pl = PLAT[p.plat] || PLAT.web;
   const name = p.me ? (u.name || "You") : p.who, cap = p.cap || d.line || "", textOnly = !p.url && !p.photo && !p.vid && !p.rec && !FY_IMG[p.id];
+  const ex = p.url && window.LowiForYou ? LowiForYou.external(p.url) : null, watch = ex ? LowiForYou.note("watchOn", {p: ex.name}) : pl.open;
   return '<section class="fy-slide' + (textOnly ? " fy-text" : "") + (p.vid ? " fyv-slide" : "") + '" data-id="' + p.id + '">' + fyBg(p) + '<div class="fy-shade"></div>' +
     (textOnly ? '<div class="fy-big">' + esc(cap) + '</div>' : "") +
-    (p.url && p.plat !== "web" ? '<button class="fy-play" data-tr="open" data-id="' + p.id + '" aria-label="' + pl.open + '">' + IC.play + '</button>' : "") +
+    (p.url && (p.plat !== "web" || ex) ? '<button class="fy-play' + (ex ? ' fy-play-out' : '') + '" data-tr="open" data-id="' + p.id + '" aria-label="' + esc(watch) + '">' + IC.play + '</button>' : "") +
     '<div class="fy-rail">' +
       '<button class="fy-act' + (liked ? " on" : "") + '" data-tr="like" data-id="' + p.id + '" aria-label="' + fyT("Like") + '">' + FIC.heart + '<span class="num">' + n + '</span></button>' +
       '<button class="fy-act" data-tr="comment" data-id="' + p.id + '" aria-label="' + fyT("Comment") + '">' + FIC.chat + '<span>' + fyT("Chat") + '</span></button>' +
@@ -4518,11 +4527,31 @@ function slideHTML(p){
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
       (p.meta && p.meta.meal && window.LowiMealSnap ? LowiMealSnap.cardHTML(p.meta.meal, {compact:true, noName:!!cap && cap === p.meta.meal.name}) : "") +
       (p.rec && window.FYV ? FYV.recChip(p) : "") +
-      (p.url ? '<button class="fy-src" data-tr="open" data-id="' + p.id + '">' + PICON[p.plat || "web"] + '<span>' + esc(byline(p.meta, p.plat || "web")) + '</span></button>' : "") +
+      (ex ? fyOut(p, ex) : p.url ? '<button class="fy-src" data-tr="open" data-id="' + p.id + '">' + PICON[p.plat || "web"] + '<span>' + esc(byline(p.meta, p.plat || "web")) + '</span></button>' : "") +
     '</div></section>';
 }
+/* 25 Oct: a post meant for For You goes to the shared table. pend while it goes, pub once it landed, fail when it did not;
+ * a failed or interrupted one is tried again by itself the next time For You opens while online. */
+function sharePost(p, file){
+  if (!p || p.vis !== "tribe") return Promise.resolve(false);
+  p.pend = 1; delete p.fail; save();
+  const CL = window.LOWI_CLOUD;
+  return Promise.resolve(CL && CL.publish ? CL.publish(p, file) : false).catch(() => false).then(ok => {
+    const q = (T.posts || []).find(x => x.id === p.id) || p; delete q.pend;
+    if (ok) { q.pub = Date.now(); delete q.fail; } else q.fail = 1;
+    save(); return !!ok;
+  });
+}
+let fyRetryAt = 0;
+function retryShares(){
+  const CL = window.LOWI_CLOUD; if (!CL || !CL.live || !CL.live() || Date.now() - fyRetryAt < 60000) return;
+  const todo = (T.posts || []).filter(p => p.vis === "tribe" && !p.pub && (p.fail || p.pend));
+  if (!todo.length) return; fyRetryAt = Date.now();
+  todo.reduce((pr, p) => pr.then(() => sharePost(p)), Promise.resolve()).then(() => { if ($("#fyFeed")) renderForYou(); });
+}
+function heldPosts(){ return (T.posts || []).filter(p => window.LowiForYou && LowiForYou.held(Object.assign({}, p, {me: true}))); }
 function renderForYou(el){
-  el = el || $("#cmFeed"); if (!el) return; load(); const list = feed();
+  el = el || $("#cmFeed"); if (!el) return; load(); retryShares(); const list = feed();
   const prev = $("#fyFeed"), y = prev ? prev.scrollTop : 0;
   el.innerHTML = (window.FYV ? FYV.fabHTML() : "") + '<div class="fy-feed" id="fyFeed">' + list.map(slideHTML).join("") +
     '<section class="fy-slide fy-end"><div class="fy-endin"><b>' + esc(fyT("That's everyone")) + '</b><span class="small muted">' + esc(fyT("Newest first. No algorithm.")) + '</span><button class="btn primary sm" data-r3f="post" data-sfx="open">' + esc(fyT("Post something")) + '</button></div></section></div>';
@@ -4537,8 +4566,12 @@ function profileHTML(){ load(); const mine = T.posts.length, sv = Object.keys(T.
     '<div class="tiny dim" style="margin-top:6px">' + (window.LOWI_CLOUD && LOWI_CLOUD.live() ? 'For You and Chat are live: real members, shared.' : 'For You and Chat show sample members until launch.') + '</div></div>'; }
 function listSheet(kind){ const h = H(); load(); const all = DEMO.concat(T.posts.map(p => Object.assign({me:true}, p)), window.LowiForYou ? LowiForYou.botPosts() : []);
   const list = (kind === "mine" ? all.filter(p => p.me) : all.filter(p => (T.saved || {})[p.id])).sort((a, b) => b.ts - a.ts);
-  h.openSheet('<div class="h2" style="margin-bottom:10px">' + (kind === "mine" ? "My posts" : "Saved") + '</div>' + (list.length ? list.map(p => { const d = describe(p.meta), rr = p.rec && postRecipe(p.rec), cap = p.cap || d.line || (rr && rr.n) || PLAT[p.plat || "web"].n;
-    return '<div class="fy-lrow"><div class="fy-lth">' + fyBg(p, true) + '</div><div style="flex:1;min-width:0"><div class="small fy-lcap">' + esc(cap) + '</div><div class="tiny dim">' + (p.me ? (p.vid ? "Video · " : "") + (p.vis === "tribe" && (!window.LowiForYou || LowiForYou.passes(p)) ? "In For You" : "Only you") : esc(p.who)) + " · " + ago(p.ts) + '</div></div>' +
+  /* 25 Oct: each own post says where it is (In For You / Not in For You yet / Only you); posts the old food rule kept back can be shared in one tap */
+  const F = window.LowiForYou, fn = (k, en, v) => (F ? F.note(k, v) : en), held = kind === "mine" ? heldPosts() : [];
+  const where = p => p.vis !== "tribe" ? fn("onlyYou", "Only you") : (F && F.held(p)) ? fn("heldTag", "Not in For You yet") : p.pend ? fn("sending", "Sharing…") : fn("inFy", "In For You");
+  const banner = held.length ? '<div class="fy-held"><p class="small">' + esc(held.length === 1 ? fn("heldOne", "") : fn("heldWhy", "", {n: held.length})) + '</p><button class="btn primary sm" data-tr="share-held">' + esc(held.length === 1 ? fn("shareNow", "Share to For You") : fn("shareAll", "Share all", {n: held.length})) + '</button></div>' : "";
+  h.openSheet('<div class="h2" style="margin-bottom:10px">' + (kind === "mine" ? "My posts" : "Saved") + '</div>' + banner + (list.length ? list.map(p => { const d = describe(p.meta), rr = p.rec && postRecipe(p.rec), cap = p.cap || d.line || (rr && rr.n) || PLAT[p.plat || "web"].n;
+    return '<div class="fy-lrow"><div class="fy-lth">' + fyBg(p, true) + '</div><div style="flex:1;min-width:0"><div class="small fy-lcap">' + esc(cap) + '</div><div class="tiny dim">' + (p.me ? (p.vid ? "Video · " : "") + '<span class="fy-where' + (p.vis === "tribe" && F && F.held(p) ? ' held' : '') + '">' + esc(where(p)) + '</span>' : esc(p.who)) + " · " + ago(p.ts) + '</div></div>' +
       (kind === "mine" ? '<button class="fy-lbtn" data-tr="post-menu" data-id="' + p.id + '" aria-label="More">' + IC.more + '</button>' : '<button class="fy-lbtn" data-tr="save" data-id="' + p.id + '" aria-label="Remove">' + FIC.save + '</button>') + '</div>'; }).join("")
     : '<div class="small muted">' + (kind === "mine" ? "Nothing yet. Your posts show up here." : "Tap Save on any post in For You.") + '</div>')); }
 
@@ -4648,19 +4681,23 @@ function doPost(btn){
   T.posts.unshift(p); if (T.posts.length > 80) T.posts.length = 80;
   if (p.vis !== "tribe") T.filter = "mine"; else if (T.filter === "orig" && !p.mine) T.filter = "all";
   save(); C = null; h.closeSheet(); showFeed();
-  /* For You only shows insulin-friendly items: a post without that verdict stays in My posts, is not published and earns no XP. */
-  const fyOk = !window.LowiForYou || LowiForYou.passes(p);
-  if (p.vis === "tribe" && !fyOk) h.toast(LowiForYou.note("post"));
-  else if (p.vis === "tribe" && window.LOWI_CLOUD) LOWI_CLOUD.publish(p);
-  if (p.vis === "tribe" && fyOk) { h.award("tribe-post", null, POST_XP); if (p.mine) setTimeout(() => h.toast("Live as a Tribe Original"), 2300); }
-  else if (p.vis !== "tribe") h.toast("Saved. Only you can see it.");
+  /* 25 Oct (Emmanuel): "when someone, me or anyone, posts on the For You page, it's actually there." A member's own post is
+   * never held back by the food rule; if it cannot reach the shared table the poster is told and it tries again by itself. */
+  if (p.vis === "tribe") {
+    h.award("tribe-post", null, POST_XP);
+    sharePost(p).then(ok => { h.toast(window.LowiForYou ? LowiForYou.note(ok ? "shared" : "post") : (ok ? "Posted." : "Saved in My posts.")); if (ok && p.mine) setTimeout(() => h.toast("Live as a Tribe Original"), 2300); if ($("#fyFeed")) renderForYou(); });
+  }
+  else h.toast("Saved. Only you can see it.");
   setTimeout(() => { const el = $('.fy-slide[data-id="' + p.id + '"]'), f = $("#fyFeed"); if (el && f) f.scrollTop = el.offsetTop; }, 220);
 }
 function postMenu(id){
   const h = H(), p = T.posts.map(x => Object.assign({me:true}, x)).find(x => x.id === id) || DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)); if (!p || !h) return;
   let b = '<button class="xbtn" data-act="close-sheet">' + h.icon.x + '</button><div class="sheetbody"><div class="tiny dim" style="margin-bottom:12px">' + (p.me ? "Your post" : esc(p.who) + "'s post") + '</div><div class="actions">';
   if (p.me) {
-    b += '<button class="actbtn" data-tr="toggle-vis" data-id="' + id + '">' + (p.vis === "tribe" ? "Only show it to me" : "Show it in For You") + '</button>';
+    /* 25 Oct: a post that is not in For You yet says why and offers to share it; only then the private switch */
+    const F = window.LowiForYou, hd = !!(F && F.held(p)), fn = (k, en) => (F ? F.note(k) : en);
+    if (hd) b += '<p class="small muted fy-held-why">' + esc(fn("heldOne", "")) + '</p><button class="actbtn" data-tr="toggle-vis" data-id="' + id + '">' + esc(fn("shareNow", "Share to For You")) + '</button><button class="actbtn" data-tr="vis-me" data-id="' + id + '">' + esc(fn("onlyMe", "Only show it to me")) + '</button>';
+    else b += '<button class="actbtn" data-tr="toggle-vis" data-id="' + id + '">' + esc(p.vis === "tribe" ? fn("onlyMe", "Only show it to me") : fn("shareNow", "Show it in For You")) + '</button>';
     if (p.url && PLAT[p.plat].mine) b += '<button class="actbtn" data-tr="toggle-mine" data-id="' + id + '">' + (p.mine ? "Remove the Tribe Original mark" : "Mark as my own video") + '</button>';
     b += '<button class="actbtn red" data-tr="del" data-id="' + id + '">' + (p.vid ? "Delete video" : "Delete post") + '</button>';
   } else {
@@ -4696,9 +4733,25 @@ document.addEventListener("click", e => {
     case "list-mine": listSheet("mine"); break;
     case "list-saved": listSheet("saved"); break;
     case "like": { if (T.likes[id]) delete T.likes[id]; else T.likes[id] = 1; save(); const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); b.classList.toggle("on", !!T.likes[id]); b.querySelector("span").textContent = ((p && p.likes) || 0) + (T.likes[id] ? 1 : 0); if (T.likes[id]) { b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); } if (window.LOWI_CLOUD) LOWI_CLOUD.like(id, !!T.likes[id]); break; }
-    case "open": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p || !p.url) break; if (p.demo) { h.toast("Sample post. Real videos play right here."); break; } window.open(p.url, "_blank", "noopener"); break; }
+    case "open": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p || !p.url) break; if (p.demo) { h.toast("Sample post. Real videos open on the creator's own page."); break; }
+      /* 25 Oct (Emmanuel): another platform's video never plays inside LOWiSPIKE; the original opens there, so the creator gets the view */
+      const ex = window.LowiForYou ? LowiForYou.external(p.url) : null, u = ex ? ex.url : p.url; if (!/^https?:\/\//i.test(u)) break;
+      window.open(u, "_blank", "noopener"); break; }
     case "post-menu": postMenu(id); break;
-    case "toggle-vis": { const p = T.posts.find(x => x.id === id); if (p) { p.vis = p.vis === "tribe" ? "me" : "tribe"; save(); const fyOk = !window.LowiForYou || LowiForYou.passes(p); h.toast(p.vis === "tribe" ? (fyOk ? "Now in For You" : LowiForYou.note("post")) : "Now only visible to you"); if (window.LOWI_CLOUD) { if (p.vis === "tribe" && fyOk) LOWI_CLOUD.publish(p); else LOWI_CLOUD.unpublish(p.id); } } h.closeSheet(); rerender(); break; }
+    case "toggle-vis": { const p = T.posts.find(x => x.id === id); const F = window.LowiForYou, fn = (k, en) => (F ? F.note(k) : en);
+      if (p) {
+        const hd = !!(F && F.held(Object.assign({}, p, {me: true})));
+        if (p.vis === "tribe" && !hd) { p.vis = "me"; delete p.pub; delete p.fail; delete p.pend; save(); h.toast(fn("onlyNow", "Now only visible to you")); if (window.LOWI_CLOUD) LOWI_CLOUD.unpublish(p.id); }
+        else { p.vis = "tribe"; sharePost(p).then(ok => { h.toast(ok ? fn("nowIn", "Now in For You") : fn("post", "Saved in My posts.")); rerender(); }); }
+      }
+      h.closeSheet(); rerender(); break; }
+    case "vis-me": { const p = T.posts.find(x => x.id === id); if (p) { p.vis = "me"; delete p.pub; delete p.fail; delete p.pend; save(); h.toast(window.LowiForYou ? LowiForYou.note("onlyNow") : "Now only visible to you"); if (window.LOWI_CLOUD) LOWI_CLOUD.unpublish(p.id); } h.closeSheet(); rerender(); break; }
+    case "share-held": { const list = heldPosts(), F = window.LowiForYou; if (!list.length) break; b.disabled = true;
+      list.forEach(p => { p.vis = "tribe"; });
+      list.reduce((pr, p) => pr.then(n => sharePost(p).then(ok => n + (ok ? 1 : 0))), Promise.resolve(0)).then(n => {
+        h.toast(n ? (F ? F.note("sharedN", {n}) : n + " posts are now in For You") : (F ? F.note("post") : "Saved in My posts."));
+        h.closeSheet(); listSheet("mine"); rerender(); });
+      break; }
     case "toggle-mine": { const p = T.posts.find(x => x.id === id); if (p) { p.mine = !p.mine; save(); if (window.LOWI_CLOUD && p.vis === "tribe") LOWI_CLOUD.publish(p); } h.closeSheet(); rerender(); break; }
     case "del": { const gone = T.posts.find(x => x.id === id); T.posts = T.posts.filter(x => x.id !== id); save(); if (window.LOWI_CLOUD) LOWI_CLOUD.unpublish(id); if (gone && gone.vid && window.FYV) FYV.remove(id); h.closeSheet(); rerender(); if (gone && gone.vid) h.toast("Video deleted from this phone"); break; }
     case "hide": T.hidden.push(id); save(); h.closeSheet(); rerender(); h.toast("Hidden for you"); break;
@@ -4735,6 +4788,8 @@ function showFeed(){ const h = H(); if (!h) return;
 window.TRIBE = {
   renderForYou, compose, showFeed, composeInto, setPhoto:ph => { if (C) { C.photo = ph || ""; C.meal = null; C.mealErr = ""; paintRest(); } } /* f2-photo */,
   /* Oct 19 meal photos (meal-photo.js): Snap food's "Also share to Community" attaches the read it already has */
+  sharePost /* 25 Oct: FYV videos publish through the same marks (pub / pend / fail) */,
+  openMine: () => listSheet("mine") /* My posts, for Community settings and checks */,
   setMeal:m => { if (C) { C.meal = m && window.LowiMealSnap ? LowiMealSnap.clean(m) : null; C.mealErr = ""; paintRest(); } },
   addPost:p => { load(); T.posts.unshift(p); while (T.posts.length > 80) { const x = T.posts.pop(); if (x && x.vid && window.FYV) FYV.remove(x.id); } try { localStorage.setItem(KEY, JSON.stringify(T)); return true; } catch(e){ T.posts.shift(); const h = H(); if (h) h.toast("Storage is full on this phone."); return false; } }, checkShareHash, profileHTML, shareRecipe,
   post:id => T.posts.map(x => Object.assign({me:true}, x)).find(x => x.id === id) || DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || (window.LowiForYou && LowiForYou.botPost(id)), imgKey:id => FY_IMG[id] || "", demoNames:() => DEMO.map(x => x.who),
@@ -4908,15 +4963,15 @@ async function doPost(btn){
   URLS.set(id, u.url); U = null;
   const p = {id, ts:Date.now(), plat:"", url:"", meta:null, vid:1, cap:(u.cap || "").trim().slice(0, 150), rec:u.rec || "", vis:"tribe", mine:true, poster:meta.poster || "", w:meta.w || 0, h:meta.h || 0, dur:meta.dur || 0};
   if (!TRIBE.addPost(p)) { delVid(id).catch(() => {}); return; }
-  const fyOk = !window.LowiForYou || LowiForYou.passes(p); /* For You only shows insulin-friendly items (a video with a Recipe Book recipe) */
-  if (fyOk && window.LOWI_CLOUD) LOWI_CLOUD.publish(p, u.file);
+  /* 25 Oct (Emmanuel): a member's own video always goes to For You (no food gate); TRIBE.sharePost marks it and retries if it could not go */
+  const shared = TRIBE.sharePost ? TRIBE.sharePost(p, u.file) : (window.LOWI_CLOUD ? LOWI_CLOUD.publish(p, u.file) : Promise.resolve(false));
   h.closeSheet();
   if (window.LowiNavMoves && TRIBE.showFeed) TRIBE.showFeed(); /* Oct 16: For You is a window in Cook */
   else { if (window.cmSetView) cmSetView("feed");
   if (h.tab() !== "foryou") h.go("foryou"); else if (window.cmSeg && $("#cmTrack")) { cmSeg("feed"); TRIBE.renderForYou(); } else TRIBE.renderForYou(); }
-  if (!fyOk) { setTimeout(() => h.toast(LowiForYou.note("post")), 160); return; }
   h.award("tribe-post", null, {amt:10, perDay:2, label:"Shared to For You"});
-  setTimeout(() => { const f = $("#fyFeed"); if (f) f.scrollTop = 0; h.toast("Live in your For You"); }, 160);
+  setTimeout(() => { const f = $("#fyFeed"); if (f) f.scrollTop = 0; }, 160);
+  Promise.resolve(shared).then(ok => { if (!ok && window.LowiForYou) setTimeout(() => h.toast(LowiForYou.note("post")), 400); });
 }
 function remove(id){ const u = URLS.get(id);
   $$('video.fyv-v[data-vid="' + id + '"]').forEach(v => { v.pause(); v.removeAttribute("src"); try { v.load(); } catch(e){} const sl = v.closest(".fy-slide"); if (sl) sl.remove(); });
@@ -16162,8 +16217,9 @@ function find(q){
   return p || {n:q.name || "Member", s:"", t:"", lv:1, streak:0, uid:q.uid || ""};
 }
 const xpOf = p => p.xp || (function(){ try { return levelStart(p.lv || 1); } catch(e){ return 0; } })();
-function detailsBits(p, o){ o = o || {}; const b = [], a = ageOf(p.bday);
-  if (a != null) b.push(String(a)); if (p.s) b.push(o.signName ? gl(p.s) + " " + p.s : gl(p.s)); if (p.t) b.push(p.t); if (p.w) b.push(p.w + " kg"); return b; }
+/* 25 Oct: no age next to a name, not even your own (birthday cards, 24 Oct: the year and the age are never shown) */
+function detailsBits(p, o){ o = o || {}; const b = [];
+  if (p.s) b.push(o.signName ? gl(p.s) + " " + p.s : gl(p.s)); if (p.t) b.push(p.t); if (p.w) b.push(p.w + " kg"); return b; }
 const who = p => ' data-r5="profile" data-who="' + esc(p.n) + '"' + (p.uid ? ' data-uid="' + esc(p.uid) + '"' : "") + (p.me ? ' data-me="1"' : "");
 
 /* ---------- the bubble: photo under water, inside a glass ball ---------- */

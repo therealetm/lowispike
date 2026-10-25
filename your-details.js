@@ -45,6 +45,8 @@
 
     /* ---- current values ---- */
     const loc = x => { try { return (W.LowiLang && LowiLang.t) ? LowiLang.t(x) : x; } catch (e) { return x; } };
+    /* Oct 25: own entries typed at "I want" / "Anything we should look out for?" (own-entries.js, S.health.own, this phone only) */
+    function ownOf(h) { try { return W.LowiOwnEntries ? W.LowiOwnEntries.read(h) : { goals: [], conds: [] }; } catch (e) { return { goals: [], conds: [] }; } }
     function tagLabel(k) { try { if (W.LowiTags && LowiTags.label) { const x = LowiTags.label(k); if (x) return loc(x); } const L = W.LowiTags, all = (L.goals || []).concat(L.conds || []), x = all.find(t => t[0] === k); return x ? loc(x[1]) : k; } catch (e) { return k; } }
     function isCond(k) { try { return !!(W.LowiTags && LowiTags.isCond && LowiTags.isCond(k)); } catch (e) { return false; } }
     function age(b) { const d = new Date(b + 'T12:00:00'); if (!b || isNaN(d)) return null; const n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) a--; return a; }
@@ -70,9 +72,9 @@
                 { id: 'bday', label: tr('bday'), val: bd },
                 { id: 'mbti', label: tr('mbti'), val: mbti() },
                 { id: 'gender', label: tr('gender'), val: /^[fmnx]$/.test(u.gender || '') ? tr(u.gender) : '' }]],
-            ['goals', [{ id: 'goals', label: tr('goalsRow'), val: goals.map(tagLabel).join(', ') }]],
+            ['goals', [{ id: 'goals', label: tr('goalsRow'), val: goals.map(tagLabel).concat(ownOf(h).goals).join(', ') }]],   /* Oct 25: own entries too */
             ['health', [
-                { id: 'conds', label: tr('conds'), val: (() => { const note = typeof h.condNote === 'string' ? h.condNote.trim() : ''; const list = conds.map(tagLabel); if (note) list.push(note); return list.length ? list.join(', ') : u.noCond ? tr('none') : ''; })() },  /* Oct 23: own typed note (on this phone only) */
+                { id: 'conds', label: tr('conds'), val: (() => { const note = typeof h.condNote === 'string' ? h.condNote.trim() : ''; const list = conds.map(tagLabel).concat(ownOf(h).conds); if (note) list.push(note); return list.length ? list.join(', ') : u.noCond ? tr('none') : ''; })() },  /* Oct 23: own typed note (on this phone only) */
                 { id: 'bp', label: tr('bp'), val: h.bpOff ? tr('off') : tr('on') },
                 { id: 'private', label: tr('priv'), val: tr('privSub'), sub: true }]],
             ['account', [

@@ -10672,6 +10672,8 @@ html[data-ui=light] #pfBtn .av,html[data-ui=light] .av{background:#eef1f7;color:
 html[data-ui=light] .td-window,html[data-ui=light] .camb{color:#8a6420}
 html[data-ui=light] .badge.ja{color:#2f7a45}
 </style>
+<!-- Oct 25: own entries at "I want" and "Anything we should look out for?" (own-entries.js), loaded before the setup code -->
+<script src="own-entries.js?v=20261025-094915"></script>
 <script>
 /* ===== LOWiSPIKE round 2 · core helpers, theme, small fixes ===== */
 (function(){
@@ -11069,10 +11071,42 @@ function condNoteHTML(id, note){
   return '<label class="r2-fl r2-condnote"><span>Something else? Type it here</span><input id="' + id + '" type="text" maxlength="' + CONDNOTE_MAX + '" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="e.g. sickle cell disease" value="' + esc(note || "") + '"></label>' +
     '<div class="r2-obhint r2-condnote-h">Stays on this phone. A note for you, not medical advice.</div>';
 }
+/* Oct 25 (Eman): people can type their own option at "I want" and at "Anything we should look out for?" and add it with
+   Add / Hinzufügen / Añadir (own-entries.js). Own entries are chips with an x, stored in S.health.own (this phone only).
+   This is NOT the Oct 23 condition note line below (condNote), which stays as it is. */
+const ownLang = () => { try { return (window.LowiLang && LowiLang.get && LowiLang.get()) || "en"; } catch(e){ return "en"; } };
+function ownChips(kind, arr){ const OE = window.LowiOwnEntries; return OE ? OE.list(arr).map(x => OE.chipHTML(kind, x, ownLang())).join("") : ""; }
+function ownRow(kind, id){ const OE = window.LowiOwnEntries; return OE ? OE.rowHTML(kind, ownLang(), id) : ""; }
+/* condBlock serves setup and Edit profile: setup's own list lives in ob, Edit profile's in the saved S.health */
+function ownCondsFor(noteId){ const OE = window.LowiOwnEntries; if (!OE) return []; if (noteId === "r2obCondNote" && ob) return OE.list(ob.ownConds); return OE.read(R2.S().health).conds; }
+/* the own chips sit in the chip list right before the Add row */
+function ownRead(id){ const i = $("#" + id), w = i && i.closest(".r2-ownadd"), box = w && w.previousElementSibling; return box ? Array.prototype.map.call(box.querySelectorAll("[data-r2own-rm]"), b => b.getAttribute("data-own")) : null; }
+function ownSync(id){ if (!ob || String(id || "").indexOf("r2ob") !== 0) return; const g = ownRead("r2obOwnG"), c = ownRead("r2obOwnC"); if (g) ob.ownGoals = g; if (c) ob.ownConds = c; }
+function ownAdd(inp){
+  const OE = window.LowiOwnEntries; if (!OE || !inp) return false;
+  const w = inp.closest(".r2-ownadd"), box = w && w.previousElementSibling, kind = inp.getAttribute("data-r2own-in"), msg = w && w.nextElementSibling;
+  const say = t => { if (msg && msg.classList.contains("r2-ownmsg")) msg.textContent = t || ""; };
+  const txt = OE.clean(inp.value); if (!txt || !box) { try { inp.focus(); } catch(e){} return false; }
+  /* typed one of the listed options: pick that chip instead of adding a copy */
+  const same = Array.prototype.find.call(box.querySelectorAll("[data-r2tag],[data-r2etag]"), b => b.textContent.trim().toLowerCase() === txt.toLowerCase());
+  if (same) { if (!same.classList.contains("on")) same.click(); inp.value = ""; say(""); return true; }
+  const r = OE.add(Array.prototype.map.call(box.querySelectorAll("[data-r2own-rm]"), b => b.getAttribute("data-own")), txt);
+  if (r.why === "dup") { inp.value = ""; say(""); return true; }
+  if (r.why === "full") { say(OE.tx("full", ownLang())); return false; }
+  const tmp = document.createElement("div"); tmp.innerHTML = OE.chipHTML(kind, r.added, ownLang());
+  const none = box.querySelector(".r2-none"); box.insertBefore(tmp.firstChild, kind === "conds" ? none : null);
+  if (kind === "conds" && none) { none.classList.remove("on"); none.setAttribute("aria-pressed", "false"); if (ob && inp.id.indexOf("r2ob") === 0) ob.noCond = false; }
+  inp.value = ""; say(""); ownSync(inp.id); return true;
+}
+/* text typed but not added yet is added on Next / Save, so nothing typed is lost */
+function ownFlush(ids){ ids.forEach(id => { const i = $("#" + id); if (i && i.value.trim()) ownAdd(i); }); }
 function condBlock(attr, noneAttr, sel, none, gender, note, noteId){
+  const own = ownCondsFor(noteId), noneOn = !!(none && !sel.some(isCond) && !own.length);
   return '<div class="r2-obsub r2-condq">Anything we should look out for? <span>(optional)</span></div><div class="r2-obhint">Only changes your tips. Stays private.</div>' +
     '<div class="r2-chips r2-conds">' + condsFor(gender, sel).map(c => '<button type="button" class="r2-chip' + (sel.includes(c[0]) ? " on" : "") + '" aria-pressed="' + sel.includes(c[0]) + '" ' + attr + '="' + esc(c[0]) + '">' + esc(c[1]) + '</button>').join("") +
-    '<button type="button" class="r2-chip r2-none' + (none && !sel.some(isCond) ? " on" : "") + '" aria-pressed="' + !!(none && !sel.some(isCond)) + '" ' + noneAttr + '="1">None of these</button></div>' +
+    ownChips("conds", own) +
+    '<button type="button" class="r2-chip r2-none' + (noneOn ? " on" : "") + '" aria-pressed="' + noneOn + '" ' + noneAttr + '="1">None of these</button></div>' +
+    ownRow("conds", noteId === "r2obCondNote" ? "r2obOwnC" : "r2eOwnC") +
     (noteId ? condNoteHTML(noteId, note) : "");
 }
 /* Oct 23: the four gender choices Emmanuel approved. "n" (non-binary) and "x" (prefer not to say) never count as woman or man */
@@ -11090,6 +11124,7 @@ R2.onboard = function(opts){
   const bc = window.LowiBirthCompanion, needReveal = !!(bc && bc.has && bc.reveal && !bc.has());
   ob = { step: (s.setupMid && !s.setupDone && s.user.bday && !needReveal) ? 1 : 0, bday: s.user.bday || "", btime: s.user.btime || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), noCond: !!s.user.noCond, name: s.user.name || "", gender: s.user.gender || "", pcos: !!(s.health && s.health.pcos), condNote: (s.health && typeof s.health.condNote === "string") ? s.health.condNote : "", cycle: (s.health && s.health.cyc && typeof s.health.cyc.show === "boolean") ? s.health.cyc.show : null, askName: !s.user.name || opts.askName };
   if (ob.pcos && ob.gender !== "m" && !ob.tags.includes("PCOS")) ob.tags.push("PCOS");   /* old PCOS checkbox -> PCOS condition */
+  { const OE = window.LowiOwnEntries, o = OE ? OE.read(s.health) : { goals: [], conds: [] }; ob.ownGoals = o.goals; ob.ownConds = o.conds; }   /* Oct 25: own entries */
   const ov = R2.sheet('<div class="r2-ob" id="r2ob"></div>', { full: true, noClose: true, cls: "r2-obov" });
   paintOb();
   return ov;
@@ -11126,7 +11161,7 @@ function paintOb(){
       /* Oct 23 2026, cycle tracking stage 1: only women are asked, and only a yes turns it on (off for everyone else) */
       (ob.gender === "f" ? '<div class="r2-obsub r2-cyq">Track your cycle? <span>(optional)</span></div><div class="r2-obhint">See your phase as a little cell world. Private on this phone.</div><div class="r2-chips r2-cycle">' + [["1", "Yes, track it", true], ["0", "No thanks", false]].map(c => '<button type="button" class="r2-chip' + (ob.cycle === c[2] ? " on" : "") + '" aria-pressed="' + (ob.cycle === c[2]) + '" data-r2cy="' + c[0] + '">' + c[1] + '</button>').join("") + '</div>' : "") +
       '<div class="r2-obsub">I want</div>' +
-      '<div class="r2-chips r2-goals">' + goalList().map(t => '<button type="button" class="r2-chip' + (ob.tags.includes(t[0]) ? " on" : "") + '" aria-pressed="' + ob.tags.includes(t[0]) + '" data-r2tag="' + esc(t[0]) + '">' + esc(t[1]) + '</button>').join("") + '</div>' +
+      '<div class="r2-chips r2-goals">' + goalList().map(t => '<button type="button" class="r2-chip' + (ob.tags.includes(t[0]) ? " on" : "") + '" aria-pressed="' + ob.tags.includes(t[0]) + '" data-r2tag="' + esc(t[0]) + '">' + esc(t[1]) + '</button>').join("") + ownChips("goals", ob.ownGoals) + '</div>' + ownRow("goals", "r2obOwnG") +
       condBlock("data-r2tag", "data-r2none", ob.tags, ob.noCond, ob.gender, ob.condNote, "r2obCondNote") +
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="' + (obShop() ? "next" : "finish") + '">' + (obShop() ? "Next" : "Let\'s go") + '</button></div>';
   } else {
@@ -11150,9 +11185,10 @@ function saveOb(final){
   if (typeof ob.btime === "string") { if (ob.btime) s.user.btime = ob.btime.slice(0, 5); else delete s.user.btime; }
   if (ob.avatar && ob.avatar !== s.user.avatar) { s.user.avatar = ob.avatar; delete s.user.avatarUrl; }
   s.user.tags = ob.tags.slice();
-  s.user.noCond = !!ob.noCond && !ob.tags.some(isCond);
+  s.user.noCond = !!ob.noCond && !ob.tags.some(isCond) && !(ob.ownConds || []).length;
   if (ob.gender) s.user.gender = ob.gender;
   s.health = s.health || {}; s.health.pcos = ob.gender !== "m" && ob.tags.includes("PCOS");
+  { const OE = window.LowiOwnEntries; if (OE && (ob.ownGoals || ob.ownConds)) OE.write(s.health, { goals: ob.ownGoals, conds: ob.ownConds }); }   /* Oct 25: own entries, this phone only */
   if (ob.gender === "f" && ob.cycle !== null && window.LowiCycle && LowiCycle.setShow) LowiCycle.setShow(ob.cycle);   /* cycle stage 1: her answer to Track your cycle? */
   { const note = typeof cleanCondNote === "function" ? cleanCondNote(ob.condNote) : ""; if (note) s.health.condNote = note; else delete s.health.condNote; }  /* ob.condNote follows the field on every keystroke (paintOb) */
   if (final) { s.setupDone = true; s.onboarded = true; delete s.autoSkipped; delete s.setupMid; }
@@ -11242,7 +11278,8 @@ function editHTML(){
     '<label class="r2-fl date"><span>Birthday</span><input id="r2eB" type="date" max="' + todayISO() + '" min="1920-01-01" value="' + esc(u.bday || "") + '"></label>' +
     '<div class="r2-esign" id="r2eSign">' + (z ? z.g + " " + esc(z.n) : "Add your birthday to see your star sign") + '</div>' +
     (() => { const sel = (u.tags || []).slice(); if (u.gender !== "m" && s.health && s.health.pcos && !sel.includes("PCOS")) sel.push("PCOS");
-      return '<div class="r2-fl"><span>Goals</span><div class="r2-chips r2-goals">' + goalList().map(t => '<button type="button" class="r2-chip' + (sel.includes(t[0]) ? " on" : "") + '" aria-pressed="' + sel.includes(t[0]) + '" data-r2etag="' + esc(t[0]) + '">' + esc(t[1]) + '</button>').join("") + '</div></div>' +
+      const own = window.LowiOwnEntries ? LowiOwnEntries.read(s.health) : { goals: [], conds: [] };
+      return '<div class="r2-fl"><span>Goals</span><div class="r2-chips r2-goals">' + goalList().map(t => '<button type="button" class="r2-chip' + (sel.includes(t[0]) ? " on" : "") + '" aria-pressed="' + sel.includes(t[0]) + '" data-r2etag="' + esc(t[0]) + '">' + esc(t[1]) + '</button>').join("") + ownChips("goals", own.goals) + '</div>' + ownRow("goals", "r2eOwnG") + '</div>' +
         '<div class="r2-fl r2-econd">' + condBlock("data-r2etag", "data-r2enone", sel, !!u.noCond, u.gender || "", (s.health && s.health.condNote) || "", "r2eCondNote") + '</div>'; })() +
     '<button class="r2-row tap" data-r2p="mbti"><span class="r2-ri">🧩</span><div><b>Personality type</b><small>' + (mb ? esc(mb) : "Not set") + '</small></div>' + R2.ico.chev + '</button>' +
     '<button class="r2-btn pri big" data-r2p="saveedit">Save</button></div>';
@@ -11304,8 +11341,10 @@ function saveEdit(){
   const n = $("#r2eName").value.trim(); if (n) s.user.name = n.slice(0, 40);
   s.user.bday = $("#r2eB").value || "";
   s.user.tags = $$("[data-r2etag].on").map(b => b.getAttribute("data-r2etag"));
-  const nn = $("[data-r2enone]"); s.user.noCond = !!(nn && nn.classList.contains("on")) && !s.user.tags.some(isCond);
+  ownFlush(["r2eOwnG", "r2eOwnC"]); const og = ownRead("r2eOwnG"), oc = ownRead("r2eOwnC");   /* Oct 25: own entries */
+  const nn = $("[data-r2enone]"); s.user.noCond = !!(nn && nn.classList.contains("on")) && !s.user.tags.some(isCond) && !(oc && oc.length);
   s.health = s.health || {}; s.health.pcos = s.user.gender !== "m" && s.user.tags.includes("PCOS");
+  { const OE = window.LowiOwnEntries; if (OE && og && oc) OE.write(s.health, { goals: og, conds: oc }); }
   { const cn = $("#r2eCondNote"); if (cn) { const note = cleanCondNote(cn.value); if (note) s.health.condNote = note; else delete s.health.condNote; } }
   R2.save();
   try { window.LowiGlass && LowiGlass.apply(); } catch(e){}
@@ -11343,6 +11382,8 @@ function hookProfile(){
 }
 
 /* ---------- events ---------- */
+/* Oct 25: Enter in a type-your-own field adds it (and never submits or moves on) */
+document.addEventListener("keydown", e => { const i = e.key === "Enter" && e.target && e.target.closest && e.target.closest("[data-r2own-in]"); if (i) { e.preventDefault(); e.stopPropagation(); ownAdd(i); } }, true);
 document.addEventListener("submit", e => {
   const f = e.target.closest("[data-r2form]"); if (!f) return; e.preventDefault();
   const m = f.getAttribute("data-r2form");
@@ -11356,8 +11397,10 @@ document.addEventListener("click", e => {
     if (v === "skip") { showGate("signup"); return; }   /* no guest mode any more */
     if (R2.top() && (v === "signup" || v === "signin")) R2.closeAll();
     showGate(v); return; }
+  const oa = e.target.closest("[data-r2own-add]"); if (oa) { const w = oa.closest(".r2-ownadd"); ownAdd(w && w.querySelector("[data-r2own-in]")); return; }
+  const orm = e.target.closest("[data-r2own-rm]"); if (orm) { const w = orm.parentNode && orm.parentNode.nextElementSibling, i = w && w.querySelector && w.querySelector("[data-r2own-in]"); orm.remove(); if (i) ownSync(i.id); return; }
   const o = e.target.closest("[data-r2o]");
-  if (o && ob) { const v = o.getAttribute("data-r2o");
+  if (o && ob) { const v = o.getAttribute("data-r2o"); ownFlush(["r2obOwnG", "r2obOwnC"]);
     if (v === "photo") return pickPhoto(url => { ob.avatar = url; saveOb(false); paintOb(); });
     if (v === "next" || v === "initial") { if (ob.step === 0) { const n = $("#r2obName"), b = $("#r2obB"), er = $("#r2obErr"); if (n) ob.name = n.value.trim(); if (b) ob.bday = b.value;
         const bad = (m, el) => { if (er) { er.textContent = m; er.classList.remove("shake"); void er.offsetWidth; er.classList.add("shake"); } if (el) el.focus(); };
@@ -11375,7 +11418,7 @@ document.addEventListener("click", e => {
     if (v === "shoplater") { try { const r = LowiShopPlan.readForm($("#r2ob")); if (r.ok) LowiShopPlan.saveForm($("#r2ob")); else if (!LowiShopPlan.isSet()) LowiShopPlan.set({ skipped: true }); } catch(x){} return finishOb(); }
   }
   const gg = e.target.closest("[data-r2g]");
-  if (gg && ob) { ob.gender = gg.getAttribute("data-r2g"); if (ob.gender !== "f") { ob.pcos = false; ob.cycle = null; } { const cn = $("#r2obCondNote"); if (cn) ob.condNote = cn.value; } const sc = ($("#r2ob .r2-obpane") || {}).scrollTop || 0; paintOb(); const pn = $("#r2ob .r2-obpane"); if (pn) { pn.style.animation = "none"; pn.scrollTop = sc; } return; } /* hunt Oct 23: same step, no fade-in again */
+  if (gg && ob) { ownFlush(["r2obOwnG", "r2obOwnC"]); ob.gender = gg.getAttribute("data-r2g"); if (ob.gender !== "f") { ob.pcos = false; ob.cycle = null; } { const cn = $("#r2obCondNote"); if (cn) ob.condNote = cn.value; } const sc = ($("#r2ob .r2-obpane") || {}).scrollTop || 0; paintOb(); const pn = $("#r2ob .r2-obpane"); if (pn) { pn.style.animation = "none"; pn.scrollTop = sc; } return; } /* hunt Oct 23: same step, no fade-in again */
   const cyq = e.target.closest("[data-r2cy]");
   if (cyq && ob) { ob.cycle = cyq.getAttribute("data-r2cy") === "1"; $$("#r2ob [data-r2cy]").forEach(b => { const on = (b.getAttribute("data-r2cy") === "1") === ob.cycle; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); }); return; }
   const pc = e.target.closest("[data-r2pcos]");
@@ -11386,9 +11429,9 @@ document.addEventListener("click", e => {
   if (tg && ob) { const t = tg.getAttribute("data-r2tag"); const i = ob.tags.indexOf(t); if (i >= 0) ob.tags.splice(i, 1); else ob.tags.push(t); pz(tg, i < 0);
     if (i < 0 && isCond(t)) { ob.noCond = false; pz($("#r2ob [data-r2none]"), false); } return; }
   const tn = e.target.closest("[data-r2none]");
-  if (tn && ob) { ob.noCond = !tn.classList.contains("on"); if (ob.noCond) { ob.tags = ob.tags.filter(t => !isCond(t)); $$("#r2ob .r2-conds [data-r2tag]").forEach(b => pz(b, false)); } pz(tn, ob.noCond); return; }
+  if (tn && ob) { ob.noCond = !tn.classList.contains("on"); if (ob.noCond) { ob.tags = ob.tags.filter(t => !isCond(t)); $$("#r2ob .r2-conds [data-r2tag]").forEach(b => pz(b, false)); $$("#r2ob .r2-conds [data-r2own-rm]").forEach(b => b.remove()); ob.ownConds = []; } pz(tn, ob.noCond); return; }
   const et = e.target.closest("[data-r2etag]"); if (et) { const on = !et.classList.contains("on"); pz(et, on); if (on && isCond(et.getAttribute("data-r2etag"))) pz($("[data-r2enone]"), false); return; }
-  const en = e.target.closest("[data-r2enone]"); if (en) { const on = !en.classList.contains("on"); pz(en, on); if (on) $$(".r2-econd [data-r2etag]").forEach(b => pz(b, false)); return; }
+  const en = e.target.closest("[data-r2enone]"); if (en) { const on = !en.classList.contains("on"); pz(en, on); if (on) { $$(".r2-econd [data-r2etag]").forEach(b => pz(b, false)); $$(".r2-econd [data-r2own-rm]").forEach(b => b.remove()); } return; }
   const p = e.target.closest("[data-r2p]");
   if (p) { const v = p.getAttribute("data-r2p");
     if (v === "photo") return pickPhoto(url => { setPhoto(url); const ov = R2.top(); if (ov && ov.querySelector(".r2-edit")) { R2.close(ov); R2.sheet(editHTML()); } });
@@ -12798,6 +12841,13 @@ html[data-ui=light] .r3a-pl{background:radial-gradient(120% 80% at 50% 0%,#fff6e
 .r2-obhint{font-size:12.5px;opacity:.6;margin:-4px 0 8px}
 .r2-econd .r2-obsub{margin-top:2px}
 .r2-condnote{margin-top:12px}
+/* Oct 25: type-your-own row under "I want" and "Anything we should look out for?" */
+.r2-ownadd{display:flex;gap:8px;align-items:center;margin-top:10px}
+.r2-ownadd input{flex:1;min-width:0;height:46px;font-size:16px}
+.r2-ownadd .r2-ownbtn{flex:none;height:46px;padding:0 16px;font-weight:750;white-space:nowrap}
+.r2-ownchip i{font-style:normal;margin-left:6px;opacity:.8}
+.r2-ownmsg{font-size:13px;margin-top:4px}
+.r2-ownmsg:empty{display:none}
 .r2-condnote input{height:48px;font-size:17px}
 .r2-condnote-h{margin:6px 0 4px;padding-left:4px}
 @media (max-height:700px){.r2-obpane .r2-obsub{margin:8px 0 6px}.r2-obpane .r2-chip{height:36px;padding:0 13px}}

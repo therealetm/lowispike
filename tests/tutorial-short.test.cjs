@@ -33,10 +33,13 @@ test('What\'s New cards stay out of the base tour', () => {
 });
 
 test('every demo opens a page tutorial.js knows how to open AND close', () => {
-    const js = read('tutorial.js'), open = js.slice(js.indexOf('const OPEN'), js.indexOf('const OPEN') + 6000);
+    /* routes are either a literal { stage, go, back } or made by the bloom(k) factory, which itself has stage, go and back */
+    const js = read('tutorial.js');
+    assert.match(js, /const bloom = k => \(\{ stage: '[^']+', go: [\s\S]*?back: /, 'the bloom route factory has a stage, go and back');
     for (const s of S.base().filter(x => x.demo && x.demo.open)) {
-        const m = open.match(new RegExp("'" + s.demo.open + "': \\{ stage: '[^']+', go: [\\s\\S]*?back: "));
-        assert.ok(m, s.id + ': route ' + s.demo.open + ' has a stage, go and back');
+        const lit = new RegExp("'" + s.demo.open + "': \\{ stage: '[^']*', go[:(][\\s\\S]*?back[:(]").test(js);
+        const fac = new RegExp("'" + s.demo.open + "': bloom\\('[a-z]+'\\)").test(js);
+        assert.ok(lit || fac, s.id + ': route ' + s.demo.open + ' has a stage, go and back');
     }
 });
 
@@ -72,11 +75,12 @@ test('a sheet that is already closing does not hide the next card (the You sheet
 
 test('the first flight: once per account (a synced key), real autopilot to a cell world, the edge and home on the currents; any touch hands back', () => {
     const f = read('tutorial-flight.js');
-    assert.match(f, /'lowispike\.tutorial\.first-flight\.v1'/);
-    assert.ok(require('../account-sync-core.js').synced('lowispike.tutorial.first-flight.v1'), 'lowispike.* is synced, so the iPad does not fly again');
+    assert.match(f, /KEY = 'lowispike\.first-flight\.v1'/);
+    assert.ok(require('../account-sync-core.js').synced('lowispike.first-flight.v1'), 'lowispike.* is synced, so the iPad does not fly again');
     assert.match(f, /pointerdown/, 'any touch takes control');
     assert.match(f, /cell/i); assert.match(f, /edge/i); assert.match(f, /current/i);
-    assert.match(read('index.html'), /tutorial-flight\.js/);
+    /* loaded by tutorial.js (like tutorial-auto/voice/show/resume), so index.html's versioned script list stays untouched */
+    assert.match(read('tutorial.js'), /\['tutorial-demo\.js', 'tutorial-flight\.js'\]\.forEach\(f => \{ if \(!D\.querySelector\('script\[src\^="' \+ f/);
 });
 
 test('the short tour ships offline and its voice clips are recorded for every base card', () => {

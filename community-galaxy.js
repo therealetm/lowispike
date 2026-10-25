@@ -94,6 +94,25 @@ function uniqueNames(list,ownName,lastTs){const own=String(ownName||'').trim().t
  for(const p of list||[]){if(!p||!p.uid)continue;const k=String(p.n||'').trim().toLocaleLowerCase();if(!k||(own&&k===own))continue;const cur=best.get(k);
   const score=q=>[+(lastTs&&lastTs.get(q.uid))||0,+q.lv||0];if(!cur){best.set(k,p);continue;}const a=score(p),b=score(cur);if(a[0]>b[0]||(a[0]===b[0]&&a[1]>b[1]))best.set(k,p);}
  return [...best.values()];}
+/* Oct 25, 2026 (Emmanuel: "remove the bots from the galaxy; every real companion stays parked there like a car, even offline").
+   The Room galaxy's members, built only from data every device shares (the profiles list), never from what one phone saw:
+   - no made-up bots (uid "bot:..."), no account the server flags as a bot or test (isBot, by flag or id, never by name), no hidden id, no blank name;
+   - one entry per name (the same person signed in twice), the winner picked by level, then xp, then id, so every phone picks the same one;
+   - online is only a glow (p.on), never a reason to be in or out.
+   o: {isBot(uid), isHidden(uid), online(uid), me:{uid,n,...}}. Returns {layout, shown}: layout seats everyone (blocked people and
+   people sharing your own name too) so seats come from the full room and are the same on every phone; shown is what your screen draws. */
+function roomMembers(people,o){o=o||{};const isBot=o.isBot||(()=>false),isHidden=o.isHidden||(()=>false),online=o.online||(()=>false),blocked=o.blocked||(()=>false);
+ const me=o.me&&o.me.uid?o.me:null,best=new Map();
+ for(const p of people||[]){if(!p||!p.uid)continue;const uid=String(p.uid),n=String(p.n||'').trim();
+  if(!n||/^bot:/.test(uid)||p.bot||isBot(uid)||isHidden(uid))continue;const k=n.toLocaleLowerCase(),cur=best.get(k);
+  if(!cur){best.set(k,p);continue;}const a=[+p.lv||0,+p.xp||0],b=[+cur.lv||0,+cur.xp||0];
+  if(a[0]>b[0]||(a[0]===b[0]&&(a[1]>b[1]||(a[1]===b[1]&&uid<String(cur.uid)))))best.set(k,p);}
+ const all=[...best.values()].filter(p=>!me||p.uid!==me.uid).map(p=>Object.assign({},p,{on:!!online(p.uid)}));
+ all.sort((a,b)=>String(a.uid)<String(b.uid)?-1:1);
+ const own=me?String(me.n||'').trim().toLocaleLowerCase():'',mine=me?Object.assign({},me,{me:true,on:true}):null;
+ const layout=mine?all.concat([mine]):all;
+ const shown=all.filter(p=>!blocked(p.uid)&&!(own&&String(p.n||'').trim().toLocaleLowerCase()===own));
+ return {layout,shown:mine?shown.concat([mine]):shown};}
 function withBots(people,botList,ownName){const taken=new Set((people||[]).map(p=>String(p.n||'').trim().toLocaleLowerCase()));if(ownName)taken.add(String(ownName).trim().toLocaleLowerCase());return (botList||[]).filter(b=>!taken.has(b.n.toLocaleLowerCase()));}
 /* A bot's short answer, picked from what you wrote and who they are. Local only: nothing is posted to the room. */
 function botReply(b,text,lang){const l=lang===1||lang===2?lang:0,t=String(text||'').toLocaleLowerCase(),C=['Spark','Bud','Sprite','Drifter','Guardian','Radiant'],form=[C,['Funke','Knospe','Flitzer','Gleiter','Hüter','Strahler'],['Chispa','Brote','Duende','Viajero','Guardián','Radiante']][l][b.stage];
@@ -210,7 +229,7 @@ function mapLabels(items,view){
   if(got)r.bub=got;else r.dot=true;}
  return out;
 }
-const api={BOT_KEEP,hash,mapPool,mapSlot,mapLayout,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
+const api={BOT_KEEP,hash,mapPool,mapSlot,mapLayout,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,roomMembers,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
 if(typeof module==='object'&&module.exports)module.exports=api;
 root.LowiGalaxy=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -779,7 +779,7 @@ usually still run for a while. So the handover is done **by you, directly, in th
    `queue/`, reclaim the abandoned claims, recreate any schedules (hourly checklist, sweeps) on your own agent, and keep
    this runbook in the file for the Maya after you.
 
-**The clone prompt for the next Maya stays in the chat only (Emmanuel, Sun 25 Oct 2026, about 11 PM): "I don't need it on GitHub."** At handover, send him that prompt (the previous one, every number moved up by one) right in the chat with the voice note. Never put the prompt itself in this repo.
+**The clone prompt for the next Maya stays in the chat only (Emmanuel, Sun 25 Oct 2026, about 11 PM): "I don't need it on GitHub."** **It is UNIVERSAL (Emmanuel, ~11:15 PM: "I wanted the universal prompt"): no Maya numbers, no dates, nothing to fill in.** The same text works for every Maya; each new Maya works out where she is from the newest "Handover" section. At handover, send him the exact prompt you were given, word for word and unchanged, right in the chat with the voice note. Never put the prompt itself in this repo.
 
 **Handover table.** Checkpoint by Maya 5, Monday 19 Oct 2026, 9:20 PM CEST. Live **20261019-201827**, `main` at
 510f7f7 before this commit. Tasks run only on Maya 5's account and worktrees live only on her computer: a new Maya

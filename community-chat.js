@@ -356,8 +356,12 @@ function fitCam(gx,v){const spots=(gx.map.spots||[]).filter(s=>gx.spot.has(s.uid
      Room's bottom-left corner, so it is kept free as well, in Room pixels with a 4 px margin. */
   const av=avoid?[avoid]:[];try{const tb=gal&&gal.parentNode&&gal.parentNode.querySelector('.nm-ctree');if(tb&&tb.offsetParent){const a=tb.getBoundingClientRect(),g=gal.getBoundingClientRect();
     const r={x:Math.round(a.left-g.left-4),y:Math.round(a.top-g.top-4),w:Math.round(a.width+8),h:Math.round(a.height+8)};if(r.w>8&&r.x<v.w&&r.y<v.h&&r.x+r.w>0&&r.y+r.h>0)av.push(r);}}catch(e){}
-  const key=v.w+'x'+v.h+':'+av.map(a=>a.x+','+a.y+','+a.w+','+a.h).join(';')+':'+spots.map(s=>s.uid+'@'+s.x+','+s.y).join('|');
-  if(!fitMemo||fitMemo.key!==key)fitMemo={key,cam:G.mapFit(spots,v.w,v.h,{side:v.w>=640?54:46,top:v.w>=640?44:36,bot:v.w>=640?64:56,big:v.w>=640,avoid:av})};return {...fitMemo.cam};}
+  /* each name's real width (the same number place() keeps in el.__nw), so a short name is not fitted as if it were the longest */
+  const nw={};try{const fld=D.getElementById('cgField');if(fld)for(const L of gx.labels||[]){const el=fld.querySelector('.cg-body[data-uid="'+String(L.id).replace(/["\\]/g,'')+'"]');if(!el)continue;
+    if(el.__nw==null){const n=el.querySelector('.cg-name');el.__nw=n?Math.min(L.size+30,n.offsetWidth||60):60;}nw[L.id]=Math.round(el.__nw);}}catch(e){}
+  const key=v.w+'x'+v.h+':'+av.map(a=>a.x+','+a.y+','+a.w+','+a.h).join(';')+':'+spots.map(s=>s.uid+'@'+s.x+','+s.y+'~'+(nw[s.uid]||'')).join('|');
+  if(!fitMemo||fitMemo.key!==key)fitMemo={key,cam:G.mapFit(spots,v.w,v.h,{side:v.w>=640?54:46,top:v.w>=640?44:36,bot:v.w>=640?64:56,big:v.w>=640,avoid:av,nw})};
+  fitMemo.keep=av.slice(avoid?1:0);return {...fitMemo.cam};}
 function mapZ(gx,v){return G.mapZooms(gx.map.radius,v.w,v.h,fitCam(gx,v).z);}
 function schedulePlace(){if(placeRaf)return;placeRaf=requestAnimationFrame(()=>{placeRaf=0;place();});}
 /* Oct 16 (energy hits, community-energy.js): a knocked companion rolls away from its spot for a moment; epos() adds that offset */
@@ -378,6 +382,7 @@ function place(){
    el.style.left='0';el.style.top='0';el.style.transform='translate3d('+p.x.toFixed(1)+'px,'+p.y.toFixed(1)+'px,0) translate(-50%,calc(var(--s) / -2)) scale('+f.toFixed(3)+')';
    el.style.setProperty('--nk',(fn/f).toFixed(3));el.classList.toggle('cg-out',p.x<-80||p.x>v.w+80||p.y<-80||p.y>v.h+80);}
   const ko=W.LowiEnergy&&W.LowiEnergy.keepOut?W.LowiEnergy.keepOut(gal):null;if(ko)items.push({id:'__ce',x:ko.x,y:ko.y,s:ko.s,nw:0,bw:0,bh:0,bub:false});
+  if(fitMemo&&fitMemo.keep&&G.mapPads)items.push(...G.mapPads(fitMemo.keep,'__keep'));/* Oct 25 (readability + fit): the Friends tree button too, as the fit saw it */
   const lab=G.mapLabels(items,{w:v.w,h:v.hb||v.h});
   for(const it of items){const r=lab.get(it.id),el=bodies.get(it.id),b=bubs.get(it.id);if(!r||!el)continue;el.classList.toggle('cg-nn',!r.name&&r.at!=='i');el.classList.toggle('cg-nt',r.at==='t');el.classList.toggle('cg-ni',r.at==='i');el.classList.toggle('cg-dot',!!r.dot);
    if(!b)continue;if(r.bub){b.style.display='';b.style.left=r.bub.x+'px';b.style.setProperty('top',r.bub.y+'px','important');b.style.setProperty('bottom','auto','important');b.style.setProperty('--tail',r.bub.tail+'px');b.setAttribute('data-side',r.bub.side);}else b.style.display='none';}

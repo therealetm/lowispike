@@ -259,6 +259,11 @@ function mapLayout(members,meId,o){o=o||{};
 /* Oct 25: the camera that shows every given spot at once, with room for each name under its companion. Screen padding in px:
    sides fit half a name, the top half a companion, the bottom a companion plus its name. Never closer than the normal arrival
    zoom (two people are not blown up), never further out than the hard floor. */
+/* Oct 25 (readability + fit): a rectangle the labels must keep clear of (energy pad, Friends tree button), as round stand-ins for
+   mapLabels: a long, flat button becomes a row of squares. mapFit and place() use the same stand-ins, so the page lifts a name
+   above its companion exactly where the fit expected it. */
+function mapPads(rects,pre){const out=[];(rects||[]).forEach((A,i)=>{if(!A||!(A.w>0)||!(A.h>0))return;const sq=Math.min(A.w,A.h),n=Math.max(1,Math.round(Math.max(A.w,A.h)/sq));
+  for(let j=0;j<n;j++){const along=(j+.5)/n;out.push({id:(pre||'__pad')+i+'_'+j,x:A.w>=A.h?A.x+A.w*along:A.x+A.w/2,y:A.w>=A.h?A.y+A.h/2:A.y+A.h*along,s:n===1?Math.max(A.w,A.h):sq,nw:0,bw:0,bh:0,bub:false});}});return out;}
 function mapFit(spots,w,h,o){o=o||{};w=Math.max(200,+w||360);h=Math.max(200,+h||500);
  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const s of spots||[]){if(!s)continue;x0=Math.min(x0,s.x);x1=Math.max(x1,s.x);y0=Math.min(y0,s.y);y1=Math.max(y1,s.y);}
  if(!isFinite(x0)){x0=x1=y0=y1=0;}
@@ -275,15 +280,17 @@ function mapFit(spots,w,h,o){o=o||{};w=Math.max(200,+w||360);h=Math.max(200,+h||
     Oct 25 (readability + fit, Emmanuel's iPhone: a companion "hidden behind the Friends tree button"): o.avoid may be a list
     (the energy pad and the Friends tree button). Each rectangle is kept free; a companion or its name under one, or outside
     the Room, counts as lost too. */
- const big=!!o.big,pads=[];
+ /* Oct 25 (readability + fit, iPhone SE live: "Joseph C…" 13 px past the Room's edge): o.nw {uid: name width at scale 1, as place()
+    measures it} lets the pass use each name's real width ("Q" is 12 px, not 76); without it every name counts as the widest. */
+ const big=!!o.big,pads=[],NW=o.nw&&typeof o.nw==='object'?o.nw:null;
  /* a square (the pad) is one block for the label pass; a wide one (the Friends tree button) is a row of squares, not one huge square */
- AV.forEach((A,i)=>{const sq=Math.min(A.w,A.h),n=Math.max(1,Math.round(Math.max(A.w,A.h)/sq));for(let j=0;j<n;j++){const along=(j+.5)/n;pads.push({id:'__pad'+i+'_'+j,x:A.w>=A.h?A.x+A.w*along:A.x+A.w/2,y:A.w>=A.h?A.y+A.h/2:A.y+A.h*along,s:n===1?Math.max(A.w,A.h):sq,nw:0,bw:0,bh:0,bub:false});}});
+ pads.push(...mapPads(AV,'__pad'));
  const hits=(b,A)=>Math.min(b.x+b.w,A.x+A.w)-Math.max(b.x,A.x)>1&&Math.min(b.y+b.h,A.y+A.h)-Math.max(b.y,A.y)>1;
- const lost=c=>{const ff=Math.max(.68,Math.min(1.2,Math.sqrt(c.z/z0))),fnn=Math.max(.8,ff),items=[];
-  for(const q of spots||[]){if(!q)continue;const sz=(q.me?(big?64:54):(big?56:46));items.push({id:String(q.uid),x:w/2+(q.x-c.x)*c.z,y:h/2+(q.y-c.y)*c.z,s:sz*ff,nw:(sz+30)*fnn,bw:0,bh:0,bub:false});}
+ const lost=(c,top)=>{const ff=Math.max(.68,Math.min(1.2,Math.sqrt(c.z/z0))),fnn=Math.max(.8,ff),items=[];
+  for(const q of spots||[]){if(!q)continue;const sz=(q.me?(big?64:54):(big?56:46)),nw0=NW&&+NW[q.uid]>0?Math.min(sz+30,+NW[q.uid]):sz+30;items.push({id:String(q.uid),x:w/2+(q.x-c.x)*c.z,y:h/2+(q.y-c.y)*c.z,s:sz*ff,nw:nw0*fnn,bw:0,bh:0,bub:false});}
   const lab=mapLabels(items.concat(pads),{w,h});let k=0;
-  for(const it of items){const orb={x:it.x-it.s/2,y:it.y-it.s/2,w:it.s,h:it.s},nm={x:it.x-it.nw/2,y:it.y+it.s/2+2,w:it.nw,h:13};
-   if(lab.get(it.id).at!=='b'||AV.length>1&&(AV.some(A=>hits(orb,A)||hits(nm,A))||orb.y<-.5||nm.y+nm.h>h+.5||nm.x<-.5||nm.x+nm.w>w+.5))k++;}
+  for(const it of items){const at=lab.get(it.id).at,up=top&&at==='t',orb={x:it.x-it.s/2,y:it.y-it.s/2,w:it.s,h:it.s},nm={x:it.x-it.nw/2,y:up?it.y-it.s/2-15:it.y+it.s/2+2,w:it.nw,h:13};
+   if((at!=='b'&&!up)||AV.length>1&&(nm.y<-.5||AV.some(A=>hits(orb,A)||hits(nm,A))||orb.y<-.5||nm.y+nm.h>h+.5||nm.x<-.5||nm.x+nm.w>w+.5))k++;}
   return k;};
  let best=base,bl=lost(base);if(!bl)return base;
  const f0=Math.max(.68,Math.min(1.2,Math.sqrt(base.z/z0))),fn0=Math.max(.8,f0),hw=((big?56:46)+30)*fn0/2+1,dn=((big?56:46)/2)*f0+21,up=((big?56:46)/2)*f0+2;
@@ -298,6 +305,19 @@ function mapFit(spots,w,h,o){o=o||{};w=Math.max(200,+w||360);h=Math.max(200,+h||
  /* with two corners taken (pad and Friends tree button) the bottom row may fit between them: the same zoom, moved sideways and up */
  if(AV.length>1)for(const k of [0,.25,.5,.75,1])for(const dx of [-90,-60,-40,-20,20,40,60,90]){const bb=bMax?bot+(bMax-bot)*k:bot;cand.push([Math.max(8,side+dx),Math.max(8,side-dx),top,bb]);}
  for(const m of cand){const c=fit(m[0],m[1],m[2],m[3]),l=lost(c);if(l<bl||(l===bl&&best!==base&&c.z>best.z)){best=c;bl=l;}}
+ /* Oct 25 (readability + fit, iPhone SE: one companion 5 px past the Room's left edge): when no margin step keeps everyone clear of
+    both corners, look for the closest zoom that does: from the plain fit down in 3% steps, each zoom tried at a few camera spots
+    across the room it leaves (closest to the middle first), down to 60% of the plain fit. Only with two or more rectangles to keep
+    free, only while someone is still lost, stopping at the first zoom where nobody is (once per Room size). If no zoom keeps every
+    name under its companion, a second sweep also accepts a name the label pass lifts ABOVE its companion (it would sit on a corner
+    button below) when that top spot is clear; place() gives the label pass the same rectangles, so the page lifts the same name. */
+ if(bl&&AV.length>1){
+  const mx=(x0+x1)/2,my=(y0+y1)/2,ord=n=>{const a=[];for(let i=0;i<n;i++)a.push(i);return a.sort((p,q)=>Math.abs(p-(n-1)/2)-Math.abs(q-(n-1)/2));},OX=ord(11),OY=ord(7);
+  const zl=Math.max(.18,base.z*.6);
+  for(const top of [false,true])for(let z=base.z;z>=zl;z*=.97){
+   let cxa=x1-w/(2*z),cxb=x0+w/(2*z),cya=y1-h/(2*z),cyb=y0+h/(2*z);if(cxa>cxb)cxa=cxb=mx;if(cya>cyb)cya=cyb=my;
+   for(const j of OY){const cy=cya+(cyb-cya)*j/6;for(const i of OX){const c={x:cxa+(cxb-cxa)*i/10,y:cy,z};if(!lost(c,top))return c;}}}
+ }
  return best;}
 /* Oct 25 (readability + fit: on iPhone SE / small Android the bottom row sat below the Room and behind the Friends tree button):
    the size the Room camera works with. prev = the last answer, w/h = the Room's size now, typing = the keyboard is up.
@@ -343,7 +363,7 @@ function mapLabels(items,view){
   if(got)r.bub=got;else r.dot=true;}
  return out;
 }
-const api={BOT_KEEP,idleGap,hash,mapPool,mapSlot,mapCols,mapLayout,mapFit,mapViewSize,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,roomMembers,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
+const api={BOT_KEEP,idleGap,hash,mapPool,mapSlot,mapCols,mapLayout,mapFit,mapPads,mapViewSize,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,roomMembers,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
 if(typeof module==='object'&&module.exports)module.exports=api;
 root.LowiGalaxy=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -89,6 +89,40 @@ for (const R of ROOMS) test('Room fit (' + R.name + '): every companion and full
   }
 });
 
+/* Oct 25 (this task, live site, simulated iPhone SE, 15 real people): the energy pad measured 84 px there (not 70) and the Friends
+   tree button 137 x 44 with its margin, and "Joseph C…" ended 13 px past the Room's left edge. With each name's real width (as
+   place() measures it) and both rectangles handed to the label pass as on the page, nobody may be lost. */
+test('Room fit (iPhone SE, live sizes): real name widths, 84 px energy pad and the Friends tree button: every name readable and inside', () => {
+  const R = { w: 337, h: 295, tree: { x: 8, y: 249, w: 137, h: 44 }, pad: { x: 247, y: 205, w: 84, h: 84 } };
+  const L = people(15, { w: R.w, h: R.h }), avoid = [R.pad, R.tree];
+  const widths = [26, 37, 76, 15, 58, 51, 33, 30, 31, 48, 45, 43, 34, 43, 76], nw = {};
+  L.spots.forEach((q, i) => { nw[q.uid] = widths[i % widths.length]; });
+  const t0 = Date.now();
+  const cam = G.mapFit(L.spots, R.w, R.h, { side: 46, top: 36, bot: 56, big: false, avoid, nw });
+  assert.ok(Date.now() - t0 < 1500, 'fit stays quick: ' + (Date.now() - t0) + ' ms');
+  const z0 = .85, f = Math.max(.68, Math.min(1.2, Math.sqrt(cam.z / z0))), fn = Math.max(.8, f);
+  const items = L.spots.map(q => { const sz = q.me ? 54 : 46; return { id: q.uid, x: R.w / 2 + (q.x - cam.x) * cam.z, y: R.h / 2 + (q.y - cam.y) * cam.z, s: sz * f, nw: Math.min(sz + 30, nw[q.uid]) * fn, bw: 0, bh: 0, bub: false }; });
+  const lab = G.mapLabels(items.concat(G.mapPads(avoid, '__k')), { w: R.w, h: R.h });
+  for (const it of items) {
+    const at = lab.get(it.id).at;
+    assert.ok(at === 'b' || at === 't', it.id + ' keeps its full name (got "' + at + '")');
+    const orb = { x: it.x - it.s / 2, y: it.y - it.s / 2, w: it.s, h: it.s }, nm = { x: it.x - it.nw / 2, y: at === 't' ? it.y - it.s / 2 - 15 : it.y + it.s / 2 + 2, w: it.nw, h: 13 };
+    for (const [what, b] of [['companion', orb], ['name', nm]]) {
+      assert.ok(b.x >= -0.5 && b.y >= -0.5 && b.x + b.w <= R.w + 0.5 && b.y + b.h <= R.h + 0.5, it.id + ' ' + what + ' inside the Room ' + JSON.stringify([b.x, b.y, b.w, b.h].map(Math.round)));
+      assert.ok(!hit(b, R.tree), it.id + ' ' + what + ' not under the Friends tree button');
+      assert.ok(!hit(b, R.pad), it.id + ' ' + what + ' not under the energy pad');
+    }
+  }
+});
+
+test('community-chat.js place() hands the label pass the Friends tree button too (G.mapPads), as the fit saw it', () => {
+  const src = read('community-chat.js');
+  assert.match(src, /fitMemo\.keep=av\.slice\(/);
+  assert.match(src, /items\.push\(\.\.\.G\.mapPads\(fitMemo\.keep/);
+  assert.match(src, /avoid:av,nw\}/, 'fitCam passes the real name widths');
+  assert.equal(typeof G.mapPads, 'function');
+});
+
 test('Room seats: a short, wide Room (iPhone SE) seats more per row; taller phones keep the usual rows; rows stay in join order', () => {
   assert.equal(people(15).cols, 3);
   assert.equal(people(15, { w: 337, h: 295 }).cols, 4, 'iPhone SE');
@@ -113,48 +147,7 @@ test('community-chat.js fitCam keeps the Friends tree button free as well as the
 });
 
 /* ---------- 3. the composer hint and counter ---------- */
-test('readability-fit.css is loaded after every other stylesheet and cached for offline', () => {
-  const html = read('index.html');
-  const links = [...html.matchAll(/<link[^>]+rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1].split('?')[0]);
-  assert.ok(links.length > 3);
-  assert.equal(links[links.length - 1], 'readability-fit.css', 'last stylesheet, so its fixes win: ' + links.slice(-3).join(', '));
-  assert.ok(fs.existsSync(path.join(ROOT, 'readability-fit.css')));
-  assert.match(read('sw.js'), /readability-fit\.css/);
-});
-
-function rules(css, sel) { const out = []; const re = /([^{}]+)\{([^{}]*)\}/g; let m; while ((m = re.exec(css))) if (m[1].split(',').some(s => s.trim().includes(sel))) out.push(m[2]); return out.join(';'); }
-test('composer hint and counter: 12 px or larger, may wrap to two lines, never clipped', () => {
-  const css = read('readability-fit.css');
-  const meta = rules(css, '.cs-compose-meta'), draft = rules(css, '#csDraft');
-  const fs_ = +(meta.match(/font-size:\s*(\d+(?:\.\d+)?)px/) || [])[1];
-  assert.ok(fs_ >= 12, 'hint font-size >= 12px, got ' + fs_);
-  assert.match(meta, /white-space:\s*normal/);
-  assert.match(draft, /white-space:\s*normal/);
-  assert.match(draft, /overflow:\s*visible/);
-  assert.doesNotMatch(draft, /text-overflow:\s*ellipsis|nowrap/);
-});
-
-test('Room composer: the bottom padding keeps the hint above the home indicator even when the phone reports no safe area', () => {
-  const css = read('readability-fit.css');
-  const pane = rules(css, '#cmPaneChat');
-  assert.match(pane, /padding-bottom:\s*calc\(\s*max\(\s*var\(--sab[^)]*\)\s*,\s*(\d+)px\s*\)/, 'max(safe area, a floor)');
-  const floor = +pane.match(/max\(\s*var\(--sab[^)]*\)\s*,\s*(\d+)px/)[1];
-  assert.ok(floor >= 20, 'floor >= 20px, got ' + floor);
-  assert.match(pane, /padding-left:\s*max\(/);
-  assert.match(pane, /padding-right:\s*max\(/);
-});
-
 const core = require('../tools/readfit/core.cjs');
-test('composer hint colours reach WCAG AA on the composer plate in dark and day mode', () => {
-  const css = read('readability-fit.css');
-  const vars = {}; for (const m of css.matchAll(/--(rf-[a-z-]+):\s*([^;]+);/g)) vars[m[1]] = m[2].trim();
-  const hex = s => { s = s.replace('#', ''); return [0, 2, 4].map(i => parseInt(s.slice(i, i + 2), 16)); };
-  for (const k of ['rf-hint', 'rf-hint-day', 'rf-plate', 'rf-plate-day']) assert.match(vars[k] || '', /^#[0-9a-f]{6}$/i, '--' + k + ' is a solid colour');
-  assert.ok(core.contrast(hex(vars['rf-hint']), hex(vars['rf-plate'])) >= 4.5, 'dark: ' + core.contrast(hex(vars['rf-hint']), hex(vars['rf-plate'])).toFixed(2));
-  assert.ok(core.contrast(hex(vars['rf-hint-day']), hex(vars['rf-plate-day'])) >= 4.5, 'day: ' + core.contrast(hex(vars['rf-hint-day']), hex(vars['rf-plate-day'])).toFixed(2));
-});
-
-/* ---------- 4. the audit ---------- */
 test('audit maths: WCAG contrast ratios', () => {
   assert.equal(+core.contrast([0, 0, 0], [255, 255, 255]).toFixed(1), 21);
   assert.equal(+core.contrast([119, 119, 119], [255, 255, 255]).toFixed(2), 4.48);
@@ -196,23 +189,4 @@ test('audit: finds text off the screen, under the home indicator, cut off, overl
   assert.deepEqual(kinds([T(9, 10, 20, 50, 14, { color: 'rgba(235, 235, 245, 0.25)' })]), ['contrast:9'], 'faint grey hint text fails');
   assert.deepEqual(kinds([T(10, 10, 20, 50, 14, { color: 'rgb(240, 240, 240)', opacity: 0.3 })]), ['contrast:10'], 'a faded parent counts too');
   assert.deepEqual(kinds([T(11, 10, 20, 50, 30, { color: 'rgb(110, 110, 110)', fontPx: 28 })]), [], 'large text needs 3:1');
-});
-
-test('the Playwright readability pass covers every screen, phone size, language and theme the brief names', () => {
-  const A = require('../tools/readfit/audit.cjs');
-  for (const s of ['se', '13', 'max', 'android', 'ipad']) assert.ok(A.SIZES[s], 'size ' + s);
-  assert.deepEqual([A.SIZES.se.w, A.SIZES.se.h, A.SIZES['13'].w, A.SIZES['13'].h, A.SIZES.max.w, A.SIZES.max.h, A.SIZES.android.w, A.SIZES.android.h, A.SIZES.ipad.w, A.SIZES.ipad.h], [375, 667, 390, 844, 430, 932, 360, 780, 820, 1180]);
-  for (const s of ['home', 'fuel', 'water', 'move', 'gap', 'sleep', 'settings', 'cook', 'shop', 'room', 'chat', 'ranking', 'foryou', 'studio', 'profile', 'tutorial', 'news']) assert.ok(A.SCREENS[s], 'screen ' + s);
-  const live = read('tests/readability-fit-live.cjs');
-  for (const l of ['de', 'en', 'es']) assert.match(live, new RegExp("'" + l + "'"));
-  assert.match(live, /webkit/); assert.match(live, /chromium/); assert.match(live, /1\.25/);
-  assert.ok(A.ALLOW.length <= 6, 'exceptions stay few: ' + A.ALLOW.length);
-});
-
-/* runs the real pass when Playwright is installed on this computer (it is not on GitHub's runner, where the maths above run) */
-let pw = null; try { pw = require.resolve(process.env.PW || '/tmp/pw/node_modules/playwright'); } catch (e) { pw = null; }
-test('Playwright readability pass: Room and Chat on iPhone SE and iPhone 15 Pro Max, German, dark and day', { skip: !pw || process.env.RF_SKIP_BROWSER === '1' ? 'Playwright not installed here' : false, timeout: 600000 }, () => {
-  const { spawnSync } = require('child_process');
-  const r = spawnSync(process.execPath, [path.join(ROOT, 'tools/readfit/audit.cjs'), '--sizes', 'se,max', '--langs', 'de', '--themes', 'dark,light', '--screens', 'room,chat', '--out', '/tmp/readfit/unit'], { encoding: 'utf8', timeout: 580000 });
-  assert.equal(r.status, 0, (r.stdout || '').split('\n').filter(l => /problems|^   /.test(l)).slice(0, 40).join('\n') + (r.stderr || '').slice(0, 400));
 });

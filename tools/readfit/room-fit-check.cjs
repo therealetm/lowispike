@@ -17,11 +17,14 @@ const SIZES = { se: [375, 667, 20, 0], '13': [390, 844, 47, 34], max: [430, 932,
     const insetB = s.insetApplied ? ib : 0, insetT = s.insetApplied ? it : 0;
     await H.openRoom(s.page);
     if (process.env.HINT_TO) await s.page.evaluate(n => { const d = document.getElementById('csDraft'); if (d) d.textContent = n; }, process.env.HINT_TO);
-    await s.page.waitForTimeout(1500);
+    /* SETTLE=ms: WebKit on the slow test computer draws ~2 frames a second, so its layout needs longer to settle */
+    await s.page.waitForTimeout(+process.env.SETTLE || 1500);
     const r = await s.page.evaluate(([insetT, insetB]) => {
       const R = e => { const b = e.getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height }; };
       const g = document.getElementById('cgGalaxy'), gb = g && R(g), vw = innerWidth, vh = innerHeight;
       const blockers = [...document.querySelectorAll('#cmPaneChat .nm-ctree, #cmPaneChat .ce-pad, #cmPaneChat [class*="ce-pad"], #cePad')].filter(e => e.getBoundingClientRect().width > 4).map(e => ({ el: (e.id || e.className).toString().slice(0, 30), r: R(e) }));
+      /* the energy pad as the Room sees it (LowiEnergy.keepOut: the pad plus a 6 px margin each side), in screen px */
+      try { const gal = document.getElementById('cgGalaxy'), ko = gal && window.LowiEnergy && LowiEnergy.keepOut ? LowiEnergy.keepOut(gal) : null; if (ko) { const g = gal.getBoundingClientRect(), s = ko.s - 12; blockers.push({ el: 'energy pad', r: { x: g.left + ko.x - s / 2, y: g.top + ko.y - s / 2, w: s, h: s } }); } } catch (e) {}
       const hit = (a, b) => Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) > 2 && Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) > 2;
       const issues = [], bodies = [];
       for (const b of document.querySelectorAll('#cgGalaxy .cg-body')) {

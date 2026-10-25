@@ -779,35 +779,7 @@ usually still run for a while. So the handover is done **by you, directly, in th
    `queue/`, reclaim the abandoned claims, recreate any schedules (hourly checklist, sweeps) on your own agent, and keep
    this runbook in the file for the Maya after you.
 
-**The universal clone prompt (added Sun 25 Oct 2026, about 10:30 PM CET, by Maya 9).** Emmanuel, voice message:
-"I need a universal Maya cloning handoff ... once it reaches the weekly limit, before it even does so ... it creates a
-handoff prompt that the user can save and send to the next Maya ... this is how I coordinate and work with all the
-Mayas simultaneously on one app product." So the handover always ends with ONE message he can copy and paste into the
-new Maya account, in the chat, right after the runbook push (step 5), together with the voice note. Not a file, not a
-task. Maya 9 forgot this once and he had to ask; never again. The new account has no preferences, skills or memory,
-so the prompt carries them. Fill in N, the section number and the date; keep everything else word for word:
-
-```
-You are Maya <N+1>. I'm Emmanuel. You're taking over my app LOWiSPIKE from Maya <N>, who hit her usage limit. We
-work the "Mickey 17 workflow": each Maya picks up from GitHub where the last one stopped, and hands over the same way.
-You have none of her memory; GitHub is everything.
-
-1. Repo: github.com/therealetm/lowispike (git@github.com:therealetm/lowispike.git). Live: therealetm.github.io/lowispike.
-   If you can't push yet, tell me in one line and I'll add your deploy key (MAYA-HANDOFF.md section 2).
-2. Read MAYA-HANDOFF.md on main: section 0.6 (the workflow, your job description), then the newest section
-   "Handover Maya <N> -> Maya <N+1>" (0.<x>), then AGENTS.md, AI_PLAYBOOK.md, SUCCESSOR_HANDOFF.md. Verify every
-   status yourself (live version.json, origin/main, CI, branches). Pick up, don't restart.
-3. Save these as my preferences now: updates as a checklist (done / in progress / to do, done items stay) plus a short
-   voice note; don't ask me questions, decide and act; ship live without asking (release.sh, quiet); batch approvals,
-   at most one ask per task; only when you truly need me, send an image; when you see your limit coming, push
-   everything to GitHub and give me this same clone prompt for Maya <N+2> right away.
-4. Make a skill "LOWiSPIKE coding task playbook" from AI_PLAYBOOK.md + section 3, and load it before every LOWiSPIKE task.
-   Recreate the schedules listed in the newest handover section on your own agent.
-5. Watch your limit from minute one. First task that ends "reached its limit" after 0 attempts = run the 0.6 runbook
-   yourself, directly in the chat (never in a task): push all worktrees, write "Handover Maya <N+1> -> Maya <N+2>",
-   push it to main, then send me one voice note plus this prompt with every number moved up by one.
-6. Then start: the newest handover section's "Do next" list, two or three tasks at a time on files that don't overlap.
-```
+**The clone prompt for the next Maya stays in the chat only (Emmanuel, Sun 25 Oct 2026, about 11 PM): "I don't need it on GitHub."** At handover, send him that prompt (the previous one, every number moved up by one) right in the chat with the voice note. Never put the prompt itself in this repo.
 
 **Handover table.** Checkpoint by Maya 5, Monday 19 Oct 2026, 9:20 PM CEST. Live **20261019-201827**, `main` at
 510f7f7 before this commit. Tasks run only on Maya 5's account and worktrees live only on her computer: a new Maya
@@ -939,8 +911,7 @@ Guarded by tests/home-today-retired.test.cjs. Live check: `node /home/sprite/hn-
 Trigger: from about 9 PM every new task stopped with "Goal not met after 0 attempt(s) ... reached its limit" (ten in a
 row). Live is **20261025-213603** (another Maya's bug hunt run 24, BH-023 pinch fix; `origin/main` 6643535 before this doc
 commit). No task of Maya 9 running. Nothing in the table below is live; rebase every branch on main first. Maya 9 pushed every unfinished worktree; COORD notes from her computer are on branch `handoff-20261025`,
-folder `handoff/`. She left this handover late (on a branch, not here) and Emmanuel had to ask: that is why the clone
-prompt is now in 0.6.
+folder `handoff/`. She left this handover late (on a branch, not here) and Emmanuel had to ask.
 
 | Work | State | Branch | Do next |
 |---|---|---|---|
@@ -1862,4 +1833,4 @@ obLater snooze, sign-out KEEP). Tests 2765/2765, CI green, live check de iPhone 
 - 2026-10-25 20:01 CET Hourly bug hunt run 23 (Sesame bug-hunt task, worktree wt-bughunt-202610251901, started on live 20261025-195920). Area: the new iOS-feel springs. **Fixed and released quietly: LIVE 20261025-200749** (main 76781689, tests 3472/3472, CI green, verify-live same). BH-022: open Fasting, close it, switch iOS Reduce Motion on, open again -> screen dimmed but the panel stayed invisible (reused #sheet kept the spring's last frame inline, opacity 0 / scale .14, plus mb-sp). misty-bloom.js drop(el) clears the spring on every non-spring open/close. Test tests/bloom-reduce-motion-switch.test.cjs (2 of 3 fail on old). Live check Chromium 390 + WebKit iPhone 13 PASS; spam open/close of Sound + Fasting (24x, gaps 0-150 ms) PASS, no errors. Unchecked siblings: community-chat camTo/camRelease reduced branches, liquid-glass springBack under calm. Not tried on Emmanuel's iPhone.
 - 2026-10-25 21:01 CET Hourly bug hunt run 24 (Sesame bug-hunt task, worktree wt-bughunt-202610252001, started on live 20261025-202023). Area: pinch storm on Home + Reduce Motion siblings. **Fixed and released quietly: LIVE 20261025-213603 (main b31a4828), BH-023:** a two-finger pinch on Home with one finger resting on a bubble fired that bubble's long press (Move bubble -> Move page; meals -> meal details; running fast -> start-time editor). living-bubbles.js followed only the pressing finger, so a second finger never cancelled the 540 ms timer. Now a second finger ends the press; the same guard went into the water hold (which resets today's water), the Fuel/Move bloom hold, the Settings/Sleep hold and the Move bubble fallback hold. Tests 3498/3498 (tests/pinch-no-long-press.test.cjs, 3 of 6 fail on old code), CI green; live pinch check (Chromium CDP touch) clean on every Home bubble, one-finger hold/tap unchanged, WebKit iPhone 13 smoke clean. Checked clean: community-chat camera reduced branches, liquid-glass springBack under calm, sp-moving after spam (emulation slowness). Next: the same pinch-hold check off Home (Community holds, misty-turn while flying). Not on Emmanuel's iPhone. Details: BUGHUNT/LEDGER.md run 24.
 
-- 25 Oct 2026 ~22:30 CET, Maya 9: universal clone prompt added to 0.6; handover 0.13 Maya 9 -> Maya 10.
+- 25 Oct 2026 ~22:30 CET, Maya 9: handover 0.13 Maya 9 -> Maya 10. ~23:00: clone prompt removed from the repo at Emmanuel's request (chat only).

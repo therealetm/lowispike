@@ -21,6 +21,18 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
     const R = await H.open({ engine, lang, url, probe: false, fresh: false, viewport: { width: 390, height: 844 }, cloud: url ? undefined : undefined });
     const P = R.page;
     await P.addInitScript(() => { const n = Date.now.bind(Date); Date.now = () => n() + (+sessionStorage.getItem('__pmcSkew') || 0); });
+    /* diagnostic: when the card folds itself, note what it overlapped (window.__pmcFoldHits, printed with a fold failure) */
+    await P.addInitScript(() => {
+        const si = Storage.prototype.setItem;
+        Storage.prototype.setItem = function (k, v) {
+            if (k === 'lowi.pmc.v1' && /"fold":true/.test(v) && !window.__pmcFoldHits) {
+                const c = document.getElementById('pmcCard');
+                if (c) { const top = c.offsetTop, bottom = top + c.offsetHeight, g = c.getBoundingClientRect();
+                    window.__pmcFoldHits = { top, bottom, hits: [...document.querySelectorAll('.wh-cell, #whPad, #spBubble')].filter(b => { const q = b.getBoundingClientRect(); return q.width >= 10 && !(q.right <= g.left || q.left >= g.right || q.bottom <= top - 4 || q.top >= bottom); }).map(b => (b.id || b.className.slice(0, 30)) + ' ' + [q => q.top, q => q.bottom].map(f => Math.round(f(b.getBoundingClientRect()))).join('-') + ' op' + getComputedStyle(b).opacity + ' ' + (b.textContent || '').slice(0, 40)) }; }
+            }
+            return si.call(this, k, v);
+        };
+    });
     const skew = async min => { await P.evaluate(m => sessionStorage.setItem('__pmcSkew', String(m * 60000)), min); await H.sleep(1600); };
     try {
         R.step = 'boot'; await R.goto(); await H.sleep(engine === 'webkit' ? 12000 : 7000);
@@ -102,7 +114,7 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
         const run1 = (await P.evaluate(() => LowiAfterMeal.state())).run;
         ok('a reload keeps every timer start', JSON.stringify(run1) === JSON.stringify(run0), { run0, run1 });
         ok('card back after the reload', !!(await card()));
-        ok('card open after the reload (not folded by a ring that is still moving in)', !(await P.evaluate(() => (LowiAfterMeal.state() || {}).fold)), await P.evaluate(() => LowiAfterMeal.state()));
+        ok('card open after the reload (not folded by a ring that is still moving in)', !(await P.evaluate(() => (LowiAfterMeal.state() || {}).fold)), await P.evaluate(() => ({ st: LowiAfterMeal.state(), foldHits: window.__pmcFoldHits || null })));
         /* 3 */
         R.step = 'squats and stairs done';
         await skew(6.5);

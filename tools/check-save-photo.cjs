@@ -44,7 +44,8 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
         await H.sleep(900);
         const fixture = path.join(__dirname, 'regress', 'fixtures', 'photo2.jpg');
         /* the photo button opens the camera screen with its "choose photo" input; choose the photo there */
-        const hasPhotoBtn = await P.evaluate(() => !!document.querySelector('.r2-ov.on [data-sp="photo"]'));
+        /* wait for the button, not a fixed time: with motion on, a busy VM's WebKit takes seconds for the sheet to switch */
+        const hasPhotoBtn = !!(await P.waitForSelector('.r2-ov.on [data-sp="photo"], input.sp-file-in', { state: 'attached', timeout: 20000 }).catch(() => null)) && await P.evaluate(() => !!document.querySelector('.r2-ov.on [data-sp="photo"]'));
         if (hasPhotoBtn) { await P.evaluate(() => document.querySelector('.r2-ov.on [data-sp="photo"]').click()); await H.sleep(1500); }
         const input = await P.waitForSelector('input.sp-file-in', { state: 'attached', timeout: 15000 }).catch(() => null);
         ok('snack > photo shows a choose-photo input', !!input, { hasPhotoBtn });

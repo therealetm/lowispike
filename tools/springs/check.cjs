@@ -66,7 +66,7 @@ async function run(name) {
     else {
       const drift = Math.max(...sh.held.map(y => Math.abs(y - sh.y1)));
       notes.push(name + ' sheet ' + JSON.stringify({ open: sh.open.map(Math.round), y1: Math.round(sh.y1), drift: +drift.toFixed(2), yUp: Math.round(sh.yUp), expect: Math.round(sh.expect), back: sh.back, end: +sh.yEnd.toFixed(2) }));
-      if (!(sh.y1 > 15)) fail(name, 'sheet: was not mid-open when grabbed (y=' + sh.y1 + ')'); 
+      if (!(sh.y1 > 15)) fail(name, 'sheet: was not mid-open when grabbed (y=' + sh.y1 + ')');
       else if (drift > 1.5) fail(name, 'sheet: moved ' + drift.toFixed(1) + ' px while held mid-open (not caught)');
       else ok(name, 'sheet caught mid-open at ' + Math.round(sh.y1) + ' px, held still (drift ' + drift.toFixed(2) + ' px)');
       if (!(sh.yUp < -5)) fail(name, 'sheet: did not stretch up past the top (' + sh.yUp + ')');

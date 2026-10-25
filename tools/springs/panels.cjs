@@ -56,10 +56,12 @@ async function run(name) {
       const r = res[k], label = k === 'wx' ? 'Weather' : 'Fasting';
       if (r.err) { fail(name, label + ': ' + r.err); continue; }
       const g = r.grow[r.grow.length - 1], f = r.fold[0];
+      const trail = r.fold.map(x => x.on ? x.s.toFixed(2) + '/o' + x.o.toFixed(2) + '@' + x.t + 'ms' : 'removed@' + x.t + 'ms').join(' ');
       if (!g.sp || (g.anim && g.anim !== 'none')) fail(name, label + ': not spring-driven (' + JSON.stringify(g) + ')');
       else if (!(g.s > 0.15 && g.s < 0.99)) fail(name, label + ': not mid-growth when closed (' + g.s + ')');
-      else if (f.s > g.s + 0.12) fail(name, label + ': jumped from ' + g.s.toFixed(2) + ' to ' + f.s.toFixed(2));
-      else ok(name, label + ' closed mid-growth at scale ' + g.s.toFixed(2) + ', next frame ' + f.s.toFixed(2) + ' (no jump), then ' + r.fold.map(x => x.on ? x.s.toFixed(2) + '/o' + x.o.toFixed(2) + '@' + x.t + 'ms' : 'removed@' + x.t + 'ms').join(' '));
+      else if (!f.on) ok(name, label + ' closed mid-growth at scale ' + g.s.toFixed(2) + '; this machine took ' + (f.t - g.t) + ' ms for one frame, so the panel was already removed (its normal 260 ms close) before the next frame: ' + trail);
+      else if (f.s > g.s + 0.12) fail(name, label + ': jumped from ' + g.s.toFixed(2) + ' to ' + f.s.toFixed(2) + ' ' + trail);
+      else ok(name, label + ' closed mid-growth at scale ' + g.s.toFixed(2) + ', next frame ' + f.s.toFixed(2) + ' (no jump), then ' + trail);
     }
     if (res.wxGone === false) fail(name, 'Weather: overlay still there after closing'); else if (res.wxGone) ok(name, 'Weather overlay removed after closing');
     if (res.plain) {

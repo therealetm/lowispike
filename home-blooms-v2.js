@@ -170,6 +170,11 @@
 
     /* ---------------- page part ---------------- */
     const W = root, D = W.document;
+    const ORB_ARM_MS = 400; /* BH-026, see onBloomClick */
+    const now = () => (W.performance && W.performance.now) ? W.performance.now() : Date.now();
+    /* when the finger touched: the event's own time stamp (same clock as performance.now), so a second tap that waited in the queue
+       while the 3D world held the main thread still counts as the quick tap it was; anything odd falls back to now */
+    const tapTime = e => { const n = now(), t = e && +e.timeStamp; return t > 0 && t <= n + 50 && n - t < 10000 ? t : n; };
     if (W.LowiHomeBloomsV2) return;
 
     if (!D.getElementById('hb2Css')) {
@@ -447,7 +452,7 @@
         if (!ov) return false;
         D.body.appendChild(ov);
         try { fitLabels(ov); } catch (e) { }
-        st.ov = ov; st.open = 'all'; st.all = true; st.src = null;
+        st.ov = ov; st.open = 'all'; st.all = true; st.src = null; st.openedAt = now();
         D.documentElement.classList.add('hb2-open');
         buzz(8);
         void ov.offsetWidth; ov.classList.add('on');
@@ -516,7 +521,7 @@
         D.body.appendChild(ov);
         try { fitLabels(ov); } catch (e) { }
         try { placeNote(ov); } catch (e) { }
-        st.ov = ov; st.open = kind; st.src = src;
+        st.ov = ov; st.open = kind; st.src = src; st.openedAt = now();
         src.classList.add('hb2-src'); src.setAttribute('aria-expanded', 'true');
         D.documentElement.classList.add('hb2-open');
         buzz(8);
@@ -567,10 +572,15 @@
         ov.addEventListener('pointerup', end);
         ov.addEventListener('pointercancel', end);
     }
+    /* BH-026: a bloom's orbs fly out of the bubble you tapped and the middle one comes to rest on top of it (Move's Steady sits 25 px
+       from the bubble's centre). A quick second tap on the bubble (a double tap, or a "tap again to close") pressed that orb before you
+       could see it: Move logged Steady 5k-10k steps, Fuel could open Cook. Like the fresh backdrop (BH-025), a bloom ignores pointer
+       taps made in its first ORB_ARM_MS (by the tap's own time stamp). Keyboard clicks (detail 0) and scripted clicks work at once. */
     function onBloomClick(e) {
         const t = e.target.closest('[data-hb2]');
         if (!t || !st.ov) return;
         e.preventDefault(); e.stopPropagation();
+        if (e.isTrusted && e.detail > 0 && tapTime(e) - (st.openedAt || 0) < ORB_ARM_MS) return;
         if (t.dataset.hb2 === 'close') { close(); return; }
         const a = (st.ov.__acts || []).find(x => x.id === t.dataset.id);
         if (!a || a.disabled) return;

@@ -1,14 +1,17 @@
 'use strict';
 /* Oct 25, 2026: Give a hand as the fourth peer in the Fuel > Shop tab bar (store-picks.js giftDoor), no longer a row in Kitchen.
    node tools/give-hand-tab/check.cjs [url|root] [sizes] [langs] [outdir]     ENG=chromium|webkit (default chromium)
-   sizes: iphone (390x844), se (320x568), small (375x667); langs: en,de,es
+   sizes: iphone (390x844), se (320x568), small (375x667), ipadP (820x1180), ipadL (1180x820); langs: en,de,es
+   WebKit on this VM: SIM_REDUCED_MOTION=1 SIM_WK_NOSHOT=1 (and SIM_DPR=1 for iPad) keep software rendering moving
    Real finger taps. Server gate shut: three tabs, no Give a hand anywhere. Server gate open: four tabs (Supermarket, Seller Zone,
    Kitchen, Give a hand), each inside the card, 44 px+, no word cut off, no sideways overflow; no Give a hand row in Kitchen or
    the Supermarket pane; tap Give a hand: its panel opens on top of Shop; its X brings Shop back on the tab used last (Kitchen);
    Supermarket and Seller Zone tabs still switch; Shop's own X closes Shop. Zero page errors. The Room galaxy is not touched. */
 const H = require('../sim/harness.cjs');
 const fs = require('fs');
-const SZ = { iphone: [390, 844], se: [320, 568], small: [375, 667] };
+const SZ = { iphone: [390, 844], se: [320, 568], small: [375, 667], ipadP: [820, 1180], ipadL: [1180, 820] };
+/* WebKit keeps its device (user agent, touch) but uses the size asked for (iPhone 13 at the full 390x844; iPad Pro 11 both ways) */
+process.env.SIM_WK_VIEWPORT = '1';
 const NM = { en: 'Give a hand', de: 'Hilf mit', es: 'Echa una mano' };
 (async () => {
   const where = process.argv[2] || '.', sizes = (process.argv[3] || 'iphone,se').split(','), langs = (process.argv[4] || 'en,de,es').split(',');
@@ -18,6 +21,7 @@ const NM = { en: 'Give a hand', de: 'Hilf mit', es: 'Echa una mano' };
   for (const sz of sizes) for (const lang of langs) {
     const [w, h] = SZ[sz], tag = sz + '-' + lang + '-' + engine, gateTest = first; first = false;
     const o = { engine, members: 6, messages: 6, probe: false, lang, viewport: { width: w, height: h } };
+    if (/^ipad/.test(sz)) { o.device = 'iPad Pro 11'; o.dpr = 2; }
     if (/^https?:/.test(where)) o.url = where; else o.root = where;
     const R = await H.open(o), P = R.page;
     const ok = (name, c, info) => { if (c) pass++; else { fail++; bad.push(tag + ' ' + name); } console.log((c ? 'PASS ' : 'FAIL ') + tag + ' ' + name + (c || info === undefined ? '' : ' ' + JSON.stringify(info))); };

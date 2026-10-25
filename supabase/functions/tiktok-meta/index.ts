@@ -54,15 +54,17 @@ async function resolve(link: URL, admin: ReturnType<typeof createClient>): Promi
     try { const r = await get(link.href, 8000, { redirect: "manual" }); vid = vidFrom(r.headers.get("location") || ""); } catch { /* none */ }
   }
   if (!vid) return null;
-  // already copied for this video: nothing to download
+  // already copied for this video: nothing to download (still read the page below when the creator is unknown)
+  let have = "";
   for (const ext of ["jpg", "webp", "png"]) {
     try {
       const h = await get(PUB + vid + "." + ext, 5000, { method: "HEAD" });
-      if (h.ok) return { thumb: PUB + vid + "." + ext, vid, title, author, handle };
+      if (h.ok) { have = PUB + vid + "." + ext; break; }
     } catch { /* go on */ }
   }
+  if (have && (handle || author)) return { thumb: have, vid, title, author, handle };
   // 3. no picture in oEmbed: the video's own page carries its cover (and the caption and creator)
-  if (!src || !title || !handle) {
+  if ((!src && !have) || !title || !handle) {
     try {
       const r = await get("https://www.tiktok.com/" + (handle || "@i") + "/video/" + vid, 10000);
       if (r.ok) {
@@ -80,6 +82,7 @@ async function resolve(link: URL, admin: ReturnType<typeof createClient>): Promi
       }
     } catch { /* no picture */ }
   }
+  if (have) return { thumb: have, vid, title, author, handle };
   if (!src) return { thumb: "", vid, title, author, handle };
   // 4. copy the picture to our own storage, where the link never expires
   try {
@@ -109,7 +112,8 @@ Deno.serve(async (req) => {
     const link = row && ttUrl(row.url);
     if (!row || !link) return json({ ok: false, error: "not a TikTok post" }, 404);
     const old = row.meta && typeof row.meta === "object" ? row.meta : {};
-    if (typeof old.thumb === "string" && old.thumb.startsWith(PUB) && old.vid) return json({ ok: true, meta: old, cached: true });
+    // done: the stored picture and the creator; without a creator it tries again at most once a day
+    if (typeof old.thumb === "string" && old.thumb.startsWith(PUB) && old.vid && (old.author || old.handle || Date.now() - Number(old.tt || 0) < 864e5)) return json({ ok: true, meta: old, cached: true });
     const m = await resolve(link, admin);
     if (!m) return json({ ok: false, error: "unknown video" }, 422);
     const meta = { ...old, vid: m.vid, tt: Date.now() } as Record<string, unknown>;

@@ -64,7 +64,7 @@
   /* ---------- open in the TikTok app ---------- */
   var pending = null, left = false, webUntil = 0, hinted = null, oldText = '', restoreT = 0;
   function restore() {
-    if (hinted) { try { hinted.textContent = oldText; } catch (e) {} }
+    if (hinted) { try { if (oldText === null) hinted.remove(); else hinted.textContent = oldText; } catch (e) {} }
     hinted = null; webUntil = 0;
   }
   function gone() { if (pending) left = true; }
@@ -72,8 +72,9 @@
     var b = pending; pending = null;
     if (!b || left || D.visibilityState === 'hidden') return;
     webUntil = Date.now() + 30000;
-    var slide = b.closest && b.closest('.fy-slide'), s = slide && slide.querySelector('.fy-out small');
-    if (s) { restore(); webUntil = Date.now() + 30000; hinted = s; oldText = s.textContent; s.textContent = HINT[lang()]; }
+    var slide = b.closest && b.closest('.fy-slide'), s = slide && slide.querySelector('.fy-out small'), made = false;
+    if (!s && slide && slide.querySelector('.fy-out-t')) { s = D.createElement('small'); s.className = 'fy-tt-hint'; slide.querySelector('.fy-out-t').appendChild(s); made = true; }
+    if (s) { restore(); webUntil = Date.now() + 30000; hinted = s; oldText = made ? null : s.textContent; s.textContent = HINT[lang()]; }
     else if (typeof W.toast === 'function') { try { W.toast(HINT[lang()], 3200); } catch (e) {} }
     try { W.clearTimeout(restoreT); restoreT = W.setTimeout(restore, 30000); } catch (e) {}
   }
@@ -83,7 +84,7 @@
     if (!app || !ios() || !standalone()) return false;
     if (webUntil && Date.now() < webUntil) { restore(); return false; }
     pending = btn || null; left = false;
-    W.location.href = app;
+    api._go(app);
     try { W.setTimeout(stayed, 2500); } catch (e) {}
     return true;
   }
@@ -146,6 +147,6 @@
     });
     pump(onMeta);
   }
-  W.LowiTikTok = { isTikTok: isTikTok, vidOf: vidOf, stable: stable, sized: sized, appURL: appURL, needsHeal: needsHeal,
+  var api = W.LowiTikTok = { _go: function (u) { W.location.href = u; }, isTikTok: isTikTok, vidOf: vidOf, stable: stable, sized: sized, appURL: appURL, needsHeal: needsHeal,
     open: open, meta: meta, merge: merge, heal: heal, paint: paint, _stayed: stayed, HINT: HINT };
 })(typeof window !== 'undefined' ? window : this);

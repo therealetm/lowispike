@@ -82,6 +82,17 @@ test('Home Screen app on iPhone: the tap goes straight to the TikTok app; no app
   assert.equal(small.textContent, 'von @glowwithshiva', 'the button reads as before');
 });
 
+test('no creator name on the button: the hint gets its own small line, removed again on the next tap', () => {
+  const { win, document, timers } = page();
+  const kids = [], made = [];
+  document.createElement = tag => { const e = { tag, className: '', textContent: '', remove() { kids.splice(kids.indexOf(e), 1); } }; made.push(e); return e; };
+  const t = { appendChild: e => kids.push(e) };
+  const btn = { closest: s => (s === '.fy-slide' ? { querySelector: q => (q === '.fy-out-t' ? t : null) } : null) };
+  win.LowiTikTok.open(POST, btn); timers.find(x => x[1] === 2500)[0]();
+  assert.equal(kids.length, 1); assert.equal(kids[0].textContent, 'Keine TikTok-App? Nochmal tippen f\u00fcr den Browser');
+  assert.equal(win.LowiTikTok.open(POST, btn), false); assert.equal(kids.length, 0);
+});
+
 test('the app took it (page went to the background): no hint, the next tap goes to the app again', () => {
   const { win, document, log, timers, L } = page();
   win.LowiTikTok.open(POST, null);
@@ -132,7 +143,7 @@ test('server: oEmbed with a page fallback, the picture copied into our storage, 
   assert.ok(fn.includes('__UNIVERSAL_DATA_FOR_REHYDRATION__'), 'oEmbed gives no picture from some regions: the video page has the cover');
   assert.ok(fn.includes('admin.storage.from("media").upload("tiktok/" + vid + "." + ext'));
   assert.ok(fn.includes('meta.thumb = m.thumb') && !/meta\.thumb = src/.test(fn), 'only the stored copy is ever written, never TikTok\'s expiring link');
-  assert.ok(fn.includes('old.thumb.startsWith(PUB) && old.vid'), 'idempotent');
+  assert.ok(fn.includes('old.thumb.startsWith(PUB) && old.vid && (old.author || old.handle'), 'idempotent');
   const html = read('index.html');
   assert.ok(html.includes('function fyHealThumbs(){') && /fyHealThumbs\(\); load\(\); retryShares\(\); const list = feed\(\);/.test(html));
   assert.ok(html.includes('if (TT && was && was.meta && TT.stable(was.meta.thumb)'), 'a re-send keeps the stored picture');

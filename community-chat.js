@@ -345,8 +345,12 @@ function mapView(gal){const typing=D.documentElement.classList.contains('cs-chat
   if(typing&&camFrozen)return camFrozen;
   if(!camFrozen||Math.abs(w-camFrozen.w)>40||h>camFrozen.h||camFrozen.h-h>160)camFrozen={w,h,hb:h};else camFrozen={w:camFrozen.w,h:camFrozen.h,hb:h};
   return camFrozen;}
-function fitCam(gx,v){const spots=(gx.map.spots||[]).filter(s=>gx.spot.has(s.uid)),key=v.w+'x'+v.h+':'+spots.map(s=>s.uid+'@'+s.x+','+s.y).join('|');
-  if(!fitMemo||fitMemo.key!==key)fitMemo={key,cam:G.mapFit(spots,v.w,v.h,{side:v.w>=640?54:46,top:v.w>=640?44:36,bot:v.w>=640?64:56})};return {...fitMemo.cam};}
+/* Oct 25 (Emmy shrank to "E" next to You): the energy pad's corner is kept free too (mapFit avoid), so no name lands on it */
+function fitCam(gx,v){const spots=(gx.map.spots||[]).filter(s=>gx.spot.has(s.uid)),gal=D.getElementById('cgGalaxy');
+  let ko=null;try{ko=gal&&W.LowiEnergy&&W.LowiEnergy.keepOut?W.LowiEnergy.keepOut(gal):null;}catch(e){ko=null;}
+  const avoid=ko&&ko.s>0?{x:Math.round(ko.x-ko.s/2),y:Math.round(ko.y-ko.s/2),w:Math.round(ko.s),h:Math.round(ko.s)}:null;
+  const key=v.w+'x'+v.h+':'+(avoid?avoid.x+','+avoid.y+','+avoid.w:'-')+':'+spots.map(s=>s.uid+'@'+s.x+','+s.y).join('|');
+  if(!fitMemo||fitMemo.key!==key)fitMemo={key,cam:G.mapFit(spots,v.w,v.h,{side:v.w>=640?54:46,top:v.w>=640?44:36,bot:v.w>=640?64:56,big:v.w>=640,avoid})};return {...fitMemo.cam};}
 function mapZ(gx,v){return G.mapZooms(gx.map.radius,v.w,v.h,fitCam(gx,v).z);}
 function schedulePlace(){if(placeRaf)return;placeRaf=requestAnimationFrame(()=>{placeRaf=0;place();});}
 /* Oct 16 (energy hits, community-energy.js): a knocked companion rolls away from its spot for a moment; epos() adds that offset */

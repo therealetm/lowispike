@@ -135,11 +135,37 @@ function pointOn(q,t){const u=1-t;return {x:u*u*q.a.x+2*u*t*q.c.x+t*t*q.b.x,y:u*
 function midOf(a,b){return pointOn(curveOf(a,b),.5);}
 
 /* Sky: stars, two soft nebulae and the stream lines between bodies. Draws nothing without a real canvas. */
+/* Oct 25 heat (COORD-heat-battery.md: phones got hot because things kept redrawing with nobody touching them). How often the Room
+   draws when nobody touches the screen: the "page" tiers of power-saver.js. 0 = every frame (as before). */
+const IDLE_T={ACTIVE:3000,REST:30000,DEEP:90000},IDLE_FPS={calm:20,rest:10,deep:5};
+function idleGap(ms){const f=ms<IDLE_T.ACTIVE?0:ms>=IDLE_T.DEEP?IDLE_FPS.deep:ms>=IDLE_T.REST?IDLE_FPS.rest:IDLE_FPS.calm;return f?1000/f:0;}
+/* the app-wide power saver (window.LowiPower, power-saver.js) decides when it is there, so every loop slows the same way (it also
+   knows battery saver and flights); without it the Room keeps its own touch clock with the same tiers */
+function idlePacer(R){
+ const now=()=>R.performance&&R.performance.now?R.performance.now():Date.now();let lastIn=now(),moveAt=0;const subs=[];
+ const poke=()=>{lastIn=now();subs.forEach(fn=>{try{fn();}catch(e){}});};
+ if(R.addEventListener){['pointerdown','touchstart','keydown','wheel'].forEach(t=>R.addEventListener(t,poke,{capture:true,passive:true}));
+  ['pointermove','scroll'].forEach(t=>R.addEventListener(t,()=>{const n=now();if(n-moveAt>250){moveAt=n;poke();}},{capture:true,passive:true}));}
+ return {gap(){const P=R.LowiPower;if(P&&typeof P.interval==='function'){try{const v=+P.interval(true);if(isFinite(v)&&v>=0)return v;}catch(e){}}return idleGap(now()-lastIn);},
+  onPoke(fn){subs.push(fn);}};
+}
+/* the companions' cgBob loops (community-galaxy.css) while slowed: held by the Room and moved on at its own pace (real time, the same
+   ease), handed back to the browser at the next touch or when the Room closes. Any other animation is left alone. */
+function bobPacer(R,box){
+ const held=new Map();let scanAt=-1e9;
+ const list=()=>{const b=box();if(!b||!b.getAnimations)return [];try{return b.getAnimations({subtree:true}).filter(a=>a&&a.animationName==='cgBob');}catch(e){return [];}};
+ return {
+  step(t){if(t-scanAt>=1000||!held.size){scanAt=t;for(const a of list())if(!held.has(a)&&a.playState==='running'){held.set(a,{ct:+a.currentTime||0,t0:t});try{a.pause();}catch(e){}}}
+   held.forEach((v,a)=>{const tg=a.effect&&a.effect.target;if(!tg||tg.isConnected===false){held.delete(a);return;}try{a.currentTime=v.ct+(t-v.t0);}catch(e){}});},
+  release(t){if(!held.size)return;held.forEach((v,a)=>{try{a.currentTime=v.ct+(t-v.t0);a.play();}catch(e){}});held.clear();}
+ };
+}
 function sky(canvas,opts){
+ const R=(opts&&opts.root)||root,pace=idlePacer(R),bobs=bobPacer(R,()=>(opts&&opts.bobs)||(canvas&&(canvas.closest&&canvas.closest('#cgGalaxy')||canvas.parentElement)));
  const ctx=canvas&&canvas.getContext&&canvas.getContext('2d');if(!ctx)return null;
- const reduce=()=>!!(root.matchMedia&&root.matchMedia('(prefers-reduced-motion: reduce)').matches);
+ const reduce=()=>!!(R.matchMedia&&R.matchMedia('(prefers-reduced-motion: reduce)').matches);
  let w=0,h=0,dpr=1,stars=[],lines=[],orbits=null,raf=0,last=0,running=false,light=false,seed=hash('lowi-galaxy');
- function size(){const r=canvas.getBoundingClientRect?canvas.getBoundingClientRect():{width:0,height:0};const nw=Math.round(r.width),nh=Math.round(r.height);dpr=Math.min(2,root.devicePixelRatio||1);if(nw===w&&nh===h&&canvas.width===Math.round(nw*dpr))return;w=nw;h=nh;canvas.width=Math.max(1,Math.round(w*dpr));canvas.height=Math.max(1,Math.round(h*dpr));const r2=rng(seed),count=Math.round(Math.min(140,w*h/3600));stars=[];for(let i=0;i<count;i++)stars.push({x:r2()*w,y:r2()*h,r:r2()<.12?1.6:r2()*1.1+.35,p:r2()*6.28,s:.4+r2()*1.4});}
+ function size(){const r=canvas.getBoundingClientRect?canvas.getBoundingClientRect():{width:0,height:0};const nw=Math.round(r.width),nh=Math.round(r.height);dpr=Math.min(2,R.devicePixelRatio||1);if(nw===w&&nh===h&&canvas.width===Math.round(nw*dpr))return;w=nw;h=nh;canvas.width=Math.max(1,Math.round(w*dpr));canvas.height=Math.max(1,Math.round(h*dpr));const r2=rng(seed),count=Math.round(Math.min(140,w*h/3600));stars=[];for(let i=0;i<count;i++)stars.push({x:r2()*w,y:r2()*h,r:r2()<.12?1.6:r2()*1.1+.35,p:r2()*6.28,s:.4+r2()*1.4});}
  const curve=curveOf,at=pointOn;
  function draw(now){
   size();if(!w||!h)return;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);const still=reduce(),t=now/1000;
@@ -148,7 +174,7 @@ function sky(canvas,opts){
      behind you, cells and energy motes drifting slowly past. The companions float in it; the stream lines still carry the talk. */
   const O=orbits&&isFinite(orbits.cx)&&isFinite(orbits.cy)?orbits:null,cx=O?O.cx:w/2,cy=O?O.cy:h*.45,R=Math.hypot(w,h);
   /* Oct 16: with the live 3D world under the page (html.wb-on), this layer only draws the energy streams */
-  const bare=!!(root.document&&root.document.documentElement&&root.document.documentElement.classList.contains('wb-on'));
+  const bare=!!(R.document&&R.document.documentElement&&R.document.documentElement.classList.contains('wb-on'));
   if(!bare){
   const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,R*.75);bg.addColorStop(0,'#16305a');bg.addColorStop(.45,'#0a1834');bg.addColorStop(1,'#040811');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
   /* Oct 25: the three drifting nebula blobs are gone too: a clean, still deep-blue room with Misty's mint glow behind you */
@@ -170,12 +196,21 @@ function sky(canvas,opts){
   }
   ctx.globalAlpha=1;
  }
- function loop(now){raf=0;if(!running)return;if(now-last>=33){last=now;draw(now);}raf=(root.requestAnimationFrame||setTimeout)(loop,16);}
+ /* Oct 25 heat: ~30 a second while someone touches the screen (as before); after 3 s without a touch the Room's own drawing and the
+    companions' bobbing step at ~20 a second, after 30 s ~10, after 90 s ~5 (idlePacer). Time stays real, so it looks the same. While
+    slowed it waits on a timer, not on every screen refresh; the next touch goes back to full speed in the next frame. */
+ const nowMs=()=>R.performance&&R.performance.now?R.performance.now():Date.now();
+ let tmo=0;
+ function next(g){if(!running)return;if(g>0){tmo=R.setTimeout(()=>{tmo=0;loop(nowMs());},Math.max(8,g-(nowMs()-last)));}else raf=(R.requestAnimationFrame||R.setTimeout)(loop,16);}
+ function loop(now){raf=0;if(!running)return;const g=pace.gap();
+  if(now-last>=Math.max(33,g)-2){last=now;draw(now);if(g>0)bobs.step(nowMs());}
+  if(!g)bobs.release(nowMs());next(g);}
+ pace.onPoke(()=>{if(!running)return;bobs.release(nowMs());if(tmo){R.clearTimeout(tmo);tmo=0;raf=(R.requestAnimationFrame||R.setTimeout)(loop,16);}});
  return {
-  set(next,isLight,orb){lines=Array.isArray(next)?next:[];light=!!isLight;orbits=orb||null;if(!running||reduce())draw(performance.now?performance.now():Date.now());},
-  start(){if(running)return;running=true;if(reduce()){draw(0);running=false;return;}raf=(root.requestAnimationFrame||setTimeout)(loop,16);},
-  stop(){running=false;if(raf&&root.cancelAnimationFrame)root.cancelAnimationFrame(raf);raf=0;},
-  resize(){w=0;h=0;draw(performance.now?performance.now():Date.now());},
+  set(next,isLight,orb){lines=Array.isArray(next)?next:[];light=!!isLight;orbits=orb||null;if(!running||reduce())draw(nowMs());},
+  start(){if(running)return;running=true;if(reduce()){draw(0);running=false;return;}raf=(R.requestAnimationFrame||setTimeout)(loop,16);},
+  stop(){running=false;if(raf&&R.cancelAnimationFrame)R.cancelAnimationFrame(raf);raf=0;if(tmo)R.clearTimeout(tmo);tmo=0;bobs.release(nowMs());},
+  resize(){w=0;h=0;draw(nowMs());},
   running:()=>running
  };
 }
@@ -208,7 +243,7 @@ function mapLayout(members,meId,o){o=o||{};
  /* oldest first, then id hash: who is first in the caller's list (selected, newest talker) can never change a seat */
  list.sort((a,b)=>jt(a.j)-jt(b.j)||hash(a.uid)-hash(b.uid)||(a.uid<b.uid?-1:a.uid>b.uid?1:0));
  const K=mapCols(list.length),abs=new Map();
- list.forEach((m,i)=>{const row=Math.floor(i/K),k=i%K,r=rng(hash(m.uid)+11),jx=(r()-.5)*14,jy=(r()-.5)*14;
+ list.forEach((m,i)=>{const row=Math.floor(i/K),k=i%K,r=rng(hash(m.uid)+11),jx=(r()-.5)*6,jy=(r()-.5)*6;/* Oct 25: a small wobble (was 14 px) so a name never just grazes the companion below it */
   abs.set(m.uid,{x:Math.round((rowOff(k,K)+(row%2?.25:-.25))*ROW_DX+jx),y:Math.round(-row*ROW_DY+jy)});});
  const a0=abs.get(me),spots=[{uid:me,me:true,x:0,y:0}];let R=0;
  for(const m of list){if(m.uid===me)continue;const a=abs.get(m.uid);spots.push({uid:m.uid,me:false,x:a.x-a0.x,y:a.y-a0.y});}
@@ -222,8 +257,26 @@ function mapFit(spots,w,h,o){o=o||{};w=Math.max(200,+w||360);h=Math.max(200,+h||
  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const s of spots||[]){if(!s)continue;x0=Math.min(x0,s.x);x1=Math.max(x1,s.x);y0=Math.min(y0,s.y);y1=Math.max(y1,s.y);}
  if(!isFinite(x0)){x0=x1=y0=y1=0;}
  const side=o.side!=null?o.side:46,top=o.top!=null?o.top:36,bot=o.bot!=null?o.bot:56,z0=Math.max(.85,Math.min(1.25,Math.min(w,h)/400));
- let z=Math.min((w-2*side)/Math.max(1,x1-x0),(h-top-bot)/Math.max(1,y1-y0));z=Math.max(.18,Math.min(z0,z));
- return {x:(x0+x1)/2,y:(y0+y1)/2-((top+(h-bot))/2-h/2)/z,z};}
+ const fit=(l,r,t,b)=>{let z=Math.min((w-l-r)/Math.max(1,x1-x0),(h-t-b)/Math.max(1,y1-y0));z=Math.max(.18,Math.min(z0,z));
+  return {x:(x0+x1)/2-((l+(w-r))/2-w/2)/z,y:(y0+y1)/2-((t+(h-b))/2-h/2)/z,z};};
+ const base=fit(side,side,top,bot),A=o.avoid;
+ if(!A||!(A.w>0)||!(A.h>0))return base;
+ /* Oct 25 (live check: "Emmy" shrank to "E" next to You): the energy pad sits in a corner of the Room and mapLabels keeps names
+    off it. The view tries leaving the pad's corner free (the bottom rows lifted above it, or the right column moved left of it,
+    in steps) and runs the same label pass the page runs (page sizes: orb 46*f, 54 for you, 56/64 on a big screen, name up to
+    size+30 wide, f from the zoom as in place()). It keeps the view that loses the fewest names to a letter, then the closest
+    zoom; with nothing lost it stays the plain fit. */
+ const big=!!o.big,ax0=A.x,ay0=A.y,ax1=A.x+A.w,ay1=A.y+A.h,pad={id:'__pad',x:(ax0+ax1)/2,y:(ay0+ay1)/2,s:Math.max(A.w,A.h),nw:0,bw:0,bh:0,bub:false};
+ const lost=c=>{const ff=Math.max(.68,Math.min(1.2,Math.sqrt(c.z/z0))),fnn=Math.max(.8,ff),items=[];
+  for(const q of spots||[]){if(!q)continue;const sz=(q.me?(big?64:54):(big?56:46));items.push({id:String(q.uid),x:w/2+(q.x-c.x)*c.z,y:h/2+(q.y-c.y)*c.z,s:sz*ff,nw:(sz+30)*fnn,bw:0,bh:0,bub:false});}
+  items.push(pad);const lab=mapLabels(items,{w,h});let k=0;for(const it of items)if(it!==pad&&lab.get(it.id).at!=='b')k++;return k;};
+ let best=base,bl=lost(base);if(!bl)return base;
+ const f0=Math.max(.68,Math.min(1.2,Math.sqrt(base.z/z0))),fn0=Math.max(.8,f0),hw=((big?56:46)+30)*fn0/2+1,dn=((big?56:46)/2)*f0+21,up=((big?56:46)/2)*f0+2;
+ const bMax=ay0>h/2?Math.max(bot,h-ay0+dn):0,tMax=ay0>h/2?0:Math.max(top,ay1+up),rMax=ax0>w/2?Math.max(side,w-ax0+hw):0,lMax=ax0>w/2?0:Math.max(side,ax1+hw);
+ for(const k of [.25,.5,.75,1]){
+  const cs=[fit(side,side,tMax?top+(tMax-top)*k:top,bMax?bot+(bMax-bot)*k:bot),fit(lMax?side+(lMax-side)*k:side,rMax?side+(rMax-side)*k:side,top,bot)];
+  for(const c of cs){const l=lost(c);if(l<bl||(l===bl&&best!==base&&c.z>best.z)){best=c;bl=l;}}}
+ return best;}
 /* Camera limits for a w x h view: z0 = the zoom you arrive at, zmin shows everyone, zmax is a close look. */
 /* fz (Oct 25): the fitted zoom (mapFit), so the furthest you can zoom out always still includes the view that shows everyone */
 function mapZooms(radius,w,h,fz){w=Math.max(200,+w||360);h=Math.max(200,+h||500);const z0=Math.max(.85,Math.min(1.25,Math.min(w,h)/400)),fit=Math.min(w,h)/(2*((+radius||0)+90)),f2=+fz>0?+fz:Infinity;
@@ -258,7 +311,7 @@ function mapLabels(items,view){
   if(got)r.bub=got;else r.dot=true;}
  return out;
 }
-const api={BOT_KEEP,hash,mapPool,mapSlot,mapCols,mapLayout,mapFit,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,roomMembers,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
+const api={BOT_KEEP,idleGap,hash,mapPool,mapSlot,mapCols,mapLayout,mapFit,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,roomMembers,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
 if(typeof module==='object'&&module.exports)module.exports=api;
 root.LowiGalaxy=api;
 })(typeof window!=='undefined'?window:globalThis);

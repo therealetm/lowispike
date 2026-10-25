@@ -48,7 +48,9 @@ test('Community is the spirit world seen from far out: metabolic, not planets; r
     assert.ok(me.cell.r > 0 && me.cell.r < L.grid.rows - 1, 'you sit in a middle row, not the bottom');
     assert.ok(gal.includes('set(next,isLight,orb)') && !/ctx\.arc\(O\.cx,O\.cy,r,0,6\.283\)/.test(gal), 'no orbit rings');
     assert.ok(!/rgba\(255,244,214,\.55\)/.test(gal), 'no sun');
-    assert.ok(gal.includes("'#16305a'") && gal.includes('a cell: soft disc'), 'dark-blue bloodstream with drifting cells');
+    /* Oct 25 (Emmanuel, real iPhone: "bugs from the circle leftovers chunking"): the deep-blue room stays, the cell discs with rims
+       are gone; every speck is a small soft mote */
+    assert.ok(gal.includes("'#16305a'") && !gal.includes('a cell: soft disc') && !/ctx\.ellipse\(x,y,r,r\*\.82/.test(gal) && /ctx\.arc\(x,y,s\.r,0,6\.283\)/.test(gal), 'dark-blue room with soft motes, no cell discs');
     assert.ok(chat.includes('gx.orbits={cx:mp.x,cy:mp.y') && chat.includes('sk.set(gx.lines,false,gx.orbits)'), 'the sky centres on you and draws the streams');
     assert.ok(!chat.includes("' ringed'") && !/\.cg-body\.ringed/.test(css), 'no planet rings');
     assert.ok(/html\.lg #cmPaneChat\[data-spirit-chat\] \.cg-bub \{\n    background: #fff !important;/.test(css) && /border-radius: 20px !important;/.test(css), 'white, round bubbles');

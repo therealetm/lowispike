@@ -47,9 +47,9 @@ test('roomMembers: someone with several accounts under one name keeps the date t
 });
 
 /* the fitted camera, then the same label pass the page runs (community-chat.js place()) */
-function project(L, cam, w, h) {
+function project(L, cam, w, h, big) {
   const Z = G.mapZooms(L.radius, w, h, cam.z), f = Math.max(.68, Math.min(1.2, Math.sqrt(cam.z / Z.z0))), fn = Math.max(.8, f);
-  return L.spots.map(s => ({ id: s.uid, x: w / 2 + (s.x - cam.x) * cam.z, y: h * .5 + (s.y - cam.y) * cam.z, s: (s.me ? 54 : 46) * f, nw: 76 * fn, bw: 0, bh: 0, bub: false }));
+  return L.spots.map(s => ({ id: s.uid, x: w / 2 + (s.x - cam.x) * cam.z, y: h * .5 + (s.y - cam.y) * cam.z, s: (s.me ? (big ? 64 : 54) : (big ? 56 : 46)) * f, nw: ((big ? 56 : 46) + 30) * fn, bw: 0, bh: 0, bub: false }));
 }
 for (const [label, w, h] of [['iPhone 13', 390, 614], ['iPad', 820, 1000], ['small iPhone', 375, 520]]) {
   test('fit to everyone on ' + label + ': the Room opens with every companion on screen and every full name readable', () => {
@@ -70,6 +70,35 @@ for (const [label, w, h] of [['iPhone 13', 390, 614], ['iPad', 820, 1000], ['sma
     }
   });
 }
+
+/* Oct 25 (live check, iPhone 13 at 390x844: "Emmy" shrank to "E" in the bottom row next to You): the energy pad sits in the
+   Room's bottom-right corner and the label pass keeps names off it, so the fitted view must leave the pad's corner free.
+   Galaxy and pad sizes are the ones measured on the page (iPhone 13: galaxy 352x465, pad centre 304,417, 84 wide). */
+for (const [label, w, h, pad, big] of [['iPhone 13', 352, 465, { x: 304, y: 417, s: 84 }], ['iPhone 15 Pro Max', 392, 553, { x: 344, y: 505, s: 84 }], ['iPad', 770, 715, { x: 712, y: 657, s: 96 }, true]]) {
+  test('fit keeps every full name off the energy pad on ' + label + ' (no name shrinks to a letter)', () => {
+    for (const n of [6, 15, 16, 20]) for (const mi of [0, 1, 2, n - 1]) {
+      const P = crowd(n), me = P[mi], L = G.mapLayout(P.filter(p => p !== me), me.uid, { meJ: me.j });
+      const avoid = { x: pad.x - pad.s / 2, y: pad.y - pad.s / 2, w: pad.s, h: pad.s };
+      const cam = G.mapFit(L.spots, w, h, { avoid, big });
+      const items = project(L, cam, w, h, big); items.push({ id: '__ce', x: pad.x, y: pad.y, s: pad.s, nw: 0, bw: 0, bh: 0, bub: false });
+      const lab = G.mapLabels(items, { w, h });
+      for (const it of items) if (it.id !== '__ce') {
+        assert.ok(it.x > 0 && it.x < w && it.y > 0 && it.y < h, n + ' people, you #' + mi + ': ' + it.id + ' on screen');
+        assert.equal(lab.get(it.id).at, 'b', n + ' people, you #' + mi + ': ' + it.id + ' shows its full name under its companion');
+      }
+      assert.ok(cam.z >= G.mapFit(L.spots, w, h, { big }).z * .6, 'the pad costs a little zoom, not half of it');
+    }
+  });
+}
+
+test('fit on a small iPhone (SE, Room 337x315): keeping the pad corner free never loses more names than ignoring the pad', () => {
+  const w = 337, h = 315, pad = { x: 289, y: 267, s: 84 }, avoid = { x: pad.x - 42, y: pad.y - 42, w: 84, h: 84 };
+  const lostAt = (L, cam) => { const items = project(L, cam, w, h); items.push({ id: '__ce', x: pad.x, y: pad.y, s: pad.s, nw: 0, bw: 0, bh: 0, bub: false }); const lab = G.mapLabels(items, { w, h }); return items.filter(it => it.id !== '__ce' && lab.get(it.id).at !== 'b').length; };
+  for (const n of [6, 15, 16]) for (const mi of [0, n - 1]) {
+    const P = crowd(n), me = P[mi], L = G.mapLayout(P.filter(p => p !== me), me.uid, { meJ: me.j });
+    assert.ok(lostAt(L, G.mapFit(L.spots, w, h, { avoid })) <= lostAt(L, G.mapFit(L.spots, w, h)), n + ' people, you #' + mi);
+  }
+});
 
 test('fit: two people are not blown up past the normal arrival zoom', () => {
   const P = crowd(2), L = G.mapLayout([P[1]], P[0].uid, { meJ: P[0].j }), cam = G.mapFit(L.spots, 390, 614);

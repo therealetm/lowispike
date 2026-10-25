@@ -171,7 +171,7 @@ function meSpot(g){return g&&g.spots.find(s=>s.me);}
 /* Oct 19: where knocked companions came to rest survives leaving Community and a reload (per account on this phone) */
 const LAND_KEY='lowi.energy.land.v3'; /* Oct 24: v2 = room coordinates (v1 was each device's own frame). Oct 25: v3 = the join-ordered rows (community-galaxy.js mapLayout); spots saved in the old scattered layout would land people in random places */
 /* Oct 25: shared rest spots written before the rows layout went live belong to the old layout; they are skipped (people sit in their row seat) */
-const ROWS_SINCE=Date.parse('2026-10-25T14:30:00Z');
+const ROWS_SINCE=Date.parse('2026-10-25T14:50:00Z');
 function landKey(){const c=W.LOWI_CLOUD_X,st=c&&c.state?c.state():null;return LAND_KEY+':'+((st&&st.uid)||'me');}
 function loadLand(){try{const o=JSON.parse(localStorage.getItem(landKey())||'{}');return o&&typeof o==='object'?o:{};}catch(e){return {};}}
 function saveLand(){if(!tb)return;try{const o=tb.snap();if(Object.keys(o).length)localStorage.setItem(landKey(),JSON.stringify(o));else localStorage.removeItem(landKey());}catch(e){}}

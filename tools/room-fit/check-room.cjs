@@ -72,6 +72,7 @@ const writes = [];
   console.log(JSON.stringify({ engine: process.env.ENGINE || 'chromium', size: W + 'x' + H, galaxy: r1.g, cam: r1.cam, fit: r1.fit, bodies: r1.bodies.length, offscreen: off.map(b => b.label), withoutName: noName.map(b => b.label || b.uid), cutNames: r1.bodies.filter(b => b.cut).map(b => b.label), nameOverlaps: ovl, testOrBot: tests.map(b => b.label), rowInversions: inversions }));
   for (const b of r1.bodies.slice().sort((a, b) => a.oy - b.oy || a.ox - b.ox)) console.log('   ' + JSON.stringify(b.label).padEnd(26) + (b.me ? 'YOU ' : '    ') + (b.nameShown ? 'name' : b.ini ? 'INITIAL' : 'NO NAME') + (b.cut ? ' (cut)' : '') + '  orb ' + b.ox + ',' + b.oy + '  joined ' + ((flag.get(b.uid) || {}).joined_at || '').slice(0, 10));
   for (const b of r1.bodies) if (!b.nameShown && !b.me) console.log('   no-name detail: ' + JSON.stringify(b));
+  console.log('energy pad keep-out (galaxy px): ' + JSON.stringify(await page.evaluate(() => { const g = document.getElementById('cgGalaxy'); return window.LowiEnergy && LowiEnergy.keepOut ? LowiEnergy.keepOut(g) : null; })));
   if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT + '-open.png' });
   /* background behind the Room: what else is painted under the galaxy? */
   const bg = await page.evaluate(() => { const out = []; const g = document.getElementById('cgGalaxy'); const r = g.getBoundingClientRect(); const pts = [[.15, .2], [.85, .25], [.5, .5], [.2, .8], [.8, .85]];
@@ -93,13 +94,34 @@ const writes = [];
     return out; });
   console.log('room ancestors / inside:'); for (const l of anc) console.log('   ' + l);
   /* a zoom you choose is kept when you leave Community and come back */
-  await page.mouse.move(gx + gw / 2, gy + gh / 2); await page.mouse.wheel(0, -500); await page.waitForTimeout(600);
-  const z1 = (await measure()).cam;
+  /* Oct 25: a mouse wheel is not delivered in mobile emulation, so pinch with two touch pointers through the Room's own
+     pointer handlers (the same code path a finger uses): fingers 60 px apart spread to 160 px around the middle */
+  const z0 = (await measure()).cam;
+  await page.evaluate(() => { const g = document.getElementById('cgGalaxy'), r = g.getBoundingClientRect(), cx = r.x + r.width / 2, cy = r.y + r.height * .45;
+    const ev = (type, id, x) => g.dispatchEvent(new PointerEvent(type, { pointerId: id, pointerType: 'touch', isPrimary: id === 1, bubbles: true, cancelable: true, clientX: x, clientY: cy, button: 0, buttons: type === 'pointerup' ? 0 : 1 }));
+    ev('pointerdown', 1, cx - 30); ev('pointerdown', 2, cx + 30);
+    for (let k = 1; k <= 10; k++) { ev('pointermove', 1, cx - 30 - 5 * k); ev('pointermove', 2, cx + 30 + 5 * k); }
+    ev('pointerup', 1, cx - 80); ev('pointerup', 2, cx + 80); });
+  await page.waitForTimeout(700);
+  const zm = await measure(), z1 = zm.cam;
+  console.log('pinch: ' + JSON.stringify({ before: z0, after: z1, user: zm.user, zoomedIn: !!(z0 && z1 && z1.z > z0.z * 1.3) }));
   await page.evaluate(() => { try { goTab('home'); } catch (e) { } }); await page.waitForTimeout(2500);
   await openRoom();
   const r2 = await measure();
-  console.log('manual zoom kept: ' + JSON.stringify({ zoomed: z1, back: r2.cam, user: r2.user, kept: !!(z1 && r2.cam && Math.abs(z1.z - r2.cam.z) < .02) }));
+  console.log('names after pinch, back in Room: ' + JSON.stringify({ withoutName: r2.bodies.filter(b => !b.me && !b.nameShown && b.ox > r2.g[0] && b.ox < r2.g[0] + r2.g[2] && b.oy > r2.g[1] && b.oy < r2.g[1] + r2.g[3]).map(b => b.label) }));
+  console.log('manual zoom kept: ' + JSON.stringify({ zoomed: z1, back: r2.cam, user: r2.user, kept: !!(z1 && r2.cam && zm.user && z0 && z1.z > z0.z * 1.3 && Math.abs(z1.z - r2.cam.z) < .02) }));
   if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT + '-zoomed.png' });
+  if (process.env.IDLE) {
+    /* Oct 25 heat: Room draws ~30/s while touched, ~20/s after 3 s idle, bobbing held and stepped; a touch brings full speed back */
+    await page.evaluate(() => { const c = document.getElementById('cgSky').getContext('2d'), o = c.clearRect.bind(c); window.__skyN = 0; c.clearRect = (...a) => { window.__skyN++; return o(...a); }; });
+    const count = async ms => { await page.evaluate(() => { window.__skyN = 0; }); await page.waitForTimeout(ms); return page.evaluate(() => window.__skyN); };
+    const bobs = () => page.evaluate(() => { const g = document.getElementById('cgGalaxy'); const a = g.getAnimations({ subtree: true }).filter(x => x.animationName === 'cgBob'); return { n: a.length, running: a.filter(x => x.playState === 'running').length, t: a[0] ? Math.round(a[0].currentTime) : null }; });
+    const touch = () => page.evaluate(() => document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' })));
+    await touch(); const act = await count(2000); const bA = await bobs();
+    await page.waitForTimeout(2000); const calm = await count(4000); const bC1 = await bobs(); await page.waitForTimeout(1000); const bC2 = await bobs();
+    await touch(); await page.waitForTimeout(50); const bT = await bobs(); const back = (await count(2000)) / 2;
+    console.log('idle pace: ' + JSON.stringify({ touchedPerS: act / 2, calmPerS: calm / 4, afterTouchPerS: back, bobTouched: bA, bobCalm: bC1, bobCalm1sLater: bC2, bobAfterTouch: bT }));
+  }
   for (const w of writes) console.log('write: ' + w.m + ' ' + w.p + ' ' + String(w.body || '').slice(0, 160));
   console.log('page errors: ' + (errs.join(' / ') || 'none'));
   await browser.close();

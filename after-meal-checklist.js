@@ -6,7 +6,11 @@
    - Each tick pays XP once through LowiVitalsBridge.awardWith (the normal ledger, so it syncs and shows in the level), only within
      60 minutes of the meal and for at most three meals a day. Deleting the meal takes its ticks back.
    - The first full checklist unlocks a hidden achievement; nothing hints at it before.
-   - The x skips it with one tap. Quiet by design: no notification, no post, no What's New. */
+   - The x skips it with one tap. Quiet by design: no notification, no post, no What's New.
+   - Oct 25 evening (Emmanuel: four taps in seconds paid 12 XP, Spike Tamer and a level-up; water paid but the Home cup bubble
+     stayed put): walk / squats / upright start a timer on the first tap and only count after the timer ran out AND a second
+     tap confirms it (C.start / C.claim). The card says it is a timer, not tracking. The glass of water is gone (it paid points
+     but never reached the Home water bubble); Emmanuel had it replaced by a real spike flattener: stairs up and down, 6 min. */
 (function () {
     'use strict';
     const W = window, D = document;
@@ -26,11 +30,19 @@
     }
     function load() { try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && v.id && +v.ts ? v : null; } catch (e) { return null; } }
     function save() { try { if (P) localStorage.setItem(KEY, JSON.stringify(P)); else localStorage.removeItem(KEY); } catch (e) { } }
+    /* another tab may have moved on: take its ticks and keep the earliest start of each timer before changing anything */
+    function sync() {
+        const o = load(); if (!o || !P || o.id !== P.id) return;
+        o.done && o.done.forEach(i => { if (P.done.indexOf(i) < 0) P.done.push(i); });
+        const run = Object.assign({}, P.run || {});
+        Object.keys(o.run || {}).forEach(i => { if (+o.run[i] > 0 && (!(+run[i] > 0) || +o.run[i] < +run[i])) run[i] = +o.run[i]; });
+        P.run = run; if (o.skip) P.skip = true; if (o.fin) P.fin = true;
+    }
 
     const ICON = {
         walk: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="13" cy="4.5" r="2"/><path d="M10 21l2.2-6 2.8 2.6V21M8 11.5l3-3.5 3 1.5 2 3.5h3M11 8l-1.6 6.5"/></svg>',
         muscle: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6M6 7v10M18 7v10M21 9v6M6 12h12"/></svg>',
-        water: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12l-1.6 17.2a1 1 0 0 1-1 .8H8.6a1 1 0 0 1-1-.8z"/><path d="M7 9.5c2 1.2 3.4-.8 5 0s3 1.2 5 0"/></svg>',
+        stairs: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h5v-4h4v-4h4V8h5"/><path d="M15 3.5l3 3" opacity=".6"/></svg>',
         upright: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="4.5" r="2"/><path d="M12 8v7M9 21l3-6 3 6M8 11h8"/></svg>',
         wave: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 15c3.5-6 6.5-6 10 0s6.5 6 10 0"/><path d="M2 15h20" opacity=".35"/></svg>',
         tick: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
@@ -50,7 +62,7 @@
 
     function prog() { const d = (P && P.done || []).length; return s('prog', { d, n: C.ITEMS.length, x: paidXp() }); }
     /* the header line: before any tick "60 min left · +3 XP each", after a tick "1/4 · +3 XP · 58 min left" */
-    function sub(now) { const left = s('left', { m: C.minsLeft(P, now) }); return (P.done.length ? prog() : s('each', { x: C.XP_EACH })) + ' \u00b7 ' + left; }
+    function sub(now) { const m = C.minsLeft(P, now), head = P.done.length ? prog() : s('each', { x: C.XP_EACH }); return m > 0 ? head + ' \u00b7 ' + s('left', { m }) : head; }
     /* small screens: when the open card would cover a Home bubble or the joystick, it starts folded (one tap opens it) */
     function coversRing() {
         if (!el) return false; const g = el.getBoundingClientRect(), top = el.offsetTop, bottom = top + el.offsetHeight;   /* layout box: the slide-in transform must not hide an overlap */
@@ -58,14 +70,36 @@
         return false;
     }
     function paidXp() { if (!P) return 0; const L = ledger(); return C.ITEMS.reduce((a, it) => a + (L.some(e => e && e.eventId === C.eventId(P.id, it.id)) ? C.XP_EACH : 0), 0); }
-    function tiles() {
+    /* the second line of a tile: why it helps; for a timed one "Tap to start · 10 min", then "9:41 left", then "Done? Tap to confirm" */
+    function line(it, now) {
+        const l = lang();
+        if (P.done.indexOf(it.id) >= 0) return C.why(it, l);
+        if (C.timed(it.id)) {
+            if (C.ready(P, it.id, now)) return s('confirm');
+            if (C.live(P, it.id, now)) return s('run', { t: C.clock(C.remaining(P, it.id, now)) });
+            return s('start', { d: C.durText(it.id, l) });
+        }
+        return C.why(it, l);
+    }
+    function state(it, now) { return P.done.indexOf(it.id) >= 0 ? 'on' : C.ready(P, it.id, now) ? 'ready' : C.live(P, it.id, now) ? 'run' : ''; }
+    function tiles(now) {
         const l = lang();
         return C.ITEMS.map(it => {
-            const on = P.done.indexOf(it.id) >= 0;
-            return '<button type="button" class="pmc-it' + (on ? ' on' : '') + '" role="checkbox" aria-checked="' + on + '" data-pmc="' + it.id + '">' +
-                '<span class="pmc-ic">' + (on ? ICON.tick : ICON[it.id]) + '</span><span class="pmc-tx"><b>' + esc(C.label(it, l)) + '</b><small>' + esc(C.why(it, l)) + '</small></span>' +
+            const st = state(it, now), on = st === 'on';
+            return '<button type="button" class="pmc-it' + (st ? ' ' + st : '') + '" role="checkbox" aria-checked="' + on + '" data-pmc="' + it.id + '">' +
+                '<span class="pmc-ic">' + (on ? ICON.tick : ICON[it.id]) + '</span><span class="pmc-tx"><b>' + esc(C.label(it, l)) + '</b><small>' + esc(line(it, now)) + '</small></span>' +
                 '<span class="pmc-xp" aria-hidden="true">+' + C.XP_EACH + '</span></button>';
         }).join('');
+    }
+    /* once a second: count the running timers down; a timer that ran out redraws its tile as "Done? Tap to confirm" */
+    function tickTiles(now) {
+        if (!el || P.fold) return;
+        for (const it of C.ITEMS) {
+            const b = el.querySelector('[data-pmc="' + it.id + '"]'); if (!b) continue;
+            const st = state(it, now), had = b.classList.contains('ready') ? 'ready' : b.classList.contains('run') ? 'run' : b.classList.contains('on') ? 'on' : '';
+            if (st !== had) { paint(); return; }
+            const m = b.querySelector('small'), want = line(it, now); if (m && m.textContent !== want) m.textContent = want;
+        }
     }
     function paint() {
         if (!el || !P) return;
@@ -75,8 +109,8 @@
             '<div class="pmc-hd"><button type="button" class="pmc-hb" data-pmc="fold" aria-expanded="' + !P.fold + '" aria-label="' + esc(s(P.fold ? 'open' : 'fold')) + '">' +
             '<span class="pmc-wave">' + ICON.wave + '</span><span class="pmc-ht"><b>' + esc(s('title')) + '</b><small>' + esc(sub(now)) + '</small></span></button>' +
             '<button type="button" class="pmc-x" data-pmc="skip" aria-label="' + esc(s('skip')) + '" title="' + esc(s('skip')) + '">' + ICON.x + '</button></div>' +
-            (P.fold ? '' : '<p class="pmc-say"><b>' + esc(name()) + '</b> \u00b7 ' + esc(s(P.spike ? 'subSpike' : 'sub')) + '</p><div class="pmc-grid">' + tiles() + '</div>' +
-                '<p class="pmc-ft" aria-live="polite">' + esc(note) + '</p>');
+            (P.fold ? '' : '<p class="pmc-say"><b>' + esc(name()) + '</b> \u00b7 ' + esc(s(P.spike ? 'subSpike' : 'sub')) + '</p><div class="pmc-grid">' + tiles(now) + '</div>' +
+                '<p class="pmc-ft" aria-live="polite">' + esc(note || (C.running(P, now).length ? s('honest') : '')) + '</p>');
     }
     function paintFinal(ach) {
         if (!el) return;
@@ -111,10 +145,19 @@
         tick(k, b);
     }
     function tick(item, b) {
-        if (!P || P.done.indexOf(item) >= 0 || C.IDS.indexOf(item) < 0) return;
+        if (!P || C.IDS.indexOf(item) < 0) return;
+        sync();
+        if (P.done.indexOf(item) >= 0) { paint(); return; }
         const now = Date.now();
-        if (C.minsLeft(P, now) <= 0) { stop(); remove(); return; }
-        const r = C.decide(ledger(), P, item, now);
+        if (!C.open(P, now)) { stop(); remove(); return; }
+        if (C.timed(item) && !C.live(P, item, now)) {   /* first tap: start the timer, pay nothing */
+            const st = C.start(P, item, now);
+            if (st.ok) { P = st.p; note = s('honest'); save(); } else if (st.why === 'late') note = s('late');
+            paint(); return;
+        }
+        if (C.timed(item) && !C.ready(P, item, now)) { note = s('honest'); paint(); return; }   /* tapping a running timer does nothing */
+        const r = C.claim(ledger(), P, item, now);
+        if (!r.complete) { if (r.why === 'expired' && P.run) { delete P.run[item]; save(); } paint(); return; }
         let got = 0;
         if (r.ok && B() && B().awardWith) { try { got = +B().awardWith(r.xp, C.LABEL, C.SRC, r.eventId, { meal: P.id, item }, true) || 0; } catch (x) { got = 0; } }
         note = r.why === 'cap' ? s('cap') : '';
@@ -135,7 +178,7 @@
     function drop(id) {
         if (!P || P.id !== id) return;
         const b = B();
-        if (b && b.unaward) C.ITEMS.forEach(it => { try { b.unaward(C.eventId(P.id, it.id)); } catch (x) { } });
+        if (b && b.unaward) C.IDS.concat(['water']).forEach(id => { try { b.unaward(C.eventId(P.id, id)); } catch (x) { } });   /* water: a tick from before Oct 25 evening */
         P = null; save(); stop(); remove();
     }
 
@@ -144,24 +187,25 @@
         if (el && !el.isConnected) el = null;   /* something else removed the node: draw it again */
         if (blocked()) { if (el) el.hidden = true; return; }
         if (!el) mount(); else if (el.hidden) { el.hidden = false; paint(); }
-        else { const m = el.querySelector('.pmc-ht small'); if (m && !el.classList.contains('fin')) { const want = sub(Date.now()); if (m.textContent !== want) m.textContent = want; } }
+        else { const m = el.querySelector('.pmc-ht small'); if (m && !el.classList.contains('fin')) { const now = Date.now(), want = sub(now); if (m.textContent !== want) m.textContent = want; tickTiles(now); } }
     }
-    function start() { if (!timer) timer = setInterval(loop, 1000); setTimeout(loop, 1200); }
+    function go() { if (!timer) timer = setInterval(loop, 1000); setTimeout(loop, 1200); }
     function stop() { if (timer) { clearInterval(timer); timer = 0; } }
 
     W.addEventListener('lowi:meal-logged', ev => {
         const d = ev && ev.detail, now = Date.now();
         if (!C.justAte(d, now)) return;
         if (P && P.id === String(d.id)) return;   /* the same meal announced again: keep its ticks and its skip */
-        P = C.pending(d, now); note = ''; save(); remove(); start();
+        P = C.pending(d, now); note = ''; save(); remove(); go();
     });
     W.addEventListener('lowi:meal-removed', ev => { const d = ev && ev.detail || {}; if (d.id) drop(String(d.id)); });
     W.addEventListener('lowi:meal-moved', ev => { const d = ev && ev.detail || {}; if (P && d.id && String(d.id) === P.id && !C.justAte({ id: P.id, ts: d.ts }, P.at)) drop(P.id); });
-    D.addEventListener('visibilitychange', () => { if (D.visibilityState === 'visible' && P) start(); });
+    D.addEventListener('visibilitychange', () => { if (D.visibilityState === 'visible' && P) go(); });
     W.addEventListener('lowi:lang', () => { if (el && !el.classList.contains('fin')) { el.setAttribute('aria-label', s('region')); paint(); } });
 
     P = load();
-    if (P && C.open(P, Date.now())) start(); else if (P && !P.fin && C.minsLeft(P, Date.now()) <= 0) { P = null; save(); }
+    if (P && !P.run) P.run = {};
+    if (P && C.open(P, Date.now())) go(); else if (P && !P.fin && C.minsLeft(P, Date.now()) <= 0) { P = null; save(); }
 
     W.LowiAfterMeal = { state: () => (P ? JSON.parse(JSON.stringify(P)) : null), tick: item => tick(item, el && el.querySelector('[data-pmc="' + item + '"]')), skip: () => { if (P) { P.skip = true; save(); } stop(); remove(); }, shown: () => !!(el && !el.hidden), waitingFor: () => blocker() };
 })();

@@ -37,6 +37,12 @@
 .pmc-it.on { background: rgba(48, 209, 88, .16); border-color: rgba(48, 209, 88, .55); }
 .pmc-it.on .pmc-ic { background: #30d158; color: #04210f; }
 .pmc-it.on .pmc-xp { color: rgba(48, 209, 88, .9); }
+/* Oct 25 evening: a started timer (run) and a timer that ran out and waits for the confirm tap (ready) */
+.pmc-it.run { border-color: rgba(143, 231, 255, .5); }
+.pmc-it.run small { font-variant-numeric: tabular-nums; color: #8fe7ff; }
+.pmc-it.ready { background: rgba(255, 214, 10, .12); border-color: rgba(255, 214, 10, .6); }
+.pmc-it.ready .pmc-ic { background: rgba(255, 214, 10, .9); color: #2a2100; }
+.pmc-it.ready small { color: #ffe066; }
 .pmc-it:focus-visible, .pmc-x:focus-visible, .pmc-hb:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .pmc-ft { margin: 6px 4px 0; font-size: 12px; color: rgba(235, 235, 245, .62); text-align: center; }
 .pmc-ft:empty { display: none; }

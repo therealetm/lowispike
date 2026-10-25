@@ -17,7 +17,8 @@ const day = C.dayKey(T0);
 const meal = (o) => Object.assign({ id: 'meal:abc', title: 'Chicken salad', ts: T0, ateSet: false, via: 'spirit', spike: false, xp: 15 }, o || {});
 
 test('four evidence-based actions, in order, each with a label and a short why in English, German and Spanish', () => {
-    assert.deepStrictEqual(C.ITEMS.map(i => i.id), ['walk', 'muscle', 'water', 'upright']);
+    /* Oct 25 evening (Emmanuel): the glass of water was removed and replaced by stairs up and down (tests/after-meal-honest.test.cjs) */
+    assert.deepStrictEqual(C.ITEMS.map(i => i.id), ['walk', 'muscle', 'stairs', 'upright']);
     for (const it of C.ITEMS) for (const f of ['l', 's']) {
         assert.strictEqual(it[f].length, 3, it.id + '.' + f + ' has en/de/es');
         it[f].forEach((v, k) => { assert.ok(typeof v === 'string' && v.trim().length > 2, it.id + '.' + f + '[' + k + ']'); assert.ok(v.length <= 30, it.id + '.' + f + '[' + k + '] fits a tile: ' + v); });
@@ -54,8 +55,8 @@ test('ticks pay 3 XP each, once per action and meal, only inside 60 minutes of t
     assert.deepStrictEqual(C.decide([], p, 'walk', T0 + 15 * MIN), { ok: true, xp: 3, why: 'ok', eventId: 'pmc:meal:abc:walk' });
     const L = [{ day, ts: T0 + 15 * MIN, amt: 3, src: C.SRC, eventId: 'pmc:meal:abc:walk' }];
     assert.strictEqual(C.decide(L, p, 'walk', T0 + 16 * MIN).why, 'dup');
-    assert.strictEqual(C.decide(L, p, 'water', T0 + 59 * MIN).xp, 3);
-    assert.deepStrictEqual(C.decide(L, p, 'water', T0 + 61 * MIN), { ok: false, xp: 0, why: 'late', eventId: 'pmc:meal:abc:water' });
+    assert.strictEqual(C.decide(L, p, 'stairs', T0 + 59 * MIN).xp, 3);
+    assert.deepStrictEqual(C.decide(L, p, 'stairs', T0 + 61 * MIN), { ok: false, xp: 0, why: 'late', eventId: 'pmc:meal:abc:stairs' });
     assert.strictEqual(C.decide(L, p, 'nap', T0).why, 'unknown');
     assert.strictEqual(C.decide(L, null, 'walk', T0).why, 'unknown');
     assert.strictEqual(C.XP_EACH * C.ITEMS.length, 12, 'a meal pays at most 12 XP');
@@ -77,12 +78,12 @@ test('a day pays checklists for three meals at most, so logging more meals canno
 
 test('the secret achievement unlocks once, on the first full checklist, and is hidden before', () => {
     assert.ok(!C.achEarned([]));
-    assert.ok(!C.shouldUnlock([], ['walk', 'muscle', 'water']));
-    assert.ok(C.shouldUnlock([], ['walk', 'muscle', 'water', 'upright']));
-    assert.ok(C.shouldUnlock([], ['upright', 'water', 'walk', 'muscle', 'walk']));
+    assert.ok(!C.shouldUnlock([], ['walk', 'muscle', 'stairs']));
+    assert.ok(C.shouldUnlock([], ['walk', 'muscle', 'stairs', 'upright']));
+    assert.ok(C.shouldUnlock([], ['upright', 'stairs', 'walk', 'muscle', 'walk']));
     const L = [{ day, ts: T0, amt: C.ACH.xp, src: C.SRC, eventId: C.ACH.eventId }];
     assert.ok(C.achEarned(L));
-    assert.ok(!C.shouldUnlock(L, ['walk', 'muscle', 'water', 'upright']), 'only once');
+    assert.ok(!C.shouldUnlock(L, ['walk', 'muscle', 'stairs', 'upright']), 'only once');
     assert.strictEqual(C.ACH.eventId, 'pmc:ach:spike-tamer');
     assert.ok(C.ACH.xp > 0 && C.ACH.xp <= 25);
     /* the card never names or hints the achievement until it is earned */

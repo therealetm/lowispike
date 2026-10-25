@@ -46,7 +46,7 @@ async function boot(P, fails, tag) {
   let uid = ''; for (let i = 0; i < 120 && !uid; i++) { uid = await P.ev(() => { try { return LOWI_CLOUD_X.state().uid || ''; } catch (e) { return ''; } }); if (!uid) await sleep(500); }
   if (!uid) fails.push(tag + ': no cloud sign-in'); else if (!(await TA.markTest(P.page))) fails.push(tag + ': could not mark the test account');
   P.uid = uid;
-  await P.ev(() => { try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); document.querySelectorAll('[inert]').forEach(e => e.removeAttribute('inert')); });
+  await P.ev(() => { try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); const un = () => { document.querySelectorAll('[inert]').forEach(e => e.removeAttribute('inert')); document.documentElement.classList.remove('gate-up', 'gate-boot'); }; un(); if (!window.__fypUngate) { window.__fypUngate = 1; try { new MutationObserver(un).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['inert', 'class'] }); } catch (e) { } } });
   return uid;
 }
 const build = P => P.ev(() => { try { return (document.querySelector('meta[name=lowi-build]') || {}).content || window.LOWI_BUILD || ''; } catch (e) { return ''; } });
@@ -81,7 +81,7 @@ async function myPosts(P) {
     info.build = await build(A);
     /* B reloads once so the app knows it is a test account too (test accounts see each other) */
     await B.page.reload({ waitUntil: 'load' }); await B.page.waitForFunction(() => window.TRIBE && window.LowiForYou, null, { timeout: 150000 });
-    await B.ev(() => { try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); document.querySelectorAll('[inert]').forEach(e => e.removeAttribute('inert')); });
+    await B.ev(() => { try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); const un = () => { document.querySelectorAll('[inert]').forEach(e => e.removeAttribute('inert')); document.documentElement.classList.remove('gate-up', 'gate-boot'); }; un(); if (!window.__fypUngate) { window.__fypUngate = 1; try { new MutationObserver(un).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['inert', 'class'] }); } catch (e) { } } });
 
     /* 1. the old held post: labelled, offered, shared with one tap */
     await openForYou(A);
@@ -124,7 +124,7 @@ async function myPosts(P) {
     let seen = null;
     for (let i = 0; i < 6 && !(seen && seen.fresh && seen.old); i++) {
       await B.page.reload({ waitUntil: 'load' }); await B.page.waitForFunction(() => window.TRIBE && window.LowiForYou, null, { timeout: 150000 });
-      await B.ev(() => { try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); document.querySelectorAll('[inert]').forEach(e => e.removeAttribute('inert')); });
+      await B.ev(() => { try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); const un = () => { document.querySelectorAll('[inert]').forEach(e => e.removeAttribute('inert')); document.documentElement.classList.remove('gate-up', 'gate-boot'); }; un(); if (!window.__fypUngate) { window.__fypUngate = 1; try { new MutationObserver(un).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['inert', 'class'] }); } catch (e) { } } });
       await sleep(4000); await openForYou(B);
       seen = await B.ev(a => { const f = document.getElementById('fyFeed'); const q = id => f && f.querySelector('.fy-slide[data-id="' + id + '"]'); return { fresh: !!(a.n && q(a.n)), old: !!q(a.o), n: f ? f.querySelectorAll('.fy-slide').length : -1 }; }, { n: newId, o: OLD.id });
     }
@@ -157,6 +157,9 @@ async function myPosts(P) {
     const sw = await B.ev(() => document.documentElement.scrollWidth - innerWidth); if (sw > 1) fails.push('sideways scroll ' + sw);
     if (A.errs.length || B.errs.length) fails.push('page errors ' + A.errs.concat(B.errs).join(' | '));
   } catch (e) { fails.push(e.message.slice(0, 200)); }
+  /* 25 Oct fix: removing #r2gate alone left html.gate-up (the app stays visibility:hidden) and the gate's observer re-inerts
+     #app, so no tap reached My posts or the composer. The test accounts have no e-mail, so the sign-in gate is expected here;
+     the helper above takes it down for good, like tools/one-chat/check.cjs. */
   /* 4. clean up: both test posts out of the shared table, both test profiles removed */
   try { info.unpub = await A.ev(ids => Promise.all(ids.filter(Boolean).map(id => Promise.resolve(LOWI_CLOUD.unpublish(id)).then(() => 'ok').catch(e => 'err')) ), [newId, OLD.id]); } catch (e) { info.unpub = 'err ' + e.message; }
   try { await TA.cleanup(A.page); await TA.cleanup(B.page); } catch (e) { }

@@ -21,8 +21,8 @@ const WRAP = el => { if (!el) return null; const out = { lines: 0, split: [], ov
       const ys = new Set(rs.map(x => Math.round(x.top))); if (ys.size > 1) out.split.push(m[0]); rs.forEach(x => { tops.add(Math.round(x.top / 4)); if (x.right > innerWidth + 1) out.over = true; }); } }
   out.lines = tops.size; out.hyph = getComputedStyle(el).hyphens; return out; };
 (async () => {
-  const ipad = /ipad/i.test(device);
-  const R = await H.open({ url, lang, device, fresh: true, engine: process.env.ENGINE || 'chromium', viewport: ipad ? { width: 820, height: 1180 } : { width: 390, height: 844 } });
+  const ipad = /ipad/i.test(device); const dev = ipad ? 'iPad Pro 11' : device;
+  const R = await H.open({ url, lang, device: dev, fresh: true, engine: process.env.ENGINE || 'chromium', viewport: ipad ? { width: 820, height: 1180 } : { width: 390, height: 844 } });
   const p = R.page, errs = [];
   p.on('pageerror', e => errs.push(String(e.message || e).slice(0, 160)));
   let shot = 0; const snap = async () => { try { await p.screenshot({ path: `/tmp/opt-${pre}-${++shot}.png` }); } catch (e) { } };

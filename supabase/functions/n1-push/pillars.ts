@@ -9,7 +9,8 @@
    says things the app really knows (days since the app was last open, a real post, a real product, a real energy shot). */
 import { lang, local, quiet, type Nudge, type Row } from "./logic.ts";
 
-export type Pillars = { a?: boolean; b?: boolean; c?: boolean; d?: boolean };
+/* n: Nibblo's meal posts (nibblo.ts, 25 Oct 2026), own cap, not part of the budget below */
+export type Pillars = { a?: boolean; b?: boolean; c?: boolean; d?: boolean; n?: boolean };
 export type PRow = Row & {
   uid?: string | null; pillars?: Pillars | null; cn?: string | null;
   d_miss?: number | null; last_d?: number | null; last_a?: number | null; last_b?: number | null; last_tpl?: string | null;
@@ -87,7 +88,7 @@ const pw = (l: string, k: string) => (PW[l] || PW.en)[k];
 
 export function sentToday(r: PRow, day: string) { return r.sent_day === day && Array.isArray(r.sent_ids) ? r.sent_ids : []; }
 /* pushes today that count against the daily budget (energy has its own cap) */
-export function used(r: PRow, day: string) { return sentToday(r, day).filter(x => !/^e/.test(x)).length; }
+export function used(r: PRow, day: string) { return sentToday(r, day).filter(x => !/^e/.test(x) && !/^nb-/.test(x)).length; }
 export function daysAway(r: PRow, now: number) { return r.seen ? Math.floor((now - r.seen) / DAY) : 1; }
 /* misses: D pushes in a row without the app being opened afterwards */
 export function misses(r: PRow) { return r.seen && r.last_d && r.seen > r.last_d ? 0 : (+(r.d_miss || 0)); }

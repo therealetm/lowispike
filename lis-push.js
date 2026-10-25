@@ -4,7 +4,9 @@
    B  Product: a community-rated product, at shopping times (never "go shopping now")
    C  Energy received: someone sent your companion energy, also while you were offline
    D  Your own companion, Tamagotchi style, on days you have not opened the app
-   This file adds: the four switches (stored on the phone, sent with the subscription), the login token so the subscription
+   N  Nibblo's meals (25 Oct 2026): the bot's breakfast, lunch and dinner post in Chat, sent by the server (n1-push nibblo.ts);
+      a tap opens Chat at that post (and Nibblo's recipe, when nibblo-core.js offers LowiNibblo.openRecipe)
+   This file adds: the five switches (stored on the phone, sent with the subscription), the login token so the subscription
    belongs to your account (needed for C), the companion name, where a tapped push opens, a one-time ask that does not depend
    on the old Home hint bubble, and the hook for C: window.LisPush.energySent(toUid). */
 (function(){
@@ -20,22 +22,25 @@ const put = (k, o) => { try { localStorage.setItem(k, JSON.stringify(o)); } catc
 
 const W = {
   en: {d:"Your companion", dSub:"Only on days you haven't opened the app", c:"Energy", cSub:"When someone sends your companion energy, also when you're offline",
+    n:"Nibblo's meals", nSub:"Nibblo's low-spike meal idea at breakfast, lunch and dinner",
     a:"For You", aSub:"A real food photo or recipe from the feed, around mealtimes", b:"Product", bSub:"A product the community rated, around shopping days",
     what:"What can reach you", ask:"Can I message you when the app is closed? Energy from friends, a recipe from For You, a good product find, and the odd note from me. Never in your quiet hours.",
     yes:"Yes, message me", no:"Not now", ok:"Deal. I'll be charming. Mostly."},
   de: {d:"Dein Begleiter", dSub:"Nur an Tagen, an denen du die App nicht ge\u00f6ffnet hast", c:"Energie", cSub:"Wenn jemand deinem Begleiter Energie schickt, auch wenn du offline bist",
+    n:"Nibblos Mahlzeiten", nSub:"Nibblos Essensidee mit wenig Spike, zum Fr\u00fchst\u00fcck, Mittag- und Abendessen",
     a:"For You", aSub:"Ein echtes Essensfoto oder Rezept aus dem Feed, um die Essenszeiten", b:"Produkt", bSub:"Ein Produkt, das die Community bewertet hat, rund um Einkaufstage",
     what:"Was dich erreichen darf", ask:"Darf ich dir schreiben, wenn die App zu ist? Energie von Freunden, ein Rezept aus For You, ein guter Produktfund und mal was von mir. Nie in deiner Ruhezeit.",
     yes:"Ja, schreib mir", no:"Nicht jetzt", ok:"Abgemacht. Ich bleib charmant. Meistens."},
   es: {d:"Tu compa\u00f1ero", dSub:"Solo los d\u00edas que no has abierto la app", c:"Energ\u00eda", cSub:"Cuando alguien manda energ\u00eda a tu compa\u00f1ero, tambi\u00e9n sin conexi\u00f3n",
+    n:"Comidas de Nibblo", nSub:"La idea de comida de bajo pico de Nibblo en el desayuno, la comida y la cena",
     a:"For You", aSub:"Una foto de comida o receta real del feed, cerca de las comidas", b:"Producto", bSub:"Un producto valorado por la comunidad, cerca de los d\u00edas de compra",
     what:"Qu\u00e9 te puede llegar", ask:"\u00bfTe puedo escribir con la app cerrada? Energ\u00eda de amigos, una receta de For You, un buen hallazgo de producto y alguna nota m\u00eda. Nunca en tus horas de silencio.",
     yes:"S\u00ed, escr\u00edbeme", no:"Ahora no", ok:"Trato hecho. Ser\u00e9 encantador. Casi siempre."}
 };
 const w = k => (W[LANG()] && W[LANG()][k]) || W.en[k] || k;
 
-/* ---------- the four switches (all on by default once phone notifications are on) ---------- */
-const ORDER = ["d", "c", "a", "b"];
+/* ---------- the five switches (all on by default once phone notifications are on) ---------- */
+const ORDER = ["d", "c", "n", "a", "b"];
 function pillars(){ const s = js(KEY), o = {}; ORDER.forEach(k => { o[k] = s[k] !== false; }); return o; }
 function setPillar(k, v){ if (ORDER.indexOf(k) < 0) return pillars(); const s = pillars(); s[k] = !!v; put(KEY, s); try { const p = P(); p && p.sync && p.sync(true); } catch(e){} return s; }
 function pillarHTML(){ const p = pillars();
@@ -67,7 +72,15 @@ function route(q){
   if (q === "foryou") { tab("foryou"); setTimeout(() => seg("feed"), 350); return true; }
   if (q === "community") { tab("foryou"); setTimeout(() => seg("chat"), 350); return true; }
   if (q === "home" || q === "scan") { tab("home"); return true; }
+  const nb = /^nb:(nb-\d{8}-[mne])$/.exec(String(q || ""));
+  if (nb) { tab("foryou"); setTimeout(() => seg("chat"), 350); setTimeout(() => nbShow(nb[1], 0), 900); return true; }
   return false; }
+/* a Nibblo push: Chat scrolled to that meal post, then Nibblo's recipe if nibblo-core.js offers it (recipe task) */
+function nbShow(id, n){
+  const el = D.querySelector('#tab-foryou [data-id="' + id + '"]') || D.querySelector('[data-id="' + id + '"]');
+  if (!el && n < 12) { setTimeout(() => nbShow(id, n + 1), 400); return; }
+  try { el && el.scrollIntoView({block: "center", behavior: "smooth"}); } catch(e){}
+  try { const N = window.LowiNibblo; if (N && typeof N.openRecipe === "function") N.openRecipe(id); } catch(e){} }
 
 /* ---------- the one-time ask (the old Home hint bubble that used to ask is gone) ----------
    Only on the second day of use or later, on Home, with nothing else open, when the phone can do it (on iPhone: from the

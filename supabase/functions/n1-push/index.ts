@@ -7,9 +7,12 @@
    25 Oct 2026, four pillars (pillars.ts): the app may send its login token (tok) so a subscription belongs to an account,
    the companion name (cn) and which pillars are on; action "energy" lets a sender's phone ask for a push to the receiver's
    phones (also when the receiver is offline), checked against the sender's login and limited per pair; the morning and
-   evening nudges are replaced by the companion (D), For You (A) and product (B) pushes. */
+   evening nudges are replaced by the companion (D), For You (A) and product (B) pushes.
+   25 Oct 2026, Nibblo (nibblo.ts): action "nibblo" sends each fresh Nibblo meal post once (the database calls it the
+   moment a meal is posted; cron runs it too as a fallback). "nbtest" (cron key) sends the newest one to one account only. */
 import { after, decide, okEndpoint, push, type Row, words, lang } from "./logic.ts";
 import { afterPillar, decidePillar, energyNow, energyNudge, energyOpen, on, safeName, type Ctx, type PRow } from "./pillars.ts";
+import { decideNibblo, nbNudge, nbSlot, NB_FRESH_MIN, type NbPost } from "./nibblo.ts";
 
 const URL0 = Deno.env.get("SUPABASE_URL")!, SRK = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const JWK = JSON.parse(Deno.env.get("N1_VAPID_JWK") || "{}"), PUB = Deno.env.get("N1_VAPID_PUB") || "", CRON = Deno.env.get("N1_CRON_KEY") || "";
@@ -44,7 +47,7 @@ function clean(st: Record<string, unknown>) {
   };
 }
 
-function pills(p: Record<string, unknown>) { const o: Record<string, boolean> = {}; for (const k of ["a", "b", "c", "d"]) o[k] = p[k] !== false && p[k] !== 0; return o; }
+function pills(p: Record<string, unknown>) { const o: Record<string, boolean> = {}; for (const k of ["a", "b", "c", "d", "n"]) o[k] = p[k] !== false && p[k] !== 0; return o; }
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /* the account behind a login token, checked by Supabase Auth itself; null when missing or not valid */
 async function who(tok: unknown): Promise<string | null> {
@@ -96,7 +99,7 @@ async function context(now: number): Promise<Ctx> {
 }
 
 async function send(r: PRow, n: { id: string; title: string; body: string; q: string; ttl: number }, now: number, urgency = "normal") {
-  const st = await push(r, { t: n.title, b: n.body, q: n.q, tag: "lowi-" + n.id.replace(/^e.*/, "e") }, n.ttl, JWK, PUB, SUBJ, urgency);
+  const st = await push(r, { t: n.title, b: n.body, q: n.q, tag: "lowi-" + n.id.replace(/^e.*/, "e").replace(/^nb-.*/, "nb") }, n.ttl, JWK, PUB, SUBJ, urgency);
   if (st === 404 || st === 410) { await db(T + "?" + eq(r.endpoint), { method: "DELETE" }); return "gone"; }
   if (st >= 200 && st < 300) { await db(T + "?" + eq(r.endpoint), { method: "PATCH", body: JSON.stringify({ ...after(r, n, now), ...afterPillar(r, n, now), fails: 0 }) }); return "sent"; }
   const f = (+((r as Record<string, unknown>).fails as number) || 0) + 1;
@@ -189,6 +192,63 @@ async function gifts() {
   return J({ ok: true, claimed: claimed.length, sent, queued, skipped });
 }
 
+/* Nibblo's meal posts: the post as the notification needs it (dish, Recipe Book id), only while its Chat message exists */
+async function nbPost(id: string): Promise<NbPost | null> {
+  if (!nbSlot(id)) return null;
+  const [msg, post] = await Promise.all([
+    db("/rest/v1/messages?select=id,created_at&id=eq." + id + "&limit=1"),
+    db("/rest/v1/posts?select=rec,meta&id=eq.s" + id + "&limit=1"),
+  ]);
+  if (!msg || !msg.length) return null;
+  const p = (post && post[0]) || {}, meta = (p.meta || {}) as Record<string, unknown>;
+  return { id, rec: typeof p.rec === "string" ? p.rec : null, dish: typeof meta.dish === "string" ? meta.dish : null, at: Date.parse(msg[0].created_at) };
+}
+/* claims every fresh, not yet announced Nibblo post (nibblo_log.pushed_at) and sends it once. dry (cron key): nothing
+   claimed or sent, only who would get what for the given post id. No secret needed otherwise: it only announces posts
+   the database itself wrote, once each. */
+async function nibblo(dry?: { id: string; at?: number }) {
+  const now = dry && dry.at ? dry.at : Date.now();
+  let ids: string[];
+  if (dry) ids = [dry.id];
+  else {
+    const since = new Date(now - NB_FRESH_MIN * 6e4).toISOString();
+    const claimed: { id: string }[] = await db("/rest/v1/nibblo_log?pushed_at=is.null&posted_at=gte." + since + "&select=id",
+      { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ pushed_at: new Date(now).toISOString() }) }) || [];
+    ids = claimed.map(c => c.id);
+  }
+  if (!ids.length) return J({ ok: true, posts: 0, sent: 0 });
+  const rows: PRow[] = await db(T + "?select=*&enabled=eq.true&limit=2000") || [];
+  let sent = 0, skipped = 0, fail = 0, gone = 0; const out: unknown[] = [];
+  for (const id of ids) {
+    const post = await nbPost(id); if (!post) { out.push({ id, err: "no post" }); continue; }
+    if (dry) post.at = null;
+    await Promise.all(rows.map(async r => {
+      const n = decideNibblo(r, now, post); if (!n) { skipped++; return; }
+      if (dry) { out.push({ e: r.endpoint.slice(0, 40), uid: r.uid || null, t: n.title, b: n.body, q: n.q }); return; }
+      try {
+        const res = await send(r, n, now);
+        if (res === "sent") sent++; else if (res === "gone") gone++; else { fail++; out.push({ e: r.endpoint.slice(0, 40), st: res }); }
+      } catch (e) { fail++; out.push({ e: r.endpoint.slice(0, 40), err: String(e).slice(0, 120) }); }
+    }));
+  }
+  return J({ ok: true, posts: ids.length, rows: rows.length, sent, skipped, gone, fail, out });
+}
+/* one test notification of the newest (or given) Nibblo post to ONE account's phones, nothing recorded (cron key only) */
+async function nbtest(b: Record<string, unknown>) {
+  const uid = String(b.uid || ""); if (!UUID.test(uid)) return J({ ok: false, err: "uid" }, 400);
+  let id = typeof b.id === "string" ? b.id : "";
+  if (!nbSlot(id)) { const last = await db("/rest/v1/nibblo_log?select=id&order=posted_at.desc&limit=1") || []; id = last[0] ? last[0].id : ""; }
+  const post = await nbPost(id); if (!post) return J({ ok: false, err: "no post" }, 404);
+  const rows: PRow[] = await db(T + "?select=*&enabled=eq.true&uid=eq." + uid + "&limit=10") || [];
+  const res: unknown[] = [];
+  for (const r of rows) {
+    const n = nbNudge(r, post); if (!n) continue;
+    const st = await push(r, { t: n.title, b: n.body, q: n.q, tag: "lowi-nb" }, n.ttl, JWK, PUB, SUBJ, "normal");
+    res.push({ e: r.endpoint.slice(0, 40), st, t: n.title, b: n.body, q: n.q });
+  }
+  return J({ ok: true, id, rows: rows.length, res });
+}
+
 Deno.serve(async req => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return J({ ok: false }, 405);
@@ -198,11 +258,18 @@ Deno.serve(async req => {
     if (b.a === "cron") {
       if (!CRON || req.headers.get("x-n1-key") !== CRON) return J({ ok: false }, 401);
       if (!b.dry) { try { await gifts(); } catch (_e) { /* the pillar pushes still go out */ } }
+      if (!b.dry) { try { await nibblo(); } catch (_e) { /* fallback only; the database trigger is the main path */ } }
       return await cron(!!b.dry, typeof b.at === "number" ? b.at : undefined);
     }
     if (b.a === "save" || b.a === "unsub" || b.a === "test") return await fromApp(b);
     if (b.a === "energy") return await energy(b);
     if (b.a === "gifts") return await gifts();
+    if (b.a === "nibblo" || b.a === "nbtest") {
+      const key = !!CRON && req.headers.get("x-n1-key") === CRON;
+      if (b.a === "nbtest") return key ? await nbtest(b) : J({ ok: false }, 401);
+      if (b.dry) return key && typeof b.id === "string" ? await nibblo({ id: b.id, at: typeof b.at === "number" ? b.at : undefined }) : J({ ok: false }, 401);
+      return await nibblo();
+    }
     return J({ ok: false, err: "action" }, 400);
   } catch (e) { return J({ ok: false, err: String(e).slice(0, 200) }, 500); }
 });

@@ -66,21 +66,46 @@ create policy "gift update own open" on public.gift_baskets for update to authen
 drop policy if exists "gift delete own open" on public.gift_baskets;
 create policy "gift delete own open" on public.gift_baskets for delete to authenticated
   using (user_id = (select auth.uid()) and helped_at is null);
--- kicked members can neither post baskets nor be seen
+-- kicked members can neither post baskets nor be seen. public.community_kicks (owner_admin_20261018.sql) is not on the live
+-- project yet (checked 25 Oct 2026), so these two policies are only made when it exists. Rerun this file after it lands.
 drop policy if exists "owner kick select" on public.gift_baskets;
-create policy "owner kick select" on public.gift_baskets as restrictive for select to authenticated
-  using (user_id = (select auth.uid()) or not exists (select 1 from public.community_kicks k where k.user_id = gift_baskets.user_id));
 drop policy if exists "owner kick insert" on public.gift_baskets;
-create policy "owner kick insert" on public.gift_baskets as restrictive for insert to authenticated
-  with check (not exists (select 1 from public.community_kicks k where k.user_id = (select auth.uid())));
+do $kick$ begin
+  if to_regclass('public.community_kicks') is not null then
+    execute $p$create policy "owner kick select" on public.gift_baskets as restrictive for select to authenticated
+      using (user_id = (select auth.uid()) or not exists (select 1 from public.community_kicks k where k.user_id = gift_baskets.user_id))$p$;
+    execute $p$create policy "owner kick insert" on public.gift_baskets as restrictive for insert to authenticated
+      with check (not exists (select 1 from public.community_kicks k where k.user_id = (select auth.uid())))$p$;
+  end if;
+end $kick$;
+
+-- Server-side checks (25 Oct 2026, switch-on task): a tampered app can't post spike foods, odd items or a Ko-fi dashboard link.
+-- The word list is tools/gift-basket/deny.cjs (SQL_RE / EXCEPT_RE). tools/gift-basket/deny-corpus.cjs proves it never refuses
+-- a food the app's own rating (LowiFoodPolicy.rateName) calls low-spike. It is a backstop; the app's rating stays the real rule.
+create or replace function public.gift_items_ok(items jsonb)
+returns boolean language sql immutable set search_path to '' as $fn$
+  select jsonb_typeof(items) = 'array' and not exists (
+    select 1 from jsonb_array_elements(items) e(x)
+    where jsonb_typeof(e.x) <> 'object' or jsonb_typeof(e.x->'n') <> 'string'
+       or char_length(e.x->>'n') not between 2 and 40
+       or (e.x->>'n') ~ '[<>[:cntrl:]]'
+       or regexp_replace(e.x->>'n', 'zuckerschote|zuckerschoten|zuckererbse|zuckererbsen|zuckerhut|zuckerfrei|ohne[ -]?zucker|ohne[ -]?zuckerzusatz|sugar[ -]?free|sugar-free|no[ -]?sugar|no[ -]?added[ -]?sugar|sugar[ -]?snap|sin[ -]?azúcar|sin[ -]?azucar|sin[ -]?azúcares|rum[ -]?steak|without[ -]?sugar|less[ -]?sugar|weniger[ -]?zucker|menos[ -]?azúcar|menos[ -]?azucar', ' ', 'gi') ~* '\mcola|\mcoca|\mpepsi|\mfanta|\msprite\M|\mlimo\M|limonade\M|\meistee|\mice[ -]?tea\M|\miced[ -]?tea\M|\msoftdrink|\msoft[ -]?drink|\menergy[ -]?drink|\menergydrink|\mred[ -]?bull\M|\mmonster[ -]?energy\M|\mrefresco|saft\M|\mjuice\M|\mzumo\M|nektar\M|\mnectar\M|\msmoothie|\mbier\M|\mbeer\M|\mcerveza|\mwein\M|\mwine\M|\mvino\M|\mvodka|\mwodka|\mschnaps|likör\M|\mrum\M|\msekt\M|\mzucker\M|\msugar\M|\mazucar\M|\mazúcar\M|\mtraubenzucker|\mpuderzucker|\msüßigkeit|\msuessigkeit|\msüssigkeit|\mcandy|\msweets\M|\mcaramelo|\mgolosina|\mdulces\M|\mbonbon|\mlolli|\mlollipop|\mgummibär|\mgummibaer|\mweingummi|\mfruchtgummi|\mharibo|\mgummy[ -]?bear|\mnutella|\mschokoriegel|\mchocolate[ -]?bar|\mmilchschokolade|\mmilk[ -]?chocolate\M|\msnickers|\mmars\M|\mtwix|\mkitkat|\mkit[ -]?kat|\mmilchschnitte|\mkinder\M|\mhonig\M|\mhoney\M|\mmiel\M|\mmarmelade|\mkonfitüre|\mjam\M|\mmermelada|sirup\M|\msyrup\M|\msirope|\meiscreme|\mspeiseeis|\mice[ -]?cream\M|\mhelado|kuchen\M|torte\M|\mcake\M|\mcupcake|\mtarta\M|\mpastel\M|\mkeks|kekse\M|\mcookie|\mgalleta|\mwaffel|\mwaffle|\mdonut|\mdoughnut|\mberliner\M|\mcroissant|\mmuffin|\mbrownie|\mchurro|\mpudding\M|\mtoast|\mtoastbrot|\mweißbrot|\mweissbrot|\mwhite[ -]?bread|\mpan[ -]?blanco|\mpan[ -]?de[ -]?molde|brötchen\M|broetchen\M|\mbaguette|\mbrezel|\mpretzel|\mbagel|\mcornflakes|\mfrosties|\mchoco[ -]?pops|\mcereal|chips\M|\mcrisps\M|\mpatatas[ -]?fritas|\mpommes|\mfrench[ -]?fries|\mfries\M|\mpizza|\mburger|\mhamburguesa|\mhot[ -]?dog\M|\mnachos|\mpopcorn|\mpalomitas|\mbanane|\mbananen|\mbanana|\mplatano|\mplátano|\mweintraube|trauben\M|\mgrapes\M|\muvas\M|\mdatteln|\mdates\M|\mdátiles|\mrosinen|\mraisins|\mpasas\M')
+$fn$;
+alter table public.gift_baskets drop constraint if exists gift_items_low_spike;
+alter table public.gift_baskets add constraint gift_items_low_spike check (public.gift_items_ok(items));
+alter table public.gift_baskets drop constraint if exists gift_kofi_page;
+alter table public.gift_baskets add constraint gift_kofi_page check (pay_url !~* '^https://(www\.)?ko-fi\.com/(manage|account|settings|home|explore|login|signin|signup|register|logout|discover|feed|shop|about|blog|help|support|pricing|gold|search|notifications|messages|commissions|memberships|donations|stream|streamalerts|legal|privacy|terms|checkout|cart)$');
 
 -- "I helped": the first giver takes the basket. Returns the basket id, or raises when it is taken / own / gone.
 create or replace function public.gift_help(basket uuid)
 returns uuid language plpgsql security definer set search_path to '' as $fn$
-declare me uuid := auth.uid(); got uuid;
+declare me uuid := auth.uid(); got uuid; kicked boolean := false;
 begin
   if me is null then raise exception 'sign in' using errcode = '42501'; end if;
-  if exists (select 1 from public.community_kicks k where k.user_id = me) then raise exception 'kicked' using errcode = '42501'; end if;
+  if to_regclass('public.community_kicks') is not null then
+    execute 'select exists (select 1 from public.community_kicks k where k.user_id = $1)' into kicked using me;
+  end if;
+  if kicked then raise exception 'kicked' using errcode = '42501'; end if;
   update public.gift_baskets set helper_id = me, helped_at = now()
    where id = basket and helped_at is null and helper_id is null and user_id <> me and expires_at > now()
   returning id into got;
@@ -163,10 +188,15 @@ commit;
 select to_regclass('public.gift_baskets') is not null as table_ready,
        to_regprocedure('public.gift_help(uuid)') is not null as help_ready,
        to_regprocedure('public.gift_trust(uuid[])') is not null as trust_ready,
-       (select public from storage.buckets where id = 'gift-receipts') = false as receipts_private;
+       (select public from storage.buckets where id = 'gift-receipts') = false as receipts_private,
+       public.gift_items_ok('[{"n":"Eier"},{"n":"Brokkoli"},{"n":"Zuckerschoten"},{"n":"Hähnchenbrust"},{"n":"Jamón"}]') as staples_ok,
+       not public.gift_items_ok('[{"n":"Eier"},{"n":"Cola"}]') and not public.gift_items_ok('[{"n":"Toastbrot"}]')
+         and not public.gift_items_ok('[{"n":"Bananen"}]') and not public.gift_items_ok('[{"n":"Süßigkeiten"}]')
+         and not public.gift_items_ok('[{"n":"Apfelsaft"}]') and not public.gift_items_ok('[{"n":"azúcar"}]') as spike_refused;
 
 -- To take it back out (no other table is touched):
 --   drop policy if exists "gift receipt upload" on storage.objects; drop policy if exists "gift receipt replace" on storage.objects;
 --   drop policy if exists "gift receipt read" on storage.objects;
+--   drop function if exists public.gift_items_ok(jsonb) cascade;
 --   drop function if exists public.gift_help(uuid), public.gift_receipt(uuid), public.gift_verdict(uuid, text), public.gift_trust(uuid[]);
 --   drop table if exists public.gift_baskets;   (then empty and delete the gift-receipts bucket in the dashboard)

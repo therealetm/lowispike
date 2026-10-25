@@ -68,14 +68,19 @@ test('own condition: cleaned, max 120, saved only in S.health (stays on this pho
   setOb(ctx, { condNote: '   ' });
   assert.equal('condNote' in s.health, false);
   assert(html.includes('const PRIVATE_KEYS = ["health"];'), 'health is never synced to the account');
-  assert(html.includes('maxlength="\' + CONDNOTE_MAX + \'"') && html.includes('enterkeyhint="done"') && html.includes('value="\' + esc(note || "") + \'"'), 'field is limited, escaped and closes the keyboard');
+  /* Oct 25 (Emmanuel's call): the separate line is gone, its text is folded into own chips (own-entries.js fold, 40 characters
+     each, escaped, Enter adds). What setup still stores here is only the part that did not fit, cleaned exactly as before. */
+  assert(!html.includes('maxlength="\' + CONDNOTE_MAX + \'"'), 'no second typing field under "watch out for"');
+  assert(html.includes('(noteId ? condHintHTML() : "")'), 'only the honest hint is left where the line was');
+  assert(html.includes('ob.condNote = o.left;'), 'setup keeps only what did not fit in the chips');
 });
 
 test('own condition shows in setup and in Edit profile, with the honest hint in three languages', () => {
   assert(html.includes('condBlock("data-r2tag", "data-r2none", ob.tags, ob.noCond, ob.gender, ob.condNote, "r2obCondNote")'));
   assert(html.includes('condBlock("data-r2etag", "data-r2enone", sel, !!u.noCond, u.gender || "", (s.health && s.health.condNote) || "", "r2eCondNote")'));
-  assert(html.includes('["Something else? Type it here", "Noch etwas? Hier eintippen", "¿Algo más? Escríbelo aquí"]'));
-  assert(html.includes('["e.g. sickle cell disease", "z. B. Sichelzellkrankheit", "p. ej., anemia falciforme"]'));
+  /* Oct 25: the "Something else? Type it here" line merged into the Add box: no label, placeholder or field of its own left */
+  assert(!html.includes('"Something else? Type it here"') && !html.includes('"e.g. sickle cell disease"'), 'old line gone in every language');
+  assert(!html.includes('$("#r2obCondNote")') && !html.includes('$("#r2eCondNote")'), 'nothing reads the old field any more');
   assert(html.includes('["Stays on this phone. A note for you, not medical advice.", "Bleibt auf diesem Handy. Eine Notiz für dich, keine medizinische Beratung.", "Se queda en este móvil. Es una nota para ti, no un consejo médico."]'));
   assert(read('your-details.js').includes("typeof h.condNote === 'string'"), 'Your details lists it with the conditions');
 });

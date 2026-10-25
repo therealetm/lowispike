@@ -1,4 +1,6 @@
 /* Oct 23 2026, Emmanuel: four gender choices (Frau / Mann / Nichtbinär / Keine Angabe) and an own condition line in setup,
+   Oct 25: the own condition line is merged into the Add box under "watch out for" (one place to type): this check now types
+   into that box, adds with Enter, and checks that an old stored note shows up as chips in Edit profile and is moved there.
    checked in a real browser (local folder or the live site). Walks a fresh setup to "About you", picks non-binary,
    types an own condition, checks it survives a gender tap, saves, reopens Edit profile and the Profile card.
    Usage: node tools/check-onboarding-gender-note.cjs [url] [lang] [device] [shotPrefix] [theme]
@@ -7,9 +9,9 @@
 const H = require('./sim/harness.cjs');
 const url = process.argv[2] || '', lang = process.argv[3] || 'de', device = process.argv[4] || 'iPhone 13', pre = process.argv[5] || 'local', theme = process.argv[6] || 'dark';
 const T = {
-  de: { g: ['Frau', 'Mann', 'Nichtbinär', 'Keine Angabe'], head: 'Geschlecht', note: 'Noch etwas? Hier eintippen', ph: 'z. B. Sichelzellkrankheit', hint: 'Bleibt auf diesem Handy' },
-  en: { g: ['Woman', 'Man', 'Non-binary', 'Prefer not to say'], head: 'Gender', note: 'Something else? Type it here', ph: 'e.g. sickle cell disease', hint: 'Stays on this phone' },
-  es: { g: ['Mujer', 'Hombre', 'No binario', 'Prefiero no decirlo'], head: 'Género', note: '¿Algo más? Escríbelo aquí', ph: 'p. ej., anemia falciforme', hint: 'Se queda en este móvil' }
+  de: { g: ['Frau', 'Mann', 'Nichtbinär', 'Keine Angabe'], head: 'Geschlecht', ph: 'Eigenes, z. B. Hashimoto', hint: 'Bleibt auf diesem Handy' },
+  en: { g: ['Woman', 'Man', 'Non-binary', 'Prefer not to say'], head: 'Gender', ph: 'Your own, e.g. Hashimoto\'s', hint: 'Stays on this phone' },
+  es: { g: ['Mujer', 'Hombre', 'No binario', 'Prefiero no decirlo'], head: 'Género', ph: 'Lo tuyo, p. ej., Hashimoto', hint: 'Se queda en este móvil' }
 }[lang];
 const fails = [], ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails.push(m); };
 const noX = async (R, sel, what) => { const o = await R.page.evaluate(s => { let bad = 0; document.querySelectorAll(s + ' *').forEach(e => { const r = e.getBoundingClientRect(); if (r.width && (r.right > innerWidth + 1 || r.left < -1)) bad++; }); return bad; }, sel); ok(o === 0, what + ': nothing sticks out (' + o + ')'); };
@@ -37,11 +39,11 @@ const noX = async (R, sel, what) => { const o = await R.page.evaluate(s => { let
     ok(JSON.stringify(labels.map(l => l[1])) === JSON.stringify(T.g) && labels.map(l => l[0]).join('') === 'fmnx', 'four choices: ' + JSON.stringify(labels));
     const head = await p.evaluate(() => { const g = document.querySelector('#r2ob .r2-gender'); const h = g && g.previousElementSibling; return h ? h.textContent.trim() : ''; });
     ok(head === T.head, 'heading: ' + head);
-    const field = await p.evaluate(() => { const i = document.getElementById('r2obCondNote'); if (!i) return null; const l = i.closest('label'); const h = l && l.nextElementSibling; const r = i.getBoundingClientRect(); const cs = getComputedStyle(i); return { label: l.querySelector('span').textContent.trim(), ph: i.placeholder, hint: h ? h.textContent.trim() : '', max: i.maxLength, h: r.height, fs: parseFloat(cs.fontSize), color: cs.color, bg: cs.backgroundColor }; });
-    ok(field && field.label === T.note, 'field label: ' + (field && field.label));
-    ok(field && field.ph === T.ph, 'placeholder: ' + (field && field.ph));
-    ok(field && field.hint.startsWith(T.hint), 'hint: ' + (field && field.hint));
-    ok(field && field.max === 120 && field.h >= 44 && field.fs >= 16, 'field: max 120, thumb-sized, no iOS zoom ' + JSON.stringify(field));
+    const field = await p.evaluate(() => { const i = document.getElementById('r2obOwnC'); if (!i) return null; const w = i.closest('.r2-ownadd'); let h = w && w.nextElementSibling; while (h && !h.classList.contains('r2-condnote-h')) h = h.nextElementSibling; const r = i.getBoundingClientRect(); const cs = getComputedStyle(i); return { ph: i.placeholder, hint: h ? h.textContent.trim() : '', max: i.maxLength, h: r.height, fs: parseFloat(cs.fontSize), others: document.querySelectorAll('#r2ob .r2-conds input[type=text], #r2ob .r2-conds ~ * input[type=text]').length, old: !!document.getElementById('r2obCondNote') }; });
+    ok(field && !field.old, 'the old separate line is gone (one place to type)');
+    ok(field && field.ph === T.ph, 'Add box placeholder: ' + (field && field.ph));
+    ok(field && field.hint.startsWith(T.hint), 'hint under the Add box: ' + (field && field.hint));
+    ok(field && field.max === 40 && field.h >= 44 && field.fs >= 16, 'Add box: max 40, thumb-sized, no iOS zoom ' + JSON.stringify(field));
     const lines = await p.$$eval('#r2ob .r2-gender [data-r2g]', bs => bs.map(b => { const cs = getComputedStyle(b); const r = b.getBoundingClientRect(); const range = document.createRange(); range.selectNodeContents(b); const rects = [...range.getClientRects()].map(x => Math.round(x.top)); return { t: b.textContent.trim(), h: Math.round(r.height), rows: new Set(rects).size, hy: cs.hyphens }; }));
     ok(lines.every(l => l.rows === 1 && l.h >= 36), 'each gender chip on one line, as tall as the other setup chips (40, or 36 on short screens): ' + JSON.stringify(lines));
     await tap('#r2ob [data-r2g="f"]'); await H.sleep(400);
@@ -51,38 +53,49 @@ const noX = async (R, sel, what) => { const o = await R.page.evaluate(s => { let
     await tap('#r2ob [data-r2g="n"]'); await H.sleep(400);
     ok(await p.$('#r2ob .r2-cyq') === null, 'non-binary: no setup cycle question, same as prefer not to say before');
     ok(await p.$('#r2ob [data-r2tag="PCOS"]') !== null, 'PCOS stays a free pick for non-binary');
-    await p.evaluate(() => { const i = document.getElementById('r2obCondNote'); i && i.scrollIntoView({ block: 'center' }); }); await H.sleep(500);
-    const hit = await p.evaluate(() => { const i = document.getElementById('r2obCondNote'); const r = i.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const e = document.elementFromPoint(x, y); return { top: Math.round(r.top), vh: innerHeight, on: e === i, el: e ? (e.id || String(e.className) || e.tagName) : null }; });
+    await p.evaluate(() => { const i = document.getElementById('r2obOwnC'); i && i.scrollIntoView({ block: 'center' }); }); await H.sleep(500);
+    const hit = await p.evaluate(() => { const i = document.getElementById('r2obOwnC'); const r = i.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const e = document.elementFromPoint(x, y); return { top: Math.round(r.top), vh: innerHeight, on: e === i, el: e ? (e.id || String(e.className) || e.tagName) : null }; });
     ok(hit.on, 'the field can be tapped (nothing on top): ' + JSON.stringify(hit));
-    await tap('#r2obCondNote'); await H.sleep(300);
+    await tap('#r2obOwnC'); await H.sleep(300);
     const focused = await p.evaluate(() => document.activeElement && document.activeElement.id);
-    ok(focused === 'r2obCondNote', 'a tap puts the cursor in the field: ' + focused);
-    if (focused !== 'r2obCondNote') await p.evaluate(() => document.getElementById('r2obCondNote').focus());
-    await p.keyboard.type('Sichelzellkrankheit'); await H.sleep(300);
+    ok(focused === 'r2obOwnC', 'a tap puts the cursor in the field: ' + focused);
+    if (focused !== 'r2obOwnC') await p.evaluate(() => document.getElementById('r2obOwnC').focus());
+    await p.keyboard.type('Sichelzellkrankheit'); await p.keyboard.press('Enter'); await H.sleep(400);
+    const ownChips = () => p.$$eval('#r2ob .r2-conds [data-r2own-rm]', bs => bs.map(b => b.textContent.replace(/\u00d7/g, '').trim()));
+    ok(JSON.stringify(await ownChips()) === '["Sichelzellkrankheit"]', 'Enter turns it into a chip: ' + JSON.stringify(await ownChips()));
     await tap('#r2ob [data-r2g="x"]'); await H.sleep(300); await tap('#r2ob [data-r2g="n"]'); await H.sleep(400);
-    ok((await p.inputValue('#r2obCondNote')) === 'Sichelzellkrankheit', 'typed text survives a gender tap');
+    ok(JSON.stringify(await ownChips()) === '["Sichelzellkrankheit"]', 'the chip survives a gender tap');
     const on = await p.$$eval('#r2ob .r2-gender [data-r2g].on', bs => bs.map(b => b.getAttribute('data-r2g')));
     ok(on.join() === 'n', 'only non-binary is lit: ' + on);
     await p.evaluate(() => document.activeElement && document.activeElement.blur());
-    await noX(R, '#r2ob', 'about'); await p.evaluate(() => { const i = document.getElementById('r2obCondNote'); i && i.scrollIntoView({ block: 'center' }); }); await H.sleep(300);
+    await noX(R, '#r2ob', 'about'); await p.evaluate(() => { const i = document.getElementById('r2obOwnC'); i && i.scrollIntoView({ block: 'center' }); }); await H.sleep(300);
     await R.shot('/tmp/obgn-' + pre + '-1-about.png');
     await tap('#r2ob [data-r2o="next"]'); await H.sleep(1500);
-    const st = await p.evaluate(() => { const s = LowiR2.S(); return { g: s.user.gender, note: s.health && s.health.condNote, userNote: s.user.condNote, pcos: !!(s.health && s.health.pcos) }; });
+    /* WebKit on a loaded VM can drop a coordinate tap while it renders no frames (see harness SIM_REDUCED_MOTION note): tap Next again, never anything else */
+    for (let k = 0; k < 2 && !(await p.evaluate(() => LowiR2.S().user.gender)); k++) { console.log('INFO Next tap retried'); await tap('#r2ob [data-r2o="next"]'); await H.sleep(2000); }
+    const st = await p.evaluate(() => { const s = LowiR2.S(); return { g: s.user.gender, own: s.health && s.health.own && s.health.own.conds, note: s.health && s.health.condNote, userNote: s.user.condNote, userJson: JSON.stringify(s.user), pcos: !!(s.health && s.health.pcos) }; });
     ok(st.g === 'n', 'saved gender stays non-binary: ' + st.g);
-    ok(st.note === 'Sichelzellkrankheit' && st.userNote === undefined, 'note saved in health only: ' + JSON.stringify(st));
+    ok(JSON.stringify(st.own) === '["Sichelzellkrankheit"]' && st.note === undefined && st.userNote === undefined && !st.userJson.includes('Sichelzell'), 'own condition saved in health only, as a chip: ' + JSON.stringify(st));
     ok(st.pcos === false, 'no PCOS without the pick');
     /* finish setup the quick way, then reopen Edit profile */
+    console.log('INFO step: close setup');
     await p.evaluate(() => { try { LowiR2.closeAll && LowiR2.closeAll(); } catch (e) { } const o = document.getElementById('r2ob'); if (o) o.remove(); });
+    console.log('INFO step: setup closed');
     await H.sleep(800);
+    /* an old note from before Oct 25 (the removed line) must show up as chips in Edit profile and move there on save */
+    await p.evaluate(() => { const s = LowiR2.S(); s.health.condNote = 'Eisenmangel; Asthma'; LowiR2.save(); });
+    console.log('INFO step: old note seeded, opening Edit profile');
     await p.evaluate(() => { const x = document.createElement('button'); x.setAttribute('data-r2p', 'edit'); x.style.display = 'none'; (document.getElementById('tab-profile') || document.body).appendChild(x); x.click(); x.remove(); });
-    await p.waitForSelector('#r2eCondNote', { timeout: 15000 });
-    ok((await p.inputValue('#r2eCondNote')) === 'Sichelzellkrankheit', 'Edit profile shows the note');
-    await p.fill('#r2eCondNote', 'Sichelzellkrankheit, Asthma'); await H.sleep(200);
-    await noX(R, '.r2-edit', 'edit'); await p.evaluate(() => { const i = document.getElementById('r2eCondNote'); i && i.scrollIntoView({ block: 'center' }); }); await H.sleep(300);
+    await p.waitForSelector('#r2eOwnC', { timeout: 15000 });
+    const eChips = () => p.$$eval('.r2-econd [data-r2own-rm]', bs => bs.map(b => b.textContent.replace(/\u00d7/g, '').trim()));
+    ok(JSON.stringify(await eChips()) === '["Sichelzellkrankheit","Eisenmangel","Asthma"]', 'Edit profile shows own chip plus the old note as chips: ' + JSON.stringify(await eChips()));
+    ok(!(await p.$('#r2eCondNote')) && (await p.$$('.r2-econd input[type=text]')).length === 1, 'Edit profile: one place to type');
+    await p.fill('#r2eOwnC', 'Laktose'); await p.press('#r2eOwnC', 'Enter'); await H.sleep(300);
+    await noX(R, '.r2-edit', 'edit'); await p.evaluate(() => { const i = document.getElementById('r2eOwnC'); i && i.scrollIntoView({ block: 'center' }); }); await H.sleep(300);
     await R.shot('/tmp/obgn-' + pre + '-2-edit.png');
     await p.evaluate(() => { const b = document.querySelector('[data-r2p="saveedit"]'); b && b.click(); }); await H.sleep(800);
-    const st2 = await p.evaluate(() => { const s = LowiR2.S(); return { g: s.user.gender, note: s.health && s.health.condNote }; });
-    ok(st2.note === 'Sichelzellkrankheit, Asthma' && st2.g === 'n', 'edit saves the note, gender unchanged: ' + JSON.stringify(st2));
+    const st2 = await p.evaluate(() => { const s = LowiR2.S(); return { g: s.user.gender, own: s.health && s.health.own && s.health.own.conds, note: s.health && s.health.condNote }; });
+    ok(JSON.stringify(st2.own) === '["Sichelzellkrankheit","Eisenmangel","Asthma","Laktose"]' && st2.note === undefined && st2.g === 'n', 'edit saves the chips, the old note moved over, gender unchanged: ' + JSON.stringify(st2));
     const back = await p.evaluate(() => { try { return JSON.stringify(JSON.parse(JSON.stringify(LowiR2.S()))); } catch (e) { return ''; } });
     ok(back.includes('Asthma'), 'state holds the note on this phone');
     /* Profile card: four chips, non-binary lit */

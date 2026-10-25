@@ -1,11 +1,14 @@
 /* own-entries.js (Oct 25 2026). Eman (handoff from the other account): at "I want" (Ich möchte) and "Anything we should look
    out for?" (Worauf sollen wir achten?) people can type their own option and add it with an Add (Hinzufügen / Añadir) button.
-   Not the same as the one free-text condition line from Oct 23 (S.health.condNote), which stays as it is.
+   Oct 25, later (Emmanuel's call, made for him): ONE place to type under "watch out for". The Oct 23 free-text line
+   (S.health.condNote) is gone from the screen; whatever someone wrote there is folded into own condition chips (fold, split
+   at commas, semicolons, slashes (not 50/100), plus signs; long parts wrapped at a word), so nothing anyone wrote is lost. Only what
+   does not fit in the six chips stays in condNote (fold().left) and keeps showing in Your details until there is room.
    - Each own entry becomes a chip with a small x; tapping it removes it. At most 6 per list, 40 characters, no markup.
    - Stored in S.health.own = { goals: [...], conds: [...] }: S.health is PRIVATE_KEYS, so it stays on this phone.
    - Typed words are wrapped in data-noi18n so the app's translator never changes them.
    - Own entries never change tips or scores; they are the person's own words, shown back to them.
-   API (window.LowiOwnEntries, also require()-able for tests): clean, list, add, read, write, rowHTML, chipHTML, tx, MAX, LEN */
+   API (window.LowiOwnEntries, also require()-able for tests): clean, list, add, read, fold, splitNote, write, rowHTML, chipHTML, tx, MAX, LEN */
 (function (root, factory) {
     const api = factory();
     if (typeof module === 'object' && module.exports) module.exports = api;
@@ -34,7 +37,33 @@
         if (cur.length >= MAX) return { list: cur, added: null, why: 'full' };
         return { list: cur.concat([c]), added: c, why: '' };
     }
-    function read(h) { const o = h && h.own && typeof h.own === 'object' ? h.own : {}; return { goals: list(o.goals), conds: list(o.conds) }; }
+    /* the old free-text condition line, cut into chip-sized parts: "Hashimoto, Eisenmangel; Asthma" -> 3 parts. A part longer
+       than LEN is wrapped at a word (never cut mid-word unless one word is longer than LEN), so every word stays. */
+    function splitNote(note) {
+        const s = String(note == null ? '' : note).replace(/[\u0000-\u001f\u007f<>]/g, ' '), out = [];
+        s.split(/\s*(?:[,;|+\u00b7\u2022]|\/(?!\d)|\s[-\u2013\u2014]\s)\s*/).forEach(part => {
+            let p = part.replace(/\s+/g, ' ').trim().replace(/^[-\u2013\u2014.\s]+|[.\s]+$/g, '');
+            while (p.length > LEN) {
+                let cut = p.lastIndexOf(' ', LEN);
+                if (cut < 1) cut = LEN;
+                out.push(p.slice(0, cut).trim()); p = p.slice(cut).trim();
+            }
+            if (p) out.push(p);
+        });
+        return out;
+    }
+    /* own entries plus the old note folded in. left = the parts that did not fit in six chips (kept, never dropped) */
+    function fold(h) {
+        const o = h && h.own && typeof h.own === 'object' ? h.own : {};
+        let conds = list(o.conds);
+        const left = [];
+        splitNote(h && typeof h.condNote === 'string' ? h.condNote : '').forEach(p => {
+            const r = add(conds, p);
+            if (r.added) conds = r.list; else if (r.why === 'full') left.push(p);
+        });
+        return { goals: list(o.goals), conds, left: left.join(', ') };
+    }
+    function read(h) { const f = fold(h); return { goals: f.goals, conds: f.conds }; }
     function write(h, own) {
         if (!h || typeof h !== 'object') return;
         const g = list(own && own.goals), c = list(own && own.conds);
@@ -52,5 +81,5 @@
             '<button type="button" class="r2-btn r2-ownbtn" data-r2own-add="' + k + '">' + esc(tx('add', l)) + '</button></div>' +
             '<div class="r2-ownmsg" data-noi18n role="status" aria-live="polite"></div>';
     }
-    return { MAX, LEN, TX, tx, clean, list, add, read, write, chipHTML, rowHTML };
+    return { MAX, LEN, TX, tx, clean, list, add, read, fold, splitNote, write, chipHTML, rowHTML };
 });

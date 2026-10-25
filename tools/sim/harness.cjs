@@ -51,6 +51,15 @@ async function open(o) {
     const host = new URL(url).host;
     const browser = await pw[o.engine].launch({ args: o.engine === 'chromium' ? ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--js-flags=--expose-gc'] : [] });
     const dev = o.engine === 'webkit' ? Object.assign({}, pw.devices[o.device]) : { viewport: o.viewport || { width: 390, height: 844 }, deviceScaleFactor: o.dpr || 3, hasTouch: true, isMobile: true };
+    /* SIM_WK_VIEWPORT=1: WebKit keeps the iPhone 13 device (user agent, touch) but uses the given viewport (390x844, the full
+       screen size the release checks use) instead of Playwright's 390x664 browser-chrome size. Off by default. */
+    if (o.engine === 'webkit' && process.env.SIM_WK_VIEWPORT === '1' && o.viewport) dev.viewport = o.viewport;
+    /* SIM_REDUCED_MOTION=1: the iPhone "Reduce Motion" setting. On this shared VM headless WebKit renders the live world in
+       software at well under one frame per second (rAF starves, taps wait for a frame, screenshots stall, memory can run away
+       on the About you step), which is the VM, not the app. With Reduce Motion the app's own calm mode keeps frames coming,
+       so DOM, typing and storage checks can run in WebKit. Off by default. */
+    if (process.env.SIM_REDUCED_MOTION === '1') dev.reducedMotion = 'reduce';
+    if (process.env.SIM_DPR) dev.deviceScaleFactor = +process.env.SIM_DPR;   /* e.g. SIM_DPR=1: a third of the pixels per side for software rendering on the VM */
     const ctx = await browser.newContext(Object.assign(dev, { serviceWorkers: 'block' }));
     await ctx.route(u => { try { const x = new URL(u); return !(x.protocol === 'data:' || x.protocol === 'blob:' || x.host === host || x.host.endsWith('.supabase.co')); } catch (e) { return true; } }, r => r.abort());
     await ctx.route(u => { try { return new URL(u).host === host; } catch (e) { return false; } }, r => r.request().method() === 'GET' ? r.continue() : r.abort());
@@ -70,7 +79,7 @@ async function open(o) {
     /* memory of this run's own browser processes (the web content process is the one iOS kills), from ps, in MB */
     R.rss = () => { try { const rows = require('child_process').execSync('ps -eo pid,ppid,rss,comm --no-headers').toString().trim().split('\n').map(l => l.trim().split(/\s+/)); const kids = new Set([String(process.pid)]); let grew = true; while (grew) { grew = false; for (const r of rows) if (kids.has(r[1]) && !kids.has(r[0])) { kids.add(r[0]); grew = true; } } const out = {}; for (const r of rows) if (kids.has(r[0]) && r[0] !== String(process.pid)) { const k = /WebProcess|renderer|chrome/.test(r[3]) ? r[3].slice(0, 15) : r[3].slice(0, 15); out[k] = Math.max(out[k] || 0, Math.round(+r[2] / 1024)); } return out; } catch (e) { return { err: e.message }; } };
     R.close = async () => { try { await browser.close(); } catch (e) { } if (srv) srv.close(); };
-    R.shot = (f) => page.screenshot({ path: f }).catch(() => { });
+    R.shot = (f) => (o.engine === 'webkit' && process.env.SIM_WK_NOSHOT === '1' ? Promise.resolve() : page.screenshot({ path: f, timeout: 20000 }))   /* Oct 25: a WebKit screenshot can hang for minutes on this VM (no frames: see SIM_REDUCED_MOTION note), and a pending one blocks every later call, so SIM_WK_NOSHOT=1 skips pictures in WebKit */.catch(() => { });
     /* a finger tap at the element's middle (the bubbles float, so Playwright's "stable" wait never settles) */
     R.tapEl = async (l) => { let b = await l.boundingBox({ timeout: 20000 }).catch(() => null); if (!b) b = await l.evaluate(e => { const r = e.getBoundingClientRect(); return r.width ? { x: r.x, y: r.y, width: r.width, height: r.height } : null; }, null, { timeout: 20000 }); if (!b) throw new Error('no box'); await page.touchscreen.tap(b.x + b.width / 2, b.y + b.height / 2); };
     R.tap = async (sel) => R.tapEl(page.locator(sel).first());

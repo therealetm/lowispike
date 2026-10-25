@@ -354,3 +354,26 @@ test('the sound kit AudioContext goes to sleep 6 s after the last sound and wake
     const go = fn(ac, (f, ms) => { q.push({ f, ms }); return q.length; }, () => { });
     go(); assert.strictEqual(q[0].ms, 6000); q[0].f(); assert.strictEqual(ac.state, 'suspended');
 });
+
+test('behind steady Community the faded-out world canvas is not drawn; the pull-out and the dive home always are', () => {
+    const src = read('body-world-3d.js');
+    assert.match(src, /if \(mode === 'back'\) return !!\(back && back\.isConnected\) && !backFaded\(\);/);
+    const fn = src.slice(src.indexOf('function backFaded()'), src.indexOf('function shouldRender()'));
+    assert.ok(fn.length > 0 && fn.length < 600, 'backFaded is a small helper before shouldRender');
+    assert.match(fn, /contains\('wb-comm'\)/);
+    assert.match(fn, /contains\('gx-in'\)/);
+    assert.match(fn, /contains\('gx-out'\)/);
+    assert.match(fn, /getComputedStyle\(canvas\)\.opacity === 0/, 'only when the canvas is really fully faded out (the Room CSS is live and its fade has finished)');
+    /* run it: a tiny fake page */
+    const mk = (cls, op) => {
+        const H = { classList: { contains: c => cls.includes(c) } };
+        const W = { getComputedStyle: () => ({ opacity: op }) };
+        return new Function('H', 'W', 'canvas', fn + '; return backFaded();')(H, W, {});
+    };
+    assert.strictEqual(mk(['wb-on', 'wb-comm'], '0'), true, 'steady Community, canvas faded = no drawing');
+    assert.strictEqual(mk(['wb-on', 'wb-comm'], '1'), false, 'canvas still visible (Room CSS not live yet) = keep drawing');
+    assert.strictEqual(mk(['wb-on', 'wb-comm'], '0.4'), false, 'mid-fade = keep drawing');
+    assert.strictEqual(mk(['wb-on', 'wb-comm', 'gx-in'], '0'), false, 'pull-out from Home = always drawn');
+    assert.strictEqual(mk(['wb-on', 'wb-comm', 'gx-out'], '0'), false, 'dive home = always drawn');
+    assert.strictEqual(mk(['wb-on'], '0'), false, 'other pages are not affected');
+});

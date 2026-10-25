@@ -185,6 +185,14 @@
         if (full) close();
     }
     function communityOn() { const c = D.getElementById('tab-foryou'); return !c || c.classList.contains('active'); }
+    /* Oct 25 heat pass: in steady Community the Room build fades the world canvas out (community-standout.css: html.wb-on.wb-comm,
+       not gx-in / gx-out = canvas opacity 0) and shows a still deep-blue space instead. Drawing a canvas nobody can see only heats the
+       phone, so while it is fully faded nothing is drawn. Read from the canvas's own style, so it only applies when that CSS is live
+       and the fade has finished; the pull-out and the dive home (gx-in / gx-out) are never touched. */
+    function backFaded() {
+        if (!canvas || !H.classList.contains('wb-comm') || H.classList.contains('gx-in') || H.classList.contains('gx-out')) return false;
+        try { return +W.getComputedStyle(canvas).opacity === 0; } catch (e) { return false; }
+    }
     function shouldRender() {
         if (D.hidden) return false;
         if (H.classList.contains('mm-open')) return false;   /* Mirror mode covers the screen: no world frames behind it */
@@ -192,7 +200,7 @@
         if (H.classList.contains('sz-open')) return false;
         if ((H.classList.contains("cr-room") || H.classList.contains("rm-view")) && communityOn()) return false;   /* Oct 23 2026: only while Community is the open page. A flag left on behind Home froze Home on the last Community frame (Emmanuel: "stuck on like a frozen page") */   /* 21 Oct: Creation/Affiliates tabs cover it too */   /* 20 Oct (support rooms): the Chat tab covers the screen, so no world frames behind it */  /* "What can I buy here?" covers it too (Oct 18 Cook -> shop crash): no frames re-blurred under its list */
         if (mode === 'full') return !!full;
-        if (mode === 'back') return !!(back && back.isConnected);
+        if (mode === 'back') return !!(back && back.isConnected) && !backFaded();
         if (!visibleHome || !stage || !stage.isConnected) return false;
         const tab = D.getElementById('spHome'); if (tab && !tab.offsetParent) return false;
         if (D.querySelector(H.classList.contains('wh-on') ? '.sp-world.on, .ht-world.on' : '.r2-ov, .sp-world.on, .ht-world.on')) return false; /* world-first Home: sheets are see-through, the world keeps breathing behind them */

@@ -346,7 +346,8 @@ test('the sound kit AudioContext goes to sleep 6 s after the last sound and wake
     assert.match(nap[0], /\}, 6000\);/);
     assert.match(html, /function ready\(\)\{[^\n]*ac\.resume\(\);[^\n]*sfxNap\(\); return ac\.state !== "closed"; \}/, 'every sound resets the nap and wakes a sleeping context');
     assert.match(html, /unlocked = true; \}\n  sfxNap\(\);\n\}/, 'the unlock tap also starts the nap clock');
-    assert.match(html, /\["pointerdown", "touchend", "click", "keydown"\]\.forEach\(t => document\.addEventListener\(t, wakeSfx/, 'woken as the finger lands, before the tap sound');
+    assert.match(html, /document\.addEventListener\("pointerdown", wakeSfx, \{capture:true, passive:true\}\)/, 'woken as the finger lands, before the tap sound');
+    assert.ok(html.includes('["touchend", "click", "keydown"].forEach(t => document.addEventListener(t, wakeSfx, {capture:true, passive:true}));'), 'the older wake-ups stay as they were');
     /* run it: a stand-in context goes running -> suspended after 6 s of silence */
     const fn = new Function('ac', 'setTimeout', 'clearTimeout', 'let sfxNapT = 0;\n' + nap[0] + '\nreturn sfxNap;');
     const q = []; const ac = { state: 'running', suspend() { this.state = 'suspended'; } };

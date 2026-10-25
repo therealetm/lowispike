@@ -16759,7 +16759,8 @@ document.addEventListener("visibilitychange", () => { if (!ac) return; if (docum
    the Sounds switch changes it. After the background, a call or Siri, iOS leaves the context 'suspended' or 'interrupted': any later
    tap or key wakes it again, silently (the once-only unlock above only covered the very first tap), and so does the page cache return */
 const wakeSfx = () => { if (document.hidden || !S.on) return; if (!unlocked || (ac && ac.state !== "running" && ac.state !== "closed")) unlock(); };
-["pointerdown", "touchend", "click", "keydown"].forEach(t => document.addEventListener(t, wakeSfx, {capture:true, passive:true}));
+["touchend", "click", "keydown"].forEach(t => document.addEventListener(t, wakeSfx, {capture:true, passive:true}));
+document.addEventListener("pointerdown", wakeSfx, {capture:true, passive:true});   // Oct 25 heat pass: the sound kit naps after 6 s, so the very first touch wakes it before the tap sound
 window.addEventListener("pageshow", e => { if (e && e.persisted && ac && unlocked && !document.hidden) { try { ac.resume(); } catch(x){} } });
 
 /* Oct 25 heat pass (E-man: phones get hot, battery drains): a running AudioContext keeps the phone's audio hardware and an audio thread

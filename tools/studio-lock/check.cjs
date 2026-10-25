@@ -6,7 +6,8 @@
                reload it opens straight away on this device.
    admin mode: an admin account opens Studio straight away, no PIN; taking admin away locks it again.
    Local (no --url): the app from this folder with the fake Supabase, studio_access / studio_unlock answered here (PIN 4321).
-   Live (--url): the real server. pin mode needs the PIN in STUDIO_PIN (never in this file). admin mode needs
+   Live (--url): the real server, signed in as the email test account in STUDIO_TEST_EMAIL / STUDIO_TEST_PW (an anonymous
+   account stays behind the sign-in gate, so Community is never reachable). pin mode needs the PIN in STUDIO_PIN (never in this file). admin mode needs
    STUDIO_ADMIN_ON / STUDIO_ADMIN_OFF: shell commands with {uid}, run to make this run's own test account admin and back.
    WebKit on this VM: SIM_WK_VIEWPORT=1 SIM_REDUCED_MOTION=1 SIM_WK_NOSHOT=1, one WebKit run at a time. */
 const H = require('../sim/harness.cjs');
@@ -39,7 +40,19 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
     try {
         if (mode === 'admin' && !url) admin = true;
         R.step = 'boot'; await R.goto(); await H.sleep(engine === 'webkit' ? 12000 : 7000);
-        const tidy = () => P.evaluate(() => { try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); try { if (window.LowiTutorial && LowiTutorial.stop) LowiTutorial.stop(); } catch (e) { } document.querySelectorAll('.tut-skip,[data-tut="skip"]').forEach(b => b.click()); });
+        if (url && process.env.STUDIO_TEST_EMAIL && process.env.STUDIO_TEST_PW) {   /* live: sign in as the email test account (profiles.test = true, hidden from Community) */
+            R.step = 'sign in';
+            const r = await P.evaluate(async ([e, p]) => {
+                const c = window.LOWI_CFG; localStorage.removeItem('lowi.auth');
+                const q = await fetch(c.url + '/auth/v1/token?grant_type=password', { method: 'POST', headers: { apikey: c.key, 'Content-Type': 'application/json' }, body: JSON.stringify({ email: e, password: p }) });
+                const d = await q.json(); if (!q.ok || !d.access_token) return 'sign-in failed ' + q.status + ' ' + JSON.stringify(d).slice(0, 120);
+                if (!d.expires_at) d.expires_at = Math.floor(Date.now() / 1000) + (d.expires_in || 3600);
+                localStorage.setItem('lowi.auth', JSON.stringify(d)); localStorage.setItem('lowi.gate', 'done'); return 'ok ' + d.user.id;
+            }, [process.env.STUDIO_TEST_EMAIL, process.env.STUDIO_TEST_PW]);
+            ok('signed in as the email test account', /^ok /.test(r), r);
+            await R.goto(); await H.sleep(engine === 'webkit' ? 12000 : 7000);
+        }
+        const tidy = () => P.evaluate(() => { try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); document.documentElement.classList.remove('gate-boot', 'gate-up'); /* live: a fresh test account is anonymous, so the sign-in gate is up; step past it like a signed-up person */ try { if (window.LowiTutorial && LowiTutorial.stop) LowiTutorial.stop(); } catch (e) { } document.querySelectorAll('.tut-skip,[data-tut="skip"]').forEach(b => b.click()); });
         await P.evaluate(l => { try { window.LowiLang && LowiLang.set && LowiLang.set(l); } catch (e) { } }, lang); await H.sleep(1200);
         await tidy(); await H.sleep(800);
         const build = await P.evaluate(() => { const s = [...document.scripts].map(x => x.src).find(x => /studio-lock\.js\?v=/.test(x)); return s ? s.split('v=')[1] : 'missing'; });

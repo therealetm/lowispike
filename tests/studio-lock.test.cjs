@@ -104,6 +104,11 @@ test('studio-lock.js: asks the server, keeps the pass on this device only, PIN f
     const js = R('studio-lock.js'), css = R('studio-lock.css');
     assert.match(js, /rpc\('studio_access', \{ pass: p \|\| null \}\)/);
     assert.match(js, /rpc\('studio_unlock', \{ pin \}\)/);
+    /* found on the live site: the first check can go out before the cloud session is live (public key, so "no"); the account
+       only counts once it is live, so the owner's own check always follows and he is not left locked */
+    assert.match(js, /return \(s && s\.uid && s\.live\) \? s\.uid : '';/);
+    assert.match(js, /const p = pass\(\), id = liveUid\(\), key = id \+ '\|' \+ p;/);
+    assert.match(js, /setInterval\(\(\) => \{ if \(liveUid\(\) \+ '\|' \+ pass\(\) !== ST\.key\) check\(false\); \}, 2000\);/);
     assert.strictEqual(C.PASS_KEY.indexOf('lowispike.'), -1, 'not a lowispike.* key, so the account backup never carries it to another phone');
     assert.match(js, /else \{ put\(C\.OK_KEY, ''\); if \(p\) put\(C\.PASS_KEY, ''\); \}/, 'a refused pass is forgotten');
     assert.match(js, /type="password" inputmode="numeric" pattern="\[0-9\]\*" maxlength="8" autocomplete="off"/);

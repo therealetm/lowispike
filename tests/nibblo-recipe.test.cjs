@@ -179,3 +179,53 @@ test('the new files load and work offline', () => {
   assert.match(html, /<link rel="stylesheet" id="nbrCss" href="nibblo-recipe\.css\?v=/);
   assert.match(read('sw.js'), /STATIC\.push\("recipe-amounts-core\.js", "nibblo-recipe\.css"\)/);
 });
+
+// 25 Oct 2026 (release task a81ac609): the Nibblo push (lis-push.js nbShow) and the meal-details hook (meal-detail.js routeBot)
+// both hand over to LowiNibblo.openRecipe; and the page makes no "blood sugar stays steady" promise (scanner says "Lower impact").
+function fakeWindow() {
+  const opened = [], routes = [];
+  const W = {
+    LowiP2: { open: id => { opened.push(id); } },
+    LowiMealDetail: { routeBot: fn => { routes.push(fn); }, hasBotRoute: () => routes.length > 0 },
+    addEventListener() {}, document: { readyState: 'complete', addEventListener() {} },
+    localStorage: { getItem: () => null }, navigator: { language: 'en' }
+  };
+  return { W, opened, routes };
+}
+function freshApi() { delete require.cache[require.resolve('../nibblo-core.js')]; return require('../nibblo-core.js'); }
+
+test('LowiNibblo.openRecipe accepts the push id nb-YYYYMMDD-m|n|e, the For You id s<id> and an rb_ id', () => {
+  const api = freshApi(), { W, opened } = fakeWindow();
+  api.install(W);
+  assert.equal(typeof W.LowiNibblo.openRecipe, 'function');
+  const day = '20261025', p = api.pick(day, 'n');
+  assert.equal(W.LowiNibblo.openRecipe('nb-' + day + '-n'), true);
+  assert.equal(opened.pop(), api.bookId(p.dish.r));
+  assert.equal(W.LowiNibblo.openRecipe('snb-' + day + '-e'), true);
+  assert.equal(opened.pop(), api.bookId(api.pick(day, 'e').dish.r));
+  assert.equal(W.LowiNibblo.openRecipe('rb_shirataki_carbonara_pull'), true);
+  assert.equal(opened.pop(), 'rb_shirataki_carbonara_pull');
+  assert.equal(W.LowiNibblo.openRecipe('m123'), false, 'a member message is not a recipe');
+  assert.equal(W.LowiNibblo.openRecipe(''), false);
+  assert.equal(opened.length, 0);
+});
+
+test('the meal-details hook: install registers LowiMealDetail.routeBot, and its info opens the recipe', () => {
+  const api = freshApi(), { W, opened, routes } = fakeWindow();
+  api.install(W);
+  assert.equal(routes.length, 1, 'one route registered');
+  routes[0]({ source: 'chat', id: 'nb-20261025-m', bookId: 'rb_shirataki_carbonara_pull' });
+  assert.equal(opened.pop(), 'rb_shirataki_carbonara_pull');
+  routes[0]({ source: 'foryou', id: 'snb-20261025-m' });
+  assert.equal(opened.pop(), api.bookId(api.pick('20261025', 'm').dish.r));
+});
+
+test('the recipe page makes no "blood sugar stays steady" promise in any language', () => {
+  for (const l of ['en', 'de', 'es']) {
+    for (const r of BOOK.slice(0, 38)) {
+      const sp = A.spike({ r: r.r, ing: ingOf(r) }, l);
+      if (!sp) continue;
+      assert.doesNotMatch(sp.why, /steady|stay stable|ruhig|estable|won't push|nicht hoch|no dispara/i, l + ' ' + r.n + ': ' + sp.why);
+    }
+  }
+});

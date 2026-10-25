@@ -230,6 +230,23 @@
     if (!W || W.__lowiNibblo) return; W.__lowiNibblo = 1;
     W.LowiNibblo = api;
     api.lang = () => viewLang(W);
+    /* 25 Oct 2026: open a Nibblo meal's full recipe from anywhere: the push tap (lis-push.js nbShow passes 'nb-YYYYMMDD-m|n|e'),
+     * a For You post id ('s' + that), a chat message or post object, or the rb_ id itself. false when it is not Nibblo's. */
+    api.openRecipe = x => {
+      let rec = '';
+      if (x && typeof x === 'object') rec = recipeFor(x);
+      else { const s = String(x || ''); rec = /^rb_/.test(s) ? s : recipeFor({ id: s.replace(/^s(?=nb-)/, ''), uid: UID }); }
+      const P = W.LowiP2; if (!rec || !P || typeof P.open !== 'function') return false;
+      try { P.open(rec); return true; } catch (e) { return false; }
+    };
+    /* meal-detail.js (task bb58db98): a bot meal's spike label / For You chip / meal card never opens the details panel, it calls
+     * this route; info = {source, id, bookId, ...}. meal-detail.js loads before this file; the retry covers the other order. */
+    const route = () => {
+      const MD = W.LowiMealDetail; if (!MD || typeof MD.routeBot !== 'function' || (MD.hasBotRoute && MD.hasBotRoute())) return;
+      MD.routeBot(info => { if (!info) return; if (!(info.bookId && api.openRecipe(info.bookId))) api.openRecipe(info.id); });
+    };
+    route();
+    try { if (W.document && W.document.readyState === 'loading') W.document.addEventListener('DOMContentLoaded', route); } catch (e) { /* no document */ }
   }
 
   const api = { NAME, UID, EMAIL, LOOK, MEDIA, TZ, LANGS, SLOTS, WINDOW_MIN, INTROS, MENU, BOT_TAG, bookId, photoFile, photoUrl, dayNum, pick, texts, msgId, postId, chatBody, postRow, chatMeal, chatPhoto, isPost, post, recipeFor, cookHTML, chatHTML, fyHitHTML, COOK, berlin, dueSlot, install, lang: () => 'en' };

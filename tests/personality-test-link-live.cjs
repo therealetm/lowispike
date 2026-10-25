@@ -50,14 +50,14 @@ function decodePNG(buf) { let pos = 8, w = 0, h = 0, type = 0; const idat = []; 
   const checkEl = async (page, sel, label, W) => {
     await page.evaluate(sel => { const e = [...document.querySelectorAll(sel)].filter(x => x.getClientRects().length).pop(); if (e) e.scrollIntoView({ block: 'center' }); }, sel);
     /* wait until it stops moving (sheets slide in; WebKit on a loaded test computer draws only a few frames a second) */
-    await page.waitForFunction(sel => { const e = [...document.querySelectorAll(sel)].filter(x => x.getClientRects().length).pop(); if (!e) return false; const y = Math.round(e.getBoundingClientRect().top); const ok = window.__ptY === y; window.__ptY = y; return ok; }, sel, { polling: 400, timeout: 20000 }).catch(() => {});
+    await page.waitForFunction(sel => { const e = [...document.querySelectorAll(sel)].filter(x => x.getClientRects().length).pop(); if (!e) return false; const r = e.getBoundingClientRect(), y = Math.round(r.top); if (r.top < 0 || r.bottom > innerHeight) e.scrollIntoView({ block: 'center' }); const ok = window.__ptY === y && r.top >= 0 && r.bottom <= innerHeight; window.__ptY = y; return ok; }, sel, { polling: 900, timeout: 40000 }).catch(() => {});
     const m = await page.evaluate(sel => { const e = [...document.querySelectorAll(sel)].filter(x => x.getClientRects().length).pop(); if (!e) return null; const r = e.getBoundingClientRect(), cs = getComputedStyle(e);
       let op = 1; for (let n = e; n && n !== document.documentElement; n = n.parentElement) op *= +getComputedStyle(n).opacity;
       const c = cs.color.match(/[\d.]+/g).map(Number); return { x: r.x, y: r.y, w: r.width, h: r.height, fg: [c[0], c[1], c[2], (c[3] == null ? 1 : c[3]) * op], vw: innerWidth, vh: innerHeight, font: parseFloat(cs.fontSize), text: e.innerText.trim() }; }, sel);
     if (!m) { ok(false, label + ': not on screen'); return null; }
     ok(m.x >= 0 && m.x + m.w <= m.vw + 0.5 && m.y >= 0 && m.y + m.h <= m.vh + 0.5, label + ': inside the screen ' + JSON.stringify({ x: Math.round(m.x), y: Math.round(m.y), w: Math.round(m.w), h: Math.round(m.h) }));
     await page.evaluate(sel => { const e = [...document.querySelectorAll(sel)].filter(x => x.getClientRects().length).pop(); e.dataset.ptHide = e.getAttribute('style') || ''; e.style.setProperty('color', 'transparent', 'important'); e.style.setProperty('-webkit-text-fill-color', 'transparent', 'important'); e.style.setProperty('text-decoration-color', 'transparent', 'important'); }, sel);
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(ENGINE === 'webkit' ? 1500 : 200);
     Object.assign(m, await page.evaluate(sel => { const e = [...document.querySelectorAll(sel)].filter(x => x.getClientRects().length).pop(), r = e.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; }, sel));
     const img = decodePNG(await page.screenshot({ type: 'png' })), scale = img.w / m.vw;
     await page.evaluate(sel => { const e = [...document.querySelectorAll(sel)].filter(x => x.getClientRects().length).pop(); e.setAttribute('style', e.dataset.ptHide); delete e.dataset.ptHide; }, sel);

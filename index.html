@@ -11067,13 +11067,13 @@ function condsFor(gender, sel){ return condList().filter(c => c[0] !== "PCOS" ||
 const CONDNOTE_MAX = 120;
 function cleanCondNote(v){ return String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, CONDNOTE_MAX); }
 R2.cleanCondNote = cleanCondNote;
-function condNoteHTML(id, note){
-  return '<label class="r2-fl r2-condnote"><span>Something else? Type it here</span><input id="' + id + '" type="text" maxlength="' + CONDNOTE_MAX + '" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="e.g. sickle cell disease" value="' + esc(note || "") + '"></label>' +
-    '<div class="r2-obhint r2-condnote-h">Stays on this phone. A note for you, not medical advice.</div>';
-}
+/* Oct 25 (Emmanuel's call, made for him): ONE place to type under "watch out for". The separate "Something else? Type it
+   here" line is gone; what anyone wrote in it is folded into own chips (LowiOwnEntries.fold), so the Add box above is the
+   only field. Only parts that do not fit in six chips stay in S.health.condNote. The honest hint stays under the Add box. */
+function condHintHTML(){ return '<div class="r2-obhint r2-condnote-h">Stays on this phone. A note for you, not medical advice.</div>'; }
 /* Oct 25 (Eman): people can type their own option at "I want" and at "Anything we should look out for?" and add it with
    Add / Hinzufügen / Añadir (own-entries.js). Own entries are chips with an x, stored in S.health.own (this phone only).
-   This is NOT the Oct 23 condition note line below (condNote), which stays as it is. */
+   The Oct 23 condition note line (condNote) is folded into these chips (see condHintHTML above). */
 const ownLang = () => { try { return (window.LowiLang && LowiLang.get && LowiLang.get()) || "en"; } catch(e){ return "en"; } };
 function ownChips(kind, arr){ const OE = window.LowiOwnEntries; return OE ? OE.list(arr).map(x => OE.chipHTML(kind, x, ownLang())).join("") : ""; }
 function ownRow(kind, id){ const OE = window.LowiOwnEntries; return OE ? OE.rowHTML(kind, ownLang(), id) : ""; }
@@ -11107,7 +11107,7 @@ function condBlock(attr, noneAttr, sel, none, gender, note, noteId){
     ownChips("conds", own) +
     '<button type="button" class="r2-chip r2-none' + (noneOn ? " on" : "") + '" aria-pressed="' + noneOn + '" ' + noneAttr + '="1">None of these</button></div>' +
     ownRow("conds", noteId === "r2obCondNote" ? "r2obOwnC" : "r2eOwnC") +
-    (noteId ? condNoteHTML(noteId, note) : "");
+    (noteId ? condHintHTML() : "");
 }
 /* Oct 23: the four gender choices Emmanuel approved. "n" (non-binary) and "x" (prefer not to say) never count as woman or man */
 const GENDERS = [["f", "Woman"], ["m", "Man"], ["n", "Non-binary"], ["x", "Prefer not to say"]];
@@ -11124,7 +11124,7 @@ R2.onboard = function(opts){
   const bc = window.LowiBirthCompanion, needReveal = !!(bc && bc.has && bc.reveal && !bc.has());
   ob = { step: (s.setupMid && !s.setupDone && s.user.bday && !needReveal) ? 1 : 0, bday: s.user.bday || "", btime: s.user.btime || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), noCond: !!s.user.noCond, name: s.user.name || "", gender: s.user.gender || "", pcos: !!(s.health && s.health.pcos), condNote: (s.health && typeof s.health.condNote === "string") ? s.health.condNote : "", cycle: (s.health && s.health.cyc && typeof s.health.cyc.show === "boolean") ? s.health.cyc.show : null, askName: !s.user.name || opts.askName };
   if (ob.pcos && ob.gender !== "m" && !ob.tags.includes("PCOS")) ob.tags.push("PCOS");   /* old PCOS checkbox -> PCOS condition */
-  { const OE = window.LowiOwnEntries, o = OE ? OE.read(s.health) : { goals: [], conds: [] }; ob.ownGoals = o.goals; ob.ownConds = o.conds; }   /* Oct 25: own entries */
+  { const OE = window.LowiOwnEntries, o = OE ? OE.fold(s.health) : { goals: [], conds: [], left: ob.condNote }; ob.ownGoals = o.goals; ob.ownConds = o.conds; ob.condNote = o.left; }   /* Oct 25: own entries; the old note line folded into own chips, ob.condNote keeps only what did not fit */
   const ov = R2.sheet('<div class="r2-ob" id="r2ob"></div>', { full: true, noClose: true, cls: "r2-obov" });
   paintOb();
   return ov;
@@ -11175,7 +11175,6 @@ function paintOb(){
   const b = $("#r2obB"); if (b) { const onB = () => { ob.bday = b.value; $("#r2obSign").innerHTML = signReveal(); obErrClear(); }; b.addEventListener("input", onB); b.addEventListener("change", onB); }
   const n = $("#r2obName"); if (n) n.addEventListener("input", () => { ob.name = n.value.trim(); obErrClear(); });
   const bt = $("#r2obT"); if (bt) bt.addEventListener("input", () => { ob.btime = bt.value; });
-  const cn = $("#r2obCondNote"); if (cn) { cn.addEventListener("input", () => { ob.condNote = cn.value; }); cn.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); cn.blur(); } }); }
 }
 function saveOb(final){
   const s = R2.S(); s.user = s.user || {};
@@ -11190,7 +11189,7 @@ function saveOb(final){
   s.health = s.health || {}; s.health.pcos = ob.gender !== "m" && ob.tags.includes("PCOS");
   { const OE = window.LowiOwnEntries; if (OE && (ob.ownGoals || ob.ownConds)) OE.write(s.health, { goals: ob.ownGoals, conds: ob.ownConds }); }   /* Oct 25: own entries, this phone only */
   if (ob.gender === "f" && ob.cycle !== null && window.LowiCycle && LowiCycle.setShow) LowiCycle.setShow(ob.cycle);   /* cycle stage 1: her answer to Track your cycle? */
-  { const note = typeof cleanCondNote === "function" ? cleanCondNote(ob.condNote) : ""; if (note) s.health.condNote = note; else delete s.health.condNote; }  /* ob.condNote follows the field on every keystroke (paintOb) */
+  { const note = typeof cleanCondNote === "function" ? cleanCondNote(ob.condNote) : ""; if (note) s.health.condNote = note; else delete s.health.condNote; }  /* Oct 25: ob.condNote = only the old note parts that did not fit in the own chips (R2.onboard) */
   if (final) { s.setupDone = true; s.onboarded = true; delete s.autoSkipped; delete s.setupMid; }
   else if (!s.setupDone) s.setupMid = 1;
   R2.save();
@@ -11344,8 +11343,7 @@ function saveEdit(){
   ownFlush(["r2eOwnG", "r2eOwnC"]); const og = ownRead("r2eOwnG"), oc = ownRead("r2eOwnC");   /* Oct 25: own entries */
   const nn = $("[data-r2enone]"); s.user.noCond = !!(nn && nn.classList.contains("on")) && !s.user.tags.some(isCond) && !(oc && oc.length);
   s.health = s.health || {}; s.health.pcos = s.user.gender !== "m" && s.user.tags.includes("PCOS");
-  { const OE = window.LowiOwnEntries; if (OE && og && oc) OE.write(s.health, { goals: og, conds: oc }); }
-  { const cn = $("#r2eCondNote"); if (cn) { const note = cleanCondNote(cn.value); if (note) s.health.condNote = note; else delete s.health.condNote; } }
+  { const OE = window.LowiOwnEntries; if (OE && og && oc) { const left = cleanCondNote(OE.fold(s.health).left); OE.write(s.health, { goals: og, conds: oc }); if (left) s.health.condNote = left; else delete s.health.condNote; } }   /* Oct 25: the old note now lives in the chips; only what did not fit stays */
   R2.save();
   try { window.LowiGlass && LowiGlass.apply(); } catch(e){}
   R2.applyTheme();
@@ -11418,7 +11416,7 @@ document.addEventListener("click", e => {
     if (v === "shoplater") { try { const r = LowiShopPlan.readForm($("#r2ob")); if (r.ok) LowiShopPlan.saveForm($("#r2ob")); else if (!LowiShopPlan.isSet()) LowiShopPlan.set({ skipped: true }); } catch(x){} return finishOb(); }
   }
   const gg = e.target.closest("[data-r2g]");
-  if (gg && ob) { ownFlush(["r2obOwnG", "r2obOwnC"]); ob.gender = gg.getAttribute("data-r2g"); if (ob.gender !== "f") { ob.pcos = false; ob.cycle = null; } { const cn = $("#r2obCondNote"); if (cn) ob.condNote = cn.value; } const sc = ($("#r2ob .r2-obpane") || {}).scrollTop || 0; paintOb(); const pn = $("#r2ob .r2-obpane"); if (pn) { pn.style.animation = "none"; pn.scrollTop = sc; } return; } /* hunt Oct 23: same step, no fade-in again */
+  if (gg && ob) { ownFlush(["r2obOwnG", "r2obOwnC"]); ob.gender = gg.getAttribute("data-r2g"); if (ob.gender !== "f") { ob.pcos = false; ob.cycle = null; } const sc = ($("#r2ob .r2-obpane") || {}).scrollTop || 0; paintOb(); const pn = $("#r2ob .r2-obpane"); if (pn) { pn.style.animation = "none"; pn.scrollTop = sc; } return; } /* hunt Oct 23: same step, no fade-in again */
   const cyq = e.target.closest("[data-r2cy]");
   if (cyq && ob) { ob.cycle = cyq.getAttribute("data-r2cy") === "1"; $$("#r2ob [data-r2cy]").forEach(b => { const on = (b.getAttribute("data-r2cy") === "1") === ob.cycle; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); }); return; }
   const pc = e.target.closest("[data-r2pcos]");
@@ -12840,7 +12838,6 @@ html[data-ui=light] .r3a-pl{background:radial-gradient(120% 80% at 50% 0%,#fff6e
 .r2-condq span{font-weight:500;opacity:.8}
 .r2-obhint{font-size:12.5px;opacity:.6;margin:-4px 0 8px}
 .r2-econd .r2-obsub{margin-top:2px}
-.r2-condnote{margin-top:12px}
 /* Oct 25: type-your-own row under "I want" and "Anything we should look out for?" */
 .r2-ownadd{display:flex;gap:8px;align-items:center;margin-top:10px}
 .r2-ownadd input{flex:1;min-width:0;height:46px;font-size:16px}
@@ -12848,7 +12845,6 @@ html[data-ui=light] .r3a-pl{background:radial-gradient(120% 80% at 50% 0%,#fff6e
 .r2-ownchip i{font-style:normal;margin-left:6px;opacity:.8}
 .r2-ownmsg{font-size:13px;margin-top:4px}
 .r2-ownmsg:empty{display:none}
-.r2-condnote input{height:48px;font-size:17px}
 .r2-condnote-h{margin:6px 0 4px;padding-left:4px}
 @media (max-height:700px){.r2-obpane .r2-obsub{margin:8px 0 6px}.r2-obpane .r2-chip{height:36px;padding:0 13px}}
 </style>
@@ -12956,8 +12952,6 @@ dict([
   ["About you", "Über dich", "Sobre ti"],
   ["I am", "Ich bin", "Soy"], ["I want", "Ich will", "Quiero"], ["A woman", "Eine Frau", "Una mujer"], ["A man", "Ein Mann", "Un hombre"], ["Prefer not to say", "Keine Angabe", "Prefiero no decirlo"],
   ["Gender", "Geschlecht", "Género"], ["Woman", "Frau", "Mujer"], ["Man", "Mann", "Hombre"], ["Non-binary", "Nichtbinär", "No binario"],
-  ["Something else? Type it here", "Noch etwas? Hier eintippen", "¿Algo más? Escríbelo aquí"],
-  ["e.g. sickle cell disease", "z. B. Sichelzellkrankheit", "p. ej., anemia falciforme"],
   ["Stays on this phone. A note for you, not medical advice.", "Bleibt auf diesem Handy. Eine Notiz für dich, keine medizinische Beratung.", "Se queda en este móvil. Es una nota para ti, no un consejo médico."],
   ["I have PCOS, or think I might", "Ich habe PCOS oder vermute es", "Tengo SOP o creo que podría tenerlo"],
   ["Fewer cravings", "Weniger Heißhunger", "Menos antojos"], ["More energy", "Mehr Energie", "Más energía"], ["Better skin", "Bessere Haut", "Mejor piel"],

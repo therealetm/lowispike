@@ -131,7 +131,7 @@ async function pages(base) {
             await shot('admin-open');
             adminStub = false;
             if (live && session) {
-                const d = await api('/functions/v1/delete-my-account', {}, session.access_token);
+                const d = await api('/functions/v1/delete-my-account', { confirm: 'DELETE' }, session.access_token);
                 ok('account: test account deleted', d.status === 200, { status: d.status, data: d.data });
             }
         }
@@ -141,20 +141,28 @@ async function pages(base) {
     await browser.close();
 }
 
-/* Community > Studio in the app: local only (the fake cloud; an admin on this device, as Emmanuel's phone is) */
+/* Community > Studio in the app, as the owner's phone is (studio_access answered yes in this browser; live: the app's own guest
+   account, deleted at the end) */
 async function app() {
-    const R = await H.open({ engine, lang, url: '', device: 'iPhone 13', probe: false, fresh: false, viewport: { width: 390, height: 844 } });
-    const P = R.page; let admin = true;
+    const R = await H.open({ engine, lang, url: live, device: 'iPhone 13', probe: false, fresh: false, viewport: { width: 390, height: 844 }, cloud: live ? false : undefined });
+    const P = R.page; let admin = true; const toks = new Map();
+    const grab = async () => { const a = await P.evaluate(() => { try { const s = JSON.parse(localStorage.getItem('lowi.auth')); return [s.user.id, s.access_token]; } catch (e) { return null; } }).catch(() => null); if (a) toks.set(a[0], a[1]); return a ? a[0] : ''; };
     await R.ctx.route(u => /\/rest\/v1\/rpc\/studio_(access|unlock)/.test(String(u)), route => {
         const q = route.request(), b = (() => { try { return JSON.parse(q.postData() || '{}'); } catch (e) { return {}; } })();
+        if (live && !/studio_access/.test(q.url())) return route.continue();
+        if (live && !admin && b.pass) return route.continue();
         const data = /studio_access/.test(q.url()) ? (admin || b.pass === LOCAL_PASS) : b.pin === LOCAL_PIN ? { ok: true, pass: LOCAL_PASS } : { ok: false, reason: 'wrong' };
         route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(data) });
     });
-    const boot = async () => { await R.goto(); await H.sleep(wk ? 12000 : 7000); await P.evaluate(l => { try { LowiLang.set(l); } catch (e) { } try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); document.documentElement.classList.remove('gate-boot', 'gate-up'); try { LowiTutorial.stop(); } catch (e) { } }, lang); await H.sleep(1200); };
+    const boot = async () => { await R.goto(); await H.sleep(wk ? 12000 : 7000); await P.evaluate(l => { try { LowiLang.set(l); } catch (e) { } try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); document.documentElement.classList.remove('gate-boot', 'gate-up'); try { LowiTutorial.stop(); } catch (e) { } document.querySelectorAll('.tut-skip,[data-tut="skip"]').forEach(b => b.click()); }, lang); await H.sleep(1200); if (live) await P.waitForFunction(() => { try { const s = LOWI_CLOUD_X.state(); return s && s.uid && s.live; } catch (e) { return false; } }, null, { timeout: 60000 }).catch(() => { }); await P.evaluate(() => { try { LowiTutorial.stop(); } catch (e) { } document.querySelectorAll('.tut-skip,[data-tut="skip"]').forEach(b => b.click()); try { LowiR2.closeAll(); } catch (e) { } }); await H.sleep(800); };
     const openStudio = async () => {
         for (let i = 0; i < 4; i++) { await P.evaluate(() => window.goTab('foryou')); if (await P.waitForSelector('#tab-foryou .rm-tab[data-rm="studio"]', { state: 'attached', timeout: 30000 }).then(() => true, () => false)) break; }
         await H.sleep(800); await R.tap('#tab-foryou .rm-tab[data-rm="studio"]'); await H.sleep(wk ? 6000 : 3000);
+        if (live && !(await P.$('#tab-foryou .rm-view'))) { console.log('note: touch did not reach the Studio tab on live; pressing it from the page'); await P.evaluate(() => document.querySelector('#tab-foryou .rm-tab[data-rm="studio"]').click()); await H.sleep(3000); }
     };
+    /* live: a fresh guest whose setup screen this script removed has an empty full-screen layer over the tabs (touch never
+       lands; Emmanuel's own phone has no such layer), so there the buttons are pressed from the page */
+    const press = async sel => { if (live) { await P.evaluate(q => document.querySelector(q).click(), sel); } else await R.tap(sel); };
     const st = () => P.evaluate(() => {
         const v = document.querySelector('#tab-foryou .rm-view'), l = v && v.querySelector(':scope>.sl-lock'), b = v && v.querySelector(':scope>.sl-open'), br = b && !b.hidden && b.getBoundingClientRect();
         const sw = v && v.querySelector(':scope>.rm-sw'), sr = sw && sw.getBoundingClientRect(), fr = v ? [...v.querySelectorAll(':scope>iframe')] : [];
@@ -163,25 +171,30 @@ async function app() {
             belowSwitch: !!(br && sr && br.top >= sr.bottom - 0.5), aboveFrame: !!(br && frr && br.bottom <= frr.top + 0.5), frames: fr.length, locked: localStorage.getItem('lowi.studio.locked'), pass: (localStorage.getItem('lowi.studio.pass') || '').length };
     });
     try {
-        R.step = 'boot'; await boot(); await openStudio();
+        R.step = 'boot'; await boot(); const u1 = await grab(); await openStudio();
         let s = await st();
         ok('app: the owner\'s Studio opens with "🔒 ' + T.badge + '" and "' + T.lockNow + '" between the switch and the page', s.open && !s.lock && s.badge.indexOf(T.badge) >= 0 && s.badge.indexOf(T.lockNow) >= 0 && s.belowSwitch && s.aboveFrame && s.frames > 0, s);
         await R.shot(out + '/' + engine + '-' + lang + '-app-open.png');
-        await R.tap('#tab-foryou .sl-lockbtn'); await H.sleep(wk ? 4000 : 1500);
+        await press('#tab-foryou .sl-lockbtn'); await H.sleep(wk ? 4000 : 1500);
         s = await st();
         ok('app: Lock shows the locked panel, the pages go, the badge goes', !s.open && s.lock && !s.badge && s.frames === 0 && s.locked === '1', s);
         await R.shot(out + '/' + engine + '-' + lang + '-app-locked.png');
-        R.step = 'reload'; await boot(); await openStudio();
+        R.step = 'reload'; await boot(); const u2 = await grab(); console.log('accounts', u1.slice(0, 8), u2.slice(0, 8), 'flag', await P.evaluate(() => localStorage.getItem('lowi.studio.locked'))); await openStudio();
         s = await st();
         ok('app: after a reload this device stays locked although the account is the owner', !s.open && s.lock && s.frames === 0, s);
-        await R.tap('#tab-foryou .sl-key'); await H.sleep(700);
-        await P.fill('#tab-foryou .sl-pin input', ''); await P.type('#tab-foryou .sl-pin input', LOCAL_PIN, { delay: 30 }); await R.tap('#tab-foryou .sl-go');
+        await press('#tab-foryou .sl-key'); await H.sleep(700);
+        await P.fill('#tab-foryou .sl-pin input', ''); await P.type('#tab-foryou .sl-pin input', PIN, { delay: 30 }); await press('#tab-foryou .sl-go');
         await P.waitForFunction(() => LowiStudioLock.isOpen() && document.querySelector('#tab-foryou .rm-view>iframe'), null, { timeout: 30000 }).catch(() => { });
         await H.sleep(wk ? 4000 : 1500);
         s = await st();
+        if (live) console.log('after PIN', JSON.stringify(await P.evaluate(() => { const v = document.querySelector('#tab-foryou .rm-view'); const l = v && v.querySelector('.sl-lock'); return { tabs: [...document.querySelectorAll('#tab-foryou .rm-tab')].map(t => t.dataset.rm + ':' + t.getAttribute('aria-selected')), kids: v ? [...v.children].map(c => c.className + (c.hidden ? '(h)' : '')) : null, msg: l && (l.querySelector('.sl-msg') || {}).textContent, form: l && !!l.querySelector('.sl-pin:not([hidden])'), st: LowiStudioLock._st && { open: LowiStudioLock._st.open, server: LowiStudioLock._st.server, busy: LowiStudioLock._st.busy } }; })));
         ok('app: the PIN opens it again and clears the device lock', s.open && !s.lock && s.frames > 0 && !s.locked && s.badge.indexOf(T.badge) >= 0, s);
         ok('app: no page errors', R.errs.length === 0, R.errs.slice(0, 3));
-    } catch (e) { ok('app run finished (step ' + R.step + ')', false, String(e && e.message || e).slice(0, 300)); }
+    } catch (e) { ok('app run finished (step ' + R.step + ')', false, String(e && e.message || e).slice(0, 300)); await R.shot(out + '/' + engine + '-' + lang + '-app-fail.png'); console.log(JSON.stringify(await P.evaluate(() => { const v = document.querySelector('#tab-foryou .rm-view'); return { tab: document.body.dataset.tab, view: v && v.dataset.view, tabs: [...document.querySelectorAll('#tab-foryou .rm-tab')].map(t => t.dataset.rm + ':' + t.getAttribute('aria-selected')), kids: v ? [...v.children].map(c => c.className || c.tagName) : null, top: (() => { const t = document.querySelector('#tab-foryou .rm-tab[data-rm="studio"]'); if (!t) return 'no tab'; const r = t.getBoundingClientRect(); const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height), e ? (e.id || '') + '.' + String(e.className).slice(0, 60) + ' ' + (e.closest('[id]') || {}).id : null]; })(), overlays: [...document.querySelectorAll('body > *')].filter(n => { const st = getComputedStyle(n); return st.position === 'fixed' && st.display !== 'none' && st.visibility !== 'hidden' && +st.zIndex > 50 && n.getBoundingClientRect().height > 200; }).map(n => (n.id || '') + '.' + String(n.className).slice(0, 40)) }; }).catch(() => null))); }
+    if (live) {   /* the guest account this run's app made: deleted again */
+        await grab();
+        for (const [id, tok] of toks) { const d = await api('/functions/v1/delete-my-account', { confirm: 'DELETE' }, tok); ok('app: the run\'s guest account ' + id.slice(0, 8) + ' deleted', d.status === 200, { status: d.status, data: d.data }); }
+    }
     await R.close();
 }
 
@@ -191,7 +204,7 @@ async function app() {
     if (!base) { srv = await serve(); base = 'http://127.0.0.1:' + srv.address().port + '/lowispike/'; }
     try { if (part !== 'app') await pages(base); } catch (e) { ok('pages run finished', false, String(e && e.message || e).slice(0, 300)); }
     if (srv) srv.close();
-    if (part !== 'pages' && !live) await app();
+    if (part !== 'pages') await app();
     const f = res.filter(r => !r.pass).length;
     console.log((f ? 'FAILED ' : 'ALL PASS ') + (res.length - f) + '/' + res.length + ' ' + engine + ' ' + lang + (live ? ' live' : ' local'));
     process.exit(f ? 1 : 0);

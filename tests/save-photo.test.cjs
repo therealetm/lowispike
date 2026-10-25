@@ -49,8 +49,9 @@ test('a second tap while the share sheet is open does not share twice and never 
     assert.strictEqual(w.log.shares, 1, 'one share sheet');
     assert.strictEqual(w.log.downloads, 0);
     w.done(); await first;
-    await w.savePhoto();
+    const next = w.savePhoto();
     assert.strictEqual(w.log.shares, 2, 'after the sheet closes, the next tap shares again');
+    w.done(); await next;
 });
 
 for (const err of ['InvalidStateError', 'NotAllowedError', 'TypeError', 'DataError']) {

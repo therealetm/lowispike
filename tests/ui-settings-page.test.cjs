@@ -44,7 +44,7 @@ test('the slim Settings holds only switches, language and the account; places an
 test('delete account asks first, calls the server, and only clears the phone after the server said ok', () => {
     assert.match(JS, /functions\.invoke\('delete-my-account'/);
     assert.match(JS, /ok = !!\(r && !r\.error && r\.data && r\.data\.ok\)/);
-    assert.match(JS, /if \(ok\) \{[^\n]*wipeDevice\(\)/);
+    assert.match(JS, /if \(ok\) \{[\s\S]{0,400}?wipeDevice\(\); return true;/);  /* Oct 25: the ok branch spans lines (push unsubscribe first) */
     assert.match(JS, /T\.delFail/, 'a failed call says nothing was deleted');
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'supabase', 'functions', 'delete-my-account', 'index.ts')), 'the server function is in the repo');
 });

@@ -123,9 +123,9 @@
         const s = S(), ST = sT(); if (b.disabled) return;
         if (b.getAttribute('data-guest') === 'true') { s.wipeDevice(); return; }
         b.disabled = true; const lb = b.querySelector('b'); if (lb) lb.textContent = ST.delBusy;
-        const ok = await s.deleteAccount(); if (ok) return;
+        const r = await s.deleteAccount(); if (r === true) return;
         b.disabled = false; if (lb) lb.textContent = ST.delGo;
-        const tx = el && el.querySelector('.cme-del-tx'); if (tx) { tx.textContent = ST.delFail; tx.setAttribute('role', 'alert'); }
+        const tx = el && el.querySelector('.cme-del-tx'); if (tx) { tx.textContent = r === 'owner' ? ST.delOwner : ST.delFail; tx.setAttribute('role', 'alert'); }
     }
     function open() {
         const s = S(); if (!s || typeof s.has !== 'function') return false;

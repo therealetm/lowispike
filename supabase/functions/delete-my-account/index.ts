@@ -1,21 +1,23 @@
-// LOWiSPIKE delete-my-account (Oct 21, 2026)
-// Why: App Store guideline 5.1.1(v) says an app with sign-up must let people start deleting their account inside the app.
-// Settings > Delete account (home-settings-sleep-v2.js) calls this after the person confirmed. Deleting a login needs
-// auth.admin.deleteUser() with the service role key, on a server only; this function is that server.
-//   POST { confirm: "DELETE" }   Authorization: Bearer <the person's own access token>
-//   -> 200 { ok: true }  or  4xx/5xx { ok: false, error }
+// LOWiSPIKE delete-my-account (Oct 21, 2026; rebuilt Oct 25, 2026)
+// Why: App Store guideline 5.1.1(v) says an app with sign-up must let people delete their account inside the app.
+// Settings > Delete account (home-settings-sleep-v2.js) and Community hold > Delete account (community-me.js) call this after
+// the person confirmed.
+//   POST { confirm: "DELETE", endpoint?: "<this phone's push subscription URL>" }
+//   Authorization: Bearer <the person's own access token>
+//   -> 200 { ok: true, media_left }   or   4xx/5xx { ok: false, error }   (an error always means nothing was deleted)
 // Who it deletes: only the signed-in caller, read from their own token. No ids are accepted, so nobody can delete anyone else.
 // It refuses an owner account (public.app_admins), so the owner can't lock themselves out by accident.
-// What goes (same list as owner-delete-account): media/<id>/..., their rows in reactions, post_likes, messages, posts,
-// user_state, community_kicks and profiles, then the login itself. Nothing about the account is logged.
-// Deploy once: supabase functions deploy delete-my-account   (Supabase injects SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY).
+// Oct 25, 2026 (a tester got "We couldn't delete your account right now"): the function had never been deployed (404), and
+// the old order (photos, then rows table by table, then the login) left half-deleted accounts whenever a later step failed;
+// the login step always failed for anyone who had caught a product (products_caught_by_fkey via the lowi_rate_products
+// trigger). Now: ONE database transaction, public.lowi_delete_account (supabase/proposals/delete_account_20261025.sql),
+// deletes the login and every row (by cascade and by name) or nothing at all. Only after it committed are the photo and video
+// files removed (best effort, retried once) and this phone's push subscription row dropped. Nothing about the account is logged.
+// Deploy: supabase functions deploy delete-my-account --project-ref vnfwmifmsfecascwaody
+//   (Supabase injects SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY).
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
-const ROWS: Array<[string, string]> = [
-  ["reactions", "user_id"], ["post_likes", "user_id"], ["messages", "user_id"], ["posts", "user_id"],
-  ["user_state", "id"], ["community_kicks", "user_id"], ["profiles", "id"],
-];
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -35,12 +37,17 @@ function cors(req: Request): Record<string, string> {
 function out(req: Request, status: number, body: unknown) {
   return new Response(JSON.stringify(body), { status, headers: { ...cors(req), "Content-Type": "application/json" } });
 }
-const missingTable = (e: { code?: string } | null) => !!e && (e.code === "42P01" || e.code === "PGRST205" || e.code === "42703");
 
-async function removeMedia(id: string) {
-  const { data } = await admin.storage.from("media").list(id, { limit: 1000 });
-  const paths = (data || []).filter((f) => f && f.name).map((f) => `${id}/${f.name}`);
-  if (paths.length) await admin.storage.from("media").remove(paths);
+// files go only after the account is gone; a failure here can't half-delete the account, it only leaves files behind
+async function removeMedia(paths: string[]): Promise<number> {
+  let left = 0;
+  for (let i = 0; i < paths.length; i += 100) {
+    const part = paths.slice(i, i + 100);
+    let { error } = await admin.storage.from("media").remove(part);
+    if (error) ({ error } = await admin.storage.from("media").remove(part));
+    if (error) left += part.length;
+  }
+  return left;
 }
 
 Deno.serve(async (req) => {
@@ -52,23 +59,25 @@ Deno.serve(async (req) => {
   const me = who && who.user;
   if (!me) return out(req, 401, { ok: false, error: "signed_out" });
 
-  let body: { confirm?: unknown } = {};
+  let body: { confirm?: unknown; endpoint?: unknown } = {};
   try { body = await req.json(); } catch { /* empty body */ }
   if (body.confirm !== "DELETE") return out(req, 400, { ok: false, error: "confirm" });
 
-  const { data: owners, error: ownErr } = await admin.from("app_admins").select("user_id");
-  if (!ownErr && (owners || []).some((r: { user_id: string }) => r.user_id === me.id)) return out(req, 403, { ok: false, error: "owner" });
-
-  try {
-    await removeMedia(me.id);
-    for (const [table, col] of ROWS) {
-      const { error } = await admin.from(table).delete().eq(col, me.id);
-      if (error && !missingTable(error)) return out(req, 500, { ok: false, error: `rows: ${table}` });
-    }
-    const { error } = await admin.auth.admin.deleteUser(me.id);
-    if (error && !/not.?found/i.test(error.message)) return out(req, 500, { ok: false, error: "login" });
-    return out(req, 200, { ok: true });
-  } catch (e) {
-    return out(req, 500, { ok: false, error: String((e as Error).message || e).slice(0, 120) });
+  // the whole account in one transaction: on any error Postgres rolls back and nothing was deleted
+  const { data, error } = await admin.rpc("lowi_delete_account", { uid: me.id });
+  if (error) {
+    if (/owner/.test(error.message || "")) return out(req, 403, { ok: false, error: "owner" });
+    return out(req, 500, { ok: false, error: "db" });
   }
+  const media: string[] = Array.isArray(data && data.media) ? data.media.filter((p: unknown) => typeof p === "string") : [];
+
+  let mediaLeft = 0;
+  try { mediaLeft = await removeMedia(media); } catch { mediaLeft = media.length; }
+
+  // this phone stops getting pushes for an account that no longer exists (the row has no user id, only the device's URL)
+  const ep = typeof body.endpoint === "string" ? body.endpoint : "";
+  if (/^https:\/\//.test(ep) && ep.length < 2000) {
+    try { await admin.from("n1_push").delete().eq("endpoint", ep); } catch { /* best effort */ }
+  }
+  return out(req, 200, { ok: true, media_left: mediaLeft });
 });

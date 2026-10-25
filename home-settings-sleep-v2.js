@@ -39,13 +39,13 @@
     /* Oct 21 2026 (Emmanuel: the Home bubble is Community now, a hold opens a slim Settings with only what is needed) */
     Object.assign(TX.en, { language: 'Language', deleteAccount: 'Delete account', hint: 'Hold Community for profile & settings', day: 'Day', night: 'Night', foryou: 'For You', hunt: 'Shopping hunt',
         delTitle: 'Delete your account?', delBody: 'This deletes your LOWiSPIKE account for good: your profile, posts, chats, photos and synced progress. It also clears this phone. It can\u2019t be undone.', delGo: 'Delete my account', delCancel: 'Keep my account',
-        delBusy: 'Deleting\u2026', delFail: 'We couldn\u2019t delete your account right now. Nothing was deleted. Please try again later.', delGuest: 'You\u2019re not signed in, so there is no account in the cloud. Delete everything saved on this phone?', delGuestGo: 'Delete this phone\u2019s data', account2: 'Account' });
+        delBusy: 'Deleting\u2026', delFail: 'We couldn\u2019t delete your account right now. Nothing was deleted. Please try again later.', delGuest: 'You\u2019re not signed in, so there is no account in the cloud. Delete everything saved on this phone?', delGuestGo: 'Delete this phone\u2019s data', delOwner: 'This is the owner account, so it can\u2019t be deleted here. Nothing was deleted.', account2: 'Account' });
     Object.assign(TX.de, { language: 'Sprache', deleteAccount: 'Konto l\u00f6schen', hint: 'Halte Community f\u00fcr Profil & Einstellungen', day: 'Tag', night: 'Nacht', foryou: 'F\u00fcr dich', hunt: 'Einkaufsjagd',
         delTitle: 'Konto l\u00f6schen?', delBody: 'Damit l\u00f6schst du dein LOWiSPIKE-Konto endg\u00fcltig: Profil, Beitr\u00e4ge, Chats, Fotos und deinen synchronisierten Fortschritt. Auch dieses Handy wird geleert. Das kann man nicht r\u00fcckg\u00e4ngig machen.', delGo: 'Mein Konto l\u00f6schen', delCancel: 'Konto behalten',
-        delBusy: 'Wird gel\u00f6scht\u2026', delFail: 'Dein Konto konnte gerade nicht gel\u00f6scht werden. Es wurde nichts gel\u00f6scht. Bitte versuch es sp\u00e4ter noch einmal.', delGuest: 'Du bist nicht angemeldet, also gibt es kein Konto in der Cloud. Alles l\u00f6schen, was auf diesem Handy gespeichert ist?', delGuestGo: 'Daten auf diesem Handy l\u00f6schen', account2: 'Konto' });
+        delBusy: 'Wird gel\u00f6scht\u2026', delFail: 'Dein Konto konnte gerade nicht gel\u00f6scht werden. Es wurde nichts gel\u00f6scht. Bitte versuch es sp\u00e4ter noch einmal.', delGuest: 'Du bist nicht angemeldet, also gibt es kein Konto in der Cloud. Alles l\u00f6schen, was auf diesem Handy gespeichert ist?', delGuestGo: 'Daten auf diesem Handy l\u00f6schen', delOwner: 'Das ist das Inhaber-Konto, es kann hier nicht gel\u00f6scht werden. Es wurde nichts gel\u00f6scht.', account2: 'Konto' });
     Object.assign(TX.es, { language: 'Idioma', deleteAccount: 'Eliminar cuenta', hint: 'Mant\u00e9n Comunidad para perfil y ajustes', day: 'D\u00eda', night: 'Noche', foryou: 'Para ti', hunt: 'Caza de compras',
         delTitle: '\u00bfEliminar tu cuenta?', delBody: 'Esto elimina tu cuenta de LOWiSPIKE para siempre: tu perfil, publicaciones, chats, fotos y el progreso sincronizado. Tambi\u00e9n vac\u00eda este m\u00f3vil. No se puede deshacer.', delGo: 'Eliminar mi cuenta', delCancel: 'Conservar mi cuenta',
-        delBusy: 'Eliminando\u2026', delFail: 'No pudimos eliminar tu cuenta ahora. No se ha borrado nada. Int\u00e9ntalo m\u00e1s tarde.', delGuest: 'No has iniciado sesi\u00f3n, as\u00ed que no hay cuenta en la nube. \u00bfBorrar todo lo guardado en este m\u00f3vil?', delGuestGo: 'Borrar los datos de este m\u00f3vil', account2: 'Cuenta' });
+        delBusy: 'Eliminando\u2026', delFail: 'No pudimos eliminar tu cuenta ahora. No se ha borrado nada. Int\u00e9ntalo m\u00e1s tarde.', delGuest: 'No has iniciado sesi\u00f3n, as\u00ed que no hay cuenta en la nube. \u00bfBorrar todo lo guardado en este m\u00f3vil?', delGuestGo: 'Borrar los datos de este m\u00f3vil', delOwner: 'Esta es la cuenta del propietario y no se puede eliminar aqu\u00ed. No se ha borrado nada.', account2: 'Cuenta' });
     const pick = l => TX[l] || TX.en;
     /* Oct 20 2026 (Emmanuel: prove a GitHub change reaches the live app): the Settings panel names the running build, read from the
        page's lowi-build tag, as plain text beside the x; an empty or malformed id shows nothing */
@@ -563,23 +563,42 @@
         if (btn.disabled) return;
         if (guest) { wipeDevice(); return; }
         btn.disabled = true; const lb = btn.querySelector('.ss2-lbl'); if (lb) lb.textContent = T.delBusy;
-        const ok = await serverDelete();
-        if (ok) return;
+        const r = await serverDelete();
+        if (r === true) return;
         btn.disabled = false; if (lb) lb.textContent = T.delGo;
-        if (tx) { tx.textContent = T.delFail; tx.setAttribute('role', 'alert'); }
+        if (tx) { tx.textContent = r === 'owner' ? T.delOwner : T.delFail; tx.setAttribute('role', 'alert'); }
     }
-    /* the one server call, shared by the old sheet and the profile hub: true only after the server said ok (then the phone is cleared) */
+    /* the one server call, shared by the old sheet and the profile hub. Returns true only after the server said ok (then this
+       phone is cleared), 'owner' when the server refused the owner account, else false. Oct 25 2026: the server deletes the whole
+       account in one transaction, so a false really means nothing was deleted; it also gets this phone's push address, so the
+       deleted account stops getting pushes here (and the subscription itself is dropped). */
+    async function pushSub() {
+        try {
+            const sw = root.navigator && root.navigator.serviceWorker;
+            if (!sw || !sw.ready) return null;
+            const reg = await Promise.race([sw.ready, new Promise(res => setTimeout(() => res(null), 1500))]);
+            return reg && reg.pushManager && fn(reg.pushManager, 'getSubscription') ? await reg.pushManager.getSubscription() : null;
+        } catch (e) { return null; }
+    }
     async function serverDelete() {
-        let ok = false;
+        let ok = false, why = '';
+        const sub = await pushSub(), endpoint = sub && typeof sub.endpoint === 'string' ? sub.endpoint : '';
         try {
             const X = cloud(), c = X && fn(X, 'client') ? X.client() : null;
             if (c && c.functions && fn(c.functions, 'invoke')) {
-                const r = await c.functions.invoke('delete-my-account', { body: { confirm: 'DELETE' } });
+                const r = await c.functions.invoke('delete-my-account', { body: endpoint ? { confirm: 'DELETE', endpoint } : { confirm: 'DELETE' } });
                 ok = !!(r && !r.error && r.data && r.data.ok);
+                if (!ok && r && r.error && r.error.context && fn(r.error.context, 'json')) {
+                    try { const j = await r.error.context.json(); why = j && j.error === 'owner' ? 'owner' : ''; } catch (e) { }
+                }
             }
         } catch (e) { ok = false; }
-        if (ok) { try { const X = cloud(), c = X.client(); if (c && c.auth) await c.auth.signOut({ scope: 'local' }); } catch (e) { } wipeDevice(); return true; }
-        return false;
+        if (ok) {
+            try { if (sub && fn(sub, 'unsubscribe')) await sub.unsubscribe(); } catch (e) { }
+            try { const X = cloud(), c = X.client(); if (c && c.auth) await c.auth.signOut({ scope: 'local' }); } catch (e) { }
+            wipeDevice(); return true;
+        }
+        return why === 'owner' ? 'owner' : false;
     }
     function pulse() { const b = findBubble('sleep'), tx = b && b.querySelector('.wh-cell-tx'); if (!tx) return; tx.classList.remove('ss2-pulse'); void tx.offsetWidth; tx.classList.add('ss2-pulse'); }
 

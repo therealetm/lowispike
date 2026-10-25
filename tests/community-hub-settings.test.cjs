@@ -42,7 +42,8 @@ test('the hub renders Settings rows: day/night switch, EN/DE/ES, red Delete acco
     assert.match(SRC, /data-lang="' \+ x \+ '"/);
     assert.match(SRC, /cme-row cme-danger" data-cme="deleteAccount" aria-haspopup="dialog"/);
     assert.match(SRC, /data-cme="delGo"/); assert.match(SRC, /data-cme="delCancel"/);
-    assert.match(SRC, /const ok = await s\.deleteAccount\(\); if \(ok\) return;/, 'only the server ok clears the phone');
+    /* Oct 25: deleteAccount() returns true, 'owner' or false; only true (the server's ok) clears the phone */
+    assert.match(SRC, /const r = await s\.deleteAccount\(\); if \(r === true\) return;/, 'only the server ok clears the phone');
     assert.match(SRC, /cme-ver/);
     assert.match(SSJS, /deleteAccount: \(\) => serverDelete\(\)/);
 });

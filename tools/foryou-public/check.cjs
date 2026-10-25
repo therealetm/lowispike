@@ -59,6 +59,16 @@ async function openForYou(P) {
   await P.page.click('.rm-tab[data-rm="fy"]', { timeout: 10000 }).catch(() => { });
   await sleep(2200);
 }
+/* 25 Oct: a finger tap at the element's centre, after checking it is the topmost thing there. page.click waits for two
+   steady animation frames first, and WebKit on this shared VM (software WebGL under load) can starve those frames for
+   longer than any timeout, so the tap itself never happened (both earlier WebKit runs stopped at "waiting for element to
+   be ... stable"). The hit test keeps it honest: a covered or hidden button still fails. */
+async function tap(P, sel, fails, what) {
+  const r = await P.ev(s => { const b = document.querySelector(s); if (!b) return null; b.scrollIntoView({ block: 'center' }); const q = b.getBoundingClientRect(), x = q.x + q.width / 2, y = q.y + q.height / 2, t = document.elementFromPoint(x, y); return { x, y, hit: !!(t && (t === b || b.contains(t))), dis: !!b.disabled, top: t ? (t.tagName + '.' + t.className).slice(0, 60) : '' }; }, sel);
+  if (!r) { fails.push(what + ': ' + sel + ' not found'); return false; }
+  if (!r.hit || r.dis) { fails.push(what + ': ' + sel + (r.dis ? ' is disabled' : ' is covered by ' + r.top)); return false; }
+  await P.page.mouse.click(r.x, r.y); return true;
+}
 async function myPosts(P) {
   await P.ev(() => TRIBE.openMine());
   await sleep(900);
@@ -80,7 +90,7 @@ async function myPosts(P) {
     await boot(A, fails, 'A'); await boot(B, fails, 'B');
     info.build = await build(A);
     /* B reloads once so the app knows it is a test account too (test accounts see each other) */
-    await B.page.reload({ waitUntil: 'load' }); await B.page.waitForFunction(() => window.TRIBE && window.LowiForYou, null, { timeout: 150000 });
+    await B.page.reload({ waitUntil: 'load', timeout: 180000 }); await B.page.waitForFunction(() => window.TRIBE && window.LowiForYou, null, { timeout: 150000 });
     await B.ev(() => { try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); const un = () => { document.querySelectorAll('[inert]').forEach(e => e.removeAttribute('inert')); document.documentElement.classList.remove('gate-up', 'gate-boot'); }; un(); if (!window.__fypUngate) { window.__fypUngate = 1; try { new MutationObserver(un).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['inert', 'class'] }); } catch (e) { } } });
 
     /* 1. the old held post: labelled, offered, shared with one tap */
@@ -94,7 +104,7 @@ async function myPosts(P) {
     if (!mp.held || !mp.btn) fails.push('My posts does not offer to share the kept-back post: ' + JSON.stringify(mp).slice(0, 200));
     if (!mp.rows.some(r => r.toLowerCase().includes(LowiNote(LANG, 'heldTag').toLowerCase()))) fails.push('My posts row does not say "' + LowiNote(LANG, 'heldTag') + '": ' + JSON.stringify(mp.rows.slice(0, 3)));
     info.shareBtn = await A.ev(() => { const b = document.querySelector('[data-tr="share-held"]'); if (!b) return null; b.scrollIntoView({ block: 'center' }); const r = b.getBoundingClientRect(), t = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return { r: [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)], top: t ? (t.tagName + '.' + t.className + '#' + t.id).slice(0, 80) : '', hit: !!(t && (t === b || b.contains(t))) }; });
-    await A.page.click('[data-tr="share-held"]', { timeout: 10000 }).catch(e => fails.push('tap Share: ' + e.message.slice(0, 80)));
+    await tap(A, '[data-tr="share-held"]', fails, 'tap Share');
     let shared = false; for (let i = 0; i < 40 && !shared; i++) { await sleep(500); shared = await A.ev(id => { const t = JSON.parse(localStorage.getItem('lowispike.foryou.v1') || '{}'); const p = (t.posts || []).find(x => x.id === id); return !!(p && p.pub); }, OLD.id); }
     if (!shared) fails.push('the old post did not reach For You after Share');
 
@@ -108,7 +118,7 @@ async function myPosts(P) {
     const vis = await A.ev(() => { const t = [...document.querySelectorAll('#trRest .toggle')].pop(); return t ? t.className : ''; });
     info.composerToggle = vis;
     if (!/\bon\b/.test(vis)) await A.ev(() => { const t = [...document.querySelectorAll('#trRest .toggle')].pop(); if (t) t.click(); });
-    await A.page.click('#trPost', { timeout: 10000 }).catch(e => fails.push('tap Post: ' + e.message.slice(0, 80)));
+    await tap(A, '#trPost', fails, 'tap Post');
     let toast = ''; for (let i = 0; i < 30; i++) { await sleep(400); toast = await A.ev(() => { const t = document.querySelector('.toast, #toast'); return t ? t.textContent.trim() : ''; }); if (toast && /For You|Für dich|Para ti/.test(toast)) break; }
     info.toast = toast;
     const mine = await A.ev(run => { const t = JSON.parse(localStorage.getItem('lowispike.foryou.v1') || '{}'); const p = (t.posts || []).find(x => (x.cap || '').includes(run) && x.id.indexOf('old-') !== 0); return p ? { id: p.id, vis: p.vis, pub: !!p.pub, fail: !!p.fail } : null; }, RUN);
@@ -123,7 +133,7 @@ async function myPosts(P) {
     /* 3. B sees both, and the YouTube slide links out */
     let seen = null;
     for (let i = 0; i < 6 && !(seen && seen.fresh && seen.old); i++) {
-      await B.page.reload({ waitUntil: 'load' }); await B.page.waitForFunction(() => window.TRIBE && window.LowiForYou, null, { timeout: 150000 });
+      await B.page.reload({ waitUntil: 'load', timeout: 180000 }); await B.page.waitForFunction(() => window.TRIBE && window.LowiForYou, null, { timeout: 150000 });
       await B.ev(() => { try { LowiR2.closeAll(); } catch (e) { } const g = document.getElementById('r2gate'); if (g) g.remove(); const un = () => { document.querySelectorAll('[inert]').forEach(e => e.removeAttribute('inert')); document.documentElement.classList.remove('gate-up', 'gate-boot'); }; un(); if (!window.__fypUngate) { window.__fypUngate = 1; try { new MutationObserver(un).observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['inert', 'class'] }); } catch (e) { } } });
       await sleep(4000); await openForYou(B);
       seen = await B.ev(a => { const f = document.getElementById('fyFeed'); const q = id => f && f.querySelector('.fy-slide[data-id="' + id + '"]'); return { fresh: !!(a.n && q(a.n)), old: !!q(a.o), n: f ? f.querySelectorAll('.fy-slide').length : -1 }; }, { n: newId, o: OLD.id });
@@ -143,13 +153,13 @@ async function myPosts(P) {
       if (slide.img !== 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg') fails.push('not YouTube\'s own still: ' + slide.img);
       if (slide.outBox && (slide.outBox[3] < 44 || slide.outBox[0] < 0 || slide.outBox[0] + slide.outBox[2] > slide.w)) fails.push('Watch card off screen or under 44px: ' + slide.outBox);
       const pop = B.ctx.waitForEvent('page', { timeout: 15000 }).catch(() => null);
-      await B.page.click('#fyFeed .fy-slide[data-id="' + newId + '"] .fy-play', { timeout: 10000 }).catch(e => fails.push('tap play: ' + e.message.slice(0, 80)));
+      await tap(B, '#fyFeed .fy-slide[data-id="' + newId + '"] .fy-play', fails, 'tap play');
       const p2 = await pop; let popped = ''; if (p2) { await sleep(800); popped = p2.url(); await p2.close().catch(() => { }); }
       const inApp = await B.ev(() => document.querySelectorAll('#fyFeed iframe, .fye, video[src*="youtube"]').length);
       info.tap = { popped, inApp };
       if (!/^https:\/\/(www\.|m\.|consent\.)?youtube\.com\//.test(popped)) fails.push('the tap did not open the original on YouTube: ' + popped);
       if (inApp) fails.push('a player appeared inside LOWiSPIKE');
-      await B.page.click('#fyFeed .fy-slide[data-id="' + newId + '"] .fy-out', { timeout: 10000 }).catch(e => fails.push('tap Watch card: ' + e.message.slice(0, 80)));
+      await tap(B, '#fyFeed .fy-slide[data-id="' + newId + '"] .fy-out', fails, 'tap Watch card');
       await sleep(1200);
       for (const pg of B.ctx.pages()) if (pg !== B.page) { info.tapCard = pg.url(); await pg.close().catch(() => { }); }
       if (!/youtube\.com/.test(info.tapCard || '')) fails.push('the Watch card did not open YouTube: ' + info.tapCard);

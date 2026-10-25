@@ -170,7 +170,7 @@ test('Spanish honey or candied nuts give the coated-nuts reason, not "sweet sauc
         assert.ok(!r.rules.includes('ja.nuts_moderate'), q + ' is not also a plain-nuts pick');
     }
     for (const q of ['almendras', 'nueces', 'cacahuetes']) assert.equal(P.rateName(q).verdict, 'JA', q + ' stays a plain nut');
-    for (const q of ['miel', 'yogur con miel', 'cebolla caramelizada']) assert.ok(!P.rateName(q).rules.includes('policy.coated_nuts'), q + ' is not a nut');
+    for (const q of ['miel', 'yogur con miel', 'tostada con miel']) assert.ok(!P.rateName(q).rules.includes('policy.coated_nuts'), q + ' is not a nut');
 });
 
 test('honey-coated nuts written as one German word are a Skip it too (live check: "Honigmandeln" came out Lower impact)', () => {

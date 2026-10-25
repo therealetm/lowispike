@@ -226,7 +226,7 @@
       ]
     },
     "coated_nuts": {
-      "name": "honig[- ]?mantel|honig[- ]?(mandel|nüss|nuss|erdnüss|erdnuss|cashew|pekan|walnüss|walnuss|haselnüss|macadamia|pistazie)|honey[- ]?(almond|nut|cashew|peanut|pecan|walnut|hazelnut|macadamia|pistachio)|gebrannt|kandiert|candied|glasiert|glazed|karamell|caramel|schoko[- ]?(mandeln|nüsse|erdnüsse)|dragee|honey roasted|garrapiñad",
+      "name": "honig[- ]?mantel|honig[- ]?(mandel|nüss|nuss|erdnüss|erdnuss|cashew|pekan|walnüss|walnuss|haselnüss|macadamia|pistazie)|honey[- ]?(almond|nut|cashew|peanut|pecan|walnut|hazelnut|macadamia|pistachio)|gebrannt|kandiert|candied|glasiert|glazed|karamell|caramel|schoko[- ]?(mandeln|nüsse|erdnüsse)|dragee|honey roasted|garrapiñad|(almendra|nuez|nueces|cacahuete|man[ií]|anacardo|avellana|pistacho|pecana|macadamia|frutos secos)[a-zñ]*\\s+(con miel|a la miel|garrapiñad|caramelizad|acaramelad|confitad|bañad|glasead)|garrapiñad",
       "off": [
         "en:coated-nuts",
         "en:candied-nuts"

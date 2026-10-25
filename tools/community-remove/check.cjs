@@ -51,8 +51,22 @@ const slow = engine === 'webkit' ? 2 : 1;
             const r = e.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2; const hit = y > 0 && y < innerHeight && document.elementFromPoint(x, y);
             return hit && (hit === e || e.contains(hit)) ? 'tap' : 'click'; }, sel);
         await H.sleep(400 * slow);
-        if (vis === 'click') { console.log('    (' + sel + ': off screen in this engine, click() used)'); await P.evaluate(q => document.querySelector(q).click(), sel); }
-        else await R.tap(sel);
+        if (vis === 'click') {
+            /* 25 Oct release: live proof must be a real tap. Wait for the sheet to finish sliding in (up to 8 s), re-scrolling. */
+            let v2 = vis;
+            for (let i = 0; i < 16 && v2 !== 'tap'; i++) {
+                await H.sleep(500);
+                v2 = await P.evaluate(q => { const e = document.querySelector(q); if (!e) return 'missing'; e.scrollIntoView({ block: 'center' });
+                    const r = e.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2; const hit = y > 0 && y < innerHeight && document.elementFromPoint(x, y);
+                    return hit && (hit === e || e.contains(hit)) ? 'tap' : 'click'; }, sel);
+            }
+            if (v2 !== 'tap') {
+                if (url) { ok('real tap possible on ' + sel, false, v2); throw new Error('not tappable: ' + sel); }
+                console.log('    (' + sel + ': off screen in this engine, click() used)'); await P.evaluate(q => document.querySelector(q).click(), sel); return;
+            }
+            console.log('    (' + sel + ': tapped after the sheet settled)');
+        }
+        await R.tap(sel);
     };
     const sessions = {};
     const become = async who => {

@@ -15035,7 +15035,7 @@ function withNameEst(p){
 const capw = s => String(s || "").charAt(0).toUpperCase() + String(s || "").slice(1);
 function nameEstHTML(p){ const e = p.nameEst; if (!e) return "";
   const rows = [];
-  if (e.how !== "name" && e.hit) rows.push([net("read"), capw(e.hit)]);
+  if (e.how !== "name" && e.hit) rows.push([net(e.src === "photo" ? "looks" : "read"), capw(e.hit)]);
   /* Oct 25 (Emmanuel: keep the scanner minimal, no confusing confidence jargon): the "How sure" row is gone; the estimate caveat
      already sits on the verdict, and an empty box is not drawn */
   const ai = e.how === "ai" && e.dishes && e.dishes.length ? '<ul class="ne-dish">' + e.dishes.map(d => '<li><b>' + esc(capw(d.name)) + '</b><span>' + esc([d.portion || (d.grams ? d.grams + " g" : ""), d.kcal ? Math.round(d.kcal) + " kcal" : "", d.carbs != null ? Math.round(d.carbs) + " g " + ["carbs", "KH", "HC"][LI()] : "", d.sugar != null ? Math.round(d.sugar) + " g " + ["sugar", "Zucker", "azúcar"][LI()] : ""].filter(Boolean).join(" · ")) + '</span></li>').join("") + '</ul>' : "";
@@ -15072,8 +15072,8 @@ function noDataHTML(p){
   /* Oct 25 (Emmanuel: typed "nuts" showed an empty "From the scan / no data" box): only a scanned barcode has scan data to miss */
   if (scanHasData(p) || !p || !p.barcode) return "";
   return '<section class="sc-sec ne-nodata"><h4>' + esc(net("scanData")) + '</h4><p class="ne-ndh"><b>' + esc(net("nodata")) + '</b>' + esc(net("nodataS")) + '</p>' +
-    '<div class="ne-exact"><small>' + esc(net("exact")) + '</small><p class="tiny dim">' + esc(net("exactS")) + '</p>' + (p.offline ? "" : lpAskHTML(Object.assign({}, p, {verdict:"unknown"}))) +
-    '<button type="button" class="r2-btn ghost ne-tick" data-b3="netick">' + esc(net("tick")) + '</button></div></section>'; }
+    '<div class="ne-exact"><small>' + esc(net("exact")) + '</small><p class="tiny dim">' + esc(net("exactS")) + '</p>' + (p.offline ? '<button type="button" class="r2-btn ghost ne-tick" data-b3="netick">' + esc(net("tick")) + '</button>' : lpAskHTML(Object.assign({}, p, {verdict:"unknown"}))) +
+    '</div></section>'; }
 /* the name box in the "not found / no data" sheet: type a name, see the verdict live, Analyze by name */
 function nameBoxHTML(p){
   /* Oct 23 (Emmanuel, plantain chips: "Where's the search bar? I typed in plantain chips. And why did I type it in if there's no search
@@ -15618,7 +15618,7 @@ function simpleCardHTML(p){
   return '<div class="b3-card sc-card v-' + v + '" id="b3Card">' +
     '<div class="sc-top"><div class="sc-img">' + (p.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(p.img) + '">' : '<i>' + (CAT_E[p.cat] || CAT_E.other) + '</i>') + '</div>' +
     '<div class="sc-nm"><div class="b3-name">' + esc(p.name) + '</div>' + (p.brand ? '<div class="sc-brand">' + esc(p.brand) + (p.facts && p.facts.q ? " · " + esc(p.facts.q) : "") + '</div>' : "") + '</div></div>' +
-    '<div class="sc-verd v-' + v + (p.nameEst ? " ne-v" : "") + '" role="status"><small>' + esc(p.nameEst ? net(p.nameEst.how === "ai" ? "ai" : "est") : sct("est")) + '</small><strong>' + esc(sct(v)) + '</strong>' + (why[0] ? '<span>' + esc(why[0]) + '</span>' : "") + '</div>' +
+    '<div class="sc-verd v-' + v + (p.nameEst ? " ne-v" : "") + '" role="status"><small>' + esc(p.nameEst ? net(p.nameEst.how === "ai" ? (p.nameEst.src === "photo" ? "photo" : "ai") : "est") : sct("est")) + '</small><strong>' + esc(sct(v)) + '</strong>' + (why[0] ? '<span>' + esc(why[0]) + '</span>' : "") + '</div>' +
     (p.nameEst ? nameEstHTML(p) + nameSwapHTML(p) + szs + noDataHTML(p) : szs) + /* Oct 23: name verdict, best swap, Seller Zone buys, then the scan's own data or "no detailed data" */
     (p.nameEst && !scanHasData(p) ? "" : (window.LowiFoodCard ? LowiFoodCard.cardHTML(p, LI(), g, {swaps: !!szs}) : "")) + /* scanfe-g1: verdict, why, serving, quality, better choice */
     (p.nameEst && !scanHasData(p) ? "" : (window.LowiNutriStats ? LowiNutriStats.portionHTML(p) : "")) +
@@ -15641,6 +15641,27 @@ function actsHTML(p){ const mine = isMine(p);
 /* Oct 23 (Eman: "I would like it so that they don't have to scroll down"): the not-found sheet fits one screen. Barcode in the
    sub line, name + Analyze in one row, Deep analyze and Label photos as two tiles in one row, ticks as two-line chips, and
    Don't save + Bubble catch side by side in a footer that stays above the keyboard. */
+/* Oct 25: unknown product -> "Photo of the pack" runs the Snap food photo check (LowiFoodAI) and shows a "Looks like ..." estimate */
+async function snapPack(file){
+  if (!file || NE_BUSY || !REV) return;
+  const say = k => { const l = $("#b3NfSnapLive", REV); if (l) l.innerHTML = '<div class="' + (k === "snapBusy" ? "ne-wait" : "ne-none") + '">' + esc(net(k)) + '</div>'; };
+  if (!window.LowiFoodAI || !LowiFoodAI.analyse) { say("snapFail"); return; }
+  NE_BUSY = true; say("snapBusy");
+  let ai = null, e = null;
+  try {
+    const url = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(file); });
+    ai = await LowiFoodAI.analyse(LowiFoodAI.prep ? await LowiFoodAI.prep(url, file) : url, {lang:NEL()});
+    const nm = ai && LowiFoodAI.title ? LowiFoodAI.title(ai.dishes, NEL()) : "";
+    e = ai && ai.isFood !== false ? NE().fromAI(ai, {rate:nameRate, name:nm}) : null;
+    if (e) { e.name = nm || (CUR && CUR.name) || ""; e.nameEst = Object.assign({}, e.nameEst, {src:"photo"}); }
+  } catch(err){ e = null; }
+  NE_BUSY = false;
+  if (!REV) return;
+  if (!e || !e.name) { say("snapFail"); return; }
+  const p = Object.assign({}, CUR || {}, {brand:(CUR && CUR.brand) || "", notFound:false, partial:false, offline:false, manual:false, why:[], score:null}, e);
+  sfx("tap"); await showNameResult(p);
+}
+document.addEventListener("change", ev => { const el = ev.target; if (el && el.id === "b3NfSnap" && el.files && el.files[0]) { const f = el.files[0]; el.value = ""; snapPack(f); } });
 function nfTick(k){ const s = t("m_" + k), i = s.indexOf(" ("); const a = i > 0 ? s.slice(0, i) : s, b = i > 0 ? s.slice(i + 2).replace(/\)$/, "") : "";
   return '<button class="b3-tick" data-b3="tick" data-k="' + k + '" aria-pressed="false" aria-label="' + esc(s) + '"><b>' + esc(a) + '</b>' + (b ? '<small>' + esc(b) + '</small>' : "") + '</button>'; }
 function nfPhotoHTML(p){ const has = typeof lpAskHTML === "function" && lpAskHTML(p); if (!has) return "";
@@ -15649,12 +15670,19 @@ function manualHTML(p){ const off = !!p.offline;
   return '<div class="b3-man nf2">' +
     '<div class="b3-name">' + esc(t(off ? "noReach" : "notFound")) + '</div><div class="nf-sub">' + (p.barcode ? '<span class="nf-bc">' + esc(p.barcode) + '</span>' : "") + esc(off ? t("noReachS") : t("nfSub")) + '</div>' +
     nameBoxHTML(p) +
-    (off ? "" : '<div class="tiny dim b3-fl ne-exl">' + esc(net("exact")) + '</div>' +
+    /* Oct 25 (Emmanuel, plantain chips: "not in the database yet" asked for sugar / syrup / sweetener / starch ticks although the
+       scanner can look at the pack): online, the next step is a photo of the pack, read by the same photo check as Snap food.
+       Its answer is a guess at the food ("Looks like ..."), never a read ingredient list; label photos stay optional, for exact
+       numbers. The ticks remain only offline, where no photo check can run. */
+    (off ? "" : nfSnapHTML() + '<div id="b3NfSnapLive" aria-live="polite"></div>' +
+      '<div class="tiny dim b3-fl ne-exl">' + esc(net("exactH")) + '</div>' +
       '<div class="nf-row">' + deepLink("b3-nfdeep b3-nftile", 'id="b3NfDeep"', t("deepNf"), t("nfDeepS")) + nfPhotoHTML(p) + '</div>' +
-      '<div class="tiny dim b3-fl b3-or">' + esc(t("orAdd")) + '</div>') +
-    '<input class="input nf-brand" id="b3MBrand" maxlength="60" placeholder="' + esc(t("brandPh")) + '" value="' + esc(p.brand || "") + '"' + (off ? ' style="margin-top:10px"' : "") + '>' +
+      '<div class="nf-act"><button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button></div></div>') +
+    (!off ? "" : '<input class="input nf-brand" id="b3MBrand" maxlength="60" placeholder="' + esc(t("brandPh")) + '" value="' + esc(p.brand || "") + '" style="margin-top:10px">' +
     '<div class="small b3-mq">' + esc(t("nfQ")) + '</div><div class="b3-ticks">' + ["sugar", "sweet", "carb", "none"].map(nfTick).join("") + '</div>' +
-    '<div class="nf-act"><button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button><button class="r2-btn pri big b3-catch" data-b3="mcatch" id="b3MCatch" disabled><span class="b3-bub" aria-hidden="true"></span>' + esc(t("catch")) + '</button></div></div>'; }
+    '<div class="nf-act"><button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button><button class="r2-btn pri big b3-catch" data-b3="mcatch" id="b3MCatch" disabled><span class="b3-bub" aria-hidden="true"></span>' + esc(t("catch")) + '</button></div></div>'); }
+function nfSnapHTML(){
+  return '<label class="b3-nftile nf-snap" style="width:100%;margin-top:10px;position:relative"><input type="file" accept="image/*" capture="environment" id="b3NfSnap" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"><span class="nf-cam" aria-hidden="true"></span><span><b>' + esc(net("snap")) + '</b><small>' + esc(net("snapS")) + '</small></span></label>'; }
 /* prod-verdict (Oct 14, 2026): a product picked anywhere (Cook > Products shuffle) opens this same verdict card.
    Label facts it is missing are filled from Open Food Facts by exact barcode only, never guessed; what stays missing is said plainly. */
 const ENR = {}, FILLK = ["c", "s", "f", "p"];

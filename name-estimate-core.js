@@ -129,6 +129,7 @@
     }
     const STR = {
         en: { est: 'Estimate from the name', read: 'Read as', how: 'How sure', medium: 'medium, from the name only', low: 'low, a guess from the name',
+            snap: 'Photo of the pack', snapS: 'Guesses the food from the photo. Exact ingredients need label photos.', snapBusy: 'Looking at the photo…', snapFail: 'The photo check isn\'t available right now. Type the name above or add label photos.', photo: 'Estimate from a photo of the pack, ingredients not read', looks: 'Looks like', exactH: 'Make it exact (optional)',
             ai: 'AI estimate from the name', nodata: 'No detailed data from the scan', nodataS: 'This product has no nutrition table or ingredients in the database yet, so the verdict above comes from its name only.',
             exact: 'Make it exact (optional)', exactS: 'Add label photos, or tick what the label says. Then the scan rates the real numbers.', tick: 'Tick what the label says',
             scanData: 'From the scan', swap: 'Best swap', swapOk: 'Good pick, no swap needed', recipe: 'Recipe Book', open: 'See the recipe', show: 'Show it',
@@ -136,6 +137,7 @@
             typeName: 'Or type a food name', typeHint: 'e.g. grapes, strawberries or a product name', noCatch: 'Estimated from the name, so it isn’t saved to the community. Add label photos to save it.',
             fallback: 'The AI name check isn’t switched on yet, so this uses the app’s own food rules.', portion: 'Typical portion' },
         de: { est: 'Schätzung nach dem Namen', read: 'Erkannt als', how: 'Wie sicher', medium: 'mittel, nur nach dem Namen', low: 'gering, geraten nach dem Namen',
+            snap: 'Foto der Packung', snapS: 'Errät das Lebensmittel vom Foto. Genaue Zutaten brauchen Etikett-Fotos.', snapBusy: 'Schaue mir das Foto an…', snapFail: 'Der Foto-Check geht gerade nicht. Tippe oben den Namen ein oder mach Etikett-Fotos.', photo: 'Schätzung nach einem Foto der Packung, Zutaten nicht gelesen', looks: 'Sieht aus wie', exactH: 'Genau machen (freiwillig)',
             ai: 'KI-Schätzung nach dem Namen', nodata: 'Keine genauen Daten vom Scan', nodataS: 'Für dieses Produkt gibt es noch keine Nährwerttabelle und keine Zutaten in der Datenbank. Das Ergebnis oben kommt nur vom Namen.',
             exact: 'Genauer machen (optional)', exactS: 'Füg Etikettenfotos hinzu oder tipp an, was auf dem Etikett steht. Dann bewertet der Scan die echten Werte.', tick: 'Antippen, was auf dem Etikett steht',
             scanData: 'Vom Scan', swap: 'Beste Alternative', swapOk: 'Gute Wahl, keine Alternative nötig', recipe: 'Rezeptbuch', open: 'Zum Rezept', show: 'Anzeigen',
@@ -143,6 +145,7 @@
             typeName: 'Oder Lebensmittel eintippen', typeHint: 'z. B. Trauben, Erdbeeren oder ein Produktname', noCatch: 'Nach dem Namen geschätzt, darum wird es nicht in der Community gespeichert. Mit Etikettenfotos kannst du es speichern.',
             fallback: 'Die KI-Namensprüfung ist noch nicht eingeschaltet, darum gelten die eigenen Lebensmittel-Regeln der App.', portion: 'Übliche Portion' },
         es: { est: 'Estimación por el nombre', read: 'Leído como', how: 'Seguridad', medium: 'media, solo por el nombre', low: 'baja, deducido del nombre',
+            snap: 'Foto del paquete', snapS: 'Adivina el alimento por la foto. Los ingredientes exactos necesitan fotos de la etiqueta.', snapBusy: 'Mirando la foto…', snapFail: 'La revisión por foto no está disponible ahora. Escribe el nombre arriba o añade fotos de la etiqueta.', photo: 'Estimación por una foto del paquete, ingredientes no leídos', looks: 'Parece', exactH: 'Hazlo exacto (opcional)',
             ai: 'Estimación con IA por el nombre', nodata: 'Sin datos detallados del escaneo', nodataS: 'Este producto aún no tiene tabla nutricional ni ingredientes en la base de datos, así que el resultado de arriba viene solo de su nombre.',
             exact: 'Hacerlo exacto (opcional)', exactS: 'Añade fotos de la etiqueta o marca lo que dice. Así el escaneo valora los datos reales.', tick: 'Marcar lo que dice la etiqueta',
             scanData: 'Del escaneo', swap: 'Mejor alternativa', swapOk: 'Buena elección, no hace falta cambiar', recipe: 'Libro de recetas', open: 'Ver la receta', show: 'Ver',

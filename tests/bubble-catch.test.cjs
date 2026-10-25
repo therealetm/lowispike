@@ -31,7 +31,7 @@ test('the not-found sheet: compact one-screen layout, bubble catch and Don\'t sa
   assert.match(out, /<div class="nf-row"><a class="b3-nfdeep b3-nftile"[^>]*><b>Deep analyze<\/b>.*?<button type="button" class="b3-nftile nf-ph" data-b3="lphoto">/, 'Deep analyze and Label photos share one row');
   /* Oct 25 (Emmanuel, plantain chips): online, the next step is a photo of the pack (same photo check as Snap food), not
      sugar / syrup / sweetener / starch ticks; the ticks + Bubble catch stay for offline, where no photo check can run */
-  assert.match(out, /<label class="b3-nftile nf-snap"[^>]*><input type="file" accept="image\/\*" capture="environment" id="b3NfSnap"/, 'online: Photo of the pack is the next step');
+  assert.match(out, /<label class="b3-nftile nf-ph nf-snap"[^>]*><input type="file" accept="image\/\*" capture="environment" id="b3NfSnap"/, 'online: Photo of the pack is the next step');
   assert.match(out, /<b>snap<\/b><small>snapS<\/small>/);
   assert.doesNotMatch(out, /data-k="sugar"|b3-ticks|id="b3MCatch"/, 'online: no ingredient ticks and no tick-based catch');
   assert.match(out, /<div class="nf-act"><button class="r2-link b3-skip" data-b3="close">Don't save<\/button><\/div>/, 'online: Don\'t save stays in the sticky footer');

@@ -41,6 +41,7 @@
         sugar_first_ingredient: {en: 'Sugar is the first ingredient', de: 'Zucker ist die erste Zutat', es: 'El azúcar es el primer ingrediente'},
         liquid_sugar: {en: 'Liquid sugar goes into the blood fast', de: 'Flüssiger Zucker geht schnell ins Blut', es: 'El azúcar líquido pasa rápido a la sangre'},
         juice_is_not_whole_fruit: {en: 'Juice is not whole fruit: the fibre is gone', de: 'Saft ist kein ganzes Obst: die Ballaststoffe fehlen', es: 'El zumo no es fruta entera: falta la fibra'},
+        smoothie_blended: {en: 'Smoothie: blended fruit, easy to drink fast', de: 'Smoothie: püriertes Obst, schnell getrunken', es: 'Batido: fruta triturada, se bebe rápido'},
         sweet_substitute_keeps_habit: {en: 'Sweet “zero” drink keeps the sweet habit going', de: 'Süßes „Zero“-Getränk hält die Süß-Gewohnheit am Laufen', es: 'La bebida “zero” dulce mantiene el hábito dulce'},
         sweet_dessert: {en: 'Sweets or a sweet dessert', de: 'Süßigkeit oder süßes Dessert', es: 'Dulce o postre dulce'},
         refined_starch_staple: {en: 'Starchy staple: lots of fast carbohydrate', de: 'Stärke-Beilage: viele schnelle Kohlenhydrate', es: 'Básico con almidón: muchos carbohidratos rápidos'},
@@ -94,7 +95,7 @@
     // Shown-reason order: the deciding rules first (safety > medical > personal > policy), then numbers, then quality,
     // then the "does not cancel" corrections, then behaviour and positives (spec sections 9 and 12).
     const ORDER = ['allergen', 'avoid_list', 'craving_trigger', 'pork_policy', 'alcohol_policy', 'coated_nuts_sugar', 'sugar_first_ingredient',
-        'liquid_sugar', 'juice_is_not_whole_fruit', 'sweet_substitute_keeps_habit', 'sweet_dessert', 'refined_starch_staple', 'bread_staple',
+        'liquid_sugar', 'juice_is_not_whole_fruit', 'smoothie_blended', 'sweet_substitute_keeps_habit', 'sweet_dessert', 'refined_starch_staple', 'bread_staple',
         'grain_staple', 'sugar_itself', 'sweet_fruit', 'breaded_fried', 'processed_starchy_snack', 'sweet_sauce', 'sugar_per_100', 'processed_protein_product', 'processed_meat_snack', 'added_sugar_and_honey',
         'added_sugar', 'dried_fruit_sugar', 'sweetener', 'refined_starch_top', 'fat_protein_do_not_cancel_carbs', 'fibre_does_not_cancel_carbs',
         'sweet_salty_repeat_snacking', 'repeat_snacking', 'protein_does_not_make_it_green', 'large_portion', 'legumes_still_carbs',
@@ -270,6 +271,7 @@
         if (f.S.sugarFirst) add('sugar_first_ingredient');
         if (H('policy.sugar_drink') || H('policy.juice') || (f.liquid && (f.glucose.reasons || []).includes('liquid_sugar'))) add('liquid_sugar');
         if (H('policy.juice')) add('juice_is_not_whole_fruit');
+        if (H('policy.smoothie')) add('smoothie_blended');
         if (H('policy.zero_drink')) add('sweet_substitute_keeps_habit');
         if (H('policy.candy_dessert')) add('sweet_dessert');
         if (H('policy.starch_staple')) add(f.cats.starch_bread && !f.cats.starch_rice && !f.cats.starch_pasta && !f.cats.starch_potato ? 'bread_staple' : 'refined_starch_staple');
@@ -366,7 +368,7 @@
         if (H('policy.alcohol')) key = 'sparkling_water';
         else if (f.processedMeat) key = 'fresh_meat';
         else if (H('policy.pork')) key = 'poultry_beef';
-        else if (H('policy.juice') || c.juice) key = 'whole_fruit';
+        else if (H('policy.juice') || c.juice || H('policy.smoothie') || c.smoothie) key = 'whole_fruit';
         else if (f.liquid && (H('policy.sugar_drink') || H('policy.zero_drink') || c.sugar_drink || f.addedSugar || f.sweetener)) key = 'sparkling_water';
         else if (f.nutsCore && (H('policy.coated_nuts') || f.sweetSalty || f.addedSugar)) key = 'sweet_nut_snack';
         else if (f.sweetSalty) key = 'sweet_nut_snack';

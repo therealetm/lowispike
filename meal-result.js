@@ -23,9 +23,9 @@
     const LVL = { low: 'low', mid: 'medium', high: 'high' };
     const STR = {
         en: {
-            q: 'Spike check', low: 'No spike', mid: 'Small rise', high: 'Spike likely',
-            whyLow: 'Only about {net} g net carbs. Your blood sugar should stay steady.',
-            whyMid: 'About {net} g net carbs. Expect a moderate rise, not a spike.',
+            q: 'Spike check', low: 'Lower impact', mid: 'Small rise', high: 'Spike likely',
+            whyLow: 'About {net} g net carbs.', net: 'about {net} g net carbs',
+            whyMid: 'About {net} g net carbs: a moderate rise.',
             whyHigh: 'About {net} g net carbs. That’s enough to spike.',
             whyDrink: 'The sugary drink alone is enough to spike.',
             est: 'Estimate from the photo, not a measurement.', lowConf: 'The photo was hard to read, so check the foods below.',
@@ -38,9 +38,9 @@
             total: 'Total', pcs: 'pcs', pc: 'pc', none: 'Nothing left to check. Type what it is below.', protein: 'protein', carbs: 'carbs', fat: 'fat', kcal: 'kcal'
         },
         de: {
-            q: 'Spike-Check', low: 'Kein Spike', mid: 'Leichter Anstieg', high: 'Spike wahrscheinlich',
-            whyLow: 'Nur etwa {net} g Netto-Kohlenhydrate. Dein Blutzucker sollte ruhig bleiben.',
-            whyMid: 'Etwa {net} g Netto-Kohlenhydrate. Eher ein mäßiger Anstieg, kein Spike.',
+            q: 'Spike-Check', low: 'Niedrigere Wirkung', mid: 'Leichter Anstieg', high: 'Spike wahrscheinlich',
+            whyLow: 'Etwa {net} g Netto-Kohlenhydrate.', net: 'etwa {net} g Netto-KH',
+            whyMid: 'Etwa {net} g Netto-Kohlenhydrate: eher ein mäßiger Anstieg.',
             whyHigh: 'Etwa {net} g Netto-Kohlenhydrate. Das reicht für einen Spike.',
             whyDrink: 'Allein das süße Getränk reicht für einen Spike.',
             est: 'Schätzung aus dem Foto, keine Messung.', lowConf: 'Das Foto war schwer zu erkennen, prüf die Lebensmittel unten.',
@@ -53,9 +53,9 @@
             total: 'Gesamt', pcs: 'Stk.', pc: 'Stk.', none: 'Nichts mehr zu prüfen. Schreib unten, was es ist.', protein: 'Eiweiß', carbs: 'KH', fat: 'Fett', kcal: 'kcal'
         },
         es: {
-            q: 'Control de pico', low: 'Sin pico', mid: 'Subida leve', high: 'Pico probable',
-            whyLow: 'Solo unos {net} g de carbohidratos netos. Tu azúcar debería mantenerse estable.',
-            whyMid: 'Unos {net} g de carbohidratos netos. Una subida moderada, no un pico.',
+            q: 'Control de pico', low: 'Impacto bajo', mid: 'Subida leve', high: 'Pico probable',
+            whyLow: 'Unos {net} g de carbohidratos netos.', net: 'unos {net} g de carbohidratos netos',
+            whyMid: 'Unos {net} g de carbohidratos netos: una subida moderada.',
             whyHigh: 'Unos {net} g de carbohidratos netos. Suficiente para un pico.',
             whyDrink: 'Solo la bebida azucarada ya basta para un pico.',
             est: 'Estimación a partir de la foto, no una medición.', lowConf: 'La foto era difícil de leer, revisa los alimentos.',
@@ -461,6 +461,20 @@
         const nein = !!(food && food.verdict === 'NEIN');
         return { level, lvl: LVL[nein ? 'high' : level], spike: level === 'high', nein, food, score: bs.score, net: bs.net, drink: byDrink, total: tot, empty: !all.length };
     }
+    /* Oct 25 2026 (Emmanuel: a bowl read "No spike ... blood sugar should stay steady" and, right under it, "LOWiSPIKE: Skip it,
+       sweets with sugar, no XP"): one answer on top. The stricter of the spike estimate and the LOWiSPIKE verdict wins, so the
+       headline, its colour, its one reason line and the XP line never disagree. A NEIN or SELTEN verdict shows its own label
+       (Skip it / Small portion) and reason, with the carb estimate after it; never a promise that it won't spike. */
+    function headline(v, l) {
+        if (!v || v.empty) return null;
+        const K = fk(), fv = v.food && v.food.verdict, lab = x => { const s2 = String(K.label(x, l) || ''); return s2.charAt(0).toUpperCase() + s2.slice(1).toLowerCase(); }, why = () => (v.food && (v.food.reason || (K && K.reasonText(v.food.rule, l)))) || '';
+        const netS = t('net', l, { net: v.net }), join = (a, b) => a ? a + ' \u00b7 ' + b : b.charAt(0).toUpperCase() + b.slice(1);
+        if (fv === 'NEIN' && K) return { cls: 'high', ans: lab('NEIN'), why: join(why(), netS) };
+        if (v.level === 'high') return { cls: 'high', ans: t('high', l), why: v.drink ? t('whyDrink', l) : t('whyHigh', l, { net: v.net }) };
+        if (fv === 'SELTEN' && K) return { cls: 'mid', ans: lab('SELTEN'), why: join(why(), netS) };
+        if (v.level === 'mid') return { cls: 'mid', ans: t('mid', l), why: t('whyMid', l, { net: v.net }) };
+        return { cls: 'low', ans: t('low', l), why: t('whyLow', l, { net: v.net }) };
+    }
     function fk() { try { return (typeof window !== 'undefined' && window.LowiFoodKnowledge) || (typeof require === 'function' ? require('./food-knowledge-core.js') : null); } catch (e) { return null; } }
 
     /* XP for logging it, from the app's own rules (index.html LowiVitalsBridge), never a second point system:
@@ -478,8 +492,8 @@
             if (why === 'spike' && v && v.nein && !v.spike) why = 'nein';
             return { xp: base + quest, base, quest, why, cap };
         }
-        const base = v && v.spike ? 0 : 15;
-        return { xp: base, base, quest: 0, why: v && v.spike ? 'spike' : '', cap };
+        const why = v && v.spike ? 'spike' : v && v.nein ? 'nein' : '', base = why ? 0 : 15;
+        return { xp: base, base, quest: 0, why, cap };
     }
     // { big: '+45 XP', small: '15 for the meal + 30 for today's eat quest' }
     function xpText(x, l) {
@@ -568,12 +582,11 @@
             if (sheet) sheet.classList.toggle('mr-on', !v.empty);
             const mealTitle = (titleIn && titleIn.value.trim()) || fv.title;
             const x = xpFor(v, mealTitle, bridge());
+            const hl = headline(v, l);
             const head = v.empty ? '' :
-                '<section class="mr-verdict mr-' + v.level + '" aria-live="polite" aria-atomic="true">' +
-                '<div class="mr-vt"><small class="mr-q">' + esc(t('q', l)) + '</small><b class="mr-ans"><i aria-hidden="true"></i>' + esc(t(v.level, l)) + '</b>' +
-                '<span class="mr-why">' + esc(v.drink ? t('whyDrink', l) : t(v.level === 'low' ? 'whyLow' : v.level === 'mid' ? 'whyMid' : 'whyHigh', l, { net: v.net })) + '</span>' +
-                (v.food && fk() ? '<span class="mr-fk mr-fk-' + v.food.light + '"><i aria-hidden="true"></i><b>' + esc(t('fk', l) + ': ' + fk().label(v.food.verdict, l)) + '</b> ' +
-                    esc(v.food.reason || fk().reasonText(v.food.rule, l)) + '</span>' : '') +
+                '<section class="mr-verdict mr-' + hl.cls + '" aria-live="polite" aria-atomic="true">' +
+                '<div class="mr-vt"><small class="mr-q">' + esc(t('q', l)) + '</small><b class="mr-ans"><i aria-hidden="true"></i>' + esc(hl.ans) + '</b>' +
+                '<span class="mr-why">' + esc(hl.why) + '</span>' +
                 '</div>' +
                 (opts.photo ? '<img class="mr-thumb" alt="" src="' + esc(opts.photo) + '">' : '') + '</section>';
             const foods = st.items.length ? '<div class="mr-sec"><p class="mr-h"><b>' + esc(t('see', l)) + '</b><small>' + esc(t('tapFix', l)) + '</small></p><ul class="mr-list">' +
@@ -893,5 +906,5 @@
         };
     }
 
-    return { KEYS, STR, TABLE, lookup, parseAmount, estimateItem, estimateDrink, matchScore, pieceOf, fromProduct, fromLog, fromKitchen, kitchenHit, estFor, knownList, suggest, itemFrom, perText, manyLabel, clean, totals, title, verdict, xpFor, xpText, formValues, mount };
+    return { KEYS, STR, TABLE, lookup, parseAmount, estimateItem, estimateDrink, matchScore, pieceOf, fromProduct, fromLog, fromKitchen, kitchenHit, estFor, knownList, suggest, itemFrom, perText, manyLabel, clean, totals, title, verdict, xpFor, xpText, formValues, headline, mount };
 });

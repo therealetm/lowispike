@@ -134,14 +134,13 @@
       ]
     },
     "sugar_drink": {
-      "name": "\\bcola\\b|limonade|lemonade|\\bsoda\\b|eistee|ice tea|iced tea|energy|fanta|sprite|brause|softdrink|soft drink|refresco|smoothie|milchshake|milkshake|sugary drinks?|süßgetränk|bebida azucarada|zero or diet|diet drink|diet soda|light drink|refresco zero",
+      "name": "\\bcola\\b|limonade|lemonade|\\bsoda\\b|eistee|ice tea|iced tea|energy|fanta|sprite|brause|softdrink|soft drink|refresco|milchshake|milkshake|sugary drinks?|süßgetränk|bebida azucarada|zero or diet|diet drink|diet soda|light drink|refresco zero",
       "off": [
         "en:sodas",
         "en:sweetened-beverages",
         "en:colas",
         "en:energy-drinks",
-        "en:iced-teas",
-        "en:smoothies"
+        "en:iced-teas"
       ]
     },
     "juice": {
@@ -150,6 +149,12 @@
         "en:fruit-juices",
         "en:juices-and-nectars",
         "en:fruit-nectars"
+      ]
+    },
+    "smoothie": {
+      "name": "smoothie|batidos? de frutas?",
+      "off": [
+        "en:smoothies"
       ]
     },
     "candy_dessert": {
@@ -402,7 +407,7 @@
       "id": "policy.sugar_drink",
       "stage": "policy",
       "verdict": "NEIN",
-      "when": "a drink with added sugar or at least sugarDrinkPer100ml sugar per 100 ml, or a soft drink / smoothie category",
+      "when": "a drink with added sugar or at least sugarDrinkPer100ml sugar per 100 ml, or a soft drink category (smoothies have their own rule, policy.smoothie)",
       "why": "Sugary drink: liquid sugar hits fast"
     },
     {
@@ -411,6 +416,13 @@
       "verdict": "NEIN",
       "when": "fruit juice, nectar or juice spritzer",
       "why": "Juice is liquid sugar, even without added sugar"
+    },
+    {
+      "id": "policy.smoothie",
+      "stage": "policy",
+      "verdict": "NEIN",
+      "when": "a fruit smoothie. Master Knowledge v3 lists typical smoothies as NEIN; since Oct 25 2026 they get their own reason so a smoothie is not called a soda (blending leaves less intact fibre than whole fruit; NHS counts smoothie sugar as free sugar). Added sugar or a soft-drink category still adds policy.sugar_drink",
+      "why": "Smoothie: blended fruit, less fibre than whole fruit"
     },
     {
       "id": "policy.zero_drink",

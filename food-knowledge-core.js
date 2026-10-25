@@ -55,6 +55,7 @@
         'policy.alcohol': R('Alcohol is not part of LOWiSPIKE', 'Alkohol gehört nicht zu LOWiSPIKE', 'El alcohol no forma parte de LOWiSPIKE'),
         'policy.sugar_drink': R('Sweet drink: liquid sugar', 'Süßes Getränk: flüssiger Zucker', 'Bebida dulce: azúcar líquido'),
         'policy.juice': R('Juice: fruit sugar without the fibre', 'Saft: Fruchtzucker ohne Ballaststoffe', 'Zumo: azúcar de fruta sin fibra'),
+        'policy.smoothie': R('Smoothie: blended fruit, less fibre than whole fruit', 'Smoothie: püriertes Obst, weniger Ballaststoffe als ganzes Obst', 'Batido: fruta triturada, menos fibra que la fruta entera'),
         'policy.candy_dessert': R('Sweets or dessert with sugar', 'Süßes oder Dessert mit Zucker', 'Dulce o postre con azúcar'),
         'policy.coated_nuts': R('Coated or sweetened nuts', 'Umhüllte oder gesüßte Nüsse', 'Frutos secos rebozados o dulces'),
         'policy.starch_staple': R('Rice, bread, pasta or potato: a big starch load', 'Reis, Brot, Nudeln oder Kartoffel: viel Stärke', 'Arroz, pan, pasta o patata: mucho almidón'),

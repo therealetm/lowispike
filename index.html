@@ -15036,12 +15036,20 @@ const capw = s => String(s || "").charAt(0).toUpperCase() + String(s || "").slic
 function nameEstHTML(p){ const e = p.nameEst; if (!e) return "";
   const rows = [];
   if (e.how !== "name" && e.hit) rows.push([net("read"), capw(e.hit)]);
-  rows.push([net("how"), e.conf === "medium" ? net("medium") : net("low")]);
+  /* Oct 25 (Emmanuel: keep the scanner minimal, no confusing confidence jargon): the "How sure" row is gone; the estimate caveat
+     already sits on the verdict, and an empty box is not drawn */
   const ai = e.how === "ai" && e.dishes && e.dishes.length ? '<ul class="ne-dish">' + e.dishes.map(d => '<li><b>' + esc(capw(d.name)) + '</b><span>' + esc([d.portion || (d.grams ? d.grams + " g" : ""), d.kcal ? Math.round(d.kcal) + " kcal" : "", d.carbs != null ? Math.round(d.carbs) + " g " + ["carbs", "KH", "HC"][LI()] : "", d.sugar != null ? Math.round(d.sugar) + " g " + ["sugar", "Zucker", "azúcar"][LI()] : ""].filter(Boolean).join(" · ")) + '</span></li>').join("") + '</ul>' : "";
+  if (!rows.length && !ai && !e.fb) return "";
   return '<div class="ne-est" data-ne="' + esc(e.how) + '">' + rows.map(r => '<div class="ne-row"><span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b></div>').join("") + ai + (e.fb ? '<div class="ne-fb tiny dim">' + esc(net("fallback")) + '</div>' : "") + '</div>'; }
 /* the best swap for what you're about to buy: the typed-meal swap (often a Recipe Book recipe), else a better community product */
 function nameSwap(p){
-  if (p.verdict === "ok") return {ok:true};
+  /* Oct 25 (Emmanuel: "nuts" said Lower impact / Good pick and still drew a Best swap box): a swap only when the result needs one */
+  if (!p || p.verdict === "ok" || p.verdict === "unknown" || !p.verdict) return null;
+  /* Oct 25 (Emmanuel: "honey almonds" got a breakfast board with eggs and turkey): first the same food without the honey or
+     coating, when that is an everyday choice ("Plain almonds"), with a real product the app already knows if one matches */
+  try { const SW = typeof window !== "undefined" && window.LowiScanSwap; if (SW && typeof nameRate === "function") {
+    const an = SW.anchored(p.name || "", {rate:nameRate, l:["en", "de", "es"][typeof LI === "function" ? LI() : 0] || "en", products:Object.values((typeof D !== "undefined" && D.comm) || {})});
+    if (an) return an.prod ? {e:"🌿", n:an.prod.name, prod:an.prod, anchored:an.n} : {e:"🌿", n:an.n, anchored:an.n}; } } catch(e){}
   const q = (p.nameEst && p.nameEst.how !== "ai" ? p.nameEst.hit : "") || p.name || "";
   const m = mealRead(String(q).split(", ")[0]) || mealRead(p.name || "");
   const sw = m && m.swap;
@@ -15061,7 +15069,8 @@ function nameSwapHTML(p){ const s = nameSwap(p); if (!s) return "";
   const go = s.rb ? '<button type="button" class="ne-go" data-b3="nercp" data-r="' + esc(s.rb.id) + '">' + esc(net("open")) + ' ›</button>' : s.prod ? '<button type="button" class="ne-go" data-b3="neprod" data-k="' + esc(pkey(s.prod)) + '">' + esc(net("show")) + ' ›</button>' : "";
   return '<div class="ne-swap"><span class="ne-se">' + esc(s.e) + '</span><div><small>' + esc(net("swap")) + (s.rb ? " · " + esc(net("recipe")) : "") + '</small><b>' + esc(s.rb ? s.rb.n : s.n) + '</b>' + (s.rb && s.n && s.n !== s.rb.n ? '<span class="ne-sn">' + esc(s.n) + '</span>' : "") + '</div>' + go + '</div>'; }
 function noDataHTML(p){
-  if (scanHasData(p)) return "";
+  /* Oct 25 (Emmanuel: typed "nuts" showed an empty "From the scan / no data" box): only a scanned barcode has scan data to miss */
+  if (scanHasData(p) || !p || !p.barcode) return "";
   return '<section class="sc-sec ne-nodata"><h4>' + esc(net("scanData")) + '</h4><p class="ne-ndh"><b>' + esc(net("nodata")) + '</b>' + esc(net("nodataS")) + '</p>' +
     '<div class="ne-exact"><small>' + esc(net("exact")) + '</small><p class="tiny dim">' + esc(net("exactS")) + '</p>' + (p.offline ? "" : lpAskHTML(Object.assign({}, p, {verdict:"unknown"}))) +
     '<button type="button" class="r2-btn ghost ne-tick" data-b3="netick">' + esc(net("tick")) + '</button></div></section>'; }
@@ -21562,6 +21571,7 @@ window.LowiCommunityHost = {
 <script src="misty-explore.js?v=20261025-233717"></script>
 <script src="meal-photo.js?v=20261025-233717"></script>
 <script src="food-photo-ai.js?v=20261025-233717"></script>
+<script src="scan-swap-core.js?v=20261025-233717"></script>
 <script src="meal-result.js?v=20261025-233717"></script>
 <script src="meal-journal.js?v=20261025-233717"></script>
 <script src="meal-detail-core.js?v=20261025-233717"></script>

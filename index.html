@@ -4563,11 +4563,13 @@ function fyOut(p, ex){
 /* button sweep 16:20: For You sits in a data-noi18n pane (posts stay as written), so its own buttons and end card ask LowiLang for their words */
 const fyT = s => { try { return window.LowiLang && LowiLang.t ? LowiLang.t(s) : s; } catch (e) { return s; } };
 function slideHTML(p){
+  /* 25 Oct: a post mapped before nibblo-core.js loaded (fast cloud reply) still becomes Nibblo's: Bot tag, own language, Cook this */
+  if (!p.nb && window.LowiNibblo && LowiNibblo.isPost && LowiNibblo.isPost(p)) LowiNibblo.post(p, LowiNibblo.lang);
   if (p.bot && window.LowiForYou) return LowiForYou.slideHTML(p, {bg: fyBg(p), saved: !!(T.saved || {})[p.id], FIC, chip: p.rec && window.FYV ? FYV.recChip(p) : ""});
   const h = H(), u = h.user(), d = describe(p.meta), liked = !!T.likes[p.id], saved = !!(T.saved || {})[p.id], n = (p.likes || 0) + (liked ? 1 : 0), pl = PLAT[p.plat] || PLAT.web;
   const name = p.me ? (u.name || "You") : p.who, cap = p.cap || d.line || "", textOnly = !p.url && !p.photo && !p.vid && !p.rec && !FY_IMG[p.id];
   const ex = p.url && window.LowiForYou ? LowiForYou.external(p.url) : null, watch = ex ? LowiForYou.note("loveBtn") + " \u00b7 " + LowiForYou.note("watchOn", {p: ex.name}) : pl.open;
-  return '<section class="fy-slide' + (textOnly ? " fy-text" : "") + (p.vid ? " fyv-slide" : "") + '" data-id="' + p.id + '">' + fyBg(p) + '<div class="fy-shade"></div>' +
+  return '<section class="fy-slide' + (textOnly ? " fy-text" : "") + (p.vid ? " fyv-slide" : "") + '" data-id="' + p.id + '">' + fyBg(p) + '<div class="fy-shade"></div>' + (p.nb && window.LowiNibblo && LowiNibblo.fyHitHTML ? LowiNibblo.fyHitHTML(p) : "") +
     (textOnly ? '<div class="fy-big">' + esc(cap) + '</div>' : "") +
     /* 25 Oct 2026: his own post that is not out yet says so (it goes by itself as soon as the app is connected) */
     (p.me && !p.cloud && !p.pub && window.LowiForYou ? '<span class="fy-state">' + esc(LowiForYou.note(p.fail ? "retrying" : "sending")) + '</span>' : "") +
@@ -4585,8 +4587,9 @@ function slideHTML(p){
     '<div class="fy-meta"><div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b>' + (p.nb ? '<span class="fy-bot" title="Bot">Bot</span>' : '') + '<span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
       (p.meta && p.meta.meal && window.LowiMealSnap ? LowiMealSnap.cardHTML(p.meta.meal, {compact:true, noName:!!cap && cap === p.meta.meal.name}) : "") +
-      (window.LowiMealDetail ? LowiMealDetail.fyChip(p) : "") + /* Oct 25: tap the spike label for the meal details (meal-detail.js, task 31c545da) */
-      (p.rec && window.FYV ? FYV.recChip(p) : "") +
+      /* Oct 25: tap the spike label for the meal details (meal-detail.js, task 31c545da); a Nibblo meal gets "Cook this" (its full recipe) instead */
+      (p.nb && window.LowiNibblo && LowiNibblo.cookHTML && LowiNibblo.recipeFor(p) ? LowiNibblo.cookHTML(LowiNibblo.recipeFor(p), null, "nb-fy") :
+        (window.LowiMealDetail ? LowiMealDetail.fyChip(p) : "") + (p.rec && window.FYV ? FYV.recChip(p) : "")) +
       (ex ? fyOut(p, ex) : p.url ? '<button class="fy-src" data-tr="open" data-id="' + p.id + '">' + PICON[p.plat || "web"] + '<span>' + esc(byline(p.meta, p.plat || "web")) + '</span></button>' : "") +
     '</div></section>';
 }
@@ -11717,6 +11720,11 @@ html[data-ui=light] .p2-ia{background:linear-gradient(145deg,color-mix(in srgb,v
 .p2-ip{font-size:14px;font-weight:650;color:var(--r2-mut)}
 .p2-ok{width:24px;height:24px;border-radius:50%;background:var(--p2-ok);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;animation:p2pop .35s both}
 .p2-hint{font-size:12.5px;color:var(--r2-mut);margin-top:8px}
+/* 25 Oct 2026: spike line on a Recipe Book recipe (spikeHTML) */
+.p2-spike{display:flex;flex-direction:column;gap:6px;margin:0 0 16px;padding:12px 14px;border-radius:16px;font-size:14px;line-height:1.45;background:color-mix(in srgb,currentColor 6%,transparent);border:1px solid color-mix(in srgb,currentColor 14%,transparent)}
+.p2-spike .p2-sb{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;padding:2px 10px 2px 8px;border-radius:999px;font-size:12.5px;font-weight:650;background:color-mix(in srgb,currentColor 12%,transparent)}
+.p2-spike .p2-sb i{width:9px;height:9px;border-radius:50%;background:var(--lo,#a9dcb2)}
+.p2-spike.lvl-mid .p2-sb i{background:var(--mid,#e6c98a)}
 .p2-best{display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;background:linear-gradient(135deg,rgba(202,161,90,.16),rgba(202,161,90,.05));border:1px solid rgba(202,161,90,.35);color:var(--r2-ink,inherit);width:100%;font:inherit;box-sizing:border-box}
 .p2-best.tap{cursor:pointer;transition:transform .15s}
 .p2-best.tap:active{transform:scale(.98)}
@@ -12140,8 +12148,9 @@ const meals = () => (typeof MEALS !== "undefined" ? MEALS : []);
 function fromBook(r){ const mt = window.LOWI_COOK ? LOWI_COOK.min(r.id) : 0, mx = window.LOWI_COOK ? (LOWI_COOK.minTxt(r.id) || "").replace(/^\d+ min ?/, "") : "";
   return {id:r.id, n:r.n, e:r.e || "🍽️", img:img(r.id), sub:r.sub || "", note:r.note || "", mins:mt, extra:mx, book:true, r:r.r || "ja",
     steps:[].concat(r.prep || [], r.make || r.steps || []),
-    ing:(r.ing || []).map(i => { const n = typeof i === "string" ? i.split("|")[1] : i.n, g = typeof i === "string" ? i.split("|")[0] : i.g, k = String(n).toLowerCase();
-      const pr = LC_PR[k] || LC_G[g] || ["🛒", 2]; return {k, n, q:"", g:g || "", e:pr[0], p:FREE.indexOf(k) >= 0 ? 0 : pr[1]}; })}; }
+    /* 25 Oct 2026: amounts for one person (recipe-amounts-core.js); the book itself lists none */
+    ing:(r.ing || []).map((i, j) => { const n = typeof i === "string" ? i.split("|")[1] : i.n, g = typeof i === "string" ? i.split("|")[0] : i.g, k = String(n).toLowerCase();
+      const pr = LC_PR[k] || LC_G[g] || ["🛒", 2]; return {k, n, q:window.LowiRecipeAmounts ? LowiRecipeAmounts.q(r.n, j) : "", g:g || "", e:pr[0], p:FREE.indexOf(k) >= 0 ? 0 : pr[1]}; })}; }
 function fromMeal(m){ const sw = m.s || {};
   if (sw.rb) { const b = book().find(x => x.n === sw.rb); if (b) { const r = fromBook(b); r.swapName = sw.n; return r; } }
   const R = R2_REC[m.id]; if (!R) return null;
@@ -12184,6 +12193,7 @@ function recipeHTML(r){ const b = basket(r), e = ease(r), cur = storeId(), pick 
       (r.swapName && r.swapName !== r.n ? '<div class="small muted">Recipe Book: ' + esc(r.n) + '</div>' : "") + '</div>' +
     '<div class="p2-facts p2-up" style="--d:1">' + (r.mins ? '<span class="p2-fact">' + IC.clock + '<b>' + esc(minsLabel(r)) + '</b></span>' : "") +
       '<span class="p2-fact">' + meter(e.lv) + '<b>' + e.t + '</b></span>' + (r.steps.length ? '<span class="p2-fact"><b>' + r.steps.length + ' steps</b></span>' : "") + (e.h ? '<span class="p2-fact"><b>' + e.h + '</b></span>' : "") + '</div>' +
+    spikeHTML(r) +
     (r.note ? '<div class="sh-heads p2-heads p2-up" style="--d:2"><b>Heads-up</b><span>' + esc(r.note) + '</span></div>' : "") +
     (window.LowiCS ? LowiCS.pair(r.id, {cls:"p2-start p2-up p2-cs", cook:'data-p2="cook"', cookId:"p2Start", shopId:"p2Shop", close:true, noCook:!r.steps.length}).replace('class="cs-pair', 'style="--d:2" class="cs-pair')
       : (r.steps.length ? '<button class="r2-btn pri big p2-start p2-up" style="--d:2" data-p2="cook" id="p2Start">' + IC.play + '<span>Start cooking</span></button>' : "")) +
@@ -12191,11 +12201,15 @@ function recipeHTML(r){ const b = basket(r), e = ease(r), cur = storeId(), pick 
       '<div class="p2-ings" id="p2Home">' + (b.home.length ? b.home.map(i => ingChip(i, true)).join("") : '<span class="small muted">Nothing yet. Tap what you have below.</span>') + '</div></div>' +
     '<div class="p2-sec p2-up" style="--d:4"><div class="p2-lab"><span>To buy</span><span class="p2-cnt">' + b.buy.length + '</span></div>' +
       '<div class="p2-ings" id="p2Buy">' + (b.buy.length ? b.buy.map(i => ingChip(i, false, pick.s)).join("") : '<span class="small muted">You have everything. Start cooking.</span>') + '</div>' +
-      '<div class="p2-hint">Tap anything you already have.</div></div>' +
+      '<div class="p2-hint">Tap anything you already have.</div>' + (r.book && window.LowiRecipeAmounts ? '<div class="p2-hint p2-serves">Amounts for 1 person.</div>' : "") + '</div>' +
     (b.buy.length ? shopsHTML(b, pick) : "") +
     (r.steps.length ? '<div class="p2-sec p2-up" style="--d:6"><div class="p2-lab"><span>How it goes</span></div><ol class="p2-steps">' + r.steps.map((s, i) => '<li><span class="p2-sn">' + (i + 1) + '</span><span>' + esc(s) + '</span></li>').join("") + '</ol></div>' : "") +
     '<div class="p2-more p2-up" style="--d:7">' + (r.book ? '<button class="r2-btn ghost" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="1">Add to today</button>' + (window.LowiCS ? "" : '<button class="r2-btn ghost" data-lc="open" data-id="' + esc(r.id) + '" data-p2close="1">' + IC.cart + '<span>Fill my cart</span></button>') + '<button class="r2-btn ghost p2-share" data-tr="share-recipe" data-r="' + esc(r.id) + '" data-p2close="1">Share to For You</button>' : '<button class="r2-btn ghost" data-p2="copy">Copy shopping list</button>') + '</div>' +
     '<div style="height:12px"></div>'; }
+/* 25 Oct 2026 (Emmanuel): a Nibblo meal opens here, so the page says how it rates and why, in the phone's language */
+function spikeHTML(r){ const A = window.LowiRecipeAmounts; if (!r || !r.book || !A) return "";
+  const L = window.LowiLang, sp = A.spike(r, L && L.get ? L.get() : "en", n => (L && L.t ? L.t(n) : n)); if (!sp) return "";
+  return '<div class="p2-spike p2-up lvl-' + sp.lvl + '" style="--d:1" data-noi18n><span class="p2-sb"><i aria-hidden="true"></i>' + esc(sp.label) + '</span><span class="p2-sw">' + esc(sp.why) + '</span></div>'; }
 function ingChip(i, home, s){ return '<button class="p2-ing' + (home ? " home" : "") + '" data-p2="ing" data-k="' + esc(i.k) + '"><span class="p2-ie">' + ingArt(i) + '</span><span class="p2-in"><b>' + esc(i.n) + '</b>' + (i.q ? '<small>' + esc(i.q) + '</small>' : "") + '</span>' +
   (home ? '<span class="p2-ok">' + IC.check + '</span>' : (s ? '<span class="p2-ip num">' + eur(px(i, s)) + '</span>' : "")) + '</button>'; }
 function shopsHTML(b, pick){ const save = b.worst.t - b.best.t;
@@ -12468,6 +12482,7 @@ const ROWS = [
   ["Add to today", "Zu heute", "Añadir a hoy"],
   ["Fill my cart", "Wagen füllen", "Llenar mi carrito"],
   ["Copy shopping list", "Einkaufsliste kopieren", "Copiar lista de compras"],
+  ["Amounts for 1 person.", "Mengen für 1 Person.", "Cantidades para 1 persona."],
   ["Shopping list copied", "Einkaufsliste kopiert", "Lista de compras copiada"],
   ["Couldn't copy", "Kopieren ging nicht", "No se pudo copiar"],
   [/^Recipe Book: (.+)$/, "Rezeptbuch: $1", "Recetario: $1"],
@@ -21684,8 +21699,10 @@ window.LowiCommunityHost = {
 <script src="nutri-stats-core.js?v=20261025-202023"></script>
 <script src="nutri-stats.js?v=20261025-202023"></script>
 <link rel="stylesheet" id="fybCss" href="foryou.css?v=20261025-202023">
+<link rel="stylesheet" id="nbrCss" href="nibblo-recipe.css?v=20261025-202023">
 <script src="foryou-core.js?v=20261025-202023"></script>
 <script src="inspo-core.js?v=20261025-202023"></script>
+<script src="recipe-amounts-core.js?v=20261025-202023"></script>
 <script src="nibblo-core.js?v=20261025-202023"></script>
 <script src="foryou.js?v=20261025-202023"></script>
 <script src="foryou-stay.js?v=20261025-202023"></script>

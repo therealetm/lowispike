@@ -38,9 +38,12 @@ const startSampler = p => p.evaluate(() => {
       const r = last && last.getBoundingClientRect();
       s.f.push({ t: Math.round(performance.now() - s.t0), dist: Math.round(l.scrollHeight - l.scrollTop - l.clientHeight), sh: l.scrollHeight, rows: rows.length, lastOk: !!(r && r.height && r.bottom <= bottomEdge + 3 && r.top < bottomEdge), imgs: l.querySelectorAll('img').length });
     }
-    requestAnimationFrame(tick);
+    requestAnimationFrame(after);
   };
-  requestAnimationFrame(tick);
+  /* measure what was painted: after the frame (rAF -> layout -> ResizeObserver -> paint), not inside rAF, where a photo that just
+     decoded is laid out before the ResizeObserver had its turn to re-pin (that state never reaches the screen) */
+  const after = () => setTimeout(tick, 0);
+  requestAnimationFrame(after);
 });
 const readSampler = p => p.evaluate(() => { const s = window.__cnS; window.__cnS = null; return s ? s.f : []; });
 
@@ -71,7 +74,7 @@ async function run(key) {
     await N.openCommunity(R); await sleep(5000);
     const count = await p.evaluate(() => (window.LowiCommunityHost && LowiCommunityHost.messages().length) || 0);
     notes.push(W + ' messages in the chat: ' + count); if (count < 100) fail(W, 'only ' + count + ' messages loaded');
-    const tapTab = async rm => { await p.locator('#cmPaneChat .rm-tab[data-rm="' + rm + '"]').first().click({ force: true, timeout: 5000 }); };
+    const tapTab = async rm => { await p.locator('#cmPaneChat .rm-tab[data-rm="' + rm + '"]').first().click({ force: true, timeout: C.engine === 'webkit' ? 120000 : 5000 }); };
     const isOpen = () => p.evaluate(() => !!document.querySelector('#cgThread[data-open]'));
     /* a loaded test computer can drop WebKit to a frame every second or two: wait for the state, not a fixed time */
     const SLOW = C.engine === 'webkit' ? 3 : 1;
@@ -92,13 +95,13 @@ async function run(key) {
     if (await isOpen()) fail(W, 'Room tab did not close the chat');
     await startSampler(p);
     const hb = p.locator('#cgTo [data-chat="history"]').first();
-    await hb.click({ force: true, timeout: 5000 }).catch(e => fail(W, 'B: Chat button under the galaxy: ' + e.message.split('\n')[0]));
+    await hb.click({ force: true, timeout: C.engine === 'webkit' ? 120000 : 5000 }).catch(e => fail(W, 'B: Chat button under the galaxy: ' + e.message.split('\n')[0]));
     await opened(); await sleep(4500 * SLOW);
     if (!(await isOpen())) throw new Error('B: the Chat button did not open the chat');
     judge(W, 'B galaxy Chat button', await readSampler(p)); await R.shot(path.join(OUT, key + '-B-galaxy-button.png'));
 
     /* C: back arrow, then the Chat tab again */
-    await p.locator('#cgThread [data-chat="close-thread"]').first().click({ force: true, timeout: 5000 }).catch(() => { }); await closed();
+    await p.locator('#cgThread [data-chat="close-thread"]').first().click({ force: true, timeout: C.engine === 'webkit' ? 120000 : 5000 }).catch(() => { }); await closed();
     if (await isOpen()) { await tapTab('room'); await closed(); }
     await startSampler(p); await tapTab('chat'); await opened(); await sleep(4500 * SLOW);
     judge(W, 'C reopen', await readSampler(p));
@@ -117,7 +120,7 @@ async function run(key) {
     if (!up.pill) fail(W, 'no "new message" pill while scrolled up');
     await R.shot(path.join(OUT, key + '-D-pill.png'));
     /* the pill brings you down */
-    await p.locator('#csJump .cs-jump').first().click({ force: true, timeout: 8000 }).catch(e => fail(W, 'pill tap: ' + e.message.split('\n')[0])); await sleep(1500 * SLOW);
+    await p.locator('#csJump .cs-jump').first().click({ force: true, timeout: C.engine === 'webkit' ? 120000 : 8000 }).catch(e => fail(W, 'pill tap: ' + e.message.split('\n')[0])); await sleep(1500 * SLOW);
     const down = await p.evaluate(() => { const l = document.getElementById('cmList'); return Math.round(l.scrollHeight - l.scrollTop - l.clientHeight); });
     if (down > 4) fail(W, 'pill tap left the list ' + down + ' px above the bottom');
     /* at the bottom a new photo message stays pinned once the photo loads */

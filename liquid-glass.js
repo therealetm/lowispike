@@ -67,6 +67,18 @@
         return false;
     }
     let g = null;
+    let back = null;/* the spring of a page snapping back (rubber band), so a finger can catch it */
+    function springBack(s, cur, pe, v) {
+        const side = s.dx < 0 ? s.W : -s.W, vel = (s.peek ? v : v * 0.55) * 1000;
+        let fin = false;
+        const done = () => { if (fin) return; fin = true; if (back && back.cur === cur) back = null; if (pe) { pe.classList.remove('lg-peek'); pe.style.transform = ''; }
+            if (s.cur === 'scan' && s.under && activeTab() !== s.under) quietGo(s.under); };
+        const sp = window.LowiSpring.create({ value: s.dx, response: 0.42, damping: 1, onUpdate: x => { setX(cur, Math.abs(x) < 0.5 ? 0 : x); if (pe) setX(pe, side + x); } });
+        back = { sp, cur, rubber: !s.peek, W: s.W, done };
+        sp.to(0, { velocity: vel, onRest: done });
+    }
+    /* caught mid-way but the finger did not page (a tap, or it went up and down): finish the way home */
+    function letGo(s) { if (s && s.b0 && window.LowiSpring) { const cur = pageEl(s.cur), x = s.rubber0; s.dx = x; springBack(s, cur, null, 0); } }
     function setX(el, x) { if (el) el.style.transform = x ? 'translate3d(' + x + 'px,0,0)' : ''; }
     const GZ = () => window.LowiGalaxyZoom || null;
     function dragTo(dx) {
@@ -84,12 +96,15 @@
         if (g.cur === 'scan' && n && activeTab() !== n) { quietGo(n); }
         if (g.peek && g.peek !== n) { const pe = pageEl(g.peek); if (pe) { pe.classList.remove('lg-peek'); pe.style.transform = ''; } }
         g.peek = n;
-        const x = n ? dx : dx / 3;   /* rubber band at the first and the last page */
+        /* rubber band at the first and the last page. Oct 25 2026 (Emmanuel's TikTok, rubberband.js): Apple's hyperbola
+           (1 - 1/(x*0.55/d + 1)) * d with d = the page width, instead of a flat third: it follows less the further you pull
+           and can never pass one screen */
+        const x = n ? dx : (window.LowiRubber ? window.LowiRubber.offset(dx, g.W) : dx / 3);
         g.dx = x; setX(cur, x);
         if (n) { const pe = pageEl(n); if (pe) { pe.classList.add('lg-peek'); setX(pe, (dx < 0 ? g.W : -g.W) + x); } }
     }
     function release(cancelled) {
-        const s = g; g = null; if (!s || s.dir !== 'x') return;
+        const s = g; g = null; if (!s || s.dir !== 'x') { letGo(s); return; }
         const main = D.getElementById('main'); if (main) main.classList.remove('lg-drag');
         const v = s.v || 0;
         if (s.warp) {
@@ -105,6 +120,9 @@
             setX(cur, 0); if (pe) { pe.classList.remove('lg-peek'); setX(pe, 0); }
             pendingDx = s.dx; window.goTab(n);
             if (activeTab() === s.cur) pendingDx = 0;   /* goTab refused: nothing moved */
+        } else if (window.LowiSpring && !calm() && !(window.LowiSpring.reduced && window.LowiSpring.reduced())) {
+            /* Oct 25 2026 (spring.js): springs back with the speed the finger let go at, and can be caught again mid-way (onDown) */
+            springBack(s, cur, pe, v);
         } else {
             const o = { duration: 260, easing: EASE };
             const back = [cur && cur.animate([{ transform: 'translate3d(' + s.dx + 'px,0,0)' }, { transform: 'translate3d(0,0,0)' }], o)];
@@ -166,20 +184,24 @@
         /* Oct 16: Community is a map you drag around (community-chat.js), so there too the pages move from the edges or the tab bar */
         if (cur === 'foryou' && !onBar && t.closest('#cgGalaxy') && e.clientX > 26 && e.clientX < W - 26) return;
         if (!onBar && hScroller(t, pageEl(cur))) return;
-        g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, lx: e.clientX, lt: performance.now(), v: 0, dir: '', dx: 0, cur, i, W, peek: null, warp: '', under: cur === 'scan' ? activeTab() : '' };
+        /* a page still springing back is caught where it is: the new drag starts from there, nothing jumps */
+        let b0 = 0;
+        let x0 = 0;
+        if (back && back.sp.moving && back.cur === pageEl(cur)) { const x = x0 = back.sp.stop().value; b0 = back.rubber && window.LowiRubber ? window.LowiRubber.inverse(x, back.W) : x; const d = back.done; back = null; d(); setX(pageEl(cur), x); }
+        g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, lx: e.clientX, lt: performance.now(), v: 0, dir: '', dx: 0, b0, rubber0: x0, cur, i, W, peek: null, warp: '', under: cur === 'scan' ? activeTab() : '' };
     }
     function onMove(e) {
         if (!g || e.pointerId !== g.id) return;
         const mx = e.clientX - g.x0, my = e.clientY - g.y0;
         if (!g.dir) {
             if (Math.abs(mx) < 8 && Math.abs(my) < 8) return;
-            if (Math.abs(mx) <= Math.abs(my) * 1.2) { g = null; return; }
+            if (Math.abs(mx) <= Math.abs(my) * 1.2) { const s0 = g; g = null; letGo(s0); return; }
             g.dir = 'x'; clearSlide();
             const main = D.getElementById('main'); if (main) main.classList.add('lg-drag');
         }
         e.stopPropagation(); if (e.cancelable) e.preventDefault();
         const now = performance.now(), dt = Math.max(1, now - g.lt); g.v = .7 * ((e.clientX - g.lx) / dt) + .3 * g.v; g.lx = e.clientX; g.lt = now;
-        dragTo(mx);
+        dragTo(mx + (g.b0 || 0));
     }
     function onUp(e) { if (g && e.pointerId === g.id) { if (g.dir === 'x') e.stopPropagation(); release(e.type === 'pointercancel' && Math.abs(g.dx) < 30); } }
     function lastSheet() {

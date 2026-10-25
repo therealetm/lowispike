@@ -369,7 +369,7 @@ function epos(s,id){const e=W.LowiEnergy,o=s&&e&&e.offset?e.offset(id):null;retu
 function place(){
   const gx=W.__lgGx,field=D.getElementById('cgField'),gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!field||!gal)return;
   mapGestures(gal);if(W.LowiEnergy&&W.LowiEnergy.mount)W.LowiEnergy.mount(gal);
-  const v=mapView(gal),Z=mapZ(gx,v),fz=fitCam(gx,v);if(!cam||(!camUser&&!camAnimOn))cam=fz;/* until you zoom yourself, the view follows everyone (people still loading in, someone joining) */cam=G.mapClamp(cam,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy},fz.z);
+  const v=mapView(gal),Z=mapZ(gx,v),fz=fitCam(gx,v);if(!cam||(!camUser&&!camAnimOn))cam=fz;/* until you zoom yourself, the view follows everyone (people still loading in, someone joining) */cam=camFree?cam:G.mapClamp(cam,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy},fz.z);/* Oct 25: camFree = a finger or the camera spring owns it (rubber band past the edge) */
   const f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),fn=Math.max(.8,f),cx=v.w/2,cy=v.h*.5,scr=s=>({x:cx+(s.x-cam.x)*cam.z,y:cy+(s.y-cam.y)*cam.z});
   const bodies=new Map(),bubs=new Map();
   for(const el of field.querySelectorAll('.cg-body'))bodies.set(el.getAttribute('data-uid'),el);
@@ -395,39 +395,84 @@ function place(){
   const streamed=streamDraw(gx.lines,v)&&!!sel;if(sk){if(streamed)sk.set(gx.lines.filter(l=>!l.sel),false,gx.orbits);else sk.set(gx.lines,false,gx.orbits);}
   gal.setAttribute('data-zoom',cam.z>=Z.zmax*.995?'max':cam.z<=Z.zmin*1.005?'min':'mid');
 }
+/* Oct 25 2026 (Emmanuel's TikTok "Why does iOS feel so nice to use"; spring.js + rubberband.js): the Room camera moves like
+   an iOS scroll view. Dragging or pinching past the edge (or past the zoom limits) stretches on Apple's rubber band
+   (c = 0.55, d = the Room's width/height; zoom in log space) instead of stopping dead. Letting go flings with iOS's
+   deceleration and springs back from the edge with the speed it had. Double-tap zoom is a spring too, and every one of these
+   can be caught mid-way by a finger: the camera stays exactly where it is and the drag carries on from there.
+   One requestAnimationFrame loop, one place() per frame, and nothing runs once the camera is at rest. */
+let camFree=false,camMo=null;
+const RB=()=>W.LowiRubber,SPR=()=>W.LowiSpring,LZ_D=.5;
+function camBox(gx,v,c){const k={x:gx.map.cx,y:gx.map.cy},fz=fitCam(gx,v).z,lo=G.mapClamp({x:-1e9,y:-1e9,z:c.z},gx.map.radius,v.w,v.h,k,fz),hi=G.mapClamp({x:1e9,y:1e9,z:c.z},gx.map.radius,v.w,v.h,k,fz),Z=mapZ(gx,v);return {x0:lo.x,x1:hi.x,y0:lo.y,y1:hi.y,z0:Z.zmin,z1:Z.zmax};}
+/* raw camera (where the finger would put it) -> what you see (stretched past the edges) */
+function camRubber(raw,gx,v){const rb=RB();if(!rb)return raw;const b=camBox(gx,v,raw),z=raw.z;return {x:rb.clamp(raw.x*z,b.x0*z,b.x1*z,v.w)/z,y:rb.clamp(raw.y*z,b.y0*z,b.y1*z,v.h)/z,z};}
+function camUnrubber(c,gx,v){const rb=RB();if(!rb)return {...c};const b=camBox(gx,v,c),z=c.z;return {x:rb.unclamp(c.x*z,b.x0*z,b.x1*z,v.w)/z,y:rb.unclamp(c.y*z,b.y0*z,b.y1*z,v.h)/z,z};}
+function zRubber(z,gx,v){const rb=RB();if(!rb)return z;const Z=mapZ(gx,v);return Math.exp(rb.clamp(Math.log(z),Math.log(Z.zmin),Math.log(Z.zmax),LZ_D));}
+function zUnrubber(z,gx,v){const rb=RB();if(!rb)return z;const Z=mapZ(gx,v);return Math.exp(rb.unclamp(Math.log(z),Math.log(Z.zmin),Math.log(Z.zmax),LZ_D));}
+/* grab: stop wherever the camera is; the finger owns it now */
+function camHold(){cancelAnimationFrame(camAnim);camAnim=0;camMo=null;camAnimOn=false;}
+function camRest(){camHold();camFree=false;place();}
+/* axes: {x,y,z(log)} each {p,v,t (spring target) or coast:true}; w/zeta from the spring response and damping */
+function camRun(ax,o){cancelAnimationFrame(camAnim);const S=SPR(),gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!S||!gx||!gal){camRest();return;}
+  const P=S.params(o||{response:.45,damping:1});camMo={ax,P};camAnimOn=true;camFree=true;let last=performance.now();
+  const step=t=>{camAnim=0;if(!camMo||camMo.ax!==ax)return;const dt=Math.min(.064,Math.max(0,(t-last)/1000));last=t;const v=mapView(gal),b=camBox(gx,v,cam);let moving=false;
+   for(const k of ['x','y','z']){const a=ax[k];if(!a||a.done)continue;
+    if(a.coast){const c=S.coast(a.p,a.v,dt);a.p=c.x;a.v=c.v;const lo=k==='x'?b.x0:b.y0,hi=k==='x'?b.x1:b.y1;
+     if(a.p<lo||a.p>hi){a.coast=false;a.t=a.p<lo?lo:hi;}else if(Math.abs(a.v*cam.z)<8){a.v=0;a.done=true;continue;}}
+    else{const r=S.solve(a.p-a.t,a.v,P.w,P.damping,dt);a.p=a.t+r.x;a.v=r.v;const eps=k==='z'?.0015:.4/Math.max(.05,cam.z);if(Math.abs(a.p-a.t)<eps&&Math.abs(a.v)<eps*4){a.p=a.t;a.v=0;a.done=true;}}
+    moving=moving||!a.done;}
+   cam={x:ax.x?ax.x.p:cam.x,y:ax.y?ax.y.p:cam.y,z:ax.z?Math.exp(ax.z.p):cam.z};
+   if(moving){place();camAnim=requestAnimationFrame(step);}else camRest();};
+  camAnim=requestAnimationFrame(step);}
+function camVel(){return camMo?{x:camMo.ax.x?camMo.ax.x.v:0,y:camMo.ax.y?camMo.ax.y.v:0,z:camMo.ax.z?camMo.ax.z.v:0}:{x:0,y:0,z:0};}
 function camTo(target,ms){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gal||!cam)return;cancelAnimationFrame(camAnim);const v=mapView(gal),to=G.mapClamp(target,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy},fitCam(gx,v).z),from={...cam},t0=performance.now(),dur=ms||280;
+  /* the spring: from where the camera is, with the speed it has (a second double-tap mid-zoom turns it, no restart) */
+  if(SPR()&&!SPR().reduced()){const vv=camVel();camRun({x:{p:cam.x,v:vv.x,t:to.x},y:{p:cam.y,v:vv.y,t:to.y},z:{p:Math.log(cam.z),v:vv.z,t:Math.log(to.z)}},{response:.45,damping:1});return;}
   camAnimOn=true;const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);cam={x:from.x+(to.x-from.x)*e,y:from.y+(to.y-from.y)*e,z:from.z*Math.pow(to.z/from.z,e)};if(k>=1)camAnimOn=false;place();if(k<1)camAnim=requestAnimationFrame(step);};camAnim=requestAnimationFrame(step);}
+/* the finger let go: past the zoom limits -> spring back around the pinch centre; else fling (world units/s) and spring off the edges */
+function camRelease(vel,anchor){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gx.map||!gal||!cam){camFree=false;return;}const v=mapView(gal),Z=mapZ(gx,v),S=SPR();
+  if(!S||S.reduced()){camFree=false;place();return;}
+  if(cam.z<Z.zmin*.999||cam.z>Z.zmax*1.001){const zc=Math.max(Z.zmin,Math.min(Z.zmax,cam.z)),a=anchor||{x:v.w/2,y:v.h*.5};camTo(zoomAt(cam,zc/cam.z,a.x,a.y,v));return;}
+  const b=camBox(gx,v,cam),out=k=>k==='x'?(cam.x<b.x0||cam.x>b.x1):(cam.y<b.y0||cam.y>b.y1),edge=k=>k==='x'?(cam.x<b.x0?b.x0:b.x1):(cam.y<b.y0?b.y0:b.y1);
+  const ax={};for(const k of ['x','y']){const vv=vel&&isFinite(vel[k])?vel[k]:0;ax[k]=out(k)?{p:cam[k],v:vv,t:edge(k)}:{p:cam[k],v:vv,coast:true};}
+  if(!out('x')&&!out('y')&&Math.hypot(ax.x.v,ax.y.v)*cam.z<40){camFree=false;place();return;}
+  camRun(ax,{response:.45,damping:1});}
 /* zoom by k keeping the world point under (px,py) (galaxy px) under the finger */
-function zoomAt(c0,k,px,py,v){const gx=W.__lgGx,Z=gx&&gx.map?mapZ(gx,v):{zmin:.18,zmax:3},z=Math.max(Z.zmin,Math.min(Z.zmax,c0.z*k)),wx=c0.x+(px-v.w/2)/c0.z,wy=c0.y+(py-v.h*.5)/c0.z;return {x:wx-(px-v.w/2)/z,y:wy-(py-v.h*.5)/z,z};}
+function zoomAt(c0,k,px,py,v,loose){const gx=W.__lgGx,Z=gx&&gx.map?mapZ(gx,v):{zmin:.18,zmax:3},z=loose&&gx&&gx.map?zRubber(c0.z*k,gx,v):Math.max(Z.zmin,Math.min(Z.zmax,c0.z*k)),wx=c0.x+(px-v.w/2)/c0.z,wy=c0.y+(py-v.h*.5)/c0.z;return {x:wx-(px-v.w/2)/z,y:wy-(py-v.h*.5)/z,z};}
 function mapGestures(gal){if(gal.__map)return;gal.__map=1;
   const pts=new Map();let g=null,suppress=0,lastTap=0,lastXY=null,lpT=0,lpHeld=false,lpAt=0;
   /* Oct 16 (E-man: "that [card] only appears if you long-press on the companion, or any companion's name"): holding a companion still
      for 450 ms opens their person card (with a little buzz where the device supports it); a plain tap connects instead (see connect()).
      Moving more than 9 px (a pan) or a second finger (a pinch) cancels the hold, so dragging, pinching and double-tap stay as they were. */
+  /* the camera's own recent path (what you see, stretch included), for the speed it is let go with */
+  const trail=[];const track=e=>{if(!cam)return;const t=e.timeStamp||performance.now();trail.push({t,x:cam.x,y:cam.y});while(trail.length>2&&t-trail[0].t>100)trail.shift();};
+  const trailVel=e=>{const t=e.timeStamp||performance.now();if(trail.length<2||t-trail[trail.length-1].t>80)return {x:0,y:0};const a=trail[0],b=trail[trail.length-1],dt=Math.max(16,b.t-a.t)/1000;return {x:(b.x-a.x)/dt,y:(b.y-a.y)/dt};};
   const lpStop=()=>{clearTimeout(lpT);lpT=0;};
   const lpOpen=body=>{lpHeld=true;lpAt=Date.now();try{if(navigator.vibrate)navigator.vibrate(12);}catch(x){}body.classList.add('cg-held');setTimeout(()=>body.classList.remove('cg-held'),420);const u=body.getAttribute('data-uid');if(u&&u!=='me')openProfile(u,body.getAttribute('data-name')||'');};
   const local=e=>{const r=gal.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
   const inUi=t=>!!(t&&t.closest&&t.closest('.cm-compose,input,textarea,#cgThread,.cg-empty,.ce-joy'));
-  gal.addEventListener('pointerdown',e=>{if(inUi(e.target)||(e.pointerType==='mouse'&&e.button!==0))return;cancelAnimationFrame(camAnim);camAnimOn=false;pts.set(e.pointerId,local(e));
+  gal.addEventListener('pointerdown',e=>{if(inUi(e.target)||(e.pointerType==='mouse'&&e.button!==0))return;const caught=!!camMo;camHold();if(caught)try{gal.setPointerCapture(e.pointerId);}catch(x){}pts.set(e.pointerId,local(e));
    lpStop();lpHeld=false;
-   if(pts.size===1){const body=e.target.closest&&e.target.closest('.cg-body');g={kind:'tap',p0:local(e),cam0:{...cam},t0:Date.now(),onBody:!!(e.target.closest&&e.target.closest('.cg-body,.cg-bub')),body:body||null};if(body)lpT=setTimeout(()=>{lpT=0;if(g&&g.kind==='tap'&&pts.size===1)lpOpen(body);},450);}
-   else if(pts.size===2){const [a,b]=[...pts.values()];g={kind:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},cam0:{...cam}};}});
+   const gx0=W.__lgGx,raw0=()=>cam&&gx0&&gx0.map?camUnrubber(cam,gx0,mapView(gal)):(cam&&{...cam});trail.length=0;
+   if(pts.size===1){const body=e.target.closest&&e.target.closest('.cg-body');g={kind:caught?'pan':'tap',caught,p0:local(e),cam0:raw0(),t0:Date.now(),onBody:!!(e.target.closest&&e.target.closest('.cg-body,.cg-bub')),body:body||null};if(body)lpT=setTimeout(()=>{lpT=0;if(g&&g.kind==='tap'&&pts.size===1)lpOpen(body);},450);}
+   else if(pts.size===2){const [a,b]=[...pts.values()],gxp=W.__lgGx;g={kind:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},cam0:cam&&gxp&&gxp.map?camUnrubber({...cam,z:zUnrubber(cam.z,gxp,mapView(gal))},gxp,mapView(gal)):{...cam}};}
+   if(cam)camFree=true;});
   gal.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId)||!g||!cam)return;pts.set(e.pointerId,local(e));const v=mapView(gal);
    if(g.kind==='pinch'&&pts.size>=2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y)||1,m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
-    const c=zoomAt(g.cam0,d/g.d0,g.m0.x,g.m0.y,v);c.x-=(m.x-g.m0.x)/c.z;c.y-=(m.y-g.m0.y)/c.z;cam=c;camUser=true;schedulePlace();return;}
+    const c=zoomAt(g.cam0,d/g.d0,g.m0.x,g.m0.y,v,true);c.x-=(m.x-g.m0.x)/c.z;c.y-=(m.y-g.m0.y)/c.z;const gxm=W.__lgGx;cam=gxm&&gxm.map?camRubber(c,gxm,v):c;g.mid=m;track(e);camUser=true;schedulePlace();return;}
    if(pts.size!==1)return;const p=pts.get(e.pointerId),dx=p.x-g.p0.x,dy=p.y-g.p0.y;
    if(g.kind==='tap'&&Math.hypot(dx,dy)>9){lpStop();g.kind='pan';try{gal.setPointerCapture(e.pointerId);}catch(x){}}
-   if(g.kind==='pan'){cam={x:g.cam0.x-dx/g.cam0.z,y:g.cam0.y-dy/g.cam0.z,z:g.cam0.z};camUser=true;schedulePlace();}});
+   if(g.kind==='pan'){const raw={x:g.cam0.x-dx/g.cam0.z,y:g.cam0.y-dy/g.cam0.z,z:g.cam0.z},gxm=W.__lgGx;cam=gxm&&gxm.map?camRubber(raw,gxm,v):raw;track(e);camUser=true;schedulePlace();}});
   const end=e=>{if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);pts.delete(e.pointerId);
    // a busy frame can deliver the finger lift before the 450 ms hold timer: a held press still opens the card
    if(lpT&&!lpHeld&&e.type==='pointerup'&&g&&g.kind==='tap'&&g.body&&!pts.size&&Date.now()-g.t0>=450){lpStop();lpOpen(g.body);}
-   lpStop();if(lpHeld){lpHeld=false;suppress=Date.now();if(!pts.size)g=null;return;}if(!g)return;
-   if(g.kind==='pan'||g.kind==='pinch'){suppress=Date.now();if(!pts.size)g=null;else if(g.kind==='pinch'){const q=[...pts.values()][0];g={kind:'pan',p0:q,cam0:{...cam}};}return;}
+   lpStop();if(!pts.size&&camFree&&!camMo&&(lpHeld||!g))camRelease(null,p);if(lpHeld){lpHeld=false;suppress=Date.now();if(!pts.size)g=null;return;}if(!g)return;
+   if(g.kind==='pan'||g.kind==='pinch'){suppress=Date.now();if(!pts.size){const mid=g.mid||p;g=null;camRelease(e.type==='pointerup'?trailVel(e):null,mid);}else if(g.kind==='pinch'){const q=[...pts.values()][0],gxq=W.__lgGx;trail.length=0;g={kind:'pan',p0:q,cam0:cam&&gxq&&gxq.map?camUnrubber(cam,gxq,mapView(gal)):{...cam}};}return;}
    if(g.kind==='tap'&&e.type==='pointerup'&&!g.onBody){const now=Date.now();
     if(now-lastTap<420&&lastXY&&Math.hypot(p.x-lastXY.x,p.y-lastXY.y)<40){lastTap=0;const gx=W.__lgGx,v=mapView(gal),Z=gx&&gx.map?mapZ(gx,v):null;
      if(Z){const back=cam.z>=Z.zmax*.98;camUser=!back;camTo(back?fitCam(gx,v):zoomAt(cam,1.8,p.x,p.y,v));}suppress=now;}
     else{lastTap=now;lastXY=p;}}
-   if(!pts.size)g=null;};
+   if(!pts.size){g=null;if(camFree&&!camMo)camRelease(null,p);}};
   gal.addEventListener('pointerup',end);gal.addEventListener('pointercancel',end);
   gal.addEventListener('click',e=>{if(Date.now()-suppress<380){e.preventDefault();e.stopPropagation();}},true);
   gal.addEventListener('dblclick',e=>e.preventDefault());
@@ -439,7 +484,7 @@ function mapGestures(gal){if(gal.__map)return;gal.__map=1;
   gal.addEventListener('gesturestart',e=>e.preventDefault());
 }
 W.LowiCgMap={atMax(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gx.map||!gal||!cam)return true;return cam.z>=mapZ(gx,mapView(gal)).zmax*.995;},
-  cam(){return cam&&{...cam};},reset(){cam=null;camUser=false;schedulePlace();},place,
+  cam(){return cam&&{...cam};},reset(){camHold();camFree=false;cam=null;camUser=false;schedulePlace();},place,
   /* Oct 25: the fitted view (everyone on screen) and whether you zoomed yourself, for tests and the energy layer */
   fit(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!gal)return null;return fitCam(gx,mapView(gal));},user:()=>camUser,
   /* Oct 16 (energy hits): the camera and every companion's home spot and radius in map units, for community-energy.js */

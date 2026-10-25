@@ -141,8 +141,40 @@
         if (reflow) return;
         reflow = requestAnimationFrame(() => { reflow = 0; D.querySelectorAll('.r2-sh.mb-dock').forEach(el => { el.classList.add('mb-measure'); dock(el); el.classList.remove('mb-measure'); }); });
     });
+    /* Oct 25 2026 (Emmanuel's TikTok "Why does iOS feel so nice to use", spring.js): the bloom is a spring, not a timed keyframe.
+       p = 0 is the small round bubble at the finger, p = 1 the open panel. Closing while it is still growing (or opening
+       again while it folds) turns the same spring around from where it is and how fast it moves, so it never jumps back to
+       full size first. Without spring.js, or with reduced motion, the CSS keyframes below still do it. */
+    function springy() { return !!(W.LowiSpring && W.LowiSpring.create) && !reduced(); }
+    function paint(el, p) {
+        const k = 1 - p, s = el.style, dx = parseFloat(s.getPropertyValue ? s.getPropertyValue('--mb-dx') : 0) || 0, dy = parseFloat(s.getPropertyValue ? s.getPropertyValue('--mb-dy') : 0) || 0;
+        const sc = Math.min(1.035, 0.14 + 0.86 * p), op = Math.max(0, Math.min(1, p * 2.4)), kr = Math.max(0, Math.min(1, k * 1.6));
+        s.setProperty('translate', (dx * k).toFixed(1) + 'px ' + (dy * k).toFixed(1) + 'px');
+        s.setProperty('scale', sc.toFixed(4));
+        s.setProperty('opacity', op.toFixed(3));
+        s.setProperty('border-radius', kr > 0.001 ? 'calc(50% * ' + kr.toFixed(3) + ' + ' + ((el.__mbR || 0) * (1 - kr)).toFixed(1) + 'px)' : '');
+    }
+    function unpaint(el) { ['translate', 'scale', 'opacity', 'border-radius'].forEach(k => el.style.removeProperty && el.style.removeProperty(k)); }
+    function spring(el) {
+        if (el.__mbS) return el.__mbS;
+        if (el.__mbR == null) { let r = 0; try { r = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0; } catch (e) { } el.__mbR = r; }
+        el.__mbS = W.LowiSpring.create({ value: 0, restDelta: 0.002, onUpdate: p => { paint(el, p); if (p < 0.03 && el.__mbFin && el.__mbS && el.__mbS.target === 0) { const f = el.__mbFin; el.__mbFin = null; f(); } } });
+        return el.__mbS;
+    }
     function open(el) {
         if (!prep(el)) return false;
+        if (springy()) {
+            const sp = spring(el);
+            el.classList.add('mb-sp');
+            el.classList.remove('mb-out');
+            el.classList.add('mb-in');
+            if (!sp.moving && sp.value >= 0.999) sp.set(0);
+            paint(el, sp.value);
+            /* a soft overshoot, like the old .5s curve, but it keeps whatever speed a fold-back had */
+            el.__mbFin = null;
+            sp.to(1, { response: 0.5, damping: 0.74, onRest: () => { if (el.classList.contains('mb-in')) unpaint(el); } });
+            return true;
+        }
         el.classList.remove('mb-in');
         void el.offsetWidth;
         el.classList.add('mb-in');
@@ -156,6 +188,16 @@
         let fired = false;
         const fin = () => { if (fired) return; fired = true; if (typeof done === 'function') done(); };
         if (reduced()) { fin(); return true; }
+        if (springy()) {
+            /* from where it is now (maybe still growing) straight back into the bubble; no bounce on the way in */
+            const sp = spring(el);
+            if (!sp.moving && !el.classList.contains('mb-sp')) sp.set(1);
+            el.classList.add('mb-sp');
+            el.__mbFin = fin;/* gone from sight (p < 0.03): hand over without waiting for the last invisible pixels */
+            sp.to(0, { response: 0.3, damping: 1, onRest: fin });
+            setTimeout(fin, 900);/* a hidden tab gets no frames: hand over anyway */
+            return true;
+        }
         el.addEventListener('animationend', e => { if (e.target === el) fin(); });
         setTimeout(fin, 320);
         return true;

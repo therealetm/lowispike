@@ -116,6 +116,9 @@ html:root.wh-home body #whToday .wh-today-grab { background: rgba(143, 231, 255,
 @keyframes mb-pop { from { scale: .25; opacity: 0; } }
 /* misty-bloom.js measures the panel at rest */
 html:root body .mb-on.mb-measure { animation: none !important; translate: none !important; scale: none !important; }
+/* Oct 25 2026: spring.js drives the bloom (misty-bloom.js open/close write translate, scale, opacity, border-radius each frame),
+   so the timed keyframes step aside and a close half way through a bloom turns around instead of restarting */
+html:root body .mb-on.mb-sp { animation: none !important; }
 /* the panel's own slide-up is replaced by the bloom */
 html:root body #sheetwrap #sheet.mb-on,
 html:root body #tbWx .tbw-sheet.mb-on,

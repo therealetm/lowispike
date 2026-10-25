@@ -83,12 +83,15 @@ function ensureView(pane){let box=pane.querySelector(':scope>.rm-view');
 /* Studio's switch: two halves in the same glass as the tab bar, only while Studio is open */
 /* locked unless studio-lock.js is there and the server said yes (a missing lock module never opens Studio) */
 function studioLocked(){const L=W.LowiStudioLock;try{return !L||L.locked()!==false;}catch(e){return true;}}
+/* Oct 25 2026 (Emmanuel's TikTok, spring.js): the sliding glow under the open section rides a spring instead of a .32 s CSS
+   timer. Tapping another section while it still slides turns it from where it is, with the speed it has, instead of restarting. */
+function pillTo(el,name,i){if(W.LowiSpring&&W.LowiSpring.cssVar)W.LowiSpring.cssVar(el,name,i);else el.style.setProperty(name,String(i));}
 function studioSwitch(box){let sw=box.querySelector(':scope>.rm-sw');const on=!!VIEWS[view]&&!studioLocked();
  if(!sw){sw=D.createElement('div');sw.className='rm-sw';sw.setAttribute('role','tablist');sw.innerHTML=['aff','create'].map(k=>'<button type="button" role="tab" class="rm-swb" data-rmsw="'+k+'"></button>').join('');box.insertBefore(sw,box.firstChild);
   sw.addEventListener('click',e=>{const b=e.target.closest('[data-rmsw]');if(!b)return;e.preventDefault();showView(b.dataset.rmsw);const n=sw.querySelector('[data-rmsw="'+view+'"]');if(n&&D.activeElement===b)n.focus({preventScroll:true});});
   sw.addEventListener('keydown',e=>{if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;e.preventDefault();showView(view==='aff'?'create':'aff');const n=sw.querySelector('[data-rmsw="'+view+'"]');if(n)n.focus({preventScroll:true});});}
  sw.hidden=!on;if(sw.getAttribute('aria-label')!==tr('studioSw'))sw.setAttribute('aria-label',tr('studioSw'));
- sw.style.setProperty('--rm-sw-i',view==='create'?'1':'0');
+ pillTo(sw,'--rm-sw-i',view==='create'?1:0);
  sw.querySelectorAll('[data-rmsw]').forEach(b=>{const k=b.dataset.rmsw,t=tr(k),sel=k===view;if(b.textContent!==t)b.textContent=t;b.setAttribute('aria-selected',sel?'true':'false');b.tabIndex=sel?0:-1;});}
 function copyText(u,label){const done=()=>note(label+': '+u);
  if(navigator.clipboard&&W.isSecureContext)navigator.clipboard.writeText(u).then(done,()=>note(u));else note(u);}
@@ -121,7 +124,7 @@ function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  const tabs=b.querySelectorAll('.rm-tab');tabs.forEach(t=>{t.textContent=tr(t.dataset.rm);});b.querySelector('.rm-tabs').setAttribute('aria-label',tr('tabs'));
  tabs.forEach(t=>{const on=t.dataset.rm===sel;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;});
  /* Phase E: one glowing pill slides under the open section (CSS .rm-tabs::before reads --rm-i) */
- const ti=[...tabs].findIndex(t=>t.dataset.rm===sel),tl=b.querySelector('.rm-tabs');if(tl.__n!==tabs.length){tl.__n=tabs.length;tl.style.setProperty('--rm-n',String(tabs.length));}if(tl.__i!==ti){tl.__i=ti;tl.style.setProperty('--rm-i',String(Math.max(0,ti)));}
+ const ti=[...tabs].findIndex(t=>t.dataset.rm===sel),tl=b.querySelector('.rm-tabs');if(tl.__n!==tabs.length){tl.__n=tabs.length;tl.style.setProperty('--rm-n',String(tabs.length));}if(tl.__i!==ti){tl.__i=ti;pillTo(tl,'--rm-i',Math.max(0,ti));}
  if(view){pane.setAttribute('data-rm-view',view);D.documentElement.classList.toggle('rm-view',pageActive());/* Oct 23 2026: only while Community is open (watch() repaints every 1.5 s, also behind Home) */if(VIEWS[view])ensureView(pane);else{const bx=pane.querySelector(':scope>.rm-view');if(bx)ensureView(pane);}}
  else{pane.removeAttribute('data-rm-view');D.documentElement.classList.remove('rm-view');if(pane.querySelector(':scope>.rm-view'))ensureView(pane);}
  /* a new section starts at the top: a pane left scrolled by the last one slid the tabs under the floating profile picture (iPhone SE) */

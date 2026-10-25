@@ -27,13 +27,21 @@ function settle(s,target,velocity,done){
   stop(s);s.target=target;s.v=Number.isFinite(velocity)?velocity:s.v;s.done=done;
   if(reduced()){s.y=target;s.v=0;render(s);if(done)done();return;}
   const tick=time=>{
-    const dt=s.last?Math.min((time-s.last)/1000,.025):1/60;s.last=time;
+    const dt=s.last?Math.min((time-s.last)/1000,window.LowiSpring?.064:.025):1/60;s.last=time;
     const stiffness=360,damping=s.release?32:38;
-    s.v+=(-stiffness*(s.y-s.target)-damping*s.v)*dt;s.y+=s.v*dt;render(s);
+    /* Oct 25 2026 (spring.js): the exact spring curve, so a late frame (power saver, busy phone) lands on the same path */
+    if(window.LowiSpring){const w=Math.sqrt(stiffness),r=LowiSpring.solve(s.y-s.target,s.v,w,damping/(2*w),dt);s.y=s.target+r.x;s.v=r.v;}
+    else{s.v+=(-stiffness*(s.y-s.target)-damping*s.v)*dt;s.y+=s.v*dt;}
+    render(s);
     if(Math.abs(s.y-s.target)<.5&&Math.abs(s.v)<3){s.y=s.target;s.v=0;render(s);s.raf=0;s.last=0;if(s.done){const cb=s.done;s.done=null;cb();}}else s.raf=requestAnimationFrame(tick);
   };
   s.raf=requestAnimationFrame(tick);
 }
+/* Oct 25 2026 (Emmanuel's TikTok, rubberband.js): pulling a sheet up past its top stretches on Apple's hyperbola,
+   (1 - 1/(x*0.55/d + 1)) * d with d = the screen height, instead of a fixed 200 px curve. Grabbing it while it is still
+   stretched starts from where it is (inverse), so nothing jumps. */
+const rubber=raw=>window.LowiRubber?LowiRubber.offset(raw,innerHeight||844):(raw*200*.55)/(200+.55*Math.abs(raw));
+const unrubber=y=>window.LowiRubber?LowiRubber.inverse(y,innerHeight||844):y;
 const sheet=R2.sheet;
 R2.sheet=function(html,opts){
   opts=opts||{};const trigger=D.activeElement,ov=sheet.apply(this,arguments),sh=ov&&ov.querySelector('.r2-sh');
@@ -52,13 +60,13 @@ R2.sheet=function(html,opts){
   if(grab&&!opts.full){
     let drag=null;
     grab.addEventListener('pointerdown',e=>{
-      if(e.button!==0||s.closing)return;stop(s);drag={id:e.pointerId,start:e.clientY,base:s.y,lastY:e.clientY,lastTime:e.timeStamp,velocity:s.v};
+      if(e.button!==0||s.closing)return;stop(s);drag={id:e.pointerId,start:e.clientY,base:s.y<0?unrubber(s.y):s.y,lastY:e.clientY,lastTime:e.timeStamp,velocity:s.v};
       grab.setPointerCapture(e.pointerId);ov.classList.add('au-drag');e.preventDefault();
     });
     grab.addEventListener('pointermove',e=>{
       if(!drag||e.pointerId!==drag.id)return;
       const raw=drag.base+e.clientY-drag.start;
-      s.y=raw>=0?raw:(raw*200*.55)/(200+.55*Math.abs(raw));
+      s.y=raw>=0?raw:rubber(raw);
       const dt=Math.max(1,e.timeStamp-drag.lastTime);drag.velocity=.6*drag.velocity+.4*((e.clientY-drag.lastY)/dt*1000);drag.lastY=e.clientY;drag.lastTime=e.timeStamp;render(s);
     });
     const end=(e,cancelled)=>{

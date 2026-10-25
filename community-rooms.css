@@ -232,6 +232,8 @@ html.sec-open #cmPaneChat[data-spirit-chat]>.rm-bar .rm-head{padding-left:calc(5
 #cmPaneChat[data-spirit-chat] .rm-view>.rm-sw>.rm-swb:focus-visible{outline:2px solid var(--rm-cyan,#8fe7ff);outline-offset:2px}
 @media (max-width:359px){#cmPaneChat[data-spirit-chat] .rm-view>.rm-sw>.rm-swb{font-size:12.5px;padding:0 4px}}
 @media (prefers-reduced-motion:reduce){#cmPaneChat[data-spirit-chat] .rm-view>.rm-sw::before{transition:none}}
+/* Oct 25 2026: spring.js drives --rm-i / --rm-sw-i (community-rooms-ui.js pillTo), so the CSS timer steps aside */
+#cmPaneChat[data-spirit-chat] .rm-tabs.sp-var::before,#cmPaneChat[data-spirit-chat] .rm-view>.rm-sw.sp-var::before{transition:none}
 /* For You: the feed in the same glowing panel as Ranking, Creation and Affiliates. Each post fills the panel and snaps; the overlay
    offsets match the old Cook window (the panel is not under the notch or the menu bar). */
 #cmPaneChat[data-spirit-chat] .rm-view>.rm-fy[hidden]{display:none}

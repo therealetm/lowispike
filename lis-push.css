@@ -1,0 +1,17 @@
+/* phone notifications, four pillars (25 Oct 2026): the switches in the reminder settings and the one-time ask */
+.lisp-pil{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.lisp-what{margin-bottom:2px}
+.lisp-sw{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;padding:10px 12px;border-radius:16px;border:1px solid rgba(127,127,127,.25);background:rgba(127,127,127,.08);color:inherit;font:inherit;cursor:pointer}
+.lisp-t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lisp-k{flex:0 0 auto;width:42px;height:24px;border-radius:12px;background:rgba(127,127,127,.4);position:relative;transition:background .2s}
+.lisp-k::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s}
+.lisp-sw.on .lisp-k{background:#2bb673}
+.lisp-sw.on .lisp-k::after{transform:translateX(18px)}
+.lisp-card{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(92vw,380px);z-index:9000;padding:14px 16px;border-radius:22px;
+  background:rgba(20,28,40,.86);color:#fff;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 10px 30px rgba(0,0,0,.35);animation:lispIn .26s ease-out}
+html.light .lisp-card,body.light .lisp-card{background:rgba(255,255,255,.92);color:#14202e}
+.lisp-card.out{opacity:0;transform:translate(-50%,12px);transition:opacity .25s,transform .25s}
+.lisp-q{margin:0 0 10px;line-height:1.35}
+.lisp-b{display:flex;gap:8px;justify-content:flex-end}
+@keyframes lispIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+@media (prefers-reduced-motion:reduce){.lisp-card{animation:none}.lisp-card.out{transition:none}}

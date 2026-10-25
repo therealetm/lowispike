@@ -83,6 +83,8 @@
 (()=>{try{const P=DOMTokenList.prototype,A=P.add,R=P.remove;
 P.add=function(){for(let i=0;i<arguments.length;i++)if(!this.contains(arguments[i]))return A.apply(this,arguments);};
 P.remove=function(){for(let i=0;i<arguments.length;i++)if(this.contains(arguments[i]))return R.apply(this,arguments);};}catch(e){}})();</script>
+<!-- Oct 25 heat pass: one calm/rest ladder + battery saver for every heavy loop (power-saver.js) -->
+<script src="power-saver.js?v=20261025-154222"></script>
 <script id="igFresh">/* install-guide.js: was storage empty before anything ran? (a first start from the iPhone Home Screen = just added) */try{window.__lowiFresh=localStorage.length===0}catch(e){}</script>
 <style id="spdCss">
 /* Oct 16 speed pass. (1) The old sky layers (weather rain, falling leaves, the star mist) sit under the 3D world, which covers them
@@ -16749,6 +16751,7 @@ function unlock(){
   try { if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch(e){}   // mix with the user's music, respect the silent switch
   if (ac.state !== "running") { try { ac.resume(); } catch(e){} }
   if (!unlocked) { try { const b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource(); s.buffer = b; s.connect(ac.destination); s.start(0); } catch(e){} unlocked = true; }
+  sfxNap();
 }
 ["pointerdown", "keydown"].forEach(t => document.addEventListener(t, unlock, {capture:true, passive:true, once:true}));
 document.addEventListener("visibilitychange", () => { if (!ac) return; if (document.hidden) { try { ac.suspend(); } catch(e){} } else if (unlocked) { try { ac.resume(); } catch(e){} } });
@@ -16756,10 +16759,15 @@ document.addEventListener("visibilitychange", () => { if (!ac) return; if (docum
    the Sounds switch changes it. After the background, a call or Siri, iOS leaves the context 'suspended' or 'interrupted': any later
    tap or key wakes it again, silently (the once-only unlock above only covered the very first tap), and so does the page cache return */
 const wakeSfx = () => { if (document.hidden || !S.on) return; if (!unlocked || (ac && ac.state !== "running" && ac.state !== "closed")) unlock(); };
-["touchend", "click", "keydown"].forEach(t => document.addEventListener(t, wakeSfx, {capture:true, passive:true}));
+["pointerdown", "touchend", "click", "keydown"].forEach(t => document.addEventListener(t, wakeSfx, {capture:true, passive:true}));
 window.addEventListener("pageshow", e => { if (e && e.persisted && ac && unlocked && !document.hidden) { try { ac.resume(); } catch(x){} } });
 
-function ready(){ if (!S.on || S.vol <= 0) return false; if (!ctx()) return false; if (ac.state === "suspended" || ac.state === "interrupted") { try { ac.resume(); } catch(e){} } return ac.state !== "closed"; }
+/* Oct 25 heat pass (E-man: phones get hot, battery drains): a running AudioContext keeps the phone's audio hardware and an audio thread
+   awake even when nothing plays. Every sound here is short (under 2 s), so 6 s after the last one the context goes to sleep, and the
+   next tap or sound wakes it again (this context was unlocked by a tap, so iOS lets the script wake it). */
+let sfxNapT = 0;
+function sfxNap(){ if (sfxNapT) clearTimeout(sfxNapT); sfxNapT = setTimeout(() => { sfxNapT = 0; if (ac && ac.state === "running") { try { ac.suspend(); } catch(e){} } }, 6000); }
+function ready(){ if (!S.on || S.vol <= 0) return false; if (!ctx()) return false; if (ac.state === "suspended" || ac.state === "interrupted") { try { ac.resume(); } catch(e){} } sfxNap(); return ac.state !== "closed"; }
 
 /* ---------- building blocks ---------- */
 // one note: f Hz, at time t (s from now), d seconds, wave, peak gain, optional pitch slide, reverb send

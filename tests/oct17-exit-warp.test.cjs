@@ -31,7 +31,10 @@ test('a resized canvas is drawn again in the same refresh, never left wiped', ()
   assert.ok(sets.length >= 2);
   sets.forEach(s => assert.match(s, /paintNow = true/));
   // the every-other-frame saving never skips the refresh right after a resize, nor any refresh during a transition
-  assert.match(scene, /odd = calm\(now\) && !paintNow && !inTransit\(\) \? !odd : false;\s*paintNow = false;/);
+  // (Oct 25 heat pass: the every-other-frame toggle became one draw interval from power-saver.js; the same guarantee: the interval is
+  //  only ever non-zero when calm AND not right after a resize AND not in a transition, so those refreshes are always drawn)
+  assert.match(scene, /const quiet = calm\(now\) && !paintNow && !inTransit\(\);\s*let iv = 0;\s*if \(quiet\) \{/);
+  assert.match(scene, /const drawNow = !iv \|\| sinceDraw >= iv - 6;\s*paintNow = false;/);
   // paintNow is declared before anything can call resize
   assert.ok(scene.indexOf('let paintNow = false') < scene.indexOf('function resize(w, h)'));
 });

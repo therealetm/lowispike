@@ -32,13 +32,16 @@
     cv.forEach(c => { const r = c.getBoundingClientRect(); const vis = r.width > 0 && r.height > 0 && getComputedStyle(c).visibility !== 'hidden'; mp += c.width * c.height; list.push((c.id || c.className || 'canvas').toString().slice(0, 24) + ' ' + c.width + 'x' + c.height + ' css ' + Math.round(r.width) + 'x' + Math.round(r.height) + (vis ? '' : ' hidden')); });
     let running = 0; const anim = {};
     try { document.getAnimations().forEach(a => { if (a.playState === 'running') { running++; const t = a.effect && a.effect.target; const k = (a.animationName || a.transitionProperty || 'waapi') + ' ' + (t ? (t.id ? '#' + t.id : '.' + ((t.className && t.className.baseVal !== undefined ? t.className.baseVal : t.className) || t.tagName).toString().split(' ')[0]) : ''); anim[k] = (anim[k] || 0) + 1; } }); } catch (e) { }
+    const animDetail = [];
+    try { document.getAnimations().forEach(a => { if (a.playState !== 'running' || animDetail.length > 40) return; const t = a.effect && a.effect.target; if (!t) return; const r = t.getBoundingClientRect(); let vis = true; try { vis = t.checkVisibility ? t.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) : !!t.offsetParent; } catch (e) { } animDetail.push({ name: a.animationName || a.transitionProperty || 'waapi', tag: t.tagName, cls: String(t.className && t.className.baseVal !== undefined ? t.className.baseVal : t.className).slice(0, 40), id: t.id, svg: !!(t.ownerSVGElement || t.tagName === 'svg'), vis, onScreen: r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth, w: Math.round(r.width), h: Math.round(r.height), path: (() => { const p = []; let e = t; for (let i = 0; i < 5 && e; i++) { p.push(e.id ? '#' + e.id : (e.tagName || '').toLowerCase() + (e.classList && e.classList[0] ? '.' + e.classList[0] : '')); e = e.parentElement; } return p.join('<'); })() }); }); } catch (e) { }
     let backdrop = 0; const bdList = [];
     document.querySelectorAll('body *').forEach(e => { const s = getComputedStyle(e); const b = s.backdropFilter || s.webkitBackdropFilter; if (b && b !== 'none') { const r = e.getBoundingClientRect(); if (r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight && s.visibility !== 'hidden' && s.display !== 'none') { backdrop++; if (bdList.length < 12) bdList.push((e.id ? '#' + e.id : '.' + String(e.className).split(' ')[0]) + ' ' + b); } } });
     return {
       raf: H.raf, rafBy: Object.assign({}, H.rafBy), frames: H.frames, timerCb: H.timerCb, timerBy: Object.assign({}, H.timerBy), liveIntervals: H.intervals.size,
       draw2d: H.draw2d, draw2dBy: Object.assign({}, H.draw2dBy), glDraw: H.glDraw, glBy: Object.assign({}, H.glBy), mut: H.mut,
-      canvases: { n: cv.length, mp: +(mp / 1e6).toFixed(2), list }, animations: { running, top: Object.entries(anim).sort((a, b) => b[1] - a[1]).slice(0, 10) },
+      canvases: { n: cv.length, mp: +(mp / 1e6).toFixed(2), list }, animations: { running, top: Object.entries(anim).sort((a, b) => b[1] - a[1]).slice(0, 10), detail: animDetail },
       backdrop, backdropList: bdList, audio: H.audio.map(c => c.state), wakeLocks: H.wake,
+      power: window.LowiPower ? LowiPower.state() + (LowiPower.saver() ? '+saver' : '') + ' paused:' + LowiPower.pausedCount() : '', htmlClass: document.documentElement.className.slice(0, 300),
       heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1e6) : null, nodes: document.getElementsByTagName('*').length
     };
   };

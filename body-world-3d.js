@@ -134,7 +134,7 @@
             canvas = D.createElement('canvas'); canvas.className = 'bw3-canvas'; canvas.setAttribute('aria-hidden', 'true');
             canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); ctxLost(); });
             canvas.addEventListener('webglcontextrestored', () => ctxBack());
-            world = S.createWorld(THREE, canvas, { places: PLACES, small: W.innerWidth < 380, dprCap: dprCap({ w: W.innerWidth, mem: navigator.deviceMemory }), theme: themeNow(), shouldRender, onFrameError });
+            world = S.createWorld(THREE, canvas, { places: PLACES, small: W.innerWidth < 380, dprCap: dprCap({ w: W.innerWidth, mem: navigator.deviceMemory }), theme: themeNow(), inBack: () => mode === 'back', shouldRender, onFrameError });
             Object.assign(api, { THREE, scene: world.scene, camera: world.camera, renderer: world.renderer, hub: world.hub, regions: world.regions, rig: world.rig, memU: world.memU || null });
             pendingFrames.forEach(fn => { const t = pendingBind.get(fn); const off = world.onFrame(fn); if (t) t.bind(off); }); pendingFrames.clear(); pendingBind.clear();
             api.ready = true; api.state = 'ready'; H.classList.add('bw3-ready');

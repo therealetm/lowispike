@@ -45,6 +45,8 @@ export function createWorld(THREE, canvas, opts) {
     let dprCap = opts.dprCap || 2, dpr = Math.min(window.devicePixelRatio || 1, dprCap);
     /* sharpness floor + ceiling for the frame-time watcher in frame(): never below 1.5x on a retina screen, back up to the cap when smooth */
     const dprTop = dpr, dprFloor = Math.min(dprTop, (window.devicePixelRatio || 1) >= 2 ? 1.5 : 1);
+    /* Oct 25: the sharpest the world may be right now: battery saver (power-saver.js) caps it at 1.5x, never below dprFloor */
+    const topNow = () => { try { if (typeof LowiPower !== 'undefined' && LowiPower.dprCap) return Math.max(dprFloor, Math.min(dprTop, LowiPower.dprCap(dprTop))); } catch (e) { } return dprTop; };
     let hiFor = 0, dprDropAt = -1e9; /* no climbing back for 20 s after a step down: no flip-flopping sharpness */
     renderer.setPixelRatio(dpr);
     const scene = new THREE.Scene();
@@ -757,16 +759,33 @@ export function createWorld(THREE, canvas, opts) {
     /* a frame hook (the companion's flight, a trip, Home's camera) that throws is skipped for that frame, as before, now with the same
        quiet logging, so one broken hook can't flood the console 60 times a second */
     const hookGuard = frameGuard(e => { if (typeof opts.onFrameError === 'function') { try { opts.onFrameError(e); } catch (x) { } } });
+    /* Oct 25 heat pass (E-man: "everyone's phone gets really, really hot when they open our app"): when the world is quiet and drawn
+       at 15 a second or fewer (power-saver.js: rest / deep / behind a page), the next frame is asked for with a timer instead of every
+       screen refresh, so the phone's processor can sleep between draws. A touch asks for the next frame at once (markIn below). */
+    let wake = 0, nextGap = 0, gapFrame = false, sinceDraw = 0;
+    function askFrame() { if (wake) { clearTimeout(wake); wake = 0; gapFrame = true; } if (running && !raf) raf = requestAnimationFrame(frame); }
     function frame(now) {
         raf = 0; if (!running) return;
-        /* the next refresh is asked for first: whatever this frame throws, the world keeps running (frameGuard above) */
-        raf = requestAnimationFrame(frame);
-        guard.run('frame', () => frameWork(now));
+        /* the next frame is asked for in finally: whatever this frame throws, the world keeps running (frameGuard above). It is asked
+           for after the work so a quiet frame can choose to sleep on a timer until its next draw instead of waking every refresh. */
+        const next = () => {
+            if (!running || raf || wake) return;
+            if (nextGap > 0) { gapFrame = true; wake = setTimeout(() => { wake = 0; askFrame(); }, nextGap); }
+            else { gapFrame = false; raf = requestAnimationFrame(frame); }
+        };
+        try { guard.run('frame', () => frameWork(now)); } finally { next(); }
     }
     function frameWork(now) {
-        const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60; last = now;
-        frames.push(dt); if (frames.length > 90) frames.shift();
-        if (frames.length >= 90) {
+        const raw = last ? (now - last) / 1000 : 1 / 60; last = now;
+        const dt = Math.min(0.05, raw);
+        const wasChained = !gapFrame;
+        /* the sharpness watcher and the Low Power Mode detector only look at frames that came straight from the screen refresh:
+           a frame that waited on a timer on purpose is not a slow phone */
+        if (wasChained) {
+            frames.push(dt); if (frames.length > 90) frames.shift();
+            try { if (typeof LowiPower !== 'undefined' && LowiPower.reportFrame) LowiPower.reportFrame(raw); } catch (e) { }
+        }
+        if (wasChained && frames.length >= 90) {
             const avg = frames.reduce((a, b) => a + b, 0) / frames.length;
             /* Oct 17 (E-man: the bubbles look "pixely"): this used to step down to 1x and never come back. On a 3x iPhone that is a
                3x stretched canvas with no antialias (antialias is off at dpr >= 2), so every living bubble went jagged - and a phone
@@ -777,18 +796,33 @@ export function createWorld(THREE, canvas, opts) {
                is drawn again in the same screen refresh (paintNow), never left blank for a skipped one. */
             if (inTransit()) { lowFor = 0; hiFor = 0; }
             else if (avg > 1 / 38 && dpr > dprFloor) { lowFor += dt; hiFor = 0; if (lowFor > 2) { dprDropAt = now; dpr = Math.max(dprFloor, dpr - 0.25); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); paintNow = true; lowFor = 0; frames = []; } }
-            else if (avg < 1 / 50 && dpr < dprTop && now - dprDropAt > 20000) { lowFor = 0; hiFor += dt; if (hiFor > 4) { dpr = Math.min(dprTop, dpr + 0.25); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); paintNow = true; hiFor = 0; frames = []; } }
+            else if (avg < 1 / 50 && dpr < topNow() && now - dprDropAt > 20000) { lowFor = 0; hiFor += dt; if (hiFor > 4) { dpr = Math.min(dprTop, dpr + 0.25); dpr = Math.min(dpr, topNow()); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); paintNow = true; hiFor = 0; frames = []; } }
             else { lowFor = 0; hiFor = 0; }
+        }
+        /* Oct 25: battery saver (Low Power Mode or a hot phone, power-saver.js) draws the world at most 1.5x sharp; back to full when it ends */
+        if (!inTransit()) {
+            const top = topNow();
+            if (dpr > top + 0.01) { dpr = top; renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); paintNow = true; frames = []; dprDropAt = now; }
         }
         /* Oct 16 speed pass (E-man: the newest iPhone overheats): nobody touching, no camera flight, no Community warp, no gyro swing,
            only the slow drift of the bloodstream moving = draw every second screen refresh (about 30 a second). Time still runs at full
            speed (the skipped refresh's time is added to the next one), so it looks the same, at half the GPU work. A touch, a glide or a
            tilt brings back every frame at once. The DPR watcher above still sees every refresh, so this never lowers the sharpness. */
+        /* Oct 25: the same idea, one ladder for the whole app (power-saver.js): calm = ~30 a second on Home as before (~20 behind a
+           page), 30 s without a touch ~15 (~10), 90 s ~8 (~5); fewer when the phone is in Low Power Mode or hot. Time still runs at
+           real speed (all motion here is time-based), so the drift looks the same, just drawn less often. */
+        const quiet = calm(now) && !paintNow && !inTransit();
+        let iv = 0;
+        if (quiet) { try { iv = typeof LowiPower !== 'undefined' && LowiPower.interval ? LowiPower.interval(!!(opts.inBack && opts.inBack())) : 1000 / 30; } catch (e) { iv = 1000 / 30; } }
         acc += dt;
-        odd = calm(now) && !paintNow && !inTransit() ? !odd : false;
+        if (!wasChained) acc += Math.max(0, Math.min(0.25, raw) - dt); /* a frame that slept on a timer carries its whole gap: real-speed time */
+        sinceDraw += raw * 1000;
+        const drawNow = !iv || sinceDraw >= iv - 6;
         paintNow = false;
-        if (!odd) {
-            const d = Math.min(0.1, acc); acc = 0; /* reset before the work: a failing frame does not pile its time onto the next one */
+        nextGap = iv >= 60 ? Math.max(0, Math.round(iv - (drawNow ? 0 : sinceDraw) - 12)) : 0;
+        if (drawNow) {
+            sinceDraw = 0;
+            const d = iv ? Math.min(0.25, acc) : Math.min(0.1, acc); acc = 0; /* reset before the work: a failing frame does not pile its time onto the next one */
             if (!opts.shouldRender || opts.shouldRender()) {
                 const stepped = guard.run('step', () => step(d));
                 frameFns.forEach(fn => hookGuard.run('onFrame', () => fn(d, now)));
@@ -797,7 +831,7 @@ export function createWorld(THREE, canvas, opts) {
             }
         }
     }
-    let acc = 0, odd = false, lastIn = 0;
+    let acc = 0, lastIn = 0;
     /* a world transition is running (a fly-to / leaving a place: body-world-regions.js html.bwr-warping; Misty going through a wall,
        flying out, falling or warping: misty-flight.js html.mf-transit): every refresh is drawn and the canvas size is left alone */
     /* ... and for 2 s after the camera crosses our own membrane into the spirit world or back (world-home.js html.wh-cosmos), the
@@ -809,7 +843,7 @@ export function createWorld(THREE, canvas, opts) {
         const cos = /(^|\s)wh-cosmos(\s|$)/.test(c); if (cos !== cosOn) { if (cosOn !== null) cosAt = now; cosOn = cos; }
         return /(^|\s)(bwr-warping|mf-transit)(\s|$)/.test(c) || now - cosAt < 2000;
     }
-    const markIn = () => { lastIn = performance.now(); };
+    const markIn = () => { lastIn = performance.now(); if (wake || nextGap > 0) { nextGap = 0; askFrame(); } };
     try { ['pointerdown', 'pointermove', 'touchstart', 'touchmove', 'wheel', 'keydown'].forEach(ev => window.addEventListener(ev, markIn, { passive: true, capture: true })); } catch (e) { }
     function calm(now) {
         if (now - lastIn < 2500 || rig.fly) return false;
@@ -817,8 +851,8 @@ export function createWorld(THREE, canvas, opts) {
         const H = typeof document !== 'undefined' && document.documentElement;
         return !(H && /(^|\s)gx-(in|out|hold)(\s|$)/.test(H.className));
     }
-    function start() { if (running) return; running = true; last = 0; raf = requestAnimationFrame(frame); }
-    function stop() { running = false; if (raf) cancelAnimationFrame(raf); raf = 0; }
+    function start() { if (running) return; running = true; last = 0; nextGap = 0; gapFrame = true; paintNow = true; raf = requestAnimationFrame(frame); }
+    function stop() { running = false; if (raf) cancelAnimationFrame(raf); raf = 0; if (wake) { clearTimeout(wake); wake = 0; } nextGap = 0; }
     function fps() { if (!frames.length) return 0; return Math.round(frames.length / frames.reduce((a, b) => a + b, 0)); }
     function renderOnce() { step(0.016); renderer.render(scene, camera); }
     /* the camera is out past the World Map (spirit world) and the world is the layer under a page (html.wb-on: Community, Cook...) */

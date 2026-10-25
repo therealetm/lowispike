@@ -64,7 +64,17 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   if (cdp && THROTTLE > 1) await cdp.send('Emulation.setCPUThrottlingRate', { rate: THROTTLE });
   await sleep(3000);
   const metrics = async () => { if (!cdp) return {}; const r = await cdp.send('Performance.getMetrics'); const o = {}; r.metrics.forEach(m => o[m.name] = m.value); return o; };
-  const snap = async () => Object.assign(await page.evaluate(() => window.__heat.snap()), { m: await metrics(), t: Date.now(), req, wsOpens });
+  /* whole browser CPU (all processes: page, GPU/compositor, network), from /proc, in CPU-seconds. Works for WebKit too. */
+  const rootPid = process.pid; /* the browser runs under this node process */
+  const HZ = 100;
+  function procCpu() {
+    const kids = {}; const stat = {};
+    for (const d of fs.readdirSync('/proc')) { if (!/^\d+$/.test(d)) continue; try { const s = fs.readFileSync('/proc/' + d + '/stat', 'utf8'); const r = s.slice(s.lastIndexOf(')') + 2).split(' '); stat[d] = { pp: +r[1], cpu: (+r[11] + +r[12]) / HZ }; } catch (e) { } }
+    Object.entries(stat).forEach(([p, s]) => { (kids[s.pp] = kids[s.pp] || []).push(+p); });
+    let tot = 0; const st = [].concat(kids[rootPid] || []); while (st.length) { const p = st.pop(); if (stat[p]) tot += stat[p].cpu; (kids[p] || []).forEach(k => st.push(k)); }
+    return tot;
+  }
+  const snap = async () => Object.assign(await page.evaluate(() => window.__heat.snap()), { m: await metrics(), t: Date.now(), req, wsOpens, cpu: procCpu() });
   const ev = (fn, a) => page.evaluate(fn, a).catch(e => 'ERR ' + e.message.slice(0, 160));
   const out = { engine: ENGINE, throttle: THROTTLE, dpr: DPR, url: URL, when: new Date().toISOString(), scenarios: {} };
   const top = (o, n) => Object.entries(o || {}).sort((a, b) => b[1] - a[1]).slice(0, n || 8);
@@ -78,7 +88,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     const by = (A, B) => { const o = {}; Object.keys(B || {}).forEach(k => { const d = (B[k] || 0) - ((A || {})[k] || 0); if (d > 0) o[k] = +(d / sec).toFixed(1); }); return o; };
     const busy = cdp ? +((b.m.TaskDuration - a.m.TaskDuration) / sec * 100).toFixed(1) : null;
     const r = {
-      note, seconds: +sec.toFixed(1), mainBusyPct: busy,
+      note, seconds: +sec.toFixed(1), mainBusyPct: busy, procCpuPct: +((b.cpu - a.cpu) / sec * 100).toFixed(1),
       scriptPct: cdp ? +((b.m.ScriptDuration - a.m.ScriptDuration) / sec * 100).toFixed(1) : null,
       layoutPct: cdp ? +((b.m.LayoutDuration - a.m.LayoutDuration) / sec * 100).toFixed(1) : null,
       stylePct: cdp ? +((b.m.RecalcStyleDuration - a.m.RecalcStyleDuration) / sec * 100).toFixed(1) : null,
@@ -88,15 +98,46 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       draw2dPerSec: per(a.draw2d, b.draw2d), draw2dBy: top(by(a.draw2dBy, b.draw2dBy), 6), glDrawsPerSec: per(a.glDraw, b.glDraw), glBy: top(by(a.glBy, b.glBy), 6),
       canvases: b.canvases, animations: b.animations, backdrop: b.backdrop,
       mutPerSec: per(a.mut, b.mut), reqPerSec: per(a.req, b.req), reqBy: top(by(reqBy0, reqBy), 5), wsOpens: b.wsOpens - a.wsOpens,
-      audio: b.audio, wakeLocks: b.wakeLocks, heapMB: b.heapMB, nodes: b.nodes
+      audio: b.audio, wakeLocks: b.wakeLocks, heapMB: b.heapMB, nodes: b.nodes, power: b.power, htmlClass: b.htmlClass
     };
     out.scenarios[name] = r;
-    console.log(`${name.padEnd(18)} busy ${String(r.mainBusyPct).padStart(5)}%  raf/s ${String(r.rafPerSec).padStart(5)} fps ${String(r.framesPerSec).padStart(4)}  timers/s ${String(r.timerCbPerSec).padStart(5)} iv ${r.liveIntervals}  2d/s ${String(r.draw2dPerSec).padStart(6)} gl/s ${String(r.glDrawsPerSec).padStart(5)}  anim ${r.animations.running} bd ${r.backdrop}  mut/s ${r.mutPerSec}  req/s ${r.reqPerSec} ws+${r.wsOpens}  canvMP ${r.canvases.mp} heap ${r.heapMB}`);
+    console.log(`${name.padEnd(18)} cpu ${String(r.procCpuPct).padStart(5)}% busy ${String(r.mainBusyPct).padStart(5)}%  raf/s ${String(r.rafPerSec).padStart(5)} fps ${String(r.framesPerSec).padStart(4)}  timers/s ${String(r.timerCbPerSec).padStart(5)} iv ${r.liveIntervals}  2d/s ${String(r.draw2dPerSec).padStart(6)} gl/s ${String(r.glDrawsPerSec).padStart(5)}  anim ${r.animations.running} bd ${r.backdrop}  mut/s ${r.mutPerSec}  req/s ${r.reqPerSec} ws+${r.wsOpens}  canvMP ${r.canvases.mp} heap ${r.heapMB} ${r.power || ''} audio ${r.audio}`);
+  }
+  if (process.env.MODE === 'anim') {
+    /* pause one CSS animation name at a time on Home idle */
+    await measure('home-idle', null, 500);
+    const names = await ev(() => [...new Set(document.getAnimations().filter(a => a.playState === 'running').map(a => a.animationName || 'waapi'))]);
+    for (const n of names) {
+      await measure('pause ' + n, () => ev(n => { document.getAnimations().forEach(a => { if ((a.animationName || 'waapi') === n) a.pause(); }); return n; }, n), 1500);
+      await ev(n => { document.getAnimations().forEach(a => { if ((a.animationName || 'waapi') === n && a.playState === 'paused') a.play(); }); }, n);
+    }
+    if (process.env.OUT) fs.writeFileSync(process.env.OUT, JSON.stringify(out, null, 1));
+    await browser.close(); return;
+  }
+  if (process.env.MODE === 'attr') {
+    /* attribution on Home idle: switch one suspect off at a time (cumulative) and see how much busy time goes away */
+    await measure('home-idle', null, 500);
+    if (cdp) { await cdp.send('Profiler.enable'); await cdp.send('Profiler.setSamplingInterval', { interval: 500 }); await cdp.send('Profiler.start'); await sleep(5000); const { profile } = await cdp.send('Profiler.stop');
+      const self = {}; const dt = profile.timeDeltas; const byId = new Map(profile.nodes.map(n => [n.id, n])); const cnt = {}; profile.samples.forEach((s, i) => { cnt[s] = (cnt[s] || 0) + (dt[i] || 0); });
+      Object.entries(cnt).forEach(([id, us]) => { const n = byId.get(+id); const f = n.callFrame; const k = (f.functionName || '(anon)') + ' ' + (f.url || '').split('/').pop().split('?')[0] + ':' + (f.lineNumber + 1); self[k] = (self[k] || 0) + us / 1000; });
+      out.profile = top(self, 25); console.log('self ms in 5 s:'); out.profile.forEach(([k, v]) => console.log('   ' + v.toFixed(0).padStart(6) + '  ' + k)); }
+    if (process.env.EXTRA_CSS) await measure('extra-css', () => ev(c => { const s = document.createElement('style'); s.textContent = c; document.head.appendChild(s); return 'css'; }, process.env.EXTRA_CSS), 1500);
+    await measure('no-world-render', () => ev(() => { const r = window.LowiWorld3D && LowiWorld3D.renderer; if (!r) return 'no renderer'; r.__render = r.render; r.render = function () { }; return 'render off'; }), 1500);
+    await measure('no-backdrop', () => ev(() => { const s = document.createElement('style'); s.textContent = '*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}'; document.head.appendChild(s); return 'ok'; }), 1500);
+    await measure('no-css-anim', () => ev(() => { const s = document.createElement('style'); s.textContent = '*,*::before,*::after{animation-play-state:paused!important}'; document.head.appendChild(s); return 'ok'; }), 1500);
+    await measure('no-intervals', () => ev(() => { for (let i = 1; i < 100000; i++) clearInterval(i); return 'ok'; }), 1500);
+    out.errors = errs.slice(0, 20);
+    if (process.env.OUT) fs.writeFileSync(process.env.OUT, JSON.stringify(out, null, 1));
+    await browser.close(); return;
   }
   await measure('home-idle', null, 500);
+  /* real waiting, no clock tricks: nobody touches the phone */
+  await measure('home-rest-35s', null, 22000);
+  await measure('home-deep-95s', null, 52000);
   await measure('home-touch', async () => { const v = page.viewportSize(); for (let i = 0; i < 6; i++) { await page.mouse.click(v.width / 2 + (i % 2 ? 60 : -60), v.height * 0.75); await sleep(200); } }, 300);
   await measure('panel-fuel', () => ev(() => { const b = document.querySelector('[data-bloom="fuel"], #hb-fuel, [data-orbit="fuel"]'); if (b) { b.click(); return 'clicked ' + (b.id || b.className); } return 'no fuel bubble'; }));
   await measure('community-room', () => ev(() => { try { if (window.LowiBack) LowiBack(); } catch (e) {} goTab('foryou'); try { cmSeg('chat'); } catch (e) { } return document.getElementById('cgGalaxy') ? 'galaxy' : 'no galaxy'; }), 4000);
+  await measure('community-rest-35s', null, 24000);
   await measure('chat-list', () => ev(() => { const b = document.querySelector('[data-cgv="list"], #cgChatBtn, .cg-chatbtn'); if (b) { b.click(); return 'clicked'; } return 'no chat button'; }));
   await measure('back-home-idle', () => ev(() => { goTab('home'); return 'home'; }), 3000);
   await measure('cell-world', () => ev(() => { const L = window.LowiCellWorld || window.LowiCellRoom || window.LowiBodyWorld; try { if (window.LowiBodyWorld3D && LowiBodyWorld3D.open) { LowiBodyWorld3D.open(); return 'bw3d'; } } catch (e) { return 'ERR ' + e.message; } return 'no cell world api: ' + Object.keys(window).filter(k => /cell|body/i.test(k)).join(','); }), 4000);

@@ -4523,6 +4523,7 @@ function postHTML(p){
     (p.url ? '<button class="tr-link" data-tr="open" data-id="' + p.id + '">' + mediaHTML(p) + '<div class="tr-lk"><div class="tiny dim">' + esc(byline(p.meta, p.plat)) + '</div>' + (d.line ? '<div class="tr-ttl">' + esc(d.line) + '</div>' : '') + (d.tags.length ? '<div class="tr-tags">' + d.tags.map(t => '<span>' + esc(t) + '</span>').join("") + '</div>' : '') + '</div></button>' : '') +
     (p.photo ? '<div class="tr-photo"><img src="' + p.photo + '" alt=""></div>' : '') +
     (p.meta && p.meta.meal && window.LowiMealSnap ? LowiMealSnap.cardHTML(p.meta.meal) : '') +
+    (window.LowiMealKitchen ? LowiMealKitchen.fyHTML(p) : '') + /* Oct 25: Add to kitchen (meal-kitchen.js) */
     '<div class="tr-acts"><button class="tr-heart' + (liked ? " on" : "") + '" data-tr="like" data-id="' + p.id + '">' + IC.heart + '<span class="num">' + n + '</span></button>' + (p.url ? '<button class="tr-open" data-tr="open" data-id="' + p.id + '">' + pl.open + ' ' + IC.ext + '</button>' : '<span style="flex:1"></span>') + (p.mine ? '<button class="tr-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="More">' + IC.more + '</button>' : '') + '</div></article>';
 }
 /* ---------- Oct 8 fix round: For You is a TikTok-style feed. One post per screen, vertical snap, a slim side rail. No chips, no pills. ---------- */
@@ -4586,6 +4587,7 @@ function slideHTML(p){
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
       (p.meta && p.meta.meal && window.LowiMealSnap ? LowiMealSnap.cardHTML(p.meta.meal, {compact:true, noName:!!cap && cap === p.meta.meal.name}) : "") +
       (window.LowiMealDetail ? LowiMealDetail.fyChip(p) : "") + /* Oct 25: tap the spike label for the meal details (meal-detail.js, task 31c545da) */
+      (window.LowiMealKitchen ? LowiMealKitchen.fyHTML(p) : "") + /* Oct 25: Add to kitchen, the meal's foods into your Kitchen (meal-kitchen.js, task a33a6ac1) */
       (p.rec && window.FYV ? FYV.recChip(p) : "") +
       (ex ? fyOut(p, ex) : p.url ? '<button class="fy-src" data-tr="open" data-id="' + p.id + '">' + PICON[p.plat || "web"] + '<span>' + esc(byline(p.meta, p.plat || "web")) + '</span></button>' : "") +
     '</div></section>';
@@ -21565,6 +21567,8 @@ window.LowiCommunityHost = {
 <script src="meal-journal.js?v=20261025-202023"></script>
 <script src="meal-detail-core.js?v=20261025-202023"></script>
 <script src="meal-detail.js?v=20261025-202023"></script>
+<script src="meal-kitchen-core.js?v=20261025-202023"></script>
+<script src="meal-kitchen.js?v=20261025-202023"></script>
 <script src="grocery-bucket-core.js?v=20261025-202023"></script>
 <script src="grocery-bucket.js?v=20261025-202023"></script>
 <script src="string-pov.js?v=20261025-202023"></script>
@@ -21626,6 +21630,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" href="meal-photo.css?v=20261025-202023">
 <link rel="stylesheet" href="meal-journal.css?v=20261025-202023">
 <link rel="stylesheet" href="meal-detail.css?v=20261025-202023">
+<link rel="stylesheet" href="meal-kitchen.css?v=20261025-202023">
 <link rel="stylesheet" href="grocery-bucket.css?v=20261025-202023">
 <link rel="stylesheet" id="mpopCss" href="misty-pop.css?v=20261025-202023">
 <link rel="stylesheet" id="mpnCss" href="misty-panels.css?v=20261025-202023">

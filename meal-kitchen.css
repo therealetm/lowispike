@@ -1,0 +1,22 @@
+/* LOWiSPIKE "Add to kitchen" under a shared meal (Oct 25 2026, meal-kitchen.js). One small row: the button, then the first three
+   foods and +N. Chat: inherits the bubble's own text colour (AA there in day and dark). For You: the same dark glass as the
+   meal-details chip (white on rgba(8,12,20,.62) over the photo). Wraps on an iPhone SE, 44px tap height via padding. */
+.mk-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-width:0;max-width:100%}
+.mk-chat{margin:4px 0 2px;max-width:min(260px,70vw)}
+.mk-fy{margin:6px 0 2px}
+.mk-btn,.mk-undo{display:inline-flex;align-items:center;gap:6px;flex:none;min-height:32px;padding:4px 11px 4px 9px;border-radius:999px;font:inherit;font-size:13px;font-weight:650;line-height:1.2;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;position:relative}
+.mk-btn::after,.mk-undo::after{content:"";position:absolute;inset:-6px -2px}
+.mk-chat .mk-btn,.mk-chat .mk-undo{color:inherit;background:color-mix(in srgb,currentColor 12%,transparent);border:1px solid color-mix(in srgb,currentColor 26%,transparent)}
+.mk-fy .mk-btn,.mk-fy .mk-undo{color:#fff;background:rgba(8,12,20,.62);border:1px solid rgba(255,255,255,.28);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.mk-ic{flex:none}
+.mk-foods{min-width:0;flex:1 1 120px;font-size:12.5px;line-height:1.35;overflow-wrap:anywhere;opacity:.86}
+.mk-fy .mk-foods{color:#fff;opacity:1;text-shadow:0 1px 3px rgba(0,0,0,.75)}
+.mk-more{font-weight:650}
+.mk-ok{display:inline-flex;align-items:baseline;gap:4px;flex-wrap:wrap;min-height:32px;align-items:center;font-size:13px;font-weight:650;line-height:1.3}
+.mk-had{color:inherit;font-size:12px;font-weight:500;opacity:.86}
+.mk-fy .mk-ok{color:#fff;padding:2px 10px;border-radius:999px;background:rgba(8,12,20,.62)}
+.mk-note{flex-basis:100%;font-size:12px;line-height:1.3;opacity:.86}
+.mk-fy .mk-note{color:#fff;opacity:1;text-shadow:0 1px 3px rgba(0,0,0,.75)}
+.mk-btn:active,.mk-undo:active{transform:scale(.97)}
+.mk-btn:focus-visible,.mk-undo:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.mk-btn:active,.mk-undo:active{transform:none}}

@@ -164,9 +164,10 @@ async function myPosts(P) {
       info.tap = { popped, inApp };
       if (!/^https:\/\/(www\.|m\.|consent\.)?youtube\.com\//.test(popped)) fails.push('the tap did not open the original on YouTube: ' + popped);
       if (inApp) fails.push('a player appeared inside LOWiSPIKE');
+      const pop2 = B.ctx.waitForEvent('page', { timeout: 15000 }).catch(() => null); /* 25 Oct: the live site needed more than 1.2 s */
       await tap(B, '#fyFeed .fy-slide[data-id="' + newId + '"] .fy-out', fails, 'tap Watch card');
-      await sleep(1200);
-      for (const pg of B.ctx.pages()) if (pg !== B.page) { info.tapCard = pg.url(); await pg.close().catch(() => { }); }
+      const p3 = await pop2; if (p3) { await sleep(800); info.tapCard = p3.url(); }
+      for (const pg of B.ctx.pages()) if (pg !== B.page) { if (!info.tapCard) info.tapCard = pg.url(); await pg.close().catch(() => { }); }
       if (!/youtube\.com/.test(info.tapCard || '')) fails.push('the Watch card did not open YouTube: ' + info.tapCard);
     }
     const sw = await B.ev(() => document.documentElement.scrollWidth - innerWidth); if (sw > 1) fails.push('sideways scroll ' + sw);

@@ -7,6 +7,7 @@ const STATIC = ["community-room.css", "community-tg.css", "one-sheet.css", "cycl
    (?v=other) still goes to the network first, so old and new files never mix. */
 STATIC.push("foryou.css", "foryou-core.js", "inspo-core.js", "foryou.js"); /* Oct 24 For You: insulin-friendly rule + inspiration bot */
 STATIC.push("gift-basket-core.js", "gift-basket.js", "gift-basket.css"); /* Oct 25 Give a hand in Shop: own line, like kitchen-core.js */
+STATIC.push("after-meal-checklist-core.js", "after-meal-checklist.js", "after-meal-checklist.css"); /* Oct 25 after-meal checklist: own line */
 STATIC.push("tutorial-demo.js", "tutorial-demo.css", "tutorial-flight.js", "tutorial-img/scan-sample.webp"); /* Oct 25 short tour: the demo finger, the mocked Scan photo and her first flight */
 STATIC.push("kitchen-core.js"); /* Oct 24 Kitchen in Shop: on its own line so it never collides with the build stamp next to the STATIC line */
 const OWN = STATIC.filter(f => /\.(js|css)$/.test(f) && f.indexOf("vendor/") !== 0), PLAIN = STATIC.filter(f => OWN.indexOf(f) < 0);

@@ -1,0 +1,57 @@
+/* After-meal checklist card (after-meal-checklist.js, Oct 25 2026). The app's dark Liquid Glass with the brand cyan rim, docked
+   in the free strip under the bubble ring (above the home indicator), never modal. 2x2 tiles, every target at least 44 pt. */
+.pmc { position: fixed; z-index: 2147480800; left: 50%; transform: translateX(-50%); box-sizing: border-box;
+    bottom: max(env(safe-area-inset-bottom, 0px), 10px); width: min(calc(100vw - 20px), 420px); padding: 8px 10px 8px;
+    border-radius: 24px; color: #fff; font-family: var(--lg-font, -apple-system, BlinkMacSystemFont, system-ui, sans-serif);
+    background: linear-gradient(160deg, rgba(34, 52, 92, .62), rgba(12, 18, 40, .74));
+    -webkit-backdrop-filter: blur(22px) saturate(170%); backdrop-filter: blur(22px) saturate(170%);
+    border: 1px solid rgba(143, 231, 255, .30);
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, .6), inset 0 .5px 0 rgba(255, 255, 255, .38), inset 0 14px 24px -18px rgba(255, 255, 255, .22);
+    animation: pmc-in .32s cubic-bezier(.2, .9, .3, 1.2) backwards; -webkit-tap-highlight-color: transparent; }
+.pmc[hidden] { display: none !important; }
+.pmc svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pmc-hd { display: flex; align-items: center; gap: 4px; }
+.pmc-hb { flex: 1; min-width: 0; min-height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 4px; margin: 0; border: 0; background: none;
+    color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.pmc-wave, .pmc-star { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #fff;
+    background: linear-gradient(160deg, rgba(80, 220, 190, .78), rgba(30, 140, 200, .78)); box-shadow: 0 0 12px rgba(120, 240, 210, .4); }
+.pmc-ht { min-width: 0; display: flex; flex-direction: column; line-height: 1.2; }
+.pmc-ht b { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.pmc-ht small { font-size: 12px; color: rgba(235, 235, 245, .66); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pmc-x { flex: none; min-width: 44px; min-height: 44px; width: 44px; height: 44px; display: grid; place-items: center; margin: 0; padding: 0;
+    border: 0; border-radius: 50%; background: rgba(255, 255, 255, .08); color: rgba(235, 235, 245, .8); cursor: pointer; }
+.pmc-x svg { width: 16px; height: 16px; }
+.pmc-x:active, .pmc-it:active { transform: scale(.96); }
+.pmc-say { margin: 0 4px 6px; font-size: 12.5px; line-height: 1.25; color: rgba(235, 235, 245, .82); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pmc-say b { color: #8fe7ff; font-weight: 700; }
+.pmc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.pmc-it { position: relative; min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 5px 30px 5px 8px; margin: 0; box-sizing: border-box;
+    border-radius: 16px; border: 1px solid rgba(143, 231, 255, .18); background: rgba(255, 255, 255, .06); color: #fff; font: inherit; text-align: left;
+    cursor: pointer; transition: background .2s, border-color .2s; overflow: visible; }
+.pmc-it .pmc-ic { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: rgba(143, 231, 255, .12); color: #8fe7ff; }
+.pmc-it .pmc-ic svg { width: 17px; height: 17px; }
+.pmc-tx { min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+.pmc-tx b { font-size: 13px; font-weight: 650; }
+.pmc-tx small { font-size: 11px; color: rgba(235, 235, 245, .6); margin-top: 2px; }
+.pmc-xp { position: absolute; top: 6px; right: 8px; font-size: 11px; font-weight: 700; color: #64d2ff; }
+.pmc-it.on { background: rgba(48, 209, 88, .16); border-color: rgba(48, 209, 88, .55); }
+.pmc-it.on .pmc-ic { background: #30d158; color: #04210f; }
+.pmc-it.on .pmc-xp { color: rgba(48, 209, 88, .9); }
+.pmc-it:focus-visible, .pmc-x:focus-visible, .pmc-hb:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.pmc-ft { margin: 6px 4px 0; font-size: 12px; color: rgba(235, 235, 245, .62); text-align: center; }
+.pmc-ft:empty { display: none; }
+.pmc-pop { position: absolute; right: 8px; top: -4px; font-size: 13px; font-weight: 800; color: #64d2ff; pointer-events: none;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, .5); animation: pmc-pop 1.1s ease-out forwards; }
+.pmc.fold { padding-bottom: 6px; }
+.pmc.fin { padding: 8px 10px; }
+.pmc-done .pmc-wave { background: #30d158; color: #04210f; }
+.pmc-ach { display: flex; align-items: center; gap: 10px; min-height: 64px; }
+.pmc-ach .pmc-ht { flex: 1; }
+.pmc-ach .pmc-ht b { font-size: 17px; color: #ffd60a; }
+.pmc-star { width: 44px; height: 44px; background: radial-gradient(circle at 40% 35%, #ffe57a, #ff9f0a); box-shadow: 0 0 18px rgba(255, 214, 10, .55); animation: pmc-glow 1.6s ease-in-out infinite; }
+.pmc-star svg { width: 24px; height: 24px; fill: #fff; stroke: none; }
+@keyframes pmc-in { from { opacity: 0; transform: translate(-50%, 18px) scale(.97); } }
+@keyframes pmc-pop { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-22px); } }
+@keyframes pmc-glow { 50% { box-shadow: 0 0 28px rgba(255, 214, 10, .85); } }
+html[data-theme="light"] .pmc { border-color: rgba(40, 170, 150, .7); background: linear-gradient(160deg, rgba(30, 64, 110, .84), rgba(16, 36, 76, .9)); }
+@media (prefers-reduced-motion: reduce) { .pmc, .pmc-pop, .pmc-star { animation: none !important; } .pmc-it { transition: none; } }

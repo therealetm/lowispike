@@ -118,7 +118,11 @@ async function myPosts(P) {
     const vis = await A.ev(() => { const t = [...document.querySelectorAll('#trRest .toggle')].pop(); return t ? t.className : ''; });
     info.composerToggle = vis;
     if (!/\bon\b/.test(vis)) await A.ev(() => { const t = [...document.querySelectorAll('#trRest .toggle')].pop(); if (t) t.click(); });
+    /* 25 Oct: clear the Share toast first (it also says "For You", so the wait below stopped at once), then give a slow
+       engine up to 15 s to write the post before reading it */
+    await A.ev(() => document.querySelectorAll('.toast, #toast').forEach(t => { t.textContent = ''; }));
     await tap(A, '#trPost', fails, 'tap Post');
+    for (let i = 0; i < 30; i++) { await sleep(500); if (await A.ev(run => (JSON.parse(localStorage.getItem('lowispike.foryou.v1') || '{}').posts || []).some(x => (x.cap || '').includes(run) && x.id.indexOf('old-') !== 0 && (x.pub || x.fail)), RUN)) break; }
     let toast = ''; for (let i = 0; i < 30; i++) { await sleep(400); toast = await A.ev(() => { const t = document.querySelector('.toast, #toast'); return t ? t.textContent.trim() : ''; }); if (toast && /For You|Für dich|Para ti/.test(toast)) break; }
     info.toast = toast;
     const mine = await A.ev(run => { const t = JSON.parse(localStorage.getItem('lowispike.foryou.v1') || '{}'); const p = (t.posts || []).find(x => (x.cap || '').includes(run) && x.id.indexOf('old-') !== 0); return p ? { id: p.id, vis: p.vis, pub: !!p.pub, fail: !!p.fail } : null; }, RUN);

@@ -4749,7 +4749,7 @@ document.addEventListener("click", e => {
     case "share-held": { const list = heldPosts(), F = window.LowiForYou; if (!list.length) break; b.disabled = true;
       list.forEach(p => { p.vis = "tribe"; });
       list.reduce((pr, p) => pr.then(n => sharePost(p).then(ok => n + (ok ? 1 : 0))), Promise.resolve(0)).then(n => {
-        h.toast(n ? (F ? F.note("sharedN", {n}) : n + " posts are now in For You") : (F ? F.note("post") : "Saved in My posts."));
+        h.toast(n ? (F ? F.note(n === 1 ? "nowIn" : "sharedN", {n}) : n + " posts are now in For You") : (F ? F.note("post") : "Saved in My posts."));
         h.closeSheet(); listSheet("mine"); rerender(); });
       break; }
     case "toggle-mine": { const p = T.posts.find(x => x.id === id); if (p) { p.mine = !p.mine; save(); if (window.LOWI_CLOUD && p.vis === "tribe") LOWI_CLOUD.publish(p); } h.closeSheet(); rerender(); break; }

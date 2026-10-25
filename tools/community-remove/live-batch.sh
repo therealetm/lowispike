@@ -24,6 +24,7 @@ VISIBLE="select p.id, p.name, p.lv, p.xp, p.joined_at, u.created_at, p.updated_a
   where coalesce(p.test,false) = false and coalesce(p.bot,false) = false and coalesce(trim(p.name),'') <> ''
     and (to_regclass('public.community_kicks') is null or not exists (select 1 from public.community_kicks k where k.user_id = p.id))
   order by u.created_at"
+if [ "${LIVE_ONLY:-}" != 1 ]; then
 echo "== 1. visible before"; qs "$VISIBLE;" > "$OUT/before.json"; head -c 300 "$OUT/before.json"; echo
 echo "== 2. migration"; q supabase/proposals/community_remove_20261025.sql | tee "$OUT/migration.txt" | tail -15
 echo "== 3. hide test-run copies"
@@ -43,25 +44,16 @@ qs "with c as (
   update public.profiles p set test = true from c where p.id = c.id returning p.id
 ) select c.id, c.name, (select count(*) from m) as meta, (select count(*) from p) as flagged from c;" | tee "$OUT/hidden.json" | head -c 4000; echo
 echo "== 4. visible after"; qs "$VISIBLE;" > "$OUT/after.json"; head -c 300 "$OUT/after.json"; echo
+fi
 echo "== 5. live checks"
 export CR_ADMIN_ON="bash tools/community-remove/admin-toggle.sh on {uid}"
 export CR_ADMIN_OFF="bash tools/community-remove/admin-toggle.sh off {uid}"
-for run in "chromium de" "webkit en"; do
+IFS=, read -ra RL <<< "${RUNS:-chromium de,webkit en}"
+for run in "${RL[@]}"; do
   set -- $run
   timeout 900 node tools/community-remove/check.cjs "$1" "$2" "$URL" > "$OUT/live-$1.log" 2>&1; echo "exit $? $1" >> "$OUT/live-$1.log"
   grep -E "IDS|ok |FAIL|PASS|exit" "$OUT/live-$1.log"
 done
 echo "== 6. cleanup"
-IDS=$(grep -h '^IDS ' "$OUT"/live-*.log | cut -d' ' -f2- | tr ' ' '\n' | grep -E '^[0-9a-f-]{36}$' | sort -u | sed "s/.*/'&'/" | paste -sd, -)
-if [ -n "$IDS" ]; then
-  qs "delete from public.app_admins where user_id in ($IDS) and user_id <> '$OWNER';
-      delete from public.community_kicks where user_id in ($IDS);
-      delete from public.community_removal_log where target in ($IDS) or actor in ($IDS);
-      delete from public.messages where user_id in ($IDS);
-      delete from public.profiles where id in ($IDS);
-      delete from auth.users where id in ($IDS);" > "$OUT/cleanup.txt" 2>&1
-fi
-qs "select (select count(*) from public.app_admins) as admins, (select count(*) from public.app_admins where user_id = '$OWNER') as owner_is_admin,
-  (select count(*) from auth.users where id in (${IDS:-'00000000-0000-0000-0000-000000000000'})) as test_accounts_left,
-  (select count(*) from public.community_kicks) as removed_now, (select count(*) from public.community_removal_log) as log_rows;" | tee "$OUT/final.json"
+bash "$(dirname "$0")/cleanup.sh" "$OUT"
 echo "== done"

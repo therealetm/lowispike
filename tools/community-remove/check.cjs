@@ -14,7 +14,7 @@ const out = '/tmp/cr-shots'; fs.mkdirSync(out, { recursive: true });
 const res = []; const ok = (n, p, d) => { res.push({ n, pass: !!p }); console.log((p ? '  ok   ' : '  FAIL ') + n + (p ? '' : '  ' + JSON.stringify(d === undefined ? '' : d).slice(0, 400))); };
 const slow = engine === 'webkit' ? 2 : 1;
 (async () => {
-    const R = await H.open({ engine, lang, url: url || undefined, name: 'CR Test', fresh: true });
+    const R = await H.open({ engine, lang, url: url || undefined, name: 'CR Test', fresh: true, cloud: url ? false : undefined }); /* live: the real server, not the harness stand-in */
     const P = R.page;
     /* local stand-in for the server */
     const SV = { admin: false, out: false, kicks: [], names: {} };
@@ -46,6 +46,9 @@ const slow = engine === 'webkit' ? 2 : 1;
     /* scroll the sheet like a finger would, then tap. Headless WebKit can leave the card sheet mid slide-in (its top below the
        screen, seen in a debug run), so a control still off screen after scrolling gets a click() instead, and the log says so. */
     const tap = async sel => {
+        /* live throwaway accounts are anonymous, so the app keeps its sign-in wall up (html.gate-boot + inert on everything else, re-applied
+           whenever a sheet is added). A signed-in account has no wall: lift it the way hideGate() does, then tap with a real finger. */
+        if (url) { await P.evaluate(() => { const g = document.getElementById('r2gate'); if (g) g.remove(); document.documentElement.classList.remove('gate-boot', 'gate-up'); document.querySelectorAll('[data-gate-inert]').forEach(e => { e.inert = false; e.removeAttribute('data-gate-inert'); }); }); await H.sleep(300); }
         const vis = await P.evaluate(q => { const e = document.querySelector(q); if (!e) return 'missing'; e.scrollIntoView({ block: 'center' });
             for (let a = e.parentElement; a; a = a.parentElement) { const cs = getComputedStyle(a); if (a.scrollHeight > a.clientHeight + 2 && /auto|scroll/.test(cs.overflowY)) { const r = e.getBoundingClientRect(), ar = a.getBoundingClientRect(); a.scrollTop += (r.top + r.height / 2) - (ar.top + Math.min(ar.height, innerHeight) / 2); } }
             const r = e.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2; const hit = y > 0 && y < innerHeight && document.elementFromPoint(x, y);
@@ -61,7 +64,14 @@ const slow = engine === 'webkit' ? 2 : 1;
                     return hit && (hit === e || e.contains(hit)) ? 'tap' : 'click'; }, sel);
             }
             if (v2 !== 'tap') {
-                if (url) { ok('real tap possible on ' + sel, false, v2); throw new Error('not tappable: ' + sel); }
+                if (url) {
+                    const why = await P.evaluate(q => { const e = document.querySelector(q); const r = e.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+                        const d = el => { const p = []; for (let i = 0; el && i < 4; i++, el = el.parentElement) p.push(el.tagName + (el.id ? '#' + el.id : '') + '.' + String(el.className).slice(0, 40)); return p.join(' < '); };
+                        const hit = y > 0 && y < innerHeight ? document.elementFromPoint(x, y) : null; const hr = hit && hit.getBoundingClientRect();
+                        return { btn: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], vh: innerHeight, hit: hit ? d(hit) : 'offscreen', hitRect: hr ? [Math.round(hr.left), Math.round(hr.top), Math.round(hr.width), Math.round(hr.height)] : null, z: hit ? getComputedStyle(hit).zIndex + '/' + getComputedStyle(hit).position : '' }; }, sel);
+                    console.log('    WHY ' + JSON.stringify(why)); await R.shot(out + '/' + engine + '-' + lang + '-blocked.png').catch(() => { });
+                    ok('real tap possible on ' + sel, false, v2); throw new Error('not tappable: ' + sel);
+                }
                 console.log('    (' + sel + ': off screen in this engine, click() used)'); await P.evaluate(q => document.querySelector(q).click(), sel); return;
             }
             console.log('    (' + sel + ': tapped after the sheet settled)');
@@ -108,7 +118,7 @@ const slow = engine === 'webkit' ? 2 : 1;
             const vis = async () => P.evaluate(async t => { const c = await LOWI_CLOUD_X.client(); const p = await c.from('profiles').select('id').eq('id', t); const k = await c.from('community_kicks').select('user_id').eq('user_id', t);
                 return { profile: p.error ? 'err ' + p.error.message : p.data.length, kick: k.error ? 'err ' + k.error.message : k.data.length, hidden: LowiHiddenAccounts.isHidden(t), people: (LowiCommunity.people ? LowiCommunity.people() : []).some(x => (x.uid || x.id) === t) }; }, ids.t);
             R.step = 'viewer'; me = await become('v');
-            let s = await vis(); ok('before: a normal account sees the target\'s profile', s.profile === 1 && s.kick === 0 && !s.hidden, s);
+            let s = await vis(); ok('before: a normal account sees the target\'s profile, not removed', s.profile === 1 && s.kick === 0 && !(await P.evaluate(t => LowiHiddenAccounts.isRemoved(t), ids.t)), s); /* throwaway accounts are test-marked, so isHidden is true by design */
             ok('normal account: the server says not admin', (await P.evaluate(() => LowiCommunityRemove.state().admin)) === false);
             let c = await card(ids.t, 'CR Test'); ok('normal account: the card opens, with no Remove button', c.card && !c.btn, c);
             const forged = await P.evaluate(t => LowiCommunityRemove._rpc('community_remove', { target: t }), ids.t);

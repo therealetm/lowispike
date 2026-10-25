@@ -167,7 +167,7 @@
                 : '<p class="stp-snack-none">' + esc(T('Nothing to buy yet. Add something here, or tap + Shopping cart on a product in the Supermarket tab.', 'Noch nichts zu kaufen. Trag hier etwas ein oder tipp bei einem Produkt im Supermarkt auf + Einkaufswagen.', 'Aún no hay nada que comprar. Añade algo aquí o toca + Carrito en un producto del Supermercado.')) + '</p>') +
             (cv.got.length ? '<div class="stp-kit-gone"><small>' + esc(T(cv.got.length + ' ticked off in the shop', cv.got.length + ' im Laden abgehakt', cv.got.length + ' marcados en la tienda')) + '</small><button type="button" class="stp-chip" data-stp-kit="gotall">' + esc(T('Put in the kitchen', 'In die Küche', 'A la cocina')) + '</button></div>' : '') +
             kitForm('cart', T('Add something to buy, like oat flakes', 'Etwas zum Kaufen, z. B. Haferflocken', 'Algo para comprar, p. ej. copos de avena'), T('Add something to buy', 'Etwas zum Kaufen hinzufügen', 'Añadir algo para comprar')) + '</section>';
-        return shell(head + '<div class="stp-scroll stp-kit" data-noi18n>' + msg + home + cart + giftEntry() + '</div>' + footBtns(''));
+        return shell(head + '<div class="stp-scroll stp-kit" data-noi18n>' + msg + home + cart + '</div>' + footBtns(''));
     }
     /* move one cart entry into the Kitchen: it leaves the list, it shows up at home (once, even if it was already there) */
     function kitFromCart(it) {
@@ -223,10 +223,14 @@
         const Z = SZ(); if (!Z && !K) return '';
         if (K && !kit) kitLoad();
         const b = (id, icon, txt, n) => '<button type="button" class="stp-tab' + (tab === id ? ' on' : '') + '" role="tab" aria-selected="' + (tab === id) + '" data-stp-tab="' + id + '"><span aria-hidden="true">' + icon + '</span><b>' + esc(txt) + '</b>' + (n ? '<i>' + n + '</i>' : '') + '</button>';
-        const n = (Z ? 1 : 0) + (K ? 1 : 0) + 1;
-        return '<div class="stp-tabs' + (n > 2 ? ' stp-tabs3' : '') + '" role="tablist" aria-label="' + esc(T('Shop', 'Einkaufen', 'Comprar')) + '">' +
+        /* Oct 25 (Emmanuel: Give a hand gets "its own place next to Supermarket, Seller Zone and Kitchen", not inside Kitchen):
+           the fourth peer. A door, not a pane: it opens the Give a hand panel on top of Shop and is never the remembered tab. */
+        const G = giftDoor();
+        const n = (Z ? 1 : 0) + (K ? 1 : 0) + (G ? 1 : 0) + 1;
+        return '<div class="stp-tabs' + (n > 2 ? ' stp-tabs3' : '') + (n > 3 ? ' stp-tabs4' : '') + '" role="tablist" aria-label="' + esc(T('Shop', 'Einkaufen', 'Comprar')) + '">' +
             b('shop', '\u{1F6D2}', T('Supermarket', 'Supermarkt', 'Supermercado')) + (Z ? b('sz', '\u{1F6CD}\uFE0F', Z.name(), Z.count ? Z.count() : 0) : '') +
-            (K ? b('kitchen', '\u{1F9FA}', T('Kitchen', 'Küche', 'Cocina'), K.count(kit)) : '') + '</div>';
+            (K ? b('kitchen', '\u{1F9FA}', T('Kitchen', 'Küche', 'Cocina'), K.count(kit)) : '') +
+            (G ? b('gift', '\u{1F91D}', T('Give a hand', 'Hilf mit', 'Echa una mano')) : '') + '</div>';
     }
     function szHTML() {
         const Z = SZ();
@@ -234,15 +238,20 @@
     }
     /* Oct 19 food paths (E-man: Shop "so complicated and so hidden"): Shop is the one place for shopping. Two plain ways on from
        here: scan products in the shop (the shopping camera: check and add to your list, it never logs a meal) and your shopping list. */
-    /* Oct 25 Give a hand (gift-basket.js owns it): one entry row, only when the module is loaded */
-    function giftEntry() { try { return W.LowiGiftBasket && W.LowiGiftBasket.entryHTML ? W.LowiGiftBasket.entryHTML() : ''; } catch (x) { return ''; } }
+    /* Oct 25 Give a hand (gift-basket.js owns the panel): its own tab in the bar above, behind the same server gate the old row
+       had (only once the server has the basket table; until then ask the server again, and lowi:gift-ready repaints Shop) */
+    function giftDoor() {
+        const GB = W.LowiGiftBasket;
+        try { if (GB && GB.serverReady && GB.serverReady()) return true; if (GB && GB.probe) GB.probe(); } catch (x) {}
+        return false;
+    }
     function shopActs() {
         const scan = W.LowiShopScan && W.LowiShopScan.open, list = typeof W.tdShopOpen === 'function';
         const Z = W.LowiSellerZone, sz = Z && Z.stripHTML ? Z.stripHTML() : Z && Z.entryHTML ? Z.entryHTML() : '';
-        if (!scan && !list) return sz + giftEntry();
+        if (!scan && !list) return sz;
         return sz + '<div class="stp-foot-acts">' +
             (scan ? '<button type="button" class="stp-go stp-scanshop" data-stp="scanshop">' + ic.cart + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>' : '') +
-            (list ? '<button type="button" class="stp-pill stp-mylist" data-stp="mylist"><span>' + esc(T('Shopping list', 'Einkaufsliste', 'Lista de compra')) + '</span></button>' : '') + '</div>' + giftEntry();
+            (list ? '<button type="button" class="stp-pill stp-mylist" data-stp="mylist"><span>' + esc(T('Shopping list', 'Einkaufsliste', 'Lista de compra')) + '</span></button>' : '') + '</div>';
     }
     function footBtns(left) {
         return '<div class="stp-foot">' + (left || '<span></span>') + '<button type="button" class="stp-orb stp-close" data-stp="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + ic.x + '</button></div>';
@@ -579,7 +588,10 @@
         if (kitClick(t)) return;
         if (e.target === ov) { close(); return; }
         const tb = t.closest('[data-stp-tab]');
-        if (tb) { setTab(tb.getAttribute('data-stp-tab'), tb.getAttribute('data-sz-focus')); return; }
+        if (tb) {
+            if (tb.getAttribute('data-stp-tab') === 'gift') { try { W.LowiGiftBasket.open('shop'); } catch (x) {} return; }
+            setTab(tb.getAttribute('data-stp-tab'), tb.getAttribute('data-sz-focus')); return;
+        }
         if (onSz() && SZ().inlineClick(t)) { paint('keep'); return; }
         const row = t.closest('[data-stp-item]');
         if (row) { openQuick(+row.getAttribute('data-stp-item')); return; }
@@ -711,6 +723,7 @@
 
     function boot() {
         W.addEventListener('lowi:lang', () => { if (ov) paint(data ? 'keep' : undefined); });
+        W.addEventListener('lowi:gift-ready', () => { if (ov) paint(data ? 'keep' : undefined); });
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 

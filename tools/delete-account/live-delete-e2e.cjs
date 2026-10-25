@@ -59,7 +59,7 @@ const INIT = `try {
     res.uid = await page.evaluate(() => window.LOWI_CLOUD_X.state().uid);
     /* mark it a test account first, then give it rows */
     const made = await page.evaluate(async () => {
-      const c = window.LOWI_CLOUD_X.client(), uid = window.LOWI_CLOUD_X.state().uid, out = {};
+      const c = await window.LOWI_CLOUD_X.client(), uid = window.LOWI_CLOUD_X.state().uid, out = {};
       const u = await c.auth.updateUser({ data: { lowi_test: 'true' } }); out.flag = u.error ? u.error.message : 'ok';
       const p = await c.from('profiles').upsert({ id: uid, name: 'QA delete test', test: true }); out.profile = p.error ? p.error.message : 'ok';
       const s = await c.from('user_state').upsert({ id: uid, data: { qa: 'delete-test' } }); out.state = s.error ? s.error.message : 'ok';

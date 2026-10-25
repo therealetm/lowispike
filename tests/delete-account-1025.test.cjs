@@ -72,3 +72,39 @@ test('both delete buttons tell the owner refusal apart from a failure, and the p
   assert.match(dg, /delOwner/);
   assert.match(dg, /=== true/);
 });
+
+/* The real cause on the phone: LOWI_CLOUD_X.client() is async, and serverDelete used it without await, so it got a Promise,
+   found no .functions on it and returned false at once: the Delete button never sent anything to the server. */
+function runServerDelete(answer) {
+  const src = read('home-settings-sleep-v2.js');
+  const a = src.indexOf('async function pushSub') > 0 ? src.indexOf('async function pushSub') : src.indexOf('async function serverDelete');
+  const code = src.slice(a, src.indexOf('function pulse('));
+  const log = { invoked: [], signedOut: 0, wiped: 0, unsub: 0 };
+  const sub = { endpoint: 'https://push.example/abc', unsubscribe: async () => { log.unsub++; return true; } };
+  const sb = {
+    functions: { invoke: async (name, opts) => { log.invoked.push({ name, body: opts && opts.body }); return answer; } },
+    auth: { signOut: async () => { log.signedOut++; } }
+  };
+  const ctx = {
+    root: { navigator: { serviceWorker: { ready: Promise.resolve({ pushManager: { getSubscription: async () => sub } }) } } },
+    fn: (o, k) => !!o && typeof o[k] === 'function', cloud: () => ({ client: async () => sb }),
+    wipeDevice: () => { log.wiped++; }, setTimeout, Promise
+  };
+  vm.createContext(ctx);
+  vm.runInContext(code + '\nthis.serverDelete = serverDelete;', ctx);
+  return ctx.serverDelete().then(r => ({ r, log }));
+}
+
+test('Delete really calls the server (the client is async), and clears the phone only after ok', async () => {
+  const ok = await runServerDelete({ data: { ok: true }, error: null });
+  assert.equal(ok.log.invoked.length, 1, 'delete-my-account was called');
+  assert.equal(ok.log.invoked[0].name, 'delete-my-account');
+  assert.equal(ok.log.invoked[0].body.confirm, 'DELETE');
+  assert.equal(ok.log.invoked[0].body.endpoint, 'https://push.example/abc');
+  assert.equal(ok.r, true);
+  assert.equal(ok.log.wiped, 1); assert.equal(ok.log.signedOut, 1); assert.equal(ok.log.unsub, 1);
+  const bad = await runServerDelete({ data: null, error: { message: 'x', context: { json: async () => ({ ok: false, error: 'db' }) } } });
+  assert.equal(bad.r, false); assert.equal(bad.log.wiped, 0); assert.equal(bad.log.unsub, 0);
+  const own = await runServerDelete({ data: null, error: { message: 'x', context: { json: async () => ({ ok: false, error: 'owner' }) } } });
+  assert.equal(own.r, 'owner'); assert.equal(own.log.wiped, 0);
+});

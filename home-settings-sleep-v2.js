@@ -584,7 +584,7 @@
         let ok = false, why = '';
         const sub = await pushSub(), endpoint = sub && typeof sub.endpoint === 'string' ? sub.endpoint : '';
         try {
-            const X = cloud(), c = X && fn(X, 'client') ? X.client() : null;
+            const X = cloud(), c = X && fn(X, 'client') ? await X.client() : null;  /* client() is async: without await nothing was ever sent */
             if (c && c.functions && fn(c.functions, 'invoke')) {
                 const r = await c.functions.invoke('delete-my-account', { body: endpoint ? { confirm: 'DELETE', endpoint } : { confirm: 'DELETE' } });
                 ok = !!(r && !r.error && r.data && r.data.ok);
@@ -595,7 +595,7 @@
         } catch (e) { ok = false; }
         if (ok) {
             try { if (sub && fn(sub, 'unsubscribe')) await sub.unsubscribe(); } catch (e) { }
-            try { const X = cloud(), c = X.client(); if (c && c.auth) await c.auth.signOut({ scope: 'local' }); } catch (e) { }
+            try { const X = cloud(), c = await X.client(); if (c && c.auth) await c.auth.signOut({ scope: 'local' }); } catch (e) { }
             wipeDevice(); return true;
         }
         return why === 'owner' ? 'owner' : false;

@@ -31,7 +31,7 @@ const INIT = ([name]) => {
     await ctx.addInitScript(INIT, [name]);
     await ctx.route(/ko-fi\.com|paypal\.me|stripe\.com/, r => r.fulfill({ status: 200, contentType: 'text/html', body: '<p>payment page (test, nothing paid)</p>' }));
     const P = await ctx.newPage();
-    const popups = []; ctx.on('page', p => { if (p === P) return; p.waitForLoadState('domcontentloaded').catch(() => {}).then(() => { popups.push(p.url()); setTimeout(() => p.close().catch(() => {}), 300); }); }); errs[name] = []; P.on('pageerror', e => errs[name].push(String(e && e.message || e)));
+    const popups = []; ctx.on('page', p => { if (p === P) return; popups.push(p.url()); p.on('framenavigated', f => { if (f === p.mainFrame()) popups.push(f.url()); }); p.waitForLoadState('domcontentloaded', { timeout: 20000 }).catch(() => {}).then(() => { popups.push(p.url()); setTimeout(() => p.close().catch(() => {}), 300); }); }); errs[name] = []; P.on('pageerror', e => errs[name].push(String(e && e.message || e)));
     await P.goto(URL0, { waitUntil: 'commit', timeout: 180000 });
     const wait = async () => { let st = null; for (let i = 0; i < 150; i++) { await sleep(1000); st = await P.evaluate(() => { const x = window.LOWI_CLOUD_X; return x && x.state ? x.state() : null; }).catch(() => null); if (st && st.live && st.uid) break; } return st; };
     let st = await wait();
@@ -108,7 +108,8 @@ const INIT = ([name]) => {
   const bSees = !!(await B.P.$('[data-gb-id="' + id + '"]'));
   ok('B: sees A’s basket in the list', bSees, (await text(B.P)).slice(0, 200));
   if (bSees) {
-    await tap(B.P, '[data-gb-id="' + id + '"] a.gb-pay'); await sleep(1500);
+    const href = await B.P.evaluate(id => { const a = document.querySelector('[data-gb-id="' + id + '"] a.gb-pay'); return a && [a.href, a.target, a.rel].join(' '); }, id); console.log('pay link', href);
+    await tap(B.P, '[data-gb-id="' + id + '"] a.gb-pay'); for (let i = 0; i < 16 && !B.popups.some(u => u.includes(KOFI)); i++) await sleep(500);
     ok('B: Pay opened A’s own Ko-fi page outside the app', B.popups.some(u => u.includes(KOFI)), B.popups);
     await tap(B.P, '[data-gb-help="' + id + '"]'); await sleep(2500);
   }

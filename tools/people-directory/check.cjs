@@ -68,7 +68,7 @@ async function main() {
         await page.waitForSelector('.pd-ov .pd-row', { timeout: 10000 }).catch(() => {});
         const st = await page.evaluate(() => {
             const ov = document.querySelector('.pd-ov'), card = ov && ov.querySelector('.pd-card'), x = ov && ov.querySelector('.pd-x');
-            const rows = ov ? [...ov.querySelectorAll('.pd-row')] : [];
+            const rows = ov ? [...ov.querySelectorAll('.pd-row:not([data-me])')] : []; /* Oct 25 2026: your own row under Online right now is not a member row */
             const r = card ? card.getBoundingClientRect() : null, xr = x ? x.getBoundingClientRect() : null;
             const names = rows.map(b => b.querySelector('.pd-n').textContent);
             const n0 = rows[0] && rows[0].querySelector('.pd-n'), bg = card && getComputedStyle(card).backgroundImage;
@@ -82,7 +82,7 @@ async function main() {
         ok(st.names.length > 10 && st.names.length === st.expect, name + ': lists the whole Add a friend list, offline people included (' + st.names.length + ' of ' + st.expect + ', ' + st.cloud + ' profiles in the cloud)');
         ok(!st.names.some(n => st.bots.includes(n)), name + ': no demo bot names');
         ok(st.names.join('|') === [...st.names].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })).join('|'), name + ': sorted by name');
-        ok(!/\bonline\b|\bLevel\b|\bXP\b|\bkg\b/i.test(st.text.replace(/offline/gi, '')), name + ': no online, level, XP or weight words');
+        ok(!/\bonline\b|\bLevel\b|\bXP\b|\bkg\b/i.test(st.text.replace(/offline/gi, '').replace(/Online right now/gi, '')), name + ': no level, XP or weight words; "online" only as the Online right now heading (Oct 25 2026, people-online/check.cjs covers it)');
         ok(st.card && st.card.l >= 0 && st.card.t >= 0 && st.card.r <= st.vw + 0.5 && st.card.b <= st.vh + 0.5, name + ': panel inside the screen ' + JSON.stringify(st.card));
         ok(st.sw <= st.vw + 1, name + ': no sideways scroll');
         ok(st.x && st.x.w >= 44 && st.x.h >= 44, name + ': close button ' + (st.x && st.x.w) + 'x' + (st.x && st.x.h));
@@ -95,11 +95,11 @@ async function main() {
         const pick = st.names[Math.min(3, st.names.length - 1)] || 'x', qy = pick.split(' ')[0].slice(0, 3);
         await page.fill('.pd-q', qy);
         await page.waitForTimeout(200);
-        const found = await page.evaluate(() => [...document.querySelectorAll('.pd-row .pd-n')].map(e => e.textContent));
+        const found = await page.evaluate(() => [...document.querySelectorAll('.pd-row:not([data-me]) .pd-n')].map(e => e.textContent));
         ok(found.includes(pick) && found.length < st.names.length, name + ': search "' + qy + '" finds ' + pick + ' (' + found.length + ' rows)');
         await page.fill('.pd-q', '');
         await page.waitForTimeout(200);
-        await tapAt(page.locator('.pd-row').nth(2));
+        await tapAt(page.locator('.pd-row:not([data-me])').nth(2));
         await page.waitForTimeout(1200);
         const card = await page.evaluate(() => {
             const c = [...document.querySelectorAll('.cs-overlay')].pop(); if (!c) return null;

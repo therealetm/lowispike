@@ -43,7 +43,9 @@
     }
     function myRow() {
         const id = me(), p = cloudProfiles().find(x => x && String(x.uid) === id) || {};
-        return { uid: id, n: C().nameOf(p), img: C().safeImg(p.avatar) };
+        let mine = {};
+        try { const H = W.LowiCommunityHost; mine = (H && H.identity && H.identity()) || {}; } catch (e) { mine = {}; }
+        return { uid: id, n: C().nameOf(p) || C().nameOf(mine), img: C().safeImg(p.avatar) || C().safeImg(mine.avatar) };
     }
     function picHTML(r) {
         return r.img ? '<img class="pd-pic" src="' + esc(r.img) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' :

@@ -112,6 +112,7 @@ test('the header count and faces come from the same list, and tapping "N here no
     assert.match(ui, /e\.target\.closest\('\.rm-live\[data-here\]'\)[\s\S]{0,80}W\.LowiPeopleDir\.open\(\{at:'here'\}\)/);
     const css = read('community-rooms.css');
     assert.match(css, /\.rm-live\[data-here\]::after\{content:'';position:absolute;/, 'a bigger tap area for the live line');
+    assert.match(css, /\.rm-live\[data-here\] \*\{pointer-events:none\}/, 'a repaint mid-tap cannot detach the tapped element');
 });
 
 test('the online dot and section look: green dot with a ring, headings are not buttons, nothing new moves', () => {

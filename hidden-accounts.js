@@ -4,7 +4,7 @@
 
    Matched by account id (profiles.id = auth user id), never by display name, so a real person who signs up later as
    "Emma" or "Test" still shows. Ids come from the live profiles table as read at 01:01 on Oct 18 (614 rows).
-   Kept on purpose: Emmanuel's own "eman" account, Manuuii (his iPad account), Joseph Castellar, Q, the demo bots
+   Kept on purpose: Emmanuel's own "eman" account (Manuuii was hidden on Oct 25, see below), Joseph Castellar, Q, the demo bots
    Mateo / Jonas / Samir, and Emmy and Emmanuel (not decided yet).
 
    To hide another account: add its id here with a one-line reason, and add it to tests/hidden-accounts.test.cjs.
@@ -46,7 +46,11 @@
         'bb1788fa-a11e-4ee9-ac28-4beef63248ae',
         /* "eman" x2: written to the live database by our own test browser (qa-care/repro.cjs) on Oct 17 at 23:58 and
            Oct 18 at 00:07 with made-up activity. Emmanuel's real eman account (83077af7-...) is NOT in this list. */
-        'ca2b5daf-5d17-4866-b7ca-33bbad10d5b2', '01aa50e7-9078-4fda-97db-0accac597947'
+        'ca2b5daf-5d17-4866-b7ca-33bbad10d5b2', '01aa50e7-9078-4fda-97db-0accac597947',
+        /* Oct 25: "Manuuii", Emmanuel's old extra (iPad) account, unused since Oct 16. He asked for one bubble for himself in
+           the Room; his real account is eman (83077af7-...). The 82 anonymous "Emmanuel"/"eman" copies made by test runs are
+           flagged on the server instead (profiles.test). */
+        '4add63ec-61d6-4187-9c62-bd78c427be24'
     ]);
     const SET = new Set(IDS);
     const idOf = p => typeof p === 'string' ? p : (p && (p.uid || p.id || p.user_id)) || '';

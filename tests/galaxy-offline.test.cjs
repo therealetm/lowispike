@@ -137,8 +137,8 @@ test('companion_rest is device independent: a spot knocked on the iPhone, writte
 
 test('wiring: profiles come with the bot and test flags, so a bot never flashes into the galaxy before the server list loads', () => {
   const h = R('index.html');
-  assert.match(h, /select\("id,name,sign,mbti,lv,streak,bio,avatar,bday,xp,xp_week,wk,xp_month,mo,weight,bot,test"\)/);
-  assert.match(h, /bot:!!r\.bot, test:!!r\.test\}; \}/);
+  assert.match(h, /select\("id,name,sign,mbti,lv,streak,bio,avatar,bday,xp,xp_week,wk,xp_month,mo,weight,bot,test,joined_at"\)/); /* Oct 25: + joined_at for the rows */
+  assert.match(h, /bot:!!r\.bot, test:!!r\.test, j: Date\.parse\(r\.joined_at\) \|\| 0\}; \}/); /* Oct 25: + the join time */
 });
 
 test('SQL proposal for energy_gifts and companion_rest is kept with its spam limits', () => {

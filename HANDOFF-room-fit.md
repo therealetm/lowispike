@@ -1,0 +1,5 @@
+# HANDOFF: Room fit + join-ordered rows (room-fit-20261025)
+
+NOT released. Done on branch: rows by profiles.joined_at (newest top, mapLayout), fit-to-all camera (G.mapFit, place(), camUser keeps manual zoom), Room background clean (community-standout.css hides the 3D canvas in steady Community), sky cells/nebulae removed, LAND_KEY v3 + ROWS_SINCE (set to release time!), Manuuii hidden, index.html selects joined_at.
+DB DONE in prod: profiles.joined_at + trigger; test=true for GiftTestA/B, Nuke Test, T, 82 anonymous Emmanuel copies.
+To do: (1) Emmy shows an initial in the bottom row next to You (local check, Chrome 390x844) - find what its name box collides with in mapLabels (likely the You label/orb width); (2) wheel zoom check in tools/room-fit/check-room.cjs did not register (mobile emulation) - use pinch or WheelEvent; (3) full test run (3,300 pass; 3 file-level flakes under load passed alone); (4) set ROWS_SINCE, quiet release, version.json + CI, live checks iPhone 13 + iPad, Chrome + WebKit.

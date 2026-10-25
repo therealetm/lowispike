@@ -24,30 +24,34 @@ const TEST = [
   Object.assign({ n: 'Test', uid: 'e3cce12d-b025-4385-89f7-704595a8c06c', lv: 1 }, care(0, 5)),
   Object.assign({ n: 'QA', uid: 'bb1788fa-a11e-4ee9-ac28-4beef63248ae', lv: 1 }, care(0, 4)),
   Object.assign({ n: 'eman', uid: 'ca2b5daf-5d17-4866-b7ca-33bbad10d5b2', lv: 4 }, care(6, 72)),
-  Object.assign({ n: 'eman', uid: '01aa50e7-9078-4fda-97db-0accac597947', lv: 4 }, care(6, 72))
+  Object.assign({ n: 'eman', uid: '01aa50e7-9078-4fda-97db-0accac597947', lv: 4 }, care(6, 72)),
+  /* Oct 25 (Emmanuel, Room screenshot: keep only one bubble for him): Manuuii, his old extra account unused since Oct 16, moves
+     from kept to hidden. His real account is eman (REAL_EMAN). */
+  Object.assign({ n: 'Manuuii', uid: '4add63ec-61d6-4187-9c62-bd78c427be24', lv: 1 }, care(0, 7))
 ];
 /* real people (kept) */
 const REAL = [
   Object.assign({ n: 'Joseph Castellar', uid: '06f0a8ee-1ed1-4778-a9d4-0852594bd6ad', lv: 3 }, care(2, 30)),
   Object.assign({ n: 'Q', uid: 'f4f8fbf8-3a18-4317-96d3-9dd778066136', lv: 1 }, care(0, 5)),
-  Object.assign({ n: 'Manuuii', uid: '4add63ec-61d6-4187-9c62-bd78c427be24', lv: 1 }, care(0, 7)),
   Object.assign({ n: 'Emmy', uid: 'd813675e-16b6-40e3-bedb-d6fe8b01af91', lv: 1 }, care(0, 3)),
   Object.assign({ n: 'Emmanuel', uid: 'e81217a0-6658-4c00-bce2-bfe56de897a5', lv: 1 }, care(0, 2))
 ];
 const REAL_EMAN = '83077af7-8475-4628-9328-25bd335db240';
 const BOTS = [{ n: 'Mateo', lv: 1, shownLv: 1, bot: true }, { n: 'Jonas', lv: 18, shownLv: 4, bot: true }, { n: 'Samir', lv: 43, shownLv: 6, bot: true }];
-const HIDDEN_NAMES = ['Emma', 'Gatey', 'Guesty', 'Test', 'QA'];
-const KEPT_NAMES = ['Joseph Castellar', 'Q', 'Manuuii', 'Emmy', 'Emmanuel', 'Mateo', 'Jonas', 'Samir'];
+const HIDDEN_NAMES = ['Emma', 'Gatey', 'Guesty', 'Test', 'QA', 'Manuuii'];
+const KEPT_NAMES = ['Joseph Castellar', 'Q', 'Emmy', 'Emmanuel', 'Mateo', 'Jonas', 'Samir'];
 
 test('hidden list: every test account id is listed, no real person and not your own eman account', () => {
   for (const p of TEST) assert.ok(HA.isHidden(p), p.n + ' ' + p.uid + ' is hidden');
   for (const p of REAL) assert.ok(!HA.isHidden(p), p.n + ' stays');
   assert.ok(!HA.isHidden(REAL_EMAN), 'your real eman account stays');
   assert.ok(!HA.isHidden({ n: 'eman', uid: REAL_EMAN, me: true }));
-  assert.equal(HA.IDS.length, 29 + 16 + 16 + 1 + 1 + 2 + 2);
+  assert.equal(HA.IDS.length, 29 + 16 + 16 + 1 + 1 + 2 + 2 + 1); /* Oct 25: + Manuuii */
   /* Oct 25: the two "One Chat Test" accounts our own test tool made are hidden; "Nuke Test" stays (origin not proven) */
   for (const id of ['b0f67f50-1fac-4bf0-b874-f19d3856ea72', 'e635ae48-da7d-4ae9-a0c5-9a10a96b181f']) assert.ok(HA.isHidden(id), id + ' (One Chat Test) is hidden');
-  assert.ok(!HA.isHidden('1953ba3e-68d8-4753-9d31-3c5f3f384293'), 'Nuke Test stays visible');
+  /* Oct 25 (Emmanuel's Room screenshot): Nuke Test is obviously a test account; it is now hidden by its server flag (profiles.test=true,
+     set 25 Oct), which every build reads, so it is not repeated in this list */
+  assert.ok(!HA.IDS.includes('1953ba3e-68d8-4753-9d31-3c5f3f384293'), 'Nuke Test is hidden by the server test flag, not by this list');
   assert.equal(new Set(HA.IDS).size, HA.IDS.length, 'no id twice');
   for (const id of HA.IDS) assert.match(id, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
   assert.ok(Object.isFrozen(HA.IDS));

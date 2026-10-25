@@ -102,16 +102,18 @@ function uniqueNames(list,ownName,lastTs){const own=String(ownName||'').trim().t
    o: {isBot(uid), isHidden(uid), online(uid), me:{uid,n,...}}. Returns {layout, shown}: layout seats everyone (blocked people and
    people sharing your own name too) so seats come from the full room and are the same on every phone; shown is what your screen draws. */
 function roomMembers(people,o){o=o||{};const isBot=o.isBot||(()=>false),isHidden=o.isHidden||(()=>false),online=o.online||(()=>false),blocked=o.blocked||(()=>false);
- const me=o.me&&o.me.uid?o.me:null,best=new Map(),anyOn=new Set();
+ const me=o.me&&o.me.uid?o.me:null,best=new Map(),anyOn=new Set(),first=new Map();
  /* the same name signed in on several accounts: the one that is online right now wins (presence is the same on every phone), then
     level, xp, id; the group glows when any of its accounts is online */
  const rank=q=>[online(q.uid)?1:0,+q.lv||0,+q.xp||0];
  for(const p of people||[]){if(!p||!p.uid)continue;const uid=String(p.uid),n=String(p.n||'').trim();
   if(!n||/^bot:/.test(uid)||p.bot||p.test||isBot(uid)||isHidden(uid))continue;const k=n.toLocaleLowerCase(),cur=best.get(k);
   if(online(uid))anyOn.add(k);
+  /* Oct 25: the group's seat in the join-ordered rows is the day its first account joined, whichever account is shown */
+  {const j=+p.j;if(isFinite(j)&&j>0&&(!first.has(k)||j<first.get(k)))first.set(k,j);}
   if(!cur){best.set(k,p);continue;}const a=rank(p),b=rank(cur);
   if(a[0]>b[0]||(a[0]===b[0]&&(a[1]>b[1]||(a[1]===b[1]&&(a[2]>b[2]||(a[2]===b[2]&&uid<String(cur.uid)))))))best.set(k,p);}
- const all=[...best.values()].filter(p=>!me||p.uid!==me.uid).map(p=>Object.assign({},p,{on:anyOn.has(String(p.n).trim().toLocaleLowerCase())}));
+ const all=[...best.values()].filter(p=>!me||p.uid!==me.uid).map(p=>{const k=String(p.n).trim().toLocaleLowerCase(),o2={on:anyOn.has(k)};if(first.has(k))o2.j=first.get(k);return Object.assign({},p,o2);});
  all.sort((a,b)=>String(a.uid)<String(b.uid)?-1:1);
  const own=me?String(me.n||'').trim().toLocaleLowerCase():'',mine=me?Object.assign({},me,{me:true,on:true}):null;
  const layout=mine?all.concat([mine]):all;
@@ -149,14 +151,12 @@ function sky(canvas,opts){
   const bare=!!(root.document&&root.document.documentElement&&root.document.documentElement.classList.contains('wb-on'));
   if(!bare){
   const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,R*.75);bg.addColorStop(0,'#16305a');bg.addColorStop(.45,'#0a1834');bg.addColorStop(1,'#040811');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
-  for(let i=0;i<3;i++){const px=w*(.2+.3*i)+(still?0:Math.sin(t*.07+i*2.1)*w*.06),py=h*(.25+.28*((i*7)%3))+(still?0:Math.cos(t*.05+i)*h*.05),pr=Math.min(w,h)*(.34+.08*i),pg=ctx.createRadialGradient(px,py,0,px,py,pr);pg.addColorStop(0,i===1?'rgba(196,92,120,.10)':'rgba(120,170,235,.09)');pg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=pg;ctx.fillRect(0,0,w,h);}
+  /* Oct 25: the three drifting nebula blobs are gone too: a clean, still deep-blue room with Misty's mint glow behind you */
   {const R0=Math.max(40,Math.min(w,h)*.16),g=ctx.createRadialGradient(cx,cy,0,cx,cy,R0*2.4);g.addColorStop(0,'rgba(156,218,199,.34)');g.addColorStop(.3,'rgba(156,218,199,.12)');g.addColorStop(.6,'rgba(110,150,230,.05)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
   for(const s of stars){
    const dy=still?0:(t*(4+s.s*5))%(h+40),y=((s.y-dy)%(h+40)+h+40)%(h+40)-20,x=s.x+(still?0:Math.sin(t*.4*s.s+s.p)*6);
-   if(s.r>=1.5){/* a cell: soft disc with a brighter rim and a pale centre, like the blood cells in Home's stream */
-    const r=s.r*2.6,red=s.p>3.1;ctx.globalAlpha=.55;ctx.fillStyle=red?'rgba(214,96,120,.30)':'rgba(190,210,240,.20)';ctx.beginPath();ctx.ellipse(x,y,r,r*.82,s.p,0,6.283);ctx.fill();
-    ctx.lineWidth=1.2;ctx.strokeStyle=red?'rgba(255,160,175,.45)':'rgba(225,235,255,.38)';ctx.stroke();ctx.fillStyle='rgba(4,8,17,.35)';ctx.beginPath();ctx.ellipse(x,y,r*.42,r*.34,s.p,0,6.283);ctx.fill();}
-   else{const tw=still?.8:.55+.45*Math.sin(t*s.s+s.p);ctx.globalAlpha=.7*tw;ctx.fillStyle=s.p<1.2?'#ffd27a':'#bfeee0';ctx.beginPath();ctx.arc(x,y,s.r,0,6.283);ctx.fill();}}
+   /* Oct 25 (Emmanuel: "bugs from the circle leftovers"): no more cell discs with rims; every speck is a small soft mote */
+   {const tw=still?.8:.55+.45*Math.sin(t*s.s+s.p);ctx.globalAlpha=.7*tw;ctx.fillStyle=s.p<1.2?'#ffd27a':'#bfeee0';ctx.beginPath();ctx.arc(x,y,s.r,0,6.283);ctx.fill();}}
   }
   ctx.globalAlpha=1;
   for(const L of lines){const q=curve(L.a,L.b),alpha=Math.max(.15,L.alpha||1);
@@ -191,23 +191,44 @@ function mapSlot(i,c){c=c||MAP_C;const r=c*Math.sqrt(i+1.6),a=i*2.399963+0.6;ret
    tablet computes the same seats for the same people; the frame is then only SHIFTED so that you are at (0,0). A shift keeps
    every direction and distance the same, so an angle or a vector between two people means the same thing on every device.
    (cx,cy) is the room centre in this shifted frame and radius is measured from it: the camera limits and the cushion use it. */
-function mapLayout(members,meId){
- const me=meId||'me',list=[{uid:me,me:true}],seen=new Set([me]);
+/* Oct 25 (Emmanuel: "there's no structure ... the newest people are now at the top, and the oldest ... further down"): the room
+   is ROWS ordered by when each person joined (profiles.joined_at, the same on every device). The longest-standing member takes
+   the first seat of the bottom row, every later member the next seat, row by row upward, so the newest row is on top. A row
+   fills from its middle outward and every other row sits half a seat over, like a honeycomb. A newcomer only ever takes the
+   next free seat on the top row: nobody else moves (until the room grows into one more column, see mapCols). Someone with no
+   known join date counts as the longest-standing (their order is by id hash). The frame is still shared and only SHIFTED so
+   that you are at (0,0); (cx,cy) is the room's fixed anchor (the middle of the bottom row) and radius is measured from it. */
+const ROW_DX=150,ROW_DY=128;
+/* columns per row from the crowd size in bands, so a room stays a little taller than wide (portrait phones) */
+function mapCols(n){return Math.max(2,Math.ceil(Math.sqrt((+n||0)/2.2)));}
+function rowOff(k,K){const odd=K%2===1,step=Math.floor((k+(odd?1:0))/2);if(odd)return k===0?0:(k%2?step:-step);return k%2?(Math.floor(k/2)+.5):-(Math.floor(k/2)+.5);}
+function mapLayout(members,meId,o){o=o||{};
+ const jt=v=>{v=+v;return isFinite(v)&&v>0?v:0;},me=meId||'me',list=[{uid:me,me:true,j:jt(o.meJ)}],seen=new Set([me]);
  for(const m of members||[]){if(!m||!m.uid||seen.has(m.uid))continue;seen.add(m.uid);list.push(m);}
- /* insertion order is by id hash, so who is first in the caller's list (selected, newest talker) can never change a spot */
- list.sort((a,b)=>hash(a.uid)-hash(b.uid)||(a.uid<b.uid?-1:a.uid>b.uid?1:0));
- const P=mapPool(list.length),taken=new Set(),abs=new Map();
- for(const m of list){let k=hash('slot:'+m.uid)%P;while(taken.has(k))k=(k+1)%P;taken.add(k);
-  const s=mapSlot(k+1),r=rng(hash(m.uid)+11),jx=(r()-.5)*MAP_C*.5,jy=(r()-.5)*MAP_C*.5;abs.set(m.uid,{x:Math.round(s.x+jx),y:Math.round(s.y+jy)});}
- const o=abs.get(me),spots=[{uid:me,me:true,x:0,y:0}];let R=0;
- for(const m of list){if(m.uid===me)continue;const a=abs.get(m.uid);spots.push({uid:m.uid,me:false,x:a.x-o.x,y:a.y-o.y});}
+ /* oldest first, then id hash: who is first in the caller's list (selected, newest talker) can never change a seat */
+ list.sort((a,b)=>jt(a.j)-jt(b.j)||hash(a.uid)-hash(b.uid)||(a.uid<b.uid?-1:a.uid>b.uid?1:0));
+ const K=mapCols(list.length),abs=new Map();
+ list.forEach((m,i)=>{const row=Math.floor(i/K),k=i%K,r=rng(hash(m.uid)+11),jx=(r()-.5)*14,jy=(r()-.5)*14;
+  abs.set(m.uid,{x:Math.round((rowOff(k,K)+(row%2?.25:-.25))*ROW_DX+jx),y:Math.round(-row*ROW_DY+jy)});});
+ const a0=abs.get(me),spots=[{uid:me,me:true,x:0,y:0}];let R=0;
+ for(const m of list){if(m.uid===me)continue;const a=abs.get(m.uid);spots.push({uid:m.uid,me:false,x:a.x-a0.x,y:a.y-a0.y});}
  for(const a of abs.values())R=Math.max(R,Math.hypot(a.x,a.y));
- return {spots,radius:Math.round(R),pool:P,cx:-o.x,cy:-o.y};
+ return {spots,radius:Math.round(R),cols:K,cx:-a0.x,cy:-a0.y};
 }
+/* Oct 25: the camera that shows every given spot at once, with room for each name under its companion. Screen padding in px:
+   sides fit half a name, the top half a companion, the bottom a companion plus its name. Never closer than the normal arrival
+   zoom (two people are not blown up), never further out than the hard floor. */
+function mapFit(spots,w,h,o){o=o||{};w=Math.max(200,+w||360);h=Math.max(200,+h||500);
+ let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const s of spots||[]){if(!s)continue;x0=Math.min(x0,s.x);x1=Math.max(x1,s.x);y0=Math.min(y0,s.y);y1=Math.max(y1,s.y);}
+ if(!isFinite(x0)){x0=x1=y0=y1=0;}
+ const side=o.side!=null?o.side:46,top=o.top!=null?o.top:36,bot=o.bot!=null?o.bot:56,z0=Math.max(.85,Math.min(1.25,Math.min(w,h)/400));
+ let z=Math.min((w-2*side)/Math.max(1,x1-x0),(h-top-bot)/Math.max(1,y1-y0));z=Math.max(.18,Math.min(z0,z));
+ return {x:(x0+x1)/2,y:(y0+y1)/2-((top+(h-bot))/2-h/2)/z,z};}
 /* Camera limits for a w x h view: z0 = the zoom you arrive at, zmin shows everyone, zmax is a close look. */
-function mapZooms(radius,w,h){w=Math.max(200,+w||360);h=Math.max(200,+h||500);const z0=Math.max(.85,Math.min(1.25,Math.min(w,h)/400)),fit=Math.min(w,h)/(2*((+radius||0)+90));
- return {z0,zmin:Math.max(.18,Math.min(z0*.55,fit)),zmax:z0*2.4};}
-function mapClamp(cam,radius,w,h,c){const Z=mapZooms(radius,w,h),z=Math.max(Z.zmin,Math.min(Z.zmax,+cam.z||Z.z0)),lim=(+radius||0)+40,cx=c&&+c.x||0,cy=c&&+c.y||0;
+/* fz (Oct 25): the fitted zoom (mapFit), so the furthest you can zoom out always still includes the view that shows everyone */
+function mapZooms(radius,w,h,fz){w=Math.max(200,+w||360);h=Math.max(200,+h||500);const z0=Math.max(.85,Math.min(1.25,Math.min(w,h)/400)),fit=Math.min(w,h)/(2*((+radius||0)+90)),f2=+fz>0?+fz:Infinity;
+ return {z0,zmin:Math.max(.18,Math.min(z0*.55,fit,f2)),zmax:z0*2.4};}
+function mapClamp(cam,radius,w,h,c,fz){const Z=mapZooms(radius,w,h,fz),z=Math.max(Z.zmin,Math.min(Z.zmax,+cam.z||Z.z0)),lim=(+radius||0)+40,cx=c&&+c.x||0,cy=c&&+c.y||0;
  return {x:Math.max(cx-lim,Math.min(cx+lim,+cam.x||0)),y:Math.max(cy-lim,Math.min(cy+lim,+cam.y||0)),z};}
 function overlaps(a,b){return a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;}
 /* Labels on the map: items = [{id,x,y,s,nw,bw,bh,bub}] in screen px (x,y = orb centre, s = orb size, nw = name width,
@@ -237,7 +258,7 @@ function mapLabels(items,view){
   if(got)r.bub=got;else r.dot=true;}
  return out;
 }
-const api={BOT_KEEP,hash,mapPool,mapSlot,mapLayout,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,roomMembers,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
+const api={BOT_KEEP,hash,mapPool,mapSlot,mapCols,mapLayout,mapFit,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,roomMembers,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
 if(typeof module==='object'&&module.exports)module.exports=api;
 root.LowiGalaxy=api;
 })(typeof window!=='undefined'?window:globalThis);

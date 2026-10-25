@@ -169,7 +169,9 @@ function geom(){const m=map();return m&&m.geom?m.geom():null;}
 function scr(g,p){return {x:g.cx+(p.x-g.cam.x)*g.cam.z,y:g.cy+(p.y-g.cam.y)*g.cam.z};}
 function meSpot(g){return g&&g.spots.find(s=>s.me);}
 /* Oct 19: where knocked companions came to rest survives leaving Community and a reload (per account on this phone) */
-const LAND_KEY='lowi.energy.land.v2'; /* Oct 24: v2 = room coordinates (v1 was each device's own frame) */
+const LAND_KEY='lowi.energy.land.v3'; /* Oct 24: v2 = room coordinates (v1 was each device's own frame). Oct 25: v3 = the join-ordered rows (community-galaxy.js mapLayout); spots saved in the old scattered layout would land people in random places */
+/* Oct 25: shared rest spots written before the rows layout went live belong to the old layout; they are skipped (people sit in their row seat) */
+const ROWS_SINCE=Date.parse('2026-10-25T14:30:00Z');
 function landKey(){const c=W.LOWI_CLOUD_X,st=c&&c.state?c.state():null;return LAND_KEY+':'+((st&&st.uid)||'me');}
 function loadLand(){try{const o=JSON.parse(localStorage.getItem(landKey())||'{}');return o&&typeof o==='object'?o:{};}catch(e){return {};}}
 function saveLand(){if(!tb)return;try{const o=tb.snap();if(Object.keys(o).length)localStorage.setItem(landKey(),JSON.stringify(o));else localStorage.removeItem(landKey());}catch(e){}}
@@ -282,7 +284,7 @@ function restFlush(){const pre=restPre;restPre=null;if(!pre||!tb)return;const ro
 function restLoad(force){const now=Date.now();if(!force&&now-restT<4000)return Promise.resolve(false);restT=now;
  try{const c=W.LOWI_CLOUD_X,st=c&&c.state?c.state():null;if(!c||!c.client||!st||!st.uid)return Promise.resolve(false);
   return Promise.resolve(c.client()).then(sb=>sb&&sb.from('companion_rest').select('user_id,rx,ry,updated_at').order('updated_at',{ascending:false}).limit(400)).then(r=>{
-   if(!r||r.error||!Array.isArray(r.data))return false;const o={};for(const x of r.data)if(x&&x.user_id&&isFinite(x.rx)&&isFinite(x.ry))o[x.user_id]=[+x.rx,+x.ry];
+   if(!r||r.error||!Array.isArray(r.data))return false;const o={};for(const x of r.data)if(x&&x.user_id&&isFinite(x.rx)&&isFinite(x.ry)&&!(Date.parse(x.updated_at)<ROWS_SINCE))o[x.user_id]=[+x.rx,+x.ry];
    const t=ensureTable();if(t.busy())return false;t.restore(o);saveLand();stats.restLoaded=Object.keys(o).length;const m=map();if(m&&m.place)m.place();return true;}).catch(()=>false);}catch(e){return Promise.resolve(false);}}
 try{D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='visible')restLoad();});W.addEventListener('online',()=>restLoad(true));W.addEventListener('pageshow',()=>restLoad());
  D.addEventListener('lowi:chat',e=>{const d=e&&e.detail;if(d&&(d.type==='ready'||d.type==='reconnect'))restLoad(d.type==='reconnect');});}catch(e){}

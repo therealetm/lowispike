@@ -266,9 +266,10 @@ function online(uid){const R=W.LowiRooms;try{if(R&&R.active&&R.active()&&R.has(u
 let recentTs=new Map();
 function roomOf(){const ms=messages();recentTs=new Map();for(const m of ms)if(m&&m.uid&&!m.demo&&!m.bot)recentTs.set(m.uid,+m.ts||0);
  const B=W.LowiBotAccounts,selfTest=(()=>{try{return !!(B&&B.isTest&&scope&&B.isTest(scope));}catch(e){return false;}})();
- let people=((H.people&&H.people())||[]).map(p=>p&&p.uid?{uid:p.uid,n:String(p.n||'').trim(),lv:p.lv||1,xp:+p.xp||0,bot:!!p.bot,test:!!p.test&&!selfTest}:null).filter(Boolean);
+ let people=((H.people&&H.people())||[]).map(p=>p&&p.uid?{uid:p.uid,n:String(p.n||'').trim(),lv:p.lv||1,xp:+p.xp||0,j:+p.j||0,bot:!!p.bot,test:!!p.test&&!selfTest}:null).filter(Boolean);
  {const seen=new Set(people.map(p=>p.uid));for(let i=ms.length-1;i>=0;i--){const m=ms[i];if(m&&m.uid&&!m.demo&&!m.bot&&!seen.has(m.uid)){seen.add(m.uid);people.push({uid:m.uid,n:String(m.by||'').trim(),lv:1});}}}
- const me=scope?{uid:scope,n:String(own().n||'').trim()}:null;
+ /* Oct 25: your own join date (profiles.joined_at) gives your seat in the join-ordered rows, like everyone else's */
+ const me=scope?{uid:scope,n:String(own().n||'').trim(),j:(()=>{try{return +(H.joined&&H.joined())||0;}catch(e){return 0;}})()}:null;
  return G&&G.roomMembers?G.roomMembers(people,{isBot:u=>{if(botOf(u))return true;try{return !!(B&&B.isBot&&B.isBot(u));}catch(e){return false;}},isHidden:hiddenAcct,online,blocked,me}):{layout:people,shown:people};}
 function roster(){const map=new Map();for(const p of roomOf().shown)if(p&&!p.me&&p.uid!==scope)map.set(p.uid,p);return map;}
 function nameIdx(r){const list=[...(r||roster()).values()];if(scope&&own().n)list.push({uid:scope,n:own().n});return G?G.nameIndex(list):[];}
@@ -291,7 +292,7 @@ function galaxy(ms,w,h,quiet){
   /* Oct 16, round 5 (E-man: "tapping Joseph selected Bastian", "everyone changes places"): a map, not a seating plan. Each person
      has one fixed spot (G.mapLayout); selecting, typing, new messages and the keyboard never move anyone. place() draws the spots
      through the camera (drag to pan, pinch / double-tap to zoom), so the HTML here carries no positions at all. */
-  const RM=roomOf(),r=new Map(RM.shown.filter(p=>!p.me&&p.uid!==scope).map(p=>[p.uid,p])),idx=nameIdx(r),LA=G.mapLayout(RM.layout.filter(p=>!p.me&&p.uid!==scope),scope||'me'),L=Object.assign({},LA,{spots:LA.spots.filter(x=>x.me||r.has(x.uid))}),last=latestBy(ms),now=Date.now(),spot=new Map(L.spots.map(x=>[x.uid,x])),meSpot=L.spots[0],names=[],labels=[],lineDefs=[];
+  const RM=roomOf(),r=new Map(RM.shown.filter(p=>!p.me&&p.uid!==scope).map(p=>[p.uid,p])),idx=nameIdx(r),LA=G.mapLayout(RM.layout.filter(p=>!p.me&&p.uid!==scope),scope||'me',{meJ:(RM.layout.find(p=>p.me)||{}).j||0}),L=Object.assign({},LA,{spots:LA.spots.filter(x=>x.me||r.has(x.uid))}),last=latestBy(ms),now=Date.now(),spot=new Map(L.spots.map(x=>[x.uid,x])),meSpot=L.spots[0],names=[],labels=[],lineDefs=[];
   const big=w>=640,bodyS=big?56:46,meS=big?64:54;
   /* Oct 16: chats with the galaxy bots live on this phone; their newest words go in the same avatar bubbles */
   try{const bs=botStore();for(const u in bs){const arr=bs[u];const m=arr&&arr[arr.length-1];if(!m||!m.t)continue;const k=m.from==='me'?scope:u,cur=last.get(k);if(!cur||(+cur.ts||0)<=(+m.ts||0))last.set(k,{id:'',uid:k,t:m.t,ts:m.ts||now});}}catch(e){}
@@ -334,21 +335,26 @@ function galaxy(ms,w,h,quiet){
   return {html:parts.join(''),parts,map:L,spot,labels,lineDefs,lines:[],names,me:meSpot};
 }
 /* ---- the map camera: pins stay put, the camera moves ---- */
-let cam=null,camFrozen=null,placeRaf=0,camAnim=0;
+/* Oct 25 (Emmanuel: "when I open the circle it's zoomed in to me ... I don't want to have to zoom out all the time"): the Room opens
+   fitted to everyone drawn (G.mapFit). Once you pinch, pan, scroll or double-tap yourself (camUser), your view is kept for the rest
+   of the session, also when you leave Community and come back; double-tap at the closest zoom goes back to everyone. */
+let cam=null,camFrozen=null,placeRaf=0,camAnim=0,camUser=false,fitMemo=null,camAnimOn=false;
 function mapView(gal){const typing=D.documentElement.classList.contains('cs-chat-map-typing');const w=gal.clientWidth||360,h=gal.clientHeight||480;
   /* the centre of the map is fixed: the composer growing a chip row, or the keyboard coming up, never slides the pins.
      Only a real change of screen (rotation, iPad split view) re-centres it. */
   if(typing&&camFrozen)return camFrozen;
   if(!camFrozen||Math.abs(w-camFrozen.w)>40||h>camFrozen.h||camFrozen.h-h>160)camFrozen={w,h,hb:h};else camFrozen={w:camFrozen.w,h:camFrozen.h,hb:h};
   return camFrozen;}
-function mapZ(gx,v){return G.mapZooms(gx.map.radius,v.w,v.h);}
+function fitCam(gx,v){const spots=(gx.map.spots||[]).filter(s=>gx.spot.has(s.uid)),key=v.w+'x'+v.h+':'+spots.map(s=>s.uid+'@'+s.x+','+s.y).join('|');
+  if(!fitMemo||fitMemo.key!==key)fitMemo={key,cam:G.mapFit(spots,v.w,v.h,{side:v.w>=640?54:46,top:v.w>=640?44:36,bot:v.w>=640?64:56})};return {...fitMemo.cam};}
+function mapZ(gx,v){return G.mapZooms(gx.map.radius,v.w,v.h,fitCam(gx,v).z);}
 function schedulePlace(){if(placeRaf)return;placeRaf=requestAnimationFrame(()=>{placeRaf=0;place();});}
 /* Oct 16 (energy hits, community-energy.js): a knocked companion rolls away from its spot for a moment; epos() adds that offset */
 function epos(s,id){const e=W.LowiEnergy,o=s&&e&&e.offset?e.offset(id):null;return o?{uid:s.uid,me:s.me,x:s.x+o.x,y:s.y+o.y}:s;}
 function place(){
   const gx=W.__lgGx,field=D.getElementById('cgField'),gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!field||!gal)return;
   mapGestures(gal);if(W.LowiEnergy&&W.LowiEnergy.mount)W.LowiEnergy.mount(gal);
-  const v=mapView(gal),Z=mapZ(gx,v);if(!cam)cam={x:0,y:0,z:Z.z0};cam=G.mapClamp(cam,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy});
+  const v=mapView(gal),Z=mapZ(gx,v),fz=fitCam(gx,v);if(!cam||(!camUser&&!camAnimOn))cam=fz;/* until you zoom yourself, the view follows everyone (people still loading in, someone joining) */cam=G.mapClamp(cam,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy},fz.z);
   const f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),fn=Math.max(.8,f),cx=v.w/2,cy=v.h*.5,scr=s=>({x:cx+(s.x-cam.x)*cam.z,y:cy+(s.y-cam.y)*cam.z});
   const bodies=new Map(),bubs=new Map();
   for(const el of field.querySelectorAll('.cg-body'))bodies.set(el.getAttribute('data-uid'),el);
@@ -373,8 +379,8 @@ function place(){
   const streamed=streamDraw(gx.lines,v)&&!!sel;if(sk){if(streamed)sk.set(gx.lines.filter(l=>!l.sel),false,gx.orbits);else sk.set(gx.lines,false,gx.orbits);}
   gal.setAttribute('data-zoom',cam.z>=Z.zmax*.995?'max':cam.z<=Z.zmin*1.005?'min':'mid');
 }
-function camTo(target,ms){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gal||!cam)return;cancelAnimationFrame(camAnim);const v=mapView(gal),to=G.mapClamp(target,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy}),from={...cam},t0=performance.now(),dur=ms||280;
-  const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);cam={x:from.x+(to.x-from.x)*e,y:from.y+(to.y-from.y)*e,z:from.z*Math.pow(to.z/from.z,e)};place();if(k<1)camAnim=requestAnimationFrame(step);};camAnim=requestAnimationFrame(step);}
+function camTo(target,ms){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gal||!cam)return;cancelAnimationFrame(camAnim);const v=mapView(gal),to=G.mapClamp(target,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy},fitCam(gx,v).z),from={...cam},t0=performance.now(),dur=ms||280;
+  camAnimOn=true;const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);cam={x:from.x+(to.x-from.x)*e,y:from.y+(to.y-from.y)*e,z:from.z*Math.pow(to.z/from.z,e)};if(k>=1)camAnimOn=false;place();if(k<1)camAnim=requestAnimationFrame(step);};camAnim=requestAnimationFrame(step);}
 /* zoom by k keeping the world point under (px,py) (galaxy px) under the finger */
 function zoomAt(c0,k,px,py,v){const gx=W.__lgGx,Z=gx&&gx.map?mapZ(gx,v):{zmin:.18,zmax:3},z=Math.max(Z.zmin,Math.min(Z.zmax,c0.z*k)),wx=c0.x+(px-v.w/2)/c0.z,wy=c0.y+(py-v.h*.5)/c0.z;return {x:wx-(px-v.w/2)/z,y:wy-(py-v.h*.5)/z,z};}
 function mapGestures(gal){if(gal.__map)return;gal.__map=1;
@@ -386,16 +392,16 @@ function mapGestures(gal){if(gal.__map)return;gal.__map=1;
   const lpOpen=body=>{lpHeld=true;lpAt=Date.now();try{if(navigator.vibrate)navigator.vibrate(12);}catch(x){}body.classList.add('cg-held');setTimeout(()=>body.classList.remove('cg-held'),420);const u=body.getAttribute('data-uid');if(u&&u!=='me')openProfile(u,body.getAttribute('data-name')||'');};
   const local=e=>{const r=gal.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
   const inUi=t=>!!(t&&t.closest&&t.closest('.cm-compose,input,textarea,#cgThread,.cg-empty,.ce-joy'));
-  gal.addEventListener('pointerdown',e=>{if(inUi(e.target)||(e.pointerType==='mouse'&&e.button!==0))return;cancelAnimationFrame(camAnim);pts.set(e.pointerId,local(e));
+  gal.addEventListener('pointerdown',e=>{if(inUi(e.target)||(e.pointerType==='mouse'&&e.button!==0))return;cancelAnimationFrame(camAnim);camAnimOn=false;pts.set(e.pointerId,local(e));
    lpStop();lpHeld=false;
    if(pts.size===1){const body=e.target.closest&&e.target.closest('.cg-body');g={kind:'tap',p0:local(e),cam0:{...cam},t0:Date.now(),onBody:!!(e.target.closest&&e.target.closest('.cg-body,.cg-bub')),body:body||null};if(body)lpT=setTimeout(()=>{lpT=0;if(g&&g.kind==='tap'&&pts.size===1)lpOpen(body);},450);}
    else if(pts.size===2){const [a,b]=[...pts.values()];g={kind:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},cam0:{...cam}};}});
   gal.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId)||!g||!cam)return;pts.set(e.pointerId,local(e));const v=mapView(gal);
    if(g.kind==='pinch'&&pts.size>=2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y)||1,m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
-    const c=zoomAt(g.cam0,d/g.d0,g.m0.x,g.m0.y,v);c.x-=(m.x-g.m0.x)/c.z;c.y-=(m.y-g.m0.y)/c.z;cam=c;schedulePlace();return;}
+    const c=zoomAt(g.cam0,d/g.d0,g.m0.x,g.m0.y,v);c.x-=(m.x-g.m0.x)/c.z;c.y-=(m.y-g.m0.y)/c.z;cam=c;camUser=true;schedulePlace();return;}
    if(pts.size!==1)return;const p=pts.get(e.pointerId),dx=p.x-g.p0.x,dy=p.y-g.p0.y;
    if(g.kind==='tap'&&Math.hypot(dx,dy)>9){lpStop();g.kind='pan';try{gal.setPointerCapture(e.pointerId);}catch(x){}}
-   if(g.kind==='pan'){cam={x:g.cam0.x-dx/g.cam0.z,y:g.cam0.y-dy/g.cam0.z,z:g.cam0.z};schedulePlace();}});
+   if(g.kind==='pan'){cam={x:g.cam0.x-dx/g.cam0.z,y:g.cam0.y-dy/g.cam0.z,z:g.cam0.z};camUser=true;schedulePlace();}});
   const end=e=>{if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);pts.delete(e.pointerId);
    // a busy frame can deliver the finger lift before the 450 ms hold timer: a held press still opens the card
    if(lpT&&!lpHeld&&e.type==='pointerup'&&g&&g.kind==='tap'&&g.body&&!pts.size&&Date.now()-g.t0>=450){lpStop();lpOpen(g.body);}
@@ -403,7 +409,7 @@ function mapGestures(gal){if(gal.__map)return;gal.__map=1;
    if(g.kind==='pan'||g.kind==='pinch'){suppress=Date.now();if(!pts.size)g=null;else if(g.kind==='pinch'){const q=[...pts.values()][0];g={kind:'pan',p0:q,cam0:{...cam}};}return;}
    if(g.kind==='tap'&&e.type==='pointerup'&&!g.onBody){const now=Date.now();
     if(now-lastTap<420&&lastXY&&Math.hypot(p.x-lastXY.x,p.y-lastXY.y)<40){lastTap=0;const gx=W.__lgGx,v=mapView(gal),Z=gx&&gx.map?mapZ(gx,v):null;
-     if(Z)camTo(cam.z>=Z.zmax*.98?{x:0,y:0,z:Z.z0}:zoomAt(cam,1.8,p.x,p.y,v));suppress=now;}
+     if(Z){const back=cam.z>=Z.zmax*.98;camUser=!back;camTo(back?fitCam(gx,v):zoomAt(cam,1.8,p.x,p.y,v));}suppress=now;}
     else{lastTap=now;lastXY=p;}}
    if(!pts.size)g=null;};
   gal.addEventListener('pointerup',end);gal.addEventListener('pointercancel',end);
@@ -413,11 +419,13 @@ function mapGestures(gal){if(gal.__map)return;gal.__map=1;
   gal.addEventListener('contextmenu',e=>{const body=e.target.closest&&e.target.closest('.cg-body');if(!body)return;e.preventDefault();if(Date.now()-lpAt<1500)return;lpAt=Date.now();const u=body.getAttribute('data-uid');if(u&&u!=='me')openProfile(u,body.getAttribute('data-name')||'');});
   gal.addEventListener('wheel',e=>{const gx=W.__lgGx;if(!gx||!gx.map||!cam||inUi(e.target))return;const v=mapView(gal),Z=mapZ(gx,v);
    if(e.deltaY<0&&cam.z>=Z.zmax*.995)return;/* fully zoomed in: galaxy-zoom.js may dive you back into Home */
-   e.preventDefault();const p=local(e);cam=zoomAt(cam,Math.exp(-e.deltaY*.0022),p.x,p.y,v);schedulePlace();},{passive:false});
+   e.preventDefault();const p=local(e);cam=zoomAt(cam,Math.exp(-e.deltaY*.0022),p.x,p.y,v);camUser=true;schedulePlace();},{passive:false});
   gal.addEventListener('gesturestart',e=>e.preventDefault());
 }
 W.LowiCgMap={atMax(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gx.map||!gal||!cam)return true;return cam.z>=mapZ(gx,mapView(gal)).zmax*.995;},
-  cam(){return cam&&{...cam};},reset(){cam=null;schedulePlace();},place,
+  cam(){return cam&&{...cam};},reset(){cam=null;camUser=false;schedulePlace();},place,
+  /* Oct 25: the fitted view (everyone on screen) and whether you zoomed yourself, for tests and the energy layer */
+  fit(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!gal)return null;return fitCam(gx,mapView(gal));},user:()=>camUser,
   /* Oct 16 (energy hits): the camera and every companion's home spot and radius in map units, for community-energy.js */
   geom(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!gal||!cam)return null;const v=mapView(gal),Z=mapZ(gx,v),f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),big=v.w>=640,sz=new Map((gx.labels||[]).map(L=>[L.id,L.size]));
    return {cam:{...cam},w:v.w,h:v.h,cx:v.w/2,cy:v.h*.5,f,radius:gx.map.radius,rcx:gx.map.cx||0,rcy:gx.map.cy||0,spots:gx.map.spots.filter(s=>gx.spot.has(s.uid)).map(s=>({uid:s.uid,me:!!s.me,x:s.x,y:s.y,r:((sz.get(s.uid)||(s.me?(big?64:54):(big?56:46)))*f/2)/cam.z}))};},
@@ -432,7 +440,7 @@ function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)r
    snapshot of Home any more). From anywhere else the galaxy just settles in from a little closer. */
 function intro(){const g=D.getElementById('cgGalaxy');if(!g||!g.removeAttribute)return;g.__intro=1;if(D.documentElement.classList.contains('gx-out'))return;if(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches)return;g.removeAttribute('data-intro');void g.offsetWidth;g.setAttribute('data-intro','1');clearTimeout(introT);introT=setTimeout(()=>{g.removeAttribute('data-intro');},1100);}
 let enterAt=0,ro=null;
-function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();cam=null;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();}}
+function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();if(!camUser)cam=null;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();}}
 function watch(){if(watching||!W.MutationObserver)return;const t=D.getElementById('tab-foryou');if(!t)return;watching=true;new W.MutationObserver(onShow).observe(t,{attributes:true,attributeFilter:['class']});}
 function roomFlag(){const p=D.getElementById('cmPaneChat'),on=threadOpen&&!!(p&&p.hasAttribute&&p.hasAttribute('data-spirit-chat'));if(p&&p.dataset){if(on)p.dataset.room='1';else delete p.dataset.room;}try{D.documentElement.classList.toggle('cr-room',on);}catch(e){}roomDress(p,on);}
 /* Oct 22 (item 37): the room's composer floats over the messages (community-tg.css). The list keeps its last message clear of it, and of a reply bar or photo

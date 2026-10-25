@@ -27,7 +27,8 @@ test('map: each person keeps one spot whatever the order, selection or screen; y
  assert.deepEqual(a.spots[0],{uid:'me',me:true,x:0,y:0});assert.equal(a.spots.length,32);
  let min=1e9;for(const p of a.spots)for(const q of a.spots)if(p!==q)min=Math.min(min,Math.hypot(p.x-q.x,p.y-q.y));
  assert.ok(min>=100,'people are spread out like pins, nearest pair '+Math.round(min));
- const c=G.mapLayout(people.concat([{uid:'new-person'}]),'me');const moved=c.spots.filter(s=>{const o=a.spots.find(x=>x.uid===s.uid);return o&&(o.x!==s.x||o.y!==s.y);});
+ /* Oct 25 (Emmanuel: "the newest people at the top"): seats follow the join date, so the newcomer here joins after everyone */
+ const c=G.mapLayout(people.concat([{uid:'new-person',j:Date.parse('2026-10-25T12:00:00Z')}]),'me');const moved=c.spots.filter(s=>{const o=a.spots.find(x=>x.uid===s.uid);return o&&(o.x!==s.x||o.y!==s.y);});
  assert.ok(moved.length<=2,'one new member moves at most one neighbour');
 });
 test('map labels: bubbles never cover another person or name; no room means a dot',()=>{

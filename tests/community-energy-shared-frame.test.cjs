@@ -88,11 +88,11 @@ test('page: a shot that arrives while Community is off screen still lands, and t
   assert.match(js, /if\(!visible\(\)\)\{settle\(t\);/);
   assert.match(js, /if\(m\.f\)t\.setAt\(m\.by,m\.f\.x,m\.f\.y\);if\(to&&m\.g\)t\.setAt\(to,m\.g\.x,m\.g\.y\);/);
   assert.doesNotMatch(js, /ag\.stale\|\|!visible\(\)/, 'off screen is no longer a reason to drop a shot');
-  assert.match(js, /LAND_KEY='lowi\.energy\.land\.v2'/);
+  assert.match(js, /LAND_KEY='lowi\.energy\.land\.v3'/); /* Oct 25: v3 = the join-ordered rows */
   assert.match(js, /const PHYS_R=24;/); assert.match(js, /const pinned=b=>false;/);
   const chat = fs.readFileSync(path.join(__dirname, '..', 'community-chat.js'), 'utf8');
   assert.match(chat, /rcx:gx\.map\.cx\|\|0,rcy:gx\.map\.cy\|\|0/);
-  assert.equal((chat.match(/G\.mapClamp\([^;]*\{x:gx\.map\.cx,y:gx\.map\.cy\}\)/g) || []).length, 2);
+  assert.equal((chat.match(/G\.mapClamp\([^;]*\{x:gx\.map\.cx,y:gx\.map\.cy\},(fz\.z|fitCam\(gx,v\)\.z)\)/g) || []).length, 2); /* Oct 25: + the fitted zoom */
   /* consent, cooldown and anti-spam stay as they were */
   assert.match(js, /bucket\(sendSt,now,SEND\.max,SEND\.win,SEND\.gap\)/); assert.match(js, /bucket\(recvSt\.get\(m\.by\),now,RECV\.max,RECV\.win,RECV\.gap\)/);
   assert.match(js, /bucket\(inboxSt,now,INBOX\.max,INBOX\.win,0\)/);

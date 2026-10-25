@@ -9,6 +9,13 @@ html.wb-on.wb-comm:not(.gx-in):not(.gx-out) #bw3Back .bw3-canvas {
     filter: var(--wm-filter, ) brightness(.62) saturate(.72) blur(1.4px) !important;
     transition: filter .6s ease !important;
 }
+/* Oct 25 (Emmanuel, real iPhone, Room: "I can still see that there are some bugs from the circle leftovers chunking"): once the
+   pull-out from Home has landed, the live world fades away behind Community, so no far glass worlds, cells or rings pop in
+   chunk by chunk behind the Room. What stays is a clean, still deep-blue space with a soft glow, the same on every Community
+   tab. The world is still what you fly through: it is fully there during the pull-out (gx-in) and the dive home (gx-out). */
+html.wb-on.wb-comm:not(.gx-in):not(.gx-out) #bw3Back { background: radial-gradient(120% 80% at 50% 40%, #11284a 0%, #0a1733 46%, #050b1a 78%, #03060f 100%); }
+html.wb-on.wb-comm:not(.gx-in):not(.gx-out) #bw3Back .bw3-canvas { opacity: 0; transition: opacity .9s ease .15s; }
+
 html.wb-on.wb-comm:not(.gx-in):not(.gx-out) #bw3Back::after {
     opacity: 1 !important;
     background: radial-gradient(120% 95% at 50% 45%, rgba(2, 6, 18, .12), rgba(2, 6, 18, .42)) !important;

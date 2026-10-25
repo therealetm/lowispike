@@ -1,0 +1,25 @@
+/* nibblo-recipe.css: a Nibblo meal in Chat and For You opens its full recipe (25 Oct 2026, Emmanuel).
+ * Markup comes from nibblo-core.js chatHTML() / cookHTML() / fyHitHTML(); the tap is handled by the recipe screen (index.html p2js). */
+.nb-photo{cursor:pointer}
+.nb-meal .nb-bs{cursor:pointer;font:inherit;color:inherit;border:0;min-height:30px;display:inline-flex;align-items:center;gap:6px}
+.nb-bs .nb-bs-go{display:inline-flex;width:14px;height:14px;opacity:.75}
+.nb-bs .nb-bs-go svg,.nb-cook svg{width:100%;height:100%}
+.nb-cap{cursor:pointer}
+.nb-cook{display:flex;align-items:center;gap:10px;width:100%;max-width:300px;min-height:48px;margin:8px 0 2px;padding:8px 10px 8px 8px;border-radius:16px;
+  border:1px solid color-mix(in srgb,#a9dcb2 55%,transparent);background:color-mix(in srgb,#a9dcb2 22%,transparent);color:inherit;font:inherit;text-align:left;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;transition:transform .18s cubic-bezier(.2,.8,.2,1),background .18s}
+.nb-cook:active{transform:scale(.97)}
+.nb-cook:focus-visible{outline:2px solid #a9dcb2;outline-offset:2px}
+.nb-cook-ic{flex:0 0 32px;height:32px;border-radius:11px;display:grid;place-items:center;background:#a9dcb2;color:#14361d}
+.nb-cook-ic svg{width:19px;height:19px}
+.nb-cook-tx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.nb-cook-tx b{font-size:15px;font-weight:700}
+.nb-cook-tx small{font-size:12px;opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-cook-go{flex:0 0 18px;height:18px;opacity:.7}
+/* For You: on the photo, white text over the dark shade like the rest of .fy-meta */
+.nb-cook.nb-fy{margin:10px 0 4px;background:rgba(20,40,26,.55);border-color:rgba(169,220,178,.7);color:#fff;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);text-shadow:none}
+.nb-fyhit{position:absolute;inset:0;z-index:1;border:0;padding:0;margin:0;background:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.nb-fyhit:focus-visible{outline:3px solid #a9dcb2;outline-offset:-6px}
+/* day mode chat: keep the green button readable on a light bubble */
+html[data-ui=light] .cs-msg .nb-cook,html[data-ui=light] .nb-cook:not(.nb-fy){background:#e3f4e6;border-color:#9fd2a9;color:#123019}
+@media (prefers-reduced-motion:reduce){.nb-cook{transition:none}.nb-cook:active{transform:none}}

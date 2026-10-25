@@ -149,13 +149,56 @@
     const k = MSG_RX.exec(String(m.id || '')); if (!k) return ml;
     const p = pick(k[1], k[2]); if (!p || ml.src !== photoUrl(p.dish.r)) return ml;
     const t = texts(p, lang || 'en');
-    return { src: ml.src, lvl: ml.lvl, name: t.name, caption: t.caption, nb: true };
+    return { src: ml.src, lvl: ml.lvl, name: t.name, caption: t.caption, nb: true, rec: bookId(p.dish.r) };
   }
   /* community-chat.js photoOf(): the bot's meal message as Chat's {src, caption, meal}, in this phone's language; null for anything else */
   function chatPhoto(K, m, u) {
     if (!K || !K.meal || !m || m.uid !== UID) return null;
     const x = chatMeal(K.meal(m.t, u), m, api.lang());
-    return x && x.nb ? { src: x.src, caption: x.caption, meal: x } : null;
+    if (!x || !x.nb) return null;
+    const ph = { src: x.src, caption: x.caption, meal: x, rec: x.rec };
+    ph.render = h => chatHTML(ph, m, h); /* community-chat.js msgBody() draws it: photo, label, caption, Cook this -> the recipe */
+    return ph;
+  }
+
+  /* ---- 25 Oct 2026 (Emmanuel): "When I click on the low spike, it's not taking me to how do you cook it." ----
+   * Every Nibblo dish is a Recipe Book recipe (rb_ id, the same library the Cook swipe, Shuffle and Cook with me use).
+   * In Chat and For You the photo, the Low spike label, the caption and a "Cook this" button carry data-sh="recipe" data-r,
+   * which the recipe screen's capture listener (index.html p2js) opens as the full recipe page over Home: ingredients with
+   * amounts, the estimated basket per shop, the steps and Start cooking. */
+  const COOK = { btn: ['Cook this', 'Nachkochen', 'Cocínalo'], sub: ['Ingredients, prices, steps', 'Zutaten, Preise, Schritte', 'Ingredientes, precios, pasos'],
+    open: ['Open the recipe: {n}', 'Rezept öffnen: {n}', 'Abrir la receta: {n}'] };
+  const ESC = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const POT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11h16v3a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6v-3Z"/><path d="M2 11h2M20 11h2M9 7c0-1 1-1.5 1-2.5M13 7c0-1 1-1.5 1-2.5"/></svg>';
+  const CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+  /* the Recipe Book id behind a Nibblo chat message {id, uid} or For You post; '' for anything else */
+  function recipeFor(x) {
+    if (!x || x.uid !== UID && x.user_id !== UID && !x.nb) return '';
+    if (x.rec && /^rb_/.test(x.rec)) return x.rec;
+    if (x.meta && x.meta.nb) { const q = pick(x.meta.nb.d, x.meta.nb.s); if (q) return bookId(q.dish.r); }
+    const k = MSG_RX.exec(String(x.id || '')); if (!k) return '';
+    const p = pick(k[1], k[2]); return p ? bookId(p.dish.r) : '';
+  }
+  const rattr = rec => ' data-sh="recipe" data-r="' + ESC(rec) + '"';
+  function cookHTML(rec, lang, cls) {
+    if (!/^rb_/.test(String(rec || ''))) return '';
+    const i = li(lang || api.lang());
+    return '<button type="button" class="nb-cook' + (cls ? ' ' + cls : '') + '"' + rattr(rec) + ' data-noi18n data-sfx="none"><span class="nb-cook-ic">' + POT + '</span><span class="nb-cook-tx"><b>' + ESC(COOK.btn[i]) + '</b><small>' + ESC(COOK.sub[i]) + '</small></span><span class="nb-cook-go">' + CHEV + '</span></button>';
+  }
+  /* community-chat.js msgBody() for a Nibblo meal: ph = chatPhoto()'s {src, caption, meal, rec}; h = {label} (the chat's own "Low spike" text) */
+  function chatHTML(ph, m, h) {
+    if (!ph || !ph.rec || !ph.meal) return '';
+    const i = li(api.lang()), rec = ph.rec, ml = ph.meal, lab = (h && h.label) || 'Low spike', open = COOK.open[i].replace('{n}', ml.name);
+    return '<button type="button" class="cs-photo nb-photo"' + rattr(rec) + ' data-sfx="none" aria-label="' + ESC(open) + '"><img loading="lazy" decoding="async" alt="" src="' + ESC(ph.src) + '"></button>' +
+      '<div class="cs-meal nb-meal" data-noi18n><b class="cs-meal-n">' + ESC(ml.name) + '</b><button type="button" class="cs-meal-bs cs-meal-' + ESC(ml.lvl || 'low') + ' nb-bs"' + rattr(rec) + ' data-sfx="none" aria-label="' + ESC(open) + '"><i aria-hidden="true"></i>' + ESC(lab) + '<span class="nb-bs-go" aria-hidden="true">' + CHEV + '</span></button></div>' +
+      (ph.caption ? '<div class="cm-t nb-cap"' + rattr(rec) + ' role="button" tabindex="0" data-noi18n>' + ESC(ph.caption) + '</div>' : '') +
+      cookHTML(rec, LANGS[i]);
+  }
+  /* For You: a full-size tap target over a Nibblo post's photo (under the rail and the caption) */
+  function fyHitHTML(p) {
+    const rec = recipeFor(p); if (!rec) return '';
+    const i = li(api.lang()), k = p && p.meta && p.meta.nb ? pick(p.meta.nb.d, p.meta.nb.s) : null, n = k ? texts(k, LANGS[i]).name : '';
+    return '<button type="button" class="nb-fyhit"' + rattr(rec) + ' data-sfx="none" aria-label="' + ESC(COOK.open[i].replace('{n}', n)) + '"></button>';
   }
   function isPost(p) { return !!(p && p.uid === UID && p.meta && p.meta.nb && MSG_RX.test('nb-' + p.meta.nb.d + '-' + p.meta.nb.s)); }
   /* For You: a mapped cloud post (index.html mapPost). Nibblo's own gets its caption in the viewer's language (read each time it
@@ -189,6 +232,6 @@
     api.lang = () => viewLang(W);
   }
 
-  const api = { NAME, UID, EMAIL, LOOK, MEDIA, TZ, LANGS, SLOTS, WINDOW_MIN, INTROS, MENU, BOT_TAG, bookId, photoFile, photoUrl, dayNum, pick, texts, msgId, postId, chatBody, postRow, chatMeal, chatPhoto, isPost, post, berlin, dueSlot, install, lang: () => 'en' };
+  const api = { NAME, UID, EMAIL, LOOK, MEDIA, TZ, LANGS, SLOTS, WINDOW_MIN, INTROS, MENU, BOT_TAG, bookId, photoFile, photoUrl, dayNum, pick, texts, msgId, postId, chatBody, postRow, chatMeal, chatPhoto, isPost, post, recipeFor, cookHTML, chatHTML, fyHitHTML, COOK, berlin, dueSlot, install, lang: () => 'en' };
   return api;
 });

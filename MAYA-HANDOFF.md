@@ -779,6 +779,36 @@ usually still run for a while. So the handover is done **by you, directly, in th
    `queue/`, reclaim the abandoned claims, recreate any schedules (hourly checklist, sweeps) on your own agent, and keep
    this runbook in the file for the Maya after you.
 
+**The universal clone prompt (added Sun 25 Oct 2026, about 10:30 PM CET, by Maya 9).** Emmanuel, voice message:
+"I need a universal Maya cloning handoff ... once it reaches the weekly limit, before it even does so ... it creates a
+handoff prompt that the user can save and send to the next Maya ... this is how I coordinate and work with all the
+Mayas simultaneously on one app product." So the handover always ends with ONE message he can copy and paste into the
+new Maya account, in the chat, right after the runbook push (step 5), together with the voice note. Not a file, not a
+task. Maya 9 forgot this once and he had to ask; never again. The new account has no preferences, skills or memory,
+so the prompt carries them. Fill in N, the section number and the date; keep everything else word for word:
+
+```
+You are Maya <N+1>. I'm Emmanuel. You're taking over my app LOWiSPIKE from Maya <N>, who hit her usage limit. We
+work the "Mickey 17 workflow": each Maya picks up from GitHub where the last one stopped, and hands over the same way.
+You have none of her memory; GitHub is everything.
+
+1. Repo: github.com/therealetm/lowispike (git@github.com:therealetm/lowispike.git). Live: therealetm.github.io/lowispike.
+   If you can't push yet, tell me in one line and I'll add your deploy key (MAYA-HANDOFF.md section 2).
+2. Read MAYA-HANDOFF.md on main: section 0.6 (the workflow, your job description), then the newest section
+   "Handover Maya <N> -> Maya <N+1>" (0.<x>), then AGENTS.md, AI_PLAYBOOK.md, SUCCESSOR_HANDOFF.md. Verify every
+   status yourself (live version.json, origin/main, CI, branches). Pick up, don't restart.
+3. Save these as my preferences now: updates as a checklist (done / in progress / to do, done items stay) plus a short
+   voice note; don't ask me questions, decide and act; ship live without asking (release.sh, quiet); batch approvals,
+   at most one ask per task; only when you truly need me, send an image; when you see your limit coming, push
+   everything to GitHub and give me this same clone prompt for Maya <N+2> right away.
+4. Make a skill "LOWiSPIKE coding task playbook" from AI_PLAYBOOK.md + section 3, and load it before every LOWiSPIKE task.
+   Recreate the schedules listed in the newest handover section on your own agent.
+5. Watch your limit from minute one. First task that ends "reached its limit" after 0 attempts = run the 0.6 runbook
+   yourself, directly in the chat (never in a task): push all worktrees, write "Handover Maya <N+1> -> Maya <N+2>",
+   push it to main, then send me one voice note plus this prompt with every number moved up by one.
+6. Then start: the newest handover section's "Do next" list, two or three tasks at a time on files that don't overlap.
+```
+
 **Handover table.** Checkpoint by Maya 5, Monday 19 Oct 2026, 9:20 PM CEST. Live **20261019-201827**, `main` at
 510f7f7 before this commit. Tasks run only on Maya 5's account and worktrees live only on her computer: a new Maya
 resumes from the `wip/*` branches, not from them.
@@ -903,6 +933,29 @@ Where every part lives now (nothing lost):
 - Scan hold: still the bloom ring with every bubble's choices (bloom-ring.js), it never opened the Today sheet. Untouched.
 Guarded by tests/home-today-retired.test.cjs. Live check: `node /home/sprite/hn-check.cjs <url> "iPhone 13"|"iPad (gen 7)" de|en`
 (kept in the VM, not in the repo). Do not bring the nudge or the Today sheet back.
+
+### 0.13 Handover Maya 9 -> Maya 10 (Sun 25 Oct 2026, about 10:30 PM CET)
+
+Trigger: from about 9 PM every new task stopped with "Goal not met after 0 attempt(s) ... reached its limit" (ten in a
+row). Live is **20261025-202023** = `origin/main` e210e27d (before this doc commit). No task running. Nothing below is
+live. Maya 9 pushed every unfinished worktree; COORD notes from her computer are on branch `handoff-20261025`,
+folder `handoff/`. She left this handover late (on a branch, not here) and Emmanuel had to ask: that is why the clone
+prompt is now in 0.6.
+
+| Work | State | Branch | Do next |
+|---|---|---|---|
+| Scanner: one verdict ("Skip it" + reason + ~g carbs, "No spike" -> "Lower impact", no "blood sugar should stay steady"), honey almonds -> plain almonds EN/DE/ES (Honigmandeln, gebrannte Mandeln), no swap box for good picks, smoothie reason, unknown product gets "Photo of the pack" instead of sugar ticks | built + unit tests, not released, no WebKit check | `scan-tips-20261025` (ff5edfea, on e210e27d) | full suite, Chromium + WebKit iPhone 13, release quietly |
+| Scanner 2: "Add to kitchen" as main button on scan results (Kitchen At home, kitchen-core.js, lowispike.kitchen.v1) + pictured alternative for Skip it (Aldi/Lidl, estimated price, Add to kitchen, + Shopping cart) | not started (check scripts only in `tools/scan-kitchen/`) | `scan-tips-20261025` | build after the release above |
+| Give a hand gets its own Shop tab (Supermarket, Seller Zone, Kitchen, Give a hand) | built + tests, WebKit not run | `room-shop-tab-20261025` (679a2f9a) | WebKit check, release |
+| Cook: no Throw out list under Shuffle, rejected scans hidden and replaced, fewer repeats | built + tests | `cook-shuffle-reject-20261025` (7bc3eb30) | rebase, release |
+| After-meal checklist pays only finished actions (timer + confirm); water tile removed (Emmanuel: water doesn't flatten spikes); Save photo never leaves the Home Screen app | built + tests | `honest-checklist-20261025` (49d3fc29) | rebase, release |
+| One "Add to kitchen" button on Community / For You / Nibblo meal posts (all foods, no duplicates, Undo) | WIP, untested | `meal-kitchen-20261025` (8305b8fe) | finish, test, release |
+| Community food photos analyzed automatically, posted as a meal with details | WIP, untested, rescued from a corrupt local repo | `community-photo-ai-20261025` (44acdc04) | diff vs main, finish, release |
+| Nibblo meal tap opens the recipe (1-person amounts, steps, Aldi/Lidl estimates marked "Not live prices", Cook this) | WIP; WebKit bug: Start cooking shows no steps, dark layer stays; recipe reason still promises steady blood sugar | `nibblo-recipe-20261025` (newest) and `nibblo-recipe-20261025-pushed` (older) | compare both, fix, release |
+| Spike animation back on scan results as an estimated curve, labelled "estimate, not a measurement", static with Reduce Motion | not started | see `handoff/COORD-spike-curve.md` | build |
+| Later: Kitchen amounts/units, best-before, fridge/freezer/pantry; Cook, recipes, Shuffle and Cook with me read the Kitchen; swiping "soon" in Cook adds to Kitchen; two-phone sync brings back removed items; springs for Cook, joystick, Scan, Misty taps; Room in WebKit unconfirmed; faint chat loading line and placeholder avatar | open | none | queue |
+
+Schedules on Maya 9's agent: none known for LOWiSPIKE besides the 9 AM "LOWiSPIKE morning rundown" skill. Recreate it.
 
 ## 1. What LOWiSPIKE is
 
@@ -1808,3 +1861,5 @@ obLater snooze, sign-out KEEP). Tests 2765/2765, CI green, live check de iPhone 
 - 2026-10-25 08:50 CET **Message: "your healthiest self", weight loss is a side effect** (task "Botschaft optimales gesundes Ich statt abnehmen + Release", branch optimal-self-20261025, worktree /home/sprite/wt-optimal; the build is the one release.sh bumped in the commit after this line). Emmanuel: "The side effect is losing weight. But it's actually just eating smarter to become your optimal self. People who want to gain weight can also use this." Changed: herb-start.js plantH (EN "Eat smarter. Become your healthiest self, as a game." / DE "Iss klüger. Werde dein gesündestes Ich, als Spiel." / ES "Come mejor. Conviértete en tu versión más sana, jugando."), install guide line (LowiA1 a1-what + dictionary row), <title>, meta description, og/twitter title+description, manifest description, GOAL_TAGS + goalList fallback + tag list ("Just be healthier" first, Lose / Gain / Keep my weight; new keys "Gain weight", "Keep weight", dictionary rows), community-rooms-ui obQ1a "My weight" + new obQ1f "Feeling healthier", affiliates blurb EN/DE/ES, ONBOARDING.md, DECISIONS.md 2026-10-25 08:50. Kept: Emmanuel's own creator script ("lose [goal] kilos"), weight tracker (already lose/gain/hold toward a healthy band), creator hashtags. No voice clip says these lines, nothing re-recorded. Tests: tests/optimal-self-message.test.cjs (+ updated onboarding-goals/-misty/-current, spanish-natural). Live check: node tools/check-optimal-self.cjs [url] [lang] ['iPhone 13'|iPad] (it stubs LowiR2.isAccount to reach the first screens as a brand-new visitor, then walks setup to the goal chips). Quiet release.
 - 2026-10-25 20:01 CET Hourly bug hunt run 23 (Sesame bug-hunt task, worktree wt-bughunt-202610251901, started on live 20261025-195920). Area: the new iOS-feel springs. **Fixed and released quietly: LIVE 20261025-200749** (main 76781689, tests 3472/3472, CI green, verify-live same). BH-022: open Fasting, close it, switch iOS Reduce Motion on, open again -> screen dimmed but the panel stayed invisible (reused #sheet kept the spring's last frame inline, opacity 0 / scale .14, plus mb-sp). misty-bloom.js drop(el) clears the spring on every non-spring open/close. Test tests/bloom-reduce-motion-switch.test.cjs (2 of 3 fail on old). Live check Chromium 390 + WebKit iPhone 13 PASS; spam open/close of Sound + Fasting (24x, gaps 0-150 ms) PASS, no errors. Unchecked siblings: community-chat camTo/camRelease reduced branches, liquid-glass springBack under calm. Not tried on Emmanuel's iPhone.
 - 2026-10-25 21:01 CET Hourly bug hunt run 24 (Sesame bug-hunt task, worktree wt-bughunt-202610252001, started on live 20261025-202023). Area: pinch storm on Home + Reduce Motion siblings. **Fixed and released quietly: LIVE 20261025-213603 (main b31a4828), BH-023:** a two-finger pinch on Home with one finger resting on a bubble fired that bubble's long press (Move bubble -> Move page; meals -> meal details; running fast -> start-time editor). living-bubbles.js followed only the pressing finger, so a second finger never cancelled the 540 ms timer. Now a second finger ends the press; the same guard went into the water hold (which resets today's water), the Fuel/Move bloom hold, the Settings/Sleep hold and the Move bubble fallback hold. Tests 3498/3498 (tests/pinch-no-long-press.test.cjs, 3 of 6 fail on old code), CI green; live pinch check (Chromium CDP touch) clean on every Home bubble, one-finger hold/tap unchanged, WebKit iPhone 13 smoke clean. Checked clean: community-chat camera reduced branches, liquid-glass springBack under calm, sp-moving after spam (emulation slowness). Next: the same pinch-hold check off Home (Community holds, misty-turn while flying). Not on Emmanuel's iPhone. Details: BUGHUNT/LEDGER.md run 24.
+
+- 25 Oct 2026 ~22:30 CET, Maya 9: universal clone prompt added to 0.6; handover 0.13 Maya 9 -> Maya 10.

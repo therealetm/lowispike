@@ -9,12 +9,20 @@ const zlib = require('zlib');
 const ROOT = path.join(__dirname, '..');
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const G = require('../community-galaxy.js');
-test('readability-fit.css is loaded after every other stylesheet and cached for offline', () => {
+test('readability-fit.css is linked, outweighs the rules it fixes and is cached for offline', () => {
   const html = read('index.html');
   const links = [...html.matchAll(/<link[^>]+rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1].split('?')[0]);
   assert.ok(links.length > 3);
-  assert.equal(links[links.length - 1], 'readability-fit.css', 'last stylesheet, so its fixes win: ' + links.slice(-3).join(', '));
+  /* Other tests pin the end of index.html, so the file sits at the end of <head> and wins by weight instead of by order: every
+     rule repeats #cmPaneChat (one id more than any rule it overrides) and every declaration is !important. */
+  assert.ok(links.includes('readability-fit.css'), 'linked: ' + links.slice(-3).join(', '));
   assert.ok(fs.existsSync(path.join(ROOT, 'readability-fit.css')));
+  const rf = read('readability-fit.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  for (const m of rf.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (m[1].trim() === ':root') continue;
+    for (const sel of m[1].split(',')) assert.match(sel, /#cmPaneChat#cmPaneChat/, 'outweighs the older rule: ' + sel.trim());
+    for (const d of m[2].split(';').map(x => x.trim()).filter(Boolean)) assert.match(d, /!important$/, 'wins over older !important rules: ' + d);
+  }
   assert.match(read('sw.js'), /readability-fit\.css/);
 });
 

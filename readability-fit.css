@@ -1,4 +1,5 @@
-/* readability-fit.css: loaded after every other stylesheet, so these fixes win.
+/* readability-fit.css: linked at the end of <head>. Its rules win by weight, not by order: each repeats #cmPaneChat (one id more
+   than the rule it overrides) and every declaration is !important.
    Oct 25, 2026 (Emmanuel's iPhone 15 Pro Max): the hint "Everyone in the galaxy can read what you send." and the "0/600" counter
    under the chat composer were faint (10 px, 82% white) and cut off at the bottom. Measured in a simulated iPhone 15 Pro Max:
    with the phone reporting no safe area the hint ended 17 px above the screen's bottom edge, inside the home indicator's zone.
@@ -12,9 +13,9 @@
 html body #tab-foryou #cmPaneChat#cmPaneChat .cs-compose-meta{font-size:12.5px!important;line-height:1.3!important;color:var(--rf-hint)!important;opacity:1!important;white-space:normal!important;align-items:flex-start!important;gap:10px!important}
 html[data-theme=light] body #tab-foryou #cmPaneChat#cmPaneChat .cs-compose-meta{color:var(--rf-hint-day)!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat .cs-compose-meta *{color:inherit!important;opacity:1!important}
-html body #tab-foryou #cmPaneChat#cmPaneChat #csDraft{flex:1 1 auto!important;min-width:0!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere}
-html body #tab-foryou #cmPaneChat#cmPaneChat #csCount{flex:0 0 auto!important;white-space:nowrap!important;font-variant-numeric:tabular-nums}
+html body #tab-foryou #cmPaneChat#cmPaneChat #csDraft{flex:1 1 auto!important;min-width:0!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat #csCount{flex:0 0 auto!important;white-space:nowrap!important;font-variant-numeric:tabular-nums!important}
 
-/* the same selectors (and weight) as the rules that set these paddings before, loaded later: only the floor is new */
-html[data-lay=phone] #tab-foryou #cmPaneChat.ls-pane[data-planet]{padding-bottom:calc(max(var(--sab,0px),20px) + 14px)!important;padding-left:max(18px,env(safe-area-inset-left,0px))!important;padding-right:max(18px,env(safe-area-inset-right,0px))!important}
-html.cr-room[data-lay=phone] #tab-foryou #cmPaneChat[data-spirit-chat][data-room]{padding-bottom:calc(max(var(--sab,0px),20px) + 10px)!important}
+/* the rules that set these paddings before (community-chat.css, community-room.css), one id heavier: only the floor is new */
+html[data-lay=phone] #tab-foryou #cmPaneChat#cmPaneChat.ls-pane[data-planet]{padding-bottom:calc(max(var(--sab,0px),20px) + 14px)!important;padding-left:max(18px,env(safe-area-inset-left,0px))!important;padding-right:max(18px,env(safe-area-inset-right,0px))!important}
+html.cr-room[data-lay=phone] #tab-foryou #cmPaneChat#cmPaneChat[data-spirit-chat][data-room]{padding-bottom:calc(max(var(--sab,0px),20px) + 10px)!important}

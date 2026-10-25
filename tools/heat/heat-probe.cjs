@@ -74,8 +74,13 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     let tot = 0; const st = [].concat(kids[rootPid] || []); while (st.length) { const p = st.pop(); if (stat[p]) tot += stat[p].cpu; (kids[p] || []).forEach(k => st.push(k)); }
     return tot;
   }
-  const snap = async () => Object.assign(await page.evaluate(() => window.__heat.snap()), { m: await metrics(), t: Date.now(), req, wsOpens, cpu: procCpu() });
+  /* world draws: count renderer.render calls of the 3D world (one per drawn world frame) */
+  /* STUBGL=1: the world's draw itself is skipped (counted only), so the VM's software GPU (~4-8 world frames/s at most here) is not
+     the bottleneck and the count shows how often the app asks to draw the world, as on a phone with a real GPU */
+  const wrapWorld = () => page.evaluate(stub => { try { const r = window.LowiWorld3D && LowiWorld3D.renderer; if (r && !r.__wrc) { const f = r.render; r.render = function () { window.__wr = (window.__wr || 0) + 1; if (!stub) return f.apply(this, arguments); }; r.__wrc = 1; } } catch (e) { } return window.__wr || 0; }, !!process.env.STUBGL).catch(() => 0);
+  const snap = async () => Object.assign(await page.evaluate(() => window.__heat.snap()), { wr: await wrapWorld() }, { m: await metrics(), t: Date.now(), req, wsOpens, cpu: procCpu() });
   const ev = (fn, a) => page.evaluate(fn, a).catch(e => 'ERR ' + e.message.slice(0, 160));
+  await wrapWorld();
   const out = { engine: ENGINE, throttle: THROTTLE, dpr: DPR, url: URL, when: new Date().toISOString(), scenarios: {} };
   const top = (o, n) => Object.entries(o || {}).sort((a, b) => b[1] - a[1]).slice(0, n || 8);
   async function measure(name, act, settle) {
@@ -93,7 +98,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       layoutPct: cdp ? +((b.m.LayoutDuration - a.m.LayoutDuration) / sec * 100).toFixed(1) : null,
       stylePct: cdp ? +((b.m.RecalcStyleDuration - a.m.RecalcStyleDuration) / sec * 100).toFixed(1) : null,
       layoutsPerSec: cdp ? per(a.m.LayoutCount, b.m.LayoutCount) : null, stylesPerSec: cdp ? per(a.m.RecalcStyleCount, b.m.RecalcStyleCount) : null,
-      rafPerSec: per(a.raf, b.raf), rafBy: top(by(a.rafBy, b.rafBy), 10), framesPerSec: per(a.frames, b.frames),
+      worldDrawsPerSec: per(a.wr, b.wr), rafPerSec: per(a.raf, b.raf), rafBy: top(by(a.rafBy, b.rafBy), 10), framesPerSec: per(a.frames, b.frames),
       timerCbPerSec: per(a.timerCb, b.timerCb), timerBy: top(by(a.timerBy, b.timerBy), 8), liveIntervals: b.liveIntervals,
       draw2dPerSec: per(a.draw2d, b.draw2d), draw2dBy: top(by(a.draw2dBy, b.draw2dBy), 6), glDrawsPerSec: per(a.glDraw, b.glDraw), glBy: top(by(a.glBy, b.glBy), 6),
       canvases: b.canvases, animations: b.animations, backdrop: b.backdrop,
@@ -101,7 +106,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       audio: b.audio, wakeLocks: b.wakeLocks, heapMB: b.heapMB, nodes: b.nodes, power: b.power, htmlClass: b.htmlClass
     };
     out.scenarios[name] = r;
-    console.log(`${name.padEnd(18)} cpu ${String(r.procCpuPct).padStart(5)}% busy ${String(r.mainBusyPct).padStart(5)}%  raf/s ${String(r.rafPerSec).padStart(5)} fps ${String(r.framesPerSec).padStart(4)}  timers/s ${String(r.timerCbPerSec).padStart(5)} iv ${r.liveIntervals}  2d/s ${String(r.draw2dPerSec).padStart(6)} gl/s ${String(r.glDrawsPerSec).padStart(5)}  anim ${r.animations.running} bd ${r.backdrop}  mut/s ${r.mutPerSec}  req/s ${r.reqPerSec} ws+${r.wsOpens}  canvMP ${r.canvases.mp} heap ${r.heapMB} ${r.power || ''} audio ${r.audio}`);
+    console.log(`${name.padEnd(18)} cpu ${String(r.procCpuPct).padStart(5)}% busy ${String(r.mainBusyPct).padStart(5)}% world/s ${String(r.worldDrawsPerSec).padStart(5)}  raf/s ${String(r.rafPerSec).padStart(5)} fps ${String(r.framesPerSec).padStart(4)}  timers/s ${String(r.timerCbPerSec).padStart(5)} iv ${r.liveIntervals}  2d/s ${String(r.draw2dPerSec).padStart(6)} gl/s ${String(r.glDrawsPerSec).padStart(5)}  anim ${r.animations.running} bd ${r.backdrop}  mut/s ${r.mutPerSec}  req/s ${r.reqPerSec} ws+${r.wsOpens}  canvMP ${r.canvases.mp} heap ${r.heapMB} ${r.power || ''} audio ${r.audio}`);
   }
   if (process.env.MODE === 'anim') {
     /* pause one CSS animation name at a time on Home idle */

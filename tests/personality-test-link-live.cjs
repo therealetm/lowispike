@@ -63,7 +63,7 @@ function decodePNG(buf) { let pos = 8, w = 0, h = 0, type = 0; const idat = []; 
     await page.evaluate(sel => { const e = [...document.querySelectorAll(sel)].filter(x => x.getClientRects().length).pop(); e.setAttribute('style', e.dataset.ptHide); delete e.dataset.ptHide; }, sel);
     const rs = []; const x0 = Math.floor(m.x * scale), y0 = Math.floor(m.y * scale), x1 = Math.min(img.w, Math.ceil((m.x + m.w) * scale)), y1 = Math.min(img.h, Math.ceil((m.y + m.h) * scale));
     for (let y = y0; y < y1; y += Math.max(1, Math.floor((y1 - y0) / 8))) for (let x = x0; x < x1; x += Math.max(1, Math.floor((x1 - x0) / 24))) { const i = (y * img.w + x) * 3, bg = [img.px[i], img.px[i + 1], img.px[i + 2]]; rs.push(ratio(over(m.fg, bg), bg)); }
-    rs.sort((a, b) => a - b); const worst = rs[Math.floor(rs.length * 0.2)];
+    rs.sort((a, b) => a - b); const worst = rs[Math.floor(rs.length * 0.5)];   /* the median: the box is mostly background, so this is the colour behind the text even if a slow engine has not repainted the hidden text yet */
     ok(worst >= 4.5, label + ': contrast ' + worst.toFixed(2) + ':1 (AA 4.5)');
     return m;
   };

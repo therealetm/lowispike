@@ -156,3 +156,17 @@ test('a started timer never makes the card taller: the honest line takes the pla
     assert.match(say, /'honest'/, 'the intro line turns into the honest line while a timer runs');
     assert.doesNotMatch(ft, /'honest'/, 'the footer never adds the honest line on top');
 });
+
+test('the card only folds itself once the Home ring has settled, never on a joystick still in its boot spot', () => {
+    /* Oct 25 (Maya 10, browser check, iPhone 13 390x844): after a reload with timers running, mount() measured the joystick
+       at its boot spot (y 700-760, before html.wh-home places it in the ring at y 473-561), saw an overlap and folded the card
+       for good, so the tiles were hidden although nothing covered anything once Home was laid out. */
+    const mount = ui.slice(ui.indexOf('function mount()'), ui.indexOf('function remove()'));
+    assert.ok(mount.length > 50, 'mount() found');
+    assert.doesNotMatch(mount, /coversRing\(\)/, 'mount() does not decide the fold at once');
+    const settle = ui.slice(ui.indexOf('function settleFold('), ui.indexOf('function settleFold(') + 900);
+    assert.ok(ui.indexOf('function settleFold(') > 0, 'a settle step decides the fold');
+    assert.match(settle, /wh-home/, 'it waits for the Home layout');
+    assert.match(settle, /coversRing\(\)/);
+    assert.match(mount, /settleFold\(/);
+});

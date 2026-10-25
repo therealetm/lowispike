@@ -103,6 +103,7 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
         R.step = 'skip';
         const d = await logMeal(lang === 'de' ? 'Griechischer Joghurt' : lang === 'es' ? 'Yogur griego' : 'Greek yogurt', 0);
         c = await card();
+        for (let i = 0; !c && i < 4; i++) { console.log('  no card yet; waiting for:', await P.evaluate(() => LowiAfterMeal.waitingFor()), JSON.stringify(await P.evaluate(() => LowiAfterMeal.state()))); await tidy(); await H.sleep(2000); c = await card(); }
         ok('card again for the next meal eaten now', !!c && d.ev && (await P.evaluate(() => LowiAfterMeal.state().id)) === d.ev.id, c);
         if (c) {
             await R.tap('#pmcCard [data-pmc="skip"]');

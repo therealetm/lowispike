@@ -590,6 +590,8 @@
     /* taps and holds on the four bubbles (one window capture listener: runs before the old cell handlers) */
     const HOLD_MS = 550;
     function onDown(e) {
+        /* BH-023: a second finger means a pinch, not a hold: drop the hold the first finger started */
+        if (e.isPrimary === false) { if (st.hold) { clearTimeout(st.hold.t); st.hold = null; } return; }
         const el = bubbleOf(e.target);
         if (!el) return;
         const kind = el.getAttribute('data-orbit');

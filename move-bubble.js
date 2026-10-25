@@ -269,6 +269,8 @@
             clear(); b.classList.add('wm-holding');
             down = setTimeout(() => { down = 0; held = true; b.classList.remove('wm-holding', 'wm-press'); buzz(18); openPage(); }, 560);
         });
+        /* BH-023: a second finger anywhere turns the hold into a pinch: no Move page */
+        D.addEventListener('pointerdown', e => { if (down && e.isPrimary === false) { clear(); b.classList.remove('wm-press'); } }, true);
         b.addEventListener('pointermove', e => { if (down && Math.hypot(e.clientX - sx, e.clientY - sy) > 12) { clear(); b.classList.remove('wm-press'); } });
         ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => b.addEventListener(n, () => { clear(); b.classList.remove('wm-press'); }));
         b.addEventListener('contextmenu', e => { e.preventDefault(); if (shared()) return; });

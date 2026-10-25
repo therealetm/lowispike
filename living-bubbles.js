@@ -341,6 +341,11 @@
 
     /* ---------- press squish + long press (generic), like Misty's bubble ---------- */
     let press = null, swallow = 0;
+    /* BH-023 (bug hunt run 24): fingers on the screen right now. A press or long press is one finger; once a second finger lands it
+       is a pinch, so the press ends and no long press fires (pinching Home with a finger resting on the Move bubble opened the Move
+       page, on the meals bubble the meal details, on a running fast the start-time editor). */
+    const fingers = new Set();
+    const lift = e => fingers.delete(e.pointerId);
     function bubbleOf(t) {
         if (!t || !t.closest) return null;
         for (const el of list.keys()) if (el.contains(t)) return el;
@@ -355,6 +360,7 @@
         press = null;
     }
     D.addEventListener('pointerdown', e => {
+        if (e.pointerType !== 'mouse') { if (e.isPrimary) fingers.clear(); /* the first finger of a new touch: nothing stale counts */ fingers.add(e.pointerId); if (fingers.size > 1) { endPress(false); return; } }
         const el = bubbleOf(e.target); if (!el || (e.button != null && e.button !== 0)) return;
         if (list.get(el).opts.ctl) return; /* home-controls: their own :active press, tap, hold and drag stay exactly as they were */
         endPress(false);
@@ -376,8 +382,8 @@
         press.moved = Math.max(press.moved, Math.hypot(e.clientX - press.x, e.clientY - press.y));
         if (press.moved > 14) endPress(false);
     }, { passive: true, capture: true });
-    D.addEventListener('pointerup', e => { if (press && e.pointerId === press.id) endPress(true); }, { passive: true, capture: true });
-    D.addEventListener('pointercancel', e => { if (press && e.pointerId === press.id) endPress(false); }, { passive: true, capture: true });
+    D.addEventListener('pointerup', e => { lift(e); if (press && e.pointerId === press.id) endPress(true); }, { passive: true, capture: true });
+    D.addEventListener('pointercancel', e => { lift(e); if (press && e.pointerId === press.id) endPress(false); }, { passive: true, capture: true });
     /* the tap that ends a long press must not also do the bubble's tap action, nor press whatever just opened under the finger */
     D.addEventListener('click', e => {
         if (swallow && performance.now() - swallow < 900) { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); swallow = 0; }

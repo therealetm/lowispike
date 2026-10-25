@@ -649,6 +649,7 @@
     }
     function onHoldDown(e) {
         if (!holdFired) swallowUntil = 0;
+        if (e.isPrimary === false) { holdCancel(); return; } /* BH-023: a second finger is a pinch, not a hold */
         const el = e.target && e.target.closest && e.target.closest('[data-orbit="settings"]');
         if (!el || el.dataset.o8Adapter !== 'settings-sleep' || (e.button && e.button !== 0) || e.isPrimary === false) return;
         holdCancel(); holdAt = { x: e.clientX, y: e.clientY }; holdEl = el; holdCue(true);

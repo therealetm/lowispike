@@ -1202,6 +1202,7 @@
     function wireWaterHold() {
         const sel = '.wh-water[data-sp="water"], #lvDash .lv-water';
         D.addEventListener('pointerdown', e => {
+            if (e.isPrimary === false) { lpCancel(); return; } /* BH-023: a second finger is a pinch: never reset the water */
             const el = e.target.closest && e.target.closest(sel); if (!el || (e.button && e.button !== 0)) return;
             lpCancel(); lp.el = el; lp.x = e.clientX; lp.y = e.clientY; lp.fired = false; el.classList.add('wh-holding');
             lp.t = setTimeout(() => { lp.t = 0; lp.fired = true; lp.until = Date.now() + 1500; el.classList.remove('wh-holding'); waterUndoLast(); }, 600);

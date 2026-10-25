@@ -196,7 +196,9 @@ function ensureScope(){const id=H.state().uid||'';if(id===scope&&(store||!id))re
 /* Oct 19: "@Name ⚡ X sent you energy" lines (old app pings, crowd members) are hidden everywhere: chat, bubbles, unread counts */
 const ENERGY_LINE=/^(@\S[^\n]*?\s)?\u26a1\s[^\n]+\s(sent you energy|hat dir Energie geschickt|te envi\u00f3 energ\u00eda)[\s!.]*$/u;
 function energyLine(m){return !!(m&&typeof m.t==='string'&&ENERGY_LINE.test(m.t.trim()));}
-function messages(){const live=transport.state().phase==='ready'||H.messages().length?H.messages():cache;return K.visible(live,draftState().outbox,prefs.blocks||{},scope).filter(m=>!energyLine(m));}
+/* Oct 25: messages from people the admin removed (hidden-accounts.js isRemoved) are hidden for everyone; the server hides them too */
+function removedBy(m){try{const Hd=W.LowiHiddenAccounts;return !!(Hd&&Hd.isRemoved&&m&&m.uid&&m.uid!==scope&&Hd.isRemoved(m.uid));}catch(e){return false;}}
+function messages(){const live=transport.state().phase==='ready'||H.messages().length?H.messages():cache;return K.visible(live,draftState().outbox,prefs.blocks||{},scope).filter(m=>!energyLine(m)).filter(m=>!removedBy(m));}
 /* 22 Oct, admin pinning (K.pinned): the raw room rows include the pin markers that messages() hides */
 function rawLive(){return transport.state().phase==='ready'||H.messages().length?H.messages():cache;}
 function isAdmin(){try{return !!(scope&&W.LowiOwnerAdmin&&W.LowiOwnerAdmin.isOwner&&W.LowiOwnerAdmin.isOwner());}catch(e){return false;}}

@@ -29,7 +29,9 @@
     const selfIsTest = () => !!self && tests.has(self);
     function isTest(p) { const u = uidOf(p); return !!u && tests.has(u); }
     function testHidden(p) { if (p && typeof p === 'object' && p.me) return false; return isTest(p) && !selfIsTest() && uidOf(p) !== self; }
-    function isBot(p) { const u = uidOf(p); if (!u) return false; return bots.has(u) || testHidden(p); }
+    /* Oct 25: people the admin removed from the Community (hidden-accounts.js isRemoved) leave every list that asks here too */
+    function removed(p) { if (p && typeof p === 'object' && p.me) return false; const H = root.LowiHiddenAccounts; return !!(H && H.isRemoved && H.isRemoved(uidOf(p))); }
+    function isBot(p) { const u = uidOf(p); if (!u) return false; return bots.has(u) || testHidden(p) || removed(p); }
     function humans(list) { return (list || []).filter(p => !isBot(p)); }
     function save() { try { root.localStorage && root.localStorage.setItem(KEY, JSON.stringify({ ids: [...bots], tests: [...tests], self, at: Date.now() })); } catch (e) { /* full */ } }
     function set(botIds, testIds) {

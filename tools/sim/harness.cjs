@@ -63,6 +63,17 @@ async function open(o) {
     const ctx = await browser.newContext(Object.assign(dev, { serviceWorkers: 'block' }));
     await ctx.route(u => { try { const x = new URL(u); return !(x.protocol === 'data:' || x.protocol === 'blob:' || x.host === host || x.host.endsWith('.supabase.co')); } catch (e) { return true; } }, r => r.abort());
     await ctx.route(u => { try { return new URL(u).host === host; } catch (e) { return false; } }, r => r.request().method() === 'GET' ? r.continue() : r.abort());
+    /* Oct 25 (Emmanuel: "I see companions that I don't know, and names that I don't know" - an "Emmanuel, Leo, 1 August, Level 5"):
+       a run against the LIVE site signs in anonymously with this harness's seed (name Emmanuel, birthday 1 August, 2400 XP), so
+       every such run left a stranger called Emmanuel in the real Community. Live runs now mark their account as a test account
+       (auth metadata lowi_test:true, copied to profiles.test by the bot_flag triggers), so it is hidden from real people.
+       SIM_LIVE_UNMARKED=1 turns this off. */
+    if (o.url && process.env.SIM_LIVE_UNMARKED !== '1') await ctx.route(u => /\.supabase\.co\/auth\/v1\/signup/.test(String(u)), r => {
+        const q = r.request(); if (q.method() !== 'POST') return r.continue();
+        let b = {}; try { b = JSON.parse(q.postData() || '{}') || {}; } catch (e) { b = {}; }
+        b.data = Object.assign({}, b.data || {}, { lowi_test: true });
+        return r.continue({ postData: JSON.stringify(b) });
+    });
     const sim = o.cloud === false ? null : await cloud.install(ctx, o);
     await ctx.addInitScript(INIT, [o.lang, o.name, o.fresh]);
     if (o.keyboard) await ctx.addInitScript(KEYBOARD, [o.kbHeight || 291]);

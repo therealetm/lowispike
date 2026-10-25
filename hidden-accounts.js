@@ -56,9 +56,25 @@
     const idOf = p => typeof p === 'string' ? p : (p && (p.uid || p.id || p.user_id)) || '';
     /* your own row is never hidden, even if its id were listed */
     /* + accounts the server marks as test accounts (profiles.test, bot-accounts.js), hidden everywhere like these */
-    function isHidden(p) { if (p && typeof p === 'object' && p.me) return false; const id = String(idOf(p)).trim().toLowerCase(); if (!id) return false; if (SET.has(id)) return true; const B = root.LowiBotAccounts; return !!(B && B.testHidden && B.testHidden(String(idOf(p)).trim())); }
+    function isHidden(p) { if (p && typeof p === 'object' && p.me) return false; const id = String(idOf(p)).trim().toLowerCase(); if (!id) return false; if (SET.has(id) || REMOVED.has(id)) return true; const B = root.LowiBotAccounts; return !!(B && B.testHidden && B.testHidden(String(idOf(p)).trim())); }
     function visible(list) { return (list || []).filter(p => !isHidden(p)); }
-    const api = { IDS, isHidden, visible };
+    /* Oct 25: people the admin removed from the Community (public.community_kicks, community-remove.js). Hidden exactly like
+       the accounts above, for everyone. Cached so the first paint after a restart already leaves them out; the server's
+       list replaces it on every load, so a Restore brings the person back. */
+    const RKEY = 'lowi.removedIds.v1';
+    let REMOVED = new Set();
+    try { const v = JSON.parse((root.localStorage && root.localStorage.getItem(RKEY)) || 'null'); if (v && Array.isArray(v.ids)) REMOVED = new Set(v.ids.map(x => String(x).toLowerCase())); } catch (e) { /* no cache */ }
+    function isRemoved(p) { const id = String(idOf(p)).trim().toLowerCase(); return !!id && REMOVED.has(id); }
+    function setRemoved(ids) {
+        const next = new Set((ids || []).map(x => String(x || '').trim().toLowerCase()).filter(Boolean));
+        const changed = next.size !== REMOVED.size || [...next].some(x => !REMOVED.has(x));
+        REMOVED = next;
+        try { root.localStorage && root.localStorage.setItem(RKEY, JSON.stringify({ ids: [...REMOVED], at: Date.now() })); } catch (e) { /* full */ }
+        if (changed) { try { root.dispatchEvent && root.dispatchEvent(new root.CustomEvent('lowi-bots')); } catch (e) { /* old browser */ } }
+        return changed;
+    }
+    function removedIds() { return [...REMOVED]; }
+    const api = { IDS, isHidden, visible, isRemoved, setRemoved, removedIds, RKEY };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiHiddenAccounts = api;
 })(typeof window !== 'undefined' ? window : globalThis);

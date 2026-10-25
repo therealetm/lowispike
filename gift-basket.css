@@ -1,0 +1,60 @@
+/* Oct 25 2026: "Give a hand" (gift-basket.js). It sits on the Shop panel's glass (.stp-ov / .stp-card from store-picks.css);
+   these are only its own bits, in the same soft membrane look. */
+.gb-entry { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; margin: 10px 0 14px; padding: 12px 14px; border-radius: 22px; }
+.gb-entry-i { font-size: 24px; line-height: 1; flex: 0 0 auto; }
+.gb-head { padding-bottom: 6px; }
+.gb-tabs { margin-top: 4px; }
+.gb-msg { display: none; margin: 0 16px 6px; padding: 9px 12px; border-radius: 16px; font-size: 14px; line-height: 1.35; background: rgba(143, 231, 255, .14); }
+.gb-msg.on { display: block; }
+.gb-msg.gb-good { background: rgba(120, 230, 170, .18); }
+.gb-msg.gb-low { background: rgba(255, 170, 120, .2); }
+.gb-intro { font-size: 14.5px; line-height: 1.4; margin: 10px 4px 6px; opacity: .92; }
+.gb-money { font-size: 12.5px; line-height: 1.4; margin: 10px 4px 12px; padding: 10px 12px; border-radius: 16px; border: 1px dashed rgba(170, 214, 255, .4); opacity: .9; }
+.gb-basket { margin: 10px 0; padding: 12px 14px 14px; border-radius: 22px; border: 1px solid rgba(170, 214, 255, .28); background: rgba(255, 255, 255, .06); }
+.gb-basket header { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; margin-bottom: 8px; }
+.gb-basket header b { font-size: 16px; font-weight: 800; }
+.gb-basket header small { font-size: 13px; opacity: .78; }
+.gb-basket header .gb-badge { margin-left: auto; }
+.gb-badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; background: rgba(143, 231, 255, .2); }
+.gb-badge.gb-good { background: rgba(120, 230, 170, .26); }
+.gb-badge.gb-low { background: rgba(255, 170, 120, .26); }
+.gb-badge.gb-new { background: rgba(255, 255, 255, .14); }
+.gb-items { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.gb-items li { padding: 5px 10px; border-radius: 999px; font-size: 13.5px; background: rgba(120, 230, 170, .14); border: 1px solid rgba(120, 230, 170, .3); }
+.gb-items li::before { content: "\2713\00a0"; opacity: .7; }
+.gb-total { margin: 6px 2px 10px; font-size: 14px; }
+.gb-ask { margin: 8px 2px; font-size: 14px; font-weight: 700; }
+.gb-state { margin: 6px 2px 0; font-size: 13.5px; opacity: .9; }
+.gb-state.gb-good, .gb-linkmsg { color: inherit; }
+.gb-state.gb-low, .gb-linkmsg.gb-low { color: #ffc49a; }
+.gb-basket .stp-go, .gb-basket .stp-pill, a.gb-pay { text-decoration: none; text-align: center; min-height: 46px; box-sizing: border-box; }
+.gb-basket .stp-foot-acts { margin: 8px 0 0; }
+.gb-receipt { margin: 8px 0; border-radius: 16px; overflow: hidden; background: rgba(0, 0, 0, .2); text-align: center; }
+.gb-receipt img { display: block; width: 100%; max-height: 420px; object-fit: contain; }
+.gb-receipt-wait { display: block; padding: 18px; font-size: 13px; opacity: .8; }
+.gb-moment { display: flex; gap: 12px; align-items: center; margin: 8px 0 4px; padding: 12px 14px; border-radius: 22px; background: rgba(120, 230, 170, .16); border: 1px solid rgba(120, 230, 170, .4); }
+.gb-moment > span { font-size: 30px; animation: gb-bob 1.6s ease-in-out infinite; }
+.gb-moment b { display: block; font-size: 15.5px; }
+.gb-moment small { font-size: 13px; opacity: .85; }
+@keyframes gb-bob { 50% { transform: translateY(-4px) rotate(-6deg); } }
+@media (prefers-reduced-motion: reduce) { .gb-moment > span { animation: none; } }
+.gb-score { display: flex; align-items: center; justify-content: space-between; margin: 12px 4px 0; font-weight: 700; }
+.gb-chosen, .gb-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+.gb-chosen .stp-chip, .gb-chips .stp-chip { white-space: normal; text-align: left; }
+.gb-empty { font-size: 13.5px; opacity: .75; padding: 6px 2px; }
+.gb-sub { margin: 12px 4px 4px; font-size: 13px; font-weight: 800; opacity: .8; }
+.gb-addf { margin: 4px 0 6px; }
+.gb-field { display: flex; flex-direction: column; gap: 5px; margin: 12px 0 0; font-size: 13.5px; font-weight: 700; }
+.gb-field input { min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(170, 214, 255, .3); background: rgba(0, 0, 0, .22); color: inherit; font: inherit; font-size: 16px; font-weight: 500; box-sizing: border-box; width: 100%; }
+.gb-check { display: flex; align-items: center; gap: 10px; margin: 14px 2px 0; font-size: 14px; min-height: 32px; }
+.gb-check input { width: 22px; height: 22px; flex: 0 0 auto; }
+.gb-linkmsg { margin: 6px 6px 0; font-size: 13px; min-height: 1em; }
+.gb-fine { margin-top: 6px; }
+.gb-share { margin: 6px 0 4px; }
+.gb-file { position: relative; overflow: hidden; cursor: pointer; }
+.gb-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
+.gb-hist { list-style: none; margin: 0; padding: 0; }
+.gb-hist li { display: flex; flex-direction: column; padding: 8px 4px; border-bottom: 1px solid rgba(170, 214, 255, .14); font-size: 14px; }
+.gb-hist small { opacity: .8; font-size: 12.5px; }
+html[data-theme="light"] .gb-field input, html.light .gb-field input { background: rgba(255, 255, 255, .6); }
+html[data-theme="light"] .gb-state.gb-low, html[data-theme="light"] .gb-linkmsg.gb-low, html.light .gb-state.gb-low, html.light .gb-linkmsg.gb-low { color: #a8461b; }

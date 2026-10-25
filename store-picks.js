@@ -167,7 +167,7 @@
                 : '<p class="stp-snack-none">' + esc(T('Nothing to buy yet. Add something here, or tap + Shopping cart on a product in the Supermarket tab.', 'Noch nichts zu kaufen. Trag hier etwas ein oder tipp bei einem Produkt im Supermarkt auf + Einkaufswagen.', 'Aún no hay nada que comprar. Añade algo aquí o toca + Carrito en un producto del Supermercado.')) + '</p>') +
             (cv.got.length ? '<div class="stp-kit-gone"><small>' + esc(T(cv.got.length + ' ticked off in the shop', cv.got.length + ' im Laden abgehakt', cv.got.length + ' marcados en la tienda')) + '</small><button type="button" class="stp-chip" data-stp-kit="gotall">' + esc(T('Put in the kitchen', 'In die Küche', 'A la cocina')) + '</button></div>' : '') +
             kitForm('cart', T('Add something to buy, like oat flakes', 'Etwas zum Kaufen, z. B. Haferflocken', 'Algo para comprar, p. ej. copos de avena'), T('Add something to buy', 'Etwas zum Kaufen hinzufügen', 'Añadir algo para comprar')) + '</section>';
-        return shell(head + '<div class="stp-scroll stp-kit" data-noi18n>' + msg + home + cart + '</div>' + footBtns(''));
+        return shell(head + '<div class="stp-scroll stp-kit" data-noi18n>' + msg + home + cart + giftEntry() + '</div>' + footBtns(''));
     }
     /* move one cart entry into the Kitchen: it leaves the list, it shows up at home (once, even if it was already there) */
     function kitFromCart(it) {
@@ -234,13 +234,15 @@
     }
     /* Oct 19 food paths (E-man: Shop "so complicated and so hidden"): Shop is the one place for shopping. Two plain ways on from
        here: scan products in the shop (the shopping camera: check and add to your list, it never logs a meal) and your shopping list. */
+    /* Oct 25 Give a hand (gift-basket.js owns it): one entry row, only when the module is loaded */
+    function giftEntry() { try { return W.LowiGiftBasket && W.LowiGiftBasket.entryHTML ? W.LowiGiftBasket.entryHTML() : ''; } catch (x) { return ''; } }
     function shopActs() {
         const scan = W.LowiShopScan && W.LowiShopScan.open, list = typeof W.tdShopOpen === 'function';
         const Z = W.LowiSellerZone, sz = Z && Z.stripHTML ? Z.stripHTML() : Z && Z.entryHTML ? Z.entryHTML() : '';
-        if (!scan && !list) return sz;
+        if (!scan && !list) return sz + giftEntry();
         return sz + '<div class="stp-foot-acts">' +
             (scan ? '<button type="button" class="stp-go stp-scanshop" data-stp="scanshop">' + ic.cart + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>' : '') +
-            (list ? '<button type="button" class="stp-pill stp-mylist" data-stp="mylist"><span>' + esc(T('Shopping list', 'Einkaufsliste', 'Lista de compra')) + '</span></button>' : '') + '</div>';
+            (list ? '<button type="button" class="stp-pill stp-mylist" data-stp="mylist"><span>' + esc(T('Shopping list', 'Einkaufsliste', 'Lista de compra')) + '</span></button>' : '') + '</div>' + giftEntry();
     }
     function footBtns(left) {
         return '<div class="stp-foot">' + (left || '<span></span>') + '<button type="button" class="stp-orb stp-close" data-stp="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + ic.x + '</button></div>';
@@ -572,6 +574,8 @@
         if (qv && qv.contains(t) && qvCart(t)) return;
         if (qv && qv.contains(t)) { snackClick(t); return; }
         if (snackClick(t)) return;
+        /* Oct 25 Give a hand (gift-basket.js): opens on top of Shop; Back brings Shop back */
+        if (t.closest && t.closest('[data-stp="gift"]')) { try { W.LowiGiftBasket.open('shop'); } catch (x) {} return; }
         if (kitClick(t)) return;
         if (e.target === ov) { close(); return; }
         const tb = t.closest('[data-stp-tab]');

@@ -52,7 +52,10 @@ test('a private post stays private; a post kept back is labelled, never silently
   assert.equal(F.shows({ id: 'm', me: true, vis: 'me', cap: 'mine' }, ctx), false);
   /* the posts the 24 Oct rule kept back: held, so My posts says "Not in For You yet" and offers to share them */
   for (const p of HIS) assert.equal(F.held(p, ctx), true, p.cap);
-  for (const p of HIS) assert.equal(F.shows(p, ctx), false, 'not in For You until shared: ' + p.cap);
+  /* 25 Oct 2026, Emmanuel's decision ("I post that ... I still can't see them. Fix that."): held posts no longer wait for a tap.
+     They show on his own phone (labelled) and go out by themselves; see tests/foryou-fix.test.cjs and DECISIONS.md. */
+  for (const p of HIS) assert.equal(F.shows(p, ctx), true, 'his own post shows on his phone while it goes out: ' + p.cap);
+  assert.equal(F.toPublish(HIS, ctx).length, HIS.length, 'and every held post goes out by itself');
   /* already in the shared table, published, in flight or private: not held */
   assert.equal(F.held(Object.assign({}, HIS[0], { id: 'in-cloud' }), ctx), false);
   assert.equal(F.held(Object.assign({}, HIS[0], { pub: 5 }), ctx), false);

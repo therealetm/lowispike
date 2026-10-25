@@ -1210,3 +1210,17 @@ Emmanuel (Seven): "I don't understand the food journal section. Either remove it
 - Your own age is no longer shown next to your name (the 24 Oct birthday cards promise no age anywhere).
 
 **Consequences:** `tests/foryou-public.test.cjs`; `tests/interface-polish.test.cjs`, `tests/glass-controls.test.cjs` and `tests/foryou-window.test.cjs` now assert the link-out instead of the Oct 16 inline players; `tests/foryou-rule.test.cjs` keeps the insulin rule for bots and crowd posts. Quiet release, no news card, no push.
+
+## 25 Oct 2026: For You keeps his posts (Emmanuel: "I post that. I keep losing the for you page and I still can't see them. Fix that.")
+
+Read-only check of his real account (eman, therealetm@gmail.com) and his phone's backup: 12 posts were in the shared table but carried no `pub` mark on his phone, so whenever the app was not connected yet they counted as held and vanished, and For You showed sample posts; a TikTok link he posted at 10:56 was never sent (made before the 11:41 release, no mark, and the retry only looked at `fail` / `pend`); Community opens on his first tab (Room) and iOS reloads the Home Screen app after a trip to TikTok, so For You was gone each time; "My posts" only lived on the old Tribe profile.
+
+- **Held posts no longer wait for a tap.** Every own For You post that is not in the shared table goes out by itself once the app is connected (`LowiForYou.toPublish`), quietly, keeping its own date. Posts already in the table get their `pub` mark. The "Share all" banner stays as a fallback.
+- **His own For You posts always show on his own phone**, sent or not; one that is not out yet says "Sharing…" or "Not sent yet · trying again" on the slide. Others only ever see what is in the table. This reverses the 25 Oct morning assertion in `tests/foryou-public.test.cjs` ("not in For You until shared").
+- **Old links on Only me go to For You once** (before 25 Oct 18:00 UTC): a link to a public video is nobody's secret and he said his posts kept landing on Only me. Photos, phone videos, notes and anything set to Only me after the fix stay private.
+- **While connecting, For You shows the last real feed** from this device (`lowi.fycache.v1`, per account, outside the account backup), never the sample posts.
+- **For You comes back:** left from For You less than 30 minutes ago, Community opens on For You again (this overrides the first-tab rule only then), and after iOS reloads the app it opens on For You at the same post (`foryou-stay.js`). A link still wins.
+- **"My posts" sits on the feed** (top left, with the count) and lists his cloud posts too.
+- The bot list now loads even when the connection beats the scripts, so the crowd's "Just ate" posts no longer bury his.
+
+**Consequences:** `tests/foryou-fix.test.cjs` (new); `tests/foryou-public.test.cjs` one assertion now checks the reverse.

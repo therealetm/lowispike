@@ -5,7 +5,7 @@ const STATIC = ["community-room.css", "community-tg.css", "one-sheet.css", "cycl
 /* Oct 15 clean start: files the page asks for with ?v=<this build> never change, so they come straight from this build's cache
    (filled at install, or on first use) instead of a network round trip per file on every launch. A page from another build
    (?v=other) still goes to the network first, so old and new files never mix. */
-STATIC.push("foryou.css", "foryou-core.js", "inspo-core.js", "foryou.js"); /* Oct 24 For You: insulin-friendly rule + inspiration bot */
+STATIC.push("foryou.css", "foryou-core.js", "inspo-core.js", "foryou.js", "foryou-stay.js"); /* Oct 24 For You: insulin-friendly rule + inspiration bot */
 STATIC.push("gift-basket-core.js", "gift-basket.js", "gift-basket.css"); /* Oct 25 Give a hand in Shop: own line, like kitchen-core.js */
 STATIC.push("after-meal-checklist-core.js", "after-meal-checklist.js", "after-meal-checklist.css"); /* Oct 25 after-meal checklist: own line */
 STATIC.push("studio-lock-core.js", "studio-lock.js", "studio-lock.css"); /* Oct 25 Studio lock: own line */

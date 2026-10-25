@@ -89,13 +89,36 @@
     if (ctx.inCloud && p.id && ctx.inCloud(p.id)) return false;
     return verdict(p, ctx) !== 'low';
   }
+  /* 25 Oct 2026: what still has to go out. Every own For You post that is not in the shared table yet, also the ones made before
+   * the 11:41 release, which carry no pub / pend / fail mark (his 10:56 TikTok). The caller skips the ones it is sending now. */
+  function toPublish(posts, ctx) {
+    ctx = ctx || {};
+    if (!Array.isArray(posts)) return [];
+    return posts.filter(p => p && typeof p === 'object' && p.id && p.vis === 'tribe' && !p.bot && !p.cloud && !p.pub &&
+      !(ctx.inCloud && ctx.inCloud(p.id)));
+  }
+  /* 25 Oct 2026, once: an old link (TikTok, YouTube, a web page) marked Only me before `before` goes to For You. A link to a public
+   * video is nobody's secret, and Emmanuel said his posts kept landing on Only me. Photos, videos from the phone, plain notes
+   * and anything set to Only me after the fix stay private. Returns how many moved. */
+  function freeLinks(posts, before) {
+    if (!Array.isArray(posts)) return 0;
+    let n = 0;
+    for (const p of posts) {
+      if (!p || p.vis !== 'me' || p.bot || !p.url || p.photo || p.vid || p.video) continue;
+      if (!(typeof p.ts === 'number' && p.ts < before)) continue;
+      p.vis = 'tribe'; n++;
+    }
+    return n;
+  }
   function shows(p, ctx) {
     ctx = ctx || {};
     if (!p || typeof p !== 'object' || !p.id) return false;
     if (p.bot) return passes(p, ctx);
     if (ctx.hidden && ctx.hidden(p)) return false;
     if (ctx.botAccount && ctx.botAccount(p)) return passes(p, ctx);
-    if (p.me) return p.vis !== 'me' && !held(p, ctx);
+    /* 25 Oct 2026 (Emmanuel: "I post that ... I still can't see them"): his own For You posts always show on his own phone, sent,
+     * on their way or stuck (the slide says which); everyone else only ever sees what is in the shared table. */
+    if (p.me) return p.vis !== 'me';
     if (p.uid) return true; /* a real member's post from the shared table */
     return passes(p, ctx); /* no known author (old samples, seeded rows): the insulin rule */
   }
@@ -157,6 +180,8 @@
     inFy: ['In For You', 'In Für dich', 'En Para ti'],
     onlyYou: ['Only you', 'Nur du', 'Solo tú'],
     sending: ['Sharing…', 'Wird geteilt…', 'Compartiendo…'],
+    mine: ['My posts', 'Meine Beiträge', 'Mis publicaciones'],
+    retrying: ['Not sent yet · trying again', 'Noch nicht gesendet · neuer Versuch', 'Aún no enviado · reintentando'],
     heldTag: ['Not in For You yet', 'Noch nicht in Für dich', 'Aún no está en Para ti'],
     shareNow: ['Share to For You', 'In Für dich teilen', 'Compartir en Para ti'],
     onlyMe: ['Only show it to me', 'Nur mir zeigen', 'Mostrármelo solo a mí'],
@@ -198,5 +223,5 @@
     return note(who ? 'love' : 'loveAnon', lang, { who, p: e.name });
   }
 
-  return { level, recipeLevel, verdict, passes, filter, merge, sharePost, srcOfRow, NOTE, note, held, shows, external, ytId, thumbOf, creatorOf, love };
+  return { level, recipeLevel, verdict, passes, filter, merge, sharePost, srcOfRow, NOTE, note, held, shows, toPublish, freeLinks, external, ytId, thumbOf, creatorOf, love };
 });

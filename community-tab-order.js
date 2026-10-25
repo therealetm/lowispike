@@ -217,7 +217,9 @@
             if (!R || !t) { if (++tries < 40) setTimeout(tryIt, 100); return; }
             wire(t); apply();
             const th = D.getElementById('cgThread'), room = !!(th && th.hasAttribute('data-open'));
-            const act = firstAction(order()[0], R.view ? R.view() : null, room, Date.now() - roomStamp < FRESH_MS, deep || Date.now() - wantStamp < FRESH_MS * 2);
+            let act = firstAction(order()[0], R.view ? R.view() : null, room, Date.now() - roomStamp < FRESH_MS, deep || Date.now() - wantStamp < FRESH_MS * 2);
+            /* 25 Oct 2026 (Emmanuel: "I keep losing the for you page"): left from For You less than 30 minutes ago, back to For You */
+            if (!deep && W.LowiForYouStay && W.LowiForYouStay.back && W.LowiForYouStay.back()) act = (R.view && R.view() === 'fy') ? null : 'fy';
             try {
                 if (act === 'room') R.setTab(false);
                 else if (act === 'chat') R.setTab(true, true);   /* opened as the first tab: back from it leaves Community */

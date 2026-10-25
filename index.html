@@ -1494,6 +1494,16 @@ html[data-lay=desktop] #cmPaneChat.cm-pane{padding-bottom:16px}
   background:linear-gradient(135deg,rgba(var(--acc-rgb),.34),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 24px rgba(0,0,0,.35),0 0 18px rgba(var(--acc-rgb),.28);
   backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);cursor:pointer}
 .fyv-fab svg{width:20px;height:20px}
+/* 25 Oct 2026: My posts on the For You feed (top left, the same glass as + Post) and the "not out yet" label on his own slides */
+.fy-mine{position:absolute;top:12px;left:12px;z-index:6;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:999px;color:#fff;font:inherit;font-size:14px;font-weight:700;
+  background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 24px rgba(0,0,0,.3);
+  backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);cursor:pointer}
+.fy-mine b{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:rgba(var(--acc-rgb),.55);font-size:12px;line-height:20px;text-align:center}
+.fy-mine:active{transform:scale(.95)}
+html:not([data-lay=phone]) .fy-mine{left:calc(50% - min(260px,50%) + 12px)}
+html[data-ui=light] .fy-mine{color:#111318;background:linear-gradient(135deg,rgba(255,255,255,.7),rgba(255,255,255,.4));border:1px solid rgba(22,28,46,.3)}
+.fy-state{position:absolute;top:62px;left:12px;z-index:4;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:650;color:#fff;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .fyv-fab:active{transform:scale(.95)}
 html:not([data-lay=phone]) .fyv-fab{right:calc(50% - min(260px,50%) + 12px)}
 
@@ -4452,11 +4462,31 @@ const DEMO = (() => {
 
 /* For You shows only insulin-friendly items, plus the inspiration bot's daily slides (foryou-core.js, DECISIONS 24 Oct 2026). */
 function feed(){ const all = feedAll(); return window.LowiForYou ? LowiForYou.feed(all).filter(p => !T.hidden.includes(p.id)) : all; }
+/* 25 Oct 2026: the last real For You feed, per account, on this device only. lowi.* keys are outside the account backup. */
+function fyUid(){ try { const a = JSON.parse(localStorage.getItem("lowi.auth") || "null"); return a && a.user && a.user.id || ""; } catch(e){ return ""; } }
+function fyCacheRead(){
+  try { const c = JSON.parse(localStorage.getItem("lowi.fycache.v1") || "null"), u = fyUid();
+    if (!c || !Array.isArray(c.posts) || !c.uid || c.uid !== u) return [];
+    return c.posts.filter(p => p && p.id).map(p => Object.assign({}, p, {cloud:true, me: !!(p.uid && p.uid === u)}));
+  } catch(e){ return []; }
+}
+let fyCacheSig = "";
+function fyCacheWrite(list){
+  try { const u = fyUid(); if (!u || !Array.isArray(list)) return;
+    const rows = list.filter(p => p && p.id).slice(0, 150), sig = u + "|" + rows.map(p => p.id + ":" + (p.likes || 0)).join(",");
+    if (sig === fyCacheSig) return; fyCacheSig = sig;
+    const txt = JSON.stringify({uid:u, at:Date.now(), posts:rows.map(p => { const o = {}; for (const k in p) { const v = p[k]; if (typeof v !== "function" && !(typeof v === "string" && v.length > 4000)) o[k] = v; } return o; })});
+    if (txt.length < 600000) localStorage.setItem("lowi.fycache.v1", txt);
+  } catch(e){}
+}
 function feedAll(){
   const hidden = T.hidden.concat(T.reported), blocked = T.blocked;
   const me = T.posts.map(p => Object.assign({me:true}, p));
   const CL = window.LOWI_CLOUD, on = !!(CL && CL.live());
-  const remote = on ? CL.posts() : DEMO;
+  /* 25 Oct 2026 (Emmanuel: "I keep losing the for you page"): while the app connects (the first seconds after opening, a weak
+     network, a failed start) For You shows the last real feed from this phone, not sample posts. */
+  let remote;
+  if (on) { remote = CL.posts(); fyCacheWrite(remote); } else { const c = fyCacheRead(); remote = c.length ? c : DEMO; }
   if (window.LowiSpiritCore) return LowiSpiritCore.mergeFeed(remote,me,hidden,blocked);
   const merged = new Map(remote.map(p=>[p.id,p]));
   me.filter(p=>p.vis!=="me").forEach(p=>{const r=merged.get(p.id);merged.set(p.id,Object.assign({},p,r,{me:true,photo:r&&r.photo||p.photo||"",vurl:r&&r.vurl||p.vurl||"",poster:r&&r.poster||p.poster||""}));});
@@ -4517,6 +4547,8 @@ function slideHTML(p){
   const ex = p.url && window.LowiForYou ? LowiForYou.external(p.url) : null, watch = ex ? LowiForYou.note("watchOn", {p: ex.name}) : pl.open;
   return '<section class="fy-slide' + (textOnly ? " fy-text" : "") + (p.vid ? " fyv-slide" : "") + '" data-id="' + p.id + '">' + fyBg(p) + '<div class="fy-shade"></div>' +
     (textOnly ? '<div class="fy-big">' + esc(cap) + '</div>' : "") +
+    /* 25 Oct 2026: his own post that is not out yet says so (it goes by itself as soon as the app is connected) */
+    (p.me && !p.cloud && !p.pub && window.LowiForYou ? '<span class="fy-state">' + esc(LowiForYou.note(p.fail ? "retrying" : "sending")) + '</span>' : "") +
     (p.url && (p.plat !== "web" || ex) ? '<button class="fy-play' + (ex ? ' fy-play-out' : '') + '" data-tr="open" data-id="' + p.id + '" aria-label="' + esc(watch) + '">' + IC.play + '</button>' : "") +
     '<div class="fy-rail">' +
       '<button class="fy-act' + (liked ? " on" : "") + '" data-tr="like" data-id="' + p.id + '" aria-label="' + fyT("Like") + '">' + FIC.heart + '<span class="num">' + n + '</span></button>' +
@@ -4535,29 +4567,48 @@ function slideHTML(p){
 /* 25 Oct: a post meant for For You goes to the shared table. pend while it goes, pub once it landed, fail when it did not;
  * a failed or interrupted one is tried again by itself the next time For You opens while online. */
 function sharePost(p, file){
+  const quiet = arguments[2] === true; /* 25 Oct 2026: background sends say nothing */
   if (!p || p.vis !== "tribe") return Promise.resolve(false);
   p.pend = 1; delete p.fail; save();
   const CL = window.LOWI_CLOUD;
-  return Promise.resolve(CL && CL.publish ? CL.publish(p, file) : false).catch(() => false).then(ok => {
+  return Promise.resolve(CL && CL.publish ? CL.publish(p, file, quiet) : false).catch(() => false).then(ok => {
     const q = (T.posts || []).find(x => x.id === p.id) || p; delete q.pend;
     if (ok) { q.pub = Date.now(); delete q.fail; } else q.fail = 1;
     save(); return !!ok;
   });
 }
-let fyRetryAt = 0;
+/* 25 Oct 2026 (Emmanuel: "I post that ... I still can't see them"): everything he meant for For You goes out on its own as soon as
+   the app is connected: failed and interrupted sends, and also posts made before the 11:41 release, which carry no mark at all.
+   Posts already in the shared table get their mark, so they never look held while the app is still connecting. Old links he had
+   on Only me go to For You once (LowiForYou.freeLinks); photos and notes on Only me stay private. */
+const FY_FREE_BEFORE = Date.UTC(2026, 9, 25, 18, 0);
+let fyRetryAt = 0; const fySending = new Set();
 function retryShares(){
   const CL = window.LOWI_CLOUD; if (!CL || !CL.live || !CL.live() || Date.now() - fyRetryAt < 60000) return;
+  const FY = window.LowiForYou; let dirty = false;
+  if (FY && FY.freeLinks && !T.freed1) { LowiForYou.freeLinks(T.posts, FY_FREE_BEFORE); T.freed1 = 1; dirty = true; }
+  const inCloud = id => !!(CL.post && CL.post(id));
+  (T.posts || []).forEach(q => { if (q.vis === "tribe" && !q.pub && !q.fail && !q.pend && inCloud(q.id)) { q.pub = q.pub || Date.now(); dirty = true; } });
+  if (dirty) save();
   const todo = (T.posts || []).filter(p => p.vis === "tribe" && !p.pub && (p.fail || p.pend));
-  if (!todo.length) return; fyRetryAt = Date.now();
-  todo.reduce((pr, p) => pr.then(() => sharePost(p)), Promise.resolve()).then(() => { if ($("#fyFeed")) renderForYou(); });
+  const more = FY && FY.toPublish ? LowiForYou.toPublish(T.posts || []) : [];
+  more.forEach(p => { if (todo.indexOf(p) < 0) todo.push(p); });
+  const go = todo.filter(p => !fySending.has(p.id));
+  if (!go.length) return; fyRetryAt = Date.now();
+  go.forEach(p => fySending.add(p.id));
+  go.reduce((pr, p) => pr.then(() => sharePost(p, null, true)).then(() => fySending.delete(p.id)), Promise.resolve())
+    .then(() => { if ($("#fyFeed")) renderForYou(); });
 }
 function heldPosts(){ return (T.posts || []).filter(p => window.LowiForYou && LowiForYou.held(Object.assign({}, p, {me: true}))); }
+let fyTop = 0;
 function renderForYou(el){
   el = el || $("#cmFeed"); if (!el) return; load(); retryShares(); const list = feed();
   const prev = $("#fyFeed"), y = prev ? prev.scrollTop : 0;
-  el.innerHTML = (window.FYV ? FYV.fabHTML() : "") + '<div class="fy-feed" id="fyFeed">' + list.map(slideHTML).join("") +
+  /* 25 Oct 2026: "My posts" sits on the feed itself (it only lived on the old Tribe profile); after posting, the feed opens at the top */
+  const mineN = fyMineAll().length, mineLbl = window.LowiForYou ? LowiForYou.note("mine") : "My posts";
+  el.innerHTML = (window.FYV ? FYV.fabHTML() : "") + '<button class="fy-mine" data-tr="list-mine" aria-label="' + esc(mineLbl) + '">' + esc(mineLbl) + (mineN ? ' <b>' + mineN + '</b>' : '') + '</button>' + '<div class="fy-feed" id="fyFeed">' + list.map(slideHTML).join("") +
     '<section class="fy-slide fy-end"><div class="fy-endin"><b>' + esc(fyT("That's everyone")) + '</b><span class="small muted">' + esc(fyT("Newest first. No algorithm.")) + '</span><button class="btn primary sm" data-r3f="post" data-sfx="open">' + esc(fyT("Post something")) + '</button></div></section></div>';
-  const f = $("#fyFeed"); if (f) { f.scrollTop = y; if (!f.dataset.dbl) { f.dataset.dbl = "1"; f.addEventListener("dblclick", e => { const s = e.target.closest(".fy-slide[data-id]"); if (!s || e.target.closest("button")) return; const b = s.querySelector('[data-tr="like"]'); if (b && !b.classList.contains("on")) b.click(); fyBurst(s, e); }); } if (window.FYV) FYV.attach(f); }
+  const f = $("#fyFeed"); if (f) { f.scrollTop = fyTop ? 0 : y; fyTop = 0; if (!f.dataset.dbl) { f.dataset.dbl = "1"; f.addEventListener("dblclick", e => { const s = e.target.closest(".fy-slide[data-id]"); if (!s || e.target.closest("button")) return; const b = s.querySelector('[data-tr="like"]'); if (b && !b.classList.contains("on")) b.click(); fyBurst(s, e); }); } if (window.FYV) FYV.attach(f); }
 }
 function fyBurst(s, e){ const r = s.getBoundingClientRect(), x = document.createElement("span"); x.className = "fy-burst"; x.innerHTML = FIC.heart; x.style.left = (e.clientX - r.left) + "px"; x.style.top = (e.clientY - r.top) + "px"; s.appendChild(x); setTimeout(() => x.remove(), 800); }
 /* My posts and Saved live in Profile now, plus the tiny demo note. */
@@ -4566,7 +4617,15 @@ function profileHTML(){ load(); const mine = T.posts.length, sv = Object.keys(T.
     '<button class="fy-prow" data-tr="list-mine"><b>My posts</b><span class="num muted">' + mine + '</span>' + chev + '</button>' +
     '<button class="fy-prow" data-tr="list-saved"><b>Saved</b><span class="num muted">' + sv + '</span>' + chev + '</button>' +
     '<div class="tiny dim" style="margin-top:6px">' + (window.LOWI_CLOUD && LOWI_CLOUD.live() ? 'For You and Chat are live: real members, shared.' : 'For You and Chat show sample members until launch.') + '</div></div>'; }
-function listSheet(kind){ const h = H(); load(); const all = DEMO.concat(T.posts.map(p => Object.assign({me:true}, p)), window.LowiForYou ? LowiForYou.botPosts() : []);
+/* 25 Oct 2026: every post of his: the ones on this phone plus the ones only in the shared table (posted on the iPad, or before this
+   phone was set up again) */
+function fyMineAll(){
+  const own = (T.posts || []).map(p => Object.assign({me:true}, p)), ids = new Set(own.map(p => p.id));
+  const CL = window.LOWI_CLOUD, cloud = CL && CL.live && CL.live() ? CL.posts() : fyCacheRead();
+  (cloud || []).forEach(p => { if (p && p.me && !ids.has(p.id)) { ids.add(p.id); own.push(Object.assign({}, p, {me:true})); } });
+  return own;
+}
+function listSheet(kind){ const h = H(); load(); const all = DEMO.concat(kind === "mine" ? fyMineAll() : T.posts.map(p => Object.assign({me:true}, p)), window.LowiForYou ? LowiForYou.botPosts() : []);
   const list = (kind === "mine" ? all.filter(p => p.me) : all.filter(p => (T.saved || {})[p.id])).sort((a, b) => b.ts - a.ts);
   /* 25 Oct: each own post says where it is (In For You / Not in For You yet / Only you); posts the old food rule kept back can be shared in one tap */
   const F = window.LowiForYou, fn = (k, en, v) => (F ? F.note(k, v) : en), held = kind === "mine" ? heldPosts() : [];
@@ -4682,7 +4741,7 @@ function doPost(btn){
   }
   T.posts.unshift(p); if (T.posts.length > 80) T.posts.length = 80;
   if (p.vis !== "tribe") T.filter = "mine"; else if (T.filter === "orig" && !p.mine) T.filter = "all";
-  save(); C = null; h.closeSheet(); showFeed();
+  fyTop = 1; save(); C = null; h.closeSheet(); showFeed();
   /* 25 Oct (Emmanuel): "when someone, me or anyone, posts on the For You page, it's actually there." A member's own post is
    * never held back by the food rule; if it cannot reach the shared table the poster is told and it tries again by itself. */
   if (p.vis === "tribe") {
@@ -9705,6 +9764,13 @@ function likeCount(id){ const s = LIKES[id]; return s ? s.size - (s.has(uid) ? 1
 /* posts carry no avatar column: the author's profile picture comes from their profile row */
 let AVATARS = {};
 function avatarOf(id){ if (!id) return ""; if (id === uid) { try { return (S.user.avatarUrl || (/^https?:/.test(S.user.avatar || "") ? S.user.avatar : "")) || AVATARS[id] || ""; } catch(e){} } return AVATARS[id] || ""; }
+/* 25 Oct 2026: the bot list loads even when the connection is faster than the scripts at the end of the page (seen in the stand-in
+   test: the crowd's "Just ate" posts then filled For You and pushed his own posts 30 slides down). */
+function fyBotsLater(sb, n){
+  n = n || 0;
+  if (window.LowiBotAccounts) { try { window.LowiBotAccounts.load(sb); } catch(e){} return; }
+  if (n < 40) setTimeout(() => fyBotsLater(sb, n + 1), 250);
+}
 function mapPost(r){
   return {id:r.id, uid:r.user_id, me:r.user_id === uid, cloud:true, who:r.who || "Member", ts:ts(r.created_at), plat:r.url ? (PLATS.indexOf(r.plat) >= 0 ? r.plat : "web") : "", url:r.url || "", meta:r.meta || null,
     cap:r.cap || "", photo:r.photo_url || r.photo || "", avatar:r.avatar_url || r.avatar || avatarOf(r.user_id), vid:r.video_url ? 1 : 0, vurl:r.video_url || "", poster:r.poster || "", w:r.w || 0, h:r.h || 0, dur:r.dur || 0,
@@ -9756,7 +9822,7 @@ async function start(){
   PEOPLE = q[4].data.filter(r => r.id !== uid).map(mapPerson);
   live = true;
   applyChat(); applyMembers(); syncMyLikes(); chatNotify("ready");
-  if (window.LowiBotAccounts) window.LowiBotAccounts.load(sb); /* server bot flag: keeps bots off the Ranking and the add-friend list */
+  fyBotsLater(sb); /* server bot flag: keeps bots off the Ranking and the add-friend list (25 Oct 2026: also when bot-accounts.js arrives after the connection) */
   subscribe(); startRooms(); pushProfile(); clearTimeout(backT); setTimeout(() => syncNow("open"), 600); syncNote();
   refreshUI();
   /* a photo picked before the cloud existed never left the phone: upload it once so others see it */
@@ -9824,7 +9890,7 @@ function syncMyLikes(){ try { const k = "lowispike.foryou.v1", T = JSON.parse(lo
   Object.keys(LIKES).forEach(id => { if (LIKES[id].has(uid) && !T.likes[id]) { T.likes[id] = 1; ch = 1; } }); if (ch) localStorage.setItem(k, JSON.stringify(T)); } catch(e){} }
 function dataUrlBlob(d){ const m = /^data:([^;]+);base64,(.*)$/.exec(d || ""); if (!m) return null; const b = atob(m[2]), a = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return new Blob([a], {type:m[1]}); }
 async function upload(path, blob, type){ const r = await sb.storage.from(BUCKET).upload(path, blob, {contentType:type || blob.type || "application/octet-stream", upsert:true, cacheControl:"31536000"}); if (r.error) throw r.error; return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl; }
-async function publish(p, file){
+async function publish(p, file, quiet){
   if (!live || !p || p.vis !== "tribe") return false;
   try {
     let photo_url = /^https?:/.test(p.photo || "") ? p.photo : "", video_url = "";
@@ -9834,8 +9900,8 @@ async function publish(p, file){
       if (!video_url) {
         if (!file && window.FYV && FYV._t && FYV._t.getVid) file = await FYV._t.getVid(p.id);
         if (!file) return false;
-        if (file.size > MAX_UP) { toast("Over 50 MB, so it stays on this phone. Shorter clips go to everyone.", 3600); return false; }
-        toast("Uploading video…", 60000);
+        if (file.size > MAX_UP) { if (!quiet) toast("Over 50 MB, so it stays on this phone. Shorter clips go to everyone.", 3600); return false; }
+        if (!quiet) toast("Uploading video…", 60000);
         const ext = (/quicktime/.test(file.type) ? "mov" : /webm/.test(file.type) ? "webm" : "mp4");
         video_url = await upload(uid + "/" + p.id + "." + ext, file, file.type || "video/mp4");
       }
@@ -9843,11 +9909,16 @@ async function publish(p, file){
     let lv = 1; try { lv = levelOf(S.xp, true).L; } catch(e){}
     const row = {id:p.id, who:myName() || "Member", plat:p.plat || "", url:p.url || "", meta:p.meta || null, cap:p.cap || "", photo_url, video_url, poster:p.poster || "",
       w:p.w || 0, h:p.h || 0, dur:Math.round(p.dur || 0), rec:p.rec || "", mine:!!p.mine, art:p.art || null, lv};
-    const r = await sb.from("posts").upsert(row); if (r.error) throw r.error;
+    /* 25 Oct 2026: an older post keeps its own date (sent late, it does not jump to the top for everyone). A post dated ahead of
+       the server clock is sent as now. If the table refuses the date, it goes without one. */
+    const at = Math.min(typeof p.ts === "number" && p.ts > 0 ? p.ts : Date.now(), Date.now());
+    let r = await sb.from("posts").upsert(Object.assign({created_at:new Date(at).toISOString()}, row));
+    if (r.error) r = await sb.from("posts").upsert(row);
+    if (r.error) throw r.error;
     const np = mapPost(Object.assign({user_id:uid, created_at:new Date(p.ts || Date.now()).toISOString()}, row)); const i = POSTS.findIndex(x => x.id === p.id); if (i >= 0) POSTS[i] = np; else POSTS.unshift(np);
-    if (p.vid) toast("Shared with everyone");
+    if (p.vid && !quiet) toast("Shared with everyone");
     return true;
-  } catch(e){ console.info("[LOWiSPIKE] publish failed", e && (e.message || e)); toast(p.vid ? "Upload failed. It's still on this phone." : "No connection. Try again in a moment.", 3200); return false; }
+  } catch(e){ console.info("[LOWiSPIKE] publish failed", e && (e.message || e)); if (!quiet) toast(p.vid ? "Upload failed. It's still on this phone." : "No connection. Try again in a moment.", 3200); return false; }
 }
 async function unpublish(id){ if (!live || !id) return; const p = POSTS.find(x => x.id === id); POSTS = POSTS.filter(x => x.id !== id);
   try { await sb.from("posts").delete().eq("id", id); if (p && p.me) { const files = ["jpg", "mp4", "mov", "webm"].map(x => uid + "/" + id + "." + x); sb.storage.from(BUCKET).remove(files).then(() => {}); } } catch(e){} }
@@ -21534,6 +21605,7 @@ window.LowiCommunityHost = {
 <script src="foryou-core.js?v=20261025-150124"></script>
 <script src="inspo-core.js?v=20261025-150124"></script>
 <script src="foryou.js?v=20261025-150124"></script>
+<script src="foryou-stay.js?v=20261025-150124"></script>
 <link rel="stylesheet" id="gnCss" href="glass-nav.css?v=20261025-150124">
 <link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261025-150124">
 <link rel="stylesheet" id="symCss" href="sym-home.css?v=20261025-150124">

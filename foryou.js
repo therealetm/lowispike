@@ -88,10 +88,11 @@
   }
   const note = (k, vars) => C.note(k, lang(), vars);
   const held = p => C.held(p, ctx);
+  const toPublish = list => C.toPublish(list, ctx); /* 25 Oct 2026: own For You posts not in the shared table yet */
   const shows = p => C.shows(p, ctx);
   const love = p => C.love(p, lang());
   /* the For You list re-checks when the server's bot list arrives (a crowd account's post then follows the insulin rule) */
   try { root.addEventListener && root.addEventListener('lowi-bots', () => { try { const T = root.TRIBE; if (T && T.renderForYou && doc().getElementById('fyFeed')) T.renderForYou(); } catch (e) { /* not on screen */ } }); } catch (e) { /* no window */ }
 
-  root.LowiForYou = { feed, botPosts, botPost, verdict, passes, held, shows, love, external: C.external, thumbOf: C.thumbOf, creatorOf: C.creatorOf, slideHTML, fromCommunityShare, note, ctx };
+  root.LowiForYou = { feed, botPosts, botPost, verdict, passes, held, toPublish, freeLinks: C.freeLinks, shows, love, external: C.external, thumbOf: C.thumbOf, creatorOf: C.creatorOf, slideHTML, fromCommunityShare, note, ctx };
 })(typeof window !== 'undefined' ? window : this);

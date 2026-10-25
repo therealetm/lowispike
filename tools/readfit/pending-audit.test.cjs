@@ -27,4 +27,3 @@ test('Playwright readability pass: Room and Chat on iPhone SE and iPhone 15 Pro 
   const r = spawnSync(process.execPath, [path.join(ROOT, 'tools/readfit/audit.cjs'), '--sizes', 'se,max', '--langs', 'de', '--themes', 'dark,light', '--screens', 'room,chat', '--out', '/tmp/readfit/unit'], { encoding: 'utf8', timeout: 580000 });
   assert.equal(r.status, 0, (r.stdout || '').split('\n').filter(l => /problems|^   /.test(l)).slice(0, 40).join('\n') + (r.stderr || '').slice(0, 400));
 });
-

@@ -73,12 +73,17 @@ function ensureView(pane){let box=pane.querySelector(':scope>.rm-view');
  if(!box){box=D.createElement('section');box.className='rm-view';box.setAttribute('data-noi18n','');pane.appendChild(box);}
  studioSwitch(box);
  for(const k in frames)if(frames[k].parentNode!==box){const f=frames[k];delete frames[k];if(f.parentNode)f.parentNode.removeChild(f);}
- if(VIEWS[view]&&!frames[view]&&pageActive()){/* never load a page while Community is closed (a repaint after leaving made it again) */const f=D.createElement('iframe');f.className='rm-frame';f.src=VIEWS[view]+'?embed=1';/* not lazy: it is only made when its tab is opened, and lazy frames in WebKit can wait for a scroll */f.dataset.view=view;frames[view]=f;box.appendChild(f);}
+ /* 25 Oct 2026 (Emmanuel: "Studio under construction. I want it locked. So no one can see inside."): while Studio is locked no
+    Affiliates / Creation frame is made (any made before goes), only the lock panel (studio-lock.js; the server decides) */
+ const lk=!!VIEWS[view]&&studioLocked();if(lk)dropFrames('');const SL=W.LowiStudioLock;if(SL&&SL.paint)SL.paint(box,lk&&pageActive());
+ if(VIEWS[view]&&!lk&&!frames[view]&&pageActive()){/* never load a page while Community is closed (a repaint after leaving made it again) */const f=D.createElement('iframe');f.className='rm-frame';f.src=VIEWS[view]+'?embed=1';/* not lazy: it is only made when its tab is opened, and lazy frames in WebKit can wait for a scroll */f.dataset.view=view;frames[view]=f;box.appendChild(f);}
  for(const k in frames)frames[k].hidden=k!==view;
  for(const k in frames)frames[k].title=k==='aff'?tr('aff'):tr('create');
  return box;}
 /* Studio's switch: two halves in the same glass as the tab bar, only while Studio is open */
-function studioSwitch(box){let sw=box.querySelector(':scope>.rm-sw');const on=!!VIEWS[view];
+/* locked unless studio-lock.js is there and the server said yes (a missing lock module never opens Studio) */
+function studioLocked(){const L=W.LowiStudioLock;try{return !L||L.locked()!==false;}catch(e){return true;}}
+function studioSwitch(box){let sw=box.querySelector(':scope>.rm-sw');const on=!!VIEWS[view]&&!studioLocked();
  if(!sw){sw=D.createElement('div');sw.className='rm-sw';sw.setAttribute('role','tablist');sw.innerHTML=['aff','create'].map(k=>'<button type="button" role="tab" class="rm-swb" data-rmsw="'+k+'"></button>').join('');box.insertBefore(sw,box.firstChild);
   sw.addEventListener('click',e=>{const b=e.target.closest('[data-rmsw]');if(!b)return;e.preventDefault();showView(b.dataset.rmsw);const n=sw.querySelector('[data-rmsw="'+view+'"]');if(n&&D.activeElement===b)n.focus({preventScroll:true});});
   sw.addEventListener('keydown',e=>{if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;e.preventDefault();showView(view==='aff'?'create':'aff');const n=sw.querySelector('[data-rmsw="'+view+'"]');if(n)n.focus({preventScroll:true});});}
@@ -186,7 +191,7 @@ function menuItems(){const it=[];/* People directory (Oct 24 2026): everyone in 
  /* 23 Oct (Emmanuel: "Replies & mentions doesn't work and doesn't make sense, so you can mute it"): no Replies & mentions entry.
     lastDirected() and the 'replies' click branch stay as harmless dead paths (nothing renders that key any more). */
  if(D.getElementById('pfBtn'))it.push(['profile','👤',tr('mProfile')]);
- it.push(['invite','🔗',tr('mInvite')]);if(VIEWS[view])it.push(['copyview','📋',tr(view==='aff'?'mCopyAff':'mCopyCreate')]);
+ it.push(['invite','🔗',tr('mInvite')]);if(VIEWS[view])it.push(['copyview','📋',tr(view==='aff'?'mCopyAff':'mCopyCreate')]);if(studioLocked())for(let i=it.length-1;i>=0;i--)if(it[i][0]==='copyview')it.splice(i,1);/* no Studio page link while Studio is locked */
  if(W.LowiCommunity&&W.LowiCommunity.settings)it.push(['settings','⚙️',tr('mSettings')]);
  if(W.LowiCommunityWelcome&&W.LowiCommunityWelcome.open)it.push(['welcome','📜',tr('mWelcome')]);
  return it;}
@@ -331,5 +336,6 @@ function openOn(v){try{if(W.LowiCommunityTabs&&W.LowiCommunityTabs.want)W.LowiCo
  const on=()=>{const p=D.getElementById('tab-foryou');return !!(p&&p.classList.contains('active'));};
  if(!on()){try{W.goTab('foryou');}catch(e){}}
  let k=0;const t=()=>{k++;if(!ensure()||!on()){if(k<30)setTimeout(t,100);return;}const was=view;showView(v);if(v==='fy'&&was==='fy')paintFyFeed();/* already there: show the newest post */};setTimeout(t,on()?0:60);}
+W.addEventListener('lowi:studio-lock',()=>{if(VIEWS[view])paint();});
 W.LowiRoomsUI={paint,setTab,back,from:()=>from,fit,showView,openOn,tab:()=>open()?'chat':tabOfView(view)||'room',view:()=>view,frames:()=>Object.keys(frames),menu:toggleMenu,copyView,inviteUrl,_chanRows:chanRows,_menuKeys:()=>menuItems().map(x=>x[0])};
 })(window,document);

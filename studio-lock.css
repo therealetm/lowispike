@@ -1,0 +1,42 @@
+/* LOWiSPIKE Studio lock (25 Oct 2026): the calm "Under construction" panel in Community > Studio. It is an .rm-frame, so it
+   gets the same width, edge, glow and radius as Ranking, For You and the Studio pages (community-rooms.css). Dark like the
+   Studio pages it stands in for, in day mode too. */
+.sl-lock{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:28px 22px 76px;
+  background:radial-gradient(ellipse 120% 70% at 50% 0%,rgba(15,45,107,.9) 0%,rgba(9,25,63,.88) 46%,#050b1e 100%),#050b1e;color:#f2f8ff;text-align:center;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.sl-lock[hidden]{display:none}
+.sl-lock::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(rgba(190,236,255,.14) .9px,transparent 1.4px) 0 0/22px 22px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 50%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 50%,transparent 100%)}
+.sl-in{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:340px}
+.sl-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;font-size:12.5px;line-height:1;font-weight:600;letter-spacing:.02em;
+  background:rgba(9,20,52,.74);border:1px solid rgba(143,231,255,.42);box-shadow:0 0 14px rgba(28,247,249,.16)}
+.sl-pill i{width:7px;height:7px;border-radius:50%;background:#ffc861;box-shadow:0 0 8px rgba(255,200,97,.85)}
+.sl-ic{display:grid;place-items:center;width:92px;height:92px;margin:6px 0 2px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.18),rgba(28,247,249,.1) 45%,rgba(9,20,52,.6) 100%);
+  border:1px solid rgba(143,231,255,.36);box-shadow:inset 0 0 26px rgba(28,247,249,.14),0 0 34px rgba(28,247,249,.16);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.sl-ic svg{width:38px;height:38px;fill:none;stroke:#8fe7ff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(28,247,249,.45))}
+.sl-t{margin:0;font-size:28px;line-height:1.08;font-weight:800;letter-spacing:-.02em;color:#fff;text-shadow:0 0 24px rgba(28,247,249,.26)}
+.sl-s{margin:0;max-width:28ch;font-size:15px;line-height:1.5;color:#b8cce4}
+.sl-pin{display:flex;flex-direction:column;align-items:stretch;gap:10px;width:100%;max-width:260px;margin-top:6px}
+.sl-pin[hidden]{display:none}
+.sl-pin input{width:100%;min-height:50px;padding:0 16px;border-radius:16px;border:1px solid rgba(143,231,255,.42);background:rgba(9,20,52,.74);color:#fff;
+  font:600 22px/1 inherit;font-family:inherit;letter-spacing:.32em;text-align:center;outline:none;-webkit-appearance:none;appearance:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 14px rgba(28,247,249,.12)}
+.sl-pin input::placeholder{color:rgba(184,204,228,.7);font-size:15px;font-weight:500;letter-spacing:0}
+.sl-pin input:focus-visible{border-color:#8fe7ff;box-shadow:0 0 0 3px rgba(143,231,255,.28)}
+.sl-row{display:flex;gap:10px}
+.sl-b{flex:1;min-height:46px;border-radius:15px;border:1px solid rgba(143,231,255,.36);background:rgba(9,20,52,.6);color:#f2f8ff;font:650 15px/1 inherit;font-family:inherit;cursor:pointer}
+.sl-go{border:0;color:#03122e;background:linear-gradient(135deg,#8ff8f9 0%,#46c8ff 48%,#5b8cff 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 20px rgba(48,140,255,.3)}
+.sl-go:disabled{opacity:.6}
+.sl-b:focus-visible,.sl-key:focus-visible{outline:2px solid #8fe7ff;outline-offset:2px}
+.sl-msg{min-height:1.3em;font-size:13.5px;line-height:1.3;color:#ffd38a}
+.sl-pin.sl-no{animation:sl-no .32s ease}
+@keyframes sl-no{20%{transform:translateX(-7px)}45%{transform:translateX(6px)}70%{transform:translateX(-4px)}100%{transform:none}}
+/* the small lock button: quiet, bottom right, 44 px touch target */
+.sl-key{position:absolute;right:14px;bottom:14px;display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:50%;cursor:pointer;
+  border:1px solid rgba(143,231,255,.26);background:rgba(9,20,52,.55);opacity:.7}
+.sl-key[hidden]{display:none}
+.sl-key svg{width:18px;height:18px;fill:none;stroke:#b8cce4;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@media (max-height:640px){.sl-ic{width:68px;height:68px}.sl-ic svg{width:30px;height:30px}.sl-t{font-size:24px}.sl-lock{padding-top:18px}}
+@media (prefers-reduced-motion:reduce){.sl-pin.sl-no{animation:none}}

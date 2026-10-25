@@ -31,7 +31,7 @@ async function phone(browser, seedOld) {
     try {
       if (sessionStorage.getItem('fyp-seeded')) return; sessionStorage.setItem('fyp-seeded', '1');
       localStorage.setItem('lowi.gate', 'done'); localStorage.setItem('lowispike.tutorial.v1', JSON.stringify({ done: true, v: 99 }));
-      localStorage.setItem('lowi.lang', a.l);
+      localStorage.setItem('lowispike.lang', a.l); /* 25 Oct: the app reads lowispike.lang, not lowi.lang */
       localStorage.setItem('lowispike.v2', JSON.stringify({ v: 2, setupDone: true, onboarded: true, xp: 0, ledger: [], logs: [], saved: [], lang: a.l, user: { name: 'For You Test', bday: '1990-01-01', tags: [] } }));
       if (a.old) { const t = JSON.parse(localStorage.getItem('lowispike.foryou.v1') || '{}'); t.posts = [a.old].concat(t.posts || []); localStorage.setItem('lowispike.foryou.v1', JSON.stringify(t)); }
     } catch (e) { }

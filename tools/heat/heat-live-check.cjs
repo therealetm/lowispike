@@ -60,7 +60,9 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++
   if (BUILD) { const b = await page.evaluate(() => fetch('version.json?x=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(j => j.build).catch(() => '')); ok(b === BUILD, 'version.json build ' + b + ' (expected ' + BUILD + ')'); }
   ok(await page.evaluate(() => !!(window.LowiPower && LowiPower.state)), 'power saver loaded');
   ok(await page.evaluate(() => !!(window.LowiWorld3D && LowiWorld3D.renderer)), '3D world running');
-  await page.evaluate(() => { const r = LowiWorld3D.renderer; const f = r.render; window.__wr = 0; window.__wrT = []; r.render = function () { window.__wr++; window.__wrT.push(performance.now()); if (window.__wrT.length > 400) window.__wrT.shift(); return f.apply(this, arguments); }; });
+  /* STUBGL=1: skip the draw itself (count only) so the VM's software GPU is not the bottleneck */
+  if (process.env.STUBGL) await page.evaluate(() => { window.__stub = 1; });
+  await page.evaluate(() => { const r = LowiWorld3D.renderer; const f = r.render; window.__wr = 0; window.__wrFirst = 0; r.render = function () { window.__wr++; if (window.__wrFirst === null) window.__wrFirst = performance.now(); if (!window.__stub) return f.apply(this, arguments); }; });
   const busyNow = async () => { if (!cdp) return null; const r = await cdp.send('Performance.getMetrics'); const o = {}; r.metrics.forEach(m => o[m.name] = m.value); return o.TaskDuration; };
   const span = async ms => { const a = await page.evaluate(() => window.__wr), ba = await busyNow(), t0 = Date.now(); await sleep(ms); const b = await page.evaluate(() => window.__wr), bb = await busyNow(); const s = (Date.now() - t0) / 1000; return { draws: +((b - a) / s).toFixed(1), busy: ba == null ? null : +((bb - ba) / s * 100).toFixed(1) }; };
   const v = page.viewportSize();
@@ -76,10 +78,10 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++
   ok(quiet.draws < active.draws || active.draws <= 16, 'quiet draws fewer frames than touching (' + quiet.draws + ' vs ' + active.draws + ')');
   if (cdp) ok(quiet.busy < active.busy, 'main thread less busy when quiet (' + quiet.busy + '% vs ' + active.busy + '%)');
   const t = await page.evaluate(() => new Promise(res => {
-    const n0 = window.__wrT.length, t0 = performance.now();
+    const n0 = window.__wr, t0 = performance.now(); window.__wrFirst = null;
     window.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', clientX: 200, clientY: 600 }));
     const st = LowiPower.state();
-    setTimeout(() => { const ts = window.__wrT.slice(n0); res({ st, first: ts.length ? +(ts[0] - t0).toFixed(1) : null, n: ts.length }); }, 1000);
+    setTimeout(() => res({ st, first: window.__wrFirst === null ? null : +(window.__wrFirst - t0).toFixed(1), n: window.__wr - n0 }), 1000);
   }));
   console.log('one touch:  state ' + t.st + ', first world frame after ' + t.first + ' ms, ' + t.n + ' frames in the next second');
   ok(t.st === 'active', 'a touch switches to active at once');

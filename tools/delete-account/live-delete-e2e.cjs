@@ -70,12 +70,19 @@ const INIT = `try {
     console.log('UID ' + res.uid);
     await page.waitForFunction(() => typeof window.goTab === 'function' && window.LowiHomeSettingsSleepV2 && window.LowiCommunityMe, null, { timeout: 90000 });
     await sleep(3000);
-    const openAsk = async () => {
+    /* the hub sheet scrolls inside itself and animates in, so rows are scrolled into view and tapped like a finger would */
+    const tap = sel => page.evaluate(sel => { const e = document.querySelector(sel); if (!e) return false; e.scrollIntoView({ block: 'center' }); e.click(); return true; }, sel);
+    const openHub = async () => {
       await page.evaluate(() => { if (!window.LowiCommunityMe.isOpen()) window.LowiHomeSettingsSleepV2.openSettings(); });
-      await page.waitForSelector('[data-cme="deleteAccount"]', { timeout: 15000 });
-      await page.click('[data-cme="deleteAccount"]');
-      await page.waitForSelector('[data-cme="delGo"]', { timeout: 10000 });
-      await sleep(400);
+      await page.waitForSelector('#cmeSheet', { state: 'attached', timeout: 15000 }); await sleep(700);
+    };
+    const openAsk = async () => {
+      await openHub();
+      await page.waitForSelector('[data-cme="deleteAccount"]', { state: 'attached', timeout: 15000 });
+      await tap('[data-cme="deleteAccount"]');
+      await page.waitForSelector('[data-cme="delGo"]', { state: 'attached', timeout: 10000 });
+      await page.evaluate(() => { const e = document.querySelector('[data-cme="delGo"]'); const box = e.closest('.cme-sec') || e; box.scrollIntoView({ block: 'center' }); });
+      await sleep(500);
     };
     const read = () => page.evaluate(() => {
       const q = s => document.querySelector(s), box = e => { if (!e) return null; const r = e.getBoundingClientRect(); return { l: Math.round(r.left), r: Math.round(r.right), t: Math.round(r.top), b: Math.round(r.bottom) }; };
@@ -84,10 +91,10 @@ const INIT = `try {
       const clipped = [go, keep, tx, h].filter(e => e && e.scrollWidth > e.clientWidth + 1).length;
       return { lang: document.documentElement.lang, title: h && h.textContent, text: tx && tx.textContent, go: go && go.textContent, keep: keep && keep.textContent, fits, clipped, vw: innerWidth, vh: innerHeight };
     });
-    for (const l of ['en', 'de', 'es']) {
-      await page.evaluate(() => { if (!window.LowiCommunityMe.isOpen()) window.LowiHomeSettingsSleepV2.openSettings(); });
-      await page.waitForSelector('[data-lang="' + l + '"]', { timeout: 15000 });
-      await page.click('[data-lang="' + l + '"]'); await sleep(900);
+    for (const l of ['en', 'es', 'de']) {  /* German last: its dialog stays open for the failure and the real delete */
+      await openHub();
+      await page.waitForSelector('[data-lang="' + l + '"]', { state: 'attached', timeout: 15000 });
+      await tap('[data-lang="' + l + '"]'); await sleep(900);
       await openAsk();
       const r = await read();
       await page.screenshot({ path: path.join(OUT, ENG + '-dialog-' + l + '.png') });
@@ -98,11 +105,11 @@ const INIT = `try {
       if (!r.fits) fail(l + ' dialog does not fit 390x844');
       if (r.clipped) fail(l + ' clipped text ' + r.clipped);
       res.steps.push({ lang: l, dialog: r });
-      if (l !== 'de') { await page.click('[data-cme="delCancel"]'); await sleep(500); }
+      if (l !== 'de') { await tap('[data-cme="delCancel"]'); await sleep(500); }
     }
     /* the failure path, in German: the call is blocked once */
     blockDelete = true;
-    await page.click('[data-cme="delGo"]');
+    await tap('[data-cme="delGo"]');
     await page.waitForFunction(() => { const t = document.querySelector('.cme-del-tx'); return t && t.getAttribute('role') === 'alert'; }, null, { timeout: 30000 });
     const f = await read();
     await page.screenshot({ path: path.join(OUT, ENG + '-dialog-de-failed.png') });
@@ -114,7 +121,7 @@ const INIT = `try {
     if (PAUSE) { const until = Date.now() + 180000; while (!fs.existsSync(PAUSE) && Date.now() < until) await sleep(500); }
     /* delete for real, from the same dialog (German) */
     const nav = page.waitForNavigation({ timeout: 60000 }).catch(() => null);
-    await page.click('[data-cme="delGo"]');
+    await tap('[data-cme="delGo"]');
     await nav; await sleep(4000);
     res.steps.push({ deleteCalls });
     const after = await page.evaluate(() => ({ local: Object.keys(localStorage).filter(k => /lowispike\.v2|lowi\.auth/.test(k)).length, uid: (window.LOWI_CLOUD_X && window.LOWI_CLOUD_X.state && window.LOWI_CLOUD_X.state().uid) || '' }));

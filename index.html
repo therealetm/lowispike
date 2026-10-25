@@ -4801,7 +4801,7 @@ const posts = () => (window.TRIBE && TRIBE._t.state() ? TRIBE._t.state().posts :
 const post = id => posts().find(p => p.id === id);
 const recipes = () => (typeof RECIPE_BOOK !== "undefined" ? RECIPE_BOOK : []);
 const recipe = id => recipes().find(r => r.id === id);
-const img = id => (typeof FOOD_IMG !== "undefined" && FOOD_IMG[id]) || "";
+const img = id => (typeof FOOD_IMG !== "undefined" && FOOD_IMG[id]) || (window.LowiInspoCore && LowiInspoCore.fileImg && id ? LowiInspoCore.fileImg(id) : "");   /* Oct 25 2026: the For You photo when the book has none */
 function todaysPick(){
   try { if (typeof S === "undefined" || !S.td || S.td.day !== (typeof today === "function" ? today() : S.td.day)) return "";
     const plan = (S.td.plan || []).filter(id => recipe(id)); if (!plan.length) return "";
@@ -7516,7 +7516,13 @@ function onAct(el, e){
   const a = el.dataset.sh, id = el.dataset.id;
   const P = () => SH.products.find(x => x.id === id);
   switch (a) {
-    case "open-shelf": e.stopPropagation(); return openShelf(el.dataset.t || "regal", el.dataset.sub || "", el.dataset.r || "", "host");
+    case "open-shelf": e.stopPropagation();
+      /* Oct 25 2026: a recipe chip (For You, Today, ...) opened TWO recipe views: this listener opened the Kitchen recipe page
+         and the P2 capture listener (registered later on document, so stopPropagation did not stop it) opened the recipe
+         screen on top. X on the screen showed the Kitchen page underneath. One recipe view: the P2 screen; here only when P2
+         does not know the recipe. */
+      if (el.dataset.sub === "recipe" && el.dataset.r && window.LowiP2 && LowiP2.rec && LowiP2.rec(el.dataset.r)) return;
+      return openShelf(el.dataset.t || "regal", el.dataset.sub || "", el.dataset.r || "", "host");
     case "close": return closeShelf();
     case "up": V.sub = ""; V.tab = V.tab === "alle" ? "alle" : "kochen"; render(); return; /* r3k-up: render puts you back where you were */
     case "tab": V.sub = ""; V.tab = el.dataset.t; V.q = ""; render(); return void ($("#shBody").scrollTop = 0);
@@ -10505,6 +10511,13 @@ html[data-ui=light] .r2-logo span{color:#a8792e}
 .r2-ov.off .r2-scrim{opacity:0}.r2-ov.off .r2-sh{transform:translateY(100%);transition-duration:.3s}
 .r2-ov.full .r2-sh{height:100%;max-height:none;border-radius:0;padding-top:calc(env(safe-area-inset-top) + 18px)}
 .r2-grab{width:40px;height:5px;border-radius:3px;background:var(--r2-line);margin:0 auto 8px}
+/* Oct 25 2026: one-handed close for full screens (the recipe screen): one round X at the bottom centre, same look as the
+   world-home .wh-x, sitting on the screen itself (not in the scrolling sheet) so it never scrolls away */
+.r2-ov.r2-xb>.r2-x{position:absolute;z-index:6;top:auto;right:auto;left:50%;bottom:calc(var(--sab, env(safe-area-inset-bottom)) + 16px);width:58px;height:58px;margin-left:-29px;border-radius:50%;padding:0;color:#0b1d3f;background:rgba(255,255,255,.94);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 10px 30px -10px rgba(0,0,0,.55),0 0 0 1px rgba(11,29,63,.08);transition:transform .25s cubic-bezier(.2,.9,.3,1.3),opacity .2s;-webkit-tap-highlight-color:transparent}
+.r2-ov.r2-xb>.r2-x svg{width:24px;height:24px;stroke-width:2.4}
+.r2-ov.r2-xb>.r2-x:active{transform:scale(.92)}
+.r2-ov.r2-xb.off>.r2-x{opacity:0;pointer-events:none}
+.r2-ov.r2-xb .r2-shb{padding-bottom:calc(var(--sab, env(safe-area-inset-bottom)) + 92px)}
 .r2-x{position:absolute;right:14px;top:14px;width:36px;height:36px;border-radius:50%;border:0;background:var(--r2-field);color:var(--r2-ink);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}
 .r2-shb{position:relative}
 .r2-edit{display:flex;flex-direction:column;gap:14px;padding-top:8px}
@@ -10689,6 +10702,8 @@ R2.sheet = function(html, opts){
   return ov;
 };
 function ovTopIndex(){ for (let i = ovStack.length - 1; i >= 0; i--) if (!ovStack[i].parked) return i; return ovStack.length - 1; }
+/* Oct 25 2026: move a full screen's X out of the scrolling sheet to the bottom centre (CSS .r2-ov.r2-xb > .r2-x) */
+R2.xBottom = function(ov){ try { const x = ov && ov.querySelector(":scope > .r2-sh > .r2-x"); if (!x) return; ov.appendChild(x); ov.classList.add("r2-xb"); } catch(e){} };
 R2.close = function(ov, how){
   const i = ov ? ovStack.findIndex(x => x.ov === ov) : ovTopIndex();
   if (i < 0) return;
@@ -11440,6 +11455,7 @@ html[data-ui=light]{--p2-ok:#2f8f4e;--p2-no:#d6453a;--p2-gold:#a8792e;--p2-card:
 .p2-rh{margin-top:-34px;position:relative}
 .p2-rn{margin-top:4px;line-height:1.15}
 .p2-facts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 16px}
+.p2-heads{margin:0 0 16px}
 .p2-fact{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;background:var(--p2-card);border:1px solid var(--r2-line);font-size:13.5px}
 .p2-fact b{font-weight:650}
 .p2-start{margin-bottom:22px}
@@ -11880,11 +11896,11 @@ function ingKind(i){ const n=String((i&&i.n)||"").toLowerCase(), g=String((i&&i.
 function ingArt(i){ const k=ingKind(i), art=ING_ART[k]; return '<span class="p2-ia ia-'+k+'" aria-hidden="true">'+(art||'<span class="p2-emoji">'+String((i&&i.e)||"•")+'</span>')+'</span>'; }
 
 /* ---------- one recipe shape for everything: {id, n, e, img, mins, extra, steps, ing:[{k,n,q,e,p}], book} ---------- */
-const img = k => (typeof FOOD_IMG !== "undefined" && k && FOOD_IMG[k]) || "";
+const img = k => (typeof FOOD_IMG !== "undefined" && k && FOOD_IMG[k]) || (window.LowiInspoCore && LowiInspoCore.fileImg && k ? LowiInspoCore.fileImg(k) : "");   /* Oct 25 2026: the For You post photo instead of a placeholder */
 const book = () => (typeof RECIPE_BOOK !== "undefined" ? RECIPE_BOOK : []);
 const meals = () => (typeof MEALS !== "undefined" ? MEALS : []);
 function fromBook(r){ const mt = window.LOWI_COOK ? LOWI_COOK.min(r.id) : 0, mx = window.LOWI_COOK ? (LOWI_COOK.minTxt(r.id) || "").replace(/^\d+ min ?/, "") : "";
-  return {id:r.id, n:r.n, e:r.e || "🍽️", img:img(r.id), sub:r.sub || "", mins:mt, extra:mx, book:true, r:r.r || "ja",
+  return {id:r.id, n:r.n, e:r.e || "🍽️", img:img(r.id), sub:r.sub || "", note:r.note || "", mins:mt, extra:mx, book:true, r:r.r || "ja",
     steps:[].concat(r.prep || [], r.make || r.steps || []),
     ing:(r.ing || []).map(i => { const n = typeof i === "string" ? i.split("|")[1] : i.n, g = typeof i === "string" ? i.split("|")[0] : i.g, k = String(n).toLowerCase();
       const pr = LC_PR[k] || LC_G[g] || ["🛒", 2]; return {k, n, q:"", g:g || "", e:pr[0], p:FREE.indexOf(k) >= 0 ? 0 : pr[1]}; })}; }
@@ -11930,6 +11946,7 @@ function recipeHTML(r){ const b = basket(r), e = ease(r), cur = storeId(), pick 
       (r.swapName && r.swapName !== r.n ? '<div class="small muted">Recipe Book: ' + esc(r.n) + '</div>' : "") + '</div>' +
     '<div class="p2-facts p2-up" style="--d:1">' + (r.mins ? '<span class="p2-fact">' + IC.clock + '<b>' + esc(minsLabel(r)) + '</b></span>' : "") +
       '<span class="p2-fact">' + meter(e.lv) + '<b>' + e.t + '</b></span>' + (r.steps.length ? '<span class="p2-fact"><b>' + r.steps.length + ' steps</b></span>' : "") + (e.h ? '<span class="p2-fact"><b>' + e.h + '</b></span>' : "") + '</div>' +
+    (r.note ? '<div class="sh-heads p2-heads p2-up" style="--d:2"><b>Heads-up</b><span>' + esc(r.note) + '</span></div>' : "") +
     (window.LowiCS ? LowiCS.pair(r.id, {cls:"p2-start p2-up p2-cs", cook:'data-p2="cook"', cookId:"p2Start", shopId:"p2Shop", close:true, noCook:!r.steps.length}).replace('class="cs-pair', 'style="--d:2" class="cs-pair')
       : (r.steps.length ? '<button class="r2-btn pri big p2-start p2-up" style="--d:2" data-p2="cook" id="p2Start">' + IC.play + '<span>Start cooking</span></button>' : "")) +
     '<div class="p2-sec p2-up" style="--d:3"><div class="p2-lab"><span>Probably at home</span><span class="p2-cnt">' + b.home.length + '</span></div>' +
@@ -11952,6 +11969,7 @@ function shopsHTML(b, pick){ const save = b.worst.t - b.best.t;
 function openRecipe(id, opt){ const r = typeof id === "string" ? rec(id) : id; if (!r) return false;
   if (OPEN && OPEN.ov && OPEN.ov.isConnected) { try { R2.close(OPEN.ov); } catch(e){} }
   const ov = R2.sheet('<div class="p2-rec" id="p2Rec">' + recipeHTML(r) + '</div>', {full:true, cls:"p2-recov", onClose:() => { if (OPEN && OPEN.ov === ov) OPEN = null; }});
+  if (R2.xBottom) R2.xBottom(ov);
   OPEN = {r, ov}; if (opt && opt.cook) setTimeout(() => cook(r), 250); return true; }
 function repaintRecipe(){ if (!OPEN || !OPEN.ov.isConnected) return; const box = $("#p2Rec", OPEN.ov), sh = OPEN.ov.querySelector(".r2-sh"), y = sh ? sh.scrollTop : 0;
   box.innerHTML = recipeHTML(OPEN.r); box.classList.add("p2-still"); if (sh) sh.scrollTop = y; }

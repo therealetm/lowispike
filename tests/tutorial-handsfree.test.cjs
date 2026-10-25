@@ -31,16 +31,22 @@ test('a title is only said when none of its words is in the text', () => {
         for (const w of t) assert.ok(!x.has(w), st.id + '/' + l + ': title "' + st.title[l] + '" is said although "' + w + '…" is in the text');
         assert.ok(sp.s.endsWith(body), st.id + '/' + l + ': the whole text follows the title');
     }
-    assert.ok(left > said * 3, 'most titles repeat their text and are left out (' + left + ' left out, ' + said + ' said)');
+    assert.ok(left > said * 2, 'most titles repeat their text and are left out (' + left + ' left out, ' + said + ' said)');
+    /* Oct 25 2026 short tour: in the base tour only the cards whose title adds something are said with their title; every
+       "Tap X ..." card (the bubbles, Scan, Community) says its name once, in the text */
+    const ADDS = new Set(['claim', 'hello', 'settings', 'fly', 'done']);
+    for (const l of LANGS) for (const st of S.plan({ claimReady: true })) if (V.spoken(st, l, 'Misty').t >= 0) assert.ok(ADDS.has(st.id), st.id + '/' + l + ': title said although the text repeats it');
+    for (const l of LANGS) for (const id of ['gap', 'fuel', 'water', 'move', 'sleep', 'scan', 'community']) assert.strictEqual(V.spoken(S.STEPS.find(x => x.id === id), l, 'Misty').t, -1, id + '/' + l + ': said once');
 });
 
 test('Emmanuel\'s examples: repeated titles are gone, titles that add something stay', () => {
     const sp = (id, l) => V.spoken(S.STEPS.find(s => s.id === id), l || 'en', 'Misty');
-    assert.strictEqual(sp('touch').t, -1, '"Tap me" + "Tap me once" says it once');
-    assert.strictEqual(sp('scan').t, -1, '"Scan" + "This is Scan" says it once');
-    assert.strictEqual(sp('misty-hold').t, -1, '"Hold me" + "keep your finger on me": a repeat in other words (sayTitle: false)');
+    /* Oct 25 2026 short tour: the long tour's "Tap me" / "Hold me" cards are gone; the same rule on the short cards */
+    assert.strictEqual(sp('gap').t, -1, '"Gap" + "Tap Gap to see..." says it once');
+    assert.strictEqual(sp('scan').t, -1, '"Scan" + "Tap Scan and point..." says it once');
+    assert.strictEqual(sp('water', 'de').t, -1, '"Wasser" + "Tipp auf Wasser..." says it once');
     for (const l of LANGS) assert.ok(sp('hello', l).t > 0, 'hello/' + l + ': "Hi, I\'m Misty" adds the greeting and the name');
-    assert.ok(sp('secret').s.startsWith('A secret. '), 'a title that adds something is said once, then the text');
+    assert.ok(sp('settings').s.startsWith('Settings. ') && sp('settings').s.endsWith(S.STEPS.find(x => x.id === 'settings').text.en), 'a title that adds something is said once, then the text');
     const ren = V.spoken(S.STEPS.find(s => s.id === 'hello'), 'en', 'Nova');
     assert.strictEqual(ren.key, 'hello~', 'a renamed companion: the recorded title with Misty in it is left out');
 });
@@ -67,23 +73,22 @@ test('the tour never opens Scan or asks for the camera', () => {
     assert.match(js, /b3-camon[^\n]*return 'camera'/, 'a camera the user opens holds the tour behind it');
 });
 
-test('the Scan cards show what is inside, in every language', () => {
-    const peeks = S.STEPS.filter(s => s.peek);
-    assert.deepStrictEqual(peeks.map(s => s.id), ['scan-in', 'deep']);
-    assert.deepStrictEqual(peeks.map(s => s.peek.mark), ['frame', 'deep']);
-    for (const l of LANGS) {
-        const P = S.UI[l].peek; assert.ok(P, l + ': peek words');
-        for (const k of ['title', 'aim', 'field', 'barcode', 'deep', 'deepS', 'note']) assert.ok(P[k] && P[k].length, l + ': peek.' + k);
-        assert.ok(S.UI[l].pause && S.UI[l].play, l + ': Pause / Play labels');
-    }
-    const js = read('tutorial.js'), css = read('tutorial.css');
-    assert.match(js, /function peekHtml\(s, U\)/);
-    assert.match(js, /peekHtml\(s, U\) \+/, 'the card shows the picture under its text');
-    assert.match(css, /\.lt-peek \{/);
+test('the Scan card shows a pretend Scan in every language: a sample photo, a shutter and a verdict marked Demo, never the camera (Oct 25 2026)', () => {
+    assert.ok(!S.STEPS.some(s => s.peek), 'the long tour\'s Scan look-alike cards are gone');
     const scan = S.STEPS.find(s => s.id === 'scan');
-    assert.match(scan.text.en, /show you what’s inside/);
-    const snap = S.STEPS.find(s => s.id === 'snap');
-    for (const l of LANGS) assert.ok(!/Barcode|Scannen|Escanear/.test(snap.text[l]), 'snap/' + l + ': Snap is no longer in Scan');
+    assert.deepStrictEqual(scan.demo, { g: 'tap', open: 'scan-demo' });
+    for (const l of LANGS) assert.ok(S.UI[l].pause && S.UI[l].play, l + ': Pause / Play labels');
+    const d = read('tutorial-demo.js'), code = d.replace(/\/\*[\s\S]*?\*\//g, '');
+    assert.ok(!/getUserMedia|mediaDevices|openScan|goTab/.test(code), 'tutorial-demo.js never starts the camera or the real Scan');
+    for (const [l, verdict] of [['en', 'Barely a spike'], ['de', 'Kaum Spike'], ['es', 'Apenas pico']]) {
+        const m = d.match(new RegExp('\\n\\s+' + l + ": \\{ tag: '([^']+)', food: '([^']+)', verdict: '([^']+)', demo: 'Demo'"));
+        assert.ok(m && m[3] === verdict && /Demo/.test(m[1]) && m[2].length > 5, l + ': demo words');
+    }
+    assert.ok(d.includes("esc(L.verdict) + ' \\u00b7 9/10</b>"), 'the verdict reads "… · 9/10"');
+    assert.ok(fs.existsSync(path.join(ROOT, 'tutorial-img/scan-sample.webp')), 'the sample photo ships');
+    assert.match(read('sw.js'), /"tutorial-img\/scan-sample\.webp"/, 'and is cached offline');
+    assert.match(read('tutorial.js'), /'scan-demo': \{ stage: '\.lt-scan', go: \(\) => \{ if \(W\.LowiTutorialDemo && root\) W\.LowiTutorialDemo\.scanOpen\(root, lang\(\)\)/);
+    for (const l of LANGS) assert.ok(!/Barcode|Strichcode|código de barras/i.test(scan.text[l]), 'scan/' + l + ': one sentence, no Scan menu');
 });
 
 /* ---------- 2. hands-free ---------- */

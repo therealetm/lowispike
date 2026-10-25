@@ -24,13 +24,14 @@ const HANDLER = /addEventListener\(\s*['"](pointerdown|touchstart|gesturestart|d
 const INPUT = /addEventListener\(\s*['"](pointer\w+|touch\w+|gesture\w+|click|dblclick|contextmenu|wheel|deviceorientation|keydown)['"]|\.on(pointer\w+|touch\w+|click|dblclick)\s*=|data-[\w-]+=|onTap|tap\(|\.click\(/;
 const appFiles = () => fs.readdirSync(ROOT).filter(f => f.endsWith('.js') && f !== 'sw.js');
 
-test('every gesture has a step that teaches it, and every taught id is a real gesture', () => {
-    const t = T.taught(), ids = new Set();
-    for (const g of T.GESTURES) {
-        assert.ok(!ids.has(g.id), 'duplicate gesture id ' + g.id); ids.add(g.id);
-        assert.ok(t[g.id], 'no tutorial step teaches gesture "' + g.id + '" (' + g.what + ')');
-    }
+test('every gesture is listed once, every taught id is a real gesture, and each demo card of the short tour teaches what its finger shows (Oct 25 2026)', () => {
+    const ids = new Set(), byId = {};
+    for (const g of T.GESTURES) { assert.ok(!ids.has(g.id), 'duplicate gesture id ' + g.id); ids.add(g.id); byId[g.id] = g; }
     for (const s of T.STEPS) for (const g of (s.teaches || [])) assert.ok(ids.has(g), 'step ' + s.id + ' teaches unknown gesture ' + g);
+    const demos = T.base().filter(s => s.demo);
+    assert.ok(demos.length >= 9, 'nearly every base card shows its gesture with the finger (' + demos.length + ')');
+    for (const s of demos) assert.ok((s.teaches || []).some(g => byId[g].how === s.demo.g), s.id + ': the finger shows a gesture the card teaches');
+    const t = T.taught(); for (const s of demos) for (const g of s.teaches) assert.ok(t[g], g + ' counts as taught');
 });
 
 test('every gesture names real source files with input handling in them', () => {
@@ -58,28 +59,26 @@ test('CODE SCAN: every file with a gesture handler is taught or exempt with a re
     assert.deepStrictEqual(missing, [], 'gesture handlers with no tutorial step: add a GESTURES entry (and a step that teaches it) or a GESTURE_EXEMPT reason');
 });
 
-test('every kind of gesture is in the tutorial', () => {
-    const t = T.taught(), kinds = new Set(T.GESTURES.filter(g => t[g.id]).map(g => g.how));
-    for (const k of ['tap', 'hold', 'drag', 'pinch', 'double', 'triple', 'swipe', 'push', 'tilt']) assert.ok(kinds.has(k), 'the tutorial teaches a ' + k);
+test('the short tour shows tap, hold and drag with the finger, and every kind of gesture stays listed for the app', () => {
+    const shown = new Set(T.base().filter(s => s.demo).map(s => s.demo.g));
+    for (const k of ['tap', 'hold', 'drag']) assert.ok(shown.has(k), 'the finger shows a ' + k);
+    const kinds = new Set(T.GESTURES.map(g => g.how));
+    for (const k of ['tap', 'hold', 'drag', 'pinch', 'double', 'triple', 'swipe', 'push', 'tilt']) assert.ok(kinds.has(k), 'a ' + k + ' gesture is listed');
 });
 
-test('every section of the app has a step and the tour visits it', () => {
-    const S = T.STEPS, where = s => s.where || 'home';
-    for (const a of T.AREAS) assert.ok(S.some(s => s.area === a), 'area ' + a + ' has a step');
-    for (const w of ['home', 'community']) assert.ok(S.some(s => where(s) === w), 'a step is shown in ' + w);
-    /* Oct 22 2026: Scan opens the camera at once, so no step is shown inside it; its cards show a picture of the inside instead */
-    assert.ok(S.some(s => s.peek && s.peek.kind === 'scan'), 'a step shows what is inside Scan');
-    for (const rm of ['room', 'chat', 'create', 'aff']) assert.ok(S.some(s => where(s) === 'community' && s.rm === rm), 'Community tab ' + rm + ' has a step');
-    for (const s of S) {
-        assert.ok(['home', 'community', 'move'].includes(where(s)), s.id + ': where is home, community or move (never scan: it opens the camera)');
-        if (s.rm) assert.strictEqual(where(s), 'community', s.id + ': a Community tab step is shown in Community');
-    }
+test('every section of the app has a card in the short tour, and the tour opens it for real (never the camera)', () => {
+    const S = T.base(), where = s => s.where || 'home';
+    for (const a of ['you', 'home', 'food', 'play', 'together', 'settings', 'end']) assert.ok(S.some(s => s.area === a), 'area ' + a + ' has a base card');
+    for (const a of T.AREAS) assert.ok(T.STEPS.some(s => s.area === a) || ['companion', 'extras'].includes(a), 'area ' + a + ' has a step');
+    /* Oct 25 2026: Scan opens a pretend Scan (sample photo + Demo verdict); the camera question waits for the first real scan */
+    assert.ok(S.some(s => s.demo && s.demo.open === 'scan-demo'), 'a card shows what is inside Scan');
+    assert.ok(S.some(s => s.demo && s.demo.open === 'community-tab'), 'a card opens Community');
+    assert.ok(S.some(s => s.demo && s.demo.open === 'settings-sheet'), 'a card opens Settings');
+    for (const s of T.STEPS) assert.ok(['home', 'community', 'move'].includes(where(s)), s.id + ': where is home, community or move (never scan: it opens the camera)');
     const gw = new Set(T.GESTURES.map(g => g.where));
     for (const w of ['home', 'world', 'scan', 'community', 'any']) assert.ok(gw.has(w), 'gestures of section ' + w + ' are listed');
-    /* sections that are their own screen each get a step */
     const covers = T.covered();
     for (const f of ['scan', 'deep-analyze', 'forms', 'worlds', 'community', 'settings', 'tutorial']) assert.ok(covers[f], 'feature ' + f + ' is covered');
-    /* tutorial.js takes the user to a step's section */
     const js = read('tutorial.js');
     assert.match(js, /function goSection\(/, 'tutorial.js moves to the step\'s section');
     assert.match(js, /const TAB_OF = \{ home: 'home', community: 'foryou' \};/, 'community maps to its tab; scan is never a tour section');
@@ -89,25 +88,24 @@ test('Settings opens by HOLDING the Community bubble (old check expected a tap)'
     const s = T.STEPS.find(x => x.id === 'settings');
     assert.ok(s, 'there is a Settings step');
     assert.ok((s.teaches || []).includes('community-hold'), 'it teaches holding Community');
-    assert.deepStrictEqual(s.tryIt && s.tryIt.how, 'hold', 'its try-it is a hold');
-    assert.match(s.text.en, /hold the Community bubble/i);
-    assert.match(s.text.de, /Community-Blase kurz gedrückt/);
-    assert.match(s.text.es, /mantén pulsada la burbuja Comunidad/i);
+    assert.deepStrictEqual(s.demo, { g: 'hold', open: 'settings-sheet' }, 'its finger holds Community and Settings opens');
+    assert.match(s.text.en, /^Hold Community/);
+    assert.match(s.text.de, /^Halt Community gedrückt/);
+    assert.match(s.text.es, /^Mantén pulsada Comunidad/);
     for (const l of ['en', 'de', 'es']) assert.doesNotMatch(s.text[l], /^(Tap|Tipp|Toca) (Settings|Einstellungen|Ajustes)/i, 'no step says tap Settings (' + l + ')');
     const hold = T.GESTURES.find(g => g.id === 'community-hold'), tap = T.GESTURES.find(g => g.id === 'community-tap');
     assert.strictEqual(hold.how, 'hold'); assert.strictEqual(tap.how, 'tap');
-    /* no step anywhere tells people to tap a Settings bubble */
     for (const x of T.STEPS) for (const l of ['en', 'de', 'es']) assert.doesNotMatch(x.text[l], /(tap|tipp\w*|toca) (the |die |la )?(Settings|Einstellungen|Ajustes)[- ](bubble|Blase|burbuja)/i, x.id + '.' + l);
 });
 
-test('try-it steps use a gesture tutorial.js can detect, matching what they teach', () => {
-    const detect = new Set(['tap', 'hold', 'drag', 'pinch', 'double', 'triple', 'swipe']), byId = {};
-    T.GESTURES.forEach(g => { byId[g.id] = g; });
-    const tries = T.STEPS.filter(s => s.tryIt);
-    assert.ok(tries.length >= 5, 'several steps let people try the gesture (' + tries.length + ')');
-    for (const s of tries) {
-        assert.ok(detect.has(s.tryIt.how), s.id + ': tryIt.how ' + s.tryIt.how + ' is detectable');
-        assert.ok((s.teaches || []).some(g => byId[g] && T.tryMatch(s.tryIt.how, byId[g].how) || (byId[g] && byId[g].how === s.tryIt.how)), s.id + ': the try-it matches a gesture it teaches');
+test('no card has a try-it any more (Oct 25 2026): the demo finger uses gestures tutorial-demo.js can show, matching what each card teaches', () => {
+    const byId = {}; T.GESTURES.forEach(g => { byId[g.id] = g; });
+    assert.strictEqual(T.STEPS.filter(s => s.tryIt).length, 0, 'no "Try it now" card');
+    const demo = read('tutorial-demo.js');
+    for (const s of T.STEPS.filter(x => x.demo)) {
+        assert.ok(['tap', 'hold', 'drag'].includes(s.demo.g), s.id + ': demo gesture ' + s.demo.g + ' is one the finger can show');
+        assert.ok(demo.includes("'" + s.demo.g + "'"), 'tutorial-demo.js knows ' + s.demo.g);
+        assert.ok((s.teaches || []).some(g => byId[g] && (byId[g].how === s.demo.g || T.tryMatch(s.demo.g, byId[g].how))), s.id + ': the finger matches a gesture it teaches');
     }
     assert.ok(T.tryMatch('drag', 'swipe') && T.tryMatch('hold', 'hold') && !T.tryMatch('tap', 'hold'));
 });

@@ -79,34 +79,16 @@ function page(o) {
 }
 const firstTry = () => S.plan({}).find(s => s.tryIt).id;
 
-test('Try it now is a real button on every try-it card, in every language', () => {
-    const p = page(); p.T.start({ from: 'test', fresh: true });
-    p.to(firstTry());
-    const h = p.card().innerHTML;
-    assert.match(h, /<button type="button" class="lt-trybtn" data-lt="tryit">/, 'a button with data-lt=tryit');
-    assert.ok(h.includes('Try it now</button>'), 'it reads Try it now');
-    assert.ok(!/<p class="lt-tryline"[^>]*>Try it now/.test(h), 'no longer a plain line of text that does nothing');
-    for (const l of ['en', 'de', 'es']) assert.ok(S.UI[l].tryIt && S.TRY_CUE[l].length, l + ': label and cue words');
+test('GUARD (Oct 25 2026): no card has a Try it now button in any language, and tutorial.js only draws one for a card that has a try-it', () => {
+    for (const s of S.STEPS) assert.ok(!s.tryIt, s.id + ': "Try it now" was retired with the long tour; the demo finger shows the gesture instead');
+    for (const s of S.STEPS) for (const l of ['en', 'de', 'es']) assert.doesNotMatch(s.text[l], /Try it now|Jetzt ausprobieren|Pruébalo ahora/i, s.id + '/' + l);
+    const js = read('tutorial.js');
+    assert.match(js, /function tryHtml\(s, U\) \{\n\s+if \(!s \|\| !s\.tryIt\) return '';/, 'no try-it, no button');
 });
 
-test('tapping Try it now closes the card, stops the voice and saves the place for Continue tutorial', () => {
-    const p = page({ voice: true }), id = firstTry();
-    p.T.start({ from: 'test', fresh: true }); p.to(id);
-    const ids = S.plan({}).map(s => s.id), i = ids.indexOf(id);
-    const stops = p.voice.stops;
-    p.click('tryit');
-    assert.strictEqual(p.T.isOn(), false, 'the card is closed');
-    assert.ok(p.voice.stops > stops, 'the voice was stopped');
-    const r = p.store().resume;
-    assert.ok(r, 'lowi.tutorial.v1 .resume saved');
-    assert.deepStrictEqual({ at: r.at, i: r.i, n: r.n, next: r.next, fin: r.fin, via: r.via }, { at: id, i, n: ids.length, next: ids[i + 1], fin: true, via: 'tryit' });
-    assert.strictEqual(p.store().done, false, 'not counted as finished');
-    assert.strictEqual(p.ev('reason').pop().reason, 'tryit', 'stop reason tryit (tutorial-resume.js keeps the place for any reason but finished / skipped)');
-    assert.strictEqual(p.ev('tryNow').length, 1, 'a tryNow event');
-    p.T.start({ from: 'settings' });
-    assert.strictEqual(p.T.step(), ids[i + 1], 'picks up on the card after the one they tried');
-    p.T.stop('left'); p.T.start({ from: 'settings' });
-    assert.strictEqual(p.T.step(), ids[0], 'only picked up once');
+test('GUARD: no base card says "after the tour" and no base card is a later card; Continue tutorial still resumes a saved place', () => {
+    for (const s of S.base()) { assert.ok(!s.later, s.id + ': later'); for (const l of ['en', 'de', 'es']) assert.doesNotMatch(s.text[l], S.LATER_MARK[l], s.id + '/' + l); }
+    assert.strictEqual(typeof S.tryResume, 'function', 'a saved place can still be resumed');
 });
 
 test('the resume record has the tutorial-resume.js shape (next card, or this one when it is the last)', () => {
@@ -117,82 +99,23 @@ test('the resume record has the tutorial-resume.js shape (next card, or this one
     assert.strictEqual(resumeAt(r), 'c'); assert.strictEqual(resumeAt(last), 'b');
 });
 
-test('the button wiggles when the voice says the cue, at most twice, and hands-free waits a few seconds after it', () => {
-    const p = page({ voice: true }), id = firstTry();
-    p.T.start({ from: 'test', fresh: true }); p.to(id);
-    const c = p.voice.ctx;
-    assert.deepStrictEqual(Array.from(c.cue), S.TRY_CUE.en, 'the voice is given the cue words');
-    assert.strictEqual(typeof c.onCue, 'function');
-    p.runTimers();
-    assert.strictEqual(p.T.wiggles(), 0, 'no wiggle before the words are said (voice on)');
-    c.onCue();
-    assert.strictEqual(p.T.wiggles(), 1, 'wiggles on the cue');
-    assert.ok(p.btn().classList.contains('lt-wiggle'), 'the wiggle class is on the button');
-    assert.deepStrictEqual(p.ev('wiggle').map(d => [d.wiggle, d.why]), [[id, 'cue']]);
-    p.timeouts.length = 0;
-    c.onEnd();
-    assert.strictEqual(p.T.wiggles(), 1, 'no second wiggle right after the first');
-    const auto = p.timeouts.find(t => t.ms >= 1000);
-    assert.ok(auto && auto.ms >= 4000, 'hands-free waits at least 4 s after the wiggle (' + (auto && auto.ms) + ' ms)');
-    c.onCue(); c.onCue(); c.onEnd();
-    assert.ok(p.T.wiggles() <= 2, 'never more than twice per card');
+test('the short tour moves on by itself: a reading timer per card that waits while the voice still talks (works with the speaker off)', () => {
+    const js = read('tutorial.js');
+    assert.match(js, /const DEMO = \{ CLOSE_PAUSE: \d+, READ_MIN: (\d+), READ_PER_CHAR: (\d+), START: \d+ \};/);
+    const m = js.match(/READ_MIN: (\d+), READ_PER_CHAR: (\d+)/); assert.ok(+m[1] >= 2000 && +m[2] >= 40, 'enough time to read');
+    assert.match(js, /function readMs\(s\) \{ const t = S\.text\(s, 'text', lang\(\), \{ name: companionName\(\) \}\) \|\| ''; return Math\.max\(DEMO\.READ_MIN, t\.length \* DEMO\.READ_PER_CHAR\); \}/);
+    assert.match(js, /if \(talking\) \{ readT = setTimeout\(chk, 500\); return; \}/, 'never cuts the voice off mid-sentence');
+    assert.match(js, /readDone = at; demoGo\(\);/, 'the timer moves the card on');
 });
 
-test('no cue words: wiggle at the end; no voice: once when it appears; reduced motion glows', () => {
-    let p = page({ voice: true }); p.T.start({ from: 'test', fresh: true }); p.to(firstTry());
-    p.voice.ctx.onEnd();
-    assert.deepStrictEqual(p.ev('wiggle').map(d => d.why), ['end']);
-    p = page({ voice: false }); p.T.start({ from: 'test', fresh: true }); p.to(firstTry());
-    assert.strictEqual(p.T.wiggles(), 0); p.runTimers();
-    assert.deepStrictEqual(p.ev('wiggle').map(d => d.why), ['appear'], 'one wiggle when the card appears with no voice');
-    p.click('pause'); p.click('pause'); p.runTimers();
-    assert.strictEqual(p.ev('wiggle').length, 1, 'a repaint of the same card does not wiggle again');
-    p = page({ voice: false, reduced: true }); p.T.start({ from: 'test', fresh: true }); p.to(firstTry()); p.runTimers();
-    assert.ok(p.btn().classList.contains('lt-glow') && !p.btn().classList.contains('lt-wiggle'), 'reduced motion: a glow, no movement');
-    const css = read('tutorial.css');
-    assert.match(css, /\.lt-trybtn\.lt-wiggle \{ animation: lt-wiggle [^}]* 1; \}/, 'the wiggle runs once, not in a loop');
-    assert.match(css, /prefers-reduced-motion: reduce\) \{ \.lt-trybtn\.lt-wiggle \{ animation: lt-glow/);
+test('GUARD: no card carries a cue word, a practice field, a peek or a pad: there is nothing to wiggle at in the short tour', () => {
+    for (const s of S.STEPS) for (const f of ['cue', 'practice', 'peek', 'pad', 'tryIt']) assert.ok(!(f in s), s.id + ': ' + f + ' came back');
+    for (const s of S.base()) assert.ok(s.demo || ['claim', 'done'].includes(s.id), s.id + ': the finger shows it instead');
 });
 
-test('the real voice finds the cue in every language and calls onCue once when it gets there', async () => {
-    const st = S.STEPS.find(s => s.id === 'swipe-pages');
-    for (const l of ['en', 'de', 'es']) {
-        const sp = V.spoken(st, l, 'Misty'), k = V.cueIndex(sp.s, S.TRY_CUE[l]);
-        assert.ok(k > 0, l + ': cue found in ' + sp.s);
-        assert.ok(/^(try|probier|pru)/i.test(sp.s.slice(k)), l + ': it points at the words');
-    }
-    assert.strictEqual(V.cueIndex('Tap me once.', S.TRY_CUE.en), -1);
-    const L = { 'lowi.tutorial.voice.v1': '1' }, audios = [], events = []; let frame = null;
-    class Audio {
-        constructor() { this.l = {}; this.paused = true; this.currentTime = 0; audios.push(this); }
-        setAttribute() { }
-        addEventListener(k, f) { (this.l[k] = this.l[k] || []).push(f); }
-        play() { this.paused = false; return Promise.resolve(); }
-        pause() { this.paused = true; }
-    }
-    const stub = () => ({ classList: { toggle() { }, add() { }, remove() { } }, setAttribute() { }, querySelector: () => null, appendChild() { }, textContent: '' });
-    const D = { documentElement: { classList: { contains: () => true } }, head: { appendChild() { } }, addEventListener() { }, getElementById: () => ({}), createElement: stub, createTextNode: () => ({}), querySelector: () => null, hidden: false };
-    const W = {
-        document: D, Audio, localStorage: { getItem: k => (k in L ? L[k] : null), setItem: (k, v) => { L[k] = String(v); } },
-        fetch: async () => ({ ok: true, clone() { return this; }, blob: async () => ({}) }), URL: { createObjectURL: () => 'blob:x', revokeObjectURL() { } },
-        requestAnimationFrame: f => { frame = f; return 1; }, cancelAnimationFrame() { }, setTimeout, clearTimeout, Promise,
-        CustomEvent: function (t, i) { this.type = t; this.detail = i && i.detail; }, dispatchEvent(e) { events.push(e); }, addEventListener() { }
-    };
-    W.window = W;
-    const sp = V.spoken(st, 'en', 'Misty'), at = V.cueIndex(sp.s, S.TRY_CUE.en);
-    W.LowiTutorialVoiceData = { clips: { en: { [sp.key]: { f: 'x.mp3', h: 'x', s: sp.s, w: [[0, 0], [1000, 10], [5000, at], [5400, at + 4]] } } } };
-    vm.runInContext(read('tutorial-voice.js').replace(/const SILENT = '[^']*'/, "const SILENT = 'silent'"), vm.createContext(W));
-    const got = [];
-    W.LowiTutorialVoice.render(stub(), st, { lang: 'en', cue: S.TRY_CUE.en, onCue: k => got.push(k) });
-    const tick = () => new Promise(r => setTimeout(r, 5));
-    await tick(); await tick(); await tick();
-    const a = audios[0]; assert.strictEqual(a.src, 'blob:x', 'the clip plays');
-    a.currentTime = 2; if (frame) frame();
-    assert.deepStrictEqual(got, [], 'not yet: the words come later');
-    a.currentTime = 5.1; if (frame) frame();
-    a.currentTime = 5.5; if (frame) frame();
-    assert.deepStrictEqual(got, [sp.key], 'onCue once, when the words are said');
-    assert.ok(events.some(e => e.detail && e.detail.state === 'cue'), 'a cue event for others');
+test('every card of the short tour has its recorded clip in English, German and Spanish (the tutorial voice); none needs a cue', () => {
+    for (const s of S.plan({ claimReady: true })) for (const l of ['en', 'de', 'es'])
+        assert.ok(fs.existsSync(path.join(ROOT, 'tutorial-voice', l, s.id + '.mp3')) || fs.readdirSync(path.join(ROOT, 'tutorial-voice', l)).some(f => f.startsWith(s.id + '~')), s.id + '/' + l + ' has a clip');
 });
 
 test('tutorial-auto does not count Try it now as quitting and gives them time to try before offering the rest', () => {

@@ -64,13 +64,16 @@ test('tutorial.js can begin at a step (for Continue), and the auto tour never to
     assert.match(auto, /#drDay/, 'and for the Day card itself');
 });
 
-test('the tour explains almost every small part, in short cards grouped into parts', () => {
-    assert.ok(S.STEPS.length >= 35, 'many small cards: ' + S.STEPS.length);
+test('the short tour (Oct 25 2026): at most 12 short cards, one sentence each, grouped into parts; the small parts stay covered', () => {
+    const b = S.plan({ claimReady: true });
+    assert.ok(b.length <= 12 && b.length >= 10, 'at most 12 cards: ' + b.length);
+    assert.ok(S.STEPS.length >= 20, 'base cards plus the What\'s New cards: ' + S.STEPS.length);
     const c = S.covered();
     for (const f of ['mood', 'energy-peak', 'joy-hold', 'zoom', 'fly-out', 'half-energy', 'care-room', 'community-post', 'community-energy', 'back-x', 'day-card', 'whats-new', 'photo-checks', 'sleep'])
         assert.ok(c[f] && c[f] !== 'none', f + ' has a step');
     for (const s of S.STEPS) for (const l of ['en', 'de', 'es']) assert.ok(s.text[l].length <= 230, s.id + '.' + l + ' short');
-    const areas = new Set(S.STEPS.map(s => s.area));
-    assert.ok(areas.size >= 8, 'grouped into parts so Skip jumps a whole part');
+    for (const s of b) for (const l of ['en', 'de', 'es']) assert.ok(s.text[l].length <= 120 && (s.text[l].match(/[.!?](\s|$)/g) || []).length <= 1, s.id + '.' + l + ': one short sentence');
+    const areas = new Set(b.map(s => s.area));
+    assert.ok(areas.size >= 6, 'grouped into parts so Skip jumps a whole part');
     assert.ok(S.VERSION >= 2);
 });

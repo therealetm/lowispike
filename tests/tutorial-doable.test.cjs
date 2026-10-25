@@ -16,53 +16,41 @@ const S = require('../tutorial-steps.js');
 const LANGS = ['en', 'de', 'es'];
 const MOTIONS = ['tap', 'hold', 'double', 'drag', 'swipe', 'pinch'];
 
-test('every instruction card is doable now or says it is for after the tour (listed)', () => {
+test('every card of the short tour is shown by the finger on the real control, or asks for nothing (Oct 25 2026, listed)', () => {
     const rows = [];
-    for (const s of S.STEPS) {
-        const k = S.kind(s), asks = S.INSTRUCTION.test(s.text.en);
-        if (asks || k !== 'info') rows.push(k.padEnd(8) + ' ' + s.id + (s.practice ? ' (' + s.practice.how + ' on ' + s.practice.look + ')' : s.tryIt ? ' (' + s.tryIt.how + ')' : s.later ? ' (shows ' + s.later + ')' : ''));
-        if (asks && k === 'info') assert.ok(typeof s.info === 'string' && s.info.trim().length >= 12, s.id + ' asks for a gesture but is neither tryIt, practice nor later (and has no info reason): "' + s.text.en + '"');
+    for (const s of S.plan({ claimReady: true })) {
+        rows.push((s.demo ? s.demo.g + ' > ' + (s.demo.open || 'stay') : 'no gesture').padEnd(26) + ' ' + s.id);
+        if (S.INSTRUCTION.test(s.text.en)) assert.ok(s.demo || s.id === 'claim', s.id + ' asks for a gesture, so the finger shows it: "' + s.text.en + '"');
+        assert.ok(!s.tryIt && !s.practice && !s.later, s.id + ': no Try it now, practice or after-the-tour in the short tour');
     }
-    console.log('instruction cards (' + rows.length + '):\n  ' + rows.join('\n  '));
-    assert.ok(rows.length >= 55, 'the list should cover the tour, got ' + rows.length);
+    assert.ok(rows.filter(r => !/^no gesture/.test(r)).length >= 9, rows.join('\n'));
 });
 
-test('"later" cards say so in every language and name a motion to show', () => {
+test('"later" cards are What\'s New cards only; they say so in every language and name a motion to show', () => {
     const later = S.STEPS.filter(s => s.later);
-    assert.ok(later.length >= 20);
     for (const s of later) {
-        assert.ok(MOTIONS.includes(s.later), s.id + ': later must be one of ' + MOTIONS);
-        for (const l of LANGS) assert.match(s.text[l], S.LATER_MARK[l], s.id + ' ' + l + ' must say it is for after the tour: ' + s.text[l]);
-        assert.ok(!s.tryIt && !s.practice, s.id + ': later and try at once');
+        assert.strictEqual(s.area, 'new', s.id + ': only What\'s New cards are for after the tour (the short base tour never is)');
+        assert.ok(MOTIONS.includes(s.later), s.id + ': later motion ' + s.later);
+        for (const l of LANGS) assert.match(s.text[l], S.LATER_MARK[l], s.id + '/' + l + ' says after the tour');
     }
-    /* and nothing else claims "after the tour" (the words stay meaningful) */
-    for (const s of S.STEPS.filter(x => !x.later)) for (const l of LANGS) assert.doesNotMatch(s.text[l], S.LATER_MARK[l], s.id + ' ' + l + ' says after the tour but is not a later card');
+    for (const s of S.base()) for (const l of LANGS) assert.doesNotMatch(s.text[l], S.LATER_MARK[l], s.id + '/' + l + ': no after-the-tour in the base tour');
 });
 
-test('practice cards: a known gesture and a look-alike in every language, never the camera or mic for real', () => {
-    const pr = S.STEPS.filter(s => s.practice);
-    assert.ok(pr.length >= 10);
-    for (const s of pr) {
-        assert.ok(S.PRACTICE_HOW.includes(s.practice.how), s.id + ': practice.how ' + s.practice.how);
-        assert.ok(!s.tryIt && !s.later, s.id + ': practice and try/later at once');
-        assert.notStrictEqual(s.where, 'scan', s.id + ': never on the Scan tab (camera)');
-        for (const l of LANGS) {
-            const U = S.UI[l];
-            assert.ok(U.looks && U.looks[s.practice.look], s.id + ' ' + l + ': no label for look ' + s.practice.look);
-            assert.ok(U.how && U.how[s.practice.how], s.id + ' ' + l + ': no word for ' + s.practice.how);
-            assert.ok(U.practice && U.laterTag, l + ': practice note / later tag');
-            assert.ok(S.tryMatch(s.practice.how, s.practice.how === 'touch' ? 'tap' : s.practice.how));
-        }
-    }
-    /* the gestures that would change data or ask for a permission are practice, not the real control */
-    for (const id of ['water-hold', 'voice', 'send-energy', 'theme']) assert.ok(S.STEPS.find(s => s.id === id).practice, id + ' must be a practice card');
+test('no practice cards and no look-alikes any more; the one pretend screen is Scan, marked Demo, never the camera or mic for real', () => {
+    assert.strictEqual(S.STEPS.filter(s => s.practice).length, 0, 'no practice card');
+    const pretend = S.STEPS.filter(s => s.demo && /demo$/.test(s.demo.open || ''));
+    assert.deepStrictEqual(pretend.map(s => s.id), ['scan']);
+    const d = read('tutorial-demo.js').replace(/\/\*[\s\S]*?\*\//g, '');
+    assert.ok(!/getUserMedia|mediaDevices|SpeechRecognition|webkitSpeech/.test(d), 'no camera or mic in tutorial-demo.js');
+    assert.ok(/demo: 'Demo'/.test(d), 'the verdict card is marked Demo');
 });
 
-test('only the chat card switches to the chat (it opens straight into galaxy chat, item 36) and it points at the Chat tab', () => {
-    for (const s of S.STEPS) if (s.id !== 'chat') assert.notStrictEqual(s.rm, 'chat', s.id);
-    const chat = S.STEPS.find(s => s.id === 'chat');
-    assert.ok(chat.later && /galaxy chat/i.test(chat.text.en) && !/room chip/i.test(chat.text.en));
-    assert.ok(chat.target[0].includes('data-rm="chat"'));
+test('only the Community card switches tabs: its finger taps the real Community bubble and the Community tab opens (Oct 25 2026)', () => {
+    const tabbers = S.STEPS.filter(s => s.rm || (s.demo && s.demo.open === 'community-tab'));
+    assert.deepStrictEqual(tabbers.map(s => s.id), ['community']);
+    const c = tabbers[0];
+    assert.strictEqual(c.demo.g, 'tap');
+    assert.match(read('tutorial.js'), /'community-tab': \{/, 'tutorial.js knows how to open and close the Community tab');
 });
 
 test('tutorial.js: practice pad and later motion are drawn, hands-free still moves on, nothing passes through on practice cards', () => {
@@ -83,13 +71,9 @@ test('tutorial.js: practice pad and later motion are drawn, hands-free still mov
 
 /* Oct 22 2026: the energy-shot card says "keep one on the joystick, and tap the world twice quickly with the other". On the practice pad
    the resting finger used to turn the second finger's taps into a pinch, so the card could not be done as written. */
-test('energy-shot pad: one finger resting on the joystick, two quick taps with the other finger count as the double tap', () => {
-    const st = S.STEPS.find(s => s.id === 'energy-shot');
-    assert.equal(st.practice.how, 'double'); assert.equal(st.practice.joy, true, 'the pad shows a joystick to keep a finger on');
-    const src = fs.readFileSync(path.join(__dirname, '..', 'tutorial.js'), 'utf8');
-    const pw = src.slice(src.indexOf('function padWire('), src.indexOf("el.addEventListener('pointerup', up);"));
-    assert.match(pw, /const P = new Map\(\); let D = new Map\(\)/, 'every finger tracked on its own');
-    assert.match(pw, /P\.size >= 2 && pinchPad\(\)/, 'two fingers are a pinch only on a pinch pad');
-    assert.doesNotMatch(pw, /if \(P\.size >= 2\) \{/, 'a second finger no longer always starts a pinch');
-    assert.match(src, /k\.joy \? '<span class="lt-joy"/);
+test('the demo finger never logs anything: tutorial-demo.js only draws the finger, and the tour only opens and closes pages', () => {
+    const d = read('tutorial-demo.js').replace(/\/\*[\s\S]*?\*\//g, '');
+    assert.ok(!/localStorage|sessionStorage|indexedDB|\.click\(\)|dispatchEvent|fetch\(|LowiFuel|LowiWater|LowiSleep|logMeal|addWater/.test(d), 'no storage, no clicks, no logging calls');
+    const js = read('tutorial.js'), open = js.slice(js.indexOf('const OPEN'), js.indexOf('const OPEN') + 4000);
+    assert.ok(!/\blog\w*\(|addWater|LowiFuel\.add|saveMeal/.test(open), 'the pages the tour opens are opened and closed, never logged into');
 });

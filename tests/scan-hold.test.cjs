@@ -203,18 +203,20 @@ test('wiring: the hold lives in bloom-ring.js, before every click handler, and o
 const T = require('../tutorial-steps.js');
 const TWO_ON_ME = { en: /(tap|touch) me with two fingers/i, de: /mit zwei Fingern gleichzeitig an/i, es: /(tócame|toca a \w+) con dos dedos/i };
 
-test('tutorial: a Hold Scan card in EN/DE/ES that says a quick tap still opens Scan', () => {
-    const s = T.STEPS.find(x => x.id === 'scan-hold');
+test('tutorial: Hold Scan is its What\'s New card in EN/DE/ES (a quick tap still opens Scan); the base Scan card shows a pretend Scan, never the camera', () => {
+    const s = T.STEPS.find(x => x.id === 'new-scan-hold');
     assert.ok(s, 'there is a Hold Scan card');
-    assert.deepStrictEqual(s.teaches, ['scan-hold']);
+    assert.strictEqual(s.area, 'new', 'What\'s New only: the short base tour never shows it (Oct 25 2026)');
+    assert.deepStrictEqual(s.covers, ['scan-hold-all']);
     assert.strictEqual(s.later, 'hold', 'Scan is tried after the tour (a slip would open the camera during it)');
     assert.ok(s.target.includes('#whHud .o8-scan'), 'it points at Scan');
-    assert.match(s.text.en, /hold it for a moment/i); assert.match(s.text.en, /every bubble opens at once/i); assert.match(s.text.en, /quick tap still opens Scan/i);
+    assert.match(s.text.en, /hold Scan for a moment/i); assert.match(s.text.en, /every bubble opens at once/i); assert.match(s.text.en, /quick tap still opens Scan/i);
     assert.match(s.text.de, /Halt Scan kurz gedrückt/); assert.match(s.text.de, /alle Bubbles auf einmal/); assert.match(s.text.de, /Kurz tippen öffnet weiter Scan/);
-    assert.match(s.text.es, /mantén pulsado Scan/i); assert.match(s.text.es, /todas las burbujas se abren a la vez/i); assert.match(s.text.es, /toque rápido sigue abriendo Scan/i);
+    assert.match(s.text.es, /mantén pulsado Scan/i); assert.match(s.text.es, /todas las burbujas a la vez/i); assert.match(s.text.es, /toque rápido sigue abriendo Scan/i);
     for (const l of ['en', 'de', 'es']) assert.match(s.text[l], T.LATER_MARK[l], 'says after the tour (' + l + ')');
-    const i = T.STEPS.findIndex(x => x.id === 'scan');
-    assert.strictEqual(T.STEPS[i + 1].id, 'scan-hold', 'right after the Scan card');
+    const b = T.STEPS.find(x => x.id === 'scan');
+    assert.ok(b && b.area !== 'new' && b.demo && b.demo.open === 'scan-demo', 'the base Scan card opens the pretend Scan');
+    assert.ok(!T.base().some(x => x.id === 'new-scan-hold'), 'not in the base tour');
     const g = T.GESTURES.find(x => x.id === 'scan-hold');
     assert.ok(g && g.how === 'hold' && g.src.includes('bloom-ring.js'), 'listed as a hold gesture in bloom-ring.js');
 });

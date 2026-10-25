@@ -50,7 +50,19 @@
            New features never go here: they go into part 'new' (What's New), which the base tour does NOT play.
            tests/tutorial-short.test.cjs fails when the base tour grows past MAX_BASE. ---------- */
         {
-            id: 'misty', area: 'you', target: ['[data-home-misty]', '#spBubble'], demo: { g: 'hold', open: 'misty-card' },
+            /* HOOK (claim-your-own-companion): OFF until the own-companion task ships LowiBirthCompanion.claim(opts).
+               tutorial.js only plans this step when that function exists (ctx.claimReady), so the tour never depends on it. */
+            id: 'claim', area: 'you', when: 'claimReady', hook: 'own-companion-claim', action: 'claim', target: null, covers: ['companion-claim'], info: 'the claim form opens right on this card; ‘type’ is the personality type',
+            title: { en: 'Make me yours', de: 'Mach mich zu deinem', es: 'Hazme tuyo' },
+            text: {
+                en: 'Tell me your birthday and I become your very own companion.',
+                de: 'Sag mir deinen Geburtstag, dann werde ich dein ganz eigener Begleiter.',
+                es: 'Dime tu cumpleaños y me convierto en tu propio compañero.'
+            },
+            cta: { en: 'Let’s do it', de: 'Los geht’s', es: '¡Vamos!' }
+        },
+        {
+            id: 'hello', area: 'you', target: ['[data-home-misty]', '#spBubble'], demo: { g: 'hold', open: 'misty-card' },
             covers: ['companion', 'misty', 'companion-card', 'energy', 'mood', 'energy-peak', 'welcome-energy', 'forms', 'evolution', 'care-room', 'cell-room', 'rename', 'aura', 'mirror-mode'],
             teaches: ['misty-hold'],
             title: { en: 'Hi, I’m {name}', de: 'Hi, ich bin {name}', es: 'Hola, soy {name}' },
@@ -273,9 +285,9 @@
             id: 'done', area: 'end', target: null, covers: [],
             title: { en: 'You’re set', de: 'Startklar', es: 'Todo listo' },
             text: {
-                en: 'That’s it. Start small: a glass of water, then your next meal.',
-                de: 'Das war’s. Fang klein an: ein Glas Wasser, dann deine nächste Mahlzeit.',
-                es: 'Eso es todo. Empieza poco a poco: un vaso de agua y luego tu próxima comida.'
+                en: 'Start small: a glass of water, then your next meal.',
+                de: 'Fang klein an: ein Glas Wasser, dann deine nächste Mahlzeit.',
+                es: 'Empieza poco a poco: un vaso de agua y luego tu próxima comida.'
             },
             cta: { en: 'Done', de: 'Fertig', es: 'Listo' }
         }

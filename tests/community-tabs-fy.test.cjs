@@ -47,7 +47,10 @@ test('Cook has no For You button; the tour points at the new tabs', () => {
   assert.ok(!R('index.html').includes('ck-fy" data-nm="fy"'));
   const steps = R('tutorial-steps.js');
   assert.ok(!steps.includes('.rm-tab[data-rm="create"]') && !steps.includes('.rm-tab[data-rm="aff"]'), 'no tour card points at a tab that is gone');
-  assert.match(steps, /'\.rm-sw \[data-rmsw="create"\]', '\.rm-tab\[data-rm="studio"\]'/);
+  /* Oct 25 2026 short tour: Creation and Affiliates (the Studio tab) are part of the one Community card */
+  const TS = require('../tutorial-steps.js');
+  assert.strictEqual(TS.covered().creation, 'community'); assert.strictEqual(TS.covered().affiliates, 'community');
+  assert.ok(TS.STEPS.find(s => s.id === 'community').demo.open === 'community-tab', 'the Community card opens the real Community tab');
   assert.ok(!/For You is in Cook/.test(steps));
   assert.match(R('tutorial.js'), /else if \(!b && W\.LowiRoomsUI && W\.LowiRoomsUI\.showView/);
 });

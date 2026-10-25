@@ -44,16 +44,13 @@ test('five bubbles still fan apart and on screen on a small phone (iPhone SE siz
     for (let i = 0; i < 5; i++) for (let j = i + 1; j < 5; j++) assert.ok(Math.hypot(f.pts[i].x - f.pts[j].x, f.pts[i].y - f.pts[j].y) >= g.orb - 0.5, 'apart');
 });
 
-test('tutorial: the Mirror card comes right after the basic Misty gestures, as an after-the-tour card', () => {
-    const ids = S.STEPS.map(s => s.id), i = ids.indexOf('mirror');
-    assert.strictEqual(ids[i - 1], 'misty-turn');
-    const s = S.STEPS[i];
-    assert.strictEqual(s.later, 'tap');
-    assert.ok(s.covers.includes('mirror-mode'));
+test('tutorial: Mirror mode is part of the companion card in the short tour (Oct 25 2026), never a "tap Move, then Mirror" path', () => {
+    assert.ok(!S.STEPS.some(s => s.id === 'mirror'), 'the separate Mirror card left with the long tour');
+    const s = S.STEPS.find(x => x.id === 'hello');
+    assert.ok(s.covers.includes('mirror-mode'), 'the companion card covers Mirror mode');
+    assert.ok(s.demo && s.demo.g === 'hold' && s.demo.open === 'misty-card', 'its finger holds the companion and her card opens');
     for (const l of ['en', 'de', 'es']) assert.ok(s.text[l].length < 230 && s.title[l], l);
-    assert.ok(S.VERSION >= 14);
+    assert.ok(S.VERSION >= 26);
     assert.ok(/mirror: \{ g: 'hold', vis: 'mirror' \}/.test(read('tutorial-show.js')), 'Oct 23: hold Move (Mirror left the Move bloom)');
-    /* Oct 23 (Mirror orb out of the Move bloom): the card points to the Move page, never to "tap Move, then Mirror" */
-    assert.ok(/hold Move/.test(s.text.en) && /gedrückt/.test(s.text.de) && /mantén Movimiento/i.test(s.text.es), 'hold Move in every language');
-    for (const l of ['en', 'de', 'es']) assert.ok(!/then Mirror|dann auf Spiegel|luego Espejo/.test(s.text[l]), l + ': no old two-tap path');
+    for (const st of S.STEPS) for (const l of ['en', 'de', 'es']) assert.ok(!/then Mirror|dann auf Spiegel|luego Espejo/.test(st.text[l]), st.id + '/' + l + ': no old two-tap path');
 });

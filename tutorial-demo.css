@@ -26,7 +26,9 @@
 .lt-tour.lt-staged .lt-hole::after { display: none; }
 /* "the tour card must slide up when a page is open, not cover content": the card goes to the free edge (tutorial.js place), and the
    opened sheet gives it room (--lt-ch is the card's height plus a gap) */
-.lt-tour.lt-staged .lt-card { z-index: 4; transition: left .32s cubic-bezier(.2, .9, .25, 1), top .38s cubic-bezier(.2, .9, .25, 1); }
+/* no slide: a sliding card crossed the page on its way (Oct 25 2026); it jumps to the free edge and fades in there */
+/* it waits out the page's own opening (blooms fan out from their bubble, sheets slide up) so it never sits on a moving piece */
+.lt-tour.lt-staged .lt-card { z-index: 4; transition: none; animation: lt-fade .22s ease .45s both; }
 html.lt-room-top .r2-ov .r2-sh, html.lt-room-top .cme-ov .r2-sh, html.lt-room-top #gvSheet .gv-card, html.lt-room-top .wh-ms-ov .r2-sh {
     max-height: calc(100dvh - var(--lt-ch, 180px) - env(safe-area-inset-top, 0px)) !important; }
 html.lt-room-bottom .lt-scan .lts-bar { margin-bottom: var(--lt-ch, 180px); }

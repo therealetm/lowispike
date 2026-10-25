@@ -95,5 +95,9 @@ test('hold Move on Home opens the Move page; a tap still blooms', () => {
   assert.match(hb, /fn\(W\.LowiMoveBubble, 'page'\)\) W\.LowiMoveBubble\.page\(\)/);
   assert.match(mb, /onTap: \(\) => \{[^}]*openBloom|openBloom\(/, 'tap still opens the bloom');
   const tut = R('tutorial-steps.js');
-  assert.match(tut, /id: 'move-hold'/); assert.match(tut, /id: 'community-order'/);
+  /* Oct 25 2026 short tour (max 12 cards): one Move card; its demo finger taps Move and only the bloom opens, the page is part of it */
+  const TS = require('../tutorial-steps.js'), mv = TS.STEPS.find(s => s.id === 'move');
+  assert.ok(mv && mv.target.includes('#whHud .wh-move') && mv.demo && mv.demo.g === 'tap' && mv.demo.open === 'move-bloom', 'the Move card taps the real Move bubble');
+  assert.strictEqual(TS.covered()['move-page'], 'move'); assert.strictEqual(TS.covered()['community-tab-order'], 'community');
+  assert.match(tut, /id: 'move',/);
 });

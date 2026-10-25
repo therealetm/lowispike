@@ -30,8 +30,11 @@
 
     /* what the tour gives way to: setup / sign-in, every other dialog, the Day card's list of sheets, Misty in flight */
     const OWN = '#ltTour';
+    /* a sheet that is already on its way out (LowiR2 marks it .off at once; the Gap sheet drops .on) is not a panel to wait for: the
+       You sheet's close animation took 4.6 s in the short tour, and the next card stayed hidden behind it (Oct 25 2026) */
+    const closing = el => { try { return !!(el.closest('.r2-ov.off') || (el.closest('#gvSheet, .gv-ov') && !el.closest('#gvSheet, .gv-ov').classList.contains('on'))); } catch (e) { return false; } };
     function busyBy() {
-        const stg = stage(), mine = el => !!(el.closest(OWN) || (stg && el.closest(stg)));
+        const stg = stage(), mine = el => !!(el.closest(OWN) || (stg && el.closest(stg)) || closing(el));
         if (H.classList.contains('gate-up') || H.classList.contains('gate-boot')) return 'setup';
         if (vis($('#r2ob')) || vis($('.hs-ivov.on'))) return 'setup';
         if (H.classList.contains('mf-on')) return 'flight';
@@ -260,7 +263,7 @@
         if (opened !== r) { opened = r; try { OPEN[r].go(); } catch (e) { } }
         demoOpened = i;
         if (root) root.classList.add('lt-staged');
-        place(); setTimeout(place, 380);
+        place(); for (const ms of [60, 160, 380, 800]) setTimeout(place, ms);   /* the page animates in: settle the card on its real pieces */
     }
     function demoStart(s) {
         if (!s || !s.demo || mode === 'news' || !on || held || paused) return;
@@ -315,19 +318,30 @@
         if (demoAt === i) demoGo();
     }
     /* where the card sits while a page is open: the free edge, and the page gives it room (tutorial-demo.css) */
+    /* the sheet the tour opened gets its height capped inline (important), so it starts below the card: the stylesheet rule lost to
+       the sheets' own max-height on the r2 sheets (Oct 25 2026, card covered 33% of Misty's card) */
+    let sizedEl = null, sizedPx = 0;
+    function sized(el, px) {
+        if (sizedEl && sizedEl !== el) { try { sizedEl.style.removeProperty('max-height'); } catch (e) { } sizedEl = null; }
+        if (el) { try { sizedPx = Math.max(160, Math.round(px)); el.style.setProperty('max-height', sizedPx + 'px', 'important'); sizedEl = el; } catch (e) { } }
+    }
+    /* the visible pieces of the page the tour opened, without full-screen backdrops (the bloom's tap-away layer is a button too) */
+    function stageBoxes() {
+        const r = opened && OPEN[opened]; if (!r || !r.stage) return [];
+        let el = null; try { el = $(r.stage); } catch (e) { } if (!el || !vis(el)) return [];
+        const vw = H.clientWidth || innerWidth, vh = innerHeight, out = [];
+        for (const c of el.querySelectorAll('.r2-sh, .gv-card, button, .lts-frame, .lts-verdict, .lts-shutter')) {
+            if (!vis(c) || closing(c)) continue; const q = c.getBoundingClientRect();
+            if (q.width < 4 || q.height < 4 || q.width * q.height > 0.6 * vw * vh) continue;
+            out.push(q);
+        }
+        return out;
+    }
     function room(where) {
         try {
             H.classList.toggle('lt-room-top', where === 'top'); H.classList.toggle('lt-room-bottom', where === 'bottom');
-            if (!where) H.style.removeProperty('--lt-ch');
+            if (!where) { H.style.removeProperty('--lt-ch'); sized(null); }
         } catch (e) { }
-    }
-    function stageRect() {
-        const r = opened && OPEN[opened]; if (!r || !r.stage) return null;
-        let el = null; try { el = $(r.stage); } catch (e) { } if (!el || !vis(el)) return null;
-        let L = 1e9, T2 = 1e9, R = -1e9, B = -1e9, n = 0;
-        const pool = el.querySelectorAll('.r2-sh, .gv-card, button, .lts-frame, .lts-verdict');
-        for (const c of (pool.length ? pool : [el])) { if (!vis(c)) continue; const q = c.getBoundingClientRect(); if (q.width < 4 || q.height < 4) continue; L = Math.min(L, q.left); T2 = Math.min(T2, q.top); R = Math.max(R, q.right); B = Math.max(B, q.bottom); n++; }
-        return n ? { left: L, top: T2, right: R, bottom: B } : null;
     }
     function said() {
         clearT(autoT); autoT = 0;
@@ -412,12 +426,29 @@
         const sd = s && s.demo && mode !== 'news' && opened && opened === s.demo.open;
         if (sd) {
             /* a page is open: the card slides to the free edge (top unless the page's content sits in the upper half) */
-            const sr = stageRect(), sat = parseFloat(getComputedStyle(H).getPropertyValue('--sat')) || 0;
-            const where = opened === 'community-tab' ? 'bottom' : (sr && (sr.top + sr.bottom) / 2 < vh * 0.45 ? 'bottom' : 'top');
-            H.style.setProperty('--lt-ch', Math.round(ch + 2 * m + 8) + 'px'); room(where);
+            const sat = parseFloat(getComputedStyle(H).getPropertyValue('--sat')) || 0, sab = parseFloat(getComputedStyle(H).getPropertyValue('--sab')) || 0;
+            const need = Math.round(ch + 2 * m + 8), boxes = stageBoxes();
+            const sheet = (() => { const r = OPEN[opened]; let st = null; try { st = r && r.stage && $(r.stage); } catch (e) { } const sh = st && st.querySelector('.r2-sh, .gv-card'); return sh && vis(sh) && !closing(sh) ? sh : null; })();
+            let where = 'top';
+            if (opened === 'community-tab') where = 'bottom';
+            else if (sheet) {
+                /* the sheet shrinks until it starts below the card: measured, not guessed (the You sheet is centred, Misty's card sits
+                   24 px above the bottom), so each placement takes off what still overlaps; a centred sheet loses it twice */
+                where = 'top';
+                const q = sheet.getBoundingClientRect(), cardBot = Math.max(m, m + sat) + ch + 10, over = cardBot - q.top;
+                const centred = q.bottom < vh - sab - 30, cur = sizedEl === sheet ? sizedPx : Math.min(q.height, vh - need - sat);
+                sized(sheet, over > 0 ? cur - over * (centred ? 2 : 1) : cur);
+            }
+            else if (boxes.length) {
+                /* free bands above and below the page's pieces; the card takes the bigger one (bloom bubbles fan up or down) */
+                const top = Math.min(...boxes.map(q => q.top)), bot = Math.max(...boxes.map(q => q.bottom));
+                where = (vh - sab - bot) > (top - sat) ? 'bottom' : 'top';
+            }
+            if (!sheet) sized(null);
+            H.style.setProperty('--lt-ch', need + 'px'); room(where);
             root.classList.remove('lt-center'); hole.style.cssText = '';
             card.style.left = Math.round((vw - cw) / 2) + 'px';
-            card.style.top = Math.round(where === 'top' ? Math.max(m, m + sat) : vh - ch - m - (parseFloat(getComputedStyle(H).getPropertyValue('--sab')) || 0)) + 'px';
+            card.style.top = Math.round(where === 'top' ? Math.max(m, m + sat) : vh - ch - m - sab) + 'px';
             card.setAttribute('data-room', where);
             return;
         }

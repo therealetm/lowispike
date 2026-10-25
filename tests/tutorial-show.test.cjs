@@ -12,9 +12,14 @@ const steps = () => S.plan({ noOwnCompanion: true, claimReady: false });
 test('every card of the first section (companion + bubbles) has a visual plan', () => {
     for (const id of FIRST) assert.ok(X.plan(id), id + ' has no plan in SHOW');
 });
-test('every plan belongs to a real tutorial step', () => {
+test('every plan belongs to a real tutorial step, or to a long-tour card retired on Oct 25 2026 that the short tour never draws', () => {
     const ids = new Set(steps().map(s => s.id));
-    for (const id of X.ids()) assert.ok(ids.has(id), id + ' is not a step in tutorial-steps.js');
+    /* the long tour's cards (the short tour replaced them); their pictures stay for the moment, and nothing can plan them again:
+       none of these ids is a step, and every base card that has a plan is a demo card (the finger shows the real control, not Show) */
+    const RETIRED = new Set(['touch', 'misty-hold', 'misty-turn', 'mirror', 'energy', 'mood', 'energy-peak', 'bubbles', 'ring-still', 'gap-tap', 'fuel-hold', 'log-meal', 'water-hold', 'move-hold']);
+    for (const id of X.ids()) assert.ok(ids.has(id) || RETIRED.has(id), id + ' is not a step in tutorial-steps.js');
+    for (const id of RETIRED) assert.ok(!ids.has(id), id + ' is retired and must not come back as a step');
+    for (const s of require('../tutorial-steps.js').base()) if (X.ids().includes(s.id)) assert.ok(s.demo, s.id + ': a base card with a plan is shown by the demo finger');
 });
 test('the photo card (bubbles, a centred text card) lights the real bubbles one after another and shows the ring', () => {
     const p = X.plan('bubbles');

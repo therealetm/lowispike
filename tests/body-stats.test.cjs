@@ -109,7 +109,7 @@ test('wiring: Settings row, tutorial step, includes in order, offline cache, Day
     const hs = read('home-settings-sleep-v2.js');
     assert.match(hs, /body: 'Weight & BMI'/); assert.match(hs, /body: 'Gewicht & BMI'/); assert.match(hs, /body: 'Peso e IMC'/);
     const TS = require('../tutorial-steps.js');
-    assert.strictEqual(TS.covered().body, 'body');
+    assert.strictEqual(TS.covered().body, 'settings', 'Oct 25 short tour: Weight & BMI is part of the Settings card (hold Community)');
     const html = read('index.html'), core = html.indexOf('body-stats-core.js?v='), ui = html.indexOf('body-stats.js?v=');
     assert.ok(core > 0 && ui > core && html.indexOf('body-stats.css?v=') > 0, 'core before UI');
     assert.ok(ui < html.indexOf('home-settings-sleep-v2.js') || /LowiBodyStats/.test(hs), 'route checks at tap time');

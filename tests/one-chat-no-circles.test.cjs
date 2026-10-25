@@ -33,8 +33,11 @@ test('no word "Circle" left in anything the app shows or says (EN / DE / ES)', (
   const S = require('../tutorial-steps.js');
   assert.ok(!S.STEPS.some(s => s.id === 'new-rooms'), 'the Circles tour step is gone');
   assert.ok(!S.STEPS.some(s => (s.covers || []).includes('user-rooms')));
-  const cm = S.STEPS.find(s => s.id === 'cm-name');
-  assert.strictEqual(cm.title.en, 'People and profile');
+  /* Oct 25 2026 short tour: People and profiles are part of the one Community card; no card text says Circle in any language */
+  assert.ok(!S.STEPS.some(s => s.id === 'cm-name'));
+  const cm = S.STEPS.find(s => s.id === 'community');
+  assert.ok(cm.covers.includes('person-card') && cm.covers.includes('community-chat'));
+  for (const st of S.STEPS) for (const l of ['en', 'de', 'es']) assert.doesNotMatch(st.title[l] + ' ' + st.text[l], /Circle|C[ií]rculo|Kreis/, st.id + '/' + l);
   const v = JSON.parse(R('version.json'));
   for (const l of ['en', 'de', 'es']) assert.doesNotMatch((v.news && v.news.text && v.news.text[l]) || '', /Circle|C[ií]rculo|rooms of up to 30|Räume mit bis zu 30|salas de hasta 30/, 'What\'s New ' + l);
 });

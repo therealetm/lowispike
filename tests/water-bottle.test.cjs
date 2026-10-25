@@ -126,5 +126,7 @@ test('water words say glass everywhere (no cups), and the Home bubble says what 
   assert.doesNotMatch(wh, /add a cup/);
   assert.ok(wh.includes("' glasses. Tap for 10 sips, a glass or a bottle, hold to take the last one off'"));
   const steps = read('tutorial-steps.js');
-  assert.ok(steps.includes('Size sets how big your bottle is.') && steps.includes('Mit Größe stellst du ein') && steps.includes('Con Tamaño eliges'));
+  /* Oct 25 2026 short tour: one Water card, one sentence: 10 sips, a glass or a bottle (never cups) */
+  assert.ok(steps.includes('10 sips, a glass or a bottle') && steps.includes('10 Sips, ein Glas oder eine Flasche') && steps.includes('10 sorbos, un vaso o una botella'));
+  for (const st of require('../tutorial-steps.js').STEPS) for (const l of ['en', 'de', 'es']) assert.doesNotMatch(st.text[l] + ' ' + st.title[l], /\bcups?\b|Becher|\btazas?\b/i, st.id + '/' + l + ' says cup');
 });

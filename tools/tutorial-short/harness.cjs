@@ -41,10 +41,10 @@ const STUB = `(() => {
 })();`;
 
 async function newPage(browser, dev, lang) {
-    const ctx = await browser.newContext(Object.assign({}, pw.devices[dev], { colorScheme: 'dark', serviceWorkers: 'block' }));
+    const ctx = await browser.newContext(Object.assign({}, pw.devices[dev], { colorScheme: 'dark', serviceWorkers: 'block' }, /^iPhone/.test(dev) ? { viewport: { width: 390, height: 844 } } : {}));
     await ctx.addInitScript(PRE(lang)); await ctx.addInitScript(STUB); await ctx.addInitScript('(' + INIT_SRC + ')()');
     const page = await ctx.newPage();
-    page.errs = []; page.on('pageerror', e => page.errs.push(String(e.message || e)));
+    page.errs = []; page.on('pageerror', e => page.errs.push(String(e.stack || e.message || e).split('\n').slice(0, 3).join(' <- ')));
     return { ctx, page };
 }
 async function boot(page, url) {

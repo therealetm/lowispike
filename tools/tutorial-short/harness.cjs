@@ -26,7 +26,7 @@ const PRE = lang => `(() => { try {
   if (!sessionStorage.getItem('thf')) { sessionStorage.setItem('thf', '1');
   localStorage.setItem('lowispike.v2', JSON.stringify({ v: 2, setupDone: true, onboarded: true, user: { name: 'Tester', bday: '1990-03-05', tags: [] }, xp: 1254, ledger: [], logs: [], saved: [], settings: { lang: '${lang}' } }));
   localStorage.setItem('lowispike.companion.v1', JSON.stringify({ v: 1, bday: '1990-03-05', btime: '07:45', n: 0, name: 'Misty', created: 1 }));
-  localStorage.setItem('lowi.hint.communityHold', '1'); localStorage.setItem('lowispike.lang', '${lang}'); localStorage.setItem('lowi.tutorial.voice.v1', '1'); }
+  localStorage.setItem('lowi.hint.communityHold', '1'); localStorage.setItem('lowispike.lang', '${lang}'); localStorage.setItem('lowi.tutorial.voice.v1', '${process.env.VOICE === '0' ? '0' : '1'}'); }
 } catch (e) { } })();`;
 /* audio: each clip ends after 300 ms; camera: counted, answered like a dismissed permission sheet */
 const STUB = `(() => {

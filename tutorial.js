@@ -316,8 +316,10 @@
     }
     /* where the card sits while a page is open: the free edge, and the page gives it room (tutorial-demo.css) */
     function room(where) {
-        H.classList.toggle('lt-room-top', where === 'top'); H.classList.toggle('lt-room-bottom', where === 'bottom');
-        if (!where) H.style.removeProperty('--lt-ch');
+        try {
+            H.classList.toggle('lt-room-top', where === 'top'); H.classList.toggle('lt-room-bottom', where === 'bottom');
+            if (!where) H.style.removeProperty('--lt-ch');
+        } catch (e) { }
     }
     function stageRect() {
         const r = opened && OPEN[opened]; if (!r || !r.stage) return null;

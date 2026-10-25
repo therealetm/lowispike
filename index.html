@@ -8002,7 +8002,12 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-lc]"
     case "shopdone": { /* what you ticked is bought: Today counts it as got, the cart starts fresh next time */
       const g = lcGot(); tdEnsure(); Object.keys(g).forEach(k => { S.td.got[k] = 1; }); lcState().got = {}; save();
       const sh = $("#lcShop"); if (sh) sh.classList.remove("open"); closeCart(); if (typeof toast === "function") toast("Nice. Your shopping is done."); break; }
-    case "hubshop": { const pk = document.querySelector("#r5Pick .r5-card[data-id]"), id = pk && pk.dataset.id; openCart(id && lcRec(id) ? {recipe:id} : {}); break; }
+    case "hubshop": { const pk = document.querySelector("#r5Pick .r5-card[data-id]"), id = pk && pk.dataset.id;
+      /* cook-reject: Shop it on a product pick puts that product on the shopping list (once) before the cart opens */
+      if (id && /^sf-buy:/.test(id) && typeof fById === "function" && window.LOWI_SHELF && LOWI_SHELF.addIngredients) { const f = fById(id), p = f && f.product;
+        if (p && p.name) { const have = (LOWI_SHELF.listOpen ? LOWI_SHELF.listOpen() : []).some(x => String(x && x.n || "").split(" · ")[0].trim().toLowerCase() === String(p.name).trim().toLowerCase());
+          if (!have) try { LOWI_SHELF.addIngredients([{n:p.name, barcode:p.barcode || ""}], "Shuffle"); } catch(e){} } }
+      openCart(id && lcRec(id) ? {recipe:id} : {}); break; }
     case "hubcook": { const pk = document.querySelector("#r5Pick .r5-card[data-id]"), id = pk && pk.dataset.id;
       if (id && window.LowiP2 && LowiP2.rec(id)) { LowiP2.open(id); break; }
       const td = S.td || {}, pl = (td.plan || []).concat(td.extra || []).find(x => window.LowiP2 && LowiP2.rec(x)); if (pl) { LowiP2.open(pl); break; }
@@ -9248,7 +9253,10 @@ function fProductsEmptyHTML(){
   /* no "in": on phones that class pops the result up as the "Your pick" sheet, and an empty state is not a pick */
   return '<div class="r5-card ck-pempty" role="status" data-noi18n><b>' + esc(tx("emptyT")) + '</b><div class="small muted">' + esc(tx("emptyS")) + '</div><div class="r5-btns"><button type="button" class="btn primary" data-cktoss="scan">' + esc(tx("scan")) + '</button><button type="button" class="btn ghost" data-cktoss="book">' + esc(tx("book")) + '</button></div></div>';
 }
-function fTossRepaint(){ const n = r5$("#ckToss"), h = fTossHTML(); if (n) { if (h) n.outerHTML = h; else n.remove(); } else if (h) { const sh = r5$("#r5Shuf"); if (sh) sh.insertAdjacentHTML("beforeend", h); }
+/* cook-reject (Oct 25, 2026, Emmanuel: "we have a throwout scanned, but keep out of shuffle. Why do I even see it?"): Cook is a
+   recommendation page, so the Throw out list no longer renders under Shuffle at all. The scans, the hidden list and the Kitchen stay
+   exactly as they are (nothing is deleted); fTossHTML is kept for its tests and any later home outside Cook. */
+function fTossRepaint(){ const n = r5$("#ckToss"); if (n) n.remove();
   const pk = r5$("#r5Pick"); if (pk && fSrc() === "products" && !fSrcPool().length && !ckCatPending()) pk.innerHTML = fProductsEmptyHTML(); }
 if (typeof document !== "undefined") document.addEventListener("click", e => { const b = e.target && e.target.closest && e.target.closest("[data-cktoss]"); if (!b) return; e.preventDefault();
   const k = b.dataset.cktoss;
@@ -9267,7 +9275,11 @@ function fSrcPool(src){
 const ckLastKey = () => CKK.src + ".last." + fSrc() + (fSrc() === "book" ? "." + fCatSel() : "");
 function fLast(){ let id = ""; try { id = localStorage.getItem(ckLastKey()) || ""; } catch(e){} if (!id && fSrc() === "book" && fCatSel() === "all") id = R5.last || "";
   return id ? fSrcPool().find(x => x.id === id) || null : null; }
-function fSaveLast(f){ ckSet(ckLastKey(), f.id); if (f.book) { R5.last = f.id; r5save(); } if (f.buy && window.LowiSwaflo) try { LowiSwaflo.saveBuy(f.id); } catch(e){} }
+/* cook-reject: Shuffle also skips the last few picks of this source while there are enough others (half the pool, at most 3),
+   so a small pool no longer bounces between the same two or three. Session memory only. */
+const FRECENT = {};
+function fRecent(){ const k = ckLastKey(); return FRECENT[k] || (FRECENT[k] = []); }
+function fSaveLast(f){ const rc = fRecent(); if (rc[rc.length - 1] !== f.id) { rc.push(f.id); if (rc.length > 12) rc.shift(); } ckSet(ckLastKey(), f.id); if (f.book) { R5.last = f.id; r5save(); } if (f.buy && window.LowiSwaflo) try { LowiSwaflo.saveBuy(f.id); } catch(e){} }
 function fCell(c){ return '<div class="r5-cell">' + (c && c.img ? '<img alt="" decoding="async" src="' + c.img + '">' : '<span class="ck-ph">' + CKPLATE + '<b>' + esc(String((c && c.n) || "?").trim().charAt(0).toUpperCase()) + '</b></span>') + '</div>'; }
 function ckBarHTML(){
   const s = fSrc(), c = fCatSel(), v = fView();
@@ -9301,7 +9313,9 @@ function fMetaHTML(f){ const m = window.LOWI_COOK && f.book ? LOWI_COOK.minTxt(f
   return [f.com ? "From " + f.who : FCAT[f.c] || "", m].filter(Boolean).map(x => "<span>" + esc(x) + "</span>").join(" · "); }
 function fBadge(f){ return '<span class="sh-pk ' + (f.r === "selten" ? "warn" : "gold") + '">' + (f.r === "selten" ? "Small portion" : "Everyday") + "</span>"; }
 function fPick(){
-  dkNorm(); /* r3k-pick, ck-src: from the chosen source only */ const lf = fLast(), A = fSrcPool().filter(f => R5.never.indexOf(f.id) < 0), P = A.length > 1 && lf ? A.filter(f => f.id !== lf.id) : A; if (!P.length) return null;
+  dkNorm(); /* r3k-pick, ck-src: from the chosen source only */ const lf = fLast(), A = fSrcPool().filter(f => R5.never.indexOf(f.id) < 0); if (!A.length) return null;
+  const avoid = new Set(fRecent().slice(-Math.min(3, Math.floor(A.length / 2)))); if (lf && A.length > 1) avoid.add(lf.id);
+  let P = A.filter(f => !avoid.has(f.id)); if (!P.length) P = A.length > 1 && lf ? A.filter(f => f.id !== lf.id) : A;
   /* ck-cat: caught products together weigh as much as the whole shop range, so your own and community catches still come up */
   const nCat = P.filter(f => f.catalog).length, nOwn = P.length - nCat, own = nCat && nOwn ? Math.max(1, nCat / nOwn) : 1;
   const w = P.map(f => (R5.liked.indexOf(f.id) >= 0 ? 3 : R5.skipped.indexOf(f.id) >= 0 ? 0.3 : f.com ? 1.5 : 1) * (f.buy && !f.catalog ? own : 1)), sum = w.reduce((a, b) => a + b, 0);
@@ -9319,7 +9333,7 @@ function fHomeHTML(){
     '<button class="btn primary r5-go" data-r5="shuffle" id="r5Go">' + R5IC.shuffle.replace("<svg", '<svg width="20" height="20"') + '<span>' + (last ? "Shuffle again" : "Shuffle my food") + '</span></button>' +
     (window.LowiCS ? '<div class="cs-pair cs-hub" id="csHub"><button type="button" class="cs-btn cs-cook" data-lc="hubcook">' + LowiCS.ic.pot + '<span>Cook it</span></button><button type="button" class="cs-btn cs-shop" data-lc="hubshop">' + LowiCS.ic.cart + '<span>Shop it</span></button></div>' : "") +
     '<div class="small muted r5-hint" data-noi18n>' + /* r3k-hint */ fHintTxt() + '</div>' +
-    '<div id="r5Pick">' + (last ? fRevealHTML(last, false) : (fSrc() === "products" && !fSrcPool().length && !ckCatPending() ? fProductsEmptyHTML() : "")) + '</div>' + fTossHTML() + '</div>' +
+    '<div id="r5Pick">' + (last ? fRevealHTML(last, false) : (fSrc() === "products" && !fSrcPool().length && !ckCatPending() ? fProductsEmptyHTML() : "")) + '</div>' + /* cook-reject: no Throw out list here */ '</div>' +
     /* r3k-home */ dkSectionHTML() +
     '<div id="r3kYes">' + fYesHTML() + '</div>';
 }
@@ -9342,9 +9356,20 @@ function fProdCardHTML(f, anim){
 function fProdVerdict(f, open){
   if (!f || !f.buy || !window.LowiDex || !LowiDex.enrich) return null;
   return LowiDex.enrich(f.product).then(q => { const had = PV[f.id]; PV[f.id] = q;
+      if (fRejected(f)) { fDropRejected(f); return q; } /* cook-reject: the label says spike after all, so it is not a pick */
       const pk = r5$("#r5Pick"), c = pk && [...pk.querySelectorAll(".ck-pv")].find(x => x.dataset.id === f.id); if (c && !had) c.outerHTML = fProdCardHTML(f, false);
       if (open) LowiDex.reveal(q); return q; },
     () => { PV[f.id] = f.product; if (open) LowiDex.reveal(f.product); return f.product; });
+}
+/* cook-reject: a product pick whose filled-in label turns out to spike (or no longer rates) has left the Products pool (fSort reads PV),
+   so it is replaced at once by another pick, or the empty state; it never stays on screen as "Your pick". */
+function fRejected(f){ if (!f || !f.buy) return false; try { return !fProducts().some(x => x.id === f.id); } catch(e){ return false; } }
+function fDropRejected(f){
+  try { if (localStorage.getItem(ckLastKey()) === f.id) localStorage.removeItem(ckLastKey()); } catch(e){}
+  const pk = r5$("#r5Pick"), shown = pk && [...pk.querySelectorAll(".r5-card[data-id]")].some(x => x.dataset.id === f.id); if (!shown || fSrc() !== "products") return;
+  if (fSrcPool().filter(x => R5.never.indexOf(x.id) < 0).length) { fSpinning = false; fShuffle(true); return; }
+  const st = r5$("#r5Strip"); if (st) st.innerHTML = '<div class="r5-cell r5-idle"><span class="r5-q">?</span></div>';
+  const sg = r5$("#r5Stage"); if (sg) sg.classList.remove("has", "hit"); pk.innerHTML = fProductsEmptyHTML();
 }
 function fRevealHTML(f, anim){
   if (f.buy && window.LowiDex && LowiDex.enrich) return fProdCardHTML(f, anim);
@@ -9431,7 +9456,7 @@ function dkSync(){
   const have = new Set(fSrcPool().map(f => f.id));
   const done = DK.order.slice(0, DK.i).filter(id => have.has(id)), ahead = DK.order.slice(DK.i).filter(id => have.has(id) && !dkDone(id));
   const known = new Set(DK.order), nu = fSrcPool().filter(f => !known.has(f.id) && !dkDone(f.id)).map(f => f.id);
-  DK.hist = DK.hist.filter(id => have.has(id));
+  DK.hist = DK.hist.filter(h => have.has(h && h.id || h)); /* cook-reject: hist holds {id, dir}; the old filter emptied it, so Undo broke */
   DK.order = done.concat(ahead.slice(0, 1), nu, ahead.slice(1)); DK.i = done.length;
 }
 function dkLeft(){ return Math.max(0, DK.order.length - DK.i); }
@@ -9485,6 +9510,21 @@ function dkCookToday(id){
      (book: Jetzt kochen / Wagen füllen / Zu heute; community and caught products: their own pick card). */
   setTimeout(() => { try { if (fById(id)) fShowPick(id); } catch(e){} }, 420);
 }
+/* swipe-kitchen (Oct 25, 2026, Emmanuel: "when they ... go on soon, that adds that to the kitchen"): swiping a product to Soon puts it
+   in Kitchen > At home (kitchen-core, lowispike.kitchen.v1, the same store as the cart's Bought), once, with one short line.
+   Undo takes it out again only if this swipe added it. Recipes are not stock, so they never go in. */
+function dkKitchenSave(K, st){ localStorage.setItem(K.KEY, JSON.stringify(st)); try { window.dispatchEvent(new CustomEvent("lowi:kitchen", {detail:{count:K.count(st)}})); } catch(e){} }
+function dkKitchenAdd(f){
+  const K = window.LowiKitchenCore; if (!K || !f || !f.buy) return "";
+  const n = String((f.product && f.product.name) || f.n || "").trim(); if (!n) return "";
+  let st; try { st = K.parse(localStorage.getItem(K.KEY)); } catch(e){ st = K.parse(null); }
+  const say = m => { try { r5toast(m); } catch(e){} };
+  if (K.has(st, n)) { say(ckT("Already in your kitchen: ", "Schon in deiner Küche: ", "Ya está en tu cocina: ") + n); return ""; }
+  const nx = K.add(st, n, Date.now(), "me"), it = nx.items[nx.items.length - 1]; if (!it || nx.items.length === st.items.length) return "";
+  try { dkKitchenSave(K, nx); } catch(e){ return ""; }
+  say(ckT("Added to your kitchen: ", "In deiner Küche: ", "Añadido a tu cocina: ") + n); return it.id;
+}
+function dkKitchenUndo(kid){ const K = window.LowiKitchenCore; if (!K || !kid) return; try { const r = K.drop(localStorage.getItem(K.KEY), kid); if (r && r.gone) dkKitchenSave(K, r.state); } catch(e){} }
 function dkDecide(dir){
   if (dir === true) dir = "right"; if (dir === false) dir = "left";
   const D = DKDIR[dir]; if (!D) return; const id = DK.order[DK.i]; if (!id) return; const c = r5$("#r5Stack .r5-dc.top");
@@ -9493,7 +9533,8 @@ function dkDecide(dir){
   else if (dir === "right") R5.liked.push(id);
   else if (dir === "left") R5.skipped.push(id);
   else { R5.never.push(id); if (R5.last === id) R5.last = ""; }
-  r5save(); DK.hist.push({id, dir}); DK.i++;
+  const kid = dir === "right" ? dkKitchenAdd(fById(id)) : ""; /* swipe-kitchen */
+  r5save(); DK.hist.push({id, dir, kid}); DK.i++;
   dkSfx(dir); dkFx(dir); try { if (navigator.vibrate) navigator.vibrate(D.vib); } catch(e){}
   if (dir === "up") dkCookToday(id);
   if (dir === "right" && window.LowiAte) LowiAte.offer(id); /* ate-this: liked = offer I just ate this / I'll eat this */
@@ -9501,7 +9542,7 @@ function dkDecide(dir){
   if (c) { c.classList.add("r3k-go", "go-" + dir); c.style.transition = "transform .38s ease-in, opacity .38s, filter .38s"; c.style.transform = T[dir]; c.style.opacity = "0"; setTimeout(dkPaint, 300); } else dkPaint();
   dkYesRefresh();
 }
-function dkUndo(){ const h = DK.hist.pop(); if (!h) return; const id = h.id || h;
+function dkUndo(){ const h = DK.hist.pop(); if (!h) return; const id = h.id || h; if (h.kid) dkKitchenUndo(h.kid);
   R5.liked = R5.liked.filter(x => x !== id); R5.skipped = R5.skipped.filter(x => x !== id); R5.never = R5.never.filter(x => x !== id); R5.today = R5.today.filter(x => x !== id); r5save();
   const at = DK.order.lastIndexOf(id, DK.i - 1); if (at >= 0 && at !== DK.i - 1) { DK.order.splice(at, 1); DK.order.splice(DK.i - 1, 0, id); }
   DK.i = Math.max(0, DK.i - 1); dkSfx("undo"); dkPaint(); dkYesRefresh(); }

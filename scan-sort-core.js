@@ -89,7 +89,12 @@
             BASICS = /\S*\u00f6l(\s|$)|\boil\b|\S*fett\b|salz|\bsalt\b|\bolie\b|fritier|frittier|essig|vinegar/i,
             PORKISH = /salami|salame|salchich|schinken|wurst|\bmett\b|cabanossi|tyrolini|landj[a\u00e4]ger|mortadella|pancetta|guanciale|wiener|\bham\b|skinke|p\u00f8lse/i,
             BIRD = /pute|h\u00e4hnchen|huhn|chicken|rinder|beef|gefl\u00fcgel|kalkun|kylling|lamm|turkey|vegan|vegetar/i;
-        const lanes = (built.groups || []).map(g => (g.pass || []).filter(it => it && it.p && typeof it.p.c === 'number' && !it.r.typical && !NOPE.test(String(it.p.n) + ' ' + String(it.p.k || '')) && !BASICS.test(String(it.p.n)) && !(PORKISH.test(String(it.p.n)) && !BIRD.test(String(it.p.n)))));
+        /* cook-reject (Oct 25, 2026): a liquid filed under a food group (sweets, snacks ...) was rated by a 25-50 g bite, so sweet drinks such as
+           "Bubble Pop Sunny Peach" (8.8 g sugar per 100 ml, 500 ml bottle) or ready-made cocoa reached Shuffle as low-spike picks. For the Shuffle
+           lane a liquid filed under sweets or snacks is checked like any drink: sugar per 250 ml glass within the store's own sugar limit. The Seller Zone rating itself is unchanged. */
+        const SUGAR_MAX = (core.LIMIT && core.LIMIT.sugar) || 6,
+            sweetLiquid = it => it.r.unit === 'ml' && /^(sweets|snacks)$/.test(String(it.r.group)) && (Number(it.r.serve) || 0) < 200 && (Number(it.p.s) || 0) * 2.5 > SUGAR_MAX;
+        const lanes = (built.groups || []).map(g => (g.pass || []).filter(it => it && it.p && typeof it.p.c === 'number' && !it.r.typical && !sweetLiquid(it) && !NOPE.test(String(it.p.n) + ' ' + String(it.p.k || '')) && !BASICS.test(String(it.p.n)) && !(PORKISH.test(String(it.p.n)) && !BIRD.test(String(it.p.n)))));
         const out = [];
         for (let i = 0; out.length < max; i++) {
             let any = false;

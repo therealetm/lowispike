@@ -103,7 +103,10 @@ test('all scanned products spike: friendly empty state, no fallback to spiking i
     assert.match(e, /data-cktoss="book"/);
     assert.doesNotMatch(e, /Cola|Chips|Gummy/);
     assert.match(api.fTossHTML(), /Throw out <small>3<\/small>/);
-    assert.match(part('function fHomeHTML(){', 'const PV = {};'), /fProductsEmptyHTML\(\)[^]*fTossHTML\(\)/);
+    /* Oct 25, 2026 (Emmanuel: "we have a throwout scanned, but keep out of shuffle. Why do I even see it?"): Cook no longer renders
+       Throw out under the empty state or anywhere else; see tests/cook-shuffle-reject.test.cjs */
+    assert.match(part('function fHomeHTML(){', 'const PV = {};'), /fProductsEmptyHTML\(\)/);
+    assert.doesNotMatch(part('function fHomeHTML(){', 'const PV = {};'), /fTossHTML\(\)/);
 });
 
 test('Buy picks, swap requests and shopping matches for generated recipes skip likely spikes too', () => {

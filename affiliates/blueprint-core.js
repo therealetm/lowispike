@@ -91,7 +91,7 @@
       langs: {
         en: {
           keyword: 'recipe',
-          blurb: 'You lose weight with the app and film it: your goal, the shuffle, cooking, eating, your rating. People comment \u201crecipe\u201d for the e-book.',
+          blurb: 'You film your journey with the app: your own goal, the shuffle, cooking, eating, your rating. People comment \u201crecipe\u201d for the e-book.',
           onScreen: 'Day [X] \u00b7 [Goal] kilos down within [Time]',
           vars: { day: '[X]', kg: '[Goal]', time: '[Time]', food: '[Meal]', rating: '[Rating]', keyword: 'recipe' },
           scenes: [
@@ -111,7 +111,7 @@
         },
         de: {
           keyword: 'Rezept',
-          blurb: 'Du nimmst mit der App ab und filmst es: dein Ziel, der Shuffle, kochen, essen, bewerten. Die Leute kommentieren \u201eRezept\u201c für das E-Book.',
+          blurb: 'Du filmst deinen Weg mit der App: dein eigenes Ziel, der Shuffle, kochen, essen, bewerten. Die Leute kommentieren \u201eRezept\u201c für das E-Book.',
           onScreen: 'Tag [X] \u00b7 [Ziel] Kilo weniger in [Zeitraum]',
           vars: { day: '[X]', kg: '[Ziel]', time: '[Zeitraum]', food: '[Mahlzeit]', rating: '[Note]', keyword: 'Rezept' },
           scenes: [
@@ -131,7 +131,7 @@
         },
         es: {
           keyword: 'receta',
-          blurb: 'Adelgazas con la app y lo grabas: tu meta, la mezcla, cocinar, comer y puntuar. La gente comenta \u201creceta\u201d para el e-book.',
+          blurb: 'Grabas tu camino con la app: tu propia meta, la mezcla, cocinar, comer y puntuar. La gente comenta \u201creceta\u201d para el e-book.',
           onScreen: 'Día [X] \u00b7 [Meta] kilos menos en [Tiempo]',
           vars: { day: '[X]', kg: '[Meta]', time: '[Tiempo]', food: '[Comida]', rating: '[Nota]', keyword: 'receta' },
           scenes: [

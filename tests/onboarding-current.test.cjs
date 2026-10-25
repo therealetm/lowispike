@@ -81,7 +81,7 @@ test('the shopping form never pre-fills a number and is editable later from Prof
 test('gate is 3 plain screens (Oct 21 TikTok advice): what it is + why + proof first, shop & scan first in the habits', () => {
     const s = read('herb-start.js');
     assert.ok(!/play:\[/.test(s), 'how-you-play is taught in the app, not before the account');
-    assert.match(s, /plantH:'Eat smarter and lose weight, as a game\.'/);
+    assert.match(s, /plantH:'Eat smarter\. Become your healthiest self, as a game\.'/);
     /* Oct 24 (Eman): the "Made by Eman, who lost 45 kg in 7 months" line is gone everywhere, not corrected */
     assert.ok(!/proof:'/.test(s) && !s.includes('hs-proof') && !/45 kg/.test(s), 'no founder weight-loss line on the first screen');
     for (const cute of ['Say hi', 'Got it', 'Nice to meet you', "Save your companion"]) assert.ok(!s.includes("'" + cute + "'") && !s.includes("'" + cute + ":"), 'plain button words, not cute ones: ' + cute);

@@ -8,7 +8,8 @@ const html = read('index.html');
 test('"I want" holds only goals phrased as goals; conditions are their own optional group', () => {
   const m = html.match(/const GOAL_TAGS = (\[.*?\]\]);/), c = html.match(/const COND_TAGS = (\[.*?\]\]);/);
   const goals = JSON.parse(m[1]), conds = JSON.parse(c[1]);
-  assert.deepEqual(goals.map(g => g[1]), ['Fewer cravings', 'More energy', 'Better skin', 'Lose weight', 'Steadier blood sugar', 'Just eat better']);
+  /* Oct 25 (Eman): optimal healthy self first; weight is lose, gain or keep, never assumed */
+  assert.deepEqual(goals.map(g => g[1]), ['Just be healthier', 'More energy', 'Fewer cravings', 'Steadier blood sugar', 'Better skin', 'Lose weight', 'Gain weight', 'Keep my weight']);
   assert.deepEqual(conds.map(g => g[0]), ['PCOS', 'Insulin resistance', 'Pre-diabetes']);
   for (const g of goals) assert(!/pcos|insulin|diabet/i.test(g[1]), g[1]);
   /* stored keys of old goals are unchanged, so old profiles keep their picks */

@@ -14,7 +14,8 @@ test('onboarding copy tells the Misty story in all three languages, with no herb
   for (const lang of ['en:', 'de:', 'es:']) assert.ok(tx.includes(lang));
   // Oct 16 birth companion: before the birthday the companion is an unrevealed being with no name ("Misty" only stays as the fallback for existing users)
   // Oct 21 (TikTok advice): the first headline says what the app is and why it helps, not a riddle
-  assert.ok(tx.includes("plantH:'Eat smarter and lose weight, as a game.'") && tx.includes("plantH:'Iss kl\\u00fcger und nimm ab, als Spiel.'") && tx.includes("plantH:'Come mejor y adelgaza jugando.'"));
+  // Oct 25 (Eman): weight loss is a side effect; the headline is becoming your healthiest self
+  assert.ok(tx.includes("plantH:'Eat smarter. Become your healthiest self, as a game.'") && tx.includes("plantH:'Iss kl\\u00fcger. Werde dein ges\\u00fcndestes Ich, als Spiel.'") && tx.includes("plantH:'Come mejor. Convi\\u00e9rtete en tu versi\\u00f3n m\\u00e1s sana, jugando.'"));
   assert.ok(!/Misty/.test(tx.slice(0, tx.indexOf('ivOver'))), 'no Misty in the gate copy');
   assert.ok(!/spirit world|Geisterwelt|mundo espiritual/.test(tx), 'Oct 19: never "spirit"');
   assert.ok(!/glow-up|Plant my herb|Every glow/i.test(read('index.html')));

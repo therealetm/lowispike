@@ -22,7 +22,7 @@ const save=()=>{try{if(R().save)R().save();else LowiVitalsBridge.save();}catch(e
 const dayKey=d=>{d=new Date(d||Date.now());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 
 const TX={
- en:{over:'FOOD & HABIT TRACKER',plantH:'Eat smarter and lose weight, as a game.',plantP:'Every healthy habit you track powers up your companion:',hab:['Shop & scan','Fuel (meals)','Water','Move','Gap (fasting)'],plantBtn:'Get started',have:'I already have an account',back:'Back',
+ en:{over:'FOOD & HABIT TRACKER',plantH:'Eat smarter. Become your healthiest self, as a game.',plantP:'Every healthy habit you track powers up your companion:',hab:['Shop & scan','Fuel (meals)','Water','Move','Gap (fasting)'],plantBtn:'Get started',have:'I already have an account',back:'Back',
   nameLabel:'Name',shuffle:'Shuffle',later:'You can change this later.',
   askOver:'YOUR NAME',ask:'Hi! I\u2019m your companion. What\u2019s your first name?',youLabel:'Your first name',askBtn:'Continue',needName:'Type your first name first.',
   rewOver:'YOUR FIRST XP',rew:'{name}, you earned your first spark! Create a free account to keep it.',chip:'+5 XP \u00b7 first spark',saveBtn:'Create free account',fine:'Free. Takes 20 seconds.',firstLeaf:'First spark',
@@ -31,7 +31,7 @@ const TX={
   rowT:'Next steps',rowAll:'All done for today',rowQ:'{herb} has a question',why:'Why this?',goBtn:'Go',change:'Change',remove:'Remove',addOne:'Add a step',doneLbl:'Done today',pickOne:'Pick a step',cancel:'Cancel',
   redo:'Redo the questions',hide:'Hide from Today',show:'Show on Today',profT:'Starter plan',profNone:'4 optional questions with your companion. They set 3 or 4 next steps on Today.',profHas:'{n} next steps on Today',profStart:'Start',
   skipped:'Any time: Profile \u203a About you \u203a Starter plan.',saved:'Your next steps are on Today.',qNot:'Not now',qThanks:'Got it. I changed your steps.',allDone:'All steps done. {herb} is glowing.'},
- de:{over:'ESSEN- & GEWOHNHEITS-TRACKER',plantH:'Iss kl\u00fcger und nimm ab, als Spiel.',plantP:'Jede gesunde Gewohnheit, die du eintr\u00e4gst, l\u00e4dt dein Lichtwesen auf:',hab:['Einkaufen & scannen','Essen','Wasser','Bewegung','Pause (Fasten)'],plantBtn:'Loslegen',have:'Ich habe schon ein Konto',back:'Zur\u00fcck',
+ de:{over:'ESSEN- & GEWOHNHEITS-TRACKER',plantH:'Iss kl\u00fcger. Werde dein ges\u00fcndestes Ich, als Spiel.',plantP:'Jede gesunde Gewohnheit, die du eintr\u00e4gst, l\u00e4dt dein Lichtwesen auf:',hab:['Einkaufen & scannen','Essen','Wasser','Bewegung','Pause (Fasten)'],plantBtn:'Loslegen',have:'Ich habe schon ein Konto',back:'Zur\u00fcck',
   nameLabel:'Name',shuffle:'Mischen',later:'Du kannst das sp\u00e4ter \u00e4ndern.',
   askOver:'DEIN NAME',ask:'Hi! Ich bin dein Lichtwesen. Wie ist dein Vorname?',youLabel:'Dein Vorname',askBtn:'Weiter',needName:'Trag zuerst deinen Vornamen ein.',
   rewOver:'DEINE ERSTEN XP',rew:'{name}, dein erster Funke! Mit einem kostenlosen Konto bleibt dein Fortschritt gespeichert.',chip:'+5 XP \u00b7 erster Funke',saveBtn:'Kostenloses Konto erstellen',fine:'Kostenlos. Dauert 20 Sekunden.',firstLeaf:'Erster Funke',
@@ -40,7 +40,7 @@ const TX={
   rowT:'N\u00e4chste Schritte',rowAll:'Heute alles geschafft',rowQ:'{herb} hat eine Frage',why:'Warum das?',goBtn:'Los',change:'\u00c4ndern',remove:'Entfernen',addOne:'Schritt hinzuf\u00fcgen',doneLbl:'Heute erledigt',pickOne:'Schritt ausw\u00e4hlen',cancel:'Abbrechen',
   redo:'Fragen neu beantworten',hide:'Auf Heute ausblenden',show:'Auf Heute zeigen',profT:'Startplan',profNone:'4 freiwillige Fragen. Daraus werden 3 oder 4 n\u00e4chste Schritte auf Heute.',profHas:'{n} n\u00e4chste Schritte auf Heute',profStart:'Starten',
   skipped:'Jederzeit: Profil \u203a \u00dcber dich \u203a Startplan.',saved:'Deine n\u00e4chsten Schritte stehen auf Heute.',qNot:'Jetzt nicht',qThanks:'Verstanden. Ich habe deine Schritte angepasst.',allDone:'Alle Schritte geschafft. {herb} leuchtet.'},
- es:{over:'APP DE COMIDA Y H\u00c1BITOS',plantH:'Come mejor y adelgaza jugando.',plantP:'Cada h\u00e1bito sano que registras le da energ\u00eda a tu ser de luz:',hab:['Comprar y escanear','Comida','Agua','Movimiento','Pausa (ayuno)'],plantBtn:'Empezar',have:'Ya tengo una cuenta',back:'Atr\u00e1s',
+ es:{over:'APP DE COMIDA Y H\u00c1BITOS',plantH:'Come mejor. Convi\u00e9rtete en tu versi\u00f3n m\u00e1s sana, jugando.',plantP:'Cada h\u00e1bito sano que registras le da energ\u00eda a tu ser de luz:',hab:['Comprar y escanear','Comida','Agua','Movimiento','Pausa (ayuno)'],plantBtn:'Empezar',have:'Ya tengo una cuenta',back:'Atr\u00e1s',
   nameLabel:'Nombre',shuffle:'Otro',later:'Puedes cambiarlo despu\u00e9s.',
   askOver:'TU NOMBRE',ask:'\u00a1Hola! Soy tu ser de luz. \u00bfCu\u00e1l es tu nombre?',youLabel:'Tu nombre',askBtn:'Continuar',needName:'Primero escribe tu nombre.',
   rewOver:'TUS PRIMEROS XP',rew:'\u00a1{name}, tu primera chispa! Crea una cuenta gratis para no perderla.',chip:'+5 XP \u00b7 primera chispa',saveBtn:'Crear cuenta gratis',fine:'Es gratis y solo te lleva 20 segundos.',firstLeaf:'Primera chispa',

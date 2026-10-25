@@ -4,8 +4,9 @@
    Tree shows only added friends. The UI lives in people-directory.js; this file holds what tests can pin without a DOM:
    which people are listed (real humans only, never blocked ones, one row per account id, sorted by name), the name search,
    which picture URLs are allowed, and the EN/DE/ES words.
-   Privacy: a row carries only the human name, the picture and the id. Never weight, glucose, level, XP or presence:
-   the directory never says anyone is online, and it is not a ranking. Real-human filtering is not redone here: the UI
+   Privacy: a row carries only the human name, the picture and the id. Never weight, glucose, level, XP: it is not a ranking.
+   Presence (Oct 25 2026, Emmanuel's ask): only the live "here now" presence the Community header already shows (here()),
+   never a profile field and never a last-seen time. Real-human filtering is not redone here: the UI
    takes its list from LowiCellRoom.people(), the same list as Add a friend (bots, test, hidden and owner accounts removed). */
 (function (root) {
     'use strict';
@@ -22,7 +23,11 @@
         empty: ['Nobody to show yet.', 'Noch niemand zu zeigen.', 'Todavía no hay nadie que mostrar.'],
         signin: ['Sign in to see the people in LOWiSPIKE.', 'Melde dich an, um die Leute bei LOWiSPIKE zu sehen.', 'Inicia sesión para ver a las personas de LOWiSPIKE.'],
         loading: ['Loading people…', 'Leute werden geladen…', 'Cargando personas…'],
-        friend: ['In your tree', 'In deinem Baum', 'En tu árbol']
+        friend: ['In your tree', 'In deinem Baum', 'En tu árbol'],
+        onNow: ['Online right now', 'Gerade online', 'En línea ahora'],
+        others: ['Everyone else', 'Alle anderen', 'Todos los demás'],
+        you: ['You', 'Du', 'Tú'],
+        onDot: ['online', 'online', 'en línea']
     };
     const LANGS = ['en', 'de', 'es'];
     function tr(k, li, v) {
@@ -79,7 +84,47 @@
             return words.every(w => parts.some(p => p.startsWith(w)));
         });
     }
-    const API = { T, LANGS, tr, build, match, safeImg, initials, nameOf };
+    /* Oct 25 2026 (Emmanuel: "When someone is online, it says '2 here now', but when I click, I don't see who ... maybe under
+       'Online right now'"): who is here now, for BOTH the header count ("2 here now") and the People section, so the two always match.
+       ids: the live presence ids (LowiRooms.members(), your own included). profiles: the raw profile list, only used to place an
+       online account whose row is listed under another account of the same name (rows keep one account per name).
+       rows: build() output (real humans only, blocked and you already out). opts.me: your id; opts.ok(profile) must be true for
+       that fallback (not a bot, test, hidden, removed or blocked account). An id that matches no row never shows and never counts.
+       Returns {me: you are here, rows: the others here (by name, one per row), count: rows + you}. */
+    function here(ids, profiles, rows, opts) {
+        opts = opts || {};
+        const me = opts.me ? String(opts.me) : '';
+        const ok = typeof opts.ok === 'function' ? opts.ok : () => false;
+        const byUid = new Map(), byName = new Map(), prof = new Map();
+        for (const r of rows || []) {
+            if (!r || !r.uid) continue;
+            byUid.set(String(r.uid), r);
+            const k = fold(nameOf(r));
+            if (k && !byName.has(k)) byName.set(k, r);
+        }
+        for (const p of profiles || []) if (p && typeof p === 'object' && p.uid) prof.set(String(p.uid), p);
+        let meHere = false;
+        const out = [], seen = new Set();
+        for (const raw of ids || []) {
+            const id = String(raw == null ? '' : raw).trim();
+            if (!id) continue;
+            if (me && id === me) { meHere = true; continue; }
+            let r = byUid.get(id);
+            if (!r) {
+                const p = prof.get(id);
+                let good = false;
+                try { good = !!(p && ok(p)); } catch (e) { good = false; }
+                if (!good) continue;
+                r = byName.get(fold(nameOf(p)));
+            }
+            if (!r || seen.has(r.uid)) continue;
+            seen.add(r.uid);
+            out.push(r);
+        }
+        out.sort((a, b) => a.n.localeCompare(b.n, undefined, { sensitivity: 'base' }) || (a.uid < b.uid ? -1 : a.uid > b.uid ? 1 : 0));
+        return { me: meHere, rows: out, count: out.length + (meHere ? 1 : 0) };
+    }
+    const API = { T, LANGS, tr, build, match, safeImg, initials, nameOf, here };
     if (typeof module === 'object' && module.exports) module.exports = API;
     root.LowiPeopleDirCore = API;
 })(typeof window !== 'undefined' ? window : globalThis);

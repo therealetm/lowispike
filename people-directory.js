@@ -1,7 +1,8 @@
 /* LOWiSPIKE People directory (Oct 24, 2026). Emmanuel: browse everyone who is part of the app, offline people and people
    he has not added too, with their human names and profile pictures, and open their human profile (the person card with
    picture, birthday and star sign), not just their companion. A discreet People entry in the Community menu opens it
-   (community-rooms-ui.js, key 'dir'). Not a ranking and no member-count boast: no numbers, no levels, no presence.
+   (community-rooms-ui.js, key 'dir'). Not a ranking and no member-count boast: no numbers, no levels. Since Oct 25 2026 the
+   live "here now" presence is the one exception: Online right now at the top, and the header's "N here now" opens it (hereNow()).
    The list is LowiCellRoom.people() (the Add a friend list: real humans only, bots, test, hidden and owner accounts
    removed, one per name) minus anyone you blocked (LowiCommunity.blocked). Tapping a row opens
    LowiCommunity.openProfile, which shows only what the person card already shows to the community.
@@ -21,6 +22,45 @@
     function friendIds() { try { return new Set(((W.LowiCellRoom && W.LowiCellRoom.friends && W.LowiCellRoom.friends()) || []).map(f => String(f.uid))); } catch (e) { return new Set(); } }
     function hue(uid) { try { if (W.LowiCommunity && W.LowiCommunity.colorOf) return W.LowiCommunity.colorOf(uid); } catch (e) {} let h = 0; for (const ch of String(uid)) h = (h * 31 + ch.charCodeAt(0)) % 360; return 'hsl(' + h + ',70%,72%)'; }
     function rows() { return C().build(source(), { blocked: isBlocked, me: me() }); }
+    /* Oct 25 2026 (Emmanuel: "If I click on People, I should be able to see the person who's online ... very up, maybe under
+       'Online right now'"): the live presence of the one Community room (LowiRooms, the same ids the header counts), resolved to
+       the rows above by LowiPeopleDirCore.here(). The header's "N here now" reads hereNow() too, so the count and the section
+       always match, and bots, test, hidden, removed and blocked accounts never show or count. */
+    function cloudProfiles() { try { return (W.LOWI_CLOUD && W.LOWI_CLOUD.people && W.LOWI_CLOUD.people()) || []; } catch (e) { return []; } }
+    function presenceIds() { try { const r = W.LowiRooms; return r && r.status && r.status() === 'in' && r.members ? r.members() || [] : []; } catch (e) { return []; } }
+    function realProfile(p) {
+        try {
+            const B = W.LowiBotAccounts, H = W.LowiHiddenAccounts, names = new Set((W.LOWI_BOTS || []).map(b => b && b.n));
+            return !!(p && p.uid && !names.has(p.n) && !(B && B.isBot && B.isBot(p)) && !(H && H.isHidden && H.isHidden(p)) && !isBlocked(String(p.uid)));
+        } catch (e) { return false; }
+    }
+    const NOBODY = { me: false, rows: [], count: 0 };
+    function hereNow() {
+        if (!C() || !C().here) return NOBODY;
+        const ids = presenceIds();
+        if (!ids.length) return NOBODY;
+        try { return C().here(ids, cloudProfiles(), live() ? rows() : [], { me: me(), ok: realProfile }); } catch (e) { return NOBODY; }
+    }
+    function myRow() {
+        const id = me(), p = cloudProfiles().find(x => x && String(x.uid) === id) || {};
+        return { uid: id, n: C().nameOf(p), img: C().safeImg(p.avatar) };
+    }
+    function picHTML(r) {
+        return r.img ? '<img class="pd-pic" src="' + esc(r.img) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' :
+            '<span class="pd-pic pd-ini" style="--pd-h:' + esc(hue(r.uid)) + '" aria-hidden="true">' + esc(C().initials(r.n || tr('you'))) + '</span>';
+    }
+    const CHEV = '<svg class="pd-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    function hereRowHTML(r, fr, mine) {
+        const n = r.n || tr('you');
+        return '<li><button type="button" class="pd-row pd-here"' + (mine ? ' data-me="1"' : '') + ' data-uid="' + esc(r.uid) + '" aria-label="' + esc(tr('open', { n: mine && !r.n ? tr('you') : n }) + ' · ' + tr('onDot')) + '">' +
+            '<span class="pd-av">' + picHTML(r) + '<i class="pd-on" aria-hidden="true"></i></span>' +
+            '<span class="pd-n">' + esc(n) + '</span>' + (mine && r.n ? '<span class="pd-tag pd-you">' + esc(tr('you')) + '</span>' : '') +
+            (!mine && fr.has(r.uid) ? '<span class="pd-tag">' + esc(tr('friend')) + '</span>' : '') + CHEV + '</button></li>';
+    }
+    function secHTML(k, id) {
+        return '<li class="pd-sec"' + (id ? ' id="' + id + '"' : '') + '><h3 class="pd-sec-h"' + (id ? ' tabindex="-1"' : '') + '>' +
+            (k === 'onNow' ? '<i class="pd-sec-dot" aria-hidden="true"></i>' : '') + esc(tr(k)) + '</h3></li>';
+    }
     function rowHTML(r, fr) {
         const pic = r.img ? '<img class="pd-pic" src="' + esc(r.img) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' :
             '<span class="pd-pic pd-ini" style="--pd-h:' + esc(hue(r.uid)) + '" aria-hidden="true">' + esc(C().initials(r.n)) + '</span>';
@@ -34,12 +74,19 @@
         let note = '', html = '';
         if (!live()) note = tr('signin');
         else {
-            const all = rows(), shown = C().match(all, q), fr = friendIds();
-            if (!all.length) note = (W.LOWI_CLOUD && W.LOWI_CLOUD.people && (W.LOWI_CLOUD.people() || []).length) ? tr('empty') : tr('loading');
-            else if (!shown.length) note = tr('none');
-            html = shown.map(r => rowHTML(r, fr)).join('');
+            const all = rows(), shown = C().match(all, q), fr = friendIds(), h = hereNow();
+            const onIds = new Set(h.rows.map(r => r.uid)), onShown = C().match(h.rows, q), rest = shown.filter(r => !onIds.has(r.uid));
+            const mine = h.me && !q.trim() ? myRow() : null;
+            if (!all.length && !mine) note = (W.LOWI_CLOUD && W.LOWI_CLOUD.people && (W.LOWI_CLOUD.people() || []).length) ? tr('empty') : tr('loading');
+            else if (!shown.length && !mine) note = tr('none');
+            /* "Online right now" first (you, then the others here by name), then everyone else as before */
+            if (mine || onShown.length) {
+                html = secHTML('onNow', 'pdHere') + (mine ? hereRowHTML(mine, fr, true) : '') + onShown.map(r => hereRowHTML(r, fr, false)).join('') +
+                    (rest.length ? secHTML('others', '') : '');
+            }
+            html += rest.map(r => rowHTML(r, fr)).join('');
         }
-        const key = note + '|' + html.length + '|' + html.slice(0, 400) + html.slice(-400);
+        const key = note + '|' + html; /* the whole list: someone moving between Online right now and Everyone else changes the middle */
         if (key === lastKey) return;
         lastKey = key;
         box.innerHTML = html;
@@ -72,9 +119,17 @@
             else if (!e.shiftKey && D.activeElement === z) { e.preventDefault(); a.focus(); }
         }
     }
-    function open() {
+    /* opts.at === 'here' (the header's "N here now"): the list starts at Online right now and that heading takes the focus */
+    function toHere() {
+        if (!ov) return;
+        const l = ov.querySelector('.pd-list'), h = ov.querySelector('#pdHere .pd-sec-h');
+        if (l) l.scrollTop = 0;
+        if (h) { try { h.focus({ preventScroll: true }); } catch (e) {} }
+    }
+    function open(opts) {
         if (!C()) return null;
-        if (ov) { paint(); return ov; }
+        const at = opts && opts.at === 'here';
+        if (ov) { paint(); if (at) toHere(); return ov; }
         opener = D.activeElement;
         q = ''; lastKey = '';
         ov = D.createElement('div');
@@ -92,6 +147,7 @@
             if (e.target === ov || e.target.closest('[data-pd="close"]')) { close(); return; }
             const b = e.target.closest('.pd-row');
             if (!b) return;
+            if (b.hasAttribute('data-me')) { const m = myRow(); if (m.uid) showProfile({ uid: m.uid, n: m.n || tr('you') }); return; }
             const uid = b.getAttribute('data-uid'), r = rows().find(x => x.uid === uid);
             if (!r) { paint(); return; }
             showProfile(r);
@@ -100,6 +156,7 @@
         D.addEventListener('keydown', onKey, true);
         D.addEventListener('click', onCardClick, true);
         W.addEventListener('lowi-bots', paint);
+        D.addEventListener('lowi:room', paint);
         dragDown(ov);
         D.body.appendChild(ov);
         D.documentElement.classList.add('pd-open');
@@ -107,6 +164,7 @@
         clearInterval(poll);
         poll = setInterval(() => { if (!ov) { clearInterval(poll); return; } paint(); }, 2500);
         try { ov.querySelector('.pd-x').focus({ preventScroll: true }); } catch (e) {}
+        if (at) toHere();
         return ov;
     }
     /* Oct 24 2026 (back and close sweep): on a phone People is a bottom sheet, but a swipe down did nothing (only back, X,
@@ -150,11 +208,12 @@
         D.removeEventListener('keydown', onKey, true);
         D.removeEventListener('click', onCardClick, true);
         W.removeEventListener('lowi-bots', paint);
+        D.removeEventListener('lowi:room', paint);
         if (ov.parentNode) ov.parentNode.removeChild(ov);
         ov = null; lastKey = '';
         D.documentElement.classList.remove('pd-open');
         try { if (opener && opener.isConnected && opener.focus) opener.focus({ preventScroll: true }); } catch (e) {}
         opener = null;
     }
-    W.LowiPeopleDir = { open, close, isOpen: () => !!ov, rows: () => (C() ? rows() : []) };
+    W.LowiPeopleDir = { open, close, isOpen: () => !!ov, rows: () => (C() ? rows() : []), here: hereNow };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

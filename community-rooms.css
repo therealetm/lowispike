@@ -19,6 +19,10 @@
 .rm-name{font-size:18px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:var(--rm-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rm-live{display:flex;align-items:center;gap:6px;min-width:0;font-size:13px;line-height:1.2;font-weight:500;color:var(--rm-ink2);white-space:nowrap}
 .rm-sub{overflow:hidden;text-overflow:ellipsis;min-width:0}
+/* 25 Oct 2026: "2 here now" opens People at Online right now (community-rooms-ui.js bar click). The tap area reaches down to the
+   button's bottom edge and a little to the sides, not up into the name, which still opens the menu. */
+.rm-live[data-here]{position:relative;cursor:pointer}
+.rm-live[data-here]::after{content:'';position:absolute;left:-8px;right:-14px;top:-2px;bottom:-12px}
 .rm-faces{display:inline-flex;flex:none}
 .rm-faces i{display:grid;place-items:center;width:20px;height:20px;margin-left:-6px;border-radius:50%;font:700 9px/1 inherit;font-family:inherit;font-style:normal;color:#06122c;background:var(--fc,#8fe7ff);border:1.5px solid #0b1636}
 .rm-faces i:first-child{margin-left:0}

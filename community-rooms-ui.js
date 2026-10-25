@@ -105,17 +105,22 @@ function ensure(){const pane=D.getElementById('cmPaneChat');if(!pane||!pane.hasA
  pane.insertBefore(bar,pane.firstChild);banner=bar.querySelector('.rm-banner');
  for(const ms of [60,250,600,1100])setTimeout(()=>fit(bar),ms);setTimeout(maybeWelcome,1200);
  bar.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const a=b.dataset.rm;
-  if(a==='back')goBack();else if(a==='room')setTab(false);else if(a==='chat')setTab(true);else if(a==='create'||a==='aff'||a==='rank'||a==='fy'||a==='studio')showView(a);else if(a==='copy')copyView();else if(a==='menu')toggleMenu();});
+  if(a==='back')goBack();else if(a==='room')setTab(false);else if(a==='chat')setTab(true);else if(a==='create'||a==='aff'||a==='rank'||a==='fy'||a==='studio')showView(a);else if(a==='copy')copyView();else if(a==='menu'){if(e.target.closest('.rm-live[data-here]')&&W.LowiPeopleDir&&W.LowiPeopleDir.open){toggleMenu(false);try{W.LowiPeopleDir.open({at:'here'});return;}catch(x){}}toggleMenu();}});
  bar.querySelector('.rm-tabs').addEventListener('keydown',e=>{if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;const ts=[...bar.querySelectorAll('.rm-tab')],i=ts.indexOf(D.activeElement);if(i<0)return;e.preventDefault();const n=ts[(i+(e.key==='ArrowRight'?1:ts.length-1))%ts.length];n.focus();n.click();});
  return bar;}
 function note(s){msg=s;clearTimeout(msgT);if(s)msgT=setTimeout(()=>{msg='';paint();},6000);paint();}
 function initials(n){const p=String(n||'').trim().split(/\s+/).filter(Boolean);return ((p[0]||'?')[0]+((p[1]||'')[0]||'')).toUpperCase();}
 function colorOf(uid){try{return (W.LowiCommunity&&W.LowiCommunity.colorOf&&W.LowiCommunity.colorOf(uid))||'';}catch(e){return '';}}
-function liveHTML(){const r=R(),c=C();if(!r||!c)return '<span class="rm-sub">'+esc(tr('community'))+'</span>';const st=r.status();
- if(st!=='in')return '<span class="rm-sub">'+esc(tr('community'))+'</span>';
- const ms=r.members(),id=me(),faces=ms.filter(u=>u!==id).map(u=>({u,n:nameOf(u)})).filter(x=>x.n).slice(0,3);
- return (faces.length?'<span class="rm-faces" aria-hidden="true">'+faces.map(f=>'<i style="'+(colorOf(f.u)?'--fc:'+esc(colorOf(f.u)):'')+'">'+esc(initials(f.n))+'</i>').join('')+'</span>':'')
-  +(ms.length?'<span class="rm-dot" aria-hidden="true"></span><span class="rm-sub">'+esc(tr('hereNow',{c:ms.length}))+'</span>':'<span class="rm-sub">'+esc(tr('community'))+'</span>');}
+/* 25 Oct 2026 (Emmanuel: "When someone is online, it says '2 here now', but when I click, I don't see who"): the count and the
+   faces come from LowiPeopleDir.here(), the same list as Online right now in People, so they always match and bots, test, hidden
+   and removed accounts never count. A tap on this line opens People at that section (bar click, .rm-live[data-here]). */
+function hereNow(){const r=R();if(!r||!C()||r.status()!=='in')return {me:false,rows:[],count:0};const P=W.LowiPeopleDir;
+ if(P&&P.here){try{return P.here();}catch(e){return {me:false,rows:[],count:0};}}
+ const ms=r.members(),id=me(),rows=ms.filter(u=>u!==id).map(u=>({uid:u,n:nameOf(u)})).filter(x=>x.n);return {me:ms.includes(id),rows,count:rows.length+(ms.includes(id)?1:0)};}
+function liveHTML(h){h=h||hereNow();if(!h.count)return '<span class="rm-sub">'+esc(tr('community'))+'</span>';
+ const faces=h.rows.slice(0,3);
+ return (faces.length?'<span class="rm-faces" aria-hidden="true">'+faces.map(f=>'<i style="'+(colorOf(f.uid)?'--fc:'+esc(colorOf(f.uid)):'')+'">'+esc(initials(f.n))+'</i>').join('')+'</span>':'')
+  +'<span class="rm-dot" aria-hidden="true"></span><span class="rm-sub">'+esc(tr('hereNow',{c:h.count}))+'</span>';}
 function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  if(chat&&view)view='';/* the message room was opened by other code: Chat wins */
  if(chat)dropFrames('');
@@ -132,8 +137,8 @@ function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  paintChans(pane);paintRank(pane);paintFy(pane);
  const cr=b.querySelector('.rm-crumb');cr.hidden=!(chat&&!view);if(!cr.hidden){const bk=cr.querySelector('.rm-back');if(bk.getAttribute('aria-label')!==tr('back')){bk.innerHTML='<i aria-hidden="true"></i>';bk.setAttribute('aria-label',tr('back'));}cr.querySelector('.rm-crumb-t').textContent=tr('chGalaxy');}
  const nm=b.querySelector('.rm-name');if(nm.textContent!==tr('community'))nm.textContent=tr('community');
- const lv=b.querySelector('.rm-live'),lh=liveHTML();if(lv.__h!==lh){lv.innerHTML=lh;lv.__h=lh;}
- const st=r&&C()?r.status():'';b.querySelector('.rm-menu-btn').setAttribute('aria-label',tr('menu')+' · '+(st==='in'?tr('hereNow',{c:r.members().length}):tr('community')));
+ const hn=hereNow(),lv=b.querySelector('.rm-live'),lh=liveHTML(hn);if(lv.__h!==lh){lv.innerHTML=lh;lv.__h=lh;}if(lv.hasAttribute('data-here')!==!!hn.count)lv.toggleAttribute('data-here',!!hn.count);
+ b.querySelector('.rm-menu-btn').setAttribute('aria-label',tr('menu')+' · '+(hn.count?tr('hereNow',{c:hn.count}):tr('community')));
  let h='';
  if(msg)h='<span>'+esc(msg)+'</span>';
  if(banner.__h!==h){banner.innerHTML=h;banner.__h=h;}banner.toggleAttribute('data-on',!!h);
@@ -181,7 +186,7 @@ function paintChans(pane){let box=pane.querySelector(':scope>.rm-chans');if(view
     dark galaxy): one clear thing on this view. A small live pill, one big headline, a muted line, ONE glass card with the three
     community channels (icon tile, name, last line, thin dividers), and one big button into the galaxy chat. Creation and
     Affiliates are their own sections in the pill control above, so they are not repeated here. */
- const r=R(),inRoom=!!(r&&C()&&r.status()==='in'),pill=inRoom?'<i class="rm-l-dot" aria-hidden="true"></i>'+esc(tr('hereNow',{c:r.members().length})):esc(tr('community'));
+ const r=R(),inRoom=!!(r&&C()&&r.status()==='in'),hc=inRoom?hereNow().count:0,pill=hc?'<i class="rm-l-dot" aria-hidden="true"></i>'+esc(tr('hereNow',{c:hc})):esc(tr('community'));
  const row=x=>'<li><button type="button" class="rm-ch" data-ch="'+x.k+'"'+(x.dis?' disabled':'')+'><span class="rm-ch-ic" data-ic="'+x.k+'" aria-hidden="true">'+x.ic+'</span><span class="rm-ch-txt"><span class="rm-ch-top"><b>'+esc(x.t)+'</b>'+(x.ts?'<time>'+esc(ago(x.ts))+'</time>':'')+'</span><span class="rm-ch-p">'+esc(String(x.p||'').replace(/\s+/g,' ').slice(0,140))+'</span></span>'+(x.n?'<span class="rm-ch-n" aria-label="'+esc(tr('unreadN',{c:x.n}))+'">'+(x.n>99?'99+':x.n)+'</span>':'<span class="rm-ch-go" aria-hidden="true"></span>')+'</button></li>';
  const h='<div class="rm-l-hero"><span class="rm-l-pill">'+pill+'</span><h2 class="rm-l-h">'+esc(tr('lHead'))+'</h2><p class="rm-l-sub">'+esc(tr('lSub'))+'</p></div>'
   +'<h3 class="rm-ch-h">'+esc(tr('channels'))+'</h3><ul class="rm-ch-list">'+chanRows().filter(x=>x.k==='galaxy'||x.k==='replies').map(row).join('')+'</ul>'

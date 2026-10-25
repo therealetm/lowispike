@@ -54,9 +54,9 @@ const INIT = ([name]) => {
     await P.evaluate(() => { try { window.LowiGiftBasket.isOpen() && document.querySelector('.gb-x') && document.querySelector('.gb-x').click(); } catch (e) { } }); await sleep(600);
     await P.evaluate(() => LowiStorePicks.open('home-bloom')); await sleep(1800);
     if (await P.evaluate(() => LowiStorePicks.tab()) !== 'kitchen') { await tap(P, '[data-stp-tab="kitchen"]'); await sleep(900); }
-    const loc = P.locator('.gb-entry:visible').first();
+    const loc = P.locator('.stp-tab[data-stp-tab="gift"]:visible').first(); /* Oct 25: Give a hand is its own Shop tab now, not a Kitchen row */
     let entry = false; try { await loc.waitFor({ state: 'visible', timeout: 25000 }); entry = true; } catch (e) {
-      const why = await P.evaluate(() => [...document.querySelectorAll('.gb-entry')].map(e => { const r = e.getBoundingClientRect(); let p = e, h = []; while (p && p !== document.body) { const cs = getComputedStyle(p); if (cs.display === 'none' || cs.visibility === 'hidden' || p.hidden) h.push((p.className || p.id || p.tagName) + ':' + cs.display + '/' + cs.visibility); p = p.parentElement; } return { r: [r.x, r.y, r.width, r.height], h }; }));
+      const why = await P.evaluate(() => [...document.querySelectorAll('.stp-tab[data-stp-tab="gift"]')].map(e => { const r = e.getBoundingClientRect(); let p = e, h = []; while (p && p !== document.body) { const cs = getComputedStyle(p); if (cs.display === 'none' || cs.visibility === 'hidden' || p.hidden) h.push((p.className || p.id || p.tagName) + ':' + cs.display + '/' + cs.visibility); p = p.parentElement; } return { r: [r.x, r.y, r.width, r.height], h }; }));
       console.log('entry not visible', JSON.stringify(why), await P.evaluate(() => LowiStorePicks.tab())); await P.screenshot({ path: OUT + '/fail-entry-' + ENG + '.png' }); }
     if (entry) { await loc.scrollIntoViewIfNeeded().catch(() => {}); await sleep(300); await loc.tap({ timeout: 10000 }); await sleep(2500); }
     return entry;

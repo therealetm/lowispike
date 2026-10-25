@@ -269,3 +269,11 @@ button.stp-item:active { transform: scale(.985); }
 .stp-kit-qv:disabled { opacity: .7; }
 /* Oct 24 2026 (back and close sweep): on a phone the top bar is the handle, a drag down closes Shop (store-picks.js dragDown) */
 @media (max-width: 699.98px) { .stp-card > .stp-tabs, .stp-card > .stp-head > h3, .stp-card > .stp-head > p, .stp-card > .sz-head { touch-action: none; } }
+/* Oct 25, 2026 (Emmanuel: Give a hand gets "its own place next to Supermarket, Seller Zone and Kitchen"): a fourth peer in the
+   tab bar (store-picks.js giftDoor). Four equal columns, icon over the word; a long word may break onto a second line instead
+   of being cut off, so Supermercado / Seller Zone / Küche / Echa una mano all fit an iPhone SE in en, de and es. */
+.stp-tabs.stp-tabs3.stp-tabs4 { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 3px; padding: 4px; }
+.stp-tabs4 .stp-tab { padding: 5px 2px; }
+.stp-tabs4 .stp-tab b { font-size: 11.5px; line-height: 1.1; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; text-align: center; }
+.stp-tabs4 .stp-tab i { right: 3px; }
+@media (max-width: 360px) { .stp-tabs4 .stp-tab b { font-size: 10.5px; } .stp-tabs4 .stp-tab span { font-size: 14px; } }

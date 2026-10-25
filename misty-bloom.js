@@ -160,6 +160,15 @@
         s.setProperty('border-radius', kr > 0.001 ? 'calc(50% * ' + kr.toFixed(3) + ' + ' + ((el.__mbR || 0) * (1 - kr)).toFixed(1) + 'px)' : '');
     }
     function unpaint(el) { ['translate', 'scale', 'opacity', 'border-radius'].forEach(k => el.style.removeProperty && el.style.removeProperty(k)); }
+    /* BH-022 (25 Oct 2026): Reduce Motion switched on mid-session. A panel that folded away on the spring keeps its last frame
+       inline (opacity 0, scale .14) and mb-sp (keyframes off); the reduced-motion path never cleared them, so the reused
+       Fasting panel (#sheet) opened invisible behind its dimmed backdrop. Every non-spring open/close drops the spring first. */
+    function drop(el) {
+        if (el.__mbS) { try { el.__mbS.stop(); } catch (e) { } el.__mbS = null; }
+        el.__mbFin = null;
+        el.classList.remove('mb-sp');
+        unpaint(el);
+    }
     function spring(el) {
         if (el.__mbS) return el.__mbS;
         if (el.__mbR == null) { let r = 0; try { r = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0; } catch (e) { } el.__mbR = r; }
@@ -180,6 +189,7 @@
             sp.to(1, { response: 0.5, damping: 0.74, onRest: () => { if (el.classList.contains('mb-in')) unpaint(el); } });
             return true;
         }
+        drop(el);
         el.classList.remove('mb-in');
         void el.offsetWidth;
         el.classList.add('mb-in');
@@ -192,7 +202,7 @@
         el.classList.add('mb-out');
         let fired = false;
         const fin = () => { if (fired) return; fired = true; if (typeof done === 'function') done(); };
-        if (reduced()) { fin(); return true; }
+        if (reduced()) { drop(el); fin(); return true; }
         if (springy()) {
             /* from where it is now (maybe still growing) straight back into the bubble; no bounce on the way in */
             const sp = spring(el);

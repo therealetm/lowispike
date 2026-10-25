@@ -1240,3 +1240,6 @@ Read-only check of his real account (eman, therealetm@gmail.com) and his phone's
 - For You: the post passes the insulin rule as a bot account because its recipe is a "ja" recipe; a small "Bot" tag sits next to the name (p.nb).
 - No push: nothing in the bot notifies; n1-push's For You nudge now skips bot accounts (profiles test or bot).
 - Owner food rules: only "ja" recipes, no chocolate/cocoa, no sweetened products, no pork (tested).
+
+## 25 Oct 2026: a Home panel that folded away on its spring opens visible after Reduce Motion is switched on (bug hunt BH-022)
+Found by the hourly bug hunt (run 23) playing live 20261025-195920: open the Fasting panel, close it, switch iOS Reduce Motion on, open it again. The screen dimmed but the panel stayed invisible: #sheet is reused, the spring's last fold-back frame stayed inline (opacity 0, scale .14) and mb-sp kept the keyframes off, and the reduced-motion path in misty-bloom.js never cleared them. Fix: misty-bloom.js `drop(el)` stops the spring and clears its paint and mb-sp on every non-spring open and close. Behaviour only, no design change. Tests: `tests/bloom-reduce-motion-switch.test.cjs` (2 of 3 fail on the old code). Probe: BUGHUNT/playtest/probe-rm-bloom.cjs. Quiet release, no news card.

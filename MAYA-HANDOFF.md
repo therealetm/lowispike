@@ -937,8 +937,8 @@ Guarded by tests/home-today-retired.test.cjs. Live check: `node /home/sprite/hn-
 ### 0.13 Handover Maya 9 -> Maya 10 (Sun 25 Oct 2026, about 10:30 PM CET)
 
 Trigger: from about 9 PM every new task stopped with "Goal not met after 0 attempt(s) ... reached its limit" (ten in a
-row). Live is **20261025-202023** = `origin/main` e210e27d (before this doc commit). No task running. Nothing below is
-live. Maya 9 pushed every unfinished worktree; COORD notes from her computer are on branch `handoff-20261025`,
+row). Live is **20261025-213603** (another Maya's bug hunt run 24, BH-023 pinch fix; `origin/main` 6643535 before this doc
+commit). No task of Maya 9 running. Nothing in the table below is live; rebase every branch on main first. Maya 9 pushed every unfinished worktree; COORD notes from her computer are on branch `handoff-20261025`,
 folder `handoff/`. She left this handover late (on a branch, not here) and Emmanuel had to ask: that is why the clone
 prompt is now in 0.6.
 
@@ -955,7 +955,7 @@ prompt is now in 0.6.
 | Spike animation back on scan results as an estimated curve, labelled "estimate, not a measurement", static with Reduce Motion | not started | see `handoff/COORD-spike-curve.md` | build |
 | Later: Kitchen amounts/units, best-before, fridge/freezer/pantry; Cook, recipes, Shuffle and Cook with me read the Kitchen; swiping "soon" in Cook adds to Kitchen; two-phone sync brings back removed items; springs for Cook, joystick, Scan, Misty taps; Room in WebKit unconfirmed; faint chat loading line and placeholder avatar | open | none | queue |
 
-Schedules on Maya 9's agent: none known for LOWiSPIKE besides the 9 AM "LOWiSPIKE morning rundown" skill. Recreate it.
+Schedules on Maya 9's agent: none (checked). Maya 9 has a "LOWiSPIKE morning rundown" skill (9 AM status) but no schedule for it. The hourly bug hunt that released 20261025-213603 runs on another Maya's agent, not Maya 9's: Emmanuel runs several Mayas at once, so check main for releases before every release of yours.
 
 ## 1. What LOWiSPIKE is
 

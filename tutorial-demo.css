@@ -29,6 +29,8 @@
 /* no slide: a sliding card crossed the page on its way (Oct 25 2026); it jumps to the free edge and fades in there */
 /* it waits out the page's own opening (blooms fan out from their bubble, sheets slide up) so it never sits on a moving piece */
 .lt-tour.lt-staged .lt-card { z-index: 4; transition: none; animation: lt-fade .22s ease .45s both; }
+/* until a piece of the page is visible the card has no edge to go to: it stays hidden (tutorial.js place, lt-roomwait) */
+.lt-tour.lt-staged .lt-card.lt-roomwait { animation: none; opacity: 0; pointer-events: none; }
 html.lt-room-top .r2-ov .r2-sh, html.lt-room-top .cme-ov .r2-sh, html.lt-room-top #gvSheet .gv-card, html.lt-room-top .wh-ms-ov .r2-sh {
     max-height: calc(100dvh - var(--lt-ch, 180px) - env(safe-area-inset-top, 0px)) !important; }
 html.lt-room-bottom .lt-scan .lts-bar { margin-bottom: var(--lt-ch, 180px); }

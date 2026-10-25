@@ -22,17 +22,17 @@ update, the tutorial also needs to be updated."
   the tour calls `LowiBirthCompanion.claim({from:'tutorial'})` only once it exists (marked HOOK in tutorial-steps.js, off until the own-companion task ships it; there is no fallback), hides while it is open and goes
   on to the next step when it closes.
 - Every step: Back, Skip (skips the rest of this part, e.g. all Home bubbles), Next, and Skip all. Esc = Skip all, arrows move.
-- Every card that asks for a gesture can be done, or says it is for later (item 38, Oct 22 2026, Emmanuel: "In tutorial it tells the
-  person to do stuff but then you can't actually do the stuff so either make sure they understand they can play after tutorial or let
-  them actually do the gesture"). Each step is one of: `tryIt` (the real control takes it, touches go through the dim), `practice
-  {how, look}` (a practice pad on the card, a small look-alike that takes tap / hold / touch / double / drag / swipe / pinch with its own
-  pointer handling in `padWire()`, shows Nice and moves on; no spotlight, touches do NOT go through, nothing in the app changes, no mic
-  or camera; used where the real gesture would change data (Hold Water resets it, theme, sending energy), ask for the mic, or the control
-  isn't on screen), `later: '<motion>'` (done after the tour: the text says "After the tour" / "Nach der Tour" / "Después del
-  recorrido" in every language, clips regenerated, and the card shows a small looping hand doing that motion, `.lt-later`), or plain
-  info (a card whose words mention a gesture without asking for one carries an `info` reason). Hands-free gives practice cards the
-  try-it time (4.5 s) and moves on if they are not tried. `tests/tutorial-doable.test.cjs` lists every instruction card and fails a new
-  card that asks for a gesture without one of these; `tools/tutorial-voice/handsfree-check.cjs` part F does every practice gesture.
+- Short auto-demo tour (Oct 25 2026, branch tutorial-short-20261025): the base tour is at most 12 one-sentence cards (11, plus the
+  "claim your companion" card only for accounts that still have the standard Misty). Every card plays by itself: a demo finger
+  (`tutorial-demo.js`) does the gesture on the real control, the page opens read-only, the card jumps to the free edge and fades in
+  (it stays hidden, `.lt-roomwait`, until a piece of the page is visible, so it never sits on bubbles that are still flying out), and
+  with the speaker off the reading time moves it on. Scan is a mocked screen ("Kaum Spike · 9/10", marked Demo): the camera is never
+  asked for. After the very first finished tour Misty flies once by herself (`tutorial-flight.js`, `lowispike.first-flight.v1`, once
+  per account, any touch hands control back, no tracking entries).
+- The old "Try it now" button, the practice pads and the tour's own touch watchers were REMOVED from tutorial.js/css on Oct 25 2026
+  (the demo finger replaced them; item 38's "can be done or is for later" is now met by showing every gesture). `later: '<motion>'`
+  (the small looping hand and "After the tour" wording) stays because What's New cards still use it. `tests/tutorial-doable.test.cjs`,
+  `tests/tutorial-trynow.test.cjs` and `tests/tutorial-short.test.cjs` guard that Try it now / practice cannot come back.
   Only the chat card switches to the Chat tab (it opens the galaxy chat itself since item 36); voice and post cards stay on the Room tab.
 - It never opens panels, and never Scan: `goTab('scan')` opens the scanner camera at once, so no step has `where: 'scan'` and
   `TAB_OF` has no scan (Oct 22 2026: the tour kept calling it for 2.5 s, iOS asked "Allow camera" and the tour got stuck; a tour left on

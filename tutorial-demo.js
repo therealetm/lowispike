@@ -54,7 +54,7 @@
     }
     /* one gesture on one element; resolves through cb(true) when done, cb(false) when stopped */
     function gesture(el, g, mine, cb) {
-        if (!el) { cb(true); return; }
+        if (!el) { hand.classList.add('ltd-hide'); cb(true); return; }   /* nothing to point at: no stale finger from the last card */
         const p = center(el), size = Math.max(54, Math.min(110, Math.max(p.r.width, p.r.height) + 18));
         hand.classList.remove('ltd-away', 'ltd-hide'); hand.dataset.g = g;
         if (!hand.dataset.x) put(innerWidth * 0.78, innerHeight + 30, 0);
@@ -99,7 +99,7 @@
             try { if (o.onGesture) o.onGesture(); } catch (e) { }
             const shown = () => { if (mine !== tok) return; later(() => { if (mine === tok && o.onShown) o.onShown(); }, o.show == null ? T.SHOW : o.show); };
             if (o.then) later(() => { if (mine !== tok) return; try { o.then(shown, mine); } catch (e) { shown(); } }, T.AFTER);
-            else { later(() => { if (mine === tok) aside(center(o.el)); }, T.AFTER); shown(); }
+            else { later(() => { if (mine === tok && o.el && o.el.isConnected) aside(center(o.el)); }, T.AFTER); shown(); }
         });
         return mine;
     }

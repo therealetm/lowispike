@@ -190,7 +190,7 @@
         if (opened !== r) { opened = r; try { OPEN[r].go(); } catch (e) { } }
         demoOpened = i;
         if (root) root.classList.add('lt-staged');
-        place(); for (const ms of [60, 160, 380, 800]) setTimeout(place, ms);   /* the page animates in: settle the card on its real pieces */
+        roomWaitAt = 0; stageSeenAt = 0; place(); for (const ms of [60, 160, 380, 800, 1300, 2000]) setTimeout(place, ms);   /* the page animates in: settle the card on its real pieces */
     }
     function demoStart(s) {
         if (!s || !s.demo || mode === 'news' || !on || held || paused) return;
@@ -198,15 +198,27 @@
         demoAt = i; const at = i;
         readAfter(at, readMs(s) + (demoWait || 0) + (voiceOn() ? 1500 : 0));
         clearT(demoT);
-        demoT = setTimeout(() => {
+        let tries = 0;
+        demoT = setTimeout(function begin() {
             demoT = 0; if (!on || held || paused || i !== at) return;
             const D2 = Demo(), el = target(s);
+            /* its control is still faded out behind the page that is closing (iPad: the pad comes back ~2 s after the You sheet,
+               Oct 25 2026): wait for it, up to 3 s, instead of showing no finger */
+            if (D2 && !el && s.target && s.target.length && ++tries <= 10) { demoT = setTimeout(begin, 300); return; }
             if (!D2) { demoOpen(s); demoDone = at; demoGo(); return; }
             D2.run({
                 root, el, g: s.demo.g,
                 onGesture: () => { if (on && i === at && !paused) demoOpen(s); },
                 then: s.demo.open === 'scan-demo' ? (done, m) => D2.scanThen(done, m) : null,
-                onShown: () => { if (on && i === at) { demoDone = at; demoGo(); } }
+                /* a slow phone can take seconds to draw the page it opened (WebKit iPad, Oct 25 2026: the You sheet showed 2.4 s late and
+                   only for 2 s): the card counts its show time from when the page is really visible, at least 1.8 s, waiting at most 6 s */
+                onShown: function fin(t0) {
+                    if (!on || i !== at || paused) return;
+                    t0 = typeof t0 === 'number' ? t0 : Date.now();
+                    const r = s.demo.open, slow = r && r !== 'community-tab' && opened === r && Date.now() - t0 < 6000;
+                    if (slow && (!stageSeenAt || Date.now() - stageSeenAt < 1800)) { setTimeout(() => fin(t0), 250); return; }
+                    demoDone = at; demoGo();
+                }
             });
         }, DEMO.START + (demoWait || 0));
         demoWait = 0;
@@ -247,7 +259,7 @@
     /* where the card sits while a page is open: the free edge, and the page gives it room (tutorial-demo.css) */
     /* the sheet the tour opened gets its height capped inline (important), so it starts below the card: the stylesheet rule lost to
        the sheets' own max-height on the r2 sheets (Oct 25 2026, card covered 33% of Misty's card) */
-    let sizedEl = null, sizedPx = 0;
+    let sizedEl = null, sizedPx = 0, roomWaitAt = 0, stageSeenAt = 0;
     function sized(el, px) {
         if (sizedEl && sizedEl !== el) { try { sizedEl.style.removeProperty('max-height'); } catch (e) { } sizedEl = null; }
         if (el) { try { sizedPx = Math.max(160, Math.round(px)); el.style.setProperty('max-height', sizedPx + 'px', 'important'); sizedEl = el; } catch (e) { } }
@@ -314,6 +326,13 @@
             const need = Math.round(ch + 2 * m + 8), boxes = stageBoxes();
             const sheet = (() => { const r = OPEN[opened]; let st = null; try { st = r && r.stage && $(r.stage); } catch (e) { } const sh = st && st.querySelector('.r2-sh, .gv-card'); return sh && vis(sh) && !closing(sh) ? sh : null; })();
             let where = 'top';
+            /* nothing of the page is visible yet (a bloom still at opacity 0 in its bubble, a slow phone): the card stays hidden instead
+               of fading in at the top and sitting on bubbles that then fan up under it (WebKit, Oct 25 2026: Fuel covered 100% for 2.6 s).
+               tick() and the settle timers place again; after 2.5 s it shows at the top anyway */
+            const waiting = opened !== 'community-tab' && !sheet && !boxes.length && Date.now() - (roomWaitAt || (roomWaitAt = Date.now())) < 2500;
+            card.classList.toggle('lt-roomwait', waiting);
+            if ((sheet || boxes.length) && !stageSeenAt) stageSeenAt = Date.now();
+            if (!waiting && (sheet || boxes.length)) roomWaitAt = 0;
             if (opened === 'community-tab') where = 'bottom';
             else if (sheet) {
                 /* the sheet shrinks until it starts below the card: measured, not guessed (the You sheet is centred, Misty's card sits
@@ -336,7 +355,7 @@
             card.setAttribute('data-room', where);
             return;
         }
-        card.removeAttribute('data-room');
+        card.removeAttribute('data-room'); card.classList.remove('lt-roomwait'); roomWaitAt = 0;
         if (!el) {
             root.classList.add('lt-center'); hole.style.cssText = '';
             card.style.left = Math.round((vw - cw) / 2) + 'px'; card.style.top = Math.round(Math.max(m, (vh - ch) / 2)) + 'px';

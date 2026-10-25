@@ -158,7 +158,15 @@
     if (!p || !p.url) return '';
     const id = ytId(p.url); if (id) return 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg';
     const t = p.meta && typeof p.meta.thumb === 'string' ? p.meta.thumb : '';
-    return /^https:\/\//.test(t) ? t : '';
+    return /^https:\/\//.test(t) && !expired(t) ? t : '';
+  }
+  /* 25 Oct 2026: TikTok's own picture links stop working at their x-expires time (old posts kept them); those count as no picture,
+     so the slide shows the platform colours until the stored copy (tiktok-meta) arrives, never a broken image */
+  function expired(t, now) {
+    const x = httpUrl(t); if (!x) return true;
+    if (!/(^|\.)(tiktokcdn(-[a-z]+)?\.com|tiktokcdn\.[a-z.]+|tiktokv\.com|ibyteimg\.com|byteimg\.com)$/i.test(x.hostname)) return false;
+    const e = Number(x.searchParams.get('x-expires') || 0);
+    return !!e && e * 1000 <= (now || Date.now());
   }
   /* the creator's name as the link preview gave it ("@handle" or the channel), else '' */
   function creatorOf(p) {
@@ -196,6 +204,9 @@
     watchOn: ['Watch on {p}', 'Auf {p} ansehen', 'Ver en {p}'],
     openOn: ['Open on {p}', 'Auf {p} öffnen', 'Abrir en {p}'],
     byWho: ['by {who}', 'von {who}', 'de {who}'],
+    /* 25 Oct 2026 (Emmanuel): "Show the creator some love ... it's a bit long" - the button says it, one short line under it */
+    loveBtn: ['Show the creator some love', 'Zeig dem Creator etwas Liebe', 'Dale amor al creador'],
+    loveSub: ['Follow & like the original \u{1F49C}', 'Folgen & das Original liken \u{1F49C}', 'S\u00edguele y dale like al original \u{1F49C}'],
     love: ['Show {who} some love: watch it on {p}, follow them and like the original. We\'re a supportive tribe.',
       'Zeig {who} etwas Liebe: schau es auf {p}, folge und like das Original. Wir sind ein Tribe, der zusammenhält.',
       'Dale amor a {who}: míralo en {p}, síguele y dale like al original. Somos una tribu que se apoya.'],
@@ -223,5 +234,5 @@
     return note(who ? 'love' : 'loveAnon', lang, { who, p: e.name });
   }
 
-  return { level, recipeLevel, verdict, passes, filter, merge, sharePost, srcOfRow, NOTE, note, held, shows, toPublish, freeLinks, external, ytId, thumbOf, creatorOf, love };
+  return { level, recipeLevel, verdict, passes, filter, merge, sharePost, srcOfRow, NOTE, note, held, shows, toPublish, freeLinks, external, ytId, thumbOf, expired, creatorOf, love };
 });

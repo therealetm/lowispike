@@ -4425,6 +4425,10 @@ async function fetchMeta(p){
   const base = {title:"", author:"", handle:handleFrom(p), thumb:"", src:"none"};
   if (p.plat === "youtube") { const id = ytId(p.url); if (id) base.thumb = "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg"; }
   if (MOCK[p.url]) return Object.assign(base, {thumb:""}, MOCK[p.url], {src:"mock"});
+  /* 25 Oct 2026: TikTok through our own server (CORS, and its picture links expire): a stored picture that keeps working, plus the video id */
+  if (p.plat === "tiktok" && window.LowiTikTok && navigator.onLine !== false) {
+    try { const m = await withTimeout(LowiTikTok.meta(p.url), 9000); if (m && (m.thumb || m.title)) return Object.assign(base, {title:String(m.title || "").trim(), author:m.author || "", handle:m.handle || base.handle, thumb:m.thumb || "", vid:m.vid || "", src:"live"}); } catch(e){}
+  }
   if (OEMBED[p.plat] && navigator.onLine !== false) {
     try {
       const r = await withTimeout(fetch(OEMBED[p.plat](p.url), {credentials:"omit"}), 4500);
@@ -4497,8 +4501,8 @@ function feedAll(){
 function ago(ts){ const m = Math.max(0, Math.round((Date.now() - ts) / 60000)); if (m < 1) return "now"; if (m < 60) return m + " min"; const h = Math.round(m / 60); if (h < 24) return h + " h"; const d = Math.round(h / 24); return d === 1 ? "yesterday" : d + " days"; }
 function art(p){ const a = p.art || ["✨", 40, 280]; return '<div class="tr-art" style="--h1:' + a[1] + ';--h2:' + a[2] + '"><span>' + a[0] + '</span></div>'; }
 function mediaHTML(p){
-  const pl = PLAT[p.plat] || PLAT.web, th = p.meta && p.meta.thumb;
-  const img = th ? '<img src="' + esc(th) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : "";
+  const pl = PLAT[p.plat] || PLAT.web, th = window.LowiForYou ? LowiForYou.thumbOf(p) : p.meta && p.meta.thumb;
+  const img = th ? fyThumbImg(th, false) : "";
   return '<div class="tr-media" style="aspect-ratio:' + pl.ar + '">' + art(p) + img + '<span class="tr-plat">' + PICON[p.plat || "web"] + pl.n + '</span>' + (p.plat !== "web" ? '<span class="tr-play">' + IC.play + '</span>' : '') + '</div>';
 }
 function postHTML(p){
@@ -4532,13 +4536,20 @@ function fyBg(p, thumb){
   /* 25 Oct: a creator's video shows its real still (YouTube's own picture, else the link's preview) over that platform's colours, never the plain placeholder */
   const FYX = window.LowiForYou, ex = p.url && FYX ? FYX.external(p.url) : null, th = FYX ? FYX.thumbOf(p) : (p.meta && p.meta.thumb) || "";
   const a = p.art || (ex && FY_PLAT_ART[ex.plat]) || ["✨", 40, 280];
-  return '<div class="fy-bg fy-art' + (ex ? ' fy-art-ext' : '') + '" style="--h1:' + a[1] + ';--h2:' + a[2] + '">' + (ex ? '<span class="fy-art-pl" aria-hidden="true">' + (PICON[ex.plat] || PICON.web) + '<b>' + esc(ex.name) + '</b></span>' : '') + (th ? '<img src="' + esc(th) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">' : "") + '</div>';
+  return '<div class="fy-bg fy-art' + (ex ? ' fy-art-ext' : '') + '" style="--h1:' + a[1] + ';--h2:' + a[2] + '">' + (ex ? '<span class="fy-art-pl" aria-hidden="true">' + (PICON[ex.plat] || PICON.web) + '<b>' + esc(ex.name) + '</b></span>' : '') + (th ? fyThumbImg(th, thumb) : "") + '</div>';
+}
+/* 25 Oct 2026 (Emmanuel: "every TikTok video ... we see a thumbnail"): the still fills the card (cover), is fetched only when it
+   is near the screen, at the size it is drawn (a small one in My posts); a stored copy that fails falls back to the full picture */
+function fyThumbImg(th, small){
+  const TT = window.LowiTikTok, src = TT ? TT.sized(th, small ? 160 : 720, small ? 284 : 1280) : th;
+  return '<img src="' + esc(src) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-full="' + esc(th) + '" onerror="if(this.dataset.full&&this.src!==this.dataset.full){this.src=this.dataset.full}else{this.remove()}">';
 }
 const FY_PLAT_ART = {youtube:["▶", 0, 350], tiktok:["▶", 178, 335], instagram:["▶", 330, 30], vimeo:["▶", 195, 215], facebook:["▶", 215, 230], x:["▶", 220, 250]};
-/* 25 Oct (Emmanuel): a video from someone else never plays here. The card names the creator and their platform, opens the original there, and asks the tribe to follow and like it. */
+/* 25 Oct (Emmanuel): a video from someone else never plays here. The card names the creator and their platform, opens the original there, and asks the tribe to follow and like it.
+   25 Oct, later: "Show the creator some love" is the button (TikTok opens straight in its app), one short line under it. */
 function fyOut(p, ex){
   const FYX = window.LowiForYou, who = FYX.creatorOf(p);
-  return '<button class="fy-out" data-tr="open" data-id="' + esc(p.id) + '" data-plat="' + ex.plat + '">' + (PICON[ex.plat] || PICON.web) + '<span class="fy-out-t"><b>' + esc(FYX.note("watchOn", {p: ex.name})) + '</b>' + (who ? '<small>' + esc(FYX.note("byWho", {who})) + '</small>' : '') + '</span>' + IC.ext + '</button><p class="fy-love">' + esc(FYX.love(p)) + '</p>';
+  return '<button class="fy-out" data-tr="open" data-id="' + esc(p.id) + '" data-plat="' + ex.plat + '">' + (PICON[ex.plat] || PICON.web) + '<span class="fy-out-t"><b>' + esc(FYX.note("loveBtn")) + '</b>' + (who ? '<small>' + esc(FYX.note("byWho", {who})) + '</small>' : '') + '</span>' + IC.ext + '</button><p class="fy-love">' + esc(FYX.note("loveSub")) + '</p>';
 }
 /* button sweep 16:20: For You sits in a data-noi18n pane (posts stay as written), so its own buttons and end card ask LowiLang for their words */
 const fyT = s => { try { return window.LowiLang && LowiLang.t ? LowiLang.t(s) : s; } catch (e) { return s; } };
@@ -4546,18 +4557,21 @@ function slideHTML(p){
   if (p.bot && window.LowiForYou) return LowiForYou.slideHTML(p, {bg: fyBg(p), saved: !!(T.saved || {})[p.id], FIC, chip: p.rec && window.FYV ? FYV.recChip(p) : ""});
   const h = H(), u = h.user(), d = describe(p.meta), liked = !!T.likes[p.id], saved = !!(T.saved || {})[p.id], n = (p.likes || 0) + (liked ? 1 : 0), pl = PLAT[p.plat] || PLAT.web;
   const name = p.me ? (u.name || "You") : p.who, cap = p.cap || d.line || "", textOnly = !p.url && !p.photo && !p.vid && !p.rec && !FY_IMG[p.id];
-  const ex = p.url && window.LowiForYou ? LowiForYou.external(p.url) : null, watch = ex ? LowiForYou.note("watchOn", {p: ex.name}) : pl.open;
+  const ex = p.url && window.LowiForYou ? LowiForYou.external(p.url) : null, watch = ex ? LowiForYou.note("loveBtn") + " \u00b7 " + LowiForYou.note("watchOn", {p: ex.name}) : pl.open;
   return '<section class="fy-slide' + (textOnly ? " fy-text" : "") + (p.vid ? " fyv-slide" : "") + '" data-id="' + p.id + '">' + fyBg(p) + '<div class="fy-shade"></div>' +
     (textOnly ? '<div class="fy-big">' + esc(cap) + '</div>' : "") +
     /* 25 Oct 2026: his own post that is not out yet says so (it goes by itself as soon as the app is connected) */
     (p.me && !p.cloud && !p.pub && window.LowiForYou ? '<span class="fy-state">' + esc(LowiForYou.note(p.fail ? "retrying" : "sending")) + '</span>' : "") +
     (p.url && (p.plat !== "web" || ex) ? '<button class="fy-play' + (ex ? ' fy-play-out' : '') + '" data-tr="open" data-id="' + p.id + '" aria-label="' + esc(watch) + '">' + IC.play + '</button>' : "") +
-    '<div class="fy-rail">' +
+    /* 25 Oct 2026 (Emmanuel): "When someone is posting someone else's TikTok, remove the like button, the chat button, the save
+       button, the share button, the swipe button. All the engagement is just dedicated for that TikTok video." A creator's video
+       keeps only ··· (delete / report); the love goes to the original through "Show the creator some love". */
+    '<div class="fy-rail' + (ex ? ' fy-rail-ext' : '') + '">' + (ex ? '' :
       '<button class="fy-act' + (liked ? " on" : "") + '" data-tr="like" data-id="' + p.id + '" aria-label="' + fyT("Like") + '">' + FIC.heart + '<span class="num">' + n + '</span></button>' +
       '<button class="fy-act" data-tr="comment" data-id="' + p.id + '" aria-label="' + fyT("Comment") + '">' + FIC.chat + '<span>' + fyT("Chat") + '</span></button>' +
       '<button class="fy-act' + (saved ? " on" : "") + '" data-tr="save" data-id="' + p.id + '" aria-label="' + fyT("Save") + '">' + FIC.save + '<span>' + fyT(saved ? "Saved" : "Save") + '</span></button>' +
       '<button class="fy-act" data-tr="share" data-id="' + p.id + '" aria-label="' + fyT("Share") + '">' + FIC.share + '<span>' + fyT("Share") + '</span></button>' +
-      (window.LowiFood && LowiFood.isFoodPost(p, FY_IMG[p.id]) ? LowiFood.railBtn(p.id) : "") +
+      (window.LowiFood && LowiFood.isFoodPost(p, FY_IMG[p.id]) ? LowiFood.railBtn(p.id) : "")) +
       '<button class="fy-act fy-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="' + fyT("More") + '">' + IC.more + '</button></div>' +
     '<div class="fy-meta"><div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b>' + (p.nb ? '<span class="fy-bot" title="Bot">Bot</span>' : '') + '<span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
@@ -4604,13 +4618,25 @@ function retryShares(){
 function heldPosts(){ return (T.posts || []).filter(p => window.LowiForYou && LowiForYou.held(Object.assign({}, p, {me: true}))); }
 let fyTop = 0;
 function renderForYou(el){
-  el = el || $("#cmFeed"); if (!el) return; load(); retryShares(); const list = feed();
+  el = el || $("#cmFeed"); if (!el) return; fyHealThumbs(); load(); retryShares(); const list = feed();
   const prev = $("#fyFeed"), y = prev ? prev.scrollTop : 0;
   /* 25 Oct 2026: "My posts" sits on the feed itself (it only lived on the old Tribe profile); after posting, the feed opens at the top */
   const mineN = fyMineAll().length, mineLbl = window.LowiForYou ? LowiForYou.note("mine") : "My posts";
   el.innerHTML = (window.FYV ? FYV.fabHTML() : "") + '<button class="fy-mine" data-tr="list-mine" aria-label="' + esc(mineLbl) + '">' + esc(mineLbl) + (mineN ? ' <b>' + mineN + '</b>' : '') + '</button>' + '<div class="fy-feed" id="fyFeed">' + list.map(slideHTML).join("") +
     '<section class="fy-slide fy-end"><div class="fy-endin"><b>' + esc(fyT("That's everyone")) + '</b><span class="small muted">' + esc(fyT("Newest first. No algorithm.")) + '</span><button class="btn primary sm" data-r3f="post" data-sfx="open">' + esc(fyT("Post something")) + '</button></div></section></div>';
   const f = $("#fyFeed"); if (f) { f.scrollTop = fyTop ? 0 : y; fyTop = 0; if (!f.dataset.dbl) { f.dataset.dbl = "1"; f.addEventListener("dblclick", e => { const s = e.target.closest(".fy-slide[data-id]"); if (!s || e.target.closest("button")) return; const b = s.querySelector('[data-tr="like"]'); if (b && !b.classList.contains("on")) b.click(); fyBurst(s, e); }); } if (window.FYV) FYV.attach(f); }
+}
+/* 25 Oct 2026: TikTok posts in the shared table without their stored picture get it now (once per post per session); the copy on
+   this phone takes the same picture and video id, so a later re-send never puts the expired one back */
+function fyHealThumbs(){
+  const TT = window.LowiTikTok, CL = window.LOWI_CLOUD; if (!TT || !CL || !CL.live || !CL.live()) return;
+  load(); let dirty = false;
+  (T.posts || []).forEach(q => { const c = CL.post && CL.post(q.id); if (c && c.meta && TT.stable(c.meta.thumb) && !(q.meta && TT.stable(q.meta.thumb))) { TT.merge(q, c.meta); dirty = true; } });
+  if (dirty) save();
+  TT.heal(CL.posts().concat((T.posts || []).filter(q => CL.post && CL.post(q.id)).map(q => Object.assign({}, q, {cloud:true}))), (id, m) => {
+    const c = CL.post(id); if (c) TT.merge(c, m);
+    const q = (T.posts || []).find(x => x.id === id); if (q) { TT.merge(q, m); save(); }
+  });
 }
 function fyBurst(s, e){ const r = s.getBoundingClientRect(), x = document.createElement("span"); x.className = "fy-burst"; x.innerHTML = FIC.heart; x.style.left = (e.clientX - r.left) + "px"; x.style.top = (e.clientY - r.top) + "px"; s.appendChild(x); setTimeout(() => x.remove(), 800); }
 /* My posts and Saved live in Profile now, plus the tiny demo note. */
@@ -4799,6 +4825,8 @@ document.addEventListener("click", e => {
     case "open": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p || !p.url) break; if (p.demo) { h.toast("Sample post. Real videos open on the creator's own page."); break; }
       /* 25 Oct (Emmanuel): another platform's video never plays inside LOWiSPIKE; the original opens there, so the creator gets the view */
       const ex = window.LowiForYou ? LowiForYou.external(p.url) : null, u = ex ? ex.url : p.url; if (!/^https?:\/\//i.test(u)) break;
+      /* 25 Oct 2026 ("It should open TikTok direct"): from the Home Screen app a TikTok goes straight to the TikTok app (tiktok-open.js) */
+      if (ex && ex.plat === "tiktok" && window.LowiTikTok && LowiTikTok.open(p, b)) break;
       window.open(u, "_blank", "noopener"); break; }
     case "post-menu": postMenu(id); break;
     case "toggle-vis": { const p = T.posts.find(x => x.id === id); const F = window.LowiForYou, fn = (k, en) => (F ? F.note(k) : en);
@@ -9912,7 +9940,10 @@ async function publish(p, file, quiet){
       }
     }
     let lv = 1; try { lv = levelOf(S.xp, true).L; } catch(e){}
-    const row = {id:p.id, who:myName() || "Member", plat:p.plat || "", url:p.url || "", meta:p.meta || null, cap:p.cap || "", photo_url, video_url, poster:p.poster || "",
+    /* 25 Oct 2026: a post whose stored TikTok picture the server already wrote keeps it when this phone sends it again */
+    let meta = p.meta || null; const was = POSTS.find(x => x.id === p.id), TT = window.LowiTikTok;
+    if (TT && was && was.meta && TT.stable(was.meta.thumb) && !(meta && TT.stable(meta.thumb))) { meta = Object.assign({}, meta || {}); TT.merge({meta}, was.meta); }
+    const row = {id:p.id, who:myName() || "Member", plat:p.plat || "", url:p.url || "", meta, cap:p.cap || "", photo_url, video_url, poster:p.poster || "",
       w:p.w || 0, h:p.h || 0, dur:Math.round(p.dur || 0), rec:p.rec || "", mine:!!p.mine, art:p.art || null, lv};
     /* 25 Oct 2026: an older post keeps its own date (sent late, it does not jump to the top for everyone). A post dated ahead of
        the server clock is sent as now. If the table refuses the date, it goes without one. */
@@ -9921,6 +9952,7 @@ async function publish(p, file, quiet){
     if (r.error) r = await sb.from("posts").upsert(row);
     if (r.error) throw r.error;
     const np = mapPost(Object.assign({user_id:uid, created_at:new Date(p.ts || Date.now()).toISOString()}, row)); const i = POSTS.findIndex(x => x.id === p.id); if (i >= 0) POSTS[i] = np; else POSTS.unshift(np);
+    if (TT && TT.needsHeal(np)) TT.heal([np], (id, m) => TT.merge(np, m)); /* a TikTok sent without its stored picture gets it now */
     if (p.vid && !quiet) toast("Shared with everyone");
     return true;
   } catch(e){ console.info("[LOWiSPIKE] publish failed", e && (e.message || e)); if (!quiet) toast(p.vid ? "Upload failed. It's still on this phone." : "No connection. Try again in a moment.", 3200); return false; }
@@ -21462,6 +21494,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261025-191009">
 <script src="scan-glass.js?v=20261025-191009"></script>
 <script src="gpt-open.js?v=20261025-191009"></script>
+<script src="tiktok-open.js?v=20261025-191009"></script>
 <link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261025-191009">
 <script src="realm-backdrop-core.js?v=20261025-191009"></script>
 <script src="realm-backdrop.js?v=20261025-191009"></script>

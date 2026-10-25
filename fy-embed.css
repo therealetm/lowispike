@@ -18,7 +18,7 @@ html[data-theme="light"] .fy-meta .fy-out { background: var(--wh-glass-wide), rg
 .fy-meta .fy-out-t { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
 .fy-meta .fy-out-t b { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fy-meta .fy-out-t small { font-size: 12px; font-weight: 600; opacity: .82; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fy-meta .fy-love { margin: 7px 0 0; font-size: 12.5px; line-height: 1.38; font-weight: 600; color: rgba(240, 248, 255, .9); text-shadow: 0 1px 5px rgba(0, 10, 30, .7); max-width: 34ch; }
+.fy-meta .fy-love { margin: 6px 0 0; font-size: 12px; line-height: 1.38; font-weight: 600; color: rgba(240, 248, 255, .9); text-shadow: 0 1px 5px rgba(0, 10, 30, .7); max-width: 34ch; }
 html[data-theme="light"] .fy-meta .fy-love { color: #fff; }
 /* the creator platform's colours and name behind the still, so a missing preview is never the plain placeholder */
 .fy-art.fy-art-ext { display: flex; align-items: center; justify-content: center; }

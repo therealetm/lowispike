@@ -162,6 +162,17 @@ test('the app loads the swap module before the page script runs, and the offline
     assert.match(fs.readFileSync(path.join(root, 'sw.js'), 'utf8'), /"scan-swap-core\.js"/);
 });
 
+test('Spanish honey or candied nuts give the coated-nuts reason, not "sweet sauce" (WebKit es check: almendras con miel read "Salsa o crema dulce")', () => {
+    for (const q of ['almendras con miel', 'cacahuetes con miel', 'anacardos a la miel', 'almendras garrapiñadas', 'nueces caramelizadas', 'avellanas confitadas', 'frutos secos con miel']) {
+        const r = P.rateName(q);
+        assert.equal(r.verdict, 'NEIN', q + ' stays a Skip it');
+        assert.equal(r.rules[0], 'policy.coated_nuts', q + ' leads with the coated-nuts reason');
+        assert.ok(!r.rules.includes('ja.nuts_moderate'), q + ' is not also a plain-nuts pick');
+    }
+    for (const q of ['almendras', 'nueces', 'cacahuetes']) assert.equal(P.rateName(q).verdict, 'JA', q + ' stays a plain nut');
+    for (const q of ['miel', 'yogur con miel', 'cebolla caramelizada']) assert.ok(!P.rateName(q).rules.includes('policy.coated_nuts'), q + ' is not a nut');
+});
+
 test('honey-coated nuts written as one German word are a Skip it too (live check: "Honigmandeln" came out Lower impact)', () => {
     for (const q of ['Honigmandeln', 'Honig-Mandeln', 'Honignüsse', 'Honigerdnüsse', 'Honig-Cashews', 'honey-roasted peanuts', 'almendras con miel'])
         assert.equal(nameRate(q).verdict, 'spike', q + ' is a coated / honey nut');

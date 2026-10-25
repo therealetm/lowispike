@@ -1291,6 +1291,7 @@ html:not([data-lay=phone]) button:focus-visible,html:not([data-lay=phone]) a:foc
 .fy-by{display:flex;align-items:center;gap:8px;font-size:15px}
 .fy-by span{opacity:.75;font-size:13px}
 .fy-by .av,.fy-by img{flex:none}
+.fy-bot{opacity:1!important;font-size:10px!important;font-weight:800;letter-spacing:.04em;padding:1px 6px;border-radius:7px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28)}
 .fy-orig svg{width:14px;height:14px;color:var(--gold,#f5c84b);opacity:1}
 .fy-cap{margin-top:8px;font-size:14.5px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .fy-src{display:inline-flex;align-items:center;gap:6px;margin-top:8px;max-width:100%;color:#fff;font-size:12.5px;opacity:.9;padding:0;background:none;border:0}
@@ -4558,7 +4559,7 @@ function slideHTML(p){
       '<button class="fy-act" data-tr="share" data-id="' + p.id + '" aria-label="' + fyT("Share") + '">' + FIC.share + '<span>' + fyT("Share") + '</span></button>' +
       (window.LowiFood && LowiFood.isFoodPost(p, FY_IMG[p.id]) ? LowiFood.railBtn(p.id) : "") +
       '<button class="fy-act fy-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="' + fyT("More") + '">' + IC.more + '</button></div>' +
-    '<div class="fy-meta"><div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b><span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
+    '<div class="fy-meta"><div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b>' + (p.nb ? '<span class="fy-bot" title="Bot">Bot</span>' : '') + '<span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
       (p.meta && p.meta.meal && window.LowiMealSnap ? LowiMealSnap.cardHTML(p.meta.meal, {compact:true, noName:!!cap && cap === p.meta.meal.name}) : "") +
       (p.rec && window.FYV ? FYV.recChip(p) : "") +
@@ -9772,7 +9773,9 @@ function fyBotsLater(sb, n){
   if (window.LowiBotAccounts) { try { window.LowiBotAccounts.load(sb); } catch(e){} return; }
   if (n < 40) setTimeout(() => fyBotsLater(sb, n + 1), 250);
 }
-function mapPost(r){
+/* 25 Oct 2026: the inspiration bot's meal posts (nibblo-core.js) get their caption in this phone's language and a small Bot tag. */
+function mapPost(r){ const p = mapPostRow(r); return window.LowiNibblo ? LowiNibblo.post(p, LowiNibblo.lang) : p; }
+function mapPostRow(r){
   return {id:r.id, uid:r.user_id, me:r.user_id === uid, cloud:true, who:r.who || "Member", ts:ts(r.created_at), plat:r.url ? (PLATS.indexOf(r.plat) >= 0 ? r.plat : "web") : "", url:r.url || "", meta:r.meta || null,
     cap:r.cap || "", photo:r.photo_url || r.photo || "", avatar:r.avatar_url || r.avatar || avatarOf(r.user_id), vid:r.video_url ? 1 : 0, vurl:r.video_url || "", poster:r.poster || "", w:r.w || 0, h:r.h || 0, dur:r.dur || 0,
     rec:r.rec || "", mine:!!r.mine, art:r.art || ["✨", 40, 280], vis:"tribe", rank:r.lv ? "Lv " + r.lv : "", get likes(){ return likeCount(this.id); }};
@@ -21615,6 +21618,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="fybCss" href="foryou.css?v=20261025-173238">
 <script src="foryou-core.js?v=20261025-173238"></script>
 <script src="inspo-core.js?v=20261025-173238"></script>
+<script src="nibblo-core.js?v=20261025-173238"></script>
 <script src="foryou.js?v=20261025-173238"></script>
 <script src="foryou-stay.js?v=20261025-173238"></script>
 <link rel="stylesheet" id="gnCss" href="glass-nav.css?v=20261025-173238">

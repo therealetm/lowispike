@@ -488,7 +488,7 @@ function dmAlert(m){if(DM_MUTED){const t=D.getElementById('cgToast');if(t&&t.rem
 function openGalaxy(uid){try{if(typeof W.goTab==='function')W.goTab('foryou');}catch(e){}try{if(typeof W.cmSeg==='function')W.cmSeg('chat');}catch(e){}const t=D.getElementById('cgToast');if(t)t.removeAttribute('data-on');if(uid&&roster().has(uid))sel=uid;refresh();}
 function text(t){return esc(t).replace(/@([\p{L}\p{N}_-]+)/gu,'<span class="cm-at">@$1</span>');}
 /* Oct 16 (Task 11): a photo message shows its picture (tap to open) and caption, never the raw link */
-function photoOf(m){if(!m||!K.photo)return null;const u=String(m.uid||'').indexOf('bot:')===0?'x':m.uid,ph=K.photo(m.t,u);if(ph)return ph;const ml=K.meal?K.meal(m.t,u):null;return ml?{src:ml.src,caption:ml.caption,meal:ml}:null;}
+function photoOf(m){if(!m||!K.photo)return null;const u=String(m.uid||'').indexOf('bot:')===0?'x':m.uid,ph=K.photo(m.t,u);if(ph)return ph;if(W.LowiNibblo){const nb=W.LowiNibblo.chatPhoto(K,m,u);if(nb)return nb;}const ml=K.meal?K.meal(m.t,u):null;return ml?{src:ml.src,caption:ml.caption,meal:ml}:null;}
 /* Oct 22: a meal shared from Log a meal: the photo, the dish name and its spike rating (theme tokens, see community-chat.css .cs-meal) */
 function mealHtml(ml){const k={low:'mealLow',mid:'mealMid',high:'mealHigh'}[ml.lvl]||'mealMid';return '<div class="cs-meal"><b class="cs-meal-n">'+esc(ml.name)+'</b><span class="cs-meal-bs cs-meal-'+esc(ml.lvl)+'"><i aria-hidden="true"></i>'+esc(tr(k))+'</span></div>';}
 function voiceOf(m){return m&&K.voice?K.voice(m.t,String(m.uid||'').indexOf('bot:')===0?'x':m.uid):null;}

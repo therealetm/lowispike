@@ -83,7 +83,7 @@ async function context(now: number): Promise<Ctx> {
     const since = new Date(now - 3 * 864e5).toISOString();
     const [posts, tests] = await Promise.all([
       db("/rest/v1/posts?select=id,who,cap,user_id,created_at&photo_url=not.is.null&cap=not.is.null&created_at=gte." + since + "&order=created_at.desc&limit=40"),
-      db("/rest/v1/profiles?select=id&test=eq.true&limit=1000"),
+      db("/rest/v1/profiles?select=id&or=(test.eq.true,bot.eq.true)&limit=1000"),
     ]);
     const bad = new Set((tests || []).map((x: { id: string }) => x.id));
     ctx.posts = (posts || []).filter((p: { user_id?: string; cap?: string }) => !(p.user_id && bad.has(p.user_id)) && (p.cap || "").trim().length > 3)

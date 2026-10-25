@@ -1,5 +1,6 @@
 'use strict';
 // Nibblo, the For You food bot (inspo-core.js / foryou.js). 24 Oct 2026: the bot lives in For You only.
+// 25 Oct 2026: it now also posts meal photos to the main Chat and For You three times a day from the server (nibblo-core.js).
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('fs');
@@ -100,11 +101,19 @@ test('no poll, no push, no server post: the slides are built on the phone',()=>{
   assert.doesNotMatch(read('foryou.js').slice(read('foryou.js').indexOf('function slideHTML'),read('foryou.js').indexOf('function fromCommunityShare')),/data-tr="(like|comment|post-menu)"|data-r5="profile"/,'no like, chat, menu or profile on the bot slide');
 });
 
-test('the bot only reaches For You: not in Chat, not in People, not in the companion directory',()=>{
-  for(const f of ['community-chat.js','community-rooms-ui.js','community-room.js','people.js','people-core.js'].filter(f=>fs.existsSync(path.join(ROOT,f)))){
+// 25 Oct 2026, Emmanuel changed this: the bot also posts its meal photos into the main Chat, "just like a normal human posting
+// what they ate" (nibblo-core.js, tests/nibblo-meals.test.cjs). The For You swap slides still never become chat cards, and the
+// bot stays out of People, the Room and the companion directory. Chat carries exactly one hook: the bot's meal shown in the
+// viewer's language.
+test('the bot\'s For You slides stay out of Chat; it is not in People, the Room or the companion directory',()=>{
+  for(const f of ['community-rooms-ui.js','community-room.js','people.js','people-core.js'].filter(f=>fs.existsSync(path.join(ROOT,f)))){
     const s=read(f);
     assert.doesNotMatch(s,/Nibblo|LowiInspo|inspoLines|inspoCard|lowi-inspo-bot/,f+' must not carry the bot');
   }
+  const chat=read('community-chat.js');
+  assert.doesNotMatch(chat,/LowiInspo|inspoLines|inspoCard|lowi-inspo-bot/,'no For You slide renderer in Chat');
+  assert.equal((chat.match(/Nibblo/g)||[]).length,2,'Chat only localizes the bot\'s meal posts: if(W.LowiNibblo){const nb=W.LowiNibblo.chatPhoto(K,m,u);if(nb)return nb;}');
+  assert.match(chat,/if\(W\.LowiNibblo\)\{const nb=W\.LowiNibblo\.chatPhoto\(K,m,u\);if\(nb\)return nb;\}/);
   assert.ok(!fs.existsSync(path.join(ROOT,'inspo.js')),'the old chat card renderer is gone');
   const html=read('index.html');
   assert.doesNotMatch(html,/inspo\.css|inspo\.js\?v=/);

@@ -15,6 +15,8 @@
     function get(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
     function put(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (e) { } }
     function uid() { try { const x = W.LOWI_CLOUD_X, s = x && x.state && x.state(); return (s && s.uid) || ''; } catch (e) { return ''; } }
+    /* the account the server will see: only once the cloud session is live (before that the call goes out with the public key) */
+    function liveUid() { try { const x = W.LOWI_CLOUD_X, s = x && x.state && x.state(); return (s && s.uid && s.live) ? s.uid : ''; } catch (e) { return ''; } }
     function pass() { const p = get(C.PASS_KEY); return C.validPass(p) ? p : ''; }
 
     /* signed in: the app's own Supabase client (the server sees who it is, so the owner gets in); otherwise the public key */
@@ -46,11 +48,11 @@
 
     /* ask the server; a missing answer (offline, no SQL yet) keeps the remembered verdict */
     async function check(force) {
-        const p = pass(), id = uid(), key = id + '|' + p;
+        const p = pass(), id = liveUid(), key = id + '|' + p;
         if (!force && key === ST.key) return ST.open;
         ST.key = key; ST.checkedAt = Date.now();
         const res = await rpc('studio_access', { pass: p || null });
-        if (key !== uid() + '|' + pass()) return ST.open; /* account or pass changed meanwhile: the next check answers */
+        if (key !== liveUid() + '|' + pass()) return ST.open; /* account, session or pass changed meanwhile: the next check answers */
         const v = C.accessFromRpc(res);
         if (v === null) { set(local()); return ST.open; }
         ST.server = v;
@@ -69,7 +71,7 @@
         ST.busy = false;
         if (r.ok) {
             put(C.PASS_KEY, r.pass); put(C.OK_KEY, C.okMark(true, uid()));
-            ST.server = true; ST.key = uid() + '|' + r.pass; ST.msg = '';
+            ST.server = true; ST.key = liveUid() + '|' + r.pass; ST.msg = '';
             set(true);
             return true;
         }
@@ -126,7 +128,7 @@
     function refresh() { D.querySelectorAll('.sl-lock:not([hidden])').forEach(fill); }
 
     ST.open = local();
-    setInterval(() => { if (uid() + '|' + pass() !== ST.key) check(false); }, 2000);
+    setInterval(() => { if (liveUid() + '|' + pass() !== ST.key) check(false); }, 2000);
     W.addEventListener('online', () => check(true));
     D.addEventListener('visibilitychange', () => { if (D.visibilityState === 'visible' && Date.now() - ST.checkedAt > 30000) check(true); });
     setTimeout(() => check(false), 0);

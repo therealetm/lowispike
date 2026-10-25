@@ -346,9 +346,11 @@ function mapView(gal){const typing=D.documentElement.classList.contains('cs-chat
   if(!camFrozen||Math.abs(w-camFrozen.w)>40||h>camFrozen.h||camFrozen.h-h>160)camFrozen={w,h,hb:h};else camFrozen={w:camFrozen.w,h:camFrozen.h,hb:h};
   return camFrozen;}
 /* Oct 25 (Emmy shrank to "E" next to You): the energy pad's corner is kept free too (mapFit avoid), so no name lands on it */
+let koRetry=0;
 function fitCam(gx,v){const spots=(gx.map.spots||[]).filter(s=>gx.spot.has(s.uid)),gal=D.getElementById('cgGalaxy');
   let ko=null;try{ko=gal&&W.LowiEnergy&&W.LowiEnergy.keepOut?W.LowiEnergy.keepOut(gal):null;}catch(e){ko=null;}
   const avoid=ko&&ko.s>0?{x:Math.round(ko.x-ko.s/2),y:Math.round(ko.y-ko.s/2),w:Math.round(ko.s),h:Math.round(ko.s)}:null;
+  if(avoid)koRetry=0;else if(gal&&W.LowiEnergy&&koRetry<10){koRetry++;setTimeout(schedulePlace,400);}/* pad hidden or not laid out yet (zoom-out from Home): look again shortly */
   const key=v.w+'x'+v.h+':'+(avoid?avoid.x+','+avoid.y+','+avoid.w:'-')+':'+spots.map(s=>s.uid+'@'+s.x+','+s.y).join('|');
   if(!fitMemo||fitMemo.key!==key)fitMemo={key,cam:G.mapFit(spots,v.w,v.h,{side:v.w>=640?54:46,top:v.w>=640?44:36,bot:v.w>=640?64:56,big:v.w>=640,avoid})};return {...fitMemo.cam};}
 function mapZ(gx,v){return G.mapZooms(gx.map.radius,v.w,v.h,fitCam(gx,v).z);}
@@ -444,7 +446,7 @@ function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)r
    snapshot of Home any more). From anywhere else the galaxy just settles in from a little closer. */
 function intro(){const g=D.getElementById('cgGalaxy');if(!g||!g.removeAttribute)return;g.__intro=1;if(D.documentElement.classList.contains('gx-out'))return;if(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches)return;g.removeAttribute('data-intro');void g.offsetWidth;g.setAttribute('data-intro','1');clearTimeout(introT);introT=setTimeout(()=>{g.removeAttribute('data-intro');},1100);}
 let enterAt=0,ro=null;
-function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();if(!camUser)cam=null;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();}}
+function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();koRetry=0;if(!camUser)cam=null;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();}}
 function watch(){if(watching||!W.MutationObserver)return;const t=D.getElementById('tab-foryou');if(!t)return;watching=true;new W.MutationObserver(onShow).observe(t,{attributes:true,attributeFilter:['class']});}
 function roomFlag(){const p=D.getElementById('cmPaneChat'),on=threadOpen&&!!(p&&p.hasAttribute&&p.hasAttribute('data-spirit-chat'));if(p&&p.dataset){if(on)p.dataset.room='1';else delete p.dataset.room;}try{D.documentElement.classList.toggle('cr-room',on);}catch(e){}roomDress(p,on);}
 /* Oct 22 (item 37): the room's composer floats over the messages (community-tg.css). The list keeps its last message clear of it, and of a reply bar or photo

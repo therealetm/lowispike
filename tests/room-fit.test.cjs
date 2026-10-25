@@ -130,3 +130,12 @@ test('hidden: Manuuii (Emmanuel\'s own extra account) no longer gets its own bub
   assert.ok(HA.isHidden('4add63ec-61d6-4187-9c62-bd78c427be24'));
   assert.ok(!HA.isHidden('83077af7-8475-4628-9328-25bd335db240'), 'his real eman account stays');
 });
+
+/* Oct 25 (live WebKit run: the Room opened on the plain fit because the energy pad was not measurable yet, e.g. hidden during the
+   zoom-out from Home): fitCam looks again shortly after, so the view moves to keep the pad corner free once the pad is there */
+test('wired: the fit looks for the energy pad again when it is not measurable yet, and keeps its corner free once it is', () => {
+  const src = require('fs').readFileSync(__dirname + '/../community-chat.js', 'utf8');
+  const i = src.indexOf('function fitCam('), body = src.slice(i, src.indexOf('\nfunction ', i + 10));
+  assert.ok(/avoid/.test(body) && /LowiEnergy\.keepOut/.test(body), 'fit passes the pad as avoid');
+  assert.ok(/koRetry/.test(body) && /setTimeout\(\s*schedulePlace/.test(body), 'no pad yet: place again shortly');
+});

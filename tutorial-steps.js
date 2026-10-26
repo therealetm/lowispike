@@ -238,6 +238,16 @@
             }
         },
         {
+            id: 'new-shop-finds', area: 'new', where: 'home', open: 'shop', target: ['.gh-entry', '.stp-card'], covers: ['scan'],
+            info: 'Oct 26 2026 (MAYA-HANDOFF 0.32, grocery-hunt.js): Shop finds made simple. One plain line, Power combos first, Caught today with the scanner card words, the shop picked once (reuses Supermarket), and one short line on the scanner card only when a scan earned something',
+            title: { en: 'Shop finds, simpler', de: 'Ladenfunde, einfacher', es: 'Hallazgos, más simple' },
+            text: {
+                en: 'Shop finds is simpler: scan food while you shop to earn XP for your companion, with Power combos right at the top.',
+                de: 'Ladenfunde ist einfacher: Scanne Essen beim Einkaufen, sammle XP für deinen Begleiter, Power-Kombis ganz oben.',
+                es: 'Hallazgos es más simple: escanea comida al comprar, gana XP para tu compañero, con los combos de poder arriba.'
+            }
+        },
+        {
             id: 'new-give-hand', area: 'new', where: 'home', open: 'shop', target: ['.stp-card .stp-tab[data-stp-tab="gift"]', '.stp-card'], covers: ['give-a-hand'],
             info: 'Oct 25 2026: the Give a hand tab in Shop (store-picks.js giftDoor); it shows once the server has the basket table, otherwise the card points at Shop. Oct 26: the Kitchen tab left Shop for Cook, so the card opens Shop on Seller Zone and Give a hand sits right beside it',
             title: { en: 'Give a hand', de: 'Hilf mit', es: 'Echa una mano' },

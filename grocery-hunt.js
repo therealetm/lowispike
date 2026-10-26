@@ -77,27 +77,46 @@
         const b = W.LowiVitalsBridge; if (!b || !b.awardWith) return 0;
         let sum = 0;
         res.awards.forEach(a => {
-            const txt = a.label === 'trip' ? T('Shopping check-in', 'Einkaufs-Check-in', 'Check-in de compra') : a.label === 'combo' ? T('Power combo', 'Power-Kombi', 'Combo de poder') :
+            const txt = a.label === 'trip' ? T('Shopping bonus', 'Einkaufsbonus', 'Bonus de compra') : a.label === 'combo' ? T('Power combo', 'Power-Kombi', 'Combo de poder') :
                 a.label === 'find' ? T('New find', 'Neuer Fund', 'Nuevo hallazgo') : T('Shop find', 'Ladenfund', 'Hallazgo');
             try { sum += b.awardWith(a.amt, txt + (label ? ' · ' + label : ''), 'grocery', a.eventId, { grocery: a.kind }, true) || 0; } catch (e) {}
         });
         return sum;
     }
+    /* 0.32 (Emmanuel, 26 Oct): plain words. No "check-in", no glimmers, no glowing worlds: what you got, in XP, and why. */
     function lines(res) {
         if (!res.ok) return [];
         const out = [];
-        if (res.again) out.push(T('Already caught today', 'Heute schon gefangen', 'Ya capturado hoy'));
-        if (res.hint && res.hint.cooling && !res.awards.some(a => a.label === 'hint')) out.push(T('Glimmer caught already · pays again ', 'Schimmer schon gefangen · zählt wieder ab ', 'Destello ya capturado · vuelve a contar el ') + dateS(res.hint.againAt));
+        if (res.again) out.push(T('Already scanned today', 'Heute schon gescannt', 'Ya escaneado hoy'));
+        if (res.hint && res.hint.cooling && !res.awards.some(a => a.label === 'hint')) out.push(T('Found here before · counts again from ', 'Hier schon gefunden · zählt wieder ab ', 'Ya encontrado aquí · cuenta de nuevo el ') + dateS(res.hint.againAt));
         res.awards.forEach(a => {
-            if (a.label === 'hint') out.push('+' + a.amt + ' XP · ' + (a.kind === 'community' ? T('you caught a glimmer another shopper left here', 'Schimmer gefangen, den jemand hier gefunden hat', 'capturaste un destello que dejó otra persona') : T('you caught one of your glimmers again', 'einen deiner Schimmer wieder gefangen', 'recapturaste uno de tus destellos')));
-            if (a.label === 'find') out.push('+' + a.amt + ' XP · ' + T('new find in this shop: it glimmers here next time', 'neuer Fund in diesem Laden: beim nächsten Mal schimmert er hier', 'nuevo hallazgo: la próxima vez brillará aquí'));
-            if (a.label === 'trip') out.push('+' + a.amt + ' XP · ' + T('shopping check-in: your world glows brighter', 'Einkaufs-Check-in: deine Welt leuchtet heller', 'check-in de compra: tu mundo brilla más'));
+            if (a.label === 'hint') out.push('+' + a.amt + ' XP · ' + (a.kind === 'community' ? T('another shopper found this here before', 'jemand hat das hier schon gefunden', 'otra persona lo encontró aquí antes') : T('you found this here before', 'du hast das hier schon gefunden', 'ya lo encontraste aquí')));
+            if (a.label === 'find') out.push('+' + a.amt + ' XP · ' + T('new find at your shop', 'neuer Fund in deinem Laden', 'nuevo hallazgo en tu tienda'));
+            if (a.label === 'trip') out.push('+' + a.amt + ' XP · ' + T('shopping bonus for 2 products today', 'Einkaufsbonus für 2 Produkte heute', 'bonus de compra por 2 productos hoy'));
         });
-        if (res.renewed && !res.awards.some(a => a.label === 'trip')) out.push(T('Shopping check-in: your world glows brighter', 'Einkaufs-Check-in: deine Welt leuchtet heller', 'Check-in de compra: tu mundo brilla más'));
-        if (!res.renewed && res.tripNeed > 0 && !res.again) out.push(T('1 more different product today for your shopping check-in', 'Noch 1 anderes Produkt heute für deinen Einkaufs-Check-in', '1 producto distinto más hoy para tu check-in'));
-        res.combos.forEach(x => out.push(x.paid ? '⚡ ' + T('Power combo! ', 'Power-Kombi! ', '¡Combo de poder! ') + comboName(x.combo) + ' +' + C.XP.combo + ' XP' : comboName(x.combo) + ' · ' + T('combo again from ', 'Kombi wieder ab ', 'combo de nuevo el ') + dateS(x.againAt)));
-        if (res.ok && !res.awards.length && !res.again && !res.renewed && !res.combos.length && C.xpLeft(S, Date.now()) === 0) out.push(T('Shop-find XP for today is used up. Catches still count for your check-in and combos.', 'Ladenfund-XP für heute sind aufgebraucht. Fänge zählen weiter für Check-in und Kombis.', 'Los XP de hallazgos de hoy se agotaron. Las capturas siguen contando.'));
+        if (res.renewed && !res.awards.some(a => a.label === 'trip')) out.push(T('Shopping bonus done for today', 'Einkaufsbonus für heute geschafft', 'Bonus de compra de hoy hecho'));
+        if (!res.renewed && res.tripNeed > 0 && !res.again) out.push(T('1 more product today for +', 'Noch 1 Produkt heute für +', '1 producto más hoy para +') + C.XP.trip + ' XP');
+        res.combos.forEach(x => out.push(x.paid ? '⚡ ' + T('Power combo! ', 'Power-Kombi! ', '¡Combo de poder! ') + comboName(x.combo) + ' +' + C.XP.combo + ' XP' : comboName(x.combo) + ' · ' + T('again from ', 'wieder ab ', 'de nuevo el ') + dateS(x.againAt)));
+        if (res.ok && !res.awards.length && !res.again && !res.renewed && !res.combos.length && C.xpLeft(S, Date.now()) === 0) out.push(T('You have all of today\'s Shop finds XP. Scans still count for Power combos.', 'Du hast alle Ladenfunde-XP für heute. Scans zählen weiter für Power-Kombis.', 'Ya tienes todos los XP de hoy. Los escaneos siguen contando para los combos de poder.'));
         return out;
+    }
+    /* 0.32: the scanner card gets ONE short line, only when the scan earned something or moved a Power combo on. Nothing else:
+       no shop reminder, no "1 more product" nag. The line opens Shop finds. */
+    function oneLine(res) {
+        if (!res.ok || res.again) return '';
+        const paid = res.combos.find(x => x.paid);
+        if (paid) return '⚡ ' + T('Power combo! ', 'Power-Kombi! ', '¡Combo de poder! ') + comboName(paid.combo) + ' +' + C.XP.combo + ' XP';
+        const aw = l => res.awards.find(a => a.label === l);
+        if (aw('trip')) return '+' + aw('trip').amt + ' XP · ' + T('shopping bonus for 2 products today', 'Einkaufsbonus für 2 Produkte heute', 'bonus de compra por 2 productos hoy');
+        if (aw('hint')) return '+' + aw('hint').amt + ' XP · ' + T('found here before', 'hier schon gefunden', 'ya encontrado aquí');
+        if (aw('find')) return '+' + aw('find').amt + ' XP · ' + T('new find at your shop', 'neuer Fund in deinem Laden', 'nuevo hallazgo en tu tienda');
+        const now = Date.now(), todays = C.catchesOn(S, C.dayOf(now));
+        for (const cb of C.allCombos(S, shared().combos)) {
+            const at = S.comboDone[cb.id] || 0; if (at && now - at < C.COOLDOWN * C.DAY) continue;
+            const pr = C.comboProgress(cb, todays);
+            if (!pr.done && pr.items.some(i => i.by && i.by.key === res.key)) return T('Power combo ', 'Power-Kombi ', 'Combo de poder ') + comboName(cb) + ': ' + pr.have + T(' of ', ' von ', ' de ') + pr.items.length;
+        }
+        return '';
     }
     function doCatch(p) {
         load();
@@ -118,11 +137,10 @@
         const res = doCatch({ via: 'barcode', bc: d.barcode, name: d.name, lvl: d.level });
         const card = d.card; if (!card || !res.ok) return;
         const sheet = card.querySelector('.ss-sheet'); if (!sheet) return;
-        const ls = lines(res);
-        if (!S.plan.store) ls.push(T('Pick your shop in Shop finds so your finds glimmer there next time.', 'Wähl in Ladenfunde deinen Laden, dann schimmern deine Funde dort beim nächsten Mal.', 'Elige tu tienda en Hallazgos para que tus hallazgos brillen allí.'));
-        const box = D.createElement('div'); box.className = 'gh-chip';
-        box.innerHTML = '<b>' + IC.star + '<span>' + esc(T('Shop finds', 'Ladenfunde', 'Hallazgos en la tienda')) + '</span></b>' + ls.map(l => '<small>' + esc(l) + '</small>').join('') +
-            '<button type="button" class="gh-chip-open" data-gh="open">' + esc(T('Open finds', 'Funde öffnen', 'Ver hallazgos')) + '</button>';
+        /* 0.32 (Emmanuel: the box was confusing): one short line, or nothing when the scan earned nothing */
+        const one = oneLine(res); if (!one) return;
+        const box = D.createElement('div'); box.className = 'gh-chip'; box.classList.add('gh-one');
+        box.innerHTML = '<button type="button" class="gh-chip-open" data-gh="open" aria-label="' + esc(T('Open Shop finds', 'Ladenfunde öffnen', 'Abrir hallazgos')) + '">' + IC.star + '<small>' + esc(one) + '</small><i aria-hidden="true">›</i></button>';
         /* Oct 26 one scanner: the card is capped by its camera, so the finds note goes under the buttons (above Details), never between the verdict and Add to cart */
         const more = sheet.querySelector('.ss-more'); if (more) sheet.insertBefore(box, more); else sheet.appendChild(box);
     });
@@ -158,24 +176,16 @@
             '<div class="stp-foot">' + (foot || '') + '<button type="button" class="stp-orb" data-gh="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + IC.x + '</button></div></div>';
     }
     function storeName(st) { return st ? (st.brand && st.name && st.name.toLowerCase().indexOf(st.brand.toLowerCase()) < 0 ? st.brand + ' ' + st.name : st.name || st.brand) + (st.town ? ' · ' + st.town : '') : ''; }
-    function glowHTML(now) {
-        const st = C.status(S, now);
-        let head, sub;
-        if (st.phase === 'none') { head = T('No shopping glow yet', 'Noch kein Einkaufs-Leuchten', 'Aún sin brillo de compra'); sub = T('Catch 2 different products on one shopping day (barcode or photo) and your world and spirit world glow brighter.', 'Fang an einem Einkaufstag 2 verschiedene Produkte (Barcode oder Foto), dann leuchten deine Welt und die Geisterwelt heller.', 'Captura 2 productos distintos en un día de compra (código o foto) y tu mundo y el mundo espíritu brillarán más.'); }
-        else if (st.phase === 'full') { head = T('Shopping glow: full', 'Einkaufs-Leuchten: voll', 'Brillo de compra: lleno'); sub = T('Holds until ', 'Hält bis ', 'Dura hasta el ') + dateS(st.holdUntil) + T(', then fades slowly.', ', danach verblasst es langsam.', ', luego se apaga poco a poco.'); }
-        else if (st.phase === 'fading') { head = T('Shopping glow fading · ', 'Einkaufs-Leuchten verblasst · ', 'Brillo de compra apagándose · ') + st.pct + '%'; sub = T('A shopping check-in renews it. Gone on ', 'Ein Einkaufs-Check-in frischt es auf. Weg am ', 'Un check-in lo renueva. Se apaga el ') + dateS(st.fadesOutAt) + '.'; }
-        else if (st.phase === 'faded') { head = T('Shopping glow has faded', 'Einkaufs-Leuchten ist verblasst', 'El brillo de compra se apagó'); sub = T('Your world is at its normal look. Nothing you earned is lost.', 'Deine Welt sieht normal aus. Nichts, was du verdient hast, geht verloren.', 'Tu mundo tiene su aspecto normal. No pierdes nada de lo ganado.'); }
-        else { head = T('Paused until ', 'Pausiert bis ', 'En pausa hasta el ') + dateS(st.pausedUntil); sub = T('The glow stands still while you are away.', 'Das Leuchten bleibt stehen, solange du weg bist.', 'El brillo se queda quieto mientras no estás.'); }
-        const today = C.catchesOn(S, C.dayOf(now)).length, done = C.dayOf(S.lastRenew || 0) === C.dayOf(now);
-        const trip = done ? T('Checked in from the shop today', 'Heute vom Laden aus eingecheckt', 'Hoy hiciste check-in desde la tienda') : T('Today: ', 'Heute: ', 'Hoy: ') + Math.min(today, C.TRIP_MIN) + ' / ' + C.TRIP_MIN + T(' products for your check-in', ' Produkte für deinen Check-in', ' productos para tu check-in');
-        return '<div class="gh-glow gh-' + st.phase + '"><div class="gh-glow-t"><b>' + esc(head) + '</b><small>' + esc(sub) + '</small></div><div class="gh-bar"><i style="width:' + st.pct + '%"></i></div>' +
-            '<div class="gh-trip' + (done ? ' on' : '') + '">' + esc(trip) + '</div></div>';
+    /* 0.32: the same verdict words as the scanner card (shop-scan-core.js v_none / v_mild / v_spike): Lower / Moderate / Higher */
+    function lvlWord(lvl) {
+        const SC = W.LowiShopScanCore, k = 'v_' + lvl;
+        try { if (SC && SC.tx) { const w = SC.tx(k, li()); if (w && w !== k) return w; } } catch (e) {}
+        return { none: T('Lower', 'Niedriger', 'Bajo'), mild: T('Moderate', 'Mittel', 'Moderado'), spike: T('Higher', 'Höher', 'Alto') }[lvl];
     }
     function lvlTag(h) {
         if (h.via === 'photo' && !h.lvl) return '<i class="stp-tag">' + esc(T('Photo · not rated', 'Foto · nicht bewertet', 'Foto · sin valorar')) + '</i>';
-        if (h.lvl === 'none') return '<i class="stp-tag best">' + esc(T('Gentle (estimate)', 'Sanft (Schätzung)', 'Suave (estimación)')) + '</i>';
-        if (h.lvl === 'mild') return '<i class="stp-tag ok">' + esc(T('Medium (estimate)', 'Mittel (Schätzung)', 'Medio (estimación)')) + '</i>';
-        if (h.lvl === 'spike') return '<i class="stp-tag no">' + esc(T('Spikes (estimate)', 'Spike (Schätzung)', 'Pico (estimación)')) + '</i>';
+        const cls = { none: 'best', mild: 'ok', spike: 'no' }[h.lvl];
+        if (cls) return '<i class="stp-tag ' + cls + '">' + esc(lvlWord(h.lvl) + T(' (estimate)', ' (Schätzung)', ' (estimación)')) + '</i>';
         return '<i class="stp-tag">' + esc(T('Not rated', 'Nicht bewertet', 'Sin valorar')) + '</i>';
     }
     function ago(d) { return d === 0 ? T('today', 'heute', 'hoy') : d === 1 ? T('yesterday', 'gestern', 'ayer') : T(d + ' days ago', 'vor ' + d + ' Tagen', 'hace ' + d + ' días'); }
@@ -183,7 +193,7 @@
         let src;
         if (h.community) src = T('Found here by ', 'Hier gefunden von ', 'Encontrado aquí por ') + h.shoppers + ' ' + (h.shoppers === 1 ? T('shopper', 'Person', 'persona') : T('shoppers', 'Personen', 'personas')) + ' · ' + T('last ', 'zuletzt ', 'última vez ') + ago(h.daysAgo);
         else src = T('Your find · last seen here ', 'Dein Fund · zuletzt hier gesehen ', 'Tu hallazgo · visto aquí ') + ago(h.daysAgo);
-        const state = h.cooling ? T('Caught · counts again from ', 'Gefangen · zählt wieder ab ', 'Capturado · cuenta de nuevo el ') + dateS(h.againAt) : T('May be sold out or moved. Find it on the shelf and scan it, or take a photo.', 'Kann ausverkauft oder umgeräumt sein. Such es im Regal und scanne es oder mach ein Foto.', 'Puede estar agotado o en otro sitio. Búscalo y escanéalo o haz una foto.');
+        const state = h.cooling ? T('Scanned · counts again from ', 'Gescannt · zählt wieder ab ', 'Escaneado · cuenta de nuevo el ') + dateS(h.againAt) : T('May be sold out or moved. Find it on the shelf and scan it, or take a photo.', 'Kann ausverkauft oder umgeräumt sein. Such es im Regal und scanne es oder mach ein Foto.', 'Puede estar agotado o en otro sitio. Búscalo y escanéalo o haz una foto.');
         return '<li class="stp-item gh-hint' + (h.cooling ? ' gh-cool' : ' gh-glim') + '"><span class="gh-spark" aria-hidden="true"></span><div><b>' + esc(h.name) + '</b><small>' + esc(src) + '</small><small class="gh-state">' + esc(state) + '</small></div>' +
             lvlTag(h) + (h.cooling ? '' : '<button type="button" class="gh-mini" data-gh="photo-hint" data-i="' + i + '" aria-label="' + esc(T('Catch with a photo', 'Mit Foto fangen', 'Capturar con foto')) + '">' + IC.cam + '</button>') + '</li>';
     }
@@ -192,7 +202,7 @@
         const by = cb.by === 'starter' ? T('Starter idea from LOWiSPIKE', 'Start-Idee von LOWiSPIKE', 'Idea inicial de LOWiSPIKE') : cb.by === 'you' ? T('Your combo', 'Deine Kombi', 'Tu combo') + (cb.shared ? T(' · shared', ' · geteilt', ' · compartido') : '') : T('Shared by a shopper here', 'Von jemandem hier geteilt', 'Compartido por alguien aquí');
         const chips = pr.items.map((x, j) => '<span class="gh-item' + (x.by ? ' on' : '') + '">' + (x.by ? '✓ ' : '') + esc(x.item.kind ? C.kindLabel(x.item.kind, li()) : x.item.label || '?') +
             (x.by ? '' : '<button type="button" class="gh-mini sm" data-gh="photo-combo" data-c="' + esc(cb.id) + '" data-j="' + j + '" aria-label="' + esc(T('Catch with a photo', 'Mit Foto fangen', 'Capturar con foto')) + '">' + IC.cam + '</button>') + '</span>').join('');
-        const st = cool ? T('Power-up done · again from ', 'Power-up geschafft · wieder ab ', 'Power-up hecho · de nuevo el ') + dateS(at + C.COOLDOWN * C.DAY) : T('Catch them all on one shopping day: +', 'Alle an einem Einkaufstag fangen: +', 'Captúralos todos en un día de compra: +') + C.XP.combo + ' XP power-up';
+        const st = cool ? '✓ ' + T('Done · again from ', 'Geschafft · wieder ab ', 'Hecho · de nuevo el ') + dateS(at + C.COOLDOWN * C.DAY) : T('Scan all of these on the same day: +', 'Scanne alle am selben Tag: +', 'Escanéalos todos el mismo día: +') + C.XP.combo + ' XP';
         return '<div class="gh-combo' + (pr.done ? ' done' : '') + '"><div class="gh-combo-h"><b>' + esc(comboName(cb)) + '</b><small>' + esc(by) + '</small></div><div class="gh-items">' + chips + '</div><small class="gh-state">' + esc(st) + '</small></div>';
     }
     function shareHTML() {
@@ -228,7 +238,7 @@
             const sp = SPL(); let sum = ''; try { sum = String(sp.summary ? sp.summary() : ''); } catch (e) {}
             let life2 = st.phase === 'paused' ? '<button type="button" class="stp-pill" data-gh="resume">' + esc(T('End the pause', 'Pause beenden', 'Terminar la pausa')) + '</button>' :
                 '<button type="button" class="stp-pill" data-gh="pause" data-n="7">' + esc(T('Pause 1 week', '1 Woche pausieren', 'Pausar 1 semana')) + '</button><button type="button" class="stp-pill" data-gh="pause" data-n="14">' + esc(T('Pause 2 weeks', '2 Wochen pausieren', 'Pausar 2 semanas')) + '</button>';
-            if (st.graceOk) life2 += '<button type="button" class="stp-pill" data-gh="grace">' + esc(T('Shopped but couldn\'t scan? Hold my glow 3 days', 'Eingekauft, aber Scannen ging nicht? Leuchten 3 Tage halten', '¿Compraste pero no pudiste escanear? Mantener el brillo 3 días')) + '</button>';
+            if (st.graceOk) life2 += '<button type="button" class="stp-pill" data-gh="grace">' + esc(T('Shopped but couldn\'t scan? Keep my world bright 3 more days', 'Eingekauft, aber Scannen ging nicht? Welt 3 Tage länger hell halten', '¿Compraste pero no pudiste escanear? Mantener mi mundo luminoso 3 días más')) + '</button>';
             return '<h4 class="stp-h4">' + esc(T('Your shopping rhythm (optional)', 'Dein Einkaufsrhythmus (optional)', 'Tu ritmo de compra (opcional)')) + '</h4>' +
                 (sum ? '<p class="gh-q">' + esc(sum) + '</p>' : '') +
                 '<div class="stp-chips stp-wrap"><button type="button" class="stp-pill" data-gh="plan-edit">' + esc(T('Change my shopping rhythm', 'Einkaufsrhythmus ändern', 'Cambiar mi ritmo de compra')) + '</button></div>' +
@@ -239,42 +249,68 @@
         const nx = C.nextShopDay(S, now);
         let life = st.phase === 'paused' ? '<button type="button" class="stp-pill" data-gh="resume">' + esc(T('End the pause', 'Pause beenden', 'Terminar la pausa')) + '</button>' :
             '<button type="button" class="stp-pill" data-gh="pause" data-n="7">' + esc(T('Pause 1 week', '1 Woche pausieren', 'Pausar 1 semana')) + '</button><button type="button" class="stp-pill" data-gh="pause" data-n="14">' + esc(T('Pause 2 weeks', '2 Wochen pausieren', 'Pausar 2 semanas')) + '</button>';
-        if (st.graceOk) life += '<button type="button" class="stp-pill" data-gh="grace">' + esc(T('Shopped but couldn\'t scan? Hold my glow 3 days', 'Eingekauft, aber Scannen ging nicht? Leuchten 3 Tage halten', '¿Compraste pero no pudiste escanear? Mantener el brillo 3 días')) + '</button>';
+        if (st.graceOk) life += '<button type="button" class="stp-pill" data-gh="grace">' + esc(T('Shopped but couldn\'t scan? Keep my world bright 3 more days', 'Eingekauft, aber Scannen ging nicht? Welt 3 Tage länger hell halten', '¿Compraste pero no pudiste escanear? Mantener mi mundo luminoso 3 días más')) + '</button>';
         return '<h4 class="stp-h4">' + esc(T('Your shopping rhythm (optional)', 'Dein Einkaufsrhythmus (optional)', 'Tu ritmo de compra (opcional)')) + '</h4>' +
             '<p class="gh-q">' + esc(T('How often do you shop?', 'Wie oft kaufst du ein?', '¿Cada cuánto compras?')) + '</p><div class="stp-chips stp-wrap">' + ev + '</div>' +
             '<p class="gh-q">' + esc(T('Which days?', 'An welchen Tagen?', '¿Qué días?')) + '</p><div class="stp-chips stp-wrap">' + days + '</div>' +
             (nx && S.lastRenew ? '<p class="stp-fine">' + esc(T('Next shop day: ', 'Nächster Einkaufstag: ', 'Próximo día de compra: ') + dateS(nx)) + '</p>' : '') +
             '<div class="stp-chips stp-wrap gh-life">' + life + '</div>';
     }
+    /* 0.32 (Emmanuel, 26 Oct: "When you open Shop finds, it's very complicated ... Power combos make sense, but that other stuff is
+       confusing"): one plain line, the scan buttons, Power combos as the hero, Caught today with the scanner card's verdict words,
+       then your shop in one quiet row. The rhythm, pause, sharing and the small print live under one "More" fold. The shopping
+       bonus and the world boost still work exactly as before; they are just said plainly (C.XP.trip for 2 products a day). */
+    const SPK = 'lowi.gh.spshop';
+    function adoptShop() {
+        /* the shop is picked once: the one picked in Supermarket (store-picks.js) is the Shop finds shop too, until you pick another one here */
+        try {
+            const P = W.LowiStorePicks, sp = P && P.state && (P.state() || {}).store; if (!sp || !sp.id) return;
+            const own = S.plan.store, took = localStorage.getItem(SPK);
+            if (own && own.id === String(sp.id)) return;
+            if (own && own.id !== took) return;
+            C.setPlan(S, { store: { id: sp.id, name: sp.name || sp.brand, brand: sp.brand || '', chain: sp.chain || '', town: sp.town || '' } });
+            localStorage.setItem(SPK, String(sp.id)); save(); cloud.store = '';
+        } catch (e) {}
+    }
+    function todayLine(now, todays) {
+        if (C.dayOf(S.lastRenew || 0) === C.dayOf(now)) return '✓ ' + T('Shopping bonus today: +', 'Einkaufsbonus heute: +', 'Bonus de compra de hoy: +') + C.XP.trip + ' XP';
+        if (todays.length === 1) return T('Scan 1 more product today for +', 'Noch 1 Produkt heute scannen für +', 'Escanea 1 producto más hoy para +') + C.XP.trip + ' XP';
+        return T('Scan 2 different products today for +', 'Scanne heute 2 verschiedene Produkte für +', 'Escanea 2 productos distintos hoy para +') + C.XP.trip + ' XP';
+    }
     function homeHTML() {
-        load();
+        load(); adoptShop();
         const now = Date.now(), st = S.plan.store, todays = C.catchesOn(S, C.dayOf(now)), sh = shared();
-        let h = '<div class="stp-head"><h3>' + esc(T('Shop finds', 'Ladenfunde', 'Hallazgos en la tienda')) + '</h3><p>' + esc(T('Scan products while you shop to see if they\'re likely to spike your blood sugar. Good ones glow here on your next trip.', 'Scanne Produkte beim Einkaufen und sieh, ob sie deinen Blutzucker wahrscheinlich hochtreiben. Gute leuchten hier beim nächsten Einkauf.', 'Escanea productos mientras compras y mira si es probable que te suban el azúcar. Los buenos brillan aquí en tu próxima compra.')) + '</p>' +
-            '<button type="button" class="stp-shop" data-gh="shops" style="margin-top:10px">' + IC.pin + '<span>' + esc(st ? storeName(st) : T('Pick your shop', 'Wähl deinen Laden', 'Elige tu tienda')) + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button></div>';
+        let h = '<div class="stp-head"><h3>' + esc(T('Shop finds', 'Ladenfunde', 'Hallazgos en la tienda')) + '</h3><p>' + esc(T('Scan food while you shop to see if it\'s likely to spike your blood sugar, and earn XP for your companion.', 'Scanne Essen beim Einkaufen, sieh, ob es deinen Blutzucker wahrscheinlich hochtreibt, und sammle XP für deinen Begleiter.', 'Escanea comida mientras compras, mira si es probable que te suba el azúcar y gana XP para tu compañero.')) + '</p></div>';
         h += '<div class="stp-scroll">';
         if (msg) h += '<p class="stp-msg gh-msg">' + esc(msg) + '</p>';
         if (lastRes && lastRes.length) h += '<div class="gh-chip in-panel">' + lastRes.map(l => '<small>' + esc(l) + '</small>').join('') + '</div>';
-        h += glowHTML(now);
         h += '<div class="stp-chips gh-acts"><button type="button" class="stp-go" data-gh="scan">' + IC.bc + '<span>' + esc(T('Scan a product', 'Produkt scannen', 'Escanear producto')) + '</span></button>' +
             '<button type="button" class="stp-pill gh-photo" data-gh="photo">' + IC.cam + '<span>' + esc(T('Photo', 'Foto', 'Foto')) + '</span></button></div>';
-        if (!st) h += '<p class="stp-msg">' + esc(T('Pick your shop so your finds are tied to it. Only the shop is saved, never where you are.', 'Wähl deinen Laden, damit deine Funde dazu gehören. Gespeichert wird nur der Laden, nie wo du bist.', 'Elige tu tienda para asociar tus hallazgos. Solo se guarda la tienda, nunca dónde estás.')) + '</p>';
-        else {
-            const hs = C.hints(S, st, sh.finds, now); picking = { hints: hs };
-            h += '<h4 class="stp-h4">' + esc(T('Glimmers at this shop', 'Schimmer in diesem Laden', 'Destellos en esta tienda')) + (hs.length ? ' · ' + hs.filter(x => !x.cooling).length : '') + '</h4>';
-            h += hs.length ? '<ul class="stp-items">' + hs.slice(0, 40).map(hintHTML).join('') + '</ul>' :
-                '<p class="stp-none">' + esc(T('No glimmers here yet. Scan good products in this shop and they glimmer here on your next trip.', 'Noch keine Schimmer hier. Scanne gute Produkte in diesem Laden, dann schimmern sie hier bei deinem nächsten Einkauf.', 'Aún no hay destellos. Escanea buenos productos en esta tienda y brillarán en tu próxima visita.')) + '</p>';
-        }
-        h += '<h4 class="stp-h4">' + esc(T('Power combos', 'Power-Kombis', 'Combos de poder')) + '</h4>';
-        h += C.allCombos(S, sh.combos).filter(cb => !cb.store || !st || cb.store === st.id || cb.by === 'you').map(cb => comboHTML(cb, todays, now)).join('');
+        h += '<section class="gh-combos"><h4 class="stp-h4 gh-hero-h">⚡ ' + esc(T('Power combos', 'Power-Kombis', 'Combos de poder')) + '</h4>' +
+            C.allCombos(S, sh.combos).filter(cb => !cb.store || !st || cb.store === st.id || cb.by === 'you').map(cb => comboHTML(cb, todays, now)).join('') + '</section>';
         h += '<h4 class="stp-h4">' + esc(T('Caught today', 'Heute gefangen', 'Capturado hoy')) + (todays.length ? ' · ' + todays.length : '') + '</h4>';
+        h += '<p class="gh-today' + (C.dayOf(S.lastRenew || 0) === C.dayOf(now) ? ' on' : '') + '">' + esc(todayLine(now, todays)) + '</p>';
         h += todays.length ? '<ul class="stp-items">' + todays.slice().reverse().map(c => '<li class="stp-item"><div><b>' + esc(c.name || T('Product', 'Produkt', 'Producto')) + '</b><small>' + esc(c.via === 'photo' ? T('Photo · not identified by the app', 'Foto · von der App nicht erkannt', 'Foto · la app no lo identifica') : T('Barcode scanned', 'Barcode gescannt', 'Código escaneado')) + (c.kind ? ' · ' + esc(C.kindLabel(c.kind, li())) : '') + '</small></div>' + lvlTag(c) + '</li>').join('') + '</ul>' +
             (todays.length >= 2 ? '<button type="button" class="stp-more" data-gh="combo-new">' + esc(T('Make a combo from today\'s catches', 'Kombi aus den heutigen Fängen machen', 'Crear un combo con lo de hoy')) + '</button>' : '') :
             '<p class="stp-none">' + esc(T('Nothing yet today.', 'Heute noch nichts.', 'Nada todavía hoy.')) + '</p>';
+        h += '<h4 class="stp-h4">' + esc(T('Your shop', 'Dein Laden', 'Tu tienda')) + '</h4>' +
+            '<button type="button" class="stp-shop gh-shop" data-gh="shops">' + IC.pin + '<span>' + esc(st ? storeName(st) : T('Pick your shop', 'Wähl deinen Laden', 'Elige tu tienda')) + '</span><i>' + esc(st ? T('Change', 'Ändern', 'Cambiar') : T('Optional', 'Optional', 'Opcional')) + '</i></button>';
+        if (!st) h += '<p class="stp-fine">' + esc(T('Then the products you scan there show up here on your next trip. Only the shop is saved, never where you are.', 'Dann siehst du die Produkte, die du dort scannst, hier beim nächsten Einkauf. Gespeichert wird nur der Laden, nie wo du bist.', 'Así los productos que escanees allí aparecen aquí en tu próxima compra. Solo se guarda la tienda, nunca dónde estás.')) + '</p>';
+        else {
+            const hs = C.hints(S, st, sh.finds, now); picking = { hints: hs };
+            if (hs.length) h += '<h4 class="stp-h4">' + esc(T('Found here before', 'Hier schon gefunden', 'Encontrado aquí antes')) + ' · ' + hs.filter(x => !x.cooling).length + '</h4>' +
+                '<ul class="stp-items">' + hs.slice(0, 40).map(hintHTML).join('') + '</ul>' +
+                '<p class="stp-fine">' + esc(T('Someone found these in this shop before. They may be sold out or moved.', 'Jemand hat sie früher in diesem Laden gefunden. Sie können ausverkauft oder umgeräumt sein.', 'Alguien los encontró antes en esta tienda. Pueden estar agotados o en otro sitio.')) + '</p>';
+            else h += '<p class="stp-fine">' + esc(T('Products you scan here show up on your next trip.', 'Produkte, die du hier scannst, siehst du beim nächsten Einkauf.', 'Los productos que escanees aquí aparecen en tu próxima compra.')) + '</p>';
+        }
+        h += '<details class="stp-how gh-more"><summary>' + esc(T('More: rhythm, sharing, how XP works', 'Mehr: Rhythmus, Teilen, so gibt es XP', 'Más: ritmo, compartir, cómo se gana XP')) + '</summary>';
         h += rhythmHTML(now);
         h += '<h4 class="stp-h4">' + esc(T('Sharing', 'Teilen', 'Compartir')) + '</h4>' + shareHTML();
-        h += '<details class="stp-how"><summary>' + esc(T('How finds work', 'So funktionieren Funde', 'Cómo funcionan los hallazgos')) + '</summary><p>' +
-            esc(T('A shopping check-in is 2 different products caught on one day, by barcode in the shopping scanner or by a photo here. It makes your world and your world in the spirit realm glow brighter for your rhythm plus a day, then the extra glow fades slowly back to the normal look. It never goes below normal and says nothing about what you eat. A glimmer pays once a week, a combo once a week, the same photo never counts twice, and shop-find XP is capped at ', 'Ein Einkaufs-Check-in sind 2 verschiedene Produkte an einem Tag, per Barcode im Einkaufs-Scanner oder per Foto hier. Dann leuchten deine Welt und deine Welt im Geisterreich heller, für deinen Rhythmus plus einen Tag, danach verblasst das Extra-Leuchten langsam zurück zum normalen Aussehen. Es geht nie unter normal und sagt nichts darüber, was du isst. Ein Schimmer zählt einmal pro Woche, eine Kombi einmal pro Woche, dasselbe Foto nie zweimal, und Ladenfund-XP sind auf ', 'Un check-in son 2 productos distintos capturados en un día, con el código en el escáner de compra o con una foto aquí. Tu mundo y tu mundo en el reino espíritu brillan más durante tu ritmo más un día, y luego el brillo extra vuelve poco a poco a lo normal. Nunca baja de lo normal y no dice nada de lo que comes. Un destello cuenta una vez por semana, un combo una vez por semana, la misma foto nunca dos veces, y los XP de hallazgos tienen un tope de ') + C.XP_DAY_CAP + T(' a day.', ' pro Tag begrenzt.', ' al día.')) + '</p></details>';
-        h += '<p class="stp-fine">' + esc(T('Ratings are estimates from the label, not a promise about your blood sugar or insulin. Portion size and your own body make a difference. A glimmer means someone found it in this shop before; it may be sold out or moved.', 'Bewertungen sind Schätzungen vom Etikett, kein Versprechen für deinen Blutzucker oder dein Insulin. Portionsgröße und dein Körper machen einen Unterschied. Ein Schimmer heißt, jemand hat es früher in diesem Laden gefunden; es kann ausverkauft oder umgeräumt sein.', 'Las valoraciones son estimaciones de la etiqueta, no una promesa sobre tu azúcar o tu insulina. La porción y tu cuerpo influyen. Un destello significa que alguien lo encontró antes en esta tienda; puede estar agotado o en otro sitio.')) + '</p>';
+        h += '<h4 class="stp-h4">' + esc(T('How XP works', 'So gibt es XP', 'Cómo se gana XP')) + '</h4><p class="stp-fine">' +
+            esc(T('Scan 2 different products on one day (barcode in the scanner, or a photo here) for a +' + C.XP.trip + ' XP shopping bonus. It also makes your companion\'s world a little brighter until a day after your next shop day, then it slowly goes back to normal. It never gets darker than normal and says nothing about what you eat. A new find at your shop gives +' + C.XP.find + ' XP. A Power combo gives +' + C.XP.combo + ' XP once a week. The same photo never counts twice, and Shop finds gives at most ' + C.XP_DAY_CAP + ' XP a day.',
+                'Scanne 2 verschiedene Produkte an einem Tag (Barcode im Scanner oder ein Foto hier) für +' + C.XP.trip + ' XP Einkaufsbonus. Dazu wird die Welt deines Begleiters etwas heller, bis einen Tag nach deinem nächsten Einkaufstag, dann wird sie langsam wieder normal. Sie wird nie dunkler als normal und sagt nichts darüber, was du isst. Ein neuer Fund in deinem Laden gibt +' + C.XP.find + ' XP. Eine Power-Kombi gibt einmal pro Woche +' + C.XP.combo + ' XP. Dasselbe Foto zählt nie zweimal, und Ladenfunde geben höchstens ' + C.XP_DAY_CAP + ' XP am Tag.',
+                'Escanea 2 productos distintos en un día (código en el escáner o una foto aquí) para un bonus de compra de +' + C.XP.trip + ' XP. Además, el mundo de tu compañero se ve un poco más luminoso hasta un día después de tu próximo día de compra, y luego vuelve poco a poco a la normalidad. Nunca se ve más oscuro de lo normal y no dice nada de lo que comes. Un nuevo hallazgo en tu tienda da +' + C.XP.find + ' XP. Un combo de poder da +' + C.XP.combo + ' XP una vez por semana. La misma foto nunca cuenta dos veces y los hallazgos dan como máximo ' + C.XP_DAY_CAP + ' XP al día.')) + '</p>';
+        h += '<p class="stp-fine">' + esc(T('Ratings are estimates from the label, not a promise about your blood sugar or insulin. Portion size and your own body make a difference.', 'Bewertungen sind Schätzungen vom Etikett, kein Versprechen für deinen Blutzucker oder dein Insulin. Portionsgröße und dein Körper machen einen Unterschied.', 'Las valoraciones son estimaciones de la etiqueta, no una promesa sobre tu azúcar o tu insulina. La porción y tu cuerpo influyen.')) + '</p></details>';
         h += '</div>';
         return shell(h);
     }
@@ -295,7 +331,7 @@
         else if (where && P) { list = P.nearest(all, where, 15); center = where; }
         else if (S.plan.store && P) { const me = all.find(s => s.id === S.plan.store.id); if (me) { center = me; list = P.nearest(all, me, 15); } }
         if (list.length && !center) center = list[0];
-        let h = '<div class="stp-head"><h3>' + esc(T('Which shop?', 'Welcher Laden?', '¿Qué tienda?')) + '</h3><p>' + esc(T('Your finds and glimmers belong to this shop. You can set it before you go in.', 'Deine Funde und Schimmer gehören zu diesem Laden. Du kannst ihn schon vor dem Reingehen wählen.', 'Tus hallazgos y destellos van con esta tienda. Puedes elegirla antes de entrar.')) + '</p>' +
+        let h = '<div class="stp-head"><h3>' + esc(T('Which shop?', 'Welcher Laden?', '¿Qué tienda?')) + '</h3><p>' + esc(T('Products you scan there show up here on your next trip. You can pick it before you go in. Only the shop is saved.', 'Produkte, die du dort scannst, siehst du hier beim nächsten Einkauf. Du kannst ihn schon vorher wählen. Gespeichert wird nur der Laden.', 'Los productos que escanees allí aparecen aquí en tu próxima compra. Puedes elegirla antes de entrar. Solo se guarda la tienda.')) + '</p>' +
             '<div class="stp-tools"><input class="stp-q" data-gh="q" type="search" enterkeyhint="search" maxlength="40" value="' + esc(q) + '" placeholder="' + esc(T('Shop, street or town', 'Laden, Straße oder Ort', 'Tienda, calle o ciudad')) + '"><button type="button" class="stp-pill" data-gh="near">' + esc(T('Near me', 'In der Nähe', 'Cerca')) + '</button></div></div><div class="stp-scroll">';
         if (msg) h += '<p class="stp-msg">' + esc(msg) + '</p>';
         if (!stores) h += '<p class="stp-msg">' + esc(T('Loading shops…', 'Läden werden geladen…', 'Cargando tiendas…')) + '</p>';
@@ -348,6 +384,7 @@
     function setStore(s) {
         const P = SP();
         C.setPlan(S, { store: s ? { id: s.id, name: s.name || s.brand, brand: s.brand || '', chain: s.chain || '', town: s.town != null ? s.town : (P && s.lat ? P.town(s) : '') } : null });
+        try { localStorage.removeItem(SPK); } catch (e) {}
         save(); cloud.store = ''; msg = ''; view = 'home'; paint(); refresh();
     }
     /* BH-036 (P-CLOSING-STILL-LIVE): the panel fades out for 240 ms after it closes and stayed clickable: a double tap on "Scan"
@@ -395,7 +432,7 @@
         if (a === 'day') { const d = +b.dataset.d, ds = S.plan.days.slice(), i = ds.indexOf(d); if (i >= 0) ds.splice(i, 1); else ds.push(d); C.setPlan(S, { days: ds }); save(); return paint(); }
         if (a === 'pause') { C.pause(S, now, +b.dataset.n); save(); return paint(); }
         if (a === 'resume') { C.resume(S, now); save(); return paint(); }
-        if (a === 'grace') { if (C.grace(S, now)) { save(); msg = T('Your glow holds 3 more days. Next time, a product photo works when the barcode won\'t scan.', 'Dein Leuchten hält 3 Tage länger. Nächstes Mal geht auch ein Produktfoto, wenn der Barcode nicht klappt.', 'Tu brillo dura 3 días más. La próxima vez, una foto del producto sirve si el código no se escanea.'); } return paint(); }
+        if (a === 'grace') { if (C.grace(S, now)) { save(); msg = T('Your world stays bright 3 more days. Next time, a product photo works when the barcode won\'t scan.', 'Deine Welt bleibt 3 Tage länger hell. Nächstes Mal geht auch ein Produktfoto, wenn der Barcode nicht klappt.', 'Tu mundo sigue luminoso 3 días más. La próxima vez, una foto del producto sirve si el código no se escanea.'); } return paint(); }
         if (a === 'combo-new') { comboPick = {}; view = 'combo'; msg = ''; return paint(); }
         if (a === 'open') { open(); return; }
     }
@@ -453,12 +490,12 @@
     }
 
     /* ---------- the way in: Shop mode (under Scan a product) and the shopping scanner ---------- */
+    /* 0.32: plain words under Scan a product: what you have today, not a glow percentage */
     function entryHTML() {
         load();
-        const now = Date.now(), st = C.status(S, now), store = S.plan.store;
-        const hs = store ? C.hints(S, store, shared().finds, now).filter(h => !h.cooling).length : 0;
-        const sub = st.phase === 'none' ? T('Catch good products, light up your world', 'Fang gute Produkte, bring deine Welt zum Leuchten', 'Captura buenos productos e ilumina tu mundo') :
-            (st.phase === 'paused' ? T('Paused', 'Pausiert', 'En pausa') : T('Glow ', 'Leuchten ', 'Brillo ') + st.pct + '%') + (store ? ' · ' + hs + ' ' + T('glimmers here', 'Schimmer hier', 'destellos aquí') : '');
+        const now = Date.now(), n = C.catchesOn(S, C.dayOf(now)).length;
+        const sub = n ? T(n + ' scanned today · Power combos', n + ' heute gescannt · Power-Kombis', n + ' escaneados hoy · combos de poder') :
+            T('Scan food, earn XP, catch Power combos', 'Essen scannen, XP sammeln, Power-Kombis fangen', 'Escanea comida, gana XP, atrapa combos de poder');
         return '<span class="gh-entry-dot" aria-hidden="true">' + IC.star + '</span><span class="stp-sos-t"><b>' + esc(T('Shop finds', 'Ladenfunde', 'Hallazgos en la tienda')) + '</b><small>' + esc(sub) + '</small></span>';
     }
     function decorate() {

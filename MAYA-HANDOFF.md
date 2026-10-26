@@ -1239,6 +1239,21 @@ Check every place the row is used (Chat recipe posts, a person's meal post with 
 Task "LOWiSPIKE: fix clunky recipe card buttons after Add to kitchen" (Sesame, 26 Oct), worktree wt-recipe-pills, branch
 recipe-card-pills, COORD-recipe-pills.md. Status: building (see Log for the release).
 
+### 0.29 Cook opens on Kitchen first + Cook tabs reorderable like Community's (Emmanuel, voice + screenshot, Mon 26 Oct 2026 about 4:00 PM CET)
+
+His words (screenshot: Cook with Shuffle | Swipe | Kitchen, Kitchen selected): "Can you move Kitchen to where Shuffle is, so
+that when they open Cook, it's the first thing that opens. And also give them the option to manually readjust it, just like
+they can manually readjust the Community chat and affiliate, blah blah blah. You know what I mean?"
+
+What to build: Cook's game switch defaults to Kitchen | Shuffle | Swipe and opening Cook lands on the FIRST tab of the order
+(like Community). Hold a Cook tab to lift it and drag it to a new place, with the SAME hold-and-drag engine as Community's
+tabs (community-tab-order.js, extended to a second row, not a second copy). Order saved per device (lowispike.cook.tabs,
+backed up like lowispike.community.tabs). Everyone gets Kitchen first (no Cook order existed before); a saved order is
+kept. Anything that opens Cook on a given game on purpose (Kitchen from the tour / Kitchen links, "Help me pick" Shuffle or
+Swipe, Swaflo's shuffle form) still lands on that game. EN/DE/ES, Reduce Motion, WebKit iPhone 13. Task "LOWiSPIKE: Kitchen
+first in Cook + reorderable Cook tabs" (Sesame, 26 Oct), worktree wt-cook-tabs, branch cook-tab-order, COORD-cook-tabs.md.
+Status: building (see Log for the release).
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

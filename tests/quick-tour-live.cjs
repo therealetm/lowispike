@@ -77,6 +77,8 @@ const Q = require('../quick-tour.js'), SS = require('../home-settings-sleep-v2.j
                     ok(st.box[0] >= -1 && st.box[1] >= -1 && st.box[2] <= st.vw + 1 && st.box[3] <= st.vh + 1, P, 'sheet does not fit the screen ' + JSON.stringify(st.box));
                     ok(st.sound === Q.TX[lang].sound && st.skip === Q.TX[lang].skip, P, 'button labels not in ' + lang + ': ' + st.sound + ' / ' + st.skip);
                     ok(st.role === 'dialog' && /qt-skip/.test(st.focus || ''), P, 'not a dialog with focus on Skip: ' + st.focus);
+                    /* on the live site the first fetch of the 2.3 MB file can take a few seconds: wait for data (up to 20 s) before judging it */
+                    await page.waitForFunction(() => { const v = document.querySelector('.qt-ov video'); return !v || v.error || v.readyState >= 2; }, null, { timeout: 20000, polling: 250 }).catch(() => { });
                     { const m = await page.evaluate(() => { const v = document.querySelector('.qt-ov video'); return { t: v.currentTime, rs: v.readyState, w: v.videoWidth, h: v.videoHeight, err: v.error && v.error.code }; }); steps.playing = m;
                       /* Chromium plays it; Playwright's Linux WebKit decodes it (readyState 4, 720x1280) but its media clock does not run headless, so there it is "decoded", on a real iPhone it plays */
                       ok(!m.err && m.rs >= 2 && m.w === 720 && m.h === 1280 && (eng === 'webkit' || m.t > 0.3), P, 'the video does not load/play ' + JSON.stringify(m)); }

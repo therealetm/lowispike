@@ -1464,7 +1464,7 @@ What to build:
   short or long. Skippable, plays inline, starts muted with captions burned in, tap for sound, small web file, lazy-loaded so
   onboarding stays fast, EN/DE/ES labels. Silent release (scripts/release.sh, no notification).
 Task "LOWiSPIKE: 60-second Reels/TikTok promo video + onboarding quick tour" (Sesame, 26 Oct), worktree wt-quick-tour,
-branch quick-tour-video, COORD-quick-tour.md. Status: started 21:20 CET.
+branch quick-tour-video, COORD-quick-tour.md. Status: **LIVE in build 20261026-225013** (silent). Live checks: WebKit iPhone 13 en/de/es, iPad en/de, Android Chrome es all passed.
 - Update (Emmanuel, 26 Oct ~22:30 CET): he found the 45-second cut boring; a separate task remakes it in the style of a TikTok
   example he sent. No German version of the old cut. The Quick tour ships now with the current cut and must be easy to swap:
   **to swap the video, edit only `VIDEO` at the top of quick-tour.js** (src per language, poster, seconds, version). Put the new

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Oct 26 2026 (MAYA-HANDOFF 0.29): with your companion flying on autopilot (the case that hid it), every Community tab and
+/* Oct 26 2026 (MAYA-HANDOFF 0.33): with your companion flying on autopilot (the case that hid it), every Community tab and
    every other page shows the round Home button, the tap lands on it, the tap takes you Home, a swipe from the left edge takes
    you Home, and its invisible tap ring doesn't cover the header next to it. WebKit iPhone 13 at 390x844, Reduce Motion.
    Usage: node tools/community-home-btn/check.cjs [URL|''] [en,de,es]   ('' serves this worktree) */

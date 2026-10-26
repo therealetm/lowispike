@@ -80,6 +80,13 @@
         const d = tapTime(e) - spentAt.t;
         return d > 0 && d < SPOT_MS && Math.abs(e.clientX - spentAt.x) <= SPOT_PX && Math.abs(e.clientY - spentAt.y) <= SPOT_PX;
     }
+    /* BH-039: a swallowed 2nd tap must not focus a field either. Focus comes with mousedown, before the click is swallowed, so the
+       keyboard still came up on iPhone (camera's barcode / name field). Same rules as the click; only fields, nothing else changes. */
+    function guardDown(e) {
+        if (!e || !e.isTrusted || !(e.detail > 0) || typeof e.clientX !== 'number') return;
+        const f = e.target && e.target.closest && e.target.closest('input,textarea,select,[contenteditable=""],[contenteditable="true"]');
+        if (f && (sameSpot(e) || quiet(e))) e.preventDefault();
+    }
     function start() {
         if (!D.body) return;
         try {
@@ -88,7 +95,8 @@
                 .observe(D.body, { childList: true });
         } catch (e) {}
         W.addEventListener('click', guard, true);
+        W.addEventListener('mousedown', guardDown, true);
     }
     if (D.body) start(); else D.addEventListener('DOMContentLoaded', start, { once: true });
-    W.LowiFreshScrim = { MS, SPOT_MS, SPOT_PX, age, backdrop, guard, sameSpot, mark, spent, quiet };
+    W.LowiFreshScrim = { MS, SPOT_MS, SPOT_PX, age, backdrop, guard, guardDown, sameSpot, mark, spent, quiet };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

@@ -679,6 +679,11 @@
                 height: innerHeight * .4
             };
             world.hidden = false;
+            /* BH-039 (26 Oct 2026): #spWorld is made once and shown again for every camera that opens inside it (Products' empty-state
+               Scan, herb care). While it springs open it sits shrunk over the middle of the screen, so the 2nd tap of a double tap on a
+               Scan button there pressed the camera: the barcode or name field (keyboard up) or Deep analyze (left the app for ChatGPT).
+               Mark it on every show so fresh-scrim's same-spot rule (44 px / 400 ms) swallows that 2nd tap, like #whX and the menu. */
+            try { if (window.LowiFreshScrim && window.LowiFreshScrim.mark) window.LowiFreshScrim.mark(world); } catch (e) { }
             world.querySelector('.sp-body').append(creature);
             D.documentElement.classList.add('herb-room', 'sp-open');
             expansion(1);

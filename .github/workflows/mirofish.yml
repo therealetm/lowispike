@@ -1,0 +1,82 @@
+# MiroFish market simulation for LOWiSPIKE. Manual only: it never runs on push and never touches the app.
+# Needs two repository secrets: MIROFISH_LLM_API_KEY (default: a Google AI Studio Gemini key)
+# and MIROFISH_ZEP_API_KEY (free key from app.getzep.com). See tools/mirofish/README.md.
+name: MiroFish simulation
+
+on:
+  workflow_dispatch:
+    inputs:
+      rounds:
+        description: "Max simulation rounds (MiroFish advises under 40)"
+        default: "20"
+      platform:
+        description: "parallel, reddit or twitter"
+        default: "parallel"
+      model:
+        description: "Model name at the LLM endpoint"
+        default: "gemini-3.8-flash"
+      base_url:
+        description: "OpenAI-compatible endpoint"
+        default: "https://generativelanguage.googleapis.com/v1beta/openai/"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mirofish
+  cancel-in-progress: false
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      MIROFISH_SHA: 7657031ac01184afe2cb220f5ee3545573b5e843
+      LLM_API_KEY: ${{ secrets.MIROFISH_LLM_API_KEY }}
+      ZEP_API_KEY: ${{ secrets.MIROFISH_ZEP_API_KEY }}
+      LLM_BASE_URL: ${{ inputs.base_url }}
+      LLM_MODEL_NAME: ${{ inputs.model }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the keys answer (fails in seconds if a secret is missing or wrong)
+        run: python3 tools/mirofish/run.py --preflight
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Get MiroFish at a pinned commit (AGPL-3.0, github.com/666ghj/MiroFish)
+        run: |
+          git init -q mirofish && cd mirofish
+          git remote add origin https://github.com/666ghj/MiroFish.git
+          git fetch -q --depth 1 origin "$MIROFISH_SHA"
+          git checkout -q FETCH_HEAD
+
+      - name: Install the MiroFish backend
+        working-directory: mirofish/backend
+        run: |
+          python -m pip install -q uv
+          uv sync -q --python 3.12
+
+      - name: Start the backend
+        working-directory: mirofish/backend
+        run: |
+          nohup .venv/bin/python run.py > "$RUNNER_TEMP/mirofish-backend.log" 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:5001/health && exit 0; sleep 2; done
+          tail -50 "$RUNNER_TEMP/mirofish-backend.log"; exit 1
+
+      - name: Run the simulation and write the report
+        run: python3 tools/mirofish/run.py --out mirofish-out --rounds "${{ inputs.rounds }}" --platform "${{ inputs.platform }}"
+
+      - name: Backend log tail (job log only, never in the artifact)
+        if: always()
+        run: tail -80 "$RUNNER_TEMP/mirofish-backend.log" || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mirofish-report-${{ github.run_number }}
+          path: mirofish-out/
+          retention-days: 30
+          if-no-files-found: ignore

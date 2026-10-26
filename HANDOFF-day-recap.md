@@ -1,0 +1,4 @@
+# HANDOFF day-recap (MAYA-HANDOFF 0.40), not live yet
+Branch day-recap, worktree /home/sprite/wt-day-recap. Built: day-recap-core.js, day-recap.js, day-recap.css, companion card "Your day" bubble + My day item (misty-hub.js), tour step new-day-recap (scroll: true, tutorial.js honours it), voices built, tests/day-recap.test.cjs.
+Proven in WebKit iPhone 13 (en/de/es, Reduce Motion), iPad portrait: tools/day-recap/probe.cjs and tour-probe.cjs pass, no errors.
+Left: rerun voices (tools/tutorial-voice/build.py) after the last text edits, full suite + scripts/release-check.cjs, empty-day probe, rebase on main (evening-catchup also bumps tutorial VERSION / voices: regenerate), news json (slug day-recap, tutorial new-day-recap, tour [new-day-recap]), scripts/release.sh silent, then report to Emmanuel. Voice lines must never say the app name (say "L.I.S." or leave it out).

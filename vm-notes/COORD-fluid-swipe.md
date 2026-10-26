@@ -19,3 +19,4 @@ Release: scripts/release.sh --quiet (feel fix, no tour card).
 
 ## Status (append only)
 - 14:36 CET started; video transcribed; swipe deck read against apple-design SKILL.md
+- 15:05 tests 3748/3748, probes pass, releasing

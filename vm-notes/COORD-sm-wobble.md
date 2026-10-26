@@ -14,3 +14,5 @@ Does NOT touch: shop-scan*, index.html (except release bump), cart-core.js, gift
 ## Status (append only)
 - 14:35 CET started; root cause reproduced in WebKit iPhone 13: a nowrap "+ snack" chip (352px) wider than the snack box makes .stp-scroll scroll 12px sideways; Shop from home door has no side margin (1px vs 19px)
 - 14:42 CET 3734/3734 tests pass, WebKit probe SMWOBBLE ok iPhone 13 + iPad both ways en/de/es; releasing --quiet
+- 14:52 CET LIVE build 20261026-144712 (quiet); live WebKit probe ok en/de/es. Handoff docs push next. Files free.
+- 14:57 CET handoff docs on main (015cbcab). Still live in newer build 20261026-145042. DONE, all files free.

@@ -1521,8 +1521,28 @@ text twice in a row), one honest takeaway and one gentle nudge for tomorrow. No 
 spike", never "insulin spike". EN/DE/ES. Reached from the companion card (long press) and My day; never auto-opened and
 no notification, so it does not compete with 0.39's evening catch-up greeting. 0.39 is the logging checklist for people who
 could not log during the day; 0.40 only shows back what is there (and links to the catch-up when the day is empty).
-Task "LOWiSPIKE: build and ship the Day Recap" (Sesame, 26 Oct ~23:30), worktree wt-day-recap, branch day-recap,
-COORD-day-recap.md. Status: requested, building.
+Task "LOWiSPIKE: build and ship the Day Recap" (Sesame, 26 Oct ~23:30) + its continue run (27 Oct), worktree
+wt-day-recap, branch day-recap, COORD-day-recap.md.
+**Status: LIVE** (build in Releases, Oct 27). What shipped:
+- Files: day-recap-core.js (window.LowiDayRecapCore, pure: summarize(o) / view(sum, {lang, name, last, rnd}) / POOLS / UI,
+  journalClean / journalPut, JOURNAL_MAX 140), day-recap.js (window.LowiDayRecap {open, close}; R2.sheet glass panel, class
+  drc-ov), day-recap.css. Loaded right before misty-hub.js; sw.js has its own STATIC.push line.
+- Data (today only): meals + verdicts (low / medium / high / unknown), water, longest gap, Move minutes + steps, XP by bucket
+  from the ledger, **care sent** (ledger src care-*, so capped like its XP), companion level from/to.
+- Lines: hello pools by mood (great / ok / tough / empty), never the same hello twice in a row (lowi.dayrecap.last), one
+  takeaway, one nudge for tomorrow. "likely blood sugar spike" only; tests block "insulin" and "Misty" in shown strings.
+- **Journal line**: one optional line (input data-drc-journal, data-mic so the speak-to-type mic sits on it), saved on the
+  phone only in localStorage lowi.dayrecap.journal.v1 {YYYY-MM-DD: text}, newest 60 days, never sent anywhere.
+- Entry points: companion card bubble "Your day" (data-mh="t-recap", glows from 6 PM), My day item (k: 'recap'), and
+  **once after the evening catch-up's Save**: listens for lowi:catchup-saved, waits until html.ec-open is gone (the catch-up
+  screen closed), then opens. Empty day: a Catch up button opens LowiEveningCatchup. Never opens by itself otherwise, no
+  notification.
+- Tour: part 'new' card new-day-recap (tutorial v35), voices EN/DE/ES re-recorded (no app name spoken).
+- Checks: tests/day-recap.test.cjs + tests/day-recap-journal.test.cjs; WebKit probes tools/day-recap/probe.cjs (bubble +
+  My day, real taps), journal-probe.cjs (care card, typed journal line kept, faked catch-up event), catchup-flow-probe.cjs
+  (the real catch-up: bubbles, Save, Good night, then the recap opens once), tour-probe.cjs.
+- Trap: on a loaded build computer the sheets' spring takes seconds; probes wait until the target stops moving before a
+  tap. A closed sheet can linger as .r2-ov.off for a few seconds in headless WebKit; open() then waits at most 2 s.
 
 ## 1. What LOWiSPIKE is
 

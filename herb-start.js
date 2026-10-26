@@ -176,17 +176,17 @@ function ivPaint(){const el=D.getElementById('hsIv');if(!el||!IV)return;const he
    '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hsi="done">'+esc(t('planBtn'))+'</button></div>';}
  el.innerHTML=h;fillArt(0);el.setAttribute('data-step',IV.step);el.setAttribute('data-back-step',IV.step);const f=el.querySelector('.hs-opt.on,.hs-opt,[data-hsi="start"],[data-hsi="done"]');if(f&&matchMedia('(pointer:fine)').matches)try{f.focus({preventScroll:true});}catch(e){}}
 function ivNext(){if(!IV)return;IV.step++;if(IV.step===C.QUESTIONS.length){IV.plan=C.newPlan(IV.answers);ivPaint();const n=IV.step;setTimeout(()=>{if(IV&&IV.step===n){IV.step++;ivPaint();}},reduce()?250:1300);return;}ivPaint();}
-function ivLater(){pendClear();const p=plan();if(!p){const s=S();if(s){s.starter={v:2,skipped:true,actions:[],asked:{},created:Date.now(),hidden:true};save();}}ivClose();try{R().toast&&R().toast(t('skipped'));}catch(e){}refresh();}
+function ivLater(){const p=plan();if(!p){const s=S();if(s){s.starter={v:2,skipped:true,actions:[],asked:{},created:Date.now(),hidden:true};save();}}ivClose();try{R().toast&&R().toast(t('skipped'));}catch(e){}refresh();}
 /* Oct 26 (bug hunt run 51, BH-050 sibling): the interview sheet has no close button (noClose) and had no Escape, so Safari's back
    swipe (back-swipe.js sends Escape) changed nothing and left LOWiSPIKE. Escape now does what the sheet's own buttons do: one
    question back (the \u2039 button), from the plan back to the last question, and on the first screen "Not now". The step sits in
    data-back-step, so back-swipe.js sees that back did something. */
 function ivEsc(e){if(e.key!=='Escape'||!IV||!IV.ov||!IV.ov.isConnected)return;e.stopPropagation();const n=C.QUESTIONS.length;
- if(IV.step<=-1){ivLater();return;}IV.step=IV.step>=n?n-1:IV.step-1;ivPaint();}
+ if(IV.step<=-1){pendClear();ivLater();return;}IV.step=IV.step>=n?n-1:IV.step-1;ivPaint();}
 D.addEventListener('keydown',ivEsc,true);
 function onIvClick(e){const b=e.target.closest('[data-hsi]');if(!b||!IV)return;const a=b.getAttribute('data-hsi');e.preventDefault();
  if(a==='start'){IV.step=0;ivPaint();return;}
- if(a==='later'){ivLater();return;}
+ if(a==='later'){pendClear();ivLater();return;}
  if(a==='back'){IV.step=Math.max(-1,IV.step-1);ivPaint();return;}
  if(a==='skip'){delete IV.answers[C.QUESTIONS[IV.step].id];ivNext();return;}
  if(a==='opt'){IV.answers[C.QUESTIONS[IV.step].id]=b.getAttribute('data-v');b.parentNode.querySelectorAll('.hs-opt').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-checked',x===b);});setTimeout(ivNext,reduce()?60:220);return;}

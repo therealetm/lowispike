@@ -338,12 +338,12 @@
         },
         {
             id: 'new-quick-tour', area: 'new', where: 'home', target: ['#whHud .o8-settings'], covers: ['quickTour', 'quick-tour'],
-            info: 'Oct 26 2026 (MAYA-HANDOFF 0.38, quick-tour.js): the 45-second promo video as a Quick tour, on the first onboarding screen and as a Settings row right after Tutorial. Muted first, Tap for sound, Skip any time; lazy-loaded, never cached by the service worker.',
+            info: 'Oct 26 2026 (MAYA-HANDOFF 0.38, quick-tour.js): the promo video (one VIDEO config, easy to swap) as a Quick tour, on the first onboarding screen and as a Settings row right after Tutorial. Muted first, Tap for sound, Skip any time; lazy-loaded, never cached by the service worker.',
             title: { en: 'Quick tour', de: 'Kurze Tour', es: 'Tour r\u00e1pido' },
             text: {
-                en: 'The whole app in 45 seconds: Settings has a Quick tour right after Tutorial. It starts muted, tap for sound.',
-                de: 'Die ganze App in 45 Sekunden: In den Einstellungen gibt es gleich nach Tutorial die kurze Tour. Tipp f\u00fcr Ton.',
-                es: 'Toda la app en 45 segundos: en Ajustes, justo despu\u00e9s de Tutorial, est\u00e1 el tour r\u00e1pido. Toca para o\u00edr el sonido.'
+                en: 'The whole app in one short video: Settings has a Quick tour right after Tutorial. It starts muted, tap for sound.',
+                de: 'Die ganze App in einem kurzen Video: In den Einstellungen gibt es gleich nach Tutorial die kurze Tour. Tipp f\u00fcr Ton.',
+                es: 'Toda la app en un v\u00eddeo corto: en Ajustes, justo despu\u00e9s de Tutorial, est\u00e1 el tour r\u00e1pido. Toca para o\u00edr el sonido.'
             }
         },
         {

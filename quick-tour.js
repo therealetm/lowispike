@@ -1,5 +1,5 @@
 /* quick-tour.js: Oct 26 2026 (MAYA-HANDOFF 0.38, Emmanuel: "use the same video as a quick tour on the onboarding page").
-   The 45-second promo video (Reels/TikTok cut, made from real app footage with a made-up account) as a Quick tour:
+   The promo video (VIDEO below: file, poster, length) (Reels/TikTok cut, made from real app footage with a made-up account) as a Quick tour:
    - a pill on the first onboarding screen (herb-start.js step 0) and a Quick tour row next to Tutorial in Settings
      (home-settings-sleep-v2.js SETTINGS_IDS) open it; any [data-qt="open"] button does;
    - it starts muted (iOS only autoplays muted video) with a Tap for sound button, and Skip closes it at any time;
@@ -13,19 +13,29 @@
     'use strict';
     const LANGS = ['en', 'de', 'es'];
     const TX = {
-        en: { open: 'Quick tour', len: '45 s', title: 'LOWiSPIKE quick tour', sound: 'Tap for sound', mute: 'Mute', skip: 'Skip', replay: 'Watch again', done: 'Done' },
-        de: { open: 'Kurze Tour', len: '45 Sek.', title: 'LOWiSPIKE in 45 Sekunden', sound: 'Tippen f\u00fcr Ton', mute: 'Ton aus', skip: '\u00dcberspringen', replay: 'Nochmal ansehen', done: 'Fertig' },
-        es: { open: 'Tour r\u00e1pido', len: '45 s', title: 'Tour r\u00e1pido de LOWiSPIKE', sound: 'Toca para el sonido', mute: 'Silenciar', skip: 'Saltar', replay: 'Ver otra vez', done: 'Listo' }
+        en: { open: 'Quick tour', len: '{s} s', title: 'LOWiSPIKE in {s} seconds', sound: 'Tap for sound', mute: 'Mute', skip: 'Skip', replay: 'Watch again', done: 'Done' },
+        de: { open: 'Kurze Tour', len: '{s} Sek.', title: 'LOWiSPIKE in {s} Sekunden', sound: 'Tippen f\u00fcr Ton', mute: 'Ton aus', skip: '\u00dcberspringen', replay: 'Nochmal ansehen', done: 'Fertig' },
+        es: { open: 'Tour r\u00e1pido', len: '{s} s', title: 'LOWiSPIKE en {s} segundos', sound: 'Toca para el sonido', mute: 'Silenciar', skip: 'Saltar', replay: 'Ver otra vez', done: 'Listo' }
     };
-    const SRC = { en: 'media/quick-tour-en.mp4' };
-    const POSTER = 'media/quick-tour-poster.jpg';
+    /* ===== THE VIDEO: the one place to swap it (Oct 26 2026, Emmanuel: a new cut is coming) =====
+       New cut: put the mp4 (H.264 + AAC, 720x1280, faststart, under 4 MB) and a small poster jpg in media/, point src / poster
+       at them, set seconds to its length and bump version. Labels, title and the cache-buster follow; tests/quick-tour-swap
+       checks the file's real length against seconds. A language with its own cut gets its own src entry (de: ..., es: ...). */
+    const VIDEO = {
+        src: { en: 'media/quick-tour-en.mp4' },
+        poster: 'media/quick-tour-poster.jpg',
+        seconds: 45,
+        version: '1'
+    };
+    const SRC = VIDEO.src, POSTER = VIDEO.poster;
     const SEEN_KEY = 'lowi.quickTour.seen';
     const lang = () => { let l = 'en'; try { l = (root.LowiLang && root.LowiLang.get && root.LowiLang.get()) || (root.document && root.document.documentElement.lang) || 'en'; } catch (e) { } l = String(l).slice(0, 2).toLowerCase(); return LANGS.includes(l) ? l : 'en'; };
-    const tx = (k, l) => (TX[l || lang()] || TX.en)[k] || TX.en[k];
-    const src = l => SRC[l || lang()] || SRC.en;
+    const tx = (k, l) => String((TX[l || lang()] || TX.en)[k] || TX.en[k]).replace('{s}', VIDEO.seconds);
+    const src = l => (SRC[l || lang()] || SRC.en) + '?v=' + VIDEO.version;
+    const posterUrl = () => POSTER + '?v=' + VIDEO.version;
     /* the pill / row label: "Quick tour \u00b7 45 s" */
     const label = l => tx('open', l) + ' \u00b7 ' + tx('len', l);
-    const core = { LANGS, TX, SRC, POSTER, SEEN_KEY, tx, src, label };
+    const core = { LANGS, TX, VIDEO, SRC, POSTER, SEEN_KEY, tx, src, label };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root.document) return;
 
@@ -49,7 +59,7 @@
         el.className = 'qt-ov';
         el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', tx('title', l));
         el.innerHTML = '<div class="qt-box">' +
-            '<video class="qt-vid" playsinline webkit-playsinline muted autoplay preload="none" poster="' + POSTER + '" aria-label="' + esc(tx('title', l)) + '"></video>' +
+            '<video class="qt-vid" playsinline webkit-playsinline muted autoplay preload="none" poster="' + esc(posterUrl()) + '" aria-label="' + esc(tx('title', l)) + '"></video>' +
             '<button type="button" class="qt-tap" data-qt="sound" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>' + esc(tx('sound', l)) + '</span></button>' +
             '<button type="button" class="qt-skip" data-qt="skip">' + esc(tx('skip', l)) + '</button>' +
             '<div class="qt-bar" aria-hidden="true"><i></i></div>' +

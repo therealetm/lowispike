@@ -55,10 +55,7 @@ test('every video file is as long as VIDEO.seconds says (within a second)', () =
 
 test('the tour card names no length, so a new cut needs no new voice recordings', () => {
     const S = require('../tutorial-steps.js');
-    const all = JSON.stringify(S);
-    const i = all.indexOf('"id":"new-quick-tour"');
-    assert.ok(i >= 0 || read('tutorial-steps.js').includes("id: 'new-quick-tour'"), 'the card exists');
-    const src = read('tutorial-steps.js'), a = src.indexOf("id: 'new-quick-tour'"), card = src.slice(a, src.indexOf('\n        },', a));
-    const text = card.slice(card.indexOf('text: {'));
-    assert.ok(!/\d+\s*(seconds|Sekunden|segundos|s\b|Sek)/.test(text), 'no length in the card text: ' + text.slice(0, 300));
+    const card = (S.STEPS || []).find(x => x.id === 'new-quick-tour');
+    assert.ok(card, 'the card exists');
+    for (const l of Q.LANGS) assert.ok(!/\d+\s*(seconds|Sekunden|segundos|s\b|Sek)/.test(card.text[l]), 'no length in the ' + l + ' card text: ' + card.text[l]);
 });

@@ -18,8 +18,10 @@ test('core: labels in English, German and Spanish, real translations, an English
     for (const k of ['open', 'sound', 'skip']) { assert.notStrictEqual(Q.TX.de[k], Q.TX.en[k], 'de ' + k); assert.notStrictEqual(Q.TX.es[k], Q.TX.en[k], 'es ' + k); }
     assert.strictEqual(Q.label('en'), 'Quick tour \u00b7 45 s');
     assert.strictEqual(Q.label('de'), 'Kurze Tour \u00b7 45 Sek.');
-    for (const l of LANGS) assert.match(Q.src(l), /^media\/quick-tour-[a-z]{2}\.mp4$/, 'video for ' + l);
-    assert.strictEqual(Q.src('fr'), Q.SRC.en, 'unknown language falls back to English');
+    /* Oct 26 2026: the URL now carries VIDEO.version as a cache-buster (tests/quick-tour-swap.test.cjs), so the path is checked on SRC */
+    for (const l of LANGS) assert.match(Q.src(l), /^media\/quick-tour-[a-z]{2}\.mp4\?v=[\w.-]+$/, 'video for ' + l);
+    for (const f of Object.values(Q.SRC)) assert.match(f, /^media\/quick-tour-[a-z]{2}\.mp4$/, f);
+    assert.strictEqual(Q.src('fr'), Q.src('en'), 'unknown language falls back to English');
 });
 
 test('the video: a real web-sized H.264 file and a poster, 45 seconds, under 4 MB, faststart (moov before mdat)', () => {

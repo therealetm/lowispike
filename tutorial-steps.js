@@ -229,6 +229,16 @@
             }
         },
         {
+            id: 'new-quick-add', area: 'new', where: 'home', open: 'supermarket', target: ['.stp-card .stp-qa', '.stp-card'], covers: ['quick-add'],
+            info: 'Oct 26 2026 (MAYA-HANDOFF 0.35, quick-add-core.js): a quick + on every Supermarket product row. + puts it in the Cart and turns into - 1 +, the house puts it straight into the Kitchen, nothing opens',
+            title: { en: 'Add while you scroll', de: 'Beim Scrollen hinzufügen', es: 'Añade mientras bajas' },
+            text: {
+                en: 'In Supermarket, tap + on any product to put it in your Cart without opening it. Tap the house if you already have it at home.',
+                de: 'Tippe im Supermarkt bei jedem Produkt auf +, und es landet im Warenkorb, ohne es zu öffnen. Hast du es schon, tippe aufs Haus.',
+                es: 'En Supermercado, toca + en cualquier producto y va a tu carrito sin abrirlo. Si ya lo tienes en casa, toca la casita.'
+            }
+        },
+        {
             id: 'new-week-shop', area: 'new', where: 'home', open: 'supermarket', target: ['.stp-card .stp-wb', '.stp-card'], covers: ['week-shop'],
             info: 'Oct 26 2026: Shop from home at the top of Supermarket (week-basket.js, MAYA-HANDOFF 0.21). Household, budget and dinners in, a week of low-spike dinners and one grocery list out, priced with the existing store estimates; it fills the Cart (0.22).',
             title: { en: 'Shop from home', de: 'Von zu Hause einkaufen', es: 'Compra desde casa' },

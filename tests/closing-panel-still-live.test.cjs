@@ -56,7 +56,7 @@ function panel(file, k, extra) {
     return ctx;
 }
 const storePicks = k => panel('store-picks.js', k, calls => ({
-    dragAt: 0, qv: null, snackClick: () => false, kitClick: () => false, onSz: () => false, SZ: () => null, view: 'list',
+    dragAt: 0, qv: null, snackClick: () => false, kitClick: () => false, qaClick: () => false, onSz: () => false, SZ: () => null, view: 'list',
     close() { calls.push('close'); }, setTab() { calls.push('tab'); }, openQuick() { calls.push('quick'); }, paint() { calls.push('paint'); },
     showList() { calls.push('list-view'); }, locate() {}, save() {}
 }));

@@ -62,6 +62,7 @@
     const onSz = () => tab === 'sz' && !!SZ();
     /* Oct 24: the third tab, Kitchen (kitchen-core.js): what you have at home + the shopping cart (= the shopping list) */
     const K = W.LowiKitchenCore && W.LowiKitchenCore.parse ? W.LowiKitchenCore : null;
+    const Q = W.LowiQuickAdd && W.LowiQuickAdd.html ? W.LowiQuickAdd : null; /* Oct 26 quick "+" on product rows (MAYA-HANDOFF 0.35) */
     /* Oct 26: the Kitchen moved to Cook (kitchen-game.js, Cook > Kitchen; MAYA-HANDOFF 0.19). While that game is loaded, Shop has
        no Kitchen tab, and anything that asks for it opens Cook > Kitchen instead. The data (lowispike.kitchen.v1) is the same. */
     const KG = () => (W.LowiKitchenGame && W.LowiKitchenGame.open ? W.LowiKitchenGame : null);
@@ -442,10 +443,103 @@
             : '<span class="stp-th none" title="' + esc(T('No photo yet', 'Noch kein Foto', 'Aún no hay foto')) + '">' + camera + '</span>';
     }
     function itemHTML(it, failed) {
-        const r = it.r, p = it.p, i = shown.push({ it, failed: !!failed }) - 1;
-        return '<li class="stp-li"><button type="button" class="stp-item' + (failed ? ' fail' : '') + '" data-stp-item="' + i + '" aria-haspopup="dialog">' + thumbHTML(p) +
-            '<span class="stp-it"><b>' + esc(p.n) + '</b><small>' + esc([p.b, p.q].filter(Boolean).join(' · ')) +
-            (r.typical ? ' · ' + esc(T('typical values, no label online', 'typische Werte, kein Etikett online', 'valores típicos, sin etiqueta en línea')) : '') + '</small><span class="stp-why">' + esc(reason(it)) + '</span></span>' + tagHTML(r, failed) + '</button></li>';
+        const r = it.r, p = it.p, i = shown.push({ it, failed: !!failed }) - 1, qa = qaOn();
+        /* Oct 26 (MAYA-HANDOFF 0.35): with the quick "+" the verdict is a small tag by the name and the quick column sits on the right,
+           outside the row button (a button never sits in a button); the row button still opens the product */
+        return '<li class="stp-li' + (qa ? ' qa' : '') + '"><button type="button" class="stp-item' + (failed ? ' fail' : '') + '" data-stp-item="' + i + '" aria-haspopup="dialog">' + thumbHTML(p) +
+            '<span class="stp-it">' + (qa ? '<span class="stp-nm"><b>' + esc(p.n) + '</b> ' + tagHTML(r, failed) + '</span>' : '<b>' + esc(p.n) + '</b>') + '<small>' + esc([p.b, p.q].filter(Boolean).join(' · ')) +
+            (r.typical ? ' · ' + esc(T('typical values, no label online', 'typische Werte, kein Etikett online', 'valores típicos, sin etiqueta en línea')) : '') + '</small><span class="stp-why">' + esc(reason(it)) + '</span></span>' + (qa ? '' : tagHTML(r, failed)) + '</button>' + (qa ? qaCol(i) : '') + '</li>';
+    }
+
+    /* ---------------- Oct 26 quick "+" on every product row (MAYA-HANDOFF 0.35, quick-add-core.js) ----------------
+       Emmanuel: "while I scroll down, instead of it saying Top, or next to Top, I can just add, add, add ... into my kitchen or my
+       cart". "+" puts the product in the Cart (the shopping list, never a second list) and becomes a "- 1 +" stepper in the same
+       spot; the house puts it straight into the Kitchen ("I have it"). Only the tapped row's column is redrawn: the list never
+       repaints, scrolls or opens the product. Its column has a fixed width, so the row never reflows under the finger. */
+    function qaOn() { return !!(Q && shelf() && W.LOWI_SHELF.addIngredients && W.LOWI_SHELF.setQty && W.LOWI_SHELF.cartLines); }
+    function qaLines() { const sh = shelf(); try { return sh && sh.cartLines ? sh.cartLines() : []; } catch (e) { return []; } }
+    function qaKitItem(p) {
+        if (!K) return null; if (!kit) kitLoad(); if (!kit || !Array.isArray(kit.items)) return null;
+        const k = Q.norm(p.n), bc = String(p.g || '').replace(/\D/g, '');
+        return kit.items.find(x => Q.norm(x.n) === k || (bc && x.p && x.p.bc === bc)) || null;
+    }
+    function qaState(i) { const s = shown[i]; return s ? Q.state(qaLines(), s.it.p.n, !!qaKitItem(s.it.p)) : null; }
+    function qaCol(i) {
+        const st = qaState(i); if (!st) return '';
+        return '<span class="stp-qa" data-stp-qa-col="' + i + '" data-k="' + st.kind + '">' + Q.html(st, i, shown[i].it.p.n, lang()) + '</span>';
+    }
+    function qaPaint(i, focusWhat) {
+        const col = ov && ov.querySelector('[data-stp-qa-col="' + i + '"]'), st = qaState(i); if (!col || !st) return;
+        col.setAttribute('data-k', st.kind);
+        col.innerHTML = Q.html(st, i, shown[i].it.p.n, lang());
+        if (focusWhat) { /* keyboard and VoiceOver stay on the column: + -> the stepper's +, the last - -> + */
+            const f = col.querySelector('[data-stp-qa="' + focusWhat + '"]') || col.querySelector('[data-stp-qa="add"],[data-stp-qa="more"]');
+            if (f) try { f.focus({ preventScroll: true }); } catch (e) {}
+        }
+    }
+    /* after the Cart or a quick view closes, or the Kitchen changes: the steppers show the real numbers again */
+    function qaRefresh() { if (!ov || !Q) return; ov.querySelectorAll('[data-stp-qa-col]').forEach(c => qaPaint(+c.getAttribute('data-stp-qa-col'))); }
+    const qaAt = {}; /* product -> when its control last changed kind (the double tap rule in quick-add-core.js) */
+    let qaNoteT = 0, qaUndo = null, qaNoteAt = 0;
+    function qaNote(text, undo) {
+        const card = ov && ov.querySelector('.stp-card'); if (!card) return;
+        let n = card.querySelector('.stp-qa-note');
+        if (!n) { n = D.createElement('div'); n.className = 'stp-qa-note'; n.setAttribute('role', 'status'); n.setAttribute('aria-live', 'polite'); card.appendChild(n); }
+        qaUndo = undo || null; qaNoteAt = Date.now();
+        n.innerHTML = '<span>' + esc(text) + '</span>' + (undo ? '<button type="button" class="stp-qa-undo" data-stp-qa="undo" data-spend="1">' + esc(Q.word(lang(), 'undo')) + '</button>' : '');
+        n.classList.add('on'); n.classList.toggle('act', !!undo);
+        clearTimeout(qaNoteT); qaNoteT = setTimeout(() => { n.classList.remove('on', 'act'); qaUndo = null; }, undo ? 5000 : 2600);
+    }
+    function qaCartBtn() { const cb = ov && ov.querySelector('.stp-card .stp-cartbtn'); if (cb) cb.outerHTML = cartBtnHTML(); }
+    function qaClick(t, e) {
+        const b = t.closest && t.closest('[data-stp-qa]'); if (!b || !Q || !ov) return false;
+        const a = b.getAttribute('data-stp-qa'), now = Date.now();
+        if (a === 'undo') {
+            if (Q.fresh(qaNoteAt, now) || !qaUndo) return true;
+            const u = qaUndo; qaUndo = null; u();
+            const n = ov.querySelector('.stp-qa-note'); if (n) n.classList.remove('on', 'act');
+            return true;
+        }
+        const i = +b.getAttribute('data-stp-qa-i'), s = shown[i], sh = shelf(); if (!s || !sh) return true;
+        const p = s.it.p, key = Q.norm(p.n), before = qaState(i), l = lang();
+        if (Q.fresh(qaAt[key] || 0, now)) return true; /* the 2nd tap of a double tap lands on the control that just took the spot */
+        let note = '', undo = null;
+        if (a === 'add' || (a === 'more' && !before.id)) {
+            if (before.id) sh.setQty(before.id, before.q + 1);
+            else {
+                try { sh.addIngredients([{ n: String(p.n).slice(0, 60) }], ''); } catch (x) {}
+                /* the new Cart line gets the product's photo and barcode, so the Cart shows the same picture as the list */
+                const ln = Q.lineFor(qaLines(), p.n), st = sh.state && sh.state(), raw = ln && st && Array.isArray(st.list) ? st.list.find(x => String(x.id) === ln.id) : null;
+                if (raw) {
+                    const img = C.photo(p), bc = String(p.g || '').replace(/\D/g, '');
+                    if (img && !raw.photo && /^https:\/\//.test(img)) raw.photo = img;
+                    if (bc && !raw.bc) raw.bc = bc;
+                    sh.setQty(raw.id, raw.q || 1); /* saves the list */
+                }
+            }
+            note = Q.note(l, 'inCart', p.n);
+        } else if (a === 'more') sh.setQty(before.id, before.q + 1);
+        else if (a === 'less' && before.id) { sh.setQty(before.id, before.q - 1); if (before.q <= 1) note = Q.note(l, 'outCart', p.n); }
+        else if (a === 'kit') {
+            if (!K) return true;
+            if (!kit) kitLoad();
+            if (before.kit) note = Q.note(l, 'already', p.n);
+            else {
+                const img = C.photo(p), r = K.addProduct(kit, { n: p.n, bc: p.g, img: /^https:\/\//.test(img || '') ? img : '', br: p.b }, now, 'shop');
+                kitSave(r.state);
+                const id = r.id;
+                note = Q.note(l, 'inKit', p.n);
+                undo = () => { if (id && !r.had) { kitSave(K.drop(kit, id)); qaPaint(i); qaNote(Q.note(l, 'back', p.n)); } };
+            }
+        } else return true;
+        const after = qaState(i);
+        if (after.kind !== before.kind || after.kit !== before.kit) qaAt[key] = now;
+        const focused = D.activeElement && b.contains(D.activeElement) || D.activeElement === b;
+        qaPaint(i, focused ? (a === 'add' ? 'more' : a === 'less' && after.kind === 'add' ? 'add' : a) : '');
+        qaCartBtn();
+        if (note) qaNote(note, undo);
+        try { if (navigator.vibrate) navigator.vibrate(10); } catch (x) {}
+        return true;
     }
 
     /* ---------------- quick view: photo, label, why, where it comes from ---------------- */
@@ -548,6 +642,7 @@
         o.remove();
         if (wasCart && ov) { const cb = ov.querySelector('.stp-card .stp-cartbtn'); if (cb) { cb.outerHTML = cartBtnHTML(); const nb = ov.querySelector('.stp-card .stp-cartbtn'); if (nb) try { nb.focus({ preventScroll: true }); } catch (e) {} } }
         if (!ov) return;
+        qaRefresh(); /* Oct 26: the quick "+" steppers show what the Cart or quick view changed */
         const card = ov.querySelector('.stp-card'); if (card) card.removeAttribute('aria-hidden');
         const b = ov.querySelector('[data-stp-item="' + qvFrom + '"]');
         if (b) try { b.focus({ preventScroll: true }); } catch (e) {}
@@ -710,6 +805,7 @@
         if (snackClick(t)) return;
         /* Oct 25 Give a hand (gift-basket.js): opens on top of Shop; Back brings Shop back */
         if (t.closest && t.closest('[data-stp="gift"]')) { try { W.LowiGiftBasket.open('shop'); } catch (x) {} return; }
+        if (qaClick(t, e)) return; /* Oct 26 quick "+": never opens the product (MAYA-HANDOFF 0.35) */
         if (kitClick(t)) return;
         if (e.target === ov) { spend(e); close(); return; }
         const tb = t.closest('[data-stp-tab]');

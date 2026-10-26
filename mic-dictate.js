@@ -22,7 +22,12 @@
   if (!C) return;
 
   // fields other files render, opted in here so their files stay untouched (one line per field)
-  var OPT_IN = ['#cmInput'];
+  // Food logging, search and names come first (Emmanuel: "when I don't always want to type what food I wrote"): these keep their
+  // mic even when a screen squeezes them narrower than the 150 px rule.
+  var OPT_IN = ['#cmInput', '#b3Nm', '#b3Name', '#b3MName', '#b3Dq', '#scanText', '#scanType', '#f2In', '#kgQ', '#k9Q', '#gb-item',
+    '.stp-snack-add input[name="snack"]', 'input[data-mr-drink]', '#fyvCap', '#trCap', 'input[name="herbName"]', '.lc-in', '#hqGoalText'];
+  // typed confirmations and codes never get one
+  var OPT_OUT = ['.oa-type', 'input[name="code"]', '#trUrl', '#gb-link', '#gb-total'];
   var CHAT = { '#cmInput': 1 };
   var SIZE = 34, INSET = 6, HINT_MS = 4200, SCAN_MS = 250;
 
@@ -73,9 +78,14 @@
   var io = typeof IntersectionObserver === 'function' ? new IntersectionObserver(function (ents) {
     ents.forEach(function (en) { if (en.isIntersecting) { io.unobserve(en.target); consider(en.target); } });
   }) : null;
+  function optedOut(el) {
+    for (var i = 0; i < OPT_OUT.length; i++) { try { if (el.matches(OPT_OUT[i])) return true; } catch (e) { } }
+    return false;
+  }
   function consider(el) {
     if (!el || el.nodeType !== 1 || (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA')) return;
     if (done.has(el) || !el.isConnected) return;
+    if (optedOut(el) && !el.hasAttribute('data-mic')) { done.set(el, 'no'); return; }
     if (!el.offsetWidth) { if (io) io.observe(el); return; }
     if (!C.eligible(facts(el))) { done.set(el, 'no'); return; }
     attach(el);

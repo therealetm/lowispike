@@ -9,6 +9,7 @@ STATIC.push("foryou.css", "foryou-core.js", "inspo-core.js", "nibblo-core.js", "
 STATIC.push("rubberband.js", "spring.js"); /* Oct 25 iOS feel: shared springs + rubber band, own line */
 STATIC.push("gift-basket-core.js", "gift-basket.js", "gift-basket.css"); /* Oct 25 Give a hand in Shop: own line, like kitchen-core.js */
 STATIC.push("after-meal-checklist-core.js", "after-meal-checklist.js", "after-meal-checklist.css"); /* Oct 25 after-meal checklist: own line */
+STATIC.push("evening-catchup-core.js", "evening-catchup.js", "evening-catchup.css"); /* Oct 26 evening catch-up (MAYA-HANDOFF 0.39): own line */
 STATIC.push("studio-lock-core.js", "studio-lock.js", "studio-lock.css"); /* Oct 25 Studio lock: own line */
 STATIC.push("meal-detail-core.js", "meal-detail.js", "meal-detail.css"); /* Oct 25 meal details on the spike label: own line */
 STATIC.push("bot-recipe-core.js", "bot-recipe.js", "bot-recipe.css"); /* Oct 26 Community recipe cards: Open / Cook / Save / Add to kitchen (MAYA-HANDOFF 0.18) */

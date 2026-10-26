@@ -24,17 +24,17 @@
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'not logged',
             settings: 'Settings', me: 'Me', look: 'Look & sound', account: 'Account', on: 'on', off: 'off', more: 'More', back: 'Back', close: 'Close',
             moreTitle: 'Everything else', today: 'Today & history', community: 'Community', care: 'Ranking', cook: 'Cook', workouts: 'Workouts',
-            vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest', goTo: 'Go to', settingsGroup: 'Settings', tutorial: 'Tutorial', quickTour: 'Quick tour', body: 'Weight & BMI', myday: 'My day', weight: 'Weight journey', version: 'Version' },
+            vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest', goTo: 'Go to', settingsGroup: 'Settings', tutorial: 'Tutorial', quickTour: 'Quick tour', catchUp: 'Catch up on today', body: 'Weight & BMI', myday: 'My day', weight: 'Weight journey', version: 'Version' },
         de: { sleep: 'Schlaf', log: 'Eintragen', ask: 'Wie lange hast du letzte Nacht geschlafen?', under6: 'Unter 6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std. oder mehr',
             short: { under6: '<6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std.+' }, notLogged: 'nicht eingetragen',
             settings: 'Einstellungen', me: 'Ich', look: 'Aussehen & Ton', account: 'Konto', on: 'an', off: 'aus', more: 'Mehr', back: 'Zur\u00fcck', close: 'Schlie\u00dfen',
             moreTitle: 'Alles andere', today: 'Heute & Verlauf', community: 'Community', care: 'Rangliste', cook: 'Kochen', workouts: 'Workouts',
-            vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest', goTo: 'Gehe zu', settingsGroup: 'Einstellungen', tutorial: 'Tutorial', quickTour: 'Kurze Tour', body: 'Gewicht & BMI', myday: 'Mein Tag', weight: 'Gewichtsreise', version: 'Version' },
+            vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest', goTo: 'Gehe zu', settingsGroup: 'Einstellungen', tutorial: 'Tutorial', quickTour: 'Kurze Tour', catchUp: 'Heute nachtragen', body: 'Gewicht & BMI', myday: 'Mein Tag', weight: 'Gewichtsreise', version: 'Version' },
         es: { sleep: 'Sue\u00f1o', log: 'Anotar', ask: '\u00bfCu\u00e1nto dormiste anoche?', under6: 'Menos de 6 h', '6to7': '6\u20137 h', '7plus': '7 h o m\u00e1s',
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'sin anotar',
             settings: 'Ajustes', me: 'Yo', look: 'Aspecto y sonido', account: 'Cuenta', on: 's\u00ed', off: 'no', more: 'M\u00e1s', back: 'Atr\u00e1s', close: 'Cerrar',
             moreTitle: 'Todo lo dem\u00e1s', today: 'Hoy e historial', community: 'Comunidad', care: 'Ranking', cook: 'Cocinar', workouts: 'Entrenos',
-            vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', tutorial: 'Tutorial', quickTour: 'Tour r\u00e1pido', body: 'Peso e IMC', myday: 'Mi d\u00eda', weight: 'Tu camino de peso', version: 'Versi\u00f3n' }
+            vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', tutorial: 'Tutorial', quickTour: 'Tour r\u00e1pido', catchUp: 'Ponerme al d\u00eda', body: 'Peso e IMC', myday: 'Mi d\u00eda', weight: 'Tu camino de peso', version: 'Versi\u00f3n' }
     };
     /* Oct 21 2026 (Emmanuel: the Home bubble is Community now, a hold opens a slim Settings with only what is needed) */
     Object.assign(TX.en, { language: 'Language', deleteAccount: 'Delete account', hint: 'Hold Community for profile & settings', day: 'Day', night: 'Night', foryou: 'For You', hunt: 'Shopping hunt',
@@ -158,7 +158,8 @@
     const MORE_GROUPS = { go: COMMUNITY_PLACES.you.concat(['foryou', 'care', 'workouts', 'gift', 'hunt']), set: [] };
     const MORE = MORE_GROUPS.go.concat(MORE_GROUPS.set);
     /* the slim Settings (a hold on the Community bubble): the switches, the language and the account, nothing else */
-    const SETTINGS_IDS = ['theme', 'look', 'worldSound', 'language', 'tutorial', 'quickTour'], ACCOUNT_IDS = ['account', 'deleteAccount'];
+    /* Oct 26 2026 (MAYA-HANDOFF 0.39): "Catch up on today" first, so the evening catch-up is always one clear tap away */
+    const SETTINGS_IDS = ['catchUp', 'theme', 'look', 'worldSound', 'language', 'tutorial', 'quickTour'], ACCOUNT_IDS = ['account', 'deleteAccount'];
     const HINT_KEY = 'lowi.hint.holdCommunity', HOLD_MS = 480;
     /* out of the panel, and where each one is still reached (their routes and features stay in the app):
        today: Emmanuel dropped Today from Home; cook: Fuel bubble > Cook; theme: Settings > Look & sound > Day & night;
@@ -258,6 +259,7 @@
         look: '<path d="M4 10v4h3l4 3.5v-11L7 10H4z" ' + P + '/><path d="M15 9.5a3.5 3.5 0 0 1 0 5M17.5 7a7 7 0 0 1 0 10" ' + P + '/>',
         account: '<rect x="5" y="10.5" width="14" height="9.5" rx="2" ' + P + '/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" ' + P + '/>',
         tutorial: '<circle cx="12" cy="12" r="8.5" ' + P + '/><path d="M10 8.8v6.4l5.2-3.2z" ' + P + '/>',
+        catchUp: '<circle cx="12" cy="12" r="8.5" ' + P + '/><path d="M8.4 12.2l2.5 2.5 4.8-5.2" ' + P + '/>',
         quickTour: '<rect x="6.5" y="3" width="11" height="18" rx="2.6" ' + P + '/><path d="M10.6 9.6v4.8l4-2.4z" ' + P + '/>',
         body: '<rect x="4" y="5" width="16" height="14" rx="4" ' + P + '/><path d="M8.5 10a4.5 4.5 0 0 1 7 0L12 12.5" ' + P + '/>',
         myday: '<circle cx="12" cy="12" r="8" ' + P + '/><path d="M12 7.5V12l3 2" ' + P + '/>',
@@ -316,6 +318,8 @@
         /* Oct 19 2026 (Emmanuel): replay the guided tour (tutorial.js / tutorial-steps.js); Settings closes first, the tour waits for it */
         tutorial: { has: () => !!(root.LowiTutorial && fn(root.LowiTutorial, 'start')), run: () => root.LowiTutorial.start({ from: 'settings' }) },
         /* Oct 26 2026 (MAYA-HANDOFF 0.38): the video tour (quick-tour.js, VIDEO config), right next to Tutorial; Settings closes first */
+        /* Oct 26 2026 (MAYA-HANDOFF 0.39): the evening bubble checklist (evening-catchup.js); Settings closes first */
+        catchUp: { has: () => !!(root.LowiEveningCatchup && fn(root.LowiEveningCatchup, 'open')), run: () => root.LowiEveningCatchup.open({ from: 'settings' }) },
         quickTour: { has: () => !!(root.LowiQuickTour && fn(root.LowiQuickTour, 'open')), run: () => root.LowiQuickTour.open() },
         /* Oct 19 2026 (Emmanuel): weigh in, BMI with its category, body-fat estimate and the Then/Now level-up track (body-stats.js) */
         body: { has: () => !!(root.LowiBodyStats && fn(root.LowiBodyStats, 'open')), run: () => root.LowiBodyStats.open() },

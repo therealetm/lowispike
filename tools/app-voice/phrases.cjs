@@ -8,6 +8,7 @@
    - Audio mode reading notifications aloud: every fixed toast("...") text                                          en
    - Gap's "After your meal" phase cards (gap-view.js mcSpoken)                                                       en de es
    - the Move grand finish (move-finish-core.js SAY)                                                                  en de es
+   - the evening catch-up (evening-catchup-core.js SAY: greeting, bubble questions, cheers, read-back, finish)        en de es
    Usage: node tools/app-voice/phrases.cjs            -> JSON {sources:{name:count}, pieces:{lang:[sentence...]}}
           node tools/app-voice/phrases.cjs --news     -> only version.json's news (what a release adds) */
 'use strict';
@@ -66,6 +67,9 @@ function harvest(newsOnly) {
     /* ---- Move grand finish (move-finish-core.js SAY, the companion's line at the end of a session) ---- */
     const MF = require(path.join(ROOT, 'move-finish-core.js'));
     for (const l of LANGS) (MF.SAY[l] || []).forEach(s => add('move-finish', l, s));
+    /* ---- evening catch-up (evening-catchup-core.js SAY, MAYA-HANDOFF 0.39): what the companion says through the bubble checklist ---- */
+    const EC = require(path.join(ROOT, 'evening-catchup-core.js'));
+    for (const l of LANGS) (EC.SAY[l] || []).forEach(s => add('evening-catchup', l, s));
 
     /* ---- scan-ball guide ---- */
     const g1 = html.indexOf('id="g1js"');

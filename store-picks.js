@@ -93,7 +93,7 @@
     }
     function snackHTML() {
         const v = C.snackView(snacks, loggedSnacks());
-        const rows = v.buy.map(i => '<li class="stp-snack"><button type="button" class="stp-snack-tick" data-stp-snack-got="' + esc(i.id) + '" aria-label="' + esc(T('Bought ', 'Gekauft: ', 'Comprado: ') + i.n) + '"><span aria-hidden="true"></span></button><b>' + esc(i.n) + '</b>' +
+        const rows = v.buy.map(i => '<li class="stp-snack"><button type="button" class="stp-snack-tick" data-spend="1" data-stp-snack-got="' + esc(i.id) + '" aria-label="' + esc(T('Bought ', 'Gekauft: ', 'Comprado: ') + i.n) + '"><span aria-hidden="true"></span></button><b>' + esc(i.n) + '</b>' +
             '<button type="button" class="stp-snack-x" data-stp-snack-drop="' + esc(i.id) + '" aria-label="' + esc(T('Remove ', 'Entfernen: ', 'Quitar: ') + i.n) + '">' + ic.x + '</button></li>').join('');
         /* Oct 26 (Emmanuel: "a buy again auto fill option. Recent or something, but not stack it up like that"): one row, never a
            pill per snack. A one-line preview of the recent snacks; one tap puts them all back on the list (C.snackRefill); Undo
@@ -103,10 +103,11 @@
             const k = snackUndo.n;
             again = '<div class="stp-again stp-again-done" role="status"><span class="stp-again-ic" aria-hidden="true">\u2713</span><span class="stp-again-t"><b>' +
                 esc(k === 1 ? T('1 recent snack is back on your list', '1 Snack ist wieder auf deiner Liste', '1 snack vuelve a tu lista') : T(k + ' recent snacks are back on your list', k + ' Snacks sind wieder auf deiner Liste', k + ' snacks vuelven a tu lista')) +
-                '</b></span><button type="button" class="stp-again-undo" data-stp-snack-undo="1">' + esc(T('Undo', 'Rückgängig', 'Deshacer')) + '</button></div>';
+                '</b></span><button type="button" class="stp-again-undo" data-spend="1" data-stp-snack-undo="1">' + esc(T('Undo', 'Rückgängig', 'Deshacer')) + '</button></div>';
         } else if (v.again.length) {
             const n = v.again.length, names = v.again.join(' · ');
-            again = '<button type="button" class="stp-again" data-stp-snack-refill="1" aria-label="' +
+            /* BH-042: Buy again and its Undo swap places under the finger: data-spend keeps a double tap from pressing both */
+            again = '<button type="button" class="stp-again" data-spend="1" data-stp-snack-refill="1" aria-label="' +
                 esc(T('Buy again: put your ' + n + ' recent snacks back on the list: ', 'Wieder kaufen: deine ' + n + ' letzten Snacks wieder auf die Liste: ', 'Comprar otra vez: vuelve a poner tus ' + n + ' snacks recientes en la lista: ') + v.again.join(', ')) + '">' +
                 '<span class="stp-again-ic" aria-hidden="true">\u21bb</span><span class="stp-again-t" aria-hidden="true"><b>' + esc(T('Buy again', 'Wieder kaufen', 'Comprar otra vez')) + ' <em>· ' + esc(T('recent', 'zuletzt', 'reciente')) + '</em></b><small>' + esc(names) + '</small></span>' +
                 '<span class="stp-again-add" aria-hidden="true">' + esc(T('Add ' + n, n + ' dazu', 'Añadir ' + n)) + '</span></button>';
@@ -199,7 +200,7 @@
         const cart = !sh ? '' : '<section class="stp-kit-sec stp-kit-cart" aria-label="' + esc(T('Shopping cart', 'Einkaufswagen', 'Carrito')) + '"><h4 class="stp-h4">\u{1F6D2} ' + esc(T('Shopping cart', 'Einkaufswagen', 'Carrito')) + (cv.buy.length ? ' <i>' + cv.buy.length + '</i>' : '') + '</h4>' +
             '<p class="stp-kit-sub">' + esc(T('To buy later. It’s the same list as your shopping list.', 'Für später zum Einkaufen. Das ist dieselbe Liste wie deine Einkaufsliste.', 'Para comprar más tarde. Es la misma lista que tu lista de la compra.')) + '</p>' +
             (cv.buy.length ? '<ul class="stp-snack-list">' + cv.buy.map(i => '<li class="stp-snack stp-kit-row"><span class="stp-kit-t"><b>' + esc(i.n) + '</b>' + (i.store ? '<small>' + esc(i.store) + '</small>' : '') + '</span>' +
-                '<button type="button" class="stp-chip stp-kit-got" data-stp-kit-got="' + esc(i.id) + '" aria-label="' + esc(T('Bought, put in the kitchen: ', 'Gekauft, in die Küche: ', 'Comprado, a la cocina: ') + i.n) + '">' + esc(T('✓ Bought', '✓ Gekauft', '✓ Comprado')) + '</button>' +
+                '<button type="button" class="stp-chip stp-kit-got" data-spend="1" data-stp-kit-got="' + esc(i.id) + '" aria-label="' + esc(T('Bought, put in the kitchen: ', 'Gekauft, in die Küche: ', 'Comprado, a la cocina: ') + i.n) + '">' + esc(T('✓ Bought', '✓ Gekauft', '✓ Comprado')) + '</button>' +
                 '<button type="button" class="stp-snack-x" data-stp-kit-cdrop="' + esc(i.id) + '" aria-label="' + esc(T('Remove from the cart: ', 'Aus dem Einkaufswagen nehmen: ', 'Quitar del carrito: ') + i.n) + '">' + ic.x + '</button></li>').join('') + '</ul>'
                 : '<p class="stp-snack-none">' + esc(T('Nothing to buy yet. Add something here, or tap + Shopping cart on a product in the Supermarket tab.', 'Noch nichts zu kaufen. Trag hier etwas ein oder tipp bei einem Produkt im Supermarkt auf + Einkaufswagen.', 'Aún no hay nada que comprar. Añade algo aquí o toca + Carrito en un producto del Supermercado.')) + '</p>') +
             (cv.got.length ? '<div class="stp-kit-gone"><small>' + esc(T(cv.got.length + ' ticked off in the shop', cv.got.length + ' im Laden abgehakt', cv.got.length + ' marcados en la tienda')) + '</small><button type="button" class="stp-chip" data-stp-kit="gotall">' + esc(T('Put in the kitchen', 'In die Küche', 'A la cocina')) + '</button></div>' : '') +
@@ -315,7 +316,7 @@
             '<span class="stp-cart-ph" aria-hidden="true">' + (l.photo ? '<img src="' + esc(l.photo) + '" alt="" loading="lazy">' : esc(l.e)) + '</span>' +
             '<span class="stp-cart-txt"><b>' + esc(l.n) + '</b><small>' + esc([l.store, l.p != null ? money(l.p) + T(' each', ' pro Stück', ' c/u') : T('no price reported yet', 'noch kein Preis gemeldet', 'aún sin precio')].filter(Boolean).join(' · ')) + '</small></span>' +
             '<span class="stp-cart-q" role="group" aria-label="' + esc(T('Quantity of ', 'Menge von ', 'Cantidad de ') + l.n) + '">' +
-            '<button type="button" class="stp-cart-step" data-stp-cq="' + esc(l.id) + '" data-stp-cd="-1" aria-label="' + esc((l.q > 1 ? T('One less: ', 'Eins weniger: ', 'Uno menos: ') : T('Remove from the cart: ', 'Aus dem Warenkorb nehmen: ', 'Quitar del carrito: ')) + l.n) + '">\u2212</button>' +
+            '<button type="button" class="stp-cart-step"' + (l.q <= 1 ? ' data-spend="1"' : '') + ' data-stp-cq="' + esc(l.id) + '" data-stp-cd="-1" aria-label="' + esc((l.q > 1 ? T('One less: ', 'Eins weniger: ', 'Uno menos: ') : T('Remove from the cart: ', 'Aus dem Warenkorb nehmen: ', 'Quitar del carrito: ')) + l.n) + '">\u2212</button>' +
             '<b aria-live="polite">' + l.q + '</b>' +
             '<button type="button" class="stp-cart-step" data-stp-cq="' + esc(l.id) + '" data-stp-cd="1" aria-label="' + esc(T('One more: ', 'Eins mehr: ', 'Uno más: ') + l.n) + '"' + (CC && l.q >= CC.MAX_Q ? ' disabled' : '') + '>+</button></span></li>';
         const totalHTML = !ls.length ? '' : tot.priced

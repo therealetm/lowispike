@@ -1400,6 +1400,25 @@ manually."
 - Task "LOWiSPIKE: fix cart UI + whole cart to someone else pays in Hilf mit" started; branch `cart-ask-pay`, COORD
   `/home/sprite/COORD-cart-ask.md`. Report only once live.
 
+### 0.35 Supermarket list: a quick "+" on every product row, add add add while scrolling (Emmanuel, voice in German on iPad + screenshot, Mon 26 Oct 2026 about 4:51 PM CET)
+
+His words (translated from German): "From this window, while I scroll through, without even opening anything, while I
+scroll down, instead of it saying Top, or next to Top, I can just add, add, add, you know? And it goes into my kitchen or
+my cart. You know what I mean?"
+
+Screenshot: Shop > Supermarkt (Lidl Flensburg) product list, rows like "Bio Leinsamen · Crownfield · Niedrigere Wirkung
+pro 30 g ..." with a "Top" badge on the right of each row.
+
+What to build: a quick add on every product row of the Supermarket list (and the same rows in its search results). The
+verdict stays visible (Top / Gut as a small tag), and a round "+" sits on the right. One tap on "+" puts the product in the
+Cart (Warenkorb / Carrito) right away, without opening the product, leaving the list or scrolling it, so you can add, add,
+add while you scroll. After adding, the "+" becomes a compact "- 1 +" stepper and the Cart count updates. A quick way to put
+it straight into the Kitchen instead ("I have it" / "Hab ich schon" / "Ya lo tengo"). Tapping "+" never opens the product.
+Rows must not shift under the finger (double tap protection, bug hunt P-ROW-SHIFT rounds 41-43). Big tap targets (44 pt),
+EN/DE/ES, iPhone 390x844 + iPad both orientations, Reduce Motion.
+Task "LOWiSPIKE: quick + add on Supermarket product rows" (Sesame, 26 Oct), worktree wt-quick-add, branch quick-add-rows,
+COORD-quick-add.md. Status: building (see Log for the release).
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

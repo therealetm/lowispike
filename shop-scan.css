@@ -38,11 +38,13 @@
     position: absolute; z-index: 6; left: 0; right: 0; bottom: var(--sg-dock, 0px);
     padding: 0 calc(env(safe-area-inset-right, 0px) + 12px) calc(env(safe-area-inset-bottom, 0px) + 12px) calc(env(safe-area-inset-left, 0px) + 12px);
     display: flex; justify-content: center; pointer-events: none; animation: ss-up .26s cubic-bezier(.2, .8, .2, 1) both;
+    /* Oct 26 one scanner: the Scan camera sits in your companion's world (shorter than the screen), so the card is capped by its camera, not by the screen */
+    top: calc(env(safe-area-inset-top, 0px) + 72px); align-items: flex-end; box-sizing: border-box;
 }
 .b3-cam.sg-docked .ss-card { padding-bottom: 10px; }
 @keyframes ss-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 .b3-cam .ss-sheet {
-    pointer-events: auto; position: relative; box-sizing: border-box; width: 100%; max-width: 520px; max-height: calc(100dvh - var(--sg-dock, 0px) - env(safe-area-inset-top, 0px) - 84px);
+    pointer-events: auto; position: relative; box-sizing: border-box; width: 100%; max-width: 520px; max-height: 100%;
     overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 14px; border-radius: 28px; color: #fff;
     font-family: var(--lg-font, -apple-system, system-ui, sans-serif);
     border: 1.5px solid var(--ss-rim); background: var(--ss-wide), rgba(6, 12, 28, .82); box-shadow: var(--ss-sh), 0 18px 50px -18px rgba(0, 0, 0, .8);

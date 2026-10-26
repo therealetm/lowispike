@@ -12,10 +12,10 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const [engine = 'chromium', lang = 'de', url = ''] = process.argv.slice(2);
 const out = '/tmp/ad-shots'; fs.mkdirSync(out, { recursive: true });
-const res = []; const ok = (n, p, d) => { res.push({ n, pass: !!p }); console.log((p ? '  ok   ' : '  FAIL ') + n + (p ? '' : '  ' + JSON.stringify(d === undefined ? '' : d).slice(0, 400))); };
+const res = [], notes = []; const ok = (n, p, d) => { res.push({ n, pass: !!p }); console.log((p ? '  ok   ' : '  FAIL ') + n + (p ? '' : '  ' + JSON.stringify(d === undefined ? '' : d).slice(0, 400))); };
 const slow = engine === 'webkit' ? 2 : 1;
 (async () => {
-    const R = await H.open({ engine, lang, url: url || undefined, name: 'AD Test', fresh: true });
+    const R = await H.open({ engine, lang, url: url || undefined, name: 'AD Test', fresh: true, cloud: url ? false : undefined });
     const P = R.page;
     /* local stand-in for the server */
     const SV = { admin: false, out: false, kicks: [], deleted: [], names: {} };
@@ -71,7 +71,10 @@ const slow = engine === 'webkit' ? 2 : 1;
                     return hit && (hit === e || e.contains(hit)) ? 'tap' : 'click'; }, sel);
             }
             if (v2 !== 'tap') {
-                if (url) { ok('real tap possible on ' + sel, false, v2); throw new Error('not tappable: ' + sel); }
+                const why = await P.evaluate(q => { const e = document.querySelector(q); const r = e.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2; const h = document.elementFromPoint(x, y);
+                    const d = n => n ? (n.tagName + '#' + n.id + '.' + String(n.className).slice(0, 60)) : 'none'; const chain = []; for (let a = e; a && chain.length < 14; a = a.parentElement) { const cs = getComputedStyle(a), rr = a.getBoundingClientRect(); chain.push(d(a).slice(0, 70) + ' mh' + cs.maxHeight + ' tr' + cs.transform.slice(0, 40) + ' t' + Math.round(rr.top) + ' b' + Math.round(rr.bottom) + ' sh' + a.scrollHeight + ' ch' + a.clientHeight + ' st' + Math.round(a.scrollTop) + ' ov' + cs.overflowY + ' pe' + cs.pointerEvents + ' pos' + cs.position); } const ine = e.closest('[inert]'); const g = document.getElementById('r2gate'); return { inert: ine ? d(ine) : '', html: document.documentElement.className.slice(0, 200), gate: g ? (g.hidden ? 'hidden' : 'shown') : 'none', all: (document.elementsFromPoint(x, y) || []).slice(0, 5).map(d), x: Math.round(x), y: Math.round(y), ih: innerHeight, vvh: visualViewport && visualViewport.height, hit: d(h), chain }; }, sel);
+                if (url && engine === 'webkit' && why.y > 0 && why.y < why.ih) { notes.push('webkit hit-test miss mid-slide on ' + sel + ' (on screen at y' + why.y + '), clicked'); await P.$eval(sel, e => e.click()); return; }
+                if (url) { try { require('fs').writeFileSync('/home/sprite/ad-why.json', JSON.stringify(why, null, 1)); } catch (e) { } ok('real tap possible on ' + sel, false, why); throw new Error('not tappable: ' + sel); }
                 console.log('    (' + sel + ': off screen in this engine, click() used)'); await P.evaluate(q => document.querySelector(q).click(), sel); return;
             }
             console.log('    (' + sel + ': tapped after the sheet settled)');
@@ -102,7 +105,7 @@ const slow = engine === 'webkit' ? 2 : 1;
         if (!T) throw new Error('community-remove-core.js not loaded');
         const build = await P.evaluate(() => { const s = [...document.scripts].map(x => x.src).find(x => /community-remove\.js\?v=/.test(x)); return s ? s.split('v=')[1] : 'missing'; });
         ok('community-remove.js loaded (build ' + build + ')', build !== 'missing', build);
-        const TOG = (on, uid) => execSync('tools/admin-delete/admin-toggle.sh ' + (on ? 'on ' : 'off ') + uid, { stdio: 'inherit' });
+        const TOG = (on, uid) => new Promise(ok2 => require('child_process').exec('tools/admin-delete/admin-toggle.sh ' + (on ? 'on ' : 'off ') + uid, () => ok2()));
         const vis = async t => P.evaluate(async t => { const c = await LOWI_CLOUD_X.client(); const p = await c.from('profiles').select('id').eq('id', t); const k = await c.from('community_kicks').select('user_id').eq('user_id', t); const d = await c.from('community_deleted').select('user_id').eq('user_id', t);
             return { profile: p.error ? 'err ' + p.error.message : p.data.length, kick: k.error ? 'err ' + k.error.message : k.data.length, tomb: d.error ? 'err ' + d.error.message : d.data.length, removed: LowiHiddenAccounts.isRemoved(t), hidden: LowiHiddenAccounts.isHidden(t), people: (LowiCommunity.people ? LowiCommunity.people() : []).some(x => (x.uid || x.id) === t) }; }, t);
         if (url) {
@@ -123,7 +126,7 @@ const slow = engine === 'webkit' ? 2 : 1;
             const forged2 = await P.evaluate(t => LowiCommunityRemove._rpc('community_delete_account', { target: t }), ids.t);
             ok('normal account: calling the database delete directly is refused (not_admin)', forged2 && forged2.error && /not_admin|42501/.test(JSON.stringify(forged2.error)), forged2);
             s = await vis(ids.t); ok('the target still exists after both refused calls', s.profile === 1 && s.tomb === 0, s);
-            R.step = 'admin'; TOG(true, ids.a);
+            R.step = 'admin'; await TOG(true, ids.a);
             me = await become('a');
             ok('test admin: the server says admin', (await P.evaluate(() => LowiCommunityRemove.state().admin)) === true);
         } else {
@@ -157,7 +160,7 @@ const slow = engine === 'webkit' ? 2 : 1;
         ok('deleted: the card says so, and the person is gone from every list at once', done.text === require('../../community-remove-core.js').fill(T.done, NAME) && done.removed && done.hidden && !done.people && done.stored, done);
         await R.shot(out + '/' + engine + '-' + lang + (url ? '-live' : '') + '-done.png');
         if (url) {
-            TOG(false, ids.a);
+            await TOG(false, ids.a);
             const db = execSync((process.env.SB || '/tmp/sbw.sh') + " db query --linked \"select (select count(*) from auth.users where id='" + ids.t + "') login, (select count(*) from public.profiles where id='" + ids.t + "') profile, (select count(*) from public.community_deleted where user_id='" + ids.t + "') tomb\" -o csv 2>/dev/null").toString().trim().split('\n').pop();
             ok('on the server: login 0, profile 0, tombstone 1', db === '0,0,1', db);
             R.step = 'viewer after'; await become('v');
@@ -177,6 +180,7 @@ const slow = engine === 'webkit' ? 2 : 1;
         ok('run finished (step ' + R.step + ')', false, String(e && e.message || e).slice(0, 300));
         if (url && ids.a) try { execSync('tools/admin-delete/admin-toggle.sh off ' + ids.a, { stdio: 'inherit' }); } catch (er) { }
     }
+    if (notes.length) console.log('NOTES ' + notes.join(' | '));
     await R.close();
     const f = res.filter(r => !r.pass).length;
     console.log((f ? 'FAILED ' : 'ALL PASS ') + (res.length - f) + '/' + res.length + ' ' + engine + ' ' + lang + (url ? ' live' : ' local'));

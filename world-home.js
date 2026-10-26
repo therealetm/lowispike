@@ -126,7 +126,8 @@
     function ensureToday() {
         const h = home(); if (!h) return null;
         let box = D.getElementById('whToday');
-        if (box && box.parentNode !== h) { box.remove(); box = null; }
+        /* 26 Oct 2026 (nb.dataset): a stray sheet must not take Home's status line and log away with it (spirit.js paints them) */
+        if (box && box.parentNode !== h) { box.querySelectorAll(':scope > .sp-status, :scope > .sp-log').forEach(n => h.appendChild(n)); box.remove(); box = null; }
         const status = h.querySelector(':scope > .sp-status'), log = h.querySelector(':scope > .sp-log');
         if (!box) {
             box = D.createElement('div'); box.id = 'whToday'; box.className = 'wh-today';

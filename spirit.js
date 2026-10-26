@@ -382,6 +382,10 @@
         return '<div class="sp-xp"><span>' + esc(stage(m)) + '</span><b>' + Math.floor(m.xp) + ' XP</b><div role="progressbar" aria-label="XP" aria-valuenow="' + Math.round(m.progress * 100) + '" aria-valuemin="0" aria-valuemax="100"><i style="width:' + Math.round(m.progress * 100) + '%"></i></div></div>';
     }
 
+    /* Home's Today pieces: world-home.js moves them into its #whToday sheet, so they can leave the page with that sheet */
+    const STATUS_HTML = '<div class="sp-status"><i class="sp-status-dot" aria-hidden="true"></i><div><b></b><span></span></div><button type="button" class="sp-next" data-sp="water"></button></div>',
+        LOG_HTML = '<section class="sp-log"><header><b></b><div class="sp-habits" aria-label="Habit tracker"></div></header><div class="sp-log-rows"></div></section>';
+
     function ensure() {
         if (!home || !home.isConnected) {
             const tab = D.getElementById('tab-home');
@@ -390,11 +394,15 @@
             home.id = 'spHome';
             home.className = 'rs-cols';
             home.setAttribute('data-noi18n', '');
-            home.innerHTML = '<header class="sp-top"><div class="sp-greeting"><span></span><small></small></div><button type="button" class="sp-weather" data-sp="weather"></button></header><div class="sp-heroes"><button id="spBubble" class="sp-bubble" data-sp="open" aria-label="' + esc(tr('world')) + '"><span class="sp-bubble-water"></span><span class="sp-home-herb"></span><span class="sp-bubble-name"></span></button><button id="spFast" class="sp-fast" data-sp="fast"><span class="sp-fast-water"></span><span class="sp-fast-copy"></span></button></div><div class="sp-status"><i class="sp-status-dot" aria-hidden="true"></i><div><b></b><span></span></div><button type="button" class="sp-next" data-sp="water"></button></div><section class="sp-log"><header><b></b><div class="sp-habits" aria-label="Habit tracker"></div></header><div class="sp-log-rows"></div></section>';
+            home.innerHTML = '<header class="sp-top"><div class="sp-greeting"><span></span><small></small></div><button type="button" class="sp-weather" data-sp="weather"></button></header><div class="sp-heroes"><button id="spBubble" class="sp-bubble" data-sp="open" aria-label="' + esc(tr('world')) + '"><span class="sp-bubble-water"></span><span class="sp-home-herb"></span><span class="sp-bubble-name"></span></button><button id="spFast" class="sp-fast" data-sp="fast"><span class="sp-fast-water"></span><span class="sp-fast-copy"></span></button></div>' + STATUS_HTML + LOG_HTML;
             tab.prepend(home);
             /* Oct 14: a rebuilt Home (after Community etc.) paints the weather pill from the cached reading right away */
             paintCachedWeather();
         }
+        /* 26 Oct 2026 (nb.dataset): if the Today sheet left the page with .sp-status / .sp-log inside, every paint threw on the
+           missing .sp-next and Home stopped updating. Put fresh pieces back; world-home.js wraps them into a new sheet. */
+        if (home && !home.querySelector('.sp-status')) home.insertAdjacentHTML('beforeend', STATUS_HTML);
+        if (home && !home.querySelector('.sp-log')) home.insertAdjacentHTML('beforeend', LOG_HTML);
         if (!world) {
             world = D.createElement('section');
             world.id = 'spWorld';
@@ -439,7 +447,7 @@
                 mood: v.dry > .25 ? 'droopy' : m.mood
             }, 'hero', p);
             creature.style.setProperty('--sp-dry', v.dry);
-            world.querySelector('.sp-world-xp').innerHTML = xpHTML(m);
+            const wx = world.querySelector('.sp-world-xp'); if (wx) wx.innerHTML = xpHTML(m);
             setText(world.querySelector('h1'), name());
             setText(home.querySelector('.sp-bubble-name'), name());
             [home, world].forEach(n => {
@@ -460,11 +468,11 @@
         setText(home.querySelector('.sp-status b'), st.title);
         setText(home.querySelector('.sp-status span'), st.sub);
         const nb = home.querySelector('.sp-next');
-        if (nb.dataset.sp !== st.action) nb.dataset.sp = st.action;
+        if (nb) { if (nb.dataset.sp !== st.action) nb.dataset.sp = st.action; }
         const nbh = icon(st.icon) + '<span>' + esc(st.button) + '</span>';
         /* Oct 21 (instant back): compare with what this paint last wrote, never with innerHTML: symbols() swaps emoji for icons, so the
            page never matched and every paint (each resize, e.g. coming back to Home) rewrote the button and the log rows */
-        if (nb.__spH !== nbh || !nb.firstChild) { nb.innerHTML = nbh; nb.__spH = nbh; }
+        if (nb && (nb.__spH !== nbh || !nb.firstChild)) { nb.innerHTML = nbh; nb.__spH = nbh; }
         setText(home.querySelector('.sp-log header b'), tr('todayLog') + ' · ' + new Intl.DateTimeFormat(locale(), {
             weekday: 'short',
             day: '2-digit',
@@ -473,7 +481,7 @@
         const row = (key, ic, label, value, done, action) => '<button type="button" class="sp-log-row' + (done ? ' done' : '') + '" data-sp="' + action + '" data-log="' + key + '"><i class="sp-bullet" aria-hidden="true"></i>' + icon(ic) + '<span><b>' + esc(label) + '</b><small>' + esc(value) + '</small></span></button>';
         const rows = row('water', 'water', tr('waterLabel'), waterTxt(day.water) + ' / ' + WATER_GOAL + ' ' + tr('glasses'), day.water >= WATER_GOAL, 'water') + row('meal', 'plate', tr('mealLabel'), day.meals ? day.meals + ' ' + tr(day.meals === 1 ? 'mealOne' : 'mealMany') : tr('mealNone'), day.meals > 0, 'meal') + row('move', 'move', tr('moveLabel'), day.moved ? tr('moveDone') : tr('moveOpen'), day.moved, 'move') + row('checkin', 'check', tr('checkLabel'), day.checkin || tr('checkOpen'), /^(\d+)\/(\d+)/.test(day.checkin) && RegExp.$1 === RegExp.$2, 'checkin');
         const lr = home.querySelector('.sp-log-rows');
-        if (lr.__spH !== rows || !lr.firstChild) { lr.innerHTML = rows; lr.__spH = rows; }
+        if (lr && (lr.__spH !== rows || !lr.firstChild)) { lr.innerHTML = rows; lr.__spH = rows; }
         const days = Array.from({
             length: 7
         }, (_, i) => {
@@ -484,7 +492,7 @@
             return '<i class="' + (done ? 'on' : '') + '" title="' + key + '" aria-label="' + key + ' ' + (done ? '✓' : '—') + '"></i>';
         }).join('');
         const dots = home.querySelector('.sp-habits');
-        if (dots.innerHTML !== days) dots.innerHTML = days;
+        if (dots && dots.innerHTML !== days) dots.innerHTML = days;
         D.documentElement.dataset.spPeriod = m.period;
         /* BH-004: Misty's VoiceOver name was written once in the boot language; keep its head in the current one (cell-world.js adds " · <state>") */
         const sb = home.querySelector('#spBubble');

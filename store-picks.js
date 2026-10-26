@@ -62,7 +62,11 @@
     const onSz = () => tab === 'sz' && !!SZ();
     /* Oct 24: the third tab, Kitchen (kitchen-core.js): what you have at home + the shopping cart (= the shopping list) */
     const K = W.LowiKitchenCore && W.LowiKitchenCore.parse ? W.LowiKitchenCore : null;
-    const onKit = () => tab === 'kitchen' && !!K;
+    /* Oct 26: the Kitchen moved to Cook (kitchen-game.js, Cook > Kitchen; MAYA-HANDOFF 0.19). While that game is loaded, Shop has
+       no Kitchen tab, and anything that asks for it opens Cook > Kitchen instead. The data (lowispike.kitchen.v1) is the same. */
+    const KG = () => (W.LowiKitchenGame && W.LowiKitchenGame.open ? W.LowiKitchenGame : null);
+    const kitTab = () => !!K && !KG();
+    const onKit = () => tab === 'kitchen' && kitTab();
     const onShop = () => !onSz() && !onKit();
     const ic = {
         x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
@@ -226,10 +230,10 @@
         /* Oct 25 (Emmanuel: Give a hand gets "its own place next to Supermarket, Seller Zone and Kitchen", not inside Kitchen):
            the fourth peer. A door, not a pane: it opens the Give a hand panel on top of Shop and is never the remembered tab. */
         const G = giftDoor();
-        const n = (Z ? 1 : 0) + (K ? 1 : 0) + (G ? 1 : 0) + 1;
+        const n = (Z ? 1 : 0) + (kitTab() ? 1 : 0) + (G ? 1 : 0) + 1;
         return '<div class="stp-tabs' + (n > 2 ? ' stp-tabs3' : '') + (n > 3 ? ' stp-tabs4' : '') + '" role="tablist" aria-label="' + esc(T('Shop', 'Einkaufen', 'Comprar')) + '">' +
             b('shop', '\u{1F6D2}', T('Supermarket', 'Supermarkt', 'Supermercado')) + (Z ? b('sz', '\u{1F6CD}\uFE0F', Z.name(), Z.count ? Z.count() : 0) : '') +
-            (K ? b('kitchen', '\u{1F9FA}', T('Kitchen', 'Küche', 'Cocina'), K.count(kit)) : '') +
+            (kitTab() ? b('kitchen', '\u{1F9FA}', T('Kitchen', 'Küche', 'Cocina'), K.count(kit)) : '') +
             (G ? b('gift', '\u{1F91D}', T('Give a hand', 'Hilf mit', 'Echa una mano')) : '') + '</div>';
     }
     function szHTML() {
@@ -630,6 +634,7 @@
     }
     /* switch tabs; from a snack on the swipe shelf, the zone opens on that snack's card and it glows once */
     function setTab(id, focus) {
+        if (id === 'kitchen' && KG()) { if (ov) close(); KG().open(); return; }
         const next = id === 'sz' && SZ() ? 'sz' : id === 'kitchen' && K ? 'kitchen' : 'shop';
         const same = next === tab;
         tab = next; try { localStorage.setItem(TKEY, tab); } catch (e) {}
@@ -659,6 +664,7 @@
 
     function openPanel(from) {
         if (ov) return;
+        if (tab === 'kitchen' && KG()) tab = 'shop';
         ov = D.createElement('div');
         ov.className = 'stp-ov';
         ov.addEventListener('click', onClick);
@@ -735,5 +741,5 @@
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiStorePicks = { open: openPanel, close, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)), tab: () => (onSz() ? 'sz' : onKit() ? 'kitchen' : 'shop'), kitchen: () => (K ? (kitLoad(), K.view(kit)) : []), setTab: id => { if (ov) setTab(id); else { tab = ({ sz: 'sz', kitchen: 'kitchen' })[id] || 'shop'; try { localStorage.setItem(TKEY, tab); } catch (e) {} } } };
+    W.LowiStorePicks = { open: openPanel, close, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)), tab: () => (onSz() ? 'sz' : onKit() ? 'kitchen' : 'shop'), kitchen: () => (K ? (kitLoad(), K.view(kit)) : []), setTab: id => { if (id === 'kitchen' && KG()) { if (ov) close(); KG().open(); return; } if (ov) setTab(id); else { tab = ({ sz: 'sz', kitchen: 'kitchen' })[id] || 'shop'; try { localStorage.setItem(TKEY, tab); } catch (e) {} } } };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

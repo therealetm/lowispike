@@ -59,8 +59,9 @@
     const OPEN = {
         move: { go() { if (typeof W.goTab === 'function') W.goTab('move'); }, stage: '', back() { goHome(); } },
         shop: { go() { const P = W.LowiStorePicks; if (!P) return; goHome(); if (!P.isOpen()) P.open('tour'); try { P.setTab('sz'); } catch (e) { } }, stage: '.stp-card', back() { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
-        /* Oct 24: the Kitchen tab in Shop (new-kitchen) */
-        kitchen: { go() { const P = W.LowiStorePicks; if (!P) return; goHome(); if (!P.isOpen()) P.open('tour'); try { P.setTab('kitchen'); } catch (e) { } }, stage: '.stp-card', back() { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
+        /* Oct 24: the Kitchen tab in Shop (new-kitchen). Oct 26: the Kitchen is a game in Cook now (kitchen-game.js), so the step opens
+           Cook > Kitchen; the old Shop tab stays the fallback when the game file is missing. */
+        kitchen: { go() { if (W.LowiKitchenGame && W.LowiKitchenGame.open) { try { goHome(); W.LowiKitchenGame.open(); } catch (e) { } return; } const P = W.LowiStorePicks; if (!P) return; goHome(); if (!P.isOpen()) P.open('tour'); try { P.setTab('kitchen'); } catch (e) { } }, stage: '#kgRoot, .stp-card', back() { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } try { if (W.LowiKitchenGame) goHome(); } catch (e) { } } },
     };
     function stage() {
         const s = step(), r = s && (s.open || (s.demo && mode !== 'news' && s.demo.open));   /* a demo card's page is its stage too */

@@ -21,21 +21,21 @@
             last: 'Last meal', fix: 'Fix time', now: 'Now', next: 'Next: {n} in about {d}', past: 'Past the last marker. Listen to your body.', markers: 'Typical markers',
             pts: 'So far +{x} XP. You get them when your next meal is logged in Fuel.', recent: 'Recent gaps', log: 'Log a meal in Fuel',
             hedge: 'A general guide from typical patterns, not a measurement. Every body runs its own clock. On diabetes medication? Ask your doctor before long gaps.',
-            hexL: 'Six markers on a hexagon; the lit trail shows the time since your last meal', today: 'Today', yday: 'Yesterday',
+            hexL: 'Six markers on a hexagon; the lit trail shows the time since your last meal', today: 'Today', yday: 'Yesterday', ago1: 'yesterday',
             mcH: 'After your meal', mcTyp: 'Typical, not measured', mcLever: 'Lower the spike', mcMove: 'Open Move', mcRow: 'After-meal phases', mcPrev: 'Previous phase', mcNext: 'Next phase', mcSay: 'Read this phase aloud', mcStop: 'Stop reading', mcRate: 'Voice speed {r}',
             mcCare: 'On insulin or diabetes medication? Talk to your care team before changing meals or exercise: these tips can lower your blood sugar.' },
         de: { title: 'Essenspause', since: 'seit deiner letzten Mahlzeit', none: 'Noch keine Mahlzeit eingetragen', noneSub: 'Trag deine nächste Mahlzeit in Fuel ein. Die Pause zählt ab dem Essen.', close: 'Schließen',
             last: 'Letzte Mahlzeit', fix: 'Zeit ändern', now: 'Jetzt', next: 'Als Nächstes: {n} in etwa {d}', past: 'Über die letzte Marke hinaus. Hör auf deinen Körper.', markers: 'Typische Marken',
             pts: 'Bisher +{x} XP. Du bekommst sie, wenn du deine nächste Mahlzeit in Fuel einträgst.', recent: 'Letzte Pausen', log: 'Mahlzeit in Fuel eintragen',
             hedge: 'Eine grobe Orientierung aus typischen Verläufen, keine Messung. Jeder Körper hat seine eigene Uhr. Nimmst du Diabetes-Medikamente? Frag vor langen Pausen deine Ärztin oder deinen Arzt.',
-            hexL: 'Sechs Marken auf einem Sechseck; die leuchtende Spur zeigt die Zeit seit deiner letzten Mahlzeit', today: 'Heute', yday: 'Gestern',
+            hexL: 'Sechs Marken auf einem Sechseck; die leuchtende Spur zeigt die Zeit seit deiner letzten Mahlzeit', today: 'Heute', yday: 'Gestern', ago1: 'gestern',
             mcH: 'Nach dem Essen', mcTyp: 'Typisch, nicht gemessen', mcLever: 'Spike senken', mcMove: 'Zu Bewegung', mcRow: 'Phasen nach dem Essen', mcPrev: 'Vorherige Phase', mcNext: 'Nächste Phase', mcSay: 'Diese Phase vorlesen', mcStop: 'Vorlesen stoppen', mcRate: 'Sprechtempo {r}',
             mcCare: 'Nimmst du Insulin oder Diabetes-Medikamente? Sprich mit deinem Behandlungsteam, bevor du Essen oder Bewegung umstellst: Diese Tipps können deinen Blutzucker senken.' },
         es: { title: 'Pausa entre comidas', since: 'desde tu última comida', none: 'Aún no hay comidas', noneSub: 'Registra tu próxima comida en Fuel. La pausa cuenta desde la hora en que comiste.', close: 'Cerrar',
             last: 'Última comida', fix: 'Cambiar hora', now: 'Ahora', next: 'Después: {n} en unas {d}', past: 'Más allá del último marcador. Escucha a tu cuerpo.', markers: 'Marcadores típicos',
             pts: 'Por ahora +{x} XP. Los recibes al registrar tu próxima comida en Fuel.', recent: 'Pausas recientes', log: 'Registrar comida en Fuel',
             hedge: 'Una guía general según patrones típicos, no una medición. Cada cuerpo tiene su propio reloj. ¿Tomas medicación para la diabetes? Consulta a tu médico antes de pausas largas.',
-            hexL: 'Seis marcadores en un hexágono; el rastro iluminado muestra el tiempo desde tu última comida', today: 'Hoy', yday: 'Ayer',
+            hexL: 'Seis marcadores en un hexágono; el rastro iluminado muestra el tiempo desde tu última comida', today: 'Hoy', yday: 'Ayer', ago1: 'ayer',
             mcH: 'Después de comer', mcTyp: 'Típico, no medido', mcLever: 'Baja el pico', mcMove: 'Ir a Movimiento', mcRow: 'Fases después de comer', mcPrev: 'Fase anterior', mcNext: 'Fase siguiente', mcSay: 'Leer esta fase en voz alta', mcStop: 'Dejar de leer', mcRate: 'Velocidad de voz {r}',
             mcCare: '¿Usas insulina o medicación para la diabetes? Habla con tu equipo médico antes de cambiar comidas o ejercicio: estos consejos pueden bajar tu azúcar.' }
     };
@@ -139,7 +139,17 @@
     /* marker notes are our own constants with <b> only; anything else is escaped */
     const rich = v => esc(v).replace(/&lt;(\/?)b&gt;/g, '<$1b>');
     const dur = ms => { const m = Math.max(0, Math.floor(ms / 60000)), h = Math.floor(m / 60); return h ? h + ' h ' + String(m % 60).padStart(2, '0') + ' min' : (m % 60) + ' min'; };
-    const clock = t => new Date(t).toLocaleTimeString(lang(), { hour: '2-digit', minute: '2-digit' });
+    /* Bug hunt run 30: the Last meal line had no day word, so after midnight "06:57 PM" read as later today while the end-fast
+       sheet said "18:57 yesterday". Same rule as fast-edit.js at(): today = time only, yesterday = time + "yesterday", older = time + date. */
+    function when(t, l) {
+        l = l || lang();
+        const tm = new Date(t).toLocaleTimeString(l, { hour: '2-digit', minute: '2-digit' });
+        const a = new Date(t), b = new Date(); a.setHours(0, 0, 0, 0); b.setHours(0, 0, 0, 0);
+        const n = Math.round((a - b) / 864e5);
+        if (n >= 0) return tm;
+        if (n === -1) return tm + ' ' + ((STR[l] || STR.en).ago1 || STR.en.ago1);
+        try { return tm + ' ' + new Date(t).toLocaleDateString(l, { weekday: 'short', day: 'numeric', month: 'short' }); } catch (e) { return tm; }
+    }
 
     function stages() {
         try { if (W.LowiFast && W.LowiFast.stagesFull) { const L = W.LowiFast.stagesFull(); if (L && L.length === 6) return L; } } catch (e) {}
@@ -212,7 +222,7 @@
         const curM = m.cur >= 0 ? L[m.cur] : null;
         const nextLine = m.next ? s('next').replace('{n}', m.next.n.charAt(0).toLowerCase() + m.next.n.slice(1)).replace('{d}', dur(m.nextIn)) : s('past');
         return '<div class="gv-hero">' + hero(m) + '<div class="gv-mid"><b class="gv-time" data-gv="time">' + esc(dur(m.elapsed)) + '</b><small>' + esc(s('since')) + '</small></div></div>' +
-            '<div class="gv-last"><span><small>' + esc(s('last')) + '</small><b>' + (m.meal ? esc(m.meal) + ' · ' : '') + esc(clock(m.start)) + '</b></span>' +
+            '<div class="gv-last"><span><small>' + esc(s('last')) + '</small><b>' + (m.meal ? esc(m.meal) + ' · ' : '') + esc(when(m.start)) + '</b></span>' +
             (W.LowiFastEdit && W.LowiFastEdit.open ? '<button type="button" class="gv-fix" data-gv="fix">' + esc(s('fix')) + '</button>' : '') + '</div>' +
             curve(m) +
             (curM && m.hours >= MC_WIN ? '<section class="gv-now" style="--c:' + COL[m.cur] + '"><small>' + esc(s('now')) + '</small><h3>' + esc(curM.n) + '</h3>' + (curM.x ? '<p>' + rich(curM.x) + '</p>' : '<p>' + esc(curM.t) + '</p>') +
@@ -466,5 +476,5 @@
         else if (k === 'mcprev' || k === 'mcnext') { const cur = mcSel >= 0 ? mcSel : Math.max(0, model().mcCur); mcPick(cur + (k === 'mcnext' ? 1 : -1)); }
         else if (k === 'move') { close(); setTimeout(() => { try { if (typeof W.lowiOpen === 'function') W.lowiOpen('move'); else if (typeof W.goTab === 'function') W.goTab('move'); } catch (x) { console.error(x); } }, 60); }
     }
-    return { open, close, isOpen: () => !!el, model, strings: STR, _trail: trail, phases: MC, curvePhase, _curve: curve, mcSpoken, selFor, speaking: () => !!say };
+    return { open, close, isOpen: () => !!el, model, strings: STR, _when: when, _trail: trail, phases: MC, curvePhase, _curve: curve, mcSpoken, selFor, speaking: () => !!say };
 });

@@ -14,14 +14,15 @@ const A = '22222222-2222-4222-8222-222222222222', OWNER = '83077af7-8475-4628-93
 test('every label exists in German, English and Spanish, with the person\'s name where it belongs', () => {
     const keys = Object.keys(C.TXT.en);
     for (const l of ['en', 'de', 'es']) for (const k of keys) assert.ok(C.TXT[l][k] && C.TXT[l][k].trim(), l + '.' + k);
-    assert.strictEqual(C.TXT.en.btn, 'Remove from community');
-    assert.strictEqual(C.TXT.de.btn, 'Aus der Community entfernen');
-    assert.strictEqual(C.TXT.es.btn, 'Quitar de la comunidad');
+    /* 26 Oct 2026 Emmanuel changed the requirement: the button deletes the account (tests/admin-delete-account.test.cjs) */
+    assert.strictEqual(C.TXT.en.btn, 'Delete account');
+    assert.strictEqual(C.TXT.de.btn, 'Konto löschen');
+    assert.strictEqual(C.TXT.es.btn, 'Borrar cuenta');
     for (const l of ['en', 'de', 'es']) for (const k of ['title', 'body', 'done', 'restored']) assert.ok(C.TXT[l][k].includes('{n}'), l + '.' + k + ' names the person');
-    assert.strictEqual(C.fill(C.TXT.en.title, 'Emmanuel'), 'Remove Emmanuel?');
-    assert.strictEqual(C.fill(C.TXT.de.title, ' '), 'Member entfernen?', 'no name: a neutral word, never an empty gap');
+    assert.strictEqual(C.fill(C.TXT.en.title, 'Emmanuel'), 'Delete Emmanuel’s account?');
+    assert.strictEqual(C.fill(C.TXT.de.title, ' '), 'Konto von Member löschen?', 'no name: a neutral word, never an empty gap');
     assert.strictEqual(C.text('fr'), C.TXT.en);
-    assert.match(C.TXT.en.body, /Nothing is deleted/, 'the confirm says it can be undone');
+    assert.match(C.TXT.en.body, /can’t be undone/, 'the confirm says it can not be undone (26 Oct 2026)');
     assert.match(C.TXT.de.outTitle, /nicht mehr Teil dieser Community/);
 });
 
@@ -109,11 +110,10 @@ test('the app wiring: loaded on every page start, precached, button under Block 
     assert.match(ui, /\.cp-card\[data-person\]/, 'every profile card');
     assert.match(ui, /card\.appendChild\(box\)/, 'at the bottom, below Block person');
     assert.match(ui, /#csBlockedList/, 'Removed people sits in Community settings after Blocked people');
-    assert.match(ui, /rpc\('community_remove', \{ target: id \}\)/);
     assert.match(ui, /rpc\('community_restore', \{ target: id \}\)/);
     assert.match(ui, /data-cr="ask"[\s\S]*cr-confirm[\s\S]*data-cr="yes"/, 'one confirm step before anything happens');
     assert.doesNotMatch(ui, /83077af7/, 'no admin id in the app: the server decides');
-    assert.doesNotMatch(ui, /\.delete\(|admin_delete|owner-delete-account/, 'never deletes');
+    assert.doesNotMatch(ui, /\.delete\(/, 'the app itself deletes no rows; the server does (owner-delete-account, 26 Oct 2026)');
 });
 
 test('Safari: the card decoration decorates with a plain timer, not a detached requestAnimationFrame (no button showed in WebKit)', () => {

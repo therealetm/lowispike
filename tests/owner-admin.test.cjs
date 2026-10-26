@@ -99,7 +99,9 @@ test('delete function: owner-only, typed confirm, never self or another owner; n
     assert.match(fn, /if \(!ownerIds\.has\(me\.id\)\) return out\(req, 403/);
     assert.match(fn, /body\.confirm !== "DELETE"/);
     assert.match(fn, /id === me\.id/);
-    assert.match(fn, /auth\.admin\.deleteUser\(id\)/);
+    /* 26 Oct 2026: the delete is one database transaction (community_delete_account -> lowi_delete_account) run as the caller,
+       instead of row-by-row deletes and auth.admin.deleteUser (which left half-deleted accounts); see admin-delete-account.test.cjs */
+    assert.match(fn, /asCaller\.rpc\("community_delete_account", \{ target: id \}\)/);
     assert.match(fn, /Deno\.env\.get\("SUPABASE_SERVICE_ROLE_KEY"\)/);
     for (const f of ['owner-admin.js', 'owner-admin-core.js', 'index.html']) {
         const s = read(f);

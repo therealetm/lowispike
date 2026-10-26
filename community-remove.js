@@ -7,7 +7,10 @@
    - The removed ids (public.community_kicks) go to hidden-accounts.js, so the person leaves Room, Chat, Ranking, For You,
      Add a friend, the People list and mentions for everyone. The server hides their rows too.
    - A removed person sees a calm "You're no longer part of this community" screen in Community instead of the chat.
-   Nothing here deletes anything. */
+   26 Oct 2026 (Emmanuel: "I removed it, and it's still there. This should be deleting their accounts. Fix it."): the card
+   button is now "Delete account". After its confirm it calls the Edge Function owner-delete-account, which deletes the login
+   and every row on the server; the card says "deleted" only when the server confirmed it, an error otherwise. Deleted ids
+   (public.community_deleted) are hidden everywhere like removed ones, also from caches and after a reload. */
 (function () {
     'use strict';
     const W = window, D = document, C = W.LowiCommunityRemoveCore;
@@ -23,6 +26,15 @@
         const sb = await client(); if (!sb) return { error: { message: 'offline' } };
         try { return await sb.rpc(name, args || {}); } catch (e) { return { error: { message: String(e && e.message || e) } }; }
     }
+    /* the admin delete goes through the Edge Function (it removes the photo files too); the database checks the admin again */
+    async function invoke(id) {
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) return { error: { message: 'offline' } };
+        const sb = await client(); if (!sb || !sb.functions || !sb.functions.invoke) return { error: { message: 'offline' } };
+        const call = C.deleteCall(id);
+        try { return await sb.functions.invoke(call.fn, { body: call.body }); } catch (e) { return { error: { message: String(e && e.message || e) } }; }
+    }
+    function deletedNow() { try { return C.idsFrom(JSON.parse(localStorage.getItem(C.DELETED_KEY) || '[]')); } catch (e) { return []; } }
+    function saveDeleted(ids) { try { localStorage.setItem(C.DELETED_KEY, JSON.stringify(C.idsFrom(ids).slice(-5000))); } catch (e) { } }
     const HA = () => W.LowiHiddenAccounts;
     function removedNow() { const H = HA(); return H && H.removedIds ? H.removedIds() : []; }
     function setRemoved(ids) { const H = HA(); if (H && H.setRemoved) H.setRemoved(ids); }
@@ -37,13 +49,16 @@
         if (ST.self !== c.uid) { ST.self = c.uid; ST.admin = cachedAdmin(c.uid); }
         ST.loadedAt = Date.now();
         const sb = await client(); if (!sb) return false;
-        const [a, k, me] = await Promise.all([
+        const [a, k, me, del] = await Promise.all([
             rpc('community_is_admin'),
             sb.from('community_kicks').select('user_id').limit(5000).then(r => r, e => ({ error: e })),
-            rpc('community_am_removed')
+            rpc('community_am_removed'),
+            sb.from('community_deleted').select('user_id').limit(5000).then(r => r, e => ({ error: e }))
         ]);
         if (a && !a.error) { ST.admin = C.adminFrom(a); saveAdmin(c.uid, ST.admin); }
-        if (k && !k.error && Array.isArray(k.data)) setRemoved(C.idsFrom(k.data));
+        const h = C.hiddenIds(k, del, removedNow(), deletedNow());
+        saveDeleted(h.deleted);
+        if ((k && !k.error) || h.deleted.length) setRemoved(h.removed);
         if (me && !me.error) { ST.out = C.removedFrom(me); }
         D.documentElement.classList.toggle('cr-admin-on', ST.admin);
         outScreen(); decorate();
@@ -77,16 +92,17 @@
         if (ST.busy) return; const id = box.getAttribute('data-cr-id'), n = box.getAttribute('data-cr-name'), T = t();
         const out = box.querySelector('.cr-result'), yes = box.querySelector('[data-cr="yes"]');
         ST.busy = true; if (yes) { yes.disabled = true; yes.textContent = T.working; }
-        const r = await rpc('community_remove', { target: id });
+        const r = await invoke(id), o = C.deleteOutcome(r, id);
         ST.busy = false;
-        if (r && !r.error) {
+        if (o.ok) {
+            saveDeleted(deletedNow().concat([id]));
             setRemoved(removedNow().concat([id]));
             box.classList.add('cr-done'); box.querySelector('.cr-confirm').hidden = true; box.querySelector('[data-cr="ask"]').hidden = true;
             out.textContent = C.fill(T.done, n); ST.ask = ''; ST.done = { id, text: out.textContent };
             return true;
         }
         if (yes) { yes.disabled = false; yes.textContent = T.yes; }
-        out.textContent = C.reasonText(C.reasonOf(r), lang());
+        out.textContent = C.reasonText(o.reason, lang());
         return false;
     }
 

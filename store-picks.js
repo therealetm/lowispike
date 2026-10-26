@@ -69,6 +69,8 @@
     const onKit = () => tab === 'kitchen' && kitTab();
     const onShop = () => !onSz() && !onKit();
     const ic = {
+        scan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5h3M17 5h3v3M20 16v3h-3M7 19H4v-3M8 9v6M11 9v6M14 9v6M17 9v6"/></svg>',
+        gift: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7C10.5 4 7 4 7 6s3 1 5 1zm0 0c1.5-3 5-3 5-1s-3 1-5 1z"/></svg>',
         x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
         pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/></svg>',
         cart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2.2 10.5h10.6L21 7H7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="19" r="1.6" fill="currentColor"/><circle cx="17" cy="19" r="1.6" fill="currentColor"/></svg>'
@@ -314,7 +316,7 @@
         const n = ls.reduce((a, l) => a + l.q, 0);
         const row = l => '<li class="stp-cart-row" data-stp-cart-id="' + esc(l.id) + '">' +
             '<span class="stp-cart-ph" aria-hidden="true">' + (l.photo ? '<img src="' + esc(l.photo) + '" alt="" loading="lazy">' : esc(l.e)) + '</span>' +
-            '<span class="stp-cart-txt"><b>' + esc(l.n) + '</b><small>' + esc([l.store, l.p != null ? money(l.p) + T(' each', ' pro Stück', ' c/u') : T('no price reported yet', 'noch kein Preis gemeldet', 'aún sin precio')].filter(Boolean).join(' · ')) + '</small></span>' +
+            '<span class="stp-cart-txt"><b>' + esc(foodName(l.n)) + '</b><small>' + esc([l.store, l.p != null ? money(l.p) + T(' each', ' pro Stück', ' c/u') : T('no price reported yet', 'noch kein Preis gemeldet', 'aún sin precio')].filter(Boolean).join(' · ')) + '</small></span>' +
             '<span class="stp-cart-q" role="group" aria-label="' + esc(T('Quantity of ', 'Menge von ', 'Cantidad de ') + l.n) + '">' +
             '<button type="button" class="stp-cart-step"' + (l.q <= 1 ? ' data-spend="1"' : '') + ' data-stp-cq="' + esc(l.id) + '" data-stp-cd="-1" aria-label="' + esc((l.q > 1 ? T('One less: ', 'Eins weniger: ', 'Uno menos: ') : T('Remove from the cart: ', 'Aus dem Warenkorb nehmen: ', 'Quitar del carrito: ')) + l.n) + '">\u2212</button>' +
             '<b aria-live="polite">' + l.q + '</b>' +
@@ -325,15 +327,21 @@
                 (tot.complete ? '' : ' ' + T((tot.all - tot.priced) + ' of ' + tot.all + ' have no price yet.', (tot.all - tot.priced) + ' von ' + tot.all + ' haben noch keinen Preis.', (tot.all - tot.priced) + ' de ' + tot.all + ' aún no tienen precio.'))) + '</p>'
             : '<p class="stp-fine">' + esc(T('Nobody has reported prices for these yet, so there’s no total.', 'Für diese Sachen hat noch niemand Preise gemeldet, deshalb gibt es keine Summe.', 'Nadie ha indicado aún precios para esto, así que no hay total.')) + '</p>';
         const scan = W.LowiShopScan && W.LowiShopScan.open, list = typeof W.tdShopOpen === 'function', G = giftDoor();
-        const acts = !ls.length ? '' : '<div class="stp-foot-acts stp-cart-acts">' +
-            (list ? '<button type="button" class="stp-go" data-stp="mylist">' + esc(T('Go shopping', 'Einkaufen gehen', 'Ir a comprar')) + '</button>' : '') +
-            (scan ? '<button type="button" class="stp-pill" data-stp="scanshop">' + ic.cart + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>' : '') +
-            (G ? '<button type="button" class="stp-pill" data-stp="gift">\u{1F91D} <span>' + esc(T('Ask for a hand with it', 'Um Hilfe dafür bitten', 'Pedir una mano con esto')) + '</span></button>' : '') + '</div>';
+        /* Oct 26 2026 (MAYA-HANDOFF 0.34, Emmanuel's iPad screenshot): the scan pill's icon had no size (212 px on iPad), so both
+           pills grew into huge circles that spilled out of the sheet. Now: title fixed on top, the list scrolls, and the actions
+           sit under it: Go shopping full width, then two matching pills with the same 18 px icon. "Someone else pays" turns
+           the whole cart into a Give a hand basket (gift-basket.js fromCart). */
+        const two = (scan ? '<button type="button" class="stp-pill stp-cart-act" data-stp="scanshop">' + ic.scan + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>' : '') +
+            (G ? '<button type="button" class="stp-pill stp-cart-act" data-stp="giftcart" data-spend="1">' + ic.gift + '<span>' + esc(T('Someone else pays', 'Jemand anderes zahlt', 'Que pague otra persona')) + '</span></button>' : '');
+        const acts = !ls.length ? '' : '<div class="stp-cart-acts">' +
+            (list ? '<button type="button" class="stp-go stp-cart-go" data-stp="mylist">' + ic.cart + '<span>' + esc(T('Go shopping', 'Einkaufen gehen', 'Ir a comprar')) + '</span></button>' : '') +
+            (two ? '<div class="stp-cart-two">' + two + '</div>' : '') + '</div>';
         return '<div class="stp-qv-card stp-cart-card" role="dialog" aria-modal="true" aria-labelledby="stpCartT">' +
-            '<div class="stp-qv-scroll"><h3 id="stpCartT">\u{1F6D2} ' + esc(T('Cart', 'Warenkorb', 'Carrito')) + (n ? ' <i class="stp-cart-n">' + n + '</i>' : '') + '</h3>' +
-            '<p class="stp-qv-sub">' + esc(T('It’s the same list as your shopping list.', 'Das ist dieselbe Liste wie deine Einkaufsliste.', 'Es la misma lista que tu lista de la compra.')) + '</p>' +
+            '<div class="stp-cart-head"><h3 id="stpCartT">\u{1F6D2} ' + esc(T('Cart', 'Warenkorb', 'Carrito')) + (n ? ' <i class="stp-cart-n">' + n + '</i>' : '') + '</h3>' +
+            '<p class="stp-qv-sub">' + esc(T('It’s the same list as your shopping list.', 'Das ist dieselbe Liste wie deine Einkaufsliste.', 'Es la misma lista que tu lista de la compra.')) + '</p></div>' +
+            '<div class="stp-qv-scroll stp-cart-scroll">' +
             (ls.length ? '<ul class="stp-cart-list">' + ls.map(row).join('') + '</ul>' : '<p class="stp-snack-none">' + esc(T('Your cart is empty. Tap a product, then + Cart.', 'Dein Warenkorb ist leer. Tipp auf ein Produkt und dann auf + Warenkorb.', 'Tu carrito está vacío. Toca un producto y luego + Carrito.')) + '</p>') +
-            totalHTML + acts + '</div>' +
+            totalHTML + '</div>' + acts +
             '<div class="stp-foot"><button type="button" class="stp-pill" data-stp="qv-close">' + esc(T('‹ Back to list', '‹ Zurück zur Liste', '‹ Volver a la lista')) + '</button>' +
             '<button type="button" class="stp-orb stp-close" data-stp="qv-close" aria-label="' + esc(T('Close cart', 'Warenkorb schließen', 'Cerrar carrito')) + '">' + ic.x + '</button></div></div>';
     }

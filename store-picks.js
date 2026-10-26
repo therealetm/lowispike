@@ -249,13 +249,78 @@
         try { if (GB && GB.serverReady && GB.serverReady()) return true; if (GB && GB.probe) GB.probe(); } catch (x) {}
         return false;
     }
+    /* Oct 26 (Emmanuel, MAYA-HANDOFF 0.22: "Remove Seller Zone in Supermarket. Seller Zone has its own section"): the Seller Zone
+       strip is no longer inside the Supermarket tab; Seller Zone keeps its own tab ("our Amazon"). The Shopping list pill became
+       the Cart (Warenkorb / Carrito), the step the viral grocery apps have: the same list, with quantities and an estimate. */
+    function cartN() { const sh = shelf(); try { return sh && sh.cartLines ? sh.cartLines().reduce((a, l) => a + l.q, 0) : 0; } catch (e) { return 0; } }
+    function cartBtnHTML() {
+        const n = cartN(), name = T('Cart', 'Warenkorb', 'Carrito');
+        return '<button type="button" class="stp-pill stp-cartbtn" data-stp="cart" aria-label="' + esc(name + (n ? ', ' + n : '')) + '">' + ic.cart + '<span>' + esc(name) + '</span>' + (n ? '<i class="stp-cart-n">' + n + '</i>' : '') + '</button>';
+    }
     function shopActs() {
-        const scan = W.LowiShopScan && W.LowiShopScan.open, list = typeof W.tdShopOpen === 'function';
-        const Z = W.LowiSellerZone, sz = Z && Z.stripHTML ? Z.stripHTML() : Z && Z.entryHTML ? Z.entryHTML() : '';
-        if (!scan && !list) return sz;
-        return sz + '<div class="stp-foot-acts">' +
+        const scan = W.LowiShopScan && W.LowiShopScan.open, cart = !!(shelf() && shelf().cartLines);
+        if (!scan && !cart) return '';
+        return '<div class="stp-foot-acts">' +
             (scan ? '<button type="button" class="stp-go stp-scanshop" data-stp="scanshop">' + ic.cart + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>' : '') +
-            (list ? '<button type="button" class="stp-pill stp-mylist" data-stp="mylist"><span>' + esc(T('Shopping list', 'Einkaufsliste', 'Lista de compra')) + '</span></button>' : '') + '</div>';
+            (cart ? cartBtnHTML() : '') + '</div>';
+    }
+    /* the Cart sheet: lines with photo, store, reported price, a - n + stepper and remove; an estimated total only from prices people
+       reported on the shelf (never invented); Go shopping opens the shopping list in shop mode */
+    function cartHTML() {
+        const sh = shelf(), CC = W.LowiCartCore;
+        let ls = [], tot = { sum: 0, priced: 0, all: 0, complete: false };
+        try { ls = sh.cartLines(); tot = sh.cartTotal(); } catch (e) {}
+        const money = v => (CC ? CC.money(v, ['en', 'de', 'es'][li()]) : '€' + v.toFixed(2));
+        const n = ls.reduce((a, l) => a + l.q, 0);
+        const row = l => '<li class="stp-cart-row" data-stp-cart-id="' + esc(l.id) + '">' +
+            '<span class="stp-cart-ph" aria-hidden="true">' + (l.photo ? '<img src="' + esc(l.photo) + '" alt="" loading="lazy">' : esc(l.e)) + '</span>' +
+            '<span class="stp-cart-txt"><b>' + esc(l.n) + '</b><small>' + esc([l.store, l.p != null ? money(l.p) + T(' each', ' pro Stück', ' c/u') : T('no price reported yet', 'noch kein Preis gemeldet', 'aún sin precio')].filter(Boolean).join(' · ')) + '</small></span>' +
+            '<span class="stp-cart-q" role="group" aria-label="' + esc(T('Quantity of ', 'Menge von ', 'Cantidad de ') + l.n) + '">' +
+            '<button type="button" class="stp-cart-step" data-stp-cq="' + esc(l.id) + '" data-stp-cd="-1" aria-label="' + esc((l.q > 1 ? T('One less: ', 'Eins weniger: ', 'Uno menos: ') : T('Remove from the cart: ', 'Aus dem Warenkorb nehmen: ', 'Quitar del carrito: ')) + l.n) + '">\u2212</button>' +
+            '<b aria-live="polite">' + l.q + '</b>' +
+            '<button type="button" class="stp-cart-step" data-stp-cq="' + esc(l.id) + '" data-stp-cd="1" aria-label="' + esc(T('One more: ', 'Eins mehr: ', 'Uno más: ') + l.n) + '"' + (CC && l.q >= CC.MAX_Q ? ' disabled' : '') + '>+</button></span></li>';
+        const totalHTML = !ls.length ? '' : tot.priced
+            ? '<p class="stp-cart-total"><span>' + esc(tot.complete ? T('Estimated total', 'Geschätzte Summe', 'Total estimado') : T('Estimate so far', 'Bisher geschätzt', 'Estimado hasta ahora')) + '</span><b>' + esc(money(tot.sum)) + '</b></p>' +
+              '<p class="stp-fine">' + esc(T('From prices people reported on the shelf. In the shop it can differ.', 'Aus Preisen, die Leute am Regal gemeldet haben. Im Laden kann es anders sein.', 'Con precios que la gente ha visto en la tienda. Allí puede variar.') +
+                (tot.complete ? '' : ' ' + T((tot.all - tot.priced) + ' of ' + tot.all + ' have no price yet.', (tot.all - tot.priced) + ' von ' + tot.all + ' haben noch keinen Preis.', (tot.all - tot.priced) + ' de ' + tot.all + ' aún no tienen precio.'))) + '</p>'
+            : '<p class="stp-fine">' + esc(T('Nobody has reported prices for these yet, so there’s no total.', 'Für diese Sachen hat noch niemand Preise gemeldet, deshalb gibt es keine Summe.', 'Nadie ha indicado aún precios para esto, así que no hay total.')) + '</p>';
+        const scan = W.LowiShopScan && W.LowiShopScan.open, list = typeof W.tdShopOpen === 'function', G = giftDoor();
+        const acts = !ls.length ? '' : '<div class="stp-foot-acts stp-cart-acts">' +
+            (list ? '<button type="button" class="stp-go" data-stp="mylist">' + esc(T('Go shopping', 'Einkaufen gehen', 'Ir a comprar')) + '</button>' : '') +
+            (scan ? '<button type="button" class="stp-pill" data-stp="scanshop">' + ic.cart + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>' : '') +
+            (G ? '<button type="button" class="stp-pill" data-stp="gift">\u{1F91D} <span>' + esc(T('Ask for a hand with it', 'Um Hilfe dafür bitten', 'Pedir una mano con esto')) + '</span></button>' : '') + '</div>';
+        return '<div class="stp-qv-card stp-cart-card" role="dialog" aria-modal="true" aria-labelledby="stpCartT">' +
+            '<div class="stp-qv-scroll"><h3 id="stpCartT">\u{1F6D2} ' + esc(T('Cart', 'Warenkorb', 'Carrito')) + (n ? ' <i class="stp-cart-n">' + n + '</i>' : '') + '</h3>' +
+            '<p class="stp-qv-sub">' + esc(T('It’s the same list as your shopping list.', 'Das ist dieselbe Liste wie deine Einkaufsliste.', 'Es la misma lista que tu lista de la compra.')) + '</p>' +
+            (ls.length ? '<ul class="stp-cart-list">' + ls.map(row).join('') + '</ul>' : '<p class="stp-snack-none">' + esc(T('Your cart is empty. Tap a product, then + Cart.', 'Dein Warenkorb ist leer. Tipp auf ein Produkt und dann auf + Warenkorb.', 'Tu carrito está vacío. Toca un producto y luego + Carrito.')) + '</p>') +
+            totalHTML + acts + '</div>' +
+            '<div class="stp-foot"><button type="button" class="stp-pill" data-stp="qv-close">' + esc(T('‹ Back to list', '‹ Zurück zur Liste', '‹ Volver a la lista')) + '</button>' +
+            '<button type="button" class="stp-orb stp-close" data-stp="qv-close" aria-label="' + esc(T('Close cart', 'Warenkorb schließen', 'Cerrar carrito')) + '">' + ic.x + '</button></div></div>';
+    }
+    let cartOpen = false;
+    function openCart() {
+        if (!ov || !shelf() || !shelf().cartLines) return;
+        if (qv) qv.remove();
+        qvFrom = -1; cartOpen = true;
+        qv = D.createElement('div');
+        qv.className = 'stp-qv stp-cartv';
+        qv.innerHTML = cartHTML();
+        ov.appendChild(qv);
+        const card = ov.querySelector('.stp-card'); if (card) card.setAttribute('aria-hidden', 'true');
+        requestAnimationFrame(() => { if (qv) { qv.classList.add('in'); const h = qv.querySelector('.stp-pill[data-stp="qv-close"]'); if (h) try { h.focus({ preventScroll: true }); } catch (e) {} } });
+    }
+    /* a stepper tap: repaint the sheet in place and keep focus on the same button (or the next row when a line went away) */
+    function cartClick(t) {
+        const b = t.closest('[data-stp-cq]'); if (!b) return false;
+        const sh = shelf(); if (!sh || !sh.setQty || b.disabled) return true;
+        const id = b.getAttribute('data-stp-cq'), d = +b.getAttribute('data-stp-cd') || 0;
+        const l = (sh.cartLines() || []).find(x => x.id === id); if (!l) return true;
+        const r = sh.setQty(id, l.q + d);
+        qv.innerHTML = cartHTML();
+        const keep = r === 'set' ? qv.querySelector('[data-stp-cq="' + id.replace(/"/g, '') + '"][data-stp-cd="' + d + '"]') : qv.querySelector('.stp-cart-step') || qv.querySelector('[data-stp="qv-close"]');
+        if (keep) try { keep.focus({ preventScroll: true }); } catch (e) {}
+        const cb = ov && ov.querySelector('.stp-card .stp-cartbtn'); if (cb) cb.outerHTML = cartBtnHTML();
+        return true;
     }
     function footBtns(left) {
         return '<div class="stp-foot">' + (left || '<span></span>') + '<button type="button" class="stp-orb stp-close" data-stp="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + ic.x + '</button></div>';
@@ -410,16 +475,17 @@
                 'Allgemeine Ernährungshilfe vom Etikett, keine medizinische Beratung. Dein eigener Blutzucker kann anders reagieren; deine Grenzen klärst du mit deiner Ärztin oder deinem Arzt.',
                 'Orientación general a partir de la etiqueta, no consejo médico. Tu azúcar en sangre puede reaccionar distinto; consulta tus límites con tu médico.')) + '</p></div>' +
             (/^(snacks|sweets|fruit)$/.test(r.group || '') ? '<button type="button" class="stp-go stp-snack-qv" data-stp-snack-qv="' + esc(p.n) + '">' + esc(T('+ Snacks to buy', '+ Snacks zum Einkaufen', '+ Snacks para comprar')) + '</button>' : '') +
-            (shelf() ? '<button type="button" class="stp-go stp-kit-qv" data-stp-kit-qv="' + esc(p.n) + '">' + esc(T('+ Shopping cart', '+ Einkaufswagen', '+ Carrito')) + '</button>' : '') +
+            (shelf() ? '<button type="button" class="stp-go stp-kit-qv" data-stp-kit-qv="' + esc(p.n) + '">' + esc(T('+ Cart', '+ Warenkorb', '+ Carrito')) + '</button>' : '') +
             '<div class="stp-foot"><button type="button" class="stp-pill" data-stp="qv-close">' + esc(T('‹ Back to list', '‹ Zurück zur Liste', '‹ Volver a la lista')) + '</button>' +
             '<button type="button" class="stp-orb stp-close" data-stp="qv-close" aria-label="' + esc(T('Close product', 'Produkt schließen', 'Cerrar producto')) + '">' + ic.x + '</button></div></div>';
     }
-    /* Oct 24: "+ Shopping cart" on a product card puts it on the shopping list, to buy later (Kitchen tab shows it) */
+    /* Oct 24: "+ Cart" on a product card puts it on the shopping list, to buy later (Oct 26: the Supermarket's Cart shows it) */
     function qvCart(t) {
         const b = t.closest('[data-stp-kit-qv]'); if (!b || b.disabled) return !!b;
         const n = b.getAttribute('data-stp-kit-qv'), added = cartAdd(n);
         b.disabled = true; b.classList.add('done');
-        b.textContent = added ? T('✓ In your shopping cart', '✓ Im Einkaufswagen', '✓ En tu carrito') : T('✓ Already in your shopping cart', '✓ Schon im Einkaufswagen', '✓ Ya está en tu carrito');
+        b.textContent = added ? T('✓ In your cart', '✓ Im Warenkorb', '✓ En tu carrito') : T('✓ Already in your cart', '✓ Schon im Warenkorb', '✓ Ya está en tu carrito');
+        const cb = ov && ov.querySelector('.stp-card .stp-cartbtn'); if (cb) cb.outerHTML = cartBtnHTML();
         return true;
     }
     function openQuick(i) {
@@ -438,8 +504,9 @@
     }
     function closeQuick() {
         if (!qv) return;
-        const o = qv; qv = null;
+        const o = qv, wasCart = cartOpen; qv = null; cartOpen = false;
         o.remove();
+        if (wasCart && ov) { const cb = ov.querySelector('.stp-card .stp-cartbtn'); if (cb) { cb.outerHTML = cartBtnHTML(); const nb = ov.querySelector('.stp-card .stp-cartbtn'); if (nb) try { nb.focus({ preventScroll: true }); } catch (e) {} } }
         if (!ov) return;
         const card = ov.querySelector('.stp-card'); if (card) card.removeAttribute('aria-hidden');
         const b = ov.querySelector('[data-stp-item="' + qvFrom + '"]');
@@ -523,7 +590,7 @@
         if (!ov) return;
         const sc = ov.querySelector('.stp-scroll'), top = sc ? sc.scrollTop : 0;
         const hadQ = D.activeElement && D.activeElement.classList && D.activeElement.classList.contains('stp-q');
-        qv = null;
+        qv = null; cartOpen = false;
         ov.innerHTML = onSz() ? szHTML() : onKit() ? kitHTML() : view === 'pick' ? pickHTML(state) : listHTML(state);
         watchThumbs();
         const sc2 = ov.querySelector('.stp-scroll'); if (sc2 && state === 'keep') sc2.scrollTop = top;
@@ -591,6 +658,13 @@
         if (Date.now() - dragAt < 450) return; /* the click a drag down on the top bar leaves behind */
         const t = e.target.closest ? e.target : null; if (!t) return;
         if (qv && (e.target === qv || (t.closest('[data-stp="qv-close"]') && qv.contains(t)))) { closeQuick(); return; }
+        if (qv && cartOpen && qv.contains(t)) {
+            if (cartClick(t)) return;
+            const ca = t.closest('[data-stp]'), a2 = ca && ca.getAttribute('data-stp');
+            if (a2 === 'gift') { closeQuick(); try { W.LowiGiftBasket.open('shop', 'mine'); } catch (x) {} return; }
+            if (a2 === 'mylist' || a2 === 'scanshop') { spend(e); close(); setTimeout(() => { try { a2 === 'mylist' ? W.tdShopOpen() : W.LowiShopScan.open(); } catch (x) {} }, 200); return; }
+            return;
+        }
         if (qv && qv.contains(t) && qvCart(t)) return;
         if (qv && qv.contains(t)) { snackClick(t); return; }
         if (snackClick(t)) return;
@@ -614,6 +688,7 @@
         if (a === 'scanshop') { close(); setTimeout(() => { try { W.LowiShopScan.open(); } catch (x) {} }, 200); return; }
         if (a === 'sellerzone') { setTab('sz'); return; }
         if (a === 'mylist') { close(); setTimeout(() => { try { W.tdShopOpen(); } catch (x) {} }, 200); return; }
+        if (a === 'cart') { openCart(); return; }
         if (a === 'pick') { view = 'pick'; return paint(); }
         if (a === 'list') return showList();
         if (a === 'locate') return locate();
@@ -725,7 +800,7 @@
     }
     function close() {
         if (!ov) return;
-        const o = ov; ov = null; qv = null;
+        const o = ov; ov = null; qv = null; cartOpen = false;
         if (io) { io.disconnect(); io = null; }
         D.documentElement.classList.remove('stp-open');
         where = null; place = null; near = null; busy = false; /* the position is forgotten with the panel */

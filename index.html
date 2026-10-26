@@ -2878,6 +2878,7 @@ window.LowiG1 = {mini, steps:() => stepList().map(x => x.k), start, close, line,
 </script>
 <script src="kitchen-core.js?v=20261026-132627"></script>
 <script src="kitchen-game-core.js?v=20261026-132627"></script>
+<script src="cart-core.js?v=20261026-132627"></script>
 <style id="homecss">
 /* ===== G1 part 2: simpler Today ===== */
 #tab-home .g1-lead{margin-top:6px;font-size:15px;line-height:1.35;font-weight:600;color:var(--muted,rgba(255,255,255,.72))}
@@ -7804,7 +7805,11 @@ function shBoot(){
     dropList:id => { const n = SH.list.length; SH.list = SH.list.filter(x => x.id !== id); if (SH.list.length === n) return false; shSave(); return true; },
     /* Oct 16 in-store scan (shop-scan.js): a scanned product goes on the list as in the cart; undo puts it back */
     addScanned:p => { const C = window.LowiShopScanCore, r = C && C.cartAdd(SH.list, p, uid); if (!r) return null; shSave(); return {action:r.action, n:r.item.n, q:r.item.q || 1, count:C.cartCount(SH.list), undo:() => { r.undo(SH.list); shSave(); }}; },
-    cartCount:() => window.LowiShopScanCore ? LowiShopScanCore.cartCount(SH.list) : 0};
+    cartCount:() => window.LowiShopScanCore ? LowiShopScanCore.cartCount(SH.list) : 0,
+    /* Oct 26 Supermarket Cart (cart-core.js; Warenkorb / Carrito): the same list, things still to buy, with quantities and an estimate from reported prices */
+    cartLines:() => window.LowiCartCore ? LowiCartCore.lines(SH.list, s => storeById(s).n) : [],
+    cartTotal:() => window.LowiCartCore ? LowiCartCore.total(SH.list) : {sum:0, priced:0, all:0, complete:false},
+    setQty:(id, q) => { const r = window.LowiCartCore ? LowiCartCore.setQty(SH.list, id, q) : null; if (r) shSave(); return r; }};
   if (window.LowiHost && LowiHost.tab() === "shelf") showTab();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", shBoot); else shBoot();

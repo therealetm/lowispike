@@ -130,3 +130,15 @@ test('wired in: loaded, cached offline, opened from Supermarket, prices from the
   assert.match(ui, /not live prices/i, 'estimates are labelled');
   assert.match(ui, /not medical advice/i);
 });
+
+test('MAYA-HANDOFF 0.22: the shopping cart is Cart / Warenkorb / Carrito, never a basket or bucket on screen, and the week fills that Cart', () => {
+  const ui = read('week-basket.js');
+  const shown = [...ui.matchAll(/T\('((?:[^'\\]|\\.)*)'/g)].map(m => m[1]).join(' | ');
+  assert.doesNotMatch(shown, /basket|bucket/i, 'English strings never say basket or bucket');
+  assert.match(ui, /Put it in my Cart/); assert.match(ui, /In meinen Warenkorb/); assert.match(ui, /carrito/);
+  assert.match(ui, /\.stp-cartbtn/, 'Open my Cart presses the Supermarket Cart button (store-picks.js owns the pane)');
+  const step = require('../tutorial-steps.js').STEPS.find(s => s.id === 'new-week-shop');
+  assert.ok(step, 'What\'s New step for Shop from home');
+  assert.match(step.text.en, /Cart/); assert.match(step.text.de, /Warenkorb/); assert.match(step.text.es, /carrito/);
+  for (const l of ['en', 'de', 'es']) assert.doesNotMatch(step.text[l], /basket|bucket|\bKorb\b|cesta/i);
+});

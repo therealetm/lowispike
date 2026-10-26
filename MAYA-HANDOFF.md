@@ -1090,6 +1090,21 @@ literally inside of our supermarket. Include that into the handover if you're no
 of the weekly limit."
 - Task "LOWiSPIKE: redesign Supermarket as virtual grocery shopping" started; working notes `HANDOFF-supermarket.md` on its
   branch. Open work until it is live (report it only once live). Research on the viral apps: agent-harness `research/`.
+- Screenshot he sent: Shop > Supermarket, "What can I buy here?", store "Lidl · Merkurstraße 24, 24943 Flensburg" with Change,
+  "Search this shop", "Show left out", Seller Zone row (Irischer Knusperkäse, Bio Nori Snack Sea Salt, KoRo nuts), "Scan in the
+  shop", "Shopping list", "SNACKS TO BUY".
+- What makes the viral apps work (Sesame task 8e42ed90 + /home/sprite/research_notes.md): choosy's flow "pick my supermarket,
+  household, weekly budget, what I could save, way of eating"; Potto/mise/Herbi/TapCook/Super plan a whole week in one tap under a
+  weekly budget with a running total; household size and portions; pick the nights you cook; staples you have stay off the bill;
+  store-specific baskets; choosy sends the list to REWE delivery; recipe import from TikTok/Instagram.
+- Decided (he said don't ask), slice 1: Supermarket opens with "Shop from home", a weekly basket: household size, weekly budget,
+  nights you cook, the store -> a week of low-spike dinners from our own recipes, priced with the existing seven-store estimates
+  (LC_STORES / LowiStoreList.price, labelled estimates, not live prices), running total against the budget, swap a dinner, what's
+  already in your kitchen comes off the bill, one tap puts the basket on the existing shopping list, then the existing delivery
+  links (REWE Lieferservice, Knuspr, Flink, Picnic). Extend what exists, never a second list or price model; no invented products,
+  prices or health claims; EN/DE/ES; "your companion", never "Misty"; quiet release. Later slices (tickets if not reached): recipe
+  import from the share button, shared household list, offers. Branch `supermarket-virtual`, worktree /home/sprite/wt-supermarket,
+  COORD-supermarket.md. Waits for kitchen-pantry (0.19) to release before touching store-picks.js.
 
 ### 0.22 Supermarket = our Choosy, Cart (Warenkorb), Seller Zone out of Supermarket, Give a hand = swipe to pay groceries (Emmanuel, Mon 26 Oct 2026 1:07 PM CET, voice)
 

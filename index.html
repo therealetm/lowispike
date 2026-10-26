@@ -5762,7 +5762,7 @@ function endKeep(){ if (!P) return; P.confirm = false; P.last = performance.now(
 let mvSkipPop = false;
 function mvGuard(){ try { if (!(history.state && history.state.lowiMv)) history.pushState({lowiMv:1}, ""); } catch(e){} }
 function mvUnguard(){ try { if (history.state && history.state.lowiMv) { mvSkipPop = true; history.back(); setTimeout(() => { mvSkipPop = false; }, 600); } } catch(e){} }
-function mvBack(){ if (!$("#mv-player.on")) return false; if (P && !P.done) { if (P.confirm) finish(false); else endAsk(); } else closePlayer(); return true; }
+function mvBack(){ if (window.LowiMoveFinish && LowiMoveFinish.open()) { LowiMoveFinish.close("back"); return true; } if (!$("#mv-player.on")) return false; if (P && !P.done) { if (P.confirm) finish(false); else endAsk(); } else closePlayer(); return true; }
 addEventListener("popstate", () => { if (mvSkipPop) { mvSkipPop = false; return; } if (mvBack() && $("#mv-player.on")) mvGuard(); });
 document.addEventListener("keydown", e => { if (e.key !== "Escape" || !$("#mv-player.on")) return; e.preventDefault(); if (P && P.confirm) endKeep(); else mvBack(); });
 
@@ -5771,10 +5771,9 @@ function finish(complete){
   if (!P || P.done) return; P.done = true; cancelAnimationFrame(P.raf); lockScreen(false); mvHush();
   const h = H(), moved = Math.round(P.moved), min = Math.floor(moved / 60);
   let xp = 0, lines = [];
-  const sess = {id:uid(), ts:Date.now(), day:today(), fmt:P.fmt, name:P.name, mins:P.mins, moved, eq:M.eq.slice(), postMeal:P.postMeal && moved >= 180, xp:0};
-  M.sessions.unshift(sess); if (M.sessions.length > 200) M.sessions.length = 200; save();
+  const sess = saveSession({fmt:P.fmt, name:P.name, mins:P.mins, moved, postMeal:P.postMeal && moved >= 180});
+  const sr = sessionReward(sess, h); xp = sr.xp; const big = sr.big; if (big) lines.push("+" + big + " XP · " + min + "-min session");
   if (h && min >= 3) {
-    const a = h.award("move:session", null, {amt:Math.min(30, 2 * min), perDay:3, label:"Move session · " + min + " min"}); xp += a; if (a) lines.push("+" + a + " XP · " + min + "-min session");
     if (P.postMeal && moved >= 300) { const b = h.award("move:meal", null, {amt:15, perDay:3, label:"Moved after a meal"}); xp += b; if (b) lines.push("+" + b + " XP · moved after a meal"); }
     if (P.postMeal && moved >= 540 && h.completeQuest) { const c = h.completeQuest("walk"); if (c) { xp += c; lines.push("+" + c + " XP · quest done"); } }
     const walkMin = Math.floor(dayMoves().filter(s => s.fmt === "walk" || s.fmt === "lift").reduce((a, s) => a + s.moved, 0) / 60);
@@ -5791,6 +5790,35 @@ function finish(complete){
     '<button class="btn primary" data-mv="done" style="margin-top:22px">Done</button></div>';
   if (window.LowiSFX) { if (M.sound) try{window.LowiSFX&&LowiSFX.play("workoutDone")}catch(_){}; } else { beep(880, .18); setTimeout(() => beep(1320, .3), 160); }/*r3e*/
   P = null;
+  celebrateSession(min, big, !!(M.voice || AUD()));
+}
+/* MAYA-HANDOFF 0.37 (26 Oct 2026, Emmanuel: "I just finished a session ... and I didn't get any points. No animation, no congrats"):
+   ONE way a finished Move session is saved and paid, for the Move player (finish above) and Mirror mode / Kreuzheben (MOVE.record,
+   mirror-move.js). Before, Mirror mode only fired lowi:mirror-done, which nothing listened to: no Verlauf, no Diese Woche, no XP.
+   The reward is move-finish-core.js xpFor(min): the biggest single reward in the app, at most PER_DAY a day, minutes that really ran. */
+function saveSession(o){
+  const sess = {id:uid(), ts:Date.now(), day:today(), fmt:o.fmt, name:o.name, mins:o.mins, moved:Math.max(0, Math.round(+o.moved || 0)), eq:M.eq.slice(), postMeal:!!o.postMeal, xp:0};
+  if (o.kind) sess.kind = o.kind; if (o.reps) sess.reps = o.reps;
+  M.sessions.unshift(sess); if (M.sessions.length > 200) M.sessions.length = 200; save();
+  return sess;
+}
+function sessionReward(sess, h){
+  const MF = window.LowiMoveFinishCore, min = Math.floor(sess.moved / 60), amt = MF ? MF.xpFor(min) : (min >= 3 ? Math.min(30, 2 * min) : 0);
+  let big = 0;
+  if (h && amt > 0) big = h.award("move:session", null, {amt, perDay:MF ? MF.PER_DAY : 3, label:"Move session · " + min + " min", eventId:"move:" + sess.id, quiet:true}) || 0;
+  sess.xp = big; save();
+  return {xp:big, big, min};
+}
+function celebrateSession(min, xp, voice, onClose){
+  try { if (window.LowiMoveFinish && min >= 3) LowiMoveFinish.celebrate({min, xp, voice, onClose}); else if (onClose) onClose(); } catch(e){ if (onClose) onClose(); }
+}
+/* Mirror mode and Kreuzheben: o = {fmt:"mirror"|"hinge", name, moved (seconds that really ran), reps?, voice?, onClose?} -> {xp, min, sess} */
+function record(o){
+  o = o || {}; const h = H(); const sess = saveSession({fmt:o.fmt || "mirror", name:o.name || "Mirror mode", mins:Math.max(1, Math.round((+o.moved || 0) / 60)), moved:o.moved, kind:o.kind, reps:o.reps});
+  const r = sessionReward(sess, h);
+  if ($("#mv-screen.on")) renderScreen(); if (h && h.refresh) h.refresh();
+  if (o.celebrate !== false) celebrateSession(r.min, r.xp, !!o.voice, o.onClose);
+  return {xp:r.xp, min:r.min, sess};
 }
 function closePlayer(){ mvUnguard(); const el = $("#mv-player"); if (window.LowiMovePlayer) LowiMovePlayer.close(el); if (el) { el.classList.remove("on", "mv-asking"); setTimeout(() => { if (!P) el.innerHTML = ""; }, 400); } if ($("#mv-screen.on")) renderScreen(); const h = H(); if (h && h.refresh) h.refresh(); }
 
@@ -5844,7 +5872,7 @@ document.addEventListener("change", e => { if (e.target.id === "mv-steps") { set
 document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.id === "mv-steps") e.target.blur(); });
 document.addEventListener("visibilitychange", () => { if (!document.hidden && P && !P.done) lockScreen(true); });
 
-window.MOVE = {showTab, todayHTML:todayCardHTML, todayCardHTML, mealPromptHTML, open, close, start, reset:() => { localStorage.removeItem(KEY); },
+window.MOVE = {showTab, todayHTML:todayCardHTML, todayCardHTML, mealPromptHTML, open, close, start, record, refresh:() => { if ($("#mv-screen.on")) renderScreen(); }, reset:() => { localStorage.removeItem(KEY); },
   _t:{build, MOVES, FORMATS, BODY, AFTER, moveStreak, state:() => M, player:() => P, setSpeed:s => { speed = s; }, setSteps, reload:load}};
 })();
 
@@ -7087,7 +7115,7 @@ window.LowiHost = {
     if (ov.eventId && S.ledger.some(e => e.eventId === ov.eventId)) return 0;
     if (ov.perDay && S.ledger.filter(e => e.day === t && e.src === src).length >= ov.perDay) return 0;
     if (!ov.perDay && S.ledger.some(e => e.src === src)) return 0;
-    const gained = award(ov.amt || 10, ov.label || "XP", el, src, ov.eventId); if (TAB === "profile") renderProfile(); return gained; },
+    const gained = award(ov.amt || 10, ov.label || "XP", el, src, ov.eventId, (ov.quiet || ov.extra) ? {quiet:!!ov.quiet, extra:ov.extra} : undefined); if (TAB === "profile") renderProfile(); return gained; },
   completeQuest(id){ if (id === "walk" && !S.quests.done.walk && curQuests().some(q => q.id === "walk")) { questDone("walk"); return 1; } return 0; },
   lastMeal(){ const l = S.logs[S.logs.length - 1]; return l ? {ts:l.ts, name:l.t, n:l.t, r:l.r, e:l.e} : null; },
   openSheet:html => sheet(html), closeSheet, toast,
@@ -21706,6 +21734,9 @@ window.LowiCommunityHost = {
 <script src="mirror-hinge-core.js?v=20261026-174856"></script>
 <script src="mirror-hinge.js?v=20261026-174856"></script>
 <script src="mirror-move.js?v=20261026-174856"></script>
+<link rel="stylesheet" id="mfCss" href="move-finish.css?v=20261026-174856">
+<script src="move-finish-core.js?v=20261026-174856"></script>
+<script src="move-finish.js?v=20261026-174856"></script>
 <link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261026-174856">
 <script src="fy-embed.js?v=20261026-174856"></script>
 <link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261026-174856">

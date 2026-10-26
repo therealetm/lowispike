@@ -1533,7 +1533,22 @@ consistent; (3) a grand full-screen finish celebration (companion celebrates, re
 style, haptics, "Geschafft!" with minutes and points), smooth, tap to dismiss, calm under Reduce Motion, companion's own name,
 EN/DE/ES; (4) Diese Woche, Verlauf and the companion's day update right away.
 Task "LOWiSPIKE: Move session gives no reward + grand finish celebration" (Sesame, 26 Oct), worktree wt-move-reward, branch
-move-reward, COORD-move-reward.md. Status: in progress.
+move-reward, COORD-move-reward.md, continued by "finish + ship Move session reward + grand finish (continue)".
+Status: DONE, released with the build named in the release line below (quiet, What's New tour step `new-move-finish`).
+What was wrong: Mirror mode and Kreuzheben only fired `lowi:mirror-done`, which nothing listened to, so they were never saved
+(no Diese Woche, no Verlauf, no XP). The Move player saved but paid at most 30 XP (`Math.min(30, 2 * min)`).
+What it does now: mirror-move.js finish() -> `MOVE.record({fmt:'mirror'|'hinge', moved: real seconds of follow/rest,
+complete:true})` -> index.html saveSession + sessionReward + celebrateSession (one path with the Move player).
+Reward (move-finish-core.js): 150 + 5 per real minute, up to 60 minutes (450 max), 3 paid sessions a day (`move:session`,
+eventId per session, quiet award). Counts from 3 minutes, or from 1 real minute when the routine ran to its own end
+(`complete`): Kreuzheben is about 3 minutes and skipping a rest makes it shorter, so it must never pay nothing again.
+The 4th session of a day still saves and celebrates with "no more points today". Grand finish: move-finish.js/.css,
+full-screen, companion's own name, EN/DE/ES, Reduce Motion calm, Back closes it, its line in the recorded voice
+(tools/app-voice/phrases.cjs source `move-finish`). Tests: tests/move-finish.test.cjs (9, all fail on the old code);
+tests/xp-tap.test.cjs health caps moved to the core. Proof: tools/move-finish/proof.cjs (Kreuzheben 130 s -> 160 XP,
+Desk 10 min -> 200 XP, shows in Verlauf, own name, covers the screen, no errors) on iPhone 13, iPhone 13 Reduce Motion,
+iPhone 13 German, iPad upright Spanish, iPad sideways German and Chrome 390: 102/102 checks.
+Not checked on Emmanuel's real iPhone/iPad yet.
 
 ### GitHub
 

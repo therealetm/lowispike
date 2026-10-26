@@ -42,7 +42,7 @@ assert.ok(/r\[0\] === "pending" \? ""/.test(card), 'no "Tier pending" badge on t
 assert.ok(/data-b3="label"/.test(fnBody(html, 'function simpleCardHTML(p){')), 'label evidence stays reachable as a secondary link (in Details)');
 assert.ok(/case "label": if \(CUR && window\.LowiDiscovery\) LowiDiscovery\.openProduct\(CUR\)/.test(html), 'label link opens the field guide');
 
-const eat = fnBody(html, 'function eatCur(btn){');
+const eat = fnBody(html, 'function eatCur(btn, prod){');
 assert.ok(/LowiVitalsBridge\.logMeal\(/.test(eat), 'Ate it logs through the single meal ledger');
 assert.ok(!/award\(/.test(eat), 'Ate it does not award XP a second time (logMeal awards it once)');
 assert.ok(!/verdict\s*===\s*"ok"\s*\?/.test(eat), 'logging earns XP whatever the spike estimate');

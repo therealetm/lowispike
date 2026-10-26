@@ -8,7 +8,10 @@
    glasses of water and Moves. Not tracked = no energy from it yet, never "you didn't". Low energy: she looks tired (spiky
    food logged: worn out) and is too tired to head out; the sun-full bonus still counts and she leaves once she has energy.
    Full of energy when she leaves: she brings back a second find. The countdown shows in her empty bubble on Home.
-   The trip is timestamps only (start/back), reconciled on load: nothing simulates in the background. */
+   The trip is timestamps only (start/back), reconciled on load: nothing simulates in the background.
+   Oct 26 (Emmanuel: "You know the auto fly. If they want to manually tap, let them do that. But not automatically."): the
+   lines above about leaving on her own are history. A full sun pays the bonus and asks; she heads out only when the user
+   taps "Send her exploring" (sun sheet). Old automatic trips are brought home on the next open with their finds. */
 (function () {
     'use strict';
     const W = typeof window !== 'undefined' ? window : globalThis, D = W.document;
@@ -196,8 +199,10 @@
         if (trip.vigor === 'thriving' && trip.item2) out.push({ id: trip.item2, day, bonus: true });
         return out;
     }
+    /* Oct 26 (Emmanuel: "You know the auto fly. If they want to manually tap, let them do that. But not automatically."): a
+       trip only ever starts from a tap, and is marked manual so a trip saved by an older build can be told apart */
     function makeTrip(key, owned, now, tier) {
-        const item = pickItem(key, owned), t = { start: now, back: now + AWAY_MS, item, got: false, vigor: tier || 'ok' };
+        const item = pickItem(key, owned), t = { start: now, back: now + AWAY_MS, item, got: false, vigor: tier || 'ok', manual: true };
         if (tier === 'thriving') t.item2 = pickItem(key + ':2', (owned || []).concat([item]));
         return t;
     }
@@ -233,7 +238,26 @@
         if (!p.keep) { t.lost = [trip.item, trip.item2].filter(Boolean); delete t.item; delete t.item2; }
         return { trip: t, finds, keep: p.keep, plan: p };
     }
-    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, RECALL_KEEP, tended, classify, points, model, pickItem, fmtLeft, fmtBack, fmtHM, msToMidnight, dayKey, verdict, energy, WELCOME, welcomeStart, welcomeK, FEEL, feel, mayDepart, tripFinds, makeTrip, recallPlan, recallTrip };
+    /* Oct 26: a trip that an older build started on its own (no manual flag) is brought home on the next open, quietly, with
+       her find(s): the user never chose it. Trips the user started keep running. Returns how many were brought home. */
+    function settleAuto(g, now) {
+        now = +now || Date.now();
+        if (!g || !g.trips) return 0;
+        if (!Array.isArray(g.items)) g.items = [];
+        let n = 0;
+        for (const key of Object.keys(g.trips)) {
+            const t = g.trips[key];
+            if (!t || typeof t !== 'object' || t.manual || t.got || !(+t.start > 0) || !(+t.back > now)) continue;
+            const r = recallTrip(t, now, key);
+            if (!r) continue;
+            r.trip.auto = true;
+            g.trips[key] = r.trip;
+            for (const f of r.finds) if (!g.items.some(i => i && i.day === key && !!i.bonus === !!f.bonus)) g.items.push(Object.assign({ ts: now }, f));
+            n++;
+        }
+        return n;
+    }
+    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, RECALL_KEEP, tended, classify, points, model, pickItem, fmtLeft, fmtBack, fmtHM, msToMidnight, dayKey, verdict, energy, WELCOME, welcomeStart, welcomeK, FEEL, feel, mayDepart, tripFinds, makeTrip, recallPlan, recallTrip, settleAuto };
     if (!D) {
         if (typeof module !== 'undefined' && module.exports) module.exports = core;
         return;
@@ -248,9 +272,12 @@
         away: ['Out tending the world', 'Pflegt die Welt', 'Cuidando el mundo'],
         back: ['back in', 'zurück in', 'vuelve en'],
         title: ['Your sun is full!', 'Deine Sonne ist voll!', '¡Tu sol está lleno!'],
-        thanks: ['Thank you! All that sunshine gives me so much energy. I’m flying out into the world to help everything grow, and I’ll bring you something back. Watch for me out there!', 'Danke! So viel Sonne gibt mir so viel Kraft. Ich flieg raus in die Welt und helfe allem beim Wachsen, und ich bring dir was mit. Schau, wo ich herumfliege!', '¡Gracias! Tanto sol me da mucha energía. Salgo volando al mundo a ayudar a que todo crezca y te traigo algo. ¡Búscame por ahí!'],
+        goAsk: ['Thank you! All that sunshine gives me so much energy. Want to send me out exploring? I’ll help everything grow and bring you something back. Or I just stay here with you.', 'Danke! So viel Sonne gibt mir so viel Kraft. Willst du mich auf Entdeckungstour schicken? Ich helfe allem beim Wachsen und bring dir was mit. Oder ich bleib einfach hier bei dir.', '¡Gracias! Tanto sol me da mucha energía. ¿Me mandas a explorar? Ayudaré a que todo crezca y te traeré algo. O me quedo aquí contigo.'],
+        sendOut: ['Send her exploring', 'Auf Entdeckungstour schicken', 'Mandarla a explorar'],
+        notNow: ['Not now', 'Jetzt nicht', 'Ahora no'],
+        thanksDone: ['Thank you! All that sunshine gives me so much energy.', 'Danke! So viel Sonne gibt mir so viel Kraft.', '¡Gracias! Tanto sol me da mucha energía.'],
+        sendNote: ['Today’s trip is ready. She only heads out when you send her, and you can call her back any time.', 'Der Ausflug für heute ist bereit. Sie fliegt nur los, wenn du sie schickst, und du kannst sie jederzeit zurückrufen.', 'La salida de hoy está lista. Solo sale cuando tú la mandas, y puedes llamarla cuando quieras.'],
         filled: ['What filled it today', 'Das hat sie heute gefüllt', 'Lo que la llenó hoy'],
-        go: ['Off you go', 'Los, flieg los', '¡Ve!'],
         backIn: ['Back in', 'Zurück in', 'Vuelvo en'],
         tomorrow: ['Tomorrow your sun starts fresh.', 'Morgen fängt deine Sonne neu an.', 'Mañana tu sol empieza de nuevo.'],
         newIn: ['new in', 'neu in', 'nuevo en'],
@@ -263,15 +290,15 @@
         how: ['How the sun fills', 'So füllt sich die Sonne', 'Cómo se llena el sol'],
         howTx: ['Every counted action is a sunbeam for me, up to a daily limit per kind, so a mix fills me fastest. Repeats, spiky meals and meals over the daily limit don’t count.', 'Jede gezählte Aktion ist ein Sonnenstrahl für mich, pro Art bis zu einer Grenze. Eine Mischung füllt mich am schnellsten. Doppeltes, Spike-Mahlzeiten und Essen über dem Tageslimit zählen nicht.', 'Cada acción contada es un rayo de sol para mí, con un límite por tipo, así que una mezcla me llena antes. Repeticiones, comidas con pico y comidas sobre el límite diario no cuentan.'],
         awayTap: ['I’m out tending the world! Back in', 'Ich pflege gerade die Welt! Zurück in', '¡Estoy cuidando el mundo! Vuelvo en'],
-        tiredT: ['Thank you! The sun is full, but I’m too tired to head out right now. A meal, a glass of water or a Move gives me energy, and then I’m off.', 'Danke! Die Sonne ist voll, aber ich bin gerade zu müde zum Losfliegen. Eine Mahlzeit, ein Glas Wasser oder Bewegung gibt mir Kraft, dann flieg ich los.', '¡Gracias! El sol está lleno, pero ahora no tengo energía para salir. Una comida, un vaso de agua o moverte me da energía y salgo.'],
+        tiredT: ['Thank you! The sun is full, but I’m too tired to head out right now. A meal, a glass of water or a Move gives me energy, and then you can send me exploring.', 'Danke! Die Sonne ist voll, aber ich bin gerade zu müde zum Losfliegen. Eine Mahlzeit, ein Glas Wasser oder Bewegung gibt mir Kraft, dann kannst du mich auf Entdeckungstour schicken.', '¡Gracias! El sol está lleno, pero ahora no tengo energía para salir. Una comida, un vaso de agua o moverte me da energía, y luego puedes mandarme a explorar.'],
         tooTired: ['Too tired to explore', 'Zu müde zum Erkunden', 'Sin energía para explorar'],
         tiredTap: ['I’m too tired to head out. A meal, water or a Move gives me energy.', 'Ich bin zu müde zum Losfliegen. Essen, Wasser oder Bewegung geben mir Kraft.', 'No tengo energía para salir. Comer, agua o moverte me da energía.'],
         okay: ['Okay', 'Okay', 'Vale'],
         out: ['Out exploring', 'Unterwegs', 'Explorando'],
-        callBack: ['Call Misty back', 'Misty zurückrufen', 'Llamar a Misty'],
+        callBack: ['Call her back', 'Zurückrufen', 'Llamarla'],
         tapBack: ['Tap to call her back', 'Tippen zum Zurückrufen', 'Toca para llamarla'],
         letGo: ['Let her explore', 'Weiter erkunden lassen', 'Déjala explorar'],
-        recallQ: ['Call Misty back now?', 'Misty jetzt zurückrufen?', '¿Llamar a Misty ahora?'],
+        recallQ: ['Call her back now?', 'Jetzt zurückrufen?', '¿Llamarla ahora?'],
         recallLose: ['She’s only been out for', 'Sie ist erst seit', 'Solo lleva fuera'],
         recallLose2: ['If she comes home now, she won’t bring a find today, and she can’t head out again until tomorrow. From halfway on she brings her find with her.', 'unterwegs. Wenn sie jetzt heimkommt, bringt sie heute keinen Fund mit und kann erst morgen wieder los. Ab der Hälfte bringt sie ihren Fund mit.', '. Si vuelve ahora, hoy no traerá ningún hallazgo y no podrá salir de nuevo hasta mañana. A partir de la mitad trae su hallazgo.'],
         recallKeep: ['She comes home right away and brings her find with her. Her next trip is tomorrow.', 'Sie kommt sofort heim und bringt ihren Fund mit. Ihr nächster Ausflug ist morgen.', 'Vuelve enseguida y trae su hallazgo. Su próxima salida es mañana.'],
@@ -280,14 +307,14 @@
         coming: ['Coming home!', 'Ich komm heim!', '¡Ya voy a casa!'],
         comingEmpty: ['Coming home! No find this time, but the world got a little sunshine.', 'Ich komm heim! Diesmal ohne Fund, aber die Welt hat ein bisschen Sonne abbekommen.', '¡Ya voy! Esta vez sin hallazgo, pero el mundo recibió un poco de sol.'],
         backShort: ['back in', 'zurück in', 'vuelve en'],
-        leaves: ['I’ve got energy now, I’m heading out! Back in', 'Jetzt hab ich Kraft, ich flieg los! Zurück in', '¡Ya tengo energía, salgo! Vuelvo en'],
+        leaves: ['Off I go exploring! Back in', 'Ich geh auf Entdeckungstour! Zurück in', '¡Me voy a explorar! Vuelvo en'],
         bonusFind: ['I had so much energy, I found a second one:', 'Ich hatte so viel Kraft, ich hab noch was gefunden:', 'Tenía tanta energía que encontré otro:'],
-        energy: ['Misty’s energy', 'Mistys Energie', 'Energía de Misty'],
+        energy: ['Energy', 'Energie', 'Energía'],
         eThriving: ['Full of energy', 'Voller Energie', 'Llena de energía'], eOk: ['Doing okay', 'Geht so', 'Bien'], eTired: ['Low on energy', 'Wenig Energie', 'Poca energía'], eWeak: ['Worn out', 'Erschöpft', 'Agotada'],
         eFood: ['Food', 'Essen', 'Comida'], eWater: ['Water', 'Wasser', 'Agua'], eMove: ['Move', 'Bewegung', 'Movimiento'],
         notYet: ['not tracked yet', 'noch nicht eingetragen', 'aún sin registrar'],
         mealsN: ['logged', 'eingetragen', 'registradas'], spikyN: ['spiky', 'mit Spike', 'con pico'], glasses: ['glasses', 'Gläser', 'vasos'], moved: ['logged', 'eingetragen', 'registrado'],
-        eNote: ['“Not tracked yet” only means Misty gets no energy from it yet, not that you didn’t do it. Energy is what sends Misty out on adventures.', '„Noch nicht eingetragen“ heißt nur, dass Misty daraus noch keine Kraft bekommt, nicht dass du es nicht gemacht hast. Für Abenteuer braucht Misty Energie.', '“Aún sin registrar” solo significa que Misty aún no recibe energía de eso, no que no lo hayas hecho. Necesita energía para sus aventuras.'],
+        eNote: ['“Not tracked yet” only means your companion gets no energy from it yet, not that you didn’t do it. With enough energy you can send her out exploring.', '„Noch nicht eingetragen“ heißt nur, dass dein Begleiter daraus noch keine Kraft bekommt, nicht dass du es nicht gemacht hast. Mit genug Energie kannst du ihn auf Entdeckungstour schicken.', '“Aún sin registrar” solo significa que tu compañero aún no recibe energía de eso, no que no lo hayas hecho. Con suficiente energía puedes mandarlo a explorar.'],
         meal: ['Meal', 'Mahlzeit', 'Comida'], scan: ['Scan', 'Scan', 'Escaneo'], move: ['Move', 'Bewegung', 'Movimiento'], fast: ['Fasting milestone', 'Fasten-Etappe', 'Etapa de ayuno'],
         macro: ['Macro goal', 'Makro-Ziel', 'Meta de macros'], water: ['Glass of water', 'Glas Wasser', 'Vaso de agua'], other: ['Other action', 'Andere Aktion', 'Otra acción']
     };
@@ -305,7 +332,8 @@
     const S = () => { try { return B().state() || {}; } catch (e) { return {}; } };
     const save = () => { try { B().save(); } catch (e) {} };
     function garden() { const s = S(); if (!s.garden || typeof s.garden !== 'object') s.garden = { trips: {}, items: [] }; s.garden.trips = s.garden.trips || {}; s.garden.items = s.garden.items || []; return s.garden; }
-    const live = () => { const s = S(); return model({ now: Date.now(), ledger: s.ledger || [], garden: s.garden }); };
+    /* Oct 26: an old automatic trip comes home before anything reads "away", so she is never shown out on her own */
+    const live = () => { const s = S(), now = Date.now(); if (s.garden && s.garden.trips && typeof s.garden === 'object') { let n = 0; try { n = settleAuto(s.garden, now); } catch (e) { n = 0; } if (n) save(); } return model({ now, ledger: s.ledger || [], garden: s.garden }); };
     function waterToday(now) { try { const f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}; return +((f.water || {})[dayKey(now)]) || 0; } catch (e) { return 0; } }
     const powerBoost = () => { try { const P = W.LowiMistyPower, r = P && P.read && P.read(); return r ? +r.boost || 0 : 0; } catch (e) { return 0; } };
     /* the gentle day (My cycle): only with cycle tracking on and a gentle day she switched on for today */
@@ -340,7 +368,7 @@
         const en = energyNow();
         if (home && home.dataset.misty !== en.tier) home.dataset.misty = en.tier;
         awayBadge(v);
-        backChip(v, en);
+        backChip(v);
         if (sig === last) return;
         last = sig;
         row.classList.toggle('full', v.full);
@@ -356,21 +384,20 @@
            (world-home.js adventure); the countdown stays on the sun bar in Today. */
         const b = D.querySelector('#spBubble .ls-away'); if (b) b.remove();
     }
-    /* Oct 16 (E-man: "a timer, so we know when Misty comes back"): while she is out, her empty bubble on Home shows
-       "Out exploring · back in 42 min"; when the sun is full but she is too tired, it says so under her. */
-    function backChip(v, en) {
+    /* Oct 16 (E-man: "a timer, so we know when Misty comes back"): while she is out, her empty bubble on Home shows when she
+       is back. Oct 26 (Emmanuel: "...and then the UI breaks"): it is now a small card that always fits inside her bubble
+       (three short lines that wrap, never one long line wider than the bubble), and the "Too tired to explore" note under
+       her is gone: she never waits to leave on her own any more. */
+    function backChip(v) {
         const bub = D.getElementById('spBubble');
         let c = bub && bub.querySelector(':scope > .ls-back');
-        const waiting = !v.away && v.fullDone && !v.trip && en && !en.canTravel;
-        if (!bub || (!v.away && !waiting)) { if (c) c.remove(); return; }
-        if (!c) { c = D.createElement('span'); c.className = 'ls-back'; c.setAttribute('role', 'status'); bub.appendChild(c); }
-        const txt = v.away ? tr('out') + ' · ' + tr('backShort') + ' ' + fmtBack(v.left) : tr('tooTired');
-        c.classList.toggle('tired', !v.away);
-        /* Oct 17: while she is out the timer is also the button that calls her home */
-        c.classList.toggle('ls-recall', !!v.away);
-        if (v.away) { c.setAttribute('role', 'button'); c.setAttribute('tabindex', '0'); c.setAttribute('aria-label', txt + '. ' + tr('callBack')); }
-        else { c.setAttribute('role', 'status'); c.removeAttribute('tabindex'); c.removeAttribute('aria-label'); }
-        const html = v.away ? esc(txt) + '<small>' + esc(tr('tapBack')) + '</small>' : esc(txt);
+        if (!bub || !v.away) { if (c) c.remove(); return; }
+        if (!c) { c = D.createElement('span'); c.className = 'ls-back'; bub.appendChild(c); }
+        const when = tr('backShort') + ' ' + fmtBack(v.left), txt = tr('out') + ' · ' + when;
+        /* Oct 17: while she is out the card is also the button that calls her home */
+        c.classList.add('ls-recall'); c.classList.remove('tired');
+        c.setAttribute('role', 'button'); c.setAttribute('tabindex', '0'); c.setAttribute('aria-label', txt + '. ' + tr('callBack'));
+        const html = '<b>' + esc(tr('out')) + '</b><span class="ls-when num">' + esc(when) + '</span><small>' + esc(tr('tapBack')) + '</small>';
         if (c.dataset.k !== html) { c.dataset.k = html; c.innerHTML = html; }
     }
     function pop(n) {
@@ -394,12 +421,14 @@
     function fullSheet(v) {
         if (!R() || !R().sheet) return;
         try { localStorage.setItem('lowi.sun.sheet', v.key); } catch (e) {}
-        const gone = !!v.trip;
-        const html = '<div class="ls-sheet"><div class="ls-big">' + sunSvg(1) + '</div><h2>' + esc(tr('title')) + '</h2><p class="ls-say">' + esc(tr(gone ? 'thanks' : 'tiredT')) + '</p>' +
+        /* Oct 26 (Emmanuel): filling the sun no longer sends her off. The sheet asks; only "Send her exploring" starts the trip. */
+        const can = !v.trip && mayDepart(v, energyNow());
+        const html = '<div class="ls-sheet"><div class="ls-big">' + sunSvg(1) + '</div><h2>' + esc(tr('title')) + '</h2><p class="ls-say">' + esc(tr(can ? 'goAsk' : v.trip ? 'thanksDone' : 'tiredT')) + '</p>' +
             '<p class="ls-bonus num">+' + BONUS + ' XP</p>' +
             (Object.keys(v.parts).length ? '<h3>' + esc(tr('filled')) + '</h3>' + partsHtml(v) : '') +
-            '<p class="ls-note">' + (gone ? esc(tr('backIn')) + ' ' + fmtBack(Math.max(0, +v.trip.back - Date.now())) + ' · ' : '') + esc(tr('tomorrow')) + '</p>' +
-            '<button type="button" class="ls-cta" data-ls="close">' + esc(tr(gone ? 'go' : 'okay')) + '</button></div>';
+            '<p class="ls-note">' + esc(tr('tomorrow')) + '</p>' +
+            (can ? '<button type="button" class="ls-cta" data-ls="go">' + esc(tr('sendOut')) + '</button><button type="button" class="ls-cta ls-ghost" data-ls="close">' + esc(tr('notNow')) + '</button></div>'
+                : '<button type="button" class="ls-cta" data-ls="close">' + esc(tr('okay')) + '</button></div>');
         R().sheet(html, { cls: 'ls-ov' });
     }
     function returnSheet(trip) {
@@ -431,10 +460,16 @@
         R().sheet('<div class="ls-sheet ls-info"><div class="ls-head">' + sunSvg(v.ratio) + '<div><h2>' + esc(v.away ? tr('away') : v.full ? tr('full') : tr('sun')) + '</h2><p class="num">' + (v.away ? esc(tr('back')) + ' ' + fmtLeft(v.left) : v.points + '/' + v.goal) + '</p>' + (v.away ? '<p class="ls-note ls-adv">' + esc(advLine('')) + '</p>' : '') + '</div></div>' +
             '<div class="ls-track big" style="--ls-fill:' + v.ratio.toFixed(3) + '"><i class="ls-fill"></i></div>' + '<p class="ls-note ls-reset num">' + esc(tr('resetAt')) + ' ' + fmtHM(msToMidnight(Date.now())) + '.</p>' + partsHtml(v) + scaleOr() +
             '<h3>' + esc(tr('how')) + '</h3><p class="ls-note">' + esc(tr('howTx')) + '</p><ul class="ls-parts how">' + how + '</ul>' +
-            (v.away ? recallBlock(v) : '') +
+            (v.away ? recallBlock(v) : sendBlock(v)) +
             '<h3>' + esc(tr('finds')) + '</h3>' + finds + '</div>', { cls: 'ls-ov' });
     }
-    /* Oct 17: the "Call Misty back" button under the countdown, with what it means for her find */
+    /* Oct 26: the one way she sets off: a deliberate tap on "Send her exploring" (sun full, today's trip free, enough energy) */
+    function sendBlock(v) {
+        if (v.trip || !mayDepart(v, energyNow())) return '';
+        return '<p class="ls-note ls-send-note">' + esc(tr('sendNote')) + '</p>' +
+            '<button type="button" class="ls-cta ls-send-btn" data-ls="go">' + esc(tr('sendOut')) + '</button>';
+    }
+    /* Oct 17: the "Call her back" button under the countdown, with what it means for her find */
     function recallBlock(v) {
         const p = recallPlan(v.away, Date.now());
         if (!p) return '';
@@ -463,7 +498,7 @@
             if (n > 0) pop(n);
         }
         if (v.full && !v.fullDone && !busy) { busy = true; setTimeout(fill, 700); }
-        else if (v.fullDone && !v.trip) depart();
+        /* Oct 26 (Emmanuel): no more "she leaves as soon as she has the energy"; she leaves only from a tap (depart) */
     }
     function fill() {
         busy = false;
@@ -471,17 +506,16 @@
         if (!v.full || v.fullDone || !W.LowiHost) return;
         const got = LowiHost.award('sun-full', null, { amt: BONUS, label: 'Sun meter full', eventId: 'sun-full:' + v.key, perDay: 1 });
         if (!got) return;
-        const g = garden(), en = energyNow();
-        if (!g.trips[v.key] && en.canTravel) g.trips[v.key] = makeTrip(v.key, g.items, Date.now(), en.tier);
         save();
         let shown = '';
         try { shown = localStorage.getItem('lowi.sun.sheet') || ''; } catch (x) {}
         if (shown !== v.key) fullSheet(live());
         render();
     }
-    /* the sun bonus is in but Misty was too tired: she leaves as soon as she has the energy (same day only) */
+    /* Oct 26: called only from a tap on "Send her exploring" (data-ls="go"); nothing calls it on a timer or on a reward */
     function depart() {
         const v = live(), en = energyNow();
+        if (v.fullDone && !v.trip && !v.away && !en.canTravel) { try { if (W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('tiredTap')); } catch (e) {} return false; }
         if (!mayDepart(v, en)) return false;
         const g = garden();
         if (g.trips[v.key]) return false;
@@ -577,13 +611,18 @@
         }
         const rc = e.target.closest && e.target.closest('#spBubble > .ls-recall');
         if (rc) { e.preventDefault(); e.stopImmediatePropagation(); Recall.call(); return; }
+        if (c && c.dataset.ls === 'go') {
+            e.preventDefault();
+            const ov = c.closest('.r2-ov'); if (ov && R()) R().close(ov);
+            setTimeout(() => { try { depart(); } catch (x) {} }, 60);
+            return;
+        }
         if (c && c.dataset.ls === 'info') { e.preventDefault(); infoSheet(); return; }
         const bub = e.target.closest && e.target.closest('#spBubble');
         if (bub) {
             const v = live();
             /* ambience only: the trip never blocks the herb world or anything in it */
             if (v.away && W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('awayTap') + ' ' + fmtBack(v.left) + '.' + advLine(' '));
-            else if (v.fullDone && !v.trip && !energyNow().canTravel && W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('tiredTap'));
         }
     }, true);
 
@@ -605,7 +644,7 @@
         schedule();
         setTimeout(() => check(null), 1500);
         setInterval(() => { if (D.hidden) return; const v = live(); if (v.away || v.pending.length) { schedule(); collect(); } }, 5000);
-        setInterval(() => { if (!D.hidden) { schedule(); try { depart(); } catch (e) {} } }, 30000);
+        setInterval(() => { if (!D.hidden) schedule(); }, 30000);
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 

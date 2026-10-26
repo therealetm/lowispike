@@ -71,7 +71,8 @@ test('energy: nothing tracked is low energy and unknown, never "you didn\'t"', (
   assert.ok(en.value >= 0.15 && en.value < SUN.ENERGY.travel);
   const sm = read('sun-meter.js');
   assert.match(sm, /notYet: \['not tracked yet'/);
-  assert.match(sm, /only means Misty gets no energy from it yet, not that you didn’t do it/);
+  // Oct 26: worded "your companion" (every user names their own), and energy now lets YOU send her out (Emmanuel: no auto trips)
+  assert.match(sm, /only means your companion gets no energy from it yet, not that you didn’t do it/);
 });
 
 test('energy: a spiky meal alone wears her out (sad), good tracking energises her, yesterday does not count', () => {
@@ -106,16 +107,22 @@ test('travel: the sun bonus counts, but she only leaves with energy; trips and f
   assert.equal(SUN.tripFinds(t1, '2026-10-16').length, 2); assert.equal(SUN.tripFinds(t2, '2026-10-16').length, 1);
   assert.equal(SUN.tripFinds(t1, 'd')[1].bonus, true);
   const sm = read('sun-meter.js');
-  assert.match(sm, /if \(!g\.trips\[v\.key\] && en\.canTravel\) g\.trips\[v\.key\] = makeTrip/);
+  // Oct 26 (Emmanuel: "If they want to manually tap, let them do that. But not automatically."): filling the sun no longer
+  // creates a trip; only depart() (a tap on "Send her exploring") does, and only with energy
+  assert.doesNotMatch(sm, /en\.canTravel\) g\.trips\[v\.key\] = makeTrip/);
+  assert.match(sm, /if \(!mayDepart\(v, en\)\) return false;/);
   assert.match(sm, /for \(const f of tripFinds\(trip, t\.day\)\) if \(!g\.items\.some\(i => i\.day === t\.day && !!i\.bonus === !!f\.bonus\)\)/, 'collect never pays a find twice');
   assert.match(sm, /if \(g\.trips\[v\.key\]\) return false;/);
 });
 
-test('countdown: "Out exploring · back in 42 min" in her empty bubble, "Too tired to explore" when she cannot go', () => {
+// Oct 26 (Emmanuel): the "Too tired to explore" note under her is gone (she never waits to leave on her own any more); the
+// away card shows "Out exploring" / "back in 42 min" / "Tap to call her back" on three lines that fit inside her bubble
+test('countdown: "Out exploring · back in 42 min" in her empty bubble, and no "too tired" note now that trips are manual', () => {
   assert.equal(SUN.fmtBack(42 * 60000), '42 min'); assert.equal(SUN.fmtBack(10), '1 min'); assert.equal(SUN.fmtBack(65 * 60000), '1 h 05');
   const sm = read('sun-meter.js'), css = read('sun-meter.css');
-  assert.match(sm, /function backChip\(v, en\)/); assert.match(sm, /backChip\(v, en\);/);
-  assert.match(sm, /tr\('out'\) \+ ' · ' \+ tr\('backShort'\) \+ ' ' \+ fmtBack\(v\.left\)/);
+  assert.match(sm, /function backChip\(v\)/); assert.match(sm, /backChip\(v\);/);
+  assert.match(sm, /tr\('backShort'\) \+ ' ' \+ fmtBack\(v\.left\), txt = tr\('out'\) \+ ' · ' \+ when/);
+  assert.doesNotMatch(sm, /tr\('tooTired'\)/);
   assert.match(css, /#spBubble > \.ls-back \{/);
   assert.doesNotMatch(sm, /In the garden|in the garden/);
 });
@@ -132,9 +139,10 @@ test('Misty\'s face: content when full of energy; neutral, sleepy or sad otherwi
   assert.match(wh, /if \(cs0\.display === 'none'\) \{ cs\[i\]\.remove\(\); return; \}/);
 });
 
-test('body trips wait while she is too tired; exploring progress still counts', () => {
+// Oct 26 (Emmanuel: "not automatically"): a meal no longer sends her on a body journey at all; the tap still checks energy
+test('body trips never start on their own; a tap still waits while she is too tired; exploring progress still counts', () => {
   const bt = read('body-trips.js');
-  assert.match(bt, /if \(Object\.keys\(got\)\.length && canStart\(st, now\) && !tooTired\(\)\)/);
+  assert.doesNotMatch(bt, /canStart\(st, now\) && !tooTired\(\)/);
   assert.match(bt, /if \(tooTired\(\)\) \{ try \{ if \(W\.LowiPraise && LowiPraise\.say\) LowiPraise\.say\(tr\('tired'\)\); \} catch \(e\) \{\} return false; \}/);
   assert.match(bt, /else if \(tooTired\(\)\) action = '<p class="bt-note">'/);
 });

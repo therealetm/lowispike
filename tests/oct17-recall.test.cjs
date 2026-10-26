@@ -50,14 +50,17 @@ test('nothing to recall when she is home, already back, or the trip is done', ()
 });
 
 test('the countdown chip in her empty bubble is the call-back button', () => {
-    assert.match(sm, /c\.classList\.toggle\('ls-recall', !!v\.away\)/);
+    // Oct 26: the chip only exists while she is out now (no "too tired" variant), so it is always the call-back button
+    assert.match(sm, /if \(!bub \|\| !v\.away\) \{ if \(c\) c\.remove\(\); return; \}/);
+    assert.match(sm, /c\.classList\.add\('ls-recall'\)/);
     assert.match(sm, /tr\('tapBack'\)/);
     assert.match(sm, /closest\('#spBubble > \.ls-recall'\)\)?;?\s*\n?\s*if \(rc\) \{ e\.preventDefault\(\); e\.stopImmediatePropagation\(\); Recall\.call\(\)/);
     assert.match(css, /#spBubble > \.ls-back\.ls-recall \{ pointer-events: auto;/, 'the chip takes taps (the plain chip does not)');
 });
 
-test('the sun sheet has a Call Misty back button while she is out, and a confirm sheet when it would lose the find', () => {
-    assert.match(sm, /\(v\.away \? recallBlock\(v\) : ''\)/);
+test('the sun sheet has a Call her back button while she is out, and a confirm sheet when it would lose the find', () => {
+    // Oct 26: when she is home the same place offers "Send her exploring" (the only way she sets off)
+    assert.match(sm, /\(v\.away \? recallBlock\(v\) : sendBlock\(v\)\)/);
     assert.match(sm, /data-ls="recall"/);
     assert.match(sm, /data-ls="recall-yes"/);
     assert.match(sm, /if \(p\.loses && !force\) \{ recallSheet\(p\); return \{ ok: false, why: 'confirm'/);

@@ -326,7 +326,7 @@
         here: ['Your cell is here', 'Deine Zelle ist hier', 'Tu célula está aquí'],
         go: ['Travel here', 'Hinreisen', 'Viajar aquí'],
         busy: ['Your cell is already on a trip.', 'Deine Zelle ist schon unterwegs.', 'Tu célula ya está de viaje.'],
-        tired: ['Misty is too tired to travel. A meal, water or a Move helps.', 'Misty ist zu müde zum Reisen. Essen, Wasser oder Bewegung hilft.', 'Misty está muy cansada para viajar. Comer, agua o moverte ayuda.'],
+        tired: ['Too tired to travel. A meal, water or a Move helps.', 'Zu müde zum Reisen. Essen, Wasser oder Bewegung hilft.', 'Muy cansada para viajar. Comer, agua o moverte ayuda.'],
         limit: ['That was today’s 3 trips. Tomorrow your cell travels again.', 'Das waren heute 3 Reisen. Morgen reist deine Zelle wieder.', 'Ya van 3 viajes hoy. Mañana tu célula vuelve a viajar.'],
         how: ['How to explore it', 'So erkundest du es', 'Cómo explorarlo'],
         facts: ['What your cell found', 'Was deine Zelle entdeckt hat', 'Lo que encontró tu célula'],
@@ -345,7 +345,6 @@
         fiberNow: ['Your fiber just arrived: the gut bacteria are busy.', 'Deine Ballaststoffe sind angekommen: Die Darmbakterien haben zu tun.', 'Tu fibra acaba de llegar: las bacterias del intestino están ocupadas.'],
         movedNow: ['You moved: the GLUT4 doors are open and sugar flows into the muscle.', 'Du hast dich bewegt: Die GLUT4-Türen sind offen, Zucker fließt in den Muskel.', 'Te moviste: las puertas GLUT4 están abiertas y el azúcar entra en el músculo.'],
         fastNow: ['You are fasting: the liver is releasing its stored sugar.', 'Du fastest: Die Leber gibt ihren Zuckervorrat frei.', 'Estás en ayuno: el hígado libera su azúcar guardado.'],
-        sent: ['Off it goes to', 'Ab geht’s:', 'Rumbo a'],
         xpL: ['Body journey', 'Körperreise', 'Viaje por el cuerpo']
     };
     const tr = k => (copy[k] || [k])[L()] || (copy[k] || [k])[0];
@@ -509,14 +508,11 @@
     function gain(g, why) {
         const st = body(), now = Date.now(), got = apply(st, g, now);
         if (why) st.recent[why] = now;
-        let sent = null;
-        if (Object.keys(got).length && canStart(st, now) && !tooTired()) {
-            const dest = destination(got);
-            if (dest) sent = start(st, dest, now);
-        }
-        if (Object.keys(got).length || why || sent) save();
+        /* Oct 26 (Emmanuel: "If they want to manually tap, let them do that. But not automatically."): a meal, water or a Move
+           no longer sends her off on a journey by herself. Progress still counts; the Today row says "Start next journey" and
+           only that tap starts one (startNext). */
+        if (Object.keys(got).length || why) save();
         render();
-        if (sent && W.LowiPraise && LowiPraise.say) setTimeout(() => { try { LowiPraise.say(tr('sent') + ' ' + nm(byId(sent.place)) + '!'); } catch (e) {} }, 1900);
         return got;
     }
     let lastMeal = { k: '', t: 0 };

@@ -785,7 +785,9 @@
         /* Oct 16: the bubble controller (misty-pad.js) can take Misty out of her cell at any time: drive = you steer, auto = she
            flies her own adventure (a slow, sleepy drift when her energy is low), home = she glides back into her cell */
         const PD = st.pad, padOn = !!PD.mode;
-        const show = (A.away || padOn) && (r.mode === 'home' || r.mode === 'full') && !inRegion() && !awayHome() && !D.hidden;
+        /* Oct 26 (Emmanuel: "...then the UI breaks"): while she is out on her trip she is simply out: no faded copy of her drifting
+           round her cell over Home's bubbles. She shows outside her bubble only while you fly her (the controller). */
+        const show = padOn && (r.mode === 'home' || r.mode === 'full') && !inRegion() && !awayHome() && !D.hidden;
         /* Oct 16 (E-man): misty-flight.js takes over the steering at Home: out of her bubble (it stretches, never pops), across the
            whole world at her real size, and into a place by flying (the tap's warp), still steerable inside. Old path = fallback. */
         const MF = W.LowiMistyFlight, mfx = MF && MF.wants ? { a, r, A, PD, dt, k: A.vigor, wand: A.wand, reduced: reduced(), inRegion: inRegion(), awayHome: awayHome(), burst: (p, n, sp) => burst(A, p, n, sp) } : null;

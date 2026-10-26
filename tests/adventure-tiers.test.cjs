@@ -55,8 +55,11 @@ test('the timed trip no longer hands her to the old loop or cuts autopilot short
     const ok = mf.match(/const ok = [^\n]+/)[0], blink = mf.match(/const blink = [^\n]+/)[0];
     assert.ok(!/A\.away/.test(ok), ok); assert.ok(!/A\.away/.test(blink), blink);
     assert.match(mf, /const trip = !!ctx\.A\.away && !ADV\(\)/);
-    assert.match(mf, /S\.st === 'idle' && trip && !PD\.mode[^\n]+padMode\(ctx, 'auto'\)/);
-    assert.match(mf, /S\.trip \? 'auto' : 'home'/, 'stopping steering mid-trip resumes the trip');
+    // Oct 26 (Emmanuel: "You know the auto fly ... not automatically. It's quite annoying and then the UI breaks."): the timed
+    // trip no longer switches the controller into autopilot (that hid every Home button for the hour), and letting go of the
+    // stick mid-trip goes home, not back into autopilot. Autopilot is only the user's own three taps now.
+    assert.doesNotMatch(mf, /S\.st === 'idle' && trip && !PD\.mode[^\n]+padMode\(ctx, 'auto'\)/);
+    assert.doesNotMatch(mf, /S\.trip \? 'auto' : 'home'/);
     assert.match(mf, /if \(capsNow\(\)\.cells\) S\.tourGo = g/, 'cell worlds gated');
     assert.match(mf, /ADVX\(\) && !ctx\.reduced/, 'trip gets the autopilot drift');
     assert.match(mf, /steering && ADV\(\)\) \{ try \{ W\.LowiAdventure\.stop/, 'only autopilot is stopped by steering');

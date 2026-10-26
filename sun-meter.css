@@ -62,6 +62,15 @@
 /* Oct 17 (E-man: "cancel the exploration and call Misty back"): while she is out, the countdown chip is a button */
 #spBubble > .ls-back.ls-recall { pointer-events: auto; cursor: pointer; text-align: center; padding: 7px 14px 8px; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 #spBubble > .ls-back.ls-recall small { display: block; margin-top: 2px; font-size: 11px; font-weight: 700; color: #ffe2a8; letter-spacing: .1px; }
+/* Oct 26 (Emmanuel: "...and then the UI breaks"): the away card always fits inside her round bubble in every language:
+   three short centred lines that may wrap, never one nowrap line wider than the bubble (it spilled past both edges at 390 px) */
+#spBubble > .ls-back.ls-recall { display: flex; flex-direction: column; align-items: center; gap: 1px; box-sizing: border-box; white-space: normal;
+    width: max-content; max-width: calc(100% - 26px); max-height: calc(100% - 40px); border-radius: 20px; padding: 8px 12px 9px; line-height: 1.15; overflow: hidden; overflow-wrap: anywhere; }
+#spBubble > .ls-back.ls-recall b { display: block; font-size: 12.5px; font-weight: 800; }
+#spBubble > .ls-back.ls-recall .ls-when { display: block; font-size: 12px; font-weight: 700; opacity: .92; }
+#spBubble > .ls-back.ls-recall small { margin-top: 3px; font-size: 10.5px; line-height: 1.15; }
+/* her name stays under the empty bubble, so it is still clear whose bubble it is; the card sits a little above centre so the two never touch */
+#spHome[data-sun-away] #spBubble > .ls-back.ls-recall { top: 46%; }
 #spBubble > .ls-back.ls-recall:active { transform: translate(-50%, -50%) scale(.96); }
 #spBubble > .ls-back.ls-recall:focus-visible { outline: 2px solid #ffe2a8; outline-offset: 2px; }
 .ls-recall-note { margin-top: 14px; text-align: left; }

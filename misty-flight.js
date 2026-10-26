@@ -474,7 +474,10 @@
         if (S.trip && !trip && !ADV() && S.st !== 'idle' && (PD.mode === 'auto' || !PD.mode)) { padMode(ctx, 'home'); note('trip over'); } /* timer ran out, or called back (sun-meter.js flyHome clears the pad) */
         if (S.trip !== trip && EXP()) EXP().reset(S);
         S.trip = trip;
-        if (S.st === 'idle' && trip && !PD.mode && !ctx.inRegion && !ctx.awayHome && !regionsBusy()) padMode(ctx, 'auto');
+        /* Oct 26 (Emmanuel: "You know the auto fly ... not automatically. It's quite annoying and then the UI breaks."): her timed
+           trip no longer takes the controller into autopilot. That autopilot hid every button on Home (clean view, lw-clean-auto)
+           and flew the camera off for the whole hour. Now Home stays as it is while she is out; autopilot is only ever the
+           user's own three taps (LowiAdventure). */
         /* adventure: back on Today (or after a tap took her somewhere) the tour simply goes on */
         if (S.st === 'idle' && !PD.mode) { S.recallOut = false; S.recallFast = false; }
         if (S.st === 'idle' && ADV() && !PD.mode && !ctx.inRegion && !ctx.awayHome && !regionsBusy()) padMode(ctx, 'auto');
@@ -521,7 +524,7 @@
            restarts, I'm back in a bubble"): letting go of the stick to turn the view round counted as doing nothing, so 20 s into
            looking she was raced home into her bubble. Turning or pinching the view now counts as being busy too (lookIdle). */
         S.lookIdle = lookBusy(r) ? 0 : (+S.lookIdle || 0) + dt;
-        if (mode === 'drive' && homeIdle(S.idle, S.lookIdle, K.IDLE_HOME) && (S.st === 'free' || S.st === 'exit')) { padMode(ctx, S.trip ? 'auto' : 'home'); note(S.trip ? 'idle trip' : 'idle home'); }
+        if (mode === 'drive' && homeIdle(S.idle, S.lookIdle, K.IDLE_HOME) && (S.st === 'free' || S.st === 'exit')) { padMode(ctx, 'home'); note('idle home'); } /* Oct 26: never back into autopilot on her trip */
         const camFree = !r.fly;
 
         if (S.st === 'pull') { pullFrame(ctx, k); return; }

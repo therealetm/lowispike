@@ -13,7 +13,9 @@ test('the controller ships: loaded on the page, precached, and wired into the 3D
     assert.match(html, /id="mpCss" href="misty-pad\.css\?v=[\d-]+"/);
     assert.ok(sw.includes('"misty-pad.js"') && sw.includes('"misty-pad.css"'));
     assert.ok(wh.includes('W.LowiWorldHome.pad = pad;'), 'Home exposes the pad');
-    assert.ok(wh.includes("const show = (A.away || padOn)"), 'Misty flies whenever the controller has her out');
+    // Oct 26 (Emmanuel: "You know the auto fly ... not automatically ... then the UI breaks"): she shows outside her bubble only
+    // while the controller has her out; on her timed trip she is simply away (no faded copy drifting over Home's bubbles)
+    assert.ok(wh.includes("const show = padOn && (r.mode === 'home'"), 'Misty flies whenever the controller has her out');
     assert.ok(wh.includes("const sleepy = PD.mode === 'auto' && k < 0.4;"), 'low energy autopilot is a slow, sleepy drift');
     assert.ok(js.includes('no-page-swipe'), 'a drag on the controller never pages the tabs');
     assert.ok(js.includes("['touchstart', 'mousedown'].forEach(n => b.addEventListener(n, e => e.stopPropagation()"), 'the world never sees a touch on the controller');

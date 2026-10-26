@@ -132,3 +132,11 @@ test('wiring: every camera routes to the compact card; typed names too; new word
     }
     assert.equal(C.tx('ate', 1), 'Hab ich gegessen'); assert.equal(C.tx('swapH', 2), 'Mejor opción');
 });
+
+test('the Shop finds note sits under the buttons, never between the verdict and Add to cart (the card is capped by its camera)', () => {
+    const g = read('grocery-hunt.js');
+    const at = g.indexOf("box.className = 'gh-chip'"); assert.ok(at > 0);
+    const tail = g.slice(at, at + 1200);
+    assert.match(tail, /querySelector\('\.ss-more'\)[^\n]*insertBefore\(box, more\)/, 'goes in above Details');
+    assert.doesNotMatch(tail, /insertBefore\(box, add\)/, 'not above Add to cart');
+});

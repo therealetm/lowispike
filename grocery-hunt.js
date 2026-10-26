@@ -123,7 +123,8 @@
         const box = D.createElement('div'); box.className = 'gh-chip';
         box.innerHTML = '<b>' + IC.star + '<span>' + esc(T('Shop finds', 'Ladenfunde', 'Hallazgos en la tienda')) + '</span></b>' + ls.map(l => '<small>' + esc(l) + '</small>').join('') +
             '<button type="button" class="gh-chip-open" data-gh="open">' + esc(T('Open finds', 'Funde öffnen', 'Ver hallazgos')) + '</button>';
-        const add = sheet.querySelector('.ss-add'); if (add) sheet.insertBefore(box, add); else sheet.appendChild(box);
+        /* Oct 26 one scanner: the card is capped by its camera, so the finds note goes under the buttons (above Details), never between the verdict and Add to cart */
+        const more = sheet.querySelector('.ss-more'); if (more) sheet.insertBefore(box, more); else sheet.appendChild(box);
     });
 
     /* a fresh product photo: downscaled in memory, hashed so the same picture never counts twice, then dropped */

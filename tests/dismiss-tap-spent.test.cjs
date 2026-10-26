@@ -85,6 +85,6 @@ test('BH-040: ordinary buttons, taps elsewhere, late taps, keyboard and script c
 
 test('BH-040: the guard sits in fresh-scrim (loaded on every page), not in each module', () => {
     const src = read('fresh-scrim.js');
-    assert.match(src, /if \(dismissing\(e\.target\)\) spent\(e\)/);
+    assert.match(src, /if \(dismissing\(e\.target\)( \|\| removing\(e\.target\))?\) spent\(e\)/); /* BH-041 adds data-spend rows */
     assert.ok(read('index.html').includes('fresh-scrim.js'), 'index.html loads fresh-scrim.js');
 });

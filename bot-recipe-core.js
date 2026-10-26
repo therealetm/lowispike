@@ -112,11 +112,12 @@
         if (o.kitchen === 'done') {
             kit = '<span class="crb-b crb-kitchen crb-on" role="status"' + k + '><span class="crb-i" aria-hidden="true">✓</span><span class="crb-l">' +
                 esc(o.added ? t('inKitchen', l, o.added) : t('allHave', l)) + '</span></span>' +
-                (o.undo ? '<button type="button" class="crb-undo" data-crb="undo"' + k + '>' + esc(t('undo', l)) + '</button>' : '');
+                (o.undo ? '<button type="button" class="crb-undo" data-spend data-crb="undo"' + k + '>' + esc(t('undo', l)) + '</button>' : '');
         } else if (o.kitchen === 'have') {
             kit = '<span class="crb-b crb-kitchen crb-on" role="status"' + k + '><span class="crb-i" aria-hidden="true">✓</span><span class="crb-l">' + esc(t('allHave', l)) + '</span></span>';
         } else {
-            kit = btn('kitchen', '🧺', t('kitchen', l), o.count ? t('kitchenA', l, o.count) : t('kitchenA1', l));
+            /* BH-041: Add to kitchen turns into the status + Undo in place; data-spend keeps a double tap from undoing it at once */
+            kit = btn('kitchen', '🧺', t('kitchen', l), o.count ? t('kitchenA', l, o.count) : t('kitchenA1', l), ' data-spend');
         }
         if (!id) return '<div class="crb-row crb-one" data-crb-row' + k + sig + '>' + kit + '</div>';
         return '<div class="crb-row" data-crb-row' + k + sig + '>' +

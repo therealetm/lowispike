@@ -22,11 +22,18 @@
    did. A seeded double-tap monkey on a WebKit iPhone 13 (mock cloud) found the 2nd tap reaching the page under the finger after a
    close: the bottom X (#whX) 173 ms later focused Community's chat box ("Write to Paul", keyboard up), and Move's backdrop 222 ms
    later pressed the companion's world bubble. Now every real tap on a dismiss control (an X / close button by its data-* or
-   class name, or a *-scrim backdrop) is spent here, once, for the whole app. */
+   class name, or a *-scrim backdrop) is spent here, once, for the whole app.
+   BH-041 (Oct 26 2026): a row action that takes its own row away (Kitchen's To buy list: Bought, x) lets the NEXT row slide up
+   under the finger, so the 2nd tap of a double tap acted on that row too. Live WebKit iPhone 13: a double tap on Bought for
+   Apples (82 ms) also put Butter in the kitchen; live Chromium the x took two items off the list. A control marked data-spend is
+   spent like a close control: the 2nd tap within 44 px / 400 ms does nothing, a deliberate tap on another row works at once.
+   BH-041b: a two-step delete ("Tap again to delete": class armed / sure on the button) was armed AND confirmed by one double tap,
+   so the safety step did nothing: Delete all cycle data (Cycle sheet and Cycle world), delete a chat message, remove today's meal.
+   A tap on an armed button on the spot of the tap just before it (44 px, ARM_MS) is swallowed; the deliberate 2nd tap works. */
 (function (W, D) {
     'use strict';
     if (!W || !D || W.LowiFreshScrim) return;
-    const MS = 350, SPOT_MS = 400, SPOT_PX = 44, born = new WeakMap(), opener = new WeakMap(), shown = new WeakMap();
+    const MS = 350, SPOT_MS = 400, SPOT_PX = 44, ARM_MS = 500, born = new WeakMap(), opener = new WeakMap(), shown = new WeakMap();
     let last = null; /* the last real pointer tap: {x, y, t} */
     let spentAt = null; /* BH-033: the last real tap that made a choice and closed what it was on: {x, y, t} */
     const now = () => (W.performance && W.performance.now ? W.performance.now() : Date.now());
@@ -72,11 +79,25 @@
         try { if (c && c.matches(CLOSE_SEL)) return true; } catch (e) {}
         return !!c && CLOSE_CLS.test(cls) || isScrim(el);
     }
+    /* BH-041b: the armed 2-step button this tap would confirm, or null */
+    function armedCtl(t) {
+        try { return (t && t.nodeType === 1 && t.closest && t.closest('button.armed,button.sure')) || null; } catch (e) { return null; }
+    }
+    /* the confirm tap of a double tap: an armed button, tapped on the spot of the previous real tap (the arming one) within ARM_MS */
+    function armTwice(e) {
+        if (!last || !e || !e.isTrusted || !(e.detail > 0) || typeof e.clientX !== 'number' || !armedCtl(e.target)) return false;
+        const d = tapTime(e) - last.t;
+        return d >= 0 && d < ARM_MS && Math.abs(e.clientX - last.x) <= SPOT_PX && Math.abs(e.clientY - last.y) <= SPOT_PX;
+    }
+    /* BH-041: a control that removes its own row or list (data-spend): what slides in under the finger must not get the 2nd tap */
+    function removing(t) {
+        try { return !!(t && t.nodeType === 1 && t.closest && t.closest('[data-spend]')); } catch (e) { return false; }
+    }
     function guard(e) {
         if (!e.isTrusted) return;
         const b = backdrop(e.target);
-        if ((b && age(b) < MS) || sameSpot(e) || quiet(e)) { e.preventDefault(); e.stopImmediatePropagation(); return; }
-        if (e.detail > 0 && typeof e.clientX === 'number') { last = { x: e.clientX, y: e.clientY, t: tapTime(e) }; if (dismissing(e.target)) spent(e); }
+        if ((b && age(b) < MS) || sameSpot(e) || quiet(e) || armTwice(e)) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+        if (e.detail > 0 && typeof e.clientX === 'number') { last = { x: e.clientX, y: e.clientY, t: tapTime(e) }; if (dismissing(e.target) || removing(e.target)) spent(e); }
     }
     /* BH-032: a pane shown again (a tab, a Community view) right after a real tap: same-spot guard like a new overlay. Only the
        spot rule applies (shown is not born, so a pane is never treated as a backdrop). */
@@ -114,5 +135,5 @@
         W.addEventListener('mousedown', guardDown, true);
     }
     if (D.body) start(); else D.addEventListener('DOMContentLoaded', start, { once: true });
-    W.LowiFreshScrim = { MS, SPOT_MS, SPOT_PX, age, backdrop, guard, guardDown, sameSpot, mark, spent, quiet, dismissing };
+    W.LowiFreshScrim = { MS, SPOT_MS, SPOT_PX, ARM_MS, armedCtl, armTwice, age, backdrop, guard, guardDown, sameSpot, mark, spent, quiet, dismissing, removing };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

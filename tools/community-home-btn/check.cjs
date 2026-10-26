@@ -42,7 +42,7 @@ async function swipeBack(R) {
         /* Reduce Motion by default; pass 'motion' as the 3rd argument for a run where autopilot really flies */
         if (process.argv[4] !== 'motion') await R.page.emulateMedia({ reducedMotion: 'reduce' });
         await R.goto(); await H.sleep(3000);
-        if (lang !== 'en') { await R.page.evaluate(l => window.setLang && window.setLang(l), lang); await H.sleep(800); }
+        if (lang !== 'en') { await R.page.evaluate(l => window.LowiLang && window.LowiLang.set(l), lang); await H.sleep(800); }
         console.log('  html lang', await R.page.evaluate(() => document.documentElement.lang));
         ok(await fly(R), 'companion flying on Home');
         await R.page.evaluate(() => goTab('foryou')); await H.sleep(2500);

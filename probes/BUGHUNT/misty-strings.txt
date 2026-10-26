@@ -1,0 +1,87 @@
+atmosphere-core.js:35: How fast the world around Misty moves. Misty keeps its own pace.
+atmosphere-core.js:35: Wie schnell sich die Welt um Misty bewegt. Misty behält das eigene Tempo.
+atmosphere-core.js:35: Qué tan rápido se mueve el mundo alrededor de Misty. Misty mantiene su propio ritmo.
+body-trips.js:321: Next journey: Misty needs energy
+body-trips.js:321: Nächste Reise: Misty braucht Energie
+body-trips.js:321: Próximo viaje: Misty necesita energía
+clean-view-core.js:81: Controls hidden while Misty flies. Tap anywhere to show them.
+clean-view-core.js:82: Bedienelemente ausgeblendet, solange Misty fliegt. Tippe irgendwo, um sie zu zeigen.
+clean-view-core.js:83: Controles ocultos mientras Misty vuela. Toca en cualquier sitio para mostrarlos.
+community-me.js:24: Misty\u2019s daily gift
+community-me.js:26: El regalo diario de Misty
+companion.js:273: <div class="cf-panel cf-misty" role="dialog" aria-modal="true" aria-label="Misty"><header class="cf-head"><h2>
+food-photo-ai.js:17: Misty is looking…
+food-photo-ai.js:17: Misty is taking another look…
+food-photo-ai.js:18: Misty schaut sich das an…
+food-photo-ai.js:18: Misty schaut noch einmal hin…
+food-photo-ai.js:19: Misty está mirando…
+food-photo-ai.js:19: Misty mira otra vez…
+herb-quests.js:54: Level 25: Misty reached the final evolution. Every action still keeps it glowing.
+herb-quests.js:54: Level 25: Misty hat die letzte Entwicklung erreicht. Jede Aktion lässt es weiter leuchten.
+herb-quests.js:54: Nivel 25: Misty alcanzó la evolución final. Cada acción la mantiene brillando.
+herb-shop.js:70: You keep everything: scan, log, fasting, Misty in every form, and the daily gift.
+herb-shop.js:70: Du behältst alles: Scan, Loggen, Fasten, Misty in jeder Form und das Tagesgeschenk.
+herb-shop.js:70: Te quedas con todo: escanear, registrar, ayuno, Misty en todas sus formas y el regalo diario.
+herb-shop.js:139: Misty\'s gift of the day
+herb-shop.js:139: El regalo del día de Misty
+herb-shop.js:148: Misty\'s gift of the day
+herb-shop.js:148: El regalo del día de Misty
+herb-tamagotchi.js:9: Misty’s room
+herb-tamagotchi.js:9: El rincón de Misty
+herb-tamagotchi.js:178: '+esc(o&&o.label||'Misty')+'
+install-guide.js:119: LOWiSPIKE is on your Home Screen now. One tap and Misty is there.
+install-guide.js:119: LOWiSPIKE ist jetzt auf deinem Home-Bildschirm. Ein Tipp und Misty ist da.
+install-guide.js:119: LOWiSPIKE ya está en tu pantalla de inicio. Un toque y Misty está ahí.
+misty-hunt.js:90: Level up! Misty is now level {L}. I feel stronger!
+misty-hunt.js:90: Level up! Misty ist jetzt Level {L}. Ich fühl mich stärker!
+misty-hunt.js:90: ¡Subes de nivel! Misty ya es nivel {L}. ¡Me siento más fuerte!
+misty-pad.js:103: Autopilot, Misty is drifting sleepily. Tap to steer
+misty-pad.js:103: Autopilot, Misty treibt m\u00fcde. Tippen zum Steuern
+misty-pad.js:103: Piloto autom\u00e1tico, Misty flota con sue\u00f1o. Toca para dirigir
+misty-pad.js:103: Autopilot, Misty flies on its own. Tap to steer
+misty-pad.js:103: Autopilot, Misty fliegt allein. Tippen zum Steuern
+misty-pad.js:103: Piloto autom\u00e1tico, Misty vuela por su cuenta. Toca para dirigir
+misty-pad.js:104: Controller: drag to fly Misty, hold the middle to go forward, tap then hold to go back, three taps for autopil
+misty-pad.js:104: Steuerung: ziehen, um Misty zu fliegen, Mitte halten f\u00fcr vorw\u00e4rts, tippen und halten f\u00fcr r\u00f
+misty-pad.js:104: Control: arrastra para volar con Misty, mant\u00e9n el centro para avanzar, toca y mant\u00e9n para retroceder
+misty-pad.js:278: Misty is flying home
+misty-pad.js:278: Misty fliegt nach Hause
+misty-pad.js:278: Misty vuelve a casa
+misty-pad.js:323: New: drag here to fly Misty
+misty-pad.js:323: Neu: hier ziehen, um mit Misty zu fliegen
+misty-pad.js:323: Nuevo: arrastra aqu\u00ed para volar con Misty
+move-bubble.js:460: Casual (under 5,000), Steady (5,000 to 9,999) or Epic (10,000 or more) is today\'s step total from your own ph
+move-bubble.js:462: Tranquilo (menos de 5.000), Constante (de 5.000 a 9.999) o Épico (10.000 o más) es tu total de pasos de hoy se
+ranking.js:235: ' + esc(tr('yourPlace') + ', ' + (x ? '#' + x.rank + ', ' + score(x) + ' ' + unitLong() : tr('notYet')) + ', '
+ranking.js:283: >' + esc(c ? c.name : 'Misty') + '</b><span class=
+spirit.js:55: Caught for Misty
+spirit.js:55: Für Misty eingefangen
+spirit.js:55: Capturado para Misty
+spirit.js:100: Misty suggests
+spirit.js:100: Misty schlägt vor
+spirit.js:100: Misty sugiere
+starter-core.js:57: You move most days. Keep the streak and let Misty feel it.
+starter-core.js:57: Du bewegst dich fast t\u00e4glich. Halte die Serie und lass Misty es sp\u00fcren.
+starter-core.js:57: Te mueves casi a diario. Mant\u00e9n la racha y que Misty lo sienta.
+starter-core.js:63: Water is the easiest win of the day, and it fills Misty up too.
+starter-core.js:63: Wasser ist der leichteste Gewinn des Tages, und er l\u00e4dt auch Misty auf.
+starter-core.js:63: El agua es la victoria m\u00e1s f\u00e1cil del d\u00eda, y tambi\u00e9n recarga a Misty.
+starter-core.js:70: Tired days count too. Two minutes of moving still wakes Misty up.
+starter-core.js:70: M\u00fcde Tage z\u00e4hlen auch. Zwei Minuten Bewegung wecken Misty trotzdem.
+starter-core.js:70: Los d\u00edas cansados tambi\u00e9n cuentan. Dos minutos de movimiento despiertan a Misty.
+sym-home.js:185: Every meal you log charges Misty. Three meals fill this bubble for today.
+sym-home.js:185: Jede eingetragene Mahlzeit lädt Misty auf. Drei Mahlzeiten füllen diese Blase für heute.
+sym-home.js:185: Cada comida que registras carga a Misty. Tres comidas llenan esta burbuja hoy.
+tutorial-steps.js:366: tap Misty: she plays
+tutorial-steps.js:367: hold Misty: her card (energy, forms, Evolution path, home)
+tutorial-steps.js:368: press Misty: her bubble squishes under your finger
+tutorial-steps.js:369: drag starting on Misty: she turns
+tutorial-steps.js:395: push Misty into the edge of her world: out into the galaxy
+world-home.js:938: Misty\u2019s home
+world-home.js:938: La casa de Misty
+world-home.js:942: Misty grows with what you do: log a meal, drink water, scan, move. Each one gives XP.
+world-home.js:942: Misty w\u00e4chst mit dem, was du tust: Essen eintragen, Wasser trinken, scannen, bewegen. Jedes gibt XP.
+world-home.js:942: Misty crece con lo que haces: registrar comida, beber agua, escanear, moverte. Todo da XP.
+world-home.js:947: Everything you have scanned so far. Every new product is a new discovery for Misty.
+world-home.js:947: Alles, was du bisher gescannt hast. Jedes neue Produkt ist eine neue Entdeckung f\u00fcr Misty.
+world-home.js:947: Todo lo que has escaneado. Cada producto nuevo es un descubrimiento para Misty.

@@ -1,0 +1,5 @@
+camera open {"cam":true,"live":true,"card":"","liveTracks":0,"srcLive":true,"vw":960,"gum":0,"tab":"tab-home","hist":2,"href":"tm.github.io/lowispike/?tb=1793038917031"}
+before back {"cam":true,"live":true,"card":"","liveTracks":0,"srcLive":true,"vw":960,"gum":0,"tab":"tab-home","hist":3,"href":"tm.github.io/lowispike/?tb=1793038917031"}
+after back {"cam":false,"live":false,"card":"","liveTracks":0,"srcLive":false,"vw":0,"gum":0,"tab":"tab-home","hist":3,"href":"tm.github.io/lowispike/?tb=1793038917031"}
+errors {"err":[],"rej":[],"pe":[]}
+PASS

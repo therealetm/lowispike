@@ -1,0 +1,4 @@
+playing in chat {"playing":1,"t":[0.2,2.4],"tab":"tab-foryou","ev":["play data:audio/mpeg;base","pause     at voicePlay (community-chat.js?v=20261026-182027:835:22) |     at HTMLDocument.<anonymous> (community-chat.js?v=20261026-182027:1012:707) |     at eval (eval at evaluate (:370:30), <anonymous>:1:19)","play https://abcdefgh12.s"]}
+after leaving (home) {"playing":0,"t":[0.2,2.5],"tab":"tab-home","ev":["play data:audio/mpeg;base","pause     at voicePlay (community-chat.js?v=20261026-182027:835:22) |     at HTMLDocument.<anonymous> (community-chat.js?v=20261026-182027:1012:707) |     at eval (eval at evaluate (:370:30), <anonymous>:1:19)","play https://abcdefgh12.s","pause     at voiceStop (community-chat.js?v=20261026-182027:840:80) |     at MutationObserver.onShow (community-chat.js?v=20261026-182027:507:228)"]}
+errors {"err":[],"rej":[],"pe":[]}
+PASS

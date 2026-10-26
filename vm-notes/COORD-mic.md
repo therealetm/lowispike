@@ -10,3 +10,6 @@ Won't touch: community-chat.js voice notes logic, kitchen-core.js / store-picks.
 - 16:11 core+component+function written, WIP pushed to branch
 - 16:55 CET continuation task started; local branch was rebased on main so pushed as mic-dictation-2 (no force push)
 - 17:00 CET recreated as branch mic-dictation-3 on origin/main (clean rebase), pushed
+- 17:25 rebased again on 984aa0bc, pushed as mic-dictation-4
+- 16:20:30Z release queued from branch mic-dictation-5 via /home/sprite/mic-release.sh
+- 16:37:57Z LIVE build 20261026-173248 (main d963b418), silent

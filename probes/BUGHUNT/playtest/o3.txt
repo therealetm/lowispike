@@ -1,0 +1,5 @@
+camera open {"cam":true,"live":true,"card":"","liveTracks":0,"srcLive":true,"vw":960,"gum":0,"tab":"tab-home","hist":2,"href":"http://127.0.0.1:46035/?tb=1793037977632"}
+before back {"cam":true,"live":true,"card":"","liveTracks":0,"srcLive":true,"vw":960,"gum":0,"tab":"tab-home","hist":3,"href":"http://127.0.0.1:46035/?tb=1793037977632"}
+after back {"cam":false,"live":false,"card":"","liveTracks":0,"srcLive":false,"vw":0,"gum":0,"tab":"tab-home","hist":3,"href":"http://127.0.0.1:46035/?tb=1793037977632"}
+errors {"err":[],"rej":[],"pe":[]}
+PASS

@@ -12,3 +12,4 @@ Release: scripts/release.sh --quiet (fix, no tour card)
 - 16:15 CET started; root cause reproduced in node: nameSwap's last fallback = any ok community product with the same coarse cat, "other" matches "other" (Mandeln Stifte -> Paliria eggplant sauce)
 
 ## Replies
+- 17:12 CET LIVE 20261026-170447 (quiet). WebKit iPhone 13 live check DE/EN 0 finds. Done; handoff notes pushed.

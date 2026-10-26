@@ -78,3 +78,9 @@ world-home.js, home-orbit-v2*, misty-pad*, Settings files.
 # Run 44 (Mon 26 Oct 2026 16:42 CET): worktree /home/sprite/wt-bughunt-202610261642, branch bughunt-44 (off origin/main 37ba9c60). CLAIM: body-trips.js startNext() only, tests/oct16-today-functional.test.cjs (one assertion), new tests/journey-no-autopilot.test.cjs. Start next journey must not switch the controller to autopilot.
 - 15:50 UTC run 44: tests 3768 (1 load flake, passes alone), local WebKit iPhone 13 + Chromium 390 PASS, releasing
 - 15:59 UTC run 44 RELEASED build 20261026-165435, live verified. Worktree released.
+
+# Run 47 (Mon 26 Oct 2026 19:01 CET): worktree /home/sprite/wt-bughunt-202610261801, branch bughunt-47 (off origin/main 65a53bfe). Probing P-SESSION-OUTLIVES-SCREEN siblings (getUserMedia / audio / recognition kept after leaving a screen). Not touching mirror-move.js / mirror-hinge.js / move-*.js (move-reward task releasing).
+Run 47 done: BH-047 LIVE 20261026-191635.
+
+# Run 48 (Mon 26 Oct 2026 20:02 CET): worktree /home/sprite/wt-bughunt-202610261903, branch bughunt-48 (off origin/main). Probing dictation vs typed words (mic-dictate.js) and full-screen layers vs back swipe. 
+Run 48 done: BH-048 LIVE 20261026-200906 (mic-dictate.js). Files released.

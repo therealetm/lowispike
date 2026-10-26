@@ -1,0 +1,6 @@
+camera open {"cam":true,"live":true,"card":"","liveTracks":0,"srcLive":true,"vw":960,"gum":0,"tab":"tab-home","hist":2,"href":"tm.github.io/lowispike/?tb=1793038034891"}
+before back {"cam":true,"live":true,"card":"","liveTracks":0,"srcLive":true,"vw":960,"gum":0,"tab":"tab-home","hist":3,"href":"tm.github.io/lowispike/?tb=1793038034891"}
+after back {"cam":false,"live":false,"card":"","liveTracks":0,"srcLive":false,"vw":0,"gum":0,"tab":"","hist":3,"href":"about:blank"}
+BUG back with the food camera open LEFT THE APP
+errors {"err":[],"rej":[],"pe":[]}
+FAIL

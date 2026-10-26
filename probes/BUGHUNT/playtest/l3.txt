@@ -1,0 +1,6 @@
+camera open {"cam":true,"live":true,"card":"","liveTracks":1,"srcLive":true,"vw":960,"gum":1,"tab":"tab-home","hist":2,"href":"tm.github.io/lowispike/?tb=1793038916842"}
+hidden {"cam":true,"live":false,"card":"Starting camera…","liveTracks":0,"srcLive":false,"vw":960,"gum":1,"tab":"tab-home","hist":2,"href":"tm.github.io/lowispike/?tb=1793038916842"}
+back to foreground {"cam":true,"live":true,"card":"","liveTracks":1,"srcLive":true,"vw":960,"gum":2,"tab":"tab-home","hist":2,"href":"tm.github.io/lowispike/?tb=1793038916842"}
+shutter after foreground {"camAfter":false,"sheet":true}
+errors {"err":[],"rej":[],"pe":[]}
+PASS

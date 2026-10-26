@@ -13,3 +13,5 @@ Release: scripts/release.sh --news news.json (silent, mini-tour step only)
 - 16:55 CET started; handoff 0.35 being written
 
 ## Replies
+- 17:25 CET built: quick-add-core.js + rows + CSS + tour step + voices; 3809/3809 local tests; WebKit iPhone 13 / iPad P (es) / iPad L (de) / iPhone RM probes pass (no scroll, no open, row height same, dbl tap = 1, stepper, house + Undo). Docs push of 0.35 hit 2 time-dependent fast tests on CI (not mine); handoff 0.35 goes with the release. Next: rebase, release.
+- 17:49 CET LIVE 20261026-174232 (silent). Live probe on all 4 views passed. Docs log line pushing (push-main). Task done.

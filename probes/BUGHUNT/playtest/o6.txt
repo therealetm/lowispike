@@ -1,0 +1,6 @@
+camera open {"cam":true,"live":true,"card":"","liveTracks":0,"srcLive":true,"vw":960,"gum":0,"tab":"tab-home","hist":2,"href":"http://127.0.0.1:43993/?tb=1793038034925"}
+hidden {"cam":true,"live":false,"card":"Starting camera…","liveTracks":0,"srcLive":false,"vw":960,"gum":0,"tab":"tab-home","hist":2,"href":"http://127.0.0.1:43993/?tb=1793038034925"}
+back to foreground {"cam":true,"live":true,"card":"","liveTracks":0,"srcLive":true,"vw":960,"gum":0,"tab":"tab-home","hist":2,"href":"http://127.0.0.1:43993/?tb=1793038034925"}
+shutter after foreground {"camAfter":false,"sheet":false}
+errors {"err":[],"rej":[],"pe":[]}
+PASS

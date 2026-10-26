@@ -1,0 +1,11 @@
+✔ BH-045: each line that names the companion goes through the user's own name (7.992844ms)
+✔ BH-045: the clean-flight VoiceOver line and the controller chip read the chosen name (2.908601ms)
+✔ BH-045: no new file shows the default name without going through the chosen name (63.30124ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 145.676319

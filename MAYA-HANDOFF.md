@@ -1272,6 +1272,32 @@ swaps after a manual catch) had the same cat match. Task "LOWiSPIKE: Better pick
 (Sesame, 26 Oct), worktree wt-better-pick, branch better-pick-same-kind, COORD-better-pick.md.
 Status: building (see Log for the release).
 
+### 0.31 Scanner card: small blood sugar graph, "how often" in numbers, a simple Why (Emmanuel, voice + 2 screenshots, Mon 26 Oct 2026 about 4:07 PM CET)
+
+Screenshots: Shop camera card for "Mandeln Stifte" (K-Classic slivered almonds) saying "ESTIMATE Moderate - Moderate
+estimated blood sugar impact", and its Details (Usual portion 50 g / Whole pack 100 g, 2.1 g carbs, 8 g fibre per 100 g ...).
+His words: "I'm not satisfied with this yet. I don't like how it looks... It says lower estimate, moderate estimate blood
+sugar impact. Let's add a little graph in there, why are you not adding the graph? And when I click more details, it's
+confusing. It says your portion... What I'm looking for: when it says moderate, what does that mean? Can I eat this every
+day? Every week? Once, twice, three, four, five times a week? I need to know exactly how many times I can eat this. What
+does moderate mean? Same with lower, does that mean I can eat this every day? And if it says no, then also why? But just a
+little tap button to understand the reasoning, the text doesn't have to be there clunky. Maybe I tap Moderate and it
+opens, or it has a Why button, I click the Why and it has a simple explanation that a 9-year-old and a 70-80-year-old
+would understand."
+
+What to build (extend the one shared scanner card from 0.23, shop-scan.js / shop-scan-core.js / shop-scan.css, no new card):
+1. A tiny estimated blood sugar curve on the verdict for the shown portion (low hump / taller hump / sharp spike), labelled
+   "estimate, not a measurement", Reduce Motion honoured.
+2. "How often" in plain numbers for every verdict at the shown portion. This REPLACES the 24 Oct "no frequency" rule
+   (DECISIONS: SELTEN never says "now and then"): he now explicitly wants a number. General guide, not medical advice.
+3. A small "Why?" tap target that opens a short plain explanation (what the word means, why this food, how often).
+   Collapsed by default.
+4. Check the almonds verdict: 2.1 g carbs per 50 g reads as low impact. Fix the cause if it is a bug, explain it otherwise.
+   Shop finds "Caught today" said "Medium (estimate)" for the same product while the card said "Moderate": one word.
+5. Details: "Your portion" must say plainly where the portion came from; calmer, more native card overall. EN/DE/ES.
+Task "LOWiSPIKE: scanner card graph, how often + simple Why" (Sesame, 26 Oct), worktree wt-scan-why, branch scan-why,
+COORD-scan-why.md. Status: building (see Log for the release).
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

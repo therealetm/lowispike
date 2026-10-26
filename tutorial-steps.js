@@ -337,7 +337,7 @@
             }
         },
         {
-            id: 'new-day-recap', area: 'new', where: 'home', open: 'misty-card', target: ['[data-mh="t-recap"]'], covers: ['day-recap', 'dayRecap'],
+            id: 'new-day-recap', area: 'new', where: 'home', open: 'misty-card', target: ['[data-mh="t-recap"]'], scroll: true, covers: ['day-recap', 'dayRecap'],
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.40, day-recap.js): Day recap, your companion\'s read-only look back at today (meals with their likely blood sugar spike verdicts, longest gap, Move, water, XP, level up), one takeaway and one nudge for tomorrow. On the companion card (Your day bubble, glows from 6 PM) and in My day. Never opens by itself, no notification.',
             title: { en: 'Your day, looked back', de: 'Dein Tag im R\u00fcckblick', es: 'Tu d\u00eda, en resumen' },
             text: {

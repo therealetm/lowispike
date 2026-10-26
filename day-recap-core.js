@@ -80,7 +80,7 @@
     const POOLS = {
         hello_good: {
             en: ['That was a good day, and I felt every bit of it.', 'Look at you today. I am glowing over here.', 'Today went well. I saved the best bits for you.', 'I loved today. Here is what we did together.', 'You took good care of us today.', 'A calm, steady day. My favourite kind.'],
-            de: ['Das war ein guter Tag, und ich hab jedes bisschen gesp\u00fcrt.', 'Schau dich an heute. Ich leuchte hier richtig.', 'Heute lief gut. Ich hab dir das Beste aufgehoben.', 'Ich mochte heute. Das haben wir zusammen geschafft.', 'Du hast heute gut auf uns aufgepasst.', 'Ein ruhiger, gleichm\u00e4\u00dfiger Tag. Meine Lieblingssorte.'],
+            de: ['Das war ein guter Tag, und ich hab jedes bisschen gesp\u00fcrt.', 'Schau dich an heute. Ich leuchte hier richtig.', 'Heute lief gut. Ich hab dir das Beste aufgehoben.', 'Heute war sch\u00f6n. Das haben wir zusammen geschafft.', 'Du hast heute gut auf uns aufgepasst.', 'Ein ruhiger, gleichm\u00e4\u00dfiger Tag. Meine Lieblingssorte.'],
             es: ['Fue un buen d\u00eda, y lo sent\u00ed todo.', 'M\u00edrate hoy. Estoy brillando aqu\u00ed.', 'Hoy sali\u00f3 bien. Te guard\u00e9 lo mejor.', 'Me encant\u00f3 hoy. Esto hicimos juntos.', 'Hoy nos cuidaste bien.', 'Un d\u00eda tranquilo y constante. Mi favorito.']
         },
         hello_mixed: {
@@ -161,7 +161,7 @@
         meals: { en: 'Meals', de: 'Mahlzeiten', es: 'Comidas' },
         gap: { en: 'Longest gap', de: 'L\u00e4ngste Pause', es: 'Pausa m\u00e1s larga' },
         move: { en: 'Move', de: 'Move', es: 'Move' },
-        water: { en: 'Water', de: 'Wasser', es: 'Agua' },
+        water: { en: 'Glasses of water', de: 'Gl\u00e4ser Wasser', es: 'Vasos de agua' },
         xp: { en: 'XP today', de: 'XP heute', es: 'XP hoy' },
         calm: { en: 'calmer', de: 'ruhiger', es: 'tranquilas' },
         mid: { en: 'in between', de: 'mittel', es: 'intermedias' },
@@ -221,7 +221,7 @@
         }
         if (s.gapH) stats.push({ k: 'gap', n: fmt(s.gapH, lang) + ' h', b: ui('gap', lang), sub: '', tone: s.gapH >= 12 ? 'ok' : '' });
         if (s.moveMin || s.steps) stats.push({ k: 'move', n: s.moveMin ? ui('min', lang, { n: s.moveMin }) : String(s.steps), b: ui('move', lang), sub: s.moveMin && s.steps ? s.steps + ' ' + (lang === 'de' ? 'Schritte' : lang === 'es' ? 'pasos' : 'steps') : (!s.moveMin ? (lang === 'de' ? 'Schritte' : lang === 'es' ? 'pasos' : 'steps') : ''), tone: s.moveMin >= 10 ? 'ok' : '' });
-        if (s.water) stats.push({ k: 'water', n: String(s.water), b: ui('water', lang), sub: ui('glasses', lang, { n: s.water }), tone: s.water >= 6 ? 'ok' : '' });
+        if (s.water) stats.push({ k: 'water', n: String(s.water), b: ui('water', lang), sub: '', tone: s.water >= 6 ? 'ok' : '' });
         if (s.xp) stats.push({ k: 'xp', n: (s.xp > 0 ? '+' : '') + s.xp, b: ui('xp', lang), sub: '', tone: 'ok' });
         const levelUp = s.levelTo > s.levelFrom && s.levelFrom > 0 ? ui('levelUp', lang, { name, n: s.levelTo }) : '';
         return {

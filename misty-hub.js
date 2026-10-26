@@ -170,7 +170,7 @@
         const t = D.createElement('button'); t.type = 'button'; t.hidden = true; t.setAttribute(attr, val);
         D.body.appendChild(t); try { t.click(); } finally { t.remove(); }
     }
-    const TODAY_ACT = { trip: () => proxy('data-bt', 'bar'), sun: () => proxy('data-ls', 'info'), goal: () => proxy('data-dr', 'chip'), recap: () => W.LowiDayRecap && W.LowiDayRecap.open() };
+    const TODAY_ACT = { trip: () => proxy('data-bt', 'bar'), sun: () => proxy('data-ls', 'info'), goal: () => proxy('data-dr', 'chip'), recap: () => W.LowiDayRecap && W.LowiDayRecap.open({ after: true }) };
     function cycleHtml() { try { return W.LowiCycleWorld && W.LowiCycleWorld.hubHtml ? W.LowiCycleWorld.hubHtml() : ''; } catch (e) { return ''; } }
     function advHtml() { try { return W.LowiAdventureTiers && W.LowiAdventureTiers.html ? W.LowiAdventureTiers.html() : ''; } catch (e) { return ''; } }
     function rankHtml() { try { return W.LowiMistyRank && W.LowiMistyRank.html ? W.LowiMistyRank.html() : ''; } catch (e) { return ''; } }
@@ -415,7 +415,7 @@
         if (k.indexOf('g-') === 0) return proxy('data-g2h-open', k.slice(2));
         if (k === 'macro') return proxy('data-sp', 'goals');
         if (k === 'inside') { const r = D.getElementById('brRow'); if (r) r.click(); }
-        if (k === 'recap' && W.LowiDayRecap) W.LowiDayRecap.open();
+        if (k === 'recap' && W.LowiDayRecap) W.LowiDayRecap.open({ after: true });
     }
     function dayHtml() {
         const its = dayItems();

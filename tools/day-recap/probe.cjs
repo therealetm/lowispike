@@ -24,6 +24,9 @@ const has = k => process.argv.includes('--' + k);
       } } catch (e) { }`;
     const h = await L.open({ url, view, lang, preInit, reducedMotion: has('rm') });
     const P = h.page, out = { view, lang, url, problems: [] };
+    await P.evaluate(() => { window.__drc = []; new MutationObserver(ms => ms.forEach(m => { const t = m.target; if (t.classList && t.classList.contains('drc-ov')) window.__drc.push(Math.round(performance.now()) + ' ' + t.className); })).observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+        const R = window.LowiR2, oc = R && R.close; if (oc) R.close = function (ov, how) { if (ov && ov.classList && ov.classList.contains('drc-ov')) window.__drc.push(Math.round(performance.now()) + ' close ' + (how || '') + ' ' + (new Error().stack || '').split('\n').slice(1, 4).join(' < ').replace(/https?:[^ )]*\//g, '')); return oc.apply(this, arguments); };
+        document.addEventListener('click', e => { if (document.querySelector('.drc-ov')) window.__drc.push(Math.round(performance.now()) + ' click ' + (e.target.className && e.target.className.baseVal == null ? e.target.className : e.target.tagName)); }, true); });
     const bad = m => out.problems.push(m);
     /* the sheet slides in on a spring; wait until it has landed (emulated phones are slow) */
     const settled = async () => { for (let i = 0; i < 40; i++) { const ok = await P.evaluate(() => { const s = document.querySelector('.r2-ov.on:not(.off) #dayRecap'); if (!s) return false; const t = getComputedStyle(s.closest('.r2-sh')).transform; return t === 'none' || /, 0\)$/.test(t); }); if (ok) return true; await L.sleep(200); } return false; };
@@ -80,6 +83,7 @@ const has = k => process.argv.includes('--' + k);
         if (!/127\.0\.0\.1|lowispike/.test(out.afterBack.url)) bad('back left the app');
         if (has('shot')) { await P.evaluate(() => window.LowiDayRecap.open()); await L.sleep(2400); await P.screenshot({ path: arg('shot', '/tmp/drc.png') }); }
     } catch (e) { bad('probe error ' + e.message); }
+    out.drcLog = await P.evaluate(() => window.__drc).catch(() => null);
     out.errors = { page: h.log.pageerror, console: h.log.console.filter(x => !/Failed to load resource|net::|ERR_/.test(x)), mon: await P.evaluate(() => window.__bh && { err: window.__bh.err, rej: window.__bh.rej }).catch(() => null) };
     if (out.errors.page.length || (out.errors.mon && (out.errors.mon.err.length || out.errors.mon.rej.length))) bad('errors');
     console.log(JSON.stringify(out, null, 1));

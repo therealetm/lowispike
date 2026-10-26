@@ -60,10 +60,25 @@
     }
     function sheet() { return Array.from(D.querySelectorAll('#dayRecap')).find(e => !(e.closest && e.closest('.r2-ov.off'))) || null; }
     function close() { const ex = sheet(), ov = ex && ex.closest('.r2-ov'); try { if (ov && W.LowiR2 && W.LowiR2.close) W.LowiR2.close(ov); else if (ov) ov.remove(); } catch (e) { ov && ov.remove(); } }
-    function open() {
+    /* Opened from the companion card or My day, the sheet underneath is still closing, and going back Home makes its own
+       quiet history.back() (section-nav.js). That popstate can land after our sheet is up, and back-swipe.js then closes the
+       top sheet: ours. So with {after: true} we wait for that popstate (or 600 ms) and for no sheet still sliding away
+       (max 2 s), then open. A double tap still opens one panel. */
+    let pending = 0, lastPop = 0;
+    W.addEventListener('popstate', () => { lastPop = Date.now(); });
+    function closing() { return !!D.querySelector('.r2-ov.off'); }
+    function open(o) {
         const R2 = W.LowiR2; if (!R2 || !R2.sheet || !C()) return false;
-        if (sheet()) return true; /* a double tap opens one panel */
-        R2.sheet(html(), { cls: 'drc-ov' });
+        if (sheet() || pending) return true;
+        const go = () => { pending = 0; if (!sheet()) R2.sheet(html(), { cls: 'drc-ov' }); };
+        const after = !!(o && o.after);
+        if (!after && !closing()) { go(); return true; }
+        const t0 = Date.now();
+        pending = setInterval(() => {
+            const now = Date.now(), popped = lastPop >= t0 - 400 && now - lastPop > 120;
+            const ready = !closing() && (!after || popped || now - t0 > 600);
+            if (ready || now - t0 > 2000) { clearInterval(pending); pending = setTimeout(go, 60); }
+        }, 60);
         return true;
     }
     D.addEventListener('click', e => {

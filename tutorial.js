@@ -114,7 +114,9 @@
     function emit(extra) { try { W.dispatchEvent(new CustomEvent('lowi:tutorial', { detail: Object.assign({ on, step: step() && step().id }, mode === 'news' ? { news: true } : {}, extra || {}) })); } catch (e) { } }
 
     function target(s) {
-        for (const sel of (s && s.target) || []) { let el = null; try { el = $(sel); } catch (e) { } if (el && vis(el)) { const r = el.getBoundingClientRect(); if (r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth) return el; } }
+        for (const sel of (s && s.target) || []) { let el = null; try { el = $(sel); } catch (e) { } if (el && vis(el)) { let r = el.getBoundingClientRect(); if (r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth) return el;
+            /* Oct 26 (day recap): a step with scroll: true scrolls its target into view inside its sheet (e.g. the companion card's lower bubbles) */
+            if (s.scroll) { try { el.scrollIntoView({ block: 'center', inline: 'nearest' }); } catch (e) { } r = el.getBoundingClientRect(); if (r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth) return el; } } }
         return null;
     }
     function ensureRoot() {

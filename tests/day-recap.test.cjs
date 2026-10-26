@@ -147,4 +147,6 @@ test('the mini tour has a Day recap step', () => {
     const steps = read('tutorial-steps.js');
     assert.ok(/id: 'new-day-recap'/.test(steps));
     assert.ok(/covers: \[[^\]]*'day-recap'/.test(steps));
+    assert.ok(/id: 'new-day-recap'[^\n]*scroll: true/.test(steps), 'the bubble sits low on the card: the step scrolls it into view');
+    assert.ok(/if \(s\.scroll\) \{ try \{ el\.scrollIntoView/.test(read('tutorial.js')), 'tutorial.js honours scroll: true');
 });

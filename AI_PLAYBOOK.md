@@ -6,6 +6,19 @@ The step-by-step version for an agent is `.agents/skills/lowispike-change/SKILL.
 
 Last checked 18 October 2026. Sources and what could not be read are at the end.
 
+## 0. Companion naming rule (Emmanuel, 26 Oct 2026)
+
+Every user names their own companion. "Misty" is only the default name in the code, not the companion's name. Every report,
+voice note, checklist, "Try it on your iPhone" step, App Store or marketing caption, What's New card and tutorial line says
+"your companion" (DE "dein Begleiter" / "deine Begleiterin", ES "tu compañero" / "tu compañera"), never "Misty".
+
+- Bad: "Hold Misty, then tap 'Misty is number 3 worldwide'." Good: "Hold your companion, then tap the 'number 3 worldwide' line."
+- New user-facing strings never hard-code "Misty" as the name: use the user's chosen name (companion-core `nameOf`, the
+  companion card's name) with a neutral fallback ("your companion").
+- Quote "Misty" only for a code identifier, or for the literal on-screen text of a test profile that never renamed its
+  companion, and say that it is the default name.
+- Reviewers (section 8) flag any new "Misty" that reaches a user.
+
 ## 1. One task, one owner, one worktree
 
 **What people do.** Simon Willison and the incident.io team run several agents at once, each in its own checkout or

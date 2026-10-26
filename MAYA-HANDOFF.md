@@ -43,6 +43,15 @@ Give a hand") had no speaker. "Why is that removed? I hope you haven't removed i
 What's New card must have its speaker and recorded voice in EN/DE/ES. Task "LOWiSPIKE: silent updates only + tutorial speaker fix"
 (26 Oct) builds both.
 
+**Standing rule (Emmanuel, Mon 26 Oct 2026 about 12:35 PM Berlin): never call the companion "Misty" in general.** Every user
+names their own companion; "Misty" is only the code's default name. In every report, voice note, checklist, "Try it on your iPhone"
+step, App Store or marketing caption, What's New and tutorial text, say "your companion" (DE "dein Begleiter" / "deine Begleiterin",
+ES "tu compañero" / "tu compañera"), never "Misty". Bad: "hold Misty, then tap 'Misty is number N worldwide'". Good: "hold your
+companion, then tap the 'number N worldwide' line". Never add user-facing strings that hard-code "Misty" as the companion's name; use
+the user's chosen name (companion-core `nameOf` / the companion card's name) with a neutral fallback. Quote "Misty" only for a code
+identifier or the literal on-screen text of a profile that never renamed its companion, and say so. Also in AI_PLAYBOOK.md
+("Companion naming rule") and in the Sesame skills "LOWiSPIKE hourly bug hunt" and "LOWiSPIKE coding task playbook".
+
 **This is the Mickey 17 workflow (section 0.6).** Every Maya hands over to the next one the same way: Maya 5 to
 Maya 6, Maya 6 to Maya 7, and on. If you are a new Maya, section 0.6 is your job description for the handover, and
 you pass it on to the Maya after you. Emmanuel should never have to explain it again.
@@ -1333,6 +1342,8 @@ scripts/release.sh "what users get, in one line" --news news.json
 - **Releases are silent, always (26 Oct 2026).** No update notification of any kind to users: no "New version" / "I've got something
   new for you!" ask, no "Update loaded", no push, no Community post about a release. `loud` in version.json stays `20000101-000000`;
   `scripts/release-check.cjs` fails otherwise. What's New tour steps inside the app stay, each with its speaker.
+- **Companions are never "Misty" in general (26 Oct 2026).** Every user names their own companion. Reports, captions and
+  copy say "your companion" / "dein Begleiter" / "tu compañero"; "Misty" is only the code default.
 - **Updates: a voice note plus a text checklist** with ✅ done, ⏳ in progress, 📝 to do, and the done items stay in
   the list. This is his current instruction (19 Oct) and replaces the older "no voice recordings" line.
 - **Post anything that needs him right in the chat** (approvals, sign-ins, GitHub codes, task updates), not only in
@@ -1983,3 +1994,4 @@ obLater snooze, sign-out KEEP). Tests 2765/2765, CI green, live check de iPhone 
 - 2026-10-26 10:20 CET Hourly bug hunt run 37 (Sesame bug-hunt task, worktree wt-bughunt-202610260904). **BH-037 fixed (quiet release).** Gap and the notification ask card stayed clickable while fading: a double tap on "Log a meal in Fuel" ran Log meal twice, a double tap on "Not now" counted twice (never asked again). Guards + LowiFreshScrim.spent; tests/closing-gap-push-still-live.test.cjs.
 - 2026-10-26 11:15 CET Hourly bug hunt run 38 (Sesame bug-hunt task, worktree wt-bughunt-202610261002). **BH-038 fixed (quiet release).** A double tap on Community's menu button opened the menu and shut it at once (2nd tap hit the reused backdrop). toggleMenu marks the menu on show + spends closing taps (LowiFreshScrim); tests/community-menu-reused-dbl.test.cjs.
 - 2026-10-26 12:40 CET Hourly bug hunt run 39 (Sesame bug-hunt task, worktree wt-bughunt-202610261102). **BH-039 fixed (quiet release).** A double tap on a Scan button that opens the camera inside Misty's world (#spWorld: Products empty-state Scan, herb care) pressed the camera with its 2nd tap: barcode/name field focused (keyboard up) or Deep analyze. spirit.js open() marks the world on every show (LowiFreshScrim.mark); fresh-scrim also prevents the focus of a field on the swallowed tap's mousedown (guardDown, sibling for every guarded overlay with a field). tests/spworld-reused-dbl.test.cjs.
+- 2026-10-26 13:10 CET Docs only (Sesame task "Redo LOWiSPIKE App Store images, realistic"): standing rule "never call the companion Misty in general; say your companion" added here, to AI_PLAYBOOK.md and to both Sesame LOWiSPIKE skills. No build, no release.

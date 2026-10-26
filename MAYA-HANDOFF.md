@@ -450,6 +450,17 @@ call, task running. (Numbered 25 because parallel tasks were writing 22 to 24 at
      resets the Gap timer. Keep barcode, photo and deep analysis, review/correction, the Breakfast/Lunch/Dinner/Snacks
      tiles, backdated times, recipes, the shopping list and Snacks to buy, account data and safety copy. Never claim a
      meal estimate measures blood sugar; blood sugar is not insulin. Small commits, not one giant redesign.
+   - **Added 10:4x PM (same call): keep the grocery-shopping discovery game, and make it fair.** A product that is
+     already in the community database still just shows its information (verdict, details, prices) when scanned.
+     **Catch** is offered only for a product that is NOT in the community database yet: whoever adds it first gets
+     first-discoverer credit and a substantial one-time reward. He left the reward to Maya. Maya's decision: a
+     permanent **Pathfinder** badge (first discoverer, shown on the product and in the profile) plus a bounded
+     one-time evolution-XP bonus, paid only after the barcode is verified as unique (valid check digit, not already in
+     the catalogue or Open Food Facts lookup result for someone else) and the product has useful details (name plus at
+     least a label photo or the key nutrition facts). Anti-farming: one reward per barcode ever (server-side unique
+     key, not only on the phone), a daily cap on discovery rewards per person, no reward for re-adding, renaming or
+     junk entries (made-up barcodes, empty or nonsense names), and the XP keeps its stable event ID so it is paid once.
+     Plain words in en/de/es, no "Hunt" jargon.
    - **Task** 4e961904 "LOWiSPIKE: simplify food navigation and unify meal logging" (started 10:14 PM). Notes in
      `/home/sprite/COORD-food-paths.md`. Coordinates with the companion-panel / Collection food journal task
      (0d494df4), aura (ce74d1af), evolution (8ac28dff), crash (9472a9a4), billiard (34bb0a32) and the hourly bug hunt.
@@ -986,3 +997,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:30 Crowd fix: an @mention now reaches only the member it names (Emmanuel's ping to "Thiago M." got thank-yous from Thiago AND Thiago M.; same for Luis/Luis A., paolo/Paolo H.). My 22:15 --net soak (guest "Soak", uid ...858f71) posted two real '@Thiago / @paolo sent you energy' lines in the room and Emmanuel answered '@Soak Yooo'; --net now blocks room writes. Those 2 lines are still in the room (needs a service-role delete or Emmanuel in Supabase). Still no scheduled crowd run at 22:11.
 - 2026-10-19 22:35 Item 22 recorded under 0.5: companion card without "spirit", adventure places need your own visit plus her level, mood check-in explained, Forms and Collection up front, Collection becomes a food journal. Task companion-panel running.
 - 2026-10-19 22:35 Item 25 recorded under 0.5: food paths (Scan, Gap, Fuel, Cook, Shop) must make sense and stop repeating each other; one shared meal-logging flow, plain Shop labels (task 4e961904, running). No build change.
+- 2026-10-19 22:45 Item 25 extended: Catch only for products not yet in the community database, first discoverer gets a permanent Pathfinder badge and a one-time, capped evolution-XP bonus after the barcode and details are verified; no farming. No build change.

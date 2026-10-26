@@ -1426,7 +1426,20 @@ it straight into the Kitchen instead ("I have it" / "Hab ich schon" / "Ya lo ten
 Rows must not shift under the finger (double tap protection, bug hunt P-ROW-SHIFT rounds 41-43). Big tap targets (44 pt),
 EN/DE/ES, iPhone 390x844 + iPad both orientations, Reduce Motion.
 Task "LOWiSPIKE: quick + add on Supermarket product rows" (Sesame, 26 Oct), worktree wt-quick-add, branch quick-add-rows,
-COORD-quick-add.md. Status: building (see Log for the release).
+COORD-quick-add.md. Status: shipped (build in the Log).
+What was built (decision: the simplest native option for the Kitchen is a small house button next to "+", not a long press,
+because a long press cannot be found and VoiceOver cannot reach it):
+- quick-add-core.js (window.LowiQuickAdd): name -> Cart line match (case, accents, " · amount" ignored), which control a row
+  shows, its markup EN/DE/ES, and the double tap rule (a tap within 450 ms of the control changing kind is ignored).
+- store-picks.js: itemHTML puts the verdict tag by the name and a fixed-width (100 px) quick column OUTSIDE the row button;
+  qaClick (asked in onClick before the row can open the product) adds with LOWI_SHELF.addIngredients, copies the product photo
+  and barcode onto the new Cart line, steps with LOWI_SHELF.setQty, and puts the product in the Kitchen with
+  LowiKitchenCore.addProduct (note with Undo). Only that row's column is redrawn; the list never repaints or scrolls.
+  closeQuick() calls qaRefresh() so the steppers show what the Cart pane or a quick view changed.
+- "+" and the house are data-spend (LowiFreshScrim), the stepper's "+" is not (quick taps all count), the last "-" is.
+- The reason line is clamped to two lines on rows with the quick column (full reason in the product card): iPhone rows are
+  98 to 118 px (were 96).
+- Probe: tools/quick-add/probe.cjs (needs /home/sprite/BUGHUNT/playtest/lib.cjs) (WebKit iPhone 13, iPad portrait es, iPad landscape de, Reduce Motion).
 
 ## 1. What LOWiSPIKE is
 

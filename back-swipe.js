@@ -28,7 +28,13 @@
             /* Oct 24 17:02 (bug hunt): a small layer inside a sheet that closes on Escape without changing any open marker (the
                rename field on Misty's card) left the app: back cancelled the rename, nothing in this signature changed, so it
                went on and left. Such layers carry data-back-layer; one gone = back closed something. */
-            D.querySelectorAll('[data-back-layer]').length;
+            D.querySelectorAll('[data-back-layer]').length + '|' +
+            /* Oct 26 (bug hunt run 50): a panel that fades out as a ghost keeps role="dialog" but turns aria-hidden at once (the
+               Sound panel, world-audio.js). Back closed it and nothing above changed, so back went on and left the app. */
+            D.querySelectorAll('[role="dialog"]:not([aria-hidden="true"])').length + '|' +
+            /* Oct 26 (bug hunt run 51): a layer that steps back inside itself on Escape (the starter interview, herb-start.js) keeps
+               every open marker; it carries its current step in data-back-step, so a changed step = back did something. */
+            Array.prototype.map.call(D.querySelectorAll('[data-back-step]') || [], e => e && e.getAttribute ? e.getAttribute('data-back-step') : '').join(',');
     }
     /* Oct 24 (back and close sweep): a layer can listen for Escape on itself only (keys on its own element). Escape sent to the
        document never reached it: back from Community went Home and left that layer on top of Home, and the next back left the

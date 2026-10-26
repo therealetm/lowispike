@@ -763,6 +763,14 @@
         (host() || D.body).appendChild(m);
         const x = m.querySelector('[data-x]'); x && x.focus && x.focus({ preventScroll: true });
     }
+    /* Oct 26 (bug hunt run 50): the World map had no Escape. Back (which sends Escape) went past it and closed the whole body
+       world under it. Now Escape closes the map only and the world stays; focus goes back to the map button. */
+    D.addEventListener('keydown', e => {
+        if (e.key !== 'Escape') return;
+        const m = D.getElementById('bwrMap'); if (!m) return;
+        e.stopPropagation(); m.remove();
+        const b = D.getElementById('bwrMapBtn'); try { b && b.focus && b.focus({ preventScroll: true }); } catch (x) { }
+    }, true);
     function reset() {
         if (st.warp) { const q = st.warp; st.warp = null; clean(q); warpEv('cancel', q.id, q.from); }
         if (st.region) { st.region.dispose(); st.region = null; }

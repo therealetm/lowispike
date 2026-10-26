@@ -120,9 +120,35 @@
         result(el, p, { code });
     }
     const ctxOf = el => (el && el.dataset && el.dataset.ssctx) || (el && el.classList.contains('b3-shop') ? 'shop' : 'scan');
-    function verdictHTML(lvl, est) {
-        return '<div class="ss-verdict" role="status"><span class="ss-vic">' + IC[lvl] + '</span><div class="ss-vt"><span class="ss-est">' + esc(est || T('est')) + '</span>' +
-            '<b class="ss-vw">' + esc(T('v_' + lvl)) + '</b><small>' + esc(T('s_' + lvl)) + '</small></div></div>';
+    /* Oct 26 scan-why (Emmanuel: "Let's add a little graph in there ... when it says moderate, what does that mean? Can I eat this
+       every day? Every week? ... just a little tap button to understand the reasoning"): the one verdict is the word, a small line
+       saying what it is about, a tiny estimated blood sugar curve labelled "Estimate, not a measurement", How often in numbers,
+       and a Why? button that opens a short plain explanation (collapsed by default). The old "Estimate" tag plus "Moderate
+       estimated blood sugar impact" line said estimate twice; the small line under the word replaces both. */
+    let whyN = 0;
+    const servOf = p => { try { return W.LowiNutriStats && W.LowiNutriStats.servingFor ? W.LowiNutriStats.servingFor(p) : null; } catch (e) { return null; } };
+    function curveHTML(lvl) {
+        const cv = C.curve(lvl); if (!cv) return '<span class="ss-vic">' + IC.unknown + '</span>';
+        return '<figure class="ss-graph"><svg class="ss-curve" viewBox="0 0 80 36" aria-hidden="true" focusable="false"><path class="ss-cbase" d="M2 32.5H78"/><path class="ss-cline" pathLength="1" d="' + cv.d + '"/></svg>' +
+            '<figcaption>' + esc(T('graphL')) + '</figcaption></figure>';
+    }
+    function verdictHTML(lvl, est, p, grams, open) {
+        let e = null; try { e = C.explain(p || {}, grams, lvl, li()); } catch (x) { e = null; }
+        const g = grams > 0 ? Math.round(grams) : e && e.g, unit = (e && e.unit) || 'g';
+        const sub = est || (lvl === 'unknown' ? T('s_unknown') : g ? T('bsG', g + ' ' + unit) : T('bs'));
+        const id = 'ssWhy' + (++whyN), lines = e ? e.lines : [T('s_' + lvl)];
+        return '<div class="ss-verdict"><div class="ss-vrow"><div class="ss-vt" role="status"><b class="ss-vw">' + esc(T('v_' + lvl)) + '</b><small>' + esc(sub) + '</small></div>' + curveHTML(lvl) + '</div>' +
+            '<div class="ss-orow"><p class="ss-often"><span>' + esc(T('oftenH')) + '</span><b>' + esc(e ? e.often : T('o_' + lvl)) + '</b></p>' +
+            '<button type="button" class="ss-whyb" data-ss="why" aria-expanded="' + (open ? 'true' : 'false') + '" aria-controls="' + id + '">' + esc(T('whyB')) + '</button></div>' +
+            '<div class="ss-whyp" id="' + id + '"' + (open ? '' : ' hidden') + '>' + lines.map(l => '<p>' + esc(l) + '</p>').join('') + '<p class="ss-whyf">' + esc(T('whyFoot')) + '</p></div></div>';
+    }
+    /* Details: one plain line on where the amount came from, instead of the calculator's own "Usual portion" label */
+    function psrcHTML(p, sv, grams, from) {
+        let e = null; try { e = C.explain(p || {}, grams, 'none', li()); } catch (x) { e = null; }
+        if (!e || !e.g) return '';
+        from = from || (sv && sv.from);
+        const k = from === 'mine' ? 'mine' : from === 'last' ? 'last' : from === 'maker' ? 'maker' : e.src || 'group';
+        return '<p class="ss-psrc">' + esc(T('psrcH')) + ' <b>' + esc(e.g + ' ' + e.unit) + '</b>: ' + esc(T('psrc_' + k)) + '. <span>' + esc(T('psrcHint')) + '</span></p>';
     }
     function detailsHTML(p, r) {
         const f = p.facts || {}, rows = C.factRows(f), why = (p.why && p.why.length ? p.why : (r && r.why) || []);
@@ -131,9 +157,11 @@
         const wt = why.map(w => { try { return X().whyText(w); } catch (e) { return ''; } }).filter(Boolean).slice(0, 5);
         const ing = String(p.ingredients || '').trim().slice(0, 700);
         let h = '<details class="ss-more"><summary><span>' + esc(T('details')) + '</span><i aria-hidden="true"></i></summary><div class="ss-body">';
-        if (por) h += '<div class="ss-h">' + esc(T('portion')) + '</div><div class="ss-por">' + por + '</div>';
+        const sv = rows.length ? servOf(p) : null, src = rows.length ? psrcHTML(p, sv, sv && sv.grams) : '';
+        if (por || src) h += '<div class="ss-h">' + esc(T('portion')) + '</div>' + src + (por ? '<div class="ss-por">' + por + '</div>' : '');
         if (rows.length) h += '<div class="ss-h">' + esc(T(f.drink || p.cat === 'drink' ? 'per100ml' : 'per100')) + '</div><div class="ss-facts">' + rows.map(x => '<div><small>' + esc(T(x[0])) + '</small><b>' + esc(num(x[1])) + '</b></div>').join('') + '</div>';
-        if (wt.length) h += '<div class="ss-h">' + esc(T('why')) + '</div><ul class="ss-why">' + wt.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
+        /* Oct 26 scan-why: the Why list moved into the verdict's Why? tap; a name-only estimate (no numbers) keeps its reasons here */
+        if (wt.length && !rows.length) h += '<div class="ss-h">' + esc(T('why')) + '</div><ul class="ss-why">' + wt.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
         if (ing) h += '<div class="ss-h">' + esc(T('ing')) + '</div><p class="ss-ing">' + esc(ing) + '</p>';
         if (!rows.length && !wt.length && !ing) h += '<p class="ss-ing">' + esc(T('noData')) + '</p>';
         if (p.barcode) h += '<p class="ss-bcl">' + esc(T('bc', String(p.barcode))) + '</p>';
@@ -148,8 +176,11 @@
     function rated(p, o) {
         let q = p; try { if (X().prep && !o.lvl) q = X().prep(Object.assign({}, p)) || p; } catch (e) { q = p; }
         let v = q; try { if (X().view && !o.lvl) v = X().view(q) || q; } catch (e) { v = q; }
-        const lvl = o.lvl || (v !== q && v.verdict ? C.level(v.verdict) : C.verdictOf(q, X() && X().rate));
-        return { q, v, lvl };
+        /* Oct 26 scan-why: an amount you picked before (last time / mine) re-rates with the same tightened rule as the first verdict */
+        const sv = servOf(q), ug = sv && (sv.from === 'last' || sv.from === 'mine') && sv.grams > 0 ? sv.grams : 0;
+        const at = !o.lvl && v !== q && ug ? C.levelAt(q, ug) : null;
+        const lvl = o.lvl || at || (v !== q && v.verdict ? C.level(v.verdict) : C.verdictOf(q, X() && X().rate));
+        return { q, v, lvl, g: sv && sv.grams > 0 ? sv.grams : 0 };
     }
     function result(el, p, o) {
         o = o || {};
@@ -161,7 +192,7 @@
         const img = /^https:\/\//.test(String(q.img || '')) ? String(q.img) : '';
         const okv = lvl === 'none' ? 'ok' : lvl === 'mild' ? 'better' : lvl === 'spike' ? 'spike' : q.verdict;
         const pv = Object.assign({}, q, { verdict: okv });
-        cur = { name, barcode: code, img, level: lvl, brand: String(q.brand || '').slice(0, 40), cat: String(q.cat || ''), p: pv, est: o.est || '' };
+        cur = { name, barcode: code, img, level: lvl, q, brand: String(q.brand || '').slice(0, 40), cat: String(q.cat || ''), p: pv, est: o.est || '' };
         /* Oct 26 Kitchen game (kitchen-game.js, Cook > Kitchen): a scanned product can also go straight into your kitchen. Opened from
            the Kitchen's Scan button, that is the big button and Add to cart is the small one. */
         const KG = W.LowiKitchenGame, kIn = !!(KG && KG.intent && KG.intent());
@@ -174,7 +205,7 @@
         c.innerHTML = '<div class="ss-sheet ss-v-' + lvl + '" data-ctx="' + esc(ctx) + '">' +
             '<div class="ss-head"><span class="ss-img">' + (img ? '<img alt="" src="' + esc(img) + '">' : IC.bc) + '</span><div class="ss-name"><b>' + esc(name) + '</b>' + (q.brand ? '<small>' + esc(q.brand) + '</small>' : '') + '</div>' +
             '<button type="button" class="ss-x" data-ss="next" aria-label="' + esc(T('next')) + '">' + IC.x + '</button></div>' +
-            verdictHTML(lvl, o.est) + acts + extrasHTML(pv, lvl) + detailsHTML(q, r) + '</div>';
+            verdictHTML(lvl, o.est, q, rr.g) + acts + extrasHTML(pv, lvl) + detailsHTML(q, r) + '</div>';
         /* the companion reacts to the verdict, as it did to the old result (companion.js); shopping stays quiet */
         if (ctx !== 'shop' && lvl !== 'unknown') { try { W.dispatchEvent(new CustomEvent('lowi:scan-verdict', { detail: { verdict: okv } })); } catch (e) {} }
         /* Oct 17 grocery hunt (grocery-hunt.js): a barcode really scanned (camera, typed digits or a barcode photo) in the shopping camera is a catch; a product picked from a name search is not */
@@ -223,11 +254,13 @@
         const d = (e && e.detail) || {}, el = cam(); if (!el || !cur || !cur.p || !X().atGrams || !(d.grams > 0)) return;
         const sh = el.querySelector('.ss-sheet'), box = sh && sh.querySelector('.ss-por .ns-portion'); if (!box) return;
         if (box.getAttribute('data-ns-key') && d.key && box.getAttribute('data-ns-key') !== d.key) return;
-        let v = null; try { v = X().atGrams(cur.p, d.grams); } catch (e) { v = null; }
-        if (!v || !v.verdict) return;
-        const lvl = C.level(v.verdict), unit = (cur.p.facts && cur.p.facts.drink) || cur.p.cat === 'drink' ? ' ml' : ' g';
+        /* Oct 26 scan-why: the same tightened rule as the first verdict (C.levelAt), so 50 g of almonds stays Moderate */
+        let lvl = C.levelAt(cur.q || cur.p, d.grams);
+        if (!lvl) { let v = null; try { v = X().atGrams(cur.p, d.grams); } catch (e) { v = null; } if (!v || !v.verdict) return; lvl = C.level(v.verdict); }
         const old = sh.querySelector('.ss-verdict'); if (!old) return;
-        const t = D.createElement('div'); t.innerHTML = verdictHTML(lvl, T('estG', Math.round(d.grams) + unit)); old.replaceWith(t.firstChild);
+        const wb = old.querySelector('[data-ss="why"]'), open = !!(wb && wb.getAttribute('aria-expanded') === 'true');
+        const t = D.createElement('div'); t.innerHTML = verdictHTML(lvl, '', cur.q || cur.p, d.grams, open); old.replaceWith(t.firstChild);
+        const ps = sh.querySelector('.ss-psrc'); if (ps) { const u = D.createElement('div'); u.innerHTML = psrcHTML(cur.q || cur.p, null, d.grams, 'mine'); if (u.firstChild) ps.replaceWith(u.firstChild); }
         sh.className = sh.className.replace(/ss-v-\w+/, 'ss-v-' + lvl); cur.level = lvl;
     });
     function unknown(el, code, offline) {
@@ -332,7 +365,12 @@
         if (k === 'open') { e.preventDefault(); open(); return; }
         const el = b.closest('.b3-cam'); if (!el) return;
         e.preventDefault();
-        if (k === 'mode') toggle();
+        if (k === 'why') {
+            /* Oct 26 scan-why: the short plain explanation under the verdict opens and closes in place */
+            const pn = b.getAttribute('aria-controls') && el.querySelector('#' + b.getAttribute('aria-controls')), on = b.getAttribute('aria-expanded') !== 'true';
+            b.setAttribute('aria-expanded', on ? 'true' : 'false'); if (pn) pn.hidden = !on;
+        }
+        else if (k === 'mode') toggle();
         else if (k === 'add') add(el);
         else if (k === 'kit') addKit(el);
         else if (k === 'next') next(el);

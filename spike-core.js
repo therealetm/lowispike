@@ -60,6 +60,24 @@
     }
     // opts.servingG (scanfe-g2): the amount the user picked on the card (g or ml). It wins over the manufacturer serving
     // and the group portion; without it the default stays manufacturer serving, else the group's usual portion.
+    // portionGroup (Oct 26 scan-why, Emmanuel's almonds: "Mandeln Stifte" read Moderate at an invented 50 g): a product with no
+    // shelf category of its own used the 50 g "other" portion, and a hard cheese the 150 g of a yoghurt pot. The food policy's own
+    // usual portion for plain nuts and for cheese is 30 g (nuts_large / cheese_large fire above it), so the rating, the Details
+    // portion and the Food check now agree: a small handful of almonds is Lower, 50 g of them is still Moderate.
+    // 'nuts' rates with the engine's 30 g snacks portion; 'cheese' is an engine group (30 g) already.
+    function portionGroup(p, group) {
+        if (group !== 'other' && group !== 'snacks' && group !== 'dairy') return group;
+        P0 = P0 || lib('LowiFoodPolicy', './food-policy-core.js');
+        if (!P0 || typeof P0.classify !== 'function') return group;
+        let c = null;
+        try { c = P0.classify({name: p.name, categories: p.categories || []}); } catch (e) { c = null; }
+        if (!c) return group;
+        const sweet = c.candy_dessert || c.coated_nuts || c.sweet_salty || c.chips_snack || c.breakfast_cereal || c.protein_product || c.sugar_drink || c.sweet_sauce ||
+            c.starch_bread || c.starch_pasta || c.starch_potato || c.starch_rice || c.processed_meat;
+        if (c.nuts && !sweet && group !== 'dairy') return 'nuts';
+        if (c.cheese && !c.fresh_cheese && !sweet) return 'cheese';
+        return group;
+    }
     function assess(p, opts) {
         p = p || {};
         const userG = opts && n(opts.servingG) > 0 ? n(opts.servingG) : null;
@@ -91,8 +109,8 @@
         const per100 = {carbs: c, sugar: s, fibre: n(f.f), protein: n(f.p), fat: n(f.fat), kcal: n(f.kcal)};
         const unit = drink ? 'ml' : 'g';
         const nutrition = E.validateNutrition(per100, unit);
-        const group = drink ? 'drinks' : (veg && p.cat === 'drink' ? 'other' : GROUP[p.cat] || 'other');
-        const serving = E.calculateServing(nutrition, {manufacturerG: n(f.sv), userG, group});
+        const group = portionGroup(p, drink ? 'drinks' : (veg && p.cat === 'drink' ? 'other' : GROUP[p.cat] || 'other'));
+        const serving = E.calculateServing(nutrition, {manufacturerG: n(f.sv), userG, group: group === 'nuts' ? 'snacks' : group});
         const glucose = E.estimateGlucoseImpact({serving, category: {liquid: drink}});
         let key = glucose.key;
         const sg = serving.amounts.sugar, cg = serving.amounts.carbs;
@@ -123,7 +141,7 @@
             try { confidence = E.assessConfidence({name: p.name, barcode: p.barcode, unit, per100, ingredients: p.ingredients}, {nutrition, ingredients: A}); } catch (e) { confidence = null; }
         }
         const ingredients = A ? {status: A.status, allergens: A.allergens, claims: A.claims, summary: AS} : {status: hasI ? 'complete' : 'missing', allergens: [], claims: []};
-        Object.defineProperty(out, 'engine', {value: {version: E.VERSION, bands: E.BANDS.version, key, glucose, serving: {g: serving.g, unit: serving.unit, source: serving.source, shown: serving.shown}, valid: nutrition.valid, issues: nutrition.issues, ingredients, policy: policy && {verdict: policy.verdict, version: policy.policyVersion, decidedBy: policy.decidedBy, why: policy.why, provisional: policy.provisional}, confidence: confidence && confidence.level, confidenceInfo: confidence}, enumerable: false});
+        Object.defineProperty(out, 'engine', {value: {version: E.VERSION, bands: E.BANDS.version, key, glucose, serving: {g: serving.g, unit: serving.unit, source: serving.source, group, shown: serving.shown}, valid: nutrition.valid, issues: nutrition.issues, ingredients, policy: policy && {verdict: policy.verdict, version: policy.policyVersion, decidedBy: policy.decidedBy, why: policy.why, provisional: policy.provisional}, confidence: confidence && confidence.level, confidenceInfo: confidence}, enumerable: false});
         return out;
     }
     const TX = {

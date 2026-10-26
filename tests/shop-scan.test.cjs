@@ -144,11 +144,11 @@ test('look: black space and iOS blue glass, one big verdict and Add to cart, det
     // order in the card: verdict, then Add to cart, then the folded details
     const r = js.slice(js.indexOf('function result('), js.indexOf('function unknown('));
     // Oct 26 one scanner: verdict, then the buttons (Add to cart first outside Log meal), then the better pick / bubble, then the folded details
-    assert.match(r, /verdictHTML\(lvl, o\.est\) \+ acts \+ extrasHTML\(pv, lvl\) \+ detailsHTML\(q, r\)/, 'verdict, buttons, extras, details');
+    assert.match(r, /verdictHTML\(lvl, o\.est, q, rr\.g\) \+ acts \+ extrasHTML\(pv, lvl\) \+ detailsHTML\(q, r\)/, 'verdict, buttons, extras, details');
     assert.match(r, /: kIn \? kitB\(true\) \+ cartB\(false\) : cartB\(true\) \+ kitB\(false\);/, 'Add to cart is the big button outside Log meal and the Kitchen');
     assert.match(r, /data-ss="add"/);
     assert.match(js, /<details class="ss-more">/, 'details closed by default');
     assert.doesNotMatch(js, /<details class="ss-more" open/);
-    assert.match(js, /T\('est'\)/, 'the verdict says Estimate');
+    assert.match(js, /T\('graphL'\)/, 'the verdict says Estimate, not a measurement (Oct 26 scan-why: on the curve)');
     assert.match(css, /prefers-reduced-motion/);
 });

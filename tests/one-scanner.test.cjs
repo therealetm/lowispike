@@ -112,7 +112,7 @@ test('Details holds the old result\'s portion calculator, barcode and the honest
     const W = load(dexBase(), { LowiNutriStats: { portionHTML: p => '<section class="sc-sec ns-portion" data-ns-key="k">portion</section>' } });
     const h = showIn(W, chips, { ctx: 'scan' });
     const d = h.slice(h.indexOf('<details'));
-    assert.equal(count(d, /ns-portion/g), 1); assert.match(d, /Your portion/);
+    assert.equal(count(d, /ns-portion/g), 1); assert.match(d, />Portion</); // Oct 26 scan-why: "Your portion" was confusing; the header is Portion
     assert.match(d, /4000000000001/); assert.match(d, /not medical advice/);
     assert.equal(count(h, /ns-portion/g), 1, 'portion only inside Details');
 });

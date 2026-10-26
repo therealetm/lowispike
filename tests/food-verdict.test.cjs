@@ -10,7 +10,10 @@ const SS = require('../scan-sort-core.js');
 
 const ULTJE = { name: 'Ültje Süß & Salzig', barcode: '', facts: { c: 36, s: 29, f: 5.5, p: 15, fat: 38, kcal: 555 }, ingredients: '' };
 const HAM = { name: 'Schinken gekocht', facts: { c: 1, s: 1, p: 20, fat: 3 }, ingredients: 'Schweinefleisch, Salz' };
-const PEANUTS = { name: 'Gesalzene Erdnüsse', facts: { c: 10, s: 4, f: 8, p: 25, fat: 50 }, ingredients: 'Erdnüsse, Salz' };
+/* Oct 26 scan-why: plain nuts now default to the policy's own 30 g portion (ja.nuts_moderate), so a bag with no printed serving
+   reads Everyday at a small handful. This fixture keeps its RARELY by printing a 50 g serving on the pack (policy.nuts_large). */
+const PEANUTS = { name: 'Gesalzene Erdnüsse', facts: { c: 10, s: 4, f: 8, p: 25, fat: 50, sv: 50 }, ingredients: 'Erdnüsse, Salz' };
+const PEANUTS_30 = { name: 'Gesalzene Erdnüsse', facts: { c: 10, s: 4, f: 8, p: 25, fat: 50 }, ingredients: 'Erdnüsse, Salz' };
 const YOG = { name: 'Naturjoghurt', cat: 'dairy', facts: { c: 4, s: 4, p: 4, fat: 3.5 }, ingredients: 'Milch, Joghurtkulturen' };
 const BEER = { name: 'Bier', cat: 'drink', facts: { c: 3, s: 0 }, ingredients: 'Wasser, Gerstenmalz, Hopfen, Alkohol' };
 const rate = p => S.assess(p);
@@ -21,7 +24,8 @@ test('foodVerdict follows the Food check card: NEIN -> spike, SELTEN -> at least
     assert.equal(S.assess(HAM).verdict, 'ok');
     assert.equal(S.foodVerdict(HAM), 'spike', 'pork: card says NO');
     assert.equal(S.foodVerdict(BEER), 'spike', 'alcohol: card says NO');
-    assert.equal(S.foodVerdict(PEANUTS), 'better', 'nuts: card says RARELY');
+    assert.equal(S.foodVerdict(PEANUTS), 'better', 'nuts, 50 g serving: card says RARELY');
+    assert.equal(S.foodVerdict(PEANUTS_30), 'ok', 'nuts at the usual 30 g handful: card says EVERYDAY');
     assert.equal(S.foodVerdict(YOG), 'ok', 'plain yoghurt: card says YES');
 });
 

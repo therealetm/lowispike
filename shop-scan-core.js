@@ -95,9 +95,47 @@
         swapR: ['Recipe', 'Rezept', 'Receta'],
         swapOpen: ['Open', 'Öffnen', 'Abrir'],
         swapShow: ['Show', 'Zeigen', 'Ver'],
-        portion: ['Your portion', 'Deine Portion', 'Tu ración'],
+        portion: ['Portion', 'Portion', 'Ración'],
         estG: ['Estimate for {0}', 'Schätzung für {0}', 'Estimación para {0}'],
-        packPhoto: ['Add it with a photo of the pack', 'Mit einem Foto der Packung hinzufügen', 'Añádelo con una foto del envase']
+        packPhoto: ['Add it with a photo of the pack', 'Mit einem Foto der Packung hinzufügen', 'Añádelo con una foto del envase'],
+        /* Oct 26 scan-why: the tiny curve, How often, the Why? tap and the plain portion source line */
+        graphL: ['Estimate, not a measurement', 'Schätzung, keine Messung', 'Estimación, no una medición'],
+        bsG: ['Blood sugar · estimate for {0}', 'Blutzucker · Schätzung für {0}', 'Azúcar en sangre · estimación para {0}'],
+        bs: ['Blood sugar · estimate', 'Blutzucker · Schätzung', 'Azúcar en sangre · estimación'],
+        oftenH: ['How often', 'Wie oft', 'Cada cuánto'],
+        whyB: ['Why?', 'Warum?', '¿Por qué?'],
+        whyFoot: ['A general guide for this portion, not medical advice.', 'Eine allgemeine Orientierung für diese Portion, kein ärztlicher Rat.', 'Una guía general para esta porción, no un consejo médico.'],
+        o_none: ['Fine every day at this portion', 'Jeden Tag okay, in dieser Portion', 'Bien todos los días, en esta porción'],
+        o_mild: ['Up to 2–3 times a week at this portion', 'Bis zu 2–3 Mal pro Woche, in dieser Portion', 'Hasta 2–3 veces por semana, en esta porción'],
+        o_mildP: ['Every day at {0}. At {1}: 2–3 times a week', 'Jeden Tag bei {0}. Bei {1}: 2–3 Mal pro Woche', 'Todos los días con {0}. Con {1}: 2–3 veces por semana'],
+        o_spike: ['Once a week at most, as a small portion', 'Höchstens einmal pro Woche, als kleine Portion', 'Como mucho una vez por semana, en porción pequeña'],
+        o_unknown: ['Can\'t say yet: the label is missing numbers', 'Noch nicht zu sagen: Dem Etikett fehlen Zahlen', 'No podemos decirlo aún: faltan números en la etiqueta'],
+        m_none: ['Lower means: this food likely raises your blood sugar only a little.', 'Niedriger heißt: Dein Blutzucker steigt bei diesem Essen wahrscheinlich nur wenig.', 'Bajo significa: este alimento probablemente sube poco tu azúcar en sangre.'],
+        m_mild: ['Moderate means: your blood sugar likely goes up more than with a Lower food.', 'Mittel heißt: Dein Blutzucker steigt wahrscheinlich mehr als bei einem niedrigeren Essen.', 'Moderado significa: tu azúcar en sangre probablemente sube más que con un alimento Bajo.'],
+        m_mildP: ['Moderate here is about the amount, not about sugar.', 'Mittel geht hier um die Menge, nicht um Zucker.', 'Aquí Moderado va de la cantidad, no del azúcar.'],
+        m_spike: ['Higher means: your blood sugar likely goes up fast and high.', 'Höher heißt: Dein Blutzucker steigt wahrscheinlich schnell und stark.', 'Alto significa: tu azúcar en sangre probablemente sube rápido y mucho.'],
+        m_pol: ['{0} here is about more than blood sugar.', '{0} geht hier um mehr als den Blutzucker.', 'Aquí {0} va de algo más que el azúcar en sangre.'],
+        m_unknown: ['Not sure means: the label doesn\'t give enough numbers to tell.', 'Unklar heißt: Das Etikett hat zu wenige Zahlen, um es zu sagen.', 'No seguro significa: la etiqueta no da suficientes números para saberlo.'],
+        w_nuts: ['Very few carbs ({0} in {1}), so blood sugar barely moves. But {1} of nuts is a lot of fat and energy{2}.', 'Sehr wenig Kohlenhydrate ({0} in {1}), der Blutzucker bewegt sich kaum. Aber {1} Nüsse sind viel Fett und Energie{2}.', 'Muy pocos carbohidratos ({0} en {1}), el azúcar en sangre casi no se mueve. Pero {1} de frutos secos es mucha grasa y energía{2}.'],
+        w_cheese: ['Very few carbs ({0} in {1}), so blood sugar barely moves. But {1} of cheese is a lot of fat and energy{2}.', 'Sehr wenig Kohlenhydrate ({0} in {1}), der Blutzucker bewegt sich kaum. Aber {1} Käse sind viel Fett und Energie{2}.', 'Muy pocos carbohidratos ({0} en {1}), el azúcar en sangre casi no se mueve. Pero {1} de queso es mucha grasa y energía{2}.'],
+        w_pol: ['Not about sugar: {0}', 'Nicht wegen Zucker: {0}', 'No por el azúcar: {0}'],
+        w_sweet: ['It has a sweetener ({0}). LOWiSPIKE counts sweeteners like sugar.', 'Es enthält Süßstoff ({0}). LOWiSPIKE zählt Süßstoff wie Zucker.', 'Lleva edulcorante ({0}). LOWiSPIKE cuenta los edulcorantes como azúcar.'],
+        w_drink: ['It\'s a sweet drink: {0} sugar in {1}. Sugar you drink gets into the blood fast.', 'Ein süßes Getränk: {0} Zucker in {1}. Getrunkener Zucker geht schnell ins Blut.', 'Es una bebida dulce: {0} de azúcar en {1}. El azúcar que bebes pasa rápido a la sangre.'],
+        w_sugar: ['It has {0} sugar in {1}. Sugar gets into the blood quickly.', 'Es hat {0} Zucker in {1}. Zucker geht schnell ins Blut.', 'Tiene {0} de azúcar en {1}. El azúcar pasa rápido a la sangre.'],
+        w_refined: ['It\'s made mostly of {0}. White flour and starch turn into sugar quickly.', 'Es besteht vor allem aus {0}. Weißmehl und Stärke werden schnell zu Zucker.', 'Está hecho sobre todo de {0}. La harina blanca y el almidón se vuelven azúcar rápido.'],
+        w_cHi: ['It has {0} carbs in {1}. That\'s a lot, and carbs turn into sugar in your blood.', 'Es hat {0} Kohlenhydrate in {1}. Das ist viel, und Kohlenhydrate werden im Blut zu Zucker.', 'Tiene {0} de carbohidratos en {1}. Es mucho, y los carbohidratos se vuelven azúcar en la sangre.'],
+        w_cMid: ['It has {0} carbs in {1}: some, but not a lot.', 'Es hat {0} Kohlenhydrate in {1}: etwas, aber nicht viel.', 'Tiene {0} de carbohidratos en {1}: algo, pero no mucho.'],
+        w_cLo: ['Only {0} carbs in {1}, so there\'s little to turn into sugar.', 'Nur {0} Kohlenhydrate in {1}, also wenig, was zu Zucker wird.', 'Solo {0} de carbohidratos en {1}, así que hay poco que se vuelva azúcar.'],
+        w_slow: ['Fibre and protein help it go in more slowly.', 'Ballaststoffe und Eiweiß lassen es langsamer ins Blut gehen.', 'La fibra y la proteína hacen que pase más despacio.'],
+        w_nodata: ['The label is missing the carb and sugar numbers.', 'Auf dem Etikett fehlen Kohlenhydrate und Zucker.', 'A la etiqueta le faltan los carbohidratos y el azúcar.'],
+        psrcH: ['Rated for', 'Bewertet für', 'Valorado para'],
+        psrc_maker: ['the serving printed on the pack', 'die Portion, die auf der Packung steht', 'la ración que pone el envase'],
+        psrc_nuts: ['the usual portion of nuts, a small handful', 'die übliche Portion Nüsse, eine kleine Handvoll', 'la ración habitual de frutos secos, un puñado pequeño'],
+        psrc_cheese: ['the usual portion of cheese', 'die übliche Portion Käse', 'la ración habitual de queso'],
+        psrc_group: ['a usual portion for this kind of food', 'eine übliche Portion für diese Art Essen', 'una ración habitual para este tipo de alimento'],
+        psrc_last: ['the amount you had last time', 'die Menge vom letzten Mal', 'la cantidad de la última vez'],
+        psrc_mine: ['the amount you picked', 'die Menge, die du gewählt hast', 'la cantidad que elegiste'],
+        psrcHint: ['Pick another amount and the rating changes with it.', 'Wähle eine andere Menge, dann ändert sich die Bewertung mit.', 'Elige otra cantidad y la valoración cambia con ella.']
     };
     function tx(k, li) { const r = TX[k]; let s = r ? (r[li | 0] || r[0]) : k; for (let i = 2; i < arguments.length; i++) s = s.split('{' + (i - 2) + '}').join(arguments[i]); return s; }
     function langIndex(code) { return ({ de: 1, es: 2 })[String(code || 'en').slice(0, 2)] || 0; }
@@ -148,7 +186,83 @@
     const TRIP_MS = 2 * 3600 * 1000;
     function tripOn(stamp, now) { const s = Number(stamp) || 0; return s > 0 && now - s >= 0 && now - s < TRIP_MS; }
 
-    const api = { MAP, LEVELS, level, verdictOf, TX, tx, langIndex, norm, safeImg, cartAdd, cartCount, factRows, SAME_MS, repeatHit, TRIP_MS, tripOn };
+    /* ---------- Oct 26 scan-why (Emmanuel: "when it says moderate, what does that mean? Can I eat this every day? Every week? ...
+       I need to know exactly how many times I can eat this ... a Why button ... a simple explanation that a 9-year-old and a
+       70-80-year-old would understand") ---------- */
+    const RANKL = { unknown: -1, none: 0, mild: 1, spike: 2 };
+    /* the card's verdict at an amount you picked: the same rule as the first verdict (assess made stricter by the Food check,
+       LowiSpikeCore.tighten), so 50 g of almonds can't jump back to Lower when you pick it in Details */
+    function levelAt(p, grams) {
+        const S = spikeCore(); if (!S || !p || p.notFound || !(grams > 0)) return null;
+        try {
+            const a = S.assess(p, { servingG: +grams });
+            if (!a || !RATED[a.verdict]) return null;
+            return level(typeof S.tighten === 'function' ? S.tighten(p, a) : a.verdict);
+        } catch (e) { return null; }
+    }
+    /* the tiny estimated curve on the verdict (viewBox 0 0 80 36, baseline y 31): a gentle low hump, a taller hump, a sharp spike.
+       A drawing of the estimate's size, never a measurement. */
+    const CURVES = {
+        none: { d: 'M2 31 C14 31 20 24 30 24 S46 31 58 31 L78 31', peak: 7 },
+        mild: { d: 'M2 31 C12 31 18 14 28 14 S44 31 56 31 L78 31', peak: 17 },
+        spike: { d: 'M2 31 C8 31 13 4 19 4 S27 27 36 29 S60 31 78 31', peak: 27 }
+    };
+    function curve(lvl) { return CURVES[lvl] || null; }
+    let FK = null;
+    function knowledge() {
+        if (FK) return FK;
+        if (typeof window !== 'undefined' && window.LowiFoodKnowledge) return window.LowiFoodKnowledge;
+        if (typeof require === 'function') { try { FK = require('./food-knowledge-core.js'); } catch (e) { FK = null; } }
+        return FK;
+    }
+    /* explain(p, grams, lvl, lang): what Why? and How often say for the verdict lvl shown on the card at that amount.
+       {often, lines: [what the word means, why this food (, what slows it)], g, unit, src: 'nuts'|'cheese'|'group'|'maker'|null}.
+       How often in numbers (Emmanuel asked for a number; it replaces the 24 Oct "no frequency" wording), a general guide for the
+       portion, never a promise: Lower = fine every day, Moderate = up to 2-3 times a week, Higher = once a week at most. A
+       Moderate that is only about a big portion of nuts or cheese says the small portion that is fine every day. */
+    function explain(p, grams, lvl, lang) {
+        const li = typeof lang === 'number' ? lang : langIndex(lang), t = (k, ...a) => tx(k, li, ...a);
+        lvl = level(lvl);
+        const S = spikeCore();
+        let a = null;
+        try { a = S && p && !p.notFound ? S.assess(p, grams > 0 ? { servingG: +grams } : undefined) : null; } catch (e) { a = null; }
+        const eng = a && a.engine, sv = eng && eng.serving, sh = (sv && sv.shown) || {}, why = (a && a.why) || [];
+        const unit = sv && sv.unit === 'ml' ? 'ml' : 'g', g = sv && sv.g > 0 ? Math.round(sv.g) : null;
+        const G = v => (v >= 10 || v === 0 ? Math.round(v) : Math.round(v * 10) / 10).toString().replace('.', li ? ',' : '.');
+        const amt = v => G(v) + ' g', at = g ? g + ' ' + unit : '';
+        const bs = a && RATED[a.verdict] ? level(a.verdict) : 'unknown';
+        const pol = eng && eng.policy, rule = (pol && pol.decidedBy) || '';
+        const group = sv && sv.group, src = !sv ? null : sv.source === 'manufacturer' ? 'maker' : group === 'nuts' || group === 'cheese' ? group : 'group';
+        const port = bs === 'none' && lvl === 'mild' && /nuts_large|cheese_large/.test(rule) ? (/nuts/.test(rule) ? 'nuts' : 'cheese') : null;
+        const polUp = !port && lvl !== 'unknown' && bs !== 'unknown' && RANKL[lvl] > RANKL[bs];
+        const lines = [];
+        lines.push(port ? t('m_mildP') : polUp ? t('m_pol', t('v_' + lvl)) : t('m_' + lvl));
+        const has = k => why.find(w => w && w[0] === k);
+        const c = sh.carbs, s = sh.sugar;
+        let w = '';
+        if (lvl === 'unknown' || bs === 'unknown') w = t('w_nodata');
+        else if (port) w = t('w_' + port, amt(c || 0), at, sh.kcal != null ? ': ' + Math.round(sh.kcal) + ' kcal' : '');
+        else if (polUp) {
+            let r = ''; try { const K = knowledge(); r = K && K.reasonText ? K.reasonText(rule, ['en', 'de', 'es'][li]) : ''; } catch (e) { r = ''; }
+            if (!r && pol && li === 0) r = pol.why || '';
+            w = r ? t('w_pol', String(r).replace(/\.?$/, '.')) : '';
+        }
+        if (!w && bs !== 'unknown') {
+            const sw = has('s_sweet'), rf = has('s_refined_i');
+            if (sw && lvl === 'spike') w = t('w_sweet', sw[1]);
+            else if (unit === 'ml' && (s || 0) >= 5) w = t('w_drink', amt(s), at);
+            else if ((s || 0) >= 8 && lvl !== 'none') w = t('w_sugar', amt(s), at);
+            else if (rf && lvl !== 'none') w = t('w_refined', rf[1]);
+            else if (c != null) w = t(bs === 'spike' ? 'w_cHi' : bs === 'mild' ? 'w_cMid' : 'w_cLo', amt(c), at);
+        }
+        if (w) lines.push(w);
+        if (!port && !polUp && (lvl === 'none' || lvl === 'mild') && ((sh.fibre || 0) >= 2 || (sh.protein || 0) >= 6)) lines.push(t('w_slow'));
+        if (lines.length < 2) lines.push(t('w_nodata'));
+        const often = lvl === 'unknown' ? t('o_unknown') : port ? t('o_mildP', '30 ' + unit, at) : t('o_' + lvl);
+        return { often, lines: lines.slice(0, 4), g, unit, src, bs };
+    }
+
+    const api = { MAP, LEVELS, level, verdictOf, levelAt, curve, explain, TX, tx, langIndex, norm, safeImg, cartAdd, cartCount, factRows, SAME_MS, repeatHit, TRIP_MS, tripOn };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiShopScanCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

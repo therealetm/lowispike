@@ -67,7 +67,9 @@ function page(people, opts) {
   };
   win.window = win;
   const doc = { getElementById: () => null };
-  vm.runInNewContext(R('ranking.js'), { window: win, document: doc, localStorage: win.localStorage, setTimeout: () => 0, console });
+  /* the page reads the clock: pin it to NOW (Fri 23 Oct), else the fixtures' week goes stale every Monday (failed Mon 26 Oct 00:00) */
+  class FixedDate extends Date { constructor(...a) { super(...(a.length ? a : [NOW])); } static now() { return NOW; } }
+  vm.runInNewContext(R('ranking.js'), { window: win, document: doc, localStorage: win.localStorage, setTimeout: () => 0, console, Date: FixedDate });
   return win;
 }
 

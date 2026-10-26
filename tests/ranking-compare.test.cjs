@@ -166,7 +166,7 @@ test('shared breakdown: written only for the current periods, read back only whe
 /* the page: ranking.js in a small window */
 function page(people, opts) {
   opts = opts || {};
-  const store = { 'lowispike.lang': opts.lang || 'en' }, now = Date.now();
+  const store = { 'lowispike.lang': opts.lang || 'en' }, now = NOW;
   const win = {
     localStorage: { getItem: k => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); } },
     LowiRankingCore: K, LowiCareBoard: CB, LowiSun: SUN,
@@ -179,7 +179,10 @@ function page(people, opts) {
     LowiCompanion: { friendLooks: () => opts.looks || {}, genome: () => ({ st: 5, el: 'air', nm: 'Misty Comet' }), prefs: () => ({ share: true }) }
   };
   win.window = win;
-  vm.runInNewContext(R('ranking.js'), { window: win, document: { getElementById: () => null }, localStorage: win.localStorage, setTimeout: () => 0, console });
+  /* the page reads the clock: pin it to NOW (Fri 23 Oct, 3 PM) like the rest of this file, else "by Sun · a Move today" and the week
+     tags change with the real day (failed Mon 26 Oct 00:00 UTC) */
+  class FixedDate extends Date { constructor(...a) { super(...(a.length ? a : [NOW])); } static now() { return NOW; } }
+  vm.runInNewContext(R('ranking.js'), { window: win, document: { getElementById: () => null }, localStorage: win.localStorage, setTimeout: () => 0, console, Date: FixedDate });
   return win;
 }
 
@@ -194,7 +197,7 @@ test('privacy + quiet sync: the split is only sent while you share your companio
 
 // 23 Oct, 15:00 (Eman: "too much text ... more symbols and animations, a gaming type of ranking; only if I click on someone do I see the comparison"):
 test('page: the board is symbols, not sentences; no Compare the top 3; tapping a companion opens You vs them, your own place opens the level ladder', () => {
-  const now = Date.now();
+  const now = NOW;
   for (const lg of ['en', 'de', 'es']) {
     const h = page(screenshot(now), { lang: lg }).LowiRanking._html();
     assert.doesNotMatch(h, /class="rk-t"|class="rk-sub"|class="rk-per"|data-rk="cmp3"|class="rk-cmpb"/, lg + ': no title, explainer or Compare the top 3');
@@ -208,7 +211,7 @@ test('page: the board is symbols, not sentences; no Compare the top 3; tapping a
 });
 
 test('page: You vs Joseph is a visual duel: VS header, one bar, one "what it takes" line, mirrored bars per board, no long text', () => {
-  const now = Date.now(), W = page(screenshot(now), { looks: { 'u-Joseph Castellar': 'GOOD' } });
+  const now = NOW, W = page(screenshot(now), { looks: { 'u-Joseph Castellar': 'GOOD' } });
   const h = W.LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
   assert.match(h, /<div class="rk-vs-h"><div class="rk-vs-s me">[\s\S]*?<b class="rk-vs-b" aria-hidden="true">VS<\/b><div class="rk-vs-s them">/);
   assert.match(h, /<div class="rk-duel" style="--a:0\.\d+"/);
@@ -223,7 +226,7 @@ test('page: You vs Joseph is a visual duel: VS header, one bar, one "what it tak
 });
 
 test('page: a tie says who wins the tie-break, never "lead by 0", in English, German and Spanish', () => {
-  const now = Date.now(), ppl = screenshot(now), self = ppl.find(p => p.me), lv = K.level(self);
+  const now = NOW, ppl = screenshot(now), self = ppl.find(p => p.me), lv = K.level(self);
   const jo = ppl.find(p => p.n === 'Joseph Castellar'); jo.xp = K.rows(ppl, 'all', now, MINE).find(x => x.p.me).pts; jo.lv = lv;
   for (const [lg, re] of [['en', /Tie · you win on name/], ['de', /Gleichstand · du gewinnst durch den Namen/], ['es', /Empate · ganas por nombre/]]) {
     const h = page(ppl, { lang: lg }).LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'all');
@@ -232,7 +235,7 @@ test('page: a tie says who wins the tie-break, never "lead by 0", in English, Ge
 });
 
 test('page: the sun is the app\'s own sun icon, labelled "sunbeams", when the icon set is there', () => {
-  const now = Date.now(), W = page(screenshot(now), { looks: { 'u-Joseph Castellar': 'GOOD' } });
+  const now = NOW, W = page(screenshot(now), { looks: { 'u-Joseph Castellar': 'GOOD' } });
   W.LowiIcons = { svg: (n, o) => '<svg class="sp-symbol li li-' + n + ' ' + o.cls + '" role="img" aria-label="' + o.label + '"></svg>' };
   const h = W.LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
   assert.match(h, /<svg class="sp-symbol li li-sun rk-sun[^"]*" role="img" aria-label="sunbeams"><\/svg>/);
@@ -263,7 +266,7 @@ test('open: the board is drawn finished and still; only a Week/Month/All time sw
 // 24 Oct 2026 (Eman: "when you read your own, it just says you ... it should say my name"; "What does Tide Radiant even mean? ...
 // Ideally we only see the names of their companion and their own names"):
 test('names: your own entry carries your name (never you / du / tú), and nobody gets an extra form line', () => {
-  const now = Date.now();
+  const now = NOW;
   for (const lg of ['en', 'de', 'es']) {
     const W = page(screenshot(now), { lang: lg });
     W.LowiR2.S = () => ({ ledger: [], user: { name: 'Emmanuel' } });
@@ -299,7 +302,7 @@ test('layout: "Next: Level 6 · Legend" gets its own row below the 25 dots in th
 });
 
 test('page: their breakdown shows only when they share their companion; hidden shows only the totals', () => {
-  const now = Date.now();
+  const now = NOW;
   const shown = page(screenshot(now), { looks: { 'u-Joseph Castellar': 'GOOD' } }).LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
   const hid = page(screenshot(now)).LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
   const them = h => ((h.match(/<ul class="rk-mir rk-src">[\s\S]*?<\/ul>/) || [''])[0].match(/rk-mir-v them[^"]*"><b class="num">/g) || []).length;
@@ -310,7 +313,7 @@ test('page: their breakdown shows only when they share their companion; hidden s
 });
 
 test('page: the small i holds the rules, one short line each, the open board marked, in English, German and Spanish', () => {
-  const now = Date.now();
+  const now = NOW;
   for (const [lg, re] of [['en', /Sunbeams since Monday/], ['de', /Sonnenstrahlen seit Montag/], ['es', /Rayos de sol desde el lunes/]]) {
     const h = page(screenshot(now), { lang: lg }).LowiRanking._info();
     assert.match(h, re, lg);

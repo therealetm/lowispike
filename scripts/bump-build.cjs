@@ -4,7 +4,7 @@
 // Replaces the bump block that was copy-pasted into each one-off release script.
 // Usage:
 //   node scripts/bump-build.cjs [--build YYYYMMDD-HHMMSS] [--live URL|--no-live] [--news news.json | --quiet] [--dry-run]
-//   --quiet = a silent bug fix: no "New version" ask, no "Update loaded", no What's New (see applyBump)
+//   --quiet = a pure bug fix with no What's New. EVERY release is silent (Oct 26): no release ever asks phones to update.
 // news.json: {"slug":"care-board","tutorial":"<step id>"|{"none":"why"},"go":{"tab":"home"},"lead":{en,de,es},"steps":[...],"text":{"en":"..","de":"..","es":".."}}
 // Prints the new build id on the last line.
 const fs = require('fs');
@@ -53,6 +53,7 @@ function checkTutorial(root, news) {
    announces itself, right after "build" so the app's 64-byte update poll sees it. The app asks to update (and says "Update
    loaded") only when "loud" is newer than the build it runs; a quiet build just arrives the next time the app opens. A normal
    release sets loud = its own build. A quiet release cannot carry What's New (--news). */
+const SILENT_LOUD = '20000101-000000';
 function applyBump(root, oldId, newId, news, opts) {
   const quiet = !!(opts && opts.quiet);
   if (quiet && news) throw new Error('a quiet release (silent bug fix) has no What\'s New: drop --news or --quiet');
@@ -67,7 +68,12 @@ function applyBump(root, oldId, newId, news, opts) {
   const vp = path.join(root, 'version.json');
   const raw = fs.readFileSync(vp, 'utf8');
   const d0 = JSON.parse(raw);
-  const loud = quiet ? (BUILD_RE.test(d0.loud || '') ? d0.loud : oldId) : newId;
+  /* Oct 26 2026 (Emmanuel: "you're supposed to push out the update silently. It's annoying when people get notified of every
+     update. So, no more notification updates."): every release is silent, with or without What's New. "loud" stays frozen at
+     SILENT_LOUD forever. It must stay in the file, right after "build": builds already on phones read it from the first 64 bytes,
+     and a missing "loud" means "this build is loud" to them. The What's New tour still plays inside the app once the build is there. */
+  void quiet;
+  const loud = SILENT_LOUD;
   const d = Object.assign({ build: newId, loud }, d0, { build: newId, loud });
   if (news) {
     const n = d.news = d.news || {};
@@ -132,5 +138,5 @@ async function main() {
   console.log(newId);
 }
 
-module.exports = { nextBuild, berlinNow, applyBump, checkTutorial, toDate, fromDate };
+module.exports = { nextBuild, berlinNow, applyBump, checkTutorial, toDate, fromDate, SILENT_LOUD };
 if (require.main === module) main();

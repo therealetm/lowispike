@@ -94,7 +94,8 @@ test('the Scan card shows a pretend Scan in every language: a sample photo, a sh
 /* ---------- 2. hands-free ---------- */
 test('tutorial.js moves on by itself after a card was read, and can be paused', () => {
     const js = read('tutorial.js');
-    assert.match(js, /render\(card, s, \{[^\n]*onEnd: said, quiet: paused \}\)/, 'every card hands the voice its onEnd and the pause');
+    assert.match(js, /voiceCard = \{ card, s, o: \{[^\n]*onEnd: said, quiet: paused \} \}/, 'every card hands the voice its onEnd and the pause');
+    assert.match(js, /render\(card, s, Object\.assign\(\{\}, v\.o, \{ quiet: paused \}\)\)/, 'the late painter uses the pause as it is now (Oct 26)');
     const said = js.slice(js.indexOf('function said()'), js.indexOf('function cancelAuto()'));
     assert.match(said, /if \(!on \|\| held \|\| paused \|\| !s \|\| !voiceOn\(\) \|\| at >= list\.length - 1 \|\| s\.action === 'claim'\) return;/, 'only with the speaker on, never on the last or the claim card');
     assert.match(said, /go\(at \+ 1, 'auto'\)/);

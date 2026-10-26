@@ -139,6 +139,15 @@ batches and version control as "a critical safety net as AI accelerates" changes
 This matches the existing rule in `AGENTS.md`: freeze scope, ship the smallest complete slice, verify it, then start
 the next one.
 
+**Updates always ship silently, never send update notifications (product owner, 26 Oct 2026).** "It's annoying when
+people get notified of every update. So, no more notification updates." No release ever puts a "New version" or
+"I've got something new for you!" ask on a phone, shows "Update loaded", sends a push or posts to Community about
+itself. `version.json` keeps `"loud":"20000101-000000"` right after `"build"` forever, because builds already on
+phones read it; `scripts/bump-build.cjs` writes it and `scripts/release-check.cjs` fails anything else. A new build
+loads by itself on the next open, or quietly when the app comes back after 10 minutes away. The What's New tour inside
+the app stays, and every tour card has its speaker in EN/DE/ES (`tests/silent-updates-always.test.cjs`,
+`tests/tutorial-speaker-every-card.test.cjs`).
+
 ## 10. Outside skills and social media tips are leads, not authority
 
 - `.agents/skills/apple-design` comes from `emilkowalski/skills` and is pinned by hash in `skills-lock.json`. Read

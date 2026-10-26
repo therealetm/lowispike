@@ -21,31 +21,35 @@ function fixture(id, extra) {
 const V = d => JSON.parse(fs.readFileSync(path.join(d, 'version.json'), 'utf8'));
 const raw = d => fs.readFileSync(path.join(d, 'version.json'), 'utf8');
 
-test('a quiet release keeps the last loud build and leaves What\'s New alone', () => {
-    const d = fixture('20261024-100000');
+// Oct 26 2026 (Emmanuel: "you're supposed to push out the update silently ... no more notification updates"): the loud/quiet
+// split is gone. Every release is silent: "loud" stays frozen at 20000101-000000, so no build on any phone ever asks.
+test('a quiet release freezes loud and leaves What\'s New alone', () => {
+    const d = fixture('20261024-100000', { loud: '20261023-090000' });
+    const before = V(d).news;
     applyBump(d, '20261024-100000', '20261024-100001', null, { quiet: true });
     const v = V(d);
     assert.strictEqual(v.build, '20261024-100001');
-    assert.strictEqual(v.loud, '20261024-100000', 'the build before was loud');
-    assert.strictEqual(v.news.id, 'n-20261024-100000', 'no new What\'s New');
-    applyBump(d, '20261024-100001', '20261024-100002', null, { quiet: true });
-    assert.strictEqual(V(d).loud, '20261024-100000', 'two quiet fixes in a row still point at the last loud one');
+    assert.strictEqual(v.loud, '20000101-000000', 'even an old real loud build is replaced by the frozen one');
+    assert.deepStrictEqual(v.news, before, 'What\'s New untouched');
+    const d2 = fixture('20261024-100000');
+    applyBump(d2, '20261024-100000', '20261024-100001', null, { quiet: true });
+    assert.strictEqual(V(d2).loud, '20000101-000000');
 });
 
-test('a normal release is loud', () => {
+test('a release with What\'s New is silent too (Oct 26: there are no loud releases any more)', () => {
     const d = fixture('20261024-100000', { loud: '20261023-090000' });
     applyBump(d, '20261024-100000', '20261024-100001', { slug: 'x', text: { en: 'A', de: 'A', es: 'A' } });
-    assert.strictEqual(V(d).loud, '20261024-100001');
+    assert.strictEqual(V(d).loud, '20000101-000000');
     const d2 = fixture('20261024-100000');
     applyBump(d2, '20261024-100000', '20261024-100001', null);
-    assert.strictEqual(V(d2).loud, '20261024-100001', 'no --quiet = announces itself, as before');
+    assert.strictEqual(V(d2).loud, '20000101-000000', 'no --quiet is silent as well');
 });
 
 test('the app\'s 64-byte update poll can read build and loud', () => {
     const d = fixture('20261024-100000');
     applyBump(d, '20261024-100000', '20261024-100001', null, { quiet: true });
     const head = raw(d).slice(0, 64);
-    assert.match(head, /^\{"build":"20261024-100001","loud":"20261024-100000"/);
+    assert.match(head, /^\{"build":"20261024-100001","loud":"20000101-000000"/);
 });
 
 test('a quiet release cannot carry What\'s New', () => {
@@ -71,7 +75,10 @@ test('the app reads loud, and an old version.json without it counts every build 
 });
 
 test('a silent fix never asks "New version" and never says "Update loaded"', () => {
-    assert.match(html, /if \(validBuild\(v\.loud\) && v\.loud <= BUILD\) \{ clearUpd\(\); return; \}/, 'no ask while only quiet builds are newer');
-    assert.match(html, /liveInfo\(\)\.then\(v => \{ if \(!validBuild\(v\.loud\) \|\| v\.loud > seen\) updNote\(updTxt\(\)\[1\]\); \}\)/, 'no "Update loaded" for a quiet build');
+    const chk = html.slice(html.indexOf('async function checkUpdate(force)'), html.indexOf('const QUIET_AWAY'));
+    assert.match(chk, /clearUpd\(\); quietLoad\(v\.build\);/, 'a newer build never asks (Oct 26: every build is silent)');
+    assert.doesNotMatch(chk, /showUpd\(\)/, 'the build check never puts the ask on screen');
+    const after = html.slice(html.indexOf('function afterUpdate()'), html.indexOf('function sw()'));
+    assert.doesNotMatch(after, /liveInfo\(\)/, 'no "Update loaded" for a build that arrived by itself');
     assert.match(html, /async function liveBuild\(\)\{ return \(await liveInfo\(\)\)\.build; \}/);
 });

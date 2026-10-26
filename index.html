@@ -10216,10 +10216,27 @@ async function checkUpdate(force){ if (!validBuild(BUILD) || location.protocol =
   try { const v = await liveInfo();
     if (!validBuild(v.build)) return;
     if (v.build <= BUILD || failedRecently(v.build)) { clearUpd(); return; }
-    if (validBuild(v.loud) && v.loud <= BUILD) { clearUpd(); return; } /* only silent bug fixes since this build: no ask, they load on the next open */
-    try { if (localStorage.getItem("lowi.upd.later") === v.build) { clearUpd(); return; } } catch(e){} /* "Later" on the orb's bubble: not again for this build */
-    try { const z = +localStorage.getItem("lowi.upd.snooze") || 0; if (z && Date.now() - z < 3 * 3600 * 1000) { clearUpd(); return; } } catch(e){} /* Oct 23: and no other build asks for 3 hours */
-    newBuild = v.build; showUpd(); } catch(e){} finally { checking = false; } }
+    /* Oct 26 2026 (Emmanuel, 5:30 AM: "you're supposed to push out the update silently. It's annoying when people get notified of
+       every update. So, no more notification updates."): a newer build NEVER asks. No "New version" banner, no "I've got something
+       new for you!" card on the orb, no "Update loaded". It loads by itself: the next time the app opens (the page is fetched
+       network-first), or quietly right here when the app comes back after at least 10 minutes away (updAway / quietLoad). */
+    clearUpd(); quietLoad(v.build); } catch(e){} finally { checking = false; } }
+const QUIET_AWAY = 10 * 60 * 1000;
+let hiddenAt = 0, backAt = 0, awayMs = 0;
+function updAway(ms){ awayMs = ms; backAt = Date.now(); }
+function quietBusy(){ /* never under the user's fingers: a focused field, a written draft, setup or a tutorial on screen */
+  try { const a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName || "") ) return true; if (a && a.isContentEditable) return true;
+    const f = document.querySelectorAll("textarea, input[type=text], input[type=search], input:not([type])"); for (let k = 0; k < f.length; k++) if (String(f[k].value || "").trim()) return true;
+    if (window.LowiTutorial && LowiTutorial.isOn && LowiTutorial.isOn()) return true;
+    if (document.querySelector && document.querySelector(".lt-tour, #ltTour, .ob-wrap.on, video[autoplay]")) return true; } catch(e){ return true; }
+  return false; }
+function quietLoad(b){ if (!validBuild(b) || updating || navigator.onLine === false) return;
+  if (awayMs < QUIET_AWAY || !backAt || Date.now() - backAt > 15000) return; /* only right after coming back from a long time away */
+  if (quietBusy()) return;
+  try { if (localStorage.getItem("lowi.upd.quiet") === b) return; localStorage.setItem("lowi.upd.quiet", b); sessionStorage.setItem("lowi.upd.q", b); } catch(e){ return; } /* once per build: never a reload loop */
+  awayMs = 0; updating = true;
+  const u = new URL(location.href); u.searchParams.set("v", b); u.searchParams.set("r", String(Date.now())); u.searchParams.set("q", "1");
+  location.replace(u.pathname + u.search + u.hash); }
 /* tap: everything is already saved on the phone, so load the new build past every cache right away.
    Oct 15 (frozen update fix): the tap no longer waits on the service worker. On some iPhones its promises never settle,
    which left "Update" greyed out forever. Now the tap shows progress at once and navigates; if this page is still here
@@ -10244,6 +10261,9 @@ function updNote(t, ms){ const go = () => { if (!document.body || $("#lcUpdOk"))
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(go, 900)); else setTimeout(go, 900); }
 function afterUpdate(){ let want = ""; try { want = sessionStorage.getItem("lowi.upd") || ""; } catch(e){}
   const u = new URL(location.href);
+  let quiet = u.searchParams.get("q") === "1"; try { if (sessionStorage.getItem("lowi.upd.q")) quiet = true; sessionStorage.removeItem("lowi.upd.q"); } catch(e){}
+  if (quiet) { u.searchParams.delete("v"); u.searchParams.delete("r"); u.searchParams.delete("q"); try { history.replaceState(history.state, "", u.pathname + u.search + u.hash); } catch(e){}
+    try { sessionStorage.removeItem("lowi.upd"); sessionStorage.removeItem("lowi.updn"); if (BUILD) localStorage.setItem("lowi.build", BUILD); } catch(e){} return; } /* Oct 26: a quiet load says nothing, worked or not */
   if (!validBuild(want) && validBuild(u.searchParams.get("v"))) want = u.searchParams.get("v");
   if (u.searchParams.has("v")) { u.searchParams.delete("v"); u.searchParams.delete("r"); try { history.replaceState(history.state, "", u.pathname + u.search + u.hash); } catch(e){} }
   // A manual refresh gets one attempt. Never reload automatically or claim success while old HTML remains.
@@ -10252,11 +10272,12 @@ function afterUpdate(){ let want = ""; try { want = sessionStorage.getItem("lowi
     clearUpd();
     if (validBuild(BUILD) && BUILD >= want) { try { localStorage.removeItem(FAIL_KEY); } catch(e){} updNote(updTxt()[1]); }
     else { failedBuild = want; try { localStorage.setItem(FAIL_KEY, JSON.stringify({build:want,at:Date.now()})); } catch(e){} updNote(updTxt()[2], 9000); }
-  } else { let seen = ""; try { seen = localStorage.getItem("lowi.build") || ""; } catch(e){} if (validBuild(seen) && validBuild(BUILD) && seen < BUILD) liveInfo().then(v => { if (!validBuild(v.loud) || v.loud > seen) updNote(updTxt()[1]); }).catch(() => {}); } /* Oct 24: a silent bug fix opens without "Update loaded" */
+  } /* Oct 26: a build that arrived by itself opens without "Update loaded": every release is silent */
   try { if (BUILD) localStorage.setItem("lowi.build", BUILD); } catch(e){} }
 function sw(){ if (!("serviceWorker" in navigator) || location.protocol !== "https:") return;
   navigator.serviceWorker.register("sw.js", {scope:"./", updateViaCache:"none"}).then(reg => { try { reg.update(); } catch(e){} }).catch(() => {}); }
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { checkUpdate(true); if (!live && !booting) boot(); } });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") { hiddenAt = Date.now(); return; }
+  if (document.visibilityState === "visible") { if (hiddenAt) { updAway(Date.now() - hiddenAt); hiddenAt = 0; } checkUpdate(true); if (!live && !booting) boot(); } });
 window.addEventListener("pageshow", () => checkUpdate(true));
 window.addEventListener("focus", () => checkUpdate());
 window.addEventListener("online", () => { checkUpdate(true); if (!live) boot(); });

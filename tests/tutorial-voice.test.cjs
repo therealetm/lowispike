@@ -62,7 +62,9 @@ test('what is said: title then text; a renamed companion is not called Misty', (
 
 test('tutorial.js hands every card to the voice and silences it when the tour stops or hides', () => {
     const t = read('tutorial.js');
-    assert.match(t, /place\(\);\s*\n\s*\/\*[^\n]*\*\/\s*\n\s*try \{ if \(W\.LowiTutorialVoice\) W\.LowiTutorialVoice\.render\(card, s,/);
+    /* Oct 26: one painter (voicePaint) for every render and for a voice file that arrives after the card is on screen */
+    assert.match(t, /place\(\);\s*\n\s*\/\*[^\n]*\*\/\s*\n\s*voiceCard = \{ card, s, o: \{[^\n]*\} \};\s*\n\s*voicePaint\(\);/);
+    assert.match(t, /function voicePaint\(\) \{[\s\S]{0,400}W\.LowiTutorialVoice\.render\(card, s,/);
     assert.match(t, /function hold\(why\) \{[^\n]*LowiTutorialVoice\.stop\(\)/);
     assert.match(t, /tutorial-voice\.js\?v=/);
     const v = read('tutorial-voice.js');

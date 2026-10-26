@@ -97,6 +97,17 @@
     const voiceOn = () => { try { return !!(W.LowiTutorialVoice && W.LowiTutorialVoice.isOn()); } catch (e) { return false; } };
     const clearT = id => { try { if (id) (W.clearTimeout || clearTimeout)(id); } catch (e) { } };
     const step = () => list[i] || null;
+    /* Oct 26 2026 (Emmanuel: "one part of the tutorial doesn't have a speaker. Why is that removed?"): nothing was removed. The
+       speaker comes from tutorial-voice.js, which loads on its own after the page; a card already on screen when it arrived (or
+       when it failed to load on a slow connection right after an update) never got its speaker. voicePaint() is the one painter:
+       every render calls it, and so does the voice file the moment it arrives. */
+    let voiceCard = null;
+    function voicePaint() {
+        const v = voiceCard; if (!v || !W.LowiTutorialVoice || !on || !v.card || !v.card.isConnected || v.card.querySelector('.lt-speak')) return;
+        const card = v.card, s = v.s;
+        try { W.LowiTutorialVoice.render(card, s, Object.assign({}, v.o, { quiet: paused })); } catch (e) { }
+        try { if (root) root.classList.toggle('lt-voice', voiceOn()); } catch (e) { }
+    }
     function emit(extra) { try { W.dispatchEvent(new CustomEvent('lowi:tutorial', { detail: Object.assign({ on, step: step() && step().id }, mode === 'news' ? { news: true } : {}, extra || {}) })); } catch (e) { } }
 
     function target(s) {
@@ -139,7 +150,8 @@
         root.classList.toggle('lt-voice', voiceOn()); root.classList.toggle('lt-paused', paused);
         place();
         /* tutorial-voice.js: the companion picture is the speaker; reads the card aloud when sound is on (Oct 21 2026); onEnd = hands-free */
-        try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.render(card, s, { lang: l, name: vars.name, next: list.slice(i + 1, i + 3), onEnd: said, quiet: paused }); } catch (e) { }
+        voiceCard = { card, s, o: { lang: l, name: vars.name, next: list.slice(i + 1, i + 3), onEnd: said, quiet: paused } };
+        voicePaint();
         try { (card.querySelector(focusSel || '[data-lt="claim"],[data-lt="next"]') || card).focus({ preventScroll: true }); } catch (e) { }
         focusSel = '';
         keepAwake();
@@ -531,7 +543,15 @@
     /* tutorial-auto.js (new accounts get the tour once) loads from here, so index.html's versioned script list stays untouched */
     if (!W.LowiTutorialAuto && !D.querySelector('script[src^="tutorial-auto.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-auto.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     /* tutorial-voice.js (the speaker on every card) loads the same way */
-    if (!W.LowiTutorialVoice && !D.querySelector('script[src^="tutorial-voice.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-voice.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
+    /* Oct 26: when it arrives, the card on screen gets its speaker (voicePaint); a failed load is tried again, up to 3 times */
+    if (!W.LowiTutorialVoice && !D.querySelector('script[src^="tutorial-voice.js"]')) {
+        const m = $('meta[name="lowi-build"]'), b = encodeURIComponent((m && m.content) || '1');
+        const load = (n) => { const sc = D.createElement('script'); sc.src = 'tutorial-voice.js?v=' + b + (n ? '&retry=' + n : ''); sc.defer = true;
+            sc.onload = () => voicePaint();
+            sc.onerror = () => { try { sc.remove(); } catch (e) { } if (n < 3 && !W.LowiTutorialVoice) setTimeout(() => load(n + 1), 2000 * (n + 1)); /* try again */ };
+            D.head.appendChild(sc); };
+        load(0);
+    }
     /* tutorial-show.js (item 42: the finger on the real control, lit spots, the picture of what opens) loads the same way */
     if (!W.LowiTutorialShow && !D.querySelector('script[src^="tutorial-show.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-show.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     /* tutorial-resume.js (the floating "Continue tutorial" button until the tour is finished or skipped) loads the same way */

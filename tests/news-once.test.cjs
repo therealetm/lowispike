@@ -96,6 +96,7 @@ test('one gate in the code: no separate toured path that can open a second card,
   assert(html.includes('if (NEWS && NEWS.id && !newsSeen(NEWS.id) && !toured(NEWS.id)) { if (newsGo() === "steps") offerTour(); else offerNews(); return; }'));
   assert(!html.includes('newsGo() === "steps" && !toured(NEWS.id)) { offerTour(); return; }'));
   assert(!html.includes('(TOUR.kind === "news" ? \'<div class="g1-tag">\''));
-  assert(html.includes('localStorage.setItem("lowi.upd.snooze"') && html.includes('3 * 3600 * 1000'), 'Later keeps every build quiet for 3 hours');
+  /* Oct 26 (Emmanuel: "no more notification updates"): the 3-hour "Later" snooze is gone with the ask itself: no build ever asks */
+  assert(html.includes('clearUpd(); quietLoad(v.build); }') && !/newBuild = v\.build; showUpd\(\)/.test(html), 'a newer build never asks');
   assert(/k === "lowi\.news\.build"/.test(html) && /k === "lowi\.news\.toured"/.test(html), 'sign-out keeps the seen state');
 });

@@ -10,7 +10,7 @@ function fixture(build,available,initial={}){
   const storage=(map,blocked)=>({getItem:k=>{if(blocked)throw Error('blocked');return map.get(k)||null;},setItem:(k,v)=>{if(blocked)throw Error('blocked');map.set(k,String(v));},removeItem:k=>{if(blocked)throw Error('blocked');map.delete(k);}});
   const element=()=>{const cls=new Set();return {dataset:{},style:{},classList:{add:c=>cls.add(c),remove:c=>cls.delete(c),contains:c=>cls.has(c)},setAttribute(){},remove(){nodes.delete(this.id);}};};
   const events=[];
-  const document={body:{},readyState:'complete',visibilityState:initial.visibility||'visible',dispatchEvent:e=>{events.push(e.detail);return true;},documentElement:{lang:'en',appendChild:n=>nodes.set(n.id,n)},createElement:element,querySelector:s=>s.includes('meta[')?{content:build}:null};
+  const document={body:{},readyState:'complete',visibilityState:initial.visibility||'visible',dispatchEvent:e=>{events.push(e.detail);return true;},documentElement:{lang:'en',appendChild:n=>nodes.set(n.id,n)},createElement:element,querySelectorAll:()=>[],querySelector:s=>s.includes('meta[')?{content:build}:null};
   const url=new URL(initial.url||'https://example.com/lowispike/?mode=biopunk#meal');
   const location={href:url.href,protocol:url.protocol,pathname:url.pathname,search:url.search,hash:url.hash,replace:u=>replaces.push(u)};
   let requests=0,current=available;
@@ -35,12 +35,13 @@ test('an explicit refresh on stale HTML never reports success or auto-reloads',a
 });
 test('failed-refresh cooldown survives a page reload but does not hide a different release',async()=>{
   const f=fixture(old,latest,{local:{'lowi.upd.failed':JSON.stringify({build:latest,at:Date.now()})}});
-  await f.run('checkUpdate(true)');assert(!f.nodes.has('lcUpd'));
-  f.setAvailable(future);await f.run('checkUpdate(true)');assert.equal(f.nodes.get('lcUpd').dataset.build,future);
+  f.run('updAway(11*60000)');await f.run('checkUpdate(true)');assert(!f.nodes.has('lcUpd'));assert.equal(f.replaces.length,0,'no quiet load of the build that just failed');
+  f.setAvailable(future);f.run('updAway(11*60000)');await f.run('checkUpdate(true)');assert(!f.nodes.has('lcUpd'),'Oct 26: never an ask');
+  assert.equal(new URL(f.replaces[0],'https://example.com').searchParams.get('v'),future,'a different release still loads quietly');
 });
 test('expired refresh failure can be retried later',async()=>{
   const f=fixture(old,latest,{local:{'lowi.upd.failed':JSON.stringify({build:latest,at:Date.now()-16*60000})}});
-  await f.run('checkUpdate(true)');assert(f.nodes.has('lcUpd'));
+  f.run('updAway(11*60000)');await f.run('checkUpdate(true)');assert(!f.nodes.has('lcUpd'));assert.equal(f.replaces.length,1,'loads quietly again (Oct 26: no ask)');
 });
 test('success requires that the loaded HTML reaches the requested build',()=>{
   const f=fixture(latest,latest,{session:{'lowi.upd':latest},local:{'lowi.upd.failed':'{}'}});
@@ -48,8 +49,8 @@ test('success requires that the loaded HTML reaches the requested build',()=>{
   assert(!f.local.has('lowi.upd.failed'));assert(!f.nodes.has('lcUpd'));assert.equal(f.replaces.length,0);
   f.nodes.delete('lcUpdOk');f.run('afterUpdate()');f.flush();assert(!f.nodes.has('lcUpdOk'));
 });
-test('update click preserves existing query parameters/hash and cannot double-refresh',async()=>{
-  const f=fixture(old,latest);await f.run('checkUpdate(true)');await f.run('doUpdate()');await f.run('doUpdate()');
+test('the quiet load (Oct 26: it replaced the update click) preserves query parameters/hash and cannot double-refresh',async()=>{
+  const f=fixture(old,latest);f.run('updAway(11*60000)');await f.run('checkUpdate(true)');f.run('updAway(11*60000)');await f.run('checkUpdate(true)');await f.run('doUpdate()');
   assert.equal(f.replaces.length,1);const u=new URL(f.replaces[0],'https://example.com');
   assert.equal(u.searchParams.get('mode'),'biopunk');assert.equal(u.searchParams.get('v'),latest);assert(u.searchParams.has('r'));assert.equal(u.hash,'#meal');
 });
@@ -60,36 +61,36 @@ test('query target works when session storage is unavailable; no automatic retri
 test('overlapping forced checks share one in-flight request',async()=>{
   const f=fixture(old,latest);await Promise.all([f.run('checkUpdate(true)'),f.run('checkUpdate(true)')]);assert.equal(f.requests(),1);
 });
-test('success notice and refresh prompt never overlap',async()=>{
+test('success notice and refresh prompt never overlap (there is no prompt any more)',async()=>{
   const f=fixture(latest,future,{session:{'lowi.upd':latest}});f.run('afterUpdate()');f.flush();assert(f.nodes.has('lcUpdOk'));
-  await f.run('checkUpdate(true)');assert(f.nodes.has('lcUpd'));assert(!f.nodes.has('lcUpdOk'));
+  await f.run('checkUpdate(true)');assert(!f.nodes.has('lcUpd'),'Oct 26: a newer build never asks');
 });
 test('invalid manifest build creates neither a banner nor navigation',async()=>{
   const f=fixture(latest,'invalid');await f.run('checkUpdate(true)');assert.equal(f.nodes.size,0);assert.equal(f.replaces.length,0);
 });
 test('tap navigates at once even when the service worker never answers (iPhone freeze)',async()=>{
   const hang=()=>new Promise(()=>{});
-  const f=fixture(old,latest,{navigator:{serviceWorker:{getRegistration:hang,ready:hang}}});await f.run('checkUpdate(true)');
-  f.run('doUpdate()');assert.equal(f.replaces.length,1);assert.equal(f.events.at(-1).state,'busy');
-  assert.equal(f.nodes.get('lcUpd').classList.contains('busy'),true);assert.equal(f.session.get('lowi.upd'),latest);
+  const f=fixture(old,latest,{navigator:{serviceWorker:{getRegistration:hang,ready:hang}}});await f.run('checkUpdate(true)');assert(!f.nodes.has('lcUpd'));
+  f.run('doUpdate("'+latest+'")');assert.equal(f.replaces.length,1);assert.equal(f.events.at(-1).state,'busy');
+  assert.equal(f.session.get('lowi.upd'),latest);
 });
 test('a load that stalls hands the button back with the restart hint, and the next tap tries again',async()=>{
-  const f=fixture(old,latest);await f.run('checkUpdate(true)');f.run('doUpdate()');assert.equal(f.replaces.length,1);
-  f.run('doUpdate()');assert.equal(f.replaces.length,1,'rapid second tap is ignored while loading');
+  const f=fixture(old,latest);await f.run('checkUpdate(true)');f.run('doUpdate("'+latest+'")');assert.equal(f.replaces.length,1);
+  f.run('doUpdate("'+latest+'")');assert.equal(f.replaces.length,1,'rapid second tap is ignored while loading');
   f.flush();const last=f.events.at(-1);assert.equal(last.state,'stalled');assert.equal(last.why,'slow');
-  assert.equal(f.nodes.get('lcUpd').classList.contains('busy'),false);assert(!f.session.has('lowi.upd'));
-  f.run('doUpdate()');assert.equal(f.replaces.length,2);assert.equal(f.events.at(-1).state,'busy');
+  assert(!f.nodes.has('lcUpd'));assert(!f.session.has('lowi.upd'));
+  f.run('doUpdate("'+latest+'")');assert.equal(f.replaces.length,2);assert.equal(f.events.at(-1).state,'busy');
   await f.run('checkUpdate(true)');assert.equal(f.requests(),1,'no checks while a load is pending');
 });
 test('the stall watchdog waits while the app is in the background',async()=>{
-  const f=fixture(old,latest,{visibility:'hidden'});await f.run('checkUpdate(true)');f.run('doUpdate()');
+  const f=fixture(old,latest,{visibility:'hidden'});await f.run('checkUpdate(true)');f.run('doUpdate("'+latest+'")');
   f.flush();assert.equal(f.events.at(-1).state,'busy');assert.equal(f.timers.length,1,'re-armed');
   f.document.visibilityState='visible';f.flush();assert.equal(f.events.at(-1).state,'stalled');
 });
 test('offline tap does not navigate to the old copy and says why',async()=>{
-  const f=fixture(old,latest,{navigator:{onLine:false}});await f.run('checkUpdate(true)');f.run('doUpdate()');
+  const f=fixture(old,latest,{navigator:{onLine:false}});await f.run('checkUpdate(true)');f.run('doUpdate("'+latest+'")');
   assert.equal(f.replaces.length,0);assert.deepEqual([f.events.at(-1).state,f.events.at(-1).why],['stalled','offline']);
-  f.ctx.navigator.onLine=true;f.run('doUpdate()');assert.equal(f.replaces.length,1);
+  f.ctx.navigator.onLine=true;f.run('doUpdate("'+latest+'")');assert.equal(f.replaces.length,1);
 });
 test('the orb can pass its build even when the hidden banner is gone; junk is ignored',()=>{
   const f=fixture(old,latest);f.run('doUpdate({type:"click"})');assert.equal(f.replaces.length,0);assert.equal(f.events.at(-1).state,'idle');

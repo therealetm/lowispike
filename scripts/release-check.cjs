@@ -74,6 +74,10 @@ function check(root) {
     let ver = null;
     try { ver = JSON.parse(verText); } catch (e) { errors.push('version.json is not valid JSON: ' + e.message); }
     if (ver) {
+      /* Oct 26 2026 (Emmanuel: "no more notification updates"): releases are always silent. Builds on phones show the
+         "I've got something new for you!" ask when "loud" is newer than they are, or missing from the first 64 bytes. */
+      if (ver.loud !== '20000101-000000' || verText.indexOf('"loud":"20000101-000000"') < 0 || verText.indexOf('"loud":"20000101-000000"') > 40)
+        errors.push('version.json "loud" must stay "20000101-000000", right after "build": updates always ship silently, never ask phones to update (MAYA-HANDOFF standing rule, 26 Oct)');
       const n = ver.news || {};
       if (!n.id) errors.push('version.json news.id missing');
       for (const l of ['en', 'de', 'es']) {

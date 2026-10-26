@@ -23,13 +23,14 @@ test('the bubble speaks from the real orb on Today, from a copy of it elsewhere,
   assert(!html.includes('.spirit-app .g1ob-orb{display:none'), 'the copy is not hidden in the spirit app like the old guide herb');
 });
 
-test('Later (button or Esc) hides it for that build only, and the build check respects it after a reload', () => {
+test('Later (button or Esc) hides it for that build only, and the build check never asks at all (Oct 26)', () => {
   const l = cut('function obLater(){', 'function obClick(e){');
   assert(l.includes('localStorage.setItem(LATER, OB.build'));
   assert(l.includes('markSeen(upNews.id)'));
   assert(cut('const LATER', ';') === 'const LATER = "lowi.upd.later"');
-  const q = cut('if (v.build <= BUILD || failedRecently(v.build)) { clearUpd(); return; }', 'newBuild = v.build; showUpd();');
-  assert(q.includes('localStorage.getItem("lowi.upd.later") === v.build'));
+  /* Oct 26: the build check never asks at all any more (every release is silent), so Later has nothing left to hold back */
+  const q = cut('if (v.build <= BUILD || failedRecently(v.build)) { clearUpd(); return; }', 'const QUIET_AWAY');
+  assert(q.includes('clearUpd(); quietLoad(v.build);') && !q.includes('showUpd()'));
   assert(html.includes('e.key === "Escape" && OB && !TOUR'));
 });
 

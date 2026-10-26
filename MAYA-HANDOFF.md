@@ -1332,6 +1332,25 @@ Decision (do not bring the auto trip back):
   open with its finds, quietly, no sheet. Trips the user started keep running.
 - The away look was fixed so the manual version is clean (see the commit and tests/companion-manual-explore.test.cjs).
 
+### 0.36 Exploring is GONE: no "Send her exploring", no away state, no timer, no call-back (Emmanuel, Mon 26 Oct 2026, task at 5:07 PM CET)
+
+This REPLACES 0.32 above. 0.32 (live in 20261026-163708) only made the sun trip manual and kept the away card ("Out
+exploring · back in 59 min · Tap to call her back") and the one-tap call-back. That did not match what he asked first:
+"Also let's remove this feature. It's kind of annoying. Nobody likes it. Nobody's gonna use it. Just waste."
+
+Decision (do not bring any of it back):
+- The sun trip is removed: no "Send her exploring" / "Not now" on the full-sun sheet or the sun info sheet, no away
+  state, no away card in her bubble, no "back in" timer on the sun row, no call-back (chip, button, sheet, LowiRecall).
+- A full sun keeps everything else: the +10 XP sun bonus once a day, the thank-you sheet with what filled it (one Okay
+  button), the reset at midnight.
+- Old saved state: ANY trip still out (manual or automatic) or ended but not collected is brought home on the next open,
+  quietly, with her find(s) kept in World finds. Nothing errors. World finds stays in the sun sheet only when there are finds.
+- Untouched: body journeys (Today row "Start next journey", round 44: it never turns on autopilot), autopilot itself
+  (triple tap on the controller), the Community Home button fix (0.33, 20261026-165141).
+- Copy: "your companion", never "Misty". Updates stay silent.
+Task "LOWiSPIKE: fully remove companion exploring (finish removal)" (Sesame, 26 Oct), worktree wt-no-explore, branch
+companion-no-explore, COORD-no-explore.md. Status: building (see Log for the release).
+
 ### 0.32 Shop finds is confusing: make it simple, Power combos the hero (Emmanuel, voice + 2 screenshots, Mon 26 Oct 2026 about 4:07 PM CET)
 
 His words: "I don't understand Shop finds yet. It's a bit complicated. When you open Shop finds, it's very complicated. What

@@ -88,6 +88,17 @@
     transition: transform .15s ease;
 }
 .b3-cam .ss-add svg { width: 22px; height: 22px; }
+/* Oct 26 Kitchen game: "In my kitchen" (small under Add to cart; the big one when the scanner was opened from Cook > Kitchen) */
+.b3-cam .ss-kit {
+    width: 100%; min-height: 48px; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 9px; border-radius: 24px; cursor: pointer;
+    font: 650 16px/1 var(--lg-font, -apple-system, system-ui, sans-serif); color: #eaf6ff; -webkit-tap-highlight-color: transparent;
+    border: 1px solid rgba(255, 255, 255, .26); background: rgba(255, 255, 255, .1); transition: transform .15s ease;
+}
+.b3-cam .ss-kit svg { width: 20px; height: 20px; }
+.b3-cam .ss-kit:active { transform: scale(.97); }
+.b3-cam .ss-kit:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 3px; }
+.b3-cam .ss-kit-main { background: linear-gradient(180deg, #34c77b, #1fa463); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 10px 28px -10px rgba(31, 164, 99, .9); }
+@media (prefers-reduced-motion: reduce) { .b3-cam .ss-kit, .b3-cam .ss-kit:active { transition: none; transform: none; } }
 .b3-cam .ss-add:focus-visible, .b3-cam .ss-chip:focus-visible, .b3-cam .ss-x:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 3px; }
 
 /* the optional details */

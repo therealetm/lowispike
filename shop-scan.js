@@ -25,6 +25,7 @@
 
     const SVG = (d, extra) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + (extra || '') + '>' + d + '</svg>';
     const IC = {
+        kit: SVG('<rect x="6" y="2.5" width="12" height="19" rx="2.2"/><path d="M6 9.5h12M9 5.5v2M9 12.5v3"/>'),
         cart: SVG('<path d="M3 4h2.2l2.1 10.2a1.6 1.6 0 0 0 1.6 1.3h8.4a1.6 1.6 0 0 0 1.6-1.2L20.5 8H6.1"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/>'),
         bc: SVG('<path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2"/><path d="M8 8v8M11 8v8M14 8v8M17 8v8"/>'),
         x: SVG('<path d="M6 6l12 12M18 6L6 18"/>'),
@@ -139,13 +140,18 @@
         const code = String(p.barcode || o.code || '');
         const name = String(p.name || '').trim() || T('unnamed', code);
         const img = /^https:\/\//.test(String(p.img || '')) ? String(p.img) : '';
-        cur = { name, barcode: code, img, level: lvl };
+        cur = { name, barcode: code, img, level: lvl, brand: String(p.brand || '').slice(0, 40), cat: String(p.cat || '') };
+        /* Oct 26 Kitchen game (kitchen-game.js, Cook > Kitchen): a scanned product can also go straight into your kitchen. Opened from
+           the Kitchen's Scan button, that is the big button and Add to cart is the small one. */
+        const KG = W.LowiKitchenGame, kIn = !!(KG && KG.intent && KG.intent());
+        const kBtn = !KG ? '' : '<button type="button" class="' + (kIn ? 'ss-add ss-kit-main' : 'ss-kit') + '" data-ss="kit">' + IC.kit + '<span>' + esc(kitT(0)) + '</span></button>';
+        const cBtn = '<button type="button" class="' + (kIn ? 'ss-kit' : 'ss-add') + '" data-ss="add">' + IC.cart + '<span>' + esc(T('add')) + '</span></button>';
         const c = card(el);
         c.innerHTML = '<div class="ss-sheet ss-v-' + lvl + '">' +
             '<div class="ss-head"><span class="ss-img">' + (img ? '<img alt="" src="' + esc(img) + '">' : IC.bc) + '</span><div class="ss-name"><b>' + esc(name) + '</b>' + (p.brand ? '<small>' + esc(p.brand) + '</small>' : '') + '</div>' +
             '<button type="button" class="ss-x" data-ss="next" aria-label="' + esc(T('next')) + '">' + IC.x + '</button></div>' +
             verdictHTML(lvl, o.est) +
-            '<button type="button" class="ss-add" data-ss="add">' + IC.cart + '<span>' + esc(T('add')) + '</span></button>' +
+            (kIn ? kBtn + cBtn : cBtn + kBtn) +
             detailsHTML(p, r) + '</div>';
         /* Oct 17 grocery hunt (grocery-hunt.js): a barcode really scanned (camera, typed digits or a barcode photo) is a catch; a product picked from a name search is not */
         if (o.code) { try { W.dispatchEvent(new CustomEvent('lowi:shop-scan', { detail: { barcode: code, name, brand: String(p.brand || ''), level: lvl, card: c } })); } catch (e) {} }
@@ -200,6 +206,21 @@
         count(el);
         if (X() && X().shopResume) X().shopResume();
     }
+    function kitT(k) {
+        const l = String((W.LowiLang && LowiLang.get && LowiLang.get()) || D.documentElement.lang || 'en'), i = /^de/i.test(l) ? 1 : /^es/i.test(l) ? 2 : 0;
+        return [['In my kitchen', 'In meine Küche', 'A mi cocina'], ['In your kitchen', 'In deiner Küche', 'En tu cocina'], ['Already in your kitchen', 'Schon in deiner Küche', 'Ya está en tu cocina']][k][i];
+    }
+    function addKit(el) {
+        const KG = W.LowiKitchenGame; if (!cur || !KG || !KG.addScanned) return;
+        let r = null; try { r = KG.addScanned(cur); } catch (e) { r = null; }
+        if (!r) return;
+        last = r.had ? null : { undo: r.undo };
+        try { navigator.vibrate && navigator.vibrate(18); } catch (e) {}
+        closeCard(el);
+        toast(el, kitT(r.had ? 2 : 1), r.n + (r.shelf ? ' · ' + r.shelf : ''));
+        if (r.had) { const b = el.querySelector('.ss-toast [data-ss="undo"]'); if (b) b.hidden = true; }
+        if (X() && X().shopResume) X().shopResume();
+    }
     function toast(el, text, name) {
         let t = el.querySelector('.ss-toast');
         if (!t) { t = D.createElement('div'); t.className = 'ss-toast'; t.setAttribute('role', 'status'); el.appendChild(t); }
@@ -238,6 +259,7 @@
         e.preventDefault();
         if (k === 'mode') toggle();
         else if (k === 'add') add(el);
+        else if (k === 'kit') addKit(el);
         else if (k === 'next') next(el);
         else if (k === 'undo') undo(el);
         else if (k === 'cart') goCart();

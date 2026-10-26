@@ -1247,6 +1247,15 @@
         D.body.append(h);
         foodCam = h;
         D.documentElement.classList.add('ss-foodon');
+        return startFood(h);
+    }
+
+    /* BH-047 (P-SESSION-OUTLIVES-SCREEN): the food camera's stream start, shared by photo() and the return from the background.
+       It used to live inside photo() only, so the stream that visibilitychange stopped on hide never came back: the screen kept
+       its live look on a dead stream, and the shutter took the last frozen frame (black on iPhone). Same as the barcode camera
+       (index.html camResume): stopped on hide, the spinner shows, and it starts again on return. A second start that loses the
+       race (photoStream already set) or lands while the page is hidden hands its tracks straight back. */
+    async function startFood(h) {
         if (!navigator.mediaDevices?.getUserMedia) {
             foodState(h, 'nocam');
             return;
@@ -1267,7 +1276,7 @@
                     }
                 }
             });
-            if (foodCam !== h || !h.isConnected) {
+            if (foodCam !== h || !h.isConnected || D.hidden || photoStream) {
                 stream.getTracks().forEach(t => t.stop());
                 return;
             }
@@ -1279,13 +1288,21 @@
                 foodState(h, 'live');
             }
         } catch (e) {
-            if (foodCam === h) foodState(h, e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? 'denied' : 'nocam');
+            if (foodCam !== h) return;
+            /* BH-047: play() cut short by going to the background is not a missing camera: start again on return */
+            if (D.hidden) {
+                foodState(h, 'starting');
+                h.dataset.resume = '1';
+                return;
+            }
+            foodState(h, e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? 'denied' : 'nocam');
         }
     }
 
     function shutter() {
         const v = foodCam && foodCam.querySelector('video');
-        if (!v || !v.videoWidth) return;
+        /* BH-047: no live stream = no photo (a stopped track keeps videoWidth and its last frame) */
+        if (!v || !v.videoWidth || !photoStream || !photoStream.getVideoTracks().some(t => t.readyState === 'live')) return;
         const cv = D.createElement('canvas'),
             scale = Math.min(1, 640 / v.videoWidth);
         cv.width = Math.round(v.videoWidth * scale);
@@ -2313,6 +2330,16 @@
             profile();
         }
     });
+    /* BH-047: Escape and Safari's swipe back (back-swipe.js sends Escape) never reached the food camera: the keydown below
+       returns while the herb world is closed, which it always is under #ssFood. Back went past the camera and left the app (or
+       switched the page under it) with the camera still running. The camera sits on top of everything (z 2147483002), so it
+       takes Escape first, in the window's capture phase, and nothing under it sees that Escape. */
+    window.addEventListener('keydown', e => {
+        if (e.key !== 'Escape' || !foodCam || !foodCam.isConnected) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        cancelCapture();
+    }, true);
     D.addEventListener('keydown', e => {
         if (!opened) return;
         if (e.key === 'Escape') {
@@ -2346,8 +2373,24 @@
     window.addEventListener('lowi:peak', refresh); /* Oct 22: a sugar rush starting or fading, or the peak, rewrites the status line */
     window.addEventListener('resize', refresh);
     D.addEventListener('visibilitychange', () => {
-        if (D.hidden) stopPhoto();
-        else refresh();
+        const h = foodCam && foodCam.isConnected ? foodCam : null;
+        if (D.hidden) {
+            stopPhoto();
+            /* BH-047: the camera was live or starting: show the spinner and start it again on return */
+            if (h && (h.dataset.st === 'live' || h.dataset.st === 'starting')) {
+                h.classList.remove('live');
+                foodState(h, 'starting');
+                h.dataset.resume = '1';
+            }
+        } else {
+            refresh();
+            if (h && h.dataset.resume) {
+                delete h.dataset.resume;
+                setTimeout(() => {
+                    if (foodCam === h && h.isConnected && !photoStream && !D.hidden) startFood(h);
+                }, 250);
+            }
+        }
     });
     const pendingNodes = new Set();
     let observerQueued = false;

@@ -223,9 +223,9 @@
             info: 'Oct 26 2026: Shop from home at the top of Supermarket (week-basket.js, MAYA-HANDOFF 0.21). Household, budget and dinners in, a week of low-spike dinners and one grocery list out, priced with the existing store estimates; it fills the Cart (0.22).',
             title: { en: 'Shop from home', de: 'Von zu Hause einkaufen', es: 'Compra desde casa' },
             text: {
-                en: 'New in Supermarket: Shop from home. Pick people, budget and dinners, and get a week of low-spike dinners with an estimated total per store. Tick what you have, then put it in your Cart.',
-                de: 'Neu im Supermarkt: Von zu Hause einkaufen. Personen, Budget und Abendessen wählen, schon steht eine Woche Low-Spike-Abendessen mit geschätzter Summe pro Laden. Abhaken, was da ist, ab in den Warenkorb.',
-                es: 'Nuevo en Supermercado: Compra desde casa. Elige personas, presupuesto y cenas, y recibe una semana de cenas low-spike con un total estimado por tienda. Marca lo que tienes y añádelo al carrito.'
+                en: 'New in Supermarket: Shop from home. Pick people, budget and dinners for a low-spike week with store estimates, then fill your Cart.',
+                de: 'Neu im Supermarkt: Von zu Hause einkaufen. Personen, Budget, Abendessen wählen: eine Low-Spike-Woche mit Schätzpreis, ab in den Warenkorb.',
+                es: 'Nuevo en Supermercado: Compra desde casa. Elige personas, presupuesto y cenas: una semana low-spike con precio estimado, al carrito.'
             }
         },
         {

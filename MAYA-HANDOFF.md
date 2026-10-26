@@ -1270,7 +1270,9 @@ backed up like lowispike.community.tabs). Everyone gets Kitchen first (no Cook o
 kept. Anything that opens Cook on a given game on purpose (Kitchen from the tour / Kitchen links, "Help me pick" Shuffle or
 Swipe, Swaflo's shuffle form) still lands on that game. EN/DE/ES, Reduce Motion, WebKit iPhone 13. Task "LOWiSPIKE: Kitchen
 first in Cook + reorderable Cook tabs" (Sesame, 26 Oct), worktree wt-cook-tabs, branch cook-tab-order, COORD-cook-tabs.md.
-Status: building (see Log for the release).
+Status: LIVE 20261026-171531 (quiet). Note: the cook-tab-order.js script tag sits after </body> so parallel releases stop
+clashing on the stamped script list; bump-build does not restamp it (release-check warns), so after editing cook-tab-order.js
+change its ?v= by hand.
 
 ### 0.30 Better pick must be a better version of the SAME kind of food (Emmanuel, voice + 2 screenshots, Mon 26 Oct 2026 about 4:07 PM CET)
 
@@ -2352,3 +2354,4 @@ obLater snooze, sign-out KEEP). Tests 2765/2765, CI green, live check de iPhone 
 - 2026-10-26 15:45 CET Community: the way back to Home disappeared (0.33; Sesame task 'LOWiSPIKE: Community back-to-home button missing', worktree wt-community-home, branch community-home-btn). Cause: section-nav.css `html.sec-open.mf-on .sec-x{display:none}` + section-nav.js edge swipe/Escape gates on mf-on; autopilot leaves mf-on set off Home, so every page lost all three ways home while the companion flew (reproduced live: tools/community-home-btn/repro.cjs). Flying no longer hides or blocks them (camera and herb room still do); invisible 48 px tap ring on the 40 px circle. tests/section-back-while-flying.test.cjs (8 tests, 7 fail on old code). tools/community-home-btn/check.cjs: WebKit iPhone 13 390x844, real autopilot (motion) + Reduce Motion EN/DE/ES, all 5 Community tabs, Move, Cook, Profile: button shown, tap and edge swipe go Home, ring doesn't cover the header. Note for probes: Playwright's locator tap on #secX can time out on a moving glass page; use touchscreen.tap at its centre. Inside Community Chat, back goes to the channel list first (item 33), by design.
 - 2026-10-26 17:00 CET bug hunt run 44: BH-044 LIVE 20261026-165435 (quiet): Start next journey no longer switches the controller to autopilot (it hid every Home button for the 30 min journey). Emmanuel: auto fly only when the user taps it.
 - 2026-10-26 17:12 CET better pick 0.30: LIVE 20261026-170447 (quiet): Better pick only a better version of the same kind of food (almonds -> nuts/seeds or nothing, never eggplant sauce); better-pick-core.js; 7 tests; WebKit iPhone 13 live check DE/EN/ES 0 finds
+- 2026-10-26 17:25 CET cook tabs 0.29: LIVE 20261026-171531 (quiet): Cook is Kitchen | Shuffle | Swipe and opens on the first tab; hold a Cook tab to drag it (Community's engine, community-tab-order.js row()); order in lowispike.cook.tabs (device). Kitchen links, Help me pick Shuffle and Swaflo still land on their game. What's New new-cook-tabs (en/de/es voice), new-kitchen no longer says next to Swipe. Tests tests/cook-tab-order.test.cjs (7, all failed on old code); browser check tools/cook-tabs/check.cjs.

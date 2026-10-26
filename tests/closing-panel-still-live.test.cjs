@@ -124,7 +124,7 @@ test('BH-036: keyboard and script clicks are never swallowed, and the open Shop 
 
 test('BH-036: Give a hand ignores taps while it fades (it threw on ov.contains(null)) and marks its closing tap', () => {
     const k = scrim();
-    const P = panel('gift-basket.js', k, calls => ({ close() { calls.push('close'); }, paint() { calls.push('paint'); }, tab: 'open', msg: '',
+    const P = panel('gift-basket.js', k, calls => ({ close() { calls.push('close'); }, paint() { calls.push('paint'); }, tab: 'open', msg: '', dragAt: 0, pick() {}, skip() {}, undoSkip() {},
         addItem() { calls.push('add'); }, help() { calls.push('help'); } }));
     const ov = el(k.body, {}, 'DIV'), x = el(ov, { 'data-gb': 'close' }), help = el(ov, { 'data-gb-help': 'a1' });
     P.setOv(ov);

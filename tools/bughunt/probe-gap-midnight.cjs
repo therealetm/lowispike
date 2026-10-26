@@ -44,7 +44,7 @@ const L = require('./lib.cjs');
         const sh = document.getElementById('gvSheet'), fs = document.querySelector('.fst-ov,.r2-ov.on,#sheetwrap.open');
         const txt = e => e ? (e.innerText || '').replace(/\n+/g, ' | ').slice(-420) : '';
         const B = window.__bh || { err: [], rej: [] };
-        return { lb, clock: new Date().toString().slice(0, 24), last: txt(sh && sh.querySelector('.gv-last')), gap: txt(sh && sh.querySelector('.gv-body')), other: sh ? '' : txt(fs), ring: (document.querySelector('[data-orbit="gap"]') || {}).innerText, err: B.err.splice(0), rej: B.rej.splice(0) };
+        return { lb, clock: new Date().toString().slice(0, 24), last: txt(sh && sh.querySelector('.gv-last')), gap: txt(sh && sh.querySelector('.gv-body')), other: sh ? '' : txt(fs), ring: (document.querySelector('[data-orbit="gap"]') || {}).innerText, aria: (document.getElementById('spFast') || { getAttribute() { return null; } }).getAttribute('aria-label'), err: B.err.splice(0), rej: B.rej.splice(0) };
     }, lb);
     const out = [];
     await page.evaluate(() => LowiGapView.open()); await L.sleep(1500);

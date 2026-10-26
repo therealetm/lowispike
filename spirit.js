@@ -548,8 +548,11 @@
            label, one short value. The value is the time since the last meal as h:mm (15:09); no units, no "last meal 10:00" line
            (the Gap page and the screen-reader label still say when). No meal known yet = the label alone, no dash. */
         const h = '<small>' + esc(tr('sinceMeal')) + '</small><b>' + (f.start ? hours + ':' + String(min).padStart(2, '0') : '') + '</b>';
+        /* Bug hunt run 30 (BH-030 sibling): after midnight VoiceOver read "since your last meal at 06:57 PM" with no day word.
+           Same words as the Gap page's Last meal line (LowiGapView._when): "06:57 PM yesterday", or the date further back. */
+        const gapWhen = t => { try { if (window.LowiGapView && window.LowiGapView._when) return window.LowiGapView._when(t, lang()); } catch (e) { } return new Date(t).toLocaleTimeString(lang(), { hour: '2-digit', minute: '2-digit' }); };
         /* Oct 21 grandma test: the Gap bubble says in words what its number is (it had no label for screen readers, and an empty Gap was a bare dash) */
-        const al = f.start ? tr('gapAria').replace('{h}', hours).replace('{m}', min).replace('{t}', new Date(f.start).toLocaleTimeString(lang(), { hour: '2-digit', minute: '2-digit' })) : tr('gapAria0');
+        const al = f.start ? tr('gapAria').replace('{h}', hours).replace('{m}', min).replace('{t}', gapWhen(f.start)) : tr('gapAria0');
         if (el.getAttribute('aria-label') !== al) el.setAttribute('aria-label', al);
         const t = el.querySelector('.sp-fast-copy');
         if (t.innerHTML !== h) t.innerHTML = h;

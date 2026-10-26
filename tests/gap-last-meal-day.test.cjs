@@ -31,3 +31,9 @@ test('a meal two days back shows its date, never "yesterday"', () => {
 test('every language has the yesterday word', () => {
     for (const l of ['en', 'de', 'es']) assert.ok(G.strings[l].ago1, l);
 });
+
+test('the Gap bubble\'s spoken label uses the same day words (VoiceOver said "at 06:57 PM" after midnight)', () => {
+    const s = require('node:fs').readFileSync(path.join(__dirname, '..', 'spirit.js'), 'utf8');
+    assert.ok(/tr\('gapAria'\)[^\n]*\.replace\('\{t\}', gapWhen\(f\.start\)\)/.test(s), 'gapAria fills {t} with gapWhen');
+    assert.ok(/const gapWhen = t => \{[^\n]*LowiGapView\._when\(t, lang\(\)\)/.test(s), 'gapWhen asks LowiGapView._when');
+});

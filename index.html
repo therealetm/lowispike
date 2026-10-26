@@ -15123,9 +15123,17 @@ function nameSwap(p){
   try { const SW = typeof window !== "undefined" && window.LowiScanSwap; if (SW && typeof nameRate === "function") {
     const an = SW.anchored(p.name || "", {rate:nameRate, l:["en", "de", "es"][typeof LI === "function" ? LI() : 0] || "en", products:Object.values((typeof D !== "undefined" && D.comm) || {})});
     if (an) return an.prod ? {e:"🌿", n:an.prod.name, prod:an.prod, anchored:an.n} : {e:"🌿", n:an.n, anchored:an.n}; } } catch(e){}
+  /* Oct 26 (Emmanuel scanned K-Classic "Mandeln Stifte" and the Better pick was Paliria "Eggplants in Onion & Tomato Sauce":
+     "Why didn't it just recommend me a better version, an alternative of what I'm trying to find here?"): a Better pick is
+     only ever a better version of the SAME kind of food (better-pick-core.js): other nuts or seeds for almonds, a yogurt for
+     a yogurt, a bread for a bread. Nothing of that kind is better: no Better pick at all. tests/better-pick-same-kind.test.cjs */
+  const BP = typeof window !== "undefined" && window.LowiBetterPick;
   const q = (p.nameEst && p.nameEst.how !== "ai" ? p.nameEst.hit : "") || p.name || "";
   const m = mealRead(String(q).split(", ")[0]) || mealRead(p.name || "");
-  const sw = m && m.swap;
+  let sw = m && m.swap;
+  /* the meal engine's idea must be the same kind of food too; a scanned product we can't place gets none (a typed
+     dish name we can't place keeps the engine's idea, it was written for that dish) */
+  if (sw && sw.n && BP) { const known = BP.kindOf(p); if (known ? !BP.ideaFits(p, sw.n) : !!p.barcode) sw = null; }
   if (sw && sw.n) { let rb = null; try { rb = sw.rb && typeof RECIPE_BOOK !== "undefined" && typeof norm === "function" ? RECIPE_BOOK.find(b => norm(b.n) === norm(sw.rb)) : null; } catch(e){ rb = null; }
     /* no recipe named: the Recipe Book recipe that shares the most words with the swap, and at least two of them
        (Oct 24 sweep: one shared word anywhere sent popcorn's 'Cucumber and pepper sticks' to Pepper Pizza Boats, fries'
@@ -15134,9 +15142,14 @@ function nameSwap(p){
       const st = ws(sw.n).filter((w, i, a) => a.indexOf(w) === i); let hit = 1;
       RECIPE_BOOK.forEach(b => { const bw = ws(b.n), k = st.filter(w => bw.indexOf(w) >= 0).length; if (k > hit) { hit = k; rb = b; } }); } } catch(e){ rb = null; }
     return {e:sw.e || "🌿", n:sw.n, r:sw.r || "ja", rb}; }
-  try { const alt = Object.values(D.comm || {}).find(x => x && x.verdict === "ok" && x.cat && x.cat === p.cat && pkey(x) !== pkey(p)); if (alt) return {e:CAT_E[alt.cat] || "🌿", n:alt.name, prod:alt}; } catch(e){}
+  /* a real product the app already knows, of the same kind, rated better, sold where the user shops first. This used to be
+     ANY Lower product with the same coarse category, and "other" matched "other": almonds got eggplant sauce. */
+  try { const alt = BP ? BP.best(p, (typeof D !== "undefined" && D.comm) || [], {pkey, region:bpRegion()}) : null; if (alt) return {e:CAT_E[alt.cat] || "🌿", n:alt.name, prod:alt}; } catch(e){}
   return null;
 }
+/* the Supermarket region the user picked (eu, uk, us, ww); none picked yet: German and Spanish read as EU */
+function bpRegion(){ let r = ""; try { r = localStorage.getItem("lowi.sellerZone.region") || ""; } catch(e){ r = ""; }
+  return r || (typeof LI === "function" && LI() > 0 ? "eu" : ""); }
 function nameSwapHTML(p){ const s = nameSwap(p); if (!s) return "";
   if (s.ok) return '<div class="ne-swap ok"><span class="ne-se">🌿</span><div><small>' + esc(net("swap")) + '</small><b>' + esc(net("swapOk")) + '</b></div></div>';
   const go = s.rb ? '<button type="button" class="ne-go" data-b3="nercp" data-r="' + esc(s.rb.id) + '">' + esc(net("open")) + ' ›</button>' : s.prod ? '<button type="button" class="ne-go" data-b3="neprod" data-k="' + esc(pkey(s.prod)) + '">' + esc(net("show")) + ' ›</button>' : "";
@@ -15576,12 +15589,17 @@ function meterHTML(score, est){ const s = Math.max(0, Math.min(100, score || 0))
     '<div class="b3-mbar"><i class="b3-mfill" style="--w:' + s + '%"></i><i class="b3-mdot" style="--w:' + s + '%"></i></div><div class="b3-mscale tiny dim"><span>' + esc(t("m_low")) + '</span><span>' + esc(t("m_mid")) + '</span><span>' + esc(t("m_high")) + '</span></div></div>'; }
 function factsHTML(f){ if (!f || f.c == null && f.s == null) return ""; const n = v => v == null ? "–" : String(v).replace(".", LI() ? "," : ".") + " g";
   return '<div class="b3-facts"><span class="tiny dim">' + esc(t("per100")) + '</span><div>' + [["f_c", f.c], ["f_s", f.s], ["f_f", f.f], ["f_p", f.p]].map(x => '<span><b>' + n(x[1]) + '</b><small>' + esc(t(x[0])) + '</small></span>').join("") + '</div></div>'; }
-function swapsHTML(p){ if (p.verdict === "ok") return "";
-  const comm = D.comm.filter(x => x.verdict === "ok" && x.cat === p.cat && pkey(x) !== pkey(p)).slice(0, 6);
-  const rule = (B3_PICKS[p.cat] || B3_PICKS.other).map(tr3);
+function swapsHTML(p){ if (!p || p.verdict === "ok") return "";
+  /* Oct 26 (MAYA-HANDOFF 0.30): the products here are better versions of the same kind of food only (better-pick-core.js),
+     never anything Lower that shares the catch-all "other" category; the "other" idea chips are kept only when they fit */
+  const BP = window.LowiBetterPick;
+  const comm = BP ? BP.candidates(Object.assign({}, p, {verdict:p.verdict === "better" ? "better" : "spike"}), D.comm, {pkey, region:bpRegion()}).filter(x => x.verdict === "ok").slice(0, 6) : [];
+  let rule = (B3_PICKS[p.cat] || B3_PICKS.other).map(tr3);
+  if (BP && (!p.cat || p.cat === "other" || !B3_PICKS[p.cat])) rule = (B3_PICKS.other).filter(x => BP.ideaFits(p, x[0])).map(tr3);
+  if (!comm.length && !rule.length) return "";
   return '<div class="b3-swaps"><div class="b3-lab"><span>' + esc(t("swapsFor")) + '</span></div>' +
     (comm.length ? '<div class="tiny dim b3-sh">' + esc(t("betterComm")) + '</div><div class="b3-strip">' + comm.map(cardMini).join("") + '</div>' : "") +
-    '<div class="tiny dim b3-sh">' + esc(t("betterRule")) + '</div><div class="b3-chips">' + rule.map(x => '<span class="b3-chip">' + esc(x) + '</span>').join("") + '</div></div>'; }
+    (rule.length ? '<div class="tiny dim b3-sh">' + esc(t("betterRule")) + '</div><div class="b3-chips">' + rule.map(x => '<span class="b3-chip">' + esc(x) + '</span>').join("") + '</div>' : "") + '</div>'; }
 function cardHTML(p, anim){
   const v = p.verdict || "unknown", r = rarity(p), mine = isMine(p), m = mine ? D.mine[pkey(p)] : null;
   let storeCmp = ""; try { storeCmp = window.LOWI_SHELF && LOWI_SHELF.priceCompareHTML ? LOWI_SHELF.priceCompareHTML(p.name, p.barcode, true) : ""; } catch(e){}
@@ -21698,6 +21716,7 @@ window.LowiCommunityHost = {
 <script src="meal-photo.js?v=20261026-165435"></script>
 <script src="food-photo-ai.js?v=20261026-165435"></script>
 <script src="scan-swap-core.js?v=20261026-165435"></script>
+<script src="better-pick-core.js?v=20261026-165435"></script>
 <script src="meal-result.js?v=20261026-165435"></script>
 <script src="meal-journal.js?v=20261026-165435"></script>
 <script src="meal-detail-core.js?v=20261026-165435"></script>

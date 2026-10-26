@@ -71,7 +71,8 @@
     const W = root, D = root.document;
     if (W.LowiMealsBubble) return;
     const lang = () => { const l = (D.documentElement.lang || 'en').slice(0, 2); return l === 'de' ? 1 : l === 'es' ? 2 : 0; };
-    const T = (en, de, es) => [en, de, es][lang()];
+    const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
+    const T = (en, de, es) => wnm([en, de, es][lang()]);
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const state = () => { try { return W.LowiVitalsBridge && W.LowiVitalsBridge.state(); } catch (e) { return null; } };
     const label = () => T('Fuel', 'Essen', 'Comida'); /* Oct 19 (new-user walkthrough): the ring calls this bubble Fuel, so VoiceOver says Fuel too */

@@ -11,7 +11,8 @@
     const R = W.LowiR2 || {}, V = () => W.LowiVitalsBridge;
     const lang = () => { let l = 'de'; try { l = (W.LowiLang && LowiLang.get && LowiLang.get()) || D.documentElement.lang || 'de'; } catch (e) {} l = String(l).slice(0, 2); return l === 'en' || l === 'es' ? l : 'de'; };
     const li = () => ({ en: 0, de: 1, es: 2 }[lang()]);
-    const t = (en, de, es) => [en, de, es][li()];
+    const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
+    const t = (en, de, es) => wnm([en, de, es][li()]);
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const js = k => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { return {}; } };
     const S = () => { try { const v = V(); return v && v.state ? v.state() : null; } catch (e) { return null; } };

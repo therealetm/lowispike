@@ -18,7 +18,8 @@
     const RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
     const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
     const lang = () => { const l = (H.lang || ls.get('lowispike.lang') || 'en').slice(0, 2); return C.LANGS.includes(l) ? l : 'en'; };
-    const W = k => C.word(k, lang());
+    const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
+    const W = k => wnm(C.word(k, lang()));
     const R2 = () => window.LowiR2;
 
     (function css() {

@@ -17,6 +17,7 @@
     };
     /* the places that only work on Home (they press a Home control): go Home first, then run */
     const HOME_FIRST = ['gift', 'myday'];  /* myday: its bubbles open Home's old day panels (index.html g2h) */
+    const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
     const LABELS = {
         en: { me: 'Profile', presence: 'Your presence', body: 'Weight & BMI', weight: 'Weight journey' }, de: { me: 'Profil', presence: 'Dein Auftritt', body: 'Gewicht & BMI', weight: 'Gewichtsreise' }, es: { me: 'Perfil', presence: 'Tu presencia', body: 'Peso e IMC', weight: 'Tu camino de peso' }
     };
@@ -72,7 +73,7 @@
     }
     const sT = () => { const s = S(), l = lang(); return (s && s.TX && (s.TX[l] || s.TX.en)) || {}; };
     function row(id) {
-        const s = S(), l = lang(), ST = sT(), lab = (LABELS[l] && LABELS[l][id]) || s.label(id), sub = (SUB[l] && SUB[l][id]) || '';
+        const s = S(), l = lang(), ST = sT(), lab = wnm(LABELS[l] && LABELS[l][id]) || s.label(id), sub = (SUB[l] && SUB[l][id]) || '';
         const ico = ICON[id] ? svg(id) : s.icon(id).replace('ss2-ico', 'cme-ico');
         if (id === 'language') { return '<div class="cme-row cme-langrow" role="group" aria-label="' + esc(lab) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><span class="cme-langs">' + ['en', 'de', 'es'].map(x => '<button type="button" data-lang="' + x + '" aria-pressed="' + (x === l) + '"' + (x === l ? ' class="on"' : '') + '>' + x.toUpperCase() + '</button>').join('') + '</span></div>'; }
         if (id === 'theme') { const dark = s.state ? s.state('theme') : true, st = dark ? ST.night : ST.day; return '<button type="button" class="cme-row" role="switch" data-cme="theme" aria-checked="' + dark + '" aria-label="' + esc(lab) + ': ' + esc(st) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><small class="cme-st">' + esc(st) + '</small></button>'; }
@@ -82,7 +83,7 @@
     /* Oct 22 One UI (Emmanuel: "every UI should look the same ... the Japanese convenient logic"): You is a small grid of tiles, icon
        over a short label, one tap each; the line under the label stays as the button's description for screen readers */
     function tile(id) {
-        const s = S(), l = lang(), lab = (LABELS[l] && LABELS[l][id]) || s.label(id), sub = (SUB[l] && SUB[l][id]) || '';
+        const s = S(), l = lang(), lab = wnm(LABELS[l] && LABELS[l][id]) || s.label(id), sub = (SUB[l] && SUB[l][id]) || '';
         const ico = ICON[id] ? svg(id) : s.icon(id).replace('ss2-ico', 'cme-ico');
         return '<button type="button" class="cme-tile" data-cme="' + id + '"' + (sub ? ' title="' + esc(sub) + '"' : '') + '>' + ico + '<b>' + esc(lab) + '</b></button>';
     }
@@ -91,7 +92,7 @@
         if (!ids || !ids.length) return '';
         const s = S(), l = lang(), T = TX[l];
         return '<div class="cme-more' + (moreOpen ? ' on' : '') + '"><button type="button" class="cme-row cme-more-btn" data-cme="more" aria-expanded="' + moreOpen + '" aria-controls="cmeMore"><span class="cme-tx"><b>' + esc(T.more) + '</b></span>' + svg('chev', 'cme-chev') + '</button>' +
-            '<div class="cme-chips" id="cmeMore"' + (moreOpen ? '' : ' hidden') + '>' + ids.map(id => '<button type="button" class="cme-chip" data-cme="' + id + '">' + esc((LABELS[l] && LABELS[l][id]) || s.label(id)) + '</button>').join('') + '</div></div>';
+            '<div class="cme-chips" id="cmeMore"' + (moreOpen ? '' : ' hidden') + '>' + ids.map(id => '<button type="button" class="cme-chip" data-cme="' + id + '">' + esc(wnm(LABELS[l] && LABELS[l][id]) || s.label(id)) + '</button>').join('') + '</div></div>';
     }
     function render() {
         const s = S(), T = TX[lang()], m = me(), pf = D.getElementById('pfBtn');

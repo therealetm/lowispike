@@ -34,10 +34,11 @@
         (D.head || H).appendChild(el);
     }
     let sr = null;
+    const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
     function announce(on) {
         if (!D.body) return;
         if (!sr) { sr = D.createElement('div'); sr.className = 'lw-clean-sr'; sr.id = 'lwCleanSay'; sr.setAttribute('aria-live', 'polite'); D.body.appendChild(sr); }
-        sr.textContent = on ? C.say(lang()) : '';
+        sr.textContent = on ? wnm(C.say(lang())) : '';
     }
 
     /* ---------- apply ---------- */

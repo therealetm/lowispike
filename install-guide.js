@@ -119,6 +119,7 @@
     w_t: ['LOWiSPIKE is on your Home Screen now. One tap and Misty is there.', 'LOWiSPIKE ist jetzt auf deinem Home-Bildschirm. Ein Tipp und Misty ist da.', 'LOWiSPIKE ya está en tu pantalla de inicio. Un toque y Misty está ahí.']
   };
   const LI = { en: 0, de: 1, es: 2 };
+  const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
   function tx(key, lang) { const r = TX[key]; return r ? (r[LI[lang] == null ? 0 : LI[lang]] || r[0]) : key; }
   const Core = { detect, flow, TX, tx, WELCOME: 'lowi.ig.welcome', SEEN: 'lowi.ig.seen', A2HS_X: 'lowi.a2hs.x' };
   if (typeof module !== 'undefined' && module.exports) module.exports = Core;
@@ -344,7 +345,7 @@
     try { localStorage.setItem(Core.WELCOME, String(Date.now())); localStorage.removeItem(Core.SEEN); } catch (e) {}
     const L = lang(), w = D.createElement('div'); w.id = 'igWelcome'; w.className = 'ig-welcome'; w.setAttribute('data-noi18n', ''); w.setAttribute('role', 'status');
     w.innerHTML = '<button type="button" class="ig-wcard" data-ig="welcome"><span class="ig-misty" aria-hidden="true"><i class="e l"></i><i class="e r"></i><i class="m"></i></span>' +
-      '<span class="ig-wt"><b>' + esc(tx('w_h', L)) + '</b><small>' + esc(tx('w_t', L)) + '</small></span></button>' +
+      '<span class="ig-wt"><b>' + esc(tx('w_h', L)) + '</b><small>' + esc(wnm(tx('w_t', L))) + '</small></span></button>' +
       '<span class="ig-fizz" aria-hidden="true">' + '<i></i>'.repeat(8) + '</span>';
     host().appendChild(w);
     requestAnimationFrame(() => w.classList.add('in'));

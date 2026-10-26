@@ -94,6 +94,7 @@
         warm: ['Warmer... one is close!', 'Wärmer... einer ist ganz nah!', 'Caliente... ¡hay una cerca!']
     };
     const li = lang => { const l = String(lang || 'de').slice(0, 2); return l === 'en' ? 0 : l === 'es' ? 2 : 1; };
+    const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
     const tr = (k, lang, v) => String((STR[k] || [''])[li(lang)] || '').replace(/\{(\w+)\}/g, (m, x) => v && v[x] != null ? v[x] : m);
     function read(st, now, lang) {
         const s = norm(st, now), L = levelOf(s.xp);
@@ -139,7 +140,7 @@
         try { const G = W.LowiRegionPals; if (G && G.hunt && G.hunt(key, v || {}, world || H.id)) return; } catch (e) { }
         if (!STR[key]) return;
         const t = Date.now(); if (!force && t - lastSay < 2500) return; lastSay = t;
-        try { if (W.LowiPraise && W.LowiPraise.say) W.LowiPraise.say(tr(key, lang(), v)); } catch (e) { }
+        try { if (W.LowiPraise && W.LowiPraise.say) W.LowiPraise.say(wnm(tr(key, lang(), v))); } catch (e) { }
     };
     const reduced = () => { try { return W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
     const mine = () => { const s = S(); return s ? (s.mistyPower = norm(s.mistyPower)) : norm(null); };

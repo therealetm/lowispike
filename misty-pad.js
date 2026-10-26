@@ -275,7 +275,7 @@
         if (!st.mode || !H.classList.contains('wh-padfly')) return;
         const t = e.target; if (!t || !t.closest || !t.closest('#spBubble')) return;
         e.stopPropagation(); if (e.cancelable) e.preventDefault();
-        if (e.type === 'pointerdown') { const A = W.LowiAdventure; let rec = false; if (A && A.on) { try { A.stop('recall'); rec = true; } catch (er) { } } if (!rec) setMode('home', true); chip(T('Misty is flying home', 'Misty fliegt nach Hause', 'Misty vuelve a casa'), 1600); }
+        if (e.type === 'pointerdown') { const A = W.LowiAdventure; let rec = false; if (A && A.on) { try { A.stop('recall'); rec = true; } catch (er) { } } if (!rec) setMode('home', true); chip(nm(T('Misty is flying home', 'Misty fliegt nach Hause', 'Misty vuelve a casa')), 1600) /* BH-045 */; }
     }
     ['pointerdown', 'click'].forEach(n => D.addEventListener(n, callHome, true));
     W.addEventListener('blur', () => fade(false)); /* the window lost focus: the joystick comes back (a finger still moving fades it again) */

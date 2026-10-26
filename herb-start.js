@@ -50,6 +50,7 @@ const TX={
   redo:'Repetir las preguntas',hide:'Ocultar de Hoy',show:'Mostrar en Hoy',profT:'Plan inicial',profNone:'4 preguntas opcionales. Crean 3 o 4 pr\u00f3ximos pasos en Hoy.',profHas:'{n} pr\u00f3ximos pasos en Hoy',profStart:'Empezar',
   skipped:'Cuando quieras: Perfil \u203a Sobre ti \u203a Plan inicial.',saved:'Tus pr\u00f3ximos pasos est\u00e1n en Hoy.',qNot:'Ahora no',qThanks:'Entendido. He ajustado tus pasos.',allDone:'Todos los pasos hechos. {herb} brilla.'}
 };
+const wnm=s=>{try{const B=window.LowiBirthCompanion;return s&&B&&B.withName?B.withName(s):s;}catch(e){return s;}}; /* BH-045 */
 const t=(k,o)=>C.fmt((TX[lang()]||TX.en)[k]||TX.en[k]||k,o);
 const tl=k=>(TX[lang()]||TX.en)[k]||TX.en[k]||[];
 const MISTY='Misty';
@@ -169,7 +170,7 @@ function ivPaint(){const el=D.getElementById('hsIv');if(!el||!IV)return;const he
    q.opts.map(o=>'<button type="button" class="hs-opt'+(cur===o.v?' on':'')+'" role="radio" aria-checked="'+(cur===o.v)+'" data-hsi="opt" data-v="'+esc(o.v)+'"><span>'+esc(o.t)+'</span><i aria-hidden="true"></i></button>').join('')+'</div></div>';}
  else if(IV.step===n)h='<div class="hs-ivpane think"><div class="hs-scene sm">'+herbArt(2,reduce()?'':'bob')+'</div><h2>'+esc(t('think',{herb}))+'</h2></div>';
  else{const p=IV.plan,f=facts();h='<div class="hs-ivpane res"><p class="hs-over">'+esc(t('ivOver'))+'</p><h2>'+esc(t('planH'))+'</h2><p class="hs-p">'+esc(t('planP'))+'</p><ol class="hs-res">'+
-   p.actions.map(a=>'<li><span class="hs-ic">'+ico(C.ACTIONS[a.id].ic)+'</span><span><b>'+esc(C.actionText(a.id,lang(),AV(f)))+'</b><small>'+esc(C.whyText(a.why,lang()))+'</small></span></li>').join('')+'</ol></div>'+
+   p.actions.map(a=>'<li><span class="hs-ic">'+ico(C.ACTIONS[a.id].ic)+'</span><span><b>'+esc(C.actionText(a.id,lang(),AV(f)))+'</b><small>'+esc(wnm(C.whyText(a.why,lang())))+'</small></span></li>').join('')+'</ol></div>'+
    '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hsi="done">'+esc(t('planBtn'))+'</button></div>';}
  el.innerHTML=h;fillArt(0);el.setAttribute('data-step',IV.step);const f=el.querySelector('.hs-opt.on,.hs-opt,[data-hsi="start"],[data-hsi="done"]');if(f&&matchMedia('(pointer:fine)').matches)try{f.focus({preventScroll:true});}catch(e){}}
 function ivNext(){if(!IV)return;IV.step++;if(IV.step===C.QUESTIONS.length){IV.plan=C.newPlan(IV.answers);ivPaint();setTimeout(()=>{if(IV){IV.step++;ivPaint();}},reduce()?250:1300);return;}ivPaint();}
@@ -191,7 +192,7 @@ function sheetBody(){const p=plan();if(!p)return '';const f=facts(),st=status(p,
  if(PICK!=null){const alts=C.alternatives(p);h+='<div class="hs-pick"><b>'+esc(t('pickOne'))+'</b>'+alts.map(id=>'<button type="button" class="hs-alt" data-hsp="pick" data-id="'+id+'"><span class="hs-ic">'+ico(C.ACTIONS[id].ic)+'</span>'+esc(C.actionText(id,lang(),AV(f)))+'</button>').join('')+'<button type="button" class="hs-link" data-hsp="cancel">'+esc(t('cancel'))+'</button></div>';}
  h+='<ol class="hs-steps">'+st.map((a,i)=>'<li class="hs-step'+(a.done?' done':'')+'"><div class="hs-sline"><span class="hs-ic">'+(a.done?ico('check')||'\u2713':ico(C.ACTIONS[a.id].ic))+'</span><b>'+esc(C.actionText(a.id,lang(),AV(f)))+'</b>'+
   (a.done?'<span class="hs-done">'+esc(t('doneLbl'))+'</span>':'<button type="button" class="hs-go" data-hsp="go" data-id="'+a.id+'">'+esc(t('goBtn'))+' \u203a</button>')+'</div>'+
-  '<details class="hs-why"><summary>'+esc(t('why'))+'</summary><p>'+esc(C.whyText(a.why,lang()))+'</p></details>'+
+  '<details class="hs-why"><summary>'+esc(t('why'))+'</summary><p>'+esc(wnm(C.whyText(a.why,lang())))+'</p></details>'+
   '<div class="hs-edit"><button type="button" class="hs-mini" data-hsp="change" data-i="'+i+'">'+esc(t('change'))+'</button>'+(st.length>3?'<button type="button" class="hs-mini" data-hsp="remove" data-i="'+i+'">'+esc(t('remove'))+'</button>':'')+'</div></li>').join('')+'</ol>'+
   (st.length<4&&C.alternatives(p).length?'<button type="button" class="hs-mini add" data-hsp="add">+ '+esc(t('addOne'))+'</button>':'')+
   (st.every(a=>a.done)?'<p class="hs-alldone">'+esc(t('allDone',{herb}))+'</p>':'')+

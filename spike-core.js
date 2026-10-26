@@ -207,6 +207,10 @@
         let a; try { a = assess(p, opts); } catch (e) { return keep; }
         const f = tighten(p, a);
         if (RANK[f] == null || f === v) return keep;
+        /* 26 Oct 2026 (Emmanuel's Products Shuffle): a verdict this rerate made itself (rerated rows) follows the Food check
+           both ways, so a policy fix reaches rows it tightened before: "Frische Hamburger vom Rind" and "Sushi Nori" were
+           rerated to spike when the check read them as bread and rice. Verdicts from the day of the catch stay never-milder. */
+        if (p.rerated && RANK[f] < RANK[v]) return {verdict: f, why: a.why || []};
         if (v === 'unknown' ? f !== 'spike' : RANK[f] <= RANK[v]) return keep;
         const c = checkOf(p, a), byCheck = c && FROM_CHECK[c] === f && RANK[f] > (RANK[a.verdict] != null ? RANK[a.verdict] : -1);
         return {verdict: f, why: byCheck ? [[c === 'NEIN' ? 'c_no' : 'c_rare']].concat(a.why || []) : (a.why || [])};

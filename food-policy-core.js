@@ -41,6 +41,9 @@
     // Category keys for a product, from its name/brand and Open Food Facts category tags.
     const COATED_NUT_WORD_RX = /garrapiñad|garrapinad|\bman[ií](?![a-zñ])|\bnuez\b|frutos secos|anacardo|avellana|almendra|pistacho|pecana|cacahuete|macadamia|\bnut\b|mandel|nüss|nuss/;
     const CANDIED_RX = /candied|kandiert|gebrannt|dragee/;
+    const SEAWEED_RX = /\bnori\b|seaweed|seetang|meeresalge|\balgen?\b|wakame|kombu|\balga(s)? (marina|nori)/;
+    const STARCH_ING_RX = /reis|rice|arroz|mehl|flour|harina|weizen|wheat|trigo|brot|bread|\bpan\b|bun\b|nudel|pasta|noodle|teig|dough|kartoffel|potato|patata|hafer|\boat|avena|grieß|semolina|sémola|\bmais|\bcorn|maíz|stärke|starch|almidón|dinkel|spelt|roggen|\brye\b|gerste|barley|cebada|paniermehl|breadcrumb|couscous|bulgur|quinoa|hirse|millet/;
+    const STAPLE_NOUN_RX = /brot|bread|toast|br\u00f6tchen|semmel|\bbun|\bpan\b|wrap|tortilla|baguette|reis|\brice|arroz|nudel|pasta|noodle|kartoffel|potato|patata|pommes|fries/;
     const SAVOURY_CATS = ['nonstarchy_veg', 'fish', 'poultry', 'lean_beef', 'pork', 'processed_meat', 'eggs', 'legumes', 'plant_protein',
         'cheese', 'fresh_cheese', 'halloumi', 'starch_potato', 'sweet_potato', 'protein_product'];
     function classify(product) {
@@ -66,6 +69,8 @@
         // Master Knowledge v3: vegetable swaps are not the starch they replace (cauliflower rice, konjac or zucchini noodles),
         // coconut milk is a cooking fat and not a glass of milk, and fresh cheese is never a "large portion of cheese".
         if (/blumenkohl|cauliflower|coliflor|brokkoli|broccoli|konjac|konjak|shirataki|zucchini|zoodle|gemüsenudel|palmito|hearts of palm/.test(text)) { delete cats.starch_rice; delete cats.starch_pasta; }
+        // 26 Oct 2026 (Emmanuel's Products Shuffle): nori and other seaweed sheets sold "for sushi" are seaweed, not sushi rice.
+        if (SEAWEED_RX.test(text) && !/\breis\b|\brice\b|\barroz\b|sushireis|sushi-reis/.test(text)) delete cats.starch_rice;
         if (/kokos|coconut|\bcoco\b/.test(text)) delete cats.milk;
         if (cats.sweet_fruit) delete cats.fruit_whole;
         if (/\bpatty\b|bunless|ohne brötchen|lettuce wrap|salatblatt|sin pan/.test(text)) delete cats.starch_bread;
@@ -100,6 +105,34 @@
         const servingG = num(a.serving && a.serving.g) != null ? num(a.serving.g) : num(a.servingG);
         const cats = classify(p);
         const complete = ing.status === 'complete';
+        /* 26 Oct 2026 (Emmanuel, Products Shuffle): a name word alone (hamburger, burger, sushi) can't make a starch staple when
+           the label shows there is no starch base. "Frische Hamburger vom Rind" (plain beef patties, 0 g carbs) was a Skip it as
+           bread and "Sushi Nori" (100 % seaweed) as rice. Bread, rice, pasta and potato foods always carry well over 5 g carbs
+           per 100 g, and a complete ingredient list with no grain, rice, flour, bread, pasta or potato in it has no starch base
+           either. Open Food Facts tags that say bread, rice, pasta or potatoes still count. */
+        if (cats.starch_bread || cats.starch_rice || cats.starch_pasta || cats.starch_potato) {
+            const carbs100 = num(per100.carbs);
+            const ingText = ing.status === 'complete' && !ing.truncated ? (ing.items || []).map(it => low(it && it.text)).join(' ').trim() : '';
+            /* a complete list decides; without one, the label's carbs do, unless the name itself is a staple noun (a "Keto Brot"
+               stays bread whatever the pack claims) */
+            const nm = low((p.name || '') + ' ' + (p.genericName || ''));
+            const noStarchBase = ingText !== '' ? !STARCH_ING_RX.test(ingText)
+                : (carbs100 != null && carbs100 <= 5 && !STAPLE_NOUN_RX.test(nm.replace(/hamburger|cheeseburger|burger/g, ' ')));
+            if (noStarchBase) {
+                const tags = (p.categories || []).map(low);
+                for (const k of ['starch_bread', 'starch_rice', 'starch_pasta', 'starch_potato']) {
+                    if (cats[k] && !(POLICY.categories[k].off || []).some(t => tags.includes(t))) delete cats[k];
+                }
+            }
+        }
+        /* Same sibling for juice: "Thunfisch in eigenem Saft" (tuna in its own juice, 0 g sugar) was a Skip it as juice. Fruit and
+           vegetable juices always carry sugar, so the name word alone can't make a juice when the label shows 2 g sugar per 100 or
+           less, or when it says "in its own juice". Juice tags from Open Food Facts still count. */
+        if (cats.juice) {
+            const tags = (p.categories || []).map(low), byTag = (POLICY.categories.juice.off || []).some(t => tags.includes(t));
+            const sugar100 = num(per100.sugar), text = low((p.name || '') + ' ' + (p.genericName || ''));
+            if (!byTag && ((sugar100 != null && sugar100 <= 2) || /eigene[mn]? saft|own juice|su (propio )?jugo|jugo natural/.test(text))) delete cats.juice;
+        }
         const incomplete = !complete || !!ing.truncated;
         const liquid = p.unit === 'ml' || !!g.liquid || !!(cats.sugar_drink || cats.juice || cats.smoothie || cats.unsweetened_drink) && !cats.plain_yoghurt_quark;
         const addedSugar = !!S.addedSugar;

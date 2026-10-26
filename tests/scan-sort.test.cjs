@@ -44,12 +44,14 @@ test('core: split keeps Low-spike and Now and then once each; Throw out holds on
     assert.deepEqual(S.split(caught, { rate, rateName, hidden: ['2'] }).toss.map(x => x.product.name), ['Chips', 'Gummy bears']);
 });
 
-test('core: Throw out copy exists in EN, DE and ES with the "likely spike insulin" line', () => {
-    assert.equal(S.text('line', 'en'), 'Will likely spike insulin.');
-    assert.match(S.text('line', 'de'), /Insulin/);
-    assert.match(S.text('line', 'es'), /insulina/);
+test('core: Kept out of Shuffle copy exists in EN, DE and ES, in the scanner\'s words, with no insulin promise', () => {
+    assert.equal(S.text('verdict', 'en'), 'Spike likely');
+    assert.equal(S.text('verdict', 'de'), 'Spike wahrscheinlich');
+    assert.equal(S.text('verdict', 'es'), 'Pico probable');
+    assert.equal(S.text('row', 'en').replace('{n}', 3), '3 scans kept out of Shuffle');
     for (const k of Object.keys(S.TX)) { assert.equal(S.TX[k].length, 3, k); S.TX[k].forEach(v => assert(v && v.trim(), k)); }
-    assert.doesNotMatch(JSON.stringify(S.TX), /bad|shame|guilt|schlecht|malo/i);
+    assert.doesNotMatch(JSON.stringify(S.TX), /bad|shame|guilt|schlecht|malo|insulin/i);
+    assert.equal(S.TX.line, undefined);
 });
 
 function cook(store, list) {
@@ -58,7 +60,7 @@ function cook(store, list) {
         LowiScanSort: S, LowiDex: { rate, rateName, vtext: v => [{ spike: 'Skip it', ok: 'Low-spike' }[v] || v, ''], state: () => ({ mine: { a: caught[4] } }) },
         LowiDiscovery: { all: () => list || caught, assess: () => ({ category: 'fits' }) }, LowiLang: { get: () => 'en' } };
     ctx.window = ctx;
-    vm.runInNewContext(part('const CKK = {', 'function fPool(){') + ';this.api={fSrcPool,fProducts,fTossHTML,fProductsEmptyHTML,ckEmptyHTML,fLast};', ctx);
+    vm.runInNewContext(part('const CKK = {', 'function fPool(){') + ';this.api={fSrcPool,fProducts,fTossHTML,fTossListHTML,fProductsEmptyHTML,ckEmptyHTML,fLast};', ctx);
     return ctx.api;
 }
 
@@ -73,23 +75,25 @@ test('Cook → Shuffle → Products never draws a likely-spike product', () => {
     assert.equal(cook(store).fLast(), null);
 });
 
-test('Throw out lists the likely spikes with name, rating, the line and a remove button', () => {
+test('Shuffle shows one calm row; the likely spikes live in their own sheet with a reason each and one verdict', () => {
     const store = { 'lowi.cook.src': 'products' };
     const h = cook(store).fTossHTML();
-    assert.match(h, /id="ckToss"/);
-    assert.match(h, /Throw out <small>3<\/small>/);
-    for (const n of ['Gummy bears', 'Cola', 'Chips']) assert.match(h, new RegExp('<b>' + n + '</b>'));
-    assert.doesNotMatch(h, /<b>Skyr<\/b>|<b>Oat bar<\/b>|Mystery jar/);
-    assert.equal((h.match(/Will likely spike insulin\./g) || []).length, 3);
-    assert.equal((h.match(/v-spike[^"]*">Skip it</g) || []).length, 3);
-    assert.equal((h.match(/data-cktoss="hide"/g) || []).length, 3);
-    assert.ok(h.indexOf('Gummy bears') < h.indexOf('Cola'), 'your own scans first');
+    assert.match(h, /id="ckOut"/);
+    assert.match(h, /data-cktoss="open"/);
+    assert.match(h, />3 scans kept out of Shuffle</);
+    assert.doesNotMatch(h, /Gummy bears|Cola|Chips|v-spike|insulin|Throw out/);
+    const l = cook(store).fTossListHTML();
+    for (const n of ['Gummy bears', 'Cola', 'Chips']) assert.match(l, new RegExp('<b>' + n + '</b>'));
+    assert.doesNotMatch(l, /<b>Skyr<\/b>|<b>Oat bar<\/b>|Mystery jar/);
+    assert.doesNotMatch(l, /insulin|v-spike/, 'the sheet names the verdict once, not on every row');
+    assert.equal((l.match(/data-cktoss="hide"/g) || []).length, 3);
+    assert.ok(l.indexOf('Gummy bears') < l.indexOf('Cola'), 'your own scans first');
     /* removed items stay out of the list (and out of Shuffle) */
     store['lowi.cook.tossHidden'] = JSON.stringify(['2']);
-    const h2 = cook(store).fTossHTML();
-    assert.doesNotMatch(h2, /<b>Cola<\/b>/);
+    assert.doesNotMatch(cook(store).fTossListHTML(), /<b>Cola<\/b>/);
+    assert.match(cook(store).fTossHTML(), />2 scans kept out of Shuffle</);
     assert.equal(JSON.stringify(cook(store).fSrcPool().map(x => x.n)), '["Skyr","Oat bar"]');
-    /* other sources have no Throw out */
+    /* other sources have no row */
     assert.equal(cook({ 'lowi.cook.src': 'book' }).fTossHTML(), '');
 });
 
@@ -102,7 +106,7 @@ test('all scanned products spike: friendly empty state, no fallback to spiking i
     assert.match(e, /data-cktoss="scan"/);
     assert.match(e, /data-cktoss="book"/);
     assert.doesNotMatch(e, /Cola|Chips|Gummy/);
-    assert.match(api.fTossHTML(), /Throw out <small>3<\/small>/);
+    assert.match(api.fTossHTML(), />3 scans kept out of Shuffle</);
     assert.match(part('function fHomeHTML(){', 'const PV = {};'), /fProductsEmptyHTML\(\)[^]*fTossHTML\(\)/);
 });
 

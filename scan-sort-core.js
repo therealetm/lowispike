@@ -26,20 +26,39 @@
     function verdictOf(p, rate, rateName) {
         if (!p || p.notFound) return 'unknown';
         const stored = KNOWN[p.verdict] ? p.verdict : 'unknown';
-        let live = 'unknown';
+        let live = 'unknown', byEngine = false;
         if (typeof rate === 'function') {
             try {
                 const r = rate(p);
                 if (r && KNOWN[r.verdict]) live = r.verdict;
                 const S = r && r.engine && !p.manual ? spikeCore() : null;
-                if (S && typeof S.tighten === 'function') { const v = S.tighten(p, r); if (KNOWN[v]) live = v; }
+                if (S && typeof S.tighten === 'function') { const v = S.tighten(p, r); if (KNOWN[v]) { live = v; byEngine = true; } }
             } catch (e) {}
         }
+        /* 26 Oct 2026: a stored spike that an earlier rerate wrote (rerated rows, see LowiSpikeCore.rerate) is not the catch-day
+           verdict: the live engine verdict replaces it, so a corrected Food check reaches Shuffle. */
+        if (p.rerated && byEngine && live !== 'unknown') return live;
         if (stored === 'spike' || live === 'spike') return 'spike';
         if (live !== 'unknown') return live;
         if (stored !== 'unknown') return stored;
         if (typeof rateName === 'function' && p.name) { try { const r = rateName(p.name); if (r && r.verdict === 'spike') return 'spike'; } catch (e) {} }
         return 'unknown';
+    }
+    /* why a product sits in "Kept out of Shuffle", in one or two words (26 Oct 2026). Reads the scanner's own reasons
+       (LowiSpikeCore assess why keys), sweetener first because it is LOWiSPIKE's own rule, not a blood sugar claim. */
+    function reasonOf(p, rate) {
+        let keys = [];
+        try { const r = typeof rate === 'function' ? rate(p) : null; keys = ((r && r.why) || []).concat((p && p.why) || []).map(w => String(Array.isArray(w) ? w[0] : w || '')); } catch (e) {}
+        const has = rx => keys.some(k => rx.test(k));
+        if (has(/sweet/) || /s\u00fc\u00dfstoff|sweetener|edulcorante/.test(String((p && p.ingredients) || '').toLowerCase())) return 'rSweet';
+        if (has(/pork|schwein/)) return 'rPork';
+        if ((p && (p.unit === 'ml' || p.cat === 'drink' || (p.facts && p.facts.drink))) && has(/sugar|e_/)) return 'rDrink';
+        if (has(/sugar|sirup|syrup/)) return 'rSugar';
+        if (has(/^s_(refined|flour|rice|starch|corn|oat|grain|bread|pasta|potato)/)) return 'rStarch';
+        const f = (p && p.facts) || {};
+        if (Number(f.s) >= 10) return 'rSugar';
+        if (Number(f.c) >= 30) return 'rStarch';
+        return 'rOther';
     }
     const fits = v => v === 'ok' || v === 'better';
     /* list: products; o: {rate, rateName, identity(p), hidden:[keys], mine:[keys]} -> {keep, toss, unsure}, each item {key, product, verdict} */
@@ -61,12 +80,23 @@
         return { keep, toss, unsure };
     }
     const TX = {
-        title: ['Throw out', 'Aussortieren', 'Para descartar'],
-        line: ['Will likely spike insulin.', 'Spikt wahrscheinlich dein Insulin.', 'Probablemente dispara tu insulina.'],
-        sub: ['Scanned, but kept out of Shuffle. No stress: swap them next time you shop.', 'Gescannt, aber nicht im Shuffle. Kein Stress: Beim nächsten Einkauf einfach tauschen.', 'Escaneados, pero fuera del shuffle. Sin estrés: cámbialos en tu próxima compra.'],
+        /* 26 Oct 2026 (Emmanuel: "Why am I seeing the food that I'm not supposed to be eating in my product shuffle?"): the big red
+           "Throw out" list left the Shuffle screen. One calm row ("11 scans kept out of Shuffle") opens the list in its own sheet.
+           The sheet names the verdict once, in the scanner's words (Spike likely), and each row says why in one or two words.
+           The old line promising an insulin spike is gone: no medical promise, one verdict per screen. */
+        row: ['{n} scans kept out of Shuffle', '{n} Scans nicht im Shuffle', '{n} escaneos fuera del shuffle'],
+        row1: ['1 scan kept out of Shuffle', '1 Scan nicht im Shuffle', '1 escaneo fuera del shuffle'],
+        title: ['Kept out of Shuffle', 'Nicht im Shuffle', 'Fuera del shuffle'],
+        verdict: ['Spike likely', 'Spike wahrscheinlich', 'Pico probable'],
+        sub: ['Your scans that the Food check rates Spike likely. Shuffle and Swipe only show products with a lower impact. Swap these next time you shop.', 'Deine Scans, die der Food-Check mit Spike wahrscheinlich bewertet. Shuffle und Swipe zeigen nur Produkte mit niedrigerer Wirkung. Tausch sie beim nächsten Einkauf.', 'Tus escaneos que el Food check califica como Pico probable. Shuffle y Deslizar solo muestran productos de menor impacto. Cámbialos en tu próxima compra.'],
+        rSweet: ['Sweetener', 'Süßstoff', 'Edulcorante'],
+        rSugar: ['Sugar', 'Zucker', 'Azúcar'],
+        rStarch: ['Starchy carbs', 'Viel Stärke', 'Mucho almidón'],
+        rPork: ['Pork', 'Schwein', 'Cerdo'],
+        rDrink: ['Sweet drink', 'Süßes Getränk', 'Bebida dulce'],
+        rOther: ['Food check: Skip it', 'Food-Check: Lieber nicht', 'Food check: Mejor no'],
+        close: ['Close', 'Schließen', 'Cerrar'],
         remove: ['Remove from this list', 'Aus der Liste entfernen', 'Quitar de la lista'],
-        more: ['Show all', 'Alle zeigen', 'Ver todos'],
-        less: ['Show fewer', 'Weniger zeigen', 'Ver menos'],
         yours: ['your scan', 'dein Scan', 'tu escaneo'],
         emptyT: ['No low-spike products to shuffle yet', 'Noch keine Low-Spike-Produkte zum Mischen', 'Aún no hay productos de pico bajo para mezclar'],
         emptyS: ['Shuffle only uses products with a lower impact. Scan a few more, or shuffle the eBook recipes.', 'Der Shuffle nimmt nur Produkte mit niedrigerer Wirkung. Scanne noch ein paar oder misch die E-Book-Rezepte.', 'El shuffle solo usa productos de menor impacto. Escanea algunos más o mezcla las recetas del eBook.'],
@@ -105,5 +135,5 @@
     }
     const LI = { en: 0, de: 1, es: 2 };
     function text(k, lang) { const a = TX[k]; if (!a) return k; const i = LI[String(lang || 'en').slice(0, 2)]; return a[i == null ? 0 : i]; }
-    return { verdictOf, fits, split, catalog, TX, text };
+    return { verdictOf, fits, split, catalog, reasonOf, TX, text };
 });

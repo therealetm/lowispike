@@ -1253,6 +1253,9 @@ The row is only used by Community Chat (bot recipe posts + a person's meal post 
 For the bug hunt (not touched, other owners): overflow-wrap:anywhere is still on text in narrow flex columns in community-chat.css
 (.cs-meal-n), foryou.css (.fyb-from/.fyb-to/.fyb-pt), grocery-bucket.css (.gb-nm), herb-quests.css (.hq-food b), herb-shop.css
 (.hs-modes): check each for the same letter-by-letter squeeze at 390 px in DE.
+Live: build 20261026-164032 (quiet, no notification). Emmanuel's second screenshot (iPad, DE, "5 in deiner Küche" sliver) was the
+build before it. Live proof after the release: pills.cjs against the live site, WebKit iPad Pro 11 DE portrait + landscape and
+iPhone 13 DE, 54/54 pass, including Save -> "Gemerkt" on one line at the same height.
 
 ### 0.29 Cook opens on Kitchen first + Cook tabs reorderable like Community's (Emmanuel, voice + screenshot, Mon 26 Oct 2026 about 4:00 PM CET)
 

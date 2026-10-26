@@ -20,6 +20,7 @@ const ALL = {
     'webkit-se-de': { engine: 'webkit', device: 'iPhone SE (3rd gen)', lang: 'de' },
     'webkit-ipad-de': { engine: 'webkit', device: 'iPad Pro 11', lang: 'de' },
     'webkit-ipadl-es': { engine: 'webkit', device: 'iPad Pro 11 landscape', lang: 'es' },
+    'webkit-ipadl-de': { engine: 'webkit', device: 'iPad Pro 11 landscape', lang: 'de' },
     'chromium-13-en': { engine: 'chromium', viewport: { width: 390, height: 844 }, lang: 'en' }
 };
 const CASES = (process.argv[4] || 'webkit-13-en,webkit-13-de,webkit-13-es').split(',').filter(k => ALL[k]);
@@ -105,6 +106,13 @@ async function one(key) {
         ok('Undo: back to Add to kitchen, same height, no toast over the post', c.ctl.some(x => x.a === 'kitchen') && c.rowH === a.rowH && (!c.toast || !c.toast.over), { rowH: c.rowH, toast: c.toast });
         const kn = await p.evaluate(() => JSON.parse(localStorage.getItem('lowispike.kitchen.v1') || '{"items":[]}').items.length);
         ok('Undo: kitchen empty again', kn === 0, kn);
+        /* Save -> "Gemerkt" (Emmanuel's iPad screenshot: a huge tall box): still one line, same height */
+        const sb = await p.evaluate(k => { const b = document.querySelector('.crb-row[data-key="' + k + '"] [data-crb="save"]'); if (!b) return null; const q = b.getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; }, k);
+        if (sb) { if (C.engine === 'webkit') await p.touchscreen.tap(sb.x, sb.y); else await p.mouse.click(sb.x, sb.y); }
+        await p.waitForTimeout(500);
+        const d = await p.evaluate(MEASURE, k); await shot('saved');
+        const sv = d.ctl.find(x => x.a === 'save') || {};
+        ok('Saved: one line, no word split, same row height', !!sb && sv.lines === 1 && !sv.split.length && sv.h <= 40 && d.rowH === a.rowH, { save: sv.t, lines: sv.lines, h: sv.h, rowH: d.rowH });
         /* a person's meal post with foods: Add to kitchen only, same pill */
         const one1 = await p.evaluate((l) => { const C = LowiBotRecipeCore; const bub = document.querySelector('.cm-bub:has(.crb-row)'); const box = document.createElement('div'); box.className = 'cm-bub'; box.style.cssText = 'width:' + (bub ? bub.getBoundingClientRect().width : 280) + 'px'; (bub ? bub.parentNode : document.body).appendChild(box);
             const out = []; for (const st of [{ kitchen: 'add', count: 3 }, { kitchen: 'done', added: 3, undo: true }, { kitchen: 'have' }]) { box.innerHTML = C.rowHTML(Object.assign({ key: 'cx', foods: ['A', 'B', 'C'] }, st), l); const r = box.querySelector('.crb-row'); const q = r.getBoundingClientRect(); out.push({ st: st.kitchen, h: Math.round(q.height), t: r.textContent.replace(/\s+/g, ' '), ok: [...r.querySelectorAll('.crb-l')].every(e => { const g = document.createRange(); g.selectNodeContents(e); return new Set([...g.getClientRects()].filter(x => x.width).map(x => Math.round(x.top))).size === 1; }) }); }

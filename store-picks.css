@@ -45,7 +45,10 @@
 .stp-tog { display: flex; align-items: center; gap: 6px; font-size: 13px; white-space: nowrap; opacity: .9; }
 .stp-tog input { width: 18px; height: 18px; accent-color: #8fe7ff; margin: 0; }
 
-.stp-scroll { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 14px 14px; }
+/* Oct 26 (Emmanuel: "a bit wiggly woggly"): overflow-y auto turns overflow-x auto too, so one row wider than the list let the
+   whole list slide sideways and clip on the left. The list never scrolls sideways, and its side padding is the head's 18px so
+   every row lines up with the store row and search field (tests/supermarket-no-wobble.test.cjs). */
+.stp-scroll { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 18px 14px; }
 .stp-go { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 13px 16px; border-radius: 999px; font-weight: 800; font-size: 15.5px;
   background: var(--mb-go, linear-gradient(135deg, #8ff0c8, #6fd8ff)); color: #062033; border-color: rgba(255, 255, 255, .5); }
 .stp-go svg { color: #062033; }
@@ -61,7 +64,7 @@
 .stp-wrap { flex-wrap: wrap; }
 .stp-jumps { overflow-x: auto; padding: 2px 2px 8px; margin: 0 -2px; scrollbar-width: none; }
 .stp-jumps::-webkit-scrollbar { display: none; }
-.stp-chip { flex: 0 0 auto; padding: 8px 13px; border-radius: 999px; font-size: 13.5px; font-weight: 700; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.stp-chip { flex: 0 0 auto; max-width: 100%; min-width: 0; padding: 8px 13px; border-radius: 999px; font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; display: inline-flex; align-items: center; gap: 6px; }
 .stp-chip i { font-style: normal; opacity: .75; font-weight: 800; }
 .stp-chip.on { background: var(--mb-chosen, rgba(143, 231, 255, .3)); border-color: #fff; }
 .stp-sum { font-size: 14.5px; margin: 6px 4px 10px; }
@@ -152,7 +155,8 @@ button.stp-item:active { transform: scale(.985); }
 .stp-snacks { margin: 2px 0 14px; padding: 4px 12px 12px; border-radius: 22px; border: 1px solid rgba(170, 214, 255, .24); background: rgba(255, 255, 255, .06); }
 .stp-snacks .stp-h4 { margin-top: 10px; display: flex; align-items: center; gap: 8px; }
 .stp-snacks .stp-h4 i { font-style: normal; min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--mb-acc, #8fe7ff); color: #062033; text-align: center; opacity: 1; }
-.stp-snack-list { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 6px; }
+/* minmax(0, 1fr): an auto grid column grows to a long nowrap name and pushed the list sideways (Oct 26 wobble) */
+.stp-snack-list { list-style: none; margin: 0 0 8px; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
 .stp-snack { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 4px 0 6px; border-radius: 16px; background: rgba(255, 255, 255, .06); }
 .stp-snack b { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stp-snack-tick, .stp-snack-x { flex: 0 0 auto; display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; color: inherit; padding: 0; cursor: pointer; }
@@ -161,8 +165,24 @@ button.stp-item:active { transform: scale(.985); }
 .stp-snack-none { margin: 0 4px 10px; font-size: 14px; opacity: .78; }
 .stp-snack-add { display: flex; gap: 8px; }
 .stp-snack-add input { flex: 1; min-width: 0; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(170, 214, 255, .3); background: rgba(0, 0, 0, .22); color: #fff; font: inherit; font-size: 16px; }
-.stp-snack-again { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
-.stp-snack-again small { width: 100%; font-size: 12.5px; opacity: .7; font-weight: 700; }
+/* Oct 26: Buy again is one row (a one-line preview of the recent snacks, one tap fills the list, Undo), never a pill per snack */
+.stp-again {
+  display: flex; align-items: center; gap: 10px; box-sizing: border-box; width: 100%; min-height: 52px; margin-top: 10px; padding: 6px 6px 6px 12px;
+  border-radius: 18px; border: 1px solid rgba(170, 214, 255, .26); background: rgba(255, 255, 255, .07); color: inherit; font: inherit; text-align: left;
+  cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+button.stp-again:active { background: rgba(255, 255, 255, .13); }
+.stp-again-ic { flex: 0 0 auto; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: rgba(143, 231, 255, .18); color: var(--mb-acc, #8fe7ff); font-weight: 800; font-size: 17px; }
+.stp-again-t { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.stp-again-t b { font-size: 14.5px; font-weight: 800; overflow-wrap: anywhere; }
+.stp-again-t em { font-style: normal; font-weight: 700; opacity: .7; }
+.stp-again-t small { display: block; font-size: 12.5px; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stp-again-add, .stp-again-undo {
+  flex: 0 0 auto; min-height: 40px; padding: 0 14px; display: inline-flex; align-items: center; border-radius: 999px; font-weight: 800; font-size: 14px; white-space: nowrap;
+  background: var(--mb-go, linear-gradient(135deg, #8ff0c8, #6fd8ff)); color: #062033; border: 0;
+}
+.stp-again-undo { font: inherit; font-weight: 800; font-size: 14px; cursor: pointer; touch-action: manipulation; min-width: 44px; min-height: 44px; background: rgba(255, 255, 255, .12); color: inherit; border: 1px solid rgba(170, 214, 255, .34); }
+.stp-again:focus-visible, .stp-again-undo:focus-visible { outline: 2px solid #c9f5ff; outline-offset: 2px; }
 .stp-snack-qv { margin: 10px 0 0; }
 .stp-snack-qv:disabled { opacity: .7; }
 

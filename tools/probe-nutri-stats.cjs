@@ -50,10 +50,14 @@ const settle = () => L.sleep(900);
   /* log it the way "Ate it" does, then reopen the card: "Last time 200 g" */
   R.logged = await page.evaluate(() => { const m = LowiNutriStats.logMacros(window.__nsP); const r = LowiVitalsBridge.logMeal({ id: 'bc:probe:' + Date.now(), t: 'Haferflocken', macros: m, via: 'barcode' }); return { m, ok: !!r }; });
   await page.evaluate(() => { try { LowiR2.close(); } catch (e) {} }); await L.sleep(500);
-  await page.evaluate(() => LowiDex.reveal(window.__nsP, true)); await L.sleep(1500);
-  R.reopen = await page.evaluate(() => { const b = document.querySelector('#b3Card .ns-portion'); return b ? b.querySelector('.ns-plab').textContent + ' ' + b.querySelector('.ns-g').value : 'none'; });
+  await page.evaluate(() => LowiDex.reveal(window.__nsP, true));
+  await page.waitForFunction(() => { const c = [...document.querySelectorAll('.r2-ov.on #b3Card')].pop(), sh = c && c.closest('.r2-sh'); if (!sh) return false; const m = new DOMMatrix(getComputedStyle(sh).transform); return Math.abs(m.m42) < 1; }, null, { timeout: 30000, polling: 250 }).catch(() => {});
+  await settle();
+  R.openCards = await page.evaluate(() => document.querySelectorAll('#b3Card').length + ' cards, ' + document.querySelectorAll('.r2-ov.on #b3Card').length + ' open');
+  R.reopen = await page.evaluate(() => { const b = [...document.querySelectorAll('.r2-ov.on #b3Card .ns-portion')].pop(); return b ? b.querySelector('.ns-plab').textContent + ' ' + b.querySelector('.ns-g').value : 'none'; });
   /* 2. Today's stats from the card */
-  await page.click('#b3Card [data-ns="open"]');
+  await page.evaluate(() => { const b = [...document.querySelectorAll('.r2-ov.on #b3Card [data-ns="open"]')].pop(); b.scrollIntoView({ block: 'center' }); }); await L.sleep(400);
+  await page.locator('.r2-ov.on #b3Card [data-ns="open"]').last().click({ timeout: 60000 });
   await page.waitForFunction(() => { const o = document.querySelector('.ns-ov.on .r2-sh'); if (!o) return false; const m = new DOMMatrix(getComputedStyle(o).transform); return Math.abs(m.m42) < 1; }, null, { timeout: 20000, polling: 250 }).catch(() => {});
   await settle();
   R.stats = await page.evaluate(() => {
@@ -79,6 +83,8 @@ const settle = () => L.sleep(900);
   R.afterReload = await page.evaluate(() => ({ goals: (LowiVitalsBridge.state().user || {}).macroGoals, rows: LowiNutriStatsCore.rows(LowiVitalsBridge.state()).rows.map(r => r.k + ':' + r.value + '/' + r.target + ':' + r.state) }));
   /* 4. Log meal sheet gets the strip; tapping it puts the stats on top */
   await page.evaluate(() => { try { LowiSpirit.meal(); } catch (e) { window.__err = String(e); } }); await L.sleep(1500);
+  await page.waitForFunction(() => { const s = document.querySelector('.sp-sheet .ns-strip'); return s && s.getBoundingClientRect().height >= 44; }, null, { timeout: 15000, polling: 250 }).catch(() => {});
+  await settle();
   R.strip = await page.evaluate(() => { const s = document.querySelector('.sp-sheet .ns-strip'); if (!s) return { err: 'no strip', sheets: [...document.querySelectorAll('.r2-ov')].map(o => o.className) }; const b = s.getBoundingClientRect(); return { text: s.textContent, box: [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height), innerWidth] }; });
   if (!R.strip.err) {
     await page.screenshot({ path: out + '-' + view + '-' + lang + '-logmeal.png' });

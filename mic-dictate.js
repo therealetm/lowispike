@@ -273,6 +273,12 @@
     var r;
     try { r = new SR(); } catch (e) { markBroken(); refreshAll(); if (appleTouch) useKeyboard(rec); return; }
     var el = rec.el, base = caret(el), finalText = '', action = '', started = false, ended = false, s, dog;
+    // BH-048 P-STALE-BASE: every result and the end used to rebuild the field from the text it held when the mic was tapped, so
+    // words typed while listening vanished, and text the app cleared meanwhile (chat Send) came back. Compare against the last
+    // value written here; any other change wins: keep it, carry on from it, and skip results already shown on screen.
+    var wrote = base.value, seen = 0, skip = 0;
+    function changed() { return el.value !== wrote; }
+    function rebase() { base = caret(el); wrote = el.value; finalText = ''; skip = seen; }
     r.lang = C.langTag(lang());
     r.interimResults = true;
     r.continuous = false;
@@ -291,11 +297,13 @@
     r.onstart = r.onaudiostart = function () { started = true; };
     r.onresult = function (ev) {
       started = true;
+      if (changed()) rebase();
       var interim = '';
-      for (var i = ev.resultIndex; i < ev.results.length; i++) {
+      for (var i = Math.max(ev.resultIndex, skip); i < ev.results.length; i++) {
         if (ev.results[i].isFinal) finalText += ev.results[i][0].transcript; else interim += ev.results[i][0].transcript;
       }
-      el.value = C.merge(base.value, C.tidy(finalText + ' ' + interim, true), base.s, base.e, el.maxLength > 0 ? el.maxLength : null).value;
+      seen = Math.max(seen, ev.results.length);
+      el.value = wrote = C.merge(base.value, C.tidy(finalText + ' ' + interim, true), base.s, base.e, el.maxLength > 0 ? el.maxLength : null).value;
     };
     r.onerror = function (ev) {
       var err = ev && ev.error;
@@ -308,6 +316,7 @@
       clearTimeout(dog);
       clearInterval(watch);
       if (session === s) session = null;
+      if (changed()) rebase(); // typed or cleared after the last words: their text stays as it is
       el.value = base.value;
       var got = insert(rec, finalText, base);
       setState(rec, 'idle');

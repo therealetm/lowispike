@@ -962,6 +962,29 @@ messages); he removed three of them plus one "F", so another "E" kept showing. T
 deletes the account", branch `admin-delete-account`, worktree wt-admin-delete, COORD-admin-delete.md. Removed/deleted
 accounts must also leave the ranking: note left for the weekly-ranking task (8c688ff2). Status: requested, being built.
 
+### 0.16 Products Shuffle shows food he shouldn't eat + broken layout (Emmanuel, voice message, Mon 26 Oct 2026 about 5:37 AM CET)
+
+His words: "Why am I seeing the food that I'm not supposed to be eating in my product shuffle? That shouldn't be looking
+like this. Fix the UI."
+His screenshots (05:37): Fuel > Cook > Products, Shuffle mode. Right under the shuffle buttons a big "Throw out (11)" list
+("Scanned, but kept out of Shuffle. No stress: swap them next time you shop.") with his scans in red, each "Higher impact"
++ "Will likely spike insulin.": Süs & Salzig (Ültje), Sushi Nori Roasted Seaweed (YUTAKA), High Protein Quarkcreme
+(Milprima), Frische Hamburger vom Rind (Bio), High Protein Porridge Chocolicious (SPORTYFEEL), AMERICAN BURGER (BLOCK
+HOUSE), "Show all (11)". Layout broken: rows run off both screen edges (icons/thumbnails cut at the left, chevrons at the
+right, the description past the right edge), text over the busy background, the sticky Cook it / Shop it bar covers the
+list on scroll.
+
+What he wants: (1) Shuffle is for food he CAN eat: the big red Throw-out list goes off Shuffle/Products (at most one small
+calm collapsed row that opens it in its own sheet, or move it to Kitchen); Shuffle and Swipe never show a Skip-it product.
+(2) Layout: rows inside safe margins, nothing clipped, glass panel like the other panels, sticky Cook it / Shop it never
+covers content; check 390x844, SE, iPad. (3) Verdicts: plain beef patties, roasted nori and high-protein quark are very
+low carb and must not be Skip it unless the label shows real sugar/starch; find why (food-policy-core + nutrition data),
+fix without breaking real Skip-its (sweet porridge, sweet snacks, burgers with buns/sugary sauces); honesty rules (no
+medical promises, one verdict per screen, the scanner's words Lower impact / Small rise / Spike likely), reword "Will
+likely spike insulin" EN/DE/ES. (4) Tests that fail on old code. (5) Release silently, verify live, log here.
+Task: Sesame "LOWiSPIKE: clean up Products Shuffle + fix wrong Skip-its", branch `products-shuffle-clean`, worktree
+wt-products-shuffle, COORD-products-shuffle.md. Status: requested, being built.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

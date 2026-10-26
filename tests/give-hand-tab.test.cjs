@@ -37,16 +37,19 @@ test('tapping Give a hand opens its panel on top of Shop and is never saved as t
   assert.match(sp, /const next = id === 'sz' && SZ\(\) \? 'sz' : id === 'kitchen' && K \? 'kitchen' : 'shop';/);
 });
 
-test('What\'s New mini tour: new-give-hand opens Shop on Kitchen and points at the Give a hand tab, in en/de/es', () => {
+/* Oct 26 2026 (test changed, why): the Kitchen left Shop for Cook (kitchen-game.js, MAYA-HANDOFF 0.19), so the 'kitchen' route now
+   opens Cook > Kitchen. new-give-hand opens Shop (route 'shop', Seller Zone tab) and Give a hand sits right beside it. */
+test('What\'s New mini tour: new-give-hand opens Shop and points at the Give a hand tab, in en/de/es', () => {
   const S = require('../tutorial-steps.js');
   const s = S.STEPS.find(x => x.id === 'new-give-hand');
   assert.ok(s, 'step new-give-hand exists');
   assert.strictEqual(s.area, 'new');
-  assert.strictEqual(s.open, 'kitchen', 'Shop opens on Kitchen, the Give a hand tab sits right beside it');
+  assert.strictEqual(s.open, 'shop', 'Shop opens on Seller Zone, the Give a hand tab sits right beside it (Kitchen is in Cook now)');
+  assert.doesNotMatch(s.text.en + s.text.de + s.text.es, /next to Kitchen|neben Küche|junto a Cocina/, 'never says Kitchen is next to it');
   assert.strictEqual(s.target[0], '.stp-card .stp-tab[data-stp-tab="gift"]');
   assert.strictEqual(s.target[s.target.length - 1], '.stp-card', 'falls back to Shop while the server gate is shut');
   assert.deepStrictEqual([s.title.en, s.title.de, s.title.es], ['Give a hand', 'Hilf mit', 'Echa una mano'], 'same name as the tab');
-  assert.ok(S.VERSION >= 27);
+  assert.ok(S.VERSION >= 28);
   assert.deepStrictEqual(S.tourOf({ tour: ['new-give-hand'] }), ['new-give-hand']);
 });
 

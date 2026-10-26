@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 27;  /* 27: Oct 25 2026, new-give-hand in part 'new' (Give a hand is its own Shop tab next to Kitchen); 26: Oct 25 2026, the short base tour (11 cards, auto demo, What's New never in the base tour); 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 28;  /* 28: Oct 26 2026, new-kitchen rewritten (Kitchen is a game in Cook next to Shuffle and Swipe) and new-give-hand opens Shop on Seller Zone (Kitchen left Shop); 27: Oct 25 2026, new-give-hand in part 'new' (Give a hand is its own Shop tab next to Kitchen); 26: Oct 25 2026, the short base tour (11 cards, auto demo, What's New never in the base tour); 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- the base tour (Oct 25 2026, Emmanuel: "far too long ... only the essentials, at most 12 steps"). One card per
@@ -199,23 +199,23 @@
             }
         },
         {
-            id: 'new-kitchen', area: 'new', where: 'home', open: 'kitchen', target: ['.stp-card .stp-tab[data-stp-tab="kitchen"]', '.stp-card'], covers: ['kitchen'],
-            info: 'the Kitchen tab is open right behind this card; Bought is on each cart row there, so the card only says what it does',
-            title: { en: 'Your kitchen', de: 'Deine Küche', es: 'Tu cocina' },
+            id: 'new-kitchen', area: 'new', where: 'home', open: 'kitchen', target: ['#ckBar [data-ck="view"][data-v="kitchen"]', '#kgRoot .kg-wrap', '.stp-card'], covers: ['kitchen'],
+            info: 'Oct 26 2026: the Kitchen is a game in Cook now (kitchen-game.js), the third game after Shuffle and Swipe. The card opens Cook > Kitchen and points at its Kitchen button; the fridge and cabinet doors are right below it (the old Shop tab is the fallback when the game file is missing)',
+            title: { en: 'Your kitchen is a game now', de: 'Deine Küche ist jetzt ein Spiel', es: 'Tu cocina ahora es un juego' },
             text: {
-                en: 'New in Shop: Kitchen. Keep track of what you have at home, plus a shopping cart for later. Tap Bought and it moves into your kitchen.',
-                de: 'Neu im Shop: Küche. Hier steht, was du zu Hause hast, plus ein Einkaufswagen für später. Tipp auf Gekauft, dann kommt es in deine Küche.',
-                es: 'Nuevo en Shop: Cocina. Apunta lo que tienes en casa y usa un carrito para más tarde. Toca Comprado y pasa a tu cocina.'
+                en: 'New in Cook, next to Swipe: Kitchen. Tap a fridge or cabinet door and that shelf swings open. Bin what ran out and it lands on your list.',
+                de: 'Neu in Kochen, neben Swipen: Küche. Tipp auf eine Tür und das Fach schwingt auf. Leeres ab in den Mülleimer, dann steht es auf der Liste.',
+                es: 'Nuevo en Cocinar, junto a Deslizar: Cocina. Toca una puerta y se abre ese estante. Lo que se acabe, al cubo, y pasa a tu lista de la compra.'
             }
         },
         {
-            id: 'new-give-hand', area: 'new', where: 'home', open: 'kitchen', target: ['.stp-card .stp-tab[data-stp-tab="gift"]', '.stp-card'], covers: ['give-a-hand'],
-            info: 'Oct 25 2026: Shop opens on Kitchen and the card points at the Give a hand tab right beside it (store-picks.js giftDoor); it shows once the server has the basket table, otherwise the card points at Shop',
+            id: 'new-give-hand', area: 'new', where: 'home', open: 'shop', target: ['.stp-card .stp-tab[data-stp-tab="gift"]', '.stp-card'], covers: ['give-a-hand'],
+            info: 'Oct 25 2026: the Give a hand tab in Shop (store-picks.js giftDoor); it shows once the server has the basket table, otherwise the card points at Shop. Oct 26: the Kitchen tab left Shop for Cook, so the card opens Shop on Seller Zone and Give a hand sits right beside it',
             title: { en: 'Give a hand', de: 'Hilf mit', es: 'Echa una mano' },
             text: {
-                en: 'New in Shop: Give a hand has its own tab, right next to Kitchen. Pay for someone’s healthy groceries, or share your own basket.',
-                de: 'Neu im Shop: Hilf mit hat jetzt einen eigenen Tab, direkt neben Küche. Bezahl jemandem gesunde Lebensmittel oder teile deinen eigenen Korb.',
-                es: 'Nuevo en Shop: Echa una mano tiene su propia pestaña, junto a Cocina. Paga la compra sana de alguien o comparte tu propia cesta.'
+                en: 'New in Shop: Give a hand has its own tab, right next to Seller Zone. Pay for someone’s healthy groceries, or share your own basket.',
+                de: 'Neu im Shop: Hilf mit hat jetzt einen eigenen Tab, neben Seller Zone. Bezahl jemandem gesunde Lebensmittel oder teile deinen eigenen Korb.',
+                es: 'Nuevo en Shop: Echa una mano tiene su propia pestaña, junto a Seller Zone. Paga la compra sana de alguien o comparte tu propia cesta.'
             }
         },
         {
@@ -379,6 +379,7 @@
     const SHORT_SKIPS = {};
     ['misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'fuel-hold', 'move-hold', 'scan-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'edge-push', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-buttons', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tabs', 'cm-tab-order', 'cm-name', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
     const GESTURE_EXEMPT = {
+        'kitchen-game.js': 'Cook > Kitchen: dragging something that ran out onto the bin is only a shortcut; the Ran out: bin it button on the same card does it with a plain tap, and the shelf says so',
         'mirror-move.js': 'camera workout: it tells you each move out loud while you do it',
         'mirror-move-core.js': 'camera workout: it tells you each move out loud while you do it',
         'community-energy-core.js': 'math for the energy joystick taught by cm-energy',

@@ -70,3 +70,14 @@ When adding a ticket, include:
 - **Scope:** Review the unapplied SQL proposal; audit/remediate old public birthdays/type/sign and old-client writes; run the opt-in two-account checker; assign report review/retention/abuse controls; verify block persistence across devices and local quiet controls. Test Community navigation, phone/iPad portrait/landscape, keyboard/safe areas, long history, Home/For You/companion/fasting regression and PWA offline upgrades.
 - **Out of scope:** Home redesign, XP/evolution, fasting storage, scanner/cooking, product game, private messages and personality-based access rules.
 - **Evidence:** actual backend/account results, browser console plus before/after captures, physical phone/iPad keyboard tests and release-owner build/Pages verification if deployed. `COMMUNITY_CHAT.md` records the implemented boundary and current blockers.
+
+## LS-KITCHEN-DECOR — Kitchen: decorate and upgrade your kitchen with points
+
+- **Status:** proposed (future idea from Emmanuel, Oct 26 2026; do not build until he asks)
+- **Order:** after the Kitchen pantry game has been live for a while
+- **Depends on:** Cook > Kitchen game (`kitchen-game.js`, `kitchen-game-core.js`), the shared points ledger (`LowiHost.award`)
+- **User-visible outcome:** the points earned in the Kitchen (daily look, binning, healthy kitchen) can be spent to decorate and upgrade the fridge and cabinet: colours, magnets on the fridge, a nicer cabinet, extra shelf space.
+- **Scope:** a small catalogue of cosmetic upgrades, a spend flow that uses the existing points (no new currency, no real money), saved per account, shown in the existing fridge and cabinet art.
+- **Explicitly out of scope:** anything that changes the health bar, the scanner verdicts or nutrition advice; paid items; a second currency (Emmanuel removed confusing currency overlaps).
+- **Acceptance:** an upgrade costs points once, shows right away, survives reload and a new device; Reduce Motion gets fades instead of animations; EN/DE/ES text.
+- **Evidence:** unit tests for spending and caps, WebKit iPhone 13 (390x844) check with Reduce Motion in EN/DE/ES, live check after a quiet release.

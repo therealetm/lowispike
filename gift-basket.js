@@ -311,9 +311,14 @@
     }
 
     /* ---------- events ---------- */
+    /* BH-036 (P-CLOSING-STILL-LIVE): the panel fades out for 260 ms after it closes. A tap on one of its buttons meanwhile threw
+       (ov.contains on null); now a closing panel ignores taps, and a real tap that closes it is marked spent (fresh-scrim.js) so the
+       2nd tap of a double tap on that spot presses nothing on Shop or Home under it. */
+    function spend(e) { try { const F = W.LowiFreshScrim; if (F && F.spent) F.spent(e); } catch (x) {} }
     function onClick(e) {
         const t = e.target;
-        if (t === ov) { close(e.isTrusted); return; }
+        if (!ov || !ov.contains(t)) return;
+        if (t === ov) { spend(e); close(e.isTrusted); return; }
         const el = t.closest ? t.closest('[data-gb],[data-gb-tab],[data-gb-help],[data-gb-add],[data-gb-drop],[data-gb-verdict],[data-gb-pay]') : null;
         if (!el || !ov.contains(el)) return;
         if (el.hasAttribute('data-gb-pay')) { const id = el.getAttribute('data-gb-pay'); if (!opened[id]) { opened[id] = true; setTimeout(paint, 60); } return; } /* the link opens; nothing is sent */
@@ -323,7 +328,7 @@
         if (el.hasAttribute('data-gb-help')) { help(el.getAttribute('data-gb-help')); return; }
         if (el.hasAttribute('data-gb-verdict')) { verdict(el.getAttribute('data-gb-for'), el.getAttribute('data-gb-verdict')); return; }
         const a = el.getAttribute('data-gb');
-        if (a === 'close') { close(e.isTrusted); return; }
+        if (a === 'close') { spend(e); close(e.isTrusted); return; }
         if (a === 'reload') { loaded = false; paint(); load(); return; }
         if (a === 'share') { share(); return; }
         if (a === 'down') { takeDown(el.getAttribute('data-gb-for')); return; }

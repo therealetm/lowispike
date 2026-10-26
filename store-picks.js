@@ -576,7 +576,14 @@
         }).catch(() => { busy = false; if (ov && view === 'pick') paint(MAPFAIL()); });
     }
 
+    /* BH-036 (Oct 26 2026, P-CLOSING-STILL-LIVE): Shop fades out for 260 ms after it closes and stayed clickable meanwhile. A
+       double tap on "Scan in the shop" or "Shopping list" (both close Shop) pressed the same button again in the fading panel, so the
+       shop camera opened twice (live Chromium 390: 97 ms apart) and the list twice; with the panel gone, the 2nd tap pressed the Home
+       bubble under the finger (Scan, Sleep). A closing panel now ignores taps, and a real tap that closes it is marked spent
+       (fresh-scrim.js) so the 2nd tap of a double tap on that spot presses nothing. */
+    function spend(e) { try { const F = W.LowiFreshScrim; if (F && F.spent) F.spent(e); } catch (x) {} }
     function onClick(e) {
+        if (!ov || !ov.contains(e.target)) return; /* BH-036: this panel is closing (or another Shop replaced it) */
         if (Date.now() - dragAt < 450) return; /* the click a drag down on the top bar leaves behind */
         const t = e.target.closest ? e.target : null; if (!t) return;
         if (qv && (e.target === qv || (t.closest('[data-stp="qv-close"]') && qv.contains(t)))) { closeQuick(); return; }
@@ -586,7 +593,7 @@
         /* Oct 25 Give a hand (gift-basket.js): opens on top of Shop; Back brings Shop back */
         if (t.closest && t.closest('[data-stp="gift"]')) { try { W.LowiGiftBasket.open('shop'); } catch (x) {} return; }
         if (kitClick(t)) return;
-        if (e.target === ov) { close(); return; }
+        if (e.target === ov) { spend(e); close(); return; }
         const tb = t.closest('[data-stp-tab]');
         if (tb) {
             if (tb.getAttribute('data-stp-tab') === 'gift') { try { W.LowiGiftBasket.open('shop'); } catch (x) {} return; }
@@ -598,6 +605,7 @@
         const b = t.closest('[data-stp],[data-stp-store],[data-stp-range],[data-stp-more],[data-stp-jump]');
         if (!b || b.tagName === 'INPUT') return;
         const a = b.getAttribute('data-stp');
+        if (a === 'close' || a === 'scanshop' || a === 'mylist') spend(e); /* BH-036: these close Shop */
         if (a === 'close') return close();
         if (a === 'scanshop') { close(); setTimeout(() => { try { W.LowiShopScan.open(); } catch (x) {} }, 200); return; }
         if (a === 'sellerzone') { setTab('sz'); return; }

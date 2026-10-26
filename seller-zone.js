@@ -126,9 +126,13 @@
         const s2 = ov.querySelector('.sz-scroll'); if (s2 && top) s2.scrollTop = top;
     }
     function onKey(e) { if (e.key === 'Escape' && ov) { e.stopPropagation(); close(); } }
+    /* BH-036 (P-CLOSING-STILL-LIVE): the zone fades out for 260 ms after it closes; a closing zone ignores taps, and a real tap that
+       closes it is marked spent (fresh-scrim.js) so the 2nd tap of a double tap on that spot presses nothing under it. */
+    function spend(e) { try { const F = W.LowiFreshScrim; if (F && F.spent) F.spent(e); } catch (x) {} }
     function onClick(e) {
         const t = e.target && e.target.closest ? e.target : null; if (!t) return;
-        if (t === ov || t.closest('[data-sz="close"]')) { close(); return; }
+        if (!ov || !ov.contains(t)) return;
+        if (t === ov || t.closest('[data-sz="close"]')) { spend(e); close(); return; }
         const c = t.closest('[data-sz-cat]'); if (c) { cat = c.getAttribute('data-sz-cat'); paint(); return; }
         const r = t.closest('[data-sz-reg]'); if (r) { region = r.getAttribute('data-sz-reg'); try { localStorage.setItem(RKEY, region); } catch (x) {} paint('keep'); return; }
     }

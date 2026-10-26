@@ -349,18 +349,23 @@
         C.setPlan(S, { store: s ? { id: s.id, name: s.name || s.brand, brand: s.brand || '', chain: s.chain || '', town: s.town != null ? s.town : (P && s.lat ? P.town(s) : '') } : null });
         save(); cloud.store = ''; msg = ''; view = 'home'; paint(); refresh();
     }
+    /* BH-036 (P-CLOSING-STILL-LIVE): the panel fades out for 240 ms after it closes and stayed clickable: a double tap on "Scan"
+       opened the shop camera twice, and a tap on Photo meanwhile opened the photo picker for a closed panel. A closing panel now
+       ignores taps, and a real tap that closes it is marked spent (fresh-scrim.js) so the 2nd tap on that spot presses nothing. */
+    function spend(e) { try { const F = W.LowiFreshScrim; if (F && F.spent) F.spent(e); } catch (x) {} }
     function onClick(e) {
         const t = e.target; if (!t || !t.closest) return;
-        if (t === ov) { close(); return; }
+        if (!ov || !ov.contains(t)) return;
+        if (t === ov) { spend(e); close(); return; }
         const b = t.closest('[data-gh]'); if (!b || (b.tagName === 'INPUT' && b.type !== 'checkbox')) return;
         const a = b.getAttribute('data-gh');
         if (a === 'consent') { S.consent = !!b.checked; save(); refresh(); return; }
         if (b.tagName === 'INPUT') return;
         e.preventDefault();
         const now = Date.now();
-        if (a === 'close') return close();
+        if (a === 'close') { spend(e); return close(); }
         if (a === 'home') { view = 'home'; msg = ''; pendingPhoto = null; return paint(); }
-        if (a === 'scan') { close(); try { W.LowiShopScan && W.LowiShopScan.open(); } catch (er) {} return; }
+        if (a === 'scan') { spend(e); close(); try { W.LowiShopScan && W.LowiShopScan.open(); } catch (er) {} return; }
         if (a === 'photo') return askPhoto(null);
         if (a === 'photo-hint') { const h = picking && picking.hints[+b.dataset.i]; if (h) askPhoto({ name: h.name, bc: h.bc }); return; }
         if (a === 'photo-combo') { const cb = C.allCombos(S, shared().combos).find(c => c.id === b.dataset.c), it = cb && cb.items[+b.dataset.j]; if (it) askPhoto({ name: it.kind ? C.kindLabel(it.kind, li()) : it.label, kind: it.kind || '' }); return; }

@@ -82,11 +82,11 @@
         if (!q.trim()) return '';
         const rows = hits.slice(0, 6).map((p, ix) => {
             const lv = p._lv || 'unknown';
-            return '<button type="button" role="option" class="kg-hit" data-kg-hit="' + ix + '">' +
+            return '<button type="button" role="option" class="kg-hit" data-spend data-kg-hit="' + ix + '">' +
                 (p.img ? '<img src="' + esc(p.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span class="kg-em" aria-hidden="true">' + G.byId(G.shelfOf({ n: p.name }, p.cat)).ic + '</span>') +
                 '<span class="kg-hit-t"><b>' + esc(p.name) + '</b><small>' + esc([p.brand, LVL[lv]()].filter(Boolean).join(' · ')) + '</small></span>' + dot(lv) + '</button>';
         }).join('');
-        return rows + '<button type="button" role="option" class="kg-hit kg-hit-plain" data-kg-hit="typed"><span class="kg-em" aria-hidden="true">+</span><span class="kg-hit-t"><b>' +
+        return rows + '<button type="button" role="option" class="kg-hit kg-hit-plain" data-spend data-kg-hit="typed"><span class="kg-em" aria-hidden="true">+</span><span class="kg-hit-t"><b>' +
             esc(T('Add “' + q.trim() + '”', '„' + q.trim() + '“ hinzufügen', 'Añadir «' + q.trim() + '»')) + '</b><small>' +
             esc(busy ? T('Looking in the product database…', 'Suche in der Produktdatenbank …', 'Buscando en la base de productos…') : T('Just the name, without product data', 'Nur der Name, ohne Produktdaten', 'Solo el nombre, sin datos del producto')) + '</small></span></button>';
     }
@@ -115,9 +115,9 @@
         return '<li class="kg-card' + (on ? ' on' : '') + '" data-kg-id="' + esc(i.id) + '">' +
             '<button type="button" class="kg-cb" data-kg-sel="' + esc(i.id) + '" aria-expanded="' + on + '">' + pic(i, 'kg-cp') +
             '<span class="kg-ct"><b>' + esc(i.n) + '</b><small>' + esc([i.p && i.p.br, LVL[lv]() + (i.p && i.p.est ? ' ' + T('(estimate)', '(Schätzung)', '(estimación)') : '')].filter(Boolean).join(' · ')) + '</small></span>' + dot(lv) + '</button>' +
-            (on ? '<div class="kg-acts"><button type="button" class="kg-binbtn" data-kg-bin="' + esc(i.id) + '">' + binSVG() + esc(T('Ran out: bin it', 'Leer: wegwerfen', 'Se acabó: al cubo')) + '</button>' +
+            (on ? '<div class="kg-acts"><button type="button" class="kg-binbtn" data-spend data-kg-bin="' + esc(i.id) + '">' + binSVG() + esc(T('Ran out: bin it', 'Leer: wegwerfen', 'Se acabó: al cubo')) + '</button>' +
                 '<label class="kg-move"><span>' + esc(T('Shelf', 'Fach', 'Estante')) + '</span><select data-kg-move="' + esc(i.id) + '">' + G.SHELVES.map(x => '<option value="' + x.id + '"' + (x.id === s.id ? ' selected' : '') + '>' + x.ic + ' ' + esc(x.t[li()]) + '</option>').join('') + '</select></label>' +
-                '<button type="button" class="kg-x" data-kg-del="' + esc(i.id) + '">' + esc(T('Remove, added by mistake', 'Entfernen, aus Versehen', 'Quitar, fue un error')) + '</button></div>' : '') + '</li>';
+                '<button type="button" class="kg-x" data-spend data-kg-del="' + esc(i.id) + '">' + esc(T('Remove, added by mistake', 'Entfernen, aus Versehen', 'Quitar, fue un error')) + '</button></div>' : '') + '</li>';
     }
     function shelfView() {
         if (open === 'buy') return buyView();
@@ -132,8 +132,8 @@
         const all = toBuy(), buy = all.filter(i => !i.done), got = all.filter(i => i.done), m = memGet();
         const row = (i, done) => { const d = m[G.norm(K.fromCartName ? K.fromCartName(i.n) : i.n)], it = { n: i.n, p: d && d.p, c: d && d.c };
             return '<li class="kg-card kg-buy' + (done ? ' done' : '') + '">' + '<span class="kg-cb">' + pic(it, 'kg-cp') + '<span class="kg-ct"><b>' + esc(i.n) + '</b>' + (i.store ? '<small>' + esc(i.store) + '</small>' : '') + '</span></span>' +
-                '<button type="button" class="kg-got" data-kg-got="' + esc(i.id) + '" aria-label="' + esc(T('Bought, put in the kitchen: ', 'Gekauft, in die Küche: ', 'Comprado, a la cocina: ') + i.n) + '">' + esc(T('✓ Bought', '✓ Gekauft', '✓ Comprado')) + '</button>' +
-                '<button type="button" class="kg-bx" data-kg-bdrop="' + esc(i.id) + '" aria-label="' + esc(T('Take off the list: ', 'Von der Liste nehmen: ', 'Quitar de la lista: ') + i.n) + '">×</button></li>'; };
+                '<button type="button" class="kg-got" data-spend data-kg-got="' + esc(i.id) + '" aria-label="' + esc(T('Bought, put in the kitchen: ', 'Gekauft, in die Küche: ', 'Comprado, a la cocina: ') + i.n) + '">' + esc(T('✓ Bought', '✓ Gekauft', '✓ Comprado')) + '</button>' +
+                '<button type="button" class="kg-bx" data-spend data-kg-bdrop="' + esc(i.id) + '" aria-label="' + esc(T('Take off the list: ', 'Von der Liste nehmen: ', 'Quitar de la lista: ') + i.n) + '">×</button></li>'; };
         return '<div class="kg-open kg-buyv" role="region" aria-label="' + esc(T('Shopping list', 'Einkaufsliste', 'Lista de la compra')) + '">' +
             '<div class="kg-oh"><button type="button" class="kg-back" data-kg="close" aria-label="' + esc(T('Close the list', 'Liste schließen', 'Cerrar la lista')) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
             '<h3 tabindex="-1">' + esc(T('To buy', 'Einkaufsliste', 'Por comprar')) + '</h3><span class="kg-oc">' + buy.length + '</span></div>' +

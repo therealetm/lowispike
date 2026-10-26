@@ -26,7 +26,7 @@ function serve() {
     });
 }
 const IPAD = { viewport: { width: 820, height: 1180 }, screen: { width: 820, height: 1180 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' };
-const VIEWS = { iphone13_webkit: ['webkit', 'iPhone 13'], ipad_portrait_webkit: ['webkit', IPAD], iphone_chromium: ['chromium', { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true }] };
+const VIEWS = { iphone13_webkit: ['webkit', 'iPhone 13'], ipad_portrait_webkit: ['webkit', IPAD], iphone_chromium: ['chromium', { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, /* an Android phone in Chrome: the Add to Home Screen guide only shows on phones (a desktop UA goes straight to onboarding) */ userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36' }] };
 const INIT = fs.readFileSync(path.join(__dirname, 'home-orbit-v2-live.cjs'), 'utf8').match(/const INIT = `([\s\S]*?)`;/)[1];
 const Q = require('../quick-tour.js'), SS = require('../home-settings-sleep-v2.js');
 

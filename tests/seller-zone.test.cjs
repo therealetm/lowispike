@@ -99,7 +99,8 @@ test('wired: scanner card, Shop panel entry, files cached, world paused while op
     assert.ok(html.indexOf('<script src="seller-zone.js') > html.indexOf('<script src="seller-zone-core.js'));
     const sp = read('store-picks.js');
     /* Oct 23: the one-line entry became a swipe shelf + its own tab (tests/seller-zone-in-shop.test.cjs); entryHTML stays the fallback */
-    assert.match(sp, /Z\.stripHTML \? Z\.stripHTML\(\) : Z && Z\.entryHTML \? Z\.entryHTML\(\)/);
+    /* Oct 26 (MAYA-HANDOFF 0.22): the shelf left the Supermarket tab; Seller Zone is its own tab ("our Amazon") */
+    assert.doesNotMatch(sp, /Z\.stripHTML \? Z\.stripHTML\(\)/);
     assert.match(sp, /a === 'sellerzone'/);
     assert.match(read('body-world-3d.js'), /sz-open/);
     const ui = read('seller-zone.js');

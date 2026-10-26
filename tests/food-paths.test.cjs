@@ -115,7 +115,9 @@ test('Shop sheet: plain "Scan in the shop" and "Shopping list" buttons, in three
     const sp = read('store-picks.js');
     assert.equal((sp.match(/'<div class="stp-scroll">' \+ shopActs\(\) \+ snackHTML\(\)/g) || []).length, 2, 'both Shop views start with the two buttons');
     assert.match(sp, /T\('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda'\)/);
-    assert.match(sp, /T\('Shopping list', 'Einkaufsliste', 'Lista de compra'\)/);
+    /* Oct 26 (MAYA-HANDOFF 0.22): the Shopping list pill became the Cart (Warenkorb / Carrito); its sheet has Go shopping (the same list in shop mode) */
+    assert.match(sp, /T\('Cart', 'Warenkorb', 'Carrito'\)/);
+    assert.match(sp, /T\('Go shopping', 'Einkaufen gehen', 'Ir a comprar'\)/);
     assert.match(sp, /if \(a === 'scanshop'\) \{ close\(\); setTimeout\(\(\) => \{ try \{ W\.LowiShopScan\.open\(\); \}/);
     assert.match(sp, /if \(a === 'mylist'\) \{ close\(\); setTimeout\(\(\) => \{ try \{ W\.tdShopOpen\(\); \}/);
 });

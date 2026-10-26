@@ -209,6 +209,16 @@
             }
         },
         {
+            id: 'new-cart-swipe', area: 'new', where: 'home', open: 'shop', target: ['.stp-card .stp-cartbtn', '.stp-card'], covers: ['supermarket-cart', 'give-hand-swipe'],
+            info: 'Oct 26 2026 (MAYA-HANDOFF 0.22): the Supermarket tab in Shop has a Cart (Warenkorb / Carrito; cart-core.js, store-picks.js cartHTML) with quantities and an estimate from reported prices; the Seller Zone strip left the Supermarket (Seller Zone keeps its own tab); Give a hand is a swipe deck (gift-basket.js deckHTML): right = pay for these groceries, left = skip.',
+            title: { en: 'Your cart', de: 'Dein Warenkorb', es: 'Tu carrito' },
+            text: {
+                en: 'New in Supermarket: a Cart with amounts and an estimated total. In Give a hand, swipe a basket right to pay for it, left to skip.',
+                de: 'Neu im Supermarkt: ein Warenkorb mit Mengen und Schätzsumme. In Hilf mit wischst du Körbe: rechts bezahlen, links überspringen.',
+                es: 'Nuevo en el súper: carrito con cantidades y total estimado. En Echa una mano, desliza cestas: derecha para pagar, izquierda para saltar.'
+            }
+        },
+        {
             id: 'new-give-hand', area: 'new', where: 'home', open: 'shop', target: ['.stp-card .stp-tab[data-stp-tab="gift"]', '.stp-card'], covers: ['give-a-hand'],
             info: 'Oct 25 2026: the Give a hand tab in Shop (store-picks.js giftDoor); it shows once the server has the basket table, otherwise the card points at Shop. Oct 26: the Kitchen tab left Shop for Cook, so the card opens Shop on Seller Zone and Give a hand sits right beside it',
             title: { en: 'Give a hand', de: 'Hilf mit', es: 'Echa una mano' },
@@ -313,6 +323,7 @@
        pinch, double, triple, swipe, push or tilt. Each id must be in some step's teaches. */
     const G = (id, where, how, src, what) => ({ id, where, how, src, what });
     const GESTURES = [
+        G('give-hand-swipe', 'home', 'swipe', ['gift-basket.js'], 'Give a hand: swipe a grocery basket right to pay for it, left to skip (Oct 26; shown by What\u2019s New new-cart-swipe)'),
         G('misty-tap', 'home', 'tap', ['body-world-3d.js'], 'tap Misty: she plays'),
         G('misty-hold', 'home', 'hold', ['body-world-3d.js', 'world-home.js'], 'hold Misty: her card (energy, forms, Evolution path, home)'),
         G('misty-squish', 'home', 'hold', ['herb-touch.js', 'spirit.js', 'living-bubbles.js'], 'press Misty: her bubble squishes under your finger'),
@@ -377,7 +388,7 @@
        either taught by a base card or listed here, so nothing is forgotten silently (tests/tutorial-gestures.test.cjs). */
     const SHORT_SKIP_WHY = 'not in the short base tour (Oct 25 2026, max 12 cards): found in place or shown by What\u2019s New';
     const SHORT_SKIPS = {};
-    ['misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'fuel-hold', 'move-hold', 'scan-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'edge-push', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-buttons', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tabs', 'cm-tab-order', 'cm-name', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
+    ['give-hand-swipe', 'misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'fuel-hold', 'move-hold', 'scan-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'edge-push', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-buttons', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tabs', 'cm-tab-order', 'cm-name', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
     const GESTURE_EXEMPT = {
         'kitchen-game.js': 'Cook > Kitchen: dragging something that ran out onto the bin is only a shortcut; the Ran out: bin it button on the same card does it with a plain tap, and the shelf says so',
         'mirror-move.js': 'camera workout: it tells you each move out loud while you do it',

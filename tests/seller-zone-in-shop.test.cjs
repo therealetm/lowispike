@@ -89,7 +89,8 @@ test('wired into the Shop panel: tabs on top, zone tab, shelf, remembered tab, n
   assert.match(sp, /role="tablist"/); assert.match(sp, /role="tab" aria-selected=/);
   assert.match(sp, /T\('Supermarket', 'Supermarkt', 'Supermercado'\)/);
   assert.match(sp, /ov\.innerHTML = onSz\(\) \? szHTML\(\) :/);
-  assert.match(sp, /Z\.stripHTML \? Z\.stripHTML\(\)/, 'the shelf replaces the old one-line entry');
+  /* Oct 26 (Emmanuel, MAYA-HANDOFF 0.22: "Remove Seller Zone in Supermarket. Seller Zone has its own section"): no strip inside the Supermarket tab */
+  assert.doesNotMatch(sp, /Z\.stripHTML \? Z\.stripHTML\(\)/, 'the Seller Zone shelf left the Supermarket tab; Seller Zone has its own tab');
   assert.match(sp, /'lowi\.storePicks\.tab'/);
   assert.match(sp, /if \(ov && view === 'list' && (!onSz\(\)|onShop\(\))\) paint\(\)/, 'the list loading behind the zone tab never throws you back to the top');
   assert.match(sp, /if \(onSz\(\) && SZ\(\)\.inlineClick\(t\)\) \{ paint\('keep'\)/);

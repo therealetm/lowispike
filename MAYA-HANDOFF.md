@@ -1331,6 +1331,10 @@ Decision (do not bring the auto trip back):
 - Old saved state: a trip that started automatically before this change (no `manual` flag) is brought home on the next
   open with its finds, quietly, no sheet. Trips the user started keep running.
 - The away look was fixed so the manual version is clean (see the commit and tests/companion-manual-explore.test.cjs).
+- LIVE in build 20261026-163708 (quiet release, no update notice). Root cause of "the UI breaks": her trip switched the
+  controller to autopilot, which turned on clean view and hid every Home button for the hour, a faded copy of her drifted
+  over the bubbles, and the one-line away chip was wider than her bubble. All three fixed. Browser probe:
+  tools/manual-explore/check.cjs (WebKit iPhone 13, EN/DE/ES, 39/39 on the live site). Not tried on Emmanuel's iPhone yet.
 
 ### 0.32 Shop finds is confusing: make it simple, Power combos the hero (Emmanuel, voice + 2 screenshots, Mon 26 Oct 2026 about 4:07 PM CET)
 

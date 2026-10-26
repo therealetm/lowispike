@@ -1351,7 +1351,10 @@ glow brighter", the 1/2 check-in jargon and the duplicate "pick your shop" text;
 quiet row, and it reuses the shop already picked in Supermarket); "companion", never "spirit". Scanner card's Shop finds
 box: one short line, or nothing when it adds nothing. Rewards keep working, folded in quietly. EN/DE/ES, glass style.
 Task "LOWiSPIKE: simplify Shop finds" (Sesame, 26 Oct), worktree wt-shop-finds, branch shop-finds-simple,
-COORD-shop-finds.md. Status: building (see Log for the release).
+COORD-shop-finds.md. Status: LIVE in build 20261026-164258 (silent). Details: HANDOFF-shop-finds.md. Tests
+tests/shop-finds-simple.test.cjs (all failed on the old code), suite 3786/3786, CI green, WebKit iPhone 13 EN/DE/ES pass locally
+and on the live site (node tools/shop-finds/probe.cjs). What's New step new-shop-finds with recorded voices.
+Not done: not tried on Emmanuel's iPhone; the combo item "Catch with a photo" mini buttons are 24 px (hit area padded to 44).
 
 ### 0.33 Community: the way back to Home disappears (Emmanuel, Mon 26 Oct 2026 about 4 PM CET, voice + 2 screenshots)
 

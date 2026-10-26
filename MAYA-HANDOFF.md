@@ -1475,7 +1475,7 @@ branch quick-tour-video, COORD-quick-tour.md. Status: **LIVE in build 20261026-2
 ### 0.39 Evening catch-up: "the best bubble checklist ever" for people who can only open the app at the end of the day (Emmanuel, call, Mon 26 Oct 2026 about 11:30 PM CET)
 
 
-**STATUS: LIVE (released Oct 27 2026 ~00:5x CET by the continue run; build id in version.json / the release commit).** Files:
+**STATUS: LIVE (released Oct 27 2026 by the continue run; build id in version.json / the release commit).** Files:
 evening-catchup-core.js (pure logic, tests/evening-catchup.test.cjs), evening-catchup.js + .css (the greeting, the bubble screen,
 Settings first row `catchUp` -> `LowiEveningCatchup.open({from:'settings'})`, any `[data-ec-open]`), recorded companion lines in
 app-voice (EN/DE/ES, never the app name), mini-tour card `new-evening-catchup` (part 'new', tutorial v34, recorded tutorial voice),

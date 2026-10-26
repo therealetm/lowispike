@@ -338,12 +338,12 @@
         },
         {
             id: 'new-day-recap', area: 'new', where: 'home', open: 'misty-card', target: ['[data-mh="t-recap"]'], scroll: true, covers: ['day-recap', 'dayRecap'],
-            info: 'Oct 26 2026 (MAYA-HANDOFF 0.40, day-recap.js): Day recap, your companion\'s read-only look back at today (meals with their likely blood sugar spike verdicts, longest gap, Move, water, XP, level up), one takeaway and one nudge for tomorrow. On the companion card (Your day bubble, glows from 6 PM) and in My day. Never opens by itself, no notification.',
+            info: 'Oct 26 2026 (MAYA-HANDOFF 0.40, day-recap.js): Day recap, your companion\'s read-only look back at today (meals with their likely blood sugar spike verdicts, longest gap, Move, water, XP, level up), one takeaway and one nudge for tomorrow, care sent today, an optional journal line (type or speak, saved on the phone); shows once after the evening catch-up Save. On the companion card (Your day bubble, glows from 6 PM) and in My day. Otherwise never opens by itself, no notification.',
             title: { en: 'Your day, looked back', de: 'Dein Tag im R\u00fcckblick', es: 'Tu d\u00eda, en resumen' },
             text: {
-                en: 'Hold your companion and tap Your day: your meals, longest gap, Move and water, plus one tip for tomorrow.',
-                de: 'Halte deinen Begleiter gedr\u00fcckt und tippe auf Dein Tag: Mahlzeiten, l\u00e4ngste Pause, Move und Wasser, dazu ein Tipp f\u00fcr morgen.',
-                es: 'Mant\u00e9n pulsado a tu compa\u00f1ero y toca Tu d\u00eda: comidas, pausa m\u00e1s larga, Move y agua, y un consejo para ma\u00f1ana.'
+                en: 'Hold your companion and tap Your day: meals, longest gap, Move and care, one tip for tomorrow, and a line for your journal.',
+                de: 'Begleiter gedr\u00fcckt halten, dann Dein Tag: Mahlzeiten, l\u00e4ngste Pause, Move und F\u00fcrsorge, ein Tipp f\u00fcr morgen und eine Zeile f\u00fcrs Tagebuch.',
+                es: 'Mant\u00e9n pulsado a tu compa\u00f1ero y toca Tu d\u00eda: comidas, pausa m\u00e1s larga, Move y cuidado, un consejo para ma\u00f1ana y una l\u00ednea para tu diario.'
             }
         },
         {

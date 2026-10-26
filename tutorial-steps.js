@@ -341,9 +341,9 @@
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.40, day-recap.js): Day recap, your companion\'s read-only look back at today (meals with their likely blood sugar spike verdicts, longest gap, Move, water, XP, level up), one takeaway and one nudge for tomorrow. On the companion card (Your day bubble, glows from 6 PM) and in My day. Never opens by itself, no notification.',
             title: { en: 'Your day, looked back', de: 'Dein Tag im R\u00fcckblick', es: 'Tu d\u00eda, en resumen' },
             text: {
-                en: 'Hold your companion and tap Your day. It looks back at today: your meals, your longest gap, Move and water, plus one tip for tomorrow.',
-                de: 'Halte deinen Begleiter gedr\u00fcckt und tippe auf Dein Tag. Er blickt auf heute zur\u00fcck: deine Mahlzeiten, deine l\u00e4ngste Pause, Move und Wasser, dazu ein Tipp f\u00fcr morgen.',
-                es: 'Mant\u00e9n pulsado a tu compa\u00f1ero y toca Tu d\u00eda. Repasa tu d\u00eda: tus comidas, tu pausa m\u00e1s larga, Move y agua, y un consejo para ma\u00f1ana.'
+                en: 'Hold your companion and tap Your day: your meals, longest gap, Move and water, plus one tip for tomorrow.',
+                de: 'Halte deinen Begleiter gedr\u00fcckt und tippe auf Dein Tag: Mahlzeiten, l\u00e4ngste Pause, Move und Wasser, dazu ein Tipp f\u00fcr morgen.',
+                es: 'Mant\u00e9n pulsado a tu compa\u00f1ero y toca Tu d\u00eda: comidas, pausa m\u00e1s larga, Move y agua, y un consejo para ma\u00f1ana.'
             }
         },
         {

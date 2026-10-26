@@ -21,7 +21,8 @@ test('part new: intro first, every step short, three languages, a known route', 
       assert.ok(s.title[l] && s.text[l], s.id + ' ' + l);
       assert.ok(s.text[l].length <= 140, s.id + ' ' + l + ': keep it short (' + s.text[l].length + ')');
     }
-    if (s.open) assert.match(js, new RegExp('\\b' + s.open + ': \\{ go\\('), s.id + ': open route ' + s.open + ' exists in tutorial.js OPEN');
+    /* Oct 26 (day recap): quoted keys like 'misty-card' and stage-first routes count too */
+    if (s.open) assert.match(js, new RegExp("(\\b|')" + s.open + "'?: \\{[^\\n]*\\bgo(\\(|: )"), s.id + ': open route ' + s.open + ' exists in tutorial.js OPEN');
   }
   for (const l of ['en', 'de', 'es']) for (const k of ['newsLabel', 'newsSkip', 'newsDone', 'newsTitle']) assert.ok(S.UI[l][k], l + ' ' + k);
   assert.strictEqual(S.UI.de.newsSkip, 'Überspringen');

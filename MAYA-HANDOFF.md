@@ -943,6 +943,25 @@ or rounds 30-32 hid a real week-boundary bug. Task: Sesame "LOWiSPIKE: fix weekl
 `weekly-ranking-fix`, worktree wt-weekly-ranking, COORD-weekly-ranking.md. Release silently (--quiet), no update
 notification, no announcement. Status: requested, being built.
 
+### 0.15 Admin "Remove from community" must DELETE the account (Emmanuel, voice message, Mon 26 Oct 2026 about 5:36 AM CET)
+
+His words: "Also, look, there's a random account. I removed it, and it's still there. This should be deleting their
+accounts. Fix it." His screenshot (05:36): a person's card in Community for an account named "E" (Leo, birthday
+1 August, Personality none yet, Level 2) with "Block person" and the ADMIN button "Remove from community"; under it
+"E was removed from the community.", yet "E" is still in Community (Luise in the list below).
+
+What he wants: the admin button deletes the account for real on the server (login, profile, companion, presence,
+messages, posts, energy, ranking rows), through a server-side function with an admin check (only his admin account, keys
+never in the repo). The person disappears from Community, People, the Room, the chat, the ranking and every list for
+everyone, also after a reload. "Removed" is only said once the server confirmed the delete, an error otherwise; a confirm
+step that says plainly the account gets deleted (EN/DE/ES). Then delete the "E" he already removed. Tests that fail on
+the old code; live checks with fake/test accounts only, never deleting a real user other than "E". Release silently.
+First findings (Supabase, 04:40 UTC): the old button only wrote a reversible row in public.community_kicks (nothing
+deleted, by design of 25 Oct). There are FIVE anonymous accounts named "E" (all created 25 Oct 22:21-22:23 UTC, no
+messages); he removed three of them plus one "F", so another "E" kept showing. Task: Sesame "LOWiSPIKE: admin remove
+deletes the account", branch `admin-delete-account`, worktree wt-admin-delete, COORD-admin-delete.md. Removed/deleted
+accounts must also leave the ranking: note left for the weekly-ranking task (8c688ff2). Status: requested, being built.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

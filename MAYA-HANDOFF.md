@@ -1376,6 +1376,30 @@ the space at the top left where the round glass Home button (#secX, section-nav.
   390x844, 430x932 and 820x1180 (tools/community-home-btn/width-probe.cjs): shown at every width while still, hidden at
   every width while flying. His iPhone had his companion on autopilot; the iPad did not.
 
+### 0.34 Cart looks weird + "someone else pays" turns the WHOLE cart into a Give a hand basket (Emmanuel, 2 voice messages in German + 2 iPad screenshots, Mon 26 Oct 2026 about 4:50 PM CET)
+
+His words (translated, meaning kept): "This isn't right. Look at the UI, it looks weird. Also, when you put things in
+your cart, I want you to be able to choose the option that someone else pays for it. Then you land on this Tinder swipe,
+because Hilf mit (Give a hand) does it automatically. So the whole shopping list, without having to type anything in
+manually."
+- Screenshot 1 (iPad, DE, Shop > Supermarkt > Warenkorb, "Einkaufen gehen"): the cart sheet sits over the Supermarkt page
+  and the page shows through around it ("Von zu Hause einkaufen", "Warenkorb", "Hinzufügen"). The two action buttons are
+  huge circles that overflow the sheet; "Im Laden scannen" has a giant cart icon, "Um Hilfe dafür bitten" a tiny one.
+  The list is cut off at the top.
+- Screenshot 2 (Shop > Hilf mit > "Ich brauche Hilfe"): the "Aus deinem Warenkorb" chips are English in the German UI
+  ("Lettuce, Lean beef mince, Smoked paprika"), and "Nicht für einen Korb (kein Low-Spike): No-sugar salsa, Oregano" is
+  wrong: oregano and no-sugar salsa are not high-spike.
+- What it means: (1) a clean solid glass cart sheet, compact matching buttons, nothing showing through, nothing
+  overflowing (iPad both ways, iPhone 390x844, EN/DE/ES). (2) The cart's ask button = "someone else pays": one tap plus
+  the normal confirm turns every cart item (with its quantity) into a Give a hand basket, no typing, no chip picking,
+  then straight to the Hilf mit swipe feed where helpers see it. Same gift-basket flow, not a second one. Only low-spike
+  foods go in; one short line says which cart items were left out and why. Receipt badge rules, double-tap guards
+  (bug hunt round 43) and sign-in stay. (3) Food names in the cart chips in the app language; "not low-spike" only for
+  foods the rating really calls spiky, foods it doesn't know yet get their own honest line, and herbs, spices and salsa
+  are rated low-spike.
+- Task "LOWiSPIKE: fix cart UI + whole cart to someone else pays in Hilf mit" started; branch `cart-ask-pay`, COORD
+  `/home/sprite/COORD-cart-ask.md`. Report only once live.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

@@ -68,7 +68,8 @@ const FAKE = `(() => {
     const r = b && b.getBoundingClientRect(), ir = i && i.getBoundingClientRect(), vr = vm && vm.getBoundingClientRect();
     return { input: !!i, dictate: !!(b && b.classList.contains('mic-chat') && !b.hidden), label: b && b.getAttribute('aria-label'),
       voiceMic: !!(vr && vr.width > 2), overlap: !!(r && vr && r.right > vr.left && r.left < vr.right && r.bottom > vr.top && r.top < vr.bottom),
-      insideBox: !!(r && ir && r.right <= ir.right + 1 && r.left >= ir.left), icon: b && b.querySelectorAll('path').length };
+      insideBox: !!(r && ir && r.right <= ir.right + 1 && r.left >= ir.left), icon: b && b.querySelectorAll('path').length,
+      micRect: r && [r.left, r.right, r.top, r.bottom].map(Math.round), boxRect: ir && [ir.left, ir.right, ir.top, ir.bottom].map(Math.round) };
   }));
   await P.evaluate(() => { const i = document.getElementById('cmInput'); if (i) { i.value = 'Hi'; i.dispatchEvent(new Event('input', { bubbles: true })); } });
   log('chat tap', await tapMic('#cmInput')); await H.sleep(1300);

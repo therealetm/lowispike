@@ -27,7 +27,7 @@ const CART = { en: 'Cart', de: 'Warenkorb', es: 'Carrito' };
         localStorage.setItem('lowispike.lang', a.l); localStorage.setItem('lowi.lang', a.l); localStorage.setItem('lowi.storePicks.tab', 'shop');
         localStorage.setItem('lowi.giftBasket.server.v1', JSON.stringify({ ok: true, at: Date.now() })); localStorage.removeItem('lowi.giftBasket.skips.v1'); } catch (e) { } }, { l: lang });
       await R.ctx.addInitScript(() => { const t = setInterval(() => { if (window.LowiGiftBasket) { clearInterval(t);
-        const now = new Date().toISOString(), B = (id, name, items, total) => ({ id, user_id: 'u-' + id, first_name: name, anon: false, city: 'Teststadt', items: items.map(n => ({ n })), total_eur: total, pay_url: 'https://ko-fi.com/test-' + id, created_at: now });
+        const now = new Date().toISOString(), B = (id, name, items, total) => ({ id, user_id: 'u-' + id, first_name: name, anon: false, city: 'Teststadt', items: items.map(n => ({ n })), total_eur: total, pay_url: 'https://ko-fi.com/lowitest' + id, created_at: now });
         const open = [B('b1', 'Testperson A', ['Skyr', 'Oats', 'Spinach'], 14), B('b2', 'Testperson B', ['Eggs', 'Lentils'], 9), B('b3', 'Testperson C', ['Apples', 'Rye bread'], 7)];
         window.open = function () { window.__opened = (window.__opened || 0) + 1; return null; };
         window.LowiGiftBasket._api = { uid: () => 'me', ready: async () => true, open: async () => open.map(b => Object.assign({}, b)), mine: async () => [], given: async () => [], trust: async () => [] }; } }, 50); });

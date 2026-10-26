@@ -145,13 +145,12 @@
            the Kitchen's Scan button, that is the big button and Add to cart is the small one. */
         const KG = W.LowiKitchenGame, kIn = !!(KG && KG.intent && KG.intent());
         const kBtn = !KG ? '' : '<button type="button" class="' + (kIn ? 'ss-add ss-kit-main' : 'ss-kit') + '" data-ss="kit">' + IC.kit + '<span>' + esc(kitT(0)) + '</span></button>';
-        const cBtn = '<button type="button" class="' + (kIn ? 'ss-kit' : 'ss-add') + '" data-ss="add">' + IC.cart + '<span>' + esc(T('add')) + '</span></button>';
         const c = card(el);
         c.innerHTML = '<div class="ss-sheet ss-v-' + lvl + '">' +
             '<div class="ss-head"><span class="ss-img">' + (img ? '<img alt="" src="' + esc(img) + '">' : IC.bc) + '</span><div class="ss-name"><b>' + esc(name) + '</b>' + (p.brand ? '<small>' + esc(p.brand) + '</small>' : '') + '</div>' +
             '<button type="button" class="ss-x" data-ss="next" aria-label="' + esc(T('next')) + '">' + IC.x + '</button></div>' +
             verdictHTML(lvl, o.est) +
-            (kIn ? kBtn + cBtn : cBtn + kBtn) +
+            (kIn ? kBtn : '') + '<button type="button" class="' + (kIn ? 'ss-kit' : 'ss-add') + '" data-ss="add">' + IC.cart + '<span>' + esc(T('add')) + '</span></button>' + (kIn ? '' : kBtn) +
             detailsHTML(p, r) + '</div>';
         /* Oct 17 grocery hunt (grocery-hunt.js): a barcode really scanned (camera, typed digits or a barcode photo) is a catch; a product picked from a name search is not */
         if (o.code) { try { W.dispatchEvent(new CustomEvent('lowi:shop-scan', { detail: { barcode: code, name, brand: String(p.brand || ''), level: lvl, card: c } })); } catch (e) {} }

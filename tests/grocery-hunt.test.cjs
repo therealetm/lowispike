@@ -192,7 +192,7 @@ test('sharing: only the shop, the product, the estimate, the method; no user nam
 test('wiring: scripts load, the shopping scanner reports real barcode scans only, the world and spirit glow hooks default to no change', () => {
     const html = read('index.html'), sw = read('sw.js'), scan = read('shop-scan.js'), wh = read('world-health-core.js'), scene = read('body-world-3d-scene.js');
     for (const f of ['grocery-hunt-core.js', 'grocery-hunt.js', 'grocery-hunt.css']) { assert.ok(html.indexOf(f + '?v=') > 0, f + ' in index.html'); assert.ok(sw.indexOf('"' + f + '"') > 0, f + ' cached'); }
-    assert.match(scan, /if \(o\.code\)[^\n]*lowi:shop-scan/, 'only a looked-up barcode is reported, not a typed name');
+    assert.match(scan, /if \(o\.code && ctx === 'shop'\)[^\n]*lowi:shop-scan/, 'only a looked-up barcode in the shopping camera is reported, not a typed name (Oct 26 one scanner: the Scan and Log meal cameras show the same card but are not a shopping trip)');
     const WH = require('../world-health-core.js');
     const st = { logs: [], ledger: [], fast: {} };
     const base = WH.score(st);

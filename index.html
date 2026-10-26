@@ -15467,6 +15467,9 @@ async function camName(q){
   let p = withNameEst(base), fb = false;
   if (!p.nameEst) { NE_BUSY = true; msg(net("analysing")); const r = await nameResult(q, base); NE_BUSY = false; p = r.p; fb = r.fb; }
   if (!CAM) return;
+  /* Oct 26 one scanner: a typed name gets the same compact card as a barcode, over the camera, so Scan next goes on scanning */
+  if (window.LowiShopScan && LowiShopScan.show) { CAM.hold = true; buzz(30); sfx(p ? "check" : "soft"); const ip = $("#b3Nm", CAM.el); if (ip) { ip.value = ""; ip.blur(); } const lv = $("#b3NmLive", CAM.el); if (lv) lv.innerHTML = "";
+    LowiShopScan.show(CAM.el, p || {name:q, why:[], facts:{}, typed:true}, {ctx:scanCtx(), lvl:p ? "" : "unknown"}); return; }
   CAM.done = true; stopStream(); buzz(30); closeScanner(true);
   if (p) { sfx("check"); await showNameResult(p); return; }
   reveal({notFound:true, name:q, typed:true, neNone:true, neFb:fb}, true); }
@@ -15530,8 +15533,10 @@ function closeScanner(now){ if (!CAM) return; const c = CAM; c.done = true; stop
   if (now) c.el.remove(); else { c.el.classList.remove("on"); setTimeout(() => c.el.remove(), 260); } }
 async function torch(){ try { const tr = CAM.stream.getVideoTracks()[0]; CAM.torch = !CAM.torch; await tr.applyConstraints({advanced:[{torch:CAM.torch}]}); $(".b3-torch", CAM.el).classList.toggle("on", CAM.torch); } catch(e){} }
 async function found(code){ if (!CAM) return;
-  if (CAM.shop && window.LowiShopScan) { const now = performance.now(); if (CAM.hold || (window.LowiShopScanCore && LowiShopScanCore.repeatHit(code, CAM.lastHit, now))) return;
-    CAM.hold = true; CAM.lastHit = {code, at:now}; buzz(30); sfx("check"); msg(t("bcFound", code)); LowiShopScan.found(code, CAM.el); return; }
+  /* Oct 26 one scanner (Emmanuel: "the main page scanner gives me still this old overwhelming preview. Sync them"): every camera
+     (Scan, Log meal's Scan, Shop, Kitchen) shows the same compact card over the camera; its buttons follow where it was opened */
+  if (window.LowiShopScan) { const now = performance.now(); if (CAM.hold || (window.LowiShopScanCore && LowiShopScanCore.repeatHit(code, CAM.lastHit, now))) return;
+    CAM.hold = true; CAM.lastHit = {code, at:now}; buzz(30); sfx("check"); msg(t("bcFound", code)); LowiShopScan.found(code, CAM.el, {ctx:scanCtx()}); return; }
   CAM.done = true; stopStream(); buzz(30); sfx("check");
   CAM.el.classList.add("got"); msgState("lookup"); msg(t("bcFound", code));
   let p = null; try { p = await byBarcode(code); } catch(e){}
@@ -15638,6 +15643,8 @@ function pfToday(){ const d = new Date().toDateString(); return Object.values(D.
    (the main button when the scan came from Log meal); it never shows in the shopping camera, so a shopping scan never logs a meal
    or touches the Gap clock. Catch only appears for products the community database doesn't have yet (Pathfinder). */
 function scanForMeal(){ return !!window.LowiScanMeal && !(typeof CAM !== "undefined" && CAM && CAM.shop); } /* Oct 21: see openScanner */
+/* Oct 26 one scanner: where the camera was opened decides the card's buttons (shop: Add to cart first; meal: I ate this first) */
+function scanCtx(){ return typeof CAM !== "undefined" && CAM && CAM.shop ? "shop" : scanForMeal() ? "meal" : "scan"; }
 /* Oct 23 (Eman: "they can only do this with insulin-friendly products"): a yellow or spike result gets no bubble. It shows why,
    a Skip button and, when there is one, the best swap; nothing goes into the shared database or the Bubble Dex. */
 function noCatchHTML(p, noSkip){
@@ -15807,8 +15814,8 @@ function fillHerb(root){
   if (src) { const c = src.cloneNode(true); c.removeAttribute("id"); c.querySelectorAll("[id]").forEach(e => e.removeAttribute("id")); av.appendChild(c); }
   else av.classList.add("b3-herb-fallback");
 }
-function eatCur(btn){
-  const p = CUR; if (!p || !window.LowiVitalsBridge || btn.disabled) return; btn.disabled = true;
+function eatCur(btn, prod){ /* Oct 26 one scanner: prod = the product on the compact scan card (LowiDex.eat) */
+  const p = prod || CUR; if (!p || !window.LowiVitalsBridge || btn.disabled) return; btn.disabled = true;
   const meta = LV_B3[scView(p, scServing(p)).verdict] || LV_B3[p.verdict] || ["", 0]; /* scanfe-g2: the level for the amount you ate */
   const code = String(p.code || p.barcode || (p.nameEst ? "name:" + String(p.name || "").toLowerCase().replace(/\s+/g, " ").trim().slice(0, 60) : ""));
   const ne = p.nameEst && !scanHasData(p); /* Oct 23: a name estimate counts like a typed meal, marked as an estimate with its confidence */
@@ -15817,13 +15824,14 @@ function eatCur(btn){
   if (res && res.log && !res.dup) { res.log.lvl = meta[0]; res.log.r = meta[1]; res.log.code = code; if (ne) { res.log.est = "name"; res.log.conf = p.nameEst.conf || "low"; } try { LowiVitalsBridge.save(); } catch(e){} }
   buzz(12); sfx(res && res.dup ? "tap" : "soft");
   const text = res && res.dup ? res.reason : ["Logged", "Eingetragen", "Registrado"][LI()] + (res && !res.xp && res.reason ? " · " + res.reason.split(" · ").slice(1).join(" · ") : "");
-  if (REV) { try { R2.close(REV); } catch(e){} }
+  if (REV && !prod) { try { R2.close(REV); } catch(e){} }
   /* Oct 14: the herb world closes on its own after a scan log; a small XP pop on Home instead */
   if (window.LowiSpirit && LowiSpirit.afterScan) LowiSpirit.afterScan(res && res.xp || 0, text, res && res.dup ? "curious" : "eat");
   else toast(text + (res && res.xp ? " · +" + res.xp + " XP" : ""));
 }
-function reveal(p, quiet){
-  if (REV) { try { R2.close(REV); } catch(e){} REV = null; }
+/* Oct 26 one scanner (Emmanuel: "one thing, one ultimate scanner"): the re-rating every result gets, shared by reveal() and the
+   compact scan card (shop-scan.js via LowiDex.prep), so both always show the same verdict for the same product */
+function scanPrep(p){
   if (p && !p.notFound && !p.verdict) { p = Object.assign({}, p); }
   if (p && p.nameEst && scanHasData(p)) { p = Object.assign({}, p, {nameEst:null, verdict:"unknown", why:[], score:null}); } /* Oct 23: label data arrived, the name guess goes */
   /* Oct 16: always re-rate with the current spike estimator, so older saved verdicts (e.g. a vegetable pan rated as a drink) are corrected */
@@ -15832,6 +15840,10 @@ function reveal(p, quiet){
     else if (r.why && r.why.length) { p = Object.assign({}, p, {verdict:"unknown", why:r.why, score:null, est:true}); } }
   if (p && !p.notFound && !p.manual && (!p.verdict || p.verdict === "unknown")) p = withNameEst(p); /* Oct 23: the name gives the verdict when the label can't */
   if (p && !p.notFound && (!p.verdict || p.verdict === "unknown" || !p.why)) { const r = rate(p); p.verdict = p.verdict && p.verdict !== "unknown" ? p.verdict : r.verdict; p.why = p.why && p.why.length ? p.why : r.why; if (p.score == null) p.score = r.score; if (p.est == null) p.est = r.est; }
+  return p; }
+function reveal(p, quiet){
+  if (REV) { try { R2.close(REV); } catch(e){} REV = null; }
+  p = scanPrep(p);
   if (p && p.notFound) { if (p.partial) { p.name = ""; } }
   CUR = p; const anim = !quiet && !RM();
   if (!quiet && p && !p.notFound && p.verdict && p.verdict !== "unknown") { try { window.dispatchEvent(new CustomEvent("lowi:scan-verdict", { detail: { verdict: p.verdict } })); } catch(e){} }
@@ -15844,6 +15856,17 @@ function reveal(p, quiet){
     n && n.addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); analyseByName($(".ne-inl", REV)); } }); }
 }
 function manualReady(){ if (!REV) return; const n = ($("#b3MName", REV) || {}).value || "", any = $$(".b3-tick[aria-pressed=true]", REV).length; const b = $("#b3MCatch", REV); if (b) b.disabled = !(n.trim().length >= 2 && any); }
+/* Oct 26 one scanner: the Bubble Dex catch from the compact scan card (same doCatch + Pathfinder reward as catchCur, no sheet) */
+async function bubbleProduct(p){
+  if (!p || p.verdict !== "ok") return null;
+  const res = await doCatch(p); if (res.nocatch) return null;
+  const first = res.first, k = pkey(p), m = D.mine[k] || p; let xp = 0; if (first) xp = pfAward(Object.assign({}, p, m));
+  try { window.dispatchEvent(new CustomEvent("lowi:product-caught", {detail:{product:slim(Object.assign({}, p, m)), verdict:p.verdict, xp}})); } catch(e){}
+  sfx(first ? "catchFirst" : "catch"); buzz(first ? [30, 60, 30, 60, 80] : [30, 50, 40]);
+  if (curTab() === "scan") { try { renderTab(); } catch(e){} }
+  return {first:!!first, xp, title:first ? sct("pfWin") : t("caught"), sub:first ? sct("pfWinSub") : res.draft ? sct("pfDraft") : res.pending ? t("pending") : t("inYours")}; }
+function bubbleInfo(p){ if (!p || p.verdict !== "ok") return null; const m = D.mine[pkey(p)];
+  return {has:!!(m && !m.localDraft), label:pfVerifiable(p) ? sct("pfFirst") : t("catch"), hasLabel:t("inYours")}; }
 async function catchCur(btn, p){
   if (!p || btn.disabled) return; btn.disabled = true; btn.classList.add("throw"); sfx("tap");
   const rev = REV;
@@ -16006,7 +16029,9 @@ function boot(){
   try { if (curTab() === "scan") renderTab(); } catch(e){}
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 0)); else setTimeout(boot, 0);
-window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, nameEst:withNameEst, nameRate, byName:analyseTyped, /* Oct 23 name check */ validCode, enrich, showProduct, vtext:v => [t("vl_" + v), t("vs_" + v)], whyText, /* prod-verdict */ render:renderTab, state:() => D, stop:() => closeScanner(true), load:loadComm, lookup:byBarcode, search:searchName, shopMode, shopResume, shopOn:() => !!(CAM && CAM.shop), collect:doCatch, pfCount:() => Object.keys(D.pf || {}).length, items:() => D.comm.concat(mineList()), cur:() => CUR || (window.LowiDiscovery ? LowiDiscovery.cur() : null)} /* f2-cur */;
+window.LowiDex = {open:openDex, scan:openScanner, reveal,
+  /* Oct 26 one scanner (shop-scan.js card): */ prep:scanPrep, view:p => scView(p, scServing(p)), atGrams:(p, g) => scView(p, {from:"mine", grams:+g}), eat:p => eatCur({disabled:false}, p), bubble:bubbleProduct, bubbleInfo, swap:p => { try { return nameSwap(p); } catch(e){ return null; } }, ctx:scanCtx, openRecipe:id => { closeScanner(true); setTimeout(() => { try { if (typeof openRecipe === "function" && openRecipe(id) !== false) return; } catch(e){}
+    const x = document.createElement("button"); x.hidden = true; x.dataset.sh = "open-shelf"; x.dataset.t = "kochen"; x.dataset.sub = "recipe"; x.dataset.r = id; document.body.appendChild(x); x.click(); x.remove(); }, 180); }, rate, rateName, nameEst:withNameEst, nameRate, byName:analyseTyped, /* Oct 23 name check */ validCode, enrich, showProduct, vtext:v => [t("vl_" + v), t("vs_" + v)], whyText, /* prod-verdict */ render:renderTab, state:() => D, stop:() => closeScanner(true), load:loadComm, lookup:byBarcode, search:searchName, shopMode, shopResume, shopOn:() => !!(CAM && CAM.shop), collect:doCatch, pfCount:() => Object.keys(D.pf || {}).length, items:() => D.comm.concat(mineList()), cur:() => CUR || (window.LowiDiscovery ? LowiDiscovery.cur() : null)} /* f2-cur */;
 })();
 </script>
 <style id="r3kcss">

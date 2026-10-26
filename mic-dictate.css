@@ -1,0 +1,41 @@
+/* LOWiSPIKE mic dictation (Oct 26, 2026), see mic-dictate.js. Emmanuel: "I can click on a microphone and then I can just speak
+   and it writes it ... basically everywhere where you're supposed to type, minimally." Small glass mic inside the field's right
+   edge, 34 px with a 46 px tap area, a gentle breathing ring while listening. */
+.mic-has { padding-right: 46px !important; }
+.mic-btn {
+  position: absolute; left: 0; top: 0; z-index: 3; width: 34px; height: 34px; margin: 0; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .16); color: rgba(235, 245, 255, .82);
+  background: linear-gradient(160deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .04));
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 2px 8px rgba(0, 0, 0, .22);
+  cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  -webkit-user-select: none; user-select: none; transition: background .2s, color .2s, transform .15s, border-color .2s;
+}
+.mic-btn[hidden] { display: none !important; }
+.mic-btn::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; }
+.mic-btn svg { position: relative; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.mic-btn svg .mic-fill { fill: currentColor; stroke: none; }
+.mic-btn:active { transform: scale(.92); }
+.mic-btn:focus-visible { outline: 2px solid rgba(140, 210, 255, .9); outline-offset: 2px; }
+.mic-ring { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; opacity: 0; }
+.mic-btn.mic-on { color: #fff; border-color: rgba(120, 220, 255, .7); background: linear-gradient(160deg, rgba(90, 200, 255, .55), rgba(40, 120, 255, .45)); }
+.mic-btn.mic-on .mic-ring {
+  opacity: 1; box-shadow: 0 0 0 5px rgba(110, 210, 255, .26); animation: mic-breathe 1.6s ease-in-out infinite;
+}
+@keyframes mic-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.mic-btn.mic-ta { border-radius: 12px; }
+.mic-btn.mic-ta .mic-ring, .mic-btn.mic-ta::after { border-radius: 14px; }
+@media (prefers-reduced-motion: reduce) {
+  .mic-btn, .mic-btn.mic-on .mic-ring { transition: none; animation: none; }
+}
+.mic-hint {
+  position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 96px); z-index: 100000;
+  max-width: min(92vw, 420px); padding: 10px 16px; border-radius: 18px; transform: translate(-50%, 12px);
+  color: #fff; font-size: 15px; line-height: 1.35; text-align: center; pointer-events: none; opacity: 0;
+  background: rgba(20, 28, 48, .82); border: 1px solid rgba(255, 255, 255, .14);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 8px 28px rgba(0, 0, 0, .35);
+  transition: opacity .2s, transform .2s;
+}
+.mic-hint.on { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { .mic-hint { transition: none; transform: translate(-50%, 0); } }

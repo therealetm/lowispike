@@ -1219,7 +1219,14 @@ clutter. Food logging / food search / meal names first, then Scan search, Kitche
 companion rename and other free-text fields. Recognition in the app language (EN/DE/ES), every string EN/DE/ES. Permission
 denied = short localized hint. Audio only ever leaves the phone after the user taps the mic. If it can't work somewhere, hide
 the mic instead of showing a broken button. Task "LOWiSPIKE: microphone dictation in every text field" (Sesame, 26 Oct),
-worktree wt-mic, branch mic-dictation, COORD-mic.md. Status: building (see Log for the release).
+worktree wt-mic, branch mic-dictation-4, COORD-mic.md, HANDOFF-mic.md. Status: releasing (see Log for the build).
+Cost decision (Emmanuel: "if it costs money, use the device's own built-in speech-to-text"): Google cloud speech-to-text
+charges past a capped free tier, so the mic uses ONLY the device's free SpeechRecognition (webkitSpeechRecognition). No cloud
+service, no keys, no Supabase voice-text function (an early draft had one; it was removed and never deployed). iOS blocks
+that API inside Home Screen web apps (open WebKit bug), so there a tap focuses the field, opens the keyboard and a localized
+hint points at the keyboard's own dictation mic. Auto-attaches to free-text fields >= 150 px; OPT_IN / OPT_OUT lists in
+mic-dictate.js; data-mic / data-mic="off" per field. Chat composer: dictation mic inside the text box, the voice-message
+mic next to Send is untouched. What's New: new-mic-dictation (voiced EN/DE/ES). Probes: tools/mic-dictate/*.cjs.
 
 ### 0.27 Recipe card buttons look clunky after Add to kitchen (Emmanuel, voice + screenshot, Mon 26 Oct 2026 about 4:00 PM CET)
 

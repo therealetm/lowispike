@@ -143,7 +143,7 @@
     }
     function noteHTML() {
         if (!note) return '<div class="kg-toast" role="status" aria-live="polite"></div>';
-        return '<div class="kg-toast on" role="status" aria-live="polite"><span>' + esc(note.t) + (note.pts ? ' <b class="kg-pts">+' + note.pts + '</b>' : '') + '</span>' + (note.undo ? '<button type="button" data-kg="undo">' + esc(T('Undo', 'Rückgängig', 'Deshacer')) + '</button>' : '') + '</div>';
+        return '<div class="kg-toast on" role="status" aria-live="polite"><span>' + esc(note.t) + '' /* points show in the app's own points toast (LowiHost.award) */ + '</span>' + (note.undo ? '<button type="button" data-kg="undo">' + esc(T('Undo', 'Rückgängig', 'Deshacer')) + '</button>' : '') + '</div>';
     }
     function html() {
         load();
@@ -225,7 +225,7 @@
         const r = addOne(x, 'me'); if (!r) return;
         q = ''; hits = []; seq++;
         paint();
-        say(r.had ? T('Already in your kitchen: ', 'Schon in deiner Küche: ', 'Ya está en tu cocina: ') + r.it.n : T('In the ', 'Im Fach ', 'En ') + r.shelf.t[li()] + ': ' + r.it.n, r.had ? null : { undo: r.undo });
+        say(r.had ? T('Already in your kitchen: ', 'Schon in deiner Küche: ', 'Ya está en tu cocina: ') + r.it.n : T('Added to ', 'Neu im Fach ', 'A\u00f1adido a ') + r.shelf.t[li()] + ': ' + r.it.n, r.had ? null : { undo: r.undo });
         if (!r.had) { const d = root() && root().querySelector('[data-kg-door="' + r.shelf.id + '"]'); if (d && !rm()) { d.classList.add('kg-pop'); setTimeout(() => d.classList.remove('kg-pop'), 700); } daily(); }
     }
     /* shop-scan.js "In my kitchen": cur = {name, barcode, img, level, brand, cat} */

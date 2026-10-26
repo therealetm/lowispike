@@ -26,9 +26,27 @@
         const seen = {};
         const items = o.items.filter(i => i && typeof i === 'object' && typeof i.id === 'string' && clean(i.n))
             .filter(i => (seen[i.id] ? false : (seen[i.id] = true)))
-            .map(i => ({ id: i.id, n: clean(i.n), at: Number(i.at) || 0, from: i.from === 'cart' ? 'cart' : 'me' }))
+            .map(item)
             .slice(-MAX);
         return { v: 1, items };
+    }
+    /* Oct 26 Kitchen game (kitchen-game.js, Cook > Kitchen): an entry may also carry its shelf (c) and the product it came from (p):
+       barcode, picture, brand and the scanner's verdict level, copied from the product database or the scanner, never made up.
+       Old entries without them stay as they are (the shelf is then worked out from the name). */
+    const LEVELS = ['ok', 'better', 'spike', 'unknown'];
+    function prod(p) {
+        if (!p || typeof p !== 'object') return null;
+        const bc = String(p.bc || '').replace(/\D/g, '').slice(0, 14), img = /^https:\/\/[^\s"'<>]+$/.test(String(p.img || '')) ? String(p.img).slice(0, 400) : '';
+        const br = clean(p.br).slice(0, 40), v = LEVELS.indexOf(p.v) >= 0 ? p.v : '';
+        if (!bc && !img && !br && !v) return null;
+        const o = {}; if (bc) o.bc = bc; if (img) o.img = img; if (br) o.br = br; if (v) { o.v = v; if (p.est) o.est = 1; }
+        return o;
+    }
+    function item(i) {
+        const o = { id: i.id, n: clean(i.n), at: Number(i.at) || 0, from: i.from === 'cart' ? 'cart' : 'me' };
+        const c = String(i.c || '').replace(/[^a-z]/g, '').slice(0, 12); if (c) o.c = c;
+        const p = prod(i.p); if (p) o.p = p;
+        return o;
     }
     const has = (st, name) => { const k = norm(name); return !!k && st.items.some(i => norm(i.n) === k); };
     /* add one thing you have at home; the same name twice stays one entry (returns the same state) */
@@ -38,6 +56,25 @@
         if (!n || has(st, n)) return st;
         const items = st.items.concat([{ id: mkId(now), n, at: Number(now) || Date.now(), from: from === 'cart' ? 'cart' : 'me' }]).slice(-MAX);
         return { v: 1, items };
+    }
+    /* Oct 26: add with product data (from the product search or a scan). The same name or barcode twice stays one entry; a known
+       entry without data gets the data. Returns {state, id, had} */
+    function addProduct(st, x, now, from) {
+        st = parse(st); x = x || {};
+        const n = clean(x.n), p = prod(x), k = norm(n);
+        if (!n) return { state: st, id: '', had: false };
+        const old = st.items.find(i => norm(i.n) === k || (p && p.bc && i.p && i.p.bc === p.bc));
+        if (old) {
+            if (!p || old.p) return { state: st, id: old.id, had: true };
+            return { state: { v: 1, items: st.items.map(i => (i.id === old.id ? item(Object.assign({}, i, { p, c: i.c || x.c })) : i)) }, id: old.id, had: true };
+        }
+        const it = item({ id: mkId(now), n, at: Number(now) || Date.now(), from, c: x.c, p });
+        return { state: { v: 1, items: st.items.concat([it]).slice(-MAX) }, id: it.id, had: false };
+    }
+    /* Oct 26: put one entry on another shelf (the person knows better than the word list) */
+    function setShelf(st, id, c) {
+        st = parse(st);
+        return { v: 1, items: st.items.map(i => (i.id === id ? item(Object.assign({}, i, { c })) : i)) };
     }
     /* take one out (eaten, used up, thrown away): {state, gone} — gone is the removed entry, for an optional "Buy again" */
     function drop(st, id) {
@@ -56,5 +93,5 @@
     }
     /* the name a cart item goes into the Kitchen with: no " · 200 g" recipe amounts, no emoji prefix */
     function fromCartName(n) { return clean(String(n || '').split(' · ')[0]); }
-    return Object.freeze({ KEY, MAX, parse, add, drop, view, count, has, cartView, fromCartName, norm });
+    return Object.freeze({ KEY, MAX, LEVELS, parse, add, addProduct, setShelf, prod, drop, view, count, has, cartView, fromCartName, norm });
 });

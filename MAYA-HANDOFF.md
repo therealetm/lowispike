@@ -29,6 +29,8 @@ Ask him only what only he can answer (his real phone, his keys, a sign-in code),
 
 **Standing rule (Emmanuel, Fri 23 Oct 2026 about 10:55 PM Berlin, hotfix live as 20261023-231115): What's New appears ONCE per build.** His words: "It says 'New in this update.' I click on 'Show me.' It tells me. And then it appears again ... I click on 'Got it.' It appears again. It doesn't go away." One gate in the guide tick (`!newsSeen && !toured` then ONE card: Show me card with steps, text card without). Seen is kept per id AND per build (`lowi.news.build`, plus `lowispike.news.seenbuild` so the account backup carries it to his other device); any news of that build or older is seen. The update bubble before a refresh marks its build seen, so nothing announces it again after the refresh. The walkthrough no longer repeats the "New in this update" header; with one step the card already shows the text and Show me only goes there. "Later" keeps every update bubble quiet for 3 hours (`lowi.upd.snooze`). Sign-out keeps all of this. Never add a second popup path for news. Tests: `tests/news-once.test.cjs`; live check: `node tools/check-news-once.cjs 'iPhone 13'|'iPad Pro 11' [url] [lang]` (STEPS=1|3 injects steps to walk the tour).
 
+**Standing rule (Emmanuel, Mon 26 Oct 2026 about 1:45 PM CET): LOWiSPIKE work only gets reported once it is LIVE.** Never report work that is built but not live; keep it out of his updates and checklists until it is in the live build.
+
 **Standing rule (Emmanuel, 23 Oct 2026): every Maya watches for her own limit and hands over by herself.** The first task that ends "reached its limit" after 0 attempts means: run the handover runbook in section 0.6 ("Seeing the limit coming") yourself, directly in the chat, then tell him in one voice note. He never has to ask or explain it.
 
 **Standing rule (Emmanuel, voice message, Mon 26 Oct 2026 about 5:30 AM Berlin): updates ALWAYS ship silently. Never send update
@@ -782,6 +784,12 @@ usually still run for a while. So the handover is done **by you, directly, in th
 (a task started at the limit dies at 0 attempts, as on 23 Oct). Do it in as few calls as possible, most important first.
 
 *The handover runbook (about 5 calls):*
+0. **Rolling, before the limit (added Mon 26 Oct 2026, Maya 10):** the handover is no longer a one-off. Every coding
+   task pushes its branch after each step, and every task and bug-hunt run ends with
+   `bash /home/sprite/wt-harness/probes/sync-vm.sh "<what changed>"` (agent-harness branch): notes, probes, research and
+   tooling go to `agent-harness`, unfinished worktrees to `wip/<branch>`, with a secret scan. The short handoff for the
+   next Maya is `docs/HANDOFF-NEXT-MAYA.md` plus its PDF `docs/HANDOFF-NEXT-MAYA.pdf` (section 0.20). At the limit:
+   run sync-vm.sh once more, refresh that file and PDF, then send Emmanuel his prompt word for word plus the PDF.
 1. **Save everything on your computer:** `scripts/handover.sh <your N> <N+1>` from a fresh worktree of `origin/main`
    (`git worktree add -B handoff-mayaN1-<date> ../wt-handoffN1 origin/main`). It pushes every unfinished worktree to
    `wip/<branch>` and copies the work queue plus `OWNER-REQUESTS-*.md` into `handoff/queue-<date>/`, and prints a table.
@@ -800,7 +808,7 @@ usually still run for a while. So the handover is done **by you, directly, in th
    `queue/`, reclaim the abandoned claims, recreate any schedules (hourly checklist, sweeps) on your own agent, and keep
    this runbook in the file for the Maya after you.
 
-**The clone prompt for the next Maya stays in the chat only (Emmanuel, Sun 25 Oct 2026, about 11 PM): "I don't need it on GitHub."** **It is UNIVERSAL (Emmanuel, ~11:15 PM: "I wanted the universal prompt"): no Maya numbers, no dates, nothing to fill in.** The same text works for every Maya; each new Maya works out where she is from the newest "Handover" section. At handover, send him the exact prompt you were given, word for word and unchanged, right in the chat with the voice note. Never put the prompt itself in this repo.
+**The clone prompt for the next Maya stays in the chat only (Emmanuel, Sun 25 Oct 2026, about 11 PM): "I don't need it on GitHub."** **It is UNIVERSAL (Emmanuel, ~11:15 PM: "I wanted the universal prompt"): no Maya numbers, no dates, nothing to fill in.** The same text works for every Maya; each new Maya works out where she is from the newest "Handover" section. At handover, send him the exact prompt you were given, word for word and unchanged, right in the chat with the voice note. Send `docs/HANDOFF-NEXT-MAYA.pdf` with it (also to his Gmail): the prompt points here, this file points to 0.20, and 0.20 points to the PDF. Never put the prompt itself in this repo.
 
 **Handover table.** Checkpoint by Maya 5, Monday 19 Oct 2026, 9:20 PM CEST. Live **20261019-201827**, `main` at
 510f7f7 before this commit. Tasks run only on Maya 5's account and worktrees live only on her computer: a new Maya
@@ -1051,6 +1059,37 @@ Task: Sesame "LOWiSPIKE: rebuild Kitchen as an animated pantry game in Cook", br
 His words: "Ok now let's do what this guy talks about in his video" (Instagram reel by Nick Saraev about MiroFish, github.com/666ghj/MiroFish: feed it a pitch, it simulates thousands of AI people reacting on a fake Twitter/Reddit and writes a report).
 Built: tools/mirofish/ (pitch seed, question, headless run.py) + manual GitHub Action "MiroFish simulation" (.github/workflows/mirofish.yml, workflow_dispatch only, pinned MiroFish 7657031a). Read tools/mirofish/README.md.
 Waiting on Emmanuel: two repo secrets, MIROFISH_LLM_API_KEY (Gemini key from aistudio.google.com) and MIROFISH_ZEP_API_KEY (free key from app.getzep.com). Once they exist, run it (`gh workflow run mirofish.yml -f rounds=20`), read report.md + interviews.json, and send him the top findings. Simulation results are a lead, not proof: check them before turning them into app tasks.
+
+### 0.20 Handover (rolling): Maya 10 -> next Maya (Emmanuel, Mon 26 Oct 2026 about 12:45 PM CET)
+
+His words: "Start the hand-off so that when we reach it, I can just send the PDF to the next Maya, and that Maya can
+check how far you got and what it needs to finish ... don't just have everything in your computer ... Transfer
+everything that you're doing into the repos ... the smartest, most efficient way."
+
+- **Start here:** [docs/HANDOFF-NEXT-MAYA.md](docs/HANDOFF-NEXT-MAYA.md) (PDF: `docs/HANDOFF-NEXT-MAYA.pdf`). It has
+  what LOWiSPIKE is, where everything lives, his standing rules, every open task with its next exact step, and how to
+  rebuild the agent computer from GitHub. Keep it current; regenerate the PDF with
+  `bash /home/sprite/wt-harness/tools-vm/handoff-pdf.sh` (agent-harness) and land both docs-only via push-main.sh.
+- **Everything that was only on the agent computer** is on branch `agent-harness` (bug-hunt ledger and probes, COORD and
+  HANDOFF notes in `vm-notes/`, scripts, research, ChatGPT simulation prompts, App Store concept images, MiroFish patch,
+  seed and `mirofish/MIROFISH-RECREATE.md`) and in `wip/<branch>` snapshots. Private things stay off GitHub and are
+  described instead: MiroFish keys and run-1 data, Emmanuel's own profile seed for the App Store shots, the Community
+  cleanup fixtures, email audit notes.
+- **Rolling:** the playbook and bug-hunt skills now push branches after each step and run `probes/sync-vm.sh` at the end
+  (section 0.6 step 0).
+- **Kitchen pantry game (0.19), 1:50 PM:** built and on GitHub (`kitchen-pantry`), not live. A GitHub Actions run on it
+  failed; a fresh finishing task is fixing it and finishing the tour step and voices, tests, iPhone check and quiet release.
+- **His prompt** stays in the chat only, unchanged (0.6). It sends the new Maya to this section.
+
+### 0.21 Supermarket redesign: virtual grocery shopping (Emmanuel, Mon 26 Oct 2026 about 2:05 PM CET)
+
+His words: "Also redesign supermarket because it's quite annoying. I'm at home and I want to go grocery shopping now. And I
+would have loved to be able to virtual grocery shop, just like all those apps that are going viral, the ones that we are
+trying to copy from. Whatever their feature is that is making people want to use their app, we could be using that,
+literally inside of our supermarket. Include that into the handover if you're not able to actually get this done because
+of the weekly limit."
+- Task "LOWiSPIKE: redesign Supermarket as virtual grocery shopping" started; working notes `HANDOFF-supermarket.md` on its
+  branch. Open work until it is live (report it only once live). Research on the viral apps: agent-harness `research/`.
 
 ## 1. What LOWiSPIKE is
 
@@ -1995,3 +2034,4 @@ obLater snooze, sign-out KEEP). Tests 2765/2765, CI green, live check de iPhone 
 - 2026-10-26 11:15 CET Hourly bug hunt run 38 (Sesame bug-hunt task, worktree wt-bughunt-202610261002). **BH-038 fixed (quiet release).** A double tap on Community's menu button opened the menu and shut it at once (2nd tap hit the reused backdrop). toggleMenu marks the menu on show + spends closing taps (LowiFreshScrim); tests/community-menu-reused-dbl.test.cjs.
 - 2026-10-26 12:40 CET Hourly bug hunt run 39 (Sesame bug-hunt task, worktree wt-bughunt-202610261102). **BH-039 fixed (quiet release).** A double tap on a Scan button that opens the camera inside Misty's world (#spWorld: Products empty-state Scan, herb care) pressed the camera with its 2nd tap: barcode/name field focused (keyboard up) or Deep analyze. spirit.js open() marks the world on every show (LowiFreshScrim.mark); fresh-scrim also prevents the focus of a field on the swallowed tap's mousedown (guardDown, sibling for every guarded overlay with a field). tests/spworld-reused-dbl.test.cjs.
 - 2026-10-26 13:10 CET Docs only (Sesame task "Redo LOWiSPIKE App Store images, realistic"): standing rule "never call the companion Misty in general; say your companion" added here, to AI_PLAYBOOK.md and to both Sesame LOWiSPIKE skills. No build, no release.
+- 2026-10-26 13:40 CET Rolling handoff (Maya 10): section 0.20 + docs/HANDOFF-NEXT-MAYA.md/.pdf, 0.6 step 0, agent-harness probes/sync-vm.sh (VM notes, probes, research, ASO, MiroFish to agent-harness; wip/* fast-forward snapshots). Docs only, no build bump.

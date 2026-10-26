@@ -1017,6 +1017,13 @@ Food check: a name word alone (hamburger/burger/sushi/Saft) can't make bread/ric
 rows follow the fixed check, catch-day verdicts never milder; Milprima Quarkcreme stays out (sweeteners). Live WebKit check
 (tests/products-shuffle-layout-live.cjs against the live URL): iPhone 13 390x844, SE, iPad: nothing off either edge, no errors.
 
+### 0.18 Community bot recipe cards must open the recipe page + clear buttons + Add to Kitchen fills the pantry (Emmanuel, voice message, Mon 26 Oct 2026 about 12:40 PM CET)
+
+Screens: Community > Chat, a "Nibblo - bot" message (photo "Tandoori Lettuce Wrap Plate", "Low spike" pill, "Lunch idea, straight from the Recipe Book: ...", buttons "+", "Reply", "Report message").
+His words: "The bot messages, they are so useless. Where is all the things that I said? We should be able to click on it and then it opens... You know how when you go on Shuffle and you pick a food, that page that opens? That's what's supposed to happen. Cuz that page already has everything else, doesn't it? It has the where to buy it, how much it cost, the ingredients. So since there's a button, at least let's have the button be in a way where people understand that they can click on it to save, or to cook, or to open, or to add into their kitchen. When I add to kitchen, the products are then added to the kitchen wardrobe. You need to fix that logic."
+"Where is all the things that I said" = the two unreleased rows of 0.13: Nibblo meal tap opens the recipe (`nibblo-recipe-20261025`) and one "Add to kitchen" button on Community / For You / Nibblo posts (`meal-kitchen-20261025`).
+What he wants: (1) a tap on the bot's photo / title / an Open button opens the SAME page Shuffle opens for a picked food (where to buy, cost, ingredients). Reuse it, no second version. (2) the vague "+" becomes labelled actions (Open, Cook, Save, Add to Kitchen) in EN/DE/ES. (3) Add to Kitchen puts the recipe's products into the Kitchen pantry (At home), correctly. Task: Sesame "Community bot recipe cards open the recipe page", branch `bot-recipe-open`, worktree /home/sprite/wt-bot-recipe, COORD-bot-recipe.md. Quiet release.
+
 ### 0.17 MiroFish: test LOWiSPIKE on simulated people (Emmanuel, Mon 26 Oct 2026 about 5:40 AM CET)
 
 His words: "Ok now let's do what this guy talks about in his video" (Instagram reel by Nick Saraev about MiroFish, github.com/666ghj/MiroFish: feed it a pitch, it simulates thousands of AI people reacting on a fake Twitter/Reddit and writes a report).

@@ -1472,6 +1472,33 @@ branch quick-tour-video, COORD-quick-tour.md. Status: **LIVE in build 20261026-2
   says "Quick tour · N s"; tests/quick-tour-swap.test.cjs checks the file's length) and bump version (cache-buster on the URL).
   The tour card text names no length, so no new voice recordings are needed. Live check: `node tests/quick-tour-live.cjs`.
 
+### 0.39 Evening catch-up: "the best bubble checklist ever" for people who can only open the app at the end of the day (Emmanuel, call, Mon 26 Oct 2026 about 11:30 PM CET)
+
+His words: "One of my beta users only uses her phone at the end of the day when she's about to go to sleep, which means
+throughout the day she can't use her phone, which means she can barely use our app, but she wants to. We need to make our
+app so that even those who weren't able to use the app throughout the day can catch up at the end of the day." She is
+pushing 80, so it must be very simple. His idea: "a checklist game that she goes through, and as she's selecting the things
+she gets points after points after points, animation and everything, so it feels really cool going through that
+checklist... the best bubble checklist ever."
+
+What to build (extend existing code, no second version of anything):
+- Evening greeting: after about 7 PM, or when the day has little or nothing logged, opening the app greets gently "Ready to
+  catch up on your day?" with one large "Catch up on today" button. Also reachable any time from a clear spot.
+- The catch-up is an evening bubble checklist: calm deep twilight-purple screen in the app's glass/cosmic style. One large
+  glowing bubble at a time (Breakfast, Lunch, Dinner, Snacks, Drinks/water, Movement/walk). Big stationary tap target, no
+  chasing moving bubbles.
+- Tap a bubble: a few large clear choices (her usual and recent foods, simple common options), plus "Something else" (type
+  or speak via the existing dictation mic, never required) and "Skip".
+- Each pick pops the bubble with a burst, sparkles, points floating up, haptics where the app uses them; your companion
+  cheers; next bubble drifts in. Points fair and in line with the reward table, no farming.
+- End: read back the day in plain words, one big "Save". Entries saved at the approximate time of day (morning / noon /
+  evening). Calm finish celebration, companion day/level updates.
+- Accessibility for about 80 years old: very large text and targets, high contrast, few words, one thing per screen,
+  VoiceOver labels, Reduce Motion calm version, one-handed. EN/DE/ES with recorded companion voice. "your companion", never
+  "Misty". Honest wording, no medical promises.
+Task "LOWiSPIKE: evening catch-up bubble checklist for end-of-day users" (Sesame, 26 Oct ~23:29), worktree
+wt-evening-catchup, branch evening-catchup, COORD-evening-catchup.md. Status: requested, building.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

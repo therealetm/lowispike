@@ -1221,6 +1221,24 @@ denied = short localized hint. Audio only ever leaves the phone after the user t
 the mic instead of showing a broken button. Task "LOWiSPIKE: microphone dictation in every text field" (Sesame, 26 Oct),
 worktree wt-mic, branch mic-dictation, COORD-mic.md. Status: building (see Log for the release).
 
+### 0.27 Recipe card buttons look clunky after Add to kitchen (Emmanuel, voice + screenshot, Mon 26 Oct 2026 about 4:00 PM CET)
+
+His words: "When I add something, look at how it looks. It looks weird. Fix that UI. Added to your kitchen, it looks so clunky
+and big, and look at how the green thing looks. That's not even normal written words anymore."
+
+Screenshot (Community > Chat, Nibblo post "Tandoori Lettuce Wrap Plate", after Add to kitchen): the four buttons under the
+card (0.18, bot-recipe-core.js rowHTML + bot-recipe.css) are big tiles in a 2x2 grid, "Open recipe" wraps to two lines,
+Save is a tall box. After adding, "✓ 6 in your kitchen" and a separate Undo tile share one grid cell, so the green text breaks
+letter by letter ("6 / in / yo / ur / kit / ch / en", .crb-l had overflow-wrap:anywhere). The "Added to your Kitchen:
+Lettuce, Chicken, ..." toast is big and covers the post.
+
+What to build: small glass pill buttons in tidy rows, text never wraps mid-word or letter by letter (EN/DE/ES), the added
+state is one readable pill ("✓ 6 in your kitchen · Undo", Undo a small text button at its end), no layout jump between before
+and after, and a short toast (or none) that does not cover the post. Keep BH-041's data-spend on Add to kitchen / Undo.
+Check every place the row is used (Chat recipe posts, a person's meal post with foods) and sibling rows with the same squeeze.
+Task "LOWiSPIKE: fix clunky recipe card buttons after Add to kitchen" (Sesame, 26 Oct), worktree wt-recipe-pills, branch
+recipe-card-pills, COORD-recipe-pills.md. Status: building (see Log for the release).
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

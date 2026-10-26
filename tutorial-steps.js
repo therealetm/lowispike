@@ -219,6 +219,15 @@
             }
         },
         {
+            id: 'new-one-scanner', area: 'new', where: 'home', target: ['#whHud .o8-scan'], covers: ['scan'],
+            title: { en: 'One scanner everywhere', de: 'Ein Scanner überall', es: 'Un solo escáner en todas partes' },
+            text: {
+                en: 'Scan shows the same short card everywhere now: from Home, in Shop or when you log a meal. One verdict, a better pick when it helps, and the rest under Details.',
+                de: 'Scan zeigt jetzt überall dieselbe kurze Karte: auf Home, im Shop oder wenn du ein Essen einträgst. Ein Urteil, eine bessere Wahl, wenn sie hilft, und der Rest unter Details.',
+                es: 'Scan muestra ahora la misma tarjeta corta en todas partes: en Inicio, en Shop o cuando registras una comida. Un veredicto, una opción mejor cuando ayuda, y el resto en Detalles.'
+            }
+        },
+        {
             id: 'new-give-hand', area: 'new', where: 'home', open: 'shop', target: ['.stp-card .stp-tab[data-stp-tab="gift"]', '.stp-card'], covers: ['give-a-hand'],
             info: 'Oct 25 2026: the Give a hand tab in Shop (store-picks.js giftDoor); it shows once the server has the basket table, otherwise the card points at Shop. Oct 26: the Kitchen tab left Shop for Cook, so the card opens Shop on Seller Zone and Give a hand sits right beside it',
             title: { en: 'Give a hand', de: 'Hilf mit', es: 'Echa una mano' },

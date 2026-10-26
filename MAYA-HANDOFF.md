@@ -953,7 +953,22 @@ ranking; wherever "Moss Drifter" was written (if a probe or test wrote it to pro
 fake/test data. Check whether bug hunt run 28's ranking test change (5b901b17, "pin the clock", week rollover Mon 26 Oct)
 or rounds 30-32 hid a real week-boundary bug. Task: Sesame "LOWiSPIKE: fix weekly leaderboard + remove bot", branch
 `weekly-ranking-fix`, worktree wt-weekly-ranking, COORD-weekly-ranking.md. Release silently (--quiet), no update
-notification, no announcement. Status: requested, being built.
+notification, no announcement.
+**Status: DONE, LIVE 20261026-055906 (quiet).** Root cause: the ranking code was not broken (rounds 28, 30-32 changed no
+ranking logic; 5b901b17 only pinned test fixtures that were dated Fri 23 Oct). At Monday 00:00 local the week resets, so
+every real person had 0 sunbeams and dropped off the Week board (by design, rows need pts > 0), and Emmanuel's own row was
+"–" because he had 0 this week (the 6 is Misty's level). The only row was a fake: anonymous guest "F" (look 1.3.3 Capricorn
+= "Moss Drifter", Lv 4, xp 998 from the Fixture state) made at 03:05 and 03:08 UTC by bug hunt run 31's quick scripts
+/tmp/fsvis.cjs and /tmp/amod.cjs, which opened the LIVE app with no network block; amod.cjs logged a meal after midnight,
+so "F" got the new week's only 6 sunbeams. Same family: five "E" guests (Emmanuel fixture, Lv 2) from run 26's
+/tmp/bh26-r2.cjs at 22:21-22:23 UTC on 25 Oct. Cleanup: those 7 anonymous auth users deleted (cascade: profiles,
+user_state; they had no posts, messages, likes or gifts), backup in VM BUGHUNT/cleanup/fixture-guests-20261026.json; no
+real account touched. Prevention: index.html lowiAnonOpts() makes every guest sign-in from an automated browser
+(navigator.webdriver) send lowi_test:true, so the server marks it profiles.test and it never reaches a real person's
+Ranking, galaxy or chat (food-photo-ai.js too). The empty Week board now says "New week, everyone starts at 0" (EN/DE/ES)
+with a "See this month" button. tests/ranking-week-reset.test.cjs (6, 3 fail on old). Live: WebKit iPhone 13 EN + DE and
+Chromium 390 ES, signup body carries lowi_test, new guest is test=true in the DB, no fake on the board, 0 errors.
+Not on Emmanuel's iPhone.
 
 ### 0.15 Admin "Remove from community" must DELETE the account (Emmanuel, voice message, Mon 26 Oct 2026 about 5:36 AM CET)
 
@@ -1216,6 +1231,10 @@ scripts/release.sh "what users get, in one line" --news news.json
 - **Safe testing:** a browser test against the live site must block the production Supabase host or use a local test
   sign-in, and must not create real profiles, messages or activity. On 17 to 18 Oct test profiles ("eman", "QA")
   landed on Emmanuel's Care board. When a real-server test is unavoidable (food-photo), say so and name the test user.
+  Quick /tmp scripts count too: on 26 Oct two of them (bug hunt run 31, /tmp/fsvis.cjs + /tmp/amod.cjs, no route at all)
+  put a fake "F" (Moss Drifter) at 1st on the new week's board, and /tmp/bh26-r2.cjs left five "E" guests (0.14). Since
+  release 20261026-055906 every guest made by an automated browser (navigator.webdriver) signs up with lowi_test:true and is
+  profiles.test, hidden from real people; that is the safety net, not a licence: still block writes unless a live write is the test.
 - Reports must say what kind of evidence it is: unit tests, simulated browser, live site, or Emmanuel's real phone.
   You never have his phone; say "simulated iPhone 13, not your phone" and give him one exact thing to try.
 - Under heavy machine load some test files fail as a whole (herb-tamagotchi, ui-joystick-fade, ui-settings-panel)
@@ -1929,3 +1948,4 @@ obLater snooze, sign-out KEEP). Tests 2765/2765, CI green, live check de iPhone 
 - 2026-10-26 03:45 CET Hourly bug hunt run 30, second release: BH-030 sibling, the Gap bubble's VoiceOver label (spirit.js gapAria) now says 'at 06:57 PM yesterday' after midnight (gapWhen -> LowiGapView._when). probe-gap-midnight.cjs records the label; local WebKit iPhone 13 EN/DE pass, 0 errors.
 - 2026-10-26 04:30 CET Hourly bug hunt run 31 (Sesame bug-hunt task, worktree wt-bughunt-202610260301, started on live 20261026-031541). **P-CLOCK-NO-DAY sweep: clean** for everything a user can see (BUGHUNT/playtest/probe-bare-time.cjs at 00:10 with a meal at 18:57 yesterday: every Home bubble, the legacy tabs, the end-fast sheet; meal-journal / slot picker / move bubble / sym-home only ever show today's items). Left alone: the old fasting card #fsCard ('Last meal 18:57', index.html lastTxt) has no day word, but it is display:none in the current app. **Midnight with after-meal timers running: clean** (probe-pmc-midnight.cjs: 23:52 meal, walk/stairs/upright confirmed after midnight pay once each, the per-meal cap holds, Spike Tamer once, state survives a reload). **Fixed, quiet release, BH-031 (P-OVERLAY-STACK):** the Day card's busy() only knew its named BUSY list, so it opened 1.5 s after the fasting reward (#fstRw 'Fast complete', opened by the first meal of the day) on top of it (z 2147483000 over 2147482000) and one Escape closed both: live Chromium 390 probe-dayover.cjs. busy() now also counts any other visible [aria-modal=true] dialog (real visibility, never #drDay itself), like tutorial.js busyBy and EVO_BUSY. Local Chromium + WebKit iPhone 13: the reward stays on top, the Day card opens ~5 s after the reward is closed; with no meal the Day card still opens at ~4.5 s. tests/day-card-other-modal.test.cjs (6, 2 fail on old).
 - 2026-10-26 05:20 CET Hourly bug hunt run 32 (Sesame bug-hunt task, worktree wt-bughunt-202610260401, started on live 20261026-041554). Auto-openers vs the fasting reward: clean (#fstRw is aria-modal, so visits, tour, evolution and the Day card wait). **BH-032 fixed + LIVE 20261026-051305 (quiet):** a double tap that switches tabs pressed what the new tab put under the finger. Double tapping "Misty is number 25 worldwide" in her card showed the Community galaxy before Ranking, and the 2nd tap picked a companion as the chat target ("Write to Lina"), so the next message went to that person alone. fresh-scrim.js mark(el): a pane shown again right after a real tap ignores a tap within 44 px for 400 ms; goTab and community-rooms-ui showView call it. tests/fresh-tab-same-spot.test.cjs (6, all fail on old), suite 3594/3594, live Chromium 390 probe-rank-dbl.cjs PASS. Open: the galaxy shows for up to ~3 s before Ranking on a slow device (a slow deliberate tap there still picks a person); ranking could open Community straight into Ranking. Not on Emmanuel's iPhone.
+- 2026-10-26 06:10 CET Weekly leaderboard + bot (0.14, Sesame task, worktree wt-weekly-ranking). **LIVE 20261026-055906 (quiet).** Not a ranking regression: Monday reset emptied the Week board and the one row was a fake guest "F" (Moss Drifter) from run 31's unblocked /tmp scripts; 7 fixture guests (F x2, E x5) deleted from production (backup BUGHUNT/cleanup/fixture-guests-20261026.json). Automated browsers now sign up as test accounts (lowiAnonOpts), empty Week board explains the reset + See this month. tests/ranking-week-reset.test.cjs 6 (3 fail on old), suite 3600/3600, CI green. Live WebKit iPhone 13 EN/DE + Chromium ES: signup carries lowi_test, guest test=true, 0 errors.

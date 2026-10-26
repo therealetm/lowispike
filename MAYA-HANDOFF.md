@@ -1091,6 +1091,26 @@ of the weekly limit."
 - Task "LOWiSPIKE: redesign Supermarket as virtual grocery shopping" started; working notes `HANDOFF-supermarket.md` on its
   branch. Open work until it is live (report it only once live). Research on the viral apps: agent-harness `research/`.
 
+### 0.22 Supermarket = our Choosy, Cart (Warenkorb), Seller Zone out of Supermarket, Give a hand = swipe to pay groceries (Emmanuel, Mon 26 Oct 2026 1:07 PM CET, voice)
+
+His words (meaning kept): "Remove Seller Zone in Supermarket. Seller Zone has its own section, so why is it in
+Supermarket? Seller Zone is supposed to be Amazon. Our Amazon. Supermarket is supposed to be basically those viral
+videos' apps version. Our version, but smarter. ... Keep on creating Kitchen in the gaming section. What we can add here
+is Einkaufswagen, basically Warenkorb. The apps that went viral already have all of these steps in there, I even sent you
+a screenshot. So go ahead and make the Supermarket our Choosy version, Seller Zone our Amazon version, removing Kitchen
+out of there. And Give a hand the app version of the one that I sent you ... our Tinder version for millionaires, but
+just people who have money, who want to pay the groceries for someone, and just swipe. Swipe through groceries to pay
+for. Update the Maya handoff if you can't finish this task."
+- What it means: (1) the Seller Zone strip inside the Supermarket tab goes; Seller Zone keeps its own Shop tab ("our
+  Amazon"). (2) The Kitchen tab leaves Shop; Kitchen lives on as the pantry game in Cook (task d798e0ea). (3) Supermarket
+  gets a real Cart (EN Cart, DE Warenkorb, ES Carrito): add, cart view, quantities, estimated total labelled as an
+  estimate, never invented prices. It is the same list as the shopping list. The Choosy-style week flow itself is task
+  0.21's (week basket); it should fill this Cart. (4) Give a hand becomes a swipe deck of other people's grocery baskets:
+  right = I'll pay this one (then the payer still taps the person's own payment link: no money moves in the app),
+  left = skip. Cards show the food, never hardship; no fake people shown as real.
+- Task "LOWiSPIKE: Supermarket = our Choosy, cart, Seller Zone out, swipe-to-pay groceries" started; branch
+  `supermarket-cart-swipe`, COORD file `/home/sprite/COORD-cart-swipe.md`. Report only once live.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

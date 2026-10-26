@@ -85,6 +85,8 @@
             el.textContent = '+' + v; if (now - t0 < COUNT_MS) requestAnimationFrame(step); else { el.textContent = '+' + total; el.classList.add('mf-pop'); }
         };
         requestAnimationFrame(step);
+        /* the final number lands even when frames are throttled (low power, background) */
+        setTimeout(() => { if (!c.dead && el.textContent !== '+' + total) { el.textContent = '+' + total; el.classList.add('mf-pop'); } }, COUNT_MS + 250);
     }
 
     /* o: {min, xp, lang?, voice?, onClose?} -> the overlay element (null when there is nothing to celebrate) */
@@ -117,7 +119,7 @@
         c.onKey = e => { if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); close('escape'); } else if (e.key === 'Tab') { e.preventDefault(); const b = el.querySelector('.mf-go'); if (b) b.focus(); } };
         D.addEventListener('keydown', c.onKey, true);
         D.body.appendChild(el);
-        requestAnimationFrame(() => { if (!c.dead) el.classList.add('mf-in'); });
+        void el.offsetWidth; el.classList.add('mf-in'); /* a reflow, not a frame: a throttled or paused rAF must never leave it invisible */
         const go = el.querySelector('.mf-go'); setTimeout(() => { try { if (!c.dead && go) go.focus({ preventScroll: true }); } catch (e) { } }, 60);
         const sr = el.querySelector('.mf-sr'); setTimeout(() => { if (!c.dead && sr) sr.textContent = [w.title, w.glow, xp ? '+' + xp + ' ' + w.xpWord : '', w.minutes, w.note].filter(Boolean).join('. '); }, 120);
         if (!rm) {

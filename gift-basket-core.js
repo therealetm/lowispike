@@ -175,10 +175,33 @@
     }
     /* drop skips older than 24 hours so the saved map stays small */
     function freshSkips(skipped, now) { now = now || Date.now(); const o = {}; Object.keys(skipped || {}).forEach(id => { if (now - skipped[id] < SKIP_MS) o[id] = skipped[id]; }); return o; }
-    /* a horizontal drag decides: past the threshold (or a quick flick) right = pay, left = skip, else it springs back */
-    function swipeDecision(dx, dy, ms, width) {
+    /* Oct 26 (.agents/skills/apple-design, sections 3, 5 and 6): Apple's momentum projection from "Designing Fluid Interfaces".
+       Where a released card would come to rest, in px, for a release velocity in px/s. 0.99 = the snappier deceleration. */
+    function project(v, rate) { const d = rate || 0.99; return ((+v || 0) / 1000) * d / (1 - d); }
+    /* the finger's speed at release (px/s) from the last ~100 ms of [{x, t}] samples; 0 if it rested before letting go */
+    function releaseVelocity(hist, now, win) {
+        win = win || 100; if (!Array.isArray(hist) || hist.length < 2) return 0;
+        const last = hist[hist.length - 1]; if (now != null && now - last.t > win) return 0;
+        let first = last; for (let i = hist.length - 2; i >= 0; i--) { if (last.t - hist[i].t > win) break; first = hist[i]; }
+        if (first === last) first = hist[hist.length - 2];
+        const dt = last.t - first.t; return dt > 0 ? (last.x - first.x) / dt * 1000 : 0;
+    }
+    /* the live on-screen x of a computed CSS transform ('none' | matrix(...) | matrix3d(...)), to grab a card mid-flight */
+    function txOf(s) {
+        const m = /^matrix(3d)?\(([^)]*)\)/.exec(String(s || '').trim()); if (!m) return 0;
+        const n = m[2].split(',').map(Number); const x = m[1] ? n[12] : n[4]; return isFinite(x) ? x : 0;
+    }
+    /* a horizontal drag decides: past the threshold (or a quick flick) right = pay, left = skip, else it springs back.
+       With the release velocity vx (px/s): a flick back against the drag is a change of mind (back), otherwise the card
+       commits if where it is thrown (dx + project(vx)) is past the threshold. */
+    function swipeDecision(dx, dy, ms, width, vx) {
         const th = Math.max(80, Math.min(140, (width || 360) * 0.28));
         if (Math.abs(dy) > Math.abs(dx) * 1.2) return 'back';
+        if (typeof vx === 'number' && isFinite(vx)) {
+            if (Math.abs(vx) > 150 && dx !== 0 && Math.sign(vx) !== Math.sign(dx)) return 'back';
+            const end = dx + project(vx);
+            return end >= th ? 'pay' : end <= -th ? 'skip' : 'back';
+        }
         const fast = ms > 0 && Math.abs(dx) / ms > 0.6 && Math.abs(dx) > 40;
         if (dx >= th || (fast && dx > 0)) return 'pay';
         if (dx <= -th || (fast && dx < 0)) return 'skip';
@@ -186,5 +209,5 @@
     }
 
     return { DAY, WINDOW_DAYS, MAX_ITEMS, MIN_EUR, MAX_EUR, MAX_URL, PAY_RE_SQL, KOFI_RESERVED,
-        payLink, linkName, itemCheck, total, build, view, status, canReceipt, canVerdict, daysLeft, trust, fromCounts, careEventId, norm, SKIP_MS, deck, freshSkips, swipeDecision };
+        payLink, linkName, itemCheck, total, build, view, status, canReceipt, canVerdict, daysLeft, trust, fromCounts, careEventId, norm, SKIP_MS, deck, freshSkips, swipeDecision, project, releaseVelocity, txOf };
 });

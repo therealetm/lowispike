@@ -171,19 +171,26 @@
     function undoSkip() { if (!lastSkip) return; delete skipped[lastSkip]; saveSkips(); lastSkip = ''; paint(); }
     const calm = () => { try { return W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
     /* the drag: the top card follows the finger sideways (vertical moves keep scrolling the panel), PAY / SKIP fade in, and on
-       release C.swipeDecision decides. Skip flies the card out to the left; pay springs it back and shows the pay link. */
+       release C.swipeDecision decides. Skip flies the card out to the left; pay springs it back and shows the pay link.
+       Oct 26 (.agents/skills/apple-design): it decides by the flick at release (velocity + momentum projection), a card grabbed
+       while it springs back stays where it is under the finger (drag.bx = its live x), and the fly-out keeps the finger's speed. */
+    const now = () => (W.performance && W.performance.now ? W.performance.now() : Date.now());
     function onDown(e) {
         if (!ov || drag || (e.button != null && e.button !== 0)) return;
-        const card = e.target.closest && e.target.closest('.gb-swipe'); if (!card || !ov.contains(card)) return;
+        const card = e.target.closest && e.target.closest('.gb-swipe'); if (!card || !ov.contains(card) || card.classList.contains('gb-fly')) return;
         if (e.target.closest('a,button,input,label')) return;
-        drag = { card, id: card.getAttribute('data-gb-id'), x: e.clientX, y: e.clientY, t: Date.now(), dx: 0, dy: 0, on: false, pid: e.pointerId };
+        let bx = 0; try { bx = C.txOf(W.getComputedStyle(card).transform); } catch (x) {}
+        if (Math.abs(bx) < 1) bx = 0;
+        drag = { card, id: card.getAttribute('data-gb-id'), x: e.clientX, y: e.clientY, t: Date.now(), dx: bx, dy: 0, bx, on: false, pid: e.pointerId, h: [{ x: bx, t: now() }] };
+        if (bx) { card.classList.add('gb-dragging'); card.style.transform = 'translateX(' + bx + 'px)'; } /* caught mid-flight: hold it there */
     }
     function onMove(e) {
         if (!drag || e.pointerId !== drag.pid) return;
-        drag.dx = e.clientX - drag.x; drag.dy = e.clientY - drag.y;
+        const mx = e.clientX - drag.x; drag.dx = drag.bx + mx; drag.dy = e.clientY - drag.y;
+        const t = now(); drag.h.push({ x: drag.dx, t }); while (drag.h.length > 2 && t - drag.h[0].t > 160) drag.h.shift();
         if (!drag.on) {
-            if (Math.abs(drag.dy) > 10 && Math.abs(drag.dy) > Math.abs(drag.dx)) { drag = null; return; } /* a scroll, not a swipe */
-            if (Math.abs(drag.dx) < 8) return;
+            if (Math.abs(drag.dy) > 10 && Math.abs(drag.dy) > Math.abs(mx)) { const d = drag; drag = null; if (d.bx) release(d); return; } /* a scroll, not a swipe */
+            if (Math.abs(mx) < 8 && !drag.bx) return;
             drag.on = true; drag.card.classList.add('gb-dragging');
             try { drag.card.setPointerCapture(drag.pid); } catch (x) {}
         }
@@ -196,17 +203,23 @@
     function onUp(e) {
         if (!drag || (e && e.pointerId !== drag.pid)) return;
         const d = drag; drag = null;
-        if (!d.on) return;
+        if (!d.on) { if (d.bx) release(d); return; }
         dragAt = Date.now();
-        const w = ov ? ov.clientWidth : 360, v = e && e.type === 'pointercancel' ? 'back' : C.swipeDecision(d.dx, d.dy, Date.now() - d.t, w);
+        const w = ov ? ov.clientWidth : 360, vx = C.releaseVelocity(d.h, now()), ms = Date.now() - d.t;
+        const v = e && e.type === 'pointercancel' ? 'back' : C.swipeDecision(d.dx, d.dy, ms, w, vx);
         d.card.classList.remove('gb-dragging');
         if (v === 'skip' && !calm()) {
-            d.card.classList.add('gb-fly'); d.card.style.transform = 'translateX(' + (-w * 1.2) + 'px) rotate(-14deg)';
-            setTimeout(() => skip(d.id), 220); return;
+            /* velocity handoff: leave at the finger's speed (never slower than 220 ms ease-out, never faster than 120 ms) */
+            const to = -w * 1.2, flyMs = vx < -200 ? Math.round(Math.max(120, Math.min(220, Math.abs((to - d.dx) / vx) * 1000))) : 220;
+            d.card.style.transitionDuration = flyMs + 'ms';
+            d.card.classList.add('gb-fly'); d.card.style.transform = 'translateX(' + to + 'px) rotate(-14deg)';
+            setTimeout(() => skip(d.id), flyMs); return;
         }
-        d.card.style.transform = ''; d.card.style.removeProperty('--gb-pay'); d.card.style.removeProperty('--gb-skip');
+        release(d);
         if (v === 'skip') skip(d.id); else if (v === 'pay') pick(d.id);
     }
+    /* spring back from wherever it is now (the CSS transition starts from the live value) */
+    function release(d) { d.card.classList.remove('gb-dragging'); d.card.style.transform = ''; d.card.style.removeProperty('--gb-pay'); d.card.style.removeProperty('--gb-skip'); }
     function cardHTML(b) {
         const t = trustBy[b.owner];
         const act = actHTML(b);

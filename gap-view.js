@@ -463,10 +463,17 @@
             if (e.shiftKey && D.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && D.activeElement === z) { e.preventDefault(); a.focus(); }
         }
     }
+    /* BH-037 (Oct 26 2026, P-CLOSING-STILL-LIVE, sibling of BH-036): Gap fades out for 260 ms after it closes and stayed clickable
+       meanwhile. A double tap on "Log a meal in Fuel" pressed the same button again in the fading Gap, so Log meal was opened twice
+       (live Chromium 390). A closing Gap now ignores taps, and a real tap that closes it is marked spent (fresh-scrim.js) so the 2nd
+       tap of a double tap on that spot presses nothing under it. */
+    function spend(e) { try { const F = W.LowiFreshScrim; if (F && F.spent) F.spent(e); } catch (x) {} }
     function onClick(e) {
-        if (e.target === el) { close(); return; }
+        if (!el || !el.contains(e.target)) return; /* BH-037: this Gap is closing */
+        if (e.target === el) { spend(e); close(); return; }
         const b = e.target.closest('[data-gv]'); if (!b) return;
         const k = b.dataset.gv;
+        if (k === 'close' || k === 'log' || k === 'move') spend(e); /* BH-037: these close Gap */
         if (k === 'close') close();
         else if (k === 'fix') { try { W.LowiFastEdit.open(); } catch (x) { console.error(x); } }
         else if (k === 'log') { close(); setTimeout(() => { try { W.LowiSpirit.meal(); } catch (x) { console.error(x); } }, 60); }

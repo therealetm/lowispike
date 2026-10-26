@@ -100,10 +100,15 @@ function ask(force){
   c.innerHTML = '<p class="lisp-q"></p><div class="lisp-b"><button type="button" class="chip lisp-no"></button><button type="button" class="chip on lisp-yes"></button></div>';
   c.querySelector(".lisp-q").textContent = (cname() ? cname() + ": " : "") + w("ask");
   c.querySelector(".lisp-yes").textContent = w("yes"); c.querySelector(".lisp-no").textContent = w("no");
+  /* BH-037 (Oct 26 2026, P-CLOSING-STILL-LIVE): the card fades for 260 ms after a choice and stayed clickable meanwhile, so a double
+     tap on "Not now" counted two "not now"s (live: no=2), and two mean never ask again; a double tap on Yes asked the system twice.
+     One choice per card now, and the real tap that makes it is marked spent (fresh-scrim.js) so the 2nd tap presses nothing under it. */
+  let picked = false;
+  const pick = e => { if (picked) return false; picked = true; try { const F = window.LowiFreshScrim; if (F && F.spent && e) F.spent(e); } catch (x) {} return true; };
   const close = () => { c.classList.add("out"); setTimeout(() => c.remove(), 260); };
-  c.querySelector(".lisp-yes").addEventListener("click", () => { const s = js(AKEY); s.done = 1; put(AKEY, s);
+  c.querySelector(".lisp-yes").addEventListener("click", e => { if (!pick(e)) return; const s = js(AKEY); s.done = 1; put(AKEY, s);
     const p = P(); (p && p.enable ? p.enable() : Promise.resolve("off")).then(m => { if (m === "on") { c.querySelector(".lisp-q").textContent = w("ok"); c.querySelector(".lisp-b").remove(); setTimeout(close, 2600); } else close(); }, close); });
-  c.querySelector(".lisp-no").addEventListener("click", () => { const s = js(AKEY); s.no = (s.no || 0) + 1; put(AKEY, s); close(); });
+  c.querySelector(".lisp-no").addEventListener("click", e => { if (!pick(e)) return; const s = js(AKEY); s.no = (s.no || 0) + 1; put(AKEY, s); close(); });
   D.body.appendChild(c); return true; }
 function init(){ days(); setTimeout(() => { try { ask(false); } catch(e){} }, 25000); }
 if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", init); else setTimeout(init, 0);

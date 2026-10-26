@@ -12207,7 +12207,19 @@ function rec(id){ if (CACHE[id]) return CACHE[id]; let r = null;
 
 /* at home: what you ticked in Today / the cart (S.td.have, same keys), plus kitchen staples unless you un-ticked them */
 function haveMap(){ const s = st(); if (!s) return {}; if (!s.td) s.td = {}; if (!s.td.have) s.td.have = {}; return s.td.have; }
-function isHome(i){ if (FREE.indexOf(i.k) >= 0) return true; const h = haveMap(); if (h[i.k] === true) return true; if (h[i.k] === false) return false; return !!i.home0 || STAPLE.test(i.k); }
+/* MAYA-HANDOFF 0.18: what is in Shop > Kitchen > At home (lowispike.kitchen.v1) counts as at home on every recipe, under its
+   English name or the phone-language one. A tap on this recipe ("not at home" / "at home") still wins for this ingredient. */
+let KIT_RAW, KIT_ST = null;
+function kitSt(){ const K = window.LowiKitchenCore; if (!K) return null;
+  let raw = null; try { raw = localStorage.getItem(K.KEY); } catch(e){}
+  if (raw !== KIT_RAW || !KIT_ST) { KIT_RAW = raw; KIT_ST = K.parse(raw); }
+  return KIT_ST; }
+const kitTr = s => { try { return window.LowiLang && LowiLang.t ? LowiLang.t(s) || s : s; } catch(e){ return s; } };
+function kitHas(i){ const B = window.LowiBotRecipeCore, ks = kitSt(); if (!B || !ks || !i || !ks.items.length) return false;
+  return B.inKitchen(ks, {n:i.n || i.k}, kitTr); }
+function isHome(i){ if (FREE.indexOf(i.k) >= 0) return true; const h = haveMap(); if (h[i.k] === true) return true; if (h[i.k] === false) return false; return kitHas(i) || !!i.home0 || STAPLE.test(i.k); }
+/* Add to kitchen: this recipe's earlier "not at home" taps no longer hide what you just put in the Kitchen */
+function homeClear(id){ const r = rec(id); if (!r) return; const h = haveMap(); let ch = false; r.ing.forEach(i => { if (h[i.k] === false && kitHas(i)) { delete h[i.k]; ch = true; } }); if (ch) persist(); repaintRecipe(); }
 function setHome(i, v){ if (FREE.indexOf(i.k) >= 0) return; haveMap()[i.k] = !!v; persist(); }
 function storeId(){ const s = st(); return (s && s.cart && s.cart.store) || ""; }
 function setStore(id){ const s = st(); if (!s) return; if (!s.cart) s.cart = {}; s.cart.store = id; persist(); }
@@ -12242,7 +12254,7 @@ function recipeHTML(r){ const b = basket(r), e = ease(r), cur = storeId(), pick 
       '<div class="p2-hint">Tap anything you already have.</div></div>' +
     (b.buy.length ? shopsHTML(b, pick) : "") +
     (r.steps.length ? '<div class="p2-sec p2-up" style="--d:6"><div class="p2-lab"><span>How it goes</span></div><ol class="p2-steps">' + r.steps.map((s, i) => '<li><span class="p2-sn">' + (i + 1) + '</span><span>' + esc(s) + '</span></li>').join("") + '</ol></div>' : "") +
-    '<div class="p2-more p2-up" style="--d:7">' + (r.book ? '<button class="r2-btn ghost" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="1">Add to today</button>' + (window.LowiCS ? "" : '<button class="r2-btn ghost" data-lc="open" data-id="' + esc(r.id) + '" data-p2close="1">' + IC.cart + '<span>Fill my cart</span></button>') + '<button class="r2-btn ghost p2-share" data-tr="share-recipe" data-r="' + esc(r.id) + '" data-p2close="1">Share to For You</button>' : '<button class="r2-btn ghost" data-p2="copy">Copy shopping list</button>') + '</div>' +
+    '<div class="p2-more p2-up" style="--d:7">' + (r.book ? '<button class="r2-btn ghost" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="1">Add to today</button>' + kitBtn(r) + (window.LowiCS ? "" : '<button class="r2-btn ghost" data-lc="open" data-id="' + esc(r.id) + '" data-p2close="1">' + IC.cart + '<span>Fill my cart</span></button>') + '<button class="r2-btn ghost p2-share" data-tr="share-recipe" data-r="' + esc(r.id) + '" data-p2close="1">Share to For You</button>' : '<button class="r2-btn ghost" data-p2="copy">Copy shopping list</button>') + '</div>' +
     '<div style="height:12px"></div>'; }
 function ingChip(i, home, s){ return '<button class="p2-ing' + (home ? " home" : "") + '" data-p2="ing" data-k="' + esc(i.k) + '"><span class="p2-ie">' + ingArt(i) + '</span><span class="p2-in"><b>' + esc(i.n) + '</b>' + (i.q ? '<small>' + esc(i.q) + '</small>' : "") + '</span>' +
   (home ? '<span class="p2-ok">' + IC.check + '</span>' : (s ? '<span class="p2-ip num">' + eur(px(i, s)) + '</span>' : "")) + '</button>'; }
@@ -12257,6 +12269,11 @@ function openRecipe(id, opt){ const r = typeof id === "string" ? rec(id) : id; i
   const ov = R2.sheet('<div class="p2-rec" id="p2Rec">' + recipeHTML(r) + '</div>', {full:true, cls:"p2-recov", onClose:() => { if (OPEN && OPEN.ov === ov) OPEN = null; }});
   if (R2.xBottom) R2.xBottom(ov);
   OPEN = {r, ov}; if (opt && opt.cook) setTimeout(() => cook(r), 250); return true; }
+/* the recipe page's own Add to kitchen (bot-recipe.js handles the tap): the products go to Shop > Kitchen > At home */
+function kitBtn(r){ const B = window.LowiBotRecipeCore, K = window.LowiKitchenCore; if (!B || !K || !r) return "";
+  const l = (window.LowiLang && LowiLang.get && LowiLang.get()) || "en", f = B.foods(r.ing); if (!f.length) return "";
+  const ks = kitSt(), have = !!ks && B.status(ks, f, kitTr) === "have";
+  return '<button class="r2-btn ghost p2-kit" data-br="kitchen" data-id="' + esc(r.id) + '" data-key="r' + esc(r.id) + '" data-noi18n="1"' + (have ? ' aria-label="' + esc(B.t("allHave", l)) + '"' : '') + '>' + (have ? '\u2713 ' + esc(B.t("allHave", l)) : '\u{1F9FA} ' + esc(B.t("kitchen", l))) + '</button>'; }
 function repaintRecipe(){ if (!OPEN || !OPEN.ov.isConnected) return; const box = $("#p2Rec", OPEN.ov), sh = OPEN.ov.querySelector(".r2-sh"), y = sh ? sh.scrollTop : 0;
   box.innerHTML = recipeHTML(OPEN.r); box.classList.add("p2-still"); if (sh) sh.scrollTop = y; }
 
@@ -12488,7 +12505,7 @@ function boot(){
     .observe(document.body, {childList:true, subtree:true});
   $$(".r5-card").forEach(enhancePick);
 }
-window.LowiP2 = {open:openRecipe, cook:id => { const r = rec(id); if (r) cook(r); }, register:r => { if (r && r.id && Array.isArray(r.ing) && Array.isArray(r.steps)) CACHE[r.id] = r; }, rec, basket, sceneOf, renderScan:renderScan2, brandSheet, classicsSheet};
+window.LowiP2 = {open:openRecipe, cook:id => { const r = rec(id); if (r) cook(r); }, register:r => { if (r && r.id && Array.isArray(r.ing) && Array.isArray(r.steps)) CACHE[r.id] = r; }, rec, basket, sceneOf, renderScan:renderScan2, brandSheet, classicsSheet, homeClear:homeClear, repaint:repaintRecipe};
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();
 
@@ -21652,6 +21669,8 @@ window.LowiCommunityHost = {
 <script src="meal-journal.js?v=20261026-122440"></script>
 <script src="meal-detail-core.js?v=20261026-122440"></script>
 <script src="meal-detail.js?v=20261026-122440"></script>
+<script src="bot-recipe-core.js?v=20261026-122440"></script>
+<script src="bot-recipe.js?v=20261026-122440"></script>
 <script src="grocery-bucket-core.js?v=20261026-122440"></script>
 <script src="grocery-bucket.js?v=20261026-122440"></script>
 <script src="string-pov.js?v=20261026-122440"></script>
@@ -21713,6 +21732,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" href="meal-photo.css?v=20261026-122440">
 <link rel="stylesheet" href="meal-journal.css?v=20261026-122440">
 <link rel="stylesheet" href="meal-detail.css?v=20261026-122440">
+<link rel="stylesheet" href="bot-recipe.css?v=20261026-122440">
 <link rel="stylesheet" href="grocery-bucket.css?v=20261026-122440">
 <link rel="stylesheet" id="mpopCss" href="misty-pop.css?v=20261026-122440">
 <link rel="stylesheet" id="mpnCss" href="misty-panels.css?v=20261026-122440">

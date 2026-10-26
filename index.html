@@ -9834,6 +9834,13 @@ function mapPerson(r){ const sh = sharedOf(r); return {n:r.name, s:sh.s, t:sh.t,
 /* ---------- boot ---------- */
 function loadLib(){ return new Promise((ok, no) => { if (window.supabase && window.supabase.createClient) return ok();
   const s = document.createElement("script"); s.src = LIB; s.async = true; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+/* 26 Oct 2026 (Emmanuel, 05:33: "Why have you broken the weekly leaderboard? And added a bot in there."): a quick check script
+   of ours opened the live app in a test browser, signed in as a guest and logged a meal, so a made-up "F" (Moss Drifter) took
+   1st place on the new week's board. A guest account made by an automated browser (navigator.webdriver, set by Playwright,
+   Selenium and every WebDriver) now carries lowi_test:true, so the server marks it profiles.test (bot-accounts.js) and it stays
+   off the Ranking, the galaxy and the chat for every real person. tests/ranking-week-reset.test.cjs holds this. */
+function lowiAnonOpts(){ try { return navigator.webdriver === true ? {options:{data:{lowi_test:true}}} : undefined; } catch(e){ return undefined; } }
+window.lowiAnonOpts = lowiAnonOpts;
 async function boot(){
   if (booting || live) return; if (!CFG.url || !CFG.key || location.protocol === "file:") return;
   booting = true; paintCard();
@@ -9844,7 +9851,7 @@ async function boot(){
       sb.auth.onAuthStateChange((ev, session) => { const u = session && session.user; if (u) { if (uid && u.id !== uid) switchUser(); uid = u.id; email = u.email || ""; chatNotify("auth"); } else { switchUser(); uid = ""; email = ""; chatNotify("auth"); } });
     }
     let { data } = await sb.auth.getSession(); let session = data && data.session;
-    if (!session) { const r = await sb.auth.signInAnonymously(); if (r.error) throw r.error; session = r.data.session; }
+    if (!session) { const r = await sb.auth.signInAnonymously(lowiAnonOpts()); if (r.error) throw r.error; session = r.data.session; }
     uid = session.user.id; email = session.user.email || "";
     await start();
   } catch(e){ console.info("[LOWiSPIKE] offline mode:", e && (e.message || e)); live = false; }

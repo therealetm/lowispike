@@ -140,7 +140,7 @@
             if (!cx || !cx.client) return '';
             const sb = await cx.client();
             let s = (await sb.auth.getSession()).data.session;
-            if (!s && sb.auth.signInAnonymously) s = (await sb.auth.signInAnonymously()).data.session;
+            if (!s && sb.auth.signInAnonymously) s = (await sb.auth.signInAnonymously(root.lowiAnonOpts ? root.lowiAnonOpts() : undefined)).data.session;   /* test browsers sign in as test accounts (index.html lowiAnonOpts) */
             return (s && s.access_token) || '';
         } catch (e) { return ''; }
     }

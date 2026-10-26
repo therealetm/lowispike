@@ -30,6 +30,11 @@
         place: ['Place {n}', 'Platz {n}', 'Puesto {n}'],
         up: ['up {n}', '{n} hoch', 'sube {n}'], down: ['down {n}', '{n} runter', 'baja {n}'],
         empty: ['No one here yet. Be the first.', 'Noch niemand da. Sei der Erste.', 'Aún no hay nadie. Sé el primero.'],
+        /* 26 Oct 2026 (Emmanuel, Monday 05:33: "Why have you broken the weekly leaderboard?"): right after the Monday reset the Week
+           board is empty on purpose (everyone starts at 0), so it says so and offers the month's board, where everyone still is */
+        emptyW: ['New week, everyone starts at 0 ☀. Log anything to take 1st place.', 'Neue Woche, alle starten bei 0 ☀. Trag etwas ein und hol dir Platz 1.', 'Semana nueva, todos empiezan en 0 ☀. Registra algo y toma el 1.er puesto.'],
+        emptyM: ['New month, everyone starts at 0 ☀. Log anything to take 1st place.', 'Neuer Monat, alle starten bei 0 ☀. Trag etwas ein und hol dir Platz 1.', 'Mes nuevo, todos empiezan en 0 ☀. Registra algo y toma el 1.er puesto.'],
+        seeM: ['See this month', 'Diesen Monat ansehen', 'Ver este mes'],
         open: ['Open {name}', '{name} öffnen', 'Abrir {name}'],
         levels: ['Levels', 'Level', 'Niveles'],
         left1: ['Last day', 'Letzter Tag', 'Último día'],
@@ -242,7 +247,8 @@
             '<div class="rk-chips"><span class="rk-chip">' + pIco(per) + '<span>' + esc(per === 'all' ? tr('xp') : tr('sun')) + '</span></span>' +
             '<span class="rk-chip">' + (sp ? ico('hourglass', '', 'rk-hg', '\u231b') : '<b class="rk-inf8" aria-hidden="true">\u221e</b>') + '<span>' + esc(sp ? (left <= 1 ? tr('left1') : tr('leftN', { n: left })) : tr('forever')) + '</span></span></div>' +
             meHTML(list, mv);
-        if (!list.length) h += '<p class="rk-empty">' + ico('trophy', '', 'rk-empty-i', '') + '<span>' + esc(tr('empty')) + '</span></p>';
+        if (!list.length) h += '<p class="rk-empty">' + ico('trophy', '', 'rk-empty-i', '') + '<span>' + sunHTML(esc(tr(per === 'w' ? 'emptyW' : per === 'm' ? 'emptyM' : 'empty'))) + '</span>' +
+            (per === 'w' && K.rows(people(), 'm', now, myCare()).length ? '<button type="button" class="rk-seem" data-rk="per" data-k="m">' + esc(tr('seeM')) + '</button>' : '') + '</p>';
         else {
             h += '<div class="rk-pod n' + top.length + '">' + K.podium(list).map((x, i) => podHTML(x, i, mv)).join('') + '</div>';
             if (rest.length) h += '<ol class="rk-list">' + rest.map((x, i) => rowHTML(x, i, mv)).join('') + '</ol>';

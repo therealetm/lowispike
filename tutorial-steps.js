@@ -222,9 +222,9 @@
             id: 'new-one-scanner', area: 'new', where: 'home', target: ['#whHud .o8-scan'], covers: ['scan'],
             title: { en: 'One scanner everywhere', de: 'Ein Scanner überall', es: 'Un solo escáner en todas partes' },
             text: {
-                en: 'Scan shows the same short card everywhere now: from Home, in Shop or when you log a meal. One verdict, a better pick when it helps, and the rest under Details.',
-                de: 'Scan zeigt jetzt überall dieselbe kurze Karte: auf Home, im Shop oder wenn du ein Essen einträgst. Ein Urteil, eine bessere Wahl, wenn sie hilft, und der Rest unter Details.',
-                es: 'Scan muestra ahora la misma tarjeta corta en todas partes: en Inicio, en Shop o cuando registras una comida. Un veredicto, una opción mejor cuando ayuda, y el resto en Detalles.'
+                en: 'Every scan now shows the same short card: one verdict, a better pick when it helps, and the rest under Details.',
+                de: 'Jeder Scan zeigt jetzt dieselbe kurze Karte: ein Urteil, eine bessere Wahl, wenn sie hilft, und der Rest unter Details.',
+                es: 'Cada escaneo muestra ahora la misma tarjeta corta: un veredicto, una opción mejor cuando ayuda, y el resto en Detalles.'
             }
         },
         {

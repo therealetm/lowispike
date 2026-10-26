@@ -319,7 +319,12 @@
            a tap on it landed on the scrim. Lift the X one above the sheet it closes; back to the stylesheet's 300 otherwise. */
         const rz = r ? (parseInt(getComputedStyle(r).zIndex, 10) || 0) : 0, xz = rz >= 300 ? String(rz + 1) : '';
         if (x.style.zIndex !== xz) x.style.zIndex = xz;
+        const was = x.hidden;
         if (x.hidden !== !on) x.hidden = !on; /* Oct 18 game-perf: runs every 700 ms, write only on change */
+        /* BH-035 (Oct 26 2026): this X is made once and shown again for every sheet, so fresh-scrim never saw it as new. A double
+           tap on Ranking's "Profile" (bottom centre) opened the profile and the 2nd tap, 200-350 ms later, landed on this X and
+           closed it at once (live Chromium 390 and WebKit iPhone 13). Shown again = the same-spot rule as a new overlay. */
+        if (on && was) { try { const F = W.LowiFreshScrim; if (F && F.mark) F.mark(x); } catch (e) { } }
     }
 
     /* ---------- zoom: whole world <-> back in ---------- */

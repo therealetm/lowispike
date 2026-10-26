@@ -488,6 +488,9 @@
         el.className = 'rk-lad-wrap rk-cmp-wrap'; el.setAttribute('data-noi18n', '');
         el.innerHTML = '<div class="rk-lad rk-cmp fresh" role="dialog" aria-modal="true"></div>';
         el.addEventListener('click', e => {
+            /* BH-035: a card that is closing stays on screen for 220 ms; a double tap on "Profile" pressed it twice and stacked two
+               profiles of the same person (live Chromium 390, taps 60-120 ms apart). Only the open card acts. */
+            if (el !== cmpEl) return;
             if (e.target === el) { closeCmp(); return; }
             const t = e.target.closest('[data-cmp]'); if (!t) return;
             const a = t.dataset.cmp;

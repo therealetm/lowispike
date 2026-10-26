@@ -1426,7 +1426,7 @@ it straight into the Kitchen instead ("I have it" / "Hab ich schon" / "Ya lo ten
 Rows must not shift under the finger (double tap protection, bug hunt P-ROW-SHIFT rounds 41-43). Big tap targets (44 pt),
 EN/DE/ES, iPhone 390x844 + iPad both orientations, Reduce Motion.
 Task "LOWiSPIKE: quick + add on Supermarket product rows" (Sesame, 26 Oct), worktree wt-quick-add, branch quick-add-rows,
-COORD-quick-add.md. Status: shipped (build in the Log).
+COORD-quick-add.md. Status: LIVE in build 20261026-174232 (silent, mini-tour step new-quick-add).
 What was built (decision: the simplest native option for the Kitchen is a small house button next to "+", not a long press,
 because a long press cannot be found and VoiceOver cannot reach it):
 - quick-add-core.js (window.LowiQuickAdd): name -> Cart line match (case, accents, " · amount" ignored), which control a row
@@ -2394,3 +2394,4 @@ obLater snooze, sign-out KEEP). Tests 2765/2765, CI green, live check de iPhone 
 - 2026-10-26 17:00 CET bug hunt run 44: BH-044 LIVE 20261026-165435 (quiet): Start next journey no longer switches the controller to autopilot (it hid every Home button for the 30 min journey). Emmanuel: auto fly only when the user taps it.
 - 2026-10-26 17:12 CET better pick 0.30: LIVE 20261026-170447 (quiet): Better pick only a better version of the same kind of food (almonds -> nuts/seeds or nothing, never eggplant sauce); better-pick-core.js; 7 tests; WebKit iPhone 13 live check DE/EN/ES 0 finds
 - 2026-10-26 17:25 CET cook tabs 0.29: LIVE 20261026-171531 (quiet): Cook is Kitchen | Shuffle | Swipe and opens on the first tab; hold a Cook tab to drag it (Community's engine, community-tab-order.js row()); order in lowispike.cook.tabs (device). Kitchen links, Help me pick Shuffle and Swaflo still land on their game. What's New new-cook-tabs (en/de/es voice), new-kitchen no longer says next to Swipe. Tests tests/cook-tab-order.test.cjs (7, all failed on old code); browser check tools/cook-tabs/check.cjs.
+- 2026-10-26 17:48 CET quick add 0.35: LIVE 20261026-174232 (quiet): every Supermarket product row (and its search results) has a quick column: "+" into the Cart (becomes "- 1 +" in the same spot), a house straight into the Kitchen (note with Undo); verdict tag by the name; double tap adds one. 3825 tests; live WebKit probe iPhone 13 / iPad P es / iPad L de / Reduce Motion all pass (tools/quick-add/probe.cjs).

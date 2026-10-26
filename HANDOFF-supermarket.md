@@ -9,6 +9,14 @@ parallel Cart / Seller Zone / Give a hand task, branch supermarket-cart-swipe, C
 
 Branch `supermarket-virtual`, worktree /home/sprite/wt-supermarket, COORD /home/sprite/COORD-supermarket.md.
 
+## Status (Mon 26 Oct 2026, 14:55 CET): slice 1 DONE and shipped
+Released silently with scripts/release.sh (news id week-shop-*, tour ["new-week-shop"]), after rebasing on the Cart release
+(20261026-135558). Since the Cart is the shopping list (0.22), the week now fills the Cart: "Put it in my Cart / In meinen Warenkorb /
+Anadir a mi carrito", then "Open my Cart" presses the Supermarket Cart button. The door sits above Supermarket's scroll (tests pin
+Shop's two buttons + Snacks at the top of the scroll). CI was red on 12:37/12:40 UTC runs: 6 tests (door before shopActs, tour card over
+140 chars, no recorded voices); all fixed. Checks: full suite 3723/3723, WebKit iPhone 13 EN/DE/ES + iPad portrait/landscape with
+Reduce Motion (probes/SUPERMARKET/check.cjs on agent-harness). Next slices below are still open.
+
 ## Slice 1: Shop from home weekly basket
 Files (new, owned by this task): week-basket-core.js (logic), week-basket.js (sheet), week-basket.css, tests/week-basket.test.cjs.
 - Household 1-6+, dinners 3-7, weekly budget (EUR, -5/+5 or typed), store chips with each store's week total (cheapest marked).

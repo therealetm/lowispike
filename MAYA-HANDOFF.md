@@ -1179,6 +1179,14 @@ remember, iOS 17 would never do that."
   one tap that puts them all back on Snacks to buy, with Undo. Extend the existing snack code, no second version.
 - Task "LOWiSPIKE: fix wobbly Supermarket layout + Buy again autofill"; branch `sm-wobble`, COORD file
   `/home/sprite/COORD-sm-wobble.md`. Report only once live.
+- LIVE (quiet) in build 20261026-144712. Root cause: .stp-scroll is overflow-y auto, so overflow-x turned auto too, and two
+  things were wider than the list: a nowrap "+ snack" Again pill (352px in a 313px box) and the Snacks to buy grid's auto
+  column (grew to a long nowrap name, +151px). Fix: .stp-scroll overflow-x hidden + side padding 18px (= .stp-head),
+  .stp-chip max-width 100%, .stp-snack-list grid-template-columns minmax(0, 1fr), .stp-wb door margin 0 18px 10px.
+  Buy again: store-picks.js snackHTML() renders ONE row (data-stp-snack-refill: preview line with ellipsis, "Add N"),
+  C.snackRefill() in store-picks-core.js puts snackView().again back on the list; then a status row with Undo
+  (data-stp-snack-undo, restores the list as it was). Tests: tests/supermarket-no-wobble.test.cjs (6, fail on old code).
+  WebKit probe: wt-harness/probes/SMWOBBLE/probe.cjs (BASE=live TAP=1 LANGS=en,de,es VPS=390x844,820x1180,1180x820).
 
 ## 1. What LOWiSPIKE is
 

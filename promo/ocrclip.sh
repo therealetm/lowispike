@@ -1,0 +1,2 @@
+#!/bin/bash
+c=$1; for t in $(seq $2 $4 $3); do ffmpeg -loglevel error -y -ss $t -i clips/$c.webm -frames:v 1 -vf "scale=1560:-1,format=gray" fr/o.png; ffmpeg -loglevel error -y -i fr/o.png -vf negate fr/on.png; a=$(tesseract fr/o.png - 2>/dev/null | tr '\n' ' ' | tr -s ' '); b=$(tesseract fr/on.png - 2>/dev/null | tr '\n' ' ' | tr -s ' '); [ ${#b} -gt ${#a} ] && a=$b; echo "-- $c @$t: $(echo $a | cut -c1-200)"; done

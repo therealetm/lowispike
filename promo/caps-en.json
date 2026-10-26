@@ -1,0 +1,239 @@
+{
+ "total": 45.0,
+ "vo_offset": 0.25,
+ "segs": [
+  {
+   "scene": "home-en",
+   "a": 0.0,
+   "b": 6.9,
+   "fa": 1,
+   "fb": 180
+  },
+  {
+   "scene": "scan-en",
+   "a": 6.9,
+   "b": 13.6,
+   "fa": 1,
+   "fb": 204,
+   "push": true,
+   "zoom": [
+    {
+     "a": 10.4,
+     "b": 13.6,
+     "z": 1.22,
+     "x": 190,
+     "y": 335,
+     "out": false
+    }
+   ]
+  },
+  {
+   "scene": "photo-en",
+   "a": 13.6,
+   "b": 17.8,
+   "fa": 32,
+   "fb": 152,
+   "push": true,
+   "zoom": [
+    {
+     "a": 15.0,
+     "b": 17.8,
+     "z": 1.22,
+     "x": 190,
+     "y": 440,
+     "out": false
+    }
+   ]
+  },
+  {
+   "scene": "card-en",
+   "a": 17.8,
+   "b": 23.3,
+   "fa": 1,
+   "fb": 177,
+   "push": true
+  },
+  {
+   "scene": "cook-en",
+   "a": 23.3,
+   "b": 25.5,
+   "fa": 98,
+   "fb": 189,
+   "push": true
+  },
+  {
+   "scene": "shop-en",
+   "a": 25.5,
+   "b": 27.7,
+   "fa": 55,
+   "fb": "end",
+   "push": true,
+   "zoom": [
+    {
+     "a": 26.5,
+     "b": 27.7,
+     "z": 1.22,
+     "x": 190,
+     "y": 420,
+     "out": false
+    }
+   ]
+  },
+  {
+   "scene": "gap-en",
+   "a": 27.7,
+   "b": 29.3,
+   "fa": 18,
+   "fb": 114,
+   "push": true
+  },
+  {
+   "scene": "move-en",
+   "a": 29.3,
+   "b": 34.0,
+   "fa": 4,
+   "fb": 174,
+   "push": true,
+   "zoom": [
+    {
+     "a": 31.6,
+     "b": 34.0,
+     "z": 1.3,
+     "x": 195,
+     "y": 380,
+     "out": false
+    }
+   ]
+  },
+  {
+   "scene": "comm-en",
+   "a": 34.0,
+   "b": 36.8,
+   "fa": 50,
+   "fb": 177,
+   "push": true
+  },
+  {
+   "scene": "home-en",
+   "a": 36.8,
+   "b": 37.33,
+   "fa": 120,
+   "fb": 136
+  },
+  {
+   "scene": "home2-de",
+   "a": 37.33,
+   "b": 37.87,
+   "fa": 20,
+   "fb": 36
+  },
+  {
+   "scene": "home2-es",
+   "a": 37.87,
+   "b": 38.6,
+   "fa": 20,
+   "fb": 42
+  }
+ ],
+ "caps": [
+  {
+   "a": 0.25,
+   "b": 2.75,
+   "t": "Ever eaten something *“healthy”*… and crashed an hour later?",
+   "size": 68
+  },
+  {
+   "a": 3.05,
+   "b": 4.5,
+   "t": "Yeah, *me too.*",
+   "size": 84
+  },
+  {
+   "a": 4.6,
+   "b": 6.9,
+   "t": "This is *LOWiSPIKE*",
+   "size": 88
+  },
+  {
+   "a": 7.0,
+   "b": 9.8,
+   "t": "Scan *any product*",
+   "size": 84
+  },
+  {
+   "a": 9.8,
+   "b": 13.6,
+   "t": "One *clear answer*",
+   "size": 84
+  },
+  {
+   "a": 13.65,
+   "b": 17.8,
+   "t": "Snap your plate: *calories & protein*",
+   "size": 74
+  },
+  {
+   "a": 17.95,
+   "b": 20.35,
+   "t": "Good choices *power up* your companion",
+   "size": 72
+  },
+  {
+   "a": 20.35,
+   "b": 23.3,
+   "t": "Name it. It *grows with you.*",
+   "size": 78
+  },
+  {
+   "a": 23.4,
+   "b": 25.5,
+   "t": "Swipe *low-spike recipes*",
+   "size": 80
+  },
+  {
+   "a": 25.6,
+   "b": 27.7,
+   "t": "Add snacks *by voice*",
+   "size": 84
+  },
+  {
+   "a": 27.8,
+   "b": 29.3,
+   "t": "Track your *meal pause*",
+   "size": 84
+  },
+  {
+   "a": 29.4,
+   "b": 31.4,
+   "t": "*Move* after you eat",
+   "size": 84
+  },
+  {
+   "a": 31.4,
+   "b": 34.0,
+   "t": "Finish with a *big celebration*",
+   "size": 78
+  },
+  {
+   "a": 34.1,
+   "b": 36.8,
+   "t": "A community that *cheers you on*",
+   "size": 74
+  }
+ ],
+ "chips": {
+  "a": 36.8,
+  "b": 38.6,
+  "labels": [
+   "English",
+   "Deutsch",
+   "Español"
+  ]
+ },
+ "end": {
+  "a": 38.6,
+  "tag": "Eat smarter. Make it a game.",
+  "cta": "Link in bio",
+  "url": "therealetm.github.io/lowispike"
+ }
+}

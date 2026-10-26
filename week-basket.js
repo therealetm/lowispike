@@ -72,10 +72,11 @@
             ? '<p class="wb-bst over">' + T(eur(-bs.left) + ' over your budget', eur(-bs.left) + ' \u00fcber deinem Budget', eur(-bs.left) + ' por encima de tu presupuesto') + (cheapest && cheapest !== S.store ? ' \u00b7 ' + T(storeName(cheapest) + ' is cheaper', storeName(cheapest) + ' ist g\u00fcnstiger', storeName(cheapest) + ' es m\u00e1s barato') : '') + '</p>' +
               '<button type="button" class="wb-fit" data-wb="fit">' + T('Fit my budget', 'In mein Budget bringen', 'Ajustar a mi presupuesto') + '</button>'
             : '<p class="wb-bst">' + T(eur(bs.left) + ' left this week', 'Noch ' + eur(bs.left) + ' \u00fcbrig diese Woche', 'Te quedan ' + eur(bs.left) + ' esta semana') + '</p>';
+        const sent = S.sent === S.wk + '#' + S.shuffle + '#' + need.length, cart = cartOn();
         const deliv = DELIVERY().map(x => '<a class="wb-dl" href="' + esc(x[1]) + '" target="_blank" rel="noopener">' + esc(x[0]) + ' \u2197</a>').join('');
         return '<div class="wb-card" role="dialog" aria-modal="true" aria-labelledby="wbTitle">' +
             '<div class="wb-head"><div><h3 id="wbTitle">\ud83c\udfe0 ' + T('Shop from home', 'Von zu Hause einkaufen', 'Compra desde casa') + '</h3>' +
-            '<p>' + T('Your week of low-spike dinners, one basket.', 'Deine Woche mit Low-Spike-Abendessen, ein Einkauf.', 'Tu semana de cenas low-spike, una sola compra.') + '</p></div>' +
+            '<p>' + T('Your week of low-spike dinners, one grocery list.', 'Deine Woche mit Low-Spike-Abendessen, ein Einkauf.', 'Tu semana de cenas low-spike, una sola compra.') + '</p></div>' +
             '<button type="button" class="wb-x" data-wb="close" aria-label="' + T('Back to Supermarket', 'Zur\u00fcck zum Supermarkt', 'Volver al supermercado') + '">\u00d7</button></div>' +
             '<div class="wb-scroll">' +
             '<section class="wb-setup" aria-label="' + T('Your week', 'Deine Woche', 'Tu semana') + '">' +
@@ -85,16 +86,17 @@
             '<button type="button" class="wb-step" data-wb="bud" data-v="-5" aria-label="' + T('5 euros less', '5 Euro weniger', '5 euros menos') + '">\u2212</button>' +
             '<span class="wb-eur">\u20ac</span><input id="wbBud" type="number" inputmode="numeric" min="' + C.BUDGET_MIN + '" max="' + C.BUDGET_MAX + '" step="5" value="' + S.budget + '">' +
             '<button type="button" class="wb-step" data-wb="bud" data-v="5" aria-label="' + T('5 euros more', '5 Euro mehr', '5 euros m\u00e1s') + '">+</button></div></div></section>' +
-            '<section class="wb-total' + (bs.over ? ' over' : '') + '" aria-live="polite"><div class="wb-tl"><span>' + T('Your basket at ', 'Dein Einkauf bei ', 'Tu compra en ') + esc(storeName(S.store)) + '</span><b>\u2248 ' + eur(bs.total) + '</b><small>' + T('of ', 'von ', 'de ') + eur(bs.budget) + '</small></div>' +
+            '<section class="wb-total' + (bs.over ? ' over' : '') + '" aria-live="polite"><div class="wb-tl"><span>' + T('Your groceries at ', 'Dein Einkauf bei ', 'Tu compra en ') + esc(storeName(S.store)) + '</span><b>\u2248 ' + eur(bs.total) + '</b><small>' + T('of ', 'von ', 'de ') + eur(bs.budget) + '</small></div>' +
             '<div class="wb-bar" role="img" aria-label="' + esc(Math.round(bs.pct * 100) + '%') + '"><i style="width:' + Math.round(bs.pct * 100) + '%"></i></div>' + status + '</section>' +
             '<section><h4>' + T('Where do you shop?', 'Wo kaufst du ein?', '\u00bfD\u00f3nde compras?') + '</h4><div class="wb-stores" role="group">' +
             c.totals.map(([sid, t]) => chip('store', sid, S.store === sid, esc(storeName(sid)) + ' <em>\u2248 ' + eur(t) + '</em>' + (sid === cheapest ? '<small>' + T('cheapest', 'am g\u00fcnstigsten', 'm\u00e1s barato') + '</small>' : ''))).join('') + '</div></section>' +
             '<section><div class="wb-h4"><h4>' + T('Your dinners', 'Deine Abendessen', 'Tus cenas') + '</h4><button type="button" class="wb-mini" data-wb="new">\u21bb ' + T('New week', 'Neue Woche', 'Nueva semana') + '</button></div>' +
             '<ul class="wb-dins">' + c.dinners.map(dinner).join('') + '</ul></section>' +
-            '<section><h4>' + T('Your basket', 'Dein Einkauf', 'Tu compra') + ' \u00b7 ' + need.length + '</h4><p class="wb-hint">' + T('Tap the circle for what you already have. It comes off the bill.', 'Tipp den Kreis bei allem, was du schon hast. Es f\u00e4llt aus der Rechnung.', 'Toca el c\u00edrculo en lo que ya tienes. Sale de la cuenta.') + '</p>' +
+            '<section><h4>' + T('Your groceries', 'Dein Einkauf', 'Tu compra') + ' \u00b7 ' + need.length + '</h4><p class="wb-hint">' + T('Tap the circle for what you already have. It comes off the bill.', 'Tipp den Kreis bei allem, was du schon hast. Es f\u00e4llt aus der Rechnung.', 'Toca el c\u00edrculo en lo que ya tienes. Sale de la cuenta.') + '</p>' +
             Object.keys(groups).map(a => '<h5>' + esc(aisleName(a)) + '</h5><ul class="wb-items">' + groups[a].map(i => row(i, false)).join('') + '</ul>').join('') +
             (home.length ? '<h5>' + T('Already at home', 'Schon zu Hause', 'Ya en casa') + ' \u00b7 ' + home.length + '</h5><ul class="wb-items">' + home.map(i => row(i, true)).join('') + '</ul>' : '') + '</section>' +
-            '<section class="wb-go"><button type="button" class="wb-cta" data-wb="list"' + (need.length ? '' : ' disabled') + '>' + (S.sent === S.wk + '#' + S.shuffle + '#' + need.length ? '\u2713 ' + T('On your shopping list', 'Auf deiner Einkaufsliste', 'En tu lista de la compra') : T('Put it on my shopping list', 'Auf meine Einkaufsliste', 'A\u00f1adir a mi lista de la compra')) + '</button>' +
+            '<section class="wb-go"><button type="button" class="wb-cta" data-wb="list"' + (need.length ? '' : ' disabled') + '>' + (sent ? '\u2713 ' + (cart ? T('In your Cart', 'In deinem Warenkorb', 'En tu carrito') : T('On your shopping list', 'Auf deiner Einkaufsliste', 'En tu lista de la compra')) : (cart ? T('Put it in my Cart', 'In meinen Warenkorb', 'A\u00f1adir a mi carrito') : T('Put it on my shopping list', 'Auf meine Einkaufsliste', 'A\u00f1adir a mi lista de la compra'))) + '</button>' +
+            (sent && cart ? '<button type="button" class="wb-sec" data-wb="cart">' + T('Open my Cart', 'Warenkorb \u00f6ffnen', 'Abrir mi carrito') + '</button>' : '') +
             '<button type="button" class="wb-sec" data-wb="copy">' + T('Copy or share the list', 'Liste kopieren oder teilen', 'Copiar o compartir la lista') + '</button>' +
             (deliv ? '<h5>' + T('Order it to your door', 'Nach Hause liefern lassen', 'Pedir a domicilio') + '</h5><div class="wb-dls">' + deliv + '</div>' : '') + '</section>' +
             '<p class="wb-fine">' + T('Prices are estimates for a typical pack at each chain, not live prices. One pack per dinner feeds up to two people; spices, sauces, oils and seeds count once a week. General food guidance, not medical advice.',
@@ -102,6 +104,9 @@
                 'Los precios son estimaciones de un paquete t\u00edpico en cada cadena, no precios en vivo. Un paquete por cena alcanza para hasta dos personas; especias, salsas, aceites y semillas cuentan una vez por semana. Orientaci\u00f3n general sobre alimentaci\u00f3n, no consejo m\u00e9dico.') + '</p>' +
             '</div><div class="wb-toast" role="status" aria-live="polite"></div></div>';
     }
+    /* Oct 26 (MAYA-HANDOFF 0.22): the Supermarket Cart (Warenkorb / Carrito) is the same list as the shopping list; when its
+       button is on the page, the week goes "in my Cart" and Open my Cart presses that button (store-picks.js owns the pane). */
+    function cartOn() { return !!D.querySelector('.stp-card .stp-cartbtn'); }
     function paint(keepFocusSel) {
         if (!ov) return;
         const sc = ov.querySelector('.wb-scroll'), y = sc ? sc.scrollTop : 0;
@@ -138,8 +143,10 @@
             try { if (W.LOWI_SHELF && W.LOWI_SHELF.addIngredients) added = W.LOWI_SHELF.addIngredients(need.map(i => ({ n: i.n, g: i.g })), T('Week shop', 'Wocheneinkauf', 'Compra semanal')); } catch (err) { added = -1; }
             if (added < 0) return toast(T('Could not save the list. Try again.', 'Liste nicht gespeichert. Bitte nochmal.', 'No se pudo guardar la lista. Int\u00e9ntalo de nuevo.'));
             S.sent = S.wk + '#' + S.shuffle + '#' + need.length; paint(sel('list'));
+            if (cartOn()) return toast(added ? T(need.length + ' things in your Cart', need.length + ' Sachen in deinem Warenkorb', need.length + ' cosas en tu carrito') : T('Already in your Cart', 'Schon in deinem Warenkorb', 'Ya est\u00e1 en tu carrito'));
             return toast(added ? T(need.length + ' things on your shopping list', need.length + ' Sachen auf deiner Einkaufsliste', need.length + ' cosas en tu lista de la compra') : T('Already on your shopping list', 'Steht schon auf deiner Einkaufsliste', 'Ya est\u00e1 en tu lista'));
         }
+        if (a === 'cart') { close(); setTimeout(() => { const cb = D.querySelector('.stp-card .stp-cartbtn'); if (cb) try { cb.click(); } catch (err) {} }, 280); return; }
         if (a === 'copy') {
             const txt = C.text(ctx.items, ctx.have, price, S.store, storeName(S.store), eur, T('Week shop', 'Wocheneinkauf', 'Compra semanal')).replace(/^- (.*)$/gm, (m, x) => '- ' + x) ;
             const done = () => toast(T('List copied', 'Liste kopiert', 'Lista copiada'));

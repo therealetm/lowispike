@@ -1180,6 +1180,25 @@ remember, iOS 17 would never do that."
 - Task "LOWiSPIKE: fix wobbly Supermarket layout + Buy again autofill"; branch `sm-wobble`, COORD file
   `/home/sprite/COORD-sm-wobble.md`. Report only once live.
 
+### 0.25 TikTok: "Apple Design + SwiftUI Expert" agent skills (Emmanuel, Mon 26 Oct 2026 about 2:35 PM CET, TikTok link)
+
+His words: "Learn from this TikTok video and implemented if necessary" https://vm.tiktok.com/ZGdC3HgSc/
+
+The video (@lucablancom, German, 7 Oct 2026): two agent skills so Codex or Claude Code build better iOS apps. "Apple
+Design" (Emil Kowalski, emilkowalski/skills, MIT): Apple's design thinking from the Human Interface Guidelines and WWDC
+talks, about animations, gestures, transitions and how an app answers your finger. "SwiftUI Expert": clean, modern SwiftUI
+code. Decision:
+- Apple Design is already in this repo since 11 Oct (`.agents/skills/apple-design`, pinned in `skills-lock.json`, same
+  text as upstream today). Nothing to add. But the Give a hand swipe deck (0.22, built today) broke three of its rules, so
+  that was fixed and shipped (quiet): the deck decides by the flick at release (release velocity + momentum projection,
+  section 6), a flick back against the drag springs back, a card grabbed while it springs back stays under the finger
+  (section 3), and the skip fly-out keeps the finger's speed (section 5). `gift-basket-core.js` project / releaseVelocity
+  / txOf; tests/give-hand-fluid-swipe.test.cjs; probe tools/fluid-swipe/check.cjs.
+- SwiftUI Expert: not added. LOWiSPIKE is a web app with no Swift code. Only worth a look if a native iOS app (App Store)
+  is ever built.
+- Rule for every Maya: any new drag, swipe, sheet or animation gets checked against the apple-design Quick reference
+  before release (AI_PLAYBOOK section 10).
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday
@@ -2128,3 +2147,4 @@ obLater snooze, sign-out KEEP). Tests 2765/2765, CI green, live check de iPhone 
 - 2026-10-26 14:10 CET Community bot recipe cards (0.18; Sesame task 'Finish and ship Community bot recipe cards', worktree wt-bot-recipe, branch bot-recipe-open). Quiet release (loud stays 20000101-000000), build id in the release commit. Chat recipe post: photo / dish name / Open recipe open the Shuffle recipe page; Open recipe / Cook it / Save / Add to kitchen buttons (EN/DE/ES, 44pt+); bubble menu '+' now says React; Add to kitchen fills Cook > Kitchen once per food with Undo, recipe page counts them at home and has its own button. tests/bot-recipe.test.cjs (12, all fail on old code); tools/bot-recipe/check.cjs ALL PASS WebKit iPhone 13 EN / SE DE / 15 Pro Max ES + Chromium. **Open:** For You bot posts have no button row yet (Chat only). HANDOFF-bot-recipe.md.
 - 2026-10-26 14:20 CET Supermarket Cart (Warenkorb / Carrito), Seller Zone strip out of Supermarket, Give a hand swipe deck (0.22; Sesame task 'finish and ship Supermarket cart + Give a hand swipe deck', worktree wt-cart-swipe, branch supermarket-cart-swipe). **LIVE 20261026-135558** (quiet, loud stays 20000101-000000), What's New new-cart-swipe with EN/DE/ES voices, tests 3712/3712 (12 new, all fail on old code), WebKit iPhone 13 EN/DE/ES 39/39 local + live. Notes HANDOFF-cart-swipe.md.
 - 2026-10-26 14:40 CET Hourly bug hunt run 41 (Sesame bug-hunt task, worktree wt-bughunt-202610261303). **BH-041 fixed (quiet release).** New pattern P-ROW-SHIFT: a row action that removes its own row lets the next row slide under the finger. Live WebKit iPhone 13: a double tap (82 ms) on Bought for Apples in Cook > Kitchen > To buy also bought Butter; Chromium: x took two items off the list. Fix: fresh-scrim spends any real tap on a `data-spend` control (44 px / 400 ms), like a close control; Kitchen's Bought, x, Removed, Ran out: bin it and search hits carry it, so does the recipe card's Add to kitchen / Undo (Undo overlaps the right third of Add). BH-041b sibling: two-step deletes (class `armed` / `sure`: Cycle world + cycle sheet Delete all cycle data, chat message delete, Misty's remove today's meal) were armed and confirmed by one double tap; fresh-scrim now swallows a tap on an armed button on the spot of the previous tap within ARM_MS 500. New lists that drop rows: add `data-spend`; new 2-step deletes: use a `button` with class `armed` or `sure`. Tests: tests/row-shift-armed-dbl.test.cjs (4 of 5 fail on old code). Probes: BUGHUNT/playtest/probe-kitchen-dbl.cjs, probe-crb-undo-spot.cjs.
+- 2026-10-26 15:10 CET TikTok "Apple Design + SwiftUI Expert" (0.25; Sesame task 'learn from TikTok video', worktree wt-fluid-swipe, branch fluid-swipe). Apple Design already pinned in .agents/skills since 11 Oct; SwiftUI Expert not added (no Swift code). Fixed the Give a hand swipe deck against it: release velocity + momentum projection decide (a flick back after passing the line used to pay: reproduced on live 20261026-143321), grab mid spring-back holds the card, skip fly-out at finger speed. Quiet release, no tour card. tests/give-hand-fluid-swipe.test.cjs (5, all fail on old code); tools/fluid-swipe/check.cjs WebKit iPhone 13 EN/DE/ES (Reduce Motion) + WebKit EN with motion + Chromium all pass; old live fails 2 of them.

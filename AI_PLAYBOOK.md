@@ -165,6 +165,11 @@ the app stays, and every tour card has its speaker in EN/DE/ES (`tests/silent-up
 
 - `.agents/skills/apple-design` comes from `emilkowalski/skills` and is pinned by hash in `skills-lock.json`. Read
   outside skills as text. Don't run their scripts, and don't add new ones without the owner's yes.
+- Any new drag, swipe, sheet or animation is checked against the Quick reference at the end of
+  `.agents/skills/apple-design/SKILL.md` before release: decide commit or go back by the release velocity (with momentum
+  projection), never by the average speed; a moving element can be grabbed where it is; a release keeps the finger's
+  speed; Reduce Motion still works. The Give a hand deck (`gift-basket-core.js` project / releaseVelocity / txOf) is the
+  worked example. "SwiftUI Expert" (seen on TikTok 26 Oct) is for Swift code only, so it isn't used here.
 - The most popular #claudecode reels on Instagram on 18 October were mostly promotion. One 2-million-view reel pushes a
   plugin that routes your code through "over 200 free AI providers". Don't use that on this repo: the code and any
   keys in the session would go to unknown services.

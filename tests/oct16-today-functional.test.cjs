@@ -57,7 +57,9 @@ test('next journey: ready with a place, away, back, tired, tomorrow with the tim
   assert.match(src, /nextGo: \['Start next journey', 'Nächste Reise starten', 'Empezar el próximo viaje'\]/);
   assert.match(src, /nextTomorrow: \['Next journey tomorrow'/);
   assert.match(src, /function startNext\(id\)/);
-  assert.match(src, /LowiPad\.mode\('auto'\)/, 'Misty flies her galaxy while she travels');
+  /* Oct 26 (bug hunt run 44, Emmanuel: no auto fly unless the user taps autopilot): a journey no longer switches the
+     controller to autopilot (it hid every Home button for 30 min). Was: assert.match(src, /LowiPad\.mode\('auto'\)/). */
+  assert.doesNotMatch(src, /LowiPad\.mode\('auto'\)/, 'a journey never puts the controller into autopilot');
   assert.match(src, /st0 === 'idle' && next\(body\(\), Date\.now\(\), tooTired\(\)\)\.kind === 'ready'\) startNext\(\)/, 'a tap on the row starts it');
 });
 

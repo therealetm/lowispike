@@ -135,7 +135,7 @@
 4. Still unplayed this build: offline mid-action, clock past midnight / Gap timer, Reduce Motion toggle mid-session, pinch storm.
 
 ## Clean streak
-0 (run 38, Mon 26 Oct 2026: BH-038 found and fixed)
+0 (run 44, Mon 26 Oct 2026: BH-044 found and fixed)
 
 ## Worlds playtest (separate task, Oct 19 2026 13:23 CEST, base 20261019-130951) - see /home/sprite/COORD-worlds-playtest.md
 - **W-001 fixed (release in progress, see COORD).** Run 5 next-run item 2 "lesson skip on language switch inside a world" is DONE by the
@@ -815,3 +815,21 @@ Community via mock-cloud, TABS=... picks reset tabs incl. 'misty'; lib.open gain
 - Live after release (iPhone 13): 9/9 PASS, 0 errors (one tick 2nd tap had a real gap of 404 ms = past the 400 ms window, deliberate by rule). Kitchen cart ✓ Bought and cart − at 1: unit tests only.
 - Unprotected candidates still to judge (P-ROW-SHIFT/undo-under-finger): herb-quests [data-hq=undo] toast, kitchen-game toast undo, ate-this undo, shop-scan-core undo, owner-admin undo, gift-basket Skip (Skip stays at same spot -> double tap skips two baskets? Undo sits in the middle, not under Skip), week-basket swap/tick rows.
 - Clean streak: 0.
+
+## Run 43 — 2026-10-26 16:03–16:45 CET — quiet release (build in the result line below)
+- Lead from run 42 (gift-basket Skip double tap). Undo toasts in herb-quests / kitchen-game / ate-this are position:fixed at the bottom (92-100 px above safe area), not where the tapped control was: lower risk, not probed yet.
+- BH-043 FIXED (P-ROW-SHIFT / SWAP-UNDER-FINGER, gift-basket.js, Shop > Give a hand deck). Live build 20261026-151258, probe-gb-skip-dbl.cjs (made-up baskets via LowiGiftBasket._api; pay_url host must be allowed, e.g. ko-fi.com, or the deck hides the basket; network blocked): double tap Skip -> 2 baskets skipped at every gap (WebKit iPhone 13 real 31-383 ms, Chromium 390 too); Undo only restores the last -> first basket hidden 24 h. Double tap Pay -> Chromium 2nd tap hit the pay link (.gb-pay) that slides under the finger. Pay link -> "I helped" in place (help() = server + XP, basket gone for everyone): emulation unreliable (popups), unit test only.
+- Fix: data-spend on .gb-skip, .gb-yes, both [data-gb-pay] links, .gb-helped. tests/give-hand-double-tap.test.cjs 3 (3/3 fail on old). Suite 3755/3755. Local probe: Chromium 6/6 ok + deliberate 700 ms 2nd Skip still skips; WebKit swallowed at real gaps < 400 ms (one 528 ms real gap skipped = deliberate by rule).
+- VM rebooted twice mid-run (Sprites 500); probes re-run. Release waited on a release lock held by another task (nohup).
+- User voice note seen in this run's frame: "auto fly ... if they want to manually auto tap let them, but not automatically, it's annoying and the UI breaks" = autopilot starting by itself (misty-flight.js ~477 trip / ~480 ADV / ~524 idle -> padMode auto). The running task "remove companion 'Out exploring' feature" owns that area; not touched here. NEXT RUN: once that lands, verify no autopilot starts without a tap (idle on Home, after a trip, after ADV) and that the UI does not break.
+- Next leads: gift-basket "I helped" in a real WebKit popup-free probe (stub anchor click), bottom Undo toasts when the tapped control sits in the bottom 120 px, week-basket swap/tick rows.
+- Clean streak: 0.
+
+## Run 44 (Mon 26 Oct 2026, 16:42 CET; live at start 20261026-163708, main 37ba9c60) - worktree wt-bughunt-202610261642, branch bughunt-44
+- Started from HANDOFF: verify Emmanuel's "auto fly only when the user taps it" after the manual-explore task landed (20261026-163708: sun trip no longer auto starts / no autopilot from a trip).
+- Idle Home 40 s, no tap (probe-journey-auto.cjs, live Chromium 390 + WebKit iPhone 13): CLEAN (pad '', no lw-clean-auto, no adventure).
+- Sweep for every path into autopilot: misty-pad userMode (three taps / Enter) = user; adventure.js start/resume = only while the user's adventure is on; misty-flight 483 = ADV() only; **body-trips startNext -> setTimeout(LowiPad.mode('auto'), 480)** = not the user's choice.
+- **BH-044 FIXED:** "Start next journey" (Today journey row, body-trips startNext) switched the controller to autopilot 480 ms later -> clean flight view (html.lw-clean-auto) hid every Home control (visible 7 -> 0) for the whole 30 min journey, camera flew off. Repro LIVE 20261026-163708 Chromium 390 + WebKit iPhone 13 (energy stubbed to canTravel in the probe; the journey needs energy). Pattern P-AUTO-SIDE-EFFECT (something other than the controller's own three taps sets pad mode 'auto'); all sites checked, only this one.
+  Fix: removed the LowiPad.mode('auto') timer from startNext (journey still starts, sheets close). tests/journey-no-autopilot.test.cjs 3 (2 fail on old: behaviour in a vm sandbox + source guard). oct16-today-functional asserted the old call; now asserts it is gone (reason in commit). Suite 3768 (community-rooms-runtime flaked once under load, passes alone). Local WebKit iPhone 13 + Chromium 390: after the journey pad '', no clean view, 7 controls visible, trips 1, 0 errors.
+- Queued (naming rule, P-HARDCODED-NAME): misty-pad.js:278 chip 'Misty is flying home' / 'Misty fliegt nach Hause' / 'Misty vuelve a casa' is not wrapped in nm() (LowiBirthCompanion.withName), so a renamed companion still reads "Misty" on the controller chip when you tap her empty cell. ~49 quoted strings with 'Misty' in JS outside tests: sweep which are user-visible and not passed through withName.
+- BH-044 LIVE 20261026-165435 (main 01d4985c); live WebKit iPhone 13 + Chromium 390 probe PASS. Run 44 done.

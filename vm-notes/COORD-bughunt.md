@@ -74,3 +74,7 @@ world-home.js, home-orbit-v2*, misty-pad*, Settings files.
 # Run 40 (Mon 26 Oct 2026 13:02 CET): worktree see BUGHUNT/.wt, branch bughunt-40 (off origin/main 993c381b)
 - Probing P-CLOSE-UNDER-FINGER (sheet option rows, Community person card). Not touching community-chat.js, nibblo-core.js, kitchen-core.js, store-picks.js, pantry*, Cook view bar, tutorial files.
 - Run 40 done 13:35 CET: BH-040 live 20261026-132627 (fresh-scrim.js only). Worktree released.
+
+# Run 44 (Mon 26 Oct 2026 16:42 CET): worktree /home/sprite/wt-bughunt-202610261642, branch bughunt-44 (off origin/main 37ba9c60). CLAIM: body-trips.js startNext() only, tests/oct16-today-functional.test.cjs (one assertion), new tests/journey-no-autopilot.test.cjs. Start next journey must not switch the controller to autopilot.
+- 15:50 UTC run 44: tests 3768 (1 load flake, passes alone), local WebKit iPhone 13 + Chromium 390 PASS, releasing
+- 15:59 UTC run 44 RELEASED build 20261026-165435, live verified. Worktree released.

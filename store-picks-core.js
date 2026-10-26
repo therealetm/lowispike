@@ -556,6 +556,16 @@
         (logged || []).forEach(push);
         return { buy, again };
     }
+    /* Oct 26 (Emmanuel: "a buy again auto fill option ... not stack it up like that"): one tap puts every recent snack from
+       snackView().again back on the list; added = how many really went on (never one twice). Each gets its own time step so
+       ids stay unique. */
+    function snackRefill(list, names, now) {
+        let l = Array.isArray(list) ? list : [];
+        const before = l.filter(i => !i.got).length;
+        now = +now || Date.now();
+        (Array.isArray(names) ? names : []).forEach((n, k) => { l = snackAdd(l, n, now + k); });
+        return { list: l, added: l.filter(i => !i.got).length - before };
+    }
 
-    return { LIMIT, GROUPS, G, groupOf, typical, rate, rows, build, km, nearest, town, findStore, chainOf, addrOf, overpassQuery, parseShops, nomToElements, viewbox, placeOf, placeFromSearch, lookup, GENERAL, merge, photo, link, explain, PAGE, page, SNACK_MAX, snackAdd, snackGot, snackDrop, snackView };
+    return { LIMIT, GROUPS, G, groupOf, typical, rate, rows, build, km, nearest, town, findStore, chainOf, addrOf, overpassQuery, parseShops, nomToElements, viewbox, placeOf, placeFromSearch, lookup, GENERAL, merge, photo, link, explain, PAGE, page, SNACK_MAX, snackAdd, snackGot, snackDrop, snackView, snackRefill };
 });

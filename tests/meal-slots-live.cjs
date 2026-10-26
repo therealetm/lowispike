@@ -105,8 +105,9 @@ const NAMES = { en: ['Breakfast', 'Lunch', 'Dinner', 'Snacks'], de: ['Frühstüc
             await sleep(500);
             let sn = await page.evaluate(() => window.LowiStorePicks.snacks());
             ok(sn.length === 1 && sn[0].n === 'Rice cakes' && !sn[0].got, P + 'Shop: snack added to buy ' + JSON.stringify(sn));
-            const again = await page.evaluate(() => [...document.querySelectorAll('[data-stp-snack-again]')].map(b => b.getAttribute('data-stp-snack-again')));
-            ok(again.includes('Paprika'), P + 'Shop: logged snack Paprika offered under Again ' + JSON.stringify(again));
+            // Oct 26: the Again pills became one Buy again row; its preview line names the recent snacks
+            const again = await page.evaluate(() => { const r = document.querySelector('[data-stp-snack-refill] .stp-again-t small'); return r ? r.textContent.split(' · ') : []; });
+            ok(again.includes('Paprika'), P + 'Shop: logged snack Paprika offered under Buy again ' + JSON.stringify(again));
             const row = await onScreen('.stp-snack');
             ok(row.length === 1 && row[0].in, P + 'Shop: the snack row is on screen ' + JSON.stringify(row));
             await page.screenshot({ path: path.join(OUT, name + '-shop-snacks.png') });
@@ -115,7 +116,7 @@ const NAMES = { en: ['Breakfast', 'Lunch', 'Dinner', 'Snacks'], de: ['Frühstüc
             sn = await page.evaluate(() => window.LowiStorePicks.snacks());
             const buyRows = await page.evaluate(() => document.querySelectorAll('.stp-snack').length);
             ok(sn[0].got > 0 && buyRows === 0, P + 'Shop: ticked = bought, off the buy list');
-            ok(await page.evaluate(() => [...document.querySelectorAll('[data-stp-snack-again]')].some(b => b.getAttribute('data-stp-snack-again') === 'Rice cakes')), P + 'Shop: bought snack waits under Again');
+            ok(await page.evaluate(() => { const r = document.querySelector('[data-stp-snack-refill] .stp-again-t small'); return !!r && r.textContent.split(' · ').includes('Rice cakes'); }), P + 'Shop: bought snack waits under Buy again');
             ok(await page.evaluate(() => JSON.parse(localStorage.getItem('lowi.snackBuy.v1') || '[]').length === 1), P + 'Shop: list kept on the phone');
             await page.evaluate(() => window.LowiStorePicks.close());
             const bad = errs.filter(e => !/Load failed|NetworkError|Failed to fetch|access control|cancelled/i.test(e));

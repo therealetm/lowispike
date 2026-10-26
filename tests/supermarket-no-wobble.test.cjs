@@ -79,3 +79,12 @@ test('snackRefill puts every recent snack back on the list in one go, never twic
     assert.notStrictEqual(new Set(r.list.map(i => i.id)).size, 0);
     assert.strictEqual(new Set(r.list.map(i => i.id)).size, r.list.length, 'ids stay unique when added in the same millisecond');
 });
+
+test('a long snack name on Snacks to buy ends in ... instead of widening the list (grid column minmax(0, 1fr))', () => {
+    // found by the WebKit probe after Buy again filled six long names: the auto grid column grew 151 px past the list
+    const l = rule(css, '.stp-snack-list');
+    assert.strictEqual(prop(l, 'grid-template-columns'), 'minmax(0, 1fr)');
+    const b = rule(css, '.stp-snack b');
+    assert.strictEqual(prop(b, 'text-overflow'), 'ellipsis');
+    assert.strictEqual(prop(b, 'min-width'), '0');
+});

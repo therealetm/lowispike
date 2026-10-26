@@ -86,6 +86,8 @@
     try { snacks = JSON.parse(localStorage.getItem(SKEY) || '[]') || []; } catch (e) { snacks = []; }
     if (!Array.isArray(snacks)) snacks = [];
     function saveSnacks(next) { snacks = next; try { localStorage.setItem(SKEY, JSON.stringify(snacks)); } catch (e) {} }
+    /* the list as it was before the last Buy again fill, for its Undo; any other snack action drops it */
+    let snackUndo = null;
     function loggedSnacks() {
         try { const st = W.LowiVitalsBridge && W.LowiVitalsBridge.state && W.LowiVitalsBridge.state(); return ((st && st.logs) || []).filter(l => l && l.slot === 'snack').slice().reverse().map(l => l.t || l.n); } catch (e) { return []; }
     }
@@ -93,16 +95,34 @@
         const v = C.snackView(snacks, loggedSnacks());
         const rows = v.buy.map(i => '<li class="stp-snack"><button type="button" class="stp-snack-tick" data-stp-snack-got="' + esc(i.id) + '" aria-label="' + esc(T('Bought ', 'Gekauft: ', 'Comprado: ') + i.n) + '"><span aria-hidden="true"></span></button><b>' + esc(i.n) + '</b>' +
             '<button type="button" class="stp-snack-x" data-stp-snack-drop="' + esc(i.id) + '" aria-label="' + esc(T('Remove ', 'Entfernen: ', 'Quitar: ') + i.n) + '">' + ic.x + '</button></li>').join('');
-        const again = v.again.length ? '<div class="stp-snack-again"><small>' + esc(T('Again?', 'Wieder?', '¿Otra vez?')) + '</small>' + v.again.map(n => '<button type="button" class="stp-chip" data-stp-snack-again="' + esc(n) + '">+ ' + esc(n) + '</button>').join('') + '</div>' : '';
+        /* Oct 26 (Emmanuel: "a buy again auto fill option. Recent or something, but not stack it up like that"): one row, never a
+           pill per snack. A one-line preview of the recent snacks; one tap puts them all back on the list (C.snackRefill); Undo
+           right after brings the list back as it was. */
+        let again = '';
+        if (snackUndo) {
+            const k = snackUndo.n;
+            again = '<div class="stp-again stp-again-done" role="status"><span class="stp-again-ic" aria-hidden="true">\u2713</span><span class="stp-again-t"><b>' +
+                esc(k === 1 ? T('1 recent snack is back on your list', '1 Snack ist wieder auf deiner Liste', '1 snack vuelve a tu lista') : T(k + ' recent snacks are back on your list', k + ' Snacks sind wieder auf deiner Liste', k + ' snacks vuelven a tu lista')) +
+                '</b></span><button type="button" class="stp-again-undo" data-stp-snack-undo="1">' + esc(T('Undo', 'Rückgängig', 'Deshacer')) + '</button></div>';
+        } else if (v.again.length) {
+            const n = v.again.length, names = v.again.join(' · ');
+            again = '<button type="button" class="stp-again" data-stp-snack-refill="1" aria-label="' +
+                esc(T('Buy again: put your ' + n + ' recent snacks back on the list: ', 'Wieder kaufen: deine ' + n + ' letzten Snacks wieder auf die Liste: ', 'Comprar otra vez: vuelve a poner tus ' + n + ' snacks recientes en la lista: ') + v.again.join(', ')) + '">' +
+                '<span class="stp-again-ic" aria-hidden="true">\u21bb</span><span class="stp-again-t" aria-hidden="true"><b>' + esc(T('Buy again', 'Wieder kaufen', 'Comprar otra vez')) + ' <em>· ' + esc(T('recent', 'zuletzt', 'reciente')) + '</em></b><small>' + esc(names) + '</small></span>' +
+                '<span class="stp-again-add" aria-hidden="true">' + esc(T('Add ' + n, n + ' dazu', 'Añadir ' + n)) + '</span></button>';
+        }
         return '<section class="stp-snacks" aria-label="' + esc(T('Snacks to buy', 'Snacks zum Einkaufen', 'Snacks para comprar')) + '"><h4 class="stp-h4">\u{1F95C} ' + esc(T('Snacks to buy', 'Snacks zum Einkaufen', 'Snacks para comprar')) + (v.buy.length ? ' <i>' + v.buy.length + '</i>' : '') + '</h4>' +
             (rows ? '<ul class="stp-snack-list">' + rows + '</ul>' : '<p class="stp-snack-none">' + esc(T('Only snacks you still need to buy. Tick one when it’s in your bag.', 'Nur Snacks, die du noch kaufen willst. Hak sie ab, wenn sie in der Tasche sind.', 'Solo los snacks que aún vas a comprar. Márcalos cuando estén en tu bolsa.')) + '</p>') +
             '<form class="stp-snack-add" data-stp-snack-form="1"><input type="text" name="snack" maxlength="60" autocomplete="off" enterkeyhint="done" placeholder="' + esc(T('Add a snack, like bell pepper', 'Snack hinzufügen, z. B. Paprika', 'Añade un snack, p. ej. pimiento')) + '" aria-label="' + esc(T('Add a snack to buy', 'Snack zum Einkaufen hinzufügen', 'Añadir snack para comprar')) + '"><button type="submit" class="stp-pill">' + esc(T('Add', 'Hinzufügen', 'Añadir')) + '</button></form>' + again + '</section>';
     }
-    function repaintSnacks() {
+    function repaintSnacks(focusAgain) {
         const el = ov && ov.querySelector('.stp-snacks');
         if (!el) return;
         const w = D.createElement('div'); w.innerHTML = snackHTML();
-        el.replaceWith(w.firstChild);
+        const nw = w.firstChild;
+        el.replaceWith(nw);
+        /* after Buy again / Undo the button under the finger is gone: keep focus in the row (Undo, else the fill button) */
+        if (focusAgain) { const f = nw.querySelector('[data-stp-snack-undo],[data-stp-snack-refill]') || nw.querySelector('.stp-snack-add input'); if (f && f.tagName === 'BUTTON') try { f.focus({ preventScroll: true }); } catch (e) {} }
     }
     function onSubmit(e) {
         const f = e.target;
@@ -117,16 +137,29 @@
         e.preventDefault();
         const inp = f.querySelector('input[name="snack"]'), v = inp ? inp.value : '';
         if (!String(v).trim()) return;
+        snackUndo = null;
         saveSnacks(C.snackAdd(snacks, v));
         repaintSnacks();
         const ni = ov && ov.querySelector('.stp-snack-add input'); if (ni) ni.focus();
     }
     function snackClick(t) {
-        const b = t.closest('[data-stp-snack-got],[data-stp-snack-drop],[data-stp-snack-again],[data-stp-snack-qv]');
+        const b = t.closest('[data-stp-snack-got],[data-stp-snack-drop],[data-stp-snack-qv],[data-stp-snack-refill],[data-stp-snack-undo]');
         if (!b) return false;
+        if (b.hasAttribute('data-stp-snack-refill')) {
+            const r = C.snackRefill(snacks, C.snackView(snacks, loggedSnacks()).again);
+            if (r.added) { const prev = snacks; saveSnacks(r.list); snackUndo = { list: prev, n: r.added }; }
+            repaintSnacks(true);
+            return true;
+        }
+        if (b.hasAttribute('data-stp-snack-undo')) {
+            if (snackUndo) saveSnacks(snackUndo.list);
+            snackUndo = null;
+            repaintSnacks(true);
+            return true;
+        }
+        snackUndo = null;
         if (b.hasAttribute('data-stp-snack-got')) saveSnacks(C.snackGot(snacks, b.getAttribute('data-stp-snack-got')));
         else if (b.hasAttribute('data-stp-snack-drop')) saveSnacks(C.snackDrop(snacks, b.getAttribute('data-stp-snack-drop')));
-        else if (b.hasAttribute('data-stp-snack-again')) saveSnacks(C.snackAdd(snacks, b.getAttribute('data-stp-snack-again')));
         else { saveSnacks(C.snackAdd(snacks, b.getAttribute('data-stp-snack-qv'))); b.disabled = true; b.textContent = T('✓ On your snack list', '✓ Auf deiner Snackliste', '✓ En tu lista de snacks'); }
         repaintSnacks();
         return true;
@@ -747,6 +780,7 @@
     function openPanel(from) {
         if (ov) return;
         if (tab === 'kitchen' && KG()) tab = 'shop';
+        snackUndo = null;
         ov = D.createElement('div');
         ov.className = 'stp-ov';
         ov.addEventListener('click', onClick);

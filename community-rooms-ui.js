@@ -346,7 +346,9 @@ W.LowiCommunityWelcome={open:openWelcome,close:()=>obClose(false),seen:()=>!!lsG
 function openOn(v){try{if(W.LowiCommunityTabs&&W.LowiCommunityTabs.want)W.LowiCommunityTabs.want();}catch(e){}
  const on=()=>{const p=D.getElementById('tab-foryou');return !!(p&&p.classList.contains('active'));};
  if(!on()){try{W.goTab('foryou');}catch(e){}}
- let k=0;const t=()=>{k++;if(!ensure()||!on()){if(k<30)setTimeout(t,100);return;}const was=view;showView(v);if(v==='fy'&&was==='fy')paintFyFeed();/* already there: show the newest post */};setTimeout(t,on()?0:60);}
+ /* BH-034: switch the view in the same task as goTab, before the browser draws. A timer let the default view (the galaxy, with
+    people you can tap) show for 0.3-2.5 s on a busy phone, and a tap meant for the new view picked a person there. */
+ let k=0;const t=()=>{k++;if(!ensure()||!on()){if(k<30)setTimeout(t,100);return;}const was=view;showView(v);if(v==='fy'&&was==='fy')paintFyFeed();/* already there: show the newest post */};t();}
 W.addEventListener('lowi:studio-lock',()=>{if(VIEWS[view])paint();});
 W.LowiRoomsUI={paint,setTab,back,from:()=>from,fit,showView,openOn,tab:()=>open()?'chat':tabOfView(view)||'room',view:()=>view,frames:()=>Object.keys(frames),menu:toggleMenu,copyView,inviteUrl,_chanRows:chanRows,_menuKeys:()=>menuItems().map(x=>x[0])};
 })(window,document);

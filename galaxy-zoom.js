@@ -189,7 +189,8 @@
     function wrap() {
         const orig = W.goTab;
         if (typeof orig !== 'function' || orig.__gx) return !!(orig && orig.__gx);
-        const firstIsRoom = () => { try { const T = W.LowiCommunityTabs; return !T || !T.order || T.order()[0] === 'room' || /^#community\//i.test(W.location.hash || ''); } catch (e) { return true; } };
+        /* BH-034: a tab asked for on purpose (LowiCommunityTabs.want(): Ranking from Misty's card, For You) is not the galaxy either */
+        const firstIsRoom = () => { try { const T = W.LowiCommunityTabs; if (T && T.wanted && T.wanted()) return false; return !T || !T.order || T.order()[0] === 'room' || /^#community\//i.test(W.location.hash || ''); } catch (e) { return true; } };
         const g = function (t) {
             if (inCall) return orig.apply(this, arguments);
             const from = activeTab();

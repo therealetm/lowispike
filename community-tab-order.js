@@ -220,8 +220,9 @@
             wire(t); apply();
             const th = D.getElementById('cgThread'), room = !!(th && th.hasAttribute('data-open'));
             let act = firstAction(order()[0], R.view ? R.view() : null, room, Date.now() - roomStamp < FRESH_MS, deep || Date.now() - wantStamp < FRESH_MS * 2);
-            /* 25 Oct 2026 (Emmanuel: "I keep losing the for you page"): left from For You less than 30 minutes ago, back to For You */
-            if (!deep && W.LowiForYouStay && W.LowiForYouStay.back && W.LowiForYouStay.back()) act = (R.view && R.view() === 'fy') ? null : 'fy';
+            /* 25 Oct 2026 (Emmanuel: "I keep losing the for you page"): left from For You less than 30 minutes ago, back to For You.
+               BH-034: not when a tab was asked for (want(): Ranking from Misty's card), which is now set before this runs */
+            if (!deep && W.LowiForYouStay && W.LowiForYouStay.back && !(Date.now() - wantStamp < FRESH_MS * 2) && W.LowiForYouStay.back()) act = (R.view && R.view() === 'fy') ? null : 'fy';
             try {
                 if (act === 'room') R.setTab(false);
                 else if (act === 'chat') R.setTab(true, true);   /* opened as the first tab: back from it leaves Community */
@@ -252,6 +253,9 @@
     W.addEventListener('storage', e => { if (e.key === KEY) apply(); });
     /* something opens one tab on purpose (For You after posting, Settings > For You): the first-tab rule leaves it alone */
     function want() { wantStamp = Date.now(); }
-    W.LowiCommunityTabs = Object.assign({ order, save, apply, haptic, want, _drag: () => g && { id: g.id, lifted: g.lifted, rm: g.b.dataset.rm } }, core);
+    /* BH-034: one tab was asked for this very moment (Ranking from Misty's card, For You): galaxy-zoom.js skips the warp into the
+       galaxy, which you are not going to see */
+    function wanted() { return Date.now() - wantStamp < FRESH_MS * 2; }
+    W.LowiCommunityTabs = Object.assign({ order, save, apply, haptic, want, wanted, _drag: () => g && { id: g.id, lifted: g.lifted, rm: g.b.dataset.rm } }, core);
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })(typeof window !== 'undefined' ? window : null);

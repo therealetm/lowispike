@@ -563,6 +563,10 @@
     function open() {
         try { const R2 = W.LowiR2; if (R2 && R2.top && R2.top() && R2.closeAll) R2.closeAll(); } catch (e) { }
         try { const sw = D.getElementById('sheetwrap'); if (sw && sw.classList.contains('open') && typeof W.closeSheet === 'function') W.closeSheet(); } catch (e) { }
+        /* BH-034: Ranking was asked for, so the first-tab rule and the warp into the galaxy leave it (community-tab-order.js want()),
+           and Ranking is set in this same task, before the browser draws. A 60 ms timer (late by up to 2.5 s on a busy phone) let
+           the galaxy show first, and a tap meant for Ranking picked the person under the finger as the one you talk to. */
+        try { const T = W.LowiCommunityTabs; if (T && T.want) T.want(); } catch (e) { }
         try { if (typeof W.goTab === 'function') W.goTab('foryou'); } catch (e) { console.error(e); }
         let n = 0;
         const go = () => {
@@ -570,7 +574,7 @@
             try { if (U && U.showView && D.getElementById('cmPaneChat')) { U.showView('rank'); if (U.view && U.view() === 'rank') return; } } catch (e) { console.error(e); }
             if (++n < 25) setTimeout(go, 120);
         };
-        setTimeout(go, 60);
+        go();
     }
     /* the server bot list arrived or changed (bot-accounts.js): repaint an open board so bots drop out at once */
     try { W.addEventListener('lowi-bots', () => { if (box && box.isConnected) render(box); }); } catch (e) { }

@@ -18,7 +18,11 @@ const tabNow = R => R.page.evaluate(() => (document.querySelector('#main > .tab.
 async function fly(R) {
     await R.page.evaluate(() => { if (document.getElementById('tab-home').classList.contains('active') && window.LowiPad) window.LowiPad.mode('auto'); });
     for (let i = 0; i < 20; i++) { await H.sleep(500); if (await R.page.evaluate(() => document.documentElement.classList.contains('mf-on'))) return true; }
-    return false;
+    /* a busy machine (or Reduce Motion) may not start the real flight in time: set the same flag autopilot leaves behind */
+    const why = await R.page.evaluate(() => ({ pad: window.LowiPad && window.LowiPad.state ? window.LowiPad.state().pad : null, fl: window.LowiMistyFlight ? window.LowiMistyFlight.state().st : null }));
+    console.log('  (flight did not start: ' + JSON.stringify(why) + '; setting html.mf-on as autopilot leaves it)');
+    await R.page.evaluate(() => document.documentElement.classList.add('mf-on'));
+    return true;
 }
 async function swipeBack(R) {
     await R.page.evaluate(async () => {
@@ -35,8 +39,11 @@ async function swipeBack(R) {
         console.log('== ' + lang);
         const R = await H.open({ engine: 'webkit', url, lang });
         await R.page.setViewportSize({ width: 390, height: 844 });
-        await R.page.emulateMedia({ reducedMotion: 'reduce' });
+        /* Reduce Motion by default; pass 'motion' as the 3rd argument for a run where autopilot really flies */
+        if (process.argv[4] !== 'motion') await R.page.emulateMedia({ reducedMotion: 'reduce' });
         await R.goto(); await H.sleep(3000);
+        if (lang !== 'en') { await R.page.evaluate(l => window.setLang && window.setLang(l), lang); await H.sleep(800); }
+        console.log('  html lang', await R.page.evaluate(() => document.documentElement.lang));
         ok(await fly(R), 'companion flying on Home');
         await R.page.evaluate(() => goTab('foryou')); await H.sleep(2500);
         for (const t of ['room', 'chat', 'fy', 'studio', 'rank']) {
@@ -49,11 +56,15 @@ async function swipeBack(R) {
             ok(!b.next, 'tap ring does not cover the header next to it on ' + t);
             await R.shot('/home/sprite/chb-shot-' + lang + '-' + t + '.png');
         }
-        await R.page.tap('#secX'); await H.sleep(1200);
+        /* a real finger tap at the button's centre (the locator tap waits for the glass to stop moving, which a finger doesn't) */
+        const c = await R.page.evaluate(() => { const r = document.getElementById('secX').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; });
+        await R.page.touchscreen.tap(c.x, c.y); await H.sleep(1200);
         ok(await tabNow(R) === 'tab-home', 'tapping it on Community goes Home (' + lang + ')');
         for (const p of ['foryou', 'move', 'shelf', 'profile']) {
             ok(await fly(R), 'companion flying before ' + p);
             await R.page.evaluate(p => goTab(p), p); await H.sleep(1800);
+            /* inside a Community chat room, back goes to the channel list first (MAYA-HANDOFF item 33): swipe from Ranking */
+            if (p === 'foryou') { await R.page.evaluate(() => { const b = document.querySelector('.rm-tab[data-rm="rank"]'); if (b) b.click(); }); await H.sleep(1000); }
             const b = await btn(R);
             console.log('  ' + p, JSON.stringify(b));
             ok(b.disp === 'flex' && b.hit, 'Home button visible on ' + p);

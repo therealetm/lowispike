@@ -1,11 +1,15 @@
 /* LOWiSPIKE mic dictation, pure core (Oct 26, 2026).
    Why: Emmanuel: "So, I can click on a microphone and then I can just speak and it writes it ... basically everywhere where
-   you're supposed to type, minimally." mic-dictate.js puts a small glass mic in free-text fields; this file holds the parts
-   that need no browser so the tests can pin them: which fields get a mic, which engine works on this device, how spoken
-   words merge into what is already typed, the WAV encoder for the iPhone path, and the EN/DE/ES words.
-   Engine rule: iPhone/iPad and Safari never use webkitSpeechRecognition (it is missing in Home Screen web apps, WebKit bug
-   225298, and breaks after the app played audio), they record a short clip and our voice-text function writes it out.
-   Chrome/Edge/Android use the browser's own speech recognition. No working engine = no mic (never a broken button). */
+   you're supposed to type, minimally." Then: "If the cloud speech-to-text has a fee, use the device's native OS speech-to-text
+   instead." Cloud transcription (Gemini audio) is billed per use past a capped free tier, so LOWiSPIKE uses ONLY the device's
+   own speech recognition: free, nothing extra stored by us.
+   mic-dictate.js puts a small glass mic in free-text fields; this file holds the parts that need no browser so the tests can pin
+   them: which fields get a mic, which engine works on this device, how spoken words merge into what is already typed, and the
+   EN/DE/ES words.
+   Engines: 'native' = the browser's SpeechRecognition (Safari tabs on iPhone/Mac use Apple's own dictation, Chrome/Edge/Android
+   use theirs). 'keyboard' = iPhone/iPad where it is not available (Home Screen web apps: WebKit bug 225298, still open): the mic
+   opens the keyboard and points at the keyboard's own dictation mic (also the OS's speech-to-text, also free). 'none' = no mic
+   at all (never a broken button). */
 (function (root, factory) {
   var api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -38,14 +42,19 @@
     return true;
   }
 
-  // env: { hasNativeSR, hasMediaRecorder, hasGetUserMedia, hasAudioContext, appleWebKit, standalone, secure, serverReady }
+  // env: { secure, hasNativeSR, nativeBroken, appleTouch }
   function chooseEngine(env) {
     env = env || {};
-    if (!env.secure || !env.hasGetUserMedia && !env.hasNativeSR) return 'none';
-    var canServer = !!(env.serverReady && env.hasGetUserMedia && env.hasMediaRecorder && env.hasAudioContext);
-    if (env.hasNativeSR && !env.appleWebKit) return 'native';
-    if (canServer) return 'server';
+    if (!env.secure) return 'none';
+    if (env.hasNativeSR && !env.nativeBroken) return 'native';
+    if (env.appleTouch) return 'keyboard';
     return 'none';
+  }
+
+  // iPhone / iPad (iPadOS also poses as a Mac with a touch screen): their keyboard has a dictation mic.
+  function isAppleTouch(ua, maxTouchPoints) {
+    ua = String(ua || '');
+    return /iPhone|iPad|iPod/.test(ua) || /Macintosh/.test(ua) && Number(maxTouchPoints) > 1;
   }
 
   // iPhone, iPad (also iPadOS posing as a Mac) and desktop Safari: all Apple WebKit.
@@ -93,93 +102,47 @@
     return s;
   }
 
-  // Mono, resampled Float32 samples -> 16-bit PCM WAV bytes (Uint8Array).
-  function encodeWav(samples, rate) {
-    var n = samples.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
-    function str(o, s) { for (var i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); }
-    str(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); str(8, 'WAVE'); str(12, 'fmt ');
-    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
-    v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
-    str(36, 'data'); v.setUint32(40, n * 2, true);
-    for (var i = 0, o = 44; i < n; i++, o += 2) {
-      var x = Math.max(-1, Math.min(1, samples[i] || 0));
-      v.setInt16(o, x < 0 ? x * 0x8000 : x * 0x7fff, true);
-    }
-    return new Uint8Array(buf);
-  }
-
-  // Average channels and resample linearly to `to` Hz. channels: array of Float32Array.
-  function downmix(channels, from, to) {
-    if (!channels || !channels.length) return new Float32Array(0);
-    var len = channels[0].length, mono = new Float32Array(len), c, i;
-    for (c = 0; c < channels.length; c++) for (i = 0; i < len; i++) mono[i] += channels[c][i] / channels.length;
-    if (!from || from === to) return mono;
-    var outLen = Math.max(1, Math.floor(len * to / from)), out = new Float32Array(outLen), r = from / to;
-    for (i = 0; i < outLen; i++) {
-      var p = i * r, k = Math.floor(p), t = p - k;
-      out[i] = (mono[k] || 0) * (1 - t) + (mono[Math.min(k + 1, len - 1)] || 0) * t;
-    }
-    return out;
-  }
-
-  function toBase64(bytes) {
-    var s = '', CH = 0x8000;
-    for (var i = 0; i < bytes.length; i += CH) s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
-    return typeof btoa === 'function' ? btoa(s) : Buffer.from(s, 'binary').toString('base64');
-  }
-
-  // Silence watcher: feed it loudness (0..1) every tick; it says when to stop.
-  // Stops 1.6 s after speech ends, after 8 s with no speech at all, and always at 30 s.
-  function silenceGate(opts) {
-    opts = opts || {};
-    var THR = opts.threshold || 0.035, AFTER = opts.afterSpeechMs || 1600, NONE = opts.noSpeechMs || 8000,
-      MAX = opts.maxMs || 30000, start = null, lastLoud = null, heard = false;
-    return function (level, now) {
-      if (start == null) start = now;
-      if (level >= THR) { heard = true; lastLoud = now; }
-      if (now - start >= MAX) return 'max';
-      if (heard && now - lastLoud >= AFTER) return 'done';
-      if (!heard && now - start >= NONE) return 'quiet';
-      return null;
-    };
-  }
-
   var WORDS = {
     en: {
-      speak: 'Speak to type', stop: 'Stop listening', listening: 'Listening…', writing: 'Writing it down…',
-      denied: 'Microphone is off for LOWiSPIKE. Turn it on in Settings › Safari › Microphone (or your browser’s site settings).',
-      nothing: 'Didn’t catch that. Tap the mic and try again.', signin: 'Sign in to speak instead of typing.',
-      busy: 'Lots of talking right now. Try again in a minute.', failed: 'Couldn’t write that down. Try again or type it.',
-      offline: 'You’re offline. Type it for now.', chat: 'Speak to type (your words appear as text)'
+      speak: 'Speak to type', stop: 'Stop listening', listening: 'Listening\u2026',
+      denied: 'Microphone or Speech Recognition is off for LOWiSPIKE. Turn it on in Settings \u203a Privacy & Security (or your browser\u2019s site settings).',
+      nothing: 'Didn\u2019t catch that. Tap the mic and try again.',
+      keyboard: 'Tap the mic on your keyboard and speak. No mic there? Turn on Dictation in Settings \u203a General \u203a Keyboard.',
+      failed: 'Couldn\u2019t listen just now. Try again or type it.',
+      offline: 'You\u2019re offline. Use the mic on your keyboard or type it.', chat: 'Speak to type (your words appear as text)'
     },
     de: {
-      speak: 'Sprechen statt tippen', stop: 'Zuhören beenden', listening: 'Ich höre zu…', writing: 'Schreibe es auf…',
-      denied: 'Das Mikrofon ist für LOWiSPIKE aus. Schalte es unter Einstellungen › Safari › Mikrofon ein (oder in den Website-Einstellungen deines Browsers).',
-      nothing: 'Nicht verstanden. Tippe aufs Mikrofon und versuch es noch mal.', signin: 'Melde dich an, um zu sprechen statt zu tippen.',
-      busy: 'Gerade wird viel gesprochen. Versuch es gleich noch mal.', failed: 'Konnte es nicht aufschreiben. Versuch es noch mal oder tippe es.',
-      offline: 'Du bist offline. Tippe es vorerst.', chat: 'Sprechen statt tippen (deine Worte erscheinen als Text)'
+      speak: 'Sprechen statt tippen', stop: 'Zuh\u00f6ren beenden', listening: 'Ich h\u00f6re zu\u2026',
+      denied: 'Mikrofon oder Spracherkennung ist f\u00fcr LOWiSPIKE aus. Schalte es ein unter Einstellungen \u203a Datenschutz & Sicherheit (oder in den Website-Einstellungen deines Browsers).',
+      nothing: 'Nicht verstanden. Tippe aufs Mikrofon und versuch es noch mal.',
+      keyboard: 'Tippe auf das Mikrofon deiner Tastatur und sprich. Kein Mikrofon da? Schalte Diktieren ein unter Einstellungen \u203a Allgemein \u203a Tastatur.',
+      failed: 'Zuh\u00f6ren ging gerade nicht. Versuch es noch mal oder tippe es.',
+      offline: 'Du bist offline. Nutze das Mikrofon deiner Tastatur oder tippe es.', chat: 'Sprechen statt tippen (deine Worte erscheinen als Text)'
     },
     es: {
-      speak: 'Habla para escribir', stop: 'Dejar de escuchar', listening: 'Escuchando…', writing: 'Escribiéndolo…',
-      denied: 'El micrófono está desactivado para LOWiSPIKE. Actívalo en Ajustes › Safari › Micrófono (o en los ajustes del sitio de tu navegador).',
-      nothing: 'No te he entendido. Toca el micrófono e inténtalo otra vez.', signin: 'Inicia sesión para hablar en vez de escribir.',
-      busy: 'Mucha gente hablando ahora. Inténtalo en un minuto.', failed: 'No pude escribirlo. Inténtalo otra vez o escríbelo.',
-      offline: 'Estás sin conexión. Escríbelo por ahora.', chat: 'Habla para escribir (tus palabras aparecen como texto)'
+      speak: 'Habla para escribir', stop: 'Dejar de escuchar', listening: 'Escuchando\u2026',
+      denied: 'El micr\u00f3fono o el reconocimiento de voz est\u00e1 desactivado para LOWiSPIKE. Act\u00edvalo en Ajustes \u203a Privacidad y seguridad (o en los ajustes del sitio de tu navegador).',
+      nothing: 'No te he entendido. Toca el micr\u00f3fono e int\u00e9ntalo otra vez.',
+      keyboard: 'Toca el micr\u00f3fono de tu teclado y habla. \u00bfNo hay micr\u00f3fono? Activa el Dictado en Ajustes \u203a General \u203a Teclado.',
+      failed: 'No pude escuchar ahora. Int\u00e9ntalo otra vez o escr\u00edbelo.',
+      offline: 'Est\u00e1s sin conexi\u00f3n. Usa el micr\u00f3fono de tu teclado o escr\u00edbelo.', chat: 'Habla para escribir (tus palabras aparecen como texto)'
     }
   };
   function t(lang, key) { var w = WORDS[lang2(lang)]; return w[key] || WORDS.en[key] || key; }
 
-  // Server error -> which hint to show.
-  function errorKey(status, error) {
-    if (status === 401 || error === 'sign_in') return 'signin';
-    if (status === 429 || error === 'busy') return 'busy';
-    if (status === 0 || error === 'offline') return 'offline';
-    return 'failed';
+  // SpeechRecognition error -> what to do: 'denied' hint, 'keyboard' (service not available here, e.g. Home Screen web app
+  // on iPhone, or dictation off), 'nothing', 'offline', 'failed', or '' (ignore: aborted by us).
+  function errorAction(err, appleTouch, online) {
+    if (err === 'not-allowed') return 'denied';
+    if (err === 'service-not-allowed' || err === 'language-not-supported' || err === 'audio-capture') return appleTouch ? 'keyboard' : 'failed';
+    if (err === 'network') return online === false ? (appleTouch ? 'keyboard' : 'offline') : appleTouch ? 'keyboard' : 'failed';
+    if (err === 'no-speech') return 'nothing';
+    if (err === 'aborted') return '';
+    return appleTouch ? 'keyboard' : 'failed';
   }
 
   return {
-    eligible: eligible, chooseEngine: chooseEngine, isAppleWebKit: isAppleWebKit, langTag: langTag, lang2: lang2,
-    merge: merge, tidy: tidy, encodeWav: encodeWav, downmix: downmix, toBase64: toBase64, silenceGate: silenceGate,
-    t: t, WORDS: WORDS, errorKey: errorKey, MIN_WIDTH: MIN_WIDTH
+    eligible: eligible, chooseEngine: chooseEngine, isAppleTouch: isAppleTouch, langTag: langTag, lang2: lang2,
+    merge: merge, tidy: tidy, t: t, WORDS: WORDS, errorAction: errorAction, MIN_WIDTH: MIN_WIDTH
   };
 });

@@ -1,6 +1,6 @@
 /* LOWiSPIKE mic dictation (Oct 26, 2026), see mic-dictate.js. Emmanuel: "I can click on a microphone and then I can just speak
    and it writes it ... basically everywhere where you're supposed to type, minimally." Small glass mic inside the field's right
-   edge, 34 px with a 46 px tap area, a gentle pulse that follows your voice while listening, a spinner while writing. */
+   edge, 34 px with a 46 px tap area, a gentle breathing ring while listening. */
 .mic-has { padding-right: 46px !important; }
 .mic-btn {
   position: absolute; left: 0; top: 0; z-index: 3; width: 34px; height: 34px; margin: 0; padding: 0;
@@ -21,18 +21,13 @@
 .mic-ring { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; opacity: 0; }
 .mic-btn.mic-on { color: #fff; border-color: rgba(120, 220, 255, .7); background: linear-gradient(160deg, rgba(90, 200, 255, .55), rgba(40, 120, 255, .45)); }
 .mic-btn.mic-on .mic-ring {
-  opacity: 1; box-shadow: 0 0 0 calc(3px + var(--mic-lvl, 0) * 9px) rgba(110, 210, 255, .28);
-  transition: box-shadow .1s linear; animation: mic-breathe 1.6s ease-in-out infinite;
+  opacity: 1; box-shadow: 0 0 0 5px rgba(110, 210, 255, .26); animation: mic-breathe 1.6s ease-in-out infinite;
 }
 @keyframes mic-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-.mic-btn.mic-busy { pointer-events: none; }
-.mic-btn.mic-busy .mic-ring { opacity: 1; border: 2px solid rgba(140, 210, 255, .25); border-top-color: rgba(160, 225, 255, .95); animation: mic-spin .8s linear infinite; }
-@keyframes mic-spin { to { transform: rotate(360deg); } }
 .mic-btn.mic-ta { border-radius: 12px; }
 .mic-btn.mic-ta .mic-ring, .mic-btn.mic-ta::after { border-radius: 14px; }
 @media (prefers-reduced-motion: reduce) {
   .mic-btn, .mic-btn.mic-on .mic-ring { transition: none; animation: none; }
-  .mic-btn.mic-busy .mic-ring { animation-duration: 2.4s; }
 }
 .mic-hint {
   position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 96px); z-index: 100000;

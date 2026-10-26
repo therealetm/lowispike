@@ -1,20 +1,20 @@
 /* LOWiSPIKE mic dictation (Oct 26, 2026). Shared component, loaded once for the whole app.
    Why: Emmanuel: "So, I can click on a microphone and then I can just speak and it writes it ... have that basically everywhere
-   where you're supposed to type, minimally."
+   where you're supposed to type, minimally." And: "If the cloud speech-to-text has a fee, use the device's native OS
+   speech-to-text instead." Cloud transcription is billed per use, so this uses ONLY the device's own speech recognition.
    What it does: every free-text field (input type text/search, textarea) gets a small glass mic inside its right edge. Tap it,
    speak, the words land where the caret is; tap again or stop talking and it stops. Rules (pure parts in mic-dictate-core.js):
    - Opt in/out with ONE attribute: data-mic (force on, even for a narrow field) / data-mic="off" (never). Without it, plain
-     free-text fields get a mic and logins, emails, numbers, codes and fields narrower than 150 px don't. data-mic-kind=
-     "food" | "search" | "name" | "text" helps the transcriber with food words; it is guessed from the field when missing.
-   - Engines: Chrome/Edge/Android use the browser's speech recognition. iPhone, iPad and Safari record a short clip (Web Audio,
-     16 kHz mono WAV, max 30 s) only after the tap and send it to our voice-text function (Gemini key stays in Supabase
-     secrets). Safari's webkitSpeechRecognition is not used on purpose: missing in Home Screen web apps (WebKit bug 225298).
-     No working engine or function not deployed = no mic at all (never a broken button).
-   - Microphone permission denied -> a short hint in EN/DE/ES. Nothing listens at start-up; getUserMedia only runs in start().
+     free-text fields get a mic and logins, emails, numbers, codes and fields narrower than 150 px don't.
+   - Engine 'native': the browser's SpeechRecognition in the app language (Safari tabs = Apple dictation, Chrome/Android = theirs).
+     Engine 'keyboard': iPhone/iPad where that is not available (Home Screen web apps, WebKit bug 225298, still open; or it
+     hangs after the app played audio, WebKit bug 317741): the mic opens the keyboard and a short hint points at the keyboard's
+     own dictation mic. Learned per device and mode after the first 'service-not-allowed', kept 7 days. No engine = no mic.
+   - Permission denied -> short hint in EN/DE/ES. Nothing listens at start-up; recognition only starts in start(), after a tap.
    - Community chat: the round mic next to Send records a voice MESSAGE (community-chat.js, unchanged). Dictation sits inside the
      text box with its own "speak to type" icon (ICON_DICTATE: mic + text lines) so the two never look like the same button.
-   Fields rendered later (most screens build their HTML on the fly) are picked up by a MutationObserver (childList only,
-   throttled), fields that are hidden at first by an IntersectionObserver and on focus. */
+   Fields rendered later are picked up by a MutationObserver (childList only, throttled), hidden ones by an IntersectionObserver
+   and on focus. */
 (function (W, D) {
   'use strict';
   if (!W || !D || W.LowiMic) return;
@@ -35,36 +35,14 @@
 
   // ---------- engine ----------
   var SR = W.SpeechRecognition || W.webkitSpeechRecognition || null;
-  var AC = W.AudioContext || W.webkitAudioContext || null;
-  var apple = C.isAppleWebKit(navigator.userAgent, navigator.maxTouchPoints, navigator.vendor);
-  var serverState = 'unknown'; // unknown | ready | off
+  var appleTouch = C.isAppleTouch(navigator.userAgent, navigator.maxTouchPoints);
+  var standalone = !!(navigator.standalone || W.matchMedia && W.matchMedia('(display-mode: standalone)').matches);
+  var OFF_KEY = 'lowi_mic_native_off_' + (standalone ? 'app' : 'tab'), OFF_MS = 7 * 24 * 3600 * 1000;
   var nativeBroken = false;
-  function endpoint() {
-    if (W.LOWI_VOICE_TEXT_URL) return String(W.LOWI_VOICE_TEXT_URL);
-    var cfg = W.LOWI_CFG || {};
-    return cfg.url ? String(cfg.url).replace(/\/$/, '') + '/functions/v1/voice-text' : '';
-  }
-  function env() {
-    return {
-      secure: !!W.isSecureContext, hasNativeSR: !!SR && !nativeBroken, appleWebKit: apple,
-      hasGetUserMedia: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
-      hasMediaRecorder: !!(AC && AC.prototype && AC.prototype.createScriptProcessor),
-      hasAudioContext: !!AC, serverReady: serverState !== 'off' && !!endpoint()
-    };
-  }
+  try { var off = Number(localStorage.getItem(OFF_KEY)); nativeBroken = off > 0 && Date.now() - off < OFF_MS; } catch (e) { }
+  function markBroken() { nativeBroken = true; try { localStorage.setItem(OFF_KEY, String(Date.now())); } catch (e) { } }
+  function env() { return { secure: !!W.isSecureContext, hasNativeSR: !!SR, nativeBroken: nativeBroken, appleTouch: appleTouch }; }
   function engine() { return C.chooseEngine(env()); }
-
-  var probing = null;
-  function probeServer() {
-    if (probing || serverState !== 'unknown' || !endpoint() || typeof fetch !== 'function') return;
-    var cfg = W.LOWI_CFG || {}, h = {};
-    if (cfg.key) { h.apikey = cfg.key; h.Authorization = 'Bearer ' + cfg.key; }
-    probing = fetch(endpoint(), { method: 'GET', headers: h, cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (j) { serverState = j && j.ok && j.configured ? 'ready' : 'off'; })
-      .catch(function () { /* offline: keep the mics, the tap says so */ })
-      .then(function () { probing = null; if (serverState === 'off') refreshAll(); });
-  }
 
   // ---------- fields ----------
   var done = new WeakMap();
@@ -132,7 +110,6 @@
       rec.ro.observe(el);
       if (el.parentElement) rec.ro.observe(el.parentElement);
     }
-    if (apple || !SR) probeServer();
     anchor(rec);
     place(rec);
   }
@@ -205,6 +182,7 @@
   // ---------- hint ----------
   var hintEl = null, hintT = 0;
   function hint(key) {
+    if (!key) return;
     if (!hintEl) {
       hintEl = D.createElement('div');
       hintEl.className = 'mic-hint';
@@ -214,9 +192,11 @@
     }
     hintEl.textContent = tr(key);
     hintEl.setAttribute('data-key', key);
+    var vv = W.visualViewport; // stay above the keyboard
+    hintEl.style.bottom = vv ? Math.max(16, W.innerHeight - (vv.offsetTop + vv.height) + 16) + 'px' : '';
     hintEl.classList.add('on');
     clearTimeout(hintT);
-    hintT = setTimeout(function () { hintEl.classList.remove('on'); }, HINT_MS);
+    hintT = setTimeout(function () { hintEl.classList.remove('on'); }, key === 'keyboard' || key === 'denied' ? 6500 : HINT_MS);
   }
 
   // ---------- sessions ----------
@@ -224,18 +204,16 @@
   function setState(rec, st) {
     var b = rec.b, el = rec.el;
     b.classList.toggle('mic-on', st === 'listen');
-    b.classList.toggle('mic-busy', st === 'busy');
     b.setAttribute('aria-pressed', st === 'listen' ? 'true' : 'false');
     b.setAttribute('aria-label', st === 'listen' ? tr('stop') : tr(rec.chat ? 'chat' : 'speak'));
     b.innerHTML = '<span class="mic-ring" aria-hidden="true"></span>' + (st === 'listen' ? ICON_STOP : iconFor(rec));
-    if (st === 'listen' || st === 'busy') {
+    if (st === 'listen') {
       if (!('ph' in rec)) rec.ph = el.getAttribute('placeholder');
-      if (!el.value) el.setAttribute('placeholder', tr(st === 'listen' ? 'listening' : 'writing'));
+      if (!el.value) el.setAttribute('placeholder', tr('listening'));
     } else if ('ph' in rec) {
       if (rec.ph == null) el.removeAttribute('placeholder'); else el.setAttribute('placeholder', rec.ph);
       delete rec.ph;
     }
-    b.style.removeProperty('--mic-lvl');
   }
 
   function insert(rec, words, base) {
@@ -258,26 +236,37 @@
     if (session) stop('switch');
     var eng = engine();
     if (eng === 'native') startNative(rec);
-    else if (eng === 'server') startServer(rec);
+    else if (eng === 'keyboard') useKeyboard(rec);
   }
   function stop(why) {
     if (!session) return;
     try { session.stop(why); } catch (e) { }
   }
 
-  // Chrome / Edge / Android: the browser's own recognition, words appear while speaking
+  // iPhone/iPad without in-page recognition: the keyboard's own dictation mic does it (Apple's speech-to-text, free)
+  function useKeyboard(rec) {
+    var el = rec.el;
+    try { el.focus({ preventScroll: true }); var n = el.value.length; el.setSelectionRange(n, n); } catch (e) { try { el.focus(); } catch (e2) { } }
+    hint(navigator.onLine === false ? 'offline' : 'keyboard');
+  }
+
+  // The device's own speech recognition, words appear while speaking
   function startNative(rec) {
     var r;
-    try { r = new SR(); } catch (e) { nativeBroken = true; refreshAll(); if (engine() === 'server') startServer(rec); return; }
-    var el = rec.el, base = caret(el), finalText = '', fellBack = false, s;
+    try { r = new SR(); } catch (e) { markBroken(); refreshAll(); if (appleTouch) useKeyboard(rec); return; }
+    var el = rec.el, base = caret(el), finalText = '', action = '', started = false, ended = false, s, dog;
     r.lang = C.langTag(lang());
     r.interimResults = true;
     r.continuous = false;
     r.maxAlternatives = 1;
-    s = { rec: rec, stop: function () { try { r.stop(); } catch (e) { } } };
+    s = { rec: rec, stop: function (why) { if (why === 'switch' || why === 'gone') action = ''; try { why === 'tap' ? r.stop() : r.abort(); } catch (e) { } } };
     session = s;
     setState(rec, 'listen');
+    // WebKit bug 317741: after the app played audio, recognition can hang without starting
+    dog = setTimeout(function () { if (!started && !ended) { action = appleTouch ? 'keyboard' : 'failed'; try { r.abort(); } catch (e) { } setTimeout(function () { if (!ended) r.onend(); }, 400); } }, 3000);
+    r.onstart = r.onaudiostart = function () { started = true; };
     r.onresult = function (ev) {
+      started = true;
       var interim = '';
       for (var i = ev.resultIndex; i < ev.results.length; i++) {
         if (ev.results[i].isFinal) finalText += ev.results[i][0].transcript; else interim += ev.results[i][0].transcript;
@@ -286,127 +275,22 @@
     };
     r.onerror = function (ev) {
       var err = ev && ev.error;
-      if (err === 'not-allowed') { hint('denied'); return; }
-      if (err === 'service-not-allowed' || err === 'network' || err === 'audio-capture' || err === 'language-not-supported') {
-        nativeBroken = true;
-        if (engine() === 'server') { fellBack = true; return; }
-        hint(navigator.onLine === false ? 'offline' : 'failed');
-        return;
-      }
-      if (err === 'no-speech') hint('nothing');
+      action = C.errorAction(err, appleTouch, navigator.onLine);
+      if (err === 'service-not-allowed' && !started) markBroken();
     };
     r.onend = function () {
+      if (ended) return;
+      ended = true;
+      clearTimeout(dog);
       if (session === s) session = null;
       el.value = base.value;
-      insert(rec, finalText, base);
+      var got = insert(rec, finalText, base);
       setState(rec, 'idle');
-      if (fellBack) { refreshAll(); startServer(rec); }
+      if (nativeBroken) refreshAll();
+      if (got) return;
+      if (action === 'keyboard') useKeyboard(rec); else hint(action);
     };
-    try { r.start(); } catch (e) { session = null; setState(rec, 'idle'); nativeBroken = true; refreshAll(); if (engine() === 'server') startServer(rec); }
-  }
-
-  // iPhone / iPad / Safari / Firefox: record only after the tap, our voice-text function writes it out
-  function startServer(rec) {
-    if (navigator.onLine === false) { hint('offline'); return; }
-    var ctx;
-    try { ctx = new AC(); } catch (e) { hint('failed'); return; }
-    try { if (ctx.resume) ctx.resume(); } catch (e) { }
-    var chunks = [], stream = null, src = null, proc = null, mute = null, an = null, buf = null, timer = 0, stopped = false;
-    var gate = C.silenceGate(), t0 = Date.now();
-    var s = { rec: rec, stop: function (why) { finish(why); } };
-    session = s;
-    setState(rec, 'listen');
-    function closeCtx() { try { if (ctx && ctx.close && ctx.state !== 'closed') ctx.close(); } catch (e) { } }
-    function cleanup() {
-      clearInterval(timer);
-      try { if (proc) { proc.onaudioprocess = null; proc.disconnect(); } } catch (e) { }
-      try { if (src) src.disconnect(); } catch (e) { }
-      try { if (mute) mute.disconnect(); } catch (e) { }
-      if (stream) stream.getTracks().forEach(function (tk) { try { tk.stop(); } catch (e) { } }); // mic light goes off now
-      stream = null;
-    }
-    function finish(why) {
-      if (stopped) return;
-      stopped = true;
-      var rate = ctx.sampleRate;
-      cleanup();
-      closeCtx();
-      if (session === s) session = null;
-      if (why === 'switch' || why === 'gone' || why === 'denied' || why === 'error') { chunks = []; setState(rec, 'idle'); return; }
-      var n = 0; chunks.forEach(function (c) { n += c.length; });
-      var all = new Float32Array(n), o = 0;
-      chunks.forEach(function (c) { all.set(c, o); o += c.length; });
-      chunks = [];
-      var peak = 0; for (var i = 0; i < all.length; i += 16) peak = Math.max(peak, Math.abs(all[i]));
-      if (why === 'quiet' || all.length < rate * 0.35 || peak < 0.02) { setState(rec, 'idle'); hint('nothing'); return; }
-      var mono = C.downmix([all], rate, 16000);
-      if (mono.length > 16000 * 30) mono = mono.subarray(0, 16000 * 30);
-      send(rec, C.toBase64(C.encodeWav(mono, 16000)));
-    }
-    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function (st) {
-      if (stopped) { st.getTracks().forEach(function (tk) { tk.stop(); }); return; }
-      stream = st;
-      src = ctx.createMediaStreamSource(st);
-      an = ctx.createAnalyser(); an.fftSize = 1024;
-      buf = new Float32Array(an.fftSize);
-      proc = ctx.createScriptProcessor(4096, 1, 1);
-      mute = ctx.createGain(); mute.gain.value = 0;
-      proc.onaudioprocess = function (ev) { if (!stopped) chunks.push(new Float32Array(ev.inputBuffer.getChannelData(0))); };
-      src.connect(an); src.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
-      t0 = Date.now();
-      timer = setInterval(function () {
-        if (!rec.el.isConnected) return finish('gone');
-        an.getFloatTimeDomainData(buf);
-        var sum = 0; for (var i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
-        var lvl = Math.sqrt(sum / buf.length);
-        rec.b.style.setProperty('--mic-lvl', Math.min(1, lvl * 8).toFixed(2));
-        var g = gate(lvl, Date.now() - t0);
-        if (g) finish(g);
-      }, 100);
-    }).catch(function (e) {
-      var denied = e && (e.name === 'NotAllowedError' || e.name === 'SecurityError');
-      finish(denied ? 'denied' : 'error');
-      hint(denied ? 'denied' : 'failed');
-    });
-  }
-
-  function tokenNow() {
-    try {
-      var cx = W.LOWI_CLOUD_X;
-      if (!cx || !cx.client) return Promise.resolve('');
-      return Promise.resolve(cx.client()).then(function (sb) {
-        return sb.auth.getSession().then(function (r) {
-          var se = r && r.data && r.data.session;
-          if (se || !sb.auth.signInAnonymously) return se;
-          return sb.auth.signInAnonymously(W.lowiAnonOpts ? W.lowiAnonOpts() : undefined).then(function (x) { return x && x.data && x.data.session; }); // test browsers sign in as test accounts
-        });
-      }).then(function (se) { return (se && se.access_token) || ''; }).catch(function () { return ''; });
-    } catch (e) { return Promise.resolve(''); }
-  }
-  function token() { return Promise.race([tokenNow(), new Promise(function (ok) { setTimeout(function () { ok(''); }, 8000); })]); }
-
-  function send(rec, b64) {
-    setState(rec, 'busy');
-    token().then(function (tok) {
-      if (!tok) { var er = new Error('sign_in'); er.status = 401; throw er; }
-      var cfg = W.LOWI_CFG || {}, h = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok };
-      if (cfg.key) h.apikey = cfg.key;
-      var c = typeof AbortController === 'function' ? new AbortController() : null;
-      var to = setTimeout(function () { if (c) c.abort(); }, 30000);
-      return fetch(endpoint(), { method: 'POST', headers: h, body: JSON.stringify({ audio: b64, lang: lang(), field: kindOf(rec.el) }), signal: c ? c.signal : undefined, cache: 'no-store' })
-        .then(function (r) {
-          clearTimeout(to);
-          return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) { var e2 = new Error(j.error || 'failed'); e2.status = r.status; throw e2; } return j; });
-        }, function () { clearTimeout(to); var e3 = new Error('offline'); e3.status = navigator.onLine === false ? 0 : 502; throw e3; });
-    }).then(function (j) {
-      setState(rec, 'idle');
-      if (!rec.el.isConnected) return;
-      if (!insert(rec, j && j.text, caret(rec.el))) hint('nothing');
-    }).catch(function (e) {
-      setState(rec, 'idle');
-      if (e && e.status === 503) { serverState = 'off'; refreshAll(); }
-      hint(C.errorKey(e && e.status, e && e.message));
-    });
+    try { r.start(); } catch (e) { action = appleTouch ? 'keyboard' : 'failed'; r.onend(); }
   }
 
   // ---------- boot ----------
@@ -433,6 +317,6 @@
   W.LowiMic = {
     engine: engine, refresh: scanSoon, stop: function () { stop('gone'); },
     listening: function () { return !!session; },
-    state: function () { return { serverState: serverState, apple: apple, attached: attached.length, engine: engine() }; }
+    state: function () { return { appleTouch: appleTouch, standalone: standalone, nativeBroken: nativeBroken, attached: attached.length, engine: engine() }; }
   };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

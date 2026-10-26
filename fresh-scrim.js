@@ -17,7 +17,12 @@
    BH-033 (Oct 26 2026): the mirror case. A tap that makes a choice and closes what it was on (a bloom orb) uncovers what lies
    under the finger at once, so the 2nd tap of a double tap pressed that. Live WebKit iPhone 13: a double tap on Move's "Steady"
    logged Steady, the bloom folded, and the 2nd tap landed on the Move bubble and opened the Move bloom again 239 ms later.
-   spent(e) marks such a tap; for SPOT_MS a real tap within SPOT_PX of it is swallowed (quiet). */
+   spent(e) marks such a tap; for SPOT_MS a real tap within SPOT_PX of it is swallowed (quiet).
+   BH-040 (Oct 26 2026): the same for taps that only CLOSE something. Each module had to call spent() on its own X, so most never
+   did. A seeded double-tap monkey on a WebKit iPhone 13 (mock cloud) found the 2nd tap reaching the page under the finger after a
+   close: the bottom X (#whX) 173 ms later focused Community's chat box ("Write to Paul", keyboard up), and Move's backdrop 222 ms
+   later pressed the companion's world bubble. Now every real tap on a dismiss control (an X / close button by its data-* or
+   class name, or a *-scrim backdrop) is spent here, once, for the whole app. */
 (function (W, D) {
     'use strict';
     if (!W || !D || W.LowiFreshScrim) return;
@@ -56,11 +61,22 @@
         const t = tapTime(e), b = Math.max(born.has(ov) ? born.get(ov) : -Infinity, shown.has(ov) ? shown.get(ov) : -Infinity);
         return t - b < SPOT_MS && Math.abs(e.clientX - o.x) <= SPOT_PX && Math.abs(e.clientY - o.y) <= SPOT_PX;
     }
+    /* BH-040: a control whose tap only closes something: the X / close buttons (by data-* or by class name: xbtn, *-x, *-cx,
+       *-close) and *-scrim backdrops. What lies under it shows the moment it closes. */
+    const CLOSE_SEL = '[data-r2="close"],[data-act="close-sheet"],[data-sp="close"],[data-hb2="close"],[data-chat="close-thread"],#whX';
+    const CLOSE_CLS = /(^|\s)([a-z0-9]+-)*(x|cx|close|xbtn)(\s|$)/;
+    function dismissing(t) {
+        if (!t || t.nodeType !== 1 || !t.closest) return false;
+        const c = t.closest('button,[role="button"],a');
+        const el = c || t, cls = typeof el.className === 'string' ? el.className : '';
+        try { if (c && c.matches(CLOSE_SEL)) return true; } catch (e) {}
+        return !!c && CLOSE_CLS.test(cls) || isScrim(el);
+    }
     function guard(e) {
         if (!e.isTrusted) return;
         const b = backdrop(e.target);
         if ((b && age(b) < MS) || sameSpot(e) || quiet(e)) { e.preventDefault(); e.stopImmediatePropagation(); return; }
-        if (e.detail > 0 && typeof e.clientX === 'number') last = { x: e.clientX, y: e.clientY, t: tapTime(e) };
+        if (e.detail > 0 && typeof e.clientX === 'number') { last = { x: e.clientX, y: e.clientY, t: tapTime(e) }; if (dismissing(e.target)) spent(e); }
     }
     /* BH-032: a pane shown again (a tab, a Community view) right after a real tap: same-spot guard like a new overlay. Only the
        spot rule applies (shown is not born, so a pane is never treated as a backdrop). */
@@ -98,5 +114,5 @@
         W.addEventListener('mousedown', guardDown, true);
     }
     if (D.body) start(); else D.addEventListener('DOMContentLoaded', start, { once: true });
-    W.LowiFreshScrim = { MS, SPOT_MS, SPOT_PX, age, backdrop, guard, guardDown, sameSpot, mark, spent, quiet };
+    W.LowiFreshScrim = { MS, SPOT_MS, SPOT_PX, age, backdrop, guard, guardDown, sameSpot, mark, spent, quiet, dismissing };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

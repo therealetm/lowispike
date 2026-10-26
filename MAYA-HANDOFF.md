@@ -1534,7 +1534,8 @@ style, haptics, "Geschafft!" with minutes and points), smooth, tap to dismiss, c
 EN/DE/ES; (4) Diese Woche, Verlauf and the companion's day update right away.
 Task "LOWiSPIKE: Move session gives no reward + grand finish celebration" (Sesame, 26 Oct), worktree wt-move-reward, branch
 move-reward, COORD-move-reward.md, continued by "finish + ship Move session reward + grand finish (continue)".
-Status: DONE, released with the build named in the release line below (quiet, What's New tour step `new-move-finish`).
+Status: LIVE in 20261026-190121 (main e7fd027, quiet, What's New tour step `new-move-finish`). Live WebKit check after the
+release: tools/move-finish/proof.cjs on the live site, iPhone 13 EN/DE, iPhone 13 Reduce Motion, iPad upright ES: 68/68.
 What was wrong: Mirror mode and Kreuzheben only fired `lowi:mirror-done`, which nothing listened to, so they were never saved
 (no Diese Woche, no Verlauf, no XP). The Move player saved but paid at most 30 XP (`Math.min(30, 2 * min)`).
 What it does now: mirror-move.js finish() -> `MOVE.record({fmt:'mirror'|'hinge', moved: real seconds of follow/rest,

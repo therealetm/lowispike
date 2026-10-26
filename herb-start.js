@@ -87,12 +87,14 @@ function want(back){const s=S();if(!s)return false;try{if(R().isAccount&&R().isA
 /* Oct 21 (Eman: "apply everything he said in this video", Build in Public: simplify conversion pages): the start is 3 screens,
    not 5. 0 = what LOWiSPIKE is + why it helps + proof, 1 = your first name, 2 = first XP + free account. The how-you-play
    controls are taught in the app (misty-hints.js, misty-pad.js hints, the tutorial), not before the account. v:3 moves older saved progress. */
+/* Oct 26 2026 (MAYA-HANDOFF 0.38): the Quick tour pill (quick-tour.js opens the 45-second video, muted, Skip any time) */
+function qtPill(){const Q=window.LowiQuickTour;return Q&&Q.label?'<button type="button" class="hs-qt" data-qt="open"><i aria-hidden="true">\u25B6</i>'+esc(Q.label(lang()))+'</button>':'';}
 function html(){let st=hs();if(!st){st={v:3,step:0,seed:Math.floor(Math.random()*1e6),herb:'',user:''};hsSet(st);}
  if(st.v!==3){const o=+st.step||0;st.step=st.v===2?(o>=4?2:o>=1?1:0):(o>=3?2:o>=1?1:0);st.v=3;hsSet(st);}
  const step=Math.max(0,Math.min(2,+st.step||0)),herb=st.herb||MISTY,pick=window.LowiA2&&LowiA2.picker?LowiA2.picker():'';
  const top='<div class="hs-top">'+(step?'<button type="button" class="hs-back" data-hs="back" aria-label="'+esc(t('back'))+'">\u2039</button>':'<span></span>')+'<div class="hs-dots" aria-hidden="true">'+[0,1,2].map(i=>'<i'+(i<=step?' class="on"':'')+'></i>').join('')+'</div>'+(step?'<span></span>':pick)+'</div>';
  let body='';
- if(step===0)body='<div class="hs-scene" id="hsScene">'+herbArt(0,'',1)+'</div><div class="hs-copy"><p class="hs-over">'+esc(t('over'))+'</p><h1>'+esc(t('plantH'))+'</h1><p class="hs-p">'+esc(t('plantP'))+'</p>'+habits()+'</div>'+
+ if(step===0)body='<div class="hs-scene" id="hsScene">'+herbArt(0,'',1)+'</div><div class="hs-copy"><p class="hs-over">'+esc(t('over'))+'</p><h1>'+esc(t('plantH'))+'</h1><p class="hs-p">'+esc(t('plantP'))+'</p>'+habits()+qtPill()+'</div>'+
   '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hs="plant">'+esc(t('plantBtn'))+'</button><button type="button" class="hs-link" data-r2a="signin">'+esc(t('have'))+'</button></div>';
  else if(step===1)body='<div class="hs-scene">'+herbArt(2,'',1)+'<div class="hs-bubble" role="status">'+esc(t('ask',{herb}))+'</div></div><div class="hs-copy"><p class="hs-over">'+esc(t('askOver'))+'</p>'+
   '<label class="hs-lbl" for="hsYou">'+esc(t('youLabel'))+'</label><input id="hsYou" class="hs-in" maxlength="24" autocomplete="given-name" enterkeyhint="done" value="'+esc(st.user||'')+'"><p class="hs-err" id="hsErr" role="alert"></p></div>'+

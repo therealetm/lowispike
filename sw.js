@@ -23,6 +23,7 @@ STATIC.push("food-names-core.js"); /* Oct 26 food names in the app language (car
 STATIC.push("week-basket-core.js", "week-basket.js", "week-basket.css"); /* Oct 26 Shop from home weekly basket in Supermarket (MAYA-HANDOFF 0.21): own line */
 STATIC.push("mic-dictate.css", "mic-dictate-core.js", "mic-dictate.js"); /* Oct 26 mic dictation in text fields: own line */
 STATIC.push("quick-add-core.js"); /* Oct 26 quick "+" on Supermarket rows (MAYA-HANDOFF 0.35): own line, like kitchen-core.js */
+STATIC.push("quick-tour.js", "quick-tour.css"); /* Oct 26 Quick tour video sheet (MAYA-HANDOFF 0.38): own line; the .mp4 itself is never precached */
 STATIC.push("kitchen-core.js"); /* Oct 24 Kitchen in Shop: on its own line so it never collides with the build stamp next to the STATIC line */
 const OWN = STATIC.filter(f => /\.(js|css)$/.test(f) && f.indexOf("vendor/") !== 0), PLAIN = STATIC.filter(f => OWN.indexOf(f) < 0);
 self.addEventListener("install", e => {
@@ -53,6 +54,9 @@ self.addEventListener("fetch", e => {
   const req = e.request; if (req.method !== "GET") return;
   const url = new URL(req.url); if (url.origin !== self.location.origin) return;
   if (url.pathname.endsWith("/version.json") || url.pathname.endsWith("/sw.js")) return;
+  /* Oct 26 (MAYA-HANDOFF 0.38): video goes straight to the network. Safari plays <video> with Range requests, and a cached
+     or re-wrapped 200 answer breaks playback on iPhone; the Quick tour mp4 is also too big to cache. */
+  if (/\.(mp4|m4v|webm|mov)$/i.test(url.pathname)) return;
   if (url.searchParams.get("v") === SHELL_BUILD && /\.(js|css)$/.test(url.pathname)) {
     e.respondWith(caches.open(CACHE).then(c => c.match(req).then(hit => hit || fetch(req).then(res => { if (res && res.ok) c.put(req, res.clone()); return res; }).catch(() => caches.match(url.origin + url.pathname).then(r => r || Response.error())))));
     return;

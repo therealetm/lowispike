@@ -1,0 +1,35 @@
+/* quick-tour.css: Oct 26 2026 (MAYA-HANDOFF 0.38). The Quick tour video sheet (quick-tour.js) and its onboarding pill. */
+.qt-ov { position: fixed; inset: 0; z-index: 2147483300; display: flex; align-items: center; justify-content: center; box-sizing: border-box;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px calc(env(safe-area-inset-bottom, 0px) + 12px);
+  background: rgba(6, 8, 22, .82); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+  opacity: 0; transition: opacity .24s ease; }
+.qt-ov.on { opacity: 1; }
+.qt-box { position: relative; height: 100%; max-height: 900px; aspect-ratio: 9 / 16; max-width: 100%; border-radius: 26px; overflow: hidden;
+  background: #0b0d1c; box-shadow: 0 24px 70px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .1); transform: scale(.96); transition: transform .26s cubic-bezier(.2, .9, .3, 1.1); }
+.qt-ov.on .qt-box { transform: none; }
+.qt-vid { display: block; width: 100%; height: 100%; object-fit: contain; background: #0b0d1c; }
+.qt-tap, .qt-skip, .qt-again, .qt-done { font: 600 15px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: #fff; border: 0; cursor: pointer;
+  min-height: 44px; border-radius: 22px; padding: 0 16px; background: rgba(20, 22, 40, .58); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22); -webkit-tap-highlight-color: transparent; }
+.qt-skip { position: absolute; top: 12px; right: 12px; }
+.qt-tap { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+  background: rgba(124, 92, 255, .86); box-shadow: 0 6px 22px rgba(124, 92, 255, .45), inset 0 0 0 1px rgba(255, 255, 255, .3); animation: qtPulse 1.6s ease-in-out infinite; }
+.qt-tap svg { width: 20px; height: 20px; }
+.qt-tap.qt-loud { left: 12px; bottom: auto; top: 12px; transform: none; animation: none; background: rgba(20, 22, 40, .58); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22); }
+.qt-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(255, 255, 255, .18); }
+.qt-bar i { display: block; height: 100%; background: #7c5cff; transform-origin: 0 50%; transform: scaleX(0); }
+.qt-end { position: absolute; inset: auto 0 22px; display: flex; justify-content: center; gap: 10px; }
+.qt-end[hidden] { display: none; }
+.qt-done { background: #7c5cff; }
+.qt-ov.qt-paused .qt-tap { animation: none; }
+@keyframes qtPulse { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.05); } }
+.qt-tap:focus-visible, .qt-skip:focus-visible, .qt-again:focus-visible, .qt-done:focus-visible, .hs-qt:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+/* the pill on the first onboarding screen */
+.hs-qt { display: inline-flex; align-items: center; gap: 8px; margin: 12px auto 0; min-height: 44px; padding: 0 18px; border-radius: 22px; border: 0; cursor: pointer;
+  font: 600 15px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: inherit;
+  background: rgba(255, 255, 255, .14); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28); }
+.hs-qt i { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #7c5cff; color: #fff; font-style: normal; font-size: 11px; padding-left: 2px; box-sizing: border-box; }
+@media (prefers-reduced-motion: reduce) {
+  .qt-ov, .qt-box { transition: none; }
+  .qt-tap { animation: none; }
+}

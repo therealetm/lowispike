@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 32;  /* 32: Oct 26 2026, new-cart-ask in part 'new' (Someone else pays: the whole Cart as a Give a hand basket); 31: Oct 26 2026, new-mic-dictation in part 'new' (a small mic in text fields: speak instead of typing; Home Screen app on iPhone uses the keyboard's mic); 30: Oct 26 2026, new-cook-tabs (Cook opens on Kitchen, the first tab; hold a Cook tab to move it) and new-kitchen no longer says next to Swipe; 29: Oct 26 2026, new-scan-why in part 'new' (the scanner card's curve, How often and Why?); 28: Oct 26 2026, new-kitchen rewritten (Kitchen is a game in Cook next to Shuffle and Swipe) and new-give-hand opens Shop on Seller Zone (Kitchen left Shop); 27: Oct 25 2026, new-give-hand in part 'new' (Give a hand is its own Shop tab next to Kitchen); 26: Oct 25 2026, the short base tour (11 cards, auto demo, What's New never in the base tour); 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 33;  /* 33: Oct 26 2026, new-quick-tour in part 'new' (the 45-second video tour, Settings row after Tutorial); 32: Oct 26 2026, new-cart-ask in part 'new' (Someone else pays: the whole Cart as a Give a hand basket); 31: Oct 26 2026, new-mic-dictation in part 'new' (a small mic in text fields: speak instead of typing; Home Screen app on iPhone uses the keyboard's mic); 30: Oct 26 2026, new-cook-tabs (Cook opens on Kitchen, the first tab; hold a Cook tab to move it) and new-kitchen no longer says next to Swipe; 29: Oct 26 2026, new-scan-why in part 'new' (the scanner card's curve, How often and Why?); 28: Oct 26 2026, new-kitchen rewritten (Kitchen is a game in Cook next to Shuffle and Swipe) and new-give-hand opens Shop on Seller Zone (Kitchen left Shop); 27: Oct 25 2026, new-give-hand in part 'new' (Give a hand is its own Shop tab next to Kitchen); 26: Oct 25 2026, the short base tour (11 cards, auto demo, What's New never in the base tour); 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- the base tour (Oct 25 2026, Emmanuel: "far too long ... only the essentials, at most 12 steps"). One card per
@@ -142,7 +142,7 @@
         },
         {
             id: 'settings', area: 'settings', target: ['#whHud .o8-settings'], demo: { g: 'hold', open: 'settings-sheet' },
-            covers: ['settings', 'theme', 'language', 'day-night', 'me', 'look', 'account', 'deleteAccount', 'body', 'weight', 'bmi', 'care', 'workouts', 'foryou', 'hunt', 'tutorial', 'back-x', 'home-visit', 'day-card', 'whats-new', 'update'],
+            covers: ['settings', 'theme', 'language', 'day-night', 'me', 'look', 'account', 'deleteAccount', 'body', 'weight', 'bmi', 'care', 'workouts', 'foryou', 'hunt', 'tutorial', 'quickTour', 'back-x', 'home-visit', 'day-card', 'whats-new', 'update'],
             teaches: ['community-hold'],
             title: { en: 'Settings', de: 'Einstellungen', es: 'Ajustes' },
             text: {
@@ -334,6 +334,16 @@
                 en: 'Finish any Move session, Mirror mode and Deadlift too, and you get the biggest reward in the app, plus a big celebration.',
                 de: 'Beende eine Bewegen-Einheit, auch Spiegel-Modus und Kreuzheben: Du bekommst die größte Belohnung der App und ein großes Fest.',
                 es: 'Termina cualquier sesión de Moverse, también modo espejo y peso muerto: la mayor recompensa de la app y una gran celebración.'
+            }
+        },
+        {
+            id: 'new-quick-tour', area: 'new', where: 'home', target: ['#whHud .o8-settings'], covers: ['quickTour', 'quick-tour'],
+            info: 'Oct 26 2026 (MAYA-HANDOFF 0.38, quick-tour.js): the 45-second promo video as a Quick tour, on the first onboarding screen and as a Settings row right after Tutorial. Muted first, Tap for sound, Skip any time; lazy-loaded, never cached by the service worker.',
+            title: { en: 'Quick tour', de: 'Kurze Tour', es: 'Tour r\u00e1pido' },
+            text: {
+                en: 'The whole app in 45 seconds: Settings has a Quick tour right after Tutorial. It starts muted, tap for sound.',
+                de: 'Die ganze App in 45 Sekunden: In den Einstellungen gibt es gleich nach Tutorial die kurze Tour. Tipp f\u00fcr Ton.',
+                es: 'Toda la app en 45 segundos: en Ajustes, justo despu\u00e9s de Tutorial, est\u00e1 el tour r\u00e1pido. Toca para o\u00edr el sonido.'
             }
         },
         {

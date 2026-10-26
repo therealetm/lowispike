@@ -11,6 +11,7 @@ STATIC.push("gift-basket-core.js", "gift-basket.js", "gift-basket.css"); /* Oct 
 STATIC.push("after-meal-checklist-core.js", "after-meal-checklist.js", "after-meal-checklist.css"); /* Oct 25 after-meal checklist: own line */
 STATIC.push("studio-lock-core.js", "studio-lock.js", "studio-lock.css"); /* Oct 25 Studio lock: own line */
 STATIC.push("meal-detail-core.js", "meal-detail.js", "meal-detail.css"); /* Oct 25 meal details on the spike label: own line */
+STATIC.push("bot-recipe-core.js", "bot-recipe.js", "bot-recipe.css"); /* Oct 26 Community recipe cards: Open / Cook / Save / Add to kitchen (MAYA-HANDOFF 0.18) */
 STATIC.push("community-remove-core.js", "community-remove.js", "community-remove.css"); /* Oct 25 admin Remove from community: own line */
 STATIC.push("tutorial-demo.js", "tutorial-demo.css", "tutorial-flight.js", "tutorial-img/scan-sample.webp"); /* Oct 25 short tour: the demo finger, the mocked Scan photo and her first flight */
 STATIC.push("fresh-scrim.js"); /* Oct 25 bug hunt BH-025: a fresh backdrop ignores the 2nd tap of a double tap, own line */

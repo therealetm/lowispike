@@ -33,7 +33,7 @@
     let ov = null, vid = null, opener = null, endTimer = 0;
     const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-    function isOpen() { return !!(ov && ov.classList.contains('on')); }
+    function isOpen() { return !!(ov && ov.isConnected && ov.classList.contains('on')); }
     function soundBtn() { return ov && ov.querySelector('[data-qt="sound"]'); }
     function syncSound() {
         const b = soundBtn(); if (!b || !vid) return;
@@ -43,7 +43,9 @@
         b.classList.toggle('qt-loud', !muted);
     }
     function build(l) {
-        const el = D.createElement('div');
+        /* a modal <dialog> sits in the browser's top layer: above everything, never clipped by a parent (the start gate
+           scrolls and hides overflow), and the rest of the page is inert while it is open */
+        const el = D.createElement(typeof root.HTMLDialogElement === 'function' ? 'dialog' : 'div');
         el.className = 'qt-ov';
         el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', tx('title', l));
         el.innerHTML = '<div class="qt-box">' +
@@ -62,10 +64,14 @@
     }
     function open(opts) {
         if (isOpen()) return true;
+        if (ov && !ov.isConnected) close();
         const l = (opts && opts.lang) || lang();
         opener = (opts && opts.from) || (D.activeElement && D.activeElement !== D.body ? D.activeElement : null);
         if (ov) { ov.remove(); ov = null; }
-        ov = build(l); D.body.appendChild(ov);
+        /* while the start gate is up, everything else in <body> is inert and hidden, so the sheet goes inside the gate */
+        const gate = D.getElementById('r2gate'), gateUp = gate && gate.isConnected && root.getComputedStyle(gate).display !== 'none' && root.getComputedStyle(gate).visibility !== 'hidden';
+        ov = build(l); (gateUp ? gate : D.body).appendChild(ov);
+        if (ov.showModal) { try { ov.showModal(); } catch (e) { } ov.addEventListener('cancel', e => { e.preventDefault(); close(); }); }
         vid = ov.querySelector('video');
         vid.muted = true; vid.defaultMuted = true;
         vid.addEventListener('timeupdate', onTime);
@@ -75,7 +81,8 @@
         D.documentElement.classList.add('qt-open');
         const p = vid.play(); if (p && p.catch) p.catch(() => { ov && ov.classList.add('qt-paused'); });
         syncSound();
-        try { ov.querySelector('[data-qt="skip"]').focus({ preventScroll: true }); } catch (e) { }
+        /* after the tap that opened it has finished (WebKit keeps focus on the tapped button otherwise) */
+        const me = ov; setTimeout(() => { if (ov === me) try { me.querySelector('[data-qt="skip"]').focus({ preventScroll: true }); } catch (e) { } }, 60);
         return true;
     }
     function close() {
@@ -83,6 +90,7 @@
         const el = ov, v = vid; ov = null; vid = null; clearTimeout(endTimer);
         if (v) { try { v.pause(); } catch (e) { } v.removeAttribute('src'); try { v.load(); } catch (e) { } }
         el.classList.remove('on'); D.documentElement.classList.remove('qt-open');
+        if (el.close && el.open) try { el.close(); } catch (e) { }
         const reduce = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (reduce) el.remove(); else endTimer = setTimeout(() => el.remove(), 260);
         const o = opener; opener = null;
@@ -109,5 +117,23 @@
     D.addEventListener('click', e => { if (vid && e.target === vid) { e.preventDefault(); toggleSound(); } }, false);
     D.addEventListener('keydown', e => { if (isOpen() && (e.key === 'Escape' || e.key === 'Esc')) { e.preventDefault(); e.stopPropagation(); close(); } }, true);
     D.addEventListener('visibilitychange', () => { if (D.hidden && vid) try { vid.pause(); } catch (e) { } });
-    root.LowiQuickTour = Object.assign({ open, close, isOpen }, core);
+    /* the browser visitor's very first screen is the Add to Home Screen guide (index.html a1, mode "start"): the same pill goes
+       under its "Free app: ..." line, so people can see the app before they install it. Mounted from here (the guide can draw
+       before this file loads), kept in the page's language. */
+    function pillHtml() { return '<i aria-hidden="true">\u25B6</i>' + esc(label()); }
+    function mountPills() {
+        const what = D.querySelector('#r2gate .r2-start.a1-first .a1-what');
+        if (what && !(what.nextElementSibling && what.nextElementSibling.classList.contains('a1-qt'))) {
+            const b = D.createElement('button'); b.type = 'button'; b.className = 'hs-qt a1-qt'; b.setAttribute('data-qt', 'open'); b.innerHTML = pillHtml();
+            what.insertAdjacentElement('afterend', b);
+        }
+        D.querySelectorAll('.a1-qt').forEach(b => { const h = pillHtml(); if (b.innerHTML !== h) b.innerHTML = h; });
+    }
+    function watch() {
+        mountPills();
+        try { new MutationObserver(() => mountPills()).observe(D.getElementById('r2gate') || D.body, { childList: true, subtree: true }); } catch (e) { }
+        try { new MutationObserver(() => mountPills()).observe(D.documentElement, { attributes: true, attributeFilter: ['lang'] }); } catch (e) { }
+    }
+    if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', watch, { once: true }); else watch();
+    root.LowiQuickTour = Object.assign({ open, close, isOpen, mountPills }, core);
 })(typeof window !== 'undefined' ? window : globalThis);

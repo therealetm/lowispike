@@ -36,8 +36,8 @@ const SEED = `try{ if(!localStorage.getItem('lowi.storePicks.v1')) localStorage.
     if (a.rows.some(r => r.overlap)) fail('text overlaps the quick column');
     if (a.rows.some(r => r.btnH.some(x => x < 44))) fail('tap target under 44');
     const tgt = await P.evaluate(() => { const cs = [...document.querySelectorAll('.stp-card [data-stp-qa-col]')]; const vis = cs.filter(c => { const r = c.getBoundingClientRect(); const s = document.querySelector('.stp-card .stp-scroll').getBoundingClientRect(); const li = c.closest('li').getBoundingClientRect(); return li.top >= s.top - 1 && r.bottom < s.bottom - 8; }); return vis.slice(0, 3).map(c => c.getAttribute('data-stp-qa-col')); });
-    if (tgt.length < 3) fail('fewer than 3 visible rows ' + tgt.length);
-    const i2 = String(+tgt[0] + 2), [i0, i1] = tgt, sel = (i, q) => `[data-stp-qa-col="${i}"] [data-stp-qa="${q}"]`;
+    if (tgt.length < 1) fail('no visible row');
+    const i0 = tgt[0], i1 = String(+tgt[0] + 1), i2 = String(+tgt[0] + 2), sel = (i, q) => `[data-stp-qa-col="${i}"] [data-stp-qa="${q}"]`;
     const h0 = await P.evaluate(i => document.querySelector(`[data-stp-qa-col="${i}"]`).closest('li').getBoundingClientRect().height, i0);
     // 1) single tap +
     let p = await tp(sel(i0, 'add')); await L.sleep(500);
@@ -47,10 +47,12 @@ const SEED = `try{ if(!localStorage.getItem('lowi.storePicks.v1')) localStorage.
     if (Math.abs(r0.h - h0) > 0.5) fail('row height changed ' + h0 + '->' + r0.h); if (a.lines.length !== 1) fail('cart lines ' + a.lines.length);
     await L.sleep(800);
     // 2) double tap + on 2nd row (gap ~80ms)
+    await P.evaluate(i => document.querySelector(`[data-stp-qa-col="${i}"]`).closest('li').scrollIntoView({ block: 'center' }), i1); await L.sleep(500);
     p = await tp(sel(i1, 'add')); await L.sleep(80); if (p) await L.tap(h, p.x, p.y); await L.sleep(600);
     a = await info(); R.dbl = a.lines; if (a.lines.some(l => / x2$/.test(l))) fail('double tap added 2'); if (a.qv) fail('dbl opened product');
     await L.sleep(800);
     // 3) stepper + quick taps x2 on first row (300 ms apart) -> 3
+    await P.evaluate(i => document.querySelector(`[data-stp-qa-col="${i}"]`).closest('li').scrollIntoView({ block: 'center' }), i0); await L.sleep(500);
     p = await tp(sel(i0, 'more')); await L.sleep(300); if (p) await L.tap(h, p.x, p.y); await L.sleep(500);
     a = await info(); R.more = a.lines; if (!a.lines.some(l => / x3$/.test(l))) fail('stepper + did not reach 3');
     // 4) minus x3 -> removed, + back

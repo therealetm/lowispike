@@ -209,16 +209,22 @@ function menuItems(){const it=[];/* People directory (Oct 24 2026): everyone in 
 function paintMenu(){const h='<div class="rm-menu-card" role="menu" aria-label="'+esc(tr('menu'))+'">'+menuItems().map(([k,ic,t])=>'<button type="button" role="menuitem" data-rmm="'+k+'"><span class="rm-mi" aria-hidden="true">'+ic+'</span><span>'+esc(t)+'</span></button>').join('')+'</div>';
  if(menu.__h!==h){menu.innerHTML=h;menu.__h=h;}
  const btn=bar&&bar.querySelector('.rm-menu-btn');if(btn){const r=btn.getBoundingClientRect();menu.style.setProperty('--rm-mt',Math.round(r.bottom+8)+'px');menu.style.setProperty('--rm-ml',Math.round(Math.max(10,r.left))+'px');}}
+/* BH-038 (P-REUSED-OVERLAY): the menu is a full-screen body element made once and shown again, so fresh-scrim (BH-025) only
+   protected its very first open. Live: a double tap on the menu button opened it and the 2nd tap (17-250 ms later) landed on its
+   backdrop and shut it. Now every hidden->shown edge gets fresh-scrim's same-spot rule (mark), and a tap that closes it (a row or
+   the backdrop) is spent, so the 2nd tap of that double tap does not press what the closing menu uncovers (BH-033). */
+function fresh(el){try{if(W.LowiFreshScrim&&W.LowiFreshScrim.mark)W.LowiFreshScrim.mark(el);}catch(x){}}
+function spend(e){try{if(W.LowiFreshScrim&&W.LowiFreshScrim.spent)W.LowiFreshScrim.spent(e);}catch(x){}}
 function toggleMenu(force){const on=force==null?!(menu&&!menu.hidden):!!force;
  if(!menu){menu=D.createElement('div');menu.className='rm-menu';menu.hidden=true;menu.setAttribute('data-noi18n','');D.body.appendChild(menu);
-  menu.addEventListener('click',e=>{if(e.target===menu){toggleMenu(false);return;}const b=e.target.closest('[data-rmm]');if(!b)return;const k=b.dataset.rmm;toggleMenu(false);
+  menu.addEventListener('click',e=>{if(e.target===menu){spend(e);toggleMenu(false);return;}const b=e.target.closest('[data-rmm]');if(!b)return;const k=b.dataset.rmm;spend(e);toggleMenu(false);
    if(k==='replies'){const dl=lastDirected(),c=W.LowiCommunity;if(dl&&c&&c.thread){const f=cur();view='';c.thread(true,dl.m.id);if(f!=='chat')from=f;paint();}}/* thread(), not openMessage(): its goTab('foryou') from inside Community rebuilds the page and drops the open chat */else if(k==='dir'){try{W.LowiPeopleDir.open();}catch(x){}}
    else if(k==='profile'){const p=D.getElementById('pfBtn');if(p)p.click();}else if(k==='invite')copyText(inviteUrl(),tr('copied'));else if(k==='copyview')copyView();
    else if(k==='settings'){try{W.LowiCommunity.settings();}catch(x){}}else if(k==='welcome'){try{W.LowiCommunityWelcome.open();}catch(x){}}});
   menu.addEventListener('keydown',e=>{const bs=[...menu.querySelectorAll('[data-rmm]')],i=bs.indexOf(D.activeElement);
    if(e.key==='Escape'){e.stopPropagation();toggleMenu(false);}else if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const n=bs[(i+(e.key==='ArrowDown'?1:bs.length-1)+bs.length)%bs.length];if(n)n.focus();}});}
  if(!menu.isConnected)D.body.appendChild(menu);
- menu.hidden=!on;const btn=bar&&bar.querySelector('.rm-menu-btn');if(btn)btn.setAttribute('aria-expanded',on?'true':'false');
+ const was=menu.hidden;menu.hidden=!on;if(on&&was)fresh(menu);const btn=bar&&bar.querySelector('.rm-menu-btn');if(btn)btn.setAttribute('aria-expanded',on?'true':'false');
  if(on){paintMenu();setTimeout(()=>{const f=menu.querySelector('[data-rmm]');if(f)f.focus({preventScroll:true});},30);}else if(btn&&menu.contains(D.activeElement))btn.focus({preventScroll:true});}
 D.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu&&!menu.hidden){e.stopPropagation();toggleMenu(false);}},true);
 /* 21 Oct 2026 (Eman: the day/night button covers the word "Room"): the Day/Night switch (#tbTheme) and the profile picture

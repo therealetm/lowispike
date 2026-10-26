@@ -1329,6 +1329,27 @@ Decision (do not bring the auto trip back):
   open with its finds, quietly, no sheet. Trips the user started keep running.
 - The away look was fixed so the manual version is clean (see the commit and tests/companion-manual-explore.test.cjs).
 
+### 0.32 Shop finds is confusing: make it simple, Power combos the hero (Emmanuel, voice + 2 screenshots, Mon 26 Oct 2026 about 4:07 PM CET)
+
+His words: "I don't understand Shop finds yet. It's a bit complicated. When you open Shop finds, it's very complicated. What
+is this? 'Scan products while you shop to see if they're likely to spike your blood sugar. Good ones glow here on your next
+trip.' I don't understand what this page is. 'Pick your shop so your finds are tied to it,' and then Power combos: quark,
+kiwi and almonds, sounds like an idea for no spike. OK, I guess Power combos make sense, but that other stuff is confusing."
+
+Screenshots: the Shop finds panel (intro line, Pick your shop, "No shopping glow yet: Catch 2 different products on one
+shopping day ... your world and spirit world glow brighter", Today 1/2, Scan a product + Photo, a second "Pick your shop so
+your finds are tied to it" line, POWER COMBOS Quark, kiwi and almonds +30 XP, CAUGHT TODAY Mandeln Stifte "Medium
+(estimate)") and the scanner card's "Shop finds" box ("1 more different product today for your shopping check-in. Pick your
+shop in Shop finds so your finds glimmer there next time." + Open finds).
+
+What to build: one plain purpose line; Power combos first and biggest (he likes them); Caught today plain, with the SAME
+verdict words as the scanner card (Lower / Moderate / Higher, never "Medium"); cut "shopping glow", "world and spirit world
+glow brighter", the 1/2 check-in jargon and the duplicate "pick your shop" text; the shop is picked once, in one place (one
+quiet row, and it reuses the shop already picked in Supermarket); "companion", never "spirit". Scanner card's Shop finds
+box: one short line, or nothing when it adds nothing. Rewards keep working, folded in quietly. EN/DE/ES, glass style.
+Task "LOWiSPIKE: simplify Shop finds" (Sesame, 26 Oct), worktree wt-shop-finds, branch shop-finds-simple,
+COORD-shop-finds.md. Status: building (see Log for the release).
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

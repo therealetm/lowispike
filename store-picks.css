@@ -320,3 +320,55 @@ button.stp-again:active { background: rgba(255, 255, 255, .13); }
 .stp-cart-total b { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .stp-cart-acts { margin-top: 12px; }
 .stp-cart-acts > :first-child { grid-column: 1 / -1; }
+
+/* Oct 26 quick "+" on every product row (MAYA-HANDOFF 0.35, quick-add-core.js): the verdict is a small tag by the name, the
+   quick column sits on the right of the row with a fixed width, so turning "+" into "- 1 +" never reflows the row under the
+   finger (bug hunt P-ROW-SHIFT). Every control is 44 px tall; "+" is the rightmost control in both states. */
+.stp-li.qa { position: relative; }
+.stp-li.qa > .stp-item { padding-right: 118px; }
+.stp-nm { display: block; line-height: 1.25; }
+.stp-nm b { margin-right: 2px; }
+.stp-nm .stp-tag { display: inline-block; vertical-align: 1px; font-size: 10.5px; padding: 2px 7px; white-space: nowrap; }
+.stp-qa {
+  position: absolute; top: 50%; right: 6px; width: 106px; height: 44px; margin-top: -22px; z-index: 1;
+  display: flex; align-items: center; justify-content: flex-end; gap: 4px;
+}
+.stp-qa-b {
+  flex: 0 0 auto; width: 44px; height: 44px; min-width: 44px; padding: 0; margin: 0; border-radius: 50%; display: grid; place-items: center;
+  font: inherit; font-size: 24px; font-weight: 800; line-height: 1; color: inherit; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation; -webkit-user-select: none; user-select: none;
+  border: 1.2px solid var(--mb-pill-rim, rgba(143, 231, 255, .42)); background: rgba(255, 255, 255, .08);
+}
+.stp-qa-b:focus-visible { outline: 2.5px solid var(--mb-acc, #8fe7ff); outline-offset: 1px; }
+.stp-qa-add { background: var(--mb-go, linear-gradient(135deg, #8ff0c8, #6fd8ff)); color: #062033; border-color: rgba(255, 255, 255, .55);
+  box-shadow: 0 0 12px rgba(143, 231, 255, .28); }
+.stp-qa-add:active { transform: scale(.92); }
+.stp-qa-kit { position: relative; color: rgba(255, 255, 255, .82); background: rgba(255, 255, 255, .05); }
+.stp-qa-kit.on { color: #9ff5c9; border-color: rgba(159, 245, 201, .6); background: rgba(120, 240, 180, .16); }
+.stp-qa-tick { position: absolute; right: 3px; top: 3px; width: 15px; height: 15px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 10px; font-weight: 900; background: #9ff5c9; color: #062033; }
+.stp-qa-step { display: flex; align-items: center; height: 44px; border-radius: 22px; background: rgba(143, 231, 255, .14);
+  border: 1.2px solid rgba(143, 231, 255, .45); animation: stp-qa-in .16s ease-out; }
+.stp-qa-step .stp-qa-b { border: 0; background: none; }
+.stp-qa-step .stp-qa-less { width: 40px; min-width: 40px; }
+.stp-qa-step .stp-qa-more { color: var(--mb-acc, #8fe7ff); }
+.stp-qa-step .stp-qa-b:active { background: rgba(255, 255, 255, .12); }
+.stp-qa-n { min-width: 20px; text-align: center; font-size: 15.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
+@keyframes stp-qa-in { from { opacity: .4; transform: scale(.94); } to { opacity: 1; transform: none; } }
+/* a short note above the bottom bar ("In your Cart: X", Undo for the kitchen); it floats, so no row moves */
+.stp-qa-note {
+  position: absolute; left: 18px; right: 18px; bottom: 82px; z-index: 3; display: flex; align-items: center; gap: 10px; min-height: 44px;
+  padding: 6px 8px 6px 16px; border-radius: 22px; font-size: 14px; font-weight: 700; color: #fff;
+  background: rgba(10, 16, 44, .92); border: 1.2px solid rgba(143, 231, 255, .45); box-shadow: 0 10px 26px rgba(0, 6, 30, .4);
+  opacity: 0; transform: translateY(6px); transition: opacity .18s ease, transform .18s ease; pointer-events: none;
+}
+.stp-qa-note span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stp-qa-note.on { opacity: 1; transform: none; }
+.stp-qa-note.on.act .stp-qa-undo { pointer-events: auto; }
+.stp-qa-undo { flex: 0 0 auto; min-height: 36px; padding: 0 14px; border-radius: 18px; font: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer;
+  color: var(--mb-acc, #8fe7ff); background: rgba(143, 231, 255, .14); border: 1px solid rgba(143, 231, 255, .45); touch-action: manipulation; }
+@media (prefers-reduced-motion: reduce) {
+  .stp-qa-step { animation: none; }
+  .stp-qa-note { transition: none; transform: none; }
+  .stp-qa-add:active { transform: none; }
+}

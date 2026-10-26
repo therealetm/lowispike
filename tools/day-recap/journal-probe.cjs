@@ -20,7 +20,7 @@ const has = k => process.argv.includes('--' + k);
         localStorage.setItem('lowispike.v2', JSON.stringify(s)); localStorage.removeItem('lowi.dayrecap.journal.v1'); } } catch (e) { }`;
     const h = await L.open({ url, view, lang, preInit, reducedMotion: has('rm') });
     const P = h.page, out = { view, lang, problems: [] }, bad = m => out.problems.push(m);
-    const settled = async () => { for (let i = 0; i < 40; i++) { const ok = await P.evaluate(() => { const s = document.querySelector('.r2-ov.on:not(.off) #dayRecap'); if (!s) return false; const t = getComputedStyle(s.closest('.r2-sh')).transform; return t === 'none' || /, 0\)$/.test(t); }); if (ok) return true; await L.sleep(200); } return false; };
+    const settled = async () => { for (let i = 0; i < 150; i++) { const ok = await P.evaluate(() => { const s = document.querySelector('.r2-ov.on:not(.off) #dayRecap'); if (!s) return false; const t = getComputedStyle(s.closest('.r2-sh')).transform; return t === 'none' || /, 0\)$/.test(t); }); if (ok) return true; await L.sleep(200); } return false; };
     const isOpen = () => P.evaluate(() => !!document.querySelector('.r2-ov:not(.off) #dayRecap'));
     try {
         await P.evaluate(() => window.LowiDayRecap.open()); await L.sleep(500); out.settled = await settled();

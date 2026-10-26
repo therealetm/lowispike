@@ -29,13 +29,16 @@ const has = k => process.argv.includes('--' + k);
         document.addEventListener('click', e => { if (document.querySelector('.drc-ov')) window.__drc.push(Math.round(performance.now()) + ' click ' + (e.target.className && e.target.className.baseVal == null ? e.target.className : e.target.tagName)); }, true); });
     const bad = m => out.problems.push(m);
     /* the sheet slides in on a spring; wait until it has landed (emulated phones are slow) */
-    const settled = async () => { for (let i = 0; i < 40; i++) { const ok = await P.evaluate(() => { const s = document.querySelector('.r2-ov.on:not(.off) #dayRecap'); if (!s) return false; const t = getComputedStyle(s.closest('.r2-sh')).transform; return t === 'none' || /, 0\)$/.test(t); }); if (ok) return true; await L.sleep(200); } return false; };
+    /* a loaded machine slows the sheets' spring: tap only once the target has stopped moving */
+    const stable = async sel => { let last = ''; for (let i = 0; i < 100; i++) { const r = await P.evaluate(q => { const e = document.querySelector(q); if (!e) return ''; const b = e.getBoundingClientRect(); return Math.round(b.left) + ',' + Math.round(b.top); }, sel); if (r && r === last) return true; last = r; await L.sleep(300); } return false; };
+    const settled = async () => { for (let i = 0; i < 150; i++) { const ok = await P.evaluate(() => { const s = document.querySelector('.r2-ov.on:not(.off) #dayRecap'); if (!s) return false; const t = getComputedStyle(s.closest('.r2-sh')).transform; return t === 'none' || /, 0\)$/.test(t); }); if (ok) return true; await L.sleep(200); } return false; };
     try {
         out.loaded = await P.evaluate(() => !!(window.LowiDayRecap && window.LowiDayRecap.open && window.LowiDayRecapCore));
         if (!out.loaded) bad('Day recap not loaded');
         await P.evaluate(() => (window.LowiWorldHome && window.LowiWorldHome.openMisty) ? window.LowiWorldHome.openMisty() : window.LowiMistyHub.open());
         await L.sleep(900);
         await P.evaluate(() => { const e = document.querySelector('[data-mh="t-recap"]'); e && e.scrollIntoView({ block: 'center' }); }); await L.sleep(400);
+        await stable('[data-mh="t-recap"]');
         const orb = await L.center(h, '[data-mh="t-recap"]');
         out.cardBubble = await P.evaluate(() => { const e = document.querySelector('[data-mh="t-recap"]'); if (!e) return null; const r = e.getBoundingClientRect(); return { text: e.innerText.replace(/\s+/g, ' '), w: Math.round(r.width), right: Math.round(r.right), vw: innerWidth, n: document.querySelectorAll('.mh-today .mh-orb').length }; });
         if (!orb) bad('no Your day bubble on the companion card');
@@ -69,6 +72,7 @@ const has = k => process.argv.includes('--' + k);
         await P.evaluate(() => window.LowiMyDay && window.LowiMyDay.open && window.LowiMyDay.open());
         await L.sleep(900);
         await P.evaluate(() => { const e = document.querySelector('[data-myday="recap"]'); e && e.scrollIntoView({ block: 'center' }); }); await L.sleep(400);
+        await stable('[data-myday="recap"]');
         const md = await L.center(h, '[data-myday="recap"]');
         out.myDayItem = !!md;
         if (md) { await L.tap(h, md.x, md.y); await L.sleep(500); out.settled2 = await settled(); out.panel2 = await read(); if (!out.panel2) bad('panel did not open from My day'); else if (out.panel && out.panel2.say === out.panel.say) bad('same hello twice in a row'); }

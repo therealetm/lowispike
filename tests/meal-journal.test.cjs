@@ -68,7 +68,7 @@ test('the Community meal card message: photo, dish name, spike rating, caption; 
 
 test('the chat renders the meal card and accepts it through the photo outbox; report/block work like any message', () => {
     assert.match(chat, /const ml=K\.meal\?K\.meal\(m\.t,u\):null;return ml\?\{src:ml\.src,caption:ml\.caption,meal:ml\}:null;/);
-    assert.match(chat, /\(ph\.meal\?mealHtml\(ph\.meal\):''\)/);
+    assert.match(chat, /\(ph\.meal\?mealHtml\(ph\.meal\)(?:\+\(W\.LowiBotRecipe[^:]*:''\))?:''\)/); /* Oct 26: + the recipe card buttons (bot-recipe.js) */
     assert.match(chat, /async function shareMeal\(o\)/);
     assert.match(chat, /scope\+'\/meal-'\+id\+'\.jpg'/);
     assert.match(chat, /W\.LowiCommunity=\{mount,refresh,send,comment,[^\n]*,shareMeal\};/);

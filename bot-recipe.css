@@ -1,0 +1,26 @@
+/* bot-recipe.css — the labelled buttons under a Community recipe card (MAYA-HANDOFF 0.18). Glass pills, 44 px taps. */
+#cmPaneChat .cs-meal-n,.cs-meal-n{appearance:none;-webkit-appearance:none;background:none;border:0;margin:0;padding:2px 0;min-height:0;min-width:0;
+  font:inherit;font-weight:650;font-size:15px;line-height:1.25;color:inherit;text-align:left;cursor:pointer;overflow-wrap:anywhere;
+  text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 35%,transparent);text-underline-offset:3px;border-radius:6px;box-shadow:none}
+.cs-meal-n:focus-visible{outline:2px solid var(--accent,#9cdac7);outline-offset:2px}
+.crb-row{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;gap:6px;margin:8px 0 4px;max-width:min(272px,72vw);min-width:0}
+.crb-row.crb-one{grid-template-columns:1fr}
+.crb-kwrap{display:flex;gap:6px;min-width:0;align-self:stretch}
+.crb-row>.crb-b,.crb-kwrap>.crb-b{align-self:stretch;height:auto!important;max-height:none!important}
+.crb-kwrap>.crb-b{flex:1 1 auto}
+#cmPaneChat .crb-b,.crb-b{appearance:none;-webkit-appearance:none;display:flex;align-items:center;gap:6px;min-height:44px;min-width:0;margin:0;
+  padding:7px 10px;border-radius:13px;box-sizing:border-box;font:inherit;font-size:13px;font-weight:650;line-height:1.2;text-align:left;color:inherit;
+  background:color-mix(in srgb,currentColor 7%,transparent);border:1px solid color-mix(in srgb,currentColor 20%,transparent);
+  box-shadow:inset 0 1px 0 #ffffff14;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s ease,background .15s ease}
+.crb-b .crb-i{flex:none;font-size:15px;line-height:1}
+.crb-b .crb-l{min-width:0;overflow-wrap:anywhere}
+#cmPaneChat .crb-open,.crb-open{background:color-mix(in srgb,var(--accent,#9cdac7) 24%,transparent);border-color:color-mix(in srgb,var(--accent,#9cdac7) 60%,transparent);
+  box-shadow:inset 0 1px 0 #ffffff22,0 0 14px color-mix(in srgb,var(--accent,#9cdac7) 22%,transparent)}
+.crb-save[aria-pressed="true"] .crb-i{color:var(--gold,#f2cf72)}
+#cmPaneChat .crb-on,.crb-on{cursor:default;background:color-mix(in srgb,var(--lo,#a9dcb2) 16%,transparent);border-color:color-mix(in srgb,var(--lo,#a9dcb2) 45%,transparent);font-weight:600}
+#cmPaneChat .crb-undo,.crb-undo{appearance:none;flex:none;min-height:44px;min-width:44px;margin:0;padding:6px 9px;border-radius:13px;font:inherit;font-size:12px;font-weight:650;
+  color:inherit;background:transparent;border:1px solid color-mix(in srgb,currentColor 22%,transparent);cursor:pointer}
+.crb-b:active:not(.crb-on),.crb-undo:active{transform:scale(.97)}
+.crb-b:focus-visible,.crb-undo:focus-visible{outline:2px solid var(--accent,#9cdac7);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.crb-b,.crb-undo{transition:none}.crb-b:active,.crb-undo:active{transform:none}}
+@media (prefers-contrast:more){.crb-b,.crb-undo{border-color:currentColor}}

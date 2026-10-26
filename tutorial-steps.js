@@ -219,6 +219,16 @@
             }
         },
         {
+            id: 'new-week-shop', area: 'new', where: 'home', open: 'supermarket', target: ['.stp-card .stp-wb', '.stp-card'],
+            info: 'Oct 26 2026: Shop from home, the weekly basket at the top of Supermarket (week-basket.js, MAYA-HANDOFF 0.21). Household, budget and dinners in, a week of low-spike dinners in one basket out, priced with the existing store estimates.',
+            title: { en: 'Shop from home', de: 'Von zu Hause einkaufen', es: 'Compra desde casa' },
+            text: {
+                en: 'New in Supermarket: Shop from home. Say how many people, your budget and how many dinners. You get a week of low-spike dinners in one basket, with an estimated total for each store. Tick what you already have, then send the list.',
+                de: 'Neu im Supermarkt: Von zu Hause einkaufen. Sag, wie viele Personen, dein Budget und wie viele Abendessen. Du bekommst eine Woche Low-Spike-Abendessen in einem Einkauf, mit geschätzter Summe für jeden Laden. Hak ab, was du schon hast, und schick die Liste los.',
+                es: 'Nuevo en Supermercado: Compra desde casa. Di cuántas personas sois, tu presupuesto y cuántas cenas. Recibes una semana de cenas low-spike en una sola compra, con un total estimado para cada tienda. Marca lo que ya tienes y envía la lista.'
+            }
+        },
+        {
             id: 'new-give-hand', area: 'new', where: 'home', open: 'shop', target: ['.stp-card .stp-tab[data-stp-tab="gift"]', '.stp-card'], covers: ['give-a-hand'],
             info: 'Oct 25 2026: the Give a hand tab in Shop (store-picks.js giftDoor); it shows once the server has the basket table, otherwise the card points at Shop. Oct 26: the Kitchen tab left Shop for Cook, so the card opens Shop on Seller Zone and Give a hand sits right beside it',
             title: { en: 'Give a hand', de: 'Hilf mit', es: 'Echa una mano' },

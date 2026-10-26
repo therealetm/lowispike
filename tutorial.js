@@ -59,6 +59,8 @@
     const OPEN = {
         move: { go() { if (typeof W.goTab === 'function') W.goTab('move'); }, stage: '', back() { goHome(); } },
         shop: { go() { const P = W.LowiStorePicks; if (!P) return; goHome(); if (!P.isOpen()) P.open('tour'); try { P.setTab('sz'); } catch (e) { } }, stage: '.stp-card', back() { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
+        /* Oct 26 (MAYA-HANDOFF 0.21): Shop opened on the Supermarket tab, for the Shop from home step (new-week-shop) */
+        supermarket: { go() { const P = W.LowiStorePicks; if (!P) return; goHome(); if (!P.isOpen()) P.open('tour'); try { P.setTab('shop'); } catch (e) { } }, stage: '.stp-card', back() { try { if (W.LowiWeekBasket && W.LowiWeekBasket.isOpen()) W.LowiWeekBasket.close(); } catch (e) { } try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
         /* Oct 24: the Kitchen tab in Shop (new-kitchen). Oct 26: the Kitchen is a game in Cook now (kitchen-game.js), so the step opens
            Cook > Kitchen; the old Shop tab stays the fallback when the game file is missing. */
         kitchen: { go() { if (W.LowiKitchenGame && W.LowiKitchenGame.open) { try { goHome(); W.LowiKitchenGame.open(); } catch (e) { } return; } const P = W.LowiStorePicks; if (!P) return; goHome(); if (!P.isOpen()) P.open('tour'); try { P.setTab('kitchen'); } catch (e) { } }, stage: '#kgRoot, .stp-card', back() { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } try { if (W.LowiKitchenGame) goHome(); } catch (e) { } } },

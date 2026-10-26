@@ -17,7 +17,7 @@
     if (W.LowiAfterMeal) return;
     const C = W.LowiAfterMealCore; if (!C) return;
     const KEY = 'lowi.pmc.v1';
-    let P = null, el = null, timer = 0, hideT = 0, note = '';
+    let P = null, el = null, timer = 0, hideT = 0, finT = 0, note = '';
 
     const lang = () => { try { return (W.LowiLang.get() || 'en').slice(0, 2); } catch (e) { return ((D.documentElement && D.documentElement.lang) || 'en').slice(0, 2); } };
     const s = (k, v) => C.t(lang(), k, v);
@@ -123,6 +123,9 @@
             : '<div class="pmc-hd pmc-done" role="status"><span class="pmc-wave">' + ICON.tick + '</span><span class="pmc-ht"><b>' + esc(s('done')) + '</b><small>' + esc(note || prog()) + '</small></span>' +
               '<button type="button" class="pmc-x" data-pmc="close" aria-label="' + esc(s('skip')) + '">' + ICON.x + '</button></div>';
         clearTimeout(hideT); hideT = setTimeout(remove, ach ? 9000 : 4500);
+        /* the loop has stopped by now: keep the closing card out of the way of a sheet or another page opened while it shows (it sits above almost everything) */
+        clearInterval(finT); finT = setInterval(() => { if (!el || !el.isConnected) { clearInterval(finT); finT = 0; return; } const b = blocked(); if (el.hidden !== b) el.hidden = b; }, 250);
+        if (blocked()) el.hidden = true;
     }
 
     function mount() {
@@ -150,7 +153,7 @@
             P.fold = true; save(); paint();
         }, 450);
     }
-    function remove() { clearTimeout(hideT); clearTimeout(foldT); if (el) { el.remove(); el = null; } }
+    function remove() { clearTimeout(hideT); clearTimeout(foldT); clearInterval(finT); finT = 0; if (el) { el.remove(); el = null; } }
 
     function onTap(e) {
         const b = e.target.closest('[data-pmc]'); if (!b || !P) { if (b && b.dataset.pmc === 'close') remove(); return; }

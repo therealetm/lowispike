@@ -160,9 +160,12 @@ test('a meal logged this morning can go back to last night (other day, up to 7 d
 
 test('Fuel\'s own path (meal > Bearbeiten > Uhrzeit) keeps working beside it', () => {
     const now = Date.now(), meal = min(now - H), h = host(running(min(now - 3 * H)));
+    /* Fuel's path only moves a meal within its own day: between 00:00 and 01:30 "30 min earlier" is yesterday, so move it later then
+       (bug hunt round 29: this test failed every night in that window and blocked releases) */
+    const to = dayOf(meal - 30 * MIN) === dayOf(meal) ? meal - 30 * MIN : meal + 30 * MIN;
     h.logMeal('a', meal);
-    h.win.LowiVitalsBridge.editMeal({ id: 'a', ts: meal - 30 * MIN });
-    assert.strictEqual(h.start(), meal - 30 * MIN);
+    h.win.LowiVitalsBridge.editMeal({ id: 'a', ts: to });
+    assert.strictEqual(h.start(), to);
     assert.strictEqual(h.logs.length, 1);
 });
 

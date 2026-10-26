@@ -168,7 +168,18 @@
         try { if (W.LowiR2 && LowiR2.gateUp && LowiR2.gateUp()) return true; } catch (e) {}
         try { if (W.LowiHost && LowiHost.onboarded && !LowiHost.onboarded()) return true; } catch (e) {}
         try { if (W.LowiG1 && LowiG1.state && LowiG1.state()) return true; } catch (e) {}
-        return BUSY.some(sel => { try { const e = $(sel); return !!(e && (e.offsetParent || getComputedStyle(e).position === 'fixed')); } catch (x) { return false; } });
+        if (BUSY.some(sel => { try { const e = $(sel); return !!(e && (e.offsetParent || getComputedStyle(e).position === 'fixed')); } catch (x) { return false; } })) return true;
+        return otherModal();
+    }
+    /* BH-031 (Oct 26 2026): the named BUSY list missed every dialog not on it. The fasting reward (#fstRw, "Fast complete") opens
+       when the first meal of the day ends the fast, which is exactly when the Day card is due: the Day card opened 1.5 s later on
+       top of it (z 2147483000 over 2147482000) and one Escape closed both, so the reward went by unseen. Live 20261026-031541,
+       playtest/probe-dayover.cjs. Like the tour (tutorial.js busyBy) and Misty's evolution (EVO_BUSY), any other open modal dialog
+       now counts, by real visibility (a closed fixed overlay still reports position:fixed); the ritual's own Day card never does. */
+    function shown(n) { try { if (!n.getClientRects().length) return false; const cs = getComputedStyle(n); return cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > 0.05; } catch (e) { return false; } }
+    function otherModal() {
+        try { for (const n of D.querySelectorAll('[aria-modal="true"]')) { if (n.id === 'drDay' || (n.closest && n.closest('#drDay'))) continue; if (shown(n)) return true; } } catch (e) { }
+        return false;
     }
     const ICON = {
         flame: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c.6 3.4 4.7 5.6 4.7 10.3A4.7 4.7 0 0 1 12 21.5a4.7 4.7 0 0 1-4.7-4.7c0-2.3 1.2-3.7 2.3-4.9.3 1.4 1 2.3 2 2.6-.6-3.4.1-7.2.4-12z" fill="currentColor"/></svg>',

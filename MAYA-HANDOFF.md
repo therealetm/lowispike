@@ -1219,7 +1219,7 @@ clutter. Food logging / food search / meal names first, then Scan search, Kitche
 companion rename and other free-text fields. Recognition in the app language (EN/DE/ES), every string EN/DE/ES. Permission
 denied = short localized hint. Audio only ever leaves the phone after the user taps the mic. If it can't work somewhere, hide
 the mic instead of showing a broken button. Task "LOWiSPIKE: microphone dictation in every text field" (Sesame, 26 Oct),
-worktree wt-mic, branch mic-dictation-4, COORD-mic.md, HANDOFF-mic.md. Status: releasing (see Log for the build).
+worktree wt-mic, branch mic-dictation-4, COORD-mic.md, HANDOFF-mic.md. Status: LIVE in build 20261026-173248, silent.
 Cost decision (Emmanuel: "if it costs money, use the device's own built-in speech-to-text"): Google cloud speech-to-text
 charges past a capped free tier, so the mic uses ONLY the device's free SpeechRecognition (webkitSpeechRecognition). No cloud
 service, no keys, no Supabase voice-text function (an early draft had one; it was removed and never deployed). iOS blocks

@@ -1,7 +1,8 @@
 'use strict';
 /* 26 Oct 2026 (Emmanuel's Products Shuffle screenshots): the old "Throw out" rows ran off both edges of a 390 px iPhone.
    WebKit check at 390x844, iPhone SE and iPad: nothing on the Products Shuffle screen or in the kept-out sheet sits
-   outside the screen. Skips when Playwright is not installed (GitHub's checks); run locally before every release. */
+   outside the screen. Not in the *.test.cjs suite: GitHub's checks have no Playwright, and a skipped test there lowers the pass count and fails
+   the test floor. Run locally before every release: node --test tests/products-shuffle-layout-live.cjs */
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('http'), fs = require('fs'), path = require('path');

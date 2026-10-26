@@ -17,6 +17,7 @@ STATIC.push("tutorial-demo.js", "tutorial-demo.css", "tutorial-flight.js", "tuto
 STATIC.push("fresh-scrim.js"); /* Oct 25 bug hunt BH-025: a fresh backdrop ignores the 2nd tap of a double tap, own line */
 STATIC.push("tutorial-voice.js", "tutorial-voice.css", "tutorial-voice-data.js", "tutorial-show.js", "tutorial-auto.js", "tutorial-resume.js"); /* Oct 26: the speaker on every tutorial card ships with the build, so a slow connection right after an update cannot leave a card without it */
 STATIC.push("kitchen-game-core.js", "kitchen-game.js", "kitchen-game.css"); /* Oct 26 Kitchen game in Cook (MAYA-HANDOFF 0.19): own line, like kitchen-core.js */
+STATIC.push("cook-tab-order.js"); /* Oct 26 Cook opens on its first tab, tabs held and moved like Community's (MAYA-HANDOFF 0.29): own line */
 STATIC.push("cart-core.js"); /* Oct 26 Supermarket Cart (Warenkorb): own line */
 STATIC.push("week-basket-core.js", "week-basket.js", "week-basket.css"); /* Oct 26 Shop from home weekly basket in Supermarket (MAYA-HANDOFF 0.21): own line */
 STATIC.push("kitchen-core.js"); /* Oct 24 Kitchen in Shop: on its own line so it never collides with the build stamp next to the STATIC line */

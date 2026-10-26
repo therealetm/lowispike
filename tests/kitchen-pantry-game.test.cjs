@@ -81,10 +81,10 @@ test('kitchen-core keeps shelf and product data, and old entries without them st
   assert.equal(K.add(null, 'Milk', 1, 'cart').items[0].from, 'cart', 'the old add() call (bot recipe) still works');
 });
 
-test('Cook: Kitchen is the third game after Shuffle and Swipe, and the game files load and are cached offline', () => {
+test('Cook: Kitchen is a game next to Shuffle and Swipe (first by default since 26 Oct, cook-tab-order.test.cjs), and the game files load and are cached offline', () => {
   const html = read('index.html');
-  assert.match(html, /seg\("view", "swipe"[^\n]*seg\("view", "kitchen", ckT\("Kitchen", "Küche", "Cocina"\)/);
-  assert.match(html, /const fView = \(\) => ckGet\(CKK\.view, "shuffle", \["shuffle", "swipe", "kitchen"\]\)/);
+  assert.match(html, /kitchen: \(\) => window\.LowiKitchenGame \? seg\("view", "kitchen", ckT\("Kitchen", "Küche", "Cocina"\)/);
+  assert.match(html, /const fView = \(\) => ckGet\(CKK\.view, ckFirst\(\), \["shuffle", "swipe", "kitchen"\]\)/);
   assert.match(html, /<div id="kgRoot" class="kg-root">/);
   assert.match(html, /<script src="kitchen-game-core\.js\?v=/);
   assert.match(html, /<script src="kitchen-game\.js\?v=/);
@@ -103,15 +103,15 @@ test('Shop: no Kitchen tab while the game is loaded, and asking for it opens Coo
   assert.match(ss, /else if \(k === 'kit'\) addKit\(el\);/);
 });
 
-test('What\'s New: new-kitchen opens Cook > Kitchen and says it is next to Swipe, in en/de/es; the route opens the game', () => {
+test('What\'s New: new-kitchen opens Cook > Kitchen, in en/de/es; the route opens the game (since 26 Oct Kitchen is first, so no "next to Swipe")', () => {
   const S = require('../tutorial-steps.js');
   const s = S.STEPS.find(x => x.id === 'new-kitchen');
   assert.ok(s && s.area === 'new');
   assert.equal(s.open, 'kitchen');
   assert.equal(s.target[0], '#ckBar [data-ck="view"][data-v="kitchen"]', 'points at the Kitchen button in Cook');
-  assert.match(s.text.en, /Cook/); assert.match(s.text.en, /Swipe/); assert.doesNotMatch(s.text.en, /Shop/);
-  assert.match(s.text.de, /Kochen/); assert.match(s.text.de, /Swipen/); assert.doesNotMatch(s.text.de, /Shop/);
-  assert.match(s.text.es, /Cocinar/); assert.match(s.text.es, /Deslizar/); assert.doesNotMatch(s.text.es, /Shop/);
+  assert.match(s.text.en, /Cook/); assert.doesNotMatch(s.text.en, /Swipe/); assert.doesNotMatch(s.text.en, /Shop/);
+  assert.match(s.text.de, /Kochen/); assert.doesNotMatch(s.text.de, /Swipen/); assert.doesNotMatch(s.text.de, /Shop/);
+  assert.match(s.text.es, /Cocinar/); assert.doesNotMatch(s.text.es, /Deslizar/); assert.doesNotMatch(s.text.es, /Shop/);
   for (const l of ['en', 'de', 'es']) assert.doesNotMatch(s.title[l] + s.text[l], /Misty/, 'never names the companion');
   assert.ok(S.VERSION >= 28);
   assert.match(read('tutorial.js'), /kitchen: \{ go\(\) \{ if \(W\.LowiKitchenGame && W\.LowiKitchenGame\.open\)/);

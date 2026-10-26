@@ -68,7 +68,10 @@
         try { if (W.localStorage.getItem(KEY) !== v) W.localStorage.setItem(KEY, v); } catch (e) { }
     }
     function tabsEl() { return D.querySelector('#cmPaneChat .rm-tabs'); }
-    function domOrder(t) { return [...t.querySelectorAll('.rm-tab')].map(b => b.dataset.rm); }
+    /* a row of tabs the hold-and-drag can arrange. Community's is the first; Cook's game switch (cook-tab-order.js) registers
+       a second one with LowiCommunityTabs.row(), so both rows share this one engine (MAYA-HANDOFF 0.29) */
+    const CM = { tab: '.rm-tab', id: b => b.dataset.rm, save: l => save(l), apply: () => apply(), move: moveTo, after: () => { try { W.LowiRoomsUI && W.LowiRoomsUI.paint && W.LowiRoomsUI.paint(); } catch (e) { } }, hint: () => 'Hold a tab to move it' };
+    function domOrder(t, r) { r = r || CM; return [...t.querySelectorAll(r.tab)].map(r.id); }
     function apply() {
         const t = tabsEl(); if (!t || t.classList.contains('rm-arranging')) return;
         const want = order();
@@ -94,12 +97,12 @@
 
     /* ---- the hold-and-drag ---- */
     let g = null, swallowUntil = 0;
-    function centersOf(t, except) {
+    function centersOf(t, except, r) {
         const left = t.getBoundingClientRect().left;
-        return [...t.querySelectorAll('.rm-tab')].filter(b => b !== except).map(b => left + b.offsetLeft + b.offsetWidth / 2);
+        return [...t.querySelectorAll(r.tab)].filter(b => b !== except).map(b => left + b.offsetLeft + b.offsetWidth / 2);
     }
-    function flip(t, fn, except) {
-        const others = [...t.querySelectorAll('.rm-tab')].filter(b => b !== except);
+    function flip(t, fn, except, r) {
+        const others = [...t.querySelectorAll(r.tab)].filter(b => b !== except);
         const before = new Map(others.map(b => [b, b.offsetLeft]));
         fn();
         others.forEach(b => {
@@ -110,11 +113,11 @@
         });
     }
     function follow(x) {
-        const t = g.t, b = g.b, tr = t.getBoundingClientRect();
-        const slot = slotAt(centersOf(t, b), x);
-        const now = domOrder(t).indexOf(b.dataset.rm);
+        const t = g.t, b = g.b, r = g.r, tr = t.getBoundingClientRect();
+        const slot = slotAt(centersOf(t, b, r), x);
+        const now = domOrder(t, r).indexOf(r.id(b));
         if (slot !== now) {
-            flip(t, () => { const ref = t.querySelectorAll('.rm-tab:not(.rm-lifted)')[slot] || null; t.insertBefore(b, ref); }, b);
+            flip(t, () => { const ref = t.querySelectorAll(r.tab + ':not(.rm-lifted)')[slot] || null; t.insertBefore(b, ref); }, b, r);
             g.moved = true; haptic(6);
         }
         let want = x - tr.left - g.grab;
@@ -133,7 +136,7 @@
     }
     function end(commit) {
         if (!g) return;
-        const { t, b, lifted } = g;
+        const { t, b, r, lifted } = g;
         clearTimeout(g.timer);
         g = null;
         listen(false);
@@ -141,9 +144,9 @@
         swallowUntil = Date.now() + 450;
         b.classList.remove('rm-lifted'); b.style.transform = '';
         t.classList.remove('rm-arranging');
-        if (commit) { save(domOrder(t)); haptic(8); }
-        else apply();
-        try { W.LowiRoomsUI && W.LowiRoomsUI.paint && W.LowiRoomsUI.paint(); } catch (e) { }
+        if (commit) { r.save(domOrder(t, r)); haptic(8); }
+        else r.apply(t);
+        r.after(t);
     }
     /* the move/up listeners sit on window (capture) for the length of one press, so nothing on the page (the galaxy, the
        page slider) sees the drag first; the row itself is .no-page-swipe */
@@ -164,15 +167,16 @@
         W[f]('pointermove', onMove, true); W[f]('pointerup', onUp, true); W[f]('pointercancel', onCancel, true); W[f]('pointerdown', onOther, true);
         W[f]('touchmove', onTouchMove, { capture: true, passive: false });
     }
-    function wire(t) {
+    function wire(t, r) {
+        r = r || CM;
         if (!t || t.dataset.order === '1') return;
         t.dataset.order = '1';
         t.classList.add('no-page-swipe');   /* liquid-glass.js: a drag that starts on the tabs never slides to the next page */
-        t.setAttribute('aria-description', 'Hold a tab to move it');
+        t.setAttribute('aria-description', r.hint());
         t.addEventListener('pointerdown', e => {
-            const b = e.target.closest && e.target.closest('.rm-tab');
-            if (!b || (e.pointerType === 'mouse' && e.button !== 0) || g) return;
-            g = { t, b, id: e.pointerId, x0: e.clientX, y0: e.clientY, sy: W.scrollY, lifted: false, moved: false };
+            const b = e.target.closest && e.target.closest(r.tab);
+            if (!b || !t.contains(b) || (e.pointerType === 'mouse' && e.button !== 0) || g) return;
+            g = { t, b, r, id: e.pointerId, x0: e.clientX, y0: e.clientY, sy: W.scrollY, lifted: false, moved: false };
             g.timer = setTimeout(lift, HOLD_MS);
             listen(true);
         });
@@ -184,11 +188,11 @@
         /* keyboard: Alt + Left/Right moves the focused tab */
         t.addEventListener('keydown', e => {
             if (!e.altKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
-            const b = e.target.closest && e.target.closest('.rm-tab'); if (!b) return;
+            const b = e.target.closest && e.target.closest(r.tab); if (!b || !t.contains(b)) return;
             e.preventDefault(); e.stopPropagation();
-            const list = domOrder(t), i = list.indexOf(b.dataset.rm);
-            save(moveTo(list, b.dataset.rm, i + (e.key === 'ArrowLeft' ? -1 : 1)));
-            apply(); b.focus();
+            const list = domOrder(t, r), i = list.indexOf(r.id(b));
+            r.save(r.move(list, r.id(b), i + (e.key === 'ArrowLeft' ? -1 : 1)));
+            r.apply(t); r.after(t); b.focus();
         }, true);
     }
     W.addEventListener('scroll', () => { if (g && !g.lifted && Math.abs(W.scrollY - g.sy) > 2) end(false); }, { passive: true, capture: true });
@@ -256,6 +260,7 @@
     /* BH-034: one tab was asked for this very moment (Ranking from Misty's card, For You): galaxy-zoom.js skips the warp into the
        galaxy, which you are not going to see */
     function wanted() { return Date.now() - wantStamp < FRESH_MS * 2; }
-    W.LowiCommunityTabs = Object.assign({ order, save, apply, haptic, want, wanted, _drag: () => g && { id: g.id, lifted: g.lifted, rm: g.b.dataset.rm } }, core);
+    /* row(el, cfg): arrange another tab row with this same engine. cfg = { tab, id(b), save(list), apply(el), after(el), move(list,id,to), hint() } */
+    W.LowiCommunityTabs = Object.assign({ order, save, apply, haptic, want, wanted, row: (t, r) => wire(t, Object.assign({}, CM, r)), _drag: () => g && { id: g.id, lifted: g.lifted, rm: g.r.id(g.b) } }, core);
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })(typeof window !== 'undefined' ? window : null);

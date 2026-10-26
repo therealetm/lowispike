@@ -11,7 +11,7 @@ test('Cook: eBook | Recipes | Products, and Shuffle | Swipe (For You moved to a 
     assert.match(html, /seg\("src", "community", ckT\("Recipes", "Rezepte", "Recetas"\), s === "community"\)/);
     assert.ok(!html.includes('seg("src", "community", "Community"'), 'no Community segment in Cook');
     const i = html.indexOf('seg("view", "shuffle"'), k = html.indexOf('seg("view", "swipe"');
-    assert.ok(i > 0 && k > i, 'Shuffle | Swipe');
+    assert.ok(i > 0 && k > i, 'Shuffle | Swipe (since 26 Oct Kitchen comes first and the user can reorder, cook-tab-order.test.cjs)');
     assert.ok(!html.includes('class="ck-b ck-fy" data-nm="fy"'), 'no For You button in Cook any more');
 });
 

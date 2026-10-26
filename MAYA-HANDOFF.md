@@ -1254,6 +1254,24 @@ Swipe, Swaflo's shuffle form) still lands on that game. EN/DE/ES, Reduce Motion,
 first in Cook + reorderable Cook tabs" (Sesame, 26 Oct), worktree wt-cook-tabs, branch cook-tab-order, COORD-cook-tabs.md.
 Status: building (see Log for the release).
 
+### 0.30 Better pick must be a better version of the SAME kind of food (Emmanuel, voice + 2 screenshots, Mon 26 Oct 2026 about 4:07 PM CET)
+
+What he saw: he scanned "Mandeln Stifte" (K-Classic slivered almonds). The scan card said Estimate / Moderate and its
+"Better pick" was "Eggplants in Onion & Tomato..." (Paliria "Eggplants in Onion & Tomato Sauce", rated Lower).
+His words: "Why is it recommending me eggplants and onion when I scanned almonds? Why didn't it just recommend me a better
+version, an alternative of what I'm trying to find here? That's stupid."
+
+Rule from now on: a Better pick (scan card, Shop camera, Log meal's Scan, the name card, the swaps after a catch) is only
+ever a better version of the same kind of food with the same use: other almonds / nuts / seeds for almonds, a lower-sugar
+yogurt for a yogurt, a whole-grain bread for a bread. Real products the app already holds only (prefer the user's
+shop / country), never invented. Nothing of the same kind that is actually better: no Better pick at all. Never a random
+unrelated food. No Better pick when the scanned item is already Lower. EN/DE/ES.
+Root cause (reproduced in node): index.html nameSwap()'s last fallback took ANY community product rated ok whose coarse
+catOf() category matched, and "other" is the catch-all, so almonds (other) got eggplant sauce (other). swapsHTML() (the
+swaps after a manual catch) had the same cat match. Task "LOWiSPIKE: Better pick only suggests same-kind alternatives"
+(Sesame, 26 Oct), worktree wt-better-pick, branch better-pick-same-kind, COORD-better-pick.md.
+Status: building (see Log for the release).
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

@@ -9,11 +9,11 @@
 <style id="firstPaint">html,body{background:#03050a}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261026-165435">
+<meta name="lowi-build" content="20261026-170152">
 <!-- Oct 21 (open instantly): Home's 3D world (three.js + its scene) starts downloading with the page, not after the app has booted.
      Same URLs body-world-3d.js imports, so the browser reuses these. -->
-<link rel="modulepreload" href="vendor/three-0.160.1.module.min.js?v=20261026-165435">
-<link rel="modulepreload" href="body-world-3d-scene.js?v=20261026-165435">
+<link rel="modulepreload" href="vendor/three-0.160.1.module.min.js?v=20261026-170152">
+<link rel="modulepreload" href="body-world-3d-scene.js?v=20261026-170152">
 <link rel="manifest" href="manifest.webmanifest?v=generic2">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -84,12 +84,12 @@
 P.add=function(){for(let i=0;i<arguments.length;i++)if(!this.contains(arguments[i]))return A.apply(this,arguments);};
 P.remove=function(){for(let i=0;i<arguments.length;i++)if(this.contains(arguments[i]))return R.apply(this,arguments);};}catch(e){}})();</script>
 <!-- Oct 25 heat pass: one calm/rest ladder + battery saver for every heavy loop (power-saver.js) -->
-<script src="power-saver.js?v=20261026-165435"></script>
+<script src="power-saver.js?v=20261026-170152"></script>
 <script id="igFresh">/* install-guide.js: was storage empty before anything ran? (a first start from the iPhone Home Screen = just added) */try{window.__lowiFresh=localStorage.length===0}catch(e){}</script>
 <!-- Oct 25 iOS feel (Emmanuel's TikTok "Why does iOS feel so nice to use"): interruptible springs + Apple's rubber band, shared by every grabbable motion -->
-<script src="rubberband.js?v=20261026-165435"></script>
-<script src="spring.js?v=20261026-165435"></script>
-<script src="fresh-scrim.js?v=20261026-165435"></script>
+<script src="rubberband.js?v=20261026-170152"></script>
+<script src="spring.js?v=20261026-170152"></script>
+<script src="fresh-scrim.js?v=20261026-170152"></script>
 <style id="spdCss">
 /* Oct 16 speed pass. (1) The old sky layers (weather rain, falling leaves, the star mist) sit under the 3D world, which covers them
    completely once it is up. They only ever showed in the split second before the world appeared - the rain / leaves flash on opening -
@@ -2876,8 +2876,8 @@ window.LowiG1 = {mini, steps:() => stepList().map(x => x.k), start, close, line,
   state:() => TOUR ? {kind:TOUR.kind, i:TOUR.i, n:TOUR.steps.length, k:TOUR.steps[TOUR.i].k} : (OB ? {kind:"ob", k:OB.kind, i:0, n:1} : null), orbNews:() => OB ? {kind:OB.kind, build:OB.build || "", mode:($("#g1Ob") || {dataset:{}}).dataset.mode || ""} : null, fairy:() => fz ? {on:fz.classList.contains("on"), home:fzHome, pos:fzPos} : null};
 })();
 </script>
-<script src="kitchen-core.js?v=20261026-165435"></script>
-<script src="kitchen-game-core.js?v=20261026-165435"></script>
+<script src="kitchen-core.js?v=20261026-170152"></script>
+<script src="kitchen-game-core.js?v=20261026-170152"></script>
 <style id="homecss">
 /* ===== G1 part 2: simpler Today ===== */
 #tab-home .g1-lead{margin-top:6px;font-size:15px;line-height:1.35;font-weight:600;color:var(--muted,rgba(255,255,255,.72))}
@@ -2890,7 +2890,7 @@ html:not(.g1-more-open) #tab-home .g1-fold{display:none!important}
 html[data-ui=light] #tab-home .g1-more{background:rgba(20,24,38,.04);border-color:rgba(20,24,38,.28);color:#141826}
 #tab-home .g1-more:focus-visible{outline:3px solid #9fd8ff;outline-offset:2px}
 </style>
-<script src="cart-core.js?v=20261026-165435"></script>
+<script src="cart-core.js?v=20261026-170152"></script>
 <script id="homejs">
 /* ===== LOWiSPIKE G1 part 2 (Oct 10, 2026): a simpler Today (Home) =====
    Nothing removed. Every numbered step gets one plain line saying what to tap, the top says how to read the page,
@@ -3822,11 +3822,11 @@ html.n1-talk #n1B .g1-mini .g1-face u{animation:g1Talk .28s ease-in-out 4 altern
 
 
 </style>
-<link rel="stylesheet" href="updates.css?v=20261026-165435">
-<link rel="stylesheet" id="obwCss" href="onboarding-world.css?v=20261026-165435">
-<link rel="stylesheet" href="lis-push.css?v=20261026-165435">
-<script src="lis-push.js?v=20261026-165435" defer></script>
-<link rel="stylesheet" id="rfCss" href="readability-fit.css?v=20261026-165435">
+<link rel="stylesheet" href="updates.css?v=20261026-170152">
+<link rel="stylesheet" id="obwCss" href="onboarding-world.css?v=20261026-170152">
+<link rel="stylesheet" href="lis-push.css?v=20261026-170152">
+<script src="lis-push.js?v=20261026-170152" defer></script>
+<link rel="stylesheet" id="rfCss" href="readability-fit.css?v=20261026-170152">
 </head>
 <body>
 <div id="app">
@@ -6056,7 +6056,7 @@ window.LOWI_COOK = {chips:() => CHIPS, match, min, minTxt};
 
 </script>
 <!-- Oct 22, 2026: the one level table (world-home-core.js STAGES: cell names + XP) loads before the core code reads it. -->
-<script src="world-home-core.js?v=20261026-165435"></script>
+<script src="world-home-core.js?v=20261026-170152"></script>
 <script>
 /* LOWiSPIKE v2: core state, XP curve, zodiac, streak, quests, cycle */
 const KEY = "lowispike.v2";
@@ -8869,8 +8869,8 @@ html[data-ui=light] .a1-toast{background:#161c2e}
 @media (min-width:700px){ .r2-start.a1{max-width:460px} .a1-stage{max-height:340px} .a1-phone{max-height:330px} }
 @media (prefers-reduced-motion:reduce){ .a1-hit::after,.a1-mine .a1-icon,.a1-glow .a1-icon{animation:none} .a1-f{transition:none} }
 </style>
-<link rel="stylesheet" href="install-guide.css?v=20261026-165435">
-<script src="install-guide.js?v=20261026-165435"></script>
+<link rel="stylesheet" href="install-guide.css?v=20261026-170152">
+<script src="install-guide.js?v=20261026-170152"></script>
 <script id="a1js">
 /* ===== LOWiSPIKE A1 (Oct 11, 2026): Add to Home Screen before sign-up =====
    - Why: on iPhone, Safari and the Home Screen app keep separate storage, so people who sign up in Safari and add the app
@@ -9756,10 +9756,10 @@ window.LowiFood = {fitDeck:ckFitDeck, source:fSrc, setSource:ckSource, category:
 .lc-upd{justify-content:center;font-weight:600;cursor:pointer;text-align:center}
 .lc-newpill{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:30;padding:8px 14px;border-radius:999px;border:0;background:#fff;color:#000;font-weight:700;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.4);cursor:pointer}
 </style>
-<script src="read-time-core.js?v=20261026-165435"></script>
-<script src="community-chat-core.js?v=20261026-165435"></script>
-<script src="profile-share-core.js?v=20261026-165435"></script>
-<script src="account-sync-core.js?v=20261026-165435"></script>
+<script src="read-time-core.js?v=20261026-170152"></script>
+<script src="community-chat-core.js?v=20261026-170152"></script>
+<script src="profile-share-core.js?v=20261026-170152"></script>
+<script src="account-sync-core.js?v=20261026-170152"></script>
 <script>
 window.LOWI_CFG = {"url": "https://vnfwmifmsfecascwaody.supabase.co", "key": "sb_publishable_iVA3wCYxzfWu2q8SSgieWw_adXbx4Qd"};
 </script>
@@ -20286,9 +20286,9 @@ if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); el
 })();
 </script>
 <!-- Oct 25 2026: after a meal eaten just now, a small glass checklist of quick spike-lowering moves (after-meal-checklist*.js, COORD-post-meal-checklist.md). Kept between two inline blocks so release build bumps never collide with it. -->
-<link rel="stylesheet" id="pmcCss" href="after-meal-checklist.css?v=20261026-165435">
-<script src="after-meal-checklist-core.js?v=20261026-165435"></script>
-<script src="after-meal-checklist.js?v=20261026-165435"></script>
+<link rel="stylesheet" id="pmcCss" href="after-meal-checklist.css?v=20261026-170152">
+<script src="after-meal-checklist-core.js?v=20261026-170152"></script>
+<script src="after-meal-checklist.js?v=20261026-170152"></script>
 <script id="g2eJs">/* ===== LOWiSPIKE G2 part 5 (Oct 11, 2026): Profile is one game screen, no scrolling (phone) =====
    On a phone, Profile shows your bubble, name and sign with Edit profile, your level card, your streak row and
    tiles: Finish profile (while steps are left), Community, Saved swaps, Your glow, About you, Health, Account,
@@ -21279,9 +21279,9 @@ html.q4b-off #lcA2hs{display:none!important}
   var l = document.createElement('link'); l.rel = 'stylesheet'; l.id = 'ydCss'; l.href = 'your-details.css' + q; document.head.appendChild(l);
   var sc = document.createElement('script'); sc.src = 'your-details.js' + q; sc.async = false; document.head.appendChild(sc); })();
 </script>
-<script src="recipe-book.js?v=20261026-165435"></script>
-<script src="appearance.js?v=20261026-165435"></script>
-<link rel="stylesheet" href="apple-ui.css?v=20261026-165435">
+<script src="recipe-book.js?v=20261026-170152"></script>
+<script src="appearance.js?v=20261026-170152"></script>
+<link rel="stylesheet" href="apple-ui.css?v=20261026-170152">
 <script>
 /* Companion bridge: native state, single XP ledger, stable IDs for completed actions. */
 window.LowiVitalsBridge = {
@@ -21374,11 +21374,11 @@ window.LowiVitalsBridge = {
 };
 </script>
 <script>window.LowiSpiritHost={recipeImage:id=>typeof FOOD_IMG!=="undefined"?FOOD_IMG[id]||"":"",recipe:id=>window.LowiP2?LowiP2.rec(id):null,cook:id=>window.LowiP2&&LowiP2.cook?LowiP2.cook(id):null};</script>
-<script src="apple-ui.js?v=20261026-165435"></script>
-<link rel="stylesheet" href="discovery.css?v=20261026-165435">
-<script src="discovery-config.js?v=20261026-165435"></script>
-<script src="discovery-core.js?v=20261026-165435"></script>
-<script src="discovery.js?v=20261026-165435"></script>
+<script src="apple-ui.js?v=20261026-170152"></script>
+<link rel="stylesheet" href="discovery.css?v=20261026-170152">
+<script src="discovery-config.js?v=20261026-170152"></script>
+<script src="discovery-core.js?v=20261026-170152"></script>
+<script src="discovery.js?v=20261026-170152"></script>
 <script>
 /* Bridges into the existing library/storage; no separate swaps or shopping database. */
 window.LowiSwafloBridge = {
@@ -21391,11 +21391,11 @@ window.LowiSwafloBridge = {
   }
 };
 </script>
-<link rel="stylesheet" href="swaflo.css?v=20261026-165435">
-<script src="swaflo-config.js?v=20261026-165435"></script>
-<script src="scan-sort-core.js?v=20261026-165435"></script>
-<script src="swaflo-core.js?v=20261026-165435"></script>
-<script src="swaflo.js?v=20261026-165435"></script>
+<link rel="stylesheet" href="swaflo.css?v=20261026-170152">
+<script src="swaflo-config.js?v=20261026-170152"></script>
+<script src="scan-sort-core.js?v=20261026-170152"></script>
+<script src="swaflo-core.js?v=20261026-170152"></script>
+<script src="swaflo.js?v=20261026-170152"></script>
 <style id="hofcss">
 /* LOWiSPIKE HOF (Oct 14, 2026): carry the sign-in from Safari into the Home Screen app */
 #hofSheet{position:fixed;inset:0;z-index:320;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55)}
@@ -21621,10 +21621,10 @@ setTimeout(tick, 1800); setInterval(tick, 1500);
 window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _state: () => ({ has: !!cur, exp: cur ? cur.exp : 0, pinned }) };
 })();
 </script>
-<link rel="stylesheet" href="community-chat.css?v=20261026-165435">
-<link rel="stylesheet" href="community-galaxy.css?v=20261026-165435">
-<link rel="stylesheet" href="community-energy.css?v=20261026-165435">
-<link rel="stylesheet" href="community-voice.css?v=20261026-165435">
+<link rel="stylesheet" href="community-chat.css?v=20261026-170152">
+<link rel="stylesheet" href="community-galaxy.css?v=20261026-170152">
+<link rel="stylesheet" href="community-energy.css?v=20261026-170152">
+<link rel="stylesheet" href="community-voice.css?v=20261026-170152">
 <script id="community-chat-bridge">
 /* Bounded bridge: the Community module shares auth/messages with the existing cloud owner. */
 window.LowiCommunityHost = {
@@ -21648,210 +21648,210 @@ window.LowiCommunityHost = {
   }
 };
 </script>
-<script src="community-chat-cloud.js?v=20261026-165435"></script>
-<script src="community-rooms-core.js?v=20261026-165435"></script>
-<script src="community-rooms.js?v=20261026-165435"></script>
-<script src="community-tab-order.js?v=20261026-165435"></script>
-<script src="community-rooms-ui.js?v=20261026-165435"></script>
-<script src="hidden-accounts.js?v=20261026-165435"></script>
-<script src="bot-accounts.js?v=20261026-165435"></script>
-<script src="people-directory-core.js?v=20261026-165435"></script>
-<script src="people-directory.js?v=20261026-165435"></script>
-<script src="community-galaxy.js?v=20261026-165435"></script>
-<script src="chat-stick-core.js?v=20261026-165435"></script>
-<script src="community-chat.js?v=20261026-165435"></script>
-<script src="community-energy.js?v=20261026-165435"></script>
-<link rel="stylesheet" href="home-visit.css?v=20261026-165435">
-<script src="home-visit.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261026-165435">
-<script src="clean-view-core.js?v=20261026-165435"></script>
-<script src="clean-view.js?v=20261026-165435"></script>
-<script src="liquid-glass.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="sweepCss" href="style-sweep.css?v=20261026-165435">
-<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261026-165435">
-<script src="scan-glass.js?v=20261026-165435"></script>
-<script src="gpt-open.js?v=20261026-165435"></script>
-<script src="tiktok-open.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261026-165435">
-<script src="realm-backdrop-core.js?v=20261026-165435"></script>
-<script src="realm-backdrop.js?v=20261026-165435"></script>
-<link rel="stylesheet" href="nav-moves.css?v=20261026-165435">
-<script src="nav-moves.js?v=20261026-165435"></script>
-<script src="back-swipe.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261026-165435">
-<link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261026-165435">
-<script src="move-player.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="mmCss" href="mirror-move.css?v=20261026-165435">
-<script src="app-voice.js?v=20261026-165435"></script>
-<script src="mirror-move-core.js?v=20261026-165435"></script>
-<script src="mirror-hinge-core.js?v=20261026-165435"></script>
-<script src="mirror-hinge.js?v=20261026-165435"></script>
-<script src="mirror-move.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261026-165435">
-<script src="fy-embed.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261026-165435">
-<script src="community-spirit.js?v=20261026-165435"></script>
-<script src="galaxy-zoom.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261026-165435">
-<script src="care-board-core.js?v=20261026-165435"></script>
-<script src="ranking-core.js?v=20261026-165435"></script>
-<script src="ranking.js?v=20261026-165435"></script>
-<script src="adventure-tiers.js?v=20261026-165435"></script>
-<script src="misty-hub.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="mpCss" href="misty-pad.css?v=20261026-165435">
-<script src="misty-pad.js?v=20261026-165435"></script>
-<script src="misty-flight.js?v=20261026-165435"></script>
-<script src="misty-turn.js?v=20261026-165435"></script>
-<script src="misty-face.js?v=20261026-165435"></script>
-<script src="misty-galaxy.js?v=20261026-165435"></script>
-<script src="misty-bump.js?v=20261026-165435"></script>
-<script src="galaxy-bubbles.js?v=20261026-165435"></script>
-<script src="misty-explore.js?v=20261026-165435"></script>
-<script src="meal-photo.js?v=20261026-165435"></script>
-<script src="food-photo-ai.js?v=20261026-165435"></script>
-<script src="scan-swap-core.js?v=20261026-165435"></script>
-<script src="meal-result.js?v=20261026-165435"></script>
-<script src="meal-journal.js?v=20261026-165435"></script>
-<script src="meal-detail-core.js?v=20261026-165435"></script>
-<script src="meal-detail.js?v=20261026-165435"></script>
-<script src="bot-recipe-core.js?v=20261026-165435"></script>
-<script src="bot-recipe.js?v=20261026-165435"></script>
-<script src="grocery-bucket-core.js?v=20261026-165435"></script>
-<script src="grocery-bucket.js?v=20261026-165435"></script>
-<script src="string-pov.js?v=20261026-165435"></script>
-<script src="misty-hunt.js?v=20261026-165435"></script>
-<script src="hunt-count.js?v=20261026-165435"></script>
-<script src="misty-hints.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="msCss" href="misty-scale.css?v=20261026-165435">
-<script src="misty-scale.js?v=20261026-165435"></script>
-<script src="misty-peak.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="mbCss" href="move-bubble.css?v=20261026-165435">
-<script src="move-estimate-core.js?v=20261026-165435"></script>
-<script src="move-bubble.js?v=20261026-165435"></script>
-<script src="adventure.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="csoCss" href="community-standout.css?v=20261026-165435">
-<link rel="stylesheet" id="tsgCss" href="today-sheet.css?v=20261026-165435">
-<link rel="stylesheet" id="ccCss" href="community-composer.css?v=20261026-165435">
-<link rel="stylesheet" id="crCss" href="community-room.css?v=20261026-165435">
-<link rel="stylesheet" href="community-rooms.css?v=20261026-165435">
-<link rel="stylesheet" href="people-directory.css?v=20261026-165435">
-<link rel="stylesheet" href="ranking.css?v=20261026-165435">
-<link rel="stylesheet" href="community-tab-order.css?v=20261026-165435">
-<script src="community-composer.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="ssCss" href="shop-scan.css?v=20261026-165435">
-<script src="shop-scan-core.js?v=20261026-165435"></script>
-<script src="shop-scan.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="stpCss" href="store-picks.css?v=20261026-165435">
-<link rel="stylesheet" id="kgCss" href="kitchen-game.css?v=20261026-165435">
-<script src="store-picks-core.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="gbCss" href="gift-basket.css?v=20261026-165435">
-<script src="gift-basket-core.js?v=20261026-165435"></script>
-<script src="gift-basket.js?v=20261026-165435"></script>
-<script src="store-picks.js?v=20261026-165435"></script>
-<script src="kitchen-game.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="wbCss" href="week-basket.css?v=20261026-165435">
-<script src="week-basket-core.js?v=20261026-165435"></script>
-<script src="week-basket.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="szCss" href="seller-zone.css?v=20261026-165435">
-<script src="seller-zone-data.js?v=20261026-165435"></script>
-<script src="seller-zone-core.js?v=20261026-165435"></script>
-<script src="seller-zone.js?v=20261026-165435"></script>
+<script src="community-chat-cloud.js?v=20261026-170152"></script>
+<script src="community-rooms-core.js?v=20261026-170152"></script>
+<script src="community-rooms.js?v=20261026-170152"></script>
+<script src="community-tab-order.js?v=20261026-170152"></script>
+<script src="community-rooms-ui.js?v=20261026-170152"></script>
+<script src="hidden-accounts.js?v=20261026-170152"></script>
+<script src="bot-accounts.js?v=20261026-170152"></script>
+<script src="people-directory-core.js?v=20261026-170152"></script>
+<script src="people-directory.js?v=20261026-170152"></script>
+<script src="community-galaxy.js?v=20261026-170152"></script>
+<script src="chat-stick-core.js?v=20261026-170152"></script>
+<script src="community-chat.js?v=20261026-170152"></script>
+<script src="community-energy.js?v=20261026-170152"></script>
+<link rel="stylesheet" href="home-visit.css?v=20261026-170152">
+<script src="home-visit.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261026-170152">
+<script src="clean-view-core.js?v=20261026-170152"></script>
+<script src="clean-view.js?v=20261026-170152"></script>
+<script src="liquid-glass.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="sweepCss" href="style-sweep.css?v=20261026-170152">
+<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261026-170152">
+<script src="scan-glass.js?v=20261026-170152"></script>
+<script src="gpt-open.js?v=20261026-170152"></script>
+<script src="tiktok-open.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261026-170152">
+<script src="realm-backdrop-core.js?v=20261026-170152"></script>
+<script src="realm-backdrop.js?v=20261026-170152"></script>
+<link rel="stylesheet" href="nav-moves.css?v=20261026-170152">
+<script src="nav-moves.js?v=20261026-170152"></script>
+<script src="back-swipe.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261026-170152">
+<link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261026-170152">
+<script src="move-player.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="mmCss" href="mirror-move.css?v=20261026-170152">
+<script src="app-voice.js?v=20261026-170152"></script>
+<script src="mirror-move-core.js?v=20261026-170152"></script>
+<script src="mirror-hinge-core.js?v=20261026-170152"></script>
+<script src="mirror-hinge.js?v=20261026-170152"></script>
+<script src="mirror-move.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261026-170152">
+<script src="fy-embed.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261026-170152">
+<script src="community-spirit.js?v=20261026-170152"></script>
+<script src="galaxy-zoom.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261026-170152">
+<script src="care-board-core.js?v=20261026-170152"></script>
+<script src="ranking-core.js?v=20261026-170152"></script>
+<script src="ranking.js?v=20261026-170152"></script>
+<script src="adventure-tiers.js?v=20261026-170152"></script>
+<script src="misty-hub.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="mpCss" href="misty-pad.css?v=20261026-170152">
+<script src="misty-pad.js?v=20261026-170152"></script>
+<script src="misty-flight.js?v=20261026-170152"></script>
+<script src="misty-turn.js?v=20261026-170152"></script>
+<script src="misty-face.js?v=20261026-170152"></script>
+<script src="misty-galaxy.js?v=20261026-170152"></script>
+<script src="misty-bump.js?v=20261026-170152"></script>
+<script src="galaxy-bubbles.js?v=20261026-170152"></script>
+<script src="misty-explore.js?v=20261026-170152"></script>
+<script src="meal-photo.js?v=20261026-170152"></script>
+<script src="food-photo-ai.js?v=20261026-170152"></script>
+<script src="scan-swap-core.js?v=20261026-170152"></script>
+<script src="meal-result.js?v=20261026-170152"></script>
+<script src="meal-journal.js?v=20261026-170152"></script>
+<script src="meal-detail-core.js?v=20261026-170152"></script>
+<script src="meal-detail.js?v=20261026-170152"></script>
+<script src="bot-recipe-core.js?v=20261026-170152"></script>
+<script src="bot-recipe.js?v=20261026-170152"></script>
+<script src="grocery-bucket-core.js?v=20261026-170152"></script>
+<script src="grocery-bucket.js?v=20261026-170152"></script>
+<script src="string-pov.js?v=20261026-170152"></script>
+<script src="misty-hunt.js?v=20261026-170152"></script>
+<script src="hunt-count.js?v=20261026-170152"></script>
+<script src="misty-hints.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="msCss" href="misty-scale.css?v=20261026-170152">
+<script src="misty-scale.js?v=20261026-170152"></script>
+<script src="misty-peak.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="mbCss" href="move-bubble.css?v=20261026-170152">
+<script src="move-estimate-core.js?v=20261026-170152"></script>
+<script src="move-bubble.js?v=20261026-170152"></script>
+<script src="adventure.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="csoCss" href="community-standout.css?v=20261026-170152">
+<link rel="stylesheet" id="tsgCss" href="today-sheet.css?v=20261026-170152">
+<link rel="stylesheet" id="ccCss" href="community-composer.css?v=20261026-170152">
+<link rel="stylesheet" id="crCss" href="community-room.css?v=20261026-170152">
+<link rel="stylesheet" href="community-rooms.css?v=20261026-170152">
+<link rel="stylesheet" href="people-directory.css?v=20261026-170152">
+<link rel="stylesheet" href="ranking.css?v=20261026-170152">
+<link rel="stylesheet" href="community-tab-order.css?v=20261026-170152">
+<script src="community-composer.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="ssCss" href="shop-scan.css?v=20261026-170152">
+<script src="shop-scan-core.js?v=20261026-170152"></script>
+<script src="shop-scan.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="stpCss" href="store-picks.css?v=20261026-170152">
+<link rel="stylesheet" id="kgCss" href="kitchen-game.css?v=20261026-170152">
+<script src="store-picks-core.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="gbCss" href="gift-basket.css?v=20261026-170152">
+<script src="gift-basket-core.js?v=20261026-170152"></script>
+<script src="gift-basket.js?v=20261026-170152"></script>
+<script src="store-picks.js?v=20261026-170152"></script>
+<script src="kitchen-game.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="wbCss" href="week-basket.css?v=20261026-170152">
+<script src="week-basket-core.js?v=20261026-170152"></script>
+<script src="week-basket.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="szCss" href="seller-zone.css?v=20261026-170152">
+<script src="seller-zone-data.js?v=20261026-170152"></script>
+<script src="seller-zone-core.js?v=20261026-170152"></script>
+<script src="seller-zone.js?v=20261026-170152"></script>
 <!-- Oct 17: the person's own grocery shopping rhythm (setup step 4 + Profile > About you). ONE source of truth: shop-plan-core.js -->
-<link rel="stylesheet" id="splCss" href="shop-plan.css?v=20261026-165435">
-<script src="shop-plan-core.js?v=20261026-165435"></script>
-<script src="shop-plan.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="ghCss" href="grocery-hunt.css?v=20261026-165435">
-<script src="grocery-hunt-core.js?v=20261026-165435"></script>
-<script src="grocery-hunt.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="scCss" href="spike-catch.css?v=20261026-165435">
-<script src="ingredient-core.js?v=20261026-165435"></script>
-<script src="food-policy-core.js?v=20261026-165435"></script>
-<script src="food-knowledge-core.js?v=20261026-165435"></script>
-<script src="name-estimate-core.js?v=20261026-165435"></script>
-<script src="food-assess-core.js?v=20261026-165435"></script>
-<script src="food-engine-core.js?v=20261026-165435"></script>
-<script src="spike-core.js?v=20261026-165435"></script>
-<link rel="stylesheet" href="label-photos.css?v=20261026-165435">
-<script src="label-photos-core.js?v=20261026-165435"></script>
-<script src="label-photos.js?v=20261026-165435"></script>
-<link rel="stylesheet" href="food-card.css?v=20261026-165435">
-<script src="food-card-core.js?v=20261026-165435"></script>
-<script src="spike-catch.js?v=20261026-165435"></script>
-<script src="living-bubbles.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="scrCss" href="scan-screens.css?v=20261026-165435">
-<link rel="stylesheet" href="meal-photo.css?v=20261026-165435">
-<link rel="stylesheet" href="meal-journal.css?v=20261026-165435">
-<link rel="stylesheet" href="meal-detail.css?v=20261026-165435">
-<link rel="stylesheet" href="bot-recipe.css?v=20261026-165435">
-<link rel="stylesheet" href="grocery-bucket.css?v=20261026-165435">
-<link rel="stylesheet" id="mpopCss" href="misty-pop.css?v=20261026-165435">
-<link rel="stylesheet" id="mpnCss" href="misty-panels.css?v=20261026-165435">
+<link rel="stylesheet" id="splCss" href="shop-plan.css?v=20261026-170152">
+<script src="shop-plan-core.js?v=20261026-170152"></script>
+<script src="shop-plan.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="ghCss" href="grocery-hunt.css?v=20261026-170152">
+<script src="grocery-hunt-core.js?v=20261026-170152"></script>
+<script src="grocery-hunt.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="scCss" href="spike-catch.css?v=20261026-170152">
+<script src="ingredient-core.js?v=20261026-170152"></script>
+<script src="food-policy-core.js?v=20261026-170152"></script>
+<script src="food-knowledge-core.js?v=20261026-170152"></script>
+<script src="name-estimate-core.js?v=20261026-170152"></script>
+<script src="food-assess-core.js?v=20261026-170152"></script>
+<script src="food-engine-core.js?v=20261026-170152"></script>
+<script src="spike-core.js?v=20261026-170152"></script>
+<link rel="stylesheet" href="label-photos.css?v=20261026-170152">
+<script src="label-photos-core.js?v=20261026-170152"></script>
+<script src="label-photos.js?v=20261026-170152"></script>
+<link rel="stylesheet" href="food-card.css?v=20261026-170152">
+<script src="food-card-core.js?v=20261026-170152"></script>
+<script src="spike-catch.js?v=20261026-170152"></script>
+<script src="living-bubbles.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="scrCss" href="scan-screens.css?v=20261026-170152">
+<link rel="stylesheet" href="meal-photo.css?v=20261026-170152">
+<link rel="stylesheet" href="meal-journal.css?v=20261026-170152">
+<link rel="stylesheet" href="meal-detail.css?v=20261026-170152">
+<link rel="stylesheet" href="bot-recipe.css?v=20261026-170152">
+<link rel="stylesheet" href="grocery-bucket.css?v=20261026-170152">
+<link rel="stylesheet" id="mpopCss" href="misty-pop.css?v=20261026-170152">
+<link rel="stylesheet" id="mpnCss" href="misty-panels.css?v=20261026-170152">
 <!-- Oct 18: owner tools (kick / delete members). Server-checked: supabase/proposals/owner_admin_20261018.sql -->
-<script src="owner-admin-core.js?v=20261026-165435"></script>
-<script src="owner-admin.js?v=20261026-165435"></script>
+<script src="owner-admin-core.js?v=20261026-170152"></script>
+<script src="owner-admin.js?v=20261026-170152"></script>
 <!-- Oct 25 Studio lock: Community > Studio stays an "Under construction" panel except for the owner or a device that typed the PIN (the server decides) -->
-<link rel="stylesheet" href="studio-lock.css?v=20261026-165435">
-<script src="studio-lock-core.js?v=20261026-165435"></script>
-<script src="studio-lock.js?v=20261026-165435"></script>
-<link rel="stylesheet" href="community-remove.css?v=20261026-165435">
-<script src="community-remove-core.js?v=20261026-165435"></script>
-<script src="community-remove.js?v=20261026-165435"></script>
-<script src="misty-bloom.js?v=20261026-165435"></script>
+<link rel="stylesheet" href="studio-lock.css?v=20261026-170152">
+<script src="studio-lock-core.js?v=20261026-170152"></script>
+<script src="studio-lock.js?v=20261026-170152"></script>
+<link rel="stylesheet" href="community-remove.css?v=20261026-170152">
+<script src="community-remove-core.js?v=20261026-170152"></script>
+<script src="community-remove.js?v=20261026-170152"></script>
+<script src="misty-bloom.js?v=20261026-170152"></script>
 <!-- Oct 18: one-page Home ring: eight controls on one true circle round Misty (home-orbit-v2.js, COORD-eight-home.md) -->
-<link rel="stylesheet" id="o8Css" href="home-orbit-v2.css?v=20261026-165435">
-<script src="home-orbit-v2.js?v=20261026-165435"></script>
+<link rel="stylesheet" id="o8Css" href="home-orbit-v2.css?v=20261026-170152">
+<script src="home-orbit-v2.js?v=20261026-170152"></script>
 <!-- Oct 18: real Sleep (hours, private health store) and Settings blooms on the ring Home (COORD-eight-settings-sleep.md) -->
-<link rel="stylesheet" id="ss2Css" href="home-settings-sleep-v2.css?v=20261026-165435">
-<script src="home-settings-sleep-v2.js?v=20261026-165435"></script>
-<link rel="stylesheet" href="community-me.css?v=20261026-165435">
-<link rel="stylesheet" id="ctgCss" href="community-tg.css?v=20261026-165435">
-<script src="community-me.js?v=20261026-165435"></script>
+<link rel="stylesheet" id="ss2Css" href="home-settings-sleep-v2.css?v=20261026-170152">
+<script src="home-settings-sleep-v2.js?v=20261026-170152"></script>
+<link rel="stylesheet" href="community-me.css?v=20261026-170152">
+<link rel="stylesheet" id="ctgCss" href="community-tg.css?v=20261026-170152">
+<script src="community-me.js?v=20261026-170152"></script>
 <!-- Oct 22 One UI step 1: the one sheet shell (dark glass, grab, X under the sheet), the profile hub uses it -->
-<link rel="stylesheet" id="oneSheetCss" href="one-sheet.css?v=20261026-165435">
+<link rel="stylesheet" id="oneSheetCss" href="one-sheet.css?v=20261026-170152">
 <!-- Oct 22: "I just ate this" / "I'll eat this" on the Shuffle pick, a right swipe and the cook-along end (ate-this.js) -->
-<link rel="stylesheet" id="ateCss" href="ate-this.css?v=20261026-165435">
-<script src="ate-this.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="mistySayCss" href="misty-say.css?v=20261026-165435">
+<link rel="stylesheet" id="ateCss" href="ate-this.css?v=20261026-170152">
+<script src="ate-this.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="mistySayCss" href="misty-say.css?v=20261026-170152">
 <!-- Oct 18: Fuel / Water / Move / Gap blooms on the ring Home (home-blooms-v2.js, COORD-hb2-integrate.md); the shell mounts it with root = document -->
-<link rel="stylesheet" id="hb2Css" href="home-blooms-v2.css?v=20261026-165435">
-<script src="home-blooms-v2.js?v=20261026-165435"></script>
+<link rel="stylesheet" id="hb2Css" href="home-blooms-v2.css?v=20261026-170152">
+<script src="home-blooms-v2.js?v=20261026-170152"></script>
 <!-- Oct 23: one round, symmetrical layout for the secondary bubbles + zoom-out + two-finger tap on Misty opens them all (bloom-ring.js) -->
-<link rel="stylesheet" id="brCss" href="bloom-ring.css?v=20261026-165435">
-<script src="bloom-ring.js?v=20261026-165435"></script>
+<link rel="stylesheet" id="brCss" href="bloom-ring.css?v=20261026-170152">
+<script src="bloom-ring.js?v=20261026-170152"></script>
 <!-- Oct 21 Scan / Fuel / Gap: tapping Gap opens this passive view (time since the last meal, six markers on the hexagon); Deep analyze = in-app AI for a product the barcode did not find -->
-<link rel="stylesheet" id="gvCss" href="gap-view.css?v=20261026-165435">
-<script src="gap-view.js?v=20261026-165435"></script>
+<link rel="stylesheet" id="gvCss" href="gap-view.css?v=20261026-170152">
+<script src="gap-view.js?v=20261026-170152"></script>
 <!-- Oct 23 2026: cycle tracking stage 1, women only and opt-in; the phase as a cell world (cycle-world.js) -->
-<link rel="stylesheet" id="cwCss" href="cycle-world.css?v=20261026-165435">
-<script src="cycle-care-core.js?v=20261026-165435"></script>
-<script src="cycle-world.js?v=20261026-165435"></script>
+<link rel="stylesheet" id="cwCss" href="cycle-world.css?v=20261026-170152">
+<script src="cycle-care-core.js?v=20261026-170152"></script>
+<script src="cycle-world.js?v=20261026-170152"></script>
 <!-- Oct 19: replayable tutorial from Settings > Tutorial; steps live ONLY in tutorial-steps.js (TUTORIAL.md, COORD-tutorial.md) -->
-<link rel="stylesheet" id="ltCss" href="tutorial.css?v=20261026-165435">
+<link rel="stylesheet" id="ltCss" href="tutorial.css?v=20261026-170152">
 <!-- Oct 19: Settings > Weight & BMI: weigh-in, BMI, body-fat estimate, Then/Now level-up track (body-stats*.js, COORD-stats.md) -->
-<link rel="stylesheet" id="bsCss" href="body-stats.css?v=20261026-165435">
-<script src="body-stats-core.js?v=20261026-165435"></script>
-<script src="body-stats.js?v=20261026-165435"></script>
+<link rel="stylesheet" id="bsCss" href="body-stats.css?v=20261026-170152">
+<script src="body-stats-core.js?v=20261026-170152"></script>
+<script src="body-stats.js?v=20261026-170152"></script>
 <!-- Oct 22: Weight journey: start date, Add weight (backfill/edit/delete), kg/lb, W/M/3M/Y/All/Since start chart, goal line (weight-journey*.js) -->
-<link rel="stylesheet" id="wjCss" href="weight-journey.css?v=20261026-165435">
-<script src="weight-journey-core.js?v=20261026-165435"></script>
-<script src="weight-journey.js?v=20261026-165435"></script>
-<script src="tutorial-steps.js?v=20261026-165435"></script>
-<script src="tutorial.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="nsCss" href="nutri-stats.css?v=20261026-165435">
-<script src="nutri-stats-core.js?v=20261026-165435"></script>
-<script src="nutri-stats.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="fybCss" href="foryou.css?v=20261026-165435">
-<script src="foryou-core.js?v=20261026-165435"></script>
-<script src="inspo-core.js?v=20261026-165435"></script>
-<script src="nibblo-core.js?v=20261026-165435"></script>
-<script src="foryou.js?v=20261026-165435"></script>
-<script src="foryou-stay.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="gnCss" href="glass-nav.css?v=20261026-165435">
-<link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261026-165435">
-<link rel="stylesheet" id="symCss" href="sym-home.css?v=20261026-165435">
-<script src="sym-home.js?v=20261026-165435"></script>
-<link rel="stylesheet" id="secCss" href="section-nav.css?v=20261026-165435">
-<script src="section-nav.js?v=20261026-165435"></script>
+<link rel="stylesheet" id="wjCss" href="weight-journey.css?v=20261026-170152">
+<script src="weight-journey-core.js?v=20261026-170152"></script>
+<script src="weight-journey.js?v=20261026-170152"></script>
+<script src="tutorial-steps.js?v=20261026-170152"></script>
+<script src="tutorial.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="nsCss" href="nutri-stats.css?v=20261026-170152">
+<script src="nutri-stats-core.js?v=20261026-170152"></script>
+<script src="nutri-stats.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="fybCss" href="foryou.css?v=20261026-170152">
+<script src="foryou-core.js?v=20261026-170152"></script>
+<script src="inspo-core.js?v=20261026-170152"></script>
+<script src="nibblo-core.js?v=20261026-170152"></script>
+<script src="foryou.js?v=20261026-170152"></script>
+<script src="foryou-stay.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="gnCss" href="glass-nav.css?v=20261026-170152">
+<link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261026-170152">
+<link rel="stylesheet" id="symCss" href="sym-home.css?v=20261026-170152">
+<script src="sym-home.js?v=20261026-170152"></script>
+<link rel="stylesheet" id="secCss" href="section-nav.css?v=20261026-170152">
+<script src="section-nav.js?v=20261026-170152"></script>
 </body>
 <script src="cook-tab-order.js?v=20261026-164825"></script><!-- Oct 26 (MAYA-HANDOFF 0.29): Cook tab order, kept apart from the stamped script list so parallel releases do not clash -->
 </html>

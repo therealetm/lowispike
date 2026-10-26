@@ -1523,7 +1523,7 @@ no notification, so it does not compete with 0.39's evening catch-up greeting. 0
 could not log during the day; 0.40 only shows back what is there (and links to the catch-up when the day is empty).
 Task "LOWiSPIKE: build and ship the Day Recap" (Sesame, 26 Oct ~23:30) + its continue run (27 Oct), worktree
 wt-day-recap, branch day-recap, COORD-day-recap.md.
-**Status: LIVE** (build in Releases, Oct 27). What shipped:
+**Status: LIVE in build 20261027-004442** (silent, Oct 27 00:44 CET; CI run 40421925834; live WebKit probes iPhone 13 EN/DE/ES, Reduce Motion, iPad portrait all pass). What shipped:
 - Files: day-recap-core.js (window.LowiDayRecapCore, pure: summarize(o) / view(sum, {lang, name, last, rnd}) / POOLS / UI,
   journalClean / journalPut, JOURNAL_MAX 140), day-recap.js (window.LowiDayRecap {open, close}; R2.sheet glass panel, class
   drc-ov), day-recap.css. Loaded right before misty-hub.js; sw.js has its own STATIC.push line.

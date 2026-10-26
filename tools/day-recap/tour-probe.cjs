@@ -11,7 +11,7 @@ const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ?
     const P = h.page, out = { lang, view, problems: [] };
     try {
         await P.evaluate(() => window.LowiTutorial.news({ slug: 'day-recap', tutorial: 'new-day-recap', tour: ['new-day-recap'], text: { en: 'Day recap', de: 'Tagesr\u00fcckblick', es: 'Resumen del d\u00eda' } }));
-        for (let i = 0; i < 30; i++) { await L.sleep(300); const id = await P.evaluate(() => window.LowiTutorial.step()); out.firstStep = out.firstStep || id; if (id === 'new-day-recap') break; if (id === 'new-intro') { await P.evaluate(() => { const b = Array.from(document.querySelectorAll('.lt-card button')).find(b => /next|weiter|siguiente|los|start|\u2192/i.test(b.innerText + ' ' + (b.getAttribute('aria-label') || ''))); b && b.click(); }); await L.sleep(600); } }
+        for (let i = 0; i < 30; i++) { await L.sleep(300); const id = await P.evaluate(() => window.LowiTutorial.step()); out.firstStep = out.firstStep || id; if (id === 'new-day-recap') break; if (id === 'new-intro') { await P.evaluate(() => { const b = Array.from(document.querySelectorAll('.lt-card button')).find(b => /next|weiter|siguiente|los|start|go\b|vamos|empez|comenz|\u2192/i.test(b.innerText + ' ' + (b.getAttribute('aria-label') || ''))); b && b.click(); }); await L.sleep(600); } }
         out.ids = await P.evaluate(() => window.LowiTutorial.ids());
         let st = null;
         for (let i = 0; i < 40; i++) {

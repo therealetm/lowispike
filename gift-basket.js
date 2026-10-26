@@ -136,6 +136,10 @@
        someone, and just swipe. Swipe through groceries to pay for."): one basket at a time, swipe right = I'll pay for this one,
        left = skip (it comes back tomorrow). A right swipe pays nothing by itself: the card then shows the person's own pay link
        and "I helped", exactly as before. The card shows the food and the rough total, never a photo of a person. */
+    /* BH-043 (bug hunt run 43, P-ROW-SHIFT / swap under the finger): Skip draws the next basket's Skip on the same spot, Pay grows the
+       card so its pay link lands where Pay was, and the pay link turns into "I helped" in place. So one double tap skipped two baskets
+       (Undo brought back only one), opened the pay link, or said "I helped" without paying. These controls carry data-spend:
+       fresh-scrim swallows a 2nd tap on the same spot within 400 ms; a deliberate tap after that works as before. */
     function deckHTML(list) {
         const left = Object.keys(skipped).filter(id => open.some(b => b.id === id)).length;
         if (!list.length) return '<p class="stp-snack-none gb-none">' + esc(left
@@ -151,17 +155,17 @@
             itemsHTML(b.items) + '<p class="gb-total">' + esc(T('About ', 'Etwa ', 'Unos ')) + '<b>' + esc(eur(b.total)) + '</b></p>' +
             (on ? '<p class="gb-pick-msg">' + esc(T('You picked ' + who(b) + '’s groceries. Pay through their own link, then tap I helped.', 'Du hast den Einkauf von ' + who(b) + ' gewählt. Bezahl über den eigenen Link der Person und tipp dann auf Ich habe geholfen.', 'Elegiste la compra de ' + who(b) + '. Paga con su propio enlace y luego toca He ayudado.')) + '</p>' + actHTML(b) : hint) + '</article>';
         const btns = '<div class="gb-deck-btns">' +
-            '<button type="button" class="gb-round gb-skip" data-gb="skip" data-gb-for="' + esc(b.id) + '" aria-label="' + esc(T('Skip ', 'Überspringen: ', 'Saltar ') + who(b)) + '"><span aria-hidden="true">\u2715</span><small>' + esc(T('Skip', 'Weiter', 'Saltar')) + '</small></button>' +
+            '<button type="button" class="gb-round gb-skip" data-gb="skip" data-spend="1" data-gb-for="' + esc(b.id) + '" aria-label="' + esc(T('Skip ', 'Überspringen: ', 'Saltar ') + who(b)) + '"><span aria-hidden="true">\u2715</span><small>' + esc(T('Skip', 'Weiter', 'Saltar')) + '</small></button>' +
             (lastSkip ? '<button type="button" class="stp-pill gb-undo" data-gb="undo">' + esc(T('Undo', 'Zurück', 'Deshacer')) + '</button>' : '<span class="gb-count">' + esc(T('1 of ', '1 von ', '1 de ') + list.length) + '</span>') +
-            '<button type="button" class="gb-round gb-yes" data-gb="yes" data-gb-for="' + esc(b.id) + '"' + (on ? ' disabled aria-disabled="true"' : '') + ' aria-label="' + esc(T('Pay for ', 'Bezahlen für ', 'Pagar a ') + who(b)) + '"><span aria-hidden="true">\u{1F91D}</span><small>' + esc(T('Pay', 'Zahlen', 'Pagar')) + '</small></button></div>';
+            '<button type="button" class="gb-round gb-yes" data-gb="yes" data-spend="1" data-gb-for="' + esc(b.id) + '"' + (on ? ' disabled aria-disabled="true"' : '') + ' aria-label="' + esc(T('Pay for ', 'Bezahlen für ', 'Pagar a ') + who(b)) + '"><span aria-hidden="true">\u{1F91D}</span><small>' + esc(T('Pay', 'Zahlen', 'Pagar')) + '</small></button></div>';
         return '<div class="gb-deck">' + peeks + top + '</div>' + btns;
     }
     function actHTML(b) {
         return opened[b.id]
             ? '<p class="gb-ask">' + esc(T('Did the payment go through?', 'Hat die Zahlung geklappt?', '¿Se ha completado el pago?')) + '</p>' +
-              '<div class="stp-foot-acts"><button type="button" class="stp-go gb-helped" data-gb-help="' + esc(b.id) + '"' + (busy ? ' disabled' : '') + '>' + esc(T('I helped', 'Ich habe geholfen', 'He ayudado')) + '</button>' +
-              '<a class="stp-pill gb-pay" href="' + esc(b.link) + '" target="_blank" rel="noopener noreferrer external" data-gb-pay="' + esc(b.id) + '">' + esc(T('Open link again', 'Link nochmal öffnen', 'Abrir otra vez')) + ' ↗</a></div>'
-            : '<a class="stp-go gb-pay" href="' + esc(b.link) + '" target="_blank" rel="noopener noreferrer external" data-gb-pay="' + esc(b.id) + '">' + esc(linkText(b.kind)) + ' ↗</a>';
+              '<div class="stp-foot-acts"><button type="button" class="stp-go gb-helped" data-spend="1" data-gb-help="' + esc(b.id) + '"' + (busy ? ' disabled' : '') + '>' + esc(T('I helped', 'Ich habe geholfen', 'He ayudado')) + '</button>' +
+              '<a class="stp-pill gb-pay" href="' + esc(b.link) + '" target="_blank" rel="noopener noreferrer external" data-spend="1" data-gb-pay="' + esc(b.id) + '">' + esc(T('Open link again', 'Link nochmal öffnen', 'Abrir otra vez')) + ' ↗</a></div>'
+            : '<a class="stp-go gb-pay" href="' + esc(b.link) + '" target="_blank" rel="noopener noreferrer external" data-spend="1" data-gb-pay="' + esc(b.id) + '">' + esc(linkText(b.kind)) + ' ↗</a>';
     }
     function pick(id) { if (!open.some(b => b.id === id)) return; picked = id; lastSkip = ''; msg = ''; paint(); const a = ov && ov.querySelector('.gb-swipe .gb-pay'); if (a) try { a.focus({ preventScroll: true }); } catch (e) {} }
     function skip(id) {

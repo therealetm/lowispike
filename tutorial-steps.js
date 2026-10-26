@@ -273,8 +273,8 @@
             title: { en: 'Speak instead of typing', de: 'Sprechen statt tippen', es: 'Habla en vez de escribir' },
             text: {
                 en: 'See the small mic in a text field? Tap it and just say your food, I write it down. In the Home Screen app, tap the mic on your keyboard.',
-                de: 'Siehst du das kleine Mikro im Textfeld? Tipp drauf und sag einfach dein Essen, ich schreibe es auf. In der Home-Bildschirm-App tippst du aufs Mikro der Tastatur.',
-                es: '¿Ves el pequeño micro en el campo de texto? Tócalo y di tu comida, yo la escribo. En la app de la pantalla de inicio, toca el micro del teclado.'
+                de: 'Siehst du das Mikro im Textfeld? Tipp drauf und sag dein Essen, ich schreibe mit. In der Home-Bildschirm-App: Mikro der Tastatur.',
+                es: '¿Ves el micro en el campo de texto? Tócalo y di tu comida, yo la escribo. En la app de inicio, toca el micro del teclado.'
             }
         },
         {

@@ -142,8 +142,20 @@
 - LIVE 20261026-200906 (quiet, main 02d83cf5, CI https://github.com/therealetm/lowispike/actions/runs/40384243979/job/121788174641). Live probe-mic-typed PASS Chromium 390 + WebKit iPhone 13, 0 errors. Local probe-mic-sweep sessions PASS.
 - Next leads: generic probe: every full-screen aria-modal layer + history.back() must not leave the app; tutorial-demo audio after leaving; bottom Undo bars; cycle delete in a browser; VoiceOver focus loss; level-up/badge moments. Not on a real iPhone (Safari dictation is the real engine there).
 
+## Runs 49-51 (Mon 26 Oct 2026, 21:01-23:30 CET), worktree /home/sprite/wt-bughunt-202610262119, branch bughunt-50
+- Run 49 built the generic probe playtest/probe-back-layers.cjs (every window.Lowi*.open/show on Home, guard, history.back(), app must stay). LIVE 20261026-200906 Chromium 390: 4 LEFT_APP (bl-live.txt): LowiBirthCompanion.openCreator, LowiHerbStart.openInterview, LowiWorldRegions.openMap, LowiWorldAudio.open.
+- Run 50 added probe-back-world.cjs (inside the body world: map / Sound panel + back) and probe-back-user.cjs (Profile > companion card > creator > back x2): map + sound = WORLD_CLOSED_TOO, creator stayed on top of Home then LEFT_APP. Wrote fixes for 3 of 4 and the test, then the run stopped (no ledger, lock left).
+- **BH-050 FIXED (new pattern P-BACK-ONE-LAYER: a layer that does not own its Escape, so back goes past it):**
+  companion-birth.js creator: capture Escape -> closeOv(). body-world-regions.js World map: capture Escape removes #bwrMap only, focus to #bwrMapBtn. world-audio.js Sound panel: Escape moved to capture + stopPropagation (it closed the body world with it). back-swipe.js sig: + count of [role=dialog]:not([aria-hidden=true]) (fade-out ghost) + data-back-step values.
+  Run 51: herb-start.js starter interview (full sheet, noClose, no Escape): capture Escape = one question back, plan/thinking -> last question, first screen = Not now (pendClear inline, starter-resume guard); hs-iv carries data-back-step; plan timer only advances if the step is still "thinking" (back during thinking no longer jumps to the plan).
+  tests/bh050-back-closes-one-layer.test.cjs 7 (all 7 fail on old code). Suite 3889/3889.
+- LIVE 20261026-230840 (quiet, main e80a731a, CI https://github.com/therealetm/lowispike/actions/runs/40410235299/job/121878794322). Live: probe-back-layers (the 4) ok Chromium 390 + WebKit iPhone 13; probe-back-world map+sound ok iPhone 13 + Chromium; probe-back-user creator ok iPhone 13; 0 errors.
+- Flake note: probe-back-user B once reported "creator stayed open" locally while 3 heavy jobs ran in parallel; re-run alone PASS twice. Not a bug.
+- Full sweep after release (bl51-live-full-i.txt, live 230840, WebKit iPhone 13): 63 openers ok (incl. the new Quick tour), 0 LEFT_APP, 0 STAYED_OPEN, 0 errors.
+- Next leads: openers that opened "nothing" on Home need their own entry path (Move player/finish, meal journal, cart, people); tutorial-demo audio after leaving; bottom Undo bars; cycle delete in a browser; VoiceOver focus loss; level-up/badge moments.
+
 ## Clean streak
-0 (run 48, Mon 26 Oct 2026: BH-048 found and fixed)
+0 (runs 49-51, Mon 26 Oct 2026: BH-050 found and fixed)
 
 ## Worlds playtest (separate task, Oct 19 2026 13:23 CEST, base 20261019-130951) - see /home/sprite/COORD-worlds-playtest.md
 - **W-001 fixed (release in progress, see COORD).** Run 5 next-run item 2 "lesson skip on language switch inside a world" is DONE by the

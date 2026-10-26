@@ -1,0 +1,2 @@
+{"map":"ok","sound":"ok"}
+EXIT 0

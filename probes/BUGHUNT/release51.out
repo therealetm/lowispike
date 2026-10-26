@@ -1,0 +1,30 @@
+lock held 22:08:38
+info: build 20261026-230840
+info: version.json 455 KB
+warning: news.id "move-finish-20261026-190121" does not end with the build id; What's New may not reappear for this release
+warning: version.json is 455 KB and every update check downloads it; consider moving older What's New entries out of it
+warning: index.html is 3.4 MB; big files cost parse time and memory on iPhone
+warning: media/quick-tour-en.mp4 is 2.3 MB; big files cost parse time and memory on iPhone
+warning: files with their own version tag (not the build id), so the service worker never caches them by build: cook-tab-order.js?v=20261026-164825, own-entries.js?v=20261025-094915
+release-check OK (3214 tracked files, 5 warning(s))
+ℹ tests 3889
+ℹ pass 3889
+ℹ fail 0
+test floor OK: 3889 pass, floor 3882
+remote: 
+remote: Create a pull request for 'ci/20261026-230840-20261026220927' on GitHub by visiting:        
+remote:      https://github.com/therealetm/lowispike/pull/new/ci/20261026-230840-20261026220927        
+remote: 
+pushed e80a731a9386be7ed84638c823e8dbd6d235905f to ci/20261026-230840-20261026220927, waiting for CI
+waiting for "Release check and tests" on e80a731
+"Release check and tests" success after 91s: https://github.com/therealetm/lowispike/actions/runs/40410235299/job/121878794322
+To https://github.com/therealetm/lowispike.git
+   0d9b737b..e80a731a  HEAD -> main
+main is now e80a731a9386be7ed84638c823e8dbd6d235905f
+pushed e80a731a9386be7ed84638c823e8dbd6d235905f as 20261026-230840
+waiting for https://therealetm.github.io/lowispike/ to serve 20261026-230840 or newer
+live OK after 91s: {"index.html":"20261026-230840","sw.js":"20261026-230840","version.json":"20261026-230840"}
+same  index.html repo 676aace73e43 live 676aace73e43
+same  sw.js repo 65a06915cbf3 live 65a06915cbf3
+same  version.json repo ba53052c0545 live ba53052c0545
+same  apple-ui.js repo a8a595f0f508 live a8a595f0f508

@@ -4,7 +4,7 @@
    - Cook it opens that recipe in cook mode (.p2-ckov); Save puts it in My recipes (LowiBook)
    - Add to kitchen puts the products into lowispike.kitchen.v1 once, shows "N in your kitchen" + Undo, the recipe page then counts
      them as at home and its own button says all in your kitchen; Undo takes them out; a second Add adds nothing twice
-   - no tap on the buttons opens the bubble's menu; the menu's reaction button says React, not "+"; no page errors.
+   - no tap on the buttons opens the bubble's menu; the menu's reaction button says React, not "+"; Cook > Kitchen lists the foods; no page errors.
    node tools/bot-recipe/check.cjs [outDir] [url] [cases]   (url: run against that site with the fake Supabase; nothing is written) */
 'use strict';
 const fs = require('fs'), path = require('path');
@@ -100,6 +100,8 @@ async function one(key) {
         /* the recipe page's own Add to kitchen does the same, and Chat then says all in your kitchen */
         await row.locator('[data-crb="open"]').click({ timeout: 8000 }); await recOpen();
         await p.evaluate(() => { const b = document.querySelector('#p2Rec .p2-kit'); if (b) b.scrollIntoView({ block: 'center' }); }); await p.waitForTimeout(800);
+        /* WebKit: the recipe page can still shift once while its pictures load; wait until the button holds still, then tap it */
+        await p.waitForFunction(() => { const b = document.querySelector('#p2Rec .p2-kit'); if (!b) return false; const t = Math.round(b.getBoundingClientRect().top); const ok = window.__kitT === t; window.__kitT = t; return ok; }, null, { timeout: 8000, polling: 400 }).catch(() => { });
         await p.locator('#p2Rec .p2-kit').click({ timeout: 8000 }); await p.waitForTimeout(500);
         const k3 = await p.evaluate(() => ({ n: JSON.parse(localStorage.getItem('lowispike.kitchen.v1') || '{"items":[]}').items.length, b: (document.querySelector('#p2Rec .p2-kit') || {}).textContent }));
         ok('recipe page Add to kitchen: each product once, button flips', k3.n - before === k1.foods && /\u2713/.test(k3.b || ''), k3);
@@ -121,6 +123,23 @@ async function one(key) {
         await p.waitForTimeout(500);
         const pickT = await p.evaluate(() => { const b = document.querySelector('.cp-acts [data-chat="pick"]'); return b ? b.textContent.trim() : null; });
         ok('the menu says React, not +', !!pickT && pickT.includes(REACT[C.lang]) && !/^\+|\uFF0B/.test(pickT), pickT);
+        /* 8. the Kitchen screen itself (Cook > Kitchen since build 20261026-132254) lists what Add to kitchen put away */
+        await closeAll();
+        await p.evaluate(() => { try { LowiKitchenGame.open(); } catch (e) { } });
+        await p.waitForFunction(() => !!document.querySelector('#kgRoot .kg-scene'), null, { timeout: 20000 }).catch(() => { });
+        const doors = await p.evaluate(() => [...document.querySelectorAll('#kgRoot [data-kg-door]')].filter(d => d.dataset.kgDoor !== 'buy').map(d => ({ id: d.dataset.kgDoor, n: +((d.querySelector('.kg-dl small') || {}).textContent) || 0 })));
+        /* the names Add to kitchen stored, in the phone's language (Gurke, Pepino...), one per recipe food */
+        const want8 = await p.evaluate(id => { const st = JSON.parse(localStorage.getItem('lowispike.kitchen.v1') || '{"items":[]}'); const n = LowiBotRecipeCore.foods(LowiP2.rec(id).ing).length; return st.items.length === n ? st.items.map(i => i.n) : ['count ' + st.items.length + ' != ' + n]; }, bookId);
+        const seen = [];
+        for (const d of doors.filter(x => x.n > 0)) {
+            await p.locator('#kgRoot [data-kg-door="' + d.id + '"]').click({ timeout: 8000 });
+            await p.waitForFunction(() => !!document.querySelector('#kgRoot .kg-open'), null, { timeout: 8000 }).catch(() => { });
+            seen.push(...(await p.evaluate(() => [...document.querySelectorAll('#kgRoot .kg-open .kg-ct b')].map(b => b.textContent))));
+            await p.locator('#kgRoot .kg-open [data-kg="close"]').click({ timeout: 8000 }).catch(() => { });
+            await p.waitForFunction(() => !document.querySelector('#kgRoot .kg-open'), null, { timeout: 8000 }).catch(() => { });
+        }
+        ok('Cook > Kitchen lists every added food on its shelf', want8.length > 0 && want8.every(n => seen.includes(n)) && doors.reduce((a, d) => a + d.n, 0) === want8.length, { want8, seen, doors });
+        await p.screenshot({ path: path.join(OUT, key + '-kitchen.png') });
         ok('no page errors', R.errs.length === 0, R.errs.slice(0, 3));
     } catch (e) { ok('ran', false, String(e && e.message).slice(0, 400)); }
     await R.close();

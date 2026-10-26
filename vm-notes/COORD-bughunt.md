@@ -40,3 +40,33 @@ world-home.js, home-orbit-v2*, misty-pad*, Settings files.
 - CLAIMED: index.html ONLY R2.onboard() first line (ob.step resume), saveOb() final/setupMid line, new setupPending() helper,
   R2.authBoot() two onboard-reopen lines. NOT finishOb() (AUTO worker), NOT simpleCardHTML (product card).
   tests/setup-resume.test.cjs (new), DECISIONS.md (append), What's New (one entry). BH-009: setup lost after a reload past the birthday step.
+- 18:40 BH-009 committed (1dddd2e), suite 1680/1680, release.sh queued for the lock (GitHub Actions jammed). Claim held until it lands.
+- 18:47 BH-009 LIVE 20261019-184058 (main 64614c2). Claim released.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.
+- 16:42 UTC EVO (evolution-escalate task): took the #lhEvolution half of the 'auto-open sibling check'. evolve() now waits while any other aria-modal dialog, #g1Ob, #lcUpd, .r2-ov, sheets, #drDay, the tour, #lcOv, .cf-ov or #brOv is visible, and shows once it closes (EVO_BUSY in herb-tamagotchi.js). .mm-ov (mirror-move) is still yours. Release pending (evolution-escalate).
+- 16:47 NOTE: MAYA-HANDOFF.md landed on main (e322804) and the agent-harness branch holds copies of these COORD files.
+
+# Run 12 (Oct 19 2026 20:01 CEST): worktree /home/sprite/wt-bughunt-202610191801
+- CLAIMED: index.html ONLY the R2.onboard() resume line (ob.step) + one comment; tests/reveal-resume.test.cjs (new); DECISIONS.md (append); What's New (one entry). BH-011: companion lost after a reload during the reveal.
+- 20:25 BH-011 LIVE 20261019-201827 (main 4e8beda). Claim released.
+
+## Run 14 (Oct 19 2026 22:01 CEST) CLAIM: galaxy-zoom.js warpFx() only (the 2D #gxWarp streak canvas made per Home<->Community warp: cap size + zero on drop, CS-001 pattern). New tests/warp-canvas-memory.test.cjs. Worktree /home/sprite/wt-bughunt-202610192001. Not touching community-chat.js / community-energy.js.
+- 22:30 BH-012 LIVE 20261019-221918 (main a5d5338). Claim on galaxy-zoom.js released.
+
+# Run 19 (Tue 20 Oct 2026 03:01 CEST): mirror-move.js (camera start token), discovery.js showPhoto only, tests/mirror-cam-race.test.cjs. LIVE 20261020-030834 (main 8d89e5a). Claims released.
+
+# Run 25 (Sun 25 Oct 2026 22:01 CET): world-home.js wireMistyHold, misty-turn.js, community-tab-order.js, bloom-ring.js, tests/second-finger-no-hold.test.cjs. LIVE 20261025-221414 (main e0c0fafd). Claims released.
+- 2026-10-25 22:25 UTC run 26: shipped BH-025 (fresh-scrim.js) LIVE 20261025-231656. Lock freed.
+
+# Run 30 (Mon 26 Oct 2026 02:02 UTC): worktree /home/sprite/wt-bughunt-202610260202. Probing near-max z-index transient cards (P-LOOP-STOPPED-OVERLAY). No claim yet.
+- 2026-10-26 02:40 UTC run 30: shipped BH-030 (gap-view.js) LIVE 20261026-030809. Lock freed.
+- 2026-10-26 02:35 UTC run 30 second release: spirit.js gapAria sibling LIVE 20261026-031541. Lock already freed.
+
+# Run 34 (Mon 26 Oct 2026 06:01 UTC): worktree /home/sprite/wt-bughunt-202610260603. CLAIM: community-rooms-ui.js openOn(), ranking.js open(), community-tab-order.js want()/wanted(), galaxy-zoom.js firstIsRoom(). Community opens straight on a requested view (no galaxy flash that takes a tap).
+# Run 34 DONE 06:35 UTC: BH-034 LIVE 20261026-071738; claims released.
+- 2026-10-26T07:34:49Z bughunt run 35 done: BH-035 LIVE 20261026-082829 (world-home.js syncX, index.html sheet(), ranking.js compare). Files released.
+- 2026-10-26T09:25Z bughunt run 37 done: BH-037 LIVE 20261026-101115 (gap-view.js onClick, lis-push.js ask()). Files released.
+- 2026-10-26T10:16:31Z bughunt run 38 done: BH-038 LIVE 20261026-111102 (community-rooms-ui.js toggleMenu). Files released.
+- 2026-10-26T11:20:33Z bughunt run 39: releasing BH-039 (spirit.js open, fresh-scrim.js guardDown).
+- 2026-10-26T11:30:28Z bughunt run 39 done: BH-039 LIVE 20261026-122440 (spirit.js open, fresh-scrim.js guardDown). Files released.

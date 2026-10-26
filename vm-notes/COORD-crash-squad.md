@@ -17,3 +17,5 @@ Home ring / blooms / Settings / Fuel / praise / nudges / guides' text (bug hunt 
 
 ## Status
 - [x] soak harness; fix RELEASED 20261019-142709
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

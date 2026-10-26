@@ -23,3 +23,5 @@ misty-explore.js, galaxy-bubbles.js (autopilot task 3a4c3c3a), region-pals*, arr
 - [x] Browser checks pre-release: oct19-exit-launch-live launch + weak in Chromium 390x844 and WebKit iPhone 13, launch on WebKit iPad landscape; world-exit-reverse-live Chromium; stuck-in-worlds-live WebKit iPhone 13 + Chromium: all pass
 - [x] RELEASED build 20261019-080527, main d54777e, tests 1466/1466, CI on main success, live files match
 - Files free again: body-world-regions.js, misty-flight.js, misty-hunt.js, tests above.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

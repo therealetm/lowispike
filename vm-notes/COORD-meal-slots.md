@@ -22,3 +22,6 @@ food-photo-ai.js / meal-photo.* (photo cap stays as is: Snap food is the existin
 - 18:15 started, files claimed
 - 18:35 code + tests done (spirit.js mealForm/slotPicker, spirit-core slot helpers, index.html logMeal/mealDup/mealSlot, store-picks snacks, scan-screens.css + store-picks.css appends). tutorial-steps.js NOT touched after all (AUTO rewrites fuel/log-meal); sentences left for AUTO in COORD-tutorial.md. news names step "fuel".
 - NUTRISTATS: your .ns-strip on the Log meal sheet will also sit above the new four-slot picker (same ss-sheet). Logs may carry slot.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.
+- 18:55 RELEASED 20261019-185352 (main 3b5ae66). 1,729 tests pass, CI green, live serves it. Live probe tests/meal-slots-live.cjs PASS on WebKit iPhone 13 + iPad landscape/portrait (EN/DE/ES). Files free again. DONE.

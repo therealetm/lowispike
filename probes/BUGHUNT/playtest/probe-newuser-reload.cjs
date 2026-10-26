@@ -28,6 +28,21 @@ const SHOT = process.env.SHOT || '';
   for (let k = 0; k < 2; k++) { await p.evaluate(() => { const b = document.querySelector('[data-lc="shuffle"]'); b && b.click(); }); await L.sleep(900); }
   shown.picked = await p.evaluate(() => (document.querySelector('.lc-name') || {}).textContent || null);
   shown.shapeAfterShuffle = await p.evaluate(() => { const s = [...document.querySelectorAll('.lc-svg .lc-shape')].map(e => e.getAttribute('d')); return s[s.length - 1] || null; });
+  if (process.env.RELOAD4) { // BH-011: the app reloads while the reveal is showing, before Continue is tapped
+    steps.push('pre4:has=' + (await p.evaluate(() => !!(window.LowiBirthCompanion && LowiBirthCompanion.has()))));
+    await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 150000 }); await L.sleep(12000);
+    for (let k = 0; k < 12 && !(await vis('#r2ob')); k++) await L.sleep(600);
+    for (let k = 0; k < 12 && (await vis('#r2ob')) && !(await vis('.lc-name')) && !(await vis('[data-r2o]')); k++) await L.sleep(600);
+    await L.sleep(2500);
+    steps.push('reload4:setup=' + (await vis('#r2ob')) + ',reveal=' + (await vis('.lc-name')) + ',revealName=' + (await p.evaluate(() => (document.querySelector('.lc-name') || {}).textContent || '')) + ',has=' + (await p.evaluate(() => !!(window.LowiBirthCompanion && LowiBirthCompanion.has()))) + ',step=' + (await p.evaluate(() => [...document.querySelectorAll('#r2ob .r2-dots i')].findIndex(i => i.classList.contains('on')))));
+    if (await vis('#r2obB')) { // fixed build: back on the birthday step (filled in), Next replays the reveal
+      steps.push('reload4:bdayKept=' + (await p.evaluate(() => document.getElementById('r2obB').value)));
+      await p.click('[data-r2o="next"]'); for (let k = 0; k < 30 && !(await vis('.lc-name')); k++) await L.sleep(500); await L.sleep(2500);
+      steps.push('reload4:revealAgain=' + (await vis('.lc-name')) + ',name=' + (await p.evaluate(() => (document.querySelector('.lc-name') || {}).textContent || '')));
+      shown.shapes = await p.evaluate(() => [...document.querySelectorAll('.lc-svg .lc-shape')].map(e => e.getAttribute('d')));
+    }
+    shown.picked = await p.evaluate(() => (document.querySelector('.lc-name') || {}).textContent || null) || shown.picked;
+  }
   await p.evaluate(() => { const b = document.querySelector('.lc-cta'); b && b.click(); }); await L.sleep(2000);
   if (process.env.RELOAD2) { await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 150000 }); await L.sleep(12000); steps.push('reload2:setupVisible=' + (await vis('#r2ob')) + ',day=' + (await vis('#drDay'))); }
   await C('text=Use my initial'); await L.sleep(1000); await C('text=None of these'); await L.sleep(400);
@@ -37,6 +52,15 @@ const SHOT = process.env.SHOT || '';
     steps.push('ob:' + c); if (!c) break; await L.sleep(1500);
   }
   await L.sleep(4000);
+  if (process.env.RELOAD3) { // BH-010: starter questions open after setup, then the app reloads before an answer
+    for (let k = 0; k < 10 && !(await vis('.hs-ivov #hsIv')); k++) await L.sleep(600);
+    steps.push('iv:open=' + (await vis('.hs-ivov #hsIv')) + ',pend=' + (await p.evaluate(() => localStorage.getItem('lowispike.hs-pending.v1') !== null)));
+    await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 150000 }); await L.sleep(12000);
+    for (let k = 0; k < 10 && !(await vis('.hs-ivov #hsIv')); k++) await L.sleep(600);
+    steps.push('reload3:ivVisible=' + (await vis('.hs-ivov #hsIv')) + ',ivCount=' + (await p.evaluate(() => document.querySelectorAll('.hs-ivov:not(.off)').length)) + ',starter=' + (await p.evaluate(() => { try { return !!(window.LowiR2.S().starter); } catch (e) { return 'err'; } })));
+    const later = await p.evaluate(() => { const b = document.querySelector('[data-hsi="later"]'); if (b) { b.click(); return true; } return false; }); await L.sleep(1500);
+    steps.push('later:' + later + ',pendAfter=' + (await p.evaluate(() => localStorage.getItem('lowispike.hs-pending.v1') !== null)) + ',ivAfter=' + (await vis('.hs-ivov #hsIv')));
+  }
   const read = () => h.page.evaluate(() => { const B = window.LowiBirthCompanion, svg = document.querySelector('#spBubble svg.tmg-plant'); const sh = svg && svg.querySelector('.cw-own-body .lc-shape'); const nm = (window.LowiHerbIdentity && LowiHerbIdentity.name && LowiHerbIdentity.name()) || null; return { has: B && B.has(), rec: B && B.get() && B.get().name, homeOwn: !!(svg && svg.classList.contains('cw-own-cell')), homeShape: sh && sh.getAttribute('d'), homeName: nm, setupOpen: !!document.querySelector('#r2ob') && document.querySelector('#r2ob').getBoundingClientRect().width > 0 }; });
   const home = await read();
   if (SHOT) await p.screenshot({ path: SHOT + '-home.png' });

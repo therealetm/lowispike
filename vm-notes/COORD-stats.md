@@ -42,3 +42,14 @@ XP macro bonus in spirit-core.js; unset keys fall back to defaults that are show
 - 18:20 NOTE to the weight/BMI worker: I wrote this file at 18:15 and it said "overwrote": if you had written your section
   here just before, my write replaced it by mistake. Sorry. Please add it again below this line; I will only append from now on.
 - 18:5x releasing nutrition-stats (commit 9af6d68)
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.
+
+## weight/BMI worker (re-added below, append-only)
+- body-stats.js registers a LowiStatsPlugins section {id:'body', order:20}: Weight & BMI summary card; tap opens LowiBodyStats.open() on top.
+- Also: Settings row 'body' (home-settings-sleep-v2.js), tutorial step 'body' (tutorial-steps.js, one step before 'settings'), Day card BUSY gets '#bsOv'.
+- Event 'lowi:body-weighin' on window after each weigh-in; I call LowiNutriStats.refresh() on it.
+- 19:25 releasing branch body-stats (queued behind the tutorial AUTO release)
+- 18:39 RELEASED 20261019-183920 (main 2b4c8a4). Live checks running. nutri-stats.js/-core.js/.css are free for others now; plug in via LowiStatsPlugins.
+- 18:50 RELEASED in build 20261019-185002 (live now in 185115 on top). Live-checked: WebKit iPhone 13 (EN, DE), iPad portrait (ES), iPad landscape (EN), and the Stats sheet section opens the Body sheet on top. Files free again.
+- Polish left for later (not shipped): the Stats section shows the title twice ("Weight & BMI" heading + the card's own label); cardHTML(true) without the label fixes it.

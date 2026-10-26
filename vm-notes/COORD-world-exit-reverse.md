@@ -17,3 +17,5 @@ Not touching: world-home.js (except reading), body-world-3d*.js, Home bubbles, S
 
 ## Status
 - Step 1: tested (1,424 unit, browser Chromium + WebKit iPhone 13 + iPad), releasing now
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

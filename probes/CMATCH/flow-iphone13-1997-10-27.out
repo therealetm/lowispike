@@ -1,0 +1,5 @@
+page.evaluate: Target page, context or browser has been closed
+    at read (/home/sprite/CMATCH/flow.cjs:38:29)
+    at /home/sprite/CMATCH/flow.cjs:45:26 {
+  log: []
+}

@@ -17,3 +17,5 @@ For You composer / feed / meal card / food-photo-ai.js / meal-photo.* (PHOTOCAP 
 - started, code read
 - DONE: live in build 20261019-163105 (main 1f35162), CI green, 1656 tests pass, live checks WebKit iPhone 13 / iPad / Chromium / reduced motion clean.
 - Files no longer claimed. Follow-ups: German/Spanish header length not checked on device; real-account chat (live messages) not tested, fixture only.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

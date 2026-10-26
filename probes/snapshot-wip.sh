@@ -27,7 +27,7 @@ git worktree list --porcelain | awk '/^worktree /{w=$2} /^branch /{sub("refs/hea
   unset GIT_INDEX_FILE; rm -f /tmp/wipidx-$$
   c=$(git commit-tree "$tree" -p HEAD -m "WIP snapshot of $br for the next agent [skip ci]
 
-Taken 2026-10-19 by the handoff task from $wt: $uniq unmerged commit(s), $files uncommitted file(s) captured.
+Taken $(TZ=Europe/Berlin date '+%Y-%m-%d %H:%M %Z') by the handoff task from $wt: $uniq unmerged commit(s), $files uncommitted file(s) captured.
 Not reviewed, not released. See MAYA-HANDOFF.md.")
   if git push -q origin "$c:refs/heads/wip/$br" 2>/tmp/wip-push.err; then
     echo -e "$br\tpushed\tunmerged=$uniq uncommitted=$files\t$(git log -1 --format=%s HEAD | cut -c1-70)" >> "$OUT"

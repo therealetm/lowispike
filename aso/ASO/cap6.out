@@ -1,0 +1,59 @@
+SHOT home
+== home
+LOWiSPIKE
+Misty
+4:41
+· Nächste Marke 8 h: Die Leber übernimmt oft
+5/6
+Ziehen zum Umsehen · zwei Finger zum Zoomen
+1/3
+["button#spBubble.sp-bubble[data-sp=open][data-home-misty=][data-ms-tier=ok][data-cyh=] \"Misty\" @120,313 150x150","button#spFast.sp-fast.fb-on[data-sp=fast][data-orbit=gap][data-home-bubble=gap][data-o8-adapter=blooms][data-lb=fast] \"4:41 · Nächste Marke 8 h: Die Leber übernimmt oft\" @22,344 88x88","button.wh-cell.wh-water[data-noi18n=][data-sp=water][data-orbit=water][data-home-bubble=water][data-o8-adapter=blooms][data-lb=water] \"5/6\" @242,253 88x88","button.wh-cell.wh-move[data-hb=move][data-lb=move][data-orbit=move][data-home-bubble=move][data-o8-adapter=blooms] \"Bewegung, heute keine Schritte eingetragen. Tippen, um den S\" @280,344 88x88","button.wh-cell.o8-cell[data-hb=scan][data-orbit=scan][data-lb=scan] \"Produkt scannen\" @242,436 88x88","button.wh-cell.o8-cell[data-hb=sleep][data-orbit=sleep][data-o8-adapter=settings-sleep][data-lb=sleep] \"Schlaf, nicht eingetragen\" @60,436 88x88","button.wh-cell.o8-cell[data-hb=settings][data-orbit=settings][data-o8-adapter=settings-sleep][data-lb=settings] \"Community. Halten für Einstellungen\" @151,215 88x88","button#whPad.wh-pad.no-page-swipe[data-noi18n=][data-icon=drive][data-mode=idle][data-tier=ok][data-anchor=held][data-orbit=joy][data-lb=joy] \"Steuerung: ziehen, um Misty zu fliegen, Mitte halten für vor\" @151,473 88x88","button.wh-cell.wh-meals[data-hb=meals][data-lb=meals][data-orbit=fuel][data-home-bubble=fuel][data-o8-adapter=blooms] \"1/3\" @60,253 88x88"]
+SHOT gap
+== gap
+LOWiSPIKE
+Misty
+4:41
+· Nächste Marke 8 h: Die Leber übernimmt oft
+5/6
+Ziehen zum Umsehen · zwei Finger zum Zoomen
+1/3
+Essenspause
+0h
+3h
+8h
+12h
+14h
+16h
+4 h 41 min
+seit deiner letzten Mahlzeit
+Letzte Mahlzeit
+Haferbrei mit Heidelbeeren · 07:40
+Zeit ändern
+NACH DEM ESSEN
+Typisch, nicht gemessen
+0
+30 min
+1 h
+2 h
+4 h
+Insulin niedrig
+JETZT
+Ab etwa 4 Std. nach dem Essen
+Einige Stunden nach dem Essen ist Insulin wieder niedrig und dein Körper nutzt mehr gespeicherte Energie.
+SPIKE SENKEN
+Wenn es passt: früher am Tag mehr essen, abends leicht und ohne Stärke.
+Das erste Essen des Tages herzhaft und mit Eiweiß.
+Guter Schlaf und weniger Stress helfen: Schlafmangel und Stress können den Blutzucker erhöhen.
+Nimmst du Insulin oder Diabetes-Medikamente? Sprich mit deinem Behandlungsteam, bevor du Essen oder Bewegung umstellst: Diese Tipps können deinen Blutzucker senken.
+JETZT
+Blutzucker beruhigt sich oft
+Bei den meisten ist die Mahlzeit jetzt größtenteils verarbeitet, und der Blutzucker sinkt zurück Richtung Ausgangswert, das Insulin mit. Nach einer großen oder süßen Mahlzeit kann das länger dauern. Dein Körper, dein Tempo.
+Als Nächstes: die Leber übernimmt oft in etwa 3 h 18 min
+Bisher +8 XP. Du bekommst sie, wenn du deine nächste Mahlzeit in Fuel einträgst.
+TYPISCHE MARKEN
+Blutzucker steigt
+Direkt nach deiner letzten Mahlzeit
+Blutzucker beruhigt sich oft
+Bei den meisten etwa ab 3 h
+Bei den 
+["button.gv-x[data-gv=close] \"Schließen\" @17,33 44x44","button.gv-fix[data-gv=fix] \"Zeit ändern\" @259,409 99x44","button.mc-ph.past[data-gv=mc][data-i=0] \"0\" @19,520 44x64","button.mc-ph.past[data-gv=mc][data-i=1] \"30 min\" @96,520 44x64","button.mc-ph.past[data-gv=mc][data-i=2] \"1 h\" @173,520 44x64","button.mc-ph.past[data-gv=mc][data-i=3] \"2 h\" @250,520 44x64","button.mc-ph.sel[data-gv=mc][data-i=4] \"4 h\" @327,520 44x64","button.mc-spk[data-gv=mcsay] \"Diese Phase vorlesen\" @322,697 44x44"]

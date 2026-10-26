@@ -1,0 +1,9 @@
+de_DE-kerstin-low.onnx
+de_DE-thorsten-medium.onnx
+en_GB-cori-high.onnx
+en_GB-vctk-medium.onnx
+en_US-libritts_r-medium.onnx
+en_US-ryan-high.onnx
+es_AR-daniela-high.onnx
+es_MX-claude-high.onnx
+ja_JP-hi_fi_captain-medium.onnx

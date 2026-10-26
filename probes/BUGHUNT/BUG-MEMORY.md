@@ -33,7 +33,43 @@
 - Harness: /home/sprite/BUGHUNT/playtest (lib.cjs, scenarios.cjs: home-abuse, world-churn, storage-corrupt; probes: probe-guide-joy.cjs,
   probe-ring.cjs, probe-race.cjs, probe-world.cjs, probe-cover.cjs (generic cover sampler), probe-nudge.cjs, probe-hint.cjs, probe-praise.cjs, probe-lang.cjs, probe-lang-match.cjs, probe-lang-world.cjs, probe-movenote.cjs, probe-name.cjs, probe-companion-key.cjs). Open-panel check skips <html> (it carries .hb2-open). Playwright at /tmp/pw/node_modules/playwright. Fixture init skips onboarding.
 
+- **P-PINCH-HOLD: a hold is one finger (BH-023 run 24, BH-024 run 25).** Every long-press timer must (1) never arm for a non-primary
+  finger (`e.isPrimary === false`) and (2) die when any second finger lands anywhere, not only on the same element. Do not rely on a
+  drift/slop cancel: Chromium (and likely iOS) stops delivering pointermoves once a two-finger gesture starts. Probe with one finger
+  RESTING still (probe-pinch-rest.cjs) and the second finger starting on another control. Holds fixed: living-bubbles, world-home water +
+  Misty, home-blooms-v2, settings-sleep, move-bubble, misty-turn (also skips while the controller is held), community-tab-order, bloom-ring
+  Scan. Clean: community-chat galaxy person hold, body-world-3d onLong. Unchecked: misty-pad holdT, spike-catch, chat message hold.
+
 ## Run 7 lessons
 - A probe flag is a question, not a bug: "PINNED hook" merged rows by leg, she was swimming 63 units at ~1 u/s. Read the distance.
 - Harness taps on rects inside scroll boxes must check the rect is inside the box (newuser "Close sits on World map" was a hidden row).
 - Live user reports during a run usually get their own task within minutes: check list_tasks before touching that area.
+- **P-FRESH-SCRIM: the backdrop arrives under the finger (BH-025).** A sheet whose opener sits where its backdrop lands (top of the
+  screen) closes on the 2nd tap of a double tap. fresh-scrim.js now guards full-screen body-child overlays and *-scrim layers for 350 ms.
+  New overlays that are NOT a body child or not full screen are not covered: give them the same guard. Test with real input (mouse/touch),
+  never el.click() (script clicks pass by design).
+
+- **P-ORB-UNDER-FINGER: what the 1st tap opens lands a BUTTON under the finger (BH-026).** Home blooms put their middle orb on the
+  bubble you tapped (pointer-events on at opacity 0), so a double tap / quick "tap again" pressed it: Move logged Steady steps, Sleep
+  logged 6-7 h. Rule: a freshly opened chooser ignores pointer taps (e.detail > 0) made in its first ~400 ms, timed by e.timeStamp
+  (not handler time). Same family as BH-025 (fresh backdrop) and gap-view's 450 ms mc guard. Find: RM=1 probe-orb-stack.cjs
+  (Reduce Motion puts orbs at rest from frame 0). Still to check: any other chooser that opens around its opener (Misty's care card
+  buttons vs her body, Community galaxy person card, Scan hold "all" view from the Scan bubble).
+- **BH-028 (P-ORB-UNDER-FINGER, global):** fresh-scrim.js now also eats a real tap within 44 px of the opening tap for a new overlay's
+  first 400 ms. So any body-child overlay is covered; NOT covered: in-place content swaps inside an existing sheet and page/tab swaps
+  (Profile tile -> lvCard). Find more with probe-under-finger.cjs (RM=1; MOCK=1 for Community). Reduce Motion is the proof tool.
+- **P-CLOCK-TEST:** a test that runs app code in vm.runInNewContext gets the REAL Date even when its fixtures are pinned: pass
+  Date: FixedDate into the context. Week rollover (Monday 00:00) and month end are the trip points. A NODE_OPTIONS Date shim only
+  shifts the outer clock, so offsets > 1 day give false fails in vm-based tests.
+
+
+- BH-029 (run 29) P-LOOP-STOPPED-OVERLAY: a docked card whose visibility is driven by a loop keeps showing after the loop stops (closing/celebration state) and sits over sheets/tabs. Check: after a 'final' state, is anything still checking blockers? Siblings to check: other near-max z-index cards (ate-this, body-stats, companion, living-home, mirror-move, scan-glass, tutorial).
+- P-CLOCK-TEST (again, run 29): tests built on Date.now() +/- offsets break near midnight (gap-time-sync). Run suspicious tests under TZ=Etc/GMT+1 etc. to shift local time.
+- P-CLOCK-NO-DAY (BH-030, run 30): a clock time shown for an event that can be yesterday needs a day word (fast-edit.js at() is the house rule). Run 31 sweep: CLEAN for visible UI (probe-bare-time.cjs); meal-journal, slot picker, move bubble, sym-home only list today's items (logMeal keeps day == day(ts)). Only #fsCard lastTxt (index.html) lacks it and is display:none.
+- P-OVERLAY-STACK (BH-031, run 31): an auto-opening overlay that waits on a NAMED busy list misses every dialog not on it (Day card opened over #fstRw fasting reward). Rule: auto-openers count any visible [aria-modal=true] (real visibility: rects+display+visibility+opacity, never position:fixed alone) minus their own. Already generic: tutorial.js busyBy, herb-tamagotchi EVO_BUSY, after-meal blocker, section-nav. Siblings to check: misty-hub nudge (named list), auto toasts/visits.
+- P-LIVE-WRITE (26 Oct, weekly-ranking task): run 31's quick /tmp scripts (fsvis.cjs, amod.cjs) opened the LIVE app with NO route block, so the app signed in as a guest and pushed the Fixture state; amod logged a meal after midnight and fake "F" (Moss Drifter) took 1st on the new week's board (Emmanuel 05:33: "added a bot in there"). Run 26's /tmp/bh26-r2.cjs left five "E" guests the same way. All 7 deleted. RULE: every script, even a 20-line /tmp one, goes through lib.cjs L.open with the route block or mock-cloud; never pw.launch() + goto(live) bare. Safety net since 20261026-055906: automated browsers sign up with lowi_test:true (index.html lowiAnonOpts), so a slip is a hidden test account, but still a slip.
+- P-CLOSE-UNDER-FINGER (BH-033, run 33): a choice that closes its chooser uncovers what was under the finger AT ONCE (.off = pointer-events none during the fade), so a double tap's 2nd tap presses the opener (Move Steady -> Move bubble reopened). Fix house rule: LowiFreshScrim.spent(e) at the closing choice; quiet(e) swallows same-spot taps < 400 ms. Check other choosers that close on a choice (sheets with option rows, Misty card actions) for the same.
+- P-VIEW-AFTER-TAB (BH-034, run 34): opening a tab and switching its sub-view on a TIMER (setTimeout 60 ms, late by 0.3-2.5 s while Community builds / the warp runs) draws the default view first (galaxy with tappable people) and a deliberate tap there (450 ms, past BH-032's 400 ms guard) picks a person. House rule: say which tab you want (LowiCommunityTabs.want()) BEFORE goTab, then set the view in the same task (LowiRoomsUI.openOn(v) does both); want() keeps the first-tab rule, the For You stay rule and the galaxy warp off it. Probe: playtest/probe-rank-flash.cjs (rAF timeline of what is under the finger). Check other "goTab then setTimeout(showX)" callers (grep "goTab(" + setTimeout) for the same.
+- P-REUSED-OVERLAY (BH-035/038/039, runs 35-39): an overlay made once and shown again by hidden/class toggle is not "born", so fresh-scrim's same-spot rule never covered its later shows. Rule: LowiFreshScrim.mark(el) on every show. All known sites done (#whX, #sheetwrap, .rm-menu, #spWorld). Watch for new ones: grep "hidden = false" / classList.add('open') on body-level nodes.
+- P-FOCUS-BEFORE-CLICK (BH-039, run 39): swallowing a click is not enough when the 2nd tap lands on a FIELD: focus (and the iPhone keyboard) comes on mousedown, before click. fresh-scrim guardDown now prevents mousedown's default on fields for the same-spot / quiet taps. Any new tap guard must cover mousedown for fields too. Probes: record focusin, not only clicks.
+- PROBE NOTE (run 39): in emulation the 2nd tap's real gap can stretch past 400 ms under load (568/881 ms); read the in-page timeStamps before calling a FAIL. A spring-open overlay is shrunk over the screen middle while it opens: test spots in the middle, not only where its controls sit at rest.

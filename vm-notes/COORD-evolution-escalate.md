@@ -22,3 +22,7 @@ dialog / sheet / onboarding is up). .mm-ov (mirror-move) stays with the bug hunt
 ## Status
 - 18:20 started
 - 18:55 tests 1676/1676, releasing
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.
+- 16:39 UTC release.sh restarted in background (first run was cut off waiting for CI), log /home/sprite/evo-release.log
+- 16:57 UTC LIVE in 20261019-185115 (c303d1d). Live checks: WebKit iPhone 13, iPad portrait + landscape OK. Files companion-core.js / herb-tamagotchi.js/.css are free again.

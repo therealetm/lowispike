@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The UGC farm playbook</title>
+<style>
+:root{--ground:#F3F3F3;--card:#FFFFFF;--ink:#141414;--muted:#6E6C68;--rule:#DCDAD5;
+--serif:"William Subhead",Georgia,serif;--sans:"ABC Diatype",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--mono:"ABC Diatype Semi-Mono",ui-monospace,Menlo,monospace}
+@font-face{font-family:"ABC Diatype";src:url(https://www.sesame.com/fonts/diatype/ABCDiatypeVariable.woff2) format("woff2");font-weight:300 700;font-display:swap}
+@font-face{font-family:"William Subhead";src:url(https://www.sesame.com/fonts/william/WilliamSubheadVFRoman.woff2) format("woff2");font-weight:400 700;font-display:swap}
+@font-face{font-family:"ABC Diatype Semi-Mono";src:url(https://www.sesame.com/fonts/diatype/ABCDiatypeSemi-Mono-Regular.woff2) format("woff2");font-weight:400;font-display:swap}
+@media (prefers-color-scheme:dark){:root{--ground:#0F0F0F;--card:#1B1B1B;--ink:#F1F0EE;--muted:#9C9994;--rule:#2C2C2C;color-scheme:dark}}
+*{box-sizing:border-box}img{background:color-mix(in srgb,var(--ground),var(--ink) 6%)}
+body{margin:0;background:var(--ground);color:var(--ink);font:15px/1.5 var(--sans);padding:10px 16px 64px}
+.wrap{max-width:680px;margin:0 auto}
+h1{font:600 clamp(28px,7vw,32px)/1.05 var(--serif);letter-spacing:-.01em;margin:28px 0 8px}
+h1,h2,h3,p,li{text-wrap:pretty}h2,.lede{text-wrap:balance}
+h2{font:400 26px/1.15 var(--serif);margin:52px 0 14px}
+h3{font:600 17px/1.3 var(--sans);margin:0 0 5px}
+.kicker{font:19px/1.4 var(--sans);color:var(--muted);margin:0 0 2px}h1+.kicker{margin-top:-2px}h2:has(+.kicker){margin-bottom:0}h2+.kicker{margin-bottom:12px}
+.updated{font:14px/1.4 var(--sans);color:var(--muted);margin:6px 0 14px}
+.lede{font:400 clamp(18px,4.4vw,21px)/1.3 var(--sans);margin:22px 0 26px}.lede:has(+ul){margin-bottom:8px}.lede:not(.lede~.lede){padding-top:16px}.lede+ul{font-size:16px}.lede+ul li::marker{color:color-mix(in srgb,var(--ink) 50%,transparent)}
+html{scroll-behavior:smooth}
+p{margin:0 0 10px}
+a{color:inherit;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:2px;text-decoration-color:color-mix(in srgb,currentColor 30%,transparent);transition:text-decoration-color .15s}a:hover{text-decoration-color:currentColor}
+.src{font:11px/1 var(--mono);padding:2px 6px;border:1px solid var(--muted);border-radius:999px;white-space:nowrap;text-decoration:none;margin-left:4px;transition:background-color .15s,color .15s,border-color .15s}@media (hover:hover) and (pointer:fine){.src:hover{background:var(--ink);border-color:var(--ink);color:var(--ground)}}
+ol.takeaways{counter-reset:k;list-style:none;padding:0;margin:0 0 30px}
+ol.takeaways>li{counter-increment:k;display:grid;grid-template-columns:30px minmax(0,1fr);padding:16px 0;font-size:16px;line-height:1.5;font-weight:400;color:color-mix(in srgb,var(--muted) 70%,var(--ink))}
+ol.takeaways>li::before{content:counter(k);font:400 21px/1.2 var(--sans);color:var(--ink)}
+ol.takeaways b{display:block;font:600 17px/1.35 var(--sans);color:var(--ink);margin-bottom:3px}
+ol.takeaways small{display:block;grid-column:2;margin-top:4px;font:13px/1.4 var(--sans);color:var(--muted)}
+details.more{padding:16px 0;interpolate-size:allow-keywords}details.more::details-content{block-size:0;overflow:hidden;transition:block-size .25s ease-out,content-visibility .25s allow-discrete}details.more[open]::details-content{block-size:auto}details.more[open]>:not(summary){animation:reveal .25s ease-out}details.more summary{border-radius:4px;transition:background-color .15s,box-shadow .15s}@media (hover:hover) and (pointer:fine){details.more summary:hover{background:color-mix(in srgb,var(--ground),var(--ink) 4%);box-shadow:0 0 0 12px color-mix(in srgb,var(--ground),var(--ink) 4%)}}
+details.more summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) 16px;column-gap:12px}
+details.more summary b{font:600 18px/1.3 var(--sans)}
+details.more summary span{grid-column:1;margin-top:2px;font-size:15px;line-height:1.45;color:var(--muted)}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::after{content:"";grid-column:2;grid-row:1/span 2;align-self:center;width:7px;height:7px;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(45deg);transition:transform .15s}
+details.more[open] summary::after{transform:rotate(-135deg)}
+details.more ul{margin:10px 0 0;padding-left:19px}
+@keyframes reveal{from{opacity:0;transform:translateY(-6px)}}@media (prefers-reduced-motion:reduce){details.more::details-content{transition:none}details.more[open]>:not(summary){animation:none}}
+.tablewrap{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;white-space:nowrap;font:500 13px/1.4 var(--sans);color:var(--ink);padding:6px 10px 6px 0;border-bottom:1px solid var(--ink)}
+td{min-width:7em;padding:9px 10px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+ul{padding-left:18px;margin:0 0 10px}li{margin:0 0 6px}
+nav.jump{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:16px 0 26px}nav.jump::before{content:"Jump to:";font:500 14px/1 var(--sans);color:var(--muted);margin-right:2px}
+nav.jump a{display:inline-flex;align-items:center;gap:7px;font:14px/1 var(--sans);text-decoration:none;background:color-mix(in srgb,var(--ground),var(--ink) 6%);border-radius:999px;padding:9px 13px;transition:background-color .15s}@media (hover:hover) and (pointer:fine){nav.jump a:hover{background:color-mix(in srgb,var(--ground),var(--ink) 12%)}}nav.jump a::after{content:"";width:5px;height:5px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:translateY(-2px) rotate(45deg)}
+.sources{margin-top:40px;font-size:13px;color:var(--muted)}.sources>b{display:block;font:500 16px/1.4 var(--sans);color:var(--ink);margin:0 0 6px}
+.sources li{margin:0 0 4px}
+</style>
+</head>
+<body><div class="wrap">
+<h1>How the meal-app “just found this” TikTok farm works</h1>
+<p class="kicker">Research, choosy, Potto, Mise, Herbi, albo, TapCook, Super, Olive</p>
+<p class="updated">Researched Oct 26, 2026, 11:45am</p>
+<p class="lede">It’s a volume lottery: real, low-paid creators on fresh accounts post one cloned hook daily, and apps pay to boost the few that go viral.</p>
+<ul>
+<li>Almost none of the posts carry the “Werbung” or “ad” label German rules ask for, choosy’s included.</li>
+<li>I couldn’t tie any one account to a named agency; recruiting runs through open creator marketplaces.</li>
+</ul>
+<nav class="jump"><a href="#accounts">Accounts</a><a href="#detail">How it works</a><a href="#lowispike">For LOWiSPIKE</a></nav>
+
+<ol class="takeaways">
+<li><div><b>One script, cloned per market.</b>“Been shopping at [store] for [N] years and I’m JUST NOW finding this?”, with only the chain and years swapped: ALDI, REWE, Mercadona, Walmart, LuLu, Carrefour. <a class="src" href="https://x.com/i/status/2103424918109163795">x.com/consumerxai</a></div></li>
+<li><div><b>Most posts flop on purpose.</b>Mise posted 2,048 times from new accounts; 95% flopped and the top 1% carried 78% of views. Destiny’s 139 posts have a median of 1,162 views and one hit 1.2M. <a class="src" href="https://x.com/i/status/2110931071067934764">x.com/twoclipping</a></div></li>
+<li><div><b>Winners get turned into ads.</b>TikTok’s own page data marks the big hits as ads (isAd): madi’s 29.3M Potto video, Destiny’s top 5 and Jumoke’s top 7. None of the low posts I sampled were. <a class="src" href="https://ads.tiktok.com/resources/help/article/spark-ads">TikTok Spark Ads</a><small>Flag read from TikTok’s page code, 26 Oct.</small></div></li>
+<li><div><b>Real people, cheap and replaceable.</b>Every choosy video I checked opens on a real face with fresh footage. Pay seen: $140–$330 a video, or $200–$2,000 a month plus $1–$4 per 1,000 views. <a class="src" href="https://sideshift.app/creators">sideshift.app</a></div></li>
+<li><div><b>Disclosure is mostly missing.</b>0 of choosy’s 59 Zoe videos say “Werbung” or “Anzeige”. German regulators want “Werbung” on screen for the whole video. <a class="src" href="https://www.die-medienanstalten.de/fileadmin/user_upload/die_medienanstalten/Service/Merkblaetter_Leitfaeden/Leitfaden_Werbekennzeichnung_Onlinemedien_ua.pdf">die-medienanstalten.de</a></div></li>
+</ol>
+
+<h2 id="accounts">The accounts</h2>
+<p class="kicker">Pulled from TikTok on Oct 26; views are TikTok’s play counts</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Account</th><th>App, market</th><th>Posts</th><th>Median, top</th><th>Ad flag, label</th></tr></thead>
+<tbody>
+<tr><td><a href="https://www.tiktok.com/@madimugc444">@madimugc444</a></td><td><a href="https://pottoapp.com/">Potto</a>, US</td><td>15 since Jun 23</td><td>229, 29.3M</td><td>Hit flagged ad, no label</td></tr>
+<tr><td><a href="https://www.tiktok.com/@mealswithdom">@mealswithdom</a></td><td><a href="https://apps.apple.com/us/app/mise-meal-planner/id6777471316">Mise</a>, US</td><td>139 since Sep 7</td><td>1,162, 1.2M</td><td>Top 5 of 6 flagged, no label</td></tr>
+<tr><td><a href="https://www.tiktok.com/@evgeniafoodie">@evgeniafoodie</a></td><td>Mise, Spain</td><td>30, Jul 24–Aug 3</td><td>9,486, 920.5K</td><td>None flagged, no label</td></tr>
+<tr><td><a href="https://www.tiktok.com/@alicecooksmeals">@alicecooksmeals</a></td><td><a href="https://apps.apple.com/us/app/herbi-meal-planner-recipes/id6777230233">Herbi</a>, UK</td><td>113 since Aug 27</td><td>727, 518K</td><td>“Herbi app partner” in bio only</td></tr>
+<tr><td><a href="https://www.tiktok.com/@sarah.cooks46">@sarah.cooks46</a></td><td><a href="https://apps.apple.com/us/app/tapcook-budget-meal-plans/id6769601354">TapCook</a>, US</td><td>130 since Sep 10</td><td>359, 34.7K</td><td>None flagged, no label</td></tr>
+<tr><td><a href="https://www.tiktok.com/@cutespotaholic">@cutespotaholic</a></td><td><a href="https://apps.apple.com/ae/app/albo-save-organise-plan/id6578421992">albo</a>, Gulf</td><td>57 since Sep 15</td><td>1,540, 171.9K</td><td>None flagged, no label</td></tr>
+<tr><td><a href="https://www.tiktok.com/@aianasaves">@aianasaves</a></td><td>albo, Gulf</td><td>58, Sep 15–Oct 11</td><td>672, 84.9K</td><td>None flagged, no label</td></tr>
+<tr><td><a href="https://www.tiktok.com/@c0ok.with.zoe">@c0ok.with.zoe</a></td><td><a href="https://apps.apple.com/de/app/choosy-essensplaner-rezepte/id1577201493">choosy</a>, Germany</td><td>59 since Oct 6</td><td>547, 40.2K</td><td>None flagged, no label</td></tr>
+<tr><td><a href="https://www.tiktok.com/@jumokewellness">@jumokewellness</a></td><td><a href="https://apps.apple.com/us/app/olive-ai-health-weight-loss/id6739765789">Olive</a>, US</td><td>507 since May 2025</td><td>1,344, 3M</td><td>Top 7 flagged; #olivepartner on 45</td></tr>
+<tr><td><a href="https://www.tiktok.com/@supercomidas.app">@supercomidas.app</a></td><td><a href="https://apps.apple.com/es/app/men%C3%BA-y-lista-compra-super/id6779308914">Super</a>, Spain</td><td>131 since Jun 20</td><td>3,248, 588.8K</td><td>Brand account; a 137K post flagged</td></tr>
+</tbody>
+</table></div>
+
+<h2 id="detail">In detail</h2>
+
+<details class="more"><summary><b>Where the hook comes from</b><span>Earliest use I found is Super, 20 June; Potto’s 29.3M video made it the template.</span></summary><ul>
+<li>Super’s own brand account opened with it on 20 June 2026, the day its app launched: “10 años yendo al Mercadona… y no sabía que esto existía”, 137.1K views.</li>
+<li>madi posted for <a href="https://pottoapp.com/">Potto</a> on 23 and 24 June; the second hit 29.3M on an account opened 19 June. Her handle was madi.spam111 at the time. <a class="src" href="https://x.com/i/status/2103424918109163795">x.com/consumerxai</a></li>
+<li>Potto launched 12 June, made $150K in July with 95K downloads, and had 61.9M plays across 24 creators, by one analyst’s count. I found no older origin than June.</li>
+</ul></details>
+
+<details class="more"><summary><b>The video format</b><span>A face reacting for 2 to 7 seconds, then a screen recording of the app with voiceover.</span></summary><ul>
+<li>All 17 Zoe videos I downloaded open on a face, with new footage each time, then switch to the app: pick your supermarket, household, weekly budget, diet, plan.</li>
+<li>Potto’s shot: hand on forehead, mouth open, text in the middle. <a class="src" href="https://x.com/i/status/2103424918109163795">x.com/consumerxai</a> One Mise farm ran 18 accounts on the same 43-second video, silent demo, two spoken words: “no way”. <a class="src" href="https://x.com/i/status/2084739019187847201">x.com/pixclipper</a></li>
+<li>Zoe’s caption on 7 October begins “Klar, ohne Bezug auf den Laden:”, a chatbot reply pasted as is. Her years and store change daily: 3 to 8 years at REWE, ALDI, LIDL, EDEKA, PENNY, Globus.</li>
+</ul></details>
+
+<details class="more"><summary><b>The account farm</b><span>Brand-new accounts, two to three posts a day, a pinned winner on top.</span></summary><ul>
+<li>Accounts opened weeks before posting: madi 19 Jun, Evgenia 22 Jul, Alice 21 Aug, Destiny 4 Sep, Aiana 7 Sep, Cutespotaholic 8 Sep, Sarah 9 Sep. Zoe’s dates from 2021, but all 59 posts are from 6 to 25 October.</li>
+<li>Mise’s tracked network: 31 creator accounts, 677 posts and 6.91M views in 30 days, two even named “Mise Food Planner” and “Mise Meal Planner”. <a class="src" href="https://monroe.app/library/mise">monroe.app</a></li>
+<li>albo’s two Gulf accounts posted the same caption a day apart: “pov: you’re trying to stop wasting food and ordering takeaway”.</li>
+</ul></details>
+
+<details class="more"><summary><b>How creators are recruited and paid</b><span>Open marketplaces and agencies post the gigs: a small base, a view bonus, a quota.</span></summary><ul>
+<li>Potto ad via Elev8or: “$1,000/month + up to $750 per viral video”. <a class="src" href="https://x.com/i/status/2098477355610329224">x.com/Elev8orCollabs</a> A SideShift gig: “$500 for 30 videos + bonuses from 50k views”. <a class="src" href="https://x.com/i/status/2113794098926678301">x.com/SideShiftUGC</a></li>
+<li>UGC Ninja: $180–$330 a video for a nutrition app, $140–$260 for a shopping app wanting English and German. <a class="src" href="https://x.com/i/status/2103183324009148734">x.com/ugcninja1</a> <a class="src" href="https://x.com/i/status/2114628559947862364">x.com/ugcninja1</a></li>
+<li>SideShift says brands post the content on their own channels “or new campaign accounts”, and pay $200–$2,000 a month plus $1–$4 per 1,000 views. <a class="src" href="https://sideshift.app/creators">sideshift.app</a></li>
+</ul></details>
+
+<details class="more"><summary><b>How the apps play the creators</b><span>Pay per post, not per result, and keep the upside: the winners become ads.</span></summary><ul>
+<li>The quota does the work: 2 to 3 posts a day per account. Most earn the base and nothing more, since a few videos carry most views; pixclipper counted 3 of 702 carrying 60%.</li>
+<li>Spark Ads let a brand run a creator’s organic post as a paid ad; SideShift prices paid usage at 30–100% extra. <a class="src" href="https://ads.tiktok.com/resources/help/article/spark-ads">TikTok</a> <a class="src" href="https://sideshift.app/blog/how-much-should-you-charge-for-ugc">sideshift.app</a></li>
+<li>Brands run their own accounts too: Super, Potto and choosy all post on brand accounts beside creators. I couldn’t prove whether a creator account like Zoe’s is run by the app or the creator.</li>
+</ul></details>
+
+<details class="more"><summary><b>The app wave behind it</b><span>At least eight near-identical meal planners launched in June and July 2026.</span></summary><ul>
+<li>App Store release dates: mise 10 Jun, Potto 12 Jun, Herbi and Disha 16 Jun, Super 20 Jun, TapCook, NeatEat and Savor 17 Jul. The creator videos for Potto, Herbi, TapCook, albo and choosy show the same setup steps: store, household, budget.</li>
+<li>Mise is said to make about $300K a month from UGC alone. <a class="src" href="https://x.com/i/status/2110931071067934764">x.com/twoclipping</a></li>
+<li>Five launched this summer are in the US top 10 grossing Food &amp; Drink, by one tracker’s count. <a class="src" href="https://x.com/i/status/2112212729813463072">x.com/ski0xFF</a></li>
+</ul></details>
+
+<details class="more"><summary><b>choosy, the German case</b><span>An older, bootstrapped Bochum app now copying the summer playbook.</span></summary><ul>
+<li>Choosy UG, Bochum, run by Julius Kuschke and Vanessa Westphal; founded 2021, small and fully remote, no open jobs. <a class="src" href="https://www.choosy.de/legal-notice">choosy.de</a> <a class="src" href="https://join.com/companies/choosy">join.com</a></li>
+<li>A March 2026 podcast put it at €250K revenue in a month with three people. Growth came from micro-influencers, unpaid at first, Meta Ads and word of mouth. <a class="src" href="https://happy-bootstrapping.de/podcast/bootstrapped-zur-nr-1-wie-choosy-den-dach-essensplaner-markt-gewann-163/">happy-bootstrapping.de</a></li>
+<li>Zoe’s 59 videos total 84,830 views; one hit 40.2K. #choosy appears only in the first five captions, then the app name disappears.</li>
+</ul></details>
+
+<details class="more"><summary><b>Ad disclosure, account by account</b><span>Only Olive’s and Mise’s partner hashtags and Herbi’s bio come close.</span></summary><ul>
+<li>No caption, sticker or spoken word says “Werbung” or “Anzeige” on Zoe’s 59 videos. Madi, Destiny, Evgenia, Sarah, Cutespotaholic and Aiana show no ad label either.</li>
+<li>Jumoke tags #olivepartner on 45 of 507 posts; many Mise creators use #misepartner; Alice says “Herbi app partner” only in her bio.</li>
+<li>German guide: a paid video where the product is central needs “Werbevideo” or “Werbung” clearly readable for the whole video; codes need “Werbung” right beside them. <a class="src" href="https://www.die-medienanstalten.de/fileadmin/user_upload/die_medienanstalten/Service/Merkblaetter_Leitfaeden/Leitfaden_Werbekennzeichnung_Onlinemedien_ua.pdf">die-medienanstalten.de</a></li>
+</ul></details>
+
+<h2 id="lowispike">How LOWiSPIKE could copy it, honestly</h2>
+<details class="more"><summary><b>Keep the parts that work</b><span>The hook, the volume and boosting winners all work without faking anything.</span></summary><ul>
+<li>A face-reaction hook tied to a real local chain, then 20 seconds of the app: scan a product at ALDI or REWE, Misty reacts.</li>
+<li>Volume over polish: 3 to 5 accounts, 2 to 3 posts a day for two weeks, then spend only on the few that break out.</li>
+<li>Pay small and fair: a base plus a view bonus, as on SideShift, and put Spark Ads behind the winners.</li>
+</ul></details>
+<details class="more"><summary><b>Drop the parts that don’t</b><span>No invented backstories, no hidden ads, no unsupported health claims.</span></summary><ul>
+<li>Start with your three friends who already test the app: real years, real stores, real reactions, no chatbot captions.</li>
+<li>Put “Werbung” on screen for the whole video whenever anyone is paid or rewarded, and switch on TikTok’s disclosure setting.</li>
+<li>Show what the app does, like logging a meal or the fasting timer, not health promises. That keeps you clear of German rules and of users who would feel misled.</li>
+</ul></details>
+
+<div class="sources"><b>Sources and where to verify</b><ul>
+<li>TikTok profiles and posts listed in the table, read on Oct 26, 2026, including <a href="https://www.tiktok.com/@c0ok.with.zoe/video/7700357492269780256">the Zoe video you shared</a></li>
+<li><a href="https://x.com/i/status/2103424918109163795">@consumerxai on Potto</a>, Sep 25, 2026; <a href="https://x.com/i/status/2084739019187847201">@pixclipper on Mise</a>, Aug 4, 2026; <a href="https://x.com/i/status/2110931071067934764">@twoclipping on Mise</a>, Oct 16, 2026</li>
+<li><a href="https://monroe.app/library/mise">Monroe, Mise creator library</a>; <a href="https://monroe.app/library/potto">Monroe, Potto creator library</a></li>
+<li><a href="https://sideshift.app/creators">SideShift for creators</a>; <a href="https://sideshift.app/blog/how-much-should-you-charge-for-ugc">SideShift UGC pricing</a>; <a href="https://ads.tiktok.com/resources/help/article/spark-ads">TikTok, About Spark Ads</a>, Jun 2026</li>
+<li><a href="https://www.die-medienanstalten.de/fileadmin/user_upload/die_medienanstalten/Service/Merkblaetter_Leitfaeden/Leitfaden_Werbekennzeichnung_Onlinemedien_ua.pdf">Die Medienanstalten, Leitfaden Werbekennzeichnung</a>, May 2025</li>
+<li><a href="https://happy-bootstrapping.de/podcast/bootstrapped-zur-nr-1-wie-choosy-den-dach-essensplaner-markt-gewann-163/">Happy Bootstrapping #163, choosy</a>, Mar 16, 2026; <a href="https://www.choosy.de/legal-notice">choosy legal notice</a></li>
+<li>App Store pages: <a href="https://apps.apple.com/us/app/potto-meal-planner/id6778760884">Potto</a>, <a href="https://apps.apple.com/us/app/mise-meal-planner/id6777471316">mise</a>, <a href="https://apps.apple.com/us/app/herbi-meal-planner-recipes/id6777230233">Herbi</a>, <a href="https://apps.apple.com/us/app/tapcook-budget-meal-plans/id6769601354">TapCook</a>, <a href="https://apps.apple.com/ae/app/albo-save-organise-plan/id6578421992">albo</a>, <a href="https://apps.apple.com/es/app/men%C3%BA-y-lista-compra-super/id6779308914">Super</a>, <a href="https://apps.apple.com/us/app/olive-ai-health-weight-loss/id6739765789">Olive</a>, <a href="https://apps.apple.com/de/app/choosy-essensplaner-rezepte/id1577201493">choosy</a></li>
+</ul></div>
+</div></body></html>

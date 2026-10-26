@@ -29,3 +29,5 @@ misty-*.js, cell-world.js (Home stays: no smile, no glow ring), index.html onboa
 - 16:50 cause found (see report): friend's account (created Oct 10) predates the reveal (Oct 16); companion.js wrote
   Community prefs into lowispike.companion.v1 for 422 of 440 backups until 20261019-143513, so stored() is null -> Misty
   fallback (fixed name, fixed look). Server: 37 email accounts, only 1 has its own companion.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

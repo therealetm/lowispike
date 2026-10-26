@@ -22,3 +22,5 @@ misty-explore.js, galaxy-bubbles.js (autopilot task), region-pals*, companion/sp
 - [x] live re-check WebKit iPhone 13 PASS: knob no fill/rim/ring, see-through .4 then gone 0 ~1.5-1.9 s, Misty moves while gone, lift back ~0.4 s, Home + liver world
 - Known flakes (not this change): ui-joystick-fade-live membrane 0.92->0.73 (also on the old live build), joystick-bubble-style-live iPad flat-shell compare (passed on rerun)
 - Files released: misty-pad.js, misty-pad.css, home-orbit-v2.css, DECISIONS.md, tests/*joystick*, tests/fixtures/misty-pad-page.cjs
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

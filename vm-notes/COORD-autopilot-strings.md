@@ -28,3 +28,5 @@ region-pals*, arrival-cards*, speech/companion files (companion Remember Yes/No 
 - [x] committed 908ba78 on autopilot-crash (one commit on origin/main d54777e). Suite 1477/1477.
 - [x] WebKit iPhone 13 probe: no crash/errors/reload in 540 s, but too slow here (1-3 fps) to reach a string ride.
 - [x] RELEASED 20261019-091732 (main 1c3e794, CI green, live serves it). Release lock is free: string-pov can rebase and release now. NOTE for string-pov: strand() now takes a 4th arg hs, and returns clear.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

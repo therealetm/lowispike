@@ -15,3 +15,5 @@ Worlds code (worlds playtest), bughunt worktrees, food-photo AI code (photo reco
 - RELEASED 20261019-151237 (tests 1604/1604, CI ok, live OK). Next: WebKit iPhone 13 live check of Log meal + Scanner, voice note.
 - LIVE CHECK PASS (WebKit iPhone 13, live 20261019-151237): tests/meal-names-live.cjs, 9/9. Script committed on branch meal-names (6f?), NOT on main: release --no-bump hit VM-load crashes in unrelated test files (load avg 52). Land it with the next release.
 - Release B (more dishes) not needed: FNDDS db + dish list already shipped in one release.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

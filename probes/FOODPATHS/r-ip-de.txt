@@ -1,0 +1,21 @@
+PASS scan camera has no Shopping switch
+PASS Shop sheet shows Scan in the shop + Shopping list
+shop buttons [[49,140,191,195],[199,140,341,195],[296,549,341,594]] vw 390x664
+PASS Shop buttons inside the screen
+PASS Scan in the shop opens the shopping camera
+PASS known product: no Catch, shows Pathfinder name
+PASS I ate this logs exactly one meal (double tap)
+PASS new product: Be the first to add it
+after fresh closeAll eat visible false
+shopcam {"shopOn":true,"ssCard":true,"ns0":1,"ns1":1,"gapSame":true}
+eat visible in ["BUTTON.r2-btn big sc-eat ghost < DIV.b3-acts sc-acts < DIV.b3-card sc-card v-ok < DIV.b3-stage sc-stage show < DIV.b3-rev < DIV.r2-shb < DIV.r2-sh < DIV.r2-ov b3-ov au-physics pf-sw off | Skyr NaturArlaSpike-SchätzungWahrscheinlich kein Blutzucker-SpikeGeringe Kohlenh"]
+before shopcam: eat visible = see above
+PASS shopping scan card has no I ate this
+gap bloom ["","Gerade gegessenPause 0 m","Früher gegessenZeit wählen"]
+PASS Gap I just ate opens the shared logger with the optional note
+PASS no separate What did you eat sheet
+PASS Not now closes it
+closing sheets left at end 0
+
+ERRORS []
+RESULT {"scan camera has no Shopping switch":true,"Shop sheet shows Scan in the shop + Shopping list":true,"Shop buttons inside the screen":true,"Scan in the shop opens the shopping camera":true,"known product: no Catch, shows Pathfinder name":true,"I ate this logs exactly one meal (double tap)":true,"new product: Be the first to add it":true,"shopping scan card has no I ate this":true,"Gap I just ate opens the shared logger with the optional note":true,"no separate What did you eat sheet":true,"Not now closes it":true}

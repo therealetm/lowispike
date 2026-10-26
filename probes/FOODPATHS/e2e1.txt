@@ -1,0 +1,16 @@
+PASS scan camera has no Shopping switch
+PASS Shop sheet shows Scan in the shop + Shopping list
+shop buttons [[49,140,191,195],[199,140,341,195],[296,549,341,594]] vw 390x664
+PASS Shop buttons inside the screen
+PASS Scan in the shop opens the shopping camera
+PASS known product: no Catch, shows Pathfinder name
+PASS I ate this logs exactly one meal (double tap)
+PASS new product: Be the first to add it
+FAIL shopping scan card has no I ate this
+gap bloom ["","I just ategap 0 m","Ate earlierpick the time"]
+FAIL Gap I just ate opens the shared logger with the optional note
+PASS no separate What did you eat sheet
+PASS Not now closes it
+
+ERRORS []
+RESULT {"scan camera has no Shopping switch":true,"Shop sheet shows Scan in the shop + Shopping list":true,"Shop buttons inside the screen":true,"Scan in the shop opens the shopping camera":true,"known product: no Catch, shows Pathfinder name":true,"I ate this logs exactly one meal (double tap)":true,"new product: Be the first to add it":true,"shopping scan card has no I ate this":false,"Gap I just ate opens the shared logger with the optional note":false,"no separate What did you eat sheet":true,"Not now closes it":true}

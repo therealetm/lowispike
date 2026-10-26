@@ -1,0 +1,28 @@
+lock held 13:54:22
+info: build 20261019-155424
+info: version.json 248 KB
+warning: version.json is 248 KB and every update check downloads it; consider moving older What's New entries out of it
+warning: index.html is 3.2 MB; big files cost parse time and memory on iPhone
+warning: files with their own version tag (not the build id), so the service worker never caches them by build: community-chat-cloud.js?v=community-1, community-chat.css?v=galaxy-2, community-galaxy.js?v=galaxy-3, nav-moves.js?v=nav-3
+release-check OK (641 tracked files, 3 warning(s))
+ℹ tests 1634
+ℹ pass 1634
+ℹ fail 0
+test floor OK: 1634 pass, floor 1628
+remote: 
+remote: Create a pull request for 'ci/20261019-155424-20261019135435' on GitHub by visiting:        
+remote:      https://github.com/therealetm/lowispike/pull/new/ci/20261019-155424-20261019135435        
+remote: 
+pushed f93f687c5cbc507e2610977bacaec03f8a0e1413 to ci/20261019-155424-20261019135435, waiting for CI
+waiting for "Release check and tests" on f93f687
+"Release check and tests" success after 46s: https://github.com/therealetm/lowispike/actions/runs/39264209667/job/118099432777
+To https://github.com/therealetm/lowispike.git
+   1d6d941..f93f687  HEAD -> main
+main is now f93f687c5cbc507e2610977bacaec03f8a0e1413
+pushed f93f687c5cbc507e2610977bacaec03f8a0e1413 as 20261019-155424
+waiting for https://therealetm.github.io/lowispike/ to serve 20261019-155424 or newer
+live OK after 46s: {"index.html":"20261019-155424","sw.js":"20261019-155424","version.json":"20261019-155424"}
+same  index.html repo c346228cf169 live c346228cf169
+same  sw.js repo 619166396ca3 live 619166396ca3
+same  version.json repo b0ebc880c4f6 live b0ebc880c4f6
+same  apple-ui.js repo 50f3889f9a57 live 50f3889f9a57

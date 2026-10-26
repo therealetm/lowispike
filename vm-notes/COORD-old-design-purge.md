@@ -27,3 +27,5 @@ Other agents: if you find old art/logos, add a line under Findings.
 
 ## For the new-user walkthrough task
 - First-run gate: the pre-birth mystery bubble (`LowiBirthCompanion.mysterySVG`, class lc-mystery) draws a seedling sprout (`lc-seedling`) inside it. That is the old herb idea; Misty is a glass cell now. Left untouched by me because it is your flow.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

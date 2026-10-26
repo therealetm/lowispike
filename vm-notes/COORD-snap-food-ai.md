@@ -19,3 +19,5 @@ If you remove Snap food from the Log meal panel, the Scanner's Snap food (LowiSp
 ## Status
 - started, code read
 - RELEASED 20261019-150120. Touched spirit.js photoSheet only (+ food-photo-ai.js, scan-screens.css, index.html script, sw.js). Done.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

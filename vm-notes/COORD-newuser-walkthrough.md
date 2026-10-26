@@ -19,3 +19,5 @@ icons / companion art / cell-room / community art (old-design purge); praise.js,
 - [x] round 2: g1 update bubble held during setup (index.html g1 decorate() + one interval in init()): LIVE 20261019-144057 (1587/1587, CI green). ALL FILES RELEASED.
 - Found, not fixed (not my files): Settings panel Close button (.ss2-page-x, home-settings-sleep-v2.*) sits on the World map chip on iPhone 13 Safari (tap at 340,610 hits Close).
 - Skipped: 'Moss Leaf'/'Minti Leaf' name on Home = bug hunt BH-006 (claimed world-home.js/misty-hub.js/misty-scale.js name helper).
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

@@ -1,0 +1,2 @@
+const pw=require('/tmp/pw/node_modules/playwright');(async()=>{const b=await pw.chromium.launch();const p=await b.newPage({viewport:{width:1290,height:2796}});await p.goto('file:///home/sprite/ASO/html/00-listing.html',{waitUntil:'networkidle'});
+console.log(await p.evaluate(()=>['.head','.info','.banner','.shots','.iphone','.desc','.tabbar','.name','.cbtn'].map(s=>{const r=document.querySelector(s).getBoundingClientRect();return s+' '+Math.round(r.top)+'-'+Math.round(r.bottom)+' w'+Math.round(r.width)}).join('\n')));await b.close();})();

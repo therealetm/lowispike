@@ -38,3 +38,5 @@ Interstellar exit task: if you touch misty-galaxy.js cam() or rig.dist/yaw in th
 - RELEASED 20261019-095111 (Mon 19 Oct ~09:52 CEST, main 076aa19, tests 1495/1495, CI passed, live files match). misty-explore.js /
   tests/oct19-autopilot-strings.test.cjs claim released. Live autopilot probe (Chromium 390x844, 300 s): POV fully in on all 10 rides,
   no pinned ride, no frame stop, 1 load. Worktree /home/sprite/wt-string-pov can be removed.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

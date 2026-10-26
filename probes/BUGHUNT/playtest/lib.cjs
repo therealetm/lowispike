@@ -27,8 +27,9 @@ const MONITOR = `(() => { if (window.__bh) return; const B = window.__bh = { err
   const f = t => { if (B.last && t - B.last > 700 && document.visibilityState === 'visible') B.stalls.push(Math.round(t - B.last)); B.last = t; B.frames++; requestAnimationFrame(f); }; requestAnimationFrame(f); })();`;
 function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 async function open(opts) {
+    let h0 = null;
     const [eng, dd] = VIEWS[opts.view];
-    const browser = await pw[eng].launch(eng === 'chromium' ? { args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] } : {});
+    const browser = await pw[eng].launch(eng === 'chromium' ? { args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'].concat(opts.args || []) } : {});
     const dev = Object.assign({}, typeof dd === 'string' ? pw.devices[dd] : dd);
     const ctx = await browser.newContext(Object.assign({}, dev, { serviceWorkers: 'block' }, opts.reducedMotion ? { reducedMotion: 'reduce' } : {}));
     const host = new URL(opts.url).host;
@@ -36,6 +37,7 @@ async function open(opts) {
     if (!opts.noFixture) await ctx.addInitScript(fixtureInit(opts.lang, opts.claimPrompt));
     if (opts.preInit) await ctx.addInitScript(opts.preInit);
     await ctx.addInitScript(MONITOR);
+    if (opts.ctxHook) h0 = await opts.ctxHook(ctx);
     const page = await ctx.newPage(); const log = { pageerror: [], console: [] };
     page.on('pageerror', e => log.pageerror.push((e.stack || e.message).split('\n').slice(0, 3).join(' | ').slice(0, 400)));
     page.on('console', m => { if (m.type() === 'error') log.console.push(m.text().slice(0, 300)); });
@@ -43,7 +45,7 @@ async function open(opts) {
     await page.goto(opts.url + (opts.url.includes('?') ? '&' : '?') + 'tb=' + Date.now(), { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(() => typeof window.goTab === 'function', null, { timeout: 90000 }).catch(() => log.pageerror.push('goTab never defined'));
     await sleep(opts.settle || 5000);
-    return { browser, ctx, page, dev, log, touch: !!dev.hasTouch };
+    return { browser, ctx, page, dev, log, touch: !!dev.hasTouch, hook: h0 };
 }
 async function tap(h, x, y) { if (h.touch) await h.page.touchscreen.tap(x, y); else await h.page.mouse.click(x, y); }
 async function center(h, sel) { return h.page.evaluate(s => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); if (!r.width) return null; return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, sel); }

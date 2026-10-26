@@ -36,3 +36,5 @@ tests/guide-intro-live.cjs, tests/cell-guide.test.cjs and tests/region-pals.test
   Known: in emulation MF.screen() is often null in WebKit and Misty roams nonstop in Chromium, so the question usually asks via the
   6 s rule and docks at the top; real-phone timing unknown.
 - Step 4 (gossip): NOT started; own task after step 3 is live (touches region-pals.js).
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

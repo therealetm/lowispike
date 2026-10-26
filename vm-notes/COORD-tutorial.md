@@ -60,3 +60,7 @@ Branch: tutorial-auto  Worktree: /home/sprite/wt-tutorial-auto  Base: origin/mai
   ES "Toca Registrar comida y elige Desayuno, Almuerzo, Cena o Snacks, y luego escríbelo, escanéalo o hazle una foto. Lo de siempre está a un toque."
   and the 'shop' step can add: EN "Snacks to buy at the top: only snacks you still need." DE "Oben: Snacks zum Einkaufen, nur was du noch brauchst." ES "Arriba: Snacks para comprar, solo los que te faltan."
 - 16:31 AUTO: task out of budget; retry loop /home/sprite/auto-land2.sh still running (waits for release lock). Do not kill it.
+- 16:36 AUTO: rebased manually on 3110dfa (6db7f4a); tutorial-auto.js now loaded by tutorial.js (no index.html script tag, avoids ?v= rebase conflicts). release.sh queued for lock.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.
+- 16:51 AUTO: RELEASED 20261019-184516 (fe47a5a), live (site serves 184741 which contains it). Done; files free.

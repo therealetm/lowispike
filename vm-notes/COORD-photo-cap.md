@@ -35,3 +35,5 @@ eats the 30 s budget, one retry, honest error codes/messages: key/ai down/networ
 (spirit.js photoSheet markup + scan-screens.css). Server: only gemini() error classification + Gemini timeout in index.ts.
 I branch from origin/main and will REBASE ON YOUR WORK if you release first; I will not deploy food-photo over your v2 without
 merging your durable 3/day cap. If I release first, the conflicts for you are the STR lines and the analyse() fetch line.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

@@ -1,0 +1,33 @@
+'use strict';
+// Live check: a crowd member sends real energy balls to a fresh guest on the live site; the guest's page must receive them.
+process.env.CROWD_STATE = '/tmp/crowd-meal-check-state.json';
+const os = require('os'), path = require('path');
+const pw = require('/tmp/pw/node_modules/playwright');
+const C = require('/home/sprite/wt-crowd-meals/tools/community-crowd/crowd.cjs'), T = C._t;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+(async () => {
+  const browser = await pw.webkit.launch(); const ctx = await browser.newContext(pw.devices['iPhone 13']);
+  await ctx.addInitScript(() => { try { const d = new Date(), k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    localStorage.setItem('lowi.daily.seen', k); sessionStorage.setItem('lowi.a2hs.x', '1'); localStorage.setItem('lowi.gate', 'done'); localStorage.setItem('lowi.news.seen', '99999'); localStorage.setItem('lowi.tutorial.auto', 'done');
+    if (!localStorage.getItem('lowispike.v2')) localStorage.setItem('lowispike.v2', JSON.stringify({ v: 2, setupDone: true, onboarded: true, user: { name: 'Ballcheck', bday: '1990-01-01' }, xp: 900, ledger: [], logs: [], saved: [], settings: { lang: 'en' } }));
+    window.__shots = []; document.addEventListener('lowi:energy-shot', e => window.__shots.push(e.detail)); } catch (e) { } });
+  const page = await ctx.newPage(); const errs = []; page.on('pageerror', e => errs.push(e.message)); let crashed = false; page.on('crash', () => { crashed = true; });
+  await page.goto('https://therealetm.github.io/lowispike/?balls=' + Date.now(), { waitUntil: 'load', timeout: 180000 });
+  await page.waitForFunction(() => window.goTab && document.getElementById('whPad'), null, { timeout: 180000 });
+  await sleep(4000); await page.evaluate(() => window.goTab('foryou'));
+  await page.waitForFunction(() => window.LowiCgMap && window.LowiCgMap.geom(), null, { timeout: 60000 }); await sleep(4000);
+  const me = await page.evaluate(() => { const g = window.LowiCgMap.geom(); const m = g.spots.find(s => s.me); return { uid: m.uid, spots: g.spots.length }; });
+  console.log('guest on live site, my uid ends', me.uid.slice(-6), '| spots on my map', me.spots);
+  const before = await page.evaluate(() => ({ n: window.__shots.length, fx: window.LowiEnergy && window.LowiEnergy.stats ? window.LowiEnergy.stats() : null }));
+  const st = T.load(); const p = C.people().slice(0, 30).find(x => st.bots[x.i] && st.bots[x.i].id) || C.people()[0];
+  const sent = await T.energyBalls(st, p, me.uid);
+  console.log('member', p.name, 'sent', sent, 'ball(s); stats', JSON.stringify(T.stats));
+  await sleep(4000);
+  const after = await page.evaluate(() => ({ n: window.__shots.length, last: window.__shots.slice(-1)[0], fx: window.LowiEnergy && window.LowiEnergy.stats ? window.LowiEnergy.stats() : null }));
+  const by = st.bots[p.i].id;
+  const got = await page.evaluate(n => window.__shots.slice(n), before.n); console.log('events:', JSON.stringify(got.map(x => ({ by: String(x && x.by).slice(-6), to: String(x && x.to).slice(-6), id: x && x.id }))), '| member ends', by.slice(-6));
+  console.log('page received', after.n - before.n, 'energy events | last from that member:', !!(after.last && after.last.by === by), '| to me:', !!(after.last && after.last.to === me.uid));
+  console.log('energy stats got', before.fx && before.fx.got, '->', after.fx && after.fx.got, '| shown', before.fx && before.fx.shown, '->', after.fx && after.fx.shown, '| dropped', before.fx && before.fx.dropped, '->', after.fx && after.fx.dropped);
+  console.log('errors', errs.length, errs.slice(0, 3).join(' | '), '| crashed', crashed);
+  await browser.close();
+})().catch(e => { console.log('FAILED:', e.message); process.exit(1); });

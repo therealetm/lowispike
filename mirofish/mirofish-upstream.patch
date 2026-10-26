@@ -1,0 +1,83 @@
+diff --git a/backend/scripts/run_parallel_simulation.py b/backend/scripts/run_parallel_simulation.py
+index 2a627ff..f23988e 100644
+--- a/backend/scripts/run_parallel_simulation.py
++++ b/backend/scripts/run_parallel_simulation.py
+@@ -654,6 +654,18 @@ def get_agent_names_from_config(config: Dict[str, Any]) -> Dict[int, str]:
+     return agent_names
+ 
+ 
++
++def _max_trace_rowid(db_path):
++    """Local fix: highest trace rowid right after the seed posts."""
++    import sqlite3
++    try:
++        con = sqlite3.connect(db_path)
++        r = con.execute("SELECT COALESCE(MAX(rowid), 0) FROM trace").fetchone()[0]
++        con.close()
++        return int(r or 0)
++    except Exception:
++        return 0
++
+ def fetch_new_actions_from_db(
+     db_path: str,
+     last_rowid: int,
+@@ -1184,10 +1196,10 @@ async def run_twitter_simulation(
+             content = post.get("content", "")
+             try:
+                 agent = result.env.agent_graph.get_agent(agent_id)
+-                initial_actions[agent] = ManualAction(
++                initial_actions.setdefault(agent, []).append(ManualAction(
+                     action_type=ActionType.CREATE_POST,
+                     action_args={"content": content}
+-                )
++                ))
+                 
+                 if action_logger:
+                     action_logger.log_action(
+@@ -1204,6 +1216,7 @@ async def run_twitter_simulation(
+         
+         if initial_actions:
+             await result.env.step(initial_actions)
++            last_rowid = _max_trace_rowid(db_path)  # local fix: seed posts were logged again at the first active round
+             log_info(f"已发布 {len(initial_actions)} 条初始帖子")
+     
+     # 记录 round 0 结束
+@@ -1233,7 +1246,7 @@ async def run_twitter_simulation(
+             break
+         
+         simulated_minutes = round_num * minutes_per_round
+-        simulated_hour = (simulated_minutes // 60) % 24
++        simulated_hour = ((time_config.get("start_hour", 0) * 60 + simulated_minutes) // 60) % 24
+         simulated_day = simulated_minutes // (60 * 24) + 1
+         
+         active_agents = get_active_agents_for_round(
+@@ -1383,10 +1396,10 @@ async def run_reddit_simulation(
+                         action_args={"content": content}
+                     ))
+                 else:
+-                    initial_actions[agent] = ManualAction(
++                    initial_actions.setdefault(agent, []).append(ManualAction(
+                         action_type=ActionType.CREATE_POST,
+                         action_args={"content": content}
+-                    )
++                    ))
+                 
+                 if action_logger:
+                     action_logger.log_action(
+@@ -1403,6 +1416,7 @@ async def run_reddit_simulation(
+         
+         if initial_actions:
+             await result.env.step(initial_actions)
++            last_rowid = _max_trace_rowid(db_path)  # local fix: seed posts were logged again at the first active round
+             log_info(f"已发布 {len(initial_actions)} 条初始帖子")
+     
+     # 记录 round 0 结束
+@@ -1432,7 +1446,7 @@ async def run_reddit_simulation(
+             break
+         
+         simulated_minutes = round_num * minutes_per_round
+-        simulated_hour = (simulated_minutes // 60) % 24
++        simulated_hour = ((time_config.get("start_hour", 0) * 60 + simulated_minutes) // 60) % 24
+         simulated_day = simulated_minutes // (60 * 24) + 1
+         
+         active_agents = get_active_agents_for_round(

@@ -1,0 +1,11 @@
+{
+ "slug": "home-visit",
+ "tutorial": {"none": "It explains itself when it happens: the visitor shows who wrote and what they said, and tapping it opens the message in Community."},
+ "go": {"tab": "home"},
+ "lead": {"en": "Messages to you now fly into your world", "de": "Nachrichten an dich fliegen jetzt in deine Welt", "es": "Los mensajes para ti ahora llegan volando a tu mundo"},
+ "text": {
+  "en": "When someone writes to you in Community while you're on Home, their own companion now flies into your world, appears like a hologram and shows you the message. Tap it to open the message in Community and reply, or tap the x to let them go. Only messages to you come by, one person at a time.",
+  "de": "Wenn dir jemand in der Community schreibt, während du auf Home bist, fliegt jetzt sein eigener Begleiter in deine Welt, erscheint wie ein Hologramm und zeigt dir die Nachricht. Tippe darauf, um sie in der Community zu öffnen und zu antworten, oder tippe auf das x, um ihn wieder gehen zu lassen. Es kommen nur Nachrichten an dich, eine Person nach der anderen.",
+  "es": "Cuando alguien te escribe en Comunidad mientras estás en Inicio, su propio compañero ahora llega volando a tu mundo, aparece como un holograma y te enseña el mensaje. Tócalo para abrirlo en Comunidad y responder, o toca la x para que se vaya. Solo aparecen los mensajes para ti, y de uno en uno."
+ }
+}

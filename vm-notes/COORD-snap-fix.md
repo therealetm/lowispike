@@ -5,3 +5,5 @@ Task: LOWiSPIKE: Snap food photo stopped working (forked, 2026-10-19 16:19 CEST)
 - supabase/functions/food-photo/index.ts: gemini() only (error classification, timeout). Coordinated with PHOTOCAP (COORD-photo-cap.md), who owns the cap.
 ## Status
 - diagnosing (edge logs: iPad never reached food-photo; iPhone did 8 OK reads 15:45-15:57, then 16:11 GET with no POST)
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

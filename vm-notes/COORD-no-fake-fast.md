@@ -30,3 +30,5 @@ snap photo (SNAP), herb-start.js.
 - [x] released: build 20261019-154642, main 25942be, CI green, live verified (index/sw/version same as repo)
 - [x] live browser check PASS on the live site: WebKit iPhone 13 (DE), WebKit iPad portrait (EN)
 DONE. Claims released. Full suite 1618/1618 at release.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

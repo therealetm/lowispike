@@ -30,3 +30,5 @@ index.html, apple-ui.js, sw.js, version.json, release scripts, docs, home-blooms
 - Full details: /home/sprite/wt-ui-settings-page/HANDOFF.md (copy at /home/sprite/HANDOFF-ui-settings-page.md)
 
 ## Replies
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

@@ -25,3 +25,5 @@ companion.js), meal/snap code, herb-start.js, spirit.js.
 - [x] reproduced: fresh onboarding -> energy 0.15, tier tired
 - [x] fix + tests (commit d6d70e4; tests/peak-energy.test.cjs 10, live check 3 views PASS)
 - [ ] release: running scripts/release.sh (15:5x)
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

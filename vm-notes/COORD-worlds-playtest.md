@@ -23,3 +23,5 @@ Not touching: Home ring / blooms / Settings / onboarding files (new-user walkthr
 - Fresh run (iphone13_webkit, live 20261019-140135): W-005 Misty never comes into the LUNG world (misty-flight join() needs a 3D hub beacon; lung has none).
   misty-flight.js join gate + tests/worlds-lung-join.test.cjs: LIVE 20261019-142930 (main 794be53, 1557 tests, CI passed). CLAIMS RELEASED.
 - This run is done; handoff in /home/sprite/HANDOFF-worlds-playtest.md. iPad + Chromium runs are the next task.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

@@ -13,7 +13,7 @@ const L = require('./lib.cjs');
     const ctx = await browser.newContext(Object.assign({}, dev, { serviceWorkers: 'block', timezoneId: 'Europe/Berlin' }));
     const host = new URL(url).host;
     await ctx.route('**/*', r => { const q = r.request(), u = new URL(q.url()); if (u.protocol === 'data:' || u.protocol === 'blob:' || (u.host === host && q.method() === 'GET')) return r.continue(); return r.abort(); });
-    const bd = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' }).format(new Date()); const start = new Date(bd + 'T23:57:30+02:00');
+    const bd = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' }).format(new Date()); const off = (() => { const n = new Date(bd + 'T12:00:00Z'); const t = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Berlin', hour: '2-digit', hourCycle: 'h23' }).format(n); const h = +t - 12; return (h >= 0 ? '+' : '-') + String(Math.abs(h)).padStart(2, '0') + ':00'; })(); /* run 22: DST-safe (was a fixed +02:00, which missed midnight in winter time) */ const start = new Date(bd + 'T23:57:30' + off);
     // fixture init uses Date at init, so install the clock first
     await ctx.clock.install({ time: start });
     const fx = require('fs').readFileSync(__dirname + '/lib.cjs', 'utf8');

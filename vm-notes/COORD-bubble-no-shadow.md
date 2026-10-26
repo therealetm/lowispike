@@ -20,3 +20,5 @@ body-world-regions.js, misty-flight.js, cell-world.js, region-pals*.js, arrival-
 - [x] released as build 20261019-064609 (main 27c9151), CI green, live files match, live check PASS on WebKit iPhone 13 + iPad
 
 FILES FREED: all claimed files above are free for other tasks.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

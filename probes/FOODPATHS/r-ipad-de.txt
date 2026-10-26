@@ -1,0 +1,6 @@
+PASS scan camera has no Shopping switch
+PASS Shop sheet shows Scan in the shop + Shopping list
+shop buttons [[153,245,412,293],[422,245,682,293],[630,960,682,1012]] vw 834x1194
+PASS Shop buttons inside the screen
+PASS Scan in the shop opens the shopping camera
+PASS known product: no Catch, shows Pathfinder name

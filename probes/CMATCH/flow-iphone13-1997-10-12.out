@@ -1,0 +1,30 @@
+page.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('[data-r2o="next"]')
+    - locator resolved to <button data-r2o="next" class="r2-btn pri big">Next</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <div id="drDay" role="dialog" data-noi18n="" data-dr="dayx" aria-modal="true" aria-labelledby="drDayH" class="dr-ov dr-day-ov dr-in">…</div> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    - waiting for element to be visible, enabled and stable
+
+    at /home/sprite/CMATCH/flow.cjs:21:11 {
+  log: [
+    `  - waiting for locator('[data-r2o="next"]')`,
+    '    - locator resolved to <button data-r2o="next" class="r2-btn pri big">Next</button>',
+    '  - attempting click action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is visible, enabled and stable',
+    '      - scrolling into view if needed',
+    '      - done scrolling',
+    '      - <div id="drDay" role="dialog" data-noi18n="" data-dr="dayx" aria-modal="true" aria-labelledby="drDayH" class="dr-ov dr-day-ov dr-in">…</div> intercepts pointer events',
+    '    - retrying click action',
+    '    - waiting 20ms',
+    '    - waiting for element to be visible, enabled and stable'
+  ],
+  name: 'TimeoutError'
+}

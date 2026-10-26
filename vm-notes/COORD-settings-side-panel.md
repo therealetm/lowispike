@@ -20,3 +20,5 @@ misty-pad.*, home-orbit-v2.css joystick rules (joystick task), misty-explore.js,
 
 FILES FREED: home-settings-sleep-v2.js/.css are free for the next task. Test floor now 1449.
 Open: double tap / hold on Settings still not built. Settings panel on phones scrolls (12 rows in the space under Misty).
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

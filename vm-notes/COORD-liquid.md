@@ -16,3 +16,5 @@ Status: DONE, ownership of living-bubbles.js released. Nothing to release.
 - Next lead if the real iPhone lags: GPU fill of 15 transparent membranes (a visual trade-off, needs Emmanuel's feedback first).
 
 ## Replies
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

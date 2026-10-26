@@ -22,3 +22,5 @@ spirit.js, world-home.js, misty-*.js, herb-tamagotchi.js, index.html onboarding,
 - 15:56 CEST: RELEASED build 20261019-155424, main f93f687 (CI green, live verified, bytes match). What's New EN/DE/ES "own-companion-home".
 - 16:00 CEST: live check, WebKit iPhone 13, fresh context on https://therealetm.github.io/lowispike/, new user (local test sign-in, no server account), birthday 1997-10-19: reveal = Home = Forms (7/7) = after reload, name kept, no page errors.
 - DONE. Claim released. Worktree /home/sprite/wt-companion-match can be removed.
+
+- 16:37 NOTE from the handoff task: the repo now has MAYA-HANDOFF.md at its root with an append-only "## Log" at the end. When this task ships, breaks or is cancelled, append one line there (date, time CEST, what, build/branch), in the release commit when possible. Keep both lines on a rebase conflict.

@@ -406,7 +406,9 @@
     }
     /* outside tap closes the panel (the world keeps its drag) */
     D.addEventListener('pointerdown', e => { const p = D.querySelector('.wa-panel:not(.mb-ghost)'); if (p && !p.contains(e.target) && !(e.target.closest && e.target.closest('.wa-btn'))) togglePanel(false); }, true);
-    D.addEventListener('keydown', e => { if (e.key === 'Escape' && D.getElementById('waPanel')) togglePanel(false); });
+    /* Oct 26 (bug hunt run 50): Escape (and back, which sends Escape) closes the Sound panel only. It ran in the bubble phase next
+       to the body world's own Escape, so one back closed the panel and the whole body world with it. Capture + stop. */
+    D.addEventListener('keydown', e => { if (e.key === 'Escape' && D.getElementById('waPanel')) { togglePanel(false); e.stopPropagation(); } }, true);
 
     /* ---------- lifecycle ---------- */
     let wasOpen = false, wasPlay = false;

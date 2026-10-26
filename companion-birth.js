@@ -136,6 +136,9 @@ function mountProfile(){const prof=D.getElementById('tab-profile');if(!prof)retu
  if(ex&&ex.getAttribute('data-sig')===sig&&ex.isConnected)return;
  if(ex)ex.remove();const anchor=D.getElementById('hsProf')||pf;anchor.insertAdjacentHTML('afterend',html);ex=D.getElementById('lcProf');if(ex)ex.setAttribute('data-sig',sig);}
 D.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-lcopen]'))openCreator();});
+/* Oct 26 (bug hunt run 50): the companion creator had no Escape. Back (which sends Escape) left it open, went Home under it, and the
+   next back left the app. Escape closes it now, and only it. */
+D.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const ov=D.getElementById('lcOv');if(!ov||!ov.classList.contains('on'))return;e.stopPropagation();closeOv();},true);
 let q=0;const soon=()=>{if(q)return;q=requestAnimationFrame(()=>{q=0;try{mountProfile();}catch(e){}});};
 try{new MutationObserver(ms=>{for(const m of ms){const tg=m.target;if(!tg||!tg.closest||tg.closest('#lcProf,#lcOv'))continue;if(tg.id==='tab-profile'||tg.closest('#tab-profile')){soon();return;}}}).observe(D.body,{childList:true,subtree:true});}catch(e){}
 window.addEventListener('lowi:lang',soon);

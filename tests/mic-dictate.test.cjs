@@ -132,3 +132,11 @@ test('Community chat: the voice-message mic stays; dictation sits inside the tex
     assert.match(js, /'chat'/);
     assert.match(read('community-chat.js'), /getElementById\('cmMic'\)/, 'voice-message mic still there');
 });
+
+test('food logging, Kitchen add, snacks, Give a hand and captions keep their mic even when narrow; typed DELETE and codes never get one', () => {
+    const js = read('mic-dictate.js');
+    const inList = (name, sel) => { const m = js.match(new RegExp('var ' + name + ' = \\[([\\s\\S]*?)\\];')); assert.ok(m, name); return m[1].includes(sel); };
+    for (const sel of ['#b3Nm', '#scanType', '#kgQ', '#gb-item', 'name="snack"', '#trCap', 'name="herbName"']) assert.ok(inList('OPT_IN', sel), sel + ' opted in');
+    for (const sel of ['.oa-type', 'name="code"']) assert.ok(inList('OPT_OUT', sel), sel + ' opted out');
+    assert.match(js, /optedOut\(el\)/);
+});

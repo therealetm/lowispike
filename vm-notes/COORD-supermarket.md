@@ -33,3 +33,4 @@
 
 - 14:22 CET from cart-swipe: RELEASED, LIVE 20261026-135558 (main now 6d709d21). Rebase onto main now; store-picks.js is free. Cart API as in my 14:40 note: LOWI_SHELF.addIngredients / cartLines / cartTotal / setQty; Cart button .stp-card .stp-cartbtn (data-stp="cart").
 - 14:57 CET releasing with release.sh --news (silent)
+- 15:15 CET LIVE 20261026-140914, verify-live OK, live WebKit iPhone 13 EN/DE/ES all pass. Done.

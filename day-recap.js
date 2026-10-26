@@ -8,7 +8,7 @@
     'use strict';
     const W = window, D = document, H = D.documentElement;
     if (W.LowiDayRecap) return;
-    const LAST_KEY = 'lowi.dayrecap.last';
+    const LAST_KEY = 'lowi.dayrecap.last', JOURNAL_KEY = 'lowi.dayrecap.journal.v1';
     const lang = () => { try { return ((W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || H.lang || 'de').slice(0, 2); } catch (e) { return 'de'; } };
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     const js = k => { try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch (e) { return {}; } };
@@ -41,9 +41,19 @@
         } catch (e) { }
         return '<span class="drc-orb" aria-hidden="true"></span>';
     }
+    /* Oct 27 (continue run): the optional journal line, typed or spoken (data-mic opts the field in to the app's speak-to-type
+       mic, mic-dictate.js). Saved on this phone only, never sent anywhere. */
+    function journalGet(day) { const j = js(JOURNAL_KEY); return typeof j[day] === 'string' ? j[day] : ''; }
+    function journalSave(day, text) { try { localStorage.setItem(JOURNAL_KEY, JSON.stringify(C().journalPut(js(JOURNAL_KEY), day, text))); return true; } catch (e) { return false; } }
+    function journalHTML(sum, L) {
+        const ui = k => C().ui(k, L);
+        return '<label class="drc-jr"><span>' + esc(ui('journal')) + '</span>' +
+            '<input type="text" data-drc-journal data-mic data-mic-kind="note" enterkeyhint="done" autocomplete="off" maxlength="' + C().JOURNAL_MAX + '" placeholder="' + esc(ui('journalPh')) + '" value="' + esc(journalGet(sum.day)) + '" data-day="' + esc(sum.day) + '"></label>' +
+            '<p class="drc-jr-ok" data-drc-jr-ok aria-live="polite" hidden>' + esc(ui('journalSaved')) + '</p>';
+    }
     const DOT = { low: 'ok', medium: 'mid', high: 'warn', unknown: 'none' };
     function html() {
-        const { v } = build(), a = aura() || {};
+        const { sum, v } = build(), a = aura() || {};
         const stats = v.stats.map(x => '<li class="drc-st ' + esc(x.tone) + '" data-k="' + esc(x.k) + '"><b class="num">' + esc(x.n) + '</b><span>' + esc(x.b) + '</span>' + (x.sub ? '<small>' + esc(x.sub) + '</small>' : '') + '</li>').join('');
         const meals = v.meals.length ? '<ul class="drc-meals">' + v.meals.map(m => '<li><i class="drc-dot ' + DOT[m.v] + '" aria-hidden="true"></i>' + esc(m.t || '\u2026') + '</li>').join('') + '</ul>' : '';
         const catchUp = v.catchUp && W.LowiEveningCatchup && typeof W.LowiEveningCatchup.open === 'function'
@@ -55,11 +65,18 @@
             (v.levelUp ? '<p class="drc-level">' + esc(v.levelUp) + '</p>' : '') +
             '<div class="drc-card"><span>' + esc(v.labels.takeaway) + '</span><p data-drc-take>' + esc(v.takeaway) + '</p></div>' +
             '<div class="drc-card soft"><span>' + esc(v.labels.tomorrow) + '</span><p data-drc-nudge>' + esc(v.nudge) + '</p></div>' +
+            journalHTML(sum, v.lang) +
             '<div class="drc-acts">' + catchUp + '<button type="button" class="drc-btn" data-drc="done">' + esc(v.labels.done) + '</button></div>' +
             '<p class="drc-note">' + esc(v.estimate) + '</p></section>';
     }
     function sheet() { return Array.from(D.querySelectorAll('#dayRecap')).find(e => !(e.closest && e.closest('.r2-ov.off'))) || null; }
-    function close() { const ex = sheet(), ov = ex && ex.closest('.r2-ov'); try { if (ov && W.LowiR2 && W.LowiR2.close) W.LowiR2.close(ov); else if (ov) ov.remove(); } catch (e) { ov && ov.remove(); } }
+    function saveJournal(show) {
+        const ex = sheet(), f = ex && ex.querySelector('[data-drc-journal]'); if (!f) return;
+        const day = f.dataset.day || C().dayKey(Date.now()), t = C().journalClean(f.value);
+        if (t === journalGet(day)) return;
+        if (journalSave(day, t) && show && t) { const ok = ex.querySelector('[data-drc-jr-ok]'); if (ok) ok.hidden = false; }
+    }
+    function close() { saveJournal(false); const ex = sheet(), ov = ex && ex.closest('.r2-ov'); try { if (ov && W.LowiR2 && W.LowiR2.close) W.LowiR2.close(ov); else if (ov) ov.remove(); } catch (e) { ov && ov.remove(); } }
     /* Opened from the companion card or My day, the sheet underneath is still closing, and going back Home makes its own
        quiet history.back() (section-nav.js). That popstate can land after our sheet is up, and back-swipe.js then closes the
        top sheet: ours. So with {after: true} we wait for that popstate (or 600 ms) and for no sheet still sliding away
@@ -81,6 +98,21 @@
         }, 60);
         return true;
     }
+    let jrTimer = 0;
+    D.addEventListener('input', e => { if (!e.target.matches || !e.target.matches('#dayRecap [data-drc-journal]')) return; const ok = D.querySelector('#dayRecap [data-drc-jr-ok]'); if (ok) ok.hidden = true; clearTimeout(jrTimer); jrTimer = setTimeout(() => saveJournal(true), 700); });
+    D.addEventListener('change', e => { if (e.target.matches && e.target.matches('#dayRecap [data-drc-journal]')) saveJournal(true); });
+    D.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches && e.target.matches('#dayRecap [data-drc-journal]')) { e.preventDefault(); saveJournal(true); try { e.target.blur(); } catch (x) { } } });
+    /* The evening catch-up (MAYA-HANDOFF 0.39) is the input side; the recap is the read-back. After its Save, once its screen is
+       closed (html.ec-open gone), the recap shows by itself, once per Save. It never opens on its own otherwise. */
+    let afterCatchUp = 0;
+    W.addEventListener('lowi:catchup-saved', () => {
+        clearInterval(afterCatchUp); const t0 = Date.now();
+        afterCatchUp = setInterval(() => {
+            if (Date.now() - t0 > 15 * 60000) { clearInterval(afterCatchUp); return; }
+            if (H.classList.contains('ec-open') || D.querySelector('.ec-ov, #ecOv')) return;
+            clearInterval(afterCatchUp); setTimeout(() => { if (!H.classList.contains('ec-open')) open({ after: false }); }, 380);
+        }, 250);
+    });
     D.addEventListener('click', e => {
         const b = e.target.closest && e.target.closest('[data-drc]'); if (!b || !b.closest('#dayRecap')) return;
         const k = b.dataset.drc;

@@ -23,6 +23,13 @@
 .drc-level { margin: 0; padding: 10px 14px; border-radius: 16px; font-weight: 600; font-size: 14.5px; background: linear-gradient(90deg, color-mix(in srgb, var(--a) 28%, transparent), color-mix(in srgb, var(--b) 22%, transparent)); }
 .drc-card { padding: 12px 14px; border-radius: 18px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(205, 236, 255, .18); }
 .drc-card.soft { background: rgba(255, 255, 255, .04); }
+/* Oct 27: the optional journal line (16px+ so iOS never zooms; the speak-to-type mic button sits after the field) */
+.drc-jr { display: flex; flex-direction: column; gap: 6px; position: relative; }
+.drc-jr span { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: color-mix(in srgb, var(--a) 80%, #fff); }
+.drc-jr input { box-sizing: border-box; width: 100%; min-height: 48px; padding: 12px 52px 12px 14px; border-radius: 16px; font: inherit; font-size: 17px; color: #fff; background: rgba(255, 255, 255, .07); border: 1px solid rgba(205, 236, 255, .2); outline: none; }
+.drc-jr input::placeholder { color: #9fb6d6; }
+.drc-jr input:focus { border-color: color-mix(in srgb, var(--a) 70%, #fff); box-shadow: 0 0 0 3px color-mix(in srgb, var(--a) 25%, transparent); }
+.drc-jr-ok { margin: -6px 0 0; font-size: 13px; color: color-mix(in srgb, var(--a) 70%, #fff); }
 .drc-card span { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: color-mix(in srgb, var(--a) 80%, #fff); margin-bottom: 4px; }
 .drc-card p { margin: 0; font-size: 15px; line-height: 1.4; }
 .drc-acts { display: flex; gap: 10px; flex-wrap: wrap; }

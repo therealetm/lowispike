@@ -57,10 +57,11 @@
         const moveMin = Math.floor(arr(m.sessions).filter(s => s.day === day).reduce((a, s) => a + Math.max(0, num(s.moved)), 0) / 60);
         const steps = Math.max(0, Math.floor(num(m.steps && m.steps[day])));
         const xpBy = { meal: 0, water: 0, move: 0, gap: 0, other: 0 };
-        let xp = 0;
+        let xp = 0, care = 0;
         arr(o.ledger).forEach(e => {
             const d = e.day || (num(e.ts) ? dayKey(num(e.ts)) : '');
             if (d !== day) return;
+            if (/^care/.test(String(e.src || ''))) care++;
             const a = num(e.amt); if (!a) return;
             xp += a; xpBy[bucket(e.src)] += a;
         });
@@ -70,8 +71,8 @@
         }
         const gapH = Math.round(gap * 10) / 10;
         return {
-            day, meals, counts, water, gapH, moveMin, steps, xp, xpBy, levelFrom, levelTo,
-            empty: !meals.length && !water && !moveMin && !steps && !xp && !gapH,
+            day, meals, counts, water, gapH, moveMin, steps, xp, xpBy, levelFrom, levelTo, care,
+            empty: !meals.length && !water && !moveMin && !steps && !xp && !gapH && !care,
             evening: new Date(now).getHours() >= EVENING_H || new Date(now).getHours() < 4
         };
     }
@@ -175,8 +176,22 @@
         ok: { en: 'Got it', de: 'Alles klar', es: 'Entendido' },
         estimate: { en: 'Estimates from what you logged, not medical advice.', de: 'Sch\u00e4tzungen aus deinen Eintr\u00e4gen, keine medizinische Beratung.', es: 'Estimaciones de lo que registraste, no es consejo m\u00e9dico.' },
         glasses: { en: '{n} glasses', de: '{n} Gl\u00e4ser', es: '{n} vasos' },
-        min: { en: '{n} min', de: '{n} Min.', es: '{n} min' }
+        min: { en: '{n} min', de: '{n} Min.', es: '{n} min' },
+        care: { en: 'Care sent', de: 'F\u00fcrsorge gesendet', es: 'Cuidado enviado' },
+        journal: { en: 'One line about today', de: 'Eine Zeile zu heute', es: 'Una l\u00ednea sobre hoy' },
+        journalPh: { en: 'Optional. Type it or tap the mic.', de: 'Freiwillig. Tippen oder aufs Mikro tippen.', es: 'Opcional. Escr\u00edbela o toca el micro.' },
+        journalSaved: { en: 'Saved on this phone', de: 'Auf diesem Handy gespeichert', es: 'Guardado en este m\u00f3vil' }
     };
+    /* the optional journal line: one clean line, saved on this phone only (day-recap.js), newest 60 days kept */
+    const JOURNAL_MAX = 140, JOURNAL_DAYS = 60;
+    function journalClean(t) { return String(t == null ? '' : t).replace(/\s+/g, ' ').trim().slice(0, JOURNAL_MAX).trim(); }
+    function journalPut(store, day, text) {
+        const out = {}; const src = store && typeof store === 'object' ? store : {};
+        Object.keys(src).forEach(k => { if (/^\d{4}-\d{2}-\d{2}$/.test(k) && typeof src[k] === 'string' && src[k]) out[k] = src[k]; });
+        const t = journalClean(text); if (t) out[day] = t; else delete out[day];
+        Object.keys(out).sort().reverse().slice(JOURNAL_DAYS).forEach(k => { delete out[k]; });
+        return out;
+    }
 
     const L = lang => (lang === 'de' || lang === 'es' ? lang : 'en');
     function fill(s, vars) { return String(s).replace(/\{(\w+)\}/g, (m, k) => (vars && vars[k] != null ? String(vars[k]) : '')); }
@@ -222,6 +237,7 @@
         if (s.gapH) stats.push({ k: 'gap', n: fmt(s.gapH, lang) + ' h', b: ui('gap', lang), sub: '', tone: s.gapH >= 12 ? 'ok' : '' });
         if (s.moveMin || s.steps) stats.push({ k: 'move', n: s.moveMin ? ui('min', lang, { n: s.moveMin }) : String(s.steps), b: ui('move', lang), sub: s.moveMin && s.steps ? s.steps + ' ' + (lang === 'de' ? 'Schritte' : lang === 'es' ? 'pasos' : 'steps') : (!s.moveMin ? (lang === 'de' ? 'Schritte' : lang === 'es' ? 'pasos' : 'steps') : ''), tone: s.moveMin >= 10 ? 'ok' : '' });
         if (s.water) stats.push({ k: 'water', n: String(s.water), b: ui('water', lang), sub: '', tone: s.water >= 6 ? 'ok' : '' });
+        if (s.care) stats.push({ k: 'care', n: String(s.care), b: ui('care', lang), sub: '', tone: 'ok' });
         if (s.xp) stats.push({ k: 'xp', n: (s.xp > 0 ? '+' : '') + s.xp, b: ui('xp', lang), sub: '', tone: 'ok' });
         const levelUp = s.levelTo > s.levelFrom && s.levelFrom > 0 ? ui('levelUp', lang, { name, n: s.levelTo }) : '';
         return {
@@ -232,5 +248,5 @@
         };
     }
 
-    return { POOLS, UI, verdict, bucket, summarize, view, ui, dayKey, EVENING_H };
+    return { POOLS, UI, verdict, bucket, summarize, view, ui, dayKey, EVENING_H, JOURNAL_MAX, journalClean, journalPut };
 });

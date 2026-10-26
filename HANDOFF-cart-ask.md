@@ -8,6 +8,9 @@ So the whole shopping list, without having to type anything in manually."
 Branch `cart-ask-pay`, worktree /home/sprite/wt-cart-ask, COORD /home/sprite/COORD-cart-ask.md. Started by task cbbafa65 (ran out of
 room before release), finished and released by the continue task.
 
+## Status: LIVE 20261026-174856 (Mon 26 Oct 2026 ~17:50 CET, silent: loud stays 20000101, news cart-ask-*, tour ["new-cart-ask"])
+Release commit 7903c449, full suite 3844/3844, GitHub checks run 40363161961 green. Tour VERSION 32 (after mic 31).
+
 ## What shipped
 - Cart sheet (store-picks.js / store-picks.css, `.stp-cartv`): covers the whole Shop card, solid glass, the page behind is blurred;
   sticky title, the list scrolls under it; "Go shopping" plus two matching compact buttons with one 18 px icon each (the scan icon had

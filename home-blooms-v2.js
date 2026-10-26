@@ -589,6 +589,8 @@
         /* Oct 21 (E-man: "go back without the bubbles all of a sudden being closed"): an action that opens a page (Cook, fitness...)
            leaves this bloom open, hidden under the page (section-nav.css), so the X / back finds Home exactly as it was.
            Anything else (a sheet, a log) folds the bloom as before, right after the action runs. */
+        /* BH-033: this choice folds the bloom and uncovers the bubble under the finger: a double tap's 2nd tap must not reopen it */
+        freshSpent(e);
         const wasHome = homeTab();
         setTimeout(() => {
             try { a.run(); } catch (err) { console.error(err); }
@@ -596,6 +598,10 @@
             close(false, a.id);
         }, 0);
     }
+
+    /* BH-033: fresh-scrim's double-tap guard for a choice that folds the bloom (spent) and the tap it uncovers (quiet) */
+    function freshSpent(e) { try { const F = W.LowiFreshScrim; if (F && F.spent) F.spent(e); } catch (x) { } }
+    function freshQuiet(e) { try { const F = W.LowiFreshScrim; return !!(F && F.quiet && F.quiet(e)); } catch (x) { return false; } }
 
     /* taps and holds on the four bubbles (one window capture listener: runs before the old cell handlers) */
     const HOLD_MS = 550;
@@ -619,6 +625,8 @@
         if (!el) return;
         e.preventDefault(); e.stopImmediatePropagation();
         if (Date.now() < st.swallow) return;
+        /* BH-033: the 2nd tap of a double tap on a choice that just folded this bloom (this capture listener may run before fresh-scrim's) */
+        if (freshQuiet(e)) return;
         const kind = el.getAttribute('data-orbit');
         /* Oct 21 Scan / Fuel / Gap (E-man: "gap is just like water and move or sleep... not formatted like a fasting app"): Gap has no
            actions any more. A tap opens the passive Gap view (gap-view.js); meals are logged in Fuel, which is what restarts the gap */

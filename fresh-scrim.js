@@ -13,12 +13,17 @@
    pressed what the new tab put under the finger. Live WebKit iPhone 13: a double tap on "Misty is number 25 worldwide" in her card
    switched to Community, the galaxy showed before Ranking, and the 2nd tap picked a companion ("Talking to Marco"): the chat box
    then said "Write to Marco". mark(el) gives a pane that is shown again the same same-spot rule; goTab and Community's showView
-   call it. */
+   call it.
+   BH-033 (Oct 26 2026): the mirror case. A tap that makes a choice and closes what it was on (a bloom orb) uncovers what lies
+   under the finger at once, so the 2nd tap of a double tap pressed that. Live WebKit iPhone 13: a double tap on Move's "Steady"
+   logged Steady, the bloom folded, and the 2nd tap landed on the Move bubble and opened the Move bloom again 239 ms later.
+   spent(e) marks such a tap; for SPOT_MS a real tap within SPOT_PX of it is swallowed (quiet). */
 (function (W, D) {
     'use strict';
     if (!W || !D || W.LowiFreshScrim) return;
     const MS = 350, SPOT_MS = 400, SPOT_PX = 44, born = new WeakMap(), opener = new WeakMap(), shown = new WeakMap();
     let last = null; /* the last real pointer tap: {x, y, t} */
+    let spentAt = null; /* BH-033: the last real tap that made a choice and closed what it was on: {x, y, t} */
     const now = () => (W.performance && W.performance.now ? W.performance.now() : Date.now());
     const age = n => { const t = born.get(n); return t == null ? Infinity : now() - t; };
     const isScrim = el => /(^|[\s-])scrim(\s|$)/.test(typeof el.className === 'string' ? el.className : '');
@@ -54,7 +59,7 @@
     function guard(e) {
         if (!e.isTrusted) return;
         const b = backdrop(e.target);
-        if ((b && age(b) < MS) || sameSpot(e)) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+        if ((b && age(b) < MS) || sameSpot(e) || quiet(e)) { e.preventDefault(); e.stopImmediatePropagation(); return; }
         if (e.detail > 0 && typeof e.clientX === 'number') last = { x: e.clientX, y: e.clientY, t: tapTime(e) };
     }
     /* BH-032: a pane shown again (a tab, a Community view) right after a real tap: same-spot guard like a new overlay. Only the
@@ -63,6 +68,17 @@
         if (!el || el.nodeType !== 1) return;
         const t = now(), o = last && t - last.t < 600 ? last : null;
         shown.set(el, t); if (o) opener.set(el, o); else opener.delete(el);
+    }
+    /* BH-033: a real tap that made a choice and closed its bloom / chooser; keyboard and script clicks have no finger to protect */
+    function spent(e) {
+        if (!e || !e.isTrusted || !(e.detail > 0) || typeof e.clientX !== 'number') return;
+        spentAt = { x: e.clientX, y: e.clientY, t: tapTime(e) };
+    }
+    /* the 2nd tap of that double tap: a later real tap on the same spot within SPOT_MS (by its own time stamp) */
+    function quiet(e) {
+        if (!spentAt || !e || !e.isTrusted || !(e.detail > 0) || typeof e.clientX !== 'number') return false;
+        const d = tapTime(e) - spentAt.t;
+        return d > 0 && d < SPOT_MS && Math.abs(e.clientX - spentAt.x) <= SPOT_PX && Math.abs(e.clientY - spentAt.y) <= SPOT_PX;
     }
     function start() {
         if (!D.body) return;
@@ -74,5 +90,5 @@
         W.addEventListener('click', guard, true);
     }
     if (D.body) start(); else D.addEventListener('DOMContentLoaded', start, { once: true });
-    W.LowiFreshScrim = { MS, SPOT_MS, SPOT_PX, age, backdrop, guard, sameSpot, mark };
+    W.LowiFreshScrim = { MS, SPOT_MS, SPOT_PX, age, backdrop, guard, sameSpot, mark, spent, quiet };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

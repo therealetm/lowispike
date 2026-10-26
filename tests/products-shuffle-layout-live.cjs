@@ -40,6 +40,9 @@ async function check(browser, url, device, vp) {
   await sleep(3000);
   await page.evaluate(() => { document.querySelectorAll('.r2-ov,.g2-ov,.tut-ov,[role=dialog]').forEach(n => { try { n.remove(); } catch (e) { } }); goTab('shelf'); });
   await sleep(2500);
+  /* the Cook page slides in from the right (wh-leave/rw-page); measure once it has settled, not mid-slide (iPad under load) */
+  await page.waitForFunction(() => { const t = document.getElementById('tab-shelf'); if (!t) return false; const b = t.getBoundingClientRect(); return Math.abs(b.left) < 1 && getComputedStyle(t).transform === 'none'; }, null, { timeout: 20000 }).catch(() => {});
+  await sleep(300);
   const out = (sel) => page.evaluate(sel => { const W = innerWidth, bad = []; document.querySelectorAll(sel).forEach(n => { const r = n.getBoundingClientRect(); if (!r.width || !r.height || getComputedStyle(n).visibility === 'hidden') return; if (r.left < -0.5 || r.right > W + 0.5) bad.push(String(n.className || n.tagName).slice(0, 40) + ' ' + Math.round(r.left) + '..' + Math.round(r.right)); }); return bad; }, sel);
   const home = await page.evaluate(() => ({ row: (document.querySelector('#ckOut') || {}).textContent || '', list: !!document.querySelector('#ckToss, #tab-shelf .ck-out-l') }));
   const badHome = await out('#r5Shuf, #r5Shuf *');

@@ -3,8 +3,10 @@
 # committed change. It never force-pushes and never touches files you did not commit.
 #
 #   scripts/release.sh "Short summary of what users get" [--news news.json | --quiet] [--no-bump] [--no-verify]
-#   --quiet: a silent bug fix (Oct 24, Emmanuel): no "New version" ask, no "Update loaded", no What's New;
-#            the fix just arrives the next time the app opens (scripts/bump-build.cjs applyBump, "loud" in version.json).
+#   --quiet: a bug fix with no What's New. EVERY release is silent (Oct 26, Emmanuel: "no more notification updates"):
+#            no release ever asks phones to update, says "Update loaded", sends a push or posts to Community. "loud" in
+#            version.json stays 20000101-000000 (bump-build.cjs writes it, release-check.cjs fails anything else).
+#            There is deliberately no --notify / --announce option. Do not add one.
 #
 # Steps: shared lock -> fetch -> rebase on origin/main -> bump build (+ What's New) ->
 # release-check -> full test suite -> whitespace check -> commit -> scripts/push-main.sh (CI must

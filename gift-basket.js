@@ -22,7 +22,16 @@
     const T = (en, de, es) => [en, de, es][li()];
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
     const eur = n => { try { return Number(n).toLocaleString(['en-IE', 'de-DE', 'es-ES'][li()], { style: 'currency', currency: 'EUR', maximumFractionDigits: n % 1 ? 2 : 0 }); } catch (e) { return '€' + n; } };
-    const rate = n => (W.LowiFoodPolicy && W.LowiFoodPolicy.rateName ? W.LowiFoodPolicy.rateName(n) : null);
+    /* Oct 26 2026 (MAYA-HANDOFF 0.34): a name the rating doesn't know in German or Spanish ("Mageres Rinderhack") is rated by
+       its English name from food-names-core.js; the strict rule stays: only JA foods go in a basket. */
+    const rate = n => {
+        const P = W.LowiFoodPolicy; if (!P || !P.rateName) return null;
+        const r = P.rateName(n); if (r && r.verdict) return r;
+        const en = W.LowiFoodNames && W.LowiFoodNames.english(n);
+        return en && C.norm(en) !== C.norm(n) ? (P.rateName(en) || r) : r;
+    };
+    /* food names in the app language (the cart's names often come from English recipe cards) */
+    const fname = n => (W.LowiFoodNames ? W.LowiFoodNames.name(n, ['en', 'de', 'es'][li()]) : String(n == null ? '' : n));
     const STAPLES = [
         ['Eggs', 'Eier', 'Huevos'], ['Plain yoghurt', 'Naturjoghurt', 'Yogur natural'], ['Cottage cheese', 'Hüttenkäse', 'Queso cottage'],
         ['Chicken breast', 'Hähnchenbrust', 'Pechuga de pollo'], ['Salmon', 'Lachs', 'Salmón'], ['Tuna', 'Thunfisch', 'Atún'],
@@ -70,6 +79,7 @@
     let ov = null, tab = 'give', busy = false, msg = '', msgKind = '', loaded = false, offline = false;
     let open = [], mine = [], given = [], momentIds = {}, trustBy = {}, opened = {}, receiptUrl = {}, photo = null, blurOn = true;
     let draft = loadDraft();
+    let fromCartReq = false, fromCartPick = null; /* Oct 26 2026: {items, left, est} while "Someone else pays" shows the whole cart as a basket */
     let skipped = loadSkips(), picked = '', lastSkip = '', drag = null, dragAt = 0;
     function loadSkips() { try { return C.freshSkips(JSON.parse(localStorage.getItem(SKIP_KEY) || '{}') || {}); } catch (e) { return {}; } }
     function saveSkips() { try { localStorage.setItem(SKIP_KEY, JSON.stringify(C.freshSkips(skipped))); } catch (e) {} }
@@ -90,7 +100,8 @@
         return '<span class="gb-badge' + (t.pct >= 90 ? ' gb-good' : t.pct < 60 ? ' gb-low' : '') + '">' + esc(t.pct + (li() ? ' % ' : '% ') + T('verified', 'verifiziert', 'verificado')) + '</span>';
     }
     function who(b) { return b.name || T('Someone', 'Jemand', 'Alguien'); }
-    function itemsHTML(items) { return '<ul class="gb-items">' + items.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>'; }
+    /* qtys (Oct 26 2026): how many of each, from the cart; a basket without them shows plain names */
+    function itemsHTML(items, qtys) { return '<ul class="gb-items">' + items.map((n, i) => '<li>' + esc(fname(n)) + (qtys && qtys[i] > 1 ? ' <i class="gb-q">×' + qtys[i] + '</i>' : '') + '</li>').join('') + '</ul>'; }
     function linkText(kind) { return T('Pay with ', 'Bezahlen mit ', 'Pagar con ') + (C.linkName(kind) || 'link'); }
     function left(b) { const d = C.daysLeft(b); return T(d === 1 ? '1 day left' : d + ' days left', d === 1 ? 'noch 1 Tag' : 'noch ' + d + ' Tage', d === 1 ? 'queda 1 día' : 'quedan ' + d + ' días'); }
 
@@ -152,7 +163,7 @@
         const top = '<article class="gb-basket gb-swipe' + (on ? ' gb-picked' : '') + '" data-gb-id="' + esc(b.id) + '" data-gb-top="1" aria-roledescription="' + esc(T('swipe card', 'Wischkarte', 'tarjeta deslizable')) + '" aria-label="' + esc(who(b) + ', ' + T('about ', 'etwa ', 'unos ') + eur(b.total)) + '">' +
             '<span class="gb-stamp gb-stamp-pay" aria-hidden="true">' + esc(T('Pay', 'Zahlen', 'Pagar')) + '</span><span class="gb-stamp gb-stamp-skip" aria-hidden="true">' + esc(T('Skip', 'Weiter', 'Saltar')) + '</span>' +
             '<header><b>' + esc(who(b)) + '</b>' + (b.city ? '<small>' + esc(b.city) + '</small>' : '') + badge(trustBy[b.owner]) + '</header>' +
-            itemsHTML(b.items) + '<p class="gb-total">' + esc(T('About ', 'Etwa ', 'Unos ')) + '<b>' + esc(eur(b.total)) + '</b></p>' +
+            itemsHTML(b.items, b.qtys) + '<p class="gb-total">' + esc(T('About ', 'Etwa ', 'Unos ')) + '<b>' + esc(eur(b.total)) + '</b></p>' +
             (on ? '<p class="gb-pick-msg">' + esc(T('You picked ' + who(b) + '’s groceries. Pay through their own link, then tap I helped.', 'Du hast den Einkauf von ' + who(b) + ' gewählt. Bezahl über den eigenen Link der Person und tipp dann auf Ich habe geholfen.', 'Elegiste la compra de ' + who(b) + '. Paga con su propio enlace y luego toca He ayudado.')) + '</p>' + actHTML(b) : hint) + '</article>';
         const btns = '<div class="gb-deck-btns">' +
             '<button type="button" class="gb-round gb-skip" data-gb="skip" data-spend="1" data-gb-for="' + esc(b.id) + '" aria-label="' + esc(T('Skip ', 'Überspringen: ', 'Saltar ') + who(b)) + '"><span aria-hidden="true">\u2715</span><small>' + esc(T('Skip', 'Weiter', 'Saltar')) + '</small></button>' +
@@ -228,7 +239,7 @@
         const t = trustBy[b.owner];
         const act = actHTML(b);
         return '<article class="gb-basket" data-gb-id="' + esc(b.id) + '"><header><b>' + esc(who(b)) + '</b>' + (b.city ? '<small>' + esc(b.city) + '</small>' : '') + badge(t) + '</header>' +
-            itemsHTML(b.items) + '<p class="gb-total">' + esc(T('About ', 'Etwa ', 'Unos ')) + '<b>' + esc(eur(b.total)) + '</b></p>' + act + '</article>';
+            itemsHTML(b.items, b.qtys) + '<p class="gb-total">' + esc(T('About ', 'Etwa ', 'Unos ')) + '<b>' + esc(eur(b.total)) + '</b></p>' + act + '</article>';
     }
     function givenHTML(b) {
         const s = C.status(b);
@@ -244,7 +255,7 @@
                 '<p class="stp-fine gb-fine">' + esc(left(b) + T('. If you don’t answer, it counts as verified.', '. Wenn du nicht antwortest, gilt er als verifiziert.', '. Si no respondes, cuenta como verificado.')) + '</p>';
             else body += '<p class="gb-state' + (s === 'mismatch' ? ' gb-low' : ' gb-good') + '">' + esc(s === 'mismatch' ? T('You said it doesn’t match.', 'Du hast gesagt: passt nicht.', 'Dijiste que no coincide.') : s === 'auto-verified' ? T('Counted as verified.', 'Gilt als verifiziert.', 'Cuenta como verificado.') : T('You verified it ✓', 'Du hast ihn verifiziert ✓', 'Lo verificaste ✓')) + '</p>';
         }
-        return '<article class="gb-basket gb-given" data-gb-id="' + esc(b.id) + '"><header><b>\u{1F9FA} ' + esc(who(b)) + '</b>' + (b.city ? '<small>' + esc(b.city) + '</small>' : '') + '</header>' + itemsHTML(b.items) + body + '</article>';
+        return '<article class="gb-basket gb-given" data-gb-id="' + esc(b.id) + '"><header><b>\u{1F9FA} ' + esc(who(b)) + '</b>' + (b.city ? '<small>' + esc(b.city) + '</small>' : '') + '</header>' + itemsHTML(b.items, b.qtys) + body + '</article>';
     }
 
     function mineHTML() {
@@ -261,20 +272,20 @@
             const l = { 'await-verdict': T('Receipt sent, waiting for their answer', 'Kassenbon gesendet, wartet auf Antwort', 'Ticket enviado, esperando respuesta'), verified: T('Verified ✓', 'Verifiziert ✓', 'Verificado ✓'), 'auto-verified': T('Counted as verified', 'Gilt als verifiziert', 'Cuenta como verificado'), mismatch: T('Marked as not matching', 'Als unpassend markiert', 'Marcado como que no coincide'), missed: T('No receipt in 7 days', 'Kein Kassenbon in 7 Tagen', 'Sin ticket en 7 días') }[s] || '';
             return '<li><b>' + esc(b.items.slice(0, 3).join(', ') + (b.items.length > 3 ? ' …' : '')) + '</b><small>' + esc(l) + '</small></li>';
         }).join('') + '</ul>' : '';
-        const body = cur ? myBasketHTML(cur) : builderHTML();
+        const body = fromCartPick ? cartBasketHTML(cur) : cur ? myBasketHTML(cur) : builderHTML();
         void me;
         return dueHTML + head + body + histHTML;
     }
     function myBasketHTML(b) {
         return '<h4 class="stp-h4">' + esc(T('Your basket is shared', 'Dein Korb ist geteilt', 'Tu cesta está compartida')) + '</h4>' +
-            '<article class="gb-basket gb-mine"><header><b>' + esc(who(b)) + '</b>' + (b.city ? '<small>' + esc(b.city) + '</small>' : '') + '</header>' + itemsHTML(b.items) +
+            '<article class="gb-basket gb-mine"><header><b>' + esc(who(b)) + '</b>' + (b.city ? '<small>' + esc(b.city) + '</small>' : '') + '</header>' + itemsHTML(b.items, b.qtys) +
             '<p class="gb-total">' + esc(T('About ', 'Etwa ', 'Unos ')) + '<b>' + esc(eur(b.total)) + '</b> · ' + esc(C.linkName(b.kind)) + '</p>' +
             '<p class="stp-fine gb-fine">' + esc(T('Others see it under Give a hand until someone helps. It goes away by itself after 3 weeks.', 'Andere sehen ihn unter Helfen, bis jemand hilft. Nach 3 Wochen verschwindet er von selbst.', 'Los demás la ven en Ayudar hasta que alguien ayude. Desaparece sola a las 3 semanas.')) + '</p>' +
             '<button type="button" class="stp-pill gb-down" data-gb="down" data-gb-for="' + esc(b.id) + '"' + (busy ? ' disabled' : '') + '>' + esc(T('Take my basket down', 'Meinen Korb zurücknehmen', 'Retirar mi cesta')) + '</button></article>' +
             '<p class="gb-money">' + esc(MONEY()) + '</p>';
     }
     function receiptHTML(b) {
-        return '<article class="gb-basket gb-due" data-gb-id="' + esc(b.id) + '"><header><b>\u{1F49A} ' + esc(T('Someone helped you!', 'Jemand hat dir geholfen!', '¡Alguien te ha ayudado!')) + '</b></header>' + itemsHTML(b.items) +
+        return '<article class="gb-basket gb-due" data-gb-id="' + esc(b.id) + '"><header><b>\u{1F49A} ' + esc(T('Someone helped you!', 'Jemand hat dir geholfen!', '¡Alguien te ha ayudado!')) + '</b></header>' + itemsHTML(b.items, b.qtys) +
             '<p class="gb-ask">' + esc(T('Add a photo of your grocery receipt', 'Lade ein Foto deines Kassenbons hoch', 'Sube una foto de tu ticket de la compra')) + ' · ' + esc(left(b)) + '</p>' +
             '<p class="stp-fine gb-fine">' + esc(T('Cover your card number and your address before you take it. Only the person who helped you sees the photo.', 'Deck vorher Kartennummer und Adresse ab. Nur die Person, die dir geholfen hat, sieht das Foto.', 'Tapa el número de tarjeta y tu dirección antes de hacer la foto. Solo la persona que te ayudó ve la foto.')) + '</p>' +
             (photo && photo.id === b.id ? '<figure class="gb-receipt"><img src="' + esc(photo.url) + '" alt="' + esc(T('Your receipt photo', 'Dein Kassenbon-Foto', 'Tu foto del ticket')) + '"></figure>' +
@@ -288,8 +299,10 @@
         const has = n => chosen.some(x => C.norm(x) === C.norm(n));
         let cart = [];
         try { cart = W.LOWI_SHELF && W.LOWI_SHELF.listOpen ? W.LOWI_SHELF.listOpen() : []; } catch (e) { cart = []; }
-        const cartOk = [], cartNo = [];
-        cart.forEach(i => { const c = C.itemCheck(i && i.n, rate); if (!c.name) return; (c.ok ? cartOk : cartNo).push(c.name); });
+        /* Oct 26 2026 (Emmanuel's screenshot): names in the app language, and "not low-spike" only for foods the rating calls
+           spiky; a food it doesn't know yet says so instead of being called spiky */
+        const pickC = C.fromCart(cart, rate, fname);
+        const cartOk = pickC.items.map(x => x.n), cartNo = pickC.left;
         const staples = STAPLES.map(s => s[li()]).filter(n => C.itemCheck(n, rate).ok);
         const chip = n => '<button type="button" class="stp-chip gb-add-chip" data-gb-add="' + esc(n) + '">+ ' + esc(n) + '</button>';
         const link = draft.payUrl ? C.payLink(draft.payUrl) : null;
@@ -300,7 +313,8 @@
             '<div class="gb-chosen" aria-label="' + esc(T('Your basket', 'Dein Korb', 'Tu cesta')) + '">' + (chosen.length ? chosen.map(n => '<button type="button" class="stp-chip on" data-gb-drop="' + esc(n) + '" aria-label="' + esc(T('Remove ', 'Entfernen: ', 'Quitar ') + n) + '">' + esc(n) + ' <i aria-hidden="true">×</i></button>').join('') : '<span class="gb-empty">' + esc(T('Your basket is empty.', 'Dein Korb ist leer.', 'Tu cesta está vacía.')) + '</span>') + '</div>' +
             '<form class="stp-snack-add gb-addf" data-gb-form="item"><input id="gb-item" type="text" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="' + esc(T('Add a food, like eggs', 'Lebensmittel hinzufügen, z. B. Eier', 'Añade un alimento, p. ej. huevos')) + '" aria-label="' + esc(T('Add a food to the basket', 'Lebensmittel zum Korb hinzufügen', 'Añadir un alimento a la cesta')) + '"><button type="submit" class="stp-pill">' + esc(T('Add', 'Hinzufügen', 'Añadir')) + '</button></form>' +
             (cartOk.filter(n => !has(n)).length ? '<p class="gb-sub">' + esc(T('From your cart', 'Aus deinem Warenkorb', 'De tu carrito')) + '</p><div class="gb-chips">' + cartOk.filter(n => !has(n)).map(chip).join('') + '</div>' : '') +
-            (cartNo.length ? '<p class="stp-fine gb-fine">' + esc(T('Not for a basket (not low-spike): ', 'Nicht für einen Korb (kein Low-Spike): ', 'No para una cesta (no es bajo en picos): ') + cartNo.slice(0, 6).join(', ')) + '</p>' : '') +
+            (cartOk.length > 1 ? '<button type="button" class="stp-pill gb-wholecart" data-gb="wholecart">' + esc(T('Put my whole cart in', 'Ganzen Warenkorb nehmen', 'Meter todo mi carrito')) + '</button>' : '') +
+            (cartNo.length ? '<p class="stp-fine gb-fine gb-left">' + esc(leftLine(cartNo)) + '</p>' : '') +
             '<p class="gb-sub">' + esc(T('Healthy staples', 'Gesunde Basics', 'Básicos sanos')) + '</p><div class="gb-chips">' + staples.filter(n => !has(n)).map(chip).join('') + '</div>' +
             '<label class="gb-field"><span>' + esc(T('Rough total in euros', 'Ungefährer Betrag in Euro', 'Total aproximado en euros')) + '</span><input id="gb-total" data-gb-in="total" inputmode="decimal" maxlength="7" placeholder="25" value="' + esc(draft.total) + '"></label>' +
             '<p class="stp-fine gb-fine">' + esc(T('Between €5 and €150.', 'Zwischen 5 und 150 €.', 'Entre 5 y 150 €.')) + '</p>' +
@@ -313,6 +327,63 @@
             '<p class="gb-money">' + esc(MONEY()) + '</p>' +
             '<button type="button" class="stp-go gb-share" data-gb="share"' + (busy || !built.ok ? ' disabled' : '') + '>' + esc(T('Share my basket', 'Meinen Korb teilen', 'Compartir mi cesta')) + '</button>' +
             '<p class="stp-fine gb-fine gb-missing"' + (built.ok ? ' hidden' : '') + '>' + esc(missing(built)) + '</p>';
+    }
+    /* one short line: which cart foods stay out of the basket and why */
+    function leftLine(left) {
+        const by = w => left.filter(x => x.why === w).map(x => x.n);
+        const spike = by('spike'), unk = by('unknown'), full = by('full'), cut = a => a.slice(0, 5).join(', ') + (a.length > 5 ? ' …' : '');
+        const parts = [];
+        if (spike.length) parts.push(cut(spike) + T(' (not low-spike)', ' (kein Low-Spike)', ' (no es bajo en picos)'));
+        if (unk.length) parts.push(cut(unk) + T(' (the app can’t rate it yet)', ' (kann die App noch nicht bewerten)', ' (la app aún no lo valora)'));
+        if (full.length) parts.push(cut(full) + T(' (a basket holds 12 foods)', ' (in einen Korb passen 12 Lebensmittel)', ' (en una cesta caben 12 alimentos)'));
+        return parts.length ? T('Left out: ', 'Nicht dabei: ', 'Fuera: ') + parts.join(' · ') : '';
+    }
+    /* Oct 26 2026 (MAYA-HANDOFF 0.34, Emmanuel): "Someone else pays" in the Supermarket cart. The WHOLE cart becomes the basket:
+       every low-spike food with its quantity, nothing to type or pick. Total comes from the cart's reported prices when there
+       are any; the payment link is the one saved last time. Share puts it straight into the Give a hand swipe feed. */
+    function cartDraft() { return Object.assign({}, draft, { items: fromCartPick ? fromCartPick.items : [] }); }
+    function cartBasketHTML(cur) {
+        const p = fromCartPick, built = C.build(cartDraft(), rate);
+        const link = draft.payUrl ? C.payLink(draft.payUrl) : null;
+        const linkMsg = !link ? '' : link.ok ? '✓ ' + C.linkName(link.kind) : linkWhy(link);
+        const none = !p.items.length;
+        return '<h4 class="stp-h4">' + esc(T('Your cart as a basket', 'Dein Warenkorb als Korb', 'Tu carrito como cesta')) + '</h4>' +
+            '<article class="gb-basket gb-mine gb-fromcart">' +
+            (none ? '<p class="gb-intro">' + esc(T('Nothing in your cart can go in a basket yet. Only low-spike food can.', 'Noch nichts aus deinem Warenkorb passt in einen Korb. Nur Low-Spike-Essen geht.', 'Aún no hay nada en tu carrito que pueda ir en una cesta. Solo comida baja en picos.')) + '</p>'
+                : '<p class="gb-intro">' + esc(T('Everything from your cart, ready to go. Helpers see it in Give a hand and can pay for it.', 'Alles aus deinem Warenkorb, fertig. Helfer sehen ihn unter Hilf mit und können ihn bezahlen.', 'Todo lo de tu carrito, listo. Quien quiera ayudar la ve en Echa una mano y puede pagarla.')) + '</p>' +
+                  itemsHTML(p.items.map(x => x.n), p.items.map(x => x.q))) +
+            (p.left.length ? '<p class="stp-fine gb-fine gb-left">' + esc(leftLine(p.left)) + '</p>' : '') + '</article>' +
+            (none ? '' :
+            '<label class="gb-field"><span>' + esc(T('Rough total in euros', 'Ungefährer Betrag in Euro', 'Total aproximado en euros')) + '</span><input id="gb-total" data-gb-in="total" inputmode="decimal" maxlength="7" placeholder="25" value="' + esc(draft.total) + '"></label>' +
+            '<p class="stp-fine gb-fine">' + esc(p.est ? T('From the prices in your cart. Between €5 and €150.', 'Aus den Preisen in deinem Warenkorb. Zwischen 5 und 150 €.', 'Según los precios de tu carrito. Entre 5 y 150 €.') : T('Between €5 and €150.', 'Zwischen 5 und 150 €.', 'Entre 5 y 150 €.')) + '</p>' +
+            '<label class="gb-field"><span>' + esc(T('Your payment link', 'Dein Zahlungslink', 'Tu enlace de pago')) + '</span><input id="gb-link" data-gb-in="payUrl" type="url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="300" placeholder="https://ko-fi.com/yourname" value="' + esc(draft.payUrl) + '"></label>' +
+            '<p class="gb-linkmsg' + (link && !link.ok ? ' gb-low' : '') + '" id="gb-linkmsg" aria-live="polite">' + esc(linkMsg) + '</p>' +
+            '<label class="gb-check"><input type="checkbox" id="gb-anon" data-gb-in="anon"' + (draft.anon ? ' checked' : '') + '> ' + esc(T('Stay anonymous', 'Anonym bleiben', 'Quedarme anónimo')) + '</label>' +
+            (cur ? '<p class="stp-fine gb-fine">' + esc(T('This replaces the foods in the basket you already shared.', 'Das ersetzt die Lebensmittel in deinem schon geteilten Korb.', 'Esto sustituye la comida de la cesta que ya compartiste.')) + '</p>' : '') +
+            '<p class="gb-money">' + esc(MONEY()) + '</p>' +
+            '<button type="button" class="stp-go gb-share gb-cartshare" data-gb="cartshare" data-spend="1"' + (busy || !built.ok ? ' disabled' : '') + '>' + esc(cur ? T('Update my basket', 'Meinen Korb aktualisieren', 'Actualizar mi cesta') : T('Share in Give a hand', 'Bei Hilf mit teilen', 'Compartir en Echa una mano')) + '</button>' +
+            '<p class="stp-fine gb-fine gb-missing"' + (built.ok ? ' hidden' : '') + '>' + esc(missing(built)) + '</p>') +
+            '<button type="button" class="stp-pill gb-cartoff" data-gb="cartoff">' + esc(T('Pick foods myself instead', 'Lieber selbst auswählen', 'Prefiero elegir yo')) + '</button>';
+    }
+    /* opens Give a hand on "I could use a hand" with the whole cart as the basket (Supermarket cart's "Someone else pays") */
+    function fromCart(from) {
+        let lines = [], est = 0;
+        try { const S = W.LOWI_SHELF; lines = S && S.cartLines ? S.cartLines() : S && S.listOpen ? S.listOpen() : []; } catch (e) { lines = []; }
+        try { const S = W.LOWI_SHELF, CC = W.LowiCartCore, t = S && S.cartTotal ? S.cartTotal() : CC && CC.total ? CC.total(lines) : null; if (t && t.priced && t.sum > 0) est = Math.min(150, Math.max(5, Math.ceil(t.sum))); } catch (e) { est = 0; }
+        const pick = C.fromCart(lines, rate, fname);
+        fromCartPick = { items: pick.items, left: pick.left, est };
+        if (ov) { tab = 'mine'; msg = ''; paint(); } else openPanel(from || 'shop', 'mine');
+        if (est && !String(draft.total || '').trim()) { draft.total = String(est); saveDraft(); paint(); }
+    }
+    function shareCart() {
+        const b = C.build(cartDraft(), rate); if (!b.ok) return;
+        run(async () => {
+            const cur = mine.find(x => !x.helped);
+            const row = await api().share(b.row, cur ? cur.id : '');
+            const v = C.view(row); if (v) mine = [v].concat(mine.filter(x => x.id !== v.id));
+            fromCartPick = null; tab = 'give';
+            msg = T('Your cart is in Give a hand now. Helpers see it as they swipe.', 'Dein Warenkorb ist jetzt bei Hilf mit. Helfer sehen ihn beim Wischen.', 'Tu carrito ya está en Echa una mano. Quien ayuda lo ve al deslizar.'); msgKind = 'good';
+        });
     }
     function missing(built) { return built.ok ? '' : T('Still missing: ', 'Es fehlt noch: ', 'Falta: ') + built.errors.map(e => ({ items: T('food', 'Essen', 'comida'), total: T('total', 'Betrag', 'total'), link: T('payment link', 'Zahlungslink', 'enlace de pago') })[e]).join(', '); }
     function linkWhy(l) {
@@ -426,6 +497,9 @@
         if (a === 'skip') { skip(el.getAttribute('data-gb-for')); return; }
         if (a === 'undo') { undoSkip(); return; }
         if (a === 'share') { share(); return; }
+        if (a === 'cartshare') { shareCart(); return; }
+        if (a === 'cartoff') { fromCartPick = null; msg = ''; paint(); return; }
+        if (a === 'wholecart') { fromCart(); return; }
         if (a === 'down') { takeDown(el.getAttribute('data-gb-for')); return; }
         if (a === 'send-receipt') { sendReceipt(el.getAttribute('data-gb-for')); return; }
     }
@@ -434,7 +508,7 @@
         if (!k || k === 'anon') return;
         draft[k] = String(t.value || '').slice(0, 300); saveDraft();
         /* repaint only the parts that depend on the typing, so the keyboard stays put */
-        const built = C.build(draft, rate), sh = ov.querySelector('.gb-share');
+        const built = C.build(fromCartPick ? cartDraft() : draft, rate), sh = ov.querySelector('.gb-share');
         if (sh) sh.disabled = busy || !built.ok;
         const miss = ov.querySelector('.gb-missing');
         if (miss) { miss.hidden = built.ok; miss.textContent = missing(built); }
@@ -512,6 +586,7 @@
     /* ---------- open / close ---------- */
     function openPanel(from, startTab) {
         if (ov) return;
+        fromCartReq = !!fromCartPick && startTab === 'mine';
         if (startTab === 'mine' || startTab === 'give') tab = startTab; /* Oct 26: the Supermarket Cart's "Ask for a hand with it" opens on I could use a hand */
         ov = D.createElement('div');
         ov.className = 'stp-ov gb-ov';
@@ -523,7 +598,7 @@
         ov.addEventListener('pointerdown', onDown); ov.addEventListener('pointermove', onMove, { passive: false });
         ov.addEventListener('pointerup', onUp); ov.addEventListener('pointercancel', onUp);
         D.addEventListener('keydown', onKey, true);
-        picked = ''; lastSkip = ''; drag = null; skipped = loadSkips();
+        picked = ''; lastSkip = ''; drag = null; skipped = loadSkips(); if (!fromCartReq) fromCartPick = null; fromCartReq = false;
         loaded = false; offline = false; msg = ''; opened = {}; receiptUrl = {}; photo = null; draft = loadDraft();
         D.body.appendChild(ov);
         paint();
@@ -571,5 +646,5 @@
     setTimeout(probe, 6000);
     setTimeout(probe, 30000);
     W.addEventListener('lowi:boot-ready', () => setTimeout(probe, 2500));
-    W.LowiGiftBasket = Object.assign(API, { open: openPanel, probe, serverReady, close: () => close(false), isOpen: () => !!ov, entryHTML, _state: () => ({ tab, open, mine, given, draft, trustBy, offline, loaded, msg }), _render: render });
+    W.LowiGiftBasket = Object.assign(API, { open: openPanel, fromCart, probe, serverReady, close: () => close(false), isOpen: () => !!ov, entryHTML, _state: () => ({ tab, open, mine, given, draft, trustBy, offline, loaded, msg, fromCartPick }), _render: render });
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

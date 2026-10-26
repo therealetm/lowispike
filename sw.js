@@ -19,6 +19,7 @@ STATIC.push("tutorial-voice.js", "tutorial-voice.css", "tutorial-voice-data.js",
 STATIC.push("kitchen-game-core.js", "kitchen-game.js", "kitchen-game.css"); /* Oct 26 Kitchen game in Cook (MAYA-HANDOFF 0.19): own line, like kitchen-core.js */
 STATIC.push("cook-tab-order.js"); /* Oct 26 Cook opens on its first tab, tabs held and moved like Community's (MAYA-HANDOFF 0.29): own line */
 STATIC.push("cart-core.js"); /* Oct 26 Supermarket Cart (Warenkorb): own line */
+STATIC.push("food-names-core.js"); /* Oct 26 food names in the app language (cart + Give a hand): own line */
 STATIC.push("week-basket-core.js", "week-basket.js", "week-basket.css"); /* Oct 26 Shop from home weekly basket in Supermarket (MAYA-HANDOFF 0.21): own line */
 STATIC.push("mic-dictate.css", "mic-dictate-core.js", "mic-dictate.js"); /* Oct 26 mic dictation in text fields: own line */
 STATIC.push("quick-add-core.js"); /* Oct 26 quick "+" on Supermarket rows (MAYA-HANDOFF 0.35): own line, like kitchen-core.js */

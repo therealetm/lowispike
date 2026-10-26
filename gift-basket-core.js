@@ -80,6 +80,24 @@
         if (v === 'JA') return { ok: true, name: n, verdict: v };
         return { ok: false, why: v ? 'spike' : 'unknown', name: n, verdict: v };
     }
+    /* how many of one food (cart quantity): a whole number 1..99, anything else is 1 */
+    function qty(raw) { const q = Math.floor(Number(raw)); return q >= 1 ? Math.min(99, q) : 1; }
+    /* Oct 26 2026 (MAYA-HANDOFF 0.34, Emmanuel): "someone else pays" turns the WHOLE cart into a basket, no typing.
+       lines: the cart [{n, q}]. name(n): the name to show and store (app language). Same rule as build(): only foods the
+       rating calls low-spike go in. Returns {items:[{n,q}], left:[{n, why:'spike'|'unknown'|'full'}]}; same food twice adds up. */
+    function fromCart(lines, rate, name) {
+        const items = [], left = [], at = new Map();
+        (Array.isArray(lines) ? lines : []).forEach(l => {
+            const raw = cleanText(l && l.n, 40); if (raw.length < 2) return;
+            const shown = cleanText(name ? name(raw) : raw, 40) || raw;
+            const c = itemCheck(shown, rate), k = norm(shown), q = qty(l && l.q);
+            if (!c.ok) { if (!left.some(x => norm(x.n) === k)) left.push({ n: shown, why: c.why === 'empty' ? 'unknown' : c.why }); return; }
+            if (at.has(k)) { const it = items[at.get(k)]; it.q = Math.min(99, it.q + q); return; }
+            if (items.length >= MAX_ITEMS) { left.push({ n: shown, why: 'full' }); return; }
+            at.set(k, items.length); items.push({ n: c.name, q });
+        });
+        return { items, left };
+    }
     function total(raw) {
         const s = String(raw == null ? '' : raw).replace(/€|eur/gi, '').replace(/\s/g, '').replace(',', '.');
         if (!/^\d{1,3}(\.\d{1,2})?$/.test(s)) return null;
@@ -94,7 +112,8 @@
             const c = itemCheck(typeof x === 'string' ? x : x && x.n, rate);
             const k = norm(c.name);
             if (!c.ok || !k || seen.has(k)) return;
-            seen.add(k); items.push({ n: c.name });
+            const q = qty(x && x.q);
+            seen.add(k); items.push(q > 1 ? { n: c.name, q } : { n: c.name });
         });
         if (!items.length) errors.push('items');
         if (items.length > MAX_ITEMS) items.length = MAX_ITEMS;
@@ -112,10 +131,11 @@
     function view(row) {
         if (!row || !row.id) return null;
         const link = payLink(row.pay_url);
-        const items = (Array.isArray(row.items) ? row.items : []).map(x => cleanText(x && x.n, 40)).filter(Boolean).slice(0, MAX_ITEMS);
+        const good = (Array.isArray(row.items) ? row.items : []).filter(x => cleanText(x && x.n, 40)).slice(0, MAX_ITEMS);
+        const items = good.map(x => cleanText(x.n, 40)), qtys = good.map(x => qty(x.q));
         return {
             id: String(row.id), owner: row.user_id || '', anon: !!row.anon,
-            name: row.anon ? '' : cleanText(row.first_name, 24), city: cleanText(row.city, 40), items,
+            name: row.anon ? '' : cleanText(row.first_name, 24), city: cleanText(row.city, 40), items, qtys,
             total: Number(row.total_eur) || 0, link: link.ok ? link.url : '', kind: link.ok ? link.kind : '',
             created: Date.parse(row.created_at) || 0, helper: row.helper_id || '', helped: Date.parse(row.helped_at) || 0,
             receipt: Date.parse(row.receipt_at) || 0, receiptPath: row.receipt_path || '', verdict: row.verdict || '',
@@ -209,5 +229,5 @@
     }
 
     return { DAY, WINDOW_DAYS, MAX_ITEMS, MIN_EUR, MAX_EUR, MAX_URL, PAY_RE_SQL, KOFI_RESERVED,
-        payLink, linkName, itemCheck, total, build, view, status, canReceipt, canVerdict, daysLeft, trust, fromCounts, careEventId, norm, SKIP_MS, deck, freshSkips, swipeDecision, project, releaseVelocity, txOf };
+        payLink, linkName, itemCheck, qty, fromCart, total, build, view, status, canReceipt, canVerdict, daysLeft, trust, fromCounts, careEventId, norm, SKIP_MS, deck, freshSkips, swipeDecision, project, releaseVelocity, txOf };
 });

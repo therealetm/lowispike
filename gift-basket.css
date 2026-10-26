@@ -84,3 +84,9 @@ html[data-theme="light"] .gb-state.gb-low, html[data-theme="light"] .gb-linkmsg.
 .gb-round:active { transform: scale(.94); }
 .gb-count { min-width: 52px; text-align: center; font-size: 13px; opacity: .7; }
 @media (prefers-reduced-motion: reduce) { .gb-swipe, .gb-swipe.gb-fly, .gb-round:active { transition: none; transform: none; } }
+/* Oct 26 2026 (MAYA-HANDOFF 0.34): the whole cart as a basket ("Someone else pays" in the Supermarket cart) */
+.gb-items .gb-q { font-style: normal; font-weight: 700; opacity: .8; margin-left: 2px; }
+.gb-fromcart .gb-items { margin-top: 4px; }
+.gb-left { margin: 4px 4px 2px; }
+.gb-wholecart, .gb-cartoff { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; margin: 6px 0 4px; white-space: normal; line-height: 1.2; }
+.gb-cartoff { margin-top: 10px; opacity: .9; }

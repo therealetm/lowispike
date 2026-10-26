@@ -153,6 +153,8 @@
             const dc = D.getElementById('drChip'), m = dc ? String(dc.textContent || '').match(/(\d+)\s*\/\s*(\d+)/) : null;
             out.push({ k: 'goal', on: !!(dc && dc.classList.contains('won')), ico: ICO.flame, n: m ? m[1] + '/' + m[2] : '', b: T('Weekly goal', 'Wochenziel', 'Meta semanal'), sub: srcLabel('#drChip') });
         }
+        /* Oct 26 (MAYA-HANDOFF 0.40): the Day recap, your companion's look back at today (day-recap.js); it glows from 6 PM */
+        if (W.LowiDayRecap) out.push({ k: 'recap', on: new Date().getHours() >= 18, ico: ICO.moon, b: T('Your day', 'Dein Tag', 'Tu d\u00eda'), sub: T('Day recap', 'Tagesr\u00fcckblick', 'Resumen del d\u00eda') });
         return out;
     }
     function orb(it, attr) {
@@ -161,14 +163,14 @@
     }
     function todayHtml() {
         const its = todayItems(); if (!its.length) return '';
-        return '<nav class="mh-today" aria-label="' + esc(T('Today with ' + name(), 'Heute mit ' + name(), 'Hoy con ' + name())) + '">' + its.map(it => orb(it, 'data-mh="t-' + it.k + '"')).join('') + '</nav>';
+        return '<nav class="mh-today' + (its.length === 4 ? ' n4' : '') + '" aria-label="' + esc(T('Today with ' + name(), 'Heute mit ' + name(), 'Hoy con ' + name())) + '">' + its.map(it => orb(it, 'data-mh="t-' + it.k + '"')).join('') + '</nav>';
     }
     /* a tap on a bubble does what the hidden row did, from outside any sheet (body-trips.js treats a tap inside a sheet differently) */
     function proxy(attr, val) {
         const t = D.createElement('button'); t.type = 'button'; t.hidden = true; t.setAttribute(attr, val);
         D.body.appendChild(t); try { t.click(); } finally { t.remove(); }
     }
-    const TODAY_ACT = { trip: () => proxy('data-bt', 'bar'), sun: () => proxy('data-ls', 'info'), goal: () => proxy('data-dr', 'chip') };
+    const TODAY_ACT = { trip: () => proxy('data-bt', 'bar'), sun: () => proxy('data-ls', 'info'), goal: () => proxy('data-dr', 'chip'), recap: () => W.LowiDayRecap && W.LowiDayRecap.open() };
     function cycleHtml() { try { return W.LowiCycleWorld && W.LowiCycleWorld.hubHtml ? W.LowiCycleWorld.hubHtml() : ''; } catch (e) { return ''; } }
     function advHtml() { try { return W.LowiAdventureTiers && W.LowiAdventureTiers.html ? W.LowiAdventureTiers.html() : ''; } catch (e) { return ''; } }
     function rankHtml() { try { return W.LowiMistyRank && W.LowiMistyRank.html ? W.LowiMistyRank.html() : ''; } catch (e) { return ''; } }
@@ -399,6 +401,7 @@
     const DAY_ICO = { macro: ICO.macro, inside: ICO.inside };
     function dayItems() {
         const out = [];
+        if (W.LowiDayRecap) out.push({ k: 'recap', b: T('Day recap', 'Tagesr\u00fcckblick', 'Resumen del d\u00eda'), sub: '', ico: ICO.moon });
         D.querySelectorAll('#g2hTiles [data-g2h-open]').forEach(b => {
             const k = b.dataset.g2hOpen, lab = b.querySelector('b'), ic = b.querySelector('.g2h-ic'), sm = b.querySelector('small');
             if (!k || out.some(o => o.k === 'g-' + k)) return;
@@ -412,6 +415,7 @@
         if (k.indexOf('g-') === 0) return proxy('data-g2h-open', k.slice(2));
         if (k === 'macro') return proxy('data-sp', 'goals');
         if (k === 'inside') { const r = D.getElementById('brRow'); if (r) r.click(); }
+        if (k === 'recap' && W.LowiDayRecap) W.LowiDayRecap.open();
     }
     function dayHtml() {
         const its = dayItems();

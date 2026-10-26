@@ -1499,6 +1499,21 @@ What to build (extend existing code, no second version of anything):
 Task "LOWiSPIKE: evening catch-up bubble checklist for end-of-day users" (Sesame, 26 Oct ~23:29), worktree
 wt-evening-catchup, branch evening-catchup, COORD-evening-catchup.md. Status: requested, building.
 
+### 0.40 Day recap: "setz das um" (Emmanuel, voice message in German, Mon 26 Oct 2026 11:22 PM CET)
+
+His words: "Und setze das mit dem ... Day-Recap, whatever we call it, setz das um." (= build the Day Recap and put it live;
+he wasn't sure of the name). No earlier spec was found in the repo (searched recap / day recap / daily recap /
+Tagesrückblick / end of day / summary of the day in MAYA-HANDOFF, DECISIONS, docs, COORD and HANDOFF files and branches).
+Decided (Maya, he wants no questions): **Day recap = your companion's read-only look back at today**, built only from what
+the app already holds for today: meals with their likely-blood-sugar-spike verdicts, water, the longest gap between meals,
+Move minutes, XP earned today and the companion's level. A glass panel with shuffled warm companion lines (never the same
+text twice in a row), one honest takeaway and one gentle nudge for tomorrow. No medical promises, "likely blood sugar
+spike", never "insulin spike". EN/DE/ES. Reached from the companion card (long press) and My day; never auto-opened and
+no notification, so it does not compete with 0.39's evening catch-up greeting. 0.39 is the logging checklist for people who
+could not log during the day; 0.40 only shows back what is there (and links to the catch-up when the day is empty).
+Task "LOWiSPIKE: build and ship the Day Recap" (Sesame, 26 Oct ~23:30), worktree wt-day-recap, branch day-recap,
+COORD-day-recap.md. Status: requested, building.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

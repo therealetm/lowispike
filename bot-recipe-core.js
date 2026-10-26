@@ -20,7 +20,7 @@
         save: ['Save', 'Merken', 'Guardar'],
         saved: ['Saved', 'Gemerkt', 'Guardada'],
         kitchen: ['Add to kitchen', 'In die Küche', 'A mi cocina'],
-        inKitchen: ['{n} in your kitchen', '{n} in deiner Küche', '{n} en tu cocina'],
+        inKitchen: ['{n} in your kitchen', '{n} in der Küche', '{n} en tu cocina'],
         allHave: ['All in your kitchen', 'Alles in deiner Küche', 'Todo en tu cocina'],
         undo: ['Undo', 'Rückgängig', 'Deshacer'],
         openA: ['Open the recipe: where to buy, prices, ingredients', 'Rezept öffnen: wo kaufen, Preise, Zutaten', 'Abrir la receta: dónde comprar, precios, ingredientes'],
@@ -28,7 +28,7 @@
         saveA: ['Save to your recipes', 'In deinen Rezepten merken', 'Guardar en tus recetas'],
         kitchenA: ['Put the {n} products into your Kitchen (At home)', 'Die {n} Produkte in deine Küche legen (Zuhause)', 'Poner los {n} productos en tu cocina (En casa)'],
         kitchenA1: ['Put the foods into your Kitchen (At home)', 'Die Lebensmittel in deine Küche legen (Zuhause)', 'Poner los alimentos en tu cocina (En casa)'],
-        added: ['Added to your Kitchen: {list}', 'In deiner Küche: {list}', 'En tu cocina: {list}'],
+        undoA: ['Undo: {n} in your kitchen', 'Rückgängig: {n} in der Küche', 'Deshacer: {n} en tu cocina'],
         hadAll: ['Already in your Kitchen', 'Schon in deiner Küche', 'Ya está en tu cocina'],
         undone: ['Taken out of your Kitchen again', 'Wieder aus der Küche genommen', 'Quitado de tu cocina'],
         savedT: ['Saved to your recipes', 'In deinen Rezepten gemerkt', 'Guardada en tus recetas'],
@@ -110,9 +110,11 @@
             ' aria-label="' + esc(aria || label) + '"><span class="crb-i" aria-hidden="true">' + ic + '</span><span class="crb-l">' + esc(label) + '</span></button>';
         let kit;
         if (o.kitchen === 'done') {
-            kit = '<span class="crb-b crb-kitchen crb-on" role="status"' + k + '><span class="crb-i" aria-hidden="true">✓</span><span class="crb-l">' +
-                esc(o.added ? t('inKitchen', l, o.added) : t('allHave', l)) + '</span></span>' +
-                (o.undo ? '<button type="button" class="crb-undo" data-spend data-crb="undo"' + k + '>' + esc(t('undo', l)) + '</button>' : '');
+            /* 0.27: ONE pill "✓ 6 in your kitchen · Undo" (Undo a small text button at its end, never a separate squeezed tile) */
+            const said = o.added ? t('inKitchen', l, o.added) : t('allHave', l);
+            kit = '<span class="crb-b crb-kitchen crb-on crb-done" role="status"' + k + '><span class="crb-i" aria-hidden="true">✓</span><span class="crb-l">' + esc(said) + '</span>' +
+                (o.undo ? '<button type="button" class="crb-undo" data-spend data-crb="undo"' + k + ' aria-label="' + esc(o.added ? t('undoA', l, o.added) : t('undo', l)) + '">' + esc(t('undo', l)) + '</button>' : '') +
+                '</span>';
         } else if (o.kitchen === 'have') {
             kit = '<span class="crb-b crb-kitchen crb-on" role="status"' + k + '><span class="crb-i" aria-hidden="true">✓</span><span class="crb-l">' + esc(t('allHave', l)) + '</span></span>';
         } else {

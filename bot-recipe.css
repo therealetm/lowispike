@@ -1,26 +1,39 @@
-/* bot-recipe.css — the labelled buttons under a Community recipe card (MAYA-HANDOFF 0.18). Glass pills, 44 px taps. */
+/* bot-recipe.css — the labelled buttons under a Community recipe card (MAYA-HANDOFF 0.18). Glass pills, 44 px taps; 0.27 made them compact one-line pills. */
 #cmPaneChat .cs-meal-n,.cs-meal-n{appearance:none;-webkit-appearance:none;background:none;border:0;margin:0;padding:2px 0;min-height:0;min-width:0;
-  font:inherit;font-weight:650;font-size:15px;line-height:1.25;color:inherit;text-align:left;cursor:pointer;overflow-wrap:anywhere;
+  font:inherit;font-weight:650;font-size:15px;line-height:1.25;color:inherit;text-align:left;cursor:pointer;overflow-wrap:break-word;
   text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 35%,transparent);text-underline-offset:3px;border-radius:6px;box-shadow:none}
 .cs-meal-n:focus-visible{outline:2px solid var(--accent,#9cdac7);outline-offset:2px}
-.crb-row{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;gap:6px;margin:8px 0 4px;max-width:min(272px,72vw);min-width:0}
+/* 0.27 (Emmanuel, Oct 26): compact glass pills, one line each, never a word broken. Open recipe leads (full width), Cook it | Save
+   share a row, the kitchen pill has its own full-width row in every state, so Add to kitchen -> "✓ 6 in your kitchen · Undo" never jumps.
+   Pills are 36 px to the eye and 44 px to the finger (::before reaches 4 px above and below; rows are 8 px apart, so no overlap). */
+.crb-row{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:8px 6px;margin:8px 0 4px;max-width:min(272px,72vw);min-width:0}
 .crb-row.crb-one{grid-template-columns:1fr}
-.crb-kwrap{display:flex;gap:6px;min-width:0;align-self:stretch}
-.crb-row>.crb-b,.crb-kwrap>.crb-b{align-self:stretch;height:auto!important;max-height:none!important}
+.crb-row .crb-open{grid-column:1/-1}
+.crb-kwrap{grid-column:1/-1;display:flex;min-width:0}
 .crb-kwrap>.crb-b{flex:1 1 auto}
-#cmPaneChat .crb-b,.crb-b{appearance:none;-webkit-appearance:none;display:flex;align-items:center;gap:6px;min-height:44px;min-width:0;margin:0;
-  padding:7px 10px;border-radius:13px;box-sizing:border-box;font:inherit;font-size:13px;font-weight:650;line-height:1.2;text-align:left;color:inherit;
-  background:color-mix(in srgb,currentColor 7%,transparent);border:1px solid color-mix(in srgb,currentColor 20%,transparent);
+#cmPaneChat .crb-b,.crb-b{appearance:none;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;margin:0;
+  box-sizing:border-box;font:inherit;font-size:13px;font-weight:650;line-height:1.1;text-align:center;color:inherit;white-space:nowrap;
+  background:color-mix(in srgb,currentColor 7%,transparent);border:1px solid color-mix(in srgb,currentColor 18%,transparent);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
   box-shadow:inset 0 1px 0 #ffffff14;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s ease,background .15s ease}
-.crb-b .crb-i{flex:none;font-size:15px;line-height:1}
-.crb-b .crb-l{min-width:0;overflow-wrap:anywhere}
+.crb-row .crb-b{position:relative;height:36px!important;min-height:0!important;max-height:none!important;padding:0 12px;border-radius:999px}
+.crb-row .crb-b::before{content:"";position:absolute;left:0;right:0;top:-4px;bottom:-4px}
+.crb-b .crb-i{flex:none;font-size:14px;line-height:1}
+.crb-b .crb-l{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #cmPaneChat .crb-open,.crb-open{background:color-mix(in srgb,var(--accent,#9cdac7) 24%,transparent);border-color:color-mix(in srgb,var(--accent,#9cdac7) 60%,transparent);
-  box-shadow:inset 0 1px 0 #ffffff22,0 0 14px color-mix(in srgb,var(--accent,#9cdac7) 22%,transparent)}
+  box-shadow:inset 0 1px 0 #ffffff22,0 0 12px color-mix(in srgb,var(--accent,#9cdac7) 18%,transparent)}
 .crb-save[aria-pressed="true"] .crb-i{color:var(--gold,#f2cf72)}
 #cmPaneChat .crb-on,.crb-on{cursor:default;background:color-mix(in srgb,var(--lo,#a9dcb2) 16%,transparent);border-color:color-mix(in srgb,var(--lo,#a9dcb2) 45%,transparent);font-weight:600}
-#cmPaneChat .crb-undo,.crb-undo{appearance:none;flex:none;min-height:44px;min-width:44px;margin:0;padding:6px 9px;border-radius:13px;font:inherit;font-size:12px;font-weight:650;
-  color:inherit;background:transparent;border:1px solid color-mix(in srgb,currentColor 22%,transparent);cursor:pointer}
+/* the added state: "✓ 6 in your kitchen" on the left, Undo a small text button at the right end of the same pill */
+.crb-row .crb-done{justify-content:flex-start;padding-right:0}
+.crb-done .crb-l{flex:1 1 auto;text-align:left}
+#cmPaneChat .crb-undo,.crb-undo{appearance:none;-webkit-appearance:none;position:relative;flex:none;align-self:stretch;display:flex;align-items:center;min-height:0;min-width:44px;
+  margin:0 0 0 4px;padding:0 14px 0 12px;border:0;border-left:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:0 999px 999px 0;
+  font:inherit;font-size:13px;font-weight:700;line-height:1;white-space:nowrap;color:inherit;background:transparent;box-shadow:none;cursor:pointer;
+  text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
+.crb-undo::before{content:"";position:absolute;left:0;right:0;top:-5px;bottom:-5px}
 .crb-b:active:not(.crb-on),.crb-undo:active{transform:scale(.97)}
-.crb-b:focus-visible,.crb-undo:focus-visible{outline:2px solid var(--accent,#9cdac7);outline-offset:2px}
+.crb-b:focus-visible{outline:2px solid var(--accent,#9cdac7);outline-offset:2px}
+.crb-undo:focus-visible{outline:2px solid var(--accent,#9cdac7);outline-offset:-3px}
 @media (prefers-reduced-motion:reduce){.crb-b,.crb-undo{transition:none}.crb-b:active,.crb-undo:active{transform:none}}
 @media (prefers-contrast:more){.crb-b,.crb-undo{border-color:currentColor}}

@@ -1237,7 +1237,22 @@ state is one readable pill ("✓ 6 in your kitchen · Undo", Undo a small text b
 and after, and a short toast (or none) that does not cover the post. Keep BH-041's data-spend on Add to kitchen / Undo.
 Check every place the row is used (Chat recipe posts, a person's meal post with foods) and sibling rows with the same squeeze.
 Task "LOWiSPIKE: fix clunky recipe card buttons after Add to kitchen" (Sesame, 26 Oct), worktree wt-recipe-pills, branch
-recipe-card-pills, COORD-recipe-pills.md. Status: building (see Log for the release).
+recipe-card-pills, COORD-recipe-pills.md. Status: built and released (see Log).
+
+What shipped (0.27): bot-recipe-core.js rowHTML + bot-recipe.css. Three tidy rows of 36 px glass pills (44 px to the finger via
+::before, rows 8 px apart so hit areas never overlap): Open recipe (full width, accent) | Cook it · Save | kitchen pill (full width,
+its own row in every state). After Add to kitchen the same pill reads "✓ 6 in your kitchen" with Undo as a small underlined text
+button at its right end (data-spend kept, aria-label "Undo: 6 in your kitchen"). Row height 124 px before and after (old: 128 -> 301
+px). Labels are nowrap + ellipsis; nothing in bot-recipe.css can split a word. DE inKitchen shortened to "{n} in der Küche".
+No toast from a card tap (the pill confirms); the recipe page (#p2Rec) keeps a short "✓ 6 in your kitchen" toast. Why three rows,
+not two: the button area in a chat bubble is 228 px on iPhone 13 (217 on SE); three labelled pills side by side do not fit in
+German. Tests: tests/recipe-card-pills.test.cjs (6, all fail on the old code). Browser proof: tools/bot-recipe/pills.cjs
+(WebKit iPhone 13 EN/DE/ES, iPhone SE DE, iPad DE, Chromium EN: all pass; the old code fails 12 of 17 in DE and reproduces the
+screenshot: the green text on 14 lines, 234 px tall, outside the bubble, toast over the post).
+The row is only used by Community Chat (bot recipe posts + a person's meal post with foods); Shuffle does not use it.
+For the bug hunt (not touched, other owners): overflow-wrap:anywhere is still on text in narrow flex columns in community-chat.css
+(.cs-meal-n), foryou.css (.fyb-from/.fyb-to/.fyb-pt), grocery-bucket.css (.gb-nm), herb-quests.css (.hq-food b), herb-shop.css
+(.hs-modes): check each for the same letter-by-letter squeeze at 390 px in DE.
 
 ### 0.29 Cook opens on Kitchen first + Cook tabs reorderable like Community's (Emmanuel, voice + screenshot, Mon 26 Oct 2026 about 4:00 PM CET)
 

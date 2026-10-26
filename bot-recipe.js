@@ -99,22 +99,23 @@
     }
     let kq = 0;
     root.addEventListener('lowi:kitchen', () => { if (kq) return; kq = setTimeout(() => { kq = 0; refreshAll(); }, 0); });
-    function addKitchen(card) {
+    function addKitchen(card, page) {
         const r = C.addAll(kitState(), card.foods, Date.now(), tr);
         if (r.added.length && !kitSave(r.state)) return;
         done[card.key] = { ids: r.added.map(x => x.id) };
         /* a product you marked "not at home" on this recipe before counts as at home now */
         try { if (card.id && P2() && P2().homeClear) P2().homeClear(card.id); } catch (e) {}
         const l = lang();
-        say(r.added.length ? C.t('added', l).replace('{list}', r.added.map(x => x.n).join(', ')) : C.t('hadAll', l));
+        /* 0.27: on a card the pill itself says "✓ 6 in your kitchen" (no long toast over the post); the recipe page gets a short one */
+        page && say(r.added.length ? '✓ ' + C.t('inKitchen', l, r.added.length) : C.t('hadAll', l));
         try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) {}
     }
-    function undoKitchen(card) {
+    function undoKitchen(card, page) {
         const d = done[card.key]; if (!d) return;
         kitSave(C.undo(kitState(), d.ids));
         delete done[card.key];
         try { if (card.id && P2() && P2().repaint) P2().repaint(); } catch (e) {}
-        say(C.t('undone', lang()));
+        page && say(C.t('undone', lang()));
     }
     /* capture: the bubble around the row must not open its ··· menu on these taps */
     D.addEventListener('click', e => {
@@ -128,8 +129,8 @@
         else if (a === 'cook') cook(card.id);
         else if (a === 'save') {
             try { if (root.LowiBook) root.LowiBook.toggle(card.id); } catch (e) {} /* it says Saved / Removed itself */
-        } else if (a === 'kitchen') addKitchen(card);
-        else if (a === 'undo') undoKitchen(card);
+        } else if (a === 'kitchen') addKitchen(card, !!b.closest('#p2Rec'));
+        else if (a === 'undo') undoKitchen(card, !!b.closest('#p2Rec'));
         if (a === 'kitchen' || a === 'undo' || a === 'save') {
             repaint(card.key, a);
             try { if (card.id && P2() && P2().repaint && b.closest('#p2Rec')) P2().repaint(); } catch (e) {}

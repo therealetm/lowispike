@@ -557,16 +557,19 @@
         render();
         return true;
     }
-    /* "Start next journey": starts the trip, closes the sheets and the Today sheet, and lets Misty fly her galaxy
-       on autopilot (misty-pad.js) so you watch her travel in the real world, with the countdown in the journey row. */
+    /* "Start next journey": starts the trip and closes the sheets and the Today sheet, so you are back on Home with the
+       countdown in the journey row.
+       Oct 26 (bug hunt run 44; Emmanuel: "You know the auto fly. If they want to manually tap, let them do that. But not
+       automatically. It's quite annoying and then the UI breaks."): it no longer switches the controller into autopilot
+       480 ms later. That autopilot turned on the clean flight view (lw-clean-auto), hid every Home button for the whole
+       30 min journey and flew the camera off, although only a journey was asked for. Autopilot is only ever the user's own
+       three taps on the controller (misty-pad.js userMode). tests/journey-no-autopilot.test.cjs */
     function startNext(id) {
         const st = body(), now = Date.now(), nx = next(st, now, tooTired());
         if (nx.kind !== 'ready') { if (nx.kind === 'tired') { try { if (W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('tired')); } catch (e) {} } return false; }
         if (!goPlace(byId(id) ? id : nx.place)) return false;
         try { if (R()) R().closeAll(); } catch (e) {}
         try { const H = W.LowiWorldHome; if (H && H.state && H.state.today && H.openToday) H.openToday(false); } catch (e) {}
-        let calm = false; try { calm = W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
-        setTimeout(() => { try { if (W.LowiPad && W.LowiPad.mode) W.LowiPad.mode('auto'); } catch (e) {} }, calm ? 0 : 480);
         return true;
     }
     function collect() {

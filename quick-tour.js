@@ -24,8 +24,8 @@
     const VIDEO = {
         src: { en: 'media/quick-tour-en.mp4' },
         poster: 'media/quick-tour-poster.jpg',
-        seconds: 45,
-        version: '1'
+        seconds: 63,
+        version: '2'
     };
     const SRC = VIDEO.src, POSTER = VIDEO.poster;
     const SEEN_KEY = 'lowi.quickTour.seen';

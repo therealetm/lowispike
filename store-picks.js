@@ -496,8 +496,9 @@
         const a = b.getAttribute('data-stp-qa'), now = Date.now();
         if (a === 'undo') {
             if (Q.fresh(qaNoteAt, now) || !qaUndo) return true;
-            const u = qaUndo; qaUndo = null; u();
+            const u = qaUndo; qaUndo = null;
             const n = ov.querySelector('.stp-qa-note'); if (n) n.classList.remove('on', 'act');
+            u(); /* shows "Taken back out of your kitchen" */
             return true;
         }
         const i = +b.getAttribute('data-stp-qa-i'), s = shown[i], sh = shelf(); if (!s || !sh) return true;

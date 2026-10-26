@@ -1111,6 +1111,27 @@ for. Update the Maya handoff if you can't finish this task."
 - Task "LOWiSPIKE: Supermarket = our Choosy, cart, Seller Zone out, swipe-to-pay groceries" started; branch
   `supermarket-cart-swipe`, COORD file `/home/sprite/COORD-cart-swipe.md`. Report only once live.
 
+### 0.23 One ultimate scanner: the main page scan shows the same compact card as Shopping scan (Emmanuel, Mon 26 Oct 2026 about 1:42 PM CET, voice + 5 screenshots)
+
+His words: "I've seen the new update image one, but I'm confused why this is the image one scanner. This is the preview,
+but the main page scanner gives me still this old overwhelming preview. Sync them. You know. Or is there a reason why
+the main page scanner looks different? If not, sync them logically, so it makes sense. I like the main main page one.
+Even though I feel like there are few things missing there that we have, but the UI needs to make sense, you know? It
+needs to be synchronized. So, just make the scanning thingy, just optimize it. So, it's one thing, one ultimate scanner."
+- Screenshots: the NEW compact Shopping scan card over the camera (Erdnuss Flips: one ESTIMATE verdict, Shop finds,
+  In my kitchen, Add to cart, Details) vs the OLD long sheet the main page scan still opens (companion bubble, SPIKE
+  ESTIMATE card, Buy this instead x3 + Seller Zone, Skip it traffic light, Pack serving, Cheaper at other stores, No
+  bubble for this one, Best swap recipe, Details, Data confidence, Community deals, Browse spike lists). The verdict shows
+  three times and carbs four times there.
+- What it means: ONE result card for every scan entry (main page Scan, Log meal's Scan, Shopping scan, Kitchen scan,
+  a typed name in the camera), built on the compact card (shop-scan.js, extended, not a second card). One verdict per
+  screen. The useful old parts go in once, logically: a better pick (the swap) when the verdict needs one, I ate this
+  (logs the meal; primary when opened from Log meal), the Bubble Dex catch for Lower impact products, and portion / why /
+  per 100 g / ingredients / source inside Details. Actions follow where you opened it; shopping extras (Shopping pill,
+  cart chip, Shop finds) stay in the camera opened from Shop. Swaps are not linked to Seller Zone (task 0.22).
+- Task "LOWiSPIKE: one ultimate scanner" started; branch `one-scanner`, COORD file `/home/sprite/COORD-one-scanner.md`.
+  Report only once live.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

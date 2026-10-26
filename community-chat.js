@@ -504,7 +504,7 @@ function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)r
    snapshot of Home any more). From anywhere else the galaxy just settles in from a little closer. */
 function intro(){const g=D.getElementById('cgGalaxy');if(!g||!g.removeAttribute)return;g.__intro=1;if(D.documentElement.classList.contains('gx-out'))return;if(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches)return;g.removeAttribute('data-intro');void g.offsetWidth;g.setAttribute('data-intro','1');clearTimeout(introT);introT=setTimeout(()=>{g.removeAttribute('data-intro');},1100);}
 let enterAt=0,ro=null;
-function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();koRetry=0;if(!camUser)cam=null;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();}}
+function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();koRetry=0;if(!camUser)cam=null;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();if(rec)recStop(false);}}
 function watch(){if(watching||!W.MutationObserver)return;const t=D.getElementById('tab-foryou');if(!t)return;watching=true;new W.MutationObserver(onShow).observe(t,{attributes:true,attributeFilter:['class']});}
 function roomFlag(){const p=D.getElementById('cmPaneChat'),on=threadOpen&&!!(p&&p.hasAttribute&&p.hasAttribute('data-spirit-chat'));if(p&&p.dataset){if(on)p.dataset.room='1';else delete p.dataset.room;}try{D.documentElement.classList.toggle('cr-room',on);}catch(e){}roomDress(p,on);}
 /* Oct 22 (item 37): the room's composer floats over the messages (community-tg.css). The list keeps its last message clear of it, and of a reply bar or photo
@@ -796,7 +796,12 @@ function recStart(mode,x){if(rec||voiceBusy||photoBusy)return;if(!scope){notice=
   try{if(r.ac){const src=r.ac.createMediaStreamSource(stream),an=r.ac.createAnalyser();an.fftSize=512;src.connect(an);r.an=an;r.buf=new Uint8Array(an.fftSize);}}catch(e){r.an=null;}
   r.tick=setInterval(()=>recTick(r),80);recUI();
  }).catch(e=>{recClose(r);if(rec===r)rec=null;recUI();refresh();const n=e&&e.name||'';micCard(/NotFound|DevicesNotFound|Overconstrained/.test(n)?'none':/NotSupported|TypeError/.test(n)?'old':'denied');});}
-function recTick(r){if(rec!==r||!r.t0)return;const sec=(Date.now()-r.t0)/1000,t=D.getElementById('csRecTime');if(t)t.textContent=mmss(Math.floor(sec));
+/* BH-046 P-SESSION-OUTLIVES-SCREEN: leaving the chat while a voice message records (room back, Community closes, Home,
+   a sheet that hides it) used to keep the microphone open invisibly, and at the 2 minute cap it sent itself. The recording
+   now lives only while its bar is on screen: hidden for ~a quarter second = thrown away, never sent. */
+function recShown(e){if(!e||!e.isConnected)return false;const b=e.getBoundingClientRect();if(!b.width||!b.height||b.bottom<=0||b.right<=0||b.top>=(W.innerHeight||D.documentElement.clientHeight)||b.left>=(W.innerWidth||D.documentElement.clientWidth))return false;
+ if(e.checkVisibility)return e.checkVisibility({visibilityProperty:true,opacityProperty:true});for(let x=e;x&&x.nodeType===1;x=x.parentElement){const cs=getComputedStyle(x);if(cs.display==='none'||cs.visibility==='hidden'||cs.opacity==='0')return false;}return true;}
+function recTick(r){if(rec!==r||!r.t0)return;if(!recShown(D.querySelector('#csRec .cs-rec'))){if((r.gone=(r.gone||0)+1)>=3)recStop(false);return;}r.gone=0;const sec=(Date.now()-r.t0)/1000,t=D.getElementById('csRecTime');if(t)t.textContent=mmss(Math.floor(sec));
  let lv=0;if(r.an){try{r.an.getByteTimeDomainData(r.buf);let sum=0;for(let i=0;i<r.buf.length;i++){const d=(r.buf[i]-128)/128;sum+=d*d;}lv=Math.min(1,Math.sqrt(sum/r.buf.length)*4.2);}catch(e){lv=0;}}
  if(!r.an||(!lv&&r.ac&&r.ac.state!=='running'))lv=.18+.14*Math.abs(Math.sin(sec*5.3))*Math.abs(Math.sin(sec*1.7+1));
  r.levels.push(lv);if(r.levels.length>64)r.levels.shift();

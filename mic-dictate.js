@@ -242,6 +242,14 @@
     return { value: el.value, s: focused ? el.selectionStart : null, e: focused ? el.selectionEnd : null };
   }
 
+  function shownField(el) {
+    if (!el || !el.isConnected || D.hidden) return false;
+    var b = el.getBoundingClientRect();
+    if (!b.width || !b.height) return false;
+    if (el.checkVisibility) return el.checkVisibility({ visibilityProperty: true, opacityProperty: true });
+    for (var x = el; x && x.nodeType === 1; x = x.parentElement) { var cs = getComputedStyle(x); if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') return false; }
+    return true;
+  }
   function start(rec) {
     if (session) stop('switch');
     var eng = engine();
@@ -272,6 +280,12 @@
     s = { rec: rec, stop: function (why) { if (why === 'switch' || why === 'gone') action = ''; try { why === 'tap' ? r.stop() : r.abort(); } catch (e) { } } };
     session = s;
     setState(rec, 'listen');
+    // BH-046 P-SESSION-OUTLIVES-SCREEN: closing Kitchen or the chat hides the field but keeps it in the page, so the old
+    // "field removed" check never fired and the microphone kept listening into a hidden box. Hidden field = stop.
+    var miss = 0, watch = setInterval(function () {
+      if (session !== s || ended) { clearInterval(watch); return; }
+      if (shownField(el)) miss = 0; else if (++miss >= 2) s.stop('gone');
+    }, 200);
     // WebKit bug 317741: after the app played audio, recognition can hang without starting
     dog = setTimeout(function () { if (!started && !ended) { action = appleTouch ? 'keyboard' : 'failed'; try { r.abort(); } catch (e) { } setTimeout(function () { if (!ended) r.onend(); }, 400); } }, 3000);
     r.onstart = r.onaudiostart = function () { started = true; };
@@ -292,6 +306,7 @@
       if (ended) return;
       ended = true;
       clearTimeout(dog);
+      clearInterval(watch);
       if (session === s) session = null;
       el.value = base.value;
       var got = insert(rec, finalText, base);

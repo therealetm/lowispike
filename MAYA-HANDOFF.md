@@ -31,6 +31,18 @@ Ask him only what only he can answer (his real phone, his keys, a sign-in code),
 
 **Standing rule (Emmanuel, 23 Oct 2026): every Maya watches for her own limit and hands over by herself.** The first task that ends "reached its limit" after 0 attempts means: run the handover runbook in section 0.6 ("Seeing the limit coming") yourself, directly in the chat, then tell him in one voice note. He never has to ask or explain it.
 
+**Standing rule (Emmanuel, voice message, Mon 26 Oct 2026 about 5:30 AM Berlin): updates ALWAYS ship silently. Never send update
+notifications.** His words: "First of all, you're supposed to push out the update silently. It's annoying when people get notified
+of every update. So, no more notification updates. ... If you can, remove the notification from everyone's phone ... If you can't,
+just don't be sending out no more update notifications to people." He woke up early and saw the in-app "I've got something new for
+you!" card (Later / Update) that the Give a hand release (20261025-233717, released with --news) put on every phone running an older
+build. So: no release ever asks users to update, shows "Update loaded", sends a push about a release or posts a release announcement
+to Community. version.json `loud` stays frozen at `20000101-000000` forever (old builds read it and stay quiet). The in-app What's New
+tour after a feature release stays (he wants it, with a speaker on every card). Same message: one What's New card ("New · 2 of 2 —
+Give a hand") had no speaker. "Why is that removed? I hope you haven't removed it from the tutorial itself." Every tutorial and
+What's New card must have its speaker and recorded voice in EN/DE/ES. Task "LOWiSPIKE: silent updates only + tutorial speaker fix"
+(26 Oct) builds both.
+
 **This is the Mickey 17 workflow (section 0.6).** Every Maya hands over to the next one the same way: Maya 5 to
 Maya 6, Maya 6 to Maya 7, and on. If you are a new Maya, section 0.6 is your job description for the handover, and
 you pass it on to the Maya after you. Emmanuel should never have to explain it again.
@@ -1268,6 +1280,9 @@ scripts/release.sh "what users get, in one line" --news news.json
 - **Food, health and fasting texts follow docs/NUTRITION-POLICY.md** (his nutrition audit, 24 Oct 2026). No cooled-rice
   pass, no small-portion tips for craving food, vinegar only optional, "remission" not "cure".
 
+- **Releases are silent, always (26 Oct 2026).** No update notification of any kind to users: no "New version" / "I've got something
+  new for you!" ask, no "Update loaded", no push, no Community post about a release. `loud` in version.json stays `20000101-000000`;
+  `scripts/release-check.cjs` fails otherwise. What's New tour steps inside the app stay, each with its speaker.
 - **Updates: a voice note plus a text checklist** with ✅ done, ⏳ in progress, 📝 to do, and the done items stay in
   the list. This is his current instruction (19 Oct) and replaces the older "no voice recordings" line.
 - **Post anything that needs him right in the chat** (approvals, sign-ins, GitHub codes, task updates), not only in

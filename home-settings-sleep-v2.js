@@ -315,7 +315,7 @@
         weather: { has: () => !!(root.LowiTopBar && fn(root.LowiTopBar, 'openWeather')), run: () => root.LowiTopBar.openWeather() },
         /* Oct 19 2026 (Emmanuel): replay the guided tour (tutorial.js / tutorial-steps.js); Settings closes first, the tour waits for it */
         tutorial: { has: () => !!(root.LowiTutorial && fn(root.LowiTutorial, 'start')), run: () => root.LowiTutorial.start({ from: 'settings' }) },
-        /* Oct 26 2026 (MAYA-HANDOFF 0.38): the 45-second video tour (quick-tour.js), right next to Tutorial; Settings closes first */
+        /* Oct 26 2026 (MAYA-HANDOFF 0.38): the video tour (quick-tour.js, VIDEO config), right next to Tutorial; Settings closes first */
         quickTour: { has: () => !!(root.LowiQuickTour && fn(root.LowiQuickTour, 'open')), run: () => root.LowiQuickTour.open() },
         /* Oct 19 2026 (Emmanuel): weigh in, BMI with its category, body-fat estimate and the Then/Now level-up track (body-stats.js) */
         body: { has: () => !!(root.LowiBodyStats && fn(root.LowiBodyStats, 'open')), run: () => root.LowiBodyStats.open() },

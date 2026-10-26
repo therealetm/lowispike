@@ -87,7 +87,7 @@ function want(back){const s=S();if(!s)return false;try{if(R().isAccount&&R().isA
 /* Oct 21 (Eman: "apply everything he said in this video", Build in Public: simplify conversion pages): the start is 3 screens,
    not 5. 0 = what LOWiSPIKE is + why it helps + proof, 1 = your first name, 2 = first XP + free account. The how-you-play
    controls are taught in the app (misty-hints.js, misty-pad.js hints, the tutorial), not before the account. v:3 moves older saved progress. */
-/* Oct 26 2026 (MAYA-HANDOFF 0.38): the Quick tour pill (quick-tour.js opens the 45-second video, muted, Skip any time) */
+/* Oct 26 2026 (MAYA-HANDOFF 0.38): the Quick tour pill (quick-tour.js opens the promo video set in its VIDEO config, muted, Skip any time) */
 function qtPill(){const Q=window.LowiQuickTour;return Q&&Q.label?'<button type="button" class="hs-qt" data-qt="open"><i aria-hidden="true">\u25B6</i>'+esc(Q.label(lang()))+'</button>':'';}
 function html(){let st=hs();if(!st){st={v:3,step:0,seed:Math.floor(Math.random()*1e6),herb:'',user:''};hsSet(st);}
  if(st.v!==3){const o=+st.step||0;st.step=st.v===2?(o>=4?2:o>=1?1:0):(o>=3?2:o>=1?1:0);st.v=3;hsSet(st);}

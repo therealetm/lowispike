@@ -1465,6 +1465,12 @@ What to build:
   onboarding stays fast, EN/DE/ES labels. Silent release (scripts/release.sh, no notification).
 Task "LOWiSPIKE: 60-second Reels/TikTok promo video + onboarding quick tour" (Sesame, 26 Oct), worktree wt-quick-tour,
 branch quick-tour-video, COORD-quick-tour.md. Status: started 21:20 CET.
+- Update (Emmanuel, 26 Oct ~22:30 CET): he found the 45-second cut boring; a separate task remakes it in the style of a TikTok
+  example he sent. No German version of the old cut. The Quick tour ships now with the current cut and must be easy to swap:
+  **to swap the video, edit only `VIDEO` at the top of quick-tour.js** (src per language, poster, seconds, version). Put the new
+  mp4 (H.264 + AAC, 720x1280, faststart, under 4 MB) and a small poster jpg in media/, set seconds to its real length (the pill
+  says "Quick tour · N s"; tests/quick-tour-swap.test.cjs checks the file's length) and bump version (cache-buster on the URL).
+  The tour card text names no length, so no new voice recordings are needed. Live check: `node tests/quick-tour-live.cjs`.
 
 ## 1. What LOWiSPIKE is
 

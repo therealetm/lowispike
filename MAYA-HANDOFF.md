@@ -1441,6 +1441,31 @@ because a long press cannot be found and VoiceOver cannot reach it):
   98 to 118 px (were 96).
 - Probe: tools/quick-add/probe.cjs (needs /home/sprite/BUGHUNT/playtest/lib.cjs) (WebKit iPhone 13, iPad portrait es, iPad landscape de, Reduce Motion).
 
+### 0.38 60-second promo video for TikTok / Reels / Stories + the same video as a "Quick tour (60 sec)" in onboarding (Emmanuel, voice message, Mon 26 Oct 2026 9:12 PM CET)
+
+His words: "I need you to create a shortcut tutorial. I have a long tutorial for people who want to take the time. But I need
+like almost a 60-second shortcut, like an advert for my app, that I can post on my Instagram story or even post on TikTok,
+that pretty much shows people, highlights the things that are in our app. Just like you did with the App Store. But this
+time it's a video, you basically speedrunning through our app, showing them highlight stuff. Obviously strategize here when
+you make this video so that you really show the main things that people will want to see, care about, and will want to get
+this app. Use your voice. Make sure your voiceover is nice, or if you have a better voiceover, then go use that one. I've
+sent you multiple voice notes. Maybe you can even clone my voice and use it. Just make it a really good TikTok / Instagram
+Reels / story video, that's why I want 60-second, walk-through video of the app. And then that same video, we can even have
+in our onboarding page, quick tour basically. That'd be cool."
+
+What to build:
+- Part 1, the video: vertical 1080x1920, 45 to 60 s, H.264 MP4. Hook in the first 2 s (not knowing which foods spike you),
+  speedrun highlights, call to action at the end (link in bio). Real footage of the app in a simulated iPhone 13 (Playwright
+  WebKit) with fake test data only, production Supabase blocked. Burned-in captions inside the TikTok/Reels safe zones,
+  "likely blood sugar spike" (never "insulin spike"), no medical promises, "your companion" (never "Misty"). Voiceover: the
+  chat Maya's own voice (sesame.voice_notes). His own voice can't be cloned with our tools (the voice tool only records the
+  Maya voice). Sent in the chat and to his Gmail. Source and scripts: agent-harness branch, promo/ (no private data).
+- Part 2, onboarding: the same video as an optional "Quick tour (60 sec)" next to the long guided tutorial, so people pick
+  short or long. Skippable, plays inline, starts muted with captions burned in, tap for sound, small web file, lazy-loaded so
+  onboarding stays fast, EN/DE/ES labels. Silent release (scripts/release.sh, no notification).
+Task "LOWiSPIKE: 60-second Reels/TikTok promo video + onboarding quick tour" (Sesame, 26 Oct), worktree wt-quick-tour,
+branch quick-tour-video, COORD-quick-tour.md. Status: started 21:20 CET.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

@@ -257,6 +257,12 @@
         const n = cartN(), name = T('Cart', 'Warenkorb', 'Carrito');
         return '<button type="button" class="stp-pill stp-cartbtn" data-stp="cart" aria-label="' + esc(name + (n ? ', ' + n : '')) + '">' + ic.cart + '<span>' + esc(name) + '</span>' + (n ? '<i class="stp-cart-n">' + n + '</i>' : '') + '</button>';
     }
+    /* Oct 26 (MAYA-HANDOFF 0.21): the door to Shop from home (week-basket.js), a week of dinners in one basket, from home */
+    function wbDoor() {
+        if (!W.LowiWeekBasket) return '';
+        return '<button type="button" class="stp-wb" data-stp="weekshop"><span aria-hidden="true">\ud83c\udfe0</span><span class="stp-wb-t"><b>' + esc(T('Shop from home', 'Von zu Hause einkaufen', 'Compra desde casa')) + '</b>' +
+            '<small>' + esc(T('Plan your week of dinners, see the total, send the list', 'Plane deine Abendessen der Woche, sieh die Summe, schick die Liste los', 'Planea tus cenas de la semana, mira el total, env\u00eda la lista')) + '</small></span><span class="stp-wb-go" aria-hidden="true">\u203a</span></button>';
+    }
     function shopActs() {
         const scan = W.LowiShopScan && W.LowiShopScan.open, cart = !!(shelf() && shelf().cartLines);
         if (!scan && !cart) return '';
@@ -354,7 +360,7 @@
             RANGES.map(r => '<button type="button" class="stp-chip' + (S.range === r.id && !S.store ? ' on' : '') + '" data-stp-range="' + r.id + '">' + esc(r.label) + '</button>').join('');
         return shell('<div class="stp-head"><h3>' + esc(T('Which shop?', 'Welcher Laden?', '¿Qué tienda?')) + '</h3><p>' +
             esc(T('Share your location to see the supermarkets nearest to you, or type a town or postcode.', 'Teil deinen Standort, um die Supermärkte in deiner Nähe zu sehen, oder gib einen Ort oder eine Postleitzahl ein.', 'Comparte tu ubicación para ver los supermercados más cercanos, o escribe una ciudad o un código postal.')) + '</p></div>' +
-            '<div class="stp-scroll">' + shopActs() + snackHTML() + '<button type="button" class="stp-go" data-stp="locate"' + (busy ? ' disabled aria-busy="true"' : '') + '>' + ic.pin + '<span>' + esc(T('Share my location', 'Meinen Standort teilen', 'Compartir mi ubicación')) + '</span></button>' +
+            '<div class="stp-scroll">' + wbDoor() + shopActs() + snackHTML() + '<button type="button" class="stp-go" data-stp="locate"' + (busy ? ' disabled aria-busy="true"' : '') + '>' + ic.pin + '<span>' + esc(T('Share my location', 'Meinen Standort teilen', 'Compartir mi ubicación')) + '</span></button>' +
             whereForm() + (msg ? '<p class="stp-msg" role="status">' + esc(msg) + '</p>' : '') + hereHTML() + shopRowsHTML() +
             '<button type="button" class="stp-more stp-skip" data-stp="general">' + esc(T('Skip: show the general lists', 'Überspringen: allgemeine Listen zeigen', 'Omitir: ver las listas generales')) + '</button>' +
             '<h4 class="stp-h4">' + esc(T('Or pick a chain', 'Oder eine Kette wählen', 'O elige una cadena')) + '</h4><div class="stp-chips stp-wrap">' + chains + '</div>' +
@@ -581,7 +587,7 @@
             '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || label(S.range) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>' +
             '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '">' +
             '<label class="stp-tog"><input type="checkbox" data-stp="fails"' + (showFail ? ' checked' : '') + '><span>' + esc(T('Show left out', 'Aussortierte zeigen', 'Ver excluidos')) + '</span></label></div></div>' +
-            '<div class="stp-scroll">' + shopActs() + snackHTML() + gen + inner + '</div>' +
+            '<div class="stp-scroll">' + wbDoor() + shopActs() + snackHTML() + gen + inner + '</div>' +
             '<p class="stp-note">' + esc(T('General food guidance, not medical advice.', 'Allgemeine Ernährungshilfe, keine medizinische Beratung.', 'Orientación general sobre alimentos, no consejo médico.')) + '</p>' +
             footBtns(''));
     }
@@ -687,6 +693,7 @@
         if (a === 'close') return close();
         if (a === 'scanshop') { close(); setTimeout(() => { try { W.LowiShopScan.open(); } catch (x) {} }, 200); return; }
         if (a === 'sellerzone') { setTab('sz'); return; }
+        if (a === 'weekshop') { try { W.LowiWeekBasket.open({ store: S.range }); } catch (x) {} return; }
         if (a === 'mylist') { close(); setTimeout(() => { try { W.tdShopOpen(); } catch (x) {} }, 200); return; }
         if (a === 'cart') { openCart(); return; }
         if (a === 'pick') { view = 'pick'; return paint(); }

@@ -38,6 +38,8 @@ const ORE = { en: 'Oregano', de: 'Oregano', es: 'Orégano' }, SAL = { en: 'No-su
         const eg = S.cartLines().find(l => l.n === 'Eggs'); if (eg && S.setQty) S.setQty(eg.id, 2); });
       await P.evaluate(() => LowiStorePicks.open('home-bloom')); await H.sleep(1500);
       await R.tap('.stp-card .stp-cartbtn'); await H.sleep(1200);
+      /* wait out the 0.26 s entry slide: on a loaded test machine WebKit can still be mid-transition after 1.2 s (measured 24 px low) */
+      for (let i = 0; i < 20; i++) { if (await P.evaluate(() => { const c = document.querySelector('.stp-cartv.in .stp-cart-card'); return !!c && getComputedStyle(c).transform === 'none' && getComputedStyle(c.parentNode).opacity === '1'; })) break; await H.sleep(200); }
       const m = await P.evaluate(() => {
         const q = document.querySelector('.stp-cartv .stp-cart-card'), sc = q && q.querySelector('.stp-cart-scroll'), st = document.querySelector('.stp-card'), qv = document.querySelector('.stp-cartv');
         if (!q) return null; const r = e => e.getBoundingClientRect(), c = r(q), s = r(st);

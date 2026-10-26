@@ -1272,6 +1272,23 @@ swaps after a manual catch) had the same cat match. Task "LOWiSPIKE: Better pick
 (Sesame, 26 Oct), worktree wt-better-pick, branch better-pick-same-kind, COORD-better-pick.md.
 Status: building (see Log for the release).
 
+### 0.31 The companion never goes exploring on her own (Emmanuel, Mon 26 Oct 2026 about 4 PM CET, voice + screenshot)
+
+His words, first: "Also let's remove this feature. It's kind of annoying. Nobody likes it. Nobody's gonna use it. Just
+waste." (screenshot: Home with the companion's bubble empty and "Out exploring · back in 59 min · Tap to call her back").
+Then he changed it: "You know the auto fly. If they want to manually tap, let them do that. But not automatically. It's
+quite annoying and then the UI breaks."
+
+Decision (do not bring the auto trip back):
+- The sun trip (sun-meter.js) no longer starts by itself when the sun fills. Filling the sun only pays the sun bonus.
+  She explores only when the user taps "Send her exploring" (sun full sheet, or the sun info sheet while today's trip is
+  still free). Calling her back still works the same (tap the chip, keep the finds).
+- Body journeys (body-trips.js) no longer set off by themselves after a meal or a workout. Progress still counts; the
+  Today row says "Start next journey" and a tap starts it (that already existed).
+- Old saved state: a trip that started automatically before this change (no `manual` flag) is brought home on the next
+  open with its finds, quietly, no sheet. Trips the user started keep running.
+- The away look was fixed so the manual version is clean (see the commit and tests/companion-manual-explore.test.cjs).
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

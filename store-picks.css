@@ -277,3 +277,26 @@ button.stp-item:active { transform: scale(.985); }
 .stp-tabs4 .stp-tab b { font-size: 11.5px; line-height: 1.1; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; text-align: center; }
 .stp-tabs4 .stp-tab i { right: 3px; }
 @media (max-width: 360px) { .stp-tabs4 .stp-tab b { font-size: 10.5px; } .stp-tabs4 .stp-tab span { font-size: 14px; } }
+
+/* Oct 26 Supermarket Cart (Warenkorb / Carrito): the button with its count and the sheet (cart-core.js; MAYA-HANDOFF 0.22) */
+.stp-cartbtn { position: relative; gap: 6px; }
+.stp-cartbtn svg { width: 20px; height: 20px; flex: 0 0 auto; }
+.stp-cart-n { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: #8fe7ff; color: #06243a; font-style: normal; font-size: 13px; font-weight: 800; line-height: 1; }
+.stp-cart-card h3 { display: flex; align-items: center; gap: 8px; margin: 2px 0 2px; }
+.stp-cart-list { list-style: none; margin: 10px 0 6px; padding: 0; }
+.stp-cart-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(170, 214, 255, .14); }
+.stp-cart-row:last-child { border-bottom: 0; }
+.stp-cart-ph { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; overflow: hidden; background: rgba(255, 255, 255, .08); font-size: 22px; }
+.stp-cart-ph img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+.stp-cart-txt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.stp-cart-txt b { font-size: 15px; font-weight: 700; overflow-wrap: anywhere; }
+.stp-cart-txt small { font-size: 12.5px; opacity: .72; }
+.stp-cart-q { flex: 0 0 auto; display: flex; align-items: center; gap: 2px; border-radius: 22px; background: rgba(255, 255, 255, .08); }
+.stp-cart-q b { min-width: 22px; text-align: center; font-size: 15px; font-variant-numeric: tabular-nums; }
+.stp-cart-step { width: 44px; height: 44px; border: 0; border-radius: 22px; background: none; color: inherit; font-size: 22px; font-weight: 700; line-height: 1; cursor: pointer; touch-action: manipulation; }
+.stp-cart-step:disabled { opacity: .35; }
+.stp-cart-step:active { background: rgba(255, 255, 255, .12); }
+.stp-cart-total { display: flex; justify-content: space-between; align-items: baseline; margin: 10px 0 2px; font-size: 15px; }
+.stp-cart-total b { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.stp-cart-acts { margin-top: 12px; }
+.stp-cart-acts > :first-child { grid-column: 1 / -1; }

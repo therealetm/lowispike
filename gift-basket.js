@@ -17,6 +17,7 @@
     if (!C) return;
     const DRAFT_KEY = 'lowi.giftBasket.draft.v1';
     const SEEN_KEY = 'lowi.giftBasket.seen.v1';
+    const SKIP_KEY = 'lowi.giftBasket.skips.v1'; /* Oct 26 swipe deck: baskets swiped left, { id: time }, back after 24 hours */
     const li = () => { const l = (D.documentElement.lang || 'en').slice(0, 2); return l === 'de' ? 1 : l === 'es' ? 2 : 0; };
     const T = (en, de, es) => [en, de, es][li()];
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -69,6 +70,9 @@
     let ov = null, tab = 'give', busy = false, msg = '', msgKind = '', loaded = false, offline = false;
     let open = [], mine = [], given = [], momentIds = {}, trustBy = {}, opened = {}, receiptUrl = {}, photo = null, blurOn = true;
     let draft = loadDraft();
+    let skipped = loadSkips(), picked = '', lastSkip = '', drag = null, dragAt = 0;
+    function loadSkips() { try { return C.freshSkips(JSON.parse(localStorage.getItem(SKIP_KEY) || '{}') || {}); } catch (e) { return {}; } }
+    function saveSkips() { try { localStorage.setItem(SKIP_KEY, JSON.stringify(C.freshSkips(skipped))); } catch (e) {} }
     function loadDraft() {
         try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); if (d && typeof d === 'object') return { items: Array.isArray(d.items) ? d.items.slice(0, C.MAX_ITEMS).map(String) : [], firstName: String(d.firstName || ''), anon: !!d.anon, city: String(d.city || ''), total: String(d.total || ''), payUrl: String(d.payUrl || '') }; } catch (e) {}
         return { items: [], firstName: '', anon: false, city: '', total: '', payUrl: '' };
@@ -124,18 +128,88 @@
             esc(T(who(arrived[0]) + ' added the receipt. Have a look below.', who(arrived[0]) + ' hat den Kassenbon hochgeladen. Schau unten nach.', who(arrived[0]) + ' ha subido el ticket. Míralo abajo.')) + '</small></div></div>' : '';
         const intro = '<p class="gb-intro">' + esc(T('Pay for someone’s healthy groceries. Each basket only holds low-spike food.', 'Bezahl jemandem gesunde Lebensmittel. In jedem Korb ist nur Essen ohne großen Zuckerspike.', 'Paga la compra sana de alguien. Cada cesta solo lleva comida sin grandes picos.')) + '</p>' +
             '<p class="gb-money">' + esc(MONEY()) + '</p>';
-        const list = open.filter(b => b.owner !== me && b.link);
-        const cards = list.length ? list.map(cardHTML).join('') : '<p class="stp-snack-none gb-none">' + esc(T('No baskets right now. Check back later.', 'Gerade keine Körbe. Schau später wieder rein.', 'Ahora no hay cestas. Vuelve más tarde.')) + '</p>';
+        const list = C.deck(open, me, skipped, picked);
         const giv = given.length ? '<h4 class="stp-h4">' + esc(T('Baskets you helped', 'Körbe, bei denen du geholfen hast', 'Cestas que has ayudado')) + ' <i>' + given.length + '</i></h4>' + given.map(givenHTML).join('') : '';
-        return moment + intro + '<h4 class="stp-h4">' + esc(T('Baskets', 'Körbe', 'Cestas')) + (list.length ? ' <i>' + list.length + '</i>' : '') + '</h4>' + cards + giv;
+        return moment + intro + '<h4 class="stp-h4">' + esc(T('Baskets', 'Körbe', 'Cestas')) + (list.length ? ' <i>' + list.length + '</i>' : '') + '</h4>' + deckHTML(list) + giv;
     }
-    function cardHTML(b) {
-        const t = trustBy[b.owner];
-        const act = opened[b.id]
+    /* Oct 26 (Emmanuel, MAYA-HANDOFF 0.22: "our Tinder version ... people who have money, who want to pay the groceries for
+       someone, and just swipe. Swipe through groceries to pay for."): one basket at a time, swipe right = I'll pay for this one,
+       left = skip (it comes back tomorrow). A right swipe pays nothing by itself: the card then shows the person's own pay link
+       and "I helped", exactly as before. The card shows the food and the rough total, never a photo of a person. */
+    function deckHTML(list) {
+        const left = Object.keys(skipped).filter(id => open.some(b => b.id === id)).length;
+        if (!list.length) return '<p class="stp-snack-none gb-none">' + esc(left
+            ? T('You’ve seen every basket. The ones you skipped come back tomorrow.', 'Du hast alle Körbe gesehen. Die übersprungenen kommen morgen wieder.', 'Has visto todas las cestas. Las que saltaste vuelven mañana.')
+            : T('No baskets right now. Check back later.', 'Gerade keine Körbe. Schau später wieder rein.', 'Ahora no hay cestas. Vuelve más tarde.')) + '</p>' +
+            (lastSkip ? '<div class="gb-deck-btns"><button type="button" class="stp-pill gb-undo" data-gb="undo">' + esc(T('Undo skip', 'Überspringen rückgängig', 'Deshacer')) + '</button></div>' : '');
+        const b = list[0], on = picked === b.id;
+        const peeks = list.slice(1, 3).map((x, i) => '<div class="gb-peek gb-peek' + (i + 1) + '" aria-hidden="true"><b>' + esc(who(x)) + '</b><span>' + esc(x.items.slice(0, 3).join(' · ')) + '</span></div>').join('');
+        const hint = on ? '' : '<p class="gb-swipe-hint">' + esc(T('Swipe right to pay for these groceries, left to skip.', 'Wisch nach rechts, um diesen Einkauf zu bezahlen, nach links zum Überspringen.', 'Desliza a la derecha para pagar esta compra, a la izquierda para saltarla.')) + '</p>';
+        const top = '<article class="gb-basket gb-swipe' + (on ? ' gb-picked' : '') + '" data-gb-id="' + esc(b.id) + '" data-gb-top="1" aria-roledescription="' + esc(T('swipe card', 'Wischkarte', 'tarjeta deslizable')) + '" aria-label="' + esc(who(b) + ', ' + T('about ', 'etwa ', 'unos ') + eur(b.total)) + '">' +
+            '<span class="gb-stamp gb-stamp-pay" aria-hidden="true">' + esc(T('Pay', 'Zahlen', 'Pagar')) + '</span><span class="gb-stamp gb-stamp-skip" aria-hidden="true">' + esc(T('Skip', 'Weiter', 'Saltar')) + '</span>' +
+            '<header><b>' + esc(who(b)) + '</b>' + (b.city ? '<small>' + esc(b.city) + '</small>' : '') + badge(trustBy[b.owner]) + '</header>' +
+            itemsHTML(b.items) + '<p class="gb-total">' + esc(T('About ', 'Etwa ', 'Unos ')) + '<b>' + esc(eur(b.total)) + '</b></p>' +
+            (on ? '<p class="gb-pick-msg">' + esc(T('You picked ' + who(b) + '’s groceries. Pay through their own link, then tap I helped.', 'Du hast den Einkauf von ' + who(b) + ' gewählt. Bezahl über den eigenen Link der Person und tipp dann auf Ich habe geholfen.', 'Elegiste la compra de ' + who(b) + '. Paga con su propio enlace y luego toca He ayudado.')) + '</p>' + actHTML(b) : hint) + '</article>';
+        const btns = '<div class="gb-deck-btns">' +
+            '<button type="button" class="gb-round gb-skip" data-gb="skip" data-gb-for="' + esc(b.id) + '" aria-label="' + esc(T('Skip ', 'Überspringen: ', 'Saltar ') + who(b)) + '"><span aria-hidden="true">\u2715</span><small>' + esc(T('Skip', 'Weiter', 'Saltar')) + '</small></button>' +
+            (lastSkip ? '<button type="button" class="stp-pill gb-undo" data-gb="undo">' + esc(T('Undo', 'Zurück', 'Deshacer')) + '</button>' : '<span class="gb-count">' + esc(T('1 of ', '1 von ', '1 de ') + list.length) + '</span>') +
+            '<button type="button" class="gb-round gb-yes" data-gb="yes" data-gb-for="' + esc(b.id) + '"' + (on ? ' disabled aria-disabled="true"' : '') + ' aria-label="' + esc(T('Pay for ', 'Bezahlen für ', 'Pagar a ') + who(b)) + '"><span aria-hidden="true">\u{1F91D}</span><small>' + esc(T('Pay', 'Zahlen', 'Pagar')) + '</small></button></div>';
+        return '<div class="gb-deck">' + peeks + top + '</div>' + btns;
+    }
+    function actHTML(b) {
+        return opened[b.id]
             ? '<p class="gb-ask">' + esc(T('Did the payment go through?', 'Hat die Zahlung geklappt?', '¿Se ha completado el pago?')) + '</p>' +
               '<div class="stp-foot-acts"><button type="button" class="stp-go gb-helped" data-gb-help="' + esc(b.id) + '"' + (busy ? ' disabled' : '') + '>' + esc(T('I helped', 'Ich habe geholfen', 'He ayudado')) + '</button>' +
               '<a class="stp-pill gb-pay" href="' + esc(b.link) + '" target="_blank" rel="noopener noreferrer external" data-gb-pay="' + esc(b.id) + '">' + esc(T('Open link again', 'Link nochmal öffnen', 'Abrir otra vez')) + ' ↗</a></div>'
             : '<a class="stp-go gb-pay" href="' + esc(b.link) + '" target="_blank" rel="noopener noreferrer external" data-gb-pay="' + esc(b.id) + '">' + esc(linkText(b.kind)) + ' ↗</a>';
+    }
+    function pick(id) { if (!open.some(b => b.id === id)) return; picked = id; lastSkip = ''; msg = ''; paint(); const a = ov && ov.querySelector('.gb-swipe .gb-pay'); if (a) try { a.focus({ preventScroll: true }); } catch (e) {} }
+    function skip(id) {
+        if (!id) return; skipped[id] = Date.now(); saveSkips(); if (picked === id) picked = ''; lastSkip = id; msg = ''; paint();
+        const n = ov && (ov.querySelector('.gb-yes') || ov.querySelector('.gb-undo')); if (n) try { n.focus({ preventScroll: true }); } catch (e) {}
+    }
+    function undoSkip() { if (!lastSkip) return; delete skipped[lastSkip]; saveSkips(); lastSkip = ''; paint(); }
+    const calm = () => { try { return W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+    /* the drag: the top card follows the finger sideways (vertical moves keep scrolling the panel), PAY / SKIP fade in, and on
+       release C.swipeDecision decides. Skip flies the card out to the left; pay springs it back and shows the pay link. */
+    function onDown(e) {
+        if (!ov || drag || (e.button != null && e.button !== 0)) return;
+        const card = e.target.closest && e.target.closest('.gb-swipe'); if (!card || !ov.contains(card)) return;
+        if (e.target.closest('a,button,input,label')) return;
+        drag = { card, id: card.getAttribute('data-gb-id'), x: e.clientX, y: e.clientY, t: Date.now(), dx: 0, dy: 0, on: false, pid: e.pointerId };
+    }
+    function onMove(e) {
+        if (!drag || e.pointerId !== drag.pid) return;
+        drag.dx = e.clientX - drag.x; drag.dy = e.clientY - drag.y;
+        if (!drag.on) {
+            if (Math.abs(drag.dy) > 10 && Math.abs(drag.dy) > Math.abs(drag.dx)) { drag = null; return; } /* a scroll, not a swipe */
+            if (Math.abs(drag.dx) < 8) return;
+            drag.on = true; drag.card.classList.add('gb-dragging');
+            try { drag.card.setPointerCapture(drag.pid); } catch (x) {}
+        }
+        if (e.cancelable) e.preventDefault();
+        const r = Math.max(-12, Math.min(12, drag.dx / 18));
+        drag.card.style.transform = 'translateX(' + drag.dx + 'px) rotate(' + (calm() ? 0 : r) + 'deg)';
+        const k = Math.min(1, Math.abs(drag.dx) / 110);
+        drag.card.style.setProperty('--gb-pay', drag.dx > 0 ? k : 0); drag.card.style.setProperty('--gb-skip', drag.dx < 0 ? k : 0);
+    }
+    function onUp(e) {
+        if (!drag || (e && e.pointerId !== drag.pid)) return;
+        const d = drag; drag = null;
+        if (!d.on) return;
+        dragAt = Date.now();
+        const w = ov ? ov.clientWidth : 360, v = e && e.type === 'pointercancel' ? 'back' : C.swipeDecision(d.dx, d.dy, Date.now() - d.t, w);
+        d.card.classList.remove('gb-dragging');
+        if (v === 'skip' && !calm()) {
+            d.card.classList.add('gb-fly'); d.card.style.transform = 'translateX(' + (-w * 1.2) + 'px) rotate(-14deg)';
+            setTimeout(() => skip(d.id), 220); return;
+        }
+        d.card.style.transform = ''; d.card.style.removeProperty('--gb-pay'); d.card.style.removeProperty('--gb-skip');
+        if (v === 'skip') skip(d.id); else if (v === 'pay') pick(d.id);
+    }
+    function cardHTML(b) {
+        const t = trustBy[b.owner];
+        const act = actHTML(b);
         return '<article class="gb-basket" data-gb-id="' + esc(b.id) + '"><header><b>' + esc(who(b)) + '</b>' + (b.city ? '<small>' + esc(b.city) + '</small>' : '') + badge(t) + '</header>' +
             itemsHTML(b.items) + '<p class="gb-total">' + esc(T('About ', 'Etwa ', 'Unos ')) + '<b>' + esc(eur(b.total)) + '</b></p>' + act + '</article>';
     }
@@ -208,7 +282,7 @@
             '<p class="gb-intro">' + esc(T('Pick the healthy groceries you need. Only low-spike food can go in a basket.', 'Wähl die gesunden Lebensmittel, die du brauchst. In einen Korb kommt nur Essen ohne großen Zuckerspike.', 'Elige la compra sana que necesitas. En una cesta solo entra comida sin grandes picos.')) + '</p>' +
             '<div class="gb-chosen" aria-label="' + esc(T('Your basket', 'Dein Korb', 'Tu cesta')) + '">' + (chosen.length ? chosen.map(n => '<button type="button" class="stp-chip on" data-gb-drop="' + esc(n) + '" aria-label="' + esc(T('Remove ', 'Entfernen: ', 'Quitar ') + n) + '">' + esc(n) + ' <i aria-hidden="true">×</i></button>').join('') : '<span class="gb-empty">' + esc(T('Your basket is empty.', 'Dein Korb ist leer.', 'Tu cesta está vacía.')) + '</span>') + '</div>' +
             '<form class="stp-snack-add gb-addf" data-gb-form="item"><input id="gb-item" type="text" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="' + esc(T('Add a food, like eggs', 'Lebensmittel hinzufügen, z. B. Eier', 'Añade un alimento, p. ej. huevos')) + '" aria-label="' + esc(T('Add a food to the basket', 'Lebensmittel zum Korb hinzufügen', 'Añadir un alimento a la cesta')) + '"><button type="submit" class="stp-pill">' + esc(T('Add', 'Hinzufügen', 'Añadir')) + '</button></form>' +
-            (cartOk.filter(n => !has(n)).length ? '<p class="gb-sub">' + esc(T('From your shopping cart', 'Aus deinem Einkaufswagen', 'De tu carrito')) + '</p><div class="gb-chips">' + cartOk.filter(n => !has(n)).map(chip).join('') + '</div>' : '') +
+            (cartOk.filter(n => !has(n)).length ? '<p class="gb-sub">' + esc(T('From your cart', 'Aus deinem Warenkorb', 'De tu carrito')) + '</p><div class="gb-chips">' + cartOk.filter(n => !has(n)).map(chip).join('') + '</div>' : '') +
             (cartNo.length ? '<p class="stp-fine gb-fine">' + esc(T('Not for a basket (not low-spike): ', 'Nicht für einen Korb (kein Low-Spike): ', 'No para una cesta (no es bajo en picos): ') + cartNo.slice(0, 6).join(', ')) + '</p>' : '') +
             '<p class="gb-sub">' + esc(T('Healthy staples', 'Gesunde Basics', 'Básicos sanos')) + '</p><div class="gb-chips">' + staples.filter(n => !has(n)).map(chip).join('') + '</div>' +
             '<label class="gb-field"><span>' + esc(T('Rough total in euros', 'Ungefährer Betrag in Euro', 'Total aproximado en euros')) + '</span><input id="gb-total" data-gb-in="total" inputmode="decimal" maxlength="7" placeholder="25" value="' + esc(draft.total) + '"></label>' +
@@ -319,6 +393,7 @@
         const t = e.target;
         if (!ov || !ov.contains(t)) return;
         if (t === ov) { spend(e); close(e.isTrusted); return; }
+        if (Date.now() - dragAt < 400) return; /* the click a swipe leaves behind */
         const el = t.closest ? t.closest('[data-gb],[data-gb-tab],[data-gb-help],[data-gb-add],[data-gb-drop],[data-gb-verdict],[data-gb-pay]') : null;
         if (!el || !ov.contains(el)) return;
         if (el.hasAttribute('data-gb-pay')) { const id = el.getAttribute('data-gb-pay'); if (!opened[id]) { opened[id] = true; setTimeout(paint, 60); } return; } /* the link opens; nothing is sent */
@@ -330,6 +405,9 @@
         const a = el.getAttribute('data-gb');
         if (a === 'close') { spend(e); close(e.isTrusted); return; }
         if (a === 'reload') { loaded = false; paint(); load(); return; }
+        if (a === 'yes') { pick(el.getAttribute('data-gb-for')); return; }
+        if (a === 'skip') { skip(el.getAttribute('data-gb-for')); return; }
+        if (a === 'undo') { undoSkip(); return; }
         if (a === 'share') { share(); return; }
         if (a === 'down') { takeDown(el.getAttribute('data-gb-for')); return; }
         if (a === 'send-receipt') { sendReceipt(el.getAttribute('data-gb-for')); return; }
@@ -388,7 +466,7 @@
         const b = open.find(x => x.id === id); if (!b) return;
         run(async () => {
             await api().help(id);
-            open = open.filter(x => x.id !== id);
+            open = open.filter(x => x.id !== id); if (picked === id) picked = '';
             given = [Object.assign({}, b, { helper: api().uid(), helped: Date.now() })].concat(given);
             /* one sunbeam per basket on the Care board ("other" kind, capped per day like every habit), never per euro */
             try { if (typeof W.award === 'function') W.award(10, T('Gave a hand', 'Geholfen', 'Ayudó'), null, 'gift', C.careEventId(id)); } catch (e) {}
@@ -415,8 +493,9 @@
     }
 
     /* ---------- open / close ---------- */
-    function openPanel(from) {
+    function openPanel(from, startTab) {
         if (ov) return;
+        if (startTab === 'mine' || startTab === 'give') tab = startTab; /* Oct 26: the Supermarket Cart's "Ask for a hand with it" opens on I could use a hand */
         ov = D.createElement('div');
         ov.className = 'stp-ov gb-ov';
         ov.setAttribute('data-from', from || '');
@@ -424,7 +503,10 @@
         ov.addEventListener('input', onInput);
         ov.addEventListener('change', onChange);
         ov.addEventListener('submit', onSubmit);
+        ov.addEventListener('pointerdown', onDown); ov.addEventListener('pointermove', onMove, { passive: false });
+        ov.addEventListener('pointerup', onUp); ov.addEventListener('pointercancel', onUp);
         D.addEventListener('keydown', onKey, true);
+        picked = ''; lastSkip = ''; drag = null; skipped = loadSkips();
         loaded = false; offline = false; msg = ''; opened = {}; receiptUrl = {}; photo = null; draft = loadDraft();
         D.body.appendChild(ov);
         paint();

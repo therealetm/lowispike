@@ -58,3 +58,29 @@
 .gb-hist small { opacity: .8; font-size: 12.5px; }
 html[data-theme="light"] .gb-field input, html.light .gb-field input { background: rgba(255, 255, 255, .6); }
 html[data-theme="light"] .gb-state.gb-low, html[data-theme="light"] .gb-linkmsg.gb-low, html.light .gb-state.gb-low, html.light .gb-linkmsg.gb-low { color: #a8461b; }
+
+/* Oct 26 Give a hand swipe deck (MAYA-HANDOFF 0.22): right = pay for these groceries, left = skip */
+.gb-deck { position: relative; margin: 10px 0 4px; padding-bottom: 14px; }
+.gb-swipe { position: relative; z-index: 3; margin: 0; background: rgba(22, 38, 66, .96); box-shadow: 0 10px 30px rgba(0, 0, 0, .35); touch-action: pan-y; user-select: none; -webkit-user-select: none; transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s; --gb-pay: 0; --gb-skip: 0; }
+.gb-swipe.gb-dragging { transition: none; cursor: grabbing; }
+.gb-swipe.gb-fly { transition: transform .22s ease-in, opacity .22s ease-in; opacity: 0; }
+.gb-swipe.gb-picked { border-color: rgba(120, 240, 190, .75); box-shadow: 0 0 0 2px rgba(120, 240, 190, .25), 0 10px 30px rgba(0, 0, 0, .35); }
+.gb-stamp { position: absolute; top: 14px; padding: 3px 10px; border: 3px solid currentColor; border-radius: 10px; font-size: 18px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; pointer-events: none; }
+.gb-stamp-pay { left: 14px; color: #78f0be; transform: rotate(-12deg); opacity: var(--gb-pay); }
+.gb-stamp-skip { right: 14px; color: #ff9a9a; transform: rotate(12deg); opacity: var(--gb-skip); }
+.gb-peek { position: absolute; left: 0; right: 0; top: 0; bottom: 14px; border-radius: 22px; border: 1px solid rgba(170, 214, 255, .2); background: rgba(255, 255, 255, .05); padding: 12px 14px; overflow: hidden; display: flex; flex-direction: column; gap: 4px; }
+.gb-peek span { font-size: 13px; opacity: .6; }
+.gb-peek1 { z-index: 2; transform: translateY(8px) scale(.96); opacity: .7; }
+.gb-peek2 { z-index: 1; transform: translateY(16px) scale(.92); opacity: .4; }
+.gb-swipe-hint, .gb-pick-msg { margin: 8px 0 0; font-size: 13.5px; opacity: .8; }
+.gb-pick-msg { opacity: 1; color: #b9ffe0; margin-bottom: 8px; }
+.gb-deck-btns { display: flex; align-items: center; justify-content: center; gap: 22px; margin: 8px 0 14px; }
+.gb-round { width: 68px; height: 68px; border-radius: 50%; border: 1px solid rgba(170, 214, 255, .35); background: rgba(255, 255, 255, .08); color: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; cursor: pointer; touch-action: manipulation; }
+.gb-round span { font-size: 24px; line-height: 1; }
+.gb-round small { font-size: 11px; font-weight: 700; opacity: .85; }
+.gb-skip span { color: #ff9a9a; }
+.gb-yes { border-color: rgba(120, 240, 190, .6); background: rgba(120, 240, 190, .14); }
+.gb-round:disabled { opacity: .4; }
+.gb-round:active { transform: scale(.94); }
+.gb-count { min-width: 52px; text-align: center; font-size: 13px; opacity: .7; }
+@media (prefers-reduced-motion: reduce) { .gb-swipe, .gb-swipe.gb-fly, .gb-round:active { transition: none; transform: none; } }

@@ -6,7 +6,7 @@
 #   --quiet: a bug fix with no What's New. EVERY release is silent (Oct 26, Emmanuel: "no more notification updates"):
 #            no release ever asks phones to update, says "Update loaded", sends a push or posts to Community. "loud" in
 #            version.json stays 20000101-000000 (bump-build.cjs writes it, release-check.cjs fails anything else).
-#            There is deliberately no --notify / --announce option. Do not add one.
+#            There is deliberately no option that notifies or announces anything. Do not add one.
 #
 # Steps: shared lock -> fetch -> rebase on origin/main -> bump build (+ What's New) ->
 # release-check -> full test suite -> whitespace check -> commit -> scripts/push-main.sh (CI must

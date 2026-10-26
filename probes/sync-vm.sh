@@ -57,5 +57,5 @@ fi
 if ! git diff --cached --quiet; then
   git commit -qm "harness sync: $NOTE [skip ci]" && git push -q origin HEAD:agent-harness && echo "agent-harness pushed $(git rev-parse --short HEAD)"
 else echo 'agent-harness: nothing new'; fi
-[ $WIP = 1 ] && bash "$H/probes/snapshot-wip.sh" | grep -v -P '\tskip\t' 
+[ $WIP = 1 ] && bash "$H/probes/snapshot-wip.sh" | grep -v -P '\t(skip|unchanged)\t' 
 exit 0

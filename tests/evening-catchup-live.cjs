@@ -58,7 +58,7 @@ const num = s => +(String(s || '').match(/\d+/) || [0])[0];
             page.on('pageerror', e => errs.push(e.message.slice(0, 160)));
             const shot = async n => { try { await page.screenshot({ path: `${OUT}/${v}-${lang}${REDUCE ? '-rm' : ''}-${n}.png` }); } catch (e) { } };
             const look = () => page.evaluate(LOOK);
-            const tap = async sel => { await page.waitForSelector(sel, { timeout: 6000 }).catch(async () => { throw new Error('no ' + sel + ' on ' + JSON.stringify(await look()).slice(0, 400)); }); await page.evaluate(s => { const e = document.querySelector(s); e && e.scrollIntoView({ block: 'center' }); }, sel); await sleep(150); await page.tap(sel, { timeout: 5000 }); };
+            const tap = async sel => { await page.waitForSelector(sel, { timeout: 6000 }).catch(async () => { throw new Error('no ' + sel + ' on ' + JSON.stringify(await look()).slice(0, 400)); }); await page.evaluate(s => { const e = document.querySelector(s); e && e.scrollIntoView({ block: 'center', behavior: 'instant' }); }, sel); await sleep(400); await page.tap(sel, { timeout: 12000 }); };   /* instant: the hub scrolls smoothly, so a smooth scroll kept the row "not stable" */
             try {
                 await page.goto(url + (url.includes('?') ? '&' : '?') + 'tb=' + Date.now(), { waitUntil: 'load', timeout: 180000 });
                 await page.waitForFunction(() => window.LowiEveningCatchup && window.LowiHomeSettingsSleepV2 && document.documentElement.classList.contains('wh-home'), null, { timeout: 150000, polling: 300 }).catch(() => P.push('app or catch-up never loaded'));

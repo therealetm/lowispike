@@ -1474,6 +1474,16 @@ branch quick-tour-video, COORD-quick-tour.md. Status: **LIVE in build 20261026-2
 
 ### 0.39 Evening catch-up: "the best bubble checklist ever" for people who can only open the app at the end of the day (Emmanuel, call, Mon 26 Oct 2026 about 11:30 PM CET)
 
+
+**STATUS: LIVE (released Oct 27 2026 ~00:5x CET by the continue run; build id in version.json / the release commit).** Files:
+evening-catchup-core.js (pure logic, tests/evening-catchup.test.cjs), evening-catchup.js + .css (the greeting, the bubble screen,
+Settings first row `catchUp` -> `LowiEveningCatchup.open({from:'settings'})`, any `[data-ec-open]`), recorded companion lines in
+app-voice (EN/DE/ES, never the app name), mini-tour card `new-evening-catchup` (part 'new', tutorial v34, recorded tutorial voice),
+browser check tests/evening-catchup-live.cjs (iPhone 13 + iPad WebKit, EN/DE/ES, `--reduce` for Reduce Motion; all passed).
+Fixes the browser check found: headings were 20 px (apple-ui.css `.apple-ui :is(.h2,h2)` out-ranked `.ec-q`; now `.ec-ov h2.ec-q`),
+and Save with a fast running popped the fast-done reward dialog behind the finish (later covering Settings): index.html
+mealLogged0 now sets `o.reward = false` for `via === "catchup"` (the fast still ends and pays). Day recap (0.40) can link to it with
+`window.LowiEveningCatchup.open` and listen for `lowi:catchup-saved` {day, n, xp}.
 His words: "One of my beta users only uses her phone at the end of the day when she's about to go to sleep, which means
 throughout the day she can't use her phone, which means she can barely use our app, but she wants to. We need to make our
 app so that even those who weren't able to use the app throughout the day can catch up at the end of the day." She is

@@ -30,7 +30,7 @@
     const NEVER = Object.freeze(['lowispike.chat.v1', 'lowi.sync.v1']);
     /* backed up (a new device gets them at sign-in) but each device keeps its own: Eman runs the iPhone in English and the iPad
        in German; which tab or period was open last; pending Apple Health writes */
-    const DEVICE = Object.freeze(['lowispike.lang', 'lowispike.community.tabs', 'lowispike.ranking.period', 'lowispike.ranking.moves',
+    const DEVICE = Object.freeze(['lowispike.lang', 'lowispike.community.tabs', 'lowispike.cook.tabs', 'lowispike.ranking.period', 'lowispike.ranking.moves',
         'lowispike.rk.mixcol', 'lowispike.hs-pending.v1']);
     function synced(k) {
         if (typeof k !== 'string' || NEVER.indexOf(k) >= 0) return false;

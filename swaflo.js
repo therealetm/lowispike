@@ -38,7 +38,7 @@ function refreshToolbar(){D.querySelectorAll('.sf-toolbar').forEach(n=>{const x=
 D.addEventListener('submit',e=>{if(!e.target.matches('.sf-form'))return;e.preventDefault();const i=e.target.querySelector('input');try{request(i.value);}catch(ex){LowiR2.toast(ex.message);}});
 D.addEventListener('click',e=>{const b=e.target.closest('[data-sf]');if(!b)return;e.preventDefault();const result=b.closest('.r2-ov')&&b.closest('.r2-ov').__sfResult||selected;try{switch(b.dataset.sf){
   case 'mode':setPrefs({...prefs(),mode:b.dataset.mode});refreshToolbar();if(b.dataset.mode==='buy')LowiDex.load(false).then(()=>{if(prefs().mode==='buy'&&!pool([]).length)emptyPick();});break;case 'snack':setPrefs({...prefs(),snack:b.dataset.snack==='true'});refreshToolbar();break;
-  case 'open':LowiHost.go('shelf');LOWI_SHELF.open('kochen');{const input=D.querySelector('#r5Shuf .sf-form input');if(input){input.scrollIntoView({block:'center'});input.focus({preventScroll:true});}}break;
+  case 'open':LowiHost.go('shelf');LOWI_SHELF.open('kochen');try{LowiFood.setView('shuffle');}catch(x){}{const input=D.querySelector('#r5Shuf .sf-form input');if(input){input.scrollIntoView({block:'center'});input.focus({preventScroll:true});}}break;
   case 'product':{const p=products().find(p=>LowiDiscoveryCore.identity(p)===b.dataset.key);if(p)LowiDiscovery.openProduct(p);break;}
   case 'quick':request('Something sweet, fast');break;case 'scan':LowiDex.scan('cam');break;
   case 'search':LOWI_SHELF.searchIngredients(b.dataset.term);break;

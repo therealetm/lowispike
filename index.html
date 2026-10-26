@@ -7001,6 +7001,8 @@ function goTab(t){
      asks it to refresh; community-tab-order.js puts it on your first tab before the first frame is drawn. */
   const keepCommunity = t === "foryou" && cached && TAB !== "foryou" && !!document.querySelector("#tab-foryou #cmPaneChat[data-spirit-chat]");
   if (TAB === "home" && t !== "home") homeSig = stateSig();
+  /* 26 Oct (MAYA-HANDOFF 0.29): Cook opens on the first tab of its order (Kitchen by default, cook-tab-order.js) unless a game was just asked for */
+  if (t === "shelf" && TAB !== "shelf") { try { if (window.LowiCookTabs) window.LowiCookTabs.opening(); } catch (e) { } }
   TAB = t; closeSheet(); ["result", "sos"].forEach(id => { const o = $("#" + id); if (o) o.classList.remove("open"); }); if (window.MOVE && MOVE.close) MOVE.close();
   $$(".tab").forEach(x => x.classList.toggle("active", x.id === "tab-" + t));
   if (keepHome) { cancelTabRefresh(); if (stateSig() !== homeSig) refreshCachedTab("home"); return; }
@@ -9187,7 +9189,9 @@ const ckGet = (k, d, ok) => { try { const v = localStorage.getItem(k); return ok
 const ckSet = (k, v) => { try { localStorage.setItem(k, v); } catch(e){} };
 const fSrc = () => ckGet(CKK.src, "book", ["book", "community", "products"]);
 const fCatSel = () => ckGet(CKK.cat, "all", ["all", "meal", "sweet"]);
-const fView = () => ckGet(CKK.view, "shuffle", ["shuffle", "swipe", "kitchen"]); /* Oct 26: Kitchen (kitchen-game.js) is the third game */
+const ckOrder = () => (window.LowiCookTabs ? window.LowiCookTabs.order() : ["kitchen", "shuffle", "swipe"]);
+const ckFirst = () => (window.LowiCookTabs ? window.LowiCookTabs.first() : (window.LowiKitchenGame ? "kitchen" : "shuffle"));
+const fView = () => ckGet(CKK.view, ckFirst(), ["shuffle", "swipe", "kitchen"]); /* Oct 26: Kitchen (kitchen-game.js); later that day Kitchen became the FIRST game and the order is the user's own (cook-tab-order.js) */
 const ckLang = () => { try { return (window.LowiLang && LowiLang.get()) || localStorage.getItem("lowi.lang") || "de"; } catch(e){ return "de"; } };
 const ckT = (en, de, es) => { const l = ckLang(); return l === "de" ? de : l === "es" ? (es || en) : en; };
 const CKPLATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/></svg>';
@@ -9299,12 +9303,20 @@ function fCell(c){ return '<div class="r5-cell">' + (c && c.img ? '<img alt="" d
 function ckBarHTML(){
   const s = fSrc(), c = fCatSel(), v = fView();
   const seg = (k, val, lab, on, ic) => '<button type="button" class="ck-b' + (on ? " on" : "") + '" data-ck="' + k + '" data-v="' + val + '" aria-pressed="' + on + '">' + (ic || "") + '<span>' + lab + '</span></button>';
+  const ckViewSeg = {
+    kitchen: () => window.LowiKitchenGame ? seg("view", "kitchen", ckT("Kitchen", "Küche", "Cocina"), v === "kitchen", '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="2.5" width="13" height="19" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 9.5h13M8.8 5.5v2M8.8 12.5v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>') : "",
+    shuffle: () => seg("view", "shuffle", ckT("Shuffle", "Mischen", "Mezclar"), v === "shuffle", R5IC.shuffle),
+    swipe: () => seg("view", "swipe", ckT("Swipe", "Swipen", "Deslizar"), v === "swipe", R5IC.cards)
+  };
   return '<div class="ck-bar" id="ckBar" data-noi18n>' +
     '<div class="ck-src" role="group" aria-label="' + ckT("Shuffle from", "Mischen aus", "Mezclar de") + '">' +
       seg("src", "book", ckT("eBook", "E-Book", "eBook"), s === "book") + seg("src", "community", ckT("Recipes", "Rezepte", "Recetas"), s === "community") + seg("src", "products", ckT("Products", "Produkte", "Productos"), s === "products") + '</div>' +
     '<div class="ck-row">' +
       (s === "book" ? '<div class="ck-cats" role="group" aria-label="' + ckT("Kind", "Art", "Tipo") + '">' + seg("cat", "all", ckT("All", "Alle", "Todo"), c === "all") + seg("cat", "meal", ckT("Savory", "Herzhaft", "Salado"), c === "meal") + seg("cat", "sweet", ckT("Sweet", "Süß", "Dulce"), c === "sweet") + '</div>' : '<div class="ck-cats ck-note small muted">' + (s === "community" ? ckT("Meals people shared with a photo", "Geteilte Gerichte mit Foto", "Platos compartidos con foto") : ckT("Products people caught", "Gefangene Produkte", "Productos atrapados")) + '</div>') +
-      '<div class="ck-view" role="tablist" aria-label="' + ckT("Game", "Spiel", "Juego") + '">' + seg("view", "shuffle", ckT("Shuffle", "Mischen", "Mezclar"), v === "shuffle", R5IC.shuffle) + /* For You moved to Community (24 Oct 2026) */ seg("view", "swipe", ckT("Swipe", "Swipen", "Deslizar"), v === "swipe", R5IC.cards) + /* Oct 26 Kitchen: fridge + cabinet game (kitchen-game.js), moved here from Shop */ (window.LowiKitchenGame ? seg("view", "kitchen", ckT("Kitchen", "Küche", "Cocina"), v === "kitchen", '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="2.5" width="13" height="19" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 9.5h13M8.8 5.5v2M8.8 12.5v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>') : "") + '</div>' +
+      /* 26 Oct (MAYA-HANDOFF 0.29): Kitchen | Shuffle | Swipe by default, drawn in the user's own order (hold a tab to move it,
+         cook-tab-order.js + Community's hold-and-drag engine). For You moved to Community (24 Oct 2026). Kitchen: fridge + cabinet
+         game (kitchen-game.js), moved here from Shop. */
+      '<div class="ck-view no-page-swipe" role="tablist" aria-label="' + ckT("Game", "Spiel", "Juego") + '">' + ckOrder().map(id => ckViewSeg[id] ? ckViewSeg[id]() : "").join("") +'</div>' +
     '</div></div>';
 }
 function ckEmptyHTML(){
@@ -19109,7 +19121,7 @@ document.addEventListener("click", e => {
   else if (k === "snap") { sfx("tap"); snap(); }
   else if (k === "bc") { sfx("tap"); F.mode = "bc"; try { closeSheet(); } catch(x){} setTimeout(() => { try { LowiDex.scan("cam"); } catch(x){ console.error(x); } watch(); }, 180); }
   else if (k === "chip") { const i = q("#f2In"); if (i) { i.value = b.dataset.v; F.text = i.value; F.err = ""; const er = q("#f2Err"); if (er) er.textContent = ""; const g = q("#f2Go"); if (g) g.disabled = false; } sfx("tap"); }
-  else if (k === "shuffle") { sfx("tap"); cook(() => { const s = q("#r5Stage"); if (s) s.scrollIntoView({block:"center"}); setTimeout(() => { try { LowiFood.shuffle(); } catch(x){} }, 250); }); }
+  else if (k === "shuffle") { sfx("tap"); cook(() => { try { LowiFood.setView("shuffle"); } catch(x){} const s = q("#r5Stage"); if (s) s.scrollIntoView({block:"center"}); setTimeout(() => { try { LowiFood.shuffle(); } catch(x){} }, 250); }); }
   else if (k === "swipe") { sfx("tap"); cook(() => { try { LowiFood.openDeck(); } catch(x){} }); }
   else if (k === "share") { sfx("open"); share(); }
   else if (k === "bc-ate") { e.preventDefault(); e.stopPropagation(); bcAte(); }
@@ -21841,5 +21853,6 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="secCss" href="section-nav.css?v=20261026-165435">
 <script src="section-nav.js?v=20261026-165435"></script>
 </body>
+<script src="cook-tab-order.js?v=20261026-164825"></script><!-- Oct 26 (MAYA-HANDOFF 0.29): Cook tab order, kept apart from the stamped script list so parallel releases do not clash -->
 </html>
 

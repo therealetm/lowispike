@@ -162,7 +162,29 @@
         return { counted: c, verified: v, pending: Math.max(0, pending | 0), pct: c ? Math.floor(v * 100 / c) : null, label: c ? 'pct' : 'new' };
     }
     function careEventId(id) { return 'gift:' + String(id || '').slice(0, 40); }
+    /* Oct 26 (Emmanuel, MAYA-HANDOFF 0.22: "swipe through groceries to pay for"): the Give a hand swipe deck. The baskets you can
+       help (not yours, with a pay link), minus the ones you swiped left in the last 24 hours; one you swiped right on stays on top
+       until you help or skip it. Pure: skipped = { id: time }, picked = id or ''. */
+    const SKIP_MS = 24 * 3600 * 1000;
+    function deck(open, me, skipped, picked, now) {
+        skipped = skipped || {}; now = now || Date.now();
+        const list = (Array.isArray(open) ? open : []).filter(b => b && b.owner !== me && b.link && !(skipped[b.id] && now - skipped[b.id] < SKIP_MS));
+        const k = picked ? list.findIndex(b => b.id === picked) : -1;
+        if (k > 0) list.unshift(list.splice(k, 1)[0]);
+        return list;
+    }
+    /* drop skips older than 24 hours so the saved map stays small */
+    function freshSkips(skipped, now) { now = now || Date.now(); const o = {}; Object.keys(skipped || {}).forEach(id => { if (now - skipped[id] < SKIP_MS) o[id] = skipped[id]; }); return o; }
+    /* a horizontal drag decides: past the threshold (or a quick flick) right = pay, left = skip, else it springs back */
+    function swipeDecision(dx, dy, ms, width) {
+        const th = Math.max(80, Math.min(140, (width || 360) * 0.28));
+        if (Math.abs(dy) > Math.abs(dx) * 1.2) return 'back';
+        const fast = ms > 0 && Math.abs(dx) / ms > 0.6 && Math.abs(dx) > 40;
+        if (dx >= th || (fast && dx > 0)) return 'pay';
+        if (dx <= -th || (fast && dx < 0)) return 'skip';
+        return 'back';
+    }
 
     return { DAY, WINDOW_DAYS, MAX_ITEMS, MIN_EUR, MAX_EUR, MAX_URL, PAY_RE_SQL, KOFI_RESERVED,
-        payLink, linkName, itemCheck, total, build, view, status, canReceipt, canVerdict, daysLeft, trust, fromCounts, careEventId, norm };
+        payLink, linkName, itemCheck, total, build, view, status, canReceipt, canVerdict, daysLeft, trust, fromCounts, careEventId, norm, SKIP_MS, deck, freshSkips, swipeDecision };
 });

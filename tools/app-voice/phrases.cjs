@@ -7,6 +7,7 @@
    - Learn while you move (index.html R3W_BOOK and the coach lines around it)                                   en
    - Audio mode reading notifications aloud: every fixed toast("...") text                                          en
    - Gap's "After your meal" phase cards (gap-view.js mcSpoken)                                                       en de es
+   - the Move grand finish (move-finish-core.js SAY)                                                                  en de es
    Usage: node tools/app-voice/phrases.cjs            -> JSON {sources:{name:count}, pieces:{lang:[sentence...]}}
           node tools/app-voice/phrases.cjs --news     -> only version.json's news (what a release adds) */
 'use strict';
@@ -61,6 +62,10 @@ function harvest(newsOnly) {
     }
     const mm = read('mirror-move.js');
     for (const m of mm.matchAll(/say\(T\('((?:[^'\\]|\\.)*)',\s*'((?:[^'\\]|\\.)*)',\s*'((?:[^'\\]|\\.)*)'\)/g)) { add('mirror', 'en', m[1]); add('mirror', 'de', m[2]); add('mirror', 'es', m[3]); }
+
+    /* ---- Move grand finish (move-finish-core.js SAY, the companion's line at the end of a session) ---- */
+    const MF = require(path.join(ROOT, 'move-finish-core.js'));
+    for (const l of LANGS) (MF.SAY[l] || []).forEach(s => add('move-finish', l, s));
 
     /* ---- scan-ball guide ---- */
     const g1 = html.indexOf('id="g1js"');

@@ -89,14 +89,14 @@
         setTimeout(() => { if (!c.dead && el.textContent !== '+' + total) { el.textContent = '+' + total; el.classList.add('mf-pop'); } }, COUNT_MS + 250);
     }
 
-    /* o: {min, xp, lang?, voice?, onClose?} -> the overlay element (null when there is nothing to celebrate) */
+    /* o: {min, xp, complete?, lang?, voice?, onClose?} -> the overlay element (null when there is nothing to celebrate) */
     function celebrate(o) {
         o = o || {}; const core = C(); if (!core) return null;
         const min = Math.max(0, Math.floor(+o.min || 0)), xp = Math.max(0, Math.floor(+o.xp || 0));
-        if (min < core.MIN_MIN) return null;
+        if (!(core.counts ? core.counts(min, o.complete) : min >= core.MIN_MIN)) return null;
         if (cur) close('replaced');
         const comp = companion(), rm = reduced(), pick = Math.floor(Math.random() * 3);
-        const w = core.words({ lang: o.lang || lang(), min, xp, name: comp.name, pick });
+        const w = core.words({ lang: o.lang || lang(), min, xp, name: comp.name, pick, complete: !!o.complete });
         const el = D.createElement('div');
         el.className = 'mf-celebrate' + (rm ? ' mf-rm' : '') + (xp ? '' : ' mf-capped');
         el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', w.dialog);

@@ -378,7 +378,7 @@
     function recordFinish(s, name) {
         if (finished === flow) return null; finished = flow;
         const moved = Math.round(activeSec);
-        try { if (W.MOVE && W.MOVE.record) return W.MOVE.record({ fmt: s.kind === 'hinge' ? 'hinge' : 'mirror', name, moved, reps: s.kind === 'hinge' ? s.done : undefined, voice: voiceOn }); } catch (e) {}
+        try { if (W.MOVE && W.MOVE.record) return W.MOVE.record({ fmt: s.kind === 'hinge' ? 'hinge' : 'mirror', name, moved, complete: true, reps: s.kind === 'hinge' ? s.done : undefined, voice: voiceOn }); } catch (e) {}
         return null;
     }
     function finish(s) {
@@ -392,7 +392,7 @@
         const R = C.ROUTINES[routine] || C.ROUTINES.chair;
         const res = recordFinish(s, C.txt(R.n, l));
         const mins = res && res.min ? res.min : Math.max(1, Math.round(activeSec / 60));
-        if (!(res && res.min >= 3 && W.LowiMoveFinish)) say(T('Done. Nice moving.', 'Geschafft. Gut bewegt.', 'Hecho. Bien movido.'), true);
+        if (!(res && W.LowiMoveFinish && W.LowiMoveFinish.open())) say(T('Done. Nice moving.', 'Geschafft. Gut bewegt.', 'Hecho. Bien movido.'), true);
         try { W.dispatchEvent(new CustomEvent('lowi:mirror-done', { detail: { routine, minutes: mins, camera: s.mode === 'camera', xp: res ? res.xp : 0 } })); } catch (e) {}
         const xpLine = res && res.xp ? ' ' + T('+' + res.xp + ' XP.', '+' + res.xp + ' XP.', '+' + res.xp + ' XP.') : '';
         showSheet('<header class="mm-ph"><b>' + esc(T('Done, nice moving', 'Geschafft, gut bewegt', 'Hecho, bien movido')) + '</b><button type="button" class="mm-ic" data-mm="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + ICON.x + '</button></header>' +

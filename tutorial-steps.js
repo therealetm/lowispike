@@ -327,6 +327,16 @@
             }
         },
         {
+            id: 'new-move-finish', area: 'new', where: 'move', open: 'move', target: ['.mm-hero', '.mm-hero-dl'], covers: ['move-finish'],
+            info: 'Oct 26 2026 (MAYA-HANDOFF 0.37, move-finish-core.js / move-finish.js): every finished Move session, Mirror mode and Kreuzheben included, is saved to This week and History, pays the biggest reward in the app (150 + 5 per minute, up to 60 min, 3 a day) and ends with a grand finish.',
+            title: { en: 'Finish strong', de: 'Stark ins Ziel', es: 'Termina a lo grande' },
+            text: {
+                en: 'Finish any Move session, Mirror mode and Deadlift too, and you get the biggest reward in the app, plus a big celebration.',
+                de: 'Beende eine Bewegen-Einheit, auch Spiegel-Modus und Kreuzheben: Du bekommst die größte Belohnung der App und ein großes Fest.',
+                es: 'Termina cualquier sesión de Moverse, también modo espejo y peso muerto: la mayor recompensa de la app y una gran celebración.'
+            }
+        },
+        {
             id: 'new-deadlift', area: 'new', where: 'move', open: 'move', target: ['.mm-hero-dl'], covers: ['deadlift-mirror'],
             title: { en: 'Deadlift in Mirror mode', de: 'Kreuzheben im Spiegel-Modus', es: 'Peso muerto en modo espejo' },
             text: {

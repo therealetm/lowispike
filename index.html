@@ -5762,7 +5762,7 @@ function endKeep(){ if (!P) return; P.confirm = false; P.last = performance.now(
 let mvSkipPop = false;
 function mvGuard(){ try { if (!(history.state && history.state.lowiMv)) history.pushState({lowiMv:1}, ""); } catch(e){} }
 function mvUnguard(){ try { if (history.state && history.state.lowiMv) { mvSkipPop = true; history.back(); setTimeout(() => { mvSkipPop = false; }, 600); } } catch(e){} }
-function mvBack(){ if (window.LowiMoveFinish && LowiMoveFinish.open()) { LowiMoveFinish.close("back"); return true; } if (!$("#mv-player.on")) return false; if (P && !P.done) { if (P.confirm) finish(false); else endAsk(); } else closePlayer(); return true; }
+function mvBack(){ const MFo = typeof window !== "undefined" && window.LowiMoveFinish; if (MFo && MFo.open()) { MFo.close("back"); return true; } if (!$("#mv-player.on")) return false; if (P && !P.done) { if (P.confirm) finish(false); else endAsk(); } else closePlayer(); return true; }
 addEventListener("popstate", () => { if (mvSkipPop) { mvSkipPop = false; return; } if (mvBack() && $("#mv-player.on")) mvGuard(); });
 document.addEventListener("keydown", e => { if (e.key !== "Escape" || !$("#mv-player.on")) return; e.preventDefault(); if (P && P.confirm) endKeep(); else mvBack(); });
 
@@ -5772,7 +5772,7 @@ function finish(complete){
   const h = H(), moved = Math.round(P.moved), min = Math.floor(moved / 60);
   let xp = 0, lines = [];
   const sess = saveSession({fmt:P.fmt, name:P.name, mins:P.mins, moved, postMeal:P.postMeal && moved >= 180});
-  const sr = sessionReward(sess, h); xp = sr.xp; const big = sr.big; if (big) lines.push("+" + big + " XP · " + min + "-min session");
+  const sr = sessionReward(sess, h, complete); xp = sr.xp; const big = sr.big; if (big) lines.push("+" + big + " XP · " + min + "-min session");
   if (h && min >= 3) {
     if (P.postMeal && moved >= 300) { const b = h.award("move:meal", null, {amt:15, perDay:3, label:"Moved after a meal"}); xp += b; if (b) lines.push("+" + b + " XP · moved after a meal"); }
     if (P.postMeal && moved >= 540 && h.completeQuest) { const c = h.completeQuest("walk"); if (c) { xp += c; lines.push("+" + c + " XP · quest done"); } }
@@ -5790,7 +5790,7 @@ function finish(complete){
     '<button class="btn primary" data-mv="done" style="margin-top:22px">Done</button></div>';
   if (window.LowiSFX) { if (M.sound) try{window.LowiSFX&&LowiSFX.play("workoutDone")}catch(_){}; } else { beep(880, .18); setTimeout(() => beep(1320, .3), 160); }/*r3e*/
   P = null;
-  celebrateSession(min, big, !!(M.voice || AUD()));
+  celebrateSession(min, big, !!(M.voice || AUD()), null, complete);
 }
 /* MAYA-HANDOFF 0.37 (26 Oct 2026, Emmanuel: "I just finished a session ... and I didn't get any points. No animation, no congrats"):
    ONE way a finished Move session is saved and paid, for the Move player (finish above) and Mirror mode / Kreuzheben (MOVE.record,
@@ -5802,22 +5802,23 @@ function saveSession(o){
   M.sessions.unshift(sess); if (M.sessions.length > 200) M.sessions.length = 200; save();
   return sess;
 }
-function sessionReward(sess, h){
-  const MF = window.LowiMoveFinishCore, min = Math.floor(sess.moved / 60), amt = MF ? MF.xpFor(min) : (min >= 3 ? Math.min(30, 2 * min) : 0);
+function sessionReward(sess, h, complete){
+  const MF = window.LowiMoveFinishCore, min = Math.floor(sess.moved / 60), amt = MF ? MF.xpFor(min, !!complete) : (min >= 3 ? Math.min(30, 2 * min) : 0);
   let big = 0;
   if (h && amt > 0) big = h.award("move:session", null, {amt, perDay:MF ? MF.PER_DAY : 3, label:"Move session · " + min + " min", eventId:"move:" + sess.id, quiet:true}) || 0;
   sess.xp = big; save();
   return {xp:big, big, min};
 }
-function celebrateSession(min, xp, voice, onClose){
-  try { if (window.LowiMoveFinish && min >= 3) LowiMoveFinish.celebrate({min, xp, voice, onClose}); else if (onClose) onClose(); } catch(e){ if (onClose) onClose(); }
+function celebrateSession(min, xp, voice, onClose, complete){
+  const MF = window.LowiMoveFinishCore, ok = MF && MF.counts ? MF.counts(min, complete) : min >= 3;
+  try { if (window.LowiMoveFinish && ok) LowiMoveFinish.celebrate({min, xp, voice, onClose, complete:!!complete}); else if (onClose) onClose(); } catch(e){ if (onClose) onClose(); }
 }
-/* Mirror mode and Kreuzheben: o = {fmt:"mirror"|"hinge", name, moved (seconds that really ran), reps?, voice?, onClose?} -> {xp, min, sess} */
+/* Mirror mode and Kreuzheben: o = {fmt:"mirror"|"hinge", name, moved (seconds that really ran), complete (ran to its end), reps?, voice?, onClose?} -> {xp, min, sess} */
 function record(o){
   o = o || {}; const h = H(); const sess = saveSession({fmt:o.fmt || "mirror", name:o.name || "Mirror mode", mins:Math.max(1, Math.round((+o.moved || 0) / 60)), moved:o.moved, kind:o.kind, reps:o.reps});
-  const r = sessionReward(sess, h);
+  const r = sessionReward(sess, h, o.complete !== false);
   if ($("#mv-screen.on")) renderScreen(); if (h && h.refresh) h.refresh();
-  if (o.celebrate !== false) celebrateSession(r.min, r.xp, !!o.voice, o.onClose);
+  if (o.celebrate !== false) celebrateSession(r.min, r.xp, !!o.voice, o.onClose, o.complete !== false);
   return {xp:r.xp, min:r.min, sess};
 }
 function closePlayer(){ mvUnguard(); const el = $("#mv-player"); if (window.LowiMovePlayer) LowiMovePlayer.close(el); if (el) { el.classList.remove("on", "mv-asking"); setTimeout(() => { if (!P) el.innerHTML = ""; }, 400); } if ($("#mv-screen.on")) renderScreen(); const h = H(); if (h && h.refresh) h.refresh(); }

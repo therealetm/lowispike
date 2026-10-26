@@ -64,8 +64,12 @@ test('categories: every action gets its own label; Move is always move, never ex
 test('no reward pushes longer fasts or more exercise than is healthy', () => {
     const src = read('index.html');
     assert.ok(/const PER_H = 2, CAP_H = 16,/.test(src), 'hourly fast points stop at 16 h');
-    assert.ok(src.includes('perDay:3, label:"Move session'), 'Move sessions capped at 3 a day');
-    assert.ok(src.includes('amt:Math.min(30, 2 * min)'), 'one session tops out at 30 XP');
+    /* MAYA-HANDOFF 0.37: a finished Move session is now the biggest reward in the app (Emmanuel asked for it), so the old
+       30 XP cap moved to move-finish-core.js. The health limits stay: 3 paid sessions a day, nothing extra past 60 minutes. */
+    const MF = require('../move-finish-core.js');
+    assert.ok(src.includes('perDay:MF ? MF.PER_DAY : 3, label:"Move session'), 'Move sessions capped at 3 a day');
+    assert.equal(MF.PER_DAY, 3);
+    assert.equal(MF.xpFor(60), MF.xpFor(240), 'one session stops paying more after 60 minutes');
     assert.ok(src.includes('if (sosN < 3) award(20, "Craving handled", null, "", "sos:" + today() + ":" + sosN);'), 'craving handled max 3 a day');
     assert.ok(src.includes('award(50, "Weekly glow check-in", null, "", "glow:" + e.week);'), 'weekly glow once a week');
     assert.equal(K.ACTIONS.fastedit.perDay, 1);

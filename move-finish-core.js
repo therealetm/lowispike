@@ -17,10 +17,13 @@
     const L = l => { l = String(l || 'en').slice(0, 2).toLowerCase(); return l === 'de' || l === 'es' ? l : 'en'; };
     /* whole minutes from seconds that really ran (the Move player rounds the same way) */
     const minutesOf = sec => Math.max(0, Math.round((+sec || 0) / 60));
-    /* XP for one finished session; 0 when it was too short to count */
-    function xpFor(min) {
+    /* XP for one finished session; 0 when it was too short to count. complete = the routine ran to its own end (Mirror mode,
+       Kreuzheben, a Move player plan): then a real minute is enough, because a Kreuzheben session is only about 3 minutes and
+       skipping a rest makes it shorter, and finishing it must never pay nothing again (MAYA-HANDOFF 0.37). */
+    function counts(min, complete) { min = Math.floor(+min || 0); return min >= MIN_MIN || (!!complete && min >= 1); }
+    function xpFor(min, complete) {
         min = Math.floor(+min || 0);
-        if (!(min >= MIN_MIN)) return 0;
+        if (!counts(min, complete)) return 0;
         return BASE + PER_MIN * Math.min(MAX_MIN, min);
     }
     /* the count-up: 0..1 eased (ease-out cubic) */
@@ -56,17 +59,18 @@
     function words(o) {
         o = o || {}; const lang = L(o.lang), n = Math.max(0, Math.floor(+o.min || 0)), xp = Math.max(0, Math.floor(+o.xp || 0));
         const pick = ((Math.floor(+o.pick || 0) % 3) + 3) % 3, name = String(o.name || '').trim();
+        const ok = counts(n, o.complete);
         return {
-            lang, xp, min: n, capped: !xp && n >= MIN_MIN,
+            lang, xp, min: n, capped: !xp && ok,
             title: t(xp ? 'title' : 'capTitle', lang),
             minutes: n === 1 ? t('min1', lang) : t('min', lang, { n }),
             glow: name ? fill(TXT.glow[pick][lang], { name }) : '',
-            note: xp ? t('biggest', lang) : (n >= MIN_MIN ? t('capped', lang) : ''),
+            note: xp ? t('biggest', lang) : (ok ? t('capped', lang) : ''),
             more: t('more', lang), dialog: t('dialog', lang), tap: t('tap', lang), xpWord: t('xp', lang),
             say: SAY[lang][pick]
         };
     }
-    const api = { BASE, PER_MIN, MIN_MIN, MAX_MIN, PER_DAY, TOP_OTHER, minutesOf, xpFor, ease, countAt, words, SAY, TXT, t, L };
+    const api = { BASE, PER_MIN, MIN_MIN, MAX_MIN, PER_DAY, TOP_OTHER, minutesOf, counts, xpFor, ease, countAt, words, SAY, TXT, t, L };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.LowiMoveFinishCore = api;
 })(typeof window !== 'undefined' ? window : null);

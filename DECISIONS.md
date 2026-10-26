@@ -1268,3 +1268,11 @@ Found by the hourly bug hunt (run 43, BUGHUNT/playtest/probe-gb-skip-dbl.cjs, li
 
 ## 26 Oct 2026: the companion never goes exploring on her own; exploring is a tap (Emmanuel)
 Emmanuel (voice, about 4 PM CET, screenshot of "Out exploring · back in 59 min"): first "remove this feature ... nobody likes it", then "You know the auto fly. If they want to manually tap, let them do that. But not automatically. It's quite annoying and then the UI breaks." So: the sun trip no longer starts when the sun fills (only "Send her exploring" starts it), body journeys no longer auto-start after logging, call back stays, auto trips saved before this are brought home quietly with their finds, and the away layout is fixed. MAYA-HANDOFF 0.32.
+
+## 2026-10-26 — Scanner card says How often in numbers (overrides "no frequency" for the scanner card)
+Emmanuel on the almonds card: "I need to know exactly how many times I can eat this. What does moderate mean?" The scanner
+card's How often line (shop-scan-core explain) gives a general guide for the shown portion: Lower = fine every day, Moderate =
+up to 2-3 times a week, Higher = once a week at most; a Moderate that is only about a big nut or cheese portion names the
+30 g portion that is fine every day. Always with "A general guide for this portion, not medical advice." The tier words
+elsewhere (Everyday / Small portion / Skip it) stay as decided on 24 Oct. Plain nuts and hard cheese are rated at the food
+policy's own 30 g usual portion (spike-core portionGroup).

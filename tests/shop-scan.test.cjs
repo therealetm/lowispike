@@ -124,8 +124,9 @@ test('wiring: the Scan camera is reused (no second camera or barcode reader), lo
     assert.match(html, /function shopMode\(on\)/);
     assert.match(html, /function shopResume\(\)/);
     assert.match(html, /if \(CAM\.busy \|\| CAM\.hold \|\|/, 'a hit holds the scan loop while the card is open');
-    assert.match(html, /CAM\.shop && window\.LowiShopScan\) \{ const now = performance\.now\(\); if \(CAM\.hold \|\| \(window\.LowiShopScanCore && LowiShopScanCore\.repeatHit/);
-    assert.match(html, /LowiShopScan\.found\(code, CAM\.el\); return; \}\n  CAM\.done = true; stopStream\(\);/, 'shopping mode keeps the camera stream on; normal Scan is unchanged');
+    // Oct 26 one scanner (Emmanuel: "Sync them ... one thing, one ultimate scanner"): every camera shows this card and keeps the stream on
+    assert.match(html, /if \(window\.LowiShopScan\) \{ const now = performance\.now\(\); if \(CAM\.hold \|\| \(window\.LowiShopScanCore && LowiShopScanCore\.repeatHit/);
+    assert.match(html, /LowiShopScan\.found\(code, CAM\.el, \{ctx:scanCtx\(\)\}\); return; \}\n  CAM\.done = true; stopStream\(\);/, 'every camera keeps the stream on; the old close-and-reveal path is only a fallback without shop-scan.js');
     assert.match(html, /search:searchName, shopMode, shopResume/);
     assert.match(html, /addScanned:p => \{ const C = window\.LowiShopScanCore, r = C && C\.cartAdd\(SH\.list, p, uid\); if \(!r\) return null; shSave\(\);/);
     assert.match(html, /mode !== "shop"\)\{LowiSpirit\.scannerHost\(\)/, 'from Shop it opens as its own layer');
@@ -142,8 +143,10 @@ test('look: black space and iOS blue glass, one big verdict and Add to cart, det
     assert.match(css, /#0a84ff/);
     // order in the card: verdict, then Add to cart, then the folded details
     const r = js.slice(js.indexOf('function result('), js.indexOf('function unknown('));
-    const iv = r.indexOf('verdictHTML(lvl'), ia = r.indexOf('data-ss="add"'), id = r.indexOf('detailsHTML(p, r)');
-    assert.ok(iv > 0 && iv < ia && ia < id, 'verdict, Add to cart, details');
+    // Oct 26 one scanner: verdict, then the buttons (Add to cart first outside Log meal), then the better pick / bubble, then the folded details
+    assert.match(r, /verdictHTML\(lvl, o\.est\) \+ acts \+ extrasHTML\(pv, lvl\) \+ detailsHTML\(q, r\)/, 'verdict, buttons, extras, details');
+    assert.match(r, /: kIn \? kitB\(true\) \+ cartB\(false\) : cartB\(true\) \+ kitB\(false\);/, 'Add to cart is the big button outside Log meal and the Kitchen');
+    assert.match(r, /data-ss="add"/);
     assert.match(js, /<details class="ss-more">/, 'details closed by default');
     assert.doesNotMatch(js, /<details class="ss-more" open/);
     assert.match(js, /T\('est'\)/, 'the verdict says Estimate');

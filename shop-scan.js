@@ -104,8 +104,11 @@
     }
     function timeout(pr, ms) { return Promise.race([pr, new Promise(ok => setTimeout(() => ok(null), ms))]); }
 
-    async function found(code, el) {
+    /* o.ctx (Oct 26 one scanner): 'shop' | 'meal' | 'scan', where the camera was opened (LowiDex.ctx); kept on the camera for the
+       retry, name search and swap cards that follow */
+    async function found(code, el, o) {
         el = el || cam(); if (!el) return;
+        if (o && o.ctx) el.dataset.ssctx = o.ctx;
         loading(el, code);
         let p = null;
         try { p = await timeout(X().lookup(code), 11000); } catch (e) { p = null; }
@@ -116,45 +119,117 @@
         if (p.notFound) { unknown(el, code, false); return; }
         result(el, p, { code });
     }
+    const ctxOf = el => (el && el.dataset && el.dataset.ssctx) || (el && el.classList.contains('b3-shop') ? 'shop' : 'scan');
     function verdictHTML(lvl, est) {
         return '<div class="ss-verdict" role="status"><span class="ss-vic">' + IC[lvl] + '</span><div class="ss-vt"><span class="ss-est">' + esc(est || T('est')) + '</span>' +
             '<b class="ss-vw">' + esc(T('v_' + lvl)) + '</b><small>' + esc(T('s_' + lvl)) + '</small></div></div>';
     }
     function detailsHTML(p, r) {
         const f = p.facts || {}, rows = C.factRows(f), why = (p.why && p.why.length ? p.why : (r && r.why) || []);
+        /* Oct 26 one scanner: the old result's portion calculator (nutri-stats.js), once, inside Details; picking an amount re-rates the one verdict above */
+        let por = ''; try { por = W.LowiNutriStats && W.LowiNutriStats.portionHTML && rows.length ? W.LowiNutriStats.portionHTML(p) : ''; } catch (e) { por = ''; }
         const wt = why.map(w => { try { return X().whyText(w); } catch (e) { return ''; } }).filter(Boolean).slice(0, 5);
         const ing = String(p.ingredients || '').trim().slice(0, 700);
         let h = '<details class="ss-more"><summary><span>' + esc(T('details')) + '</span><i aria-hidden="true"></i></summary><div class="ss-body">';
+        if (por) h += '<div class="ss-h">' + esc(T('portion')) + '</div><div class="ss-por">' + por + '</div>';
         if (rows.length) h += '<div class="ss-h">' + esc(T(f.drink || p.cat === 'drink' ? 'per100ml' : 'per100')) + '</div><div class="ss-facts">' + rows.map(x => '<div><small>' + esc(T(x[0])) + '</small><b>' + esc(num(x[1])) + '</b></div>').join('') + '</div>';
         if (wt.length) h += '<div class="ss-h">' + esc(T('why')) + '</div><ul class="ss-why">' + wt.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
         if (ing) h += '<div class="ss-h">' + esc(T('ing')) + '</div><p class="ss-ing">' + esc(ing) + '</p>';
         if (!rows.length && !wt.length && !ing) h += '<p class="ss-ing">' + esc(T('noData')) + '</p>';
+        if (p.barcode) h += '<p class="ss-bcl">' + esc(T('bc', String(p.barcode))) + '</p>';
         h += '<p class="ss-legal">' + esc(T('legal')) + '</p></div></details>';
         return h;
     }
-    /* o: {code, est (label override), lvl (verdict override)} */
+    /* o: {code, est (label override), lvl (verdict override), ctx}
+       Oct 26 one scanner (Emmanuel: "the main page scanner gives me still this old overwhelming preview. Sync them ... one thing, one
+       ultimate scanner"): this card is the result of every scan now: the Scan camera, Log meal's Scan, Shop and the Kitchen. ONE verdict
+       (for your usual amount when you have one), then the buttons for where you opened it, then a better pick only when the verdict needs
+       one, the Bubble Dex catch for a Lower one, and the rest (portion, per 100 g, why, ingredients) folded in Details. Nothing repeated. */
+    function rated(p, o) {
+        let q = p; try { if (X().prep && !o.lvl) q = X().prep(Object.assign({}, p)) || p; } catch (e) { q = p; }
+        let v = q; try { if (X().view && !o.lvl) v = X().view(q) || q; } catch (e) { v = q; }
+        const lvl = o.lvl || (v !== q && v.verdict ? C.level(v.verdict) : C.verdictOf(q, X() && X().rate));
+        return { q, v, lvl };
+    }
     function result(el, p, o) {
         o = o || {};
+        const ctx = o.ctx || ctxOf(el); if (o.ctx) el.dataset.ssctx = o.ctx;
         let r = null; try { r = !p.verdict || p.verdict === 'unknown' ? X().rate(p) : null; } catch (e) {}
-        const lvl = o.lvl || C.verdictOf(p, X() && X().rate);
-        const code = String(p.barcode || o.code || '');
-        const name = String(p.name || '').trim() || T('unnamed', code);
-        const img = /^https:\/\//.test(String(p.img || '')) ? String(p.img) : '';
-        cur = { name, barcode: code, img, level: lvl, brand: String(p.brand || '').slice(0, 40), cat: String(p.cat || '') };
+        const rr = rated(p, o), q = rr.q, lvl = rr.lvl;
+        const code = String(q.barcode || o.code || '');
+        const name = String(q.name || '').trim() || T('unnamed', code);
+        const img = /^https:\/\//.test(String(q.img || '')) ? String(q.img) : '';
+        const okv = lvl === 'none' ? 'ok' : lvl === 'mild' ? 'better' : lvl === 'spike' ? 'spike' : q.verdict;
+        const pv = Object.assign({}, q, { verdict: okv });
+        cur = { name, barcode: code, img, level: lvl, brand: String(q.brand || '').slice(0, 40), cat: String(q.cat || ''), p: pv, est: o.est || '' };
         /* Oct 26 Kitchen game (kitchen-game.js, Cook > Kitchen): a scanned product can also go straight into your kitchen. Opened from
            the Kitchen's Scan button, that is the big button and Add to cart is the small one. */
         const KG = W.LowiKitchenGame, kIn = !!(KG && KG.intent && KG.intent());
-        const kBtn = !KG ? '' : '<button type="button" class="' + (kIn ? 'ss-add ss-kit-main' : 'ss-kit') + '" data-ss="kit">' + IC.kit + '<span>' + esc(kitT(0)) + '</span></button>';
+        const kitB = big => !KG ? '' : '<button type="button" class="' + (big ? 'ss-add ss-kit-main' : 'ss-kit') + '" data-ss="kit">' + IC.kit + '<span>' + esc(kitT(0)) + '</span></button>';
+        const cartB = big => '<button type="button" class="' + (big ? 'ss-add' : 'ss-kit') + '" data-ss="add">' + IC.cart + '<span>' + esc(T('add')) + '</span></button>';
+        /* Oct 21 rule kept: only Log meal's own Scan logs a meal ("Scan identifies"); there I ate this is the big button */
+        const ateB = '<button type="button" class="ss-add ss-ate" data-ss="ate">' + IC.ok + '<span>' + esc(T('ate')) + '</span></button>';
+        const acts = ctx === 'meal' ? ateB + kitB(false) : kIn ? kitB(true) + cartB(false) : cartB(true) + kitB(false);
         const c = card(el);
-        c.innerHTML = '<div class="ss-sheet ss-v-' + lvl + '">' +
-            '<div class="ss-head"><span class="ss-img">' + (img ? '<img alt="" src="' + esc(img) + '">' : IC.bc) + '</span><div class="ss-name"><b>' + esc(name) + '</b>' + (p.brand ? '<small>' + esc(p.brand) + '</small>' : '') + '</div>' +
+        c.innerHTML = '<div class="ss-sheet ss-v-' + lvl + '" data-ctx="' + esc(ctx) + '">' +
+            '<div class="ss-head"><span class="ss-img">' + (img ? '<img alt="" src="' + esc(img) + '">' : IC.bc) + '</span><div class="ss-name"><b>' + esc(name) + '</b>' + (q.brand ? '<small>' + esc(q.brand) + '</small>' : '') + '</div>' +
             '<button type="button" class="ss-x" data-ss="next" aria-label="' + esc(T('next')) + '">' + IC.x + '</button></div>' +
-            verdictHTML(lvl, o.est) +
-            (kIn ? kBtn : '') + '<button type="button" class="' + (kIn ? 'ss-kit' : 'ss-add') + '" data-ss="add">' + IC.cart + '<span>' + esc(T('add')) + '</span></button>' + (kIn ? '' : kBtn) +
-            detailsHTML(p, r) + '</div>';
-        /* Oct 17 grocery hunt (grocery-hunt.js): a barcode really scanned (camera, typed digits or a barcode photo) is a catch; a product picked from a name search is not */
-        if (o.code) { try { W.dispatchEvent(new CustomEvent('lowi:shop-scan', { detail: { barcode: code, name, brand: String(p.brand || ''), level: lvl, card: c } })); } catch (e) {} }
+            verdictHTML(lvl, o.est) + acts + extrasHTML(pv, lvl) + detailsHTML(q, r) + '</div>';
+        /* the companion reacts to the verdict, as it did to the old result (companion.js); shopping stays quiet */
+        if (ctx !== 'shop' && lvl !== 'unknown') { try { W.dispatchEvent(new CustomEvent('lowi:scan-verdict', { detail: { verdict: okv } })); } catch (e) {} }
+        /* Oct 17 grocery hunt (grocery-hunt.js): a barcode really scanned (camera, typed digits or a barcode photo) in the shopping camera is a catch; a product picked from a name search is not */
+        if (o.code && ctx === 'shop') { try { W.dispatchEvent(new CustomEvent('lowi:shop-scan', { detail: { barcode: code, name, brand: String(q.brand || ''), level: lvl, card: c } })); } catch (e) {} }
     }
+    /* a better pick (only for Higher / Moderate: index.html nameSwap, never invented) and the Bubble Dex catch (only for Lower) */
+    let swapCur = null;
+    function extrasHTML(p, lvl) {
+        let h = ''; swapCur = null;
+        if (lvl === 'spike' || lvl === 'mild') {
+            let s = null; try { s = X().swap ? X().swap(p) : null; } catch (e) { s = null; }
+            if (s && !s.ok && s.n) {
+                swapCur = s;
+                const go = s.rb ? '<button type="button" class="ss-sgo" data-ss="swap">' + esc(T('swapOpen')) + ' ›</button>' : s.prod ? '<button type="button" class="ss-sgo" data-ss="swap">' + esc(T('swapShow')) + ' ›</button>' : '';
+                h += '<div class="ss-swap"><span class="ss-se" aria-hidden="true">' + esc(s.e || '🌿') + '</span><div class="ss-st"><small>' + esc(T('swapH')) + (s.rb ? ' · ' + esc(T('swapR')) : '') + '</small><b>' + esc(s.rb ? s.rb.n : s.n) + '</b></div>' + go + '</div>';
+            }
+        }
+        if (lvl === 'none') {
+            let b = null; try { b = X().bubbleInfo ? X().bubbleInfo(p) : null; } catch (e) { b = null; }
+            if (b) h += b.has ? '<div class="ss-bub has"><span class="ss-bdot" aria-hidden="true"></span><span>' + esc(b.hasLabel) + '</span></div>'
+                : '<button type="button" class="ss-bub" data-ss="bubble"><span class="ss-bdot" aria-hidden="true"></span><span>' + esc(b.label) + '</span></button>';
+        }
+        return h;
+    }
+    function show(el, p, o) { el = el || cam(); if (!el || !p) return; result(el, p, o || {}); }
+    async function bubble(el, btn) {
+        if (!cur || !cur.p || btn.disabled || !X().bubble) return; btn.disabled = true;
+        let res = null; try { res = await X().bubble(cur.p); } catch (e) { res = null; }
+        if (!btn.isConnected) return;
+        if (!res) { btn.disabled = false; return; }
+        btn.outerHTML = '<div class="ss-bub has done" role="status"><span class="ss-bdot" aria-hidden="true"></span><span><b>' + esc(res.title) + '</b> ' + esc(res.sub || '') + (res.xp ? ' · +' + res.xp + ' XP' : '') + '</span></div>';
+    }
+    function ate(el, btn) {
+        if (!cur || !cur.p || btn.disabled || !X().eat) return; btn.disabled = true;
+        const p = cur.p; closeCard(el);
+        try { X().stop(); } catch (e) {}
+        try { X().eat(p); } catch (e) {}
+    }
+    function swap(el) {
+        const s = swapCur; if (!s) return;
+        if (s.rb && X().openRecipe) { X().openRecipe(s.rb.id); return; }
+        if (s.prod) result(el, s.prod, {});
+    }
+    /* picking an amount in Details re-rates the one verdict (nutri-stats.js fires lowi:portion) */
+    W.addEventListener('lowi:portion', e => {
+        const d = (e && e.detail) || {}, el = cam(); if (!el || !cur || !cur.p || !X().atGrams || !(d.grams > 0)) return;
+        const sh = el.querySelector('.ss-sheet'), box = sh && sh.querySelector('.ss-por .ns-portion'); if (!box) return;
+        if (box.getAttribute('data-ns-key') && d.key && box.getAttribute('data-ns-key') !== d.key) return;
+        let v = null; try { v = X().atGrams(cur.p, d.grams); } catch (e) { v = null; }
+        if (!v || !v.verdict) return;
+        const lvl = C.level(v.verdict), unit = (cur.p.facts && cur.p.facts.drink) || cur.p.cat === 'drink' ? ' ml' : ' g';
+        const old = sh.querySelector('.ss-verdict'); if (!old) return;
+        const t = D.createElement('div'); t.innerHTML = verdictHTML(lvl, T('estG', Math.round(d.grams) + unit)); old.replaceWith(t.firstChild);
+        sh.className = sh.className.replace(/ss-v-\w+/, 'ss-v-' + lvl); cur.level = lvl;
+    });
     function unknown(el, code, offline) {
         cur = null;
         const c = card(el);
@@ -163,6 +238,7 @@
             '<button type="button" class="ss-x" data-ss="next" aria-label="' + esc(T('next')) + '">' + IC.x + '</button></div>' +
             '<form class="ss-find" autocomplete="off"><input class="input" name="q" maxlength="80" enterkeyhint="search" placeholder="' + esc(T('namePh')) + '" aria-label="' + esc(T('namePh')) + '"><button class="ss-go" aria-label="' + esc(T('search')) + '">' + IC.search + '</button></form>' +
             (offline && code ? '<button type="button" class="b3-cbtn ghost ss-retry" data-ss="retry" data-code="' + esc(code) + '">' + esc(T('retry')) + '</button>' : '') +
+            (!offline && code ? '<button type="button" class="b3-cbtn ghost ss-pack" data-ss="pack" data-code="' + esc(code) + '">' + esc(T('packPhoto')) + '</button>' : '') +
             '<div class="ss-results" data-code="' + esc(code || '') + '"></div></div>';
         const f = c.querySelector('.ss-find');
         f.addEventListener('submit', e => { e.preventDefault(); search(el, f.q.value, code); });
@@ -264,6 +340,10 @@
         else if (k === 'cart') goCart();
         else if (k === 'name') { if (X() && X().shopMode && !el.classList.contains('b3-shop')) { X().shopMode(true); stamp(true); attach(el, true); } unknown(el, '', false); }
         else if (k === 'retry') { if (b.dataset.code) found(b.dataset.code, el); }
+        else if (k === 'ate') ate(el, b);
+        else if (k === 'bubble') bubble(el, b);
+        else if (k === 'swap') swap(el);
+        else if (k === 'pack') { const bc = b.dataset.code; try { X().stop(); } catch (e2) {} setTimeout(() => { try { X().reveal({ barcode: bc, notFound: true }); } catch (e2) {} }, 60); }
         else if (k === 'pick') { const p = found_[+b.dataset.i]; if (p) result(el, p, {}); }
         else if (k === 'plain') plain(el, b.dataset.q, (el.querySelector('.ss-results') || {}).dataset ? el.querySelector('.ss-results').dataset.code : '');
     });
@@ -292,5 +372,5 @@
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', watch); else watch();
 
-    W.LowiShopScan = { want, pill, title, decorate, found, open, entryHTML, _cur: () => cur, _add: () => { const el = cam(); if (el) add(el); } };
+    W.LowiShopScan = { want, pill, title, decorate, found, show, open, entryHTML, _cur: () => cur, _add: () => { const el = cam(); if (el) add(el); } };
 })();

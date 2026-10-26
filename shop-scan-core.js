@@ -88,7 +88,16 @@
         nothing: ['Nothing found. You can still add it.', 'Nichts gefunden. Du kannst es trotzdem hinzufügen.', 'No se encontró nada. Puedes añadirlo igual.'],
         fromName: ['Estimate from the name only', 'Schätzung nur nach dem Namen', 'Estimación solo por el nombre'],
         bc: ['Barcode {0}', 'Barcode {0}', 'Código {0}'],
-        unnamed: ['Product {0}', 'Produkt {0}', 'Producto {0}']
+        unnamed: ['Product {0}', 'Produkt {0}', 'Producto {0}'],
+        /* Oct 26 one scanner: the same card for every scan, with the useful parts of the old long result worked in once */
+        ate: ['I ate this', 'Hab ich gegessen', 'Me lo comí'],
+        swapH: ['Better pick', 'Bessere Wahl', 'Mejor opción'],
+        swapR: ['Recipe', 'Rezept', 'Receta'],
+        swapOpen: ['Open', 'Öffnen', 'Abrir'],
+        swapShow: ['Show', 'Zeigen', 'Ver'],
+        portion: ['Your portion', 'Deine Portion', 'Tu ración'],
+        estG: ['Estimate for {0}', 'Schätzung für {0}', 'Estimación para {0}'],
+        packPhoto: ['Add it with a photo of the pack', 'Mit einem Foto der Packung hinzufügen', 'Añádelo con una foto del envase']
     };
     function tx(k, li) { const r = TX[k]; let s = r ? (r[li | 0] || r[0]) : k; for (let i = 2; i < arguments.length; i++) s = s.split('{' + (i - 2) + '}').join(arguments[i]); return s; }
     function langIndex(code) { return ({ de: 1, es: 2 })[String(code || 'en').slice(0, 2)] || 0; }

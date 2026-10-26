@@ -71,7 +71,10 @@ test('Cart sheet: quantities, honest estimate, empty state and the three ways on
     assert.match(h, /no price reported yet', 'noch kein Preis gemeldet', 'aún sin precio'/);
     assert.match(h, /Your cart is empty/);
     assert.match(h, /same list as your shopping list/);
-    assert.match(h, /data-stp="mylist"/); assert.match(h, /data-stp="scanshop"/); assert.match(h, /data-stp="gift"/);
+    assert.match(h, /data-stp="mylist"/); assert.match(h, /data-stp="scanshop"/);
+    /* Oct 26 2026 (MAYA-HANDOFF 0.34, Emmanuel): "I could use a hand" became "Someone else pays", which turns the whole cart into a
+       Give a hand basket; the third way on is now data-stp="giftcart" (still opens Give a hand, see the next test) */
+    assert.match(h, /data-stp="giftcart"/);
     assert.match(h, /role="dialog" aria-modal="true"/);
     assert.doesNotMatch(h, /Math\.random|rating|\u2605/, 'no invented prices or ratings');
 });
@@ -84,6 +87,9 @@ test('product sheet: "+ Cart" / "+ Warenkorb" / "+ Carrito" and the confirmation
 });
 
 test('Cart sheet opens Give a hand on "I could use a hand" (openPanel takes a start tab)', () => {
-    assert.match(sp, /W\.LowiGiftBasket\.open\('shop', 'mine'\)/);
+    /* Oct 26 2026 (MAYA-HANDOFF 0.34): the cart now hands the whole cart over (LowiGiftBasket.fromCart('shop')); opening Give a hand
+       on the mine tab stays as the fallback, so the same way on still exists */
+    assert.match(sp, /G\.fromCart\('shop'\)/);
+    assert.match(sp, /\.open\('shop', 'mine'\)/);
     assert.match(read('gift-basket.js'), /function openPanel\(from, startTab\) \{[\s\S]{0,120}if \(startTab === 'mine' \|\| startTab === 'give'\) tab = startTab;/);
 });

@@ -1207,6 +1207,20 @@ code. Decision:
 - Rule for every Maya: any new drag, swipe, sheet or animation gets checked against the apple-design Quick reference
   before release (AI_PLAYBOOK section 10).
 
+### 0.26 Microphone dictation in every text field (Emmanuel, voice, Mon 26 Oct 2026 about 4:00 PM CET)
+
+His words: "Can you add a speak thingy? For example, when I don't always want to type what food I wrote. So, I can click on
+a microphone and then I can just speak and it writes it. Are we able to do that? And have that basically everywhere where
+you're supposed to type, minimally."
+
+What to build: one shared component (opt in with one attribute on any input/textarea), a small glass mic inside the field's
+right edge. Tap, speak, the words land in the field; tap again or silence stops. Gentle listening pulse, big tap target, no
+clutter. Food logging / food search / meal names first, then Scan search, Kitchen + shopping list add, Supermarket, captions,
+companion rename and other free-text fields. Recognition in the app language (EN/DE/ES), every string EN/DE/ES. Permission
+denied = short localized hint. Audio only ever leaves the phone after the user taps the mic. If it can't work somewhere, hide
+the mic instead of showing a broken button. Task "LOWiSPIKE: microphone dictation in every text field" (Sesame, 26 Oct),
+worktree wt-mic, branch mic-dictation, COORD-mic.md. Status: building (see Log for the release).
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

@@ -1,0 +1,143 @@
+/* kitchen-game.css — Cook > Kitchen (kitchen-game.js, Oct 26 2026). A cool glass fridge and a warm wooden cabinet; every door swings
+   open into its shelf. Reduce Motion: no swings, no flights, plain fades. */
+html:not([data-ckview=kitchen]) #tab-shelf #kgRoot { display: none !important; }
+html[data-ckview=kitchen] #tab-shelf #r5Shuf,
+html[data-ckview=kitchen] #tab-shelf #r3kSwipe,
+html[data-ckview=kitchen] #tab-shelf #g2cTiles,
+html[data-ckview=kitchen] #tab-shelf #r3kYes,
+html[data-ckview=kitchen] #tab-shelf .ck-src,
+html[data-ckview=kitchen] #tab-shelf .ck-cats { display: none !important; }
+html[data-ckview=kitchen] #tab-shelf .ck-row { justify-content: center; }
+html[data-ckview=kitchen] #tab-shelf .ck-view { flex: 1 1 auto; }
+html[data-ckview=kitchen] #tab-shelf .ck-view .ck-b { flex: 1 1 0; }
+#tab-shelf #kgRoot { width: 100%; box-sizing: border-box; min-width: 0; }
+.kg-wrap { display: flex; flex-direction: column; gap: 10px; color: var(--text, #eef3f0); font: 15px/1.3 var(--lg-font, -apple-system, system-ui, sans-serif); padding-bottom: 12px; }
+.kg-wrap button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+.kg-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#kgRoot.kg-lock .kg-wrap { pointer-events: none; }
+
+/* health meter */
+.kg-meter { padding: 12px 14px; border-radius: 18px; background: linear-gradient(160deg, rgba(255,255,255,.09), rgba(255,255,255,.03)); border: 1px solid var(--b-edge, rgba(255,255,255,.12)); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+.kg-m-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.kg-m-top b { font-size: 15px; font-weight: 700; }
+.kg-m-pts { font-size: 12px; color: var(--muted, #9aa6b2); text-align: right; }
+.kg-m-pts.on { color: #7ee2a8; font-weight: 700; }
+.kg-m-bar { display: flex; gap: 2px; height: 9px; margin: 9px 0 7px; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,.06); }
+.kg-m-bar i { display: block; min-width: 6px; transition: flex .4s ease; }
+.kg-m-ok, .kg-dot.kg-ok { background: #34c77b; }
+.kg-m-better, .kg-dot.kg-better { background: #ffb340; }
+.kg-m-spike, .kg-dot.kg-spike { background: #ff6b5f; }
+.kg-m-unknown, .kg-dot.kg-unknown { background: rgba(255,255,255,.28); }
+.kg-m-empty { background: rgba(255,255,255,.08); }
+.kg-m-txt { margin: 0; font-size: 13px; color: var(--muted, #b6c0ca); }
+.kg-m-txt small { display: block; margin-top: 2px; font-size: 11.5px; opacity: .85; }
+
+/* add bar + product search */
+.kg-add { position: relative; display: flex; gap: 8px; margin: 0; z-index: 5; }
+.kg-q { flex: 1 1 auto; min-width: 0; height: 46px; padding: 0 16px; border-radius: 23px; border: 1px solid var(--b-edge, rgba(255,255,255,.16)); background: rgba(255,255,255,.07); color: var(--text, #eef3f0); font: 16px/1 inherit; outline: none; -webkit-appearance: none; appearance: none; }
+.kg-q::placeholder { color: var(--muted, #9aa6b2); }
+.kg-q:focus-visible { border-color: var(--tmg-a, #9de6b8); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tmg-a, #9de6b8) 30%, transparent); }
+.kg-scan { flex: none; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 23px; border: 1px solid var(--b-edge, rgba(255,255,255,.16)); background: color-mix(in srgb, var(--tmg-a, #9de6b8) 20%, transparent); }
+.kg-scan svg { width: 22px; height: 22px; }
+.kg-scan:active, .kg-door:active, .kg-note:active, .kg-hit:active, .kg-got:active, .kg-binbtn:active { transform: scale(.97); }
+.kg-hits { position: absolute; left: 0; right: 0; top: 52px; display: flex; flex-direction: column; gap: 2px; max-height: 330px; overflow-y: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; background: rgba(22,30,36,.97); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 18px 40px -12px rgba(0,0,0,.7); padding: 4px; }
+.kg-hits:empty { display: none; }
+.kg-hit { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 10px; border: 0; border-radius: 12px; background: none; text-align: left; }
+.kg-hit:hover, .kg-hit:focus-visible { background: rgba(255,255,255,.08); outline: none; }
+.kg-hit img, .kg-hit .kg-em { flex: none; width: 40px; height: 40px; border-radius: 10px; object-fit: contain; background: #fff; }
+.kg-hit .kg-em { display: grid; place-items: center; background: rgba(255,255,255,.08); font-size: 22px; }
+.kg-hit-t { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.kg-hit-t b { font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kg-hit-t small { font-size: 12px; color: var(--muted, #9aa6b2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kg-hit-plain .kg-em { font-size: 24px; font-weight: 300; }
+.kg-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+
+/* the kitchen: fridge + cabinet */
+.kg-scene { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; perspective: 900px; }
+.kg-unit { position: relative; display: flex; flex-direction: column; gap: 7px; padding: 10px 8px 12px; border-radius: 20px; min-width: 0; }
+.kg-fridge-u { background: linear-gradient(165deg, rgba(196,228,255,.2), rgba(120,170,220,.07) 60%, rgba(120,170,220,.12)); border: 1px solid rgba(205,232,255,.3); box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 0 26px -8px rgba(140,200,255,.45); }
+.kg-cab-u { background: linear-gradient(165deg, rgba(255,208,160,.2), rgba(190,120,60,.08) 60%, rgba(190,120,60,.14)); border: 1px solid rgba(255,214,170,.3); box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 0 26px -8px rgba(255,180,110,.4); }
+.kg-uh { margin: 0 2px 1px; font-size: 11px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; color: var(--muted, #b6c0ca); }
+.kg-door { position: relative; display: flex; align-items: center; gap: 7px; min-height: 56px; padding: 6px 14px 6px 8px; border-radius: 13px; text-align: left; overflow: visible; transform-style: preserve-3d; border: 1px solid rgba(255,255,255,.13); transition: transform .14s ease, box-shadow .2s; }
+.kg-door.kg-fridge { background: linear-gradient(180deg, rgba(230,244,255,.13), rgba(180,215,245,.06)); }
+.kg-door.kg-cabinet { background: linear-gradient(180deg, rgba(255,226,190,.13), rgba(220,160,100,.06)); }
+.kg-door::after { content: ""; position: absolute; right: 6px; top: 50%; width: 3px; height: 22px; margin-top: -11px; border-radius: 2px; background: rgba(255,255,255,.45); box-shadow: 0 0 6px rgba(255,255,255,.35); }
+.kg-door:focus-visible, .kg-note:focus-visible, .kg-scan:focus-visible, .kg-back:focus-visible, .kg-cb:focus-visible, .kg-got:focus-visible, .kg-binbtn:focus-visible, .kg-x:focus-visible, .kg-bx:focus-visible { outline: 2px solid var(--tmg-a, #9de6b8); outline-offset: 2px; }
+.kg-leaf { position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; transform-origin: 0 50%; backface-visibility: hidden; background: inherit; opacity: 0; }
+.kg-ic { flex: none; font-size: 22px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
+.kg-dl { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.kg-dl b { font-size: 12.5px; font-weight: 700; line-height: 1.15; overflow-wrap: anywhere; hyphens: auto; }
+.kg-dl small { font-size: 11.5px; color: var(--muted, #9aa6b2); }
+.kg-peek { position: absolute; right: 14px; bottom: 5px; display: flex; }
+.kg-pk { width: 18px; height: 18px; margin-left: -6px; border-radius: 50%; object-fit: cover; background: #fff; border: 1.5px solid rgba(20,28,34,.9); font-size: 10px; display: grid; place-items: center; }
+.kg-pk.kg-em { background: rgba(40,50,58,.95); }
+.kg-warn { position: absolute; top: 6px; right: 13px; width: 7px; height: 7px; border-radius: 50%; background: #ff6b5f; box-shadow: 0 0 6px #ff6b5f; }
+/* the door swings open (then the shelf grows) */
+.kg-door.kg-swing .kg-leaf { opacity: 1; animation: kgSwing .26s cubic-bezier(.3,.7,.4,1) forwards; }
+.kg-door.kg-swing { box-shadow: inset 0 0 22px rgba(255,236,190,.55), 0 0 18px -4px rgba(255,236,190,.6); }
+@keyframes kgSwing { from { transform: rotateY(0); } to { transform: rotateY(-82deg); } }
+.kg-door.kg-pop { animation: kgPop .6s ease; }
+@keyframes kgPop { 0% { box-shadow: 0 0 0 0 rgba(126,226,168,.8); } 40% { transform: scale(1.04); box-shadow: 0 0 0 6px rgba(126,226,168,0); } 100% { transform: none; } }
+/* the shopping list: a sticky note on the fridge */
+.kg-note { position: relative; align-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 44px; padding: 6px 10px; border: 0; border-radius: 4px 4px 10px 4px; color: #3a2f0b !important; background: linear-gradient(170deg, #ffe680, #f7cf45); transform: rotate(-1.5deg); box-shadow: 0 6px 12px -6px rgba(0,0,0,.6); text-align: left; }
+.kg-note::before { content: ""; position: absolute; top: -4px; left: 50%; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff9a9a, #d0342c); box-shadow: 0 1px 2px rgba(0,0,0,.5); }
+.kg-note b { font-size: 13px; font-weight: 750; }
+.kg-note span { min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 11px; background: rgba(58,47,11,.15); font-weight: 750; font-size: 13px; display: grid; place-items: center; }
+.kg-binhint { display: flex; align-items: center; gap: 8px; margin: 2px 4px 0; font-size: 12.5px; color: var(--muted, #9aa6b2); }
+.kg-bin-s svg { width: 20px; height: 20px; flex: none; display: block; }
+
+/* an open shelf */
+.kg-open { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 20px; min-height: 300px; transform-origin: 50% 0; }
+.kg-open.kg-fridge { background: linear-gradient(170deg, rgba(196,228,255,.18), rgba(120,170,220,.06)); border: 1px solid rgba(205,232,255,.28); box-shadow: inset 0 10px 30px -12px rgba(220,240,255,.45); }
+.kg-open.kg-cabinet { background: linear-gradient(170deg, rgba(255,208,160,.18), rgba(190,120,60,.06)); border: 1px solid rgba(255,214,170,.28); box-shadow: inset 0 10px 30px -12px rgba(255,226,180,.45); }
+.kg-open.kg-buyv { background: linear-gradient(170deg, rgba(255,230,128,.14), rgba(247,207,69,.04)); border: 1px solid rgba(255,230,128,.3); }
+.kg-open.kg-in { animation: kgGrow .3s cubic-bezier(.2,.8,.3,1); }
+@keyframes kgGrow { from { opacity: 0; transform: scale(.92) translateY(10px); } to { opacity: 1; transform: none; } }
+.kg-oh { display: flex; align-items: center; gap: 8px; }
+.kg-back { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 22px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.08); }
+.kg-back svg { width: 20px; height: 20px; }
+.kg-oh h3 { flex: 1 1 auto; margin: 0; font-size: 18px; font-weight: 750; outline: none; }
+.kg-oc { min-width: 28px; height: 28px; padding: 0 8px; box-sizing: border-box; border-radius: 14px; background: rgba(255,255,255,.1); display: grid; place-items: center; font-weight: 700; font-size: 14px; }
+.kg-sub { margin: 0 2px; font-size: 13px; color: var(--muted, #b6c0ca); }
+.kg-none { margin: 18px 6px; text-align: center; color: var(--muted, #9aa6b2); font-size: 14px; }
+.kg-cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.kg-card { position: relative; border-radius: 14px; background: rgba(10,16,20,.32); border: 1px solid rgba(255,255,255,.1); touch-action: pan-y; }
+.kg-card.kg-drag { z-index: 10; box-shadow: 0 18px 30px -10px rgba(0,0,0,.7); background: rgba(30,40,48,.95); touch-action: none; }
+.kg-card.kg-buy { display: flex; align-items: center; gap: 6px; padding-right: 6px; }
+.kg-card.kg-buy .kg-cb { flex: 1 1 auto; }
+.kg-cb { width: 100%; display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 7px 12px 7px 8px; border: 0; background: none; text-align: left; border-radius: 14px; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.kg-cp { flex: none; width: 44px; height: 44px; border-radius: 10px; object-fit: contain; background: #fff; }
+.kg-cp.kg-em { display: grid; place-items: center; background: rgba(255,255,255,.08); font-size: 24px; }
+.kg-ct { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.kg-ct b { font-weight: 650; overflow-wrap: anywhere; }
+.kg-ct small { font-size: 12px; color: var(--muted, #9aa6b2); }
+.kg-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 2px 10px 10px; }
+.kg-binbtn { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 14px; border-radius: 22px; border: 1px solid rgba(255,120,110,.45); background: rgba(255,107,95,.16); font-weight: 650; }
+.kg-binbtn svg { width: 19px; height: 19px; }
+.kg-move { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 13px; color: var(--muted, #b6c0ca); }
+.kg-move select { min-height: 40px; max-width: 170px; border-radius: 12px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.08); color: var(--text, #eef3f0); font: 14px/1 inherit; padding: 0 8px; }
+.kg-x { min-height: 44px; padding: 0 4px; border: 0; background: none; color: var(--muted, #9aa6b2) !important; font-size: 13px !important; text-decoration: underline; }
+.kg-got { flex: none; min-height: 40px; padding: 0 12px; border-radius: 20px; border: 1px solid rgba(126,226,168,.45); background: rgba(52,199,123,.18); font-weight: 650; font-size: 14px !important; }
+.kg-bx { flex: none; width: 40px; height: 40px; border-radius: 20px; border: 0; background: rgba(255,255,255,.07); font-size: 20px !important; line-height: 1; }
+.kg-gotall { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 4px 0; color: var(--muted, #b6c0ca); }
+/* the bin at the bottom of a shelf: drag a card here (or tap "Ran out: bin it") */
+.kg-bin { position: sticky; bottom: 8px; margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; border-radius: 16px; border: 1.5px dashed rgba(255,140,130,.45); background: rgba(40,20,20,.55); color: #ffb3ab; font-size: 13px; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: background .18s, transform .18s; }
+.kg-bin svg { width: 26px; height: 26px; }
+.kg-bin .kg-lid { transform-origin: 20px 6px; transition: transform .2s; }
+.kg-bin.kg-hot { background: rgba(255,107,95,.3); transform: scale(1.03); border-style: solid; }
+.kg-bin.kg-hot .kg-lid { transform: rotate(-24deg) translateY(-1px); }
+.kg-bin.kg-gulp { animation: kgGulp .5s ease; }
+@keyframes kgGulp { 30% { transform: scale(1.08); } 60% { transform: scale(.97); } }
+/* the little note at the bottom (with Undo) */
+.kg-toast { position: fixed; left: 14px; right: 14px; bottom: calc(env(safe-area-inset-bottom, 0px) + 100px); z-index: 40; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 8px 8px 8px 16px; border-radius: 24px; background: rgba(22,30,36,.96); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 14px 30px -10px rgba(0,0,0,.7); font-size: 14px; opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .2s, transform .2s; max-width: 520px; margin: 0 auto; }
+.kg-toast.on { opacity: 1; transform: none; pointer-events: auto; }
+.kg-toast span { flex: 1 1 auto; min-width: 0; }
+.kg-toast button { flex: none; min-height: 40px; padding: 0 14px; border-radius: 20px; border: 0; background: rgba(255,255,255,.12); font-weight: 700; }
+.kg-pts { color: #7ee2a8; }
+@media (min-width: 700px) { .kg-scene { gap: 16px; } .kg-door { min-height: 64px; } .kg-dl b { font-size: 14px; } }
+@media (prefers-reduced-motion: reduce) {
+    .kg-door, .kg-door.kg-pop, .kg-open.kg-in, .kg-bin, .kg-bin.kg-gulp, .kg-m-bar i, .kg-toast, .kg-bin .kg-lid { animation: none !important; transition: none !important; }
+    .kg-door.kg-swing .kg-leaf { animation: none !important; opacity: 0; }
+    .kg-scan:active, .kg-door:active, .kg-note:active, .kg-hit:active, .kg-got:active, .kg-binbtn:active, .kg-bin.kg-hot { transform: none; }
+    .kg-toast { transform: none; }
+}

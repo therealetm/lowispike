@@ -60,7 +60,9 @@ const STUDIO_KEY='lowispike.community.studio';
 function studioLast(){try{return localStorage.getItem(STUDIO_KEY)==='create'?'create':'aff';}catch(e){return 'aff';}}
 function tabOfView(v){return v==='aff'||v==='create'?'studio':v;}
 function showView(v){if(v==='chans'){setTab(true);return;}if(v==='studio')v=studioLast();if(!VIEWS[v]&&!PANES[v])return;
- if(VIEWS[v]){try{if(localStorage.getItem(STUDIO_KEY)!==v)localStorage.setItem(STUDIO_KEY,v);}catch(e){}}const c=W.LowiCommunity;if(open()&&c&&c.thread)c.thread(false);view=v;paint();}
+ if(VIEWS[v]){try{if(localStorage.getItem(STUDIO_KEY)!==v)localStorage.setItem(STUDIO_KEY,v);}catch(e){}}const c=W.LowiCommunity;if(open()&&c&&c.thread)c.thread(false);const was=view;view=v;paint();
+ /* BH-032: the view swapped in right after a tap must not take that double tap's 2nd tap (fresh-scrim.js) */
+ if(was!==v){try{const F=W.LowiFreshScrim;if(F&&F.mark)F.mark(D.getElementById('tab-foryou'));}catch(e){}}}
 function viewUrl(v){try{return new URL(VIEWS[v],location.href.split('#')[0]).href;}catch(e){return VIEWS[v];}}
 function inviteUrl(){try{return location.href.split('#')[0].split('?')[0]+'#community';}catch(e){return '#community';}}
 /* Oct 22 (item 33 sweep): a rebuilt Community page (renderCommunity) left the cached frames detached: frames[view] still existed,

@@ -6985,6 +6985,8 @@ function goTab(t){
   if (window.LowiSpirit) LowiSpirit.close(true);
   if (!RENDER[t]) t = "home";
   const root = $("#tab-" + t), cached = !!(root && root.dataset.navRendered === "1" && root.childElementCount);
+  /* BH-032: a double tap that switches tabs must not press what the new tab puts under the finger (fresh-scrim.js) */
+  try { if (root && TAB !== t && window.LowiFreshScrim && LowiFreshScrim.mark) LowiFreshScrim.mark(root); } catch (e) {}
   /* Oct 21 (E-man: "I go back and it just takes me completely back"): Home is never torn down on the way back. Leaving it keeps
      its DOM, open bubbles, orbit and scroll exactly as they were; coming back only shows it again. It re-renders (quietly, when
      the phone is idle) only when something it shows changed while you were away, e.g. a meal logged in Cook. */

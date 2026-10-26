@@ -12210,7 +12210,7 @@ function rec(id){ if (CACHE[id]) return CACHE[id]; let r = null;
 
 /* at home: what you ticked in Today / the cart (S.td.have, same keys), plus kitchen staples unless you un-ticked them */
 function haveMap(){ const s = st(); if (!s) return {}; if (!s.td) s.td = {}; if (!s.td.have) s.td.have = {}; return s.td.have; }
-/* MAYA-HANDOFF 0.18: what is in Shop > Kitchen > At home (lowispike.kitchen.v1) counts as at home on every recipe, under its
+/* MAYA-HANDOFF 0.18: what is in Cook > Kitchen (lowispike.kitchen.v1, the old Shop > Kitchen > At home list) counts as at home on every recipe, under its
    English name or the phone-language one. A tap on this recipe ("not at home" / "at home") still wins for this ingredient. */
 let KIT_RAW, KIT_ST = null;
 function kitSt(){ const K = window.LowiKitchenCore; if (!K) return null;
@@ -12272,7 +12272,7 @@ function openRecipe(id, opt){ const r = typeof id === "string" ? rec(id) : id; i
   const ov = R2.sheet('<div class="p2-rec" id="p2Rec">' + recipeHTML(r) + '</div>', {full:true, cls:"p2-recov", onClose:() => { if (OPEN && OPEN.ov === ov) OPEN = null; }});
   if (R2.xBottom) R2.xBottom(ov);
   OPEN = {r, ov}; if (opt && opt.cook) setTimeout(() => cook(r), 250); return true; }
-/* the recipe page's own Add to kitchen (bot-recipe.js handles the tap): the products go to Shop > Kitchen > At home */
+/* the recipe page's own Add to kitchen (bot-recipe.js handles the tap): the products go to Cook > Kitchen (lowispike.kitchen.v1) */
 function kitBtn(r){ const B = window.LowiBotRecipeCore, K = window.LowiKitchenCore; if (!B || !K || !r) return "";
   const l = (window.LowiLang && LowiLang.get && LowiLang.get()) || "en", f = B.foods(r.ing); if (!f.length) return "";
   const ks = kitSt(), have = !!ks && B.status(ks, f, kitTr) === "have";

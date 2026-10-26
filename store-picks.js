@@ -257,11 +257,11 @@
         const n = cartN(), name = T('Cart', 'Warenkorb', 'Carrito');
         return '<button type="button" class="stp-pill stp-cartbtn" data-stp="cart" aria-label="' + esc(name + (n ? ', ' + n : '')) + '">' + ic.cart + '<span>' + esc(name) + '</span>' + (n ? '<i class="stp-cart-n">' + n + '</i>' : '') + '</button>';
     }
-    /* Oct 26 (MAYA-HANDOFF 0.21): the door to Shop from home (week-basket.js), a week of dinners in one basket, from home */
+    /* Oct 26 (MAYA-HANDOFF 0.21): the door to Shop from home (week-basket.js), a week of dinners from home that fills the Cart (0.22) */
     function wbDoor() {
         if (!W.LowiWeekBasket) return '';
         return '<button type="button" class="stp-wb" data-stp="weekshop"><span aria-hidden="true">\ud83c\udfe0</span><span class="stp-wb-t"><b>' + esc(T('Shop from home', 'Von zu Hause einkaufen', 'Compra desde casa')) + '</b>' +
-            '<small>' + esc(T('Plan your week of dinners, see the total, send the list', 'Plane deine Abendessen der Woche, sieh die Summe, schick die Liste los', 'Planea tus cenas de la semana, mira el total, env\u00eda la lista')) + '</small></span><span class="stp-wb-go" aria-hidden="true">\u203a</span></button>';
+            '<small>' + esc(T('Plan your week of dinners, see the total, fill your Cart', 'Plane deine Abendessen der Woche, sieh die Summe, ab in den Warenkorb', 'Planea tus cenas de la semana, mira el total, llena tu carrito')) + '</small></span><span class="stp-wb-go" aria-hidden="true">\u203a</span></button>';
     }
     function shopActs() {
         const scan = W.LowiShopScan && W.LowiShopScan.open, cart = !!(shelf() && shelf().cartLines);

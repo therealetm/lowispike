@@ -115,6 +115,26 @@ test('a closed or denied camera is not started again on return', async () => {
     assert.equal(c2.gum, 0, 'a camera the user blocked is not asked for again by itself');
 });
 
+/* sibling in Community chat: a playing voice message outlived the chat (live build 20261026-190121: it played on, on Home) */
+test('a chat voice message pauses once its bubble is gone, and keeps playing while it is only scrolled away', () => {
+    const cc = fs.readFileSync(path.join(__dirname, '..', 'community-chat.js'), 'utf8');
+    const a = cc.indexOf('let vGone=0;'), b = cc.indexOf('function voiceSync(){');
+    assert.ok(a > 0 && b > a, 'community-chat.js has the voice-message guard');
+    assert.match(cc, /if\(rec\)recStop\(false\);voiceStop\(\);\}\}/, 'leaving the chat pauses a playing voice message');
+    const SRC = 'https://x.supabase.co/v.webm';
+    let btn = { isConnected: true, getAttribute: () => SRC, getBoundingClientRect: () => ({ width: 80, height: 40, top: -900 }) };
+    const ctx = { vAudio: { paused: false, pause() { this.paused = true; } }, vSrc: SRC, D: { querySelectorAll: () => btn ? [btn] : [] } };
+    vm.createContext(ctx);
+    vm.runInContext('var vAudio=this.vAudio,vSrc=this.vSrc;' + cc.slice(a, b) + ';this.tick=voiceGone;this.stop=voiceStop;', ctx);
+    for (let i = 0; i < 6; i++) ctx.tick();
+    assert.equal(ctx.vAudio.paused, false, 'a bubble scrolled out of view keeps playing');
+    btn = null;
+    ctx.tick(); ctx.tick();
+    assert.equal(ctx.vAudio.paused, false, 'one or two missed updates (a re-render) do not stop it');
+    ctx.tick();
+    assert.equal(ctx.vAudio.paused, true, 'three in a row with no bubble: paused');
+});
+
 test('the shutter never takes a photo from a stopped stream', () => {
     const ctx = sandbox();
     openLive(ctx);

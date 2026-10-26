@@ -47,7 +47,8 @@ test('food photo shutter: the preview and the 1600 px upload canvas are both han
     D: { createElement: () => cv.mk() }, foodCam: { querySelector: () => video },
     cancelCapture() { }, flight: () => ({ then() { } }), photoSheet() { }, out: {} };
   vm.createContext(ctx);
-  vm.runInContext('var photoURL = "", photoFile = null;\n' + fnSrc(src, 'function shutter()') + '\nout.shutter = shutter; out.get = () => ({ photoURL, photoFile });', ctx);
+  /* BH-047: the shutter only snaps from a live stream */
+  vm.runInContext('var photoURL = "", photoFile = null, photoStream = { getVideoTracks: () => [{ readyState: "live" }] };\n' + fnSrc(src, 'function shutter()') + '\nout.shutter = shutter; out.get = () => ({ photoURL, photoFile });', ctx);
   for (let i = 0; i < 3; i++) {
     ctx.out.shutter(); cv.flush();
     const st = ctx.out.get();

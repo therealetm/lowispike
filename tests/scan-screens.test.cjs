@@ -42,9 +42,11 @@ test('camera permission: starting, blocked and missing camera each get a clear g
   assert.match(st, /'starting'/);
   assert.match(st, /'denied'[\s\S]*camOff[\s\S]*camOffS[\s\S]*data-sp="photo"[\s\S]*\+ pick \+/, 'denied: explain, Try again, choose a photo');
   assert.match(st, /'nocam'[\s\S]*camNone[\s\S]*pick\.replace[\s\S]*data-sp="meal"/, 'no camera: photo library or type it');
-  const photo = fnBody(spirit, 'async function photo()');
-  assert.match(photo, /NotAllowedError'[\s\S]*'denied' : 'nocam'/);
-  assert.match(photo, /foodState\(h, 'live'\)/);
+  // BH-047: the stream start moved out of photo() into startFood(h), shared with the return from the background
+  assert.match(fnBody(spirit, 'async function photo()'), /return startFood\(h\)/);
+  const start = fnBody(spirit, 'async function startFood(h)');
+  assert.match(start, /NotAllowedError'[\s\S]*'denied' : 'nocam'/);
+  assert.match(start, /foodState\(h, 'live'\)/);
   assert.match(spirit, /camOffS: \['Allow it in Settings › Safari › Camera/);
   // closing tidies the layer and the class, and stops the stream
   const cancel = fnBody(spirit, 'function cancelCapture()');

@@ -504,7 +504,7 @@ function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)r
    snapshot of Home any more). From anywhere else the galaxy just settles in from a little closer. */
 function intro(){const g=D.getElementById('cgGalaxy');if(!g||!g.removeAttribute)return;g.__intro=1;if(D.documentElement.classList.contains('gx-out'))return;if(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches)return;g.removeAttribute('data-intro');void g.offsetWidth;g.setAttribute('data-intro','1');clearTimeout(introT);introT=setTimeout(()=>{g.removeAttribute('data-intro');},1100);}
 let enterAt=0,ro=null;
-function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();koRetry=0;if(!camUser)cam=null;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();if(rec)recStop(false);}}
+function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();koRetry=0;if(!camUser)cam=null;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();if(rec)recStop(false);voiceStop();}}
 function watch(){if(watching||!W.MutationObserver)return;const t=D.getElementById('tab-foryou');if(!t)return;watching=true;new W.MutationObserver(onShow).observe(t,{attributes:true,attributeFilter:['class']});}
 function roomFlag(){const p=D.getElementById('cmPaneChat'),on=threadOpen&&!!(p&&p.hasAttribute&&p.hasAttribute('data-spirit-chat'));if(p&&p.dataset){if(on)p.dataset.room='1';else delete p.dataset.room;}try{D.documentElement.classList.toggle('cr-room',on);}catch(e){}roomDress(p,on);}
 /* Oct 22 (item 37): the room's composer floats over the messages (community-tg.css). The list keeps its last message clear of it, and of a reply bar or photo
@@ -833,7 +833,14 @@ function voicePlay(btn){const src=btn&&btn.getAttribute('data-src')||'';if(!K.vo
   vAudio.addEventListener('ended',()=>{vSrc='';voiceSync();});vAudio.addEventListener('error',()=>{if(!vSrc)return;vSrc='';notice=tr('voiceBad');voiceSync();refresh();});}
  if(vSrc===src){if(vAudio.paused)vAudio.play().catch(()=>{});else vAudio.pause();return;}
  vSrc=src;try{vAudio.pause();}catch(e){}vAudio.src=src;const pr=vAudio.play();if(pr&&pr.catch)pr.catch(e=>{if(e&&e.name==='NotSupportedError'){vSrc='';notice=tr('voiceBad');refresh();}voiceSync();});voiceSync();}
-function voiceSync(){const btns=D.querySelectorAll('#cmPaneChat [data-chat="voice"]');if(!btns.length)return;const a=vAudio,d=a&&isFinite(a.duration)&&a.duration>0?a.duration:0;
+/* BH-047 (P-SESSION-OUTLIVES-SCREEN, sibling of BH-046): a voice message kept playing after you left the chat or its room, with no
+   button left on screen to stop it (seen on the live site, build 20261026-190121). Leaving the chat pauses it; a playing message whose
+   bubble is gone or hidden for three time updates in a row (about 3/4 s: the room closed, the tab changed) pauses too. Scrolling the
+   bubble out of view does not count: it is still there. Its place is kept, so a tap on it plays on. */
+let vGone=0;function voiceStop(){vGone=0;if(vAudio&&!vAudio.paused){try{vAudio.pause();}catch(e){}}}
+function voiceGone(){if(!vAudio||vAudio.paused||!vSrc){vGone=0;return;}let b=null;for(const x of D.querySelectorAll('#cmPaneChat [data-chat="voice"]'))if(x.getAttribute('data-src')===vSrc){b=x;break;}
+ const r=b&&b.isConnected&&b.getBoundingClientRect();if(r&&r.width&&r.height){vGone=0;return;}if(++vGone>=3)voiceStop();}
+function voiceSync(){voiceGone();const btns=D.querySelectorAll('#cmPaneChat [data-chat="voice"]');if(!btns.length)return;const a=vAudio,d=a&&isFinite(a.duration)&&a.duration>0?a.duration:0;
  for(const b of btns){const on=!!vSrc&&b.getAttribute('data-src')===vSrc,playing=on&&a&&!a.paused,dur=+b.getAttribute('data-dur')||d||0,len=d||dur;
   b.classList.toggle('playing',!!playing);b.setAttribute('aria-pressed',String(!!playing));b.style.setProperty('--vp',on&&len?Math.min(1,a.currentTime/len).toFixed(3):'0');
   const t=b.querySelector('.cs-vt');if(t){const s=on&&a.currentTime>0?mmss(a.currentTime):mmss(dur);if(t.textContent!==s)t.textContent=s;}}}

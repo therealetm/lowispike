@@ -34,7 +34,7 @@ function chatSandbox(bar) {
         mmss: s => String(s)
     };
     vm.createContext(ctx);
-    vm.runInContext('var rec=null,wasOn=true,sk=null,active=()=>false;function recStop(s){calls.push(s);}\n' + cut(chat, 'recShown') + '\n' + cut(chat, 'recTick') + '\n' + cut(chat, 'onShow'), ctx);
+    vm.runInContext('var rec=null,wasOn=true,sk=null,active=()=>false;function recStop(s){calls.push(s);}function voiceStop(){}\n' + cut(chat, 'recShown') + '\n' + cut(chat, 'recTick') + '\n' + cut(chat, 'onShow'), ctx);
     return ctx;
 }
 

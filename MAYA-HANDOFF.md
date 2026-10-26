@@ -1157,6 +1157,12 @@ needs to be synchronized. So, just make the scanning thingy, just optimize it. S
   cart chip, Shop finds) stay in the camera opened from Shop. Swaps are not linked to Seller Zone (task 0.22).
 - Task "LOWiSPIKE: one ultimate scanner" started; branch `one-scanner`, COORD file `/home/sprite/COORD-one-scanner.md`.
   Report only once live.
+- LIVE (Mon 26 Oct, 3:35 PM CET): build 20261026-143321, quiet, What's New card `new-one-scanner` voiced in en/de/es.
+  The camera-capped card hid Add to cart under the Shop finds note in the Shop camera; the note now goes under the
+  buttons (above Details). Tests: tests/one-scanner.test.cjs (9, all fail on the old code). WebKit iPhone 13 probe,
+  Reduce Motion: wt-harness probes/ONESCAN/probe.cjs (Home Scan, Log meal Scan logs one meal on a double tap, Shop
+  camera logs nothing, card fits, no errors), all pass en/de/es locally and live. Note: the same barcode typed again
+  within 4 s is ignored on purpose (SAME_MS in shop-scan-core.js). Not yet tried on Emmanuel's iPhone.
 
 ## 1. What LOWiSPIKE is
 

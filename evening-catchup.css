@@ -47,7 +47,8 @@ html.ec-open, html.ec-open body { overflow: hidden; }
     background: radial-gradient(circle at 50% 55%, var(--c1), var(--c2) 72%); box-shadow: 0 0 26px color-mix(in srgb, var(--c1) 70%, transparent); animation: ecOpen .35s ease both; }
 .ec-mini .ec-ico { width: 52%; height: 52%; }
 @keyframes ecOpen { from { transform: scale(2.6); opacity: .4; } to { transform: none; opacity: 1; } }
-.ec-q { margin: 0; font-size: 30px; line-height: 1.2; font-weight: 800; max-width: 22ch; }
+/* h2 + parent: apple-ui.css's .apple-ui :is(.h2, h2) {font-size:1.25rem} out-ranked the bare class (20px headings; caught by tests/evening-catchup-live.cjs) */
+.ec-ov h2.ec-q { margin: 0; font-size: 30px; line-height: 1.2; font-weight: 800; max-width: 22ch; }
 .ec-opts { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 460px; }
 .ec-opt { min-height: 72px; width: 100%; border-radius: 22px; border: 2px solid rgba(255,255,255,.4); background: rgba(255,255,255,.14); color: #fff;
     font: inherit; font-size: 26px; font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 16px; cursor: pointer;
@@ -121,7 +122,7 @@ html.ec-open, html.ec-open body { overflow: hidden; }
     box-shadow: 0 20px 60px rgba(0,0,0,.45), 0 0 40px rgba(169,139,255,.35); transform: translateY(30px); transition: transform .4s cubic-bezier(.2,.9,.3,1); }
 .ec-hi.on .ec-hi-card { transform: none; }
 .ec-hi-pal { width: 104px; height: 104px; filter: drop-shadow(0 0 22px rgba(255,210,122,.6)); }
-.ec-hi-h { margin: 0; font-size: 30px; line-height: 1.2; font-weight: 800; }
+.ec-hi h2.ec-hi-h { margin: 0; font-size: 30px; line-height: 1.2; font-weight: 800; }
 .ec-hi .ec-big:focus-visible, .ec-hi .ec-soft:focus-visible { outline: 4px solid #ffd27a; outline-offset: 4px; }
 /* Reduce Motion: no drifting, popping, sparkles or rings; fades only */
 .ec-reduced *, .ec-reduced { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .15s !important; }
@@ -130,4 +131,4 @@ html.ec-open, html.ec-open body { overflow: hidden; }
     .ec-ov *, .ec-hi * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
     .ec-burst { display: none; }
 }
-@media (max-height: 700px) { .ec-bubble { width: min(56vw, 240px); height: min(56vw, 240px); } .ec-opt { min-height: 64px; font-size: 24px; } .ec-q { font-size: 26px; } }
+@media (max-height: 700px) { .ec-bubble { width: min(56vw, 240px); height: min(56vw, 240px); } .ec-opt { min-height: 64px; font-size: 24px; } .ec-ov h2.ec-q { font-size: 26px; } }

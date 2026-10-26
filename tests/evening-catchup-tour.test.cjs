@@ -43,3 +43,13 @@ test('tutorial: the card is recorded in the approved tutorial voice in all three
         assert.ok(!/lowi\s*spike/i.test(clip.s), 'the app name is never said out loud');
     }
 });
+
+test('save: back-dated catch-up meals end a running fast quietly (points kept, no second reward dialog on top of the finish)', () => {
+    /* found by tests/evening-catchup-live.cjs: Save with a fast running popped the fast-done reward (#fstRw, aria-modal) 0.7 s
+       later, behind the catch-up finish; after closing, it covered Settings and blocked taps */
+    const src = require('fs').readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+    const m = src.match(/function mealLogged0\(d, id\)\{[\s\S]*?\n  return r; \}/);
+    assert.ok(m, 'mealLogged0 found');
+    assert.ok(/d\.via === "catchup"[^;]*o\.reward = false|o\.reward = false[^;]*d\.via === "catchup"|if \(d\.edit \|\| d\.via === "catchup"\) o\.reward = false/.test(m[0]), 'via catchup turns the reward dialog off');
+    assert.ok(/const r = end\(t, o\)/.test(m[0]), 'the fast still ends (points kept)');
+});

@@ -2138,7 +2138,7 @@ function mealLogged0(d, id){ const s = st(), now = Date.now(), t = Math.min(now,
   if (!start) { const ok = firstMeal(t); if (ok && id) { const s1 = st(); trail(s1, {id, t, p:0}); put(s1); } return ok ? {first:true} : null; }
   if (t <= start + SITTING) return null;
   const aw = s.awarded || 0;
-  const o = {keep:true, quiet:true, byMeal:true, rewardDelay:d.via === "plan" ? 60 : 700}; if (d.edit) o.reward = false;
+  const o = {keep:true, quiet:true, byMeal:true, rewardDelay:d.via === "plan" ? 60 : 700}; if (d.edit || d.via === "catchup") o.reward = false; /* Oct 26 (0.39): the evening catch-up has its own finish; the fast still ends and pays, quietly */
   const r = end(t, o);
   if (r && r.rec && !d.spike && !d.edit) { try { if (window.LowiF2 && LowiF2.bonusFor) o.bonus = r.bonus = LowiF2.bonusFor(r.rec); } catch(e){ console.error(e); } }
   if (id && r && !r.err && !r.already) { const s2 = st(); if (+s2.last === t) { trail(s2, {id, t, p:start, aw, rs:r.rec ? r.rec.s : 0, x:r.rec ? r.x : 0, b:+r.bonus || 0}); put(s2); } }

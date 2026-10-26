@@ -1,0 +1,8 @@
+[
+ {"file": "f-home.png",    "kicker": "DEIN BEGLEITER", "head": "Er wächst mit jedem guten Essen.", "sub": "Du gibst ihm den Namen. Deine Mahlzeiten geben ihm Kraft."},
+ {"file": "f-photo.png",   "kicker": "FOTO-CHECK",     "head": "Foto machen.<br>Spike sofort sehen.", "sub": "Jede Zutat erkannt, mit Kalorien und Eiweiß."},
+ {"file": "f-scanres.png", "kicker": "SCANNER",        "head": "Scannen, bevor es im Wagen landet.", "sub": "Mit der besseren Wahl direkt daneben."},
+ {"file": "f-gap.png",     "kicker": "ESSENSPAUSE",    "head": "Deine Pause,<br>Stunde für Stunde.", "sub": "Sieh, welche Marke als Nächstes kommt."},
+ {"file": "f-card.png",    "kicker": "10 FORMEN",      "head": "Form 5 von 10.<br>Wie weit kommst du?", "sub": "Gute Tage lassen deinen Begleiter wachsen."},
+ {"file": "f-swipe.png",   "kicker": "REZEPTE",        "head": "Swipe dich zum Abendessen.", "sub": "Rezepte mit wenig Spike, passend zu dir."}
+]

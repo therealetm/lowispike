@@ -2,10 +2,10 @@ const L=require('./lib.cjs'),fs=require('fs');const {route}=require('./probe.cjs
 const which=(process.argv[2]||'home').split(',');
 const J={
  async home(H){await H.sleep(2500);},
- async gap(H){await H.tap('[data-orbit=gap]');await H.sleep(3500);},
+ async gap(H){await H.tap('[data-orbit=gap]');await H.sleep(7000);},
  async fuel(H){await H.tap('[data-orbit=fuel]');await H.sleep(2500);},
  async scanres(H,p){await H.tap('[data-orbit=scan]');await H.sleep(2500);await p.tap('#b3Bc');await p.keyboard.type('3017620422003');await p.keyboard.press('Enter');await H.sleep(7000);},
- async photo(H,p){await p.evaluate(()=>window.LowiSpirit&&LowiSpirit.photo&&LowiSpirit.photo());await H.sleep(2500);const i=await p.$('.sp-file-in');if(i)await i.setInputFiles(__dirname+'/data/rind.jpg');await p.waitForSelector('.sp-ai.fai-done, .sp-ai.fai-off, .sp-ai.fai-err',{timeout:30000}).catch(()=>console.log('photo wait timeout'));await H.sleep(2500);},
+ async photo(H,p){await p.evaluate(()=>window.LowiSpirit&&LowiSpirit.photo&&LowiSpirit.photo());await H.sleep(2500);const i=await p.$('.sp-file-in');if(i)await i.setInputFiles(__dirname+'/data/rind.jpg');await p.waitForSelector('.sp-ai.fai-done, .sp-ai.fai-off, .sp-ai.fai-err',{timeout:30000}).catch(()=>console.log('photo wait timeout'));await H.sleep(6000);},
  async cook(H){await H.tap('[data-orbit=fuel]');await H.sleep(1200);await H.tap('#hb2Bloom [data-id="cook"]');await H.sleep(3500);},
  async swipe(H){await H.tap('[data-orbit=fuel]');await H.sleep(1200);await H.tap('#hb2Bloom [data-id="cook"]');await H.sleep(3000);await H.tap('[data-ck=view][data-v=swipe]');await H.sleep(3000);},
  async shop(H){await H.tap('[data-orbit=fuel]');await H.sleep(1200);await H.tap('#hb2Bloom [data-id="shop"]');await H.sleep(3500);},

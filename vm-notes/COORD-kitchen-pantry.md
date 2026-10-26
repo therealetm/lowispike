@@ -12,3 +12,6 @@
 
 ## Replies
 - 13:05 CET new task (finish+ship) took over: rebase, tour steps, tests, release
+- 13:30 CI fix + tour steps pushed (c4a8b0b9); next WebKit check, release
+- 13:25 releasing (release.sh --news)
+- 13:50 LIVE 20261026-132254, verified live EN/DE WebKit; MAYA-HANDOFF log via push-main; red runs deleted

@@ -1,0 +1,38 @@
+const L = require('../BUGHUNT/playtest/lib.cjs');
+const view = process.argv[2] || 'chromium390', lang = process.argv[3] || 'en';
+(async () => {
+  const s = await L.serve('/home/sprite/wt-supermarket');
+  const h = await L.open({ view, url: 'http://127.0.0.1:' + s.address().port + '/', settle: 3000, lang, reducedMotion: true });
+  const p = h.page;
+  await p.addStyleTag({ url: '/week-basket.css' }); await p.addScriptTag({ url: '/week-basket-core.js' }); await p.addScriptTag({ url: '/week-basket.js' });
+  await p.evaluate(() => LowiWeekBasket.open({ store: 'lidl' })); await L.sleep(600);
+  await p.screenshot({ path: 'wb-' + lang + '-1.png' });
+  const info = await p.evaluate(() => { const c = LowiWeekBasket._ctx(), S = LowiWeekBasket._state(); return { plan: S.plan, store: S.store, sum: c.sum, items: c.items.length, totals: c.totals, overflowX: [...document.querySelectorAll('#wbSheet *')].filter(e => e.getBoundingClientRect().right > innerWidth + 1).map(e => e.className).slice(0, 5) }; });
+  console.log(JSON.stringify(info));
+  // interactions: people 4, budget down to 30, fit, have tick, swap, list
+  const click = async sel => { const c = await L.center(h, sel); if (!c) { console.log('MISSING', sel); return; } await L.tap(h, c.x, c.y); await L.sleep(250); };
+  await click('[data-wb="people"][data-v="4"]');
+  await p.evaluate(() => { const i = document.querySelector('#wbBud'); i.value = '30'; i.dispatchEvent(new Event('change', { bubbles: true })); }); await L.sleep(200);
+  await p.screenshot({ path: 'wb-' + lang + '-2.png' });
+  const before = await p.evaluate(() => LowiWeekBasket._ctx().sum);
+  await p.evaluate(() => document.querySelector('[data-wb="fit"]') && document.querySelector('[data-wb="fit"]').scrollIntoView({ block: 'center' }));
+  await click('[data-wb="fit"]');
+  const after = await p.evaluate(() => LowiWeekBasket._ctx().sum);
+  await p.evaluate(() => document.querySelector('[data-wb="have"]').scrollIntoView({ block: 'center' }));
+  await click('[data-wb="have"]');
+  const afterHave = await p.evaluate(() => LowiWeekBasket._ctx().sum);
+  await p.evaluate(() => document.querySelector('[data-wb="swap"]').scrollIntoView({ block: 'center' }));
+  const pl0 = await p.evaluate(() => LowiWeekBasket._state().plan.join());
+  await click('[data-wb="swap"][data-i="0"]');
+  const pl1 = await p.evaluate(() => LowiWeekBasket._state().plan.join());
+  await p.evaluate(() => document.querySelector('[data-wb="list"]').scrollIntoView({ block: 'center' }));
+  await p.screenshot({ path: 'wb-' + lang + '-3.png' });
+  await click('[data-wb="list"]');
+  await p.screenshot({ path: 'wb-' + lang + '-4.png' });
+  const shelf = await p.evaluate(() => { try { return JSON.parse(localStorage.getItem(Object.keys(localStorage).find(k => /shelf|shoplist|lowi.sh/i.test(k)) || 'x') || 'null'); } catch (e) { return String(e); } });
+  console.log(JSON.stringify({ before, after, afterHave, swapped: pl0 !== pl1, toast: await p.evaluate(() => document.querySelector('.wb-toast').textContent), cta: await p.evaluate(() => document.querySelector('[data-wb="list"]').textContent), shelfKeys: await p.evaluate(() => Object.keys(localStorage)) }));
+  await p.keyboard.press('Escape'); await L.sleep(400);
+  console.log('closed', await p.evaluate(() => !document.querySelector('#wbSheet')));
+  console.log(JSON.stringify(h.log), JSON.stringify(await L.snap(h)));
+  await h.browser.close(); s.close();
+})();

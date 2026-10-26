@@ -1,5 +1,5 @@
-# Bug hunt HANDOFF (after run 38, 26 Oct 10:25 UTC)
-Last shipped: BH-038 LIVE 20261026-111102 (Community menu: a double tap on the menu button no longer opens and shuts it; community-rooms-ui.js toggleMenu marks on show + spends closing taps). Run 38 finished cleanly.
-P-REUSED-OVERLAY: #whX, #sheetwrap, .rm-menu done; #appearancePanel unreachable (button display:none).
-Run 39 first: 1) #spWorld (spirit.js, made once, hidden toggled): does a double tap that opens it press a world button under the finger? 2) P-CLOSE-UNDER-FINGER siblings: sheet option rows, Misty card buttons, a person's card in Community. 3) still open: VoiceOver losing its place; level-up/badge saved too early; soak (20-min, offline mid-action, language switch) on current build.
-Every probe: mock-cloud or route block (P-LIVE-WRITE). iPhone 13 viewport is 390x664 (tap relative to innerHeight). Release with nohup scripts/release.sh "..." --quiet. Never `cat > /dev/null` in exec (waits on stdin).
+# Bug hunt HANDOFF (after run 40, Mon 26 Oct 2026 ~13:35 CET)
+- Live: 20261026-132627 (main 990b1483), shipped quiet. BH-040: every X / close button / scrim backdrop tap is spent in fresh-scrim (2nd tap of a double tap presses and focuses nothing).
+- Ledger Run 40 has the details and the next leads: Community .cg-body double tap, water bloom keep-orb double tap, VoiceOver focus, level-up/badge saved early, soak.
+- VM was unstable (reboots wipe /tmp, including /tmp/exec). Write logs under BUGHUNT/playtest/out, not /tmp.
+- Still waiting on Emmanuel: should Post wait for the photo? Should companion visits wait until 8 AM?

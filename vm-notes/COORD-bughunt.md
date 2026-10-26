@@ -73,3 +73,4 @@ world-home.js, home-orbit-v2*, misty-pad*, Settings files.
 
 # Run 40 (Mon 26 Oct 2026 13:02 CET): worktree see BUGHUNT/.wt, branch bughunt-40 (off origin/main 993c381b)
 - Probing P-CLOSE-UNDER-FINGER (sheet option rows, Community person card). Not touching community-chat.js, nibblo-core.js, kitchen-core.js, store-picks.js, pantry*, Cook view bar, tutorial files.
+- Run 40 done 13:35 CET: BH-040 live 20261026-132627 (fresh-scrim.js only). Worktree released.

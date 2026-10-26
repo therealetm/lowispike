@@ -23,7 +23,7 @@ const L = require('./lib.cjs');
     const ovOf = e => { for (let n = e; n && n !== document.body; n = n.parentNode) { if (n.parentNode === document.body) { const cs = getComputedStyle(n); return cs.position === 'fixed' || cs.position === 'absolute' ? n : null; } } return null; };
     const gone = ov => { if (!ov || !ov.isConnected) return true; const cs = getComputedStyle(ov); if (cs.display === 'none' || cs.visibility === 'hidden' || ov.hidden) return true; return /(^|\s)(off|out|closing)(\s|$)/.test(ov.className) || !/(^|\s)(on|open|show)(\s|$)/.test(ov.className) && ov.getAttribute('aria-hidden') === 'true'; };
     window.__nmc = nm; window.__ovOf = ovOf; window.__ck = [];
-    addEventListener('click', e => { if (!e.isTrusted) return; const c = ctl(e.target), ov = ovOf(e.target); window.__ck.push({ t: Math.round(e.timeStamp), c, n: nm(c), ov, ovn: nm(ov) }); }, true);
+    document.addEventListener('click', e => { if (!e.isTrusted) return; const c = ctl(e.target), ov = ovOf(e.target); window.__ck.push({ t: Math.round(e.timeStamp), c, n: nm(c), ov, ovn: nm(ov) }); }, true);
     window.__gone = gone; });
   const BAD = /delete|remove|sign ?out|log ?out|reset|erase|wipe|löschen|entfernen|abmelden|borrar|eliminar|cerrar sesión|report|block|melden|unfriend|install|share|teilen|compartir|download|camera|kamera|cámara|photo|foto|snap|upload|copy link|mailto|tel:|deep analy|chatgpt|ko-fi|kofi/i;
   const reset = async () => { for (let i = 0; i < 2; i++) { await page.keyboard.press('Escape'); await L.sleep(250); } await page.evaluate(() => { try { LowiR2.closeAll(); } catch (e) {} try { LowiHomeBloomsV2.close && LowiHomeBloomsV2.close(true); } catch (e) {} try { closeSheet(); } catch (e) {} }); await L.sleep(600);

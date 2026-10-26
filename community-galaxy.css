@@ -175,3 +175,16 @@ html.lg #cmPaneChat[data-spirit-chat] .cg-snap :is(.cg-to, .cg-t .cm-mention) { 
 html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap[data-side=b]::after{top:-7px!important;bottom:auto!important;transform:rotate(225deg)!important}
 html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap[data-side=r]::after{left:-6px!important;top:calc(50% + .5px)!important;bottom:auto!important;transform:rotate(135deg)!important}
 html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap[data-side=l]::after{left:auto!important;right:-6px!important;top:calc(50% + .5px)!important;bottom:auto!important;transform:rotate(-45deg)!important}
+
+/* Item 29 (20 Oct 2026, real-iPhone crash on Community then chat): companions in the galaxy and the chat are small
+   pictures of their exact drawing (community-chat.js mateLite). The picture has a 25% margin so auras and ears that
+   reach past the frame still show, hence the 1.5 scale. Above 24 people the galaxy also drops the per-companion
+   bobbing, glow filters and frosted bubble backgrounds, which each cost the phone a layer of graphics memory. */
+#cmPaneChat .cp-form.cp-picf{overflow:visible}
+#cmPaneChat .cp-form.cp-picf>.cp-pic{display:block;width:100%;height:100%;object-fit:contain;transform:scale(1.5);pointer-events:none;-webkit-user-drag:none;-webkit-user-select:none;user-select:none}
+#cmPaneChat .cp-form.cp-picf>i.cp-pic{transform:none}
+#cgGalaxy[data-crowd] .cg-orb{animation:none!important}
+#cgGalaxy[data-crowd] .cg-body{will-change:auto!important}
+html #cmPaneChat[data-spirit-chat] #cgGalaxy[data-crowd] .cg-orb .cp-form{filter:none!important}
+html #cmPaneChat[data-spirit-chat] #cgGalaxy[data-crowd] .cg-bub,html #cmPaneChat[data-spirit-chat] #cgGalaxy[data-crowd] .cg-bub::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html #cmPaneChat[data-spirit-chat] #cgGalaxy[data-crowd] .cg-bub.cg-snap,html #cmPaneChat[data-spirit-chat] #cgGalaxy[data-crowd] .cg-bub.cg-snap::after{background:rgba(8,14,40,.8)!important}

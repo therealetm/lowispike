@@ -205,6 +205,49 @@ function ownMisty(){const now=Date.now();if(ownArt.svg&&now-ownArt.at<4000)retur
    times a minute. Each drawing gets ids from who it is instead; the key suffix still keeps two drawings on one page apart. */
 function stableIds(svg,id){return String(svg||'').replace(/\blh\d+/g,'lhc'+String(id||'me').replace(/[^a-z0-9]/gi,'').slice(-12));}
 function mate(id,key){if(id&&(id===scope||id==='me')){const ms=ownMisty();if(ms)return stableIds('<span class="cp-form cp-own">'+ms+'</span>',id);}const g=genomeFor(id),C=W.LowiCompanionCore,F=W.LowiCompanion&&W.LowiCompanion.friendSVG;let svg='';if(g&&F){try{svg=F(g,key)||'';}catch(e){svg='';}}if(!svg&&g&&C&&C.miniSVG){try{svg=C.miniSVG(g,key);}catch(e){svg='';}}return stableIds('<span class="cp-form'+(svg?'':' cp-plain')+'">'+(svg||spirit(id,key))+'</span>',id);}
+/* Item 29 (20 Oct 2026): a big crowd of inline companion drawings (about 150 SVG pieces each, 115 in the galaxy and 123
+   more in the chat) is what got Safari's page killed on a real iPhone ("A problem repeatedly occurred"). Each companion is
+   now drawn once, off screen, into a small picture with its exact look, and the galaxy and the chat show that picture.
+   One drawing at a time, so the peak stays small. If anything fails, that companion stays a live drawing as before. */
+const PIC=new Map(),PICQ=[],PICP=['fill','fill-opacity','fill-rule','stroke','stroke-width','stroke-opacity','stroke-linecap','stroke-linejoin','stroke-dasharray','stroke-dashoffset','opacity','display','visibility','transform','transform-origin','transform-box','mix-blend-mode','stop-color','stop-opacity','clip-path','mask','filter','font-size','font-family','font-weight','text-anchor','dominant-baseline','color'];
+let picBusy=false,picHost=null,picT=0,picN=0;
+function picHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+s.length;}
+function picOk(){return !!(W.Blob&&W.URL&&URL.createObjectURL&&W.XMLSerializer&&W.Image&&D.createElement('canvas').getContext);}
+function mateLite(id,key){
+ const html=mate(id,'pc');if(html.indexOf('<svg')<0||!picOk())return mate(id,key);
+ const k=(id||'me')+'|'+picHash(html),c=PIC.get(k),open=html.slice(0,html.indexOf('>')+1),cls=' class="cp-pic'+(c&&c.url?'':' cp-wait')+'"';
+ if(c==='x')return mate(id,key);
+ if(c&&c.url)return open.replace('class="cp-form','class="cp-form cp-picf')+'<img'+cls+' alt="" draggable="false" src="'+c.url+'"></span>';
+ if(!c){PIC.set(k,{wait:1});PICQ.push({k,html});picKick();}
+ return open.replace('class="cp-form','class="cp-form cp-picf')+'<i'+cls+'></i></span>';
+}
+function picTrim(k){const id=k.split('|')[0]+'|',mine=[...PIC.keys()].filter(x=>x.startsWith(id)&&PIC.get(x).url);while(mine.length>2){const o=mine.shift();try{URL.revokeObjectURL(PIC.get(o).url);}catch(e){}PIC.delete(o);}}
+function picKick(){if(picBusy||!PICQ.length)return;picBusy=true;setTimeout(picRun,picN?12:0);}
+function picDone(){picBusy=false;picN++;if(!picT)picT=setTimeout(()=>{picT=0;refresh();},PICQ.length?450:30);picKick();}
+function picRun(){
+ const job=PICQ.shift();if(!job){picBusy=false;return;}
+ let fail=()=>{PIC.set(job.k,'x');picDone();};
+ try{
+  if(!picHost){picHost=D.createElement('div');picHost.setAttribute('aria-hidden','true');picHost.className='cp-pichost';picHost.style.cssText='position:fixed;left:0;top:0;width:72px;height:72px;opacity:0;pointer-events:none;z-index:-1;overflow:hidden;contain:strict';}
+  if(!picHost.isConnected)(D.body||D.documentElement).appendChild(picHost);
+  picHost.innerHTML='<span class="cg-orb" style="display:block;width:72px;height:72px">'+job.html+'</span>';
+  const svg=picHost.querySelector('svg'),vb=svg&&svg.viewBox&&svg.viewBox.baseVal;
+  if(!svg||!vb||!(vb.width>0)||!(vb.height>0)){picHost.innerHTML='';fail();return;}
+  const cl=svg.cloneNode(true),src=[svg,...svg.querySelectorAll('*')],dst=[cl,...cl.querySelectorAll('*')],ids=new Set();
+  for(let i=0;i<src.length;i++){const s=getComputedStyle(src[i]),d=dst[i];for(const a of [...d.attributes])if(!/^[a-zA-Z_][\w:.-]*$/.test(a.name))d.removeAttribute(a.name);if(d.id)ids.add(d.id);
+   let st='';for(const p of PICP){const v=s.getPropertyValue(p);if(v)st+=p+':'+v.replace(/url\(\s*"?[^"#)]*#/g,'url(#').replace(/"\)/g,')')+';';}d.setAttribute('style',st+'animation:none;transition:none');}
+  const P=.25,w=vb.width,h=vb.height,S=Math.round(48*Math.min(3,Math.max(1,W.devicePixelRatio||1))*(1+2*P)),cw=w>=h?S:Math.max(8,Math.round(S*w/h)),ch=h>=w?S:Math.max(8,Math.round(S*h/w));
+  cl.setAttribute('viewBox',(vb.x-P*w)+' '+(vb.y-P*h)+' '+w*(1+2*P)+' '+h*(1+2*P));cl.setAttribute('width',cw);cl.setAttribute('height',ch);cl.setAttribute('preserveAspectRatio','xMidYMid meet');cl.setAttribute('xmlns','http://www.w3.org/2000/svg');cl.setAttribute('style','overflow:visible');
+  const xml=new XMLSerializer().serializeToString(cl);picHost.innerHTML='';
+  const refs=xml.match(/(?:url\(#|href="#)([^)"]+)/g)||[];if(refs.some(r=>!ids.has(r.replace(/^(url\(#|href="#)/,'')))){fail();return;}
+  const url=URL.createObjectURL(new Blob([xml],{type:'image/svg+xml'})),im=new Image();let over=false;
+  const tm=setTimeout(()=>{over=true;URL.revokeObjectURL(url);fail();},4000);
+  im.onerror=()=>{if(over)return;clearTimeout(tm);URL.revokeObjectURL(url);fail();};
+  im.onload=()=>{if(over)return;clearTimeout(tm);try{const c=D.createElement('canvas');c.width=cw;c.height=ch;c.getContext('2d').drawImage(im,0,0,cw,ch);URL.revokeObjectURL(url);
+   c.toBlob(b=>{c.width=c.height=0;if(!b){fail();return;}PIC.set(job.k,{url:URL.createObjectURL(b)});picTrim(job.k);picDone();},'image/png');}catch(e){URL.revokeObjectURL(url);fail();}};
+  im.src=url;
+ }catch(e){if(picHost)picHost.innerHTML='';fail();}
+}
 const G=W.LowiGalaxy;
 let sel='',threadOpen=false,sk=null,wasOn=false,introT=0,gxIds=[],dmLive=new Set(),dmBoot=Date.now(),toastT=0,watching=false;
 function hueColor(id,me){return me?'#9cdac7':'hsl('+hue(id)+' 78% 74%)';}
@@ -257,7 +300,7 @@ function galaxy(ms,w,h,quiet){
    const picked=!me&&sel===x.uid,talking=speak&&speak===x.uid,size=me?meS:bodyS;
    const aria=me?(sel?tr('toEveryone'):tr('youAll')):(picked?fill('talking',p.n):fill('talkTo',p.n));
    const attrs='data-uid="'+esc(x.uid)+'" data-name="'+esc(me?own().n||'':p.n)+'" aria-label="'+esc(aria)+'"'+(me?'':' aria-pressed="'+picked+'"')+' style="--s:'+size+'px;--i:'+(i%24)+';--c:'+hueColor(x.uid,me)+'"';
-   const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>';
+   const inner='<span class="cg-orb">'+mateLite(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>';
    parts.push(button(me?'to-all':'person',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(me&&!scope?' cg-off':'')));
    /* Oct 16 (E-man: "like Snapchat's map"): every companion's newest message sits in one small bubble next to their round avatar:
       their name, then the words (or "New picture" for a photo, which opens it). Your own words always sit next to YOUR avatar.
@@ -445,7 +488,7 @@ function roomHead(q,ms,state){const rp=roomPeople(ms),meta=q('#crMeta'),link=q('
  if(link){const k={live:'linkLive',connecting:'linkSync',loading:'linkSync',offline:'linkOff',error:'linkErr',auth:'linkAuth'}[state]||'linkLive',h='<i aria-hidden="true"></i>'+esc(tr(k));if(link.dataset)link.dataset.state=state;if(link.innerHTML!==h)link.innerHTML=h;}
  if(crew){const h=rp.crew.length?'<span class="cr-crewl">'+esc(tr('roomCrew'))+'</span><div class="cr-crews">'+rp.crew.map(p=>button('profile',mate(p.uid,'cr'+sid(p.uid)),'data-uid="'+esc(p.uid)+'" data-name="'+esc(p.n)+'" aria-label="'+esc(p.n)+' · '+tr('profile')+'" style="--chat-color:'+hueColor(p.uid,false)+'"','cr-mate')).join('')+'</div>':'';if(crew.__html!==h){crew.innerHTML=h;crew.__html=h;}}}
 function renderLocal(m,prev,next){const mine=m.uid===scope,start=!prev||prev.uid!==m.uid||m.ts-prev.ts>300000,end=!next||next.uid!==m.uid||next.ts-m.ts>300000;
- const who=end?'<span class="cs-avatar cp-av" aria-hidden="true">'+mate(mine?(scope||'me'):m.uid,'l'+sid(m.id))+'</span>':'<span class="cp-av cp-gap" aria-hidden="true"></span>';
+ const who=end?'<span class="cs-avatar cp-av" aria-hidden="true">'+mateLite(mine?(scope||'me'):m.uid,'l'+sid(m.id))+'</span>':'<span class="cp-av cp-gap" aria-hidden="true"></span>';
  const head='<div class="cs-by">'+(start&&!mine?'<b class="cs-name">'+esc(m.by)+'</b><span class="cr-bot">'+tr('botTag')+'</span>':'<span class="cp-sr">'+esc(mine?tr('you'):m.by)+' '+tr('says')+'</span>')+'<time datetime="'+new Date(m.ts).toISOString()+'">'+esc(time(m.ts))+'</time></div>';
  return '<article class="cm-msg cp-msg cp-local'+(mine?' mine':'')+(start?' cp-start':'')+(end?' cp-end':'')+'" id="cm-'+esc(m.id)+'" data-who="'+esc(m.by)+'" style="--chat-color:'+(mine?'#9cdac7':hueColor(m.uid,false))+'">'+who+'<div class="cm-bub">'+head+msgBody(m)+'</div></article>';}
 function renderMessage(m,all,prev,next){
@@ -457,7 +500,7 @@ function renderMessage(m,all,prev,next){
  const rx=H.reactions().filter(x=>x.message_id===m.id&&!blocked(x.user_id));
  const quote=m.re?'<div class="cm-quote">'+(re?'<b>'+esc(re.by)+'</b> '+esc(plain(re).slice(0,90)):tr('gone'))+'</div>':'';
  const reacts=K.EMOJI.map(em=>{const rows=rx.filter(x=>x.emoji===em);return rows.length?button('react',esc(em)+' '+rows.length,'data-id="'+esc(m.id)+'" data-emoji="'+esc(em)+'" aria-pressed="'+rows.some(x=>x.user_id===scope)+'"'+(transport.reactionBusy(m.id,em)?' disabled':''),'cm-chip'+(rows.some(x=>x.user_id===scope)?' on':'')):'';}).join('');
- const who=end?button('profile',mate(m.uid,'m'+sid(m.id)),'data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'" aria-label="'+esc(mine?tr('you'):m.by)+' · '+tr('profile')+'"','cs-avatar cp-av'):'<span class="cp-av cp-gap" aria-hidden="true"></span>';
+ const who=end?button('profile',mateLite(m.uid,'m'+sid(m.id)),'data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'" aria-label="'+esc(mine?tr('you'):m.by)+' · '+tr('profile')+'"','cs-avatar cp-av'):'<span class="cp-av cp-gap" aria-hidden="true"></span>';
  const head='<div class="cs-by">'+(start&&!mine?'<b class="cs-name">'+esc(m.by)+'</b>':'<span class="cp-sr">'+esc(mine?tr('you'):m.by)+' '+tr('says')+'</span>')+'<time datetime="'+new Date(m.ts).toISOString()+'">'+esc(time(m.ts))+'</time>'+(pending?'':button('more','<span aria-hidden="true">···</span>','data-id="'+esc(m.id)+'" aria-label="'+tr('more')+'" aria-expanded="'+open+'"','cp-more'))+'</div>';
  const acts=!pending&&open?'<div class="cp-acts">'+button('pick','＋','data-id="'+esc(m.id)+'" aria-label="'+tr('react')+'" aria-expanded="'+(pick===m.id)+'"','cm-mini')+button('reply',tr('reply'),'data-id="'+esc(m.id)+'"','cm-mini')+(mine?button('delete',tr(armed===m.id?'confirmDelete':'delete'),'data-id="'+esc(m.id)+'"','cm-mini'):button('report',tr('report'),'data-id="'+esc(m.id)+'"','cm-mini'))+'</div>':'';
  return '<article class="cm-msg cp-msg'+(mine?' mine':'')+(start?' cp-start':'')+(end?' cp-end':'')+(open?' cp-open':'')+'" id="cm-'+esc(m.id)+'" data-who="'+esc(m.by)+'" data-chat-id="'+esc(m.id)+'" style="--chat-color:'+esc(color)+'">'+who+
@@ -506,7 +549,7 @@ function paint(el){
  const gx=galaxy(ms,gw,gh,quietRoom),field=q('#cgField'),gal=q('#cgGalaxy');
  const emptyHTML=(quietRoom?'<div class="cg-empty"><span class="cs-lantern" aria-hidden="true">✧</span><b>'+tr('emptyTitle')+'</b><p>'+(st.phase==='ready'?(Object.values(prefs.blocks).some(x=>x.blocked)?tr('filtered'):tr('empty')):tr('waiting'))+'</p>'+(st.phase==='ready'?button('hello',tr('hi'),'','cs-action cg-hello'):'')+'</div>':''),fieldHTML=gx.html+emptyHTML;
  if(field&&field.__html!==fieldHTML){patchKids(field,(gx.parts||[gx.html]).concat(emptyHTML?[emptyHTML]:[]));field.__html=fieldHTML;}
- if(gal){gal.setAttribute('aria-label',tr('onPlanet')+': '+gx.names.join(', '));gal.setAttribute('data-streams',String(gx.lineDefs.length));}
+ if(gal){gal.setAttribute('aria-label',tr('onPlanet')+': '+gx.names.join(', '));if(gal.hasAttribute('data-crowd')!==(gx.names.length>24))gal.toggleAttribute('data-crowd',gx.names.length>24);gal.setAttribute('data-streams',String(gx.lineDefs.length));}
  W.__lgGx=gx;place();watch();if(active()&&!D.hidden){if(!wasOn)onShow();else{if(gal&&!gal.__intro&&Date.now()-enterAt<600)intro();skyStart();}}
  if(room&&W.ResizeObserver&&ro!==room.__ro){if(ro)ro.disconnect();let lastSz='';ro=new W.ResizeObserver(()=>{const sz=room.clientWidth+'x'+room.clientHeight;if(sz===lastSz)return;lastSz=sz;clearTimeout(W.__cgRo);W.__cgRo=setTimeout(()=>{if(active()){refresh();if(sk)sk.resize();}},90);});ro.observe(room);room.__ro=ro;}
  const tt=q('#cgThreadTitle');if(tt)tt.textContent=tr('room');roomHead(q,ms,state);roomFlag();const cx=q('#cgClose');if(cx&&cx.setAttribute)cx.setAttribute('aria-label',tr('back'));

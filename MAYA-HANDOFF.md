@@ -1517,6 +1517,24 @@ current (section 3).
 
 ## 2. Accounts and access, step by step
 
+### 0.37 Move session gave no points, no animation + make finishing a session the biggest reward with a grand celebration (Emmanuel, voice on iPad in German UI + screenshot, Mon 26 Oct 2026 about 6:14 PM CET)
+
+His words: "I just finished a session here in the Move, and I didn't get any points. No animation, no congrats. This
+should be giving me the most points ever. The most points that can be reached should be finishing one of those
+movements. And then the animation should be grandiose."
+
+Screenshot: Bewegen right after his session, still "Diese Woche 0/10 Min", "Verlauf: Noch keine", "Schritte heute auf
+Home: noch nichts". So the finished session was not recorded at all: a bug, not only a missing reward.
+
+What to build: (1) find and fix why a finished session is not saved/rewarded, for every Move session type (Spiegel-Modus,
+Kreuzheben, Desk Spike Breaker, quick starts), signed in, iPad, German; (2) finishing a Move session pays more XP than any
+other single action in the app, scaled by real minutes (5-60), anti-farm (must really run, daily cap); sunbeams/Ranking stay
+consistent; (3) a grand full-screen finish celebration (companion celebrates, reward count-up, light burst in the glass/cosmic
+style, haptics, "Geschafft!" with minutes and points), smooth, tap to dismiss, calm under Reduce Motion, companion's own name,
+EN/DE/ES; (4) Diese Woche, Verlauf and the companion's day update right away.
+Task "LOWiSPIKE: Move session gives no reward + grand finish celebration" (Sesame, 26 Oct), worktree wt-move-reward, branch
+move-reward, COORD-move-reward.md. Status: in progress.
+
 ### GitHub
 
 - Account: **therealetm** (Emmanuel's). Repository: **github.com/therealetm/lowispike**, public. Branch `main` is live.

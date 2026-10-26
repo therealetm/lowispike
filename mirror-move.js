@@ -78,7 +78,10 @@
     const FINE = () => T('The outline helps you follow along. It cannot tell if your form is safe. Stop if anything hurts.', 'Der Umriss hilft dir mitzumachen. Er kann nicht prüfen, ob deine Haltung sicher ist. Hör auf, wenn etwas weh tut.', 'La silueta te ayuda a seguir el ritmo. No puede saber si tu postura es segura. Para si algo duele.');
     /* what mirror-hinge.js needs from here */
     const hd = () => ({ T, esc, lang: lang(), ICON, say, live: t => { if (live) live.textContent = t; } });
+    /* seconds this session really ran (follow + rest between sets; never align, count, lost or paused), for the Move reward (MAYA-HANDOFF 0.37) */
+    let activeSec = 0, lastActive = 0;
     function newFlow(mode) {
+        activeSec = 0; lastActive = 0;
         const G = HG(); if (G) G.reset();
         return isHinge() ? G.makeFlow(mode, lang(), dlv()) : new C.Flow({ routine, mode, lang: lang() });
     }
@@ -279,6 +282,8 @@
         raf = requestAnimationFrame(draw);
         if (now - lastDraw < 31) return;      /* 30 fps is plenty for a slow outline */
         lastDraw = now;
+        if (lastActive && !flow.paused && (flow.phase === 'follow' || flow.phase === 'rest')) activeSec += Math.min(1, Math.max(0, (now - lastActive) / 1000));
+        lastActive = now;
         const view = size();
         let m = null;
         if (flow.mode === 'camera') {
@@ -365,17 +370,33 @@
             if (s.hint && s.hint !== 'sync' && s.hint !== 'rest' && s.hint !== 'hold' && s.hint !== prev) { live.textContent = s.hintText; if (s.hint !== 'follow') say(s.hintText); }
         }
     }
+    /* MAYA-HANDOFF 0.37 (26 Oct 2026): Emmanuel finished a Mirror session and got "no points, no animation, no congrats", and Bewegen still said
+       "Diese Woche 0/10 Min, Verlauf: Noch keine". This only fired lowi:mirror-done, which nothing listened to. Now the session is saved and paid
+       through index.html's Move (MOVE.record: Verlauf, Diese Woche, XP, your companion's day) and the grand finish celebration plays
+       (move-finish.js). The event stays for anything that listens. */
+    let finished = null;
+    function recordFinish(s, name) {
+        if (finished === flow) return null; finished = flow;
+        const moved = Math.round(activeSec);
+        try { if (W.MOVE && W.MOVE.record) return W.MOVE.record({ fmt: s.kind === 'hinge' ? 'hinge' : 'mirror', name, moved, reps: s.kind === 'hinge' ? s.done : undefined, voice: voiceOn }); } catch (e) {}
+        return null;
+    }
     function finish(s) {
         running = false; cancelAnimationFrame(raf); raf = 0; stopCamera();
+        const l = lang();
         if (s.kind === 'hinge' && HG()) {
-            try { W.dispatchEvent(new CustomEvent('lowi:mirror-done', { detail: { routine: 'hinge', variant: s.variant, reps: s.done, clean: s.clean, sets: s.sets, camera: s.mode === 'camera' } })); } catch (e) {}
+            const res = recordFinish(s, C.txt(HG().routineFor(dlv()).n, l));
+            try { W.dispatchEvent(new CustomEvent('lowi:mirror-done', { detail: { routine: 'hinge', variant: s.variant, reps: s.done, clean: s.clean, sets: s.sets, camera: s.mode === 'camera', minutes: res ? res.min : 0, xp: res ? res.xp : 0 } })); } catch (e) {}
             return showSheet(HG().finishHTML(s, hd()));
         }
-        const mins = Math.max(1, Math.round(s.total / 60));
-        say(T('Done. Nice moving.', 'Geschafft. Gut bewegt.', 'Hecho. Bien movido.'), true);
-        try { W.dispatchEvent(new CustomEvent('lowi:mirror-done', { detail: { routine, minutes: mins, camera: s.mode === 'camera' } })); } catch (e) {}
+        const R = C.ROUTINES[routine] || C.ROUTINES.chair;
+        const res = recordFinish(s, C.txt(R.n, l));
+        const mins = res && res.min ? res.min : Math.max(1, Math.round(activeSec / 60));
+        if (!(res && res.min >= 3 && W.LowiMoveFinish)) say(T('Done. Nice moving.', 'Geschafft. Gut bewegt.', 'Hecho. Bien movido.'), true);
+        try { W.dispatchEvent(new CustomEvent('lowi:mirror-done', { detail: { routine, minutes: mins, camera: s.mode === 'camera', xp: res ? res.xp : 0 } })); } catch (e) {}
+        const xpLine = res && res.xp ? ' ' + T('+' + res.xp + ' XP.', '+' + res.xp + ' XP.', '+' + res.xp + ' XP.') : '';
         showSheet('<header class="mm-ph"><b>' + esc(T('Done, nice moving', 'Geschafft, gut bewegt', 'Hecho, bien movido')) + '</b><button type="button" class="mm-ic" data-mm="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + ICON.x + '</button></header>' +
-            '<p class="mm-lead">' + esc(T('About ' + mins + ' minutes of moving. Your camera is off again.', 'Etwa ' + mins + ' Minuten Bewegung. Deine Kamera ist wieder aus.', 'Unos ' + mins + ' minutos de movimiento. Tu cámara está apagada.')) + '</p>' +
+            '<p class="mm-lead">' + esc(T('About ' + mins + ' minutes of moving. Your camera is off again.', 'Etwa ' + mins + ' Minuten Bewegung. Deine Kamera ist wieder aus.', 'Unos ' + mins + ' minutos de movimiento. Tu cámara está apagada.') + xpLine) + '</p>' +
             '<div class="mm-acts"><button type="button" class="mm-btn mm-pri" data-mm="close">' + esc(T('Close', 'Schließen', 'Cerrar')) + '</button><button type="button" class="mm-btn mm-ghostbtn" data-mm="open">' + esc(T('Another one', 'Noch eine', 'Otra')) + '</button></div>');
     }
 
@@ -422,5 +443,5 @@
         else if (k === 'voice') { voiceOn = !voiceOn; b.setAttribute('aria-pressed', String(voiceOn)); b.classList.toggle('off', !voiceOn); if (!voiceOn) hushVoice(); }
     });
 
-    W.LowiMirror = { stripHTML, heroHTML, open, close, _state: () => ({ flow, sm, running, stream: !!stream, delegate, interval, costAvg, lms: !!lms, phase: flow && flow.phase }) };
+    W.LowiMirror = { stripHTML, heroHTML, open, close, _addActive: n => { activeSec += +n || 0; }, _state: () => ({ activeSec, flow, sm, running, stream: !!stream, delegate, interval, costAvg, lms: !!lms, phase: flow && flow.phase }) };
 })();

@@ -1164,6 +1164,22 @@ needs to be synchronized. So, just make the scanning thingy, just optimize it. S
   camera logs nothing, card fits, no errors), all pass en/de/es locally and live. Note: the same barcode typed again
   within 4 s is ignored on purpose (SAME_MS in shop-scan-core.js). Not yet tried on Emmanuel's iPhone.
 
+### 0.24 Supermarket wobbles sideways + "Buy again" stack becomes one autofill row (Emmanuel, Mon 26 Oct 2026 about 2:20 PM CET, voice + screenshot)
+
+His words: "This section is a bit wiggly woggly, fix that. Um, and personally, my snack buy again thingy that's there, I
+don't know if I like it, um, especially because it's like, you know, the more you have in there, I would say, let's just
+have a auto fill option. You know, buy again auto fill option. Recent or something, but not stack it up like that. Don't
+remember, iOS 17 would never do that."
+- Screenshot (iPhone, Shop > Supermarket, Lidl Merkurstrasse 24, build ~20261026-140914): under "Shop from home" the whole
+  list is shifted left and clipped (buy-again pills, "of 5,414 products pass", category chips, the Snacks header, the first
+  product card); the Shop from home banner is wider than the store row and search field above it.
+- What it means: the Supermarket list never scrolls or shifts sideways, nothing is clipped, every row lines up with the
+  store row and search field (iPhone, iPad both ways, Reduce Motion, EN/DE/ES). The "Again?" pills under Snacks to buy
+  (one pill per snack, a stack that grows) become ONE compact "Buy again" row: a short preview of the recent snacks and
+  one tap that puts them all back on Snacks to buy, with Undo. Extend the existing snack code, no second version.
+- Task "LOWiSPIKE: fix wobbly Supermarket layout + Buy again autofill"; branch `sm-wobble`, COORD file
+  `/home/sprite/COORD-sm-wobble.md`. Report only once live.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

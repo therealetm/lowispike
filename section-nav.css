@@ -7,13 +7,18 @@
   -webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);-webkit-tap-highlight-color:transparent}
 .sec-x svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .sec-x:active{transform:scale(.92)}
+/* Oct 26 2026: the glass circle stays 40 px; an invisible ring makes the tap area 48 px (Apple's minimum is 44 pt) */
+.sec-x::after{content:"";position:absolute;inset:-4px;border-radius:50%}
 .sec-x:focus-visible{outline:2px solid #7fd4ff;outline-offset:2px}
 html.sec-open .sec-x{display:flex}
 html.lt .sec-x{color:#0d2440;background:rgba(255,255,255,.72);border-color:rgba(40,140,220,.5)}
 /* the same rules that hide your picture while something is open full screen hide the X too */
 /* a bloom left open on Home waits, hidden, under the page */
 html.sec-open .hb2-bloom{visibility:hidden!important}
-html.sec-open.b3-camon .sec-x, html.sec-open.mf-on .sec-x, html.sec-open.sp-open .sec-x{display:none}
+/* Oct 26 2026 (Emmanuel: "Once we're in the Community section, the back button disappears"): flying (html.mf-on) no longer
+   hides it. Autopilot keeps mf-on set after you leave Home, so every page lost its way home while your companion flew. Only a
+   real full-screen layer with its own close hides it: the camera and the herb room. */
+html.sec-open.b3-camon .sec-x, html.sec-open.sp-open .sec-x{display:none}
 /* Oct 22 2026 (Emmanuel's screenshot: the round arrow sat on the Account "Back" pill): inside a Profile part the header's Back pill is
    the one back control; the round arrow shows again on the overview, where it goes Home */
 html.g2e-on.g2e-open .sec-x{display:none!important}

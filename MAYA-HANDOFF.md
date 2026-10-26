@@ -1350,6 +1350,23 @@ box: one short line, or nothing when it adds nothing. Rewards keep working, fold
 Task "LOWiSPIKE: simplify Shop finds" (Sesame, 26 Oct), worktree wt-shop-finds, branch shop-finds-simple,
 COORD-shop-finds.md. Status: building (see Log for the release).
 
+### 0.33 Community: the way back to Home disappears (Emmanuel, Mon 26 Oct 2026 about 4 PM CET, voice + 2 screenshots)
+
+Emmanuel, word for word: "Once we're in the Community section, the back button disappears. Going back to the home
+disappears. Fix that." His screenshots (Ranking and Chat): only the "Community · 1 here now" pill, the moon and his picture;
+the space at the top left where the round glass Home button (#secX, section-nav.js) sits is empty.
+
+- Cause (reproduced live, WebKit iPhone 13, tools/community-home-btn/repro.cjs): section-nav.css hid the button with
+  `html.sec-open.mf-on .sec-x{display:none}`, and section-nav.js blocked the edge swipe and Escape on `mf-on` too. `mf-on`
+  means "your companion is flying". Flying only happens on Home, but autopilot keeps `mf-on` set after you leave Home
+  (the flight sits in its exit state until you come back). So with your companion flying, every page (Community and all
+  its tabs, Move, Cook/Shop, Profile) had no Home button, no swipe back and no Escape. No way home but the phone's back.
+- Rule: a page (html.sec-open) always shows its Home button. Flying never hides it, because the flight is not on screen
+  on a page. Only a real full-screen layer with its own close (camera b3-camon, herb room sp-open, a Profile part's Back
+  pill) may hide it. The edge swipe and Escape follow the same rule.
+- Tap target: Apple's 44 pt minimum. The glass circle stays 40 px; an invisible ring makes the tap area 48 px.
+- Test: tests/section-back-while-flying.test.cjs.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

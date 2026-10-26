@@ -126,7 +126,8 @@
         const s = escSnap; escSnap = null;
         if (!e.isTrusted || !s || s.e !== e || e.defaultPrevented) return;
         if (s.tab === 'home' || s.sheet || tabOf() !== s.tab || layersNow() !== s.layers) return;
-        if (H.classList.contains('mf-on') || H.classList.contains('b3-camon') || D.querySelector('#mv-player.on')) return;
+        /* Oct 26 2026: flying (mf-on) is not a reason. Autopilot keeps it set after you leave Home, and the flight is not on a page */
+        if (H.classList.contains('b3-camon') || D.querySelector('#mv-player.on')) return;
         const t = e.target; if (t && t.closest && t.closest('input, textarea, select, [contenteditable]')) return;
         back();
     }
@@ -165,7 +166,8 @@
     function page() { return D.getElementById('tab-' + tabOf()); }
     function blocked(t) {
         if (tabOf() === 'home') return true;
-        if (H.classList.contains('mf-on') || H.classList.contains('b3-camon') || openSheet()) return true;
+        /* Oct 26 2026 (Emmanuel: the way back disappeared on Community): flying (mf-on) no longer blocks it, see section-nav.css */
+        if (H.classList.contains('b3-camon') || openSheet()) return true;
         return !!(t && t.closest && t.closest('input, textarea, select, [contenteditable], .no-back-swipe'));
     }
     function onDown(e) {

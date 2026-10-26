@@ -11,3 +11,4 @@
 - 12:55 CET started; MAYA-HANDOFF 0.19 committed on branch, landing on main via push-main.sh
 
 ## Replies
+- 13:05 CET new task (finish+ship) took over: rebase, tour steps, tests, release

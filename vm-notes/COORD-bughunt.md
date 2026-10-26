@@ -70,3 +70,6 @@ world-home.js, home-orbit-v2*, misty-pad*, Settings files.
 - 2026-10-26T10:16:31Z bughunt run 38 done: BH-038 LIVE 20261026-111102 (community-rooms-ui.js toggleMenu). Files released.
 - 2026-10-26T11:20:33Z bughunt run 39: releasing BH-039 (spirit.js open, fresh-scrim.js guardDown).
 - 2026-10-26T11:30:28Z bughunt run 39 done: BH-039 LIVE 20261026-122440 (spirit.js open, fresh-scrim.js guardDown). Files released.
+
+# Run 40 (Mon 26 Oct 2026 13:02 CET): worktree see BUGHUNT/.wt, branch bughunt-40 (off origin/main 993c381b)
+- Probing P-CLOSE-UNDER-FINGER (sheet option rows, Community person card). Not touching community-chat.js, nibblo-core.js, kitchen-core.js, store-picks.js, pantry*, Cook view bar, tutorial files.

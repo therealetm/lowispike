@@ -15,13 +15,14 @@ const J={
  async move(H){await H.tap('[data-orbit=move]');await H.sleep(2500);},
  async water(H){await H.tap('[data-orbit=water]');await H.sleep(2500);},
 };
-(async()=>{const H=await L.open({root:'/home/sprite/lowispike',lang:'de',locale:'de-DE',engine:'webkit',device:'iPhone 14 Pro Max',clock:process.env.CLOCK||'2026-10-25T09:40:00+01:00',init:require('./seed.js'),route});const p=H.page;
-await p.setViewportSize({width:430,height:932});await H.reload();
-let first=true;
-for(const n of which){ if(!J[n]){console.log('no',n);continue;} if(!first) await H.reload(); first=false;
+(async()=>{
+for(const n of which){ if(!J[n]){console.log('no',n);continue;}
+ const H=await L.open({root:'/home/sprite/lowispike',lang:'de',locale:'de-DE',engine:'webkit',device:'iPhone 14 Pro Max',clock:process.env.CLOCK||'2026-10-25T09:40:00+01:00',init:require('./seed.js'),route});const p=H.page;
+ await p.setViewportSize({width:430,height:932});await H.sleep(2500);
   try{await J[n](H,p);}catch(e){console.log('STEPERR',n,String(e).slice(0,200));}
   await p.screenshot({path:__dirname+'/shots/'+(process.env.PFX||'c')+'-'+n+'.png',timeout:60000}).then(()=>console.log('SHOT',n)).catch(e=>console.log('SHOTERR',n,String(e).slice(0,200)));
   if(process.env.TXT){console.log('== '+n+'\n'+(await H.text()).slice(0,1600));}
+  console.log('ERRS',JSON.stringify(H.errs.slice(0,4)));
+  await H.close();
 }
-console.log('ERRS',JSON.stringify(H.errs.slice(0,5)));
-await H.close();process.exit(0);})().catch(e=>{console.error(e);process.exit(1)});
+process.exit(0);})().catch(e=>{console.error(e);process.exit(1)});

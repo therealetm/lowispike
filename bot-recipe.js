@@ -5,7 +5,7 @@
      the SAME recipe page a Shuffle pick opens (LowiP2.open — where to buy, prices, what's at home, ingredients). No second page.
    - LowiBotRecipe.chatRow(m): the labelled buttons under the card: Open recipe / Cook it / Save / Add to kitchen
      (a person's meal with foods: Add to kitchen only). Logic and words in bot-recipe-core.js.
-   - Add to kitchen puts the products into Shop > Kitchen > At home (lowispike.kitchen.v1), once each, with Undo, and the recipe
+   - Add to kitchen puts the products into Cook > Kitchen (lowispike.kitchen.v1), once each, with Undo, and the recipe
      page then counts them as at home. The recipe page's own "Add to kitchen" button (index.html) uses the same handler. */
 (function (root) {
     'use strict';
@@ -87,7 +87,7 @@
             if (hadFocus && row.isConnected) { const f = row.querySelector('[data-crb="' + want + '"]') || row.querySelector('button'); try { if (f) f.focus({ preventScroll: true }); } catch (e) {} }
         });
     }
-    /* the Kitchen changed (here, on a recipe page or in Shop > Kitchen): every card row says so */
+    /* the Kitchen changed (here, on a recipe page or in Cook > Kitchen): every card row says so */
     function refreshAll() {
         try { if (root.LowiCommunity && root.LowiCommunity.refresh) root.LowiCommunity.refresh(); } catch (e) {}
         D.querySelectorAll('[data-crb-row]').forEach(row => {

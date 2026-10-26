@@ -929,6 +929,20 @@ folder `handoff/`. She left this handover late (on a branch, not here) and Emman
 
 Schedules on Maya 9's agent: none (checked). Maya 9 has a "LOWiSPIKE morning rundown" skill (9 AM status) but no schedule for it. The hourly bug hunt that released 20261025-213603 runs on another Maya's agent, not Maya 9's: Emmanuel runs several Mayas at once, so check main for releases before every release of yours.
 
+### 0.14 Weekly leaderboard broken + a bot on it (Emmanuel, voice message, Mon 26 Oct 2026 about 5:33 AM CET)
+
+His words: "Also, what the fuck is this? Why have you broken the weekly leaderboard? And added a bot in there."
+His screenshot (05:33): Community > Ranking > Week, "sunbeams", "7 days left", header "1 here now". His own row reads
+"– Misty, Log anything for ☀️" with a dash for rank although Misty's badge shows 6. The podium has ONE entry,
+"Moss Drifter", Lv 4, F, 6 ☀️, 1st with a crown; the rest of the board is empty.
+
+What he wants: the weekly board shows real users with his own rank; no bot, simulated or test account ever on the
+ranking; wherever "Moss Drifter" was written (if a probe or test wrote it to production) cleaned up, touching only
+fake/test data. Check whether bug hunt run 28's ranking test change (5b901b17, "pin the clock", week rollover Mon 26 Oct)
+or rounds 30-32 hid a real week-boundary bug. Task: Sesame "LOWiSPIKE: fix weekly leaderboard + remove bot", branch
+`weekly-ranking-fix`, worktree wt-weekly-ranking, COORD-weekly-ranking.md. Release silently (--quiet), no update
+notification, no announcement. Status: requested, being built.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

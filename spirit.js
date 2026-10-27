@@ -187,6 +187,18 @@
         mealAsk: ['What did you eat?', 'Was hast du gegessen?', '¿Qué comiste?'],
         mealPh: ['e.g. chicken stew, fish and chips', 'z. B. Hähnchen-Eintopf, Fisch mit Pommes', 'p. ej. guiso de pollo, pescado con papas'],
         ownNumbers: ['Add your own numbers (optional)', 'Eigene Werte eintragen (optional)', 'Añadir tus propios valores (opcional)'],
+        /* Oct 27 calm Log meal sheet (one input, quiet time, own values tucked away) */
+        lmUsual: ['Your usual', 'Wie immer', 'Lo de siempre'],
+        lmIdea: ['Idea from Misty', 'Idee von Misty', 'Idea de Misty'],
+        lmOwn: ['Own values', 'Eigene Werte', 'Tus valores'],
+        lmPhoto: ['Photo', 'Foto', 'Foto'],
+        lmCode: ['Barcode', 'Barcode', 'Código'],
+        lmAt: ['at {t}', 'um {t}', 'a las {t}'],
+        lmTimeA: ['When did you eat? {t}. Tap to change', 'Wann hast du gegessen? {t}. Tippen zum Ändern', '¿Cuándo comiste? {t}. Toca para cambiar'],
+        lmSnackSave: ['Log snack', 'Snack eintragen', 'Registrar tentempié'],
+        lmGap: ['Fast ended, your time is saved. Add what you ate, or skip.', 'Fasten beendet, deine Zeit ist gespeichert. Trag ein, was du gegessen hast, oder überspring es.', 'Ayuno terminado, tu hora está guardada. Añade lo que comiste, o sáltalo.'],
+        lmToday: ['Today · {n}', 'Heute · {n}', 'Hoy · {n}'],
+        lmAgain: ['Log again: {t}', 'Nochmal eintragen: {t}', 'Registrar otra vez: {t}'],
         understood: ['Understood as', 'Erkannt als', 'Entendido como'],
         roughMeal: ['A typical meal (rough estimate)', 'Eine typische Mahlzeit (grobe Schätzung)', 'Una comida típica (estimación aproximada)'],
         ingr: ['Ingredients', 'Zutaten', 'Ingredientes'],
@@ -952,41 +964,63 @@
         return '<p class="sp-fast-note" data-noi18n' + (n ? '' : ' hidden') + '>' + esc(n) + '</p>';
     }
     /* Scan / Fuel / Gap (Oct 21, E-man: "Fuel is where you actually log a meal", Gap "tracks back to when you actually ate"):
-       Log meal asks when you ate. Now is the default; a chip backdates the meal (index.html logMeal reads window.LowiMealCtx
-       from 'when', same day, once, 15 min), so a meal logged 3 h late starts the Gap from 3 h ago, not from Save. */
-    const WHEN_MIN = [0, 30, 60, 120, 180];
+       Log meal asks when you ate. Now is the default; the quiet clock (Oct 27: one native time wheel instead of four chips) backdates
+       the meal (index.html logMeal reads window.LowiMealCtx from 'when', same day, once, 15 min), so a meal logged 3 h late starts
+       the Gap from 3 h ago, not from Save. pickWhen stays for any [data-sp="when"][data-m] button (older screens, tools). */
     function whenAt() { const c = window.LowiMealCtx; return c && c.from === 'when' && Date.now() - c.at < 15 * 60000 ? +c.ateAt || 0 : 0; }
-    function whenOk(m) { const at = Date.now() - m * 60000; return !m || new Date(at).toDateString() === new Date().toDateString(); }
-    function whenRow() {
-        const at = whenAt(), cur = at ? Math.round((Date.now() - at) / 60000) : 0;
-        const lab = m => !m ? tr('whenNow') : m < 60 ? tr('whenM').replace('{n}', m) : tr('whenH').replace('{n}', m / 60);
-        return '<div class="sp-when" role="group" aria-label="' + esc(tr('whenQ')) + '"><small>' + esc(tr('whenQ')) + '</small><div class="sp-when-row">' +
-            WHEN_MIN.filter(whenOk).map(m => '<button type="button" class="sp-when-c" data-sp="when" data-m="' + m + '" aria-pressed="' + (Math.abs(cur - m) < 8 || (!at && !m) ? 'true' : 'false') + '">' + esc(lab(m)) + '</button>').join('') + '</div></div>';
-    }
     function pickWhen(b) {
         const m = +b.dataset.m || 0, sheet = b.closest('.r2-ov') || D;
         window.LowiMealCtx = m ? { from: 'when', ateAt: Date.now() - m * 60000, at: Date.now() } : null;
         sheet.querySelectorAll('[data-sp="when"]').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
-        const note = sheet.querySelector('.sp-fast-note'); let n = '';
-        try { n = window.LowiFastStop && LowiFastStop.mealNote ? LowiFastStop.mealNote(m ? Date.now() - m * 60000 : 0) : ''; } catch (e) {}
+        lmSetTime(sheet, m ? Date.now() - m * 60000 : 0);
+    }
+    /* Oct 27, 2026 (Emmanuel, screenshots of the Mahlzeit sheet: "It's very confusing and overwhelming whilst opening. There's just
+       too much redundancy there ... Remember our focus is minimalism, efficiency, convenience. And we care about people with mental
+       health ... They are seeing this for the first time."): Log meal is ONE calm sheet now, no "Meal or snack?" step first.
+       Meal | Snack is a small switch at the top, then one field (type it, or the mic, or Foto / Barcode right under it), the time
+       is a quiet "Now" you can tap, own values hide behind one quiet link, then one Save. "Your usual" sits right under Save for one
+       tap; the companion's idea, today's entries and today's stats sit lower, apart. slotPicker() stays as the way back to it
+       (after editing an entry), with today's list open. */
+    let lmToday = false;
+    function slotPicker() {
+        lmToday = true;
+        mealForm(null, null, pendingSlot() || (K.slotFor ? K.slotFor() : 'meal'));
+    }
+    const lmHm = t => { const d = new Date(+t || Date.now()); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+    const lmShow = n => { try { return K.mealName ? K.mealName(n, lang()) : n; } catch (e) { return n; } };
+    function lmTimeLabel(at) { return at ? tr('lmAt').replace('{t}', lmHm(at)) : tr('whenNow'); }
+    /* the time a meal is logged at: a time picked here (LowiMealCtx 'when'), else the Gap's saved time, else now */
+    function lmAt() { const w = whenAt(); if (w) return w; const c = window.LowiMealCtx; return c && c.from === 'gap' && Date.now() - c.at < 20 * 60000 ? +c.ateAt || 0 : 0; }
+    function lmSetTime(sheet, at) {
+        if (!sheet) return;
+        const lab = sheet.querySelector('.lm-time-l'), inp = sheet.querySelector('.lm-time input'), note = sheet.querySelector('.sp-fast-note');
+        if (lab) lab.textContent = lmTimeLabel(at);
+        if (inp) { inp.value = lmHm(at || Date.now()); inp.setAttribute('aria-label', tr('lmTimeA').replace('{t}', lmTimeLabel(at))); }
+        sheet.querySelectorAll('.lm-time').forEach(x => x.classList.toggle('set', !!at));
+        let n = '';
+        try { n = window.LowiFastStop && LowiFastStop.mealNote ? LowiFastStop.mealNote(at || 0) : ''; } catch (e) {}
         if (note) { note.textContent = n; note.hidden = !n; }
     }
-    function slotPicker() {
-        if (window.LowiMealCtx && window.LowiMealCtx.from === 'when') window.LowiMealCtx = null; /* a fresh Log meal starts at Now */
-        /* Oct 19 food paths: opened right after the Gap bubble saved a time -> say so, offer Not now, and suggest that time's meal */
-        let gc = window.LowiMealCtx && window.LowiMealCtx.from === 'gap' && Date.now() - window.LowiMealCtx.at < 20 * 60000 ? window.LowiMealCtx : null;
-        if (gc && gc.shown) gc = null; else if (gc) gc.shown = true;
-        const now = K.slotFor ? K.slotFor(gc ? gc.ateAt : undefined) : 'lunch',
-            day = K.day(),
-            logs = (V.state().logs || []).filter(l => l.day === day);
-        const tiles = (K.SLOTS || ['meal', 'snack']).map((s, i) => {
-            const n = logs.filter(l => kindOf(l.slot) === s).length;
-            return '<button type="button" class="sp-slot sp-slot-' + s + (s === now ? ' now' : '') + (n ? ' has' : '') + '" data-sp="slot" data-slot="' + s + '" style="--i:' + i + '">' +
-                '<span class="sp-slot-ic">' + icon(SLOT_IC[s]) + '</span><b>' + esc(slotName(s)) + '</b>' +
-                '<small>' + esc(n ? n + ' ' + tr('slotDone') : '\u00a0') + '</small></button>';
-        }).join('');
-        showSheet('<h2>' + esc(tr('meal')) + '</h2><p class="sp-slot-q' + (gc ? ' sp-gap-q' : '') + '">' + esc(tr(gc ? 'gapQ' : 'slotQ')) + '</p>' + (gc ? '' : fastNote()) + '<div class="sp-slots sp-slots-2" role="group" aria-label="' + esc(tr('slotQ')) + '">' + tiles + '</div>' +
-            (gc ? '<button type="button" class="sp-ghost sp-gap-skip" data-sp="gapskip">' + esc(tr('gapSkip')) + '</button>' : '') + todayList(logs));
+    /* the native time wheel: today only, never in the future; a time within 2 min of now counts as Now */
+    function lmTimeChange(inp) {
+        const sheet = inp.closest('.r2-ov') || D, m = /^(\d{1,2}):(\d{2})/.exec(String(inp.value || ''));
+        if (!m) return;
+        const d = new Date(); d.setHours(+m[1], +m[2], 0, 0);
+        let at = d.getTime();
+        if (at > Date.now() + 60000) { R.toast(tr('editFuture')); at = 0; }
+        if (at && Date.now() - at < 2 * 60000) at = 0;
+        const c = window.LowiMealCtx, gap = c && c.from === 'gap' && Date.now() - c.at < 20 * 60000;
+        if (at) window.LowiMealCtx = { from: 'when', ateAt: at, at: Date.now() };
+        else if (gap) window.LowiMealCtx = { from: 'when', ateAt: Date.now(), at: Date.now() }; /* "now" over the Gap's saved time */
+        else if (c && c.from === 'when') window.LowiMealCtx = null;
+        lmSetTime(sheet, at);
+    }
+    function lmKind(b) {
+        const s = b.dataset.slot, sheet = b.closest('.r2-ov') || D;
+        setSlot(s);
+        sheet.querySelectorAll('[data-sp="lmKind"]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+        const sv = sheet.querySelector('.lm-save'); if (sv) sv.textContent = tr(s === 'snack' ? 'lmSnackSave' : 'save');
+        const seg = sheet.querySelector('.lm-kind'); if (seg) seg.dataset.on = s;
     }
     /* Oct 23: today's entries in Log meal, newest first: what it was, the time, the photo if one was taken. Tap = edit. */
     const hm = ts => { const d = new Date(+ts || 0); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
@@ -1098,25 +1132,49 @@
         lastMealId = editing || uid();
         const values = K.macros(seed);
         const quick = !editing && !(seed.t || seed.n || seed.name);
-        if (quick && K.slotOk && !K.slotOk(slot)) {
-            slotPicker();
-            return;
-        }
-        if (quick && slot) setSlot(slot);
         if (quick) {
-            const recent = recentMeals(),
-                kc = l => {
-                    const m = K.macros(l);
-                    return m.kcal != null ? Math.round(m.kcal) + ' kcal' : m.protein != null ? Math.round(m.protein) + ' g ' + tr('protein') : '';
-                };
+            const back = lmToday;
+            lmToday = false;
+            if (!back && window.LowiMealCtx && window.LowiMealCtx.from === 'when') window.LowiMealCtx = null; /* a fresh Log meal starts at Now */
+            /* Oct 19 food paths: opened right after the Gap bubble saved a time -> one calm line, Not now, and that time on the clock */
+            let gc = window.LowiMealCtx && window.LowiMealCtx.from === 'gap' && Date.now() - window.LowiMealCtx.at < 20 * 60000 ? window.LowiMealCtx : null;
+            if (gc && gc.shown) gc = null; else if (gc) gc.shown = true;
+            /* a fresh open starts at Meal (K.slotFor); Snack is one tap */
+            setSlot((K.slotOk && K.slotOk(slot) ? slot : '') || (back ? pendingSlot() : '') || (K.slotFor ? K.slotFor(gc ? gc.ateAt : undefined) : 'meal'));
+            const recent = recentMeals().slice(0, 4), at = lmAt(), day = K.day(),
+                logs = (V.state().logs || []).filter(l => l.day === day && l && (l.t || l.n));
             mealDb();
-            const fields = '<label>' + esc(tr('mealAsk')) + '<input name="title" required maxlength="100" autocomplete="off" placeholder="' + esc(tr('mealPh')) + '"></label><p class="sp-meal-guess" aria-live="polite"></p><button class="r2-btn pri" type="submit">' + esc(tr('save')) + '</button><details class="sp-own"><summary>' + esc(tr('ownNumbers')) + '</summary><small>' + esc(tr('portion')) + '</small><div class="sp-form-macros">' + Object.keys(values).map(k => '<label>' + esc(tr(k)) + '<input name="' + k + '" inputmode="decimal" type="number" min="0" max="10000" step="0.1" placeholder="\u2248"></label>').join('') + '</div><p class="sp-note">' + esc(tr('macroOptional')) + '</p></details>';
+            const kind = (K.SLOTS || ['meal', 'snack']).map(k => '<button type="button" data-sp="lmKind" data-slot="' + k + '" aria-pressed="' + (k === mealSlot) + '">' + esc(slotName(k)) + '</button>').join('');
+            const own = '<div class="lm-own" id="lmOwn" hidden><small>' + esc(tr('portion')) + '</small><div class="sp-form-macros">' + Object.keys(values).map(k => '<label>' + esc(tr(k)) + '<input name="' + k + '" inputmode="decimal" type="number" min="0" max="10000" step="0.1" placeholder="\u2248"></label>').join('') + '</div><p class="sp-note">' + esc(tr('macroOptional')) + '</p></div>';
+            const form = '<form id="spMeal" class="lm-form" data-id="' + esc(lastMealId) + '">' +
+                '<label class="lm-ask" for="lmTitle">' + esc(tr('mealAsk')) + '</label>' +
+                '<input id="lmTitle" class="lm-in" name="title" required maxlength="100" autocomplete="off" enterkeyhint="done" data-mic="1" placeholder="' + esc(tr('mealPh')) + '">' +
+                '<div class="lm-alt"><button type="button" class="lm-chip" data-sp="photo">' + icon('camera') + '<span>' + esc(tr('lmPhoto')) + '</span></button>' +
+                '<button type="button" class="lm-chip" data-sp="scan">' + icon('scan') + '<span>' + esc(tr('lmCode')) + '</span></button></div>' +
+                '<p class="sp-meal-guess" aria-live="polite"></p>' +
+                '<div class="lm-row"><label class="lm-time' + (at ? ' set' : '') + '">' + icon('clock') + '<span class="lm-time-l">' + esc(lmTimeLabel(at)) + '</span>' +
+                '<input type="time" class="lm-time-in" data-sp-time value="' + lmHm(at || Date.now()) + '" aria-label="' + esc(tr('lmTimeA').replace('{t}', lmTimeLabel(at))) + '"></label>' +
+                '<button type="button" class="lm-own-t" data-sp="lmOwn" aria-expanded="false" aria-controls="lmOwn">' + esc(tr('lmOwn')) + '</button></div>' + own +
+                '<button class="r2-btn pri lm-save" type="submit">' + esc(tr(mealSlot === 'snack' ? 'lmSnackSave' : 'save')) + '</button>' + (gc ? '' : fastNote(at)) + '</form>'; /* in the Gap chain the fast already ended there */
+            const usual = recent.length ? '<section class="lm-usual" aria-label="' + esc(tr('lmUsual')) + '"><h3 class="lm-h">' + esc(tr('lmUsual')) + '</h3><div class="lm-u-list">' + recent.map((l, i) => {
+                const n = String(l.t || l.n), show = lmShow(n), done = V.mealDup && V.mealDup({t: n, code: l.code, slot: mealSlot});
+                return '<button type="button" class="lm-u' + (done ? ' done' : '') + '" data-sp="quickMeal" data-q="' + i + '" aria-label="' + esc(done ? show + ' \u2713 ' + tr('doneToday') : tr('lmAgain').replace('{t}', show)) + '"><span class="lm-u-t"' + (show !== n ? ' lang="' + lang() + '"' : '') + '>' + esc(show) + '</span><em aria-hidden="true">' + (done ? icon('check') : icon('plus')) + '</em></button>';
+            }).join('') + '</div></section>' : '';
             const pk = herbPick(),
-                tip = pk ? '<button type="button" class="sp-herb-tip" data-sp="herbPick">' + (pk.recipe.img ? '<img src="' + esc(pk.recipe.img) + '" alt="">' : icon('plate')) + '<span><small>' + esc(wnm(tr('herbTip'))) + '</small><b>' + esc(recipeName(pk.recipe)) + '</b><i>' + esc(whyLine(pk.why.slice(0, 2), null) || tr('whyText')) + '</i></span>' + icon('arrow') + '</button>' : '';
-            const how = mealSlot ? '<div class="sp-slot-head"><span class="sp-slot-ic">' + icon(SLOT_IC[mealSlot]) + '</span><h2>' + esc(slotName(mealSlot)) + '</h2><button type="button" class="sp-slot-change" data-sp="slotPick">' + esc(tr('slotChange')) + '</button></div>' +
-                '<div class="sp-slot-how" role="group" aria-label="' + esc(tr('slotHow')) + '"><button type="button" class="sp-how" data-sp="slotWrite">' + icon('book') + '<span>' + esc(tr('slotWrite')) + '</span></button><button type="button" class="sp-how" data-sp="scan">' + icon('scan') + '<span>' + esc(tr('slotScan')) + '</span></button><button type="button" class="sp-how" data-sp="photo">' + icon('camera') + '<span>' + esc(tr('slotSnap')) + '</span></button></div>' + whenRow() + fastNote(whenAt()) : '<h2>' + esc(tr('meal')) + '</h2>' + whenRow() + fastNote(whenAt());
-            const html = how + '<div class="sp-quick-log"><div class="sp-manual"><small class="sp-quick-h">' + esc(tr('manual')) + '</small><form id="spMeal" data-id="' + esc(lastMealId) + '">' + fields + '</form></div>' + (recent.length ? '<small class="sp-quick-h">' + esc(tr(mealSlot ? 'slotRecent' : 'recent')) + '</small><div class="sp-quick-list">' + recent.map((l, i) => { const done = V.mealDup && V.mealDup({t: l.t || l.n, code: l.code, slot: mealSlot}); return '<button type="button" class="sp-quick-item' + (done ? ' done' : '') + '" data-sp="quickMeal" data-q="' + i + '">' + icon('plate') + '<span><b>' + esc(l.t || l.n) + '</b><small>' + esc(done ? tr('doneToday') : (kc(l) || tr('oneTap'))) + '</small></span><em>' + (done ? '\u2713' : '+') + '</em></button>'; }).join('') + '</div>' : '<p class="sp-note">' + esc(tr('recentEmpty')) + '</p>') + tip + '</div>';
+                idea = pk ? '<section class="lm-idea"><h3 class="lm-h">' + esc(wnm(tr('lmIdea'))) + '</h3><button type="button" class="sp-herb-tip lm-idea-b" data-sp="herbPick">' + (pk.recipe.img ? '<img src="' + esc(pk.recipe.img) + '" alt="">' : icon('plate')) + '<span><b>' + esc(recipeName(pk.recipe)) + '</b><i>' + esc(whyLine(pk.why.slice(0, 2), null) || tr('whyText')) + '</i></span>' + icon('arrow') + '</button></section>' : '';
+            const today = logs.length ? '<details class="lm-today"' + (back ? ' open' : '') + '><summary>' + esc(tr('lmToday').replace('{n}', logs.length)) + '</summary>' + todayList(logs) + '</details>' : '';
+            const html = '<div class="lm" data-lm>' + '<h2 class="lm-sr">' + esc(tr('meal')) + '</h2>' +
+                '<div class="lm-kind" role="group" aria-label="' + esc(tr('slotQ')) + '" data-on="' + esc(mealSlot) + '">' + kind + '</div>' +
+                (gc ? '<p class="lm-gap">' + esc(tr('lmGap')) + ' <button type="button" class="lm-gap-skip" data-sp="gapskip">' + esc(tr('gapSkip')) + '</button></p>' : '') +
+                form + usual + idea + today + '<div class="lm-foot"></div></div>';
             showSheet(html);
+            const sh = ownedSheet, ti = sh && sh.querySelector('.lm-time-in');
+            if (ti) {
+                ti.addEventListener('change', () => lmTimeChange(ti));
+                ti.addEventListener('blur', () => lmTimeChange(ti));
+                /* a tap anywhere on the quiet clock pill opens the native wheel (iPhone opens it on its own; desktop needs showPicker) */
+                ti.addEventListener('click', () => { try { if (ti.showPicker) ti.showPicker(); } catch (e) {} });
+            }
             return;
         }
         const html = '<h2>' + esc(tr('meal')) + '</h2><form id="spMeal" data-id="' + esc(lastMealId) + '" ' + (editing ? 'data-edit="1"' : '') + '><label>' + esc(tr('title')) + '<input name="title" required maxlength="100" value="' + esc(seed.t || seed.n || seed.name || '') + '"></label><small>' + esc(tr('portion')) + '</small><div class="sp-form-macros">' + Object.keys(values).map(k => '<label>' + esc(tr(k)) + '<input name="' + k + '" inputmode="decimal" type="number" min="0" max="10000" step="0.1" value="' + (values[k] === null ? '' : values[k]) + '" placeholder="\u2248"></label>').join('') + '</div><p class="sp-meal-guess" aria-live="polite"></p><p class="sp-note">' + esc(tr('macroOptional')) + '</p><button class="r2-btn pri" type="submit">' + esc(tr(editing ? 'rename' : 'save')) + '</button></form>';
@@ -2191,6 +2249,8 @@
         else if (a === 'meal') mealForm(null, null, b.dataset.slot || (fromCam ? pendingSlot() : ''));
         else if (a === 'slot') mealForm(null, null, b.dataset.slot);
         else if (a === 'slotPick') slotPicker();
+        else if (a === 'lmKind') lmKind(b);
+        else if (a === 'lmOwn') { const sh = b.closest('.r2-ov') || D, box = sh.querySelector('#lmOwn'); if (box) { box.hidden = !box.hidden; b.setAttribute('aria-expanded', String(!box.hidden)); if (!box.hidden) { const f = box.querySelector('input'); box.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); if (f) f.focus({ preventScroll: true }); } } }
         else if (a === 'todayEdit') editToday(b.dataset.id);
         else if (a === 'todayDel') delToday(b);
         else if (a === 'editKind') { const f = b.closest('#spEdit'); if (f) { f.dataset.kind = b.dataset.kind; f.querySelectorAll('[data-sp="editKind"]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); } }

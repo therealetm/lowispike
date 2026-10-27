@@ -254,6 +254,9 @@
         /* Oct 21: on the photo result the spike verdict comes first (meal-result.js), so the strip goes with the secondary actions */
         const acts = body.querySelector('.sp-ai') && body.querySelector('.sp-photo-acts');
         if (acts && acts.parentNode) { acts.before(wrap.firstChild); return; }
+        /* Oct 27 calm Log meal sheet: today's stats are a quiet line at the very bottom, not the first thing you see */
+        const foot = body.querySelector('.lm-foot');
+        if (foot) { const el = wrap.firstChild; el.classList.add('ns-quiet'); foot.appendChild(el); return; }
         const h = body.querySelector('h2'); if (h && h.parentNode === body) h.after(wrap.firstChild); else body.prepend(wrap.firstChild);
     }
     try { new MutationObserver(() => { if (!queued) queued = requestAnimationFrame(inject); }).observe(D.body || D.documentElement, { childList: true, subtree: true }); } catch (e) { }

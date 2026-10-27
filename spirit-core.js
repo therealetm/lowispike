@@ -63,5 +63,62 @@ function waterAmount(k,ml){if(typeof k==='number'&&isFinite(k)&&k>0)return Math.
 function waterSum(a,b){return Math.max(0,Math.round(((+a||0)+(+b||0))*4)/4);}
 function waterFmt(n){n=Math.max(0,Math.round((+n||0)*4)/4);const w=Math.floor(n),fr=['','\u00bc','\u00bd','\u00be'][Math.round((n-w)*4)]||'';return(w||!fr?String(w):'')+fr;}
 function waterXpDue(cups,have,cap){cap=cap==null?WATER.xpCap:cap;return Math.max(0,Math.min(cap,Math.floor((+cups||0)+1e-9))-Math.max(0,+have||0));}
-const api={WATER,BOTTLE,bottleMl,setBottleMl,nextBottleMl,bottleLitres,bottleGlasses,waterAmount,waterSum,waterFmt,waterXpDue,SLOTS,kind,slotOk,slotFor,slotRecent,scanVerdict,estimate,pickFor,day,macros,totals,bonuses,vitality,personalityName,mergeFeed,bound,step,release,icon,paths};if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiSpiritCore=api;
+/* Oct 27, 2026 (Emmanuel, the Log meal sheet: past meals in English inside the German app, "Lettuce wraps with ground beef"):
+   mealName(name, lang) shows an English meal name in German or Spanish when EVERY word of it is a known food word or "with / and";
+   anything else stays exactly as it was typed (no half translations, no guessing). Display only: the log keeps its own name, so
+   "Your usual" still finds the meal again. Nouns next to each other are one dish: German joins them with a hyphen
+   ("Salat-Wraps"), Spanish turns them round with "de" ("wraps de lechuga"). */
+const MEAL_WORDS={
+ /* single foods: en -> [de, es] */
+ apple:['Apfel','manzana'],apples:['Äpfel','manzanas'],avocado:['Avocado','aguacate'],avocados:['Avocados','aguacates'],bacon:['Speck','beicon'],banana:['Banane','plátano'],bananas:['Bananen','plátanos'],
+ bean:['Bohne','judía'],beans:['Bohnen','judías'],beef:['Rindfleisch','ternera'],berries:['Beeren','frutos rojos'],blueberries:['Heidelbeeren','arándanos'],bowl:['Bowl','bowl'],bread:['Brot','pan'],
+ broccoli:['Brokkoli','brócoli'],broth:['Brühe','caldo'],burger:['Burger','hamburguesa'],butter:['Butter','mantequilla'],cabbage:['Kohl','col'],carrot:['Karotte','zanahoria'],carrots:['Karotten','zanahorias'],
+ cauliflower:['Blumenkohl','coliflor'],cheese:['Käse','queso'],chicken:['Hähnchen','pollo'],chickpeas:['Kichererbsen','garbanzos'],chili:['Chili','chili'],coffee:['Kaffee','café'],cod:['Kabeljau','bacalao'],
+ cucumber:['Gurke','pepino'],curry:['Curry','curry'],egg:['Ei','huevo'],eggs:['Eier','huevos'],fish:['Fisch','pescado'],fries:['Pommes','patatas fritas'],fruit:['Obst','fruta'],garlic:['Knoblauch','ajo'],
+ ham:['Schinken','jamón'],hummus:['Hummus','hummus'],kale:['Grünkohl','kale'],lentil:['Linsen','lentejas'],lentils:['Linsen','lentejas'],lettuce:['Salat','lechuga'],mango:['Mango','mango'],meat:['Fleisch','carne'],
+ milk:['Milch','leche'],mushroom:['Pilz','champiñón'],mushrooms:['Pilze','champiñones'],noodles:['Nudeln','fideos'],nuts:['Nüsse','frutos secos'],oatmeal:['Haferbrei','avena'],oats:['Haferflocken','avena'],
+ omelet:['Omelett','tortilla francesa'],omelette:['Omelett','tortilla francesa'],onion:['Zwiebel','cebolla'],onions:['Zwiebeln','cebollas'],orange:['Orange','naranja'],pancakes:['Pfannkuchen','tortitas'],
+ pasta:['Pasta','pasta'],peas:['Erbsen','guisantes'],pepper:['Paprika','pimiento'],peppers:['Paprika','pimientos'],pizza:['Pizza','pizza'],pork:['Schweinefleisch','cerdo'],porridge:['Porridge','gachas'],
+ potato:['Kartoffel','patata'],potatoes:['Kartoffeln','patatas'],quinoa:['Quinoa','quinoa'],rice:['Reis','arroz'],salad:['Salat','ensalada'],salmon:['Lachs','salmón'],sandwich:['Sandwich','sándwich'],
+ sardines:['Sardinen','sardinas'],sausage:['Wurst','salchicha'],sausages:['Würstchen','salchichas'],shrimp:['Garnelen','gambas'],smoothie:['Smoothie','batido'],soup:['Suppe','sopa'],spinach:['Spinat','espinacas'],
+ steak:['Steak','filete'],stew:['Eintopf','guiso'],strawberries:['Erdbeeren','fresas'],tea:['Tee','té'],toast:['Toast','tostada'],tofu:['Tofu','tofu'],tomato:['Tomate','tomate'],tomatoes:['Tomaten','tomates'],
+ tuna:['Thunfisch','atún'],turkey:['Pute','pavo'],vegetables:['Gemüse','verduras'],veggies:['Gemüse','verduras'],walnuts:['Walnüsse','nueces'],wrap:['Wrap','wrap'],wraps:['Wraps','wraps'],
+ yogurt:['Joghurt','yogur'],yoghurt:['Joghurt','yogur'],zucchini:['Zucchini','calabacín'],almonds:['Mandeln','almendras'],apricots:['Aprikosen','albaricoques'],
+ /* fixed dishes and foods of more than one word */
+ 'ground beef':['Rinderhack','carne picada'],'minced beef':['Rinderhack','carne picada'],'minced meat':['Hackfleisch','carne picada'],'ground turkey':['Putenhack','pavo picado'],
+ 'scrambled eggs':['Rührei','huevos revueltos'],'scrambled egg':['Rührei','huevos revueltos'],'fried egg':['Spiegelei','huevo frito'],'fried eggs':['Spiegeleier','huevos fritos'],
+ 'boiled egg':['gekochtes Ei','huevo cocido'],'boiled eggs':['gekochte Eier','huevos cocidos'],'hard boiled eggs':['hart gekochte Eier','huevos duros'],'egg whites':['Eiweiß','claras de huevo'],
+ 'greek yogurt':['griechischer Joghurt','yogur griego'],'greek yoghurt':['griechischer Joghurt','yogur griego'],'cottage cheese':['Hüttenkäse','requesón'],'cream cheese':['Frischkäse','queso crema'],
+ 'feta cheese':['Feta','queso feta'],'goat cheese':['Ziegenkäse','queso de cabra'],'peanut butter':['Erdnussbutter','mantequilla de cacahuete'],'olive oil':['Olivenöl','aceite de oliva'],
+ 'sweet potato':['Süßkartoffel','boniato'],'sweet potatoes':['Süßkartoffeln','boniatos'],'brown rice':['Vollkornreis','arroz integral'],'fried rice':['gebratener Reis','arroz frito'],
+ 'mashed potatoes':['Kartoffelpüree','puré de patatas'],'green beans':['grüne Bohnen','judías verdes'],'bell pepper':['Paprika','pimiento'],'bell peppers':['Paprika','pimientos'],
+ 'chicken breast':['Hähnchenbrust','pechuga de pollo'],'grilled chicken':['gegrilltes Hähnchen','pollo a la plancha'],'roast chicken':['Brathähnchen','pollo asado'],
+ 'smoked salmon':['Räucherlachs','salmón ahumado'],'baked salmon':['Ofenlachs','salmón al horno'],'chia seeds':['Chiasamen','semillas de chía'],'protein shake':['Proteinshake','batido de proteínas'],
+ 'whole wheat bread':['Vollkornbrot','pan integral'],'wholegrain bread':['Vollkornbrot','pan integral'],'rye bread':['Roggenbrot','pan de centeno'],'sourdough bread':['Sauerteigbrot','pan de masa madre'],
+ 'green salad':['grüner Salat','ensalada verde'],'mixed salad':['gemischter Salat','ensalada mixta'],'mixed vegetables':['gemischtes Gemüse','verduras variadas'],
+ 'roasted vegetables':['Ofengemüse','verduras asadas'],'grilled vegetables':['Grillgemüse','verduras a la plancha'],'stir fry':['Pfannengericht','salteado'],'bone broth':['Knochenbrühe','caldo de huesos'],
+ 'chicken salad':['Hähnchensalat','ensalada de pollo'],'tuna salad':['Thunfischsalat','ensalada de atún'],'egg salad':['Eiersalat','ensalada de huevo'],'fruit salad':['Obstsalat','macedonia'],
+ 'chicken soup':['Hühnersuppe','sopa de pollo'],'tomato soup':['Tomatensuppe','sopa de tomate'],'lentil soup':['Linsensuppe','sopa de lentejas'],'vegetable soup':['Gemüsesuppe','sopa de verduras'],
+ 'lettuce wraps':['Salat-Wraps','wraps de lechuga'],'overnight oats':['Overnight Oats','avena remojada'],'french fries':['Pommes','patatas fritas'],'shirataki noodles':['Shirataki-Nudeln','fideos shirataki']
+};
+const MEAL_JOIN={with:['mit','con'],and:['und','y'],'&':['&','y'],on:['auf','sobre'],plus:['plus','más']};
+/* German after "mit" / "auf" (dative): the forms that change */
+const MEAL_DAT={'Eier':'Eiern','Spiegeleier':'Spiegeleiern','gekochte Eier':'gekochten Eiern','hart gekochte Eier':'hart gekochten Eiern','Walnüsse':'Walnüssen','Nüsse':'Nüssen','Äpfel':'Äpfeln','Pilze':'Pilzen',
+ 'griechischer Joghurt':'griechischem Joghurt','gegrilltes Hähnchen':'gegrilltem Hähnchen','grüner Salat':'grünem Salat','gemischter Salat':'gemischtem Salat','gemischtes Gemüse':'gemischtem Gemüse',
+ 'grüne Bohnen':'grünen Bohnen','gebratener Reis':'gebratenem Reis','gekochtes Ei':'gekochtem Ei'};
+function mealName(name,lang){
+ const raw=String(name==null?'':name),li=lang==='de'?0:lang==='es'?1:-1;if(li<0||!raw.trim())return raw;
+ const toks=raw.toLowerCase().replace(/[(),.;:!?\u2026]+/g,' ').split(/\s+/).filter(Boolean);if(!toks.length||toks.length>12)return raw;
+ const units=[];
+ for(let i=0;i<toks.length;){let hit=0;for(let n=Math.min(4,toks.length-i);n>0;n--){const k=toks.slice(i,i+n).join(' ');if(MEAL_WORDS[k]){units.push({n:MEAL_WORDS[k][li]});i+=n;hit=1;break;}if(n===1&&MEAL_JOIN[k]){units.push({j:MEAL_JOIN[k][li]});i++;hit=1;break;}if(n===1&&/^\d+([.,]\d+)?$/.test(k)){units.push({j:k});i++;hit=1;break;}}if(!hit)return raw;}
+ if(!units.some(u=>u.n))return raw;
+ const out=[];let run=[],dat=false,bad=false;
+ const flush=()=>{if(!run.length)return;if(run.length>1&&run.some(w=>w.indexOf(' ')>=0))bad=true;
+  if(li===0){if(dat&&run.length===1&&MEAL_DAT[run[0]])run[0]=MEAL_DAT[run[0]];if(dat&&run.length>1){const l=run.length-1;if(MEAL_DAT[run[l]])run[l]=MEAL_DAT[run[l]];}out.push(run.join('-'));}
+  else out.push(run.length>2?run[run.length-1]+' de '+run.slice(0,-1).join(' y '):run.slice().reverse().join(' de '));run=[];};
+ for(const u of units){if(u.n)run.push(u.n);else{flush();out.push(u.j);if(li===0&&(u.j==='mit'||u.j==='auf'))dat=true;}}flush();
+ if(bad)return raw;
+ const t=out.join(' ');return t.charAt(0).toUpperCase()+t.slice(1);
+}
+const api={mealName,MEAL_WORDS,WATER,BOTTLE,bottleMl,setBottleMl,nextBottleMl,bottleLitres,bottleGlasses,waterAmount,waterSum,waterFmt,waterXpDue,SLOTS,kind,slotOk,slotFor,slotRecent,scanVerdict,estimate,pickFor,day,macros,totals,bonuses,vitality,personalityName,mergeFeed,bound,step,release,icon,paths};if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiSpiritCore=api;
 })(typeof window!=='undefined'?window:globalThis);

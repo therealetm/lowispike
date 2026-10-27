@@ -1,0 +1,113 @@
+/* Oct 27, 2026: the calm Log meal sheet (spirit.js mealForm quick path, class .lm).
+   Emmanuel: "It's very confusing and overwhelming whilst opening. There's just too much redundancy there ... Remember our focus is
+   minimalism, efficiency, convenience. And we care about people with mental health."
+   One field with Foto / Barcode under it, a quiet clock, one Save, "Wie immer" for one tap, then the companion's idea, today and the
+   stats, quieter and apart. Deep blue glass like the rest of the app; 44 pt targets; fits the small iPhone (320 pt) and iPad. */
+
+html:root body .r2-ov .lm { --lm-line: var(--ms-line-soft, rgba(170, 214, 255, .26)); --lm-glass: rgba(255, 255, 255, .07); --lm-dim: rgba(214, 228, 255, .62);
+  display: flex; flex-direction: column; gap: 0; min-width: 0; }
+html:root body .r2-ov .lm .lm-sr { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; margin: 0; padding: 0; }
+
+/* Meal | Snack: a small iOS segmented switch at the top, not a whole first screen */
+html:root body .r2-ov .lm .lm-kind { align-self: center; display: inline-flex; gap: 2px; padding: 2px; margin: 0 0 14px; border-radius: 999px;
+  background: rgba(4, 14, 40, .45); border: 1px solid var(--lm-line); max-width: 100%; }
+html:root body .r2-ov .lm .lm-kind button { appearance: none; border: 0; background: transparent; color: var(--lm-dim); font: inherit; font-size: 14px; font-weight: 600;
+  min-height: 40px; min-width: 88px; padding: 0 14px; border-radius: 999px; cursor: pointer; transition: background .2s ease, color .2s ease; }
+html:root body .r2-ov .lm .lm-kind button[aria-pressed="true"] { background: rgba(255, 255, 255, .16); color: #fff; box-shadow: 0 1px 6px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .14); }
+html:root body .r2-ov .lm .lm-kind button:focus-visible { outline: 2px solid rgba(143, 216, 255, .9); outline-offset: 1px; }
+
+html:root body .r2-ov .lm .lm-gap { margin: 0 0 12px; font-size: 14px; line-height: 1.4; color: var(--lm-dim); text-align: center; }
+html:root body .r2-ov .lm .lm-gap-skip { appearance: none; border: 0; background: none; color: #8fd8ff; font: inherit; font-weight: 600; min-height: 44px; padding: 0 6px; cursor: pointer; }
+
+/* the one field */
+html:root body .r2-ov .lm .lm-form { display: flex; flex-direction: column; margin: 0; }
+html:root body .r2-ov .lm label.lm-ask { display: block; margin: 0 2px 8px; font-size: 20px !important; font-weight: 700; letter-spacing: -.01em; color: #fff !important; line-height: 1.25; }
+html:root body .r2-ov .lm #lmTitle { width: 100%; min-height: 54px; font-size: 17px; border-radius: 16px !important; padding: 0 14px; margin: 0; }
+html:root body .r2-ov .lm .lm-alt { display: flex; gap: 8px; margin: 10px 0 0; flex-wrap: wrap; }
+html:root body .r2-ov .lm .lm-chip { appearance: none; display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 16px 0 13px; border-radius: 999px;
+  border: 1px solid var(--lm-line); background: var(--lm-glass); color: #eaf3ff; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+html:root body .r2-ov .lm .lm-chip svg { width: 18px; height: 18px; flex: none; opacity: .9; }
+html:root body .r2-ov .lm .lm-chip:active { transform: scale(.97); background: rgba(255, 255, 255, .12); }
+html:root body .r2-ov .lm .sp-meal-guess { margin: 6px 2px 0; min-height: 0; font-size: 13px; color: var(--lm-dim); }
+html:root body .r2-ov .lm .sp-meal-guess:empty { display: none; }
+
+/* the quiet row: when (a clock that opens the native wheel) and own values */
+html:root body .r2-ov .lm .lm-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0 4px; }
+html:root body .r2-ov .lm label.lm-time { position: relative; display: inline-flex !important; align-items: center; gap: 6px; min-height: 44px; margin: 0; padding: 0 10px 0 4px;
+  font-size: 15px !important; font-weight: 500; color: var(--lm-dim) !important; cursor: pointer; border-radius: 12px; }
+html:root body .r2-ov .lm label.lm-time svg { width: 17px; height: 17px; flex: none; }
+html:root body .r2-ov .lm label.lm-time.set { color: #8fd8ff !important; }
+html:root body .r2-ov .lm label.lm-time:focus-within { box-shadow: 0 0 0 2px rgba(143, 216, 255, .7); }
+/* the time input covers the whole pill, invisible: a tap on it is a tap on the native wheel */
+html:root body .r2-ov .lm label.lm-time input.lm-time-in { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; min-height: 0 !important; margin: 0 !important;
+  padding: 0 !important; opacity: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; cursor: pointer; font-size: 16px; color: transparent !important; }
+html:root body .r2-ov .lm .lm-own-t { appearance: none; border: 0; background: none; color: var(--lm-dim); font: inherit; font-size: 15px; font-weight: 500; min-height: 44px; padding: 0 4px 0 10px; cursor: pointer; }
+html:root body .r2-ov .lm .lm-own-t::after { content: ""; display: inline-block; width: 6px; height: 6px; margin: 0 0 3px 7px; border: solid currentColor; border-width: 0 1.6px 1.6px 0; transform: rotate(45deg); transition: transform .2s ease; }
+html:root body .r2-ov .lm .lm-own-t[aria-expanded="true"] { color: #fff; }
+html:root body .r2-ov .lm .lm-own-t[aria-expanded="true"]::after { transform: rotate(-135deg); margin-bottom: -1px; }
+html:root body .r2-ov .lm .lm-own { margin: 2px 0 8px; padding: 10px 12px 4px; border-radius: 16px; background: rgba(4, 14, 40, .3); border: 1px solid var(--lm-line); }
+html:root body .r2-ov .lm .lm-own[hidden] { display: none !important; }
+html:root body .r2-ov .lm .lm-own > small { display: block; font-size: 12px; color: var(--lm-dim); }
+html:root body .r2-ov .lm .lm-own .sp-form-macros { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 0 10px; }
+html:root body .r2-ov .lm .lm-own .sp-note { font-size: 12px; color: var(--lm-dim); margin: 2px 0 6px; }
+
+/* one Save; what it does to the fast is a small calm line under it, not a box */
+html:root body .r2-ov .lm .lm-save { margin: 6px 0 0; min-height: 52px; font-size: 17px; }
+html:root body .r2-ov .lm .sp-fast-note { margin: 8px 6px 0 !important; padding: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important;
+  font-size: 12.5px !important; line-height: 1.35; font-weight: 500; color: var(--lm-dim) !important; text-align: center; }
+html:root body .r2-ov .lm .sp-fast-note[hidden] { display: none !important; }
+
+/* section headings: small, quiet */
+html:root body .r2-ov .lm .lm-h { margin: 0 4px 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--lm-dim); }
+
+/* "Wie immer": one tap */
+html:root body .r2-ov .lm .lm-usual { margin: 22px 0 0; }
+html:root body .r2-ov .lm .lm-u-list { display: flex; flex-direction: column; border-radius: 16px; overflow: hidden; background: var(--lm-glass); border: 1px solid var(--lm-line); }
+html:root body .r2-ov .lm .lm-u { appearance: none; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 0 8px 0 14px; margin: 0; border: 0;
+  border-top: 1px solid rgba(170, 214, 255, .12); background: none; color: #fff; font: inherit; font-size: 15.5px; text-align: left; cursor: pointer; }
+html:root body .r2-ov .lm .lm-u:first-child { border-top: 0; }
+html:root body .r2-ov .lm .lm-u:active { background: rgba(255, 255, 255, .08); }
+html:root body .r2-ov .lm .lm-u-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html:root body .r2-ov .lm .lm-u em { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: rgba(143, 216, 255, .16); color: #8fd8ff; font-style: normal; }
+html:root body .r2-ov .lm .lm-u em svg { width: 16px; height: 16px; }
+html:root body .r2-ov .lm .lm-u.done { color: var(--lm-dim); }
+html:root body .r2-ov .lm .lm-u.done em { background: rgba(120, 230, 170, .16); color: #8be6b4; }
+
+/* the companion's idea: lower, apart, smaller */
+html:root body .r2-ov .lm .lm-idea { margin: 26px 0 0; }
+html:root body .r2-ov .lm .lm-idea-b { display: flex !important; align-items: center; gap: 12px; width: 100%; min-height: 60px; margin: 0 !important; padding: 8px 10px !important; border-radius: 16px !important;
+  background: rgba(4, 14, 40, .28) !important; border: 1px solid rgba(170, 214, 255, .16) !important; box-shadow: none !important; color: #fff; text-align: left; }
+html:root body .r2-ov .lm .lm-idea-b img { width: 44px !important; height: 44px !important; border-radius: 12px; object-fit: cover; flex: none; }
+html:root body .r2-ov .lm .lm-idea-b > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+html:root body .r2-ov .lm .lm-idea-b b { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html:root body .r2-ov .lm .lm-idea-b i { font-style: normal; font-size: 12.5px; color: var(--lm-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html:root body .r2-ov .lm .lm-idea-b > svg { width: 16px; height: 16px; flex: none; opacity: .6; }
+
+/* today: one quiet line that opens the list (tap an entry to edit it, as before) */
+html:root body .r2-ov .lm .lm-today { margin: 18px 0 0; }
+html:root body .r2-ov .lm .lm-today > summary { list-style: none; display: flex; align-items: center; min-height: 44px; padding: 0 4px; font-size: 15px; font-weight: 500; color: var(--lm-dim); cursor: pointer; }
+html:root body .r2-ov .lm .lm-today > summary::-webkit-details-marker { display: none; }
+html:root body .r2-ov .lm .lm-today > summary::after { content: ""; width: 6px; height: 6px; margin: 0 0 3px 8px; border: solid currentColor; border-width: 0 1.6px 1.6px 0; transform: rotate(45deg); transition: transform .2s ease; }
+html:root body .r2-ov .lm .lm-today[open] > summary::after { transform: rotate(-135deg); margin-bottom: -2px; }
+html:root body .r2-ov .lm .lm-today .sp-today { margin-top: 0; }
+html:root body .r2-ov .lm .lm-today .sp-today > .sp-quick-h { display: none; }
+
+/* today's stats: a quiet line at the very bottom */
+html:root body .r2-ov .lm .lm-foot { margin: 14px 0 0; }
+html:root body .r2-ov .lm .lm-foot:empty { display: none; }
+html:root body .r2-ov .lm .ns-strip.ns-quiet { opacity: .78; margin: 0 !important; background: transparent !important; border-color: rgba(170, 214, 255, .14) !important; box-shadow: none !important; }
+
+/* small iPhone (SE, 320 pt): a little tighter, still 44 pt targets */
+@media (max-width: 359px) {
+  html:root body .r2-ov .lm label.lm-ask { font-size: 18px !important; }
+  html:root body .r2-ov .lm .lm-kind button { min-width: 76px; padding: 0 10px; }
+  html:root body .r2-ov .lm .lm-chip { padding: 0 13px 0 11px; font-size: 14.5px; }
+  html:root body .r2-ov .lm .lm-usual { margin-top: 18px; }
+}
+/* iPad: the sheet is a centred card; keep the line length calm */
+@media (min-width: 700px) {
+  html:root body .r2-ov .lm { max-width: 520px; margin: 0 auto; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:root body .r2-ov .lm * { transition: none !important; }
+}

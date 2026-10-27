@@ -25,6 +25,7 @@ STATIC.push("mic-dictate.css", "mic-dictate-core.js", "mic-dictate.js"); /* Oct 
 STATIC.push("quick-add-core.js"); /* Oct 26 quick "+" on Supermarket rows (MAYA-HANDOFF 0.35): own line, like kitchen-core.js */
 STATIC.push("quick-tour.js", "quick-tour.css"); /* Oct 26 Quick tour video sheet (MAYA-HANDOFF 0.38): own line; the .mp4 itself is never precached */
 STATIC.push("day-recap-core.js", "day-recap.js", "day-recap.css"); /* Oct 26 Day recap (MAYA-HANDOFF 0.40): own line */
+STATIC.push("meal-sheet.css"); /* Oct 27 calm Log meal sheet: own line */
 STATIC.push("kitchen-core.js"); /* Oct 24 Kitchen in Shop: on its own line so it never collides with the build stamp next to the STATIC line */
 const OWN = STATIC.filter(f => /\.(js|css)$/.test(f) && f.indexOf("vendor/") !== 0), PLAIN = STATIC.filter(f => OWN.indexOf(f) < 0);
 self.addEventListener("install", e => {

@@ -6412,7 +6412,7 @@ let toastT;
 function toast(msg, ms){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), window.LowiReadTime ? LowiReadTime.atLeast(msg, ms || 2200, {kind:"toast"}) : (ms || 2200)); }
 function sheet(html){ $("#sheet").innerHTML = '<div class="grab"></div>' + html; const fresh = !$("#sheetwrap").classList.contains("open"); try{ window.LowiBloom && LowiBloom.prep($("#sheet")); }catch(e){} $("#sheetwrap").classList.add("open"); try{ if (fresh && window.LowiBloom) LowiBloom.open($("#sheet")); }catch(e){} /* BH-035: the backdrop is reused, so a fresh open gets fresh-scrim's same-spot rule (a double tap's 2nd tap must not close it) */ try{ if (fresh && window.LowiFreshScrim && LowiFreshScrim.mark) LowiFreshScrim.mark($("#sheetwrap")); }catch(e){} }
 /* Oct 25 (iOS feel): the Fasting panel folds back on its spring from wherever it is; the backdrop fades as before, nothing waits */
-function closeSheet(){ try{ window.LowiBloom && LowiBloom.close($("#sheet")); }catch(e){} $("#sheetwrap").classList.remove("open"); }
+function closeSheet(){ try{ window.LowiBloom && LowiBloom.close($("#sheet")); }catch(e){} const w = $("#sheetwrap"); if (w.classList.contains("open")) try { const ev = window.event; if (ev && ev.type === "click" && window.LowiFreshScrim) LowiFreshScrim.spent(ev); } catch(e){} /* BH-059: see closeSpent */ w.classList.remove("open"); }
 /* sheetwrap-escape: Oct 23 (code error sweep). Nothing closed the legacy #sheetwrap sheet (Milestones on Move and the other
    LowiHost.openSheet sheets) on Escape, and back (Safari swipe / phone back) closes the top sheet by sending Escape. So back on
    Move with Milestones open closed the sheet AND left Move for Home; on Home it would have left the app. Escape now closes
@@ -11006,9 +11006,16 @@ R2.sheet = function(html, opts){
 function ovTopIndex(){ for (let i = ovStack.length - 1; i >= 0; i--) if (!ovStack[i].parked) return i; return ovStack.length - 1; }
 /* Oct 25 2026: move a full screen's X out of the scrolling sheet to the bottom centre (CSS .r2-ov.r2-xb > .r2-x) */
 R2.xBottom = function(ov){ try { const x = ov && ov.querySelector(":scope > .r2-sh > .r2-x"); if (!x) return; ov.appendChild(x); ov.classList.add("r2-xb"); } catch(e){} };
+/* BH-059 (P-CLOSE-UNDER-FINGER, Oct 27 2026): a button that closes its sheet and opens the next thing (the Community profile card's
+   Pick my type, Chat, Send care, Add my birthday; Edit, DM, Post; Room; ...) uncovered the page under the finger, and the 2nd tap of
+   a double tap pressed it: live Chromium 390, the chat / galaxy under the profile card got the 2nd tap 118-356 ms later. A close
+   that happens inside a real tap's click is now spent like the X (fresh-scrim quiet(): the same spot ignores real taps for 400 ms;
+   a tap elsewhere, a keyboard press and a script's click work at once). */
+function closeSpent(){ try { const ev = window.event; if (ev && ev.type === "click" && window.LowiFreshScrim) LowiFreshScrim.spent(ev); } catch(e){} }
 R2.close = function(ov, how){
   const i = ov ? ovStack.findIndex(x => x.ov === ov) : ovTopIndex();
   if (i < 0) return;
+  closeSpent();
   const it = ovStack.splice(i, 1)[0];
   ovDrop(it);
   const under = it.under || []; it.under = [];

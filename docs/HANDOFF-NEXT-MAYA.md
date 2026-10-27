@@ -28,6 +28,20 @@ What changed (evening-catchup.css / .js / -core.js, branch day-recap-ios17-20261
 - Meal names follow the app language when every part is a known dish or food (C.mealName, DISHES table: "Sweet potato with beef stew" shows "Süßkartoffel mit Rindereintopf" in German); anything else stays as she typed it.
 - Checks: tests/catchup-ios17.test.cjs (points match, companion row and foot in the flow, no overlap by construction, sizes, mealName); tests/evening-catchup-live.cjs updated to iOS sizes plus tappable-at-centre, not covered, on screen, bar = total, no wrapping rows; tools/catchup-ios17/probe.cjs walks every view at iPhone, SE, 320px, iPad in German and English, with Reduce Motion and a fresh first-run state. All in simulated Chrome (simulated Safari still crashes on load/tap in this machine). The app's dictation mic in the text box is its own 34px component and was left as it is.
 
+## Calmer Shop, and Shop from home gets its own tab, 27 October 2026
+
+Emmanuel, Tuesday 27 October 2026 about 9:52 AM Berlin (voice, screenshots of Shop > Supermarkt on his iPhone): "Supermarket looks crazy, like so overwhelming. I don't know what to do here. So many things. Too much. So viel auf einmal. Vielleicht möchte 'Von zu Hause einkaufen' seine eigene Sektion haben, neben Supermarkt, Seller Zone und Hilf mit... Remember our focus is minimalism, efficiency, convenience. And we care about people with mental health. Who are depressed, overwhelmed, don't know what to do. People are seeing this for the first time." He also said not to ask him questions and to take all the decisions.
+
+What changed (store-picks.js / .css, week-basket.js, tutorial-steps.js; branch shop-calm-1027, released silently with `--quiet`):
+- Supermarkt shows only the question, the store, search, then categories and products. The Cart (Warenkorb) is a small round button in the title row with its count. "Im Laden scannen" is the one big button, at the bottom next to the X.
+- "Zu Hause" (From home / Desde casa) is its own Shop tab right next to Supermarkt. The week planner draws inside Shop (no second sheet, no second X); putting a week of dinners in the Cart fills the Cart count, "Open my Cart" opens the Cart over the tab. Shop remembers this tab like Seller Zone and Kitchen.
+- The snack list with "Wieder kaufen" is one closed line, "Meine Snackliste" (with its count). "Aussortierte zeigen" is the last chip in the category row. The product count line moved into "So wird bewertet".
+- Four tabs fit on one line each: Spanish says "Súper" and "Ayudar", English "Help out" when there are four.
+- A swipe down on the "Zu Hause" title closes Shop like the tab bar and the Supermarkt title. The bug: spirit.js wraps title words that hold an emoji in a display:contents span, which has no box, so the browser started a pan and cancelled the drag; the span now gets a real box inside the drag zones.
+- The What's New tour step for Shop from home points at the new tab and says where it is ("Neu: Zu Hause, gleich neben Supermarkt."), re-recorded in the approved tutorial voice.
+- Checks: tests/shop-calm.test.cjs; tools/shop-calm/flow.cjs taps through both tabs with simulated touch (de 390x844, en 375x667, es) including Scan in the shop, the Cart, the X and the swipe-downs. All in simulated Chrome; not checked in simulated Safari or on his real iPhone/iPad.
+- Left open: the cart, the in-store Shop and the Give a hand deck are still not reachable by the double-tap sweep.
+
 ## Studio opened for everyone, 27 October 2026
 
 Emmanuel, Tuesday 27 October 2026 about 9:25 AM Berlin, with a screenshot of the locked Community > Studio tab (pill "Gesperrt", "Im Aufbau", "Studio wird gerade gebaut. Es öffnet sich hier, sobald es fertig ist.", a small lock button): "Also, um remove this we can open it up now. Delete the password or whatever."

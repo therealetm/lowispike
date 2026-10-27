@@ -243,9 +243,9 @@
             info: 'Oct 27 2026: Shop from home is its own Shop tab now (Zu Hause / From home / Desde casa), right next to Supermarket; the spotlight points at that tab (Emmanuel: "Vielleicht möchte Von zu Hause einkaufen seine eigene Sektion haben"). Oct 26 2026: Shop from home at the top of Supermarket (week-basket.js, MAYA-HANDOFF 0.21). Household, budget and dinners in, a week of low-spike dinners and one grocery list out, priced with the existing store estimates; it fills the Cart (0.22).',
             title: { en: 'Shop from home', de: 'Von zu Hause einkaufen', es: 'Compra desde casa' },
             text: {
-                en: 'New in Supermarket: Shop from home. Pick people, budget and dinners for a low-spike week with store estimates, then fill your Cart.',
-                de: 'Neu im Supermarkt: Von zu Hause einkaufen. Personen, Budget, Abendessen wählen: eine Low-Spike-Woche mit Schätzpreis, ab in den Warenkorb.',
-                es: 'Nuevo en Supermercado: Compra desde casa. Elige personas, presupuesto y cenas: una semana low-spike con precio estimado, al carrito.'
+                en: 'New: From home, right next to Supermarket. Pick people, budget and dinners for a low-spike week with store estimates, then fill your Cart.',
+                de: 'Neu: Zu Hause, gleich neben Supermarkt. Personen, Budget, Abendessen wählen: eine Low-Spike-Woche mit Schätzpreis, ab in den Warenkorb.',
+                es: 'Nuevo: Desde casa, junto a Súper. Elige personas, presupuesto y cenas: una semana low-spike con precio estimado, al carrito.'
             }
         },
         {

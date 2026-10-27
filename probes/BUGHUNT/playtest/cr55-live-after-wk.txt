@@ -1,0 +1,5 @@
+openers 5
+keys 27 targets 21
+{"tag":"num","boot":{"orbit":8,"tab":"tab-home","fatal":false},"bootErr":[],"bootRej":[],"newPageErrors":[]}
+{"tag":"str","boot":{"orbit":8,"tab":"tab-home","fatal":false},"bootErr":[],"bootRej":[],"newPageErrors":[]}
+summary {"normal":0,"num":0,"str":0}

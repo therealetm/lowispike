@@ -154,8 +154,16 @@
 - Full sweep after release (bl51-live-full-i.txt, live 230840, WebKit iPhone 13): 63 openers ok (incl. the new Quick tour), 0 LEFT_APP, 0 STAYED_OPEN, 0 errors.
 - Next leads: openers that opened "nothing" on Home need their own entry path (Move player/finish, meal journal, cart, people); tutorial-demo audio after leaving; bottom Undo bars; cycle delete in a browser; VoiceOver focus loss; level-up/badge moments.
 
+## Run 55 (Tue 27 Oct 2026, 03:01 CET; live at start 20261027-020733), worktree /home/sprite/wt-bughunt-202610270202, branch bughunt-55
+- Started from HANDOFF (P-SAVE-SHAPE siblings). probe-corrupt.cjs num,str on live 020733 (cr55-live.txt): BH-053 fixed the main-save crashes (micro-book, body-trips, spirit, misty-hunt, herb-identity, index.html 9136/11349/13227 were all the main save) and Home now boots with 8 bubbles, but still 7 boot errors: index.html fasting store st() (lowi_fast_v1, ~2025, via LOWI_FAST.startOf), the Gap card st() (~5936, known()), lis-push.js days() (lowi.pushAsk) "Cannot create property ... on number 42". Opener sweep (cr55-local.txt) added LowiEveningCatchup.open: evening-catchup.js get(C.STORE, {}) returned 42 -> stt.seen threw (open and Save).
+- **BH-055 FIXED (P-SAVE-SHAPE, second class: `JSON.parse(localStorage.getItem(k)) || {}` keeps a saved number/text, the first write throws in strict code):** every such loader (43 sites in 28 files: index.html x11, fast-bubble, store-picks, home-blooms-v2, herb-quests, tutorial, tutorial-auto, tutorial-resume, cell-world, day-recap, lis-push, ranking, nutri-stats, adventure-tiers, community-chat x2, community-energy, sun-meter, misty-scale, misty-peak, body-trips x2, fast-edit, world-home x2, micro-book, gap-view, beta, gift-basket x2, tiktok-open, herb-start x2) now reads through `(o => o && typeof o === "object" ? o : {})(JSON.parse(...))` (lists and good objects kept as before; mechanical rewrite fix55/tx.py). evening-catchup.js get(k, d): an object default wins over a non-object saved value.
+  Tests tests/bh055-save-shape-siblings.test.cjs 5 (5/5 fail on old: source guard for every JSON.parse(...getItem...) || {} + vm runs of the fasting st(), Gap st(), lis-push days(), catch-up get). news-once / update-news cut anchors updated to the new mem() text (same code cut, nothing loosened). Suite 3930/3930.
+  Local after fix: probe-corrupt num+str Chromium 390: boot 0 errors, only corruption-only opener error left was the catch-up (then fixed); WebKit iPhone 13 num: boot 0 errors.
+- **LIVE 20261027-032456** (quiet, loud 20000101-000000, main e1f1a3e9, CI https://github.com/therealetm/lowispike/actions/runs/40438370500/job/121972470107). Live after: probe-corrupt num+str, openers catch-up / day recap / fast / Gap: Chromium 390 boot 0 errors + 0 opener errors; WebKit iPhone 13 same (before: 7 boot errors). Not on Emmanuel's iPhone.
+- Still unchecked (P-SAVE-SHAPE lists): `JSON.parse(...) || []` loaders followed by .push/.filter would throw on a number/text key ("not a function"); none showed in the opener sweep, so queued. Low real-world odds.
+
 ## Clean streak
-0 (runs 49-51, Mon 26 Oct 2026: BH-050 found and fixed)
+0 (run 55, Tue 27 Oct 2026: BH-055 found and fixed)
 
 ## Worlds playtest (separate task, Oct 19 2026 13:23 CEST, base 20261019-130951) - see /home/sprite/COORD-worlds-playtest.md
 - **W-001 fixed (release in progress, see COORD).** Run 5 next-run item 2 "lesson skip on language switch inside a world" is DONE by the

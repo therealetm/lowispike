@@ -1,0 +1,24 @@
+openers 110
+{"tag":"normal","name":"LowiPeople.open","threw":"openProfile@http://127.0.0.1:42741/:9704:143\n@\nevaluate@\n@","err":[],"rej":[]}
+{"tag":"normal","name":"LowiDex.showProduct","threw":"","err":[],"rej":["opener rejected: reveal@http://127.0.0.1:42741/:15918:17\n@http://127.0.0.1:42741/:15852:68"]}
+{"tag":"normal","name":"LowiN1.show","threw":"show@http://127.0.0.1:42741/:21044:264\n@\nevaluate@\n@","err":[],"rej":[]}
+{"tag":"normal","name":"LowiDiscovery.openProduct","threw":"identity@http://127.0.0.1:42741/discovery-core.js:13:41\nrecord@http://127.0.0.1:42741/discovery.js:44:58\nopenProduct@http://127.0.0.1:42741/discovery.js:72:46\n@\nevaluate@\n@","err":[],"rej":[]}
+{"tag":"normal","name":"LowiNavMoves.open","threw":"open@http://127.0.0.1:42741/nav-moves.js:129:30\n@\nevaluate@\n@","err":[],"rej":[]}
+{"tag":"normal","name":"LowiNavMoves.show","threw":"layer@http://127.0.0.1:42741/nav-moves.js:74:39\nshow@http://127.0.0.1:42741/nav-moves.js:103:24\n@\nevaluate@\n@","err":[],"rej":[]}
+keys 34 targets 29
+{"tag":"num","boot":{"orbit":8,"tab":"tab-home","fatal":false},"bootErr":[],"bootRej":[],"newPageErrors":[]}
+{"tag":"num","name":"LowiPeople.open","threw":"openProfile@http://127.0.0.1:42741/:9704:143\n@\nevaluate@\n@","err":[],"rej":[]}
+{"tag":"num","name":"LowiDex.showProduct","threw":"","err":[],"rej":["opener rejected: reveal@http://127.0.0.1:42741/:15918:17\n@http://127.0.0.1:42741/:15852:68"]}
+{"tag":"num","name":"LowiN1.show","threw":"show@http://127.0.0.1:42741/:21044:264\n@\nevaluate@\n@","err":[],"rej":[]}
+{"tag":"num","name":"LowiDiscovery.openProduct","threw":"identity@http://127.0.0.1:42741/discovery-core.js:13:41\nrecord@http://127.0.0.1:42741/discovery.js:44:58\nopenProduct@http://127.0.0.1:42741/discovery.js:72:46\n@\nevaluate@\n@","err":[],"rej":[]}
+{"tag":"num","name":"LowiNavMoves.open","threw":"open@http://127.0.0.1:42741/nav-moves.js:129:30\n@\nevaluate@\n@","err":[],"rej":[]}
+{"tag":"num","name":"LowiNavMoves.show","threw":"layer@http://127.0.0.1:42741/nav-moves.js:74:39\nshow@http://127.0.0.1:42741/nav-moves.js:103:24\n@\nevaluate@\n@","err":[],"rej":[]}
+{"tag":"num","name":"LowiBodyStats.open","threw":"EVAL Error: page.evaluate: Target page, context or browser has been closed","err":[],"rej":[]}
+{"tag":"num","name":"LowiWeightJourneyCore.show","threw":"EVAL Error: page.evaluate: Target page, context or browser has been closed","err":[],"rej":[]}
+{"tag":"num","name":"LowiWeightJourney.open","threw":"EVAL Error: page.evaluate: Target page, context or browser has been closed","err":[],"rej":[]}
+{"tag":"num","name":"LowiNutriStats.open","threw":"EVAL Error: page.evaluate: Target page, context or browser has been closed","err":[],"rej":[]}
+{"tag":"num","name":"LowiCookTabs.openView","threw":"EVAL Error: page.evaluate: Target page, context or browser has been closed","err":[],"rej":[]}
+page.evaluate: Target page, context or browser has been closed
+    at /home/sprite/BUGHUNT/playtest/probe-corrupt.cjs:46:13 {
+  log: []
+}

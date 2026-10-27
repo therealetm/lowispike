@@ -1,0 +1,75 @@
+/* you-stats.css: Oct 27. "You & <companion>" on top of the stats sheet, the row in her hold card, and "Your day so far" on the
+   saved-meal screen. Same deep-blue glass as nutri-stats.css; calm, no flashing. */
+.ys, .ys-hub, .ys-after { --ys-rim: rgba(160, 220, 255, .28); --ys-tile: rgba(0, 18, 46, .42); --ys-you: #6fe3ff; --ys-comp: #b9a4ff; --ys-hit: #7dffb0; --ys-dim: rgba(214, 232, 255, .72);
+  font-family: var(--lg-font, -apple-system, system-ui, sans-serif); color: #eef7ff; }
+.ys { display: grid; gap: 12px; margin: 0 0 14px; }
+.ys-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ys-tile { display: grid; justify-items: center; gap: 8px; padding: 12px 8px 12px; border-radius: 20px; background: var(--ys-tile); border: 1px solid var(--ys-rim); min-width: 0; text-align: center; }
+.ys-tag { font-size: 13px; font-weight: 700; letter-spacing: .02em; color: var(--ys-dim); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ys-ring { --p: 0; --c: var(--ys-you); position: relative; display: grid; place-items: center; width: 108px; height: 108px; border-radius: 50%;
+  background: conic-gradient(var(--c) calc(var(--p) * 360deg), rgba(255, 255, 255, .1) 0); }
+.ys-ring.comp { --c: var(--ys-comp); }
+.ys-ring.over { --c: #ffd36b; }
+.ys-ring-in { display: grid; place-items: center; align-content: center; width: 88px; height: 88px; border-radius: 50%; background: rgba(6, 22, 58, .92); padding: 4px; box-sizing: border-box; }
+.ys-ring-in b { font-size: 21px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; color: #fff; }
+.ys-ring-in small { font-size: 11.5px; line-height: 1.2; color: var(--ys-dim); }
+.ys-mini { font-size: 13px; color: #d6eaff; font-variant-numeric: tabular-nums; max-width: 100%; overflow-wrap: anywhere; }
+.ys-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.ys-t { display: grid; gap: 2px; padding: 9px 4px; border-radius: 14px; text-align: center; background: var(--ys-tile); border: 1px solid rgba(160, 220, 255, .16); min-width: 0; }
+.ys-t b { font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; color: #fff; }
+.ys-t span { font-size: 11.5px; line-height: 1.2; color: var(--ys-dim); overflow-wrap: anywhere; hyphens: auto; }
+.ys-t.done b { color: var(--ys-hit); }
+.ys-sub { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--ys-dim); }
+.ys-h { margin: 6px 2px 0; font-size: 15px; font-weight: 700; color: #fff; }
+.ys-link { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ys-link li { position: relative; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 12px 14px; border-radius: 16px; background: var(--ys-tile); border: 1px solid rgba(160, 220, 255, .16); overflow: hidden; }
+.ys-li-i { font-size: 20px; text-align: center; }
+.ys-li-t { display: grid; gap: 1px; min-width: 0; }
+.ys-li-t b { font-size: 14.5px; color: #fff; }
+.ys-li-t small { font-size: 12.5px; color: var(--ys-dim); overflow-wrap: anywhere; }
+.ys-li-v { display: grid; justify-items: end; }
+.ys-li-v em { font-style: normal; font-size: 16px; font-weight: 800; color: var(--ys-comp); font-variant-numeric: tabular-nums; }
+.ys-link li.full .ys-li-v em { color: var(--ys-hit); }
+.ys-li-v small { font-size: 11px; color: var(--ys-dim); }
+.ys-li-bar { position: absolute; left: 12px; right: 12px; bottom: 6px; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .08); }
+.ys-li-bar i { display: block; height: 100%; border-radius: 3px; background: var(--ys-comp); }
+.ys-link li.full .ys-li-bar i { background: var(--ys-hit); }
+
+/* the row in the companion's hold card */
+.ys-hub { appearance: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) 16px; align-items: center; gap: 8px; width: 100%; min-height: 60px; margin: 8px 0 0; padding: 10px 14px;
+  border-radius: 18px; border: 1px solid var(--wh-glass-rim, rgba(160, 220, 255, .35)); background: var(--wh-glass-wide, rgba(28, 74, 150, .34)); box-shadow: var(--wh-glass-sh, none);
+  color: #fff; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+.ys-hub:active { transform: scale(.98); }
+.ys-hub:focus-visible { outline: 2px solid #8fd8ff; outline-offset: 2px; }
+.ys-hub-s { display: grid; min-width: 0; }
+.ys-hub-s small { font-size: 11.5px; color: var(--ys-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ys-hub-s b { font-size: 15.5px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ys-hub-s i { font-style: normal; font-size: 11.5px; color: var(--ys-dim); }
+.ys-hub-s:last-of-type b { color: var(--ys-comp); }
+.ys-hub-go { font-size: 22px; color: var(--ys-dim); text-align: right; }
+
+/* "Your day so far" on the saved-meal screen */
+.ys-after { margin: 12px 0 4px; padding: 12px 14px; border-radius: 18px; background: var(--ys-tile); border: 1px solid var(--ys-rim); }
+.ys-after h3 { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: #fff; }
+.ys-after ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ys-after li { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: baseline; }
+.ys-a-l { font-size: 13.5px; color: var(--ys-dim); }
+.ys-a-v { justify-self: end; font-size: 13.5px; color: #d6eaff; font-variant-numeric: tabular-nums; }
+.ys-a-v b { color: #fff; font-size: 15px; }
+.ys-a-v em, .ys-a-e em { font-style: normal; font-weight: 700; color: var(--ys-hit); }
+.ys-ab { grid-column: 1 / -1; position: relative; height: 6px; border-radius: 6px; background: rgba(255, 255, 255, .1); overflow: hidden; }
+.ys-ab i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 6px; }
+.ys-ab i.was { background: rgba(111, 227, 255, .45); }
+.ys-ab i.now { background: var(--ys-hit); }
+.ys-a-e { margin: 10px 0 0; font-size: 13.5px; color: #d6eaff; }
+.ys-a-e b { color: var(--ys-comp); }
+.ys-after-go { appearance: none; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-top: 8px; padding: 0 14px; border-radius: 22px;
+  border: 1px solid rgba(160, 220, 255, .35); background: rgba(255, 255, 255, .08); color: #fff; font: 600 14px/1.2 inherit; font-family: inherit; cursor: pointer; }
+.ys-after-go:focus-visible { outline: 2px solid #8fd8ff; outline-offset: 2px; }
+@media (max-width: 360px) {
+  .ys-ring { width: 96px; height: 96px; }
+  .ys-ring-in { width: 78px; height: 78px; }
+  .ys-ring-in b { font-size: 18px; }
+  .ys-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { .ys-hub:active { transform: none; } }

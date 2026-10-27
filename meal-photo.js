@@ -13,7 +13,7 @@
     else root.LowiMealSnap = api;
 })(typeof window !== 'undefined' ? window : globalThis, function (root) {
     'use strict';
-    const DAY_MAX = 3, KEYS = ['kcal', 'protein', 'carbs', 'sugar', 'fiber', 'fat'];
+    const DAY_MAX = 10, KEYS = ['kcal', 'protein', 'carbs', 'sugar', 'fiber', 'fat'];
     const CAP = { kcal: 6000, protein: 400, carbs: 800, sugar: 600, fiber: 200, fat: 500 };
     const STR = {
         en: {
@@ -150,8 +150,13 @@
         try { root.localStorage.setItem(QK, JSON.stringify({ day: dayKey(), left: Math.max(0, Math.round(left)), limit: limit || DAY_MAX })); } catch (e) {}
         try { root.dispatchEvent && root.CustomEvent && root.dispatchEvent(new CustomEvent('lowi:photo-left', { detail: { left, limit: limit || DAY_MAX } })); } catch (e) {}
     }
-    function left() { try { const o = JSON.parse(root.localStorage.getItem(QK) || 'null'); if (o && o.day === dayKey()) return { left: o.left, limit: o.limit || DAY_MAX }; } catch (e) {} return null; }
+    // Oct 27: 10 a day now. A count saved today under the old limit of 3 is stale (it would block the 4th photo on this
+    // phone before the server is even asked), so it is ignored until the server answers with the new limit.
+    function left() { try { const o = JSON.parse(root.localStorage.getItem(QK) || 'null'); if (o && o.day === dayKey() && (o.limit || DAY_MAX) >= DAY_MAX) return { left: o.left, limit: o.limit || DAY_MAX }; } catch (e) {} return null; }
     const one = (k, l, n) => (n === 1 && (STR[l || lang()] || {})[k + '1']) ? k + '1' : k; /* Spanish: 'Te queda 1', not 'Te quedan 1' */
+    // Oct 27 (Emmanuel: show remaining quietly, only when it matters): the count only shows once 3 or fewer are left.
+    const SOON = 3;
+    function leftSoon(l) { const q = left(); return q && q.left <= SOON ? leftText(l) : ''; }
     function leftText(l) { const q = left(); return q ? (q.left > 0 ? t(one('left', l, q.left), l, { n: q.left, max: q.limit }) : t('none', l)) : ''; }
 
     /* ---------- mealtime reminders (off until turned on) ---------- */
@@ -220,7 +225,7 @@
         if (!box || !root.document) return;
         const l = lang(), s = getRem();
         const wrap = document.createElement('div'); wrap.className = 'ms-extra'; wrap.setAttribute('data-noi18n', '');
-        const lt = leftText(l);
+        const lt = leftSoon(l);
         wrap.innerHTML = (lt ? '<p class="ms-left">' + esc(lt) + '</p>' : '') +
             /* Oct 22: no pre-log share box any more; "Share to Community" comes after Log as meal (meal-journal.js), opt-in every time */
             (s.on ? '' : '<label class="ms-opt"><input type="checkbox" data-ms="offer"><span><b>' + esc(t('remT', l)) + '</b><small>' + esc(t('remS', l, { times: timesText(s, l) })) + '</small></span></label>');
@@ -257,6 +262,6 @@
         document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(tick, 4000); });
     }
 
-    return { DAY_MAX, KEYS, strings: STR, t, bloodSugar, meal, clean, cardHTML, remember, recall, hash, setLeft, left, leftText, nudgeText,
+    return { DAY_MAX, KEYS, strings: STR, t, bloodSugar, meal, clean, cardHTML, remember, recall, hash, setLeft, left, leftText, leftSoon, SOON, nudgeText,
         getRem, setRem, due, rowHTML, snapExtras, share, tick, dayKey, _reads: reads };
 });

@@ -419,6 +419,32 @@
         return Object.assign({ name: p.name, count: n, portion, grams: Math.round(amount), src: 'known' }, scaled(p.per, amount / 100));
     }
 
+    // Oct 27 (Emmanuel's screenshot: "about 4 pieces" in the German photo result): a portion the photo AI wrote in English is
+    // shown in the sheet's language. Word by word from a small table; numbers and units stay; with any unknown word it stays whole.
+    const PORTION_W = {
+        de: { about: 'etwa', approx: 'etwa', 'approx.': 'etwa', around: 'etwa', roughly: 'etwa', piece: 'Stück', pieces: 'Stück', pcs: 'Stk.', pc: 'Stk.',
+            handful: 'Handvoll', handfuls: 'Handvoll', bowl: 'Schüssel', bowls: 'Schüsseln', slice: 'Scheibe', slices: 'Scheiben', cup: 'Tasse', cups: 'Tassen',
+            plate: 'Teller', plates: 'Teller', glass: 'Glas', glasses: 'Gläser', serving: 'Portion', servings: 'Portionen', portion: 'Portion', portions: 'Portionen',
+            tablespoon: 'EL', tablespoons: 'EL', tbsp: 'EL', teaspoon: 'TL', teaspoons: 'TL', tsp: 'TL', can: 'Dose', cans: 'Dosen', bar: 'Riegel', bars: 'Riegel',
+            small: 'klein', medium: 'mittel', large: 'groß', half: 'halb', a: 'ein', an: 'ein', one: 'ein', two: 'zwei', three: 'drei', and: 'und', of: '', whole: 'ganz',
+            bottle: 'Flasche', bottles: 'Flaschen', mug: 'Becher', scoop: 'Kugel', scoops: 'Kugeln', wrap: 'Wrap', wraps: 'Wraps', egg: 'Ei', eggs: 'Eier' },
+        es: { about: 'unos', approx: 'aprox.', 'approx.': 'aprox.', around: 'unos', roughly: 'unos', piece: 'pieza', pieces: 'piezas', pcs: 'uds.', pc: 'ud.',
+            handful: 'puñado', handfuls: 'puñados', bowl: 'cuenco', bowls: 'cuencos', slice: 'rebanada', slices: 'rebanadas', cup: 'taza', cups: 'tazas',
+            plate: 'plato', plates: 'platos', glass: 'vaso', glasses: 'vasos', serving: 'ración', servings: 'raciones', portion: 'ración', portions: 'raciones',
+            tablespoon: 'cda.', tablespoons: 'cdas.', tbsp: 'cda.', teaspoon: 'cdta.', teaspoons: 'cdtas.', tsp: 'cdta.', can: 'lata', cans: 'latas', bar: 'barrita', bars: 'barritas',
+            small: 'pequeño', medium: 'mediano', large: 'grande', half: 'medio', a: 'un', an: 'un', one: 'un', two: 'dos', three: 'tres', and: 'y', of: 'de', whole: 'entero',
+            bottle: 'botella', bottles: 'botellas', mug: 'taza', scoop: 'bola', scoops: 'bolas', wrap: 'wrap', wraps: 'wraps', egg: 'huevo', eggs: 'huevos' }
+    };
+    function portionL(p, l) {
+        const s = String(p || ''), W = PORTION_W[l];
+        if (!W || !/[a-z]/i.test(s) || !/\b(about|approx|around|roughly|pieces?|pcs|handfuls?|bowls?|slices?|cups?|plates?|glass(es)?|servings?|portions?|tablespoons?|tbsp|teaspoons?|tsp|cans?|bars?|small|medium|large|half|bottles?|scoops?|eggs?)\b/i.test(s)) return s;
+        let miss = false;
+        let out = s.replace(/[A-Za-z.]+/g, w => { const k = w.toLowerCase(), v = W[k] != null ? W[k] : W[k.replace(/\.$/, '')]; if (v == null && !/^(g|kg|ml|l|cl|oz|kcal|\.)$/.test(k)) miss = true; return v != null ? v : w; });
+        if (miss) return s; /* half-translated reads worse than English: keep it whole */
+        if (l === 'de') out = out.replace(/\bein Handvoll\b/, 'eine Handvoll').replace(/\bein (Schüssel|Scheibe|Tasse|Portion|Dose|Flasche|Kugel)\b/, 'eine $1');
+        if (l === 'es') out = out.replace(/\bun (pieza|rebanada|taza|ración|lata|barrita|botella|bola)\b/, 'una $1').replace(/\bunos 1\b/, 'aprox. 1');
+        return out.replace(/(\d)\.(\d)/g, '$1,$2').replace(/\s{2,}/g, ' ').trim();
+    }
     function clean(d) {
         const o = { name: cap1(d && d.name), portion: String((d && d.portion) || '').slice(0, 40), grams: num(d && d.grams, CAP.grams) };
         for (const k of KEYS) o[k] = num(d && d[k], CAP[k]);
@@ -534,12 +560,12 @@
                 (f ? ' role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="mr-sug-' + id + '"' : '') + '></label>' +
                 (f ? '<div class="mr-sug" id="mr-sug-' + id + '" role="listbox" aria-label="' + esc(t('sugL', l)) + '" hidden></div>' : '') +
                 '<label><span data-mr-many>' + esc(f ? manyLabel(pick, l) : t('manyD', l)) + '</span><input data-mr-count type="number" inputmode="decimal" min="0" max="' + MAX_COUNT + '" step="any" placeholder="' + esc(t('manyPh', l)) + '" value="' + (d.count ? esc(d.count) : '') + '"></label>' +
-                (f ? '<p class="mr-live" data-mr-live aria-live="polite"' + (pick ? '' : ' hidden') + '>' + (pick ? esc(d.portion + ' · ' + Math.round(d.kcal) + ' ' + t('kcal', l)) : '') + '</p>' : '') +
+                (f ? '<p class="mr-live" data-mr-live aria-live="polite"' + (pick ? '' : ' hidden') + '>' + (pick ? esc(portionL(d.portion, l) + ' · ' + Math.round(d.kcal) + ' ' + t('kcal', l)) : '') + '</p>' : '') +
                 '<div class="mr-ed-acts"><button type="button" class="mr-save" data-mr-save="' + id + '">' + esc(t('save', l)) + '</button><button type="button" class="mr-cancel" data-mr-cancel="' + id + '">' + esc(t('cancel', l)) + '</button></div></div></li>';
         }
         return '<li class="mr-item' + (d.src === 'kept' || d.src === 'unknown' || d.src === 'new0' ? ' mr-kept' : '') + '" data-mr="' + id + '">' +
             '<button type="button" class="mr-tap" data-mr-edit="' + id + '" aria-label="' + esc(t('edit', l) + ': ' + d.name) + '">' +
-            '<span class="mr-nm"><b>' + esc(d.name) + '</b>' + (d.portion ? '<small>' + esc(d.portion) + '</small>' : '') + '</span>' +
+            '<span class="mr-nm"><b>' + esc(d.name) + '</b>' + (d.portion ? '<small>' + esc(portionL(d.portion, l)) + '</small>' : '') + '</span>' +
             '<span class="mr-kc"><b>' + Math.round(d.kcal) + '</b><small>' + esc(t('kcal', l)) + '</small></span>' +
             '<span class="mr-pen" aria-hidden="true">' + esc(t('edit', l)) + '</span></button>' +
             '<button type="button" class="mr-x" data-mr-rm="' + id + '" aria-label="' + esc(t('remove', l) + ' ' + d.name) + '">×</button>' +
@@ -642,7 +668,7 @@
             const id = li.dataset.mr, d = st.items[indexOf(id)];
             const on = !!(st.pick && st.pick.id === id && d);
             el.hidden = !on;
-            el.textContent = on ? d.portion + ' · ' + Math.round(d.kcal) + ' ' + t('kcal', l) : '';
+            el.textContent = on ? portionL(d.portion, l) + ' · ' + Math.round(d.kcal) + ' ' + t('kcal', l) : '';
         };
         const keepOf = (id) => '[data-mr="' + id + '"]';
 
@@ -906,5 +932,5 @@
         };
     }
 
-    return { KEYS, STR, TABLE, lookup, parseAmount, estimateItem, estimateDrink, matchScore, pieceOf, fromProduct, fromLog, fromKitchen, kitchenHit, estFor, knownList, suggest, itemFrom, perText, manyLabel, clean, totals, title, verdict, xpFor, xpText, formValues, headline, mount };
+    return { KEYS, STR, TABLE, lookup, parseAmount, estimateItem, estimateDrink, matchScore, pieceOf, fromProduct, fromLog, fromKitchen, kitchenHit, estFor, knownList, suggest, itemFrom, perText, manyLabel, clean, totals, title, verdict, xpFor, xpText, formValues, headline, mount, portionL };
 });

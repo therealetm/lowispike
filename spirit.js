@@ -192,6 +192,10 @@
         lmIdea: ['Idea from Misty', 'Idee von Misty', 'Idea de Misty'],
         lmOwn: ['Own values', 'Eigene Werte', 'Tus valores'],
         lmPhoto: ['Photo', 'Foto', 'Foto'],
+        lmSnapT: ['Take a photo of your food', 'Foto von deinem Essen', 'Haz una foto de tu comida'],
+        lmSnapS: ['Misty fills in the rest', 'Misty füllt den Rest aus', 'Misty completa el resto'],
+        lmSnapNone: ['No photos left today. Just type it below.', 'Heute keine Fotos mehr. Schreib es einfach unten.', 'Hoy no quedan fotos. Escríbelo abajo.'],
+        lmOrType: ['Or type what you ate', 'Oder schreib, was du isst', 'O escribe lo que comes'],
         lmCode: ['Barcode', 'Barcode', 'Código'],
         lmAt: ['at {t}', 'um {t}', 'a las {t}'],
         lmTimeA: ['When did you eat? {t}. Tap to change', 'Wann hast du gegessen? {t}. Tippen zum Ändern', '¿Cuándo comiste? {t}. Toca para cambiar'],
@@ -987,7 +991,64 @@
         mealForm(null, null, pendingSlot() || (K.slotFor ? K.slotFor() : 'meal'));
     }
     const lmHm = t => { const d = new Date(+t || Date.now()); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
-    const lmShow = n => { try { return K.mealName ? K.mealName(n, lang()) : n; } catch (e) { return n; } };
+    /* Oct 27 (Emmanuel's screenshot: "Scrambled eggs with minced meat an..." still English in the German sheet): the local food
+       words translate most names (K.mealName); a name they can't fully translate is asked once of the food-photo function's
+       translate mode (no photo check used), and the answer is kept on the phone in LM_TR so it is never asked again. */
+    const LM_TR = 'lowi.mealname.tr.v1';
+    const lmTrAll = () => { try { const o = JSON.parse(localStorage.getItem(LM_TR) || '{}'); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } };
+    const lmTrKey = n => String(n || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const lmShow = n => {
+        const L = lang();
+        let out = n;
+        try { out = K.mealName ? K.mealName(n, L) : n; } catch (e) { out = n; }
+        if (L !== 'en' && out === n) { const c = lmTrAll()[lmTrKey(n)]; if (c && c[L]) return c[L]; }
+        return out;
+    };
+    /* plain English words a name is likely English by (so German or Spanish names are never sent off to be translated) */
+    const LM_EN = /\b(with|and|eggs?|scrambled|minced|meat|beef|chicken|salad|wraps?|nuts?|almonds?|bread|toast|cheese|rice|soup|fried|grilled|roasted|baked|potato(es)?|onions?|beans|yogurt|yoghurt|apple|banana|berries|oats?|porridge|milk|coffee|tea|fish|salmon|tuna|pork|turkey|vegetables?|veggies|sauce|bowl|sandwich|steak|strips?|breakfast|lunch|dinner|snack|spring|sweet|sour|mushrooms?|spinach|avocado|tomato(es)?|pepper(s)?|garlic|ham|bacon|sausages?|pasta|noodles|pancakes?)\b/i;
+    function lmTrLater(sh, recent) {
+        const L = lang(), FA = window.LowiFoodAI;
+        if (L === 'en' || !sh || !FA || !FA.translateNames) return;
+        const have = lmTrAll(), names = [];
+        for (const r of recent || []) { const n = String(r.t || r.n || ''); if (n && lmShow(n) === n && !have[lmTrKey(n)] && LM_EN.test(n) && names.indexOf(n) < 0) names.push(n); }
+        if (!names.length) return;
+        FA.translateNames(names).then(items => {
+            if (!items || items.length !== names.length) return;
+            const all = lmTrAll();
+            names.forEach((n, i) => { const it = items[i] || {}; if (it.de || it.es) all[lmTrKey(n)] = { de: it.de || '', es: it.es || '' }; });
+            try { localStorage.setItem(LM_TR, JSON.stringify(all)); } catch (e) {}
+            if (!sh.isConnected) return;
+            sh.querySelectorAll('.lm-u[data-q]').forEach(b => {
+                const r = (recent || [])[+b.dataset.q]; if (!r) return;
+                const n = String(r.t || r.n || ''), show = lmShow(n), sp = b.querySelector('.lm-u-t');
+                if (sp && show !== n) { sp.textContent = show; sp.setAttribute('lang', L); b.setAttribute('aria-label', b.classList.contains('done') ? show + ' \u2713 ' + tr('doneToday') : tr('lmAgain').replace('{t}', show)); }
+            });
+        }).catch(() => {});
+    }
+    /* Oct 27 (Emmanuel: "They take a picture of their food. The AI can analyze what they ate ... Make the picture one very clear,
+       and very easy to open and to access. Don't make it confusing."): the photo is the first, big way to log; typing is under it.
+       Photo checks left only show when 3 or fewer are left (LowiMealSnap.leftSoon); with none left it says so calmly and points
+       to typing, which always works. */
+    function lmSnapState() { const MS = window.LowiMealSnap, q = MS && MS.left ? MS.left() : null; return { none: !!(q && q.left === 0), soon: q && q.left > 0 && MS.leftSoon ? MS.leftSoon(lang()) : '' }; }
+    function lmSnapHTML() {
+        const st = lmSnapState();
+        return '<button type="button" class="lm-snap' + (st.none ? ' none' : '') + '" data-sp="' + (st.none ? 'snapNone' : 'photo') + '">' +
+            '<span class="lm-snap-i" aria-hidden="true">' + icon('camera') + '</span>' +
+            '<span class="lm-snap-t"><b>' + esc(tr('lmSnapT')) + '</b><i>' + esc(st.none ? tr('lmSnapNone') : wnm(tr('lmSnapS'))) + '</i>' +
+            '<small class="lm-snap-left"' + (st.soon ? '' : ' hidden') + '>' + esc(st.soon) + '</small></span></button>';
+    }
+    function lmSnapRefresh(sh) {
+        const FA = window.LowiFoodAI;
+        if (!sh || !FA || !FA.allowance) return;
+        FA.allowance().then(() => {
+            const b = sh.isConnected && sh.querySelector('.lm-snap');
+            if (!b) return;
+            const st = lmSnapState(), i = b.querySelector('.lm-snap-t i'), sm = b.querySelector('.lm-snap-left');
+            b.classList.toggle('none', st.none); b.dataset.sp = st.none ? 'snapNone' : 'photo';
+            if (i) i.textContent = st.none ? tr('lmSnapNone') : wnm(tr('lmSnapS'));
+            if (sm) { sm.textContent = st.soon; sm.hidden = !st.soon; }
+        }).catch(() => {});
+    }
     function lmTimeLabel(at) { return at ? tr('lmAt').replace('{t}', lmHm(at)) : tr('whenNow'); }
     /* the time a meal is logged at: a time picked here (LowiMealCtx 'when'), else the Gap's saved time, else now */
     function lmAt() { const w = whenAt(); if (w) return w; const c = window.LowiMealCtx; return c && c.from === 'gap' && Date.now() - c.at < 20 * 60000 ? +c.ateAt || 0 : 0; }
@@ -1121,7 +1182,7 @@
             feedback('curious', result.reason, 0);
             return;
         }
-        feedback('eat', tr('saved') + ' · ' + seed.t + whyNote(result), result.xp);
+        feedback('eat', tr('saved') + ' · ' + seed.t + whyNote(result) + (window.LowiYouStats && window.LowiYouStats.shortLine ? window.LowiYouStats.shortLine() : ''), result.xp);
         mealNotice(result.log || seed, result.xp);
         checkBonuses(false);
         refresh();
@@ -1147,10 +1208,8 @@
             const kind = (K.SLOTS || ['meal', 'snack']).map(k => '<button type="button" data-sp="lmKind" data-slot="' + k + '" aria-pressed="' + (k === mealSlot) + '">' + esc(slotName(k)) + '</button>').join('');
             const own = '<div class="lm-own" id="lmOwn" hidden><small>' + esc(tr('portion')) + '</small><div class="sp-form-macros">' + Object.keys(values).map(k => '<label>' + esc(tr(k)) + '<input name="' + k + '" inputmode="decimal" type="number" min="0" max="10000" step="0.1" placeholder="\u2248"></label>').join('') + '</div><p class="sp-note">' + esc(tr('macroOptional')) + '</p></div>';
             const form = '<form id="spMeal" class="lm-form" data-id="' + esc(lastMealId) + '">' +
-                '<label class="lm-ask" for="lmTitle">' + esc(tr('mealAsk')) + '</label>' +
+                '<label class="lm-ask lm-ask-or" for="lmTitle">' + esc(tr('lmOrType')) + '</label>' +
                 '<input id="lmTitle" class="lm-in" name="title" required maxlength="100" autocomplete="off" enterkeyhint="done" data-mic="1" placeholder="' + esc(tr('mealPh')) + '">' +
-                '<div class="lm-alt"><button type="button" class="lm-chip" data-sp="photo">' + icon('camera') + '<span>' + esc(tr('lmPhoto')) + '</span></button>' +
-                '<button type="button" class="lm-chip" data-sp="scan">' + icon('scan') + '<span>' + esc(tr('lmCode')) + '</span></button></div>' +
                 '<p class="sp-meal-guess" aria-live="polite"></p>' +
                 '<div class="lm-row"><label class="lm-time' + (at ? ' set' : '') + '">' + icon('clock') + '<span class="lm-time-l">' + esc(lmTimeLabel(at)) + '</span>' +
                 '<input type="time" class="lm-time-in" data-sp-time value="' + lmHm(at || Date.now()) + '" aria-label="' + esc(tr('lmTimeA').replace('{t}', lmTimeLabel(at))) + '"></label>' +
@@ -1166,9 +1225,11 @@
             const html = '<div class="lm" data-lm>' + '<h2 class="lm-sr">' + esc(tr('meal')) + '</h2>' +
                 '<div class="lm-kind" role="group" aria-label="' + esc(tr('slotQ')) + '" data-on="' + esc(mealSlot) + '">' + kind + '</div>' +
                 (gc ? '<p class="lm-gap">' + esc(tr('lmGap')) + ' <button type="button" class="lm-gap-skip" data-sp="gapskip">' + esc(tr('gapSkip')) + '</button></p>' : '') +
-                form + usual + idea + today + '<div class="lm-foot"></div></div>';
+                lmSnapHTML() + form + usual + idea + today + '<div class="lm-foot"></div></div>';
             showSheet(html);
             const sh = ownedSheet, ti = sh && sh.querySelector('.lm-time-in');
+            lmSnapRefresh(sh);
+            lmTrLater(sh, recent);
             if (ti) {
                 ti.addEventListener('change', () => lmTimeChange(ti));
                 ti.addEventListener('blur', () => lmTimeChange(ti));
@@ -1213,6 +1274,8 @@
             pic = await Promise.race([J.prepare(photoFile || photoURL), new Promise(r => setTimeout(() => r(null), 4000))]);
             if (pic && pic.thumb) seed.photo = pic.thumb;
         }
+        /* Oct 27: today's numbers just before this meal, so the saved screen can show what it moved (you-stats.js) */
+        const ysBefore = !form.dataset.edit && window.LowiYouStats ? window.LowiYouStats.snap() : null;
         const result = form.dataset.edit ? V.editMeal(seed) : V.logMeal(seed);
         if (!result) {
             R.toast(tr('storage'));
@@ -1237,7 +1300,7 @@
         await flight(flyURL || seed.photo);
         feedback('eat', tr('saved') + whyNote(result), result.xp);
         checkBonuses(false);
-        showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + (log.slot ? '<span class="sp-slot-tag">' + esc(tr(log.slot)) + '</span> ' : '') + esc(log.t) + '</p>' + estHTML(log) + macroHTML(log) + '<p class="sp-earned">' + (result.xp ? '+' + result.xp + ' XP' : esc(result.reason || (form.dataset.edit ? '' : '0 XP'))) + '</p>' + savedPhotoHTML(log) + gptHTML());
+        showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + (log.slot ? '<span class="sp-slot-tag">' + esc(tr(log.slot)) + '</span> ' : '') + esc(log.t) + '</p>' + estHTML(log) + macroHTML(log) + '<p class="sp-earned">' + (result.xp ? '+' + result.xp + ' XP' : esc(result.reason || (form.dataset.edit ? '' : '0 XP'))) + '</p>' + (ysBefore ? window.LowiYouStats.afterHTML(ysBefore) : '') + savedPhotoHTML(log) + gptHTML());
     }
 
     /* Oct 22: under a saved photo meal, its thumbnail (opens the photo with its estimate) and a small opt-in "Share to Community" */
@@ -1297,7 +1360,7 @@
         h.setAttribute('aria-label', tr('snapTitle'));
         h.setAttribute('data-noi18n', '');
         h.innerHTML = '<video autoplay muted playsinline webkit-playsinline disablepictureinpicture></video><div class="ss-shade" aria-hidden="true"></div>' +
-            '<header class="ss-top"><button type="button" class="ss-x" data-sp="cancelCapture" aria-label="' + esc(tr('close')) + '">' + icon('close') + '</button><span class="ss-title">' + esc(tr('snapTitle')) + '</span>' + '<button type="button" class="ss-bc" data-sp="toBarcode">' + icon('scan') + '<span>' + esc(tr('barcode')) + '</span></button></header>' +
+            '<header class="ss-top"><button type="button" class="ss-x" data-sp="cancelCapture" aria-label="' + esc(tr('close')) + '">' + icon('close') + '</button><span class="ss-title">' + esc(tr('snapTitle')) + '</span>' + '<span class="ss-bc-sp" aria-hidden="true"></span></header>' + /* Oct 27: no Barcode switch here; this camera is for a plate you're about to eat (the store scanner stays on Home and in Shop) */
             '<div class="ss-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="ss-card" role="status" aria-live="polite"></div>' +
             '<div class="ss-bar"><p class="ss-hint" hidden>' + esc(tr('snapHint')) + '</p><div class="ss-row"><label class="ss-side sp-upload-label" aria-label="' + esc(tr('upload')) + '">' + icon('plus') + '<span>' + esc(tr('library')) + '</span><input type="file" accept="image/*" class="sp-file-in"></label>' +
             '<button type="button" class="ss-shutter" data-sp="shutter" aria-label="' + esc(tr('camera')) + '"><i></i></button>' +
@@ -2044,7 +2107,7 @@
             feedback('curious', result.reason, 0);
             return;
         }
-        feedback('eat', tr('saved') + ' · ' + seed.t + whyNote(result), result.xp);
+        feedback('eat', tr('saved') + ' · ' + seed.t + whyNote(result) + (window.LowiYouStats && window.LowiYouStats.shortLine ? window.LowiYouStats.shortLine() : ''), result.xp);
         mealNotice(result.log || seed, result.xp);
         checkBonuses(false);
         refresh();
@@ -2254,6 +2317,7 @@
         else if (a === 'todayEdit') editToday(b.dataset.id);
         else if (a === 'todayDel') delToday(b);
         else if (a === 'editKind') { const f = b.closest('#spEdit'); if (f) { f.dataset.kind = b.dataset.kind; f.querySelectorAll('[data-sp="editKind"]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); } }
+        else if (a === 'snapNone') { const f = D.getElementById('lmTitle'); if (f) f.focus(); }
         else if (a === 'gapskip') { window.LowiMealCtx = null; if (ownedSheet) R.close(ownedSheet); }
         else if (a === 'slotWrite') { const inp = ownedSheet && ownedSheet.querySelector('#spMeal input[name="title"]'); if (inp) { inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); inp.focus(); } }
         else if (a === 'quickMeal') quickMeal(b.dataset.q);

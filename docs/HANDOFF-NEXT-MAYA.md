@@ -10,14 +10,20 @@ Emmanuel said in the call: "I liked the video, the last one." This refers to the
 
 The recoverable project is on [agent-harness, promo/2d-test](https://github.com/therealetm/lowispike/tree/agent-harness/promo/2d-test). Read its README for rendering, assembly, voices, real companion captures and app recordings. Its older statement that the test is awaiting Emmanuel's yes is superseded by this dated call update. The test was checked by measurement, not watched through by eye; do not describe it as visually verified.
 
+## Standing rule: every update is silent, 27 October 2026
+
+Emmanuel, Tuesday 27 October 2026 about 9:45 AM Berlin: "keep in mind all updates are silent. No more notifications for anyone." Every release from now on goes out with `scripts/release.sh "..." --quiet`: no What's New line, no update banner, no push, no notification of any kind, for anyone.
+
+He also said: "Don't tell me what you haven't been able to do." When something is live, report to him only what was done: no list of what failed or was not done. Keep those open items here in this file for the next Maya instead.
+
 ## Studio opened for everyone, 27 October 2026
 
 Emmanuel, Tuesday 27 October 2026 about 9:25 AM Berlin, with a screenshot of the locked Community > Studio tab (pill "Gesperrt", "Im Aufbau", "Studio wird gerade gebaut. Es öffnet sich hier, sobald es fertig ist.", a small lock button): "Also, um remove this we can open it up now. Delete the password or whatever."
 
-Done on branch studio-open-20261027 and released with a short What's New line (EN/DE/ES, no push); the build is the one release.sh stamped on the commit that carries this section. What changed:
+Done on branch studio-open-20261027 and released as 20261027-094223 with a short What's New line (asked for before the silent rule above). Under the silent rule that line was taken out again in the next quiet release (version.json news restored to the day-recap entry it had before, and the Studio news voice clips removed), so nothing announces Studio. What changed:
 
 - The 25 October lock is gone from the app: studio-lock.js, studio-lock-core.js, studio-lock.css and studio-gate.js are deleted, with their tags in index.html and sw.js, the hidden-until-unlocked start of affiliates/index.html and create/index.html, the lock checks in community-rooms-ui.js (frame, Affiliates/Creation switch, menu's Studio page link) and tools/studio-lock/. Their tests went with them; tests/studio-open.test.cjs checks Studio opens with no lock.
-- Server: supabase/proposals/studio_lock_retire_20261027.sql drops studio_access(), studio_unlock(), studio_forget_devices() and the tables studio_lock (the PIN hash), studio_passes and studio_pin_tries. Run only after the open build is live (an older cached app then stays locked, never opens by mistake). admin_delete_account() checks to_regclass() first, so it keeps working. See the checklist at the end of the task for whether it was applied.
+- Server: supabase/proposals/studio_lock_retire_20261027.sql drops studio_access(), studio_unlock(), studio_forget_devices() and the tables studio_lock (the PIN hash), studio_passes and studio_pin_tries. Run only after the open build is live (an older cached app then stays locked, never opens by mistake). admin_delete_account() checks to_regclass() first, so it keeps working. Applied on 27 Oct after 20261027-094223 was live: the three functions and three tables are gone (checked in information_schema).
 - Behind the lock: Affiliates is the real, working flow (script, recording, earnings). Creation is still a "Being built / Wird gebaut" page that lists what is coming, each marked Soon; nothing there was built in this task.
 - Check: tools/check-studio-open.cjs <phone|small|ipad|ipadl> [url|root] [lang] [engine] opens Studio by finger in a simulated browser and reports lock leftovers, both halves, Affiliates' Start and errors.
 

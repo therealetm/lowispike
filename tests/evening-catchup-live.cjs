@@ -5,7 +5,8 @@
       cheers; Something else takes typed words; the read-back lists the picks; one big Save logs the meals (via catchup) and the
       points really land; back (Safari's swipe) steps back inside the checklist and never leaves the app;
    C) Settings: "Catch up on today" is the first row and opens the checklist;
-   D) Reduce Motion: nothing drifts or animates; no page errors; nothing wider than the screen; targets >= 56 px, text >= 20 px.
+   D) Reduce Motion: nothing drifts or animates; no page errors; nothing wider than the screen; targets >= 44 px (iOS), text >= 15 px, nothing oversized;
+   Oct 27: no button under the companion or its words, every button on screen and tappable, bar points = total, no wrapping rows.
      node tests/evening-catchup-live.cjs [--root DIR | --url URL] [--views iphone13_webkit,ipad_portrait_webkit] [--langs en,de,es] [--reduce]
    Exit 0 = pass. */
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -25,14 +26,16 @@ function serve() {
     });
 }
 const IPAD = { viewport: { width: 820, height: 1180 }, screen: { width: 820, height: 1180 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' };
-const VIEWS = { iphone13_webkit: ['webkit', 'iPhone 13'], ipad_portrait_webkit: ['webkit', IPAD], iphone_chromium: ['chromium', { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true }] };
+const VIEWS = { iphone13_webkit: ['webkit', 'iPhone 13'], ipad_portrait_webkit: ['webkit', IPAD], iphone_chromium: ['chromium', { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true }], iphone_se_chromium: ['chromium', { viewport: { width: 375, height: 667 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true }], ipad_chromium: ['chromium', Object.assign({}, IPAD, { userAgent: undefined })] };
 const INIT = fs.readFileSync(path.join(__dirname, 'home-orbit-v2-live.cjs'), 'utf8').match(/const INIT = `([\s\S]*?)`;/)[1];
 const C = require('../evening-catchup-core.js'), SS = require('../home-settings-sleep-v2.js');
 
 /* measure what is on screen now */
 const LOOK = () => {
     const ov = document.getElementById('ecOv'), vis = e => { if (!e) return false; const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
-    const btns = ov ? [...ov.querySelectorAll('.ec-stage button')].filter(vis).map(b => { const r = b.getBoundingClientRect(), cs = getComputedStyle(b); return { ec: b.getAttribute('data-ec'), h: Math.round(r.height), w: Math.round(r.width), x: r.left, r: r.right, fs: parseFloat(cs.fontSize), t: b.textContent.trim().slice(0, 40) }; }) : [];
+    const btns = ov ? [...ov.querySelectorAll('.ec-top button, .ec-stage button, .ec-foot button')].filter(vis).map(b => { const r = b.getBoundingClientRect(), cs = getComputedStyle(b), lab = b.querySelector('.ec-opt-l, .ec-bname') || b, at = document.elementFromPoint(Math.min(innerWidth - 1, Math.max(0, r.left + r.width / 2)), Math.min(innerHeight - 1, Math.max(0, r.top + r.height / 2)));
+        const say = ov.querySelector('.ec-say'), pal = ov.querySelector('.ec-pal'), cover = [say, pal].filter(e => e && vis(e) && getComputedStyle(e).opacity !== '0').some(e => { const q = e.getBoundingClientRect(); return q.left < r.right - 1 && q.right > r.left + 1 && q.top < r.bottom - 1 && q.bottom > r.top + 1; });
+        return { ec: b.getAttribute('data-ec'), h: Math.round(r.height), w: Math.round(r.width), x: r.left, r: r.right, top: r.top, bot: r.bottom, fs: parseFloat(getComputedStyle(lab).fontSize), t: b.textContent.trim().slice(0, 40), hit: !!(at && (at === b || b.contains(at))), cover, inView: r.top >= 0 && r.bottom <= innerHeight + 1 }; }) : [];
     const anims = ov ? [...ov.querySelectorAll('*')].filter(e => { const cs = getComputedStyle(e); return cs.animationName && cs.animationName !== 'none' && parseFloat(cs.animationDuration) > 0.02 && cs.animationPlayState !== 'paused'; }).map(e => e.className.baseVal != null ? 'svg' : e.className).slice(0, 5) : [];
     return { open: !!ov && document.documentElement.classList.contains('ec-open'), step: ov ? ov.getAttribute('data-back-step') : null, btns, bubble: !!(ov && vis(ov.querySelector('.ec-bubble'))), drift: !!(ov && ov.querySelector('.ec-drift')), pts: ov ? (ov.querySelector('.ec-pts-n') || {}).textContent : '', say: ov ? (ov.querySelector('.ec-say') || {}).textContent : '', head: ov ? ((ov.querySelector('.ec-stage h2, .ec-stage .ec-q, .ec-bname') || {}).textContent || '') : '', headFs: ov && ov.querySelector('.ec-bname, .ec-q') ? parseFloat(getComputedStyle(ov.querySelector('.ec-bname, .ec-q')).fontSize) : 0, wide: document.documentElement.scrollWidth > innerWidth + 1, vw: innerWidth, anims, home: document.documentElement.classList.contains('wh-home') };
 };
@@ -74,7 +77,7 @@ const num = s => +(String(s || '').match(/\d+/) || [0])[0];
                 const g = await page.evaluate(() => { const h = document.getElementById('ecHi'); if (!h) return null; const go = h.querySelector('[data-hi="go"]'), hd = h.querySelector('h2'), r = go.getBoundingClientRect(); return { head: hd ? hd.textContent.trim() : '', headFs: hd ? parseFloat(getComputedStyle(hd).fontSize) : 0, go: go.textContent.trim(), h: r.height, x: r.left, rt: r.right, fs: parseFloat(getComputedStyle(go).fontSize), vw: innerWidth }; });
                 steps.greet = g;
                 ok(!!g && g.head === T.greet && g.go.includes(T.go), P, 'greeting text wrong ' + JSON.stringify(g));
-                ok(!!g && g.h >= 56 && g.fs >= 20 && g.headFs >= 22 && g.x >= 0 && g.rt <= g.vw + 1, P, 'greeting not big enough or off screen ' + JSON.stringify(g));
+                ok(!!g && g.h >= 44 && g.h <= 56 && g.fs >= 17 && g.headFs >= 20 && g.headFs <= 24 && g.x >= 0 && g.rt <= g.vw + 1, P, 'greeting not iOS-sized or off screen ' + JSON.stringify(g));
                 await shot('1-greet');
                 await page.tap('#ecHi [data-hi="go"]').catch(e => P.push('greet tap ' + e.message.slice(0, 80)));
                 await page.waitForSelector('#ecOv .ec-bubble', { timeout: 5000 }).catch(() => { });
@@ -85,7 +88,9 @@ const num = s => +(String(s || '').match(/\d+/) || [0])[0];
                 steps.list = await page.evaluate(() => (window.LowiEveningCatchup._state() || {}).list || []);
                 ok(L.open && L.bubble && !(await page.evaluate(() => !!document.querySelector('#ecHi.on'))), P, 'Catch up on today did not open the bubble screen ' + JSON.stringify(L));
                 ok(L.head === T.name.breakfast, P, 'first bubble is not Breakfast: ' + L.head);
-                ok(L.headFs >= 22, P, 'bubble name text too small ' + L.headFs);
+                ok(L.headFs >= 22 && L.headFs <= 30, P, 'bubble name text not iOS-sized ' + L.headFs);
+                const bub = await page.evaluate(() => { const b = document.querySelector('#ecOv .ec-bubble'); return b ? Math.round(b.getBoundingClientRect().width) : 0; });
+                ok(bub >= 100 && bub <= 160, P, 'bubble not compact: ' + bub + 'px');
                 ok(REDUCE ? (!L.drift && L.anims.length === 0) : L.drift, P, (REDUCE ? 'Reduce Motion still animates ' : 'bubble does not drift ') + JSON.stringify(L.anims));
                 await shot('2-bubble');
                 const seen = [], picks = [];
@@ -98,9 +103,10 @@ const num = s => +(String(s || '').match(/\d+/) || [0])[0];
                     L = await look();
                     const pk = L.btns.filter(b => b.ec === 'pick'), other = L.btns.find(b => b.ec === 'other'), skip = L.btns.find(b => b.ec === 'skip');
                     ok(pk.length >= 2 && !!skip && (seen.length > 4 || !!other), P, 'choices for ' + seen[seen.length - 1] + ' incomplete ' + JSON.stringify(L.btns.map(b => b.ec)));
-                    const small = L.btns.filter(b => b.h < 56 || b.fs < 20 || b.x < 0 || b.r > L.vw + 1);
-                    ok(small.length === 0, P, 'choice buttons too small or off screen on ' + seen[seen.length - 1] + ': ' + JSON.stringify(small));
-                    if (seen.length === 1) { await shot('3-choices'); const qf = await page.evaluate(() => { const q = document.querySelector('#ecOv h2.ec-q'); return q ? parseFloat(getComputedStyle(q).fontSize) : 0; }); ok(qf >= 24, P, 'question text too small ' + qf); }
+                    const small = L.btns.filter(b => b.h < 44 || b.fs < 15 || b.x < 0 || b.r > L.vw + 1 || !b.hit || b.cover || !b.inView);
+                    ok(small.length === 0, P, 'buttons too small, off screen, covered or not tappable on ' + seen[seen.length - 1] + ': ' + JSON.stringify(small));
+                    ok(L.btns.filter(b => b.ec === 'pick').every(b => b.h <= 72), P, 'choice rows bulky ' + JSON.stringify(L.btns.map(b => b.h)));
+                    if (seen.length === 1) { await shot('3-choices'); const qf = await page.evaluate(() => { const q = document.querySelector('#ecOv h2.ec-q'); return q ? parseFloat(getComputedStyle(q).fontSize) : 0; }); ok(qf >= 20 && qf <= 28, P, 'question text not iOS-sized ' + qf); }
                     if (!backChecked) {
                         backChecked = true;
                         await page.evaluate(() => history.back()); await sleep(1100);
@@ -116,7 +122,7 @@ const num = s => +(String(s || '').match(/\d+/) || [0])[0];
                         ok(!!inp, P, 'Something else has no text box');
                         if (inp) {
                             const fs1 = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('#ecOv .ec-input')).fontSize));
-                            ok(fs1 >= 20, P, 'Something else text box text too small ' + fs1);
+                            ok(fs1 >= 16, P, 'Something else text box text too small (iOS zooms under 16px) ' + fs1);
                             await inp.fill('Lentil soup'); await sleep(200);
                             await shot('4-other');
                             await tap('#ecOv [data-ec="add"]'); picks.push('Lentil soup'); otherChecked = true;
@@ -145,8 +151,21 @@ const num = s => +(String(s || '').match(/\d+/) || [0])[0];
                 /* the read-back */
                 const rv = await page.evaluate(() => { const o = document.getElementById('ecOv'); if (!o) return null; const s = o.querySelector('[data-ec="save"]'); const r = s ? s.getBoundingClientRect() : null; return { lines: [...o.querySelectorAll('.ec-stage li')].map(l => l.textContent.replace(/\s+/g, ' ').trim()), save: s ? s.textContent.trim() : '', h: r ? r.height : 0, fs: s ? parseFloat(getComputedStyle(s).fontSize) : 0 }; });
                 steps.review = rv && { n: rv.lines.length, save: rv.save };
-                ok(!!rv && rv.save.includes(T.save) && rv.h >= 56 && rv.fs >= 20, P, 'no big Save on the read-back ' + JSON.stringify(rv));
-                ok(!!rv && rv.lines.some(l => l.includes('Lentil soup')), P, 'read-back misses the typed item ' + JSON.stringify(rv && rv.lines));
+                ok(!!rv && rv.save.includes(T.save) && rv.h >= 44 && rv.h <= 56 && rv.fs >= 17, P, 'no iOS-sized Save on the read-back ' + JSON.stringify(rv));
+                /* Oct 27: every button on the read-back (Save, Start over, close) is on screen, tappable and not under the companion or its words;
+                   the points in the bar match the total; no row wraps; the first row is not cut off under the bar */
+                L = await look();
+                const badRv = L.btns.filter(b => b.h < 44 || !b.hit || b.cover || !b.inView);
+                ok(L.btns.some(b => b.ec === 'again') && badRv.length === 0, P, 'read-back button hidden, covered or untappable ' + JSON.stringify(L.btns));
+                const rv2 = await page.evaluate(() => { const o = document.getElementById('ecOv'), tot = o.querySelector('.ec-total'), top = o.querySelector('.ec-top').getBoundingClientRect(), st = o.querySelector('.ec-stage');
+                    const lis = [...o.querySelectorAll('.ec-l-w')].map(e => ({ t: e.textContent, lines: Math.round(e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight || 20)), fs: parseFloat(getComputedStyle(e).fontSize) }));
+                    const first = o.querySelector('.ec-list li'); return { bar: (o.querySelector('.ec-pts-n') || {}).textContent, total: tot ? tot.textContent : '', lis, firstTop: first ? first.getBoundingClientRect().top : 0, barBottom: top.bottom, scrollTop: st.scrollTop, rowFs: lis.length ? lis[0].fs : 0 }; });
+                steps.rv2 = { bar: rv2.bar, total: rv2.total };
+                ok(rv2.bar && rv2.bar === rv2.total, P, 'bar points do not match the total: ' + rv2.bar + ' vs ' + rv2.total);
+                ok(rv2.lis.every(l => l.lines <= 1), P, 'a read-back row wraps ' + JSON.stringify(rv2.lis));
+                ok(rv2.firstTop >= rv2.barBottom - 1, P, 'first row cut off under the bar ' + JSON.stringify(rv2));
+                ok(rv2.rowFs >= 15 && rv2.rowFs <= 17, P, 'row text not iOS-sized ' + rv2.rowFs);
+                ok(!!rv && rv.lines.some(l => l.includes(C.mealName('Lentil soup', lang))), P, 'read-back misses the typed item ' + JSON.stringify(rv && rv.lines));
                 await shot('6-review');
                 const before = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('lowispike.v2') || '{}'); return { xp: +s.xp || 0, logs: (s.logs || []).length }; });
                 await tap('#ecOv [data-ec="save"]'); await sleep(1500);

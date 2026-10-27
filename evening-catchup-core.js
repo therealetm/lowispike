@@ -39,7 +39,7 @@
             night: 'Good night', done: 'Done', points: '{n} points', plus: '+{n}', added: 'Added', allDone: 'Your day is all caught up.',
             nothing: 'Nothing to save yet.', again: 'Start over', spike: 'likely blood sugar spike', glasses1: '1 glass', glassesN: '{n} glasses', glasses4: '4 or more',
             step: '{i} of {n}', bubbleLabel: '{name}. Tap to choose.', progress: 'Bubble {i} of {n}', usual: 'your usual', settingsRow: 'Catch up on today',
-            bonus: 'Whole day caught up', companion: 'Your companion',
+            bonus: 'Whole day caught up', companion: 'Your companion', total: 'Total',
             name: { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snacks', water: 'Water', move: 'Movement' },
             q: { breakfast: 'What did you have for breakfast?', lunch: 'What did you have for lunch?', dinner: 'What did you have for dinner?', snack: 'Any snacks today?', water: 'How much water today?', move: 'Did you move today?' },
             band: { morning: 'Morning', noon: 'Midday', afternoon: 'Afternoon', evening: 'Evening', water: 'Water', move: 'Movement' },
@@ -53,7 +53,7 @@
             night: 'Gute Nacht', done: 'Fertig', points: '{n} Punkte', plus: '+{n}', added: 'Eingetragen', allDone: 'Dein Tag ist komplett nachgetragen.',
             nothing: 'Noch nichts zu speichern.', again: 'Neu anfangen', spike: 'wahrscheinlich Blutzuckerspitze', glasses1: '1 Glas', glassesN: '{n} Gl\u00e4ser', glasses4: '4 oder mehr',
             step: '{i} von {n}', bubbleLabel: '{name}. Tippen zum Ausw\u00e4hlen.', progress: 'Blase {i} von {n}', usual: 'wie immer', settingsRow: 'Heute nachtragen',
-            bonus: 'Ganzer Tag nachgetragen', companion: 'Dein Begleiter',
+            bonus: 'Ganzer Tag nachgetragen', companion: 'Dein Begleiter', total: 'Gesamt',
             name: { breakfast: 'Fr\u00fchst\u00fcck', lunch: 'Mittagessen', dinner: 'Abendessen', snack: 'Snacks', water: 'Wasser', move: 'Bewegung' },
             q: { breakfast: 'Was gab es zum Fr\u00fchst\u00fcck?', lunch: 'Was gab es zu Mittag?', dinner: 'Was gab es zum Abendessen?', snack: 'Heute etwas zwischendurch?', water: 'Wie viel Wasser heute?', move: 'Hast du dich heute bewegt?' },
             band: { morning: 'Morgens', noon: 'Mittags', afternoon: 'Nachmittags', evening: 'Abends', water: 'Wasser', move: 'Bewegung' },
@@ -67,7 +67,7 @@
             night: 'Buenas noches', done: 'Listo', points: '{n} puntos', plus: '+{n}', added: 'Anotado', allDone: 'Tu d\u00eda ya est\u00e1 al d\u00eda.',
             nothing: 'A\u00fan no hay nada que guardar.', again: 'Empezar de nuevo', spike: 'probable pico de az\u00facar en sangre', glasses1: '1 vaso', glassesN: '{n} vasos', glasses4: '4 o m\u00e1s',
             step: '{i} de {n}', bubbleLabel: '{name}. Toca para elegir.', progress: 'Burbuja {i} de {n}', usual: 'lo de siempre', settingsRow: 'Ponerme al d\u00eda',
-            bonus: 'D\u00eda completo anotado', companion: 'Tu compa\u00f1ero',
+            bonus: 'D\u00eda completo anotado', companion: 'Tu compa\u00f1ero', total: 'Total',
             name: { breakfast: 'Desayuno', lunch: 'Almuerzo', dinner: 'Cena', snack: 'Picoteo', water: 'Agua', move: 'Movimiento' },
             q: { breakfast: '\u00bfQu\u00e9 desayunaste?', lunch: '\u00bfQu\u00e9 almorzaste?', dinner: '\u00bfQu\u00e9 cenaste?', snack: '\u00bfAlgo para picar hoy?', water: '\u00bfCu\u00e1nta agua hoy?', move: '\u00bfTe moviste hoy?' },
             band: { morning: 'Ma\u00f1ana', noon: 'Mediod\u00eda', afternoon: 'Tarde', evening: 'Noche', water: 'Agua', move: 'Movimiento' },
@@ -144,13 +144,52 @@
         });
         return list.filter(e => !e.today).sort((a, b) => b.n - a.n || b.last - a.last).slice(0, max);
     }
+    /* Oct 27: a meal she logged in another language shows in the app's language (Emmanuel's screenshot: "Sweet potato with beef
+       stew" on the German read-back). Only when every part of the name is a dish or food this table knows, joined by with / and /
+       a comma; anything else stays exactly as she typed it (Phở, her own words). [en, de, es] */
+    const DISHES = [
+        ['beef stew', 'Rindereintopf', 'estofado de ternera'], ['chicken soup', 'Hühnersuppe', 'sopa de pollo'], ['vegetable soup', 'Gemüsesuppe', 'sopa de verduras'],
+        ['lentil soup', 'Linsensuppe', 'sopa de lentejas'], ['tomato soup', 'Tomatensuppe', 'sopa de tomate'], ['scrambled eggs', 'Rührei', 'huevos revueltos'],
+        ['fried eggs', 'Spiegeleier', 'huevos fritos'], ['boiled eggs', 'Gekochte Eier', 'huevos cocidos'], ['grilled chicken', 'Gegrilltes Hähnchen', 'pollo a la plancha'],
+        ['chicken breast', 'Hähnchenbrust', 'pechuga de pollo'], ['brown rice', 'Vollkornreis', 'arroz integral'], ['green salad', 'Grüner Salat', 'ensalada verde'],
+        ['mixed salad', 'Gemischter Salat', 'ensalada mixta'], ['greek yogurt', 'Griechischer Joghurt', 'yogur griego'], ['sweet potato', 'Süßkartoffel', 'boniato'],
+        ['sweet potatoes', 'Süßkartoffeln', 'boniatos'], ['mashed potatoes', 'Kartoffelpüree', 'puré de patatas'], ['whole grain bread', 'Vollkornbrot', 'pan integral'],
+        ['stew', 'Eintopf', 'estofado'], ['soup', 'Suppe', 'sopa'], ['salad', 'Salat', 'ensalada'], ['rice', 'Reis', 'arroz'], ['chicken', 'Hähnchen', 'pollo'],
+        ['beef', 'Rindfleisch', 'ternera'], ['fish', 'Fisch', 'pescado'], ['salmon', 'Lachs', 'salmón'], ['tuna', 'Thunfisch', 'atún'], ['eggs', 'Eier', 'huevos'],
+        ['egg', 'Ei', 'huevo'], ['vegetables', 'Gemüse', 'verduras'], ['veggies', 'Gemüse', 'verduras'], ['potatoes', 'Kartoffeln', 'patatas'], ['bread', 'Brot', 'pan'],
+        ['pasta', 'Nudeln', 'pasta'], ['noodles', 'Nudeln', 'fideos'], ['yogurt', 'Joghurt', 'yogur'], ['berries', 'Beeren', 'frutos rojos'], ['oatmeal', 'Haferbrei', 'avena'],
+        ['oats', 'Haferflocken', 'copos de avena'], ['cheese', 'Käse', 'queso'], ['beans', 'Bohnen', 'alubias'], ['lentils', 'Linsen', 'lentejas'], ['avocado', 'Avocado', 'aguacate'],
+        ['omelette', 'Omelett', 'tortilla francesa'], ['fruit', 'Obst', 'fruta'], ['nuts', 'Nüsse', 'frutos secos'], ['apple', 'Apfel', 'manzana'], ['banana', 'Banane', 'plátano'],
+        ['tea', 'Tee', 'té'], ['coffee', 'Kaffee', 'café'], ['milk', 'Milch', 'leche'], ['spinach', 'Spinat', 'espinacas'], ['broccoli', 'Brokkoli', 'brócoli'],
+        ['tomatoes', 'Tomaten', 'tomates'], ['mushrooms', 'Pilze', 'champiñones'], ['tofu', 'Tofu', 'tofu'], ['quinoa', 'Quinoa', 'quinoa'], ['curry', 'Curry', 'curry'],
+        ['toast', 'Toast', 'tostada'], ['butter', 'Butter', 'mantequilla'], ['honey', 'Honig', 'miel'], ['pork', 'Schweinefleisch', 'cerdo'], ['lamb', 'Lamm', 'cordero'],
+        ['shrimp', 'Garnelen', 'gambas'], ['cucumber', 'Gurke', 'pepino'], ['carrots', 'Karotten', 'zanahorias'], ['peppers', 'Paprika', 'pimientos']
+    ];
+    const DISH_IX = {}; DISHES.forEach((r, i) => r.forEach(n => { const k = norm(n); if (!(k in DISH_IX)) DISH_IX[k] = i; }));
+    const JOIN = { with: ['with', 'mit', 'con'], and: ['and', 'und', 'y'] };
+    const JOIN_IX = {}; Object.keys(JOIN).forEach(j => JOIN[j].forEach(w => { JOIN_IX[w] = j; })); JOIN_IX['&'] = 'and';
+    function mealName(text, lang) {
+        const raw = String(text == null ? '' : text).trim(); if (!raw || raw.length > 60) return raw;
+        const l = L(lang), col = LANGS.indexOf(l);
+        const whole = DISH_IX[norm(raw)]; if (whole != null) return cap(DISHES[whole][col]);
+        const bits = raw.split(/(\s+(?:with|mit|con|and|und|y|&)\s+|\s*,\s*)/i);
+        if (bits.length < 3) return raw;
+        const out = [];
+        for (let k = 0; k < bits.length; k++) {
+            if (k % 2) { const w = norm(bits[k]); if (w === ',') { out.push(', '); continue; } const j = JOIN_IX[w]; if (!j) return raw; out.push(' ' + JOIN[j][col] + ' '); continue; }
+            const i = DISH_IX[norm(bits[k])]; if (i == null) return raw;
+            const n = DISHES[i][col]; out.push(k === 0 || l === 'de' ? n : n.charAt(0).toLowerCase() + n.slice(1));
+        }
+        return cap(out.join(''));
+    }
+    function cap(s) { s = String(s || ''); return s.charAt(0).toUpperCase() + s.slice(1); }
     /* the big choices for one bubble: usual first, then common ones, four at most, no repeats */
     function choices(slot, o) {
         o = o || {}; const l = L(o.lang), t = tx(l);
         if (slot === 'water') return WATER_OPTS.map(n => ({ key: 'w' + n, cups: n, label: n === 1 ? t.glasses1 : n === 4 ? t.glasses4 : fill(t.glassesN, { n }) }));
         if (slot === 'move') return MOVE_OPTS.map(id => ({ key: id, level: id, label: t.move[id], hint: t.moveHint[id] }));
         const out = [], taken = {};
-        usual(o.logs, slot, o.now, 2).forEach(u => { taken[norm(u.t)] = 1; out.push({ key: 'u:' + norm(u.t), t: u.t, label: u.t, lvl: u.lvl || '', r: u.r, usual: true }); });
+        usual(o.logs, slot, o.now, 2).forEach(u => { taken[norm(u.t)] = 1; out.push({ key: 'u:' + norm(u.t), t: u.t, label: mealName(u.t, l), lvl: u.lvl || '', r: u.r, usual: true }); });
         (PRESETS[slot] || []).forEach(p => { if (out.length >= 4) return; const name = p[l] || p.en; if (taken[norm(name)] || taken[norm(p.en)]) return; taken[norm(name)] = 1; out.push({ key: 'p:' + p.a, t: name, label: name, a: p.a }); });
         return out.slice(0, 4);
     }
@@ -208,6 +247,7 @@
             const head = MEALS.includes(p.slot) ? t.band[BAND[p.slot]] : t.band[p.slot];
             let what = p.label || (p.data && p.data.t) || '';
             if (p.slot === 'move') what = t.move[p.level] || what;
+            else if (MEALS.includes(p.slot)) what = mealName(what, lang);
             return { slot: p.slot, head, what, spike: MEALS.includes(p.slot) && spiky(p.data, isSpiky), line: head + ': ' + what };
         });
     }
@@ -229,5 +269,5 @@
         const opts = pool.filter(c => c !== last); return opts[Math.floor(r() * opts.length) % opts.length];
     }
     return { LANGS, ORDER, MEALS, TIME, BAND, MEAL_XP, MEAL_CAP, WATER_XP, WATER_CAP, BONUS, GREET, WATER_OPTS, MOVE_OPTS, STORE, DRAFT, TX, PRESETS, CHEER, LINES, SAY,
-        L, tx, fill, dayKey, slotOf, needed, usual, choices, atFor, entryId, preview, bonusDue, bonusId, total, plan, summary, shouldGreet, cheer, real, spiky };
+        L, tx, fill, dayKey, slotOf, needed, usual, choices, atFor, entryId, preview, bonusDue, bonusId, total, plan, summary, shouldGreet, cheer, real, spiky, mealName, DISHES };
 });

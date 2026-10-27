@@ -157,10 +157,12 @@ test('saving goes through the app own code with stable ids, at the time of day, 
     assert.doesNotMatch(pickFn, /logMeal|water\(|awardWith/);
 });
 
-test('made for about 80: big targets and text, one thing per screen, VoiceOver labels, Reduce Motion, back steps back', () => {
-    assert.match(css, /\.ec-opt \{[^}]*min-height: 72px/);
-    assert.match(css, /\.ec-big \{[^}]*min-height: 76px/);
-    assert.match(css, /\.ec-ov \{[^}]*font-size: 22px/);
+test('calm iOS 17 sizes (Oct 27) that still work at about 80: 44pt+ targets, 17px body, one thing per screen, VoiceOver labels, Reduce Motion, back steps back', () => {
+    assert.match(css, /\.ec-opt \{[^}]*min-height: 52px/);
+    assert.match(css, /\.ec-big \{[^}]*min-height: 50px/);
+    assert.match(css, /\.ec-soft \{[^}]*min-height: 44px/);
+    assert.match(css, /\.ec-x \{[^}]*width: 44px; height: 44px/);
+    assert.match(css, /\.ec-ov \{[^}]*font-size: 17px/);
     assert.match(css, /prefers-reduced-motion: reduce/);
     assert.match(ui, /role', 'dialog'/); assert.match(ui, /aria-modal', 'true'/);
     assert.match(ui, /aria-label="' \+ esc\(C\.fill\(T\.bubbleLabel/);

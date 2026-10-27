@@ -67,17 +67,28 @@
         move: '<circle cx="36" cy="10" r="5"/><path d="M34 18l-8 14 10 6-4 16M26 32l-8 4M36 24l10 6M30 44l-10 10"/>'
     };
     const icon = s => '<svg class="ec-ico" viewBox="0 0 64 64" aria-hidden="true" focusable="false">' + (ICON[s] || '') + '</svg>';
+    const XSVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"/></svg>';
+    const CHEV = '<svg class="ec-chev" viewBox="0 0 8 13" aria-hidden="true" focusable="false"><path d="M1.5 1.5l5 5-5 5"/></svg>';
 
     let ov = null, st = null;
     /* st: {list (bubbles), i, view ('bubble'|'choices'|'other'|'pop'|'review'|'finish'|'empty'), picks, last (cheer), busy} */
     function draftSave() { if (st) put(C.DRAFT, { day: today(), i: st.i, picks: st.picks }); }
     function draftLoad() { const d = get(C.DRAFT, null); return d && d.day === today() && Array.isArray(d.picks) ? d : null; }
 
-    function points() { return C.total(C.preview(st.picks, ctx()), false); }
+    /* Oct 27 (Emmanuel's screenshot: "★ 49 Punkte" above a "59 Punkte" total): the bar showed the points without the whole-day
+       bonus while the read-back added it. The bar now shows the same number as the screen under it: the read-back total (bonus
+       included) on the read-back, the points really earned on the finish, the running points while picking. */
+    function points() {
+        if (!st) return 0;
+        if (st.view === 'finish') return +st.earned || 0;
+        return C.total(C.preview(st.picks, ctx()), st.view === 'review' && C.bonusDue(st.picks, S().ledger || [], today()));
+    }
     function paintTop() {
         if (!ov) return;
-        const n = st.list.length, dots = st.list.map((s, k) => '<i class="' + (k < st.i ? 'ec-d-done' : k === st.i ? 'ec-d-now' : '') + '"></i>').join('');
+        const n = st.list.length, stepping = st.view !== 'review' && st.view !== 'finish' && st.view !== 'empty' && st.i < n;
+        const dots = st.list.map((s, k) => '<i class="' + (k < st.i || !stepping ? 'ec-d-done' : k === st.i ? 'ec-d-now' : '') + '"></i>').join('');
         const d = ov.querySelector('.ec-dots'); if (d) { d.innerHTML = dots; d.setAttribute('aria-label', C.fill(t().progress, { i: Math.min(st.i + 1, n), n })); }
+        const sn = ov.querySelector('.ec-stepn'); if (sn) sn.textContent = stepping && n ? C.fill(t().step, { i: st.i + 1, n }) : '';
         const p = ov.querySelector('.ec-pts-n'); if (p) p.textContent = C.fill(t().points, { n: points() });
     }
     function say(line, voice) {
@@ -88,31 +99,36 @@
     /* Bug hunt 56: a view is swapped in place inside this screen, so it is not a new overlay for fresh-scrim.js. A double tap on
        the big bubble picked the first choice the next view put under the finger (live WebKit iPhone 13: "Eggs" logged 165 ms
        later), and a double tap on Back in "Something else" picked a meal too. mark() gives the new view the same-spot rule. */
-    function stage(html, step) {
+    /* Oct 27: a view's own buttons (Save / Start over, Something else / Skip, Done) go in the foot, a fixed row at the bottom of the
+       column, so they are always on screen and nothing (the companion, what it says, a long list) can sit on them. */
+    function stage(html, step, foot) {
         const s = ov.querySelector('.ec-stage'); s.innerHTML = html; ov.setAttribute('data-back-step', step);
         try { if (W.LowiFreshScrim && W.LowiFreshScrim.mark) W.LowiFreshScrim.mark(s); } catch (e) { }
+        const ft = ov.querySelector('.ec-foot');
+        if (ft) { ft.innerHTML = foot || ''; ft.classList.toggle('on', !!foot); try { if (W.LowiFreshScrim && W.LowiFreshScrim.mark) W.LowiFreshScrim.mark(ft); } catch (e) { } }
+        s.scrollTop = 0;
         s.classList.remove('ec-in'); void s.offsetWidth; s.classList.add('ec-in');
         paintTop();
-        const f = s.querySelector('[data-ec-first]') || s.querySelector('button, input'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } }
+        const f = s.querySelector('[data-ec-first]') || (ft && ft.querySelector('[data-ec-first]')) || s.querySelector('button, input'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } }
     }
     function viewBubble() {
         if (st.i >= st.list.length) return viewReview();
         st.view = 'bubble'; const s = st.list[st.i], T = t();
-        stage('<p class="ec-step">' + esc(C.fill(T.step, { i: st.i + 1, n: st.list.length })) + '</p>' +
-            '<button type="button" class="ec-bubble ec-b-' + s + (reduced() ? '' : ' ec-drift') + '" data-ec="open" data-ec-first aria-label="' + esc(C.fill(T.bubbleLabel, { name: T.name[s] })) + '">' +
-            icon(s) + '<span class="ec-bname" id="ecH">' + esc(T.name[s]) + '</span></button>' +
+        stage('<button type="button" class="ec-choose' + (reduced() ? '' : ' ec-drift') + '" data-ec="open" data-ec-first aria-label="' + esc(C.fill(T.bubbleLabel, { name: T.name[s] })) + '">' +
+            '<span class="ec-bubble ec-b-' + s + '">' + icon(s) + '</span><span class="ec-bname" id="ecH">' + esc(T.name[s]) + '</span></button>' +
             '<p class="ec-hint" aria-hidden="true">' + esc(T.tapBubble) + '</p>', 'bubble-' + st.i);
     }
     function viewChoices() {
         st.view = 'choices'; const s = st.list[st.i], T = t(), opts = C.choices(s, { lang: lang(), logs: S().logs || [], now: Date.now() });
         st.opts = opts;
         const meal = C.MEALS.includes(s);
-        stage('<div class="ec-mini ec-b-' + s + '" aria-hidden="true">' + icon(s) + '</div>' +
-            '<h2 class="ec-q" id="ecH">' + esc(T.q[s]) + '</h2>' +
+        stage('<div class="ec-qhead"><div class="ec-mini ec-b-' + s + '" aria-hidden="true">' + icon(s) + '</div>' +
+            '<h2 class="ec-q" id="ecH">' + esc(T.q[s]) + '</h2></div>' +
             '<div class="ec-opts" role="group" aria-labelledby="ecH">' + opts.map((o, k) => '<button type="button" class="ec-opt" data-ec="pick" data-k="' + k + '"' + (k === 0 ? ' data-ec-first' : '') + '>' +
-                '<span class="ec-opt-l">' + esc(o.label) + '</span>' + (o.hint ? '<span class="ec-opt-h">' + esc(o.hint) + '</span>' : o.usual ? '<span class="ec-opt-h">' + esc(T.usual) + '</span>' : '') + '</button>').join('') + '</div>' +
+                '<span class="ec-opt-t"><span class="ec-opt-l">' + esc(o.label) + '</span>' + (o.hint ? '<span class="ec-opt-h">' + esc(o.hint) + '</span>' : o.usual ? '<span class="ec-opt-h">' + esc(T.usual) + '</span>' : '') + '</span>' + CHEV + '</button>').join('') + '</div>',
+            'choices-' + st.i,
             '<div class="ec-row">' + (meal ? '<button type="button" class="ec-soft" data-ec="other">' + esc(T.other) + '</button>' : '') +
-            '<button type="button" class="ec-soft" data-ec="skip">' + esc(T.skip) + '</button></div>', 'choices-' + st.i);
+            '<button type="button" class="ec-soft" data-ec="skip">' + esc(T.skip) + '</button></div>');
         speak(T.q[s]);
     }
     function viewOther() {
@@ -120,7 +136,7 @@
         stage('<h2 class="ec-q" id="ecH">' + esc(T.otherQ) + '</h2>' +
             '<input class="ec-input" type="text" maxlength="60" autocomplete="off" enterkeyhint="done" aria-labelledby="ecH" placeholder="' + esc(T.otherPh) + '" data-ec-first>' +
             '<button type="button" class="ec-big" data-ec="add" disabled>' + esc(T.add) + '</button>' +
-            '<button type="button" class="ec-soft ec-wide" data-ec="back">' + esc(T.back) + '</button>', 'other-' + st.i);
+            '<button type="button" class="ec-soft ec-plain ec-wide" data-ec="back">' + esc(T.back) + '</button>', 'other-' + st.i);
     }
     function pick(p) {
         const s = st.list[st.i]; p.slot = s;
@@ -133,10 +149,10 @@
     }
     function pop(got, label) {
         st.view = 'pop'; const s = st.list[st.i], T = t(), calm = reduced();
-        const sparks = calm ? '' : Array.from({ length: 14 }, (_, k) => '<i style="--a:' + (k * 360 / 14) + 'deg;--d:' + (70 + (k % 3) * 26) + 'px"></i>').join('');
-        stage('<div class="ec-popwrap" role="status">' +
+        const sparks = calm ? '' : Array.from({ length: 12 }, (_, k) => '<i style="--a:' + (k * 30) + 'deg;--d:' + (58 + (k % 3) * 16) + 'px"></i>').join('');
+        stage('<div class="ec-popwrap" role="status"><div class="ec-popbox">' +
             '<div class="ec-bubble ec-b-' + s + ' ec-popping' + (calm ? ' ec-calm' : '') + '" aria-hidden="true">' + icon(s) + '</div>' +
-            '<div class="ec-burst" aria-hidden="true">' + sparks + '</div>' +
+            '<div class="ec-burst" aria-hidden="true">' + sparks + '</div></div>' +
             '<p class="ec-got">' + esc(label) + '</p>' +
             '<p class="ec-plus' + (got ? '' : ' ec-zero') + '">' + esc(got ? C.fill(T.plus, { n: got }) : T.added) + '</p></div>', 'pop-' + st.i);
         buzz(got ? [18, 40, 28] : 14);
@@ -152,19 +168,21 @@
     function viewReview() {
         st.view = 'review'; const T = t(), rows = C.summary(st.picks, lang(), ctx().spiky), pv = C.preview(st.picks, ctx());
         if (!rows.length) {
-            stage('<h2 class="ec-q" id="ecH">' + esc(T.nothing) + '</h2><button type="button" class="ec-big" data-ec="close" data-ec-first>' + esc(T.done) + '</button>' +
-                '<button type="button" class="ec-soft ec-wide" data-ec="again">' + esc(T.again) + '</button>', 'review');
+            stage('<h2 class="ec-q" id="ecH">' + esc(T.nothing) + '</h2>', 'review',
+                '<button type="button" class="ec-big" data-ec="close" data-ec-first>' + esc(T.done) + '</button>' +
+                '<button type="button" class="ec-soft ec-plain ec-wide" data-ec="again">' + esc(T.again) + '</button>');
             return;
         }
         const bonus = C.bonusDue(st.picks, S().ledger || [], today()), sum = C.total(pv, bonus);
-        stage('<h2 class="ec-q" id="ecH">' + esc(T.review) + '</h2>' +
-            '<ul class="ec-list">' + rows.map(r => '<li><span class="ec-l-h">' + esc(r.head) + '</span><span class="ec-l-w">' + esc(r.what) +
+        stage('<div class="ec-rv"><h2 class="ec-q ec-lt" id="ecH">' + esc(T.review) + '</h2>' +
+            '<ul class="ec-list">' + rows.map(r => '<li><span class="ec-l-i ec-b-' + r.slot + '" aria-hidden="true">' + icon(r.slot) + '</span>' +
+                '<span class="ec-l-t"><span class="ec-l-h">' + esc(r.head) + '</span><span class="ec-l-w" title="' + esc(r.what) + '">' + esc(r.what) + '</span>' +
                 (r.spike ? '<span class="ec-l-s">' + esc(T.spike) + '</span>' : '') + '</span>' +
                 '<span class="ec-l-p">' + (pv[r.slot] ? esc(C.fill(T.plus, { n: pv[r.slot] })) : '') + '</span></li>').join('') +
-            (bonus ? '<li class="ec-l-bonus"><span class="ec-l-h">\u2605</span><span class="ec-l-w">' + esc(T.bonus) + '</span><span class="ec-l-p">' + esc(C.fill(T.plus, { n: C.BONUS.xp })) + '</span></li>' : '') + '</ul>' +
-            '<p class="ec-total">' + esc(C.fill(T.points, { n: sum })) + '</p>' +
+            (bonus ? '<li class="ec-l-bonus"><span class="ec-l-i" aria-hidden="true">\u2605</span><span class="ec-l-t"><span class="ec-l-w">' + esc(T.bonus) + '</span></span><span class="ec-l-p">' + esc(C.fill(T.plus, { n: C.BONUS.xp })) + '</span></li>' : '') + '</ul>' +
+            '<div class="ec-sum"><span class="ec-sum-l">' + esc(T.total) + '</span><p class="ec-total">' + esc(C.fill(T.points, { n: sum })) + '</p></div></div>', 'review',
             '<button type="button" class="ec-big" data-ec="save" data-ec-first>' + esc(T.save) + '</button>' +
-            '<button type="button" class="ec-soft ec-wide" data-ec="again">' + esc(T.again) + '</button>', 'review');
+            '<button type="button" class="ec-soft ec-plain ec-wide" data-ec="again">' + esc(T.again) + '</button>');
         say(C.LINES[lang()].review, true);
     }
     /* Save: everything through the app's own code, in the order of the day */
@@ -196,14 +214,14 @@
         viewFinish(earned);
     }
     function viewFinish(earned) {
-        st.view = 'finish'; const T = t(), night = new Date().getHours() >= 18 || new Date().getHours() < 4, calm = reduced();
+        st.view = 'finish'; st.earned = +earned || 0; const T = t(), night = new Date().getHours() >= 18 || new Date().getHours() < 4, calm = reduced();
         const lv = levelLine();
         stage('<div class="ec-fin' + (calm ? ' ec-calm' : '') + '">' +
             '<div class="ec-fin-glow" aria-hidden="true"><i></i><i></i><i></i>' + companionHTML() + '</div>' +
             '<h2 class="ec-q" id="ecH">' + esc(T.saved) + '</h2>' +
             '<p class="ec-total ec-count" data-n="' + earned + '">' + esc(C.fill(T.plus, { n: calm ? earned : 0 })) + '</p>' +
-            (lv ? '<p class="ec-lv">' + esc(lv) + '</p>' : '') + '</div>' +
-            '<button type="button" class="ec-big" data-ec="close" data-ec-first>' + esc(night ? T.night : T.done) + '</button>', 'finish');
+            (lv ? '<p class="ec-lv">' + esc(lv) + '</p>' : '') + '</div>', 'finish',
+            '<button type="button" class="ec-big" data-ec="close" data-ec-first>' + esc(night ? T.night : T.done) + '</button>');
         ov.classList.add('ec-finished');
         say(night ? C.LINES[lang()].finish : C.LINES[lang()].finishDay, true);
         buzz([20, 60, 20, 60, 40]);
@@ -271,11 +289,12 @@
         ov.id = 'ecOv'; ov.className = 'ec-ov' + (reduced() ? ' ec-reduced' : '');
         ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'ecH'); ov.setAttribute('data-noi18n', '');
         ov.setAttribute('lang', lang());
-        ov.innerHTML = '<div class="ec-sky" aria-hidden="true"></div>' +
-            '<div class="ec-top"><div class="ec-dots" role="img"></div><p class="ec-pts" aria-live="polite"><span aria-hidden="true">\u2605 </span><span class="ec-pts-n"></span></p>' +
-            '<button type="button" class="ec-x" data-ec="close" aria-label="' + esc(T.close) + '"><span aria-hidden="true">\u00d7</span></button></div>' +
+        ov.innerHTML = '<div class="ec-top"><p class="ec-pts" aria-live="polite"><span class="ec-star" aria-hidden="true">\u2605</span><span class="ec-pts-n"></span></p>' +
+            '<div class="ec-prog"><div class="ec-dots" role="img"></div><span class="ec-stepn" aria-hidden="true"></span></div>' +
+            '<button type="button" class="ec-x" data-ec="close" aria-label="' + esc(T.close) + '">' + XSVG + '</button></div>' +
             '<div class="ec-stage"></div>' +
-            '<div class="ec-pal" aria-hidden="true">' + companionHTML() + '</div><p class="ec-say" role="status" aria-live="polite"></p>';
+            '<div class="ec-palrow"><div class="ec-pal" aria-hidden="true">' + companionHTML() + '</div><p class="ec-say" role="status" aria-live="polite"></p></div>' +
+            '<div class="ec-foot"></div>';
         D.body.appendChild(ov);
         D.documentElement.classList.add('ec-open');
         ov.addEventListener('click', onClick);
@@ -284,7 +303,7 @@
         ov.addEventListener('keydown', trap);
         st.back = e => onKey(e); D.addEventListener('keydown', st.back, true);
         requestAnimationFrame(() => { if (ov) ov.classList.add('on'); });
-        if (!list.length) { st.view = 'empty'; stage('<h2 class="ec-q" id="ecH">' + esc(T.allDone) + '</h2><button type="button" class="ec-big" data-ec="close" data-ec-first>' + esc(T.done) + '</button>', 'empty'); say(T.allDone, true); }
+        if (!list.length) { st.view = 'empty'; stage('<h2 class="ec-q" id="ecH">' + esc(T.allDone) + '</h2>', 'empty', '<button type="button" class="ec-big" data-ec="close" data-ec-first>' + esc(T.done) + '</button>'); say(T.allDone, true); }
         else viewBubble();
         const stt = get(C.STORE, {}) || {}; stt.seen = today(); put(C.STORE, stt);
         try { W.dispatchEvent(new CustomEvent('lowi:catchup-open', { detail: { from: o.from || '' } })); } catch (e) { }
@@ -322,7 +341,7 @@
         hi.innerHTML = '<div class="ec-hi-card"><div class="ec-hi-pal" aria-hidden="true">' + companionHTML() + '</div>' +
             '<h2 class="ec-hi-h" id="ecHiH">' + esc(T.greet) + '</h2>' +
             '<button type="button" class="ec-big" data-hi="go">' + esc(T.go) + '</button>' +
-            '<button type="button" class="ec-soft ec-wide" data-hi="later">' + esc(T.later) + '</button></div>';
+            '<button type="button" class="ec-soft ec-plain ec-wide" data-hi="later">' + esc(T.later) + '</button></div>';
         D.body.appendChild(hi);
         const stt = get(C.STORE, {}) || {}; stt.seen = today(); put(C.STORE, stt);
         hi.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-hi]'); if (!b) return; if (b.getAttribute('data-hi') === 'go') open({ from: 'greet' }); else hideGreet(); });

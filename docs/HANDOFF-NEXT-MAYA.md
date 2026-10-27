@@ -16,6 +16,18 @@ Emmanuel, Tuesday 27 October 2026 about 9:45 AM Berlin: "keep in mind all update
 
 He also said: "Don't tell me what you haven't been able to do." When something is live, report to him only what was done: no list of what failed or was not done. Keep those open items here in this file for the next Maya instead.
 
+## Day recap redesigned to an iOS 17 look, 27 October 2026
+
+Emmanuel, Tuesday 27 October 2026 about 9:55 AM Berlin (voice, two screenshots of the German catch-up on his iPhone): "I need you to update this section. The, uh, my talk. You know, the recap. Cuz the UI looks bad. Even the end. It's just everything is so big and bulky. And not iOS 17 aesthetic. And some buttons we can't even see nor click on it. So, you need to work on that. Don't ask me questions. Take all the decisions. Update it. Don't send other update, uh, notification."
+
+What changed (evening-catchup.css / .js / -core.js, branch day-recap-ios17-20261027, released silently):
+- The whole catch-up ("Heute nachtragen": the bubbles, the choices, Something else, the pop, the "Dein Tag" read-back, the finish, the evening greeting) now uses the app's deep blue glass over the living world (blurred), not the separate purple sky. iOS sizes: 44pt top bar with a points pill, thin progress capsules and the step number, a 30pt close circle in a 44pt hit area; 132px bubble (112 on SE, 148 on iPad) with a 28px name; grouped inset lists with 52px rows and 17px text; one 50px blue primary button; 44px tinted secondaries.
+- One column in normal flow: top bar, stage, companion row, foot. The companion (44px) and its words sit in their own row above the foot; Save and "Neu anfangen" (and Something else / Skip, Done) live in the foot, so they are always on screen and nothing can cover them. The stage scrolls from the top when it does not fit, so the first row is never cut off under the bar.
+- Bar points now match the screen: on the read-back the bar includes the whole-day bonus like the total (his screenshot: 49 vs 59); on the finish it shows the points really earned.
+- Read-back rows are one line each (ellipsis, full text in title), with a small coloured icon, the slot name above, "wahrscheinlich Blutzuckerspitze" in small orange under a likely spike, and a "Gesamt" row.
+- Meal names follow the app language when every part is a known dish or food (C.mealName, DISHES table: "Sweet potato with beef stew" shows "Süßkartoffel mit Rindereintopf" in German); anything else stays as she typed it.
+- Checks: tests/catchup-ios17.test.cjs (points match, companion row and foot in the flow, no overlap by construction, sizes, mealName); tests/evening-catchup-live.cjs updated to iOS sizes plus tappable-at-centre, not covered, on screen, bar = total, no wrapping rows; tools/catchup-ios17/probe.cjs walks every view at iPhone, SE, 320px, iPad in German and English, with Reduce Motion and a fresh first-run state. All in simulated Chrome (simulated Safari still crashes on load/tap in this machine). The app's dictation mic in the text box is its own 34px component and was left as it is.
+
 ## Studio opened for everyone, 27 October 2026
 
 Emmanuel, Tuesday 27 October 2026 about 9:25 AM Berlin, with a screenshot of the locked Community > Studio tab (pill "Gesperrt", "Im Aufbau", "Studio wird gerade gebaut. Es öffnet sich hier, sobald es fertig ist.", a small lock button): "Also, um remove this we can open it up now. Delete the password or whatever."

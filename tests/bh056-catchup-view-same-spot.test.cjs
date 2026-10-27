@@ -10,7 +10,7 @@ const test = require('node:test'), assert = require('node:assert'), fs = require
 const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 
 function stageSrc() {
-    const src = read('evening-catchup.js'), i = src.indexOf('    function stage(html, step) {'); assert.ok(i > 0, 'stage() found');
+    const src = read('evening-catchup.js'), i = src.indexOf('    function stage(html, step, foot) {'); assert.ok(i > 0, 'stage() found');
     const j = src.indexOf('\n    }\n', i); assert.ok(j > i); return src.slice(i, j + 6);
 }
 function mk() {

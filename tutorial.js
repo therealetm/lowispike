@@ -147,6 +147,10 @@
             '<button type="button" class="lt-btn lt-ghost lt-pause" data-lt="pause" aria-pressed="' + paused + '" aria-label="' + esc(paused ? (U.play || 'Play') : (U.pause || 'Pause')) + '">' + (paused ? PLAY_SVG : PAUSE_SVG) + '</button></span>' +
             '<span class="lt-right">' + (last || news ? '' : '<button type="button" class="lt-btn lt-ghost" data-lt="skip">' + esc(U.skip) + '</button>') +
             '<button type="button" class="lt-btn lt-go" data-lt="' + (s.action === 'claim' ? 'claim' : 'next') + '">' + esc(cta) + '</button></span></div>';
+        /* Bug hunt 56 (P-VIEW-SWAP): the card is swapped in place, so fresh-scrim saw no new overlay. A double tap on Next moved
+           two steps (live WebKit iPhone 13: hello -> fuel, 169 ms apart), and a double tap on Back went back two. mark() gives the new
+           card the same-spot rule. */
+        try { if (W.LowiFreshScrim && W.LowiFreshScrim.mark) W.LowiFreshScrim.mark(card); } catch (e) { }
         root.setAttribute('data-step', s.id); root.classList.toggle('lt-news', news);
         root.classList.toggle('lt-later-on', !!(s && s.later));
         if (!(s.demo && mode !== 'news')) { try { if (W.LowiTutorialShow) W.LowiTutorialShow.render(card, s, root); } catch (e) { } }   /* item 42: finger, lit spots, card picture */

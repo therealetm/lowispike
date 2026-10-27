@@ -174,7 +174,11 @@ function ivPaint(){const el=D.getElementById('hsIv');if(!el||!IV)return;const he
  else{const p=IV.plan,f=facts();h='<div class="hs-ivpane res"><p class="hs-over">'+esc(t('ivOver'))+'</p><h2>'+esc(t('planH'))+'</h2><p class="hs-p">'+esc(t('planP'))+'</p><ol class="hs-res">'+
    p.actions.map(a=>'<li><span class="hs-ic">'+ico(C.ACTIONS[a.id].ic)+'</span><span><b>'+esc(C.actionText(a.id,lang(),AV(f)))+'</b><small>'+esc(wnm(C.whyText(a.why,lang())))+'</small></span></li>').join('')+'</ol></div>'+
    '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hsi="done">'+esc(t('planBtn'))+'</button></div>';}
- el.innerHTML=h;fillArt(0);el.setAttribute('data-step',IV.step);el.setAttribute('data-back-step',IV.step);const f=el.querySelector('.hs-opt.on,.hs-opt,[data-hsi="start"],[data-hsi="done"]');if(f&&matchMedia('(pointer:fine)').matches)try{f.focus({preventScroll:true});}catch(e){}}
+ el.innerHTML=h;try{window.LowiFreshScrim&&LowiFreshScrim.mark&&LowiFreshScrim.mark(el);}catch(e){}fillArt(0);el.setAttribute('data-step',IV.step);el.setAttribute('data-back-step',IV.step);const f=el.querySelector('.hs-opt.on,.hs-opt,[data-hsi="start"],[data-hsi="done"]');if(f&&matchMedia('(pointer:fine)').matches)try{f.focus({preventScroll:true});}catch(e){}}
+/* Bug hunt 56 (P-VIEW-SWAP): the steps are swapped in place, so fresh-scrim saw no new overlay. A double tap on Skip skipped two
+   questions, and a double tap on an answer skipped the next question (live WebKit iPhone 13, 162 to 323 ms apart): the 2nd tap
+   either queued a 2nd ivNext on the old answer, or pressed what the next question put under the finger. ivPaint marks the new step
+   (LowiFreshScrim.mark), and an answer only moves on from the question it was given on. */
 function ivNext(){if(!IV)return;IV.step++;if(IV.step===C.QUESTIONS.length){IV.plan=C.newPlan(IV.answers);ivPaint();const n=IV.step;setTimeout(()=>{if(IV&&IV.step===n){IV.step++;ivPaint();}},reduce()?250:1300);return;}ivPaint();}
 function ivLater(){const p=plan();if(!p){const s=S();if(s){s.starter={v:2,skipped:true,actions:[],asked:{},created:Date.now(),hidden:true};save();}}ivClose();try{R().toast&&R().toast(t('skipped'));}catch(e){}refresh();}
 /* Oct 26 (bug hunt run 51, BH-050 sibling): the interview sheet has no close button (noClose) and had no Escape, so Safari's back
@@ -189,7 +193,7 @@ function onIvClick(e){const b=e.target.closest('[data-hsi]');if(!b||!IV)return;c
  if(a==='later'){pendClear();ivLater();return;}
  if(a==='back'){IV.step=Math.max(-1,IV.step-1);ivPaint();return;}
  if(a==='skip'){delete IV.answers[C.QUESTIONS[IV.step].id];ivNext();return;}
- if(a==='opt'){IV.answers[C.QUESTIONS[IV.step].id]=b.getAttribute('data-v');b.parentNode.querySelectorAll('.hs-opt').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-checked',x===b);});setTimeout(ivNext,reduce()?60:220);return;}
+ if(a==='opt'){IV.answers[C.QUESTIONS[IV.step].id]=b.getAttribute('data-v');b.parentNode.querySelectorAll('.hs-opt').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-checked',x===b);});const at=IV.step;setTimeout(()=>{if(IV&&IV.step===at)ivNext();},reduce()?60:220);return;}
  if(a==='done'){const p=IV.plan;p.asked={};setPlan(p);pendClear();try{const ft=C.fastTarget&&C.fastTarget(IV.answers),FK='lowi_fast_v1';if(ft){const fs=(o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(FK)||'{}'));fs.target=ft;localStorage.setItem(FK,JSON.stringify(fs));window.LowiFast&&LowiFast.refresh&&LowiFast.refresh();}}catch(e){}ivClose();try{window.LowiHost&&LowiHost.go('home');}catch(e){}try{R().toast&&R().toast(t('saved'));}catch(e){}refresh();setTimeout(refresh,400);setTimeout(refresh,1000);return;}}
 
 /* Today: one row; the sheet holds the steps, "Why this?", Go, Change, and the friction question when it's due */

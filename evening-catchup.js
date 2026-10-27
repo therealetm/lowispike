@@ -85,8 +85,12 @@
         b.textContent = line || ''; b.classList.toggle('on', !!line);
         if (voice) speak(line);
     }
+    /* Bug hunt 56: a view is swapped in place inside this screen, so it is not a new overlay for fresh-scrim.js. A double tap on
+       the big bubble picked the first choice the next view put under the finger (live WebKit iPhone 13: "Eggs" logged 165 ms
+       later), and a double tap on Back in "Something else" picked a meal too. mark() gives the new view the same-spot rule. */
     function stage(html, step) {
         const s = ov.querySelector('.ec-stage'); s.innerHTML = html; ov.setAttribute('data-back-step', step);
+        try { if (W.LowiFreshScrim && W.LowiFreshScrim.mark) W.LowiFreshScrim.mark(s); } catch (e) { }
         s.classList.remove('ec-in'); void s.offsetWidth; s.classList.add('ec-in');
         paintTop();
         const f = s.querySelector('[data-ec-first]') || s.querySelector('button, input'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } }

@@ -98,6 +98,8 @@
     function close() {
         if (!ov) return false;
         const el = ov, v = vid; ov = null; vid = null; clearTimeout(endTimer);
+        /* BH-060: Skip / Done is spent, so a fast 2nd tap does not hit the page under the tour */
+        try { const F = root.LowiFreshScrim; if (F && F.closed) F.closed(el); } catch (e) { }
         if (v) { try { v.pause(); } catch (e) { } v.removeAttribute('src'); try { v.load(); } catch (e) { } }
         el.classList.remove('on'); D.documentElement.classList.remove('qt-open');
         if (el.close && el.open) try { el.close(); } catch (e) { }

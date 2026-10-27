@@ -72,7 +72,7 @@
     }
 
     let offer = null, quietSince = 0;
-    function closeOffer() { if (offer) { offer.remove(); offer = null; } }
+    function closeOffer() { if (offer) { /* BH-060 */ try { const F = W.LowiFreshScrim; if (F && F.closed) F.closed(offer); } catch (e) { } offer.remove(); offer = null; } }
     function showOffer(st) {
         set(Object.assign({}, st, { s: 'offered' }));
         const U = UI[lang()] || UI.en;

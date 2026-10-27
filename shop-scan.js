@@ -96,7 +96,10 @@
     }
     function closeCard(el) {
         el = el || cam(); if (!el) return;
-        const c = el.querySelector('.ss-card'); if (c) c.remove();
+        const c = el.querySelector('.ss-card');
+        /* BH-060: the card's own close tap is spent, so a fast 2nd tap does not hit the camera under it */
+        try { const F = W.LowiFreshScrim; if (c && F && F.closed) F.closed(c); } catch (e) { }
+        if (c) c.remove();
         el.classList.remove('ss-open'); cur = null;
     }
     function loading(el, code) {

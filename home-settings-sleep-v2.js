@@ -369,6 +369,8 @@
     function close(refocus) {
         if (!open) return;
         const was = open; open = null; detached = false;
+        /* BH-060: a row or choice that closes the ring is spent, so a fast 2nd tap does not hit Home under it */
+        try { const F = root.LowiFreshScrim; if (layer && F && F.closed) F.closed(layer); } catch (e) { }
         H.classList.remove('ss2-open', 'ss2-page-open');
         if (layer) { layer.innerHTML = ''; layer.removeAttribute('data-kind'); }
         if (lastBubble) lastBubble.setAttribute('aria-expanded', 'false');
@@ -517,6 +519,8 @@
         if (id === 'back') { show('settings'); return; }
         if (kind === 'sleep') {
             if (BANDS.includes(id)) setSleep(id);
+            /* BH-060: the ring closes a beat later, so the choosing tap is spent now */
+            try { const F = root.LowiFreshScrim; if (F && F.closed) F.closed(layer, e); } catch (x) { }
             pulse(); setTimeout(() => close(true), 380);
             return;
         }

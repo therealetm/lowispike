@@ -111,6 +111,23 @@
         if (!e || !e.isTrusted || !(e.detail > 0) || typeof e.clientX !== 'number') return;
         spentAt = { x: e.clientX, y: e.clientY, t: tapTime(e) };
     }
+    /* BH-060: a screen that closes through its own path (Done, Save, Later, a choice, a tap on the card itself), not the shared
+       X / sheet close. When the real tap that closes it was on that screen, that tap is spent, so a fast 2nd tap on the same spot
+       does not land on whatever the closing uncovered. A tap elsewhere that closes it (an outside tap whose click goes on to its
+       own target), Escape, timers, custom events and code-made clicks spend nothing. e defaults to the event being handled. */
+    function closed(el, e) {
+        try {
+            e = e || W.event;
+            if (!e || e.type !== 'click' || !e.isTrusted || !(e.detail > 0) || typeof e.clientX !== 'number') return false;
+            if (el) {
+                const p = typeof e.composedPath === 'function' ? e.composedPath() : [];
+                const t = e.target;
+                if (p.indexOf(el) < 0 && !(t && t.nodeType === 1 && el.contains && el.contains(t))) return false;
+            }
+            spent(e);
+            return true;
+        } catch (x) { return false; }
+    }
     /* the 2nd tap of that double tap: a later real tap on the same spot within SPOT_MS (by its own time stamp) */
     function quiet(e) {
         if (!spentAt || !e || !e.isTrusted || !(e.detail > 0) || typeof e.clientX !== 'number') return false;
@@ -135,5 +152,5 @@
         W.addEventListener('mousedown', guardDown, true);
     }
     if (D.body) start(); else D.addEventListener('DOMContentLoaded', start, { once: true });
-    W.LowiFreshScrim = { MS, SPOT_MS, SPOT_PX, ARM_MS, armedCtl, armTwice, age, backdrop, guard, guardDown, sameSpot, mark, spent, quiet, dismissing, removing };
+    W.LowiFreshScrim = { MS, SPOT_MS, SPOT_PX, ARM_MS, armedCtl, armTwice, age, backdrop, guard, guardDown, sameSpot, mark, spent, closed, quiet, dismissing, removing };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

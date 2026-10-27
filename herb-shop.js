@@ -84,7 +84,7 @@ function tick(){if(!V.ov)return;const now=Date.now();let stale=false;V.ov.queryS
 function open(view){if(V.ov)return;V.back=D.activeElement;V.view='plus';V.back2=false;V.msg='';V.sel='';
  const ov=D.createElement('div');ov.className='hs-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','hsTitle');ov.tabIndex=-1;if(reduced())ov.dataset.still='';
  V.ov=ov;D.body.appendChild(ov);paint('top');V.timer=setInterval(tick,30000);root.dispatchEvent(new CustomEvent('lowi:shop',{detail:{open:true}}));}
-function close(then){if(!V.ov)return;clearInterval(V.timer);V.ov.remove();V.ov=null;
+function close(then){if(!V.ov)return;clearInterval(V.timer);/* BH-060 */try{const F=window.LowiFreshScrim;if(F&&F.closed)F.closed(V.ov);}catch(e){}V.ov.remove();V.ov=null;
  /* repaint an open wardrobe so new pieces show up */
  const tab=D.querySelector('#spWd .wd-tabs [aria-selected="true"]');if(tab)tab.click();
  if(typeof then==='function')then();else{const t=D.querySelector('#spWd .hs-entry')||V.back;if(t&&t.focus&&D.contains(t))t.focus({preventScroll:true});}
@@ -140,7 +140,7 @@ function ensureGift(){const hud=D.getElementById('whHud');let b=D.querySelector(
  /* iPad: the tab bar is a rail on the left, so the spot sits just right of it */
  try{const tb=D.getElementById('tabbar'),r=tb&&tb.getBoundingClientRect();const rail=r&&r.height>r.width&&r.left<root.innerWidth/3;const gl=rail?Math.round(r.right+16)+'px':'';/* write only on change */if(b.style.getPropertyValue('--hs-gl')!==gl)b.style.setProperty('--hs-gl',gl);if(G.pop&&G.pop.style.getPropertyValue('--hs-gl')!==gl)G.pop.style.setProperty('--hs-gl',gl);}catch(e){}
  return b;}
-function closeGift(){if(!G.pop)return;clearTimeout(G.t);G.pop.remove();G.pop=null;ensureGift();}
+function closeGift(){if(!G.pop)return;clearTimeout(G.t);/* BH-060 */try{const F=window.LowiFreshScrim;if(F&&F.closed)F.closed(G.pop);}catch(e){}G.pop.remove();G.pop=null;ensureGift();}
 function openGift(){const now=Date.now();if(G.pop||flying())return;
  const b=D.querySelector('.hs-gift');if(b)b.classList.add('is-open');
  const pop=D.createElement('div');pop.className='hs-giftpop';pop.setAttribute('role','dialog');pop.setAttribute('aria-labelledby','hsGiftT');

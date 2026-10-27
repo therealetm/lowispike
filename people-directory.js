@@ -206,6 +206,8 @@
     }
     function close() {
         if (!ov) return;
+        /* BH-060: a closing tap on the list is spent, so a fast 2nd tap does not hit what was under it */
+        try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(ov); } catch (e) { }
         clearInterval(poll); poll = 0;
         D.removeEventListener('keydown', onKey, true);
         D.removeEventListener('click', onCardClick, true);

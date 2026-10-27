@@ -2198,7 +2198,7 @@ function reward(rec, p, o){ o = o || {}; const bx = +o.bonus || 0, tx = p.x + bx
     const step = now => { const k = Math.min(1, (now - t0) / D); el.textContent = Math.round(n * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
     setTimeout(() => requestAnimationFrame(step), 300); } }
 let CH = null; /* F2: after the reward the app carries on to "What did you eat?" */
-function closeRw(){ const d = document.getElementById("fstRw"); if (!d) return; d.classList.remove("on"); setTimeout(() => d.remove(), 300);
+function closeRw(){ const d = document.getElementById("fstRw"); if (!d) return; /* BH-060 */ try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(d); } catch(e){} d.classList.remove("on"); setTimeout(() => d.remove(), 300);
   if (CH && window.LowiF2) { const c = CH; CH = null; setTimeout(() => LowiF2.start(c), 320); } }
 
 /* ---------- clicks ---------- */
@@ -2646,7 +2646,7 @@ function b2Tab(t){ if (typeof window.lowiOpen === "function") window.lowiOpen(t)
 /* the one news bubble: text once, then "Got it" (and "Show me" only when there is somewhere to go). Marked seen as it opens. */
 function offerNews(){ if (!NEWS || TOUR || newsSeen(NEWS.id)) return; hush(); markSeen(NEWS.id); begin({steps:[{k:"offer", text:NT(NEWS.text)}], i:0, kind:"offer"}); }
 function close(how, quick){ hush(); const t = TOUR; TOUR = null; clearInterval(placeT); cancelAnimationFrame(follow.raf);
-  const r = $("#g1Tour"); if (r) { r.classList.add("out"); setTimeout(() => { if (r.parentNode && !TOUR) r.remove(); else if (r.parentNode && TOUR) r.classList.remove("out"); }, quick ? 0 : 260); }
+  /* BH-060 */ const r = $("#g1Tour"); try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(r); } catch(e){} if (r) { r.classList.add("out"); setTimeout(() => { if (r.parentNode && !TOUR) r.remove(); else if (r.parentNode && TOUR) r.classList.remove("out"); }, quick ? 0 : 260); }
   H.classList.remove("g1-touring"); H.classList.remove("g2h-tour");
   if (t && t.kind === "tour") { remember({t:how === "skip" ? "skip" : "done", s:0}); if (how !== "restart") setTimeout(() => { if (!TOUR) goHome(); }, 0); }
   if (!quick) fairyHome(); else fairyReset(); }
@@ -2774,7 +2774,7 @@ function obShow(o){ let r = $("#g1Ob"); const fresh = !r || !OB || OB.kind !== o
   /* no re-placing loop any more: the card stays where it opened (resize still re-places it) */ }
 function obLoop(){ clearInterval(obLoop.t); obLoop.t = 0; }
 function obClose(quick){ const r = $("#g1Ob"); OB = null; clearInterval(obLoop.t); obLoop.t = 0; hush(); const sp = $("#spBubble"); if (sp) sp.classList.remove("g1ob-talk");
-  if (!r) return; const had = r.contains(document.activeElement); r.classList.remove("in"); r.classList.add("out"); clearTimeout(obT);
+  if (!r) return; /* BH-060 */ try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(r); } catch(e){} const had = r.contains(document.activeElement); r.classList.remove("in"); r.classList.add("out"); clearTimeout(obT);
   obT = setTimeout(() => { if (!OB && r.parentNode) r.remove(); }, quick || reduce ? 0 : 240); if (had) try { document.activeElement.blur(); } catch(e){} }
 function obLater(){ if (!OB) return; if (OB.kind === "update") { try { localStorage.setItem(LATER, OB.build || ""); localStorage.setItem("lowi.upd.snooze", String(Date.now())); } catch(e){} if (upNews && upNews.id) markSeen(upNews.id); const d = $("#lcUpd"); if (d) d.remove(); } obClose(); }
 /* Oct 15: the bubble shows what the update is doing: busy (button says "Updating…"), stalled (slow or offline:
@@ -5378,7 +5378,7 @@ function screenEl(){ let s = $("#mv-screen"); if (!s) { s = document.createEleme
 function open(){ const h = H(); if ($("#tab-move") && h && h.go) { h.go("move"); return; } const s = screenEl(); renderScreen(); s.scrollTop = 0; requestAnimationFrame(() => s.classList.add("on")); }
 /* Oct 8: Move is a tab. The same screen mounts inside #tab-move and stays open there. */
 function showTab(){ const t = $("#tab-move"); if (!t) { open(); return; } const s = screenEl(); if (s.parentElement !== t) t.appendChild(s); s.classList.add("tabmode", "on"); renderScreen(); }
-function close(){ const s = $("#mv-screen"); if (!s || s.classList.contains("tabmode") || !s.classList.contains("on")) return; s.classList.remove("on"); }  /* Oct 21 (no-menubar): goTab calls this on every page change; it no longer re-renders Home (goTab re-renders a cached Home only if S changed) */
+function close(){ const s = $("#mv-screen"); if (!s || s.classList.contains("tabmode") || !s.classList.contains("on")) return; /* BH-060 */ try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(s); } catch(e){} s.classList.remove("on"); }  /* Oct 21 (no-menubar): goTab calls this on every page change; it no longer re-renders Home (goTab re-renders a cached Home only if S changed) */
 function renderScreen(){
   const s = screenEl(), mm = movedMin(), st = stepsOn(), sk = moveStreak(), meal = mealWaiting(), plan = build(M.fmt, M.mins);
   let h = '<div class="mv-head"><button class="mv-back" data-mv="close" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + IC.back + '</button><div style="flex:1"><div class="h1">Move</div></div></div>';
@@ -5821,7 +5821,7 @@ function record(o){
   if (o.celebrate !== false) celebrateSession(r.min, r.xp, !!o.voice, o.onClose, o.complete !== false);
   return {xp:r.xp, min:r.min, sess};
 }
-function closePlayer(){ mvUnguard(); const el = $("#mv-player"); if (window.LowiMovePlayer) LowiMovePlayer.close(el); if (el) { el.classList.remove("on", "mv-asking"); setTimeout(() => { if (!P) el.innerHTML = ""; }, 400); } if ($("#mv-screen.on")) renderScreen(); const h = H(); if (h && h.refresh) h.refresh(); }
+function closePlayer(){ mvUnguard(); const el = $("#mv-player"); /* BH-060 */ if (el) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(el); } catch(e){} if (window.LowiMovePlayer) LowiMovePlayer.close(el); if (el) { el.classList.remove("on", "mv-asking"); setTimeout(() => { if (!P) el.innerHTML = ""; }, 400); } if ($("#mv-screen.on")) renderScreen(); const h = H(); if (h && h.refresh) h.refresh(); }
 
 /* ---------- steps ---------- */
 function setSteps(v){
@@ -6855,7 +6855,7 @@ const tdOfTx = (got, all) => got + " " + ({de:"von", es:"de"}[tdLang()] || "of")
 const tdForTx = i => ({de:"für ", es:"para "}[tdLang()] || "for ") + i.for.map(tdTx).join(", ");
 const tdFoundTx = f => ({de:"Von Mitgliedern gefunden: {n} bei {s}", es:"Encontrado por miembros: {n} en {s}"}[tdLang()] || "Members found: {n} at {s}").replace("{n}", () => f.n).replace("{s}", () => f.store) + (f.price ? " · " + f.price : "");
 function tdShopOpen(){ let el = $("#tdShop"); if (!el) { el = document.createElement("div"); el.id = "tdShop"; ($("#app") || document.body).appendChild(el); } tdShopRender(); el.classList.add("open"); }
-function tdShopClose(){ const el = $("#tdShop"); if (el) el.classList.remove("open"); if (TAB === "home") renderHome(); }
+function tdShopClose(){ const el = $("#tdShop"); /* BH-060 */ if (el) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(el); } catch(e){} if (el) el.classList.remove("open"); if (TAB === "home") renderHome(); }
 function tdShopRender(){ const el = $("#tdShop"); if (!el) return; const groups = tdListItems(), extra = window.LOWI_SHELF && LOWI_SHELF.listOpen ? LOWI_SHELF.listOpen(true) : [];
   const all = groups.reduce((a, g) => a + g.items.length, 0) + extra.length, got = groups.reduce((a, g) => a + g.items.filter(i => S.td.got[i.k]).length, 0) + extra.filter(i => i.done).length;
   el.innerHTML = '<div class="td-shophd"><button class="td-x big" data-td="shopclose" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button><div style="flex:1"><div class="small muted">Shopping</div><div class="h2 num" id="tdShopCount">' + tdOfTx(got, all) + '</div></div><button class="chip" data-td="copylist">Copy</button></div>' +
@@ -7601,7 +7601,7 @@ function pruefenHTML(){
 
 /* ---------- modal: detail, add, report, price ---------- */
 function modal(body, foot){ $("#shPanel").innerHTML = '<div class="mb">' + body + "</div>" + (foot ? '<div class="mf">' + foot + "</div>" : ""); $("#shModal").classList.add("on"); }
-function closeModal(){ const m = $("#shModal"); if (m) m.classList.remove("on"); }
+function closeModal(){ const m = $("#shModal"); /* BH-060 */ if (m) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(m); } catch(e){} if (m) m.classList.remove("on"); }
 function priceCompareRows(p){
   const by = {};
   liveSightings(p).forEach(s => { if (["fresh","check"].indexOf(priceState(s)) < 0 || !(s.p > 0)) return; const old = by[s.s]; if (!old || s.p < old.p || (s.p === old.p && s.at > old.at)) by[s.s] = s; });
@@ -7933,7 +7933,7 @@ function openCart(opts){ opts = opts || {}; tdEnsure(); const td = S.td, base = 
   if (!opts.store && !lcState().picked) { const it = lcItems(); if (it.filter(lcIn).length) lcState().store = LC_STORES.map(s => [s[0], lcTotal(it, s[0], true)]).sort((a, b) => a[1] - b[1])[0][0]; }
   let el = $("#lsCart"); if (!el) { el = document.createElement("div"); el.id = "lsCart"; ($("#app") || document.body).appendChild(el); lcBindDrag(el); }
   lcRender(); requestAnimationFrame(() => el.classList.add("open")); }
-function closeCart(){ const el = $("#lsCart"); if (el) el.classList.remove("open"); const sh = $("#lcShop"); if (sh) sh.classList.remove("open"); if (typeof TAB !== "undefined" && TAB === "home") renderHome(); }
+function closeCart(){ const el = $("#lsCart"); /* BH-060 */ if (el) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(el); } catch(e){} if (el) el.classList.remove("open"); const sh = $("#lcShop"); if (sh) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(sh); } catch(e){}  if (sh) sh.classList.remove("open"); if (typeof TAB !== "undefined" && TAB === "home") renderHome(); }
 
 /* Oct 24 button sweep: in de/es Shop it read English: "Nori Smash Burger Stack · Cabbage Egg Okonomiyaki" under a list item (the page
    translator only knows each recipe name, not two joined), "Lidl is €0,10 cheaper" (split by the <b>), and every product tile's aria-label.
@@ -7994,7 +7994,7 @@ function lcRender0(){ const el = $("#lsCart"); if (!el || !LC) return; const st 
 /* in the store: full screen, big ticks, aisle order, the cart's own items at the cart's store */
 function lcShopOpen(){ let el = $("#lcShop"); if (!el) { el = document.createElement("div"); el.id = "lcShop"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); ($("#app") || document.body).appendChild(el); }
   lcShopRender(); requestAnimationFrame(() => el.classList.add("open")); }
-function lcShopClose(){ const el = $("#lcShop"); if (el) el.classList.remove("open"); lcRender(); }
+function lcShopClose(){ const el = $("#lcShop"); /* BH-060 */ if (el) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(el); } catch(e){} if (el) el.classList.remove("open"); lcRender(); }
 function lcShopRender(){ const el = $("#lcShop"); if (!el || !LC) return; const st = lcState(), cur = lcStore(st.store), got = lcGot(), aisle = g => typeof tdAisle === "function" ? tdAisle(g) : "Other";
   const inC = lcItems().filter(lcIn).sort((a, b) => aisle(a.g) < aisle(b.g) ? -1 : aisle(a.g) > aisle(b.g) ? 1 : 0), n = inC.filter(i => got[i.k]).length, left = inC.filter(i => !got[i.k]);
   let lastA = "";
@@ -8124,7 +8124,7 @@ function rsSheet(k){ if (!RS) return; const items = rsItems(RS.rec), i = items.f
     '<button class="btn primary" data-lc="rs-close">Done</button>'); }
 function rsOpen(html){ let w = $("#rsSheet"); if (!w) { w = document.createElement("div"); w.id = "rsSheet"; w.innerHTML = '<div class="rs-bg" data-lc="rs-close"></div><div class="rs-sh" role="dialog" aria-modal="true"></div>'; ($("#app") || document.body).appendChild(w); }
   w.querySelector(".rs-sh").innerHTML = '<div class="grab"></div>' + html; requestAnimationFrame(() => w.classList.add("open")); }
-function rsClose(){ const w = $("#rsSheet"); if (w) w.classList.remove("open"); }
+function rsClose(){ const w = $("#rsSheet"); /* BH-060 */ if (w) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(w); } catch(e){} if (w) w.classList.remove("open"); }
 function rsText(){ const items = rsItems(RS.rec), buy = rsBuy(items).filter(lcIn), sid = rsStore(items), cur = lcStore(sid);
   return "LOWiSPIKE · " + RS.rec.n + " · " + cur[1] + "\n" + buy.map(i => { const at = lcAt(i, sid); return "- " + i.n + "  " + lcEur(lcPx(i, at)) + (at !== sid ? " (" + lcStore(at)[1] + ")" : ""); }).join("\n") + "\n\n≈ " + lcEur(lcTotal(buy, sid)) + " (estimate)"; }
 window.LowiStoreList = {pic:lcPic, storeFor:r => rsStore(rsItems(r)), storeName:id => lcStore(id)[1], eur:lcEur, /* k9-sl */ html:rsHTML, items:rsItems, store:() => RS ? rsStore(rsItems(RS.rec)) : lcState().store, best:() => RS ? rsBest(rsItems(RS.rec))[0][0] : "", price:lcPx, total:sid => RS ? lcTotal(rsBuy(rsItems(RS.rec)), sid || rsStore(rsItems(RS.rec))) : 0, text:() => RS ? rsText() : ""};
@@ -9533,7 +9533,7 @@ function dkOpen(){
   if (window.LOWI_SHELF) { try { lowiOpen("shelf"); } catch(e){}
     setTimeout(() => { const s = r5$("#r3kSwipe"); if (s) s.scrollIntoView({behavior:"smooth", block:"start"}); }, 450); }
 }
-function dkClose(){ const el = r5$("#r5Deck"); if (el) el.classList.remove("on"); }
+function dkClose(){ const el = r5$("#r5Deck"); /* BH-060 */ if (el) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(el); } catch(e){} if (el) el.classList.remove("on"); }
 function dkCard(f, k){ return '<div class="r5-dc' + (k === 0 ? " top" : "") + '" data-id="' + esc(f.id) + '" style="--k:' + k + '">' + (f.img ? '<img alt="" src="' + f.img + '" draggable="false">' : '<div class="r5-dcph ck-ph">' + CKPLATE + '<b>' + esc(String(f.n || "?").charAt(0).toUpperCase()) + '</b></div>') +
   '<i class="r3k-st up">TODAY</i><i class="r3k-st right">SOON</i><i class="r3k-st left">NOT TODAY</i><i class="r3k-st down">NEVER</i><div class="r5-dci">' + fBadge(f) + '<div class="h2">' + esc(f.n) + '</div><div class="small">' + fMetaHTML(f) + '</div>' + (f.com ? '<div class="small r5-dcc">' + esc(f.sub) + '</div>' : "") + '</div></div>'; }
 function dkPaint(){
@@ -11219,7 +11219,7 @@ function showGate(view){
 }
 function lockApp(on){ Array.prototype.forEach.call(document.body.children, el => { if (el.id === "r2gate" || el.tagName === "SCRIPT" || el.tagName === "STYLE") return; if (on) { if (!el.inert) { el.inert = true; el.setAttribute("data-gate-inert", ""); } } else if (el.hasAttribute("data-gate-inert")) { el.inert = false; el.removeAttribute("data-gate-inert"); } }); document.documentElement.classList.toggle("gate-up", !!on); if (!on) document.documentElement.classList.remove("gate-boot");
   if (on && !lockApp.mo) { lockApp.mo = new MutationObserver(() => { if (gateEl) lockApp(true); }); lockApp.mo.observe(document.body, {childList:true}); } }
-function hideGate(force){ if (!gateEl) return; if (!force && needsGate()) return; const g = gateEl; gateEl = null; lockApp(false); g.classList.remove("on"); g.classList.add("off"); setTimeout(() => g.remove(), 450); }
+function hideGate(force){ if (!gateEl) return; if (!force && needsGate()) return; const g = gateEl; gateEl = null; /* BH-060 */ try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(g); } catch(e){} lockApp(false); g.classList.remove("on"); g.classList.add("off"); setTimeout(() => g.remove(), 450); }
 R2.gateUp = () => !!gateEl;
 R2.showGate = showGate;
 
@@ -15610,7 +15610,7 @@ function loop(){ if (!CAM || CAM.done) return; CAM.raf = requestAnimationFrame(l
 function stopStream(){ if (!CAM) return; cancelAnimationFrame(CAM.raf); clearTimeout(CAM.wd); try { CAM.stream && CAM.stream.getTracks().forEach(x => x.stop()); } catch(e){} CAM.stream = null; }
 /* BH-014: the barcode frame canvas (CAM.cv, iPhones decode with ZXing) is handed back when the scanner closes, not left to the GC */
 function freeCv(cv){ try { if (cv) { cv.width = 0; cv.height = 0; } } catch(e){} }
-function closeScanner(now){ if (!CAM) return; const c = CAM; c.done = true; stopStream(); CAM = null; document.documentElement.classList.remove("b3-camon"); freeCv(c.cv); c.cv = null;
+function closeScanner(now){ if (!CAM) return; const c = CAM; /* BH-060 */ if (c.el) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(c.el); } catch(e){} c.done = true; stopStream(); CAM = null; document.documentElement.classList.remove("b3-camon"); freeCv(c.cv); c.cv = null;
   if (now) c.el.remove(); else { c.el.classList.remove("on"); setTimeout(() => c.el.remove(), 260); } }
 async function torch(){ try { const tr = CAM.stream.getVideoTracks()[0]; CAM.torch = !CAM.torch; await tr.applyConstraints({advanced:[{torch:CAM.torch}]}); $(".b3-torch", CAM.el).classList.toggle("on", CAM.torch); } catch(e){} }
 async function found(code){ if (!CAM) return;
@@ -20769,7 +20769,7 @@ function open(){ try { if (window.LowiN1 && LowiN1.hide) LowiN1.hide(true); } ca
   ov.innerHTML = html(); H.classList.add("e1-up"); fit(); sfx("open");
   requestAnimationFrame(() => requestAnimationFrame(() => { ov.classList.add("in"); fit(); }));
   setTimeout(fit, 400); const b = ov.querySelector(".e1-go"); try { b && b.focus({preventScroll:true}); } catch(e){} }
-function close(){ const ov = D.getElementById("e1Ov"); H.classList.remove("e1-up"); if (!ov) return; ov.classList.remove("in"); ov.classList.add("out"); setTimeout(() => ov.remove(), 260); paintPill(); }
+function close(){ const ov = D.getElementById("e1Ov"); H.classList.remove("e1-up"); if (!ov) return; /* BH-060 */ try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(ov); } catch(e){} ov.classList.remove("in"); ov.classList.add("out"); setTimeout(() => ov.remove(), 260); paintPill(); }
 /* one screen: tighten in steps until the content ends above the bottom edge; a little scroll only as a safety net */
 function fit(){ const ov = D.getElementById("e1Ov"); if (!ov) return; const box = ov.querySelector(".e1-in"); if (!box) return;
   const room = () => { const r = box.getBoundingClientRect(), pb = parseFloat(getComputedStyle(box).paddingBottom) || 0; return r.bottom - pb; };
@@ -21068,7 +21068,7 @@ function show(n){ if (cur && cur.stay && !n.stay && cur.id !== n.id && D.getElem
   D.body.appendChild(b); place(); H.classList.add("n1-talk"); sfx("pop");
   requestAnimationFrame(() => requestAnimationFrame(() => b.classList.add("in")));
   clearTimeout(hideT); if (n.stay) b.classList.add("b3-stay"); else hideT = setTimeout(() => hide(), 20000); return true; }
-function hide(quick){ clearTimeout(hideT); const b = D.getElementById("n1B"); cur = null; H.classList.remove("n1-talk"); if (!b) return;
+function hide(quick){ clearTimeout(hideT); const b = D.getElementById("n1B"); cur = null; H.classList.remove("n1-talk"); if (!b) return; /* BH-060 */ try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(b); } catch(e){} 
   if (quick) { b.remove(); return; } b.classList.remove("in"); b.classList.add("out"); setTimeout(() => b.remove(), 240); }
 function act(q){ if (!q) return; try {
   if (q === "fast") { if (!D.getElementById("tab-home").classList.contains("active")) window.goTab("home"); setTimeout(() => { try { LowiF3.go("fast"); } catch(e){} }, 300); return; }

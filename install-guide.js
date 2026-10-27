@@ -259,7 +259,7 @@
     else if (a === 'go' && el) { show(el, +b.getAttribute('data-i')); el.__hold = Date.now() + 6000; e.preventDefault(); }
     else if (a === 'close') closeOverlay();
     else if (a === 'later') { try { sessionStorage.setItem(Core.A2HS_X, '1'); } catch (x) {} const h = D.getElementById('lcA2hs'); if (h) h.remove(); closeOverlay(); }
-    else if (a === 'done') setTimeout(closeOverlay, 0);
+    else if (a === 'done') { /* BH-060: closes a beat later, so its tap is spent now */ try { const F = window.LowiFreshScrim, o = D.getElementById('igOv'); if (o && F && F.closed) F.closed(o, e); } catch (x) {} setTimeout(closeOverlay, 0); }
     else if (a === 'install') promptInstall();
     else if (a === 'open') openOut(b.closest('#igOv'));
     else if (a === 'copy') copyLink(b.closest('#igOv'));
@@ -313,7 +313,7 @@
     if (!reduced()) requestAnimationFrame(() => o.classList.add('in')); else o.classList.add('in');
     return true;
   }
-  function closeOverlay() { const o = D.getElementById('igOv'); if (o) o.remove(); }
+  function closeOverlay() { const o = D.getElementById('igOv'); if (o) { /* BH-060 */ try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(o); } catch (e) { } o.remove(); } }
   D.addEventListener('keydown', e => { if (e.key === 'Escape' && D.getElementById('igOv')) closeOverlay(); });
 
   /* ---------- coach: a pulsing arrow at Safari's real ••• button (iPhone: bottom right; iPad: Share, top right) ---------- */

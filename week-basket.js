@@ -180,7 +180,10 @@
     }
     function close() {
         if (!ov || ov.classList.contains('closing')) return;
-        const el = ov; ov = null; el.classList.add('closing'); el.classList.remove('in'); el.style.pointerEvents = 'none';
+        const el = ov; ov = null;
+        /* BH-060: a closing tap on the basket (Done, Cart) is spent, so a fast 2nd tap does not hit the page under it */
+        try { const F = W.LowiFreshScrim; if (F && F.closed) F.closed(el); } catch (e) {}
+        el.classList.add('closing'); el.classList.remove('in'); el.style.pointerEvents = 'none';
         D.removeEventListener('keydown', onKey, true);
         const reduce = W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches;
         setTimeout(() => { el.remove(); }, reduce ? 0 : 260);

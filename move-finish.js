@@ -30,6 +30,8 @@
 
     function close(why) {
         const c = cur; if (!c) return; cur = null;
+        /* BH-060: the tap that closes the card is spent, so a fast 2nd tap does not hit the Move screen under it */
+        try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(c.el); } catch (e) { }
         c.dead = true; cancelAnimationFrame(c.raf); clearTimeout(c.tm);
         D.removeEventListener('keydown', c.onKey, true);
         c.el.classList.add('mf-out');

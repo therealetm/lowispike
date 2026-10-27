@@ -84,7 +84,7 @@
             }
         }
         el.appendChild(card); D.body.appendChild(el);
-        const close = () => { if (!el.isConnected) return; el.classList.add('out'); setTimeout(() => el.remove(), 320); };
+        const close = () => { if (!el.isConnected) return; /* BH-060 */ try { const F = W.LowiFreshScrim; if (F && F.closed) F.closed(el); } catch (e) {} el.classList.add('out'); setTimeout(() => el.remove(), 320); };
         card.addEventListener('click', e => { e.stopPropagation(); close(); });
         setTimeout(close, 3600);
         try { W.LowiSFX && LowiSFX.play && LowiSFX.play(Math.random() < 0.5 ? 'streak' : 'levelup'); } catch (e) {}

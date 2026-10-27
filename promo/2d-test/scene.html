@@ -1,0 +1,19 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:InterX;src:url(fonts/Inter-ExtraBold.ttf)}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#000}
+#stage{position:relative;width:1080px;height:1920px}
+svg,canvas{position:absolute;left:0;top:0;width:1080px;height:1920px}
+#cap{position:absolute;left:50%;top:150px;transform:translateX(-50%);white-space:nowrap;font-family:InterX,sans-serif;font-size:50px;color:#fff;
+  background:rgba(14,14,22,.86);border-radius:28px;padding:18px 36px 20px;letter-spacing:-.3px;opacity:0;box-sizing:border-box}
+#cap.comp{box-shadow:0 0 0 5px #c7a1ff,0 0 26px rgba(183,236,255,.55)}
+</style></head>
+<body><div id="stage">
+<svg id="back" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg"></svg>
+<canvas id="cv" width="1080" height="1920"></canvas>
+<svg id="front" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg"></svg>
+<div id="cap"></div>
+</div>
+<script src="scene.js"></script>
+</body></html>

@@ -1,0 +1,47 @@
+{
+ "meta": {
+  "vw": 390,
+  "vh": 693,
+  "dpr": 3,
+  "build": "20261027-020733",
+  "href": "https://therealetm.github.io/lowispike/index.html?sim=1793064397367",
+  "cls": "tmg-plant cf-form cf-el-air cw-cell cw-own-cell lh-sprite lh-stage-4 lh-happy lh-evening lh-pot-ceramic"
+ },
+ "taps": [
+  {
+   "f": 12,
+   "sel": ".wh-meals",
+   "x": 103.59375,
+   "y": 199.6875
+  },
+  {
+   "f": 34,
+   "sel": ".hb2-orb[aria-label^=\"Cook\"]",
+   "x": 80,
+   "y": 176
+  },
+  {
+   "f": 54,
+   "sel": ".ck-b[data-ck=\"view\"][data-v=\"shuffle\"]",
+   "x": 195.0078125,
+   "y": 86.71875
+  },
+  {
+   "f": 66,
+   "sel": "[data-ck=\"cat\"][data-v=\"meal\"]",
+   "x": 85.1953125,
+   "y": 139.375
+  },
+  {
+   "f": 76,
+   "sel": "#r5Go",
+   "x": 195,
+   "y": 452.890625
+  }
+ ],
+ "frames": 176,
+ "revealAt": 76,
+ "supabaseRequestsSeen": 40,
+ "fakeCloudWrites": 9,
+ "text": "LOWiSPIKE\nCook\neBook\nRecipes\nProducts\nAll\nSavory\nSweet\nKitchen\nShuffle\nSwipe\nG\nZ\nC\nS\nS\nShuffle again\nCook it\nShop it\n13 eBook recipes\nAll recipes\nMy Recipe Book\nBy ingredient\nSwap ingredients\nLOWiSPIKE GPT\nYour pick\nC\nYour pick\nYOUR PICK\nZucchini Turkey Burger Melt\nMeal · 20 min\nEveryday\nTakes a little time\n20 min\nAT HOME\n Smoked paprika\nTO BUY\n Zucchini\n Turkey mince\n Cheddar\n Greek yogurt\n Pickles\nAldi\n€10,25\nCook it\nShop it\n✓ I just ate this\nI'll eat this\nAdd to today"
+}

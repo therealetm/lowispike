@@ -102,7 +102,7 @@
         S.plan = S.plan.filter(id => byId[id] && ids.indexOf(id) >= 0);
         if (S.plan.length !== Math.min(S.nights, ids.length)) {
             const fresh = !S.plan.length;
-            S.plan = C.plan(ids, S.nights, C.seedOf(S), S.plan.slice(0, S.nights), id => C.main(byId[id]), S.vibe.length ? id => C.vibeScore(prof[id], S.vibe) : null);
+            S.plan = C.plan(ids, S.nights, C.seedOf(S), S.plan.slice(0, S.nights), id => C.weekKeys(byId[id]), S.vibe.length ? id => C.vibeScore(prof[id], S.vibe) : null);
             if (fresh) S.plan = C.freshFirst(S.plan, id => prof[id].perish);
         }
         const dinners = S.plan.map(id => ({ id, r: byId[id], items: itemsOf(byId[id]) }));
@@ -271,12 +271,12 @@
         if (a === 'nights') { S.nights = +b.dataset.v; return paint(sel('nights', S.nights)); }
         if (a === 'bud') { S.budget = Math.min(C.BUDGET_MAX, Math.max(C.BUDGET_MIN, S.budget + (+b.dataset.v))); return paint(sel('bud', b.dataset.v)); }
         if (a === 'store') { S.store = b.dataset.v; return paint(sel('store', S.store)); }
-        if (a === 'swap') { S.plan = C.swap(S.plan, +b.dataset.i, ctx.ids, C.seedOf(S), id => C.main(ctx.byId[id])); paint('[data-wb="swap"][data-i="' + b.dataset.i + '"]'); return; }
+        if (a === 'swap') { S.plan = C.swap(S.plan, +b.dataset.i, ctx.ids, C.seedOf(S), id => C.weekKeys(ctx.byId[id])); paint('[data-wb="swap"][data-i="' + b.dataset.i + '"]'); return; }
         if (a === 'new') { S.shuffle++; S.plan = []; S.start = today(); paint(sel('new')); return toast(T('A new week of dinners', 'Eine neue Woche Abendessen', 'Una nueva semana de cenas')); }
         if (a === 'have') { const k = b.dataset.k, i = ctx.items.find(x => x.k === k); if (!i) return; const at = !!ctx.have[k]; S.have[k] = at ? 0 : 1; return paint('[data-wb="have"][data-k="' + CSS.escape(k) + '"]'); }
         if (a === 'recipe') { try { if (W.LowiP2 && W.LowiP2.open) W.LowiP2.open(b.dataset.id); } catch (err) {} return; }
         if (a === 'fit') {
-            const f = C.fitBudget(S.plan, ctx.ids, S.budget, priced);
+            const f = C.fitBudget(S.plan, ctx.ids, S.budget, priced, 0, id => C.weekKeys(ctx.byId[id]));
             S.plan = f.plan; paint(sel('fit')) ;
             return toast(f.fits ? T('Fits your budget now', 'Passt jetzt in dein Budget', 'Ya cabe en tu presupuesto')
                 : T('Still over: try fewer dinners or a cheaper store', 'Noch dr\u00fcber: weniger Abendessen oder einen g\u00fcnstigeren Laden probieren', 'Sigue por encima: prueba menos cenas o una tienda m\u00e1s barata'));
@@ -310,7 +310,7 @@
     function makeWeek() {
         S.setup = true; S.plan = []; S.start = today(); S.sent = '';
         const c = build();
-        if (c.bs.over && c.ids.length > c.dinners.length) { const f = C.fitBudget(S.plan, c.ids, S.budget, priced); S.plan = f.plan; save(); }
+        if (c.bs.over && c.ids.length > c.dinners.length) { const f = C.fitBudget(S.plan, c.ids, S.budget, priced, 0, id => C.weekKeys(c.byId[id])); S.plan = f.plan; save(); }
         view = 'make'; paint();
         const reduce = W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches;
         clearTimeout(makeT); const el = ov;

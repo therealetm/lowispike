@@ -69,7 +69,8 @@ test('saved answers: setup, vibe, needs, kitchen and the start day load safely; 
 
 test('six vegetarian dinners make "Vegetarian" a real week; all low-spike, priced names, recipe-ready', () => {
     assert.equal(C.EXTRA.length, 6);
-    const pool = C.pool(C.EXTRA); assert.equal(pool.length, 0, 'extras are added by the UI, the Cook pool rule is unchanged');
+    assert.equal(C.pool(C.EXTRA).length, 6, 'the UI adds them to the Cook dinners and the usual pool rule takes all six');
+    assert.equal(C.pool([]).length, 0, 'the extras never leak into the Cook pool on their own');
     C.EXTRA.forEach(r => {
         const p = C.profile(r);
         assert.ok(p.veg, r.n + ' is vegetarian'); assert.equal(r.r, 'ja'); assert.equal(r.c, 'meal');
@@ -77,8 +78,9 @@ test('six vegetarian dinners make "Vegetarian" a real week; all low-spike, price
         assert.ok(!/rice|pasta|potato|bread|noodle|flour|sugar/i.test(r.ing.map(i => i.n).join(' ').replace(/No-added-sugar/g, '')), r.n + ' has no starchy staple');
     });
     assert.ok(C.EXTRA.some(r => !C.profile(r).dairy), 'one veggie dinner is also dairy-free');
-    const lang = JSON.stringify(wb.match(/W\.LowiWeekFlowLang = (\[[\s\S]*?\]);\n/)[1]);
-    C.EXTRA.forEach(r => [r.n, r.sub].concat(r.prep, r.make).forEach(t => assert.ok(lang.includes(JSON.stringify(t).slice(1, -1).replace(/[\u0080-\uffff]/g, '')), 'translated: ' + t)));
+    const rows = Function('return ' + wb.match(/W\.LowiWeekFlowLang = (\[[\s\S]*?\]);\n/)[1])();
+    const en = new Set(rows.filter(x => x[1] && x[2]).map(x => x[0]));
+    C.EXTRA.forEach(r => [r.n, r.sub].concat(r.prep, r.make).forEach(t => assert.ok(en.has(t), 'translated to German and Spanish: ' + t)));
 });
 
 test('the UI: one question per screen, a tap answers it, and the week is calm', () => {
@@ -102,4 +104,39 @@ test('the CSS: big calm tiles, 44pt targets, reduced motion respected', () => {
     assert.match(css, /\.wb-swap \{[^}]*width: 44px; height: 44px/);
     assert.match(css, /\.wb-back, \.wb-back-sp \{[^}]*width: 44px; height: 44px/);
     assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{ \.wb-orb i \{ animation: none/);
+});
+
+test('no meat twice in a week ("same meat every day"): beef, turkey, chicken, salmon, shrimp each once while the pool allows', () => {
+    const mk = (id, ...ing) => ({ id, r: 'ja', c: 'meal', ing: ing.concat([['gemuese', 'Zucchini'], ['wuerze', 'Oregano']]).map(([g, n]) => ({ g, n })) });
+    assert.deepEqual(C.meats(mk('x', ['hack', 'Lean beef mince'])), ['beef']);
+    assert.deepEqual(C.meats(mk('x', ['eier', 'Eggs'], ['huhn', 'Chicken'])), ['chicken'], 'chicken hiding behind eggs still counts');
+    assert.deepEqual(C.meats(mk('x', ['eier', 'Eggs'], ['huhn', 'Shrimp'])), ['shrimp']);
+    assert.deepEqual(C.meats(mk('x', ['hack', 'Beef mince or patties'])), ['beef']);
+    assert.deepEqual(C.meats(mk('x', ['kaese', 'Halloumi'])), []);
+    assert.deepEqual(C.weekKeys(mk('x', ['hack', 'Turkey mince'])), ['hack', 'meat:turkey']);
+    const P = [mk('b1', ['hack', 'Lean beef mince']), mk('b2', ['hack', 'Beef mince or patties']), mk('b3', ['hack', 'Lean beef mince']), mk('b4', ['hack', 'Lean beef mince']),
+        mk('t1', ['hack', 'Turkey mince']), mk('t2', ['hack', 'Turkey mince']), mk('c1', ['huhn', 'Chicken']), mk('c2', ['eier', 'Eggs'], ['huhn', 'Chicken']), mk('c3', ['huhn', 'Chicken']),
+        mk('s1', ['huhn', 'Salmon']), mk('e1', ['eier', 'Eggs']), mk('k1', ['kaese', 'Halloumi']), mk('k2', ['kaese', 'Feta']), mk('e2', ['eier', 'Eggs'], ['kaese', 'Feta'])];
+    const by = {}; P.forEach(r => { by[r.id] = r; }); const ids = P.map(r => r.id), ko = id => C.weekKeys(by[id]);
+    const repeats = p => { const n = {}; return p.some(id => C.meats(by[id]).some(k => (n[k] = (n[k] || 0) + 1) > 1)); };
+    for (let s = 0; s < 40; s++) {
+        [5, 7].forEach(nights => {
+            const p = C.plan(ids, nights, 'w#' + s, null, ko);
+            assert.equal(p.length, nights); assert.ok(!repeats(p), 'no meat twice: ' + p);
+            for (let i = 0; i < nights; i++) { const q = C.swap(p, i, ids, 'w#' + s, ko); assert.ok(!repeats(q), 'swap keeps every meat once: ' + q); }
+        });
+    }
+    const cheap = { b1: 1, b2: 1, b3: 1, b4: 1 }, build = p => ({ sum: p.reduce((a, id) => a + (cheap[id] || 9), 0), cost: id => cheap[id] || 9 });
+    const f = C.fitBudget(['t1', 'c1', 's1', 'e1', 'k1'], ids, 5, build, 0, ko);
+    assert.ok(!repeats(f.plan), 'fitting the budget never brings back the same meat: ' + f.plan);
+    assert.equal(C.plan(['b1', 'b2', 'b3'], 3, 'x', null, ko).length, 3, 'a pool of only beef still fills the week');
+});
+
+test('every veggie dinner has its main ingredient in what you buy (the name\'s food is on the list)', () => {
+    const FOODS = [/\begg/i, /feta/i, /halloumi/i, /zucchini/i, /ricotta/i, /mushroom/i, /cauliflower/i, /cabbage/i];
+    C.EXTRA.forEach(r => {
+        const ing = r.ing.map(i => Array.isArray(i) ? i[1] : i.n).join(' | ');
+        FOODS.forEach(rx => { if (rx.test(r.n)) assert.ok(rx.test(ing), r.n + ' lists ' + rx); });
+        assert.ok(C.main(r), r.n + ' has a main (eggs or cheese)');
+    });
 });

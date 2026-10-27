@@ -47,14 +47,34 @@
         return !i ? '' : i.g === 'huhn' ? 'huhn:' + String(i.n || '').toLowerCase().split(/[ ,]/)[0] : i.g;
     }
     const limitFor = n => Math.max(2, Math.ceil(n / 3));
+    /* Oct 27 2026 (the TikTok's top complaint, "the same meat every day"): each meat or fish a dinner has, by kind. A week never
+       has the same one twice while the pool can avoid it (beef mince Monday, turkey Tuesday is fine; beef twice is not). */
+    const MEATS = [['beef', /beef/i], ['turkey', /turkey|pute/i], ['chicken', /chicken|h(ae|\u00e4)hnchen/i], ['pork', /pork|bacon|\bham\b|sausage|chorizo|salami/i],
+        ['salmon', /salmon|lachs/i], ['shrimp', /shrimp|prawn|garnele/i], ['tuna', /tuna|thunfisch/i], ['fish', /\bcod\b|white fish|kabeljau/i]];
+    function meats(r) {
+        const out = [];
+        (r && r.ing || []).forEach(x => {
+            const n = typeof x === 'string' ? (x.split('|')[1] || '') : Array.isArray(x) ? String(x[1] || '') : String(x && x.n || '');
+            let hit = '';
+            MEATS.some(([k, rx]) => (rx.test(n) ? (hit = k) : false));
+            if (!hit && /\bmince\b|patt(y|ies)/i.test(n)) hit = 'mince';
+            if (hit && out.indexOf(hit) < 0) out.push(hit);
+        });
+        return out;
+    }
+    /* what keeps a week varied: its main (at most a third of the week) and each meat by kind (once a week) */
+    const weekKeys = r => { const m = main(r); return (m ? [m] : []).concat(meats(r).map(k => 'meat:' + k)); };
+    const keysOf = (mo, id) => { const v = mo(id); return !v ? [] : Array.isArray(v) ? v : [v]; };
+    const limOf = (k, lim) => (k.indexOf('meat:') === 0 ? 1 : lim);
+    const roomFor = (keys, cnt, lim) => keys.every(k => (cnt[k] || 0) < limOf(k, lim));
     /* a stable shuffle of the pool for this week and this reshuffle count */
     function order(ids, seed) { return ids.slice().sort((a, b) => (hash(seed + '|' + a) - hash(seed + '|' + b)) || (a < b ? -1 : 1)); }
     function plan(poolIds, nights, seed, keep, mainOf, rankFn) {
         const n = Math.min(clampInt(nights, 1, 7, DEF.nights), poolIds.length), out = [], cnt = {}, mo = mainOf || (() => ''), lim = limitFor(n);
-        const put = id => { out.push(id); const m = mo(id); if (m) cnt[m] = (cnt[m] || 0) + 1; };
+        const put = id => { out.push(id); keysOf(mo, id).forEach(m => { cnt[m] = (cnt[m] || 0) + 1; }); };
         (keep || []).forEach(id => { if (out.length < n && poolIds.indexOf(id) >= 0 && out.indexOf(id) < 0) put(id); });
         const ord = rankFn ? rank(poolIds, seed, rankFn) : order(poolIds, seed);
-        ord.forEach(id => { const m = mo(id); if (out.length < n && out.indexOf(id) < 0 && (!m || (cnt[m] || 0) < lim)) put(id); });
+        ord.forEach(id => { if (out.length < n && out.indexOf(id) < 0 && roomFor(keysOf(mo, id), cnt, lim)) put(id); });
         ord.forEach(id => { if (out.length < n && out.indexOf(id) < 0) put(id); });
         return out;
     }
@@ -62,11 +82,11 @@
     function swap(planIds, idx, poolIds, seed, mainOf) {
         const p = planIds.slice(), cur = p[idx]; if (cur == null) return p;
         const mo = mainOf || (() => ''), lim = limitFor(p.length), ord = order(poolIds, seed), start = Math.max(0, ord.indexOf(cur));
-        const cnt = {}; p.forEach((id, j) => { const m = mo(id); if (m && j !== idx) cnt[m] = (cnt[m] || 0) + 1; });
+        const cnt = {}; p.forEach((id, j) => { if (j !== idx) keysOf(mo, id).forEach(m => { cnt[m] = (cnt[m] || 0) + 1; }); });
         let fallback = null;
         for (let k = 1; k <= ord.length; k++) {
             const id = ord[(start + k) % ord.length]; if (p.indexOf(id) >= 0) continue;
-            const m = mo(id); if (!m || (cnt[m] || 0) < lim) { p[idx] = id; return p; }
+            if (roomFor(keysOf(mo, id), cnt, lim)) { p[idx] = id; return p; }
             if (!fallback) fallback = id;
         }
         if (fallback) p[idx] = fallback;
@@ -199,16 +219,18 @@
     ].map(r => Object.assign({}, r, { ing: r.ing.map(([g, n]) => ({ g, n })), steps: r.make.slice() }));
     /* Fit my budget: swap the dinner that costs most for the cheapest one not on the plan, while that brings the week down,
        until it fits. build(planIds) -> {items, cost(id)} lets the caller price it with the real store estimate. */
-    function fitBudget(planIds, poolIds, budget, build, maxSteps) {
+    function fitBudget(planIds, poolIds, budget, build, maxSteps, keyOf) {
         let p = planIds.slice(), steps = 0, b = build(p);
         const lim = maxSteps || 12;
+        /* fitting the budget never brings back the same meat twice (keyOf = weekKeys) */
+        const meatRepeat = trial => { if (!keyOf) return false; const seen = {}; return trial.some(id => keysOf(keyOf, id).some(k => k.indexOf('meat:') === 0 && (seen[k] = (seen[k] || 0) + 1) > 1)); };
         while (b.sum > budget && steps < lim) {
             const byCost = p.map(id => [id, b.cost(id)]).sort((x, y) => y[1] - x[1]);
             let best = null;
             poolIds.forEach(c => {
                 if (p.indexOf(c) >= 0) return;
                 const trial = p.slice(); trial[p.indexOf(byCost[0][0])] = c; const tb = build(trial);
-                if (tb.sum < b.sum - 0.005 && (!best || tb.sum < best[1].sum)) best = [trial, tb];
+                if (meatRepeat(trial) && !meatRepeat(p)) return; if (tb.sum < b.sum - 0.005 && (!best || tb.sum < best[1].sum)) best = [trial, tb];
             });
             if (!best) break;
             p = best[0]; b = best[1]; steps++;
@@ -239,5 +261,5 @@
         return (title || 'LOWiSPIKE') + ' \u00b7 ' + storeName + '\n' + need.map(i => '- ' + (i.packs > 1 ? i.packs + ' \u00d7 ' : '') + i.n + '  ' + eur((Number(priceFn(i, sid)) || 0) * i.packs)).join('\n') +
             '\n\n\u2248 ' + eur(total(items, priceFn, sid, have));
     }
-    return { KEY, PEOPLE, NIGHTS, DEF, BUDGET_MIN, BUDGET_MAX, FEAT_DINNERS, VIBES, DIETS, KITS, EXTRA, weekKey, pool, main, order, rank, plan, swap, profile, fits, vibeScore, freshFirst, days, ymd, once, packsFor, basket, total, storeTotals, dinnerCost, budgetState, fitBudget, load, seedOf, text, hash };
+    return { KEY, PEOPLE, NIGHTS, DEF, BUDGET_MIN, BUDGET_MAX, FEAT_DINNERS, VIBES, DIETS, KITS, EXTRA, weekKey, pool, main, meats, weekKeys, order, rank, plan, swap, profile, fits, vibeScore, freshFirst, days, ymd, once, packsFor, basket, total, storeTotals, dinnerCost, budgetState, fitBudget, load, seedOf, text, hash };
 });

@@ -324,7 +324,12 @@
         D.addEventListener('click', e => {
             const t = e.target && e.target.closest ? e.target : null; if (!t) return;
             const o = t.closest('[data-cw="open"]'); if (o) { e.preventDefault(); e.stopPropagation(); open(); return; }
-            const b = t.closest('#cwSheet [data-cw]'); if (b) { if (b.disabled) return; e.preventDefault(); act(b.getAttribute('data-cw'), b); setTimeout(paintRing, 0); }
+            const b = t.closest('#cwSheet [data-cw]'); if (b) { if (b.disabled) return; e.preventDefault();
+                /* BH-060: Turn on / Turn off redraw the whole sheet, so a fast 2nd tap on the same spot would land on what slid in under
+                   the finger (Turn on: the Cramps chip, logged by accident). That tap is spent; a tap elsewhere works at once. */
+                const k = b.getAttribute('data-cw');
+                if (k === 'on' || k === 'off') { try { const F = W.LowiFreshScrim; if (F && F.closed) F.closed(D.getElementById('cwSheet'), e); } catch (x) { } }
+                act(k, b); setTimeout(paintRing, 0); }
         }, true);
         const addL = () => { try { if (W.LowiLang && W.LowiLang.add) { W.LowiLang.add(LANG_ROWS); return true; } } catch (e) {} return false; };
         if (!addL()) W.addEventListener && W.addEventListener('load', addL);

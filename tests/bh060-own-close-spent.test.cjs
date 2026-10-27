@@ -100,6 +100,7 @@ const SITES = [
     ['home-settings-sleep-v2.js', /const was = open; open = null; detached = false;\n[^\n]*\n\s*try \{ const F = root\.LowiFreshScrim; if \(layer && F && F\.closed\) F\.closed\(layer\); \}/, 'settings / sleep ring: a row or choice'],
     ['shop-scan.js', /F\.closed\(c\); \} catch \(e\) \{ \}\n\s*if \(c\) c\.remove\(\);/, 'shop scan result card'],
     ['tutorial-auto.js', /function closeOffer\(\) \{ if \(offer\) \{[^\n]*F\.closed\(offer\);[^\n]*offer\.remove\(\)/, 'tutorial offer: Later / Go'],
+    ['cycle-world.js', /if \(k === 'on' \|\| k === 'off'\) \{ try \{ const F = W\.LowiFreshScrim; if \(F && F\.closed\) F\.closed\(D\.getElementById\('cwSheet'\), e\); \} catch \(x\) \{ \} \}\n\s*act\(k, b\);/, 'My cycle: Turn on / Turn off redraw the sheet (Cramps chip slid under the finger)'],
 ];
 const IDX = [
     [/function closeRw\(\)\{[^\n]*F\.closed\(d\)/, 'fast reward card'],
@@ -124,6 +125,20 @@ test('each own close calls closed() with its own element before it goes', () => 
     const idx = read('index.html');
     for (const [re, what] of IDX) if (what) assert.match(idx, re, 'index.html: ' + what);
     assert.match(idx, /if \(!r\) return; \/\* BH-060 \*\/ try \{ const F = window\.LowiFreshScrim; if \(F && F\.closed\) F\.closed\(r\); \} catch\(e\)\{\} const had = r\.contains/, 'index.html: What\'s New / welcome card');
+});
+
+test('My cycle: a fast 2nd tap on Turn on does not log the chip that the redraw put under it; other chips still work', () => {
+    const k = mk();
+    const sheet = k.node(k.body, 'cw'), on = k.node(sheet, 'cw-btn pri');
+    let logged = 0;
+    const turnOn = e => { k.F.closed(sheet, e); on.parentNode = null; };   /* the sheet redraws: Turn on is gone, the chips are in */
+    const cramps = k.node(sheet, 'cw-chip'), tired = k.node(sheet, 'cw-chip');
+    const log = () => { logged++; };
+    k.at(0); k.tap(on, 195, 600, {}, turnOn);
+    k.at(120); assert.ok(k.tap(cramps, 196, 602, {}, log).stopped, 'the 2nd tap 120 ms later on the same spot is swallowed');
+    assert.strictEqual(logged, 0, 'Cramps was not logged');
+    k.at(200); k.tap(tired, 80, 640, {}, log); assert.strictEqual(logged, 1, 'a quick tap on another chip logs at once');
+    k.at(700); k.tap(cramps, 195, 600, {}, log); assert.strictEqual(logged, 2, 'a deliberate tap on Cramps later logs it');
 });
 
 test('fresh-scrim exports closed()', () => {

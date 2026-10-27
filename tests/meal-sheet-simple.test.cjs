@@ -23,11 +23,14 @@ test('Log meal opens straight into one calm sheet (no Meal-or-snack screen first
 test('one field: typing, mic, Foto and Barcode together, no second "Manuell" field or three tiles', () => {
     assert.equal((quick.match(/name="title"/g) || []).length, 1, 'exactly one meal text field');
     assert.match(quick, /id="lmTitle"[^>]*data-mic="1"/, 'the mic sits in that field');
-    assert.match(quick, /class="lm-chip" data-sp="photo"/);
-    assert.match(quick, /class="lm-chip" data-sp="scan"/);
+    /* Oct 27 (later): Barcode is off the meal sheet; the photo is the one big button above the field */
+    assert.doesNotMatch(quick, /data-sp="scan"/, 'no Barcode on the meal sheet');
+    assert.match(quick, /lmSnapHTML\(\) \+ form/, 'the photo button comes first, then the field');
     assert.ok(!/sp-slot-how|slotWrite|tr\('manual'\)|sp-manual/.test(quick), 'no Schreiben / Scannen / Foto tiles, no MANUELL heading');
-    const f = quick.indexOf('<form id="spMeal"'), photo = quick.indexOf('data-sp="photo"'), save = quick.indexOf('lm-save');
-    assert.ok(f > 0 && photo > f && save > photo, 'Foto / Barcode live inside the one form, before Save');
+    const snap = SP.slice(SP.indexOf('function lmSnapHTML()'), SP.indexOf('function lmSnapRefresh('));
+    assert.match(snap, /data-sp="' \+ \(st\.none \? 'snapNone' : 'photo'\) \+ '"/, 'one tap opens the camera (or, with no photos left, the typing field)');
+    const f = quick.indexOf('<form id="spMeal"'), save = quick.indexOf('lm-save'), mic = quick.indexOf('data-mic="1"');
+    assert.ok(f > 0 && mic > f && save > mic, 'typing and the mic live inside the one form, before Save');
 });
 
 test('time: Now by default, one quiet native clock, no row of chips; future refused; fresh open resets', () => {

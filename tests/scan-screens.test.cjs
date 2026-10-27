@@ -29,8 +29,10 @@ test('food camera is its own full-screen layer, never the herb-world card', () =
   assert.match(photo, /D\.body\.append\(h\)/);
   assert.match(photo, /h\.id = 'ssFood'/);
   assert.match(photo, /aria-modal/);
-  // X closes, one shutter, Photos, Type it, Barcode switch
-  for (const sp of ['cancelCapture', 'shutter', 'meal', 'toBarcode']) assert.match(photo, new RegExp('data-sp="' + sp + '"'), sp);
+  // X closes, one shutter, Photos, Type it. Oct 27: no Barcode switch in the food camera (it's for a plate you're about to eat;
+  // the store scanner stays on Home and in Shop)
+  for (const sp of ['cancelCapture', 'shutter', 'meal']) assert.match(photo, new RegExp('data-sp="' + sp + '"'), sp);
+  assert.doesNotMatch(photo, /data-sp="toBarcode"/, 'no Barcode switch in the food camera');
   assert.match(photo, /class="sp-file-in"/);
   // shutter reads the new layer's video, not the world's
   assert.match(fnBody(spirit, 'function shutter()'), /foodCam && foodCam\.querySelector\('video'\)/);

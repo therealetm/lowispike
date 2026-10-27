@@ -80,15 +80,21 @@ test('a read is remembered by photo, so sharing it never asks the AI again', () 
 test('allowance: today\'s checks left, as the server said; a new day forgets it', () => {
     const M = fresh('meal-photo.js');
     localStorage.clear();
+    assert.strictEqual(M.DAY_MAX, 10, 'Oct 27: 10 photo checks a day');
     assert.strictEqual(M.left(), null);
-    M.setLeft(2, 3);
-    assert.deepStrictEqual(M.left(), { left: 2, limit: 3 });
-    assert.strictEqual(M.leftText('en'), '2 of 3 photo checks left today');
-    M.setLeft(0, 3);
+    M.setLeft(9, 10);
+    assert.deepStrictEqual(M.left(), { left: 9, limit: 10 });
+    assert.strictEqual(M.leftText('en'), '9 of 10 photo checks left today');
+    assert.strictEqual(M.leftSoon('en'), '', 'the count stays quiet while more than 3 are left');
+    M.setLeft(2, 10);
+    assert.strictEqual(M.leftSoon('en'), '2 of 10 photo checks left today', 'it shows once 3 or fewer are left');
+    M.setLeft(0, 10);
     assert.match(M.leftText('en'), /No photo checks left today/);
     assert.match(M.leftText('en'), /Typing what you ate always works/);
-    localStorage.setItem('lowi.mealsnap.left', JSON.stringify({ day: '2000-01-01', left: 0, limit: 3 }));
+    localStorage.setItem('lowi.mealsnap.left', JSON.stringify({ day: '2000-01-01', left: 0, limit: 10 }));
     assert.strictEqual(M.left(), null, 'yesterday\'s count does not block today');
+    localStorage.setItem('lowi.mealsnap.left', JSON.stringify({ day: M.dayKey(), left: 0, limit: 3 }));
+    assert.strictEqual(M.left(), null, 'a count saved today under the old limit of 3 does not block photo 4 to 10');
 });
 
 test('LowiFoodAI sends the time zone, keeps the count, and says "limit" with the typed-meal way out', async () => {
@@ -97,14 +103,14 @@ test('LowiFoodAI sends the time zone, keeps the count, and says "limit" with the
     const A = fresh('food-photo-ai.js');
     global.LOWI_CFG = { url: 'https://x.supabase.co', key: 'pk' };
     let sent = null;
-    global.fetch = async (url, o) => { sent = JSON.parse(o.body); return { ok: true, status: 200, json: async () => ({ is_food: true, dishes: [{ name: 'Rice', kcal: 200 }], left: 1, limit: 3 }) }; };
+    global.fetch = async (url, o) => { sent = JSON.parse(o.body); return { ok: true, status: 200, json: async () => ({ is_food: true, dishes: [{ name: 'Rice', kcal: 200 }], left: 1, limit: 10 }) }; };
     await A.analyse('data:image/jpeg;base64,QUJD', { token: 't', lang: 'en' });
     assert.ok(typeof sent.tz === 'string', 'tz sent');
-    assert.deepStrictEqual(global.LowiMealSnap.left(), { left: 1, limit: 3 });
-    global.fetch = async () => ({ ok: false, status: 429, json: async () => ({ error: 'limit', limit: 3, left: 0 }) });
+    assert.deepStrictEqual(global.LowiMealSnap.left(), { left: 1, limit: 10 });
+    global.fetch = async () => ({ ok: false, status: 429, json: async () => ({ error: 'limit', limit: 10, left: 0 }) });
     await assert.rejects(A.analyse('data:image/jpeg;base64,QUJD', { token: 't' }), e => e.code === 'limit');
-    assert.deepStrictEqual(global.LowiMealSnap.left(), { left: 0, limit: 3 });
-    for (const l of ['en', 'de', 'es']) assert.ok(A.strings[l].limit && /3/.test(A.strings[l].limit), l + ' limit text');
+    assert.deepStrictEqual(global.LowiMealSnap.left(), { left: 0, limit: 10 });
+    for (const l of ['en', 'de', 'es']) assert.ok(A.strings[l].limit && /\b10\b/.test(A.strings[l].limit) && !/\b3\b/.test(A.strings[l].limit), l + ' limit text says 10');
     assert.match(A.strings.en.limit, /unlimited/);
     delete global.fetch; delete global.LOWI_CFG; delete global.LowiMealSnap;
 });

@@ -49,7 +49,9 @@ test('Log meal opens straight on one screen: a small Meal | Snack switch, then o
     assert.match(js, /else if \(a === 'slot'\) mealForm\(null, null, b\.dataset\.slot\)/);
     assert.match(js, /else if \(a === 'slotPick'\) slotPicker\(\)/, 'the way back (after editing an entry) still works');
     const f = js.slice(js.indexOf("const form = '<form id=\"spMeal\" class=\"lm-form\""), js.indexOf('const usual = recent.length'));
-    assert.match(f, /name="title"[\s\S]*data-sp="photo"[\s\S]*data-sp="scan"/, 'write, then Foto, then Barcode');
+    assert.match(js, /lmSnapHTML\(\) \+ form \+ usual/, 'the big photo button, then the field to write in');
+    assert.match(f, /name="title"/);
+    assert.doesNotMatch(f, /data-sp="scan"/, 'no Barcode on the meal sheet (Oct 27)');
     assert.match(js, /esc\(tr\('lmUsual'\)\)/, 'Eaten recently is "Wie immer"');
     assert.match(js, /V\.mealDup && V\.mealDup\(\{t: n, code: l\.code, slot: mealSlot\}\)/, 'a tick only for this slot');
 });

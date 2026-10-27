@@ -80,12 +80,12 @@ test('meal photo checks: Spanish singular "Te queda 1", no "Hora del Cena", and 
     global.localStorage = global.localStorage || mem(); global.sessionStorage = global.sessionStorage || mem();
     delete require.cache[require.resolve('../meal-photo.js')];
     const M = require('../meal-photo.js');
-    M.setLeft(1, 3);
-    assert.equal(M.leftText('es'), 'Te queda 1 de 3 an\u00e1lisis de foto hoy');
-    assert.match(M.nudgeText('d', 'es'), /^Cena: fotograf\u00eda tu plato y lo analizo\. Te queda 1 de 3 an\u00e1lisis hoy\.$/);
-    assert.equal(M.leftText('en'), M.t('left', 'en', { n: 1, max: 3 }), 'English keeps its one string');
-    M.setLeft(2, 3);
-    assert.equal(M.leftText('es'), 'Te quedan 2 de 3 an\u00e1lisis de foto hoy');
+    M.setLeft(1, 10);
+    assert.equal(M.leftText('es'), 'Te queda 1 de 10 an\u00e1lisis de foto hoy');
+    assert.match(M.nudgeText('d', 'es'), /^Cena: fotograf\u00eda tu plato y lo analizo\. Te queda 1 de 10 an\u00e1lisis hoy\.$/);
+    assert.equal(M.leftText('en'), M.t('left', 'en', { n: 1, max: 10 }), 'English keeps its one string');
+    M.setLeft(2, 10);
+    assert.equal(M.leftText('es'), 'Te quedan 2 de 10 an\u00e1lisis de foto hoy');
     for (const k of ['b', 'l', 'd']) assert.doesNotMatch(M.nudgeText(k, 'es'), /Hora del/);
     assert.equal(M.t('high', 'es'), 'Probable pico de az\u00facar');
 });

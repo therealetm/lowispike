@@ -130,7 +130,11 @@ test('Log meal panel: one open field first, then Wie immer, then the companion\'
   assert.ok(f.length > 200);
   assert.match(f, /<input id="lmTitle" class="lm-in" name="title" required/, 'the manual field is open, not folded away');
   assert.doesNotMatch(f, /<details/, 'nothing in the form is a fold');
-  assert.match(f, /data-mic="1"[\s\S]*class="lm-alt"[\s\S]*data-sp="photo"[\s\S]*data-sp="scan"/, 'Foto and Barcode are small chips under the one field');
+  // Oct 27 (later, Emmanuel: "remove the barcode scanner ... make the picture one very clear"): the photo is ONE big button
+  // above the field, and the meal sheet has no Barcode at all (the store scanner stays on Home and in Shop).
+  assert.match(panel, /lmSnapHTML\(\) \+ form/, 'the big photo button sits right above the one field');
+  assert.match(f, /data-mic="1"/, 'typing and the mic stay in the one field');
+  assert.doesNotMatch(f, /data-sp="scan"|data-sp="photo"/, 'no Barcode chip and no second photo chip in the form');
   assert.doesNotMatch(js, /sp-quick-cap|data-sp="slotWrite"/, 'no Snap food / Scan product row, no Write tile');
   assert.match(f, /'<\/button><\/div>' \+ own \+\s*'<button class="r2-btn pri lm-save"/, 'own values sit behind the quiet link, before the one Save');
   assert.match(js, /const own = '<div class="lm-own" id="lmOwn" hidden>/, 'your own numbers are optional and folded away (hidden until the link is tapped)');

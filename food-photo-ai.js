@@ -50,6 +50,8 @@
         }).filter(Boolean).slice(0, 8);
         const conf = ['low', 'medium', 'high'].includes(raw.confidence) ? raw.confidence : 'medium';
         return { isFood: raw.is_food !== false && dishes.length > 0, dishes, confidence: conf, note: String(raw.note || '').trim().slice(0, 160),
+            /* Oct 27: the dish's everyday name and one menu line (food-photo schema title/desc), for a Community photo card */
+            title: String(raw.title || '').replace(/\s+/g, ' ').trim().slice(0, 80), desc: String(raw.desc || '').replace(/\s+/g, ' ').trim().slice(0, 160),
             // Master Knowledge v3 verdict block. Kept raw here; meal-result validates it (LowiFoodKnowledge.parse) and it can
             // only make the app's own verdict stricter, never looser.
             verdictBlock: raw.lowispike && typeof raw.lowispike === 'object' && !Array.isArray(raw.lowispike) ? raw.lowispike : null };
@@ -160,12 +162,24 @@
         return null;
     }
     // Photo (data URL) -> {dishes,total,...}. Throws Error with .code: off | sign_in | limit | busy | net | slow | failed.
+    /* Oct 27 (Community photo card): a good read is remembered for this session by the exact picture sent and the language,
+       so the same photo in Log meal and then in Community (or removed and added again) asks the AI once and uses one
+       photo check, not two. Every caller keeps food reads; only a caller that passes opts.reuse (Community) reads them back. */
+    const seen = new Map(), SEEN_MAX = 8;
+    function seenKey(b64, l) { let h = 2166136261; const s = String(b64 || ''); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + ':' + s.length + ':' + (l || ''); }
     async function analyse(dataURL, opts) {
         opts = opts || {};
         const url = endpoint();
         if (!url) { const e = new Error('off'); e.code = 'off'; throw e; }
         const m = /^data:(image\/[a-z]+);base64,(.+)$/.exec(String(dataURL || ''));
         if (!m) { const e = new Error('failed'); e.code = 'failed'; throw e; }
+        const sk = seenKey(m[2], opts.lang || lang());
+        if (opts.reuse && seen.has(sk)) return Object.assign(JSON.parse(JSON.stringify(seen.get(sk))), { cached: true });
+        const out = await ask(url, m, opts);
+        if (out && out.isFood) { seen.delete(sk); seen.set(sk, JSON.parse(JSON.stringify(out))); while (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value); }
+        return out;
+    }
+    async function ask(url, m, opts) {
         /* Oct 22 (photo check "took too long" on a normal iPhone photo): the sign-in wait (up to 8 s) used to run inside the
            30 s clock, and the server itself may take up to 26 s (Gemini 6-21 s measured), so the phone gave up just before
            the answer came. Now the token comes first and the request alone gets TRY_MS. */
@@ -346,5 +360,5 @@
         });
         return run();
     }
-    return { KEYS, normalize, totals, title, endpoint, available, allowance, analyse, analyseName, translateNames, nameReady: () => nameOn, mount, prep, TRY_MS, AI_PX, strings: STR, _reset() { probe = null; probeAt = 0; probeWhy = ''; nameOn = false; }, _why: why };
+    return { KEYS, normalize, totals, title, endpoint, available, allowance, analyse, analyseName, translateNames, nameReady: () => nameOn, mount, prep, TRY_MS, AI_PX, strings: STR, _reset() { probe = null; probeAt = 0; probeWhy = ''; nameOn = false; seen.clear(); }, _why: why };
 });

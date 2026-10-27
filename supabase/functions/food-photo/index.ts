@@ -162,7 +162,11 @@ function prompt(lang: string): string {
     "the counted number of pieces (1 when it is one portion), its estimated weight in grams, its verdict, and your best " +
     "estimate for that portion of kcal, protein, carbohydrates, sugar, fiber and fat in grams. Use typical recipes and " +
     "plate sizes. confidence is low, medium or high for the whole photo. note is one short sentence in the same language, " +
-    "for example what was hard to see or count, or an empty string.";
+    "for example what was hard to see or count, or an empty string. " +
+    // Oct 27 (Emmanuel: a Community photo post fills itself in like the food bot's cards): a dish title and a menu line
+    "title is the everyday name of the whole meal as a menu would say it, at most 5 words, in " + (LANGS[lang] || "English") +
+    ", no brand names (for example 'Lettuce wraps with chicken'). desc is one short friendly sentence in the same language " +
+    "that says what is on the plate, like a menu line: no numbers, no health or medical claims. Empty strings when it is not food.";
 }
 function namePrompt(lang: string, name: string): string {
   return MASTER + " " +
@@ -193,6 +197,8 @@ const SCHEMA = {
     },
     confidence: { type: "STRING", enum: ["low", "medium", "high"] },
     note: { type: "STRING" },
+    title: { type: "STRING" },
+    desc: { type: "STRING" },
     lowispike: {
       type: "OBJECT",
       properties: {
@@ -206,7 +212,7 @@ const SCHEMA = {
       required: ["verdict", "light", "score", "spike", "counted", "confidence"],
     },
   },
-  required: ["is_food", "dishes", "confidence", "note", "lowispike"],
+  required: ["is_food", "dishes", "confidence", "note", "title", "desc", "lowispike"],
 };
 
 // Oct 24 (Emmanuel: a meal shared in Community showed English foods in a German chat): when someone shares a scanned meal,

@@ -86,7 +86,7 @@ test('the sheet shows only what was stored, escaped, in EN, DE and ES; an old po
 });
 
 test('Chat and Circles: the spike label is a button with a visible "Details" chevron; the meal photo opens the sheet too', () => {
-    assert.match(chat, /function mealHtml\(ml\)\{[^\n]*id=ml&&ml\.mid\?String\(ml\.mid\):''/);
+    assert.match(chat, /function mealHtml\(ml(?:,md)?\)\{[^\n]*id=ml&&ml\.mid\?String\(ml\.mid\):''/); /* Oct 27: + md for the key numbers line */
     assert.match(chat, /<button type="button" class="cs-meal-bs cs-meal-'\+esc\(ml\.lvl\)\+'" data-chat="meal-detail" data-id="/);
     assert.match(chat, /MD\.hintHTML\(\)/);
     assert.match(chat, /class="cs-photo" data-chat="photo" data-sfx="none"'\+\(md\?' data-md="'\+esc\(m\.id\)\+'" aria-haspopup="dialog"':''\)/);

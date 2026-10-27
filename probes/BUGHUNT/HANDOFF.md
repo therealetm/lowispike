@@ -12,3 +12,6 @@ BH-048 LIVE 20261026-200906 (dictation keeps typed words; cleared text stays cle
 
 ## After runs 49-51 (Mon 26 Oct 2026 ~23:30 CET)
 BH-050 LIVE 20261026-230840 (back closes only the top layer: companion creator, World map, Sound panel, starter interview; back-swipe sig counts aria-hidden dialog ghosts and data-back-step). Full opener sweep live iPhone 13: all 63 ok. Next: openers that opened nothing on Home need their real entry path; tutorial-demo audio after leaving; Undo bars near the bottom; cycle delete; VoiceOver focus loss; level-up/badge moments. Still his call: should Post wait for the photo?
+
+## After runs 52-54 (Tue 27 Oct 2026 ~02:25 CET)
+BH-053 LIVE 20261027-020733 (quiet): a save with a null / wrong-kind list or object field, or a whole save that is a number or text, no longer breaks boot or Home (index.html load(), r5load()). Next: P-SAVE-SHAPE siblings in modules with their own keys (micro-book.js, body-trips.js, lis-push.js, misty-hunt.js, spirit.js paint, herb-identity.js) with probe-corrupt.cjs num/str; then openers that opened nothing on Home need their real entry path; tutorial-demo audio after leaving; Undo bars near the bottom; cycle delete; VoiceOver focus loss; level-up/badge moments. Still his call: should Post wait for the photo?

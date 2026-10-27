@@ -1,0 +1,23 @@
+baseline {"orbit":8,"tab":"tab-home","goTab":"function"} fields user,ledger,logs,settings,streak,quests,saved,trig,glow,health,posts,reacts,hidden,blocked,meds,medsDone,td,herb,r3a
+{"mode":"null","field":"user","ok":1}
+{"mode":"null","field":"ledger","ok":1}
+{"mode":"null","field":"logs","ok":1}
+{"mode":"null","field":"settings","ok":1}
+{"mode":"null","field":"streak","ok":1}
+{"mode":"null","field":"quests","ok":1}
+{"mode":"null","field":"saved","ok":1}
+{"mode":"null","field":"trig","ok":1}
+{"mode":"null","field":"glow","ok":1}
+{"mode":"null","field":"health","st":{"orbit":8,"tab":"tab-home","goTab":"function"},"errs":["Fetch API cannot load https://vnfwmifmsfecascwaody.supabase.co/rest/v1/messages?select=id%2Cuser_id%2Cwho%2Cbody%2Creply_to%2Ccreated_at%2Croom%2Cmeal&room=eq.all&order=created_at.desc&limit=300 due to access control checks. |     at unknown (https://therealetm.github.io/lowispike/vendor/supabase-2.117.3.js:7:30970) |     at unknown (https://therealetm.github.io/lowispike/vendor/supabase-2.117.3.j","Fetch API cannot load https://vnfwmifmsfecascwaody.supabase.co/rest/v1/reactions?select=message_id%2Cuser_id%2Cwho%2Cemoji&limit=10000 due to access control checks. |     at unknown (https://therealetm.github.io/lowispike/vendor/supabase-2.117.3.js:7:30970) |     at unknown (https://therealetm.github.io/lowispike/vendor/supabase-2.117.3.js:7:32016)","Fetch API cannot load https://vnfwmifmsfecascwaody.supabase.co/rest/v1/messages?select=id%2Cuser_id%2Cwho%2Cbody%2Creply_to%2Ccreated_at%2Croom%2Cmeal&room=eq.all&body=like.%F0%9F%93%8C%E2%81%A0%25&order=created_at.desc&limit=3 due to access control checks. |     at unknown (https://therealetm.github.io/lowispike/vendor/supabase-2.117.3.js:7:30970) |     at unknown (https://therealetm.github.io/lo","Fetch API cannot load https://vnfwmifmsfecascwaody.supabase.co/rest/v1/posts?select=*&order=created_at.desc&limit=150 due to access control checks. |     at unknown (https://therealetm.github.io/lowispike/vendor/supabase-2.117.3.js:7:30970) |     at unknown (https://therealetm.github.io/lowispike/vendor/supabase-2.117.3.js:7:32016)"],"nErr":12}
+{"mode":"null","field":"posts","st":{"orbit":8,"tab":"tab-home","goTab":"function"},"errs":["Fetch API cannot load https://vnfwmifmsfecascwaody.supabase.co/rest/v1/companion_rest?select=user_id%2Crx%2Cry%2Cupdated_at&order=updated_at.desc&limit=400 due to access control checks. |     at unknown (https://therealetm.github.io/lowispike/vendor/supabase-2.117.3.js:7:30970) |     at unknown (https://therealetm.github.io/lowispike/vendor/supabase-2.117.3.js:7:32016)"],"nErr":1}
+{"mode":"null","field":"reacts","ok":1}
+{"mode":"null","field":"hidden","ok":1}
+{"mode":"null","field":"blocked","ok":1}
+{"mode":"null","field":"meds","ok":1}
+{"mode":"null","field":"medsDone","ok":1}
+{"mode":"null","field":"td","ok":1}
+{"mode":"null","field":"herb","ok":1}
+{"mode":"null","field":"r3a","ok":1}
+{"mode":"whole","field":"42","ok":1}
+{"mode":"whole","field":"str","ok":1}
+summary {"key":"lowispike.v2","cases":21,"bad":2}

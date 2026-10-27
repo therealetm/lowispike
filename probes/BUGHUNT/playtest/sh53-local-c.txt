@@ -1,0 +1,26 @@
+baseline {"orbit":8,"tab":"tab-home","goTab":"function"} fields user,ledger,logs,settings,streak,quests,saved,trig,glow,health,posts,reacts,hidden,blocked,meds,medsDone,td,herb,mistyPower,adventures,body,r3a
+{"mode":"null","field":"user","ok":1}
+{"mode":"null","field":"ledger","ok":1}
+{"mode":"null","field":"logs","ok":1}
+{"mode":"null","field":"settings","ok":1}
+{"mode":"null","field":"streak","ok":1}
+{"mode":"null","field":"quests","ok":1}
+{"mode":"null","field":"saved","ok":1}
+{"mode":"null","field":"trig","ok":1}
+{"mode":"null","field":"glow","ok":1}
+{"mode":"null","field":"health","ok":1}
+{"mode":"null","field":"posts","ok":1}
+{"mode":"null","field":"reacts","ok":1}
+{"mode":"null","field":"hidden","ok":1}
+{"mode":"null","field":"blocked","ok":1}
+{"mode":"null","field":"meds","ok":1}
+{"mode":"null","field":"medsDone","ok":1}
+{"mode":"null","field":"td","ok":1}
+{"mode":"null","field":"herb","ok":1}
+{"mode":"null","field":"mistyPower","ok":1}
+{"mode":"null","field":"adventures","ok":1}
+{"mode":"null","field":"body","ok":1}
+{"mode":"null","field":"r3a","ok":1}
+{"mode":"whole","field":"42","ok":1}
+{"mode":"whole","field":"str","ok":1}
+summary {"key":"lowispike.v2","cases":24,"bad":0}

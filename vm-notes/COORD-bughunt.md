@@ -84,3 +84,5 @@ Run 47 done: BH-047 LIVE 20261026-191635.
 
 # Run 48 (Mon 26 Oct 2026 20:02 CET): worktree /home/sprite/wt-bughunt-202610261903, branch bughunt-48 (off origin/main). Probing dictation vs typed words (mic-dictate.js) and full-screen layers vs back swipe. 
 Run 48 done: BH-048 LIVE 20261026-200906 (mic-dictate.js). Files released.
+# Run 54 (Tue 27 Oct 2026 02:02 CET): continuing run 53 in /home/sprite/wt-bughunt-202610270002 (branch bughunt-53): P-SAVE-SHAPE, index.html load()/r5load() only.
+Run 54 done: BH-053 LIVE 20261027-020733 (index.html load()/r5load()). Files released.

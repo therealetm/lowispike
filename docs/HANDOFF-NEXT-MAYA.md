@@ -12,6 +12,17 @@ Emmanuel said in the call: "I liked the video, the last one." This refers to the
 
 The recoverable project is on [agent-harness, promo/2d-test](https://github.com/therealetm/lowispike/tree/agent-harness/promo/2d-test). Read its README for rendering, assembly, voices, real companion captures and app recordings. Its older statement that the test is awaiting Emmanuel's yes is superseded by this dated call update. The test was checked by measurement, not watched through by eye; do not describe it as visually verified.
 
+## Studio opened for everyone, 27 October 2026
+
+Emmanuel, Tuesday 27 October 2026 about 9:25 AM Berlin, with a screenshot of the locked Community > Studio tab (pill "Gesperrt", "Im Aufbau", "Studio wird gerade gebaut. Es öffnet sich hier, sobald es fertig ist.", a small lock button): "Also, um remove this we can open it up now. Delete the password or whatever."
+
+Done on branch studio-open-20261027 and released with a short What's New line (EN/DE/ES, no push); the build is the one release.sh stamped on the commit that carries this section. What changed:
+
+- The 25 October lock is gone from the app: studio-lock.js, studio-lock-core.js, studio-lock.css and studio-gate.js are deleted, with their tags in index.html and sw.js, the hidden-until-unlocked start of affiliates/index.html and create/index.html, the lock checks in community-rooms-ui.js (frame, Affiliates/Creation switch, menu's Studio page link) and tools/studio-lock/. Their tests went with them; tests/studio-open.test.cjs checks Studio opens with no lock.
+- Server: supabase/proposals/studio_lock_retire_20261027.sql drops studio_access(), studio_unlock(), studio_forget_devices() and the tables studio_lock (the PIN hash), studio_passes and studio_pin_tries. Run only after the open build is live (an older cached app then stays locked, never opens by mistake). admin_delete_account() checks to_regclass() first, so it keeps working. See the checklist at the end of the task for whether it was applied.
+- Behind the lock: Affiliates is the real, working flow (script, recording, earnings). Creation is still a "Being built / Wird gebaut" page that lists what is coming, each marked Soon; nothing there was built in this task.
+- Check: tools/check-studio-open.cjs <phone|small|ipad|ipadl> [url|root] [lang] [engine] opens Studio by finger in a simulated browser and reports lock leftovers, both halves, Affiliates' Start and errors.
+
 ## How this file and Emmanuel's handoff prompt fit together
 
 - Emmanuel keeps his own handoff prompt (the "universal clone prompt"). It lives in the chat only, never in this public repo. A Maya sends it back to him word for word, unchanged, in the chat with this handoff's GitHub link, as soon as her usage limit is close (MAYA-HANDOFF.md section 0.6, "Seeing the limit coming").

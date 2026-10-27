@@ -28,6 +28,27 @@ What changed (evening-catchup.css / .js / -core.js, branch day-recap-ios17-20261
 - Meal names follow the app language when every part is a known dish or food (C.mealName, DISHES table: "Sweet potato with beef stew" shows "Süßkartoffel mit Rindereintopf" in German); anything else stays as she typed it.
 - Checks: tests/catchup-ios17.test.cjs (points match, companion row and foot in the flow, no overlap by construction, sizes, mealName); tests/evening-catchup-live.cjs updated to iOS sizes plus tappable-at-centre, not covered, on screen, bar = total, no wrapping rows; tools/catchup-ios17/probe.cjs walks every view at iPhone, SE, 320px, iPad in German and English, with Reduce Motion and a fresh first-run state. All in simulated Chrome (simulated Safari still crashes on load/tap in this machine). The app's dictation mic in the text box is its own 34px component and was left as it is.
 
+## Guided week in Shop > Zu Hause (from a TikTok), 27 October 2026
+
+Emmanuel, Tuesday 27 October 2026 (sent https://vm.tiktok.com/ZGdCwnyyh/ by @herbi.app): "Now go and watch this video if you need to, frame by frame, learn from the video, check the comments and go and improve our app, so that it also has this feature. I still feel like our app is so noisy and so confusing. Makes me hate it." Video, captions, transcript and comments are saved on the agent VM in /home/sprite/TTVID (not on GitHub).
+
+What the video taught:
+- One question per screen: where you shop, budget, vibe, what you don't eat, what's in your kitchen. Then a "leave it with us..." pause, a Monday-to-Friday of dinner cards at your store and under budget, each with a recipe and Swap, and one shopping list.
+- It lands because people don't have to think; many comments are from people with ADHD saying exactly that.
+- Comment complaints we designed against: the same meat every day, recipes missing their main ingredient, fresh food gone off by Friday, no household size, no way to leave out foods.
+
+What shipped (build 20261027-141916, released silently with `--quiet`, no What's New, no banner, no push; week-basket.js / week-basket-core.js / week-basket.css; branch week-flow-20261027, safety copy wip/week-flow-20261027):
+- Zu Hause asks one calm question per screen: shop, people, budget (big number, slider, number of dinners), vibe, what you don't eat, kitchen. A shop or people tap moves on by itself; progress dots and Back.
+- What you don't eat and your kitchen are hard filters (an air fryer counts as an oven). The vibe only orders the dinners.
+- "Leave it with [companion name]..." pause (the user's own companion name, never hard-coded; shorter with reduced motion).
+- The week page: day cards ("Heute Abend" first) with minutes, price and a swap button, total against budget, fit-to-budget when over. Fish and salad dinners come early in the week.
+- No meat twice in a week: `C.meats()` / `C.weekKeys()` read every meat or fish by kind (beef, turkey, chicken, pork, salmon, shrimp, tuna, fish, also when it hides behind eggs). plan, swap and fitBudget keep each kind to once a week while the pool allows; mains (mince, eggs, cheese) keep the old one-third limit.
+- The shopping list is its own page (ticks, cheaper store, Cart, copy/share, delivery folded away). After the first time the tab opens straight on the week; "Change my answers" and "New week" are quiet links.
+- Six new vegetarian low-spike dinners (`C.EXTRA`) in DE/EN/ES, registered in the recipe viewer.
+- The What's New tour step `new-week-shop` was left as it is (its text is still true).
+
+Checks: tests/week-flow.test.cjs (11 tests, incl. no meat twice over 40 seeds x 5/7 nights x every swap, and fit-to-budget); full suite 3971/3971; GitHub "Release check and tests" passed. `tools/week-flow/flow.cjs` (396 checks, simulated Chrome, iPhone/SE/iPad x DE/EN/ES) passed against the live site. `tools/week-flow/audit.cjs` against the live site: all 22 dinners the week can pick have the food their name promises in both the ingredients and the shopping list, and 2,000 generated weeks (every diet combo) plus every swap never repeat a meat. Not checked on his real iPhone/iPad; simulated Safari crashes on the Shop tab tap on the live build before this release too (environment, not this feature).
+
 ## Calmer Shop, and Shop from home gets its own tab, 27 October 2026
 
 Emmanuel, Tuesday 27 October 2026 about 9:52 AM Berlin (voice, screenshots of Shop > Supermarkt on his iPhone): "Supermarket looks crazy, like so overwhelming. I don't know what to do here. So many things. Too much. So viel auf einmal. Vielleicht möchte 'Von zu Hause einkaufen' seine eigene Sektion haben, neben Supermarkt, Seller Zone und Hilf mit... Remember our focus is minimalism, efficiency, convenience. And we care about people with mental health. Who are depressed, overwhelmed, don't know what to do. People are seeing this for the first time." He also said not to ask him questions and to take all the decisions.

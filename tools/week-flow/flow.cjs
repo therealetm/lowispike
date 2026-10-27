@@ -32,11 +32,11 @@ function ok(c, m) { if (!c) { fails++; console.log('  FAIL ' + m); } else consol
 
 const SHOTS = process.env.SHOTS !== '0';
 async function boot(browser, base, size, lang, seed) {
-    const ctx = await browser.newContext({ viewport: DIM[size], deviceScaleFactor: 2, hasTouch: true, isMobile: process.env.ENGINE !== 'webkit' ? size !== 'ipad' : false });
+    const ctx = await browser.newContext({ viewport: DIM[size], deviceScaleFactor: 2, hasTouch: true, isMobile: process.env.ENGINE !== 'webkit' ? size !== 'ipad' : false, serviceWorkers: 'block' });
     await ctx.route(/supabase\.co/, r => r.abort());
     await ctx.addInitScript(([l, sd]) => {
         try { if (!sessionStorage.getItem('wf.boot')) { sessionStorage.setItem('wf.boot', '1'); localStorage.setItem('lowi.lang', l); localStorage.removeItem('lowi.weekBasket.v1'); if (sd) localStorage.setItem('lowi.weekBasket.v1', sd); localStorage.setItem('lowi.storePicks.v1', JSON.stringify({ range: 'lidl' })); } } catch (e) {}
-        try { Object.defineProperty(navigator, 'serviceWorker', { value: undefined }); } catch (e) {}
+        /* the service worker is blocked by the context (on https the app registers it; an undefined stub would throw there) */
     }, [lang, seed || '']);
     const page = await ctx.newPage();
     const errors = [];

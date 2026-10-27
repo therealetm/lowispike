@@ -6110,7 +6110,12 @@ function fresh(){ return {v:2, onboarded:false, user:{name:"", bday:"", avatar:"
 /* Oct 8: some in-app viewers block or wipe storage. We check once and say so in Profile instead of failing silently. */
 const STORAGE_OK = (() => { try { localStorage.setItem("lowi.t", "1"); localStorage.removeItem("lowi.t"); return true; } catch(e){ return false; } })();
 function load(){ try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch(e){ S = fresh(); }
-  const f = fresh(); for (const k in f) if (S[k] === undefined) S[k] = f[k];
+  /* Oct 27 (bug hunt 53, P-SAVE-SHAPE): a save that is a number or text, or a list/object field saved as null or the wrong kind
+     (old saves, half-written data), made load() or Home throw at boot and no tab showed. Such a field gets its fresh default;
+     every other value, extra fields included, is kept. */
+  if (!S || typeof S !== "object" || Array.isArray(S)) S = fresh();
+  const box = v => Array.isArray(v) ? "a" : (v && typeof v === "object") ? "o" : "";
+  const f = fresh(); for (const k in f) if (S[k] === undefined || (box(f[k]) && box(S[k]) !== box(f[k]))) S[k] = f[k];
   for (const k in f.health) if (S.health[k] === undefined) S.health[k] = f.health[k];
   if (S.streak.shields === undefined) S.streak.shields = 1; delete S.streak.freezeWeek;
   /* Oct 16 (user decision): the microbe buddies are gone. Their XP (src buddy-add / buddy-bond:*) leaves the ledger and S.xp,
@@ -9133,7 +9138,10 @@ if (window.LowiLang) { const set0 = LowiLang.set; LowiLang.set = l => { const r 
 const R5KEY = "lowispike.r5.v1";
 let R5;
 function r5fresh(){ return {v:1, liked:[], skipped:[], tinder:[], last:"", audio:false, notify:true, mute:false, mbti:""}; }
-function r5load(){ try { R5 = JSON.parse(localStorage.getItem(R5KEY)) || r5fresh(); } catch(e){ R5 = r5fresh(); } const f = r5fresh(); for (const k in f) if (R5[k] === undefined) R5[k] = f[k]; }
+function r5load(){ try { R5 = JSON.parse(localStorage.getItem(R5KEY)) || r5fresh(); } catch(e){ R5 = r5fresh(); }
+  /* Oct 27 (bug hunt 53, P-SAVE-SHAPE): a save that is a number or text, or a list saved as null, loads fresh / gets its default. */
+  if (!R5 || typeof R5 !== "object" || Array.isArray(R5)) R5 = r5fresh();
+  const f = r5fresh(); for (const k in f) if (R5[k] === undefined || (Array.isArray(f[k]) && !Array.isArray(R5[k]))) R5[k] = f[k]; }
 function r5save(){ try { localStorage.setItem(R5KEY, JSON.stringify(R5)); } catch(e){} }
 r5load();
 const r5$ = (s, r) => (r || document).querySelector(s);

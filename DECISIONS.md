@@ -1268,3 +1268,6 @@ Found by the hourly bug hunt (run 43, BUGHUNT/playtest/probe-gb-skip-dbl.cjs, li
 
 ## 26 Oct 2026: the companion never goes exploring on her own; exploring is a tap (Emmanuel)
 Emmanuel (voice, about 4 PM CET, screenshot of "Out exploring · back in 59 min"): first "remove this feature ... nobody likes it", then "You know the auto fly. If they want to manually tap, let them do that. But not automatically. It's quite annoying and then the UI breaks." So: the sun trip no longer starts when the sun fills (only "Send her exploring" starts it), body journeys no longer auto-start after logging, call back stays, auto trips saved before this are brought home quietly with their finds, and the away layout is fixed. MAYA-HANDOFF 0.32.
+
+## 27 Oct 2026: a damaged or old-shape save never stops the app from opening (bug hunt 53/54, P-SAVE-SHAPE)
+Live 20261027-004442: a saved profile whose list or object field was null (health, streak) made load() throw at boot, so no tab showed; user, logs, quests or glow null made Home throw while drawing; a whole save that was a number or text broke boot too. load() and r5load() now give only such a field its fresh default (a whole non-object save loads fresh); every good value, extra fields included, is kept. Quiet fix, no What's New.

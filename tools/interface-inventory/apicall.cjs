@@ -12,7 +12,9 @@ for (const [m, fns] of Object.entries(apis)) { if (/Core$/.test(m)) continue; fo
 const { existingSeed } = L;
 const cr = fs.readFileSync(path.join(__dirname, 'crawl.cjs'), 'utf8');
 (async () => {
-  const res = [];
+  /* resume: KEEP=<n> keeps the first n entries of an existing api.json and skips those calls */
+  const KEEP = +(process.env.KEEP || 0);
+  const res = KEEP && fs.existsSync(path.join(OUT, 'api.json')) ? JSON.parse(fs.readFileSync(path.join(OUT, 'api.json'), 'utf8')).slice(0, KEEP) : [];
   let h = null, n = 0;
   const start = async () => {
     if (h) await h.browser.close().catch(() => { });
@@ -25,9 +27,15 @@ const cr = fs.readFileSync(path.join(__dirname, 'crawl.cjs'), 'utf8');
   await start();
   const home = await sigFn(h.page);
   for (const c of calls) {
+    if (n < res.length) { n++; continue; }
     if (n++ % 12 === 11) await start();
     for (let k = 0; k < 3; k++) { await h.page.keyboard.press('Escape'); await L.sleep(250); }
     await h.page.evaluate(() => { try { goTab('home'); } catch (e) { } }); await L.sleep(900);
+    /* a sticky surface (e.g. the sign-up gate) would leak into every later call: remove it, else restart the browser */
+    if ((await sigFn(h.page)).s !== home.s) {
+      await h.page.evaluate(() => { document.querySelectorAll('#r2gate,.r2-gate,.r2-ov').forEach(e => e.remove()); try { goTab('home'); } catch (e) { } }); await L.sleep(700);
+      if ((await sigFn(h.page)).s !== home.s) await start();
+    }
     const [m, f] = c.split('.');
     const err = await h.page.evaluate(([m, f]) => { try { const r = window[m][f](); if (r && r.then) r.catch(() => { }); return ''; } catch (e) { return String(e && e.message || e).slice(0, 120); } }, [m, f]);
     await L.sleep(1800);

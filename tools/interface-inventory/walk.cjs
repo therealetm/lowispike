@@ -8,7 +8,7 @@ const MODE = process.argv[2] || 'onboard', OUT = process.env.OUT || '/home/sprit
 const cr = fs.readFileSync(path.join(__dirname, 'crawl.cjs'), 'utf8');
 const sigFn = new Function('return ' + cr.slice(cr.indexOf('async function sig(page)'), cr.indexOf('/* tappable controls')).replace('async function sig(page)', 'async function (page)'))();
 const ctrlFn = new Function('return ' + cr.slice(cr.indexOf('async function ctrls(page)'), cr.indexOf('async function doStep')).replace('async function ctrls(page)', 'async function (page)'))();
-const FWD = /^(weiter|los geht\u2019s|los geht's|los|weiter \u2192|n\u00e4chster|next|fertig|starten|start|ja|okay|ok|verstanden|zeig mir|zeig's mir|ohne konto weiter|als gast|sp\u00e4ter|\u00fcberspringen|jetzt nicht|nicht jetzt|alles klar|loslegen|weiter ohne)/i;
+const FWD = /^(weiter|los geht\u2019s|los geht's|los|weiter \u2192|n\u00e4chster|next|fertig|starten|start|ja|okay|ok|verstanden|zeig mir|zeig's mir|ohne konto weiter|als gast|sp\u00e4ter|\u00fcberspringen|jetzt nicht|nicht jetzt|alles klar|loslegen|weiter ohne|im browser weitermachen|hab ich hinzugef\u00fcgt|weitermachen)/i;
 (async () => {
   let seed;
   if (MODE === 'onboard') seed = { kv: { 'lowispike.lang': 'de' }, session: { 'lowi.a2hs.x': '1' } };

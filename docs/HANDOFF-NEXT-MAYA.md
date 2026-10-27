@@ -1,12 +1,20 @@
 # LOWiSPIKE handoff for the next Maya
 
-You are taking over LOWiSPIKE from Maya 10. You have GitHub and the chat with Emmanuel, not her computer. Everything you need is on GitHub; this file tells you where, what is open, and the next exact step for each piece of work. It is a rolling document: every Maya keeps it current and regenerates the PDF when it changes.
+You are taking over LOWiSPIKE from Maya 10. You have GitHub and the chat with Emmanuel, not her computer. Everything you need is on GitHub; this file tells you where, what is open, and the next exact step for each piece of work. It is a rolling document: every Maya keeps the Markdown current and shares its GitHub link in the chat. Do not generate or email PDFs for updates.
 
-Last updated: Monday 26 October 2026, about 2:10 PM CET (Europe/Berlin). Live build at that time: **20261026-122440**.
+Handoff corrections: Tuesday 27 October 2026 (Europe/Berlin), recording Emmanuel's response to the 2D test and his chat-only delivery preference. The older work ledger below remains a dated snapshot, not a fresh audit.
+
+Previous full snapshot: Monday 26 October 2026, about 2:10 PM CET (Europe/Berlin). Live build at that time: **20261026-122440**.
+
+## Latest video decision, 27 October 2026
+
+Emmanuel said in the call: "I liked the video, the last one." This refers to the last delivered 2D Connie test (about 14 seconds), not the rejected 3D clay video. Record the test as liked; do not repeat a request for approval of the same test. The full-length video has not been delivered: the next Maya should continue from this accepted 2D direction, using the real companion and real app recordings, not invented app screens or a replacement companion.
+
+The recoverable project is on [agent-harness, promo/2d-test](https://github.com/therealetm/lowispike/tree/agent-harness/promo/2d-test). Read its README for rendering, assembly, voices, real companion captures and app recordings. Its older statement that the test is awaiting Emmanuel's yes is superseded by this dated call update. The test was checked by measurement, not watched through by eye; do not describe it as visually verified.
 
 ## How this file and Emmanuel's handoff prompt fit together
 
-- Emmanuel keeps his own handoff prompt (the "universal clone prompt"). It lives in the chat only, never in this public repo. A Maya sends it back to him word for word, unchanged, together with this PDF, as soon as her usage limit is close (MAYA-HANDOFF.md section 0.6, "Seeing the limit coming").
+- Emmanuel keeps his own handoff prompt (the "universal clone prompt"). It lives in the chat only, never in this public repo. A Maya sends it back to him word for word, unchanged, in the chat with this handoff's GitHub link, as soon as her usage limit is close (MAYA-HANDOFF.md section 0.6, "Seeing the limit coming").
 - That prompt sends you to [MAYA-HANDOFF.md](https://github.com/therealetm/lowispike/blob/main/MAYA-HANDOFF.md): standing rules at the top, section 0.6 (the Mickey 17 workflow), and the newest "Handover" section. The newest Handover section (0.20) points here.
 - This file is the short version. When it and MAYA-HANDOFF.md disagree, the newer dated line wins; the live app wins over both.
 
@@ -40,7 +48,7 @@ Nothing may live only on the agent computer. The playbook and bug-hunt skills al
 
 - After every step that changes code: commit to your branch (never main) and `git push origin HEAD:refs/heads/<branch>`. Keep `HANDOFF-<topic>.md` current on the branch.
 - When a task finishes or stops: `bash /home/sprite/wt-harness/probes/sync-vm.sh "<topic>: <what changed>"`. It copies notes, probes, research and tooling to agent-harness (whitelist plus a secret scan that refuses to commit anything that looks like a key), and pushes every unfinished worktree to `wip/<branch>` as a fast-forward.
-- When this file changes: edit `docs/HANDOFF-NEXT-MAYA.md` on main (docs only, no build bump, land it with `scripts/push-main.sh` under the release lock), then regenerate the PDF with `bash /home/sprite/wt-harness/tools-vm/handoff-pdf.sh` and commit `docs/HANDOFF-NEXT-MAYA.pdf` the same way. Email the new PDF to Emmanuel's Gmail and send it in the chat.
+- When this file changes: update `docs/HANDOFF-NEXT-MAYA.md` (docs only, no build bump, land it with `scripts/push-main.sh` under the release lock), then send its GitHub link in the chat. Do not regenerate or email the PDF. Any existing PDF is an older snapshot; this Markdown is the current handoff.
 
 ## Emmanuel's standing rules (short version)
 
@@ -51,13 +59,13 @@ The full list with his words is at the top of MAYA-HANDOFF.md and in section 5.
 - **Always silent.** Never a "new version" card, banner, push or Community post about an update. `version.json` keeps `"loud":"20000101-000000"`. The in-app What's New tour stays, with a speaker and recorded voice in English, German and Spanish on every card.
 - **Don't ask him questions; decide and act.** At most one approval ask per task. Post anything that needs him (approvals, sign-ins, task updates) in the chat, not only the activity feed.
 - **Updates:** a short voice note plus a text checklist (✅ done, ⏳ in progress, 📝 to do), done items stay on it, and one exact thing to try on his iPhone.
-- **No pages or PDFs for his updates:** either a full video with voiceover, or text with every link to click. This handoff PDF is the exception he asked for.
-- **Files he needs to keep** (images, PDFs): also email them to his Gmail; he cannot save them from the chat.
+- **Chat only, never Gmail:** send all updates and files only in the Sesame chat. This supersedes older email instructions in other handoff files.
+- **No pages or PDFs for his updates:** either a full video with voiceover, or text with every link to click. Share this Markdown handoff by its GitHub link in the chat.
 - Send an image only when he is truly needed.
 - **Say "your companion"**, never "Misty", for companions in general.
 - Every string in English, German and Spanish. Honest health copy: no medical promises, estimates labelled, one verdict per screen.
 - Never put test data, bots or fixtures into production; live-site probes block the Supabase host or mark guests as test accounts.
-- **When the usage limit is close:** push everything to GitHub (`sync-vm.sh`), then send him his handoff prompt word for word, unchanged, right away, with this PDF.
+- **When the usage limit is close:** push everything to GitHub (`sync-vm.sh`), then send him his handoff prompt word for word, unchanged, right away in the chat, with this handoff's GitHub link. Recover his exact prompt from the chat; never reconstruct it or claim it is recovered if it is not available.
 
 ## Open work on 26 October 2026, about 2:10 PM
 
@@ -68,7 +76,7 @@ The full list with his words is at the top of MAYA-HANDOFF.md and in section 5.
 | Supermarket redesign: virtual grocery shopping (0.21) | Just started (Sesame task "LOWiSPIKE: redesign Supermarket as virtual grocery shopping"), nothing built yet. His words: "Redesign supermarket because it's quite annoying. I'm at home and I want to go grocery shopping now. And I would have loved to be able to virtual grocery shop, just like all those apps that are going viral, the ones that we are trying to copy from. Whatever their feature is that is making people want to use their app, we could be using that, literally inside of our supermarket." | the task's branch, working notes `HANDOFF-supermarket.md` on it (find it with `git branch -r \| grep -i supermarket`); viral-app research in agent-harness `research/ugc-farm-playbook.html` | Read HANDOFF-supermarket.md on the branch and continue from its next step. If nothing is there: study what makes the viral meal-planner apps (mise, Potto, Super, choosy) addictive, design Supermarket as a virtual walk through the store built on that, small slices, release each quietly |
 | Community bot recipe cards open the recipe page (0.18) | Building, not live; failing test being written | `wip/bot-recipe-open`, `vm-notes/COORD-bot-recipe.md` | Reuse the Shuffle food page, labelled Open / Cook / Save / Add to Kitchen buttons, Add to Kitchen through `kitchen-core.js add()` (Kitchen now opens with `LowiKitchenGame.open()`). Fold in `meal-kitchen-20261025` and `nibblo-recipe-20261025` |
 | Hourly bug hunt | Running every hour; round 39 live in 20261026-122440 | ledger `probes/BUGHUNT/LEDGER.md` | Next: choices that close their menu and leave what was under the finger tappable (sheet rows, Community person card); then VoiceOver focus loss and level-up or badge moments that save before they are seen |
-| App Store images, realistic redo | Running (Sesame task) | concept v1 in agent-harness `aso/LOWiSPIKE-AppStore-Konzept/` | Finish the realistic set, check every image by eye, email them to his Gmail |
+| App Store images, realistic redo | Running (Sesame task) | concept v1 in agent-harness `aso/LOWiSPIKE-AppStore-Konzept/` | Finish the realistic set, check every image by eye, send them only in the chat |
 | Community food photos analyzed automatically | WIP, untested | `community-photo-ai-20261025` | Diff against main, finish, test, release |
 | Spike curve back on scan results (estimate, static with Reduce Motion) | Not started | `vm-notes/` and 0.13 | Build |
 | MiroFish crowd simulation (0.17) | Stalled on the Gemini free tier (20 requests a day); bugs fixed but untested | agent-harness `mirofish/MIROFISH-RECREATE.md` | His choice: billing on the Gemini project, or the free flash-lite route. He already has the ChatGPT prompts (`research/LOWiSPIKE-ChatGPT-simulation-prompts.md`) |

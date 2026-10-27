@@ -184,7 +184,7 @@
     }
     function lvlTag(h) {
         if (h.via === 'photo' && !h.lvl) return '<i class="stp-tag">' + esc(T('Photo · not rated', 'Foto · nicht bewertet', 'Foto · sin valorar')) + '</i>';
-        const cls = { none: 'best', mild: 'ok', spike: 'no' }[h.lvl];
+        const cls = { none: 'best', mild: 'no', spike: 'no' }[h.lvl]; /* 27 Oct: two states only, the old middle level is red like Not insulin-friendly */
         if (cls) return '<i class="stp-tag ' + cls + '">' + esc(lvlWord(h.lvl) + T(' (estimate)', ' (Schätzung)', ' (estimación)')) + '</i>';
         return '<i class="stp-tag">' + esc(T('Not rated', 'Nicht bewertet', 'Sin valorar')) + '</i>';
     }

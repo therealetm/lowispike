@@ -226,7 +226,7 @@
             (home.length ? '<h5>' + T('Already at home', 'Schon zu Hause', 'Ya en casa') + ' \u00b7 ' + home.length + '</h5><ul class="wb-items">' + home.map(i => row(i, true)).join('') + '</ul>' : '') +
             '<div class="wb-go"><button type="button" class="wb-cta" data-wb="list"' + (need.length ? '' : ' disabled') + '>' + (sent ? '\u2713 ' + (cart ? T('In your Cart', 'In deinem Warenkorb', 'En tu carrito') : T('On your shopping list', 'Auf deiner Einkaufsliste', 'En tu lista de la compra')) : (cart ? T('Put it in my Cart', 'In meinen Warenkorb', 'A\u00f1adir a mi carrito') : T('Put it on my shopping list', 'Auf meine Einkaufsliste', 'A\u00f1adir a mi lista de la compra'))) + '</button>' +
             (sent && cart ? '<button type="button" class="wb-sec" data-wb="cart">' + T('Open my Cart', 'Warenkorb \u00f6ffnen', 'Abrir mi carrito') + '</button>' : '') +
-            (sent && !cart && W.LowiKitchenGame ? '<button type="button" class="wb-sec wb-kit" data-wb="kitchen">' + T('Go to my kitchen', 'Zu meiner K\u00fcche', 'Ir a mi cocina') + '</button>' : '') +
+            (sent && W.LowiKitchenGame ? '<button type="button" class="wb-sec wb-kit" data-wb="kitchen">' + T('Go to my kitchen', 'Zu meiner K\u00fcche', 'Ir a mi cocina') + '</button>' : '') +
             '<button type="button" class="wb-sec" data-wb="copy">' + T('Copy or share the list', 'Liste kopieren oder teilen', 'Copiar o compartir la lista') + '</button>' +
             (deliv ? '<details class="wb-deliv"><summary>' + T('Order it to your door', 'Nach Hause liefern lassen', 'Pedir a domicilio') + '</summary><div class="wb-dls">' + deliv + '</div></details>' : '') + '</div>' +
             '<p class="wb-fine">' + T('Prices are estimates for a typical pack at each chain, not live prices. One pack per dinner feeds up to two people; spices, sauces, oils and seeds count once a week. General food guidance, not medical advice.',
@@ -289,9 +289,9 @@
             try { if (W.LOWI_SHELF && W.LOWI_SHELF.addIngredients) added = W.LOWI_SHELF.addIngredients(need.map(i => ({ n: i.n, g: i.g })), T('Week shop', 'Wocheneinkauf', 'Compra semanal')); } catch (err) { added = -1; }
             if (added < 0) return toast(T('Could not save the list. Try again.', 'Liste nicht gespeichert. Bitte nochmal.', 'No se pudo guardar la lista. Int\u00e9ntalo de nuevo.'));
             S.sent = S.wk + '#' + S.shuffle + '#' + need.length; paint(sel('list'));
-            if (cartOn()) return toast(added ? T(need.length + ' things in your Cart', need.length + ' Sachen in deinem Warenkorb', need.length + ' cosas en tu carrito') : T('Already in your Cart', 'Schon in deinem Warenkorb', 'Ya est\u00e1 en tu carrito'));
-            /* Oct 27 2026 (Emmanuel: "select the grocery store, how many people, the budget, and then you see a kitchen"): after the setup lands on the list, you end up in the kitchen, the list note glowing on the fridge */
+            /* Oct 27 2026 (Emmanuel: "select the grocery store, how many people, the budget, and then you see a kitchen"): after the setup lands on the list (or the Cart, the same list), you end up in the kitchen, the list note glowing on the fridge */
             if (added > 0 && toKitchen(900)) return;
+            if (cartOn()) return toast(added ? T(need.length + ' things in your Cart', need.length + ' Sachen in deinem Warenkorb', need.length + ' cosas en tu carrito') : T('Already in your Cart', 'Schon in deinem Warenkorb', 'Ya est\u00e1 en tu carrito'));
             return toast(added ? T(need.length + ' things on your shopping list', need.length + ' Sachen auf deiner Einkaufsliste', need.length + ' cosas en tu lista de la compra') : T('Already on your shopping list', 'Steht schon auf deiner Einkaufsliste', 'Ya est\u00e1 en tu lista'));
         }
         if (a === 'kitchen') { toKitchen(0); return; }

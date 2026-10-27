@@ -48,9 +48,28 @@ function nameOf(s, tab) {
   if (last) return short(last.name);
   return { 'hb2-water': 'Wasser-Men\u00fc', 'hb2-sleep': 'Schlaf-Men\u00fc', 'hb2-move': 'Move-Men\u00fc' }[(String(s.key).match(/hb2-(water|sleep|move)/) || [])[0]] || ({ 'tab-shelf': 'Cook / Shop', 'tab-profile': 'Profil', 'tab-move': 'Move', 'tab-scan': 'Scan', 'tab-foryou': 'Community' }[tab]) || s.key || tab;
 }
+const NAMES_FILE = { 'misty-004': 'Schritte eintragen (Move-Blase)', 'comm-015': 'Sternzeichen (Steinbock)', 'comm-003': 'Community-Men\u00fc', 'hsleep-002': 'Schlaf eintragen (Schlaf-Blase)', 'hmove-003': 'Bewegung: Schritte heute bearbeiten' };
+const NAMES_CODE = {
+  'LowiBirthCompanion.openCreator': 'Geburtstag & Begleiter erschaffen', 'LowiBook.open': 'Mein Rezeptbuch', 'LowiBucket.openToday': 'Heutige Eink\u00e4ufe (Korb)',
+  'LowiCellRoom.openTree': 'Freundesbaum (alte Version)', 'LowiCompanion.open': 'Misty: Entwicklungsweg', 'LowiDayRecap.open': 'Tagesr\u00fcckblick',
+  'LowiDex.open': 'Entdecker-Feldbuch', 'LowiDiscovery.openForm': 'Produkt melden (nur auf diesem Handy)', 'LowiE1.open': 'Tagesabschluss',
+  'LowiEveningCatchup.open': 'Abend-Nachtrag (Punkte & Mahlzeiten)', 'LowiF2.start': 'Mahlzeit eintragen (nach dem Fasten)',
+  'LowiG1.start': 'Alter Guide: leuchtende Scan-Kugel', 'LowiGiftBasket.open': 'Geschenkkorb: Hilf mit', 'LowiGrocery.open': 'Ladenfunde',
+  'LowiHerbShop.open': 'Zahl, was du willst (Unterst\u00fctzen)', 'LowiHerbStart.openInterview': 'Startplan-Interview (Moss Leaf)',
+  'LowiHerbStart.openPlan': 'N\u00e4chste Schritte (Startplan)', 'LowiIG.open': 'Mach LOWiSPIKE zur App (Installieren)',
+  'LowiMealDetail.open': 'Mahlzeit-Details (leer)', 'LowiMicroBook.open': 'Reisetagebuch (K\u00f6rper-Universum)',
+  'LowiQuickTour.open': 'Kurz-Tour', 'LowiR2.showGate': 'Konto-Pflicht: Fortschritt speichern (englisch)', 'LowiRanking.openInfo': 'Rangliste: So funktioniert es',
+  'LowiRanking.openLadder': 'Level-Leiter (Misty-Level)', 'LowiRitual.openDay': 'Dranbleib-Tag (Tagesziel)', 'LowiRitual.openPicker': 'Dein Rhythmus: Wie oft?',
+  'LowiSellerZone.open': 'Seller Zone', 'LowiSpirit.showPick': 'Dein Treffer (Rezept-Vorschlag)', 'LowiStorePicks.open': 'Welcher Laden?',
+  'LowiTopBar.openWeather': 'Wetter', 'LowiWeekBasket.open': 'Von zu Hause einkaufen', 'LowiWorld3D.open': 'K\u00f6rperwelt 3D (Blutbahn)',
+  'LowiWorldAudio.open': 'K\u00f6rperklang (Welt-Audio)', 'LowiWorldHome.openDetails': 'Misty: Formen, Aura & Wachstum',
+  'LowiWorldRegions.openMap': 'K\u00f6rperwelt-Karte', 'LowiMoveBubble.open': 'Schritte eintragen (Move-Blase)',
+  'LowiHomeOrbitV2.openSettings': 'Einstellungen (Home-Orbit, alte Version)', 'LowiHomeOrbitV2.openSleep': 'Wie hast du geschlafen? (Home-Orbit)' };
+/* screenshots that are not an interface of their own: empty overlays, Home again after a tour */
+const DROP = ['api-081', 'api-039', 'api-012', 'quicktour-002'];
 /* fixes for surfaces whose detected name is a CSS class or that sit in the wrong area (by first screenshot file) */
 const FIX = { 'hcomm-002': ['C', 'Community-Einstellungen (gedr\u00fcckt halten)'], 'comm-005': ['C', 'Profilkarte in der Community'],
-  'hmisty-002': ['H', 'Mistys Karte (gedr\u00fcckt halten)'], 'hmisty-005': ['H', 'Mistys Karte: Weltleuchten & Energie'] };
+  'hmisty-002': ['H', 'Mistys Karte (gedr\u00fcckt halten)'], 'hmisty-005': ['H', 'Mistys Karte: Weltleuchten & Energie'], 'tshelf-011': ['P', 'Profil-Men\u00fc (Du & Einstellungen)'] };
 const GENERIC = /^(Kochen|Community|Bewegung|Misty|Profil|Move|Deine Daten|Essenspause)$/;
 const normSig = sg => { sg = String(sg || '').replace('#app.', ''); return /^tab-home\|\|\|/.test(sg) ? 'HOME' : sg; };
 const items = [], bySig = new Map();
@@ -104,11 +123,35 @@ for (let i = items.length - 1; i >= 0; i--) { const it = items[i]; if (it.area !
 for (let i = items.length - 1; i >= 0; i--) { const it = items[i]; if (!/^Home \u2192/.test(it.path) || it.src === undefined) continue;
   const tw = items.find(o => o !== it && o.area === it.area && o.name === it.name && o.depth <= it.depth);
   if (tw && /tmove|tshelf|tprof|tscan/.test(it.src)) { tw.files.push(...it.files.filter(f => !tw.files.includes(f))); items.splice(i, 1); } }
+/* explicit merges: screenshot of the same screen (other state / other path) -> main screenshot */
+const MERGE = { 'misty-013': 'fuel-004', 'fuel-006': 'fuel-004', 'misty-018': 'fuel-004', 'api-061': 'hmisty-004', 'comm-011': 'tprof-008',
+  'fuel-005': 'fuel-003', 'comm-016': 'tprof-004', 'tprof-011': 'tprof-004', 'api-037': 'api-016', 'tprof-009': 'tprof-010', 'hmove-006': 'hmove-003' };
+const CODEMERGE = { 'LowiMoveBubble.open': 'misty-004', 'LowiQuickTour.open': 'quicktour-001' };
+for (const [c, to] of Object.entries(CODEMERGE)) { const b = items.find(o => o.files.includes(to + '.jpg')); const a = items.find(o => o !== b && !o.reachable && (o.code || [])[0] === c);
+  if (a && b) { b.code = (b.code || []).concat(a.code); items.splice(items.indexOf(a), 1); } }
+for (let i = items.length - 1; i >= 0; i--) { const it = items[i]; if (DROP.includes((it.files[0] || '').replace('.jpg', '')) || (!it.reachable && !/[a-z\u00e0-\u00ff]{3}/i.test(String(it.txt || '').replace(/undefined/g, '')))) items.splice(i, 1); }
+const byFile = f => items.find(o => o.files.includes(f + '.jpg'));
+for (const [from, to] of Object.entries(MERGE)) { const a = byFile(from), b = byFile(to); if (!a || !b || a === b) continue;
+  b.files.push(...a.files.filter(f => !b.files.includes(f))); b.code = (b.code || []).concat(a.code || []); if (a.reachable) b.reachable = true;
+  if (a.reachable && a.depth < b.depth) { b.path = a.path; b.depth = a.depth; } items.splice(items.indexOf(a), 1); }
+/* rule: a code-only surface whose text matches a reachable screen is that screen */
+const t80 = t => String(t || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+for (let i = items.length - 1; i >= 0; i--) { const it = items[i]; if (it.reachable || !t80(it.txt)) continue;
+  const tw = items.find(o => o.reachable && o.area !== 'T' && t80(o.txt) === t80(it.txt)); if (tw && tw.src !== 'tshelf') { tw.code = (tw.code || []).concat(it.code || []); items.splice(i, 1); } }
+/* German names for code-only surfaces (by call) and cleanup of raw/long names */
+const CODENAME = Object.assign({}, NAMES_CODE);
+for (const it of items) {
+  const c = (it.code || [])[0];
+  if (!it.reachable && c && CODENAME[c]) it.name = CODENAME[c];
+  else if (!it.reachable && (/^Lowi\w*\.|#|\u00d7|undefined/.test(it.name) || it.name.length > 40)) { it.name = String(it.txt || '').replace(/[#\u00d7\u2715\u2605]/g, ' ').replace(/\s+/g, ' ').trim().split(/[.!?:]/)[0].split(' ').slice(0, 5).join(' ') || 'Unbenanntes Fenster'; console.log('NEEDS NAME', c, '->', it.name); }
+  const fx2 = NAMES_FILE[(it.files[0] || '').replace('.jpg', '')]; if (fx2) it.name = fx2;
+  it.name = String(it.name).replace(/, 0 Sachen, \u00f6ffnen$/, '').replace(/, 0$/, '').replace(/^Kochen \u2013 /, 'K\u00fcche \u2013 ');
+}
 const ORDER = ['H', 'C', 'F', 'M', 'S', 'W', 'G', 'SL', 'P', 'T', 'X'];
 items.sort((a, b) => ORDER.indexOf(a.area) - ORDER.indexOf(b.area) || a.depth - b.depth || a.path.localeCompare(b.path, 'de'));
 const cnt = {};
 for (const it of items) { cnt[it.area] = (cnt[it.area] || 0) + 1; it.nr = it.area + '-' + String(cnt[it.area]).padStart(2, '0'); it.areaName = AREANAME[it.area]; it.name = String(it.name).replace(/\s+/g, ' ').trim().slice(0, 70); }
 const out = { built: new Date().toISOString(), device: 'iPhone 390x844, dunkel, Deutsch (iPad 1180x820 nur wo anders)', areas: AREANAME, counts: cnt, total: items.length,
-  items: items.map(({ nr, area, areaName, name, path, files, ipad, reachable, src, code, realArea, txt }) => ({ nr, area, areaName, name, path, files, ipad: ipad || [], reachable, src, code: code || [], realArea, txt })) };
+  items: items.map(({ nr, area, areaName, name, path, files, ipad, reachable, src, code, realArea, txt, sig }) => ({ nr, area, areaName, name, path, files, ipad: ipad || [], reachable, src, code: code || [], realArea, txt, sig })) };
 fs.writeFileSync(path.join(OUT, 'inventory.json'), JSON.stringify(out, null, 1));
 console.log('inventory', items.length, JSON.stringify(cnt));

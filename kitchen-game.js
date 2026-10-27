@@ -217,12 +217,15 @@
             const b = t.getBoundingClientRect(), cx = b.left - a.left + b.width / 2;
             const left = Math.max(4, Math.min(a.width - w - 4, cx - w / 2));
             let top = b.bottom - a.top + 8;
-            if (top + h > a.height + 60 && b.top - a.top - h - 8 > 0) { top = b.top - a.top - h - 8; qa.classList.add('up'); }
+            const vh = W.innerHeight || 800, below = b.bottom + 8 + h > vh - 84, roomUp = b.top - h - 8 > 64;
+            /* above the food when it would run past the scene or below the screen (iPad landscape: the scene ends near the fold) */
+            if ((top + h > a.height + 60 || below) && roomUp) { top = b.top - a.top - h - 8; qa.classList.add('up'); } else qa.classList.remove('up');
             qa.style.left = Math.round(left) + 'px'; qa.style.top = Math.round(top) + 'px'; qa.style.setProperty('--ax', Math.round(cx - left) + 'px');
         } else { qa.style.left = Math.max(4, Math.round((a.width - w) / 2)) + 'px'; qa.style.top = '40px'; }
         qa.classList.add('on');
         if (focusIt) { const f = qa.querySelector('.kg-binbtn'); if (f) try { f.focus({ preventScroll: true }); } catch (e) {} }
-        try { const qb = qa.getBoundingClientRect(), vh = W.innerHeight || 800; if (qb.bottom > vh - 90) W.scrollBy({ top: qb.bottom - vh + 110, behavior: rm() ? 'auto' : 'smooth' }); } catch (e) {}
+        /* still off screen: bring it in, whichever box scrolls (the tab panel, not always the window) */
+        try { const qb = qa.getBoundingClientRect(), vh = W.innerHeight || 800; if (qb.bottom > vh - 84 || qb.top < 56) qa.scrollIntoView({ block: 'nearest', behavior: rm() ? 'auto' : 'smooth' }); } catch (e) {}
     }
     function paintHits() { const h = D.getElementById('kgHits'); if (h) h.innerHTML = hitsHTML(); }
     function say(t, opt) {

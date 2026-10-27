@@ -28,6 +28,8 @@ const fs = require('fs');
   await R.ctx.addInitScript(a => { try { if (!sessionStorage.getItem('ksc')) { sessionStorage.setItem('ksc', '1'); localStorage.setItem('lowispike.lang', a.l); localStorage.setItem('lowi.lang', a.l); localStorage.setItem('lowi.theme', a.t); localStorage.setItem('lowispike.kitchen.v1', a.s); localStorage.removeItem('lowi.weekBasket.v1'); localStorage.removeItem('lowispike.weekshop.v1'); } } catch (e) { } }, { l: lang, t: theme, s: JSON.stringify(seed) });
   const res = []; const ok = (name, pass, info) => { res.push(!!pass); console.log((pass ? 'PASS ' : 'FAIL ') + tag + ' ' + name + (info !== undefined && !pass ? ' ' + JSON.stringify(info).slice(0, 600) : '')); };
   const sleep = H.sleep;
+  /* a person scrolls to what they tap; the quick actions are checked to be on screen without that */
+  const tap = async sel => { await P.locator(sel).first().scrollIntoViewIfNeeded({ timeout: 5000 }).catch(() => {}); await sleep(250); await R.tap(sel); };
   await R.goto(); await sleep(4000);
   await P.evaluate(() => {
     const strip = () => document.documentElement.classList.remove('gate-boot', 'gate-up');
@@ -46,7 +48,8 @@ const fs = require('fs');
       toks: document.querySelectorAll('.kg-scene .kg-tok:not(.kg-more)').length, open: (q('.kg-open') || {}).className || '', qa: !!q('.kg-qa.on'), week: (q('.kg-week') || {}).textContent || '', hint: (q('.kg-binhint') || {}).textContent || '',
       saved: JSON.parse(localStorage.getItem('lowispike.kitchen.v1') || '{"items":[]}').items.map(i => i.id + '@' + (i.c || '')),
       list: (() => { try { return window.LOWI_SHELF && LOWI_SHELF.listOpen ? LOWI_SHELF.listOpen().map(x => x.n) : null; } catch (e) { return 'err'; } })(),
-      hOver: document.documentElement.scrollWidth > innerWidth + 1 || (r ? [...r.querySelectorAll('*')].some(e => { const b = e.getBoundingClientRect(); return b.width && (b.right > innerWidth + 1 || b.left < -1) && getComputedStyle(e).position !== 'fixed' && !e.closest('.kg-toast'); }) : false), toast: (q('.kg-toast') || {}).textContent || '',
+      hOver: document.documentElement.scrollWidth > innerWidth + 1 || (r ? [...r.querySelectorAll('*')].some(e => { const b = e.getBoundingClientRect(); return b.width && (b.right > innerWidth + 1 || b.left < -1) && getComputedStyle(e).position !== 'fixed' && !e.closest('.kg-toast'); }) : false),
+      overBy: r ? [...r.querySelectorAll('*')].filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.right > innerWidth + 1 || b.left < -1) && getComputedStyle(e).position !== 'fixed' && !e.closest('.kg-toast'); }).slice(0, 3).map(e => String(e.className).slice(0, 40) + ':' + Math.round(e.getBoundingClientRect().left) + '-' + Math.round(e.getBoundingClientRect().right) + ' ' + (e.textContent || '').slice(0, 20)) : [], toast: (q('.kg-toast') || {}).textContent || '',
       labels: [...document.querySelectorAll('.kg-uh b')].map(b => b.textContent), text: r ? r.innerText.slice(0, 400) : '' };
   });
   let s = await st();
@@ -61,37 +64,39 @@ const fs = require('fs');
   await R.shot(out + '/scene-' + tag + '.png');
   /* zoom: fridge, cabinet, a shelf */
   for (const d of ['fridge', 'cabinet']) {
-    await R.tap('.kg-uh[data-kg-door="' + d + '"]'); await sleep(700); s = await st();
+    await tap('.kg-uh[data-kg-door="' + d + '"]'); await sleep(700); s = await st();
     ok('zoom: ' + d + ' opens in place', s.open.indexOf('kg-' + d) >= 0 && !s.hOver, s);
     await R.shot(out + '/open-' + d + '-' + tag + '.png');
-    await R.tap('.kg-open [data-kg="close"]'); await sleep(600); s = await st();
+    await tap('.kg-open [data-kg="close"]'); await sleep(600); s = await st();
     ok('zoom: ' + d + ' closes back to the scene', !s.open && s.scene, s);
   }
   const shelfId = await P.evaluate(() => { const b = document.querySelector('.kg-scene .kg-shl'); return b ? b.getAttribute('data-kg-door') : ''; });
-  await R.tap('.kg-shl[data-kg-door="' + shelfId + '"]'); await sleep(700); s = await st();
+  await tap('.kg-shl[data-kg-door="' + shelfId + '"]'); await sleep(700); s = await st();
   ok('zoom: a shelf (' + shelfId + ') opens', !!s.open && s.open.indexOf('kg-buyv') < 0, s);
-  await R.tap('.kg-open [data-kg="close"]'); await sleep(600);
+  await tap('.kg-open [data-kg="close"]'); await sleep(600);
   /* quick actions: tap Skyr, Used up -> list */
   const n0 = (await st()).noteN;
-  await R.tap('[data-kg-tok="kt1"]'); await sleep(700); s = await st();
-  const qa = await P.evaluate(() => { const q = document.querySelector('.kg-qa.on'); if (!q) return null; const b = q.getBoundingClientRect(); return { txt: q.innerText, l: b.left, r: b.right, w: innerWidth, lt: (q.querySelector('.kg-lt') || {}).textContent || '' }; });
-  ok('quick actions: tap on food opens them inside the screen', s.qa && qa && qa.l >= 0 && qa.r <= qa.w + 1, qa);
+  await tap('[data-kg-tok="kt1"]'); await sleep(700); s = await st();
+  const qa = await P.evaluate(() => { const q = document.querySelector('.kg-qa.on'); if (!q) return null; const b = q.getBoundingClientRect(); return { txt: q.innerText, l: b.left, r: b.right, w: innerWidth, t: b.top, bo: b.bottom, vh: innerHeight, lt: (q.querySelector('.kg-lt') || {}).textContent || '', hit: (() => { const bb = q.querySelector('.kg-binbtn').getBoundingClientRect(), e = document.elementFromPoint(bb.left + bb.width / 2, bb.top + bb.height / 2); return e ? String(e.className).slice(0, 40) : null; })(), sy: scrollY }; });
+  console.log('qa', JSON.stringify(qa));
+  ok('quick actions: tap on food opens them inside the screen', s.qa && qa && qa.l >= 0 && qa.r <= qa.w + 1 && qa.t >= 0 && qa.bo <= qa.vh + 1, qa);
   ok('quick actions: insulin label wording', qa && (lang === 'de' ? qa.lt === 'Insulinfreundlich' : qa.lt === 'Insulin-friendly'), qa);
   ok('quick actions: Used up / move / remove', qa && (lang === 'de' ? /Ist leer/.test(qa.txt) && /Entfernen/.test(qa.txt) : /Used up/.test(qa.txt) && /Remove/.test(qa.txt)) && !!(await P.$('.kg-qa select[data-kg-move]')), qa);
   await R.shot(out + '/qa-' + tag + '.png');
-  await R.tap('.kg-qa .kg-binbtn'); await sleep(1200); s = await st();
+  await tap('.kg-qa .kg-binbtn'); await sleep(1200); s = await st();
   ok('quick actions: Used up takes it out and onto the list', !s.saved.some(x => x.startsWith('kt1@')) && s.noteN === n0 + 1, s);
   /* move: Eggs to another shelf */
-  await R.tap('[data-kg-tok="kt2"]'); await sleep(600);
+  await tap('[data-kg-tok="kt2"]'); await sleep(600);
   const target = await P.evaluate(() => { const sel = document.querySelector('.kg-qa select[data-kg-move]'); const o = [...sel.options].find(x => !x.selected); return o ? o.value : ''; });
   await P.selectOption('.kg-qa select[data-kg-move]', target); await sleep(800); s = await st();
   ok('quick actions: move to shelf ' + target, s.saved.indexOf('kt2@' + target) >= 0, s);
   /* remove: Almonds */
   await P.evaluate(() => { const x = document.querySelector('.kg-qa [data-kg="unsel"]'); if (x) x.click(); }); await sleep(300);
-  await R.tap('[data-kg-tok="kt6"]'); await sleep(600);
-  await R.tap('.kg-qa .kg-x'); await sleep(900); s = await st();
+  await tap('[data-kg-tok="kt6"]'); await sleep(600);
+  await tap('.kg-qa .kg-x'); await sleep(900); s = await st();
   ok('quick actions: remove takes it out without the list', !s.saved.some(x => x.startsWith('kt6@')) && s.noteN === n0 + 1, s);
   /* drag White bread to the bin (mouse drag) */
+  await P.evaluate(() => { const sc = document.querySelector('.kg-scene'); if (sc) sc.scrollIntoView({ block: 'center' }); }); await sleep(500);
   const a = await P.locator('[data-kg-tok="kt5"]').boundingBox(), b = await P.locator('.kg-bin-big').boundingBox();
   if (a && b) {
     await P.mouse.move(a.x + a.width / 2, a.y + a.height / 2); await P.mouse.down(); await sleep(100);
@@ -102,12 +107,12 @@ const fs = require('fs');
   ok('drag: food dragged to the bin lands on the list', !!a && !!b && !s.saved.some(x => x.startsWith('kt5@')) && s.noteN === n0 + 2, { s, a, b });
   ok('after actions: no sideways scroll', !s.hOver, s);
   /* the list note opens the list */
-  await R.tap('.kg-note'); await sleep(700); s = await st();
+  await tap('.kg-note'); await sleep(700); s = await st();
   ok('list note opens the shopping list', s.open.indexOf('kg-buyv') >= 0, s);
   await R.shot(out + '/list-' + tag + '.png');
-  await R.tap('.kg-open [data-kg="close"]'); await sleep(500);
+  await tap('.kg-open [data-kg="close"]'); await sleep(500);
   /* week plan flow: Woche planen -> setup -> week -> list -> kitchen with the note glowing */
-  await R.tap('.kg-week'); await sleep(1500);
+  await tap('.kg-week'); await sleep(1500);
   await P.evaluate(() => { const unlock = () => document.querySelectorAll('.stp-ov[inert]').forEach(n => { n.inert = false; n.removeAttribute('inert'); }); unlock(); setInterval(unlock, 200); });
   let hasWb = await P.waitForSelector('.wb-inline, .wb-v-q, .wb-tile', { timeout: 20000 }).then(() => true).catch(() => false);
   ok('week: Woche planen opens the planner', hasWb);

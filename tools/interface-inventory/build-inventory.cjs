@@ -48,7 +48,11 @@ function nameOf(s, tab) {
   if (last) return short(last.name);
   return { 'hb2-water': 'Wasser-Men\u00fc', 'hb2-sleep': 'Schlaf-Men\u00fc', 'hb2-move': 'Move-Men\u00fc' }[(String(s.key).match(/hb2-(water|sleep|move)/) || [])[0]] || ({ 'tab-shelf': 'Cook / Shop', 'tab-profile': 'Profil', 'tab-move': 'Move', 'tab-scan': 'Scan', 'tab-foryou': 'Community' }[tab]) || s.key || tab;
 }
-const NAMES_FILE = { 'misty-004': 'Schritte eintragen (Move-Blase)', 'comm-015': 'Sternzeichen (Steinbock)', 'comm-003': 'Community-Men\u00fc', 'hsleep-002': 'Schlaf eintragen (Schlaf-Blase)', 'hmove-003': 'Bewegung: Schritte heute bearbeiten' };
+const NAMES_FILE = { 'misty-004': 'Schritte eintragen (Move-Blase)', 'comm-015': 'Sternzeichen (Steinbock)', 'comm-003': 'Community-Men\u00fc', 'hsleep-002': 'Schlaf eintragen (Schlaf-Blase)', 'hmove-003': 'Bewegung: Schritte heute bearbeiten',
+  'onboard-001': 'Erster Start, Schritt 1: Hol dir LOWiSPIKE auf den Home-Bildschirm', 'onboard-002': 'Erster Start, Schritt 2: Jetzt vom Home-Bildschirm \u00f6ffnen',
+  'onboard-003': 'Erster Start, Schritt 3: Iss kl\u00fcger (Willkommen)', 'onboard-004': 'Erster Start, Schritt 4: Wie ist dein Vorname?',
+  'onboard-005': 'Erster Start, Schritt 5: Vorname eingetragen', 'onboard-006': 'Erster Start, Schritt 6: Kostenloses Konto erstellen',
+  'quicktour-001': 'Kurz-Tour (Video mit Ton)', 'tutorial-011': 'Tutorial, Schritt 11: Scan-Demo', 'api-135': 'Heutige Stats (Du & Misty)' };
 const NAMES_CODE = {
   'LowiBirthCompanion.openCreator': 'Geburtstag & Begleiter erschaffen', 'LowiBook.open': 'Mein Rezeptbuch', 'LowiBucket.openToday': 'Heutige Eink\u00e4ufe (Korb)',
   'LowiCellRoom.openTree': 'Freundesbaum (alte Version)', 'LowiCompanion.open': 'Misty: Entwicklungsweg', 'LowiDayRecap.open': 'Tagesr\u00fcckblick',
@@ -66,7 +70,7 @@ const NAMES_CODE = {
   'LowiWorldRegions.openMap': 'K\u00f6rperwelt-Karte', 'LowiMoveBubble.open': 'Schritte eintragen (Move-Blase)',
   'LowiHomeOrbitV2.openSettings': 'Einstellungen (Home-Orbit, alte Version)', 'LowiHomeOrbitV2.openSleep': 'Wie hast du geschlafen? (Home-Orbit)' };
 /* screenshots that are not an interface of their own: empty overlays, Home again after a tour */
-const DROP = ['api-081', 'api-039', 'api-012', 'quicktour-002'];
+const DROP = ['api-081', 'api-039', 'api-012', 'quicktour-002', 'news-014', 'tutorial-016'];
 /* fixes for surfaces whose detected name is a CSS class or that sit in the wrong area (by first screenshot file) */
 const FIX = { 'hcomm-002': ['C', 'Community-Einstellungen (gedr\u00fcckt halten)'], 'comm-005': ['C', 'Profilkarte in der Community'],
   'hmisty-002': ['H', 'Mistys Karte (gedr\u00fcckt halten)'], 'hmisty-005': ['H', 'Mistys Karte: Weltleuchten & Energie'], 'tshelf-011': ['P', 'Profil-Men\u00fc (Du & Einstellungen)'] };
@@ -126,7 +130,7 @@ for (let i = items.length - 1; i >= 0; i--) { const it = items[i]; if (!/^Home \
 /* explicit merges: screenshot of the same screen (other state / other path) -> main screenshot */
 const MERGE = { 'misty-013': 'fuel-004', 'fuel-006': 'fuel-004', 'misty-018': 'fuel-004', 'api-061': 'hmisty-004', 'comm-011': 'tprof-008',
   'fuel-005': 'fuel-003', 'comm-016': 'tprof-004', 'tprof-011': 'tprof-004', 'api-037': 'api-016', 'tprof-009': 'tprof-010', 'hmove-006': 'hmove-003' };
-const CODEMERGE = { 'LowiMoveBubble.open': 'misty-004', 'LowiQuickTour.open': 'quicktour-001' };
+const CODEMERGE = { 'LowiMoveBubble.open': 'misty-004', 'LowiQuickTour.open': 'quicktour-001', 'LowiTutorial.start': 'tutorial-001' };
 for (const [c, to] of Object.entries(CODEMERGE)) { const b = items.find(o => o.files.includes(to + '.jpg')); const a = items.find(o => o !== b && !o.reachable && (o.code || [])[0] === c);
   if (a && b) { b.code = (b.code || []).concat(a.code); items.splice(items.indexOf(a), 1); } }
 for (let i = items.length - 1; i >= 0; i--) { const it = items[i]; if (DROP.includes((it.files[0] || '').replace('.jpg', '')) || (!it.reachable && !/[a-z\u00e0-\u00ff]{3}/i.test(String(it.txt || '').replace(/undefined/g, '')))) items.splice(i, 1); }
@@ -148,7 +152,8 @@ for (const it of items) {
   it.name = String(it.name).replace(/, 0 Sachen, \u00f6ffnen$/, '').replace(/, 0$/, '').replace(/^Kochen \u2013 /, 'K\u00fcche \u2013 ');
 }
 const ORDER = ['H', 'C', 'F', 'M', 'S', 'W', 'G', 'SL', 'P', 'T', 'X'];
-items.sort((a, b) => ORDER.indexOf(a.area) - ORDER.indexOf(b.area) || a.depth - b.depth || a.path.localeCompare(b.path, 'de'));
+const TOUR = s => ['walk-onboard', 'walk-quicktour', 'walk-tutorial', 'walk-news'].indexOf(s);
+items.sort((a, b) => ORDER.indexOf(a.area) - ORDER.indexOf(b.area) || (a.area === 'T' ? TOUR(a.src) - TOUR(b.src) : 0) || a.depth - b.depth || a.path.localeCompare(b.path, 'de'));
 const cnt = {};
 for (const it of items) { cnt[it.area] = (cnt[it.area] || 0) + 1; it.nr = it.area + '-' + String(cnt[it.area]).padStart(2, '0'); it.areaName = AREANAME[it.area]; it.name = String(it.name).replace(/\s+/g, ' ').trim().slice(0, 70); }
 const out = { built: new Date().toISOString(), device: 'iPhone 390x844, dunkel, Deutsch (iPad 1180x820 nur wo anders)', areas: AREANAME, counts: cnt, total: items.length,

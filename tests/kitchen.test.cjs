@@ -76,7 +76,8 @@ test('Shop panel: third tab Kitchen, At home + Shopping cart, Bought moves, Buy 
   const dropBranch = sp.slice(sp.indexOf("b.hasAttribute('data-stp-kit-drop')"), sp.indexOf("b.getAttribute('data-stp-kit') === 'again'"));
   assert.doesNotMatch(dropBranch, /cartAdd/);
   assert.match(sp, /if \(ov && view === 'list' && onShop\(\)\) paint\(\)/, 'the list loading behind the Kitchen tab never repaints over it');
-  assert.match(sp, /\(\{ sz: 'sz', kitchen: 'kitchen' \}\)\[localStorage\.getItem\(TKEY\)\]/, 'the tab is remembered');
+  /* Oct 27 2026 (test changed, why): From home joined the remembered tabs */
+  assert.match(sp, /\(\{ sz: 'sz', kitchen: 'kitchen', home: 'home' \}\)\[localStorage\.getItem\(TKEY\)\]/, 'the tab is remembered');
   assert.match(css, /\.stp-tabs\.stp-tabs3 \{ grid-template-columns: 1fr 1fr 1fr/);
   assert.match(css, /\.stp-kit-msg\.none \{ display: none/);
   /* the companion has the person's own name: never "Misty" in what people read */

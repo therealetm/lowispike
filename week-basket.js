@@ -27,6 +27,10 @@
     const pic = id => { try { return (typeof FOOD_IMG !== 'undefined' && FOOD_IMG[id]) || ''; } catch (e) { return ''; } };  /* eslint-disable-line no-undef */
 
     let S = null, ov = null, ctx = null, lastFocus = null, toastT = 0;
+    /* Oct 27, 2026 (Emmanuel: "Vielleicht möchte 'Von zu Hause einkaufen' seine eigene Sektion haben"): Shop draws this as its own
+       tab (store-picks.js homeHTML). inl holds Shop's hooks while it is mounted there: head() = the Cart button in the corner,
+       onCart() opens Shop's Cart, cartOn() says whether there is one. open() still shows the sheet for anyone else. */
+    let inl = null;
     const save = () => { try { localStorage.setItem(C.KEY, JSON.stringify(S)); } catch (e) {} };
     const recipes = () => { try { return (W.LowiAllRecipes && W.LowiAllRecipes()) || []; } catch (e) { return []; } };
     function kitchenHas(name) {
@@ -74,10 +78,10 @@
             : '<p class="wb-bst">' + T(eur(bs.left) + ' left this week', 'Noch ' + eur(bs.left) + ' \u00fcbrig diese Woche', 'Te quedan ' + eur(bs.left) + ' esta semana') + '</p>';
         const sent = S.sent === S.wk + '#' + S.shuffle + '#' + need.length, cart = cartOn();
         const deliv = DELIVERY().map(x => '<a class="wb-dl" href="' + esc(x[1]) + '" target="_blank" rel="noopener">' + esc(x[0]) + ' \u2197</a>').join('');
-        return '<div class="wb-card" role="dialog" aria-modal="true" aria-labelledby="wbTitle">' +
+        return (inl ? '<div class="wb-card wb-inline" role="region" aria-labelledby="wbTitle">' : '<div class="wb-card" role="dialog" aria-modal="true" aria-labelledby="wbTitle">') +
             '<div class="wb-head"><div><h3 id="wbTitle">\ud83c\udfe0 ' + T('Shop from home', 'Von zu Hause einkaufen', 'Compra desde casa') + '</h3>' +
             '<p>' + T('Your week of low-spike dinners, one grocery list.', 'Deine Woche mit Low-Spike-Abendessen, ein Einkauf.', 'Tu semana de cenas low-spike, una sola compra.') + '</p></div>' +
-            '<button type="button" class="wb-x" data-wb="close" aria-label="' + T('Back to Supermarket', 'Zur\u00fcck zum Supermarkt', 'Volver al supermercado') + '">\u00d7</button></div>' +
+            (inl ? (inl.head ? inl.head() : '') : '<button type="button" class="wb-x" data-wb="close" aria-label="' + T('Back to Supermarket', 'Zur\u00fcck zum Supermarkt', 'Volver al supermercado') + '">\u00d7</button>') + '</div>' +
             '<div class="wb-scroll">' +
             '<section class="wb-setup" aria-label="' + T('Your week', 'Deine Woche', 'Tu semana') + '">' +
             '<div class="wb-row"><span class="wb-lb" id="wbPpl">' + T('People', 'Personen', 'Personas') + '</span><div class="wb-chips" role="group" aria-labelledby="wbPpl">' + C.PEOPLE.map(n => chip('people', n, S.people === n, n === 6 ? '6+' : String(n))).join('') + '</div></div>' +
@@ -106,7 +110,7 @@
     }
     /* Oct 26 (MAYA-HANDOFF 0.22): the Supermarket Cart (Warenkorb / Carrito) is the same list as the shopping list; when its
        button is on the page, the week goes "in my Cart" and Open my Cart presses that button (store-picks.js owns the pane). */
-    function cartOn() { return !!D.querySelector('.stp-card .stp-cartbtn'); }
+    function cartOn() { if (inl) return !!(inl.cartOn && inl.cartOn()); return !!D.querySelector('.stp-card .stp-cartbtn'); }
     function paint(keepFocusSel) {
         if (!ov) return;
         const sc = ov.querySelector('.wb-scroll'), y = sc ? sc.scrollTop : 0;
@@ -146,6 +150,7 @@
             if (cartOn()) return toast(added ? T(need.length + ' things in your Cart', need.length + ' Sachen in deinem Warenkorb', need.length + ' cosas en tu carrito') : T('Already in your Cart', 'Schon in deinem Warenkorb', 'Ya est\u00e1 en tu carrito'));
             return toast(added ? T(need.length + ' things on your shopping list', need.length + ' Sachen auf deiner Einkaufsliste', need.length + ' cosas en tu lista de la compra') : T('Already on your shopping list', 'Steht schon auf deiner Einkaufsliste', 'Ya est\u00e1 en tu lista'));
         }
+        if (a === 'cart' && inl) { try { if (inl.onCart) inl.onCart(); } catch (err) {} return; }
         if (a === 'cart') { close(); setTimeout(() => { const cb = D.querySelector('.stp-card .stp-cartbtn'); if (cb) try { cb.click(); } catch (err) {} }, 280); return; }
         if (a === 'copy') {
             const txt = C.text(ctx.items, ctx.have, price, S.store, storeName(S.store), eur, T('Week shop', 'Wocheneinkauf', 'Compra semanal')).replace(/^- (.*)$/gm, (m, x) => '- ' + x) ;
@@ -166,7 +171,25 @@
         if (e.key === 'Enter' && e.target && e.target.id === 'wbBud') { e.preventDefault(); onChange(e); }
     }
     /* store: a chain id from Supermarket's store (lidl, aldi, ...); used the first time only, after that the person's pick stays */
+    function load(opts) {
+        S = C.load((() => { try { return localStorage.getItem(C.KEY); } catch (e) { return null; } })(), C.weekKey());
+        const raw = opts && opts.store ? String(opts.store).toLowerCase().replace(/[^a-z].*$/, '') : '', st = STORE_IDS.indexOf(raw) >= 0 ? raw : '';   /* aldi_nord -> aldi */
+        if (st && !S.store) S.store = st;
+    }
+    /* draw the planner inside el (Shop's From home tab). Shop redraws its pane, so it calls unmount() before and mount() after. */
+    function mount(el, opts) {
+        if (!el) return;
+        if (ov && !inl) close();
+        load(opts);
+        inl = { head: opts && opts.head, onCart: opts && opts.onCart, cartOn: opts && opts.cartOn };
+        ov = el;
+        el.addEventListener('click', onClick); el.addEventListener('change', onChange);
+        el.addEventListener('keydown', e => { if (ov === el && e.key === 'Enter' && e.target && e.target.id === 'wbBud') { e.preventDefault(); onChange(e); } });
+        paint();
+    }
+    function unmount() { if (!inl) return; clearTimeout(toastT); ov = null; inl = null; }
     function open(opts) {
+        if (inl) unmount();
         if (ov) return;
         S = C.load((() => { try { return localStorage.getItem(C.KEY); } catch (e) { return null; } })(), C.weekKey());
         const raw = opts && opts.store ? String(opts.store).toLowerCase().replace(/[^a-z].*$/, '') : '', st = STORE_IDS.indexOf(raw) >= 0 ? raw : '';   /* aldi_nord -> aldi */
@@ -179,6 +202,7 @@
         requestAnimationFrame(() => { if (ov) ov.classList.add('in'); const h = ov && ov.querySelector('#wbTitle'); if (h) { h.tabIndex = -1; try { h.focus({ preventScroll: true }); } catch (e) {} } });
     }
     function close() {
+        if (inl) return unmount();
         if (!ov || ov.classList.contains('closing')) return;
         const el = ov; ov = null;
         /* BH-060: a closing tap on the basket (Done, Cart) is spent, so a fast 2nd tap does not hit the page under it */
@@ -189,5 +213,5 @@
         setTimeout(() => { el.remove(); }, reduce ? 0 : 260);
         try { if (lastFocus && lastFocus.isConnected) lastFocus.focus({ preventScroll: true }); } catch (e) {}
     }
-    W.LowiWeekBasket = { open, close, isOpen: () => !!ov, _state: () => S, _ctx: () => ctx };
+    W.LowiWeekBasket = { open, close, mount, unmount, isOpen: () => !!ov && !inl, mounted: () => !!ov && !!inl, _state: () => S, _ctx: () => ctx };
 })();

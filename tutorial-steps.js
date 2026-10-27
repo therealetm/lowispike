@@ -239,8 +239,8 @@
             }
         },
         {
-            id: 'new-week-shop', area: 'new', where: 'home', open: 'supermarket', target: ['.stp-card .stp-wb', '.stp-card'], covers: ['week-shop'],
-            info: 'Oct 26 2026: Shop from home at the top of Supermarket (week-basket.js, MAYA-HANDOFF 0.21). Household, budget and dinners in, a week of low-spike dinners and one grocery list out, priced with the existing store estimates; it fills the Cart (0.22).',
+            id: 'new-week-shop', area: 'new', where: 'home', open: 'supermarket', target: ['.stp-card [data-stp-tab="home"]', '.stp-card'], covers: ['week-shop'],
+            info: 'Oct 27 2026: Shop from home is its own Shop tab now (Zu Hause / From home / Desde casa), right next to Supermarket; the spotlight points at that tab (Emmanuel: "Vielleicht möchte Von zu Hause einkaufen seine eigene Sektion haben"). Oct 26 2026: Shop from home at the top of Supermarket (week-basket.js, MAYA-HANDOFF 0.21). Household, budget and dinners in, a week of low-spike dinners and one grocery list out, priced with the existing store estimates; it fills the Cart (0.22).',
             title: { en: 'Shop from home', de: 'Von zu Hause einkaufen', es: 'Compra desde casa' },
             text: {
                 en: 'New in Supermarket: Shop from home. Pick people, budget and dinners for a low-spike week with store estimates, then fill your Cart.',

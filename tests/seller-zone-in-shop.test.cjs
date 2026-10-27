@@ -87,7 +87,8 @@ test('wired into the Shop panel: tabs on top, zone tab, shelf, remembered tab, n
   assert.match(sp, /function tabsHTML\(\)/);
   assert.match(sp, /return '<div class="stp-card[^\n]*tabsHTML\(\) \+ inner/, 'every Shop view starts with the tabs');
   assert.match(sp, /role="tablist"/); assert.match(sp, /role="tab" aria-selected=/);
-  assert.match(sp, /T\('Supermarket', 'Supermarkt', 'Supermercado'\)/);
+  /* Oct 27 2026 (test changed, why): with four tabs (From home joined) Spanish says Súper so it fits one line on an iPhone SE */
+  assert.match(sp, /T\('Supermarket', 'Supermarkt', n > 3 \? 'Súper' : 'Supermercado'\)/);
   assert.match(sp, /ov\.innerHTML = onSz\(\) \? szHTML\(\) :/);
   /* Oct 26 (Emmanuel, MAYA-HANDOFF 0.22: "Remove Seller Zone in Supermarket. Seller Zone has its own section"): no strip inside the Supermarket tab */
   assert.doesNotMatch(sp, /Z\.stripHTML \? Z\.stripHTML\(\)/, 'the Seller Zone shelf left the Supermarket tab; Seller Zone has its own tab');

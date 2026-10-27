@@ -48,8 +48,11 @@ test('Again also offers the snacks you logged in Log meal, never one already on 
 
 test('the Shop panel shows Snacks to buy at the top, with its own storage, in three languages', () => {
     assert.match(sp, /const SKEY = 'lowi\.snackBuy\.v1';/);
-    // Oct 19 food paths: the two plain Shop buttons (Scan in the shop, Shopping list) sit just above Snacks to buy
-    assert.strictEqual((sp.match(/'<div class="stp-scroll">' \+ (shopActs\(\) \+ )?snackHTML\(\) \+/g) || []).length, 2, 'store choice and product list');
+    /* Oct 27 2026 (test changed, why): Emmanuel found Supermarket "so overwhelming". Snacks to buy (with Buy again) folds into one
+       quiet line, My snack list, at the top of the product list and at the end of the store choice; it opens in place */
+    assert.match(sp, /'<div class="stp-scroll">' \+ snackBox\(\) \+ gen \+ inner/, 'product list: the snack line comes first');
+    assert.match(sp, /chains \+ '<\/div>' \+\s+snackBox\(\) \+ '<p class="stp-fine">'/, 'store choice: the snack line after the chains');
+    assert.match(sp, /function snackBox\(\)[\s\S]{0,500}snackHTML\(\) \+ '<\/details>'/);
     assert.match(sp, /T\('Snacks to buy', 'Snacks zum Einkaufen', 'Snacks para comprar'\)/);
     assert.match(sp, /l\.slot === 'snack'/, 'logged snacks from Log meal');
     assert.match(sp, /ov\.addEventListener\('submit', onSubmit\);/);

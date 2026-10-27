@@ -16,7 +16,9 @@ test('Shop tab bar: Give a hand is the fourth peer after Supermarket, Seller Zon
   const tabs = sp.slice(sp.indexOf('function tabsHTML()'), sp.indexOf('function szHTML()'));
   const iK = tabs.indexOf("b('kitchen'"), iG = tabs.indexOf("b('gift'");
   assert.ok(iK > 0 && iG > iK, 'Give a hand comes after Kitchen');
-  assert.match(tabs, /b\('gift', '\\u\{1F91D\}', T\('Give a hand', 'Hilf mit', 'Echa una mano'\)\)/, 'same name and icon as the old row');
+  /* Oct 27 2026 (test changed, why): From home is a tab too, so with four tabs the words get short enough for one line on an
+     iPhone SE (Help out / Hilf mit / Ayudar); with three it keeps the old name */
+  assert.match(tabs, /b\('gift', '\\u\{1F91D\}', n > 3 \? T\('Help out', 'Hilf mit', 'Ayudar'\) : T\('Give a hand', 'Hilf mit', 'Echa una mano'\)\)/, 'same icon, short words with four tabs');
   assert.match(tabs, /const G = giftDoor\(\);/);
   assert.match(tabs, /n > 3 \? ' stp-tabs4' : ''/);
   /* same gate as the old row: only once the server has the basket table; otherwise ask the server again */
@@ -33,8 +35,10 @@ test('Shop tab bar: Give a hand is the fourth peer after Supermarket, Seller Zon
 test('tapping Give a hand opens its panel on top of Shop and is never saved as the Shop tab', () => {
   const click = sp.slice(sp.indexOf("const tb = t.closest('[data-stp-tab]')"), sp.indexOf('if (onSz() && SZ().inlineClick(t))'));
   assert.match(click, /if \(tb\.getAttribute\('data-stp-tab'\) === 'gift'\) \{ try \{ W\.LowiGiftBasket\.open\('shop'\); \} catch \(x\) \{\} return; \}/);
-  assert.match(sp, /tab = \(\{ sz: 'sz', kitchen: 'kitchen' \}\)\[localStorage\.getItem\(TKEY\)\] \|\| 'shop'/);
-  assert.match(sp, /const next = id === 'sz' && SZ\(\) \? 'sz' : id === 'kitchen' && K \? 'kitchen' : 'shop';/);
+  /* Oct 27 2026: From home (home) is a real tab and is remembered; Give a hand still is not */
+  assert.match(sp, /tab = \(\{ sz: 'sz', kitchen: 'kitchen', home: 'home' \}\)\[localStorage\.getItem\(TKEY\)\] \|\| 'shop'/);
+  assert.match(sp, /const next = id === 'sz' && SZ\(\) \? 'sz' : id === 'kitchen' && K \? 'kitchen' : id === 'home' && homeTab\(\) \? 'home' : 'shop';/);
+  assert.ok(!/gift: 'gift'/.test(sp), 'gift is never a saved tab');
 });
 
 /* Oct 26 2026 (test changed, why): the Kitchen left Shop for Cook (kitchen-game.js, MAYA-HANDOFF 0.19), so the 'kitchen' route now

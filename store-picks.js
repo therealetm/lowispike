@@ -60,7 +60,7 @@
     const TKEY = 'lowi.storePicks.tab';
     const SZ = () => W.LowiSellerZone && W.LowiSellerZone.inlineHTML ? W.LowiSellerZone : null;
     let tab = 'shop';
-    try { tab = ({ sz: 'sz', kitchen: 'kitchen' })[localStorage.getItem(TKEY)] || 'shop'; } catch (e) { tab = 'shop'; }
+    try { tab = ({ sz: 'sz', kitchen: 'kitchen', home: 'home' })[localStorage.getItem(TKEY)] || 'shop'; } catch (e) { tab = 'shop'; }
     const onSz = () => tab === 'sz' && !!SZ();
     /* Oct 24: the third tab, Kitchen (kitchen-core.js): what you have at home + the shopping cart (= the shopping list) */
     const K = W.LowiKitchenCore && W.LowiKitchenCore.parse ? W.LowiKitchenCore : null;
@@ -70,7 +70,13 @@
     const KG = () => (W.LowiKitchenGame && W.LowiKitchenGame.open ? W.LowiKitchenGame : null);
     const kitTab = () => !!K && !KG();
     const onKit = () => tab === 'kitchen' && kitTab();
-    const onShop = () => !onSz() && !onKit();
+    /* Oct 27, 2026 (Emmanuel: "Vielleicht möchte 'Von zu Hause einkaufen' seine eigene Sektion haben ... neben Supermarkt,
+       Seller Zone und Hilf mit"): Shop from home (week-basket.js) is its own tab now, drawn inside Shop instead of a big card on
+       top of the Supermarket list. */
+    const WB = () => (W.LowiWeekBasket && W.LowiWeekBasket.mount ? W.LowiWeekBasket : null);
+    const homeTab = () => !!WB();
+    const onHome = () => tab === 'home' && homeTab();
+    const onShop = () => !onSz() && !onKit() && !onHome();
     const ic = {
         scan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5h3M17 5h3v3M20 16v3h-3M7 19H4v-3M8 9v6M11 9v6M14 9v6M17 9v6"/></svg>',
         gift: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7C10.5 4 7 4 7 6s3 1 5 1zm0 0c1.5-3 5-3 5-1s-3 1-5 1z"/></svg>',
@@ -127,6 +133,7 @@
         const w = D.createElement('div'); w.innerHTML = snackHTML();
         const nw = w.firstChild;
         el.replaceWith(nw);
+        const sn = ov.querySelector('.stp-snackbox-n'); if (sn) { const n = C.snackView(snacks).buy.length; sn.textContent = n; sn.hidden = !n; }
         /* after Buy again / Undo the button under the finger is gone: keep focus in the row (Undo, else the fill button) */
         if (focusAgain) { const f = nw.querySelector('[data-stp-snack-undo],[data-stp-snack-refill]') || nw.querySelector('.stp-snack-add input'); if (f && f.tagName === 'BUTTON') try { f.focus({ preventScroll: true }); } catch (e) {} }
     }
@@ -259,21 +266,24 @@
     }
 
     function shell(inner) {
-        return '<div class="stp-card' + (onSz() ? ' stp-on-sz' : onKit() ? ' stp-on-kit' : '') + '" role="dialog" aria-modal="true" aria-label="' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '">' + tabsHTML() + inner + '</div>';
+        return '<div class="stp-card' + (onSz() ? ' stp-on-sz' : onKit() ? ' stp-on-kit' : onHome() ? ' stp-on-home' : '') + '" role="dialog" aria-modal="true" aria-label="' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '">' + tabsHTML() + inner + '</div>';
     }
     /* Oct 23: the two tabs, a living-bubble pill on top of the panel; the thumb reaches both */
     function tabsHTML() {
-        const Z = SZ(); if (!Z && !K) return '';
+        const Z = SZ(); if (!Z && !K && !homeTab()) return '';
         if (K && !kit) kitLoad();
         const b = (id, icon, txt, n) => '<button type="button" class="stp-tab' + (tab === id ? ' on' : '') + '" role="tab" aria-selected="' + (tab === id) + '" data-stp-tab="' + id + '"><span aria-hidden="true">' + icon + '</span><b>' + esc(txt) + '</b>' + (n ? '<i>' + n + '</i>' : '') + '</button>';
         /* Oct 25 (Emmanuel: Give a hand gets "its own place next to Supermarket, Seller Zone and Kitchen", not inside Kitchen):
            the fourth peer. A door, not a pane: it opens the Give a hand panel on top of Shop and is never the remembered tab. */
         const G = giftDoor();
-        const n = (Z ? 1 : 0) + (kitTab() ? 1 : 0) + (G ? 1 : 0) + 1;
-        return '<div class="stp-tabs' + (n > 2 ? ' stp-tabs3' : '') + (n > 3 ? ' stp-tabs4' : '') + '" role="tablist" aria-label="' + esc(T('Shop', 'Einkaufen', 'Comprar')) + '">' +
-            b('shop', '\u{1F6D2}', T('Supermarket', 'Supermarkt', 'Supermercado')) + (Z ? b('sz', '\u{1F6CD}\uFE0F', Z.name(), Z.count ? Z.count() : 0) : '') +
+        /* Oct 27: Shop from home sits right next to Supermarket, both are about the weekly shop. Short words, so four tabs fit an
+           iPhone SE on one line each: Zu Hause / From home / Desde casa */
+        const H = homeTab();
+        const n = (Z ? 1 : 0) + (kitTab() ? 1 : 0) + (G ? 1 : 0) + (H ? 1 : 0) + 1;
+        return '<div class="stp-tabs' + (n > 2 ? ' stp-tabs3' : '') + (n > 3 ? ' stp-tabs4' : '') + (n > 4 ? ' stp-tabs5' : '') + '" role="tablist" aria-label="' + esc(T('Shop', 'Einkaufen', 'Comprar')) + '">' +
+            b('shop', '\u{1F6D2}', T('Supermarket', 'Supermarkt', n > 3 ? 'Súper' : 'Supermercado')) + (H ? b('home', '\u{1F3E0}', T('From home', 'Zu Hause', 'Desde casa')) : '') + (Z ? b('sz', '\u{1F6CD}\uFE0F', Z.name(), Z.count ? Z.count() : 0) : '') +
             (kitTab() ? b('kitchen', '\u{1F9FA}', T('Kitchen', 'Küche', 'Cocina'), K.count(kit)) : '') +
-            (G ? b('gift', '\u{1F91D}', T('Give a hand', 'Hilf mit', 'Echa una mano')) : '') + '</div>';
+            (G ? b('gift', '\u{1F91D}', n > 3 ? T('Help out', 'Hilf mit', 'Ayudar') : T('Give a hand', 'Hilf mit', 'Echa una mano')) : '') + '</div>';
     }
     function szHTML() {
         const Z = SZ();
@@ -292,23 +302,39 @@
        strip is no longer inside the Supermarket tab; Seller Zone keeps its own tab ("our Amazon"). The Shopping list pill became
        the Cart (Warenkorb / Carrito), the step the viral grocery apps have: the same list, with quantities and an estimate. */
     function cartN() { const sh = shelf(); try { return sh && sh.cartLines ? sh.cartLines().reduce((a, l) => a + l.q, 0) : 0; } catch (e) { return 0; } }
+    /* Oct 27 (Emmanuel: "So overwhelming, just fix that"): the Cart is a quiet round button in the corner of the title with its
+       count, always within reach, no longer a second big button next to Scan in the shop. */
     function cartBtnHTML() {
         const n = cartN(), name = T('Cart', 'Warenkorb', 'Carrito');
-        return '<button type="button" class="stp-pill stp-cartbtn" data-stp="cart" aria-label="' + esc(name + (n ? ', ' + n : '')) + '">' + ic.cart + '<span>' + esc(name) + '</span>' + (n ? '<i class="stp-cart-n">' + n + '</i>' : '') + '</button>';
+        return '<button type="button" class="stp-cartbtn" data-stp="cart" aria-label="' + esc(name + (n ? ', ' + n : '')) + '" title="' + esc(name) + '">' + ic.cart + (n ? '<i class="stp-cart-n" aria-hidden="true">' + n + '</i>' : '') + '</button>';
     }
-    /* Oct 26 (MAYA-HANDOFF 0.21): the door to Shop from home (week-basket.js), a week of dinners from home that fills the Cart (0.22) */
-    function wbDoor() {
-        if (!W.LowiWeekBasket) return '';
-        return '<button type="button" class="stp-wb" data-stp="weekshop"><span aria-hidden="true">\ud83c\udfe0</span><span class="stp-wb-t"><b>' + esc(T('Shop from home', 'Von zu Hause einkaufen', 'Compra desde casa')) + '</b>' +
-            '<small>' + esc(T('Plan your week of dinners, see the total, fill your Cart', 'Plane deine Abendessen der Woche, sieh die Summe, ab in den Warenkorb', 'Planea tus cenas de la semana, mira el total, llena tu carrito')) + '</small></span><span class="stp-wb-go" aria-hidden="true">\u203a</span></button>';
+    const hasCart = () => !!(shelf() && shelf().cartLines);
+    /* the title row: a short question + the Cart in the corner */
+    function titleRow(text) {
+        return '<div class="stp-titlerow"><h3>' + esc(text) + '</h3>' + (hasCart() ? cartBtnHTML() : '') + '</div>';
     }
-    function shopActs() {
-        const scan = W.LowiShopScan && W.LowiShopScan.open, cart = !!(shelf() && shelf().cartLines);
-        if (!scan && !cart) return '';
-        return '<div class="stp-foot-acts">' +
-            (scan ? '<button type="button" class="stp-go stp-scanshop" data-stp="scanshop">' + ic.cart + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>' : '') +
-            (cart ? cartBtnHTML() : '') + '</div>';
+    /* the one clear thing to do in the shop, pinned at the bottom next to the X */
+    function scanBtn() {
+        if (!(W.LowiShopScan && W.LowiShopScan.open)) return '';
+        return '<button type="button" class="stp-go stp-scanshop" data-stp="scanshop">' + ic.scan + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>';
     }
+    /* the snack list (with Buy again) folded into one quiet line; it opens in place and remembers that it is open */
+    let snackOpen = false;
+    function snackBox() {
+        const v = C.snackView(snacks), n = v.buy.length;
+        return '<details class="stp-snackbox"' + (snackOpen ? ' open' : '') + '><summary><span aria-hidden="true">\ud83e\udd5c</span><b>' + esc(T('My snack list', 'Meine Snackliste', 'Mi lista de snacks')) + '</b>' +
+            '<i class="stp-snackbox-n"' + (n ? '' : ' hidden') + '>' + n + '</i><span class="stp-snackbox-go" aria-hidden="true">\u203a</span></summary>' + snackHTML() + '</details>';
+    }
+    function homeHTML() {
+        return shell('<div class="stp-home"></div>' + footBtns(''));
+    }
+    function mountHome() {
+        const el = ov && ov.querySelector('.stp-home'); if (!el || !WB()) return;
+        try {
+            WB().mount(el, { store: S.range, head: () => (hasCart() ? cartBtnHTML() : ''), onCart: openCart, cartOn: () => hasCart() });
+        } catch (e) {}
+    }
+    function unmountHome() { try { if (WB() && WB().unmount) WB().unmount(); } catch (e) {} }
     /* the Cart sheet: lines with photo, store, reported price, a - n + stepper and remove; an estimated total only from prices people
        reported on the shelf (never invented); Go shopping opens the shopping list in shop mode */
     function cartHTML() {
@@ -405,17 +431,17 @@
     function pickHTML(msg) {
         const chains = '<button type="button" class="stp-chip' + (S.range === 'general' && !S.store ? ' on' : '') + '" data-stp="general">' + esc(label('general')) + '</button>' +
             RANGES.map(r => '<button type="button" class="stp-chip' + (S.range === r.id && !S.store ? ' on' : '') + '" data-stp-range="' + r.id + '">' + esc(r.label) + '</button>').join('');
-        return shell('<div class="stp-head"><h3>' + esc(T('Which shop?', 'Welcher Laden?', '¿Qué tienda?')) + '</h3><p>' +
+        return shell('<div class="stp-head">' + titleRow(T('Which shop?', 'Welcher Laden?', '¿Qué tienda?')) + '<p>' +
             esc(T('Share your location to see the supermarkets nearest to you, or type a town or postcode.', 'Teil deinen Standort, um die Supermärkte in deiner Nähe zu sehen, oder gib einen Ort oder eine Postleitzahl ein.', 'Comparte tu ubicación para ver los supermercados más cercanos, o escribe una ciudad o un código postal.')) + '</p></div>' +
-            wbDoor() + '<div class="stp-scroll">' + shopActs() + snackHTML() + '<button type="button" class="stp-go" data-stp="locate"' + (busy ? ' disabled aria-busy="true"' : '') + '>' + ic.pin + '<span>' + esc(T('Share my location', 'Meinen Standort teilen', 'Compartir mi ubicación')) + '</span></button>' +
+            '<div class="stp-scroll"><button type="button" class="stp-go" data-stp="locate"' + (busy ? ' disabled aria-busy="true"' : '') + '>' + ic.pin + '<span>' + esc(T('Share my location', 'Meinen Standort teilen', 'Compartir mi ubicación')) + '</span></button>' +
             whereForm() + (msg ? '<p class="stp-msg" role="status">' + esc(msg) + '</p>' : '') + hereHTML() + shopRowsHTML() +
             '<button type="button" class="stp-more stp-skip" data-stp="general">' + esc(T('Skip: show the general lists', 'Überspringen: allgemeine Listen zeigen', 'Omitir: ver las listas generales')) + '</button>' +
             '<h4 class="stp-h4">' + esc(T('Or pick a chain', 'Oder eine Kette wählen', 'O elige una cadena')) + '</h4><div class="stp-chips stp-wrap">' + chains + '</div>' +
-            '<p class="stp-fine">' + esc(T('Your location is only used on this phone to look up your address and the shops near you on OpenStreetMap. It isn’t sent to us or saved. Map data © OpenStreetMap contributors. ',
+            snackBox() + '<p class="stp-fine">' + esc(T('Your location is only used on this phone to look up your address and the shops near you on OpenStreetMap. It isn’t sent to us or saved. Map data © OpenStreetMap contributors. ',
                 'Dein Standort wird nur auf diesem Handy genutzt, um deine Adresse und die Läden in der Nähe bei OpenStreetMap nachzuschlagen. Er wird nicht an uns geschickt und nicht gespeichert. Kartendaten © OpenStreetMap-Mitwirkende. ',
                 'Tu ubicación solo se usa en este teléfono para buscar tu dirección y las tiendas cercanas en OpenStreetMap. No se nos envía ni se guarda. Datos del mapa © colaboradores de OpenStreetMap. ')) +
             '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">openstreetmap.org/copyright</a></p></div>' +
-            footBtns(S.range ? '<button type="button" class="stp-pill" data-stp="list">' + esc(T('Back to list', 'Zurück zur Liste', 'Volver a la lista')) + '</button>' : ''));
+            footBtns(S.range ? '<button type="button" class="stp-pill" data-stp="list">' + esc(T('Back to list', 'Zurück zur Liste', 'Volver a la lista')) + '</button>' : scanBtn()));
     }
 
     /* ---------------- the list ---------------- */
@@ -712,12 +738,15 @@
             shown = [];
             const c = built.counts;
             const chips = built.groups.filter(g => g.pass.length + g.fail.length + g.unrated).map(g => '<button type="button" class="stp-chip" data-stp-jump="' + g.id + '"><span aria-hidden="true">' + C.G[g.id].ic + '</span>' + esc(C.G[g.id][['en', 'de', 'es'][li()]].split(/[,&]| y | und /)[0].trim()) + ' <i>' + fmt(g.pass.length) + '</i></button>').join('');
-            inner = '<p class="stp-sum"><b>' + esc(fmt(c.pass)) + '</b> ' + esc(T('of ' + fmt(c.total) + ' products pass', 'von ' + fmt(c.total) + ' Produkten bestehen', 'de ' + fmt(c.total) + ' productos pasan')) +
-                (c.unrated ? ' · ' + esc(T(fmt(c.unrated) + ' without a label', fmt(c.unrated) + ' ohne Etikett', fmt(c.unrated) + ' sin etiqueta')) : '') + '</p>' +
-                '<div class="stp-chips stp-jumps">' + chips + '</div>' +
+            /* Oct 27 (Emmanuel: "So viel auf einmal"): the product count moved from the top into How the rating works, and Show left
+               out is the last chip of the category row instead of a checkbox next to the search */
+            const sum = '<p class="stp-sum"><b>' + esc(fmt(c.pass)) + '</b> ' + esc(T('of ' + fmt(c.total) + ' products pass', 'von ' + fmt(c.total) + ' Produkten bestehen', 'de ' + fmt(c.total) + ' productos pasan')) +
+                (c.unrated ? ' · ' + esc(T(fmt(c.unrated) + ' without a label', fmt(c.unrated) + ' ohne Etikett', fmt(c.unrated) + ' sin etiqueta')) : '') + '</p>';
+            const tog = '<button type="button" class="stp-chip stp-tog' + (showFail ? ' on' : '') + '" data-stp="fails" aria-pressed="' + (showFail ? 'true' : 'false') + '"><span aria-hidden="true">' + (showFail ? '\u2713' : '\u25cc') + '</span>' + esc(T('Show left out', 'Aussortierte zeigen', 'Ver excluidos')) + '</button>';
+            inner = '<div class="stp-chips stp-jumps">' + chips + tog + '</div>' +
                 built.groups.map(groupHTML).join('') +
                 (c.total ? '' : '<p class="stp-none">' + esc(T('Nothing matches that search.', 'Nichts passt zu der Suche.', 'Nada coincide con la búsqueda.')) + '</p>') +
-                '<details class="stp-how"><summary>' + esc(T('How the rating works', 'So wird bewertet', 'Cómo se valora')) + '</summary><p>' +
+                '<details class="stp-how"><summary>' + esc(T('How the rating works', 'So wird bewertet', 'Cómo se valora')) + '</summary>' + sum + '<p>' +
                 esc(T('For each product: carbs and sugar per typical portion from its label (100 g meat or fish, 30 g cheese, 40 g bread, 25 g sweets, 30 g snacks, 250 ml drink, 150 g yoghurt). The same Food check as the scanner card gives the blood sugar impact (Lower, Moderate or Higher) and Everyday, Small portion or Skip it. A product passes with Lower impact, no more than 6 g sugar per portion and no Skip it; Best also needs Everyday.',
                     'Für jedes Produkt: Kohlenhydrate und Zucker pro typischer Portion laut Etikett (100 g Fleisch oder Fisch, 30 g Käse, 40 g Brot, 25 g Süßes, 30 g Snacks, 250 ml Getränk, 150 g Joghurt). Derselbe Food-Check wie auf der Scanner-Karte gibt die Blutzuckerwirkung (Niedrigere, Mittlere oder Höhere) und Alltag, Kleine Portion oder Lieber nicht. Ein Produkt besteht mit niedrigerer Wirkung, höchstens 6 g Zucker pro Portion und ohne Lieber nicht; Top braucht zusätzlich Alltag.',
                     'Para cada producto: carbohidratos y azúcar por porción típica según su etiqueta (100 g de carne o pescado, 30 g de queso, 40 g de pan, 25 g de dulces, 30 g de snacks, 250 ml de bebida, 150 g de yogur). El mismo Food check que la tarjeta del escáner da el impacto en el azúcar en sangre (Menor, Moderado o Mayor) y Diario, Porción pequeña o Mejor no. Un producto pasa con impacto Menor, no más de 6 g de azúcar por porción y sin Mejor no; Mejor necesita además Diario.')) + '</p>' +
@@ -725,13 +754,12 @@
                 '<p>' + esc(T('Source: ', 'Quelle: ', 'Fuente: ') + (data && data.source || '') + ' · ' + (data && data.built || '')) + '</p></details>';
         }
         const gen = S.range === 'general' && S.store ? '<p class="stp-fine stp-gen">' + esc(T('We have no product list for this shop’s chain, so this is the general list. Supermarkets mostly carry the same items.', 'Für die Kette dieses Ladens haben wir keine eigene Liste, deshalb siehst du die allgemeine Liste. Supermärkte führen meist dieselben Produkte.', 'No tenemos una lista de esta cadena, así que ves la lista general. Los supermercados suelen tener los mismos productos.')) + '</p>' : '';
-        return shell('<div class="stp-head"><h3>' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '</h3>' +
+        return shell('<div class="stp-head">' + titleRow(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) +
             '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || label(S.range) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>' +
-            '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '">' +
-            '<label class="stp-tog"><input type="checkbox" data-stp="fails"' + (showFail ? ' checked' : '') + '><span>' + esc(T('Show left out', 'Aussortierte zeigen', 'Ver excluidos')) + '</span></label></div></div>' +
-            wbDoor() + '<div class="stp-scroll">' + shopActs() + snackHTML() + gen + inner + '</div>' +
-            '<p class="stp-note">' + esc(T('General food guidance, not medical advice.', 'Allgemeine Ernährungshilfe, keine medizinische Beratung.', 'Orientación general sobre alimentos, no consejo médico.')) + '</p>' +
-            footBtns(''));
+            '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" aria-label="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '"></div></div>' +
+            '<div class="stp-scroll">' + snackBox() + gen + inner +
+            '<p class="stp-note">' + esc(T('General food guidance, not medical advice.', 'Allgemeine Ernährungshilfe, keine medizinische Beratung.', 'Orientación general sobre alimentos, no consejo médico.')) + '</p></div>' +
+            footBtns(scanBtn()));
     }
 
     function paint(state) {
@@ -739,7 +767,9 @@
         const sc = ov.querySelector('.stp-scroll'), top = sc ? sc.scrollTop : 0;
         const hadQ = D.activeElement && D.activeElement.classList && D.activeElement.classList.contains('stp-q');
         qv = null; cartOpen = false;
-        ov.innerHTML = onSz() ? szHTML() : onKit() ? kitHTML() : view === 'pick' ? pickHTML(state) : listHTML(state);
+        unmountHome();
+        ov.innerHTML = onSz() ? szHTML() : onKit() ? kitHTML() : onHome() ? homeHTML() : view === 'pick' ? pickHTML(state) : listHTML(state);
+        if (onHome()) mountHome();
         watchThumbs();
         const sc2 = ov.querySelector('.stp-scroll'); if (sc2 && state === 'keep') sc2.scrollTop = top;
         if (hadQ) { const i = ov.querySelector('.stp-q'); if (i) { i.focus(); try { i.setSelectionRange(i.value.length, i.value.length); } catch (e) {} } }
@@ -837,7 +867,8 @@
         if (a === 'close') return close();
         if (a === 'scanshop') { close(); setTimeout(() => { try { W.LowiShopScan.open(); } catch (x) {} }, 200); return; }
         if (a === 'sellerzone') { setTab('sz'); return; }
-        if (a === 'weekshop') { try { W.LowiWeekBasket.open({ store: S.range }); } catch (x) {} return; }
+        if (a === 'weekshop') { if (homeTab()) setTab('home'); else try { W.LowiWeekBasket.open({ store: S.range }); } catch (x) {} return; }
+        if (a === 'fails') { showFail = !showFail; if (data) paint('keep'); return; }
         if (a === 'mylist') { close(); setTimeout(() => { try { W.tdShopOpen(); } catch (x) {} }, 200); return; }
         if (a === 'cart') { openCart(); return; }
         if (a === 'pick') { view = 'pick'; return paint(); }
@@ -861,11 +892,12 @@
     /* switch tabs; from a snack on the swipe shelf, the zone opens on that snack's card and it glows once */
     function setTab(id, focus) {
         if (id === 'kitchen' && KG()) { if (ov) close(); KG().open(); return; }
-        const next = id === 'sz' && SZ() ? 'sz' : id === 'kitchen' && K ? 'kitchen' : 'shop';
+        const next = id === 'sz' && SZ() ? 'sz' : id === 'kitchen' && K ? 'kitchen' : id === 'home' && homeTab() ? 'home' : 'shop';
         const same = next === tab;
         tab = next; try { localStorage.setItem(TKEY, tab); } catch (e) {}
         if (tab === 'sz') { if (focus) SZ().setCat('all'); if (!same || focus) paint(); if (focus) focusCard(focus); }
         else if (tab === 'kitchen') { if (!same) { kitMsg = ''; kitGone = null; paint(); } }
+        else if (tab === 'home') { if (!same) paint(); }
         else if (!same) { if (view === 'list' && S.range && !data) showList(); else paint(); }
         try { const on = ov && ov.querySelector('.stp-tab.on'); if (on && !focus) on.focus({ preventScroll: true }); } catch (e) {}
     }
@@ -880,7 +912,7 @@
         if (e.target.classList.contains('stp-q')) { clearTimeout(qt); const v = e.target.value; qt = setTimeout(() => { q = v; if (data) paint(); }, 220); }
     }
     function onChange(e) {
-        if (e.target.getAttribute && e.target.getAttribute('data-stp') === 'fails') { showFail = !!e.target.checked; if (data) paint('keep'); }
+        if (e.target.getAttribute && e.target.getAttribute('data-stp') === 'fails' && e.target.type === 'checkbox') { showFail = !!e.target.checked; if (data) paint('keep'); }
     }
     function onKey(e) {
         if (e.key !== 'Escape' || !ov) return;
@@ -898,6 +930,7 @@
         ov.addEventListener('input', onInput);
         ov.addEventListener('change', onChange);
         ov.addEventListener('submit', onSubmit);
+        ov.addEventListener('toggle', e => { if (e.target && e.target.classList && e.target.classList.contains('stp-snackbox')) snackOpen = e.target.open; }, true);
         dragDown(ov);
         D.addEventListener('keydown', onKey);
         D.body.appendChild(ov);
@@ -922,7 +955,7 @@
         o.addEventListener('pointerdown', e => {
             if (d || qv || ov !== o || !narrow() || (e.button != null && e.button > 0)) return;
             const t = e.target && e.target.closest ? e.target : null; if (!t) return;
-            const card = t.closest('.stp-card'), zone = t.closest('.stp-tabs, .stp-head, .sz-head');
+            const card = t.closest('.stp-card'), zone = t.closest('.stp-tabs, .stp-head, .sz-head, .wb-inline > .wb-head');
             if (!card || !zone || !card.contains(zone)) return;
             /* a tab can start the drag (the tab bar is nearly all tabs, and a phone moves a touch near it onto one); a plain tap
                on it still switches tabs. Other buttons, fields and links never start one. */
@@ -952,6 +985,7 @@
     }
     function close() {
         if (!ov) return;
+        unmountHome();
         const o = ov; ov = null; qv = null; cartOpen = false;
         if (io) { io.disconnect(); io = null; }
         D.documentElement.classList.remove('stp-open');
@@ -968,5 +1002,5 @@
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiStorePicks = { open: openPanel, close, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)), tab: () => (onSz() ? 'sz' : onKit() ? 'kitchen' : 'shop'), kitchen: () => (K ? (kitLoad(), K.view(kit)) : []), setTab: id => { if (id === 'kitchen' && KG()) { if (ov) close(); KG().open(); return; } if (ov) setTab(id); else { tab = ({ sz: 'sz', kitchen: 'kitchen' })[id] || 'shop'; try { localStorage.setItem(TKEY, tab); } catch (e) {} } } };
+    W.LowiStorePicks = { open: openPanel, close, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)), tab: () => (onSz() ? 'sz' : onKit() ? 'kitchen' : onHome() ? 'home' : 'shop'), kitchen: () => (K ? (kitLoad(), K.view(kit)) : []), setTab: id => { if (id === 'kitchen' && KG()) { if (ov) close(); KG().open(); return; } if (ov) setTab(id); else { tab = ({ sz: 'sz', kitchen: 'kitchen', home: 'home' })[id] || 'shop'; try { localStorage.setItem(TKEY, tab); } catch (e) {} } } };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

@@ -113,7 +113,10 @@ test('Scan camera: no Shopping switch; shopping only in the camera opened from S
 
 test('Shop sheet: plain "Scan in the shop" and "Shopping list" buttons, in three languages', () => {
     const sp = read('store-picks.js');
-    assert.equal((sp.match(/'<div class="stp-scroll">' \+ shopActs\(\) \+ snackHTML\(\)/g) || []).length, 2, 'both Shop views start with the two buttons');
+    /* Oct 27 2026 (test changed, why): Emmanuel found Supermarket "so overwhelming", so Scan in the shop is the one big button,
+       pinned in the bottom bar next to the X, and the Cart is a quiet round button in the title row (tests/shop-calm.test.cjs) */
+    assert.match(sp, /footBtns\(scanBtn\(\)\)\);/, 'Supermarket: Scan in the shop sits in the bottom bar');
+    assert.match(sp, /: scanBtn\(\)\)\);/, 'store picker: Scan in the shop sits in the bottom bar while no shop is picked');
     assert.match(sp, /T\('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda'\)/);
     /* Oct 26 (MAYA-HANDOFF 0.22): the Shopping list pill became the Cart (Warenkorb / Carrito); its sheet has Go shopping (the same list in shop mode) */
     assert.match(sp, /T\('Cart', 'Warenkorb', 'Carrito'\)/);

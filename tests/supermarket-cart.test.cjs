@@ -50,10 +50,11 @@ test('the app loads cart-core and LOWI_SHELF exposes cartLines / cartTotal / set
 });
 
 test('Supermarket tab: no Seller Zone strip inside it any more; the Cart button replaces the Shopping list pill', () => {
-    const acts = fnBody(sp, 'shopActs');
-    assert.doesNotMatch(acts, /LowiSellerZone|stripHTML|entryHTML/, 'Seller Zone lives in its own tab, not in the Supermarket');
+    /* Oct 27 2026 (test changed, why): the two-button row (shopActs) is gone; the Cart is a round button in the title row */
+    const acts = fnBody(sp, 'titleRow');
+    assert.doesNotMatch(sp, /LowiSellerZone\.stripHTML|Z\.stripHTML|entryHTML\(\)/, 'Seller Zone lives in its own tab, not in the Supermarket');
     assert.match(acts, /cartBtnHTML\(\)/);
-    assert.doesNotMatch(acts, /stp-mylist/);
+    assert.doesNotMatch(sp, /stp-mylist/);
     const btn = fnBody(sp, 'cartBtnHTML');
     assert.match(btn, /T\('Cart', 'Warenkorb', 'Carrito'\)/);
     assert.match(btn, /data-stp="cart"/);

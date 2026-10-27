@@ -9686,13 +9686,20 @@ function bubbleHTML(p, size){
     '<span class="r5-bg">' + (p.avatar ? '<img alt="" src="' + p.avatar + '">' : z ? z.g : esc(p.n.charAt(0))) + '</span><span class="r5-lv num">Lv ' + (window.LowiCareBoard ? LowiCareBoard.shownLevel(p) : L) + '</span></div>';
 }
 const PST = [];
+/* BH-058 (Oct 27 2026, P-VIEW-SWAP): a profile's sign / type tag, Back and "Add your personality type" re-render the OPEN sheet in
+   place, so it is not a new overlay for fresh-scrim and the 2nd tap of a double tap pressed what the new view put under the finger.
+   Live WebKit iPhone 13: a double tap on a sign tag opened the first member of that sign's list (103-294 ms), and a double tap on
+   "Add your personality type" opened the outside personality test web page (82-349 ms). A swap of an open sheet now gets the same
+   same-spot rule as a fresh open (only a 2nd real tap on the same spot within 400 ms is ignored). */
+function swapSheet(html){ const w = document.getElementById("sheetwrap"), was = !!(w && w.classList.contains("open")); sheet(html);
+  if (was) try { if (window.LowiFreshScrim && LowiFreshScrim.mark) LowiFreshScrim.mark(w); } catch(e){} }
 function openProfile(name, me, push){
   const p = personBy(name, me), z = sgn(p.s), t = p.t, all = people();
   if (!push) PST.length = 0; PST.push({k:"p", name, me:!!(me || p.me)});
   const nS = z ? all.filter(x => x.s === p.s && x.n !== p.n).length + (p.me ? 0 : (meP().s === p.s ? 1 : 0)) : 0;
   const nT = t ? all.filter(x => x.t === t && x.n !== p.n).length + (p.me ? 0 : (R5.mbti === t ? 1 : 0)) : 0;
   let title = ""; try { title = titleOf(window.LowiCareBoard ? LowiCareBoard.shownLevel(p) : p.lv); } catch(e){}
-  sheet('<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button>' + (PST.length > 1 ? '<button class="r5-sback" data-r5="pback" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + R5IC.back + '</button>' : "") +
+  swapSheet('<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button>' + (PST.length > 1 ? '<button class="r5-sback" data-r5="pback" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + R5IC.back + '</button>' : "") +
     '<div class="sheetbody r5-prof" id="r5Prof" data-who="' + esc(p.n) + '">' + bubbleHTML(p) +
     '<div class="h2" style="margin-top:14px">' + esc(p.n) + (p.founder ? ' <span class="cm-tag">founder</span>' : "") + (p.bot ? ' <span class="cm-tag r3z-bot">demo bot</span>' : "") + (p.me ? ' <span class="small gold">· you</span>' : "") + '</div>' +
     '<div class="small muted">Level ' + (window.LowiCareBoard ? LowiCareBoard.shownLevel(p) : p.lv) + (title ? " · " + esc(title) : "") + ' · ' + (p.streak || 0) + '-day streak</div>' + (p.bio ? '<div class="p r5-bio">' + esc(p.bio) + '</div>' : "") +
@@ -9708,14 +9715,14 @@ function openGroup(kind, v, push){
   const all = people(), me = meP(), list = all.filter(x => (kind === "sign" ? x.s : x.t) === v && x.n !== me.n).sort((a, b) => b.lv - a.lv);
   const z = kind === "sign" ? sgn(v) : null, mine = (kind === "sign" ? me.s : me.t) === v;
   if (!push) PST.length = 0; PST.push({k:"g", kind, v});
-  sheet('<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button>' + (PST.length > 1 ? '<button class="r5-sback" data-r5="pback" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + R5IC.back + '</button>' : "") +
+  swapSheet('<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button>' + (PST.length > 1 ? '<button class="r5-sback" data-r5="pback" aria-label="' + (window.LowiLang ? LowiLang.t("Back") : "Back") + '">' + R5IC.back + '</button>' : "") +
     '<div class="sheetbody"><div class="r5-gh" style="--b1:' + pal(kind === "sign" ? v : "")[0] + '"><span class="r5-tg big' + (kind === "type" ? " r5-mb" : "") + '">' + (z ? z.g : esc(v)) + '</span><div><div class="h2" id="r5GroupTitle">' + list.length + ' ' + esc(kind === "sign" ? v : v) + (kind === "sign" ? "" : "s") + ' are also members</div><div class="small muted">' + (kind === "sign" ? esc(z ? z.el : "") + " sign" : esc(MBTI[v])) + (mine ? " · same as you" : "") + '</div></div></div>' +
     '<div class="r5-plist" id="r5PList">' + list.slice(0, 60).map(x => { const zz = sgn(x.s); return '<button class="r5-prow" data-r5="profile" data-who="' + esc(x.n) + '" data-push="1"><span class="r5-pav" style="--b1:' + pal(x.s)[0] + ';--b2:' + pal(x.s)[1] + '">' + esc(x.n.charAt(0)) + '</span><span style="flex:1;min-width:0;text-align:left"><b>' + esc(x.n) + '</b><small>Lv ' + x.lv + ' · ' + (kind === "sign" ? x.t + " " + esc(MBTI[x.t]) : (zz ? zz.g + " " : "") + esc(x.s)) + '</small></span><span class="dim">›</span></button>'; }).join("") +
     (list.length > 60 ? '<div class="small muted" style="padding:10px 4px">and ' + (list.length - 60) + ' more</div>' : "") + '</div></div>');
 }
 function pBack(){ PST.pop(); const t = PST.pop(); if (!t) return closeSheet(); if (t.k === "p") openProfile(t.name, t.me, true); else openGroup(t.kind, t.v, true); }
 function mbtiSheet(){
-  sheet('<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button><div class="sheetbody"><div class="h2" style="margin:4px 40px 4px 0">Your personality type</div><div class="small muted">Shown on your profile so people who tick like you can find you. Optional.</div>' +
+  swapSheet('<button class="xbtn" data-act="close-sheet" aria-label="' + (window.LowiLang ? LowiLang.t("Close") : "Close") + '">' + ICO.x + '</button><div class="sheetbody"><div class="h2" style="margin:4px 40px 4px 0">Your personality type</div><div class="small muted">Shown on your profile so people who tick like you can find you. Optional.</div>' +
     '<div class="r5-mbgrid">' + Object.keys(MBTI).map(k => '<button class="r5-mbc' + (R5.mbti === k ? " on" : "") + '" data-r5="mbti" data-v="' + k + '"><b>' + k + '</b><small>' + MBTI[k] + '</small></button>').join("") + '</div>' +
     (R5.mbti ? '<button class="btn ghost" data-r5="mbti" data-v="" style="margin-top:12px">Remove it</button>' : "") +
     /* 25 Oct 2026 (Emmanuel: "did you add a link for them to go do the personality type test?"): no type yet -> the free test in the app language, about 10 minutes */

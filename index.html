@@ -12389,6 +12389,10 @@ function ckPaint(dir){ if (!CK) return; const r = CK.r, n = r.steps.length, i = 
     (i >= n ? (window.LowiAte ? LowiAte.doneNav(r) : r.book ? '<button class="r2-btn pri big" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="all">Add to today</button>' : '<button class="r2-btn pri big" data-p2="closeall">Close</button>')
       : '<button class="r2-btn pri big" data-p2="next" id="p2Next"><span>' + (i < 0 ? "Let's go" : i === n - 1 ? "Finish" : "Next") + '</span>' + IC.go + '</button>') + '</div>';
   box.innerHTML = '<div class="p2-cktop"><span class="small muted p2-ckname">' + esc(r.swapName || r.n) + '</span></div>' + bar + '<div class="p2-ckbody ' + (dir > 0 ? "from-r" : dir < 0 ? "from-l" : "") + '">' + body + '</div>' + nav;
+  /* Bug hunt 57 (P-VIEW-SWAP): the steps swap in place with Next / Finish always at the same spot, so a double tap skipped a cooking
+     step (live WebKit iPhone 13, 159 to 377 ms apart) and Back went back two. The done view's buttons sit under Finish too.
+     mark() gives each new step the same-spot rule. */
+  try { if (window.LowiFreshScrim && LowiFreshScrim.mark) LowiFreshScrim.mark(box); } catch(e){}
   if (i >= n) { try { navigator.vibrate && navigator.vibrate([12, 60, 20]); } catch(e){} }
   try { window.LowiR3G && LowiR3G.paint(box, CK); } catch(e){} /*r3g-hook*/ }
 function ckGo(d){ if (!CK) return; const n = CK.r.steps.length; const j = Math.max(-1, Math.min(n, CK.i + d)); if (j === CK.i) return; CK.i = j; if (j >= n && window.LowiVitalsBridge) LowiVitalsBridge.complete("bloom","recipe:"+CK.r.id,{amt:20,perDay:3,label:"Recipe finished"}); ckPaint(d); if (d > 0) try{window.LowiSFX&&LowiSFX.play((j >= n ? "workoutDone" : "step"))}catch(_){};/*r3e*/ try { navigator.vibrate && navigator.vibrate(8); } catch(e){} }

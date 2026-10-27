@@ -321,6 +321,10 @@ function obBody(){const p=Object.assign({},lsGet(OPK)||{}),aff=obA.aff==='yes';
 function obPaint(){if(!ob)return;const last=obI===4,next=obI===1?tr('obAgree'):last?tr('obDone'):tr('obNext');
  ob.innerHTML='<div class="rm-ob-card-wrap" role="dialog" aria-modal="true" aria-labelledby="rmObH"><div class="rm-ob-top"><div class="rm-ob-bar" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="'+(obI+1)+'"><i style="width:'+((obI+1)*20)+'%"></i></div><span class="rm-ob-step">'+esc(tr('obStep',{i:obI+1}))+'</span><button type="button" class="rm-x" data-ob="close" aria-label="'+esc(tr('obClose'))+'">×</button></div>'
   +'<div class="rm-ob-body">'+obBody()+'</div><div class="rm-ob-foot">'+(obI>0?'<button type="button" class="rm-ob-sec" data-ob="back">'+esc(tr('obBack'))+'</button>':'<span></span>')+'<button type="button" class="rm-ob-go" data-ob="next">'+esc(next)+'</button></div></div>';
+ /* Bug hunt 57 (P-VIEW-SWAP): the 5 steps swap in place, so fresh-scrim only protected the first one. A double tap on Next went
+    two steps (live WebKit iPhone 13, 101 to 349 ms apart: past the community rules it says "I agree" on, and Done closed the welcome
+    before its last step), and Back went back two. mark() gives each new step the same-spot rule. */
+ try{if(W.LowiFreshScrim&&W.LowiFreshScrim.mark)W.LowiFreshScrim.mark(ob);}catch(e){}
  const h=ob.querySelector('.rm-ob-h');if(h)h.id='rmObH';setTimeout(()=>{const g=ob&&ob.querySelector('.rm-ob-go');if(g)g.focus({preventScroll:true});},40);}
 function obSaveProfile(){if(!ob)return;const p=Object.assign({},lsGet(OPK)||{});ob.querySelectorAll('[data-p]').forEach(i=>{p[i.dataset.p]=String(i.value||'').trim().slice(0,i.tagName==='TEXTAREA'?280:80);});p.ts=Date.now();lsSet(OPK,p);}
 function obClose(done){if(obI===3)obSaveProfile();const st=Object.assign({},lsGet(OBK)||{},{seen:Date.now(),answers:obA});if(done)st.done=Date.now();lsSet(OBK,st);if(ob&&ob.parentNode)ob.parentNode.removeChild(ob);ob=null;}

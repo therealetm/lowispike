@@ -41,7 +41,7 @@ const SIZES = { phone: { width: 390, height: 844 }, small: { width: 375, height:
   /* Affiliates works inside: tap its Start and check the next screen comes up */
   { const fr = P.frames().find(f => /affiliates\//.test(f.url()));
     if (fr) { const st = fr.locator('button, a').filter({ hasText: /Start|Los|Empezar|Comenzar/ }).first();
-      const bb = await st.boundingBox().catch(() => null); const fe = await P.locator('.rm-frame:not([hidden])').boundingBox();
+      await st.evaluate(e => e.scrollIntoView({ block: 'center' })).catch(() => { }); await H.sleep(600); const bb = await st.boundingBox().catch(() => null); const fe = await P.locator('.rm-frame:not([hidden])').boundingBox();
       if (bb && fe) { const before = (await fr.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ');
         await P.touchscreen.tap(bb.x + bb.width / 2, bb.y + bb.height / 2); await H.sleep(2000);
         const after = (await fr.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ');

@@ -286,7 +286,8 @@
             '<button type="button" class="cw-btn pri" data-cw="save"' + (fix ? ' data-fix="1"' : '') + '>' + esc(s('save')) + '</button></div>';
     }
     function paint() {
-        const el = D && D.getElementById('cwSheet'); if (!el) return;
+        /* BH-060: a sheet just closed lingers while it slides out; paint the one this sheet owns, not the first #cwSheet in the page */
+        const el = D && ((ov && ov.querySelector && ov.querySelector('#cwSheet')) || D.getElementById('cwSheet')); if (!el) return;
         /* keep the scroll where she tapped (the care chips sit lower in the sheet) */
         const sc = el.closest ? el.closest('.r2-sh') : null, y = sc ? sc.scrollTop : 0;
         el.innerHTML = '<div class="cw-head"><h2 id="cwTitle">' + esc(s('title')) + '</h2></div><div class="cw-body">' + body() + '</div>';
@@ -300,7 +301,7 @@
         const R2 = W.LowiR2; if (!D || !R2 || !R2.sheet || !isFem()) return false;
         other = false; msg = ''; delArm = 0;
         if (ov && D.body.contains(ov)) { try { R2.close(ov); } catch (e) {} }
-        ov = R2.sheet('<div class="cw" id="cwSheet" data-noi18n></div>', { cls: 'cw-ov one-sheet', onClose: () => { ov = null; refreshTile(); paintRing(); } });
+        const me = ov = R2.sheet('<div class="cw" id="cwSheet" data-noi18n></div>', { cls: 'cw-ov one-sheet', onClose: () => { if (ov === me) ov = null; refreshTile(); paintRing(); } });   /* BH-060: an old sheet sliding out must not forget the new one */
         paint();
         return true;
     }
@@ -328,7 +329,7 @@
                 /* BH-060: Turn on / Turn off redraw the whole sheet, so a fast 2nd tap on the same spot would land on what slid in under
                    the finger (Turn on: the Cramps chip, logged by accident). That tap is spent; a tap elsewhere works at once. */
                 const k = b.getAttribute('data-cw');
-                if (k === 'on' || k === 'off') { try { const F = W.LowiFreshScrim; if (F && F.closed) F.closed(D.getElementById('cwSheet'), e); } catch (x) { } }
+                if (k === 'on' || k === 'off') { try { const F = W.LowiFreshScrim; if (F && F.closed) F.closed(b.closest('#cwSheet'), e); } catch (x) { } }
                 act(k, b); setTimeout(paintRing, 0); }
         }, true);
         const addL = () => { try { if (W.LowiLang && W.LowiLang.add) { W.LowiLang.add(LANG_ROWS); return true; } } catch (e) {} return false; };

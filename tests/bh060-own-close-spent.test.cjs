@@ -100,7 +100,9 @@ const SITES = [
     ['home-settings-sleep-v2.js', /const was = open; open = null; detached = false;\n[^\n]*\n\s*try \{ const F = root\.LowiFreshScrim; if \(layer && F && F\.closed\) F\.closed\(layer\); \}/, 'settings / sleep ring: a row or choice'],
     ['shop-scan.js', /F\.closed\(c\); \} catch \(e\) \{ \}\n\s*if \(c\) c\.remove\(\);/, 'shop scan result card'],
     ['tutorial-auto.js', /function closeOffer\(\) \{ if \(offer\) \{[^\n]*F\.closed\(offer\);[^\n]*offer\.remove\(\)/, 'tutorial offer: Later / Go'],
-    ['cycle-world.js', /if \(k === 'on' \|\| k === 'off'\) \{ try \{ const F = W\.LowiFreshScrim; if \(F && F\.closed\) F\.closed\(D\.getElementById\('cwSheet'\), e\); \} catch \(x\) \{ \} \}\n\s*act\(k, b\);/, 'My cycle: Turn on / Turn off redraw the sheet (Cramps chip slid under the finger)'],
+    ['cycle-world.js', /if \(k === 'on' \|\| k === 'off'\) \{ try \{ const F = W\.LowiFreshScrim; if \(F && F\.closed\) F\.closed\(b\.closest\('#cwSheet'\), e\); \} catch \(x\) \{ \} \}\n\s*act\(k, b\);/, 'My cycle: Turn on / Turn off redraw the sheet (Cramps chip slid under the finger)'],
+    ['cycle-world.js', /const el = D && \(\(ov && ov\.querySelector && ov\.querySelector\('#cwSheet'\)\) \|\| D\.getElementById\('cwSheet'\)\);/, 'My cycle reopened while the old sheet slides out: paint the new sheet (it stayed empty)'],
+    ['cycle-world.js', /const me = ov = R2\.sheet\([^\n]*onClose: \(\) => \{ if \(ov === me\) ov = null;/, 'My cycle: the old sheet closing late does not forget the new one'],
 ];
 const IDX = [
     [/function closeRw\(\)\{[^\n]*F\.closed\(d\)/, 'fast reward card'],

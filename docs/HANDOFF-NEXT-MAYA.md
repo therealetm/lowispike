@@ -42,6 +42,23 @@ What changed (store-picks.js / .css, week-basket.js, tutorial-steps.js; branch s
 - Checks: tests/shop-calm.test.cjs; tools/shop-calm/flow.cjs taps through both tabs with simulated touch (de 390x844, en 375x667, es) including Scan in the shop, the Cart, the X and the swipe-downs. All in simulated Chrome; not checked in simulated Safari or on his real iPhone/iPad.
 - Left open: the cart, the in-store Shop and the Give a hand deck are still not reachable by the double-tap sweep.
 
+## Log meal sheet made calm and simple, 27 October 2026
+
+Emmanuel, Tuesday 27 October 2026 (voice, screenshot of the German "Mahlzeit" sheet): "clean this up... It's very confusing and overwhelming whilst opening... too much redundancy... Schreiben, Scannen, Foto, Jetzt, vor 30 Minuten, vor einer Stunde, vor 2 Stunden. Even though you can manually change the time... 'Was hast du gegessen?' and 'Eigene Werte'... too much redundancy. Der 'Wie immer' thing is cool. Der Vorschlag is too close to it... Remember our focus is minimalism, efficiency, convenience. And we care about people with mental health. Who are depressed, overwhelmed, don't know what to do. People are seeing this for the first time." Don't ask questions; take all decisions.
+
+**Guiding principle for every screen from now on (his words above, as a rule):** minimalism, efficiency, convenience. Design for someone who is depressed, overwhelmed, doesn't know what to do, or is seeing the screen for the first time: one clear thing to do first, one way to do each thing, nothing repeated, quiet extras folded away, no choice they must make before they can start.
+
+What changed (spirit.js mealForm, spirit-core.js, new meal-sheet.css, branch meal-sheet-simple-20261027, released silently):
+- Log meal opens straight on one screen; the "Mahlzeit oder Snack?" step is gone. A small Mahlzeit | Snack switch at the top starts on the slot for the time of day; Save reads "Snack eintragen" for a snack.
+- One field, "Was hast du gegessen?", with the mic inside it and two small chips under it, Foto and Barcode. The Schreiben / Scannen / Foto tiles and the separate manual field are gone.
+- Time: a quiet "Jetzt" that opens the phone's own time wheel; it then reads "um 13:20". Future times are refused; it starts at Jetzt every time the sheet opens. The four time chips are gone. From Gap: one short line ("Fasten beendet, deine Zeit ist gespeichert…") with "Jetzt nicht", and the Gap time on the clock.
+- Eigene Werte is a quiet link beside the time; the fields open only when tapped.
+- One Save button; the Essenspause / XP line is small grey text under it, no box (not shown in the Gap chain, the fast already ended there).
+- Wie immer right under Save: up to four, one tap logs it, "Ein Tipp" removed from the heading. In German and Spanish an English name is translated only when every word is a known food word ("Lettuce wraps with ground beef" shows "Salat-Wraps mit Rinderhack"); anything else stays as typed.
+- The suggestion moved lower and set apart under "Idee von" + the companion's own name (wnm, never a hard-coded name).
+- Today's meals fold into a quiet "Heute · n" line; tapping one still edits it and comes back to the sheet. Heutige Stats is a faint line at the very bottom.
+- Checks: tests/meal-sheet-simple.test.cjs (fails on the old sheet); the old sheet's tests (meal-names, meal-slots, misty-panels, one-meal-path, gap-reset, bh045 own-name site) now describe the new sheet with the same protections and fail on the old code; tools/meal-sheet/flow.cjs (22 behaviour checks) and tools/meal-sheet/shot.cjs (DE/EN/ES at iPhone, SE, iPad, nothing off screen or covered, Wie immer visible without scrolling on SE). All in simulated Chrome; simulated Safari still crashes on tap on this machine.
+
 ## Studio opened for everyone, 27 October 2026
 
 Emmanuel, Tuesday 27 October 2026 about 9:25 AM Berlin, with a screenshot of the locked Community > Studio tab (pill "Gesperrt", "Im Aufbau", "Studio wird gerade gebaut. Es öffnet sich hier, sobald es fertig ist.", a small lock button): "Also, um remove this we can open it up now. Delete the password or whatever."

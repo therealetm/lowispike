@@ -119,6 +119,9 @@
                (cycle-world.js hubHtml / hubOpen). Tracking off: nothing here. */
             cycleHtml() +
             todayHtml() +
+            /* Oct 27 (Emmanuel: human stats "maybe next to the companion stats ... and obviously, they're linked together"): one
+               quiet row, You (kcal, protein) beside her energy; tap opens You & <name> (you-stats.js in the stats sheet). */
+            youHtml() +
             (say ? '<p class="mh-say" role="status" aria-live="polite">' + esc(say) + '</p>' : '<p class="mh-say" role="status" aria-live="polite" hidden></p>') +
             (night ? '<button type="button" class="mh-pri" data-mh="goodnight"' + (gn ? ' aria-pressed="true"' : '') + '>' + ICO.moon + '<span>' + esc(gn ? T('Tucked in for the night', 'F\u00fcr die Nacht eingekuschelt', 'Arropada para la noche') : T('Say goodnight', 'Gute Nacht sagen', 'Dar las buenas noches')) + '</span></button>' : '') +
             scaleHtml() +
@@ -171,6 +174,7 @@
         D.body.appendChild(t); try { t.click(); } finally { t.remove(); }
     }
     const TODAY_ACT = { trip: () => proxy('data-bt', 'bar'), sun: () => proxy('data-ls', 'info'), goal: () => proxy('data-dr', 'chip'), recap: () => W.LowiDayRecap && W.LowiDayRecap.open({ after: true }) };
+    function youHtml() { try { return W.LowiYouStats && W.LowiYouStats.hubHTML ? W.LowiYouStats.hubHTML() : ''; } catch (e) { return ''; } }
     function cycleHtml() { try { return W.LowiCycleWorld && W.LowiCycleWorld.hubHtml ? W.LowiCycleWorld.hubHtml() : ''; } catch (e) { return ''; } }
     function advHtml() { try { return W.LowiAdventureTiers && W.LowiAdventureTiers.html ? W.LowiAdventureTiers.html() : ''; } catch (e) { return ''; } }
     function rankHtml() { try { return W.LowiMistyRank && W.LowiMistyRank.html ? W.LowiMistyRank.html() : ''; } catch (e) { return ''; } }
@@ -212,6 +216,7 @@
         else if (k === 'forms') { try { if (W.LowiCompanion && W.LowiCompanion.open && W.LowiCompanion.open()) return; } catch (x) { } openDetails('grow'); }
         else if (k === 'glow') openDetails('aura');
         else if (k === 'rename') renameOpen();
+        else if (k === 'you') { close(); setTimeout(() => { try { W.LowiNutriStats && W.LowiNutriStats.open && W.LowiNutriStats.open(); } catch (x) { console.error(x); } }, 360); }
         else if (k === 'cycle') { try { W.LowiCycleWorld && W.LowiCycleWorld.hubOpen && W.LowiCycleWorld.hubOpen(); } catch (x) { } }
         else if (k.indexOf('t-') === 0 && TODAY_ACT[k.slice(2)]) { const go = TODAY_ACT[k.slice(2)]; close(); setTimeout(() => { try { go(); } catch (x) { console.error(x); } }, 360); }
     });

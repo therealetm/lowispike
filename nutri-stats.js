@@ -157,13 +157,23 @@
     }
     function statsHTML() {
         const m = C.rows(state() || {}), lv = level();
-        const nut = '<section class="ns-sec" data-ns-sec="nutrition"><h4 class="ns-h">' + esc(T('Nutrition', 'Ernährung', 'Nutrición')) + '</h4>' + m.rows.map(statRowHTML).join('') +
+        /* Oct 27 (you-stats.js, Emmanuel: "what about highlighting other human stats ... next to the companion stats"): with the
+           You & companion view on top, each row leads with your word (Protein) and says which of her stats it feeds (→ Strength),
+           and carbs show their net carbs (carbs minus fibre). */
+        const YS = W.LowiYouStats, fib = (m.rows.find(r => r.k === 'fiber') || {}).value || 0;
+        const rowFor = r => {
+            if (!YS || !STAT[r.k]) return statRowHTML(r);
+            const o = Object.assign({}, r, { name: STAT[r.k].s[lang()], sub: '\u2192 ' + companionName() + ' \u00b7 ' + STAT[r.k].n[lang()] });
+            if (r.k === 'carbs') o.leftText = T('net ', 'netto ', 'netos ') + fmt(Math.max(0, (r.value || 0) - fib), 'carbs') + ' g \u00b7 ' + leftText(r);
+            return statRowHTML(o);
+        };
+        const nut = '<section class="ns-sec" data-ns-sec="nutrition"><h4 class="ns-h">' + esc(YS ? T('Your food today', 'Dein Essen heute', 'Tu comida hoy') : T('Nutrition', 'Ernährung', 'Nutrición')) + '</h4>' + m.rows.map(rowFor).join('') +
             (m.unknown ? '<p class="ns-note">' + esc(m.unknown === 1 ? T('1 meal today has no nutrition facts, so it isn\'t counted.', '1 Mahlzeit heute hat keine Nährwerte und zählt nicht mit.', '1 comida de hoy no tiene valores nutricionales y no cuenta.') : T(m.unknown + ' meals today have no nutrition facts, so they aren\'t counted.', m.unknown + ' Mahlzeiten heute haben keine Nährwerte und zählen nicht mit.', m.unknown + ' comidas de hoy no tienen valores nutricionales y no cuentan.')) + '</p>' : '') + '</section>';
         const extra = [{ order: 10, html: nut }];
         for (const pl of plugins()) { let h = ''; try { h = String(pl.render(lang()) || ''); } catch (e) { h = ''; } if (h) extra.push({ order: +pl.order || 50, html: '<div class="ns-plug" data-ns-plug="' + esc(pl.id || '') + '">' + h + '</div>' }); }
         extra.sort((a, b) => a.order - b.order);
         return '<div class="ns-sheet" data-ns-view="stats"><header class="ns-hd"><div class="ns-hm"><small>' + esc(T('Today\'s stats', 'Heutige Stats', 'Stats de hoy')) + '</small>' +
-            '<h3>' + esc(companionName()) + (lv ? ' <span class="ns-lv">' + esc(T('Lv', 'Lv', 'Nv')) + ' ' + esc(lv) + '</span>' : '') + '</h3></div>' +
+            '<h3>' + esc(W.LowiYouStats ? W.LowiYouStats.title() : companionName()) + (lv ? ' <span class="ns-lv">' + esc(T('Lv', 'Lv', 'Nv')) + ' ' + esc(lv) + '</span>' : '') + '</h3></div>' +
             '<div class="ns-score' + (m.allGood ? ' all' : '') + '" aria-label="' + esc(T(m.good + ' of ' + m.total + ' stats on track', m.good + ' von ' + m.total + ' Stats im Ziel', m.good + ' de ' + m.total + ' stats en su sitio')) + '"><b>' + m.good + '</b><small>/' + m.total + '</small></div></header>' +
             '<p class="ns-mood">' + esc(moodLine(m)) + '</p>' + extra.map(x => x.html).join('') +
             '<div class="ns-acts"><button type="button" class="r2-btn pri" data-ns="log">' + esc(T('Log a meal', 'Essen eintragen', 'Registrar comida')) + '</button>' +

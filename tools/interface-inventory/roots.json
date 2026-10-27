@@ -1,0 +1,21 @@
+{
+ "gap":   [{"kind":"tap","name":"__","sel":"[data-orbit=\"gap\"]"}],
+ "water": [{"kind":"tap","name":"__","sel":"[data-orbit=\"water\"]"}],
+ "move":  [{"kind":"tap","name":"__","sel":"[data-orbit=\"move\"]"}],
+ "scan":  [{"kind":"tap","name":"__","sel":"[data-orbit=\"scan\"]"}],
+ "sleep": [{"kind":"tap","name":"__","sel":"[data-orbit=\"sleep\"]"}],
+ "comm":  [{"kind":"tap","name":"__","sel":"[data-orbit=\"settings\"]","wait":2500}],
+ "fuel":  [{"kind":"tap","name":"__","sel":"[data-orbit=\"fuel\"]"}],
+ "misty": [{"kind":"tap","name":"__","sel":"#spBubble"}],
+ "hcomm": [{"kind":"hold","name":"__","sel":"[data-orbit=\"settings\"]","ms":1000}],
+ "hmove": [{"kind":"hold","name":"__","sel":"[data-orbit=\"move\"]","ms":1000}],
+ "hfuel": [{"kind":"hold","name":"__","sel":"[data-orbit=\"fuel\"]","ms":1000}],
+ "hmisty":[{"kind":"hold","name":"__","sel":"#spBubble","ms":1000}],
+ "hsleep":[{"kind":"hold","name":"__","sel":"[data-orbit=\"sleep\"]","ms":1000}],
+ "hscan": [{"kind":"hold","name":"__","sel":"[data-orbit=\"scan\"]","ms":1000}],
+ "hgap":  [{"kind":"hold","name":"__","sel":"[data-orbit=\"gap\"]","ms":1000}],
+ "tshelf":[{"kind":"eval","js":"goTab('shelf')","wait":2500}],
+ "tprof": [{"kind":"eval","js":"goTab('profile')","wait":2500}],
+ "tmove": [{"kind":"eval","js":"goTab('move')","wait":2500}],
+ "tscan": [{"kind":"eval","js":"goTab('scan')","wait":2500}]
+}

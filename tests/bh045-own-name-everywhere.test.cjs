@@ -21,7 +21,7 @@ const SITES = [
   ['herb-quests.js', /const t = \(en, de, es\) => wnm\(/],
   ['install-guide.js', /esc\(wnm\(tx\('w_t', L\)\)\)/],
   ['misty-hunt.js', /LowiPraise\.say\(wnm\(tr\(key, lang\(\), v\)\)\)/],
-  ['spirit.js', /esc\(wnm\(tr\('herbTip'\)\)\)/],
+  ['spirit.js', /esc\(wnm\(tr\('lmIdea'\)\)\)/], /* Oct 27 calm Log meal sheet: "Idee von Misty" heading replaced the herbTip label */
   ['sym-home.js', /const T = \(en, de, es\) => wnm\(/],
   ['move-bubble.js', /const T = \(en, de, es\) => wnm\(/],
   ['herb-start.js', /wnm\(C\.whyText\(a\.why,lang\(\)\)\)[\s\S]*wnm\(C\.whyText\(a\.why,lang\(\)\)\)/],

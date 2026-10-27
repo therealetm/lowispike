@@ -39,18 +39,19 @@ test('one-tap re-log: this slot\'s own meals first, no duplicates, then the rest
     assert.deepStrictEqual(K.slotRecent(null, 'lunch'), []);
 });
 
-test('Log meal opens the slot picker first, then the slot sheet with Write / Scan / Snap', () => {
-    assert.match(js, /if \(quick && K\.slotOk && !K\.slotOk\(slot\)\) \{\s*slotPicker\(\);\s*return;/, 'no slot yet = picker');
+test('Log meal opens straight on one screen: a small Meal | Snack switch, then one field with Foto / Barcode under it', () => {
+    // Oct 27 (Emmanuel: "very confusing and overwhelming whilst opening"): no "Meal or snack?" step first
+    assert.doesNotMatch(js, /if \(quick && K\.slotOk && !K\.slotOk\(slot\)\) \{\s*slotPicker\(\);/, 'no picker step before the sheet');
     assert.match(js, /meal: \(\) => mealForm\(\)/, 'every Log meal entry (Fuel orb, Meals bubble, quest) goes through mealForm');
-    const pick = js.slice(js.indexOf('function slotPicker()'), js.indexOf('function slotPicker()') + 1500);
-    assert.match(pick, /data-sp="slot" data-slot="/);
-    assert.match(pick, /s === now \? ' now'/, 'the slot for this time of day is marked');
+    assert.match(js, /setSlot\(\(K\.slotOk && K\.slotOk\(slot\) \? slot : ''\) \|\| \(back \? pendingSlot\(\) : ''\) \|\| \(K\.slotFor \? K\.slotFor\(gc \? gc\.ateAt : undefined\) : 'meal'\)\);/, 'the slot for this time of day is picked for you');
+    assert.match(js, /data-sp="lmKind" data-slot="' \+ k \+ '" aria-pressed="' \+ \(k === mealSlot\) \+ '"/, 'the switch marks the current slot');
+    assert.match(js, /else if \(a === 'lmKind'\) lmKind\(b\);/, 'one tap switches Meal / Snack in place');
     assert.match(js, /else if \(a === 'slot'\) mealForm\(null, null, b\.dataset\.slot\)/);
-    assert.match(js, /else if \(a === 'slotPick'\) slotPicker\(\)/, 'Change goes back to the four');
-    const how = js.slice(js.indexOf('const how = mealSlot'), js.indexOf('const html = how +'));
-    assert.match(how, /data-sp="slotWrite"[\s\S]*data-sp="scan"[\s\S]*data-sp="photo"/, 'write, scan, snap in that order');
-    assert.match(js, /esc\(tr\(mealSlot \? 'slotRecent' : 'recent'\)\)/);
-    assert.match(js, /V\.mealDup\(\{t: l\.t \|\| l\.n, code: l\.code, slot: mealSlot\}\)/, 'a tick only for this slot');
+    assert.match(js, /else if \(a === 'slotPick'\) slotPicker\(\)/, 'the way back (after editing an entry) still works');
+    const f = js.slice(js.indexOf("const form = '<form id=\"spMeal\" class=\"lm-form\""), js.indexOf('const usual = recent.length'));
+    assert.match(f, /name="title"[\s\S]*data-sp="photo"[\s\S]*data-sp="scan"/, 'write, then Foto, then Barcode');
+    assert.match(js, /esc\(tr\('lmUsual'\)\)/, 'Eaten recently is "Wie immer"');
+    assert.match(js, /V\.mealDup && V\.mealDup\(\{t: n, code: l\.code, slot: mealSlot\}\)/, 'a tick only for this slot');
 });
 
 test('slot strings in English, German and Spanish', () => {

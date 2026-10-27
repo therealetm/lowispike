@@ -75,8 +75,11 @@ test('touch targets stay big and the main action is Move\'s mint', () => {
 
 test('the selectors match markup that exists', () => {
   for (const c of ['fst-sh', 'fst-title', 'fst-sum', 'fst-chips', 'fst-go', 'fst-earn', 'id="sheetwrap"']) assert.ok(html.includes(c), c);
-  // Log meal: Snap food / Scan product moved out (they live in Scan, meal-names task); Manual is the open form at the top
-  for (const c of ['sp-quick-log', 'sp-quick-item', 'sp-herb-tip', 'sp-manual', 'sp-meal-guess', "cls: 'sp-sheet'"]) assert.ok(spiritJs.includes(c), c);
+  // Log meal (Oct 27 calm sheet, meal-sheet.css): one open field at the top, Wie immer rows, the companion's idea apart
+  for (const c of ['class="lm-form"', 'class="lm-u', 'sp-herb-tip', 'id="lmTitle"', 'sp-meal-guess', "cls: 'sp-sheet'"]) assert.ok(spiritJs.includes(c), c);
+  const lm = read('meal-sheet.css');
+  for (const c of ['.lm .lm-u ', '.lm .lm-chip ', '.lm .lm-idea-b ', '.lm #lmTitle ']) assert.ok(lm.includes(c), 'meal-sheet.css styles ' + c);
+  assert.ok(/\.lm \.lm-u \{[^}]*min-height: 48px/.test(lm) && /\.lm \.lm-chip \{[^}]*min-height: 44px/.test(lm), 'Log meal rows and chips stay big touch targets');
   assert.ok(!spiritJs.includes('sp-quick-cap'), 'no Snap food / Scan product row in Log meal');
   for (const c of ['tbw-top', 'tbw-btn', 'data-tbw="refresh"', 'data-tbw="close"', 'tbw-body', 'tbw-sheet']) assert.ok(topBar.includes(c), c);
   for (const c of ['wa-panel', 'wa-x', 'wa-row']) assert.ok(audio.includes(c), c);

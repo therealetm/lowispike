@@ -117,16 +117,23 @@ test('saving a typed meal (Manual or the Scanner\'s "What is it?") fills the bla
   assert.match(read('apple-ui.js'), /'meal-db-core\.js'/, 'loaded before spirit.js');
 });
 
-test('Log meal panel: Manual, Eaten recently and Misty suggestions only', () => {
+test('Log meal panel: one open field first, then Wie immer, then the companion\'s idea, apart', () => {
   const js = read('spirit.js');
-  // Oct 19: the slot head (Breakfast/Lunch/Dinner/Snacks, then Write / Scan / Snap, E-man's ask) sits above this panel in `how`
-  const i = js.indexOf("const html = how + '<div class=\"sp-quick-log\">");
+  // Oct 27 (Emmanuel: "too much redundancy ... minimalism, efficiency, convenience"): ONE calm sheet. The field is the manual
+  // entry, open at the top; Foto / Barcode are two small chips right under it (no big Write / Scan / Snap tiles, no Snap food /
+  // Scan product row); own values fold away; Wie immer (eaten recently) sits under Save; the companion's idea comes after it.
+  const i = js.indexOf("const html = '<div class=\"lm\" data-lm>'");
   assert.ok(i > 0);
-  const panel = js.slice(i, i + 1400);
-  assert.doesNotMatch(panel, /button\('photo'|button\('scan'|sp-quick-cap/, 'Snap food and Scan product live in Scan');
-  assert.match(panel, /sp-manual[\s\S]*recent[\s\S]*tip/, 'Manual first, then Eaten recently, then Misty');
-  assert.doesNotMatch(panel, /<details class="sp-manual"/, 'Manual is open, not folded away');
-  assert.match(js, /<details class="sp-own">/, 'your own numbers are optional and folded away');
+  const panel = js.slice(i, i + 900);
+  assert.match(panel, /form \+ usual \+ idea \+ today/, 'the field first, then Eaten recently (Wie immer), then the companion, then today');
+  const f = js.slice(js.indexOf("const form = '<form id=\"spMeal\" class=\"lm-form\""), js.indexOf('const usual = recent.length'));
+  assert.ok(f.length > 200);
+  assert.match(f, /<input id="lmTitle" class="lm-in" name="title" required/, 'the manual field is open, not folded away');
+  assert.doesNotMatch(f, /<details/, 'nothing in the form is a fold');
+  assert.match(f, /data-mic="1"[\s\S]*class="lm-alt"[\s\S]*data-sp="photo"[\s\S]*data-sp="scan"/, 'Foto and Barcode are small chips under the one field');
+  assert.doesNotMatch(js, /sp-quick-cap|data-sp="slotWrite"/, 'no Snap food / Scan product row, no Write tile');
+  assert.match(f, /'<\/button><\/div>' \+ own \+\s*'<button class="r2-btn pri lm-save"/, 'own values sit behind the quiet link, before the one Save');
+  assert.match(js, /const own = '<div class="lm-own" id="lmOwn" hidden>/, 'your own numbers are optional and folded away (hidden until the link is tapped)');
   const sp = read('store-picks.js');
   assert.doesNotMatch(sp.slice(sp.indexOf('const SPOTS'), sp.indexOf('const SPOTS') + 600), /sp-quick-cap/, 'no "What can I buy here?" in Log meal');
 });

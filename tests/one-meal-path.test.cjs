@@ -150,7 +150,8 @@ test('wiring: every meal log carries its time, one listener applies the rule, th
     assert.ok(!/act\("meal", IC\.plate\)/.test(html), 'Log meal left the scanner');
     assert.match(html, /\(bx \? '<br>' \+ esc\(w\("brk"\)\)/, 'the reward shows the break-fast bonus when a meal ended the fast');
     for (const k of ['byMeal:"Your meal ended the fast"', 'byMeal:"Deine Mahlzeit hat das Fasten beendet"', 'byMeal:"Tu comida terminó el ayuno"']) assert.ok(html.includes(k), k);
-    assert.match(spirit, /\(gc \? '' : fastNote\(\)\)/, 'slot picker shows the fast line (not in the Gap chain, the fast already ended there)');
-    assert.match(spirit, /tr\('slotSnap'\)\) \+ '<\/span><\/button><\/div>' \+ whenRow\(\) \+ fastNote\(whenAt\(\)\)/, 'the Write / Scan / Snap sheet too, after "When did you eat?" (Oct 21)');
+    // Oct 27 calm Log meal sheet: one screen; the fast line is small grey text under Save, for the time on the clock
+    assert.match(spirit, /tr\(mealSlot === 'snack' \? 'lmSnackSave' : 'save'\)\) \+ '<\/button>' \+ \(gc \? '' : fastNote\(at\)\)/, 'the sheet shows the fast line under Save (not in the Gap chain, the fast already ended there)');
+    assert.match(spirit, /LowiFastStop\.mealNote\(at \|\| 0\)[\s\S]{0,80}note\.textContent = n; note\.hidden = !n;/, 'a time picked on the clock updates the fast line');
     assert.match(css, /\.sp-fast-note \{[^}]*border: 1px solid var\(--ms-line-soft/, 'brand-line border, not white');
 });

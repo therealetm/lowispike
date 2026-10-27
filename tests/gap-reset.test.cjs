@@ -141,7 +141,8 @@ test('wiring: delete and edit in the meal store tell the Gap, editing never pays
 });
 
 test('Log meal: Meal / Snack tiles, today\'s entries with time and photo, tap to edit (add more, time, remove), three languages', () => {
-    assert.match(spirit, /todayList\(logs\)\);/);
+    /* Oct 27 calm Log meal sheet: today's entries sit in one quiet "Heute · n" fold, opened again after an edit */
+    assert.match(spirit, /'<details class="lm-today"' \+ \(back \? ' open' : ''\) \+ '><summary>' \+ esc\(tr\('lmToday'\)\.replace\('\{n\}', logs\.length\)\) \+ '<\/summary>' \+ todayList\(logs\) \+ '<\/details>'/);
     assert.match(spirit, /data-sp="todayEdit"/);
     assert.match(spirit, /else if \(a === 'todayEdit'\) editToday\(b\.dataset\.id\);/);
     assert.match(spirit, /e\.target\.id === 'spEdit'/);

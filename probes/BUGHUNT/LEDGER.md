@@ -162,8 +162,40 @@
 - **LIVE 20261027-032456** (quiet, loud 20000101-000000, main e1f1a3e9, CI https://github.com/therealetm/lowispike/actions/runs/40438370500/job/121972470107). Live after: probe-corrupt num+str, openers catch-up / day recap / fast / Gap: Chromium 390 boot 0 errors + 0 opener errors; WebKit iPhone 13 same (before: 7 boot errors). Not on Emmanuel's iPhone.
 - Still unchecked (P-SAVE-SHAPE lists): `JSON.parse(...) || []` loaders followed by .push/.filter would throw on a number/text key ("not a function"); none showed in the opener sweep, so queued. Low real-world odds.
 
+## Runs 56 to 60: double-tap sweep (Tue 27 Oct 2026, 03:17 to 09:40 CET), pattern P-DOUBLE-TAP
+Pattern: the first tap of a fast double tap (2nd tap within ~400 ms on the same spot) changes or closes the view; the 2nd tap lands on whatever
+the new view put under the finger and presses it (picks an answer, skips a step, opens a page). Fix family: the tap that changed the view is
+"spent" (fresh-scrim.js guard, 400 ms same-spot window, by event timestamps); taps elsewhere, slower 2nd taps, keyboard, Escape and tap-outside
+are untouched. Probes: playtest/dt-lib.cjs (two real CDP taps with controlled event timestamps, so a slow machine cannot stretch the gap),
+dt-sweep.cjs + dt-screens.cjs (groups a to e), dt-ec.cjs, dt-cycle.cjs, dt-normal.cjs; outputs /home/sprite/dt-out/.
+- **Run 56, BH-056 FIXED, LIVE 20261027-041738** (main 189073ad): a double tap in the evening catch-up (2nd tap picked a food in the next
+  bubble), the starter questions or the tutorial picked or skipped something by itself. Test tests/bh056-catchup-view-same-spot.test.cjs.
+- **Run 57, BH-057 FIXED, LIVE 20261027-055006** (main 28d7acbb): a double tap skipped a step in the Community welcome and the cook-along.
+  Test tests/bh057-welcome-cook-view-same-spot.test.cjs.
+- **Run 58, BH-058 FIXED, LIVE 20261027-061235** (main b21fc0c4): double taps in the Community profile pressed what the next view put under
+  the finger. Test tests/bh058-profile-view-same-spot.test.cjs.
+- **Run 59, BH-059 FIXED, LIVE 20261027-072307** (main 82e4f83c): buttons that close a sheet through the shared close (X, Done, rows) let the
+  2nd tap press what was under the sheet. Test tests/bh059-close-spent.test.cjs.
+- **Run 60, BH-060 FIXED, LIVE 20261027-094002** (quiet, loud 20000101-000000, news id unchanged, main 0c179ae4, suite 3957/3957, CI
+  https://github.com/therealetm/lowispike/actions/runs/40475331586): screens that close through their OWN close path (not the shared close)
+  still let the 2nd tap through: Move finish Continue, install guide X / Got it / Maybe later, settings ring rows (Look & sound, World sound,
+  Language) hitting Home under them, quick tour Skip, My cycle Turn on (2nd tap landed on what the redraw put there; one run saw the Cramps chip
+  logged). Fix: `closed(el, e)` helper in fresh-scrim.js, called by ~25 screens' close functions; My cycle Turn on / Turn off spend their tap.
+  Also fixed: My cycle reopened while the old sheet was still sliding out showed an EMPTY sheet (paint() took the first #cwSheet in the page;
+  the old sheet's late onClose also forgot the new one). Test tests/bh060-own-close-spent.test.cjs (fails on old code; site checks + a
+  simulated Turn on -> Cramps double tap). Branch history kept on wip/bh060-own-close.
+  Checked (simulated Chromium 390 only, local fixed tree then live 094002): group e sweep (install guide, settings ring, Move finish, quick tour)
+  0 leaks; group d sweep (Today shop, week basket, herb shop, People, Community welcome, evening catch-up, e1 fast/day) 0 leaks, 0 errors;
+  dt-cycle live: fast 2nd tap swallowed, 600 ms 2nd tap and a quick tap elsewhere go through, Enter turns on, Escape closes, reopen 250 ms
+  after close shows the sheet; dt-ec live: catch-up 2nd tap swallowed (lag ~380 ms; the earlier "Yogurt with berries" pick was the test
+  machine handling taps ~1.3 s late). dt-normal: tap / Escape / tap outside / Enter / slow 2nd tap behave exactly as on the old build.
+  NOT checked in WebKit (simulated Safari) or on Emmanuel's iPhone/iPad.
+- Open (P-DOUBLE-TAP, separate class, not fixed): same-button toggles flip twice on a fast double tap: Today shopping list item, People mic,
+  Day/Night theme switch. Openers the sweep could not reach: cart, lcShop, deck (no global opener). Quick tour "Tap for sound" -> 2nd tap on the
+  tour video (inside the tour, harmless).
+
 ## Clean streak
-0 (run 55, Tue 27 Oct 2026: BH-055 found and fixed)
+0 (run 60, Tue 27 Oct 2026: BH-060 found and fixed)
 
 ## Worlds playtest (separate task, Oct 19 2026 13:23 CEST, base 20261019-130951) - see /home/sprite/COORD-worlds-playtest.md
 - **W-001 fixed (release in progress, see COORD).** Run 5 next-run item 2 "lesson skip on language switch inside a world" is DONE by the

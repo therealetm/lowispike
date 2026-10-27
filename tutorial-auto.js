@@ -54,7 +54,7 @@
     if (W.LowiTutorialAuto) return;
     const $ = s => D.querySelector(s);
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const get = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null') || {}; } catch (e) { return {}; } };
+    const get = () => { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch (e) { return {}; } };
     const set = v => { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) { } };
     const lang = () => { let l = 'en'; try { l = (W.LowiLang && LowiLang.get && LowiLang.get()) || H.lang || 'en'; } catch (e) { } l = String(l).slice(0, 2); return l === 'de' || l === 'es' ? l : 'en'; };
     const vis = el => { if (!el || !el.isConnected) return false; const r = el.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return false; const cs = getComputedStyle(el); return cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > 0.05; };

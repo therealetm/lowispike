@@ -81,14 +81,14 @@
     let draft = loadDraft();
     let fromCartReq = false, fromCartPick = null; /* Oct 26 2026: {items, left, est} while "Someone else pays" shows the whole cart as a basket */
     let skipped = loadSkips(), picked = '', lastSkip = '', drag = null, dragAt = 0;
-    function loadSkips() { try { return C.freshSkips(JSON.parse(localStorage.getItem(SKIP_KEY) || '{}') || {}); } catch (e) { return {}; } }
+    function loadSkips() { try { return C.freshSkips((o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(SKIP_KEY) || '{}'))); } catch (e) { return {}; } }
     function saveSkips() { try { localStorage.setItem(SKIP_KEY, JSON.stringify(C.freshSkips(skipped))); } catch (e) {} }
     function loadDraft() {
         try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); if (d && typeof d === 'object') return { items: Array.isArray(d.items) ? d.items.slice(0, C.MAX_ITEMS).map(String) : [], firstName: String(d.firstName || ''), anon: !!d.anon, city: String(d.city || ''), total: String(d.total || ''), payUrl: String(d.payUrl || '') }; } catch (e) {}
         return { items: [], firstName: '', anon: false, city: '', total: '', payUrl: '' };
     }
     function saveDraft() { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch (e) {} }
-    function seen() { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '{}') || {}; } catch (e) { return {}; } }
+    function seen() { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(SEEN_KEY) || '{}')); } catch (e) { return {}; } }
     function markSeen(id) { const s = seen(); s[id] = Date.now(); try { localStorage.setItem(SEEN_KEY, JSON.stringify(s)); } catch (e) {} }
 
     /* ---------- texts ---------- */

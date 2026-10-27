@@ -66,7 +66,7 @@
         if (RC && RC.cleanFriends) return RC.cleanFriends(raw).list;
         return (raw && Array.isArray(raw.list) ? raw.list : []).filter(f => f && C.okUid(f.uid) && f.n).slice(0, 12).map(f => ({ uid: f.uid, n: String(f.n).slice(0, 24), c: String(f.c || '').slice(0, 24) }));
     }
-    const vibes = () => { try { return JSON.parse(localStorage.getItem('lowispike.vibes.v1') || '{}') || {}; } catch (e) { return {}; } };
+    const vibes = () => { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem('lowispike.vibes.v1') || '{}')); } catch (e) { return {}; } };
     const hueOf = uid => { const RC = W.LowiCellRoomCore; if (RC && RC.hue) return RC.hue(uid); let h = 7; for (const c of String(uid)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 360; };
 
     /* ---------- drawings ---------- */

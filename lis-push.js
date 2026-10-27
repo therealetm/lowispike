@@ -17,7 +17,7 @@ const FN = "https://vnfwmifmsfecascwaody.supabase.co/functions/v1/n1-push";
 const P = () => window.LowiN1P || null;
 const LANG = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || D.documentElement.lang || "en"; } catch(e){} l = String(l).slice(0, 2); return l === "de" || l === "es" ? l : "en"; };
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const js = k => { try { return JSON.parse(localStorage.getItem(k) || "{}") || {}; } catch(e){ return {}; } };
+const js = k => { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(k) || "{}")); } catch(e){ return {}; } };
 const put = (k, o) => { try { localStorage.setItem(k, JSON.stringify(o)); } catch(e){} return o; };
 
 const W = {

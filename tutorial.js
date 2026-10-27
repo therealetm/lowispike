@@ -26,7 +26,7 @@
     const claimReady = () => { try { const B = BC(); return !!(B && typeof B.claim === 'function'); } catch (e) { return false; } };
     const companionName = () => { try { const B = BC(), c = B && B.get && B.get(); return (c && c.name) || 'Misty'; } catch (e) { return 'Misty'; } };
     const companionArt = () => { try { const B = BC(); if (B && B.svg) return B.svg(null, { size: 64 }); } catch (e) { } return ''; };
-    const store = { get() { try { return JSON.parse(localStorage.getItem(KEY) || 'null') || {}; } catch (e) { return {}; } }, set(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) { } } };
+    const store = { get() { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch (e) { return {}; } }, set(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) { } } };
 
     /* what the tour gives way to: setup / sign-in, every other dialog, the Day card's list of sheets, Misty in flight */
     const OWN = '#ltTour';

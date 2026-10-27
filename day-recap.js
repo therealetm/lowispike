@@ -11,7 +11,7 @@
     const LAST_KEY = 'lowi.dayrecap.last', JOURNAL_KEY = 'lowi.dayrecap.journal.v1';
     const lang = () => { try { return ((W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || H.lang || 'de').slice(0, 2); } catch (e) { return 'de'; } };
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-    const js = k => { try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch (e) { return {}; } };
+    const js = k => { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(k) || '{}')); } catch (e) { return {}; } };
     const core = () => { try { return typeof S !== 'undefined' && S ? S : js('lowispike.v2'); } catch (e) { return js('lowispike.v2'); } };
     const C = () => W.LowiDayRecapCore;
 

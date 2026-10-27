@@ -70,7 +70,7 @@
 
     const W = window, D = document;
     const store = {
-        get() { try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { return {}; } },
+        get() { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { return {}; } },
         set(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) { } }
     };
     function lang() {

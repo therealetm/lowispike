@@ -7,7 +7,7 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const cut = (a, b) => { const i = html.indexOf(a); assert(i >= 0, 'missing ' + a); const j = html.indexOf(b, i); assert(j > i, 'missing ' + b); return html.slice(i, j); };
 
 const g1 = cut('let NEWS = null;', '\n') + '\n' + cut('const KEY = "lowi.g1", GO = "lowi.g1.go", SEEN = "lowi.news.seen";', '\nconst BUILD_NOW') + '\n' + cut('const BUILD_NOW', ';\n') + ';';
-const helpers = cut('function mem(){ try { return JSON.parse(localStorage.getItem(KEY)', '/* ---------- the orb look');
+const helpers = cut('function mem(){ try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY)', '/* ---------- the orb look');
 const news = cut('function newsGo(){', 'function close(how, quick){');
 const tick = cut('function tick(){ if (document.hidden) return; if (TOUR) { helpPlace(); return; }', '/* b2-offer: once per news id */');
 

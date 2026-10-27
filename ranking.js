@@ -194,7 +194,7 @@
     function dayKey(t) { const d = new Date(t); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
     function moves(k, list, now) {
         const sp = K.span(k, now), pk = k + ':' + (sp ? +sp.start : 'all'), today = dayKey(now);
-        let all = {}; try { all = JSON.parse(localStorage.getItem(MV) || '{}') || {}; } catch (e) { all = {}; }
+        let all = {}; try { all = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(MV) || '{}')); } catch (e) { all = {}; }
         let s = all[k]; if (!s || s.pk !== pk || typeof s.cur !== 'object') s = { pk, day: today, cur: {}, prev: null };
         if (s.day !== today) { s.prev = s.cur; s.day = today; }
         const cur = {}; list.forEach(x => { cur[idOf(x.p)] = x.rank; });

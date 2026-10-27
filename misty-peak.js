@@ -211,7 +211,7 @@
     const state = () => { try { return (W.LowiVitalsBridge && W.LowiVitalsBridge.state()) || {}; } catch (e) { return {}; } };
     const pad = n => (n < 10 ? '0' : '') + n;
     const dayKey = t => { const d = new Date(t); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
-    function waterToday(now) { try { const f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}; return +((f.water || {})[dayKey(now)]) || 0; } catch (e) { return 0; } }
+    function waterToday(now) { try { const f = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')); return +((f.water || {})[dayKey(now)]) || 0; } catch (e) { return 0; } }
     let sim = '';
     try { sim = new URLSearchParams(W.location.search).get('peak') || ''; } catch (e) { }
     function now() {

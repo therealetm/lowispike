@@ -334,7 +334,7 @@
     function garden() { const s = S(); if (!s.garden || typeof s.garden !== 'object') s.garden = { trips: {}, items: [] }; s.garden.trips = s.garden.trips || {}; s.garden.items = s.garden.items || []; return s.garden; }
     /* Oct 26: an old automatic trip comes home before anything reads "away", so she is never shown out on her own */
     const live = () => { const s = S(), now = Date.now(); if (s.garden && s.garden.trips && typeof s.garden === 'object') { let n = 0; try { n = settleAuto(s.garden, now); } catch (e) { n = 0; } if (n) save(); } return model({ now, ledger: s.ledger || [], garden: s.garden }); };
-    function waterToday(now) { try { const f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}; return +((f.water || {})[dayKey(now)]) || 0; } catch (e) { return 0; } }
+    function waterToday(now) { try { const f = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')); return +((f.water || {})[dayKey(now)]) || 0; } catch (e) { return 0; } }
     const powerBoost = () => { try { const P = W.LowiMistyPower, r = P && P.read && P.read(); return r ? +r.boost || 0 : 0; } catch (e) { return 0; } };
     /* the gentle day (My cycle): only with cycle tracking on and a gentle day she switched on for today */
     const careInput = now => { try { const L = W.LowiCycle, CC = W.LowiCycleCare; if (!L || !CC || !L.enabled || !L.enabled() || !L.data) return {}; return CC.energyInput(L.data(), dayKey(now)); } catch (e) { return {}; } };

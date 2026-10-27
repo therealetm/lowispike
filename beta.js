@@ -145,7 +145,7 @@
     'use strict';
     const KEY = 'lowispike.thumbs.v1';
     let cache = {};
-    try { cache = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { cache = {}; }
+    try { cache = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { cache = {}; }
     const pending = {};
     const expires = u => { const m = /x-expires=(\d+)/.exec(u || ''); return m ? +m[1] * 1000 : 0; };
     const fresh = u => !!u && (!expires(u) || expires(u) > Date.now() + 5 * 60e3);

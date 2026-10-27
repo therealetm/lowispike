@@ -365,12 +365,12 @@
     function fastHours() {
         let start = 0;
         try { start = W.LowiFastStop && LowiFastStop.startOf ? +LowiFastStop.startOf() || 0 : 0; } catch (e) {}
-        if (!start) { try { start = +(JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}).last || 0; } catch (e) {} }
+        if (!start) { try { start = +((o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}'))).last || 0; } catch (e) {} }
         return start && start <= Date.now() ? (Date.now() - start) / 36e5 : 0;
     }
     function fastStart() {
         try { const s = W.LowiFastStop && LowiFastStop.startOf ? +LowiFastStop.startOf() || 0 : 0; if (s) return s; } catch (e) {}
-        try { return +(JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}).last || 0; } catch (e) { return 0; }
+        try { return +((o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}'))).last || 0; } catch (e) { return 0; }
     }
 
     /* ---------- adventure bar on Home ---------- */

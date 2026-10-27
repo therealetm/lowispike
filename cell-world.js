@@ -276,7 +276,7 @@
     function readInput(now) {
         const s = S(), key = dayKey(now);
         let f = {};
-        try { f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}; } catch (e) {}
+        try { f = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')); } catch (e) {}
         let sun = null;
         try { if (W.LowiSun && W.LowiSun.live) { const v = W.LowiSun.live(); sun = { full: !!(v.full || v.fullDone), away: !!v.away, left: v.left || 0 }; } } catch (e) {}
         let energy = null;

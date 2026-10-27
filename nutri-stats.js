@@ -13,7 +13,7 @@
     const V = () => W.LowiVitalsBridge || null;
     const state = () => { try { return V() && V().state(); } catch (e) { return null; } };
     const fmt = (v, k) => { if (v === null || v === undefined) return '–'; const n = k === 'kcal' ? Math.round(v) : Math.round(v * 10) / 10; return lang() ? String(n).replace('.', ',') : String(n); };
-    const mem = { get() { try { return JSON.parse(localStorage.getItem(PKEY) || '{}') || {}; } catch (e) { return {}; } }, set(m) { try { localStorage.setItem(PKEY, JSON.stringify(m)); } catch (e) { } } };
+    const mem = { get() { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(PKEY) || '{}')); } catch (e) { return {}; } }, set(m) { try { localStorage.setItem(PKEY, JSON.stringify(m)); } catch (e) { } } };
 
     /* the game names: each nutrient is a character stat (like strength in Genshin Impact) */
     const STAT = {

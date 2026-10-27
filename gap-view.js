@@ -155,7 +155,7 @@
         try { if (W.LowiFast && W.LowiFast.stagesFull) { const L = W.LowiFast.stagesFull(); if (L && L.length === 6) return L; } } catch (e) {}
         return FALLBACK;
     }
-    function fastState() { try { return W.LowiFastStop && W.LowiFastStop._st ? W.LowiFastStop._st() : JSON.parse(W.localStorage.getItem('lowi_fast_v1')) || {}; } catch (e) { return {}; } }
+    function fastState() { try { return W.LowiFastStop && W.LowiFastStop._st ? W.LowiFastStop._st() : (o => o && typeof o === "object" ? o : {})(JSON.parse(W.localStorage.getItem('lowi_fast_v1'))); } catch (e) { return {}; } }
     function startOf(f) {
         try { if (W.LowiFastStop && W.LowiFastStop.startOf) return +W.LowiFastStop.startOf(f) || 0; } catch (e) {}
         const h = Array.isArray(f.hist) ? f.hist : [], pe = h.length ? +h[h.length - 1].e || 0 : 0;

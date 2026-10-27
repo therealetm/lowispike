@@ -99,7 +99,7 @@
     /* read the fast exactly like spirit.js fastModel(), never writing anything */
     function model() {
         let f = {};
-        try { f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}; } catch (e) {}
+        try { f = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')); } catch (e) {}
         let start = 0;
         try { start = root.LowiFastStop && LowiFastStop.startOf ? +LowiFastStop.startOf() || 0 : +f.last || 0; } catch (e) { start = +f.last || 0; }
         let goal = +f.target || 16;

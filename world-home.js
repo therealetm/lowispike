@@ -434,7 +434,7 @@
         }
     }
     const HINT_KEY = 'lowi.wh.hint.v1';
-    function hintState() { try { return JSON.parse(localStorage.getItem(HINT_KEY) || '{}') || {}; } catch (e) { return {}; } }
+    function hintState() { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(HINT_KEY) || '{}')); } catch (e) { return {}; } }
     function firstTimer() { const h = hintState(); return !h.travelled && (h.opens || 0) <= 3; }
     function hintNote(k) { try { const h = hintState(); if (k === 'open') { if (st.hintOpenCounted) return; st.hintOpenCounted = true; h.opens = (h.opens || 0) + 1; } else h.travelled = 1; localStorage.setItem(HINT_KEY, JSON.stringify(h)); } catch (e) { } }
     W.addEventListener('lowi:world-warp', ev => { if (ev && ev.detail && ev.detail.phase === 'arrive' && ev.detail.id && ev.detail.id !== 'hub') hintNote('travel'); });
@@ -1196,7 +1196,7 @@
     }
     function waterReset() {
         try {
-            const f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {};
+            const f = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}'));
             if (f.water && typeof f.water === 'object') Object.keys(f.water).forEach(k => { f.water[k] = 0; }); else f.water = {};
             localStorage.setItem('lowi_fast_v1', JSON.stringify(f));
         } catch (e) { }

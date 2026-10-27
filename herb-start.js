@@ -126,7 +126,7 @@ function plan(){const s=S();const p=s&&s.starter;return p&&p.v===2&&Array.isArra
 function setPlan(p){const s=S();if(!s)return;s.starter=p;save();}
 function facts(){let v={};try{v=window.LowiLiving&&LowiLiving.live?LowiLiving.live():{};}catch(e){}
  let fastH=0,best=0,short=false;const p=plan();
- try{const F=window.LowiFastStop;let f={};try{f=JSON.parse(localStorage.getItem('lowi_fast_v1')||'{}')||{};}catch(e){}
+ try{const F=window.LowiFastStop;let f={};try{f=(o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem('lowi_fast_v1')||'{}'));}catch(e){}
   const st=F&&F.startOf?+F.startOf():0;if(st&&st<Date.now())fastH=(Date.now()-st)/36e5;
   const k=dayKey(),hist=Array.isArray(f.hist)?f.hist:[];for(const r of hist){if(r&&dayKey(+r.e)===k)best=Math.max(best,+r.h||0);}
   const last=hist[hist.length-1];short=!!(last&&last.ok===false&&p&&+last.e>+p.created);}catch(e){}
@@ -190,7 +190,7 @@ function onIvClick(e){const b=e.target.closest('[data-hsi]');if(!b||!IV)return;c
  if(a==='back'){IV.step=Math.max(-1,IV.step-1);ivPaint();return;}
  if(a==='skip'){delete IV.answers[C.QUESTIONS[IV.step].id];ivNext();return;}
  if(a==='opt'){IV.answers[C.QUESTIONS[IV.step].id]=b.getAttribute('data-v');b.parentNode.querySelectorAll('.hs-opt').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-checked',x===b);});setTimeout(ivNext,reduce()?60:220);return;}
- if(a==='done'){const p=IV.plan;p.asked={};setPlan(p);pendClear();try{const ft=C.fastTarget&&C.fastTarget(IV.answers),FK='lowi_fast_v1';if(ft){const fs=JSON.parse(localStorage.getItem(FK)||'{}')||{};fs.target=ft;localStorage.setItem(FK,JSON.stringify(fs));window.LowiFast&&LowiFast.refresh&&LowiFast.refresh();}}catch(e){}ivClose();try{window.LowiHost&&LowiHost.go('home');}catch(e){}try{R().toast&&R().toast(t('saved'));}catch(e){}refresh();setTimeout(refresh,400);setTimeout(refresh,1000);return;}}
+ if(a==='done'){const p=IV.plan;p.asked={};setPlan(p);pendClear();try{const ft=C.fastTarget&&C.fastTarget(IV.answers),FK='lowi_fast_v1';if(ft){const fs=(o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(FK)||'{}'));fs.target=ft;localStorage.setItem(FK,JSON.stringify(fs));window.LowiFast&&LowiFast.refresh&&LowiFast.refresh();}}catch(e){}ivClose();try{window.LowiHost&&LowiHost.go('home');}catch(e){}try{R().toast&&R().toast(t('saved'));}catch(e){}refresh();setTimeout(refresh,400);setTimeout(refresh,1000);return;}}
 
 /* Today: one row; the sheet holds the steps, "Why this?", Go, Change, and the friction question when it's due */
 function rowHTML(p){const f=facts(),st=status(p,f),done=st.filter(x=>x.done).length,next=st.find(x=>!x.done),q=C.frictionDue(p,f),n=st.length,herb=herbName();

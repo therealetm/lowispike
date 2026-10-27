@@ -209,7 +209,7 @@
     const svg = k => '<svg class="hb2-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + (P[k] || '') + '</svg>';
 
     /* ---------- readers (no writes) ---------- */
-    const fastStore = () => { try { return JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}; } catch (e) { return {}; } };
+    const fastStore = () => { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')); } catch (e) { return {}; } };
     const appState = () => { try { return W.LowiVitalsBridge && W.LowiVitalsBridge.state ? W.LowiVitalsBridge.state() : null; } catch (e) { return null; } };
     const moveView = () => { try { const C = W.LowiMoveEstimateCore, s = appState(); return C && fn(C, 'view') && s ? C.view(s.ledger || [], dayKey()) : null; } catch (e) { return null; } };
 

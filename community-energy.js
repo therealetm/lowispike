@@ -159,7 +159,7 @@ const COPY={joy:['Energy hit: drag to aim your companion, let go to send energy'
 function lang(){try{return Math.max(0,['en','de','es'].indexOf((W.LowiLang&&W.LowiLang.get())||localStorage.getItem('lowispike.lang')||'en'));}catch(e){return 0;}}
 function tr(k,n){return String(COPY[k][lang()]||COPY[k][0]).replace('{n}',n||'');}
 const reduced=()=>!!(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches);
-function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){return {};}}
+function load(){try{return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){return {};}}
 function store(st){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}}
 let gal=null,joy=null,knob=null,fx=null,ctx=null,live=null,tb=null,tbReduced=null,raf=0,lastT=0,drag=null,aimNow=null,fxList=[],lastPlace=0,slow=false,dpr=1;
 /* real-time sync state: my send bucket, per-shooter buckets, the inbox cap, ids already seen, each sender's smallest clock delta */

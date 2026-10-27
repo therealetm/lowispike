@@ -14,7 +14,7 @@
     const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
     const t = (en, de, es) => wnm([en, de, es][li()]);
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const js = k => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { return {}; } };
+    const js = k => { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(k))); } catch (e) { return {}; } };
     const S = () => { try { const v = V(); return v && v.state ? v.state() : null; } catch (e) { return null; } };
     const save = () => { try { V().save(); } catch (e) {} };
     const toast = m => { try { R.toast ? R.toast(m) : null; } catch (e) {} };

@@ -56,7 +56,7 @@
     /* Oct 21: the offset of the picked time, not of now: a start before the clock change reads UTC+2, after it UTC+1 */
     const tzLabel = t => { const z = tz(); let o = ''; try { o = C() && C().offsetLabel ? C().offsetLabel(t) : ''; } catch (e) {} return z ? z.replace(/_/g, ' ') + (o ? ', ' + o : '') : o; };
     const sfx = n => { try { W.LowiSFX && LowiSFX.play(n); } catch (e) {} };
-    function st() { let s; try { s = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { s = {}; } if (!s || typeof s !== 'object') s = {}; return s; }
+    function st() { let s; try { s = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY))); } catch (e) { s = {}; } if (!s || typeof s !== 'object') s = {}; return s; }
     /* Oct 24 gaptime: the logged meals (S.logs via LowiFastStop), so the edit can move the meal the Gap counts from */
     function meals() { try { if (W.LowiFastStop && LowiFastStop.mealList) return LowiFastStop.mealList() || []; } catch (e) {} return []; }
     const mealName = m => { const n = m && m.t ? String(m.t).trim() : ''; return n ? (n.length > 40 ? n.slice(0, 39) + '\u2026' : n) : w('meal'); };

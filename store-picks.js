@@ -34,7 +34,7 @@
 
     const label = id => id === 'general' ? T('All supermarkets', 'Alle Supermärkte', 'Todos los supermercados') : (RANGE[id] ? RANGE[id].label : id);
     let S = {};
-    try { S = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { S = {}; }
+    try { S = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { S = {}; }
     const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
     /* Oct 22, 2026: a shop saved from the old bundled list (one region only) is dropped; the chain choice stays. Only shops found
        around the person themselves (ids "osm:...") are remembered, by name and address, never by position. */

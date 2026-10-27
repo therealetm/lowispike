@@ -1808,7 +1808,7 @@ const lang = () => { try { const l = (localStorage.getItem("lowispike.lang") || 
 const w = (k, o) => { let s = W[lang()][k]; if (o) Object.keys(o).forEach(x => { s = s.replace("{" + x + "}", o[x]); }); return s; };
 const p2 = n => (n < 10 ? "0" : "") + n;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"})[c]);
-function st(){ try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; } }
+function st(){ try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY))); } catch(e){ return {}; } }
 function put(s){ try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e){} }
 function target(){ const t = +st().target; return OPTS.indexOf(t) >= 0 ? t : 16; }
 function hm(d){ return p2(d.getHours()) + ":" + p2(d.getMinutes()); }
@@ -2022,7 +2022,7 @@ const hTxt = h => { const m = Math.round(h * 60); return m % 60 ? Math.floor(m /
 const dtLocal = t => { const d = new Date(t); return d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()) + "T" + hm(t); };
 const sfx = n => { try { window.LowiSFX && LowiSFX.play(n); } catch(e){} };
 
-function st(){ let s; try { s = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ s = {}; } if (!s.water) s.water = {}; if (!Array.isArray(s.hist)) s.hist = []; return s; }
+function st(){ let s; try { s = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY))); } catch(e){ s = {}; } if (!s.water) s.water = {}; if (!Array.isArray(s.hist)) s.hist = []; return s; }
 function put(s){ try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e){} }
 /* nofake (Oct 19, E-man on a fresh account: "I've been fasting for nineteen hours. It doesn't make sense."):
    no meal known = no gap. Builds up to 20261019-150120 wrote a guessed start (8 PM yesterday, exactly 20:00:00.000) for every
@@ -2159,7 +2159,7 @@ function unmeal(id, ts, o){ o = o || {}; id = String(id || ""); const s = st(), 
   let m = i >= 0 ? tr[i] : null; ts = +ts || (m ? m.t : 0); let changed = false;
   if (m && +s.last === m.t) {
     if (m.rs) { s.hist = s.hist.filter(r => !(+r.s === m.rs && +r.e === m.t)); unaward("fast:" + m.rs);
-      if (m.b) { unaward("f2_break:" + m.rs); try { const k = "lowi.f2.v1", f = JSON.parse(localStorage.getItem(k) || "{}") || {}; if (Array.isArray(f.b)) { f.b = f.b.filter(x => +x !== m.rs); localStorage.setItem(k, JSON.stringify(f)); } } catch(e){} } }
+      if (m.b) { unaward("f2_break:" + m.rs); try { const k = "lowi.f2.v1", f = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(k) || "{}")); if (Array.isArray(f.b)) { f.b = f.b.filter(x => +x !== m.rs); localStorage.setItem(k, JSON.stringify(f)); } } catch(e){} } }
     if (m.aw) s.awarded = m.aw; else delete s.awarded;
     if (m.p) s.last = m.p; else delete s.last; changed = true; }
   else if (!m && ts && Math.abs((+s.last || 0) - ts) < 1000) { /* older meals (before gapfix): no trail, so no points move; the fast record goes, and it can't pay again */
@@ -2466,7 +2466,7 @@ const T = k => { const r = D[k]; if (!r) return k; return r[LANG()] || r.en; };
 const NT = o => { if (!o) return ""; if (typeof o === "string") return o; return o[LANG()] || o.en || ""; };
 
 /* ---------- memory ---------- */
-function mem(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch(e){ return {}; } }
+function mem(){ try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY) || "{}")); } catch(e){ return {}; } }
 function remember(p){ const m = Object.assign(mem(), p); try { localStorage.setItem(KEY, JSON.stringify(m)); } catch(e){} return m; }
 /* news seen-state: an id is shown once, in the banner OR in one bubble, never again (relaunch, tabs, Later) */
 function seenList(){ try { const a = JSON.parse(localStorage.getItem(SEEN) || "[]"); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
@@ -5933,7 +5933,7 @@ function fsLoc(){ const u = FS_UI[fsLang()]; STAGES.forEach((s, i) => { const r 
 
 /* nofake (Oct 19): never invents a last meal any more. This used to write "8 PM yesterday" for every new device, so a fresh
    account showed a fast it never did ("fasting for 19 hours"). No last meal = no fast: hrs() is 0 and the card stays hidden. */
-function st(){ let s; try { s = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ s = {}; }
+function st(){ let s; try { s = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY))); } catch(e){ s = {}; }
   if (!s.water) s.water = {}; return s; }
 const known = () => { const l = +st().last || 0; return l > 0 && l <= Date.now(); };
 function put(s){ try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e){} }
@@ -13432,7 +13432,7 @@ const SESS = [
 const sessMin = s => Math.round((s.s.reduce((a, x) => a + x[1], 0) + (s.norest ? 0 : (s.s.length - 1) * 8)) / 60);
 
 /* ---------- helpers ---------- */
-function fastSt(){ try { return JSON.parse(localStorage.getItem("lowi_fast_v1") || "{}") || {}; } catch(e){ return {}; } }
+function fastSt(){ try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem("lowi_fast_v1") || "{}")); } catch(e){ return {}; } }
 function fastSave(o){ try { localStorage.setItem("lowi_fast_v1", JSON.stringify(o)); } catch(e){} }
 function r3(){ return R3A.st(); }
 const todayK = () => today();
@@ -19023,7 +19023,7 @@ const xpPill = n => '<span class="f2-xpp">+' + n + ' XP</span>';
 function mealXP(){ const VB = window.LowiVitalsBridge, p = window.LowiDex && LowiDex.cur ? LowiDex.cur() : null; if (VB && VB.mealXp) return VB.mealXp(F.mode === "bc" && p ? {code:p.code || p.barcode || "", t:p.name || p.brand || "", lvl:(LV[p.verdict] || [""])[0]} : null); return logsToday() < 8 ? 15 : 0; }
 function bonusOpen(){ return !!(F.fast && F.fast.s && !bonusDone(F.fast.s)); }
 function bonusDone(s){ try { return (JSON.parse(localStorage.getItem(SEEN) || "{}").b || []).indexOf(s) >= 0; } catch(e){ return false; } }
-function mem(){ try { return JSON.parse(localStorage.getItem(SEEN) || "{}") || {}; } catch(e){ return {}; } }
+function mem(){ try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(SEEN) || "{}")); } catch(e){ return {}; } }
 function remember(o){ try { localStorage.setItem(SEEN, JSON.stringify(Object.assign(mem(), o))); } catch(e){} }
 
 function stepEat(){ F.step = "eat"; F.mode = ""; const x = mealXP() + (bonusOpen() ? BONUS : 0);
@@ -19303,7 +19303,7 @@ const w = (k, o) => { let s = W[lang()][k] || W.en[k] || k; if (o) for (const x 
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pad = n => String(n).padStart(2, "0");
 const dk = d => { d = d || new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); };
-const js = k => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch(e){ return {}; } };
+const js = k => { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(k))); } catch(e){ return {}; } };
 const core = () => { try { return typeof S !== "undefined" && S ? S : js("lowispike.v2"); } catch(e){ return js("lowispike.v2"); } };
 const sfx = n => { try { window.LowiSFX && LowiSFX.play(n); } catch(e){} };
 const ICON = {checkin:"☀️", water:"💧", fast:"⏳", eat:"🍽️", move:"🏃", post:"📣"};
@@ -20680,7 +20680,7 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp
 const p2 = n => String(n).padStart(2, "0");
 const dk = d => p2(d.getFullYear()) + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate());
 const sfx = n => { try { window.LowiSFX && LowiSFX.play(n); } catch(e){} };
-const js = k => { try { return JSON.parse(localStorage.getItem(k) || "{}") || {}; } catch(e){ return {}; } };
+const js = k => { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(k) || "{}")); } catch(e){ return {}; } };
 const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
 const nowD = () => new Date(T0 ? T0 : Date.now());
 let T0 = 0;   /* tests: fixed "now" */
@@ -20878,7 +20878,7 @@ const GAP = {few:4, normal:2, more:1};
 const DEF = {on:true, freq:"normal", qs:22, qe:7};
 const LANG = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || H.lang || "en"; } catch(e){} l = String(l).slice(0, 2); return l === "de" || l === "es" ? l : "en"; };
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const js = k => { try { return JSON.parse(localStorage.getItem(k) || "{}") || {}; } catch(e){ return {}; } };
+const js = k => { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(k) || "{}")); } catch(e){ return {}; } };
 const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
 const sfx = n => { try { if (window.LowiAudio && LowiAudio.play) LowiAudio.play(n); } catch(e){} };
 const dk = d => { d = d || new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
@@ -21126,7 +21126,7 @@ const PUB = "BLNmn2O2yRpMS7JukbXrgnYu157fNv317XnjgtVWzEyLuWMBupmX4Q1a0wid-4r6p0u
 const N = () => window.LowiN1 || null;
 const LANG = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || D.documentElement.lang || "en"; } catch(e){} l = String(l).slice(0, 2); return l === "de" || l === "es" ? l : "en"; };
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const js = k => { try { return JSON.parse(localStorage.getItem(k) || "{}") || {}; } catch(e){ return {}; } };
+const js = k => { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(k) || "{}")); } catch(e){ return {}; } };
 const st = () => js(KEY);
 const save = p => { const s = Object.assign(st(), p || {}); try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e){} return s; };
 

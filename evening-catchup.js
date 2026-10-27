@@ -27,7 +27,7 @@
     const S = () => { try { return (W.LowiR2 && W.LowiR2.S && W.LowiR2.S()) || {}; } catch (e) { return {}; } };
     const B = () => W.LowiVitalsBridge || null;
     const today = () => C.dayKey(Date.now());
-    const get = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? d : v; } catch (e) { return d; } };
+    const get = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null || (d !== null && typeof d === 'object' && (!v || typeof v !== 'object')) ? d : v; } catch (e) { return d; } }; /* bug hunt 55: a store saved as a number or text gives the default object, not a value that throws on write */
     const put = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
     const buzz = ms => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { } };
     const speak = s => { try { if (s && W.LowiVoice && !(W.LowiAudio && W.LowiAudio.muted && W.LowiAudio.muted())) W.LowiVoice.speak(s, { lang: lang(), queue: false, onlyClips: true }); } catch (e) { } };

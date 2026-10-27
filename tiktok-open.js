@@ -126,7 +126,7 @@
     });
   }
   var tried = {}, busy = 0, queue = [];
-  try { tried = JSON.parse(W.sessionStorage.getItem('lowi.tt.tried') || '{}') || {}; } catch (e) { tried = {}; }
+  try { tried = (o => o && typeof o === "object" ? o : {})(JSON.parse(W.sessionStorage.getItem('lowi.tt.tried') || '{}')); } catch (e) { tried = {}; }
   function mark(id) { tried[id] = 1; try { W.sessionStorage.setItem('lowi.tt.tried', JSON.stringify(tried)); } catch (e) {} }
   function pump(onMeta) {
     while (busy < 2 && queue.length) {

@@ -73,7 +73,7 @@
     const SEEN_KEY = 'lowi.adv.seen';
     function S() { try { return W.LowiVitalsBridge && W.LowiVitalsBridge.state ? W.LowiVitalsBridge.state() : null; } catch (e) { return null; } }
     function seen() {
-        let dev = {}; try { dev = JSON.parse(localStorage.getItem(SEEN_KEY)) || {}; } catch (e) { }
+        let dev = {}; try { dev = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(SEEN_KEY))); } catch (e) { }
         const s = S(), acc = (s && s.advSeen && typeof s.advSeen === 'object') ? s.advSeen : {};
         const out = {}; [dev, acc].forEach(o => Object.keys(o).forEach(k => { const v = +o[k] || 0; if (v && (!out[k] || v < out[k])) out[k] = v; }));
         return seedFromLedger(out, s && (s.ledger || s.xpLog));

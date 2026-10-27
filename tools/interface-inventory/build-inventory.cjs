@@ -48,8 +48,23 @@ function nameOf(s, tab) {
   if (last) return short(last.name);
   return { 'hb2-water': 'Wasser-Men\u00fc', 'hb2-sleep': 'Schlaf-Men\u00fc', 'hb2-move': 'Move-Men\u00fc' }[(String(s.key).match(/hb2-(water|sleep|move)/) || [])[0]] || ({ 'tab-shelf': 'Cook / Shop', 'tab-profile': 'Profil', 'tab-move': 'Move', 'tab-scan': 'Scan', 'tab-foryou': 'Community' }[tab]) || s.key || tab;
 }
+/* fixes for surfaces whose detected name is a CSS class or that sit in the wrong area (by first screenshot file) */
+const FIX = { 'hcomm-002': ['C', 'Community-Einstellungen (gedr\u00fcckt halten)'], 'comm-005': ['C', 'Profilkarte in der Community'],
+  'hmisty-002': ['H', 'Mistys Karte (gedr\u00fcckt halten)'], 'hmisty-005': ['H', 'Mistys Karte: Weltleuchten & Energie'] };
+const GENERIC = /^(Kochen|Community|Bewegung|Misty|Profil|Move|Deine Daten|Essenspause)$/;
+const normSig = sg => { sg = String(sg || '').replace('#app.', ''); return /^tab-home\|\|\|/.test(sg) ? 'HOME' : sg; };
 const items = [], bySig = new Map();
 function add(e) {
+  e.sig = normSig(e.sig);
+  if (e.sig === 'HOME' && e.area !== 'T') { e.area = 'H'; e.name = 'Home (Startseite)'; e.path = 'App \u00f6ffnen'; e.depth = 0; }
+  if (/^[.#]/.test(e.name)) e.name = /hb2-fuel/.test(e.name) ? 'Essen-Men\u00fc' : /hb2-water/.test(e.name) ? 'Wasser-Men\u00fc' : /hb2-sleep/.test(e.name) ? 'Schlaf-Men\u00fc' : /hb2-move/.test(e.name) ? 'Move-Men\u00fc' : e.name;
+  if (/hb2-all/.test(e.name)) e.name = 'Alle Blasen (Schnell\u00fcbersicht)';
+  if (/^Home \u2192 Misty gedr\u00fcckt halten/.test(e.path) && e.area !== 'X') e.area = 'H';
+  if (e.last && GENERIC.test(e.name) && short(e.last).indexOf(e.name) === 0) e.name = short(e.last);
+  if (!e.name || e.name === 'undefined') e.name = (e.code && e.code[0]) || 'Unbenanntes Fenster';
+  if (/^WIE IMMER/i.test(e.name)) e.name = 'Mahlzeit eintragen';
+  if (e.last && GENERIC.test(e.name) && e.depth > 1 && short(e.last) !== e.name) e.name = e.name + ' \u2013 ' + short(e.last);
+  const fx = FIX[(e.files[0] || '').replace('.jpg', '')]; if (fx) { e.area = fx[0]; e.name = fx[1]; }
   const k = e.sig + '|' + (e.dedupe || '');
   const prev = bySig.get(k);
   if (prev) { prev.files.push(...e.files.filter(f => !prev.files.includes(f))); if (e.depth < prev.depth) { prev.path = e.path; prev.depth = e.depth; } if (e.reachable) prev.reachable = true; return; }
@@ -63,7 +78,7 @@ for (const f of files.filter(f => /^[a-z]+\.json$/.test(f) && !/^(api|inventory)
     if (!exists(s.id + '.jpg')) continue;
     const tab = s.tab || '', home = !s.steps.length || (s.via === 'start');
     add({ sig: home ? 'HOME' : s.sig, area: home ? 'H' : area(run, s.sig, tab, s.key), name: home ? 'Home (Startseite)' : nameOf(s, tab),
-      path: home ? 'App \u00f6ffnen' : tapPath(run, s.steps), depth: home ? 0 : s.steps.length, files: [s.id + '.jpg'], reachable: true, src: run, via: s.via, txt: (s.txt || '').slice(0, 120) });
+      path: home ? 'App \u00f6ffnen' : tapPath(run, s.steps).replace(/^.*\u201eZur\u00fcck zur Startseite\u201c antippen/, 'Home'), last: ((s.steps || []).filter(x => x.kind === 'tap' && x.name && x.name !== '__').pop() || {}).name, depth: home ? 0 : s.steps.length, files: [s.id + '.jpg'], reachable: true, src: run, via: s.via, txt: (s.txt || '').slice(0, 120) });
   }
 }
 for (const f of files.filter(f => /^walk-[a-z]+\.json$/.test(f))) {
@@ -74,13 +89,21 @@ for (const f of files.filter(f => /^walk-[a-z]+\.json$/.test(f))) {
 if (exists('api.json')) {
   for (const s of JSON.parse(fs.readFileSync(path.join(OUT, 'api.json'), 'utf8'))) {
     if (!s.changed || !exists(s.id + '.jpg')) continue;
-    const k = s.sig + '|';
+    const k = normSig(s.sig) + '|';
+    if (k === 'HOME|') continue;
     if (bySig.has(k)) { const p = bySig.get(k); p.code = (p.code || []).concat(s.call); if (!p.files.includes(s.id + '.jpg')) p.altFiles = (p.altFiles || []).concat(s.id + '.jpg'); continue; }
-    add({ sig: s.sig, area: 'X', name: s.head || s.call, path: 'Kein Tap-Weg gefunden (nur per Code: ' + s.call + ')', depth: 99, files: [s.id + '.jpg'], reachable: false, src: 'api', code: [s.call], realArea: area('api', s.sig, s.tab, s.key), txt: (s.txt || '').slice(0, 120) });
+    add({ sig: s.sig, area: 'X', name: s.head || (s.txt ? short(s.txt) : s.call), path: 'Kein Tap-Weg gefunden (nur per Code: ' + s.call + ')', depth: 99, files: [s.id + '.jpg'], reachable: false, src: 'api', code: [s.call], realArea: area('api', s.sig, s.tab, s.key), txt: (s.txt || '').slice(0, 120) });
   }
 }
 /* iPad shots: ipad-<id>.jpg next to the phone shot of the same interface, listed in ipad.json as {phoneId, file} */
 if (exists('ipad.json')) for (const p of JSON.parse(fs.readFileSync(path.join(OUT, 'ipad.json'), 'utf8'))) { const it = items.find(i => i.files.includes(p.phoneId + '.jpg')); if (it && exists(p.file)) it.ipad = (it.ipad || []).concat(p.file); }
+/* a code-only surface with the same name as a reachable one is the same screen: keep it as alternative shot */
+for (let i = items.length - 1; i >= 0; i--) { const it = items[i]; if (it.area !== 'X') continue;
+  const tw = items.find(o => o.reachable && o.name.toLowerCase() === String(it.name).replace(/^F /, '').split(' ').slice(0, 2).join(' ').toLowerCase() || o.reachable && o.name === it.name);
+  if (tw) { tw.code = (tw.code || []).concat(it.code || []); items.splice(i, 1); } }
+for (let i = items.length - 1; i >= 0; i--) { const it = items[i]; if (!/^Home \u2192/.test(it.path) || it.src === undefined) continue;
+  const tw = items.find(o => o !== it && o.area === it.area && o.name === it.name && o.depth <= it.depth);
+  if (tw && /tmove|tshelf|tprof|tscan/.test(it.src)) { tw.files.push(...it.files.filter(f => !tw.files.includes(f))); items.splice(i, 1); } }
 const ORDER = ['H', 'C', 'F', 'M', 'S', 'W', 'G', 'SL', 'P', 'T', 'X'];
 items.sort((a, b) => ORDER.indexOf(a.area) - ORDER.indexOf(b.area) || a.depth - b.depth || a.path.localeCompare(b.path, 'de'));
 const cnt = {};

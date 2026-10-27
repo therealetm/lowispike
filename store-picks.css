@@ -453,6 +453,10 @@ button.stp-again:active { background: rgba(255, 255, 255, .13); }
 @media (max-width: 699.98px) { .stp-card > .stp-head .stp-titlerow h3, .stp-card .wb-inline > .wb-head, .stp-card .wb-inline > .wb-head * { touch-action: none; } }
 /* a swipe that starts on the little house icon in the title must still pull Shop down: icons let touches through to the title */
 .stp-card .wb-inline > .wb-head svg, .stp-titlerow svg, .stp-tabs svg { pointer-events: none; }
+/* the icon swap (spirit.js) wraps a title's words in a display:contents span; a touch on those words then got no touch-action
+   of its own, so the browser began a pan and cancelled the drag (swipe down on the From home title did nothing). A real box
+   carries the title's touch-action: none. */
+.stp-card .wb-inline > .wb-head .sp-ui-copy, .stp-card > .stp-head .sp-ui-copy, .stp-card > .sz-head .sp-ui-copy { display: inline; }
 @media (max-width: 360px) { .stp-titlerow h3, .stp-card .wb-inline > .wb-head h3 { font-size: 19px; } }
 @media (prefers-reduced-motion: reduce) { .stp-snackbox-go { transition: none; } .stp-cartbtn:active { transform: none; } }
 /* four tabs on one line each: words are kept short (Súper, Ayudar, Help out) and never hyphenated */

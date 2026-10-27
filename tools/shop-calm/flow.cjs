@@ -155,14 +155,8 @@ const VP = process.env.VP === 'se' ? { width: 375, height: 667 } : { width: 390,
     } else ok(false, 'Put it in my Cart button found');
     if (!(await isOpen())) { await open(); await page.waitForTimeout(700); }
     if (await page.locator('.stp-card .wb-inline').count()) {
-        console.log('    dbg ' + JSON.stringify(await page.evaluate(() => { const h = document.querySelector('.wb-inline > .wb-head h3'); const r = h.getBoundingClientRect(); const top = document.elementFromPoint(r.left + 40, r.top + r.height / 2); return { r: [r.left, r.top, r.width, r.height], top: top && top.className, ta: getComputedStyle(h).touchAction, qv: !!document.querySelector('.stp-qv') }; })));
-        console.log('    dbg3 ' + JSON.stringify(await page.evaluate(() => { const out = []; let n = document.querySelector('.wb-inline > .wb-head h3'); while (n && n !== document.body) { const cs = getComputedStyle(n); out.push((n.className || n.tagName).toString().slice(0, 30) + ' ov=' + cs.overflowY + ' ta=' + cs.touchAction + ' sh=' + n.scrollHeight + '/' + n.clientHeight); n = n.parentElement; } return out; })));
-        await page.evaluate(() => { window.__pl = []; const o = document.querySelector('.stp-ov'); ['pointerdown','pointermove','pointerup','pointercancel'].forEach(t => o.addEventListener(t, e => window.__pl.push(t + ':' + e.target.isConnected + ':' + (e.target.className || e.target.tagName) + ':' + Math.round(e.clientY) + ':' + document.querySelector('.stp-card').style.transform), true)); });
         await swipeDown('.wb-inline > .wb-head h3', 260);
-        console.log('    dbg2 ' + JSON.stringify(await page.evaluate(() => window.__pl.filter((x, i) => i < 4 || i > window.__pl.length - 3))));
         ok(!(await isOpen()), 'swipe down on the From home title closes Shop');
-        if (await isOpen()) { const sh = await page.evaluate(() => document.querySelector('.stp-titlerow h3') ? 'n/a' : document.querySelector('.wb-inline > .wb-head').outerHTML.slice(0, 600)); console.log('    dbg5 ' + sh); }
-        if (await isOpen()) { await swipeDown('.stp-card [data-stp-tab="home"]', 260); console.log('    dbg4 tabbar on home closes: ' + !(await isOpen())); }
     }
     await open(); await page.waitForTimeout(800);
     ok(await page.evaluate(() => window.LowiStorePicks.tab() === 'home'), 'Shop reopens on From home (remembered)');
@@ -176,9 +170,7 @@ const VP = process.env.VP === 'se' ? { width: 375, height: 667 } : { width: 390,
     await open(); await page.waitForTimeout(800);
     await swipeDown('.stp-titlerow h3', 40);
     ok(await isOpen(), 'a short drag springs back and leaves Shop open');
-    await page.evaluate(() => { window.__pl = []; const o = document.querySelector('.stp-ov'); ['pointerdown','pointermove','pointerup','pointercancel'].forEach(t => o.addEventListener(t, e => window.__pl.push(t + ':' + (e.target.className || e.target.tagName) + ':' + Math.round(e.clientY)), true)); });
     await swipeDown('.stp-titlerow h3', 260);
-    console.log('    dbg6 ' + JSON.stringify(await page.evaluate(() => window.__pl.slice(0, 4))) + JSON.stringify(await page.evaluate(() => document.querySelector('.stp-titlerow') && document.querySelector('.stp-titlerow').outerHTML.slice(0, 300))));
     ok(!(await isOpen()), 'swipe down on the Supermarket title closes Shop');
     await open(); await page.waitForTimeout(800);
 

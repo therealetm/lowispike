@@ -46,7 +46,7 @@ test('the meal card: name, ingredients, six nutrition values, likely blood sugar
         const h = M.cardHTML(m, { lang: l });
         assert.match(h, /Chicken stew/); assert.match(h, /Potatoes/); assert.match(h, /150 g/);
         assert.match(h, /420/); assert.match(h, /ms-bs ms-bs-(low|mid|high)/);
-        assert.ok(h.includes(M.t('bsL', l)), l + ': says likely blood sugar response');
+        assert.ok(h.includes(M.t(h.match(/ms-bs-(low|mid|high)/)[1], l)), l + ': says Insulin-friendly or not');
         assert.ok(h.includes(M.t('note', l)), l + ': says it is an estimate, not measured');
     }
     assert.match(M.t('note', 'en'), /not measured/);

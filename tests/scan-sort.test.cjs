@@ -45,12 +45,12 @@ test('core: split keeps Low-spike and Now and then once each; Throw out holds on
 });
 
 test('core: Kept out of Shuffle copy exists in EN, DE and ES, in the scanner\'s words, with no insulin promise', () => {
-    assert.equal(S.text('verdict', 'en'), 'Spike likely');
-    assert.equal(S.text('verdict', 'de'), 'Spike wahrscheinlich');
-    assert.equal(S.text('verdict', 'es'), 'Pico probable');
+    assert.equal(S.text('verdict', 'en'), 'Not insulin-friendly');
+    assert.equal(S.text('verdict', 'de'), 'Nicht insulinfreundlich');
+    assert.equal(S.text('verdict', 'es'), 'No apto para la insulina');
     assert.equal(S.text('row', 'en').replace('{n}', 3), '3 scans kept out of Shuffle');
     for (const k of Object.keys(S.TX)) { assert.equal(S.TX[k].length, 3, k); S.TX[k].forEach(v => assert(v && v.trim(), k)); }
-    assert.doesNotMatch(JSON.stringify(S.TX), /bad|shame|guilt|schlecht|malo|insulin/i);
+    assert.doesNotMatch(JSON.stringify(S.TX), /bad|shame|guilt|schlecht|malo/i);
     assert.equal(S.TX.line, undefined);
 });
 

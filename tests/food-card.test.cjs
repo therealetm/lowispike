@@ -26,15 +26,15 @@ test('food card: Ultje Süß & Salzig is NEIN with the spec reasons, a 30 g serv
     assert.equal(m.alternative.key, 'sweet_nut_snack');
     const h = C.cardHTML(clone(ULTJE), 0);
     assert.match(h, /class="sc-sec fc-card fc-nein"/);
-    assert.match(h, /<strong class="fc-word">Skip it<\/strong>/);
-    assert.match(h, /Blood sugar impact: <b>Moderate<\/b>/);
+    assert.match(h, /<strong class="fc-word">Not insulin-friendly<\/strong>/);
+    assert.doesNotMatch(h, /Blood sugar impact: <b>/, '27 Oct 2026: no impact level next to the verdict');
     assert.match(h, /Per 30 g serving/);
     assert.match(h, /25–30 g plain roasted almonds/);
     assert.equal((h.match(/<li>/g) || []).length, 3);
 });
 
 test('food card: verdict words and texts in EN, DE and ES, never "no spike"', () => {
-    const words = { 0: ['Skip it', 'Everyday'], 1: ['Lieber nicht', 'Alltag'], 2: ['Mejor no', 'Diario'] };
+    const words = { 0: ['Not insulin-friendly', 'Insulin-friendly'], 1: ['Nicht insulinfreundlich', 'Insulinfreundlich'], 2: ['No apto para la insulina', 'Apto para la insulina'] };
     for (const li of [0, 1, 2]) {
         const u = C.cardHTML(clone(ULTJE), li), s = C.cardHTML(clone(SKYR), li), d = C.detailsHTML(clone(ULTJE), li);
         assert.ok(u.includes('<strong class="fc-word">' + words[li][0] + '</strong>'), 'ultje word ' + li);

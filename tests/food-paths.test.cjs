@@ -132,8 +132,8 @@ test('plain words: no "Hunt" / "Cart" jargon, and no insulin claims in the shopp
     assert.ok(!/Healthy days start at the shop/.test(gh));
     assert.match(gh, /T\('Shop finds', 'Ladenfunde', 'Hallazgos en la tienda'\)/);
     assert.match(core, /cart: \['Shopping list', 'Einkaufsliste', 'Lista de compra'\]/);
-    for (const s of [core, sp]) assert.ok(!/'[^']*[Ii]nsulin[^']*'/.test(s.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '')), 'no insulin wording in UI strings');
-    assert.match(html, /spike: \["Higher estimated blood sugar impact", "Höhere geschätzte Wirkung auf den Blutzucker", "Impacto estimado más alto en el azúcar en sangre"\]/);
+    /* 27 Oct 2026 (Emmanuel): the one verdict is Insulin-friendly / Not insulin-friendly everywhere */
+    assert.match(html, /spike: \["Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina"\]/);
 });
 
 test('Gap "I just ate" / "I ate earlier" open the one shared meal logger, optional, keeping the time', () => {

@@ -168,3 +168,32 @@ html:not([data-lay=phone]) body #lcShop { left: calc(var(--side, 0px) + max(0px,
   html body #lsCart .cs-glow { animation: none; }
   html body #lcShop { transition: none; }
 }
+
+/* 27 Oct 2026 (Emmanuel): one verdict everywhere. A food or meal is either Insulinfreundlich (green) or Nicht insulinfreundlich
+   (red), in EN / DE / ES the same. The old middle level (mid / medium / better / SELTEN) used to be yellow; it is not
+   insulin-friendly, so it wears the red of the not-friendly side on every surface. Loaded last so it wins. */
+.cs-meal-mid i { background: var(--hi, #f0a08a) !important; }
+.md-lv-mid i, .md-ing .md-i-selten i { background: var(--hi, #f0a08a) !important; }
+.mj-bs-mid i { background: var(--hi, #f0a08a) !important; }
+.ms-bs-mid i { background: #f07167 !important; box-shadow: 0 0 0 3px rgba(240, 113, 103, .25) !important; }
+.gb-dot.v-better { background: var(--hi, #ff6b6b) !important; }
+.kg-m-better, .kg-dot.kg-better { background: #ff6b5f !important; }
+.ne-chip.v-better i { background: #ff6b6b !important; color: #ff6b6b !important; }
+.sc-dot.v-better { background: rgba(255, 80, 90, .3) !important; border: 1px solid rgba(255, 120, 120, .7) !important; }
+.sc-verd.v-better { border-color: rgba(255, 120, 120, .75) !important; background: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, rgba(255, 80, 90, .26), rgba(120, 20, 40, .42)) !important; box-shadow: inset 0 0 18px rgba(255, 140, 140, .28) !important; }
+html:root body .r2-ov.ss-sheet .mr-verdict.mr-mid, .mr-verdict.mr-mid { --mr-c: 255, 122, 107 !important; }
+html:root body .r2-ov.ss-sheet:not(.full) .b3-card.v-better { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), inset 0 0 0 1px rgba(255, 122, 107, .32), 0 18px 40px -20px rgba(0, 0, 0, .7) !important; }
+.badge.selten { background: rgba(255, 120, 90, .13) !important; color: var(--hi) !important; }
+.ichip.selten { border-color: rgba(240, 160, 138, .4) !important; }
+.b3-mini.v-better { box-shadow: inset 0 -3px 0 var(--b3-no) !important; }
+.b3-card.v-better { border-color: color-mix(in srgb, var(--b3-no) 50%, transparent) !important; }
+.b3-vb.v-better { background: color-mix(in srgb, var(--b3-no) 20%, transparent) !important; color: var(--b3-no) !important; }
+.b3-nocatch.v-better { border-color: color-mix(in srgb, var(--b3-no, #ff6b6b) 45%, transparent) !important; background: color-mix(in srgb, var(--b3-no, #ff6b6b) 12%, transparent) !important; }
+.b3-dot.v-better { background: var(--b3-no) !important; }
+/* the scanner names the verdict once at the top; the Food check below keeps only its short line, no second word or light */
+.sc-card .fc-head .fc-light, .sc-card .fc-head .fc-word { display: none !important; }
+.lvl.medium { background: rgba(240, 160, 138, .16) !important; color: var(--hi) !important; }
+.b3-cam .ss-v-mild .ss-verdict, .ss-v-mild .ss-verdict { --ss-c: #ff4d6a !important; --ss-bg: rgba(255, 77, 106, .17) !important; }
+.b3-cam .ss-d-mild, .ss-d-mild { background: #ff4d6a !important; }
+.if-yes { color: var(--lo, #4cc38a); }
+.if-no { color: var(--hi, #ff6b6b); }

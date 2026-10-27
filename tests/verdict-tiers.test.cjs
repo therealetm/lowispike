@@ -40,8 +40,8 @@ test('the funny-frisch chips: one verdict, Skip it, matching the higher spike es
     assert.equal(m.verdict, 'NEIN');
     for (const li of [0, 1, 2]) assert.doesNotMatch(C.cardHTML(clone(CHIPS), li, 30), FREQ);
     const de = C.cardHTML(clone(CHIPS), 1, 30, { swaps: true });
-    assert.match(de, /<strong class="fc-word">Lieber nicht<\/strong>/);
-    assert.match(de, /Höhere Spike-Schätzung/);
+    assert.match(de, /<strong class="fc-word">Nicht insulinfreundlich<\/strong>/);
+    assert.match(de, /Zu viele schnelle Kohlenhydrate/);
     assert.match(de, /Isst du es trotzdem\? Direkt nach einer Mahlzeit, nie allein, danach zehn Minuten gehen\./);
     assert.doesNotMatch(de, /Kleine Portion direkt/, 'nutrition audit: no small-portion tip for a Skip-it food');
     assert.doesNotMatch(de, /Ab und zu|SELTEN/);
@@ -103,9 +103,9 @@ test('added sugar is a reason only when there is enough sugar to matter (over 5 
 
 test('the same three tier words everywhere, in English, German and Spanish', () => {
     const T = K.TIERS;
-    assert.deepEqual([T.en.JA.name, T.en.SELTEN.name, T.en.NEIN.name], ['Everyday', 'Small portion', 'Skip it']);
-    assert.deepEqual([T.de.JA.name, T.de.SELTEN.name, T.de.NEIN.name], ['Alltag', 'Kleine Portion', 'Lieber nicht']);
-    assert.deepEqual([T.es.JA.name, T.es.SELTEN.name, T.es.NEIN.name], ['Diario', 'Porción pequeña', 'Mejor no']);
+    assert.deepEqual([T.en.JA.name, T.en.SELTEN.name, T.en.NEIN.name], ['Insulin-friendly', 'Not insulin-friendly', 'Not insulin-friendly']);
+    assert.deepEqual([T.de.JA.name, T.de.SELTEN.name, T.de.NEIN.name], ['Insulinfreundlich', 'Nicht insulinfreundlich', 'Nicht insulinfreundlich']);
+    assert.deepEqual([T.es.JA.name, T.es.SELTEN.name, T.es.NEIN.name], ['Apto para la insulina', 'No apto para la insulina', 'No apto para la insulina']);
     const L = ['en', 'de', 'es'];
     /* the card words */
     const card = { JA: [C.cardHTML(clone(SKYR), 0, 150), C.cardHTML(clone(SKYR), 1, 150), C.cardHTML(clone(SKYR), 2, 150)],
@@ -119,17 +119,15 @@ test('the same three tier words everywhere, in English, German and Spanish', () 
     });
     /* the other surfaces */
     const html = read('index.html');
-    assert.match(html, /const RLAB = \{ja:"Everyday", selten:"Small portion", nein:"Skip it"/);
-    assert.match(html, /const RB = \{ja:"Everyday", selten:"Small portion", nein:"Skip it"\}/);
-    assert.match(html, /L\("Small portion", "Kleine Portion", "Porción pequeña"\)/);
-    assert.match(html, /\["Small portion", "Kleine Portion", "Porción pequeña"\]/);
-    assert.match(html, /\["Skip it", "Lieber nicht", "Mejor no"\]/);
-    assert.match(html, /\["Everyday", "Alltag", "Diario"\]/);
-    assert.match(read('store-picks.js'), /'Food-Check: Kleine Portion'/);
-    assert.match(read('seller-zone.js'), /T\('Small portion', 'Kleine Portion', 'Porción pequeña'\)/);
-    assert.match(read('seller-zone.js'), /T\('Everyday', 'Alltag', 'Diario'\)/);
-    assert.equal(S.text(['c_rare'], 1), 'Food-Check: Kleine Portion');
-    assert.equal(S.text(['c_no'], 2), 'Análisis del alimento: Mejor no');
+    assert.match(html, /const RLAB = \{ja:"Insulin-friendly", selten:"Not insulin-friendly", nein:"Not insulin-friendly"/);
+    assert.match(html, /const RB = \{ja:"Insulin-friendly", selten:"Not insulin-friendly", nein:"Not insulin-friendly"\}/);
+    assert.match(html, /L\("Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina"\)/);
+    assert.match(html, /\["Insulin-friendly", "Insulinfreundlich", "Apto para la insulina"\]/);
+    assert.match(html, /\["Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina"\]/);
+    assert.match(read('seller-zone.js'), /T\('Not insulin-friendly', 'Nicht insulinfreundlich', 'No apto para la insulina'\)/);
+    assert.match(read('seller-zone.js'), /T\('Insulin-friendly', 'Insulinfreundlich', 'Apto para la insulina'\)/);
+    assert.equal(S.text(['c_rare'], 1), 'Food-Check: Nicht insulinfreundlich');
+    assert.equal(S.text(['c_no'], 2), 'Análisis del alimento: No apto para la insulina');
 });
 
 test('no frequency verdicts left in what people read (code comments and old What\'s New history aside)', () => {

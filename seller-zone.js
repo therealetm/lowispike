@@ -23,8 +23,8 @@
     }
     const REGIONS = [['eu', '\u{1F1EA}\u{1F1FA}', () => T('EU', 'EU', 'UE'), () => T('Germany & EU', 'Deutschland & EU', 'Alemania y UE')], ['uk', '\u{1F1EC}\u{1F1E7}', () => 'UK'], ['us', '\u{1F1FA}\u{1F1F8}', () => T('USA', 'USA', 'EE. UU.')], ['ww', '\u{1F30D}', () => T('All', 'Alle', 'Todos')]];
     const verdictPill = v => v === 'ja'
-        ? '<span class="sz-v sz-ja">' + esc(T('Everyday', 'Alltag', 'Diario')) + '</span>'
-        : '<span class="sz-v sz-sel">' + esc(T('Small portion', 'Kleine Portion', 'Porción pequeña')) + '</span>';
+        ? '<span class="sz-v sz-ja">' + esc(T('Insulin-friendly', 'Insulinfreundlich', 'Apto para la insulina')) + '</span>'
+        : '<span class="sz-v sz-sel">' + esc(T('Not insulin-friendly', 'Nicht insulinfreundlich', 'No apto para la insulina')) + '</span>';
     const ext = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     /* Oct 23 (Eman: "Pls add images. Nobody likes just reading it."): every product shows its real photo, taken from its own
        shop page and stored in the repo (seller-zone-img/, about 15 KB each). The emoji bubble sits underneath: it shows when a

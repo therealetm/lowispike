@@ -22,8 +22,8 @@
     const LV = ['low', 'mid', 'high'], VERDICTS = ['JA', 'SELTEN', 'NEIN'];
     const STR = {
         en: {
-            title: 'Meal details', from: 'From {n}’s photo check', low: 'Lower impact', mid: 'Small rise', high: 'Spike likely',
-            why: 'Why', whyLow: 'About {net} g net carbs.', whyMid: 'About {net} g net carbs: a moderate rise.',
+            title: 'Meal details', from: 'From {n}’s photo check', low: 'Insulin-friendly', mid: 'Not insulin-friendly', high: 'Not insulin-friendly',
+            why: 'Why', whyLow: 'About {net} g net carbs.', whyMid: 'About {net} g net carbs.',
             whyHigh: 'About {net} g net carbs. That’s enough to spike.', whyDrink: 'The sugary drink alone is enough to spike.',
             ing: 'What the photo check saw', nut: 'Numbers from the photo', tip: 'Tip', est: 'Estimate from the photo, not a measurement.',
             lowConf: 'The photo was hard to read, so this is a rough guess.', none: 'No details for this meal.', noneS: 'It was shared before meal details were saved with posts.',
@@ -31,8 +31,8 @@
             kcal: 'kcal', carbs: 'carbs', protein: 'protein', fiber: 'fiber', sugar: 'sugar', fat: 'fat'
         },
         de: {
-            title: 'Mahlzeit-Details', from: 'Aus dem Foto-Check von {n}', low: 'Niedrigere Wirkung', mid: 'Leichter Anstieg', high: 'Spike wahrscheinlich',
-            why: 'Warum', whyLow: 'Etwa {net} g Netto-Kohlenhydrate.', whyMid: 'Etwa {net} g Netto-Kohlenhydrate: eher ein mäßiger Anstieg.',
+            title: 'Mahlzeit-Details', from: 'Aus dem Foto-Check von {n}', low: 'Insulinfreundlich', mid: 'Nicht insulinfreundlich', high: 'Nicht insulinfreundlich',
+            why: 'Warum', whyLow: 'Etwa {net} g Netto-Kohlenhydrate.', whyMid: 'Etwa {net} g Netto-Kohlenhydrate.',
             whyHigh: 'Etwa {net} g Netto-Kohlenhydrate. Das reicht für einen Spike.', whyDrink: 'Allein das süße Getränk reicht für einen Spike.',
             ing: 'Was der Foto-Check erkannt hat', nut: 'Zahlen aus dem Foto', tip: 'Tipp', est: 'Schätzung aus dem Foto, keine Messung.',
             lowConf: 'Das Foto war schwer zu erkennen, daher nur eine grobe Schätzung.', none: 'Keine Details zu dieser Mahlzeit.', noneS: 'Sie wurde geteilt, bevor Details mit Posts gespeichert wurden.',
@@ -40,8 +40,8 @@
             kcal: 'kcal', carbs: 'Kohlenh.', protein: 'Eiweiß', fiber: 'Ballastst.', sugar: 'Zucker', fat: 'Fett'
         },
         es: {
-            title: 'Detalles de la comida', from: 'Del análisis de foto de {n}', low: 'Impacto bajo', mid: 'Subida leve', high: 'Pico probable',
-            why: 'Por qué', whyLow: 'Unos {net} g de carbohidratos netos.', whyMid: 'Unos {net} g de carbohidratos netos: una subida moderada.',
+            title: 'Detalles de la comida', from: 'Del análisis de foto de {n}', low: 'Apto para la insulina', mid: 'No apto para la insulina', high: 'No apto para la insulina',
+            why: 'Por qué', whyLow: 'Unos {net} g de carbohidratos netos.', whyMid: 'Unos {net} g de carbohidratos netos.',
             whyHigh: 'Unos {net} g de carbohidratos netos. Suficiente para un pico.', whyDrink: 'Solo la bebida azucarada ya basta para un pico.',
             ing: 'Lo que vio el análisis', nut: 'Números de la foto', tip: 'Consejo', est: 'Estimación a partir de la foto, no una medición.',
             lowConf: 'La foto era difícil de leer, así que es una estimación aproximada.', none: 'No hay detalles de esta comida.', noneS: 'Se compartió antes de que los detalles se guardaran con las publicaciones.',
@@ -134,13 +134,14 @@
         h += '<p class="md-k">' + esc(t('title', l)) + '</p>';
         if (name) h += '<h3 class="md-name">' + esc(name) + '</h3>';
         if (ctx.by) h += '<p class="md-by">' + esc(t('from', l, { n: str(ctx.by, 40) })) + '</p>';
-        if (lvl) h += chipHTML(lvl, l);
+        /* 27 Oct 2026: one verdict only. A low estimate with a food rule against it is Not insulin-friendly, never green */
+        if (lvl) h += chipHTML(lvl === 'low' && d && d.verdict && d.verdict !== 'JA' ? 'high' : lvl, l);
         if (!hasDetail(d)) return h + '<p class="md-none" role="status"><b>' + esc(t('none', l)) + '</b><small>' + esc(t('noneS', l)) + '</small></p></div>';
         const why = whyText(d, l), fl = foodLines(d, l);
         if (why || (fl && (fl.reason || fl.sub))) {
             h += '<section class="md-sec md-why"><h4>' + esc(t('why', l)) + '</h4>';
             if (why) h += '<p>' + esc(why) + '</p>';
-            if (fl && fl.name) h += '<p class="md-verdict md-v-' + esc(String(fl.light || '').toLowerCase()) + '"><b>' + esc(fl.name) + '</b>' + (fl.reason ? '<span>' + esc(fl.reason) + '</span>' : '') + '</p>';
+            if (fl && fl.reason) h += '<p class="md-verdict"><span>' + esc(fl.reason) + '</span></p>';
             h += '</section>';
         }
         if (d.items) {

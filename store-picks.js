@@ -447,20 +447,19 @@
     /* ---------------- the list ---------------- */
     /* scanfe-h4: the engine's blood sugar impact category for the serving, never an estimated GI or GL */
     function impactWord(k) {
-        return k === 'lower' ? T('Lower', 'Niedrigere', 'Menor') : k === 'moderate' ? T('Moderate', 'Mittlere', 'Moderada') : T('Higher', 'Höhere', 'Mayor');
+        /* 27 Oct 2026: only Insulin-friendly or Not insulin-friendly, no impact levels */
+        return k === 'lower' ? T('Insulin-friendly', 'Insulinfreundlich', 'Apto para la insulina') : T('Not insulin-friendly', 'Nicht insulinfreundlich', 'No apto para la insulina');
     }
     function impactLine(k) {
-        return k === 'lower' ? T('Lower blood sugar impact (estimate)', 'Niedrigere Blutzuckerwirkung (Schätzung)', 'Menor impacto en el azúcar en sangre (estimación)')
-            : k === 'moderate' ? T('Moderate blood sugar impact (estimate)', 'Mittlere Blutzuckerwirkung (Schätzung)', 'Impacto moderado en el azúcar en sangre (estimación)')
-                : T('Higher blood sugar impact (estimate)', 'Höhere Blutzuckerwirkung (Schätzung)', 'Mayor impacto en el azúcar en sangre (estimación)');
+        return impactWord(k) + ' ' + T('(estimate)', '(Schätzung)', '(estimación)');
     }
     function checkWord(v) {
-        /* 24 Oct 2026: the same three tier words as the scanner card (LowiFoodKnowledge.TIERS) */
-        return v === 'JA' ? T('Food check: Everyday', 'Food-Check: Alltag', 'Análisis del alimento: Diario') : v === 'SELTEN' ? T('Food check: Small portion', 'Food-Check: Kleine Portion', 'Análisis del alimento: Porción pequeña') : v === 'NEIN' ? T('Food check: Skip it', 'Food-Check: Lieber nicht', 'Análisis del alimento: Mejor no') : '';
+        /* 27 Oct 2026: the one label is the impact word above; no second tier word next to it */
+        return '';
     }
     function reason(it) {
         const r = it.r, u = r.unit;
-        const parts = [impactWord(r.impact) + ' ' + T('impact', 'Wirkung', 'impacto') + ' ' + T('per', 'pro', 'por') + ' ' + r.serve + ' ' + u, dec(r.carbs) + ' g ' + T('carbs', 'KH', 'carbohidratos')];
+        const parts = [impactWord(r.impact) + ' ' + T('per', 'pro', 'por') + ' ' + r.serve + ' ' + u, dec(r.carbs) + ' g ' + T('carbs', 'KH', 'carbohidratos')];
         if (r.sugar >= 1) parts.push(dec(r.sugar) + ' g ' + T('sugar', 'Zucker', 'azúcar'));
         if (r.protein >= 3) parts.push(dec(r.protein) + ' g ' + T('protein', 'Eiweiß', 'proteína'));
         if (r.fibre >= 2) parts.push(dec(r.fibre) + ' g ' + T('fibre', 'Ballaststoffe', 'fibra'));
@@ -602,9 +601,9 @@
         if (e.verdict === 'sugar') return T('Left out: ' + su + ' g sugar in a ' + sv + ' portion. The limit is 6 g.',
             'Aussortiert: ' + su + ' g Zucker in einer Portion von ' + sv + '. Die Grenze ist 6 g.',
             'Excluido: ' + su + ' g de azúcar en una porción de ' + sv + '. El límite es 6 g.');
-        return T('Left out: ' + il + ' in a ' + sv + ' portion. Only Lower passes.',
-            'Aussortiert: ' + il + ' in einer Portion von ' + sv + '. Nur Niedrigere besteht.',
-            'Excluido: ' + il + ' en una porción de ' + sv + '. Solo Menor pasa.');
+        return T('Left out: ' + il + ' in a ' + sv + ' portion. Only insulin-friendly passes.',
+            'Aussortiert: ' + il + ' in einer Portion von ' + sv + '. Nur insulinfreundlich besteht.',
+            'Excluido: ' + il + ' en una porción de ' + sv + '. Solo pasa lo apto para la insulina.');
     }
     function mathText(e) {
         const s = dec(e.carbs) + ' g ' + T('carbs', 'KH', 'carbohidratos') + ' ' + T('in', 'in', 'en') + ' ' + e.serve + ' ' + e.unit + ' → ' + impactWord(e.impact) + '. ';
@@ -747,9 +746,9 @@
                 built.groups.map(groupHTML).join('') +
                 (c.total ? '' : '<p class="stp-none">' + esc(T('Nothing matches that search.', 'Nichts passt zu der Suche.', 'Nada coincide con la búsqueda.')) + '</p>') +
                 '<details class="stp-how"><summary>' + esc(T('How the rating works', 'So wird bewertet', 'Cómo se valora')) + '</summary>' + sum + '<p>' +
-                esc(T('For each product: carbs and sugar per typical portion from its label (100 g meat or fish, 30 g cheese, 40 g bread, 25 g sweets, 30 g snacks, 250 ml drink, 150 g yoghurt). The same Food check as the scanner card gives the blood sugar impact (Lower, Moderate or Higher) and Everyday, Small portion or Skip it. A product passes with Lower impact, no more than 6 g sugar per portion and no Skip it; Best also needs Everyday.',
-                    'Für jedes Produkt: Kohlenhydrate und Zucker pro typischer Portion laut Etikett (100 g Fleisch oder Fisch, 30 g Käse, 40 g Brot, 25 g Süßes, 30 g Snacks, 250 ml Getränk, 150 g Joghurt). Derselbe Food-Check wie auf der Scanner-Karte gibt die Blutzuckerwirkung (Niedrigere, Mittlere oder Höhere) und Alltag, Kleine Portion oder Lieber nicht. Ein Produkt besteht mit niedrigerer Wirkung, höchstens 6 g Zucker pro Portion und ohne Lieber nicht; Top braucht zusätzlich Alltag.',
-                    'Para cada producto: carbohidratos y azúcar por porción típica según su etiqueta (100 g de carne o pescado, 30 g de queso, 40 g de pan, 25 g de dulces, 30 g de snacks, 250 ml de bebida, 150 g de yogur). El mismo Food check que la tarjeta del escáner da el impacto en el azúcar en sangre (Menor, Moderado o Mayor) y Diario, Porción pequeña o Mejor no. Un producto pasa con impacto Menor, no más de 6 g de azúcar por porción y sin Mejor no; Mejor necesita además Diario.')) + '</p>' +
+                esc(T('For each product: carbs and sugar per typical portion from its label (100 g meat or fish, 30 g cheese, 40 g bread, 25 g sweets, 30 g snacks, 250 ml drink, 150 g yoghurt). The same Food check as the scanner card says Insulin-friendly or Not insulin-friendly. A product passes when it is insulin-friendly with no more than 6 g sugar per portion. It is an estimate, not a guarantee.',
+                    'Für jedes Produkt: Kohlenhydrate und Zucker pro typischer Portion laut Etikett (100 g Fleisch oder Fisch, 30 g Käse, 40 g Brot, 25 g Süßes, 30 g Snacks, 250 ml Getränk, 150 g Joghurt). Derselbe Food-Check wie auf der Scanner-Karte sagt Insulinfreundlich oder Nicht insulinfreundlich. Ein Produkt besteht, wenn es insulinfreundlich ist und höchstens 6 g Zucker pro Portion hat. Das ist eine Schätzung, keine Garantie.',
+                    'Para cada producto: carbohidratos y azúcar por porción típica según su etiqueta (100 g de carne o pescado, 30 g de queso, 40 g de pan, 25 g de dulces, 30 g de snacks, 250 ml de bebida, 150 g de yogur). El mismo Food check que la tarjeta del escáner dice Apto para la insulina o No apto para la insulina. Un producto pasa si es apto para la insulina y tiene como máximo 6 g de azúcar por porción. Es una estimación, no una garantía.')) + '</p>' +
                 '<p>' + esc(T('Real: product names and label values. Estimated: the blood sugar impact; no glycemic index is guessed. The range lists have no ingredients, so the Food check sees the name and the label only. ', 'Echt: Produktnamen und Etikettwerte. Geschätzt: die Blutzuckerwirkung; es wird kein glykämischer Index geraten. Die Listen haben keine Zutaten, deshalb sieht der Food-Check nur Name und Etikett. ', 'Real: nombres y valores de la etiqueta. Estimado: el impacto en el azúcar en sangre; no se adivina ningún índice glucémico. Las listas no tienen ingredientes, así que el Food check solo ve el nombre y la etiqueta. ') + (data && data.note ? data.note : '')) + '</p>' +
                 '<p>' + esc(T('Source: ', 'Quelle: ', 'Fuente: ') + (data && data.source || '') + ' · ' + (data && data.built || '')) + '</p></details>';
         }

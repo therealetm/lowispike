@@ -14,5 +14,5 @@ test('the LOWiSPIKE reason on the photo result is in the user\'s language', () =
   assert.equal(en.reason, 'Rice, bread, pasta or potato: a big starch load');
   assert.equal(de.reason, 'Reis, Brot, Nudeln oder Kartoffel: viel Stärke');
   assert.equal(es.reason, 'Arroz, pan, pasta o patata: mucho almidón');
-  assert.equal(de.label, 'LIEBER NICHT');
+  assert.equal(de.label, 'NICHT INSULINFREUNDLICH');
 });

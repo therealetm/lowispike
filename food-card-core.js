@@ -28,11 +28,11 @@
         /* 24 Oct 2026: the tier words come from LowiFoodKnowledge.TIERS (Everyday / Small portion / Skip it), the same everywhere.
            No frequency (the old "sometimes okay" label is gone): the card never tells someone a spike food is fine sometimes. */
         verdict: {
-            JA: [['Everyday', 'A good everyday choice'], ['Alltag', 'Gute Alltagswahl'], ['Diario', 'Buena opción para el día a día']],
-            SELTEN: [['Small portion', 'Stick to the portion, best with a meal'], ['Kleine Portion', 'Bei der Portion bleiben, am besten zu einer Mahlzeit'], ['Porción pequeña', 'Quédate en la porción, mejor con una comida']],
-            NEIN: [['Skip it', 'Not a LOWiSPIKE choice. Pick a swap'], ['Lieber nicht', 'Keine LOWiSPIKE-Wahl. Nimm lieber einen Tausch'], ['Mejor no', 'No es una opción LOWiSPIKE. Elige un cambio']]
+            JA: [['Insulin-friendly', 'A good everyday choice'], ['Insulinfreundlich', 'Gute Alltagswahl'], ['Apto para la insulina', 'Buena opción para el día a día']],
+            SELTEN: [['Not insulin-friendly', 'Keep it small and with a meal, or pick a swap'], ['Nicht insulinfreundlich', 'Klein halten und zu einer Mahlzeit, oder lieber tauschen'], ['No apto para la insulina', 'Porción pequeña y con una comida, o elige un cambio']],
+            NEIN: [['Not insulin-friendly', 'Not a LOWiSPIKE choice. Pick a swap'], ['Nicht insulinfreundlich', 'Keine LOWiSPIKE-Wahl. Nimm lieber einen Tausch'], ['No apto para la insulina', 'No es una opción LOWiSPIKE. Elige un cambio']]
         },
-        nein_spike: ['Higher spike estimate. Pick a swap', 'Höhere Spike-Schätzung. Nimm lieber einen Tausch', 'Estimación de pico más alta. Elige un cambio'],
+        nein_spike: ['Too many fast carbs. Pick a swap', 'Zu viele schnelle Kohlenhydrate. Nimm lieber einen Tausch', 'Demasiados carbohidratos rápidos. Elige un cambio'],
         anyway: ['Eating it anyway? Right after a meal, never on its own, then a ten-minute walk.', 'Isst du es trotzdem? Direkt nach einer Mahlzeit, nie allein, danach zehn Minuten gehen.', '¿Te lo comes igual? Justo después de comer, nunca solo, y luego camina diez minutos.'],
         provisional: ['Provisional: some data is missing', 'Vorläufig: es fehlen Daten', 'Provisional: faltan datos'],
         impact: ['Blood sugar impact', 'Wirkung auf den Blutzucker', 'Impacto en el azúcar'],
@@ -160,7 +160,8 @@
         const m = model(p, g);
         if (!m) return '';
         const v = TX.verdict[m.verdict] ? m.verdict : 'SELTEN', vt = [TX.verdict[v][li][0], v === 'NEIN' && m.impact === 'higher' ? T(TX.nein_spike, li) : TX.verdict[v][li][1]];
-        const cls = {JA: 'fc-ja', SELTEN: 'fc-selten', NEIN: 'fc-nein'}[v];
+        /* 27 Oct 2026: two states only, green Insulin-friendly or red Not insulin-friendly; no yellow, no impact level */
+        const cls = {JA: 'fc-ja', SELTEN: 'fc-nein', NEIN: 'fc-nein'}[v];
         const unc = m.confidence ? TX.unc[m.confidence] : null;
         const reasons = m.reasons.map(r => loc(r.text, li)).filter(Boolean);
         /* Food quality only where it adds something and never against the tier: "Good everyday choice" under Skip it, or "Not a good
@@ -170,10 +171,10 @@
         const q = qShow ? loc(m.quality.label, li) : '';
         const alt = m.alternative && !o.swaps ? loc(m.alternative.text, li) : '';
         return '<section class="sc-sec fc-card ' + cls + '" data-fc-verdict="' + esc(v) + '" aria-label="' + esc(T(TX.title, li)) + '">' +
-            '<div class="fc-head"><span class="fc-light" aria-hidden="true"><i></i><i></i><i></i></span>' +
+            '<div class="fc-head"><span class="fc-light" aria-hidden="true"><i></i><i></i></span>' +
             '<div class="fc-vt"><strong class="fc-word">' + esc(vt[0]) + '</strong><span class="fc-sub">' + esc(vt[1]) + '</span></div></div>' +
             (m.provisional ? '<p class="fc-prov">' + esc(T(TX.provisional, li)) + '</p>' : '') +
-            '<div class="fc-chips"><span class="fc-chip fc-imp fc-i-' + m.impact + '">' + esc(T(TX.impact, li)) + ': <b>' + esc(T(TX.impactKey[m.impact], li)) + '</b> <em>(' + esc(T(TX.estimate, li)) + ')</em></span>' +
+            '<div class="fc-chips">' +
             (unc ? '<span class="fc-chip fc-unc">' + esc(T(TX.uncertainty, li)) + ': <b>' + esc(T(unc, li)) + '</b></span>' : '') + '</div>' +
             (reasons.length ? '<div class="fc-why"><h5>' + esc(T(TX.why, li)) + '</h5><ul>' + reasons.map(r => '<li>' + esc(r) + '</li>').join('') + '</ul></div>' : '') +
             servingLine(m, li) +
@@ -188,7 +189,7 @@
         const m = model(p, g);
         if (!m) return '';
         const rows = [];
-        rows.push(['dGlucose', esc(T(TX.impactKey[m.impact], li)) + ' · ' + esc(fmt(T(TX.dGlucoseBody, li), [dec(m.glucose.carbs, li), dec(m.glucose.sugar, li)]))]);
+        rows.push(['dGlucose', esc(fmt(T(TX.dGlucoseBody, li), [dec(m.glucose.carbs, li), dec(m.glucose.sugar, li)]))]);
         if (m.quality) {
             const words = (m.quality.concerns || []).concat(m.quality.positives || []).map(k => TX.concern[k] ? T(TX.concern[k], li) : '').filter(Boolean);
             rows.push(['dQuality', esc(loc(m.quality.label, li) || T(TX.lvl.unknown, li)) + (words.length ? ' · ' + esc(words.join(', ')) : '')]);

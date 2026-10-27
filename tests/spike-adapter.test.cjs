@@ -68,9 +68,9 @@ test('why texts exist in EN/DE/ES and the first line names carbs per serving', (
 test('scanner, dex, shop scan and spike lists never say "no spike"', () => {
   const files = ['index.html', 'shop-scan-core.js', 'spike-catch.js'].map(f => fs.readFileSync(path.join(root, f), 'utf8')).join('\n');
   for (const bad of ['no blood sugar spike', 'No spike', "Won't spike", 'Unlikely to spike', 'kein Blutzucker-Spike', 'Kein Spike', 'no te sube el azúcar', "'Sin pico'"]) assert.ok(!files.includes(bad), 'gone: ' + bad);
-  for (const t of ['Lower estimated blood sugar impact', 'Moderate estimated blood sugar impact', 'Higher estimated blood sugar impact', 'Not enough data to estimate',
-    'Niedrigere geschätzte Wirkung auf den Blutzucker', 'Zu wenig Daten für eine Schätzung', 'Impacto estimado más bajo en el azúcar en sangre', 'No hay datos suficientes para estimarlo']) assert.ok(html.includes(t), t);
-  assert.match(html, /const v = \{spike:1, better:1, ok:1\}\[p\.verdict\] \? p\.verdict : "unknown"/, 'the simple card shows all four verdicts');
+  for (const t of ['Insulin-friendly', 'Not insulin-friendly', 'Not enough data to estimate',
+    'Insulinfreundlich', 'Nicht insulinfreundlich', 'Zu wenig Daten für eine Schätzung', 'Apto para la insulina', 'No hay datos suficientes para estimarlo']) assert.ok(html.includes(t), t);
+  assert.match(html, /let v = \{spike:1, better:1, ok:1\}\[p\.verdict\] \? p\.verdict : "unknown"/, 'the simple card shows all four verdicts');
 });
 
 test('food-engine-core.js loads before spike-core.js and is cached by the service worker', () => {

@@ -23,9 +23,9 @@
     const LVL = { low: 'low', mid: 'medium', high: 'high' };
     const STR = {
         en: {
-            q: 'Spike check', low: 'Lower impact', mid: 'Small rise', high: 'Spike likely',
+            q: 'Insulin check', low: 'Insulin-friendly', mid: 'Not insulin-friendly', high: 'Not insulin-friendly',
             whyLow: 'About {net} g net carbs.', net: 'about {net} g net carbs',
-            whyMid: 'About {net} g net carbs: a moderate rise.',
+            whyMid: 'About {net} g net carbs.',
             whyHigh: 'About {net} g net carbs. That’s enough to spike.',
             whyDrink: 'The sugary drink alone is enough to spike.',
             est: 'Estimate from the photo, not a measurement.', lowConf: 'The photo was hard to read, so check the foods below.',
@@ -38,9 +38,9 @@
             total: 'Total', pcs: 'pcs', pc: 'pc', none: 'Nothing left to check. Type what it is below.', protein: 'protein', carbs: 'carbs', fat: 'fat', kcal: 'kcal'
         },
         de: {
-            q: 'Spike-Check', low: 'Niedrigere Wirkung', mid: 'Leichter Anstieg', high: 'Spike wahrscheinlich',
+            q: 'Insulin-Check', low: 'Insulinfreundlich', mid: 'Nicht insulinfreundlich', high: 'Nicht insulinfreundlich',
             whyLow: 'Etwa {net} g Netto-Kohlenhydrate.', net: 'etwa {net} g Netto-KH',
-            whyMid: 'Etwa {net} g Netto-Kohlenhydrate: eher ein mäßiger Anstieg.',
+            whyMid: 'Etwa {net} g Netto-Kohlenhydrate.',
             whyHigh: 'Etwa {net} g Netto-Kohlenhydrate. Das reicht für einen Spike.',
             whyDrink: 'Allein das süße Getränk reicht für einen Spike.',
             est: 'Schätzung aus dem Foto, keine Messung.', lowConf: 'Das Foto war schwer zu erkennen, prüf die Lebensmittel unten.',
@@ -53,9 +53,9 @@
             total: 'Gesamt', pcs: 'Stk.', pc: 'Stk.', none: 'Nichts mehr zu prüfen. Schreib unten, was es ist.', protein: 'Eiweiß', carbs: 'KH', fat: 'Fett', kcal: 'kcal'
         },
         es: {
-            q: 'Control de pico', low: 'Impacto bajo', mid: 'Subida leve', high: 'Pico probable',
+            q: 'Control de insulina', low: 'Apto para la insulina', mid: 'No apto para la insulina', high: 'No apto para la insulina',
             whyLow: 'Unos {net} g de carbohidratos netos.', net: 'unos {net} g de carbohidratos netos',
-            whyMid: 'Unos {net} g de carbohidratos netos: una subida moderada.',
+            whyMid: 'Unos {net} g de carbohidratos netos.',
             whyHigh: 'Unos {net} g de carbohidratos netos. Suficiente para un pico.',
             whyDrink: 'Solo la bebida azucarada ya basta para un pico.',
             est: 'Estimación a partir de la foto, no una medición.', lowConf: 'La foto era difícil de leer, revisa los alimentos.',

@@ -94,7 +94,7 @@ function card(W, p, o) { const el = stubEl(['b3-cam']); W.LowiShopScan.show(el, 
 
 test('the card: one verdict with a tiny labelled curve, How often, a collapsed Why? button, no clunky "estimated blood sugar impact" line', () => {
     const W = load(), h = card(W, almonds);
-    assert.match(h, /class="ss-vw">Lower</, 'almonds read Lower at a small handful');
+    assert.match(h, /class="ss-vw">Insulin-friendly</, 'almonds read Insulin-friendly at a small handful');
     assert.match(h, /<svg[^>]*class="ss-curve"/, 'a tiny curve');
     assert.match(h, /Estimate, not a measurement/, 'the curve is labelled');
     assert.match(h, /class="ss-often"/); assert.match(h, /Fine every day/);

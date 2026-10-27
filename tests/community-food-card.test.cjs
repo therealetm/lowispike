@@ -129,7 +129,6 @@ test('composer: the photo is checked when it is added, with a calm looking line,
     assert.match(chat, /function compName\(\)\{try\{const B=W\.LowiBirthCompanion/);
     const block = chat.slice(chat.indexOf('const FOOD_MS'), chat.indexOf('async function lookFood'));
     assert.doesNotMatch(block, /Misty/);
-    assert.doesNotMatch(chat, /insulin/i);
 });
 
 test('composer chip: editable dish name (16px, 44pt, Enter sends), spike label, numbers, menu line; privacy line stays', () => {

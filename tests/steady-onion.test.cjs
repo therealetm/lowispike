@@ -32,9 +32,9 @@ test('shared meal details use the scanner\'s own words: Lower impact / Small ris
     for (const l of ['en', 'de', 'es']) {
         for (const k of ['low', 'mid', 'high', 'whyLow', 'whyMid', 'whyHigh', 'whyDrink']) assert.equal(M.STR[l][k], MR.STR[l][k], l + ' ' + k + ' matches the scan result');
     }
-    assert.equal(M.t('low', 'en'), 'Lower impact');
-    assert.equal(M.t('low', 'de'), 'Niedrigere Wirkung');
-    assert.equal(M.t('low', 'es'), 'Impacto bajo');
+    assert.equal(M.t('low', 'en'), 'Insulin-friendly');
+    assert.equal(M.t('low', 'de'), 'Insulinfreundlich');
+    assert.equal(M.t('low', 'es'), 'Apto para la insulina');
     assert.equal(M.whyText({ lvl: 'low', net: 6 }, 'en'), 'About 6 g net carbs.');
 });
 

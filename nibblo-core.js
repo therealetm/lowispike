@@ -41,7 +41,7 @@
       ['Breakfast idea before the day gets going:', 'Frühstücksidee, bevor der Tag losrennt:', 'Idea de desayuno antes de que arranque el día:']
     ],
     n: [
-      ['Lunch break! Low spike, high crunch:', 'Mittagspause! Wenig Spike, viel Crunch:', '¡Hora de comer! Poco pico, mucho crujiente:'],
+      ['Lunch break! Insulin-friendly, high crunch:', 'Mittagspause! Insulinfreundlich, viel Crunch:', '¡Hora de comer! Apto para la insulina y muy crujiente:'],
       ['Noon slump? Not with this:', 'Mittagstief? Nicht mit dem hier:', '¿Bajón de mediodía? Con esto no:'],
       ['Lunch idea, straight from the Recipe Book:', 'Mahlzeit! Hier die Mittagsidee:', '¡Buen provecho! La idea de hoy para comer:'],
       ['Skip the bakery queue today:', 'Heute mal an der Bäckerschlange vorbei:', 'Hoy pasamos de la cola de la panadería:']

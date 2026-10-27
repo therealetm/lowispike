@@ -51,7 +51,7 @@
 .sz-tt small { display: block; font-size: 13px; opacity: .72; overflow-wrap: anywhere; }
 .sz-v { flex: 0 0 auto; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .4px; }
 .sz-ja { background: rgba(80, 230, 150, .18); color: #7dffb8; border: 1px solid rgba(80, 230, 150, .45); }
-.sz-sel { background: rgba(255, 210, 90, .16); color: #ffd877; border: 1px solid rgba(255, 210, 90, .45); }
+.sz-sel { background: rgba(255, 107, 107, .15); color: #ff8a8a; border: 1px solid rgba(255, 107, 107, .45); }
 .sz-why { margin: 10px 0 6px; font-size: 13px; line-height: 1.45; }
 .sz-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 0 0 6px; font-size: 13px; opacity: .85; }
 .sz-ing { margin: 0 0 10px; font-size: 11px; line-height: 1.4; opacity: .65; }
@@ -102,7 +102,7 @@
 }
 html[data-theme="light"] .sz-box { color: #0b2236; background: radial-gradient(130% 70% at 30% 0%, rgba(143, 231, 255, .35), rgba(245, 251, 255, .97) 60%); }
 html[data-theme="light"] .sz-ja { color: #0b7a44; }
-html[data-theme="light"] .sz-sel { color: #8a5a00; }
+html[data-theme="light"] .sz-sel { color: #b42828; }
 @media (max-width: 360px) { .sz-swap .sz-row { grid-template-columns: 1fr 1fr; } .sz-swap .sz-row > :nth-child(3) { display: none; } .sz-acts { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .sz-orb { animation: none; } .sz-ov, .sz-box { transition: none; } }
 /* Oct 23 (Eman: "Pls add images. Nobody likes just reading it."): real product photos, image first.
@@ -150,7 +150,7 @@ html[data-theme="light"] .sz-sel { color: #8a5a00; }
 .sz-mini .sz-ph-m { margin-bottom: 2px; }
 .sz-strip-it .sz-ph-m { width: 72px; height: 72px; }
 html[data-theme="light"] .sz-pic .sz-ja { color: #7dffb8; }
-html[data-theme="light"] .sz-pic .sz-sel { color: #ffd877; }
+html[data-theme="light"] .sz-pic .sz-sel { color: #ff8a8a; }
 @media (min-width: 700px) { .sz-grid { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); } }
 @media (max-width: 330px) { .sz-grid { grid-template-columns: 1fr 1fr; gap: 8px; } .sz-pic .sz-v { font-size: 9px; padding: 2px 6px; } }
 @media (prefers-reduced-motion: reduce) { .sz-more summary::after { transition: none; } }

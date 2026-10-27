@@ -5,7 +5,7 @@
 .fc-light i { display: block; width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, .14); }
 .fc-nein .fc-light i:nth-child(1) { background: #ff6b74; box-shadow: 0 0 10px rgba(255, 107, 116, .85); }
 .fc-selten .fc-light i:nth-child(2) { background: #ffc35a; box-shadow: 0 0 10px rgba(255, 195, 90, .85); }
-.fc-ja .fc-light i:nth-child(3) { background: #5fe3a1; box-shadow: 0 0 10px rgba(95, 227, 161, .85); }
+.fc-ja .fc-light i:nth-child(2) { background: #5fe3a1; box-shadow: 0 0 10px rgba(95, 227, 161, .85); }
 .fc-vt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .sc-sec .fc-word { font: 800 21px/1.1 var(--sc-font, inherit); letter-spacing: .04em; color: #fff; }
 .sc-sec.fc-nein .fc-word { color: #ff9aa0; }

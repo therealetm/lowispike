@@ -55,7 +55,7 @@ test('the main page Scan shows the compact card with ONE verdict (no old long sh
     const h = showIn(W, chips, { ctx: 'scan' });
     assert.equal(count(h, /class="ss-verdict/g), 1, 'exactly one verdict');
     assert.equal(count(h, /class="ss-vw"/g), 1, 'the verdict word appears once');
-    assert.match(h, /Higher/);
+    assert.match(h, /Not insulin-friendly/);
     assert.doesNotMatch(h, /sc-card|b3-card|Buy this instead|Seller Zone|Community deals|Post a deal/, 'none of the old long result');
     assert.match(h, /data-ss="add"/, 'Add to cart'); assert.match(h, /<details class="ss-more">/, 'Details folded');
     assert.doesNotMatch(h, /data-ss="ate"/, 'the Scan tab camera never logs a meal (Oct 21 rule)');

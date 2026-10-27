@@ -180,7 +180,7 @@
     function lvlWord(lvl) {
         const SC = W.LowiShopScanCore, k = 'v_' + lvl;
         try { if (SC && SC.tx) { const w = SC.tx(k, li()); if (w && w !== k) return w; } } catch (e) {}
-        return { none: T('Lower', 'Niedriger', 'Bajo'), mild: T('Moderate', 'Mittel', 'Moderado'), spike: T('Higher', 'Höher', 'Alto') }[lvl];
+        return { none: T('Insulin-friendly', 'Insulinfreundlich', 'Apto para la insulina'), mild: T('Not insulin-friendly', 'Nicht insulinfreundlich', 'No apto para la insulina'), spike: T('Not insulin-friendly', 'Nicht insulinfreundlich', 'No apto para la insulina') }[lvl];
     }
     function lvlTag(h) {
         if (h.via === 'photo' && !h.lvl) return '<i class="stp-tag">' + esc(T('Photo · not rated', 'Foto · nicht bewertet', 'Foto · sin valorar')) + '</i>';

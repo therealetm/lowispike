@@ -37,9 +37,9 @@ test('verdict words: every key in English, German and Spanish, always labelled a
         C.TX[k].forEach((s, i) => assert.ok(typeof s === 'string' && s.trim().length, k + ' ' + i));
     }
     for (const v of C.LEVELS) { assert.ok(C.TX['v_' + v], v); assert.ok(C.TX['s_' + v], v); }
-    assert.equal(C.tx('v_none', 0), 'Lower');
-    assert.equal(C.tx('v_none', 1), 'Niedriger');
-    assert.equal(C.tx('v_none', 2), 'Bajo');
+    assert.equal(C.tx('v_none', 0), 'Insulin-friendly');
+    assert.equal(C.tx('v_none', 1), 'Insulinfreundlich');
+    assert.equal(C.tx('v_none', 2), 'Apto para la insulina');
     assert.equal(C.tx('est', 1), 'Schätzung');
     assert.equal(C.tx('add', 2), 'Añadir al carro');
     assert.equal(C.tx('again', 0, 3), 'In your cart · 3×');

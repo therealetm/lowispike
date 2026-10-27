@@ -23,23 +23,23 @@
        then". Internal codes stay JA / SELTEN / NEIN. TIERS holds the names, the one-line meaning and the "eating it anyway" line,
        reusing wording the app already had ("Eating it anyway? Then move right after.", "a square or two after a meal"). */
     const TIERS = {
-        en: {JA: {name: 'Everyday', sub: 'A good everyday choice'},
-            SELTEN: {name: 'Small portion', sub: 'Stick to the portion, best with a meal'},
-            NEIN: {name: 'Skip it', sub: 'Not a LOWiSPIKE choice. Pick a swap', subSpike: 'Higher spike estimate. Pick a swap'},
+        en: {JA: {name: 'Insulin-friendly', sub: 'A good everyday choice'},
+            SELTEN: {name: 'Not insulin-friendly', sub: 'Keep it small and with a meal, or pick a swap'},
+            NEIN: {name: 'Not insulin-friendly', sub: 'Not a LOWiSPIKE choice. Pick a swap', subSpike: 'Too many fast carbs. Pick a swap'},
             anyway: 'Eating it anyway? Right after a meal, never on its own, then a ten-minute walk.'},
-        de: {JA: {name: 'Alltag', sub: 'Gute Alltagswahl'},
-            SELTEN: {name: 'Kleine Portion', sub: 'Bei der Portion bleiben, am besten zu einer Mahlzeit'},
-            NEIN: {name: 'Lieber nicht', sub: 'Keine LOWiSPIKE-Wahl. Nimm lieber einen Tausch', subSpike: 'Höhere Spike-Schätzung. Nimm lieber einen Tausch'},
+        de: {JA: {name: 'Insulinfreundlich', sub: 'Gute Alltagswahl'},
+            SELTEN: {name: 'Nicht insulinfreundlich', sub: 'Klein halten und zu einer Mahlzeit, oder lieber tauschen'},
+            NEIN: {name: 'Nicht insulinfreundlich', sub: 'Keine LOWiSPIKE-Wahl. Nimm lieber einen Tausch', subSpike: 'Zu viele schnelle Kohlenhydrate. Nimm lieber einen Tausch'},
             anyway: 'Isst du es trotzdem? Direkt nach einer Mahlzeit, nie allein, danach zehn Minuten gehen.'},
-        es: {JA: {name: 'Diario', sub: 'Buena opción para el día a día'},
-            SELTEN: {name: 'Porción pequeña', sub: 'Quédate en la porción, mejor con una comida'},
-            NEIN: {name: 'Mejor no', sub: 'No es una opción LOWiSPIKE. Elige un cambio', subSpike: 'Estimación de pico más alta. Elige un cambio'},
+        es: {JA: {name: 'Apto para la insulina', sub: 'Buena opción para el día a día'},
+            SELTEN: {name: 'No apto para la insulina', sub: 'Porción pequeña y con una comida, o elige un cambio'},
+            NEIN: {name: 'No apto para la insulina', sub: 'No es una opción LOWiSPIKE. Elige un cambio', subSpike: 'Demasiados carbohidratos rápidos. Elige un cambio'},
             anyway: '¿Te lo comes igual? Justo después de comer, nunca solo, y luego camina diez minutos.'}
     };
     const LABELS = {
-        en: {JA: 'EVERYDAY', SELTEN: 'SMALL PORTION', NEIN: 'SKIP IT'},
-        de: {JA: 'ALLTAG', SELTEN: 'KLEINE PORTION', NEIN: 'LIEBER NICHT'},
-        es: {JA: 'DIARIO', SELTEN: 'PORCIÓN PEQUEÑA', NEIN: 'MEJOR NO'}
+        en: {JA: 'INSULIN-FRIENDLY', SELTEN: 'NOT INSULIN-FRIENDLY', NEIN: 'NOT INSULIN-FRIENDLY'},
+        de: {JA: 'INSULINFREUNDLICH', SELTEN: 'NICHT INSULINFREUNDLICH', NEIN: 'NICHT INSULINFREUNDLICH'},
+        es: {JA: 'APTO PARA LA INSULINA', SELTEN: 'NO APTO PARA LA INSULINA', NEIN: 'NO APTO PARA LA INSULINA'}
     };
     /* The spike estimate as a tier: a higher estimate is never milder than Skip it, a moderate one never milder than Small portion. */
     const IMPACT_TIER = {lower: 'JA', moderate: 'SELTEN', higher: 'NEIN'};
@@ -49,6 +49,15 @@
         de: {green: 'GRÜN', yellow: 'GELB', red: 'ROT'},
         es: {green: 'VERDE', yellow: 'AMARILLO', red: 'ROJO'}
     };
+    /* 27 Oct 2026 (Emmanuel): everywhere a food or meal is rated, the app shows only "Insulinfreundlich" in green or
+       "Nicht insulinfreundlich" in red (EN / ES the same), never a spike level or a colour that contradicts it. Only JA / low /
+       ok counts as insulin-friendly (the For You rule). It stays an estimate, so the short note goes with it. */
+    const IF_WORDS = {
+        en: {yes: 'Insulin-friendly', no: 'Not insulin-friendly', note: 'An estimate, not a guarantee'},
+        de: {yes: 'Insulinfreundlich', no: 'Nicht insulinfreundlich', note: 'Eine Schätzung, keine Garantie'},
+        es: {yes: 'Apto para la insulina', no: 'No apto para la insulina', note: 'Una estimación, no una garantía'}
+    };
+    const friendly = x => /^(JA|low|lower|ok|green|yes|true)$/i.test(String(x == null ? '' : x));
     const R = (en, de, es) => ({en, de, es});
     const REASON = {
         'policy.pork': R('Pork is not a LOWiSPIKE protein', 'Schwein ist kein LOWiSPIKE-Eiweiß', 'El cerdo no es una proteína LOWiSPIKE'),
@@ -99,6 +108,9 @@
 
     const lang = l => (/^de/i.test(l || '') ? 'de' : /^es/i.test(l || '') ? 'es' : 'en');
     const label = (verdict, l) => (LABELS[lang(l)] || LABELS.en)[verdict] || '';
+    const ifWord = (x, l) => (IF_WORDS[lang(l)] || IF_WORDS.en)[friendly(x) ? 'yes' : 'no'];
+    const ifNote = l => (IF_WORDS[lang(l)] || IF_WORDS.en).note;
+    const ifClass = x => (friendly(x) ? 'if-yes' : 'if-no');
     const tier = (verdict, l) => ((TIERS[lang(l)] || TIERS.en)[verdict]) || null;
     const tierName = (verdict, l) => (tier(verdict, l) || {}).name || '';
     const anywayLine = l => (TIERS[lang(l)] || TIERS.en).anyway;
@@ -191,6 +203,6 @@
     /* Scanner scale used by the scan card, the database and the grocery list: ok / better / spike. */
     const SCALE = {JA: 'ok', SELTEN: 'better', NEIN: 'spike'};
 
-    return {VERSION, RANK, LIGHT, LABELS, TIERS, IMPACT_TIER, SCALE, label, tier, tierName, tierFor, stricter, anywayLine, lightWord, reasonText, gramsOf, rateFood, rateMeal,
+    return {VERSION, RANK, LIGHT, LABELS, TIERS, IF_WORDS, friendly, ifWord, ifNote, ifClass, IMPACT_TIER, SCALE, label, tier, tierName, tierFor, stricter, anywayLine, lightWord, reasonText, gramsOf, rateFood, rateMeal,
         block, format, parse, merge, stricter, OPEN, CLOSE};
 });

@@ -103,7 +103,7 @@ test('Shop finds: the shop picked in Supermarket is the same shop here (picked o
 });
 
 test('Caught today uses the scanner card\'s verdict words: Lower / Moderate / Higher, never Medium', () => {
-    const want = { en: ['Lower', 'Moderate', 'Higher'], de: ['Niedriger', 'Mittel', 'Höher'], es: ['Bajo', 'Moderado', 'Alto'] };
+    const want = { en: ['Insulin-friendly', 'Not insulin-friendly'], de: ['Insulinfreundlich', 'Nicht insulinfreundlich'], es: ['Apto para la insulina', 'No apto para la insulina'] };
     for (const lang of ['en', 'de', 'es']) {
         const b = boot(lang);
         b.G._catch({ via: 'barcode', bc: '4000000000011', name: 'Apfel', lvl: 'none' });

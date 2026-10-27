@@ -73,7 +73,7 @@ test('the chat renders the meal card and accepts it through the photo outbox; re
     assert.match(chat, /scope\+'\/meal-'\+id\+'\.jpg'/);
     assert.match(chat, /W\.LowiCommunity=\{mount,refresh,send,comment,[^\n]*,shareMeal\};/);
     assert.match(R('community-chat-core.js'), /function submitPhoto\(by,text,id,reply\)\{if\(!photo\(text,scope\)&&!voice\(text,scope\)&&!meal\(text,scope\)\)/);
-    for (const l of ['Low spike', 'Kleiner Spike', 'Pico bajo', 'Meal from {n}', 'Mahlzeit von {n}', 'Comida de {n}']) assert.ok(chat.includes(l), l);
+    for (const l of ['Insulin-friendly', 'Insulinfreundlich', 'Apto para la insulina', 'Meal from {n}', 'Mahlzeit von {n}', 'Comida de {n}']) assert.ok(chat.includes(l), l);
 });
 
 test('meal card and journal use theme tokens, no hard-coded teal or green', () => {

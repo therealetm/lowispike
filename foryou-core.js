@@ -216,10 +216,10 @@
     opening: ['Opening on {p}. Follow and like the original, so the creator feels the love.',
       'Öffnet auf {p}. Folge und like das Original, damit der Creator die Liebe spürt.',
       'Se abre en {p}. Sigue y dale like al original, para que quien lo creó sienta el amor.'],
-    foot: ['Only this meal is shared: the photo, its name and the spike rating. Low-spike meals also show in For You. Never your weight or other health data.',
-      'Geteilt wird nur diese Mahlzeit: das Foto, ihr Name und die Spike-Einschätzung. Mahlzeiten mit wenig Spike erscheinen auch in Für dich. Nie dein Gewicht oder andere Gesundheitsdaten.',
-      'Solo se comparte esta comida: la foto, su nombre y la estimación del pico. Las comidas de pico bajo también salen en Para ti. Nunca tu peso ni otros datos de salud.'],
-    badge: ['Low spike', 'Wenig Spike', 'Pico bajo']
+    foot: ['Only this meal is shared: the photo, its name and whether it is insulin-friendly. Insulin-friendly meals also show in For You. Never your weight or other health data.',
+      'Geteilt wird nur diese Mahlzeit: das Foto, ihr Name und ob sie insulinfreundlich ist. Insulinfreundliche Mahlzeiten erscheinen auch in Für dich. Nie dein Gewicht oder andere Gesundheitsdaten.',
+      'Solo se comparte esta comida: la foto, su nombre y si es apta para la insulina. Las comidas aptas para la insulina también salen en Para ti. Nunca tu peso ni otros datos de salud.'],
+    badge: ['Insulin-friendly', 'Insulinfreundlich', 'Apto para la insulina']
   };
   function note(key, lang, vars) {
     const i = ['en', 'de', 'es'].indexOf(String(lang || 'en').slice(0, 2).toLowerCase()); const a = NOTE[key] || [];

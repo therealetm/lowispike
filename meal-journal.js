@@ -18,7 +18,7 @@
             cap: 'Caption (optional)', capPh: 'Say something about it', foot: 'Only this meal is shared: the photo, its name, the spike rating and what the photo check found (foods, numbers, tip). Low-spike meals also show in For You. Never your weight or other health data.',
             posting: 'Posting…', posted: 'Shared to Community', noPhoto: 'This meal has no photo to share.', signin: 'Sign in to share in Community.',
             name: 'Pick a nickname in Community first.', offline: 'You are offline. Try again when you are back online.', failed: 'Could not share it. Try again.',
-            low: 'Low spike', mid: 'Medium spike', high: 'Likely spike', bs: 'Blood sugar', ing: 'Foods', est: 'Estimate from your photo. Not medical advice.',
+            low: 'Insulin-friendly', mid: 'Not insulin-friendly', high: 'Not insulin-friendly', bs: 'Blood sugar', ing: 'Foods', est: 'Estimate from your photo. Not medical advice.',
             photoOnly: 'Photo saved on this phone only', open: 'Open meal', kcal: 'kcal', carbs: 'Carbs', protein: 'Protein', fiber: 'Fiber', sugar: 'Sugar', fat: 'Fat',
             saved: 'Photo and estimate saved with your meal.'
         },
@@ -28,7 +28,7 @@
             cap: 'Text (optional)', capPh: 'Schreib etwas dazu', foot: 'Geteilt wird nur diese Mahlzeit: das Foto, ihr Name, die Spike-Einschätzung und was der Foto-Check gefunden hat (Lebensmittel, Zahlen, Tipp). Mahlzeiten mit wenig Spike erscheinen auch in Für dich. Nie dein Gewicht oder andere Gesundheitsdaten.',
             posting: 'Wird gepostet…', posted: 'In der Community geteilt', noPhoto: 'Diese Mahlzeit hat kein Foto zum Teilen.', signin: 'Melde dich an, um in der Community zu teilen.',
             name: 'Wähle zuerst einen Spitznamen in der Community.', offline: 'Du bist offline. Versuch es wieder, wenn du online bist.', failed: 'Teilen hat nicht geklappt. Versuch es noch einmal.',
-            low: 'Kleiner Spike', mid: 'Mittlerer Spike', high: 'Wahrscheinlich Spike', bs: 'Blutzucker', ing: 'Lebensmittel', est: 'Schätzung aus deinem Foto. Keine medizinische Beratung.',
+            low: 'Insulinfreundlich', mid: 'Nicht insulinfreundlich', high: 'Nicht insulinfreundlich', bs: 'Blutzucker', ing: 'Lebensmittel', est: 'Schätzung aus deinem Foto. Keine medizinische Beratung.',
             photoOnly: 'Foto nur auf diesem Handy gespeichert', open: 'Mahlzeit öffnen', kcal: 'kcal', carbs: 'Kohlenhydrate', protein: 'Eiweiß', fiber: 'Ballaststoffe', sugar: 'Zucker', fat: 'Fett',
             saved: 'Foto und Schätzung sind bei deiner Mahlzeit gespeichert.'
         },
@@ -38,7 +38,7 @@
             cap: 'Texto (opcional)', capPh: 'Escribe algo sobre ella', foot: 'Solo se comparte esta comida: la foto, su nombre, la estimación del pico y lo que encontró el análisis (alimentos, números, consejo). Las comidas de pico bajo también salen en Para ti. Nunca tu peso ni otros datos de salud.',
             posting: 'Publicando…', posted: 'Compartida en la Comunidad', noPhoto: 'Esta comida no tiene foto para compartir.', signin: 'Inicia sesión para compartir en la Comunidad.',
             name: 'Elige primero un apodo en la Comunidad.', offline: 'No tienes conexión. Inténtalo cuando vuelvas a estar en línea.', failed: 'No se pudo compartir. Inténtalo de nuevo.',
-            low: 'Pico bajo', mid: 'Pico medio', high: 'Pico probable', bs: 'Azúcar en sangre', ing: 'Alimentos', est: 'Estimación a partir de tu foto. No es consejo médico.',
+            low: 'Apto para la insulina', mid: 'No apto para la insulina', high: 'No apto para la insulina', bs: 'Azúcar en sangre', ing: 'Alimentos', est: 'Estimación a partir de tu foto. No es consejo médico.',
             photoOnly: 'Foto guardada solo en este teléfono', open: 'Abrir comida', kcal: 'kcal', carbs: 'Carbohidratos', protein: 'Proteína', fiber: 'Fibra', sugar: 'Azúcar', fat: 'Grasa',
             saved: 'La foto y la estimación se guardaron con tu comida.'
         }

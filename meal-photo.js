@@ -22,7 +22,7 @@
             remT: 'Remind me to snap my meals', remS: 'A nudge at {times}. Change it in Reminders.',
             read: 'Read this meal with AI', readFree: 'Add the meal details (already read)', reading: 'Reading your meal…', removeMeal: 'Remove meal details',
             readFail: 'I couldn’t read this photo. You can still post it.',
-            ing: 'Estimated ingredients', bsL: 'Likely blood sugar response', low: 'Gentle rise', mid: 'Moderate rise', high: 'Likely spike',
+            ing: 'Estimated ingredients', bsL: 'Insulin check', low: 'Insulin-friendly', mid: 'Not insulin-friendly', high: 'Not insulin-friendly',
             note: 'Estimated from the photo’s nutrition, not measured. Your own response can differ.', noteS: 'Estimate from the photo, not measured.',
             foot: 'Shared: the photo, the meal name, the estimated ingredients and nutrition, and the blood sugar estimate. Nothing else about your health or goals.',
             kcal: 'kcal', protein: 'protein', carbs: 'carbs', sugar: 'sugar', fiber: 'fiber', fat: 'fat',
@@ -37,7 +37,7 @@
             remT: 'Erinnere mich, meine Mahlzeiten zu fotografieren', remS: 'Ein Hinweis um {times}. Änderbar unter Erinnerungen.',
             read: 'Mahlzeit mit KI lesen', readFree: 'Mahlzeit-Details hinzufügen (schon gelesen)', reading: 'Ich lese deine Mahlzeit…', removeMeal: 'Mahlzeit-Details entfernen',
             readFail: 'Ich konnte das Foto nicht lesen. Du kannst es trotzdem posten.',
-            ing: 'Geschätzte Zutaten', bsL: 'Wahrscheinliche Blutzucker-Reaktion', low: 'Sanfter Anstieg', mid: 'Mittlerer Anstieg', high: 'Wahrscheinlich ein Spike',
+            ing: 'Geschätzte Zutaten', bsL: 'Insulin-Check', low: 'Insulinfreundlich', mid: 'Nicht insulinfreundlich', high: 'Nicht insulinfreundlich',
             note: 'Geschätzt aus den Nährwerten des Fotos, nicht gemessen. Deine eigene Reaktion kann anders sein.', noteS: 'Schätzung aus dem Foto, nicht gemessen.',
             foot: 'Geteilt werden: das Foto, der Name der Mahlzeit, die geschätzten Zutaten und Nährwerte und die Blutzucker-Schätzung. Sonst nichts über deine Gesundheit oder Ziele.',
             kcal: 'kcal', protein: 'Eiweiß', carbs: 'Kohlenh.', sugar: 'Zucker', fiber: 'Ballastst.', fat: 'Fett',
@@ -52,7 +52,7 @@
             remT: 'Recuérdame fotografiar mis comidas', remS: 'Un aviso a las {times}. Cámbialo en Avisos.',
             read: 'Analizar esta comida con IA', readFree: 'Añadir los detalles de la comida (ya analizada)', reading: 'Analizando tu comida…', removeMeal: 'Quitar detalles de la comida',
             readFail: 'No he podido analizar esta foto. Aun así puedes publicarla.',
-            ing: 'Ingredientes estimados', bsL: 'Respuesta probable de azúcar en sangre', low: 'Subida suave', mid: 'Subida moderada', high: 'Probable pico de azúcar',
+            ing: 'Ingredientes estimados', bsL: 'Análisis de insulina', low: 'Apto para la insulina', mid: 'No apto para la insulina', high: 'No apto para la insulina',
             note: 'Estimado a partir de la nutrición de la foto, no medido. Tu respuesta puede ser distinta.', noteS: 'Estimación de la foto, no medida.',
             foot: 'Se comparte: la foto, el nombre de la comida, los ingredientes y la nutrición estimados y la estimación de azúcar en sangre. Nada más sobre tu salud u objetivos.',
             kcal: 'kcal', protein: 'proteína', carbs: 'carbohidratos', sugar: 'azúcar', fiber: 'fibra', fat: 'grasa',
@@ -119,7 +119,7 @@
             (opts.noName ? '' : '<b class="ms-name">' + esc(m.name) + '</b>') +
             (ing ? '<p class="ms-ing"><span>' + esc(t('ing', l)) + ':</span> ' + ing + '</p>' : '') +
             '<div class="ms-nut">' + KEYS.map(chip).join('') + '</div>' +
-            '<p class="ms-bs ms-bs-' + bs.level + '"><i aria-hidden="true"></i><span>' + esc(t('bsL', l)) + ': <b>' + esc(t(bs.level, l)) + '</b></span></p>' +
+            '<p class="ms-bs ms-bs-' + bs.level + '"><i aria-hidden="true"></i><span><b>' + esc(t(bs.level, l)) + '</b></span></p>' +
             '<p class="ms-note">' + esc(t(opts.compact ? 'noteS' : 'note', l)) + '</p></div>';
     }
 

@@ -49,7 +49,7 @@ test('health uses the scanner verdict words only, and the healthy bonus needs en
   assert.equal(G.healthy([it('ok'), it('ok'), it('ok'), it('ok')]), false, 'four rated items are not enough');
   assert.equal(G.healthy([it('ok'), it('ok'), it('ok'), it('better'), it('spike')]), true, '3 of 5 lower impact is a healthy kitchen');
   const ui = read('kitchen-game.js');
-  assert.match(ui, /Lower impact/); assert.match(ui, /Not enough data/);
+  assert.match(ui, /Insulin-friendly/); assert.match(ui, /Not enough data/);
   assert.match(ui, /Scanner estimates, not medical advice/);
   assert.doesNotMatch(ui, /blood sugar will|stays steady|guarantee/i, 'no medical promises');
 });

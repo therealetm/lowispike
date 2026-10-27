@@ -114,8 +114,10 @@ test('anti-cheat: the model block can tighten the app verdict but never loosen i
 });
 
 test('labels in every app language: the three tiers Everyday / Small portion / Skip it, no frequency (24 Oct 2026)', () => {
-  assert.deepStrictEqual(K.LABELS.de, {JA: 'ALLTAG', SELTEN: 'KLEINE PORTION', NEIN: 'LIEBER NICHT'});
-  assert.strictEqual(K.label('JA', 'en'), 'EVERYDAY'); assert.strictEqual(K.label('SELTEN', 'es'), 'PORCIÓN PEQUEÑA'); assert.strictEqual(K.label('NEIN', 'es-ES'), 'MEJOR NO');
+  assert.deepStrictEqual(K.LABELS.de, {JA: 'INSULINFREUNDLICH', SELTEN: 'NICHT INSULINFREUNDLICH', NEIN: 'NICHT INSULINFREUNDLICH'});
+  assert.strictEqual(K.label('JA', 'en'), 'INSULIN-FRIENDLY'); assert.strictEqual(K.label('SELTEN', 'es'), 'NO APTO PARA LA INSULINA'); assert.strictEqual(K.label('NEIN', 'es-ES'), 'NO APTO PARA LA INSULINA');
+  /* 27 Oct 2026: the shared helper */
+  assert.strictEqual(K.ifWord('low', 'de'), 'Insulinfreundlich'); assert.strictEqual(K.ifWord('mid', 'de'), 'Nicht insulinfreundlich'); assert.strictEqual(K.ifWord('SELTEN', 'en'), 'Not insulin-friendly'); assert.strictEqual(K.ifClass('JA'), 'if-yes'); assert.match(K.ifNote('de'), /keine Garantie/);
   assert.strictEqual(K.lightWord('red', 'de'), 'ROT');
   for (const id of Object.keys(P.POLICY.rules.reduce((o, r) => (o[r.id] = 1, o), {}))) {
     if (!/^(policy|ja)\./.test(id) || /incomplete|unclear|wholegrain_bread/.test(id)) continue;

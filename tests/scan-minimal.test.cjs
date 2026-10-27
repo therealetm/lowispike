@@ -112,7 +112,7 @@ test('photo bowl: one answer on top; the spike estimate and the LOWiSPIKE verdic
         assert.equal(v.food.verdict, 'NEIN', 'the chocolate quark mix is not assumed sugar-free');
         const h = R.headline(v, l);
         assert.equal(h.cls, 'high', l);
-        assert.equal(h.ans, { en: 'Skip it', de: 'Lieber nicht', es: 'Mejor no' }[l] || h.ans, l);
+        assert.equal(h.ans, { en: 'Not insulin-friendly', de: 'Nicht insulinfreundlich', es: 'No apto para la insulina' }[l] || h.ans, l);
         assert.doesNotMatch(h.ans + ' ' + h.why, /no spike|kein spike|sin pico|steady|ruhig|estable|lower impact|niedrigere|impacto bajo/i, l);
         assert.match(h.why, /\d+ g/, l + ': the carb estimate stays, short');
         assert.equal(R.xpFor(v).xp, 0, l + ': not a LOWiSPIKE meal, so no XP, same as the headline');
@@ -125,10 +125,10 @@ test('photo bowl: one answer on top; the spike estimate and the LOWiSPIKE verdic
 
 test('photo: a plain everyday plate still reads low, a small-portion verdict reads yellow, a spike reads red', () => {
     const low = R.headline(R.verdict([item('chicken breast'), item('broccoli')], [], null, 'en'), 'en');
-    assert.equal(low.cls, 'low'); assert.equal(low.ans, 'Lower impact');
+    assert.equal(low.cls, 'low'); assert.equal(low.ans, 'Insulin-friendly');
     assert.match(low.why, /^About \d+ g net carbs\.$/);
     const fruit = R.headline(R.verdict([item('apple')], [], null, 'en'), 'en');
-    assert.equal(fruit.cls, 'mid'); assert.equal(fruit.ans, 'Small portion');
+    assert.equal(fruit.cls, 'mid'); assert.equal(fruit.ans, 'Not insulin-friendly', '27 Oct 2026: the middle is not insulin-friendly and shows red');
     const pork = R.verdict([item('pork chop')], [], null, 'en');
     assert.equal(R.headline(pork, 'en').cls, 'high', 'owner rule kept: pork is a NEIN, and the headline says so');
     const rice = R.headline(R.verdict([item('3 cups white rice')], [], null, 'en'), 'en');

@@ -654,6 +654,8 @@ input[type=date].input{display:flex;align-items:center;color-scheme:dark}
 .sh-pk{font-size:10px;font-weight:700;padding:3px 7px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .sh-pk.gold{background:rgba(202,161,90,.85);color:#14100a}
 .sh-pk.warn{background:rgba(240,160,138,.85);color:#1a0d08}
+.sh-pk.ok{background:rgba(76,195,138,.88);color:#06140d}
+.sh-pk.warn{background:rgba(255,107,107,.88);color:#1a0606}
 .sh-age{font-size:11px;color:var(--dim)}
 .sh-age.fresh{color:#a9dcb2}.sh-age.mid{color:#e6c98a}.sh-age.old{color:#f0a08a}
 .sh-old{text-decoration:line-through;opacity:.55}
@@ -2969,8 +2971,8 @@ window.LowiHome = {tidy, T};
 .k9-rtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
 .k9-rn{font-weight:650;font-size:15.5px;line-height:1.25}
 .k9-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.k9-spk{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(226,194,126,.18);color:#e2c27e}
-.k9-spk.warn{background:rgba(230,140,80,.16);color:#f0a46c}
+.k9-spk{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(76,195,138,.16);color:#4cc38a}
+.k9-spk.warn{background:rgba(255,107,107,.15);color:#ff6b6b}
 .k9-min{font-size:12.5px;opacity:.75}
 .k9-go{flex:none;font-size:13px;font-weight:650;color:#e2c27e;white-space:nowrap}
 .k9-buyh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:12px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.8}
@@ -2988,8 +2990,8 @@ window.LowiHome = {tidy, T};
 .k9-entry{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 12px;text-align:left;color:inherit;font:inherit;cursor:pointer;border-color:rgba(226,194,126,.45)}
 .k9-eic{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;padding:9px;box-sizing:border-box;background:linear-gradient(180deg,#e2c27e,#b98d45);color:#14100a}
 .k9-etx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-html[data-ui=light] .k9-spk{background:rgba(160,120,40,.14);color:#6e5114}
-html[data-ui=light] .k9-spk.warn{background:rgba(200,100,40,.13);color:#8a3f12}
+html[data-ui=light] .k9-spk{background:rgba(31,140,90,.12);color:#16784a}
+html[data-ui=light] .k9-spk.warn{background:rgba(200,50,50,.11);color:#b42828}
 html[data-ui=light] .k9-go{color:#7a5a16}
 html[data-ui=light] .k9-p{background:rgba(20,30,60,.04);border-color:rgba(20,30,60,.1)}
 html[data-ui=light] .k9-p.hit{border-color:rgba(150,110,30,.7);background:rgba(200,160,70,.13)}
@@ -3111,7 +3113,7 @@ function pic(i){ const sl = SL(); let src = ""; try { src = sl && sl.pic ? sl.pi
   return src ? '<img class="k9-pimg" alt="" draggable="false" loading="lazy" src="' + src + '">' : '<span class="k9-pimg k9-pem">' + esc(i.e || "🛒") + "</span>"; }
 function fimg(r){ try { if (typeof FOOD_IMG !== "undefined" && FOOD_IMG[r.id]) return FOOD_IMG[r.id]; if (r.meal && typeof FOOD_IMG !== "undefined" && FOOD_IMG["m_" + r.meal]) return FOOD_IMG["m_" + r.meal]; } catch(e){} return ""; }
 function mins(r){ try { return window.LOWI_COOK && r.book ? LOWI_COOK.minTxt(r.id) : ""; } catch(e){ return ""; } }
-const SPK = r => r.r === "selten" ? '<span class="k9-spk warn">' + esc(L("Small portion", "Kleine Portion", "Porción pequeña")) + "</span>" : '<span class="k9-spk">' + esc(L("Everyday", "Alltag", "Diario")) + "</span>"; /* 24 Oct 2026: tier words, no "now and then" */
+const SPK = r => r.r === "selten" ? '<span class="k9-spk warn">' + esc(L("Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina")) + "</span>" : '<span class="k9-spk">' + esc(L("Insulin-friendly", "Insulinfreundlich", "Apto para la insulina")) + "</span>"; /* 24 Oct 2026: tier words, no "now and then" */
 
 function rowHTML(m){
   const r = m.r, b = buyList(r, m.H, m.direct), src = fimg(r), mt = mins(r);
@@ -6436,7 +6438,8 @@ const ICO = {x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
   lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   chk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>'};
 /* 24 Oct 2026: the same three tier words as every verdict in the app (LowiFoodKnowledge.TIERS); DE / ES come from the rows below */
-const RLAB = {ja:"Everyday", selten:"Small portion", nein:"Skip it", mine:"Skip it for you"};
+/* 27 Oct 2026: only Insulin-friendly (green) or Not insulin-friendly (red), the same everywhere */
+const RLAB = {ja:"Insulin-friendly", selten:"Not insulin-friendly", nein:"Not insulin-friendly", mine:"Skip it for you"};
 const badge = r => '<span class="badge ' + r + '">' + RLAB[r] + '</span>';
 function avatar(size, u){ u = u || S.user; const z = zodiac(u.bday);
   return '<div class="av" style="width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * .4) + 'px">' + (u.avatar ? '<img src="' + u.avatar + '" alt="">' : esc((u.name || "?").charAt(0).toUpperCase())) + '</div>'; }
@@ -6466,7 +6469,7 @@ function homeExtrasHTML(){ const c = cycleInfo(), qs = curQuests(), glowDue = !S
     (glowDue ? '<button class="card goldline" style="width:100%;text-align:left" data-act="glow" id="glowBtn"><div class="row"><span style="font-size:26px">✨</span><div><div class="h3">Weekly glow check-in</div><div class="small muted">Energy, cravings, sleep and skin. 30 seconds, +50 XP.</div></div></div></button>' : "") +
     '<div class="sec"><span class="h3">Today\'s quests</span><span class="small muted num">' + qs.filter(q => S.quests.done[q.id]).length + '/' + qs.length + '</span></div><div class="card" id="quests">' +
     qs.map(q => '<button class="quest' + (S.quests.done[q.id] ? " done" : "") + '" data-act="quest" data-id="' + q.id + '"><span class="qcheck">' + ICO.chk + '</span><span><span class="qt">' + esc(q.t) + '</span><br><span class="small dim">' + esc(q.sub) + '</span></span><span class="xpp">' + (q.xp ? "+" + q.xp : "🔥") + '</span></button>').join("") + '</div>' +
-    (recent.length ? '<div class="sec"><span class="h3">Recently checked</span></div><div class="card">' + recent.map(l => '<div class="row" style="padding:8px 0"><span style="font-size:22px">' + l.e + '</span><span style="flex:1" class="small">' + esc(l.t) + '</span><span class="lvl ' + l.lvl + '" style="opacity:1;transform:none;animation:none;font-size:11px;padding:4px 9px">' + String(l.lvl || "").toUpperCase() + '</span></div>').join("") + '</div>' : "") +
+    (recent.length ? '<div class="sec"><span class="h3">Recently checked</span></div><div class="card">' + recent.map(l => '<div class="row" style="padding:8px 0"><span style="font-size:22px">' + l.e + '</span><span style="flex:1" class="small">' + esc(l.t) + '</span><span class="lvl ' + (l.lvl === "low" ? "low" : "high") + '" style="opacity:1;transform:none;animation:none;font-size:11px;padding:4px 9px">' + (l.lvl === "low" ? "Insulin-friendly" : "Not insulin-friendly") + '</span></div>').join("") + '</div>' : "") +
     '</div>';
   }
 function bindHomeExtras(){ const ta = $("#eatText"); if (ta) ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runAnalyse(ta.value); } });
@@ -6556,21 +6559,21 @@ function runAnalyse(text, photo){ text = (text || "").trim(); if (!text) { toast
   const cm = MEALS.find(m => normName(m.n) === normName(text)); if (cm) { openMeal(cm.id, photo); return; }
   const r = analyseMeal(text, {trig:S.trig}); if (!r.ok) { sheet('<div class="h2">I couldn\'t read that one</div><div class="small muted" style="margin-top:8px">I didn\'t recognise ' + (r.unknown.length ? "“" + esc(r.unknown.join(" ")) + "”" : "any food") + '. Try simple words, like “chicken, rice and salad”. I won\'t guess a verdict for something I don\'t know.</div><button class="btn ghost" style="margin-top:16px" data-act="closesheet">OK</button>'); return; }
   r.photo = photo || ""; CUR = r; renderResult(r); $("#result").scrollTop = 0; $("#result").classList.add("open"); }
-function renderResult(r){ const sw = r.swap, lvlTxt = {low:"LOW", medium:"MEDIUM", high:"HIGH"}[r.lvl];
-  const pol = (r.lvl === "low" && r.rawR === "nein") ? '<div class="lockline" style="margin-top:12px">ℹ️<span>Low spike estimate, but still Skip it: this one is a LOWiSPIKE food rule, not a spike claim.</span></div>' : "";
+function renderResult(r){ const sw = r.swap, lvlTxt = r.lvl === "low" && r.rawR !== "nein" ? "Insulin-friendly" : "Not insulin-friendly";
+  const pol = (r.lvl === "low" && r.rawR === "nein") ? '<div class="lockline" style="margin-top:12px">ℹ️<span>Not insulin-friendly here because of a LOWiSPIKE food rule, not because of a spike estimate.</span></div>' : "";
   const mine = r.trigHit ? '<div class="lockline" style="margin-top:12px">💫<span>You said you always eat too much of this. So for you it\'s a NO, whatever the general rating says.</span></div>' : "";
   const saved = sw && S.saved.some(x => x.n === sw.n);
   $("#result").innerHTML = '<div class="ovhead"><button class="xbtn" data-act="closeresult">' + ICO.x + '</button><span class="tiny gold">Your plate</span></div>' +
     '<div class="plate"><div class="pic">' + (r.photo ? '<img src="' + r.photo + '" alt="">' : r.emoji) + '</div><div style="flex:1;min-width:0"><div class="h2" style="font-size:19px">' + esc(r.title) + '</div><div style="margin-top:6px">' + badge(r.r) + '</div></div></div>' +
-    '<div class="card goldline spike" style="margin-top:14px" id="spikeCard"><div class="row"><span class="tiny gold">Spike estimate</span><span class="est" style="margin-left:auto">Estimate</span></div>' + spikeSVG(r.lvl, sw ? sw.lvl : "") +
-    '<div class="row"><span class="lvl ' + r.lvl + '" id="lvlPill">' + lvlTxt + '</span>' + (sw ? '<span class="small" style="margin-left:auto;color:var(--lo)">- - - with the swap</span>' : "") + '</div>' +
+    '<div class="card goldline spike" style="margin-top:14px" id="spikeCard"><div class="row"><span class="tiny gold">Insulin check</span><span class="est" style="margin-left:auto">Estimate, not a guarantee</span></div>' + spikeSVG(r.lvl, sw ? sw.lvl : "") +
+    '<div class="row"><span class="lvl ' + (r.lvl === "low" && r.rawR !== "nein" ? "low" : "high") + '" id="lvlPill">' + lvlTxt + '</span>' + (sw ? '<span class="small" style="margin-left:auto;color:var(--lo)">- - - with the swap</span>' : "") + '</div>' +
     '<div class="small dim" style="margin-top:10px">An estimate of the shape from what\'s typically in this food. Not a measurement, no glucose numbers. Your body can react differently.</div>' +
     '<div class="itemchips">' + r.items.map(i => '<span class="ichip ' + i.r + '">' + esc(i.n) + '</span>').join("") + '</div>' +
     (r.unknown.length ? '<div class="small dim" style="margin-top:8px">Not sure about: ' + esc(r.unknown.join(", ")) + '. Left out of the estimate.</div>' : "") + '</div>' + pol + mine +
     (r.good ? '<div class="blk"><div class="tiny">Good</div><div style="font-size:14.5px;line-height:1.45">' + esc(r.good) + '</div></div>' : "") +
     (r.change.length ? '<div class="blk"><div class="tiny">Change</div><ul>' + r.change.map(c => '<li>' + esc(c) + '</li>').join("") + '</ul></div>' : "") +
     '<div class="blk"><div class="tiny">Why?</div><ul>' + r.why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul></div>' +
-    (sw ? '<div class="blk"><div class="tiny">Better: your low-spike swap</div><div class="swapcard"><div class="row"><span style="font-size:30px">' + sw.e + '</span><div style="flex:1"><div class="h3">' + esc(sw.n) + '</div><div style="margin-top:5px">' + badge(sw.r) + ' <span class="lvl low" style="opacity:1;transform:none;animation:none;font-size:11px;padding:3px 9px">LOW (EST.)</span></div></div></div>' + (sw.keep ? '<div class="small muted" style="margin-top:8px">' + (r.meal ? "What you keep: " : "Keeps: ") + esc(sw.keep) + '</div>' : "") + ((r.meal && r.meal.s.rb) || sw.rb ? '<div class="small gold" style="margin-top:8px" data-rb="' + esc((r.meal && r.meal.s.rb) || sw.rb) + '">Recipe Book match: ' + esc((r.meal && r.meal.s.rb) || sw.rb) + '</div>' : "") +
+    (sw ? '<div class="blk"><div class="tiny">Better: your low-spike swap</div><div class="swapcard"><div class="row"><span style="font-size:30px">' + sw.e + '</span><div style="flex:1"><div class="h3">' + esc(sw.n) + '</div><div style="margin-top:5px">' + badge(sw.r) + ' <span class="lvl low" style="opacity:1;transform:none;animation:none;font-size:11px;padding:3px 9px">Insulin-friendly</span></div></div></div>' + (sw.keep ? '<div class="small muted" style="margin-top:8px">' + (r.meal ? "What you keep: " : "Keeps: ") + esc(sw.keep) + '</div>' : "") + ((r.meal && r.meal.s.rb) || sw.rb ? '<div class="small gold" style="margin-top:8px" data-rb="' + esc((r.meal && r.meal.s.rb) || sw.rb) + '">Recipe Book match: ' + esc((r.meal && r.meal.s.rb) || sw.rb) + '</div>' : "") +
       '<div class="row" style="gap:8px;margin-top:12px"><button class="btn ghost sm" data-act="saveswap" id="saveSwap" style="flex:1">' + (saved ? "Saved ✓" : "Save this swap") + '</button><button class="btn ghost sm" data-act="shareswap" id="shareSwap" style="flex:1">Share to For You</button></div></div></div>'
       : '<div class="blk"><div class="swapcard"><div class="h3">Already LOWiSPIKE ✨</div>' + (r.tip ? '<div class="small muted" style="margin-top:6px">' + esc(r.tip) + '</div>' : "") + '</div></div>') +
     classicExtras(r) +
@@ -7423,7 +7426,7 @@ const ICON = {
   x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   cart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 11h10.6L20 7H6.2"/><circle cx="9" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/></svg>'
 };
-const RB = {ja:"Everyday", selten:"Small portion", nein:"Skip it"}; /* 24 Oct 2026: same tier words everywhere */
+const RB = {ja:"Insulin-friendly", selten:"Not insulin-friendly", nein:"Not insulin-friendly"}; /* 24 Oct 2026: same tier words everywhere */
 const rBadge = r => '<span class="sh-pk ' + (r === "ja" ? "gold" : "warn") + '">' + (RB[r] || "JA") + "</span>";
 function pack(p, big){
   const c = (p.g && GROUPS[p.g[0]]) ? p.g[0] : "snack";
@@ -8171,6 +8174,13 @@ const LANG_KEY = "lowispike.lang";
 const LANGS = [{id:"en", n:"EN"}, {id:"de", n:"DE"}, {id:"es", n:"ES"}];
 /* [English, Deutsch, Español] */
 const T = [
+  // 27 Oct 2026: one verdict everywhere, Insulin-friendly (green) or Not insulin-friendly (red)
+  ["Insulin-friendly", "Insulinfreundlich", "Apto para la insulina"],
+  ["Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina"],
+  ["Insulin check", "Insulin-Check", "Control de insulina"],
+  ["Estimate, not a guarantee", "Schätzung, keine Garantie", "Estimación, no una garantía"],
+  ["Insulin-friendly, made by you.", "Insulinfreundlich, selbst gemacht.", "Apto para la insulina y hecho por ti."],
+  ["Not insulin-friendly here because of a LOWiSPIKE food rule, not because of a spike estimate.", "Nicht insulinfreundlich wegen einer LOWiSPIKE-Lebensmittelregel, nicht wegen einer Spike-Schätzung.", "No apto para la insulina por una regla de alimentos de LOWiSPIKE, no por una estimación de pico."],
   // welcome + onboarding
   ["Eat what you love.", "Iss, was du liebst.", "Come lo que te encanta."],
   ["Rebuilt low-spike.", "Neu gebaut, low-spike.", "Rehecho low-spike."],
@@ -8616,7 +8626,7 @@ html[data-ui=light] .a2-prev{background:#fff;box-shadow:0 18px 44px rgba(60,72,1
 /* spike meter */
 .a2-sp{display:inline-flex;gap:3px;vertical-align:middle;margin-right:6px}
 .a2-sp i{width:14px;height:6px;border-radius:3px;background:var(--r2-line)}
-.a2-sp1 i:nth-child(1){background:#4cc38a}
+.a2-sp1 i{background:#4cc38a}
 .a2-sp3 i{background:#ff7a6b}
 .a2-spl{font-size:12.5px;color:var(--r2-mut);vertical-align:middle}
 /* 1 scan */
@@ -8709,18 +8719,18 @@ function picker(){
 function clock(h, m){ const d = new Date(2026, 0, 1, h, m || 0);
   if (lang() === "en") return d.toLocaleTimeString("en-US", {hour:"numeric", minute:"2-digit"});
   return String(h).padStart(2, "0") + ":" + String(m || 0).padStart(2, "0"); }
-const SPIKE = (lvl, label) => '<span class="a2-sp a2-sp' + lvl + '"><i></i><i></i><i></i></span><span class="a2-spl">' + label + '</span>';
+const SPIKE = (lvl, label) => '<span class="a2-sp a2-sp' + lvl + '"><i></i></span><span class="a2-spl">' + label + '</span>';
 function cards(){
   const meal = 20;   /* last meal 20:00 -> milestones */
   return [
     {id:"scan", h:"Catch the friendly foods.", p:"Scan a barcode or snap your plate. Every insulin-friendly find goes into a bubble in your Bubble Dex.",
      v:'<div class="a2-scan"><div class="a2-orb" aria-hidden="true"><span></span></div>' +
-       '<div class="a2-pc"><div class="a2-pc-ic" aria-hidden="true">🥛</div><div class="a2-pc-t"><b>Greek yogurt</b><div>' + SPIKE(1, "Low spike") + '</div></div><span class="a2-new">New</span></div>' +
+       '<div class="a2-pc"><div class="a2-pc-ic" aria-hidden="true">🥛</div><div class="a2-pc-t"><b>Greek yogurt</b><div>' + SPIKE(1, "Insulin-friendly") + '</div></div><span class="a2-new">New</span></div>' +
        '<div class="a2-xp"><span>Caught</span><b>+15 XP</b></div></div>'},
     {id:"swap", h:"Your burger, but low-spike.", p:"Keep the craving. Get the swap that hits softer.",
-     v:'<div class="a2-swap"><div class="a2-row"><div class="a2-ic" aria-hidden="true">🍔</div><div class="a2-rt"><b>Classic burger</b><div>' + SPIKE(3, "High spike") + '</div></div></div>' +
+     v:'<div class="a2-swap"><div class="a2-row"><div class="a2-ic" aria-hidden="true">🍔</div><div class="a2-rt"><b>Classic burger</b><div>' + SPIKE(3, "Not insulin-friendly") + '</div></div></div>' +
        '<div class="a2-arrow" aria-hidden="true">↓</div>' +
-       '<div class="a2-row good"><div class="a2-ic" aria-hidden="true">🥬</div><div class="a2-rt"><b>Lettuce-wrap burger</b><div>' + SPIKE(1, "Low spike") + '</div></div></div></div>'},
+       '<div class="a2-row good"><div class="a2-ic" aria-hidden="true">🥬</div><div class="a2-rt"><b>Lettuce-wrap burger</b><div>' + SPIKE(1, "Insulin-friendly") + '</div></div></div></div>'},
     {id:"fast", h:"Know the exact minute.", p:"Every fasting milestone shows its clock time, from your last meal.",
      v:'<div class="a2-fast"><div class="a2-fh"><span>Last meal</span><b class="a2-clk" data-h="' + meal + '">' + clock(meal) + '</b></div>' +
        [[12, "Fat burn, often"], [14, "Ketones, maybe"], [16, "Your goal"]] /* soft-ms */.map((m, i) => '<div class="a2-ms' + (i === 2 ? " goal" : "") + '"><i></i><span class="a2-msh">' + m[0] + ' h</span><span class="a2-msn">' + m[1] + '</span><b class="a2-clk" data-h="' + ((meal + m[0]) % 24) + '">' + clock((meal + m[0]) % 24) + '</b></div>').join("") + '</div>'},
@@ -9376,7 +9386,7 @@ function fMeta(f){ const m = window.LOWI_COOK && f.book ? LOWI_COOK.minTxt(f.id)
 /* each part in its own span so the German/Spanish page translator can match "Sweet" and "5 min + chill" on their own (bug hunt 23 Oct) */
 function fMetaHTML(f){ const m = window.LOWI_COOK && f.book ? LOWI_COOK.minTxt(f.id) : "";
   return [f.com ? "From " + f.who : FCAT[f.c] || "", m].filter(Boolean).map(x => "<span>" + esc(x) + "</span>").join(" · "); }
-function fBadge(f){ return '<span class="sh-pk ' + (f.r === "selten" ? "warn" : "gold") + '">' + (f.r === "selten" ? "Small portion" : "Everyday") + "</span>"; }
+function fBadge(f){ return '<span class="sh-pk ' + (f.r === "selten" ? "warn" : "ok") + '">' + (f.r === "selten" ? "Not insulin-friendly" : "Insulin-friendly") + "</span>"; }
 function fPick(){
   dkNorm(); /* r3k-pick, ck-src: from the chosen source only */ const lf = fLast(), A = fSrcPool().filter(f => R5.never.indexOf(f.id) < 0), P = A.length > 1 && lf ? A.filter(f => f.id !== lf.id) : A; if (!P.length) return null;
   /* ck-cat: caught products together weigh as much as the whole shop range, so your own and community catches still come up */
@@ -12395,7 +12405,7 @@ function ckPaint(dir){ if (!CK) return; const r = CK.r, n = r.steps.length, i = 
   if (i < 0) body = '<div class="tiny gold">Get ready</div><div class="h2 p2-cktx">Put these out first</div>' +
       '<div class="p2-mise">' + r.ing.map((g, k) => '<span class="p2-m' + (isHome(g) ? " home" : "") + '" style="--i:' + k + '">' + ingArt(g) + '<b>' + esc(g.n) + '</b>' + (g.q ? '<small>' + esc(g.q) + '</small>' : "") + '</span>').join("") + '</div>';
   else if (i >= n) body = '<div class="p2-done"><div class="p2-scene sc-done" aria-hidden="true"><i class="p2-glow"></i><span class="p2-vessel">🍽️</span><span class="p2-item">' + (r.img ? '<img alt="" src="' + r.img + '">' : r.e) + '</span><i class="p2-spark k1"></i><i class="p2-spark k2"></i><i class="p2-spark k3"></i><i class="p2-spark k4"></i></div>' +
-      '<div class="tiny gold">Done</div><div class="h2 p2-cktx">Enjoy your ' + esc(r.swapName || r.n) + '</div><div class="small muted">Low spike, made by you.</div></div>';
+      '<div class="tiny gold">Done</div><div class="h2 p2-cktx">Enjoy your ' + esc(r.swapName || r.n) + '</div><div class="small muted">Insulin-friendly, made by you.</div></div>';
   else { const t = r.steps[i], kind = sceneOf(t), mm = ckMinutes(t);
     body = sceneHTML(kind, itemOf(t, r)) + '<div class="tiny gold">Step ' + (i + 1) + ' of ' + n + '</div><div class="h2 p2-cktx">' + esc(t) + '</div>' +
       (mm && mm <= 90 ? '<button class="p2-timer" data-p2="timer" data-m="' + mm + '" id="p2Timer">' + IC.clock + '<span>Start a ' + mm + ' min timer</span></button>' : ""); }
@@ -12622,7 +12632,7 @@ const ROWS = [
   ["Finish", "Fertig", "Terminar"],
   ["Close", "Schließen", "Cerrar"],
   ["Done", "Fertig", "Listo"],
-  ["Low spike, made by you.", "Low Spike, selbst gemacht.", "Sin picos de azúcar y hecho por ti."],
+  ["Insulin-friendly, made by you.", "Insulinfreundlich, selbst gemacht.", "Apto para la insulina y hecho por ti."],
   ["Timer stopped", "Timer gestoppt", "Temporizador parado"],
   ["Time's up", "Zeit ist um", "Se acabó el tiempo"],
   [/^Step (\d+) of (\d+)$/, "Schritt $1 von $2", "Paso $1 de $2"],
@@ -13633,13 +13643,15 @@ R3A.bootMorning = function(){
     ["Saved: this food is a Skip it for you", "Gespeichert: Für dich lieber nicht", "Guardado: para ti, mejor no"],
     ["Removed from your list", "Von deiner Liste entfernt", "Quitado de tu lista"],
     /* 24 Oct 2026: the three verdict tiers, the same words everywhere (LowiFoodKnowledge.TIERS) */
+    ["Insulin-friendly", "Insulinfreundlich", "Apto para la insulina"],
+    ["Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina"],
     ["Everyday", "Alltag", "Diario"],
     ["Small portion", "Kleine Portion", "Porción pequeña"],
     ["Skip it", "Lieber nicht", "Mejor no"],
     ["Skip it for you", "Für dich lieber nicht", "Para ti, mejor no"],
     ["Small portion: halloumi is a Small portion food. Hot sauce: ", "Kleine Portion: Halloumi gehört zu Kleine Portion. Scharfe Soße: ", "Porción pequeña: el halloumi es de Porción pequeña. Salsa picante: "],
     ["Small portion: a square or two after a meal.", "Kleine Portion: ein, zwei Stückchen nach einer Mahlzeit.", "Porción pequeña: una o dos onzas después de comer."],
-    ["Low spike estimate, but still Skip it: this one is a LOWiSPIKE food rule, not a spike claim.", "Niedrige Spike-Schätzung, aber trotzdem Lieber nicht: Das ist eine LOWiSPIKE-Lebensmittelregel, keine Spike-Aussage.", "Estimación de pico baja, pero igual Mejor no: es una regla de alimentos de LOWiSPIKE, no una afirmación sobre picos."],
+    ["Not insulin-friendly here because of a LOWiSPIKE food rule, not because of a spike estimate.", "Nicht insulinfreundlich wegen einer LOWiSPIKE-Lebensmittelregel, nicht wegen einer Spike-Schätzung.", "No apto para la insulina por una regla de alimentos de LOWiSPIKE, no por una estimación de pico."],
     ["The rules engine says Skip it. It goes to a member check first.", "Die Regeln sagen Lieber nicht. Es geht zuerst an eine Prüfung durch Mitglieder.", "Las reglas dicen Mejor no. Primero pasa por una revisión de miembros."],
     ["Foods I always eat too much of", "Foods, von denen ich immer zu viel esse", "Comidas de las que siempre como demasiado"],
     [/^(\d+) marked as Skip it for you$/, "$1 für dich auf Lieber nicht gesetzt", "$1 marcadas como Mejor no para ti"],
@@ -14763,13 +14775,13 @@ const B3_TX = {
   classics: ["All classics", "Alle Klassiker", "Todos los clásicos"],
   privacy: ["Photos stay in the app, not in your camera roll.", "Fotos bleiben in der App, nicht in deiner Galerie.", "Las fotos se quedan en la app, no en tu carrete."],
   /* verdicts */
-  v_ok: ["OK", "OK", "OK"],
-  v_spike: ["High spike", "Hoher Spike", "Pico alto"],
-  v_better: ["Better pick", "Bessere Wahl", "Mejor opción"],
+  v_ok: ["Insulin-friendly", "Insulinfreundlich", "Apto para la insulina"],
+  v_spike: ["Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina"],
+  v_better: ["Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina"],
   v_unknown: ["Not checked yet", "Noch nicht geprüft", "Aún sin comprobar"],
-  vs_ok: ["Lower estimated blood sugar impact. An estimate, not a guarantee.", "Niedrigere geschätzte Wirkung auf den Blutzucker. Eine Schätzung, keine Garantie.", "Impacto estimado más bajo en el azúcar en sangre. Una estimación, no una garantía."],
-  vs_spike: ["Higher estimated blood sugar impact.", "Höhere geschätzte Wirkung auf den Blutzucker.", "Impacto estimado más alto en el azúcar en sangre."],
-  vs_better: ["Moderate estimated blood sugar impact. Keep the portion small.", "Mittlere geschätzte Wirkung auf den Blutzucker. Portion klein halten.", "Impacto estimado moderado en el azúcar en sangre. Mejor una porción pequeña."],
+  vs_ok: ["An estimate, not a guarantee.", "Eine Schätzung, keine Garantie.", "Una estimación, no una garantía."],
+  vs_spike: ["Pick a swap. An estimate, not a guarantee.", "Lieber tauschen. Eine Schätzung, keine Garantie.", "Mejor elige un cambio. Una estimación, no una garantía."],
+  vs_better: ["Keep it small or pick a swap. An estimate, not a guarantee.", "Klein halten oder lieber tauschen. Eine Schätzung, keine Garantie.", "Porción pequeña o elige un cambio. Una estimación, no una garantía."],
   vs_unknown: ["Not enough data to estimate. Until it's checked, treat it as a no.", "Zu wenig Daten für eine Schätzung. Bis es geprüft ist, lieber nicht.", "No hay datos suficientes para estimarlo. Hasta comprobarlo, mejor no."],
   /* reasons */
   w_sugar100: ["{0} g sugar per 100 g", "{0} g Zucker pro 100 g", "{0} g de azúcar por 100 g"],
@@ -14972,9 +14984,9 @@ Object.assign(B3_TX, {
   m_mid: ["Medium", "Mittel", "Medio"],
   m_high: ["High", "Hoch", "Alto"],
   m_est: ["estimate", "Schätzung", "estimación"],
-  vl_ok: ["Lower impact", "Niedrigere Wirkung", "Impacto bajo"],
-  vl_better: ["Moderate impact", "Mittlere Wirkung", "Impacto moderado"],
-  vl_spike: ["Higher impact", "Höhere Wirkung", "Impacto alto"],
+  vl_ok: ["Insulin-friendly", "Insulinfreundlich", "Apto para la insulina"],
+  vl_better: ["Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina"],
+  vl_spike: ["Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina"],
   vl_unknown: ["Not enough data", "Zu wenig Daten", "Faltan datos"],
   rar_leg: ["Legendary", "Legendär", "Legendario"],
   rar_rare: ["Rare", "Selten", "Raro"],
@@ -14990,8 +15002,8 @@ Object.assign(B3_TX, {
   progress: ["{0} caught · catch {1} more to become {2}", "{0} gefangen · noch {1} fangen, dann bist du {2}", "{0} atrapados · atrapa {1} más para ser {2}"],
   progressMax: ["{0} caught · top level", "{0} gefangen · höchstes Level", "{0} atrapados · nivel máximo"],
   seen: ["{0} in the community dex", "{0} im Community-Dex", "{0} en el dex de la comunidad"],
-  f_low: ["Low-spike", "Low-Spike", "Pico bajo"],
-  f_skip: ["Skip", "Lieber nicht", "Mejor no"],
+  f_low: ["Insulin-friendly", "Insulinfreundlich", "Apto para la insulina"],
+  f_skip: ["Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina"],
   notMine: ["Not caught by you yet", "Von dir noch nicht gefangen", "Aún no lo has atrapado"],
   swapsFor: ["Swap it for", "Tausch es gegen", "Cámbialo por"],
   pending: ["Saved on this phone. It joins the shared dex when you're online.", "Auf diesem Handy gespeichert. Kommt in den gemeinsamen Dex, sobald du online bist.", "Guardado en este móvil. Entra en el dex compartido cuando tengas conexión."],
@@ -15652,7 +15664,7 @@ async function decodeFile(f){
    Reveal: silhouette, then the card. Catch, swaps, report.
    ===================================================================== */
 let CUR = null;
-function meterHTML(score, est){ const s = Math.max(0, Math.min(100, score || 0)), lab = s < 30 ? t("m_low") : s < 60 ? t("m_mid") : t("m_high");
+function meterHTML(score, est){ return ""; /* 27 Oct 2026: no Low / Medium / High spike meter; the verdict is Insulin-friendly or not */ const s = Math.max(0, Math.min(100, score || 0)), lab = s < 30 ? t("m_low") : s < 60 ? t("m_mid") : t("m_high");
   return '<div class="b3-meter"><div class="b3-mh"><span class="tiny dim">' + esc(t("meter")) + '</span><b>' + esc(lab) + (est ? ' <small>(' + esc(t("m_est")) + ')</small>' : "") + '</b></div>' +
     '<div class="b3-mbar"><i class="b3-mfill" style="--w:' + s + '%"></i><i class="b3-mdot" style="--w:' + s + '%"></i></div><div class="b3-mscale tiny dim"><span>' + esc(t("m_low")) + '</span><span>' + esc(t("m_mid")) + '</span><span>' + esc(t("m_high")) + '</span></div></div>'; }
 function factsHTML(f){ if (!f || f.c == null && f.s == null) return ""; const n = v => v == null ? "–" : String(v).replace(".", LI() ? "," : ".") + " g";
@@ -15686,11 +15698,11 @@ function cardHTML(p, anim){
    > community deals > spike lists. Details and the store prices sit high so people see them at once; posting a deal is lower.
    tests/product-card-order.test.cjs holds this order. */
 const SC_TX = {
-  spike: ["Higher estimated blood sugar impact", "Höhere geschätzte Wirkung auf den Blutzucker", "Impacto estimado más alto en el azúcar en sangre"],
-  better: ["Moderate estimated blood sugar impact", "Mittlere geschätzte Wirkung auf den Blutzucker", "Impacto estimado moderado en el azúcar en sangre"],
-  ok: ["Lower estimated blood sugar impact", "Niedrigere geschätzte Wirkung auf den Blutzucker", "Impacto estimado más bajo en el azúcar en sangre"],
+  spike: ["Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina"],
+  better: ["Not insulin-friendly", "Nicht insulinfreundlich", "No apto para la insulina"],
+  ok: ["Insulin-friendly", "Insulinfreundlich", "Apto para la insulina"],
   unknown: ["Not enough data to estimate", "Zu wenig Daten für eine Schätzung", "No hay datos suficientes para estimarlo"],
-  est: ["Spike estimate", "Spike-Schätzung", "Estimación de pico"],
+  est: ["Estimate, not a guarantee", "Schätzung, keine Garantie", "Estimación, no una garantía"],
   catchXP: ["+10 XP", "+10 XP", "+10 XP"],
   ate: ["I ate this · log it", "Gegessen · eintragen", "Me lo comí · anotarlo"],
   known: ["Already in LOWiSPIKE", "Schon in LOWiSPIKE", "Ya está en LOWiSPIKE"],
@@ -15776,7 +15788,9 @@ if (typeof window.addEventListener === "function") window.addEventListener("lowi
 function szSwapHTML(p){ try { return window.LowiSellerZone && LowiSellerZone.swapHTML ? LowiSellerZone.swapHTML(p) : ""; } catch(e){ return ""; } }
 function simpleCardHTML(p){
   const sv = scServing(p), g = scUserG(sv); p = scView(p, sv); /* scanfe-g2: from here p = the product rated for the amount on the card */
-  const v = {spike:1, better:1, ok:1}[p.verdict] ? p.verdict : "unknown", mine = isMine(p), m = mine ? D.mine[pkey(p)] : null;
+  let v = {spike:1, better:1, ok:1}[p.verdict] ? p.verdict : "unknown"; const mine = isMine(p), m = mine ? D.mine[pkey(p)] : null;
+  /* 27 Oct 2026: the top label and the Food check below say the same thing: the stricter of the two decides Insulin-friendly or not */
+  try { if (v !== "unknown" && !(p.nameEst && !scanHasData(p)) && window.LowiFoodCard && LowiFoodCard.model) { const fm = LowiFoodCard.model(p, g), fv = fm && {JA:"ok", SELTEN:"better", NEIN:"spike"}[fm.verdict], rk = {ok:0, better:1, spike:2}; if (fv && rk[fv] > rk[v]) v = fv; } } catch(e){}
   let storeCmp = ""; try { storeCmp = window.LOWI_SHELF && LOWI_SHELF.priceCompareHTML ? LOWI_SHELF.priceCompareHTML(p.name, p.barcode, true) : ""; } catch(e){}
   const why = (p.why || []).map(whyText).filter(Boolean);
   const deals = window.LowiDeals && LowiDeals.cardHTML ? LowiDeals.cardHTML(p) : "";
@@ -18899,7 +18913,7 @@ html[data-ui=light] .lockline span{color:#55462a!important;opacity:1!important}
 .f2-res img,.f2-reg{width:100%;height:100%;border-radius:50%;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:46px;background:rgba(14,17,26,.95)}
 .f2-lvb{position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);padding:4px 11px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap;color:#10131a;background:var(--lv)}
 .lv-low{--lv:#a9dcb2;--lvg:rgba(169,220,178,.45);--deg:120deg}
-.lv-medium{--lv:#e6c98a;--lvg:rgba(230,201,138,.45);--deg:220deg}
+.lv-medium{--lv:#f0a08a;--lvg:rgba(240,160,138,.45);--deg:330deg}
 .lv-high{--lv:#f0a08a;--lvg:rgba(240,160,138,.45);--deg:330deg}
 .f2-dt{font-size:23px;font-weight:800;margin-top:6px}
 .f2-meal{font-size:15px;font-weight:650;margin-top:4px;opacity:.92;overflow-wrap:anywhere}
@@ -18935,7 +18949,7 @@ html[data-ui=light] .f2-shot{border-color:rgba(22,28,46,.14)}
 html[data-ui=light] .f2-res{background:conic-gradient(var(--lvd) 0 var(--deg),rgba(22,28,46,.1) var(--deg) 360deg);box-shadow:0 6px 24px var(--lvg)}
 html[data-ui=light] .f2-res img,html[data-ui=light] .f2-reg{background:#fff}
 html[data-ui=light] .lv-low{--lvd:#2f9a52;--lvg:rgba(47,154,82,.25)}
-html[data-ui=light] .lv-medium{--lvd:#c28a12;--lvg:rgba(194,138,18,.25)}
+html[data-ui=light] .lv-medium{--lvd:#d0532f;--lvg:rgba(208,83,47,.25)}
 html[data-ui=light] .lv-high{--lvd:#d0532f;--lvg:rgba(208,83,47,.25)}
 html[data-ui=light] .f2-lvb{background:var(--lvd);color:#fff}
 html[data-ui=light] .f2-xp{color:#8a5d00}
@@ -18962,8 +18976,8 @@ const W = {
     bad:"I couldn't read that one. Try simple words, like chicken, rice and salad.", photoT:"Nice shot. What's on the plate?", photoSub:"Name the main things so I can work out the spike.",
     retake:"New photo", scanning:"Looking at your plate…",
     pickT:"Let's find your meal", pickSub:"Two quick ways to pick something low-spike.", shuf:"Shuffle", shufS:"The slot machine picks a meal for you", swipe:"Swipe", swipeS:"Swipe through meals, keep the ones you like",
-    doneT:"Meal logged!", low:"Low spike", medium:"Medium spike", high:"High spike",
-    lowL:"Clean refuel. A gentler rise is likely.", mediumL:"Solid. A short walk after it helps.", highL:"Big spike. A 10-minute walk now softens it.",
+    doneT:"Meal logged!", low:"Insulin-friendly", medium:"Not insulin-friendly", high:"Not insulin-friendly",
+    lowL:"Clean refuel. A gentler rise is likely.", mediumL:"Solid. A short walk after it helps.", highL:"A 10-minute walk now helps.",
     xpBreak:"Logged the meal that broke your fast", xpNone:"No meal XP: 5 meals a day is the max.", share:"Share to For You", shareS:"Show the community what you ate",
     skipShare:"Skip · back to Today", today:"Back to Today", nextFast:"Your next fast is running since {t}.", cap:"Just ate: {m}",
     ate:"I ate this · log it", other:"Something else", typeIt:"Can't rate it? Type it instead", meal:"Meal checked"},
@@ -18975,8 +18989,8 @@ const W = {
     bad:"Das konnte ich nicht lesen. Versuch einfache Wörter, wie Hähnchen, Reis und Salat.", photoT:"Schönes Foto. Was ist auf dem Teller?", photoSub:"Nenn die Hauptsachen, dann rechne ich den Spike aus.",
     retake:"Neues Foto", scanning:"Ich schaue mir deinen Teller an…",
     pickT:"Lass uns dein Essen finden", pickSub:"Zwei schnelle Wege zu etwas mit wenig Spike.", shuf:"Shuffle", shufS:"Der Spielautomat sucht dir ein Essen aus", swipe:"Swipen", swipeS:"Wisch durch Gerichte, behalte, was dir gefällt",
-    doneT:"Mahlzeit eingetragen!", low:"Niedriger Spike", medium:"Mittlerer Spike", high:"Hoher Spike",
-    lowL:"Sauber getankt. Wahrscheinlich ein sanfterer Anstieg.", mediumL:"Solide. Ein kurzer Spaziergang danach hilft.", highL:"Großer Spike. 10 Minuten gehen jetzt dämpft ihn.",
+    doneT:"Mahlzeit eingetragen!", low:"Insulinfreundlich", medium:"Nicht insulinfreundlich", high:"Nicht insulinfreundlich",
+    lowL:"Sauber getankt. Wahrscheinlich ein sanfterer Anstieg.", mediumL:"Solide. Ein kurzer Spaziergang danach hilft.", highL:"10 Minuten gehen jetzt hilft.",
     xpBreak:"Die Mahlzeit nach dem Fasten eingetragen", xpNone:"Keine Mahlzeit-XP: 5 Mahlzeiten am Tag sind das Maximum.", share:"Auf For You teilen", shareS:"Zeig der Community, was du gegessen hast",
     skipShare:"Überspringen · zurück zu Heute", today:"Zurück zu Heute", nextFast:"Dein nächstes Fasten läuft seit {t}.", cap:"Gerade gegessen: {m}",
     ate:"Hab ich gegessen · eintragen", other:"Etwas anderes", typeIt:"Keine Bewertung? Dann tipp es ein", meal:"Mahlzeit geprüft"},
@@ -18988,8 +19002,8 @@ const W = {
     bad:"No pude leer eso. Prueba con palabras sencillas, como pollo, arroz y ensalada.", photoT:"Buena foto. ¿Qué hay en el plato?", photoSub:"Di lo principal y calculo el pico.",
     retake:"Otra foto", scanning:"Mirando tu plato…",
     pickT:"Busquemos tu comida", pickSub:"Dos formas rápidas de elegir algo con poco pico.", shuf:"Shuffle", shufS:"La tragaperras elige una comida por ti", swipe:"Deslizar", swipeS:"Desliza platos y quédate con los que te gusten",
-    doneT:"¡Comida registrada!", low:"Pico bajo", medium:"Pico medio", high:"Pico alto",
-    lowL:"Recarga limpia. Probablemente una subida más suave.", mediumL:"Bien. Un paseo corto después ayuda.", highL:"Pico alto. Caminar 10 minutos ahora lo suaviza.",
+    doneT:"¡Comida registrada!", low:"Apto para la insulina", medium:"No apto para la insulina", high:"No apto para la insulina",
+    lowL:"Recarga limpia. Probablemente una subida más suave.", mediumL:"Bien. Un paseo corto después ayuda.", highL:"Caminar 10 minutos ahora ayuda.",
     xpBreak:"Registraste la comida que rompió tu ayuno", xpNone:"Sin XP de comida: 5 comidas al día es el máximo.", share:"Compartir en For You", shareS:"Muestra a la comunidad lo que comiste",
     skipShare:"Saltar · volver a Hoy", today:"Volver a Hoy", nextFast:"Tu próximo ayuno corre desde las {t}.", cap:"Acabo de comer: {m}",
     ate:"Me lo comí · registrar", other:"Otra cosa", typeIt:"¿Sin valoración? Escríbelo", meal:"Comida revisada"}

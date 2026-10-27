@@ -18,9 +18,9 @@
     const shelfApi = () => (W.LOWI_SHELF && W.LOWI_SHELF.listOpen && W.LOWI_SHELF.dropList ? W.LOWI_SHELF : null);
     const root = () => D.getElementById('kgRoot');
     const LVL = {
-        ok: () => T('Lower impact', 'Geringere Wirkung', 'Menor impacto'),
-        better: () => T('Moderate impact', 'Mittlere Wirkung', 'Impacto moderado'),
-        spike: () => T('Higher impact', 'Stärkere Wirkung', 'Mayor impacto'),
+        ok: () => T('Insulin-friendly', 'Insulinfreundlich', 'Apto para la insulina'),
+        better: () => T('Not insulin-friendly', 'Nicht insulinfreundlich', 'No apto para la insulina'),
+        spike: () => T('Not insulin-friendly', 'Nicht insulinfreundlich', 'No apto para la insulina'),
         unknown: () => T('Not enough data', 'Zu wenig Daten', 'Datos insuficientes')
     };
 

@@ -27,16 +27,13 @@ test('Spanish never calls the companion "tu hierba" (it reads as slang for weed)
     for (const [f, s] of all()) assert.ok(!/tu hierba|la hierba te|hierba llegó|Camino de la hierba/i.test(s), f);
 });
 
-test('scanner verdicts in Spanish talk about blood sugar, not an insulin spike', () => {
-    for (const en of ['Higher estimated blood sugar impact', 'Lower estimated blood sugar impact', 'Moderate estimated blood sugar impact']) {
-        const t = es(en);
-        assert.match(t, /azúcar/, en);
-        assert.doesNotMatch(t, /insulina/, en);
-    }
+test('scanner verdicts in Spanish: Apto / No apto para la insulina, always with the estimate note (27 Oct 2026)', () => {
+    assert.equal(es('Insulin-friendly'), 'Apto para la insulina');
+    assert.equal(es('Not insulin-friendly'), 'No apto para la insulina');
     assert.match(es('Blood sugar and insulin impact'), /azúcar y la insulina/, 'meter keeps both, kept apart');
     const scan = decode(read('shop-scan-core.js'));
-    assert.match(scan, /'Impacto estimado más alto en el azúcar en sangre'/);
-    assert.match(scan, /'Impacto estimado más bajo en el azúcar en sangre'/);
+    assert.match(scan, /'No apto para la insulina'/);
+    assert.match(scan, /'Una estimación, no una garantía'/);
     assert.doesNotMatch(scan, /suba tu insulina|sube tu insulina/);
 });
 
@@ -87,5 +84,5 @@ test('meal photo checks: Spanish singular "Te queda 1", no "Hora del Cena", and 
     M.setLeft(2, 10);
     assert.equal(M.leftText('es'), 'Te quedan 2 de 10 an\u00e1lisis de foto hoy');
     for (const k of ['b', 'l', 'd']) assert.doesNotMatch(M.nudgeText(k, 'es'), /Hora del/);
-    assert.equal(M.t('high', 'es'), 'Probable pico de az\u00facar');
+    assert.equal(M.t('high', 'es'), 'No apto para la insulina');
 });

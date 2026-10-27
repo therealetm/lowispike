@@ -51,7 +51,14 @@ const fs = require('fs'), path = require('path');
         return { text: txt.replace(/\s+/g, ' ').slice(0, 400), labels: word.map(e => { const s = getComputedStyle(e); let bg = s.backgroundColor, p = e; while (p && (bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent')) { p = p.parentElement; bg = p ? getComputedStyle(p).backgroundColor : bg; } return { t: e.textContent.trim(), cls: e.className, color: s.color, bg }; }), spikeLevels: /\b(mittel|medium|leve|moderado|hoch|high|alto|niedrig|low|bajo)\b.{0,12}(spike|anstieg|pico)|spike-(stufe|level)|gelb|yellow/i.test(txt) };
       });
     }
-    out.results.push({ code, card: card || 'NO CARD (' + (await page.evaluate(() => (document.querySelector('.b3-msg,.b3-status') || {}).textContent || '')) + ')' });
+    let why = null;
+    if (card) {
+      await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find(e => /^(Warum\?|Why\?|¿Por qué\?)$/.test(e.textContent.trim())); if (b) b.click(); });
+      await L.sleep(1200);
+      why = await page.evaluate(() => { const e = [...document.querySelectorAll('.ss-whyp')].find(x => !x.hidden); return e ? e.innerText.replace(/\s+/g, ' ').slice(0, 500) : ''; });
+      if (why && /\b(Lower|Moderate|Higher|Niedriger|Mittel|Höher|Bajo|Moderado|Alto)\b/.test(why)) card.spikeLevels = true;
+    }
+    out.results.push({ code, why, card: card || 'NO CARD (' + (await page.evaluate(() => (document.querySelector('.b3-msg,.b3-status') || {}).textContent || '')) + ')' });
     await page.screenshot({ path: '/tmp/p17-' + mode + '-' + lang + '-' + theme + '-' + code + '.png' });
     await page.evaluate(() => { try { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); } catch (e) {} });
     await L.sleep(1200);

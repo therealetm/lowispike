@@ -96,5 +96,45 @@
         const n = String(p.name || p.n || '').trim();
         return { n, bc: String(p.barcode || p.bc || ''), img: String(p.img || ''), br: String(p.brand || p.br || ''), v: level || '', est: !!p.est, pcat: p.cat || '' };
     }
-    return Object.freeze({ SHELVES, IDS, byId, shelfOf, shelve, health, levelOf, POINTS, HEALTHY_MIN, HEALTHY_SHARE, healthy, canLook, award, dayKey, fromProduct, norm });
+    /* Oct 27 2026 (Emmanuel: "see a fridge and next to it a cabinet ... with like maybe the emojis of the food"): one food emoji per entry,
+       from words in its name (EN/DE/ES, same matcher as the shelves). First match wins, so the specific words come first. No match: ''. */
+    const EMO = [
+        ['🍠', 'sweet potato|suesskartoffel|susskartoffel|batata|boniato'], ['🍉', 'watermelon|wassermelone|sandia'], ['🥜', 'peanut|erdnuss|cacahuete|mani'],
+        ['🍨', 'ice cream|speiseeis|helado|gelato'], ['🫐', 'blueberr|heidelbeer|blaubeer|arandano'], ['🍓', 'strawberr|erdbeer|fresa|raspberr|himbeer|frambuesa|berry|berries|beere|beeren'],
+        ['🍎', 'apple|apfel|aepfel|manzana'], ['🍌', 'banana|banane|platano'], ['🍇', 'grape|traube|trauben|uva|uvas'], ['🍊', 'orange|orangen|naranja|mandarin|clementin'],
+        ['🍋', 'lemon|zitrone|limon|lime|limette'], ['🍐', 'pear|birne|birnen|pera'], ['🍑', 'peach|pfirsich|melocoton|apricot|aprikose|albaricoque'], ['🍒', 'cherr|kirsch|cereza'],
+        ['🍈', 'melon|melone'], ['🍍', 'pineapple|ananas|pina'], ['🥭', 'mango'], ['🥝', 'kiwi'], ['🥑', 'avocado|aguacate'], ['🥥', 'coconut|kokos|coco'],
+        ['🍅', 'tomato|tomate|tomaten'], ['🥒', 'cucumber|gurke|gurken|pepino|zucchini|zucchetti|calabacin'], ['🥕', 'carrot|karotte|karotten|moehre|mohre|zanahoria'],
+        ['🥦', 'broccoli|brokkoli|brocoli|cauliflower|blumenkohl|coliflor'], ['🥬', 'salad|salat|lettuce|lechuga|ensalada|spinach|spinat|espinaca|kale|gruenkohl|cabbage|kohl|col|rucola|arugula|rucula'],
+        ['🌶️', 'chili|chilli|chile|jalapeno'], ['🫑', 'bell pepper|paprika|pimiento'], ['🌽', 'corn|mais|maiz'], ['🥔', 'potato|kartoffel|kartoffeln|patata|papas'],
+        ['🧅', 'onion|zwiebel|zwiebeln|cebolla'], ['🧄', 'garlic|knoblauch|ajo'], ['🍄', 'mushroom|pilz|pilze|champignon|seta|setas'], ['🍆', 'eggplant|aubergine|berenjena'],
+        ['🫚', 'ginger|ingwer|jengibre'], ['🫛', 'pea|peas|erbse|erbsen|guisante|edamame'], ['🫘', 'bean|beans|bohne|bohnen|frijol|judia|lentil|linse|linsen|lenteja|chickpea|kichererbse|garbanzo|hummus'],
+        ['🥚', 'egg|eggs|ei|eier|huevo|huevos'], ['🧈', 'butter|mantequilla|tofu|tempeh'], ['🧀', 'cheese|kaese|kase|queso|feta|mozzarella|parmesan|gouda|cheddar|halloumi|ricotta|cottage|frischkaese'],
+        ['🥛', 'milk|milch|leche|hafermilch|sojamilch|haferdrink'],
+        ['🥣', 'yogurt|yoghurt|joghurt|yogur|skyr|quark|kefir|oat|oats|hafer|haferflocken|avena|muesli|musli|granola|cereal|cereales|cornflakes|porridge'],
+        ['🍗', 'chicken|haehnchen|hahnchen|huhn|haehnchenbrust|pollo|turkey|pute|puten|pavo'],
+        ['🥓', 'bacon|speck|ham|schinken|jamon|pork|schwein|cerdo'], ['🌭', 'sausage|wurst|wuerstchen|salchicha|chorizo|salami'], ['🥩', 'beef|rind|rinder|steak|ternera|mince|hack|hackfleisch|carne|lamb|lamm|cordero|meat|fleisch'],
+        ['🦐', 'shrimp|prawn|garnele|garnelen|gamba|gambas|camaron'], ['🐟', 'fish|fisch|pescado|salmon|lachs|tuna|thunfisch|atun|cod|kabeljau|bacalao|trout|forelle|sardine'],
+        ['🥐', 'croissant'], ['🥨', 'pretzel|brezel|breze'], ['🥖', 'baguette'], ['🍞', 'bread|brot|broetchen|brotchen|pan|toast|bagel|wrap|tortilla'],
+        ['🍚', 'rice|reis|arroz'], ['🍝', 'pasta|nudel|nudeln|spaghetti|noodle|noodles|fideo|fideos|penne|fusilli|lasagne'], ['🌾', 'flour|mehl|harina|quinoa|couscous|bulgur'],
+        ['🍫', 'chocolate|schokolade|schoko|choco|kakao|cocoa'], ['🍪', 'cookie|keks|kekse|galleta|biscuit'], ['🍬', 'candy|gummi|gummy|caramelo|bonbon|sweets|suessigkeit'],
+        ['🍰', 'cake|kuchen|pastel|torte|muffin'], ['🍿', 'popcorn|palomitas'], ['🍟', 'chips|crisps|fries|pommes'], ['🌰', 'almond|mandel|mandeln|almendra|nut|nuts|nuss|nuesse|nusse|walnut|walnuss|cashew|hazelnut|haselnuss|nuez|nueces|pistach'],
+        ['🍯', 'honey|honig|miel|syrup|sirup'], ['🫙', 'jam|marmelade|konfituere|mermelada|pesto|jar|glas'],
+        ['☕', 'coffee|kaffee|cafe|espresso'], ['🍵', 'tea|tee|te|matcha'], ['🧃', 'juice|saft|zumo|jugo'], ['🥤', 'soda|cola|limo|limonade|refresco|smoothie|energy'],
+        ['🍺', 'beer|bier|cerveza'], ['🍷', 'wine|wein|vino'], ['💧', 'water|wasser|agua|mineral'],
+        ['🫒', 'olive|oliven|aceituna|oil|oel|ol|aceite'], ['🧂', 'salt|salz|sal|pepper|pfeffer|gewuerz|spice|especia'], ['🥫', 'sauce|sosse|sose|salsa|ketchup|senf|mustard|mostaza|mayo|soup|suppe|sopa|dose|lata|canned'],
+        ['🍕', 'pizza'], ['🍔', 'burger'], ['🍣', 'sushi']
+    ];
+    const ERX = EMO.map(([e, list]) => [e, list.split('|').map(w => {
+        const k = norm(w), x = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s');
+        return new RegExp(k.length <= 3 ? '(?:^|\\s)' + x + '(?:$|\\s)' : k.length === 4 ? '(?:^|\\s)' + x + '|' + x + '(?:$|\\s)' : x);
+    })]);
+    function emojiOf(entry) {
+        const n = ' ' + norm(entry && entry.n) + ' ';
+        if (n.trim()) for (const [e, rx] of ERX) if (rx.some(r => r.test(n))) return e;
+        return '';
+    }
+    /* Oct 27 2026: the green/red insulin label (one rule app-wide: only the lowest band counts as insulin-friendly). '' = no label. */
+    const labelOf = i => { const v = levelOf(i); return v === 'ok' ? 'yes' : v === 'unknown' ? '' : 'no'; };
+    return Object.freeze({ emojiOf, labelOf, EMO, SHELVES, IDS, byId, shelfOf, shelve, health, levelOf, POINTS, HEALTHY_MIN, HEALTHY_SHARE, healthy, canLook, award, dayKey, fromProduct, norm });
 });

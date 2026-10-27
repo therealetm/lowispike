@@ -5821,7 +5821,7 @@ function record(o){
   if (o.celebrate !== false) celebrateSession(r.min, r.xp, !!o.voice, o.onClose, o.complete !== false);
   return {xp:r.xp, min:r.min, sess};
 }
-function closePlayer(){ mvUnguard(); const el = $("#mv-player"); /* BH-060 */ if (el) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(el); } catch(e){} if (window.LowiMovePlayer) LowiMovePlayer.close(el); if (el) { el.classList.remove("on", "mv-asking"); setTimeout(() => { if (!P) el.innerHTML = ""; }, 400); } if ($("#mv-screen.on")) renderScreen(); const h = H(); if (h && h.refresh) h.refresh(); }
+function closePlayer(){ mvUnguard(); const el = $("#mv-player"); if (window.LowiMovePlayer) LowiMovePlayer.close(el); /* BH-060 */ if (el) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(el); } catch(e){} if (el) { el.classList.remove("on", "mv-asking"); setTimeout(() => { if (!P) el.innerHTML = ""; }, 400); } if ($("#mv-screen.on")) renderScreen(); const h = H(); if (h && h.refresh) h.refresh(); }
 
 /* ---------- steps ---------- */
 function setSteps(v){

@@ -75,12 +75,12 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
         await reset();
         await P.evaluate(() => { try { LowiMistyHub.open(); } catch (e) { } });
         await H.sleep(1500);
-        const has = await P.evaluate(k => !!document.querySelector('#mistyPeak li[data-k="' + k + '"] [data-mp]'), k);
+        const has = await P.evaluate(k => { const ovs = [...document.querySelectorAll('.r2-ov.on')]; const ov = ovs[ovs.length - 1]; return !!(ov && ov.querySelector('#mistyPeak li[data-k="' + k + '"] [data-mp]')); }, k);
         if (!has) { console.log('SKIP sheet row ' + k + ' (not missing in this state)'); continue; }
-        const act = await P.evaluate(k => { const b = document.querySelector('#mistyPeak li[data-k="' + k + '"] [data-mp]'); b.scrollIntoView({ block: 'center' }); return b.dataset.mp; }, k);
+        const act = await P.evaluate(k => { const ovs = [...document.querySelectorAll('.r2-ov.on')]; const b = ovs[ovs.length - 1].querySelector('#mistyPeak li[data-k="' + k + '"] [data-mp]'); b.scrollIntoView({ block: 'center' }); return b.dataset.mp; }, k);
         await H.sleep(500);
         /* a DOM click on the row's button: the same handler a finger runs (WebKit's touch tap inside the moving sheet is flaky in this harness) */
-        await P.evaluate(k => document.querySelector('#mistyPeak li[data-k="' + k + '"] [data-mp]').click(), k);
+        await P.evaluate(k => { const ovs = [...document.querySelectorAll('.r2-ov.on')]; ovs[ovs.length - 1].querySelector('#mistyPeak li[data-k="' + k + '"] [data-mp]').click(); }, k);
         await H.sleep(1800);
         s = await state();
         await judge('sheet-' + k, s);

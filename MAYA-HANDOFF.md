@@ -58,8 +58,110 @@ identifier or the literal on-screen text of a profile that never renamed its com
 Maya 6, Maya 6 to Maya 7, and on. If you are a new Maya, section 0.6 is your job description for the handover, and
 you pass it on to the Maya after you. Emmanuel should never have to explain it again.
 
-Contents: 0 Open requests from Emmanuel (read this first; 0.6 is the Mickey 17 workflow). 1 What LOWiSPIKE is. 2 Accounts and access. 3 How to work. 4 Lessons and difficulties. 5 Emmanuel's
+Contents: 0.41 Newest handover, 28 Oct 2026 (read it first). 0 Open requests from Emmanuel (read this first; 0.6 is the Mickey 17 workflow). 1 What LOWiSPIKE is. 2 Accounts and access. 3 How to work. 4 Lessons and difficulties. 5 Emmanuel's
 preferences and standing decisions. 6 Status board. 7 Do this first. Log (append-only, at the end).
+
+---
+
+## 0.41 Übergabe Maya 1 → nächste Maya (28.10.2026)
+
+Written Wed 28 Oct 2026, about 1:15 PM CET, by Maya 1 (task d0f45d3e) because her weekly limit may run out soon.
+Emmanuel: "make sure everything is ready for the handoff for the next Maya, if you can't continue. Have it in the
+GitHub..." Read this section first, then sections 3 and 5. No secrets in here.
+
+**Live build: 20261028-125615** (main 2c27b4cd, slim structure batch 3, verified live by verify-live --compare at
+about 12:58 PM CET). Re-read `version.json` on https://therealetm.github.io/lowispike/ before you trust this line.
+
+### Released today and last night (all quiet: no banner, no What's New)
+
+| Build | What went live |
+|---|---|
+| 20261027-210035 | Insulin label everywhere: only green "Insulinfreundlich" / red "Nicht insulinfreundlich" (EN/ES too), old middle level counts as red, spike meter gone, food-rule items (pork, alcohol) read red with a food-rule line |
+| 20261027-212448 | Visual kitchen in Cook → Küche: fridge, cabinet, bin side by side, food on shelves (emoji or own photo), tap zooms in place, quick actions, drag to bin, list note on fridge, Küchen-Check, photo button, week plan → kitchen, green/red dot |
+| 20261028-100218 | Dead screens part 1: old settings, old sleep sheet, old world map deleted; slim structure proposal (57 instead of 124 screens) |
+| 20261028-105751 | Navigation fixes: Hilf mir with shopping bar, chat notification opens the chat, Kochen as hologram, back in Profile, smaller Essenspause |
+| 20261028-113054 | Slim batch 1: one What's New card, one optional guide (Tutorial), short tour from Settings |
+| 20261028-114716 | Slim batch 2a: 6 hidden Home screens gone (journey diary, today stats, streak day → Mein Tag; weather screen and 3D window deleted) |
+| 20261028-122303 | Back/X at the bottom center everywhere (top arrows/X gone, dodges text field, bin and keyboard), Kochen hologram readable, kitchen side by side with bin visible |
+| 20261028-123638 | Slim batch 2b: one companion panel (Aussehen, Wachstum, Aura-Shop inside, old links land there, back returns to it, solid backdrop), water and sleep inline |
+| 20261028-125615 | Slim batch 3: one nutrition hub. Essenspause + Fuel are one panel (gap-view.js); Fuel tap opens it with Mahlzeit eintragen / Kochen / Einkaufen; last-meal time edits inline (fast-edit.js open({host})) |
+
+### Running or open jobs, with branch, queue step and exact next steps
+
+Queue: `/home/sprite/lowispike/queue/q.py` (max 2 active, 1 release). On a fresh computer the queue file is gone:
+use this list and the `wip/*` branches. Releases only via `queue/release-pipeline.sh` or `scripts/release.sh --quiet`;
+docs-only changes to main via `scripts/push-main.sh` while holding `/tmp/lowispike-release.lock`.
+
+1. **Slim structure batches 4–11** (task fab8c948, "successor 4"). Queue step `slim-b3-nutrition` (claimed by
+   `successor4-batch4`). Branch `slim-b2b-20261028`, worktree `wt-slim-b2b`, on GitHub as `wip/slim-b2b-20261028`
+   (batch 4 WIP commit 508afd78: every meal start opens the one logger, no empty meal-detail panel; NOT tested, NOT
+   released). One area per batch, one quiet release each, log line in the Log section after each:
+   - 4 meal as one flow (finish 508afd78, test, release)
+   - 5 one scanner
+   - 6 Move as one progress view
+   - 7 Community clean-up: keep the tabs, the galaxy and Affiliates
+   - 8 kitchen + shopping list together
+   - 9 settings into Profile
+   - 10 a shorter first start
+   - 11 hints open their target
+   Standing decisions: hold on the companion opens its panel, a tap still pets it (16 Oct); galaxy presence lives
+   in Profile only (22 Oct). Visual check tools: `/home/sprite/slimcheck.cjs`, `/home/sprite/slimlib.cjs`,
+   `/home/sprite/slimb.cjs` + `/home/sprite/scen/*.js` (local only; rebuild from the release-check notes if gone).
+   After the last batch: German screenshot page of every screen + German voice note to Emmanuel.
+2. **Fast app launch, no white flash** (task 6e9d831e). Queue step `fast-launch` (claimed by `task-fast-launch`).
+   Branch `fast-launch-20261028`, worktree `wt-fast-launch`; at handover it had no commits yet beyond main
+   (it was measuring the baseline with `/home/sprite/flprobe/perf.cjs`). Push to `wip/fast-launch-20261028` as soon
+   as there is a commit. Next: measure first paint, dark startup background and dark apple-touch-startup images so
+   no white flash, faster first paint, short branded launch fade only if needed, tests, visual check, quiet release.
+3. **Mic fix + X over popups** (task 1b909614). Not in the queue. Branch `micfix-20261028`, worktree `wt-micfix`.
+   Uncommitted work at handover was snapshotted (working tree untouched) to **`wip/micfix-20261028`** (ec6e371a):
+   bottom-close.js, community-chat.js, community-voice.css, index.html, mic-dictate-core.js, mic-dictate.js, sw.js,
+   new mic-session.js and tools/mic-fix/. Goal: mic permission detection works in iOS Safari and the home screen
+   app, only ONE mic button per field, the bottom X never covers help cards / popups. Next: finish, full suite,
+   visual check, quiet release.
+4. **iPhone crash going from Community into the chat.** Still no proven cause on a real iPhone. Top priority among
+   the bugs he can feel. Old branch/worktree `wt-chat-crash` (see Log); reproduce in WebKit, check memory and the
+   chat open path.
+5. **Supabase SQL.** From 30 Oct 2026 new tables need their permissions (grants) set by hand. Queue steps
+   `supabase-perms`, `rooms-sql`, `rooms-sql-apply` (owner), `fairplay-sql` (owner). Prepare the SQL with explicit
+   grants in `supabase/`; only Emmanuel can run it in the Supabase SQL editor.
+6. **Stripe.** Queue step `stripe`. Inspect what's missing in the repo; account steps are owner-only. Invent nothing.
+
+Other queue steps still open (older, lower priority): ranking-1/-rel, comm-menu/-rel, rooms-*, grocery-4, sync-a/b/c/rel,
+scanfe-policy-doc (needs his Master Knowledge document). Note: `queue/HOLD` (home-restore, 23 Oct) still exists on
+the build computer, but releases have gone out every day since; check with Emmanuel's latest words, not that file.
+
+### Other wip branches pushed at this handover (old, kept for reference, do not revive without a reason)
+
+`wip/food-engine-b-20261022`, `wip/food-engine-f2-old`, `wip/grocery-4-20261023`, `wip/oneworld-main-20261021`,
+`wip/oneworld-1015-superseded`, `wip/statbub-main-20261021`, `wip/statbub-1015-superseded` (oneworld and statbub are
+retired, never revive), `wip/bt-old`, `wip/finchp2`, `wip/sunmeter-pre`, `wip/worldhome`, and snapshots of old
+uncommitted work `wip/stale-{bodydepth,cookmove,homefix,mistyhome,themescale}-20261015`.
+
+### His design rules (apply to every change)
+
+- Calm, minimal, one-handed.
+- Back/X at the bottom center, never at the top.
+- Panels have a solid frosted backdrop, nothing shows through.
+- In-place panels don't count as pages; target under 10 real pages.
+- One back press goes back one step.
+- Food ratings: only green "Insulinfreundlich" / red "Nicht insulinfreundlich".
+- Say "der Begleiter" in general texts.
+- Quiet releases: no banner, no What's New.
+
+### How he wants to be told things
+
+- Voice notes, no text alongside them.
+- Bullet journal checklist LIVE / IN ARBEIT / OFFEN, short header, one line on what went live, items of 2–4 words,
+  ✅ / 🔴, only once something is live.
+- No setbacks, no failed attempts, no questions: fix quietly, report when it works.
+- Alert image only when his input is truly needed (owner-only steps like Supabase or Stripe).
+
+### Quality routine before every release
+
+All tests (`node --test`, about 4,006 today), then a visual check at 390x844, 375x667 and 360x780 in dark and
+1180x820 in light, in German: nothing covered, cut or overlapping, no JS errors, no sideways scroll. Then a quiet
+release, verify-live, and a log line here. These are browser checks, never call them his iPhone.
 
 ---
 

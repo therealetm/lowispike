@@ -108,7 +108,7 @@ test('fan: a window too small for an arc still returns n on-screen spots', () =>
 
 test('entries: only routes that exist are offered, More appears only with something in it, sleep is always the three choices', () => {
     const all = { has: () => true }, none = { has: () => false };
-    assert.deepStrictEqual(C.entries('settings', all), ['catchUp', 'theme', 'look', 'worldSound', 'language', 'tutorial', 'account', 'deleteAccount']);  /* Oct 26 2026 (MAYA-HANDOFF 0.39): Catch up on today first */
+    assert.deepStrictEqual(C.entries('settings', all), ['catchUp', 'theme', 'look', 'worldSound', 'language', 'notifications', 'tutorial', 'about', 'account', 'deleteAccount']);  /* Oct 26 2026 (MAYA-HANDOFF 0.39): Catch up on today first; Oct 28 slim batch 9: Mitteilungen + Über & Hinweise */
     assert.deepStrictEqual(C.entries('settings', none), []);
     assert.deepStrictEqual(C.entries('settings', { has: id => id === 'tutorial' || id === 'care' }), ['tutorial']);
     assert.deepStrictEqual(C.entries('more', { has: id => id === 'care' || id === 'me' }), ['me', 'care']);

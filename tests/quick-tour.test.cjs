@@ -64,16 +64,14 @@ test('onboarding: the first screen has the Quick tour pill, only there', () => {
     assert.match(js, /if\(step===0\)body=.*\+habits\(\)\+qtPill\(\)\+/, 'on step 0');
 });
 
-test('Settings: a Quick tour row right after Tutorial, in three languages, with its own icon, that opens the video', () => {
+test('Settings: no separate Quick tour row any more (Oct 28 2026 slim structure: one optional guide = Tutorial); the route stays for the first-start pill', () => {
     const SS = require('../home-settings-sleep-v2.js');
     const ids = SS.SETTINGS_IDS;
-    assert.strictEqual(ids.indexOf('quickTour'), ids.indexOf('tutorial') + 1, 'right after Tutorial');
+    assert.ok(ids.includes('tutorial'), 'Tutorial is the one guide');
+    assert.strictEqual(ids.indexOf('quickTour'), -1, 'no second tour row');
     for (const l of LANGS) assert.ok(SS.TX[l].quickTour, 'label ' + l);
-    assert.strictEqual(SS.TX.de.quickTour, 'Kurze Tour'); assert.strictEqual(SS.TX.es.quickTour, 'Tour r\u00e1pido');
-    assert.strictEqual(SS.rowAction('quickTour'), 'go', 'Settings closes, then the video opens');
     const src = read('home-settings-sleep-v2.js');
     assert.match(src, /quickTour: \{ has: \(\) => !!\(root\.LowiQuickTour && fn\(root\.LowiQuickTour, 'open'\)\), run: \(\) => root\.LowiQuickTour\.open\(\) \}/);
-    assert.match(src, /quickTour: '<rect/, 'its own icon');
 });
 
 test('wiring: loaded right before herb-start.js, CSS once with the build id, precached, the mp4 never touched by the service worker', () => {

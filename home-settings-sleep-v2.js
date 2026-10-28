@@ -159,7 +159,8 @@
     const MORE = MORE_GROUPS.go.concat(MORE_GROUPS.set);
     /* the slim Settings (a hold on the Community bubble): the switches, the language and the account, nothing else */
     /* Oct 26 2026 (MAYA-HANDOFF 0.39): "Catch up on today" first, so the evening catch-up is always one clear tap away */
-    const SETTINGS_IDS = ['catchUp', 'theme', 'look', 'worldSound', 'language', 'tutorial', 'quickTour'], ACCOUNT_IDS = ['account', 'deleteAccount'];
+    /* Oct 28 2026 (slim structure: all tutorials into ONE optional guide): the video tour row is gone; Tutorial is the one guide */
+    const SETTINGS_IDS = ['catchUp', 'theme', 'look', 'worldSound', 'language', 'tutorial'], ACCOUNT_IDS = ['account', 'deleteAccount'];
     const HINT_KEY = 'lowi.hint.holdCommunity', HOLD_MS = 480;
     /* out of the panel, and where each one is still reached (their routes and features stay in the app):
        today: Emmanuel dropped Today from Home; cook: Fuel bubble > Cook; theme: Settings > Look & sound > Day & night;

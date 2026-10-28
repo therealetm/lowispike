@@ -511,9 +511,11 @@
     function news(n) {
         if (on || !n) return false;
         const ids = S.tourOf ? S.tourOf(n) : [], byId = id => S.STEPS.find(x => x.id === id);
-        let l = ids.map(byId).filter(Boolean);
-        if (l.length) { const intro = byId('new-intro'); if (intro) l.unshift(intro); }
-        else if (S.newsCard) { const c = S.newsCard(n); if (!c.text.en) return false; l = [c]; }
+        /* Oct 28 2026 (Emmanuel, slim structure T-23..T-35: "one card instead of 13"): What's New is at most ONE card, the release's own
+           short text (newsCard), else the 'new-intro' card; the per-feature tour steps no longer play one by one */
+        let l = [];
+        if (S.newsCard) { const c = S.newsCard(n); if (c && c.text && c.text.en) l = [c]; }
+        if (!l.length && ids.length) { const intro = byId('new-intro'); if (intro) l = [intro]; }
         if (!l.length) return false;
         mode = 'news'; opened = ''; list = l;
         on = true; i = 0; held = false; afterClaim = false; startedAt = Date.now(); paused = false;

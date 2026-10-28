@@ -29,7 +29,7 @@ test('the slim Settings holds only switches, language and the account; places an
     assert.strictEqual(typeof C.pageGroups, 'function', 'pageGroups(env) is exported');
     const all = C.pageGroups({ has: () => true });
     assert.deepStrictEqual(all.map(g => g.key), ['main', 'account']);
-    assert.deepStrictEqual(all[0].ids, ['catchUp', 'theme', 'look', 'worldSound', 'language', 'tutorial', 'quickTour']);  /* Oct 26 2026 (MAYA-HANDOFF 0.39): Catch up on today first */
+    assert.deepStrictEqual(all[0].ids, ['catchUp', 'theme', 'look', 'worldSound', 'language', 'tutorial']);  /* Oct 26 2026 (MAYA-HANDOFF 0.39): Catch up on today first */
     assert.deepStrictEqual(all[1].ids, ['account', 'deleteAccount'], 'sign-out and account deletion stay reachable (App Store 5.1.1(v))');
     for (const id of ['me', 'body', 'weight', 'care', 'workouts', 'map', 'gift', 'vr', 'weather', 'community']) assert.ok(!all.some(g => g.ids.includes(id)), id + ' is not in Settings');
     assert.deepStrictEqual(C.pageGroups({ has: () => false }), [], 'nothing to show: no empty groups');

@@ -38,3 +38,23 @@ html.cook-holo #cookHoloScrim{display:block;position:fixed;inset:0;z-index:11;ba
 html.cook-holo.lt #cookHoloScrim{background:rgba(20,50,100,.14)}
 @media (prefers-reduced-motion: no-preference){html.cook-holo #main>#tab-shelf.active{animation:cookHoloUp .26s cubic-bezier(.2,.9,.3,1)}}
 @keyframes cookHoloUp{from{opacity:.4;translate:0 18px;scale:.985}to{opacity:1;translate:0 0;scale:1}}
+/* Oct 28 2026 11:11 (owner request 15, Emmanuel on his iPhone: "Bro, what the fuck is this? You completely broke it"): the panel
+   above had no backdrop at all. body-world-3d.css clears every tab's background (html.wb-on.wb-on.wb-on #app #main > .tab.tab,
+   !important), so Home's bubbles, cards and texts showed straight through Kochen and nothing was readable. Kochen keeps rising
+   over Home, but on a solid frosted glass panel, and Home behind it is dimmed and blurred hard, so no Home text or bubble shows
+   through. The selector carries more ids than the body-world rule so it always wins. Liquid Glass (html.lg) is always dark glass,
+   so the panel is dark there in day mode too; only the classic light UI gets the light panel. */
+html.cook-holo.cook-holo.cook-holo #app #main#main>#tab-shelf.tab.active:not(#bw3x){
+  background-color:#071233!important;
+  background-image:radial-gradient(120% 50% at 50% -8%,rgba(60,120,255,.22),transparent 62%),linear-gradient(180deg,rgba(12,28,70,.98) 0%,rgba(7,17,48,.985) 55%,rgba(5,12,36,.99) 100%)!important;
+  background-size:100% 100%!important;background-attachment:scroll!important;
+  -webkit-backdrop-filter:blur(26px) saturate(1.2)!important;backdrop-filter:blur(26px) saturate(1.2)!important;isolation:isolate;color:#fff}
+html.cook-holo.cook-holo.cook-holo.lt:not(.lg) #app #main#main>#tab-shelf.tab.active:not(#bw3x){
+  background-color:#f4f8ff!important;background-image:linear-gradient(180deg,rgba(250,252,255,.98),rgba(238,245,255,.985))!important;color:#0d2440}
+html.cook-holo #cookHoloScrim{background:rgba(2,6,20,.74);-webkit-backdrop-filter:blur(18px) saturate(.7);backdrop-filter:blur(18px) saturate(.7)}
+html.cook-holo.lt:not(.lg) #cookHoloScrim{background:rgba(14,30,60,.55)}
+/* Home under the panel: drawn (the panel rises over it, no new page), but faded and soft, so even where a phone has no backdrop
+   blur (Low Power Mode, older WebKit) nothing of Home can be read through the scrim. */
+html.cook-holo #main>.tab.holo-under,.apple-ui html.cook-holo #main .tab.holo-under,html.cook-holo.apple-ui #main .tab.holo-under{opacity:.35!important}
+/* the top-right profile and day/night buttons (z 12 in #main) stay under the scrim while Kochen is up, so nothing of Home floats crisp over it */
+html.cook-holo #main>#pfBtn,html.cook-holo #main>#tbTheme{visibility:hidden!important;pointer-events:none!important}

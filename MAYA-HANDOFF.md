@@ -1896,6 +1896,16 @@ scripts/release.sh "what users get, in one line" --news news.json
 
 **Design rules and decisions (all still in force)**
 
+- **Back and close live at the bottom center (Emmanuel, 28 Oct 2026, owner request 15):** every back button and every X /
+  close button sits at the bottom center of the screen, like a home button, so it can be reached with one thumb. This holds on
+  every screen, sheet, panel and overlay (Kochen, Profile, Einkaufen, Essenspause, Scanner, Community sheets, and anything new).
+  It sits above the home indicator (`env(safe-area-inset-bottom)`), and it never covers a text field, the chat composer or the
+  kitchen bin: when a screen has a bottom input, the button sits just above it. No top-left back arrows and no top-corner X
+  buttons. The shared control is `bottom-close.js` / `bottom-close.css` (one round glass button, 56 px): use it, don't draw your own.
+- **Panels that rise over Home must be readable (28 Oct 2026, owner request 15):** a hologram panel (Kochen, Essenspause,
+  Profile, Einkaufen) keeps the feeling of rising over Home, but its own backdrop is solid frosted glass (at least 95% opaque)
+  and Home behind it is dimmed and blurred, so no Home text or bubble ever shows through. Note body-world-3d.css clears every
+  tab background with !important; a panel that is a tab needs a selector with more ids (see section-nav.css, cook-holo).
 - It's a game: progress shows as character-style stats (nutrition stats and weight/BMI are being built that way).
 - **No smile on Home**: the mouth follows energy (calm short mouth at best). **No glow ring** on Home (the reveal has
   one; Home doesn't draw it).

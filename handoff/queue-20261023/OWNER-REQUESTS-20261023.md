@@ -25,3 +25,26 @@ Queue worker B (grocery-4) was told to hold releases until item 1 is live.
 13. **Counting rule + 4 priority fixes (new, Wed 28 Oct, update to item 12).** Inline interactions and hologram-like panels that keep the surrounding space do not count as new pages; Community tabs with persistent navigation are fine. Also count every notification that pops up and what opens on tap (done: on the item 12 page). Priority fixes with existing interfaces, no broad restructure of accepted areas: 'Help me' keeps the shopping top menu bar; Cook opens as an in-place hologram-like panel keeping context; Profile Back returns to the context it was opened from, not always Home; the fasting panel is too large and opaque, make it preserve more visible context. Keep the Community tabs and other flows he said already feel like one space. Status: done 28 Oct. Hilf mit bar + chat notification opening the chat LIVE 20261028-105016; Cook as in-place panel, Profile back to where it came from (and the Du panel back), smaller see-through Essenspause LIVE in the next quiet release (see MAYA-HANDOFF log).
 
 14. **Implement the whole slim structure, no questions (new, Wed 28 Oct, about 11 AM, voice, German, before a walk; update to items 12 and 13).** His words: "...and apply all the other changes. Ich möchte, dass du jetzt alles umsetzt, aber mach solche Fehler nicht mehr. Stell mir keine Fragen, du darfst alles umsetzen. Ich bin nun spazieren und wenn ich wiederkomme, soll alles fertig sein." Source of truth: the structure page (124 -> 57, verdicts KERN / BEHALTEN / ZUSAMMENLEGEN / VERSCHIEBEN / LÖSCHEN, six areas) plus the notification inventory (11 push, 18 in-app hints, each opens its existing destination). Counting rule: inline or hologram panels that keep the space are not pages; target under 10 real pages; one back press returns where you came from. Keep: Home inline Move/Sleep/Food log, Community tabs Chat/Room/FYP/Studio with the bar, community toggle, moon/sun, profile hologram, Einkaufen with Supermarkt/Seller zone/Hilf mir. Galaxy circle game and Affiliates: keep, don't expand. Merges: meal analysis + logging one flow; kitchen + shopping list one workspace; companion/presence settings, notification master controls, About/legal into Profile; all tutorials into ONE optional skippable guide + inline tips; Care board, levels & streaks, goals, milestones one progress view in Move; Shop categories one searchable gallery; Essenspause + Fuel one nutrition panel; appearance/evolution/aura shop one companion panel (tap the companion on Home); rating/review one feedback overlay; water, sleep, meal gap inline on Home; notifications open the existing destination, never their own screen. Rules everywhere: frosted panels so nothing bleeds through, back/X bottom centre, "der Begleiter", green/red insulin label kept. Small batches, one area each, tests + browser check at 390x844, 375x667, 360x780 dark and 1180x820 light in German before each quiet release.
+
+15. **Kochen hologram broken + back/X always bottom center (Emmanuel, iPhone screenshot 11:11, Wed 28 Oct 2026, dark mode).**
+
+His words: "Bro, what the fuck is this? You completely broke it. Fix it. And the back button and x button should always be in the
+middle down, basically the home button, so it's convenient to use for one hand."
+
+What the screenshot showed (build 20261028-105751): the Kochen panel was so transparent that Home ran straight through it. Misty's
+bubble, "Seit der letzten Mahlzeit", "Misty ist etwas müde / Essen eintragen", the date row, the cards and the bottom row
+(Check-ins, Mahlzeiten, Dein Teller) sat on top of Kochen's header, the Küche/Mischen/Swipen tabs, the Küchen-Check, the search
+field and the kitchen. Nothing was readable. The back arrow sat top left over "Hey eman".
+
+Cause: body-world-3d.css clears every tab's background with `html.wb-on.wb-on.wb-on #app #main > .tab.tab` (!important), so the
+cook-holo panel background never painted, and the scrim was only 28% dark with no blur.
+
+To do (queue step kochen-holo-fix, branch kochen-holo-20261028):
+1. Kochen keeps rising over Home, but on a solid frosted panel; Home behind it dimmed and blurred hard. Same for the Essenspause
+   panel (made small and see-through in owner request 13): stays small, but solid.
+2. Kitchen: fridge and cabinet side by side, bin fully visible, at 390, 375, 360 and on iPad.
+3. New app-wide design rule: every back button and every X / close button sits at the bottom center of the screen, like a home
+   button, for one-handed use. Safe area and home indicator respected; never covers inputs, the chat composer or the bin.
+   Top-left back arrows and top-corner X buttons go where they are replaced. Written into MAYA-HANDOFF section 5 design rules.
+Release quietly, in small batches (readability first, then the buttons), no banner, no What's New.
+

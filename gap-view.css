@@ -167,3 +167,8 @@
 .gv-scroll { padding-bottom: 16px; }
 @media (min-width: 700px) { .gv-card { max-height: min(66vh, 600px); } }
 html.lt .gv-ov, html[data-ui="light"] .gv-ov { background: rgba(10, 30, 70, .12); }
+/* Oct 28 2026 11:11 (owner request 15): the see-through Essenspause let Home's texts and bubbles run through the card and nothing
+   was readable. It stays the small panel in the middle, but on solid frosted glass, with Home dimmed and blurred behind it. */
+.gv-card { background: radial-gradient(120% 70% at 50% 0%, rgba(80, 140, 255, .2), transparent 60%), linear-gradient(180deg, rgba(12, 29, 72, .97) 0%, rgba(7, 19, 55, .975) 60%, rgba(5, 13, 41, .98) 100%); background-color: #071337;
+  -webkit-backdrop-filter: blur(26px) saturate(1.2); backdrop-filter: blur(26px) saturate(1.2); }
+.gv-ov, html.lt .gv-ov, html[data-ui="light"] .gv-ov { background: rgba(2, 6, 20, .66); -webkit-backdrop-filter: blur(16px) saturate(.75); backdrop-filter: blur(16px) saturate(.75); }

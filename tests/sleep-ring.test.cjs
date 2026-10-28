@@ -81,7 +81,7 @@ for (const v of VIEWS) {
 test('wiring: Sleep joins the bloom ring and the all-at-once ring (hold Scan)', () => {
     const hb = read('home-blooms-v2.js'), ss = read('home-settings-sleep-v2.js');
     /* Oct 28 2026 (same ring everywhere): ALL comes from the RING map, where Sleep blooms and Fuel (Einkaufen) does not */
-    assert.match(hb, /const ALL = BLOOMS\.filter\(k => k !== 'fuel'\);/, 'the all-at-once ring reads the RING map (Einkaufen orbs open pages, left out)');
+    assert.match(hb, /const ALL = BLOOMS\.filter\(k => k !== 'fuel' && k !== 'gap'\);/, 'the all-at-once ring reads the RING map (Einkaufen orbs open pages, Gap times a second step: left out)');
     assert.match(hb, /sleep: 'bloom'/, 'hold Scan opens Sleep too');
     assert.match(hb, /R\.place\(groups, \{ even: true \}\)/, 'the all-at-once ring is one even circle');
     assert.match(hb, /kind === 'sleep'[\s\S]{0,1600}SL\.set\(b\)/, 'Sleep answers write through LowiHomeSettingsSleepV2.sleep.set');

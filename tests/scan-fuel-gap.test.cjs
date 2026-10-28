@@ -13,8 +13,9 @@ test('the new files load and are cached for offline use', () => {
     }
 });
 
-test('Gap is passive: tapping it opens the Gap view, no "I just ate" button on Home', () => {
-    assert.ok(/if \(kind === 'gap'\) \{[^}]*LowiGapView\.open\(\)/.test(blooms));
+test('Gap: tapping it blooms Letzte / Erste Mahlzeit (Oct 28 2026, 22:54), no "I just ate" button on Home', () => {
+    assert.ok(!/if \(kind === 'gap'\) \{[^}]*LowiGapView\.open\(\)/.test(blooms), 'a tap no longer opens the old window');
+    assert.ok(/gap: 'bloom'/.test(blooms), 'Gap blooms like Water / Move / Sleep');
     assert.ok(!/label: T\('I just ate'/.test(blooms), 'the old Gap bloom action is gone');
     assert.ok(!/LowiFastStop\.end|\.end\(Date\.now\(\)/.test(gap), 'the Gap view never ends anything itself');
     assert.ok(/k === 'log'[^\n]*LowiSpirit\.meal\(\)/.test(gap), 'its one meal button opens Fuel');

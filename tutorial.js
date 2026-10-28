@@ -76,7 +76,7 @@
         'gap-view': { stage: '#gvSheet', go: () => { if (W.LowiGapView) W.LowiGapView.open(); }, back: () => { if (W.LowiGapView) W.LowiGapView.close(); } },
         /* Oct 28 2026 food plan: the old Fuel bubble is Einkaufen, its demo opens Shop read-only */
         'home-shop': { stage: '.stp-card', go: () => { const P = W.LowiStorePicks; if (P && !P.isOpen()) P.open('tour'); }, back: () => { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
-        'fuel-bloom': bloom('fuel'), 'water-bloom': bloom('water'), 'move-bloom': bloom('move'), 'sleep-bloom': bloom('sleep'),
+        'fuel-bloom': bloom('fuel'), 'gap-bloom': bloom('gap') /* Oct 28 2026, 22:54: Gap blooms Letzte / Erste Mahlzeit */, 'water-bloom': bloom('water'), 'move-bloom': bloom('move'), 'sleep-bloom': bloom('sleep'),
         'community-tab': { stage: '', go: () => { if (typeof W.goTab === 'function') W.goTab('foryou'); }, back: goHome },
         'settings-sheet': { stage: '.cme-ov', go: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.open(); }, back: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.close(); } },
         /* never the camera: the mocked Scan screen inside the tour's own layer (tutorial-demo.js) */

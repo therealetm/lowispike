@@ -17,9 +17,12 @@
             Casual / Steady / Epic -> LowiMoveBubble.pick(id): today's step range read off the phone's own step counter
             (under 5k / 5k-10k / 10k+, Oct 23 2026, Eman: "just like with sleep"). One range a day; the picked one shows as selected.
             Hold Move    -> LowiMoveBubble.page(): the full Move page (Oct 21, Eman). Today's moves are a row on that page.
-   - Gap:   no bloom since Oct 21 (Scan / Fuel / Gap): a tap opens the passive Gap view (gap-view.js). Meals are logged in Fuel,
-            which restarts the gap; the old "I just ate" / "Ate earlier" pair is gone from Home.
-            Shown as time since your last meal. No goal, no "you must fast" text in the bloom.
+   - Gap:   (Oct 28 2026, 22:54, Emmanuel on the call: "They're supposed to be bubbles ... just like when you click on sleep or
+            water ... or move", "nuke that window") blooms like Water / Move / Sleep: Letzte Mahlzeit / Erste Mahlzeit. A tap on
+            one of them opens its times as bubbles in the same place (Jetzt, vor 15 min, vor 30 min, vor 1 h, Andere Zeit) and a
+            tap on a time saves it: Letzte Mahlzeit starts the timer (or moves the start of a running one, LowiFastEdit.save),
+            Erste Mahlzeit stops it (LowiFastStop.end). Only these two move the timer. The old Essenspause window (gap-view.js
+            hub) is no longer what a tap opens. Hold Gap -> unchanged: Nach dem Essen, phases only (gap-view.js, phases).
    An action whose module is missing is left out of the bloom (never a dead button).
    Geometry: the orbs fan out along the line Misty -> bubble. If that side has no room (a bubble at the screen edge) the fan
    turns until every orb fits on screen and none touches Misty's circle. Only one bloom is open at a time.
@@ -35,12 +38,13 @@
        the companion sheet still opened the old Einkaufen / Kochen / Mahlzeit orbs round the ring, hours after the Home tap became
        Einkaufen). THE one map of what each ring bubble does. Every path reads it: the Home tap, open(kind) from other modules (the
        companion sheet, the tutorial, deep links), the all-bubbles overview, and the tests. 'bloom' = its own orbs open round the
-       ring; 'shop' = Einkaufen opens (Supermarkt); 'hub' = the Essenspause eating hub opens (log a meal, Kochen, today's meals).
+       ring; 'shop' = Einkaufen opens (Supermarkt); 'hub' = the Essenspause eating hub opens (log a meal, Kochen, today's meals;
+       no bubble uses it since Oct 28 2026, 22:54: Gap blooms Letzte / Erste Mahlzeit).
        Change a bubble here and nowhere else. */
     /* Oct 28 2026, 23:00 (Emmanuel, call: "when I click on shopping, I want supermarket, Home, Seller Zone and Hilf mit to also be
        bubbles. And then when you click on those bubbles, it takes you to those pages. Don't you think that it's more aligned to our
        design?"): Einkaufen opens a bloom like Water / Move / Sleep, one orb per Einkaufen door (store-picks.js doors()). */
-    const RING = Object.freeze({ fuel: 'bloom', gap: 'hub', water: 'bloom', move: 'bloom', sleep: 'bloom' });
+    const RING = Object.freeze({ fuel: 'bloom', gap: 'bloom', water: 'bloom', move: 'bloom', sleep: 'bloom' });
     const ringTarget = kind => RING[kind] || '';
     const BLOOMS = Object.keys(RING).filter(k => RING[k] === 'bloom');
     const WATER_GOAL = 6; /* same as spirit.js WATER_GOAL (E-man: six cups a day) */
@@ -249,6 +253,97 @@
     const MOVE_HINTS = { casual: () => '<5k', steady: () => '5k\u201310k', epic: () => '10k+' };
     const MOVE_RANGES = { casual: () => T('under 5,000 steps', 'unter 5.000 Schritte', 'menos de 5.000 pasos'), steady: () => T('5,000 to 9,999 steps', '5.000 bis 9.999 Schritte', 'de 5.000 a 9.999 pasos'), epic: () => T('10,000 steps or more', '10.000 Schritte oder mehr', '10.000 pasos o más') };
 
+    /* ---------- Gap: Letzte / Erste Mahlzeit as bubbles (Oct 28 2026, 22:54, Emmanuel on the call) ----------
+       Step 1: two orbs, Letzte Mahlzeit and Erste Mahlzeit; the one that matches now is marked and its small line is its time.
+       Step 2 (st.gapPick): the times for the one you tapped, as orbs in the same place; a tap on one saves it and folds the bloom.
+       Running timer:  Erste Mahlzeit at t -> LowiFastStop.end(t) (stops it, points as before); Letzte Mahlzeit at t -> LowiFastEdit.save(t)
+                       (the start moves, like Zeit ändern did).
+       Stopped timer:  Letzte Mahlzeit at t -> LowiFastStop.firstMeal(t) (starts it); Erste Mahlzeit -> a short line, nothing changes.
+       Nothing else (a scan, a photo, a meal log, a post) changes the timer; that stays in index.html (DECOUPLED). */
+    const p2 = n => (n < 10 ? '0' : '') + n;
+    const hhmm = t => { const d = new Date(t); return p2(d.getHours()) + ':' + p2(d.getMinutes()); };
+    const GAP_AGO = [0, 15, 30, 60];
+    function gapState() {
+        const F = W.LowiFastStop;
+        if (!F || !fn(F, 'startOf')) return null;
+        let s = {}, start = 0; try { s = fn(F, '_st') ? F._st() || {} : {}; start = +F.startOf() || 0; } catch (e) { return null; }
+        return { start, running: start > 0, last: +s.last || 0 };
+    }
+    const GAP_TX = {
+        last: () => T('Last meal', 'Letzte Mahlzeit', 'Última comida'),
+        first: () => T('First meal', 'Erste Mahlzeit', 'Primera comida'),
+        now: () => T('Now', 'Jetzt', 'Ahora'),
+        ago: n => n >= 60 ? T(n / 60 + ' h ago', 'vor ' + n / 60 + ' h', 'hace ' + n / 60 + ' h') : T(n + ' min ago', 'vor ' + n + ' min', 'hace ' + n + ' min'),
+        other: () => T('Other time', 'Andere Zeit', 'Otra hora'),
+        off: () => T('No meal gap running right now. Tap \u201cLast meal\u201d when you\u2019re done eating.', 'Gerade l\u00e4uft keine Essenspause. Tipp auf \u201eLetzte Mahlzeit\u201c, wenn du fertig gegessen hast.', 'Ahora no hay pausa en marcha. Toca \u00abÚltima comida\u00bb cuando termines de comer.')
+    };
+    function gapActs(A) {
+        const g = gapState();
+        if (!g) return;
+        const F = W.LowiFastStop;
+        if (!st.gapPick) {
+            A.push({ id: 'g-last', label: GAP_TX.last(), sub: g.running ? hhmm(g.start) : undefined, icon: 'clock', on: g.running, keep: true,
+                aria: GAP_TX.last() + (g.running ? ', ' + hhmm(g.start) : '') + T('. Tap to pick the time', '. Antippen: Zeit wählen', '. Toca para elegir la hora'),
+                run: () => { st.gapPick = 'last'; st.openedAt = now(); } });
+            if (fn(F, 'end')) A.push({ id: 'g-first', label: GAP_TX.first(), sub: !g.running && g.last ? hhmm(g.last) : undefined, icon: 'ate', on: !g.running && !!g.last, keep: true,
+                aria: GAP_TX.first() + (!g.running && g.last ? ', ' + hhmm(g.last) : '') + T('. Tap to pick the time', '. Antippen: Zeit wählen', '. Toca para elegir la hora'),
+                run: () => { if (!(gapState() || {}).running) { toast(GAP_TX.off()); return; } st.gapPick = 'first'; st.openedAt = now(); } });
+            return;
+        }
+        const pick = st.gapPick, t0 = Date.now();
+        GAP_AGO.forEach(n => {
+            const t = t0 - n * 60000;
+            if (pick === 'first' && g.running && t <= g.start + 60000) return; /* the first meal comes after the start */
+            A.push({ id: 'g-t' + n, label: n ? GAP_TX.ago(n) : GAP_TX.now(), sub: hhmm(t), icon: n ? 'clock' : (pick === 'first' ? 'ate' : 'clock'),
+                aria: (pick === 'last' ? GAP_TX.last() : GAP_TX.first()) + ': ' + (n ? GAP_TX.ago(n) : GAP_TX.now()) + ', ' + hhmm(t),
+                run: () => gapCommit(pick, Date.now() - n * 60000) });
+        });
+        A.push({ id: 'g-other', time: true, label: GAP_TX.other(), icon: 'clock', aria: (pick === 'last' ? GAP_TX.last() : GAP_TX.first()) + ': ' + GAP_TX.other(), keep: true, run: () => { } });
+    }
+    /* "HH:MM" from the time orb: today at that time, or yesterday when that is still ahead */
+    function gapFromHM(v) {
+        const m = /^(\d{1,2}):(\d{2})/.exec(String(v || ''));
+        if (!m) return 0;
+        const d = new Date(); d.setHours(+m[1], +m[2], 0, 0);
+        let t = d.getTime(); if (t > Date.now() + 60000) { d.setDate(d.getDate() - 1); t = d.getTime(); }
+        return Math.min(t, Date.now());
+    }
+    function gapCommit(pick, t) {
+        const F = W.LowiFastStop, g = gapState();
+        if (!F || !g || !(t > 0)) return false;
+        const fw = (k, o) => { try { return F.w(k, o); } catch (e) { return ''; } };
+        if (pick === 'first') {
+            if (!g.running) { toast(GAP_TX.off()); return false; }
+            if (t <= g.start) { toast(fw('before')); return false; }
+            const r = F.end(t, { keep: true });
+            if (!r || r.err) { toast(fw('before')); return false; }
+            try { W.dispatchEvent(new CustomEvent('lowi:fast', { detail: { stop: true, via: 'gap-bloom' } })); } catch (e) { }
+            return true;
+        }
+        if (!g.running) {
+            const at = t; /* firstMeal keeps it after the last saved fast itself */
+            if (!fn(F, 'firstMeal') || F.firstMeal(at) === false) return false;
+            try { const st0 = +F.startOf() || at; toast(fw('started', { t: hhmm(st0) })); } catch (e) { }
+            return true;
+        }
+        const FE = W.LowiFastEdit;
+        if (!FE || !fn(FE, 'save')) return false;
+        const r = FE.save(t);
+        if (r && r.ok) { toast(fw('restart', { t: hhmm(r.to || t) })); return true; }
+        let m = ''; try { m = r && r.err ? (r.err === 'overlap' ? FE.w('overlap', { t: FE.at ? FE.at(F._st().hist.slice(-1)[0].e) : '' }) : FE.w(r.err)) : ''; } catch (e) { m = ''; }
+        if (r && r.err === 'same') m = '';
+        if (m) toast(m);
+        return false;
+    }
+    function gapNoteText() {
+        const g = gapState();
+        if (!g) return '';
+        if (st.gapPick === 'last') return T('When was your last meal? The meal gap counts from then.', 'Wann war deine letzte Mahlzeit? Ab da zählt die Essenspause.', '¿Cuándo fue tu última comida? La pausa cuenta desde entonces.');
+        if (st.gapPick === 'first') return T('When did you eat again? The meal gap stops then.', 'Wann hast du wieder gegessen? Dann stoppt die Essenspause.', '¿Cuándo volviste a comer? La pausa se detiene entonces.');
+        if (g.running) return T('Meal gap since ', 'Essenspause seit ', 'Pausa desde las ') + hhmm(g.start) + ' \u00b7 ' + gapText(g.start, Date.now()) + T('. Eating again? Tap \u201cFirst meal\u201d.', '. Isst du wieder? Tipp auf \u201eErste Mahlzeit\u201c.', '. ¿Vuelves a comer? Toca \u00abPrimera comida\u00bb.');
+        return T('No meal gap running. Done eating? Tap \u201cLast meal\u201d.', 'Gerade keine Essenspause. Fertig gegessen? Tipp auf \u201eLetzte Mahlzeit\u201c.', 'No hay pausa en marcha. ¿Terminaste de comer? Toca \u00abÚltima comida\u00bb.');
+    }
+
     /* the orbs for one bubble: [{id, label, sub, icon, run, keep, disabled, q}] (missing modules -> left out) */
     function actionsFor(kind) {
         const A = [];
@@ -298,6 +393,8 @@
                 if (!MOVE_NAMES[L.id]) return;
                 A.push({ id: L.id, label: MOVE_NAMES[L.id](), sub: MOVE_HINTS[L.id](), aria: MOVE_NAMES[L.id]() + ', ' + MOVE_RANGES[L.id](), icon: 'walk', q: L.q / 4, on: cur === L.id, run: () => W.LowiMoveBubble.pick(L.id) });
             });
+        } else if (kind === 'gap') {
+            gapActs(A);
         } else if (kind === 'sleep') {
             /* Oct 23, 18:03 (Eman's iPhone: Sleep's three options sat as a loose row bottom left with a question line under them, "Sleeping
                isn't aligned"): Sleep blooms exactly like Fuel, Water and Move. Its three answers are bubbles on the same circle round
@@ -385,6 +482,24 @@
     }
 
 
+    /* Gap > Andere Zeit: the orb is a label over the phone's own time picker (iPhone: the wheel opens on the tap itself). The picked
+       time saves when the picker closes (iPhone: Done = blur; elsewhere the change itself), then the bloom folds. */
+    const isIOS = () => { try { return /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); } catch (e) { return false; } };
+    function timeInputs(ov) {
+        ov.querySelectorAll('.hb2-time').forEach(inp => {
+            const start = inp.value;
+            let done = false;
+            const commit = () => {
+                if (done || st.ov !== ov || !inp.value || inp.value === start) return;
+                done = true;
+                const pick = st.gapPick, t = gapFromHM(inp.value);
+                const ok = pick && t ? gapCommit(pick, t) : false;
+                if (ok) close(false, 'g-other'); else { done = false; }
+            };
+            inp.addEventListener('change', () => { if (!isIOS()) commit(); });
+            inp.addEventListener('blur', commit);
+        });
+    }
     function render(kind, src) {
         const acts = actionsFor(kind);
         const r = src.getBoundingClientRect();
@@ -410,12 +525,14 @@
         ov.style.setProperty('--hb2-orb', orb + 'px');
         const prevOrbs = orbMap(st.ov === ov ? ov : null);
         ov.innerHTML = '<button type="button" class="hb2-scrim" data-hb2="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '"></button>' +
-            acts.map((a, i) => { const p = L.pts[i]; return '<button type="button" class="hb2-orb hb2-' + a.id + (a.on ? ' hb2-on' : '') + '" data-hb2="act" data-id="' + a.id + '"' + (a.disabled ? ' disabled aria-disabled="true"' : '') + (a.on != null ? ' aria-pressed="' + !!a.on + '"' : '') +
+            acts.map((a, i) => { const p = L.pts[i]; const tag = a.time ? 'label' : 'button'; return '<' + tag + (a.time ? '' : ' type="button"') + ' class="hb2-orb hb2-' + a.id + (a.on ? ' hb2-on' : '') + '" data-hb2="act" data-id="' + a.id + '"' + (a.disabled ? ' disabled aria-disabled="true"' : '') + (a.on != null ? ' aria-pressed="' + !!a.on + '"' : '') +
                 ' style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--hb2-dx:' + Math.round((p.from || b).x - p.x) + 'px;--hb2-dy:' + Math.round((p.from || b).y - p.y) + 'px;--hb2-i:' + i + (a.q != null ? ';--hb2-q:' + a.q : '') + '"' +
                 ' aria-label="' + esc(a.aria || (a.label + (a.sub ? ', ' + a.sub : ''))) + '">' + (a.q != null ? '<span class="hb2-fill" aria-hidden="true"></span>' : '') +
-                '<span class="hb2-tx">' + svg(a.icon) + '<b>' + esc(a.label) + '</b>' + (a.sub ? '<small>' + esc(a.sub) + '</small>' : '') + '</span></button>'; }).join('') +
-            (kind === 'move' ? moveNote(L.pts, orb, b, m, vw, vh) : '');
+                '<span class="hb2-tx">' + svg(a.icon) + '<b>' + esc(a.label) + '</b>' + (a.sub ? '<small>' + esc(a.sub) + '</small>' : '') + '</span>' +
+                (a.time ? '<input type="time" class="hb2-time" value="' + hhmm(Date.now()) + '" aria-label="' + esc(a.aria || a.label) + '">' : '') + '</' + tag + '>'; }).join('') +
+            (kind === 'move' ? moveNote(L.pts, orb, b, m, vw, vh) : kind === 'gap' ? gapNote(L.pts, orb, b, m, vw, vh) : '');
         skin(ov, prevOrbs);
+        timeInputs(ov);
         ov.__acts = acts;
         ov.__layout = { pts: L.pts, bubble: b, misty: m, orb, rot: L.rot, ring: L.ring ? { s: L.ring.s, rho: L.ring.rho, step: L.ring.step, c: L.ring.c } : null };
         return ov;
@@ -426,8 +543,9 @@
        Oct 23, 18:03 (Eman: "da fehlt doch was"): Sleep's three answers were missing, so the lower left stayed empty and the ring was a
        lopsided arc. Now all four groups (3 + 3 + 3 + 3) share ONE full circle, every orb the same angle from the next (solve even).
        Gap and Scan have no options (a tap opens the Gap view / the camera), Joy and Community open pages, so they bring no orbs. */
-    /* Oct 28 2026: from the RING map. Einkaufen's orbs open pages (like Joy and Community), so the overview leaves them out, as before */
-    const ALL = BLOOMS.filter(k => k !== 'fuel');
+    /* Oct 28 2026: from the RING map. Einkaufen's orbs open pages (like Joy and Community), so the overview leaves them out, as before.
+       Gap blooms since Oct 28, 22:54, but its two orbs open times (a second step), so the overview leaves Gap out too */
+    const ALL = BLOOMS.filter(k => k !== 'fuel' && k !== 'gap');
     function renderAll() {
         const R = W.LowiBloomRing;
         if (!R || !R.place) return null;
@@ -490,6 +608,7 @@
         try { D.dispatchEvent(new CustomEvent('lowi:bloom-v2', { detail: { kind: 'all', open: true, owner: 'blooms' } })); } catch (e) { }
         return true;
     }
+    function gapNote(pts, orb, b, m, vw, vh) { const txt = gapNoteText(); return txt ? noteAt(txt, pts, orb, m, vw, vh) : ''; }
     function moveNote(pts, orb, b, m, vw, vh) {
         const v = moveView();
         if (!v) return '';
@@ -497,7 +616,10 @@
         const txt = v.level && MOVE_NAMES[v.level] ? T('Today: ', 'Heute: ', 'Hoy: ') + MOVE_NAMES[v.level]() + ' · ' + MOVE_HINTS[v.level]() + T(' steps. Tap another to change it.', ' Schritte. Tipp einen anderen zum Ändern.', ' pasos. Toca otro para cambiarlo.')
             : v.q >= v.full ? T('Move is full for today. Nice!', 'Bewegung ist heute voll. Stark!', 'Movimiento completo hoy. ¡Genial!')
             : T('How many steps today? Check your step counter, then tap one.', 'Wie viele Schritte heute? Schau auf deinen Schrittzähler und tippe eins an.', '¿Cuántos pasos hoy? Mira tu contador de pasos y toca uno.');
-        /* the note sits on the far side of the orbs from Misty */
+        return noteAt(txt, pts, orb, m, vw, vh);
+    }
+    /* the note sits on the far side of the orbs from Misty (placeNote then keeps it off everything) */
+    function noteAt(txt, pts, orb, m, vw, vh) {
         let x = 0, y = 0; pts.forEach(p => { x += p.x; y += p.y; }); x /= pts.length; y /= pts.length;
         const a = Math.atan2(y - m.y, x - m.x); x += Math.cos(a) * (orb * 0.85); y += Math.sin(a) * (orb * 0.85);
         x = Math.max(110, Math.min(vw - 110, x)); y = Math.max(24, Math.min(vh - 24, y));
@@ -544,11 +666,12 @@
         if (tg !== 'bloom') return false;
         if (kind === 'sleep' && !actionsFor('sleep').length) return false;
         if (kind === 'fuel' && !actionsFor('fuel').length) return shop();
+        if (kind === 'gap' && !gapState()) return false; /* no timer module: nothing to show (never a dead bubble) */
         if (!src) { const scope = st.root && st.root !== D ? st.root : D; src = scope.querySelector('[data-orbit="' + kind + '"]'); }
         if (!src || !src.getBoundingClientRect().width) return false;
         if (st.open) close(true);
         try { if (fn(W.LowiMoveBubble, 'close')) W.LowiMoveBubble.close(false); } catch (e) { }
-        st.ov = null;
+        st.ov = null; st.gapPick = null;
         const ov = render(kind, src);
         D.body.appendChild(ov);
         try { fitLabels(ov); } catch (e) { }
@@ -570,6 +693,8 @@
     function refreshOpen() {
         if (st.open === 'all' && st.ov) { const fid = (D.activeElement && D.activeElement.dataset && D.activeElement.dataset.id) || ''; renderAll(); try { fitLabels(st.ov); } catch (e) { } const f = fid && st.ov.querySelector('[data-id="' + fid + '"]'); if (f && !f.disabled) try { f.focus({ preventScroll: true }); } catch (e) { } return; }
         if (!st.open || !st.ov || !st.src) return;
+        /* never redraw under the open time picker (Gap > Andere Zeit) */
+        if (D.activeElement && D.activeElement.classList && D.activeElement.classList.contains('hb2-time') && st.ov.contains(D.activeElement)) return;
         const kind = st.open, focusId = (D.activeElement && D.activeElement.dataset && D.activeElement.dataset.id) || '';
         render(kind, st.src);
         try { fitLabels(st.ov); } catch (e) { }
@@ -580,7 +705,7 @@
     function close(now, chosen) {
         const ov = st.ov, kind = st.open;
         if (!ov) return false;
-        st.ov = null; st.open = null;
+        st.ov = null; st.open = null; st.gapPick = null;
         if (st.src) { st.src.classList.remove('hb2-src'); st.src.setAttribute('aria-expanded', 'false'); }
         st.src = null; st.all = false;
         D.documentElement.classList.remove('hb2-open');
@@ -644,6 +769,14 @@
     function onBloomClick(e) {
         const t = e.target.closest('[data-hb2]');
         if (!t || !st.ov) return;
+        /* Gap > Andere Zeit: no preventDefault, so the tap reaches the time input and the phone opens its picker; where a tap
+           does not open one (desktop), open it here (the tap is the user gesture showPicker needs) */
+        if (t.tagName === 'LABEL' && t.querySelector('.hb2-time')) {
+            e.stopPropagation();
+            const inp = t.querySelector('.hb2-time');
+            if (e.target === inp && !isIOS()) { try { if (fn(inp, 'showPicker')) inp.showPicker(); } catch (x) { } }
+            return;
+        }
         e.preventDefault(); e.stopPropagation();
         if (st.holdEat) { /* the release of a long press on Flasche (orbHold) logs no water */
             const he = st.holdEat; st.holdEat = null;
@@ -652,6 +785,7 @@
         if (e.isTrusted && e.detail > 0 && tapTime(e) - (st.openedAt || 0) < ORB_ARM_MS) return;
         if (t.dataset.hb2 === 'close') { close(); return; }
         const a = (st.ov.__acts || []).find(x => x.id === t.dataset.id);
+
         if (!a || a.disabled) return;
         buzz(10);
         if (a.keep) { try { a.run(); } catch (err) { console.error(err); } refreshOpen(); return; }
@@ -705,8 +839,8 @@
         const kind = el.getAttribute('data-orbit');
         /* Oct 21 Scan / Fuel / Gap (E-man: "gap is just like water and move or sleep... not formatted like a fasting app"): Gap has no
            actions any more. A tap opens the passive Gap view (gap-view.js); meals are logged in Fuel, which is what restarts the gap */
-        /* RING: gap = 'hub', fuel = 'bloom' since Oct 28 23:00 (the same map open(kind) reads) */
-        if (kind === 'gap') { close(true); buzz(8); if (fn(W.LowiGapView, 'open')) W.LowiGapView.open(); return; }
+        /* RING: gap = 'bloom' since Oct 28 22:54, fuel = 'bloom' since Oct 28 23:00 (the same map open(kind) reads) */
+        /* Oct 28 2026, 22:54 (Emmanuel: "nuke that window"): Gap blooms Letzte / Erste Mahlzeit like Water / Move / Sleep (below) */
         /* Oct 28 slim structure, batch 3 (nutrition hub): the Fuel menu had one real target, so a tap on Fuel opens the one
            nutrition panel (gap + last meal + log + Cook / Shop). (Oct 28 2026: open('fuel') no longer keeps the old menu: see RING) */
         /* Oct 28 2026 food plan (Emmanuel: "Ok mach"): Essenspause (Gap) is the eating hub, so this bubble is "Einkaufen" with a cart
@@ -791,6 +925,8 @@
     const api = {
         mount, unmount, open: k => open(k), close: () => close(), isOpen: () => st.open, openAll, isAll: () => st.open === 'all', shop, hub, RING, ringTarget,
         actions: k => actionsFor(k).map(a => ({ id: a.id, label: a.label, sub: a.sub, aria: a.aria, disabled: !!a.disabled })),
+        /* Gap bubbles (Oct 28 2026, 22:54): the time rule and the save, for tests and the tour */
+        gap: { fromHM: v => gapFromHM(v), commit: (pick, t) => gapCommit(pick, t), pick: () => st.gapPick || null },
         layout: () => (st.ov && st.ov.__layout) || null,
         undoWater: waterUndoNow, fitLabels: ov => fitLabels(ov || st.ov), core
     };

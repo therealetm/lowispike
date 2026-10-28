@@ -61,6 +61,8 @@ function page(opts) {
     W.LowiHost = { go: tab => calls.push('go:' + tab) };
     W.LowiGapView = { open: o => calls.push('gap:' + ((o && o.from) || '')) };
     W.LowiMistyHub = { close: () => calls.push('sheet:close') };
+    W.LowiFastStop = { startOf: () => 0, _st: () => ({}), end: () => ({ ok: true }), firstMeal: () => true, w: () => '' };
+    W.LowiFastEdit = { save: () => ({ ok: true }) };
     D.dispatchEvent = () => { };
     let blooms = 0;
     const origCreate = D.createElement;
@@ -86,9 +88,10 @@ function peakGo(W) {
 const OLD_TRIO = /Kochen|Mahlzeit|\bCook\b|\bMeal\b|Cocinar|Comida/;
 
 test('one map says what each ring bubble does', () => {
-    /* Oct 28 2026, 23:00 (Emmanuel: Supermarkt, Zu Hause, Seller Zone and Hilf mit "also be bubbles"): Einkaufen blooms */
-    assert.deepStrictEqual(JSON.parse(JSON.stringify(core.RING)), { fuel: 'bloom', gap: 'hub', water: 'bloom', move: 'bloom', sleep: 'bloom' });
-    assert.deepStrictEqual(core.BLOOMS, ['fuel', 'water', 'move', 'sleep']);
+    /* Oct 28 2026, 23:00 (Emmanuel: Supermarkt, Zu Hause, Seller Zone and Hilf mit "also be bubbles"): Einkaufen blooms;
+       22:54 (Emmanuel: "nuke that window"): Gap blooms Letzte / Erste Mahlzeit */
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(core.RING)), { fuel: 'bloom', gap: 'bloom', water: 'bloom', move: 'bloom', sleep: 'bloom' });
+    assert.deepStrictEqual(core.BLOOMS, ['fuel', 'gap', 'water', 'move', 'sleep']);
     assert.ok(Object.isFrozen(core.RING), 'nobody can change it at run time');
 });
 
@@ -129,19 +132,23 @@ test('path 2b, companion sheet: Water and Move rows still open their own blooms 
     assert.ok(['move', null].includes(p.B.isOpen()), 'move asks the ring (or the Move page when its module is missing)');
 });
 
-test('path 3, code (old Shop module without doors): open(\'fuel\') opens Einkaufen, open(\'gap\') the hub', () => {
+test('path 3, code (old Shop module without doors): open(\'fuel\') opens Einkaufen, open(\'gap\') the Letzte / Erste Mahlzeit bubbles', () => {
     const p = page();
     assert.strictEqual(p.B.open('fuel'), true);
-    assert.strictEqual(p.B.open('gap'), true);
-    assert.deepStrictEqual(p.calls, ['store:home-shop', 'gap:']);
+    assert.deepStrictEqual(p.calls, ['store:home-shop']);
     assert.strictEqual(p.B.isOpen(), null);
+    assert.strictEqual(p.B.open('gap'), true);
+    assert.deepStrictEqual(p.calls, ['store:home-shop'], 'never the old Essenspause window');
+    assert.strictEqual(p.B.isOpen(), 'gap');
+    assert.deepStrictEqual(p.plain(p.B.actions('gap').map(a => a.label)), ['Letzte Mahlzeit', 'Erste Mahlzeit']);
+    p.B.close(true);
     assert.deepStrictEqual(p.plain(p.B.actions('fuel')), []);
     /* tutorial.js 'fuel-bloom' still calls open('fuel'): the same Einkaufen answer */
     assert.match(read('tutorial.js'), /const bloom = k => \(\{[^\n]*LowiHomeBloomsV2\.open\(k\)/);
 });
 
 test('path 4, the all-bubbles overview takes its bubbles from the same map: no Fuel orbs', () => {
-    assert.match(SRC, /const ALL = BLOOMS\.filter\(k => k !== 'fuel'\);/);
+    assert.match(SRC, /const ALL = BLOOMS\.filter\(k => k !== 'fuel' && k !== 'gap'\);/, 'Einkaufen orbs open pages; Gap times come in a second step');
     assert.ok(core.BLOOMS.includes('fuel'), 'Einkaufen blooms on its own');
 });
 

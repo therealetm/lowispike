@@ -20,6 +20,12 @@
     transform: translate(var(--hb2-dx, 0), var(--hb2-dy, 0)) scale(.2); opacity: 0;
     transition: transform .42s cubic-bezier(.3, 1.6, .5, 1) calc(var(--hb2-i, 0) * 40ms), opacity .2s ease calc(var(--hb2-i, 0) * 40ms); }
 .hb2-bloom.on .hb2-orb { transform: none; opacity: 1; }
+/* Oct 28 2026, 22:54: Gap > Andere Zeit is a label over the phone's own time picker; the input covers the whole orb, invisible,
+   16px so iOS does not zoom; the tap on it opens the picker */
+label.hb2-orb { box-sizing: border-box; }
+.hb2-time { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; border-radius: 50%; opacity: .011; font-size: 16px;
+    color: transparent; background: transparent; -webkit-appearance: none; appearance: none; cursor: pointer; z-index: 2; }
+.hb2-time::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: auto; height: auto; opacity: 0; cursor: pointer; }
 .hb2-bloom.off .hb2-orb { transform: translate(var(--hb2-dx, 0), var(--hb2-dy, 0)) scale(.2); opacity: 0; transition-duration: .3s, .25s; transition-delay: 0s; }
 .hb2-bloom.off .hb2-orb.hb2-chosen { transform: translate(var(--hb2-dx, 0), var(--hb2-dy, 0)) scale(.55); transition: transform .32s cubic-bezier(.5, 0, .8, .4), opacity .32s ease-in; }
 .hb2-orb:active { scale: .9; transition: scale .1s; }

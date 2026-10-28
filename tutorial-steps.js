@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 36;  /* 36: Oct 28 2026, new-humans now says the chat is people only too (bot posts live in For You); 35: Oct 27 2026, new-day-recap in part 'new' (Day recap from the companion card and My day: the day read back, care sent, one journal line; shows after the evening catch-up Save); 34: Oct 26 2026, new-evening-catchup in part 'new' (Catch up on today: the evening bubble checklist, first row in Settings); 33: Oct 26 2026, new-quick-tour in part 'new' (the 45-second video tour, Settings row after Tutorial); 32: Oct 26 2026, new-cart-ask in part 'new' (Someone else pays: the whole Cart as a Give a hand basket); 31: Oct 26 2026, new-mic-dictation in part 'new' (a small mic in text fields: speak instead of typing; Home Screen app on iPhone uses the keyboard's mic); 30: Oct 26 2026, new-cook-tabs (Cook opens on Kitchen, the first tab; hold a Cook tab to move it) and new-kitchen no longer says next to Swipe; 29: Oct 26 2026, new-scan-why in part 'new' (the scanner card's curve, How often and Why?); 28: Oct 26 2026, new-kitchen rewritten (Kitchen is a game in Cook next to Shuffle and Swipe) and new-give-hand opens Shop on Seller Zone (Kitchen left Shop); 27: Oct 25 2026, new-give-hand in part 'new' (Give a hand is its own Shop tab next to Kitchen); 26: Oct 25 2026, the short base tour (11 cards, auto demo, What's New never in the base tour); 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 37;  /* 37: Oct 28 2026, 22:54, Gap blooms Letzte / Erste Mahlzeit (the old Essenspause window is not what a tap opens); 36: Oct 28 2026, new-humans now says the chat is people only too (bot posts live in For You); 35: Oct 27 2026, new-day-recap in part 'new' (Day recap from the companion card and My day: the day read back, care sent, one journal line; shows after the evening catch-up Save); 34: Oct 26 2026, new-evening-catchup in part 'new' (Catch up on today: the evening bubble checklist, first row in Settings); 33: Oct 26 2026, new-quick-tour in part 'new' (the 45-second video tour, Settings row after Tutorial); 32: Oct 26 2026, new-cart-ask in part 'new' (Someone else pays: the whole Cart as a Give a hand basket); 31: Oct 26 2026, new-mic-dictation in part 'new' (a small mic in text fields: speak instead of typing; Home Screen app on iPhone uses the keyboard's mic); 30: Oct 26 2026, new-cook-tabs (Cook opens on Kitchen, the first tab; hold a Cook tab to move it) and new-kitchen no longer says next to Swipe; 29: Oct 26 2026, new-scan-why in part 'new' (the scanner card's curve, How often and Why?); 28: Oct 26 2026, new-kitchen rewritten (Kitchen is a game in Cook next to Shuffle and Swipe) and new-give-hand opens Shop on Seller Zone (Kitchen left Shop); 27: Oct 25 2026, new-give-hand in part 'new' (Give a hand is its own Shop tab next to Kitchen); 26: Oct 25 2026, the short base tour (11 cards, auto demo, What's New never in the base tour); 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- the base tour (Oct 25 2026, Emmanuel: "far too long ... only the essentials, at most 12 steps"). One card per
@@ -73,12 +73,13 @@
             }
         },
         {
-            id: 'gap', area: 'home', target: ['#spFast'], demo: { g: 'tap', open: 'gap-view' }, covers: ['home-ring', 'gap', 'fasting', 'cook', 'log-meal'], teaches: ['gap-tap'],
+            /* Oct 28 2026, 22:54 (Emmanuel: "They're supposed to be bubbles ... nuke that window"): a tap blooms Letzte / Erste Mahlzeit */
+            id: 'gap', area: 'home', target: ['#spFast'], demo: { g: 'tap', open: 'gap-bloom' }, covers: ['home-ring', 'gap', 'fasting'], teaches: ['gap-tap'],
             title: { en: 'Gap', de: 'Gap', es: 'Gap' },
             text: {
-                en: 'Tap Gap: how long since your last meal, log a meal, Cook and today\'s meals.',
-                de: 'Tipp auf Gap: wie lange dein letztes Essen her ist, Mahlzeit eintragen, Kochen und heutige Mahlzeiten.',
-                es: 'Toca Gap: cuánto desde tu última comida, registrar comida, Cocinar y las comidas de hoy.'
+                en: 'Tap Gap: Last meal starts the timer and First meal stops it.',
+                de: 'Tipp auf Gap: Letzte Mahlzeit startet die Uhr und Erste Mahlzeit stoppt sie.',
+                es: 'Toca Gap: Última comida pone el reloj en marcha y Primera comida lo para.'
             }
         },
         {
@@ -122,7 +123,7 @@
             /* Scan in the tour NEVER calls the camera (no iOS permission prompt): 'scan-demo' is a mocked Scan screen with a sample
                photo; the finger presses its shutter and a verdict marked Demo appears. The camera is asked at the first REAL scan. */
             id: 'scan', area: 'food', target: ['#whHud .o8-scan'], demo: { g: 'tap', open: 'scan-demo' }, sayTitle: { es: false },
-            covers: ['scan', 'barcode', 'deep-analyze', 'fix-food', 'snap-food', 'photo-checks'], teaches: ['scan-tap'],
+            covers: ['scan', 'barcode', 'deep-analyze', 'fix-food', 'snap-food', 'photo-checks', 'log-meal'], teaches: ['scan-tap'],
             title: { en: 'Scan', de: 'Scannen', es: 'Escanear' },
             text: {
                 en: 'Tap Scan and point the camera at your food: I tell you how much it spikes.',
@@ -143,7 +144,7 @@
         },
         {
             id: 'settings', area: 'settings', target: ['#whHud .o8-settings'], demo: { g: 'hold', open: 'settings-sheet' },
-            covers: ['settings', 'theme', 'language', 'day-night', 'me', 'look', 'account', 'deleteAccount', 'body', 'weight', 'bmi', 'care', 'workouts', 'foryou', 'hunt', 'tutorial', 'quickTour', 'back-x', 'home-visit', 'day-card', 'whats-new', 'update'],
+            covers: ['settings', 'cook', 'theme', 'language', 'day-night', 'me', 'look', 'account', 'deleteAccount', 'body', 'weight', 'bmi', 'care', 'workouts', 'foryou', 'hunt', 'tutorial', 'quickTour', 'back-x', 'home-visit', 'day-card', 'whats-new', 'update'],
             teaches: ['community-hold'],
             title: { en: 'Settings', de: 'Einstellungen', es: 'Ajustes' },
             text: {

@@ -116,7 +116,7 @@ test('labels are the plain words E-man asked for, no Again / Photo, no emoji any
 });
 
 test('every action calls an existing app API (no invented routes, no placeholder buttons)', () => {
-  for (const call of ['LowiSpirit.meal()', 'LowiStorePicks.open(', 'LowiSpirit.water(k)', 'LowiVitalsBridge.unaward(', 'LowiMoveBubble.pick(', 'LowiMoveBubble.edit()', 'LowiMoveBubble.page()', 'W.LowiGapView.open()'])
+  for (const call of ['LowiSpirit.meal()', 'LowiStorePicks.open(', 'LowiSpirit.water(k)', 'LowiVitalsBridge.unaward(', 'LowiMoveBubble.pick(', 'LowiMoveBubble.edit()', 'LowiMoveBubble.page()', 'W.LowiGapView.open(', 'F.firstMeal(at)', 'F.end(t, { keep: true })', 'FE.save(t)'])
     assert.ok(src.includes(call), call);
   assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|supabase|sendBeacon/i, 'no backend calls from the bloom');
   /* a missing module leaves its orb out rather than showing a dead button */
@@ -125,11 +125,12 @@ test('every action calls an existing app API (no invented routes, no placeholder
   assert.match(src, /if \(fn\(W\.LowiMoveBubble, 'pick'\)/);
 });
 
-test('Gap has no bloom: a tap opens the passive Gap view and never starts, ends or writes a fast (Oct 21 Scan / Fuel / Gap)', () => {
-  /* E-man Oct 21: "gap is just like water and move or sleep... let's not have it formatted like a fasting app" */
-  assert.match(src, /if \(kind === 'gap'\) \{ close\(true\); buzz\(8\); if \(fn\(W\.LowiGapView, 'open'\)\) W\.LowiGapView\.open\(\); return; \}/);
-  assert.doesNotMatch(src, /else if \(kind === 'gap'\)/, 'no Gap actions in the bloom any more');
-  assert.doesNotMatch(src, /'I just ate'|'Ate earlier'|F\.end\(|LowiMealCtx/, 'no start / stop fast workflow from Home');
+test('Gap blooms Letzte / Erste Mahlzeit like Water / Move / Sleep; the old window is not what a tap opens (Oct 28 2026, 22:54)', () => {
+  /* Emmanuel on the call, Oct 28 2026: "They're supposed to be bubbles ... just like when you click on sleep or water ... or move",
+     "nuke that window". (Oct 21 it was a passive Gap view; the hub with embedded buttons was the wrong place.) */
+  assert.doesNotMatch(src, /if \(kind === 'gap'\) \{ close\(true\); buzz\(8\); if \(fn\(W\.LowiGapView, 'open'\)\) W\.LowiGapView\.open\(\); return; \}/, 'no tap to the old window');
+  assert.match(src, /else if \(kind === 'gap'\) \{\s*gapActs\(A\);/, 'Gap has its own orbs');
+  assert.doesNotMatch(src, /'I just ate'|'Ate earlier'|LowiMealCtx/, 'not the old Oct 18 pair');
   assert.doesNotMatch(src, /lowi_fast_v1['"]?, *JSON\.stringify\([^)]*last/, 'the bloom never writes the gap start itself');
 });
 

@@ -186,7 +186,7 @@ const num = s => +(String(s || '').match(/\d+/) || [0])[0];
                 await page.waitForSelector('[data-cme="catchUp"],[data-ss2="catchUp"]', { timeout: 8000 }).catch(() => { });
                 await sleep(700);
                 const rows = await page.evaluate(() => [...document.querySelectorAll('.cme-row[data-cme],.ss2-page [data-ss2]')].map(b => ({ id: b.dataset.cme || b.dataset.ss2, label: (b.textContent || '').trim(), vis: b.getBoundingClientRect().height > 0 })));
-                const setIds = rows.map(r => r.id).filter(id => ['catchUp', 'theme', 'look', 'worldSound', 'language', 'notifications', 'tutorial', 'about'].includes(id));
+                const setIds = rows.map(r => r.id).filter(id => ['catchUp', 'theme', 'look', 'worldSound', 'language', 'notifications', 'tutorial', 'support', 'about'].includes(id));
                 steps.rows = setIds.join(',');
                 ok(setIds[0] === 'catchUp', P, 'Catch up on today is not the first Settings row: ' + setIds.join(','));
                 const row = rows.find(r => r.id === 'catchUp');

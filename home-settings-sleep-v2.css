@@ -123,3 +123,5 @@ html.o8 #whHud [data-orbit="settings"].ss2-holding { filter: brightness(1.18) dr
 .ss2-about p, .ss2-about li { margin: 0; font-size: 14px; }
 .ss2-about ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
 .ss2-about .ss2-ab-v { opacity: .72; font-size: 13px; font-variant-numeric: tabular-nums; }
+.ss2-about .ss2-ab-crash { font-size: 12.5px; opacity: .8; overflow-wrap: anywhere; }
+.ss2-about ul.ss2-ab-crash li { margin-bottom: 6px; font-size: 12.5px; }

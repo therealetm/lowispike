@@ -13,9 +13,9 @@ test('Settings has Mitteilungen and Über & Hinweise, in German, English and Spa
     assert.ok(SS.SETTINGS_IDS.includes('notifications'));
     assert.ok(SS.SETTINGS_IDS.includes('about'));
     assert.strictEqual(SS.SETTINGS_IDS[SS.SETTINGS_IDS.length - 1], 'about', 'About is last');
-    assert.match(js, /notifications: 'Mitteilungen', about: '\\u00dcber & Hinweise'/);
-    assert.match(js, /notifications: 'Notifications', about: 'About & info'/);
-    assert.match(js, /notifications: 'Avisos', about: 'Acerca de'/);
+    assert.match(js, /notifications: 'Mitteilungen', (support: '[^']*', )?about: '\\u00dcber & Hinweise'/);
+    assert.match(js, /notifications: 'Notifications', (support: '[^']*', )?about: 'About & info'/);
+    assert.match(js, /notifications: 'Avisos', (support: '[^']*', )?about: 'Acerca de'/);
 });
 
 test('Mitteilungen opens the one notification sheet, About opens a small info sheet', () => {

@@ -419,7 +419,8 @@
         gift: 'Gift of the day announces itself on Home when there is one; nothing to learn',
         weather: 'Weather is a read-only extra in Settings; self-explanatory',
         notifications: 'Mitteilungen in Settings opens the notification sheet with its own labels (slim batch 9); nothing to learn',
-        about: 'About & info in Settings is a read-only info sheet (slim batch 9); nothing to learn'
+        about: 'About & info in Settings is a read-only info sheet (slim batch 9); nothing to learn',
+        support: 'Pay what you want in Settings opens the existing voluntary support view (X-16, Oct 28); nothing to learn'
     };
 
     /* Every gesture the app answers to (Oct 21 2026 audit). src: the files whose handlers do it; the test checks they exist and

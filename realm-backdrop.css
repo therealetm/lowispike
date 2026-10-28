@@ -46,6 +46,9 @@ html[data-theme="light"] .rw-layer .rw-veil { background: radial-gradient(120% 8
 /* nothing animates while the layer is hidden or covered by the camera layer */
 .rw-layer.rw-still *, #app > #rwBack.rw-under * { animation-play-state: paused !important; }
 #app > #rwBack.rw-back.rw-still { visibility: hidden; }
+/* Oct 28 2026 (item 29, iPhone memory): while the wallpaper is not shown (Today, Community) its three 70vmax breathing lights and
+   the motes keep no compositing layer of their own (will-change) and stand still; they get both back the moment it shows */
+#app > #rwBack.rw-back:not(.rw-show) * { will-change: auto !important; animation-play-state: paused !important; }
 
 /* ---------- Scan: the camera screen in the same living world as Community, Cook and Move ----------
    E-man (Oct 16): "our background for Scan a barcode should be the metabolic world, the same as every other page". While the

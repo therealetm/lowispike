@@ -134,7 +134,9 @@
             canvas = D.createElement('canvas'); canvas.className = 'bw3-canvas'; canvas.setAttribute('aria-hidden', 'true');
             canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); ctxLost(); });
             canvas.addEventListener('webglcontextrestored', () => ctxBack());
-            world = S.createWorld(THREE, canvas, { places: PLACES, small: W.innerWidth < 380, dprCap: dprCap({ w: W.innerWidth, mem: navigator.deviceMemory }), theme: themeNow(), inBack: () => mode === 'back', shouldRender, onFrameError });
+            world = S.createWorld(THREE, canvas, { places: PLACES, small: W.innerWidth < 380, dprCap: dprCap({ w: W.innerWidth, mem: navigator.deviceMemory }), theme: themeNow(), inBack: () => mode === 'back', shouldRender, onFrameError,
+                /* Oct 28 2026 item 29: faded behind steady Community = rest (1x1 buffer, canvas hidden, no blur filter kept) */
+                rest: backFaded, onRest: r => { try { canvas.classList.toggle('bw3-rest', !!r); } catch (e) { } } });
             Object.assign(api, { THREE, scene: world.scene, camera: world.camera, renderer: world.renderer, hub: world.hub, regions: world.regions, rig: world.rig, memU: world.memU || null });
             pendingFrames.forEach(fn => { const t = pendingBind.get(fn); const off = world.onFrame(fn); if (t) t.bind(off); }); pendingFrames.clear(); pendingBind.clear();
             api.ready = true; api.state = 'ready'; H.classList.add('bw3-ready');
@@ -462,7 +464,8 @@
         if (commIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && !WH.state.pull && WH.pullOut) WH.pullOut(); } catch (e) { } }
         H.classList.toggle('wb-home', homeIn); if (w === true && mode !== 'back') backdrop(true); else if (w === false && mode === 'back') backdrop(false);
     }
-    function queueBack() { if (!backQ) backQ = (W.requestAnimationFrame || setTimeout)(syncBack, 0); }
+    /* Oct 28 item 29: a resting world (faded behind steady Community) wakes the moment the page or the warp changes, not on its next look */
+    function queueBack() { try { if (world && world.resting && world.nudge) world.nudge(); } catch (e) { } if (!backQ) backQ = (W.requestAnimationFrame || setTimeout)(syncBack, 0); }
     if (typeof MutationObserver !== 'undefined') {
         const mo = new MutationObserver(queueBack);
         const watchTabs = () => { mo.observe(H, { attributes: true, attributeFilter: ['class'] }); const m = D.getElementById('main'); if (m) mo.observe(m, { attributes: true, attributeFilter: ['class'], subtree: true }); else setTimeout(watchTabs, 300); };

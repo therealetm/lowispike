@@ -143,7 +143,7 @@ test('frameGuard: counts, streaks, ok() and log throttling (first 3, then at mos
 
 test('body-world-3d.js: frame errors are counted on LowiWorld3D, and a restored graphics context is drawn again at once', () => {
     const s = read('body-world-3d.js');
-    assert.match(s, /shouldRender, onFrameError \}/, 'createWorld gets the error reporter');
+    assert.match(s, /shouldRender, onFrameError[,\s}]/, 'createWorld gets the error reporter');
     assert.match(s, /api\.frameErrors\+\+/);
     const back = s.slice(s.indexOf('function ctxBack'), s.indexOf('function fail('));
     assert.match(back, /world\.start\(\)/, 'the loop starts again on restore');

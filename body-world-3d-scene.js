@@ -49,6 +49,13 @@ export function createWorld(THREE, canvas, opts) {
     const topNow = () => { try { if (typeof LowiPower !== 'undefined' && LowiPower.dprCap) return Math.max(dprFloor, Math.min(dprTop, LowiPower.dprCap(dprTop))); } catch (e) { } return dprTop; };
     let hiFor = 0, dprDropAt = -1e9; /* no climbing back for 20 s after a step down: no flip-flopping sharpness */
     renderer.setPixelRatio(dpr);
+    /* Oct 28 2026 (item 29, Emmanuel's iPhone reloads going Community -> chat): while the world rests (steady Community: the canvas is
+       faded to 0 and nothing is drawn), its drawing buffer shrinks to 1x1, so the phone does not hold a full-screen GPU picture (about
+       11 MB colour + depth at 2x) under the Room and the chat. Every resize while resting is held back; waking restores the size and
+       draws in the same refresh. */
+    let resting = false;
+    const sizeNow = renderer.setSize.bind(renderer);
+    renderer.setSize = function (w, h, u) { if (resting) return; return sizeNow(w, h, u); };
     const scene = new THREE.Scene();
     const PAL = {
         dark: { bg: '#121c33', wall: '#2a3a5a', wallHi: '#6a82ab', hemiSky: '#8fb4e6', hemiGround: '#17223b', key: '#c3cfe6', fog: 0.034, shaft: 0.11, part: 0.75 },
@@ -777,6 +784,15 @@ export function createWorld(THREE, canvas, opts) {
     }
     function frameWork(now) {
         const raw = last ? (now - last) / 1000 : 1 / 60; last = now;
+        const restNow = !!(opts.rest && opts.rest());
+        if (restNow !== resting) {
+            if (restNow) { resting = true; sizeNow(1, 1, false); }
+            else { resting = false; renderer.setPixelRatio(dpr); sizeNow(W, H, false); paintNow = true; frames = []; }
+            if (typeof opts.onRest === 'function') { try { opts.onRest(resting); } catch (e) { } }
+        }
+        /* resting: no work, and the loop only looks again 2-3 times a second; a touch (markIn) or any page / class change (nudge, from
+           body-world-3d.js syncBack) wakes it at once */
+        if (resting) { nextGap = 400; return; }
         const dt = Math.min(0.05, raw);
         const wasChained = !gapFrame;
         /* the sharpness watcher and the Low Power Mode detector only look at frames that came straight from the screen refresh:
@@ -883,5 +899,5 @@ export function createWorld(THREE, canvas, opts) {
     }
     function dispose() { stop(); renderer.dispose(); }
     setTheme(opts.theme || 'dark');
-    return { scene, camera, hub, regions, onFrame, memU, resize, placesLook, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, cosmosLook: () => ({ vis: !!(cosmos && cosmos.g.visible), rv: typeof cosmosRv === 'number' ? +cosmosRv.toFixed(3) : -1, gx: +cosmosGx.toFixed(3), d: +rig.dist.toFixed(2), m: +((rig.maxD || 14) * 1.05).toFixed(2), stars: cosmos ? +cosmos.stars.material.uniforms.uO.value.toFixed(3) : 0, oth: cosmos && cosmos.others[0] ? +cosmos.others[0].material.uniforms.uO.value.toFixed(3) : 0 }), rig, renderer };
+    return { scene, camera, hub, regions, onFrame, memU, resize, placesLook, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, get resting() { return resting; }, nudge() { if (resting && (wake || nextGap > 0)) { nextGap = 0; askFrame(); } }, cosmosLook: () => ({ vis: !!(cosmos && cosmos.g.visible), rv: typeof cosmosRv === 'number' ? +cosmosRv.toFixed(3) : -1, gx: +cosmosGx.toFixed(3), d: +rig.dist.toFixed(2), m: +((rig.maxD || 14) * 1.05).toFixed(2), stars: cosmos ? +cosmos.stars.material.uniforms.uO.value.toFixed(3) : 0, oth: cosmos && cosmos.others[0] ? +cosmos.others[0].material.uniforms.uO.value.toFixed(3) : 0 }), rig, renderer };
 }

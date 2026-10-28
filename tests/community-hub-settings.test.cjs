@@ -15,7 +15,7 @@ test('hub groups: YOU, then Settings without World sound, then Delete account al
     assert.deepStrictEqual(g.map(x => x.key), ['you', 'settings', 'danger']);
     assert.deepStrictEqual(g[0].ids, ['me', 'presence', 'body', 'myday'], 'Weight journey lives inside Weight & BMI (Oct 22 2026); presence tile after Profile; My day last (Oct 25 2026, the retired Today sheet\'s parts)');
     assert.deepStrictEqual(M.groups(id => id !== 'presence')[0].ids, ['me', 'body', 'myday'], 'no presence tile without the Community sheet');
-    assert.deepStrictEqual(g[1].ids, ['catchUp', 'theme', 'look', 'language', 'notifications', 'tutorial', 'about', 'account']);  /* Oct 28 2026 slim batch 9: notifications + About in Settings */  /* Oct 26 2026 (MAYA-HANDOFF 0.39): Catch up on today first */
+    assert.deepStrictEqual(g[1].ids, ['catchUp', 'theme', 'look', 'language', 'notifications', 'tutorial', 'support', 'about', 'account']);  /* Oct 28 2026 slim batch 9: notifications + About in Settings */  /* Oct 26 2026 (MAYA-HANDOFF 0.39): Catch up on today first */
     assert.deepStrictEqual(g[2].ids, ['deleteAccount'], 'Delete account is last, on its own');
     for (const id of ['worldSound', 'foryou', 'care', 'workouts', 'map', 'gift', 'hunt']) assert.ok(!g.some(x => x.ids.includes(id)), id + ' is not in the hub');
     assert.deepStrictEqual(SS.COMMUNITY_PLACES.places, [], 'no Explore section');

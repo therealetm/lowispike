@@ -13,6 +13,9 @@ html.wb-on.wb-comm:not(.gx-in):not(.gx-out) #bw3Back .bw3-canvas {
    pull-out from Home has landed, the live world fades away behind Community, so no far glass worlds, cells or rings pop in
    chunk by chunk behind the Room. What stays is a clean, still deep-blue space with a soft glow, the same on every Community
    tab. The world is still what you fly through: it is fully there during the pull-out (gx-in) and the dive home (gx-out). */
+/* Oct 28 2026 (item 29, iPhone reload going Community -> chat): once the faded world rests (body-world-3d.js rest: 1x1 buffer), the
+   canvas is hidden and keeps no blur filter, so WebKit holds no filtered full-screen copy of it under the Room and the chat */
+html.wb-on.wb-comm #bw3Back .bw3-canvas.bw3-rest { filter: none !important; visibility: hidden !important; transition: none !important; }
 html.wb-on.wb-comm:not(.gx-in):not(.gx-out) #bw3Back { background: radial-gradient(120% 80% at 50% 40%, #11284a 0%, #0a1733 46%, #050b1a 78%, #03060f 100%); }
 html.wb-on.wb-comm:not(.gx-in):not(.gx-out) #bw3Back .bw3-canvas { opacity: 0; transition: opacity .9s ease .15s; }
 

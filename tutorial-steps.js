@@ -493,7 +493,7 @@
         G('cm-zoom', 'community', 'pinch', ['community-chat.js'], 'pinch or double-tap the galaxy: zoom'),
         G('cm-hold', 'community', 'hold', ['community-chat.js'], 'hold a companion or a name: their person card'),
         G('cm-room', 'community', 'tap', ['community-rooms-ui.js'], 'tap the room chip: rooms'),
-        G('cm-mic', 'community', 'hold', ['community-chat.js'], 'hold the mic: record, let go to send, slide left to cancel'),
+        G('cm-mic', 'community', 'tap', ['community-chat.js'], 'tap the mic: it records, tap the arrow to send (one-gesture rule: a hold is just a tap)'),
         G('cm-photo', 'community', 'tap', ['community-chat.js'], 'tap the camera: send a photo'),
         G('cm-energy', 'community', 'drag', ['community-energy.js'], 'drag the small joystick and let go: send energy'),
         G('aff-card', 'community', 'tap', ['community-rooms-ui.js'], 'Affiliates: tap a card for its script, copy it'),

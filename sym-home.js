@@ -96,29 +96,46 @@
     }
     function attachLiving(b) {
         if (living || !b) return;
-        try { if (W.LowiLivingBubble && typeof W.LowiLivingBubble.attach === 'function') { W.LowiLivingBubble.attach(b, { kind: 'meals', onLong: () => { longAt = performance.now(); details(); return true; } }); living = true; } } catch (e) {}
+        try { if (W.LowiLivingBubble && typeof W.LowiLivingBubble.attach === 'function') { W.LowiLivingBubble.attach(b, { kind: 'meals' }); living = true; /* Oct 28 2026 one-gesture rule: a hold only squishes, today's meals live in the Essenspause hub */ } } catch (e) {}
     }
+    /* Oct 28 2026 food plan (Emmanuel: "Ok mach"): this cell is the Einkaufen bubble now. A cart, the open count of the shopping list
+       (Einkaufsliste) instead of 1/3; one tap opens Einkaufen (home-blooms-v2.js). The meal counter 1/3 and today's meals moved into the
+       Essenspause hub (todayHTML below, gap-view.js), so nothing is lost. */
+    const CART = '<svg class="wh-cart" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.6" fill="currentColor"/><circle cx="17" cy="20" r="1.6" fill="currentColor"/></svg>';
+    function listCount() { try { const L = W.LOWI_SHELF; return L && typeof L.listOpen === 'function' ? (L.listOpen() || []).length : 0; } catch (e) { return 0; } }
+    function shopLabel() { return T('Shopping', 'Einkaufen', 'Compras'); }
     function paint() {
         const b = ensure(); if (!b) return;
         if (!b.classList.contains('lb-bub')) living = false;
         attachLiving(b);
-        const v = CORE.view(state());
-        const fill = String(Math.round(v.fill * 100) / 100);
+        b.classList.add('wh-shop');
+        const n = listCount(), fill = String(Math.min(1, n / 8));
         if (b.style.getPropertyValue('--wh-fill') !== fill) b.style.setProperty('--wh-fill', fill);
         const sm = b.querySelector('small'), bb = b.querySelector('b');
-        if (sm && sm.textContent !== label()) sm.textContent = label();
-        /* Oct 21 grandma test: "1/3" alone says nothing, so the count says its unit the way Water does ("0/6 cups") */
+        if (sm && sm.dataset.shop !== '1') { sm.innerHTML = CART + '<span class="wh-shop-l"></span>'; sm.dataset.shop = '1'; }
+        const sl = sm && sm.querySelector('.wh-shop-l'); if (sl && sl.textContent !== shopLabel()) sl.textContent = shopLabel();
         if (bb) {
-            const unit = /^\d+\s*\/\s*\d+$/.test(v.text) ? T('meals', 'Mahlzeiten', 'comidas') : '';
+            const unit = T('on the list', 'auf der Liste', 'en la lista');
             let num = bb.querySelector('.wh-num'), u = bb.querySelector('.wh-unit');
             if (!num || !u) { bb.innerHTML = '<span class="wh-num"></span> <u class="wh-unit"></u>'; num = bb.querySelector('.wh-num'); u = bb.querySelector('.wh-unit'); }
-            if (num.textContent !== v.text) num.textContent = v.text;
+            if (num.textContent !== String(n)) num.textContent = String(n);
             if (u.textContent !== unit) u.textContent = unit;
-            u.classList.toggle('wh-unit-2l', unit.length > 7); /* German "Mahlzeiten" sits under the count, it does not fit beside it */
+            u.classList.toggle('wh-unit-2l', true);
         }
-        b.classList.toggle('wme-full', v.full);
-        const aria = label() + ' ' + v.text + (/^\d+\s*\/\s*\d+$/.test(v.text) ? ' ' + T('meals', 'Mahlzeiten', 'comidas') : '') + '. ' + T('Tap to log a meal, long press to see today.', 'Tippen, um Essen einzutragen, lange drücken für heute.', 'Toca para registrar una comida, mantén pulsado para ver hoy.');
+        b.classList.remove('wme-full');
+        const aria = shopLabel() + ', ' + n + ' ' + T('on the shopping list. Tap to open Shopping.', 'auf der Einkaufsliste. Tippen öffnet Einkaufen.', 'en la lista de compras. Toca para abrir Compras.');
         if (b.getAttribute('aria-label') !== aria) b.setAttribute('aria-label', aria);
+    }
+    /* today's meals for the Essenspause hub: the meal counter (1/3), today's stats and the list, the same content the old long press showed */
+    function todayHTML() {
+        try {
+            const J = W.LowiMealJournal, v = CORE.view(state());
+            const meals = J && typeof J.today === 'function' ? J.today() : [];
+            const rows = meals.length ? meals.map(m => '<li class="mj-row">' + (J.thumbHTML ? J.thumbHTML(m) : '') + '<span class="wm-time">' + esc(J.timeOf ? J.timeOf(m.ts) : '') + '</span><span class="wm-name">' + esc(m.name || T('Meal', 'Mahlzeit', 'Comida')) + '</span>' + (J.labelHTML ? J.labelHTML(m) : '') + '</li>').join('')
+                : '<li class="wm-empty">' + esc(T('Nothing logged yet today.', 'Heute noch nichts eingetragen.', 'Aún no has registrado nada hoy.')) + '</li>';
+            const strip = W.LowiNutriStrip && typeof W.LowiNutriStrip.html === 'function' ? W.LowiNutriStrip.html('meals', { title: T("Today's stats", 'Heutige Werte', 'Datos de hoy') }) : '';
+            return '<section class="gv-today"><h4>' + esc(T('Today', 'Heute', 'Hoy')) + ' · <b>' + esc(v.text) + '</b> ' + esc(T('meals', 'Mahlzeiten', 'comidas')) + '</h4>' + strip + '<ul class="wm-list">' + rows + '</ul></section>';
+        } catch (e) { return ''; }
     }
     /* Misty's HOME cell, never where she drifts to: while the camera follows her flight (autopilot, steering) misty-flight.js slides
        #spBubble by --mf-bx / --mf-by (html.mf-roam). Mirroring across that moved box made Meals chase her across the screen

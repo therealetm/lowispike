@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261015-234500">
+<meta name="lowi-build" content="20261016-003000">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4335,7 +4335,7 @@ let C = null, fetchTok = 0, debT;
 function compose(prefill, text, rec){
   const h = H(); if (!h) return;
   if (window.LowiR3F && LowiR3F.postSheet) { LowiR3F.postSheet(prefill, text, rec); return; }
-  if (h.tab() !== "foryou") { if (window.cmSetView) cmSetView("feed"); h.go("foryou"); }
+  if (!$("#cmFeed")) { if (window.cmSetView) cmSetView("feed"); h.go("foryou"); }
   C = {raw:"", p:null, meta:null, loading:false, cap:text || "", vis:"tribe", mine:false, photo:"", rec:rec || ""};
   h.openSheet('<button class="xbtn" data-act="close-sheet">' + h.icon.x + '</button><div class="sheetbody" id="trCompose"><div class="h2" style="margin:4px 40px 4px 0">Share to For You</div><div class="small muted">Paste a link from TikTok, Instagram, YouTube or anywhere else. No link? Just write below.</div>' +
     '<div class="tr-urlrow"><input class="input" id="trUrl" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.tiktok.com/@…"><button class="tr-paste" data-tr="paste">' + IC.paste + 'Paste</button></div>' +
@@ -4438,7 +4438,7 @@ function postMenu(id){
 /* ---------- events (own namespace: data-tr) ---------- */
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-tr]"); if (!b) return; const h = H(); if (!h) return;
-  const a = b.dataset.tr, id = b.dataset.id, rerender = () => { if (h.tab() === "foryou" && $("#cmFeed")) renderForYou(); };
+  const a = b.dataset.tr, id = b.dataset.id, rerender = () => { if ($("#cmFeed")) renderForYou(); };
   switch (a) {
     case "compose": compose(); break;
     case "paste": (async () => { try { const t = await navigator.clipboard.readText(); if (t && C) { $("#trUrl").value = t; onUrl(t, true); } } catch(err){ h.toast("Long-press the field and tap Paste"); const i = $("#trUrl"); if (i) i.focus(); } })(); break;
@@ -4479,7 +4479,7 @@ document.addEventListener("input", e => {
 document.addEventListener("keydown", e => { if (e.key === "Enter" && C && (e.target.id === "trUrl" || e.target.id === "trCap")) { e.preventDefault(); e.target.blur(); if (e.target.id === "trUrl") onUrl(e.target.value, true); } });
 
 /* Share into the app: lowispike.html#share=<url> opens the composer prefilled (for an iOS Shortcut or share sheet later). */
-function checkShareHash(){ const m = location.hash.match(/^#share=(.+)$/); if (!m) return; let u = ""; try { u = decodeURIComponent(m[1]); } catch(e){ u = m[1]; } history.replaceState(null, "", location.pathname + location.search); const h = H(); if (h && h.onboarded()) { h.go("foryou"); setTimeout(() => compose(u), 250); } }
+function checkShareHash(){ const m = location.hash.match(/^#share=(.+)$/); if (!m) return; let u = ""; try { u = decodeURIComponent(m[1]); } catch(e){ u = m[1]; } history.replaceState(null, "", location.pathname + location.search); const h = H(); if (h && h.onboarded()) { if (window.cmSetView) cmSetView("feed"); h.go("foryou"); setTimeout(() => compose(u), 250); } }
 
 function defs(){ if (document.getElementById("trholoDefs")) return; const d = document.createElement("div"); d.id = "trholoDefs"; d.innerHTML = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="trholo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1dca6"/><stop offset=".38" stop-color="#f2bccb"/><stop offset=".68" stop-color="#c3b2ff"/><stop offset="1" stop-color="#a6e4ea"/></linearGradient></defs></svg>'; (document.body || document.documentElement).appendChild(d); }
 if (document.body) defs(); else document.addEventListener("DOMContentLoaded", defs);
@@ -4586,9 +4586,10 @@ function attach(feedEl){
   io = new IntersectionObserver(es => es.forEach(e => { const v = e.target; if (e.isIntersecting && e.intersectionRatio >= .6) { v.dataset.want = "1"; play(v); } else { v.dataset.want = ""; v.pause(); } }), {threshold:[0, .6, 1]});
   vids.forEach(v => io.observe(v));
 }
-const onFeed = () => { const h = H(), t = document.getElementById("tab-foryou"); return !document.hidden && (!h || h.tab() === "foryou") && (!t || t.classList.contains("active")) && !(window.MOVE && document.querySelector(".mv-screen.open")); };
+/* Oct 15: the feed lives in Cook now; "on the feed" = the feed is in the open tab */
+const onFeed = () => { const f = document.getElementById("cmFeed"), t = f && f.closest(".tab"); return !document.hidden && !!f && (!t || t.classList.contains("active")) && !(window.MOVE && document.querySelector(".mv-screen.open")); };
 let mo = null;
-function watchTab(){ const t = document.getElementById("tab-foryou"); if (!t || mo) return;
+function watchTab(){ const t = document.getElementById("tab-shelf"); if (!t || mo) return; /* Oct 15: the feed lives in Cook */
   mo = new MutationObserver(() => { if (!t.classList.contains("active")) pauseAll(); else $$("video.fyv-v").forEach(v => { if (v.dataset.want === "1") play(v); }); });
   mo.observe(t, {attributes:true, attributeFilter:["class"]}); }
 function play(v){ if (!v.src || !onFeed()) return; v.muted = muted; const pr = v.play(); if (pr && pr.catch) pr.catch(() => { if (!v.muted) { v.muted = true; muted = true; paintSound(); v.play().catch(() => {}); } }); }
@@ -4658,7 +4659,7 @@ async function doPost(btn){
   if (!TRIBE.addPost(p)) { delVid(id).catch(() => {}); return; }
   if (window.LOWI_CLOUD) LOWI_CLOUD.publish(p, u.file);
   h.closeSheet(); if (window.cmSetView) cmSetView("feed");
-  if (h.tab() !== "foryou") h.go("foryou"); else if (window.cmSeg && $("#cmTrack")) { cmSeg("feed"); TRIBE.renderForYou(); } else TRIBE.renderForYou();
+  if (!$("#cmFeed")) h.go("foryou"); else { if (window.cmSetView) cmSetView("chat"); TRIBE.renderForYou(); }
   h.award("tribe-post", null, {amt:10, perDay:2, label:"Shared to For You"});
   setTimeout(() => { const f = $("#fyFeed"); if (f) f.scrollTop = 0; h.toast("Live in your For You"); }, 160);
 }
@@ -6363,41 +6364,45 @@ function cmText(t){ return esc(t).replace(/@([A-Za-zÄÖÜäöüß]+)/g, '<span 
 function cmUnread(id){ const r = CM.read[id] || 0; return CM.msgs[id].filter(m => m.ts > r && m.by !== cmMe()).length; }
 
 /* Oct 8 (convenience pass): Community is three panes side by side, For You | Channels | Post.
-   Tap the segment or swipe left and right. For You comes first: it doubles as the activity feed. */
-const CM_SEGS = ["feed", "chat", "board"];
+   Oct 15 (build 20261016-003000): Community is the chat / spirit space alone, full screen and calm like Home.
+   For You moved into Cook (its own section next to eBook, Community and Products), the Leaderboard and Milestones into Move.
+   Old links that still ask for "feed" or "board" are sent to the new spots by cmRoute(), so nothing is a dead end. */
+const CM_SEGS = ["chat"];
+const cmL = (en, de, es) => { let l = "de"; try { l = (window.LowiLang && LowiLang.get()) || localStorage.getItem("lowi.lang") || "de"; } catch(e){} return l === "de" ? de : l === "es" ? es : en; };
+const CM_TREE_IC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-8"/><path d="M12 13 7 9M12 13l5-4M12 16l-4-2M12 16l4-2"/><circle cx="6" cy="7.5" r="2"/><circle cx="18" cy="7.5" r="2"/><circle cx="12" cy="5" r="2"/></svg>';
+function cmPrivIcon(){ let q = false; try { q = !!(window.LowiCommunity && LowiCommunity.isQuiet()); } catch(e){}
+  return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>' +
+    (q ? '<path d="M14.5 9.2a3.6 3.6 0 1 0 0 5.6 3 3 0 0 1 0-5.6z" fill="currentColor"/>' : '<path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>') + '</svg>'; }
+function cmPrivLabel(){ let q = false; try { q = !!(window.LowiCommunity && LowiCommunity.isQuiet()); } catch(e){}
+  return q ? cmL("Quiet hours on · privacy", "Ruhezeit an · Privatsphäre", "Horas de silencio · privacidad") : cmL("Privacy & quiet", "Privatsphäre & Ruhe", "Privacidad y silencio"); }
+function cmPrivSync(){ const b = $("#cmPrivBtn"); if (!b) return; b.innerHTML = cmPrivIcon(); b.setAttribute("aria-label", cmPrivLabel()); b.title = cmPrivLabel(); }
 function renderCommunity(){ cmLoad(); const el = $("#tab-foryou"); if (!el) return;
-  el.classList.remove("cm-splitmode"); CMV.room = "all";
-  if (CM_SEGS.indexOf(CMV.view) < 0) CMV.view = "feed";
-  const unread = CMV.view === "chat" ? 0 : cmUnread("all"), i = CM_SEGS.indexOf(CMV.view);
-  el.classList.add("paged"); el.scrollTop = 0;
-  el.innerHTML = '<div class="ls-pager"><div class="ls-phd"><div class="h1">Community</div><div class="ls-seg" id="cmSeg" role="tablist"><span class="ind" style="transform:translateX(' + (i * 100) + '%)"></span>' +
-    [["feed", "For You"], ["chat", "Chat"], ["board", "Leaderboard"]].map(o => '<button role="tab" data-sfx="tab" data-cm="view" data-v="' + o[0] + '" class="' + (CMV.view === o[0] ? "on" : "") + '">' + o[1] + (o[0] === "chat" && unread ? '<span class="cm-dot">' + unread + "</span>" : "") + "</button>").join("") + "</div></div>" +
-    '<div class="ls-track" id="cmTrack" style="transform:translateX(' + (-i * 100 / 3) + '%)"><div class="ls-pane fy-pane" id="cmPaneFeed"><div id="cmFeed"></div></div><div class="ls-pane cm-pane" id="cmPaneChat"></div><div class="ls-pane ls-board" id="cmPaneBoard"></div></div></div>';
-  if (window.TRIBE) { TRIBE.renderForYou($("#cmFeed")); } if (window.LowiR3F) LowiR3F.paintBoard();
+  el.classList.remove("cm-splitmode"); CMV.room = "all"; CMV.view = "chat";
+  el.classList.add("paged", "cm-solo"); el.scrollTop = 0;
+  el.innerHTML = '<div class="ls-pager cm-solo"><div class="ls-phd cm-hd" data-noi18n><h1 class="cm-srh">Community</h1>' +
+      '<button type="button" class="cm-treeb" id="cmTreeBtn" data-cr="tree" data-sfx="open">' + CM_TREE_IC + '<span>' + esc(cmL("Friends tree", "Freundesbaum", "Árbol de amigos")) + '</span></button>' +
+      '<button type="button" class="cm-ibtn" id="cmPrivBtn" data-chat="settings" data-sfx="open" aria-label="' + esc(cmPrivLabel()) + '" title="' + esc(cmPrivLabel()) + '">' + cmPrivIcon() + '</button></div>' +
+    '<div class="ls-track cm-solotrack" id="cmTrack"><div class="ls-pane cm-pane" id="cmPaneChat"></div></div></div>';
   cmRoom($("#cmPaneChat"));
-  cmSwipe($("#cmTrack"));
-  cmPanesInert(i);
+  try { CM.read.all = Date.now(); cmSave(); } catch(e){}
 }
-// Oct 8: the two parked panes of the swipe pager sit off-screen; inert keeps Tab, focus and screen readers out of them
-function cmPanesInert(i){ document.querySelectorAll("#cmTrack > .ls-pane").forEach((p, k) => { if (k === i) p.removeAttribute("inert"); else p.setAttribute("inert", ""); }); }
-function cmSeg(v){ if (CM_SEGS.indexOf(v) < 0) return; CMV.view = v; CMV.room = "all"; if (v === "chat") { cmLoad(); CM.read.all = Date.now(); cmSave(); const dot = $("#cmSeg .cm-dot"); if (dot) dot.remove(); const l = $("#cmList"); if (l && !l.dataset.seen) { l.dataset.seen = "1"; l.scrollTop = l.scrollHeight; } } const t = $("#cmTrack"), ind = $("#cmSeg .ind"); if (!t) { renderCommunity(); return; }
-  const i = CM_SEGS.indexOf(v); t.classList.remove("drag"); t.style.transform = "translateX(" + (-i * 100 / 3) + "%)"; if (ind) ind.style.transform = "translateX(" + (i * 100) + "%)"; cmPanesInert(i);
-  $$("#cmSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); }
+document.addEventListener("click", () => { if (typeof TAB !== "undefined" && TAB === "foryou") setTimeout(cmPrivSync, 350); }, true);
+function cmPanesInert(){ document.querySelectorAll("#cmTrack > .ls-pane").forEach(p => p.removeAttribute("inert")); }
+/* the old sections live elsewhere now: For You -> Cook, Leaderboard -> Move */
+function cmRoute(v){ CMV.view = "chat"; CMV.room = "all";
+  if (v === "feed") { try { if (window.LowiFood && LowiFood.openForYou) { LowiFood.openForYou(); return true; } } catch(e){ console.error(e); } return false; }
+  if (v === "board") { try { if (window.LowiMoveBoard) { LowiMoveBoard.open(); return true; } } catch(e){ console.error(e); } return false; }
+  return false; }
+window.cmRoute = cmRoute;
+function cmSeg(v){ if (v === "feed" || v === "board") { cmRoute(v); return; } if (v !== "chat") return;
+  CMV.view = "chat"; CMV.room = "all"; cmLoad(); CM.read.all = Date.now(); cmSave();
+  if (typeof TAB !== "undefined" && TAB !== "foryou") { goTab("foryou"); return; }
+  if (!$("#cmTrack")) { renderCommunity(); return; }
+  const l = $("#cmList"); if (l && !l.dataset.seen) { l.dataset.seen = "1"; l.scrollTop = l.scrollHeight; } }
 window.cmSeg = cmSeg; window.cmSetView = v => { CMV.view = v; CMV.room = "all"; };
 /* For You's comment button: jump to the one chat with @name ready to type */
-window.cmComment = (who) => { cmLoad(); CMV.reply = null; if ($("#cmTrack")) cmSeg("chat"); else { CMV.view = "chat"; renderCommunity(); }
+window.cmComment = (who) => { cmLoad(); CMV.reply = null; CMV.view = "chat"; if (typeof TAB !== "undefined" && TAB !== "foryou") goTab("foryou"); else if (!$("#cmTrack")) renderCommunity();
   const inp = $("#cmInput"); if (inp) { inp.value = who ? "@" + who + " " : ""; inp.dispatchEvent(new Event("input", {bubbles:true})); try { inp.focus({preventScroll:true}); } catch(e){ inp.focus(); } } };
-/* horizontal swipe between panes; vertical scrolling stays native (touch-action: pan-y) */
-function cmSwipe(t){ if (!t) return; let x0 = 0, y0 = 0, dx = 0, on = false, dir = "", w = 1, moved = false;
-  t.addEventListener("pointerdown", e => { if (e.button > 0 || e.target.closest("input,textarea,.hscroll,.toggle")) return; on = true; dir = ""; dx = 0; moved = false; x0 = e.clientX; y0 = e.clientY; w = t.parentElement.clientWidth || 1; });
-  t.addEventListener("pointermove", e => { if (!on) return; const mx = e.clientX - x0, my = e.clientY - y0;
-    if (!dir) { if (Math.abs(mx) < 8 && Math.abs(my) < 8) return; dir = Math.abs(mx) > Math.abs(my) * 1.2 ? "x" : "y"; if (dir === "x") t.classList.add("drag"); }
-    if (dir !== "x") return; moved = true; const i = CM_SEGS.indexOf(CMV.view); dx = mx; if ((i === 0 && dx > 0) || (i === 2 && dx < 0)) dx = dx / 3;
-    t.style.transform = "translateX(calc(" + (-i * 100 / 3) + "% + " + dx + "px))"; const ind = $("#cmSeg .ind"); if (ind) ind.style.transform = "translateX(calc(" + (i * 100) + "% - " + (dx / 3) + "px))"; });
-  const end = () => { if (!on) return; on = false; if (dir !== "x") return; const i = CM_SEGS.indexOf(CMV.view);
-    const n = Math.abs(dx) > w * 0.18 ? Math.max(0, Math.min(2, i + (dx < 0 ? 1 : -1))) : i; cmSeg(CM_SEGS[n]);
-    if (moved) { const stop = ev => { ev.stopPropagation(); ev.preventDefault(); }; t.addEventListener("click", stop, {capture:true, once:true}); setTimeout(() => t.removeEventListener("click", stop, {capture:true}), 60); } };
-  t.addEventListener("pointerup", end); t.addEventListener("pointercancel", end); t.addEventListener("pointerleave", end); }
 function cmMsgHTML(m, all){ const mem = cmMem(m.by), mine = m.uid ? !!(window.LOWI_CLOUD && LOWI_CLOUD.isMe(m.uid)) : (m.by === cmMe() && !m.demo), re = m.re && all.find(x => x.id === m.re);
   return '<div class="cm-msg' + (mine ? " mine" : "") + '" id="cm-' + m.id + '" data-who="'+esc(m.by)+'">' + (mine ? "" : '<span class="cm-av" data-r5="profile" data-who="' + esc(m.by) + '" role="button" style="background:' + mem.c + '">' + esc(m.by[0]) + "</span>") +
     '<div class="cm-bub">' + (mine ? "" : '<div class="cm-by"><span class="cm-byn" data-r5="profile" data-who="' + esc(m.by) + '" role="button">' + esc(m.by) + '</span>' + (mem.tag ? ' <span class="cm-tag">' + mem.tag + "</span>" : "") + ' <span class="tiny dim">' + cmAgo(m.ts) + "</span></div>") +
@@ -6448,6 +6453,8 @@ function refreshCachedTab(t){
 function renderMoveTab(){ if (window.MOVE && MOVE.showTab) MOVE.showTab(); }
 function goTab(t){
   if (t === "scan" && window.LowiSpirit) { LowiSpirit.open({capture:true}); return; }
+  /* Oct 15: "Community > For You / Leaderboard" moved to Cook / Move; an old link that still asks for them lands there */
+  if (t === "foryou" && typeof CMV !== "undefined" && (CMV.view === "feed" || CMV.view === "board")) { const v = CMV.view; CMV.view = "chat"; if (cmRoute(v)) return; }
   if (window.LowiSpirit) LowiSpirit.close(true);
   if (!RENDER[t]) t = "home";
   const root = $("#tab-" + t), cached = !!(root && root.dataset.navRendered === "1" && root.childElementCount);
@@ -6513,7 +6520,7 @@ document.addEventListener("click", e => {
     case "scantype": runAnalyse($("#scanType").value); break;
     case "meal": openMeal(d.id); break;
     case "shieldinfo": shieldSheet(); break;
-    case "shareswap": if (CUR && CUR.swap && window.TRIBE) { $("#result").classList.remove("open"); goTab("foryou"); TRIBE.compose("", "My swap: " + CUR.title + " → " + CUR.swap.n + " " + CUR.swap.e); } break;
+    case "shareswap": if (CUR && CUR.swap && window.TRIBE) { $("#result").classList.remove("open"); if (window.cmSetView) cmSetView("feed"); goTab("foryou"); TRIBE.compose("", "My swap: " + CUR.title + " → " + CUR.swap.n + " " + CUR.swap.e); } break;
     case "opensaved": { const v = d.v || ""; const m = MEALS.find(x => normName(x.n) === normName(v)); if (m) openMeal(m.id); else if (v) runAnalyse(v); break; }
     case "setupprofile": startOnboarding(); return;
     case "editname": nameSheet(); break;
@@ -8498,17 +8505,33 @@ function fLast(){ let id = ""; try { id = localStorage.getItem(ckLastKey()) || "
   return id ? fSrcPool().find(x => x.id === id) || null : null; }
 function fSaveLast(f){ ckSet(ckLastKey(), f.id); if (f.book) { R5.last = f.id; r5save(); } if (f.buy && window.LowiSwaflo) try { LowiSwaflo.saveBuy(f.id); } catch(e){} }
 function fCell(c){ return '<div class="r5-cell">' + (c && c.img ? '<img alt="" decoding="async" src="' + c.img + '">' : '<span class="ck-ph">' + CKPLATE + '<b>' + esc(String((c && c.n) || "?").trim().charAt(0).toUpperCase()) + '</b></span>') + '</div>'; }
+/* Oct 15: For You lives in Cook now, as its own section next to eBook, Community and Products.
+   It is a session flag, not a saved source: a fresh start always opens Cook on the food game. */
+const CKFY = {on:false};
+const ckFyIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="3"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/></svg>';
 function ckBarHTML(){
-  const s = fSrc(), c = fCatSel(), v = fView();
+  const fy = CKFY.on, s = fy ? "foryou" : fSrc(), c = fCatSel(), v = fView();
   const seg = (k, val, lab, on, ic) => '<button type="button" class="ck-b' + (on ? " on" : "") + '" data-ck="' + k + '" data-v="' + val + '" aria-pressed="' + on + '">' + (ic || "") + '<span>' + lab + '</span></button>';
   return '<div class="ck-bar" id="ckBar" data-noi18n>' +
-    '<div class="ck-src" role="group" aria-label="' + ckT("Shuffle from", "Mischen aus", "Mezclar de") + '">' +
-      seg("src", "book", ckT("eBook", "E-Book", "eBook"), s === "book") + seg("src", "community", "Community", s === "community") + seg("src", "products", ckT("Products", "Produkte", "Productos"), s === "products") + '</div>' +
-    '<div class="ck-row">' +
+    '<div class="ck-src ck-src4" role="group" aria-label="' + ckT("Cook sections", "Bereiche in Kochen", "Secciones de Cocina") + '">' +
+      seg("src", "book", ckT("eBook", "E-Book", "eBook"), s === "book") + seg("src", "community", "Community", s === "community") + seg("src", "products", ckT("Products", "Produkte", "Productos"), s === "products") +
+      seg("src", "foryou", ckT("For You", "Für dich", "Para ti"), s === "foryou") + '</div>' +
+    (fy ? '' : '<div class="ck-row">' +
       (s === "book" ? '<div class="ck-cats" role="group" aria-label="' + ckT("Kind", "Art", "Tipo") + '">' + seg("cat", "all", ckT("All", "Alle", "Todo"), c === "all") + seg("cat", "meal", ckT("Savory", "Herzhaft", "Salado"), c === "meal") + seg("cat", "sweet", ckT("Sweet", "Süß", "Dulce"), c === "sweet") + '</div>' : '<div class="ck-cats ck-note small muted">' + (s === "community" ? ckT("Meals people shared with a photo", "Geteilte Gerichte mit Foto", "Platos compartidos con foto") : ckT("Products people caught", "Gefangene Produkte", "Productos atrapados")) + '</div>') +
       '<div class="ck-view" role="tablist" aria-label="' + ckT("Game", "Spiel", "Juego") + '">' + seg("view", "shuffle", ckT("Shuffle", "Mischen", "Mezclar"), v === "shuffle", R5IC.shuffle) + seg("view", "swipe", ckT("Swipe", "Swipen", "Deslizar"), v === "swipe", R5IC.cards) + '</div>' +
-    '</div></div>';
+    '</div>') + '</div>';
 }
+/* For You inside Cook: the same feed (TRIBE), the same ids, so posting, likes, videos and deep links keep working */
+function ckFyHTML(){ return ckBarHTML() + '<div class="ls-pane fy-pane ck-fypane" id="cmPaneFeed"><div id="cmFeed"></div></div>'; }
+function ckFyFlag(){ try { document.documentElement.classList.toggle("ck-fy", !!CKFY.on); } catch(e){} }
+function ckFyMount(){ ckFyFlag(); if (!CKFY.on) return; const f = r5$("#cmFeed"); if (!f) return;
+  try { if (window.TRIBE) TRIBE.renderForYou(f); } catch(e){ console.error(e); } }
+function ckForYou(on){ CKFY.on = !!on; ckFyFlag(); ckRerender(); setTimeout(ckFyMount, 0); }
+function ckOpenForYou(){ CKFY.on = true; ckFyFlag();
+  const H0 = window.LowiHost; let onShelf = false; try { onShelf = !!(H0 && H0.tab && H0.tab() === "shelf"); } catch(e){}
+  if (!onShelf) { try { goTab("shelf"); } catch(e){ console.error(e); } }
+  try { if (window.LOWI_SHELF && LOWI_SHELF.open) LOWI_SHELF.open("kochen"); else ckRerender(); } catch(e){ console.error(e); }
+  setTimeout(ckFyMount, 0); }
 function ckEmptyHTML(){
   const s = fSrc();
   if (s === "products" && window.LowiSwaflo) return null;
@@ -8532,6 +8555,7 @@ function fPick(){
   let x = Math.random() * sum; for (let i = 0; i < P.length; i++) { x -= w[i]; if (x <= 0) return P[i]; } return P[P.length - 1];
 }
 function fHomeHTML(){
+  ckFyFlag(); if (CKFY.on) return ckFyHTML();
   ckSyncSwaflo(); try { document.documentElement.setAttribute("data-ckview", fView()); } catch(e){}
   const last = fLast();
   return ckBarHTML() + '<div class="r5-shuf" id="r5Shuf">' +
@@ -8910,14 +8934,14 @@ function ckSource(v){ if (["book", "community", "products"].indexOf(v) < 0) retu
 function ckCat(v){ if (["all", "meal", "sweet"].indexOf(v) < 0) return; ckSet(CKK.cat, v); ckRerender(); }
 document.addEventListener("click", e => { const b = e.target && e.target.closest && e.target.closest("#ckBar [data-ck]"); if (!b) return; e.preventDefault();
   const k = b.dataset.ck, v = b.dataset.v; try { if (navigator.vibrate) navigator.vibrate(8); } catch(x){}
-  if (k === "view") ckView(v); else if (k === "src") { if (v !== fSrc()) ckSource(v); } else if (k === "cat") { if (v !== fCatSel()) ckCat(v); } });
+  if (k === "view") ckView(v); else if (k === "src") { if (v === "foryou") { if (!CKFY.on) ckForYou(true); } else if (CKFY.on) { CKFY.on = false; ckFyFlag(); if (v !== fSrc()) ckSource(v); else ckRerender(); } else if (v !== fSrc()) ckSource(v); } else if (k === "cat") { if (v !== fCatSel()) ckCat(v); } });
 /* ck-src: in Swipe the card stack takes exactly the room that is left, so Cook never scrolls */
 function ckFitDeck(b){ b = b || document.getElementById("shBody"); const st = r5$("#r5Stack"); if (!b || !st || !st.offsetHeight || fView() !== "swipe") return;
   if (!document.documentElement.classList.contains("g2c-on")) { st.style.height = ""; return; } /* only the phone Cook is a fixed screen */
   st.style.height = ""; st.style.minHeight = "0"; const over = b.scrollHeight - b.clientHeight;
   if (over > 0) st.style.height = Math.max(150, st.offsetHeight - over - 4) + "px"; }
 window.LowiFood = {fitDeck:ckFitDeck, source:fSrc, setSource:ckSource, category:fCatSel, setCategory:ckCat, view:fView, setView:ckView, srcPool:fSrcPool,
-  homeHTML:fHomeHTML, meP, mounted(){ /* r3k-mounted */ dkPaint(); swPull(); }, dk:() => ({order:DK.order.slice(), i:DK.i, never:R5.never.slice(), today:R5.today.slice(), liked:R5.liked.slice(), skipped:R5.skipped.slice(), shared:SW.length}), swPull:() => swPull(true), shuffle:fShuffle, pool:fPool, pick:fShowPick, openDeck:dkOpen, isFoodPost, railBtn, state:() => R5, reset(){ R5 = r5fresh(); r5save(); }};
+  homeHTML:fHomeHTML, meP, mounted(){ /* r3k-mounted */ if (CKFY.on) { ckFyMount(); return; } dkPaint(); swPull(); }, openForYou:ckOpenForYou, forYouOn:() => !!CKFY.on, setForYou:ckForYou, dk:() => ({order:DK.order.slice(), i:DK.i, never:R5.never.slice(), today:R5.today.slice(), liked:R5.liked.slice(), skipped:R5.skipped.slice(), shared:SW.length}), swPull:() => swPull(true), shuffle:fShuffle, pool:fPool, pick:fShowPick, openDeck:dkOpen, isFoodPost, railBtn, state:() => R5, reset(){ R5 = r5fresh(); r5save(); }};
 
 })();
 </script>
@@ -9233,6 +9257,7 @@ function refreshUI(){ try { const h = H(); if (!h) return; const tab = h.tab(); 
   if (tab === "foryou") { const a = document.activeElement, typing = a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA");
     if (window.TRIBE && $("#cmFeed")) TRIBE.renderForYou($("#cmFeed"));
     if ($("#cmPaneChat") && !typing) cmRoom($("#cmPaneChat"), true); }
+  if (tab === "shelf" && window.TRIBE && $("#cmFeed")) TRIBE.renderForYou($("#cmFeed"));
 } catch(e){ console.info("[LOWiSPIKE] refresh", e); } }
 
 /* ---------- Home Screen hint, storage, updates ---------- */
@@ -11977,7 +12002,7 @@ function applyTabs(){ const o = lockScan(st().tabs); $$("#tabbar .tb").forEach(b
 R3A.applyTabs = applyTabs;
 
 /* ---------- community order: For You, Chat, Leaderboard by default (round 3F) ---------- */
-function applyCmOrder(){ const o = st().cm; try { CM_SEGS.splice(0, CM_SEGS.length, ...o); } catch(e){} }
+function applyCmOrder(){ /* Oct 15: Community is the chat alone; CM_SEGS stays ["chat"] */ }
 function fixCm(){
   const seg = $("#cmSeg"), tr = $("#cmTrack"); if (!seg || !tr) return;
   const o = st().cm, ind = seg.querySelector(".ind");
@@ -12036,7 +12061,7 @@ function orderList(kind){
     '<button class="r3a-obtn" data-r3a="ord" data-kind="' + kind + '" data-i="' + i + '" data-d="1" aria-label="' + esc(T("Move down") + ": " + T(nm[v])) + '"' + (i === o.length - 1 || (kind === "tabs" && v === "scan") ? " disabled" : "") + '>↓</button></div>').join("") + '</div>';
 }
 H.ord = b => { const kind = b.getAttribute("data-kind"), i = +b.getAttribute("data-i"), d = +b.getAttribute("data-d"), r = st(), a = kind === "tabs" ? lockScan(r.tabs) : r.cm, j = i + d + (kind === "tabs" && a[i + d] === "scan" ? d : 0); if (j < 0 || j >= a.length || (kind === "tabs" && a[i] === "scan")) return;
-  const t = a[i]; a[i] = a[j]; a[j] = t; save(); if (kind === "tabs") applyTabs(); else { applyCmOrder(); CMV.view = r.cm[0]; } paintProfile(); };
+  const t = a[i]; a[i] = a[j]; a[j] = t; save(); if (kind === "tabs") applyTabs(); else { applyCmOrder(); CMV.view = "chat"; } paintProfile(); };
 H.ordreset = () => { const r = st(); r.tabs = TAB_DEF.slice(); r.cm = CM_DEF.slice(); save(); applyTabs(); applyCmOrder(); paintProfile(); };
 H.gender = b => { S.user.gender = b.getAttribute("data-v"); if (S.user.gender !== "f") S.health.pcos = false; save(); paintProfile(); try { renderHome(); } catch(e){} };
 H.pcos = () => { S.health.pcos = !S.health.pcos; save(); paintProfile(); try { renderHome(); } catch(e){} };
@@ -12050,8 +12075,7 @@ function profileCards(){
       '<div class="setrow"><div class="t"><b>' + esc(T("Blood pressure log")) + '</b><div class="small muted">' + esc(T("Shows a blood pressure check on your morning card.")) + '</div></div><button class="toggle' + (!h.bpOff ? " on" : "") + '" data-r3a="bpon" aria-label="' + esc(T("Blood pressure log")) + '"></button></div></div>' +
     '<div class="sec"><span class="h3">' + esc(T("Your order")) + '</span><button class="small muted r3a-link" data-r3a="ordreset">' + esc(T("Reset")) + '</button></div><div class="card">' +
       '<div class="small"><b>' + esc(T("Tab bar")) + '</b> · <span class="muted">' + esc(T("The app opens on the first one.")) + '</span></div>' + orderList("tabs") +
-      '<div class="small" style="margin-top:14px"><b>' + esc(T("Community")) + '</b> · <span class="muted">' + esc(T("Community opens on the first one.")) + '</span></div>' + orderList("cm") +
-      '<div class="tiny muted" style="margin-top:10px">' + esc(T("Tip: press and hold an icon in the bottom bar, or a section at the top of Community, and drag it.")) + '</div></div></div>';
+      '<div class="tiny muted" style="margin-top:10px">' + esc(T("Tip: press and hold an icon in the bottom bar and drag it.")) + '</div></div></div>';
 }
 function paintProfile(){ const tp = $("#tab-profile"); if (!tp) return; const old = $(".r3a-pf", tp); const html = profileCards();
   if (old) { old.outerHTML = html; } else { const hc = $("#health", tp); const anchor = hc ? hc.previousElementSibling : null; const wrap = document.createElement("div"); wrap.innerHTML = html; const el = wrap.firstElementChild; if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor); else tp.appendChild(el); }
@@ -12064,7 +12088,7 @@ R3A.paintProfile = paintProfile;
 function observe(id, fn){ const el = document.getElementById(id); if (!el) return; let q = false; new MutationObserver(() => { if (q) return; q = true; Promise.resolve().then(() => { q = false; try { fn(el); } catch(e){ console.error(e); } }); }).observe(el, {childList:true}); try { fn(el); } catch(e){ console.error(e); } }
 function boot(){
   st(); applyTabs(); applyCmOrder();
-  if (!R3A.cmStarted) { R3A.cmStarted = true; try { CMV.view = st().cm[0]; } catch(e){} }
+  if (!R3A.cmStarted) { R3A.cmStarted = true; try { CMV.view = "chat"; } catch(e){} } /* Oct 15: Community is the chat alone */
   observe("tab-foryou", () => fixCm());
   observe("tab-profile", tp => { if (!$(".r3a-pf", tp) && tp.children.length) paintProfile(); });
   if (R3A.bootMorning) R3A.bootMorning();
@@ -13109,6 +13133,7 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp
 const ROWS = [
   ["Drag the icons. Scan stays in the middle. Tap Done when you're happy.", "Zieh die Symbole. Scannen bleibt in der Mitte. Tippe auf Fertig, wenn es passt.", "Arrastra los iconos. Escanear se queda en el centro. Toca Listo cuando te guste."],
   ["Always in the middle", "Immer in der Mitte", "Siempre en el centro"],
+  ["Tip: press and hold an icon in the bottom bar and drag it.", "Tipp: Halte ein Symbol in der Leiste unten gedrückt und zieh es.", "Consejo: mantén pulsado un icono de la barra de abajo y arrástralo."],
   ["Tip: press and hold an icon in the bottom bar, or a section at the top of Community, and drag it.", "Tipp: Halte ein Symbol in der Leiste unten oder einen Bereich oben in der Community gedrückt und zieh ihn.", "Consejo: mantén pulsado un icono de la barra de abajo, o una sección arriba en Comunidad, y arrástralo."],
   ["Drag left or right. The first one opens first. Tap Done when you're happy.", "Nach links oder rechts ziehen. Das erste öffnet zuerst. Tippe auf Fertig, wenn es passt.", "Arrastra a la izquierda o a la derecha. El primero se abre primero. Toca Listo cuando te guste."],
   ["Saved. Community opens on {x}.", "Gespeichert. Die Community öffnet mit {x}.", "Guardado. La comunidad se abre en {x}."],
@@ -13121,8 +13146,7 @@ const st = () => R3A.st();
 
 /* the saved order -> the live pager */
 function apply(){
-  const o = st().cm;
-  try { CM_SEGS.splice(0, CM_SEGS.length, ...o); } catch(e){}
+  /* Oct 15: Community has no sections any more (For You -> Cook, Leaderboard -> Move); nothing to reorder */
   try { R3A.fixCm && R3A.fixCm(); } catch(e){ console.error(e); }
 }
 function syncProfile(){ try { if ($("#tab-profile .r3a-pf") && R3A.paintProfile) R3A.paintProfile(); } catch(e){} }
@@ -13202,7 +13226,7 @@ window.addEventListener("click", e => {
   /* Community from the bottom bar opens on the section you put first */
   const tb = e.target.closest('#tabbar .tb[data-tab="foryou"]');
   if (tb && !$("#tabbar.r3a-edit")) {
-    try { if (typeof TAB !== "undefined" && TAB !== "foryou" && typeof CMV !== "undefined") { apply(); CMV.view = st().cm[0]; } } catch(_){}
+    try { if (typeof TAB !== "undefined" && TAB !== "foryou" && typeof CMV !== "undefined") { apply(); CMV.view = "chat"; } } catch(_){}
   }
 }, true);
 window.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest("#cmSeg")) e.preventDefault(); }, true);
@@ -15058,7 +15082,7 @@ function boardHTML(){
     (mi >= 50 ? '<div class="r3-lbme">' + row(L[mi], mi) + '</div>' : "") + '</div>';
 }
 function openBoard(){ R2.sheet(boardHTML(), {cls:"r3-ov r3-lbov"}); }
-R3.board = openBoard; R3.boardHTML = boardHTML;
+R3.board = openBoard; R3.boardHTML = boardHTML; R3.rank = k => rankOf(null, k || "w");
 
 /* ---------- share + deep link ---------- */
 async function share(uid, name){
@@ -15130,7 +15154,7 @@ function onClick(e){
     openMember(find({me:prof.getAttribute("data-me") === "1", uid:prof.getAttribute("data-uid") || "", name:prof.getAttribute("data-who") || ""})); return; }
   const sa = t.closest('[data-act="setupprofile"]');
   if (sa) { e.preventDefault(); e.stopPropagation(); openEdit(); return; }
-  const b = t.closest("[data-r3]"); if (!b) { const lb = t.closest("[data-r3lb]"); if (lb) { LB = lb.getAttribute("data-r3lb"); const sh = lb.closest(".r2-shb"); if (sh) sh.innerHTML = boardHTML(); } return; }
+  const b = t.closest("[data-r3]"); if (!b) { const lb = t.closest("[data-r3lb]"); if (lb) { LB = lb.getAttribute("data-r3lb"); const sh = lb.closest(".r2-shb"); if (sh && !lb.closest("#cmPaneBoard")) sh.innerHTML = boardHTML(); } return; }
   const v = b.getAttribute("data-r3"); e.preventDefault(); e.stopPropagation();
   if (v === "sign") { const s = b.getAttribute("data-sign"); if (ABOUT[s]) R2.sheet(aboutHTML(s), {cls:"r3-ov"}); return; }
   if (v === "same") { R2.sheet(sameHTML(b.getAttribute("data-sign")), {cls:"r3-ov"}); return; }
@@ -15146,8 +15170,8 @@ function openEdit(){ try { if (typeof TAB !== "undefined" && TAB !== "profile") 
 function dm(name){ try { goTab("foryou"); } catch(e){}
   setTimeout(() => { try { if (typeof cmSeg === "function") cmSeg("chat"); } catch(e){}
     setTimeout(() => { const i = document.querySelector("#cmInput"); if (i) { i.value = "@" + String(name).split(" ")[0] + " "; i.focus(); try { i.dispatchEvent(new Event("input", {bubbles:true})); } catch(e){} } }, 350); }, 120); }
-function openPost(id){ try { goTab("foryou"); } catch(e){}
-  setTimeout(() => { try { if (typeof cmSeg === "function") cmSeg("feed"); } catch(e){} setTimeout(() => { const el = document.querySelector('#cmFeed [data-id="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]'); const sec = el && el.closest("section"); if (sec) sec.scrollIntoView({behavior:reduce ? "auto" : "smooth", block:"start"}); }, 300); }, 120); }
+function openPost(id){ try { if (window.cmSetView) cmSetView("feed"); goTab("foryou"); } catch(e){}
+  setTimeout(() => { setTimeout(() => { const el = document.querySelector('#cmFeed [data-id="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]'); const sec = el && el.closest("section"); if (sec) sec.scrollIntoView({behavior:reduce ? "auto" : "smooth", block:"start"}); }, 300); }, 120); }
 
 /* ---------- boot ---------- */
 R3.profileExtra = function(){ const m = me(); return {bday:m.bday || "", xp:Math.max(0, Math.round(m.xp || 0)), xp_week:Math.max(0, Math.round(m.xpw)), wk:m.wk, xp_month:Math.max(0, Math.round(m.xpm)), mo:m.mo, weight:m.w || ""}; };
@@ -15595,14 +15619,17 @@ function paintBoard(){
 R3F.paintBoard = paintBoard;
 /* "Leaderboard" links in Profile and on member profiles open the tab */
 function openBoardTab(){
+  /* Oct 15: the Leaderboard lives in Move now. Close what is open, go to Move, open the board there. */
   let wait = 0;
   try { const R2 = window.LowiR2; if (R2 && R2.top && R2.top()) { R2.closeAll(); wait = 220; } } catch(e){}
   try { const w = $("#sheetwrap"); if (w && w.classList.contains("open")) { closeSheet(); wait = 220; } } catch(e){}
+  let onMove = false; try { onMove = typeof TAB !== "undefined" && TAB === "move"; } catch(e){}
   setTimeout(() => { try {
-    if (typeof TAB !== "undefined" && TAB === "foryou" && $("#cmTrack")) cmSeg("board");
-    else { if (window.cmSetView) cmSetView("board"); goTab("foryou"); }
+    if (!onMove) goTab("move");
+    setTimeout(() => { try { const R3 = window.LowiR3; if (R3 && R3.board) R3.board(); } catch(e){ console.error(e); } }, onMove ? 0 : 260);
   } catch(e){ console.error(e); } }, wait);
 }
+window.LowiMoveBoard = {open:openBoardTab};
 R3F.openBoardTab = openBoardTab;
 
 /* ---------- "+ Post": the whole posting flow in one sheet ---------- */
@@ -15610,7 +15637,7 @@ function fabHTML(){ return '<button class="fyv-fab r3f-fab" data-r3f="post" data
 R3F.fabHTML = fabHTML;
 function postSheet(prefill, text, rec){
   if (!window.TRIBE || !TRIBE.composeInto) return;
-  try { if (typeof TAB !== "undefined" && TAB !== "foryou") { if (window.cmSetView) cmSetView("feed"); goTab("foryou"); } } catch(e){}
+  try { if (!$("#cmFeed")) { if (window.cmSetView) cmSetView("feed"); goTab("foryou"); } } catch(e){}
   const html = '<button class="xbtn" data-act="close-sheet" aria-label="' + esc(T("Close")) + '">' + XI + '</button>' +
     '<div class="sheetbody r3f-post"><div class="h2 r3f-ph" data-noi18n>' + esc(T("New post")) + '</div><div class="small muted r3f-psub" data-noi18n>' + esc(T("Video, photo, a TikTok or Instagram link, or just a few words.")) + '</div>' +
     '<div class="ls-post" id="r3fCompose"></div></div>';
@@ -17580,7 +17607,7 @@ function go(id){ sfx("tap");
   else if (id === "fast") flash(document.getElementById("fsCard") || document.querySelector("#tab-home .r3a-mt"));
   else if (id === "eat") { if (window.LowiF2 && LowiF2.start) LowiF2.start({}); else if (typeof goTab === "function") goTab("scan"); }
   else if (id === "move") { if (typeof goTab === "function") goTab("move"); }
-  else if (id === "post") { if (window.LowiR3F && LowiR3F.postSheet) { if (typeof goTab === "function") goTab("foryou"); setTimeout(() => LowiR3F.postSheet(), 260); } else if (window.TRIBE && TRIBE.compose) TRIBE.compose(); }
+  else if (id === "post") { if (window.LowiR3F && LowiR3F.postSheet) { if (typeof goTab === "function" && !document.getElementById("cmFeed")) { if (window.cmSetView) cmSetView("feed"); goTab("foryou"); } setTimeout(() => LowiR3F.postSheet(), 260); } else if (window.TRIBE && TRIBE.compose) TRIBE.compose(); }
   setTimeout(paint, 450); }
 document.addEventListener("click", e => { const a = e.target && e.target.closest && e.target.closest("#f3Board [data-f3]"); if (!a) { setTimeout(paint, 600); return; }
   e.preventDefault(); e.stopPropagation();
@@ -17856,9 +17883,23 @@ function rearrange(stack){
   const hold = document.createElement("div"); hold.className = "g2-hold"; hold.hidden = true;
   [P.kit, P.book, P.meal, P.rings, P.steps, P.recent, P.foot].forEach(e => { if (e) hold.appendChild(e); });
   if (strip) P.hero.before(strip);
-  P.quick.after(tiles); tiles.after(hold);
+  P.quick.after(tiles); const comp = mvcRow(); tiles.after(comp); comp.after(hold);
   if (openKey && ov && ov.isConnected) fill(stack);
 }
+/* Oct 15: the competitive part of the app lives in Move now: Leaderboard + Milestones (were in Community) */
+function mvcL(en, de, es){ let l = "de"; try { l = (window.LowiLang && LowiLang.get()) || "de"; } catch(e){} return l === "de" ? de : l === "es" ? es : en; }
+function mvcRow(){
+  let rk = 0; try { rk = window.LowiR3 && LowiR3.rank ? LowiR3.rank("w") : 0; } catch(e){}
+  const d = document.createElement("div"); d.className = "mvc-row"; d.setAttribute("data-noi18n", "");
+  const ICB = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0z"/><path d="M7 6H4v1.5A3.5 3.5 0 007.3 11M17 6h3v1.5a3.5 3.5 0 01-3.3 3.5"/></svg>';
+  const ICM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.2 5.2L20 9l-4.3 3.8L17 18.5 12 15.6 7 18.5l1.3-5.7L4 9l5.8-.8z"/></svg>';
+  const b1 = mvcL("Leaderboard", "Bestenliste", "Clasificación"), s1 = rk ? "#" + rk + " " + mvcL("this week", "diese Woche", "esta semana") : mvcL("This week", "Diese Woche", "Esta semana");
+  const b2 = mvcL("Milestones", "Meilensteine", "Logros"), s2 = mvcL("Levels & streaks", "Level & Serien", "Niveles y rachas");
+  d.innerHTML = '<button type="button" class="mvc-b mvc-board" data-mvc="board" data-sfx="open" aria-label="' + esc(b1 + ", " + s1) + '"><span class="mvc-ic">' + ICB + '</span><span class="mvc-t"><b>' + esc(b1) + '</b><small>' + esc(s1) + '</small></span></button>' +
+    '<button type="button" class="mvc-b mvc-miles" id="fxMilesBtn" data-fx="miles" data-sfx="open" aria-label="' + esc(b2) + '"><span class="mvc-ic">' + ICM + '</span><span class="mvc-t"><b>' + esc(b2) + '</b><small>' + esc(s2) + '</small></span></button>';
+  return d;
+}
+document.addEventListener("click", e => { const b = e.target && e.target.closest && e.target.closest('[data-mvc="board"]'); if (!b) return; e.preventDefault(); if (window.LowiMoveBoard) LowiMoveBoard.open(); });
 function kindOf(e){
   const P = parts({children:[e]}); for (const k in P) if (P[k]) return k; return "";
 }
@@ -19700,6 +19741,58 @@ window.LowiCommunityHost = {
 </script>
 <script src="community-chat-cloud.js?v=community-1"></script>
 <script src="community-chat.js?v=planet-1"></script>
+<style id="cmSoloCss">
+/* Oct 15 (build 20261016-003000): Community = the chat / spirit space alone, calm like Home.
+   For You -> Cook (own section), Leaderboard + Milestones -> Move. */
+#tab-foryou.cm-solo{padding:0;overflow:hidden}
+#tab-foryou .ls-pager.cm-solo{position:absolute;inset:0;display:flex;flex-direction:column}
+#tab-foryou .cm-solo > .cm-hd{display:flex;align-items:center;gap:8px;min-height:42px;padding:calc(var(--sat) + 12px) 112px 6px 16px;margin:0}
+html:not([data-lay=phone]) #tab-foryou .cm-solo > .cm-hd{padding:calc(var(--sat) + 20px) 18px 8px}
+html:not([data-lay=phone]) #tab-foryou .cm-ibtn{margin-left:0}
+#tab-foryou .cm-srh{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+#tab-foryou .cm-treeb{display:inline-flex;align-items:center;gap:7px;min-width:0;max-width:100%;height:40px;padding:0 14px 0 11px;border-radius:999px;font:inherit;font-size:14px;font-weight:650;color:#f3e7c4;cursor:pointer;
+  -webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;border:1px solid rgba(255,255,255,.16);background:rgba(20,24,40,.42);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 4px 14px rgba(0,0,0,.28)}
+#tab-foryou .cm-treeb svg{width:19px;height:19px;flex:none}
+#tab-foryou .cm-treeb span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:360px){#tab-foryou .cm-treeb{gap:5px;padding:0 11px 0 9px;font-size:13px}#tab-foryou .cm-treeb svg{width:17px;height:17px}}
+#tab-foryou .cm-ibtn{flex:none;margin-left:auto;width:38px;height:38px;min-width:0;padding:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;font:inherit;
+  -webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;color:#f3e7c4;border:1px solid rgba(255,255,255,.16);background:rgba(20,24,40,.42);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 4px 14px rgba(0,0,0,.28);transition:transform .15s}
+#tab-foryou .cm-ibtn svg{width:19px;height:19px;display:block}
+#tab-foryou :is(.cm-ibtn,.cm-treeb):active{transform:scale(.94)}
+#tab-foryou :is(.cm-ibtn,.cm-treeb):focus-visible{outline:2px solid rgba(var(--acc-rgb,159,216,255),.9);outline-offset:2px}
+html[data-theme=light] #tab-foryou :is(.cm-ibtn,.cm-treeb){color:#a8792e;border-color:rgba(22,28,46,.12);background:rgba(255,255,255,.75);box-shadow:0 4px 14px rgba(60,72,110,.16)}
+#tab-foryou .cm-solo > .cm-solotrack{flex:1 1 auto;width:100%!important;min-height:0;transform:none!important;transition:none;touch-action:auto}
+#tab-foryou .cm-solo > .cm-solotrack > .cm-pane{width:100%!important;flex:1 0 100%;height:100%}
+/* the big "Community planet" title block and its "Privacy & quiet" button: gone, the header's small shield opens the same sheet */
+#tab-foryou.cm-solo #cmPaneChat :is(.cp-bar,.cp-corner){display:none!important}
+
+/* Cook > For You: the same feed, full height under the section switch */
+#tab-shelf .ck-src.ck-src4{grid-template-columns:repeat(4,minmax(0,1fr))}
+#tab-shelf .ck-src.ck-src4 .ck-b{min-width:0;padding-left:3px;padding-right:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:400px){#tab-shelf .ck-src.ck-src4 .ck-b{font-size:13px;letter-spacing:-.01em}}
+@media (max-width:340px){#tab-shelf .ck-src.ck-src4 .ck-b{font-size:11.5px}}
+#shBody:has(> #cmPaneFeed){display:flex;flex-direction:column;overflow:hidden!important;padding-bottom:8px!important}
+#shBody:has(> #cmPaneFeed) > :not(#ckBar):not(#cmPaneFeed){display:none!important}
+#shBody:has(> #cmPaneFeed) > #ckBar{flex:none}
+#shBody > #cmPaneFeed.ck-fypane{flex:1 1 auto;width:auto;height:auto;min-height:0;margin:8px 0 0;padding:0;overflow:hidden;border-radius:22px;position:relative}
+#shBody > #cmPaneFeed.ck-fypane > #cmFeed{height:100%}
+
+/* Move: Leaderboard + Milestones (the competitive part) */
+.mvc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mvc-b{display:flex;align-items:center;gap:10px;min-width:0;height:56px;padding:0 12px;border-radius:18px;border:1px solid var(--line2);background:rgba(255,255,255,.05);color:var(--text);font:inherit;text-align:left;cursor:pointer;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.mvc-b:active{transform:scale(.97)}
+.mvc-ic{width:34px;height:34px;flex:none;border-radius:12px;display:grid;place-items:center;background:rgba(var(--acc-rgb,159,216,255),.14);color:var(--acc,#9fd8ff)}
+.mvc-miles .mvc-ic{background:rgba(var(--gold-rgb,232,196,120),.16);color:var(--gold2,#e8c478)}
+.mvc-ic svg{width:19px;height:19px}
+.mvc-t{display:flex;flex-direction:column;min-width:0;gap:1px}
+.mvc-t b{font-size:13.5px;font-weight:650;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mvc-t small{font-size:11.5px;line-height:1.15;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-theme=light] .mvc-b{background:rgba(22,28,46,.045);border-color:rgba(22,28,46,.12)}
+html[data-theme=light] .mvc-t small{color:rgba(17,19,24,.62)}
+html[data-theme=light] .mvc-miles .mvc-ic{color:#a8792e}
+html.apple-ui .mvc-b{border:1px solid var(--au-border);background:var(--au-surface);box-shadow:var(--au-shadow);backdrop-filter:none;-webkit-backdrop-filter:none}
+@media (max-width:360px){.mvc-b{gap:7px;padding:0 8px;border-radius:16px}.mvc-ic{width:26px;height:26px;border-radius:9px}.mvc-ic svg{width:16px;height:16px}.mvc-t b{font-size:12px}.mvc-t small{font-size:10.5px}}
+</style>
 </body>
 </html>
 

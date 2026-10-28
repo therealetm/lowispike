@@ -69,6 +69,6 @@ test('in the store: the cart items tick off, at the cart store, and Done counts 
 });
 
 test('cook-shop.css loads last and is cached offline', () => {
-    assert.match(html, /<link rel="stylesheet" id="cshCss" href="cook-shop\.css\?v=\d{8}-\d{6}">\n(<link rel="stylesheet" id="symCss" href="sym-home\.css\?v=\d{8}-\d{6}">\n<script src="sym-home\.js\?v=\d{8}-\d{6}"><\/script>\n)?(<link rel="stylesheet" id="secCss" href="section-nav\.css\?v=\d{8}-\d{6}">\n<script src="section-nav\.js\?v=\d{8}-\d{6}"><\/script>\n)?<\/body>/);  /* Oct 21: section-nav (X + swipe back, replaces the menu bar) loads after them */
+    assert.match(html, /<link rel="stylesheet" id="cshCss" href="cook-shop\.css\?v=\d{8}-\d{6}">\n(<link rel="stylesheet" id="symCss" href="sym-home\.css\?v=\d{8}-\d{6}">\n<script src="sym-home\.js\?v=\d{8}-\d{6}"><\/script>\n)?(<link rel="stylesheet" id="secCss" href="section-nav\.css\?v=\d{8}-\d{6}">\n<script src="section-nav\.js\?v=\d{8}-\d{6}"><\/script>\n)?(<link rel="stylesheet" href="bottom-close\.css\?v=\d{8}-\d{6}">\n<script src="bottom-close\.js\?v=\d{8}-\d{6}"><\/script>\n)?<\/body>/);  /* Oct 21: section-nav (X + swipe back, replaces the menu bar) loads after them */
     assert.ok(read('sw.js').includes('"cook-shop.css"'));
 });

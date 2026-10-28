@@ -91,17 +91,14 @@ function want(back){const s=S();if(!s)return false;try{if(R().isAccount&&R().isA
 function qtPill(){const Q=window.LowiQuickTour;return Q&&Q.label?'<button type="button" class="hs-qt" data-qt="open"><i aria-hidden="true">\u25B6</i>'+esc(Q.label(lang()))+'</button>':'';}
 function html(){let st=hs();if(!st){st={v:3,step:0,seed:Math.floor(Math.random()*1e6),herb:'',user:''};hsSet(st);}
  if(st.v!==3){const o=+st.step||0;st.step=st.v===2?(o>=4?2:o>=1?1:0):(o>=3?2:o>=1?1:0);st.v=3;hsSet(st);}
- const step=Math.max(0,Math.min(2,+st.step||0)),herb=st.herb||MISTY,pick=window.LowiA2&&LowiA2.picker?LowiA2.picker():'';
- const top='<div class="hs-top">'+(step?'<button type="button" class="hs-back" data-hs="back" aria-label="'+esc(t('back'))+'">\u2039</button>':'<span></span>')+'<div class="hs-dots" aria-hidden="true">'+[0,1,2].map(i=>'<i'+(i<=step?' class="on"':'')+'></i>').join('')+'</div>'+(step?'<span></span>':pick)+'</div>';
+ const step=Math.max(0,Math.min(1,+st.step||0)),herb=st.herb||MISTY,pick=window.LowiA2&&LowiA2.picker?LowiA2.picker():'';
+ const top='<div class="hs-top">'+(step?'<button type="button" class="hs-back" data-hs="back" aria-label="'+esc(t('back'))+'">\u2039</button>':'<span></span>')+'<div class="hs-dots" aria-hidden="true">'+[0,1].map(i=>'<i'+(i<=step?' class="on"':'')+'></i>').join('')+'</div>'+(step?'<span></span>':pick)+'</div>';
  let body='';
  if(step===0)body='<div class="hs-scene" id="hsScene">'+herbArt(0,'',1)+'</div><div class="hs-copy"><p class="hs-over">'+esc(t('over'))+'</p><h1>'+esc(t('plantH'))+'</h1><p class="hs-p">'+esc(t('plantP'))+'</p>'+habits()+qtPill()+'</div>'+
   '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hs="plant">'+esc(t('plantBtn'))+'</button><button type="button" class="hs-link" data-r2a="signin">'+esc(t('have'))+'</button></div>';
- else if(step===1)body='<div class="hs-scene">'+herbArt(2,'',1)+'<div class="hs-bubble" role="status">'+esc(t('ask',{herb}))+'</div></div><div class="hs-copy"><p class="hs-over">'+esc(t('askOver'))+'</p>'+
-  '<label class="hs-lbl" for="hsYou">'+esc(t('youLabel'))+'</label><input id="hsYou" class="hs-in" maxlength="24" autocomplete="given-name" enterkeyhint="done" value="'+esc(st.user||'')+'"><p class="hs-err" id="hsErr" role="alert"></p></div>'+
-  '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hs="you">'+esc(t('askBtn'))+'</button></div>';
- else body='<div class="hs-scene rew">'+(reduce()?'':'<div class="hs-burst" aria-hidden="true">'+Array.from({length:12},(_,i)=>'<i style="--i:'+i+'"></i>').join('')+'</div>')+herbArt(3,'',1)+'<div class="hs-bubble" role="status">'+esc(t('rew',{name:st.user||'',herb}))+'</div></div>'+
-  '<div class="hs-copy"><p class="hs-over">'+esc(t('rewOver'))+'</p><span class="hs-chip">'+ico('sparkle')+esc(t('chip'))+'</span></div>'+
-  '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-r2a="signup">'+esc(t('saveBtn',{herb}))+'</button><p class="hs-fine">'+esc(t('fine'))+'</p><button type="button" class="hs-link" data-r2a="signin">'+esc(t('have'))+'</button></div>';
+ else body='<div class="hs-scene">'+herbArt(2,'',1)+'<div class="hs-bubble" role="status">'+esc(t('ask',{herb}))+'</div></div><div class="hs-copy"><p class="hs-over">'+esc(t('askOver'))+'</p>'+
+  '<label class="hs-lbl" for="hsYou">'+esc(t('youLabel'))+'</label><input id="hsYou" class="hs-in" maxlength="24" autocomplete="given-name" enterkeyhint="done" value="'+esc(st.user||'')+'"><p class="hs-err" id="hsErr" role="alert"></p><span class="hs-chip">'+ico('sparkle')+esc(t('chip'))+'</span></div>'+
+  '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hs="you">'+esc(t('saveBtn',{herb}))+'</button><p class="hs-fine">'+esc(t('fine'))+'</p><button type="button" class="hs-link" data-r2a="signin">'+esc(t('have'))+'</button></div>';
  return '<div class="r2-start hs" data-hs-step="'+step+'" data-noi18n>'+top+body+'</div>';}
 function gate(){return D.getElementById('r2gate');}
 function paint(focus){const g=gate();if(!g)return;g.innerHTML=html();fillArt(0);const f=g.firstElementChild;if(f&&!reduce())f.classList.add('r2-swap');
@@ -118,7 +115,9 @@ function onGateClick(e){const b=e.target.closest('[data-hs]');if(!b||!b.closest(
   if(reduce()||!sc){next();return;}b.disabled=true;const m=sc.querySelector('.hs-misty');if(m)m.classList.add('wake');setTimeout(next,750);return;}
  if(a==='shuffle'){st.seed=(+st.seed||0)+1+Math.floor(Math.random()*40);const cur=(D.getElementById('hsHerb')||{}).value;st.herb=C.suggestName(core(),st.seed,cur);hsSet(st);const i=D.getElementById('hsHerb');if(i){i.value=st.herb;if(!reduce()){i.classList.remove('pop');void i.offsetWidth;i.classList.add('pop');}}return;}
  if(a==='you'){const v=C.cleanName((D.getElementById('hsYou')||{}).value,30);if(!v){const er=D.getElementById('hsErr');if(er)er.textContent=t('needName');const i=D.getElementById('hsYou');if(i)i.focus();return;}
-  st.user=v;st.step=2;hsSet(st);const s=S();if(s){s.user=s.user||{};s.user.name=v;save();}firstReward();paint(false);return;}}
+  st.user=v;st.step=1;hsSet(st);const s=S();if(s){s.user=s.user||{};s.user.name=v;save();}firstReward();
+  /* Oct 28 2026 (batch 10): the separate "first XP" screen is merged into this one; the account form opens straight away */
+  try{if(R().showGate){R().showGate('signup');return;}}catch(e){}paint(false);return;}}
 function onGateKey(e){if(e.key!=='Enter')return;const i=e.target;if(!i||!i.classList||!i.classList.contains('hs-in'))return;e.preventDefault();const b=D.querySelector('.r2-start.hs [data-hs="you"]');if(b)b.click();}
 
 /* ---------- 2. starter plan ---------- */
@@ -253,21 +252,11 @@ const PEND='lowispike.hs-pending.v1';
 function pendGet(){try{return !!localStorage.getItem(PEND);}catch(e){return false;}}
 function pendSet(){try{localStorage.setItem(PEND,String(Date.now()));}catch(e){}}
 function pendClear(){try{localStorage.removeItem(PEND);}catch(e){}}
-function afterSetup(){try{localStorage.removeItem(KEY);}catch(e){}pendSet();if(plan()||(S()||{}).starter)return;setTimeout(ivOpen,reduce()?150:650);}
-function resumeQuiet(){if(D.hidden)return false;try{if(R().gateUp&&R().gateUp())return false;}catch(e){}
- const home=D.getElementById('tab-home');if(home&&!home.classList.contains('active'))return false;
- if(D.querySelector('.r2-ov:not(.off),#ltTour'))return false;
- try{const T=window.LowiTutorial;if(T&&T.isOn&&T.isOn())return false;if(T&&T.busyBy&&T.busyBy())return false;}catch(e){}
- return true;}
-let RQ=0;
+/* Oct 28 2026 (slim structure, batch 10, shorter first start): the starter-plan questions no longer open by themselves after the
+   name; they are offered later, on the Profile card "Startplan" (Starten). An old pending flag is cleared, never resumed. */
+function afterSetup(){try{localStorage.removeItem(KEY);}catch(e){}pendClear();}
 /* true = nothing more to do (stop polling) */
-function resumeTick(now){if(!pendGet())return true;const s=S();if(!s)return false;
- if(s.starter){pendClear();return true;}
- if(!s.setupDone)return false;
- if(IV&&IV.ov&&IV.ov.isConnected)return true;
- if(!resumeQuiet()){RQ=0;return false;}
- now=now||Date.now();if(!RQ){RQ=now;return false;}if(now-RQ<800)return false;
- ivOpen();return !!(IV&&IV.ov);}
+function resumeTick(){if(pendGet())pendClear();return true;}
 
 /* ---------- wiring ---------- */
 D.addEventListener('click',e=>{onGateClick(e);onIvClick(e);onSheetClick(e);const o=e.target.closest('[data-hs-open]');if(o){e.preventDefault();const k=o.getAttribute('data-hs-open');if(k==='plan')openSheet();else if(k==='redo')ivOpen();}},false);

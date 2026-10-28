@@ -86,18 +86,28 @@
         };
     }
 
+    /* 28 Oct 2026 (Emmanuel's Jeden Tag Speisequark, 500 g): Open Food Facts lists that tub with serving_quantity 500, so the
+       whole pack was rated as one serving (20 g sugar "per serving") and plain quark read as a fast blood sugar rise. A
+       manufacturer serving that is the whole pack (within 2 %) and more than twice the food group's usual portion is the pack
+       size, not a serving: the group's usual portion is used instead. Solid foods only; a drink bottle keeps its label serving.
+       The user's own grams still win. */
+    function wholePack(maker, packG, group, unit) {
+        const pack = num(packG), usual = group && GROUP_SERVING[group];
+        if (unit === 'ml' || maker == null || pack == null || pack <= 0 || !usual) return false;
+        return Math.abs(maker - pack) <= pack * 0.02 && maker > usual * 2;
+    }
     function pickServing(opts, unit) {
         const o = opts || {};
         const user = num(o.userG), maker = num(o.manufacturerG);
         if (user != null && user > 0) return {g: user, source: 'user'};
-        if (maker != null && maker > 0) return {g: maker, source: 'manufacturer'};
+        if (maker != null && maker > 0 && !wholePack(maker, o.packG, o.group, unit)) return {g: maker, source: 'manufacturer'};
         const group = o.group || (unit === 'ml' ? 'drinks' : null);
         if (group && GROUP_SERVING[group]) return {g: GROUP_SERVING[group], source: 'group', group};
         return {g: 100, source: 'per100'};
     }
 
     // nutrition: a validateNutrition result, or a raw per-100 object (validated here). opts: number (grams) or
-    // {userG, manufacturerG, group}.
+    // {userG, manufacturerG, packG, group}.
     function calculateServing(nutrition, opts) {
         const val = nutrition && nutrition.per100 && Array.isArray(nutrition.issues) ? nutrition : validateNutrition(nutrition, nutrition && nutrition.unit);
         const pick = typeof opts === 'number' || typeof opts === 'string' ? pickServing({userG: opts}, val.unit) : pickServing(opts, val.unit);
@@ -285,7 +295,7 @@
         POL = POL || lib('LowiFoodPolicy', './food-policy-core.js');
         ASS = ASS || lib('LowiFoodAssess', './food-assess-core.js');
         const val = validateNutrition(p.per100, p.unit);
-        const srv = calculateServing(val, serving == null ? {manufacturerG: p.servingG, group: p.group} : serving);
+        const srv = calculateServing(val, serving == null ? {manufacturerG: p.servingG, packG: p.packG, group: p.group} : serving);
         const glucose = estimateGlucoseImpact({serving: srv, category: {liquid: p.unit === 'ml'}, evidence: p.evidence, withMeal: !!(ctx && ctx.withMeal)});
         const ingredients = ING ? ING.analyzeIngredients(p.ingredients, {name: p.name, brand: p.brand, claims: p.claims}) : null;
         const policy = POL ? POL.applyPolicy({product: p, ingredients, glucose, serving: srv, profile: ctx && ctx.profile}) : null;

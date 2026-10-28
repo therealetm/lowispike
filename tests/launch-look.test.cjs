@@ -28,13 +28,16 @@ function el(tag) {
     Object.defineProperty(e, 'innerHTML', { set(v) { e._html = v; }, get() { return e._html; } });
     return e;
 }
-function runReader(look) {
+function runReader(look, win) {
     const bubbles = KEYS.map(k => { const b = el('b'); b.className = 'lwl-b'; b.attrs['data-k'] = k; const i = b.appendChild(el('i')); i.appendChild(el('i')); return b; });
     const L = el('div'); L.querySelectorAll = () => bubbles; L.offsetWidth = 390;
     const store = { 'lowi.launch.look': look == null ? null : (typeof look === 'string' ? look : JSON.stringify(look)) };
-    const ctx = { document: { getElementById: () => L, createElement: el }, localStorage: { getItem: k => store[k] == null ? null : store[k] }, JSON, Math, String };
+    const rafs = [];
+    const window = Object.assign({ innerWidth: 390, innerHeight: 844, requestAnimationFrame: f => rafs.push(f) }, win || {});
+    const ctx = { window, performance: { now: () => 0 }, document: { getElementById: () => L, createElement: el }, localStorage: { getItem: k => store[k] == null ? null : store[k] }, JSON, Math, String };
     vm.runInNewContext(reader, ctx);
     const out = {};
+    Object.defineProperty(out, '_L', { value: L }); Object.defineProperty(out, '_rafs', { value: rafs });
     bubbles.forEach(b => { out[b.attrs['data-k']] = { cls: b.className, p: b.style._p, items: (b.firstChild.children[1] || { children: [] }).children }; });
     return out;
 }
@@ -96,7 +99,8 @@ test('Home\'s look is read only while Home is on screen, never from the launch s
     assert.match(boot, /if \(!done \|\| document\.getElementById\("lwLaunch"\)\) return;/);
     assert.match(boot, /elementFromPoint/, 'a bubble covered by another page is not read');
     assert.match(boot, /if \(n < 6\) return;/, 'nothing half-read is saved');
-    assert.match(boot, /localStorage\.setItem\("lowi\.launch\.look", JSON\.stringify\(\{v:1, t:Date\.now\(\), b:out\}\)\)/);
+    assert.match(boot, /var look = \{v:1, t:Date\.now\(\), b:out\}; if \(g\.x > 0 && g\.y > 0 && g\.r > 40 && g\.d > 30\) look\.g = g;\s*localStorage\.setItem\("lowi\.launch\.look", JSON\.stringify\(look\)\)/);
+    for (const v of ['--o8-cx', '--o8-cy', '--o8-r', '--o8-d']) assert.ok(boot.includes('hs.getPropertyValue("' + v + '")'), 'Home\'s ring kept: ' + v);
     assert.match(boot, /visibilitychange[\s\S]{0,80}hidden[\s\S]{0,20}lookSave/);
     assert.match(boot, /"lowi:boot-ready", function\(\)\{ setTimeout\(lookSave, 2500\); \}/);
     assert.match(boot, /look: lookSave,/);
@@ -107,7 +111,7 @@ test('the bubbles look like Home\'s glass: a rim over the liquid, 4% wider than 
     assert.match(css, /#lwLaunch \.lwl-b>i\{top:-2%;left:-2%;width:104%;height:104%;border-radius:50%;overflow:hidden;/);
     assert.match(css, /#lwLaunch \.lwl-b>i::after\{content:"";[^}]*background:radial-gradient\(closest-side,/);
     assert.match(css, /#lwLaunch \.lwl-lq\{[^}]*height:calc\(var\(--l,0\) \* 100%\)/);
-    assert.match(css, /html\.lw-launch-out #lwLaunch \.lwl-b>i\{animation:none\}/);
+    assert.doesNotMatch(css, /lwlBob/, 'the bubbles sit still on Home\'s spots: nothing to snap at the hand-over');
 });
 
 function soundCtx(state, prefs) {

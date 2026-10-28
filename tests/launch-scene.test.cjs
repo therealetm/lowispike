@@ -40,17 +40,40 @@ test('the body is never hidden while starting; only the app under the scene is',
     assert.match(css, /html\.lw-boot #lwLaunch,html\.lw-boot #lwLaunch \*,html\.lw-launch-out #lwLaunch \*\{animation-play-state:running!important\}/, 'the scene plays while the app\'s own animations wait');
 });
 
-test('the scene: no logo and no text, hidden from VoiceOver, sparks gather into Misty\'s glow, eight glass bubbles land on Home\'s ring', () => {
+test('the scene: no logo and no text, hidden from VoiceOver, eight glass bubbles come out of Misty together onto Home\'s ring', () => {
     assert.strictEqual(scene.replace(/<[^>]+>/g, '').trim(), '', 'no text in the scene');
     assert.doesNotMatch(scene + bootCss, /LOW<i>i<\/i>SPIKE|LOWiSPIKE<|wordmark\{/);
     assert.match(scene, /^<div id="lwLaunch" aria-hidden="true">/);
     assert.strictEqual((scene.match(/class="lwl-b[\s"]/g) || []).length, 8, 'eight bubbles, like Home');
-    assert.ok((scene.match(/class="lwl-k"/g) || []).length >= 12, 'sparks');
-    assert.match(bootCss, /--lwl-x:var\(--o8-cx,50vw\);--lwl-y:var\(--o8-cy,46vh\);--lwl-r:var\(--o8-r,[^;]+\);--lwl-d:var\(--o8-d,[^;]+\);/, 'placed with Home\'s ring geometry');
+    // Oct 28 late (owner: "don't have the bubbles coming from different places ... just coming out of the middle bubble,
+    // all simultaneously, something very simple"): no sparks, no shock ring, no spinning shine, no spiral
+    assert.doesNotMatch(scene, /class="lwl-(k|wave|shine)"/, 'nothing flies in from elsewhere');
+    assert.doesNotMatch(bootCss, /@keyframes lwl(Gather|Spin|Wave|Bob|Tw)/);
+    assert.match(bootCss, /--lwl-x:var\(--lws-x,50vw\);--lwl-y:var\(--lws-y,46vh\);--lwl-r:var\(--lws-r,[^;]+\);--lwl-d:var\(--lws-d,[^;]+\);/, 'placed on the ring Home had last time');
+    assert.match(bootCss, /html\.lw-launch-out #lwLaunch\{--lwl-x:var\(--o8-cx,var\(--lws-x,50vw\)\);--lwl-y:var\(--o8-cy,/, 'Home\'s live ring only for the hand-over');
     const orbit = fs.readFileSync(path.join(root, 'home-orbit-v2.js'), 'utf8');
     for (const v of ['--o8-cx', '--o8-cy']) assert.ok(orbit.includes("setVar(H, '" + v + "'"), 'Home sets ' + v + ' on the html element');
-    assert.match(bootCss, /@keyframes lwlIn\{/, 'bubbles spiral in');
-    assert.match(bootCss, /@keyframes lwlGather\{/, 'sparks gather');
+    // all eight: one animation, one delay (no --i stagger), straight out along an arm from the centre to Home's spot
+    assert.strictEqual((scene.match(/<span class="lwl-arm" style="--a:[^"]+"><span class="lwl-mv"><b class="lwl-b"/g) || []).length, 8);
+    assert.match(bootCss, /#lwLaunch \.lwl-arm\{left:var\(--lwl-x\);top:var\(--lwl-y\);width:var\(--lwl-r\);height:0;transform-origin:0 0;transform:rotate\(var\(--a\)\)\}/);
+    assert.match(bootCss, /#lwLaunch\.lwl-go \.lwl-mv\{animation:lwlMove (\.\d+s) (cubic-bezier\([^)]*\)) (\.\d+s) both\}/);
+    const mv = bootCss.match(/#lwLaunch\.lwl-go \.lwl-mv\{animation:lwlMove ([^}]*)\}/)[1], gr = bootCss.match(/#lwLaunch\.lwl-go \.lwl-b\{animation:lwlGrow ([^}]*)\}/)[1];
+    assert.strictEqual(mv, gr, 'moving and growing together');
+    assert.match(bootCss, /@keyframes lwlMove\{from\{transform:translateX\(0\)\}to\{transform:translateX\(100%\)\}\}/, 'from the centre to the ring');
+    assert.match(bootCss, /@keyframes lwlGrow\{0%\{transform:scale\(\.3\);opacity:0\}/, 'small, out of Misty');
+    assert.match(bootCss, /#lwLaunch \.lwl-b>i\{[^}]*transform:rotate\(calc\(0deg - var\(--a\)\)\)/, 'icons upright');
+    assert.doesNotMatch(noComments(bootCss), /var\(--i\)/, 'no stagger');
+    // constant keyframes: nothing the page does while loading can change the motion
+    for (const k of (bootCss.match(/@keyframes lwl\w+\{[\s\S]*?\}\}/g) || [])) assert.doesNotMatch(k, /var\(/, k.slice(0, 30));
+    // only transform and opacity move
+    for (const k of (bootCss.match(/@keyframes lwl\w+\{[\s\S]*?\}\}/g) || [])) assert.doesNotMatch(k.replace(/transform:[^;}]*|opacity:[^;}]*/g, ''), /:/, k.slice(0, 30));
+});
+
+test('the motion is set going as the scene is built, so its clock starts with the first frame drawn', () => {
+    assert.match(bootCss, /#lwLaunch \.lwl-b\{[^}]*opacity:0;transform:scale\(\.3\)/, 'before the start: hidden inside Misty');
+    assert.match(bootCss, /#lwLaunch \.lwl-mv\{[^}]*transform:translateX\(0\)/);
+    assert.ok(!/#lwLaunch \.lwl-(b|mv)\{[^}]*animation/.test(bootCss), 'no animation without lwl-go');
+    assert.match(html, /if \(!\/\(\^\|\\s\)lwl-go\(\\s\|\$\)\/\.test\(L\.className\)\) L\.className \+= " lwl-go";/);
 });
 
 test('dark in both themes: the scene uses fixed colours, never the theme\'s background', () => {
@@ -59,11 +82,12 @@ test('dark in both themes: the scene uses fixed colours, never the theme\'s back
     assert.match(bootCss, /html\.lw-boot,html\.lw-launch-out\{background:#03050a!important;color-scheme:dark\}/);
 });
 
-test('Reduce Motion: the bubbles simply fade in, no spiral, no shock ring, no shine', () => {
+test('Reduce Motion: the bubbles simply fade in on their spots, no motion', () => {
     const rm = (bootCss.match(/@media \(prefers-reduced-motion:reduce\)\{([\s\S]*?)\n\}/) || [])[1] || '';
-    assert.match(rm, /#lwLaunch \.lwl-b\{animation:lwlFade/);
-    assert.match(rm, /#lwLaunch \.lwl-wave,#lwLaunch \.lwl-shine,#lwLaunch \.lwl-gl\{display:none\}/);
-    assert.match(rm, /#lwLaunch \.lwl-core\{animation:none/);
+    assert.match(rm, /#lwLaunch\.lwl-go \.lwl-b\{animation:lwlFade/);
+    assert.match(rm, /#lwLaunch \.lwl-mv,#lwLaunch\.lwl-go \.lwl-mv\{animation:none;transform:translateX\(100%\)\}/);
+    assert.match(rm, /#lwLaunch \.lwl-gl\{display:none\}/);
+    assert.match(rm, /#lwLaunch \.lwl-core,#lwLaunch\.lwl-go \.lwl-core\{animation:none/);
 });
 
 /* run the gate: the scene leaves the page after the fade, and nothing waits for the animation */

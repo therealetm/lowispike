@@ -95,7 +95,8 @@ test('the page names its build in its first kilobyte, where the worker reads it'
 test('launch scene: fixed over the page from the first frame, centred on Home\'s ring, never moves the layout', () => {
     assert.ok(!/html\.lw-boot::(before|after)/.test(bootCss), 'the old pseudo-element glow is gone');
     assert.match(bootCss, /#lwLaunch\{position:fixed;top:0;right:0;bottom:0;left:0;/, 'fixed: it never moves the layout');
-    assert.match(bootCss, /--lwl-x:var\(--o8-cx,50vw\);--lwl-y:var\(--o8-cy,46vh\)/, 'centred where Misty sits on Home');
+    assert.match(bootCss, /--lwl-x:var\(--lws-x,50vw\);--lwl-y:var\(--lws-y,46vh\)/, 'centred where Misty sat on Home last time');
+    assert.match(bootCss, /html\.lw-launch-out #lwLaunch\{--lwl-x:var\(--o8-cx,/, 'and on Home\'s live ring for the hand-over');
     assert.match(bootCss, /prefers-reduced-motion/);
 });
 

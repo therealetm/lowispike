@@ -109,8 +109,8 @@ html:not(.bw3-off) :is(#atmSky,#wxSky,#ssnSky){display:none!important}
    is hidden child by child. So the first frame WebKit shows is the scene's first frame, and the iOS startup pictures are
    rendered from exactly that frame (scripts/make-launch-images.cjs). The scene plays while the app loads and never waits: when
    Home is ready it dissolves in 0.34 s, and its bubbles sit where Home's real bubbles are (Home's --o8-* ring geometry).
-   The scene: deep-blue space, sparks gathering into Misty's glow, her glass bubble forming with a shock ring and a rim shine,
-   and Home's eight glass bubbles (six with the planet colours' liquid) spiralling into their ring. No logo, no text. */
+   The scene (Oct 28 late, simplified): deep-blue space, Misty's glass bubble forming, and Home's eight bubbles coming out of
+   her all at once, straight out to their places on Home's ring. No logo, no text. */
 @property --lwl-x{syntax:'<length>';inherits:true;initial-value:0px}
 @property --lwl-y{syntax:'<length>';inherits:true;initial-value:0px}
 @property --lwl-r{syntax:'<length>';inherits:true;initial-value:0px}
@@ -120,58 +120,68 @@ html.lw-boot body>:not(#lwLaunch),html.lw-boot>:not(head):not(body){opacity:0!im
 html.lw-boot body *{animation-play-state:paused!important}
 html.lw-boot #lwLaunch,html.lw-boot #lwLaunch *,html.lw-launch-out #lwLaunch *{animation-play-state:running!important}
 html:not(.lw-boot):not(.lw-launch-out) #lwLaunch{display:none!important}
+/* Oct 28 late, Emmanuel: "the animation is not smooth at the start ... simplify it. Don't have the bubbles coming from different
+   places. Just have them coming out of the middle bubble ... all simultaneously. Something very simple."
+   WHY IT STUTTERED: the scene sat on Home's live ring (--o8-*), which Home's own code only sets while the app loads under the
+   scene, often twice (placeholder Misty, then the 3D world). Every change slid four registered properties for 0.5 s, so the
+   bubbles' left/top and their keyframes changed on every frame while the page was still busy loading: the motion froze and
+   jumped. The sparks, the shock ring and the spinning rim shine (a conic gradient under a mask) added more work at the start.
+   NOW: the scene uses the ring Home had the last time you saw it (--lws-*, kept with lowi.launch.look and only used when the
+   screen size is the same; else the old estimate), so nothing under the motion changes while it plays. Home's live ring
+   takes over only for the hand-over. The motion animates nothing but transform and opacity, on layers made in advance
+   (will-change), and its clock starts with the first frame it is drawn in (class lwl-go, set as the scene is built), so
+   it cannot start frozen and jump. The scene: deep-blue space, Misty's glass bubble forming, and Home's eight
+   bubbles coming out of her all at the same moment, straight out to their places on Home's ring. */
 #lwLaunch{position:fixed;top:0;right:0;bottom:0;left:0;z-index:2147483647;overflow:hidden;pointer-events:auto;contain:paint;
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
-  --lwl-x:var(--o8-cx,50vw);--lwl-y:var(--o8-cy,46vh);--lwl-r:var(--o8-r,min(33.5vw,22vh,300px));--lwl-d:var(--o8-d,clamp(76px,22.6vw,88px));
+  --lwl-x:var(--lws-x,50vw);--lwl-y:var(--lws-y,46vh);--lwl-r:var(--lws-r,min(33.5vw,22vh,300px));--lwl-d:var(--lws-d,clamp(76px,22.6vw,88px));
   --lwl-m:calc((var(--lwl-r) - var(--lwl-d) / 2 - 10px) * 2);
-  background:radial-gradient(120% 78% at var(--lwl-x) var(--lwl-y),#0d1d42 0,#071029 40%,#03050a 82%) #03050a;
-  transition:--lwl-x .5s cubic-bezier(.2,.8,.2,1),--lwl-y .5s cubic-bezier(.2,.8,.2,1),--lwl-r .5s cubic-bezier(.2,.8,.2,1),--lwl-d .5s cubic-bezier(.2,.8,.2,1)}
-@media (min-aspect-ratio:1/2){#lwLaunch{--lwl-y:var(--o8-cy,42vh)}}
+  background:radial-gradient(120% 78% at var(--lwl-x) var(--lwl-y),#0d1d42 0,#071029 40%,#03050a 82%) #03050a;}
+@media (min-aspect-ratio:1/2){#lwLaunch{--lwl-y:var(--lws-y,42vh)}}
+/* the hand-over: Home's live ring takes over; where it differs from the remembered one the scene glides there while it fades */
+html.lw-launch-out #lwLaunch{--lwl-x:var(--o8-cx,var(--lws-x,50vw));--lwl-y:var(--o8-cy,var(--lws-y,46vh));--lwl-r:var(--o8-r,var(--lws-r,min(33.5vw,22vh,300px)));--lwl-d:var(--o8-d,var(--lws-d,clamp(76px,22.6vw,88px)));
+  transition:--lwl-x .34s cubic-bezier(.2,.8,.2,1),--lwl-y .34s cubic-bezier(.2,.8,.2,1),--lwl-r .34s cubic-bezier(.2,.8,.2,1),--lwl-d .34s cubic-bezier(.2,.8,.2,1)}
+@media (min-aspect-ratio:1/2){html.lw-launch-out #lwLaunch{--lwl-y:var(--o8-cy,var(--lws-y,42vh))}}
 #lwLaunch i,#lwLaunch b,#lwLaunch span,#lwLaunch svg{position:absolute;display:block;box-sizing:border-box;margin:0;padding:0;border:0}
-/* space brightening towards Home's navy, so the hand-over is a small step (Oct 28 evening: measured against Home's own
-   background, a greyer navy than before) */
-#lwLaunch .lwl-neb{top:0;right:0;bottom:0;left:0;opacity:0;
-  background:radial-gradient(150% 100% at var(--lwl-x) calc(var(--lwl-y) - 14vh),#343f5c 0,#2e3852 36%,#283049 68%,#20273b 100%);
-  animation:lwlNeb 1.5s cubic-bezier(.3,.6,.3,1) .1s both}
-/* sparks: gather into Misty's glow and go out */
-#lwLaunch .lwl-k{left:var(--x);top:var(--y);width:var(--s);height:var(--s);margin:calc(var(--s) / -2) 0 0 calc(var(--s) / -2);border-radius:50%;
-  background:#e6f7ff;box-shadow:0 0 6px 1px rgba(120,205,255,.85);opacity:.85;
-  animation:lwlGather .95s cubic-bezier(.55,0,.75,.4) var(--dl) both}
-/* stars: stay and twinkle, drifting up like Home's particles */
+/* space brightening towards Home's navy, so the hand-over is a small step */
+#lwLaunch .lwl-neb{top:0;right:0;bottom:0;left:0;opacity:0;will-change:opacity;
+  background:radial-gradient(150% 100% at var(--lwl-x) calc(var(--lwl-y) - 14vh),#343f5c 0,#2e3852 36%,#283049 68%,#20273b 100%)}
+#lwLaunch.lwl-go .lwl-neb{animation:lwlNeb .9s cubic-bezier(.35,0,.3,1) both}
+/* stars: still, like Home's sky */
 #lwLaunch .lwl-s{left:var(--x);top:var(--y);width:var(--s);height:var(--s);border-radius:50%;background:#cfe9ff;
-  box-shadow:0 0 5px rgba(140,200,255,.6);opacity:.4;animation:lwlTw var(--t) ease-in-out var(--dl) infinite alternate both}
-/* Misty: glow, glass, shock ring, rim shine */
-#lwLaunch .lwl-wave,#lwLaunch .lwl-m{left:var(--lwl-x);top:var(--lwl-y);width:var(--lwl-m);height:var(--lwl-m);
+  box-shadow:0 0 5px rgba(140,200,255,.6);opacity:.55}
+/* Misty: her glow and her glass bubble */
+#lwLaunch .lwl-m{left:var(--lwl-x);top:var(--lwl-y);width:var(--lwl-m);height:var(--lwl-m);
   margin:calc(var(--lwl-m) / -2) 0 0 calc(var(--lwl-m) / -2);border-radius:50%}
-#lwLaunch .lwl-wave{border:2px solid rgba(143,231,255,.7);box-shadow:0 0 24px rgba(90,169,255,.5),inset 0 0 18px rgba(90,169,255,.35);
-  opacity:0;animation:lwlWave 1.05s cubic-bezier(.12,.6,.3,1) .26s both}
-#lwLaunch .lwl-cw{top:-38%;left:-38%;width:176%;height:176%;animation:lwlBreath 2.6s ease-in-out 1s infinite alternate both}
-#lwLaunch .lwl-core{top:0;left:0;width:100%;height:100%;border-radius:50%;opacity:.6;transform:scale(.42);
-  background:radial-gradient(closest-side,#f2fbff 0,#c9f1ff 12%,#7fd4ff 28%,rgba(52,150,255,.55) 50%,rgba(10,132,255,.18) 74%,rgba(10,132,255,0) 100%);
-  animation:lwlCore .95s cubic-bezier(.2,.9,.25,1) .04s both}
-#lwLaunch .lwl-gl{width:48px;height:48px;left:27%;top:19%;margin:-24px 0 0 -24px;opacity:0;transform:scale(.2) rotate(-40deg);
-  animation:lwlGlint .7s cubic-bezier(.2,1.4,.4,1) .7s both,lwlGlintTw 2.4s ease-in-out 1.4s infinite alternate}
-#lwLaunch .lwl-glass{top:0;left:0;width:100%;height:100%;border-radius:50%;opacity:0;transform:scale(.55);
+#lwLaunch .lwl-cw{top:-38%;left:-38%;width:176%;height:176%}
+#lwLaunch .lwl-core{top:0;left:0;width:100%;height:100%;border-radius:50%;opacity:.6;transform:scale(.42);will-change:transform,opacity;
+  background:radial-gradient(closest-side,#f2fbff 0,#c9f1ff 12%,#7fd4ff 28%,rgba(52,150,255,.55) 50%,rgba(10,132,255,.18) 74%,rgba(10,132,255,0) 100%)}
+#lwLaunch.lwl-go .lwl-core{animation:lwlCore .6s cubic-bezier(.35,0,.25,1) both}
+#lwLaunch .lwl-gl{width:48px;height:48px;left:27%;top:19%;margin:-24px 0 0 -24px;opacity:0;transform:scale(.2) rotate(-40deg);will-change:transform,opacity}
+#lwLaunch.lwl-go .lwl-gl{animation:lwlGlint .45s cubic-bezier(.3,0,.2,1) .5s both}
+#lwLaunch .lwl-glass{top:0;left:0;width:100%;height:100%;border-radius:50%;opacity:0;transform:scale(.55);will-change:transform,opacity;
   background:radial-gradient(circle at 32% 25%,rgba(255,255,255,.55) 0,rgba(255,255,255,.16) 13%,rgba(255,255,255,0) 30%),
     radial-gradient(circle at 50% 54%,rgba(90,169,255,0) 50%,rgba(90,169,255,.16) 76%,rgba(143,231,255,.38) 100%);
-  box-shadow:inset 0 0 0 1.5px rgba(170,225,255,.45),inset 0 -12px 26px rgba(10,132,255,.28),0 0 44px rgba(10,132,255,.38),0 18px 40px rgba(0,0,0,.35);
-  animation:lwlForm .8s cubic-bezier(.2,1.35,.4,1) .14s both}
-#lwLaunch .lwl-shine{top:-2px;left:-2px;right:-2px;bottom:-2px;border-radius:50%;opacity:0;
-  background:conic-gradient(from 0deg,rgba(143,231,255,0) 0,rgba(143,231,255,0) 58%,rgba(143,231,255,.8) 70%,rgba(255,255,255,.95) 73%,rgba(143,231,255,0) 82%);
-  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));
-  animation:lwlShineIn .5s ease .55s both,lwlSpin 2.2s linear .55s infinite}
-/* Home's eight bubbles: spiral in to their ring, then bob */
-#lwLaunch .lwl-b{left:var(--lwl-x);top:var(--lwl-y);width:var(--lwl-d);height:var(--lwl-d);margin:calc(var(--lwl-d) / -2) 0 0 calc(var(--lwl-d) / -2);
-  opacity:0;transform:rotate(calc(var(--a) - 75deg)) translateX(calc(var(--lwl-r) * 2.2)) rotate(calc(75deg - var(--a))) scale(.35);
-  animation:lwlIn .9s cubic-bezier(.18,.86,.32,1.06) calc(.3s + var(--i) * .045s) both}
+  box-shadow:inset 0 0 0 1.5px rgba(170,225,255,.45),inset 0 -12px 26px rgba(10,132,255,.28),0 0 44px rgba(10,132,255,.38),0 18px 40px rgba(0,0,0,.35)}
+#lwLaunch.lwl-go .lwl-glass{animation:lwlForm .6s cubic-bezier(.35,0,.25,1) .05s both}
+/* Home's eight bubbles: wait inside Misty, then all come out together, straight out to their spots on Home's ring, and stay
+   still there (Home's bubbles sit on exactly those spots, so the hand-over has nothing to move) */
+/* each bubble rides on an arm from Misty's centre to its spot on Home's ring: the arm is turned to the bubble's angle and is as
+   long as the ring's radius (both still); the mover slides along it from 0 to 100% of its own length, which is that radius.
+   So every keyframe is a constant (no var() in any of them): nothing the page does while it loads can change the motion. */
+#lwLaunch .lwl-arm{left:var(--lwl-x);top:var(--lwl-y);width:var(--lwl-r);height:0;transform-origin:0 0;transform:rotate(var(--a))}
+#lwLaunch .lwl-mv{left:0;top:0;width:100%;height:0;transform:translateX(0);will-change:transform}
+#lwLaunch .lwl-b{left:0;top:0;width:var(--lwl-d);height:var(--lwl-d);margin:calc(var(--lwl-d) / -2) 0 0 calc(var(--lwl-d) / -2);
+  opacity:0;transform:scale(.3);will-change:transform,opacity}
+#lwLaunch.lwl-go .lwl-mv{animation:lwlMove .75s cubic-bezier(.3,0,.2,1) .25s both}
+#lwLaunch.lwl-go .lwl-b{animation:lwlGrow .75s cubic-bezier(.3,0,.2,1) .25s both}
 /* Oct 28 evening, Emmanuel: "the bubbles are not the same bubbles as on my Home, and the colours don't match Home's". So these ARE
    Home's bubbles: the glass membrane of Home's 3D bubbles (living-bubbles.js: clear inside, a soft blue rim, 4% wider than the
    button), Home's own liquid at Home's own level and colours, and Home's own icon and number, as Home last showed them
    (lowi.launch.look, see lwBootJs). A bubble that is dry on Home carries its own colour as a soft glow (Home's colour where it
    has one; the three that never have one get a fitting one: Community rose, Scan gold, Shopping amber). */
-#lwLaunch .lwl-b>i{top:-2%;left:-2%;width:104%;height:104%;border-radius:50%;overflow:hidden;
-  box-shadow:0 0 3px rgba(140,180,250,.25);
-  animation:lwlBob 3.2s ease-in-out calc(1.25s + var(--i) * .17s) infinite alternate both}
+#lwLaunch .lwl-b>i{top:-2%;left:-2%;width:104%;height:104%;border-radius:50%;overflow:hidden;transform:rotate(calc(0deg - var(--a)));
+  box-shadow:0 0 3px rgba(140,180,250,.25)}
 #lwLaunch .lwl-b>i::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:50%;
   background:radial-gradient(closest-side,rgba(140,180,250,.07) 0,rgba(140,180,250,.07) 50%,rgba(140,180,250,.1) 62%,rgba(140,180,250,.14) 72%,rgba(140,180,250,.19) 81%,rgba(150,190,252,.31) 92%,rgba(150,190,252,.3) 97%,rgba(150,190,252,.12) 100%)}
 #lwLaunch .lwl-lq{left:0;right:0;bottom:0;height:calc(var(--l,0) * 100%);
@@ -184,33 +194,25 @@ html:not(.lw-boot):not(.lw-launch-out) #lwLaunch{display:none!important}
 /* the hand-over: the scene dissolves into Home */
 html.lw-launch-out #lwLaunch{pointer-events:none;animation:lwlOut .34s cubic-bezier(.4,0,.2,1) both}
 /* the ring bubbles are the same as Home's and land on them, so they do not swell; only Misty does */
-html.lw-launch-out #lwLaunch .lwl-b>i{animation:none}
 html.lw-launch-out #lwLaunch .lwl-m{animation:lwlPop .34s cubic-bezier(.2,.7,.2,1) both}
 @keyframes lwlNeb{to{opacity:.92}}
-@keyframes lwlGather{to{transform:translate(calc(var(--lwl-x) - var(--x)),calc(var(--lwl-y) - var(--y))) scale(.25);opacity:0}}
-@keyframes lwlTw{from{opacity:.4;transform:translateY(0)}to{opacity:.95;transform:translateY(-14px)}}
-@keyframes lwlWave{0%{transform:scale(.6);opacity:0}14%{opacity:.85}100%{transform:scale(2.7);opacity:0}}
-@keyframes lwlCore{0%{transform:scale(.42);opacity:.6}48%{transform:scale(1.06);opacity:1}100%{transform:scale(.94);opacity:.92}}
-@keyframes lwlBreath{from{transform:scale(1)}to{transform:scale(1.07)}}
-@keyframes lwlForm{0%{transform:scale(.55);opacity:0}100%{transform:scale(1);opacity:1}}
-@keyframes lwlShineIn{to{opacity:1}}
-@keyframes lwlSpin{to{transform:rotate(360deg)}}
-@keyframes lwlIn{0%{transform:rotate(calc(var(--a) - 75deg)) translateX(calc(var(--lwl-r) * 2.2)) rotate(calc(75deg - var(--a))) scale(.35);opacity:0}
-  45%{opacity:1}100%{transform:rotate(var(--a)) translateX(var(--lwl-r)) rotate(calc(0deg - var(--a))) scale(1);opacity:1}}
-@keyframes lwlBob{from{transform:translateY(-2px)}to{transform:translateY(3px)}}
+@keyframes lwlCore{from{transform:scale(.42);opacity:.6}to{transform:scale(.94);opacity:.92}}
+@keyframes lwlForm{from{transform:scale(.55);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes lwlMove{from{transform:translateX(0)}to{transform:translateX(100%)}}
+@keyframes lwlGrow{0%{transform:scale(.3);opacity:0}35%{opacity:1}100%{transform:scale(1);opacity:1}}
 @keyframes lwlOut{to{opacity:0}}
 @keyframes lwlPop{from{transform:scale(1)}to{transform:scale(1.07)}}
-@keyframes lwlGlint{to{opacity:1;transform:scale(.62) rotate(0deg)}}
-@keyframes lwlGlintTw{from{opacity:1;transform:scale(.62) rotate(0deg)}to{opacity:.55;transform:scale(.44) rotate(18deg)}}
+@keyframes lwlGlint{from{opacity:0;transform:scale(.2) rotate(-40deg)}to{opacity:1;transform:scale(.62) rotate(0deg)}}
 @keyframes lwlFade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){
-  #lwLaunch .lwl-b{animation:lwlFade .4s ease .2s both;transform:rotate(var(--a)) translateX(var(--lwl-r)) rotate(calc(0deg - var(--a)))}
-  #lwLaunch .lwl-glass{animation:lwlFade .4s ease .1s both;transform:none}
-  #lwLaunch .lwl-k{animation:lwlOut .5s ease .1s both}
-  #lwLaunch .lwl-core{animation:none;transform:scale(.94);opacity:.92}
-  #lwLaunch .lwl-wave,#lwLaunch .lwl-shine,#lwLaunch .lwl-gl{display:none}
-  #lwLaunch .lwl-cw,#lwLaunch .lwl-s,#lwLaunch .lwl-b>i{animation:none}
-  html.lw-launch-out #lwLaunch .lwl-b>i,html.lw-launch-out #lwLaunch .lwl-m{animation:none}
+  #lwLaunch .lwl-mv,#lwLaunch.lwl-go .lwl-mv{animation:none;transform:translateX(100%)}
+  #lwLaunch .lwl-b{transform:none}
+  #lwLaunch.lwl-go .lwl-b{animation:lwlFade .4s ease .2s both}
+  #lwLaunch .lwl-glass{transform:none}
+  #lwLaunch.lwl-go .lwl-glass{animation:lwlFade .4s ease .1s both}
+  #lwLaunch .lwl-core,#lwLaunch.lwl-go .lwl-core{animation:none;transform:scale(.94);opacity:.92}
+  #lwLaunch .lwl-gl{display:none}
+  html.lw-launch-out #lwLaunch .lwl-m{animation:none}
 }
 </style>
 <script id="lwBootJs">
@@ -225,7 +227,7 @@ html.lw-launch-out #lwLaunch .lwl-m{animation:lwlPop .34s cubic-bezier(.2,.7,.2,
   /* Oct 28 evening, Emmanuel: "a sound in there, like when you open Netflix ... that kind of vibration, so it vibrates and
      sounds almost underwater, as if you were under water in a bubble". An original sound, made here with Web Audio (no file):
      a deep hum that swells and trembles (tremolo and vibrato: the "vibration"), muffled like under water (a low-pass that
-     opens and closes), a soft wash of water, and little bubbles rising as Home's bubbles land. About two seconds.
+     opens and closes), a soft wash of water, and little bubbles rising as Home's bubbles come out of Misty. About two seconds.
      It never holds the app back. Where the browser lets a page play sound on its own (desktop, many Android phones) it plays
      with the scene. iPhone and iPad (Safari and the home-screen app) let a page make sound only after a tap: there it plays
      if you touch the screen while the scene is still up, else it stays quiet. It follows the silent switch and mixes with
@@ -258,12 +260,12 @@ html.lw-launch-out #lwLaunch .lwl-m{animation:lwlPop .34s cubic-bezier(.2,.7,.2,
     var nz = c.createBufferSource(), nf = c.createBiquadFilter(), ng = c.createGain(); nz.buffer = buf;
     nf.type = "lowpass"; nf.frequency.value = 520; env(ng, [[.35, .22], [1.2, .08], [2.1, .0001]]);
     nz.connect(nf); nf.connect(ng); ng.connect(out); nz.start(t); nz.stop(t + 2.2);
-    /* bubbles rising as Home's eight bubbles land (they land about 0.9 s in, one after another), with a watery echo */
+    /* bubbles rising as Home's eight bubbles come out of Misty (all together, about 0.3 s in), with a watery echo */
     var bl = c.createBiquadFilter(), dl = c.createDelay(.5), fb = c.createGain(), wet = c.createGain();
     bl.type = "lowpass"; bl.frequency.value = 1900; dl.delayTime.value = .13; fb.gain.value = .32; wet.gain.value = .45;
     bl.connect(out); bl.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(out);
     for (var j = 0; j !== 8; j++) {
-      var tt = t + .86 + j * .05 + Math.random() * .02, o = c.createOscillator(), g = c.createGain(), f0 = 260 + Math.random() * 220;
+      var tt = t + .3 + j * .018 + Math.random() * .02, o = c.createOscillator(), g = c.createGain(), f0 = 260 + Math.random() * 220;
       o.frequency.setValueAtTime(f0, tt); o.frequency.exponentialRampToValueAtTime(f0 * 2.7, tt + .075);
       g.gain.setValueAtTime(.0001, tt); g.gain.exponentialRampToValueAtTime(.16 - j * .012, tt + .008); g.gain.exponentialRampToValueAtTime(.0001, tt + .1);
       o.connect(g); g.connect(bl); o.start(tt); o.stop(tt + .12);
@@ -385,7 +387,11 @@ html.lw-launch-out #lwLaunch .lwl-m{animation:lwlPop .34s cubic-bezier(.2,.7,.2,
         var o = {k:k, w:+r.width.toFixed(1), it:lookItems(el, r), f:0}; lookLiquid(el, o); delete o.k; out[k] = o; n++;
       }
       if (n < 6) return;
-      localStorage.setItem("lowi.launch.look", JSON.stringify({v:1, t:Date.now(), b:out}));
+      /* Oct 28 late: and Home's ring itself (home-orbit-v2.js --o8-*), so the next launch scene lands exactly on it */
+      var hs = H.style, g = {w:window.innerWidth, h:window.innerHeight, x:parseFloat(hs.getPropertyValue("--o8-cx")), y:parseFloat(hs.getPropertyValue("--o8-cy")),
+        r:parseFloat(hs.getPropertyValue("--o8-r")), d:parseFloat(hs.getPropertyValue("--o8-d"))};
+      var look = {v:1, t:Date.now(), b:out}; if (g.x > 0 && g.y > 0 && g.r > 40 && g.d > 30) look.g = g;
+      localStorage.setItem("lowi.launch.look", JSON.stringify(look));
     } catch(e){}
   }
   window.addEventListener("lowi:boot-ready", function(){ setTimeout(lookSave, 2500); });
@@ -473,7 +479,7 @@ html.lw-launch-out #lwLaunch .lwl-m{animation:lwlPop .34s cubic-bezier(.2,.7,.2,
 </script>
 </head>
 <body>
-<div id="lwLaunch" aria-hidden="true"><i class="lwl-neb"></i><i class="lwl-k" style="--x:66.1vw;--y:51.7vh;--s:2px;--dl:0.06s"></i><i class="lwl-k" style="--x:60.2vw;--y:84.5vh;--s:3.5px;--dl:0.09s"></i><i class="lwl-k" style="--x:88.6vw;--y:70.1vh;--s:2.5px;--dl:0.12s"></i><i class="lwl-k" style="--x:45.3vw;--y:17.3vh;--s:2.5px;--dl:0.14s"></i><i class="lwl-k" style="--x:59.1vw;--y:74.9vh;--s:3px;--dl:0.17s"></i><i class="lwl-k" style="--x:44.2vw;--y:77.5vh;--s:2.5px;--dl:0.20s"></i><i class="lwl-k" style="--x:16.0vw;--y:78.8vh;--s:3.5px;--dl:0.23s"></i><i class="lwl-k" style="--x:23.5vw;--y:25.9vh;--s:2.5px;--dl:0.26s"></i><i class="lwl-k" style="--x:27.3vw;--y:14.3vh;--s:3.5px;--dl:0.28s"></i><i class="lwl-k" style="--x:57.9vw;--y:77.1vh;--s:3.5px;--dl:0.31s"></i><i class="lwl-k" style="--x:32.2vw;--y:63.6vh;--s:3px;--dl:0.34s"></i><i class="lwl-k" style="--x:19.5vw;--y:36.6vh;--s:2.5px;--dl:0.37s"></i><i class="lwl-s" style="--x:43.3vw;--y:77.8vh;--s:2px;--t:2.5s;--dl:0.58s"></i><i class="lwl-s" style="--x:87.1vw;--y:75.9vh;--s:1.5px;--t:2.4s;--dl:0.71s"></i><i class="lwl-s" style="--x:81.7vw;--y:88.2vh;--s:2px;--t:3.6s;--dl:1.00s"></i><i class="lwl-s" style="--x:58.0vw;--y:76.8vh;--s:2.5px;--t:2.5s;--dl:0.47s"></i><i class="lwl-s" style="--x:11.5vw;--y:16.1vh;--s:1.5px;--t:2.3s;--dl:0.84s"></i><i class="lwl-s" style="--x:89.5vw;--y:68.9vh;--s:2px;--t:3.1s;--dl:0.58s"></i><i class="lwl-s" style="--x:93.9vw;--y:79.1vh;--s:2.5px;--t:2.3s;--dl:1.02s"></i><i class="lwl-s" style="--x:83.6vw;--y:90.5vh;--s:2px;--t:3.1s;--dl:1.09s"></i><i class="lwl-s" style="--x:77.4vw;--y:49.2vh;--s:2px;--t:2.6s;--dl:0.21s"></i><i class="lwl-s" style="--x:79.6vw;--y:90.1vh;--s:2.5px;--t:3.0s;--dl:0.91s"></i><i class="lwl-s" style="--x:55.8vw;--y:5.5vh;--s:2px;--t:2.6s;--dl:0.64s"></i><i class="lwl-s" style="--x:37.8vw;--y:71.8vh;--s:2px;--t:2.8s;--dl:1.10s"></i><i class="lwl-s" style="--x:81.1vw;--y:77.8vh;--s:2.5px;--t:3.5s;--dl:0.91s"></i><i class="lwl-s" style="--x:89.0vw;--y:18.1vh;--s:2px;--t:3.0s;--dl:1.19s"></i><i class="lwl-wave"></i><span class="lwl-m"><span class="lwl-cw"><i class="lwl-core"></i></span><i class="lwl-glass"></i><i class="lwl-shine"></i><svg class="lwl-gl" width="48" height="48" viewBox="0 0 48 48" focusable="false"><defs><radialGradient id="lwlGlintG"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#d4f4ff"/><stop offset="1" stop-color="#8fe7ff" stop-opacity="0"/></radialGradient></defs><path fill="url(#lwlGlintG)" d="M24 0C25.6 15.4 32.6 22.4 48 24C32.6 25.6 25.6 32.6 24 48C22.4 32.6 15.4 25.6 0 24C15.4 22.4 22.4 15.4 24 0Z"/></svg></span><b class="lwl-b" data-k="settings" style="--a:-90deg;--i:0"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="water" style="--a:-45deg;--i:1"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="move" style="--a:0deg;--i:2"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="scan" style="--a:45deg;--i:3"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="joy" style="--a:90deg;--i:4"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="sleep" style="--a:135deg;--i:5"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="gap" style="--a:180deg;--i:6"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="fuel" style="--a:225deg;--i:7"><i><i class="lwl-lq"></i></i></b></div><script>/* Oct 28 evening: Home's own bubbles. Each bubble shows what Home showed when you last left it (lowi.launch.look, written by
+<div id="lwLaunch" aria-hidden="true"><i class="lwl-neb"></i><i class="lwl-s" style="--x:43.3vw;--y:77.8vh;--s:2px;--t:2.5s;--dl:0.58s"></i><i class="lwl-s" style="--x:87.1vw;--y:75.9vh;--s:1.5px;--t:2.4s;--dl:0.71s"></i><i class="lwl-s" style="--x:81.7vw;--y:88.2vh;--s:2px;--t:3.6s;--dl:1.00s"></i><i class="lwl-s" style="--x:58.0vw;--y:76.8vh;--s:2.5px;--t:2.5s;--dl:0.47s"></i><i class="lwl-s" style="--x:11.5vw;--y:16.1vh;--s:1.5px;--t:2.3s;--dl:0.84s"></i><i class="lwl-s" style="--x:89.5vw;--y:68.9vh;--s:2px;--t:3.1s;--dl:0.58s"></i><i class="lwl-s" style="--x:93.9vw;--y:79.1vh;--s:2.5px;--t:2.3s;--dl:1.02s"></i><i class="lwl-s" style="--x:83.6vw;--y:90.5vh;--s:2px;--t:3.1s;--dl:1.09s"></i><i class="lwl-s" style="--x:77.4vw;--y:49.2vh;--s:2px;--t:2.6s;--dl:0.21s"></i><i class="lwl-s" style="--x:79.6vw;--y:90.1vh;--s:2.5px;--t:3.0s;--dl:0.91s"></i><i class="lwl-s" style="--x:55.8vw;--y:5.5vh;--s:2px;--t:2.6s;--dl:0.64s"></i><i class="lwl-s" style="--x:37.8vw;--y:71.8vh;--s:2px;--t:2.8s;--dl:1.10s"></i><i class="lwl-s" style="--x:81.1vw;--y:77.8vh;--s:2.5px;--t:3.5s;--dl:0.91s"></i><i class="lwl-s" style="--x:89.0vw;--y:18.1vh;--s:2px;--t:3.0s;--dl:1.19s"></i><span class="lwl-m"><span class="lwl-cw"><i class="lwl-core"></i></span><i class="lwl-glass"></i><svg class="lwl-gl" width="48" height="48" viewBox="0 0 48 48" focusable="false"><defs><radialGradient id="lwlGlintG"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#d4f4ff"/><stop offset="1" stop-color="#8fe7ff" stop-opacity="0"/></radialGradient></defs><path fill="url(#lwlGlintG)" d="M24 0C25.6 15.4 32.6 22.4 48 24C32.6 25.6 25.6 32.6 24 48C22.4 32.6 15.4 25.6 0 24C15.4 22.4 22.4 15.4 24 0Z"/></svg></span><span class="lwl-arm" style="--a:-90deg"><span class="lwl-mv"><b class="lwl-b" data-k="settings" style="--a:-90deg;--i:0"><i><i class="lwl-lq"></i></i></b></span></span><span class="lwl-arm" style="--a:-45deg"><span class="lwl-mv"><b class="lwl-b" data-k="water" style="--a:-45deg;--i:1"><i><i class="lwl-lq"></i></i></b></span></span><span class="lwl-arm" style="--a:0deg"><span class="lwl-mv"><b class="lwl-b" data-k="move" style="--a:0deg;--i:2"><i><i class="lwl-lq"></i></i></b></span></span><span class="lwl-arm" style="--a:45deg"><span class="lwl-mv"><b class="lwl-b" data-k="scan" style="--a:45deg;--i:3"><i><i class="lwl-lq"></i></i></b></span></span><span class="lwl-arm" style="--a:90deg"><span class="lwl-mv"><b class="lwl-b" data-k="joy" style="--a:90deg;--i:4"><i><i class="lwl-lq"></i></i></b></span></span><span class="lwl-arm" style="--a:135deg"><span class="lwl-mv"><b class="lwl-b" data-k="sleep" style="--a:135deg;--i:5"><i><i class="lwl-lq"></i></i></b></span></span><span class="lwl-arm" style="--a:180deg"><span class="lwl-mv"><b class="lwl-b" data-k="gap" style="--a:180deg;--i:6"><i><i class="lwl-lq"></i></i></b></span></span><span class="lwl-arm" style="--a:225deg"><span class="lwl-mv"><b class="lwl-b" data-k="fuel" style="--a:225deg;--i:7"><i><i class="lwl-lq"></i></i></b></span></span></div><script>/* Oct 28 evening: Home's own bubbles. Each bubble shows what Home showed when you last left it (lowi.launch.look, written by
    lwBootJs: icon, number, liquid level and colours); before that, Home's icons (LWL_DEF, taken from Home itself by
    tools/startup/launch-look.cjs). A bubble that is dry on Home glows in its own colour. Then the scene is built at once, so
    WebKit can show it before the rest of the page is read. */
@@ -481,6 +487,14 @@ html.lw-launch-out #lwLaunch .lwl-m{animation:lwlPop .34s cubic-bezier(.2,.7,.2,
   var L = document.getElementById("lwLaunch"), S = null, D = /*LWL_DEF*/{"settings":{"w":88,"it":[{"t":"s","g":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><path d=\"M4 6.5A2.5 2.5 0 0 1 6.5 4h7A2.5 2.5 0 0 1 16 6.5v4a2.5 2.5 0 0 1-2.5 2.5H9l-3 2.5V13h0.5A2.5 2.5 0 0 1 4 10.5zM18.5 9.5A1.5 1.5 0 0 1 20 11v4a2 2 0 0 1-2 2h-.5v2.5l-3-2.5H12a2 2 0 0 1-1.6-.8\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><\/path><\/svg>","c":"rgb(255, 255, 255)","fl":"drop-shadow(rgba(0, 30, 80, 0.6) 0px 1px 4px)","o":1,"x":29,"y":28,"w":29.9,"h":29.9}]},"water":{"w":88,"it":[{"t":"m","u":"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5c3.6 4.4 6 7.4 6 10.3a6 6 0 0 1-12 0c0-2.9 2.4-5.9 6-10.3z'/%3E%3C/svg%3E\")","c":"rgb(255, 255, 255)","o":1,"x":30.8,"y":30.8,"w":26.4,"h":26.4}]},"move":{"w":88,"it":[{"t":"m","u":"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12h4l2.2-5.5 4.6 11 2.2-5.5h5'/%3E%3C/svg%3E\")","c":"rgb(255, 255, 255)","o":1,"x":30.8,"y":30.8,"w":26.4,"h":26.4}]},"scan":{"w":88,"it":[{"t":"s","g":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><path d=\"M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M8 9v6M11 9v6M14 9v6M17 9v6\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><\/path><\/svg>","c":"rgb(255, 255, 255)","fl":"drop-shadow(rgba(0, 30, 80, 0.6) 0px 1px 4px)","o":1,"x":29,"y":28,"w":29.9,"h":29.9}]},"joy":{"w":88,"it":[{"t":"s","g":"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><path d=\"M12 3.5l2.4 2.6M12 3.5L9.6 6.1M12 20.5l2.4-2.6M12 20.5l-2.4-2.6M3.5 12l2.6-2.4M3.5 12l2.6 2.4M20.5 12l-2.6-2.4M20.5 12l-2.6 2.4\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><\/path><circle cx=\"12\" cy=\"12\" r=\"2.6\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><\/circle><\/svg>","c":"rgb(255, 255, 255)","fl":"drop-shadow(rgba(0, 30, 80, 0.6) 0px 1px 4px)","o":1,"x":30.8,"y":30.8,"w":26.4,"h":26.4}]},"sleep":{"w":88,"it":[{"t":"s","g":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><path d=\"M19.5 14.6A7.8 7.8 0 1 1 9.4 4.5a6.2 6.2 0 0 0 10.1 10.1z\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><\/path><\/svg>","c":"rgb(255, 255, 255)","fl":"drop-shadow(rgba(0, 30, 80, 0.6) 0px 1px 4px)","o":1,"x":29,"y":28,"w":29.9,"h":29.9}]},"gap":{"w":88,"it":[{"t":"m","u":"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 9v4.5l3 2M9.5 2.5h5M12 21.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15z'/%3E%3C/svg%3E\")","c":"rgb(255, 255, 255)","o":1,"x":30.8,"y":30.8,"w":26.4,"h":26.4}]},"fuel":{"w":88,"it":[{"t":"m","u":"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.2'/%3E%3Ccircle cx='10' cy='20' r='1.4'/%3E%3Ccircle cx='17' cy='20' r='1.4'/%3E%3C/svg%3E\")","c":"rgb(255, 255, 255)","o":1,"x":30.8,"y":30.8,"w":26.4,"h":26.4}]}}/*LWL_DEF_END*/;
   try { S = JSON.parse(localStorage.getItem("lowi.launch.look") || "null"); } catch(e){}
   if (!S || S.v !== 1 || !S.b) S = null;
+  /* Oct 28 late: Home's ring as you last saw it (centre, radius, bubble size), only on a screen of the same size, so the scene's
+     bubbles fly straight to Home's spots and nothing under them changes while they move (see lwBootCss) */
+  try {
+    var g = S && S.g, W = window.innerWidth, Hh = window.innerHeight;
+    if (g && Math.abs(g.w - W) < 2 && Math.abs(g.h - Hh) < 2 && g.r > 40 && g.d > 30 && g.x > 0 && g.y > 0 && g.x < W && g.y < Hh) {
+      L.style.setProperty("--lws-x", +g.x + "px"); L.style.setProperty("--lws-y", +g.y + "px"); L.style.setProperty("--lws-r", +g.r + "px"); L.style.setProperty("--lws-d", +g.d + "px");
+    }
+  } catch(e){}
   var C = {settings:"255,176,206|226,96,150", water:"110,200,255|40,120,240", move:"150,255,210|30,190,150", scan:"255,228,150|236,176,52",
     joy:"120,255,190|20,210,130", sleep:"190,170,255|120,100,230", gap:"118,210,238|52,92,188", fuel:"255,214,150|236,150,70"};
   function z(v, w){ return "calc(var(--lwl-d) * " + (+v / w).toFixed(4) + ")"; }
@@ -514,6 +528,12 @@ html.lw-launch-out #lwLaunch .lwl-m{animation:lwlPop .34s cubic-bezier(.2,.7,.2,
     for (var j = 0; j !== it.length && j !== 12; j++) { var e = item(it[j], w); if (e) ct.appendChild(e); }
     b.firstChild.appendChild(ct);
   } catch(e){}
+  /* the motion is set going now, before the first frame: an animation's clock starts with the first frame it is drawn in, so the
+     first frame on screen is its first frame (the same picture as the startup image), and from there the phone's compositor
+     plays it (only transform and opacity, constant keyframes), even while the page underneath is still busy loading. Waiting
+     for animation frames instead would hold the scene still for as long as the page keeps the main thread busy. */
+  if (!/(^|\s)lwl-go(\s|$)/.test(L.className)) L.className += " lwl-go";
+  try { window.__LOWI_LAUNCH_GO = Math.round(performance.now()); } catch(e){}
 })();
 document.getElementById("lwLaunch").offsetWidth</script>
 <script src="power-saver.js?v=20261028-231913"></script>

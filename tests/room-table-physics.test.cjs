@@ -81,7 +81,8 @@ test('a soft shot rolls less far than a hard one, and a miss only bumps the shoo
   const soft = C.table(); soft.load([['a', 500, 1150], ['b', 500, 750]]); soft.shoot('a', 0, -1, .1); soft.settle();
   const hard = C.table(); hard.load([['a', 500, 1150], ['b', 500, 750]]); hard.shoot('a', 0, -1, 1); hard.settle();
   assert.ok(hard.find('b').moved > soft.find('b').moved * 1.8);
-  const miss = C.table(); miss.load([['a', 500, 600], ['b', 100, 100]]); miss.shoot('a', 1, 0, 1); miss.settle();
+  /* a shot from an older build (v:2, legacy straight blast) still dies in the cushion; ricochet blasts are tests/room-table-rico */
+  const miss = C.table(); miss.load([['a', 500, 600], ['b', 100, 100]]); miss.shoot('a', 1, 0, 1, true); miss.settle();
   assert.ok(miss.hits().some(h => h.k === 'fizzle'), 'the blast fizzles in the cushion');
   assert.deepEqual([Math.round(miss.find('a').x), Math.round(miss.find('a').y)], [500, 600], 'no recoil without a hit');
   assert.ok(hard.find('a').y > 1150, 'a hit pushes the shooter back a little (recoil)');

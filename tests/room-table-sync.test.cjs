@@ -13,7 +13,7 @@ const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 test('the shot message round-trips and older builds (v1 energy shots) are not mistaken for table shots', () => {
   const s = [['u1', 100, 200], ['u2', 300.25, 400]], f = [['u1', 110, 260], ['u2', 500, 900]];
   const m = C.pack({ id: 'abc', by: 'u1', n: 'Emmanuel', t: 5, dx: .6, dy: -.8, p: .73, s, f });
-  assert.equal(m.v, 2); const u = C.unpack(JSON.parse(JSON.stringify(m)));
+  assert.equal(m.v, 3); const u = C.unpack(JSON.parse(JSON.stringify(m)));
   assert.deepEqual(u.s, s); assert.deepEqual(u.f, f); assert.equal(u.by, 'u1'); assert.equal(u.p, .73);
   assert.equal(C.unpack({ v: 1, by: 'u1', s }), null);
   assert.equal(C.unpack({ v: 2, k: 'bt', by: 'u1', s: [['u1', 'x', 2]], dx: 1, dy: 0 }), null, 'junk rows are dropped');

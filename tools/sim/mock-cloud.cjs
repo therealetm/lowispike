@@ -72,7 +72,9 @@ async function install(ctx, opts) {
     const session = { access_token: token, refresh_token: 'sim-refresh', token_type: 'bearer', expires_in: 3600 * 24 * 30, expires_at: exp, user };
     sim.session = session;
     await ctx.addInitScript(([s]) => { try { if (!localStorage.getItem('lowi.auth')) localStorage.setItem('lowi.auth', s); } catch (e) { } }, [JSON.stringify(session)]);
-    const json = (route, body, status, headers) => route.fulfill({ status: status || 200, contentType: 'application/json', headers: Object.assign({ 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-expose-headers': 'content-range', 'content-range': '0-' + Math.max(0, (Array.isArray(body) ? body.length : 1) - 1) + '/*' }, headers || {}), body: JSON.stringify(body) });
+    /* the server's clock (Date header, exposed like the real Supabase does); sim.clockShift moves it (room-table.js middle hours) */
+    sim.clockShift = 0;
+    const json = (route, body, status, headers) => route.fulfill({ status: status || 200, contentType: 'application/json', headers: Object.assign({ 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-expose-headers': 'content-range, date', 'date': new Date(Date.now() + sim.clockShift).toUTCString(), 'content-range': '0-' + Math.max(0, (Array.isArray(body) ? body.length : 1) - 1) + '/*' }, headers || {}), body: JSON.stringify(body) });
     function table(name) {
         switch (name) {
             case 'messages': return W.messages.slice().reverse();

@@ -63,7 +63,8 @@
         return { x: innerWidth / 2, y: innerHeight * 0.46, r: Math.min(innerWidth, innerHeight) * 0.27 };
     }
     function youBox() {
-        const o = D.querySelector('#cgField .cg-body.me .cg-orb') || D.querySelector('#cgField .cg-body.me'), r = o && o.getBoundingClientRect();
+        /* Oct 28: on the Billardtisch (room-table.js) "You" is your ball */
+        const o = D.querySelector('#cgGalaxy.rt-on .rt-ball.me .rt-orb') || D.querySelector('#cgField .cg-body.me .cg-orb') || D.querySelector('#cgField .cg-body.me'), r = o && o.getBoundingClientRect();
         if (r && r.width > 8) return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: r.width / 2 };
         return null;
     }

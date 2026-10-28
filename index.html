@@ -1649,6 +1649,9 @@ html[data-lay=desktop] .fyv-bar{bottom:16px}
      Safety: it always opens by itself (window load, or 8 s at the latest) and ?noboot=1 skips the wait. -->
 <style id="lwBootCss">
 html.lw-boot body,html.lw-boot>:not(head):not(body){opacity:0!important;pointer-events:none!important}
+/* Oct 28: the glow always sits on the dark brand background (the iOS startup image), also in day mode, where the day colours would
+   otherwise flash in first and then turn black when the black-space design loads, before Home fades in */
+html.lw-boot,html.lw-launch-out{background:#03050a!important}
 html.lw-boot body *,html.lw-boot body *::before,html.lw-boot body *::after{animation-play-state:paused!important}
 /* Oct 28 (Emmanuel: "if the app has to load, at least have an impressive loading animation, but it should not make the app feel like it's
    taking longer"): while the app gets ready, your companion's glow sits where Misty will be (the same picture as the iOS startup image,

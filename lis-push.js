@@ -71,7 +71,10 @@ function route(q){
   const seg = v => { try { if (typeof window.cmSeg === "function") window.cmSeg(v); } catch(e){} };
   if (q === "foryou") { tab("foryou"); setTimeout(() => seg("feed"), 350); return true; }
   if (q === "community") { tab("foryou"); setTimeout(() => seg("chat"), 350); return true; }
-  if (q === "home" || q === "scan") { tab("home"); return true; }
+  if (q === "home") { tab("home"); return true; }
+  /* Oct 28 2026 (slim structure, batch 11: a tapped notification opens its target): the product tip ("scan", a community product at
+     shopping time) opened bare Home; it now opens Einkaufen, the same place the Einkaufen bubble opens (LowiSymHome.shop) */
+  if (q === "scan" || /^scan:/.test(String(q))) { tab("home"); setTimeout(() => shop(0), 450); return true; }
   /* Oct 28 2026 (audit: a tapped chat notification opened Home): chat:<uid>[:<message id>] opens Community chat with that person
      (their message in its thread when there is one); a bare "chat" opens the chat */
   const ch = /^chat(?::([^:]*)(?::(.+))?)?$/.exec(String(q || ""));
@@ -79,6 +82,10 @@ function route(q){
   const nb = /^nb:(nb-\d{8}-[mne])$/.exec(String(q || ""));
   if (nb) { tab("foryou"); setTimeout(() => seg("chat"), 350); setTimeout(() => nbShow(nb[1], 0), 900); return true; }
   return false; }
+function shop(n){
+  const H = window.LowiSymHome;
+  if ((!H || typeof H.shop !== "function") && n < 10) { setTimeout(() => shop(n + 1), 400); return; }
+  try { H && H.shop(); } catch(e){} }
 function chatWith(uid, id, n){
   const C = window.LowiCommunity;
   if ((!C || typeof C.select !== "function") && n < 10) { setTimeout(() => chatWith(uid, id, n + 1), 400); return; }

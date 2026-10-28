@@ -200,7 +200,8 @@ function menuItems(){const it=[];/* People directory (Oct 24 2026): everyone in 
     lastDirected() and the 'replies' click branch stay as harmless dead paths (nothing renders that key any more). */
  if(D.getElementById('pfBtn'))it.push(['profile','👤',tr('mProfile')]);
  it.push(['invite','🔗',tr('mInvite')]);if(VIEWS[view])it.push(['copyview','📋',tr(view==='aff'?'mCopyAff':'mCopyCreate')]);
- if(W.LowiCommunity&&W.LowiCommunity.settings)it.push(['settings','⚙️',tr('mSettings')]);
+ /* Slim batch 7 (C-06): chat settings live in Profile only (Profil › Dein Auftritt opens the same LowiCommunity.settings sheet),
+    so the menu has no second Chat settings row. The 'settings' click branch stays as a harmless path. */
  if(W.LowiCommunityWelcome&&W.LowiCommunityWelcome.open)it.push(['welcome','📜',tr('mWelcome')]);
  return it;}
 function paintMenu(){const h='<div class="rm-menu-card" role="menu" aria-label="'+esc(tr('menu'))+'">'+menuItems().map(([k,ic,t])=>'<button type="button" role="menuitem" data-rmm="'+k+'"><span class="rm-mi" aria-hidden="true">'+ic+'</span><span>'+esc(t)+'</span></button>').join('')+'</div>';
@@ -269,7 +270,7 @@ setInterval(()=>{if(!fmo)return;for(const e of [D.documentElement,D.getElementBy
    start. Answering "yes" to affiliate makes Affiliates the first card and Done opens it. Nothing is sent anywhere. Automated
    browsers (navigator.webdriver) never get it on their own, so other checks are not covered by it; they open it explicitly. */
 const OBK='lowi.cm.welcome.v1',OPK='lowi.cm.profile.v1';
-const OT={obStep:['{i} of 5','{i} von 5','{i} de 5'],obClose:['Close','Schließen','Cerrar'],obNext:['Continue','Weiter','Continuar'],obBack:['Back','Zurück','Atrás'],
+const OT={obStep:['{i} of 4','{i} von 4','{i} de 4'],obClose:['Close','Schließen','Cerrar'],obNext:['Continue','Weiter','Continuar'],obBack:['Back','Zurück','Atrás'],
  obW1:['Welcome to the LOWiSPIKE Community','Willkommen in der LOWiSPIKE Community','Bienvenido a la Comunidad LOWiSPIKE'],
  obW2:['People using LOWiSPIKE meet here to share their gaps, meals and wins, and to keep each other steady.','Hier treffen sich Leute, die LOWiSPIKE nutzen, teilen ihre Pausen, Mahlzeiten und Erfolge und halten sich gegenseitig auf Kurs.','Aquí se reúnen quienes usan LOWiSPIKE para compartir sus pausas, comidas y logros, y mantenerse firmes juntos.'],
  obKnow:['A few things to know','Gut zu wissen','Algunas cosas que saber'],
@@ -303,20 +304,21 @@ function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function chip(group,val,label){const on=group==='work'?(obA.work||[]).includes(val):obA[group]===val;return '<button type="button" class="rm-chipq" data-q="'+group+'" data-v="'+val+'" aria-pressed="'+(on?'true':'false')+'">'+esc(label)+'</button>';}
 function obBody(){const p=Object.assign({},lsGet(OPK)||{}),aff=obA.aff==='yes';
- if(obI===0)return '<div class="rm-ob-hero" aria-hidden="true"><span class="rm-logo"><i></i></span></div><h2 class="rm-ob-h">'+esc(tr('obW1'))+'</h2><p class="rm-ob-p">'+esc(tr('obW2'))+'</p><h3 class="rm-ob-h3">'+esc(tr('obKnow'))+'</h3><ul class="rm-ob-know">'+['obK1','obK2','obK3','obK4'].map(k=>'<li>'+esc(tr(k))+'</li>').join('')+'</ul>';
- if(obI===1)return '<h2 class="rm-ob-h">'+esc(tr('obR'))+'</h2><ol class="rm-ob-rules">'+['obR1','obR2','obR3','obR4','obR5'].map(k=>'<li>'+esc(tr(k))+'</li>').join('')+'</ol>';
- if(obI===2)return '<h2 class="rm-ob-h">'+esc(tr('obQ'))+'</h2><p class="rm-ob-p">'+esc(tr('obQs'))+'</p><h3 class="rm-ob-h3">'+esc(tr('obQ1'))+'</h3><div class="rm-chips">'+['f','a','b','c','d','e'].map(x=>chip('work',x,tr('obQ1'+x))).join('')+'</div>'
+ /* Slim batch 7 (C-08): welcome and the community rules are one card, "I agree" under the rules; 4 steps instead of 5. */
+ if(obI===0)return '<div class="rm-ob-hero" aria-hidden="true"><span class="rm-logo"><i></i></span></div><h2 class="rm-ob-h">'+esc(tr('obW1'))+'</h2><p class="rm-ob-p">'+esc(tr('obW2'))+'</p><h3 class="rm-ob-h3">'+esc(tr('obKnow'))+'</h3><ul class="rm-ob-know">'+['obK1','obK2','obK3','obK4'].map(k=>'<li>'+esc(tr(k))+'</li>').join('')+'</ul>'
+  +'<h3 class="rm-ob-h3 rm-ob-rules-h">'+esc(tr('obR'))+'</h3><ol class="rm-ob-rules">'+['obR1','obR2','obR3','obR4','obR5'].map(k=>'<li>'+esc(tr(k))+'</li>').join('')+'</ol>';
+ if(obI===1)return '<h2 class="rm-ob-h">'+esc(tr('obQ'))+'</h2><p class="rm-ob-p">'+esc(tr('obQs'))+'</p><h3 class="rm-ob-h3">'+esc(tr('obQ1'))+'</h3><div class="rm-chips">'+['f','a','b','c','d','e'].map(x=>chip('work',x,tr('obQ1'+x))).join('')+'</div>'
   +'<h3 class="rm-ob-h3">'+esc(tr('obQ2'))+'</h3><div class="rm-chips">'+chip('aff','yes',tr('obQ2y'))+chip('aff','no',tr('obQ2n'))+'</div>'
   +'<h3 class="rm-ob-h3">'+esc(tr('obQ3'))+'</h3><div class="rm-chips">'+chip('fol','0',tr('obQ3a'))+chip('fol','1k','1K–10K')+chip('fol','10k','10K–100K')+chip('fol','100k','100K+')+'</div>';
- if(obI===3){const f=(k,l,ph,big)=>'<label class="rm-fld"><span>'+esc(l)+'</span>'+(big?'<textarea data-p="'+k+'" rows="3" maxlength="280">'+esc(p[k]||'')+'</textarea>':'<input data-p="'+k+'" maxlength="80" value="'+esc(p[k]||'')+'" placeholder="'+esc(ph||'')+'" autocomplete="off" autocapitalize="off">')+'</label>';
+ if(obI===2){const f=(k,l,ph,big)=>'<label class="rm-fld"><span>'+esc(l)+'</span>'+(big?'<textarea data-p="'+k+'" rows="3" maxlength="280">'+esc(p[k]||'')+'</textarea>':'<input data-p="'+k+'" maxlength="80" value="'+esc(p[k]||'')+'" placeholder="'+esc(ph||'')+'" autocomplete="off" autocapitalize="off">')+'</label>';
   const nm=nameOf(me())||'';
   return '<h2 class="rm-ob-h">'+esc(tr('obP'))+'</h2><div class="rm-ob-me"><span class="rm-ob-av" aria-hidden="true">'+esc(initials(nm||'?'))+'</span><div><b>'+esc(nm||tr('obP'))+'</b><small>'+esc(tr('obPs'))+'</small></div></div>'
    +(D.getElementById('pfBtn')?'<button type="button" class="rm-ob-sec" data-ob="photo">'+esc(tr('obPhoto'))+'</button>':'')
    +f('working',tr('obPw'),'',false)+f('bio',tr('obPb'),'',true)+'<h3 class="rm-ob-h3">'+esc(tr('obPh'))+'</h3><div class="rm-ob-handles">'+f('x','X','@')+f('ig','Instagram','@')+f('yt','YouTube','@')+f('tt','TikTok','@')+'</div><p class="rm-ob-note">'+esc(tr('obSaved'))+'</p>';}
  const cards=[['intro','👋','obC1','obC1s'],['walk','🧭','obC2','obC2s'],['help','🆘','obC3','obC3s']];if(aff)cards.unshift(['aff','🚀','obC4','obC4s']);
  return '<h2 class="rm-ob-h">'+esc(tr('obIn'))+'</h2><div class="rm-ob-cards">'+cards.map(([k,ic,t,s2])=>'<button type="button" class="rm-ob-card'+(k==='aff'?' rm-ob-hot':'')+'" data-ob="'+k+'"><span class="rm-ch-ic" aria-hidden="true">'+ic+'</span><span><b>'+esc(tr(t))+'</b><small>'+esc(tr(s2))+'</small></span></button>').join('')+'</div>';}
-function obPaint(){if(!ob)return;const last=obI===4,next=obI===1?tr('obAgree'):last?tr('obDone'):tr('obNext');
- ob.innerHTML='<div class="rm-ob-card-wrap" role="dialog" aria-modal="true" aria-labelledby="rmObH"><div class="rm-ob-top"><div class="rm-ob-bar" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="'+(obI+1)+'"><i style="width:'+((obI+1)*20)+'%"></i></div><span class="rm-ob-step">'+esc(tr('obStep',{i:obI+1}))+'</span><button type="button" class="rm-x" data-ob="close" aria-label="'+esc(tr('obClose'))+'">×</button></div>'
+function obPaint(){if(!ob)return;const last=obI===3,next=obI===0?tr('obAgree'):last?tr('obDone'):tr('obNext');
+ ob.innerHTML='<div class="rm-ob-card-wrap" role="dialog" aria-modal="true" aria-labelledby="rmObH"><div class="rm-ob-top"><div class="rm-ob-bar" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="'+(obI+1)+'"><i style="width:'+((obI+1)*25)+'%"></i></div><span class="rm-ob-step">'+esc(tr('obStep',{i:obI+1}))+'</span><button type="button" class="rm-x" data-ob="close" aria-label="'+esc(tr('obClose'))+'">×</button></div>'
   +'<div class="rm-ob-body">'+obBody()+'</div><div class="rm-ob-foot">'+(obI>0?'<button type="button" class="rm-ob-sec" data-ob="back">'+esc(tr('obBack'))+'</button>':'<span></span>')+'<button type="button" class="rm-ob-go" data-ob="next">'+esc(next)+'</button></div></div>';
  /* Bug hunt 57 (P-VIEW-SWAP): the 5 steps swap in place, so fresh-scrim only protected the first one. A double tap on Next went
     two steps (live WebKit iPhone 13, 101 to 349 ms apart: past the community rules it says "I agree" on, and Done closed the welcome
@@ -324,15 +326,15 @@ function obPaint(){if(!ob)return;const last=obI===4,next=obI===1?tr('obAgree'):l
  try{if(W.LowiFreshScrim&&W.LowiFreshScrim.mark)W.LowiFreshScrim.mark(ob);}catch(e){}
  const h=ob.querySelector('.rm-ob-h');if(h)h.id='rmObH';setTimeout(()=>{const g=ob&&ob.querySelector('.rm-ob-go');if(g)g.focus({preventScroll:true});},40);}
 function obSaveProfile(){if(!ob)return;const p=Object.assign({},lsGet(OPK)||{});ob.querySelectorAll('[data-p]').forEach(i=>{p[i.dataset.p]=String(i.value||'').trim().slice(0,i.tagName==='TEXTAREA'?280:80);});p.ts=Date.now();lsSet(OPK,p);}
-function obClose(done){if(obI===3)obSaveProfile();const st=Object.assign({},lsGet(OBK)||{},{seen:Date.now(),answers:obA});if(done)st.done=Date.now();lsSet(OBK,st);/* BH-060 */try{const F=window.LowiFreshScrim;if(ob&&F&&F.closed)F.closed(ob);}catch(e){}if(ob&&ob.parentNode)ob.parentNode.removeChild(ob);ob=null;}
+function obClose(done){if(obI===2)obSaveProfile();const st=Object.assign({},lsGet(OBK)||{},{seen:Date.now(),answers:obA});if(done)st.done=Date.now();lsSet(OBK,st);/* BH-060 */try{const F=window.LowiFreshScrim;if(ob&&F&&F.closed)F.closed(ob);}catch(e){}if(ob&&ob.parentNode)ob.parentNode.removeChild(ob);ob=null;}
 function prefill(text){const c=W.LowiCommunity;view='';if(c&&c.thread&&!open())c.thread(true);paint();setTimeout(()=>{const i=D.getElementById('cmInput');if(!i)return;if(!i.value)i.value=text;try{i.dispatchEvent(new Event('input',{bubbles:true}));}catch(e){}i.focus();},350);}
 function openWelcome(){if(ob)return;obI=0;obA=Object.assign({},((lsGet(OBK)||{}).answers)||{});ob=D.createElement('div');ob.className='rm-sheet rm-ob';ob.setAttribute('data-noi18n','');D.body.appendChild(ob);
  ob.addEventListener('click',e=>{if(e.target===ob){obClose(false);return;}const q=e.target.closest('[data-q]');
   if(q){const g=q.dataset.q,v=q.dataset.v;if(g==='work'){const a=new Set(obA.work||[]);a.has(v)?a.delete(v):a.add(v);obA.work=[...a];}else obA[g]=obA[g]===v?'':v;
    q.parentNode.querySelectorAll('[data-q]').forEach(b=>b.setAttribute('aria-pressed',(g==='work'?(obA.work||[]).includes(b.dataset.v):obA[g]===b.dataset.v)?'true':'false'));return;}
   const b=e.target.closest('[data-ob]');if(!b)return;const k=b.dataset.ob;
-  if(k==='close')obClose(false);else if(k==='back'){if(obI===3)obSaveProfile();obI=Math.max(0,obI-1);obPaint();}
-  else if(k==='next'){if(obI===3)obSaveProfile();if(obI<4){obI++;obPaint();}else{const aff=obA.aff==='yes';obClose(true);if(aff)showView('aff');}}
+  if(k==='close')obClose(false);else if(k==='back'){if(obI===2)obSaveProfile();obI=Math.max(0,obI-1);obPaint();}
+  else if(k==='next'){if(obI===2)obSaveProfile();if(obI<3){obI++;obPaint();}else{const aff=obA.aff==='yes';obClose(true);if(aff)showView('aff');}}
   else if(k==='photo'){obSaveProfile();obClose(false);const p=D.getElementById('pfBtn');if(p)p.click();}
   else if(k==='aff'){obClose(true);showView('aff');}
   else if(k==='intro'){const p=lsGet(OPK)||{};obClose(true);prefill(tr('obHi')+(p.working?' '+p.working:''));}

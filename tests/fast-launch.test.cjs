@@ -91,21 +91,17 @@ test('the page names its build in its first kilobyte, where the worker reads it'
     assert.ok(/^\{\s*"build"\s*:\s*"\d{8}-\d{6}"/.test(v), 'version.json starts with the build, so 64 bytes are enough');
 });
 
-test('launch glow: on the html element, from the first frame, centred where Misty sits, never catches a tap', () => {
-    assert.match(bootCss, /html\.lw-boot::after/);
-    assert.match(bootCss, /html\.lw-boot::before/);
-    assert.match(bootCss, /top:46%/);
-    assert.match(bootCss, /pointer-events:none!important/);
-    assert.match(bootCss, /position:fixed/, 'fixed: it never moves the layout');
+/* Oct 28 (later): the html::before/::after glow became the launch scene #lwLaunch (tests/launch-scene.test.cjs has the details). */
+test('launch scene: fixed over the page from the first frame, centred on Home\'s ring, never moves the layout', () => {
+    assert.ok(!/html\.lw-boot::(before|after)/.test(bootCss), 'the old pseudo-element glow is gone');
+    assert.match(bootCss, /#lwLaunch\{position:fixed;top:0;right:0;bottom:0;left:0;/, 'fixed: it never moves the layout');
+    assert.match(bootCss, /--lwl-x:var\(--o8-cx,50vw\);--lwl-y:var\(--o8-cy,46vh\)/, 'centred where Misty sits on Home');
     assert.match(bootCss, /prefers-reduced-motion/);
-    assert.ok(!/<(div|img|svg)[^>]+lw-launch/i.test(html), 'no launch element in the page, only the html pseudo elements');
 });
 
-test('launch glow has no minimum time: Home shows the moment it is ready, the fade is 0.26 s and taps go through at once', () => {
+test('launch scene has no minimum time: Home shows the moment it is ready, the fade is 0.34 s and taps go through at once', () => {
     assert.match(bootJs, /H\.classList\.add\("lw-launch-out"\); H\.classList\.remove\("lw-boot"\);/);
-    assert.match(bootJs, /H\.classList\.remove\("lw-launch-out"\); \}, 320\)/);
-    assert.match(bootCss, /html\.lw-launch-out::after\{animation:lwOrbOut \.26s/);
-    assert.match(bootCss, /html\.lw-launch-out body\{animation:lwHomeIn \.26s/);
-    assert.ok(!/lw-launch-out[^{]*\{[^}]*pointer-events:none/.test(bootCss.replace(/::(before|after)[^{]*\{[^}]*\}/g, '')), 'Home takes taps during the fade');
+    assert.match(bootJs, /H\.classList\.remove\("lw-launch-out"\); var L = document\.getElementById\("lwLaunch"\); if \(L && L\.parentNode\) L\.parentNode\.removeChild\(L\); \}, 380\)/);
+    assert.match(bootCss, /html\.lw-launch-out #lwLaunch\{pointer-events:none;animation:lwlOut \.34s/, 'the scene lets taps through while it fades');
     assert.ok(!/minimum|MIN_SHOW|minShow/i.test(bootJs), 'no minimum display time');
 });

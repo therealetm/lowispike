@@ -89,21 +89,28 @@ test('iOS startup images cover current iPhones and iPads, each matching its scre
     }
 });
 
-test('startup images are the brand background with the launch glow where Misty will be (Oct 28), nothing else', () => {
-    /* Oct 28 (Emmanuel: "if the app has to load, at least have an impressive loading animation"): the startup image is the first
-       frame of the launch glow (scripts/make-launch-images.cjs renders it from #lwBootCss), so splash -> page -> Home never jumps.
-       The edges stay the plain brand colour; the glow sits centred at 46 % of the height. */
-    const want = [3, 5, 10];
+test('startup images are the launch scene\'s first frame: dark deep-blue space, Misty\'s blue glow where she will be, never white', () => {
+    /* Oct 28 (Emmanuel: "only the animation"): the startup image is the very first frame of the launch scene #lwLaunch
+       (scripts/make-launch-images.cjs renders #lwBootCss + the #lwLaunch markup, every animation held at its start), so
+       startup picture -> page is invisible and the scene simply starts moving. Corners are the scene's dark space; the glow sits
+       where Misty sits (46 % of the height, 42 % on wider screens). */
+    assert.match(fs.readFileSync(path.join(root, 'scripts/make-launch-images.cjs'), 'utf8'), /<div id="lwLaunch"/, 'rendered from the scene markup');
     const files = [...new Set(links.map(l => l.href))];
     assert.deepStrictEqual(fs.readdirSync(path.join(root, 'startup')).sort(), files.map(f => path.basename(f)).sort(), 'every file in startup/ is linked, nothing extra');
     for (const f of files) {
         const { px, bpp, w, h } = readPng(path.join(root, f));
         const at = (x, y) => { const i = (y * w + x) * bpp; return [px[i], px[i + 1], px[i + 2]]; };
-        for (const [x, y] of [[0, 0], [w - 1, 0], [0, h - 1], [w - 1, h - 1], [Math.round(w / 2), 2], [Math.round(w / 2), h - 3]])
-            assert.deepStrictEqual(at(x, y), want, f + ': edge pixel ' + x + ',' + y + ' is not ' + BRAND);
-        const side = at(2, Math.round(h * 0.46)); /* the outer glow may just reach the sides of a narrow phone, faintly */
-        assert.ok(side.every((v, i) => Math.abs(v - want[i]) <= 6), f + ': side of the screen is not near ' + BRAND + ' (' + side + ')');
-        const c = at(Math.round(w / 2), Math.round(h * 0.46));
-        assert.ok(c[2] > 150 && c[2] > c[0] + 60, f + ': no blue/cyan launch glow in the centre (' + c + ')');
+        for (const [x, y] of [[0, 0], [w - 1, 0], [0, h - 1], [w - 1, h - 1]]) {
+            const p = at(x, y);
+            assert.ok(Math.max(...p) <= 30 && p[2] >= p[0], f + ': corner ' + x + ',' + y + ' is not dark blue space (' + p + ')');
+        }
+        let sum = 0, n = 0, bright = 0;
+        for (let y = 0; y < h; y += 8) for (let x = 0; x < w; x += 8) { const p = at(x, y), l = 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]; sum += l; n++; if (l > 200) bright++; }
+        assert.ok(sum / n < 40, f + ': too bright on average (' + (sum / n).toFixed(1) + '), the first frame must be dark');
+        assert.ok(bright / n < 0.01, f + ': white areas in the first frame');
+        const cy = w / h >= 0.5 ? 0.42 : 0.46; let best = [0, 0, 0];
+        for (let dy = -0.04; dy <= 0.04; dy += 0.01) for (let dx = -0.06; dx <= 0.06; dx += 0.01) {
+            const p = at(Math.round(w * (0.5 + dx)), Math.round(h * (cy + dy))); if (p[2] > best[2]) best = p; }
+        assert.ok(best[2] > 150 && best[2] >= best[0] + 25, f + ': no blue launch glow where Misty will be (' + best + ')');
     }
 });

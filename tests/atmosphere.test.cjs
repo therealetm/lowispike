@@ -90,7 +90,9 @@ test('css vars are complete and the head can restore them before first paint', (
     for (const k of ['--atm-top', '--atm-mid', '--atm-bot', '--atm-sun', '--atm-sun-a', '--atm-sun-x', '--atm-sun-y', '--atm-mist', '--atm-mist-a', '--atm-star-a', '--atm-cell-a']) assert.ok(k in v, k);
     assert.match(C.cssText(80), /^--atm-p:0\.800;--atm-top:#[0-9a-f]{6};/);
     assert.ok(html.includes('localStorage.getItem("lowi.atmos.css")') && html.includes('h.setAttribute("data-atm","manual")'), 'head restore script');
-    assert.ok(html.indexOf('lowi.atmos.css') < html.indexOf('</head>'), 'restore runs in <head>');
+    /* Oct 28 launch scene: the body opens early (WebKit white blink), so the restore now runs at the top of the body, still before
+       any app markup and while the launch scene covers the page. */
+    assert.ok(html.indexOf('lowi.atmos.css') < html.indexOf('<div id="app"'), 'restore runs before any app markup');
     assert.ok(html.includes('html[data-atm="manual"] body #app{background:linear-gradient'), 'head paints the sky on #app');
     assert.ok(html.includes('k === "lowi.atmos"'), 'the look survives a data reset like lowi.theme');
 });

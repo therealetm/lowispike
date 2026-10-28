@@ -51,17 +51,25 @@ test('the boot gate sits in <head>, before any app markup can paint', () => {
     const headEnd = html.indexOf('</head>'), body = html.search(/<body[\s>]/);
     const js = html.indexOf('<script id="lwBootJs">'), css = html.indexOf('<style id="lwBootCss">');
     assert.ok(css > 0 && js > css && js < headEnd && js < body, 'gate must be in head, before <body>');
-    assert.ok(html.indexOf('data-theme-mode') < js, 'runs after the theme is known');
+    /* Oct 28 launch scene: the gate now runs before the theme script (which moved into the body). It does not need the theme:
+       the scene and the html background while starting are dark in both themes. */
+    assert.match(bootCss, /html\.lw-boot,html\.lw-launch-out\{background:#03050a!important;color-scheme:dark\}/, 'dark while starting, whatever the theme');
+    assert.ok(js < html.indexOf('id="lwLaunch"') && js < html.indexOf('<div id="app"'), 'gate runs before the scene and the app markup');
     assert.strictEqual(html.split('id="lwBootJs"').length, 2, 'exactly one boot-gate script');
 });
 
-test('while starting, the app is hidden with opacity only (layout and measuring keep working) and there is no launch screen', () => {
+test('while starting, the app is hidden with opacity only (layout and measuring keep working) under the launch scene; the body itself stays visible', () => {
     /* Oct 21 (Emmanuel: "there was still this for a split second. We don't need it. Remove it."): no #lwBoot cover, no Misty cell,
-       no wordmark. Only the page is held back; the plain background (dark first paint) shows meanwhile. */
-    assert.match(bootCss, /html\.lw-boot body,html\.lw-boot>:not\(head\):not\(body\)\{opacity:0!important;pointer-events:none!important\}/);
-    assert.doesNotMatch(bootCss, /display:none|visibility:hidden/);
-    assert.doesNotMatch(html, /#lwBoot|lwb-orb|lwb-w|lwbIn|lwbBreath/, 'launch screen CSS is back');
-    assert.doesNotMatch(bootJs, /createElement|appendChild|innerHTML|LOW<i>i<\/i>SPIKE/, 'the boot gate draws something again');
+       no wordmark. Oct 28 (Emmanuel: "when you open the app, only the animation"): the launch scene #lwLaunch is back as the first
+       element of the body, and the body must stay visible, because WebKit shows nothing of a page whose body has opacity 0 (that
+       was the white blink). So the app is held back child by child, everything except the scene. */
+    const hide = (bootCss.match(/html\.lw-boot body>:not\(#lwLaunch\),html\.lw-boot>:not\(head\):not\(body\)\{([^}]*)\}/) || [])[1];
+    assert.ok(hide, 'every body child except the scene is held back');
+    assert.match(hide, /^opacity:0!important;pointer-events:none!important/);
+    assert.doesNotMatch(hide, /display:none|visibility:hidden/);
+    assert.doesNotMatch(bootCss, /html\.lw-boot body\s*[,{]/, 'the body itself is never hidden');
+    assert.doesNotMatch(html, /#lwBoot\b|lwb-orb|lwb-w|lwbIn|lwbBreath/, 'the old Oct 21 launch screen is back');
+    assert.doesNotMatch(bootJs, /createElement|appendChild|innerHTML|LOW<i>i<\/i>SPIKE/, 'the boot gate draws something itself');
 });
 
 test('the app shows once the page and every companion file are in, after two frames', () => {

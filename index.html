@@ -128,9 +128,10 @@ html:not(.lw-boot):not(.lw-launch-out) #lwLaunch{display:none!important}
   transition:--lwl-x .5s cubic-bezier(.2,.8,.2,1),--lwl-y .5s cubic-bezier(.2,.8,.2,1),--lwl-r .5s cubic-bezier(.2,.8,.2,1),--lwl-d .5s cubic-bezier(.2,.8,.2,1)}
 @media (min-aspect-ratio:1/2){#lwLaunch{--lwl-y:var(--o8-cy,42vh)}}
 #lwLaunch i,#lwLaunch b,#lwLaunch span,#lwLaunch svg{position:absolute;display:block;box-sizing:border-box;margin:0;padding:0;border:0}
-/* space brightening towards Home's navy, so the hand-over is a small step */
+/* space brightening towards Home's navy, so the hand-over is a small step (Oct 28 evening: measured against Home's own
+   background, a greyer navy than before) */
 #lwLaunch .lwl-neb{top:0;right:0;bottom:0;left:0;opacity:0;
-  background:radial-gradient(150% 100% at var(--lwl-x) calc(var(--lwl-y) - 14vh),#2b3e68 0,#1c2846 36%,#0f172d 68%,#080c18 100%);
+  background:radial-gradient(150% 100% at var(--lwl-x) calc(var(--lwl-y) - 14vh),#343f5c 0,#2e3852 36%,#283049 68%,#20273b 100%);
   animation:lwlNeb 1.5s cubic-bezier(.3,.6,.3,1) .1s both}
 /* sparks: gather into Misty's glow and go out */
 #lwLaunch .lwl-k{left:var(--x);top:var(--y);width:var(--s);height:var(--s);margin:calc(var(--s) / -2) 0 0 calc(var(--s) / -2);border-radius:50%;
@@ -163,16 +164,28 @@ html:not(.lw-boot):not(.lw-launch-out) #lwLaunch{display:none!important}
 #lwLaunch .lwl-b{left:var(--lwl-x);top:var(--lwl-y);width:var(--lwl-d);height:var(--lwl-d);margin:calc(var(--lwl-d) / -2) 0 0 calc(var(--lwl-d) / -2);
   opacity:0;transform:rotate(calc(var(--a) - 75deg)) translateX(calc(var(--lwl-r) * 2.2)) rotate(calc(75deg - var(--a))) scale(.35);
   animation:lwlIn .9s cubic-bezier(.18,.86,.32,1.06) calc(.3s + var(--i) * .045s) both}
-#lwLaunch .lwl-b>i{top:0;left:0;width:100%;height:100%;border-radius:50%;overflow:hidden;
-  background:radial-gradient(circle at 33% 26%,rgba(255,255,255,.5) 0,rgba(255,255,255,.12) 16%,rgba(255,255,255,0) 32%),rgba(120,170,255,.07);
-  box-shadow:inset 0 0 0 1px rgba(190,230,255,.38),inset 0 -8px 18px rgba(var(--c),calc(var(--la) * .7)),0 0 20px rgba(var(--c),calc(var(--la) * .5)),0 8px 22px rgba(0,0,0,.32);
+/* Oct 28 evening, Emmanuel: "the bubbles are not the same bubbles as on my Home, and the colours don't match Home's". So these ARE
+   Home's bubbles: the glass membrane of Home's 3D bubbles (living-bubbles.js: clear inside, a soft blue rim, 4% wider than the
+   button), Home's own liquid at Home's own level and colours, and Home's own icon and number, as Home last showed them
+   (lowi.launch.look, see lwBootJs). A bubble that is dry on Home carries its own colour as a soft glow (Home's colour where it
+   has one; the three that never have one get a fitting one: Community rose, Scan gold, Shopping amber). */
+#lwLaunch .lwl-b>i{top:-2%;left:-2%;width:104%;height:104%;border-radius:50%;overflow:hidden;
+  box-shadow:0 0 3px rgba(140,180,250,.25);
   animation:lwlBob 3.2s ease-in-out calc(1.25s + var(--i) * .17s) infinite alternate both}
-#lwLaunch .lwl-b>i::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;
-  background:radial-gradient(120% 90% at 50% 100%,rgba(var(--c),var(--la)) 0,rgba(var(--c),calc(var(--la) * .45)) 55%,rgba(var(--c),0) 100%);
-  border-top:1px solid rgba(var(--c),calc(var(--la) * .9))}
-/* the hand-over: the scene dissolves into Home, its bubbles swelling a touch into the real ones */
+#lwLaunch .lwl-b>i::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(140,180,250,.07) 0,rgba(140,180,250,.07) 50%,rgba(140,180,250,.1) 62%,rgba(140,180,250,.14) 72%,rgba(140,180,250,.19) 81%,rgba(150,190,252,.31) 92%,rgba(150,190,252,.3) 97%,rgba(150,190,252,.12) 100%)}
+#lwLaunch .lwl-lq{left:0;right:0;bottom:0;height:calc(var(--l,0) * 100%);
+  background:linear-gradient(rgba(255,255,255,.2),rgba(255,255,255,0) calc(var(--lwl-d) * .07)),linear-gradient(0deg,rgba(var(--u),var(--a2,.92)),rgba(var(--t),var(--a1,.7)))}
+#lwLaunch .lwl-dry .lwl-lq{height:64%;background:radial-gradient(115% 85% at 50% 100%,rgba(var(--u),.6) 0,rgba(var(--t),.28) 52%,rgba(var(--t),0) 100%)}
+#lwLaunch .lwl-ct{top:0;left:0;width:100%;height:100%}
+#lwLaunch .lwl-ct span{white-space:nowrap;text-align:center}
+#lwLaunch .lwl-ct svg{top:0;left:0;width:100%;height:100%;overflow:visible}
+#lwLaunch .lwl-ct .lwl-mk{-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center}
+/* the hand-over: the scene dissolves into Home */
 html.lw-launch-out #lwLaunch{pointer-events:none;animation:lwlOut .34s cubic-bezier(.4,0,.2,1) both}
-html.lw-launch-out #lwLaunch .lwl-b>i,html.lw-launch-out #lwLaunch .lwl-m{animation:lwlPop .34s cubic-bezier(.2,.7,.2,1) both}
+/* the ring bubbles are the same as Home's and land on them, so they do not swell; only Misty does */
+html.lw-launch-out #lwLaunch .lwl-b>i{animation:none}
+html.lw-launch-out #lwLaunch .lwl-m{animation:lwlPop .34s cubic-bezier(.2,.7,.2,1) both}
 @keyframes lwlNeb{to{opacity:.92}}
 @keyframes lwlGather{to{transform:translate(calc(var(--lwl-x) - var(--x)),calc(var(--lwl-y) - var(--y))) scale(.25);opacity:0}}
 @keyframes lwlTw{from{opacity:.4;transform:translateY(0)}to{opacity:.95;transform:translateY(-14px)}}
@@ -209,6 +222,74 @@ html.lw-launch-out #lwLaunch .lwl-b>i,html.lw-launch-out #lwLaunch .lwl-m{animat
      stays visible, so WebKit shows the scene from the first frame (see lwBootCss). */
   H.classList.add("lw-boot");
   function now(){ try { return Math.round(performance.now()); } catch(e){ return 0; } }
+  /* Oct 28 evening, Emmanuel: "a sound in there, like when you open Netflix ... that kind of vibration, so it vibrates and
+     sounds almost underwater, as if you were under water in a bubble". An original sound, made here with Web Audio (no file):
+     a deep hum that swells and trembles (tremolo and vibrato: the "vibration"), muffled like under water (a low-pass that
+     opens and closes), a soft wash of water, and little bubbles rising as Home's bubbles land. About two seconds.
+     It never holds the app back. Where the browser lets a page play sound on its own (desktop, many Android phones) it plays
+     with the scene. iPhone and iPad (Safari and the home-screen app) let a page make sound only after a tap: there it plays
+     if you touch the screen while the scene is still up, else it stays quiet. It follows the silent switch and mixes with
+     your music (audio session "ambient"), stays quiet when Sound's volume is set to 0, and lowi.launchSound = "0" turns it off. */
+  function chime(c){
+    var t = c.currentTime + .03, out = c.createGain(), lim = c.createDynamicsCompressor();
+    out.gain.value = .3; lim.threshold.value = -12; lim.ratio.value = 12; out.connect(lim); lim.connect(c.destination);
+    function env(g, pts){ g.gain.setValueAtTime(.0001, t); for (var i = 0; i !== pts.length; i++) g.gain.exponentialRampToValueAtTime(pts[i][1], t + pts[i][0]); }
+    /* under water: everything low passes a filter that opens as the bubble forms and closes again */
+    var lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.Q.value = 7;
+    lp.frequency.setValueAtTime(240, t); lp.frequency.exponentialRampToValueAtTime(980, t + .45); lp.frequency.exponentialRampToValueAtTime(300, t + 1.9); lp.connect(out);
+    /* the hum: low voices (the deep one for headphones, the higher ones so a phone speaker carries it), trembling (tremolo) and wavering (vibrato), faster as it fades */
+    var hum = c.createGain(); env(hum, [[.1, .95], [.7, .42], [2.1, .0001]]); hum.connect(lp);
+    var trem = c.createGain(); trem.gain.value = .75; trem.connect(hum);
+    var lfo = c.createOscillator(); lfo.frequency.setValueAtTime(5.2, t); lfo.frequency.linearRampToValueAtTime(8.8, t + 2);
+    var lfoA = c.createGain(); lfoA.gain.value = .3; lfo.connect(lfoA); lfoA.connect(trem.gain); lfo.start(t); lfo.stop(t + 2.2);
+    [[55, "sine", .3], [110, "sine", .36], [164.8, "sine", .3], [220.5, "triangle", .42], [330.8, "sine", .1]].forEach(function(v){
+      var o = c.createOscillator(), g = c.createGain(), vib = c.createGain();
+      o.type = v[1]; o.frequency.setValueAtTime(v[0] * .78, t); o.frequency.exponentialRampToValueAtTime(v[0], t + .32);
+      vib.gain.value = v[0] * .014; lfo.connect(vib); vib.connect(o.frequency);
+      g.gain.value = v[2]; o.connect(g); g.connect(trem); o.start(t); o.stop(t + 2.2);
+    });
+    /* a soft thump as Misty's bubble forms */
+    var th = c.createOscillator(), thg = c.createGain(); th.frequency.setValueAtTime(190, t + .12); th.frequency.exponentialRampToValueAtTime(62, t + .42);
+    thg.gain.setValueAtTime(.0001, t + .12); thg.gain.exponentialRampToValueAtTime(.7, t + .14); thg.gain.exponentialRampToValueAtTime(.0001, t + .6);
+    th.connect(thg); thg.connect(lp); th.start(t + .12); th.stop(t + .65);
+    /* the water: muffled noise swelling and ebbing */
+    var len = Math.floor(c.sampleRate * 2.2), buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0), last = 0;
+    for (var i = 0; i !== len; i++) { last = last * .96 + (Math.random() * 2 - 1) * .04; d[i] = last * 6; }
+    var nz = c.createBufferSource(), nf = c.createBiquadFilter(), ng = c.createGain(); nz.buffer = buf;
+    nf.type = "lowpass"; nf.frequency.value = 520; env(ng, [[.35, .22], [1.2, .08], [2.1, .0001]]);
+    nz.connect(nf); nf.connect(ng); ng.connect(out); nz.start(t); nz.stop(t + 2.2);
+    /* bubbles rising as Home's eight bubbles land (they land about 0.9 s in, one after another), with a watery echo */
+    var bl = c.createBiquadFilter(), dl = c.createDelay(.5), fb = c.createGain(), wet = c.createGain();
+    bl.type = "lowpass"; bl.frequency.value = 1900; dl.delayTime.value = .13; fb.gain.value = .32; wet.gain.value = .45;
+    bl.connect(out); bl.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(out);
+    for (var j = 0; j !== 8; j++) {
+      var tt = t + .86 + j * .05 + Math.random() * .02, o = c.createOscillator(), g = c.createGain(), f0 = 260 + Math.random() * 220;
+      o.frequency.setValueAtTime(f0, tt); o.frequency.exponentialRampToValueAtTime(f0 * 2.7, tt + .075);
+      g.gain.setValueAtTime(.0001, tt); g.gain.exponentialRampToValueAtTime(.16 - j * .012, tt + .008); g.gain.exponentialRampToValueAtTime(.0001, tt + .1);
+      o.connect(g); g.connect(bl); o.start(tt); o.stop(tt + .12);
+    }
+    return t + 2.3;
+  }
+  function launchSound(){
+    try {
+      if (localStorage.getItem("lowi.launchSound") === "0") return;
+      var wa = null; try { wa = JSON.parse(localStorage.getItem("lowi.worldAudio") || "null"); } catch(e){}
+      if (wa && +wa.vol === 0) return;
+      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      try { if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch(e){}
+      var c = new AC(), played = false, gone = false;
+      function off(){ document.removeEventListener("pointerdown", tap, true); document.removeEventListener("touchend", tap, true); }
+      function close(){ if (gone) return; gone = true; off(); try { c.close(); } catch(e){} }
+      function go(){ if (played || gone || c.state !== "running") return; played = true; off(); window.__LOWI_LAUNCH_SOUND = now(); chime(c); setTimeout(close, 2600); }
+      function tap(){ if (played || gone || done) return; try { var p = c.resume(); if (p && p.then) p.then(go, function(){}); else go(); } catch(e){} }
+      try { var p = c.resume(); if (p && p.then) p.then(go, function(){}); } catch(e){}
+      setTimeout(go, 0);
+      document.addEventListener("pointerdown", tap, true); document.addEventListener("touchend", tap, true);
+      /* not allowed and no tap while the scene was up: stay quiet */
+      window.addEventListener("lowi:boot-ready", function(){ setTimeout(function(){ if (!played) close(); }, 400); });
+    } catch(e){}
+  }
+  launchSound();
   function reveal(why){
     if (done) return; done = true;
     window.__LOWI_BOOT_DONE = why || "ready"; window.__LOWI_BOOT_T = now();
@@ -217,6 +298,100 @@ html.lw-launch-out #lwLaunch .lwl-b>i,html.lw-launch-out #lwLaunch .lwl-m{animat
     setTimeout(function(){ H.classList.remove("lw-launch-out"); var L = document.getElementById("lwLaunch"); if (L && L.parentNode) L.parentNode.removeChild(L); }, 380);
     try { window.dispatchEvent(new CustomEvent("lowi:boot-ready", {detail:{why:window.__LOWI_BOOT_DONE, t:window.__LOWI_BOOT_T}})); } catch(e){}
   }
+  /* Oct 28 evening: what Home's ring bubbles show right now (icon, number, liquid level and colours), kept in
+     lowi.launch.look so the next launch scene shows the same bubbles (read by the script right after #lwLaunch).
+     Written only while Home is on screen: shortly after Home appears, every 45 s while the app is in front, and when you
+     leave the app. Read-only on Home: it changes nothing there. */
+  function lookVisible(el){
+    for (var n = el; n && n.nodeType === 1 && n !== document.body; n = n.parentElement) {
+      var cs = getComputedStyle(n); if (cs.display === "none" || cs.visibility === "hidden" || +cs.opacity === 0) return false;
+    }
+    var r = el.getBoundingClientRect(), h = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return !!h && (el.contains(h) || h.tagName === "CANVAS");
+  }
+  /* an icon as Home draws it: its colours and strokes come from Home's stylesheets, so they are written onto the copy */
+  function lookSvg(sv, col){
+    var cl = sv.cloneNode(true), a = [sv].concat([].slice.call(sv.querySelectorAll("*"))), b = [cl].concat([].slice.call(cl.querySelectorAll("*")));
+    var P = ["fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin", "fill-opacity", "stroke-opacity", "opacity"];
+    for (var i = 0; i !== a.length && i !== b.length; i++) {
+      var cs = getComputedStyle(a[i]);
+      for (var j = 0; j !== P.length; j++) { var v = cs.getPropertyValue(P[j]); if (v) b[i].setAttribute(P[j], v); }
+      b[i].removeAttribute("class"); b[i].removeAttribute("style");
+    }
+    return cl.outerHTML.replace(/currentColor/g, col);
+  }
+  function lookItems(el, r){
+    var it = [];
+    function box(o, q){ o.x = +(q.left - r.left).toFixed(1); o.y = +(q.top - r.top).toFixed(1); o.w = +q.width.toFixed(1); o.h = +q.height.toFixed(1); if (o.o != null) o.o = +(+o.o).toFixed(2); it.push(o); }
+    function firstTop(n){
+      var t = null;
+      for (var c = n.firstChild; c; c = c.nextSibling) {
+        var q = null;
+        if (c.nodeType === 3) { if (!c.nodeValue.trim()) continue; var rg = document.createRange(); rg.selectNodeContents(c); q = rg.getBoundingClientRect(); }
+        else if (c.nodeType === 1) { var cs = getComputedStyle(c); if (cs.position === "absolute" || cs.position === "fixed" || cs.display === "none") continue; q = c.getBoundingClientRect(); }
+        if (q && q.height > 0 && (t == null || q.top < t)) t = q.top;
+      }
+      return t;
+    }
+    (function walk(n, op){
+      for (var c = n.firstChild; c && it.length !== 12; c = c.nextSibling) {
+        if (c.nodeType === 3) {
+          var s = c.nodeValue.replace(/\s+/g, " ").trim(); if (!s) continue;
+          var pc = getComputedStyle(c.parentElement), rg = document.createRange(); rg.selectNodeContents(c); var tq = rg.getBoundingClientRect(); if (tq.width < 1) continue;
+          box({t:"t", s:s.slice(0, 24), fs:+parseFloat(pc.fontSize).toFixed(2), fw:pc.fontWeight, c:pc.color, ls:pc.letterSpacing === "normal" ? 0 : (parseFloat(pc.letterSpacing) || 0),
+            sh:pc.textShadow === "none" ? "" : pc.textShadow, ff:pc.fontFamily, o:op}, tq);
+          continue;
+        }
+        if (c.nodeType !== 1) continue;
+        var cs = getComputedStyle(c); if (cs.display === "none" || cs.visibility === "hidden") continue;
+        var o2 = op * (+cs.opacity); if (o2 < .05) continue;
+        var tag = c.tagName.toLowerCase(), q = c.getBoundingClientRect(), cl = typeof c.className === "string" ? c.className : "";
+        if (tag === "canvas" || /(^|\s)(wh-cell-fill|hb2-fill)(\s|$)/.test(cl)) continue;
+        if (tag === "svg") { if (q.width >= 1) box({t:"s", g:lookSvg(c, cs.color).slice(0, 4000), c:cs.color, fl:cs.filter === "none" ? "" : cs.filter, o:o2}, q); continue; }
+        var pb = getComputedStyle(c, "::before"), mi = pb.webkitMaskImage || pb.maskImage;
+        if (mi && mi !== "none" && /^url\(/.test(mi) && pb.display !== "none") {
+          var pw = parseFloat(pb.width), ph = parseFloat(pb.height), ft = firstTop(c);
+          if (pw > 2 && ph > 2) box({t:"m", u:mi, c:pb.backgroundColor, o:o2 * (+pb.opacity)}, {left:q.left + (q.width - pw) / 2, top:ft != null ? ft - ph - (parseFloat(pb.marginBottom) || 0) : q.top + (q.height - ph) / 2, width:pw, height:ph});
+        }
+        if (q.width >= 8 && q.width <= r.width * .7 && (cs.backgroundImage !== "none" || !/^(transparent|rgba\(0, 0, 0, 0\))$/.test(cs.backgroundColor)))
+          box({t:"d", bg:(cs.backgroundImage !== "none" ? cs.backgroundImage + "," : "") + cs.backgroundColor, br:cs.borderRadius,
+            bd:parseFloat(cs.borderTopWidth) ? cs.borderTopWidth + " " + cs.borderTopStyle + " " + cs.borderTopColor : "", bs:cs.boxShadow === "none" ? "" : cs.boxShadow, o:o2}, q);
+        walk(c, o2);
+      }
+    })(el, 1);
+    return it;
+  }
+  function lookLiquid(el, o){
+    var C = window.LowiBubbles && window.LowiBubbles.core, P = null;
+    if (!C) return;
+    if (o.k === "gap") {
+      var st = null; try { st = window.LowiFastBubble && LowiFastBubble.state && LowiFastBubble.state(); } catch(e){}
+      if (!st || !st.on) return;
+      P = C.liquidColors("fast", H.getAttribute("data-theme") === "light", !!st.done); o.f = +Math.min(1, +st.target || 0).toFixed(3);
+    } else {
+      var f = el.querySelector(".wh-cell-fill, .hb2-fill"), hh = el.clientHeight; if (!f || !hh) return;
+      var fr = f.offsetHeight / hh; if (!(fr > .015)) return;
+      P = C.parseGradient(getComputedStyle(f).backgroundImage); o.f = +Math.min(1, fr).toFixed(3);
+    }
+    if (P && P.top && P.bot) o.c = [P.top.join(","), P.bot.join(","), P.a1, P.a2]; else o.f = 0;
+  }
+  function lookSave(){
+    try {
+      if (!done || document.getElementById("lwLaunch")) return;
+      var els = document.querySelectorAll("[data-orbit]"), out = {}, n = 0;
+      for (var i = 0; i !== els.length; i++) {
+        var el = els[i], k = el.getAttribute("data-orbit"), r = el.getBoundingClientRect();
+        if (!k || out[k] || r.width < 30 || !lookVisible(el)) continue;
+        var o = {k:k, w:+r.width.toFixed(1), it:lookItems(el, r), f:0}; lookLiquid(el, o); delete o.k; out[k] = o; n++;
+      }
+      if (n < 6) return;
+      localStorage.setItem("lowi.launch.look", JSON.stringify({v:1, t:Date.now(), b:out}));
+    } catch(e){}
+  }
+  window.addEventListener("lowi:boot-ready", function(){ setTimeout(lookSave, 2500); });
+  document.addEventListener("visibilitychange", function(){ if (document.visibilityState === "hidden") lookSave(); });
+  window.addEventListener("pagehide", lookSave);
+  if (window.setInterval) window.setInterval(function(){ if (document.visibilityState === "visible") lookSave(); }, 45000);
   /* Stylesheets still on their way get a short moment, so the first frame is already styled. */
   function sheetsIn(){
     var ls = document.querySelectorAll('link[rel="stylesheet"]'), wait = [];
@@ -287,6 +462,7 @@ html.lw-launch-out #lwLaunch .lwl-b>i,html.lw-launch-out #lwLaunch .lwl-m{animat
     /* apple-ui.js calls this once every companion file has run (or failed) */
     loaded: function(){ files = true; window.__LOWI_BOOT_FILES = now(); settle(); },
     reveal: reveal,
+    look: lookSave,
     done: function(){ return done; },
     state: function(){ return {done:done, dom:dom, files:files, why:window.__LOWI_BOOT_DONE || ""}; }
   };
@@ -297,7 +473,49 @@ html.lw-launch-out #lwLaunch .lwl-b>i,html.lw-launch-out #lwLaunch .lwl-m{animat
 </script>
 </head>
 <body>
-<div id="lwLaunch" aria-hidden="true"><i class="lwl-neb"></i><i class="lwl-k" style="--x:66.1vw;--y:51.7vh;--s:2px;--dl:0.06s"></i><i class="lwl-k" style="--x:60.2vw;--y:84.5vh;--s:3.5px;--dl:0.09s"></i><i class="lwl-k" style="--x:88.6vw;--y:70.1vh;--s:2.5px;--dl:0.12s"></i><i class="lwl-k" style="--x:45.3vw;--y:17.3vh;--s:2.5px;--dl:0.14s"></i><i class="lwl-k" style="--x:59.1vw;--y:74.9vh;--s:3px;--dl:0.17s"></i><i class="lwl-k" style="--x:44.2vw;--y:77.5vh;--s:2.5px;--dl:0.20s"></i><i class="lwl-k" style="--x:16.0vw;--y:78.8vh;--s:3.5px;--dl:0.23s"></i><i class="lwl-k" style="--x:23.5vw;--y:25.9vh;--s:2.5px;--dl:0.26s"></i><i class="lwl-k" style="--x:27.3vw;--y:14.3vh;--s:3.5px;--dl:0.28s"></i><i class="lwl-k" style="--x:57.9vw;--y:77.1vh;--s:3.5px;--dl:0.31s"></i><i class="lwl-k" style="--x:32.2vw;--y:63.6vh;--s:3px;--dl:0.34s"></i><i class="lwl-k" style="--x:19.5vw;--y:36.6vh;--s:2.5px;--dl:0.37s"></i><i class="lwl-s" style="--x:43.3vw;--y:77.8vh;--s:2px;--t:2.5s;--dl:0.58s"></i><i class="lwl-s" style="--x:87.1vw;--y:75.9vh;--s:1.5px;--t:2.4s;--dl:0.71s"></i><i class="lwl-s" style="--x:81.7vw;--y:88.2vh;--s:2px;--t:3.6s;--dl:1.00s"></i><i class="lwl-s" style="--x:58.0vw;--y:76.8vh;--s:2.5px;--t:2.5s;--dl:0.47s"></i><i class="lwl-s" style="--x:11.5vw;--y:16.1vh;--s:1.5px;--t:2.3s;--dl:0.84s"></i><i class="lwl-s" style="--x:89.5vw;--y:68.9vh;--s:2px;--t:3.1s;--dl:0.58s"></i><i class="lwl-s" style="--x:93.9vw;--y:79.1vh;--s:2.5px;--t:2.3s;--dl:1.02s"></i><i class="lwl-s" style="--x:83.6vw;--y:90.5vh;--s:2px;--t:3.1s;--dl:1.09s"></i><i class="lwl-s" style="--x:77.4vw;--y:49.2vh;--s:2px;--t:2.6s;--dl:0.21s"></i><i class="lwl-s" style="--x:79.6vw;--y:90.1vh;--s:2.5px;--t:3.0s;--dl:0.91s"></i><i class="lwl-s" style="--x:55.8vw;--y:5.5vh;--s:2px;--t:2.6s;--dl:0.64s"></i><i class="lwl-s" style="--x:37.8vw;--y:71.8vh;--s:2px;--t:2.8s;--dl:1.10s"></i><i class="lwl-s" style="--x:81.1vw;--y:77.8vh;--s:2.5px;--t:3.5s;--dl:0.91s"></i><i class="lwl-s" style="--x:89.0vw;--y:18.1vh;--s:2px;--t:3.0s;--dl:1.19s"></i><i class="lwl-wave"></i><span class="lwl-m"><span class="lwl-cw"><i class="lwl-core"></i></span><i class="lwl-glass"></i><i class="lwl-shine"></i><svg class="lwl-gl" width="48" height="48" viewBox="0 0 48 48" focusable="false"><defs><radialGradient id="lwlGlintG"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#d4f4ff"/><stop offset="1" stop-color="#8fe7ff" stop-opacity="0"/></radialGradient></defs><path fill="url(#lwlGlintG)" d="M24 0C25.6 15.4 32.6 22.4 48 24C32.6 25.6 25.6 32.6 24 48C22.4 32.6 15.4 25.6 0 24C15.4 22.4 22.4 15.4 24 0Z"/></svg></span><b class="lwl-b" style="--a:-90deg;--c:200,225,255;--la:0.14;--i:0"><i></i></b><b class="lwl-b" style="--a:-45deg;--c:28,247,249;--la:0.55;--i:1"><i></i></b><b class="lwl-b" style="--a:0deg;--c:159,235,37;--la:0.5;--i:2"><i></i></b><b class="lwl-b" style="--a:45deg;--c:46,248,182;--la:0.5;--i:3"><i></i></b><b class="lwl-b" style="--a:90deg;--c:200,225,255;--la:0.14;--i:4"><i></i></b><b class="lwl-b" style="--a:135deg;--c:241,71,112;--la:0.5;--i:5"><i></i></b><b class="lwl-b" style="--a:180deg;--c:248,234,64;--la:0.5;--i:6"><i></i></b><b class="lwl-b" style="--a:225deg;--c:231,134,49;--la:0.52;--i:7"><i></i></b></div><script>/* build the launch scene now, so WebKit can show it before the rest of the page is read */document.getElementById("lwLaunch").offsetWidth</script>
+<div id="lwLaunch" aria-hidden="true"><i class="lwl-neb"></i><i class="lwl-k" style="--x:66.1vw;--y:51.7vh;--s:2px;--dl:0.06s"></i><i class="lwl-k" style="--x:60.2vw;--y:84.5vh;--s:3.5px;--dl:0.09s"></i><i class="lwl-k" style="--x:88.6vw;--y:70.1vh;--s:2.5px;--dl:0.12s"></i><i class="lwl-k" style="--x:45.3vw;--y:17.3vh;--s:2.5px;--dl:0.14s"></i><i class="lwl-k" style="--x:59.1vw;--y:74.9vh;--s:3px;--dl:0.17s"></i><i class="lwl-k" style="--x:44.2vw;--y:77.5vh;--s:2.5px;--dl:0.20s"></i><i class="lwl-k" style="--x:16.0vw;--y:78.8vh;--s:3.5px;--dl:0.23s"></i><i class="lwl-k" style="--x:23.5vw;--y:25.9vh;--s:2.5px;--dl:0.26s"></i><i class="lwl-k" style="--x:27.3vw;--y:14.3vh;--s:3.5px;--dl:0.28s"></i><i class="lwl-k" style="--x:57.9vw;--y:77.1vh;--s:3.5px;--dl:0.31s"></i><i class="lwl-k" style="--x:32.2vw;--y:63.6vh;--s:3px;--dl:0.34s"></i><i class="lwl-k" style="--x:19.5vw;--y:36.6vh;--s:2.5px;--dl:0.37s"></i><i class="lwl-s" style="--x:43.3vw;--y:77.8vh;--s:2px;--t:2.5s;--dl:0.58s"></i><i class="lwl-s" style="--x:87.1vw;--y:75.9vh;--s:1.5px;--t:2.4s;--dl:0.71s"></i><i class="lwl-s" style="--x:81.7vw;--y:88.2vh;--s:2px;--t:3.6s;--dl:1.00s"></i><i class="lwl-s" style="--x:58.0vw;--y:76.8vh;--s:2.5px;--t:2.5s;--dl:0.47s"></i><i class="lwl-s" style="--x:11.5vw;--y:16.1vh;--s:1.5px;--t:2.3s;--dl:0.84s"></i><i class="lwl-s" style="--x:89.5vw;--y:68.9vh;--s:2px;--t:3.1s;--dl:0.58s"></i><i class="lwl-s" style="--x:93.9vw;--y:79.1vh;--s:2.5px;--t:2.3s;--dl:1.02s"></i><i class="lwl-s" style="--x:83.6vw;--y:90.5vh;--s:2px;--t:3.1s;--dl:1.09s"></i><i class="lwl-s" style="--x:77.4vw;--y:49.2vh;--s:2px;--t:2.6s;--dl:0.21s"></i><i class="lwl-s" style="--x:79.6vw;--y:90.1vh;--s:2.5px;--t:3.0s;--dl:0.91s"></i><i class="lwl-s" style="--x:55.8vw;--y:5.5vh;--s:2px;--t:2.6s;--dl:0.64s"></i><i class="lwl-s" style="--x:37.8vw;--y:71.8vh;--s:2px;--t:2.8s;--dl:1.10s"></i><i class="lwl-s" style="--x:81.1vw;--y:77.8vh;--s:2.5px;--t:3.5s;--dl:0.91s"></i><i class="lwl-s" style="--x:89.0vw;--y:18.1vh;--s:2px;--t:3.0s;--dl:1.19s"></i><i class="lwl-wave"></i><span class="lwl-m"><span class="lwl-cw"><i class="lwl-core"></i></span><i class="lwl-glass"></i><i class="lwl-shine"></i><svg class="lwl-gl" width="48" height="48" viewBox="0 0 48 48" focusable="false"><defs><radialGradient id="lwlGlintG"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#d4f4ff"/><stop offset="1" stop-color="#8fe7ff" stop-opacity="0"/></radialGradient></defs><path fill="url(#lwlGlintG)" d="M24 0C25.6 15.4 32.6 22.4 48 24C32.6 25.6 25.6 32.6 24 48C22.4 32.6 15.4 25.6 0 24C15.4 22.4 22.4 15.4 24 0Z"/></svg></span><b class="lwl-b" data-k="settings" style="--a:-90deg;--i:0"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="water" style="--a:-45deg;--i:1"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="move" style="--a:0deg;--i:2"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="scan" style="--a:45deg;--i:3"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="joy" style="--a:90deg;--i:4"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="sleep" style="--a:135deg;--i:5"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="gap" style="--a:180deg;--i:6"><i><i class="lwl-lq"></i></i></b><b class="lwl-b" data-k="fuel" style="--a:225deg;--i:7"><i><i class="lwl-lq"></i></i></b></div><script>/* Oct 28 evening: Home's own bubbles. Each bubble shows what Home showed when you last left it (lowi.launch.look, written by
+   lwBootJs: icon, number, liquid level and colours); before that, Home's icons (LWL_DEF, taken from Home itself by
+   tools/startup/launch-look.cjs). A bubble that is dry on Home glows in its own colour. Then the scene is built at once, so
+   WebKit can show it before the rest of the page is read. */
+(function(){
+  var L = document.getElementById("lwLaunch"), S = null, D = /*LWL_DEF*/{"settings":{"w":88,"it":[{"t":"s","g":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><path d=\"M4 6.5A2.5 2.5 0 0 1 6.5 4h7A2.5 2.5 0 0 1 16 6.5v4a2.5 2.5 0 0 1-2.5 2.5H9l-3 2.5V13h0.5A2.5 2.5 0 0 1 4 10.5zM18.5 9.5A1.5 1.5 0 0 1 20 11v4a2 2 0 0 1-2 2h-.5v2.5l-3-2.5H12a2 2 0 0 1-1.6-.8\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><\/path><\/svg>","c":"rgb(255, 255, 255)","fl":"drop-shadow(rgba(0, 30, 80, 0.6) 0px 1px 4px)","o":1,"x":29,"y":28,"w":29.9,"h":29.9}]},"water":{"w":88,"it":[{"t":"m","u":"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5c3.6 4.4 6 7.4 6 10.3a6 6 0 0 1-12 0c0-2.9 2.4-5.9 6-10.3z'/%3E%3C/svg%3E\")","c":"rgb(255, 255, 255)","o":1,"x":30.8,"y":30.8,"w":26.4,"h":26.4}]},"move":{"w":88,"it":[{"t":"m","u":"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12h4l2.2-5.5 4.6 11 2.2-5.5h5'/%3E%3C/svg%3E\")","c":"rgb(255, 255, 255)","o":1,"x":30.8,"y":30.8,"w":26.4,"h":26.4}]},"scan":{"w":88,"it":[{"t":"s","g":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><path d=\"M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M8 9v6M11 9v6M14 9v6M17 9v6\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><\/path><\/svg>","c":"rgb(255, 255, 255)","fl":"drop-shadow(rgba(0, 30, 80, 0.6) 0px 1px 4px)","o":1,"x":29,"y":28,"w":29.9,"h":29.9}]},"joy":{"w":88,"it":[{"t":"s","g":"<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><path d=\"M12 3.5l2.4 2.6M12 3.5L9.6 6.1M12 20.5l2.4-2.6M12 20.5l-2.4-2.6M3.5 12l2.6-2.4M3.5 12l2.6 2.4M20.5 12l-2.6-2.4M20.5 12l-2.6 2.4\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><\/path><circle cx=\"12\" cy=\"12\" r=\"2.6\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><\/circle><\/svg>","c":"rgb(255, 255, 255)","fl":"drop-shadow(rgba(0, 30, 80, 0.6) 0px 1px 4px)","o":1,"x":30.8,"y":30.8,"w":26.4,"h":26.4}]},"sleep":{"w":88,"it":[{"t":"s","g":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><path d=\"M19.5 14.6A7.8 7.8 0 1 1 9.4 4.5a6.2 6.2 0 0 0 10.1 10.1z\" fill=\"none\" stroke=\"rgb(255, 255, 255)\" stroke-width=\"1.8px\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-opacity=\"1\" stroke-opacity=\"1\" opacity=\"1\"><\/path><\/svg>","c":"rgb(255, 255, 255)","fl":"drop-shadow(rgba(0, 30, 80, 0.6) 0px 1px 4px)","o":1,"x":29,"y":28,"w":29.9,"h":29.9}]},"gap":{"w":88,"it":[{"t":"m","u":"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 9v4.5l3 2M9.5 2.5h5M12 21.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15z'/%3E%3C/svg%3E\")","c":"rgb(255, 255, 255)","o":1,"x":30.8,"y":30.8,"w":26.4,"h":26.4}]},"fuel":{"w":88,"it":[{"t":"m","u":"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.2'/%3E%3Ccircle cx='10' cy='20' r='1.4'/%3E%3Ccircle cx='17' cy='20' r='1.4'/%3E%3C/svg%3E\")","c":"rgb(255, 255, 255)","o":1,"x":30.8,"y":30.8,"w":26.4,"h":26.4}]}}/*LWL_DEF_END*/;
+  try { S = JSON.parse(localStorage.getItem("lowi.launch.look") || "null"); } catch(e){}
+  if (!S || S.v !== 1 || !S.b) S = null;
+  var C = {settings:"255,176,206|226,96,150", water:"110,200,255|40,120,240", move:"150,255,210|30,190,150", scan:"255,228,150|236,176,52",
+    joy:"120,255,190|20,210,130", sleep:"190,170,255|120,100,230", gap:"118,210,238|52,92,188", fuel:"255,214,150|236,150,70"};
+  function z(v, w){ return "calc(var(--lwl-d) * " + (+v / w).toFixed(4) + ")"; }
+  function item(q, w){
+    var e = null, t = q && q.t;
+    if (t === "t") {
+      e = document.createElement("span"); e.textContent = String(q.s).slice(0, 24);
+      e.style.fontSize = z(q.fs, w); e.style.lineHeight = z(q.h, w); e.style.fontWeight = q.fw || ""; e.style.color = q.c || "#fff";
+      if (q.ls) e.style.letterSpacing = z(q.ls, w); if (q.sh) e.style.textShadow = q.sh; if (q.ff) e.style.fontFamily = q.ff;
+    } else if (t === "s") {
+      if (!/^<svg[\s>]/.test(q.g || "") || /<script|<foreignObject|\son[a-z]+\s*=|javascript:/i.test(q.g)) return null;
+      e = document.createElement("span"); e.innerHTML = q.g; e.style.color = q.c || "#fff"; if (q.fl) e.style.filter = q.fl;
+    } else if (t === "m") {
+      if (!/^url\(/.test(q.u || "")) return null;
+      e = document.createElement("i"); e.className = "lwl-mk"; e.style.webkitMaskImage = q.u; e.style.maskImage = q.u; e.style.background = q.c || "#fff";
+    } else if (t === "d") {
+      e = document.createElement("i"); e.style.background = q.bg || ""; e.style.borderRadius = q.br || "50%";
+      if (q.bd) e.style.border = q.bd; if (q.bs) e.style.boxShadow = q.bs;
+    } else return null;
+    e.style.left = z(q.x + w * .02, w); e.style.top = z(q.y + w * .02, w); e.style.width = z(q.w, w); e.style.height = z(q.h, w);
+    if (q.o != null && q.o < 1) e.style.opacity = q.o;
+    return e;
+  }
+  var bs = L.querySelectorAll(".lwl-b");
+  for (var i = 0; i !== bs.length; i++) try {
+    var b = bs[i], k = b.getAttribute("data-k"), s = S && S.b[k], d = D && D[k], c = (C[k] || "200,225,255|120,170,255").split("|");
+    if (s && s.f > .015 && s.c && s.c.length === 4) { b.style.setProperty("--l", Math.min(1, +s.f)); b.style.setProperty("--t", s.c[0]); b.style.setProperty("--u", s.c[1]); b.style.setProperty("--a1", s.c[2]); b.style.setProperty("--a2", s.c[3]); }
+    else { b.className += " lwl-dry"; b.style.setProperty("--t", c[0]); b.style.setProperty("--u", c[1]); }
+    var src = (s && s.it && s.it.length) ? s : d, it = (src && src.it) || [], w = (src && src.w) || 88, ct = document.createElement("span");
+    ct.className = "lwl-ct";
+    for (var j = 0; j !== it.length && j !== 12; j++) { var e = item(it[j], w); if (e) ct.appendChild(e); }
+    b.firstChild.appendChild(ct);
+  } catch(e){}
+})();
+document.getElementById("lwLaunch").offsetWidth</script>
 <script src="power-saver.js?v=20261028-213020"></script>
 <script id="igFresh">/* install-guide.js: was storage empty before anything ran? (a first start from the iPhone Home Screen = just added) */try{window.__lowiFresh=localStorage.length===0}catch(e){}</script>
 <!-- Oct 28 2026 item 29: light crash log (JS errors + a page that died in front), shown in Profil > Über & Hinweise -->

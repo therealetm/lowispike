@@ -19,7 +19,7 @@ test('the body opens with the launch scene as its very first element, and the sc
     assert.strictEqual(html.slice(first, first + 18), '<div id="lwLaunch"', 'the first thing in the body is the scene');
     assert.strictEqual(html.split('id="lwLaunch"').length, 2, 'exactly one scene');
     assert.ok(html.indexOf('</head>') < first && html.indexOf('</head>') < html.indexOf('<div id="app"'));
-    assert.match(html.slice(first, first + scene.length + 200), /<\/div><script>[^<]*document\.getElementById\("lwLaunch"\)\.offsetWidth<\/script>/, 'laid out right away');
+    assert.match(html.slice(first, first + scene.length + 20000), /<\/div><script>(?:(?!<\/script>)[\s\S])*document\.getElementById\("lwLaunch"\)\.offsetWidth<\/script>/, 'laid out right away (after Home\'s bubbles are filled in)');
     assert.ok(html.indexOf('id="lwLaunch"') < html.indexOf('<link rel="stylesheet"', body), 'before the app stylesheets, so they never hold up its first frame');
 });
 

@@ -63,7 +63,7 @@ try { fs.mkdirSync(SHOT, { recursive: true }); } catch (e) { }
             await P.screenshot({ path: SHOT + '/bx-' + name + '-' + tag + '.jpg', type: 'jpeg', quality: 55 }).catch(() => {});
             if (s.on) {
                 const before = await P.evaluate(() => (document.querySelector('#tab-shelf .kg-open') ? 'zoom|' : '') + (typeof TAB !== 'undefined' ? TAB : '') + '|' + document.documentElement.classList.contains('b3-camon') + '|' + !!document.querySelector('.gv-ov.on,#gvSheet') + '|' + !!document.querySelector('.stp-ov'));
-                await P.click('#lwBX', { timeout: 3000 }).catch(e => { s.clickErr = String(e).slice(-300); });
+                await P.click('#lwBX', { timeout: 3000 }).catch(e => { s.clickErr = String(e).slice(0,700); });
                 await sleep(1200);
                 s.afterTap = await P.evaluate(() => (document.querySelector('#tab-shelf .kg-open') ? 'zoom|' : '') + (typeof TAB !== 'undefined' ? TAB : '') + '|' + document.documentElement.classList.contains('b3-camon') + '|' + !!document.querySelector('.gv-ov.on,#gvSheet') + '|' + !!document.querySelector('.stp-ov'));
                 s.closed = s.afterTap !== before; s.before = before;

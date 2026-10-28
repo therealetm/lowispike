@@ -27,3 +27,6 @@ html.lw-bx-on.lw-bx-on .b3-cam.b3-cam.b3-cam .b3-cbot.b3-cbot{padding-bottom:cal
 /* Einkaufen: its footer (scan-in-the-shop button, old close orb on the right) ends above the button */
 html.lw-bx-on .stp-ov .stp-foot{padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 80px)!important}
 html.lw-bx-on .stp-foot>.stp-close.lw-bx-src{position:absolute!important;right:14px}
+/* Profile's one-screen tiles: on a short phone the last row would sit under the button, so the screen may scroll a little
+   (it ends with the spacer above) instead of the button climbing over the tiles */
+html.lw-bx-on.g2e-on:not(.g2e-open) #tab-profile{overflow-y:auto!important;-webkit-overflow-scrolling:touch}

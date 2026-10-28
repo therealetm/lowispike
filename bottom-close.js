@@ -119,8 +119,9 @@
     function anchored(el) {
         for (let a = el; a && a !== D.body && a !== H; a = a.parentElement) {
             const s = getComputedStyle(a);
-            if (s.position === 'fixed' || s.position === 'sticky') return true;
+            /* a scrolling panel (even a fixed one, like Profile on a small phone) carries its content past the button */
             if (a !== el && /(auto|scroll)/.test(s.overflowY) && a.scrollHeight > a.clientHeight + 2) return false;
+            if (s.position === 'fixed' || s.position === 'sticky') return true;
         }
         return false;
     }

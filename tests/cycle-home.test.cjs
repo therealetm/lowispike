@@ -84,8 +84,8 @@ test('the way in is a section in Misty\'s hold card (tracking on only); no new g
     assert.ok(/function hubOpen\(\) \{\s*if \(!enabled\(\)\) return false;/.test(cwJs));
     assert.ok(cwJs.includes('data-mh="cycle"'), 'the section is a button in Misty\'s card');
     const hub = R('misty-hub.js');
-    const html = hub.slice(hub.indexOf("'<nav class=\"mh-doors\""), hub.indexOf('scaleHtml() +'));
-    assert.ok(html.indexOf("'</nav>'") < html.indexOf('cycleHtml()'), 'right under her two doors');
+    const html = hub.slice(hub.indexOf('doorsHtml() + secHtml()'), hub.indexOf('scaleHtml() +'));
+    assert.ok(html.indexOf('doorsHtml()') === 0 && html.indexOf('cycleHtml()') > 0, 'right under her doors');
     assert.ok(/k === 'cycle'\) \{[^}]*hubOpen\(\)/.test(hub), 'tapping it opens My cycle');
     for (const l of ['en', 'de', 'es']) assert.ok(CW.strings[l].hubOpen && CW.strings[l].ringL, l);
     /* Emmanuel, Oct 24: "rather than being its own separate trigger": no Gap long press for the cycle */

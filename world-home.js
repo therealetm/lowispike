@@ -975,6 +975,9 @@
     function liveMs() { return Array.from(D.querySelectorAll('#whMs')).find(e => !(e.closest && e.closest('.r2-ov.off'))) || null; }
     /* the aura / growth / discoveries sheet, opened from the Glow door in Misty's card */
     function openDetails(tab) {
+        /* Oct 28 2026 slim structure batch 1: growth and the aura shop live inside the one companion panel (misty-hub.js);
+           every old Glow / growth / aura link opens that section of the card in place. The sheet below is only the fallback. */
+        if (!liveMs()) { try { if (W.LowiMistyHub && W.LowiMistyHub.openSec && W.LowiMistyHub.openSec(tab || 'aura')) return true; } catch (e) { console.error(e); } }
         st.sheetTab = tab || 'aura'; if (!liveMs()) st.preview = '';
         const R2 = W.LowiR2; if (!R2 || !R2.sheet) return false;
         const ex = liveMs(); if (ex) { repaintMisty(); return true; }
@@ -1260,7 +1263,7 @@
     /* auraLook(): what Misty wears now, for any other place that draws her (a Community / leaderboard avatar: put fxHTML(fx) inside
        an element with position:relative and --a/--b set) */
     function auraLook() { const a = C.aura(auraId()); return { id: a.id, a: a.a, b: a.b, fx: a.fx || '' }; }
-    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, todayRetired: TODAY_RETIRED, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, heroTurn, state: st, auraId, sparks: sparksNow, wallet: walletNow, buyAura, fxHTML, ensureFx, auraLook, syncX, rig };
+    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, todayRetired: TODAY_RETIRED, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, mistyHTML, heroTurn, state: st, auraId, sparks: sparksNow, wallet: walletNow, buyAura, fxHTML, ensureFx, auraLook, syncX, rig };
     W.LowiWorldHome.mistyFaceArt = mistyFaceArt;
     W.LowiWorldHome.pad = pad;
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();

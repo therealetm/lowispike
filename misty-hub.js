@@ -111,10 +111,10 @@
             /* Oct 19 (E-man): Forms and Glow were at the very bottom: "that's hidden ... needs to be not hidden".
                Oct 22 (E-man: "I don't understand the food journal section ... I'd say remove it"): the Food journal door is gone;
                the meals you logged live in the Fuel sheet's meal list. Two equal doors now come first, right under the name and level, before the companion's words (fully in view when the card opens on an iPhone 13). */
-            '<nav class="mh-doors" aria-label="' + esc(name()) + '">' +
-                '<button type="button" data-mh="forms">' + ICO.forms + '<b>' + esc(T('Forms', 'Formen', 'Formas')) + '</b><small>' + esc(T('How it evolves', 'Wie es sich entwickelt', 'C\u00f3mo evoluciona')) + '</small></button>' +
-                '<button type="button" data-mh="glow">' + ICO.glow + '<b>' + esc(T('Glow', 'Leuchten', 'Brillo')) + '</b><small>' + esc(T('Aura and finds', 'Aura und Funde', 'Aura y hallazgos')) + '</small></button>' +
-            '</nav>' +
+            /* Oct 28 2026 slim structure, batch 1 (Emmanuel: "setz alles um"): ONE companion panel. Look, growth and the aura shop
+               are three doors in one row of this card; growth and the aura shop open right here in the card (in place, no second
+               sheet), Look opens the forms panel on top. The galaxy presence stays in Profile (his Oct 22 wish, P-06). */
+            doorsHtml() + secHtml() +
             /* Oct 24 2026 (Emmanuel): with cycle tracking on, a small "Your cycle" section right under the doors opens My cycle
                (cycle-world.js hubHtml / hubOpen). Tracking off: nothing here. */
             cycleHtml() +
@@ -177,6 +177,40 @@
     function youHtml() { return ''; /* Oct 28 2026 slim structure (X-24 deleted) */ try { return W.LowiYouStats && W.LowiYouStats.hubHTML ? W.LowiYouStats.hubHTML() : ''; } catch (e) { return ''; } }
     function cycleHtml() { try { return W.LowiCycleWorld && W.LowiCycleWorld.hubHtml ? W.LowiCycleWorld.hubHtml() : ''; } catch (e) { return ''; } }
     function advHtml() { try { return W.LowiAdventureTiers && W.LowiAdventureTiers.html ? W.LowiAdventureTiers.html() : ''; } catch (e) { return ''; } }
+    /* ---------- one companion panel (Oct 28 2026, slim structure batch 1) ---------- */
+    let sec = '';   /* '' | 'grow' | 'aura': the section open inside the card */
+    function doorsHtml() {
+        const d = [
+            ['look', ICO.forms, T('Look', 'Aussehen', 'Aspecto'), T('How it evolves', 'Wie es sich entwickelt', 'C\u00f3mo evoluciona')],
+            ['grow', ICO.trip, T('Growth', 'Wachstum', 'Crecimiento'), T('Levels, XP and finds', 'Level, XP und Funde', 'Niveles, XP y hallazgos')],
+            ['aura', ICO.glow, T('Aura shop', 'Aura-Shop', 'Tienda de auras'), T('Glow and unlocks', 'Leuchten und Freischalten', 'Brillo y desbloqueos')]
+        ];
+        return '<nav class="mh-doors mh-doors3" aria-label="' + esc(name()) + '">' + d.map(x => {
+            const inl = x[0] === 'grow' || x[0] === 'aura';
+            return '<button type="button" data-mh="door" data-door="' + x[0] + '"' + (inl ? ' aria-expanded="' + (sec === x[0]) + '" aria-controls="mhSec"' : '') + '>' + x[1] + '<b>' + esc(x[2]) + '</b><small>' + esc(x[3]) + '</small></button>';
+        }).join('') + '</nav>';
+    }
+    function secHtml() {
+        if (!sec) return '';
+        let inner = '';
+        try { const H = W.LowiWorldHome; if (H && H.mistyHTML) inner = H.mistyHTML(H.state.sheetTab || sec, H.state.preview || ''); } catch (e) { console.error(e); }
+        if (!inner) return '';
+        return '<section class="mh-sec" id="mhSec" aria-label="' + esc(sec === 'grow' ? T('Growth', 'Wachstum', 'Crecimiento') : T('Aura shop', 'Aura-Shop', 'Tienda de auras')) + '">' + inner + '</section>';
+    }
+    /* open one section of the card in place (also the landing spot of every old Glow / growth / aura link) */
+    function openSec(tab) {
+        const t = tab === 'grow' || tab === 'found' ? tab : 'aura';
+        sec = t === 'found' ? 'grow' : t;
+        try { const H = W.LowiWorldHome; if (H && H.state) { H.state.sheetTab = t; H.state.preview = ''; } } catch (e) { }
+        if (sheet()) repaint(); else open();
+        setTimeout(() => { const el = q('#mhSec'); if (!el) return; try { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) { } }, 60);
+        return true;
+    }
+    function door(k) {
+        if (k === 'look') { try { if (W.LowiCompanion && W.LowiCompanion.open && W.LowiCompanion.open()) return; } catch (x) { } openSec('grow'); return; }
+        if (sec === k) { sec = ''; repaint(); return; }
+        openSec(k);
+    }
     function rankHtml() { try { return W.LowiMistyRank && W.LowiMistyRank.html ? W.LowiMistyRank.html() : ''; } catch (e) { return ''; } }
     function peakHtml() { try { return W.LowiMistyPeak && W.LowiMistyPeak.html ? W.LowiMistyPeak.html() : ''; } catch (e) { return ''; } }
     function scaleHtml() { try { return W.LowiMistyScale && W.LowiMistyScale.html ? W.LowiMistyScale.html() : ''; } catch (e) { return ''; } }
@@ -213,8 +247,9 @@
             const v = cell();
             repaint(v && v.mood ? cellCopy('thanks') : '');
         } else if (k === 'goodnight') goodnight();
-        else if (k === 'forms') { try { if (W.LowiCompanion && W.LowiCompanion.open && W.LowiCompanion.open()) return; } catch (x) { } openDetails('grow'); }
-        else if (k === 'glow') openDetails('aura');
+        else if (k === 'door') door(b.dataset.door);
+        else if (k === 'forms') door('look');
+        else if (k === 'glow') openSec('aura');
         else if (k === 'rename') renameOpen();
         else if (k === 'you') { close(); setTimeout(() => { try { W.LowiNutriStats && W.LowiNutriStats.open && W.LowiNutriStats.open(); } catch (x) { console.error(x); } }, 360); }
         else if (k === 'cycle') { try { W.LowiCycleWorld && W.LowiCycleWorld.hubOpen && W.LowiCycleWorld.hubOpen(); } catch (x) { } }
@@ -457,7 +492,7 @@
     });
     W.LowiMyDay = { open: dayOpen, close: dayClose, items: dayItems, _html: dayHtml };
 
-    W.LowiMistyHub = { open, close, repaint, goodnight, saidGoodnight, nightKey, candidates, tick, quiet, nudgeSpot, nudgesRetired: NUDGES_RETIRED, todayItems, _html: html };
+    W.LowiMistyHub = { open: (x) => { if (!sheet()) sec = ''; return open(x); }, openSec, close, repaint, goodnight, saidGoodnight, nightKey, candidates, tick, quiet, nudgeSpot, nudgesRetired: NUDGES_RETIRED, todayItems, _html: html };
 })();
 
 /* Oct 23 2026 (Eman: "when we check our own Misty stats, that's where we see where Misty's ranked, worldwide basically. So people get

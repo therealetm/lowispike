@@ -369,7 +369,12 @@
         if (a === 'traits') { p.traits = !!t.checked; savePrefs(p); refreshAll(); paint('[data-cf="traits"]'); }
         else if (a === 'share') { p.share = !!t.checked; savePrefs(p); syncLook(true); V.msg = p.share ? L('Friends can see your companion again.', 'Freunde sehen deinen Begleiter wieder.', 'Tus amigos vuelven a ver a tu compañero.') : L('Your companion is hidden from friends now.', 'Dein Begleiter ist jetzt für Freunde verborgen.', 'Tu compañero ahora está oculto para tus amigos.'); paint('[data-cf="share"]'); }
     });
-    D.addEventListener('keydown', e => { if (V.ov && e.key === 'Escape') { e.stopPropagation(); close(); } }, true);
+    /* Oct 28 2026 (slim structure batch 1, "one back press returns to where you came from"): opened from the companion card, Escape /
+       back steps back to the card instead of closing both. R2 adopted this panel over the card, so R2.back closes it and brings
+       the card back; without a card under it, it simply closes. */
+    D.addEventListener('keydown', e => { if (!V.ov || e.key !== 'Escape') return; e.stopPropagation();
+        try { const R = W.LowiR2; if (R && R.back && R.top && R.top() === V.ov) { R.back(V.ov); if (!V.ov) return; } } catch (x) { }
+        close(); }, true);
 
     /* entry button next to the wardrobe, and the friends tree */
     /* where people really look: the herb path sheet (herb world > Entwicklung), the wardrobe sheet (> Kleiderschrank), and the old wardrobe grid */

@@ -177,3 +177,18 @@ html #cmPaneChat .cs-compose-meta, html #cmPaneChat[data-spirit-chat] .cg-chip:n
 .mh-day-grid { gap: 14px 8px; }
 .mh-day-none { margin: 0; font-size: 15px; color: var(--mh-ink-2); }
 .mh-day .mh-ob .g2h-ic, .mh-day .mh-ob .g2h-ic svg { display: grid; place-items: center; }
+
+/* Oct 28 2026 slim structure batch 1: one companion panel. Growth and the aura shop open inside the card; the card already shows
+   the companion, its name and level, so the section drops its own picture, name and forms button. */
+.mh-doors.mh-doors3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.mh-doors.mh-doors3 button { min-height: 92px; padding: 12px 6px 10px; text-align: center; align-items: center; }
+.mh-doors.mh-doors3 button b { font-size: 13.5px; overflow-wrap: anywhere; }
+.mh-doors.mh-doors3 button small { font-size: 11px; line-height: 1.25; }
+.mh-doors button[aria-expanded="true"] { border-color: color-mix(in srgb, var(--a) 70%, transparent); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--a) 55%, transparent), var(--lg-edge, 0 0 0 transparent); }
+.mh-sec { margin: 12px 0 4px; padding: 4px 14px 14px; border-radius: 18px; border: .5px solid var(--mh-rim); background: var(--mh-card); color: var(--mh-ink); scroll-margin-top: 12px; }
+.mh-sec .wh-ms-stage, .mh-sec .wh-ms-id, .mh-sec .wh-ms-forms { display: none !important; }
+.mh-sec .wh-ms-tabs { margin-top: 10px; }
+.mh-sec .wh-ms-panel { min-height: 0; }
+/* Oct 28 2026 (slim structure rule: panels have a solid frosted backdrop, nothing bleeds through): beta.css's solid-sheet rule
+   switched the blur off (!important) while this card kept its 80 % tint, so Home showed through the card. Near-solid tint + blur. */
+html .r2-ov.mh-ov .r2-sh, html.wh-on .r2-ov.mh-ov:not(.full) .r2-sh { background: rgba(12, 18, 34, .96) !important; -webkit-backdrop-filter: blur(28px) saturate(160%) !important; backdrop-filter: blur(28px) saturate(160%) !important; }

@@ -64,11 +64,14 @@ test('the card shows what each place still needs and whether you have been there
 
 test('companion card: Forms and Glow come first, then energy, level, adventures; no mood check-in (Oct 23, E-man)', () => {
     const js = R('misty-hub.js'), h = js.slice(js.indexOf('function html('), js.indexOf('function advHtml'));
-    const doors = h.indexOf('mh-doors'), say = h.indexOf('mh-say');
+    const doors = h.indexOf('doorsHtml()'), say = h.indexOf('mh-say');
     assert.ok(doors > 0 && doors < say, 'doors come before her words, right under the name');
     const scale = h.indexOf('scaleHtml()'), adv = h.indexOf('advHtml()');
     assert.ok(doors > 0 && doors < scale && scale < adv, 'doors, then energy, level, adventures');
-    assert.match(h, /data-mh="forms"/); assert.match(h, /data-mh="glow"/); assert.doesNotMatch(h, /Your scanned cards/);
+    /* Oct 28 2026 slim structure batch 1: one companion panel, its doors are Look, Growth, Aura shop (and Presence) */
+    const dj = js.slice(js.indexOf('function doorsHtml'), js.indexOf('function secHtml'));
+    for (const k of ["'look'", "'grow'", "'aura'", 'Aussehen', 'Wachstum', 'Aura-Shop']) assert.ok(dj.includes(k), k);
+    assert.doesNotMatch(h, /Your scanned cards/);
     assert.doesNotMatch(h, /mh-mood|data-mh="mood"|how you feel|wie du dich f|c\\u00f3mo te sientes/, 'Tell Misty how you feel is gone');
     assert.doesNotMatch(h, /data-mh="journal"/, 'Food journal door is gone');
 });
@@ -89,9 +92,10 @@ test('foods and the journal are never needed to evolve', () => {
 });
 
 test('Oct 22: the Food journal is gone from the UI: Misty has two equal doors, nothing links to it, the tally stays', () => {
-    const js = R('misty-hub.js'), h = js.slice(js.indexOf('function html('), js.indexOf('function advHtml'));
-    const doors = h.slice(h.indexOf('mh-doors'), h.indexOf('</nav>'));
-    assert.equal((doors.match(/<button /g) || []).length, 2, 'two doors: Forms and Glow');
+    const js = R('misty-hub.js');
+    /* Oct 28 2026 slim structure batch 1: the doors are Look, Growth, Aura shop and Presence (one companion panel), no journal */
+    const doors = js.slice(js.indexOf('function doorsHtml'), js.indexOf('function secHtml'));
+    assert.doesNotMatch(doors, /journal/i);
     assert.doesNotMatch(js, /data-mh="collection"|k === 'collection'/);
     assert.match(R('misty-hub.css'), /\.mh-doors \{[^}]*repeat\(2, minmax\(0, 1fr\)\)/);
     for (const f of ['misty-hub.js', 'herb-quests.js', 'spirit.js', 'world-home.js', 'tutorial-steps.js', 'tutorial-voice-data.js'])
@@ -99,4 +103,15 @@ test('Oct 22: the Food journal is gone from the UI: Misty has two equal doors, n
     const hq = R('herb-quests.js');
     assert.doesNotMatch(hq, /function dexHTML|function collectionHTML|hq-dexlink/);
     assert.equal(typeof HQ.journal, 'function'); assert.equal(typeof HQ.discover, 'function'); assert.equal(typeof HQ.newFoods, 'function');
+});
+
+test('Oct 28 2026 slim structure batch 1: one companion panel; growth and the aura shop open in place inside the card', () => {
+    const js = R('misty-hub.js'), wh = R('world-home.js'), css = R('misty-hub.css');
+    assert.match(js, /function openSec\(tab\)/);
+    assert.match(js, /W\.LowiMistyHub = \{ open: \(x\) => \{ if \(!sheet\(\)\) sec = ''; return open\(x\); \}, openSec,/, 'a fresh hold opens the card closed; openSec is exported');
+    assert.match(js, /H\.mistyHTML\(/, 'the section is the same aura / growth / found view, inside the card');
+    assert.match(wh, /W\.LowiMistyHub\.openSec\(tab \|\| 'aura'\)/, 'every old Glow / growth link lands in the card section');
+    assert.match(wh, /closeTop, openDetails, mistyHTML,/);
+    assert.doesNotMatch(js, /data-door="presence"|'presence'/, 'the galaxy presence stays in Profile (P-06), no second way');
+    assert.match(css, /\.mh-sec \.wh-ms-stage, \.mh-sec \.wh-ms-id, \.mh-sec \.wh-ms-forms \{ display: none !important; \}/, 'no second picture or name inside the card');
 });

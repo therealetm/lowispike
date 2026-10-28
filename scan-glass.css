@@ -26,6 +26,8 @@ html.lg .b3-cam .b3-torch.on { background: var(--lg-blue) !important; color: #ff
    open the panel and this X step aside for the card (shop-scan.css .ss-open), whose own X shows. While typing a code the X stays. */
 html.lg .b3-cam.sg-xbot.b3-shop .b3-cbot:has(> .ss-row) > .sg-xrow { position: absolute; right: 12px; bottom: 12px; }
 html.lg .b3-cam.sg-xbot.b3-shop .b3-cbot:has(> .ss-row) > .ss-row { box-sizing: border-box; padding-right: 54px; }
+/* Oct 28 2026: once the bottom-center close (bottom-close.js) has taken this X over (.lw-bx-src), the row gets its full width back */
+html.lg .b3-cam.sg-xbot.b3-shop .b3-cbot:has(> .sg-xrow .lw-bx-src) > .ss-row { padding-right: 0; }
 @media (max-height: 720px) {
     html.lg .b3-cam.sg-xbot.sg-docked .sg-xrow > .b3-cx { width: 42px; height: 42px; min-width: 42px; }
     html.lg .b3-cam.sg-xbot.sg-docked.b3-shop .b3-cbot:has(> .ss-row) > .sg-xrow { right: 10px; bottom: 12px; }

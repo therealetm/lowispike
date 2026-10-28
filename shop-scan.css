@@ -28,8 +28,13 @@
     border: 1.5px solid var(--ss-rim); background: var(--ss-wide), rgba(8, 20, 48, .42); box-shadow: var(--ss-sh);
     -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4);
 }
-.b3-cam .ss-chip span { white-space: normal; text-align: center; line-height: 1.1; overflow-wrap: anywhere; } /* Oct 28 2026: wraps on small phones, never cut */
-@media (max-width: 400px) { .b3-cam .ss-chip { padding: 4px 8px; gap: 5px; font-size: 13px; } }
+.b3-cam .ss-chip span { white-space: normal; text-align: center; line-height: 1.1; overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; } /* Oct 28 2026: wraps on small phones, never cut */
+/* Oct 28 2026 slim batch 5: on small phones the icon sits above the label (whole words, hyphenated if needed) and the
+   list count is a small badge in the corner, so no label breaks mid-word or is cut */
+@media (max-width: 400px) {
+    .b3-cam .ss-chip { position: relative; flex-direction: column; padding: 6px 6px; gap: 3px; font-size: 12.5px; min-height: 52px; }
+    .b3-cam .ss-chip .ss-count { position: absolute; top: -6px; right: -4px; min-width: 20px; height: 20px; font-size: 11.5px; padding: 0 5px; }
+}
 .b3-cam .ss-chip svg { width: 18px; height: 18px; flex: none; }
 .b3-cam .ss-chip .ss-count { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; display: inline-grid; place-items: center; font-size: 12.5px; background: rgba(255, 255, 255, .14); }
 .b3-cam .ss-cartchip.has .ss-count { background: #0a84ff; }

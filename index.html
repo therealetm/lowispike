@@ -4318,7 +4318,11 @@ const ES_PHRASE = [[/\bbarritas? (?:de )?proteinas?\b/g, "protein bar"], [/\bbar
   /* "tortitas de arroz" / "tortitas de maiz" are rice / corn cakes, not pancakes; they were read as a rice dish (curry swap) */
   [/\btortitas? (?:de )?arroz\b/g, "rice cakes"], [/\btortitas? (?:de )?maiz\b/g, "corn cakes"],
   /* Oct 25 bug hunt: "limón" was read as German "Limo" + n (lemonade, spike); "tortilla francesa" is a plain omelette, not a wrap */
-  [/\blimon(?:es)?\b/g, "lemon"], [/\btortillas? francesas?\b/g, "omelette"]];
+  [/\blimon(?:es)?\b/g, "lemon"], [/\btortillas? francesas?\b/g, "omelette"],
+  /* Oct 28 sweep: "fruta deshidratada" / "fruta seca" were read as plain fruit (Small portion) while "dried fruit" and
+     "Trockenobst" are Skip it; "frutas secas", "orejones", "judías", "judías verdes" and "frutos secos" (nuts) were unknown */
+  [/\bfrutas? (?:deshidratadas?|secas?)\b/g, "dried fruit"], [/\borejones\b/g, "dried fruit"], [/\bjudias? verdes?\b/g, "green beans"],
+  [/\bjudias?\b/g, "beans"], [/\bfrutos secos\b/g, "nuts"]];
 const esMealToks = toks => { const out = []; toks.forEach((t, i) => {
   if (!Object.prototype.hasOwnProperty.call(ES_MEAL, t) || (t === "pan" && /^(fried|seared|roasted|fry|frying)$/.test(toks[i + 1] || ""))) { out.push(t); return; }
   if (ES_MEAL[t]) ES_MEAL[t].split(" ").forEach(x => out.push(x)); }); return out; };

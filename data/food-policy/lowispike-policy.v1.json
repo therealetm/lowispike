@@ -60,7 +60,7 @@
       ]
     },
     "nonstarchy_veg": {
-      "name": "brokkoli|broccoli|spinat|spinach|zucchini|paprika|gurke|cucumber|salat|lettuce|blumenkohl|cauliflower|grüne bohnen|green beans|champignon|pilze|mushroom|kohl\\b|rotkohl|tomate|tomato|aubergine|spargel|asparagus|verdura|espinaca|zwiebel|\\bonions?|cebolla|knoblauch|garlic|\\bajo\\b|karotte|möhre|moehre|carrots?|zanahoria|sellerie|celery|apio|radieschen|radish|rábano|grünkohl|\\bkale\\b|lauch|porree|\\bleeks?\\b|puerro|rosenkohl|brussels|okra|fenchel|fennel|hinojo|rucola|rocket|arugula|mangold|chard|acelga|pak ?choi|bok choy|kohlrabi|weißkohl|wirsing|chinakohl|sauerkraut|kimchi|artischocke|artichoke|alcachofa|oliven|\\bolives?\\b|aceitunas?|pepino|calabac[ií]n|br[óo]coli|coliflor|champiñon|setas|tomates?|lechuga|kräuter|\\bherbs?\\b|petersilie|parsley|perejil|basilikum|basil|albahaca|koriander|cilantro|ingwer|ginger|jengibre|zitrone|\\blemons?\\b|lim[óo]n|limette|\\blimes?\\b|essiggurke|gewürzgurke|pickles?\\b|konjac|konjak|shirataki|nori|algen|seaweed|bohnen grün|judías verdes|espárrago|berenjena|pimiento|eggplant|bell pepper|peppers?\\b|cabbage|\\bcoles?\\b|repollo|r[úu]cula|colinabo|pepinillos?|hierbas|spinat|espinacas|spargel|gemüse|vegetables?|veggies|verduras?|ensalada|salad\\b|lettuce|pilze|oregano|or[ée]gano|thymian|\\bthyme\\b|tomillo|rosmarin|rosemary|romero|\\bdill\\b|eneldo|minze|schnittlauch|chives|cebollino|salbei|\\bsage\\b|majoran|marjoram|mejorana|lorbeer|bay lea|hojas de laurel|estragon|tarragon|kreuzkümmel|\\bcumin\\b|comino|kurkuma|turmeric|c[úu]rcuma|muskat|nutmeg|nuez moscada|chilipulver|chil[il]i? powder|chil[il]i? flakes|chiliflocken|chile en polvo|currypulver|curry powder|curry en polvo|piment[óo]n|knoblauchpulver|garlic powder|ajo en polvo|zwiebelpulver|onion powder|cebolla en polvo|\\bsalsa\\b|\\bpfeffer\\b|pimienta|\\bsalz\\b|\\bsalt\\b|meersalz|sea salt|\\bsal\\b",
+      "name": "brokkoli|broccoli|spinat|spinach|zucchini|paprika|gurke|cucumber|salat|lettuce|blumenkohl|cauliflower|grüne bohnen|green beans|champignon|pilze|mushroom|kohl\\b|rotkohl|tomate|tomato|aubergine|spargel|asparagus|verdura|espinaca|zwiebel|\\bonions?|cebolla|knoblauch|garlic|\\bajo\\b|karotte|möhre|moehre|carrots?|zanahoria|sellerie|celery|apio|radieschen|radish|rábano|grünkohl|\\bkale\\b|lauch|porree|\\bleeks?\\b|puerro|rosenkohl|brussels|okra|fenchel|fennel|hinojo|rucola|rocket|arugula|mangold|chard|acelga|pak ?choi|bok choy|kohlrabi|weißkohl|wirsing|chinakohl|sauerkraut|kimchi|artischocke|artichoke|alcachofa|oliven|\\bolives?\\b|aceitunas?|pepino|calabac[ií]n|br[óo]coli|coliflor|champiñon|setas|tomates?|lechuga|kräuter|\\bherbs?\\b|petersilie|parsley|perejil|basilikum|basil|albahaca|koriander|cilantro|ingwer|ginger|jengibre|zitrone|\\blemons?\\b|lim[óo]n|limette|\\blimes?\\b|essiggurke|gewürzgurke|pickles?\\b|konjac|konjak|shirataki|nori|algen|seaweed|bohnen grün|jud[ií]as verdes|espárrago|berenjena|pimiento|eggplant|bell pepper|peppers?\\b|cabbage|\\bcoles?\\b|repollo|r[úu]cula|colinabo|pepinillos?|hierbas|spinat|espinacas|spargel|gemüse|vegetables?|veggies|verduras?|ensalada|salad\\b|lettuce|pilze|oregano|or[ée]gano|thymian|\\bthyme\\b|tomillo|rosmarin|rosemary|romero|\\bdill\\b|eneldo|minze|schnittlauch|chives|cebollino|salbei|\\bsage\\b|majoran|marjoram|mejorana|lorbeer|bay lea|hojas de laurel|estragon|tarragon|kreuzkümmel|\\bcumin\\b|comino|kurkuma|turmeric|c[úu]rcuma|muskat|nutmeg|nuez moscada|chilipulver|chil[il]i? powder|chil[il]i? flakes|chiliflocken|chile en polvo|currypulver|curry powder|curry en polvo|piment[óo]n|knoblauchpulver|garlic powder|ajo en polvo|zwiebelpulver|onion powder|cebolla en polvo|\\bsalsa\\b|\\bpfeffer\\b|pimienta|\\bsalz\\b|\\bsalt\\b|meersalz|sea salt|\\bsal\\b",
       "off": [
         "en:vegetables",
         "en:fresh-vegetables",
@@ -107,7 +107,7 @@
       ]
     },
     "legumes": {
-      "name": "linsen|lentils?|kichererbsen|chickpeas?|bohnen|beans\\b|hummus|lentejas|garbanzos|edamame|alubias|judías blancas|frijoles",
+      "name": "linsen|lentils?|kichererbsen|chickpeas?|bohnen|beans\\b|hummus|lentejas|garbanzos|edamame|alubias|\\bjud[ií]as?\\b(?! verdes?)|frijoles",
       "off": [
         "en:legumes",
         "en:pulses"
@@ -296,7 +296,7 @@
       ]
     },
     "sweet_fruit": {
-      "name": "banane|\\bbananas?\\b|plátano|\\bmangos?\\b|datteln|\\bdates?\\b|dátiles|weintrauben|\\btrauben|\\bgrapes?\\b|\\buvas\\b|ananas|pineapple|\\bpiña\\b|feigen|\\bfigs?\\b|higos|rosinen|raisins?|\\bpasas\\b|trockenobst|dried fruits?|fruta seca|\\bkaki\\b|persimmon|litschi|lychee|kochbanane|plantains?|plátano macho|sweet fruit|süßes obst|fruta dulce",
+      "name": "banane|\\bbananas?\\b|plátano|\\bmangos?\\b|datteln|\\bdates?\\b|dátiles|weintrauben|\\btrauben|\\bgrapes?\\b|\\buvas\\b|ananas|pineapple|\\bpiña\\b|feigen|\\bfigs?\\b|higos|rosinen|raisins?|\\bpasas\\b|trockenobst|dried fruits?|frutas? secas?|frutas? deshidratadas?|orejones|\\bkaki\\b|persimmon|litschi|lychee|kochbanane|plantains?|plátano macho|sweet fruit|süßes obst|fruta dulce",
       "off": [
         "en:bananas",
         "en:mangoes",

@@ -31,7 +31,7 @@ function fixture({owner=false,rows=[]}={}){
   async settle(){for(let i=0;i<12;i++){await tick();flush();}},
   async scope(id){actor=id;win.LowiCommunity.refresh();await f.settle();store=load();win.LowiCommunity.refresh();await f.settle();},
   click(data){const b={dataset:data,closest:()=>null};for(const h of events.click||[])h({target:{closest:()=>b},preventDefault(){},stopPropagation(){}});flush();},
-  menu(id){f.click({chat:'more',id});const m=store.find(x=>x.id===id);return win.LowiCommunity.messageHTML(m,store);}};
+  menu(id){f.click({chat:'more',id});return win.LowiCommunity.menuHTML(id);}};
  return f;
 }
 const now=Date.now(),iso=t=>new Date(t).toISOString();
@@ -58,14 +58,14 @@ test('nothing pinned: the bar stays hidden and the room starts right under the s
 
 test('admin pins from the message menu, a new pin replaces the old, the bar goes to the message, Unpin clears it for everyone',async()=>{
  const f=fixture({owner:true,rows:base});await f.scope('o');f.click({chat:'history'});await f.settle();
- const menu=f.menu('m1');assert.match(menu,/data-chat="pin-msg"[^>]*data-id="m1"[^>]*>Pin</);
+ const menu=f.menu('m1');assert.match(menu,/data-chat="pin-msg"[^>]*data-id="m1"[^>]*><span class="cx-tx">Pin</);
  f.click({chat:'pin-msg',id:'m1'});await f.settle();
  const marks=()=>f.db.filter(r=>K.pinOf(r.body));
  assert.equal(marks().length,1);assert.equal(marks()[0].body,K.pinBody('m1','First real message'));assert.equal(marks()[0].user_id,'o');
  assert.equal(f.nodes.crPin.hidden,false);assert.equal(f.el.dataset.pinned,'1');
  assert.match(f.nodes.crPin.innerHTML,/data-chat="pin-go"[^>]*data-id="m1"[\s\S]*cr-pinl">Pinned Message<[\s\S]*cr-pint">First real message</);
  assert.match(f.nodes.crPin.innerHTML,/data-chat="unpin"[^>]*>Unpin</,'the admin gets Unpin on the bar');
- assert.match(f.menu('m1'),/data-chat="unpin"[^>]*>Unpin</,'the pinned message offers Unpin in its menu');
+ assert.match(f.menu('m1'),/data-chat="unpin"[^>]*><span class="cx-tx">Unpin</,'the pinned message offers Unpin in its menu');
  assert.doesNotMatch(f.nodes.cmList?f.nodes.cmList.innerHTML:'',/pin:m1/,'the marker never shows as a chat line');
  f.click({chat:'pin-go',id:'m1'});assert.notEqual(f.nodes.cmList.scrollTop,0,'tapping the bar scrolls the list to the pinned message');
  f.click({chat:'pin-msg',id:'m2'});await f.settle();

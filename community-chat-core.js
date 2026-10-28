@@ -2,6 +2,12 @@
 (function(root){
 'use strict';
 const EMOJI = ['❤️','👏','🙏','🌱','✨'];
+/* 28 Oct 2026 (Emmanuel: "komische Emojis ... manche wiederholen sich ... du kannst normale iOS Emojis nutzen"): the five
+   stored reaction keys stay exactly as they are (old builds, the cloud's reactions table and any policy on it keep working,
+   and every reaction ever made still counts), but each one is SHOWN as a plain system emoji, in this order. The app's icon
+   swap (spirit.js symbols()) used to draw 👏 and 🙏 as the same hands icon; .cm-emo text is never swapped now. */
+const SHOW = [['❤️','❤️',['Heart','Herz','Corazón']],['👏','👍',['Thumbs up','Daumen hoch','Me gusta']],['🌱','😋',['Yummy','Lecker','Delicioso']],['✨','🔥',['Fire','Feuer','Fuego']],['🙏','🙏',['Thanks','Danke','Gracias']]];
+function glyph(key){const s=SHOW.find(x=>x[0]===key);return s?s[1]:'';}
 const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 const type = v => /^[IE][NS][TF][JP]$/.test(String(v || '').toUpperCase()) ? String(v).toUpperCase() : '';
 const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -81,6 +87,6 @@ function afterCaption(sent, cur){
  let text=ct;if(st.trim()){if(ct===st||ct.trim()===st.trim())text='';else if(ct.startsWith(st))text=ct.slice(st.length).replace(/^\s+/,'');}
  return {text,reply:cr&&cr!==sr?cr:null};
 }
-const api={EMOJI,SIGNS,type,esc,image,photo,photoBody,voice,voiceBody,meal,mealBody,pinOf,pinBody,unpinBody,pinned,identity,quiet,message,visible,read,write,session,afterCaption};
+const api={EMOJI,SHOW,glyph,SIGNS,type,esc,image,photo,photoBody,voice,voiceBody,meal,mealBody,pinOf,pinBody,unpinBody,pinned,identity,quiet,message,visible,read,write,session,afterCaption};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiChatCore=api;
 })(typeof window==='object'?window:globalThis);

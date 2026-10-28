@@ -287,3 +287,8 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose #cmMention>*
   html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin .cr-pingo{min-height:36px;padding-block:3px}
   html body #tab-foryou #cmPaneChat#cmPaneChat[data-room][data-pinned]{--cr-top:52px}
   html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin .cr-pinl{display:none}}
+
+/* ---- 28 Oct 2026: reactions under a bubble are system emojis (.cm-emo is never swapped for an icon); an empty reaction box
+   takes no room. The floating actions menu styles itself (CX_CSS in community-chat.js), it lives outside the room. ---- */
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-rx:empty,html body #cmPaneChat[data-spirit-chat] .cm-rx:empty{display:none!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-rx .cm-chip .cm-emo{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",system-ui,sans-serif;font-size:15px;line-height:1}

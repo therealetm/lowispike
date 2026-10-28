@@ -131,7 +131,8 @@ function frame(ts){raf=0;const j0=performance.now();const fresh=!lastT,dt=fresh?
       if(!play.moving())break;}
     if(n>=16)acc=0;
     for(const b of play.balls())if(b.vx||b.vy)trailAdd(b,now);
-    if(!play.moving()||play.steps()>T.MAXSTEPS)finishPlay();}
+    /* a phone that draws far too slowly (or was stuck) does not hold the table hostage: after 25 s on the clock the shot jumps to where it ends */
+    if(play&&!play.moving()||play&&play.steps()>T.MAXSTEPS||play&&Date.now()-(play._t0||Date.now())>25000){if(play.moving())play.settle();finishPlay();}}
   if(tween){const t=Math.min(1,(now-tween.t0)/tween.ms),e=1-Math.pow(1-t,3);tween.at={x:tween.a.x+(tween.b.x-tween.a.x)*e,y:tween.a.y+(tween.b.y-tween.a.y)*e,spin:tween.spin*e};trailAdd({uid:tween.uid,x:tween.at.x,y:tween.at.y},now);if(t>=1){tween=null;}}
   render();stats.jsMs+=performance.now()-j0;
   if(play||tween||aim||sparks.length||trails.size)kick();else lastT=0;}
@@ -143,7 +144,7 @@ function finishPlay(){if(!play)return;const end=playEnd||play.snapshot();for(con
 function rid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
 function fire(dx,dy,p){const by=me||'me';if(!rest.find(by))return false;if(play){play.settle();finishPlay();}tween=null;
   const start=rest.snapshot();rest.load(start);const res=C.simulate(start,by,dx,dy,p);if(!res)return false;
-  play=C.table();play.load(start);for(const b of play.balls()){const r=rest.find(b.uid);if(r)b.spin=r.spin||0;}play.shoot(by,dx,dy,p);play._mine=true;playEnd=res.final;acc=0;
+  play=C.table();play.load(start);for(const b of play.balls()){const r=rest.find(b.uid);if(r)b.spin=r.spin||0;}play.shoot(by,dx,dy,p);play._mine=true;play._t0=Date.now();playEnd=res.final;acc=0;
   const id=rid(),now=Date.now();stats.shots++;stats.lastShot={id,hit:res.hit,moved:res.moved.length,steps:res.steps};seenIds.add(id);
   for(const r of res.moved)hold.set(r[0],now+20000);
   /* everyone else in the Room replays it from the same start */
@@ -161,7 +162,7 @@ function onBlastHit(uid){if(!play)return;
 function remote(raw){const m=C.unpack(raw);if(!m)return false;if(m.by===me||seenIds.has(m.id))return false;seenIds.add(m.id);if(seenIds.size>200)seenIds.delete(seenIds.values().next().value);
   stats.remote++;stats.lastRemote={id:m.id,by:m.by,n:m.s.length};if(play){play.settle();finishPlay();}tween=null;
   const res=C.simulate(m.s,m.by,m.dx,m.dy,m.p);const end=(m.f&&m.f.length)?m.f:(res?res.final:m.s);
-  play=C.table();play.load(m.s);play._by=m.by;play._byName=m.n;if(!play.shoot(m.by,m.dx,m.dy,m.p)){play=null;for(const r of end){if(rest.find(r[0]))rest.set(r[0],r[1],r[2]);saved.set(r[0],{x:r[1],y:r[2]});}render();return true;}
+  play=C.table();play.load(m.s);play._t0=Date.now();play._by=m.by;play._byName=m.n;if(!play.shoot(m.by,m.dx,m.dy,m.p)){play=null;for(const r of end){if(rest.find(r[0]))rest.set(r[0],r[1],r[2]);saved.set(r[0],{x:r[1],y:r[2]});}render();return true;}
   playEnd=end;acc=0;const now=Date.now();for(const r of end)hold.set(r[0],now+20000);
   if(!visible()){play.settle();finishPlay();render();return true;}kick();return true;}
 

@@ -187,7 +187,20 @@
             '<h3 tabindex="-1">' + esc(T('To buy', 'Einkaufsliste', 'Por comprar')) + '</h3><span class="kg-oc">' + buy.length + '</span></div>' +
             '<p class="kg-sub">' + esc(T('The same list as your shopping list in Shop. Tap Bought and it moves into your kitchen.', 'Dieselbe Liste wie deine Einkaufsliste im Shop. Tipp auf Gekauft, dann kommt es in deine Küche.', 'La misma lista que tu lista de la compra en Shop. Toca Comprado y pasa a tu cocina.')) + '</p>' +
             (buy.length ? '<ul class="kg-cards">' + buy.map(i => row(i, false)).join('') + '</ul>' : '<p class="kg-none">' + esc(T('Nothing to buy. Things you bin show up here.', 'Nichts zu kaufen. Was du wegwirfst, steht dann hier.', 'Nada que comprar. Lo que eches al cubo aparece aquí.')) + '</p>') +
-            (got.length ? '<div class="kg-gotall"><small>' + esc(T(got.length + ' ticked off in the shop', got.length + ' im Laden abgehakt', got.length + ' marcados en la tienda')) + '</small><button type="button" class="kg-got" data-kg="gotall">' + esc(T('Put them in the kitchen', 'In die Küche räumen', 'Guardar en la cocina')) + '</button></div>' : '') + '</div>';
+            (got.length ? '<div class="kg-gotall"><small>' + esc(T(got.length + ' ticked off in the shop', got.length + ' im Laden abgehakt', got.length + ' marcados en la tienda')) + '</small><button type="button" class="kg-got" data-kg="gotall">' + esc(T('Put them in the kitchen', 'In die Küche räumen', 'Guardar en la cocina')) + '</button></div>' : '') + todayBought() + '</div>';
+    }
+    /* Slim batch 8 (X-03 into F-05): kitchen and shopping list are one workspace. What you bought today (the scan bucket)
+       shows right under the list; the full sheet with recipe ideas opens from here. Nothing is moved out of the bucket. */
+    function todayBought() {
+        const B = W.LowiBucket; let items = [];
+        try { items = B && B.today ? B.today() : []; } catch (e) { items = []; }
+        if (!items.length) return '';
+        const show = items.slice(0, 6), more = items.length - show.length;
+        return '<div class="kg-today" role="group" aria-label="' + esc(T('Bought today', 'Heute gekauft', 'Comprado hoy')) + '">' +
+            '<div class="kg-tdh"><b>' + esc(T('Bought today', 'Heute gekauft', 'Comprado hoy')) + '</b><span class="kg-oc">' + items.length + '</span></div>' +
+            '<ul class="kg-tdl">' + show.map(x => '<li><span class="kg-tdd v-' + esc(x.verdict || '') + '" aria-hidden="true"></span><span>' + esc(x.name || x.code || '') + '</span></li>').join('') +
+            (more > 0 ? '<li class="kg-tdm">+' + more + '</li>' : '') + '</ul>' +
+            (B.openToday ? '<button type="button" class="kg-tdgo" data-spend data-kg="today">' + esc(T('What can I cook from it?', 'Was koche ich daraus?', '¿Qué cocino con esto?')) + ' ›</button>' : '') + '</div>';
     }
     function noteHTML() {
         if (!note) return '<div class="kg-toast" role="status" aria-live="polite"></div>';
@@ -463,7 +476,9 @@
         else if (k === 'scan') scan();
         else if (k === 'unsel') { const id = sel; sel = ''; paint(); const n = r.querySelector('[data-kg-tok="' + cssq(id) + '"]'); if (n) try { n.focus({ preventScroll: true }); } catch (y) {} }
         else if (k === 'week') openWeek();
+        else if (k === 'today') { try { W.LowiBucket && W.LowiBucket.openToday && W.LowiBucket.openToday(); } catch (y) {} }
     });
+    W.addEventListener('lowi:bucket', () => { try { if (open === 'buy' && root()) paint(); } catch (e) {} });
     D.addEventListener('input', e => { if (e.target && e.target.id === 'kgQ') search(e.target.value || ''); });
     D.addEventListener('change', e => { const f = e.target && e.target.matches && e.target.matches('#kgRoot [data-kg-photo]') ? e.target : null; if (f) { const file = f.files && f.files[0]; f.value = ''; photo(file); return; }
         const m = e.target && e.target.closest && e.target.closest('[data-kg-move]'); if (!m) return; load(); const id = m.getAttribute('data-kg-move'); save(K.setShelf(kit, id, m.value)); const it = kit.items.find(i => i.id === id); sel = ''; paint(); if (it) say(T('Moved to ', 'Verschoben nach ', 'Movido a ') + G.byId(m.value).t[li()] + ': ' + it.n); });

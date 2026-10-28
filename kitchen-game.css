@@ -216,3 +216,15 @@ html[data-theme="light"]:not(.lg) .kg-scene::after { background: linear-gradient
     .kg-scan:active, .kg-door:active, .kg-note:active, .kg-hit:active, .kg-got:active, .kg-binbtn:active, .kg-bin.kg-hot { transform: none; }
     .kg-toast { transform: none; }
 }
+/* Slim batch 8: Heute gekauft under the shopping list */
+.kg-today { margin: 14px 0 4px; padding: 12px 12px 10px; border-radius: 16px; border: 1px solid rgba(143,231,255,.26); background: rgba(28,247,249,.06); }
+.kg-tdh { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; }
+.kg-tdh b { font-weight: 800; font-size: 15px; }
+.kg-tdl { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.kg-tdl li { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 5px 10px; border-radius: 999px; background: rgba(255,255,255,.07); font-size: 13px; line-height: 1.25; overflow-wrap: anywhere; }
+.kg-tdd { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #8fa3b5; }
+.kg-tdd.v-spike { background: var(--hi,#ff6b6b); } .kg-tdd.v-better { background: var(--mid,#ffc14d); } .kg-tdd.v-ok { background: var(--lo,#5AA9FF); }
+.kg-tdgo { appearance: none; margin-top: 10px; width: 100%; min-height: 44px; border-radius: 12px; border: 1px solid rgba(143,231,255,.38); background: rgba(48,120,255,.14); color: inherit; font: inherit; font-weight: 700; cursor: pointer; }
+.kg-tdgo:focus-visible { outline: 2px solid #1cf7f9; outline-offset: 2px; }
+html[data-theme="light"]:not(.lg) .kg-today { border-color: rgba(20,90,160,.22); background: rgba(48,120,255,.06); }
+html[data-theme="light"]:not(.lg) .kg-tdl li { background: rgba(10,40,80,.06); }

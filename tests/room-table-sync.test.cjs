@@ -31,13 +31,13 @@ test('a replaying phone gets the same rest positions as the shooter from the mes
 });
 
 test('saved positions: table coordinates are stored as 4000 + x / 4000 + y, and old room-coordinate rows are ignored', () => {
-  const e = C.enc(123.45, 1499.9); assert.deepEqual(e, { rx: 4123.5, ry: 5499.9 });
-  assert.deepEqual(C.dec(e.rx, e.ry), { x: 123.5, y: 1499.9 });
+  const e = C.enc(123.45, 1249.9); assert.deepEqual(e, { rx: 4123.5, ry: 5249.9 });
+  assert.deepEqual(C.dec(e.rx, e.ry), { x: 123.5, y: 1249.9 });
   assert.equal(C.dec(-340, 220), null, 'an old map position (room coordinates) is not a table position');
   assert.equal(C.dec(5200, 4100), null, 'off the table');
   assert.equal(C.dec('x', 1), null);
   /* the database guard allows -6000..6000 */
-  assert.ok(e.rx <= 6000 && e.ry <= 6000 && C.enc(1000, 1500).ry <= 6000);
+  assert.ok(e.rx <= 6000 && e.ry <= 6000 && C.enc(1000, 1250).ry <= 6000);
 });
 
 test('the table owns the Room: community-chat hands the view over and the old map energy layer stands down', () => {
@@ -83,14 +83,14 @@ test('knocked while away: your saved spot moved by someone else gives a note wit
   await new Promise(r => setTimeout(r, 20));
   /* first visit: no table spot saved yet, so your ball's spot is saved for everyone */
   assert.ok(rows.some(r => r.user_id === ME), 'own spot saved');
-  /* you last saw yourself at (150,200); Antje knocked you to (800,1300) while you were away */
+  /* you last saw yourself at (150,200); Antje knocked you to (800,1150) while you were away */
   store['lowi:rt-seen'] = JSON.stringify({ u: ME, x: 150, y: 200, t: 1 });
-  rows.length = 0; rows.push({ user_id: ME, rx: 4800, ry: 5300, moved_by: ANTJE, updated_at: new Date().toISOString() }, { user_id: ANTJE, rx: -120, ry: 300, moved_by: ANTJE, updated_at: new Date().toISOString() });
+  rows.length = 0; rows.push({ user_id: ME, rx: 4800, ry: 5150, moved_by: ANTJE, updated_at: new Date().toISOString() }, { user_id: ANTJE, rx: -120, ry: 300, moved_by: ANTJE, updated_at: new Date().toISOString() });
   await W.LowiTable.load(true);
   const toast = gal.children[0].querySelector('.rt-toast');
   assert.match(toast.textContent, /^Antje hat dich weggestoßen, während du weg warst$/);
   const meBall = W.LowiTable.state().balls.find(b => b.uid === ME);
-  assert.deepEqual([meBall.x, meBall.y], [800, 1300], 'your ball is where it was knocked');
+  assert.deepEqual([meBall.x, meBall.y], [800, 1150], 'your ball is where it was knocked');
   const antje = W.LowiTable.state().balls.find(b => b.uid === ANTJE);
   assert.ok(antje.x >= 50 && antje.y >= 50, 'an old room-coordinate row does not throw Antje off the table');
   assert.equal(JSON.parse(store['lowi:rt-seen']).x, 800, 'seen is updated, so the note shows once');

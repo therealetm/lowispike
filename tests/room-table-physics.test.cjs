@@ -8,7 +8,7 @@ const C = require('../room-table-core.js');
 const T = C.T;
 
 test('a blast hits the first ball in its path and that ball rolls, then rests', () => {
-  const t = C.table(); t.load([['a', 500, 1200], ['b', 500, 600], ['c', 500, 300]]);
+  const t = C.table(); t.load([['a', 500, 1100], ['b', 500, 600], ['c', 500, 300]]);
   assert.equal(t.shoot('a', 0, -1, 1), true);
   let steps = 0, rolled = false;
   while (t.moving() && steps < T.MAXSTEPS) { t.step(); steps++; if (t.find('b').vy < -100) rolled = true; }
@@ -20,7 +20,7 @@ test('a blast hits the first ball in its path and that ball rolls, then rests', 
 });
 
 test('a straight centre hit passes the momentum on (Newton\'s cradle): the hit ball nearly stops, the next one runs', () => {
-  const t = C.table(); t.load([['a', 500, 1400], ['b', 500, 900], ['c', 500, 799]]);
+  const t = C.table(); t.load([['a', 500, 1180], ['b', 500, 700], ['c', 500, 599]]);
   t.shoot('a', 0, -1, .6);
   /* fly until the blast has hit b and b has hit c */
   let n = 0; while (!t.hits().some(h => h.k === 'ball') && n < 400) { t.step(); n++; }
@@ -45,7 +45,7 @@ test('ball-to-ball collisions keep momentum and lose only a little energy', () =
 });
 
 test('cushions reflect a ball with restitution and keep it on the table', () => {
-  const t = C.table(); const a = t.set('a', 900, 750); a.vx = 2000; a.vy = 0;
+  const t = C.table(); const a = t.set('a', 900, 600); a.vx = 2000; a.vy = 0;
   let bounced = false; for (let i = 0; i < 60; i++) { t.step(); if (a.vx < 0) bounced = true; assert.ok(a.x <= T.W - a.r + 1e-9 && a.x >= a.r - 1e-9); }
   assert.ok(bounced, 'bounced off the right cushion');
   assert.ok(Math.abs(a.vx) < 2000 * T.WALL, 'lost speed in the cushion');
@@ -78,13 +78,13 @@ test('the same start and the same shot give exactly the same result (shooter and
 });
 
 test('a soft shot rolls less far than a hard one, and a miss only bumps the shooter back a little', () => {
-  const soft = C.table(); soft.load([['a', 500, 1300], ['b', 500, 900]]); soft.shoot('a', 0, -1, .1); soft.settle();
-  const hard = C.table(); hard.load([['a', 500, 1300], ['b', 500, 900]]); hard.shoot('a', 0, -1, 1); hard.settle();
+  const soft = C.table(); soft.load([['a', 500, 1150], ['b', 500, 750]]); soft.shoot('a', 0, -1, .1); soft.settle();
+  const hard = C.table(); hard.load([['a', 500, 1150], ['b', 500, 750]]); hard.shoot('a', 0, -1, 1); hard.settle();
   assert.ok(hard.find('b').moved > soft.find('b').moved * 1.8);
-  const miss = C.table(); miss.load([['a', 500, 750], ['b', 100, 100]]); miss.shoot('a', 1, 0, 1); miss.settle();
+  const miss = C.table(); miss.load([['a', 500, 600], ['b', 100, 100]]); miss.shoot('a', 1, 0, 1); miss.settle();
   assert.ok(miss.hits().some(h => h.k === 'fizzle'), 'the blast fizzles in the cushion');
-  assert.deepEqual([Math.round(miss.find('a').x), Math.round(miss.find('a').y)], [500, 750], 'no recoil without a hit');
-  assert.ok(hard.find('a').y > 1300, 'a hit pushes the shooter back a little (recoil)');
+  assert.deepEqual([Math.round(miss.find('a').x), Math.round(miss.find('a').y)], [500, 600], 'no recoil without a hit');
+  assert.ok(hard.find('a').y > 1150, 'a hit pushes the shooter back a little (recoil)');
 });
 
 test('home spots: the same spot for a uid on every phone, all on the table, none overlapping', () => {
@@ -104,10 +104,10 @@ test('relax pushes balls that were saved on top of each other apart, inside the 
 });
 
 test('the guide line finds the ball the blast will hit first', () => {
-  const balls = [{ uid: 'me', x: 500, y: 1200, r: T.R }, { uid: 'near', x: 510, y: 800, r: T.R }, { uid: 'far', x: 500, y: 300, r: T.R }, { uid: 'side', x: 800, y: 1000, r: T.R }];
-  const g = C.guide(balls, 'me', 500, 1135, 0, -1);
+  const balls = [{ uid: 'me', x: 500, y: 1150, r: T.R }, { uid: 'near', x: 510, y: 800, r: T.R }, { uid: 'far', x: 500, y: 300, r: T.R }, { uid: 'side', x: 800, y: 1000, r: T.R }];
+  const g = C.guide(balls, 'me', 500, 1085, 0, -1);
   assert.equal(g.uid, 'near');
-  const w = C.guide(balls, 'me', 500, 1135, -1, 0);
+  const w = C.guide(balls, 'me', 500, 1085, -1, 0);
   assert.equal(w.uid, null); assert.ok(Math.abs(w.x) < 1e-6, 'misses run to the cushion');
   const a = C.aim(0, 100, 140);
   assert.ok(a.dy < 0 && Math.abs(a.p - 100 / 140) < 1e-9, 'pulling down aims up (slingshot)');

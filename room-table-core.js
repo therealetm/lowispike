@@ -4,12 +4,12 @@
    no randomness: the same start + the same shot gives the same rest positions on every phone (only + - * / and sqrt, fixed 120 Hz
    steps, balls always solved in uid order), so the shooter computes where everyone ends up, writes it, and every other phone
    replays the same shot from the same start and sees the same roll.
-   Table units: a fixed portrait table W x H (1000 x 1500), the same on every screen; the UI only scales it.
+   Table units: a fixed 4:5 table W x H (1000 x 1250), the same on every screen; the UI only scales it.
    A shot: an energy blast leaves your ball in the aimed direction, flies straight, and the first ball it touches gets the blast's
    momentum (the cue strike). From there it is billiards: momentum, rolling friction, cushions with restitution, elastic
    ball-to-ball impulses with positional separation (chain reactions), and a sleep threshold so everything comes to rest. */
 (function(W){'use strict';
-const T={W:1000,H:1500,R:50,BR:14,HZ:120,DT:1/120,
+const T={W:1000,H:1250,R:50,BR:14,HZ:120,DT:1/120,
   DAMP:.9935,      /* velocity kept per step (about 46% per second): the felt's drag */
   ROLL:150,        /* plus a constant rolling resistance in units/s^2, so a slow ball stops instead of creeping */
   WALL:.82,        /* cushion restitution */
@@ -25,7 +25,7 @@ function r1(v){return Math.round(v*10)/10;}
 function hash(s){let h=2166136261;s=String(s||'');for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return h>>>0;}
 /* A ball with no saved position gets a spot from its uid alone (the same spot on every phone): a cell of a loose grid picked by
    the uid's hash, probing on when the cell is taken (taken = by a ball placed earlier in uid order). */
-function homeSpots(uids,fixed){const cols=7,rows=11,cw=T.W/cols,ch=T.H/rows,taken=new Set(),out={};
+function homeSpots(uids,fixed){const cols=7,rows=10,cw=T.W/cols,ch=T.H/rows,taken=new Set(),out={};
   const near=(x,y)=>{for(const k in fixed){const p=fixed[k];if(p&&Math.abs(p.x-x)<T.R*2.1&&Math.abs(p.y-y)<T.R*2.1)return true;}for(const k in out){const p=out[k];if(Math.abs(p.x-x)<T.R*2.1&&Math.abs(p.y-y)<T.R*2.1)return true;}return false;};
   const list=uids.slice().sort();
   for(const u of list){if(fixed&&fixed[u])continue;const h=hash(u);let c=h%(cols*rows),tries=0,x=0,y=0;

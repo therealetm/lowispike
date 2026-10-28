@@ -36,7 +36,7 @@ const log = (k, v) => { console.log(k + ' ' + JSON.stringify(v)); };
   /* 2. zoom gestures do nothing */
   const before = await P.evaluate(() => JSON.stringify(LowiTable.state().balls) + LowiTable.state().scale);
   const fc = await P.evaluate(() => { const r = document.querySelector('.rt-felt').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
-  await P.mouse.move(fc.x, fc.y); await P.mouse.wheel(0, -400); await H.sleep(400);
+  await P.mouse.move(fc.x, fc.y); try { await P.mouse.wheel(0, -400); } catch (e) { /* mobile WebKit has no wheel: a ctrl-wheel / pinch-like event in the page instead */ await P.evaluate(([x, y]) => { const el = document.elementFromPoint(x, y); el.dispatchEvent(new WheelEvent('wheel', { deltaY: -400, ctrlKey: true, clientX: x, clientY: y, bubbles: true, cancelable: true })); }, [fc.x, fc.y]); } await H.sleep(400);
   const after = await P.evaluate(() => JSON.stringify(LowiTable.state().balls) + LowiTable.state().scale);
   if (before !== after) fail('wheel changed the table');
   /* 3. a real shot: pull back from the nearest ball's direction and let go */
@@ -48,6 +48,10 @@ const log = (k, v) => { console.log(k + ' ' + JSON.stringify(v)); };
   for (let i = 1; i <= 8; i++) { await P.mouse.move(sx - plan.ux * 20 * i, sy - plan.uy * 20 * i); await H.sleep(16); }
   await P.screenshot({ path: out + '/1-aim.png' });
   const t0 = Date.now(); await P.mouse.up();
+  /* mobile WebKit may not turn mouse input into pointer events: drag with real PointerEvents in the page then */
+  await H.sleep(200);
+  if ((await P.evaluate(() => LowiTable.stats().shots)) === st0.shots) { res.dragVia = 'PointerEvent'; await P.evaluate(([sx, sy, ux, uy]) => { const felt = document.querySelector('.rt-felt'); const ev = (t, x, y) => felt.dispatchEvent(new PointerEvent(t, { pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: x, clientY: y, bubbles: true, cancelable: true, button: 0 }));
+      ev('pointerdown', sx, sy); for (let i = 1; i <= 8; i++) ev('pointermove', sx - ux * 20 * i, sy - uy * 20 * i); ev('pointerup', sx - ux * 160, sy - uy * 160); }, [sx, sy, plan.ux, plan.uy]); } else res.dragVia = 'mouse';
   const track = [], shots = [];
   for (let i = 0; i < 200; i++) {
     const s = await P.evaluate(() => { const st = LowiTable.state(); const m = {}; for (const b of document.querySelectorAll('.rt-ball')) m[b.dataset.uid] = b.style.transform; return { play: st.play, moving: st.moving, tf: m }; });
@@ -85,7 +89,7 @@ const log = (k, v) => { console.log(k + ' ' + JSON.stringify(v)); };
   if (!rst.remote) fail('remote shot not received'); if (maxErr > 1.5) fail('remote replay differs by ' + maxErr);
   /* 6. knocked while away: your ball rolls from where you saw it, and a note says who */
   const away = await P.evaluate(() => { const st = LowiTable.state(); localStorage.setItem('lowi:rt-seen', JSON.stringify({ u: st.me, x: 150, y: 200, t: Date.now() - 3600e3 })); return st.me; });
-  if (R.sim) { R.sim.W.companion_rest = (R.sim.W.companion_rest || []).filter(r => r.user_id !== away); R.sim.W.companion_rest.push({ user_id: away, rx: 4000 + 820, ry: 4000 + 1320, moved_by: '00000064-0000-4000-8000-000000000100', updated_at: new Date(Date.now() + 60000).toISOString() }); }
+  if (R.sim) { R.sim.W.companion_rest = (R.sim.W.companion_rest || []).filter(r => r.user_id !== away); R.sim.W.companion_rest.push({ user_id: away, rx: 4000 + 820, ry: 4000 + 1150, moved_by: '00000064-0000-4000-8000-000000000100', updated_at: new Date(Date.now() + 60000).toISOString() }); }
   for (let i = 0; i < 240; i++) { if (!(await P.evaluate(() => LowiTable.state().play))) break; await H.sleep(500); }
   await H.sleep(21000); /* past the hold after the last shot */
   await P.evaluate(() => LowiTable.load(true)); await H.sleep(500);
@@ -94,7 +98,7 @@ const log = (k, v) => { console.log(k + ' ' + JSON.stringify(v)); };
   for (let i = 0; i < 60; i++) { if (!(await P.evaluate(() => LowiTable.state().tween))) break; await H.sleep(500); }
   const meNow = await P.evaluate(() => { const st = LowiTable.state(); return st.balls.find(b => b.uid === st.me); });
   res.away = { note, me: meNow }; log('away', res.away);
-  if (!note.notes || !/weggesto|knocked you away|te empuj/.test(note.text || '')) fail('no knocked-away note'); if (!meNow || Math.abs(meNow.x - 820) > 60 || Math.abs(meNow.y - 1320) > 60) fail('own ball not at the knocked spot');
+  if (!note.notes || !/weggesto|knocked you away|te empuj/.test(note.text || '')) fail('no knocked-away note'); if (!meNow || Math.abs(meNow.x - 820) > 60 || Math.abs(meNow.y - 1150) > 60) fail('own ball not at the knocked spot');
   /* 7. open/close the Room six times with a shot each: no errors, no crash */
   for (let k = 0; k < 6; k++) {
     await P.evaluate(() => goTab('home')); await H.sleep(700); await openRoom();

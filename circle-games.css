@@ -1,0 +1,45 @@
+/* LOWiSPIKE · Circle games bar (29 Oct 2026, see circle-games.js). Same pill bar as the Supermarkt bar (store-picks.css
+   .stp-tabs.stp-tabs3.stp-tabs4): four round tabs, emoji over a short word, the open one glows. */
+#cspBar{display:none}
+html.csp-circle #cmPaneChat>#cspBar{
+  flex:0 0 auto;display:grid;grid-template-columns:repeat(4,auto);gap:2px;margin:4px 12px 6px;padding:4px;border-radius:26px;position:relative;z-index:4;
+  border:1.2px solid var(--mb-pill-rim, rgba(143,231,255,.42));background:rgba(10,22,58,.38);
+  box-shadow:inset 0 0 14px rgba(155,135,210,.32),0 0 16px rgba(143,231,255,.14);
+  -webkit-backdrop-filter:blur(16px) saturate(1.25);backdrop-filter:blur(16px) saturate(1.25);color:#fff}
+.csp-tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;min-height:50px;padding:5px 6px;
+  border-radius:22px;font:inherit;color:inherit;cursor:pointer;border:0;background:transparent;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  transition:background .2s ease,color .2s ease,box-shadow .2s ease}
+.csp-tab span{font-size:17px;line-height:1}
+.csp-tab b{font-size:11.5px;font-weight:800;line-height:1.1;white-space:nowrap;letter-spacing:-.01em;max-width:100%;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.csp-tab[aria-selected="true"]{background:radial-gradient(circle at 35% 30%,#c9f5ff,#6fd6ff);color:#062033;box-shadow:0 0 16px rgba(143,231,255,.45),inset 0 0 8px rgba(255,255,255,.5)}
+.csp-tab:focus-visible{outline:2px solid #c9f5ff;outline-offset:2px}
+@media (max-width:360px){.csp-tab{padding:5px 3px}.csp-tab b{font-size:10.5px}.csp-tab span{font-size:15px}}
+@media (prefers-reduced-motion:reduce){.csp-tab{transition:none}}
+html.lt:not(.lg).csp-circle #cmPaneChat>#cspBar{background:rgba(255,255,255,.6);color:#0d2440;border-color:rgba(40,140,220,.45)}
+
+/* the quiet-hours line ("Ruhezeit · Updates bleiben still") is gone from Circle; the games bar sits in its place.
+   A real problem (offline, an error with its retry button) still shows. */
+html.csp-circle #cmPaneChat:not([data-room]) #csStatus:not([data-state="error"]):not([data-state="offline"]):not([data-state="auth"]){display:none!important}
+/* the Freundesbaum lives in the bar now, so its old corner button in the Circle room goes */
+html.csp-circle .nm-ctree{display:none!important}
+
+/* Mischen / Swipen: Kochen rises in a panel right under the bar. Circle (its header and the bar) stays fully drawn and tappable
+   above it, there is no dim scrim, so it reads as part of Circle and not as a new window. */
+html.csp-game #cookHoloScrim{display:none!important}
+html.csp-game.cook-holo #main>#tab-foryou.holo-under,.apple-ui html.csp-game.cook-holo #main #tab-foryou.holo-under,html.csp-game.cook-holo.apple-ui #main #tab-foryou.holo-under{opacity:1!important;pointer-events:auto!important;content-visibility:visible!important}
+html.csp-game.cook-holo #main>#tab-foryou.holo-under .rm-bar,html.csp-game.cook-holo #main>#tab-foryou.holo-under #cspBar{-webkit-backdrop-filter:blur(16px) saturate(1.25)!important;backdrop-filter:blur(16px) saturate(1.25)!important}
+html.csp-game.cook-holo.cook-holo.cook-holo #app #main#main>#tab-shelf.tab.active:not(#bw3x):not(#csp0){
+  top:var(--csp-top, calc(var(--sat, env(safe-area-inset-top, 0px)) + 210px))!important;bottom:calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 10px)!important;
+  border-radius:26px!important;animation:cspRise .22s cubic-bezier(.2,.9,.3,1)}
+@keyframes cspRise{from{opacity:.5;translate:0 10px}to{opacity:1;translate:0 0}}
+@media (prefers-reduced-motion:reduce){html.csp-game #main>#tab-shelf.active{animation:none!important}}
+/* inside Circle the bar is the Mischen | Swipen switch, so Kochen's own title row and switch are not shown */
+html.csp-game #tab-shelf #shTop,html.csp-game #tab-shelf .sh-top,html.csp-game #tab-shelf #ckBar .ck-view{display:none!important}
+
+/* Freundesbaum: the tree sits in the same spot under the bar, as part of Circle (no dark cover, no close button; Billard closes it) */
+.cr-ov.cr-ov-tree.csp-inline{inset:auto;top:var(--csp-top, 200px);left:max(10px, calc(50% - 290px));right:max(10px, calc(50% - 290px));
+  bottom:calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 10px);background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  align-items:stretch;justify-content:stretch;padding:0;z-index:30;animation:cspRise .22s cubic-bezier(.2,.9,.3,1)}
+.cr-ov.cr-ov-tree.csp-inline>.cr-panel{width:100%;max-width:none;height:100%;max-height:none;border-radius:26px;margin:0;
+  border:1.2px solid rgba(143,231,255,.5)}
+.cr-ov.cr-ov-tree.csp-inline .cr-x{display:none!important}

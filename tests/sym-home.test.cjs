@@ -37,6 +37,6 @@ test('Day/Night sits above Sound like VR above World map, weather is round, file
     assert.ok(/#tbTheme#tbTheme \{[^}]*position: fixed !important;[^}]*width: 46px !important; height: 46px !important;/.test(css));
     assert.ok(js.includes('sr.top - (mr.top - vrr.top)') && js.includes('sr.left + (sr.width - w) / 2'), 'same gap as VR over map, centred on Sound');
     assert.ok(/\.sp-weather\.sp-weather,[\s\S]*border-radius: 50% !important;/.test(css), 'round weather');
-    assert.ok(/id="symCss" href="sym-home\.css\?v=\d{8}-\d{6}">\n<script src="sym-home\.js\?v=\d{8}-\d{6}"><\/script>\n(<link rel="stylesheet" id="secCss" href="section-nav\.css\?v=\d{8}-\d{6}">\n<script src="section-nav\.js\?v=\d{8}-\d{6}"><\/script>\n)?(<link rel="stylesheet" href="bottom-close\.css\?v=\d{8}-\d{6}">\n<script src="bottom-close\.js\?v=\d{8}-\d{6}"><\/script>\n)?<\/body>/.test(html));
+    assert.ok(/id="symCss" href="sym-home\.css\?v=\d{8}-\d{6}">\n<script src="sym-home\.js\?v=\d{8}-\d{6}"><\/script>\n(<link rel="stylesheet" id="secCss" href="section-nav\.css\?v=\d{8}-\d{6}">\n<script src="section-nav\.js\?v=\d{8}-\d{6}"><\/script>\n)?(<link rel="stylesheet" href="circle-games\.css\?v=\d{8}-\d{6}">\n<script src="circle-games\.js\?v=\d{8}-\d{6}"><\/script>\n)?(<link rel="stylesheet" href="bottom-close\.css\?v=\d{8}-\d{6}">\n<script src="bottom-close\.js\?v=\d{8}-\d{6}"><\/script>\n)?<\/body>/.test(html));
     assert.ok(sw.includes('"sym-home.js", "sym-home.css"'));
 });

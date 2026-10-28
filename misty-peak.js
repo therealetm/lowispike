@@ -195,9 +195,11 @@
         if (!p.peak) h += '<h4 class="mp-h">' + esc(tr('missing', l)) + '</h4>';
         h += '<ul class="mp-list">';
         order.forEach(r => {
-            const t = rowText(r, l), tap = !r.done && r.act;
-            const inner = '<span class="mp-ic">' + (r.done ? ICON.ok : ICON.no) + '</span><span class="mp-tx"><b>' + esc(t[0]) + '</b>' + (t[1] ? '<small>' + esc(t[1]) + '</small>' : '') + '</span>' + (tap ? '<span class="mp-go">' + ICON.go + '</span>' : '');
-            h += '<li data-k="' + r.k + '" data-done="' + (r.done ? 1 : 0) + '">' + (tap ? '<button type="button" data-mp="' + esc(r.act) + '" aria-label="' + esc(t.join('. ')) + '">' + inner + '</button>' : '<div class="mp-row">' + inner + '</div>') + '</li>';
+            /* 29 Oct 2026 (Emmanuel: "Diese Shortcuts sollten eigentlich nur so eine Checkliste sein ... nicht, dass das einen
+               irgendwo hinbringt"): every row is a plain checklist line. No button, no arrow, no tap that opens a window. */
+            const t = rowText(r, l);
+            const inner = '<span class="mp-ic">' + (r.done ? ICON.ok : ICON.no) + '</span><span class="mp-tx"><b>' + esc(t[0]) + '</b>' + (t[1] ? '<small>' + esc(t[1]) + '</small>' : '') + '</span>';
+            h += '<li data-k="' + r.k + '" data-done="' + (r.done ? 1 : 0) + '"><div class="mp-row">' + inner + '</div></li>';
         });
         return h + '</ul></section>';
     }
@@ -257,7 +259,7 @@
     /* the sugar wave fades with time, nothing fires for that: one cheap check a minute */
     setInterval(() => { if (!D.hidden) schedule(); }, 60000);
 
-    /* a missing row taps through to the place that fixes it */
+    /* (until 29 Oct 2026 a missing row tapped through here; the checklist rows no longer call it) */
     function go(act) {
         try { if (W.LowiMistyHub && W.LowiMistyHub.close) W.LowiMistyHub.close(); } catch (e) { }
         setTimeout(() => {
@@ -275,7 +277,7 @@
             } catch (e) { console.error(e); }
         }, 380);
     }
-    D.addEventListener('click', e => { const b = e.target.closest && e.target.closest('#mistyPeak [data-mp]'); if (!b) return; e.preventDefault(); go(b.dataset.mp); });
+    /* 29 Oct 2026: the rows are a checklist only, so nothing listens for a tap on them any more (go() stays for old callers) */
 
     function boot() { schedule(); }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();

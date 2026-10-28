@@ -62,7 +62,11 @@ test('the user\'s state: energy full, but a sugar rush holds Misty back and Worl
     assert.match(h, /id="mistyPeak" data-peak="0"/);
     assert.match(h, /World glow<\/h3><b class="mp-pct num">\d+%/);
     assert.match(h, /What\u2019s missing/);
-    assert.match(h, /data-mp="move"/);
+    /* 29 Oct 2026: a checklist only, no row taps anywhere (no button, no arrow) */
+    assert.doesNotMatch(h, /data-mp=/);
+    assert.doesNotMatch(h, /<button/);
+    assert.doesNotMatch(h, /class="mp-go"/);
+    assert.match(h, /<li data-k="sugar" data-done="0"><div class="mp-row">/);
     assert.ok(h.indexOf('data-k="sugar"') < h.indexOf('data-k="water"'), 'missing rows come first');
 });
 

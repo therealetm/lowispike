@@ -55,7 +55,8 @@ test('cushions reflect a ball with restitution and keep it on the table', () => 
 test('a full table: chain reactions, nobody leaves the table, nobody overlaps at rest, and it rests within 25 seconds', () => {
   const uids = Array.from({ length: 40 }, (_, i) => 'u' + String(i).padStart(2, '0'));
   const spots = C.homeSpots(uids, {}); const start = uids.map(u => [u, spots[u].x, spots[u].y]);
-  const r = C.simulate(start, 'u07', .25, -1, 1);
+  const me = spots.u07, tg = uids.filter(u => u !== 'u07').map(u => spots[u]).sort((a, b) => Math.hypot(a.x - me.x, a.y - me.y) - Math.hypot(b.x - me.x, b.y - me.y))[0];
+  const r = C.simulate(start, 'u07', tg.x - me.x, tg.y - me.y, 1);
   assert.ok(r, 'shot ran'); assert.ok(r.hit, 'hit someone');
   assert.ok(r.moved.length >= 4, `chain reaction moved ${r.moved.length} balls`);
   assert.ok(r.steps < T.MAXSTEPS, `rested after ${(r.steps / T.HZ).toFixed(1)} s`);

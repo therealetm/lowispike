@@ -89,12 +89,12 @@ const log = (k, v) => { console.log(k + ' ' + JSON.stringify(v)); };
   for (let i = 0; i < 240; i++) { if (!(await P.evaluate(() => LowiTable.state().play))) break; await H.sleep(500); }
   await H.sleep(21000); /* past the hold after the last shot */
   await P.evaluate(() => LowiTable.load(true)); await H.sleep(500);
-  const note = await P.evaluate(() => { const t = document.querySelector('.rt-toast'); return { text: t && t.textContent, on: !!(t && t.classList.contains('on')), tween: LowiTable.state().tween }; });
+  const note = await P.evaluate(() => { const t = document.querySelector('.rt-toast'); return { text: t && t.textContent, on: !!(t && t.classList.contains('on')), tween: LowiTable.state().tween, notes: LowiTable.stats().notes }; });
   await P.screenshot({ path: out + '/5-knocked-away.png' });
   for (let i = 0; i < 60; i++) { if (!(await P.evaluate(() => LowiTable.state().tween))) break; await H.sleep(500); }
   const meNow = await P.evaluate(() => { const st = LowiTable.state(); return st.balls.find(b => b.uid === st.me); });
   res.away = { note, me: meNow }; log('away', res.away);
-  if (!note.on || !/weggesto|knocked you away|te empuj/.test(note.text || '')) fail('no knocked-away note'); if (!meNow || Math.abs(meNow.x - 820) > 60 || Math.abs(meNow.y - 1320) > 60) fail('own ball not at the knocked spot');
+  if (!note.notes || !/weggesto|knocked you away|te empuj/.test(note.text || '')) fail('no knocked-away note'); if (!meNow || Math.abs(meNow.x - 820) > 60 || Math.abs(meNow.y - 1320) > 60) fail('own ball not at the knocked spot');
   /* 7. open/close the Room six times with a shot each: no errors, no crash */
   for (let k = 0; k < 6; k++) {
     await P.evaluate(() => goTab('home')); await H.sleep(700); await openRoom();

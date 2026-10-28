@@ -24,6 +24,8 @@ const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ?
     return { open: !!c, cls: c && c.className, st: c && c.dataset.st, gum: window.__gum, stops: window.__gumStops, btn, hint: c && (c.querySelector('#b3Hint') || {}).textContent, shut: r('.b3-shut'), frame: r('.b3-frame'), bc: r('#b3BcF'), cacts: r('.b3-cacts'), vw: innerWidth, loaded: window.__loaded,
       vid: (() => { const v = document.getElementById('b3Vid'); return v ? { ok: !!v.srcObject, active: !!(v.srcObject && v.srcObject.active), w: v.videoWidth } : null; })() }; });
   const res = { engine, lang, w, url: url || 'local' };
+  for (let i = 0; i < 24; i++) { const v = await P.evaluate(() => { const x = document.getElementById('b3Vid'); return x && x.videoWidth && x.readyState >= 2; }); if (v) break; await H.sleep(500); }
+  await H.sleep(5000); /* past the 4.5 s start-up watchdog, so a restart there is not mistaken for the mode switch */
   res.a_open = await st();
   await P.click('#b3Cam [data-b3="camact"][data-act="photo"]'); await H.sleep(900);
   res.b_photo = await st();
@@ -36,7 +38,7 @@ const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ?
   for (let i = 0; i < 20; i++) { await H.sleep(500); if (await P.evaluate(() => !!document.getElementById('spMeal'))) break; }
   await H.sleep(800);
   res.e_after = await P.evaluate(() => { const f = document.getElementById('spMeal'); const sheet = f && f.closest('.ss-sheet, .sp-sheet, [role=dialog]') || null; const sb = f && f.querySelector('button[type=submit]');
-    const words = []; if (sb) { const r = document.createRange(); r.selectNodeContents(sb); const rects = [...r.getClientRects()]; words.push(rects.length); }
+    const words = []; if (sb) { const tn = [...sb.querySelectorAll('*'), sb].flatMap(e => [...e.childNodes]).filter(n => n.nodeType === 3 && n.textContent.trim()); const tops = new Set(); tn.forEach(n => { const r = document.createRange(); r.selectNodeContents(n); [...r.getClientRects()].forEach(q => tops.add(Math.round(q.top))); }); words.push(tops.size); }
     return { camOpen: !!document.getElementById('b3Cam'), stops: window.__gumStops, sheet: !!f, img: !!document.querySelector('.sp-photo-prev'), submit: sb && sb.textContent.trim(), submitRects: words[0], retake: !!document.querySelector('[data-sp="photo"]'), mealEv: window.__mealEv, fastSame: localStorage.getItem('lowi_fast_v1') === window.__fast0, vitSame: localStorage.getItem('lowi_vitals_v1') === window.__vit0, loaded: window.__loaded }; });
   await R.shot(out + '-' + engine + '-' + lang + '-' + w + '-sheet.png');
   if (res.e_after.retake) { await P.click('.sp-photo-acts [data-sp="photo"]'); await H.sleep(2500); res.f_retake = await st(); }

@@ -243,9 +243,6 @@ html[data-theme="light"] .wh-hud .wh-vr { background: rgba(255,255,255,.78); col
 /* a place reached from Home is shown in Home itself: Misty's cell, water and fasting step aside until you fly back */
 html.wh-home #spHome #spBubble, html.wh-home #spHome #spFast, html.wh-home #whHud .wh-water { transition: opacity .35s ease; }
 html.wh-home.wh-away #spHome #spBubble, html.wh-home.wh-away #spHome #spFast, html.wh-home.wh-away #whHud .wh-water, html.wh-home.wh-away .fe-bub { opacity: 0 !important; pointer-events: none !important; }
-/* the regions' own World map pill belongs to the old full window; on Home the thumb row World map button does the job */
-.wh-hud .bwr-mapbtn { display: none !important; }
-.wh-hud .bwr-map { pointer-events: auto; }
 .wh-hud .bwr-label { top: calc(env(safe-area-inset-top, 0px) + 132px); }
 
 /* water: press and hold to reset today's count (world-home.js wireWaterHold) */

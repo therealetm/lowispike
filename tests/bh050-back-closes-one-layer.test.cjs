@@ -57,23 +57,10 @@ test('companion creator: back (Escape) closes it, and nothing under it', () => {
     assert.equal(under, 1, 'with the creator gone, Escape reaches what is under it again');
 });
 
-test('World map: back (Escape) closes the map only, the body world stays', () => {
+test('World map is deleted (owner request 12, Oct 28 2026): no map, no map button, no map Escape left behind', () => {
     const src = read('body-world-regions.js');
-    const i = src.indexOf('    function reset() {');
-    const j = src.lastIndexOf('D.addEventListener(\'keydown\'', i);
-    assert.ok(j > 0 && i - j < 900, 'the map has its own Escape just above reset()');
-    const D = fakeDoc();
-    let worldClosed = 0, removed = 0, focused = 0;
-    D.nodes.bwrMap = { remove() { removed++; delete D.nodes.bwrMap; } };
-    D.nodes.bwrMapBtn = { focus() { focused++; } };
-    D.addEventListener('keydown', e => { if (e.key === 'Escape') worldClosed++; });  /* body-world-3d.js onKey */
-    vm.runInNewContext(src.slice(j, i), { D });
-    D.escape();
-    assert.equal(removed, 1, 'map closed');
-    assert.equal(worldClosed, 0, 'the body world did not close with it (it did before)');
-    assert.equal(focused, 1, 'focus back on the map button');
-    D.escape();
-    assert.equal(worldClosed, 1, 'next back closes the world as before');
+    assert.ok(!/bwrMap|openMap|bwr-map/.test(src), 'no World map code in the regions controller');
+    assert.ok(!/bwr-map/.test(read('body-world-regions.css')) && !/bwr-map/.test(read('world-home.css')), 'no World map css');
 });
 
 test('Sound panel: back (Escape) closes the panel only, the body world stays', () => {

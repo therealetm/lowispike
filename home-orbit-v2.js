@@ -176,59 +176,12 @@
         if (el.dataset.o8Adapter) return;
         if (key === 'scan') { open('scan'); return; }
         /* the bubble is Community: without its adapter a tap still opens Community (the old sheet only if there is no Community tab) */
-        if (key === 'settings') { if (typeof root.goTab === 'function' && $('#tab-foryou')) root.goTab('foryou'); else openSettings(); return; }
-        if (key === 'sleep') { openSleep(); return; }
+        /* Oct 28 2026 (owner request 12): the old fallback Settings and Sleep sheets are deleted; Settings and Sleep belong to
+           home-settings-sleep-v2.js, a fallback tap on the Community bubble opens Community */
+        if (key === 'settings') { if (typeof root.goTab === 'function' && $('#tab-foryou')) root.goTab('foryou'); return; }
     }
-    function sheet(cls, title, rows) {
-        closeSheet();
-        const w = D.createElement('div'); w.className = 'o8-sheet ' + cls; w.setAttribute('role', 'dialog'); w.setAttribute('aria-modal', 'true'); w.setAttribute('aria-label', title);
-        w.innerHTML = '<div class="o8-scrim"></div><div class="o8-panel"><b class="o8-ttl"></b><div class="o8-rows"></div><button type="button" class="o8-close">' + T('Close', 'Schließen', 'Cerrar') + '</button></div>';
-        w.querySelector('.o8-ttl').textContent = title;
-        const box = w.querySelector('.o8-rows');
-        rows.forEach(r => {
-            const b = D.createElement('button'); b.type = 'button'; b.className = 'o8-row'; b.textContent = r.label;
-            if (r.id) b.setAttribute('data-o8-row', r.id);
-            if (r.on != null) { b.setAttribute('role', 'switch'); b.setAttribute('aria-checked', r.on ? 'true' : 'false'); }
-            b.addEventListener('click', ev => { ev.stopPropagation(); if (!r.keep) closeSheet(); r.run(b); });
-            box.appendChild(b);
-        });
-        w.querySelector('.o8-scrim').addEventListener('click', closeSheet);
-        w.querySelector('.o8-close').addEventListener('click', closeSheet);
-        ['pointerdown', 'touchstart'].forEach(n => w.addEventListener(n, ev => ev.stopPropagation(), { passive: true }));
-        D.body.appendChild(w);
-        const f = w.querySelector('.o8-row'); if (f) try { f.focus({ preventScroll: true }); } catch (x) { }
-        return w;
-    }
-    function closeSheet() { const w = $('.o8-sheet'); if (w) w.remove(); }
-    const clickSel = sel => () => { const t = $(sel); if (t) t.click(); };
     /* Oct 21: the bottom menu bar is gone; sections open the way its icons did (index.html lowiOpen) */
     function open(tab) { try { if (typeof root.lowiOpen === 'function') root.lowiOpen(tab); else if (typeof root.goTab === 'function') root.goTab(tab); } catch (e) { console.error(e); } }
-    /* every entry point the ring hides stays one tap away here */
-    function entries() {
-        const list = [
-            { id: 'profile', sel: '#pfBtn', label: T('Profile', 'Profil', 'Perfil') },
-            { id: 'today', sel: '#whHud .wh-todaybtn', label: T('Today', 'Heute', 'Hoy') },
-            { id: 'community', tab: 'foryou', label: T('Community', 'Community', 'Comunidad') },
-            { id: 'cook', tab: 'shelf', label: T('Cook', 'Kochen', 'Cocinar') },
-            { id: 'move', tab: 'move', label: T('Move', 'Bewegen', 'Moverse') },
-            { id: 'vr', sel: '#whHud .wh-vr', label: 'VR' },
-            { id: 'sound', sel: '#whHud .wa-btn', label: T('Sound', 'Ton', 'Sonido') },
-            { id: 'theme', sel: '#tbTheme', label: T('Day / night', 'Tag / Nacht', 'Día / noche') },
-            { id: 'gift', sel: '.hs-gift', label: T('Gift of the day', 'Geschenk des Tages', 'Regalo del día') },
-            { id: 'weather', sel: '#tab-home .sp-weather', label: T('Weather', 'Wetter', 'Tiempo') }
-        ].filter(e => e.tab || $(e.sel)).map(e => ({ id: e.id, label: e.label, run: e.tab ? () => open(e.tab) : clickSel(e.sel) }));
-        if ($('#f3Board')) list.push({ id: 'quest', label: T('Daily quest', 'Tagesquest', 'Misión diaria') + (H.classList.contains('o8-quest') ? ' (' + T('shown', 'sichtbar', 'visible') + ')' : ''), run: () => H.classList.toggle('o8-quest') });
-        return list;
-    }
-    function openSettings() { return sheet('o8-settings-sheet', T('Settings', 'Einstellungen', 'Ajustes'), entries()); }
-    function openSleep() {
-        const pick = v => () => { let m = {}; try { m = JSON.parse(ls.get(SLEEP_KEY) || '{}') || {}; } catch (e) { } m[today()] = v; ls.set(SLEEP_KEY, JSON.stringify(m)); paintSleep(); D.dispatchEvent(new CustomEvent('lowi:sleep', { detail: { day: today(), value: v } })); };
-        return sheet('o8-sleep-sheet', T('How did you sleep last night?', 'Wie hast du letzte Nacht geschlafen?', '¿Cómo dormiste anoche?'), [
-            { id: 'good', label: T('Slept well, 7 hours or more', 'Gut geschlafen, 7 Stunden oder mehr', 'Bien, 7 horas o más'), run: pick('good') },
-            { id: 'ok', label: T('Okay', 'Okay', 'Regular'), run: pick('ok') },
-            { id: 'short', label: T('Short night', 'Kurze Nacht', 'Noche corta'), run: pick('short') }
-        ]);
-    }
     /* Oct 21: the bottom menu bar is gone for good: its old switch (lowi.home.menubar) is dropped and its class cleared */
     function dropMenuBar() { try { ls.set(MENU_KEY, '0'); } catch (e) { } if (H.classList.contains('o8-menubar')) H.classList.remove('o8-menubar'); }
 
@@ -322,10 +275,9 @@
         if (root.visualViewport) root.visualViewport.addEventListener('resize', soon, { passive: true });
         ['lowi:layout', 'lowi:home-bubble-added', 'world3d-ready', 'lowi:tab'].forEach(n => D.addEventListener(n, soon));
         D.addEventListener('lowi:lang', () => { relabel(); labelLang = lang(); paintSleep(); }); /* BH-004 */
-        D.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
         try { new MutationObserver(soon).observe(H, { attributes: true, attributeFilter: ['class', 'lang'] }); } catch (e) { }
         setInterval(() => { if (!D.hidden) { layout(false); markWords(); } }, 1500);
     }
-    root.LowiHomeOrbitV2 = Object.assign({}, core, { layout: () => layout(true), current: () => last, entries, openSettings, openSleep, closeSheet, sleepToday: sleepNow });
+    root.LowiHomeOrbitV2 = Object.assign({}, core, { layout: () => layout(true), current: () => last,  sleepToday: sleepNow });
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
 })(typeof window !== 'undefined' ? window : globalThis);

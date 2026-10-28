@@ -15,7 +15,7 @@ const world = CV.worldCss();
 const rules = world.split(',\n');
 
 test('inside a cell world every Home menu and panel is hidden, whatever the clean state', () => {
-    for (const k of ['#tabbar', '#tbTheme', '#pfBtn', '#tab-home .sp-top', '#spFast', '#f3Board', '#hcLine', '#whHint', '#arrCard', '#hqSlot', '#bwrMapBtn', '.hq-pop'])
+    for (const k of ['#tabbar', '#tbTheme', '#pfBtn', '#tab-home .sp-top', '#spFast', '#f3Board', '#hcLine', '#whHint', '#arrCard', '#hqSlot', '.hq-pop'])
         assert.ok(rules.includes('html.wh-home.wh-away ' + k), 'hidden in a world: ' + k);
     for (const r of rules) {
         assert.ok(r.startsWith('html.wh-home.wh-away '), 'scoped to being inside a world: ' + r);

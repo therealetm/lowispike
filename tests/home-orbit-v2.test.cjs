@@ -108,11 +108,13 @@ test('shell: tags every ring control for the sibling adapters, real Scan and the
 });
 
 test('shell: the old Home clutter is hidden on the ring Home but stays reachable from Settings', () => {
-    const s = read('home-orbit-v2.js'), c = read('home-orbit-v2.css');
+    const s = read('home-orbit-v2.js'), c = read('home-orbit-v2.css'), st = read('home-settings-sleep-v2.js');
     for (const sel of ['#f3Board', '.sp-top', '.wh-todaybtn', '.wh-vr', '.wa-btn', '#tbTheme', '.hs-gift', '#pfBtn']) {
         assert.ok(c.includes(sel), 'hidden in css: ' + sel);
     }
-    for (const sel of ['#pfBtn', '.wh-todaybtn', '.wh-vr', '.wa-btn', '#tbTheme', '.hs-gift', 'community', 'cook', 'move']) assert.ok(s.includes(sel), 'reachable: ' + sel);
+    /* Oct 28 2026 (owner request 12): the old fallback Settings sheet is deleted; Settings (home-settings-sleep-v2.js) carries them */
+    for (const sel of ['.wh-todaybtn', '.wh-vr', '.wa-btn', '.hs-gift', "'profile'", "'theme'"]) assert.ok(st.includes(sel), 'reachable from Settings: ' + sel);
+    assert.ok(!/function openSettings|function openSleep|o8-sheet/.test(s + c), 'no old fallback Settings or Sleep sheet');
     assert.match(s, /function dropMenuBar\(\)/, 'the old bottom menu bar switch is dropped (Oct 21)');
 });
 

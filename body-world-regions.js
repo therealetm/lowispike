@@ -3,7 +3,7 @@
    in one continuous fly-to and look around in: brain, lung, heart, liver, pancreas, gut, muscle. Regions are built lazily inside the
    SAME renderer/scene as the hub (window.LowiWorld3D), only one at a time, and disposed when you leave. No second WebGL
    context. Drag / pinch / gyro come from the hub controls, which orbit around the origin, so every region is laid out
-   around the origin. You pick a place on the World map or by tapping it in the world (no second list of chips).
+   around the origin. You pick a place by tapping it in the world (the old World map is deleted, Oct 28 2026) (no second list of chips).
    No WebGL: the 2D journey sheets. Reduced motion: you arrive without the fly-to.
    Travelling pays nothing; region brightness follows journey progress from logged actions only.
    Pure data + layout at the top are tested in tests/body-world-regions.test.cjs (also builds every region with three.js). */
@@ -363,7 +363,7 @@
     const T = (en, de, es) => pick([en, de, es], lang());
     const reduced = () => !!(W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    const st = { cur: 'hub', target: null, next: null, region: null, warp: null, busy: false, tier: null, off: null, label: null, mapBtn: null, veil: null, host: null, lt: 0 };
+    const st = { cur: 'hub', target: null, next: null, region: null, warp: null, busy: false, tier: null, off: null, label: null, veil: null, host: null, lt: 0 };
     const w3 = () => W.LowiWorld3D || null;
     /* read-only, for the browser checks (tests/world-exit-reverse-live.cjs): where the way out is */
     API.pullState = () => { const q = st.warp; return q && q.rev ? { phase: q.phase, pk: q.pk == null ? null : +q.pk.toFixed(3), k: q.k == null ? null : +q.k.toFixed(3), weak: !!q.weak, B: q.B ? [q.B.x, q.B.y, q.B.z] : null } : null; };
@@ -407,22 +407,15 @@
     }
     function ensureUi() {
         const h = host(); if (!h) return null;
-        if (st.mapBtn && st.mapBtn.isConnected && st.host === h) return st.mapBtn;
+        if (st.label && st.label.isConnected && st.host === h) return st.label;
         st.host = h;
-        /* one way to pick a place: the World map button (all seven, lungs included) plus tapping a place in the world itself */
-        const mapBtn = D.createElement('button'); mapBtn.type = 'button'; mapBtn.className = 'bwr-mapbtn'; mapBtn.id = 'bwrMapBtn';
-        mapBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.2"/><circle cx="6" cy="13" r="2.2"/><circle cx="18" cy="13" r="2.2"/><circle cx="12" cy="20" r="2.2"/><path d="M12 7v11M12 7l-5 4.5M12 7l5 4.5" fill="none"/></svg><span></span>';
-        mapBtn.addEventListener('click', e => { e.stopPropagation(); openMap(); });
-        ['pointerdown', 'touchstart'].forEach(n => mapBtn.addEventListener(n, e => e.stopPropagation(), { passive: true }));
         const lab = D.createElement('div'); lab.className = 'bwr-label'; lab.id = 'bwrLabel'; lab.setAttribute('aria-live', 'polite');
         const veil = D.createElement('div'); veil.className = 'bwr-veil'; veil.setAttribute('aria-hidden', 'true');
-        h.classList.add('bwr-on'); const lv = h.querySelector('.bw3-labels'); if (lv) h.insertBefore(veil, lv); else h.appendChild(veil); h.appendChild(lab); h.appendChild(mapBtn); st.label = lab; st.mapBtn = mapBtn; st.veil = veil; renderUi(); return mapBtn;
+        h.classList.add('bwr-on'); const lv = h.querySelector('.bw3-labels'); if (lv) h.insertBefore(veil, lv); else h.appendChild(veil); h.appendChild(lab); st.label = lab; st.veil = veil; renderUi(); return lab;
     }
     function renderUi() {
-        if (!st.mapBtn) return;
+        if (!st.host) return;
         const l = lang(), cur = byId(st.cur);
-        st.mapBtn.querySelector('span').textContent = T('World map', 'Weltkarte', 'Mapa');
-        st.mapBtn.setAttribute('aria-label', T('World map', 'Weltkarte', 'Mapa') + ' · ' + pick(cur.n, l));
         const h = st.host; if (h) { h.classList.toggle('bwr-in', st.cur !== 'hub'); h.style.setProperty('--bwr-h', cur.css); const t = h.querySelector('.bw3-top b'); if (t) { if (!t.dataset.hubTitle) t.dataset.hubTitle = t.textContent; t.textContent = st.cur === 'hub' ? t.dataset.hubTitle : pick(cur.n, l); } }
     }
     /* the base card (name, journey, Back) exists for the six beacons; the lungs have no beacon, so give them the same card */
@@ -749,36 +742,13 @@
         const pid = id === 'hub' ? 'blood' : id;
         try { if (W.LowiBodyTrips && W.LowiBodyTrips.open) { const a = w3(); if (a && a.close && host()) a.close(); return W.LowiBodyTrips.open(pid); } } catch (e) { }
     }
-    function openMap() {
-        let m = D.getElementById('bwrMap'); if (m) m.remove();
-        const l = lang(), nodes = [HUB].concat(REGIONS);
-        const lines = ROUTE.map(id => { const R = byId(id); return '<line x1="' + HUB.map[0] + '" y1="' + HUB.map[1] + '" x2="' + R.map[0] + '" y2="' + R.map[1] + '"/>'; }).join('') + ROUTE.slice(1).map((id, i) => { const a = byId(ROUTE[i]), b = byId(id); return '<line class="m" x1="' + a.map[0] + '" y1="' + a.map[1] + '" x2="' + b.map[0] + '" y2="' + b.map[1] + '"/>'; }).join('');
-        const dots = nodes.map(R => '<button type="button" class="bwr-node' + (R.id === st.cur ? ' cur' : '') + '" data-bwr="' + R.id + '" style="left:' + R.map[0] + '%;top:' + R.map[1] + '%;--h:' + R.css + '"><i></i><span>' + esc(pick(R.n, l)) + '</span></button>').join('');
-        m = D.createElement('div'); m.id = 'bwrMap'; m.className = 'bwr-map'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); m.setAttribute('aria-label', T('Body world map', 'Karte der K\u00f6rperwelt', 'Mapa del mundo del cuerpo'));
-        m.innerHTML = '<div class="bwr-map-card"><div class="bwr-map-hd"><b>' + esc(T('Your body world', 'Deine K\u00f6rperwelt', 'Tu mundo del cuerpo')) + '</b><button type="button" class="bwr-x" data-x aria-label="' + esc(T('Close', 'Schlie\u00dfen', 'Cerrar')) + '">\u00d7</button></div>' +
-            '<p>' + esc(T('Tap a place and you zoom right into it.', 'Tipp auf einen Ort und du zoomst direkt hinein.', 'Toca un lugar y entras volando directamente.')) + '</p>' +
-            '<div class="bwr-body"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="sil" d="M50 2c6 0 10 5 10 11s-4 10-10 10-10-4-10-10 4-11 10-11zM34 25h32c6 0 9 4 9 9v28c0 4-3 6-6 6l-3 30h-8l-2-26h-12l-2 26h-8l-3-30c-3 0-6-2-6-6V34c0-5 3-9 9-9z"/>' + lines + '</svg>' + dots + '</div></div>';
-        ['pointerdown', 'touchstart', 'wheel'].forEach(n => m.addEventListener(n, e => e.stopPropagation(), { passive: true }));
-        m.addEventListener('click', e => { e.stopPropagation(); if (e.target === m || e.target.closest('[data-x]')) { m.remove(); return; } const b = e.target.closest('[data-bwr]'); if (b) { m.remove(); travel(b.dataset.bwr); } });
-        (host() || D.body).appendChild(m);
-        const x = m.querySelector('[data-x]'); x && x.focus && x.focus({ preventScroll: true });
-    }
-    /* Oct 26 (bug hunt run 50): the World map had no Escape. Back (which sends Escape) went past it and closed the whole body
-       world under it. Now Escape closes the map only and the world stays; focus goes back to the map button. */
-    D.addEventListener('keydown', e => {
-        if (e.key !== 'Escape') return;
-        const m = D.getElementById('bwrMap'); if (!m) return;
-        e.stopPropagation(); m.remove();
-        const b = D.getElementById('bwrMapBtn'); try { b && b.focus && b.focus({ preventScroll: true }); } catch (x) { }
-    }, true);
     function reset() {
         if (st.warp) { const q = st.warp; st.warp = null; clean(q); warpEv('cancel', q.id, q.from); }
         if (st.region) { st.region.dispose(); st.region = null; }
         setLook(null); setHubVisible(true);
         if (st.host) st.host.classList.remove('bwr-on', 'bwr-in', 'bwr-warp');
-        [st.veil, st.label, st.mapBtn].forEach(e => { try { e && e.remove(); } catch (x) { } }); snapDrop(true); warpOn(false);
-        st.cur = 'hub'; st.busy = false; st.target = null; st.next = null; st.mapBtn = null; st.label = null; st.veil = null; st.host = null;
-        const m = D.getElementById('bwrMap'); if (m) m.remove();
+        [st.veil, st.label].forEach(e => { try { e && e.remove(); } catch (x) { } }); snapDrop(true); warpOn(false);
+        st.cur = 'hub'; st.busy = false; st.target = null; st.next = null; st.label = null; st.veil = null; st.host = null;
     }
     /* the base world's own chips, labels and beacon taps fly to a place: follow it into the region */
     W.addEventListener('lowi:world3d-place', e => { const id = e && e.detail && e.detail.id; const h = host(); if (!id || !h) return; if (!reduced()) h.classList.remove('bw3-flash'); const r = norm(id); if (ROUTE.indexOf(r) >= 0) travel(r, true); });
@@ -787,5 +757,5 @@
     W.addEventListener('lowi:world3d-ready', () => hook());
     W.addEventListener('lowi:lang', () => renderUi());
     hook();
-    Object.assign(API, { travel, openMap, current: () => st.cur, state: st, reset });
+    Object.assign(API, { travel, current: () => st.cur, state: st, reset });
 })();

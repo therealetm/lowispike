@@ -21,7 +21,7 @@
         '#tabbar', '#tbTheme', '#pfBtn', '#tab-home .sp-top',
         '#spFast', '#f3Board', '#hcLine', '#whHint',
         '#whHud > :not(#whPad):not(#whPadChip):not(#mhNudge):not(#rpPal):not(.wh-scrim):not([data-clean-keep])',
-        '.wh-move', '.wm-float', '#bwrMapBtn', '#bwrLabel', '#arrCard', '#hqSlot', '[data-clean-hide]'
+        '.wh-move', '.wm-float', '#bwrLabel', '#arrCard', '#hqSlot', '[data-clean-hide]'
     ];
     const HIDE_AUTO = ['#whPad', '#whPadChip'];
     /* Oct 17 (Emmanuel, iPad screenshots inside the heart world: "inside the cell world the panels appear, that's not supposed to

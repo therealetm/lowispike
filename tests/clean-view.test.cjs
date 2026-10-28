@@ -59,7 +59,7 @@ test('core: the menu never comes back by itself (she leaves a world, goes home, 
 
 test('the fade list covers every distracting control the user named, and never Misty, her cell, the world or speech', () => {
     const all = C.HIDE.concat(C.HIDE_AUTO).join(' ');
-    for (const s of ['#tabbar', '#tbTheme', '#pfBtn', '.sp-top', '#spFast', '#f3Board', '#whHud >', '.wh-move', '#bwrMapBtn', '#whPad']) assert.ok(all.includes(s), 'missing ' + s);
+    for (const s of ['#tabbar', '#tbTheme', '#pfBtn', '.sp-top', '#spFast', '#f3Board', '#whHud >', '.wh-move', '#whPad']) assert.ok(all.includes(s), 'missing ' + s);
     /* the HUD rule fades water, Sound, Today, World map, VR, the movement bubble, but keeps the controller and Misty's nudge */
     const hud = C.HIDE.find(s => s.startsWith('#whHud >'));
     for (const k of ['#whPad', '#whPadChip', '#mhNudge']) assert.ok(hud.includes(':not(' + k + ')'), hud);

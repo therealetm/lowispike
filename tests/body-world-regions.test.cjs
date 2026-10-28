@@ -57,7 +57,7 @@ test('controller: no vessel clip, no chip bar, warp streaks live in the shared s
     assert.ok(!/buildVessel|bwrBar|bwr-chip|bwr-bar/.test(src), 'no vessel clip or region chip bar in the controller');
     assert.ok(!/\.bwr-bar|\.bwr-chip/.test(css));
     assert.ok(/\.bw3-full\.bwr-on \.bw3-chips\{display:none\}/.test(css), 'base chip row stays hidden as well');
-    assert.ok(src.includes('bwrMapBtn') && src.includes('openMap'), 'World map stays');
+    assert.ok(!src.includes('bwrMapBtn') && !src.includes('openMap'), 'the old World map is deleted (owner request 12, Oct 28 2026)');
     assert.ok(/a\.rig/.test(src) && fs.readFileSync(path.join(root, 'body-world-3d.js'), 'utf8').includes('rig: world.rig'), 'follows the base glide');
     assert.ok(/fov0/.test(src) && /cam\.fov = q\.fov0/.test(src), 'lens kick is always restored');
 });

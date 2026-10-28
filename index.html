@@ -15394,6 +15394,18 @@ Object.assign(B3_TX, {
   actPhotoL: ["Take a photo of your food", "Essen fotografieren", "Fotografiar comida"],
   aimPhoto: ["Hold your food in view and tap the shutter", "Halte dein Essen ins Bild und tipp auf den Auslöser", "Encuadra tu comida y toca el disparador"],
   shoot: ["Take photo", "Foto aufnehmen", "Hacer foto"],
+  /* Oct 28 2026 photo-first Scan (E-man, call): the phone's own camera, one photo, the barcode read from it on the phone */
+  pickShoot: ["Take photo", "Foto machen", "Hacer foto"],
+  pickT: ["Snap your food or a product", "Fotografier dein Essen oder ein Produkt", "Fotografía tu comida o un producto"],
+  pickS: ["A barcode in the photo is read on your phone, free", "Ein Barcode im Foto wird auf deinem Handy gelesen, kostenlos", "El código de barras de la foto se lee en tu móvil, gratis"],
+  pickLib: ["From photos", "Aus Fotos", "De tus fotos"],
+  pickLive: ["Live barcode scan", "Barcode live scannen", "Escanear en vivo"],
+  pickRead: ["Looking for a barcode…", "Suche Barcode…", "Buscando código…"],
+  pickNone: ["No barcode found", "Kein Barcode erkannt", "No se encontró código"],
+  pickNoneS: ["Take a new photo with the barcode close and sharp, or let the AI check the photo.", "Mach ein neues Foto mit dem Barcode nah und scharf, oder lass die KI das Foto prüfen.", "Haz otra foto con el código cerca y nítido, o deja que la IA revise la foto."],
+  pickQr: ["QR code found, but it is not a product code", "QR-Code gefunden, aber kein Produktcode", "Código QR encontrado, pero no es de producto"],
+  pickAgain: ["New photo", "Neues Foto", "Otra foto"],
+  pickAI: ["Analyse with AI", "Mit KI analysieren", "Analizar con IA"],
   actMeal: ["Log meal", "Mahlzeit eintragen", "Registrar comida"],
   actMealL: ["Log a meal: photo, words or a recent one", "Mahlzeit eintragen: Foto, Worte oder eine letzte", "Registrar comida: foto, palabras o una reciente"],
   actWater: ["Water +1", "Wasser +1", "Agua +1"],
@@ -15957,6 +15969,9 @@ function camShot(){ const c = CAM; if (!c || !c.photo || c.shooting) return; con
 /* Oct 21 Scan / Fuel / Gap: Scan identifies. Only a camera opened from Log meal's own Scan button (spirit.js sets LowiScanIntent the
    moment before) may offer "Ate it, log it"; the Scan tab, the Scan bubble and shopping never log a meal or touch the Gap. */
 function openScanner(mode){
+  /* Oct 28 2026 photo-first Scan: the picker opens first, still inside the tap (iOS only opens it from a tap) */
+  const pick = pickMode(mode); if (pick && mode !== "pickq") pickOpen(mode === "lib");
+  if (mode === "live" || pick) mode = "cam";
   { const i = window.LowiScanIntent; window.LowiScanMeal = !!(i && i.meal && Date.now() - i.at < 5000); window.LowiScanIntent = null; } /* read by scanForMeal() */
   closeScanner(true);
   const el = document.createElement("div"); el.className = "b3-cam"; el.id = "b3Cam"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true");
@@ -15984,6 +15999,7 @@ function openScanner(mode){
   $("#b3BcF", el).addEventListener("submit", e => { e.preventDefault(); const v = $("#b3Bc", el).value, c = validCode(v); if (!c) { msg(t("bcBad"), "warn"); sfx("error"); return; } found(c); });
   camNameWire(el); /* Oct 23 name check */
   requestAnimationFrame(() => el.classList.add("on"));
+  if (pick) { el.classList.add("b3-pick"); msgState("pick"); loadZX().catch(() => {}); return; } /* the reader loads while the camera is up */
   if (mode === "type") { el.classList.add("typing"); setTimeout(() => { const i = $("#b3Bc", el), a = document.activeElement; if (i && !(a && a.id === "b3Nm")) i.focus(); }, 120); msgState("type"); return; }
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msgState("nocam"); return; }
   /* Oct 16 (E-man: "iOS asks for camera access itself ... let's not have it double"): no in-app "Allow camera" card. Tapping Scan
@@ -16008,6 +16024,7 @@ function shopMode(on){ if (!CAM) return false; CAM.shop = !!on; CAM.el.classList
      with the same title; shopping is only the switch (pill) inside it, never a second "Einkaufs-Scan" screen. */
   const tt = $(".b3-ctitle", CAM.el); if (tt) tt.textContent = t("scanBig"); return CAM.shop; }
 function shopResume(){ if (!CAM) return; CAM.hold = false; CAM.done = false; CAM.el.classList.remove("got", "held"); if (CAM.lastHit) CAM.lastHit.at = performance.now();
+  if (CAM.el.classList.contains("b3-pick")) { pickReset(); return; } /* photo-first Scan: back to Take photo, never the live camera */
   /* Oct 28 Snap: after a kept photo the camera was let go, so the next scan starts it again (startCam1 drops the photo) */
   const act = snapCore() ? snapCore().resumeAction({stream:!!CAM.stream, snap:!!CAM.snap}) : (CAM.stream ? "loop" : "none");
   if (act === "loop") { clearSnap(CAM); msgState("live"); msg(aimTxt()); cancelAnimationFrame(CAM.raf); loop(); }
@@ -16042,6 +16059,7 @@ function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.d
   else if (s === "nocam") m.innerHTML = '<div class="b3-cbox b3-cglass"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camNo")) + '</b><small>' + esc(t("camNoS")) + '</small><div class="b3-cbtns">' + typeBtn + '</div></div>';
   else if (s === "starting") m.innerHTML = '<div class="b3-cbox b3-cglass slim"><span class="b3-spin"></span><small>' + esc(t("starting")) + '</small></div>';
   else if (s === "lookup") m.innerHTML = '<div class="b3-cbox slim"><span class="b3-spin"></span><small>' + esc(t("lookup")) + '</small></div>';
+  else if (s === "pick" || s === "pickread" || s === "picknone" || s === "pickqr") m.innerHTML = pickHTML(s);
   else if (s === "snapread") { m.innerHTML = '<div class="b3-cbox b3-cglass slim" role="status"><span class="b3-spin"></span><small>' + esc(t("snapRead")) + '</small></div>'; msg(t("snapReadS")); }
   else if (s === "snapnone") { m.innerHTML = '<div class="b3-cbox b3-cglass" role="alert"><span class="b3-cic">' + IC.shutter + '</span><b>' + esc(t("snapNone")) + '</b><small>' + esc(t("snapNoneS")) + '</small><div class="b3-cbtns"><button class="b3-cbtn pri" data-b3="snapretake">' + esc(t("snapAgain")) + '</button><button class="b3-cbtn ghost" data-b3="photo">' + esc(t("snapPhone")) + '</button>' + typeBtn + '</div></div>'; msg(""); }
   else m.innerHTML = "";
@@ -16089,7 +16107,7 @@ function loop(){ if (!CAM || CAM.done) return; CAM.raf = requestAnimationFrame(l
 function stopStream(){ if (!CAM) return; cancelAnimationFrame(CAM.raf); clearTimeout(CAM.wd); try { CAM.stream && CAM.stream.getTracks().forEach(x => x.stop()); } catch(e){} CAM.stream = null; }
 /* BH-014: the barcode frame canvas (CAM.cv, iPhones decode with ZXing) is handed back when the scanner closes, not left to the GC */
 function freeCv(cv){ try { if (cv) { cv.width = 0; cv.height = 0; } } catch(e){} }
-function closeScanner(now){ if (!CAM) return; const c = CAM; /* BH-060 */ if (c.el) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(c.el); } catch(e){} c.done = true; stopStream(); CAM = null; document.documentElement.classList.remove("b3-camon"); freeCv(c.cv); c.cv = null; clearSnap(c); clearInterval(c.sbIv);
+function closeScanner(now){ if (!CAM) return; const c = CAM; if (typeof pickFree === "function") pickFree(c); /* BH-060 */ if (c.el) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(c.el); } catch(e){} c.done = true; stopStream(); CAM = null; document.documentElement.classList.remove("b3-camon"); freeCv(c.cv); c.cv = null; clearSnap(c); clearInterval(c.sbIv);
   if (now) c.el.remove(); else { c.el.classList.remove("on"); setTimeout(() => c.el.remove(), 260); } }
 /* ===== Oct 28 Snap + Focus (rules in scan-snap-core.js). Snap keeps a short burst of real frames, lets the camera go, shows the kept
    photo and reads the barcode from it here on the phone (BarcodeDetector or ZXing, the same readers as the live scan; nothing is sent
@@ -16192,6 +16210,84 @@ async function decodeFile(f){
   /* Oct 23: never pull the keyboard away from someone already typing a food name */
   if (CAM) { msgState("type"); CAM.el.classList.add("typing"); msg(t("bcNone"), "warn"); sfx("error"); const i = $("#b3Bc", CAM.el), a = document.activeElement; if (i && !(a && a.id === "b3Nm")) i.focus(); } }
 
+/* =====================================================================
+   Oct 28 2026 photo-first Scan (E-man, call: "it's kind of annoying that the camera ... says this thing", the site's own camera
+   prompt). Tapping Scan opens the phone's own camera through a file input, the way Community's photo button does: the system
+   camera, no in-browser live feed, so the default path never asks for the site's camera. One photo, then:
+   1. barcode first, on the phone, free: EAN/UPC from the still (rotations, a centre crop), then a QR code that carries a GS1
+      product link (/01/<GTIN>). Found -> the same product card as a scan, no AI.
+   2. nothing readable -> "Kein Barcode erkannt" with New photo and Analyse with AI. Only that tap sends the photo to the AI
+      (LowiSpirit.photoFile, the same check as in chat); a failed read, a cancel or a retake never spends a photo check.
+   The live barcode camera is still one tap away (Barcode live scannen); the shopping camera stays live as before.
+   ===================================================================== */
+let pickIn = null, pickLibIn = null;
+function pickMode(mode){ return (mode === "cam" || mode === "photo" || mode === "lib" || mode === "pickq") && !!(window.LowiSpirit && typeof LowiSpirit.photoFile === "function"); }
+function pickInput(lib){ let i = lib ? pickLibIn : pickIn; if (i && i.isConnected) return i;
+  i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; if (!lib) i.setAttribute("capture", "environment");
+  i.id = lib ? "b3PickLib" : "b3Pick"; i.className = "b3-pickin"; i.tabIndex = -1; i.setAttribute("aria-hidden", "true");
+  /* in the layout but out of sight (like Community's input): iOS opens a file input only from a tap, and only one it can lay out */
+  i.style.cssText = "position:fixed;left:-200px;top:0;width:1px;height:1px;opacity:0;pointer-events:none";
+  document.body.appendChild(i);
+  i.addEventListener("change", () => { const f = i.files && i.files[0]; i.value = ""; if (f) pickGot(f); });
+  if (lib) pickLibIn = i; else pickIn = i; return i; }
+function pickOpen(lib){ try { pickInput(lib).click(); } catch(e){} }
+/* both inputs exist (laid out) before the first tap: a file input made and clicked in the same moment may not open */
+(function(){ const mk = () => { try { pickInput(false); pickInput(true); } catch(e){} }; if (document.body) mk(); else document.addEventListener("DOMContentLoaded", mk); })();
+function pickHTML(s){
+  const c = CAM, img = c && c.pickUrl ? '<img alt="" src="' + esc(c.pickUrl) + '">' : "";
+  if (s === "pickread") return '<div class="b3-pickbox b3-pread" role="status"><div class="b3-pthumb">' + img + '<i class="b3-psweep"></i><i class="b3-pgrid"></i></div><small>' + esc(t("pickRead")) + '</small></div>';
+  if (s === "picknone" || s === "pickqr") return '<div class="b3-pickbox b3-pnone" role="alert"><div class="b3-pthumb">' + img + '</div><b>' + esc(t(s === "pickqr" ? "pickQr" : "pickNone")) + '</b><small>' + esc(t("pickNoneS")) + '</small>' +
+    '<div class="b3-pbtns"><button type="button" class="b3-cbtn pri" data-b3="pickretake">' + esc(t("pickAgain")) + '</button><button type="button" class="b3-cbtn ghost b3-pai" data-b3="pickai">' + IC_SPARK + '<span>' + esc(t("pickAI")) + '</span></button></div></div>';
+  return '<div class="b3-pickbox b3-pstart"><button type="button" class="b3-pshoot" data-b3="pickshoot" aria-label="' + esc(t("pickShoot")) + '"><i>' + IC.cam + '</i></button><b>' + esc(t("pickT")) + '</b><small>' + esc(t("pickS")) + '</small>' +
+    '<div class="b3-pbtns"><button type="button" class="b3-cbtn ghost" data-b3="picklib">' + esc(t("pickLib")) + '</button><button type="button" class="b3-cbtn ghost" data-b3="picklive">' + IC.bc + '<span>' + esc(t("pickLive")) + '</span></button></div></div>'; }
+function pickFree(c){ if (!c) return; c.pickTok = (c.pickTok || 0) + 1; if (c.pickUrl) { try { URL.revokeObjectURL(c.pickUrl); } catch(e){} } c.pickUrl = ""; c.pickFile = null; }
+/* back to Take photo: the kept photo is dropped (no AI call), a product card on it closes */
+function pickReset(){ const c = CAM; if (!c) return; pickFree(c); c.hold = false; c.done = false; c.el.classList.remove("held", "got");
+  const cd = c.el.querySelector(".ss-card"); if (cd) { cd.remove(); c.el.classList.remove("ss-open"); }
+  if (c.el.classList.contains("b3-pick")) { msgState("pick"); msg(""); } }
+async function pickGot(f){
+  if (!CAM || !CAM.el.classList.contains("b3-pick")) openScanner("pickq");
+  const c = CAM; if (!c) return; pickReset(); const tok = c.pickTok;
+  try { c.pickUrl = URL.createObjectURL(f); } catch(e){ c.pickUrl = ""; } c.pickFile = f;
+  msgState("pickread"); msg(""); sfx("tap");
+  let r = {code:"", qr:false}; try { r = await stillCode(f); } catch(e){}
+  if (CAM !== c || c.pickTok !== tok) return; /* closed, or a newer photo came in */
+  if (r.code) { msgState("pick"); found(r.code); return; }
+  msgState(r.qr ? "pickqr" : "picknone"); sfx("error"); }
+/* Only this tap sends the photo to the AI: the existing photo result sheet (same check as in chat); it logs nothing by itself */
+function pickAI(){ const c = CAM, S = window.LowiSpirit; if (!c || !c.pickFile || !S || typeof S.photoFile !== "function") return;
+  const f = c.pickFile; sfx("tap"); closeScanner(true); try { S.photoFile(f); } catch(e){ console.warn(e); } }
+function zxQrReader(){ const Z = window.ZXing, h = new Map(); h.set(Z.DecodeHintType.POSSIBLE_FORMATS, [Z.BarcodeFormat.QR_CODE]); h.set(Z.DecodeHintType.TRY_HARDER, true);
+  const r = new Z.MultiFormatReader(); r.setHints(h); return r; }
+/* A QR code counts only when it carries a product number: a GS1 Digital Link (.../01/<GTIN>...) or the bare digits */
+function qrGtin(raw){ raw = String(raw || "").trim(); let m = raw.match(/(?:^|\/)01\/(\d{12,14})(?=[\/?#]|$)/);
+  let d = m ? m[1] : (/^\d{8,14}$/.test(raw) ? raw : ""); if (!d) return "";
+  if (d.length === 14 && d[0] === "0") d = d.slice(1); return validCode(d); }
+/* the barcode in a still photo: EAN/UPC at three sizes plus turned 90 degrees, a centre crop, then a product QR code.
+   Each pass yields to the screen so the scanning sweep keeps moving. Returns {code, qr} (qr: a QR code was read but has no product number). */
+async function stillCode(f){
+  let url = "", code = "", qr = false; const idle = () => new Promise(ok => setTimeout(ok, 0));
+  try {
+    url = URL.createObjectURL(f); const img = new Image(); img.src = url; await img.decode();
+    const W0 = img.naturalWidth, H0 = img.naturalHeight; if (!W0 || !H0) return {code:"", qr:false};
+    const det = await nativeDetector();
+    if (det) { try { const r = await det.detect(img); for (const x of (r || [])) { code = validCode(x && x.rawValue); if (code) break; } } catch(e){} }
+    if (code) return {code, qr:false};
+    await loadZX(); const reader = zxReader(), cv = document.createElement("canvas");
+    const draw = (max, crop) => { const sx = crop ? W0 * .2 : 0, sy = crop ? H0 * .2 : 0, sw = crop ? W0 * .6 : W0, sh = crop ? H0 * .6 : H0;
+      const sc = Math.min(1, max / Math.max(sw, sh)); cv.width = Math.max(1, Math.round(sw * sc)); cv.height = Math.max(1, Math.round(sh * sc));
+      cv.getContext("2d", {willReadFrequently:true}).drawImage(img, sx, sy, sw, sh, 0, 0, cv.width, cv.height); };
+    const turned = () => { const rc = document.createElement("canvas"); rc.width = cv.height; rc.height = cv.width; const rg = rc.getContext("2d", {willReadFrequently:true});
+      rg.translate(rc.width, 0); rg.rotate(Math.PI / 2); rg.drawImage(cv, 0, 0); const v = validCode(zxDecodeCanvas(rc, reader)); freeCv(rc); return v; };
+    for (const [max, crop] of [[1400, false], [1400, true], [2000, false]]) {
+      await idle(); if (CAM && !CAM.el.isConnected) break;
+      draw(max, crop); code = validCode(zxDecodeCanvas(cv, reader)); if (code) break;
+      await idle(); code = turned(); if (code) break; }
+    if (!code) { let qrR = null; try { qrR = zxQrReader(); } catch(e){}
+      if (qrR) for (const max of [1200]) { await idle(); draw(max, false); const raw = zxDecodeCanvas(cv, qrR); if (raw) { qr = true; code = qrGtin(raw); break; } } }
+    freeCv(cv);
+  } catch(e){} finally { if (url) try { URL.revokeObjectURL(url); } catch(e){} }
+  return {code, qr: qr && !code}; }
 /* =====================================================================
    Reveal: silhouette, then the card. Catch, swaps, report.
    ===================================================================== */
@@ -16607,6 +16703,11 @@ document.addEventListener("click", e => {
     case "camclose": closeScanner(); break;
     case "camact": camAct(b.dataset.act); break;
     case "camshot": camShot(); break;
+    case "pickshoot": pickOpen(false); break;
+    case "picklib": pickOpen(true); break;
+    case "picklive": sfx("tap"); openScanner("live"); break;
+    case "pickretake": pickReset(); pickOpen(false); break;
+    case "pickai": pickAI(); break;
     case "torch": torch(); break;
     case "snap": snapShot(); break;
     case "snapretake": if (CAM) { CAM.hold = false; CAM.el.classList.remove("held"); startCam(); } break;
@@ -16650,7 +16751,7 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && CAM) closeScanner(); });
 /* Oct 15: leaving the app stops the camera; coming back starts it again on its own (no second "Allow camera" tap) */
-function camResume(){ if (!CAM || CAM.done || CAM.stream || CAM.el.classList.contains("typing")) return; const st = CAM.el.dataset.st; if (st === "denied" || st === "nocam" || st === "lookup") return;
+function camResume(){ if (!CAM || CAM.done || CAM.stream || CAM.el.classList.contains("typing") || CAM.el.classList.contains("b3-pick")) return; const st = CAM.el.dataset.st; if (st === "denied" || st === "nocam" || st === "lookup") return;
   /* Oct 28 Snap: a kept photo (being read, or "no barcode" with its own Snap again) never gets swapped for the camera behind its back */
   if (CAM.snap || st === "snapread" || st === "snapnone") return; startCam(); }
 document.addEventListener("visibilitychange", () => { if (!CAM) return; if (document.visibilityState !== "visible") { if (CAM.stream) { stopStream(); CAM.el.classList.remove("live"); if (!CAM.snap) msgState("starting"); } } else setTimeout(camResume, 250); });

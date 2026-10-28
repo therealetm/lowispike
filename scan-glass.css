@@ -182,3 +182,35 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
 .b3-cam.b3-shop .b3-shut { display: none !important; }
 .b3-cam.b3-flash::after { content: ""; position: absolute; inset: 0; background: #fff; opacity: .55; pointer-events: none; z-index: 30; }
 @media (prefers-reduced-motion: reduce) { .b3-cam.b3-photo .b3-shut i { transition: none; } }
+
+/* Oct 28 2026 photo-first Scan (index.html pickMode): no live feed, no frame, no Snap/Focus, no mode switch. One calm glass card:
+   a big Take photo button (the phone's own camera), From photos and Live barcode scan; the typing fields stay underneath.
+   While the photo is read, the photo itself shows with a quick scanning sweep. */
+.b3-cam.b3-pick video, .b3-cam.b3-pick .b3-still, .b3-cam.b3-pick .b3-frame, .b3-cam.b3-pick .b3-shut, .b3-cam.b3-pick .b3-snapb, .b3-cam.b3-pick .b3-focusb,
+.b3-cam.b3-pick .b3-torch, .b3-cam.b3-pick .b3-cacts, .b3-cam.b3-pick .b3-deep, .b3-cam.b3-pick .b3-chint,
+#spWorld .b3-cam.b3-pick .b3-frame, #spWorld .b3-cam.b3-pick .b3-cacts, #spWorld .b3-cam.b3-pick .b3-deep, #spWorld .b3-cam.b3-pick .b3-chint { display: none !important; }
+.b3-cam.b3-pick.ss-open .b3-cmsg { display: none; }
+.b3-cam.b3-pick { background: radial-gradient(120% 80% at 50% 36%, #0d1d42 0, #071029 45%, #03050a 92%) #03050a; } /* Home's navy, not a black dead camera */
+.b3-cam.b3-pick .b3-cmsg { z-index: 4; pointer-events: auto; }
+.b3-pickbox { width: min(340px, 100%); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 22px 18px 18px; border-radius: 28px;
+  background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .28); -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4);
+  box-shadow: 0 18px 50px rgba(8, 30, 60, .28), inset 0 1px 0 rgba(255, 255, 255, .35); color: #fff; }
+.b3-pickbox b { font-size: 19px; line-height: 1.25; font-weight: 700; }
+.b3-pickbox small { font-size: 14.5px; line-height: 1.4; opacity: .88; }
+.b3-pshoot { width: 96px; height: 96px; border-radius: 50%; border: 4px solid rgba(255, 255, 255, .92); background: rgba(255, 255, 255, .16); display: grid; place-items: center;
+  color: #fff; cursor: pointer; box-shadow: 0 0 0 8px rgba(120, 200, 255, .16), 0 10px 30px rgba(0, 40, 90, .3); transition: transform .15s; margin-bottom: 4px; }
+.b3-pshoot i { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(160deg, #7fd3ff, #3b8cff); display: grid; place-items: center; }
+.b3-pshoot svg { width: 34px; height: 34px; }
+.b3-pshoot:active { transform: scale(.94); }
+.b3-pbtns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 4px; width: 100%; }
+.b3-pbtns .b3-cbtn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 16px; font-size: 15px; flex: 1 1 auto; }
+.b3-pbtns .b3-cbtn svg { width: 18px; height: 18px; flex: none; }
+.b3-pthumb { position: relative; width: 168px; height: 168px; border-radius: 22px; overflow: hidden; background: rgba(0, 0, 0, .25); border: 1px solid rgba(255, 255, 255, .3); }
+.b3-pthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.b3-pread .b3-pthumb { box-shadow: 0 0 0 3px rgba(127, 211, 255, .55), 0 0 28px rgba(127, 211, 255, .45); }
+.b3-psweep { position: absolute; left: 0; right: 0; top: 0; height: 34%; background: linear-gradient(180deg, rgba(127, 211, 255, 0), rgba(127, 211, 255, .45) 85%, #bff0ff);
+  border-bottom: 2px solid #dff8ff; animation: b3psweep .9s cubic-bezier(.45, 0, .55, 1) infinite alternate; will-change: transform; }
+.b3-pgrid { position: absolute; inset: 0; background-image: linear-gradient(rgba(191, 240, 255, .14) 1px, transparent 1px), linear-gradient(90deg, rgba(191, 240, 255, .14) 1px, transparent 1px); background-size: 18px 18px; }
+@keyframes b3psweep { from { transform: translateY(-40%); } to { transform: translateY(240%); } }
+.b3-pnone .b3-pthumb { width: 120px; height: 120px; opacity: .9; }
+@media (prefers-reduced-motion: reduce) { .b3-psweep { animation: none; top: 33%; } .b3-pshoot { transition: none; } }

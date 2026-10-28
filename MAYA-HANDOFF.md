@@ -2760,3 +2760,15 @@ obLater snooze, sign-out KEEP). Tests 2765/2765, CI green, live check de iPhone 
   tallarines|espaguetis?|macarrones. Test: tests/veg-swaps-and-filled-pasta.test.cjs. Probe: tools/sweep-pasta-names-2205.cjs.
 - Left alone (ambiguous, could be wheat noodles with veg): "vegetable noodles", "Gemüsenudeln", "fideos de verdura" stay spikes.
   "gyoza"/"Teigtaschen" still get no verdict in any language.
+
+### 28 Oct 2026 ~23:50 CET: photo-first Scan (task "Scan: Foto statt Live-Kamera", branch scan-pick-20261028)
+- Eman (call, screenshots): the live scanner overlay was cluttered, the site's own camera prompt annoyed him and a beta tester.
+  Decided on the call: Scan opens the phone's own camera through a file input (like Community's photo button), no in-browser
+  live feed on the default path. One photo: barcode read from the still first (EAN/UPC with rotations and a centre crop, then a QR
+  code only if it carries a GS1 /01/<GTIN> product number), free and on the phone; found -> the usual product card, no AI.
+  No readable code -> "Kein Barcode erkannt" with Neues Foto / Mit KI analysieren; ONLY that tap calls LowiSpirit.photoFile (AI).
+  Live barcode camera stays as "Barcode live scannen"; the shopping camera (mode "shop") is unchanged and still live.
+- Code: index.html pickMode/pickInput/pickOpen/pickHTML/pickGot/pickReset/pickAI/stillCode/qrGtin; guards in camResume and
+  shopResume so returning from the picker never starts getUserMedia. CSS appended to scan-glass.css (.b3-pick).
+- Tests: tests/scan-pick.test.cjs. Browser walk-through: tools/check-scan-pick.cjs <root|url> <chromium|webkit> (Home Scan tap
+  opens the picker, zero AI calls on cancel/fail/retake/barcode, one after the AI tap). Not tried on a real iPhone.

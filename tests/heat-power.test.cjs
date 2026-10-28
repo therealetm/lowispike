@@ -337,7 +337,9 @@ test('the world tells the scene whether it is behind a page; power-saver.js load
     const html = read('index.html');
     const ps = html.indexOf('<script src="power-saver.js?v=');
     assert.ok(ps > 0, 'power-saver.js is loaded');
-    assert.ok(ps < html.indexOf('<script', html.indexOf('<body')) || ps < html.indexOf('body-world-3d.js'), 'loaded in <head>, before the world');
+    /* Oct 28 launch scene: it is now the first script of the body, right after the scene, before the app markup and the loader */
+    assert.ok(ps < html.indexOf('<div id="app"') && ps < html.indexOf('<script src="apple-ui.js'), 'loaded before the app and the world');
+    assert.ok(ps > html.indexOf('id="lwLaunch"'), 'after the launch scene, so it never delays its first frame');
     assert.match(read('sw.js'), /"power-saver\.js"/);
 });
 

@@ -35,9 +35,10 @@ test('starter plan reasons talk about Misty, not a herb', () => {
   assert.ok(!/your herb|dein Kraut|tu hierba/.test(src));
 });
 
-test('onboarding world stylesheet is linked in the head and cached by the service worker', () => {
+test('onboarding world stylesheet is linked before the app markup and cached by the service worker', () => {
   const html = read('index.html');
-  const head = html.slice(0, html.indexOf('</head>'));
+  /* Oct 28 launch scene: the stylesheets moved from the end of the head to the top of the body (under the launch scene) */
+  const head = html.slice(0, html.indexOf('<div id="app"'));
   assert.ok(/<link rel="stylesheet" id="obwCss" href="onboarding-world\.css\?v=/.test(head));
   const sw = read('sw.js');
   assert.ok((sw.match(/"onboarding-world\.css"/g) || []).length >= 2);

@@ -8,11 +8,10 @@ const fs = require('fs');
 const path = require('path');
 const R = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 
-test('Fuel bubble: the count says its unit in EN, DE and ES, like Water does', () => {
+test('Einkaufen bubble (the old Fuel bubble, Oct 28 food plan): the count says what is still on the list, same markup as Water', () => {
     const s = R('sym-home.js');
-    assert.ok(/T\('meals', 'Mahlzeiten', 'comidas'\)/.test(s), 'meals unit in three languages');
     assert.ok(/class="wh-num"><\/span> <u class="wh-unit"><\/u>/.test(s), 'same number + unit markup as Water');
-    assert.ok(/\^\\d\+\\s\*\\\/\\s\*\\d\+\$/.test(s), 'the unit only rides a plain n/goal count');
+    assert.match(s, /listOpen/, 'the number is the open count of the shopping list');
     assert.doesNotMatch(s, /bb\.textContent = v\.text/, 'the bare "1/3" write is gone');
 });
 

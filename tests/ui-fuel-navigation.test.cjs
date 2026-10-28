@@ -133,10 +133,10 @@ test('Cook keeps its destination: the Cook tab', () => {
     assert.deepStrictEqual(calls, ['go:shelf']);
 });
 
-test('holding Fuel still opens the meal log (the hold stays as a shortcut, not the only way)', () => {
+test('holding Fuel (Einkaufen since the Oct 28 food plan) does nothing but squish: one gesture per bubble', () => {
     const { hold, calls } = page();
     hold();
-    assert.deepStrictEqual(calls, ['meal']);
+    assert.deepStrictEqual(calls, []);
 });
 
 test('a missing module leaves its orb out rather than showing a dead button', () => {

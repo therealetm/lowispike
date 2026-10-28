@@ -7,7 +7,7 @@
             Shop         -> the "What can I buy here?" panel (LowiStorePicks.open), the same place the old Snack orb went.
             Cook         -> the Cook tab (LowiHost.go('shelf')). The right-side Cook panel is a separate, later change.
             Log meal     -> the meal log sheet (LowiSpirit.meal: photo, barcode, recent meals), now a visible orb.
-            Hold Fuel    -> still the meal log sheet, as a shortcut only.
+            Hold Fuel    -> nothing since Oct 28 2026 (food plan): the bubble is Einkaufen, one tap opens Shop (shop() below).
    - Water: Sips / Glass / Bottle -> LowiSpirit.water(kind) (wsip, Oct 23: estimates; XP 2 per whole glass, at most 6 glasses = 12 XP a day). Long press Water = undo the last one.
             Size         -> (Oct 24) steps the bottle size 0.33 / 0.5 / 0.75 / 1 / 1.5 l; the one thing this file stores (lowispike.water.bottle.v1 via LowiSpiritCore).
             Undo         -> takes ONE cup off today (never below 0, never another day) and, if today's water XP entries are now
@@ -611,11 +611,14 @@
         const el = bubbleOf(e.target);
         if (!el) return;
         const kind = el.getAttribute('data-orbit');
-        if (kind !== 'fuel' && kind !== 'move') return;
+        /* Oct 28 2026 food plan (one-gesture rule): the old Fuel bubble is Einkaufen now and a hold on it only squishes, so only Move
+           keeps a hold (its full page). The press start is kept so the release of a hold on Einkaufen opens nothing either. */
+        st.downAt = Date.now(); st.downKind = kind;
+        if (kind !== 'move') return;
         clearTimeout(st.hold && st.hold.t);
         st.hold = { el, x: e.clientX, y: e.clientY, t: setTimeout(() => {
             st.hold = null; st.swallow = Date.now() + 900; buzz(20); close(true);
-            if (kind === 'fuel') mealLog(); else if (fn(W.LowiMoveBubble, 'page')) W.LowiMoveBubble.page(); else if (fn(W.LowiMoveBubble, 'edit')) W.LowiMoveBubble.edit();
+            if (fn(W.LowiMoveBubble, 'page')) W.LowiMoveBubble.page(); else if (fn(W.LowiMoveBubble, 'edit')) W.LowiMoveBubble.edit();
         }, HOLD_MS) };
     }
     function onMove(e) { if (st.hold && Math.hypot(e.clientX - st.hold.x, e.clientY - st.hold.y) > 12) { clearTimeout(st.hold.t); st.hold = null; } }
@@ -633,8 +636,18 @@
         if (kind === 'gap') { close(true); buzz(8); if (fn(W.LowiGapView, 'open')) W.LowiGapView.open(); return; }
         /* Oct 28 slim structure, batch 3 (nutrition hub): the Fuel menu had one real target, so a tap on Fuel opens the one
            nutrition panel (gap + last meal + log + Cook / Shop). open('fuel') stays for code that still asks for the old menu */
-        if (kind === 'fuel' && fn(W.LowiGapView, 'open')) { close(true); buzz(8); W.LowiGapView.open({ from: 'fuel' }); return; }
+        /* Oct 28 2026 food plan (Emmanuel: "Ok mach"): Essenspause (Gap) is the eating hub, so this bubble is "Einkaufen" with a cart
+           and the open count of the shopping list (sym-home.js paints it). One tap opens Einkaufen: Supermarkt, Zu Hause/Küche,
+           Seller Zone, Hilf mit. Without the Shop module it still opens the hub, never a dead tap. */
+        if (kind === 'fuel' && st.downKind === 'fuel' && Date.now() - st.downAt > 520) { st.downKind = ''; return; } /* a hold only squished */
+        if (kind === 'fuel' && shop()) return;
         if (st.open === kind) close(); else open(kind, el);
+    }
+    /* the one Einkaufen path for the old Fuel bubble (tap here, and sym-home.js for the static layout) */
+    function shop() {
+        if (fn(W.LowiStorePicks, 'open')) { close(true); buzz(8); W.LowiStorePicks.open('home-shop'); return true; }
+        if (fn(W.LowiGapView, 'open')) { close(true); buzz(8); W.LowiGapView.open({ from: 'fuel' }); return true; }
+        return false;
     }
     function onKey(e) { if (st.open && homeTab() && e.key === 'Escape' && !(st.ov && st.ov.contains(e.target))) close(); }
     /* a real resize re-lays Home out; while a page is open on top, or as Home comes back unchanged, the bloom stays */
@@ -693,7 +706,7 @@
     }
 
     const api = {
-        mount, unmount, open: k => open(k), close: () => close(), isOpen: () => st.open, openAll, isAll: () => st.open === 'all',
+        mount, unmount, open: k => open(k), close: () => close(), isOpen: () => st.open, openAll, isAll: () => st.open === 'all', shop,
         actions: k => actionsFor(k).map(a => ({ id: a.id, label: a.label, sub: a.sub, aria: a.aria, disabled: !!a.disabled })),
         layout: () => (st.ov && st.ov.__layout) || null,
         undoWater: waterUndoNow, fitLabels: ov => fitLabels(ov || st.ov), core

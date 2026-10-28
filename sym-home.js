@@ -96,7 +96,7 @@
     }
     function attachLiving(b) {
         if (living || !b) return;
-        try { if (W.LowiLivingBubble && typeof W.LowiLivingBubble.attach === 'function') { W.LowiLivingBubble.attach(b, { kind: 'meals' }); living = true; /* Oct 28 2026 one-gesture rule: a hold only squishes, today's meals live in the Essenspause hub */ } } catch (e) {}
+        try { if (W.LowiLivingBubble && typeof W.LowiLivingBubble.attach === 'function') { W.LowiLivingBubble.attach(b, { kind: 'meals', onLong: () => { longAt = performance.now(); return true; } }); living = true; /* Oct 28 2026 one-gesture rule: a hold only squishes (it opens nothing, and the release is swallowed so it never also opens Einkaufen); today's meals live in the Essenspause hub */ } } catch (e) {}
     }
     /* Oct 28 2026 food plan (Emmanuel: "Ok mach"): this cell is the Einkaufen bubble now. A cart, the open count of the shopping list
        (Einkaufsliste) instead of 1/3; one tap opens Einkaufen (home-blooms-v2.js). The meal counter 1/3 and today's meals moved into the
@@ -126,15 +126,20 @@
         const aria = shopLabel() + ', ' + n + ' ' + T('on the shopping list. Tap to open Shopping.', 'auf der Einkaufsliste. Tippen öffnet Einkaufen.', 'en la lista de compras. Toca para abrir Compras.');
         if (b.getAttribute('aria-label') !== aria) b.setAttribute('aria-label', aria);
     }
-    /* today's meals for the Essenspause hub: the meal counter (1/3), today's stats and the list, the same content the old long press showed */
+    /* Oct 28 2026 food plan: today's meals for the Essenspause hub (gap-view.js). The same content the old long press (details()
+       below) showed: the meal counter (1/3), today's stats and the list of today's meals, each with its photo thumbnail
+       (meal-journal.js opens it, its own document listener). Logging stays the hub's own "Mahlzeit eintragen" button. */
     function todayHTML() {
         try {
-            const J = W.LowiMealJournal, v = CORE.view(state());
-            const meals = J && typeof J.today === 'function' ? J.today() : [];
-            const rows = meals.length ? meals.map(m => '<li class="mj-row">' + (J.thumbHTML ? J.thumbHTML(m) : '') + '<span class="wm-time">' + esc(J.timeOf ? J.timeOf(m.ts) : '') + '</span><span class="wm-name">' + esc(m.name || T('Meal', 'Mahlzeit', 'Comida')) + '</span>' + (J.labelHTML ? J.labelHTML(m) : '') + '</li>').join('')
-                : '<li class="wm-empty">' + esc(T('Nothing logged yet today.', 'Heute noch nichts eingetragen.', 'Aún no has registrado nada hoy.')) + '</li>';
-            const strip = W.LowiNutriStrip && typeof W.LowiNutriStrip.html === 'function' ? W.LowiNutriStrip.html('meals', { title: T("Today's stats", 'Heutige Werte', 'Datos de hoy') }) : '';
-            return '<section class="gv-today"><h4>' + esc(T('Today', 'Heute', 'Hoy')) + ' · <b>' + esc(v.text) + '</b> ' + esc(T('meals', 'Mahlzeiten', 'comidas')) + '</h4>' + strip + '<ul class="wm-list">' + rows + '</ul></section>';
+            const st = state(), list = CORE.mealsToday(st), v = CORE.view(st);
+            const tm = l => { if (!l.ts) return ''; const d = new Date(+l.ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+            const J = W.LowiMealJournal, thumb = J && typeof J.thumbHTML === 'function';
+            const rows = list.length ? list.map(l => '<li class="wm-row' + (thumb ? ' mj-row' : '') + '">' + (thumb ? J.thumbHTML(l) : '') + '<span><b>' + esc(l.t || l.n || l.name || T('Meal', 'Mahlzeit', 'Comida')) + '</b><small>' + esc(tm(l)) + '</small></span></li>').join('')
+                : '<li class="wm-row wm-empty">' + esc(T('No meals logged today yet.', 'Heute noch kein Essen eingetragen.', 'Hoy aún no has registrado comidas.')) + '</li>';
+            const strip = W.LowiNutriStats && typeof W.LowiNutriStats.stripHTML === 'function' ? W.LowiNutriStats.stripHTML() : '';
+            return '<section class="gv-today" aria-label="' + esc(T("Today's meals", 'Heutige Mahlzeiten', 'Comidas de hoy') + ' ' + v.text) + '">' +
+                '<h4 class="gv-h">' + esc(T("Today's meals", 'Heutige Mahlzeiten', 'Comidas de hoy')) + ' <b class="gv-today-n">' + esc(v.text) + '</b></h4>' +
+                strip + '<ul class="wm-list">' + rows + '</ul></section>';
         } catch (e) { return ''; }
     }
     /* Misty's HOME cell, never where she drifts to: while the camera follows her flight (autopilot, steering) misty-flight.js slides
@@ -212,15 +217,22 @@
             setTimeout(logMeal, 60);
         });
     }
+    /* Oct 28 2026 food plan: one tap opens Einkaufen (the ring's capture listener in home-blooms-v2.js normally gets there first;
+       this is the same target for the static layout). A hold only squishes: no second gesture. */
+    function openShop() {
+        /* the ring owns the one Shop call (home-blooms-v2.js shop()); without the ring the hub still opens, never a dead tap */
+        try { const B = W.LowiHomeBloomsV2; if (B && typeof B.shop === 'function' && B.shop()) return; } catch (e) {}
+        try { if (W.LowiGapView && typeof W.LowiGapView.open === 'function') { W.LowiGapView.open({ from: 'fuel' }); return; } } catch (e) {}
+        logMeal();
+    }
     function wire(b) {
         b.addEventListener('pointerdown', () => { downAt = performance.now(); });
         b.addEventListener('click', e => {
             e.preventDefault(); e.stopPropagation();
-            if (longAt && longAt >= downAt) { longAt = 0; return; }   /* the release after a long press: today's list stays open alone */
-            logMeal();
+            if (longAt && longAt >= downAt) { longAt = 0; return; }
+            openShop();
         });
         b.addEventListener('contextmenu', e => e.preventDefault());
-        b.addEventListener('keydown', e => { if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) { e.preventDefault(); details(); } });
     }
     let queued = 0;
     const soon = () => { if (queued) return; queued = requestAnimationFrame(() => { queued = 0; try { paint(); place(); placeDayNight(); } catch (e) {} }); };
@@ -324,7 +336,8 @@
     setInterval(() => { if (!D.hidden) orbHook(); }, 1500);
     setTimeout(orbHook, 500);
 
-    W.LowiMealsBubble = { paint, place, placeDayNight, details, log: logMeal, homeRect, el: () => ensure(), core: CORE,
+    W.LowiMealsBubble = { paint, place, placeDayNight, details, todayHTML, shop: openShop, log: logMeal, homeRect, el: () => ensure(), core: CORE,
         orbit: () => ({ on: ORB.on, ph: +ORB.ph.toFixed(3), R: Math.round(ORB.R), ok: !!(ORB.m && ORB.m.ok), busy: !!(ORB.m && ORB.m.busy) }) };
+    W.LowiSymHome = { todayHTML, shop: openShop };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', () => setTimeout(boot, 0), { once: true }); else setTimeout(boot, 0);
 })(typeof window !== 'undefined' ? window : null);

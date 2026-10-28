@@ -75,6 +75,8 @@
     Object.assign(OPEN, {
         'misty-card': { stage: '.wh-ms-ov', go: () => { if (W.LowiWorldHome && W.LowiWorldHome.openMisty) W.LowiWorldHome.openMisty('aura'); }, back: () => { if (vis($('.wh-ms-ov')) && W.LowiWorldHome && W.LowiWorldHome.closeTop) W.LowiWorldHome.closeTop(); } },
         'gap-view': { stage: '#gvSheet', go: () => { if (W.LowiGapView) W.LowiGapView.open(); }, back: () => { if (W.LowiGapView) W.LowiGapView.close(); } },
+        /* Oct 28 2026 food plan: the old Fuel bubble is Einkaufen, its demo opens Shop read-only */
+        'home-shop': { stage: '.stp-card', go: () => { const P = W.LowiStorePicks; if (P && !P.isOpen()) P.open('tour'); }, back: () => { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
         'fuel-bloom': bloom('fuel'), 'water-bloom': bloom('water'), 'move-bloom': bloom('move'), 'sleep-bloom': bloom('sleep'),
         'community-tab': { stage: '', go: () => { if (typeof W.goTab === 'function') W.goTab('foryou'); }, back: goHome },
         'settings-sheet': { stage: '.cme-ov', go: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.open(); }, back: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.close(); } },

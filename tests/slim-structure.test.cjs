@@ -40,3 +40,25 @@ test('batch 4: meal analysis + logging is one flow (X-12 into the one logger, no
     assert.doesNotMatch(s.slice(0, 600), /if \(!o\.own && startShared\(o\)\) return;/);
     assert.match(read('meal-detail.js'), /if \(!C\.hasDetail\(C\.clean\(detail\)\) && !ctx\.name && !ctx\.photo\) return null;/, 'X-22: no empty details panel');
 });
+
+test('food plan (Oct 28): Essenspause is the eating hub, the meal bubble is Einkaufen, one gesture each', () => {
+    const gv = read('gap-view.js'), sh = read('sym-home.js'), hb = read('home-blooms-v2.js');
+    assert.match(gv, /acts\(\) \+ today\(\)/, 'today\'s meals sit in the hub under the actions');
+    assert.doesNotMatch(gv.slice(gv.indexOf('function acts()'), gv.indexOf('function body(m)')), /data-gv="shop"/, 'no Einkaufen button in the hub');
+    assert.match(gv, /data-gv="cook"/, 'Kochen stays in the hub');
+    assert.match(sh, /W\.LowiSymHome = \{ todayHTML/, 'todayHTML is exported for the hub');
+    assert.match(sh, /function todayHTML\(\)[\s\S]*CORE\.mealsToday\(st\)[\s\S]*thumbHTML[\s\S]*stripHTML/, 'today\'s list from the real meal data, with photos and today\'s stats');
+    assert.match(sh, /LOWI_SHELF[\s\S]*listOpen/, 'the bubble shows the open count of the shopping list');
+    assert.match(sh, /kind: 'meals', onLong: \(\) => \{ longAt = performance\.now\(\); return true; \} \}\)/, 'a hold on the bubble only squishes (opens nothing, release swallowed)');
+    assert.match(hb, /if \(kind === 'fuel' && shop\(\)\) return;/, 'one tap opens Einkaufen');
+    assert.match(hb, /function shop\(\) \{\s*if \(fn\(W\.LowiStorePicks, 'open'\)\) \{[^}]*LowiStorePicks\.open\('home-shop'\)/, 'Einkaufen = the Shop panel');
+    assert.match(hb, /if \(kind !== 'move'\) return;/, 'only Move keeps a hold');
+});
+
+test('test floor: never below 4007 (food plan guard)', () => {
+    const fs = require('fs'), path = require('path');
+    let n = 0;
+    for (const f of fs.readdirSync(__dirname)) if (f.endsWith('.test.cjs')) n += (fs.readFileSync(path.join(__dirname, f), 'utf8').match(/^\s*test\(/gm) || []).length;
+    /* 3885 test() calls on Oct 28 2026 = 4007+ results in the full run; a refactor must not quietly drop suites */
+    assert.ok(n >= 3880, 'the suite keeps its tests (' + n + ' test() calls found, floor 3880)');
+});

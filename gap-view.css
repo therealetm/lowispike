@@ -188,3 +188,13 @@ html.lt .gv-ov, html[data-ui="light"] .gv-ov { background: rgba(10, 30, 70, .12)
 .gv-editslot .fe-inline .fe-card { padding: 12px 10px 10px; }
 .gv-editslot .fe-in .fe-show { left: 10px; right: 6px; font-size: 14px; }
 .gv-editslot .fe-f input { padding-left: 10px; padding-right: 8px; }
+/* Oct 28 2026 food plan: today's meals in the hub (the old meal bubble hold sheet). The stats strip gets a row of its own for its
+   label so the three short stat names never cut off on a phone; the list is the same .wm-list rows as before. */
+.gv-today { margin-top: 4px; }
+.gv-today .gv-today-n { margin-left: 6px; color: #fff; letter-spacing: 0; }
+.gv-today .ns-strip { flex-wrap: wrap; row-gap: 6px; margin: 0 0 8px; }
+.gv-today .ns-sl { flex: 1 0 100%; }
+.gv-today .ns-sm { min-width: 56px; }
+.gv-today .ns-sm small { overflow: visible; text-overflow: clip; }
+.gv-today .wm-list { margin-top: 0; }
+.gv-today .wm-row b { overflow-wrap: anywhere; }

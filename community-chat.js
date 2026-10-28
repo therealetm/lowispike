@@ -897,12 +897,11 @@ let sendKeep=false;
 function keepTyping(e){const s=e.target&&e.target.closest&&e.target.closest('#cmSend');if(!s||s.disabled)return;const inp=D.getElementById('cmInput');if(!inp||D.activeElement!==inp)return;sendKeep=true;e.preventDefault();}
 D.addEventListener('pointerdown',keepTyping,true);D.addEventListener('mousedown',keepTyping,true);
 D.addEventListener('pointerdown',e=>{const m=e.target&&e.target.closest&&e.target.closest('#cmMic');if(!m||m.disabled)return;if(e.pointerType==='mouse'&&e.button!==0)return;
- e.preventDefault();micDownAt=Date.now();if(rec)return;micPress={id:e.pointerId,x:e.clientX,t:Date.now()};try{m.setPointerCapture(e.pointerId);}catch(x){}recStart('tap',e.clientX);},true);
+ e.preventDefault();micDownAt=Date.now();if(rec)return;micPress={id:e.pointerId,x:e.clientX,t:Date.now()};try{m.setPointerCapture(e.pointerId);}catch(x){}recStart('hold',e.clientX);},true);
 D.addEventListener('pointermove',e=>{if(!micPress||e.pointerId!==micPress.id||!rec||rec.mode!=='hold')return;const dx=e.clientX-micPress.x,bar=D.querySelector('#csRec .cs-rec');if(bar){bar.classList.toggle('cancelling',dx<-40);bar.style.setProperty('--dx',Math.min(0,Math.max(-120,dx))+'px');}
  if(dx<-110){micPress=null;recStop(false);}},true);
 function micUp(e,cancelled){if(!micPress||e.pointerId!==micPress.id)return;const held=Date.now()-micPress.t;micPress=null;if(!rec)return;const bar=D.querySelector('#csRec .cs-rec');if(bar){bar.classList.remove('cancelling');bar.style.removeProperty('--dx');}
- /* Oct 28 2026 one-gesture rule (Emmanuel): a hold did nearly the same as a tap (both record), so a hold is now just a tap: it records, the arrow sends. Release sends nothing. */
- void held;void cancelled;rec.mode='tap';recUI();}
+ if(cancelled||held<350||rec.starting){rec.mode='tap';recUI();}else recStop(true);}
 D.addEventListener('pointerup',e=>micUp(e,false),true);D.addEventListener('pointercancel',e=>micUp(e,true),true);
 
 /* The connection stream (E-man: "when you just click on the companion, that connection is supposed to happen, a connection stream").

@@ -55,8 +55,8 @@ test('Meals bubble holds still: 1-3 px of drift never moves its spot, a real lay
     assert.ok(js.includes('if (!CORE.moved(ox, oy, X, Y)) return;'));
 });
 
-test('Meals bubble: releasing a long press never also opens Log a meal', () => {
-    assert.ok(js.includes("onLong: () => { longAt = performance.now(); details(); return true; }"));
+test('Einkaufen bubble (the old Meals bubble, Oct 28 food plan): a hold only squishes, a tap opens Einkaufen, never both', () => {
+    assert.ok(js.includes("W.LowiLivingBubble.attach(b, { kind: 'meals', onLong: () => { longAt = performance.now(); return true; } })"), 'a hold only squishes and swallows its release');
     assert.ok(js.includes("b.addEventListener('pointerdown', () => { downAt = performance.now(); });"));
-    assert.ok(/if \(longAt && longAt >= downAt\) \{ longAt = 0; return; \}[^\n]*\n\s*logMeal\(\);/.test(js));
+    assert.ok(/if \(longAt && longAt >= downAt\) \{ longAt = 0; return; \}[^\n]*\n\s*openShop\(\);/.test(js));
 });

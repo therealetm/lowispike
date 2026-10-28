@@ -73,21 +73,22 @@
             }
         },
         {
-            id: 'gap', area: 'home', target: ['#spFast'], demo: { g: 'tap', open: 'gap-view' }, covers: ['home-ring', 'gap', 'fasting'], teaches: ['gap-tap'],
+            id: 'gap', area: 'home', target: ['#spFast'], demo: { g: 'tap', open: 'gap-view' }, covers: ['home-ring', 'gap', 'fasting', 'cook', 'log-meal'], teaches: ['gap-tap'],
             title: { en: 'Gap', de: 'Gap', es: 'Gap' },
             text: {
-                en: 'Tap Gap to see how long it has been since your last meal.',
-                de: 'Tipp auf Gap und du siehst, wie lange deine letzte Mahlzeit her ist.',
-                es: 'Toca Gap y verás cuánto tiempo ha pasado desde tu última comida.'
+                en: 'Tap Gap: how long since your last meal, log a meal, Cook and today\'s meals.',
+                de: 'Tipp auf Gap: wie lange dein letztes Essen her ist, Mahlzeit eintragen, Kochen und heutige Mahlzeiten.',
+                es: 'Toca Gap: cuánto desde tu última comida, registrar comida, Cocinar y las comidas de hoy.'
             }
         },
         {
-            id: 'fuel', area: 'home', target: ['#whHud .wh-meals'], demo: { g: 'tap', open: 'fuel-bloom' }, covers: ['fuel', 'cook', 'shop', 'log-meal'], teaches: ['fuel-tap'],
-            title: { en: 'Fuel', de: 'Essen', es: 'Comida' },
+            /* Oct 28 2026 food plan: this bubble is Einkaufen (cart + open count of the shopping list); meals are logged in the Gap hub */
+            id: 'fuel', area: 'home', target: ['#whHud .wh-meals'], demo: { g: 'tap', open: 'home-shop' }, covers: ['fuel', 'shop'], teaches: ['fuel-tap'],
+            title: { en: 'Shopping', de: 'Einkaufen', es: 'Compras' },
             text: {
-                en: 'Tap Fuel to log a meal, find ideas in Cook or check products in Shop.',
-                de: 'Tipp auf Essen, um eine Mahlzeit einzutragen, in Kochen Ideen zu finden oder in Einkaufen Produkte zu prüfen.',
-                es: 'Toca Comida para registrar una comida, buscar ideas en Cocinar o revisar productos en Comprar.'
+                en: 'Tap Shopping for the supermarket, your kitchen, the Seller Zone and Help out.',
+                de: 'Tipp auf Einkaufen für Supermarkt, Zu Hause, Seller Zone und Hilf mit.',
+                es: 'Toca Compras para el súper, tu cocina, la Seller Zone y Ayuda.'
             }
         },
         {
@@ -450,11 +451,10 @@
         G('ring-still', 'home', 'hold', ['sym-home.js', 'home-orbit-v2.js'], 'touch an orbiting bubble: the ring stops'),
         G('water-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Water: 10 sips, a glass or a bottle (Size picks the bottle)'),
         G('water-hold', 'home', 'hold', ['world-home.js'], 'hold Water: the last entry comes off'),
-        G('fuel-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Fuel: Log meal, Cook, Shop'),
-        G('fuel-hold', 'home', 'hold', ['home-blooms-v2.js'], 'hold Fuel: Log meal opens'),
+        G('fuel-tap', 'home', 'tap', ['home-blooms-v2.js', 'sym-home.js'], 'tap Einkaufen (the old Fuel bubble): Shop opens (Oct 28 food plan; a hold only squishes)'),
         G('move-tap', 'home', 'tap', ['home-blooms-v2.js', 'move-bubble.js'], 'tap Move: Casual, Steady, Epic'),
         G('move-hold', 'home', 'hold', ['home-blooms-v2.js', 'move-bubble.js'], 'hold Move: the Move page (workouts, edit today\'s moves)'),
-        G('gap-tap', 'home', 'tap', ['home-blooms-v2.js', 'fast-bubble.js'], 'tap Gap: the Gap view'),
+        G('gap-tap', 'home', 'tap', ['home-blooms-v2.js', 'fast-bubble.js'], 'tap Gap: the eating hub (gap, last meal, Log meal, Cook, today\'s meals)'),
         G('sleep-tap', 'home', 'tap', ['home-settings-sleep-v2.js'], 'tap Sleep: how long did you sleep'),
         G('scan-tap', 'home', 'tap', ['home-orbit-v2.js'], 'tap Scan: the Scan screen'),
         /* Oct 24 2026: hold Scan opens every bubble at once (replaces the taught two-finger tap on Misty; bloom-ring.js still answers a
@@ -493,7 +493,7 @@
         G('cm-zoom', 'community', 'pinch', ['community-chat.js'], 'pinch or double-tap the galaxy: zoom'),
         G('cm-hold', 'community', 'hold', ['community-chat.js'], 'hold a companion or a name: their person card'),
         G('cm-room', 'community', 'tap', ['community-rooms-ui.js'], 'tap the room chip: rooms'),
-        G('cm-mic', 'community', 'tap', ['community-chat.js'], 'tap the mic: it records, tap the arrow to send (one-gesture rule: a hold is just a tap)'),
+        G('cm-mic', 'community', 'hold', ['community-chat.js'], 'hold the mic: record, let go to send, slide left to cancel'),
         G('cm-photo', 'community', 'tap', ['community-chat.js'], 'tap the camera: send a photo'),
         G('cm-energy', 'community', 'drag', ['community-energy.js'], 'drag the small joystick and let go: send energy'),
         G('aff-card', 'community', 'tap', ['community-rooms-ui.js'], 'Affiliates: tap a card for its script, copy it'),
@@ -509,7 +509,7 @@
        either taught by a base card or listed here, so nothing is forgotten silently (tests/tutorial-gestures.test.cjs). */
     const SHORT_SKIP_WHY = 'not in the short base tour (Oct 25 2026, max 12 cards): found in place or shown by What\u2019s New';
     const SHORT_SKIPS = {};
-    ['mic-dictate', 'give-hand-swipe', 'ck-tab-order', 'misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'fuel-hold', 'move-hold', 'scan-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'edge-push', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-buttons', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tabs', 'cm-tab-order', 'cm-name', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
+    ['mic-dictate', 'give-hand-swipe', 'ck-tab-order', 'misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'move-hold', 'scan-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'edge-push', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-buttons', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tabs', 'cm-tab-order', 'cm-name', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
     const GESTURE_EXEMPT = {
         'kitchen-game.js': 'Cook > Kitchen: dragging something that ran out onto the bin is only a shortcut; the Ran out: bin it button on the same card does it with a plain tap, and the shelf says so',
         'mirror-move.js': 'camera workout: it tells you each move out loud while you do it',

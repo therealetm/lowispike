@@ -218,23 +218,26 @@
        deine letzte Mahlzeit?" sheet). */
     const fnOf = (o, k) => !!(o && typeof o[k] === 'function');
     function acts() {
-        const cook = fnOf(W.LowiHost, 'go'), shop = fnOf(W.LowiStorePicks, 'open');
+        /* Oct 28 2026 food plan (Emmanuel: "Ok mach"): Einkaufen is its own bubble on Home now (the old meal bubble), so the hub keeps
+           Mahlzeit eintragen (big) and Kochen only. Today's meals (1/3, today's stats, the list with photos) sit right under them. */
+        const cook = fnOf(W.LowiHost, 'go');
         return '<div class="gv-acts"><button type="button" class="gv-log" data-gv="log">' + esc(s('log')) + '</button>' +
-            (cook || shop ? '<div class="gv-acts2">' + (cook ? '<button type="button" class="gv-act2" data-gv="cook">' + esc(s('cook')) + '</button>' : '') +
-                (shop ? '<button type="button" class="gv-act2" data-gv="shop">' + esc(s('shop')) + '</button>' : '') + '</div>' : '') + '</div>';
+            (cook ? '<div class="gv-acts2"><button type="button" class="gv-act2" data-gv="cook">' + esc(s('cook')) + '</button></div>' : '') + '</div>';
     }
+    /* today's meals from the Home cell's module (sym-home.js), the content of the old meal bubble hold sheet */
+    function today() { try { const H = W.LowiSymHome; return H && typeof H.todayHTML === 'function' ? H.todayHTML() : ''; } catch (e) { return ''; } }
     function body(m) {
         const L = m.stages;
         if (!m.start) {
             return '<div class="gv-hero">' + hero(m) + '<div class="gv-mid"><b class="gv-none">' + esc(s('none')) + '</b></div></div>' +
-                '<p class="gv-sub">' + esc(s('noneSub')) + '</p>' + acts() + curve(m) + markers(m) + '<p class="gv-hedge">' + esc(s('hedge')) + '</p>';
+                '<p class="gv-sub">' + esc(s('noneSub')) + '</p>' + acts() + today() + curve(m) + markers(m) + '<p class="gv-hedge">' + esc(s('hedge')) + '</p>';
         }
         const curM = m.cur >= 0 ? L[m.cur] : null;
         const nextLine = m.next ? s('next').replace('{n}', m.next.n.charAt(0).toLowerCase() + m.next.n.slice(1)).replace('{d}', dur(m.nextIn)) : s('past');
         return '<div class="gv-hero">' + hero(m) + '<div class="gv-mid"><b class="gv-time" data-gv="time">' + esc(dur(m.elapsed)) + '</b><small>' + esc(s('since')) + '</small></div></div>' +
             '<div class="gv-last"><span><small>' + esc(s('last')) + '</small><b>' + (m.meal ? esc(m.meal) + ' · ' : '') + esc(when(m.start)) + '</b></span>' +
             (W.LowiFastEdit && W.LowiFastEdit.open ? '<button type="button" class="gv-fix" data-gv="fix">' + esc(s('fix')) + '</button>' : '') + '</div>' +
-            '<div class="gv-editslot"></div>' + acts() +
+            '<div class="gv-editslot"></div>' + acts() + today() +
             curve(m) +
             (curM && m.hours >= MC_WIN ? '<section class="gv-now" style="--c:' + COL[m.cur] + '"><small>' + esc(s('now')) + '</small><h3>' + esc(curM.n) + '</h3>' + (curM.x ? '<p>' + rich(curM.x) + '</p>' : '<p>' + esc(curM.t) + '</p>') +
                 '<p class="gv-next">' + esc(nextLine) + '</p></section>' : '') +
@@ -419,7 +422,7 @@
         dragDown(el);
         mcSwipe(el);
         D.addEventListener('keydown', onKey, true);
-        W.addEventListener('lowi:fast', paint); W.addEventListener('storage', paint);
+        W.addEventListener('lowi:fast', paint); W.addEventListener('storage', paint); W.addEventListener('lowi:meal-logged', paint);
         W.addEventListener('lowi:fast-start', onFresh); D.addEventListener('visibilitychange', onVis);
         tick = setInterval(paint, 30000);
         setTimeout(() => { const x = el && el.querySelector('.gv-x'); if (x) x.focus({ preventScroll: true }); }, 60);
@@ -432,7 +435,7 @@
         try { const F = W.LowiFastEdit; if (el && el.querySelector('.fe-inline') && F && F.close) F.close(true); } catch (x) {}
         D && D.removeEventListener('keydown', onKey, true);
         W.removeEventListener && W.removeEventListener('lowi:fast-start', onFresh); D && D.removeEventListener('visibilitychange', onVis);
-        W.removeEventListener && W.removeEventListener('lowi:fast', paint); W.removeEventListener && W.removeEventListener('storage', paint);
+        W.removeEventListener && W.removeEventListener('lowi:fast', paint); W.removeEventListener && W.removeEventListener('storage', paint); W.removeEventListener && W.removeEventListener('lowi:meal-logged', paint);
         const e = el; el = null;
         if (!e) return;
         if (quick) { e.remove(); return; }
@@ -499,10 +502,10 @@
         if (e.target === el) { spend(e); close(); return; }
         const b = e.target.closest('[data-gv]'); if (!b) return;
         const k = b.dataset.gv;
-        if (k === 'close' || k === 'log' || k === 'move' || k === 'cook' || k === 'shop') spend(e); /* BH-037: these close Gap */
+        if (k === 'close' || k === 'log' || k === 'move' || k === 'cook') spend(e); /* BH-037: these close Gap */
         if (k === 'close') close();
         else if (k === 'fix') { try { edit(); } catch (x) { console.error(x); } }
-        else if (k === 'cook' || k === 'shop') { close(); setTimeout(() => { try { if (k === 'shop') W.LowiStorePicks.open('gap-hub'); else W.LowiHost.go('shelf'); } catch (x) { console.error(x); } }, 60); }
+        else if (k === 'cook') { close(); setTimeout(() => { try { W.LowiHost.go('shelf'); } catch (x) { console.error(x); } }, 60); }
         else if (k === 'log') { close(); setTimeout(() => { try { W.LowiSpirit.meal(); } catch (x) { console.error(x); } }, 60); }
         else if (k === 'mc') { if (Date.now() - openedAt < 450) return; mcPick(+b.dataset.i || 0); } /* not the tap that opened Gap landing on the row */
         else if (k === 'mcsay') { const c = b.closest('[data-mc-card]'); sayToggle(c ? +c.dataset.i : 0); }

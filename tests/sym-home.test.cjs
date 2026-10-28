@@ -25,10 +25,11 @@ test('mirror: the Meals bubble sits on the other side of Misty from Move', () =>
     assert.strictEqual(C.mirrorX(195, 195), 195);
 });
 
-test('Meals is a living bubble: .wh-cell in #whHud with data-hb, Misty long press, tap logs a meal', () => {
+test('Meals is a living bubble: .wh-cell in #whHud with data-hb; since the Oct 28 food plan it is Einkaufen (tap opens Shop, hold squishes)', () => {
     assert.ok(js.includes("el.className = 'wh-cell wh-meals'") && js.includes("el.dataset.hb = 'meals'"));
-    assert.ok(js.includes("LowiLivingBubble.attach(b, { kind: 'meals', onLong:"), 'long press opens today');
-    assert.ok(js.includes('W.LowiSpirit.meal()'), 'tap = the same meal sheet as Log a meal');
+    assert.ok(js.includes("LowiLivingBubble.attach(b, { kind: 'meals', onLong: () => { longAt = performance.now(); return true; } })"), 'a hold only squishes');
+    assert.ok(js.includes('B.shop()'), 'tap = the ring\'s one Einkaufen path');
+    assert.ok(js.includes('W.LowiSpirit.meal()'), 'last fallback is still the meal sheet, never a dead tap');
     assert.ok(!/requestAnimationFrame\(function loop|setInterval\(\(\) => \{ paint/.test(js), 'no frame loop');
 });
 

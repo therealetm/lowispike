@@ -117,7 +117,7 @@ test('only the doors Einkaufen really has become orbs (no Hilf mit before the se
 
 test('the bloom is titled Einkaufen and the overview (hold Scan) keeps its four groups without the shop doors', () => {
     assert.match(SRC, /fuel: \(\) => T\('Shopping', 'Einkaufen', 'Compras'\)/);
-    assert.match(SRC, /const ALL = BLOOMS\.filter\(k => k !== 'fuel'\);/);
+    assert.match(SRC, /const ALL = BLOOMS\.filter\(k => k !== 'fuel' && k !== 'gap'\);/, 'Gap (times in a second step, Oct 28 22:54) stays out too');
 });
 
 test('Hilf mit appearing later refreshes an open Einkaufen bloom', () => {

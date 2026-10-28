@@ -1,12 +1,7 @@
 'use strict';
-/* Hold Scan = every bubble at once (Oct 24 2026, Emmanuel: holding the Scan button on Home opens all the secondary bubbles at once;
-   a normal tap on Scan keeps opening Scan, and a recognised hold must not also fire the tap. The tutorial taught an old gesture,
-   two fingers on the companion; it now teaches hold Scan, in EN/DE/ES).
-   - scanPress: the pure rule (hold = still for SCAN_HOLD_MS, a drift over SCAN_DRIFT px is a drag, anything shorter is a tap)
-   - bloom-ring.js mounted on a small fake page, driven like a finger: tap opens Scan only; hold opens every bubble and swallows the
-     click (and the iOS touchend) so Scan does not open; a drag does nothing; nothing off Home; hold again closes; a tap right
-     after a hold still opens Scan; other buttons are untouched; no long-press menu on Scan
-   - the tutorial: a Hold Scan card in every language, no card teaches a two-finger tap on the companion any more */
+/* Oct 28 2026 slim structure (S-02 deleted): holding Scan no longer opens the "Alle Blasen" overview (the ring already shows every
+   bubble, a second way to the same bubbles). Before (Oct 24) a hold opened every bubble; now a hold is just a tap: it opens the one
+   scanner, nothing is swallowed. The tutorial no longer teaches it; still no two-finger tap on the companion. */
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -66,38 +61,6 @@ function page() {
 }
 function mounted() { const R = loadRing(), p = page(); assert.strictEqual(typeof R.mount, 'function', 'mount is exported in a browser'); R.mount(p.W); return { R, p }; }
 
-test('scanPress: still for SCAN_HOLD_MS is a hold, a drift is a drag, shorter is a tap', () => {
-    const R = require('../bloom-ring.js');
-    assert.ok(R.SCAN_HOLD_MS >= 350 && R.SCAN_HOLD_MS <= 700, 'a hold is about half a second (' + R.SCAN_HOLD_MS + ')');
-    assert.strictEqual(R.scanPress({ held: 120, moved: 2 }), 'tap');
-    assert.strictEqual(R.scanPress({ held: R.SCAN_HOLD_MS - 1, moved: 0 }), 'tap', 'just short of the hold is still a tap');
-    assert.strictEqual(R.scanPress({ held: R.SCAN_HOLD_MS, moved: 4 }), 'hold');
-    assert.strictEqual(R.scanPress({ held: 2000, moved: R.SCAN_DRIFT }), 'hold', 'a little wobble is still a hold');
-    assert.strictEqual(R.scanPress({ held: 2000, moved: R.SCAN_DRIFT + 1 }), 'drag', 'a finger that slides away is not a hold');
-    assert.strictEqual(R.scanPress({}), 'tap');
-});
-
-/* Oct 24 2026 (Emmanuel: "very simple: long press on Scan opens all those secondary bubbles"): the old two-finger tap on Misty is
-   removed, not kept as a hidden duplicate. Pinch zoom on the world, Misty's own hold (stats) and double tap stay elsewhere. */
-test('the old two-finger tap on Misty no longer opens the bubbles', () => {
-    const { R, p } = mounted();
-    const t1 = { identifier: 1, clientX: 180, clientY: 420 }, t2 = { identifier: 2, clientX: 210, clientY: 420 };
-    p.fire('touchstart', p.misty, 180, 420, { touches: [t1] });
-    p.wait(30);
-    p.fire('touchstart', p.misty, 210, 420, { touches: [t1, t2] });
-    p.wait(120);
-    p.fire('touchend', p.misty, 180, 420, { touches: [t1] });
-    const end = p.fire('touchend', p.misty, 210, 420, { touches: [] });
-    p.wait(1000);
-    assert.strictEqual(p.st.opens, 0, 'two fingers on Misty open nothing');
-    assert.strictEqual(end.prevented, false, 'and her own tap / double tap are not blocked');
-    assert.strictEqual(R.isTwoFingerTap, undefined, 'the two-finger decision is gone');
-    assert.strictEqual(R.TAP, undefined, 'its timing table too');
-    const br = read('bloom-ring.js');
-    assert.doesNotMatch(br, /addEventListener\('touchstart'/, 'no touch-story listener left for it');
-    assert.doesNotMatch(br, /function onMisty\(/, 'no Misty hit test for it');
-});
-
 test('a normal tap on Scan opens Scan and nothing else', () => {
     const { p } = mounted();
     const r = p.press(p.scan, 150);
@@ -106,133 +69,53 @@ test('a normal tap on Scan opens Scan and nothing else', () => {
     assert.strictEqual(r.touchendCancelled, false, 'the tap\'s click is not blocked');
 });
 
-test('holding Scan opens every bubble and does NOT also open Scan', () => {
+test('S-02: holding Scan opens no bubble overview, the hold is just a tap that opens the one scanner', () => {
     const { R, p } = mounted();
-    p.fire('pointerdown', p.scan);
-    assert.ok(p.scan.cls.has('br-scan-holding'), 'a light cue while the finger is down');
-    p.wait(R.SCAN_HOLD_MS - 20);
-    assert.strictEqual(p.st.opens, 0, 'nothing before the hold time');
-    p.wait(40);
-    assert.strictEqual(p.st.opens, 1, 'every bubble opens while the finger is still down');
-    assert.ok(p.st.all, 'the all-bubbles circle is open');
-    assert.ok(!p.scan.cls.has('br-scan-holding'), 'the cue goes once it fired');
-    p.fire('pointerup', p.scan);
-    const te = p.fire('touchend', p.scan);
-    assert.ok(te.prevented, 'iOS: the touchend after a hold is cancelled, so no click follows');
-    const click = p.fire('click', p.scan);
-    assert.ok(click.stopped && click.prevented, 'a click that still comes is swallowed');
-    assert.strictEqual(p.st.scanOpened, 0, 'Scan did not open');
-    assert.ok(p.st.all, 'the swallowed click did not close the bubbles either');
+    const r = p.press(p.scan, R.SCAN_HOLD_MS + 400);
+    assert.strictEqual(p.st.opens, 0, 'no all-bubbles overview');
+    assert.ok(!p.st.all);
+    assert.strictEqual(r.touchendCancelled, false, 'nothing swallowed');
+    assert.strictEqual(p.st.scanOpened, 1, 'Scan opened');
+    assert.ok(!p.scan.cls.has('br-scan-holding'), 'no hold cue');
 });
 
-test('a busy page: the timer had no chance, but the finger stayed down long enough, so it is still a hold and never Scan', () => {
+test('the old two-finger tap on Misty opens nothing either', () => {
     const { R, p } = mounted();
-    p.fire('pointerdown', p.scan);
-    p.stall(R.SCAN_HOLD_MS + 150);
-    p.fire('pointerup', p.scan);
-    assert.strictEqual(p.st.opens, 1, 'every bubble opens on lift');
-    const te = p.fire('touchend', p.scan); assert.ok(te.prevented);
-    const c = p.fire('click', p.scan); assert.ok(c.stopped);
-    assert.strictEqual(p.st.scanOpened, 0, 'Scan did not open');
+    const t1 = { identifier: 1, clientX: 180, clientY: 420 }, t2 = { identifier: 2, clientX: 210, clientY: 420 };
+    p.fire('touchstart', p.misty, 180, 420, { touches: [t1] });
+    p.fire('touchstart', p.misty, 210, 420, { touches: [t1, t2] });
+    const end = p.fire('touchend', p.misty, 210, 420, { touches: [] });
     p.wait(1000);
-    assert.strictEqual(p.st.opens, 1, 'the late timer does not fire a second time');
-    assert.ok(p.st.all, 'still open');
-});
-
-test('a busy page and a quick tap: still a tap', () => {
-    const { p } = mounted();
-    p.fire('pointerdown', p.scan); p.stall(150); p.fire('pointerup', p.scan); p.fire('touchend', p.scan); p.fire('click', p.scan);
-    p.wait(1000);
-    assert.strictEqual(p.st.scanOpened, 1); assert.strictEqual(p.st.opens, 0, 'no late hold after the lift');
-});
-
-test('a hold that slides away is a drag: nothing opens', () => {
-    const { R, p } = mounted();
-    p.press(p.scan, R.SCAN_HOLD_MS + 300, 30);
     assert.strictEqual(p.st.opens, 0);
-    assert.strictEqual(p.st.scanOpened, 0);
-});
-
-test('after a hold, the next quick tap opens Scan again', () => {
-    const { R, p } = mounted();
-    p.press(p.scan, R.SCAN_HOLD_MS + 100);
-    assert.strictEqual(p.st.opens, 1); assert.strictEqual(p.st.scanOpened, 0);
-    p.press(p.scan, 120);
-    assert.strictEqual(p.st.scanOpened, 1, 'the tap after a hold is a real tap');
-});
-
-test('hold again closes the circle (same toggle as the two-finger shortcut)', () => {
-    const { R, p } = mounted();
-    p.press(p.scan, R.SCAN_HOLD_MS + 50);
-    p.press(p.scan, R.SCAN_HOLD_MS + 50);
-    assert.strictEqual(p.st.closes, 1); assert.ok(!p.st.all);
-    assert.strictEqual(p.st.scanOpened, 0, 'neither hold opened Scan');
-});
-
-test('only on Home: a hold while Home is away does nothing', () => {
-    const { R, p } = mounted();
-    p.H.add('wh-away');
-    p.press(p.scan, R.SCAN_HOLD_MS + 200);
-    assert.strictEqual(p.st.opens, 0, 'no bubbles away from Home');
-});
-
-test('other buttons are untouched: holding Water never opens every bubble, its tap still lands', () => {
-    const { R, p } = mounted();
-    p.press(p.water, R.SCAN_HOLD_MS + 200);
-    assert.strictEqual(p.st.opens, 0);
-    p.press(p.water, 100);
-    assert.strictEqual(p.st.waterTapped, 2, 'Water got both its clicks (the hold is Water\'s own, handled in world-home.js)');
+    assert.strictEqual(end.prevented, false);
+    assert.strictEqual(R.isTwoFingerTap, undefined);
 });
 
 test('no long-press menu or callout on Scan', () => {
     const { p } = mounted();
     assert.ok(p.fire('contextmenu', p.scan).prevented, 'contextmenu on Scan is cancelled');
     assert.ok(!p.fire('contextmenu', p.empty).prevented, 'elsewhere it is left alone');
-    assert.match(read('bloom-ring.css'), /\[data-orbit="scan"\]\.br-scan-holding/, 'the hold cue is styled');
 });
 
-test('wiring: the hold lives in bloom-ring.js, before every click handler, and opens every bubble', () => {
+test('wiring: no hold listeners in bloom-ring.js, a tap on Scan still opens Scan', () => {
     const br = read('bloom-ring.js');
-    assert.match(br, /D\.addEventListener\('pointerdown', onScanDown, true\)/);
-    assert.match(br, /W\.addEventListener\('click', onScanClick, true\)/, 'the window sees the click first');
-    assert.match(br, /D\.addEventListener\('touchend', onScanTouchEnd, \{ capture: true, passive: false \}\)/, 'iOS: no synthetic click after a hold');
-    assert.match(br, /closest\('#whHud \[data-orbit="scan"\]'\)/, 'only the Home Scan button');
+    assert.doesNotMatch(br, /D\.addEventListener\('pointerdown', onScanDown, true\)/);
+    assert.doesNotMatch(br, /W\.addEventListener\('click', onScanClick, true\)/);
+    assert.match(br, /S-02 deleted/);
     assert.match(read('home-orbit-v2.js'), /if \(key === 'scan'\) \{ open\('scan'\); return; \}/, 'a tap on Scan still opens Scan');
 });
 
 const T = require('../tutorial-steps.js');
 const TWO_ON_ME = { en: /(tap|touch) me with two fingers/i, de: /mit zwei Fingern gleichzeitig an/i, es: /(tócame|toca a \w+) con dos dedos/i };
 
-test('tutorial: Hold Scan is its What\'s New card in EN/DE/ES (a quick tap still opens Scan); the base Scan card shows a pretend Scan, never the camera', () => {
-    const s = T.STEPS.find(x => x.id === 'new-scan-hold');
-    assert.ok(s, 'there is a Hold Scan card');
-    assert.strictEqual(s.area, 'new', 'What\'s New only: the short base tour never shows it (Oct 25 2026)');
-    assert.deepStrictEqual(s.covers, ['scan-hold-all']);
-    assert.strictEqual(s.later, 'hold', 'Scan is tried after the tour (a slip would open the camera during it)');
-    assert.ok(s.target.includes('#whHud .o8-scan'), 'it points at Scan');
-    assert.match(s.text.en, /hold Scan for a moment/i); assert.match(s.text.en, /every bubble opens at once/i); assert.match(s.text.en, /quick tap still opens Scan/i);
-    assert.match(s.text.de, /Halt Scan kurz gedrückt/); assert.match(s.text.de, /alle Bubbles auf einmal/); assert.match(s.text.de, /Kurz tippen öffnet weiter Scan/);
-    assert.match(s.text.es, /mantén pulsado Scan/i); assert.match(s.text.es, /todas las burbujas a la vez/i); assert.match(s.text.es, /toque rápido sigue abriendo Scan/i);
-    for (const l of ['en', 'de', 'es']) assert.match(s.text[l], T.LATER_MARK[l], 'says after the tour (' + l + ')');
-    const b = T.STEPS.find(x => x.id === 'scan');
-    assert.ok(b && b.area !== 'new' && b.demo && b.demo.open === 'scan-demo', 'the base Scan card opens the pretend Scan');
-    assert.ok(!T.base().some(x => x.id === 'new-scan-hold'), 'not in the base tour');
-    const g = T.GESTURES.find(x => x.id === 'scan-hold');
-    assert.ok(g && g.how === 'hold' && g.src.includes('bloom-ring.js'), 'listed as a hold gesture in bloom-ring.js');
-});
-
-test('tutorial: no card teaches a two-finger tap on the companion any more, in any language', () => {
+test('tutorial: no card teaches Hold Scan or a two-finger tap on the companion, in any language', () => {
+    assert.ok(!T.STEPS.some(s => s.id === 'new-scan-hold'), 'the Hold Scan card is gone');
+    assert.ok(!T.GESTURES.some(g => g.id === 'scan-hold'), 'no scan-hold gesture to teach');
     assert.ok(!T.STEPS.some(s => s.id === 'misty-two'), 'the Two fingers card is gone');
-    assert.ok(!T.GESTURES.some(g => g.id === 'misty-two'), 'no gesture misty-two to teach');
     for (const s of T.STEPS) for (const l of ['en', 'de', 'es']) {
         assert.doesNotMatch(s.text[l], TWO_ON_ME[l], s.id + '.' + l + ' teaches two fingers on the companion');
-        assert.doesNotMatch(s.title[l], /^(Two fingers|Zwei Finger|Dos dedos)$/i, s.id + '.' + l + ' title');
+        assert.doesNotMatch(s.text[l], /hold Scan|Halt Scan|mantén pulsado Scan/i, s.id + '.' + l + ' teaches hold Scan');
     }
-});
-
-test('What\'s New: the new-scan-hold card is in part new and reads in every language', () => {
-    const s = T.STEPS.find(x => x.id === 'new-scan-hold');
-    assert.ok(s && s.area === 'new', 'in part new');
-    assert.match(s.text.en, /hold Scan/i); assert.match(s.text.de, /Halt Scan/); assert.match(s.text.es, /mantén pulsado Scan/i);
-    assert.ok(T.VERSION >= 20, 'tutorial VERSION bumped');
+    const b = T.STEPS.find(x => x.id === 'scan');
+    assert.ok(b && b.area !== 'new' && b.demo && b.demo.open === 'scan-demo', 'the base Scan card opens the pretend Scan');
 });

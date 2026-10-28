@@ -283,13 +283,8 @@
             const me = D.currentScript, q = me && me.src && me.src.indexOf('?') > 0 ? me.src.slice(me.src.indexOf('?')) : '';
             const l = D.createElement('link'); l.id = 'brCss'; l.rel = 'stylesheet'; l.href = 'bloom-ring.css' + q; (D.head || H).appendChild(l);
         }
-        /* hold Scan: before every other click handler (the window sees a click first) */
-        D.addEventListener('pointerdown', onScanDown, true);
-        D.addEventListener('pointermove', onScanMove, true);
-        D.addEventListener('scroll', scanCancel, true);
-        ['pointerup', 'pointercancel'].forEach(n => D.addEventListener(n, onScanLift, true));
-        W.addEventListener('click', onScanClick, true);
-        D.addEventListener('touchend', onScanTouchEnd, { capture: true, passive: false });
+        /* Oct 28 2026 slim structure (S-02 deleted, "Alle Blasen"): holding Scan no longer opens the all-bubbles overview, the ring
+           already shows every bubble. A hold is just a tap: it opens the one scanner. No hold listeners are wired any more. */
         D.addEventListener('contextmenu', e => { if (scanEl(e.target)) e.preventDefault(); }, true);
         W.addEventListener('resize', () => { if (z.on) { const B = W.LowiHomeBloomsV2; try { if (B && B.close) B.close(); } catch (e) { } try { const S = W.LowiHomeSettingsSleepV2; if (S && S.close) S.close(); } catch (e) { } unzoom(); } });
     }

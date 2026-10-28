@@ -40,3 +40,17 @@ test('batch 4: meal analysis + logging is one flow (X-12 into the one logger, no
     assert.doesNotMatch(s.slice(0, 600), /if \(!o\.own && startShared\(o\)\) return;/);
     assert.match(read('meal-detail.js'), /if \(!C\.hasDetail\(C\.clean\(detail\)\) && !ctx\.name && !ctx\.photo\) return null;/, 'X-22: no empty details panel');
 });
+
+test('batch 5: one scanner (F-04 same Scan screen, X-09 report in the result, X-30 no Seller Zone page, S-02 no hold overview)', () => {
+    const idx = read('index.html');
+    assert.match(idx, /F-04 merged into S-01[\s\S]{0,300}if \(tt\) tt\.textContent = t\("scanBig"\); return CAM\.shop; \}/, 'F-04: the shopping scan keeps the one Scan title');
+    assert.match(idx, /function newProdHTML\(\)/, 'X-09: report a product sits in the scan result');
+    assert.match(idx, /case "newprod": if \(window\.LowiDiscovery && LowiDiscovery\.openForm\)/);
+    assert.match(idx, /esc\(t\("dontSave"\)\) \+ '<\/button>' \+ newProdHTML\(\)/, 'X-09: also on the not-found result');
+    const sz = read('seller-zone.js');
+    assert.doesNotMatch(sz, /class="sz-all" data-sz-open=/, 'X-30: no "See all" page button');
+    assert.match(sz, /function open\(kind\) \{\s*try \{\s*const card = D\.querySelector\('#b3Card'\);/, 'X-30: an old open() lands in the scan result or the scanner');
+    const br = read('bloom-ring.js');
+    assert.match(br, /S-02 deleted/);
+    assert.doesNotMatch(br, /D\.addEventListener\('pointerdown', onScanDown, true\)/, 'S-02: no hold on Scan');
+});

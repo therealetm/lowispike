@@ -121,7 +121,7 @@
             /* Scan in the tour NEVER calls the camera (no iOS permission prompt): 'scan-demo' is a mocked Scan screen with a sample
                photo; the finger presses its shutter and a verdict marked Demo appears. The camera is asked at the first REAL scan. */
             id: 'scan', area: 'food', target: ['#whHud .o8-scan'], demo: { g: 'tap', open: 'scan-demo' }, sayTitle: { es: false },
-            covers: ['scan', 'barcode', 'scan-hold-all', 'deep-analyze', 'fix-food', 'snap-food', 'photo-checks'], teaches: ['scan-tap'],
+            covers: ['scan', 'barcode', 'deep-analyze', 'fix-food', 'snap-food', 'photo-checks'], teaches: ['scan-tap'],
             title: { en: 'Scan', de: 'Scannen', es: 'Escanear' },
             text: {
                 en: 'Tap Scan and point the camera at your food: I tell you how much it spikes.',
@@ -318,15 +318,6 @@
             }
         },
         {
-            id: 'new-scan-hold', area: 'new', where: 'home', target: ['#whHud .o8-scan'], covers: ['scan-hold-all'], later: 'hold',
-            title: { en: 'Hold Scan for every bubble', de: 'Scan halten für alle Bubbles', es: 'Mantén Scan para todas las burbujas' },
-            text: {
-                en: 'After the tour, hold Scan for a moment and every bubble opens at once. A quick tap still opens Scan.',
-                de: 'Nach der Tour: Halt Scan kurz gedrückt, dann gehen alle Bubbles auf einmal auf. Kurz tippen öffnet weiter Scan.',
-                es: 'Después del recorrido, mantén pulsado Scan un momento y se abren todas las burbujas a la vez. Un toque rápido sigue abriendo Scan.'
-            }
-        },
-        {
             id: 'new-move-finish', area: 'new', where: 'move', open: 'move', target: ['.mm-hero', '.mm-hero-dl'], covers: ['move-finish'],
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.37, move-finish-core.js / move-finish.js): every finished Move session, Mirror mode and Kreuzheben included, is saved to This week and History, pays the biggest reward in the app (150 + 5 per minute, up to 60 min, 3 a day) and ends with a grand finish.',
             title: { en: 'Finish strong', de: 'Stark ins Ziel', es: 'Termina a lo grande' },
@@ -459,7 +450,6 @@
         G('scan-tap', 'home', 'tap', ['home-orbit-v2.js'], 'tap Scan: the Scan screen'),
         /* Oct 24 2026: hold Scan opens every bubble at once (replaces the taught two-finger tap on Misty; bloom-ring.js still answers a
            two-finger tap on Misty as a quiet duplicate of this shortcut, untaught on Emmanuel's word: the tour teaches hold Scan) */
-        G('scan-hold', 'home', 'hold', ['bloom-ring.js', 'home-blooms-v2.js'], 'hold Scan: every bubble opens in one circle round the companion, the view zooms out; a quick tap still opens Scan'),
         G('community-tap', 'home', 'tap', ['home-settings-sleep-v2.js'], 'tap Community: Community'),
         G('community-hold', 'home', 'hold', ['home-settings-sleep-v2.js'], 'hold Community: slim Settings'),
         G('theme-tap', 'home', 'tap', ['top-bar.js'], 'tap the moon/sun: day or night'),
@@ -509,8 +499,9 @@
        either taught by a base card or listed here, so nothing is forgotten silently (tests/tutorial-gestures.test.cjs). */
     const SHORT_SKIP_WHY = 'not in the short base tour (Oct 25 2026, max 12 cards): found in place or shown by What\u2019s New';
     const SHORT_SKIPS = {};
-    ['mic-dictate', 'give-hand-swipe', 'ck-tab-order', 'misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'fuel-hold', 'move-hold', 'scan-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'edge-push', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-buttons', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tabs', 'cm-tab-order', 'cm-name', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
+    ['mic-dictate', 'give-hand-swipe', 'ck-tab-order', 'misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'fuel-hold', 'move-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'edge-push', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-buttons', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tabs', 'cm-tab-order', 'cm-name', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
     const GESTURE_EXEMPT = {
+        'bloom-ring.js': 'Oct 28 2026 slim structure (S-02 deleted): the old hold-Scan helpers stay as code only, nothing wires them; a hold on Scan is a plain tap that opens the one scanner',
         'kitchen-game.js': 'Cook > Kitchen: dragging something that ran out onto the bin is only a shortcut; the Ran out: bin it button on the same card does it with a plain tap, and the shelf says so',
         'mirror-move.js': 'camera workout: it tells you each move out loud while you do it',
         'mirror-move-core.js': 'camera workout: it tells you each move out loud while you do it',

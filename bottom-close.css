@@ -1,0 +1,29 @@
+/* bottom-close.css: Oct 28 2026, owner request 14. One back / close button at the bottom center, like a home button, for one hand.
+   See bottom-close.js and the design rule in MAYA-HANDOFF section 5. */
+.lw-bx{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom, 0px) + 14px + var(--bx-lift, 0px));z-index:2147483646;
+  width:56px;height:56px;margin:0;padding:0;border-radius:50%;display:none;align-items:center;justify-content:center;
+  transform:translateX(-50%);color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  background:radial-gradient(120% 120% at 50% 0%,rgba(120,180,255,.28),transparent 60%),rgba(10,22,58,.82);
+  border:1px solid rgba(143,216,255,.55);
+  -webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);
+  box-shadow:0 10px 26px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.18),0 0 18px rgba(80,170,255,.28);
+  transition:bottom .2s ease,transform .12s ease,opacity .18s ease}
+.lw-bx.on{display:flex;animation:lwBxIn .22s ease both}
+.lw-bx svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.lw-bx:active{transform:translateX(-50%) scale(.9)}
+.lw-bx::after{content:"";position:absolute;inset:-6px;border-radius:50%}
+.lw-bx:focus-visible{outline:2px solid #7fd4ff;outline-offset:3px}
+@keyframes lwBxIn{from{opacity:0;transform:translateX(-50%) translateY(10px) scale(.9)}to{opacity:1;transform:translateX(-50%)}}
+@media (prefers-reduced-motion: reduce){.lw-bx.on{animation:none}.lw-bx{transition:none}}
+/* the screen's own back / close (top-left arrow, top-corner X) stays in the page for its logic, out of sight */
+.lw-bx-src{opacity:0!important;pointer-events:none!important}
+/* scrolling panels end above the button, so their last row is never under it */
+html.lw-bx-on #tab-shelf #shBody,html.lw-bx-on #tab-profile,html.lw-bx-on #tab-move,html.lw-bx-on #tab-scan,html.lw-bx-on .gv-scroll{scroll-padding-bottom:84px}
+html.lw-bx-on #tab-shelf #shBody::after,html.lw-bx-on .gv-scroll::after,html.lw-bx-on #tab-move::after,html.lw-bx-on #tab-profile::after{content:"";display:block;height:calc(env(safe-area-inset-bottom, 0px) + 72px)}
+/* Kochen's panel leaves the bottom strip for the button */
+html.cook-holo.lw-bx-on #main>#tab-shelf.tab.active{bottom:calc(env(safe-area-inset-bottom, 0px) + 14px)!important}
+/* the scanner's camera keeps its controls just above the button (its old bottom-right X is replaced by it) */
+html.lw-bx-on.lw-bx-on .b3-cam.b3-cam.b3-cam .b3-cbot.b3-cbot{padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 82px)!important}
+/* Einkaufen: its footer (scan-in-the-shop button, old close orb on the right) ends above the button */
+html.lw-bx-on .stp-ov .stp-foot{padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 80px)!important}
+html.lw-bx-on .stp-foot>.stp-close.lw-bx-src{position:absolute!important;right:14px}

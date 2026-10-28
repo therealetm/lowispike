@@ -14851,6 +14851,22 @@ html.b3-camon,html.b3-camon body{overflow:hidden}
 .b3-cam.live .b3-laser{opacity:1;animation:b3laser 1.6s ease-in-out infinite alternate}
 .b3-cam.got .b3-frame i[class^=c]{border-color:#5fc27e;transition:border-color .15s}
 .b3-cam.got .b3-laser{opacity:0}
+/* Oct 28 Snap + Focus (scan-snap-core.js): two round buttons beside the bottom-center X (bottom-close.js keeps the X at
+   bottom: safe area + 14px, 56px wide, and only looks at its own column), Snap on the left, Focus or Zoom on the right. They show
+   only while the camera is live; a kept photo (Snap) covers the video until the next scan starts. */
+.b3-still{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;pointer-events:none}
+.b3-cam.snapped .b3-still{display:block}
+.b3-cam.snapped .b3-laser{opacity:0;animation:none}
+.b3-cam:is([data-st=snapread],[data-st=snapnone]) .b3-cmsg{z-index:4} /* above the bottom panel on short screens, so its buttons take taps */
+.b3-sbtn{position:absolute;z-index:6;bottom:var(--sb-b,calc(env(safe-area-inset-bottom,0px) + 14px));width:56px;height:56px;border-radius:50%;padding:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#fff;border:1px solid rgba(143,216,255,.5);background:rgba(10,22,58,.82);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);font:650 9.5px/1 -apple-system,system-ui,sans-serif;letter-spacing:.01em;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.b3-sbtn svg{width:22px;height:22px}
+.b3-sbtn:active{transform:scale(.93)}
+.b3-snapb{left:calc(var(--sb-x,50%) - 28px - 18px - 56px)}
+.b3-focusb{left:calc(var(--sb-x,50%) + 28px + 18px)}
+.b3-cam.live:not(.typing):not(.held):not(.snapped) .b3-snapb,.b3-cam.live:not(.typing):not(.held):not(.snapped) .b3-focusb:not([hidden]){display:flex}
+.b3-focusb[aria-pressed=true]{background:#e9cb88;color:#14100a;border-color:#e9cb88}
+.b3-cam.focusing .b3-frame i[class^=c]{border-color:#fff;transition:border-color .15s}
+@media (prefers-reduced-motion:reduce){.b3-sbtn:active{transform:none}}
 @keyframes b3laser{0%{top:12%}100%{top:88%}}
 .b3-cam.typing .b3-frame,.b3-cam[data-st=ask] .b3-frame,.b3-cam[data-st=denied] .b3-frame,.b3-cam[data-st=nocam] .b3-frame{opacity:.25}
 .b3-cmsg{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 70px);bottom:calc(env(safe-area-inset-bottom,0px) + 190px);display:flex;align-items:center;justify-content:center;padding:0 calc(env(safe-area-inset-right,0px) + 22px) 0 calc(env(safe-area-inset-left,0px) + 22px);z-index:2;pointer-events:none}
@@ -15321,6 +15337,22 @@ Object.assign(B3_TX, {
   camErr: ["The camera didn't start", "Die Kamera ist nicht gestartet", "La cámara no arrancó"],
   camErrS: ["Try again, or type the barcode number below.", "Versuch es nochmal oder tipp unten die Nummer unter dem Barcode ein.", "Inténtalo de nuevo o escribe abajo el número del código."],
   camType: ["Type the number", "Nummer eintippen", "Escribir el número"],
+  /* Oct 28 Snap + Focus */
+  snap: ["Snap", "Foto", "Foto"],
+  snapL: ["Snap: keep a photo and read the barcode from it, so you can lower the phone", "Foto: Bild behalten und den Barcode daraus lesen, dann kannst du das Handy runternehmen", "Foto: guarda una imagen y lee el código de ella, así puedes bajar el móvil"],
+  snapKept: ["Photo kept. Hold still a moment…", "Foto gemacht. Kurz ruhig halten…", "Foto hecha. Quieto un momento…"],
+  snapRead: ["Reading the barcode from your photo…", "Barcode wird aus dem Foto gelesen…", "Leyendo el código de tu foto…"],
+  snapReadS: ["You can lower the phone. The result shows up here.", "Du kannst das Handy runternehmen. Das Ergebnis erscheint hier.", "Puedes bajar el móvil. El resultado aparece aquí."],
+  snapNone: ["No readable barcode in this photo", "Auf diesem Foto ist kein Barcode lesbar", "En esta foto no se puede leer ningún código"],
+  snapNoneS: ["Keep the whole barcode inside the frame, a bit further back if it looks blurry, then snap again. Or type the number.", "Den ganzen Barcode in den Rahmen, bei Unschärfe etwas weiter weg, dann neues Foto. Oder die Nummer eintippen.", "Pon todo el código dentro del marco, un poco más lejos si sale borroso, y haz otra foto. O escribe el número."],
+  snapAgain: ["Snap again", "Neues Foto", "Otra foto"],
+  snapPhone: ["Use the camera app (tap to focus)", "Kamera-App nutzen (tippen zum Scharfstellen)", "Usar la app de cámara (toca para enfocar)"],
+  focus: ["Focus", "Fokus", "Enfoque"],
+  focusL: ["Focus on the middle of the picture again", "Neu auf die Bildmitte scharfstellen", "Volver a enfocar el centro de la imagen"],
+  focusNo: ["This camera didn't take the focus request", "Diese Kamera hat das Scharfstellen nicht angenommen", "Esta cámara no aceptó el enfoque"],
+  zoom: ["2×", "2×", "2×"],
+  zoomL: ["Zoom 2x, so you can hold the phone further back", "2-fach Zoom, damit du das Handy weiter weg halten kannst", "Zoom 2x, para sostener el móvil más lejos"],
+  zoomOn: ["Zoom 2x: hold the phone a little further back", "2-fach Zoom: Handy etwas weiter weg halten", "Zoom 2x: aleja un poco el móvil"],
   camTypeHint: ["Type the number under the barcode", "Tipp die Nummer unter dem Barcode ein", "Escribe el número bajo el código"],
   camNo: ["No camera here", "Hier gibt es keine Kamera", "Aquí no hay cámara"],
   camNoS: ["Type the barcode number below instead.", "Tipp stattdessen unten die Nummer unter dem Barcode ein.", "Escribe abajo el número del código."],
@@ -15431,6 +15463,8 @@ const IC = {
   book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/></svg>',
   tag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></svg>',
   bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  shutter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.7l1.3-2h5l1.3 2h1.7A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.3" r="3.4"/></svg>',
+  focus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 9V5h4M16 5h4v4M20 15v4h-4M8 19H4v-4"/><circle cx="12" cy="12" r="2.6"/></svg>',
   search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>'
 };
 const CAT_E = {snack:"🥨", dairy:"🥛", cereal:"🥣", bread:"🍞", drink:"🥤", sweets:"🍫", staple:"🍝", other:"🛒"};
@@ -15900,7 +15934,7 @@ function openScanner(mode){
   { const i = window.LowiScanIntent; window.LowiScanMeal = !!(i && i.meal && Date.now() - i.at < 5000); window.LowiScanIntent = null; } /* read by scanForMeal() */
   closeScanner(true);
   const el = document.createElement("div"); el.className = "b3-cam"; el.id = "b3Cam"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true");
-  el.innerHTML = '<video id="b3Vid" playsinline webkit-playsinline muted autoplay disablepictureinpicture></video><div class="b3-shade"></div>' +
+  el.innerHTML = '<video id="b3Vid" playsinline webkit-playsinline muted autoplay disablepictureinpicture></video><canvas class="b3-still" id="b3Still" aria-hidden="true"></canvas><div class="b3-shade"></div>' +
     '<div class="b3-ctop"><button class="b3-cx" data-b3="camclose" aria-label="' + esc(t("close")) + '">' + IC.x + '</button><span class="b3-ctitle">' + esc(t("scanBig")) + '</span>' + (window.LowiShopScan && mode === "shop" ? LowiShopScan.pill() : "") + '<button class="b3-torch" data-b3="torch" hidden aria-label="' + esc(t("torch")) + '">' + IC.bolt + '</button></div>' +
     '<div class="b3-frame" id="b3Frame"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><i class="b3-laser"></i></div>' +
     '<div class="b3-cmsg" id="b3CMsg"></div>' +
@@ -15909,7 +15943,10 @@ function openScanner(mode){
       '<form class="b3-type b3-ctype" id="b3BcF" autocomplete="off"><input class="input" id="b3Bc" inputmode="numeric" pattern="[0-9]*" maxlength="14" placeholder="' + esc(t("bcPh")) + '" enterkeyhint="go"><button class="b3-go" aria-label="' + esc(t("check")) + '">' + IC.go + '</button></form>' +
       /* Oct 23 name check: the food-name field next to the barcode field. A typed food or product name gets its verdict straight away */
       '<form class="b3-type b3-ctype b3-nmtype" id="b3NmF" autocomplete="off"><input class="input" id="b3Nm" maxlength="80" autocomplete="off" aria-label="' + esc(net("typeName")) + '" placeholder="' + esc(net("typeName")) + '…" enterkeyhint="go"><button class="b3-go" aria-label="' + esc(net("analyse")) + '">' + IC.go + '</button></form><div class="b3-nmlive" id="b3NmLive" aria-live="polite"></div>' +
-      camBar() + '</div>';
+      camBar() + '</div>' +
+    /* Oct 28 Snap (left of the X) and Focus / Zoom (right of the X, only when this camera says it can) */
+    '<button type="button" class="b3-sbtn b3-snapb" id="b3Snap" data-b3="snap" aria-label="' + esc(t("snapL")) + '">' + IC.shutter + '<span>' + esc(t("snap")) + '</span></button>' +
+    '<button type="button" class="b3-sbtn b3-focusb" id="b3Focus" data-b3="camfocus" hidden aria-pressed="false" aria-label="' + esc(t("focusL")) + '">' + IC.focus + '<span>' + esc(t("focus")) + '</span></button>';
   /* Oct 16 in-store scan: shopping mode (from Shop / the cart) opens as its own full-screen layer, not inside Misty's world */
   if(window.LowiSpirit && mode !== "shop"){LowiSpirit.scannerHost().appendChild(el);el.removeAttribute("aria-modal");}else { document.body.appendChild(el); if (mode === "shop") el.classList.add("lv-solo"); } document.documentElement.classList.add("b3-camon");
   CAM = {el, stream:null, raf:0, det:null, reader:null, done:false, last:0};
@@ -15944,8 +15981,11 @@ function shopMode(on){ if (!CAM) return false; CAM.shop = !!on; CAM.el.classList
   /* Oct 28 2026 slim structure (F-04 merged into S-01): one scanner for everything. The kitchen / shop scan is the same Scan screen
      with the same title; shopping is only the switch (pill) inside it, never a second "Einkaufs-Scan" screen. */
   const tt = $(".b3-ctitle", CAM.el); if (tt) tt.textContent = t("scanBig"); return CAM.shop; }
-function shopResume(){ if (!CAM) return; CAM.hold = false; CAM.done = false; CAM.el.classList.remove("got"); if (CAM.lastHit) CAM.lastHit.at = performance.now();
-  if (CAM.stream) { msgState("live"); msg(aimTxt()); cancelAnimationFrame(CAM.raf); loop(); } }
+function shopResume(){ if (!CAM) return; CAM.hold = false; CAM.done = false; CAM.el.classList.remove("got", "held"); if (CAM.lastHit) CAM.lastHit.at = performance.now();
+  /* Oct 28 Snap: after a kept photo the camera was let go, so the next scan starts it again (startCam1 drops the photo) */
+  const act = snapCore() ? snapCore().resumeAction({stream:!!CAM.stream, snap:!!CAM.snap}) : (CAM.stream ? "loop" : "none");
+  if (act === "loop") { clearSnap(CAM); msgState("live"); msg(aimTxt()); cancelAnimationFrame(CAM.raf); loop(); }
+  else if (act === "restart") startCam(); }
 /* Oct 23 name check in the camera: type a name (grapes, Erdbeeren, a product name), see the verdict live under the field, then
    Go gives the full result like a scan: Misty's spike animation, the verdict on top, the best swap, then "no detailed data". */
 let CNT = 0;
@@ -15960,7 +16000,7 @@ async function camName(q){
   if (!p.nameEst) { NE_BUSY = true; msg(net("analysing")); const r = await nameResult(q, base); NE_BUSY = false; p = r.p; fb = r.fb; }
   if (!CAM) return;
   /* Oct 26 one scanner: a typed name gets the same compact card as a barcode, over the camera, so Scan next goes on scanning */
-  if (window.LowiShopScan && LowiShopScan.show) { CAM.hold = true; buzz(30); sfx(p ? "check" : "soft"); const ip = $("#b3Nm", CAM.el); if (ip) { ip.value = ""; ip.blur(); } const lv = $("#b3NmLive", CAM.el); if (lv) lv.innerHTML = "";
+  if (window.LowiShopScan && LowiShopScan.show) { CAM.hold = true; CAM.el.classList.add("held"); snapSettle(CAM, ""); buzz(30); sfx(p ? "check" : "soft"); const ip = $("#b3Nm", CAM.el); if (ip) { ip.value = ""; ip.blur(); } const lv = $("#b3NmLive", CAM.el); if (lv) lv.innerHTML = "";
     LowiShopScan.show(CAM.el, p || {name:q, why:[], facts:{}, typed:true}, {ctx:scanCtx(), lvl:p ? "" : "unknown"}); return; }
   CAM.done = true; stopStream(); buzz(30); closeScanner(true);
   if (p) { sfx("check"); await showNameResult(p); return; }
@@ -15976,6 +16016,8 @@ function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.d
   else if (s === "nocam") m.innerHTML = '<div class="b3-cbox b3-cglass"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camNo")) + '</b><small>' + esc(t("camNoS")) + '</small><div class="b3-cbtns">' + typeBtn + '</div></div>';
   else if (s === "starting") m.innerHTML = '<div class="b3-cbox b3-cglass slim"><span class="b3-spin"></span><small>' + esc(t("starting")) + '</small></div>';
   else if (s === "lookup") m.innerHTML = '<div class="b3-cbox slim"><span class="b3-spin"></span><small>' + esc(t("lookup")) + '</small></div>';
+  else if (s === "snapread") { m.innerHTML = '<div class="b3-cbox b3-cglass slim" role="status"><span class="b3-spin"></span><small>' + esc(t("snapRead")) + '</small></div>'; msg(t("snapReadS")); }
+  else if (s === "snapnone") { m.innerHTML = '<div class="b3-cbox b3-cglass" role="alert"><span class="b3-cic">' + IC.shutter + '</span><b>' + esc(t("snapNone")) + '</b><small>' + esc(t("snapNoneS")) + '</small><div class="b3-cbtns"><button class="b3-cbtn pri" data-b3="snapretake">' + esc(t("snapAgain")) + '</button><button class="b3-cbtn ghost" data-b3="photo">' + esc(t("snapPhone")) + '</button>' + typeBtn + '</div></div>'; msg(""); }
   else m.innerHTML = "";
   if (CAM.shop && window.LowiShopScan) LowiShopScan.decorate(m, s); }
 /* Oct 15: the camera opens every time. One start at a time, a plain-constraints retry when iOS refuses the ideal ones, the video is forced to play inline,
@@ -15991,7 +16033,7 @@ async function startCam(){
   if (!CAM || CAM.done) return; if (CAM.starting) return; const mine = CAM; mine.starting = true;
   try { await startCam1(mine); } finally { mine.starting = false; } }
 async function startCam1(mine){
-  if (mine.stream) stopStream(); mine.el.classList.remove("live"); msgState("starting");
+  if (mine.stream) stopStream(); clearSnap(mine); mine.el.classList.remove("live"); msgState("starting");
   let stream;
   try { stream = await getCam(); }
   catch(e){ if (CAM !== mine) return; const st = camErrState(e); msgState(st); if (st === "denied") localStorage.removeItem(CAMOK); return; }
@@ -16001,7 +16043,7 @@ async function startCam1(mine){
   if (!(await playVid(v)) && CAM === mine) { /* iOS can refuse play() outside a tap: the next touch on the scanner starts it */
     mine.el.addEventListener("pointerdown", () => { if (CAM === mine && mine.stream) playVid(v); }, {once:true}); }
   try { stream.getVideoTracks().forEach(tr => tr.addEventListener("ended", () => { if (CAM === mine && !mine.done && mine.stream === stream && document.visibilityState === "visible") startCam(); })); } catch(e){}
-  try { const tr = stream.getVideoTracks()[0], cap = tr.getCapabilities ? tr.getCapabilities() : {}; if (cap && cap.torch) $(".b3-torch", mine.el).hidden = false; } catch(e){}
+  try { const tr = stream.getVideoTracks()[0], cap = tr.getCapabilities ? tr.getCapabilities() : {}; if (cap && cap.torch) $(".b3-torch", mine.el).hidden = false; focusSetup(mine, cap); } catch(e){ focusSetup(mine, {}); }
   clearTimeout(mine.wd); mine.wd = setTimeout(() => { if (CAM !== mine || mine.done || mine.stream !== stream || document.visibilityState !== "visible") return;
     if (!v.videoWidth || v.readyState < 2) { if (!mine.retried) { mine.retried = true; startCam(); } else playVid(v); } }, 4500);
   if (!mine.det && !mine.reader) mine.det = await nativeDetector();
@@ -16021,15 +16063,80 @@ function loop(){ if (!CAM || CAM.done) return; CAM.raf = requestAnimationFrame(l
 function stopStream(){ if (!CAM) return; cancelAnimationFrame(CAM.raf); clearTimeout(CAM.wd); try { CAM.stream && CAM.stream.getTracks().forEach(x => x.stop()); } catch(e){} CAM.stream = null; }
 /* BH-014: the barcode frame canvas (CAM.cv, iPhones decode with ZXing) is handed back when the scanner closes, not left to the GC */
 function freeCv(cv){ try { if (cv) { cv.width = 0; cv.height = 0; } } catch(e){} }
-function closeScanner(now){ if (!CAM) return; const c = CAM; /* BH-060 */ if (c.el) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(c.el); } catch(e){} c.done = true; stopStream(); CAM = null; document.documentElement.classList.remove("b3-camon"); freeCv(c.cv); c.cv = null;
+function closeScanner(now){ if (!CAM) return; const c = CAM; /* BH-060 */ if (c.el) try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(c.el); } catch(e){} c.done = true; stopStream(); CAM = null; document.documentElement.classList.remove("b3-camon"); freeCv(c.cv); c.cv = null; clearSnap(c); clearInterval(c.sbIv);
   if (now) c.el.remove(); else { c.el.classList.remove("on"); setTimeout(() => c.el.remove(), 260); } }
+/* ===== Oct 28 Snap + Focus (rules in scan-snap-core.js). Snap keeps a short burst of real frames, lets the camera go, shows the kept
+   photo and reads the barcode from it here on the phone (BarcodeDetector or ZXing, the same readers as the live scan; nothing is sent
+   anywhere new). Only the code found goes on to the usual lookup. A read belongs to its own Snap: closing, a new scan or the live
+   scan getting there first drops it, so one barcode never gives two results. The phone has to keep the app open while it reads and
+   looks up; iOS pauses a web app that goes to the background, and it carries on when it comes back. ===== */
+const snapCore = () => window.LowiScanSnapCore || null;
+let SNAP_N = 0;
+const snapWait = ms => new Promise(r => setTimeout(r, ms));
+function grabFrame(v){ const W = v && v.videoWidth, H = v && v.videoHeight; if (!W || !H) return null;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H; cv.getContext("2d", {willReadFrequently:true}).drawImage(v, 0, 0, W, H); return cv; }
+function frameScore(cv){ const S = snapCore(); if (!S || !cv) return 0; let sm = null;
+  try { const r = S.readPlan(cv.width, cv.height)[0], f = S.fit(r.w, r.h, 240); sm = document.createElement("canvas"); sm.width = f.w; sm.height = f.h;
+    const g = sm.getContext("2d", {willReadFrequently:true}); g.drawImage(cv, r.x, r.y, r.w, r.h, 0, 0, f.w, f.h);
+    return S.sharpness(S.grey(g.getImageData(0, 0, f.w, f.h).data, f.w, f.h), f.w, f.h); } catch(e){ return 0; } finally { freeCv(sm); } }
+function cropFrame(cv, r){ const S = snapCore(), f = S.fit(r.w, r.h, r.max), out = document.createElement("canvas"), turn = r.rot === 90;
+  out.width = turn ? f.h : f.w; out.height = turn ? f.w : f.h; const g = out.getContext("2d", {willReadFrequently:true});
+  if (turn) { g.translate(out.width, 0); g.rotate(Math.PI / 2); } g.drawImage(cv, r.x, r.y, r.w, r.h, 0, 0, f.w, f.h); return out; }
+function showStill(c, cv){ const st = c && $("#b3Still", c.el); if (!st || !cv) return; st.width = cv.width; st.height = cv.height; st.getContext("2d").drawImage(cv, 0, 0); c.el.classList.add("snapped"); }
+/* the kept photo goes (a new scan started, the scanner closed); a read still running sees snap.over and stops */
+function clearSnap(c){ if (!c) return; const s = c.snap; c.snap = null; if (s) { s.over = true; (s.frames || []).forEach(freeCv); s.frames = []; }
+  if (c.el) { c.el.classList.remove("snapped"); const st = $("#b3Still", c.el); if (st) freeCv(st); } }
+/* a result arrived (any way): a Snap still reading stops; its photo stays on screen only when the camera is already off */
+function snapSettle(c, code){ const s = c && c.snap; if (!s) return; snapMsgOff(c); if (s.code === code) return; s.over = true; if (c.stream) clearSnap(c); }
+/* the "reading your photo" / "no barcode" card makes way for the result card (state "lookup": no camera restart behind it) */
+function snapMsgOff(c){ const st = c.el.dataset.st; if (st !== "snapread" && st !== "snapnone") return; const m = $("#b3CMsg", c.el); if (m) m.innerHTML = ""; c.el.dataset.st = "lookup"; }
+async function snapShot(){ const S = snapCore(), c = CAM; if (!S || !c) return; const v = $("#b3Vid", c.el);
+  if (!S.canSnap({stream:!!c.stream, live:c.el.classList.contains("live"), hold:!!c.hold, snap:!!c.snap, typing:c.el.classList.contains("typing")}) || !v || !v.videoWidth) return;
+  const snap = c.snap = {n:++SNAP_N, frames:[], over:false}; cancelAnimationFrame(c.raf); buzz(20); sfx("tap");
+  const f0 = grabFrame(v); if (f0) { snap.frames.push(f0); showStill(c, f0); } msg(t("snapKept"));
+  for (let k = 1; k < S.BURST; k++) { await snapWait(S.GAP_MS); if (CAM !== c || c.snap !== snap || snap.over || !c.stream) break; const f = grabFrame(v); if (f) snap.frames.push(f); }
+  if (!S.stillMine(CAM, c, snap)) { if (c.snap !== snap) { snap.frames.forEach(freeCv); snap.frames = []; } return; }
+  stopStream(); c.el.classList.remove("live"); msgState("snapread");
+  const code = await readKept(c, snap); snap.frames.forEach(freeCv); snap.frames = [];
+  if (!S.stillMine(CAM, c, snap)) return;
+  if (code) { snap.code = code; if (c.lastHit && c.lastHit.code === code) c.lastHit = null; /* asked for: never dropped as a repeat */ found(code); return; }
+  msgState("snapnone"); sfx("error"); }
+async function readKept(c, snap){ const S = snapCore(), fr = snap.frames.slice(); if (!S || !fr.length) return "";
+  const ok = () => S.stillMine(CAM, c, snap), idx = S.order(fr.map(frameScore)), t0 = performance.now();
+  const hit = (v, how) => { try { c.el.dataset.snapHow = how; c.el.dataset.snapMs = Math.round(performance.now() - t0); } catch(e){} return v; }; /* which way read it, for tests */
+  const det = c.det || await nativeDetector();
+  if (det) for (const i of idx) { if (!ok()) return ""; try { const r = await det.detect(fr[i]); const v = validCode(r && r[0] && r[0].rawValue); if (v) return hit(v, "native"); } catch(e){} }
+  let reader = c.reader; if (!reader) { try { await loadZX(); reader = c.reader = zxReader(); } catch(e){ return ""; } }
+  const plan = S.readPlan(fr[0].width, fr[0].height);
+  for (let si = 0; si < plan.length; si++) for (const i of (si === 0 ? idx : idx.slice(0, 2))) {
+    await snapWait(0); if (!ok()) return ""; let cv = null;
+    try { cv = cropFrame(fr[i], plan[si]); const v = validCode(zxDecodeCanvas(cv, reader)); if (v) return hit(v, plan[si].id + ":" + i); } catch(e){} finally { freeCv(cv); } }
+  hit("", "none"); return ""; }
+/* the button right of the X: Focus where the browser can refocus (Chrome on Android), Zoom 2x where it can only zoom, else hidden */
+/* keep Snap / Focus level with the X wherever bottom-close.js has put it (it lifts the X above things at the bottom) */
+function snapRowSync(c){ if (!c || !c.el) return; const bx = document.getElementById("lwBX"), st = c.el.style;
+  const r = bx && bx.classList.contains("on") ? bx.getBoundingClientRect() : null;
+  if (r && r.width > 0) { const b = parseFloat(getComputedStyle(bx).bottom); /* its set place, not where a settle animation has it */
+    st.setProperty("--sb-b", Math.max(0, Math.round(isFinite(b) ? b : innerHeight - r.bottom)) + "px"); st.setProperty("--sb-x", Math.round(r.left + r.width / 2) + "px"); }
+  else { st.removeProperty("--sb-b"); st.removeProperty("--sb-x"); } }
+function focusSetup(c, cap){ const b = c && $("#b3Focus", c.el); if (!b) return; if (!c.sbIv) { snapRowSync(c); c.sbIv = setInterval(() => snapRowSync(c), 400); } const S = snapCore(); c.fplan = S ? S.focusPlan(cap) : {kind:""}; c.zoomOn = false;
+  b.hidden = !c.fplan.kind; b.setAttribute("aria-pressed", "false"); if (!c.fplan.kind) return; const z = c.fplan.kind === "zoom";
+  b.setAttribute("aria-label", t(z ? "zoomL" : "focusL")); b.innerHTML = (z ? "" : IC.focus) + '<span' + (z ? ' style="font-size:15px"' : "") + '>' + esc(t(z ? "zoom" : "focus")) + '</span>'; }
+async function camFocus(){ const S = snapCore(), c = CAM; if (!S || !c || !c.stream || !c.fplan || !c.fplan.kind) return; const b = $("#b3Focus", c.el);
+  let tr = null; try { tr = c.stream.getVideoTracks()[0]; } catch(e){} if (!tr || !tr.applyConstraints) return; sfx("tap");
+  if (c.fplan.kind === "zoom") { const on = !c.zoomOn;
+    try { await tr.applyConstraints(S.focusConstraints(c.fplan, on)); if (CAM !== c) return; c.zoomOn = on; b.setAttribute("aria-pressed", on ? "true" : "false"); msg(t(on ? "zoomOn" : "aim")); } catch(e){ msg(t("focusNo"), "warn"); }
+    return; }
+  try { await tr.applyConstraints(S.focusConstraints(c.fplan, true)); if (CAM !== c) return; c.el.classList.add("focusing"); setTimeout(() => { if (CAM === c) c.el.classList.remove("focusing"); }, 700);
+    if (c.fplan.once && c.fplan.cont) setTimeout(() => { if (CAM === c && c.stream) tr.applyConstraints({advanced:[{focusMode:"continuous"}]}).catch(() => {}); }, 1500);
+  } catch(e){ if (CAM === c) { b.hidden = true; msg(t("focusNo"), "warn"); } } }
 async function torch(){ try { const tr = CAM.stream.getVideoTracks()[0]; CAM.torch = !CAM.torch; await tr.applyConstraints({advanced:[{torch:CAM.torch}]}); $(".b3-torch", CAM.el).classList.toggle("on", CAM.torch); } catch(e){} }
 async function found(code){ if (!CAM) return;
   /* Oct 26 one scanner (Emmanuel: "the main page scanner gives me still this old overwhelming preview. Sync them"): every camera
      (Scan, Log meal's Scan, Shop, Kitchen) shows the same compact card over the camera; its buttons follow where it was opened */
   if (window.LowiShopScan) { const now = performance.now(); if (CAM.hold || (window.LowiShopScanCore && LowiShopScanCore.repeatHit(code, CAM.lastHit, now))) return;
-    CAM.hold = true; CAM.lastHit = {code, at:now}; buzz(30); sfx("check"); msg(t("bcFound", code)); LowiShopScan.found(code, CAM.el, {ctx:scanCtx()}); return; }
-  CAM.done = true; stopStream(); buzz(30); sfx("check");
+    CAM.hold = true; CAM.lastHit = {code, at:now}; CAM.el.classList.add("held"); snapSettle(CAM, code); buzz(30); sfx("check"); msg(t("bcFound", code)); LowiShopScan.found(code, CAM.el, {ctx:scanCtx()}); return; }
+  CAM.done = true; stopStream(); snapSettle(CAM, code); buzz(30); sfx("check");
   CAM.el.classList.add("got"); msgState("lookup"); msg(t("bcFound", code));
   let p = null; try { p = await byBarcode(code); } catch(e){}
   if (p && !p.notFound && window.LowiSpirit) { closeScanner(true); await LowiSpirit.captureProduct(withNameEst(p)); return; }
@@ -16475,6 +16582,9 @@ document.addEventListener("click", e => {
     case "camact": camAct(b.dataset.act); break;
     case "camshot": camShot(); break;
     case "torch": torch(); break;
+    case "snap": snapShot(); break;
+    case "snapretake": if (CAM) { CAM.hold = false; CAM.el.classList.remove("held"); startCam(); } break;
+    case "camfocus": camFocus(); break;
     case "dex": sfx("open"); openDex(); break;
     case "filt": DEXF.f = b.dataset.f; if (DEXOV) { $$(".b3-filt .chip", DEXOV).forEach(c => c.classList.toggle("on", c === b)); $("#b3DexG", DEXOV).innerHTML = dexGrid(); } break;
     case "show": { const p = findK(b.dataset.k); if (p) reveal(Object.assign({}, p), true); break; }
@@ -16514,8 +16624,10 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && CAM) closeScanner(); });
 /* Oct 15: leaving the app stops the camera; coming back starts it again on its own (no second "Allow camera" tap) */
-function camResume(){ if (!CAM || CAM.done || CAM.stream || CAM.el.classList.contains("typing")) return; const st = CAM.el.dataset.st; if (st === "denied" || st === "nocam" || st === "lookup") return; startCam(); }
-document.addEventListener("visibilitychange", () => { if (!CAM) return; if (document.visibilityState !== "visible") { if (CAM.stream) { stopStream(); CAM.el.classList.remove("live"); msgState("starting"); } } else setTimeout(camResume, 250); });
+function camResume(){ if (!CAM || CAM.done || CAM.stream || CAM.el.classList.contains("typing")) return; const st = CAM.el.dataset.st; if (st === "denied" || st === "nocam" || st === "lookup") return;
+  /* Oct 28 Snap: a kept photo (being read, or "no barcode" with its own Snap again) never gets swapped for the camera behind its back */
+  if (CAM.snap || st === "snapread" || st === "snapnone") return; startCam(); }
+document.addEventListener("visibilitychange", () => { if (!CAM) return; if (document.visibilityState !== "visible") { if (CAM.stream) { stopStream(); CAM.el.classList.remove("live"); if (!CAM.snap) msgState("starting"); } } else setTimeout(camResume, 250); });
 window.addEventListener("pageshow", e => { if (e.persisted) setTimeout(camResume, 250); });
 window.addEventListener("focus", () => setTimeout(camResume, 300));
 window.addEventListener("online", () => { loadComm(true).then(ch => { if (ch && curTab() === "scan") renderTab(); }); });
@@ -22251,6 +22363,7 @@ window.LowiCommunityHost = {
 <script src="community-composer.js?v=20261028-213020"></script>
 <link rel="stylesheet" id="ssCss" href="shop-scan.css?v=20261028-213020">
 <script src="shop-scan-core.js?v=20261028-213020"></script>
+<script src="scan-snap-core.js?v=20261028-213020"></script>
 <script src="shop-scan.js?v=20261028-213020"></script>
 <!-- Oct 26: speak instead of typing, a small mic in every free-text field (mic-dictate.js; opt in/out per field with data-mic) -->
 <link rel="stylesheet" id="micCss" href="mic-dictate.css?v=20261028-213020">

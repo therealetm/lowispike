@@ -59,7 +59,8 @@ function page(lang) {
 }
 
 const LANGS = ['en', 'de', 'es'];
-const KINDS = ['fuel', 'water', 'move', 'sleep'];
+/* Oct 28 2026 (same ring everywhere): Fuel is the Einkaufen bubble and brings no orbs (tests/ring-same-everywhere.test.cjs) */
+const KINDS = ['water', 'move', 'sleep'];
 
 test('every secondary bubble shows one word (or one number) in EN / DE / ES', () => {
     for (const lang of LANGS) {
@@ -87,7 +88,7 @@ test('the small second line is a number only (steps, ten sips), never a second w
             assert.doesNotMatch(a.sub, /ml/i, 'no milliliters on a bubble');
         }
         /* Fuel and Sleep have no subline at all ("Rezepte", "was kaufen?", "letzte Nacht" x3 are gone) */
-        for (const k of ['fuel', 'sleep']) actions(k).forEach(a => assert.ok(!a.sub, lang + ' ' + k + ' ' + a.id + ' has no second line'));
+        for (const k of ['sleep']) actions(k).forEach(a => assert.ok(!a.sub, lang + ' ' + k + ' ' + a.id + ' has no second line'));
         /* Water: Sips carries ten, Bottle its size (Oct 24, no size picked = 0.75 l); Glass and Size no number */
         const w = actions('water');
         assert.deepStrictEqual(w.map(a => a.sub || ''), ['\u00d710', '', lang === 'en' ? '0.75\u00a0l' : '0,75\u00a0l', ''], lang + ' water sublines');
@@ -96,7 +97,7 @@ test('the small second line is a number only (steps, ten sips), never a second w
 
 test('the German bubbles are the words Emmanuel saw, made minimal', () => {
     const actions = page('de');
-    assert.deepStrictEqual(actions('fuel').map(a => a.label), ['Einkaufen', 'Kochen', 'Mahlzeit']);
+    assert.deepStrictEqual(actions('fuel'), [], 'no Einkaufen / Kochen / Mahlzeit orbs any more');
     assert.deepStrictEqual(actions('water').map(a => a.label), ['Sips', 'Glas', 'Flasche', 'Gr\u00f6\u00dfe']);
     assert.deepStrictEqual(actions('move').map(a => a.label), ['Locker', 'Stetig', 'Episch']);
     assert.deepStrictEqual(actions('move').map(a => a.sub), ['<5k', '5k\u201310k', '10k+']);
@@ -113,15 +114,13 @@ test('no word repeats inside a bloom (no "letzte Nacht" three times, no Kochen +
             /* the unit of the sleep ranges (h / Std.) is allowed: it is the number's unit, not a repeated word */
             assert.deepStrictEqual(dup.filter(w => !/^std\.?\+?$/.test(w)), [], lang + ' ' + k + ' repeats ' + dup.join(', '));
         }
-        assert.ok(!actions('fuel').some(a => /recipe|rezept|receta/i.test(a.label + ' ' + (a.sub || ''))), lang + ': Cook is not followed by Recipes');
     }
 });
 
 test('the full meaning stays for screen readers (aria-label), so nothing is lost by the shorter words', () => {
     const de = page('de');
     const aria = k => de(k).map(a => a.aria || '');
-    assert.ok(aria('fuel').includes('Mahlzeit eintragen'));
-    assert.ok(aria('fuel').some(s => /Rezepte/.test(s)));
+    assert.deepStrictEqual(aria('fuel'), []);
     assert.ok(aria('sleep').every(s => /letzte Nacht/.test(s)));
     assert.ok(aria('water')[0].includes('10 Schlucke'));
     assert.ok(aria('water').every(s => !/ml/.test(s)), 'no ml read out either');

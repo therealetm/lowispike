@@ -54,6 +54,7 @@ function page(opts) {
     W.LowiSwafloBridge = { catalog: () => [{ n: 'Egg muffins', ing: ['egg'] }] };
     if (opts.store !== false) W.LowiStorePicks = { open: src => calls.push('store:' + src) };
     if (opts.host !== false) W.LowiHost = { go: tab => calls.push('go:' + tab) };
+    if (opts.gap !== false) W.LowiGapView = { open: o => calls.push('gap:' + ((o && o.from) || '')) };
     if (opts.meal === false) delete W.LowiSpirit.meal;
     D.dispatchEvent = () => { };
     vm.createContext(W);
@@ -61,7 +62,7 @@ function page(opts) {
     const real = W.LowiHomeBloomsV2;
     real.mount(D);
     /* plain copies: arrays made inside the vm realm are not deep-equal to this realm's arrays */
-    const api = { open: k => real.open(k), actions: k => JSON.parse(JSON.stringify(real.actions(k))) };
+    const api = { open: k => real.open(k), openAll: () => real.openAll(), hub: f => real.hub(f), isOpen: () => real.isOpen(), actions: k => JSON.parse(JSON.stringify(real.actions(k))), ring: () => JSON.parse(JSON.stringify(real.RING)) };
     /* tap an orb the way a finger does: open the bloom from the Fuel bubble, click the orb with that id */
     const tapOrb = id => {
         assert.ok(api.open('fuel'), 'Fuel bloom opens');
@@ -75,74 +76,44 @@ function page(opts) {
     return { api, calls, tapOrb, hold, W };
 }
 
-const LABELS = {
-    /* Oct 24 2026 (Emmanuel: one word per bubble, "Mahlzeit eintragen" was too long): Log meal became Meal */
-    en: ['Shop', 'Cook', 'Meal'],
-    de: ['Einkaufen', 'Kochen', 'Mahlzeit'],
-    es: ['Comprar', 'Cocinar', 'Comida']
-};
-
-test('Fuel blooms exactly Shop, Cook and Log meal, in that order, with every module present', () => {
-    const { api } = page();
-    assert.deepStrictEqual(api.actions('fuel').map(a => a.id), ['shop', 'cook', 'log']);
-});
-
-test('Fuel orbs use the same plain words in English, German and Spanish', () => {
-    for (const lang of Object.keys(LABELS)) {
-        const { api } = page({ lang });
-        assert.deepStrictEqual(api.actions('fuel').map(a => a.label), LABELS[lang], lang);
-        /* sublines are 9px and one line in a 71px orb (375-wide phones): longer than about 12 characters gets cut with an
-           ellipsis (seen live: "was kann ich kaufen?", "was du gegessen hast", "what can I buy?" at 375), so short or none */
-        api.actions('fuel').forEach(a => assert.ok(!a.sub || a.sub.length <= 12, lang + ' ' + a.id + ' subline short enough to show whole: ' + a.sub));
-        /* Oct 24 2026 (Emmanuel: "Kochen" + "Rezepte" said it twice): no Fuel orb has a subline any more, one word each */
-        api.actions('fuel').forEach(a => { assert.ok(!a.sub, lang + ' ' + a.id + ' has no second line: ' + a.sub); assert.ok(!/\s/.test(a.label), lang + ' one word: ' + a.label); });
-    }
-});
-
-test('Swap and Today\'s step are gone from Fuel in every language, even when Craving SOS and a pick exist', () => {
-    for (const lang of Object.keys(LABELS)) {
+/* Oct 28 2026 (Emmanuel, iPhone: "wenn du was änderst, dann musst du das doch überall ändern"): the Oct 28 food plan made the Home
+   tap on Fuel open Einkaufen, but kept the Shop / Cook / Meal bloom for open('fuel'). The companion sheet's "Ballaststoffe: noch
+   13 g" row still asked for it, so the old three bubbles came back. Fuel brings no orbs any more, whoever asks. */
+test('Fuel brings no orbs in any language, even with every module present', () => {
+    for (const lang of ['en', 'de', 'es']) {
         const { api } = page({ lang, sos: true });
-        const acts = api.actions('fuel');
-        assert.ok(!acts.some(a => a.id === 'swap' || a.id === 'step' || a.id === 'snack'), lang + ' ids ' + acts.map(a => a.id));
-        assert.ok(!acts.some(a => /swap|tauschen|cambiar|today|heute|hoy/i.test(a.label + ' ' + a.sub)), lang + ' words ' + acts.map(a => a.label + '/' + a.sub));
+        assert.deepStrictEqual(api.actions('fuel'), [], lang);
     }
 });
 
-test('Log meal carries no subline: its label already says it, and German / Spanish labels need both lines', () => {
-    for (const lang of Object.keys(LABELS)) {
-        const log = page({ lang }).api.actions('fuel').find(a => a.id === 'log');
-        assert.ok(log && !log.sub, lang + ' log sub: ' + (log && log.sub));
-    }
+test('open(\'fuel\') from any module opens Einkaufen (Supermarkt), not a bloom', () => {
+    const { api, calls, W } = page();
+    W.__lastBloom = null;
+    assert.strictEqual(api.open('fuel'), true);
+    assert.deepStrictEqual(calls, ['store:home-shop']);
+    assert.strictEqual(api.isOpen(), null, 'no bloom is open');
 });
 
-test('meal logging is a visible orb that opens the meal log sheet', () => {
-    const { tapOrb, calls } = page();
-    tapOrb('log');
-    assert.deepStrictEqual(calls, ['meal']);
+test('without the Einkaufen module, open(\'fuel\') falls back to the eating hub, never to orbs', () => {
+    const { api, calls } = page({ store: false });
+    assert.strictEqual(api.open('fuel'), true);
+    assert.deepStrictEqual(calls, ['gap:fuel']);
+    assert.strictEqual(api.isOpen(), null);
 });
 
-test('Shop keeps its destination: the "What can I buy here?" panel', () => {
-    const { tapOrb, calls } = page();
-    tapOrb('shop');
-    assert.deepStrictEqual(calls, ['store:home-bloom']);
-});
-
-test('Cook keeps its destination: the Cook tab', () => {
-    const { tapOrb, calls } = page();
-    tapOrb('cook');
-    assert.deepStrictEqual(calls, ['go:shelf']);
+test('the eating hub (Essenspause) opens from hub(): log a meal and Kochen live there', () => {
+    const { api, calls } = page();
+    assert.strictEqual(api.hub('peak'), true);
+    assert.deepStrictEqual(calls, ['gap:peak']);
+    const b = page({ gap: false });
+    assert.strictEqual(b.api.hub('peak'), true, 'without the hub, the meal log sheet opens');
+    assert.deepStrictEqual(b.calls, ['meal']);
 });
 
 test('holding Fuel (Einkaufen since the Oct 28 food plan) does nothing but squish: one gesture per bubble', () => {
     const { hold, calls } = page();
     hold();
     assert.deepStrictEqual(calls, []);
-});
-
-test('a missing module leaves its orb out rather than showing a dead button', () => {
-    assert.deepStrictEqual(page({ store: false }).api.actions('fuel').map(a => a.id), ['cook', 'log']);
-    assert.deepStrictEqual(page({ host: false }).api.actions('fuel').map(a => a.id), ['shop', 'log']);
-    assert.deepStrictEqual(page({ meal: false }).api.actions('fuel').map(a => a.id), ['shop', 'cook']);
 });
 
 test('Water, Move and Gap blooms are untouched by the Fuel change', () => {

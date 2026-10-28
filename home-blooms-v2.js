@@ -30,6 +30,15 @@
 
     /* ---------------- pure part (also loaded by node tests) ---------------- */
     const KINDS = ['fuel', 'water', 'move', 'gap'];
+    /* Oct 28 2026 (Emmanuel, iPhone: "wenn du was änderst, dann musst du das doch überall ändern": "Ballaststoffe: noch 13 g" in
+       the companion sheet still opened the old Einkaufen / Kochen / Mahlzeit orbs round the ring, hours after the Home tap became
+       Einkaufen). THE one map of what each ring bubble does. Every path reads it: the Home tap, open(kind) from other modules (the
+       companion sheet, the tutorial, deep links), the all-bubbles overview, and the tests. 'bloom' = its own orbs open round the
+       ring; 'shop' = Einkaufen opens (Supermarkt); 'hub' = the Essenspause eating hub opens (log a meal, Kochen, today's meals).
+       Change a bubble here and nowhere else. */
+    const RING = Object.freeze({ fuel: 'shop', gap: 'hub', water: 'bloom', move: 'bloom', sleep: 'bloom' });
+    const ringTarget = kind => RING[kind] || '';
+    const BLOOMS = Object.keys(RING).filter(k => RING[k] === 'bloom');
     const WATER_GOAL = 6; /* same as spirit.js WATER_GOAL (E-man: six cups a day) */
     const SIPS_N = 10; /* Oct 24 2026: the Sips orb is ten sips (spirit-core WATER.amounts.sips, about half a cup, rough) */
 
@@ -164,7 +173,7 @@
         return Math.max(min, Math.floor(base * maxPx / wordPx * 2) / 2);
     }
 
-    const core = { KINDS, WATER_GOAL, SIPS_N, dayKey, gapText, waterUndo, layout, noteSpot, labelSize };
+    const core = { KINDS, RING, BLOOMS, ringTarget, WATER_GOAL, SIPS_N, dayKey, gapText, waterUndo, layout, noteSpot, labelSize };
     if (typeof module === 'object' && module.exports) { module.exports = core; return; }
     if (!root || !root.document) return;
 
@@ -225,7 +234,6 @@
         try { W.dispatchEvent(new CustomEvent('lowi:water', { detail: { undo: true, cups: plan.cups } })); } catch (e) { }
         return plan;
     }
-    function mealLog() { if (fn(W.LowiSpirit, 'meal')) { W.LowiSpirit.meal(); return true; } return false; }
 
     /* Oct 23 2026 (Eman): three step ranges like Sleep's three, "casual, steady and epic", under 5k, 5k-10k and 10k+ */
     const MOVE_NAMES = { casual: () => T('Casual', 'Locker', 'Tranquilo'), steady: () => T('Steady', 'Stetig', 'Constante'), epic: () => T('Epic', 'Episch', 'Épico') };
@@ -237,14 +245,10 @@
     /* the orbs for one bubble: [{id, label, sub, icon, run, keep, disabled, q}] (missing modules -> left out) */
     function actionsFor(kind) {
         const A = [];
-        if (kind === 'fuel') {
-            /* only Shop, Cook and a visible meal log (E-man, Oct 18): no Swap, no Today's step.
-               Oct 24 2026 (Emmanuel: "Kochen" + "Rezepte" say the same thing twice, every bubble one word): one word each, no subline;
-               the full meaning stays in the aria-label */
-            if (fn(W.LowiStorePicks, 'open')) A.push({ id: 'shop', label: T('Shop', 'Einkaufen', 'Comprar'), aria: T('Shop: what to buy', 'Einkaufen: was kaufen?', 'Comprar: ¿qué compro?'), icon: 'shop', run: () => W.LowiStorePicks.open('home-bloom') });
-            if (fn(W.LowiHost, 'go')) A.push({ id: 'cook', label: T('Cook', 'Kochen', 'Cocinar'), aria: T('Cook: recipes', 'Kochen: Rezepte', 'Cocinar: recetas'), icon: 'cook', run: () => W.LowiHost.go('shelf') });
-            if (fn(W.LowiSpirit, 'meal')) A.push({ id: 'log', label: T('Meal', 'Mahlzeit', 'Comida'), aria: T('Log a meal', 'Mahlzeit eintragen', 'Anotar comida'), icon: 'log', run: mealLog });
-        } else if (kind === 'water') {
+        /* Fuel brings no orbs any more (RING: 'shop'): the old Einkaufen / Kochen / Mahlzeit trio is gone everywhere (Oct 28 2026).
+           Kochen and logging a meal live in the Essenspause hub, Einkaufen is the bubble itself. */
+        if (ringTarget(kind) !== 'bloom') return A;
+        if (kind === 'water') {
             /* wsip (Oct 23, Eman: "x amount of sip, or one cup, or one whole bottle"): three estimates, each tap fills the bubble by that much.
                Amounts live in LowiSpiritCore.WATER (ten sips 1/2 cup since Oct 24, cup, bottle 3 cups; 1 cup ~250 ml). Undo = long press on the Water bubble. */
             const can = fn(W.LowiSpirit, 'water') || fn(W.LowiVitalsBridge, 'water');
@@ -401,7 +405,7 @@
        Oct 23, 18:03 (Eman: "da fehlt doch was"): Sleep's three answers were missing, so the lower left stayed empty and the ring was a
        lopsided arc. Now all four groups (3 + 3 + 3 + 3) share ONE full circle, every orb the same angle from the next (solve even).
        Gap and Scan have no options (a tap opens the Gap view / the camera), Joy and Community open pages, so they bring no orbs. */
-    const ALL = ['fuel', 'water', 'move', 'sleep'];
+    const ALL = BLOOMS; /* Oct 28 2026: from the RING map, so Einkaufen (no orbs) is left out like Gap and Scan */
     function renderAll() {
         const R = W.LowiBloomRing;
         if (!R || !R.place) return null;
@@ -510,7 +514,11 @@
     }
 
     function open(kind, src) {
-        if (KINDS.indexOf(kind) < 0 && kind !== 'sleep') return false;
+        /* Oct 28 2026: a bubble that opens a page opens that page, whoever asks (companion sheet, tutorial, deep link, old code) */
+        const tg = ringTarget(kind);
+        if (tg === 'shop') return shop();
+        if (tg === 'hub') return hub(kind);
+        if (tg !== 'bloom') return false;
         if (kind === 'sleep' && !actionsFor('sleep').length) return false;
         if (!src) { const scope = st.root && st.root !== D ? st.root : D; src = scope.querySelector('[data-orbit="' + kind + '"]'); }
         if (!src || !src.getBoundingClientRect().width) return false;
@@ -633,9 +641,10 @@
         const kind = el.getAttribute('data-orbit');
         /* Oct 21 Scan / Fuel / Gap (E-man: "gap is just like water and move or sleep... not formatted like a fasting app"): Gap has no
            actions any more. A tap opens the passive Gap view (gap-view.js); meals are logged in Fuel, which is what restarts the gap */
+        /* RING: gap = 'hub', fuel = 'shop' (the same map open(kind) reads) */
         if (kind === 'gap') { close(true); buzz(8); if (fn(W.LowiGapView, 'open')) W.LowiGapView.open(); return; }
         /* Oct 28 slim structure, batch 3 (nutrition hub): the Fuel menu had one real target, so a tap on Fuel opens the one
-           nutrition panel (gap + last meal + log + Cook / Shop). open('fuel') stays for code that still asks for the old menu */
+           nutrition panel (gap + last meal + log + Cook / Shop). (Oct 28 2026: open('fuel') no longer keeps the old menu: see RING) */
         /* Oct 28 2026 food plan (Emmanuel: "Ok mach"): Essenspause (Gap) is the eating hub, so this bubble is "Einkaufen" with a cart
            and the open count of the shopping list (sym-home.js paints it). One tap opens Einkaufen: Supermarkt, Zu Hause/Küche,
            Seller Zone, Hilf mit. Without the Shop module it still opens the hub, never a dead tap. */
@@ -644,6 +653,12 @@
         if (st.open === kind) close(); else open(kind, el);
     }
     /* the one Einkaufen path for the old Fuel bubble (tap here, and sym-home.js for the static layout) */
+    /* the Essenspause eating hub (gap-view.js): log a meal, Kochen, today's meals and what is still missing */
+    function hub(from) {
+        if (fn(W.LowiGapView, 'open')) { close(true); buzz(8); W.LowiGapView.open(from && from !== 'gap' ? { from } : undefined); return true; }
+        if (fn(W.LowiSpirit, 'meal')) { close(true); W.LowiSpirit.meal(); return true; }
+        return false;
+    }
     function shop() {
         if (fn(W.LowiStorePicks, 'open')) { close(true); buzz(8); W.LowiStorePicks.open('home-shop'); return true; }
         if (fn(W.LowiGapView, 'open')) { close(true); buzz(8); W.LowiGapView.open({ from: 'fuel' }); return true; }
@@ -706,7 +721,7 @@
     }
 
     const api = {
-        mount, unmount, open: k => open(k), close: () => close(), isOpen: () => st.open, openAll, isAll: () => st.open === 'all', shop,
+        mount, unmount, open: k => open(k), close: () => close(), isOpen: () => st.open, openAll, isAll: () => st.open === 'all', shop, hub, RING, ringTarget,
         actions: k => actionsFor(k).map(a => ({ id: a.id, label: a.label, sub: a.sub, aria: a.aria, disabled: !!a.disabled })),
         layout: () => (st.ov && st.ov.__layout) || null,
         undoWater: waterUndoNow, fitLabels: ov => fitLabels(ov || st.ov), core

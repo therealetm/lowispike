@@ -264,7 +264,11 @@
             try {
                 const B = W.LowiHomeBloomsV2;
                 if (act === 'scan') { if (typeof W.lowiOpen === 'function') W.lowiOpen('scan'); else if (W.LowiSpirit && W.LowiSpirit.scan) W.LowiSpirit.scan(); return; }
-                if (B && B.open && B.open(act)) return;
+                /* Oct 28 2026 (Emmanuel: "Ballaststoffe: noch 13 g" opened the old Einkaufen / Kochen / Mahlzeit orbs): the food rows
+                   (meals, protein, fibre, glow) open the Essenspause eating hub, where a meal is logged and Kochen is. The ring's own map
+                   (home-blooms-v2.js RING) decides what each bubble does; this never asks for the old Fuel menu. */
+                if (act === 'fuel') { if (B && B.hub && B.hub('peak')) return; if (W.LowiGapView && W.LowiGapView.open) { W.LowiGapView.open({ from: 'peak' }); return; } }
+                else if (B && B.open && B.open(act)) return;
                 if (act === 'fuel' && W.LowiSpirit && W.LowiSpirit.meal) W.LowiSpirit.meal();
                 else if (act === 'water' && W.LowiSpirit && W.LowiSpirit.water) W.LowiSpirit.water();
                 else if (act === 'move' && W.LowiMoveBubble && W.LowiMoveBubble.page) W.LowiMoveBubble.page();

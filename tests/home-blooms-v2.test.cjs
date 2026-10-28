@@ -104,7 +104,9 @@ test('labels are the plain words E-man asked for, no Again / Photo, no emoji any
      for good): Today's step / Snack / Swap became Shop / Log meal. Behaviour is checked in tests/ui-fuel-navigation.test.cjs. */
   /* Move words changed Oct 23 2026 (Eman: three step ranges like Sleep, "casual, steady and epic"): tests/move-steps.test.cjs */
   /* Oct 24 2026 (Emmanuel: one word per bubble): Log meal -> Meal, the Move sublines are numbers only (<5k): tests/bloom-minimal-labels.test.cjs */
-  for (const w of ["'Shop'", "'Meal'", "'Cook'", /* Water words changed Oct 23 2026 (Eman: sips, a cup or a whole bottle; undo = long press): tests/water-sips.test.cjs */
+  /* Oct 28 2026 (same ring everywhere): the Fuel orbs Shop / Cook / Meal are gone; Fuel is the Einkaufen bubble (RING) */
+  assert.doesNotMatch(src, /T\('Cook'|T\('Meal'|id: 'cook'|id: 'log'/, 'the old Fuel trio is gone');
+  for (const w of [/* Water words changed Oct 23 2026 (Eman: sips, a cup or a whole bottle; undo = long press): tests/water-sips.test.cjs */
   "'Sips'", "'Glass'", "'Bottle'", "'Size'", "'Casual'", "'Steady'", "'Epic'", "'<5k'", "'10k+'"]) assert.ok(src.includes(w), w);
   assert.doesNotMatch(src, /T\('Quick'|T\('Medium'|T\('Long'/, 'the Oct 17 minute guesses are gone from the Move bloom');
   assert.doesNotMatch(src, /T\('Again'|T\('Photo'|label: *'Again'|label: *'Photo'/);
@@ -113,12 +115,12 @@ test('labels are the plain words E-man asked for, no Again / Photo, no emoji any
 });
 
 test('every action calls an existing app API (no invented routes, no placeholder buttons)', () => {
-  for (const call of ['LowiSpirit.meal()', 'LowiStorePicks.open(', "LowiHost.go('shelf')", 'LowiSpirit.water(k)', 'LowiVitalsBridge.unaward(', 'LowiMoveBubble.pick(', 'LowiMoveBubble.edit()', 'LowiMoveBubble.page()', 'W.LowiGapView.open()'])
+  for (const call of ['LowiSpirit.meal()', 'LowiStorePicks.open(', 'LowiSpirit.water(k)', 'LowiVitalsBridge.unaward(', 'LowiMoveBubble.pick(', 'LowiMoveBubble.edit()', 'LowiMoveBubble.page()', 'W.LowiGapView.open()'])
     assert.ok(src.includes(call), call);
   assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|supabase|sendBeacon/i, 'no backend calls from the bloom');
   /* a missing module leaves its orb out rather than showing a dead button */
-  assert.match(src, /if \(fn\(W\.LowiStorePicks, 'open'\)\) A\.push/);
-  assert.match(src, /if \(fn\(W\.LowiSpirit, 'meal'\)\) A\.push/);
+  assert.match(src, /if \(fn\(W\.LowiStorePicks, 'open'\)\) \{ close\(true\)/);
+  assert.match(src, /if \(fn\(W\.LowiSpirit, 'meal'\)\) \{ close\(true\)/);
   assert.match(src, /if \(fn\(W\.LowiMoveBubble, 'pick'\)/);
 });
 

@@ -44,13 +44,13 @@
     };
     /* the few words on the pictures, EN / DE / ES (the same words the cards and the app use) */
     const L = {
-        en: { energy: 'Energy', mood: ['Calm', 'Happy', 'Tired'], full: 'Full!', gap: 'since your last meal', noMeal: 'no meal yet', meals: 'meals', log: 'Log meal', shop: 'Shop', cook: 'Cook',
+        en: { market: 'Supermarket', athome: 'From home', help: 'Give a hand', energy: 'Energy', mood: ['Calm', 'Happy', 'Tired'], full: 'Full!', gap: 'since your last meal', noMeal: 'no meal yet', meals: 'meals', log: 'Log meal', shop: 'Shop', cook: 'Cook',
             photo: 'Photo', type: 'chicken stew', recent: 'Recent', cup: 'Glass', sips: 'Sips', bottle: 'Bottle', undo: 'Undo', cups: 'glasses', moves: ['Casual', 'Steady', 'Epic'], mirror: 'Mirror', workouts: 'Workouts', care: 'Care board', today: 'Today', edit: 'Edit',
             sleep: ['Slept well', 'Okay', 'Short night'], still: 'stops', fuel: 'Fuel', water: 'Water', move: 'Move', sleepW: 'Sleep', gapW: 'Gap', scan: 'Scan', set: 'Settings', joy: 'Play', reset: 'last one off' },
-        de: { energy: 'Energie', mood: ['Ruhig', 'Froh', 'Müde'], full: 'Voll!', gap: 'seit der letzten Mahlzeit', noMeal: 'noch kein Essen', meals: 'Mahlzeiten', log: 'Mahlzeit eintragen', shop: 'Einkaufen', cook: 'Kochen',
+        de: { market: 'Supermarkt', athome: 'Zu Hause', help: 'Hilf mit', energy: 'Energie', mood: ['Ruhig', 'Froh', 'Müde'], full: 'Voll!', gap: 'seit der letzten Mahlzeit', noMeal: 'noch kein Essen', meals: 'Mahlzeiten', log: 'Mahlzeit eintragen', shop: 'Einkaufen', cook: 'Kochen',
             photo: 'Foto', type: 'Hühnereintopf', recent: 'Letzte', cup: 'Glas', sips: 'Sips', bottle: 'Flasche', undo: 'Rückgängig', cups: 'Gläser', moves: ['Locker', 'Stetig', 'Episch'], mirror: 'Spiegel', workouts: 'Workouts', care: 'Care-Board', today: 'Heute', edit: 'Bearbeiten',
             sleep: ['Gut', 'Okay', 'Kurz'], still: 'stoppt', fuel: 'Essen', water: 'Wasser', move: 'Bewegung', sleepW: 'Schlaf', gapW: 'Gap', scan: 'Scannen', set: 'Einstellungen', joy: 'Spielen', reset: 'letzte weg' },
-        es: { energy: 'Energía', mood: ['Calma', 'Feliz', 'Cansada'], full: '¡Llena!', gap: 'desde tu última comida', noMeal: 'sin comida aún', meals: 'comidas', log: 'Registrar comida', shop: 'Comprar', cook: 'Cocinar',
+        es: { market: 'Súper', athome: 'Desde casa', help: 'Ayudar', energy: 'Energía', mood: ['Calma', 'Feliz', 'Cansada'], full: '¡Llena!', gap: 'desde tu última comida', noMeal: 'sin comida aún', meals: 'comidas', log: 'Registrar comida', shop: 'Comprar', cook: 'Cocinar',
             photo: 'Foto', type: 'guiso de pollo', recent: 'Recientes', cup: 'Vaso', sips: 'Sorbos', bottle: 'Botella', undo: 'Deshacer', cups: 'vasos', moves: ['Tranquilo', 'Constante', 'Épico'], mirror: 'Espejo', workouts: 'Entrenos', care: 'Care board', today: 'Hoy', edit: 'Editar',
             sleep: ['Bien', 'Regular', 'Corta'], still: 'se para', fuel: 'Comida', water: 'Agua', move: 'Movimiento', sleepW: 'Sueño', gapW: 'Gap', scan: 'Escanear', set: 'Ajustes', joy: 'Jugar', reset: 'quita la última' }
     };
@@ -69,7 +69,8 @@
             case 'still': return b('lts-ring lts-orbit', [0, 1, 2, 3, 4, 5].map(k => b('lts-rb r' + k)).join('') + b('lts-core')) + b('lts-cap', '\u270b ' + esc(T.still));
             case 'gap': return b('lts-big', '4h 12m') + b('lts-cap', esc(T.gap));
             case 'planets': return b('lts-row lts-planets', [0, 1, 2, 3, 4, 5].map(k => b('lts-pl p' + k + (k < 3 ? ' on' : ''))).join('')) + b('lts-cap', '4h 12m \u00b7 ' + esc(T.gap));
-            case 'fuel': return b('lts-cap lts-top', '1/3 ' + esc(T.meals)) + b('lts-row', [T.log, T.shop, T.cook].map((m, k) => b('lts-pill' + (k === 0 ? ' on' : ''), esc(m))).join(''));
+            /* Oct 28 2026: the bubble is Einkaufen now (one tap opens Supermarkt), no meal count and no Mahlzeit / Kochen pills */
+            case 'fuel': return b('lts-cap lts-top', esc(T.shop)) + b('lts-row', [T.market, T.athome, T.help].map((m, k) => b('lts-pill' + (k === 0 ? ' on' : ''), esc(m))).join(''));
             case 'logmeal': return b('lts-cap lts-top', esc(T.log)) + b('lts-row', b('lts-pill', '\ud83d\udcf7 ' + esc(T.photo)) + b('lts-field', b('lts-typed', esc(T.type))) + b('lts-pill', esc(T.recent)));
             case 'water': return b('lts-row lts-cups', [0, 1, 2, 3, 4].map(k => b('lts-cup' + (k < 2 ? ' on' : '') + (k === 2 ? ' lts-fillin' : ''))).join('')) + b('lts-row', b('lts-pill', esc(T.sips)) + b('lts-pill on', esc(T.cup)) + b('lts-pill', esc(T.bottle))); /* wsip Oct 23 */
             case 'water0': return b('lts-row lts-cups', [0, 1, 2, 3, 4].map(k => b('lts-cup' + (k < 2 ? ' on' : '') + (k === 2 ? ' lts-fillin' : ''))).join('')) + b('lts-cap', '\u21ba ' + esc(T.reset));

@@ -16,9 +16,10 @@ test('the panel is opened from exactly one place in the app: Home\'s Fuel bubble
     /* Oct 28 slim structure, batch 3: a tap on Fuel opens the nutrition hub (gap-view.js), whose "Einkaufen" button is the tap
        path now; the Fuel bloom's Shop orb stays in code for open('fuel') callers */
     /* Oct 28 food plan: the old Fuel bubble IS Einkaufen; its tap (shop()) and the kept Fuel-bloom orb are the only callers */
-    assert.deepEqual(calls, ['home-blooms-v2.js', 'home-blooms-v2.js'], 'LowiStorePicks.open( callers: ' + calls.join(', '));
+    /* Oct 28 2026 (same ring everywhere): the kept Fuel-bloom Shop orb is gone, so shop() is the one caller left */
+    assert.deepEqual(calls, ['home-blooms-v2.js'], 'LowiStorePicks.open( callers: ' + calls.join(', '));
     const hb = code.find(x => x.f === 'home-blooms-v2.js').s;
-    assert.match(hb, /kind === 'fuel'[\s\S]{0,400}id: 'shop'[\s\S]{0,300}LowiStorePicks\.open\('home-bloom'\)/, 'the Shop orb sits in the Fuel bubble');
+    assert.match(hb, /function shop\(\) \{\s*if \(fn\(W\.LowiStorePicks, 'open'\)\)[^\n]*LowiStorePicks\.open\('home-shop'\)/, 'the Einkaufen bubble opens it');
 });
 
 test('no injected "What can I buy here?" card anywhere, Cook included', () => {

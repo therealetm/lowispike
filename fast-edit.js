@@ -222,6 +222,9 @@
             if (r.right <= fr.left + 2) lo = Math.max(lo, r.right + 4);
             else if (r.left >= fr.right - 2) hi = Math.min(hi, r.left - 4);
         });
+        /* world-first Home: the fasting cell floats on its own, so the pill stays inside the cell's width (no row to borrow room from) */
+        const wh = D.documentElement.classList.contains('wh-home');
+        if (wh) { lo = Math.max(4, fr.left - 18); hi = Math.min(W.innerWidth - 4, fr.right + 18); }
         pill.classList.toggle('fe-sm', fr.width < 146);
         pill.classList.remove('fe-compact', 'fe-tiny');
         const fit = () => pill.offsetWidth <= hi - lo;
@@ -234,7 +237,7 @@
         let copyB = 0;
         const cp = f.querySelector('.sp-fast-copy');
         if (cp) [...cp.children].forEach(n => { const r = n.getBoundingClientRect(); if (r.height) copyB = Math.max(copyB, r.bottom); });
-        const y = Math.max(fr.bottom - Math.round(ph * 0.55), copyB ? copyB + 2 : 0);
+        const y = wh ? Math.max(fr.bottom - Math.round(ph * 0.5), Math.min(copyB ? copyB + 2 : 0, fr.bottom - 4)) : Math.max(fr.bottom - Math.round(ph * 0.55), copyB ? copyB + 2 : 0);
         pill.style.left = Math.round(x - hr.left - host.clientLeft) + 'px';
         pill.style.top = Math.round(y - hr.top - host.clientTop) + 'px';
     }

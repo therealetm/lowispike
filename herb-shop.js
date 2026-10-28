@@ -101,7 +101,8 @@ D.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data
 D.addEventListener('change',e=>{const t=e.target;if(!V.ov||!V.ov.contains(t)||!t.dataset||!t.dataset.shop)return;if(t.dataset.shop==='remind'){save({...read(),remind:t.checked});paint('[data-shop="remind"]');}else if(t.dataset.shop==='notify')save({...read(),notify:t.checked});},true);
 D.addEventListener('keydown',e=>{if(!V.ov)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(V.view==='plus'){V.view='shop';paint('top');}else close();return;}
  if(e.key==='Tab'){const f=[...V.ov.querySelectorAll('button:not([disabled]),a[href],input,[tabindex="0"]')];if(!f.length)return;const i=f.indexOf(D.activeElement);if(e.shiftKey&&(i<=0)){e.preventDefault();f[f.length-1].focus();}else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus();}else if(i<0){e.preventDefault();f[0].focus();}e.stopImmediatePropagation();}},true);
-if(!D.getElementById('hsCss')){const l=D.createElement('link');l.id='hsCss';l.rel='stylesheet';l.href='herb-shop.css?v='+(((D.querySelector('meta[name="lowi-build"]')||{}).content)||'');D.head.appendChild(l);}
+/* Oct 15 (2): its own id. 'hsCss' is herb-start.css's link, so the shop's styles never loaded and the open shop spilled unstyled over Home. */
+if(!D.getElementById('hsShopCss')){const l=D.createElement('link');l.id='hsShopCss';l.rel='stylesheet';l.href='herb-shop.css?v='+(((D.querySelector('meta[name="lowi-build"]')||{}).content)||'');D.head.appendChild(l);}
 /* Back from Ko-fi: one calm thank-you line, no tracking, nothing unlocked. */
 function back(){if(!V.away||D.visibilityState==='hidden')return;if(Date.now()-V.away<800)return;V.away=0;if(V.ov&&V.view==='plus'){V.back2=true;paint('.hs-thanks');}}
 D.addEventListener('visibilitychange',back);root.addEventListener('focus',back);root.addEventListener('pageshow',back);

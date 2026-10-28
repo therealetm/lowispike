@@ -116,3 +116,10 @@ html.o8 #whHud [data-orbit="settings"].ss2-holding { filter: brightness(1.18) dr
 .ss2-hint[data-side="above"]::after { bottom: -7px; }
 .ss2-hint[data-side="below"]::after { top: -7px; transform: rotate(225deg); }
 .ss2-hint.out { opacity: 0; }
+/* slim batch 9: About & info sheet */
+.ss2-about { padding: 4px 4px 8px; line-height: 1.45; overflow-wrap: anywhere; }
+.ss2-about h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
+.ss2-about h3 { margin: 16px 0 4px; font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; opacity: .8; }
+.ss2-about p, .ss2-about li { margin: 0; font-size: 14px; }
+.ss2-about ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.ss2-about .ss2-ab-v { opacity: .72; font-size: 13px; font-variant-numeric: tabular-nums; }

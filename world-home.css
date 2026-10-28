@@ -16,11 +16,15 @@ html.wh-home #spHome #spBubble { position: absolute !important; left: 50% !impor
 html.wh-home #spBubble .tmg-plant { filter: drop-shadow(0 0 12px color-mix(in srgb, var(--wh-aura-a) 70%, transparent)); }
 /* the fasting cell floats next to Misty (same node, same tap: the fasting sheet) */
 html.wh-home #spHome #spFast { position: absolute !important; width: var(--wh-fs) !important; height: var(--wh-fs) !important; margin: 0 !important;
-    left: calc(50% - var(--wh-bs) / 2 - var(--wh-fs) * .3) !important; top: calc(var(--wh-cy) + var(--wh-bs) * .42) !important; transform: translate(-50%, -50%) !important; z-index: 2; pointer-events: auto; }
-@media (prefers-reduced-motion: no-preference) {
-    html.wh-home #spHome #spFast { animation: wh-float 6s ease-in-out infinite; }
-    html.wh-home #whHud .wh-water { animation: wh-float 6.8s ease-in-out -2.4s infinite; }
-}
+    left: calc(50% - var(--wh-fdx, calc(var(--wh-bs) / 2 + var(--wh-fs) * .3))) !important; top: calc(var(--wh-cy) + var(--wh-fdy, calc(var(--wh-bs) * .42))) !important; transform: translate(-50%, -50%) !important; z-index: 2; pointer-events: auto; animation: none !important; }
+/* Oct 15 (2): calm and still, so the Edit start pill stays exactly on the fasting cell's rim */
+html.wh-home #whHud .wh-water { animation: none !important; }
+/* one name only: Misty's name lives in her cell and her sheet, not in an extra chip over the fasting pill */
+html.wh-home #whHud .wh-name { display: none !important; }
+/* very short screens: the add-to-Home-Screen banner steps aside on Home (it stays on the other tabs) */
+html.wh-home.wh-tight #lcA2hs { display: none !important; }
+/* the Edit start pill on the world Home: small, centred on the fasting cell's bottom rim, above the world */
+html.wh-home #spHome #feBub { z-index: 3; max-width: calc(var(--wh-fs) + 36px); }
 @keyframes wh-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5px; } }
 
 /* ---------- HUD over the world ---------- */
@@ -37,7 +41,7 @@ html.wh-home .wh-hud { display: block; position: fixed; inset: 0; z-index: 3; po
 .wh-name-bar { position: absolute; left: 41px; right: 14px; bottom: 5px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.16); overflow: hidden; }
 .wh-name-bar > i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--wh-aura-a), var(--wh-aura-b)); }
 /* the water cell: a little special cell on Misty's other side */
-.wh-cell { width: var(--wh-fs); height: var(--wh-fs); border-radius: 50%; left: calc(50% + var(--wh-bs) / 2 + var(--wh-fs) * .3); top: calc(var(--wh-cy) + var(--wh-bs) * .42); transform: translate(-50%, -50%); overflow: hidden; padding: 0;
+.wh-cell { width: var(--wh-fs); height: var(--wh-fs); border-radius: 50%; left: calc(50% + var(--wh-fdx, calc(var(--wh-bs) / 2 + var(--wh-fs) * .3))); top: calc(var(--wh-cy) + var(--wh-fdy, calc(var(--wh-bs) * .42))); transform: translate(-50%, -50%); overflow: hidden; padding: 0;
     border: 1.5px solid rgba(160,220,255,.55); background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.42), rgba(255,255,255,0) 32%), radial-gradient(circle at 50% 60%, rgba(80,170,255,.22), rgba(20,60,140,.42));
     box-shadow: inset 0 0 18px rgba(140,210,255,.35), 0 8px 26px -10px rgba(40,120,255,.6); display: flex; align-items: center; justify-content: center; }
 .wh-cell-fill { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--wh-fill, 0) * 100%); background: linear-gradient(180deg, rgba(110,200,255,.55), rgba(40,120,240,.8)); transition: height .6s cubic-bezier(.2,.8,.2,1); }

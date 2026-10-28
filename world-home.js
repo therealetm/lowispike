@@ -460,9 +460,54 @@
         const tr = tb ? tb.getBoundingClientRect() : null, bottomBar = !!(tr && tr.height && tr.width > tr.height && tr.top > W.innerHeight * .5);
         if (bottomBar) { if (!H.classList.contains('wh-today-open') && !H.classList.contains('wh-r2-on')) top = Math.min(top, tr.top); else top = Math.min(top, W.innerHeight - (parseFloat(H.style.getPropertyValue('--wh-tb')) || 0)); }
         else top = W.innerHeight - 8;
+        const topBase = top;
         /* banners that float above the tab bar (add to Home Screen, offline, update) push the thumb row up */
         D.querySelectorAll('#lcA2hs, .lc-banner').forEach(b => { const r = b.getBoundingClientRect(); if (r.height && r.bottom > W.innerHeight * .6 && getComputedStyle(b).display !== 'none' && getComputedStyle(b).visibility !== 'hidden') top = Math.min(top, r.top); });
         H.style.setProperty('--wh-tb', Math.max(0, Math.round(W.innerHeight - top)) + 'px');
+        fitCluster(top, topBase, bottomBar ? null : tr);
+    }
+    /* Oct 15 (2): Misty, the fasting cell (with its Edit start pill) and the water cell always fit between the header/quest card
+       and the thumb row, at every phone and iPad size. Tall screens: the two cells sit low beside Misty. Short screens: they move
+       up to her sides and everything shrinks. On a very short screen the add-to-Home-Screen banner steps aside on Home. */
+    function fitCluster(thumbTop, thumbBase, rail) {
+        if (!H.classList.contains('wh-home')) return;
+        const vw = W.innerWidth, vh = W.innerHeight;
+        let T = 0;
+        ['#spHome > .sp-top', '#f3Board', '#tab-home .rs-head'].forEach(s => { const e = D.querySelector(s); if (!e) return; const r = e.getBoundingClientRect(); if (r.height && r.top < vh * .55) T = Math.max(T, r.bottom); });
+        T += 12;
+        const B0 = thumbTop - 12 - 50 - 12; /* the Today button row sits 12px above thumbTop and is 50px tall */
+        const L = rail && rail.width ? rail.right + 8 : 8, half = Math.max(80, Math.min(vw / 2 - L, vw / 2 - 8));
+        const maxBs = Math.max(150, Math.min(320, vw * .54, vh * .4));
+        const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+        function solve(B) {
+            for (let bs = Math.round(maxBs); bs >= 150; bs -= 2) {
+                const fs = Math.round(clamp(bs * .44, 80, 118)), h = bs * .92 + fs / 2 + 18;
+                if (bs / 2 + fs * .8 <= half && h <= B - T) return { side: false, bs, fs, h };
+            }
+            for (let bs = Math.round(Math.min(maxBs, 220)); bs >= 96; bs -= 2) {
+                const fs = Math.round(clamp(bs * .5, 76, 100)), h = Math.max(bs, fs + 30) + 4;
+                if (bs / 2 + fs + 6 <= half && h <= B - T) return { side: true, bs, fs, h };
+            }
+            return null;
+        }
+        /* the banner's height is remembered while it shows, so hiding it here never flips back and forth */
+        const ban = D.getElementById('lcA2hs'), bvis = ban && ban.getBoundingClientRect().height > 0;
+        if (bvis) st.banGap = Math.max(0, thumbBase - ban.getBoundingClientRect().top);
+        const banOn = !!(ban && ban.isConnected && (bvis || (H.classList.contains('wh-tight') && st.banGap)));
+        const Bfull = thumbBase - 74, Bwith = banOn ? (bvis ? B0 : Bfull - (st.banGap || 0)) : B0;
+        let fit = solve(Bwith), tight = false;
+        if (fit) fit.B = Bwith;
+        else if (banOn) { tight = true; fit = solve(Bfull); if (fit) fit.B = Bfull; }
+        if (!fit) fit = { side: true, bs: 96, fs: 76, h: 110, B: tight ? Bfull : Bwith };
+        H.classList.toggle('wh-tight', tight);
+        const B = fit.B || B0, slack = Math.max(0, B - T - fit.h);
+        const cy = Math.round(T + fit.bs / 2 + slack * .5);
+        const dx = fit.side ? fit.bs / 2 + fit.fs / 2 + 6 : fit.bs / 2 + fit.fs * .3, dy = fit.side ? 0 : fit.bs * .42;
+        const set = (k, v) => { if (H.style.getPropertyValue(k) !== v) H.style.setProperty(k, v); };
+        set('--wh-cy', cy + 'px'); set('--wh-bs', fit.bs + 'px'); set('--wh-fs', fit.fs + 'px');
+        set('--wh-fdx', Math.round(dx) + 'px'); set('--wh-fdy', Math.round(dy) + 'px');
+        H.classList.toggle('wh-side', !!fit.side);
+        try { W.LowiFastEdit && W.LowiFastEdit.pill && W.LowiFastEdit.pill(); } catch (e) { }
     }
     function tick() {
         const h = home(); if (!h || !h.querySelector('.sp-heroes')) return;

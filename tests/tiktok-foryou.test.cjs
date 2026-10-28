@@ -128,12 +128,12 @@ test('"Show the creator some love" is the button, one short line under it, natur
   assert.ok(html.includes('watch = ex ? LowiForYou.note("loveBtn") + " \\u00b7 " + LowiForYou.note("watchOn", {p: ex.name}) : pl.open'), 'the play button says the same to screen readers');
 });
 
-test('a creator\'s video has no like, chat, save, share or Swipe in the rail; only ··· stays; own posts keep them all', () => {
+test('a creator\'s video has no save or Swipe in the rail; only ··· stays; other posts keep Save and Swipe (28 Oct: Like, Chat, Share gone everywhere)', () => {
   const html = read('index.html');
   const a = html.indexOf('function slideHTML(p){'), b = html.indexOf('function sharePost(', a), s = html.slice(a, b);
   assert.ok(s.includes(`'<div class="fy-rail' + (ex ? ' fy-rail-ext' : '') + '">' + (ex ? '' :`));
   const gated = s.slice(s.indexOf("(ex ? '' :"), s.indexOf('fy-act fy-more'));
-  for (const k of ['data-tr="like"', 'data-tr="comment"', 'data-tr="save"', 'data-tr="share"', 'LowiFood.railBtn']) assert.ok(gated.includes(k), k + ' only for non-creator posts');
+  for (const k of ['data-tr="save"', 'LowiFood.railBtn']) assert.ok(gated.includes(k), k + ' only for non-creator posts');
   assert.ok(gated.trim().endsWith("LowiFood.railBtn(p.id) : \"\")) +\n      '<button class=\""), 'the ··· button sits outside the gate');
 });
 

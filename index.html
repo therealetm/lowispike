@@ -4610,7 +4610,7 @@ function fyOut(p, ex){
 const fyT = s => { try { return window.LowiLang && LowiLang.t ? LowiLang.t(s) : s; } catch (e) { return s; } };
 function slideHTML(p){
   if (p.bot && window.LowiForYou) return LowiForYou.slideHTML(p, {bg: fyBg(p), saved: !!(T.saved || {})[p.id], FIC, chip: p.rec && window.FYV ? FYV.recChip(p) : ""});
-  const h = H(), u = h.user(), d = describe(p.meta), liked = !!T.likes[p.id], saved = !!(T.saved || {})[p.id], n = (p.likes || 0) + (liked ? 1 : 0), pl = PLAT[p.plat] || PLAT.web;
+  const h = H(), u = h.user(), d = describe(p.meta), saved = !!(T.saved || {})[p.id], pl = PLAT[p.plat] || PLAT.web;
   const name = p.me ? (u.name || "You") : p.who, cap = p.cap || d.line || "", textOnly = !p.url && !p.photo && !p.vid && !p.rec && !FY_IMG[p.id];
   const ex = p.url && window.LowiForYou ? LowiForYou.external(p.url) : null, watch = ex ? LowiForYou.note("loveBtn") + " \u00b7 " + LowiForYou.note("watchOn", {p: ex.name}) : pl.open;
   return '<section class="fy-slide' + (textOnly ? " fy-text" : "") + (p.vid ? " fyv-slide" : "") + '" data-id="' + p.id + '">' + fyBg(p) + '<div class="fy-shade"></div>' +
@@ -4620,12 +4620,11 @@ function slideHTML(p){
     (p.url && (p.plat !== "web" || ex) ? '<button class="fy-play' + (ex ? ' fy-play-out' : '') + '" data-tr="open" data-id="' + p.id + '" aria-label="' + esc(watch) + '">' + IC.play + '</button>' : "") +
     /* 25 Oct 2026 (Emmanuel): "When someone is posting someone else's TikTok, remove the like button, the chat button, the save
        button, the share button, the swipe button. All the engagement is just dedicated for that TikTok video." A creator's video
-       keeps only ··· (delete / report); the love goes to the original through "Show the creator some love". */
+       keeps only ··· (delete / report); the love goes to the original through "Show the creator some love".
+       28 Oct 2026 (Emmanuel): "on the For You page ... the like button, chat button ... and the share button ... those gotta go."
+       No For You card has Like, Chat or Share any more (no double-tap like either); Save, + Swipe / In swipe and ··· stay. */
     '<div class="fy-rail' + (ex ? ' fy-rail-ext' : '') + '">' + (ex ? '' :
-      '<button class="fy-act' + (liked ? " on" : "") + '" data-tr="like" data-id="' + p.id + '" aria-label="' + fyT("Like") + '">' + FIC.heart + '<span class="num">' + n + '</span></button>' +
-      '<button class="fy-act" data-tr="comment" data-id="' + p.id + '" aria-label="' + fyT("Comment") + '">' + FIC.chat + '<span>' + fyT("Chat") + '</span></button>' +
       '<button class="fy-act' + (saved ? " on" : "") + '" data-tr="save" data-id="' + p.id + '" aria-label="' + fyT("Save") + '">' + FIC.save + '<span>' + fyT(saved ? "Saved" : "Save") + '</span></button>' +
-      '<button class="fy-act" data-tr="share" data-id="' + p.id + '" aria-label="' + fyT("Share") + '">' + FIC.share + '<span>' + fyT("Share") + '</span></button>' +
       (window.LowiFood && LowiFood.isFoodPost(p, FY_IMG[p.id]) ? LowiFood.railBtn(p.id) : "")) +
       '<button class="fy-act fy-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="' + fyT("More") + '">' + IC.more + '</button></div>' +
     '<div class="fy-meta"><div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b>' + (p.nb ? '<span class="fy-bot" title="Bot">Bot</span>' : '') + '<span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
@@ -4680,7 +4679,7 @@ function renderForYou(el){
   const mineN = fyMineAll().length, mineLbl = window.LowiForYou ? LowiForYou.note("mine") : "My posts";
   el.innerHTML = (window.FYV ? FYV.fabHTML() : "") + '<button class="fy-mine" data-tr="list-mine" aria-label="' + esc(mineLbl) + '">' + esc(mineLbl) + (mineN ? ' <b>' + mineN + '</b>' : '') + '</button>' + '<div class="fy-feed" id="fyFeed">' + list.map(slideHTML).join("") +
     '<section class="fy-slide fy-end"><div class="fy-endin"><b>' + esc(fyT("That's everyone")) + '</b><span class="small muted">' + esc(fyT("Newest first. No algorithm.")) + '</span><button class="btn primary sm" data-r3f="post" data-sfx="open">' + esc(fyT("Post something")) + '</button></div></section></div>';
-  const f = $("#fyFeed"); if (f) { f.scrollTop = fyTop ? 0 : y; fyTop = 0; if (!f.dataset.dbl) { f.dataset.dbl = "1"; f.addEventListener("dblclick", e => { const s = e.target.closest(".fy-slide[data-id]"); if (!s || e.target.closest("button")) return; const b = s.querySelector('[data-tr="like"]'); if (b && !b.classList.contains("on")) b.click(); fyBurst(s, e); }); } if (window.FYV) FYV.attach(f); }
+  const f = $("#fyFeed"); if (f) { f.scrollTop = fyTop ? 0 : y; fyTop = 0; if (window.FYV) FYV.attach(f); }
 }
 /* 25 Oct 2026: TikTok posts in the shared table without their stored picture get it now (once per post per session); the copy on
    this phone takes the same picture and video id, so a later re-send never puts the expired one back */

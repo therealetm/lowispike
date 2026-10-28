@@ -1,7 +1,8 @@
 /* LOWiSPIKE For You glue (browser). Rule and data are pure in foryou-core.js and inspo-core.js; this file wires them into
  * the For You feed (index.html feed()/slideHTML), the composer (doPost) and Share -> Community (meal-journal.js).
  *  - feed(list): the For You list (25 Oct: every real member's post; the app's own bot/crowd posts keep the insulin-friendly rule), plus the inspiration bot's daily slides.
- *  - slideHTML(p, env): the bot's slide (no like/chat/menu: there is nobody to like or chat with; Save and Share stay).
+ *  - slideHTML(p, env): the bot's slide (no like/chat/menu: there is nobody to like or chat with; Save stays. 28 Oct 2026:
+ *    Share is gone too, Emmanuel wants no Like, Chat or Share anywhere in For You).
  *  - fromCommunityShare({row,name,lvl,caption}): a meal shared to Community also posts to For You when it passes.
  * The bot never posts to Chat, never appears in People, never pushes. */
 (function (root) {
@@ -59,8 +60,7 @@
       '<p class="fyb-why">' + esc(g.why) + '</p><p class="fyb-src">' + esc(lab.goldSrc) + '</p></section>' : '';
     return '<section class="fy-slide fyb-slide" data-id="' + esc(p.id) + '" data-bot="nibblo">' + (env.bg || '') + '<div class="fy-shade"></div>' +
       '<div class="fy-rail">' +
-        '<button class="fy-act' + (saved ? ' on' : '') + '" data-tr="save" data-id="' + esc(p.id) + '" aria-label="' + esc(appT('Save')) + '">' + (FIC.save || '') + '<span>' + esc(appT(saved ? 'Saved' : 'Save')) + '</span></button>' +
-        '<button class="fy-act" data-tr="share" data-id="' + esc(p.id) + '" aria-label="' + esc(appT('Share')) + '">' + (FIC.share || '') + '<span>' + esc(appT('Share')) + '</span></button></div>' +
+        '<button class="fy-act' + (saved ? ' on' : '') + '" data-tr="save" data-id="' + esc(p.id) + '" aria-label="' + esc(appT('Save')) + '">' + (FIC.save || '') + '<span>' + esc(appT(saved ? 'Saved' : 'Save')) + '</span></button></div>' +
       '<div class="fy-meta fyb-meta"><div class="fy-by fyb-by" aria-label="' + esc(lab.aria) + '">' + AV + '<b>' + esc(I.NAME) + '</b><span class="fyb-tag">' + esc(lab.bot) + '</span><span>\u00b7 ' + esc(dayWord(c, l)) + '</span></div>' +
         '<p class="fyb-k">' + esc(sw.e) + ' ' + esc(lab.swap) + '</p>' +
         '<div class="fyb-swap"><span class="fyb-from"><small>' + esc(lab.craving) + '</small>' + esc(sw.from) + '</span><span class="fyb-arrow" aria-hidden="true">\u2192</span>' +

@@ -164,7 +164,13 @@ const okRoom = r => (r === 'all' || /^r\d{1,3}$/.test(String(r || ''))) ? r : 'a
 function noteRooms(msgs, bots) { const now = Date.now(); HUMAN_ROOM.clear(); for (const m of msgs.slice().reverse()) if (m && m.user_id && !(bots && bots.has(m.user_id)) && now - Date.parse(m.created_at || 0) < 30 * 60e3) HUMAN_ROOM.set(m.user_id, okRoom(m.room || 'all')); }
 function liveRoom() { const rs = [...new Set(HUMAN_ROOM.values())]; return rs.length ? rs[Math.floor(Math.random() * rs.length)] : 'all'; }
 let lastSay = 0;
+/* 28 Oct 2026 (Emmanuel: "Chat einfach wirklich nur für Menschen ... nuken wir mal alle Nachrichten von Bot im Chat ... lassen aber alles
+   auf der For You Page"): the crowd never writes into the Community chat again, no message and no reaction, even if the workflow is
+   switched back on. Its For You side (meal photos, likes) and the energy balls stay as they were. The app also leaves bot accounts'
+   chat messages out (chat-humans-core.js). */
+const CHAT_HUMANS_ONLY = true;
 async function say(st, p, body, reply) {
+  if (CHAT_HUMANS_ONLY) return null;
   const tok = await session(st, p); const id = newId();
   const gap = 2500 + Math.random() * 9000 - (Date.now() - lastSay); if (lastSay && gap > 0) await new Promise(r => setTimeout(r, gap)); lastSay = Date.now();
   await ins(tok, 'messages', { id, user_id: st.bots[p.i].id, room: okRoom(SAY_ROOM), who: p.name.slice(0, 40), body: String(body).slice(0, 600), reply_to: reply || null });
@@ -179,6 +185,7 @@ async function upload(tok, objPath, bytes) {
   return SB + '/storage/v1/object/public/media/' + objPath;
 }
 async function chatPhoto(st, p) {
+  if (CHAT_HUMANS_ONLY) return null;
   const tok = await session(st, p), meal = pick(MEALS.meals), uid = st.bots[p.i].id, pid = crypto.randomBytes(6).toString('hex');
   const url = await upload(tok, uid + '/chat-' + pid + '.jpg', await photoBytes(meal));
   const capText = line(p, 'photoCap', { meal: meal[0] });
@@ -394,7 +401,7 @@ async function ambient(st, room, now, minutes) {
   const avgAwake = all.reduce((s, p) => s + awake(p, now), 0) / all.length;
   const pickBot = () => weighted(all, p => awake(p, now) * p.chat);
   const n = { chat: poisson(minutes * 0.13 * scale * avgAwake * 1.4), post: poisson(minutes * 0.018 * scale * avgAwake * 1.4), energy: poisson(minutes * 0.035 * scale * avgAwake * 1.4), react: poisson(minutes * 0.12 * scale * avgAwake * 1.4), like: poisson(minutes * 0.05 * scale * avgAwake * 1.4) };
-  for (let k = 0; k < Math.min(n.chat, 12); k++) {
+  for (let k = 0; k < Math.min(n.chat, 12) && !CHAT_HUMANS_ONLY; k++) { /* 28 Oct: no chat lines, no chat photos */
     const p = pickBot(), topic = topicFor(p, now, humans);
     try {
       if (topic === 'photo') { await chatPhoto(st, p); out.photos++; continue; }
@@ -422,7 +429,7 @@ async function ambient(st, room, now, minutes) {
     try { await say(st, p, '@' + target + ' ' + fill(p, K.L[p.lang].energy, { n: p.name })); out.energy++; } catch (e) { log('energy', e.message); }
   }
   const recent = room.msgs.filter(m => now - Date.parse(m.created_at) < 6 * 36e5 && !/^bot:/.test(m.user_id));
-  for (let k = 0; k < Math.min(n.react, 10) && recent.length; k++) {
+  for (let k = 0; k < Math.min(n.react, 10) && recent.length && !CHAT_HUMANS_ONLY; k++) {
     const p = pickBot(), m = weighted(recent, x => bots.has(x.user_id) ? 1 : 2.5); if (m.user_id === st.bots[p.i].id) continue;
     try { await ins(await session(st, p), 'reactions', { message_id: m.id, user_id: st.bots[p.i].id, who: p.name.slice(0, 40), emoji: pick(K.L && ['❤️', '👏', '🙏', '🌱', '✨']) }); out.reacts++; } catch (e) { if (e.status !== 409) log('react', e.message); }
   }

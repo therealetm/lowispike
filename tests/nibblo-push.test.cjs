@@ -98,7 +98,7 @@ test('the database pings n1-push only when a slot is really posted, and Nibblo\'
   assert.doesNotMatch(read('supabase/proposals/nibblo_meals_20261025.sql'), /net\.http|push|notify|webhook/i);
 });
 
-test('the app: a fifth switch in EN/DE/ES, sent with the subscription; a tap opens Chat at that post', () => {
+test('the app: a fifth switch in EN/DE/ES, sent with the subscription; a tap opens For You at that post (28 Oct: bots no longer in Chat)', () => {
   const js = read('lis-push.js');
   assert.match(js, /const ORDER = \["d", "c", "n", "a", "b"\];/);
   assert.equal((js.match(/\bn:"[^"]+", nSub:"[^"]+"/g) || []).length, 3, 'labels in EN, DE, ES');
@@ -115,6 +115,6 @@ test('the app: a fifth switch in EN/DE/ES, sent with the subscription; a tap ope
   assert.match(W.LisPush.pillarHTML(), /data-lisp="n"[^>]*role="switch" aria-checked="false"><span class="lisp-t"><b>Nibblos Mahlzeiten<\/b>/);
   assert.equal(W.LisPush.route('nb:nb-20261026-n'), true);
   while (timers.length) timers.shift()();
-  assert.deepEqual(clicks, ['tab:foryou', 'seg:chat', 'recipe:nb-20261026-n']);
+  assert.deepEqual(clicks, ['tab:foryou', 'seg:feed', 'recipe:nb-20261026-n']);
   assert.equal(W.LisPush.route('nb:"]evil'), false, 'only real Nibblo ids');
 });

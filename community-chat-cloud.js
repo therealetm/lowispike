@@ -21,8 +21,11 @@ function create(host, changed){
   const turn=epoch;phase='loading';error='';edits=[];changed();
   const task=(async()=>{try{
    const sb=await host.client();
-   const [rows0,rx,pins]=await Promise.all([result(sb.from('messages').select(fields).eq('room',rm).order('created_at',{ascending:false}).limit(300)),result(sb.from('reactions').select('message_id,user_id,who,emoji').limit(10000)),pinRows(sb,rm)]);
-   const seen=new Set((rows0||[]).map(r=>r.id)),rows=(rows0||[]).concat((pins||[]).filter(r=>r&&!seen.has(r.id)).sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at))));
+   /* Oct 28 (Emmanuel: "Chat einfach wirklich nur für Menschen"): bot accounts' messages and reactions stay out (chat-humans-core.js, by id and server flag) */
+   const HU=root.LowiChatHumans,notBots=q=>HU?q.not('user_id','in',HU.notIn(120)):q;
+   const [rows1,rx1,pins]=await Promise.all([result(notBots(sb.from('messages').select(fields).eq('room',rm)).order('created_at',{ascending:false}).limit(300)),result(sb.from('reactions').select('message_id,user_id,who,emoji').limit(10000)),pinRows(sb,rm)]);
+   const rows0=HU?HU.keep(rows1):rows1,rx=HU?HU.keepRx(rx1):rx1;
+   const seen=new Set((rows0||[]).map(r=>r.id)),rows=(rows0||[]).concat((pins||[]).filter(r=>r&&!seen.has(r.id)&&!(HU&&HU.isBotAuthor(r))).sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at))));
    if(!still(id)||turn!==epoch||rm!==room())return false;
    const merged=new Map((rows||[]).slice().reverse().map(r=>[r.id,map(r,rx)]));
    for(const e of edits){if(e.message)merged.set(e.id,e.message);else merged.delete(e.id);}

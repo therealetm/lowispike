@@ -7040,7 +7040,7 @@ let CM = null, CMV = {view:"feed", room:"", reply:null, pick:""};
 function cmLoad(){ if (CM) return CM; try { CM = JSON.parse(localStorage.getItem(CM_KEY)); } catch(e){ CM = null; }
   if (!CM || !CM.msgs) CM = {msgs:{all:[]}, read:{}, intro:false};
   if (!CM.msgs.all) { const arr = []; Object.keys(CM.msgs).forEach(k => (CM.msgs[k] || []).forEach(m => arr.push(m))); CM.msgs = {all:arr}; CM.read = {all:Math.max(0, ...Object.values(CM.read || {}).concat([0]))}; }
-  CM.read = CM.read || {}; CM.msgs.all = CM.msgs.all.filter(m => m && !m.demo && !m.bot);
+  CM.read = CM.read || {}; CM.msgs.all = CM.msgs.all.filter(m => m && !m.demo && !m.bot && !(typeof window.lowiChatBot === "function" && window.lowiChatBot(m))); /* Oct 28: a cached bot message leaves too */
   CM.msgs.all.sort((a, b) => a.ts - b.ts);
   return CM; }
 function cmSave(){ try { localStorage.setItem(CM_KEY, JSON.stringify(CM)); } catch(e){} }
@@ -10020,6 +10020,16 @@ function mapPostRow(r){
     rec:r.rec || "", mine:!!r.mine, art:r.art || ["✨", 40, 280], vis:"tribe", rank:r.lv ? "Lv " + r.lv : "", get likes(){ return likeCount(this.id); }};
 }
 function mapMsg(r){ return {id:r.id, uid:r.user_id, by:r.who || "Member", t:r.body || "", ts:ts(r.created_at), re:r.reply_to || null, rx:rxOf(r.id), md:(r.meal && typeof r.meal === "object") ? r.meal : null}; } /* Oct 25: md = meal details (messages.meal) */
+/* Oct 28 2026 (Emmanuel: "Chat einfach wirklich nur für Menschen ... nuken wir mal alle Nachrichten von Bot im Chat ... lassen aber
+   alles auf der For You Page"): messages and reactions by bot accounts never enter the chat store (chat-humans-core.js: Nibblo's id and
+   the server's profiles.bot flag, never a name). For You keeps every bot post. */
+function chatBot(x){ const C = window.LowiChatHumans; if (C) return C.isBotAuthor(x); const u = x && typeof x === "object" ? (x.user_id || x.uid) : x; return u === "59bb3615-b344-4c45-ab0f-0a5de5cd8df3"; } /* Nibblo, before chat-humans-core.js arrives */
+function chatHumansNot(){ const C = window.LowiChatHumans; return C ? C.notIn(120) : "(59bb3615-b344-4c45-ab0f-0a5de5cd8df3)"; }
+function chatPurge(){ let gone = 0; for (let i = MSGS.length - 1; i >= 0; i--) if (chatBot(MSGS[i])) { MSGS.splice(i, 1); gone++; }
+  Object.keys(RX).forEach(k => { const a = RX[k], b = a.filter(r => !chatBot(r)); if (b.length !== a.length) { RX[k] = b; gone++; } });
+  if (gone) { MSGS.forEach(m => { m.rx = rxOf(m.id); }); applyChat(); chatNotify("humans"); } return gone; }
+try { window.addEventListener("lowi-bots", () => { try { chatPurge(); } catch(e){} }); } catch(e){}
+window.lowiChatBot = chatBot; /* cmLoad (an earlier script) asks here */
 function rxOf(mid){ const o = {}; (RX[mid] || []).forEach(x => { (o[x.emoji] = o[x.emoji] || []).push(x.who || "Member"); }); return o; }
 /* 24 Oct 2026: a person's birthday, sign and type count only in the shared form (day + month, year 0004, after consent). An older row with a
    real birth year stays private, and the year/age of anyone else never reaches the app. */
@@ -10057,19 +10067,20 @@ async function start(){
   const q = await Promise.all([
     sb.from("posts").select("*").order("created_at", {ascending:false}).limit(150),
     sb.from("post_likes").select("post_id,user_id").limit(10000),
-    sb.from("messages").select("id,user_id,who,body,reply_to,created_at,room,meal").eq("room", ROOM()).order("created_at", {ascending:false}).limit(300),
+    sb.from("messages").select("id,user_id,who,body,reply_to,created_at,room,meal").eq("room", ROOM()).not("user_id", "in", chatHumansNot()).order("created_at", {ascending:false}).limit(300), /* Oct 28: people only */
     sb.from("reactions").select("message_id,user_id,who,emoji").limit(10000),
     sb.from("profiles").select("id,name,sign,mbti,lv,streak,bio,avatar,bday,xp,xp_week,wk,xp_month,mo,weight,bot,test,joined_at").neq("name", "").limit(2000) /* Oct 25: joined_at seats the Room galaxy in rows, newest on top */
   ]);
   if (uid !== chatOwner) return;
   const bad = q.find(r => r.error); if (bad) throw bad.error;
   LIKES = {}; q[1].data.forEach(r => (LIKES[r.post_id] = LIKES[r.post_id] || new Set()).add(r.user_id));
-  RX = {}; q[3].data.forEach(r => (RX[r.message_id] = RX[r.message_id] || []).push(r));
+  try { if (window.LowiChatHumans) LowiChatHumans.learn(q[4].data || []); } catch(e){} /* Oct 28: the server's bot flag, read with this load */
+  RX = {}; q[3].data.filter(r => !chatBot(r)).forEach(r => (RX[r.message_id] = RX[r.message_id] || []).push(r));
   AVATARS = {}; (q[4].data || []).forEach(r => { if (r.avatar) AVATARS[r.id] = r.avatar; });
   PEOPLE = (q[4].data || []).filter(r => r.id !== uid).map(mapPerson);
   { const mine = (q[4].data || []).find(r => r.id === uid); MY_JOINED = (mine && Date.parse(mine.joined_at)) || MY_JOINED; }
   POSTS = (q[0].data || []).map(mapPost);
-  MSGS.length = 0; msgsRoom = ROOM(); q[2].data.slice().reverse().map(mapMsg).forEach(m => MSGS.push(m));
+  MSGS.length = 0; msgsRoom = ROOM(); q[2].data.filter(r => !chatBot(r)).reverse().map(mapMsg).forEach(m => MSGS.push(m));
   PEOPLE = q[4].data.filter(r => r.id !== uid).map(mapPerson);
   live = true;
   applyChat(); applyMembers(); syncMyLikes(); chatNotify("ready");
@@ -10097,7 +10108,7 @@ function subscribe(){
     .on("postgres_changes", {event:"*", schema:"public", table:"profiles"}, p => onProfile(p))
     .subscribe(status => { if (!rooms) { chatRealtime = status; chatNotify(status === "SUBSCRIBED" ? "reconnect" : "status"); } });
 }
-function onMsg(r){ if (!r || !r.id || (r.room || "all") !== ROOM()) return; const have = MSGS.find(m => m.id === r.id);
+function onMsg(r){ if (!r || !r.id || (r.room || "all") !== ROOM() || chatBot(r)) return; const have = MSGS.find(m => m.id === r.id);
   if (have) { Object.assign(have, mapMsg(r)); have.pending = false; chatNotify("message", r.id); return; }
   const m = mapMsg(r); MSGS.push(m); MSGS.sort((a, b) => a.ts - b.ts); saveChat();
   chatNotify("message", r.id);
@@ -10105,7 +10116,7 @@ function onMsg(r){ if (!r || !r.id || (r.room || "all") !== ROOM()) return; cons
 }
 
 function bumpDot(){ if (window.LowiCommunity && LowiCommunity.isQuiet()) return; try { if (H().tab() === "foryou" && CMV.view !== "chat") { const b = document.querySelector('#cmSeg [data-v="chat"]'); if (!b) return; const n = cmUnread("all"); let d = b.querySelector(".cm-dot"); if (!d) { d = document.createElement("span"); d.className = "cm-dot"; b.appendChild(d); } d.textContent = n; } } catch(e){} }
-function onRx(p){ const r = p.new && p.new.message_id ? p.new : p.old; if (!r || !r.message_id) return;
+function onRx(p){ const r = p.new && p.new.message_id ? p.new : p.old; if (!r || !r.message_id || chatBot(r)) return;
   const arr = RX[r.message_id] = (RX[r.message_id] || []).filter(x => !(x.user_id === r.user_id && x.emoji === r.emoji));
   if (p.eventType !== "DELETE") arr.push(p.new);
   repaintMsg(r.message_id); }
@@ -10494,10 +10505,10 @@ window.LOWI_CLOUD_X = {
   community:{
     messages:() => MSGS.slice(),
     reactions:() => Object.values(RX).flat(),
-    replace(messages, reactions){ MSGS.splice(0, MSGS.length, ...messages); RX = {}; reactions.forEach(r => (RX[r.message_id] = RX[r.message_id] || []).push(r)); applyChat(); },
-    upsert(m){ const old = MSGS.find(x => x.id === m.id); if (old) Object.assign(old, m); else MSGS.push(m); MSGS.sort((a,b) => a.ts-b.ts); applyChat(); },
+    replace(messages, reactions){ MSGS.splice(0, MSGS.length, ...messages.filter(m => !chatBot(m))); RX = {}; reactions.filter(r => !chatBot(r)).forEach(r => (RX[r.message_id] = RX[r.message_id] || []).push(r)); MSGS.forEach(m => { m.rx = rxOf(m.id); }); applyChat(); },
+    upsert(m){ if (chatBot(m)) return; const old = MSGS.find(x => x.id === m.id); if (old) Object.assign(old, m); else MSGS.push(m); MSGS.sort((a,b) => a.ts-b.ts); applyChat(); },
     remove(id){ const i = MSGS.findIndex(m => m.id === id); if (i >= 0) MSGS.splice(i,1); applyChat(); chatNotify("delete",id); },
-    setReactions(rows){ RX = {}; rows.forEach(r => (RX[r.message_id] = RX[r.message_id] || []).push(r)); MSGS.forEach(m => { m.rx = rxOf(m.id); }); }
+    setReactions(rows){ RX = {}; rows.filter(r => !chatBot(r)).forEach(r => (RX[r.message_id] = RX[r.message_id] || []).push(r)); MSGS.forEach(m => { m.rx = rxOf(m.id); }); }
   },
   setUser(u){ if (!u) return; if (uid && u.id !== uid) switchUser(); uid = u.id; email = u.email || ""; chatNotify("auth"); },
   pushProfile(){ try { pushProfile(); } catch(e){} },
@@ -21887,6 +21898,7 @@ window.LowiCommunityHost = {
 <script src="community-rooms-ui.js?v=20261028-204415"></script>
 <script src="hidden-accounts.js?v=20261028-204415"></script>
 <script src="bot-accounts.js?v=20261028-204415"></script>
+<script src="chat-humans-core.js?v=20261028-204415"></script>
 <script src="people-directory-core.js?v=20261028-204415"></script>
 <script src="people-directory.js?v=20261028-204415"></script>
 <script src="community-galaxy.js?v=20261028-204415"></script>

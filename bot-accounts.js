@@ -53,7 +53,9 @@
             return set(r.data.filter(x => x.bot).map(x => x.id), r.data.filter(x => x.test).map(x => x.id));
         } catch (e) { return false; }
     }
-    const api = { KEY, set, setSelf, isBot, isTest, testHidden, humans, load, size: () => bots.size + tests.size };
+    /* Oct 28: only the server's bot flag (profiles.bot), without test or removed accounts: the chat leaves these out (chat-humans-core.js) */
+    function isFlagged(p) { const u = uidOf(p); return !!u && bots.has(u); }
+    const api = { KEY, set, setSelf, isBot, isFlagged, flaggedIds: () => [...bots], isTest, testHidden, humans, load, size: () => bots.size + tests.size };
     root.LowiBotAccounts = api;
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

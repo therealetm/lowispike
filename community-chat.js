@@ -705,7 +705,8 @@ function paint(el){
  dmCheck(ms);
  if(!W.LowiCompanionCore&&mateTries<20){mateTries++;setTimeout(refresh,1500);}
  const empty=st.phase==='ready'?(Object.values(prefs.blocks).some(x=>x.blocked)?tr('filtered'):tr('empty')):tr('waiting');
- const shown=ms.filter(x=>!x.demo&&!x.bot&&!blocked(x.uid)).concat(botLines()).sort((a,b)=>(+a.ts||0)-(+b.ts||0));
+ /* Oct 28 (Emmanuel: "Chat einfach wirklich nur für Menschen"): no bot account's message (chat-humans-core.js) and no lines of the old galaxy companions (botLines, still on this phone) in the room */
+ const shown=ms.filter(x=>!x.demo&&!x.bot&&!blocked(x.uid)&&!(W.LowiChatHumans&&W.LowiChatHumans.isBotAuthor(x))).sort((a,b)=>(+a.ts||0)-(+b.ts||0));
  if(!pinned&&threadOpen&&lastCount&&ms.length>lastCount)roomRows+=ms.length-lastCount;/* reading older messages: a new one must not push the top row out */
  let from=Math.max(0,shown.length-roomRows);if(roomFocus){const fi=shown.findIndex(x=>x.id===roomFocus);if(fi>=0&&fi<from)from=fi;}
  const rows=shown.slice(from).map((m,j)=>{const i=from+j;return dayLine(m,shown[i-1])+renderMessage(m,ms,shown[i-1],shown[i+1]);});if(from>0)rows.unshift('<div class="cm-more">'+button('earlier',tr('earlier'),'','cs-action cm-morebtn')+'</div>');const html=shown.length?rows.join(''):'<div class="cs-empty"><span class="cs-lantern" aria-hidden="true">✧</span><b>'+tr('emptyTitle')+'</b><p>'+empty+'</p>'+(st.phase==='ready'?button('hello',tr('hi')):'')+'</div>';

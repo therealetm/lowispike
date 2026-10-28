@@ -4,8 +4,9 @@
    B  Product: a community-rated product, at shopping times (never "go shopping now")
    C  Energy received: someone sent your companion energy, also while you were offline
    D  Your own companion, Tamagotchi style, on days you have not opened the app
-   N  Nibblo's meals (25 Oct 2026): the bot's breakfast, lunch and dinner post in Chat, sent by the server (n1-push nibblo.ts);
-      a tap opens Chat at that post (and Nibblo's recipe, when nibblo-core.js offers LowiNibblo.openRecipe)
+   N  Nibblo's meals (25 Oct 2026): the bot's breakfast, lunch and dinner post, sent by the server (n1-push nibblo.ts).
+      Since 28 Oct the post lives only in For You (Chat is for people only, chat-humans-core.js): a tap opens For You at that
+      post (and Nibblo's recipe, when nibblo-core.js offers LowiNibblo.openRecipe)
    This file adds: the five switches (stored on the phone, sent with the subscription), the login token so the subscription
    belongs to your account (needed for C), the companion name, where a tapped push opens, a one-time ask that does not depend
    on the old Home hint bubble, and the hook for C: window.LisPush.energySent(toUid). */
@@ -80,7 +81,7 @@ function route(q){
   const ch = /^chat(?::([^:]*)(?::(.+))?)?$/.exec(String(q || ""));
   if (ch) { tab("foryou"); setTimeout(() => seg("chat"), 350); if (ch[1]) setTimeout(() => chatWith(ch[1], ch[2] || "", 0), 900); return true; }
   const nb = /^nb:(nb-\d{8}-[mne])$/.exec(String(q || ""));
-  if (nb) { tab("foryou"); setTimeout(() => seg("chat"), 350); setTimeout(() => nbShow(nb[1], 0), 900); return true; }
+  if (nb) { tab("foryou"); setTimeout(() => seg("feed"), 350); setTimeout(() => nbShow(nb[1], 0), 900); return true; }
   return false; }
 function shop(n){
   const H = window.LowiSymHome;
@@ -90,9 +91,10 @@ function chatWith(uid, id, n){
   const C = window.LowiCommunity;
   if ((!C || typeof C.select !== "function") && n < 10) { setTimeout(() => chatWith(uid, id, n + 1), 400); return; }
   try { if (id && typeof C.openMessage === "function") C.openMessage(uid, id); else C.select(uid); } catch(e){} }
-/* a Nibblo push: Chat scrolled to that meal post, then Nibblo's recipe if nibblo-core.js offers it (recipe task) */
+/* a Nibblo push: For You scrolled to that meal post (its For You id is "s" + the slot id, nibblo-core.js postId), then Nibblo's
+   recipe if nibblo-core.js offers it (recipe task). Oct 28: For You, not Chat: bot posts no longer live in Chat. */
 function nbShow(id, n){
-  const el = D.querySelector('#tab-foryou [data-id="' + id + '"]') || D.querySelector('[data-id="' + id + '"]');
+  const el = D.querySelector('#fyFeed .fy-slide[data-id="s' + id + '"]') || D.querySelector('#tab-foryou .fy-slide[data-id="s' + id + '"]');
   if (!el && n < 12) { setTimeout(() => nbShow(id, n + 1), 400); return; }
   try { el && el.scrollIntoView({block: "center", behavior: "smooth"}); } catch(e){}
   try { const N = window.LowiNibblo; if (N && typeof N.openRecipe === "function") N.openRecipe(id); } catch(e){} }

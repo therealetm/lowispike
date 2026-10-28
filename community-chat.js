@@ -538,8 +538,9 @@ function dmBadge(n){if(DM_MUTED)n=0;const tb=D.querySelector('#tabbar .tb[data-t
    (it parked at -160% of its own height, which is less than the safe-area offset on notched phones and iPads), so no toast,
    no tab badge and no system notification for replies/mentions any more. dmCheck still keeps dmSeen current; home-visit.js is untouched. */
 const DM_MUTED=true;
+/* Oct 28 2026 (audit): a tapped chat notification opened Home (q:''). It now carries the chat: chat:<uid>:<message id>, see lis-push.js route() */
 function dmAlert(m){if(DM_MUTED){const t=D.getElementById('cgToast');if(t&&t.removeAttribute)t.removeAttribute('data-on');return;}const title=fill('dmTitle',m.by||'Member'),body=plain(m).slice(0,140);
- if(D.hidden){try{if(W.Notification&&Notification.permission==='granted'&&navigator.serviceWorker)navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,icon:'icon-192.png',badge:'icon-192.png',tag:'lowi-dm-'+m.id,data:{q:'',tab:'foryou'}})).catch(()=>{});}catch(e){}return;}
+ if(D.hidden){try{if(W.Notification&&Notification.permission==='granted'&&navigator.serviceWorker)navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,icon:'icon-192.png',badge:'icon-192.png',tag:'lowi-dm-'+m.id,data:{q:'chat:'+(m.uid||'')+':'+(m.id||''),tab:'foryou'}})).catch(()=>{});}catch(e){}return;}
  if(active()||(W.LowiHomeVisit&&W.LowiHomeVisit.has(m.id)))return; /* on Home the sender's companion visits instead (home-visit.js) */
  let t=D.getElementById('cgToast');if(!t){t=D.createElement('div');t.id='cgToast';t.className='cg-toast-wrap';t.setAttribute('role','status');D.body.appendChild(t);}
  t.innerHTML=button('open-galaxy','<span class="cg-torb">'+mate(m.uid,'t'+sid(m.id))+'</span><span class="cg-tt"><b>'+esc(title)+'</b><span>'+text(body)+'</span></span>','data-uid="'+esc(m.uid)+'"','cg-toast');t.setAttribute('data-on','1');

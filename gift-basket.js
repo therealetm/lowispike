@@ -107,7 +107,7 @@
 
     /* ---------- paint ---------- */
     function shell(inner) {
-        return '<div class="stp-card gb-card" role="dialog" aria-modal="true" aria-labelledby="gb-title">' +
+        return '<div class="stp-card gb-card" role="dialog" aria-modal="true" aria-labelledby="gb-title">' + shopBar() +
             '<div class="stp-head gb-head"><h3 id="gb-title">\u{1F91D} ' + esc(T('Give a hand', 'Hilf mit', 'Echa una mano')) + '</h3>' +
             '<div class="stp-tabs gb-tabs" role="tablist">' +
             tabBtn('give', T('Give a hand', 'Helfen', 'Ayudar')) + tabBtn('mine', T('I could use a hand', 'Ich brauche Hilfe', 'Necesito ayuda')) + '</div></div>' +
@@ -115,6 +115,12 @@
             '<div class="stp-scroll gb-scroll" data-noi18n>' + inner + '</div>' +
             '<div class="stp-foot gb-foot"><span></span><button type="button" class="stp-orb gb-x" data-stp="close" data-gb="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>';
+    }
+    /* Oct 28 2026 (owner request 13, Emmanuel: in Einkaufen > Hilf mit the top menu bar disappears and you have to press X):
+       opened from Einkaufen, this panel carries Einkaufen's own section bar with Hilf mit lit, so Supermarkt, Zu Hause, Seller zone
+       and Küche are one tap away. A tap there closes this panel through the back stack and switches Einkaufen to that section. */
+    function shopBar() {
+        try { const S = W.LowiStorePicks; if (!ov || ov.getAttribute('data-from') !== 'shop' || !S || !S.isOpen() || !S.tabsHTML) return ''; const h = S.tabsHTML('gift'); return h ? h.replace('class="stp-tabs', 'class="stp-tabs gb-shopbar') : ''; } catch (e) { return ''; }
     }
     function tabBtn(id, label) { return '<button type="button" role="tab" class="stp-tab' + (tab === id ? ' on' : '') + '" aria-selected="' + (tab === id) + '" data-gb-tab="' + id + '"><b>' + esc(label) + '</b></button>'; }
     function paint() {
@@ -482,9 +488,10 @@
         if (!ov || !ov.contains(t)) return;
         if (t === ov) { spend(e); close(e.isTrusted); return; }
         if (Date.now() - dragAt < 400) return; /* the click a swipe leaves behind */
-        const el = t.closest ? t.closest('[data-gb],[data-gb-tab],[data-gb-help],[data-gb-add],[data-gb-drop],[data-gb-verdict],[data-gb-pay]') : null;
+        const el = t.closest ? t.closest('[data-stp-tab],[data-gb],[data-gb-tab],[data-gb-help],[data-gb-add],[data-gb-drop],[data-gb-verdict],[data-gb-pay]') : null;
         if (!el || !ov.contains(el)) return;
         if (el.hasAttribute('data-gb-pay')) { const id = el.getAttribute('data-gb-pay'); if (!opened[id]) { opened[id] = true; setTimeout(paint, 60); } return; } /* the link opens; nothing is sent */
+        if (el.hasAttribute('data-stp-tab')) { const id = el.getAttribute('data-stp-tab'); if (id === 'gift') return; spend(e); close(true); if (ov) close(false); try { W.LowiStorePicks.setTab(id); } catch (x) {} return; }
         if (el.hasAttribute('data-gb-tab')) { tab = el.getAttribute('data-gb-tab'); msg = ''; paint(); return; }
         if (el.hasAttribute('data-gb-add')) { addItem(el.getAttribute('data-gb-add')); return; }
         if (el.hasAttribute('data-gb-drop')) { const n = el.getAttribute('data-gb-drop'); draft.items = draft.items.filter(x => x !== n); saveDraft(); paint(); return; }

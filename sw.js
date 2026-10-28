@@ -145,7 +145,9 @@ self.addEventListener("push", e => {
 });
 self.addEventListener("notificationclick", e => {
   e.notification.close();
-  const d = e.notification.data || {}, q = typeof d.q === "string" ? d.q : "";
+  const d = e.notification.data || {};
+  /* Oct 28 2026: an older chat notification (q "", tab "foryou") opens Community chat, not Home */
+  const q = typeof d.q === "string" && d.q ? d.q : d.tab === "foryou" ? "community" : "";
   e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
     for (const c of list) {
       if ("focus" in c) {

@@ -72,9 +72,17 @@ function route(q){
   if (q === "foryou") { tab("foryou"); setTimeout(() => seg("feed"), 350); return true; }
   if (q === "community") { tab("foryou"); setTimeout(() => seg("chat"), 350); return true; }
   if (q === "home" || q === "scan") { tab("home"); return true; }
+  /* Oct 28 2026 (audit: a tapped chat notification opened Home): chat:<uid>[:<message id>] opens Community chat with that person
+     (their message in its thread when there is one); a bare "chat" opens the chat */
+  const ch = /^chat(?::([^:]*)(?::(.+))?)?$/.exec(String(q || ""));
+  if (ch) { tab("foryou"); setTimeout(() => seg("chat"), 350); if (ch[1]) setTimeout(() => chatWith(ch[1], ch[2] || "", 0), 900); return true; }
   const nb = /^nb:(nb-\d{8}-[mne])$/.exec(String(q || ""));
   if (nb) { tab("foryou"); setTimeout(() => seg("chat"), 350); setTimeout(() => nbShow(nb[1], 0), 900); return true; }
   return false; }
+function chatWith(uid, id, n){
+  const C = window.LowiCommunity;
+  if ((!C || typeof C.select !== "function") && n < 10) { setTimeout(() => chatWith(uid, id, n + 1), 400); return; }
+  try { if (id && typeof C.openMessage === "function") C.openMessage(uid, id); else C.select(uid); } catch(e){} }
 /* a Nibblo push: Chat scrolled to that meal post, then Nibblo's recipe if nibblo-core.js offers it (recipe task) */
 function nbShow(id, n){
   const el = D.querySelector('#tab-foryou [data-id="' + id + '"]') || D.querySelector('[data-id="' + id + '"]');

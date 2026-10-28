@@ -269,10 +269,14 @@
         return '<div class="stp-card' + (onSz() ? ' stp-on-sz' : onKit() ? ' stp-on-kit' : onHome() ? ' stp-on-home' : '') + '" role="dialog" aria-modal="true" aria-label="' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '">' + tabsHTML() + inner + '</div>';
     }
     /* Oct 23: the two tabs, a living-bubble pill on top of the panel; the thumb reaches both */
+    /* Oct 28 2026 (owner request 13): tabOver lets the Give a hand panel show this same bar with Hilf mit lit, so Einkaufen keeps
+       its top bar there and the other sections are one tap away (no X first). */
+    let tabOver = '';
     function tabsHTML() {
         const Z = SZ(); if (!Z && !K && !homeTab()) return '';
         if (K && !kit) kitLoad();
-        const b = (id, icon, txt, n) => '<button type="button" class="stp-tab' + (tab === id ? ' on' : '') + '" role="tab" aria-selected="' + (tab === id) + '" data-stp-tab="' + id + '"><span aria-hidden="true">' + icon + '</span><b>' + esc(txt) + '</b>' + (n ? '<i>' + n + '</i>' : '') + '</button>';
+        const cur = tabOver || tab;
+        const b = (id, icon, txt, n) => '<button type="button" class="stp-tab' + (cur === id ? ' on' : '') + '" role="tab" aria-selected="' + (cur === id) + '" data-stp-tab="' + id + '"><span aria-hidden="true">' + icon + '</span><b>' + esc(txt) + '</b>' + (n ? '<i>' + n + '</i>' : '') + '</button>';
         /* Oct 25 (Emmanuel: Give a hand gets "its own place next to Supermarket, Seller Zone and Kitchen", not inside Kitchen):
            the fourth peer. A door, not a pane: it opens the Give a hand panel on top of Shop and is never the remembered tab. */
         const G = giftDoor();
@@ -1001,5 +1005,5 @@
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiStorePicks = { open: openPanel, close, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)), tab: () => (onSz() ? 'sz' : onKit() ? 'kitchen' : onHome() ? 'home' : 'shop'), kitchen: () => (K ? (kitLoad(), K.view(kit)) : []), setTab: id => { if (id === 'kitchen' && KG()) { if (ov) close(); KG().open(); return; } if (ov) setTab(id); else { tab = ({ sz: 'sz', kitchen: 'kitchen', home: 'home' })[id] || 'shop'; try { localStorage.setItem(TKEY, tab); } catch (e) {} } } };
+    W.LowiStorePicks = { open: openPanel, close, tabsHTML: active => { if (!ov) return ''; tabOver = active || ''; try { return tabsHTML(); } finally { tabOver = ''; } }, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)), tab: () => (onSz() ? 'sz' : onKit() ? 'kitchen' : onHome() ? 'home' : 'shop'), kitchen: () => (K ? (kitLoad(), K.view(kit)) : []), setTab: id => { if (id === 'kitchen' && KG()) { if (ov) close(); KG().open(); return; } if (ov) setTab(id); else { tab = ({ sz: 'sz', kitchen: 'kitchen', home: 'home' })[id] || 'shop'; try { localStorage.setItem(TKEY, tab); } catch (e) {} } } };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

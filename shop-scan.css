@@ -14,7 +14,9 @@
 .b3-cam .ss-pill svg { width: 17px; height: 17px; }
 .b3-cam .ss-pill[aria-pressed="true"] { border-color: var(--ss-rim); background: var(--ss-wide), rgba(10, 60, 150, .55); box-shadow: var(--ss-sh); }
 .b3-cam .ss-pill:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 2px; }
-.b3-cam .b3-ctop .b3-ctitle { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.b3-cam .b3-ctop .b3-ctitle { min-width: 0; overflow-wrap: anywhere; line-height: 1.15; }
+/* Oct 28 2026 slim structure (one scanner): the same title "Barcode scannen" next to the Shopping switch wraps instead of being cut */
+.b3-cam.b3-shop .b3-ctop .b3-ctitle, .b3-cam .b3-ctop:has(.ss-pill) .b3-ctitle { font-size: 15px; }
 
 /* shopping mode: the capture actions step aside; search by name and the cart count take their place */
 .b3-cam .ss-row { display: none; }
@@ -26,7 +28,8 @@
     border: 1.5px solid var(--ss-rim); background: var(--ss-wide), rgba(8, 20, 48, .42); box-shadow: var(--ss-sh);
     -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4);
 }
-.b3-cam .ss-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.b3-cam .ss-chip span { white-space: normal; text-align: center; line-height: 1.1; overflow-wrap: anywhere; } /* Oct 28 2026: wraps on small phones, never cut */
+@media (max-width: 400px) { .b3-cam .ss-chip { padding: 4px 8px; gap: 5px; font-size: 13px; } }
 .b3-cam .ss-chip svg { width: 18px; height: 18px; flex: none; }
 .b3-cam .ss-chip .ss-count { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; display: inline-grid; place-items: center; font-size: 12.5px; background: rgba(255, 255, 255, .14); }
 .b3-cam .ss-cartchip.has .ss-count { background: #0a84ff; }

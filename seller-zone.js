@@ -47,8 +47,7 @@
             return '<section class="sc-sec sz-swap" data-sz-kind="' + kind + '"><h4>' + esc(T('Buy this instead', 'Kauf lieber das', 'Mejor compra esto')) + '</h4>' +
                 '<div class="sz-row">' + items.map(x => '<a class="sz-mini" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer" data-sz-link="' + esc(x.id) + '">' +
                     photo(x, 'sz-ph-m') + '<b>' + esc(x.n) + '</b><small>' + esc(x.b) + '</small>' + verdictPill(x.v) + '</a>').join('') + '</div>' +
-                (DATA.NOTE[kind] ? '<p class="sz-note">' + esc(tx(DATA.NOTE[kind])) + '</p>' : '') +
-                '<button type="button" class="sz-all" data-sz-open="' + kind + '">' + esc(T('See all in ', 'Alle im ', 'Ver todo en ') + NAME()) + ' \u203a</button></section>';
+                (DATA.NOTE[kind] ? '<p class="sz-note">' + esc(tx(DATA.NOTE[kind])) + '</p>' : '') + '</section>'; /* Oct 28 2026 slim structure (X-30): no "See all" page, the buys stay in the scan result */
         } catch (x) { return ''; }
     }
     /* ---- Shop panel entry ---- */
@@ -136,7 +135,16 @@
         const c = t.closest('[data-sz-cat]'); if (c) { cat = c.getAttribute('data-sz-cat'); paint(); return; }
         const r = t.closest('[data-sz-reg]'); if (r) { region = r.getAttribute('data-sz-reg'); try { localStorage.setItem(RKEY, region); } catch (x) {} paint('keep'); return; }
     }
+    /* Oct 28 2026 slim structure (X-30 merged into S-01 "Barcode scannen"): the Seller Zone is no page of its own any more, its buys
+       already sit in the scan result. An old call to open() shows that part of the open scan result, or opens the one scanner. */
     function open(kind) {
+        try {
+            const card = D.querySelector('#b3Card');
+            if (card) { const sw = card.querySelector('.sz-swap'); (sw || card).scrollIntoView({ block: sw ? 'center' : 'start', behavior: 'smooth' }); return; }
+            if (W.LowiDex && W.LowiDex.scan) { W.LowiDex.scan(); return; }
+        } catch (x) {}
+    }
+    function openPage(kind) {
         setCat(kind);
         lastFocus = D.activeElement;
         if (!ov) {

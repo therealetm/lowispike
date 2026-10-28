@@ -14729,6 +14729,8 @@ html[data-ui=light] .b3-q{background:radial-gradient(circle,#59607a,#2a2f40)}
 .nf2 .nf-act{position:sticky;bottom:0;z-index:2;display:flex;align-items:center;gap:10px;margin:12px -6px 0;padding:8px 6px 2px;background:linear-gradient(180deg,transparent,var(--r2-sheet,rgba(14,20,40,.96)) 22%)}
 .nf2 .nf-act .b3-catch{flex:1;margin:0;min-height:50px;display:flex;align-items:center;justify-content:center}
 .nf2 .nf-act .b3-skip{flex:none;margin:0;min-height:44px;padding:0 8px;white-space:nowrap}
+.nf2 .nf-act .b3-newprod{flex:none;margin:0 0 0 auto;min-height:44px;padding:0 8px;white-space:nowrap}
+.b3-newprod{display:block;margin-top:6px}
 .nf2 .b3-tick>b,.nf2 .b3-tick>small{display:block}
 @media (max-height:720px){.nf2 .ne-exl,.nf2 .b3-or{display:none}.nf2 .nf-row{margin-top:6px}.nf2 .nf-brand{margin-top:6px}.nf2 .b3-mq{margin:6px 0 4px}.nf2 .nf-sub{margin-top:1px}.nf2 .b3-tick{min-height:44px;height:44px}.nf2 .nf-act{margin-top:4px;padding-top:6px}.nf2 .ne-box{margin-top:6px;row-gap:5px}.nf2 .ne-box>label{display:none}.nf2 .b3-nftile{min-height:48px}.nf2 .nf-brand{height:42px;min-height:42px}.nf2 .nf-act .b3-catch{min-height:48px}}
 /* the keyboard is open: the sheet sits on top of it and scrolls, the footer stays */
@@ -15584,7 +15586,9 @@ function kbWire(el){ const i = $("#b3Bc", el); if (!i) return; const f = () => r
    shopping mode. The same camera and barcode reading; a hit holds the scan (the stream stays on) and shop-scan.js shows one big
    verdict and Add to cart over the camera; shopResume() scans the next product at once. */
 function shopMode(on){ if (!CAM) return false; CAM.shop = !!on; CAM.el.classList.toggle("b3-shop", CAM.shop); if (!CAM.shop) { CAM.hold = false; CAM.done = false; }
-  const tt = $(".b3-ctitle", CAM.el); if (tt) tt.textContent = CAM.shop && window.LowiShopScan ? LowiShopScan.title() : t("scanBig"); return CAM.shop; }
+  /* Oct 28 2026 slim structure (F-04 merged into S-01): one scanner for everything. The kitchen / shop scan is the same Scan screen
+     with the same title; shopping is only the switch (pill) inside it, never a second "Einkaufs-Scan" screen. */
+  const tt = $(".b3-ctitle", CAM.el); if (tt) tt.textContent = t("scanBig"); return CAM.shop; }
 function shopResume(){ if (!CAM) return; CAM.hold = false; CAM.done = false; CAM.el.classList.remove("got"); if (CAM.lastHit) CAM.lastHit.at = performance.now();
   if (CAM.stream) { msgState("live"); msg(t("aim")); cancelAnimationFrame(CAM.raf); loop(); } }
 /* Oct 23 name check in the camera: type a name (grapes, Erdbeeren, a product name), see the verdict live under the field, then
@@ -15847,7 +15851,7 @@ function simpleCardHTML(p){
     '<details class="sc-more" open><summary>' + esc(sct("details")) + '</summary>' +
       (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + (window.LowiFoodCard ? LowiFoodCard.detailsHTML(p, LI(), g) : "") + factsHTML(p.facts) + fillNoteHTML(p) + (p.nameEst ? "" : typeof lpAskHTML === "function" ? lpAskHTML(p) : "") +
       '<div class="tiny dim b3-meta">' + [p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div>' +
-      (window.LowiDiscovery ? '<button type="button" class="r2-link b3-label" data-b3="label">' + esc(["Label details & evidence", "Etikett-Details & Belege", "Detalles de la etiqueta"][LI()]) + '</button>' : "") +
+      (window.LowiDiscovery ? '<button type="button" class="r2-link b3-label" data-b3="label">' + esc(["Label details & evidence", "Etikett-Details & Belege", "Detalles de la etiqueta"][LI()]) + '</button>' + newProdHTML() : "") +
       '<div class="tiny dim b3-legal">' + esc(t("legal")) + '</div></details>' + deals +
     '<button type="button" class="sc-lists" data-sc="lists">' + esc(sct("lists")) + '</button></div>'; }
 function actsHTML(p){ const mine = isMine(p);
@@ -15897,10 +15901,13 @@ function manualHTML(p){ const off = !!p.offline;
     (off ? "" : nfSnapHTML() + '<div id="b3NfSnapLive" aria-live="polite"></div>' +
       '<div class="tiny dim b3-fl ne-exl">' + esc(net("exactH")) + '</div>' +
       '<div class="nf-row">' + deepLink("b3-nfdeep b3-nftile", 'id="b3NfDeep"', t("deepNf"), t("nfDeepS")) + nfPhotoHTML(p) + '</div>' +
-      '<div class="nf-act"><button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button></div></div>') +
+      '<div class="nf-act"><button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button>' + newProdHTML() + '</div></div>') +
     (!off ? "" : '<input class="input nf-brand" id="b3MBrand" maxlength="60" placeholder="' + esc(t("brandPh")) + '" value="' + esc(p.brand || "") + '" style="margin-top:10px">' +
     '<div class="small b3-mq">' + esc(t("nfQ")) + '</div><div class="b3-ticks">' + ["sugar", "sweet", "carb", "none"].map(nfTick).join("") + '</div>' +
     '<div class="nf-act"><button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button><button class="r2-btn pri big b3-catch" data-b3="mcatch" id="b3MCatch" disabled><span class="b3-bub" aria-hidden="true"></span>' + esc(t("catch")) + '</button></div></div>'); }
+/* Oct 28 2026 slim structure (X-09 merged into S-01): "report / document a new product" (only on this phone) lives right in the
+   scan result, no hidden form reachable only by code. It opens the same LowiDiscovery form as a panel over the scanner. */
+function newProdHTML(){ return typeof window !== "undefined" && window.LowiDiscovery && window.LowiDiscovery.openForm ? '<button type="button" class="r2-link b3-newprod" data-b3="newprod">' + esc(["Report this product", "Produkt melden", "Comunicar producto"][LI()]) + '</button>' : ""; }
 function nfSnapHTML(){
   return '<label class="b3-nftile nf-ph nf-snap"><input type="file" accept="image/*" capture="environment" id="b3NfSnap" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"><span class="nf-cam" aria-hidden="true"></span><span><b>' + esc(net("snap")) + '</b><small>' + esc(net("snapS")) + '</small></span></label>'; }
 /* prod-verdict (Oct 14, 2026): a product picked anywhere (Cook > Products shuffle) opens this same verdict card.
@@ -16117,6 +16124,7 @@ document.addEventListener("click", e => {
     case "show": { const p = findK(b.dataset.k); if (p) reveal(Object.assign({}, p), true); break; }
     case "catch": if (CUR) catchCur(b, CUR); break;
     case "label": if (CUR && window.LowiDiscovery) LowiDiscovery.openProduct(CUR); break;
+    case "newprod": if (window.LowiDiscovery && LowiDiscovery.openForm) LowiDiscovery.openForm(CUR && CUR.id ? "correct" : "first", Object.assign({}, CUR || {})); break; /* X-09 */
     case "lphoto": if (CUR && window.LowiLabelPhotos) { const base = CUR; LowiLabelPhotos.open(base, q => { if (REV) { try { R2.close(REV); } catch(x){} } reveal(q, true); }); } break;
     case "eat": eatCur(b); break;
     case "nebyname": analyseByName(b); break; /* Oct 23 name check */

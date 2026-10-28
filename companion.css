@@ -207,3 +207,10 @@ html body .cf-misty .cf-step.cur .cf-sm { filter: none !important; border-color:
     .cf-misty .cf-step { min-height: 86px; }
 }
 @media (prefers-reduced-motion: reduce) { html body .cf-misty .cf-step.cur .cf-sm { animation: none !important; } }
+
+/* Oct 28 2026 (Emmanuel: Aussehen only closed with the X): the top bar is a drag handle (pull down = close, see companion.js
+   gStart); the list keeps its own scrolling. While dragging, the dimmed backdrop fades with the pull. */
+.cf-ov .cf-head, .cf-ov .cf-panel > .r2-pback-row { touch-action: none; }
+.cf-ov .cf-panel.cf-misty::before { width: 44px; height: 5px; margin-left: -22px; background: rgba(150, 220, 255, .5); }
+.cf-ov.cf-dragging { background: rgba(3, 8, 24, calc(.72 * var(--cf-pull, 1))); }
+.cf-ov.cf-dragging .cf-panel { will-change: transform; }

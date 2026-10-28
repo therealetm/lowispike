@@ -327,7 +327,7 @@
     function open() {
         if (V.ov) return V.ov;
         tickCalm();
-        V.back = D.activeElement; V.msg = ''; V.pend = null; V.pickOpen = false;
+        V.back = D.activeElement; V.msg = ''; V.pickOpen = !!V.pend; /* Oct 28: a half-picked style survives a close (swipe, X, back) */
         V.ov = D.createElement('div');
         V.ov.className = 'cf-ov';
         D.body.appendChild(V.ov);
@@ -372,9 +372,82 @@
     /* Oct 28 2026 (slim structure batch 1, "one back press returns to where you came from"): opened from the companion card, Escape /
        back steps back to the card instead of closing both. R2 adopted this panel over the card, so R2.back closes it and brings
        the card back; without a card under it, it simply closes. */
-    D.addEventListener('keydown', e => { if (!V.ov || e.key !== 'Escape') return; e.stopPropagation();
+    function dismiss() {
         try { const R = W.LowiR2; if (R && R.back && R.top && R.top() === V.ov) { R.back(V.ov); if (!V.ov) return; } } catch (x) { }
-        close(); }, true);
+        close();
+    }
+    D.addEventListener('keydown', e => { if (!V.ov || e.key !== 'Escape') return; e.stopPropagation(); dismiss(); }, true);
+
+    /* Oct 28 2026 (Emmanuel, call: "bei Aussehen kann ich nicht zurück und nicht runterziehen, nur das X"). The panel already drew
+       an iOS grabber but nothing listened. Now, like every iOS sheet:
+       - pull it down by the top (grabber / title row), or anywhere in the list once the list is scrolled to the top;
+       - swipe right from the left edge = back (to the companion card when it was opened from there, else closed);
+       a short pull springs back. The X stays. Scrolling inside the list is untouched: a pull only starts at scrollTop 0 and
+       moving down; moving up scrolls. Touch events (non-passive, so iOS does not rubber-band first); a mouse (desktop) can
+       drag the top bar and the edge. Every choice in this panel saves at once, and a half-picked style (V.pend) is kept
+       for the next open, so a swipe loses nothing. */
+    const EDGE = 26, NOGRAB = 'input[type=range], textarea, select, [contenteditable], .no-pull';
+    let G = null, eatClick = 0;
+    const reduceMo = () => { try { return W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+    function gStart(x, y, target, kind) {
+        if (G || !V.ov) return;
+        const p = V.ov.querySelector('.cf-panel'); if (!p || !target || !p.contains(target)) return;
+        if (target.closest && target.closest(NOGRAB)) return;
+        const r = p.getBoundingClientRect(), sc = p.querySelector('.cf-scroll');
+        const inScroll = !!(sc && sc.contains(target)), top = !inScroll || (target.closest && target.closest('.cf-head, .r2-pback-row'));
+        const pull = top || (kind === 'touch' && sc && sc.scrollTop <= 0), edge = x - r.left <= EDGE;
+        if (!pull && !edge) return;
+        G = { kind, x0: x, y0: y, lx: x, ly: y, lt: performance.now(), v: 0, mode: '', pull, edge, p, sc, inScroll, h: r.height, w: r.width };
+    }
+    function gMove(x, y, e) {
+        const g = G; if (!g) return;
+        const dx = x - g.x0, dy = y - g.y0;
+        if (!g.mode) {
+            /* claim the very first move in our direction, or iOS starts its own scroll / bounce and stops letting go */
+            const downward = dy > 0 && dy >= Math.abs(dx), rightward = dx > 0 && dx > Math.abs(dy) * 1.2;
+            if (g.pull && g.inScroll && g.sc.scrollTop > 0) g.pull = false;
+            if (!(g.pull && downward) && !(g.edge && rightward)) { if (Math.abs(dx) > 6 || Math.abs(dy) > 6) G = null; return; }
+            if (e && e.cancelable) e.preventDefault();
+            if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+            g.mode = g.edge && rightward ? 'edge' : 'pull';
+            g.p.style.transition = 'none'; g.p.style.animation = 'none'; V.ov.classList.add('cf-dragging');
+        }
+        if (e && e.cancelable) e.preventDefault();
+        const now = performance.now(), dt = Math.max(1, now - g.lt), d = g.mode === 'edge' ? x - g.lx : y - g.ly;
+        g.v = .7 * (d / dt) + .3 * g.v; g.lx = x; g.ly = y; g.lt = now;
+        const off = Math.max(0, g.mode === 'edge' ? dx : dy), size = g.mode === 'edge' ? g.w : g.h;
+        g.p.style.transform = g.mode === 'edge' ? 'translate3d(' + off + 'px,0,0)' : 'translate3d(0,' + off + 'px,0)';
+        V.ov.style.setProperty('--cf-pull', String(Math.max(0, 1 - off / size)));
+    }
+    function gEnd(x, y, cancel) {
+        const g = G; G = null; if (!g || !g.mode) return;
+        eatClick = Date.now();
+        const dx = Math.max(0, x - g.x0), dy = Math.max(0, y - g.y0), p = g.p;
+        const go = !cancel && (g.mode === 'edge' ? (dx > g.w * 0.33 || (g.v > 0.45 && dx > 30)) : (dy > Math.min(140, g.h * 0.25) || (g.v > 0.5 && dy > 40)));
+        const reset = () => { p.style.transition = ''; p.style.transform = ''; p.style.animation = ''; if (V.ov) { V.ov.classList.remove('cf-dragging'); V.ov.style.removeProperty('--cf-pull'); } };
+        if (!go) {
+            if (reduceMo()) { reset(); return; }
+            p.style.transition = 'transform .22s cubic-bezier(.22,.8,.28,1)'; p.style.transform = 'translate3d(0,0,0)';
+            if (V.ov) V.ov.style.setProperty('--cf-pull', '1');
+            setTimeout(reset, 230); return;
+        }
+        try { navigator.vibrate && navigator.vibrate(8); } catch (e) { }
+        if (reduceMo()) { dismiss(); return; }
+        p.style.transition = 'transform .18s cubic-bezier(.22,.8,.28,1)';
+        p.style.transform = g.mode === 'edge' ? 'translate3d(' + (g.w + 20) + 'px,0,0)' : 'translate3d(0,' + (g.h + 20) + 'px,0)';
+        if (V.ov) V.ov.style.setProperty('--cf-pull', '0');
+        const ov = V.ov; setTimeout(() => { if (V.ov === ov) dismiss(); }, 180);
+    }
+    D.addEventListener('touchstart', e => { if (!V.ov || e.touches.length !== 1) { G = null; return; } const t = e.touches[0]; gStart(t.clientX, t.clientY, e.target, 'touch'); }, { capture: true, passive: true });
+    D.addEventListener('touchmove', e => { if (!G || G.kind !== 'touch') return; if (e.touches.length !== 1) { gEnd(G.lx, G.ly, true); return; } const t = e.touches[0]; gMove(t.clientX, t.clientY, e); }, { capture: true, passive: false });
+    D.addEventListener('touchend', e => { if (!G || G.kind !== 'touch') return; const t = e.changedTouches[0]; gEnd(t ? t.clientX : G.lx, t ? t.clientY : G.ly, false); }, true);
+    D.addEventListener('touchcancel', () => { if (G && G.kind === 'touch') gEnd(G.lx, G.ly, true); }, true);
+    D.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' || e.button !== 0) return; gStart(e.clientX, e.clientY, e.target, 'mouse'); }, true);
+    D.addEventListener('pointermove', e => { if (G && G.kind === 'mouse') gMove(e.clientX, e.clientY, e); }, { capture: true, passive: false });
+    D.addEventListener('pointerup', e => { if (G && G.kind === 'mouse') gEnd(e.clientX, e.clientY, false); }, true);
+    D.addEventListener('pointercancel', e => { if (G && G.kind === 'mouse') gEnd(e.clientX, e.clientY, true); }, true);
+    /* the finger lifting after a drag is not a tap on whatever row it ended on */
+    D.addEventListener('click', e => { if (eatClick && Date.now() - eatClick < 350 && V.ov && V.ov.contains(e.target)) { e.preventDefault(); e.stopPropagation(); } eatClick = 0; }, true);
 
     /* entry button next to the wardrobe, and the friends tree */
     /* where people really look: the herb path sheet (herb world > Entwicklung), the wardrobe sheet (> Kleiderschrank), and the old wardrobe grid */

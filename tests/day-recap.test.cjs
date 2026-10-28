@@ -102,7 +102,7 @@ test('the companion never says the same hello twice in a row', () => {
 test('one honest takeaway and one gentle nudge that fit the day', () => {
     const s = C.summarize(full());
     const v = C.view(s, { lang: 'en', name: 'Nova', rnd: () => 0 });
-    assert.match(v.takeaway, /1 of 4 meals/);
+    assert.match(v.takeaway, /1 of your 4 meals/);
     assert.match(v.takeaway, /likely blood sugar spike/);
     assert.match(v.nudge, /^Tomorrow/);
     const calm = C.summarize(Object.assign(full(), { logs: [{ ts: at(9, 0), day: DAY, lvl: 'low' }, { ts: at(13, 0), day: DAY, lvl: 'low' }] }));
@@ -118,7 +118,7 @@ test('the stats row: only parts with something to show, in the right language', 
     const v = C.view(C.summarize(full()), { lang: 'de', name: 'Nova', rnd: () => 0 });
     const ks = v.stats.map(x => x.k);
     assert.deepEqual(ks, ['meals', 'gap', 'move', 'water', 'xp']);
-    assert.equal(v.stats.find(x => x.k === 'gap').n, '12,8 h');
+    assert.equal(v.stats.find(x => x.k === 'gap').n, '12,8 Std.');
     assert.equal(v.stats.find(x => x.k === 'xp').n, '+85');
     assert.ok(v.levelUp, 'grew a level today');
     const e = C.view(C.summarize({ now: NOW }), { lang: 'en', name: 'Nova', rnd: () => 0 });

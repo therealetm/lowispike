@@ -55,7 +55,9 @@
     function html() {
         const { sum, v } = build(), a = aura() || {};
         const stats = v.stats.map(x => '<li class="drc-st ' + esc(x.tone) + '" data-k="' + esc(x.k) + '"><b class="num">' + esc(x.n) + '</b><span>' + esc(x.b) + '</span>' + (x.sub ? '<small>' + esc(x.sub) + '</small>' : '') + '</li>').join('');
-        const meals = v.meals.length ? '<ul class="drc-meals">' + v.meals.map(m => '<li><i class="drc-dot ' + DOT[m.v] + '" aria-hidden="true"></i>' + esc(m.t || '\u2026') + '</li>').join('') + '</ul>' : '';
+        /* Oct 28 2026: a coloured dot alone meant nothing to Emmanuel; each meal now says its time and, in words, what the app
+           estimated for it (or "nicht bewertet") */
+        const meals = v.meals.length ? '<ul class="drc-meals">' + v.meals.map(m => '<li><i class="drc-dot ' + DOT[m.v] + '" aria-hidden="true"></i>' + (m.time ? '<time class="num">' + esc(m.time) + '</time>' : '') + '<span class="drc-mt">' + esc(m.t || '\u2026') + '</span><em class="drc-tag ' + DOT[m.v] + '">' + esc(m.tag || '') + '</em></li>').join('') + '</ul>' : '';
         const catchUp = v.catchUp && W.LowiEveningCatchup && typeof W.LowiEveningCatchup.open === 'function'
             ? '<button type="button" class="drc-btn ghost" data-drc="catchup">' + esc(v.labels.catchUp) + '</button>' : '';
         return '<section class="drc" id="dayRecap" data-noi18n data-mood="' + esc(v.mood) + '" style="--a:' + esc(a.a || '#7cf0c0') + ';--b:' + esc(a.b || '#5ab0ff') + '" aria-labelledby="drcTitle">' +

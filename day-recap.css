@@ -42,3 +42,18 @@
 @media (prefers-reduced-motion: reduce) { .drc-orb { animation: none; } .drc-btn:active { transform: none; } }
 /* the companion card's fourth bubble (misty-hub.js todayItems 'recap') */
 .mh-today.n4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* Oct 28 2026 (Emmanuel did not understand the numbers): each stat is one readable row, number left, then what it is and
+   what it means; meals show time, name and the app's estimate in words. */
+.drc-stats { grid-template-columns: 1fr; gap: 6px; }
+.drc-st { display: grid; grid-template-columns: minmax(64px, auto) 1fr; column-gap: 12px; row-gap: 1px; align-items: baseline; padding: 9px 12px; }
+.drc-st b { grid-row: span 2; font-size: 19px; white-space: nowrap; }
+.drc-st span { font-size: 14px; color: #e6f0ff; font-weight: 600; overflow-wrap: break-word; hyphens: manual; }
+.drc-st small { grid-column: 2; font-size: 12.5px; overflow-wrap: break-word; }
+.drc-meals li { white-space: normal; align-items: baseline; flex-wrap: wrap; column-gap: 8px; row-gap: 0; }
+.drc-meals li time { flex: none; font-size: 12.5px; color: #9fb6d6; }
+.drc-meals .drc-mt { flex: 1 1 8em; min-width: 0; overflow-wrap: break-word; }
+.drc-meals .drc-tag { flex: 1 0 100%; padding-left: 17px; font-style: normal; font-size: 12px; color: #9fb6d6; }
+.drc-meals .drc-tag.warn { color: #ffb48c; }
+.drc-meals .drc-tag.mid { color: #ffd479; }
+.drc-note { font-size: 12px; line-height: 1.4; }

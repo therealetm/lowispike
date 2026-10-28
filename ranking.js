@@ -103,8 +103,15 @@
     /* BH-006 name chain (same helper as companion.js / misty-hub.js): own companion > a typed name > Misty */
     function companionName() { const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(W.LowiHerbIdentity && W.LowiHerbIdentity.autoName && W.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = W.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = W.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || 'Misty'; }
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    /* 28 Oct 2026 (Emmanuel: "When I open Rangliste ... I would like it to open at week because it always opens at Gesamt. Barely
+       anyone cares about Gesamt. They care about month, but they more care about this week ... that's just where it opens."):
+       every visit starts on Woche. The old code kept the last period forever (localStorage 'lowispike.ranking.period'), so one look
+       at Gesamt made every later visit open on Gesamt. Now Woche / Monat / Gesamt is only kept while you stay on the board; opening
+       the Ranking tab again or coming back to Community starts on the week. Only a board asked for on purpose (Misty's rank pill,
+       setPeriod) opens that one board, once. The stale saved choice is cleared. */
     const KEY = 'lowispike.ranking.period';
-    let per = (function () { try { return K.period(localStorage.getItem(KEY) || 'w'); } catch (e) { return 'w'; } })();
+    try { localStorage.removeItem(KEY); } catch (e) { }
+    let per = 'w', asked = null;   /* asked: { k, t } a board asked for on purpose, good for the visit that opens in the next 3 s */
     let box = null, looks = {}, fetchedAt = 0, fetching = false;
     const CC = () => W.LowiCompanionCore, LC = () => W.LowiCompanion, R3 = () => W.LowiR3;
     function people() { try { const r = R3(); return (r && r.everyone) ? r.everyone() : []; } catch (e) { return []; } }
@@ -259,7 +266,7 @@
         if (b.__rk) return; b.__rk = 1;
         b.addEventListener('click', e => {
             const t = e.target.closest('[data-rk]'); if (!t || !b.contains(t)) return;
-            if (t.dataset.rk === 'per') { per = K.period(t.dataset.k); try { localStorage.setItem(KEY, per); } catch (er) { } render(b); const n = b.querySelector('.rk-segb[aria-selected="true"]'); if (n) n.focus({ preventScroll: true }); return; }
+            if (t.dataset.rk === 'per') { per = K.period(t.dataset.k); render(b); const n = b.querySelector('.rk-segb[aria-selected="true"]'); if (n) n.focus({ preventScroll: true }); return; }
             if (t.dataset.rk === 'info') { openInfo(t); return; }
             if (t.dataset.rk === 'ladder') { openLadder(t); return; }
             /* 23 Oct, 15:00 (Eman: "only if I click on someone do I see the comparison of the stats"): a companion opens You vs them,
@@ -552,6 +559,7 @@
        other reason (looks or bots arriving, a language change) swaps the board in place without motion. */
     function render(b, fresh) {
         if (!b) return; box = b; wire(b);
+        if (fresh) { per = asked && Date.now() - asked.t < 3000 ? asked.k : 'w'; asked = null; }
         const r = html(), key = per + '|' + lang() + '|' + r.h.length + '|' + r.h;
         if (b.__rkH !== key) {
             const sw = !fresh && !!b.__rkH && b.__rkPer != null && b.__rkPer !== per && !!b.querySelector('.rk');
@@ -581,7 +589,18 @@
     }
     /* the server bot list arrived or changed (bot-accounts.js): repaint an open board so bots drop out at once */
     try { W.addEventListener('lowi-bots', () => { if (box && box.isConnected) render(box); }); } catch (e) { }
-    W.LowiRanking = { render, open, period: () => per, setPeriod: k => { per = K.period(k); if (box && box.isConnected) render(box); }, _html: () => html().h, openLadder, closeLadder, _ladder: () => ladderHTML(),
+    /* leaving Community resets the board to the week (the Ranking pane is kept between visits, so its tab may not count as freshly
+       opened next time); drawn again at once, hidden, so the next visit shows the week without the switch motion */
+    function left() { asked = null; if (per === 'w') return; per = 'w'; if (box && box.isConnected) render(box, true); }
+    (function watchCommunity(n) {
+        try {
+            const p = D.getElementById && D.getElementById('tab-foryou');
+            if (!p || typeof W.MutationObserver !== 'function') { if (p == null && n < 40 && W.setTimeout) setTimeout(() => watchCommunity(n + 1), 500); return; }
+            let was = p.classList.contains('active');
+            new W.MutationObserver(() => { const on = p.classList.contains('active'); if (was && !on) left(); was = on; }).observe(p, { attributes: true, attributeFilter: ['class'] });
+        } catch (e) { }
+    })(0);
+    W.LowiRanking = { render, open, period: () => per, setPeriod: k => { per = K.period(k); asked = { k: per, t: Date.now() }; if (box && box.isConnected) render(box); }, _left: left, _html: () => html().h, openLadder, closeLadder, _ladder: () => ladderHTML(),
         openInfo, closeInfo, _info: () => infoHTML(),
         openCompare: openCmp, closeCompare: closeCmp, _compare: (who, k) => { if (!who) return ''; const a = cmpWho, b = cmpK; cmpWho = who; cmpK = K.period(k || per); try { return pairHTML(who); } finally { cmpWho = a; cmpK = b; } }, _mixes: m => { if (m) mixes = m; return mixes; } };
 })();

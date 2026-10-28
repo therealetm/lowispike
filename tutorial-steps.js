@@ -368,7 +368,7 @@
             text: {
                 en: 'The Ranking, Add a friend and the chat show only real people. Bot posts like Nibblo\'s meals live in For You.',
                 de: 'Ranking, Freund hinzufügen und der Chat zeigen nur echte Menschen. Bot-Posts wie Nibblos Mahlzeiten findest du in Für dich.',
-                es: 'El Ranking, Añadir un amigo y el chat muestran solo personas reales. Las publicaciones de bots, como las comidas de Nibblo, están en Para ti.'
+                es: 'El Ranking, Añadir un amigo y el chat muestran solo personas reales. Los posts de bots, como las comidas de Nibblo, están en Para ti.'
             }
         },
         {

@@ -6,8 +6,10 @@
 -- Run in the SQL editor in this order. Bots = profiles.bot = true (server flag from the sign-up e-mail) or Nibblo's fixed id.
 -- Never by name or text. Posts (For You) are not touched.
 
--- 0) look first: how many rows, and does any person's reply point at a bot message (reply_to is plain text, no foreign key in
---    community_chat_20261015.sql, so deleting is safe; the app shows such a quote as "Message unavailable")
+-- 0) look first: how many rows, and the constraints on messages (the table was made in the dashboard, its schema is not in this
+--    repo). If reply_to has a foreign key that blocks deletes, stop and decide; the app shows a reply whose original is gone as
+--    "Message unavailable".
+--    select conname, pg_get_constraintdef(oid) from pg_constraint where conrelid = 'public.messages'::regclass;
 select count(*) filter (where p.bot or m.user_id = '59bb3615-b344-4c45-ab0f-0a5de5cd8df3') as bot_msgs, count(*) as all_msgs
   from public.messages m left join public.profiles p on p.id = m.user_id;
 

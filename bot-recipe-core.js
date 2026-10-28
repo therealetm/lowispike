@@ -99,6 +99,8 @@
     }
     /* the buttons. o: {key, id?, name?, foods?, saved?, kitchen:'add'|'have'|'done', added?, undo?, count?}
        id = Recipe Book id (bot recipe): all four. No id but foods (a person's meal): Add to kitchen only. */
+    let KITCHEN_ON = false;
+    function kitchenOn(v) { KITCHEN_ON = !!v; return KITCHEN_ON; } /* tests keep the dormant kitchen pill honest */
     function rowHTML(o, l) {
         o = o || {};
         const id = o.id ? String(o.id) : '';
@@ -121,12 +123,15 @@
             /* BH-041: Add to kitchen turns into the status + Undo in place; data-spend keeps a double tap from undoing it at once */
             kit = btn('kitchen', '🧺', t('kitchen', l), o.count ? t('kitchenA', l, o.count) : t('kitchenA1', l), ' data-spend');
         }
-        if (!id) return '<div class="crb-row crb-one" data-crb-row' + k + sig + '>' + kit + '</div>';
+        /* Oct 28 2026 (Emmanuel: "schmeiß die Küche raus"): the Kitchen is gone, so recipe rows carry no Add to kitchen pill. A row
+           that was only that pill (a member's meal without a recipe id) shows nothing. KITCHEN_ON brings it back in one place. */
+        if (!KITCHEN_ON) kit = '';
+        if (!id) return kit ? '<div class="crb-row crb-one" data-crb-row' + k + sig + '>' + kit + '</div>' : '';
         return '<div class="crb-row" data-crb-row' + k + sig + '>' +
             btn('open', '📖', t('open', l), t('openA', l)) +
             btn('cook', '🍳', t('cook', l), t('cookA', l)) +
             btn('save', o.saved ? '★' : '☆', o.saved ? t('saved', l) : t('save', l), t('saveA', l), ' aria-pressed="' + (o.saved ? 'true' : 'false') + '"') +
-            '<span class="crb-kwrap">' + kit + '</span></div>';
+            (kit ? '<span class="crb-kwrap">' + kit + '</span>' : '') + '</div>';
     }
-    return Object.freeze({ STR, t, foods, foodsOfDetail, inKitchen, status, addAll, undo, rowHTML, bare });
+    return Object.freeze({ STR, t, foods, foodsOfDetail, inKitchen, status, addAll, undo, rowHTML, bare, kitchenOn });
 });

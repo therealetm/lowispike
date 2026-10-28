@@ -9,6 +9,7 @@ const assert = require('node:assert');
 const fs = require('fs'), path = require('path');
 const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const C = require('../bot-recipe-core.js');
+C.kitchenOn(true); /* Oct 28 2026: the app shows no kitchen pill any more (Kitchen removed); these tests keep its dormant code honest */
 const css = read('bot-recipe.css').replace(/\/\*[\s\S]*?\*\//g, '');
 /* every block whose selector list names sel, joined */
 const rule = sel => { let out = '', m; const re = /([^{}]+)\{([^}]*)\}/g; while ((m = re.exec(css))) if (m[1].split(',').map(s => s.trim()).includes(sel)) out += m[2] + ';'; return out; };

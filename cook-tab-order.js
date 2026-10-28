@@ -8,7 +8,9 @@
    renders. Anything that opens Cook on a given game (LowiFood.setView: Kitchen links/tour, Help me pick, Swaflo) wins. */
 (function (root) {
     'use strict';
-    const IDS = ['kitchen', 'shuffle', 'swipe'];
+    /* Oct 28 2026 (Emmanuel: "schmeiß die Küche raus"): the Kitchen game is gone, Cook is Shuffle | Swipe. A saved order that still
+       names 'kitchen' loses it in normalize(), so nobody lands on an empty tab. */
+    const IDS = ['shuffle', 'swipe'];
     const KEY = 'lowispike.cook.tabs', VIEW = 'lowi.cook.view';
     const FRESH_MS = 3000;
 

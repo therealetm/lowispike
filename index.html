@@ -2921,7 +2921,6 @@ window.LowiG1 = {mini, steps:() => stepList().map(x => x.k), start:(o) => { /* O
 })();
 </script>
 <script src="kitchen-core.js?v=20261028-183907"></script>
-<script src="kitchen-game-core.js?v=20261028-183907"></script>
 <style id="homecss">
 /* ===== G1 part 2: simpler Today ===== */
 #tab-home .g1-lead{margin-top:6px;font-size:15px;line-height:1.35;font-weight:600;color:var(--muted,rgba(255,255,255,.72))}
@@ -9268,9 +9267,9 @@ const ckGet = (k, d, ok) => { try { const v = localStorage.getItem(k); return ok
 const ckSet = (k, v) => { try { localStorage.setItem(k, v); } catch(e){} };
 const fSrc = () => ckGet(CKK.src, "book", ["book", "community", "products"]);
 const fCatSel = () => ckGet(CKK.cat, "all", ["all", "meal", "sweet"]);
-const ckOrder = () => (window.LowiCookTabs ? window.LowiCookTabs.order() : ["kitchen", "shuffle", "swipe"]);
-const ckFirst = () => (window.LowiCookTabs ? window.LowiCookTabs.first() : (window.LowiKitchenGame ? "kitchen" : "shuffle"));
-const fView = () => ckGet(CKK.view, ckFirst(), ["shuffle", "swipe", "kitchen"]); /* Oct 26: Kitchen (kitchen-game.js); later that day Kitchen became the FIRST game and the order is the user's own (cook-tab-order.js) */
+const ckOrder = () => (window.LowiCookTabs ? window.LowiCookTabs.order() : ["shuffle", "swipe"]);
+const ckFirst = () => (window.LowiCookTabs ? window.LowiCookTabs.first() : "shuffle");
+const fView = () => ckGet(CKK.view, ckFirst(), ["shuffle", "swipe"]); /* Oct 28 2026 (Emmanuel: "schmeiß die Küche raus"): the Kitchen game is gone, so a saved "kitchen" falls back to the first tab. The order is the user's own (cook-tab-order.js) */
 const ckLang = () => { try { return (window.LowiLang && LowiLang.get()) || localStorage.getItem("lowi.lang") || "de"; } catch(e){ return "de"; } };
 const ckT = (en, de, es) => { const l = ckLang(); return l === "de" ? de : l === "es" ? (es || en) : en; };
 const CKPLATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/></svg>';
@@ -9383,19 +9382,19 @@ function ckBarHTML(){
   const s = fSrc(), c = fCatSel(), v = fView();
   const seg = (k, val, lab, on, ic) => '<button type="button" class="ck-b' + (on ? " on" : "") + '" data-ck="' + k + '" data-v="' + val + '" aria-pressed="' + on + '">' + (ic || "") + '<span>' + lab + '</span></button>';
   const ckViewSeg = {
-    kitchen: () => window.LowiKitchenGame ? seg("view", "kitchen", ckT("Kitchen", "Küche", "Cocina"), v === "kitchen", '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="2.5" width="13" height="19" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 9.5h13M8.8 5.5v2M8.8 12.5v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>') : "",
     shuffle: () => seg("view", "shuffle", ckT("Shuffle", "Mischen", "Mezclar"), v === "shuffle", R5IC.shuffle),
     swipe: () => seg("view", "swipe", ckT("Swipe", "Swipen", "Deslizar"), v === "swipe", R5IC.cards)
   };
+  /* Oct 28 2026 (Emmanuel, two screenshots: Küche felt like a new window, and on Swipen "Alle" and a cut-off "He…" were squeezed next to
+     the switch): one frame for every game. Row 1 is the game switch (Mischen | Swipen), always first and always in the same place.
+     Row 2 is where the picks come from, row 3 the kind (Alle, Herzhaft, Süß) or a short note, each on its own full-width row, so no
+     chip is cut off at 320 px in any language. The Kitchen game was removed the same day (no third tab). */
   return '<div class="ck-bar" id="ckBar" data-noi18n>' +
+    '<div class="ck-view no-page-swipe" role="tablist" aria-label="' + ckT("Game", "Spiel", "Juego") + '">' + ckOrder().map(id => ckViewSeg[id] ? ckViewSeg[id]() : "").join("") +'</div>' +
     '<div class="ck-src" role="group" aria-label="' + ckT("Shuffle from", "Mischen aus", "Mezclar de") + '">' +
       seg("src", "book", ckT("eBook", "E-Book", "eBook"), s === "book") + seg("src", "community", ckT("Recipes", "Rezepte", "Recetas"), s === "community") + seg("src", "products", ckT("Products", "Produkte", "Productos"), s === "products") + '</div>' +
     '<div class="ck-row">' +
       (s === "book" ? '<div class="ck-cats" role="group" aria-label="' + ckT("Kind", "Art", "Tipo") + '">' + seg("cat", "all", ckT("All", "Alle", "Todo"), c === "all") + seg("cat", "meal", ckT("Savory", "Herzhaft", "Salado"), c === "meal") + seg("cat", "sweet", ckT("Sweet", "Süß", "Dulce"), c === "sweet") + '</div>' : '<div class="ck-cats ck-note small muted">' + (s === "community" ? ckT("Meals people shared with a photo", "Geteilte Gerichte mit Foto", "Platos compartidos con foto") : ckT("Products people caught", "Gefangene Produkte", "Productos atrapados")) + '</div>') +
-      /* 26 Oct (MAYA-HANDOFF 0.29): Kitchen | Shuffle | Swipe by default, drawn in the user's own order (hold a tab to move it,
-         cook-tab-order.js + Community's hold-and-drag engine). For You moved to Community (24 Oct 2026). Kitchen: fridge + cabinet
-         game (kitchen-game.js), moved here from Shop. */
-      '<div class="ck-view no-page-swipe" role="tablist" aria-label="' + ckT("Game", "Spiel", "Juego") + '">' + ckOrder().map(id => ckViewSeg[id] ? ckViewSeg[id]() : "").join("") +'</div>' +
     '</div></div>';
 }
 function ckEmptyHTML(){
@@ -9440,8 +9439,7 @@ function fHomeHTML(){
     '<div id="r5Pick">' + (last ? fRevealHTML(last, false) : (fSrc() === "products" && !fSrcPool().length && !ckCatPending() ? fProductsEmptyHTML() : "")) + '</div>' + fTossHTML() + '</div>' +
     /* r3k-home */ dkSectionHTML() +
     '<div id="r3kYes">' + fYesHTML() + '</div>' +
-    /* Oct 26 Kitchen game (kitchen-game.js): shown only while the Kitchen game is picked (kitchen-game.css) */
-    (window.LowiKitchenGame ? '<div id="kgRoot" class="kg-root">' + (fView() === "kitchen" ? LowiKitchenGame.html() : "") + '</div>' : "");
+    "";
 }
 /* prod-verdict (Oct 14, 2026): a caught product pick shows its spike verdict right on Cook and opens the scan verdict card
    (reveal animation, herb, meter, why), with missing label facts filled from Open Food Facts. No label-evidence detour. */
@@ -9809,9 +9807,9 @@ document.addEventListener("click", e => {
 (function(){ const w = document.getElementById("sheetwrap"); if (!w) return; new MutationObserver(() => { if (!w.classList.contains("open") && AU.book && AU.book.on) auBookPause(); }).observe(w, {attributes:true, attributeFilter:["class"]}); })();
 document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches('[data-r5="profile"][role="button"]')) { e.preventDefault(); e.target.click(); } });
 /* ck-src: switching source re-renders Cook; switching the game is instant */
-function ckView(v){ if (v !== "shuffle" && v !== "swipe" && !(v === "kitchen" && window.LowiKitchenGame)) return; ckSet(CKK.view, v); try { document.documentElement.setAttribute("data-ckview", v); } catch(e){}
+function ckView(v){ if (v !== "shuffle" && v !== "swipe") return; ckSet(CKK.view, v); try { document.documentElement.setAttribute("data-ckview", v); } catch(e){}
   r5$$('#ckBar [data-ck="view"]').forEach(b => { const on = b.dataset.v === v; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
-  if (v === "swipe") { dkSync(); dkPaint(); } if (v === "kitchen") { try { LowiKitchenGame.show(); } catch(e){} } ckFitDeck(); try { if (window.LowiG2C) setTimeout(() => LowiG2C.fit(), 30); } catch(e){} }
+  if (v === "swipe") { dkSync(); dkPaint(); } ckFitDeck(); try { if (window.LowiG2C) setTimeout(() => LowiG2C.fit(), 30); } catch(e){} }
 function ckRerender(){ try { if (window.LowiG2C) LowiG2C.close(); } catch(e){} DK.order = []; ckSyncSwaflo();
   try { if (window.LOWI_SHELF && LOWI_SHELF.showTab && (!window.LowiHost || !LowiHost.tab || LowiHost.tab() === "shelf")) { LOWI_SHELF.showTab(); return; } } catch(e){}
   const bar = r5$("#ckBar"); if (bar) bar.outerHTML = ckBarHTML(); }
@@ -11085,6 +11083,8 @@ const FOREIGN = [
   {sel: ".fe-ov", panel: ".fe-card", close: el => window.LowiFastEdit && LowiFastEdit.close ? LowiFastEdit.close() : el.remove()},
   {sel: ".hs-ov", panel: "[role=dialog]"},
   {sel: ".cr-ov", panel: "[role=dialog]"},
+  /* Oct 28 2026: Hilf mit opened from Einkaufen is a tab in the same frame (gift-basket.js), so no "Back" row is put on top of it */
+  {sel: ".stp-ov.gb-inframe", panel: "[role=dialog]", noBack: true},
   {sel: ".stp-ov", panel: "[role=dialog]"},
   {sel: ".gh-ov", panel: "[role=dialog]"},
   {sel: ".wj-ov", full: true}, {sel: ".yd-ov", full: true}, {sel: ".bs-ov", full: true}
@@ -12382,8 +12382,9 @@ function openRecipe(id, opt){ const r = typeof id === "string" ? rec(id) : id; i
   const ov = R2.sheet('<div class="p2-rec" id="p2Rec">' + recipeHTML(r) + '</div>', {full:true, cls:"p2-recov", onClose:() => { if (OPEN && OPEN.ov === ov) OPEN = null; }});
   if (R2.xBottom) R2.xBottom(ov);
   OPEN = {r, ov}; if (opt && opt.cook) setTimeout(() => cook(r), 250); return true; }
-/* the recipe page's own Add to kitchen (bot-recipe.js handles the tap): the products go to Cook > Kitchen (lowispike.kitchen.v1) */
-function kitBtn(r){ const B = window.LowiBotRecipeCore, K = window.LowiKitchenCore; if (!B || !K || !r) return "";
+/* the recipe page's own Add to kitchen: off since Oct 28 2026 (Kitchen removed) */
+function kitBtn(r){ return ""; /* Oct 28 2026: the Kitchen game was removed (Emmanuel: "schmeiß die Küche raus"), so the recipe page has no "In die Küche" button any more. The old body stays below, unused, for when he wants a kitchen again. */
+  const B = window.LowiBotRecipeCore, K = window.LowiKitchenCore; if (!B || !K || !r) return "";
   const l = (window.LowiLang && LowiLang.get && LowiLang.get()) || "en", f = B.foods(r.ing); if (!f.length) return "";
   const ks = kitSt(), have = !!ks && B.status(ks, f, kitTr) === "have";
   return '<button class="r2-btn ghost p2-kit" data-crb="kitchen" data-id="' + esc(r.id) + '" data-key="r' + esc(r.id) + '" data-noi18n="1"' + (have ? ' aria-label="' + esc(B.t("allHave", l)) + '"' : '') + '>' + (have ? '\u2713 ' + esc(B.t("allHave", l)) : '\u{1F9FA} ' + esc(B.t("kitchen", l))) + '</button>'; }
@@ -21887,14 +21888,12 @@ window.LowiCommunityHost = {
 <script src="mic-dictate-core.js?v=20261028-183907"></script>
 <script src="mic-dictate.js?v=20261028-183907"></script>
 <link rel="stylesheet" id="stpCss" href="store-picks.css?v=20261028-183907">
-<link rel="stylesheet" id="kgCss" href="kitchen-game.css?v=20261028-183907">
 <script src="store-picks-core.js?v=20261028-183907"></script>
 <link rel="stylesheet" id="gbCss" href="gift-basket.css?v=20261028-183907">
 <script src="gift-basket-core.js?v=20261028-183907"></script>
 <script src="gift-basket.js?v=20261028-183907"></script>
 <script src="quick-add-core.js?v=20261028-183907"></script>
 <script src="store-picks.js?v=20261028-183907"></script>
-<script src="kitchen-game.js?v=20261028-183907"></script>
 <link rel="stylesheet" id="wbCss" href="week-basket.css?v=20261028-183907">
 <script src="week-basket-core.js?v=20261028-183907"></script>
 <script src="week-basket.js?v=20261028-183907"></script>
@@ -22002,6 +22001,6 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" href="bottom-close.css?v=20261028-183907">
 <script src="bottom-close.js?v=20261028-183907"></script>
 </body>
-<script src="cook-tab-order.js?v=20261026-164825"></script><!-- Oct 26 (MAYA-HANDOFF 0.29): Cook tab order, kept apart from the stamped script list so parallel releases do not clash -->
+<script src="cook-tab-order.js?v=20261028-kochen2"></script><!-- Oct 26 (MAYA-HANDOFF 0.29): Cook tab order, kept apart from the stamped script list so parallel releases do not clash -->
 </html>
 

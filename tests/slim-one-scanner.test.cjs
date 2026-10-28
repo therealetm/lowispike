@@ -35,8 +35,7 @@ function loadZone(card) {
     return { Z: ctx.LowiSellerZone, D: ctx.LowiSellerZoneData, C: ctx.LowiSellerZoneCore, calls };
 }
 
-test('F-04: the kitchen scan opens the same openScanner as the Scan bubble', () => {
-    assert.match(read('kitchen-game.js'), /LowiDex\.scan\('shop'\)|openScanner\('shop'\)/, 'kitchen scan goes through the one scanner');
+test('F-04: LowiDex.scan is the one scanner (the Kitchen scan that used it was removed Oct 28 2026)', () => {
     assert.match(idx, /window\.LowiDex = \{open:openDex, scan:openScanner,/, 'LowiDex.scan is openScanner');
 });
 

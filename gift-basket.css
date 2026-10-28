@@ -90,3 +90,9 @@ html[data-theme="light"] .gb-state.gb-low, html[data-theme="light"] .gb-linkmsg.
 .gb-left { margin: 4px 4px 2px; }
 .gb-wholecart, .gb-cartoff { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; margin: 6px 0 4px; white-space: normal; line-height: 1.2; }
 .gb-cartoff { margin-top: 10px; opacity: .9; }
+/* Oct 28 2026 (Emmanuel: Hilf mit felt like a new window): opened from Einkaufen it takes the same frame. No fade, no zoom, no
+   second dark backdrop; the Einkaufen card under it is hidden, so the tab bar and the card stay put and only the content changes. */
+.stp-ov.gb-ov.gb-inframe, .stp-ov.gb-ov.gb-inframe .stp-card { transition: none !important; animation: none !important; }
+.stp-ov.gb-ov.gb-inframe { background: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.stp-ov.gb-ov.gb-inframe .stp-card { transform: none !important; }
+html.gb-inframe-on .stp-ov:not(.gb-ov) > .stp-card { visibility: hidden; }

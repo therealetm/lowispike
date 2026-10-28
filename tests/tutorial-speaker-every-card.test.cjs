@@ -24,7 +24,7 @@ test('every tutorial and What\'s New step has a recorded voice in English, Germa
         if (c.f && !fs.existsSync(f)) missing.push(l + ':' + s.id + ' (file)');
     }
     assert.deepEqual(missing, []);
-    for (const id of ['new-give-hand', 'new-kitchen', 'new-meal-speaker', 'new-intro']) assert(S.STEPS.some(s => s.id === id), id + ' is still in the tutorial');
+    for (const id of ['new-give-hand', 'new-meal-speaker', 'new-intro']) /* new-kitchen left Oct 28 2026 with the Kitchen game */ assert(S.STEPS.some(s => s.id === id), id + ' is still in the tutorial');
 });
 
 test('the card on screen gets its speaker as soon as the voice file arrives, and a failed load is tried again', () => {

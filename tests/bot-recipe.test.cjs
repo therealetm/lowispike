@@ -12,6 +12,7 @@ const R = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const KC = require('../kitchen-core.js');
 global.LowiKitchenCore = KC;
 const B = require('../bot-recipe-core.js');
+B.kitchenOn(true); /* Oct 28 2026: the app shows no kitchen pill any more (Kitchen removed); these tests keep its dormant code honest */
 const N = require('../nibblo-core.js');
 const idx = R('index.html'), chat = R('community-chat.js'), dom = R('bot-recipe.js'), sw = R('sw.js');
 

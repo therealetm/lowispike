@@ -2,7 +2,7 @@
    one shared diameter (--o8-d), 45 degrees apart; positions come from home-orbit-v2.js (--o8-x/--o8-y per control).
    Only active under html.o8 (set by the shell when the circle fits); without it the old Home is untouched. */
 html.o8 { --o8-i-scan: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M8 9v6M11 9v6M14 9v6M17 9v6'/%3E%3C/svg%3E"); }
-html.o8 { --o8-i-fuel: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 3v18M4.5 3v5a2.5 2.5 0 0 0 5 0V3M19 21V3c-2.8 1.6-4.5 4.6-4.5 8.5H19'/%3E%3C/svg%3E"); }
+html.o8 { --o8-i-fuel: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.2'/%3E%3Ccircle cx='10' cy='20' r='1.4'/%3E%3Ccircle cx='17' cy='20' r='1.4'/%3E%3C/svg%3E"); }
 html.o8 { --o8-i-water: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5c3.6 4.4 6 7.4 6 10.3a6 6 0 0 1-12 0c0-2.9 2.4-5.9 6-10.3z'/%3E%3C/svg%3E"); }
 html.o8 { --o8-i-move: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12h4l2.2-5.5 4.6 11 2.2-5.5h5'/%3E%3C/svg%3E"); }
 html.o8 { --o8-i-gap: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 9v4.5l3 2M9.5 2.5h5M12 21.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15z'/%3E%3C/svg%3E"); }
@@ -64,11 +64,11 @@ html.o8.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx > small:first-of-type,
 html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy > small:first-child { display: none; }
 html.o8.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx::after,
 html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::after { order: -1; font-size: 11px; opacity: .9; line-height: 1.1; }
-html.o8.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx::after { content: 'Fuel'; }
+html.o8.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx::after { content: 'Shopping'; }
 html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::after { content: 'Gap'; }
-html.o8.wh-home[lang^="de"] #whHud [data-orbit="fuel"] .wh-cell-tx::after { content: 'Essen'; }
+html.o8.wh-home[lang^="de"] #whHud [data-orbit="fuel"] .wh-cell-tx::after { content: 'Einkaufen'; }
 html.o8.wh-home[lang^="de"] #spHome #spFast[data-orbit] .sp-fast-copy::after { content: 'Pause'; }
-html.o8.wh-home[lang^="es"] #whHud [data-orbit="fuel"] .wh-cell-tx::after { content: 'Comida'; }
+html.o8.wh-home[lang^="es"] #whHud [data-orbit="fuel"] .wh-cell-tx::after { content: 'Compras'; }
 html.o8.wh-home[lang^="es"] #spHome #spFast[data-orbit] .sp-fast-copy::after { content: 'Pausa'; }
 html.o8-wide.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx::after,
 html.o8-wide.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::after { font-size: 13px; }
@@ -139,3 +139,7 @@ html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::after { content: none
 html.o8.wh-home #whHud [data-orbit] .wh-cell-tx::before,
 html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::before { width: calc(var(--o8-d) * .30); height: calc(var(--o8-d) * .30); }
 html.o8.wh-home #whHud .o8-cell .o8-ico { width: calc(var(--o8-d) * .34); height: calc(var(--o8-d) * .34); }
+
+/* Oct 28 2026 (Emmanuel, Home screenshot: a fork and knife, a "3" and an orange fill on what is really the Einkaufen bubble; he read
+   them as meals eaten). The fuel bubble is the way into Einkaufen: a shopping-cart symbol (above), no number, no fill. */
+html.o8.wh-home #whHud [data-orbit="fuel"].wh-shop .wh-cell-tx > b { display: none !important; }

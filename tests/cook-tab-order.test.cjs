@@ -9,30 +9,30 @@ const vm = require('vm');
 const R = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const C = require('../cook-tab-order.js');
 
-test('Cook order: Kitchen | Shuffle | Swipe by default; unknown, duplicate and missing tabs are fixed; moves land where dropped', () => {
-  assert.deepStrictEqual(C.IDS, ['kitchen', 'shuffle', 'swipe']);
+/* Oct 28 2026 (Emmanuel: "schmeiß die Küche raus"): the Kitchen game is gone; Cook is Shuffle | Swipe. */
+test('Cook order: Shuffle | Swipe by default; an old saved "kitchen" is dropped; unknown, duplicate and missing tabs are fixed', () => {
+  assert.deepStrictEqual(C.IDS, ['shuffle', 'swipe']);
   assert.strictEqual(C.KEY, 'lowispike.cook.tabs');
-  assert.deepStrictEqual(C.parse(null), ['kitchen', 'shuffle', 'swipe'], 'nobody had a Cook order before, so everyone gets Kitchen first');
-  assert.deepStrictEqual(C.parse('not json'), ['kitchen', 'shuffle', 'swipe']);
-  assert.deepStrictEqual(C.parse('["swipe","shuffle"]'), ['swipe', 'shuffle', 'kitchen'], 'a saved order is kept, a missing tab goes to the end');
-  assert.deepStrictEqual(C.normalize(['shuffle', 'fy', 'shuffle', 'swipe']), ['shuffle', 'swipe', 'kitchen']);
-  assert.deepStrictEqual(C.moveTo(['kitchen', 'shuffle', 'swipe'], 'swipe', 0), ['swipe', 'kitchen', 'shuffle']);
-  assert.deepStrictEqual(C.moveTo(['kitchen', 'shuffle', 'swipe'], 'kitchen', 9), ['shuffle', 'swipe', 'kitchen']);
+  assert.deepStrictEqual(C.parse(null), ['shuffle', 'swipe']);
+  assert.deepStrictEqual(C.parse('not json'), ['shuffle', 'swipe']);
+  assert.deepStrictEqual(C.parse('["kitchen","swipe","shuffle"]'), ['swipe', 'shuffle'], 'a saved order is kept, the removed Kitchen tab is dropped');
+  assert.deepStrictEqual(C.parse('["swipe"]'), ['swipe', 'shuffle'], 'a missing tab goes to the end');
+  assert.deepStrictEqual(C.normalize(['shuffle', 'fy', 'shuffle', 'kitchen']), ['shuffle', 'swipe']);
+  assert.deepStrictEqual(C.moveTo(['shuffle', 'swipe'], 'swipe', 0), ['swipe', 'shuffle']);
 });
 
-test('Cook opens on the first tab of the order; a game asked for on purpose wins; no Kitchen game = next tab', () => {
-  assert.strictEqual(C.first(['kitchen', 'shuffle', 'swipe'], true), 'kitchen');
-  assert.strictEqual(C.first(['kitchen', 'shuffle', 'swipe'], false), 'shuffle', 'Kitchen only counts when its game loaded');
-  assert.strictEqual(C.first(['swipe', 'kitchen', 'shuffle'], true), 'swipe');
-  assert.strictEqual(C.openView(['kitchen', 'shuffle', 'swipe'], true, false), 'kitchen');
-  assert.strictEqual(C.openView(['kitchen', 'shuffle', 'swipe'], true, true), null, 'Help me pick, Kitchen links, Swaflo: their game wins');
+test('Cook opens on the first tab of the order; a game asked for on purpose wins', () => {
+  assert.strictEqual(C.first(['shuffle', 'swipe'], false), 'shuffle');
+  assert.strictEqual(C.first(['swipe', 'shuffle'], false), 'swipe');
+  assert.strictEqual(C.openView(['shuffle', 'swipe'], false, false), 'shuffle');
+  assert.strictEqual(C.openView(['shuffle', 'swipe'], false, true), null, 'Help me pick, Swaflo: their game wins');
 });
 
 function boot(store) {
   const ls = { m: Object.assign({}, store), getItem(k) { return k in this.m ? this.m[k] : null; }, setItem(k, v) { this.m[k] = String(v); } };
   const log = [];
   const doc = { documentElement: { lang: 'en', getAttribute: () => 'en' }, addEventListener() {}, querySelector: () => null, getElementById: () => null, readyState: 'complete' };
-  const win = { document: doc, localStorage: ls, addEventListener() {}, LowiKitchenGame: {}, navigator: {},
+  const win = { document: doc, localStorage: ls, addEventListener() {}, navigator: {},
     LowiFood: { setView(v) { log.push('setView ' + v); ls.m['lowi.cook.view'] = v; } }, LowiCommunityTabs: { row() {}, haptic() {} } };
   let now = 1000;
   vm.runInNewContext(R('cook-tab-order.js'), { window: win, module: undefined, setTimeout: () => 0, clearTimeout() {}, Date: { now: () => now } });
@@ -41,8 +41,9 @@ function boot(store) {
 
 test('opening Cook (goTab) puts it on the first tab, unless a game was just asked for', () => {
   let b = boot({ 'lowi.cook.view': 'shuffle' });
+  b = boot({ 'lowi.cook.view': 'kitchen' });
   b.win.LowiCookTabs.opening();
-  assert.strictEqual(b.ls.m['lowi.cook.view'], 'kitchen', 'an old remembered Shuffle no longer wins over the first tab');
+  assert.strictEqual(b.ls.m['lowi.cook.view'], 'shuffle', 'an old remembered Kitchen lands on the first tab, Shuffle');
 
   b = boot({ 'lowispike.cook.tabs': '["swipe","kitchen","shuffle"]' });
   b.win.LowiCookTabs.opening();
@@ -52,8 +53,8 @@ test('opening Cook (goTab) puts it on the first tab, unless a game was just aske
   b.tick(5000); b.win.LowiFood.setView('shuffle');      /* the wrapped setView marks it as asked for */
   b.win.LowiCookTabs.opening();
   assert.strictEqual(b.ls.m['lowi.cook.view'], 'shuffle', 'asked for right before the open');
-  b.tick(10000); b.win.LowiCookTabs.opening();
-  assert.strictEqual(b.ls.m['lowi.cook.view'], 'kitchen', 'the ask wears off');
+  b.win.LowiFood.setView('swipe'); b.tick(10000); b.win.LowiCookTabs.opening();
+  assert.strictEqual(b.ls.m['lowi.cook.view'], 'shuffle', 'the ask wears off');
 });
 
 test('the Cook row uses the SAME hold-and-drag engine as Community (one engine, a second row)', () => {
@@ -68,7 +69,7 @@ test('the Cook row uses the SAME hold-and-drag engine as Community (one engine, 
 
 test('index.html: tabs drawn in the saved order, Cook opens on the first tab, Help me pick Shuffle still lands on Shuffle', () => {
   const html = R('index.html');
-  assert.match(html, /const fView = \(\) => ckGet\(CKK\.view, ckFirst\(\), \["shuffle", "swipe", "kitchen"\]\)/);
+  assert.match(html, /const fView = \(\) => ckGet\(CKK\.view, ckFirst\(\), \["shuffle", "swipe"\]\)/);
   assert.match(html, /ckOrder\(\)\.map\(id => ckViewSeg\[id\] \? ckViewSeg\[id\]\(\) : ""\)\.join\(""\)/);
   assert.match(html, /if \(t === "shelf" && TAB !== "shelf"\) \{ try \{ if \(window\.LowiCookTabs\) window\.LowiCookTabs\.opening\(\); \} catch \(e\) \{ \} \}/);
   assert.ok(html.indexOf('LowiCookTabs.opening()') < html.indexOf('TAB = t;'), 'before the tab renders, so the first frame is already the first tab');

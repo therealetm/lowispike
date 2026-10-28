@@ -47,3 +47,8 @@ html.wh-home.ho-orbit.ho-in #spHome #spFast[data-ho] { transition: left .8s cubi
     html.wh-home.ho-orbit.ho-in #whHud .wh-cell[data-ho],
     html.wh-home.ho-orbit.ho-in #spHome #spFast[data-ho] { transition: opacity .35s ease !important; }
 }
+
+/* Oct 28 2026: the Einkaufen bubble carries no number and no fill (Emmanuel read the shopping-list count as meals eaten) */
+#whHud .wh-meals.wh-shop .wh-cell-fill { display: none !important; }
+#whHud .wh-meals.wh-shop .wh-cell-tx > b { line-height: 0; }
+#whHud .wh-meals.wh-shop .wh-cart-big { display: inline-block; width: 34px; height: 34px; }

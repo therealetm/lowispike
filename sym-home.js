@@ -102,6 +102,7 @@
        (Einkaufsliste) instead of 1/3; one tap opens Einkaufen (home-blooms-v2.js). The meal counter 1/3 and today's meals moved into the
        Essenspause hub (todayHTML below, gap-view.js), so nothing is lost. */
     const CART = '<svg class="wh-cart" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.6" fill="currentColor"/><circle cx="17" cy="20" r="1.6" fill="currentColor"/></svg>';
+    const CART_BIG = CART.replace('class="wh-cart"', 'class="wh-cart wh-cart-big"').replace('width="18" height="18"', 'width="34" height="34"');
     function listCount() { try { const L = W.LOWI_SHELF; return L && typeof L.listOpen === 'function' ? (L.listOpen() || []).length : 0; } catch (e) { return 0; } }
     function shopLabel() { return T('Shopping', 'Einkaufen', 'Compras'); }
     function paint() {
@@ -109,21 +110,16 @@
         if (!b.classList.contains('lb-bub')) living = false;
         attachLiving(b);
         b.classList.add('wh-shop');
-        const n = listCount(), fill = String(Math.min(1, n / 8));
-        if (b.style.getPropertyValue('--wh-fill') !== fill) b.style.setProperty('--wh-fill', fill);
+        /* Oct 28 2026 (Emmanuel, Home screenshot): the "3" and the orange fill read as meals eaten, and the small cart looked like a
+           fork and knife. The bubble is only the way into Einkaufen now: a big cart and the word, no number, no fill. The shopping
+           list itself is untouched (Einkaufen shows it), and meals are still counted in the Essenspause hub. */
+        if (b.style.getPropertyValue('--wh-fill') !== '0') b.style.setProperty('--wh-fill', '0');
         const sm = b.querySelector('small'), bb = b.querySelector('b');
-        if (sm && sm.dataset.shop !== '1') { sm.innerHTML = CART + '<span class="wh-shop-l"></span>'; sm.dataset.shop = '1'; }
+        if (sm && sm.dataset.shop !== '2') { sm.innerHTML = '<span class="wh-shop-l"></span>'; sm.dataset.shop = '2'; }
         const sl = sm && sm.querySelector('.wh-shop-l'); if (sl && sl.textContent !== shopLabel()) sl.textContent = shopLabel();
-        if (bb) {
-            const unit = T('on the list', 'auf der Liste', 'en la lista');
-            let num = bb.querySelector('.wh-num'), u = bb.querySelector('.wh-unit');
-            if (!num || !u) { bb.innerHTML = '<span class="wh-num"></span> <u class="wh-unit"></u>'; num = bb.querySelector('.wh-num'); u = bb.querySelector('.wh-unit'); }
-            if (num.textContent !== String(n)) num.textContent = String(n);
-            if (u.textContent !== unit) u.textContent = unit;
-            u.classList.toggle('wh-unit-2l', true);
-        }
+        if (bb && bb.dataset.shop !== '2') { bb.innerHTML = CART_BIG; bb.dataset.shop = '2'; }
         b.classList.remove('wme-full');
-        const aria = shopLabel() + ', ' + n + ' ' + T('on the shopping list. Tap to open Shopping.', 'auf der Einkaufsliste. Tippen öffnet Einkaufen.', 'en la lista de compras. Toca para abrir Compras.');
+        const aria = T('Shopping. Tap to open Shopping.', 'Einkaufen. Tippen öffnet Einkaufen.', 'Compras. Toca para abrir Compras.');
         if (b.getAttribute('aria-label') !== aria) b.setAttribute('aria-label', aria);
     }
     /* Oct 28 2026 food plan: today's meals for the Essenspause hub (gap-view.js). The same content the old long press (details()

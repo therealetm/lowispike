@@ -29,17 +29,17 @@ test('part new: intro first, every step short, three languages, a known route', 
 });
 
 test('tourOf: tour list, else the tutorial step, only existing steps, no repeats, never the intro', () => {
-  assert.deepStrictEqual(S.tourOf({ tour: ['new-kitchen', 'nope', 'new-kitchen', 'new-intro', 'new-sleep'] }), ['new-kitchen', 'new-sleep']);
+  assert.deepStrictEqual(S.tourOf({ tour: ['new-cart-swipe', 'nope', 'new-cart-swipe', 'new-intro', 'new-sleep'] }), ['new-cart-swipe', 'new-sleep']);
   assert.deepStrictEqual(S.tourOf({ tutorial: 'new-sync' }), ['new-sync']);
   assert.deepStrictEqual(S.tourOf({ tutorial: { none: 'server only fix' } }), []);
 });
 
 test('unseenNews: one entry for every unseen release, union of tours, null once all are seen', () => {
-  const n = { id: 'c', tour: ['new-sync'], text: { en: 'C' }, history: [{ id: 'c', tour: ['new-sync'] }, { id: 'b', tour: ['new-kitchen', 'new-sync'] }, { id: 'a', tour: ['new-sleep'] }] };
+  const n = { id: 'c', tour: ['new-sync'], text: { en: 'C' }, history: [{ id: 'c', tour: ['new-sync'] }, { id: 'b', tour: ['new-cart-swipe', 'new-sync'] }, { id: 'a', tour: ['new-sleep'] }] };
   const seen = new Set(['a']);
   const u = S.unseenNews(n, id => seen.has(id));
   assert.deepStrictEqual(u.ids, ['c', 'b']);
-  assert.deepStrictEqual(u.tour, ['new-sync', 'new-kitchen']);
+  assert.deepStrictEqual(u.tour, ['new-sync', 'new-cart-swipe']);
   u.ids.forEach(id => seen.add(id));
   assert.strictEqual(S.unseenNews(n, id => seen.has(id)), null, 'after it was shown once, nothing is left to show');
   assert.strictEqual(S.unseenNews({}, () => false), null);
@@ -67,7 +67,7 @@ test('reload regression: index.html marks every unseen id seen (localStorage) BE
   assert.match(html, /function markSeen\(id(, build)?\)\{[^\n]*localStorage\.setItem\(SEEN/);
   /* simulate launches: a fresh launch with the same news finds nothing to show */
   const store = {}; const seen = id => (store.seen || []).includes(id); const mark = id => { store.seen = (store.seen || []).concat(id); };
-  const NEWS = { id: 'x-2', tour: ['new-kitchen'], history: [{ id: 'x-2', tour: ['new-kitchen'] }, { id: 'x-1', tour: ['new-sleep'] }] };
+  const NEWS = { id: 'x-2', tour: ['new-cart-swipe'], history: [{ id: 'x-2', tour: ['new-cart-swipe'] }, { id: 'x-1', tour: ['new-sleep'] }] };
   let shown = 0;
   for (let launch = 0; launch < 5; launch++) { const u = S.unseenNews(NEWS, seen); if (u) { u.ids.forEach(mark); shown++; } }
   assert.strictEqual(shown, 1);
@@ -85,10 +85,10 @@ test('bump-build: tour and history go into version.json; a bad tour id blocks', 
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'wnt-'));
   fs.writeFileSync(path.join(d, 'version.json'), JSON.stringify({ build: '20261023-100000', news: { id: 'old-20261023-100000', text: { en: 'o', de: 'o', es: 'o' }, history: [{ id: 'old-20261023-100000', tour: ['new-sleep'] }] } }) + '\n');
   fs.copyFileSync(path.join(ROOT, 'tutorial-steps.js'), path.join(d, 'tutorial-steps.js'));
-  applyBump(d, '20261023-100000', '20261023-100001', { slug: 'kitchen', tutorial: 'new-kitchen', tour: ['new-kitchen', 'new-deadlift'], text: { en: 'R', de: 'R', es: 'R' } });
+  applyBump(d, '20261023-100000', '20261023-100001', { slug: 'kitchen', tutorial: 'new-cart-swipe', tour: ['new-cart-swipe', 'new-deadlift'], text: { en: 'R', de: 'R', es: 'R' } });
   const v = JSON.parse(fs.readFileSync(path.join(d, 'version.json'), 'utf8'));
-  assert.deepStrictEqual(v.news.tour, ['new-kitchen', 'new-deadlift']);
+  assert.deepStrictEqual(v.news.tour, ['new-cart-swipe', 'new-deadlift']);
   assert.deepStrictEqual(v.news.history.map(h => h.id), ['kitchen-20261023-100001', 'old-20261023-100000']);
-  assert.match(checkTutorial(ROOT, { tutorial: 'new-kitchen', tour: ['new-nope'] }), /do not exist/);
-  assert.strictEqual(checkTutorial(ROOT, { tutorial: 'new-kitchen', tour: ['new-kitchen'] }), '');
+  assert.match(checkTutorial(ROOT, { tutorial: 'new-cart-swipe', tour: ['new-nope'] }), /do not exist/);
+  assert.strictEqual(checkTutorial(ROOT, { tutorial: 'new-cart-swipe', tour: ['new-cart-swipe'] }), '');
 });

@@ -8,11 +8,18 @@ const fs = require('fs');
 const path = require('path');
 const R = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 
-test('Einkaufen bubble (the old Fuel bubble, Oct 28 food plan): the count says what is still on the list, same markup as Water', () => {
+test('Einkaufen bubble (Oct 28 2026, Emmanuel read the list count and the fill as meals eaten): a big cart and the word, no number, no fill', () => {
     const s = R('sym-home.js');
-    assert.ok(/class="wh-num"><\/span> <u class="wh-unit"><\/u>/.test(s), 'same number + unit markup as Water');
-    assert.match(s, /listOpen/, 'the number is the open count of the shopping list');
+    assert.match(s, /bb\.innerHTML = CART_BIG/, 'the big number slot holds a cart, not a count');
+    assert.doesNotMatch(s.slice(s.indexOf("b.classList.add('wh-shop');"), s.indexOf("if (b.getAttribute('aria-label') !== aria)")), /listCount\(\)|listOpen/, 'no shopping-list count on the bubble');
+    assert.match(s, /setProperty\('--wh-fill', '0'\)/, 'the fill stays empty');
     assert.doesNotMatch(s, /bb\.textContent = v\.text/, 'the bare "1/3" write is gone');
+    const css = R('sym-home.css');
+    assert.match(css, /\.wh-meals\.wh-shop \.wh-cell-fill \{ display: none !important; \}/, 'no liquid fill');
+    const o8 = R('home-orbit-v2.css');
+    assert.match(o8, /--o8-i-fuel: url\("data:image\/svg\+xml,[^"]*circle cx='10' cy='20'/, 'the ring draws a shopping cart (wheels), not a fork and knife');
+    assert.match(o8, /\[data-orbit="fuel"\]\.wh-shop \.wh-cell-tx > b \{ display: none !important; \}/, 'no number on the ring bubble');
+    for (const w of ['Shopping', 'Einkaufen', 'Compras']) assert.ok(o8.includes("content: '" + w + "'"), w);
 });
 
 test('Gap bubble: an empty Gap is the label alone on Home, says "no meal yet" in its spoken label', () => {

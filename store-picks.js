@@ -63,7 +63,9 @@
     try { tab = ({ sz: 'sz', kitchen: 'kitchen', home: 'home' })[localStorage.getItem(TKEY)] || 'shop'; } catch (e) { tab = 'shop'; }
     const onSz = () => tab === 'sz' && !!SZ();
     /* Oct 24: the third tab, Kitchen (kitchen-core.js): what you have at home + the shopping cart (= the shopping list) */
-    const K = W.LowiKitchenCore && W.LowiKitchenCore.parse ? W.LowiKitchenCore : null;
+    /* Oct 28 2026 (Emmanuel: "schmeiß die Küche raus"): the Kitchen is gone everywhere, so Shop has no Kitchen tab and no house
+       button on product rows. The saved kitchen data (lowispike.kitchen.v1) is left alone, just no longer shown. */
+    const K = null;
     const Q = W.LowiQuickAdd && W.LowiQuickAdd.html ? W.LowiQuickAdd : null; /* Oct 26 quick "+" on product rows (MAYA-HANDOFF 0.35) */
     /* Oct 26: the Kitchen moved to Cook (kitchen-game.js, Cook > Kitchen; MAYA-HANDOFF 0.19). While that game is loaded, Shop has
        no Kitchen tab, and anything that asks for it opens Cook > Kitchen instead. The data (lowispike.kitchen.v1) is the same. */
@@ -504,7 +506,7 @@
         const k = Q.norm(p.n), bc = String(p.g || '').replace(/\D/g, '');
         return kit.items.find(x => Q.norm(x.n) === k || (bc && x.p && x.p.bc === bc)) || null;
     }
-    function qaState(i) { const s = shown[i]; return s ? Q.state(qaLines(), s.it.p.n, !!qaKitItem(s.it.p)) : null; }
+    function qaState(i) { const s = shown[i]; return s ? Q.state(qaLines(), s.it.p.n, K ? !!qaKitItem(s.it.p) : null) : null; }
     function qaCol(i) {
         const st = qaState(i); if (!st) return '';
         return '<span class="stp-qa" data-stp-qa-col="' + i + '" data-k="' + st.kind + '">' + Q.html(st, i, shown[i].it.p.n, lang()) + '</span>';
@@ -925,7 +927,9 @@
 
     function openPanel(from) {
         if (ov) return;
-        if (tab === 'kitchen' && KG()) tab = 'shop';
+        /* Oct 28 2026 (Emmanuel: the Home bubble opened Einkaufen on Seller Zone / Hilf mit, "that makes no sense"): Einkaufen always
+           opens on its first tab, Supermarkt. Picking another tab still works while the panel is open (the tour sets its tab after open). */
+        tab = 'shop';
         snackUndo = null;
         ov = D.createElement('div');
         ov.className = 'stp-ov';

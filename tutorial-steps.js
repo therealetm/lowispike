@@ -188,26 +188,6 @@
             }
         },
         {
-            id: 'new-kitchen', area: 'new', where: 'home', open: 'kitchen', target: ['#ckBar [data-ck="view"][data-v="kitchen"]', '#kgRoot .kg-wrap', '.stp-card'], covers: ['kitchen'],
-            info: 'Oct 26 2026: the Kitchen is a game in Cook now (kitchen-game.js), the third game after Shuffle and Swipe. The card opens Cook > Kitchen and points at its Kitchen button; the fridge and cabinet doors are right below it (the old Shop tab is the fallback when the game file is missing)',
-            title: { en: 'Your kitchen is a game now', de: 'Deine Küche ist jetzt ein Spiel', es: 'Tu cocina ahora es un juego' },
-            text: {
-                en: 'New in Cook: Kitchen. Tap a fridge or cabinet door and that shelf swings open. Bin what ran out and it lands on your list.',
-                de: 'Neu in Kochen: Küche. Tipp auf eine Tür und das Fach schwingt auf. Leeres ab in den Mülleimer, dann steht es auf der Liste.',
-                es: 'Nuevo en Cocinar: Cocina. Toca una puerta y se abre ese estante. Lo que se acabe, al cubo, y pasa a tu lista de la compra.'
-            }
-        },
-        {
-            id: 'new-cook-tabs', area: 'new', where: 'home', open: 'kitchen', target: ['#ckBar .ck-view', '#ckBar'], covers: ['cook', 'kitchen'],
-            info: 'Oct 26 2026 (MAYA-HANDOFF 0.29): Cook\'s games are Kitchen | Shuffle | Swipe by default and Cook opens on the FIRST one (cook-tab-order.js). Hold a Cook tab until it wiggles and slide it, with the same hold-and-drag as Community\'s tabs (community-tab-order.js); the order is kept on this device',
-            title: { en: 'Cook opens on Kitchen', de: 'Kochen startet in der Küche', es: 'Cocinar abre en Cocina' },
-            text: {
-                en: 'Cook now opens on Kitchen. Want another game first? Hold its tab until it wiggles, then slide it to the front.',
-                de: 'Kochen öffnet jetzt in der Küche. Lieber ein anderes Spiel zuerst? Halte seinen Tab, bis er wackelt, und schieb ihn nach vorn.',
-                es: 'Cocinar ahora abre en Cocina. ¿Prefieres otro juego primero? Mantén su pestaña hasta que tiemble y deslízala al principio.'
-            }
-        },
-        {
             id: 'new-cart-swipe', area: 'new', where: 'home', open: 'shop', target: ['.stp-card .stp-cartbtn', '.stp-card'], covers: ['supermarket-cart', 'give-hand-swipe'],
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.22): the Supermarket tab in Shop has a Cart (Warenkorb / Carrito; cart-core.js, store-picks.js cartHTML) with quantities and an estimate from reported prices; the Seller Zone strip left the Supermarket (Seller Zone keeps its own tab); Give a hand is a swipe deck (gift-basket.js deckHTML): right = pay for these groceries, left = skip.',
             title: { en: 'Your cart', de: 'Dein Warenkorb', es: 'Tu carrito' },

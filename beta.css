@@ -971,6 +971,16 @@ html[data-ui=light] .rs-ov .rs-scrim {
 #tab-shelf .ck-view .ck-b svg { display: none; }
 @media (min-width: 420px) { #tab-shelf .ck-view .ck-b svg { display: block; } }
 #tab-shelf .ck-view .ck-b.on { background: var(--tmg-a, #9de6b8); color: #0b1410; box-shadow: none; }
+/* Oct 28 2026 (Emmanuel: on Swipen "Alle" and a cut-off "He…" sat squeezed next to the game switch; Küche felt like a new window):
+   one row each. The game switch (Mischen | Swipen) is the full-width first row, the source row comes next, then the kind chips
+   (Alle | Herzhaft | Süß) or the short note on a full row of their own: equal widths, whole words, no sideways scrolling. */
+#tab-shelf #ckBar .ck-view { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); width: 100%; box-sizing: border-box; }
+#tab-shelf #ckBar .ck-view .ck-b { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; }
+#tab-shelf #ckBar .ck-view .ck-b svg { display: block; flex: none; width: 18px; height: 18px; }
+#tab-shelf #ckBar .ck-row { display: block; }
+#tab-shelf #ckBar .ck-cats:not(.ck-note) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; }
+#tab-shelf #ckBar .ck-cats .ck-b { min-width: 0; padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#tab-shelf #ckBar .ck-note { display: flex; align-items: center; justify-content: center; text-align: center; white-space: normal; min-height: 40px; }
 html[data-ckview="swipe"] #tab-shelf #r5Shuf { display: none !important; }
 html[data-ckview="shuffle"] #tab-shelf #r3kSwipe { display: none !important; }
 html[data-ckview="swipe"] #tab-shelf #r3kSwipe { display: block !important; margin-top: 0 !important; animation: ck-in .22s ease-out; }

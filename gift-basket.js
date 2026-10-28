@@ -486,7 +486,7 @@
     function onClick(e) {
         const t = e.target;
         if (!ov || !ov.contains(t)) return;
-        if (t === ov) { spend(e); close(e.isTrusted); return; }
+        if (t === ov) { spend(e); closeUser(e.isTrusted); return; }
         if (Date.now() - dragAt < 400) return; /* the click a swipe leaves behind */
         const el = t.closest ? t.closest('[data-stp-tab],[data-gb],[data-gb-tab],[data-gb-help],[data-gb-add],[data-gb-drop],[data-gb-verdict],[data-gb-pay]') : null;
         if (!el || !ov.contains(el)) return;
@@ -498,7 +498,7 @@
         if (el.hasAttribute('data-gb-help')) { help(el.getAttribute('data-gb-help')); return; }
         if (el.hasAttribute('data-gb-verdict')) { verdict(el.getAttribute('data-gb-for'), el.getAttribute('data-gb-verdict')); return; }
         const a = el.getAttribute('data-gb');
-        if (a === 'close') { spend(e); close(e.isTrusted); return; }
+        if (a === 'close') { spend(e); closeUser(e.isTrusted); return; }
         if (a === 'reload') { loaded = false; paint(); load(); return; }
         if (a === 'yes') { pick(el.getAttribute('data-gb-for')); return; }
         if (a === 'skip') { skip(el.getAttribute('data-gb-for')); return; }
@@ -534,7 +534,7 @@
         const i = f.querySelector('input'); const v = i ? i.value : '';
         if (addItem(v) && i) i.value = '';
     }
-    function onKey(e) { if (e.key === 'Escape' && ov) { e.stopImmediatePropagation(); close(true); } }
+    function onKey(e) { if (e.key === 'Escape' && ov) { e.stopImmediatePropagation(); closeUser(true); } }
 
     function addItem(name) {
         const c = C.itemCheck(name, rate);
@@ -596,7 +596,11 @@
         fromCartReq = !!fromCartPick && startTab === 'mine';
         if (startTab === 'mine' || startTab === 'give') tab = startTab; /* Oct 26: the Supermarket Cart's "Ask for a hand with it" opens on I could use a hand */
         ov = D.createElement('div');
-        ov.className = 'stp-ov gb-ov';
+        /* Oct 28 2026 (Emmanuel: Zu Hause and Supermarkt switch smoothly, but Hilf mit "feels like a new window"): opened from
+           Einkaufen, Hilf mit takes the same frame. No fade, no zoom, no second dark backdrop, and the Einkaufen card under it is hidden
+           (html.gb-inframe-on) so the tab bar and the card stay exactly where they were and only the content changes. */
+        const inframe = from === 'shop' && !!(W.LowiStorePicks && W.LowiStorePicks.isOpen && W.LowiStorePicks.isOpen());
+        ov.className = 'stp-ov gb-ov' + (inframe ? ' gb-inframe' : '');
         ov.setAttribute('data-from', from || '');
         ov.addEventListener('click', onClick);
         ov.addEventListener('input', onInput);
@@ -609,7 +613,8 @@
         loaded = false; offline = false; msg = ''; opened = {}; receiptUrl = {}; photo = null; draft = loadDraft();
         D.body.appendChild(ov);
         paint();
-        requestAnimationFrame(() => { if (ov) ov.classList.add('in'); });
+        if (inframe) { ov.classList.add('in'); D.documentElement.classList.add('gb-inframe-on'); }
+        else requestAnimationFrame(() => { if (ov) ov.classList.add('in'); });
         load();
     }
     /* A tap on X / the backdrop / Escape goes through the app's back stack, so the Shop panel under it comes back.
@@ -622,8 +627,20 @@
         D.removeEventListener('keydown', onKey, true);
         if (photo && photo.url && photo.url.startsWith('blob:')) try { URL.revokeObjectURL(photo.url); } catch (e) {}
         photo = null; open = []; given = []; receiptUrl = {};
+        if (o.classList.contains('gb-inframe')) { D.documentElement.classList.remove('gb-inframe-on'); try { o.remove(); } catch (e) {} return; } /* a tab switch: gone at once */
         o.classList.remove('in'); o.classList.add('out');
         setTimeout(() => { try { o.remove(); } catch (e) {} }, 260);
+    }
+    /* In the same frame, X, Escape and a tap beside the card close Einkaufen itself (as on its other tabs), through the back stack. */
+    function closeUser(trusted) {
+        const inframe = !!(ov && ov.classList.contains('gb-inframe'));
+        close(trusted);
+        if (!inframe || !trusted || ov) return;
+        try {
+            const R2 = W.LowiR2, top = R2 && R2.top ? R2.top() : null;
+            if (top && top.classList && top.classList.contains('stp-ov') && !top.classList.contains('gb-ov') && R2.back) R2.back(top);
+            else if (W.LowiStorePicks && W.LowiStorePicks.isOpen && W.LowiStorePicks.isOpen()) W.LowiStorePicks.close();
+        } catch (e) {}
     }
     /* Server gate: the entry shows only once the server has the basket table (checked when the account is online,
        remembered for 6 hours). So this can ship before the database change without a broken panel. */

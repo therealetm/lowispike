@@ -37,7 +37,8 @@
     /* what the row shows: kind 'add' (house + "+") or 'step' ("- q +") */
     function state(lines, name, inKitchen) {
         const l = lineFor(lines, name), q = l ? Math.max(1, +l.q || 1) : 0;
-        return { q, id: l ? String(l.id) : '', kit: !!inKitchen, kind: q > 0 ? 'step' : 'add' };
+        /* Oct 28 2026: inKitchen === null means there is no kitchen any more (Kitchen game removed): no house button, just the "+" */
+        return { q, id: l ? String(l.id) : '', kit: inKitchen === null ? null : !!inKitchen, kind: q > 0 ? 'step' : 'add' };
     }
     /* a tap that comes less than FRESH_MS after the control changed kind is the 2nd tap of a double tap: ignore it */
     function fresh(changedAt, now) { return changedAt > 0 && now >= changedAt && now - changedAt < FRESH_MS; }
@@ -54,9 +55,9 @@
                 '<button type="button" class="stp-qa-b stp-qa-more" data-stp-qa="more" data-stp-qa-i="' + i + '" aria-label="' + esc(word(l, 'more', name)) + '"><span aria-hidden="true">+</span></button>' +
                 '</span>';
         }
-        return '<button type="button" class="stp-qa-b stp-qa-kit' + (st.kit ? ' on' : '') + '" data-stp-qa="kit" data-stp-qa-i="' + i + '" data-spend="1"' +
+        return (st.kit === null ? '' : '<button type="button" class="stp-qa-b stp-qa-kit' + (st.kit ? ' on' : '') + '" data-stp-qa="kit" data-stp-qa-i="' + i + '" data-spend="1"' +
             ' aria-pressed="' + (st.kit ? 'true' : 'false') + '" aria-label="' + esc(word(l, st.kit ? 'kitOn' : 'kit', name)) + '">' + HOUSE +
-            (st.kit ? '<span class="stp-qa-tick" aria-hidden="true">✓</span>' : '') + '</button>' +
+            (st.kit ? '<span class="stp-qa-tick" aria-hidden="true">✓</span>' : '') + '</button>') +
             '<button type="button" class="stp-qa-b stp-qa-add" data-stp-qa="add" data-stp-qa-i="' + i + '" data-spend="1" aria-label="' + esc(word(l, 'add', name)) + '"><span aria-hidden="true">+</span></button>';
     }
     /* a short note (role=status) that never moves a row: "In your Cart: X", with Undo for the kitchen */

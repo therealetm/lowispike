@@ -52,6 +52,7 @@ function panel(file, k, extra) {
     const calls = [];
     const ctx = Object.assign({ W: k.W, D: {}, Date, ov: null, calls, setTimeout: (f) => { calls.push('timer'); f(); }, console }, extra(calls));
     const shut = ctx.close; ctx.close = function () { shut.apply(ctx, arguments); ctx.setOv(null); }; /* close() lets go of the panel, as the real ones do */
+    if (ctx.closeUser) { const su = ctx.closeUser; ctx.closeUser = function () { su.apply(ctx, arguments); ctx.setOv(null); }; } /* gift-basket's closeUser() closes the same way */
     vm.runInNewContext(src.slice(i, end + 6) + '\nthis.onClick = onClick; this.setOv = v => { ov = v; };', ctx);
     return ctx;
 }
@@ -124,7 +125,7 @@ test('BH-036: keyboard and script clicks are never swallowed, and the open Shop 
 
 test('BH-036: Give a hand ignores taps while it fades (it threw on ov.contains(null)) and marks its closing tap', () => {
     const k = scrim();
-    const P = panel('gift-basket.js', k, calls => ({ close() { calls.push('close'); }, paint() { calls.push('paint'); }, tab: 'open', msg: '', dragAt: 0, pick() {}, skip() {}, undoSkip() {},
+    const P = panel('gift-basket.js', k, calls => ({ close() { calls.push('close'); }, closeUser() { calls.push('close'); }, paint() { calls.push('paint'); }, tab: 'open', msg: '', dragAt: 0, pick() {}, skip() {}, undoSkip() {},
         addItem() { calls.push('add'); }, help() { calls.push('help'); } }));
     const ov = el(k.body, {}, 'DIV'), x = el(ov, { 'data-gb': 'close' }), help = el(ov, { 'data-gb-help': 'a1' });
     P.setOv(ov);

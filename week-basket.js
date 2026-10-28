@@ -33,7 +33,9 @@
     let inl = null;
     const save = () => { try { localStorage.setItem(C.KEY, JSON.stringify(S)); } catch (e) {} };
     const recipes = () => { try { return (W.LowiAllRecipes && W.LowiAllRecipes()) || []; } catch (e) { return []; } };
+    /* Oct 28 2026: the Kitchen was removed, so nothing counts as at home through it any more (its old data is not shown anywhere) */
     function kitchenHas(name) {
+        return false;
         try { const K = W.LowiKitchenCore; if (!K) return false; const list = K.parse ? K.parse(localStorage.getItem(K.KEY)) : JSON.parse(localStorage.getItem(K.KEY) || '[]'); return !!K.has(list, name); } catch (e) { return false; }
     }
     /* everything the sheet shows, rebuilt from the saved settings */

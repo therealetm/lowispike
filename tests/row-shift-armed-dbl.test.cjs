@@ -64,19 +64,14 @@ test('BH-041: x (take off the list) double tapped: the next row stays; a deliber
     s3.at(60); assert.ok(!s3.click(z, 10, 10, { trusted: false }).stopped, 'script click works');
 });
 
-test('BH-041: every Kitchen row action that removes its row carries data-spend; the recipe card Add to kitchen / Undo too', () => {
-    const k = read('kitchen-game.js');
-    for (const a of ['data-kg-got', 'data-kg-bdrop', 'data-kg-del', 'data-kg-bin', 'data-kg-hit']) {
-        const tags = k.match(new RegExp('<button[^>]*' + a + '=[^>]*>', 'g')) || [];
-        assert.ok(tags.length, a + ' is drawn');
-        tags.forEach(tg => assert.ok(/data-spend/.test(tg), a + ' button carries data-spend: ' + tg.slice(0, 120)));
-    }
+test('Oct 28 2026: the Kitchen is gone, so recipe rows carry no Add to kitchen pill; Open / Cook / Save stay ordinary buttons', () => {
     const C = require('../bot-recipe-core.js');
-    const before = C.rowHTML({ key: 'c1', id: '5', count: 5 }, 0), after = C.rowHTML({ key: 'c1', id: '5', kitchen: 'done', added: 5, undo: true }, 0);
-    assert.match(before, /<button[^>]*data-spend[^>]*data-crb="kitchen"|<button[^>]*data-crb="kitchen"[^>]*data-spend/, 'Add to kitchen is data-spend');
-    assert.match(after, /<button[^>]*data-spend[^>]*data-crb="undo"/, 'Undo is data-spend');
-    /* the other recipe buttons stay ordinary */
-    assert.ok(!/<button[^>]*data-spend[^>]*data-crb="(open|cook|save)"/.test(before), 'Open / Cook / Save are untouched');
+    C.kitchenOn(false);
+    const row = C.rowHTML({ key: 'c1', id: '5', count: 5 }, 0);
+    assert.doesNotMatch(row, /data-crb="kitchen"/, 'no Add to kitchen');
+    for (const a of ['open', 'cook', 'save']) assert.match(row, new RegExp('data-crb="' + a + '"'), a + ' is still there');
+    assert.ok(!/<button[^>]*data-spend[^>]*data-crb="(open|cook|save)"/.test(row), 'Open / Cook / Save are untouched');
+    assert.strictEqual(C.rowHTML({ key: 'c2', foods: [{ n: 'Eier' }] }, 0), '', 'a row that was only the kitchen pill is gone');
 });
 
 test('BH-041b: a two-step delete is not armed and confirmed by one double tap', () => {

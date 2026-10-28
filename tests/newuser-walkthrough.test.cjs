@@ -40,7 +40,8 @@ test('onboarding names the bubbles the way the ring does: Fuel (not Meals), Gap 
     assert(!/'Shop & scan','Meals'/.test(hs));
     /* the ring labels those words point at */
     const css = read('home-orbit-v2.css');
-    for (const w of ['Fuel', 'Essen', 'Comida', 'Gap', 'Pause', 'Pausa']) assert(css.includes("'" + w + "'"), w);
+    /* Oct 28 2026: the ring's Fuel bubble is the way into Einkaufen, so its label is Shopping / Einkaufen / Compras */
+    for (const w of ['Shopping', 'Einkaufen', 'Compras', 'Gap', 'Pause', 'Pausa']) assert(css.includes("'" + w + "'"), w);
 });
 
 test('VoiceOver hears the Fuel bubble by its ring name, not "Meals"', () => {

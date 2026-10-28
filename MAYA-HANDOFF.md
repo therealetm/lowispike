@@ -76,6 +76,12 @@ about 12:58 PM CET). Re-read `version.json` on https://therealetm.github.io/lowi
 
 ### Released today and last night (all quiet: no banner, no What's New)
 
+**28 Oct, ~9 PM: build 20261028-205957, Community chat for people only (task "Community nur Menschen", branch `chat-humans-20261028`):**
+- Emmanuel (call, from tester feedback): "die Bot Sachen, die im Chat kommen, nur auf der For You Page leben ... dann ist der Chat einfach wirklich nur für Menschen ... nuken wir mal alle Nachrichten von Bot im Chat ... lassen aber alles auf der For You Page."
+- App: `chat-humans-core.js` (Nibblo's fixed id + `profiles.bot` via `LowiBotAccounts.isFlagged`, never a name; test accounts are NOT bots here). index.html keeps bot rows out of MSGS/RX at every door: first load (`user_id not in` + filter, learns the bot flag from the same profiles load), `onMsg`, `onRx`, `replace/upsert/setReactions`, cmLoad cache, and `chatPurge()` on `lowi-bots`. community-chat-cloud.js reload asks `user_id not in` too. community-chat.js: only the room's `const shown=` line (guard + old galaxy companion `botLines()` no longer mixed in). lis-push.js: a Nibblo push opens For You at post `snb-…` (was Chat). crowd.cjs: `CHAT_HUMANS_ONLY` (no chat line, photo or reaction even if the workflow is switched on again). Tutorial `new-humans` v36 text + voice. For You untouched.
+- **Server NOT done** (no Supabase dashboard: his GitHub signs in with Google, he did not finish it in the live view). Nibblo still inserts its chat row 3x a day (invisible in the app now), and its push still needs that row (n1-push `nbPost`). Old bot rows are still in `messages`. Exact steps in `supabase/proposals/chat_humans_20261028.sql`: backup tables, delete, `nibblo_post` without the messages insert, n1-push `nbPost` -> posts + lunch line "im Chat gelandet" -> Für dich, deploy, in that order.
+- Tests 4135/4135 (new `tests/chat-humans.test.cjs`). Live: files match, chromium + webkit boot clean, PostgREST accepts the `not.in` filter (200). Not checked signed in with real chat data (no test login on this VM), not on his iPhone.
+
 **28 Oct, ~8:45 PM (task "Aussehen leichter schließen + verständlicher Tagesüberblick", branch `look-recap-20261028`):**
 - Companion > **Aussehen** (`.cf-ov`, companion.js `dismiss()` + `gStart/gMove/gEnd`): pull down by the top bar, or anywhere
   once the list is scrolled to the top, closes it; swipe right from the left edge (26 px) = back. Both go to the companion

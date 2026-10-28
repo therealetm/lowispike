@@ -58,7 +58,7 @@ test('Deep analyze is a one-tap link to the custom GPT, never an in-app sheet (O
 });
 
 test('Fuel\'s "When did you eat?" backdates the meal, and that time is what ends the fast', () => {
-    assert.ok(/mc\.from==="gap"\|\|mc\.from==="when"/.test(html));
+    assert.ok(/mc\.from==="gap"&&Date\.now\(\)-mc\.at<20\*60000\|\|mc\.from==="when"/.test(html));
     assert.ok(/if\(ateSet\)log\.ateSet=1;/.test(html));
     assert.ok(/function catchUp\(slot, t\)\{ return false; \}/.test(html), 'gapfix (Oct 23): no meal is a catch-up guess any more, the meal time decides');
 });

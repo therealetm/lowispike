@@ -71,62 +71,28 @@ const running = s => ({ lowi_fast_v1: JSON.stringify({ last: s, hist: [] }) });
 const fastAwards = h => h.awards.filter(a => a.src === 'r3a_fast');
 const min = t => Math.floor(t / MIN) * MIN;
 
-test('Emmanuel\'s repro: Gap from a meal at 18:55, Zeit ändern to 17:55 sticks and moves that meal (no second meal)', () => {
-    const now = Date.now(), meal = min(now - H), h = host(running(min(now - 3 * H)));
-    h.logMeal('a', meal, 'Pasta');
-    assert.strictEqual(h.start(), meal, 'Gap counts from the meal ("Gespeichert: 18:55")');
-    const r = h.save(meal - H);
-    assert.ok(r.ok, JSON.stringify(r)); assert.ok(r.moved, 'the meal moved');
-    assert.strictEqual(h.start(), meal - H, 'no snap back: the Gap counts from 17:55');
-    assert.strictEqual(h.logs.length, 1, 'still one meal');
-    assert.strictEqual(h.logs[0].ts, meal - H, 'Fuel shows the new time');
-    assert.strictEqual(h.win.LowiFastStop.lastMeal().ts, meal - H, 'After your meal reads the same meal and time');
-    assert.strictEqual(h.fast().last, meal - H);
-    assert.deepStrictEqual(JSON.parse(JSON.stringify(h.edits[0])), { id: 'a', ts: meal - H, anyDay: true }, 'goes through Fuel\'s own editMeal');
+/* Oct 28, 2026 (Emmanuel): "Entkopple den Fastentimer komplett vom Essen." The Oct 24 fix (Zeit ändern moves the meal the Gap
+   counted from) is retired with it: the Gap no longer counts from a meal, so Zeit ändern moves only the timer's own start and
+   never a logged meal (LowiFastStop.mealList is empty). The fast-edit core keeps its meal logic for old callers; these tests pin the
+   app's behaviour. */
+const runningV2 = s => ({ lowi_fast_v1: JSON.stringify({ last: s, hist: [], v2: 1 }) });
+
+test('decoupled: Gap from 18:55, Zeit ändern to 17:55 sticks, and the meal eaten at 18:55 stays where it is', () => {
+    const now = Date.now(), s0 = min(now - 2 * H), h = host(runningV2(s0));
+    h.logMeal('a', s0, 'Spiegeleier');
+    const r = h.save(s0 - H);
+    assert.ok(r.ok, JSON.stringify(r)); assert.ok(!r.moved, 'no meal moved');
+    assert.strictEqual(h.start(), s0 - H, 'the new start sticks');
+    assert.strictEqual(h.logs[0].ts, s0, 'the meal keeps its time');
+    assert.strictEqual(h.edits.length, 0, 'Fuel\'s meal edit is never called');
+    assert.strictEqual(fastAwards(h).length, 0, 'no points from editing');
 });
 
-test('the bug before the fix: writing only `last` loses to the newest meal (what Emmanuel saw)', () => {
-    const now = Date.now(), meal = min(now - H), h = host(running(min(now - 3 * H)));
-    h.logMeal('a', meal);
-    const s = h.fast(); s.last = meal - H; h.win.localStorage.setItem('lowi_fast_v1', JSON.stringify(s));
-    assert.strictEqual(h.start(), meal, 'old path: back to 18:55');
-});
-
-test('a long fast before the meal is paid once, at its corrected end, and never twice', () => {
-    const now = Date.now(), s0 = min(now - 20 * H), meal = min(now - 2 * H), h = host(running(s0));
-    h.logMeal('a', meal);
-    assert.strictEqual(fastAwards(h).length, 1, 'the 18 h fast paid when the meal was logged');
-    const r = h.save(meal - 3 * H);
-    assert.ok(r.ok && r.moved);
-    assert.strictEqual(fastAwards(h).length, 1, 'still once');
-    const hist = h.fast().hist; assert.strictEqual(hist.length, 1); assert.strictEqual(hist[0].s, s0); assert.strictEqual(hist[0].e, meal - 3 * H, 'the fast now ends at the corrected meal time');
-    assert.strictEqual(h.start(), meal - 3 * H);
-    // moving it back later again works too, still one record and one payment
-    const r2 = h.save(meal - H);
-    assert.ok(r2.ok && r2.moved, JSON.stringify(r2));
-    assert.strictEqual(h.start(), meal - H); assert.strictEqual(h.fast().hist.length, 1); assert.strictEqual(fastAwards(h).length, 1);
-});
-
-test('the -1 h nudge is not clamped to the meal\'s own fast (planBounds), and the earliest time is the gap before that meal', () => {
-    const now = Date.now(), s0 = min(now - 20 * H), meal = min(now - 2 * H), h = host(running(s0));
-    h.logMeal('a', meal);
-    const s = h.fast(), ml = h.win.LowiFastStop.mealList();
-    assert.strictEqual(C.bounds(s, now).min, meal, 'the old bounds stopped at the meal itself');
-    const b = C.planBounds(s, ml, now);
-    assert.strictEqual(b.min, s0, 'with the meal lifted out, the earliest time is where that gap started');
-    assert.strictEqual(b.cur, meal);
-    assert.ok(C.plan(s, ml, meal - H, now).ok);
-    assert.strictEqual(C.plan(s, ml, s0 - H, now).err, 'overlap');
-});
-
-test('the last meal cannot move before the meal logged ahead of it (that one would win again)', () => {
-    const now = Date.now(), h = host(running(min(now - 10 * H))), m1 = min(now - 5 * H), m2 = min(now - H);
-    h.logMeal('a', m1, 'Toast'); h.logMeal('b', m2, 'Salad');
-    const p = C.plan(h.fast(), h.win.LowiFastStop.mealList(), m1 - H, now);
-    assert.strictEqual(p.err, 'mealBefore'); assert.strictEqual(p.meal.t, 'Toast');
-    const r = h.save(m1 - H);
-    assert.ok(!r.ok); assert.strictEqual(h.start(), m2, 'nothing changed'); assert.strictEqual(h.logs[1].ts, m2);
-    assert.ok(h.save(m1 + H).ok); assert.strictEqual(h.start(), m1 + H); assert.strictEqual(h.logs.length, 2);
+test('decoupled: logging a meal after a start edit does not win over it', () => {
+    const now = Date.now(), s0 = min(now - 5 * H), h = host(runningV2(s0));
+    h.save(s0 - 2 * H);
+    h.logMeal('b', min(now - 10 * MIN));
+    assert.strictEqual(h.start(), s0 - 2 * H);
 });
 
 test('no meal logged: Zeit ändern still only moves the start, as before', () => {
@@ -145,17 +111,17 @@ test('own start later than the newest meal: an earlier time that would hide behi
     assert.strictEqual(C.plan(s, meals, NOW - 3 * H, NOW).move, null);
 });
 
-test('a meal logged this morning can go back to last night (other day, up to 7 days): its day goes with it', () => {
-    const now = Date.now(), s0 = min(now - 40 * H), meal = min(now - H), h = host(running(s0));
+test('decoupled: Zeit ändern can set the start back to last night (up to 7 days); a meal logged this morning is untouched', () => {
+    const now = Date.now(), s0 = min(now - 40 * H), meal = min(now - H), h = host(runningV2(s0));
     h.logMeal('a', meal);
-    const to = meal - 26 * H;
+    const to = min(now - 26 * H);
     const r = h.save(to);
-    assert.ok(r.ok && r.moved, JSON.stringify(r));
-    assert.strictEqual(h.logs[0].ts, to); assert.strictEqual(h.logs[0].day, dayOf(to));
+    assert.ok(r.ok && !r.moved, JSON.stringify(r));
     assert.strictEqual(h.start(), to);
-    assert.strictEqual(C.plan(h.fast(), h.win.LowiFastStop.mealList(), now - 8 * 24 * H, now).err, 'old');
-    assert.strictEqual(C.plan(h.fast(), h.win.LowiFastStop.mealList(), now + H, now).err, 'future');
-    assert.strictEqual(C.plan(h.fast(), h.win.LowiFastStop.mealList(), to + 20000, now).err, 'same');
+    assert.strictEqual(h.logs[0].ts, meal);
+    assert.strictEqual(h.win.LowiFastStop.mealList().length, 0);
+    assert.strictEqual(C.plan(h.fast(), [], now - 8 * 24 * H, now).err, 'old');
+    assert.strictEqual(C.plan(h.fast(), [], now + H, now).err, 'future');
 });
 
 test('Fuel\'s own path (meal > Bearbeiten > Uhrzeit) keeps working beside it', () => {

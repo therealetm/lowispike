@@ -55,81 +55,43 @@ function moveMeal(h, id, ts) { const l = h.logs.find(l => l.id === id), old = l.
 const start = h => h.win.LowiFastStop.startOf(h.fast());
 const today = (hh, mm) => { const d = new Date(); d.setHours(hh, mm || 0, 0, 0); return d.getTime(); };
 
-/* E-man, Oct 23, 12:58: Log meal said Breakfast "1 logged today" and still "Saving this closes your 14 h 58 min meal gap" */
-test('the Oct 23 bug: a meal picked as Breakfast after 11:00 closes the gap at once (no catch-up rule)', () => {
-    const now = Date.now(), s0 = now - (14 * H + 58 * MIN), h = host(running(s0));
-    logMeal(h, 'a', now, 'breakfast');
-    assert.strictEqual(start(h), now, 'the Gap restarts at 0 from the meal');
-    assert.strictEqual(h.fast().hist.length, 1);
-    assert.strictEqual(fastAwards(h).length, 1, 'fast points once');
-    assert.strictEqual(h.win.LowiFastStop.mealNote(), '', 'Log meal no longer offers to close a gap that just closed');
+/* Oct 28, 2026 (Emmanuel): "Entkopple den Fastentimer komplett vom Essen ... Die Steuerung läuft ausschließlich über eine Bubble:
+   'Letzte Mahlzeit' zum Starten und 'Erste Mahlzeit' zum Beenden." The Oct 23 rule (every meal resets the Gap) is replaced:
+   logging, removing or moving a meal never touches the Gap. */
+const runningV2 = (startedAt) => ({ lowi_fast_v1: JSON.stringify({ last: startedAt, hist: [], v2: 1 }) });
+
+test('decoupled: a breakfast, a snack or a second plate logged during the gap leaves it running from the same start', () => {
+    const now = Date.now(), s0 = now - (14 * H + 58 * MIN), h = host(runningV2(s0));
+    logMeal(h, 'a', now, 'breakfast'); logMeal(h, 's', now - 2 * MIN, 'snack'); logMeal(h, 'b', now - 5 * MIN);
+    assert.strictEqual(start(h), s0);
+    assert.strictEqual((h.fast().hist || []).length, 0);
+    assert.strictEqual(fastAwards(h).length, 0);
+    assert.strictEqual(h.win.LowiFastStop.mealNote(), '', 'Log meal says nothing about the gap');
 });
 
-test('a snack closes the gap too (the app has no rule that keeps a fast going for a snack)', () => {
-    const now = Date.now(), h = host(running(now - 6 * H));
-    logMeal(h, 's', now - 2 * MIN, 'snack');
-    assert.strictEqual(start(h), now - 2 * MIN);
-});
-
-test('a meal that reached this device without the event (another device, an old direct log) still moves the Gap, without paying points', () => {
-    const now = Date.now(), s0 = now - 15 * H, h = host(running(s0));
+test('decoupled: a meal from another device (no event) is not read by the Gap', () => {
+    const now = Date.now(), s0 = now - 15 * H, h = host(runningV2(s0));
     h.logs.push({ id: 'x', eventId: 'meal:x', t: 'Rice', ts: now - 30 * MIN, day: day(now - 30 * MIN), slot: 'meal' });
-    assert.strictEqual(start(h), now - 30 * MIN, 'the Gap reads the newest meal');
-    assert.strictEqual(fastAwards(h).length, 0, 'no points from just looking');
-    assert.ok(!/15 h/.test(h.win.LowiFastStop.mealNote()), 'Log meal no longer offers to close the 15 h gap');
+    assert.strictEqual(start(h), s0);
 });
 
-test('the Gap shows the newest meal, also a second plate in the same sitting, and pays only once', () => {
-    const now = Date.now(), s0 = now - 16 * H, h = host(running(s0));
-    logMeal(h, 'a', now - 20 * MIN); logMeal(h, 'b', now - 5 * MIN);
-    assert.strictEqual(start(h), now - 5 * MIN);
-    assert.strictEqual(h.fast().hist.length, 1);
+test('decoupled: removing or moving a meal never moves the Gap or takes points back', () => {
+    const now = Date.now(), s0 = now - 18 * H, h = host(runningV2(s0));
+    logMeal(h, 'a', now - 6 * H); logMeal(h, 'b', now - 10 * MIN);
+    removeMeal(h, 'b'); moveMeal(h, 'a', now - 2 * H);
+    assert.strictEqual(start(h), s0);
+    assert.strictEqual(h.unawards.length, 0);
+});
+
+test('the gap ends only with "Erste Mahlzeit": recorded and paid once; restart reads the saved state only', () => {
+    const now = Date.now(), s0 = now - 16 * H, h = host(runningV2(s0));
+    const r = h.win.LowiFastStop.end(now - 5 * MIN, { reward: false, quiet: true });
+    assert.ok(r.rec);
+    assert.strictEqual(h.fast().hist[0].e, now - 5 * MIN);
     assert.strictEqual(fastAwards(h).length, 1);
-});
-
-test('removing the latest meal (long-press undo, Log meal list) puts the Gap back on the meal before it and takes its fast points back', () => {
-    const now = Date.now(), s0 = now - 18 * H, h = host(running(s0));
-    logMeal(h, 'a', now - 6 * H);            /* ends the 12 h fast */
-    logMeal(h, 'b', now - 10 * MIN);         /* ends a 5 h 50 gap */
-    assert.strictEqual(start(h), now - 10 * MIN);
-    assert.strictEqual(h.fast().hist.length, 2);
-    removeMeal(h, 'b');
-    assert.strictEqual(start(h), now - 6 * H, 'back to the meal before');
-    assert.strictEqual(h.fast().hist.length, 1, 'the record that meal made is gone');
-    assert.ok(h.unawards.includes('fast:' + (now - 6 * H)), 'its fast points are taken back');
-    removeMeal(h, 'a');
-    assert.strictEqual(start(h), s0, 'and back to the start before that');
-    assert.strictEqual(h.fast().hist.length, 0);
-    assert.strictEqual(fastAwards(h).length, 0, 'nothing left paid');
-    logMeal(h, 'c', now);
-    assert.strictEqual(fastAwards(h).length, 1, 'eating again pays that fast once, not twice');
-    assert.strictEqual(h.fast().hist.length, 1);
-});
-
-test('removing a meal in the same sitting keeps the fast ended at the other plate, paid once', () => {
-    const now = Date.now(), s0 = now - 16 * H, h = host(running(s0));
-    logMeal(h, 'a', now - 20 * MIN); logMeal(h, 'b', now - 5 * MIN);
-    removeMeal(h, 'a');
-    assert.strictEqual(start(h), now - 5 * MIN);
-    assert.strictEqual(h.fast().hist.length, 1);
-    assert.strictEqual(fastAwards(h).length, 1, 'one payment, now for the fast that ended at the remaining plate');
-});
-
-test('editing the time of the latest meal moves the Gap and re-scores that fast once', () => {
-    const now = Date.now(), s0 = now - 16 * H, h = host(running(s0));
-    logMeal(h, 'a', now - 5 * MIN);
-    moveMeal(h, 'a', now - 2 * H);
-    assert.strictEqual(start(h), now - 2 * H, 'the Gap follows the edited time');
-    assert.strictEqual(h.fast().hist.length, 1);
-    assert.strictEqual(h.fast().hist[0].e, now - 2 * H);
-    assert.strictEqual(fastAwards(h).length, 1, 'still paid once');
-});
-
-test('restart: the Gap comes from what is saved (the fast state and the meals), nothing cached', () => {
-    const now = Date.now(), init = running(now - 15 * H), h = host(init);
-    logMeal(h, 'a', now - MIN);
-    const saved = h.fast(), h2 = host({ lowi_fast_v1: JSON.stringify(saved) }, { logs: h.logs.slice() });
-    assert.strictEqual(start(h2), now - MIN);
+    assert.strictEqual(start(h), 0, 'stopped');
+    const h2 = host({ lowi_fast_v1: JSON.stringify(h.fast()) }, { logs: [{ id: 'z', eventId: 'meal:z', t: 'Soup', ts: now - MIN, day: day(now), slot: 'meal' }] });
+    assert.strictEqual(start(h2), 0, 'still stopped after a reload, whatever was eaten');
 });
 
 test('wiring: delete and edit in the meal store tell the Gap, editing never pays XP again', () => {

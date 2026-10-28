@@ -6,7 +6,7 @@
    the eating time Fuel saved, backdated meals included) and draws it in the app's own world: the six markers as six planets on a
    hexagon, a light trail along it for the hours gone by, and the liquid in the glass rising with them. The markers and their notes
    are the soft-ms texts the fasting sheet already uses (LowiFast.stagesFull), framed as typical, never as a reading.
-   The only actions: fix the last meal time (LowiFastEdit, the time was wrong) and "Log a meal in Fuel" (Fuel restarts the gap).
+   The only actions: fix the last meal time (LowiFastEdit, the time was wrong) and "Log a meal in Fuel". DECOUPLED (Oct 28): meals no longer restart the gap; only the Home bubble ("Letzte Mahlzeit" / "Erste Mahlzeit") starts and stops it.
    Oct 24 2026: an "After your meal" strip leads the card (see MC below), and its walk lever may open Move.
    API window.LowiGapView {open(), close(), isOpen(), model(now)}; model is pure enough for node tests. EN / DE / ES. */
 (function (root, factory) {
@@ -17,23 +17,23 @@
     'use strict';
     const D = W.document;
     const STR = {
-        en: { title: 'Meal gap', since: 'since your last meal', none: 'No meal logged yet', noneSub: 'Log your next meal here. The gap counts from the time you ate.', close: 'Close',
+        en: { title: 'Meal gap', since: 'since your last meal', none: 'Eating break stopped', noneSub: 'Tap the eating break bubble on Home and choose “Last meal”. Meals and scans don’t start it.', close: 'Close',
             last: 'Last meal', fix: 'Fix time', now: 'Now', next: 'Next: {n} in about {d}', past: 'Past the last marker. Listen to your body.', markers: 'Typical markers',
-            pts: 'So far +{x} XP. You get them when you log your next meal.', recent: 'Recent gaps', log: 'Log a meal', cook: 'Cook', shop: 'Shop', edit: 'Edit last meal',
+            pts: 'So far +{x} XP. You get them when you tap “First meal”.', recent: 'Recent gaps', log: 'Log a meal', cook: 'Cook', shop: 'Shop', edit: 'Edit last meal',
             hedge: 'A general guide from typical patterns, not a measurement. Every body runs its own clock. On diabetes medication? Ask your doctor before long gaps.',
             hexL: 'Six markers on a hexagon; the lit trail shows the time since your last meal', today: 'Today', yday: 'Yesterday', ago1: 'yesterday',
             mcH: 'After your meal', mcTyp: 'Typical, not measured', mcLever: 'Lower the spike', mcMove: 'Open Move', mcRow: 'After-meal phases', mcPrev: 'Previous phase', mcNext: 'Next phase', mcSay: 'Read this phase aloud', mcStop: 'Stop reading', mcRate: 'Voice speed {r}',
             mcCare: 'On insulin or diabetes medication? Talk to your care team before changing meals or exercise: these tips can lower your blood sugar.' },
-        de: { title: 'Essenspause', since: 'seit deiner letzten Mahlzeit', none: 'Noch keine Mahlzeit eingetragen', noneSub: 'Trag deine nächste Mahlzeit hier ein. Die Pause zählt ab dem Essen.', close: 'Schließen',
+        de: { title: 'Essenspause', since: 'seit deiner letzten Mahlzeit', none: 'Essenspause steht', noneSub: 'Tipp auf der Startseite auf die Essenspause-Bubble und wähle „Letzte Mahlzeit“. Mahlzeiten und Scans starten sie nicht.', close: 'Schließen',
             last: 'Letzte Mahlzeit', fix: 'Zeit ändern', now: 'Jetzt', next: 'Als Nächstes: {n} in etwa {d}', past: 'Über die letzte Marke hinaus. Hör auf deinen Körper.', markers: 'Typische Marken',
-            pts: 'Bisher +{x} XP. Du bekommst sie, wenn du deine nächste Mahlzeit einträgst.', recent: 'Letzte Pausen', log: 'Mahlzeit eintragen', cook: 'Kochen', shop: 'Einkaufen', edit: 'Letzte Mahlzeit ändern',
+            pts: 'Bisher +{x} XP. Du bekommst sie, wenn du auf „Erste Mahlzeit“ tippst.', recent: 'Letzte Pausen', log: 'Mahlzeit eintragen', cook: 'Kochen', shop: 'Einkaufen', edit: 'Letzte Mahlzeit ändern',
             hedge: 'Eine grobe Orientierung aus typischen Verläufen, keine Messung. Jeder Körper hat seine eigene Uhr. Nimmst du Diabetes-Medikamente? Frag vor langen Pausen deine Ärztin oder deinen Arzt.',
             hexL: 'Sechs Marken auf einem Sechseck; die leuchtende Spur zeigt die Zeit seit deiner letzten Mahlzeit', today: 'Heute', yday: 'Gestern', ago1: 'gestern',
             mcH: 'Nach dem Essen', mcTyp: 'Typisch, nicht gemessen', mcLever: 'Spike senken', mcMove: 'Zu Bewegung', mcRow: 'Phasen nach dem Essen', mcPrev: 'Vorherige Phase', mcNext: 'Nächste Phase', mcSay: 'Diese Phase vorlesen', mcStop: 'Vorlesen stoppen', mcRate: 'Sprechtempo {r}',
             mcCare: 'Nimmst du Insulin oder Diabetes-Medikamente? Sprich mit deinem Behandlungsteam, bevor du Essen oder Bewegung umstellst: Diese Tipps können deinen Blutzucker senken.' },
-        es: { title: 'Pausa entre comidas', since: 'desde tu última comida', none: 'Aún no hay comidas', noneSub: 'Registra aquí tu próxima comida. La pausa cuenta desde la hora en que comiste.', close: 'Cerrar',
+        es: { title: 'Pausa entre comidas', since: 'desde tu última comida', none: 'Pausa detenida', noneSub: 'Toca la burbuja de la pausa en Inicio y elige «Última comida». Las comidas y escaneos no la inician.', close: 'Cerrar',
             last: 'Última comida', fix: 'Cambiar hora', now: 'Ahora', next: 'Después: {n} en unas {d}', past: 'Más allá del último marcador. Escucha a tu cuerpo.', markers: 'Marcadores típicos',
-            pts: 'Por ahora +{x} XP. Los recibes al registrar tu próxima comida.', recent: 'Pausas recientes', log: 'Registrar comida', cook: 'Cocinar', shop: 'Comprar', edit: 'Cambiar última comida',
+            pts: 'Por ahora +{x} XP. Los recibes al tocar «Primera comida».', recent: 'Pausas recientes', log: 'Registrar comida', cook: 'Cocinar', shop: 'Comprar', edit: 'Cambiar última comida',
             hedge: 'Una guía general según patrones típicos, no una medición. Cada cuerpo tiene su propio reloj. ¿Tomas medicación para la diabetes? Consulta a tu médico antes de pausas largas.',
             hexL: 'Seis marcadores en un hexágono; el rastro iluminado muestra el tiempo desde tu última comida', today: 'Hoy', yday: 'Ayer', ago1: 'ayer',
             mcH: 'Después de comer', mcTyp: 'Típico, no medido', mcLever: 'Baja el pico', mcMove: 'Ir a Movimiento', mcRow: 'Fases después de comer', mcPrev: 'Fase anterior', mcNext: 'Fase siguiente', mcSay: 'Leer esta fase en voz alta', mcStop: 'Dejar de leer', mcRate: 'Velocidad de voz {r}',
@@ -387,6 +387,7 @@
         const ed = el.querySelector('.fe-inline'); if (ed) ed.remove();
         el.querySelector('.gv-body').innerHTML = body(model());
         if (ed) { const slot = el.querySelector('.gv-editslot'); if (slot) slot.appendChild(ed); }
+        if (savedMsg && Date.now() < savedUntil) { const slot = el.querySelector('.gv-editslot') || el.querySelector('.gv-body'), p = D.createElement('p'); p.className = 'mt-ok gv-saved'; p.setAttribute('role', 'status'); p.textContent = savedMsg; if (slot) slot.prepend(p); }
         const fx = el.querySelector('.gv-fix'); if (fx) fx.setAttribute('aria-expanded', ed ? 'true' : 'false');
         if (open.length) el.querySelectorAll('.gv-list details').forEach((d, i) => { if (i in open) d.open = open[i]; });
         if (sc) sc.scrollTop = y;
@@ -394,6 +395,9 @@
     }
     /* a new meal time, or coming back to the app: the card goes back to the phase you are in */
     function onFresh() { if (!el) return; mcSel = -1; paint(); }
+    /* Oct 28 (Antje): after a time is picked in "Zeit \u00e4ndern", one plain line says what was saved; it stays a minute */
+    let savedMsg = '', savedUntil = 0;
+    function saved(txt) { savedMsg = String(txt || ''); savedUntil = Date.now() + 60000; paint(); setTimeout(() => { const p = el && el.querySelector('.gv-saved'); if (p && p.scrollIntoView) p.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 60); }
     function onVis() { if (D && !D.hidden) onFresh(); }
     function edit() {
         if (!el) return open({ edit: true });
@@ -513,5 +517,5 @@
         else if (k === 'mcprev' || k === 'mcnext') { const cur = mcSel >= 0 ? mcSel : Math.max(0, model().mcCur); mcPick(cur + (k === 'mcnext' ? 1 : -1)); }
         else if (k === 'move') { close(); setTimeout(() => { try { if (typeof W.lowiOpen === 'function') W.lowiOpen('move'); else if (typeof W.goTab === 'function') W.goTab('move'); } catch (x) { console.error(x); } }, 60); }
     }
-    return { open, close, edit, isOpen: () => !!el, model, strings: STR, _when: when, _trail: trail, phases: MC, curvePhase, _curve: curve, mcSpoken, selFor, speaking: () => !!say };
+    return { open, close, edit, saved, isOpen: () => !!el, model, strings: STR, _when: when, _trail: trail, phases: MC, curvePhase, _curve: curve, mcSpoken, selFor, speaking: () => !!say };
 });

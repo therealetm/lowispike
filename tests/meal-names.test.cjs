@@ -136,7 +136,8 @@ test('Log meal panel: one open field first, then Wie immer, then the companion\'
   assert.match(f, /data-mic="1"/, 'typing and the mic stay in the one field');
   assert.doesNotMatch(f, /data-sp="scan"|data-sp="photo"/, 'no Barcode chip and no second photo chip in the form');
   assert.doesNotMatch(js, /sp-quick-cap|data-sp="slotWrite"/, 'no Snap food / Scan product row, no Write tile');
-  assert.match(f, /'<\/button><\/div>' \+ own \+\s*'<button class="r2-btn pri lm-save"/, 'own values sit behind the quiet link, before the one Save');
+  // Oct 28 (Antje, ~70): the one plain time button ("Gegessen: jetzt · Zeit ändern", meal-time.js) sits between them
+  assert.match(f, /'<\/button><\/div>' \+ own \+\s*mtRow\(at, 0\) \+\s*'<button class="r2-btn pri lm-save"/, 'own values sit behind the quiet link, then the time button, before the one Save');
   assert.match(js, /const own = '<div class="lm-own" id="lmOwn" hidden>/, 'your own numbers are optional and folded away (hidden until the link is tapped)');
   const sp = read('store-picks.js');
   assert.doesNotMatch(sp.slice(sp.indexOf('const SPOTS'), sp.indexOf('const SPOTS') + 600), /sp-quick-cap/, 'no "What can I buy here?" in Log meal');

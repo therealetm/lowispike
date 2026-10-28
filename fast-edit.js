@@ -23,19 +23,22 @@
             future: 'That\u2019s in the future. Pick a time that has passed.', overlap: 'Your last fast ended at {t}. This one can\u2019t start earlier.', mealNote: 'Your logged meal \u201c{m}\u201d moves to this time too, so Fuel shows the same.', mealAfter: 'You logged \u201c{m}\u201d at {t}, after that. Pick {t} or later, or change that meal in Fuel.', mealBefore: 'You logged \u201c{m}\u201d at {t}, before this meal. Pick a later time.', early: 'The earliest time here is {t}.', moved: 'Last meal moved to {t}.', meal: 'your meal', storage: 'Couldn\u2019t save that. Try again, or change the meal in Fuel.',
             old: 'You can go back up to 7 days.', invalid: 'Pick a date and a time.', same: 'That\u2019s already your start.', gap: 'The clocks jumped forward at that hour, so that time never happened. Pick a time just before or after.', twice: 'The clocks went back that night, so this time happened twice. We use the first one, still summer time.',
             keep: 'Your fast keeps running. Points come when you end it.', save: 'Save start', cancel: 'Cancel', done: 'Fast start set to {t}.',
-            yesterday: 'yesterday', h: 'h', m: 'min', aria: 'Edit when your fast started' },
+            yesterday: 'yesterday', h: 'h', m: 'min', aria: 'Edit when your fast started',
+            autoMeal: 'Time saved: {t}. \u201c{m}\u201d is there now.', autoStart: 'Time saved: {t}.', behind: 'Your break now counts from \u201c{m}\u201d at {t}.', orPick: 'Or pick day and time:' },
         de: { editHome: '\u00c4ndern', startAt: 'Start {t}', since: 'seit {t}', bubAria: '\u00c4ndern, wann dein Fasten begonnen hat, gerade seit {t}', holdAria: 'Lange dr\u00fccken, um den Fastenbeginn zu \u00e4ndern, gerade seit {t}', edit: 'Start \u00e4ndern', set: 'Start setzen', title: 'Wann war deine letzte Mahlzeit?', sub: 'Deine Pause z\u00e4hlt ab hier. Korrigier sie, wenn die Zeit falsch ist.',
             saved: 'Gespeichert: {t}', date: 'Datum', time: 'Uhrzeit', makes: 'Damit fastest du schon {d}.', tz: 'Zeiten in der Zeitzone deines Handys ({z}).',
             future: 'Das liegt in der Zukunft. W\u00e4hl eine Zeit, die schon vorbei ist.', overlap: 'Dein letztes Fasten endete um {t}. Dieses kann nicht fr\u00fcher beginnen.', mealNote: 'Deine eingetragene Mahlzeit \u201e{m}\u201c wandert mit auf diese Zeit, damit Fuel dasselbe zeigt.', mealAfter: 'Du hast \u201e{m}\u201c um {t} eingetragen, also sp\u00e4ter. W\u00e4hl {t} oder sp\u00e4ter, oder \u00e4ndere die Mahlzeit in Fuel.', mealBefore: 'Davor hast du \u201e{m}\u201c um {t} eingetragen. W\u00e4hl eine sp\u00e4tere Zeit.', early: 'Fr\u00fchestens geht hier {t}.', moved: 'Letzte Mahlzeit auf {t} verschoben.', meal: 'Mahlzeit', storage: 'Das lie\u00df sich nicht speichern. Versuch es nochmal oder \u00e4ndere die Mahlzeit in Fuel.',
             old: 'Du kannst bis zu 7 Tage zur\u00fcckgehen.', invalid: 'W\u00e4hl Datum und Uhrzeit.', same: 'Das ist schon dein Start.', gap: 'Um diese Uhrzeit wurde die Uhr vorgestellt, die Zeit gab es also nicht. W\u00e4hl eine Zeit kurz davor oder danach.', twice: 'In dieser Nacht wurde die Uhr zur\u00fcckgestellt, diese Uhrzeit gab es zweimal. Wir nehmen die erste, noch Sommerzeit.',
             keep: 'Dein Fasten l\u00e4uft weiter. Punkte gibt es, wenn du es beendest.', save: 'Start speichern', cancel: 'Abbrechen', done: 'Fasten-Start auf {t} gesetzt.',
-            yesterday: 'gestern', h: 'h', m: 'min', aria: '\u00c4ndern, wann dein Fasten begonnen hat' },
+            yesterday: 'gestern', h: 'h', m: 'min', aria: '\u00c4ndern, wann dein Fasten begonnen hat',
+            autoMeal: 'Zeit gespeichert: {t}. \u201e{m}\u201c steht jetzt dort.', autoStart: 'Zeit gespeichert: {t}.', behind: 'Deine Essenspause z\u00e4hlt jetzt ab \u201e{m}\u201c um {t}.', orPick: 'Oder Tag und Uhrzeit w\u00e4hlen:' },
         es: { editHome: 'Editar', startAt: 'Inicio {t}', since: 'desde {t}', bubAria: 'Cambiar cu\u00e1ndo empez\u00f3 tu ayuno, ahora desde {t}', holdAria: 'Mant\u00e9n pulsado para cambiar cu\u00e1ndo empez\u00f3 tu ayuno, ahora desde {t}', edit: 'Cambiar inicio', set: 'Poner inicio', title: '\u00bfCu\u00e1ndo fue tu \u00faltima comida?', sub: 'Tu pausa cuenta desde aqu\u00ed. C\u00e1mbiala si la hora est\u00e1 mal.',
             saved: 'Guardado: {t}', date: 'Fecha', time: 'Hora', makes: 'As\u00ed llevas {d} de ayuno.', tz: 'Horas en la zona horaria de tu m\u00f3vil ({z}).',
             future: 'Eso est\u00e1 en el futuro. Elige una hora que ya pas\u00f3.', overlap: 'Tu \u00faltimo ayuno termin\u00f3 a las {t}. Este no puede empezar antes.', mealNote: 'Tu comida registrada \u00ab{m}\u00bb tambi\u00e9n pasa a esta hora, as\u00ed Fuel muestra lo mismo.', mealAfter: 'Registraste \u00ab{m}\u00bb a las {t}, despu\u00e9s. Elige las {t} o m\u00e1s tarde, o cambia esa comida en Fuel.', mealBefore: 'Antes registraste \u00ab{m}\u00bb a las {t}. Elige una hora m\u00e1s tarde.', early: 'Lo m\u00e1s pronto aqu\u00ed es {t}.', moved: '\u00daltima comida movida a las {t}.', meal: 'tu comida', storage: 'No se pudo guardar. Int\u00e9ntalo de nuevo o cambia la comida en Fuel.',
             old: 'Puedes volver hasta 7 d\u00edas atr\u00e1s.', invalid: 'Elige fecha y hora.', same: 'Ese ya es tu inicio.', gap: 'A esa hora se adelant\u00f3 el reloj, as\u00ed que esa hora no existi\u00f3. Elige una hora justo antes o despu\u00e9s.', twice: 'Esa noche se atras\u00f3 el reloj, as\u00ed que esta hora pas\u00f3 dos veces. Usamos la primera, a\u00fan en horario de verano.',
             keep: 'Tu ayuno sigue. Los puntos llegan cuando lo terminas.', save: 'Guardar inicio', cancel: 'Cancelar', done: 'Inicio del ayuno: {t}.',
-            yesterday: 'ayer', h: 'h', m: 'min', aria: 'Cambiar cu\u00e1ndo empez\u00f3 tu ayuno' }
+            yesterday: 'ayer', h: 'h', m: 'min', aria: 'Cambiar cu\u00e1ndo empez\u00f3 tu ayuno',
+            autoMeal: 'Hora guardada: {t}. \u00ab{m}\u00bb est\u00e1 ahora ah\u00ed.', autoStart: 'Hora guardada: {t}.', behind: 'Tu pausa cuenta ahora desde \u00ab{m}\u00bb a las {t}.', orPick: 'O elige d\u00eda y hora:' }
     };
     const lang = () => { try { const l = (W.LowiLang && LowiLang.get ? LowiLang.get() : localStorage.getItem('lowispike.lang')) || 'en'; const k = String(l).slice(0, 2); return T[k] ? k : 'en'; } catch (e) { return 'en'; } };
     const w = (k, o) => { let s = T[lang()][k]; if (s == null) s = T.en[k]; if (o) Object.keys(o).forEach(x => { s = s.split('{' + x + '}').join(o[x]); }); return s; };
@@ -109,7 +112,8 @@
         }
         const tzEl = ov.querySelector('.fe-tz');
         if (tzEl) tzEl.textContent = w('tz', { z: tzLabel(isFinite(t) ? t : now) }) + (!bad && C().twice && C().twice(t) ? ' ' + w('twice') : '');
-        if (msg) { msg.textContent = m; msg.hidden = !m; }
+        if (!m && v.ok && v.behind) m = w('behind', { m: mealName(v.behind), t: at(v.behind.ts) }); /* Oct 28: moving the last meal before an earlier one is fine now */
+        if (msg) { msg.textContent = m; msg.hidden = !m; msg.classList.toggle('fe-info', !bad && !!m); }
         const gm = C().gapMeal ? C().gapMeal(s, ml, now) : null, keepEl = ov.querySelector('.fe-keep');
         if (keepEl) keepEl.textContent = gm ? w('mealNote', { m: mealName(gm) }) : w('keep');
         if (pre) { pre.textContent = isFinite(t) && t <= now ? w('makes', { d: dur(now - t) }) : ''; pre.classList.toggle('bad', bad); }
@@ -125,6 +129,7 @@
         return '<div class="fe-card" role="dialog" aria-modal="true" aria-labelledby="feT" tabindex="-1">' +
             '<div class="fe-hd"><span class="fe-ic" aria-hidden="true">\u23F3</span><div><h2 id="feT" class="fe-t">' + esc(w('title')) + '</h2><p class="fe-sub">' + esc(w('sub')) + '</p></div></div>' +
             (cur ? '<div class="fe-cur">' + esc(w('saved', { t: at(cur) })) + '</div>' : '') +
+            (W.LowiMealTime && inline ? '<div class="fe-mt">' + W.LowiMealTime.html({ at: pre, noOther: true }) + '</div><p class="fe-or">' + esc(w('orPick')) + '</p>' : '') +
             '<div class="fe-fields">' +
             '<label class="fe-f"><span>' + esc(w('date')) + '</span><span class="fe-in"><input type="date" id="feDate" value="' + p.date + '" min="' + mn.date + '" max="' + mx.date + '" lang="' + loc() + '" required><b class="fe-show" id="feDateShow" aria-hidden="true">' + esc(showDate(p.date)) + '</b></span></label>' +
             '<label class="fe-f"><span>' + esc(w('time')) + '</span><span class="fe-in"><input type="time" id="feTime" value="' + p.time + '" step="60" lang="' + loc() + '" required><b class="fe-show" id="feTimeShow" aria-hidden="true">' + esc(showTime(p.time)) + '</b></span></label></div>' +
@@ -155,6 +160,8 @@
         if (inline) {
             const c = ov.querySelector('.fe-card'); if (c) { c.setAttribute('role', 'group'); c.removeAttribute('aria-modal'); }
             host.appendChild(ov); check(); sfx('open');
+            /* Oct 28 (Antje, ~70): big plain choices that save the moment they are tapped; day + time below save once they settle */
+            try { const mt = ov.querySelector('.fe-mt'); if (mt && W.LowiMealTime) W.LowiMealTime.mount(mt, { at: cur, onPick: t => { autoSave(t || Date.now()); return false; } }); } catch (e) { console.error(e); }
             try { const f = ov.querySelector('#feTime') || ov.querySelector('.fe-card'); f.focus({ preventScroll: true }); } catch (e) {}
             return true;
         }
@@ -212,6 +219,31 @@
         try { W.dispatchEvent(new CustomEvent('lowi:fast-start', { detail: { from: mv.from, to: mv.to, meal: mv.ev || mv.id } })); } catch (e) {}
         return { ok: true, from: mv.from, to: mv.to, moved: true };
     }
+    /* Oct 28 (Antje: "Ich kann die Zeit \u00e4ndern, aber ich kann's nirgends speichern"): a picked time saves at once. The editor
+       closes and the Essenspause panel shows what happened in one plain line (LowiGapView.saved), e.g. "Zeit gespeichert: 08:00.
+       \u201eSpiegeleier\u201c steht jetzt dort. Deine Essenspause z\u00e4hlt jetzt ab \u201eAbendessen\u201c um 18:30." */
+    let autoT = 0;
+    function autoSave(t) {
+        clearTimeout(autoT);
+        if (!ov || !C()) return false;
+        const now = Date.now(), s0 = st(), ml = meals(), pl = C().plan ? C().plan(s0, ml, t, now) : C().validate(t, s0, now);
+        if (!pl.ok) {
+            if (pl.err === 'same') { close(true); return true; }
+            const mg = ov.querySelector('.fe-msg'); if (mg) { mg.textContent = pl.err === 'overlap' ? w('overlap', { t: at(pl.floor || C().prevEnd(s0)) }) : (w(pl.err) || ''); mg.hidden = !mg.textContent; }
+            sfx('error'); return false;
+        }
+        const r = save(t);
+        if (!r.ok) { sfx('error'); const mg = ov && ov.querySelector('.fe-msg'); if (mg) { mg.textContent = w('storage') || w('invalid'); mg.hidden = false; } return false; }
+        let txt = pl.move ? w('autoMeal', { t: at(r.to), m: mealName(pl.move) }) : w('autoStart', { t: at(r.to) });
+        if (pl.behind) txt += ' ' + w('behind', { m: mealName(pl.behind), t: at(pl.behind.ts) });
+        close(true); sfx('check');
+        try { if (W.LowiGapView && LowiGapView.saved) LowiGapView.saved(txt); else if (typeof W.toast === 'function') W.toast(txt); } catch (e) {}
+        return true;
+    }
+    function autoFields() {
+        clearTimeout(autoT);
+        autoT = setTimeout(() => { if (!ov || !inline) return; const v = check(); if (v && v.ok) autoSave(v.t); }, 1500);
+    }
     function doSave() {
         const v = check();
         if (!v) return;
@@ -248,7 +280,8 @@
         else if (k === 'nudge') nudge(+a.dataset.m || 0);
     }, true);
     D.addEventListener('input', e => { if (ov && e.target && (e.target.id === 'feDate' || e.target.id === 'feTime')) check(); });
-    D.addEventListener('change', e => { if (ov && e.target && (e.target.id === 'feDate' || e.target.id === 'feTime')) check(); });
+    D.addEventListener('change', e => { if (ov && e.target && (e.target.id === 'feDate' || e.target.id === 'feTime')) { check(); autoFields(); } });
+    D.addEventListener('focusout', e => { if (ov && inline && e.target && e.target.id === 'feTime') autoFields(); });
     /* the native field sits under the app-language label: with a mouse, a click opens its picker (on touch the field opens itself) */
     D.addEventListener('click', e => { const el = e.target; if (!ov || !el || (el.id !== 'feDate' && el.id !== 'feTime')) return; try { if (W.matchMedia && matchMedia('(pointer: fine)').matches && el.showPicker) el.showPicker(); } catch (x) {} });
     D.addEventListener('keydown', e => {

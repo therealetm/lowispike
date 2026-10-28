@@ -76,11 +76,11 @@ test('the old code path is gone: no 8 PM default anywhere in the fasting modules
 test('the Gap "Ate earlier" sheet with no meal known: no fake duration, no points, a plain question', () => {
     const h = host();
     const body = h.win.__body();
-    assert.match(body, /No meal logged yet/);
-    assert.match(body, /I just ate/);
+    assert.match(body, /When was your last meal\?/); /* Oct 28 decoupled: the bubble's start control */
+    assert.match(body, /Last meal: now/);
     assert.doesNotMatch(body, /You fasted|end fast|XP/, 'nothing to end, nothing earned');
     h.win.LowiFastStop.open();
-    assert.match(h.sheets.pop(), /When did you last eat\?/);
+    assert.match(h.sheets.pop(), /Last meal/);
 });
 
 test('first meal via the Gap bubble starts the clock at that meal, with no points and an honest toast', () => {
@@ -92,30 +92,17 @@ test('first meal via the Gap bubble starts the clock at that meal, with no point
     const f = h.fast();
     assert.strictEqual(f.last, t0 - 30 * 60000, 'the clock starts at the meal');
     assert.deepStrictEqual(f.hist, []);
-    assert.match(h.toasts.pop(), /Gap clock started at/);
+    assert.match(h.toasts.pop(), /Eating break started at/);
     assert.ok(Math.abs(h.win.LOWI_FAST.hours() - 0.5) < 0.01, 'half an hour since that meal');
 });
 
-test('first meal via Log meal (lowi:meal-logged) starts the clock; a later meal log ends the running fast (one meal path, Oct 21)', () => {
+test('Oct 28 decoupled: a meal log or a ticked planned meal never starts the clock on a new device', () => {
     const h = host();
-    const before = Date.now();
     h.emit('lowi:meal-logged', { id: 'm1', title: 'Eggs' });
-    const first = h.fast().last;
-    assert.ok(first >= before && first <= Date.now(), 'started now');
-    h.store.set('lowi_fast_v1', JSON.stringify(Object.assign(h.fast(), { last: before - 5 * H })));
-    h.emit('lowi:meal-logged', { id: 'm2', title: 'Soup' });
-    const f = h.fast();
-    assert.ok(f.last >= before, 'the meal ended the 5 h fast, the clock now runs from the meal');
-    assert.strictEqual(f.hist.length, 1, 'the fast is recorded once');
-    assert.strictEqual(f.awarded, before - 5 * H, 'points paid once for that fast');
-});
-
-test('a planned meal ticked on Today with no clock just starts it (no 8 h fast, no points)', () => {
-    const h = host();
-    const r = h.win.LowiFastStop.mealTicked();
-    assert.ok(r && r.first, 'the tick only starts the clock');
-    assert.ok(h.fast().last > Date.now() - 1000);
-    assert.deepStrictEqual(h.fast().hist, []);
+    assert.strictEqual(h.win.LowiFastStop.mealTicked(), null);
+    assert.ok(!(+h.fast().last > 0), 'no clock from eating');
+    assert.strictEqual(h.win.LowiFastStop.startOf(), 0);
+    assert.deepStrictEqual(h.fast().hist || [], []);
 });
 
 test('reload: the started clock survives, and nothing re-guesses it', () => {

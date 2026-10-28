@@ -35,7 +35,9 @@ test('one field: typing, mic, Foto and Barcode together, no second "Manuell" fie
 
 test('time: Now by default, one quiet native clock, no row of chips; future refused; fresh open resets', () => {
     assert.ok(!/data-sp="when" data-m=/.test(quick) && !/whenRow\(/.test(quick), 'no Jetzt / vor 30 Min. / vor 1 Std. chips');
-    assert.match(quick, /<input type="time" class="lm-time-in"/);
+    // Oct 28 (Antje, ~70: "ich kann's nirgends speichern"): the native clock became one plain button that opens big choices (meal-time.js)
+    assert.match(quick, /mtRow\(at, 0\)/);
+    assert.match(SP, /data-sp="lmTime" aria-expanded="/);
     assert.match(SP, /function lmTimeChange\(inp\)[\s\S]{0,600}editFuture/, 'a time in the future is refused');
     assert.match(SP, /from: 'when', ateAt: at, at: Date\.now\(\)/, 'the picked time backdates through LowiMealCtx like before');
     assert.match(quick, /if \(!back && window\.LowiMealCtx && window\.LowiMealCtx\.from === 'when'\) window\.LowiMealCtx = null;/);

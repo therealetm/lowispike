@@ -1,0 +1,32 @@
+/* LOWiSPIKE meal time chooser (meal-time.js, Oct 28 2026): big, plain, readable at 320 px; the time counts the moment it is picked */
+.mt{display:flex;flex-direction:column;gap:10px;margin:6px 0 4px;text-align:left}
+.mt-q{margin:0;font:700 17px/1.3 -apple-system,system-ui,sans-serif;color:inherit}
+.mt-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px}
+.mt-c{min-height:56px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;padding:8px 14px;border-radius:16px;
+  border:1.5px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:inherit;font:inherit;text-align:left;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;box-sizing:border-box;min-width:0}
+.mt-c b{font:700 17px/1.2 -apple-system,system-ui,sans-serif;overflow-wrap:anywhere;hyphens:none}
+.mt-c small{font:600 15px/1.2 -apple-system,system-ui,sans-serif;opacity:.78;font-variant-numeric:tabular-nums}
+.mt-c[aria-pressed="true"]{border-color:var(--acc,#7ef0ff);background:rgba(126,240,255,.18);box-shadow:0 0 0 2px rgba(126,240,255,.28) inset}
+.mt-c[aria-pressed="true"] b::after{content:" \2713"}
+.mt-c:focus-visible{outline:3px solid var(--acc,#7ef0ff);outline-offset:2px}
+.mt-photo{border-style:dashed}
+.mt-box{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mt-box[hidden]{display:none}
+.mt-f{display:flex;flex-direction:column;gap:4px;font:600 15px/1.2 -apple-system,system-ui,sans-serif;min-width:0}
+.mt-f select,.mt-f input{min-height:52px;width:100%;box-sizing:border-box;border-radius:14px;border:1.5px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.1);color:inherit;font:600 18px/1.2 -apple-system,system-ui,sans-serif;padding:0 12px;-webkit-appearance:none;appearance:none}
+.mt-f input::-webkit-date-and-time-value{text-align:left}
+.mt-ok{margin:0;padding:10px 14px;border-radius:14px;background:rgba(120,230,150,.16);border:1.5px solid rgba(120,230,150,.45);
+  font:700 17px/1.3 -apple-system,system-ui,sans-serif;color:inherit}
+.mt-ok::before{content:"\2713  "}
+.mt-ok[hidden]{display:none}
+.mt-ok.bad{background:rgba(255,140,120,.14);border-color:rgba(255,140,120,.5)}
+.mt-ok.bad::before{content:""}
+.mt-ok.pop{animation:mtPop .32s ease-out}
+@keyframes mtPop{0%{transform:scale(.97);opacity:.4}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.mt-ok.pop{animation:none}}
+html[data-theme="light"] .mt-c,.light .mt-c{border-color:rgba(0,0,0,.18);background:rgba(0,0,0,.04)}
+html[data-theme="light"] .mt-f select,html[data-theme="light"] .mt-f input,.light .mt-f select,.light .mt-f input{border-color:rgba(0,0,0,.2);background:rgba(0,0,0,.04)}
+html[data-theme="light"] .mt-c[aria-pressed="true"],.light .mt-c[aria-pressed="true"]{border-color:#0a84ff;background:rgba(10,132,255,.12);box-shadow:0 0 0 2px rgba(10,132,255,.2) inset}
+@media (max-width:350px){.mt-chips{grid-template-columns:1fr 1fr}.mt-c{padding:8px 10px}.mt-c b{font-size:16px}.mt-box{grid-template-columns:1fr}}

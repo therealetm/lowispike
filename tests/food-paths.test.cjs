@@ -146,9 +146,11 @@ test('Gap "I just ate" / "I ate earlier" open the one shared meal logger, option
     assert.match(sp, /else if \(a === 'gapskip'\) \{ window\.LowiMealCtx = null;/);
     assert.match(sp, /K\.slotFor \? K\.slotFor\(gc \? gc\.ateAt : undefined\)/);
     /* a meal logged right after "I ate earlier" keeps that time, same day only, once */
-    assert.match(html, /if\(at&&at<mts&&mts-at<18\*3600000&&new Date\(at\)\.toDateString\(\)===new Date\(mts\)\.toDateString\(\)\)\{mts=at;ateSet=1;\}window\.LowiMealCtx=null;/);
-    assert.match(html, /mc\.from==="gap"\|\|mc\.from==="when"/, 'Oct 21: Log meal\'s "When did you eat?" chips backdate the same way');
-    assert.match(html, /log=\{id:data\.id,eventId:id,ts:mts,day:today\(\),/);
+    assert.match(html, /mts-at<18\*3600000&&new Date\(at\)\.toDateString\(\)===new Date\(mts\)\.toDateString\(\)\)\)\{mts=at;ateSet=1;\}window\.LowiMealCtx=null;/);
+    /* Oct 28 (Antje): a time from the meal time chooser ("when") holds an hour, may be up to 7 days back, and the meal goes on that day */
+    assert.match(html, /mc\.from==="gap"&&Date\.now\(\)-mc\.at<20\*60000\|\|mc\.from==="when"&&Date\.now\(\)-mc\.at<60\*60000/, 'Oct 21: Log meal\'s "When did you eat?" backdates the same way');
+    assert.match(html, /mc\.from==="when"\?mts-at<=7\*864e5\+60000:/);
+    assert.match(html, /log=\{id:data\.id,eventId:id,ts:mts,day:mday,/);
 });
 
 test('a meal log with no clock starts it; with a clock running it ends the fast through the one rule (shopping scans do not log at all)', () => {

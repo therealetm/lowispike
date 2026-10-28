@@ -2107,27 +2107,27 @@ const PER_H = 2, CAP_H = 16, /* xpm: hourly fast points stop at 16 h, longer fas
 const MS = [{h:8, x:5, i:2}, {h:12, x:5, i:3}, {h:14, x:5, i:4}, {h:16, x:10, i:5}];
 const MS_EN = {8:"Liver often takes over", 12:"Fat burning often picks up", 14:"Ketones may start rising", 16:"Cell cleanup, maybe"}; /* soft-ms (Oct 21): typical, not promised */
 const W = {
-  en: {stop:"Stop", stopAria:"Stop fast: I just ate", btnNow:"I just ate · end fast", btnAt:"I ate at {t} · end fast", title:"End your fast", fasted:"You fasted", since:"since {t}",
-    when:"When did you eat?", hint:"Ate earlier? Tap a time, or tap the clock to pick your own.", now:"Just now", agoM:"{n} min ago", agoH:"{n} h ago", other:"Other time",
-    goalOk:"Goal {h} h reached", goalLeft:"Goal {h} h · {d} to go", earn:"You get +{x} XP", next:"Your next fast starts from this meal.",
+  en: {stop:"Stop", stopAria:"Stop fast: I just ate", btnNow:"First meal: now", btnAt:"First meal at {t}", title:"First meal", fasted:"You fasted", since:"since {t}",
+    when:"When was your first meal?", hint:"Meals, scans and photos don't change this timer. Only this bubble does.", now:"Just now", agoM:"{n} min ago", agoH:"{n} h ago", other:"Other time",
+    goalOk:"Goal {h} h reached", goalLeft:"Goal {h} h · {d} to go", earn:"You get +{x} XP", next:"The timer then stops until you tap \u201cLast meal\u201d again.",
     short:"Under 4 hours, so no points this time. Your clock restarts from this meal.", recent:"Your recent fasts", done:"Fast done!", badge:"Goal reached",
     without:"{d} without food", brk:"Logged the meal that broke it", enjoy:"Enjoy your meal", chain:"What did you eat? ›", label:"Fast done: {h} h", partial:"Every hour counts. The goal is next.", perH:"{h} h × 2 XP", ms:"Milestones", gb:"Goal bonus",
     restart:"Clock restarted from {t}.", before:"That's before your fast started.", today:"today", yesterday:"yesterday", h:"h", m:"min",
-    title0:"When did you last eat?", none:"No meal logged yet, so no gap is running.", first:"Your gap clock starts from this meal.", btn0Now:"I just ate", btn0At:"I ate at {t}", started:"Gap clock started at {t}.", byMeal:"Your meal ended the fast", ends:"Saving this closes your {d} meal gap · +{x} XP", endsNo:"Saving this restarts your gap clock (under 4 h, no fast points)", already:"Already logged: {m} at {t}. Your fast ended then."},
-  de: {stop:"Stopp", stopAria:"Fasten stoppen: Ich habe gerade gegessen", btnNow:"Gerade gegessen · Fasten beenden", btnAt:"Um {t} gegessen · Fasten beenden", title:"Fasten beenden", fasted:"Du hast gefastet", since:"seit {t}",
-    when:"Wann hast du gegessen?", hint:"Früher gegessen? Tipp auf eine Zeit oder auf die Uhr, um deine eigene zu wählen.", now:"Gerade eben", agoM:"vor {n} min", agoH:"vor {n} h", other:"Andere Zeit",
-    goalOk:"Ziel {h} h erreicht", goalLeft:"Ziel {h} h · noch {d}", earn:"Du bekommst +{x} XP", next:"Dein nächstes Fasten startet ab dieser Mahlzeit.",
+    title0:"Last meal", none:"When was your last meal? Your eating break runs from then.", first:"When you eat again, tap the bubble, then \u201cFirst meal\u201d.", btn0Now:"Last meal: now", btn0At:"Last meal at {t}", started:"Eating break started at {t}.", stopped:"Eating break ended at {t}. Tap \u201cLast meal\u201d when you\u2019re done eating.", byMeal:"Your meal ended the fast", ends:"Saving this closes your {d} meal gap · +{x} XP", endsNo:"Saving this restarts your gap clock (under 4 h, no fast points)", already:"Already logged: {m} at {t}. Your fast ended then."},
+  de: {stop:"Stopp", stopAria:"Fasten stoppen: Ich habe gerade gegessen", btnNow:"Erste Mahlzeit: jetzt", btnAt:"Erste Mahlzeit um {t}", title:"Erste Mahlzeit", fasted:"Du hast gefastet", since:"seit {t}",
+    when:"Wann war deine erste Mahlzeit?", hint:"Mahlzeiten, Scans und Fotos ändern diesen Timer nicht. Nur diese Bubble.", now:"Gerade eben", agoM:"vor {n} min", agoH:"vor {n} h", other:"Andere Zeit",
+    goalOk:"Ziel {h} h erreicht", goalLeft:"Ziel {h} h · noch {d}", earn:"Du bekommst +{x} XP", next:"Danach steht der Timer still, bis du wieder \u201eLetzte Mahlzeit\u201c tippst.",
     short:"Unter 4 Stunden, deshalb diesmal keine Punkte. Deine Uhr startet ab dieser Mahlzeit neu.", recent:"Deine letzten Fastenzeiten", done:"Fasten geschafft!", badge:"Ziel erreicht",
     without:"{d} ohne Essen", brk:"Mahlzeit eingetragen, die es beendet hat", enjoy:"Guten Appetit", chain:"Was hast du gegessen? ›", label:"Fasten geschafft: {h} h", partial:"Jede Stunde zählt. Als Nächstes das Ziel.", perH:"{h} h × 2 XP", ms:"Meilensteine", gb:"Ziel-Bonus",
     restart:"Uhr läuft neu ab {t}.", before:"Das ist vor dem Start deines Fastens.", today:"heute", yesterday:"gestern", h:"h", m:"min",
-    title0:"Wann hast du zuletzt gegessen?", none:"Noch keine Mahlzeit eingetragen, also läuft keine Pause.", first:"Deine Pausen-Uhr startet ab dieser Mahlzeit.", btn0Now:"Gerade gegessen", btn0At:"Um {t} gegessen", started:"Pausen-Uhr läuft ab {t}.", byMeal:"Deine Mahlzeit hat das Fasten beendet", ends:"Speichern schließt deine Essenspause ({d}) · +{x} XP", endsNo:"Speichern startet deine Pausen-Uhr neu (unter 4 h, keine Fasten-Punkte)", already:"Schon eingetragen: {m} um {t}. Dein Fasten endete da."},
-  es: {stop:"Parar", stopAria:"Parar el ayuno: acabo de comer", btnNow:"Acabo de comer · terminar ayuno", btnAt:"Comí a las {t} · terminar ayuno", title:"Terminar el ayuno", fasted:"Has ayunado", since:"desde las {t}",
-    when:"¿Cuándo comiste?", hint:"¿Comiste antes? Toca una hora, o toca el reloj para elegir la tuya.", now:"Ahora mismo", agoM:"hace {n} min", agoH:"hace {n} h", other:"Otra hora",
-    goalOk:"Meta de {h} h lograda", goalLeft:"Meta {h} h · faltan {d}", earn:"Recibes +{x} XP", next:"Tu próximo ayuno empieza desde esta comida.",
+    title0:"Letzte Mahlzeit", none:"Wann war deine letzte Mahlzeit? Ab da läuft deine Essenspause.", first:"Wenn du wieder isst, tippst du auf die Bubble und dann auf \u201eErste Mahlzeit\u201c.", btn0Now:"Letzte Mahlzeit: jetzt", btn0At:"Letzte Mahlzeit um {t}", started:"Essenspause läuft ab {t}.", stopped:"Essenspause beendet um {t}. Tipp auf \u201eLetzte Mahlzeit\u201c, wenn du fertig gegessen hast.", byMeal:"Deine Mahlzeit hat das Fasten beendet", ends:"Speichern schließt deine Essenspause ({d}) · +{x} XP", endsNo:"Speichern startet deine Pausen-Uhr neu (unter 4 h, keine Fasten-Punkte)", already:"Schon eingetragen: {m} um {t}. Dein Fasten endete da."},
+  es: {stop:"Parar", stopAria:"Parar el ayuno: acabo de comer", btnNow:"Primera comida: ahora", btnAt:"Primera comida a las {t}", title:"Primera comida", fasted:"Has ayunado", since:"desde las {t}",
+    when:"¿Cuándo fue tu primera comida?", hint:"Las comidas, escaneos y fotos no cambian este temporizador. Solo esta burbuja.", now:"Ahora mismo", agoM:"hace {n} min", agoH:"hace {n} h", other:"Otra hora",
+    goalOk:"Meta de {h} h lograda", goalLeft:"Meta {h} h · faltan {d}", earn:"Recibes +{x} XP", next:"Luego el temporizador se detiene hasta que vuelvas a tocar \u00abÚltima comida\u00bb.",
     short:"Menos de 4 horas, así que esta vez no hay puntos. Tu reloj empieza de nuevo desde esta comida.", recent:"Tus últimos ayunos", done:"¡Ayuno completado!", badge:"Meta lograda",
     without:"{d} sin comer", brk:"Registraste la comida que lo terminó", enjoy:"Buen provecho", chain:"¿Qué comiste? ›", label:"Ayuno hecho: {h} h", partial:"Cada hora cuenta. La meta, la próxima vez.", perH:"{h} h × 2 XP", ms:"Hitos", gb:"Bonus de meta",
     restart:"El reloj empieza de nuevo a las {t}.", before:"Eso es antes de que empezara tu ayuno.", today:"hoy", yesterday:"ayer", h:"h", m:"min",
-    title0:"¿Cuándo comiste por última vez?", none:"Aún no has registrado ninguna comida, así que no hay pausa en marcha.", first:"Tu reloj de pausa empieza desde esta comida.", btn0Now:"Acabo de comer", btn0At:"Comí a las {t}", started:"Reloj de pausa en marcha desde las {t}.", byMeal:"Tu comida terminó el ayuno", ends:"Al guardar cierras tu pausa de {d} sin comer · +{x} XP", endsNo:"Al guardar se reinicia tu reloj de pausa (menos de 4 h, sin puntos de ayuno)", already:"Ya registrado: {m} a las {t}. Tu ayuno terminó entonces."}
+    title0:"Última comida", none:"¿Cuándo fue tu última comida? Tu pausa corre desde entonces.", first:"Cuando vuelvas a comer, toca la burbuja y luego \u00abPrimera comida\u00bb.", btn0Now:"Última comida: ahora", btn0At:"Última comida a las {t}", started:"Pausa en marcha desde las {t}.", stopped:"Pausa terminada a las {t}. Toca \u00abÚltima comida\u00bb cuando termines de comer.", byMeal:"Tu comida terminó el ayuno", ends:"Al guardar cierras tu pausa de {d} sin comer · +{x} XP", endsNo:"Al guardar se reinicia tu reloj de pausa (menos de 4 h, sin puntos de ayuno)", already:"Ya registrado: {m} a las {t}. Tu ayuno terminó entonces."}
 };
 const lang = () => { try { const l = (window.LowiLang && LowiLang.get ? LowiLang.get() : localStorage.getItem("lowispike.lang")) || "en"; return W[l.slice(0, 2)] ? l.slice(0, 2) : "en"; } catch(e){ return "en"; } };
 const w = (k, o) => { let s = W[lang()][k]; if (s == null) s = W.en[k]; if (o) Object.keys(o).forEach(x => { s = s.split("{" + x + "}").join(o[x]); }); return s; };
@@ -2165,9 +2165,18 @@ function lastMeal(s){ try { const L = (typeof S !== "undefined" && S && Array.is
   for (let i = L.length - 1; i >= 0; i--) { const l = L[i], ts = l ? +l.ts || 0 : 0; if (!ts || ts > now || ts <= b) continue; if (SKIP && (l.eventId === SKIP || l.id === SKIP)) continue; b = ts; bl = l; }
   return bl ? {ts:b, log:bl} : null; } catch(e){ return null; } }
 /* Oct 24 gaptime: the logged meals as LowiFastEditCore.plan reads them, so Gap > Zeit ändern can move the meal the Gap counts from */
-function mealList(){ try { const L = (typeof S !== "undefined" && S && Array.isArray(S.logs)) ? S.logs : []; return L.filter(l => l && +l.ts > 0).map(l => ({id:String(l.id || l.eventId || l.ts), ev:String(l.eventId || l.id || ""), ts:+l.ts, t:l.t || ""})); } catch(e){ return []; } }
+function mealList(){ return []; } /* DECOUPLED: Zeit ändern only moves the start, never a meal */
+function mealListOld(){ try { const L = (typeof S !== "undefined" && S && Array.isArray(S.logs)) ? S.logs : []; return L.filter(l => l && +l.ts > 0).map(l => ({id:String(l.id || l.eventId || l.ts), ev:String(l.eventId || l.id || ""), ts:+l.ts, t:l.t || ""})); } catch(e){ return []; } }
 function ownStart(s){ const h = s.hist, pe = h.length ? +h[h.length - 1].e || 0 : 0; return Math.max(+s.last || 0, pe); }
-function startOf(s){ s = s || st(); if (!Array.isArray(s.hist)) s.hist = []; const m = lastMeal(s); return Math.max(ownStart(s), m ? m.ts : 0); }
+/* DECOUPLED (Oct 28, Emmanuel: "Entkopple den Fastentimer komplett vom Essen. Scans, Community-Posts oder Fotos dürfen den Timer
+   nicht mehr triggern. Die Steuerung läuft ausschließlich über eine Bubble: 'Letzte Mahlzeit' zum Starten und 'Erste Mahlzeit'
+   zum Beenden."). The timer runs from s.last while s.off is not set; only firstMeal ("Letzte Mahlzeit", start) and end ("Erste
+   Mahlzeit", stop) change it, plus Gap > Zeit ändern for the start of a running timer. No logged, scanned, posted, moved or
+   deleted meal touches it any more (mealLogged / remeal / unmeal / mealTicked are no-ops, mealList is empty).
+   Once per device (s.v2) the start the old meal-driven Gap showed is kept, so a running timer looks exactly as before. */
+function migrate(s){ if (!s || s.v2) return; const m = lastMeal(s), old = Math.max(ownStart(s), m ? m.ts : 0); s.v2 = 1;
+  if (old && Date.now() - old < 7 * 864e5) { s.last = old; delete s.off; } else s.off = 1; put(s); }
+function startOf(s){ s = s || st(); if (!Array.isArray(s.hist)) s.hist = []; if (!s.v2) migrate(s); return s.off ? 0 : (+s.last || 0); }
 function points(hours, g){
   if (!(hours >= MIN_H)) return {x:0, base:0, ms:[], msx:0, ok:false, full:Math.floor(Math.max(0, hours))};
   const full = Math.min(CAP_H, Math.floor(hours)), base = full * PER_H, ms = MS.filter(m => hours >= m.h), msx = ms.reduce((a, m) => a + m.x, 0), ok = !!g && hours >= g - 1 / 60;
@@ -2216,21 +2225,22 @@ function end(ateAt, o){ o = o || {}; const s = st(), now = Date.now(); ateAt = M
   /* one meal path: "I just ate" right after a meal was logged (that meal already ended the fast) changes nothing and opens no second Log meal */
   const ml = !rec && o.chain ? mealJustLogged(ateAt) : null;
   if (ml) { if (!o.keep) { try { if (typeof closeSheet === "function") closeSheet(); } catch(e){} } try { if (typeof toast === "function") toast(w("already", {m:ml.t || "", t:hm(+ml.ts)})); } catch(e){} return {rec:null, x:0, ok:false, hours, already:ml}; }
-  s.last = ateAt; put(s);
+  s.last = ateAt; if (start) s.off = 1; else delete s.off; s.v2 = 1; put(s); /* DECOUPLED: "Erste Mahlzeit" stops a running timer; with none running this is "Letzte Mahlzeit" and starts it */
   if (rec && p.x > 0) { try { if (typeof award === "function") award(p.x, w("label", {h:Math.floor(hours)}), null, "r3a_fast", "fast:" + start); } catch(e){ console.error(e); } }
   if (!o.keep) { try { if (typeof closeSheet === "function") closeSheet(); } catch(e){}
     try { if (window.LowiR2 && LowiR2.closeAll) LowiR2.closeAll(); } catch(e){} }
   repaintAll();
   CH = o.chain && window.LowiF2 ? {rec, x:p.x, hours, at:ateAt} : null; /* f2-chain */
-  if (rec && o.reward !== false) { if (o.rewardDelay) setTimeout(() => reward(rec, p, o), o.rewardDelay); else reward(rec, p, o); } else { if (CH) { const c = CH; CH = null; setTimeout(() => LowiF2.start(c), 380); } if (!o.quiet) { try { if (typeof toast === "function") toast(w(start ? "restart" : "started", {t:hm(ateAt)}) + (hours < MIN_H ? "" : "")); } catch(e){} } }
+  if (rec && o.reward !== false) { if (o.rewardDelay) setTimeout(() => reward(rec, p, o), o.rewardDelay); else reward(rec, p, o); } else { if (CH) { const c = CH; CH = null; setTimeout(() => LowiF2.start(c), 380); } if (!o.quiet) { try { if (typeof toast === "function") toast(w(start ? "stopped" : "started", {t:hm(ateAt)}) + (hours < MIN_H ? "" : "")); } catch(e){} } }
   return {rec, x:p.x, ok:p.ok, hours}; }
 function repaintAll(){ try { if (window.LowiFast && LowiFast.refresh) LowiFast.refresh(); } catch(e){}
   try { if (window.R3A && R3A.paintMorning) R3A.paintMorning(); } catch(e){}
   try { if (typeof renderHome === "function" && typeof TAB !== "undefined" && TAB === "home") renderHome(); } catch(e){} }
 // ticking a meal as eaten on Today: the same one rule as every other meal log (mealLogged below)
-function mealTicked(){ return mealLogged({ts:Date.now(), via:"plan"}); }
+function mealTicked(){ return null; } /* DECOUPLED */
 /* nofake: the first meal logged anywhere (Log meal, a planned meal ticked) starts the gap clock when no meal time is known yet. */
-function firstMeal(at){ const s = st(); if (startOf(s)) return false; s.last = Math.min(Date.now(), +at || Date.now()); put(s);
+function firstMeal(at){ const s = st(); if (startOf(s)) return false; const pe = s.hist.length ? +s.hist[s.hist.length - 1].e || 0 : 0;
+  s.last = Math.max(pe, Math.min(Date.now(), +at || Date.now())); delete s.off; s.v2 = 1; delete s.startEdit; put(s); /* DECOUPLED: "Letzte Mahlzeit" starts the timer, never before the last logged fast ended */
   repaintAll(); try { if (window.LowiSpirit && LowiSpirit.refresh) LowiSpirit.refresh(); } catch(e){} try { window.dispatchEvent(new CustomEvent("lowi:fast", {detail:{first:true, last:s.last}})); } catch(e){}
   return true; }
 /* ONE MEAL PATH (Oct 21, E-man: "We have scanner and snap photo. We also have log meal. And then we also have the gap with the fasting,
@@ -2252,7 +2262,8 @@ const SITTING = 30 * 60000, SLOT_ORDER = {breakfast:0, lunch:1, dinner:2};
 function slotNow(t){ const h = new Date(t).getHours(); return h >= 4 && h < 11 ? 0 : h >= 11 && h < 16 ? 1 : 2; }
 function catchUp(slot, t){ return false; } /* gapfix: kept for old callers; no meal is a catch-up any more */
 function mealJustLogged(t){ try { const L = (typeof S !== "undefined" && S && Array.isArray(S.logs)) ? S.logs : []; for (let i = L.length - 1; i >= 0 && i >= L.length - 6; i--) { const l = L[i], ts = +l.ts || 0; if (ts && ts <= t && t - ts < SITTING) return l; } } catch(e){} return null; }
-function mealLogged(d){ d = d || {}; const id = String(d.id || ""); SKIP = id; try { return mealLogged0(d, id); } finally { SKIP = ""; } }
+function mealLogged(d){ return null; } /* DECOUPLED (Oct 28): a meal, scan, photo or post never starts, ends or moves the timer */
+function mealLoggedOld(d){ d = d || {}; const id = String(d.id || ""); SKIP = id; try { return mealLogged0(d, id); } finally { SKIP = ""; } }
 function trail(s, m){ s.mt = (Array.isArray(s.mt) ? s.mt : []).filter(x => x && x.id !== m.id); s.mt.push(m); while (s.mt.length > 40) s.mt.shift(); }
 function mealLogged0(d, id){ const s = st(), now = Date.now(), t = Math.min(now, +d.ts || now), start = startOf(s);
   if (!start) { const ok = firstMeal(t); if (ok && id) { const s1 = st(); trail(s1, {id, t, p:0}); put(s1); } return ok ? {first:true} : null; }
@@ -2266,7 +2277,8 @@ function mealLogged0(d, id){ const s = st(), now = Date.now(), t = Math.min(now,
   try { if (window.LowiSpirit && LowiSpirit.refresh) LowiSpirit.refresh(); } catch(e){}
   return r; }
 /* the line Log meal shows while a fast runs, so the consequence is visible before saving ("" when no fast is running) */
-function mealNote(t){ const s = st(), now = Date.now(); t = +t || now; const start = startOf(s); if (!start || t <= start + SITTING) return "";
+function mealNote(t){ return ""; } /* DECOUPLED */
+function mealNoteOld(t){ const s = st(), now = Date.now(); t = +t || now; const start = startOf(s); if (!start || t <= start + SITTING) return "";
   const hours = (t - start) / 36e5, fresh = !s.awarded || +s.awarded !== start, p = points(fresh ? hours : 0, goalH());
   return hours >= MIN_H && fresh ? w("ends", {d:dur(t - start), x:p.x}) : w("endsNo"); }
 window.addEventListener("lowi:meal-logged", ev => { try { mealLogged(ev && ev.detail); } catch(e){ console.error(e); } });
@@ -2275,7 +2287,8 @@ window.addEventListener("lowi:meal-logged", ev => { try { mealLogged(ev && ev.de
    and the fast points it paid (eventId "fast:<start>") and its break-fast bonus are taken back, so a meal can never pay twice.
    Then the newest meal left is applied again (it may end that same fast honestly). Meals that did not move the clock change nothing. */
 function unaward(ev){ try { const V = window.LowiVitalsBridge; return V && V.unaward ? V.unaward(ev) : 0; } catch(e){ return 0; } }
-function unmeal(id, ts, o){ o = o || {}; id = String(id || ""); const s = st(), tr = Array.isArray(s.mt) ? s.mt : [], i = tr.findIndex(m => m && m.id === id);
+function unmeal(id, ts, o){ return false; } /* DECOUPLED */
+function unmealOld(id, ts, o){ o = o || {}; id = String(id || ""); const s = st(), tr = Array.isArray(s.mt) ? s.mt : [], i = tr.findIndex(m => m && m.id === id);
   let m = i >= 0 ? tr[i] : null; ts = +ts || (m ? m.t : 0); let changed = false;
   if (m && +s.last === m.t) {
     if (m.rs) { s.hist = s.hist.filter(r => !(+r.s === m.rs && +r.e === m.t)); unaward("fast:" + m.rs);
@@ -2288,7 +2301,8 @@ function unmeal(id, ts, o){ o = o || {}; id = String(id || ""); const s = st(), 
   if (changed && !o.noRedo) { const lm = lastMeal(s); if (lm && lm.ts > ownStart(s) + SITTING) mealLogged({id:String(lm.log.eventId || lm.log.id || ""), ts:lm.ts, edit:true}); }
   repaintAll(); try { window.dispatchEvent(new CustomEvent("lowi:fast", {detail:{unmeal:id}})); } catch(e){} try { if (window.LowiSpirit && LowiSpirit.refresh) LowiSpirit.refresh(); } catch(e){}
   return changed; }
-function remeal(id, ts, oldTs){ id = String(id || ""); ts = Math.min(Date.now(), +ts || 0); if (!ts) return null;
+function remeal(id, ts, oldTs){ return null; } /* DECOUPLED */
+function remealOld(id, ts, oldTs){ id = String(id || ""); ts = Math.min(Date.now(), +ts || 0); if (!ts) return null;
   unmeal(id, oldTs, {noRedo:true});
   const r = mealLogged({id, ts, edit:true});
   const lm = lastMeal(st()); if (lm && lm.ts > ownStart(st()) + SITTING) mealLogged({id:String(lm.log.eventId || lm.log.id || ""), ts:lm.ts, edit:true});
@@ -2328,7 +2342,9 @@ document.addEventListener("click", e => {
   if (k === "open") { e.preventDefault(); e.stopPropagation(); open(); }
   else if (k === "pick") { SEL = +a.dataset.t || 0; paint(); sfx("tap"); }
   else if (k === "clock") { const i = document.getElementById("fstIn"); if (i && e.target !== i) { try { if (i.showPicker) { i.showPicker(); e.preventDefault(); } } catch(x){} } }
-  else if (k === "end") { const r = end(SEL || Date.now(), {chain:true}); if (r && r.err) { try { toast(w("before")); } catch(x){} } }
+  else if (k === "end") { /* DECOUPLED: stopped -> "Letzte Mahlzeit" starts the timer; running -> "Erste Mahlzeit" ends it. No meal logging chained to it. */
+    if (!startOf()) { const at = SEL || Date.now(); if (firstMeal(at) !== false) { try { if (typeof closeSheet === "function") closeSheet(); } catch(x){} repaintAll(); try { toast(w("started", {t:hm(Math.max(at, startOf() || at))})); } catch(x){} } }
+    else { const r = end(SEL || Date.now(), {}); if (r && r.err) { try { toast(w("before")); } catch(x){} } } }
 }, true);
 function fromInput(i){ const t = new Date(i.value).getTime(); if (!t) return; const start = startOf(); SEL = Math.min(Date.now(), Math.max(start + 60000, t)); if (Date.now() - SEL < 30000) SEL = 0; paint(); }
 document.addEventListener("change", e => { if (e.target && e.target.id === "fstIn") fromInput(e.target); });
@@ -6055,7 +6071,7 @@ function fsLoc(){ const u = FS_UI[fsLang()]; STAGES.forEach((s, i) => { const r 
    account showed a fast it never did ("fasting for 19 hours"). No last meal = no fast: hrs() is 0 and the card stays hidden. */
 function st(){ let s; try { s = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY))); } catch(e){ s = {}; }
   if (!s.water) s.water = {}; return s; }
-const known = () => { const l = +st().last || 0; return l > 0 && l <= Date.now(); };
+const known = () => { const f = st(), l = +f.last || 0; return !f.off && l > 0 && l <= Date.now(); }; /* DECOUPLED: a stopped timer (s.off) shows no fast */
 function put(s){ try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e){} }
 const p2 = n => (n < 10 ? "0" : "") + n;
 const dayKey = () => { const d = new Date(); return d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()); };
@@ -20950,7 +20966,8 @@ addEventListener("resize", () => { if (isOpen()) fit(); });
 
 /* ---------- actions ---------- */
 function startFast(){ const now = Date.now();
-  try { if (window.LowiFastStop && LowiFastStop.end) { const r = LowiFastStop.end(now, {reward:false, quiet:true}); if (r && r.err) throw 0; } else throw 0; }
+  try { if (window.LowiFastStop && LowiFastStop.end && LowiFastStop.firstMeal) { /* DECOUPLED (Oct 28): end() now stops the timer, so "Fasten starten" = stop the running one, then "Letzte Mahlzeit: jetzt" */
+      if (LowiFastStop.startOf()) { const r = LowiFastStop.end(now, {reward:false, quiet:true}); if (r && r.err) throw 0; } LowiFastStop.firstMeal(now); } else throw 0; }
   catch(e){ const f = js("lowi_fast_v1"); f.last = now; put("lowi_fast_v1", f); }
   setDay({fast:now}); sfx("check"); paint();
   const b = D.querySelector("#e1Ov .e1-fast"); if (b) { b.classList.remove("e1-pop"); void b.offsetWidth; b.classList.add("e1-pop"); } }
@@ -21566,8 +21583,9 @@ window.LowiVitalsBridge = {
     /* a typed/photo meal gets the app's own verdict when analyseMeal knows the foods; unknown foods stay unknown (no guess) */
     if(!data.lvl&&(data.r==null||data.r==="")&&data.via!=="barcode"&&data.t&&typeof analyseMeal==="function")try{const a=analyseMeal(String(data.t),{trig:S.trig||[]});if(a&&a.ok){lvl=a.lvl||"";rr=a.r||rr;}}catch(e){}
     /* Oct 19 food paths: a meal logged right after Gap "I ate earlier" keeps the time picked there (same day, within 18 h), once */
-    let mts=Date.now(),ateSet=0;try{const mc=window.LowiMealCtx;if(mc&&(mc.from==="gap"||mc.from==="when")&&Date.now()-mc.at<20*60000){const at=+mc.ateAt;if(at&&at<mts&&mts-at<18*3600000&&new Date(at).toDateString()===new Date(mts).toDateString()){mts=at;ateSet=1;}window.LowiMealCtx=null;}}catch(e){}/* Oct 21 Scan/Fuel/Gap: Log meal's "When did you eat?" chips (from "when") backdate like the Gap path did; ateSet = eating time known */
-    const n=S.logs.filter(l=>l.day===today()).length,log={id:data.id,eventId:id,ts:mts,day:today(),t:data.t,macros:data.macros,photo:data.photo||"",via:data.via||"spirit",r:rr,e:"",lvl};if(data.est)log.est=data.est;
+    let mts=Date.now(),ateSet=0;try{const mc=window.LowiMealCtx;if(mc&&(mc.from==="gap"&&Date.now()-mc.at<20*60000||mc.from==="when"&&Date.now()-mc.at<60*60000)){const at=+mc.ateAt;if(at&&at<mts&&(mc.from==="when"?mts-at<=7*864e5+60000:mts-at<18*3600000&&new Date(at).toDateString()===new Date(mts).toDateString())){mts=at;ateSet=1;}window.LowiMealCtx=null;}}catch(e){}/* Oct 28 (Antje, ~70): a time picked in the meal time chooser (meal-time.js, from "when") holds for an hour and may be any of the last 7 days ("Gestern Abend"); the meal goes on the day it was eaten */
+    const mday=(()=>{const q=new Date(mts),z=n=>(n<10?"0":"")+n;return ateSet&&q.toDateString()!==new Date().toDateString()?q.getFullYear()+"-"+z(q.getMonth()+1)+"-"+z(q.getDate()):today();})();/* Oct 21 Scan/Fuel/Gap: Log meal's "When did you eat?" chips (from "when") backdate like the Gap path did; ateSet = eating time known */
+    const n=S.logs.filter(l=>l.day===today()).length,log={id:data.id,eventId:id,ts:mts,day:mday,t:data.t,macros:data.macros,photo:data.photo||"",via:data.via||"spirit",r:rr,e:"",lvl};if(data.est)log.est=data.est;
     /* Oct 22 (Seven): the full estimate a photo meal received (dish, foods, nutrition, spike, note) stays with the meal; its photo lives on this device (meal-journal.js) */
     if(data.ai&&typeof data.ai==="object")log.ai=data.ai;
     if(data.code)log.code=String(data.code);if(data.slot)log.slot=data.slot;if(ateSet)log.ateSet=1;

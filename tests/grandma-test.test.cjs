@@ -31,6 +31,9 @@ test('Gap bubble: an empty Gap is the label alone on Home, says "no meal yet" in
     /* Oct 23 one text rule for every Home bubble (Emmanuel: "Gap has too much text ... keep it minimal"): an empty Gap shows its label
        alone, no dash and no second line; the words "no meal yet" stay in the spoken label (gapAria0) and on the Gap page */
     assert.ok(s.includes("(f.start ? hours + ':' + String(min).padStart(2, '0') : '')"), 'empty Gap: the label alone, no dash');
+    /* Oct 28 decoupled: a stopped Gap's label is the control itself, "Letzte Mahlzeit" (tap = start) */
+    assert.ok(s.includes("tr(f.start ? 'sinceMeal' : 'lastMealGo')"), 'stopped Gap: label alone = Letzte Mahlzeit');
+    assert.ok(/lastMealGo: \['Last meal', 'Letzte Mahlzeit', '\u00daltima comida'\]/.test(s));
     assert.ok(/f\.start \? tr\('gapAria'\)[\s\S]{0,200}tr\('gapAria0'\)|tr\('gapAria0'\)/.test(s), 'the spoken label still says no meal yet');
     assert.ok(/el\.setAttribute\('aria-label', al\)/.test(s), 'the Gap bubble gets an aria-label');
     const m = s.match(/noMealYet: \[([^\]]+)\]/);

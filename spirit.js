@@ -180,7 +180,7 @@
         sinceMeal: ['Since last meal', 'Seit der letzten Mahlzeit', 'Desde la última comida'],
         noMealYet: ['no meal yet', 'noch kein Essen', 'sin comida aún'],
         gapAria: ['Meal gap: {h} h {m} min since your last meal at {t}. Tap to see more.', 'Essenspause: {h} Std. {m} Min. seit deiner letzten Mahlzeit um {t}. Tippen für mehr.', 'Pausa entre comidas: {h} h {m} min desde tu última comida a las {t}. Toca para ver más.'],
-        gapAria0: ['Meal gap: no meal logged yet. Log a meal in Fuel and the time since it shows here.', 'Essenspause: noch keine Mahlzeit eingetragen. Trag eine Mahlzeit bei Essen ein, dann steht hier die Zeit seitdem.', 'Pausa entre comidas: aún no hay comidas. Registra una en Comida y aquí verás el tiempo desde entonces.'],
+        gapAria0: ['Eating break stopped. Tap and choose “Last meal” to start it.', 'Essenspause steht. Tippen und „Letzte Mahlzeit“ wählen, um sie zu starten.', 'Pausa detenida. Toca y elige «Última comida» para iniciarla.'],
         lastAt: ['last meal {t}', 'letzte Mahlzeit {t}', 'última comida {t}'],
         slotRecent: ['Your usual · one tap', 'Wie immer · ein Tipp', 'Lo de siempre · un toque'],
         recentEmpty: ['Meals you log show up here for one tap next time.', 'Deine Mahlzeiten erscheinen hier, beim nächsten Mal mit einem Tipp.', 'Tus comidas aparecen aquí para registrarlas con un toque.'],
@@ -198,6 +198,13 @@
         lmOrType: ['Or type what you ate', 'Oder schreib, was du isst', 'O escribe lo que comes'],
         lmCode: ['Barcode', 'Barcode', 'Código'],
         lmAt: ['at {t}', 'um {t}', 'a las {t}'],
+        lastMealGo: ['Last meal', 'Letzte Mahlzeit', 'Última comida'],
+        lmAteNow: ['Eaten: now', 'Gegessen: jetzt', 'Comido: ahora'],
+        lmAteAt: ['Eaten at {t}', 'Gegessen um {t}', 'Comido a las {t}'],
+        lmAteDay: ['Eaten: {t}', 'Gegessen: {t}', 'Comido: {t}'],
+        lmChange: ['Change time', 'Zeit ändern', 'Cambiar hora'],
+        mtSavedMeal: ['Time saved: {t}. {m} moved there.', 'Zeit gespeichert: {t}. „{m}“ steht jetzt dort.', 'Hora guardada: {t}. «{m}» está ahora ahí.'],
+        mtFail: ['That time couldn\u2019t be saved. Pick a time within the last 7 days.', 'Diese Zeit ließ sich nicht speichern. Wähl eine Zeit in den letzten 7 Tagen.', 'No se pudo guardar esa hora. Elige una hora de los últimos 7 días.'],
         lmTimeA: ['When did you eat? {t}. Tap to change', 'Wann hast du gegessen? {t}. Tippen zum Ändern', '¿Cuándo comiste? {t}. Toca para cambiar'],
         lmSnackSave: ['Log snack', 'Snack eintragen', 'Registrar tentempié'],
         lmGap: ['Fast ended, your time is saved. Add what you ate, or skip.', 'Fasten beendet, deine Zeit ist gespeichert. Trag ein, was du gegessen hast, oder überspring es.', 'Ayuno terminado, tu hora está guardada. Añade lo que comiste, o sáltalo.'],
@@ -255,6 +262,7 @@
         photoStream = null,
         foodCam = null,
         photoURL = '',
+        photoAt = 0,
         lastMealId = '',
         homeQueued = false;
     let motion = {
@@ -572,7 +580,8 @@
         /* Oct 23 one text rule for every Home bubble (Emmanuel: "Gap has too much text ... we need to find a universe logic"): icon,
            label, one short value. The value is the time since the last meal as h:mm (15:09); no units, no "last meal 10:00" line
            (the Gap page and the screen-reader label still say when). No meal known yet = the label alone, no dash. */
-        const h = '<small>' + esc(tr('sinceMeal')) + '</small><b>' + (f.start ? hours + ':' + String(min).padStart(2, '0') : '') + '</b>';
+        /* DECOUPLED (Oct 28): running looks exactly as before; stopped, the label alone (Oct 23 one text rule) names the control: "Letzte Mahlzeit" */
+        const h = '<small>' + esc(tr(f.start ? 'sinceMeal' : 'lastMealGo')) + '</small><b>' + (f.start ? hours + ':' + String(min).padStart(2, '0') : '') + '</b>';
         /* Bug hunt run 30 (BH-030 sibling): after midnight VoiceOver read "since your last meal at 06:57 PM" with no day word.
            Same words as the Gap page's Last meal line (LowiGapView._when): "06:57 PM yesterday", or the date further back. */
         const gapWhen = t => { try { if (window.LowiGapView && window.LowiGapView._when) return window.LowiGapView._when(t, lang()); } catch (e) { } return new Date(t).toLocaleTimeString(lang(), { hour: '2-digit', minute: '2-digit' }); };
@@ -971,7 +980,7 @@
        Log meal asks when you ate. Now is the default; the quiet clock (Oct 27: one native time wheel instead of four chips) backdates
        the meal (index.html logMeal reads window.LowiMealCtx from 'when', same day, once, 15 min), so a meal logged 3 h late starts
        the Gap from 3 h ago, not from Save. pickWhen stays for any [data-sp="when"][data-m] button (older screens, tools). */
-    function whenAt() { const c = window.LowiMealCtx; return c && c.from === 'when' && Date.now() - c.at < 15 * 60000 ? +c.ateAt || 0 : 0; }
+    function whenAt() { const c = window.LowiMealCtx; return c && c.from === 'when' && Date.now() - c.at < 60 * 60000 ? +c.ateAt || 0 : 0; } /* Oct 28 (Antje): a picked time holds for an hour, not 15 min */
     function pickWhen(b) {
         const m = +b.dataset.m || 0, sheet = b.closest('.r2-ov') || D;
         window.LowiMealCtx = m ? { from: 'when', ateAt: Date.now() - m * 60000, at: Date.now() } : null;
@@ -1049,7 +1058,7 @@
             if (sm) { sm.textContent = st.soon; sm.hidden = !st.soon; }
         }).catch(() => {});
     }
-    function lmTimeLabel(at) { return at ? tr('lmAt').replace('{t}', lmHm(at)) : tr('whenNow'); }
+    function lmTimeLabel(at) { if (!at) return tr('lmAteNow'); if (window.LowiMealTime && new Date(at).toDateString() !== new Date().toDateString()) return tr('lmAteDay').replace('{t}', LowiMealTime.label(at)); return tr('lmAteAt').replace('{t}', lmHm(at)); }
     /* the time a meal is logged at: a time picked here (LowiMealCtx 'when'), else the Gap's saved time, else now */
     function lmAt() { const w = whenAt(); if (w) return w; const c = window.LowiMealCtx; return c && c.from === 'gap' && Date.now() - c.at < 20 * 60000 ? +c.ateAt || 0 : 0; }
     function lmSetTime(sheet, at) {
@@ -1074,6 +1083,29 @@
         if (at) window.LowiMealCtx = { from: 'when', ateAt: at, at: Date.now() };
         else if (gap) window.LowiMealCtx = { from: 'when', ateAt: Date.now(), at: Date.now() }; /* "now" over the Gap's saved time */
         else if (c && c.from === 'when') window.LowiMealCtx = null;
+        lmSetTime(sheet, at);
+    }
+    /* Oct 28 (Antje, ~70: "Ich kann die Zeit ändern, aber ich kann's nirgends speichern"; Emmanuel: "für solche Kunden einfacher").
+       Every new meal shows one plain time button, “Gegessen: Jetzt · Zeit ändern”. It opens big choices (LowiMealTime: Jetzt,
+       Heute früh, Mittags, Abends, Gestern Abend, Andere Zeit, and the photo's own time). A pick counts at once: the line under it
+       says “Zeit gespeichert: 08:00” and Save logs the meal at that time (index.html logMeal reads LowiMealCtx 'when', 7 days back). */
+    function mtRow(at, pAt) {
+        if (!window.LowiMealTime) return '';
+        const open = !!(pAt && LowiMealTime.photoWorth(pAt));
+        return '<div class="lm-tw"><button type="button" class="lm-time lm-time-b' + (at ? ' set' : '') + '" data-sp="lmTime" aria-expanded="' + open + '">' + icon('clock') +
+            '<span class="lm-time-l">' + esc(lmTimeLabel(at)) + '</span><span class="lm-time-c">' + esc(tr('lmChange')) + '</span></button>' +
+            '<div class="lm-mt"' + (open ? '' : ' hidden') + '>' + LowiMealTime.html({ at: at, photoAt: pAt }) + '</div></div>';
+    }
+    function mtMount(form, at, pAt) {
+        if (!form || !window.LowiMealTime) return;
+        const sheet = form.closest('.r2-ov') || D;
+        LowiMealTime.mount(form.querySelector('.lm-mt'), { at: at, photoAt: pAt, autoPhoto: true, onPick: t => { lmApply(sheet, t); return true; } });
+    }
+    function lmApply(sheet, at) {
+        at = +at || 0;
+        if (at && Date.now() - at < 2 * 60000) at = 0;
+        if (at) window.LowiMealCtx = { from: 'when', ateAt: at, at: Date.now() };
+        else window.LowiMealCtx = { from: 'when', ateAt: Date.now(), at: Date.now() }; /* Jetzt, also over a time the Gap handed in */
         lmSetTime(sheet, at);
     }
     function lmKind(b) {
@@ -1105,12 +1137,26 @@
         const kinds = ['meal', 'snack'].map(s => '<button type="button" class="sp-when-c" data-sp="editKind" data-kind="' + s + '" aria-pressed="' + (s === k) + '">' + esc(slotName(s)) + '</button>').join('');
         showSheet('<h2>' + esc(tr('editH')) + '</h2><form id="spEdit" class="sp-edit" data-id="' + esc(logId(l)) + '" data-kind="' + k + '">' +
             '<div class="sp-edit-top">' + (ph ? '<button type="button" class="sp-edit-ph" data-mj-open="' + esc(String(l.id)) + '" aria-label="' + esc(tr('editPhoto')) + '">' + thumb(l, true) + '</button>' : thumb(l, true)) +
-            '<label class="sp-edit-time">' + esc(tr('editTime')) + '<input name="time" type="time" required value="' + esc(hm(l.ts)) + '"></label></div>' +
+            '</div>' + (window.LowiMealTime ? '<div class="sp-edit-mt">' + LowiMealTime.html({ at: +l.ts }) + '</div>' :
+            '<label class="sp-edit-time">' + esc(tr('editTime')) + '<input name="time" type="time" value="' + esc(hm(l.ts)) + '"></label>') +
             '<label>' + esc(tr('editWhat')) + '<input name="t" required maxlength="100" autocomplete="off" value="' + esc(l.t || l.n || '') + '"></label>' +
             '<label>' + esc(tr('editAdd')) + '<input name="add" maxlength="60" autocomplete="off" placeholder="' + esc(tr('editAddPh')) + '"></label>' +
             '<div class="sp-when-row sp-edit-kind" role="group" aria-label="' + esc(tr('slotQ')) + '">' + kinds + '</div>' +
             '<button class="r2-btn pri" type="submit">' + esc(tr('editSave')) + '</button>' +
             '<button type="button" class="sp-ghost sp-edit-del" data-sp="todayDel">' + esc(tr('editDel')) + '</button></form>');
+        /* Oct 28 (Antje: "Ich kann die Zeit ändern, aber ich kann's nirgends speichern"): the time saves the moment it is picked,
+           with "Zeit gespeichert: 08:00" right under it; no Save needed for it. Any of the last 7 days (editMeal anyDay); the
+           Gap, the fasts, the day lists and the rings follow (lowi:meal-moved -> LowiFastStop.remeal rebuilds the fasts). */
+        const box = D.querySelector('#spEdit .sp-edit-mt');
+        if (box && window.LowiMealTime) LowiMealTime.mount(box, { at: +l.ts, onPick: t => {
+            const cur = findLog(id) || l, to = +t || Date.now();
+            if (Math.abs(to - (+cur.ts || 0)) < 60000) return tr('mtSavedMeal').replace('{t}', LowiMealTime.label(to)).replace('{m}', cur.t || cur.n || '');
+            let r = null;
+            try { r = V.editMeal({ id: cur.id || cur.eventId || String(cur.ts), ts: to, anyDay: true }); } catch (e) { console.error(e); }
+            if (!r || !r.log) { R.toast(tr('mtFail')); return false; }
+            try { refresh(); } catch (e) {}
+            return tr('mtSavedMeal').replace('{t}', LowiMealTime.label(+r.log.ts)).replace('{m}', r.log.t || r.log.n || '');
+        } });
     }
     function saveToday(form) {
         const l = findLog(form.dataset.id);
@@ -1211,9 +1257,8 @@
                 '<label class="lm-ask lm-ask-or" for="lmTitle">' + esc(tr('lmOrType')) + '</label>' +
                 '<input id="lmTitle" class="lm-in" name="title" required maxlength="100" autocomplete="off" enterkeyhint="done" data-mic="1" placeholder="' + esc(tr('mealPh')) + '">' +
                 '<p class="sp-meal-guess" aria-live="polite"></p>' +
-                '<div class="lm-row"><label class="lm-time' + (at ? ' set' : '') + '">' + icon('clock') + '<span class="lm-time-l">' + esc(lmTimeLabel(at)) + '</span>' +
-                '<input type="time" class="lm-time-in" data-sp-time value="' + lmHm(at || Date.now()) + '" aria-label="' + esc(tr('lmTimeA').replace('{t}', lmTimeLabel(at))) + '"></label>' +
-                '<button type="button" class="lm-own-t" data-sp="lmOwn" aria-expanded="false" aria-controls="lmOwn">' + esc(tr('lmOwn')) + '</button></div>' + own +
+                '<div class="lm-row lm-row-t"><button type="button" class="lm-own-t" data-sp="lmOwn" aria-expanded="false" aria-controls="lmOwn">' + esc(tr('lmOwn')) + '</button></div>' + own +
+                mtRow(at, 0) +
                 '<button class="r2-btn pri lm-save" type="submit">' + esc(tr(mealSlot === 'snack' ? 'lmSnackSave' : 'save')) + '</button>' + (gc ? '' : fastNote(at)) + '</form>'; /* in the Gap chain the fast already ended there */
             const usual = recent.length ? '<section class="lm-usual" aria-label="' + esc(tr('lmUsual')) + '"><h3 class="lm-h">' + esc(tr('lmUsual')) + '</h3><div class="lm-u-list">' + recent.map((l, i) => {
                 const n = String(l.t || l.n), show = lmShow(n), done = V.mealDup && V.mealDup({t: n, code: l.code, slot: mealSlot});
@@ -1227,7 +1272,8 @@
                 (gc ? '<p class="lm-gap">' + esc(tr('lmGap')) + ' <button type="button" class="lm-gap-skip" data-sp="gapskip">' + esc(tr('gapSkip')) + '</button></p>' : '') +
                 lmSnapHTML() + form + usual + idea + today + '<div class="lm-foot"></div></div>';
             showSheet(html);
-            const sh = ownedSheet, ti = sh && sh.querySelector('.lm-time-in');
+            const sh = ownedSheet, ti = null;
+            mtMount(sh && sh.querySelector('form#spMeal'), at, 0);
             lmSnapRefresh(sh);
             lmTrLater(sh, recent);
             if (ti) {
@@ -1430,6 +1476,7 @@
         cv.height = Math.round(v.videoHeight * scale);
         cv.getContext('2d').drawImage(v, 0, 0, cv.width, cv.height);
         photoURL = cv.toDataURL('image/jpeg', .65);
+        photoAt = 0; /* a live snap is now */
         /* BH-014: hand the bitmap back now; iOS frees an unused canvas only when the garbage collector gets to it */
         cv.width = 0; cv.height = 0;
         photoFile = null;
@@ -1448,7 +1495,8 @@
         if (!photoURL) return mealForm();
         lastMealId = uid();
         /* one clear flow: the photo, what it is, Log as meal; Retake / Save photo / deeper analysis below it */
-        showSheet('<h2>' + esc(tr('photoTitle')) + '</h2><img class="sp-photo-prev" alt="" src="' + esc(photoURL) + '"><div class="sp-ai" aria-live="polite"></div><form id="spMeal" class="sp-photo-form" data-id="' + esc(lastMealId) + '"><label>' + esc(tr('photoName')) + '<input name="title" required maxlength="100" autocomplete="off" enterkeyhint="done" placeholder="' + esc(tr('photoPh')) + '"></label><button type="submit" class="sp-action sp-primary">' + icon('plate') + '<span>' + esc(tr('photoLog')) + '</span></button></form><div class="sp-photo-acts">' + button('retake', 'camera', 'photo') + button('savePhoto', 'arrow', 'savePhoto') + '</div>' + gptHTML() + '<p class="sp-note small">' + esc(tr('photoGptHint')) + '</p>', { cls: 'sp-sheet ss-sheet' });
+        showSheet('<h2>' + esc(tr('photoTitle')) + '</h2><img class="sp-photo-prev" alt="" src="' + esc(photoURL) + '"><div class="sp-ai" aria-live="polite"></div><form id="spMeal" class="sp-photo-form" data-id="' + esc(lastMealId) + '"><label>' + esc(tr('photoName')) + '<input name="title" required maxlength="100" autocomplete="off" enterkeyhint="done" placeholder="' + esc(tr('photoPh')) + '"></label>' + mtRow(lmAt(), photoAt) + '<button type="submit" class="sp-action sp-primary">' + icon('plate') + '<span>' + esc(tr('photoLog')) + '</span></button></form><div class="sp-photo-acts">' + button('retake', 'camera', 'photo') + button('savePhoto', 'arrow', 'savePhoto') + '</div>' + gptHTML() + '<p class="sp-note small">' + esc(tr('photoGptHint')) + '</p>', { cls: 'sp-sheet ss-sheet' });
+        mtMount(D.querySelector('form#spMeal.sp-photo-form'), lmAt(), photoAt);
         /* Oct 19 2026 food photo AI: the photo goes to LowiFoodAI (Supabase function food-photo, Gemini). It fills the
            dishes, the name and hidden macro inputs; when it is off or fails, the plain "What is it?" form above still works. */
         const aiForm = document.querySelector('form#spMeal.sp-photo-form[data-id="' + lastMealId + '"]');
@@ -1513,6 +1561,9 @@
         if (!file) return;
         try {
             photoFile = file;
+            /* Oct 28 (Antje): a photo picked from the gallery offers the time it was taken (LowiMealTime.exifTime) */
+            photoAt = 0;
+            try { if (window.LowiMealTime) photoAt = await LowiMealTime.exifTime(file); } catch (e) { photoAt = 0; }
             photoURL = await LowiHost.resizeImage(file, 640, .65);
             cancelCapture();
             await flight(photoURL);
@@ -2329,6 +2380,7 @@
         else if (a === 'slot') mealForm(null, null, b.dataset.slot);
         else if (a === 'slotPick') slotPicker();
         else if (a === 'lmKind') lmKind(b);
+        else if (a === 'lmTime') { const w = b.closest('.lm-tw'), box = w && w.querySelector('.lm-mt'); if (box) { box.hidden = !box.hidden; b.setAttribute('aria-expanded', String(!box.hidden)); if (!box.hidden) { try { box.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (x) {} } } }
         else if (a === 'lmOwn') { const sh = b.closest('.r2-ov') || D, box = sh.querySelector('#lmOwn'); if (box) { box.hidden = !box.hidden; b.setAttribute('aria-expanded', String(!box.hidden)); if (!box.hidden) { const f = box.querySelector('input'); box.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); if (f) f.focus({ preventScroll: true }); } } }
         else if (a === 'todayEdit') editToday(b.dataset.id);
         else if (a === 'todayDel') delToday(b);

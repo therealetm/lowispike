@@ -161,7 +161,7 @@ test('every full hour holding the middle pays once; losing it or getting moved w
   let r = look(null, 0); assert.deepEqual(r.pay, []); assert.ok(r.fresh); let st = r.st;
   /* the app looks every 15 s for 59 min: nothing yet */
   for (let s = 15000; s < H; s += 15000) { r = look(st, s); st = r.st; assert.deepEqual(r.pay, []); }
-  r = look(st, H); st = r.st; assert.deepEqual(r.pay, [1], 'first full hour'); 
+  r = look(st, H); st = r.st; assert.deepEqual(r.pay, [1], 'first full hour');
   r = look(st, H + 10); st = r.st; assert.deepEqual(r.pay, [], 'never twice');
   r = look(st, H + 15000); st = r.st; assert.deepEqual(r.pay, []);
   /* app closed for 2.5 h, ball untouched on the same spot: the hours are paid on the next look */

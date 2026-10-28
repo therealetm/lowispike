@@ -1,4 +1,7 @@
-/* Oct 28 2026: the Room's Billardtisch (room-table.js). Deep-blue glass felt, a dark glass rail with soft brand-blue light, balls
+/* Oct 28 2026, late (Emmanuel: the small middle drawn on the felt was not symmetric with the board, and the faint LOWiSPIKE
+   on the felt could not be read: throw both out): the off-centre head line, its circle at 25 % and the spot at 75 % are gone,
+   and so is the LOWiSPIKE watermark. The only marking left is the middle ring, drawn round the exact centre (room-table.js).
+   Oct 28 2026: the Room's Billardtisch (room-table.js). Deep-blue glass felt, a dark glass rail with soft brand-blue light, balls
    that carry each companion, and nothing of the old endless map behind it (sky, lines, field with its "Neues Bild" bubbles, the
    old energy pad) while the table is on. */
 #cgGalaxy.rt-on>.cg-sky,#cgGalaxy.rt-on>svg,#cgGalaxy.rt-on>.cg-field,#cgGalaxy.rt-on>.ce-fx,#cgGalaxy.rt-on>.ce-joy,#cgGalaxy.rt-on>.ce-live{display:none!important}
@@ -11,10 +14,6 @@
 .rt-felt{position:absolute;overflow:hidden;border-radius:12px;touch-action:none;contain:strict;
   background:radial-gradient(120% 80% at 50% 38%,#164a9a 0%,#0f3576 42%,#0a2350 78%,#071a3d 100%);
   box-shadow:inset 0 0 0 1px rgba(143,231,255,.16),inset 0 10px 26px rgba(0,0,0,.45),inset 0 -6px 18px rgba(90,169,255,.12)}
-.rt-felt::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
-  background:linear-gradient(transparent calc(25% - .5px),rgba(143,231,255,.14) 25%,transparent calc(25% + .5px)),radial-gradient(circle at 50% 25%,transparent 13%,rgba(143,231,255,.12) 13.3%,transparent 13.7%)}
-.rt-spot{position:absolute;left:50%;top:75%;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:rgba(143,231,255,.35)}
-.rt-mark{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font:800 22px/1 -apple-system,system-ui,sans-serif;letter-spacing:.18em;color:rgba(143,231,255,.07);pointer-events:none}
 .rt-pocket{position:absolute;width:calc(var(--rail) * 1.5);height:calc(var(--rail) * 1.5);border-radius:50%;background:radial-gradient(circle,#02060f 55%,rgba(2,6,15,.0) 72%);pointer-events:none}
 .rt-pocket.p1{left:2px;top:2px}.rt-pocket.p2{right:2px;top:2px}.rt-pocket.p3{left:2px;bottom:2px}.rt-pocket.p4{right:2px;bottom:2px}
 .rt-pocket.p5{left:0;top:50%;transform:translate(-20%,-50%)}.rt-pocket.p6{right:0;top:50%;transform:translate(20%,-50%)}

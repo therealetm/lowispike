@@ -37,25 +37,30 @@ const log = (k, v) => { console.log(k + ' ' + JSON.stringify(v)); };
     const cv = document.querySelector('.rt-fx'), T = LowiTable.core.T, k = cv.getBoundingClientRect().width / T.W, dp = cv.width / cv.getBoundingClientRect().width;
     const px = cv.getContext('2d').getImageData(Math.round((T.MID_X + T.MID_R) * k * dp), Math.round(T.MID_Y * k * dp), 1, 1).data;
     const pc = cv.getContext('2d').getImageData(Math.round(T.MID_X * k * dp), Math.round((T.MID_Y - T.MID_R * .5) * k * dp), 1, 1).data;
-    return { ring: [...px], inside: [...pc], hint: hint && hint.textContent, mid: mid && mid.textContent, hr: r(hint), mr: r(mid), tr: r(tree), fr: r(felt), vw: innerWidth }; });
+    const ft = [...felt.childNodes].filter(n => !(n.classList && (n.classList.contains('rt-mid') || n.classList.contains('rt-balls')))).map(n => n.textContent.trim()).join('').trim();
+    return { ring: [...px], inside: [...pc], hint: hint && hint.textContent, mid: mid && mid.textContent, hr: r(hint), mr: r(mid), tr: r(tree), fr: r(felt), cv: r(cv), feltText: ft, spot: !!felt.querySelector('.rt-spot,.rt-mark'), vw: innerWidth }; });
   log('look', look);
   const ov = (a, b) => a && b && a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
   if (!(look.ring[3] > 0) || !(look.inside[3] > 0)) fail('no middle ring drawn on the felt');
   if (!/Bande|cushion|banda/.test(look.hint || '')) fail('hint does not mention the cushion bounce');
   if (!/1 (h|Std) =/.test(look.mid || '')) fail('middle line: ' + look.mid);
   if (ov(look.hr, look.mr)) fail('middle line overlaps the hint'); if (ov(look.mr, look.tr)) fail('middle line overlaps the Freundesbaum button'); if (ov(look.hr, look.tr)) fail('hint overlaps the Freundesbaum button');
+  if (look.mr && Math.abs((look.mr.l + look.mr.r) / 2 - (look.fr.l + look.fr.r) / 2) > 1.5) fail('middle not centred on the table: ' + JSON.stringify({ mr: look.mr, fr: look.fr }));
+  if (look.cv && (Math.abs(look.cv.l - look.fr.l) > 1 || Math.abs(look.cv.r - look.fr.r) > 1 || Math.abs(look.cv.t - look.fr.t) > 1 || Math.abs(look.cv.b - look.fr.b) > 1)) fail('drawing layer not on the felt: ' + JSON.stringify({ cv: look.cv, fr: look.fr }));
+  if (look.feltText) fail('text left on the felt besides the middle line: ' + look.feltText); if (look.spot) fail('off-centre spot still drawn');
   if (look.mr && (look.mr.l < look.fr.l || look.mr.r > look.fr.r || look.mr.b > look.fr.b)) fail('middle line not on the felt');
   await P.screenshot({ path: out + '/0-look.png' });
   /* 2. against the left cushion, shoot into it: it bounces back into you and knocks you away */
   setRow(me, 50, 900); await reload();
   const w0 = rows().length;
   await H.sleep(2500);
-  const self = await P.evaluate(async () => { const a = LowiTable.state().balls.find(b => b.uid === LowiTable.state().me); LowiTable.fire(-1, 0, .5); const s = LowiTable.stats().lastShot; let far = 0;
-    for (let i = 0; i < 200 && LowiTable.state().play; i++) { await new Promise(r => setTimeout(r, 30)); const q = LowiTable.state().balls.find(q => q.uid === LowiTable.state().me); far = Math.max(far, q.x - a.x); }
-    const b = LowiTable.state().balls.find(q => q.uid === LowiTable.state().me); return { s, from: a, to: b, far }; });
+  const self = await P.evaluate(async () => { const a = LowiTable.state().balls.find(b => b.uid === LowiTable.state().me); const ok = LowiTable.fire(-1, 0, .5); const s = LowiTable.stats().lastShot; let far = 0, began = LowiTable.state().play;
+    for (let i = 0; i < 600 && LowiTable.state().play; i++) { await new Promise(r => setTimeout(r, 30)); const q = LowiTable.state().balls.find(q => q.uid === LowiTable.state().me); far = Math.max(far, q.x - a.x); }
+    const b = LowiTable.state().balls.find(q => q.uid === LowiTable.state().me); return { ok, began, s, from: a, to: b, far }; });
   lastShotAt = Date.now(); log('self', self);
   if (!self.s || !self.s.self || self.s.hit !== me) fail('shot into the cushion next to me did not bounce back into me');
-  if (Math.abs(self.from.x - 50) > 2) fail('my ball was not at the cushion: ' + self.from.x); if (!(self.far > 150)) fail('I was not knocked away from the wall: ' + JSON.stringify(self));
+  if (Math.abs(self.from.x - 50) > 2) fail('my ball was not at the cushion: ' + self.from.x); const rowNow = rows().find(r => r.user_id === me), rowX = rowNow ? C.dec(rowNow.rx, rowNow.ry).x : 0;
+  if (!(self.far > 150 && rowX - 50 > 150)) fail('I was not knocked away from the wall: ' + JSON.stringify(self));
   await H.sleep(1200);
   const myRow = rows().find(r => r.user_id === me); log('myRow', myRow);
   if (!myRow || Math.abs(C.dec(myRow.rx, myRow.ry).x - self.to.x) > 2) fail('my new spot was not written');

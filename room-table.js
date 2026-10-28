@@ -71,7 +71,7 @@ function nameOf(uid){const p=people.find(x=>x.uid===uid);return p?(p.me?tr('you'
 /* ---------- DOM ---------- */
 function build(g){gal=g;g.classList.add('rt-on');
   wrap=D.createElement('div');wrap.className='rt-wrap';
-  wrap.innerHTML='<div class="rt-rail"><div class="rt-felt" role="group"><span class="rt-spot" aria-hidden="true"></span><span class="rt-mark" aria-hidden="true">LOWiSPIKE</span><canvas class="rt-fx" aria-hidden="true"></canvas><div class="rt-mid"></div><div class="rt-balls"></div></div>'+
+  wrap.innerHTML='<div class="rt-rail"><div class="rt-felt" role="group"><canvas class="rt-fx" aria-hidden="true"></canvas><div class="rt-mid"></div><div class="rt-balls"></div></div>'+
     '<span class="rt-pocket p1" aria-hidden="true"></span><span class="rt-pocket p2" aria-hidden="true"></span><span class="rt-pocket p3" aria-hidden="true"></span><span class="rt-pocket p4" aria-hidden="true"></span><span class="rt-pocket p5" aria-hidden="true"></span><span class="rt-pocket p6" aria-hidden="true"></span></div>'+
     '<div class="rt-toast" role="status" aria-live="polite"></div><div class="rt-hint" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" focusable="false"><path d="M13 3 6 13.5h5L10 21l7-10.5h-5z" fill="currentColor"/></svg><span></span></div><span class="sr-only rt-live" aria-live="polite"></span>';
   felt=wrap.querySelector('.rt-felt');fx=wrap.querySelector('.rt-fx');ctx=fx.getContext&&fx.getContext('2d');ballsEl=wrap.querySelector('.rt-balls');
@@ -155,7 +155,11 @@ function spark(x,y,c,r,life){if(reduced())return;sparks.push({x,y,c:c||'160,230,
 function trailAdd(b,now){if(reduced())return;let t=trails.get(b.uid);if(!t){t=[];trails.set(b.uid,t);}const l=t[t.length-1];if(!l||Math.abs(l.x-b.x)+Math.abs(l.y-b.y)>6){t.push({x:b.x,y:b.y,t:now});if(t.length>18)t.shift();}}
 
 /* ---------- the loop: fixed 120 Hz table steps, drawn every frame, only while something moves ---------- */
-function kick(){if(raf)return;raf=requestAnimationFrame(frame);}
+function kick(){watch();if(raf)return;raf=requestAnimationFrame(frame);}
+/* a phone that stops drawing frames (Low Power, a stalled WebView, a headless engine) must not leave a shot hanging half-way:
+   if no frame came for 1.2 s while a shot plays, it jumps to where it ends (the same end every phone computes) */
+let wdT=0,wdF=-1;function watch(){if(wdT)return;wdF=stats.frames;wdT=setTimeout(()=>{wdT=0;if(!play)return;
+  if(stats.frames===wdF){if(play.moving())play.settle();finishPlay();render();}else watch();},1200);}
 function frame(ts){raf=0;const j0=performance.now();const fresh=!lastT,dt=fresh?1/60:Math.min(.1,(ts-lastT)/1000);lastT=ts;stats.frames++;if(!fresh){if(dt>stats.maxDt)stats.maxDt=dt;if(dt>1/40)stats.slow++;}
   const now=performance.now();
   if(play){acc+=dt;let n=0;while(acc>=T.DT&&n<16){const nh=play.hits().length;play.step();n++;acc-=T.DT;

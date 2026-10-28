@@ -19172,7 +19172,9 @@ function startShared(o){
   try { LowiSpirit.meal(); } catch(e){ console.error(e); sharedOff(); window.LowiMealCtx = null; return false; }
   return true; }
 function start(o){ o = o || {};
-  if (!o.own && startShared(o)) return;
+  /* Oct 28 slim structure, batch 4 (meal one flow): "Mahlzeit eintragen (nach dem Fasten)" is no own flow any more. Every start
+     (also {own:true}) opens the one meal logger; this chain's sheet is only the fallback when the logger is missing. */
+  if (startShared(o)) return;
   F = {on:true, step:"", fast:o.rec || o.fast || null, photo:"", text:"", mode:"", err:"", last:null};
   try { if (window.LowiR2 && LowiR2.closeAll) LowiR2.closeAll(); } catch(e){}
   stepEat(); sfx("open"); }

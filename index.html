@@ -2874,7 +2874,7 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
 /* F2: one line from the fairy, pointing at something on screen (used at the start of the "I just ate" chain) */
 function line(text, el, tag){ if (TOUR) close("x", true); begin({steps:[{k:"f2", text, tag, el}], i:0, kind:"line"}); }
 function mini(){ cloneOrbCss(); return '<span class="g1-uorb g1-mini" aria-hidden="true"><span class="g1z-body">' + orbHTML() + '</span></span>'; }
-window.LowiG1 = {mini, steps:() => stepList().map(x => x.k), start, close, line, next, back, get news(){ return NEWS; }, newsSeen, startNews, offerNews, say, hush, mem, reset:() => { try { localStorage.removeItem(KEY); } catch(e){} }, T, canSpeak:SS,
+window.LowiG1 = {mini, steps:() => stepList().map(x => x.k), start:(o) => { /* Oct 28 2026 slim structure (X-13 deleted): the old guide is replaced by the one Tutorial */ try { if (window.LowiTutorial && LowiTutorial.start) return LowiTutorial.start(o); } catch(e){} }, close, line, next, back, get news(){ return NEWS; }, newsSeen, startNews, offerNews, say, hush, mem, reset:() => { try { localStorage.removeItem(KEY); } catch(e){} }, T, canSpeak:SS,
   state:() => TOUR ? {kind:TOUR.kind, i:TOUR.i, n:TOUR.steps.length, k:TOUR.steps[TOUR.i].k} : (OB ? {kind:"ob", k:OB.kind, i:0, n:1} : null), orbNews:() => OB ? {kind:OB.kind, build:OB.build || "", mode:($("#g1Ob") || {dataset:{}}).dataset.mode || ""} : null, fairy:() => fz ? {on:fz.classList.contains("on"), home:fzHome, pos:fzPos} : null};
 })();
 </script>

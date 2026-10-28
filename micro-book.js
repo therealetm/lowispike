@@ -127,6 +127,8 @@
     }
     function paint() { if (!ov || !ov.isConnected) { ov = null; return; } const box = ov.querySelector('.mb-sheet'); if (box) box.outerHTML = bookHTML(); }
     function open(t) {
+        /* Oct 28 2026 slim structure (X-23 deleted): the travel journal is not its own screen any more, its day lives in Mein Tag; the Friends tab (care) stays */
+        if (t !== 'fr') { try { if (W.LowiMyDay && W.LowiMyDay.open) W.LowiMyDay.open(); } catch (e) {} return null; }
         if (!R() || !R().sheet) return null;
         tab = t === 'fr' ? 'fr' : 'trip';
         if (ov && ov.isConnected) { paint(); return ov; }

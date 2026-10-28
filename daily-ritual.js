@@ -397,7 +397,7 @@
         ['lowi:reward', 'lowi:meal-logged', 'lowi:care'].forEach(n => { const f = () => setTimeout(() => { try { chip(true); checkReached(); } catch (e) {} }, 300); W.addEventListener(n, f); D.addEventListener(n, f); });
         if (standalone()) { const b = $('#lcA2hs'); if (b) b.remove(); }
     }
-    W.LowiRitual = { core: Core, openA2: a2Open, closeA2: a2Close, a2State: () => (A2 ? { i: A2.i, kind: A2.kind, signed: A2.signed } : null), openDay: dayCard, closeDay: dayClose, openPicker: pickOpen, closePicker: pickClose, chip, busy, activeKeys,
+    W.LowiRitual = { core: Core, openA2: a2Open, closeA2: a2Close, a2State: () => (A2 ? { i: A2.i, kind: A2.kind, signed: A2.signed } : null), openDay: () => { /* Oct 28 2026 slim structure (X-28 deleted): the streak lives in Mein Tag */ try { if (W.LowiMyDay && W.LowiMyDay.open) { W.LowiMyDay.open(); return true; } } catch (e) {} return false; }, closeDay: dayClose, openPicker: pickOpen, closePicker: pickClose, chip, busy, activeKeys,
         progress: () => { const r = ritual(); return r && r.goal ? gp(r.goal, activeKeys(), dayKey()) : null; }, tick };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })(typeof window !== 'undefined' ? window : null);

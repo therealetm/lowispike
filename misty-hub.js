@@ -174,7 +174,7 @@
         D.body.appendChild(t); try { t.click(); } finally { t.remove(); }
     }
     const TODAY_ACT = { trip: () => proxy('data-bt', 'bar'), sun: () => proxy('data-ls', 'info'), goal: () => proxy('data-dr', 'chip'), recap: () => W.LowiDayRecap && W.LowiDayRecap.open({ after: true }) };
-    function youHtml() { try { return W.LowiYouStats && W.LowiYouStats.hubHTML ? W.LowiYouStats.hubHTML() : ''; } catch (e) { return ''; } }
+    function youHtml() { return ''; /* Oct 28 2026 slim structure (X-24 deleted) */ try { return W.LowiYouStats && W.LowiYouStats.hubHTML ? W.LowiYouStats.hubHTML() : ''; } catch (e) { return ''; } }
     function cycleHtml() { try { return W.LowiCycleWorld && W.LowiCycleWorld.hubHtml ? W.LowiCycleWorld.hubHtml() : ''; } catch (e) { return ''; } }
     function advHtml() { try { return W.LowiAdventureTiers && W.LowiAdventureTiers.html ? W.LowiAdventureTiers.html() : ''; } catch (e) { return ''; } }
     function rankHtml() { try { return W.LowiMistyRank && W.LowiMistyRank.html ? W.LowiMistyRank.html() : ''; } catch (e) { return ''; } }

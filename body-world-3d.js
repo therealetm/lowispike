@@ -352,7 +352,7 @@
                only attachHome added it, so a Home re-render mid-flight left the world invisible over the plain page background. */
             if (canvas && world && api.state === 'ready') stage.classList.add('bw3-live');
         }
-        if (els.top && !els.top.querySelector('.bw3-open')) {
+        if (api.allowFull && els.top && !els.top.querySelector('.bw3-open')) {
             const btn = D.createElement('button'); btn.type = 'button'; btn.className = 'bw3-open'; btn.setAttribute('aria-label', tr('open'));
             btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="9" ry="3.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 3a9 9 0 0 1 0 18" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M18.5 14.6l2.4 1-1 2.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><b>3D</b>';
             btn.addEventListener('click', e => { e.stopPropagation(); open(); });
@@ -478,6 +478,8 @@
 
     /* ---------- full-screen world ---------- */
     function open() {
+        /* Oct 28 2026 slim structure (X-36 deleted): Home already is the world, so the separate full-screen 3D window no longer opens */
+        if (!api.allowFull) return false;
         if (api.state === 'fallback') return false;
         if (full) return true;
         mode = 'full';

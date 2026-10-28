@@ -194,6 +194,11 @@
         if (view === 'stats') for (const pl of plugins()) { if (typeof pl.mount !== 'function') continue; const el = body.querySelector('[data-ns-plug="' + (W.CSS && CSS.escape ? CSS.escape(pl.id || '') : pl.id) + '"]'); if (el) try { pl.mount(el); } catch (e) { } }
     }
     function open(from) {
+        /* Oct 28 2026 slim structure (X-24 deleted): today's values live in the bubbles; any old entry point lands in Mein Tag */
+        try { if (W.LowiMyDay && W.LowiMyDay.open) { W.LowiMyDay.open(); return null; } } catch (e) {}
+        return null;
+    }
+    function openOld(from) {
         const R = W.LowiR2; if (!R || !R.sheet) return null;
         if (ov && ov.isConnected) { view = 'stats'; paint(); return ov; }
         view = 'stats';

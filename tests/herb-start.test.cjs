@@ -118,7 +118,9 @@ test('wiring: gate hook, setup hook, loader, offline cache, and auth handoff unt
     assert(!/auth-handoff|LowiAuthHandoff/i.test(js), 'does not touch the sign-in handoff');
     assert(/s\.setupDone\|\|\(s\.logs&&s\.logs\.length\)\)return false/.test(js), 'existing users never see herb-first');
     assert(/isAccount\(\)\)return false/.test(js));
-    assert(js.includes('if(plan()||(S()||{}).starter)return;setTimeout(ivOpen'), 'the questions are offered once');
+    /* Oct 28 2026 (slim batch 10): the questions are offered later on the Profile card, never opened by themselves after setup */
+    assert(/function afterSetup\(\)\{[^}]*\}catch\(e\)\{\}pendClear\(\);\}/.test(js) && !/setTimeout\(ivOpen,reduce/.test(js), 'the questions are not forced after setup');
+    assert(/data-hs-open="redo">'\+esc\(t\('profStart'\)\)/.test(js), 'the Profile card offers them');
     assert(/herb-first:planted/.test(js), 'first reward is once ever');
     assert(/prefers-reduced-motion:reduce/.test(read('herb-start.css')));
 });

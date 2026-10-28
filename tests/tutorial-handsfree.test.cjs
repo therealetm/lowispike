@@ -34,7 +34,7 @@ test('a title is only said when none of its words is in the text', () => {
     assert.ok(left > said * 2, 'most titles repeat their text and are left out (' + left + ' left out, ' + said + ' said)');
     /* Oct 25 2026 short tour: in the base tour only the cards whose title adds something are said with their title; every
        "Tap X ..." card (the bubbles, Scan, Community) says its name once, in the text */
-    const ADDS = new Set(['claim', 'hello', 'settings', 'fly', 'done']);
+    const ADDS = new Set(['claim', 'hello', 'settings', 'done']);
     for (const l of LANGS) for (const st of S.plan({ claimReady: true })) if (V.spoken(st, l, 'Misty').t >= 0) assert.ok(ADDS.has(st.id), st.id + '/' + l + ': title said although the text repeats it');
     for (const l of LANGS) for (const id of ['gap', 'fuel', 'water', 'move', 'sleep', 'scan', 'community']) assert.strictEqual(V.spoken(S.STEPS.find(x => x.id === id), l, 'Misty').t, -1, id + '/' + l + ': said once');
 });

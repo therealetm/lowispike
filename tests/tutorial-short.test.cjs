@@ -13,7 +13,7 @@ const code = f => read(f).replace(/\/\*[\s\S]*?\*\//g, '');
 
 test('the base tour is the short one: these cards, in this order, never more than MAX_BASE (12)', () => {
     assert.strictEqual(S.MAX_BASE, 12);
-    assert.deepStrictEqual(S.plan({}).map(s => s.id), ['hello', 'gap', 'fuel', 'water', 'move', 'sleep', 'scan', 'community', 'settings', 'fly', 'done']);
+    assert.deepStrictEqual(S.plan({}).map(s => s.id), ['hello', 'gap', 'fuel', 'water', 'move', 'sleep', 'scan', 'community', 'settings', 'done']);
     assert.deepStrictEqual(S.plan({ claimReady: true }).map(s => s.id)[0], 'claim', 'a standard-Misty account first claims its own companion');
     assert.ok(S.plan({ claimReady: true }).length <= S.MAX_BASE);
 });

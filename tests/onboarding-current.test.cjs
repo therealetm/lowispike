@@ -80,7 +80,7 @@ test('the shopping form never pre-fills a number and is editable later from Prof
     ['en', 'de', 'es'].forEach(l => assert.ok(new RegExp("\\b" + l + ": \\{").test(s), l));
 });
 
-test('gate is 3 plain screens (Oct 21 TikTok advice): what it is + why + proof first, shop & scan first in the habits', () => {
+test('gate is 2 plain screens (was 3, Oct 28 slim batch 10) (Oct 21 TikTok advice): what it is + why + proof first, shop & scan first in the habits', () => {
     const s = read('herb-start.js');
     assert.ok(!/play:\[/.test(s), 'how-you-play is taught in the app, not before the account');
     assert.match(s, /plantH:'Eat smarter\. Become your healthiest self, as a game\.'/);
@@ -88,11 +88,12 @@ test('gate is 3 plain screens (Oct 21 TikTok advice): what it is + why + proof f
     assert.ok(!/proof:'/.test(s) && !s.includes('hs-proof') && !/45 kg/.test(s), 'no founder weight-loss line on the first screen');
     for (const cute of ['Say hi', 'Got it', 'Nice to meet you', "Save your companion"]) assert.ok(!s.includes("'" + cute + "'") && !s.includes("'" + cute + ":"), 'plain button words, not cute ones: ' + cute);
     assert.match(s, /saveBtn:'Create free account'/);
-    assert.match(s, /\[0,1,2\]\.map\(/, '3 dots');
+    /* Oct 28 2026 (slim batch 10): the first-XP screen is merged into the name screen, so the gate is 2 screens, then the account form */
+    assert.match(s, /\[0,1\]\.map\(/, '2 dots');
     assert.match(s, /hab:\['Shop & scan'/);
     assert.match(s, /hab:\['Einkaufen & scannen'/);
     assert.match(s, /hab:\['Comprar y escanear'/);
-    assert.match(s, /Math\.min\(2,\+st\.step\|\|0\)/);
+    assert.match(s, /Math\.min\(1,\+st\.step\|\|0\)/);
     assert.match(s, /if\(st\.v!==3\)/, 'older saved progress moves to the matching new screen');
 });
 

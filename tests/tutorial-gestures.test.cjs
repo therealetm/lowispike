@@ -68,8 +68,10 @@ test('the short tour shows tap, hold and drag with the finger, and every kind of
 
 test('every section of the app has a card in the short tour, and the tour opens it for real (never the camera)', () => {
     const S = T.base(), where = s => s.where || 'home';
-    for (const a of ['you', 'home', 'food', 'play', 'together', 'settings', 'end']) assert.ok(S.some(s => s.area === a), 'area ' + a + ' has a base card');
-    for (const a of T.AREAS) assert.ok(T.STEPS.some(s => s.area === a) || ['companion', 'extras'].includes(a), 'area ' + a + ' has a step');
+    for (const a of ['you', 'home', 'food', 'together', 'settings', 'end']) assert.ok(S.some(s => s.area === a), 'area ' + a + ' has a base card');
+    /* Oct 28 2026 (slim structure, batch 10): the joystick card ('fly') is merged into the last card, which shows the drag */
+    assert.ok(S.some(s => s.area === 'end' && (s.target || []).includes('#whPad') && s.demo && s.demo.g === 'drag'), 'the last card shows the joystick');
+    for (const a of T.AREAS) assert.ok(T.STEPS.some(s => s.area === a) || ['companion', 'extras', 'play'].includes(a), 'area ' + a + ' has a step');
     /* Oct 25 2026: Scan opens a pretend Scan (sample photo + Demo verdict); the camera question waits for the first real scan */
     assert.ok(S.some(s => s.demo && s.demo.open === 'scan-demo'), 'a card shows what is inside Scan');
     assert.ok(S.some(s => s.demo && s.demo.open === 'community-tab'), 'a card opens Community');

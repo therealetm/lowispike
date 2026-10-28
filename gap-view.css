@@ -198,3 +198,12 @@ html.lt .gv-ov, html[data-ui="light"] .gv-ov { background: rgba(10, 30, 70, .12)
 .gv-today .ns-sm small { overflow: visible; text-overflow: clip; }
 .gv-today .wm-list { margin-top: 0; }
 .gv-today .wm-row b { overflow-wrap: anywhere; }
+/* Oct 28 2026 (Emmanuel: Essenspause is not centred, in every language). Since the round close moved to the bottom center
+   (bottom-close.js), the old top-left X stays in the row invisible (.lw-bx-src) and still pushed the title 20-60 px left of
+   the card's center. Now the hidden X leaves the row and the title is centred over the whole card, wrapping centred when a
+   translation is long. While the X shows (bottom-close off), an empty 44 px slot on the right mirrors it so the title stays
+   centred between the two. The row keeps its old height, so nothing below moves. */
+.gv-top { position: relative; min-height: 64px; box-sizing: border-box; }
+.gv-top h2 { flex: 1 1 auto; min-width: 0; text-align: center; overflow-wrap: break-word; line-height: 1.25; }
+.gv-top > .gv-x.lw-bx-src { position: absolute; left: 16px; top: 14px; }
+.gv-top:has(> .gv-x:not(.lw-bx-src))::after { content: ""; flex: 0 0 44px; }

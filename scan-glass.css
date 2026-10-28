@@ -214,3 +214,12 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
 @keyframes b3psweep { from { transform: translateY(-40%); } to { transform: translateY(240%); } }
 .b3-pnone .b3-pthumb { width: 120px; height: 120px; opacity: .9; }
 @media (prefers-reduced-motion: reduce) { .b3-psweep { animation: none; top: 33%; } .b3-pshoot { transition: none; } }
+
+/* Oct 28 2026 live barcode layer ("Barcode live scannen" on the photo screen; E-man, call + screenshots): its own clean full screen.
+   Camera, frame, the hint, Snap / Focus / torch and the X stay; the Barcode / Essen-Foto switch, Deep analyze, the shutter and the two
+   type fields go (typing a number or a name stays on the photo screen under the camera). */
+.b3-cam.b3-livebc .b3-cacts, .b3-cam.b3-livebc .b3-deep, .b3-cam.b3-livebc .b3-shut, .b3-cam.b3-livebc .b3-ctype,
+.b3-cam.b3-livebc .b3-nmlive { display: none !important; }
+.b3-cam.b3-livebc { background: radial-gradient(120% 80% at 50% 36%, #0d1d42 0, #071029 45%, #03050a 92%) #03050a; }
+.b3-cam.b3-livebc .b3-cmsg { z-index: 4; pointer-events: auto; }
+.b3-cam.b3-livebc:not(.live) .b3-frame { opacity: .35; }

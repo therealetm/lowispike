@@ -52,7 +52,8 @@ test('AI is spent only from the explicit Analyse with AI tap', () => {
     assert.ok(!ai.test(fnSrc(html, sig)), sig + ' must not reach the AI');
   assert.match(fnSrc(html, 'function pickAI()'), /S\.photoFile\(f\)/);
   assert.match(html, /case "pickai": pickAI\(\); break;/);
-  assert.match(html, /case "pickretake": pickReset\(\); pickOpen\(false\); break;/);
+  /* Oct 28 2026 late: Neues Foto also marks the picker so cancelling it leaves Scan (tests/scan-live-exit.test.cjs) */
+  assert.match(html, /case "pickretake": pickReset\(\); pickOpen\(false\); if \(CAM\) CAM\.pickAgain = Date\.now\(\); break;/);
   const g = fnSrc(html, 'async function pickGot(f)');
   assert.match(g, /if \(r\.code\) \{[^}]*found\(r\.code\)/, 'a barcode goes to the product card');
   assert.match(g, /msgState\(r\.qr \? "pickqr" : "picknone"\)/, 'no code: the choice, not the AI');

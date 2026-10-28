@@ -129,7 +129,8 @@ test('wiring: the Scan camera is reused (no second camera or barcode reader), lo
     assert.match(html, /LowiShopScan\.found\(code, CAM\.el, \{ctx:scanCtx\(\)\}\); return; \}\n  CAM\.done = true; stopStream\(\);/, 'every camera keeps the stream on; the old close-and-reveal path is only a fallback without shop-scan.js');
     assert.match(html, /search:searchName, shopMode, shopResume/);
     assert.match(html, /addScanned:p => \{ const C = window\.LowiShopScanCore, r = C && C\.cartAdd\(SH\.list, p, uid\); if \(!r\) return null; shSave\(\);/);
-    assert.match(html, /mode !== "shop"\)\{LowiSpirit\.scannerHost\(\)/, 'from Shop it opens as its own layer');
+    /* Oct 28 2026 late: the live barcode layer from the photo Scan screen is its own layer too (tests/scan-live-exit.test.cjs) */
+    assert.match(html, /mode !== "shop"( && !live)?\)\{LowiSpirit\.scannerHost\(\)/, 'from Shop it opens as its own layer');
     assert.match(html, /LowiShopScan\.decorate\(m, s\)/, 'no camera: search by name');
     assert.match(js, /X\(\)\.scan\('shop'\)/);
     assert.match(js, /'tdShop', 'lsCart'/, 'Scan a product in Shop mode and in the cart');

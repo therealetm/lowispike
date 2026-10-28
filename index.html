@@ -15406,6 +15406,12 @@ Object.assign(B3_TX, {
   pickQr: ["QR code found, but it is not a product code", "QR-Code gefunden, aber kein Produktcode", "Código QR encontrado, pero no es de producto"],
   pickAgain: ["New photo", "Neues Foto", "Otra foto"],
   pickAI: ["Analyse with AI", "Mit KI analysieren", "Analizar con IA"],
+  /* Oct 28 2026 live barcode scan from the photo screen (E-man, call: "Barcode live" led into the old cluttered camera screen) */
+  liveOff: ["The camera is off", "Die Kamera ist aus", "La cámara está apagada"],
+  liveOffS: ["Just take a photo of the barcode instead. That needs no camera permission.", "Mach stattdessen einfach ein Foto vom Barcode. Dafür braucht es keine Kamera-Erlaubnis.", "Haz simplemente una foto del código. No necesita permiso de cámara."],
+  livePause: ["Live scan paused", "Live-Scan pausiert", "Escaneo en vivo en pausa"],
+  livePauseS: ["Tap to carry on, or take a photo of the barcode.", "Tipp zum Weitermachen oder mach ein Foto vom Barcode.", "Toca para seguir o haz una foto del código."],
+  liveGo: ["Carry on", "Weiter scannen", "Seguir"],
   actMeal: ["Log meal", "Mahlzeit eintragen", "Registrar comida"],
   actMealL: ["Log a meal: photo, words or a recent one", "Mahlzeit eintragen: Foto, Worte oder eine letzte", "Registrar comida: foto, palabras o una reciente"],
   actWater: ["Water +1", "Wasser +1", "Agua +1"],
@@ -15971,7 +15977,10 @@ function camShot(){ const c = CAM; if (!c || !c.photo || c.shooting) return; con
 function openScanner(mode){
   /* Oct 28 2026 photo-first Scan: the picker opens first, still inside the tap (iOS only opens it from a tap) */
   const pick = pickMode(mode); if (pick && mode !== "pickq") pickOpen(mode === "lib");
-  if (mode === "live" || pick) mode = "cam";
+  /* Oct 28 2026 (E-man, call, screenshots): "Barcode live scannen" opened the old scanner inside Misty's world (Barcode / Essen-Foto
+     switch, Deep analyze, the mood row, the fields). Live is now its own clean full-screen layer: camera, frame, Snap / Focus / torch, X. */
+  const live = mode === "live"; if (live) scanWorldOff();
+  if (live || pick) mode = "cam";
   { const i = window.LowiScanIntent; window.LowiScanMeal = !!(i && i.meal && Date.now() - i.at < 5000); window.LowiScanIntent = null; } /* read by scanForMeal() */
   closeScanner(true);
   const el = document.createElement("div"); el.className = "b3-cam"; el.id = "b3Cam"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true");
@@ -15989,7 +15998,7 @@ function openScanner(mode){
     '<button type="button" class="b3-sbtn b3-snapb" id="b3Snap" data-b3="snap" aria-label="' + esc(t("snapL")) + '">' + IC.shutter + '<span>' + esc(t("snap")) + '</span></button>' +
     '<button type="button" class="b3-sbtn b3-focusb" id="b3Focus" data-b3="camfocus" hidden aria-pressed="false" aria-label="' + esc(t("focusL")) + '">' + IC.focus + '<span>' + esc(t("focus")) + '</span></button>';
   /* Oct 16 in-store scan: shopping mode (from Shop / the cart) opens as its own full-screen layer, not inside Misty's world */
-  if(window.LowiSpirit && mode !== "shop"){LowiSpirit.scannerHost().appendChild(el);el.removeAttribute("aria-modal");}else { document.body.appendChild(el); if (mode === "shop") el.classList.add("lv-solo"); } document.documentElement.classList.add("b3-camon");
+  if(window.LowiSpirit && mode !== "shop" && !live){LowiSpirit.scannerHost().appendChild(el);el.removeAttribute("aria-modal");}else { document.body.appendChild(el); if (mode === "shop" || live) el.classList.add("lv-solo"); if (live) el.classList.add("b3-livebc"); } document.documentElement.classList.add("b3-camon");
   CAM = {el, stream:null, raf:0, det:null, reader:null, done:false, last:0};
   /* Oct 19 food paths (E-man: "at the top there, it says shopping ... so complicated and so hidden"): the Scan camera checks a product
      and logs food; shopping (Shopping pill, Search by name, Shopping list, Finds) lives only in the camera opened from Shop. */
@@ -16049,10 +16058,18 @@ async function camName(q){
   if (p) { sfx("check"); await showNameResult(p); return; }
   reveal({notFound:true, name:q, typed:true, neNone:true, neFb:fb}, true); }
 function msg(text, kind){ const m = CAM && $("#b3Hint", CAM.el); if (m) { m.textContent = text; m.className = "b3-chint" + (kind ? " " + kind : ""); } }
+function liveCard(s, m){
+  /* live barcode layer: no camera -> a photo of the barcode instead (no permission needed); retrying is only ever a tap */
+  if (!CAM.el.classList.contains("b3-livebc") || !(s === "denied" || s === "nocam" || s === "camerr" || s === "livepause")) return false; msg("");
+    const photoBtn = '<button class="b3-cbtn ' + (s === "livepause" ? "ghost" : "pri") + '" data-b3="livephoto">' + esc(t("pickShoot")) + '</button>';
+    const tryBtn = s === "nocam" ? "" : '<button class="b3-cbtn ' + (s === "livepause" ? "pri" : "ghost") + '" data-b3="camallow">' + esc(t(s === "livepause" ? "liveGo" : "camTry")) + '</button>';
+    m.innerHTML = '<div class="b3-cbox b3-cglass" role="alert"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t(s === "livepause" ? "livePause" : "liveOff")) + '</b><small>' + esc(t(s === "livepause" ? "livePauseS" : "liveOffS")) + '</small><div class="b3-cbtns">' + (s === "livepause" ? tryBtn + photoBtn : photoBtn + tryBtn) + '</div></div>';
+    return true; }
 function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.dataset.st = s;
   /* no camera (blocked, none, didn't start): Misty-blue glass card, a blue Try again and typing the number as the clear way round;
      the frame corners and the light hide (scan-glass.css), the living world stays in view */
   const typeBtn = '<button class="b3-cbtn ghost" data-b3="camtype">' + esc(t("camType")) + '</button>';
+  if (liveCard(s, m)) return; /* the live barcode layer has its own cards (below) */
   if (s === "denied" || s === "nocam" || s === "camerr") msg(t("camTypeHint")); else if (s === "starting") msg(aimTxt());
   if (s === "denied") m.innerHTML = '<div class="b3-cbox b3-cglass"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camDenied")) + '</b><small>' + esc(t("camDeniedS")) + '</small><div class="b3-cbtns"><button class="b3-cbtn pri" data-b3="camallow">' + esc(t("camTry")) + '</button>' + typeBtn + '</div></div>';
   else if (s === "camerr") m.innerHTML = '<div class="b3-cbox b3-cglass"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camErr")) + '</b><small>' + esc(t("camErrS")) + '</small><div class="b3-cbtns"><button class="b3-cbtn pri" data-b3="camallow">' + esc(t("camTry")) + '</button>' + typeBtn + '</div></div>';
@@ -16082,7 +16099,7 @@ async function startCam1(mine){
   try { stream = await getCam(); }
   catch(e){ if (CAM !== mine) return; const st = camErrState(e); msgState(st); if (st === "denied") localStorage.removeItem(CAMOK); return; }
   if (CAM !== mine || mine.done || document.visibilityState === "hidden") { stream.getTracks().forEach(x => x.stop()); return; }
-  localStorage.setItem(CAMOK, "1"); mine.stream = stream;
+  localStorage.setItem(CAMOK, "1"); mine.stream = stream; mine.hadStream = true;
   const v = $("#b3Vid", mine.el); v.srcObject = stream;
   if (!(await playVid(v)) && CAM === mine) { /* iOS can refuse play() outside a tap: the next touch on the scanner starts it */
     mine.el.addEventListener("pointerdown", () => { if (CAM === mine && mine.stream) playVid(v); }, {once:true}); }
@@ -16228,9 +16245,20 @@ function pickInput(lib){ let i = lib ? pickLibIn : pickIn; if (i && i.isConnecte
   /* in the layout but out of sight (like Community's input): iOS opens a file input only from a tap, and only one it can lay out */
   i.style.cssText = "position:fixed;left:-200px;top:0;width:1px;height:1px;opacity:0;pointer-events:none";
   document.body.appendChild(i);
-  i.addEventListener("change", () => { const f = i.files && i.files[0]; i.value = ""; if (f) pickGot(f); });
+  i.addEventListener("change", () => { const f = i.files && i.files[0]; i.value = ""; if (CAM) CAM.pickAgain = 0; if (f) pickGot(f); });
+  /* Oct 28 2026 (E-man): cancelling the camera opened by "Neues Foto" leaves Scan, not back to the Scan start screen */
+  i.addEventListener("cancel", () => pickCancelled());
   if (lib) pickLibIn = i; else pickIn = i; return i; }
 function pickOpen(lib){ try { pickInput(lib).click(); } catch(e){} }
+/* the photo screen after a cancelled "Neues Foto" camera: Scan closes the whole way (the Scan layer and Misty's world under it).
+   The input's cancel event says so; older iPhones without it: back in the app with no photo after a moment counts the same. */
+function pickCancelled(){ const c = CAM; if (!c || !c.pickAgain || !c.el.classList.contains("b3-pick") || c.pickFile || c.done) return; c.pickAgain = 0; scanExit(); }
+function pickBackCheck(){ const c = CAM; if (!c || !c.pickAgain || Date.now() - c.pickAgain < 600) return; const at = c.pickAgain;
+  setTimeout(() => { if (CAM === c && c.pickAgain === at && document.visibilityState === "visible") pickCancelled(); }, 1500); }
+if (!("oncancel" in HTMLInputElement.prototype)) { window.addEventListener("focus", pickBackCheck);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pickBackCheck(); }); }
+function scanWorldOff(){ try { const w = document.getElementById("spWorld"); if (w && w.classList.contains("sp-capture") && window.LowiSpirit && LowiSpirit.close) LowiSpirit.close(true); } catch(e){} }
+function scanExit(){ const inWorld = !!(CAM && CAM.el.closest("#spWorld")); closeScanner(); if (inWorld) scanWorldOff(); }
 /* both inputs exist (laid out) before the first tap: a file input made and clicked in the same moment may not open */
 (function(){ const mk = () => { try { pickInput(false); pickInput(true); } catch(e){} }; if (document.body) mk(); else document.addEventListener("DOMContentLoaded", mk); })();
 function pickHTML(s){
@@ -16706,7 +16734,8 @@ document.addEventListener("click", e => {
     case "pickshoot": pickOpen(false); break;
     case "picklib": pickOpen(true); break;
     case "picklive": sfx("tap"); openScanner("live"); break;
-    case "pickretake": pickReset(); pickOpen(false); break;
+    case "pickretake": pickReset(); pickOpen(false); if (CAM) CAM.pickAgain = Date.now(); break;
+    case "livephoto": sfx("tap"); pickOpen(false); if (window.LowiLiving && LowiLiving.scan) LowiLiving.scan("pickq"); else openScanner("pickq"); /* the photo screen on its own, like Home's Scan */ if (CAM) CAM.pickAgain = Date.now(); break;
     case "pickai": pickAI(); break;
     case "torch": torch(); break;
     case "snap": snapShot(); break;
@@ -16752,9 +16781,12 @@ document.addEventListener("click", e => {
 document.addEventListener("keydown", e => { if (e.key === "Escape" && CAM) closeScanner(); });
 /* Oct 15: leaving the app stops the camera; coming back starts it again on its own (no second "Allow camera" tap) */
 function camResume(){ if (!CAM || CAM.done || CAM.stream || CAM.el.classList.contains("typing") || CAM.el.classList.contains("b3-pick")) return; const st = CAM.el.dataset.st; if (st === "denied" || st === "nocam" || st === "lookup") return;
+  /* Oct 28 2026 live barcode layer: never asks for the camera again by itself (iOS shows the site's camera prompt for each new
+     request in a home-screen app); after the app was away it waits on "Weiter scannen", and a failed start waits for a tap too */
+  if (CAM.el.classList.contains("b3-livebc") && (st === "livepause" || st === "camerr" || CAM.starting)) return;
   /* Oct 28 Snap: a kept photo (being read, or "no barcode" with its own Snap again) never gets swapped for the camera behind its back */
   if (CAM.snap || st === "snapread" || st === "snapnone") return; startCam(); }
-document.addEventListener("visibilitychange", () => { if (!CAM) return; if (document.visibilityState !== "visible") { if (CAM.stream) { stopStream(); CAM.el.classList.remove("live"); if (!CAM.snap) msgState("starting"); } } else setTimeout(camResume, 250); });
+document.addEventListener("visibilitychange", () => { if (!CAM) return; if (document.visibilityState !== "visible") { if (CAM.stream) { stopStream(); CAM.el.classList.remove("live"); if (!CAM.snap) msgState(CAM.el.classList.contains("b3-livebc") ? "livepause" : "starting"); } } else setTimeout(camResume, 250); });
 window.addEventListener("pageshow", e => { if (e.persisted) setTimeout(camResume, 250); });
 window.addEventListener("focus", () => setTimeout(camResume, 300));
 window.addEventListener("online", () => { loadComm(true).then(ch => { if (ch && curTab() === "scan") renderTab(); }); });

@@ -430,18 +430,37 @@
         try { if (W.LowiHost && typeof W.LowiHost.go === 'function') W.LowiHost.go('move'); else if (typeof W.goTab === 'function') W.goTab('move'); } catch (e) {}
         watchPage(); [60, 400, 1200].forEach(ms => setTimeout(guessRow, ms));
     }
+    /* Slim batch 6 (M-03 into M-01): today's steps are picked on the Move bubble only.
+       The Move page shows today's pick as one quiet line, with Entfernen in place; no second sheet. */
     function guessRow() {
         const sc = D.querySelector('#tab-move #mv-screen .mv-head'); if (!sc) return;
         let r = sc.parentNode.querySelector(':scope > .wm-guess-row');
+        if (r && r.tagName === 'BUTTON') { r.remove(); r = null; }
         if (!r) {
-            r = D.createElement('button'); r.type = 'button'; r.className = 'wm-guess-row';
-            r.addEventListener('click', e => { e.preventDefault(); editSheet(); });
+            r = D.createElement('div'); r.className = 'wm-guess-row'; r.setAttribute('role', 'group');
+            r.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-wm-rmday]'); if (!b) return; e.preventDefault(); removeToday(); });
             sc.insertAdjacentElement('afterend', r);
         }
         const v = C.view(ledger(), dayKey()), n = v.estimates;
-        const txt = T('Today\'s steps on Home: ', 'Schritte heute auf Home: ', 'Pasos de hoy en Home: ') + (v.level ? NAMES[v.level]() + ' · ' + HINTS[v.level]() : (n ? n + ' ' + (n === 1 ? T('older guess', 'ältere Schätzung', 'estimación antigua') : T('older guesses', 'ältere Schätzungen', 'estimaciones antiguas')) : T('nothing yet', 'noch nichts', 'nada aún')));
-        const ed = T('Edit', 'Bearbeiten', 'Editar');
-        if (r.dataset.t !== txt + ed) { r.dataset.t = txt + ed; r.innerHTML = '<span>' + esc(txt) + '</span><b>' + esc(ed) + '</b>'; r.setAttribute('aria-label', txt + ', ' + ed); }
+        const head = T('Steps today', 'Schritte heute', 'Pasos hoy');
+        const val = v.level ? NAMES[v.level]() + ' · ' + HINTS[v.level]() : (n ? n + ' ' + (n === 1 ? T('older guess', 'ältere Schätzung', 'estimación antigua') : T('older guesses', 'ältere Schätzungen', 'estimaciones antiguas')) : T('pick on the Move bubble', 'auf der Bewegungs-Bubble wählen', 'elige en la burbuja de Movimiento'));
+        const rm = n ? T('Remove', 'Entfernen', 'Quitar') : '';
+        const key = head + val + rm;
+        if (r.dataset.t !== key) {
+            r.dataset.t = key;
+            r.innerHTML = '<span><small>' + esc(head) + '</small><b>' + esc(val) + '</b></span>' + (rm ? '<button type="button" class="wm-rmday" data-wm-rmday="1">' + esc(rm) + '</button>' : '');
+            r.setAttribute('aria-label', head + ': ' + val);
+        }
+    }
+    function removeToday() {
+        const br = bridge(); if (!br || !br.unaward) return;
+        const mine = C.estimates(ledger(), dayKey()); if (!mine.length) return;
+        const before = energy(); let amt = 0;
+        mine.forEach(e => { try { amt += (+br.unaward(e.eventId) || 0); } catch (x) {} });
+        const after = energy();
+        paint(); guessRow();
+        const dE = before == null || after == null ? null : Math.round((after - before) * 100);
+        float(T('Removed', 'Entfernt', 'Quitado') + ' · -' + amt + ' XP' + (dE ? ' · ' + dE + '% ' + T('energy', 'Energie', 'energía') : ''), true);
     }
     let pageObs = null;
     function watchPage() {
@@ -450,44 +469,19 @@
         pageObs = new MutationObserver(() => { if (q) return; q = setTimeout(() => { q = 0; guessRow(); }, 80); });
         pageObs.observe(p, { childList: true, subtree: true });
     }
-    function editSheet() {
-        closeBloom(false);
-        const R = W.LowiR2; if (!R || !R.sheet) return;
-        const day = dayKey(), mine = C.estimates(ledger(), day), v = C.view(ledger(), day);
-        const tm = ts => { const d = new Date(+ts || 0); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
-        const rows = mine.length ? mine.map(e => '<li class="wm-row"><span><b>' + esc((NAMES[e.lvl] ? NAMES[e.lvl]() : label()) + (HINTS[e.lvl] ? ' · ' + HINTS[e.lvl]() : '')) + '</b><small>' + esc(tm(e.ts) + ' · ' + (+e.amt || 0) + ' XP') + '</small></span><button type="button" class="wm-rm" data-wm-rm="' + esc(e.eventId) + '">' + esc(T('Remove', 'Entfernen', 'Quitar')) + '</button></li>').join('')
-            : '<li class="wm-row wm-empty">' + esc(T('No step range picked today.', 'Heute noch kein Schrittbereich gewählt.', 'Hoy aún no has elegido un rango de pasos.')) + '</li>';
-        const html = '<div class="wm-sheet"><h3>' + esc(label() + (v.text ? ' · ' + v.text : '')) + '</h3>' +
-            '<p class="wm-why">' + esc(T('Casual (under 5,000), Steady (5,000 to 9,999) or Epic (10,000 or more) is today\'s step total from your own phone\'s step counter. LOWiSPIKE does not count or check steps, so it is your word, not a measurement. One range a day: tapping another changes today\'s, it never adds a second walk. Epic fills today\'s Move share of Misty\'s energy.',
-                'Locker (unter 5.000), Stetig (5.000 bis 9.999) oder Episch (10.000 oder mehr) ist deine Schrittzahl von heute aus dem Schrittzähler deines Handys. LOWiSPIKE zählt und prüft keine Schritte, es ist also dein Wort, keine Messung. Ein Bereich pro Tag: Tippst du einen anderen, ändert sich der von heute, es kommt nie ein zweiter Weg dazu. Episch füllt den Bewegungsanteil von Mistys Energie für heute.',
-                'Tranquilo (menos de 5.000), Constante (de 5.000 a 9.999) o Épico (10.000 o más) es tu total de pasos de hoy según el contador de tu móvil. LOWiSPIKE no cuenta ni comprueba pasos, así que es tu palabra, no una medida. Un rango al día: si tocas otro, cambia el de hoy, nunca suma otro paseo. Épico llena la parte de Movimiento de la energía de Misty hoy.')) + '</p>' +
-            (v.fromMovePage ? '<p class="wm-why">' + esc(T('A workout or steps from the Move page already fill today.', 'Ein Training oder Schritte von der Bewegungsseite füllen heute schon alles.', 'Un entrenamiento o pasos de la página Movimiento ya llenan hoy.')) + '</p>' : '') +
-            '<ul class="wm-list">' + rows + '</ul></div>';
-        const ov = R.sheet(html, { cls: 'wm-sheet-ov' });
-        if (!ov) return;
-        ov.addEventListener('click', e => {
-            const btn = e.target.closest && e.target.closest('[data-wm-rm]'); if (!btn) return;
-            e.preventDefault();
-            const br = bridge(); if (!br || !br.unaward) return;
-            const before = energy(), amt = br.unaward(btn.dataset.wmRm), after = energy();
-            const row = btn.closest('li'); if (row) row.remove();
-            paint();
-            const dE = before == null || after == null ? null : Math.round((after - before) * 100);
-            float(T('Removed', 'Entfernt', 'Quitado') + ' · -' + (amt || 0) + ' XP' + (dE ? ' · ' + dE + '% ' + T('energy', 'Energie', 'energía') : ''), true);
-            const h = ov.querySelector('.wm-sheet h3'); if (h) { const t2 = C.view(ledger(), dayKey()).text; h.textContent = label() + (t2 ? ' · ' + t2 : ''); }
-            if (!ov.querySelector('[data-wm-rm]')) { const ul = ov.querySelector('.wm-list'); if (ul) ul.innerHTML = '<li class="wm-row wm-empty">' + esc(T('No step range picked today.', 'Heute noch kein Schrittbereich gewählt.', 'Hoy aún no has elegido un rango de pasos.')) + '</li>'; }
-        });
-    }
+    /* The old "Schritte heute bearbeiten" sheet is merged into the Move bubble (slim batch 6).
+       Old callers land on the Move page, where today's pick is one line with Entfernen in place. */
+    function editSheet() { openPage(); }
 
     /* ---------- life cycle ---------- */
     let queued = 0;
-    const soon = () => { if (queued) return; queued = requestAnimationFrame(() => { queued = 0; try { paint(); } catch (e) {} }); };
+    const soon = () => { if (queued) return; queued = requestAnimationFrame(() => { queued = 0; try { paint(); } catch (e) {} try { guessRow(); } catch (e) {} }); };
     const placeSoon = () => requestAnimationFrame(() => { try { place(); } catch (e) {} });
     function boot() {
         paint();
         setTimeout(watchPage, 0);
         let tries = 0; const wait = () => { if ((el && el.isConnected) || ++tries > 40) return; paint(); setTimeout(wait, 400); }; setTimeout(wait, 400);
-        ['lowi:reward', 'lowi:state', 'lowi:lang', 'lowi:layout', 'storage', 'focus'].forEach(n => W.addEventListener(n, soon));
+        ['lowi:reward', 'lowi:state', 'lowi:lang', 'lowi:layout', 'lowi:move-estimate', 'storage', 'focus'].forEach(n => W.addEventListener(n, soon));
         D.addEventListener('visibilitychange', () => { if (!D.hidden) soon(); });
         /* the HUD can be rebuilt; re-attach, and repaint after midnight (fill goes back to 0/4) */
         timer = setInterval(() => { if (D.hidden) return; if (!el || !el.isConnected || dayKey() !== lastDay) paint(); place(); }, 15000);

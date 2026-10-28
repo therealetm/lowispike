@@ -108,7 +108,7 @@ test('wired into the app: award extra fields, unaward, scripts, sw lists, bubble
     assert.match(js, /wh-cell wh-move/); assert.match(js, /data-hb|dataset\.hb/);
     assert.match(js, /openPage\(\); \}, 560\)/, 'long press opens the Move page (Oct 21)');
     assert.match(js, /onLong: \(\) => \{ longAt = performance\.now\(\); openPage\(\); return true; \}/, 'living bubble hold opens the Move page');
-    assert.match(js, /wm-guess-row[\s\S]*editSheet\(\)/, 'today\'s estimates stay one tap away on the Move page');
+    assert.match(js, /wm-guess-row[\s\S]*data-wm-rmday[\s\S]*removeToday\(\)/, 'today\'s pick stays visible on the Move page, Entfernen in place (slim batch 6)');
     assert.match(js, /LowiLivingBubble/, 'uses the shared living bubble when it exists');
     assert.match(js, /LowiSun\.energyNow/, 'reward read back from the one energy formula');
     assert.doesNotMatch(js, /\bsteps?\b\s*:\s*\d/, 'no invented step counts');

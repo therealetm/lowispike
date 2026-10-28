@@ -28,7 +28,9 @@ const SLOW = process.argv[5] === 'webkit' ? 2 : 1;
   /* a photo message from someone else, fully on screen; scroll it into the middle first */
   const target = await P.evaluate(() => {
     const l = document.getElementById('cmList'); if (!l) return null;
-    const all = [...l.querySelectorAll('.cm-msg:not(.mine)')].filter(e => e.querySelector('.cm-bub img'));
+    /* since the chat holds only people (Oct 28 2026), the mock room may have no photo from someone else: then any message of theirs */
+    let all = [...l.querySelectorAll('.cm-msg:not(.mine)')].filter(e => e.querySelector('.cm-bub img'));
+    if (!all.length) all = [...l.querySelectorAll('.cm-msg:not(.mine)')].filter(e => e.querySelector('.cm-bub'));
     const m = all[Math.max(0, all.length - 3)]; if (!m) return null;
     try { l.dispatchEvent(new WheelEvent('wheel', { deltaY: -40, bubbles: true })); } catch (e) { }
     m.scrollIntoView({ block: 'center' });

@@ -23,7 +23,7 @@ test('Kochen panel paints a solid backdrop that beats the body-world tab reset',
 });
 
 test('Home behind Kochen is dimmed and blurred', () => {
-  const m = css.match(/html\.cook-holo #cookHoloScrim\{([^}]+)\}/);
+  const m = css.slice(css.lastIndexOf('owner request 14')).match(/html\.cook-holo #cookHoloScrim\{([^}]+)\}/);
   assert.ok(m);
   assert.ok(alphaOf(m[1]) >= 0.6, 'scrim at least 60% dark');
   assert.match(m[1], /backdrop-filter:blur\((1[2-9]|[2-9]\d)px/);
@@ -33,7 +33,9 @@ test('Home behind Kochen is dimmed and blurred', () => {
 test('Essenspause stays small but solid, Home dimmed behind it', () => {
   const tail = gap.slice(gap.lastIndexOf('owner request 15'));
   const card = (tail.match(/\.gv-card \{([^}]+)\}/) || [])[1] || '';
-  assert.ok(alphaOf(card) >= 0.95, 'card at least 95% opaque');
+  const lin = (card.match(/linear-gradient\(([^;]+)\);/) || [])[1] || '';
+  assert.ok(lin && alphaOf(lin) >= 0.95, 'card at least 95% opaque');
+  assert.match(card, /background-color: #[0-9a-f]{6}/i);
   const ov = (tail.match(/\.gv-ov, html\.lt \.gv-ov, html\[data-ui="light"\] \.gv-ov \{([^}]+)\}/) || [])[1] || '';
   assert.ok(alphaOf(ov) >= 0.6, 'scrim at least 60% dark');
   assert.match(ov, /backdrop-filter: blur\(\d+px\)/);

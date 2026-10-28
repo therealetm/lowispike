@@ -119,7 +119,7 @@ The complete inline-module, screen, persistence, backend, asset, and test invent
 - Evidence before "done": a passing command, a live build id, a matching file. A confident summary is not evidence.
 - How to work with AI agents here (task sizing, worktrees, reviews, reporting): `AI_PLAYBOOK.md` and `.agents/skills/lowispike-change/SKILL.md`. `scripts/worktrees-report.sh` shows which old worktrees are merged or still hold work (read-only).
 - The test count only goes up: `scripts/test-floor.cjs` (in CI and `scripts/release.sh`) fails when fewer tests pass than the last release recorded. Never delete or skip a test to get green.
-- Parallel agents: one task, one worktree, one branch (`git worktree add ../wt-<topic> -b <topic> origin/main`). Two tasks never edit the same files; split by file before starting. Write who owns what in `/home/sprite/COORD-<topic>.md` when tasks overlap.
+- Parallel agents: one task, one worktree, one branch (`git worktree add ../wt-<topic> -b <topic> origin/main`). Two tasks never edit the same files; split by file before starting. Write who owns what in `/home/sprite/COORD-<topic>.md` when tasks overlap. COORD files only exist on one computer: when another Maya works at the same time on another computer, claim files and announce releases in the pinned GitHub issue #2 ("Maya ↔ Maya: coordination chat", see MAYA-HANDOFF.md).
 - Keep releases small and one at a time: each one is one user-visible change, its What's New and its tests.
 
 ## The tutorial stays current (rule since 19 Oct 2026, Emmanuel)

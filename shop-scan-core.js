@@ -107,6 +107,7 @@
         whyFoot: ['A general guide for this portion, not medical advice.', 'Eine allgemeine Orientierung für diese Portion, kein ärztlicher Rat.', 'Una guía general para esta porción, no un consejo médico.'],
         o_none: ['Fine every day at this portion', 'Jeden Tag okay, in dieser Portion', 'Bien todos los días, en esta porción'],
         o_mild: ['Up to 2–3 times a week at this portion', 'Bis zu 2–3 Mal pro Woche, in dieser Portion', 'Hasta 2–3 veces por semana, en esta porción'],
+        o_noneE: ['Fine every day for blood sugar. For fewer calories: about {0} instead of {1}', 'Für den Blutzucker jeden Tag okay. Für weniger Kalorien: etwa {0} statt {1}', 'Bien todos los días para el azúcar. Para menos calorías: unos {0} en vez de {1}'],
         o_mildP: ['Every day at {0}. At {1}: 2–3 times a week', 'Jeden Tag bei {0}. Bei {1}: 2–3 Mal pro Woche', 'Todos los días con {0}. Con {1}: 2–3 veces por semana'],
         o_spike: ['Once a week at most, as a small portion', 'Höchstens einmal pro Woche, als kleine Portion', 'Como mucho una vez por semana, en porción pequeña'],
         o_unknown: ['Can\'t say yet: the label is missing numbers', 'Noch nicht zu sagen: Dem Etikett fehlen Zahlen', 'No podemos decirlo aún: faltan números en la etiqueta'],
@@ -118,6 +119,7 @@
         w_slowP: ['Protein helps it go in more slowly.', 'Eiweiß lässt es langsamer ins Blut gehen.', 'La proteína hace que pase más despacio.'],
         m_none: ['Insulin-friendly means: this food likely raises your blood sugar only a little.', 'Insulinfreundlich heißt: Dein Blutzucker steigt bei diesem Essen wahrscheinlich nur wenig.', 'Apto para la insulina significa: este alimento probablemente sube poco tu azúcar en sangre.'],
         m_mild: ['Not insulin-friendly means: your blood sugar likely goes up noticeably with this food.', 'Nicht insulinfreundlich heißt: Dein Blutzucker steigt bei diesem Essen wahrscheinlich spürbar.', 'No apto para la insulina significa: tu azúcar en sangre probablemente sube de forma notable con este alimento.'],
+        m_noneE: ['Insulin-friendly. The only point here is energy, not sugar.', 'Insulinfreundlich. Hier geht es nur um Energie, nicht um Zucker.', 'Apto para la insulina. Aquí solo se trata de energía, no de azúcar.'],
         m_mildP: ['Not insulin-friendly here is about the amount, not about sugar.', 'Nicht insulinfreundlich geht hier um die Menge, nicht um Zucker.', 'Aquí, No apto para la insulina va de la cantidad, no del azúcar.'],
         m_spike: ['Not insulin-friendly means: your blood sugar likely goes up fast and high.', 'Nicht insulinfreundlich heißt: Dein Blutzucker steigt wahrscheinlich schnell und stark.', 'No apto para la insulina significa: tu azúcar en sangre probablemente sube rápido y mucho.'],
         m_pol: ['{0}: here it is about more than blood sugar.', '{0}: Hier geht es um mehr als den Blutzucker.', '{0}: aquí va de algo más que el azúcar en sangre.'],
@@ -239,7 +241,10 @@
         const bs = a && RATED[a.verdict] ? level(a.verdict) : 'unknown';
         const pol = eng && eng.policy, rule = (pol && pol.decidedBy) || '';
         const group = sv && sv.group, src = !sv ? null : sv.source === 'manufacturer' ? 'maker' : group === 'nuts' || group === 'cheese' ? group : 'group';
-        const port = bs === 'none' && lvl === 'mild' && /nuts_large|cheese_large/.test(rule) ? (/nuts/.test(rule) ? 'nuts' : 'cheese') : null;
+        /* 28 Oct 2026 (owner: calories are not blood sugar): a big portion of plain nuts or cheese is an energy note beside a JA
+           (policy stage energy), so the card stays insulin-friendly and the energy is its own line. */
+        const energy = ((pol && pol.notes) || []).map(r => r && r.id).find(id => /nuts_large|cheese_large/.test(id || '')) || '';
+        const port = bs === 'none' && lvl === 'none' && energy ? (/nuts/.test(energy) ? 'nuts' : 'cheese') : null;
         const polUp = !port && lvl !== 'unknown' && bs !== 'unknown' && RANKL[lvl] > RANKL[bs];
         const lines = [];
         /* Rulebook step 1 (28 Oct 2026): a JA food at a bigger portion (spike-core jaPortion) says so plainly instead of "rises
@@ -247,7 +252,7 @@
            called fast sugar, and a Higher that is only about the amount of such a food says it is about the amount. */
         const ja = !!(eng && eng.jaPortion), own = !!(eng && eng.sugarSource && eng.sugarSource.intrinsic);
         const ownBig = own && !port && !polUp && lvl === 'spike' && bs === 'spike';
-        lines.push(port ? t('m_mildP') : polUp ? t('m_pol', t('v_' + lvl)) : ja && lvl === 'none' ? t('m_noneJA', amt(sh.carbs || 0)) : ownBig ? t('m_mildP') : t('m_' + lvl));
+        lines.push(port ? t('m_noneE') : polUp ? t('m_pol', t('v_' + lvl)) : ja && lvl === 'none' ? t('m_noneJA', amt(sh.carbs || 0)) : ownBig ? t('m_mildP') : t('m_' + lvl));
         const has = k => why.find(w => w && w[0] === k);
         const c = sh.carbs, s = sh.sugar;
         let w = '';
@@ -271,7 +276,7 @@
         /* fibre is named only when there is some: plain quark has protein and no fibre */
         if (!port && !polUp && (lvl === 'none' || lvl === 'mild')) { if ((sh.fibre || 0) >= 2) lines.push(t('w_slow')); else if ((sh.protein || 0) >= 6) lines.push(t('w_slowP')); }
         if (lines.length < 2) lines.push(t('w_nodata'));
-        const often = lvl === 'unknown' ? t('o_unknown') : port ? t('o_mildP', '30 ' + unit, at)
+        const often = lvl === 'unknown' ? t('o_unknown') : port ? t('o_noneE', '30 ' + unit, at)
             : ja && lvl === 'none' ? t('o_noneBig')
             : ownBig ? t('o_bigP', at) : t('o_' + lvl);
         return { often, lines: lines.slice(0, 4), g, unit, src, bs };

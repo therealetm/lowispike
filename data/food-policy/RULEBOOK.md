@@ -62,11 +62,37 @@ The chat room, photo log and meal detail already give plain quark at 150 / 250 /
 damping) than the product card (available carbs per serving, 10 g / 30 g bands). So carrots 500 g read
 insulin-friendly from a photo but not from a barcode. Aligning those two scales is the next step.
 
+## Step 2a (28 Oct 2026, owner report "It didn't work": calories are not blood sugar)
+
+A photo bowl (Magerjoghurt, Mischbeeren, 35 Mandeln, 3 Kiwi-Scheiben, Chiasamen) read "Nicht insulinfreundlich" with the
+reason "Nüsse: eine große Portion ist viel Energie", although its blood-sugar estimate was low. The owner's rule (his
+GPT, following his Master Knowledge): keep blood-sugar / insulin impact, calories and portion size apart.
+
+- `policy.nuts_large` and `policy.cheese_large` are energy notes now (stage `energy`, verdict `NOTE`). Plain nuts and
+  sugar-free cheese stay JA at any portion; above 30 g the note is shown as its own line ("Energie, nicht Blutzucker: 35
+  Mandeln haben etwa 200 kcal. Für weniger Kalorien reicht eine kleine Handvoll (etwa 30 g).") on the photo result, the
+  meal detail and the barcode card. Coated, sweet-salty nuts and nut butter keep their own rules. Master Knowledge v3
+  section 23 still lists "larger portions of nuts" under SELTEN: this owner decision replaces it for the insulin label.
+- Meals: SELTEN means "small portion, best with a meal". A whole fruit of at most one piece (slices count as part of one)
+  in a meal with other foods whose whole blood-sugar estimate is low meets that condition, so it does not turn the meal
+  red. The fruit keeps its own SELTEN (`mealVerdict` JA on the meal only). Banana, grapes, mango etc. stay NEIN.
+- The deployed photo prompt (food-photo v6, not redeployed) still rates more than 30 g of nuts and whole fruit SELTEN.
+  Its per-food verdicts now ride along (`verdictBlock.parts`); its SELTEN cannot tighten an app JA when every food it
+  rated SELTEN is still on the plate under the same name and the rulebook explains it (energy note, plain nuts or cheese,
+  fruit met in the meal). Any NEIN part, or an unexplained or missing SELTEN part, still tightens.
+- The net-carb figure names its sum: "etwa 14 g Netto-KH (27 g KH − 13 g Ballaststoffe)", fibre shown as carbs minus net
+  so the numbers always add up.
+- Tests: `tests/meal-energy.test.cjs` (the bowl, old-prompt model, sugary meal, fruit in meals, both energy rules, meal
+  detail, CSS). Browser check: `node tools/check-meal-energy.cjs [--engine webkit] [--lang de|en|es] [--w 320 --h 568]`.
+- Not changed: the photo path still uses its own blood-sugar scale (step 2 below); the name-estimate path's model block
+  has no per-food verdicts yet, so it can still tighten a nut product by the old prompt.
+
 ## Conflicts and unsupported numbers (not resolved by invention)
 
 - NOSPIKE CORE "when unsure, rate stricter" vs v2 (removed). v2 wins; missing data = "can't rate" / provisional.
 - Plantain: NEIN in v2, SELTEN in the older files. v2 wins.
 - Quark is not named in v2 (only Greek yogurt and cottage cheese); the app's v3 lists it as JA. Kept JA.
+- v3 section 23 lists larger nut portions under SELTEN; owner decision 28 Oct 2026 makes them an energy note (step 2a).
 - v3 section 39 (only written portion rules change a verdict) vs owner decision 24 Oct (a Higher estimate is never
   shown as fine). Step 1 keeps the owner decision for Higher and applies section 39 to Moderate.
 - House numbers with no source in any knowledge file: carb bands 10 g / 30 g per serving, sugar 15 g per serving,

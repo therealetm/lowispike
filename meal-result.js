@@ -25,6 +25,8 @@
         en: {
             q: 'Insulin check', low: 'Insulin-friendly', mid: 'Not insulin-friendly', high: 'Not insulin-friendly',
             whyLow: 'About {net} g net carbs.', net: 'about {net} g net carbs',
+            netOf: '{carbs} g carbs − {fiber} g fibre', energy: 'Energy, not blood sugar: {what} {have} about {kcal} kcal.', energyNoKcal: 'Energy, not blood sugar: {what} {have} a lot of calories.',
+            energyNuts: 'For fewer calories, a small handful (about 30 g) is enough.', energyCheese: 'For fewer calories, about 30 g is enough.', has1: 'has', hasN: 'have',
             whyMid: 'About {net} g net carbs.',
             whyHigh: 'About {net} g net carbs. That’s enough to spike.',
             whyDrink: 'The sugary drink alone is enough to spike.',
@@ -40,6 +42,8 @@
         de: {
             q: 'Insulin-Check', low: 'Insulinfreundlich', mid: 'Nicht insulinfreundlich', high: 'Nicht insulinfreundlich',
             whyLow: 'Etwa {net} g Netto-Kohlenhydrate.', net: 'etwa {net} g Netto-KH',
+            netOf: '{carbs} g KH − {fiber} g Ballaststoffe', energy: 'Energie, nicht Blutzucker: {what} {have} etwa {kcal} kcal.', energyNoKcal: 'Energie, nicht Blutzucker: {what} {have} viele Kalorien.',
+            energyNuts: 'Für weniger Kalorien reicht eine kleine Handvoll (etwa 30 g).', energyCheese: 'Für weniger Kalorien reichen etwa 30 g.', has1: 'hat', hasN: 'haben',
             whyMid: 'Etwa {net} g Netto-Kohlenhydrate.',
             whyHigh: 'Etwa {net} g Netto-Kohlenhydrate. Das reicht für einen Spike.',
             whyDrink: 'Allein das süße Getränk reicht für einen Spike.',
@@ -55,6 +59,8 @@
         es: {
             q: 'Control de insulina', low: 'Apto para la insulina', mid: 'No apto para la insulina', high: 'No apto para la insulina',
             whyLow: 'Unos {net} g de carbohidratos netos.', net: 'unos {net} g de carbohidratos netos',
+            netOf: '{carbs} g de carbohidratos − {fiber} g de fibra', energy: 'Energía, no azúcar en sangre: {what} {have} unas {kcal} kcal.', energyNoKcal: 'Energía, no azúcar en sangre: {what} {have} muchas calorías.',
+            energyNuts: 'Para menos calorías basta un puñado pequeño (unos 30 g).', energyCheese: 'Para menos calorías bastan unos 30 g.', has1: 'tiene', hasN: 'tienen',
             whyMid: 'Unos {net} g de carbohidratos netos.',
             whyHigh: 'Unos {net} g de carbohidratos netos. Suficiente para un pico.',
             whyDrink: 'Solo la bebida azucarada ya basta para un pico.',
@@ -491,7 +497,41 @@
        sweets with sugar, no XP"): one answer on top. The stricter of the spike estimate and the LOWiSPIKE verdict wins, so the
        headline, its colour, its one reason line and the XP line never disagree. A NEIN or SELTEN verdict shows its own label
        (Skip it / Small portion) and reason, with the carb estimate after it; never a promise that it won't spike. */
+    /* 28 Oct 2026 (Emmanuel: "14 g Netto-KH" next to cards that add up to 27 g KH, no split shown): the net figure names its
+       sum, total carbs minus fibre, from the same totals the cards add up to. Fibre is shown as carbs minus net, so the
+       three numbers always add up after rounding. No fibre, no sum. */
+    function netWhy(v, l) {
+        const tot = v && v.total, net = v && v.net;
+        if (!tot || net == null) return '';
+        const carbs = Math.round(tot.carbs || 0), fiber = Math.max(0, carbs - net);
+        return fiber >= 1 && carbs > net ? t('netOf', l, { carbs, fiber }) : '';
+    }
+    /* 28 Oct 2026 (owner: calories and blood sugar are two things): a big portion of nuts or cheese is one separate energy
+       line under the verdict, never the verdict or its reason. "35 Mandeln" when the portion is a plain piece count. */
+    function energyLine(v, l) {
+        const n = v && v.food && Array.isArray(v.food.notes) ? v.food.notes[0] : null;
+        if (!n) return '';
+        const m = String(n.portion || '').match(/^\s*(\d+)\s*(?:st(?:ü|ue)ck|stk\.?|pcs?\.?|pieces?|piezas?)?\s*$/i);
+        const what = m ? m[1] + ' ' + n.name : n.portion ? n.name + ' (' + n.portion + ')' : n.name;
+        const have = t(n.rule === 'policy.cheese_large' || (m && +m[1] === 1) ? 'has1' : 'hasN', l);
+        const first = n.kcal > 0 ? t('energy', l, { what, have, kcal: n.kcal }) : t('energyNoKcal', l, { what, have });
+        return first + ' ' + t(n.rule === 'policy.cheese_large' ? 'energyCheese' : 'energyNuts', l);
+    }
     function headline(v, l) {
+        const h = headline0(v, l);
+        if (!h) return h;
+        const sum = netWhy(v, l);
+        if (sum) h.why = insertSum(h.why, v.net, sum);
+        h.energy = energyLine(v, l);
+        return h;
+    }
+    /* puts " (27 g KH − 13 g Ballaststoffe)" right after the net-carb phrase ("etwa 14 g Netto-KH", "Etwa 14 g Netto-
+       Kohlenhydrate", "about 14 g net carbs", "unos 14 g de carbohidratos netos") */
+    function insertSum(why, net, sum) {
+        const re = new RegExp('(' + net + ' g (?:Netto-KH|Netto-Kohlenhydrate|net carbs|de carbohidratos netos))');
+        return re.test(why) ? why.replace(re, '$1 (' + sum + ')') : why;
+    }
+    function headline0(v, l) {
         if (!v || v.empty) return null;
         const K = fk(), fv = v.food && v.food.verdict, lab = x => { const s2 = String(K.label(x, l) || ''); return s2.charAt(0).toUpperCase() + s2.slice(1).toLowerCase(); }, why = () => (v.food && (v.food.reason || (K && K.reasonText(v.food.rule, l)))) || '';
         const netS = t('net', l, { net: v.net }), join = (a, b) => a ? a + ' \u00b7 ' + b : b.charAt(0).toUpperCase() + b.slice(1);
@@ -613,6 +653,7 @@
                 '<section class="mr-verdict mr-' + hl.cls + '" aria-live="polite" aria-atomic="true">' +
                 '<div class="mr-vt"><small class="mr-q">' + esc(t('q', l)) + '</small><b class="mr-ans"><i aria-hidden="true"></i>' + esc(hl.ans) + '</b>' +
                 '<span class="mr-why">' + esc(hl.why) + '</span>' +
+                (hl.energy ? '<span class="mr-energy">' + esc(hl.energy) + '</span>' : '') +
                 '</div>' +
                 (opts.photo ? '<img class="mr-thumb" alt="" src="' + esc(opts.photo) + '">' : '') + '</section>';
             const foods = st.items.length ? '<div class="mr-sec"><p class="mr-h"><b>' + esc(t('see', l)) + '</b><small>' + esc(t('tapFix', l)) + '</small></p><ul class="mr-list">' +

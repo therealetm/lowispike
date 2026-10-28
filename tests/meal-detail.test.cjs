@@ -70,7 +70,7 @@ test('the sheet shows only what was stored, escaped, in EN, DE and ES; an old po
         assert.ok(h.includes(M.t('title', l))); assert.ok(h.includes(M.t('low', l)));
         assert.ok(h.includes(M.t('from', l, { n: 'Antje' }).replace(/’/g, '’')));
         assert.ok(h.includes(M.t('ing', l)) && h.includes('Salmon') && h.includes('150 g'));
-        assert.ok(h.includes(M.t('whyLow', l, { net: 6 })), l + ' why line');
+        assert.ok(h.includes(M.whyText(d, l)) && h.includes(M.t('whyLow', l, { net: 6 }).replace(/\.$/, '')), l + ' why line (28 Oct 2026: with the carbs-minus-fibre sum when stored)');
         assert.ok(h.includes('520') && h.includes(M.t('protein', l)));
         assert.ok(!h.includes(M.t('none', l)));
         const none = M.sheetHTML(null, { by: 'Q', name: 'Toast', lvl: 'high', l });

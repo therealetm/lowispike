@@ -54,7 +54,15 @@
             title: String(raw.title || '').replace(/\s+/g, ' ').trim().slice(0, 80), desc: String(raw.desc || '').replace(/\s+/g, ' ').trim().slice(0, 160),
             // Master Knowledge v3 verdict block. Kept raw here; meal-result validates it (LowiFoodKnowledge.parse) and it can
             // only make the app's own verdict stricter, never looser.
-            verdictBlock: raw.lowispike && typeof raw.lowispike === 'object' && !Array.isArray(raw.lowispike) ? raw.lowispike : null };
+            verdictBlock: raw.lowispike && typeof raw.lowispike === 'object' && !Array.isArray(raw.lowispike) ? withParts(raw.lowispike, raw.dishes) : null };
+    }
+    /* 28 Oct 2026: the model's own verdict per food (dishes[].verdict in the food-photo schema) rides along as parts, so the
+       app can tell an old-prompt nut / fruit SELTEN from a real one (LowiFoodKnowledge.merge). Missing verdicts: no parts. */
+    function withParts(block, raw) {
+        const list = (Array.isArray(raw) ? raw : []).slice(0, 8);
+        const parts = list.map(d => d && typeof d === 'object' && String(d.name || '').trim() && typeof d.verdict === 'string'
+            ? { name: String(d.name).replace(/\s+/g, ' ').trim().slice(0, 60), verdict: d.verdict.toUpperCase() } : null);
+        return parts.length && parts.every(Boolean) ? Object.assign({}, block, { parts }) : block;
     }
     function totals(dishes) {
         const out = {};

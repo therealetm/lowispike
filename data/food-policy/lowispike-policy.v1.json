@@ -16,9 +16,10 @@
     "glucose",
     "cravings",
     "satiety",
-    "alternative"
+    "alternative",
+    "energy"
   ],
-  "combine": "The strictest verdict of all matching rules wins; ties are named by the earliest stage in priority. JA only comes from a JA rule. Nothing (protein, fibre, fat, a claim or a score) can lift a safety, medical or policy NEIN. Without a JA rule a product is at best SELTEN.",
+  "combine": "The strictest verdict of all matching rules wins; ties are named by the earliest stage in priority. JA only comes from a JA rule. Nothing (protein, fibre, fat, a claim or a score) can lift a safety, medical or policy NEIN. Without a JA rule a product is at best SELTEN. Energy notes (stage energy, verdict NOTE: a big portion of nuts or cheese is a lot of energy) never change the verdict; they are shown as a separate energy line (owner decision 28 Oct 2026: keep blood-sugar / insulin impact, calories and portion apart).",
   "defaults": {
     "noRule": "SELTEN",
     "portionG": {
@@ -510,17 +511,17 @@
     },
     {
       "id": "policy.nuts_large",
-      "stage": "policy",
-      "verdict": "SELTEN",
-      "when": "plain nuts above defaults.portionG.nuts per serving",
-      "why": "Plain nuts, but a large portion ({0} g)"
+      "stage": "energy",
+      "verdict": "NOTE",
+      "when": "plain nuts above defaults.portionG.nuts per serving: an energy note next to the verdict, never the verdict itself (owner decision 28 Oct 2026; Master Knowledge section 23 calls them energy-dense, not a blood-sugar driver)",
+      "why": "Plain nuts: a large portion ({0} g) is a lot of energy"
     },
     {
       "id": "policy.cheese_large",
-      "stage": "policy",
-      "verdict": "SELTEN",
-      "when": "cheese above defaults.portionG.cheese per serving",
-      "why": "Cheese, but a large portion ({0} g)"
+      "stage": "energy",
+      "verdict": "NOTE",
+      "when": "cheese above defaults.portionG.cheese per serving: an energy note next to the verdict, never the verdict itself (owner decision 28 Oct 2026)",
+      "why": "Cheese: a large portion ({0} g) is a lot of energy"
     },
     {
       "id": "policy.legumes",
@@ -739,15 +740,15 @@
       "id": "ja.nuts_moderate",
       "stage": "policy",
       "verdict": "JA",
-      "when": "plain nuts (ingredient list known, no added sugar, no coating) up to defaults.portionG.nuts per serving",
-      "why": "Plain nuts in a moderate portion"
+      "when": "plain nuts (ingredient list known, no added sugar, no coating) at any portion; above defaults.portionG.nuts the energy note policy.nuts_large is added",
+      "why": "Plain nuts or seeds: few usable carbs"
     },
     {
       "id": "ja.cheese_moderate",
       "stage": "policy",
       "verdict": "JA",
-      "when": "cheese up to defaults.portionG.cheese per serving, no added sugar",
-      "why": "Cheese in a moderate portion"
+      "when": "cheese with no added sugar at any portion; above defaults.portionG.cheese the energy note policy.cheese_large is added",
+      "why": "Cheese without added sugar: hardly any carbs"
     }
   ]
 }

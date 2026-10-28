@@ -126,7 +126,7 @@ test('photo bowl: one answer on top; the spike estimate and the LOWiSPIKE verdic
 test('photo: a plain everyday plate still reads low, a small-portion verdict reads yellow, a spike reads red', () => {
     const low = R.headline(R.verdict([item('chicken breast'), item('broccoli')], [], null, 'en'), 'en');
     assert.equal(low.cls, 'low'); assert.equal(low.ans, 'Insulin-friendly');
-    assert.match(low.why, /^About \d+ g net carbs\.$/);
+    assert.match(low.why, /^About \d+ g net carbs( \(\d+ g carbs − \d+ g fibre\))?\.$/, '28 Oct 2026: the net figure names its sum');
     const fruit = R.headline(R.verdict([item('apple')], [], null, 'en'), 'en');
     assert.equal(fruit.cls, 'mid'); assert.equal(fruit.ans, 'Not insulin-friendly', '27 Oct 2026: the middle is not insulin-friendly and shows red');
     const pork = R.verdict([item('pork chop')], [], null, 'en');

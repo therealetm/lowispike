@@ -16,7 +16,7 @@ test('the policy in food-policy-core.js is the versioned JSON file (run scripts/
   assert.deepStrictEqual(JSON_POLICY.priority.slice(0, 5), ['safety', 'medical', 'policy', 'quality', 'glucose']);
   for (const r of JSON_POLICY.rules) {
     assert.ok(r.id && r.stage && JSON_POLICY.priority.includes(r.stage), r.id + ' stage');
-    assert.ok(r.verdict === null || ['JA', 'SELTEN', 'NEIN'].includes(r.verdict), r.id + ' verdict');
+    assert.ok(r.verdict === null || ['JA', 'SELTEN', 'NEIN'].includes(r.verdict) || (r.verdict === 'NOTE' && r.stage === 'energy'), r.id + ' verdict');
     assert.ok(r.when && r.why, r.id + ' documented');
   }
   for (const k of Object.keys(JSON_POLICY.categories)) assert.doesNotThrow(() => new RegExp(JSON_POLICY.categories[k].name, 'i'), k);
@@ -53,14 +53,22 @@ test('section 8 NEIN list: sugar drinks, juice, zero drinks, sweets, staples, ch
   for (const [p, g] of no) { const o = scan(p, g); assert.strictEqual(o.verdict, 'NEIN', p.name + ' -> ' + o.verdict + ' ' + o.policy.decidedBy); }
 });
 
-test('SELTEN: large nut and cheese portions, legumes, sweet potato, processed protein, incomplete ingredients', () => {
+test('28 Oct 2026: a large nut or cheese portion is an energy note beside JA, never the insulin verdict', () => {
   const nuts = {name: 'Mandeln naturbelassen', ingredients: 'Mandeln', per100: {carbs: 5.7, sugar: 4.4, fat: 52, protein: 24}};
   assert.strictEqual(scan(nuts, 30).verdict, 'JA');
-  assert.strictEqual(scan(nuts, 80).verdict, 'SELTEN');
-  assert.strictEqual(scan(nuts, 80).policy.decidedBy, 'policy.nuts_large');
+  assert.deepStrictEqual(scan(nuts, 30).policy.notes, []);
+  assert.strictEqual(scan(nuts, 80).verdict, 'JA');
+  assert.strictEqual(scan(nuts, 80).policy.decidedBy, 'ja.nuts_moderate');
+  assert.deepStrictEqual(scan(nuts, 80).policy.notes.map(n => n.id), ['policy.nuts_large']);
   const gouda = {name: 'Gouda jung', ingredients: 'Milch, Salz, Lab, Milchsäurebakterien', per100: {carbs: 0, sugar: 0, fat: 29}};
   assert.strictEqual(scan(gouda, 25).verdict, 'JA');
-  assert.strictEqual(scan(gouda, 100).verdict, 'SELTEN');
+  assert.strictEqual(scan(gouda, 100).verdict, 'JA');
+  assert.deepStrictEqual(scan(gouda, 100).policy.notes.map(n => n.id), ['policy.cheese_large']);
+  /* coated or sweetened nuts are still judged by what was added, whatever the portion */
+  assert.strictEqual(scan({name: 'Honig-Mandeln', ingredients: 'Mandeln, Zucker, Honig', per100: {carbs: 40, sugar: 35, fat: 30}}, 30).verdict, 'NEIN');
+});
+
+test('SELTEN: legumes, sweet potato, processed protein, incomplete ingredients', () => {
   assert.strictEqual(scan({name: 'Rote Linsen', ingredients: 'Rote Linsen', per100: {carbs: 9, sugar: 1}}, 80).verdict, 'SELTEN');
   assert.strictEqual(scan({name: 'Süßkartoffeln', per100: {carbs: 17, sugar: 4}}, 150).verdict, 'SELTEN');
   const bar = scan({name: 'Protein Crisp Bar', ingredients: 'Milchproteinisolat, Sojaprotein, Kakaobutter, Erythrit', per100: {carbs: 6, sugar: 2, protein: 35}}, 45);

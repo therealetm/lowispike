@@ -24,8 +24,11 @@ test('the foods the owner asked about are filled in with the same logic', () => 
     Hazelnuts: 'JA', Cashews: 'JA', Shrimp: 'JA', Apple: 'SELTEN', Grapes: 'NEIN', Couscous: 'NEIN', Pizza: 'NEIN'};
   for (const [n, v] of Object.entries(want)) assert.strictEqual(P.rateName(n).verdict, v, n);
   assert.strictEqual(P.rateName('Blueberries', 200).verdict, 'SELTEN', 'a bowl of berries is more than a handful');
-  assert.strictEqual(P.rateName('Walnuts', 80).verdict, 'SELTEN', 'a big portion of nuts');
-  assert.strictEqual(P.rateName('Gouda', 100).verdict, 'SELTEN', 'a big portion of cheese');
+  /* 28 Oct 2026: a big portion of nuts or cheese is an energy note, not the verdict */
+  assert.strictEqual(P.rateName('Walnuts', 80).verdict, 'JA', 'a big portion of nuts');
+  assert.deepStrictEqual(P.rateName('Walnuts', 80).notes, ['policy.nuts_large']);
+  assert.strictEqual(P.rateName('Gouda', 100).verdict, 'JA', 'a big portion of cheese');
+  assert.deepStrictEqual(P.rateName('Gouda', 100).notes, ['policy.cheese_large']);
   assert.strictEqual(P.rateName('Cottage cheese', 200).verdict, 'JA', 'fresh cheese is never the cheese limit');
 });
 
@@ -84,7 +87,10 @@ test('a photo meal: strictest part wins, blood sugar can only tighten, unknown c
   assert.strictEqual(m5.verdict, 'SELTEN'); assert.ok(m5.provisional);
   const m6 = K.rateMeal([{name: 'Eggs', count: 3, carbs: 1}, {name: 'Avocado', carbs: 2}], {level: 'low'});
   assert.strictEqual(m6.verdict, 'JA'); assert.deepStrictEqual(m6.dishes.map(d => d.count), [3, 1]);
-  assert.strictEqual(K.rateMeal([{name: 'Walnuts', portion: 'about 100 g'}], {level: 'low'}).verdict, 'SELTEN');
+  /* 28 Oct 2026: 100 g of walnuts is a lot of energy, said as a note; the insulin verdict stays JA */
+  const nuts = K.rateMeal([{name: 'Walnuts', portion: 'about 100 g'}], {level: 'low'});
+  assert.strictEqual(nuts.verdict, 'JA');
+  assert.deepStrictEqual(nuts.notes.map(n => [n.rule, n.name, n.grams]), [['policy.nuts_large', 'Walnuts', 100]]);
 });
 
 test('the verdict block: written, read back, and rejected when malformed or contradictory', () => {

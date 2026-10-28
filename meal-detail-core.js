@@ -23,6 +23,7 @@
     const STR = {
         en: {
             title: 'Meal details', from: 'From {n}’s photo check', low: 'Insulin-friendly', mid: 'Not insulin-friendly', high: 'Not insulin-friendly',
+            netOf: ' ({carbs} g carbs − {fiber} g fibre)', enNuts: 'Energy, not blood sugar: {what} is a big portion of nuts, a lot of calories. A small handful (about 30 g) is enough.', enCheese: 'Energy, not blood sugar: {what} is a big portion of cheese, a lot of calories. About 30 g is enough.',
             why: 'Why', whyLow: 'About {net} g net carbs.', whyMid: 'About {net} g net carbs.',
             whyHigh: 'About {net} g net carbs. That’s enough to spike.', whyDrink: 'The sugary drink alone is enough to spike.',
             ing: 'What the photo check saw', nut: 'Numbers from the photo', tip: 'Tip', est: 'Estimate from the photo, not a measurement.',
@@ -32,6 +33,7 @@
         },
         de: {
             title: 'Mahlzeit-Details', from: 'Aus dem Foto-Check von {n}', low: 'Insulinfreundlich', mid: 'Nicht insulinfreundlich', high: 'Nicht insulinfreundlich',
+            netOf: ' ({carbs} g KH − {fiber} g Ballaststoffe)', enNuts: 'Energie, nicht Blutzucker: {what} ist eine große Portion Nüsse, viele Kalorien. Eine kleine Handvoll (etwa 30 g) reicht.', enCheese: 'Energie, nicht Blutzucker: {what} ist eine große Portion Käse, viele Kalorien. Etwa 30 g reichen.',
             why: 'Warum', whyLow: 'Etwa {net} g Netto-Kohlenhydrate.', whyMid: 'Etwa {net} g Netto-Kohlenhydrate.',
             whyHigh: 'Etwa {net} g Netto-Kohlenhydrate. Das reicht für einen Spike.', whyDrink: 'Allein das süße Getränk reicht für einen Spike.',
             ing: 'Was der Foto-Check erkannt hat', nut: 'Zahlen aus dem Foto', tip: 'Tipp', est: 'Schätzung aus dem Foto, keine Messung.',
@@ -41,6 +43,7 @@
         },
         es: {
             title: 'Detalles de la comida', from: 'Del análisis de foto de {n}', low: 'Apto para la insulina', mid: 'No apto para la insulina', high: 'No apto para la insulina',
+            netOf: ' ({carbs} g de carbohidratos − {fiber} g de fibra)', enNuts: 'Energía, no azúcar en sangre: {what} es una porción grande de frutos secos, muchas calorías. Basta un puñado pequeño (unos 30 g).', enCheese: 'Energía, no azúcar en sangre: {what} es una porción grande de queso, muchas calorías. Bastan unos 30 g.',
             why: 'Por qué', whyLow: 'Unos {net} g de carbohidratos netos.', whyMid: 'Unos {net} g de carbohidratos netos.',
             whyHigh: 'Unos {net} g de carbohidratos netos. Suficiente para un pico.', whyDrink: 'Solo la bebida azucarada ya basta para un pico.',
             ing: 'Lo que vio el análisis', nut: 'Números de la foto', tip: 'Consejo', est: 'Estimación a partir de la foto, no una medición.',
@@ -71,6 +74,10 @@
         const r = rule(d.rule); if (r) o.rule = r;
         if (d.low === true) o.low = true;
         const note = str(d.note, 160); if (note) o.note = note;
+        const en = d.energy;   /* 28 Oct 2026: the energy note (big portion of nuts / cheese), never a verdict */
+        if (en && typeof en === 'object' && /^policy\.(nuts|cheese)_large$/.test(String(en.rule || ''))) {
+            const n = str(en.name, 60); if (n) { o.energy = { rule: en.rule, name: n }; const p = str(en.portion, 40); if (p) o.energy.portion = p; }
+        }
         const items = (Array.isArray(d.items) ? d.items : []).map(x => {
             if (!x || typeof x !== 'object') return null;
             const n = str(x.name, 60); if (!n) return null;
@@ -101,6 +108,7 @@
         const d = {
             name, lvl: L, bs: level, net: bs ? bs.net : (total ? Math.max(0, Math.round(num(total.carbs, CAP.carbs) - num(total.fiber, CAP.fiber))) : undefined),
             drink: !!drinkSugar, verdict: food && food.verdict, rule: food && food.rule, low: ai.low === true, note: ai.note,
+            energy: food && food.notes && food.notes[0] ? { rule: food.notes[0].rule, name: food.notes[0].name, portion: food.notes[0].portion } : undefined,
             items: items.map((x, i) => ({ name: x.name, portion: x.portion, v: food && food.dishes && food.dishes[i] ? food.dishes[i].verdict : undefined })),
             total
         };
@@ -112,7 +120,16 @@
         if (!d) return '';
         if (d.drink) return t('whyDrink', l);
         const k = d.bs || d.lvl; if (d.net == null || !k) return '';
-        return t(k === 'high' ? 'whyHigh' : k === 'mid' ? 'whyMid' : 'whyLow', l, { net: d.net });
+        let w = t(k === 'high' ? 'whyHigh' : k === 'mid' ? 'whyMid' : 'whyLow', l, { net: d.net });
+        /* 28 Oct 2026: the net figure names its sum (total carbs minus fibre), as on the photo result */
+        const tot = d.total, carbs = tot && isFinite(+tot.carbs) ? Math.round(+tot.carbs) : null;
+        if (carbs != null && carbs > d.net && tot.fiber != null) { const dot = w.indexOf('.'); const sum = t('netOf', l, { carbs, fiber: carbs - d.net }); w = dot > 0 ? w.slice(0, dot) + sum + w.slice(dot) : w + sum; }
+        return w;
+    }
+    /* 28 Oct 2026 (owner: calories are not blood sugar): a big portion of nuts or cheese is its own energy line */
+    function energyText(d, l) {
+        const e = d && d.energy; if (!e || !e.name) return '';
+        return t(e.rule === 'policy.cheese_large' ? 'enCheese' : 'enNuts', l, { what: e.portion ? e.name + ' (' + e.portion + ')' : e.name });
     }
     function foodLines(d, l) {
         const K = req('food-knowledge-core.js', 'LowiFoodKnowledge'); if (!d || !d.verdict || !K) return null;
@@ -141,6 +158,7 @@
         if (why || (fl && (fl.reason || fl.sub))) {
             h += '<section class="md-sec md-why"><h4>' + esc(t('why', l)) + '</h4>';
             if (why) h += '<p>' + esc(why) + '</p>';
+            const en = energyText(d, l); if (en) h += '<p class="md-energy">' + esc(en) + '</p>';
             if (fl && fl.reason) h += '<p class="md-verdict"><span>' + esc(fl.reason) + '</span></p>';
             h += '</section>';
         }
@@ -159,5 +177,5 @@
     }
     /* the visible tap hint next to a spike label: a small "Details" word + chevron */
     const hintHTML = (l) => '<span class="md-hint" aria-hidden="true">' + esc(t('hint', l)) + '<svg viewBox="0 0 10 16" width="7" height="11"><path d="M2 2l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
-    return { WHITE, KEYS, STR, t, lang, esc, clean, hasDetail, fromLog, whyText, foodLines, chipHTML, hintHTML, sheetHTML, lvlOf };
+    return { WHITE, KEYS, STR, t, lang, esc, clean, hasDetail, fromLog, whyText, energyText, foodLines, chipHTML, hintHTML, sheetHTML, lvlOf };
 });

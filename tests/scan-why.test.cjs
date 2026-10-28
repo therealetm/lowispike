@@ -25,7 +25,8 @@ test('almonds: the usual portion is a small handful (30 g, the policy\'s own nut
     assert.equal(a.engine.serving.group, 'nuts', 'the portion group rides along for the Details source line');
     assert.equal(S.tighten(almonds, a), 'ok', 'Lower at the usual portion');
     const big = S.assess(almonds, { servingG: 50 });
-    assert.equal(S.tighten(almonds, big), 'better', '50 g of nuts is still a big portion (policy.nuts_large): Moderate');
+    assert.equal(S.tighten(almonds, big), 'ok', '28 Oct 2026: 50 g of nuts is an energy note (policy.nuts_large), not Moderate');
+    assert.ok(big.engine.policy.notes.some(n => n.id === 'policy.nuts_large'), 'the energy note rides along');
 });
 
 test('hard cheese uses its own usual portion (30 g), not the 150 g of a dairy pot', () => {
@@ -37,16 +38,18 @@ test('hard cheese uses its own usual portion (30 g), not the 150 g of a dairy po
 
 test('the card verdict at a chosen amount is the same rule as the first verdict (tightened), never looser', () => {
     assert.equal(C.levelAt(almonds, 30), 'none');
-    assert.equal(C.levelAt(almonds, 50), 'mild', 'picking 50 g of almonds must not jump back to Lower');
+    assert.equal(C.levelAt(almonds, 50), 'none', '28 Oct 2026: 50 g of almonds is insulin-friendly; the energy is a separate line');
     assert.equal(C.levelAt(cola, 330), 'spike');
 });
 
 test('explain: How often in numbers for every verdict, and the portion reason for big nut portions (EN/DE/ES)', () => {
     for (const lang of ['en', 'de', 'es']) {
-        const lo = C.explain(almonds, 30, 'none', lang), mid = C.explain(almonds, 50, 'mild', lang), hi = C.explain(cola, 330, 'spike', lang), un = C.explain({ name: 'X' }, 0, 'unknown', lang);
+        const lo = C.explain(almonds, 30, 'none', lang), mid = C.explain(almonds, 50, 'none', lang), hi = C.explain(cola, 330, 'spike', lang), un = C.explain({ name: 'X' }, 0, 'unknown', lang);
         for (const e of [lo, mid, hi, un]) { assert.ok(e && e.often && e.often.length > 8, lang + ' often'); assert.ok(e.lines.length >= 2 && e.lines.length <= 4, lang + ' 2-4 short lines'); for (const l of e.lines) assert.ok(l.length < 190, lang + ' short line: ' + l); }
         assert.match(lo.often, /every day|jeden Tag|todos los días/i);
-        assert.match(mid.often, /30 g/, 'a big nut portion names the small handful that is fine every day');
+        assert.match(mid.often, /30 g/, 'a big nut portion names the small handful, for fewer calories');
+        assert.match(mid.often, /every day|jeden Tag|todos los días/i, 'blood sugar: fine every day');
+        assert.match(mid.lines[0], /energy|Energie|energía/i, 'first line: energy, not sugar');
         assert.match(mid.lines.join(' '), /316 kcal/, 'why names the energy in 50 g');
         assert.match(hi.often, /once a week|einmal pro Woche|una vez por semana/i);
         assert.match(un.often, /can't|nicht|no podemos/i);

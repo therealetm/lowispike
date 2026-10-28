@@ -166,7 +166,7 @@
             try { confidence = E.assessConfidence({name: p.name, barcode: p.barcode, unit, per100, ingredients: p.ingredients}, {nutrition, ingredients: A}); } catch (e) { confidence = null; }
         }
         const ingredients = A ? {status: A.status, allergens: A.allergens, claims: A.claims, summary: AS} : {status: hasI ? 'complete' : 'missing', allergens: [], claims: []};
-        Object.defineProperty(out, 'engine', {value: {version: E.VERSION, bands: E.BANDS.version, key, glucose, sugarSource: sugarSrc, jaPortion: lifted, serving: {g: serving.g, unit: serving.unit, source: serving.source, group, shown: serving.shown}, valid: nutrition.valid, issues: nutrition.issues, ingredients, policy: policy && {verdict: policy.verdict, version: policy.policyVersion, decidedBy: policy.decidedBy, why: policy.why, provisional: policy.provisional}, confidence: confidence && confidence.level, confidenceInfo: confidence}, enumerable: false});
+        Object.defineProperty(out, 'engine', {value: {version: E.VERSION, bands: E.BANDS.version, key, glucose, sugarSource: sugarSrc, jaPortion: lifted, serving: {g: serving.g, unit: serving.unit, source: serving.source, group, shown: serving.shown}, valid: nutrition.valid, issues: nutrition.issues, ingredients, policy: policy && {verdict: policy.verdict, version: policy.policyVersion, decidedBy: policy.decidedBy, why: policy.why, provisional: policy.provisional, notes: policy.notes || []}, confidence: confidence && confidence.level, confidenceInfo: confidence}, enumerable: false});
         return out;
     }
     const TX = {

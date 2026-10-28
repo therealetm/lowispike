@@ -14,6 +14,9 @@ const HAM = { name: 'Schinken gekocht', facts: { c: 1, s: 1, p: 20, fat: 3 }, in
    reads Everyday at a small handful. This fixture keeps its RARELY by printing a 50 g serving on the pack (policy.nuts_large). */
 const PEANUTS = { name: 'Gesalzene Erdnüsse', facts: { c: 10, s: 4, f: 8, p: 25, fat: 50, sv: 50 }, ingredients: 'Erdnüsse, Salz' };
 const PEANUTS_30 = { name: 'Gesalzene Erdnüsse', facts: { c: 10, s: 4, f: 8, p: 25, fat: 50 }, ingredients: 'Erdnüsse, Salz' };
+/* 28 Oct 2026: a big nut portion is an energy note, not RARELY any more (owner: calories are not blood sugar). The RARELY
+   fixture for every consumer below is now poultry salami (policy.processed_meat). */
+const RARE = { name: 'Geflügelsalami', facts: { c: 1, s: 0.5, p: 22, fat: 14 }, ingredients: 'Putenfleisch, Hähnchenfleisch, Salz, Gewürze' };
 const YOG = { name: 'Naturjoghurt', cat: 'dairy', facts: { c: 4, s: 4, p: 4, fat: 3.5 }, ingredients: 'Milch, Joghurtkulturen' };
 const BEER = { name: 'Bier', cat: 'drink', facts: { c: 3, s: 0 }, ingredients: 'Wasser, Gerstenmalz, Hopfen, Alkohol' };
 const rate = p => S.assess(p);
@@ -24,7 +27,8 @@ test('foodVerdict follows the Food check card: NEIN -> spike, SELTEN -> at least
     assert.equal(S.assess(HAM).verdict, 'ok');
     assert.equal(S.foodVerdict(HAM), 'spike', 'pork: card says NO');
     assert.equal(S.foodVerdict(BEER), 'spike', 'alcohol: card says NO');
-    assert.equal(S.foodVerdict(PEANUTS), 'better', 'nuts, 50 g serving: card says RARELY');
+    assert.equal(S.foodVerdict(PEANUTS), 'ok', 'nuts, 50 g serving: card says YES with an energy note (28 Oct 2026)');
+    assert.equal(S.foodVerdict(RARE), 'better', 'poultry salami: card says RARELY');
     assert.equal(S.foodVerdict(PEANUTS_30), 'ok', 'nuts at the usual 30 g handful: card says EVERYDAY');
     assert.equal(S.foodVerdict(YOG), 'ok', 'plain yoghurt: card says YES');
 });
@@ -48,10 +52,10 @@ test('scan-sort: Shuffle and the Buy pool agree with the card (fails on the old 
     assert.equal(SS.verdictOf(ULTJE, rate), 'spike');
     assert.equal(SS.verdictOf(HAM, rate), 'spike');
     assert.equal(SS.verdictOf({ ...HAM, verdict: 'ok' }, rate), 'spike', 'a stale stored ok row cannot leak');
-    assert.equal(SS.verdictOf(PEANUTS, rate), 'better');
+    assert.equal(SS.verdictOf(RARE, rate), 'better');
     assert.equal(SS.verdictOf(YOG, rate), 'ok');
-    const out = SS.split([ULTJE, HAM, PEANUTS, YOG, BEER], { rate });
-    assert.deepEqual(out.keep.map(i => i.product.name).sort(), ['Gesalzene Erdnüsse', 'Naturjoghurt']);
+    const out = SS.split([ULTJE, HAM, RARE, YOG, BEER], { rate });
+    assert.deepEqual(out.keep.map(i => i.product.name).sort(), ['Geflügelsalami', 'Naturjoghurt']);
     assert.deepEqual(out.toss.map(i => i.product.name).sort(), ['Bier', 'Schinken gekocht', 'Ültje Süß & Salzig']);
 });
 
@@ -68,7 +72,7 @@ const E = require('../food-engine-core.js');
 test('shop scan: live Food check verdict first, a stored ok cannot hide a NO', () => {
     assert.equal(SH.verdictOf(Object.assign({ verdict: 'ok' }, ULTJE), rate), 'spike', 'Ultje: stored ok, card says NO');
     assert.equal(SH.verdictOf(Object.assign({ verdict: 'ok' }, HAM), rate), 'spike', 'ham: stored ok, card says NO');
-    assert.equal(SH.verdictOf(Object.assign({ verdict: 'ok' }, PEANUTS), rate), 'mild', 'nuts: card says RARELY');
+    assert.equal(SH.verdictOf(Object.assign({ verdict: 'ok' }, RARE), rate), 'mild', 'poultry salami: card says RARELY');
     assert.equal(SH.verdictOf(Object.assign({ verdict: 'spike' }, YOG), rate), 'spike', 'a stored spike still wins');
     assert.equal(SH.verdictOf(YOG, rate), 'none', 'plain yoghurt stays Lower');
 });
@@ -107,7 +111,7 @@ test('Putenspeck and other compound speck names: processed meat or pork, never a
 });
 
 test('spike lists follow the Food check card when rate() carries the engine (fails on the old split)', () => {
-    const out = SCL.split([ULTJE, HAM, PEANUTS, YOG], rate, '', false, null);
+    const out = SCL.split([ULTJE, HAM, RARE, YOG], rate, '', false, null);
     assert.deepEqual(out.spike.map(p => p.name).sort(), ['Schinken gekocht', 'Ültje Süß & Salzig']);
     assert.deepEqual(out.ok.map(p => p.name), ['Naturjoghurt']);
     const manual = SCL.split([{ ...HAM, manual: true }], () => ({ verdict: 'ok', engine: {} }), '', false, null);
@@ -159,8 +163,8 @@ test('Misty scan reaction follows the Food check card (fails on the old estimate
     assert.strictEqual(typeof K.scanVerdict, 'function');
     assert.strictEqual(K.scanVerdict(HAM, rate, S), 'spike', 'ham: card says NO');
     assert.strictEqual(K.scanVerdict(ULTJE, rate, S), 'spike', 'Ultje: card says NO');
-    assert.strictEqual(K.scanVerdict(PEANUTS, rate, S), S.tighten(PEANUTS, rate(PEANUTS)), 'same verdict as the spike lists');
-    assert.notStrictEqual(K.scanVerdict(PEANUTS, rate, S), 'ok', 'nuts are RARELY, never a plain YES');
+    assert.strictEqual(K.scanVerdict(RARE, rate, S), S.tighten(RARE, rate(RARE)), 'same verdict as the spike lists');
+    assert.notStrictEqual(K.scanVerdict(RARE, rate, S), 'ok', 'poultry salami is RARELY, never a plain YES');
     assert.strictEqual(K.scanVerdict({ ...HAM, manual: true }, () => ({ verdict: 'ok', engine: {} }), S), 'ok', 'manual entry keeps its own rating');
     assert.strictEqual(K.scanVerdict({ notFound: true, verdict: 'spike' }, rate, S), 'spike', 'not found keeps its stored verdict');
     assert.strictEqual(K.scanVerdict({ notFound: true }, rate, S), 'unknown');
@@ -170,12 +174,12 @@ test('Misty scan reaction follows the Food check card (fails on the old estimate
    Food check still showed "ok" in the Dex grid and My catches although the card says NO. */
 test('rerate / rerateRows make stored dex rows stricter with the Food check, never milder, never guessing', () => {
     const row = (p, v, extra) => Object.assign({}, p, { verdict: v, why: [['s_low', 1, 1]] }, extra || {});
-    const ham = row(HAM, 'ok'), ultje = row(ULTJE, 'better'), nuts = row(PEANUTS, 'ok'), yog = row(YOG, 'spike');
+    const ham = row(HAM, 'ok'), ultje = row(ULTJE, 'better'), nuts = row(RARE, 'ok'), yog = row(YOG, 'spike');
     const manual = row(HAM, 'ok', { source: 'manual' }), lost = row(HAM, 'ok', { notFound: true });
     const bare = { name: 'Mystery bar', verdict: 'ok', facts: {}, ingredients: '' }, unk = row(HAM, 'unknown'), unkYog = row(YOG, 'unknown');
     assert.equal(S.rerate(ham), 'spike', 'pork: card says NO');
     assert.equal(S.rerate(ultje), 'spike');
-    assert.equal(S.rerate(nuts), 'better', 'nuts: card says RARELY');
+    assert.equal(S.rerate(nuts), 'better', 'poultry salami: card says RARELY');
     assert.equal(S.rerate(yog), 'spike', 'never milder than the stored verdict');
     assert.equal(S.rerate(manual), 'ok', 'manual entries keep their own rating');
     assert.equal(S.rerate(lost), 'ok', 'not found keeps the stored verdict');

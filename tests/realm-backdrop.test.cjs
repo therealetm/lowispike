@@ -203,7 +203,9 @@ test('camera states wear Misty\'s blue glass: blue Try again, type the number of
     const html = read('index.html'), css = read('scan-glass.css');
     const ms = html.slice(html.indexOf('function msgState(s){'), html.indexOf('function msgState(s){') + 3000);
     for (const st of ['"denied"', '"camerr"', '"nocam"', '"starting"']) assert.ok(ms.includes('s === ' + st), st);
-    assert.equal((ms.match(/b3-cbox b3-cglass/g) || []).length, 4, 'all four camera states in the glass');
+    /* Oct 28 2026 Snap: "reading your photo" and "no readable barcode" wear the same glass (4 camera states + 2 Snap states) */
+    for (const st of ['"snapread"', '"snapnone"']) assert.ok(ms.includes('s === ' + st), st);
+    assert.equal((ms.match(/b3-cbox b3-cglass/g) || []).length, 6, 'all four camera states and both Snap states in the glass');
     assert.equal((ms.match(/class="b3-cbtn pri" data-b3="camallow"/g) || []).length, 2, 'blue Try again when blocked or failed');
     assert.ok(ms.includes('data-b3="camtype"') && html.includes('case "camtype":'), 'typing the number is offered');
     assert.ok(!/r2-btn ghost" data-b3="camallow"/.test(html), 'the grey Try again is gone');

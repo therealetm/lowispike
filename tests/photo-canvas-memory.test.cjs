@@ -61,14 +61,16 @@ test('food photo shutter: the preview and the 1600 px upload canvas are both han
 function scannerRig() {
   const src = read('index.html'), cv = canvases();
   const el = { classList: { remove() { }, add() { } }, remove() { } };
-  const ctx = { Math, URL: { createObjectURL: () => 'blob:x', revokeObjectURL() { } }, setTimeout: f => f(), cancelAnimationFrame() { }, clearTimeout() { },
+  const ctx = { Math, URL: { createObjectURL: () => 'blob:x', revokeObjectURL() { } }, setTimeout: f => f(), cancelAnimationFrame() { }, clearTimeout() { }, clearInterval() { },
     document: { createElement: () => cv.mk(), documentElement: { classList: { remove() { } } } },
     Image: function () { this.naturalWidth = 3024; this.naturalHeight = 4032; this.decode = async () => { }; },
     nativeDetector: async () => null, loadZX: async () => { }, zxReader: () => ({}), zxDecodeCanvas: () => '', validCode: c => c || '',
     msgState() { }, msg() { }, sfx() { }, $: () => null, found() { }, openScanner() { }, out: {} };
   vm.createContext(ctx);
   const freeSig = src.indexOf('function freeCv(cv)') >= 0 ? fnSrc(src, 'function freeCv(cv)') : '';
-  vm.runInContext(['var CAM = null;', freeSig, fnSrc(src, 'function stopStream()'), fnSrc(src, 'function closeScanner(now)'), fnSrc(src, 'async function decodeFile(f)'),
+  vm.runInContext(['var CAM = null;', freeSig, fnSrc(src, 'function stopStream()'), fnSrc(src, 'function closeScanner(now)'),
+    /* Oct 28 2026 Snap: closing also hands back the kept Snap photo and its burst frames (clearSnap) */
+    src.indexOf('function clearSnap(c)') >= 0 ? fnSrc(src, 'function clearSnap(c)') : '', fnSrc(src, 'async function decodeFile(f)'),
     'out.closeScanner = closeScanner; out.decodeFile = decodeFile; out.setCam = c => { CAM = c; };'].join('\n'), ctx);
   return { ctx, cv, el };
 }
@@ -77,8 +79,10 @@ test('barcode scanner: the ZXing frame canvas is handed back every time the scan
   const { ctx, cv, el } = scannerRig();
   for (let i = 0; i < 10; i++) {
     const f = cv.mk(); f.width = 900; f.height = 523;
-    ctx.out.setCam({ el, cv: f, stream: null, raf: 0, wd: 0 });
+    const snap = i % 3 === 0 ? { frames: [cv.mk(), cv.mk()], over: false } : null; /* every third session closes with a Snap burst still kept */
+    ctx.out.setCam({ el, cv: f, stream: null, raf: 0, wd: 0, snap });
     ctx.out.closeScanner(i % 2 === 0);
+    if (snap) assert.ok(snap.over, 'a Snap still reading is told to stop');
     assert.strictEqual(cv.live(), 0, 'scanner session ' + (i + 1) + ': frame canvas still holds ' + MB(cv.live()));
   }
 });

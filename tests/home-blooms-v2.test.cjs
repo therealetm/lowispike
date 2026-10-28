@@ -107,7 +107,8 @@ test('labels are the plain words E-man asked for, no Again / Photo, no emoji any
   /* Oct 28 2026 (same ring everywhere): the Fuel orbs Shop / Cook / Meal are gone; Fuel is the Einkaufen bubble (RING) */
   assert.doesNotMatch(src, /T\('Cook'|T\('Meal'|id: 'cook'|id: 'log'/, 'the old Fuel trio is gone');
   for (const w of [/* Water words changed Oct 23 2026 (Eman: sips, a cup or a whole bottle; undo = long press): tests/water-sips.test.cjs */
-  "'Sips'", "'Glass'", "'Bottle'", "'Size'", "'Casual'", "'Steady'", "'Epic'", "'<5k'", "'10k+'"]) assert.ok(src.includes(w), w);
+  /* Oct 28 2026: the Water Size orb is gone (long press on Bottle): tests/water-bottle-hold.test.cjs */
+  "'Sips'", "'Glass'", "'Bottle'", "'Casual'", "'Steady'", "'Epic'", "'<5k'", "'10k+'"]) assert.ok(src.includes(w), w);
   assert.doesNotMatch(src, /T\('Quick'|T\('Medium'|T\('Long'/, 'the Oct 17 minute guesses are gone from the Move bloom');
   assert.doesNotMatch(src, /T\('Again'|T\('Photo'|label: *'Again'|label: *'Photo'/);
   assert.doesNotMatch(src, /T\('Swap'|T\("Today's step"|T\('Snack'/, 'Swap, Today\'s step and Snack are gone from Fuel');

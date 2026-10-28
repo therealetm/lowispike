@@ -104,13 +104,14 @@ test('undo takes the last bottle off by its own size and names it; an old bottle
   assert.ok(src.includes("T('a glass', 'ein Glas', 'un vaso')"));
 });
 
-test('the Water bloom: Sips, Glass, Bottle with its size, and Size; Hold Scan overview leaves Size out', () => {
+test('the Water bloom: Sips, Glass, Bottle with its size; the size changes by a long press on Bottle (Oct 28: no Size orb)', () => {
   const src = read('home-blooms-v2.js');
-  for (const w of ["T('Sips', 'Sips', 'Sorbos')", "T('Glass', 'Glas', 'Vaso')", "T('Bottle', 'Flasche', 'Botella')", "T('Size', 'Größe', 'Tamaño')"]) assert.ok(src.includes(w), w);
-  assert.match(src, /id: 'bsize', extra: true/);
-  assert.match(src, /K\.setBottleMl\(K\.nextBottleMl\(K\.bottleMl\(\)\)\)/);
+  for (const w of ["T('Sips', 'Sips', 'Sorbos')", "T('Glass', 'Glas', 'Vaso')", "T('Bottle', 'Flasche', 'Botella')"]) assert.ok(src.includes(w), w);
+  assert.ok(!src.includes("T('Size', 'Größe', 'Tamaño')"), 'the Size orb is gone');
+  assert.doesNotMatch(src, /id: 'bsize'/);
+  assert.match(src, /hold: sizable \? \(\) => \{ const n = K\.setBottleMl\(K\.nextBottleMl\(K\.bottleMl\(\)\)\)/, 'the bottle orb steps the size on a hold');
   assert.match(src, /actionsFor\(k\)\.filter\(x => !x\.extra\)/, 'the all-bubbles ring keeps 3 + 3 + 3 + 3');
-  assert.match(src, /bsize: '<path/);
+  assert.doesNotMatch(src, /bsize: '<path/);
   assert.doesNotMatch(src, /T\('Cup', 'Glas'/);
 });
 

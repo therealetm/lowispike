@@ -414,7 +414,7 @@
         G('misty-squish', 'home', 'hold', ['herb-touch.js', 'spirit.js', 'living-bubbles.js'], 'press Misty: her bubble squishes under your finger'),
         G('misty-turn', 'home', 'drag', ['misty-turn.js'], 'drag starting on Misty: she turns'),
         G('ring-still', 'home', 'hold', ['sym-home.js', 'home-orbit-v2.js'], 'touch an orbiting bubble: the ring stops'),
-        G('water-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Water: 10 sips, a glass or a bottle (Size picks the bottle)'),
+        G('water-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Water: 10 sips, a glass or a bottle (hold Bottle to change its size)'),
         G('water-hold', 'home', 'hold', ['world-home.js'], 'hold Water: the last entry comes off'),
         G('fuel-tap', 'home', 'tap', ['home-blooms-v2.js', 'sym-home.js'], 'tap Einkaufen (the old Fuel bubble): Shop opens (Oct 28 food plan; a hold only squishes)'),
         G('move-tap', 'home', 'tap', ['home-blooms-v2.js', 'move-bubble.js'], 'tap Move: Casual, Steady, Epic'),

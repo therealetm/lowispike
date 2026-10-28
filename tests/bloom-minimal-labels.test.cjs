@@ -89,16 +89,17 @@ test('the small second line is a number only (steps, ten sips), never a second w
         }
         /* Fuel and Sleep have no subline at all ("Rezepte", "was kaufen?", "letzte Nacht" x3 are gone) */
         for (const k of ['sleep']) actions(k).forEach(a => assert.ok(!a.sub, lang + ' ' + k + ' ' + a.id + ' has no second line'));
-        /* Water: Sips carries ten, Bottle its size (Oct 24, no size picked = 0.75 l); Glass and Size no number */
+        /* Water: Sips carries ten, Bottle its size (Oct 24, no size picked = 0.75 l); Glass no number. Oct 28: no Size orb any more
+           (a long press on Bottle changes the size, tests/water-bottle-hold.test.cjs) */
         const w = actions('water');
-        assert.deepStrictEqual(w.map(a => a.sub || ''), ['\u00d710', '', lang === 'en' ? '0.75\u00a0l' : '0,75\u00a0l', ''], lang + ' water sublines');
+        assert.deepStrictEqual(w.map(a => a.sub || ''), ['\u00d710', '', lang === 'en' ? '0.75\u00a0l' : '0,75\u00a0l'], lang + ' water sublines');
     }
 });
 
 test('the German bubbles are the words Emmanuel saw, made minimal', () => {
     const actions = page('de');
     assert.deepStrictEqual(actions('fuel'), [], 'no Einkaufen / Kochen / Mahlzeit orbs any more');
-    assert.deepStrictEqual(actions('water').map(a => a.label), ['Sips', 'Glas', 'Flasche', 'Gr\u00f6\u00dfe']);
+    assert.deepStrictEqual(actions('water').map(a => a.label), ['Sips', 'Glas', 'Flasche']); /* Oct 28: Gr\u00f6\u00dfe gone, long press on Flasche */
     assert.deepStrictEqual(actions('move').map(a => a.label), ['Locker', 'Stetig', 'Episch']);
     assert.deepStrictEqual(actions('move').map(a => a.sub), ['<5k', '5k\u201310k', '10k+']);
     assert.deepStrictEqual(actions('sleep').map(a => a.label.replace(/\u00a0/g, ' ')), ['<6 Std.', '6\u20137 Std.', '7 Std.+']);

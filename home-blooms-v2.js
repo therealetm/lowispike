@@ -9,7 +9,8 @@
             Log meal     -> the meal log sheet (LowiSpirit.meal: photo, barcode, recent meals), now a visible orb.
             Hold Fuel    -> nothing since Oct 28 2026 (food plan): the bubble is Einkaufen, one tap opens Shop (shop() below).
    - Water: Sips / Glass / Bottle -> LowiSpirit.water(kind) (wsip, Oct 23: estimates; XP 2 per whole glass, at most 6 glasses = 12 XP a day). Long press Water = undo the last one.
-            Size         -> (Oct 24) steps the bottle size 0.33 / 0.5 / 0.75 / 1 / 1.5 l; the one thing this file stores (lowispike.water.bottle.v1 via LowiSpiritCore).
+            Hold Bottle  -> (Oct 28, was the Size orb since Oct 24) steps the bottle size 0.33 / 0.5 / 0.75 / 1 / 1.5 l and logs no water;
+                            the one thing this file stores (lowispike.water.bottle.v1 via LowiSpiritCore). See orbHold().
             Undo         -> takes ONE cup off today (never below 0, never another day) and, if today's water XP entries are now
                             more than today's cups, takes back the newest one (unaward), so add / undo loops net zero.
    - Move:  (Mirror orb removed Oct 23, Emmanuel: "remove mirror from the bubble")
@@ -208,7 +209,6 @@
         undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
         sips: '<path d="M12 4c-2.2 3-4 5.4-4 7.6a4 4 0 0 0 8 0C16 9.4 14.2 7 12 4z"/><path d="M7 17.5h.01M12 19.5h.01M17 17.5h.01"/>',
         bottle: '<path d="M10 2.5h4v3l1.6 2.2a3 3 0 0 1 .6 1.8V20a1.5 1.5 0 0 1-1.5 1.5h-5.4A1.5 1.5 0 0 1 7.8 20V9.5a3 3 0 0 1 .6-1.8L10 5.5z"/><path d="M8 12h8"/>',
-        bsize: '<path d="M7.5 6h3v2.2l1.2 1.6a2 2 0 0 1 .4 1.2V19a1 1 0 0 1-1 1H6.9a1 1 0 0 1-1-1v-8a2 2 0 0 1 .4-1.2L7.5 8.2z"/><path d="M18 4v16M15.5 6.5L18 4l2.5 2.5M15.5 17.5L18 20l2.5-2.5"/>',
         walk: '<circle cx="13" cy="4.5" r="1.8"/><path d="M11 21l2-6-2.5-2.5L12 8l3 3h3"/><path d="M10.5 12.5L8 15H5"/>',
         ate: '<path d="M7 3v8a2 2 0 0 0 2 2v8M7 3v5M11 3v8a2 2 0 0 1-2 2"/><path d="M17 3c-2 2-2.5 5-2.5 7.5H17V21"/>',
         clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M4.5 4.5l2 2"/>',
@@ -259,14 +259,17 @@
                 A.push({ id: 'sips', label: T('Sips', 'Sips', 'Sorbos'), sub: '\u00d7' + SIPS_N, aria: T('10 sips, roughly', '10 Schlucke, ungefähr', '10 sorbos, más o menos'), icon: 'sips', keep: true, q: 0.2, run: add('sips') });
                 A.push({ id: 'cup', label: T('Glass', 'Glas', 'Vaso'), aria: T('One glass', 'Ein Glas', 'Un vaso'), icon: 'cup', keep: true, q: 0.5, run: add('cup') });
                 /* Oct 24 2026 (HANDOFF-hydration.md, bottle size picker): Bottle logs one finished bottle of the size you picked; its small
-                   line is that size (a number, like every small line). Size steps through 0.33 / 0.5 / 0.75 / 1 / 1.5 l on each tap, no
-                   sheet, remembered on this device (synced with the account). It is a setting, not a log, so the Hold Scan overview
-                   (every bubble at once, 3 + 3 + 3 + 3) leaves it out: extra. */
+                   line is that size (a number, like every small line). Sizes 0.33 / 0.5 / 0.75 / 1 / 1.5 l, remembered on this device
+                   (synced with the account).
+                   Oct 28 2026 (Emmanuel, call: the fourth orb "Größe" goes, "dann passt man die Größe an, indem man länger auf die Flasche
+                   drückt" - "Ja, genau"): no Size orb any more. A tap on Flasche logs a bottle as before; a long press on Flasche steps
+                   to the next size and logs nothing (hold, see orbHold()). Same in the Water bloom and the all-bubbles overview. */
                 const K = W.LowiSpiritCore, bk = K && fn(K, 'bottleMl') && fn(K, 'bottleLitres');
                 const bml = bk ? K.bottleMl() : 0, lit = bk ? K.bottleLitres(bml, ['en', 'de', 'es'][li()]) : '';
-                A.push({ id: 'bottle', label: T('Bottle', 'Flasche', 'Botella'), sub: lit || undefined, aria: lit ? T('One whole bottle, ', 'Eine ganze Flasche, ', 'Una botella entera, ') + lit : T('One whole bottle', 'Eine ganze Flasche', 'Una botella entera'), icon: 'bottle', keep: true, q: 0.9, run: add('bottle') });
-                if (bk) A.push({ id: 'bsize', extra: true, label: T('Size', 'Größe', 'Tamaño'), aria: T('Bottle size ', 'Flaschengröße ', 'Tamaño de botella ') + lit + T(', tap to change', ', tippen zum Ändern', ', toca para cambiar'), icon: 'bsize', keep: true,
-                    run: () => { const n = K.setBottleMl(K.nextBottleMl(K.bottleMl())); toast(T('Bottle: ', 'Flasche: ', 'Botella: ') + K.bottleLitres(n, ['en', 'de', 'es'][li()])); } });
+                const sizable = bk && fn(K, 'setBottleMl') && fn(K, 'nextBottleMl');
+                const holdHint = sizable ? T('. Hold to change the size', '. Gedrückt halten: Größe ändern', '. Mantén pulsado para cambiar el tamaño') : '';
+                A.push({ id: 'bottle', label: T('Bottle', 'Flasche', 'Botella'), sub: lit || undefined, aria: (lit ? T('One whole bottle, ', 'Eine ganze Flasche, ', 'Una botella entera, ') + lit : T('One whole bottle', 'Eine ganze Flasche', 'Una botella entera')) + holdHint, icon: 'bottle', keep: true, q: 0.9, run: add('bottle'),
+                    hold: sizable ? () => { const n = K.setBottleMl(K.nextBottleMl(K.bottleMl())); toast(T('Bottle: ', 'Flasche: ', 'Botella: ') + K.bottleLitres(n, ['en', 'de', 'es'][li()])); return n; } : undefined });
             }
         } else if (kind === 'move') {
             const C = W.LowiMoveEstimateCore;
@@ -462,6 +465,7 @@
         void ov.offsetWidth; ov.classList.add('on');
         const f = ov.querySelector('.hb2-orb:not([disabled])'); if (f) try { f.focus({ preventScroll: true }); } catch (e) { }
         ov.addEventListener('click', onBloomClick);
+        orbHold(ov);
         swipeShut(ov);
         ov.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); close(); } });
         try { D.dispatchEvent(new CustomEvent('lowi:bloom-v2', { detail: { kind: 'all', open: true, owner: 'blooms' } })); } catch (e) { }
@@ -537,6 +541,7 @@
         /* flush the folded start state, then open (no rAF: WebKit can hold frames back while the 3D world is busy) */
         void ov.offsetWidth; show();
         ov.addEventListener('click', onBloomClick);
+        orbHold(ov);
         swipeShut(ov);
         ov.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); close(); } });
         try { D.dispatchEvent(new CustomEvent('lowi:bloom-v2', { detail: { kind, open: true, owner: 'blooms' } })); } catch (e) { }
@@ -584,10 +589,46 @@
        from the bubble's centre). A quick second tap on the bubble (a double tap, or a "tap again to close") pressed that orb before you
        could see it: Move logged Steady 5k-10k steps, Fuel could open Cook. Like the fresh backdrop (BH-025), a bloom ignores pointer
        taps made in its first ORB_ARM_MS (by the tap's own time stamp). Keyboard clicks (detail 0) and scripted clicks work at once. */
+    /* Oct 28 2026 (Emmanuel: the bottle size by a long press on Flasche, no Size orb): a press on an orb that has `hold` (only
+       Flasche) held for HOLD_MS without moving runs hold() instead of run(): the size steps, the orb's small line shows it, and the
+       release of that press logs nothing: st.holdEat eats the one click that follows, however long the finger stays down after the
+       step (also when the re-draw put a new orb under the finger); it ends 700 ms after the lift or at the next press. A short tap
+       stays a tap. A second finger, a slide of more than 12 px, a lift or a cancel before HOLD_MS drops the hold. */
+    function orbHold(ov) {
+        let h = null;
+        const drop = () => { if (h) { clearTimeout(h.t); h = null; } };
+        ov.addEventListener('pointerdown', e => {
+            if (e.isPrimary === false) { drop(); return; }
+            drop();
+            st.holdEat = null; /* a new press: its click is a normal tap again */
+            const t = e.target && e.target.closest && e.target.closest('.hb2-orb[data-hb2="act"]');
+            if (!t || t.disabled || st.ov !== ov) return;
+            const a = (ov.__acts || []).find(x => x.id === t.dataset.id);
+            if (!a || typeof a.hold !== 'function') return;
+            h = { id: e.pointerId, x: e.clientX, y: e.clientY, t: setTimeout(() => {
+                h = null;
+                if (st.ov !== ov) return;
+                st.holdEat = { up: 0 };
+                buzz(20);
+                try { a.hold(); } catch (err) { console.error(err); }
+                refreshOpen();
+            }, HOLD_MS) };
+        });
+        ov.addEventListener('pointermove', e => { if (h && e.pointerId === h.id && Math.hypot(e.clientX - h.x, e.clientY - h.y) > 12) drop(); });
+        const lift = () => { drop(); if (st.holdEat && !st.holdEat.up) st.holdEat.up = Date.now(); };
+        ov.addEventListener('pointerup', lift);
+        ov.addEventListener('pointercancel', lift);
+        /* no long-press menu on the orb (desktop right click, Android) */
+        ov.addEventListener('contextmenu', e => { if (e.target && e.target.closest && e.target.closest('.hb2-orb')) e.preventDefault(); });
+    }
     function onBloomClick(e) {
         const t = e.target.closest('[data-hb2]');
         if (!t || !st.ov) return;
         e.preventDefault(); e.stopPropagation();
+        if (st.holdEat) { /* the release of a long press on Flasche (orbHold) logs no water */
+            const he = st.holdEat; st.holdEat = null;
+            if (!he.up || Date.now() - he.up < 700) return;
+        }
         if (e.isTrusted && e.detail > 0 && tapTime(e) - (st.openedAt || 0) < ORB_ARM_MS) return;
         if (t.dataset.hb2 === 'close') { close(); return; }
         const a = (st.ov.__acts || []).find(x => x.id === t.dataset.id);

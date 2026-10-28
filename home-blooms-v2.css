@@ -10,6 +10,8 @@
 .hb2-orb { position: absolute; width: var(--hb2-orb, 72px); height: var(--hb2-orb, 72px); margin: calc(var(--hb2-orb, 72px) / -2) 0 0 calc(var(--hb2-orb, 72px) / -2);
     border-radius: 50%; padding: 0; color: #fff; pointer-events: auto; overflow: hidden; isolation: isolate; display: flex; align-items: center; justify-content: center;
     font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    /* Oct 28 2026: a long press on Flasche changes the bottle size, so a held orb shows no iOS callout and selects no text */
+    -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
     /* Oct 23, 18:03: light, see-through, soft glow, like the Home bubbles' own glass (no navy disc, no hard outline) */
     border: 1px solid rgba(220, 240, 255, .16);
     background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, .02) 0%, rgba(170, 220, 255, .07) 58%, rgba(200, 235, 255, .2) 88%, rgba(230, 245, 255, .32) 100%);

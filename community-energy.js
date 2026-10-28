@@ -181,7 +181,7 @@ function saveLand(){if(!tb)return;try{const o=tb.snap();if(Object.keys(o).length
 try{W.addEventListener('pagehide',saveLand);D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='hidden')saveLand();});}catch(e){}
 function ensureTable(){const r=reduced();if(!tb||tbReduced!==r){const old=tb?tb.snap():null;tb=table({reduced:r});tbReduced=r;tb.restore(old||loadLand());}return tb;}
 function visible(){return !!(gal&&gal.isConnected&&gal.offsetParent!==null&&!D.hidden&&gal.clientWidth>0);}
-function mount(g){if(!g||!g.appendChild)return;if(gal===g&&joy&&joy.isConnected)return;gal=g;restLoad();
+function mount(g){if(!g||!g.appendChild)return;if(W.LowiTable&&W.LowiTable.active&&W.LowiTable.active())return;/* Oct 28: the Billardtisch (room-table.js) has its own blasts */if(gal===g&&joy&&joy.isConnected)return;gal=g;restLoad();
  fx=D.createElement('canvas');fx.className='ce-fx';fx.setAttribute('aria-hidden','true');g.appendChild(fx);ctx=fx.getContext&&fx.getContext('2d');
  joy=D.createElement('div');joy.className='ce-joy';joy.id='ceJoy';joy.setAttribute('role','button');joy.setAttribute('tabindex','0');joy.setAttribute('data-sfx','none');joy.setAttribute('aria-label',tr('joy'));
  joy.innerHTML='<span class="ce-ring" aria-hidden="true"></span><span class="ce-knob" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" focusable="false"><path d="M13 3 6 13.5h5L10 21l7-10.5h-5z" fill="currentColor"/></svg></span>';
@@ -218,7 +218,7 @@ function fireAt(ang,power){const g=geom(),me=meSpot(g);if(!g||!me)return;const n
  const by=myUid(me),c=W.LOWI_CLOUD_X;if(by&&c&&c.energyShot){try{if(c.energyShot(pack({id,by,a:ang,p:power,to:pr.to,ht:pr.ht,t:now,f,g:gg})))stats.sent++;}catch(e){}}
  try{if(navigator.vibrate)navigator.vibrate(12);}catch(e){}flash(meEl());kick();}
 /* a shot from someone else in the Community (lowi:energy-shot from the shared channel) */
-function remote(raw){const m=unpack(raw);if(!m)return false;const now=Date.now();
+function remote(raw){const m=unpack(raw);if(!m)return false;if(W.LowiTable&&W.LowiTable.active&&W.LowiTable.active())return false;const now=Date.now();
  if(seenIds.has(m.id))return false;seenIds.set(m.id,now);if(seenIds.size>400){for(const [k,v] of seenIds){if(now-v>10e3||seenIds.size>300)seenIds.delete(k);else break;}}
  const ib=bucket(inboxSt,now,INBOX.max,INBOX.win,0);inboxSt=ib.st;if(!ib.ok){stats.dropped++;return false;}
  const rb=bucket(recvSt.get(m.by),now,RECV.max,RECV.win,RECV.gap);recvSt.set(m.by,rb.st);if(!rb.ok){stats.dropped++;return false;}
@@ -283,7 +283,7 @@ function restFlush(){const pre=restPre;restPre=null;if(!pre||!tb)return;const ro
   rows.push({user_id:b.uid,rx:Math.max(-6000,Math.min(6000,now.x)),ry:Math.max(-6000,Math.min(6000,now.y))});}
  if(!rows.length)return;stats.restSent=(stats.restSent||0)+rows.length;
  try{const c=W.LOWI_CLOUD_X;if(c&&c.client)Promise.resolve(c.client()).then(sb=>sb&&sb.from('companion_rest').upsert(rows.slice(0,40),{onConflict:'user_id'})).then(r=>{if(r&&r.error)stats.restErr=(stats.restErr||0)+1;}).catch(()=>{stats.restErr=(stats.restErr||0)+1;});}catch(e){}}
-function restLoad(force){const now=Date.now();if(!force&&now-restT<4000)return Promise.resolve(false);restT=now;
+function restLoad(force){if(W.LowiTable&&W.LowiTable.active&&W.LowiTable.active())return Promise.resolve(false);/* the table reads companion_rest itself, in table coordinates */const now=Date.now();if(!force&&now-restT<4000)return Promise.resolve(false);restT=now;
  try{const c=W.LOWI_CLOUD_X,st=c&&c.state?c.state():null;if(!c||!c.client||!st||!st.uid)return Promise.resolve(false);
   return Promise.resolve(c.client()).then(sb=>sb&&sb.from('companion_rest').select('user_id,rx,ry,updated_at').order('updated_at',{ascending:false}).limit(400)).then(r=>{
    if(!r||r.error||!Array.isArray(r.data))return false;const o={};for(const x of r.data)if(x&&x.user_id&&isFinite(x.rx)&&isFinite(x.ry)&&!(Date.parse(x.updated_at)<ROWS_SINCE))o[x.user_id]=[+x.rx,+x.ry];
@@ -325,5 +325,5 @@ function offset(uid){if(!tb||(!tb.has(uid)&&tb.landed(uid))){const g=geom();if(!
 /* Oct 28: the roll offset the table already has, without building or syncing the table (the Room's fit reads it inside geom());
    undefined when this person has a saved landing spot the table has not placed yet (the Room fits again on the next frame) */
 function peek(uid){if(tb&&tb.has(uid))return tb.offset(uid);const L=tb?tb.landed(uid):!!loadLand()[uid];return L?undefined:null;}/* undefined = it has a landing spot the table has not placed yet */
-W.LowiEnergy={mount,offset,peek,keepOut,fire:fireAt,remote,stats:()=>({...stats,lat:stats.lat.slice()}),balls:()=>tb?tb.shots().map(x=>({id:x.id,by:x.by,to:x.to,x:Math.round(x.x),y:Math.round(x.y),remote:x.remote})):[],busy:()=>!!(tb&&tb.busy()),state:()=>tb?{mode:tb.mode(),shot:!!tb.shot(),balls:tb.shots().length,bodies:tb.bodies().filter(b=>b.ox||b.oy||b.vx||b.vy).map(b=>({uid:b.uid,ox:Math.round(b.ox),oy:Math.round(b.oy),vx:Math.round(b.vx),vy:Math.round(b.vy)}))}:null,core:api};
+W.LowiEnergy={mount,offset,peek,keepOut,fire:fireAt,remote,stats:()=>({...stats,lat:stats.lat.slice()}),balls:()=>tb?tb.shots().map(x=>({id:x.id,by:x.by,to:x.to,x:Math.round(x.x),y:Math.round(x.y),remote:x.remote})):[],busy:()=>!!(tb&&tb.busy()),state:()=>tb?{mode:tb.mode(),shot:!!tb.shot(),balls:tb.shots().length,bodies:tb.bodies().filter(b=>b.ox||b.oy||b.vx||b.vy).map(b=>({uid:b.uid,ox:Math.round(b.ox),oy:Math.round(b.oy),vx:Math.round(b.vx),vy:Math.round(b.vy)}))}:null,core:api,gift};
 })(typeof window==='object'?window:globalThis);

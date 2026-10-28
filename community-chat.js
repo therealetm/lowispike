@@ -388,6 +388,9 @@ function schedulePlace(){if(placeRaf)return;placeRaf=requestAnimationFrame(()=>{
 function epos(s,id){const e=W.LowiEnergy,o=s&&e&&e.offset?e.offset(id):null;return o?{uid:s.uid,me:s.me,x:s.x+o.x,y:s.y+o.y}:s;}
 function place(){
   const gx=W.__lgGx,field=D.getElementById('cgField'),gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!field||!gal)return;
+  /* Oct 28 (Emmanuel: "Es soll wie ein Billard-Spiel funktionieren ... Scheiss auf dieses Rauszoomen und Reinzoomen"): the Room is
+     the Billardtisch (room-table.js) now; it owns the Room view, so the endless zoomable map below is not placed any more. */
+  if(W.LowiTable&&W.LowiTable.mount&&W.LowiTable.mount(gal))return;
   mapGestures(gal);if(W.LowiEnergy&&W.LowiEnergy.mount)W.LowiEnergy.mount(gal);
   fitLate=false;const v=mapView(gal),Z=mapZ(gx,v),fz=fitCam(gx,v);if(!cam||(!camUser&&!camAnimOn))cam=fz;/* until you zoom yourself, the view follows everyone (people still loading in, someone joining) */cam=camFree?cam:G.mapClamp(cam,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy},fz.z);/* Oct 25: camFree = a finger or the camera spring owns it (rubber band past the edge) */
   const f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),fn=Math.max(.8,f),cx=v.w/2,cy=v.h*.5,scr=s=>({x:cx+(s.x-cam.x)*cam.z,y:cy+(s.y-cam.y)*cam.z});
@@ -512,13 +515,20 @@ W.LowiCgMap={atMax(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||
   /* Oct 16 (energy hits): the camera and every companion's home spot and radius in map units, for community-energy.js */
   geom(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!gal||!cam)return null;const v=mapView(gal),Z=mapZ(gx,v),f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),big=v.w>=640,sz=new Map((gx.labels||[]).map(L=>[L.id,L.size]));
    return {cam:{...cam},w:v.w,h:v.h,cx:v.w/2,cy:v.h*.5,f,radius:gx.map.radius,rcx:gx.map.cx||0,rcy:gx.map.cy||0,spots:gx.map.spots.filter(s=>gx.spot.has(s.uid)).map(s=>({uid:s.uid,me:!!s.me,x:s.x,y:s.y,r:((sz.get(s.uid)||(s.me?(big?64:54):(big?56:46)))*f/2)/cam.z}))};},
+  /* Oct 28 (the Billardtisch, room-table.js): everyone in the Room as a ball (you first), their companion art once per person,
+     and tapping a ball picks who you write to, exactly like tapping a companion on the old map */
+  people(){if(!G)return [];const RM=roomOf(),out=[];if(scope)out.push({uid:scope,me:true,n:String(own().n||''),label:tr('you'),c:hueColor(scope,true)});
+   for(const p of RM.shown){if(!p||p.me||!p.uid||p.uid===scope)continue;out.push({uid:p.uid,me:false,n:p.n,label:p.n||'?',c:hueColor(p.uid,false),bot:!!p.bot});}return out;},
+  art(uid,key){try{return mate(uid,key||'bt');}catch(e){return '';}},
+  pick(uid,name){if(!uid||uid===scope||uid==='me'){if(sel){sel='';refresh();}return;}connect(uid,name||'');},
+  selected:()=>sel,me:()=>scope||'',
   /* an energy hit on a real member: checks only (Oct 19: the "@Name ⚡ Eman sent you energy" chat line is gone) */
   energy(uid){if(!uid||uid===scope||uid==='me')return 'self';if(botOf(uid))return 'bot';const p=roster().get(uid);if(!p||!G)return 'gone';if(blocked(uid))return 'blocked';
    if(!store||!store.submitLine||!scope||navigator.onLine===false)return 'offline';const name=String(own().n||'').trim();if(!name)return 'name';
    /* Oct 19 (E-man: "it says [Damon] sent you energy ... That's a useless text message ... Remove that specific line"): the hit
       itself is the message; no chat line is posted any more. */
    return 'sent';}};
-function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)return;if(!sk||sk.canvas!==c){if(sk)sk.stop();sk=G.sky(c);if(sk){sk.canvas=c;const g0=W.__lgGx;if(g0)sk.set(g0.lines,false,g0.orbits);}}/* Oct 24 bug hunt (item 29): the open chat room covers the galaxy, so its sky stays stopped (thread(true) stops it; every repaint used to start it again at the full screen rate) */if(sk&&threadOpen){sk.stop();return;}if(sk&&active()&&!D.hidden)sk.start();}
+function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)return;if(W.LowiTable&&W.LowiTable.active&&W.LowiTable.active()){if(sk)sk.stop();return;}/* Oct 28: the Billardtisch covers the sky; no star loop behind it */if(!sk||sk.canvas!==c){if(sk)sk.stop();sk=G.sky(c);if(sk){sk.canvas=c;const g0=W.__lgGx;if(g0)sk.set(g0.lines,false,g0.orbits);}}/* Oct 24 bug hunt (item 29): the open chat room covers the galaxy, so its sky stays stopped (thread(true) stops it; every repaint used to start it again at the full screen rate) */if(sk&&threadOpen){sk.stop();return;}if(sk&&active()&&!D.hidden)sk.start();}
 /* Arriving in Community: coming from Home, galaxy-zoom.js pulls the one camera out of Misty's world into the galaxy (no boxed
    snapshot of Home any more). From anywhere else the galaxy just settles in from a little closer. */
 function intro(){const g=D.getElementById('cgGalaxy');if(!g||!g.removeAttribute)return;g.__intro=1;if(D.documentElement.classList.contains('gx-out'))return;if(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches)return;g.removeAttribute('data-intro');void g.offsetWidth;g.setAttribute('data-intro','1');clearTimeout(introT);introT=setTimeout(()=>{g.removeAttribute('data-intro');},1100);}

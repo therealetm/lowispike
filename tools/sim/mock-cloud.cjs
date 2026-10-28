@@ -79,6 +79,8 @@ async function install(ctx, opts) {
             case 'reactions': return W.reactions;
             case 'profiles': return W.profiles;
             case 'posts': return W.posts;
+            /* Oct 28: the Billardtisch's shared ball positions (room-table.js); newest first like the app asks */
+            case 'companion_rest': return (W.companion_rest || []).slice().sort((x, y) => (y.updated_at > x.updated_at ? 1 : -1));
             default: return [];
         }
     }
@@ -119,6 +121,7 @@ async function install(ctx, opts) {
             /* echo the write the way PostgREST does with return=representation, and play it back on realtime like the server would */
             const rows = (Array.isArray(body) ? body : [body]).filter(Boolean).map(r => Object.assign({ created_at: new Date().toISOString() }, r));
             if (m === 'POST' && t === 'messages') rows.forEach(r => { r.id = r.id || uuid(900000 + sim.writes.length); r.room = r.room || 'all'; W.messages.push(r); setTimeout(() => sim.change('messages', 'INSERT', r), opts.echoMs || 250); });
+            if (m === 'POST' && t === 'companion_rest') { W.companion_rest = W.companion_rest || []; rows.forEach(r => { const row = { user_id: r.user_id, rx: r.rx, ry: r.ry, moved_by: W.me.id, updated_at: new Date().toISOString() }; const i = W.companion_rest.findIndex(x => x.user_id === r.user_id); if (i >= 0) W.companion_rest[i] = row; else W.companion_rest.push(row); }); }
             if (m === 'DELETE' && t === 'messages') { const id = (u.searchParams.get('id') || '').replace(/^eq\./, ''); const i = W.messages.findIndex(x => x.id === id); if (i >= 0) { W.messages.splice(i, 1); setTimeout(() => sim.change('messages', 'DELETE', null, { id }), 200); } }
             const accept = q.headers()['accept'] || '';
             if (/vnd\.pgrst\.object/.test(accept)) return json(route, rows[0] || {}, 201);

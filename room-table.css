@@ -1,0 +1,50 @@
+/* Oct 28 2026: the Room's Billardtisch (room-table.js). Deep-blue glass felt, a dark glass rail with soft brand-blue light, balls
+   that carry each companion, and nothing of the old endless map behind it (sky, lines, field with its "Neues Bild" bubbles, the
+   old energy pad) while the table is on. */
+#cgGalaxy.rt-on>.cg-sky,#cgGalaxy.rt-on>svg,#cgGalaxy.rt-on>.cg-field,#cgGalaxy.rt-on>.ce-fx,#cgGalaxy.rt-on>.ce-joy,#cgGalaxy.rt-on>.ce-live{display:none!important}
+#cgGalaxy.rt-on{touch-action:none}
+.rt-wrap{position:absolute;inset:0;z-index:2;pointer-events:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.rt-rail{position:absolute;pointer-events:auto;border-radius:calc(var(--rail) + 12px);
+  background:linear-gradient(160deg,rgba(40,66,120,.78),rgba(10,20,48,.92) 55%,rgba(22,40,86,.85));
+  box-shadow:inset 0 .5px 0 rgba(255,255,255,.28),inset 0 0 0 .5px rgba(143,231,255,.22),0 18px 40px -16px rgba(10,132,255,.55),0 0 0 .5px rgba(0,0,0,.4);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%)}
+.rt-felt{position:absolute;overflow:hidden;border-radius:12px;touch-action:none;contain:strict;
+  background:radial-gradient(120% 80% at 50% 38%,#164a9a 0%,#0f3576 42%,#0a2350 78%,#071a3d 100%);
+  box-shadow:inset 0 0 0 1px rgba(143,231,255,.16),inset 0 10px 26px rgba(0,0,0,.45),inset 0 -6px 18px rgba(90,169,255,.12)}
+.rt-felt::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background:linear-gradient(transparent calc(25% - .5px),rgba(143,231,255,.14) 25%,transparent calc(25% + .5px)),radial-gradient(circle at 50% 25%,transparent 13%,rgba(143,231,255,.12) 13.3%,transparent 13.7%)}
+.rt-spot{position:absolute;left:50%;top:75%;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:rgba(143,231,255,.35)}
+.rt-mark{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font:800 22px/1 -apple-system,system-ui,sans-serif;letter-spacing:.18em;color:rgba(143,231,255,.07);pointer-events:none}
+.rt-pocket{position:absolute;width:calc(var(--rail) * 1.5);height:calc(var(--rail) * 1.5);border-radius:50%;background:radial-gradient(circle,#02060f 55%,rgba(2,6,15,.0) 72%);pointer-events:none}
+.rt-pocket.p1{left:2px;top:2px}.rt-pocket.p2{right:2px;top:2px}.rt-pocket.p3{left:2px;bottom:2px}.rt-pocket.p4{right:2px;bottom:2px}
+.rt-pocket.p5{left:0;top:50%;transform:translate(-20%,-50%)}.rt-pocket.p6{right:0;top:50%;transform:translate(20%,-50%)}
+.rt-fx{position:absolute;left:0;top:0;pointer-events:none;z-index:1}
+.rt-balls{position:absolute;inset:0;z-index:2}
+.rt-ball{position:absolute;left:0;top:0;width:var(--d);height:var(--d);padding:0;margin:0;border:0;background:none;color:inherit;font:inherit;
+  will-change:transform;-webkit-tap-highlight-color:transparent;touch-action:none;cursor:pointer}
+.rt-orb{position:absolute;inset:0;border-radius:50%;overflow:hidden;
+  background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.55),var(--c) 38%,#0b1f4a 100%);
+  background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.55),var(--c) 38%,color-mix(in srgb,var(--c) 55%,#06122e) 100%);
+  box-shadow:0 3px 6px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.22) inset}
+.rt-art{position:absolute;inset:8%;display:grid;place-items:center;transform-origin:50% 50%;will-change:transform;backface-visibility:hidden}
+.rt-art>*{width:100%;height:100%}
+.rt-art svg{width:100%;height:100%;display:block}
+.rt-art *{animation:none!important;transition:none!important}
+.rt-ini{display:grid;place-items:center;font:700 calc(var(--d) * .42)/1 -apple-system,system-ui,sans-serif;color:#06203f}
+.rt-gloss{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.75) 0,rgba(255,255,255,.18) 18%,transparent 34%),radial-gradient(circle at 60% 85%,transparent 50%,rgba(0,10,40,.35) 100%)}
+.rt-name{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:1px;max-width:calc(var(--d) * 2.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font:600 9.5px/1.15 -apple-system,system-ui,sans-serif;color:rgba(235,246,255,.92);text-shadow:0 1px 2px rgba(0,0,0,.85);pointer-events:none}
+.rt-ball.me .rt-orb{box-shadow:0 3px 6px rgba(0,0,0,.45),0 0 0 2px #9cdac7,0 0 12px rgba(156,218,199,.7)}
+.rt-ball.me .rt-name{color:#bff3e2;font-weight:700}
+.rt-ball.sel .rt-orb{box-shadow:0 3px 6px rgba(0,0,0,.45),0 0 0 2px #fff,0 0 14px rgba(143,231,255,.9)}
+.rt-ball:focus-visible .rt-orb{outline:2px solid #8fe7ff;outline-offset:2px}
+.rt-toast{position:absolute;left:50%;transform:translate(-50%,-6px);max-width:86%;padding:7px 12px;border-radius:14px;opacity:0;transition:opacity .25s,transform .25s;
+  font:600 12.5px/1.3 -apple-system,system-ui,sans-serif;color:#eaf6ff;text-align:center;pointer-events:none;z-index:4;
+  background:rgba(12,32,74,.82);box-shadow:inset 0 .5px 0 rgba(255,255,255,.25),0 0 0 .5px rgba(143,231,255,.3),0 8px 22px -8px rgba(10,132,255,.6);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.rt-toast.on{opacity:1;transform:translate(-50%,0)}
+.rt-toast:empty{display:none}
+.rt-hint{position:absolute;right:12px;bottom:10px;display:flex;align-items:center;gap:5px;max-width:52%;font:600 10.5px/1.25 -apple-system,system-ui,sans-serif;color:rgba(200,230,255,.72);pointer-events:none;text-align:right}
+.rt-hint svg{flex:none;color:#8fe7ff}
+@media (prefers-reduced-motion:reduce){.rt-toast{transition:none}}

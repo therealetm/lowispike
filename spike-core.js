@@ -120,7 +120,12 @@
         const nutrition = E.validateNutrition(per100, unit);
         const group = portionGroup(p, drink ? 'drinks' : (veg && p.cat === 'drink' ? 'other' : GROUP[p.cat] || 'other'));
         const serving = E.calculateServing(nutrition, {manufacturerG: n(f.sv), packG: packG(f.q), userG, group: group === 'nuts' ? 'snacks' : group});
-        const glucose = E.estimateGlucoseImpact({serving, category: {liquid: drink}});
+        /* Rulebook step 1: where the sugar comes from, before the estimate (food-engine-core sugarSource). */
+        let sugarSrc = null;
+        if (typeof E.sugarSource === 'function') {
+            try { sugarSrc = E.sugarSource({name: p.name, unit, per100, categories: p.categories || []}, A || undefined); } catch (e) { sugarSrc = null; }
+        }
+        const glucose = E.estimateGlucoseImpact({serving, category: {liquid: drink}, sugarSource: sugarSrc});
         let key = glucose.key;
         const sg = serving.amounts.sugar, cg = serving.amounts.carbs;
         if (key !== 'insufficient') {
@@ -129,34 +134,48 @@
             if (sugarTop && (s || 0) >= 10 && (sg || 0) >= 5) { key = UP[key]; why.push(['s_sugar_top', sugarTop.w, s]); }
             if (refined && key === 'moderate') { key = 'higher'; why.push(['s_refined_i', refinedTop.w]); }
         } else if (sweet) key = 'higher';
-        const verdict = TO_VERDICT[key] || 'unknown';
+        let verdict = TO_VERDICT[key] || 'unknown';
         if (glucose.key === 'insufficient') why.push([glucose.reasons[0] === 'label_inconsistent' ? 'e_bad' : 'e_nodata']);
         else {
             if (cg != null) why.push([unit === 'ml' ? 'e_carbs_ml' : 'e_carbs', cg, serving.g]);
-            if (sg != null && sg >= 5) why.push(['e_sugar', sg]);
+            if (sg != null && sg >= 5) why.push(sugarSrc && sugarSrc.intrinsic ? ['e_sugar_own', sg] : ['e_sugar', sg]);
             if (glucose.modifiers.some(m => /protein|fat|fibre/.test(m))) why.push(['e_slow']);
             why.push(['e_est']);
         }
-        const score = verdict === 'unknown' ? null : scoreOf(key, cg, sg);
-        const out = {verdict, why: why.slice(0, 4), score, est: true};
         P0 = P0 || lib('LowiFoodPolicy', './food-policy-core.js');
         let policy = null;
         if (P0) {
             try { policy = P0.applyPolicy({product: {name: p.name, unit, per100, categories: p.categories || []}, ingredients: A || undefined, glucose, serving}); } catch (e) { policy = null; }
         }
+        /* Rulebook step 1 (28 Oct 2026, Master Knowledge v3 section 39: "The same food gets the same verdict ... Only the
+           portion and the preparation can change it, and only as written here"): a food the LOWiSPIKE rules call JA (a JA rule,
+           nothing stricter, not provisional) is not turned into "Not insulin-friendly" by the Moderate carb band alone. The
+           card stays insulin-friendly and says the carbs of this portion plainly (s_ja_portion). A Higher estimate still
+           counts (policy glucose.higher, owner decision 24 Oct), and so do the written portion rules (cheese, nuts,
+           berries, milk), because those make the policy verdict SELTEN. */
+        let lifted = false;
+        if (verdict === 'better' && key === 'moderate' && policy && policy.verdict === 'JA' && !policy.provisional) {
+            verdict = 'ok'; lifted = true;
+            why.unshift([unit === 'ml' ? 's_ja_portion_ml' : 's_ja_portion', cg, serving.g]);
+        }
+        const score = verdict === 'unknown' ? null : scoreOf(lifted ? 'lower' : key, cg, sg);
+        const out = {verdict, why: why.slice(0, 4), score, est: true};
         // Confidence (scanfe-f1): evidence completeness only (identity, ingredients, label). Rides along for the result card (g1).
         let confidence = null;
         if (typeof E.assessConfidence === 'function') {
             try { confidence = E.assessConfidence({name: p.name, barcode: p.barcode, unit, per100, ingredients: p.ingredients}, {nutrition, ingredients: A}); } catch (e) { confidence = null; }
         }
         const ingredients = A ? {status: A.status, allergens: A.allergens, claims: A.claims, summary: AS} : {status: hasI ? 'complete' : 'missing', allergens: [], claims: []};
-        Object.defineProperty(out, 'engine', {value: {version: E.VERSION, bands: E.BANDS.version, key, glucose, serving: {g: serving.g, unit: serving.unit, source: serving.source, group, shown: serving.shown}, valid: nutrition.valid, issues: nutrition.issues, ingredients, policy: policy && {verdict: policy.verdict, version: policy.policyVersion, decidedBy: policy.decidedBy, why: policy.why, provisional: policy.provisional}, confidence: confidence && confidence.level, confidenceInfo: confidence}, enumerable: false});
+        Object.defineProperty(out, 'engine', {value: {version: E.VERSION, bands: E.BANDS.version, key, glucose, sugarSource: sugarSrc, jaPortion: lifted, serving: {g: serving.g, unit: serving.unit, source: serving.source, group, shown: serving.shown}, valid: nutrition.valid, issues: nutrition.issues, ingredients, policy: policy && {verdict: policy.verdict, version: policy.policyVersion, decidedBy: policy.decidedBy, why: policy.why, provisional: policy.provisional}, confidence: confidence && confidence.level, confidenceInfo: confidence}, enumerable: false});
         return out;
     }
     const TX = {
         e_carbs: ['{0} g carbs in a {1} g serving', '{0} g Kohlenhydrate in einer Portion von {1} g', '{0} g de carbohidratos en una ración de {1} g'],
         e_carbs_ml: ['{0} g carbs in a {1} ml serving', '{0} g Kohlenhydrate in einer Portion von {1} ml', '{0} g de carbohidratos en una ración de {1} ml'],
         e_sugar: ['{0} g of that is sugar', 'Davon {0} g Zucker', 'De ellos, {0} g son azúcar'],
+        e_sugar_own: ['{0} g of that is the food\'s own sugar (no sugar added)', 'Davon {0} g eigener Zucker des Lebensmittels (kein Zucker zugesetzt)', 'De ellos, {0} g son azúcar propio del alimento (sin azúcar añadido)'],
+        s_ja_portion: ['Everyday food by the LOWiSPIKE rules; this portion has {0} g carbs in {1} g', 'Alltagsessen nach den LOWiSPIKE-Regeln; diese Portion hat {0} g Kohlenhydrate in {1} g', 'Alimento de diario según las reglas de LOWiSPIKE; esta ración tiene {0} g de carbohidratos en {1} g'],
+        s_ja_portion_ml: ['Everyday food by the LOWiSPIKE rules; this portion has {0} g carbs in {1} ml', 'Alltagsessen nach den LOWiSPIKE-Regeln; diese Portion hat {0} g Kohlenhydrate in {1} ml', 'Alimento de diario según las reglas de LOWiSPIKE; esta ración tiene {0} g de carbohidratos en {1} ml'],
         e_slow: ['Protein, fat or fibre may slow it down, but they don\'t cancel the carbs', 'Eiweiß, Fett oder Ballaststoffe können es bremsen, heben die Kohlenhydrate aber nicht auf', 'La proteína, la grasa o la fibra pueden frenarlo, pero no anulan los carbohidratos'],
         e_est: ['An estimate from the label; your own response can differ', 'Eine Schätzung nach dem Etikett; deine Reaktion kann anders sein', 'Una estimación según la etiqueta; tu respuesta puede ser distinta'],
         e_nodata: ['The label lacks the carb numbers needed for an estimate', 'Dem Etikett fehlen die Kohlenhydratangaben für eine Schätzung', 'A la etiqueta le faltan los carbohidratos para poder estimar'],

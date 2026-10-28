@@ -110,6 +110,12 @@
         o_mildP: ['Every day at {0}. At {1}: 2–3 times a week', 'Jeden Tag bei {0}. Bei {1}: 2–3 Mal pro Woche', 'Todos los días con {0}. Con {1}: 2–3 veces por semana'],
         o_spike: ['Once a week at most, as a small portion', 'Höchstens einmal pro Woche, als kleine Portion', 'Como mucho una vez por semana, en porción pequeña'],
         o_unknown: ['Can\'t say yet: the label is missing numbers', 'Noch nicht zu sagen: Dem Etikett fehlen Zahlen', 'No podemos decirlo aún: faltan números en la etiqueta'],
+        m_noneJA: ['Insulin-friendly here means: an everyday food by the LOWiSPIKE rules. This portion has {0} carbs, so your blood sugar may rise a bit more than with a usual portion.', 'Insulinfreundlich heißt hier: ein Alltagsessen nach den LOWiSPIKE-Regeln. Diese Portion hat {0} Kohlenhydrate, dein Blutzucker kann also etwas mehr steigen als bei einer üblichen Portion.', 'Apto para la insulina significa aquí: un alimento de diario según las reglas de LOWiSPIKE. Esta ración tiene {0} de carbohidratos, así que tu azúcar puede subir algo más que con una ración habitual.'],
+        o_noneBig: ['Everyday food; mind the size of this portion', 'Alltagsessen; achte auf die Größe dieser Portion', 'Alimento de diario; ojo con el tamaño de esta ración'],
+        o_bigP: ['Everyday food in a usual portion; at {0} better take less', 'Alltagsessen in üblicher Portion; bei {0} lieber weniger nehmen', 'Alimento de diario en una ración habitual; con {0} mejor tomar menos'],
+        w_own: ['{0} of the {1} carbs in {2} is the food\'s own sugar; no sugar was added.', 'Von den {1} Kohlenhydraten in {2} sind {0} der eigene Zucker des Lebensmittels; es wurde kein Zucker zugesetzt.', 'De los {1} de carbohidratos en {2}, {0} son azúcar propio del alimento; no se añadió azúcar.'],
+        w_ownMilk: ['{0} of the {1} carbs in {2} is milk sugar from the milk itself; no sugar was added.', 'Von den {1} Kohlenhydraten in {2} sind {0} Milchzucker aus der Milch selbst; es wurde kein Zucker zugesetzt.', 'De los {1} de carbohidratos en {2}, {0} son lactosa de la propia leche; no se añadió azúcar.'],
+        w_slowP: ['Protein helps it go in more slowly.', 'Eiweiß lässt es langsamer ins Blut gehen.', 'La proteína hace que pase más despacio.'],
         m_none: ['Insulin-friendly means: this food likely raises your blood sugar only a little.', 'Insulinfreundlich heißt: Dein Blutzucker steigt bei diesem Essen wahrscheinlich nur wenig.', 'Apto para la insulina significa: este alimento probablemente sube poco tu azúcar en sangre.'],
         m_mild: ['Not insulin-friendly means: your blood sugar likely goes up noticeably with this food.', 'Nicht insulinfreundlich heißt: Dein Blutzucker steigt bei diesem Essen wahrscheinlich spürbar.', 'No apto para la insulina significa: tu azúcar en sangre probablemente sube de forma notable con este alimento.'],
         m_mildP: ['Not insulin-friendly here is about the amount, not about sugar.', 'Nicht insulinfreundlich geht hier um die Menge, nicht um Zucker.', 'Aquí, No apto para la insulina va de la cantidad, no del azúcar.'],
@@ -236,7 +242,12 @@
         const port = bs === 'none' && lvl === 'mild' && /nuts_large|cheese_large/.test(rule) ? (/nuts/.test(rule) ? 'nuts' : 'cheese') : null;
         const polUp = !port && lvl !== 'unknown' && bs !== 'unknown' && RANKL[lvl] > RANKL[bs];
         const lines = [];
-        lines.push(port ? t('m_mildP') : polUp ? t('m_pol', t('v_' + lvl)) : t('m_' + lvl));
+        /* Rulebook step 1 (28 Oct 2026): a JA food at a bigger portion (spike-core jaPortion) says so plainly instead of "rises
+           only a little"; the food's own sugar (sugarSource intrinsic: plain quark's milk sugar, a carrot's sugar) is never
+           called fast sugar, and a Higher that is only about the amount of such a food says it is about the amount. */
+        const ja = !!(eng && eng.jaPortion), own = !!(eng && eng.sugarSource && eng.sugarSource.intrinsic);
+        const ownBig = own && !port && !polUp && lvl === 'spike' && bs === 'spike';
+        lines.push(port ? t('m_mildP') : polUp ? t('m_pol', t('v_' + lvl)) : ja && lvl === 'none' ? t('m_noneJA', amt(sh.carbs || 0)) : ownBig ? t('m_mildP') : t('m_' + lvl));
         const has = k => why.find(w => w && w[0] === k);
         const c = sh.carbs, s = sh.sugar;
         let w = '';
@@ -251,14 +262,18 @@
             const sw = has('s_sweet'), rf = has('s_refined_i');
             if (sw && lvl === 'spike') w = t('w_sweet', sw[1]);
             else if (unit === 'ml' && (s || 0) >= 5) w = t('w_drink', amt(s), at);
-            else if ((s || 0) >= 8 && lvl !== 'none') w = t('w_sugar', amt(s), at);
+            else if (own && (s || 0) >= 5) w = t(/yoghurt|quark|milk/.test(String(eng.sugarSource.rule || '')) ? 'w_ownMilk' : 'w_own', amt(s), amt(c != null ? c : s), at);
+            else if ((s || 0) >= 8 && lvl !== 'none' && (c == null || c <= 0 || s / c >= 0.5)) w = t('w_sugar', amt(s), at);
             else if (rf && lvl !== 'none') w = t('w_refined', rf[1]);
             else if (c != null) w = t(bs === 'spike' ? 'w_cHi' : bs === 'mild' ? 'w_cMid' : 'w_cLo', amt(c), at);
         }
         if (w) lines.push(w);
-        if (!port && !polUp && (lvl === 'none' || lvl === 'mild') && ((sh.fibre || 0) >= 2 || (sh.protein || 0) >= 6)) lines.push(t('w_slow'));
+        /* fibre is named only when there is some: plain quark has protein and no fibre */
+        if (!port && !polUp && (lvl === 'none' || lvl === 'mild')) { if ((sh.fibre || 0) >= 2) lines.push(t('w_slow')); else if ((sh.protein || 0) >= 6) lines.push(t('w_slowP')); }
         if (lines.length < 2) lines.push(t('w_nodata'));
-        const often = lvl === 'unknown' ? t('o_unknown') : port ? t('o_mildP', '30 ' + unit, at) : t('o_' + lvl);
+        const often = lvl === 'unknown' ? t('o_unknown') : port ? t('o_mildP', '30 ' + unit, at)
+            : ja && lvl === 'none' ? t('o_noneBig')
+            : ownBig ? t('o_bigP', at) : t('o_' + lvl);
         return { often, lines: lines.slice(0, 4), g, unit, src, bs };
     }
 

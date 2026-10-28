@@ -147,16 +147,28 @@
         }
         const b = liquid ? BANDS.liquid : BANDS.solid;
         const sug = sugar || 0;
-        if (carbs == null) {
+        /* Rulebook step 1 (28 Oct 2026, Master Knowledge v3 section 25: "never judge from one nutrient number alone"; plain
+           yogurt's sugar is "its own milk sugar"): sugar the food brings itself (sugarSource().intrinsic: a solid the LOWiSPIKE
+           rules call JA, with a complete ingredient list and no added sugar or sweetener) still counts in full as carbohydrate,
+           but the extra "15 g sugar in the serving" trigger, which stands for fast added sugar, does not fire on it. Liquids
+           keep their sugar bands (milk by the glass is its own rule). */
+        const own = !liquid && !!(a.sugarSource && a.sugarSource.intrinsic);
+        if (own) reasons.push('sugar_own');
+        if (carbs == null && own) {
+            // Own sugar is part of the carbs, so it is a floor for them: the carb bands apply to it.
+            if (sug >= b.higherCarbs) { key = 'higher'; reasons.push('carbs_high'); }
+            else if (sug >= b.moderateCarbs) { key = 'moderate'; reasons.push('carbs_moderate'); }
+            else return Object.assign(base, {key: 'insufficient', category: CATEGORY.insufficient, reasons: reasons.concat('carbs_unknown'), modifiers});
+        } else if (carbs == null) {
             // Sugar alone is a floor: enough sugar is Higher whatever the rest; less tells us too little.
             if (sug >= b.higherSugar) { key = 'higher'; reasons.push('sugar_high'); }
             else return Object.assign(base, {key: 'insufficient', category: CATEGORY.insufficient, reasons: ['carbs_unknown'], modifiers});
         } else if (carbs >= b.higherCarbs) { key = 'higher'; reasons.push('carbs_high'); }
-        else if (sug >= b.higherSugar) { key = 'higher'; reasons.push(liquid ? 'liquid_sugar' : 'sugar_high'); }
+        else if (sug >= b.higherSugar && !own) { key = 'higher'; reasons.push(liquid ? 'liquid_sugar' : 'sugar_high'); }
         else if (carbs >= b.moderateCarbs) { key = 'moderate'; reasons.push('carbs_moderate'); }
         else if (liquid && sug >= b.moderateSugar) { key = 'moderate'; reasons.push('liquid_sugar'); }
         else { key = 'lower'; reasons.push('carbs_low'); }
-        if (sug > 0 && carbs != null && carbs > 0 && sug / carbs >= 0.5 && key !== 'lower') reasons.push('mostly_sugar');
+        if (sug > 0 && carbs != null && carbs > 0 && sug / carbs >= 0.5 && key !== 'lower' && !own) reasons.push('mostly_sugar');
 
         const gi = credibleGI(a.evidence);
         if (gi && carbs != null) {
@@ -289,6 +301,25 @@
         if (typeof require === 'function') { try { return require(file); } catch (e) { return null; } }
         return null;
     }
+    /* sugarSource(product, ingredients) (rulebook step 1, 28 Oct 2026): where the sugar on the label comes from, kept apart
+       from the verdict. added: 'yes' | 'no' | 'unknown' (unknown whenever the ingredient list is missing, unreadable or cut
+       off: never assumed). intrinsic: true only when added is 'no', there is no sweetener, and the LOWiSPIKE rules already
+       call the food JA without looking at blood sugar (plain yoghurt / quark / skyr with milk-sugar-level sugar, plain
+       vegetables, fresh cheese, a small handful of berries ...). No blanket "natural sugar" pass: fruit juice, dried fruit,
+       honey or a sweet fruit portion are never JA, so their sugar is never intrinsic here. rule: the JA rule that said so. */
+    function sugarSource(product, ingredients) {
+        const ing = ingredients || null, S = (ing && ing.summary) || {};
+        const known = !!ing && ing.status === 'complete' && !ing.truncated;
+        const added = !known ? 'unknown' : S.addedSugar ? 'yes' : 'no';
+        let intrinsic = false, rule = null;
+        POL = POL || lib('LowiFoodPolicy', './food-policy-core.js');
+        if (added === 'no' && !S.sweetener && POL) {
+            let pre = null;
+            try { pre = POL.applyPolicy({product: product || {}, ingredients: ing, glucose: {}}); } catch (e) { pre = null; }
+            if (pre && pre.verdict === 'JA') { intrinsic = true; rule = pre.decidedBy; }
+        }
+        return {added, intrinsic, rule};
+    }
     function scanFood(product, serving, ctx) {
         const p = product || {};
         ING = ING || lib('LowiIngredients', './ingredient-core.js');
@@ -296,8 +327,9 @@
         ASS = ASS || lib('LowiFoodAssess', './food-assess-core.js');
         const val = validateNutrition(p.per100, p.unit);
         const srv = calculateServing(val, serving == null ? {manufacturerG: p.servingG, packG: p.packG, group: p.group} : serving);
-        const glucose = estimateGlucoseImpact({serving: srv, category: {liquid: p.unit === 'ml'}, evidence: p.evidence, withMeal: !!(ctx && ctx.withMeal)});
         const ingredients = ING ? ING.analyzeIngredients(p.ingredients, {name: p.name, brand: p.brand, claims: p.claims}) : null;
+        const sugar = sugarSource({name: p.name, genericName: p.genericName, unit: p.unit, per100: val.per100, categories: p.categories || []}, ingredients);
+        const glucose = estimateGlucoseImpact({serving: srv, category: {liquid: p.unit === 'ml'}, evidence: p.evidence, withMeal: !!(ctx && ctx.withMeal), sugarSource: sugar});
         const policy = POL ? POL.applyPolicy({product: p, ingredients, glucose, serving: srv, profile: ctx && ctx.profile}) : null;
         // Quality, cravings + satiety, reasons and the better alternative (scanfe-e, food-assess-core.js). A craving
         // trigger the user reported (ctx.profile.triggers) makes the verdict one step stricter; policy.verdict keeps the
@@ -311,6 +343,7 @@
             verdict,
             policy,
             glucose,
+            sugarSource: sugar,
             serving: srv,
             ingredients,
             allergens: ingredients ? ingredients.allergens : [],
@@ -327,5 +360,5 @@
         };
     }
 
-    return {VERSION, NUTRIENTS, BANDS, GROUP_SERVING, CATEGORY, CONFIDENCE: CONF, normalize, validateNutrition, calculateServing, estimateGlucoseImpact, assessConfidence, scanFood};
+    return {VERSION, NUTRIENTS, BANDS, GROUP_SERVING, CATEGORY, CONFIDENCE: CONF, normalize, validateNutrition, calculateServing, estimateGlucoseImpact, sugarSource, assessConfidence, scanFood};
 });

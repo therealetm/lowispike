@@ -76,6 +76,19 @@ about 12:58 PM CET). Re-read `version.json` on https://therealetm.github.io/lowi
 
 ### Released today and last night (all quiet: no banner, no What's New)
 
+**28 Oct, ~8:45 PM (task "Aussehen leichter schließen + verständlicher Tagesüberblick", branch `look-recap-20261028`):**
+- Companion > **Aussehen** (`.cf-ov`, companion.js `dismiss()` + `gStart/gMove/gEnd`): pull down by the top bar, or anywhere
+  once the list is scrolled to the top, closes it; swipe right from the left edge (26 px) = back. Both go to the companion
+  card when Aussehen was opened from it (R2 back), else close. Short pull springs back. X unchanged. A half-picked style
+  (`V.pend`) now survives a close. Emmanuel: "ich kann nicht zurück und nicht runterziehen, nur das X".
+- **Tagesrückblick** (he calls it Tagesüberblick): every stat is a row "number + what it is + where it comes from"
+  (Mahlzeiten eingetragen with "2 × kleiner Anstieg erwartet · 1 × nicht bewertet", Längste Zeit ohne Essen in Std.,
+  Gläser Wasser, Punkte (XP) with where they came from); each meal shows time + name + the estimate in words; takeaways say
+  "schätzt die App ... Gemessen wurde nichts" / "Schätzung aus dem Essen, kein Messwert"; no "ruhig/ruhige Wahl/gleichmäßig"
+  anywhere; the walk nudge says why (same sentence as the Body trips). Water-only day no longer says "0 Minuten bewegt".
+  Still no word "insulin" in this module (Oct 24 rule). Tests: day-recap-plain-words, companion-look-dismiss;
+  probe: `tools/look-recap-probe.cjs`.
+
 | Build | What went live |
 |---|---|
 | 20261027-210035 | Insulin label everywhere: only green "Insulinfreundlich" / red "Nicht insulinfreundlich" (EN/ES too), old middle level counts as red, spike meter gone, food-rule items (pork, alcohol) read red with a food-rule line |

@@ -27,7 +27,7 @@
 
     const TXT = {
         en: { btn: 'Delete account', title: 'Delete {n}’s account?',
-            body: '{n}’s account will be deleted for good: their login, companion, messages, posts, energy and ranking. They disappear from Room, Chat, Ranking and every list for everyone. This can’t be undone.',
+            body: '{n}’s account will be deleted for good: their login, companion, messages, posts, energy and ranking. They disappear from Circle, Chat, Ranking and every list for everyone. This can’t be undone.',
             yes: 'Delete for good', cancel: 'Cancel', working: 'Deleting…', done: '{n}’s account was deleted.',
             delFailed: 'The account wasn’t deleted. Try again.', delSelf: 'You can’t delete your own account or another admin’s here.',
             list: 'Removed people', listNote: 'Only you see this list. Restore brings a person back everywhere.', none: 'Nobody is removed.',
@@ -37,7 +37,7 @@
             outTitle: 'You’re no longer part of this community', outBody: 'Your companion, your health log and everything on your own Home stay as they are. You just can’t see or post in the Community anymore.',
             outHome: 'Back to Home', badge: 'Admin' },
         de: { btn: 'Konto löschen', title: 'Konto von {n} löschen?',
-            body: 'Das Konto von {n} wird endgültig gelöscht: Login, Begleiter, Nachrichten, Beiträge, Energie und Rangliste. {n} verschwindet für alle aus Raum, Chat, Rangliste und allen Listen. Das kann nicht rückgängig gemacht werden.',
+            body: 'Das Konto von {n} wird endgültig gelöscht: Login, Begleiter, Nachrichten, Beiträge, Energie und Rangliste. {n} verschwindet für alle aus Circle, Chat, Rangliste und allen Listen. Das kann nicht rückgängig gemacht werden.',
             yes: 'Endgültig löschen', cancel: 'Abbrechen', working: 'Wird gelöscht…', done: 'Das Konto von {n} wurde gelöscht.',
             delFailed: 'Das Konto wurde nicht gelöscht. Versuch es noch mal.', delSelf: 'Dein eigenes Konto oder das eines anderen Admins kannst du hier nicht löschen.',
             list: 'Entfernte Personen', listNote: 'Nur du siehst diese Liste. „Zurückholen“ bringt die Person überall zurück.', none: 'Niemand ist entfernt.',
@@ -47,7 +47,7 @@
             outTitle: 'Du bist nicht mehr Teil dieser Community', outBody: 'Dein Begleiter, dein Gesundheitstagebuch und alles auf deinem Home bleiben, wie sie sind. Du kannst nur in der Community nichts mehr sehen oder posten.',
             outHome: 'Zurück zu Home', badge: 'Admin' },
         es: { btn: 'Borrar cuenta', title: '¿Borrar la cuenta de {n}?',
-            body: 'La cuenta de {n} se borrará para siempre: acceso, compañero, mensajes, publicaciones, energía y ranking. Desaparecerá para todos de la Sala, el Chat, el Ranking y todas las listas. No se puede deshacer.',
+            body: 'La cuenta de {n} se borrará para siempre: acceso, compañero, mensajes, publicaciones, energía y ranking. Desaparecerá para todos del Circle, el Chat, el Ranking y todas las listas. No se puede deshacer.',
             yes: 'Borrar para siempre', cancel: 'Cancelar', working: 'Borrando…', done: 'La cuenta de {n} se ha borrado.',
             delFailed: 'La cuenta no se ha borrado. Inténtalo de nuevo.', delSelf: 'Aquí no puedes borrar tu propia cuenta ni la de otro admin.',
             list: 'Personas quitadas', listNote: 'Solo tú ves esta lista. «Restaurar» devuelve a la persona en todas partes.', none: 'No has quitado a nadie.',

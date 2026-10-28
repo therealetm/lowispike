@@ -84,7 +84,7 @@
     const toast = (m, ms) => { try { (root.LowiHost && root.LowiHost.toast || root.toast)(m, ms || 2200); } catch (e) {} };
     const C = {
         miles: ['Milestones', 'Meilensteine', 'Logros'],
-        sub: ['From your companion and the people in the room. Tap to send good vibes.', 'Von deinem Begleiter und den Leuten im Raum. Tippe, um gute Vibes zu senden.', 'De tu ser de luz y de la gente de la sala. Toca para enviar buena energía.'],
+        sub: ['From your companion and the people in the Circle. Tap to send good vibes.', 'Von deinem Begleiter und den Leuten im Circle. Tippe, um gute Vibes zu senden.', 'De tu ser de luz y de la gente del Circle. Toca para enviar buena energía.'],
         lv: ['companion reached level', 'Begleiter hat Level', 'ser de luz llegó al nivel'],
         lvEnd: ['', 'erreicht', ''],
         st: ['-day streak', '-Tage-Serie', ' días de racha'],
@@ -98,7 +98,7 @@
         gotN: [' people sent you good vibes while it was quiet', ' Leute haben dir in der Ruhezeit gute Vibes geschickt', ' personas te enviaron buenas vibras mientras era hora de silencio'],
         quiet: ['Quiet hours', 'Ruhezeit', 'Horas de silencio'],
         quietSub: ['No good-vibes pop-ups from 22:00 to 08:00. They wait until morning.', 'Keine Vibes-Meldungen von 22:00 bis 08:00. Sie warten bis morgens.', 'Sin avisos de vibras de 22:00 a 08:00. Esperan a la mañana.'],
-        empty: ['Milestones show up here when you or people in the room level up or keep a streak.', 'Meilensteine erscheinen hier, sobald du oder Leute im Raum ein Level erreichen oder eine Serie halten.', 'Los logros aparecen aquí cuando tú o la gente de la sala suben de nivel o mantienen una racha.'],
+        empty: ['Milestones show up here when you or people in the Circle level up or keep a streak.', 'Meilensteine erscheinen hier, sobald du oder Leute im Circle ein Level erreichen oder eine Serie halten.', 'Los logros aparecen aquí cuando tú o la gente del Circle suben de nivel o mantienen una racha.'],
         pick: ['Send a reaction', 'Reaktion senden', 'Enviar una reacci\u00f3n'],
         more: ['More', 'Mehr', 'M\u00e1s'],
         hide: ['Hide this person', 'Person ausblenden', 'Ocultar a esta persona'],

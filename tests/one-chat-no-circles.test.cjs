@@ -19,8 +19,10 @@ test('Circles are gone: no files, nothing loads them, nothing calls them', () =>
   assert.doesNotMatch(html, /LowiUserRooms/);
 });
 
-test('no word "Circle" left in anything the app shows or says (EN / DE / ES)', () => {
-  const shown = /\bCircles?\b|\bcircles? (?:invite|chat|room)|C[ií]rculos?\b|\bc[ií]rculos\b|\bKreise\b|\bcircle(?:s)? for a goal/;
+/* Oct 28 2026, Emmanuel (call): the one Room tab "should be called Circle". So the single word Circle is the tab's name again
+   (community-rooms-ui.js T.room); the old Circles feature (several rooms, Circles plural, circle invites/chats) stays gone. */
+test('no old Circles feature left in anything the app shows or says (EN / DE / ES); "Circle" only names the one tab', () => {
+  const shown = /\bCircles\b|\bcircles? (?:invite|chat|room)|C[ií]rculos?\b|\bc[ií]rculos\b|\bKreise\b|\bcircle(?:s)? for a goal/;
   const app = fs.readdirSync(ROOT).filter(f => /\.js$/.test(f) && f !== 'tutorial-voice-data.js');
   for (const f of app) {
     const code = noComments(R(f));

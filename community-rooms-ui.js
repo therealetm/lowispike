@@ -5,7 +5,7 @@
    Room = the message list is emptied (community-chat.js paint). The small banner only shows short notes ("Link copied"). */
 (function(W,D){
 'use strict';
-const T={room:['Room','Raum','Sala'],chat:['Chat','Chat','Chat'],
+const T={room:['Circle','Circle','Circle'],chat:['Chat','Chat','Chat'],
  close:['Close','Schließen','Cerrar'],
  create:['Creation','Erstellen','Crear'],rank:['Ranking','Rangliste','Ranking'],aff:['Affiliates','Affiliates','Afiliados'],fy:['For You','Für dich','Para ti'],studio:['Studio','Studio','Estudio'],studioSw:['Studio: Affiliates or Creation','Studio: Affiliates oder Erstellen','Estudio: Afiliados o Crear'],copyLink:['Copy link','Link kopieren','Copiar enlace'],copied:['Link copied','Link kopiert','Enlace copiado'],
  tabs:['Community sections','Community-Bereiche','Secciones de la comunidad'],community:['Community','Community','Comunidad'],hereNow:['{c} here now','{c} gerade da','{c} aquí ahora'],
@@ -276,7 +276,7 @@ const OT={obStep:['{i} of 4','{i} von 4','{i} de 4'],obClose:['Close','Schließe
  obW1:['Welcome to the LOWiSPIKE Community','Willkommen in der LOWiSPIKE Community','Bienvenido a la Comunidad LOWiSPIKE'],
  obW2:['People using LOWiSPIKE meet here to share their gaps, meals and wins, and to keep each other steady.','Hier treffen sich Leute, die LOWiSPIKE nutzen, teilen ihre Pausen, Mahlzeiten und Erfolge und halten sich gegenseitig auf Kurs.','Aquí se reúnen quienes usan LOWiSPIKE para compartir sus pausas, comidas y logros, y mantenerse firmes juntos.'],
  obKnow:['A few things to know','Gut zu wissen','Algunas cosas que saber'],
- obK1:['Room: your galaxy with the people around you.','Raum: deine Galaxie mit den Leuten um dich herum.','Sala: tu galaxia con la gente a tu alrededor.'],
+ obK1:['Circle: the pool table with everyone in the Community.','Circle: der Billardtisch mit allen aus der Community.','Circle: la mesa de billar con todos los de la Comunidad.'],
  obK2:['Chat: the galaxy chat and your replies, as channels.','Chat: der Galaxie-Chat und deine Antworten, als Kanäle.','Chat: el chat de la galaxia y tus respuestas, como canales.'],
  obK3:['Creation: an AI studio for creators, being built.','Erstellen: ein KI-Studio für Creator, im Aufbau.','Crear: un estudio de IA para creadores, en construcción.'],
  obK4:['Affiliates: earn by sharing LOWiSPIKE, with the Master Blueprint.','Affiliates: verdiene, indem du LOWiSPIKE teilst, mit dem Master Blueprint.','Afiliados: gana compartiendo LOWiSPIKE, con el Master Blueprint.'],

@@ -19,3 +19,8 @@ html body #tab-foryou #cmPaneChat#cmPaneChat #csCount{flex:0 0 auto!important;wh
 /* the rules that set these paddings before (community-chat.css, community-room.css), one id heavier: only the floor is new */
 html[data-lay=phone] #tab-foryou #cmPaneChat#cmPaneChat.ls-pane[data-planet]{padding-bottom:calc(max(var(--sab,0px),20px) + 14px)!important;padding-left:max(18px,env(safe-area-inset-left,0px))!important;padding-right:max(18px,env(safe-area-inset-right,0px))!important}
 html.cr-room[data-lay=phone] #tab-foryou #cmPaneChat#cmPaneChat[data-spirit-chat][data-room]{padding-bottom:calc(max(var(--sab,0px),20px) + 10px)!important}
+
+/* Oct 28 (Emmanuel, Room screenshot: "Alle in der Galaxie können lesen, was du sendest ... I don't know why the text is even there
+   ... it's cropped"): that line is gone, and the counter only shows while you type, so the row under the composer is hidden while
+   it has nothing to say (it no longer takes a line at the bottom edge). */
+html body #tab-foryou #cmPaneChat#cmPaneChat .cs-compose-meta:has(#csDraft:empty):has(#csCount:empty){display:none!important}

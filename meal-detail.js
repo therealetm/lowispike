@@ -40,8 +40,6 @@
     function openBot(info) { if (!botRoute) return false; try { botRoute(info); return true; } catch (e) { return false; } }
     function open(detail, ctx) {
         ctx = ctx || {};
-        /* Oct 28 slim structure, batch 4: no empty details panel (X-22). Without details, a name or a photo there is nothing to show */
-        if (!C.hasDetail(C.clean(detail)) && !ctx.name && !ctx.photo) return null;
         const R = root.LowiR2, l = C.lang(ctx.l), html = C.sheetHTML(detail, Object.assign({}, ctx, { l }));
         if (!R || !R.sheet) return null;
         const ov = R.sheet(html, { cls: 'md-ov' });

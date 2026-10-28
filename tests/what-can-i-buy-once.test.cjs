@@ -13,9 +13,7 @@ const code = list(root).filter(f => /\.(js|html|css)$/.test(f) && !f.startsWith(
 test('the panel is opened from exactly one place in the app: Home\'s Fuel bubble Shop orb', () => {
     const calls = [];
     code.forEach(({ f, s }) => { const m = s.match(/LowiStorePicks\.open\(/g); if (m) m.forEach(() => calls.push(f)); });
-    /* Oct 28 slim structure, batch 3: a tap on Fuel opens the nutrition hub (gap-view.js), whose "Einkaufen" button is the tap
-       path now; the Fuel bloom's Shop orb stays in code for open('fuel') callers */
-    assert.deepEqual(calls, ['gap-view.js', 'home-blooms-v2.js'], 'LowiStorePicks.open( callers: ' + calls.join(', '));
+    assert.deepEqual(calls, ['home-blooms-v2.js'], 'LowiStorePicks.open( callers: ' + calls.join(', '));
     const hb = code.find(x => x.f === 'home-blooms-v2.js').s;
     assert.match(hb, /kind === 'fuel'[\s\S]{0,400}id: 'shop'[\s\S]{0,300}LowiStorePicks\.open\('home-bloom'\)/, 'the Shop orb sits in the Fuel bubble');
 });

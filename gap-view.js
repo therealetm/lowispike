@@ -17,23 +17,23 @@
     'use strict';
     const D = W.document;
     const STR = {
-        en: { title: 'Meal gap', since: 'since your last meal', none: 'No meal logged yet', noneSub: 'Log your next meal here. The gap counts from the time you ate.', close: 'Close',
+        en: { title: 'Meal gap', since: 'since your last meal', none: 'No meal logged yet', noneSub: 'Log your next meal in Fuel. The gap counts from the time you ate.', close: 'Close',
             last: 'Last meal', fix: 'Fix time', now: 'Now', next: 'Next: {n} in about {d}', past: 'Past the last marker. Listen to your body.', markers: 'Typical markers',
-            pts: 'So far +{x} XP. You get them when you log your next meal.', recent: 'Recent gaps', log: 'Log a meal', cook: 'Cook', shop: 'Shop', edit: 'Edit last meal',
+            pts: 'So far +{x} XP. You get them when your next meal is logged in Fuel.', recent: 'Recent gaps', log: 'Log a meal in Fuel',
             hedge: 'A general guide from typical patterns, not a measurement. Every body runs its own clock. On diabetes medication? Ask your doctor before long gaps.',
             hexL: 'Six markers on a hexagon; the lit trail shows the time since your last meal', today: 'Today', yday: 'Yesterday', ago1: 'yesterday',
             mcH: 'After your meal', mcTyp: 'Typical, not measured', mcLever: 'Lower the spike', mcMove: 'Open Move', mcRow: 'After-meal phases', mcPrev: 'Previous phase', mcNext: 'Next phase', mcSay: 'Read this phase aloud', mcStop: 'Stop reading', mcRate: 'Voice speed {r}',
             mcCare: 'On insulin or diabetes medication? Talk to your care team before changing meals or exercise: these tips can lower your blood sugar.' },
-        de: { title: 'Essenspause', since: 'seit deiner letzten Mahlzeit', none: 'Noch keine Mahlzeit eingetragen', noneSub: 'Trag deine nächste Mahlzeit hier ein. Die Pause zählt ab dem Essen.', close: 'Schließen',
+        de: { title: 'Essenspause', since: 'seit deiner letzten Mahlzeit', none: 'Noch keine Mahlzeit eingetragen', noneSub: 'Trag deine nächste Mahlzeit in Fuel ein. Die Pause zählt ab dem Essen.', close: 'Schließen',
             last: 'Letzte Mahlzeit', fix: 'Zeit ändern', now: 'Jetzt', next: 'Als Nächstes: {n} in etwa {d}', past: 'Über die letzte Marke hinaus. Hör auf deinen Körper.', markers: 'Typische Marken',
-            pts: 'Bisher +{x} XP. Du bekommst sie, wenn du deine nächste Mahlzeit einträgst.', recent: 'Letzte Pausen', log: 'Mahlzeit eintragen', cook: 'Kochen', shop: 'Einkaufen', edit: 'Letzte Mahlzeit ändern',
+            pts: 'Bisher +{x} XP. Du bekommst sie, wenn du deine nächste Mahlzeit in Fuel einträgst.', recent: 'Letzte Pausen', log: 'Mahlzeit in Fuel eintragen',
             hedge: 'Eine grobe Orientierung aus typischen Verläufen, keine Messung. Jeder Körper hat seine eigene Uhr. Nimmst du Diabetes-Medikamente? Frag vor langen Pausen deine Ärztin oder deinen Arzt.',
             hexL: 'Sechs Marken auf einem Sechseck; die leuchtende Spur zeigt die Zeit seit deiner letzten Mahlzeit', today: 'Heute', yday: 'Gestern', ago1: 'gestern',
             mcH: 'Nach dem Essen', mcTyp: 'Typisch, nicht gemessen', mcLever: 'Spike senken', mcMove: 'Zu Bewegung', mcRow: 'Phasen nach dem Essen', mcPrev: 'Vorherige Phase', mcNext: 'Nächste Phase', mcSay: 'Diese Phase vorlesen', mcStop: 'Vorlesen stoppen', mcRate: 'Sprechtempo {r}',
             mcCare: 'Nimmst du Insulin oder Diabetes-Medikamente? Sprich mit deinem Behandlungsteam, bevor du Essen oder Bewegung umstellst: Diese Tipps können deinen Blutzucker senken.' },
-        es: { title: 'Pausa entre comidas', since: 'desde tu última comida', none: 'Aún no hay comidas', noneSub: 'Registra aquí tu próxima comida. La pausa cuenta desde la hora en que comiste.', close: 'Cerrar',
+        es: { title: 'Pausa entre comidas', since: 'desde tu última comida', none: 'Aún no hay comidas', noneSub: 'Registra tu próxima comida en Fuel. La pausa cuenta desde la hora en que comiste.', close: 'Cerrar',
             last: 'Última comida', fix: 'Cambiar hora', now: 'Ahora', next: 'Después: {n} en unas {d}', past: 'Más allá del último marcador. Escucha a tu cuerpo.', markers: 'Marcadores típicos',
-            pts: 'Por ahora +{x} XP. Los recibes al registrar tu próxima comida.', recent: 'Pausas recientes', log: 'Registrar comida', cook: 'Cocinar', shop: 'Comprar', edit: 'Cambiar última comida',
+            pts: 'Por ahora +{x} XP. Los recibes al registrar tu próxima comida en Fuel.', recent: 'Pausas recientes', log: 'Registrar comida en Fuel',
             hedge: 'Una guía general según patrones típicos, no una medición. Cada cuerpo tiene su propio reloj. ¿Tomas medicación para la diabetes? Consulta a tu médico antes de pausas largas.',
             hexL: 'Seis marcadores en un hexágono; el rastro iluminado muestra el tiempo desde tu última comida', today: 'Hoy', yday: 'Ayer', ago1: 'ayer',
             mcH: 'Después de comer', mcTyp: 'Típico, no medido', mcLever: 'Baja el pico', mcMove: 'Ir a Movimiento', mcRow: 'Fases después de comer', mcPrev: 'Fase anterior', mcNext: 'Fase siguiente', mcSay: 'Leer esta fase en voz alta', mcStop: 'Dejar de leer', mcRate: 'Velocidad de voz {r}',
@@ -213,28 +213,17 @@
             '<g clip-path="url(#gvClip)"><g class="gv-liq" style="transform:translateY(' + lvl + 'px)"><path class="gv-wave" d="M-130 0 Q-97 -9 -65 0 T0 0 T65 0 T130 0 T195 0 T260 0 T325 0 T390 0 V200 H-130 Z" fill="url(#gvLiq)"/></g></g>' +
             '<circle class="gv-rim" cx="' + CX + '" cy="' + CY + '" r="62"/>' + planets + '</svg>';
     }
-    /* Oct 28 slim structure, batch 3 (nutrition hub): Essenspause + Fuel are one panel. The Fuel menu's three targets sit here
-       under the gap: log a meal (big), Cook and the shopping list (small); the last-meal time is changed inline (old "Wann war
-       deine letzte Mahlzeit?" sheet). */
-    const fnOf = (o, k) => !!(o && typeof o[k] === 'function');
-    function acts() {
-        const cook = fnOf(W.LowiHost, 'go'), shop = fnOf(W.LowiStorePicks, 'open');
-        return '<div class="gv-acts"><button type="button" class="gv-log" data-gv="log">' + esc(s('log')) + '</button>' +
-            (cook || shop ? '<div class="gv-acts2">' + (cook ? '<button type="button" class="gv-act2" data-gv="cook">' + esc(s('cook')) + '</button>' : '') +
-                (shop ? '<button type="button" class="gv-act2" data-gv="shop">' + esc(s('shop')) + '</button>' : '') + '</div>' : '') + '</div>';
-    }
     function body(m) {
         const L = m.stages;
         if (!m.start) {
             return '<div class="gv-hero">' + hero(m) + '<div class="gv-mid"><b class="gv-none">' + esc(s('none')) + '</b></div></div>' +
-                '<p class="gv-sub">' + esc(s('noneSub')) + '</p>' + acts() + curve(m) + markers(m) + '<p class="gv-hedge">' + esc(s('hedge')) + '</p>';
+                '<p class="gv-sub">' + esc(s('noneSub')) + '</p>' + curve(m) + markers(m) + '<p class="gv-hedge">' + esc(s('hedge')) + '</p>';
         }
         const curM = m.cur >= 0 ? L[m.cur] : null;
         const nextLine = m.next ? s('next').replace('{n}', m.next.n.charAt(0).toLowerCase() + m.next.n.slice(1)).replace('{d}', dur(m.nextIn)) : s('past');
         return '<div class="gv-hero">' + hero(m) + '<div class="gv-mid"><b class="gv-time" data-gv="time">' + esc(dur(m.elapsed)) + '</b><small>' + esc(s('since')) + '</small></div></div>' +
             '<div class="gv-last"><span><small>' + esc(s('last')) + '</small><b>' + (m.meal ? esc(m.meal) + ' · ' : '') + esc(when(m.start)) + '</b></span>' +
             (W.LowiFastEdit && W.LowiFastEdit.open ? '<button type="button" class="gv-fix" data-gv="fix">' + esc(s('fix')) + '</button>' : '') + '</div>' +
-            '<div class="gv-editslot"></div>' + acts() +
             curve(m) +
             (curM && m.hours >= MC_WIN ? '<section class="gv-now" style="--c:' + COL[m.cur] + '"><small>' + esc(s('now')) + '</small><h3>' + esc(curM.n) + '</h3>' + (curM.x ? '<p>' + rich(curM.x) + '</p>' : '<p>' + esc(curM.t) + '</p>') +
                 '<p class="gv-next">' + esc(nextLine) + '</p></section>' : '') +
@@ -381,10 +370,7 @@
     function paint() {
         if (!el) return;
         const sc = el.querySelector('.gv-scroll'), y = sc ? sc.scrollTop : 0, open = Array.from(el.querySelectorAll('.gv-list details')).map(d => d.open);
-        const ed = el.querySelector('.fe-inline'); if (ed) ed.remove();
         el.querySelector('.gv-body').innerHTML = body(model());
-        if (ed) { const slot = el.querySelector('.gv-editslot'); if (slot) slot.appendChild(ed); }
-        const fx = el.querySelector('.gv-fix'); if (fx) fx.setAttribute('aria-expanded', ed ? 'true' : 'false');
         if (open.length) el.querySelectorAll('.gv-list details').forEach((d, i) => { if (i in open) d.open = open[i]; });
         if (sc) sc.scrollTop = y;
         const c = el.querySelector('.mc-card'); if (say && (!c || +c.dataset.i !== say.i)) sayStop();
@@ -392,18 +378,7 @@
     /* a new meal time, or coming back to the app: the card goes back to the phase you are in */
     function onFresh() { if (!el) return; mcSel = -1; paint(); }
     function onVis() { if (D && !D.hidden) onFresh(); }
-    function edit() {
-        if (!el) return open({ edit: true });
-        const slot = el.querySelector('.gv-editslot'), F = W.LowiFastEdit;
-        if (!F || typeof F.open !== 'function') return false;
-        if (!slot) return F.open({ sheet: true });
-        if (slot.querySelector('.fe-inline')) { if (F.close) F.close(); paint(); return true; }
-        const ok = F.open({ host: slot });
-        paint();
-        setTimeout(() => { const n = el && el.querySelector('.fe-inline'); if (n && n.scrollIntoView) n.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 80);
-        return ok;
-    }
-    function open(opts) {
+    function open() {
         if (!D) return false;
         close(true);
         back = D.activeElement;
@@ -411,7 +386,8 @@
         el = D.createElement('div'); el.className = 'gv-ov'; el.id = 'gvSheet'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'gvTitle');
         el.setAttribute('data-noi18n', '');
         el.innerHTML = '<div class="gv-card"><div class="gv-top"><button type="button" class="gv-x" data-gv="close" aria-label="' + esc(s('close')) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
-            '<h2 id="gvTitle">' + esc(s('title')) + '</h2></div><div class="gv-scroll"><div class="gv-body"></div></div></div>';
+            '<h2 id="gvTitle">' + esc(s('title')) + '</h2></div><div class="gv-scroll"><div class="gv-body"></div>' +
+            '<button type="button" class="gv-log" data-gv="log">' + esc(s('log')) + '</button></div></div>';
         D.body.appendChild(el);
         paint();
         requestAnimationFrame(() => { if (el) el.classList.add('on'); });
@@ -423,13 +399,11 @@
         W.addEventListener('lowi:fast-start', onFresh); D.addEventListener('visibilitychange', onVis);
         tick = setInterval(paint, 30000);
         setTimeout(() => { const x = el && el.querySelector('.gv-x'); if (x) x.focus({ preventScroll: true }); }, 60);
-        if (opts && opts.edit && model().start) edit();
         return true;
     }
     function close(quick) {
         clearInterval(tick); tick = 0;
         if (say) sayStop();
-        try { const F = W.LowiFastEdit; if (el && el.querySelector('.fe-inline') && F && F.close) F.close(true); } catch (x) {}
         D && D.removeEventListener('keydown', onKey, true);
         W.removeEventListener && W.removeEventListener('lowi:fast-start', onFresh); D && D.removeEventListener('visibilitychange', onVis);
         W.removeEventListener && W.removeEventListener('lowi:fast', paint); W.removeEventListener && W.removeEventListener('storage', paint);
@@ -499,10 +473,9 @@
         if (e.target === el) { spend(e); close(); return; }
         const b = e.target.closest('[data-gv]'); if (!b) return;
         const k = b.dataset.gv;
-        if (k === 'close' || k === 'log' || k === 'move' || k === 'cook' || k === 'shop') spend(e); /* BH-037: these close Gap */
+        if (k === 'close' || k === 'log' || k === 'move') spend(e); /* BH-037: these close Gap */
         if (k === 'close') close();
-        else if (k === 'fix') { try { edit(); } catch (x) { console.error(x); } }
-        else if (k === 'cook' || k === 'shop') { close(); setTimeout(() => { try { if (k === 'shop') W.LowiStorePicks.open('gap-hub'); else W.LowiHost.go('shelf'); } catch (x) { console.error(x); } }, 60); }
+        else if (k === 'fix') { try { W.LowiFastEdit.open(); } catch (x) { console.error(x); } }
         else if (k === 'log') { close(); setTimeout(() => { try { W.LowiSpirit.meal(); } catch (x) { console.error(x); } }, 60); }
         else if (k === 'mc') { if (Date.now() - openedAt < 450) return; mcPick(+b.dataset.i || 0); } /* not the tap that opened Gap landing on the row */
         else if (k === 'mcsay') { const c = b.closest('[data-mc-card]'); sayToggle(c ? +c.dataset.i : 0); }
@@ -510,5 +483,5 @@
         else if (k === 'mcprev' || k === 'mcnext') { const cur = mcSel >= 0 ? mcSel : Math.max(0, model().mcCur); mcPick(cur + (k === 'mcnext' ? 1 : -1)); }
         else if (k === 'move') { close(); setTimeout(() => { try { if (typeof W.lowiOpen === 'function') W.lowiOpen('move'); else if (typeof W.goTab === 'function') W.goTab('move'); } catch (x) { console.error(x); } }, 60); }
     }
-    return { open, close, edit, isOpen: () => !!el, model, strings: STR, _when: when, _trail: trail, phases: MC, curvePhase, _curve: curve, mcSpoken, selFor, speaking: () => !!say };
+    return { open, close, isOpen: () => !!el, model, strings: STR, _when: when, _trail: trail, phases: MC, curvePhase, _curve: curve, mcSpoken, selFor, speaking: () => !!say };
 });

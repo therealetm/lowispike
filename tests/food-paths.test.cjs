@@ -137,8 +137,7 @@ test('plain words: no "Hunt" / "Cart" jargon, and no insulin claims in the shopp
 });
 
 test('Gap "I just ate" / "I ate earlier" open the one shared meal logger, optional, keeping the time', () => {
-    /* Oct 28 slim structure batch 4: every start, also {own:true}, opens the one logger */
-    assert.match(html, /function start\(o\)\{ o = o \|\| \{\};\n[^\n]*\n[^\n]*\n  if \(startShared\(o\)\) return;/);
+    assert.match(html, /function start\(o\)\{ o = o \|\| \{\};\n  if \(!o\.own && startShared\(o\)\) return;/);
     assert.match(html, /window\.LowiMealCtx = \{from:"gap", at:Date\.now\(\), ateAt:\+\(o\.at \|\| \(fast && fast\.e\) \|\| Date\.now\(\)\)\};\n  try \{ LowiSpirit\.meal\(\); \}/);
     assert.match(html, /if \(fast && !d\.spike && !d\.dup\)/, 'break-fast bonus still for a real meal');
     const sp = read('spirit.js');

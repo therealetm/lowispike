@@ -27,7 +27,6 @@ function gap() {
         LowiFreshScrim: { spent(e) { calls.push('spent'); e.spentMark = true; } } };
     const ctx = { W, Date, console, el: null, openedAt: 0, mcSel: -1, calls, setTimeout(f) { timers.push(f); },
         model: () => ({ mcCur: 0 }), mcPick(n) { calls.push('pick ' + n); }, sayToggle(n) { calls.push('say ' + n); }, sayNextRate() { calls.push('rate'); } };
-    ctx.edit = () => W.LowiFastEdit.open(); /* Oct 28 batch 3: "Zeit ändern" opens the inline editor through edit() */
     ctx.close = function () { calls.push('close'); ctx.setEl(null); }; /* close() lets go of the element, as the real one does */
     vm.runInNewContext(src.slice(i, end + 6) + '\nthis.onClick = onClick; this.setEl = v => { el = v; };', ctx);
     const ov = node(null), card = node(ov), log = node(card, 'log'), x = node(card, 'close'), move = node(card, 'move'), fix = node(card, 'fix'), say = node(card, 'mcsay');

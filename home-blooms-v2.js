@@ -631,9 +631,6 @@
         /* Oct 21 Scan / Fuel / Gap (E-man: "gap is just like water and move or sleep... not formatted like a fasting app"): Gap has no
            actions any more. A tap opens the passive Gap view (gap-view.js); meals are logged in Fuel, which is what restarts the gap */
         if (kind === 'gap') { close(true); buzz(8); if (fn(W.LowiGapView, 'open')) W.LowiGapView.open(); return; }
-        /* Oct 28 slim structure, batch 3 (nutrition hub): the Fuel menu had one real target, so a tap on Fuel opens the one
-           nutrition panel (gap + last meal + log + Cook / Shop). open('fuel') stays for code that still asks for the old menu */
-        if (kind === 'fuel' && fn(W.LowiGapView, 'open')) { close(true); buzz(8); W.LowiGapView.open({ from: 'fuel' }); return; }
         if (st.open === kind) close(); else open(kind, el);
     }
     function onKey(e) { if (st.open && homeTab() && e.key === 'Escape' && !(st.ov && st.ov.contains(e.target))) close(); }

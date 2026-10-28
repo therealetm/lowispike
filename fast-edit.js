@@ -133,31 +133,12 @@
             '<p class="fe-tz">' + esc(w('tz', { z: tzLabel(pre) })) + '</p><p class="fe-keep">' + esc(w('keep')) + '</p>' +
             '<div class="fe-acts"><button type="button" class="fe-cancel" data-fse="cancel">' + esc(w('cancel')) + '</button><button type="button" class="fe-save" data-fse="save">' + esc(w('save')) + '</button></div></div>';
     }
-    /* Oct 28 slim structure, batch 3 (nutrition hub): "Wann war deine letzte Mahlzeit?" is no separate sheet any more. It opens
-       inline inside the Essenspause panel (gap-view.js passes {host}); every old caller (holding the gap bubble, morning card)
-       lands in that panel with the editor open. {sheet:true} keeps the old overlay where no panel exists. */
-    let inline = false;
-    function open(opts) {
+    function open() {
         if (!C()) return false;
-        const host = opts && opts.host;
-        if (!host && !(opts && opts.sheet)) {
-            const G = W.LowiGapView;
-            if (G && typeof G.open === 'function' && typeof G.edit === 'function') {
-                if (isOpen() && inline) return true;
-                return G.isOpen && G.isOpen() ? G.edit() : G.open({ edit: true });
-            }
-        }
-        if (isOpen()) { if (!host || !inline) return true; close(true); }
+        if (isOpen()) return true;
         lastFocus = D.activeElement;
-        inline = !!host;
-        ov = D.createElement('div'); ov.id = 'feOv'; ov.className = inline ? 'fe-inline' : 'fe-ov'; ov.setAttribute('data-noi18n', ''); ov.setAttribute('data-xtp', 'off');
+        ov = D.createElement('div'); ov.id = 'feOv'; ov.className = 'fe-ov'; ov.setAttribute('data-noi18n', ''); ov.setAttribute('data-xtp', 'off');
         ov.innerHTML = html();
-        if (inline) {
-            const c = ov.querySelector('.fe-card'); if (c) { c.setAttribute('role', 'group'); c.removeAttribute('aria-modal'); }
-            host.appendChild(ov); check(); sfx('open');
-            try { const f = ov.querySelector('#feTime') || ov.querySelector('.fe-card'); f.focus({ preventScroll: true }); } catch (e) {}
-            return true;
-        }
         D.body.appendChild(ov);
         D.documentElement.classList.add('fe-up');
         check(); sfx('open');
@@ -168,7 +149,6 @@
     function close(silent) {
         const o = ov; ov = null; D.documentElement.classList.remove('fe-up');
         if (!o) return;
-        if (inline) { inline = false; o.remove(); if (!silent) sfx('close'); try { const G = W.LowiGapView; if (G && G.isOpen && G.isOpen()) { const fx = D.querySelector('#gvSheet .gv-fix'); if (fx) { fx.setAttribute('aria-expanded', 'false'); fx.focus({ preventScroll: true }); } } } catch (e) {} return; }
         o.classList.remove('in'); o.classList.add('out');
         setTimeout(() => o.remove(), 220);
         if (!silent) sfx('close');
@@ -237,7 +217,7 @@
     /* ---------- events ---------- */
     D.addEventListener('click', e => {
         const t = e.target; if (!t || !t.closest) return;
-        if (ov && !inline && t === ov) { e.preventDefault(); e.stopPropagation(); close(); return; }
+        if (ov && t === ov) { e.preventDefault(); e.stopPropagation(); close(); return; }
         const a = t.closest('[data-fse]'); if (!a) return;
         const k = a.dataset.fse;
         if (k === 'open') { e.preventDefault(); e.stopPropagation(); open(); return; }
@@ -253,7 +233,7 @@
     D.addEventListener('click', e => { const el = e.target; if (!ov || !el || (el.id !== 'feDate' && el.id !== 'feTime')) return; try { if (W.matchMedia && matchMedia('(pointer: fine)').matches && el.showPicker) el.showPicker(); } catch (x) {} });
     D.addEventListener('keydown', e => {
         if (!ov) return;
-        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); close(); }
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
         else if (e.key === 'Enter' && e.target && (e.target.id === 'feDate' || e.target.id === 'feTime')) { e.preventDefault(); doSave(); }
     }, true);
     /* the preview keeps counting while the card is open */

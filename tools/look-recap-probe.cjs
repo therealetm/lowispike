@@ -55,7 +55,7 @@ const SHOT = process.env.LR_SHOTS || '/home/sprite/lr-shots', lang = process.env
     await P.mouse.up(); await sleep(500); out.B_short = Object.assign(await state(), { transform: await P.evaluate(() => { const p = document.querySelector('.cf-ov .cf-panel'); return p ? p.style.transform : 'gone'; }) });
     /* C: touch pull down in the list at scrollTop 0 -> back */
     b = await panelBox(); out.C_scrollable = b.sh > b.ch;
-    out.C_touch = await touch(line(b.sx, b.sy, 0, 260, 14)); await sleep(700); out.C_after = await state();
+    out.C_touch = await touch(line(b.sx, b.sy, 0, 260, 14)); out.C_tf = await P.evaluate(() => { const p = document.querySelector('.cf-ov .cf-panel'); return p ? p.style.transform + ' / ' + p.style.transition : 'gone'; }); await sleep(900); out.C_after = await state();
     /* D: list scrolled down: a touch pull down does not close (the list scrolls instead) */
     await openLook(); await P.evaluate(() => { document.querySelector('.cf-ov .cf-scroll').scrollTop = 200; }); await sleep(100); b = await panelBox();
     out.D_scrollTop = b.st; out.D_touch = await touch(line(b.sx, b.sy, 0, 160, 10)); await sleep(500); out.D_after = await state();

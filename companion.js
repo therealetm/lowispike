@@ -387,10 +387,11 @@
        drag the top bar and the edge. Every choice in this panel saves at once, and a half-picked style (V.pend) is kept
        for the next open, so a swipe loses nothing. */
     const EDGE = 26, NOGRAB = 'input[type=range], textarea, select, [contenteditable], .no-pull';
-    let G = null, eatClick = 0;
+    let G = null, eatClick = 0, springT = 0;
     const reduceMo = () => { try { return W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
     function gStart(x, y, target, kind) {
         if (G || !V.ov) return;
+        if (springT) { clearTimeout(springT); springT = 0; const p0 = V.ov.querySelector('.cf-panel'); if (p0) { p0.style.transition = ''; p0.style.transform = ''; } }
         const p = V.ov.querySelector('.cf-panel'); if (!p || !target || !p.contains(target)) return;
         if (target.closest && target.closest(NOGRAB)) return;
         const r = p.getBoundingClientRect(), sc = p.querySelector('.cf-scroll');
@@ -429,7 +430,7 @@
             if (reduceMo()) { reset(); return; }
             p.style.transition = 'transform .22s cubic-bezier(.22,.8,.28,1)'; p.style.transform = 'translate3d(0,0,0)';
             if (V.ov) V.ov.style.setProperty('--cf-pull', '1');
-            setTimeout(reset, 230); return;
+            springT = setTimeout(() => { springT = 0; reset(); }, 230); return;
         }
         try { navigator.vibrate && navigator.vibrate(8); } catch (e) { }
         if (reduceMo()) { dismiss(); return; }

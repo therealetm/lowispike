@@ -172,3 +172,19 @@ html.lt .gv-ov, html[data-ui="light"] .gv-ov { background: rgba(10, 30, 70, .12)
 .gv-card { background: radial-gradient(120% 70% at 50% 0%, rgba(80, 140, 255, .2), transparent 60%), linear-gradient(180deg, rgba(12, 29, 72, .97) 0%, rgba(7, 19, 55, .975) 60%, rgba(5, 13, 41, .98) 100%); background-color: #071337;
   -webkit-backdrop-filter: blur(26px) saturate(1.2); backdrop-filter: blur(26px) saturate(1.2); }
 .gv-ov, html.lt .gv-ov, html[data-ui="light"] .gv-ov { background: rgba(2, 6, 20, .66); -webkit-backdrop-filter: blur(16px) saturate(.75); backdrop-filter: blur(16px) saturate(.75); }
+
+/* Oct 28 slim structure, batch 3 (nutrition hub): log a meal + Cook / Shop sit under the gap; the last-meal time edits inline */
+.gv-acts { margin: 12px 0 6px; }
+.gv-acts .gv-log { margin: 0; }
+.gv-acts2 { display: flex; gap: 8px; margin-top: 8px; }
+.gv-act2 { flex: 1 1 0; min-width: 0; min-height: 44px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(143, 216, 255, .45); background: rgba(143, 216, 255, .08); color: #dff3ff; font: inherit; font-size: 14.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gv-act2:active { transform: scale(.97); }
+.gv-act2:focus-visible { outline: 2px solid #8fd8ff; outline-offset: 2px; }
+.gv-editslot:empty { display: none; }
+.gv-editslot { margin: 8px 0 4px; }
+.gv-editslot .fe-inline .fe-card { width: 100%; max-height: none; overflow: visible; transform: none; box-shadow: none; padding: 14px 14px 12px; border-radius: 18px; background: rgba(255, 255, 255, .05); }
+.gv-editslot .fe-inline .fe-ic { display: none; }
+.gv-editslot .fe-inline .fe-t { font-size: 16px; }
+.gv-editslot .fe-inline .fe-card { padding: 12px 10px 10px; }
+.gv-editslot .fe-in .fe-show { left: 10px; right: 6px; font-size: 14px; }
+.gv-editslot .fe-f input { padding-left: 10px; padding-right: 8px; }

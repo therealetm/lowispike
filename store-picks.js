@@ -925,11 +925,13 @@
         close();
     }
 
-    function openPanel(from) {
+    function openPanel(from, start) {
         if (ov) return;
         /* Oct 28 2026 (Emmanuel: the Home bubble opened Einkaufen on Seller Zone / Hilf mit, "that makes no sense"): Einkaufen always
-           opens on its first tab, Supermarkt. Picking another tab still works while the panel is open (the tour sets its tab after open). */
-        tab = 'shop';
+           opens on its first tab, Supermarkt. Picking another tab still works while the panel is open (the tour sets its tab after open).
+           Oct 28 2026, 23:00 (Emmanuel: Supermarkt, Zu Hause, Seller Zone and Hilf mit "also be bubbles"): the Einkaufen bubble
+           opens those four as orbs (home-blooms-v2.js); the orb that was tapped is the one tab this opens on (openAt). */
+        tab = start === 'sz' && SZ() ? 'sz' : start === 'home' && homeTab() ? 'home' : start === 'kitchen' && kitTab() ? 'kitchen' : 'shop';
         snackUndo = null;
         ov = D.createElement('div');
         ov.className = 'stp-ov';
@@ -1009,5 +1011,23 @@
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiStorePicks = { open: openPanel, close, tabsHTML: active => { if (!ov) return ''; tabOver = active || ''; try { return tabsHTML(); } finally { tabOver = ''; } }, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)), tab: () => (onSz() ? 'sz' : onKit() ? 'kitchen' : onHome() ? 'home' : 'shop'), kitchen: () => (K ? (kitLoad(), K.view(kit)) : []), setTab: id => { if (id === 'kitchen' && KG()) { if (ov) close(); KG().open(); return; } if (ov) setTab(id); else { tab = ({ sz: 'sz', kitchen: 'kitchen', home: 'home' })[id] || 'shop'; try { localStorage.setItem(TKEY, tab); } catch (e) {} } } };
+    /* Oct 28 2026, 23:00: the doors of Einkaufen, in tab-bar order, for the Einkaufen bubble's orbs (home-blooms-v2.js). One list, so
+       an orb exists exactly when its tab does (Zu Hause needs week-basket.js, Hilf mit the server table). */
+    function doors() {
+        const out = [{ id: 'shop', label: T('Supermarket', 'Supermarkt', 'Súper') }];
+        if (homeTab()) out.push({ id: 'home', label: T('From home', 'Zu Hause', 'Desde casa') });
+        const Z = SZ(); if (Z) { let n = 0; try { n = Z.count ? Z.count() : 0; } catch (e) {} out.push({ id: 'sz', label: Z.name(), n }); }
+        if (kitTab()) out.push({ id: 'kitchen', label: T('Kitchen', 'Küche', 'Cocina') });
+        if (giftDoor()) out.push({ id: 'gift', label: T('Help out', 'Hilf mit', 'Ayudar') });
+        return out;
+    }
+    /* open Einkaufen right on one door. Hilf mit opens in Einkaufen's frame, as from its tab, so X / back / Escape close Einkaufen
+       itself and you are back on Home. */
+    function openAt(id, from) {
+        if (id === 'kitchen' && KG()) { if (ov) close(); KG().open(); return true; }
+        if (!ov) openPanel(from || 'home-shop', id); else if (id !== 'gift') setTab(id);
+        if (id === 'gift') { try { if (W.LowiGiftBasket && W.LowiGiftBasket.open) W.LowiGiftBasket.open('shop'); } catch (x) {} }
+        return true;
+    }
+    W.LowiStorePicks = { open: openPanel, openAt, doors, close, tabsHTML: active => { if (!ov) return ''; tabOver = active || ''; try { return tabsHTML(); } finally { tabOver = ''; } }, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)), tab: () => (onSz() ? 'sz' : onKit() ? 'kitchen' : onHome() ? 'home' : 'shop'), kitchen: () => (K ? (kitLoad(), K.view(kit)) : []), setTab: id => { if (id === 'kitchen' && KG()) { if (ov) close(); KG().open(); return; } if (ov) setTab(id); else { tab = ({ sz: 'sz', kitchen: 'kitchen', home: 'home' })[id] || 'shop'; try { localStorage.setItem(TKEY, tab); } catch (e) {} } } };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

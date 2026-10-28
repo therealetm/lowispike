@@ -53,7 +53,8 @@ test('Cook bar: game switch first, then the source row, then the kind chips on a
 test('Einkaufen always opens on Supermarkt', () => {
   const sp = R('store-picks.js');
   const o = sp.slice(sp.indexOf('function openPanel('), sp.indexOf('snackUndo = null;', sp.indexOf('function openPanel(')));
-  assert.match(o, /tab = 'shop';/);
+  /* Oct 28 2026, 23:00: Supermarkt unless the Einkaufen bloom's orb names another door (openAt); never the remembered tab */
+  assert.match(o, /tab = start === 'sz' && SZ\(\) \? 'sz' : start === 'home' && homeTab\(\) \? 'home' : start === 'kitchen' && kitTab\(\) \? 'kitchen' : 'shop';/);
   assert.doesNotMatch(o, /tab = (load|get)\w*\(/, 'the remembered tab no longer decides the first view');
 });
 

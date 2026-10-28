@@ -50,7 +50,9 @@ test('food plan (Oct 28): Essenspause is the eating hub, the meal bubble is Eink
     assert.match(sh, /function todayHTML\(\)[\s\S]*CORE\.mealsToday\(st\)[\s\S]*thumbHTML[\s\S]*stripHTML/, 'today\'s list from the real meal data, with photos and today\'s stats');
     assert.match(sh, /LOWI_SHELF[\s\S]*listOpen/, 'the bubble shows the open count of the shopping list');
     assert.match(sh, /kind: 'meals', onLong: \(\) => \{ longAt = performance\.now\(\); return true; \} \}\)/, 'a hold on the bubble only squishes (opens nothing, release swallowed)');
-    assert.match(hb, /if \(kind === 'fuel' && shop\(\)\) return;/, 'one tap opens Einkaufen');
+    /* Oct 28 2026, 23:00: one tap opens Einkaufen's own bloom (Supermarkt, Zu Hause, Seller Zone, Hilf mit); shop() is the fallback */
+    assert.match(hb, /fuel: 'bloom'/, 'one tap opens the Einkaufen bloom');
+    assert.match(hb, /if \(kind === 'fuel' && !actionsFor\('fuel'\)\.length\) return shop\(\);/, 'without the doors it still opens Einkaufen');
     assert.match(hb, /function shop\(\) \{\s*if \(fn\(W\.LowiStorePicks, 'open'\)\) \{[^}]*LowiStorePicks\.open\('home-shop'\)/, 'Einkaufen = the Shop panel');
     /* Oct 28 2026 (Emmanuel: a long press on the timer shows only the body phases): Move and Essenspause keep a hold, nothing else */
     assert.match(hb, /if \(kind !== 'move' && kind !== 'gap'\) return;/, 'only Move and Essenspause keep a hold');

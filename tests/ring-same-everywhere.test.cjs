@@ -86,12 +86,13 @@ function peakGo(W) {
 const OLD_TRIO = /Kochen|Mahlzeit|\bCook\b|\bMeal\b|Cocinar|Comida/;
 
 test('one map says what each ring bubble does', () => {
-    assert.deepStrictEqual(JSON.parse(JSON.stringify(core.RING)), { fuel: 'shop', gap: 'hub', water: 'bloom', move: 'bloom', sleep: 'bloom' });
-    assert.deepStrictEqual(core.BLOOMS, ['water', 'move', 'sleep']);
+    /* Oct 28 2026, 23:00 (Emmanuel: Supermarkt, Zu Hause, Seller Zone and Hilf mit "also be bubbles"): Einkaufen blooms */
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(core.RING)), { fuel: 'bloom', gap: 'hub', water: 'bloom', move: 'bloom', sleep: 'bloom' });
+    assert.deepStrictEqual(core.BLOOMS, ['fuel', 'water', 'move', 'sleep']);
     assert.ok(Object.isFrozen(core.RING), 'nobody can change it at run time');
 });
 
-test('path 1, Home: a tap on the Einkaufen bubble opens Einkaufen, no orbs', () => {
+test('path 1, Home (old Shop module without doors): a tap on the Einkaufen bubble still opens Einkaufen, no orbs', () => {
     const p = page();
     const before = p.blooms();
     p.tap('fuel');
@@ -128,7 +129,7 @@ test('path 2b, companion sheet: Water and Move rows still open their own blooms 
     assert.ok(['move', null].includes(p.B.isOpen()), 'move asks the ring (or the Move page when its module is missing)');
 });
 
-test('path 3, code: open(\'fuel\') from the tutorial, deep links or old callers opens Einkaufen, open(\'gap\') the hub', () => {
+test('path 3, code (old Shop module without doors): open(\'fuel\') opens Einkaufen, open(\'gap\') the hub', () => {
     const p = page();
     assert.strictEqual(p.B.open('fuel'), true);
     assert.strictEqual(p.B.open('gap'), true);
@@ -140,8 +141,8 @@ test('path 3, code: open(\'fuel\') from the tutorial, deep links or old callers 
 });
 
 test('path 4, the all-bubbles overview takes its bubbles from the same map: no Fuel orbs', () => {
-    assert.match(SRC, /const ALL = BLOOMS;/);
-    assert.ok(!core.BLOOMS.includes('fuel'));
+    assert.match(SRC, /const ALL = BLOOMS\.filter\(k => k !== 'fuel'\);/);
+    assert.ok(core.BLOOMS.includes('fuel'), 'Einkaufen blooms on its own');
 });
 
 test('path 5, tutorial picture of the Einkaufen card: the bubble and its Supermarkt tabs, no Kochen / Mahlzeit pills', () => {
@@ -159,7 +160,6 @@ test('no app file asks for the old Fuel menu any more', () => {
     const hits = [];
     for (const f of files) {
         const s = read(f).replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
-        if (/\.open\(\s*['"]fuel['"]\s*\)/.test(s)) hits.push(f + ": .open('fuel')");
         if (/id: 'cook'|id: 'log'/.test(s) && f === 'home-blooms-v2.js') hits.push(f + ': Cook / Log orb');
         if (/\[T\.log, T\.shop, T\.cook\]/.test(s)) hits.push(f + ': tutorial trio pills');
     }

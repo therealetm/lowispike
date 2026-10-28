@@ -83,7 +83,7 @@
         },
         {
             /* Oct 28 2026 food plan: this bubble is Einkaufen (cart + open count of the shopping list); meals are logged in the Gap hub */
-            id: 'fuel', area: 'home', target: ['#whHud .wh-meals'], demo: { g: 'tap', open: 'home-shop' }, covers: ['fuel', 'shop'], teaches: ['fuel-tap'],
+            id: 'fuel', area: 'home', target: ['#whHud .wh-meals'], demo: { g: 'tap', open: 'fuel-bloom' }, covers: ['fuel', 'shop'], teaches: ['fuel-tap'],
             title: { en: 'Shopping', de: 'Einkaufen', es: 'Compras' },
             text: {
                 en: 'Tap Shopping for the supermarket, your kitchen, the Seller Zone and Help out.',

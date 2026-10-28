@@ -217,7 +217,8 @@
        this is the same target for the static layout). A hold only squishes: no second gesture. */
     function openShop() {
         /* the ring owns the one Shop call (home-blooms-v2.js shop()); without the ring the hub still opens, never a dead tap */
-        try { const B = W.LowiHomeBloomsV2; if (B && typeof B.shop === 'function' && B.shop()) return; } catch (e) {}
+        /* Oct 28 2026, 23:00: the ring's map says Einkaufen opens its bloom (Supermarkt, Zu Hause, Seller Zone, Hilf mit) */
+        try { const B = W.LowiHomeBloomsV2; if (B && typeof B.open === 'function' && B.open('fuel')) return; if (B && typeof B.shop === 'function' && B.shop()) return; } catch (e) {}
         try { if (W.LowiGapView && typeof W.LowiGapView.open === 'function') { W.LowiGapView.open({ from: 'fuel' }); return; } } catch (e) {}
         logMeal();
     }

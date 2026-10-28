@@ -90,7 +90,7 @@
         bc: ['Barcode {0}', 'Barcode {0}', 'Código {0}'],
         unnamed: ['Product {0}', 'Produkt {0}', 'Producto {0}'],
         /* Oct 26 one scanner: the same card for every scan, with the useful parts of the old long result worked in once */
-        ate: ['I ate this', 'Hab ich gegessen', 'Me lo comí'],
+        ate: ['Log as eaten', 'Als gegessen eintragen', 'Registrar como comido'],
         swapH: ['Better pick', 'Bessere Wahl', 'Mejor opción'],
         swapR: ['Recipe', 'Rezept', 'Receta'],
         swapOpen: ['Open', 'Öffnen', 'Abrir'],

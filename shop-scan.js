@@ -203,7 +203,10 @@
         const cartB = big => '<button type="button" class="' + (big ? 'ss-add' : 'ss-kit') + '" data-ss="add">' + IC.cart + '<span>' + esc(T('add')) + '</span></button>';
         /* Oct 21 rule kept: only Log meal's own Scan logs a meal ("Scan identifies"); there I ate this is the big button */
         const ateB = '<button type="button" class="ss-add ss-ate" data-ss="ate">' + IC.ok + '<span>' + esc(T('ate')) + '</span></button>';
-        const acts = ctx === 'meal' ? ateB + kitB(false) : kIn ? kitB(true) + cartB(false) : cartB(true) + kitB(false);
+        /* Oct 28 2026 (E-man, call): the Scan camera's card also offers "Als gegessen eintragen", small under Add to cart. The scan
+           itself logs nothing; only this tap does. The shopping camera (ctx 'shop') never logs a meal. */
+        const ateS = '<button type="button" class="ss-kit ss-ate" data-ss="ate">' + IC.ok + '<span>' + esc(T('ate')) + '</span></button>';
+        const acts = ctx === 'meal' ? ateB + kitB(false) : kIn ? kitB(true) + cartB(false) : cartB(true) + kitB(false) + (ctx === 'scan' ? ateS : '');
         const c = card(el);
         c.innerHTML = '<div class="ss-sheet ss-v-' + lvl + '" data-ctx="' + esc(ctx) + '">' +
             '<div class="ss-head"><span class="ss-img">' + (img ? '<img alt="" src="' + esc(img) + '">' : IC.bc) + '</span><div class="ss-name"><b>' + esc(name) + '</b>' + (q.brand ? '<small>' + esc(q.brand) + '</small>' : '') + '</div>' +

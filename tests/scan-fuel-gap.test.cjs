@@ -43,7 +43,7 @@ test('Gap view model: time since the last meal, markers lit by hours, nothing wi
 });
 
 test('Scan only identifies: Barcode + Deep analyze; "I ate this" only when the camera came from Log meal', () => {
-    assert.ok(/act\("scan", IC\.bc, true\) \+ '<\/div>'/.test(html));
+    assert.ok(/act\("scan", IC\.bc, true\) \+ act\("photo", IC\.cam, false\) \+ '<\/div>'/.test(html), 'Oct 28: Barcode | Essen-Foto on one camera');
     assert.ok(/function scanForMeal\(\)\{ return !!window\.LowiScanMeal/.test(html));
     assert.ok(/const logging = scanForMeal\(\);/.test(html));
     assert.ok(/window\.LowiScanIntent = \{ meal: true, at: Date\.now\(\) \}/.test(spirit), 'Log meal\'s own Scan button sets the intent');

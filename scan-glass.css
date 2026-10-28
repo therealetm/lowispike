@@ -162,3 +162,23 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
 .b3-cam.kb .b3-cmsg, .b3-cam.kb .b3-cacts, .b3-cam.kb .b3-deep { display: none !important; }
 .b3-cam.kb .b3-ctype input, .b3-cam.kb #b3Bc { height: 48px !important; min-height: 48px !important; font-size: 17px !important; }
 .b3-cam.kb .b3-go { width: 48px !important; height: 48px !important; min-height: 48px !important; }
+
+/* ---------- Oct 28 2026 (E-man, call): one camera, two modes: Barcode | Essen-Foto ----------
+   Both buttons sit side by side as a switch (the pressed one is the mode). Essen-Foto keeps the same live video, hides the barcode
+   frame, laser and the typing fields, and shows one round shutter. Shopping (b3-shop) stays barcode only. */
+.b3-cacts.b3-two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.b3-cacts.b3-two .b3-cact { flex-direction: row; gap: 8px; min-height: 48px; font-size: 15px; }
+.b3-cam .b3-shut { display: none; }
+.b3-cam.b3-photo .b3-shut {
+    display: block; position: relative; width: 74px; height: 74px; margin: 2px auto 4px; flex: none; padding: 0; cursor: pointer;
+    border-radius: 50%; border: 4px solid #fff; background: transparent; -webkit-tap-highlight-color: transparent; box-sizing: border-box;
+}
+.b3-cam.b3-photo .b3-shut i { position: absolute; inset: 5px; border-radius: 50%; background: #fff; transition: transform .12s ease; }
+.b3-cam.b3-photo .b3-shut:active i { transform: scale(.88); }
+.b3-cam.b3-photo .b3-shut:focus-visible { outline: 2px solid #8fd8ff; outline-offset: 3px; }
+.b3-cam.b3-photo .b3-frame, .b3-cam.b3-photo .b3-ctype, .b3-cam.b3-photo .b3-nmlive, .b3-cam.b3-photo .sg-xrow,
+#spWorld .b3-cam.b3-photo .b3-frame, #spWorld .b3-cam.b3-photo .b3-ctype, #spWorld .b3-cam.b3-photo .b3-nmlive, #spWorld .b3-cam.b3-photo .sg-xrow { display: none !important; }
+.b3-cam.b3-photo .b3-chint { text-align: center; }
+.b3-cam.b3-shop .b3-shut { display: none !important; }
+.b3-cam.b3-flash::after { content: ""; position: absolute; inset: 0; background: #fff; opacity: .55; pointer-events: none; z-index: 30; }
+@media (prefers-reduced-motion: reduce) { .b3-cam.b3-photo .b3-shut i { transition: none; } }

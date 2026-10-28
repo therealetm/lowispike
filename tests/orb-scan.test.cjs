@@ -25,7 +25,7 @@ test('no white Back bar: Deep analyze follows the actions (Barcode), closing is 
   assert.ok(/<button class="b3-cx" data-b3="camclose"/.test(openScanner), 'the round X closes the scanner');
   assert.ok(camBarSrc.includes('act("scan"'), 'missing action scan');
   assert.ok(!camBarSrc.includes('act("meal"'), 'Scan / Fuel / Gap (Oct 21): Scan identifies, meals are logged in Fuel');
-  assert.ok(!camBarSrc.includes('act("photo"'), 'one meal path (Oct 21): Snap food lives inside Log meal, not beside it');
+  assert.ok(camBarSrc.includes('act("photo", IC.cam, false)'), 'Oct 28 call: Essen-Foto is the second mode of the same Scan camera (it logs nothing by itself)');
   assert.ok(!camBarSrc.includes('act("water"'), 'water does not belong in the scanner');
   assert.ok(/deepLink\("b3-deep", 'id="b3Deep"', t\("deep"\), t\("deepS"\)\)/.test(camBarSrc), 'Deep analyze is the one-tap GPT link (Oct 21 evening)');
 });

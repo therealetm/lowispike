@@ -62,7 +62,7 @@
         photoSaved: ['Photo ready', 'Foto bereit', 'Foto lista'],
         photoHold: ['Press and hold the photo to save it to your Photos.', 'Halte das Foto gedr\u00fcckt, um es in deinen Fotos zu sichern.', 'Mant\u00e9n pulsada la foto para guardarla en tus Fotos.'],
         photoGptHint: ['Save it, then upload it in the LOWiSPIKE GPT for a deeper analysis or to create content.', 'Speichere es und lade es dann im LOWiSPIKE GPT hoch, für eine tiefere Analyse oder für Inhalte.', 'Guárdala y súbela al GPT de LOWiSPIKE para un análisis más profundo o para crear contenido.'],
-        photoLog: ['Log as meal', 'Als Mahlzeit eintragen', 'Registrar comida'],
+        photoLog: ['Log as eaten', 'Als gegessen eintragen', 'Registrar como comido'],
         photoName: ['What is it?', 'Was ist das?', '¿Qué es?'],
         funny: ['My leaves raised an eyebrow. Fancy a swap?', 'Meine Blätter ziehen eine Augenbraue hoch. Lust auf einen Tausch?', 'Mis hojas alzaron una ceja. ¿Probamos un cambio?'],
         unknown: ['Let’s take a closer look at the label.', 'Schauen wir uns das Etikett genauer an.', 'Veamos la etiqueta de cerca.'],
@@ -1521,6 +1521,22 @@
             R.toast(tr('noCamera'));
         }
     }
+    /* Oct 28 2026: the Scan camera's Essen-Foto shutter hands its frame here: the same photo result sheet, nothing logged until
+       "Als gegessen eintragen". Retake on that sheet goes back to the Scan camera in Essen-Foto, not to a second camera. */
+    async function scanPhotoFile(file) {
+        await onPhotoFile(file);
+        const sh = ownedSheet;
+        if (!sh || !sh.querySelector('#spMeal')) return;
+        sh.addEventListener('click', e => {
+            const b = e.target.closest && e.target.closest('[data-sp="photo"]');
+            if (!b || !window.LowiDex || typeof window.LowiDex.scan !== 'function') return;
+            e.stopPropagation();
+            e.preventDefault();
+            R.close(sh);
+            if (ownedSheet === sh) ownedSheet = null;
+            window.LowiDex.scan('photo');
+        }, true);
+    }
     D.addEventListener('change', e => {
         if (e.target && e.target.classList && e.target.classList.contains('sp-file-in')) {
             const f = e.target.files && e.target.files[0];
@@ -2420,7 +2436,10 @@
     D.addEventListener('submit', e => {
         if (e.target.id === 'spMeal') {
             e.preventDefault();
-            finishMeal(e.target);
+            /* Oct 28 2026: one tap logs once; a second tap while it saves does nothing (the meal id dedups as well) */
+            if (e.target.__saving) return;
+            e.target.__saving = true;
+            Promise.resolve(finishMeal(e.target)).finally(() => { e.target.__saving = false; });
         } else if (e.target.id === 'spEdit') {
             e.preventDefault();
             saveToday(e.target);
@@ -2686,6 +2705,8 @@
         /* Oct 15: the capture actions live in the Scan bottom bar now; the herb world is only the game */
         scan,
         photo,
+        /* Oct 28 2026: the Scan camera's Essen-Foto shutter hands its frame here: the same photo result sheet, nothing logged */
+        photoFile: scanPhotoFile,
         meal: () => mealForm(),
         water,
         captureProduct,

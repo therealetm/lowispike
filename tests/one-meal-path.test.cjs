@@ -146,7 +146,7 @@ test('wiring: every meal log carries its time, one listener applies the rule, th
     assert.match(html, /function bonusFor\(rec\)\{ if \(!rec \|\| !rec\.s \|\| bonusDone\(rec\.s\)\) return 0;/);
     assert.match(html, /if \(fast && !d\.spike && !d\.dup\) bonusFor\(fast\); \};/, 'the I-just-ate chain pays through the same memory');
     assert.match(html, /window\.LowiF2 = \{start, finish, bonusFor,/);
-    assert.match(html, /act\("scan", IC\.bc, true\) \+ '<\/div>'/, 'scanner (Oct 21 Scan / Fuel / Gap): Barcode only, meals are logged in Fuel');
+    assert.match(html, /act\("scan", IC\.bc, true\) \+ act\("photo", IC\.cam, false\) \+ '<\/div>'/, 'scanner (Oct 28 call): Barcode | Essen-Foto on one camera; a meal is logged only by "Als gegessen eintragen"');
     assert.ok(!/act\("meal", IC\.plate\)/.test(html), 'Log meal left the scanner');
     assert.match(html, /\(bx \? '<br>' \+ esc\(w\("brk"\)\)/, 'the reward shows the break-fast bonus when a meal ended the fast');
     for (const k of ['byMeal:"Your meal ended the fast"', 'byMeal:"Deine Mahlzeit hat das Fasten beendet"', 'byMeal:"Tu comida terminó el ayuno"']) assert.ok(html.includes(k), k);

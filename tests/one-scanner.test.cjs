@@ -58,7 +58,8 @@ test('the main page Scan shows the compact card with ONE verdict (no old long sh
     assert.match(h, /Not insulin-friendly/);
     assert.doesNotMatch(h, /sc-card|b3-card|Buy this instead|Seller Zone|Community deals|Post a deal/, 'none of the old long result');
     assert.match(h, /data-ss="add"/, 'Add to cart'); assert.match(h, /<details class="ss-more">/, 'Details folded');
-    assert.doesNotMatch(h, /data-ss="ate"/, 'the Scan tab camera never logs a meal (Oct 21 rule)');
+    /* Oct 28 2026 (owner, call): the Scan camera offers "Log as eaten" small under Add to cart; only that tap logs (was: Oct 21 never) */
+    assert.match(h, /class="ss-kit ss-ate" data-ss="ate"/, 'the scan shows it; only the tap logs');
 });
 
 test('a Higher product gets ONE better pick, not linked to Seller Zone; tapping Show opens it in the same card', () => {
@@ -84,11 +85,22 @@ test('a Lower product offers the Bubble Dex catch once; already caught says so',
 test('opened from Log meal: I ate this is the big first button; shopping keeps Add to cart first', () => {
     const W = load(dexBase());
     const m = showIn(W, skyr, { ctx: 'meal' });
-    assert.match(m, /data-ss="ate"/); assert.match(m, /I ate this/);
+    assert.match(m, /data-ss="ate"/); assert.match(m, /Log as eaten/);
     assert.ok(m.indexOf('data-ss="ate"') < m.indexOf('<details'), 'before Details');
     assert.doesNotMatch(m, /data-ss="add"/, 'logging a meal is not shopping');
     const s = showIn(W, skyr, { ctx: 'shop' }, ['b3-cam', 'b3-shop']);
     assert.match(s, /class="ss-add" data-ss="add"/); assert.doesNotMatch(s, /data-ss="ate"/);
+});
+
+test('Oct 28: the Scan camera card offers "Log as eaten" small under Add to cart; the scan itself logs nothing, shopping never logs', () => {
+    const W = load(dexBase());
+    const h = showIn(W, skyr, { ctx: 'scan' });
+    assert.match(h, /class="ss-add" data-ss="add"/);
+    assert.match(h, /class="ss-kit ss-ate" data-ss="ate"/); assert.match(h, /Log as eaten/);
+    assert.ok(h.indexOf('data-ss="add"') < h.indexOf('data-ss="ate"'), 'Add to cart stays first');
+    assert.ok(!W.events.some(e => e.type === 'lowi:meal-logged'), 'showing the card logs no meal');
+    const s = showIn(W, skyr, { ctx: 'shop' }, ['b3-cam', 'b3-shop']);
+    assert.doesNotMatch(s, /data-ss="ate"/);
 });
 
 test('the verdict is the one for your usual amount (LowiDex.view), the same the old result used', () => {
@@ -130,7 +142,7 @@ test('wiring: every camera routes to the compact card; typed names too; new word
         assert.equal(C.TX[k].length, 3, k);
         assert.ok(C.TX[k].every(s => s && !/Misty/.test(s)), k);
     }
-    assert.equal(C.tx('ate', 1), 'Hab ich gegessen'); assert.equal(C.tx('swapH', 2), 'Mejor opción');
+    assert.equal(C.tx('ate', 1), 'Als gegessen eintragen'); assert.equal(C.tx('swapH', 2), 'Mejor opción');
 });
 
 test('the Shop finds note sits under the buttons, never between the verdict and Add to cart (the card is capped by its camera)', () => {

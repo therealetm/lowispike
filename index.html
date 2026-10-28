@@ -15070,8 +15070,10 @@ Object.assign(B3_TX, {
   actsL: ["What do you want to do?", "Was möchtest du machen?", "¿Qué quieres hacer?"],
   actScan: ["Barcode", "Barcode", "Código"],
   actScanL: ["Scan a product", "Produkt scannen", "Escanear producto"],
-  actPhoto: ["Snap food", "Essen-Foto", "Foto comida"],
-  actPhotoL: ["Snap food", "Essen fotografieren", "Fotografiar comida"],
+  actPhoto: ["Food photo", "Essen-Foto", "Foto comida"],
+  actPhotoL: ["Take a photo of your food", "Essen fotografieren", "Fotografiar comida"],
+  aimPhoto: ["Hold your food in view and tap the shutter", "Halte dein Essen ins Bild und tipp auf den Auslöser", "Encuadra tu comida y toca el disparador"],
+  shoot: ["Take photo", "Foto aufnehmen", "Hacer foto"],
   actMeal: ["Log meal", "Mahlzeit eintragen", "Registrar comida"],
   actMealL: ["Log a meal: photo, words or a recent one", "Mahlzeit eintragen: Foto, Worte oder eine letzte", "Registrar comida: foto, palabras o una reciente"],
   actWater: ["Water +1", "Wasser +1", "Agua +1"],
@@ -15593,20 +15595,39 @@ const IC_SPARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
    swallows it; in the iPhone home-screen app iOS opens it outside the app (Safari / ChatGPT) and the app stays where it was. Close = the round X */
 function camBar(){
   const act = (k, ic, on) => '<button type="button" class="b3-cact" data-b3="camact" data-act="' + k + '" aria-pressed="' + (on ? "true" : "false") + '" aria-label="' + esc(t("act" + k[0].toUpperCase() + k.slice(1) + "L")) + '">' + ic + '<span>' + esc(t("act" + k[0].toUpperCase() + k.slice(1))) + '</span></button>';
-  return '<div class="b3-cacts b3-one" role="group" aria-label="' + esc(t("actsL")) + '">' + act("scan", IC.bc, true) + '</div>' +
+  /* Oct 28 2026 (E-man, call): one camera, two modes. Barcode (shopping: scan a product) and Essen-Foto (before eating: photo of the
+     plate) switch on the same live camera stream, no reload, no second camera request. Neither mode logs a meal. */
+  return '<div class="b3-cacts b3-two" role="group" aria-label="' + esc(t("actsL")) + '">' + act("scan", IC.bc, true) + act("photo", IC.cam, false) + '</div>' +
     deepLink("b3-deep", 'id="b3Deep"', t("deep"), t("deepS")); }
 /* Deep analyze = one link to the custom GPT, used by the scanner bar and the not-found card */
 function deepLink(cls, attrs, title, sub){
   return '<a class="' + cls + '" ' + attrs + ' href="' + esc(deepURL()) + '" target="_blank" rel="noopener">' + IC_SPARK + '<span><b>' + esc(title) + '</b><small>' + esc(sub) + '</small></span>' + IC.chev + '</a>'; }
 function camAct(act){
   if (!CAM) return;
-  if (act === "scan") { sfx("tap"); const el = CAM.el; if (!el.classList.contains("typing") && CAM.stream) { playVid($("#b3Vid", el)); return; }
+  if (act === "scan" || act === "photo") { sfx("tap"); camMode(act === "photo"); const el = CAM.el; if (!el.classList.contains("typing") && CAM.stream) { playVid($("#b3Vid", el)); return; }
     el.classList.remove("typing"); if (CAM.stream) return; if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msgState("nocam"); return; }
     startCam(); return; }
   const S = window.LowiSpirit, fn = S && S[act], inWorld = !!CAM.el.closest("#spWorld");
   sfx("tap"); closeScanner(true);
   if (inWorld && act !== "photo" && S && S.close) try { S.close(true); } catch(e){}
   if (typeof fn === "function") setTimeout(() => { try { fn(); } catch(e){ console.warn(e); } }, 40); }
+/* Oct 28 2026 scanner modes: CAM.photo pauses the barcode reader (loop) and shows the shutter; the stream itself stays as it is */
+function aimTxt(){ return CAM && CAM.photo ? t("aimPhoto") : t("aim"); }
+function camMode(photo){ if (!CAM) return; photo = !!photo && !CAM.shop; CAM.photo = photo; const el = CAM.el; el.classList.toggle("b3-photo", photo);
+  $$('[data-b3="camact"]', el).forEach(b => b.setAttribute("aria-pressed", String((b.dataset.act === "photo") === photo)));
+  if (photo) { try { if (document.activeElement && el.contains(document.activeElement)) document.activeElement.blur(); } catch(e){} }
+  if (!el.dataset.st || el.dataset.st === "live" || el.dataset.st === "starting") msg(aimTxt()); }
+/* Shutter: one frame of the live video becomes the photo, the scanner closes (camera off) and the existing photo result sheet opens.
+   The photo alone logs nothing; only "Als gegessen eintragen" there does. */
+function camShot(){ const c = CAM; if (!c || !c.photo || c.shooting) return; const v = $("#b3Vid", c.el);
+  if (!c.stream || !v || v.readyState < 2 || !v.videoWidth) { msg(t("starting")); return; }
+  const S = window.LowiSpirit; if (!S || typeof S.photoFile !== "function") return;
+  c.shooting = true; sfx("tap"); const k = Math.min(1, 1600 / Math.max(v.videoWidth, v.videoHeight)), cv = document.createElement("canvas");
+  cv.width = Math.round(v.videoWidth * k); cv.height = Math.round(v.videoHeight * k); try { cv.getContext("2d").drawImage(v, 0, 0, cv.width, cv.height); } catch(e){ c.shooting = false; return; }
+  try { c.el.classList.add("b3-flash"); } catch(e){}
+  cv.toBlob(b => { cv.width = cv.height = 0; if (!b) { c.shooting = false; c.el.classList.remove("b3-flash"); return; }
+    closeScanner(true); let f; try { f = new File([b], "meal.jpg", {type:"image/jpeg"}); } catch(e){ f = b; }
+    try { S.photoFile(f); } catch(e){ console.warn(e); } }, "image/jpeg", .85); }
 /* Oct 21 Scan / Fuel / Gap: Scan identifies. Only a camera opened from Log meal's own Scan button (spirit.js sets LowiScanIntent the
    moment before) may offer "Ate it, log it"; the Scan tab, the Scan bubble and shopping never log a meal or touch the Gap. */
 function openScanner(mode){
@@ -15617,7 +15638,8 @@ function openScanner(mode){
     '<div class="b3-ctop"><button class="b3-cx" data-b3="camclose" aria-label="' + esc(t("close")) + '">' + IC.x + '</button><span class="b3-ctitle">' + esc(t("scanBig")) + '</span>' + (window.LowiShopScan && mode === "shop" ? LowiShopScan.pill() : "") + '<button class="b3-torch" data-b3="torch" hidden aria-label="' + esc(t("torch")) + '">' + IC.bolt + '</button></div>' +
     '<div class="b3-frame" id="b3Frame"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><i class="b3-laser"></i></div>' +
     '<div class="b3-cmsg" id="b3CMsg"></div>' +
-    '<div class="b3-cbot"><div class="b3-chint" id="b3Hint">' + esc(t("aim")) + '</div>' +
+    '<div class="b3-cbot"><div class="b3-chint" id="b3Hint">' + esc(mode === "photo" ? t("aimPhoto") : t("aim")) + '</div>' +
+      '<button type="button" class="b3-shut" data-b3="camshot" aria-label="' + esc(t("shoot")) + '"><i></i></button>' +
       '<form class="b3-type b3-ctype" id="b3BcF" autocomplete="off"><input class="input" id="b3Bc" inputmode="numeric" pattern="[0-9]*" maxlength="14" placeholder="' + esc(t("bcPh")) + '" enterkeyhint="go"><button class="b3-go" aria-label="' + esc(t("check")) + '">' + IC.go + '</button></form>' +
       /* Oct 23 name check: the food-name field next to the barcode field. A typed food or product name gets its verdict straight away */
       '<form class="b3-type b3-ctype b3-nmtype" id="b3NmF" autocomplete="off"><input class="input" id="b3Nm" maxlength="80" autocomplete="off" aria-label="' + esc(net("typeName")) + '" placeholder="' + esc(net("typeName")) + '…" enterkeyhint="go"><button class="b3-go" aria-label="' + esc(net("analyse")) + '">' + IC.go + '</button></form><div class="b3-nmlive" id="b3NmLive" aria-live="polite"></div>' +
@@ -15628,6 +15650,7 @@ function openScanner(mode){
   /* Oct 19 food paths (E-man: "at the top there, it says shopping ... so complicated and so hidden"): the Scan camera checks a product
      and logs food; shopping (Shopping pill, Search by name, Shopping list, Finds) lives only in the camera opened from Shop. */
   if (window.LowiShopScan) shopMode(mode === "shop" ? LowiShopScan.want(mode) : false);
+  if (mode === "photo") camMode(true);
   kbWire(el);
   $("#b3BcF", el).addEventListener("submit", e => { e.preventDefault(); const v = $("#b3Bc", el).value, c = validCode(v); if (!c) { msg(t("bcBad"), "warn"); sfx("error"); return; } found(c); });
   camNameWire(el); /* Oct 23 name check */
@@ -15651,12 +15674,12 @@ function kbWire(el){ const i = $("#b3Bc", el); if (!i) return; const f = () => r
 /* Oct 16 (E-man: "I scan it and I just quickly want to see if it's estimated to spike my insulin or not. Then I put it into my cart"):
    shopping mode. The same camera and barcode reading; a hit holds the scan (the stream stays on) and shop-scan.js shows one big
    verdict and Add to cart over the camera; shopResume() scans the next product at once. */
-function shopMode(on){ if (!CAM) return false; CAM.shop = !!on; CAM.el.classList.toggle("b3-shop", CAM.shop); if (!CAM.shop) { CAM.hold = false; CAM.done = false; }
+function shopMode(on){ if (!CAM) return false; CAM.shop = !!on; CAM.el.classList.toggle("b3-shop", CAM.shop); if (CAM.shop && CAM.photo) camMode(false); if (!CAM.shop) { CAM.hold = false; CAM.done = false; }
   /* Oct 28 2026 slim structure (F-04 merged into S-01): one scanner for everything. The kitchen / shop scan is the same Scan screen
      with the same title; shopping is only the switch (pill) inside it, never a second "Einkaufs-Scan" screen. */
   const tt = $(".b3-ctitle", CAM.el); if (tt) tt.textContent = t("scanBig"); return CAM.shop; }
 function shopResume(){ if (!CAM) return; CAM.hold = false; CAM.done = false; CAM.el.classList.remove("got"); if (CAM.lastHit) CAM.lastHit.at = performance.now();
-  if (CAM.stream) { msgState("live"); msg(t("aim")); cancelAnimationFrame(CAM.raf); loop(); } }
+  if (CAM.stream) { msgState("live"); msg(aimTxt()); cancelAnimationFrame(CAM.raf); loop(); } }
 /* Oct 23 name check in the camera: type a name (grapes, Erdbeeren, a product name), see the verdict live under the field, then
    Go gives the full result like a scan: Misty's spike animation, the verdict on top, the best swap, then "no detailed data". */
 let CNT = 0;
@@ -15681,7 +15704,7 @@ function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.d
   /* no camera (blocked, none, didn't start): Misty-blue glass card, a blue Try again and typing the number as the clear way round;
      the frame corners and the light hide (scan-glass.css), the living world stays in view */
   const typeBtn = '<button class="b3-cbtn ghost" data-b3="camtype">' + esc(t("camType")) + '</button>';
-  if (s === "denied" || s === "nocam" || s === "camerr") msg(t("camTypeHint")); else if (s === "starting") msg(t("aim"));
+  if (s === "denied" || s === "nocam" || s === "camerr") msg(t("camTypeHint")); else if (s === "starting") msg(aimTxt());
   if (s === "denied") m.innerHTML = '<div class="b3-cbox b3-cglass"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camDenied")) + '</b><small>' + esc(t("camDeniedS")) + '</small><div class="b3-cbtns"><button class="b3-cbtn pri" data-b3="camallow">' + esc(t("camTry")) + '</button>' + typeBtn + '</div></div>';
   else if (s === "camerr") m.innerHTML = '<div class="b3-cbox b3-cglass"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camErr")) + '</b><small>' + esc(t("camErrS")) + '</small><div class="b3-cbtns"><button class="b3-cbtn pri" data-b3="camallow">' + esc(t("camTry")) + '</button>' + typeBtn + '</div></div>';
   else if (s === "nocam") m.innerHTML = '<div class="b3-cbox b3-cglass"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camNo")) + '</b><small>' + esc(t("camNoS")) + '</small><div class="b3-cbtns">' + typeBtn + '</div></div>';
@@ -15719,7 +15742,7 @@ async function startCam1(mine){
   if (CAM !== mine || mine.stream !== stream) return;
   if (!mine.det && !mine.reader) { try { await loadZX(); mine.reader = zxReader(); } catch(e){ if (CAM === mine) msgState("camerr"); return; } }
   if (CAM !== mine || mine.stream !== stream) return; msgState("live"); mine.el.classList.add("live"); cancelAnimationFrame(mine.raf); loop(); }
-function loop(){ if (!CAM || CAM.done) return; CAM.raf = requestAnimationFrame(loop); const now = performance.now(); if (CAM.busy || CAM.hold || now - CAM.last < 160) return; CAM.last = now;
+function loop(){ if (!CAM || CAM.done) return; CAM.raf = requestAnimationFrame(loop); const now = performance.now(); if (CAM.busy || CAM.hold || CAM.photo || now - CAM.last < 160) return; CAM.last = now;
   const v = $("#b3Vid", CAM.el); if (!v || v.readyState < 2 || !v.videoWidth) return; CAM.busy = true;
   (async () => { let code = "";
     try {
@@ -16184,6 +16207,7 @@ document.addEventListener("click", e => {
     case "mode": captureMode = b.dataset.mode === "meal" ? "meal" : "barcode"; renderTab(); break;
     case "camclose": closeScanner(); break;
     case "camact": camAct(b.dataset.act); break;
+    case "camshot": camShot(); break;
     case "torch": torch(); break;
     case "dex": sfx("open"); openDex(); break;
     case "filt": DEXF.f = b.dataset.f; if (DEXOV) { $$(".b3-filt .chip", DEXOV).forEach(c => c.classList.toggle("on", c === b)); $("#b3DexG", DEXOV).innerHTML = dexGrid(); } break;

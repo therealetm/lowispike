@@ -4,6 +4,9 @@
 // 1. No launch screen: no Misty cell, no LOWiSPIKE wordmark, nothing drawn while the app gets ready.
 // 2. Never white at launch: the first paint is the dark brand background, and iOS gets plain dark startup images
 //    (no logo) to show before the page paints, instead of its default white.
+// Oct 28 2026, Emmanuel: "Die Öffnung der App dauert zu lange, es ist so 2 Sekunden weiß ... if the app has to load, at least have an
+// impressive loading animation, but it should not make the app feel like it's taking longer." Now the startup image and the first
+// paint carry the launch glow (see tests/fast-launch.test.cjs), with no minimum time; it fades into Home the moment Home is ready.
 const test = require('node:test'), assert = require('node:assert'), fs = require('node:fs'), path = require('node:path'), zlib = require('node:zlib');
 const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
@@ -86,14 +89,21 @@ test('iOS startup images cover current iPhones and iPads, each matching its scre
     }
 });
 
-test('startup images are plain brand background, no logo (there is no splash)', () => {
+test('startup images are the brand background with the launch glow where Misty will be (Oct 28), nothing else', () => {
+    /* Oct 28 (Emmanuel: "if the app has to load, at least have an impressive loading animation"): the startup image is the first
+       frame of the launch glow (scripts/make-launch-images.cjs renders it from #lwBootCss), so splash -> page -> Home never jumps.
+       The edges stay the plain brand colour; the glow sits centred at 46 % of the height. */
     const want = [3, 5, 10];
     const files = [...new Set(links.map(l => l.href))];
     assert.deepStrictEqual(fs.readdirSync(path.join(root, 'startup')).sort(), files.map(f => path.basename(f)).sort(), 'every file in startup/ is linked, nothing extra');
     for (const f of files) {
-        const { px, bpp } = readPng(path.join(root, f));
-        for (let i = 0; i < px.length; i += bpp) {
-            if (px[i] !== want[0] || px[i + 1] !== want[1] || px[i + 2] !== want[2]) assert.fail(f + ': pixel ' + (i / bpp) + ' is not ' + BRAND + ' (a logo or a stray mark)');
-        }
+        const { px, bpp, w, h } = readPng(path.join(root, f));
+        const at = (x, y) => { const i = (y * w + x) * bpp; return [px[i], px[i + 1], px[i + 2]]; };
+        for (const [x, y] of [[0, 0], [w - 1, 0], [0, h - 1], [w - 1, h - 1], [Math.round(w / 2), 2], [Math.round(w / 2), h - 3]])
+            assert.deepStrictEqual(at(x, y), want, f + ': edge pixel ' + x + ',' + y + ' is not ' + BRAND);
+        const side = at(2, Math.round(h * 0.46)); /* the outer glow may just reach the sides of a narrow phone, faintly */
+        assert.ok(side.every((v, i) => Math.abs(v - want[i]) <= 6), f + ': side of the screen is not near ' + BRAND + ' (' + side + ')');
+        const c = at(Math.round(w / 2), Math.round(h * 0.46));
+        assert.ok(c[2] > 150 && c[2] > c[0] + 60, f + ': no blue/cyan launch glow in the centre (' + c + ')');
     }
 });

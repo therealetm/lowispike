@@ -44,6 +44,34 @@ self.addEventListener("activate", e => {
 });
 const scopePath = new URL(self.registration.scope).pathname;
 const PAGE_WAIT = 1500; /* ms a launch waits for the network before it opens the saved page */
+const LIVE_WAIT = 700; /* Oct 28: ms a launch waits to hear which build is live before it opens the saved page */
+/* Oct 28 fast launch: the live build id is version.json's first key, so 64 bytes are enough (GitHub Pages answers 206). */
+function liveBuild(){
+  return fetch("version.json?t=" + Date.now(), {cache:"no-store", headers:{Range:"bytes=0-63"}}).then(r => {
+    if (!r || !(r.ok || r.status === 206) || !r.body) return null;
+    const rd = r.body.getReader(), dec = new TextDecoder(); let txt = "";
+    const step = () => rd.read().then(({done, value}) => {
+      if (value) txt += dec.decode(value, {stream:true});
+      const m = /"build"\s*:\s*"(\d{8}-\d{6})"/.exec(txt);
+      if (m || done || txt.length > 4096) { try { rd.cancel(); } catch (x) {} return m ? m[1] : null; }
+      return step();
+    });
+    return step();
+  }).catch(() => null);
+}
+/* the build the saved page belongs to: <meta name="lowi-build"> sits in its first kilobyte */
+function pageBuild(res){
+  try {
+    const rd = res.clone().body.getReader(), dec = new TextDecoder(); let txt = "";
+    const step = () => rd.read().then(({done, value}) => {
+      if (value) txt += dec.decode(value, {stream:true});
+      const m = /name="lowi-build"\s+content="(\d{8}-\d{6})"/.exec(txt);
+      if (m || done || txt.length > 16384) { try { rd.cancel(); } catch (x) {} return m ? m[1] : null; }
+      return step();
+    });
+    return step().catch(() => null);
+  } catch (x) { return Promise.resolve(null); }
+}
 /* Oct 21 (affiliate blueprint): only the app shell address is "the page". Before, every navigation counted, so opening another
    page of the site (blueprint.html, 404.html) saved THAT page as the app shell, and the next slow or offline launch opened it
    instead of the app. Other pages now go straight to the network, untouched by this worker. */
@@ -76,26 +104,39 @@ self.addEventListener("fetch", e => {
   }
   if (req.mode === "navigate" && !isShell(url)) return;
   if (isPage(req, url)) {
-    /* Oct 21 (open instantly): still network first, but a launch no longer waits on a slow or half-dead connection. If the network
+    /* Oct 21 (open instantly; Oct 28 below goes further): still network first, but a launch no longer waits on a slow or half-dead connection. If the network
        has not answered within PAGE_WAIT, the copy of the page saved on the phone opens, and the network answer still refreshes that
        copy in the background. The opened page names its own build, so the usual "New version" check takes it from there. A tapped
        update (?v=<build>) and a first launch with nothing saved still wait for the network. */
-    const net = fetch(url.pathname + url.search, {cache:"no-cache", credentials:"same-origin"}).then(stampPage).then(res => {
+    /* Oct 28 (Emmanuel: "Die Öffnung der App dauert zu lange, es ist so 2 Sekunden weiß"): the page is about 1.7 MB on the wire, and
+       every launch downloaded all of it before the app could start. Now the worker only asks the server which build is live (the first
+       64 bytes of version.json, one tiny request). Same build as the page saved on the phone: that saved page opens straight away,
+       nothing is downloaded. A newer build (a release since the last launch): the new page comes from the network as before, so
+       "close and reopen" still brings every update. No answer within LIVE_WAIT (offline, bad signal): the saved page opens and the
+       network refreshes it in the background for next time. A tapped update (?v=<build>) and a first launch still use the network. */
+    const netGo = () => fetch(url.pathname + url.search, {cache:"no-cache", credentials:"same-origin"}).then(stampPage).then(res => {
       if (res && res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(scopePath, cp)); }
       return res;
     });
     const saved = () => caches.match(scopePath).then(r => r || Response.error());
-    if (url.searchParams.has("v")) { e.respondWith(net.catch(saved)); return; }
+    if (url.searchParams.has("v")) { e.respondWith(netGo().catch(saved)); return; }
     e.respondWith(caches.match(scopePath).then(hit => {
-      if (!hit) return net.catch(saved);
-      let t = 0; const slow = new Promise(r => { t = setTimeout(() => r(null), PAGE_WAIT); });
-      return Promise.race([net.catch(() => null), slow]).then(res => {
+      if (!hit) return netGo().catch(saved);
+      let t = 0; const slow = new Promise(r => { t = setTimeout(() => r(null), LIVE_WAIT); });
+      return Promise.all([Promise.race([liveBuild(), slow]), pageBuild(hit)]).then(([live, have]) => {
         clearTimeout(t);
-        if (res && res.ok) return res;
-        try { e.waitUntil(net.catch(() => {})); } catch (x) {}
-        return hit;
+        if (live && have && live <= have) return hit;
+        if (!live) { try { e.waitUntil(netGo().catch(() => {})); } catch (x) {} return hit; }
+        /* a newer build is live: network first, but never wait longer than PAGE_WAIT on a half-dead connection */
+        const net = netGo(); let t2 = 0; const slow2 = new Promise(r => { t2 = setTimeout(() => r(null), PAGE_WAIT); });
+        return Promise.race([net.catch(() => null), slow2]).then(res => {
+          clearTimeout(t2);
+          if (res && res.ok) return res;
+          try { e.waitUntil(net.catch(() => {})); } catch (x) {}
+          return hit;
+        });
       });
-    }).catch(() => net.catch(saved)));
+    }).catch(() => netGo().catch(saved)));
     return;
   }
   e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {

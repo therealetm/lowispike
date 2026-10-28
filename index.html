@@ -1649,6 +1649,33 @@ html[data-lay=desktop] .fyv-bar{bottom:16px}
      Safety: it always opens by itself (window load, or 8 s at the latest) and ?noboot=1 skips the wait. -->
 <style id="lwBootCss">
 html.lw-boot body,html.lw-boot>:not(head):not(body){opacity:0!important;pointer-events:none!important}
+html.lw-boot body *,html.lw-boot body *::before,html.lw-boot body *::after{animation-play-state:paused!important}
+/* Oct 28 (Emmanuel: "if the app has to load, at least have an impressive loading animation, but it should not make the app feel like it's
+   taking longer"): while the app gets ready, your companion's glow sits where Misty will be (the same picture as the iOS startup image,
+   so splash, first paint and this are one still picture), a thin cyan ring circles it, and the moment Home is ready the glow opens up and
+   fades into the real Home in 0.26 s. No minimum time, no delay: a fast open is just that short fade. It lives on the html element (not in the body),
+   so it shows from the first frame, never moves the layout and never catches a tap. */
+html.lw-boot::before,html.lw-launch-out::before,html.lw-boot::after,html.lw-launch-out::after{content:"";position:fixed;left:50%;top:46%;
+  pointer-events:none!important;z-index:2147483647;border-radius:50%;box-sizing:border-box;--lwo:min(38.5vw,27.8vh)}
+html.lw-boot::after,html.lw-launch-out::after{width:var(--lwo);height:var(--lwo);margin:calc(var(--lwo) / -2) 0 0 calc(var(--lwo) / -2);
+  background:radial-gradient(circle at 38% 32%,rgba(230,251,255,.95) 0,rgba(143,231,255,.85) 14%,rgba(63,183,255,.62) 40%,rgba(10,132,255,.38) 62%,rgba(10,132,255,0) 71%);
+  box-shadow:0 0 calc(var(--lwo) * .3) calc(var(--lwo) * .02) rgba(10,132,255,.28),0 0 calc(var(--lwo) * .9) calc(var(--lwo) * .25) rgba(90,200,250,.10);
+  animation:lwOrb 2.4s ease-in-out infinite}
+html.lw-boot::before,html.lw-launch-out::before{width:calc(var(--lwo) * .86);height:calc(var(--lwo) * .86);margin:calc(var(--lwo) * -.43) 0 0 calc(var(--lwo) * -.43);
+  background:conic-gradient(from 0deg,rgba(143,231,255,0) 0 45%,rgba(90,200,250,.55) 80%,rgba(220,250,255,.95) 99%,rgba(143,231,255,0) 100%);
+  -webkit-mask:radial-gradient(closest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px),#000 calc(100% - .5px),transparent 100%);mask:radial-gradient(closest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px),#000 calc(100% - .5px),transparent 100%);
+  animation:lwRing 1.1s linear infinite,lwRingIn .45s ease-out both}
+@keyframes lwOrb{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes lwRing{to{transform:rotate(1turn)}}
+@keyframes lwRingIn{from{opacity:0}to{opacity:1}}
+html.lw-launch-out::after{animation:lwOrbOut .26s cubic-bezier(.2,.7,.3,1) forwards}
+html.lw-launch-out::before{animation:lwRingOut .26s ease-out forwards}
+html.lw-launch-out body{animation:lwHomeIn .26s ease-out both}
+@keyframes lwOrbOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.35)}}
+@keyframes lwRingOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.6)}}
+@keyframes lwHomeIn{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){html.lw-boot::before,html.lw-boot::after{animation:none}
+  html.lw-launch-out::before,html.lw-launch-out::after{animation:lwRingIn .2s ease-out reverse forwards}}
 </style>
 <script id="lwBootJs">
 (function(){
@@ -1661,7 +1688,9 @@ html.lw-boot body,html.lw-boot>:not(head):not(body){opacity:0!important;pointer-
   function reveal(why){
     if (done) return; done = true;
     window.__LOWI_BOOT_DONE = why || "ready"; window.__LOWI_BOOT_T = now();
-    H.classList.remove("lw-boot");
+    /* Oct 28: the launch glow fades into Home (0.26 s, taps already go through); then the class goes, nothing else changes */
+    H.classList.add("lw-launch-out"); H.classList.remove("lw-boot");
+    setTimeout(function(){ H.classList.remove("lw-launch-out"); }, 320);
     try { window.dispatchEvent(new CustomEvent("lowi:boot-ready", {detail:{why:window.__LOWI_BOOT_DONE, t:window.__LOWI_BOOT_T}})); } catch(e){}
   }
   /* Stylesheets still on their way get a short moment, so the first frame is already styled. */
@@ -1696,27 +1725,35 @@ html.lw-boot body,html.lw-boot>:not(head):not(body){opacity:0!important;pointer-
         var a = window.LowiWorld3D, coming = !!(a && a.state !== "fallback" && H.classList.contains("wh-home") && !H.classList.contains("bw3-off"));
         if (coming && !H.classList.contains("wh-world-live") && Date.now() - t0 < 1500) { setTimeout(w, 50); return; }
         if (coming && H.classList.contains("wh-world-live")) { try { if (window.LowiHomeOrbitV2) window.LowiHomeOrbitV2.layout(); } catch(e){} }
+        window.__LOWI_BOOT_W = (Date.now() - t0) + (coming ? (H.classList.contains("wh-world-live") ? " live" : " late") : " none");
         cb();
       })();
     }
+    /* Oct 28 (fast launch): the layout watch now runs while the 3D world comes in, not after it. Home still shows only once the world is
+       in (or late) and nothing has moved for 3 polls after that (or 0.7 s of watching and at least 0.3 s after the world), so nothing
+       jumps; it just stops adding the two waits up. */
     function go(){
       if (done || go.on) return; go.on = 1;
-      worldIn(goNow);
+      var w = { on: false, at: 0 };
+      worldIn(function(){ w.on = true; w.at = Date.now(); });
+      goNow(w);
     }
-    function goNow(){
-      var q = Date.now(), last = null, same = 0;
+    function goNow(w){
+      var q = Date.now(), last = null, same = 0, seen = false;
       function fin(why){ if (fin.d) return; fin.d = 1; window.__LOWI_BOOT_Q = (Date.now() - q) + (why ? " " + why : "");
         requestAnimationFrame(function(){ requestAnimationFrame(function(){ reveal("ready"); }); }); }
       function poll(){
         if (done) return;
         var sig; try { sig = layoutSig(); } catch(e){ fin("err"); return; }
-        if (sig === last) same++; else { same = 0; last = sig; }
-        if (same >= 3) { fin("still"); return; }
-        if (Date.now() - q >= 700) { fin("max"); return; }
+        if (w.on && !seen) { seen = true; same = 0; last = sig; }
+        else if (sig === last) same++; else { same = 0; last = sig; }
+        if (seen && same >= 3) { fin("still"); return; }
+        if (seen && Date.now() - q >= 700 && Date.now() - w.at >= 300) { fin("max"); return; }
         setTimeout(poll, 60);
       }
       poll();
     }
+    window.__LOWI_BOOT_S = now();
     if (!left) { go(); return; }
     var fin = function(){ if (--left <= 0) go(); };
     for (var i = 0; i < wait.length; i++) { wait[i].addEventListener("load", fin, {once:true}); wait[i].addEventListener("error", fin, {once:true}); }
@@ -1724,7 +1761,7 @@ html.lw-boot body,html.lw-boot>:not(head):not(body){opacity:0!important;pointer-
   }
   window.LowiBoot = {
     /* apple-ui.js calls this once every companion file has run (or failed) */
-    loaded: function(){ files = true; settle(); },
+    loaded: function(){ files = true; window.__LOWI_BOOT_FILES = now(); settle(); },
     reveal: reveal,
     done: function(){ return done; },
     state: function(){ return {done:done, dom:dom, files:files, why:window.__LOWI_BOOT_DONE || ""}; }

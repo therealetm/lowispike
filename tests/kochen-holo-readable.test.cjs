@@ -23,7 +23,7 @@ test('Kochen panel paints a solid backdrop that beats the body-world tab reset',
 });
 
 test('Home behind Kochen is dimmed and blurred', () => {
-  const m = css.slice(css.lastIndexOf('owner request 14')).match(/html\.cook-holo #cookHoloScrim\{([^}]+)\}/);
+  const m = css.slice(css.lastIndexOf('owner request 15')).match(/html\.cook-holo #cookHoloScrim\{([^}]+)\}/);
   assert.ok(m);
   assert.ok(alphaOf(m[1]) >= 0.6, 'scrim at least 60% dark');
   assert.match(m[1], /backdrop-filter:blur\((1[2-9]|[2-9]\d)px/);

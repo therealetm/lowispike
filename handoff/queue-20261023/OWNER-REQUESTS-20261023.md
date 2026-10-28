@@ -47,4 +47,3 @@ To do (queue step kochen-holo-fix, branch kochen-holo-20261028):
    button, for one-handed use. Safe area and home indicator respected; never covers inputs, the chat composer or the bin.
    Top-left back arrows and top-corner X buttons go where they are replaced. Written into MAYA-HANDOFF section 5 design rules.
 Release quietly, in small batches (readability first, then the buttons), no banner, no What's New.
-

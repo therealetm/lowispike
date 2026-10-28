@@ -3,14 +3,18 @@
 .lw-bx{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom, 0px) + 14px + var(--bx-lift, 0px));z-index:2147483646;
   width:56px;height:56px;margin:0;padding:0;border-radius:50%;display:none;align-items:center;justify-content:center;
   transform:translateX(-50%);color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
-  background:radial-gradient(120% 120% at 50% 0%,rgba(120,180,255,.28),transparent 60%),rgba(10,22,58,.82);
-  border:1px solid rgba(143,216,255,.55);
-  -webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);
-  box-shadow:0 10px 26px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.18),0 0 18px rgba(80,170,255,.28);
-  transition:transform .12s ease,opacity .18s ease}
+  background:transparent;
+  border:1.5px solid rgba(255,255,255,.42);
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:none;
+  transition:transform .12s ease,opacity .18s ease,background-color .12s ease}
 .lw-bx.on{display:flex;animation:lwBxIn .22s ease both}
-.lw-bx svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-.lw-bx:active{transform:translateX(-50%) scale(.9)}
+.lw-bx svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 0 1.5px rgba(0,0,0,.6)) drop-shadow(0 1px 3px rgba(0,0,0,.45))}
+.lw-bx:active{transform:translateX(-50%) scale(.9);background:rgba(255,255,255,.14)}
+/* Oct 29 2026 (Emmanuel): "alle Backbuttons ... die sind so blau ... durchsichtig, transparent", "the X buttons genauso":
+   back and X have no blue fill, no blue glow, no frosted plate; only a thin rim and the arrow / X. White ink in both themes
+   (Day mode keeps the dark world behind it), a soft dark halo keeps it readable over a bright photo. */
 .lw-bx::after{content:"";position:absolute;inset:-6px;border-radius:50%}
 .lw-bx:focus-visible{outline:2px solid #7fd4ff;outline-offset:3px}
 @keyframes lwBxIn{from{opacity:0;transform:translateX(-50%) translateY(10px) scale(.9)}to{opacity:1;transform:translateX(-50%)}}
@@ -19,6 +23,15 @@
 .lw-bx-src{opacity:0!important;pointer-events:none!important}
 /* Oct 28: steps aside while a card it cannot clear is open (see clearance in bottom-close.js) */
 .lw-bx.on.bx-aside{opacity:0;visibility:hidden;pointer-events:none}
+/* Oct 29: the screens' own X buttons that stay in place (a photo viewer, the ranking duel, and any back / X shown while the
+   bottom button steps aside) lose their blue fill the same way */
+.cg-photo-x,.rk-lad-x,.cf-misty .cf-x,html body .r2-gate .hs-back,html body .r2-ov.hs-ivov .hs-back,.b3-ov .r2-sh:has(.sc-card) .r2-x,.sc-ov .r2-sh .r2-x,.apple-ui #r3Back,.cr-head .cr-back,#cmPaneChat[data-spirit-chat] .rm-back,.rm-x,.nm-layer-fy .nm-back{background:transparent!important;box-shadow:none!important}
+/* the top-left back to Home (section-nav.css #secX, when the bottom button has not taken it over) and the bottom-centre X of
+   Home's sheets (world-home.css / today-sheet.css #whX, white or blue glass before): the same see-through look */
+#secX,#whX{background:transparent!important;border:1.5px solid rgba(255,255,255,.42)!important;box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;color:#fff!important}
+#secX svg,#whX svg{filter:drop-shadow(0 0 1.5px rgba(0,0,0,.6)) drop-shadow(0 1px 3px rgba(0,0,0,.45))}
+#secX:active,#whX:active{background:rgba(255,255,255,.14)!important}
 /* Oct 28: out of sight at once while a card / pane / field near it is still moving in, then it appears where it belongs (no slide) */
 .lw-bx.on.bx-settle{opacity:0;visibility:hidden;pointer-events:none;transition:none;animation:none}
 /* scrolling panels end above the button, so their last row is never under it */

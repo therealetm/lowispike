@@ -2064,7 +2064,7 @@ scripts/release.sh "what users get, in one line" --news news.json
   every screen, sheet, panel and overlay (Kochen, Profile, Einkaufen, Essenspause, Scanner, Community sheets, and anything new).
   It sits above the home indicator (`env(safe-area-inset-bottom)`), and it never covers a text field, the chat composer or the
   kitchen bin: when a screen has a bottom input, the button sits just above it. No top-left back arrows and no top-corner X
-  buttons. The shared control is `bottom-close.js` / `bottom-close.css` (one round glass button, 56 px): use it, don't draw your own.
+  buttons. The shared control is `bottom-close.js` / `bottom-close.css` (one round button, 56 px): use it, don't draw your own. Since 29 Oct 2026 it is see-through (Emmanuel: "alle Backbuttons durchsichtig ... die sind so blau", "the X buttons genauso"): no fill, no blue glow, no blur, thin white rim, white icon with a dark halo in both themes; #secX, #whX and the screens' own X buttons follow. Don't give back/X a coloured plate again.
 - **Panels that rise over Home must be readable (28 Oct 2026, owner request 15):** a hologram panel (Kochen, Essenspause,
   Profile, Einkaufen) keeps the feeling of rising over Home, but its own backdrop is solid frosted glass (at least 95% opaque)
   and Home behind it is dimmed and blurred, so no Home text or bubble ever shows through. Note body-world-3d.css clears every
@@ -2796,3 +2796,6 @@ obLater snooze, sign-out KEEP). Tests 2765/2765, CI green, live check de iPhone 
 - Tests: tests/scan-live-exit.test.cjs (+ one regex each in scan-pick / shop-scan). Browser: tools/check-scan-exit.cjs <root|url>
   <chromium|webkit> (GRANT=1 fakes a granted camera). Not tried on a real iPhone; iOS may still show its own camera prompt once when
   live is tapped in a fresh app session (that prompt is iOS's, the app no longer repeats it).
+
+### 29 Oct 2026 ~01:00 CET: see-through back and X buttons (task "Alle Zurück-Buttons transparent machen", branch back-clear-20261029)
+Emmanuel: "Kannst du bitte alle Backbuttons durchsichtig machen? ... die sind so blau ... transparent", then "The X buttons genauso". CSS only, in bottom-close.css: .lw-bx (every back and X since the bottom-center takeover) has no navy fill, blue gradient, glow or backdrop blur; thin rgba(255,255,255,.42) rim, white icon with drop-shadow halo, pressed = faint white fill, focus ring kept, 56 px target kept. White ink in Day mode too (the world behind stays dark, measured). Also transparent: #secX (top-left back), #whX (Home sheets' X, was white / blue glass), .cg-photo-x, .rk-lad-x, .cf-misty .cf-x, .r2-gate .hs-back, spike-catch .r2-x, #r3Back, .cr-back, .rm-back (spirit chat), .rm-x, .nm-layer-fy .nm-back. tests/back-clear.test.cjs. No JS change. Quiet release.

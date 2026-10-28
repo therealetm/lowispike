@@ -14865,6 +14865,8 @@ html.b3-camon,html.b3-camon body{overflow:hidden}
 .b3-focusb{left:calc(var(--sb-x,50%) + 28px + 18px)}
 .b3-cam.live:not(.typing):not(.held):not(.snapped) .b3-snapb,.b3-cam.live:not(.typing):not(.held):not(.snapped) .b3-focusb:not([hidden]){display:flex}
 .b3-focusb[aria-pressed=true]{background:#e9cb88;color:#14100a;border-color:#e9cb88}
+/* Oct 28 2026: Essen-Foto has its own shutter (scan-glass.css); Snap and Focus belong to Barcode and stay out of the photo mode */
+.b3-cam.b3-photo .b3-snapb,.b3-cam.b3-photo .b3-focusb{display:none!important}
 .b3-cam.focusing .b3-frame i[class^=c]{border-color:#fff;transition:border-color .15s}
 @media (prefers-reduced-motion:reduce){.b3-sbtn:active{transform:none}}
 @keyframes b3laser{0%{top:12%}100%{top:88%}}

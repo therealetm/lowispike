@@ -32,3 +32,11 @@ test('batch 2a: the hidden Home screens X-13, X-23, X-24, X-28, X-34, X-36 are g
     assert.match(w3, /function open\(\) \{\s*\/\*[^*]*X-36 deleted[^*]*\*\/\s*if \(!api\.allowFull\) return false;/, 'X-36: no separate 3D window');
     assert.match(w3, /if \(api\.allowFull && els\.top && !els\.top\.querySelector\('\.bw3-open'\)\)/, 'X-36: no button that opens it');
 });
+
+test('batch 4: meal analysis + logging is one flow (X-12 into the one logger, no empty details panel X-22)', () => {
+    const idx = read('index.html');
+    const s = idx.slice(idx.indexOf('function start(o){ o = o || {};'));
+    assert.match(s.slice(0, 600), /if \(startShared\(o\)\) return;/, 'every start, also {own:true}, opens the one meal logger');
+    assert.doesNotMatch(s.slice(0, 600), /if \(!o\.own && startShared\(o\)\) return;/);
+    assert.match(read('meal-detail.js'), /if \(!C\.hasDetail\(C\.clean\(detail\)\) && !ctx\.name && !ctx\.photo\) return null;/, 'X-22: no empty details panel');
+});

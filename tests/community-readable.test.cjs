@@ -81,10 +81,10 @@ test('channels: real newest message, unread count and replies are shown as they 
   assert.equal(r[1].p, 'Ben: @you nice'); assert.equal(r[1].n, 1); assert.ok(!r[1].dis);
 });
 
-test('welcome sheet: 5 steps, rules agree, affiliate yes leads to Affiliates, every line in EN/DE/ES, shown once', () => {
+test('welcome sheet: 4 steps (welcome + rules one card, slim batch 7), rules agree, affiliate yes leads to Affiliates, every line in EN/DE/ES, shown once', () => {
   const js = read('community-rooms-ui.js');
-  assert.match(js, /obStep:\['\{i\} of 5','\{i\} von 5','\{i\} de 5'\]/);
-  assert.match(js, /if\(obI===1\)return/); assert.match(js, /obI===1\?tr\('obAgree'\)/);
+  assert.match(js, /obStep:\['\{i\} of 4','\{i\} von 4','\{i\} de 4'\]/);
+  assert.match(js, /if\(obI===0\)return[^\n]*\n[^\n]*rm-ob-rules/, 'rules sit on the welcome card'); assert.match(js, /obI===0\?tr\('obAgree'\)/);
   assert.match(js, /if\(aff\)cards\.unshift\(\['aff'/); assert.match(js, /const aff=obA\.aff==='yes';obClose\(true\);if\(aff\)showView\('aff'\)/);
   assert.match(js, /function maybeWelcome\(\)\{if\(ob\|\|lsGet\(OBK\)/);
   const block = js.slice(js.indexOf('const OT={'), js.indexOf('Object.assign(T,OT);'));

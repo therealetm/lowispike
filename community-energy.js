@@ -168,6 +168,8 @@ const map=()=>W.LowiCgMap;
 function geom(){const m=map();return m&&m.geom?m.geom():null;}
 function scr(g,p){return {x:g.cx+(p.x-g.cam.x)*g.cam.z,y:g.cy+(p.y-g.cam.y)*g.cam.z};}
 function meSpot(g){return g&&g.spots.find(s=>s.me);}
+/* where your companion is on the table right now (seat plus any roll from a hit); your seat when the table has no body yet */
+function aimAt(g,me){if(!me)return me;try{const t=ensureTable();if(!t.has(me.uid))syncT(t,g);const q=t.pos(me.uid);if(q&&isFinite(q.x)&&isFinite(q.y))return {x:q.x,y:q.y,r:me.r,uid:me.uid,me:true};}catch(e){}return me;}
 /* Oct 19: where knocked companions came to rest survives leaving Community and a reload (per account on this phone) */
 const LAND_KEY='lowi.energy.land.v3'; /* Oct 24: v2 = room coordinates (v1 was each device's own frame). Oct 25: v3 = the join-ordered rows (community-galaxy.js mapLayout); spots saved in the old scattered layout would land people in random places */
 /* Oct 25: shared rest spots written before the rows layout went live belong to the old layout; they are skipped (people sit in their row seat) */
@@ -290,8 +292,11 @@ try{D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='visible')
  D.addEventListener('lowi:chat',e=>{const d=e&&e.detail;if(d&&(d.type==='ready'||d.type==='reconnect'))restLoad(d.type==='reconnect');});}catch(e){}
 function draw(g,now,fdt){if(!ctx||!g)return;const {w,h}=size();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);const z=g.cam.z,red=reduced();
  /* aiming: your companion becomes a pointed energy form facing the aim, with a faint aim line as long as the throw */
- const me=meSpot(g);
- if(aimNow&&aimNow.ok&&me){const p=scr(g,me),r=me.r*z+6,a=aimNow.ang,pw=aimNow.power,tip=r*(1.55+pw*.9),th=1.05;
+ /* Oct 28 (Emmanuel's Room screenshot: the energy form drew on his old seat while his companion sat far below, where a hit had
+    rolled it): the form starts where your companion is now (the table position, the same one fireAt() shoots from and place()
+    draws), not on your seat. */
+ const me=meSpot(g),meAt=aimAt(g,me);
+ if(aimNow&&aimNow.ok&&me){const p=scr(g,meAt),r=me.r*z+6,a=aimNow.ang,pw=aimNow.power,tip=r*(1.55+pw*.9),th=1.05;
   ctx.save();ctx.translate(p.x,p.y);ctx.rotate(a);
   const len=(150+520*pw)*(red?.5:1)*z;ctx.setLineDash([3,9]);ctx.lineCap='round';ctx.lineWidth=2.4;const lg=ctx.createLinearGradient(tip,0,tip+len,0);lg.addColorStop(0,'rgba(170,230,255,.55)');lg.addColorStop(1,'rgba(170,230,255,0)');ctx.strokeStyle=lg;ctx.beginPath();ctx.moveTo(tip+4,0);ctx.lineTo(tip+len,0);ctx.stroke();ctx.setLineDash([]);
   ctx.beginPath();ctx.arc(0,0,r,th,6.283-th);ctx.lineTo(tip,0);ctx.closePath();
@@ -317,5 +322,8 @@ function keepOut(g){if(!joy||!joy.isConnected||!g||joy.offsetParent===null)retur
 /* place() asks this for every companion it draws. After a reload (or someone coming back on the map) the table catches up once with
    the map, so a companion that was knocked earlier is drawn where it came to rest, not on its old spot. */
 function offset(uid){if(!tb||(!tb.has(uid)&&tb.landed(uid))){const g=geom();if(!g)return null;syncT(ensureTable(),g);}return tb.offset(uid);}
-W.LowiEnergy={mount,offset,keepOut,fire:fireAt,remote,stats:()=>({...stats,lat:stats.lat.slice()}),balls:()=>tb?tb.shots().map(x=>({id:x.id,by:x.by,to:x.to,x:Math.round(x.x),y:Math.round(x.y),remote:x.remote})):[],busy:()=>!!(tb&&tb.busy()),state:()=>tb?{mode:tb.mode(),shot:!!tb.shot(),balls:tb.shots().length,bodies:tb.bodies().filter(b=>b.ox||b.oy||b.vx||b.vy).map(b=>({uid:b.uid,ox:Math.round(b.ox),oy:Math.round(b.oy),vx:Math.round(b.vx),vy:Math.round(b.vy)}))}:null,core:api};
+/* Oct 28: the roll offset the table already has, without building or syncing the table (the Room's fit reads it inside geom());
+   undefined when this person has a saved landing spot the table has not placed yet (the Room fits again on the next frame) */
+function peek(uid){if(tb&&tb.has(uid))return tb.offset(uid);const L=tb?tb.landed(uid):!!loadLand()[uid];return L?undefined:null;}/* undefined = it has a landing spot the table has not placed yet */
+W.LowiEnergy={mount,offset,peek,keepOut,fire:fireAt,remote,stats:()=>({...stats,lat:stats.lat.slice()}),balls:()=>tb?tb.shots().map(x=>({id:x.id,by:x.by,to:x.to,x:Math.round(x.x),y:Math.round(x.y),remote:x.remote})):[],busy:()=>!!(tb&&tb.busy()),state:()=>tb?{mode:tb.mode(),shot:!!tb.shot(),balls:tb.shots().length,bodies:tb.bodies().filter(b=>b.ox||b.oy||b.vx||b.vy).map(b=>({uid:b.uid,ox:Math.round(b.ox),oy:Math.round(b.oy),vx:Math.round(b.vx),vy:Math.round(b.vy)}))}:null,core:api};
 })(typeof window==='object'?window:globalThis);

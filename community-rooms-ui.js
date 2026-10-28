@@ -39,7 +39,9 @@ let from='',wasOpen=false,roomTapAt=0;
 function cur(){return open()?'chat':view==='chans'?'chat':view||'room';}
 function setTab(chat,entry){const c=W.LowiCommunity;
  if(chat){const was=cur();from=entry?'':(was!=='chat'?was:from);view='';if(c&&c.thread&&!open())c.thread(true);wasOpen=open();paint();return;}
- from='';view='';if(c&&c.thread&&open())c.thread(false);wasOpen=open();paint();}
+ const wasRoom=cur()==='room';from='';view='';if(c&&c.thread&&open())c.thread(false);wasOpen=open();paint();
+ /* Oct 28 (Emmanuel: the Room should open zoomed out on everyone): coming to the Room from another tab starts fitted to everyone */
+ if(!wasRoom){try{if(W.LowiCgMap&&W.LowiCgMap.reset)W.LowiCgMap.reset();}catch(e){}}}
 /* back from the chat: true when it went to the tab you came from; false = nothing to go back to (the caller leaves Community) */
 function back(){if(!open())return false;const f=from;from='';if(f==='create'||f==='aff'||f==='rank'||f==='fy'){showView(f);return true;}if(f==='room'){setTab(false);return true;}return false;}
 function goBack(){const S=W.LowiSections;if(S&&typeof S.back==='function'&&D.documentElement.classList.contains('rm-room-open')){S.back();return;}if(!back())setTab(false);}

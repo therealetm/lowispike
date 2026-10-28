@@ -38,6 +38,9 @@ const COPY={
  hiText:['Hi everyone! Happy to be here.','Hallo zusammen! Schön, hier zu sein.','¡Hola a todos! Me alegra estar aquí.'],
  message:['Write to the galaxy','Schreib in die Galaxie','Escribe a la galaxia'],
  send:['Send message','Nachricht senden','Enviar mensaje'],
+ /* Oct 28 (Emmanuel, Room screenshot: "I don't know why the text is even there ... it's cropped"): no longer shown under the
+    composer; the line under it only appears when it says something (draft kept, who you write to, storage warning, a count while
+    typing). Kept for older callers. */
  hint:['Everyone in the galaxy can read what you send.','Alle in der Galaxie können lesen, was du sendest.','Todos en la galaxia pueden leer lo que envías.'],
  draft:['Draft kept on this device','Entwurf auf diesem Gerät gespeichert','Borrador guardado en este dispositivo'],
  volatile:['Device storage is unavailable. Keep this page open to retain your draft.','Gerätespeicher nicht verfügbar. Lass diese Seite offen, um deinen Entwurf zu behalten.','Almacenamiento no disponible. Mantén esta página abierta para conservar el borrador.'],
@@ -345,8 +348,9 @@ function galaxy(ms,w,h,quiet){
 }
 /* ---- the map camera: pins stay put, the camera moves ---- */
 /* Oct 25 (Emmanuel: "when I open the circle it's zoomed in to me ... I don't want to have to zoom out all the time"): the Room opens
-   fitted to everyone drawn (G.mapFit). Once you pinch, pan, scroll or double-tap yourself (camUser), your view is kept for the rest
-   of the session, also when you leave Community and come back; double-tap at the closest zoom goes back to everyone. */
+   fitted to everyone drawn (G.mapFit). Once you pinch, pan, scroll or double-tap yourself (camUser), your view is kept while you
+   stay in the Room; double-tap at the closest zoom goes back to everyone. Oct 28 (Emmanuel): opening Community or the Room tab
+   again starts fitted to everyone again (onShow, LowiRoomsUI.setTab -> LowiCgMap.reset). */
 let cam=null,camFrozen=null,placeRaf=0,camAnim=0,camUser=false,fitMemo=null,camAnimOn=false;
 function mapView(gal){const typing=D.documentElement.classList.contains('cs-chat-map-typing');const w=gal.clientWidth||360,h=gal.clientHeight||480;
   /* the centre of the map is fixed: the composer growing a chip row, or the keyboard coming up, never slides the pins.
@@ -357,7 +361,14 @@ function mapView(gal){const typing=D.documentElement.classList.contains('cs-chat
   return camFrozen;}
 /* Oct 25 (Emmy shrank to "E" next to You): the energy pad's corner is kept free too (mapFit avoid), so no name lands on it */
 let koRetry=0;
-function fitCam(gx,v){const spots=(gx.map.spots||[]).filter(s=>gx.spot.has(s.uid)),gal=D.getElementById('cgGalaxy');
+/* Oct 28 (Emmanuel: "when you open it, it's supposed to be so much zoomed out that we already see everyone"): the fit uses where
+   everyone is now, so a companion a hit rolled far off its seat (his own, in his screenshot) is in view too. While a ball or a
+   roll is still moving, the last fit stays, so the camera does not chase the roll. */
+let fitLate=false,fitLateN=0;
+function fitSpots(gx){const E=W.LowiEnergy,pk=E&&typeof E.peek==='function'?E.peek:null;
+  return (gx.map.spots||[]).filter(s=>gx.spot.has(s.uid)).map(s=>{let o=null;try{o=pk?pk(s.uid):null;}catch(e){o=null;}if(o===undefined)fitLate=true;return o&&isFinite(o.x)&&isFinite(o.y)?{uid:s.uid,me:s.me,x:s.x+o.x,y:s.y+o.y}:s;});}
+function fitCam(gx,v){let busy=false;try{busy=!!(W.LowiEnergy&&W.LowiEnergy.busy&&W.LowiEnergy.busy());}catch(e){}if(busy&&fitMemo&&fitMemo.key.indexOf(v.w+'x'+v.h+':')===0)return {...fitMemo.cam};
+  const spots=fitSpots(gx),gal=D.getElementById('cgGalaxy');
   let ko=null;try{ko=gal&&W.LowiEnergy&&W.LowiEnergy.keepOut?W.LowiEnergy.keepOut(gal):null;}catch(e){ko=null;}
   const avoid=ko&&ko.s>0?{x:Math.round(ko.x-ko.s/2),y:Math.round(ko.y-ko.s/2),w:Math.round(ko.s),h:Math.round(ko.s)}:null;
   if(avoid)koRetry=0;else if(gal&&W.LowiEnergy&&koRetry<10){koRetry++;setTimeout(schedulePlace,400);}/* pad hidden or not laid out yet (zoom-out from Home): look again shortly */
@@ -368,7 +379,7 @@ function fitCam(gx,v){const spots=(gx.map.spots||[]).filter(s=>gx.spot.has(s.uid
   /* each name's real width (the same number place() keeps in el.__nw), so a short name is not fitted as if it were the longest */
   const nw={};try{const fld=D.getElementById('cgField');if(fld)for(const L of gx.labels||[]){const el=fld.querySelector('.cg-body[data-uid="'+String(L.id).replace(/["\\]/g,'')+'"]');if(!el)continue;
     if(el.__nw==null){const n=el.querySelector('.cg-name');el.__nw=n?Math.min(L.size+30,n.offsetWidth||60):60;}nw[L.id]=Math.round(el.__nw);}}catch(e){}
-  const key=v.w+'x'+v.h+':'+av.map(a=>a.x+','+a.y+','+a.w+','+a.h).join(';')+':'+spots.map(s=>s.uid+'@'+s.x+','+s.y+'~'+(nw[s.uid]||'')).join('|');
+  const key=v.w+'x'+v.h+':'+av.map(a=>a.x+','+a.y+','+a.w+','+a.h).join(';')+':'+spots.map(s=>s.uid+'@'+Math.round(s.x)+','+Math.round(s.y)+'~'+(nw[s.uid]||'')).join('|');
   if(!fitMemo||fitMemo.key!==key)fitMemo={key,cam:G.mapFit(spots,v.w,v.h,{side:v.w>=640?54:46,top:v.w>=640?44:36,bot:v.w>=640?64:56,big:v.w>=640,avoid:av,nw})};
   fitMemo.keep=av.slice(avoid?1:0);return {...fitMemo.cam};}
 function mapZ(gx,v){return G.mapZooms(gx.map.radius,v.w,v.h,fitCam(gx,v).z);}
@@ -378,7 +389,7 @@ function epos(s,id){const e=W.LowiEnergy,o=s&&e&&e.offset?e.offset(id):null;retu
 function place(){
   const gx=W.__lgGx,field=D.getElementById('cgField'),gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!field||!gal)return;
   mapGestures(gal);if(W.LowiEnergy&&W.LowiEnergy.mount)W.LowiEnergy.mount(gal);
-  const v=mapView(gal),Z=mapZ(gx,v),fz=fitCam(gx,v);if(!cam||(!camUser&&!camAnimOn))cam=fz;/* until you zoom yourself, the view follows everyone (people still loading in, someone joining) */cam=camFree?cam:G.mapClamp(cam,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy},fz.z);/* Oct 25: camFree = a finger or the camera spring owns it (rubber band past the edge) */
+  fitLate=false;const v=mapView(gal),Z=mapZ(gx,v),fz=fitCam(gx,v);if(!cam||(!camUser&&!camAnimOn))cam=fz;/* until you zoom yourself, the view follows everyone (people still loading in, someone joining) */cam=camFree?cam:G.mapClamp(cam,gx.map.radius,v.w,v.h,{x:gx.map.cx,y:gx.map.cy},fz.z);/* Oct 25: camFree = a finger or the camera spring owns it (rubber band past the edge) */
   const f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),fn=Math.max(.8,f),cx=v.w/2,cy=v.h*.5,scr=s=>({x:cx+(s.x-cam.x)*cam.z,y:cy+(s.y-cam.y)*cam.z});
   const bodies=new Map(),bubs=new Map();
   for(const el of field.querySelectorAll('.cg-body'))bodies.set(el.getAttribute('data-uid'),el);
@@ -403,6 +414,8 @@ function place(){
   /* Oct 16: the picked person's thread is drawn as the connection stream (SVG), so the sky leaves that one out. */
   const streamed=streamDraw(gx.lines,v)&&!!sel;if(sk){if(streamed)sk.set(gx.lines.filter(l=>!l.sel),false,gx.orbits);else sk.set(gx.lines,false,gx.orbits);}
   gal.setAttribute('data-zoom',cam.z>=Z.zmax*.995?'max':cam.z<=Z.zmin*1.005?'min':'mid');
+  /* Oct 28: someone's landing spot was not on the table yet when this frame fitted (drawing it just placed it): fit again */
+  if(fitLate&&fitLateN<3){fitLateN++;schedulePlace();}else if(!fitLate)fitLateN=0;
 }
 /* Oct 25 2026 (Emmanuel's TikTok "Why does iOS feel so nice to use"; spring.js + rubberband.js): the Room camera moves like
    an iOS scroll view. Dragging or pinching past the edge (or past the zoom limits) stretches on Apple's rubber band
@@ -510,7 +523,7 @@ function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)r
    snapshot of Home any more). From anywhere else the galaxy just settles in from a little closer. */
 function intro(){const g=D.getElementById('cgGalaxy');if(!g||!g.removeAttribute)return;g.__intro=1;if(D.documentElement.classList.contains('gx-out'))return;if(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches)return;g.removeAttribute('data-intro');void g.offsetWidth;g.setAttribute('data-intro','1');clearTimeout(introT);introT=setTimeout(()=>{g.removeAttribute('data-intro');},1100);}
 let enterAt=0,ro=null;
-function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();koRetry=0;if(!camUser)cam=null;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();if(rec)recStop(false);voiceStop();}}
+function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();koRetry=0;/* Oct 28 (Emmanuel: "when you open it ... we already see everyone. Not that I have to zoom out"): every opening starts fitted to everyone; your own zoom lasts until you leave */camUser=false;camFree=false;cam=null;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();if(rec)recStop(false);voiceStop();}}
 function watch(){if(watching||!W.MutationObserver)return;const t=D.getElementById('tab-foryou');if(!t)return;watching=true;new W.MutationObserver(onShow).observe(t,{attributes:true,attributeFilter:['class']});}
 function roomFlag(){const p=D.getElementById('cmPaneChat'),on=threadOpen&&!!(p&&p.hasAttribute&&p.hasAttribute('data-spirit-chat'));if(p&&p.dataset){if(on)p.dataset.room='1';else delete p.dataset.room;}try{D.documentElement.classList.toggle('cr-room',on);}catch(e){}roomDress(p,on);}
 /* Oct 22 (item 37): the room's composer floats over the messages (community-tg.css). The list keeps its last message clear of it, and of a reply bar or photo
@@ -702,7 +715,7 @@ function paint(el){
  const parent=ms.find(x=>x.id===ds.draft.reply);q('#csReply').innerHTML=ds.draft.reply?'<div class="cm-replybar"><span>'+tr('replying')+' <b>'+esc(parent?parent.by:tr('gone'))+'</b></span>'+button('noreply','×','aria-label="'+tr('cancel')+'"','')+'</div>':'';
  const inp=q('#cmInput');if(inp.value!==ds.draft.text)inp.value=ds.draft.text;const selN=sel&&(roster().get(sel)||{}).n;inp.placeholder=selN?fill('writeTo',selN):threadOpen?tr('roomMsg'):tr('message');{const ph=q('#cmPhoto');if(ph&&inp.parentNode&&inp.parentNode===ph.parentNode){/* room: photo button left of the field, Telegram-style; galaxy: right of it. DOM order moves too, so focus follows what you see */const left=!!threadOpen&&!selN;if(left&&ph.nextElementSibling!==inp)inp.parentNode.insertBefore(ph,inp);else if(!left&&inp.nextElementSibling!==ph)inp.parentNode.insertBefore(ph,inp.nextSibling);}}inp.setAttribute('aria-label',inp.placeholder);inp.setAttribute('aria-describedby','csDraft csNotice');
  q('#cmSend').setAttribute('aria-label',tr('send'));const toBot=!!(sel&&botOf(sel));q('#cmSend').disabled=(!scope&&!toBot)||(!inp.value.trim()&&!pendingPhoto)||photoBusy||voiceBusy||(!toBot&&(ds.busy||navigator.onLine===false));photoBar(toBot);
- q('#csDraft').textContent=ds.storageOK?(ds.draft.text?tr('draft'):selN?fill('hintTo',selN):tr('hint')):tr('volatile');q('#csCount').textContent=inp.value.length+'/600';q('#csNotice').textContent=notice;
+ q('#csDraft').textContent=ds.storageOK?(ds.draft.text?tr('draft'):''):tr('volatile');q('#csCount').textContent=inp.value.length?inp.value.length+'/600':'';q('#csNotice').textContent=notice;
  q('#cmList').setAttribute('aria-label',tr('square'));q('#csAnnounce').setAttribute('aria-live',isQuiet()?'off':'polite');mentions();fit();
 }
 function refresh(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;ensureScope();if(store){store.confirm(H.messages());if(transport.state().phase==='ready'){cache=H.messages().map(({id,uid,by,t,ts,re})=>({id,uid,by,t,ts,re,rx:{}}));const json=JSON.stringify(cache);if(json!==cacheJSON){cacheJSON=json;K.write(deviceStorage,cacheKey(),{messages:cache});}}}const el=D.getElementById('cmPaneChat');if(el)mount(el);loadExtras();});}
@@ -714,7 +727,7 @@ let typingNow=false;
 function typeDraft(text){if(!store)return;typingNow=true;try{store.setDraft(text,draftState().draft.reply);}finally{typingNow=false;}}
 function typed(){const inp=D.getElementById('cmInput'),sb=D.getElementById('cmSend');if(!inp||!sb)return;const ds=draftState(),toBot=!!(sel&&botOf(sel)),selN=sel&&(roster().get(sel)||{}).n;
  sb.disabled=(!scope&&!toBot)||(!inp.value.trim()&&!pendingPhoto)||photoBusy||voiceBusy||(!toBot&&(ds.busy||navigator.onLine===false));
- const d=D.getElementById('csDraft');if(d)d.textContent=ds.storageOK?(ds.draft.text?tr('draft'):selN?fill('hintTo',selN):tr('hint')):tr('volatile');const c=D.getElementById('csCount');if(c)c.textContent=inp.value.length+'/600';}
+ const d=D.getElementById('csDraft');if(d)d.textContent=ds.storageOK?(ds.draft.text?tr('draft'):''):tr('volatile');const c=D.getElementById('csCount');if(c)c.textContent=inp.value.length?inp.value.length+'/600':'';}
 function comment(who){draft(who?'@'+who+' ':'',null);refresh();focusInput();}
 function focusInput(){const i=D.getElementById('cmInput');if(i)i.focus({preventScroll:true});}
 function botSend(b){const ds=draftState(),inp=D.getElementById('cmInput'),t=String(ds.draft.text||(inp&&inp.value)||'').trim();if(!t)return;botSay(b.uid,'me',t);draft('',null);if(inp)inp.value='';notice='';

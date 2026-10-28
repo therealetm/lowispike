@@ -57,3 +57,11 @@
 .drc-meals .drc-tag.warn { color: #ffb48c; }
 .drc-meals .drc-tag.mid { color: #ffd479; }
 .drc-note { font-size: 12px; line-height: 1.4; }
+/* 320 px phones: "Tagesrückblick" broke inside the word next to the art; smaller art and title there, never mid-word */
+.drc h2 { overflow-wrap: normal; word-break: normal; hyphens: manual; }
+@media (max-width: 360px) {
+    .drc-art { width: 48px; height: 48px; }
+    .drc-art svg { width: 44px; height: 44px; }
+    .drc h2 { font-size: 19px; }
+    .drc-head { gap: 10px; }
+}

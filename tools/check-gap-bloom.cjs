@@ -2,7 +2,7 @@
 /* Gap bubbles check (28 Oct 2026, 22:54). Emmanuel on the call: "They're supposed to be bubbles ... just like when you click on
    sleep or water ... or move", "nuke that window"; the long press (Nach dem Essen) stays. This opens the app and walks it with a
    finger: tap Gap -> two orbs (Letzte Mahlzeit / Erste Mahlzeit), no Essenspause window; Erste Mahlzeit -> its times as orbs;
-   Jetzt -> the timer stops; Letzte Mahlzeit -> vor 30 min -> the timer runs from 30 minutes ago; Letzte Mahlzeit -> Andere Zeit
+   Jetzt -> the timer stops; Letzte Mahlzeit -> Jetzt -> the timer runs from now (only Jetzt + Andere Zeit since Oct 28 23:43); Letzte Mahlzeit -> Andere Zeit
    (the time input) -> the start moves; hold Gap -> Nach dem Essen (phases), no orbs; every orb on screen and off Misty; page errors.
    Screenshots in --out.
    node tools/check-gap-bloom.cjs [--engine chromium|webkit] [--lang de|en|es] [--w 390 --h 844] [--url <live index.html>]
@@ -61,10 +61,10 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
     await tapOrb('g-first');
     s = await state();
     await shot('2-erste-times');
-    ok('Erste Mahlzeit: its times as orbs', s.kind === 'gap' && s.orbs.length === 5 && s.orbs[4].id === 'g-other', s.orbs.map(o => o.label + (o.sub ? ' ' + o.sub : '')));
+    ok('Erste Mahlzeit: its times as orbs', s.kind === 'gap' && s.orbs.length === 2 && s.orbs[0].id === 'g-t0' && s.orbs[1].id === 'g-other', s.orbs.map(o => o.label + (o.sub ? ' ' + o.sub : '')));
     ok('Erste Mahlzeit: still running (opening the times changes nothing)', s.start === start0);
     ok('Erste Mahlzeit: times on screen', s.orbs.every(o => o.inside));
-    ok('Andere Zeit is a label with a time input', s.orbs[4] && s.orbs[4].tag === 'LABEL' && await P.evaluate(() => !!document.querySelector('#hb2Bloom .hb2-orb[data-id="g-other"] input[type="time"]')));
+    ok('Andere Zeit is a label with a time input', s.orbs[1] && s.orbs[1].tag === 'LABEL' && await P.evaluate(() => !!document.querySelector('#hb2Bloom .hb2-orb[data-id="g-other"] input[type="time"]')));
     console.log('  note:', s.note);
 
     /* 3. Jetzt -> stopped */
@@ -77,7 +77,7 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
     await P.evaluate(() => { try { document.querySelectorAll('.lc-ov, .r2-ov.on').forEach(() => { }); LowiR2 && LowiR2.closeAll && LowiR2.closeAll(); } catch (e) { } });
     await H.sleep(1500);
 
-    /* 4. stopped: tap Gap, Erste Mahlzeit marked; Letzte Mahlzeit -> vor 30 min */
+    /* 4. stopped: tap Gap, Erste Mahlzeit marked; Letzte Mahlzeit -> Jetzt */
     await close();
     await R.tap('[data-orbit="gap"]');
     await H.sleep(1300);
@@ -87,14 +87,14 @@ const res = []; const ok = (name, pass, info) => { res.push({ name, pass: !!pass
     console.log('  note:', s.note);
     await tapOrb('g-last');
     s = await state();
-    ok('Letzte Mahlzeit: its times', s.orbs.length === 5, s.orbs.map(o => o.label));
-    const t30 = Date.now() - 30 * 60000;
-    await tapOrb('g-t30');
+    ok('Letzte Mahlzeit: only Jetzt + Andere Zeit', s.orbs.length === 2 && s.orbs[0].label === 'Jetzt' && s.orbs[1].label === 'Andere Zeit', s.orbs.map(o => o.label));
+    const t30 = Date.now();
+    await tapOrb('g-t0');
     await H.sleep(800);
     s = await state();
     await shot('5-started-30');
-    ok('vor 30 min: timer runs from 30 minutes ago', s.start > 0 && Math.abs(s.start - t30) < 120000, new Date(s.start).toTimeString().slice(0, 5));
-    ok('vor 30 min: folded', !s.kind && !s.gapView);
+    ok('Jetzt: timer runs from now', s.start > 0 && Math.abs(s.start - t30) < 120000, new Date(s.start).toTimeString().slice(0, 5));
+    ok('Jetzt: folded', !s.kind && !s.gapView);
 
     /* 5. running: Letzte Mahlzeit -> Andere Zeit (the input) -> start moves */
     await close();

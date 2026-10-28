@@ -101,8 +101,8 @@ test('running timer: Erste Mahlzeit > Jetzt stops it at now (points as before), 
     p.tap('gap');
     p.orb('g-first');
     assert.strictEqual(p.B.isOpen(), 'gap', 'still open: the times');
-    assert.deepStrictEqual(p.labels(), ['Jetzt', 'vor 15 min', 'vor 30 min', 'vor 1 h', 'Andere Zeit']);
-    assert.ok(p.B.actions('gap')[1].sub === hm(Date.now() - 15 * M), 'each time shows its clock time');
+    assert.deepStrictEqual(p.labels(), ['Jetzt', 'Andere Zeit'], 'only Jetzt and Andere Zeit (Oct 28 23:43, Antje: too many options)');
+    assert.ok(p.B.actions('gap')[0].sub === hm(Date.now()), 'Jetzt shows its clock time');
     assert.ok(!p.calls.some(c => /^(end|firstMeal|save):/.test(c)), 'opening the times changes nothing');
     const t0 = Date.now();
     p.orb('g-t0');
@@ -119,13 +119,20 @@ test('Erste Mahlzeit never offers a time before the timer started', () => {
     const p = page({ start: Date.now() - 20 * M });
     p.tap('gap');
     p.orb('g-first');
-    assert.deepStrictEqual(p.ids(), ['g-t0', 'g-t15', 'g-other'], 'vor 30 min and vor 1 h would be before the last meal');
+    assert.deepStrictEqual(p.ids(), ['g-t0', 'g-other'], 'Jetzt and Andere Zeit only');
     assert.strictEqual(p.B.gap.commit('first', p.s.last - M), false, 'a typed time before the start is refused');
     assert.ok(p.toasts.includes('before'));
     assert.ok(!p.s.off);
 });
 
-test('stopped timer: Letzte Mahlzeit > vor 30 min starts it 30 minutes ago; Erste Mahlzeit only says what to do', () => {
+test('Erste Mahlzeit right after the start: Jetzt would be before it, only Andere Zeit', () => {
+    const p = page({ start: Date.now() - 20 * 1000 });
+    p.tap('gap');
+    p.orb('g-first');
+    assert.deepStrictEqual(p.ids(), ['g-other']);
+});
+
+test('stopped timer: Letzte Mahlzeit > Jetzt starts it now; Erste Mahlzeit only says what to do', () => {
     const first = Date.now() - 5 * H;
     const p = page({ off: first });
     p.tap('gap');
@@ -139,23 +146,25 @@ test('stopped timer: Letzte Mahlzeit > vor 30 min starts it 30 minutes ago; Erst
     p.orb('g-last');
     assert.strictEqual(p.B.gap.pick(), 'last');
     const t0 = Date.now();
-    p.orb('g-t30');
+    assert.deepStrictEqual(p.labels(), ['Jetzt', 'Andere Zeit']);
+    p.orb('g-t0');
     const fm = p.calls.find(c => c.startsWith('firstMeal:'));
-    assert.ok(fm && Math.abs(+fm.split(':')[1] - (t0 - 30 * M)) < 2000, 'started 30 minutes ago');
+    assert.ok(fm && Math.abs(+fm.split(':')[1] - t0) < 2000, 'started now');
     assert.ok(!p.s.off, 'running');
     assert.ok(p.toasts.some(m => m.startsWith('started')));
     assert.strictEqual(p.B.isOpen(), null);
 });
 
-test('running timer: Letzte Mahlzeit > vor 15 min moves the start (like Zeit ändern did), no stop, no points', () => {
+test('running timer: Letzte Mahlzeit > Jetzt moves the start (like Zeit ändern did), no stop, no points', () => {
     const p = page({ start: Date.now() - 3 * H });
     p.tap('gap');
     p.orb('g-last');
-    assert.deepStrictEqual(p.labels(), ['Jetzt', 'vor 15 min', 'vor 30 min', 'vor 1 h', 'Andere Zeit']);
+    assert.deepStrictEqual(p.labels(), ['Jetzt', 'Andere Zeit']);
+    assert.ok(!p.ids().some(id => /^g-t(15|30|60)$/.test(id)), 'no vor 15 min / vor 30 min / vor 1 h');
     const t0 = Date.now();
-    p.orb('g-t15');
+    p.orb('g-t0');
     const sv = p.calls.find(c => c.startsWith('save:'));
-    assert.ok(sv && Math.abs(+sv.split(':')[1] - (t0 - 15 * M)) < 2000);
+    assert.ok(sv && Math.abs(+sv.split(':')[1] - t0) < 2000);
     assert.ok(!p.calls.some(c => c.startsWith('end:')), 'not stopped');
     assert.ok(p.toasts.some(m => m.startsWith('restart')));
 });

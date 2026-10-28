@@ -19,8 +19,9 @@
             Hold Move    -> LowiMoveBubble.page(): the full Move page (Oct 21, Eman). Today's moves are a row on that page.
    - Gap:   (Oct 28 2026, 22:54, Emmanuel on the call: "They're supposed to be bubbles ... just like when you click on sleep or
             water ... or move", "nuke that window") blooms like Water / Move / Sleep: Letzte Mahlzeit / Erste Mahlzeit. A tap on
-            one of them opens its times as bubbles in the same place (Jetzt, vor 15 min, vor 30 min, vor 1 h, Andere Zeit) and a
-            tap on a time saves it: Letzte Mahlzeit starts the timer (or moves the start of a running one, LowiFastEdit.save),
+            one of them opens its times as bubbles in the same place and a tap on a time saves it. Only two times (23:43, Emmanuel:
+            Antje finds the many options confusing, "Now or another time"): Jetzt and Andere Zeit (the phone's time wheel); the
+            vor 15 min / vor 30 min / vor 1 h presets are gone. Letzte Mahlzeit starts the timer (or moves the start of a running one, LowiFastEdit.save),
             Erste Mahlzeit stops it (LowiFastStop.end). Only these two move the timer. The old Essenspause window (gap-view.js
             hub) is no longer what a tap opens. Hold Gap -> unchanged: Nach dem Essen, phases only (gap-view.js, phases).
    An action whose module is missing is left out of the bloom (never a dead button).
@@ -262,7 +263,7 @@
        Nothing else (a scan, a photo, a meal log, a post) changes the timer; that stays in index.html (DECOUPLED). */
     const p2 = n => (n < 10 ? '0' : '') + n;
     const hhmm = t => { const d = new Date(t); return p2(d.getHours()) + ':' + p2(d.getMinutes()); };
-    const GAP_AGO = [0, 15, 30, 60];
+    const GAP_AGO = [0]; /* Oct 28 23:43, Emmanuel: only Jetzt + Andere Zeit (no vor 15/30 min, vor 1 h) */
     function gapState() {
         const F = W.LowiFastStop;
         if (!F || !fn(F, 'startOf')) return null;

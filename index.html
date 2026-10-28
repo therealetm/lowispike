@@ -84,13 +84,6 @@
 P.add=function(){for(let i=0;i<arguments.length;i++)if(!this.contains(arguments[i]))return A.apply(this,arguments);};
 P.remove=function(){for(let i=0;i<arguments.length;i++)if(this.contains(arguments[i]))return R.apply(this,arguments);};}catch(e){}})();</script>
 <!-- Oct 25 heat pass: one calm/rest ladder + battery saver for every heavy loop (power-saver.js) -->
-<script src="power-saver.js?v=20261028-200855"></script>
-<script id="igFresh">/* install-guide.js: was storage empty before anything ran? (a first start from the iPhone Home Screen = just added) */try{window.__lowiFresh=localStorage.length===0}catch(e){}</script>
-<!-- Oct 28 2026 item 29: light crash log (JS errors + a page that died in front), shown in Profil > Über & Hinweise -->
-<script src="crash-log.js?v=20261028-200855"></script>
-<!-- Oct 25 iOS feel (Emmanuel's TikTok "Why does iOS feel so nice to use"): interruptible springs + Apple's rubber band, shared by every grabbable motion -->
-<script src="rubberband.js?v=20261028-200855"></script>
-<script src="spring.js?v=20261028-200855"></script>
 <script src="fresh-scrim.js?v=20261028-200855"></script>
 <style id="spdCss">
 /* Oct 16 speed pass. (1) The old sky layers (weather rain, falling leaves, the star mist) sit under the 3D world, which covers them
@@ -102,6 +95,216 @@ html:not(.bw3-off) :is(#atmSky,#wxSky,#ssnSky){display:none!important}
 /* chat-crash: an inactive tab is opacity 0, so its glass blurs only cost memory (each backdrop-filter is its own GPU layer on iOS, 20 of them sat under Community and the chat room) */
 #main>.tab:not(.active),#main>.tab:not(.active) *{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 </style>
+<style id="lwBootCss">
+/* Launch (28 Oct 2026, owner on his iPhone: "black first, then it blinks white, then the loading thing for like a second ... when
+   you open the app, only the animation, a bit more impressive, more fitting to our whole app design"). Replaces the fast-launch
+   glow on html::before/::after (b32e51d6 / af6a799b).
+   WHY IT BLINKED WHITE: the boot gate hid the body with opacity:0. WebKit does not show a new page at all until it is "visually
+   non-empty", and a page whose the body has opacity 0 never is (LocalFrameView::qualifiesAsVisuallyNonEmpty checks the body's
+   opacity first). Until then WebKit keeps the page's layers frozen (WebPage::didStartPageTransition), so the iPhone showed its
+   empty, white web view from the moment the startup picture went away until the whole page had loaded. Only then the glow came.
+   NOW: the body opens right after the head's few small scripts and its first element is #lwLaunch, an opaque launch scene with a
+   fixed-size inline SVG in it (the glint on Misty's glass, 48 x 48 px: WebKit counts an SVG of fixed size as content the moment it
+   is built, with nothing to load). the body stays visible; the app under the scene
+   is hidden child by child. So the first frame WebKit shows is the scene's first frame, and the iOS startup pictures are
+   rendered from exactly that frame (scripts/make-launch-images.cjs). The scene plays while the app loads and never waits: when
+   Home is ready it dissolves in 0.34 s, and its bubbles sit where Home's real bubbles are (Home's --o8-* ring geometry).
+   The scene: deep-blue space, sparks gathering into Misty's glow, her glass bubble forming with a shock ring and a rim shine,
+   and Home's eight glass bubbles (six with the planet colours' liquid) spiralling into their ring. No logo, no text. */
+@property --lwl-x{syntax:'<length>';inherits:true;initial-value:0px}
+@property --lwl-y{syntax:'<length>';inherits:true;initial-value:0px}
+@property --lwl-r{syntax:'<length>';inherits:true;initial-value:0px}
+@property --lwl-d{syntax:'<length>';inherits:true;initial-value:0px}
+html.lw-boot,html.lw-launch-out{background:#03050a!important;color-scheme:dark}
+html.lw-boot body>:not(#lwLaunch),html.lw-boot>:not(head):not(body){opacity:0!important;pointer-events:none!important;transition:none!important}
+html.lw-boot body *{animation-play-state:paused!important}
+html.lw-boot #lwLaunch,html.lw-boot #lwLaunch *,html.lw-launch-out #lwLaunch *{animation-play-state:running!important}
+html:not(.lw-boot):not(.lw-launch-out) #lwLaunch{display:none!important}
+#lwLaunch{position:fixed;top:0;right:0;bottom:0;left:0;z-index:2147483647;overflow:hidden;pointer-events:auto;contain:paint;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+  --lwl-x:var(--o8-cx,50vw);--lwl-y:var(--o8-cy,46vh);--lwl-r:var(--o8-r,min(33.5vw,22vh,300px));--lwl-d:var(--o8-d,clamp(76px,22.6vw,88px));
+  --lwl-m:calc((var(--lwl-r) - var(--lwl-d) / 2 - 10px) * 2);
+  background:radial-gradient(120% 78% at var(--lwl-x) var(--lwl-y),#0d1d42 0,#071029 40%,#03050a 82%) #03050a;
+  transition:--lwl-x .5s cubic-bezier(.2,.8,.2,1),--lwl-y .5s cubic-bezier(.2,.8,.2,1),--lwl-r .5s cubic-bezier(.2,.8,.2,1),--lwl-d .5s cubic-bezier(.2,.8,.2,1)}
+@media (min-aspect-ratio:1/2){#lwLaunch{--lwl-y:var(--o8-cy,42vh)}}
+#lwLaunch i,#lwLaunch b,#lwLaunch span,#lwLaunch svg{position:absolute;display:block;box-sizing:border-box;margin:0;padding:0;border:0}
+/* space brightening towards Home's navy, so the hand-over is a small step */
+#lwLaunch .lwl-neb{top:0;right:0;bottom:0;left:0;opacity:0;
+  background:radial-gradient(150% 100% at var(--lwl-x) calc(var(--lwl-y) - 14vh),#2b3e68 0,#1c2846 36%,#0f172d 68%,#080c18 100%);
+  animation:lwlNeb 1.5s cubic-bezier(.3,.6,.3,1) .1s both}
+/* sparks: gather into Misty's glow and go out */
+#lwLaunch .lwl-k{left:var(--x);top:var(--y);width:var(--s);height:var(--s);margin:calc(var(--s) / -2) 0 0 calc(var(--s) / -2);border-radius:50%;
+  background:#e6f7ff;box-shadow:0 0 6px 1px rgba(120,205,255,.85);opacity:.85;
+  animation:lwlGather .95s cubic-bezier(.55,0,.75,.4) var(--dl) both}
+/* stars: stay and twinkle, drifting up like Home's particles */
+#lwLaunch .lwl-s{left:var(--x);top:var(--y);width:var(--s);height:var(--s);border-radius:50%;background:#cfe9ff;
+  box-shadow:0 0 5px rgba(140,200,255,.6);opacity:.4;animation:lwlTw var(--t) ease-in-out var(--dl) infinite alternate both}
+/* Misty: glow, glass, shock ring, rim shine */
+#lwLaunch .lwl-wave,#lwLaunch .lwl-m{left:var(--lwl-x);top:var(--lwl-y);width:var(--lwl-m);height:var(--lwl-m);
+  margin:calc(var(--lwl-m) / -2) 0 0 calc(var(--lwl-m) / -2);border-radius:50%}
+#lwLaunch .lwl-wave{border:2px solid rgba(143,231,255,.7);box-shadow:0 0 24px rgba(90,169,255,.5),inset 0 0 18px rgba(90,169,255,.35);
+  opacity:0;animation:lwlWave 1.05s cubic-bezier(.12,.6,.3,1) .26s both}
+#lwLaunch .lwl-cw{top:-38%;left:-38%;width:176%;height:176%;animation:lwlBreath 2.6s ease-in-out 1s infinite alternate both}
+#lwLaunch .lwl-core{top:0;left:0;width:100%;height:100%;border-radius:50%;opacity:.6;transform:scale(.42);
+  background:radial-gradient(closest-side,#f2fbff 0,#c9f1ff 12%,#7fd4ff 28%,rgba(52,150,255,.55) 50%,rgba(10,132,255,.18) 74%,rgba(10,132,255,0) 100%);
+  animation:lwlCore .95s cubic-bezier(.2,.9,.25,1) .04s both}
+#lwLaunch .lwl-gl{width:48px;height:48px;left:27%;top:19%;margin:-24px 0 0 -24px;opacity:0;transform:scale(.2) rotate(-40deg);
+  animation:lwlGlint .7s cubic-bezier(.2,1.4,.4,1) .7s both,lwlGlintTw 2.4s ease-in-out 1.4s infinite alternate}
+#lwLaunch .lwl-glass{top:0;left:0;width:100%;height:100%;border-radius:50%;opacity:0;transform:scale(.55);
+  background:radial-gradient(circle at 32% 25%,rgba(255,255,255,.55) 0,rgba(255,255,255,.16) 13%,rgba(255,255,255,0) 30%),
+    radial-gradient(circle at 50% 54%,rgba(90,169,255,0) 50%,rgba(90,169,255,.16) 76%,rgba(143,231,255,.38) 100%);
+  box-shadow:inset 0 0 0 1.5px rgba(170,225,255,.45),inset 0 -12px 26px rgba(10,132,255,.28),0 0 44px rgba(10,132,255,.38),0 18px 40px rgba(0,0,0,.35);
+  animation:lwlForm .8s cubic-bezier(.2,1.35,.4,1) .14s both}
+#lwLaunch .lwl-shine{top:-2px;left:-2px;right:-2px;bottom:-2px;border-radius:50%;opacity:0;
+  background:conic-gradient(from 0deg,rgba(143,231,255,0) 0,rgba(143,231,255,0) 58%,rgba(143,231,255,.8) 70%,rgba(255,255,255,.95) 73%,rgba(143,231,255,0) 82%);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));
+  animation:lwlShineIn .5s ease .55s both,lwlSpin 2.2s linear .55s infinite}
+/* Home's eight bubbles: spiral in to their ring, then bob */
+#lwLaunch .lwl-b{left:var(--lwl-x);top:var(--lwl-y);width:var(--lwl-d);height:var(--lwl-d);margin:calc(var(--lwl-d) / -2) 0 0 calc(var(--lwl-d) / -2);
+  opacity:0;transform:rotate(calc(var(--a) - 75deg)) translateX(calc(var(--lwl-r) * 2.2)) rotate(calc(75deg - var(--a))) scale(.35);
+  animation:lwlIn .9s cubic-bezier(.18,.86,.32,1.06) calc(.3s + var(--i) * .045s) both}
+#lwLaunch .lwl-b>i{top:0;left:0;width:100%;height:100%;border-radius:50%;overflow:hidden;
+  background:radial-gradient(circle at 33% 26%,rgba(255,255,255,.5) 0,rgba(255,255,255,.12) 16%,rgba(255,255,255,0) 32%),rgba(120,170,255,.07);
+  box-shadow:inset 0 0 0 1px rgba(190,230,255,.38),inset 0 -8px 18px rgba(var(--c),calc(var(--la) * .7)),0 0 20px rgba(var(--c),calc(var(--la) * .5)),0 8px 22px rgba(0,0,0,.32);
+  animation:lwlBob 3.2s ease-in-out calc(1.25s + var(--i) * .17s) infinite alternate both}
+#lwLaunch .lwl-b>i::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;
+  background:radial-gradient(120% 90% at 50% 100%,rgba(var(--c),var(--la)) 0,rgba(var(--c),calc(var(--la) * .45)) 55%,rgba(var(--c),0) 100%);
+  border-top:1px solid rgba(var(--c),calc(var(--la) * .9))}
+/* the hand-over: the scene dissolves into Home, its bubbles swelling a touch into the real ones */
+html.lw-launch-out #lwLaunch{pointer-events:none;animation:lwlOut .34s cubic-bezier(.4,0,.2,1) both}
+html.lw-launch-out #lwLaunch .lwl-b>i,html.lw-launch-out #lwLaunch .lwl-m{animation:lwlPop .34s cubic-bezier(.2,.7,.2,1) both}
+@keyframes lwlNeb{to{opacity:.92}}
+@keyframes lwlGather{to{transform:translate(calc(var(--lwl-x) - var(--x)),calc(var(--lwl-y) - var(--y))) scale(.25);opacity:0}}
+@keyframes lwlTw{from{opacity:.4;transform:translateY(0)}to{opacity:.95;transform:translateY(-14px)}}
+@keyframes lwlWave{0%{transform:scale(.6);opacity:0}14%{opacity:.85}100%{transform:scale(2.7);opacity:0}}
+@keyframes lwlCore{0%{transform:scale(.42);opacity:.6}48%{transform:scale(1.06);opacity:1}100%{transform:scale(.94);opacity:.92}}
+@keyframes lwlBreath{from{transform:scale(1)}to{transform:scale(1.07)}}
+@keyframes lwlForm{0%{transform:scale(.55);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes lwlShineIn{to{opacity:1}}
+@keyframes lwlSpin{to{transform:rotate(360deg)}}
+@keyframes lwlIn{0%{transform:rotate(calc(var(--a) - 75deg)) translateX(calc(var(--lwl-r) * 2.2)) rotate(calc(75deg - var(--a))) scale(.35);opacity:0}
+  45%{opacity:1}100%{transform:rotate(var(--a)) translateX(var(--lwl-r)) rotate(calc(0deg - var(--a))) scale(1);opacity:1}}
+@keyframes lwlBob{from{transform:translateY(-2px)}to{transform:translateY(3px)}}
+@keyframes lwlOut{to{opacity:0}}
+@keyframes lwlPop{from{transform:scale(1)}to{transform:scale(1.07)}}
+@keyframes lwlGlint{to{opacity:1;transform:scale(.62) rotate(0deg)}}
+@keyframes lwlGlintTw{from{opacity:1;transform:scale(.62) rotate(0deg)}to{opacity:.55;transform:scale(.44) rotate(18deg)}}
+@keyframes lwlFade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  #lwLaunch .lwl-b{animation:lwlFade .4s ease .2s both;transform:rotate(var(--a)) translateX(var(--lwl-r)) rotate(calc(0deg - var(--a)))}
+  #lwLaunch .lwl-glass{animation:lwlFade .4s ease .1s both;transform:none}
+  #lwLaunch .lwl-k{animation:lwlOut .5s ease .1s both}
+  #lwLaunch .lwl-core{animation:none;transform:scale(.94);opacity:.92}
+  #lwLaunch .lwl-wave,#lwLaunch .lwl-shine,#lwLaunch .lwl-gl{display:none}
+  #lwLaunch .lwl-cw,#lwLaunch .lwl-s,#lwLaunch .lwl-b>i{animation:none}
+  html.lw-launch-out #lwLaunch .lwl-b>i,html.lw-launch-out #lwLaunch .lwl-m{animation:none}
+}
+</style>
+<script id="lwBootJs">
+(function(){
+  var H = document.documentElement, done = false, dom = false, files = false, cap = 8000;
+  try { if (/[?&]noboot=1/.test(location.search)) return; } catch(e){}
+  if (window.LowiBoot) return;
+  /* Oct 28: the app is held back under the launch scene (#lwLaunch, the first thing in the body) until it is finished. The body itself
+     stays visible, so WebKit shows the scene from the first frame (see lwBootCss). */
+  H.classList.add("lw-boot");
+  function now(){ try { return Math.round(performance.now()); } catch(e){ return 0; } }
+  function reveal(why){
+    if (done) return; done = true;
+    window.__LOWI_BOOT_DONE = why || "ready"; window.__LOWI_BOOT_T = now();
+    /* Oct 28: the launch scene dissolves into Home (0.34 s, taps already go through); then it leaves the page */
+    H.classList.add("lw-launch-out"); H.classList.remove("lw-boot");
+    setTimeout(function(){ H.classList.remove("lw-launch-out"); var L = document.getElementById("lwLaunch"); if (L && L.parentNode) L.parentNode.removeChild(L); }, 380);
+    try { window.dispatchEvent(new CustomEvent("lowi:boot-ready", {detail:{why:window.__LOWI_BOOT_DONE, t:window.__LOWI_BOOT_T}})); } catch(e){}
+  }
+  /* Stylesheets still on their way get a short moment, so the first frame is already styled. */
+  function sheetsIn(){
+    var ls = document.querySelectorAll('link[rel="stylesheet"]'), wait = [];
+    for (var i = 0; i < ls.length; i++) { var l = ls[i]; var ok = false; try { ok = !!l.sheet; } catch(e){ ok = true; } if (!ok) wait.push(l); }
+    return wait;
+  }
+  function settle(){
+    if (done || !dom || !files) return;
+    var wait = sheetsIn(), left = wait.length, t0 = Date.now();
+    /* Late modules finish with short debounced renders (rows, cards slotting in). Wait until the layout has held still
+       for about 180 ms (at most 700 ms), so the first frame you see is the settled one, then two frames to paint it.
+       It watches the boxes of the screen you are on (layout only, so animations and re-renders of identical content do not count). */
+    function layoutSig(){
+      var h = 7, tabs = document.querySelectorAll('[id^="tab-"]'), i, j, k, t, c, r;
+      for (i = 0; i < tabs.length; i++) { t = tabs[i]; r = t.getBoundingClientRect();
+        if (!(r.width > 0 && r.height > 0 && r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight)) continue;
+        c = getComputedStyle(t); if (c.visibility === "hidden" || +c.opacity < 0.05) continue;
+        h = (h * 31 + t.scrollHeight) | 0;
+        for (j = 0; j < t.children.length; j++) { c = t.children[j]; h = (h * 31 + c.offsetTop * 7 + c.offsetHeight) | 0;
+          for (k = 0; k < c.children.length; k++) h = (h * 31 + c.children[k].offsetTop * 7 + c.children[k].offsetHeight) | 0; } }
+      return h;
+    }
+    /* Oct 21 (open instantly): on Home, the launch screen also waits for the 3D world to come up (at most 1.5 s more). Before, it
+       lifted on the flat placeholder and about a second later the world switched on and Misty's ring of buttons jumped to a new size
+       and place, right when you went to tap. Now the first frame you see is the finished Home. No 3D (or not on Home): no wait. */
+    function worldIn(cb){
+      var t0 = Date.now();
+      (function w(){
+        if (done) return;
+        var a = window.LowiWorld3D, coming = !!(a && a.state !== "fallback" && H.classList.contains("wh-home") && !H.classList.contains("bw3-off"));
+        if (coming && !H.classList.contains("wh-world-live") && Date.now() - t0 < 1500) { setTimeout(w, 50); return; }
+        if (coming && H.classList.contains("wh-world-live")) { try { if (window.LowiHomeOrbitV2) window.LowiHomeOrbitV2.layout(); } catch(e){} }
+        window.__LOWI_BOOT_W = (Date.now() - t0) + (coming ? (H.classList.contains("wh-world-live") ? " live" : " late") : " none");
+        cb();
+      })();
+    }
+    /* Oct 28 (fast launch): the layout watch now runs while the 3D world comes in, not after it. Home still shows only once the world is
+       in (or late) and nothing has moved for 3 polls after that (or 0.7 s of watching and at least 0.3 s after the world), so nothing
+       jumps; it just stops adding the two waits up. */
+    function go(){
+      if (done || go.on) return; go.on = 1;
+      var w = { on: false, at: 0 };
+      worldIn(function(){ w.on = true; w.at = Date.now(); });
+      goNow(w);
+    }
+    function goNow(w){
+      var q = Date.now(), last = null, same = 0, seen = false;
+      function fin(why){ if (fin.d) return; fin.d = 1; window.__LOWI_BOOT_Q = (Date.now() - q) + (why ? " " + why : "");
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){ reveal("ready"); }); }); }
+      function poll(){
+        if (done) return;
+        var sig; try { sig = layoutSig(); } catch(e){ fin("err"); return; }
+        if (w.on && !seen) { seen = true; same = 0; last = sig; }
+        else if (sig === last) same++; else { same = 0; last = sig; }
+        if (seen && same >= 3) { fin("still"); return; }
+        if (seen && Date.now() - q >= 700 && Date.now() - w.at >= 300) { fin("max"); return; }
+        setTimeout(poll, 60);
+      }
+      poll();
+    }
+    window.__LOWI_BOOT_S = now();
+    if (!left) { go(); return; }
+    var fin = function(){ if (--left <= 0) go(); };
+    for (var i = 0; i < wait.length; i++) { wait[i].addEventListener("load", fin, {once:true}); wait[i].addEventListener("error", fin, {once:true}); }
+    setTimeout(go, 1200);
+  }
+  window.LowiBoot = {
+    /* apple-ui.js calls this once every companion file has run (or failed) */
+    loaded: function(){ files = true; window.__LOWI_BOOT_FILES = now(); settle(); },
+    reveal: reveal,
+    done: function(){ return done; },
+    state: function(){ return {done:done, dom:dom, files:files, why:window.__LOWI_BOOT_DONE || ""}; }
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function(){ dom = true; settle(); }); else dom = true;
+  window.addEventListener("load", function(){ setTimeout(function(){ reveal("load"); }, files ? 1300 : 300); });
+  setTimeout(function(){ reveal("cap"); }, cap);
+})();
+</script>
+</head>
+<body>
+<div id="lwLaunch" aria-hidden="true"><i class="lwl-neb"></i><i class="lwl-k" style="--x:66.1vw;--y:51.7vh;--s:2px;--dl:0.06s"></i><i class="lwl-k" style="--x:60.2vw;--y:84.5vh;--s:3.5px;--dl:0.09s"></i><i class="lwl-k" style="--x:88.6vw;--y:70.1vh;--s:2.5px;--dl:0.12s"></i><i class="lwl-k" style="--x:45.3vw;--y:17.3vh;--s:2.5px;--dl:0.14s"></i><i class="lwl-k" style="--x:59.1vw;--y:74.9vh;--s:3px;--dl:0.17s"></i><i class="lwl-k" style="--x:44.2vw;--y:77.5vh;--s:2.5px;--dl:0.20s"></i><i class="lwl-k" style="--x:16.0vw;--y:78.8vh;--s:3.5px;--dl:0.23s"></i><i class="lwl-k" style="--x:23.5vw;--y:25.9vh;--s:2.5px;--dl:0.26s"></i><i class="lwl-k" style="--x:27.3vw;--y:14.3vh;--s:3.5px;--dl:0.28s"></i><i class="lwl-k" style="--x:57.9vw;--y:77.1vh;--s:3.5px;--dl:0.31s"></i><i class="lwl-k" style="--x:32.2vw;--y:63.6vh;--s:3px;--dl:0.34s"></i><i class="lwl-k" style="--x:19.5vw;--y:36.6vh;--s:2.5px;--dl:0.37s"></i><i class="lwl-s" style="--x:43.3vw;--y:77.8vh;--s:2px;--t:2.5s;--dl:0.58s"></i><i class="lwl-s" style="--x:87.1vw;--y:75.9vh;--s:1.5px;--t:2.4s;--dl:0.71s"></i><i class="lwl-s" style="--x:81.7vw;--y:88.2vh;--s:2px;--t:3.6s;--dl:1.00s"></i><i class="lwl-s" style="--x:58.0vw;--y:76.8vh;--s:2.5px;--t:2.5s;--dl:0.47s"></i><i class="lwl-s" style="--x:11.5vw;--y:16.1vh;--s:1.5px;--t:2.3s;--dl:0.84s"></i><i class="lwl-s" style="--x:89.5vw;--y:68.9vh;--s:2px;--t:3.1s;--dl:0.58s"></i><i class="lwl-s" style="--x:93.9vw;--y:79.1vh;--s:2.5px;--t:2.3s;--dl:1.02s"></i><i class="lwl-s" style="--x:83.6vw;--y:90.5vh;--s:2px;--t:3.1s;--dl:1.09s"></i><i class="lwl-s" style="--x:77.4vw;--y:49.2vh;--s:2px;--t:2.6s;--dl:0.21s"></i><i class="lwl-s" style="--x:79.6vw;--y:90.1vh;--s:2.5px;--t:3.0s;--dl:0.91s"></i><i class="lwl-s" style="--x:55.8vw;--y:5.5vh;--s:2px;--t:2.6s;--dl:0.64s"></i><i class="lwl-s" style="--x:37.8vw;--y:71.8vh;--s:2px;--t:2.8s;--dl:1.10s"></i><i class="lwl-s" style="--x:81.1vw;--y:77.8vh;--s:2.5px;--t:3.5s;--dl:0.91s"></i><i class="lwl-s" style="--x:89.0vw;--y:18.1vh;--s:2px;--t:3.0s;--dl:1.19s"></i><i class="lwl-wave"></i><span class="lwl-m"><span class="lwl-cw"><i class="lwl-core"></i></span><i class="lwl-glass"></i><i class="lwl-shine"></i><svg class="lwl-gl" width="48" height="48" viewBox="0 0 48 48" focusable="false"><defs><radialGradient id="lwlGlintG"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#d4f4ff"/><stop offset="1" stop-color="#8fe7ff" stop-opacity="0"/></radialGradient></defs><path fill="url(#lwlGlintG)" d="M24 0C25.6 15.4 32.6 22.4 48 24C32.6 25.6 25.6 32.6 24 48C22.4 32.6 15.4 25.6 0 24C15.4 22.4 22.4 15.4 24 0Z"/></svg></span><b class="lwl-b" style="--a:-90deg;--c:200,225,255;--la:0.14;--i:0"><i></i></b><b class="lwl-b" style="--a:-45deg;--c:28,247,249;--la:0.55;--i:1"><i></i></b><b class="lwl-b" style="--a:0deg;--c:159,235,37;--la:0.5;--i:2"><i></i></b><b class="lwl-b" style="--a:45deg;--c:46,248,182;--la:0.5;--i:3"><i></i></b><b class="lwl-b" style="--a:90deg;--c:200,225,255;--la:0.14;--i:4"><i></i></b><b class="lwl-b" style="--a:135deg;--c:241,71,112;--la:0.5;--i:5"><i></i></b><b class="lwl-b" style="--a:180deg;--c:248,234,64;--la:0.5;--i:6"><i></i></b><b class="lwl-b" style="--a:225deg;--c:231,134,49;--la:0.52;--i:7"><i></i></b></div><script>/* build the launch scene now, so WebKit can show it before the rest of the page is read */document.getElementById("lwLaunch").offsetWidth</script>
+<script src="power-saver.js?v=20261028-200855"></script>
+<script id="igFresh">/* install-guide.js: was storage empty before anything ran? (a first start from the iPhone Home Screen = just added) */try{window.__lowiFresh=localStorage.length===0}catch(e){}</script>
+<!-- Oct 28 2026 item 29: light crash log (JS errors + a page that died in front), shown in Profil > Über & Hinweise -->
+<script src="crash-log.js?v=20261028-200855"></script>
+<!-- Oct 25 iOS feel (Emmanuel's TikTok "Why does iOS feel so nice to use"): interruptible springs + Apple's rubber band, shared by every grabbable motion -->
+<script src="rubberband.js?v=20261028-200855"></script>
+<script src="spring.js?v=20261028-200855"></script>
 <style>
 :root{--bg:#03050a;--panel:rgba(20,23,32,.72);--panel2:rgba(30,33,45,.85);--line:rgba(202,161,90,.22);--line2:rgba(255,255,255,.07);--gold:#caa15a;--gold2:#ecd08f;--text:#f8f5ed;--muted:#a19c90;--dim:#6d695f;--hi:#f0a08a;--mid:#e6c98a;--lo:#a9dcb2;--sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
@@ -1649,133 +1852,6 @@ html[data-lay=desktop] .fyv-bar{bottom:16px}
      no Misty cell and no LOWiSPIKE wordmark. While the app gets ready you only see the plain page background (the dark brand blue,
      the same colour as the iOS startup image and the first paint), then the finished app.
      Safety: it always opens by itself (window load, or 8 s at the latest) and ?noboot=1 skips the wait. -->
-<style id="lwBootCss">
-html.lw-boot body,html.lw-boot>:not(head):not(body){opacity:0!important;pointer-events:none!important}
-/* Oct 28: the glow always sits on the dark brand background (the iOS startup image), also in day mode, where the day colours would
-   otherwise flash in first and then turn black when the black-space design loads, before Home fades in */
-html.lw-boot,html.lw-launch-out{background:#03050a!important}
-html.lw-boot body *,html.lw-boot body *::before,html.lw-boot body *::after{animation-play-state:paused!important}
-/* Oct 28 (Emmanuel: "if the app has to load, at least have an impressive loading animation, but it should not make the app feel like it's
-   taking longer"): while the app gets ready, your companion's glow sits where Misty will be (the same picture as the iOS startup image,
-   so splash, first paint and this are one still picture), a thin cyan ring circles it, and the moment Home is ready the glow opens up and
-   fades into the real Home in 0.26 s. No minimum time, no delay: a fast open is just that short fade. It lives on the html element (not in the body),
-   so it shows from the first frame, never moves the layout and never catches a tap. */
-html.lw-boot::before,html.lw-launch-out::before,html.lw-boot::after,html.lw-launch-out::after{content:"";position:fixed;left:50%;top:46%;
-  pointer-events:none!important;z-index:2147483647;border-radius:50%;box-sizing:border-box;--lwo:min(38.5vw,27.8vh)}
-html.lw-boot::after,html.lw-launch-out::after{width:var(--lwo);height:var(--lwo);margin:calc(var(--lwo) / -2) 0 0 calc(var(--lwo) / -2);
-  background:radial-gradient(circle at 38% 32%,rgba(230,251,255,.95) 0,rgba(143,231,255,.85) 14%,rgba(63,183,255,.62) 40%,rgba(10,132,255,.38) 62%,rgba(10,132,255,0) 71%);
-  box-shadow:0 0 calc(var(--lwo) * .3) calc(var(--lwo) * .02) rgba(10,132,255,.28),0 0 calc(var(--lwo) * .9) calc(var(--lwo) * .25) rgba(90,200,250,.10);
-  animation:lwOrb 2.4s ease-in-out infinite}
-html.lw-boot::before,html.lw-launch-out::before{width:calc(var(--lwo) * .86);height:calc(var(--lwo) * .86);margin:calc(var(--lwo) * -.43) 0 0 calc(var(--lwo) * -.43);
-  background:conic-gradient(from 0deg,rgba(143,231,255,0) 0 45%,rgba(90,200,250,.55) 80%,rgba(220,250,255,.95) 99%,rgba(143,231,255,0) 100%);
-  -webkit-mask:radial-gradient(closest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px),#000 calc(100% - .5px),transparent 100%);mask:radial-gradient(closest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px),#000 calc(100% - .5px),transparent 100%);
-  animation:lwRing 1.1s linear infinite,lwRingIn .45s ease-out both}
-@keyframes lwOrb{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
-@keyframes lwRing{to{transform:rotate(1turn)}}
-@keyframes lwRingIn{from{opacity:0}to{opacity:1}}
-html.lw-launch-out::after{animation:lwOrbOut .26s cubic-bezier(.2,.7,.3,1) forwards}
-html.lw-launch-out::before{animation:lwRingOut .26s ease-out forwards}
-html.lw-launch-out body{animation:lwHomeIn .26s ease-out both}
-@keyframes lwOrbOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.35)}}
-@keyframes lwRingOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.6)}}
-@keyframes lwHomeIn{from{opacity:0}to{opacity:1}}
-@media (prefers-reduced-motion:reduce){html.lw-boot::before,html.lw-boot::after{animation:none}
-  html.lw-launch-out::before,html.lw-launch-out::after{animation:lwRingIn .2s ease-out reverse forwards}}
-</style>
-<script id="lwBootJs">
-(function(){
-  var H = document.documentElement, done = false, dom = false, files = false, cap = 8000;
-  try { if (/[?&]noboot=1/.test(location.search)) return; } catch(e){}
-  if (window.LowiBoot) return;
-  /* Oct 21: no launch screen element. Only the page is held back (opacity) until it is finished; the background shows meanwhile. */
-  H.classList.add("lw-boot");
-  function now(){ try { return Math.round(performance.now()); } catch(e){ return 0; } }
-  function reveal(why){
-    if (done) return; done = true;
-    window.__LOWI_BOOT_DONE = why || "ready"; window.__LOWI_BOOT_T = now();
-    /* Oct 28: the launch glow fades into Home (0.26 s, taps already go through); then the class goes, nothing else changes */
-    H.classList.add("lw-launch-out"); H.classList.remove("lw-boot");
-    setTimeout(function(){ H.classList.remove("lw-launch-out"); }, 320);
-    try { window.dispatchEvent(new CustomEvent("lowi:boot-ready", {detail:{why:window.__LOWI_BOOT_DONE, t:window.__LOWI_BOOT_T}})); } catch(e){}
-  }
-  /* Stylesheets still on their way get a short moment, so the first frame is already styled. */
-  function sheetsIn(){
-    var ls = document.querySelectorAll('link[rel="stylesheet"]'), wait = [];
-    for (var i = 0; i < ls.length; i++) { var l = ls[i]; var ok = false; try { ok = !!l.sheet; } catch(e){ ok = true; } if (!ok) wait.push(l); }
-    return wait;
-  }
-  function settle(){
-    if (done || !dom || !files) return;
-    var wait = sheetsIn(), left = wait.length, t0 = Date.now();
-    /* Late modules finish with short debounced renders (rows, cards slotting in). Wait until the layout has held still
-       for about 180 ms (at most 700 ms), so the first frame you see is the settled one, then two frames to paint it.
-       It watches the boxes of the screen you are on (layout only, so animations and re-renders of identical content do not count). */
-    function layoutSig(){
-      var h = 7, tabs = document.querySelectorAll('[id^="tab-"]'), i, j, k, t, c, r;
-      for (i = 0; i < tabs.length; i++) { t = tabs[i]; r = t.getBoundingClientRect();
-        if (!(r.width > 0 && r.height > 0 && r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight)) continue;
-        c = getComputedStyle(t); if (c.visibility === "hidden" || +c.opacity < 0.05) continue;
-        h = (h * 31 + t.scrollHeight) | 0;
-        for (j = 0; j < t.children.length; j++) { c = t.children[j]; h = (h * 31 + c.offsetTop * 7 + c.offsetHeight) | 0;
-          for (k = 0; k < c.children.length; k++) h = (h * 31 + c.children[k].offsetTop * 7 + c.children[k].offsetHeight) | 0; } }
-      return h;
-    }
-    /* Oct 21 (open instantly): on Home, the launch screen also waits for the 3D world to come up (at most 1.5 s more). Before, it
-       lifted on the flat placeholder and about a second later the world switched on and Misty's ring of buttons jumped to a new size
-       and place, right when you went to tap. Now the first frame you see is the finished Home. No 3D (or not on Home): no wait. */
-    function worldIn(cb){
-      var t0 = Date.now();
-      (function w(){
-        if (done) return;
-        var a = window.LowiWorld3D, coming = !!(a && a.state !== "fallback" && H.classList.contains("wh-home") && !H.classList.contains("bw3-off"));
-        if (coming && !H.classList.contains("wh-world-live") && Date.now() - t0 < 1500) { setTimeout(w, 50); return; }
-        if (coming && H.classList.contains("wh-world-live")) { try { if (window.LowiHomeOrbitV2) window.LowiHomeOrbitV2.layout(); } catch(e){} }
-        window.__LOWI_BOOT_W = (Date.now() - t0) + (coming ? (H.classList.contains("wh-world-live") ? " live" : " late") : " none");
-        cb();
-      })();
-    }
-    /* Oct 28 (fast launch): the layout watch now runs while the 3D world comes in, not after it. Home still shows only once the world is
-       in (or late) and nothing has moved for 3 polls after that (or 0.7 s of watching and at least 0.3 s after the world), so nothing
-       jumps; it just stops adding the two waits up. */
-    function go(){
-      if (done || go.on) return; go.on = 1;
-      var w = { on: false, at: 0 };
-      worldIn(function(){ w.on = true; w.at = Date.now(); });
-      goNow(w);
-    }
-    function goNow(w){
-      var q = Date.now(), last = null, same = 0, seen = false;
-      function fin(why){ if (fin.d) return; fin.d = 1; window.__LOWI_BOOT_Q = (Date.now() - q) + (why ? " " + why : "");
-        requestAnimationFrame(function(){ requestAnimationFrame(function(){ reveal("ready"); }); }); }
-      function poll(){
-        if (done) return;
-        var sig; try { sig = layoutSig(); } catch(e){ fin("err"); return; }
-        if (w.on && !seen) { seen = true; same = 0; last = sig; }
-        else if (sig === last) same++; else { same = 0; last = sig; }
-        if (seen && same >= 3) { fin("still"); return; }
-        if (seen && Date.now() - q >= 700 && Date.now() - w.at >= 300) { fin("max"); return; }
-        setTimeout(poll, 60);
-      }
-      poll();
-    }
-    window.__LOWI_BOOT_S = now();
-    if (!left) { go(); return; }
-    var fin = function(){ if (--left <= 0) go(); };
-    for (var i = 0; i < wait.length; i++) { wait[i].addEventListener("load", fin, {once:true}); wait[i].addEventListener("error", fin, {once:true}); }
-    setTimeout(go, 1200);
-  }
-  window.LowiBoot = {
-    /* apple-ui.js calls this once every companion file has run (or failed) */
-    loaded: function(){ files = true; window.__LOWI_BOOT_FILES = now(); settle(); },
-    reveal: reveal,
-    done: function(){ return done; },
-    state: function(){ return {done:done, dom:dom, files:files, why:window.__LOWI_BOOT_DONE || ""}; }
-  };
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function(){ dom = true; settle(); }); else dom = true;
-  window.addEventListener("load", function(){ setTimeout(function(){ reveal("load"); }, files ? 1300 : 300); });
-  setTimeout(function(){ reveal("cap"); }, cap);
-})();
-</script>
 <style id="r3nCss">.td-herol{margin-top:4px;opacity:.88;text-wrap:balance}.td-herotx .h3{text-wrap:balance}#tab-home .td-extra .td-mtx>*{text-wrap:pretty}#tab-home .td-hero img{object-position:center 40%}</style><style id="r3xCss">#tab-home .td-extra{flex-wrap:wrap;row-gap:10px;align-items:center}#tab-home .td-extra>.td-mtx{flex:1 1 0;min-width:0}#tab-home .td-extra>.td-mtx>div:first-child{font-size:16px;line-height:1.25}#tab-home .td-extra>.td-mtx .small{margin-top:3px;line-height:1.35}#tab-home .td-extra>.go{flex:none;align-self:center}#tab-home .td-extra>.r3a-hb{flex:0 0 100%;margin:0;padding-top:10px;border-top:1px solid var(--edge,rgba(255,255,255,.12));display:flex;flex-wrap:wrap;gap:8px;align-items:center}#tab-home .td-extra>.r3a-hb .r3a-hbt{flex:1 1 auto;text-align:center;white-space:nowrap}#tab-home .td-extra>.r3a-hb .r3a-cart{flex:0 0 auto;white-space:nowrap;border-color:rgba(var(--acc-rgb,212,175,55),.6)}</style><style id="r3yCss">.lb3.lb3-max .lb3-lvl{height:100%;background:linear-gradient(180deg,rgba(var(--b1r),.42),rgba(var(--b2r),.62))}.lb3.lb3-max .lb3-wave{display:none}.lb3.lb3-glow.lb3-max{animation:r3yPulse 2.4s ease-in-out infinite}@keyframes r3yPulse{0%,100%{box-shadow:0 0 calc(var(--sz)*.30) rgba(var(--b1r),.6),0 0 calc(var(--sz)*.10) rgba(var(--b2r),.6),0 calc(var(--sz)*.05) calc(var(--sz)*.16) rgba(0,0,0,.3);filter:saturate(1)}50%{box-shadow:0 0 calc(var(--sz)*.62) rgba(var(--b1r),.95),0 0 calc(var(--sz)*.2) rgba(var(--b2r),.9),0 calc(var(--sz)*.05) calc(var(--sz)*.16) rgba(0,0,0,.3);filter:saturate(1.25) brightness(1.08)}}.r5-bub.r5-max .r5-water i{top:-60%}.r5-bub.r5-max{animation:r3yPulse5 2.4s ease-in-out infinite}@keyframes r3yPulse5{0%,100%{filter:drop-shadow(0 0 10px var(--b1))}50%{filter:drop-shadow(0 0 26px var(--b1)) drop-shadow(0 0 8px var(--b2)) brightness(1.08)}}@media (prefers-reduced-motion:reduce){.lb3.lb3-glow.lb3-max,.r5-bub.r5-max{animation:none!important}}</style><style id="r3zCss">[id^="cm-zbot"] .cm-mini{display:none}.cm-tag.r3z-bot{background:rgba(143,184,214,.16);color:#bcd6ea;border:1px dashed rgba(143,184,214,.55)}html[data-ui=light] .cm-tag.r3z-bot{color:#2f5a78;background:rgba(80,130,170,.12)}.r3z-tog{margin-left:6px;cursor:pointer}.r3z-botbar{display:flex;align-items:center;gap:8px;margin:4px 0 12px;padding:9px 12px;border-radius:14px;border:1px dashed rgba(143,184,214,.5);background:rgba(143,184,214,.08);font-size:13px;line-height:1.35}.r3z-botbar .cm-tag{flex:none}[id^="cm-zbot"] .r3m-by b::after{content:"demo bot";margin-left:6px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;border:1px dashed rgba(143,184,214,.6);color:#bcd6ea;vertical-align:1px}html[lang^=de] [id^="cm-zbot"] .r3m-by b::after{content:"Demo-Bot"}html[lang^=es] [id^="cm-zbot"] .r3m-by b::after{content:"bot de prueba"}html[data-ui=light] [id^="cm-zbot"] .r3m-by b::after{color:#2f5a78}.r3z-tog[aria-pressed=false]{opacity:.6}</style>
 <style id="gptcss">
 .gpt-card{margin:12px 0 16px;display:block;border-color:rgba(226,194,126,.45);background:linear-gradient(160deg,rgba(226,194,126,.16),rgba(226,194,126,.03)),var(--panel)}
@@ -3871,8 +3947,6 @@ html.n1-talk #n1B .g1-mini .g1-face u{animation:g1Talk .28s ease-in-out 4 altern
 <link rel="stylesheet" href="lis-push.css?v=20261028-200855">
 <script src="lis-push.js?v=20261028-200855" defer></script>
 <link rel="stylesheet" id="rfCss" href="readability-fit.css?v=20261028-200855">
-</head>
-<body>
 <div id="app">
 
   <!-- MAIN -->

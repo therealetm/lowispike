@@ -155,3 +155,15 @@
 @media (max-width: 360px) { .mc-ic { width: 40px; height: 40px; } .mc-ph small { font-size: 10.5px; } }
 @media (min-width: 700px) { .gv-ov { align-items: center; } .gv-card { border-radius: 28px; border-bottom: 1px solid rgba(143, 216, 255, .42); max-height: min(88vh, 900px); } }
 @media (prefers-reduced-motion: reduce) { .gv-ov, .gv-card, .gv-liq { transition: none; } .gv-wave, .gv-pl.here .gv-halo, .mc-card, .mc-motif *, .mc-ic, .mc-spk .mc-w1, .mc-spk .mc-w2, .mc-spkc { animation: none; transition: none; } .mc-up circle, .mc-in circle { opacity: 1; } }
+/* Oct 28 2026 (owner request 13, Emmanuel: the Essenspause panel is too big and solid, it reads like a new page): a smaller,
+   see-through panel in the middle, Home stays visible around it, like the hologram panels (profile, Einkaufen). */
+.gv-ov { align-items: center; padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom)); background: rgba(2, 8, 28, .16); }
+.gv-card { width: min(calc(100% - 36px), 370px); max-width: 370px; max-height: min(64%, 580px); border-radius: 28px; border-bottom: 1px solid rgba(143, 216, 255, .42);
+  background: radial-gradient(120% 70% at 50% 0%, rgba(80, 140, 255, .2), transparent 60%), linear-gradient(180deg, rgba(11, 29, 74, .58) 0%, rgba(7, 19, 55, .52) 60%, rgba(5, 13, 41, .5) 100%);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25); backdrop-filter: blur(16px) saturate(1.25);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .32), inset 0 1px 0 rgba(255, 255, 255, .14), 0 0 26px rgba(143, 216, 255, .2); transform: translateY(14px) scale(.97); }
+.gv-ov.on .gv-card { transform: none; }
+.gv-hero { width: min(48vw, 190px); }
+.gv-scroll { padding-bottom: 16px; }
+@media (min-width: 700px) { .gv-card { max-height: min(66vh, 600px); } }
+html.lt .gv-ov, html[data-ui="light"] .gv-ov { background: rgba(10, 30, 70, .12); }

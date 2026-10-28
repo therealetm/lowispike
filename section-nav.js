@@ -43,10 +43,49 @@
         label();
         return xBtn;
     }
-    function label() { if (xBtn) { const s = T('Back to Home', 'Zurück zur Startseite', 'Volver al inicio'); xBtn.setAttribute('aria-label', s); xBtn.title = s; } }
+    function label() { if (xBtn) { const up = trail.length && trail[trail.length - 1].tab !== 'home', s = up ? T('Back', 'Zurück', 'Atrás') : T('Back to Home', 'Zurück zur Startseite', 'Volver al inicio'); xBtn.setAttribute('aria-label', s); xBtn.title = s; } }
+
+    /* ---------- where you came from ----------
+       Oct 28 2026 (owner request 13, Emmanuel: one back always brings you back to where you came from): the X, the edge swipe,
+       Escape and the phone's back went straight to Home even when a page was opened from another page (Profile from the
+       Community "Du" panel). Each page now remembers the page it was opened from, and the panel there to bring back
+       (reopen()), and back returns to that. A page reached again by its own way (a back button that calls goTab with the
+       page before) counts as that return. Home clears it. */
+    let trail = [];
+    function track(from, to) {
+        if (from === to) return;
+        const top = trail[trail.length - 1];
+        if (top && top.tab === to) { trail.pop(); if (top.reopen) setTimeout(() => { try { if (tabOf() === to) top.reopen(); } catch (e) { console.error(e); } }, 320); }
+        else if (to === 'home') trail = [];
+        else { const i = trail.findIndex(x => x.tab === to); if (i >= 0) trail.length = i; trail.push({ tab: from }); if (trail.length > 8) trail.shift(); }
+        label();
+    }
+    /* A panel that opens a page (the Community "Du" panel) asks to come back when you go back from that page */
+    function reopen(fn) { const top = trail[trail.length - 1]; if (top && typeof fn === 'function') top.reopen = fn; return !!top; }
 
     /* ---------- open / close ---------- */
+    /* ---------- Kochen as a panel over where you were ----------
+       Oct 28 2026 (owner request 13, Emmanuel: Kochen opens as a separate page, it should rise in place like the profile panel and
+       Einkaufen): Cook is drawn as a floating glass panel. The page you opened it from (Home, mostly) stays drawn and visible
+       around it, dimmed a little; a tap beside the panel, the back button, the edge swipe and Escape all go back to it. */
+    let holoUnder = null, holoScrim = null;
+    function holo(from, to) {
+        if (holoUnder && (to !== 'shelf' || holoUnder.id !== 'tab-' + from)) { holoUnder.classList.remove('holo-under'); holoUnder = null; }
+        if (to !== 'shelf') { H.classList.remove('cook-holo'); return; }
+        const u = from && from !== 'shelf' ? D.getElementById('tab-' + from) : null;
+        if (u && u !== holoUnder) { if (holoUnder) holoUnder.classList.remove('holo-under'); holoUnder = u; u.classList.add('holo-under'); }
+        const m = D.getElementById('main');
+        if (m && !(holoScrim && holoScrim.isConnected)) {
+            holoScrim = D.getElementById('cookHoloScrim') || D.createElement('div');
+            holoScrim.id = 'cookHoloScrim'; holoScrim.setAttribute('aria-hidden', 'true');
+            if (!holoScrim.__on) { holoScrim.__on = 1; holoScrim.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (tabOf() === 'shelf') back(); }); }
+            m.appendChild(holoScrim);
+        }
+        H.classList.add('cook-holo');
+    }
     function after(from, to) {
+        try { track(from, to); } catch (e) { }
+        try { holo(from, to); } catch (e) { }
         if (to !== 'home') {
             H.classList.add('sec-open'); ensureX();
             if (from === 'home') api.opens++;
@@ -82,6 +121,8 @@
     function close() {
         if (tabOf() === 'home') { H.classList.remove('sec-open'); return; }
         api.instant = true;
+        const up = trail[trail.length - 1];
+        if (up && up.tab !== 'home' && up.tab !== tabOf()) { try { W.goTab(up.tab); return; } catch (e) { console.error(e); } }
         try { W.goTab('home'); } catch (e) { console.error(e); }
         /* Oct 21: the world comes home in the same moment, not on a later frame. Under load the queued backdrop sync ran after the
            700 ms 'instant' window and dove the camera in from the spirit world for seconds (Home looked zoomed out). */
@@ -221,7 +262,7 @@
         W.addEventListener('keydown', onKeyLast);
         try { new MutationObserver(label).observe(H, { attributes: true, attributeFilter: ['lang'] }); } catch (e) { }
     }
-    api.close = close; api.back = back; api.tab = tabOf; api.wrap = wrap;
+    api.close = close; api.back = back; api.tab = tabOf; api.wrap = wrap; api.reopen = reopen; api.from = () => (trail.length ? trail[trail.length - 1].tab : '');
     /* Oct 22 (code error sweep 20:02): our own quiet history.back() (Home came back without the X) is not a user's back.
        back-swipe.js asks before it acts on a pop: it took this pop for a swipe back on Home and went back again, out of
        LOWiSPIKE (Safari then left or reloaded the app). True while the quiet pop is pending, and for the event we swallowed. */

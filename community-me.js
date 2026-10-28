@@ -173,7 +173,7 @@
     function onClick(e) {
         /* Oct 22 2026 (item 42): your picture or name at the top opens your profile, like the Profile row */
         const who = e.target && e.target.closest && e.target.closest('.cme-av,.cme-who');
-        if (who) { e.preventDefault(); close(false); const s0 = S(); if (s0) s0.run('me'); return; }
+        if (who) { e.preventDefault(); close(false); const s0 = S(); if (s0) away(() => s0.run('me')); return; }
         const b = e.target && e.target.closest && e.target.closest('[data-cme]'); if (!b) return;
         e.preventDefault();
         const id = b.getAttribute('data-cme'), s = S();
@@ -187,7 +187,14 @@
         close(false);
         if (id === 'presence') { try { if (hasPresence()) root.LowiCommunity.settings(); } catch (x) { console.error(x); } return; }
         if (HOME_FIRST.includes(id) && typeof root.goTab === 'function') { root.goTab('home'); setTimeout(() => s.run(id), 700); return; }
-        s.run(id);
+        away(() => s.run(id));
+    }
+    /* Oct 28 2026 (owner request 13, Emmanuel: Back from the full Profile went all the way to Home): a row that takes you to a
+       page (Profile, Settings) asks the back path to bring this panel back where it was, so one Back returns here */
+    function away(go) {
+        const L = root.LowiSections, t0 = L && typeof L.tab === 'function' ? L.tab() : '';
+        go();
+        try { if (L && typeof L.reopen === 'function' && L.tab() !== t0) L.reopen(() => open()); } catch (x) { }
     }
     /* in Community, your picture opens this panel (capture: before the shell's own Profile jump) */
     D.addEventListener('click', e => {

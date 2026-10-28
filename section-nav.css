@@ -24,3 +24,17 @@ html.sec-open.b3-camon .sec-x, html.sec-open.sp-open .sec-x{display:none}
 html.g2e-on.g2e-open .sec-x{display:none!important}
 /* the page being swiped away casts a soft edge shadow, like iOS */
 html.sec-swiping #main > .tab.active{box-shadow:-12px 0 24px rgba(0,0,0,.35)}
+/* Oct 28 2026 (owner request 13, Emmanuel: Kochen opened as a separate page): Kochen rises in place as a glass panel, like the
+   profile panel and Einkaufen. The page it was opened from (Home) stays drawn around it and a tap beside the panel goes back.
+   The round back button keeps its spot at the top left, in the strip above the panel. */
+html.cook-holo #main>.tab.holo-under,.apple-ui html.cook-holo #main .tab.holo-under,html.cook-holo.apple-ui #main .tab.holo-under{opacity:1!important;pointer-events:none!important;content-visibility:visible!important}
+html.cook-holo #main>#tab-shelf.active{position:fixed;z-index:12;top:calc(var(--sat, env(safe-area-inset-top, 0px)) + 62px);bottom:calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 14px);
+  left:max(10px, calc(50% - 290px));right:max(10px, calc(50% - 290px));border-radius:30px;overflow:hidden;
+  border:1.2px solid rgba(143,231,255,.5);background:rgba(10,22,58,.5);
+  box-shadow:0 18px 50px rgba(0,0,0,.42),0 0 26px rgba(143,231,255,.22),inset 0 1px 0 rgba(255,255,255,.14)}
+html.cook-holo.lt #main>#tab-shelf.active{background:rgba(255,255,255,.55);border-color:rgba(40,140,220,.45);box-shadow:0 18px 44px rgba(20,60,120,.22),0 0 22px rgba(80,180,255,.2)}
+#cookHoloScrim{display:none}
+html.cook-holo #cookHoloScrim{display:block;position:fixed;inset:0;z-index:11;background:rgba(4,10,32,.28);-webkit-tap-highlight-color:transparent}
+html.cook-holo.lt #cookHoloScrim{background:rgba(20,50,100,.14)}
+@media (prefers-reduced-motion: no-preference){html.cook-holo #main>#tab-shelf.active{animation:cookHoloUp .26s cubic-bezier(.2,.9,.3,1)}}
+@keyframes cookHoloUp{from{opacity:.4;translate:0 18px;scale:.985}to{opacity:1;translate:0 0;scale:1}}

@@ -2208,8 +2208,24 @@ function body(){ const s = st(), start = startOf(s), now = Date.now(), t = SEL |
     '<div class="fst-earn' + (p.x ? "" : " none") + '" id="fstEarn">' + esc(p.x ? w("earn", {x:p.x}) : w("short")) + (p.x ? '<small>' + esc(w("perH", {h:p.full})) + (p.msx ? " · " + esc(w("ms")) + " +" + p.msx : "") + (p.ok ? " · " + esc(w("gb")) + " +" + GOAL_X : "") + '</small>' : "") + '</div>' +
     '<button class="btn primary fst-go" data-fst="end">' + esc(SEL ? w("btnAt", {t:hm(SEL)}) : w("btnNow")) + '</button>' +
     '<p class="tiny muted fst-next">' + esc(w("next")) + '</p>' + histHTML(4); }
-function paint(){ const el = document.getElementById("fstSheet"); if (el) el.innerHTML = body(); }
-function open(){ SEL = 0;
+/* Oct 28 2026 (Emmanuel: "Mach doch jetzt alles live"; the buttons sat in a sheet behind the Essenspause screen): the same two
+   buttons, compact, right on the Essenspause screen (gap-view.js puts ctl() into its own #fstSheet with data-mode="ctl").
+   Running: "Erste Mahlzeit" stops the timer at the picked time. Stopped: "Letzte Mahlzeit" starts it. Nothing else does. */
+function ctl(){ const s = st(), start = startOf(s), now = Date.now(), t = SEL || now;
+  const pick = c => '<button type="button" class="chip' + ((c[0] === 0 && !SEL) || (c[0] && SEL && Math.abs(c[0] - SEL) < 30000) ? " on" : "") + '" data-fst="pick" data-t="' + c[0] + '">' + esc(c[1]) + '</button>';
+  const min = start ? start + 60000 : now - 7 * 864e5;
+  let earn = "";
+  if (start) { const p = points((t - start) / 36e5, goalH()); earn = '<p class="tiny muted fst-earn' + (p.x ? "" : " none") + '" id="fstEarn">' + esc(p.x ? w("earn", {x:p.x}) : w("short")) + '</p>'; }
+  return '<div class="fst-q">' + esc(w(start ? "when" : "none")) + '</div>' +
+    '<div class="fst-chips">' + chips(start).map(pick).join("") + '</div>' +
+    '<label class="fst-time" data-fst="clock"><span class="fst-tl">' + esc(w("other")) + '</span><b id="fstAt">' + esc(at(t)) + '</b><span class="fst-pen" aria-hidden="true">✎</span><input type="datetime-local" id="fstIn" value="' + dtLocal(t) + '" min="' + dtLocal(min) + '" max="' + dtLocal(now) + '"></label>' +
+    earn + '<button type="button" class="btn primary fst-go" data-fst="end">' + esc(start ? (SEL ? w("btnAt", {t:hm(SEL)}) : w("btnNow")) : (SEL ? w("btn0At", {t:hm(SEL)}) : w("btn0Now"))) + '</button>'; }
+function paint(){ const el = document.getElementById("fstSheet"); if (el) el.innerHTML = el.dataset.mode === "ctl" ? ctl() : body(); }
+function resetSel(){ SEL = 0; }
+function open(o){ SEL = 0;
+  /* the buttons live on the Essenspause screen now: every old door to this sheet (Misty's "fast" chip, the Home card, herb-start)
+     opens that screen instead, so the sheet can never sit behind it again */
+  if (!(o && o.sheet) && window.LowiGapView && typeof LowiGapView.open === "function") { try { if (LowiGapView.open({ctl:true}) !== false) { sfx("open"); return; } } catch(e){ console.error(e); } }
   try { if (window.LowiR2 && LowiR2.closeAll) LowiR2.closeAll(); } catch(e){}
   const html = '<div class="bt-sheet fst-sh" data-noi18n><div class="h2 fst-title">' + esc(w(startOf() ? "title" : "title0")) + '</div><div id="fstSheet">' + body() + '</div></div>';
   try { if (typeof sheet === "function") sheet(html); } catch(e){ console.error(e); }
@@ -2343,8 +2359,9 @@ document.addEventListener("click", e => {
   else if (k === "pick") { SEL = +a.dataset.t || 0; paint(); sfx("tap"); }
   else if (k === "clock") { const i = document.getElementById("fstIn"); if (i && e.target !== i) { try { if (i.showPicker) { i.showPicker(); e.preventDefault(); } } catch(x){} } }
   else if (k === "end") { /* DECOUPLED: stopped -> "Letzte Mahlzeit" starts the timer; running -> "Erste Mahlzeit" ends it. No meal logging chained to it. */
-    if (!startOf()) { const at = SEL || Date.now(); if (firstMeal(at) !== false) { try { if (typeof closeSheet === "function") closeSheet(); } catch(x){} repaintAll(); try { toast(w("started", {t:hm(Math.max(at, startOf() || at))})); } catch(x){} } }
-    else { const r = end(SEL || Date.now(), {}); if (r && r.err) { try { toast(w("before")); } catch(x){} } } }
+    const inGap = !!a.closest("#gvSheet");
+    if (!startOf()) { const at = SEL || Date.now(); if (firstMeal(at) !== false) { SEL = 0; if (!inGap) { try { if (typeof closeSheet === "function") closeSheet(); } catch(x){} } repaintAll(); try { toast(w("started", {t:hm(Math.max(at, startOf() || at))})); } catch(x){} } }
+    else { const r = end(SEL || Date.now(), inGap ? {keep:true} : {}); if (r && r.err) { try { toast(w("before")); } catch(x){} } else { SEL = 0; try { window.dispatchEvent(new CustomEvent("lowi:fast", {detail:{stop:true}})); } catch(x){} } } }
 }, true);
 function fromInput(i){ const t = new Date(i.value).getTime(); if (!t) return; const start = startOf(); SEL = Math.min(Date.now(), Math.max(start + 60000, t)); if (Date.now() - SEL < 30000) SEL = 0; paint(); }
 document.addEventListener("change", e => { if (e.target && e.target.id === "fstIn") fromInput(e.target); });
@@ -2358,7 +2375,7 @@ const bigBtn = cls => '<button type="button" class="btn primary fst-btn' + (cls 
 const LV = {en:"Level {n} \u00b7 {t}", de:"Level {n} \u00b7 {t}", es:"Nivel {n} \u00b7 {t}"};
 /* Oct 16: the level toast names Misty's cell stage (Little cell, Glow cell ...), not the old herb titles */
 const lvl = (n, t) => { try { const c = window.LowiWorldHomeCore, s = c && c.STAGES && c.STAGES[n - 1]; if (s) t = c.pick(s.n, lang()); } catch (e) {} return (LV[lang()] || LV.en).replace("{n}", n).replace("{t}", t); };
-window.LowiFastStop = {lvl, open, end, mealTicked, mealLogged, mealNote, catchUp, unmeal, remeal, lastMeal, mealList, SITTING, firstMeal, guessed, unguess, points, startOf, stopPill, bigBtn, histHTML, reward, paint, _st:st, w};
+window.LowiFastStop = {lvl, open, ctl, resetSel, end, mealTicked, mealLogged, mealNote, catchUp, unmeal, remeal, lastMeal, mealList, SITTING, firstMeal, guessed, unguess, points, startOf, stopPill, bigBtn, histHTML, reward, paint, _st:st, w};
 })();
 </script>
 <style id="g1css">

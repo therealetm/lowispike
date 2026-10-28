@@ -121,7 +121,7 @@ test('the bubble sheet: stopped = "Letzte Mahlzeit", running = "Erste Mahlzeit",
     assert.match(html, /title0:"Letzte Mahlzeit", none:"Wann war deine letzte Mahlzeit\?/);
     assert.match(html, /title0:"Última comida"/);
     assert.match(html, /if \(!startOf\(\)\) \{ const at = SEL \|\| Date\.now\(\); if \(firstMeal\(at\) !== false\)/);
-    assert.match(html, /else \{ const r = end\(SEL \|\| Date\.now\(\), \{\}\);/, 'no {chain:true}: ending opens no Log meal');
+    assert.match(html, /else \{ const r = end\(SEL \|\| Date\.now\(\), inGap \? \{keep:true\} : \{\}\);/, 'no {chain:true}: ending opens no Log meal (on the Essenspause screen it keeps that screen open)');
     assert.strictEqual(run.mealNote(), '', 'Log meal no longer says saving ends the fast');
 });
 

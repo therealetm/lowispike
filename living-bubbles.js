@@ -431,7 +431,14 @@
         return true;
     }
     /* Home is rebuilt now and then: drop bubbles that left the page, pick up new ones */
+    /* Oct 28 2026 (Emmanuel: a long press on the timer shows only what happens in the body after a meal): the hold opens the
+       Essenspause screen in its phases-only form (gap-view.js). Changing the last-meal time is on the screen itself now. */
     function fastLong() {
+        const G = W.LowiGapView;
+        if (G && typeof G.open === 'function') {
+            try { if (G.isOpen && G.isOpen() && G.mode && G.mode() === 'phases') return true; } catch (e) {}
+            return G.open({ phases: true }) !== false;
+        }
         const FE = W.LowiFastEdit;
         if (!FE || typeof FE.open !== 'function') return false;
         try { const st = FE.startOf ? +FE.startOf() : 1; if (!(st > 0) || st > Date.now()) return false; } catch (e) { return false; } /* no fast running: a normal tap */

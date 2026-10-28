@@ -52,7 +52,8 @@ test('food plan (Oct 28): Essenspause is the eating hub, the meal bubble is Eink
     assert.match(sh, /kind: 'meals', onLong: \(\) => \{ longAt = performance\.now\(\); return true; \} \}\)/, 'a hold on the bubble only squishes (opens nothing, release swallowed)');
     assert.match(hb, /if \(kind === 'fuel' && shop\(\)\) return;/, 'one tap opens Einkaufen');
     assert.match(hb, /function shop\(\) \{\s*if \(fn\(W\.LowiStorePicks, 'open'\)\) \{[^}]*LowiStorePicks\.open\('home-shop'\)/, 'Einkaufen = the Shop panel');
-    assert.match(hb, /if \(kind !== 'move'\) return;/, 'only Move keeps a hold');
+    /* Oct 28 2026 (Emmanuel: a long press on the timer shows only the body phases): Move and Essenspause keep a hold, nothing else */
+    assert.match(hb, /if \(kind !== 'move' && kind !== 'gap'\) return;/, 'only Move and Essenspause keep a hold');
 });
 
 test('test floor: never below 4007 (food plan guard)', () => {

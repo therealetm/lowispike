@@ -23,6 +23,7 @@ test('the hidden top X no longer pushes the title off center', () => {
 });
 
 test('the title is the same element and text in all three languages (no copy change)', () => {
-    assert.ok(/<h2 id="gvTitle">' \+ esc\(s\('title'\)\) \+ '<\/h2>/.test(js), 'the title markup is unchanged');
+    /* Oct 28 2026: the long press on the timer opens the phases-only form, titled "Nach dem Essen"; the tap keeps "Essenspause" */
+    assert.ok(/<h2 id="gvTitle">' \+ esc\(s\(mode === 'phases' \? 'phT' : 'title'\)\) \+ '<\/h2>/.test(js), 'the title markup is unchanged (phases-only form excepted)');
     for (const t of ["title: 'Meal gap'", "title: 'Essenspause'", "title: 'Pausa entre comidas'"]) assert.ok(js.includes(t), t);
 });

@@ -663,10 +663,13 @@
         /* Oct 28 2026 food plan (one-gesture rule): the old Fuel bubble is Einkaufen now and a hold on it only squishes, so only Move
            keeps a hold (its full page). The press start is kept so the release of a hold on Einkaufen opens nothing either. */
         st.downAt = Date.now(); st.downKind = kind;
-        if (kind !== 'move') return;
+        /* Oct 28 2026 (Emmanuel: a long press on the timer shows only what happens in the body after a meal): Essenspause keeps a
+           hold too: the phases strip and the six markers, without the meals of the day and without buttons (gap-view.js, phases) */
+        if (kind !== 'move' && kind !== 'gap') return;
         clearTimeout(st.hold && st.hold.t);
         st.hold = { el, x: e.clientX, y: e.clientY, t: setTimeout(() => {
             st.hold = null; st.swallow = Date.now() + 900; buzz(20); close(true);
+            if (kind === 'gap') { const G = W.LowiGapView; if (fn(G, 'open') && !(fn(G, 'isOpen') && G.isOpen() && fn(G, 'mode') && G.mode() === 'phases')) G.open({ phases: true }); return; }
             if (fn(W.LowiMoveBubble, 'page')) W.LowiMoveBubble.page(); else if (fn(W.LowiMoveBubble, 'edit')) W.LowiMoveBubble.edit();
         }, HOLD_MS) };
     }

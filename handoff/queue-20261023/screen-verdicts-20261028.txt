@@ -1,0 +1,125 @@
+# nr|verdict|area|target|reason   (verdict: KERN BEHALTEN ZUSAMMENLEGEN VERSCHIEBEN LÖSCHEN GELÖSCHT; area = neuer Bereich)
+H-01|KERN|home||Startpunkt: Misty und alle Blasen in einem Tap
+H-02|BEHALTEN|home||Mistys Karte als Hologramm über Home, zählt nicht als Seite
+H-03|ZUSAMMENLEGEN|home|H-02|Nur ein Hinweis-Zustand der Karte, gehört inline hinein
+H-04|ZUSAMMENLEGEN|home|H-02|Umbenennen direkt in der Karte, kein eigenes Blatt
+H-05|ZUSAMMENLEGEN|home|H-02|Dieselbe Karte, nur weiter unten
+X-05|ZUSAMMENLEGEN|profil|P-04|Zweiter Weg zu Mistys Wachstum
+X-38|ZUSAMMENLEGEN|profil|P-04|Dritter Weg zu Formen und Wachstum
+X-27|ZUSAMMENLEGEN|profil|P-04|Level-Leiter gehört zu Mistys Wachstum
+X-13|LÖSCHEN|home||Alter Guide, vom Tutorial ersetzt
+X-24|LÖSCHEN|home||Kein Weg in der App, Werte stehen in den Blasen
+X-28|LÖSCHEN|home||Kein sichtbarer Weg, Serie steht in Mein Tag
+X-34|LÖSCHEN|home||Wetter ist kein Kernjob, schon aus den Menüs raus
+X-36|LÖSCHEN|home||Home ist schon die Welt, VR ist raus
+X-23|LÖSCHEN|home||Kein Weg, doppelt zu Mein Tag
+W-01|KERN|blasen||Wasser als Panel über Home, ein Tap
+G-01|KERN|blasen||Essenspause bleibt, aber kleiner und durchsichtiger
+G-02|ZUSAMMENLEGEN|blasen|G-01|Letzte Mahlzeit als Feld im Essenspause-Panel
+SL-01|KERN|blasen||Schlaf als Panel über Home
+M-01|KERN|blasen||Schritte eintragen, ein Tap
+M-03|ZUSAMMENLEGEN|blasen|M-01|Gleicher Job wie Schritte eintragen
+M-02|BEHALTEN|blasen||Bewegung mit Care board an einem Ort
+M-04|BEHALTEN|blasen||Eigener Job: Training mit Spiegel
+S-01|KERN|blasen||Ein Scanner für alles
+F-04|ZUSAMMENLEGEN|blasen|S-01|Zweiter Scanner, gleicher Job
+X-09|ZUSAMMENLEGEN|blasen|S-01|Produkt melden direkt im Scan-Ergebnis
+X-30|ZUSAMMENLEGEN|blasen|S-01|Seller-Infos stehen schon im Scan-Ergebnis
+S-02|LÖSCHEN|blasen||Doppelter Weg, der Ring zeigt schon alle Blasen
+F-03|KERN|blasen||Mahlzeit eintragen: der Kernjob der App
+F-02|ZUSAMMENLEGEN|blasen|F-03|Menü mit nur einem echten Ziel
+F-13|BEHALTEN|blasen||Kamera-Schritt von Mahlzeit eintragen
+X-12|ZUSAMMENLEGEN|blasen|F-03|Gleiches Eintragen, nur nach dem Fasten
+X-29|VERSCHIEBEN|profil|Einstellungen|Rhythmus ist eine Einstellung
+X-37|VERSCHIEBEN|profil|Einstellungen|Nur ein Ton-Schalter
+C-01|KERN|community||Community mit festen Tabs bleibt so
+C-03|KERN|community||Chat-Tab, fühlt sich schon wie ein Raum an
+C-07|BEHALTEN|community||Leute als Tab
+C-04|BEHALTEN|community||Langdruck-Menü, schon entrümpelt
+C-05|BEHALTEN|community||Profilkarte als Hologramm im Raum
+C-11|KERN|community||Mein Tag: der Tagesüberblick
+X-06|ZUSAMMENLEGEN|community|C-11|Tagesrückblick ist Mein Tag
+X-10|ZUSAMMENLEGEN|community|C-11|Tag abschließen landet in Mein Tag
+C-10|BEHALTEN|community||Heute nachtragen, klarer Job
+X-11|ZUSAMMENLEGEN|community|C-10|Abend-Nachtrag ist derselbe Job
+C-12|BEHALTEN|community||Regeln, einmal zum Nachlesen
+C-08|ZUSAMMENLEGEN|community|C-12|Willkommen und Regeln in eine Karte
+X-26|ZUSAMMENLEGEN|community|Rangliste|Info inline in der Rangliste
+X-04|LÖSCHEN|community||Alter Freundesbaum, der neue sitzt im Room-Tab
+X-07|LÖSCHEN|community||Kein Weg, Angebote posten nutzt keiner
+X-31|LÖSCHEN|community||Kein Weg, alte Spike-Listen
+C-02|VERSCHIEBEN|profil|Einstellungen|Einstellungen gehören ins Profil
+C-06|VERSCHIEBEN|profil|Einstellungen|Chat-Einstellungen gehören ins Profil
+C-09|VERSCHIEBEN|profil|P-06|Dein Auftritt gehört ins Profil, wie gewünscht
+F-01|KERN|kueche||Kochen öffnet als Hologramm-Panel am selben Ort
+F-09|BEHALTEN|kueche||Modus in Kochen, inline umgeschaltet
+F-11|BEHALTEN|kueche||Modus in Kochen, inline umgeschaltet
+F-12|BEHALTEN|kueche||Kochen Schritt für Schritt
+F-14|BEHALTEN|kueche||Rezept-Detail als Panel
+X-22|ZUSAMMENLEGEN|kueche|F-14|Ein Detail-Panel für Mahlzeiten und Rezepte
+X-02|ZUSAMMENLEGEN|kueche|F-01|Gespeicherte Rezepte gehören in Kochen
+X-32|ZUSAMMENLEGEN|kueche|F-01|Treffer ist der Shuffle in Kochen
+F-05|KERN|kueche||Einkaufsliste am Kühlschrank
+X-03|ZUSAMMENLEGEN|kueche|F-05|Heutige Einkäufe sind die Einkaufsliste
+X-35|ZUSAMMENLEGEN|kueche|F-05|Bestellen direkt aus der Einkaufsliste
+F-06|BEHALTEN|kueche||Fach-Zoom in der Küche, inline
+F-07|BEHALTEN|kueche||Fach-Zoom in der Küche, inline
+F-08|BEHALTEN|kueche||Fach-Zoom in der Küche, inline
+F-10|BEHALTEN|kueche||Fach-Zoom in der Küche, inline
+X-33|BEHALTEN|kueche||Welcher Laden, ein klarer Job
+X-15|ZUSAMMENLEGEN|kueche|X-33|Ladenfunde gehören zu Welcher Laden
+X-14|BEHALTEN|kueche||Hilf mir: mit der Einkaufsleiste oben
+X-08|LÖSCHEN|kueche||Kein Weg, altes Feldbuch
+X-16|VERSCHIEBEN|profil|P-01|Zahl, was du willst gehört ins Profil
+P-01|KERN|profil||Profil, Zurück führt dahin, wo du herkamst
+P-02|ZUSAMMENLEGEN|profil|P-01|Doppelter Einstieg ins Profil
+X-01|ZUSAMMENLEGEN|profil|P-01|Geburtstag und Begleiter als Karte im Profil
+P-03|BEHALTEN|profil||Deine Daten an einem Ort
+P-09|ZUSAMMENLEGEN|profil|P-03|Bearbeiten direkt in Deine Daten
+P-08|ZUSAMMENLEGEN|profil|P-03|Gewicht und BMI sind Daten
+P-04|BEHALTEN|profil||Mistys Wachstum, sammelt alle Wachstums-Wege
+P-05|BEHALTEN|profil||Zyklus, eigener Job
+P-06|BEHALTEN|profil||So sehen dich andere, mit Dein Auftritt
+P-07|ZUSAMMENLEGEN|profil|P-01|Sternzeichen als Zeile im Profil
+T-01|BEHALTEN|start||Installieren, ein Schritt statt zwei
+T-02|ZUSAMMENLEGEN|start|T-01|Zweiter Installier-Schritt
+X-21|ZUSAMMENLEGEN|start|T-01|Dritte Installier-Anleitung
+T-03|BEHALTEN|start||Sprache wählen
+T-04|BEHALTEN|start||Name
+T-05|ZUSAMMENLEGEN|start|T-04|Gleicher Bildschirm, nur ausgefüllt
+X-17|ZUSAMMENLEGEN|start|T-04|Startplan-Fragen in den ersten Start
+X-18|ZUSAMMENLEGEN|start|T-04|Startplan-Ergebnis in den ersten Start
+T-06|KERN|start||Konto, damit nichts verloren geht
+X-25|ZUSAMMENLEGEN|start|T-06|Zweites Konto-Blatt, dazu noch englisch
+T-07|ZUSAMMENLEGEN|start|T-08|Video-Tour doppelt zum Tutorial
+T-08|BEHALTEN|start||Tutorial-Schritt über der echten App, inline
+T-09|BEHALTEN|start||Tutorial-Schritt, inline
+T-10|BEHALTEN|start||Tutorial-Schritt, inline
+T-11|BEHALTEN|start||Tutorial-Schritt, inline
+T-12|ZUSAMMENLEGEN|start|T-11|Paar-Schritt, einer reicht
+T-13|BEHALTEN|start||Tutorial-Schritt, inline
+T-14|ZUSAMMENLEGEN|start|T-13|Paar-Schritt, einer reicht
+T-15|BEHALTEN|start||Tutorial-Schritt, inline
+T-16|ZUSAMMENLEGEN|start|T-15|Paar-Schritt, einer reicht
+T-17|BEHALTEN|start||Tutorial-Schritt, inline
+T-18|ZUSAMMENLEGEN|start|T-17|Paar-Schritt, einer reicht
+T-19|BEHALTEN|start||Tutorial-Schritt, inline
+T-20|BEHALTEN|start||Tutorial-Schritt, inline
+T-21|ZUSAMMENLEGEN|start|T-22|Fliegen kurz im letzten Schritt
+T-22|BEHALTEN|start||Tutorial-Abschluss
+T-23|BEHALTEN|start||Neuigkeiten: eine Karte statt 13
+T-24|LÖSCHEN|start||Update-Tour, Popups nur wenn nötig
+T-25|LÖSCHEN|start||Update-Tour, Popups nur wenn nötig
+T-26|LÖSCHEN|start||Update-Tour, Popups nur wenn nötig
+T-27|LÖSCHEN|start||Update-Tour, Popups nur wenn nötig
+T-28|LÖSCHEN|start||Update-Tour, Popups nur wenn nötig
+T-29|LÖSCHEN|start||Update-Tour, Popups nur wenn nötig
+T-30|LÖSCHEN|start||Update-Tour, Popups nur wenn nötig
+T-31|LÖSCHEN|start||Update-Tour, Popups nur wenn nötig
+T-32|LÖSCHEN|start||Update-Tour, Popups nur wenn nötig
+T-33|LÖSCHEN|start||Update-Tour, Popups nur wenn nötig
+T-34|LÖSCHEN|start||Update-Tour, Popups nur wenn nötig
+T-35|LÖSCHEN|start||Update-Tour, Popups nur wenn nötig
+X-19|GELÖSCHT|weg||Alte Einstellungen, ist jetzt raus
+X-20|GELÖSCHT|weg||Altes Schlaf-Blatt, ist jetzt raus
+X-39|GELÖSCHT|weg||Alte Weltkarte, ist jetzt raus

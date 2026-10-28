@@ -445,11 +445,16 @@
         const head = T('Steps today', 'Schritte heute', 'Pasos hoy');
         const val = v.level ? NAMES[v.level]() + ' · ' + HINTS[v.level]() : (n ? n + ' ' + (n === 1 ? T('older guess', 'ältere Schätzung', 'estimación antigua') : T('older guesses', 'ältere Schätzungen', 'estimaciones antiguas')) : T('pick on the Move bubble', 'auf der Bewegungs-Bubble wählen', 'elige en la burbuja de Movimiento'));
         const rm = n ? T('Remove', 'Entfernen', 'Quitar') : '';
+        /* the honest copy from the old sheet stays with the line, for screen readers */
+        const why = T('Casual (under 5,000), Steady (5,000 to 9,999) or Epic (10,000 or more) is today\'s step total from your own phone\'s step counter. LOWiSPIKE does not count or check steps, so it is your word, not a measurement. One range a day: tapping another changes today\'s.',
+            'Locker (unter 5.000), Stetig (5.000 bis 9.999) oder Episch (10.000 oder mehr) ist deine Schrittzahl von heute aus dem Schrittzähler deines Handys. LOWiSPIKE zählt und prüft keine Schritte, es ist also dein Wort, keine Messung. Ein Bereich pro Tag: Tippst du einen anderen, ändert sich der von heute.',
+            'Tranquilo (menos de 5.000), Constante (de 5.000 a 9.999) o Épico (10.000 o más) es tu total de pasos de hoy según el contador de tu móvil. LOWiSPIKE no cuenta ni comprueba pasos, así que es tu palabra, no una medida. Un rango al día: si tocas otro, cambia el de hoy.');
         const key = head + val + rm;
         if (r.dataset.t !== key) {
             r.dataset.t = key;
             r.innerHTML = '<span><small>' + esc(head) + '</small><b>' + esc(val) + '</b></span>' + (rm ? '<button type="button" class="wm-rmday" data-wm-rmday="1">' + esc(rm) + '</button>' : '');
             r.setAttribute('aria-label', head + ': ' + val);
+            r.setAttribute('aria-description', why);
         }
     }
     function removeToday() {

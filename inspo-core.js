@@ -269,7 +269,11 @@
 
     const c={
       id:'inspo-'+key,day:key,ts:cardDate(now).getTime(),uid:BOT_ID,by:NAME,lang:LANGS[li(lang)],
-      label:{bot:pick(L.bot,lang),recipe:pick(L.recipe,lang),aria:pick(L.aria,lang),swap:pick(L.swap,lang),craving:pick(L.craving,lang),tryIt:pick(L.tryIt,lang),book:pick(L.book,lang)},
+      /* 28 Oct 2026 (Emmanuel's screenshot: Konjak Nudeln looked like part of the popsicle swap): the slide renderer
+       * (foryou.js slideHTML) reads the Gold Rush heading, its subtitle and its source line from label.gold / goldSub /
+       * goldSrc. They were missing here since 24 Oct, so the product section showed a bare star with no heading. */
+      label:{bot:pick(L.bot,lang),recipe:pick(L.recipe,lang),aria:pick(L.aria,lang),swap:pick(L.swap,lang),craving:pick(L.craving,lang),tryIt:pick(L.tryIt,lang),book:pick(L.book,lang),
+        gold:pick(L.gold,lang),goldSub:pick(L.spotted,lang),goldSrc:pick(L.goldSrc,lang)},
       intro:pick(introFor(key),lang),
       swap:{k:sw.k,e:sw.e,r:sw.r,rec:bookId(sw.r),from:pick(sw.from,lang),to:pick(sw.to,lang),why:pick(sw.why,lang)},
       gold:null

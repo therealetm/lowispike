@@ -53,7 +53,13 @@
   function merge(list, bot, ctx) {
     const seen = new Set(), out = [];
     for (const p of (bot || []).concat(list || [])) { if (!p || !p.id || seen.has(p.id)) continue; seen.add(p.id); if (shows(p, ctx)) out.push(p); }
-    return out.sort((a, b) => (+b.ts || 0) - (+a.ts || 0));
+    out.sort((a, b) => (+b.ts || 0) - (+a.ts || 0));
+    /* 28 Oct 2026 (Emmanuel, call): today's Tausch des Tages stays at the top of For You. It is dated 08:00, so the bot's
+     * lunch and dinner recipe posts and member posts used to push it down during the day. Only today's card is pinned:
+     * bot[0] is the current day's slide (inspo-core feed(), newest first); the older swaps keep their place by date. */
+    const today = (bot || [])[0];
+    if (today && today.bot && today.inspo) { const i = out.indexOf(today); if (i > 0) { out.splice(i, 1); out.unshift(today); } }
+    return out;
   }
 
   /* Share -> Community also lands in For You. The meal journal posts {photo url, dish name, spike level, caption} to the

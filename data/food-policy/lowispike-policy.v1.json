@@ -159,7 +159,7 @@
       ]
     },
     "candy_dessert": {
-      "name": "pudding|dessert|postre|schokolade|chocolate|chocolat|bonbon|candy|gummibär|fruchtgummi|weingummi|lakritz|keks|kekse|cookie|biscuit|kuchen|cake|torte|waffel|\\beis\\b|eiscreme|ice cream|helado|praline|schokoriegel|müsliriegel|marzipan|nougat|creme brulee|mousse|tiramisu|donut|muffin|croissant|pastel|tarta|bizcocho|galletas?|caramelos?|brownies?|cupcakes?|^\\s*sweets\\s*$|süßigkeiten|dulces\\b|pfeffernüsse|pfeffernuesse|after eight",
+      "name": "pudding|dessert|postre|schokolade|chocolate|chocolat|bonbon|candy|gummibär|fruchtgummi|weingummi|lakritz|keks|kekse|cookie|biscuit|kuchen|cake|torte(?!ll)|waffel|\\beis\\b|eiscreme|ice cream|helado|praline|schokoriegel|müsliriegel|marzipan|nougat|creme brulee|mousse|tiramisu|donut|muffin|croissant|pastel|tarta|bizcocho|galletas?|caramelos?|brownies?|cupcakes?|^\\s*sweets\\s*$|süßigkeiten|dulces\\b|pfeffernüsse|pfeffernuesse|after eight",
       "off": [
         "en:desserts",
         "en:puddings",
@@ -188,7 +188,7 @@
       ]
     },
     "starch_pasta": {
-      "name": "spaghetti|nudeln|pasta|penne|fusilli|farfalle|tagliatelle|lasagne|makkaroni|macaroni|maccheroni|spätzle|gnocchi|noodles",
+      "name": "spaghetti|nudeln|pasta|penne|fusilli|farfalle|tagliatelle|lasagne|makkaroni|macaroni|maccheroni|spätzle|gnocchi|noodles|tortellini|tortelloni|ravioli|maultasche|tallarines|espaguetis?|macarrones",
       "off": [
         "en:pastas",
         "en:noodles"

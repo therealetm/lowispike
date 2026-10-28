@@ -49,6 +49,15 @@
         return null;
     }
     const n = v => (typeof v === 'number' && isFinite(v) ? v : null);
+    // packG(q): the pack weight in grams from the label quantity ("500g", "500 g", "0,5 kg"); null for pieces, ml or a multipack.
+    function packG(q) {
+        const s = String(q || '').toLowerCase();
+        if (!s || /\d\s*[x×]\s*\d/.test(s)) return null;
+        const m = s.match(/(\d+(?:[.,]\d+)?)\s*(kg|g|gr|gramm|grams?)\b/);
+        if (!m) return null;
+        const v = +m[1].replace(',', '.') * (m[2] === 'kg' ? 1000 : 1);
+        return v > 0 ? v : null;
+    }
     const GROUP = {snack: 'snacks', dairy: 'dairy', cereal: 'pantry', bread: 'bread', drink: 'drinks', sweets: 'sweets', staple: 'pantry'};
     const TO_VERDICT = {higher: 'spike', moderate: 'better', lower: 'ok', insufficient: 'unknown'};
     const UP = {lower: 'moderate', moderate: 'higher', higher: 'higher'};
@@ -110,7 +119,7 @@
         const unit = drink ? 'ml' : 'g';
         const nutrition = E.validateNutrition(per100, unit);
         const group = portionGroup(p, drink ? 'drinks' : (veg && p.cat === 'drink' ? 'other' : GROUP[p.cat] || 'other'));
-        const serving = E.calculateServing(nutrition, {manufacturerG: n(f.sv), userG, group: group === 'nuts' ? 'snacks' : group});
+        const serving = E.calculateServing(nutrition, {manufacturerG: n(f.sv), packG: packG(f.q), userG, group: group === 'nuts' ? 'snacks' : group});
         const glucose = E.estimateGlucoseImpact({serving, category: {liquid: drink}});
         let key = glucose.key;
         const sg = serving.amounts.sugar, cg = serving.amounts.carbs;

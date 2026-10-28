@@ -133,6 +133,14 @@
             const sugar100 = num(per100.sugar), text = low((p.name || '') + ' ' + (p.genericName || ''));
             if (!byTag && ((sugar100 != null && sugar100 <= 2) || /eigene[mn]? saft|own juice|su (propio )?jugo|jugo natural/.test(text))) delete cats.juice;
         }
+        /* 28 Oct 2026 (Emmanuel's Jeden Tag Speisequark Magerstufe): Open Food Facts files plain quark and yoghurt under
+           "en:desserts" / "en:dairy-desserts", so the tag alone made unsweetened quark a "sweet or dessert" Skip it, against
+           Master Knowledge v3 (plain quark, skyr, Greek yoghurt are JA). The dessert tag no longer counts for plain yoghurt or
+           quark when the label proves it plain: a complete ingredient list with no added sugar and no sweetener, and sugar
+           at or under plainYoghurtSugarMaxPer100 (milk sugar only). A dessert word in the name (pudding, mousse, Vanille-Quark
+           ...) still counts, and without a complete list the tag still counts. */
+        if (cats.candy_dessert && cats.plain_yoghurt_quark && complete && !ing.truncated && !S.addedSugar && !S.sweetener &&
+            sugar != null && sugar <= T.plainYoghurtSugarMaxPer100 && !CAT_RX.candy_dessert.test(low((p.name || '') + ' ' + (p.genericName || '')))) delete cats.candy_dessert;
         const incomplete = !complete || !!ing.truncated;
         const liquid = p.unit === 'ml' || !!g.liquid || !!(cats.sugar_drink || cats.juice || cats.smoothie || cats.unsweetened_drink) && !cats.plain_yoghurt_quark;
         const addedSugar = !!S.addedSugar;

@@ -24,10 +24,12 @@
   // fields other files render, opted in here so their files stay untouched (one line per field)
   // Food logging, search and names come first (Emmanuel: "when I don't always want to type what food I wrote"): these keep their
   // mic even when a screen squeezes them narrower than the 150 px rule.
-  var OPT_IN = ['#cmInput', '#b3Nm', '#b3Name', '#b3MName', '#b3Dq', '#scanText', '#scanType', '#f2In', '#kgQ', '#k9Q', '#gb-item',
+  var OPT_IN = ['#b3Nm', '#b3Name', '#b3MName', '#b3Dq', '#scanText', '#scanType', '#f2In', '#kgQ', '#k9Q', '#gb-item',
     '.stp-snack-add input[name="snack"]', 'input[data-mr-drink]', '#fyvCap', '#trCap', 'input[name="herbName"]', '.lc-in', '#hqGoalText'];
   // typed confirmations and codes never get one
-  var OPT_OUT = ['.oa-type', 'input[name="code"]', '#trUrl', '#gb-link', '#gb-total'];
+  // Oct 28: the Community chat composer has ONE mic (community-chat.js #cmMic: tap = dictate via LowiMic.dictate, hold = voice
+  // message), so the speak-to-type icon inside its text box is gone (owner: two mic buttons were a duplicate).
+  var OPT_OUT = ['.oa-type', 'input[name="code"]', '#trUrl', '#gb-link', '#gb-total', '#cmInput'];
   var CHAT = { '#cmInput': 1 };
   var SIZE = 34, INSET = 6, HINT_MS = 4200, SCAN_MS = 250;
 
@@ -42,7 +44,8 @@
   var SR = W.SpeechRecognition || W.webkitSpeechRecognition || null;
   var appleTouch = C.isAppleTouch(navigator.userAgent, navigator.maxTouchPoints);
   var standalone = !!(navigator.standalone || W.matchMedia && W.matchMedia('(display-mode: standalone)').matches);
-  var OFF_KEY = 'lowi_mic_native_off_' + (standalone ? 'app' : 'tab'), OFF_MS = 7 * 24 * 3600 * 1000;
+  // v2 (Oct 28): the old flag was learned while the 'ambient' audio session blocked the mic (see mic-session.js), so start fresh
+  var OFF_KEY = 'lowi_mic_native_off2_' + (standalone ? 'app' : 'tab'), OFF_MS = 7 * 24 * 3600 * 1000;
   var nativeBroken = false;
   try { var off = Number(localStorage.getItem(OFF_KEY)); nativeBroken = off > 0 && Date.now() - off < OFF_MS; } catch (e) { }
   function markBroken() { nativeBroken = true; try { localStorage.setItem(OFF_KEY, String(Date.now())); } catch (e) { } }
@@ -213,6 +216,8 @@
   var session = null;
   function setState(rec, st) {
     var b = rec.b, el = rec.el;
+    if (rec.onstate) { try { rec.onstate(st); } catch (e) { } }
+    if (!b) { if (st === 'listen') { if (!('ph' in rec)) rec.ph = el.getAttribute('placeholder'); if (!el.value) el.setAttribute('placeholder', tr('listening')); } else if ('ph' in rec) { if (rec.ph == null) el.removeAttribute('placeholder'); else el.setAttribute('placeholder', rec.ph); delete rec.ph; } return; }
     b.classList.toggle('mic-on', st === 'listen');
     b.setAttribute('aria-pressed', st === 'listen' ? 'true' : 'false');
     b.setAttribute('aria-label', st === 'listen' ? tr('stop') : tr(rec.chat ? 'chat' : 'speak'));
@@ -270,8 +275,11 @@
 
   // The device's own speech recognition, words appear while speaking
   function startNative(rec) {
-    var r;
-    try { r = new SR(); } catch (e) { markBroken(); refreshAll(); if (appleTouch) useKeyboard(rec); return; }
+    var r, MS = (typeof W !== 'undefined' && W && W.LowiMicSession) || null, held = false;
+    // mic fix Oct 28: leave the 'ambient' audio session before recognition starts, or WebKit has no microphone input
+    function release() { if (held) { held = false; if (MS) MS.end(); } }
+    if (MS) { MS.begin(); held = true; }
+    try { r = new SR(); } catch (e) { release(); markBroken(); refreshAll(); if (appleTouch) useKeyboard(rec); return; }
     var el = rec.el, base = caret(el), finalText = '', action = '', started = false, ended = false, s, dog;
     // BH-048 P-STALE-BASE: every result and the end used to rebuild the field from the text it held when the mic was tapped, so
     // words typed while listening vanished, and text the app cleared meanwhile (chat Send) came back. Compare against the last
@@ -313,6 +321,7 @@
     r.onend = function () {
       if (ended) return;
       ended = true;
+      release();
       clearTimeout(dog);
       clearInterval(watch);
       if (session === s) session = null;
@@ -348,8 +357,22 @@
   }
   if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
+  // Oct 28: dictation for a field that has no mic of its own (the chat composer's single mic: tap = dictate). onstate('listen' |
+  // 'idle') lets the caller show its own button state. Returns 'native' | 'keyboard' | 'stopped' | ''.
+  var ext = new WeakMap();
+  function dictate(el, onstate) {
+    if (!el) return '';
+    var rec = ext.get(el);
+    if (!rec) { rec = { el: el, b: null, chat: true, ro: null, ta: el.tagName === 'TEXTAREA' }; ext.set(el, rec); }
+    rec.onstate = onstate || null;
+    if (session && session.rec === rec) { stop('tap'); return 'stopped'; }
+    var eng = engine();
+    start(rec);
+    return eng;
+  }
   W.LowiMic = {
-    engine: engine, refresh: scanSoon, stop: function () { stop('gone'); },
+    engine: engine, refresh: scanSoon, stop: function () { stop('gone'); }, dictate: dictate,
+    listeningIn: function (el) { return !!(session && session.rec && session.rec.el === el); },
     listening: function () { return !!session; },
     state: function () { return { appleTouch: appleTouch, standalone: standalone, nativeBroken: nativeBroken, attached: attached.length, engine: engine() }; }
   };

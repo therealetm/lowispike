@@ -21,7 +21,7 @@ STATIC.push("cook-tab-order.js"); /* Oct 26 Cook opens on its first tab, tabs he
 STATIC.push("cart-core.js"); /* Oct 26 Supermarket Cart (Warenkorb): own line */
 STATIC.push("food-names-core.js"); /* Oct 26 food names in the app language (cart + Give a hand): own line */
 STATIC.push("week-basket-core.js", "week-basket.js", "week-basket.css"); /* Oct 26 Shop from home weekly basket in Supermarket (MAYA-HANDOFF 0.21): own line */
-STATIC.push("mic-dictate.css", "mic-dictate-core.js", "mic-dictate.js"); /* Oct 26 mic dictation in text fields: own line */
+STATIC.push("mic-dictate.css", "mic-session.js", "mic-dictate-core.js", "mic-dictate.js"); /* Oct 26 mic dictation in text fields: own line */
 STATIC.push("quick-add-core.js"); /* Oct 26 quick "+" on Supermarket rows (MAYA-HANDOFF 0.35): own line, like kitchen-core.js */
 STATIC.push("quick-tour.js", "quick-tour.css"); /* Oct 26 Quick tour video sheet (MAYA-HANDOFF 0.38): own line; the .mp4 itself is never precached */
 STATIC.push("day-recap-core.js", "day-recap.js", "day-recap.css"); /* Oct 26 Day recap (MAYA-HANDOFF 0.40): own line */

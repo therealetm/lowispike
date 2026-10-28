@@ -105,7 +105,7 @@
   var WORDS = {
     en: {
       speak: 'Speak to type', stop: 'Stop listening', listening: 'Listening\u2026',
-      denied: 'Microphone or Speech Recognition is off for LOWiSPIKE. Turn it on in Settings \u203a Privacy & Security (or your browser\u2019s site settings).',
+      denied: 'Mic is off. Allow it in Settings \u203a Apps \u203a Safari \u203a Microphone, then try again.',
       nothing: 'Didn\u2019t catch that. Tap the mic and try again.',
       keyboard: 'Tap the mic on your keyboard and speak. No mic there? Turn on Dictation in Settings \u203a General \u203a Keyboard.',
       failed: 'Couldn\u2019t listen just now. Try again or type it.',
@@ -113,7 +113,7 @@
     },
     de: {
       speak: 'Sprechen statt tippen', stop: 'Zuh\u00f6ren beenden', listening: 'Ich h\u00f6re zu\u2026',
-      denied: 'Mikrofon oder Spracherkennung ist f\u00fcr LOWiSPIKE aus. Schalte es ein unter Einstellungen \u203a Datenschutz & Sicherheit (oder in den Website-Einstellungen deines Browsers).',
+      denied: 'Mikrofon ist aus. Erlaube es unter Einstellungen \u203a Apps \u203a Safari \u203a Mikrofon, dann nochmal.',
       nothing: 'Nicht verstanden. Tippe aufs Mikrofon und versuch es noch mal.',
       keyboard: 'Tippe auf das Mikrofon deiner Tastatur und sprich. Kein Mikrofon da? Schalte Diktieren ein unter Einstellungen \u203a Allgemein \u203a Tastatur.',
       failed: 'Zuh\u00f6ren ging gerade nicht. Versuch es noch mal oder tippe es.',
@@ -121,7 +121,7 @@
     },
     es: {
       speak: 'Habla para escribir', stop: 'Dejar de escuchar', listening: 'Escuchando\u2026',
-      denied: 'El micr\u00f3fono o el reconocimiento de voz est\u00e1 desactivado para LOWiSPIKE. Act\u00edvalo en Ajustes \u203a Privacidad y seguridad (o en los ajustes del sitio de tu navegador).',
+      denied: 'El micr\u00f3fono est\u00e1 desactivado. Perm\u00edtelo en Ajustes \u203a Apps \u203a Safari \u203a Micr\u00f3fono y vuelve a probar.',
       nothing: 'No te he entendido. Toca el micr\u00f3fono e int\u00e9ntalo otra vez.',
       keyboard: 'Toca el micr\u00f3fono de tu teclado y habla. \u00bfNo hay micr\u00f3fono? Activa el Dictado en Ajustes \u203a General \u203a Teclado.',
       failed: 'No pude escuchar ahora. Int\u00e9ntalo otra vez o escr\u00edbelo.',

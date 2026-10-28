@@ -10,6 +10,10 @@
 #cmPaneChat .cs-mic-btn:focus-visible{outline:2px solid #9fd8ff;outline-offset:2px}
 #cmPaneChat .cm-inrow.cs-empty #cmSend{display:none}
 #cmPaneChat .cm-inrow:not(.cs-empty) .cs-mic-btn{display:none}
+/* Oct 28: one mic. While it dictates into the text box it stays (tap again = stop) and glows */
+#cmPaneChat .cm-inrow .cs-mic-btn.cs-dictating{display:grid;background:#0a84ff;border-color:#9fd8ff;color:#fff;box-shadow:0 0 0 0 rgba(10,132,255,.55);animation:csDictPulse 1.4s ease-out infinite}
+@keyframes csDictPulse{0%{box-shadow:0 0 0 0 rgba(10,132,255,.55)}100%{box-shadow:0 0 0 12px rgba(10,132,255,0)}}
+@media (prefers-reduced-motion:reduce){#cmPaneChat .cm-inrow .cs-mic-btn.cs-dictating{animation:none}}
 
 /* ---- recording: the bar takes the whole row (field, photo and mic step aside) ---- */
 #cmPaneChat .cs-rec-host:empty{display:none}

@@ -16299,7 +16299,7 @@ function ctx(){
   } catch(e){ ac = null; }
   return ac;
 }
-function unlock(){ if (!ctx()) return; try { if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch(e){}
+function unlock(){ if (!ctx()) return; try { if (window.LowiMicSession) window.LowiMicSession.ambient(); else if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch(e){}
   if (ac.state !== "running") { try { ac.resume(); } catch(e){} }
   if (!unlocked) { try { const b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource(); s.buffer = b; s.connect(ac.destination); s.start(0); } catch(e){} unlocked = true; } }
 // only wake audio for touches on the swipe deck, so this never competes with the main kit elsewhere
@@ -17088,7 +17088,7 @@ function applyVol(){ if (master && ac) { try { master.gain.setTargetAtTime(vol()
 // iOS: audio only starts inside a user gesture. Unlock on the first touch, then keep it awake.
 function unlock(){
   if (!ctx()) return;
-  try { if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch(e){}   // mix with the user's music, respect the silent switch
+  try { if (window.LowiMicSession) window.LowiMicSession.ambient(); else if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch(e){}   // mix with the user's music, respect the silent switch
   if (ac.state !== "running") { try { ac.resume(); } catch(e){} }
   if (!unlocked) { try { const b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource(); s.buffer = b; s.connect(ac.destination); s.start(0); } catch(e){} unlocked = true; }
   sfxNap();
@@ -21884,6 +21884,7 @@ window.LowiCommunityHost = {
 <script src="shop-scan.js?v=20261028-143512"></script>
 <!-- Oct 26: speak instead of typing, a small mic in every free-text field (mic-dictate.js; opt in/out per field with data-mic) -->
 <link rel="stylesheet" id="micCss" href="mic-dictate.css?v=20261028-143512">
+<script src="mic-session.js?v=20261028-143512"></script>
 <script src="mic-dictate-core.js?v=20261028-143512"></script>
 <script src="mic-dictate.js?v=20261028-143512"></script>
 <link rel="stylesheet" id="stpCss" href="store-picks.css?v=20261028-143512">

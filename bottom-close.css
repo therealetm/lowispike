@@ -17,6 +17,8 @@
 @media (prefers-reduced-motion: reduce){.lw-bx.on{animation:none}.lw-bx{transition:none}}
 /* the screen's own back / close (top-left arrow, top-corner X) stays in the page for its logic, out of sight */
 .lw-bx-src{opacity:0!important;pointer-events:none!important}
+/* Oct 28: steps aside while a card it cannot clear is open (see clearance in bottom-close.js) */
+.lw-bx.on.bx-aside{opacity:0;visibility:hidden;pointer-events:none}
 /* scrolling panels end above the button, so their last row is never under it */
 html.lw-bx-on #tab-shelf #shBody,html.lw-bx-on #tab-profile,html.lw-bx-on #tab-move,html.lw-bx-on #tab-scan,html.lw-bx-on .gv-scroll{scroll-padding-bottom:84px}
 html.lw-bx-on #tab-shelf #shBody::after,html.lw-bx-on .gv-scroll::after,html.lw-bx-on #tab-move::after,html.lw-bx-on #tab-profile::after{content:"";display:block;height:calc(env(safe-area-inset-bottom, 0px) + 72px)}

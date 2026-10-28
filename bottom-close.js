@@ -16,7 +16,7 @@
     const BACK_RE = /^\s*(back|zur(ü|u)ck|atr(á|a)s|volver)\b/i;
     /* close / back controls known by class (some carry no label); per-item remove buttons (a snack, a photo, a list row) never match */
     const KNOWN = '#secX,.sec-x,.gv-x,.stp-close,.kg-back,.kg-qx,.sh-back,.hs-back,.hs-x,.ss2-back,.ss2-page-x,.r5-sback,.f2-back,.f2-x,.gb-x,.bs-close,.ap-close,.sz-close,.tmg-close,.cf-back,.cf-x,.cf-aura-close,.rm-back,.rm-x,.r2-back,.r2-x,.cr-back,.cr-x,.a1-back,.a1-x,.mv-back,.nm-back,.yd-back,.g1-back,.wb-back,.bw3-x,.ck-out-x,.ltp-x,.hq-x,.e1-x,.ec-x,.fai-x,.pd-x,.mp-x,.ig-x,.cs-x,.dr-x,.r3a-x,[data-close],[data-bx]';
-    const NEVER = '#n1B *,.stp-snack-x,.mr-add-x,.cg-photo-x,.rk-lad-x,.lw-bx,[data-no-bx],#ltTour *,.lt-tour *';
+    const NEVER = '.cs-mic-card .cs-photo-x,#n1B *,.stp-snack-x,.mr-add-x,.cg-photo-x,.rk-lad-x,.lw-bx,[data-no-bx],#ltTour *,.lt-tour *';
     const SRC = 'lw-bx-src';
     const obs = [];
     let btn = null, target = null, raf = 0, last = '', bottomPx = 0;
@@ -95,24 +95,71 @@
     }
     const typing = () => { const a = D.activeElement; return !!(a && a !== D.body && (a.matches('textarea,select,[contenteditable=""],[contenteditable="true"]') || a.matches('input') && !/^(button|checkbox|radio|range|submit|reset|color|file|image)$/i.test(a.type || 'text'))); };
     /* rise above whatever sits at the bottom center: a text field, the chat composer, the bin, any control */
+    let cardBlock = false;
     function clearance(b) {
         const base = 14, size = 56, cx = innerWidth / 2;
-        let lift = 0; obs.length = 0;
+        let lift = 0; obs.length = 0; cardBlock = false;
         const prev = b.style.pointerEvents; b.style.pointerEvents = 'none';
         try {
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 8; i++) {
                 const y0 = innerHeight - safeBottom() - base - lift - size, hits = [];
                 for (const dx of [-26, 0, 26]) for (const y of [y0 + 4, y0 + size / 2, y0 + size - 4]) { const e = D.elementFromPoint(cx + dx, y); if (e) hits.push(e); }
-                const ob = hits.map(e => e.closest('textarea,input:not([type=hidden]),select,[contenteditable="true"],button,a[href],[role="button"],[role="textbox"],.kg-bin,.cc-composer,.cmp,.chat-composer,form'))
+                let ob = hits.map(e => e.closest('textarea,input:not([type=hidden]),select,[contenteditable="true"],button,a[href],[role="button"],[role="textbox"],.kg-bin,.cc-composer,.cmp,.chat-composer,form'))
                     .find(o => o && o !== b && !o.classList.contains(SRC) && !isCandidate(o));
+                /* Oct 28 (owner: the X sat on the "Mikrofon ist aus" card's text): a card, popup, hint or plain text that stays put
+                   at the bottom lifts it too. Take whichever obstacle reaches lowest under the button. */
+                const R = { l: cx - 30, r: cx + 30, t: y0, b: y0 + 56 };
+                const cards = hits.map(e => contentBox(e, R)).filter(o => o && o !== b && !b.contains(o) && anchored(o));
+                let isCard = false;
+                if (cards.length) {
+                    const low = cards.reduce((m, o) => (o.getBoundingClientRect().top > m.getBoundingClientRect().top ? o : m));
+                    if (!ob || !(anchored(ob) || ob.matches('textarea,input,select,[contenteditable="true"],[role="textbox"]'))) { ob = low; isCard = true; }
+                }
                 if (!ob || !(anchored(ob) || ob.matches('textarea,input,select,[contenteditable="true"],[role="textbox"]'))) break;
                 const r = ob.getBoundingClientRect(); obs.push((ob.id || String(ob.className).slice(0, 40) || ob.tagName) + '@' + Math.round(r.top) + '-' + Math.round(r.bottom));
                 const need = innerHeight - safeBottom() - base - r.top + 10;
+                /* a card it cannot clear without floating up the middle of the screen: the button steps aside instead (the card
+                   has its own close, and the button comes back when the card goes) */
+                if (isCard && need > innerHeight * 0.3) { cardBlock = true; break; }
                 if (need <= lift || need > innerHeight * 0.5) break;
                 lift = need;
             }
         } finally { b.style.pointerEvents = prev; }
         return lift;
+    }
+    /* a card / popup / hint / toast around a hit, or the hit itself when text, a picture or a control of it lies under the
+       button (R = the button's box); never a whole screen or layer */
+    const BOX_RE = /(^|[\s_-])(card|toast|hint|popup|notice|banner|snack|tip|alert|bubble)([\s_-]|$)/i;
+    const hitR = (q, R) => q.width > 0 && q.height > 0 && q.right > R.l && q.left < R.r && q.bottom > R.t && q.top < R.b;
+    function inkUnder(e, R) {
+        let k = 0;
+        for (const el of [e, ...e.querySelectorAll('img,svg,video,input,textarea,select,button,[role="button"]')]) {
+            if (++k > 60) break;
+            if (el !== e && el.matches('img,svg,video,input,textarea,select,button,[role="button"]') && hitR(el.getBoundingClientRect(), R)) return el;
+        }
+        const w = D.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; k = 0;
+        while ((n = w.nextNode()) && ++k < 120) {
+            if (!n.nodeValue.trim()) continue;
+            const pe = n.parentElement; if (!pe || (btn && btn.contains(pe))) continue;
+            const cs = getComputedStyle(pe); if (cs.visibility === 'hidden' || +cs.opacity === 0) continue;
+            const rg = D.createRange(); rg.selectNodeContents(n);
+            for (const q of rg.getClientRects()) if (hitR(q, R)) return pe;
+        }
+        return null;
+    }
+    function contentBox(e, R) {
+        if (!e || e === H || e === D.body || (btn && (e === btn || btn.contains(e)))) return null;
+        const vw = innerWidth, vh = innerHeight;
+        for (let a = e, k = 0; a && a !== D.body && a !== H && k < 7; a = a.parentElement, k++) {
+            const r = a.getBoundingClientRect();
+            if (r.height > vh * 0.5 || r.width * r.height > vw * vh * 0.55) break;
+            const role = a.getAttribute('role') || '', cls = typeof a.className === 'string' ? a.className : '';
+            if (/^(alert|alertdialog|status|tooltip)$/.test(role) || BOX_RE.test(cls)) return a;
+        }
+        const ink = inkUnder(e, R);
+        if (!ink) return null;
+        const r = e.getBoundingClientRect();
+        return (r.height > vh * 0.3) ? ink : e;
     }
     /* an obstacle counts when it stays put at the bottom (fixed or sticky, like a composer or a camera shutter); content that
        scrolls under the button does not lift it (the panels end with room for it) */
@@ -145,6 +192,9 @@
         if (sig !== last) { b.innerHTML = ICON[k]; b.setAttribute('aria-label', lab); b.dataset.kind = k; last = sig; }
         b.classList.add('on');
         const lift = clearance(b);
+        b.classList.toggle('bx-aside', cardBlock);
+        /* stepped aside: the screen's own back / close shows again meanwhile, so there is always a way out */
+        if (cardBlock) hide.forEach(el => el.classList.remove(SRC));
         if (lift !== bottomPx) { bottomPx = lift; b.style.setProperty('--bx-lift', lift + 'px'); }
     }
     function schedule() { if (!raf) raf = requestAnimationFrame(update); }

@@ -16,3 +16,19 @@ test('batch 1: one optional guide in Settings: Tutorial, no separate video tour 
     assert.ok(SS.SETTINGS_IDS.includes('tutorial'));
     assert.ok(!SS.SETTINGS_IDS.includes('quickTour'));
 });
+
+test('batch 2a: the hidden Home screens X-13, X-23, X-24, X-28, X-34, X-36 are gone, every old entry point lands somewhere sensible', () => {
+    const idx = read('index.html');
+    assert.match(idx, /start:\(o\) => \{ \/\* Oct 28 2026 slim structure \(X-13 deleted\)[^}]*LowiTutorial\.start\(o\)/, 'X-13: the old guide start opens the one Tutorial');
+    assert.match(read('micro-book.js'), /if \(t !== 'fr'\) \{ try \{ if \(W\.LowiMyDay && W\.LowiMyDay\.open\) W\.LowiMyDay\.open\(\);/, 'X-23: the travel journal lands in Mein Tag, Friends care stays');
+    const ns = read('nutri-stats.js');
+    assert.match(ns.slice(ns.indexOf('function open(from)'), ns.indexOf('function openOld(from)')), /LowiMyDay\.open\(\)/, 'X-24: today stats land in Mein Tag');
+    assert.match(read('misty-hub.js'), /function youHtml\(\) \{ return '';/, 'X-24: no You row in the companion card');
+    assert.match(read('daily-ritual.js'), /openDay: \(\) => \{[^}]*X-28 deleted[^}]*LowiMyDay/, 'X-28: the streak day lands in Mein Tag');
+    const tb = read('top-bar.js');
+    assert.match(tb, /openWeather: \(\) => false/, 'X-34: the weather screen does not open');
+    assert.doesNotMatch(tb, /stopImmediatePropagation\(\); openWeather\(\);/, 'X-34: the pill no longer opens it');
+    const w3 = read('body-world-3d.js');
+    assert.match(w3, /function open\(\) \{\s*\/\*[^*]*X-36 deleted[^*]*\*\/\s*if \(!api\.allowFull\) return false;/, 'X-36: no separate 3D window');
+    assert.match(w3, /if \(api\.allowFull && els\.top && !els\.top\.querySelector\('\.bw3-open'\)\)/, 'X-36: no button that opens it');
+});

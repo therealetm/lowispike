@@ -409,7 +409,8 @@
             const a = tg.closest('[data-tbw]');
             if (a && ov && ov.contains(a)) { e.preventDefault(); if (a.dataset.tbw === 'close') closeWeather(); else if (a.dataset.tbw === 'refresh') load(true); return; }
             const pill = tg.closest('.sp-weather');
-            if (pill && !pill.classList.contains('ask')) { e.preventDefault(); e.stopImmediatePropagation(); openWeather(); }
+            /* Oct 28 2026 slim structure (X-34 deleted): the weather pill only shows the weather, it no longer opens its own screen */
+            void pill;
         }, true);
         D.addEventListener('keydown', e => { if (ov && e.key === 'Escape') { e.preventDefault(); closeWeather(); } });
         D.addEventListener('scroll', syncState, true);
@@ -419,6 +420,6 @@
         setInterval(() => { mountBtn(); placeBtn(); paintBtn(); syncState(); }, 1500);
         ['lowi:lang'].forEach(n => { D.addEventListener(n, paintBtn); root.addEventListener(n, paintBtn); });
     }
-    root.LowiTopBar = { toggleTheme, openWeather, closeWeather, state: () => ({ theme: effective(), btn: !!(btn && btn.isConnected), open: !!ov, scanok: H.classList.contains('tb-scanok') }), fc: () => lastFc };
+    root.LowiTopBar = { toggleTheme, openWeather: () => false, closeWeather, state: () => ({ theme: effective(), btn: !!(btn && btn.isConnected), open: !!ov, scanok: H.classList.contains('tb-scanok') }), fc: () => lastFc };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -152,18 +152,6 @@
                 es: 'Mantén pulsada Comunidad para tu perfil, día o noche, idioma y tu cuenta.'
             }
         },
-        {
-            /* the finger only drags the joystick picture: she does not really fly during the tour (her real first flight comes after
-               Done, tutorial-flight.js) */
-            id: 'fly', area: 'play', target: ['#whPad'], demo: { g: 'drag', open: null }, sayTitle: { es: false },
-            covers: ['joy', 'joy-hold', 'autopilot', 'zoom', 'fly-out', 'worlds', 'half-energy', 'spirit-world', 'worldSound'], teaches: ['pad-drag', 'pad-triple'],
-            title: { en: 'Fly me', de: 'Lass mich fliegen', es: 'Hazme volar' },
-            text: {
-                en: 'Drag the joystick and I fly, or tap it three times for autopilot.',
-                de: 'Zieh am Joystick und ich fliege, oder tipp dreimal drauf für den Autopilot.',
-                es: 'Arrastra el joystick y vuelo, o tócalo tres veces para el piloto automático.'
-            }
-        },
         /* ---------- part: new (Oct 23 2026, Emmanuel: "every time I do an update it's not in the tutorial style ... take them to the
            place where you updated it and show them around"). The newest features, last in the tour. A release's What's New plays
            only its own steps from here (news.json "tour"), as a mini tour in this same card style: it opens the place (open),
@@ -413,12 +401,15 @@
             }
         },
         {
-            id: 'done', area: 'end', target: null, covers: [],
+            /* Oct 28 2026 (slim structure, batch 10): the old 'fly' card is merged in here. The ring points at the joystick, no
+               finger demo; she does not really fly during the tour (her real first flight comes after Done, tutorial-flight.js) */
+            id: 'done', area: 'end', target: ['#whPad'], demo: { g: 'drag', open: null },
+            covers: ['joy', 'joy-hold', 'autopilot', 'zoom', 'fly-out', 'worlds', 'half-energy', 'spirit-world', 'worldSound'], teaches: ['pad-drag', 'pad-triple'],
             title: { en: 'You’re set', de: 'Startklar', es: 'Todo listo' },
             text: {
-                en: 'Start small: a glass of water, then your next meal.',
-                de: 'Fang klein an: ein Glas Wasser, dann deine nächste Mahlzeit.',
-                es: 'Empieza poco a poco: un vaso de agua y luego tu próxima comida.'
+                en: 'Drag the joystick and I fly, or tap it three times for autopilot.',
+                de: 'Zieh am Joystick und ich fliege, oder tipp dreimal drauf für den Autopilot.',
+                es: 'Arrastra el joystick y vuelo, o tócalo tres veces para el piloto automático.'
             },
             cta: { en: 'Done', de: 'Fertig', es: 'Listo' }
         }

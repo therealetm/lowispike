@@ -39,30 +39,29 @@ function page(state, store, opts) {
 }
 const ivSheets = p => p.sheets.filter(s => s.o && /hs-ivov/.test(s.o.cls || ''));
 
-test('a reload while the starter questions are open brings them back on the next start', () => {
+/* Oct 28 2026 (slim structure, batch 10, shorter first start): the questions are no longer opened by themselves after setup.
+   They are offered later on the Profile card "Startplan" (Starten). An old pending mark from BH-010 is cleared and never resumed. */
+test('setup ending no longer opens the starter questions; the Profile card offers them', () => {
     const store = {};
     const s = { setupDone: true, user: { bday: '1996-03-09' } };
     const a = page(s, store);
     assert.ok(a.api, 'herb-start loads');
     a.api.afterSetup();
     a.timers.splice(0).forEach(f => f());
-    assert.equal(ivSheets(a).length, 1, 'questions open after setup');
-    /* the page goes away here: no plan, no "Not now" */
-    const b = page(s, store);
-    b.run(6);
-    assert.equal(ivSheets(b).length, 1, 'questions open again after the reload');
-    b.run(6);
-    assert.equal(ivSheets(b).length, 1, 'opened once, not again and again');
+    a.run(10);
+    assert.equal(ivSheets(a).length, 0, 'no questions forced after setup');
+    assert.ok(!(PEND in store), 'no pending mark');
+    assert.match(src, /data-hs-open="redo">'\+esc\(t\('profStart'\)\)/, 'Profile card: Starten opens them');
+    assert.equal(typeof a.api.openInterview, 'function', 'still reachable on demand');
 });
 
-test('a reload in the moment between setup closing and the questions opening also brings them back', () => {
-    const store = {};
-    const s = { setupDone: true, user: { bday: '1996-03-09' } };
-    const a = page(s, store);
-    a.api.afterSetup(); /* its 650 ms timer never fires: reload */
-    const b = page(s, store);
-    b.run(6);
-    assert.equal(ivSheets(b).length, 1);
+test('an old pending mark from before is cleared on the next start, nothing opens', () => {
+    const store = { [PEND]: '1' };
+    const p = page({ setupDone: true, user: {} }, store);
+    p.run(10);
+    assert.equal(ivSheets(p).length, 0);
+    assert.ok(!(PEND in store), 'stale mark removed');
+    assert.equal(p.api.resumeTick(), true, 'nothing more to do');
 });
 
 test('accounts that finished setup before (no mark) are never pushed into the questions', () => {
@@ -71,36 +70,7 @@ test('accounts that finished setup before (no mark) are never pushed into the qu
     assert.equal(ivSheets(p).length, 0);
 });
 
-test('a saved plan or "Not now" clears the mark, nothing reopens', () => {
-    const store = { [PEND]: '1' };
-    const s = { setupDone: true, user: {}, starter: { v: 2, skipped: true, actions: [], asked: {}, hidden: true } };
-    const p = page(s, store);
-    p.run(6);
-    assert.equal(ivSheets(p).length, 0);
-    assert.ok(!(PEND in store), 'stale mark removed');
+test('a saved plan or "Not now" still clears the mark', () => {
     assert.match(src, /if\(a==='later'\)\{pendClear\(\);/, '"Not now" clears the mark');
     assert.match(src, /setPlan\(p\);pendClear\(\);/, '"Make my plan" clears the mark');
-});
-
-test('it waits while setup is still running, the sign-in gate is up, or another sheet or the tour is on screen', () => {
-    const store = { [PEND]: '1' };
-    const s = { setupDone: false, user: { bday: '1996-03-09' }, setupMid: 1 };
-    const p = page(s, store);
-    p.run(10);
-    assert.equal(ivSheets(p).length, 0, 'setup still running');
-    let busy = true;
-    const q = page({ setupDone: true, user: {} }, { [PEND]: '1' }, { busySel: sel => busy && /r2-ov/.test(sel) ? {} : null });
-    q.run(10);
-    assert.equal(ivSheets(q).length, 0, 'a sheet is open');
-    busy = false;
-    q.run(1);
-    assert.equal(ivSheets(q).length, 0, 'waits a moment of quiet first');
-    q.run(3);
-    assert.equal(ivSheets(q).length, 1, 'opens once Home is quiet');
-    const g = page({ setupDone: true, user: {} }, { [PEND]: '1' }, { gate: true });
-    g.run(10);
-    assert.equal(ivSheets(g).length, 0, 'sign-in gate up');
-    const t = page({ setupDone: true, user: {} }, { [PEND]: '1' }, { tutorial: { isOn: () => true, busyBy: () => '' } });
-    t.run(10);
-    assert.equal(ivSheets(t).length, 0, 'tour running');
 });

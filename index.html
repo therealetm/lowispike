@@ -8931,10 +8931,6 @@ html[data-ui=light] .a1-step.on{background:rgba(185,141,69,.1);border-color:#b98
 html[data-ui=light] .a1-toast{background:#161c2e}
 .a1-toast.on{opacity:1;transform:none}
 /* done */
-.a1-dstage{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:160px;position:relative;z-index:1}
-.a1-glow .a1-icon{width:108px;max-width:none;border-radius:24px;box-shadow:0 0 0 3px #e2c27e,0 0 46px rgba(226,194,126,.6);animation:a1Pop 1.8s ease-in-out infinite}
-.a1-dname{font-size:13px;font-weight:760;letter-spacing:.08em}
-.a1-done .a1-h,.a1-done .a1-why{text-align:center}
 /* small phones (375x667) and short home-screen viewports */
 @media (max-height:740px){
   .a1-stage{min-height:120px;margin:6px 0 2px}
@@ -8974,7 +8970,7 @@ const UA = navigator.userAgent || "";
 const SKIP = "lowi.a1.skip";
 let bip = null, installed = false, view = "guide", step = 0, timer = 0;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); bip = e; paintBip(); });
-window.addEventListener("appinstalled", () => { installed = true; bip = null; if (live()) { view = "done"; repaint(); } });
+window.addEventListener("appinstalled", () => { installed = true; bip = null; if (live()) added(); });
 function standalone(){ try { return !!(navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches)); } catch(e){ return false; } }
 function ios(){ return /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && (navigator.maxTouchPoints || 0) > 1); }
 function android(){ return /Android/i.test(UA); }
@@ -9066,16 +9062,10 @@ function guideHTML(k){
     '<div class="a1-toast" role="status" aria-live="polite"></div>' +
     '</div>';
 }
-function doneHTML(k){
-  return '<div class="r2-start a1 a1-done a1-' + k + '" data-k="' + k + '">' +
-    '<div class="r2-orbs" aria-hidden="true"><i></i><i></i><i></i></div>' + top() +
-    '<div class="a1-dstage"><div class="a1-glow">' + ICON + '</div><div class="a1-dname">LOWiSPIKE</div></div>' +
-    '<h1 class="a1-h">' + T("Now open it from your Home Screen") + '</h1>' +
-    '<p class="a1-why">' + T("Tap the LOWiSPIKE icon and create your account there. You can close this browser tab.") + '</p>' +
-    '<div class="a1-acts"><button type="button" class="a1-ghost" data-a1="guide">' + T("Show the steps again") + '</button><button type="button" class="a1-cont" data-a1="continue">' + T("Continue in the browser") + '</button></div>' +
-    '</div>';
-}
-function html(m){ if (m) mode = m === "start" ? "start" : "signup"; const k = kind() || "ios"; tick(); return view === "done" ? doneHTML(k) : guideHTML(k); }
+/* Oct 28 2026 (slim structure, batch 10, shorter first start): the separate "Now open it from your Home Screen" screen is merged into
+   the guide. Its step 3 already says "Open LOWiSPIKE"; "I added it" now stays here and says the same in the toast. */
+function added(){ view = "guide"; setStep(2, true); toast(T("Tap the LOWiSPIKE icon and create your account there. You can close this browser tab.")); }
+function html(m){ if (m) mode = m === "start" ? "start" : "signup"; const k = kind() || "ios"; tick(); return guideHTML(k); }
 function repaint(){ const g = document.getElementById("r2gate"); if (!g || !live()) return; const was = g.querySelector(".a1"); g.innerHTML = html(); tr(); if (was && g.firstChild) g.firstChild.classList.add("a1-in"); }
 /* Oct 21: translate right away (the DOM pass came up to half a second later, so a German visitor saw the English line flash) */
 function tr(){ try { if (window.LowiLang && LowiLang.get && LowiLang.get() !== "en" && LowiLang.add) LowiLang.add([]); } catch(e){} }
@@ -9103,12 +9093,12 @@ document.addEventListener("click", e => {
   if (v === "step") setStep(+a.dataset.i, true);
   else if (v === "back") { view = "guide"; step = 0; startDone = true; gate("start"); }
   else if (v === "continue") { try { sessionStorage.setItem(SKIP, "1"); } catch(x){} view = "guide"; startDone = true; gate(mode === "start" ? "home" : "signup"); }
-  else if (v === "added") { view = "done"; repaint(); }
+  else if (v === "added") added();
   else if (v === "guide") { view = "guide"; step = 0; repaint(); }
   else if (v === "copy") copy();
   else if (v === "open") openOut();
-  else if (v === "install") { const p = bip; if (!p) { view = "done"; repaint(); return; }
-    try { p.prompt(); Promise.resolve(p.userChoice).then(c => { bip = null; if (c && c.outcome === "accepted") { view = "done"; repaint(); } else { repaint(); } }).catch(() => {}); } catch(x){ view = "done"; repaint(); } }
+  else if (v === "install") { const p = bip; if (!p) { added(); return; }
+    try { p.prompt(); Promise.resolve(p.userChoice).then(c => { bip = null; repaint(); if (c && c.outcome === "accepted") added(); }).catch(() => {}); } catch(x){ added(); } }
 });
 window.LowiA1 = { want, wantStart, mode: () => mode, kind, html, setStep, step: () => step, view: () => view, reset(){ view = "guide"; step = 0; try { sessionStorage.removeItem(SKIP); } catch(e){} }, hasPrompt: () => !!bip };
 function addLang(){ if (!window.LowiLang || !LowiLang.add) return setTimeout(addLang, 200); LowiLang.add([

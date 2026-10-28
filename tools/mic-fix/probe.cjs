@@ -59,8 +59,15 @@ const IOS = `(() => {
 const MON = `(() => {
   const F = window.__frames = { n: 0, bad: [] };
   const ov = (a, b) => !(a.right <= b.left + 1 || a.left >= b.right - 1 || a.bottom <= b.top + 1 || a.top >= b.bottom - 1);
+  /* the check runs after every requestAnimationFrame callback of the frame (ResizeObserver delivery), i.e. on what gets painted */
+  let pin = null, flip = false;
   function tick() {
-    F.n++;
+    requestAnimationFrame(tick);
+    if (!pin) { if (!document.body) return; pin = document.createElement('div'); pin.style.cssText = 'position:fixed;left:0;top:0;height:1px;width:1px;pointer-events:none;opacity:0'; document.body.appendChild(pin); new ResizeObserver(check).observe(pin); }
+    if (!pin.isConnected) document.body.appendChild(pin);
+    F.n++; flip = !flip; pin.style.width = flip ? '2px' : '1px';
+  }
+  function check() {
     try {
       const bx = document.getElementById('lwBX');
       if (bx && bx.classList.contains('on')) {
@@ -72,7 +79,6 @@ const MON = `(() => {
         }
       }
     } catch (e) { }
-    requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
 })();`;

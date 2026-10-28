@@ -278,6 +278,24 @@
         if (W.visualViewport) W.visualViewport.addEventListener('resize', schedule);
         setInterval(schedule, 700);
         schedule();
+        requestAnimationFrame(guard);
+    }
+    /* Oct 28: last line of defence, every frame while the X is showing: if a text field or the voice-message bar has moved
+       under it without any event (a pane scrolling, the field growing), measure again before that frame is painted */
+    let guardSig = '';
+    function guard() {
+        requestAnimationFrame(guard);
+        const b = btn;
+        if (!b || !D.elementsFromPoint || !b.classList.contains('on') || b.classList.contains('bx-aside') || b.classList.contains('bx-settle')) { guardSig = ''; return; }
+        const r = b.getBoundingClientRect();
+        if (r.width < 2) return;
+        let sig = '';
+        for (const y of [r.top + 3, r.top + r.height / 2, r.bottom - 3]) for (const x of [r.left + 6, r.left + r.width / 2, r.right - 6]) {
+            const e = D.elementsFromPoint(x, y).find(el => el !== b && !b.contains(el));
+            const o = e && e.closest && e.closest('.cs-rec,.cs-rec-hint,textarea,input:not([type=hidden]),select,[contenteditable="true"],[role="textbox"]');
+            if (o) sig += (o.id || o.className || o.tagName) + '|';
+        }
+        if (sig && sig !== guardSig) { guardSig = sig; update(); } else if (!sig) guardSig = '';
     }
     W.LowiBottomClose = { update: () => update(), get target() { return target; }, get lifted() { return obs.slice(); }, isCandidate };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', start); else start();

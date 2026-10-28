@@ -96,6 +96,8 @@
     const typing = () => { const a = D.activeElement; return !!(a && a !== D.body && (a.matches('textarea,select,[contenteditable=""],[contenteditable="true"]') || a.matches('input') && !/^(button|checkbox|radio|range|submit|reset|color|file|image)$/i.test(a.type || 'text'))); };
     /* rise above whatever sits at the bottom center: a text field, the chat composer, the bin, any control */
     let cardBlock = false;
+    /* a text field or the voice-message bar always lifts the button, wherever it sits */
+    const FIELD = o => o.matches('textarea,input,select,[contenteditable="true"],[role="textbox"],.cs-rec');
     function clearance(b) {
         const base = 14, size = 56, cx = innerWidth / 2;
         let lift = 0; obs.length = 0; cardBlock = false;
@@ -104,28 +106,45 @@
             for (let i = 0; i < 8; i++) {
                 const y0 = innerHeight - safeBottom() - base - lift - size, hits = [];
                 for (const dx of [-26, 0, 26]) for (const y of [y0 + 4, y0 + size / 2, y0 + size - 4]) { const e = D.elementFromPoint(cx + dx, y); if (e) hits.push(e); }
-                let ob = hits.map(e => e.closest('textarea,input:not([type=hidden]),select,[contenteditable="true"],button,a[href],[role="button"],[role="textbox"],.kg-bin,.cc-composer,.cmp,.chat-composer,form'))
-                    .find(o => o && o !== b && !o.classList.contains(SRC) && !isCandidate(o));
+                let ob = hits.map(e => e.closest('.cs-rec,textarea,input:not([type=hidden]),select,[contenteditable="true"],button,a[href],[role="button"],[role="textbox"],.kg-bin,.cc-composer,.cmp,.chat-composer,form'))
+                    .filter(o => o && o !== b && !o.classList.contains(SRC) && !isCandidate(o))
+                    .sort((p, q) => (FIELD(q) ? 1 : 0) - (FIELD(p) ? 1 : 0))[0];
                 /* Oct 28 (owner: the X sat on the "Mikrofon ist aus" card's text): a card, popup, hint or plain text that stays put
                    at the bottom lifts it too. Take whichever obstacle reaches lowest under the button. */
                 const R = { l: cx - 30, r: cx + 30, t: y0, b: y0 + 56 };
-                const cards = hits.map(e => contentBox(e, R)).filter(o => o && o !== b && !b.contains(o) && anchored(o));
+                const cards = hits.map(e => contentBox(e, R)).filter(o => o && o !== b && !b.contains(o) && anchored(o)).concat(ghostToasts(R));
                 let isCard = false;
                 if (cards.length) {
                     const low = cards.reduce((m, o) => (o.getBoundingClientRect().top > m.getBoundingClientRect().top ? o : m));
-                    if (!ob || !(anchored(ob) || ob.matches('textarea,input,select,[contenteditable="true"],[role="textbox"]'))) { ob = low; isCard = true; }
+                    if (!ob || !(anchored(ob) || FIELD(ob))) { ob = low; isCard = true; }
                 }
-                if (!ob || !(anchored(ob) || ob.matches('textarea,input,select,[contenteditable="true"],[role="textbox"]'))) break;
+                if (!ob || !(anchored(ob) || FIELD(ob))) break;
                 const r = ob.getBoundingClientRect(); obs.push((ob.id || String(ob.className).slice(0, 40) || ob.tagName) + '@' + Math.round(r.top) + '-' + Math.round(r.bottom));
                 const need = innerHeight - safeBottom() - base - r.top + 10;
                 /* a card it cannot clear without floating up the middle of the screen: the button steps aside instead (the card
                    has its own close, and the button comes back when the card goes) */
-                if (isCard && need > innerHeight * 0.3) { cardBlock = true; break; }
-                if (need <= lift || need > innerHeight * 0.5) break;
+                /* Oct 28 (owner: nothing overlapping at any moment): the same for anything else it would have to climb past
+                   (stacked obstacles used to leave it on the last one it could not clear, e.g. a galaxy body above the
+                   voice-message bar on a small phone) */
+                if (need > innerHeight * 0.3) { cardBlock = true; break; }
+                if (need <= lift) break;
                 lift = need;
             }
         } finally { b.style.pointerEvents = prev; }
         return lift;
+    }
+    /* Oct 28: fixed toasts that let taps through (pointer-events: none, e.g. the dictation hint ".mic-hint") never come back from
+       elementFromPoint, so look for them directly */
+    function ghostToasts(R) {
+        const out = [];
+        for (const el of D.querySelectorAll('.mic-hint.on,[role="status"].on,.toast.on,.lw-toast.on,.cs-rec-hint')) {
+            if (el === btn || el.classList.contains(SRC)) continue;
+            const cs = getComputedStyle(el);
+            /* the voice-message hint ("Loslassen zum Senden") sits above the recording bar, also see-through for taps */
+            if ((cs.position !== 'fixed' && !el.classList.contains('cs-rec-hint')) || cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity < 0.05) continue;
+            if (hitR(el.getBoundingClientRect(), R)) out.push(el);
+        }
+        return out;
     }
     /* a card / popup / hint / toast around a hit, or the hit itself when text, a picture or a control of it lies under the
        button (R = the button's box); never a whole screen or layer */
@@ -177,6 +196,15 @@
         if (sb == null) { const p = D.createElement('div'); p.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);width:0;visibility:hidden'; D.body.appendChild(p); sb = p.getBoundingClientRect().height || 0; p.remove(); }
         return sb;
     }
+    function tourOver(b, lift) {
+        const t = D.querySelector('#ltTour,.lt-tour');
+        if (!t) return false;
+        const prev = b.style.pointerEvents; b.style.pointerEvents = 'none';
+        try {
+            const e = D.elementFromPoint(innerWidth / 2, innerHeight - safeBottom() - 14 - lift - 28);
+            return !!(e && (e === t || t.contains(e)));
+        } finally { b.style.pointerEvents = prev; }
+    }
     function update() {
         raf = 0;
         if (!D.body) return;
@@ -192,16 +220,62 @@
         if (sig !== last) { b.innerHTML = ICON[k]; b.setAttribute('aria-label', lab); b.dataset.kind = k; last = sig; }
         b.classList.add('on');
         const lift = clearance(b);
-        b.classList.toggle('bx-aside', cardBlock);
+        /* Oct 28 (owner: the X must never lag behind a card or field that appears): while something around the bottom center
+           is still sliding, fading or growing in, the X is measured against a layout that is about to change, so it stays out
+           of sight until that motion ends and then appears in its final place (no slide, see bottom-close.css) */
+        const moving = settling(b, lift);
+        b.classList.toggle('bx-settle', moving);
+        /* Oct 28: the talking tutorial lies over the screen the X would close: the tour has its own buttons, so the X waits */
+        const veiled = tourOver(b, lift);
+        b.classList.toggle('bx-aside', cardBlock || veiled);
         /* stepped aside: the screen's own back / close shows again meanwhile, so there is always a way out */
         if (cardBlock) hide.forEach(el => el.classList.remove(SRC));
         if (lift !== bottomPx) { bottomPx = lift; b.style.setProperty('--bx-lift', lift + 'px'); }
     }
     function schedule() { if (!raf) raf = requestAnimationFrame(update); }
+    /* a finite CSS animation / transition still running on something that reaches the zone the X sits in (the button's column,
+       from its lifted spot down to the bottom), e.g. a card fading in, a pane sliding, the composer changing height. Looping
+       glows never count. Hidden at most 1.5 s in a row, so a busy screen can never lose its way out. */
+    let settleSince = 0, settleWait = null;
+    function settling(b, lift) {
+        if (!D.getAnimations) return false;
+        const cx = innerWidth / 2, top = innerHeight - safeBottom() - 14 - lift - 56 - 12, now = performance.now();
+        let list;
+        try { list = D.getAnimations(); } catch (e) { return false; }
+        const running = list.filter(a => {
+            if (a.playState !== 'running') return false;
+            const t = a.effect && a.effect.target;
+            if (!t || !t.getBoundingClientRect || t === b || b.contains(t) || t.contains(b)) return false;
+            let tm; try { tm = a.effect.getComputedTiming(); } catch (e) { return false; }
+            if (!isFinite(tm.endTime) || tm.iterations === Infinity || tm.endTime > 2500) return false;
+            const r = t.getBoundingClientRect();
+            if (r.width < 1 || r.height < 1) return false;
+            return r.right > cx - 40 && r.left < cx + 40 && r.bottom > top;
+        });
+        if (!running.length) { settleSince = 0; return false; }
+        if (!settleSince) settleSince = now;
+        if (now - settleSince > 1500) return false;
+        /* look again the moment the motion ends, and every frame meanwhile */
+        const w = running.map(a => a.finished.catch(() => { }));
+        if (settleWait !== w.length) { settleWait = w.length; Promise.all(w).then(() => { settleWait = null; update(); }); }
+        schedule();
+        return true;
+    }
+    /* a DOM change measures at once (in the same frame the card / field appears), at most 4 times a frame, else next frame */
+    let syncN = 0, syncReset = 0;
+    function syncUpdate() {
+        if (!syncReset) syncReset = requestAnimationFrame(() => { syncN = 0; syncReset = 0; });
+        if (++syncN > 4) { schedule(); return; }
+        if (raf) { cancelAnimationFrame(raf); raf = 0; }
+        try { update(); } catch (e) { schedule(); }
+    }
     function start() {
         ensureBtn();
-        new MutationObserver(ms => { for (const m of ms) { const t = m.target; if (t === btn || btn && btn.contains(t)) continue; if (m.type === 'attributes' && t.classList && m.attributeName === 'class' && t.classList.contains(SRC) && String(m.oldValue || '').replace(SRC, '').trim() === String(t.className).replace(SRC, '').trim()) continue; schedule(); return; } }).observe(D.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'open'], attributeOldValue: true });
+        new MutationObserver(ms => { for (const m of ms) { const t = m.target; if (t === btn || btn && btn.contains(t)) continue; if (m.type === 'attributes' && t.classList && m.attributeName === 'class' && t.classList.contains(SRC) && String(m.oldValue || '').replace(SRC, '').trim() === String(t.className).replace(SRC, '').trim()) continue; syncUpdate(); return; } }).observe(D.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden', 'aria-hidden', 'open'], attributeOldValue: true });
         ['resize', 'orientationchange', 'focusin', 'focusout', 'transitionend', 'animationend', 'scroll'].forEach(ev => W.addEventListener(ev, schedule, true));
+        /* a card, pane or composer starting to move: hide the X in that same frame */
+        ['transitionstart', 'transitionrun', 'animationstart'].forEach(ev => W.addEventListener(ev, e => { if (!btn || e.target === btn || btn.contains(e.target)) return; syncUpdate(); }, true));
+        if (W.visualViewport) W.visualViewport.addEventListener('resize', schedule);
         setInterval(schedule, 700);
         schedule();
     }

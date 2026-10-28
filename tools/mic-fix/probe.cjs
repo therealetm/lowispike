@@ -54,11 +54,35 @@ const IOS = `(() => {
   window.webkitSpeechRecognition = SR;
 })();`;
 
+/* Oct 28 (owner: "no lag"): every painted frame, record any moment the visible bottom X overlaps the mic card, the chat field,
+   the composer row or a hint. Reported as out.frameOverlaps (empty = nothing overlapped at any moment). */
+const MON = `(() => {
+  const F = window.__frames = { n: 0, bad: [] };
+  const ov = (a, b) => !(a.right <= b.left + 1 || a.left >= b.right - 1 || a.bottom <= b.top + 1 || a.top >= b.bottom - 1);
+  function tick() {
+    F.n++;
+    try {
+      const bx = document.getElementById('lwBX');
+      if (bx && bx.classList.contains('on')) {
+        const cs = getComputedStyle(bx);
+        if (cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > 0.05) {
+          const b = bx.getBoundingClientRect();
+          const list = [['card', document.querySelector('#csMic .cs-mic-card')], ['input', document.getElementById('cmInput')], ['mic', document.getElementById('cmMic')], ['photo', document.getElementById('cmPhoto')], ['send', document.getElementById('cmSend')], ['notice', document.getElementById('csNotice')], ['hint', document.querySelector('.mic-hint.on')], ['rec', document.querySelector('#csRec .cs-rec')], ['rechint', document.querySelector('.cs-rec-hint')]];
+          for (const [k, e] of list) { if (!e) continue; const r = e.getBoundingClientRect(); const s = getComputedStyle(e); if (r.width < 2 || r.height < 2 || s.visibility === 'hidden' || +s.opacity < 0.05) continue; if (ov(b, r)) { if (F.bad.length < 40) F.bad.push(k + '@f' + F.n + ' t' + Math.round(performance.now()) + ' bx' + Math.round(b.top) + '-' + Math.round(b.bottom) + ' el' + Math.round(r.top) + '-' + Math.round(r.bottom) + ' op' + (+cs.opacity).toFixed(2) + ' ' + bx.className + ' HIT:' + (() => { bx.style.pointerEvents='none'; const e = document.elementFromPoint(innerWidth/2, b.top + 4); bx.style.pointerEvents=''; const p = []; for (let a = e; a && p.length < 7; a = a.parentElement) p.push(a.id || a.tagName + '.' + String(a.className).slice(0, 24)); return p.join('<'); })() + ' ' + JSON.stringify(window.LowiBottomClose && LowiBottomClose.lifted)); } }
+        }
+      }
+    } catch (e) { }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();`;
+
 (async () => {
   const seed = existingSeed({ lang: 'de', kv: { 'lowispike.lang': 'de', 'lowi.lang': 'de', 'lowispike.theme': theme, 'lowi.theme': theme } });
   const h = await launch({ engine, seed, lang: 'de', locale: 'de-DE', viewport: { width: vp[0], height: vp[1] } });
   if (real && engine === 'chromium' && perm === 'granted') await h.ctx.grantPermissions(['microphone']);
-  await h.ctx.addInitScript({ content: IOS }); h.page.on('console', m => { if (/DBG/.test(m.text())) console.error(m.text()); });
+  await h.ctx.addInitScript({ content: IOS }); await h.ctx.addInitScript({ content: MON }); h.page.on('console', m => { if (/DBG/.test(m.text())) console.error(m.text()); });
+  if (process.env.OFFLINE) await h.ctx.route(/supabase\.co/, r => r.abort());
   await openApp(h, { query: '?dc=' + Date.now() });
   const P = h.page, tag = [perm, theme, vp.join('x'), engine].join('-'), out = { tag, steps: {} };
   const step = (k, v) => { out.steps[k] = v; };
@@ -91,11 +115,24 @@ const IOS = `(() => {
     if (bxOn) { const b = bx.getBoundingClientRect(); bx.style.pointerEvents = 'none'; for (const dx of [8, 28, 48]) for (const dy of [8, 28, 48]) { const t = document.elementFromPoint(b.left + dx, b.top + dy); if (t && t !== document.body && t !== document.documentElement) { const tx = [...t.childNodes].some(n => n.nodeType === 3 && n.nodeValue.trim()); const ctl = t.closest('button,input,textarea,[role="button"],.cs-mic-card,.mic-hint'); if (tx || ctl) bxOver.push((ctl ? (ctl.id || ctl.className) : t.tagName + ':' + t.textContent.trim().slice(0, 20))); } } bx.style.pointerEvents = ''; }
     const inp = document.getElementById('cmInput'), mic = document.getElementById('cmMic');
     return { mics, micLabel: mic && mic.getAttribute('aria-label'), micDictating: !!(mic && mic.classList.contains('cs-dictating')), input: inp && inp.value, placeholder: inp && inp.getAttribute('placeholder'),
-      card: cardText, overlap, cardCovered: [...new Set(cardCovered)], bxOn, bxOver: [...new Set(bxOver)], rec: !!document.querySelector('#csRec .cs-rec'), recHint: (document.getElementById('csRecHint') || {}).textContent || '',
+      card: cardText, overlap, cardCovered: [...new Set(cardCovered)], bxOn, bxOver: [...new Set(bxOver)], geo: (() => { const r = e => { if (!e) return null; const q = e.getBoundingClientRect(); return Math.round(q.left)+','+Math.round(q.top)+'-'+Math.round(q.right)+','+Math.round(q.bottom); }; return { bx: r(bx), me: r(document.querySelector('.cg-body.me')), rec: r(document.querySelector('#csRec .cs-rec')), input: r(document.getElementById('cmInput')), row: r(document.querySelector('#cmPaneChat .cm-inrow')), lifted: window.LowiBottomClose && LowiBottomClose.lifted }; })(), rec: !!document.querySelector('#csRec .cs-rec'), recHint: (document.getElementById('csRecHint') || {}).textContent || '',
       notice: (document.getElementById('csStatus') || {}).textContent || '', session: navigator.audioSession.type, perm: window.__perm, hint: (document.querySelector('.mic-hint.on') || {}).textContent || '' };
   });
+
+  /* Oct 28: pixel check of what lies under the X: the same frame with the X and without it (PNG), plus the X's box */
+  const fsx = require('fs');
+  async function shotPair(name) {
+    await P.screenshot({ path: SHOT + '/' + name + '.jpg', type: 'jpeg', quality: 60 });
+    const box = await P.evaluate(() => { const b = document.getElementById('lwBX'); if (!b || !b.classList.contains('on')) return null; const cs = getComputedStyle(b); if (cs.visibility === 'hidden' || +cs.opacity < 0.05) return null; const r = b.getBoundingClientRect(); b.style.setProperty('visibility', 'hidden', 'important'); return { l: r.left, t: r.top, r: r.right, b: r.bottom, dpr: devicePixelRatio }; });
+    if (!box) { fsx.writeFileSync(SHOT + '/' + name + '.box.json', 'null'); return; }
+    await P.screenshot({ path: SHOT + '/' + name + '.nox.png', type: 'png' });
+    await P.evaluate(() => { const b = document.getElementById('lwBX'); if (b) b.style.removeProperty('visibility'); });
+    await P.screenshot({ path: SHOT + '/' + name + '.x.png', type: 'png' });
+    fsx.writeFileSync(SHOT + '/' + name + '.box.json', JSON.stringify(box));
+  }
   step('chat', await look());
-  await P.screenshot({ path: SHOT + '/mic-0-chat-' + tag + '.jpg', type: 'jpeg', quality: 60 });
+  if (process.env.DUMP) step('dump', await P.evaluate(() => { const r = e => { const q = e.getBoundingClientRect(); return Math.round(q.left)+','+Math.round(q.top)+'-'+Math.round(q.right)+','+Math.round(q.bottom); }; const row = document.querySelector('#cmPaneChat .cm-inrow'); return { bx: r(document.getElementById('lwBX')), lifted: LowiBottomClose.lifted, row: r(row), kids: [...row.children].map(k => (k.id||k.className)+':'+r(k)+':'+getComputedStyle(k).display), compose: r(document.querySelector('#cmPaneChat .cm-compose')), vh: innerHeight, pts: (() => { const bx = document.getElementById('lwBX'); bx.style.pointerEvents='none'; const o = []; for (const y of [innerHeight - 66, innerHeight - 62, innerHeight - 42]) { const e = document.elementFromPoint(innerWidth/2, y); const path = []; for (let a = e; a && path.length < 6; a = a.parentElement) path.push(a.id || a.tagName+'.'+String(a.className).slice(0,30)); o.push(y + ':' + path.join(' < ')); } bx.style.pointerEvents=''; return o; })(), typing: document.activeElement && (document.activeElement.id||document.activeElement.tagName) }; }));
+  await shotPair('mic-0-chat-' + tag);
   const mic = P.locator('#cmMic');
   const box = await mic.boundingBox().catch(() => null);
   if (!box) { out.err = 'no #cmMic'; out.errors = h.errors; console.log(JSON.stringify(out, null, 1)); await h.browser.close(); return; }
@@ -103,9 +140,9 @@ const IOS = `(() => {
   /* 1. tap = dictation */
   await P.mouse.move(cx, cy); await P.mouse.down(); await sleep(90); await P.mouse.up();
   await sleep(450); step('tapListening', await look());
-  await P.screenshot({ path: SHOT + '/mic-1-dictate-' + tag + '.jpg', type: 'jpeg', quality: 60 });
+  await shotPair('mic-1-dictate-' + tag);
   await sleep(1400); step('tapDone', await look());
-  await P.screenshot({ path: SHOT + '/mic-2-dictated-' + tag + '.jpg', type: 'jpeg', quality: 60 });
+  await shotPair('mic-2-dictated-' + tag);
   await P.evaluate(() => { const i = document.getElementById('cmInput'); i.value = ''; i.dispatchEvent(new Event('input', { bubbles: true })); i.blur(); });
   await sleep(500);
   step('sessionBeforeHold', await P.evaluate(() => navigator.audioSession.type));
@@ -116,16 +153,17 @@ const IOS = `(() => {
   await sleep(700); step('holdingSettled', await look());
   if (process.env.DBGX2) step('dbg2', await P.evaluate(() => { const bx = document.getElementById('lwBX'); const b = bx.getBoundingClientRect(); bx.style.pointerEvents = 'none'; const t = document.elementFromPoint(b.left + 28, b.top + 28); bx.style.pointerEvents = ''; const ch = []; for (let a = t; a && a !== document.body; a = a.parentElement) { const r = a.getBoundingClientRect(), s = getComputedStyle(a); ch.push([a.tagName, a.id, String(a.className).slice(0, 40), a.getAttribute('role'), s.position, s.overflowY, Math.round(r.top), Math.round(r.bottom), Math.round(r.height), a.scrollHeight > a.clientHeight + 2]); } const cx = innerWidth / 2, y0 = b.top; bx.style.pointerEvents = 'none'; const hits = []; for (const dx of [-26, 0, 26]) for (const y of [y0 + 4, y0 + 28, y0 + 52]) { const e = document.elementFromPoint(cx + dx, y); const r = e && e.getBoundingClientRect(); hits.push([dx, Math.round(y), e && e.tagName, e && e.id, e && String(e.className).slice(0, 30), e && e.textContent.trim().slice(0, 20), r && Math.round(r.top), r && Math.round(r.bottom), e && (e.closest('button,[role=button],input,textarea,form,.cmp') || {}).className]); } bx.style.pointerEvents = ''; return { hits, bx: [b.left, b.top, b.right, b.bottom].map(Math.round), chain: ch.slice(0, 9), rec: (() => { const r = document.querySelector('#csRec'); return r && [r.getBoundingClientRect().top, r.getBoundingClientRect().bottom]; })() }; }));
   if (process.env.DBGX) step('dbgX', await P.evaluate(() => { const r = e => { if (!e) return null; const q = e.getBoundingClientRect(); return [Math.round(q.left), Math.round(q.top), Math.round(q.right), Math.round(q.bottom)]; }; const bx = document.getElementById('lwBX'); const o = { bx: r(bx), lift: bx && bx.style.getPropertyValue('--bx-lift'), card: r(document.querySelector('.cs-mic-card')), lifted: (LowiBottomClose.lifted || []).map(e => e.id || e.className), target: LowiBottomClose.target && (LowiBottomClose.target.id || LowiBottomClose.target.className), tr: getComputedStyle(bx).transition }; LowiBottomClose.update(); o.after = r(bx); o.cs = (() => { const c = getComputedStyle(bx); return [c.bottom, c.transform, c.translate, c.top, c.position, c.transition.slice(0,80)]; })(); o.parent = bx.parentElement && (bx.parentElement.id || bx.parentElement.tagName); o.vv = [innerHeight, visualViewport && visualViewport.height, visualViewport && visualViewport.offsetTop]; o.lift2 = bx.style.getPropertyValue('--bx-lift'); o.lifted2 = (LowiBottomClose.lifted || []).map(e => e.id || e.className); return o; }));
-  await P.screenshot({ path: SHOT + '/mic-3-hold-' + tag + '.jpg', type: 'jpeg', quality: 60 });
+  await shotPair('mic-3-hold-' + tag);
   await P.mouse.up(); await sleep(900);
   step('released', await look());
   if (process.env.DBGX4) { await settle(); } if (process.env.DBGX4) step('dbg4', await P.evaluate(() => { const r = e => { if (!e) return null; const q = e.getBoundingClientRect(); return [Math.round(q.top), Math.round(q.bottom), Math.round(q.left), Math.round(q.right)]; }; const bx = document.getElementById('lwBX'); const o = { bx: r(bx), lift: bx.style.cssText, lifted: LowiBottomClose.lifted, inp: r(document.getElementById('cmInput')), row: r(document.querySelector('#cmPaneChat .cm-inrow')), meta: r(document.querySelector('.cs-compose-meta')), rec: r(document.querySelector('#csRec')), compose: r(document.querySelector('#cmPaneChat .cm-compose')), act: document.activeElement && (document.activeElement.id || document.activeElement.tagName), kb: document.documentElement.className.slice(0, 200) }; LowiBottomClose.update(); o.after = r(bx); o.cs = (() => { const c = getComputedStyle(bx); return [c.bottom, c.transform, c.translate, c.top, c.position, c.transition.slice(0,80)]; })(); o.parent = bx.parentElement && (bx.parentElement.id || bx.parentElement.tagName); o.vv = [innerHeight, visualViewport && visualViewport.height, visualViewport && visualViewport.offsetTop]; o.lift2 = bx.style.cssText; o.lifted2 = LowiBottomClose.lifted; return o; }));
   await sleep(700); step('releasedSettled', await look());
-  await P.screenshot({ path: SHOT + '/mic-4-after-' + tag + '.jpg', type: 'jpeg', quality: 60 });
+  await shotPair('mic-4-after-' + tag);
   /* clean up a tap-mode recording (prompt state) so nothing is left open */
   await P.evaluate(() => { const x = document.querySelector('#csRec [data-chat="rec-cancel"]'); if (x) x.click(); });
   await sleep(700);
   await sleep(1500); step('end', await look());
+  out.frameOverlaps = await P.evaluate(() => window.__frames);
   step('typeLog', await P.evaluate(() => window.__typeLog));
   out.errors = h.errors.slice(0, 6); out.consoleErr = h.consoleErr.filter(t => !/Failed to load resource|net::|ERR_/.test(t)).slice(0, 6);
   console.log(JSON.stringify(out, null, 1));

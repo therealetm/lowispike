@@ -331,7 +331,9 @@
       setState(rec, 'idle');
       if (nativeBroken) refreshAll();
       if (got) return;
-      if (action === 'keyboard') useKeyboard(rec); else hint(action);
+      if (action === 'keyboard') useKeyboard(rec);
+      else if (action === 'denied' && rec.onstate && (function () { try { return rec.onstate('denied') === true; } catch (e) { return false; } })()) { /* the caller shows its own card */ }
+      else hint(action);
     };
     try { r.start(); } catch (e) { action = appleTouch ? 'keyboard' : 'failed'; r.onend(); }
   }

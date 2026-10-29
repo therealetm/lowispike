@@ -11,7 +11,7 @@ const SRC = fs.readFileSync(path.join(__dirname, '..', 'circle-games.js'), 'utf8
 
 function cls(list) { const s = new Set(list); return { contains: c => s.has(c), add: (...c) => c.forEach(x => s.add(x)), remove: (...c) => c.forEach(x => s.delete(x)), toggle: (c, on) => { if (on === undefined ? !s.has(c) : on) s.add(c); else s.delete(c); } }; }
 
-function boot(hiddenChecks) {
+function boot(hiddenChecks, mos) {
   const timers = [];
   let hidden = hiddenChecks || 0;
   const sb = { scrollTop: 6, scrollHeight: 414, clientHeight: 334, on: {}, addEventListener(ev, f) { this.on[ev] = f; } };
@@ -31,11 +31,11 @@ function boot(hiddenChecks) {
     getComputedStyle: () => (hidden-- > 0 ? { display: 'flex', visibility: 'hidden', opacity: '0' } : { display: 'block', visibility: 'visible', opacity: '1' }), addEventListener() { }
   };
   /* in the browser window is the global object, so the context is the window too */
-  const ctx = Object.assign(win, { setTimeout: (f, t) => { timers.push([t, f]); return timers.length; }, setInterval: () => 0, MutationObserver: class { observe() { } }, requestAnimationFrame: f => f() });
+  const ctx = Object.assign(win, { setTimeout: (f, t) => { timers.push([t, f]); return timers.length; }, setInterval: () => 0, MutationObserver: class { constructor(f) { this.f = f; if (mos) mos.push(this); } observe(t) { this.t = t; } disconnect() { this.off = true; } }, requestAnimationFrame: f => f() });
   ctx.window = ctx;
   vm.runInNewContext(SRC, ctx);
   const run = () => { timers.sort((a, b) => a[0] - b[0]); const t = timers.splice(0); t.forEach(([, f]) => f()); };
-  return { G: win.LowiCircleGames, sb, row, run, timers };
+  return { G: win.LowiCircleGames, sb, row, run, timers, show: () => { hidden = 0; } };
 }
 
 test('need(): how far to scroll so a control ends 8 px above the back button', () => {
@@ -66,6 +66,22 @@ test('the back button fading in late (after 3 s, as on a slow open) still gets R
   assert.ok(timers.some(([t]) => t > 3900), 'a check runs after the button fades in (~3.9 s)');
   timers.splice(0).forEach(([, f]) => f());
   assert.ok(sb.scrollTop > 6, 'the panel scrolled');
+  assert.ok(row[2].getBoundingClientRect().bottom <= 498, 'Undo ends above the button top');
+});
+
+test('the back button settling after every timed check (slow phone) still gets Rückgängig scrolled clear when it shows', () => {
+  const mos = [];
+  const { G, sb, row, timers, show } = boot(99, mos); /* hidden at every timed check */
+  G.select('swipen');
+  sb.scrollTop = 6;
+  timers.sort((a, b) => a[0] - b[0]);
+  timers.splice(0).forEach(([, f]) => f());
+  assert.strictEqual(sb.scrollTop, 6, 'nothing to do while the button is hidden');
+  const mo = mos.find(m => m.t && m.t.getBoundingClientRect && m.t.getBoundingClientRect().width === 56); /* the one on #lwBX */
+  assert.ok(mo, 'the back button is watched');
+  show();
+  mo.f([{ attributeName: 'class' }]); /* the button gets its class: it shows */
+  timers.splice(0).forEach(([, f]) => f());
   assert.ok(row[2].getBoundingClientRect().bottom <= 498, 'Undo ends above the button top');
 });
 

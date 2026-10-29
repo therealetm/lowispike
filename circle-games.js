@@ -158,6 +158,16 @@
     /* 29 Oct 03:02 check: on a slow open the back button only fades in after ~3.9 s, so a check that ended at 3 s always found it
        hidden and never scrolled (Rückgängig stayed under it, a tap on Undo closed the game). Keep checking until 7 s. */
     [200, 600, 1200, 2000, 3000, 4000, 5000, 7000].forEach(t => setTimeout(step, t));
+    /* Under load the button settled even later than 7 s. It shows by getting its class changed (on / bx-settle off), so also
+       check again after each class change of the button (its fade-in can take over a second on a busy phone), for up to 15 s. */
+    try {
+      const bx0 = D.getElementById('lwBX');
+      if (bx0 && W.MutationObserver) {
+        const mo = new W.MutationObserver(() => [260, 700, 1400, 2500].forEach(t => setTimeout(step, t)));
+        mo.observe(bx0, { attributes: true, attributeFilter: ['class'] });
+        setTimeout(() => { try { mo.disconnect(); } catch (e) { } }, 15000);
+      }
+    } catch (e) { }
   }
 
   /* taps */

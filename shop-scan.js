@@ -143,7 +143,23 @@
         return '<div class="ss-verdict"><div class="ss-vrow"><div class="ss-vt" role="status"><b class="ss-vw">' + esc(T('v_' + lvl)) + '</b><small>' + esc(sub) + '</small></div>' + curveHTML(lvl) + '</div>' +
             '<div class="ss-orow"><p class="ss-often"><span>' + esc(T('oftenH')) + '</span><b>' + esc(e ? e.often : T('o_' + lvl)) + '</b></p>' +
             '<button type="button" class="ss-whyb" data-ss="why" aria-expanded="' + (open ? 'true' : 'false') + '" aria-controls="' + id + '">' + esc(T('whyB')) + '</button></div>' +
-            '<div class="ss-whyp" id="' + id + '"' + (open ? '' : ' hidden') + '>' + lines.map(l => '<p>' + esc(l) + '</p>').join('') + '<p class="ss-whyf">' + esc(T('whyFoot')) + '</p></div></div>';
+            '<div class="ss-whyp" id="' + id + '"' + (open ? '' : ' hidden') + '>' + lines.map(l => '<p>' + esc(l) + '</p>').join('') + gptHTML(p, lvl, e, g, unit, lines) + '<p class="ss-whyf">' + esc(T('whyFoot')) + '</p></div></div>';
+    }
+    /* 29 Oct 2026 (Emmanuel: "In why i need a button that open my custom gpt for deeper analyses"): inside the Why? panel, under the
+       app's own explanation, one link to his Custom GPT that also copies this product's data (gpt-open.js) for him to paste there */
+    function gptHTML(p, lvl, e, g, unit, lines) {
+        const G = W.LowiGptOpen; if (!G || !G.deepHTML) return '';
+        p = p || {};
+        const f = p.facts || {}, nb = v => (typeof v === 'number' && isFinite(v) ? v : null);
+        const per = { kcal: nb(f.kcal), carbs: nb(f.c), sugar: nb(f.s), fiber: nb(f.f), protein: nb(f.p), fat: nb(f.fat) };
+        try {
+            return G.deepHTML({
+                kind: 'product', name: String(p.name || '').trim(), brand: String(p.brand || '').trim(), code: String(p.barcode || p.code || ''),
+                pack: String(f.q || p.quantity || ''), portion: g ? g + ' ' + (unit || 'g') : '', drink: !!(f.drink || p.cat === 'drink'),
+                per100: per, ingredients: String(p.ingredients || '').trim(),
+                verdict: T('v_' + lvl), often: e ? e.often : T('o_' + lvl), reasons: lines || []
+            }, li(), 'ss-gpt');
+        } catch (x) { return ''; }
     }
     /* Details: one plain line on where the amount came from, instead of the calculator's own "Usual portion" label */
     function psrcHTML(p, sv, grams, from) {

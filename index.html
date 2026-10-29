@@ -16443,6 +16443,13 @@ function scRedrawServing(){
 if (typeof window.addEventListener === "function") window.addEventListener("lowi:portion", () => { clearTimeout(scPortT); scPortT = setTimeout(scRedrawServing, 120); });
 /* Oct 23 (Seller Zone): chips, chocolate, gummies or biscuits that are not ok get real snacks you can order (seller-zone.js) */
 function szSwapHTML(p){ try { return window.LowiSellerZone && LowiSellerZone.swapHTML ? LowiSellerZone.swapHTML(p) : ""; } catch(e){ return ""; } }
+/* 29 Oct 2026 (Emmanuel: "In why i need a button that open my custom gpt for deeper analyses"): the product card gets the same link as the
+   scan card's Why? panel and the photo check: it opens his Custom GPT and copies name, brand, portion, nutrients, ingredients and the verdict */
+function scGptHTML(p, v, why, g){
+  const G = window.LowiGptOpen; if (!G || !G.deepHTML || !p) return "";
+  const f = p.facts || {}, nb = x => (typeof x === "number" && isFinite(x) ? x : null);
+  try { return '<div class="sc-gpt">' + G.deepHTML({kind:"product", name:p.name, brand:p.brand, code:p.barcode, pack:f.q, portion:g ? g + " " + (f.drink ? "ml" : "g") : "", drink:!!f.drink,
+    per100:{kcal:nb(f.kcal), carbs:nb(f.c), sugar:nb(f.s), fiber:nb(f.f), protein:nb(f.p), fat:nb(f.fat)}, ingredients:p.ingredients || "", verdict:sct(v), reasons:why || []}, LI(), "sc-gptl") + '</div>'; } catch(e){ return ""; } }
 function simpleCardHTML(p){
   const sv = scServing(p), g = scUserG(sv); p = scView(p, sv); /* scanfe-g2: from here p = the product rated for the amount on the card */
   let v = {spike:1, better:1, ok:1}[p.verdict] ? p.verdict : "unknown"; const mine = isMine(p), m = mine ? D.mine[pkey(p)] : null;
@@ -16458,6 +16465,7 @@ function simpleCardHTML(p){
     '<div class="sc-verd v-' + v + (p.nameEst ? " ne-v" : "") + '" role="status"><small>' + esc(p.nameEst ? net(p.nameEst.how === "ai" ? (p.nameEst.src === "photo" ? "photo" : "ai") : "est") : sct("est")) + '</small><strong>' + esc(sct(v)) + '</strong>' + (why[0] ? '<span>' + esc(why[0]) + '</span>' : "") + '</div>' +
     (p.nameEst ? nameEstHTML(p) + nameSwapHTML(p) + szs + noDataHTML(p) : szs) + /* Oct 23: name verdict, best swap, Seller Zone buys, then the scan's own data or "no detailed data" */
     (p.nameEst && !scanHasData(p) ? "" : (window.LowiFoodCard ? LowiFoodCard.cardHTML(p, LI(), g, {swaps: !!szs}) : "")) + /* scanfe-g1: verdict, why, serving, quality, better choice */
+    scGptHTML(p, v, why, g) + /* 29 Oct 2026: the Custom GPT for a deeper analysis, under the card's why (gpt-open.js) */
     (p.nameEst && !scanHasData(p) ? "" : (window.LowiNutriStats ? LowiNutriStats.portionHTML(p) : "")) +
     '<section class="sc-sec sc-prices"><h4>' + esc(sct("cheaper")) + '</h4>' + (storeCmp || '<p class="sc-none">' + esc(sct("noPrices")) + '</p>') + '</section>' +
     scActsHTML(p, mine, m) +

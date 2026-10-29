@@ -682,6 +682,22 @@
         return { title: title(all, l), lvl: all.length ? v.lvl : '', macros: all.length ? totals(all) : null, verdict: v };
     }
 
+    /* 29 Oct 2026 (Emmanuel: "In why i need a button that open my custom gpt for deeper analyses"): the photo check's why
+       (verdict, reason, the food that decides it) ends in the same Custom GPT link as the scan card's Why? panel. The tap copies
+       the plate as it stands now (after × or Edit), the verdict and the reason (gpt-open.js); no AI call, no credits. */
+    function gptHTML(items, drinks, hl, cz, l) {
+        const G = typeof window !== 'undefined' ? window.LowiGptOpen : null;
+        if (!G || !G.deepHTML) return '';
+        const row = d => ({ name: d.name, portion: d.portion ? portionL(d.portion, l) : '', kcal: d.kcal, carbs: d.carbs, sugar: d.sugar, fiber: d.fiber, protein: d.protein, fat: d.fat });
+        try {
+            return G.deepHTML({
+                kind: 'meal', foods: (items || []).filter(d => d && d.name).map(row), drinks: (drinks || []).filter(d => d && d.name).map(row),
+                total: totals((items || []).concat(drinks || [])), verdict: hl.ans,
+                reasons: [hl.why].concat((cz || []).map(c => c.name + ': ' + c.why)).concat(hl.energy ? [hl.energy] : [])
+            }, l, 'mr-gpt');
+        } catch (e) { return ''; }
+    }
+
     /* ---------- the screen ---------- */
     function macroLine(d, l) {
         return [['protein', d.protein], ['carbs', d.carbs], ['fat', d.fat]].map(([k, v]) => '<span><b>' + Math.round(v) + ' g</b> ' + esc(t(k, l)) + '</span>').join('');
@@ -756,6 +772,7 @@
                 (cz.length ? '<span class="mr-cause"><b>' + esc(t(cz.length > 1 ? 'causeN' : 'cause1', l)) + '</b>' +
                     cz.map(c => '<span class="mr-cz"><b>' + esc(c.name) + '</b> ' + esc(c.why) + '</span>').join('') + '</span>' : '') +
                 (hl.energy ? '<span class="mr-energy">' + esc(hl.energy) + '</span>' : '') +
+                gptHTML(st.items, st.drinks, hl, cz, l) +
                 '</div>' +
                 (opts.photo ? '<img class="mr-thumb" alt="" src="' + esc(opts.photo) + '">' : '') + '</section>';
             const foods = st.items.length ? '<div class="mr-sec"><p class="mr-h"><b>' + esc(t('see', l)) + '</b><small>' + esc(t('tapFix', l)) + '</small></p><ul class="mr-list">' +

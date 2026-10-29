@@ -245,3 +245,19 @@ html[data-ui=light] .ss-entry > svg, html[data-theme="light"] .ss-entry > svg { 
 }
 @media (prefers-reduced-motion: reduce) { .b3-cam .ss-curve .ss-cline { animation: none; stroke-dasharray: none; } }
 html[data-ui=light] .b3-cam .ss-whyb[aria-expanded="true"], html[data-theme="light"] .b3-cam .ss-whyb[aria-expanded="true"] { color: #fff; }
+/* 29 Oct 2026: "Tiefer analysieren im GPT" (gpt-open.js deepHTML) in the scan card's Why? panel, the photo check and the
+   product card. Same gold as Deep analyze; the hint wraps (never cropped on an iPhone SE). */
+a.gpt-deep { display: flex; align-items: center; gap: 9px; box-sizing: border-box; width: 100%; min-height: 48px; margin: 8px 0 4px; padding: 7px 10px;
+    border-radius: 14px; border: 1px solid rgba(233, 203, 136, .6); background: rgba(233, 203, 136, .13); color: inherit; text-decoration: none;
+    font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+a.gpt-deep:active { transform: scale(.98); }
+a.gpt-deep:focus-visible { outline: 2px solid #e9cb88; outline-offset: 2px; }
+a.gpt-deep > svg { flex: none; width: 18px; height: 18px; color: #e9cb88; }
+a.gpt-deep > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.25; }
+a.gpt-deep b { font-size: 14px; font-weight: 750; letter-spacing: 0; text-transform: none; color: inherit; }
+a.gpt-deep small { font-size: 12px; font-weight: 500; opacity: .8; white-space: normal; overflow-wrap: anywhere; }
+a.gpt-deep[data-gpt-copied="1"] { border-color: rgba(95, 210, 150, .75); background: rgba(95, 210, 150, .14); }
+.mr-vt > a.gpt-deep { margin: 6px 0 0; }
+.sc-gpt { margin: 10px 0; }
+html[data-ui=light] a.gpt-deep > svg, html[data-theme="light"] a.gpt-deep > svg { color: #a37a1f; }
+html[data-ui=light] a.gpt-deep, html[data-theme="light"] a.gpt-deep { border-color: rgba(163, 122, 31, .5); background: rgba(233, 203, 136, .2); }

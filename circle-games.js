@@ -119,10 +119,43 @@
         if (tab() !== 'shelf') go('shelf');
         try { if (W.LOWI_SHELF && LOWI_SHELF.showTab) LOWI_SHELF.showTab(); } catch (e) { }
         const sb = D.getElementById('shBody'); if (sb) sb.scrollTop = 0;
+        reveal(id);
       }
     } finally { busy = false; }
     sync();
     const bar = D.getElementById('cspBar'); if (bar) { bar.dataset.k = ''; ensureBar(); }
+  }
+
+  /* 29 Oct sweep: on a short phone (iPhone SE) the game's own buttons (Swipen's Rückgängig row, Mischen's main button) opened
+     under the floating bottom back button (#lwBX) until the panel was scrolled by hand. Once the game has drawn, scroll the
+     panel just enough that its main control ends above the button. Stops as soon as the user scrolls or switches game. */
+  const MAIN = { mischen: '#r5Go', swipen: '.r3k-b' };
+  /* how far to scroll so a control whose bottom is at ctrlBottom ends gap px above a button whose top is at bxTop */
+  function need(ctrlBottom, bxTop, gap) {
+    if (!(ctrlBottom > 0) || !(bxTop > 0)) return 0;
+    const d = Math.ceil(ctrlBottom - (bxTop - (gap == null ? 8 : gap)));
+    return d > 0 ? d : 0;
+  }
+  function reveal(id) {
+    const sel = MAIN[id]; if (!sel || !D) return;
+    const sb0 = D.getElementById('shBody');
+    let user = false;
+    const mark = () => { user = true; };
+    /* Kochen redraws (and resets its scroll) a few times while the game opens, so check again until it has settled;
+       a finger or wheel on the panel means the user is scrolling: leave it from then on */
+    if (sb0 && sb0.addEventListener) ['touchstart', 'pointerdown', 'wheel'].forEach(ev => sb0.addEventListener(ev, mark, { passive: true, once: true }));
+    const step = () => {
+      if (user || cur !== id || tab() !== 'shelf') return;
+      const sb = D.getElementById('shBody'), bx = D.getElementById('lwBX');
+      if (!sb || !bx) return;
+      const bs = W.getComputedStyle ? W.getComputedStyle(bx) : null, br = bx.getBoundingClientRect();
+      if (!br.width || (bs && (bs.display === 'none' || bs.visibility === 'hidden' || +bs.opacity === 0))) return;
+      let bottom = 0;
+      D.querySelectorAll('#tab-shelf ' + sel).forEach(b => { const r = b.getBoundingClientRect(); if (r.width > 4 && r.height > 4) bottom = Math.max(bottom, r.bottom); });
+      const d = need(bottom, br.top);
+      if (d > 0) sb.scrollTop = Math.min(sb.scrollTop + d, Math.max(0, sb.scrollHeight - sb.clientHeight));
+    };
+    [200, 600, 1200, 2000, 3000].forEach(t => setTimeout(step, t));
   }
 
   /* taps */
@@ -151,5 +184,5 @@
     sync();
   }
   if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
-  W.LowiCircleGames = { select, sync, current: () => cur, circleOn, gameOn, GAMES };
+  W.LowiCircleGames = { select, sync, current: () => cur, circleOn, gameOn, GAMES, need };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

@@ -52,10 +52,32 @@
         row.appendChild(x);
         cam.classList.add('sg-xbot');
     }
+    /* Oct 29 2026 (bug hunt, iPhone SE): the photo-first card (.b3-pickbox in .b3-cmsg) is centred in a box that ended a fixed
+       236-250px above the bottom, but the typing panel (.b3-cbot) is taller than that, and taller still with the bottom X lifted
+       (bottom-close.css). On short screens the card ran over the panel and, being on top (z 4), took the taps: the barcode field,
+       Check, the food-name field and Analyze by name all hit From photos / Live barcode scan. --b3-cbot-top is the panel's real
+       top, measured from the scanner's bottom, so the card's box ends just above it (scan-glass.css). */
+    function fitPick(cam) {
+        if (!cam) return;
+        const bot = cam.querySelector('.b3-cbot'); if (!bot) return;
+        const cr = cam.getBoundingClientRect(), br = bot.getBoundingClientRect();
+        if (!br.height || !cr.height) return;
+        const v = Math.max(0, Math.round(cr.bottom - br.top)) + 'px';
+        if (cam.style.getPropertyValue('--b3-cbot-top') !== v) cam.style.setProperty('--b3-cbot-top', v);
+    }
+    function watchPick(cam) {
+        if (!cam || cam.__sgfit) return;
+        const bot = cam.querySelector('.b3-cbot'); if (!bot) return;
+        cam.__sgfit = 1;
+        fitPick(cam);
+        if (typeof ResizeObserver === 'function') { const ro = new ResizeObserver(() => fitPick(cam)); ro.observe(bot); ro.observe(cam); }
+        requestAnimationFrame(() => fitPick(cam));
+    }
     function sync() {
         const cam = D.getElementById('b3Cam');
         if (cam && cam.parentElement === D.body) adopt(cam);
         if (cam && !cam.__sgx) dockX(cam);
+        if (cam) { watchPick(cam); fitPick(cam); }
         const docked = !!(cam && cam.classList.contains('sg-docked') && H.classList.contains('b3-camon'));
         /* Scan is the current page while the camera is open (the lit tab is scan-glass.css) */
         const sb = D.querySelector('#tabbar .tb.scan'), open = !!(cam && H.classList.contains('b3-camon'));
@@ -88,10 +110,10 @@
         window.addEventListener('load', lastSheet, { once: true });
         new MutationObserver(sync).observe(D.body, { childList: true });
         new MutationObserver(sync).observe(H, { attributes: true, attributeFilter: ['class'] });
-        const re = () => { const cam = D.getElementById('b3Cam'); if (cam && cam.classList.contains('sg-docked')) measure(cam); };
+        const re = () => { const cam = D.getElementById('b3Cam'); if (cam) fitPick(cam); if (cam && cam.classList.contains('sg-docked')) measure(cam); };
         window.addEventListener('resize', re);
         window.addEventListener('orientationchange', () => setTimeout(re, 250));
     }
     if (D.body) boot(); else D.addEventListener('DOMContentLoaded', boot, { once: true });
-    window.LowiScanGlass = { sync, measure, dockX };
+    window.LowiScanGlass = { sync, measure, dockX, fitPick };
 })();

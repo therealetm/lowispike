@@ -214,6 +214,28 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
 @keyframes b3psweep { from { transform: translateY(-40%); } to { transform: translateY(240%); } }
 .b3-pnone .b3-pthumb { width: 120px; height: 120px; opacity: .9; }
 @media (prefers-reduced-motion: reduce) { .b3-psweep { animation: none; top: 33%; } .b3-pshoot { transition: none; } }
+/* Oct 29 2026 (bug hunt, iPhone SE): the photo card never runs over the typing panel. Its box ends just above the panel's real top
+   (--b3-cbot-top, scan-glass.js), the card stays centred while it fits (auto margins) and scrolls inside its box when it does not,
+   so the barcode field, Check, the food-name field and Analyze by name stay tappable. Short screens get a more compact card. */
+.b3-cam.b3-pick .b3-cmsg, html.lg .b3-cam.sg-docked.b3-pick .b3-cmsg { bottom: calc(var(--b3-cbot-top, 250px) + 8px) !important; align-items: flex-start; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.b3-cam.b3-pick .b3-cmsg > .b3-pickbox { margin-top: auto; margin-bottom: auto; flex: none; }
+@media (max-height: 700px) {
+  .b3-cam.b3-pick .b3-pickbox { padding: 14px 14px 12px; gap: 6px; border-radius: 24px; }
+  .b3-cam.b3-pick .b3-pshoot { width: 72px; height: 72px; border-width: 3px; box-shadow: 0 0 0 6px rgba(120, 200, 255, .16), 0 8px 22px rgba(0, 40, 90, .3); margin-bottom: 2px; }
+  .b3-cam.b3-pick .b3-pshoot i { width: 54px; height: 54px; }
+  .b3-cam.b3-pick .b3-pshoot svg { width: 28px; height: 28px; }
+  .b3-cam.b3-pick .b3-pickbox b { font-size: 17px; }
+  .b3-cam.b3-pick .b3-pickbox small { font-size: 13.5px; line-height: 1.35; }
+  .b3-cam.b3-pick .b3-pthumb { width: 128px; height: 128px; }
+  .b3-cam.b3-pick .b3-pbtns .b3-cbtn { padding: 0 12px; font-size: 14px; }
+}
+@media (max-height: 600px) {
+  .b3-cam.b3-pick .b3-pstart small { display: none; }
+  .b3-cam.b3-pick .b3-pshoot { width: 62px; height: 62px; }
+  .b3-cam.b3-pick .b3-pshoot i { width: 46px; height: 46px; }
+  .b3-cam.b3-pick .b3-pshoot svg { width: 24px; height: 24px; }
+  .b3-cam.b3-pick .b3-pthumb { width: 104px; height: 104px; }
+}
 
 /* Oct 28 2026 live barcode layer ("Barcode live scannen" on the photo screen; E-man, call + screenshots): its own clean full screen.
    Camera, frame, the hint, Snap / Focus / torch and the X stay; the Barcode / Essen-Foto switch, Deep analyze, the shutter and the two

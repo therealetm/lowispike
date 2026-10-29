@@ -19,7 +19,7 @@
     const NEVER = '.cs-mic-card .cs-photo-x,#n1B *,.stp-snack-x,.mr-add-x,.cg-photo-x,.rk-lad-x,.lw-bx,[data-no-bx],#ltTour *,.lt-tour *';
     const SRC = 'lw-bx-src';
     const obs = [];
-    let btn = null, target = null, raf = 0, last = '', bottomPx = 0;
+    let btn = null, target = null, raf = 0, last = '', bottomPx = 0, shownAt = 0;
     const T = (en, de, es) => { const l = (H.lang || 'en').slice(0, 2); return l === 'de' ? de : l === 'es' ? es : en; };
     const ICON = {
         back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
@@ -88,14 +88,25 @@
         btn.id = 'lwBX'; btn.type = 'button'; btn.className = 'lw-bx'; btn.setAttribute('data-noi18n', '');
         btn.addEventListener('click', e => {
             e.preventDefault(); e.stopPropagation();
-            const t = target; if (!t || !t.isConnected) { schedule(); return; }
-            try { if (navigator.vibrate) navigator.vibrate(8); } catch (x) { }
-            /* press the screen's own back / close, so its own logic runs */
-            t.click();
-            setTimeout(schedule, 60); setTimeout(schedule, 360);
+            /* Oct 29 2026 bug hunt: tapped while the X waits out of sight for a page sliding in (bx-catch, see update): the tap is
+               kept and pressed the moment that motion ends, on the layer then on top */
+            if (btn.classList.contains('bx-settle')) { pendingPress = performance.now(); schedule(); return; }
+            pressTop();
         });
         D.body.appendChild(btn);
         return btn;
+    }
+    let pendingPress = 0;
+    function pressTop() {
+        /* Oct 29 2026 bug hunt: press the layer on top right now, not the one picked a frame or more ago (a page that just
+           opened, e.g. Settings > Your details, can still be listed under the page behind it) */
+        let t = null; try { t = pick().top; } catch (x) { }
+        if (!t || !t.isConnected) t = target;
+        if (!t || !t.isConnected) { schedule(); return; }
+        try { if (navigator.vibrate) navigator.vibrate(8); } catch (x) { }
+        /* press the screen's own back / close, so its own logic runs */
+        t.click();
+        setTimeout(schedule, 60); setTimeout(schedule, 360);
     }
     const typing = () => { const a = D.activeElement; return !!(a && a !== D.body && (a.matches('textarea,select,[contenteditable=""],[contenteditable="true"]') || a.matches('input') && !/^(button|checkbox|radio|range|submit|reset|color|file|image)$/i.test(a.type || 'text'))); };
     /* rise above whatever sits at the bottom center: a text field, the chat composer, the bin, any control */
@@ -232,6 +243,13 @@
         /* Oct 28: the talking tutorial lies over the screen the X would close: the tour has its own buttons, so the X waits */
         const veiled = tourOver(b, lift);
         b.classList.toggle('bx-aside', cardBlock || veiled);
+        /* Oct 29 2026 bug hunt (Settings > Your details, iPhone SE): the X was on screen a moment ago and only waits out of sight
+           while the new page slides in, so a tap on its spot still belongs to it, not to the row of the new page under it (that
+           opened Edit profile instead of closing Your details). It takes the tap and presses it once the motion ends. */
+        const now = performance.now();
+        if (!moving && !cardBlock && !veiled) shownAt = now;
+        b.classList.toggle('bx-catch', moving && !cardBlock && !veiled && now - shownAt < 1200);
+        if (pendingPress && !moving) { const p = pendingPress; pendingPress = 0; if (now - p < 2000 && !cardBlock && !veiled) pressTop(); }
         /* stepped aside: the screen's own back / close shows again meanwhile, so there is always a way out */
         if (cardBlock) hide.forEach(el => el.classList.remove(SRC));
         if (lift !== bottomPx) { bottomPx = lift; b.style.setProperty('--bx-lift', lift + 'px'); }
@@ -250,6 +268,10 @@
             if (a.playState !== 'running') return false;
             const t = a.effect && a.effect.target;
             if (!t || !t.getBoundingClientRect || t === b || b.contains(t) || t.contains(b)) return false;
+            /* Oct 29 2026 bug hunt: a sheet on its way out (.r2-ov.off, its scrim fading) is leaving, so the X does not wait for it.
+               Settings > Your details: the closing Settings scrim kept the X hidden for 0.3 s or more, and a tap on its spot
+               went through to a Your details row and opened Edit profile instead of closing the page. */
+            if (t.closest && t.closest('.r2-ov.off')) return false;
             let tm; try { tm = a.effect.getComputedTiming(); } catch (e) { return false; }
             if (!isFinite(tm.endTime) || tm.iterations === Infinity || tm.endTime > 2500) return false;
             const r = t.getBoundingClientRect();

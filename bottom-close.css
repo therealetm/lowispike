@@ -34,6 +34,9 @@
 #secX:active,#whX:active{background:rgba(255,255,255,.14)!important}
 /* Oct 28: out of sight at once while a card / pane / field near it is still moving in, then it appears where it belongs (no slide) */
 .lw-bx.on.bx-settle{opacity:0;visibility:hidden;pointer-events:none;transition:none;animation:none}
+/* Oct 29 bug hunt: the X was on screen a moment ago and only waits for a page sliding in: its spot still takes the tap (kept and
+   pressed when the motion ends, see bottom-close.js), so the tap never lands on a row of the new page */
+.lw-bx.on.bx-settle.bx-catch{visibility:visible;pointer-events:auto}
 /* scrolling panels end above the button, so their last row is never under it */
 html.lw-bx-on #tab-shelf #shBody,html.lw-bx-on #tab-profile,html.lw-bx-on #tab-move,html.lw-bx-on #tab-scan,html.lw-bx-on .gv-scroll{scroll-padding-bottom:84px}
 html.lw-bx-on #tab-shelf #shBody::after,html.lw-bx-on .gv-scroll::after,html.lw-bx-on #tab-move::after,html.lw-bx-on #tab-profile::after{content:"";display:block;height:calc(env(safe-area-inset-bottom, 0px) + 72px)}

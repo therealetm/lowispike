@@ -29,6 +29,20 @@ test('a sheet that is closing never takes the button from the page that opened o
     assert.ok(shown.includes("el.closest('.r2-ov.off')"), 'controls inside a closing .r2-ov.off sheet are skipped');
 });
 
+test('a sheet that is closing never keeps the button hidden, and a tap presses the layer on top right now (Settings > Your details quick tap)', () => {
+    const js = read('bottom-close.js');
+    const settling = js.slice(js.indexOf('function settling('), js.indexOf('function syncUpdate('));
+    assert.ok(settling.includes("t.closest('.r2-ov.off')"), 'animations inside a closing .r2-ov.off sheet do not hold the X back');
+    const press = js.slice(js.indexOf('function pressTop('), js.indexOf('const typing ='));
+    assert.ok(/pick\(\)\.top/.test(press), 'the press picks the top layer again before pressing it');
+    const click = js.slice(js.indexOf("btn.addEventListener('click'"), js.indexOf('D.body.appendChild(btn)'));
+    assert.ok(/bx-settle[\s\S]*pendingPress = performance\.now\(\)/.test(click), 'a tap while the X waits for motion to end is kept');
+    const upd = js.slice(js.indexOf('function update('), js.indexOf('function schedule('));
+    assert.ok(/toggle\('bx-catch'/.test(upd) && /pendingPress && !moving[\s\S]*pressTop\(\)/.test(upd), 'the kept tap is pressed once the motion ends');
+    const css = read('bottom-close.css');
+    assert.ok(/\.lw-bx\.on\.bx-settle\.bx-catch\{visibility:visible;pointer-events:auto\}/.test(css), 'the X spot takes the tap while it waits');
+});
+
 test('it presses the screen\'s own back / close, steps away while typing, and rises above fields, the composer and the bin', () => {
     const js = read('bottom-close.js');
     assert.ok(js.includes('t.click()'), 'presses the original control');

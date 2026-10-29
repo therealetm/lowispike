@@ -58,12 +58,12 @@
        Check, the food-name field and Analyze by name all hit From photos / Live barcode scan. --b3-cbot-top is the panel's real
        top, measured from the scanner's bottom, so the card's box ends just above it (scan-glass.css). */
     function fitPick(cam) {
-        if (!cam) return;
-        const bot = cam.querySelector('.b3-cbot'); if (!bot) return;
+        if (!cam || !cam.querySelector || !cam.getBoundingClientRect || !cam.style || !cam.style.setProperty) return;
+        const bot = cam.querySelector('.b3-cbot'); if (!bot || !bot.getBoundingClientRect) return;
         const cr = cam.getBoundingClientRect(), br = bot.getBoundingClientRect();
-        if (!br.height || !cr.height) return;
+        if (!br || !cr || !br.height || !cr.height) return;
         const v = Math.max(0, Math.round(cr.bottom - br.top)) + 'px';
-        if (cam.style.getPropertyValue('--b3-cbot-top') !== v) cam.style.setProperty('--b3-cbot-top', v);
+        if (cam.__sgcb !== v) { cam.__sgcb = v; cam.style.setProperty('--b3-cbot-top', v); }
     }
     function watchPick(cam) {
         if (!cam || cam.__sgfit) return;

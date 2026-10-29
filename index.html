@@ -15398,15 +15398,11 @@ Object.assign(B3_TX, {
   /* Oct 28 2026 photo-first Scan (E-man, call): the phone's own camera, one photo, the barcode read from it on the phone */
   pickShoot: ["Take photo", "Foto machen", "Hacer foto"],
   pickT: ["Snap your food or a product", "Fotografier dein Essen oder ein Produkt", "Fotografía tu comida o un producto"],
-  pickS: ["A barcode in the photo is read on your phone, free", "Ein Barcode im Foto wird auf deinem Handy gelesen, kostenlos", "El código de barras de la foto se lee en tu móvil, gratis"],
+  pickS: ["A barcode is read for free, otherwise the AI checks your food", "Ein Barcode wird kostenlos gelesen, sonst prüft die KI dein Essen", "Un código de barras se lee gratis; si no, la IA revisa tu comida"],
   pickLib: ["From photos", "Aus Fotos", "De tus fotos"],
   pickLive: ["Live barcode scan", "Barcode live scannen", "Escanear en vivo"],
-  pickRead: ["Looking for a barcode…", "Suche Barcode…", "Buscando código…"],
-  pickNone: ["No barcode found", "Kein Barcode erkannt", "No se encontró código"],
-  pickNoneS: ["Take a new photo with the barcode close and sharp, or let the AI check the photo.", "Mach ein neues Foto mit dem Barcode nah und scharf, oder lass die KI das Foto prüfen.", "Haz otra foto con el código cerca y nítido, o deja que la IA revise la foto."],
-  pickQr: ["QR code found, but it is not a product code", "QR-Code gefunden, aber kein Produktcode", "Código QR encontrado, pero no es de producto"],
-  pickAgain: ["New photo", "Neues Foto", "Otra foto"],
-  pickAI: ["Analyse with AI", "Mit KI analysieren", "Analizar con IA"],
+  /* 29 Oct 2026 (Emmanuel): one neutral wait while the photo is checked; no no-barcode card, no Analyse-with-AI button */
+  pickRead: ["Checking your photo…", "Foto wird geprüft…", "Revisando tu foto…"],
   /* Oct 28 2026 live barcode scan from the photo screen (E-man, call: "Barcode live" led into the old cluttered camera screen) */
   liveOff: ["The camera is off", "Die Kamera ist aus", "La cámara está apagada"],
   liveOffS: ["Just take a photo of the barcode instead. That needs no camera permission.", "Mach stattdessen einfach ein Foto vom Barcode. Dafür braucht es keine Kamera-Erlaubnis.", "Haz simplemente una foto del código. No necesita permiso de cámara."],
@@ -16077,7 +16073,7 @@ function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.d
   else if (s === "nocam") m.innerHTML = '<div class="b3-cbox b3-cglass"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camNo")) + '</b><small>' + esc(t("camNoS")) + '</small><div class="b3-cbtns">' + typeBtn + '</div></div>';
   else if (s === "starting") m.innerHTML = '<div class="b3-cbox b3-cglass slim"><span class="b3-spin"></span><small>' + esc(t("starting")) + '</small></div>';
   else if (s === "lookup") m.innerHTML = '<div class="b3-cbox slim"><span class="b3-spin"></span><small>' + esc(t("lookup")) + '</small></div>';
-  else if (s === "pick" || s === "pickread" || s === "picknone" || s === "pickqr") m.innerHTML = pickHTML(s);
+  else if (s === "pick" || s === "pickread") m.innerHTML = pickHTML(s);
   else if (s === "snapread") { m.innerHTML = '<div class="b3-cbox b3-cglass slim" role="status"><span class="b3-spin"></span><small>' + esc(t("snapRead")) + '</small></div>'; msg(t("snapReadS")); }
   else if (s === "snapnone") { m.innerHTML = '<div class="b3-cbox b3-cglass" role="alert"><span class="b3-cic">' + IC.shutter + '</span><b>' + esc(t("snapNone")) + '</b><small>' + esc(t("snapNoneS")) + '</small><div class="b3-cbtns"><button class="b3-cbtn pri" data-b3="snapretake">' + esc(t("snapAgain")) + '</button><button class="b3-cbtn ghost" data-b3="photo">' + esc(t("snapPhone")) + '</button>' + typeBtn + '</div></div>'; msg(""); }
   else m.innerHTML = "";
@@ -16234,8 +16230,13 @@ async function decodeFile(f){
    camera, no in-browser live feed, so the default path never asks for the site's camera. One photo, then:
    1. barcode first, on the phone, free: EAN/UPC from the still (rotations, a centre crop), then a QR code that carries a GS1
       product link (/01/<GTIN>). Found -> the same product card as a scan, no AI.
-   2. nothing readable -> "Kein Barcode erkannt" with New photo and Analyse with AI. Only that tap sends the photo to the AI
-      (LowiSpirit.photoFile, the same check as in chat); a failed read, a cancel or a retake never spends a photo check.
+   2. nothing readable -> the photo goes to the AI on its own (LowiSpirit.photoFile, the same check as in chat).
+      29 Oct 2026 (Emmanuel, voice note + screenshot of a butter bowl: "Man macht ein Foto von seinem Essen und dann sagt er, kein
+      Barcode erkannt ... die meisten sehen diesen Button 'mit KI analysieren' gar nicht ... Wenn er nichts erkannt hat nach ein
+      paar Sekunden, dann aktiviert sich einfach das mit der KI analysieren"): the barcode read runs quietly behind one neutral
+      "Foto wird geprüft…"; a valid EAN/UPC (check digit) or a product QR code -> product card, no AI; nothing valid, a QR code
+      without a product number, or still reading after PICK_WAIT_MS -> the AI photo check starts by itself. No "Kein Barcode
+      erkannt" card, no extra tap. A cancel or the X while it reads never spends a photo check.
    The live barcode camera is still one tap away (Barcode live scannen); the shopping camera stays live as before.
    ===================================================================== */
 let pickIn = null, pickLibIn = null;
@@ -16265,8 +16266,6 @@ function scanExit(){ const inWorld = !!(CAM && CAM.el.closest("#spWorld")); clos
 function pickHTML(s){
   const c = CAM, img = c && c.pickUrl ? '<img alt="" src="' + esc(c.pickUrl) + '">' : "";
   if (s === "pickread") return '<div class="b3-pickbox b3-pread" role="status"><div class="b3-pthumb">' + img + '<i class="b3-psweep"></i><i class="b3-pgrid"></i></div><small>' + esc(t("pickRead")) + '</small></div>';
-  if (s === "picknone" || s === "pickqr") return '<div class="b3-pickbox b3-pnone" role="alert"><div class="b3-pthumb">' + img + '</div><b>' + esc(t(s === "pickqr" ? "pickQr" : "pickNone")) + '</b><small>' + esc(t("pickNoneS")) + '</small>' +
-    '<div class="b3-pbtns"><button type="button" class="b3-cbtn pri" data-b3="pickretake">' + esc(t("pickAgain")) + '</button><button type="button" class="b3-cbtn ghost b3-pai" data-b3="pickai">' + IC_SPARK + '<span>' + esc(t("pickAI")) + '</span></button></div></div>';
   return '<div class="b3-pickbox b3-pstart"><button type="button" class="b3-pshoot" data-b3="pickshoot" aria-label="' + esc(t("pickShoot")) + '"><i>' + IC.cam + '</i></button><b>' + esc(t("pickT")) + '</b><small>' + esc(t("pickS")) + '</small>' +
     '<div class="b3-pbtns"><button type="button" class="b3-cbtn ghost" data-b3="picklib">' + esc(t("pickLib")) + '</button><button type="button" class="b3-cbtn ghost" data-b3="picklive">' + IC.bc + '<span>' + esc(t("pickLive")) + '</span></button></div></div>'; }
 function pickFree(c){ if (!c) return; c.pickTok = (c.pickTok || 0) + 1; if (c.pickUrl) { try { URL.revokeObjectURL(c.pickUrl); } catch(e){} } c.pickUrl = ""; c.pickFile = null; }
@@ -16274,18 +16273,22 @@ function pickFree(c){ if (!c) return; c.pickTok = (c.pickTok || 0) + 1; if (c.pi
 function pickReset(){ const c = CAM; if (!c) return; pickFree(c); c.hold = false; c.done = false; c.el.classList.remove("held", "got");
   const cd = c.el.querySelector(".ss-card"); if (cd) { cd.remove(); c.el.classList.remove("ss-open"); }
   if (c.el.classList.contains("b3-pick")) { msgState("pick"); msg(""); } }
+/* the most the quiet barcode read may take before the AI photo check starts anyway (a few seconds, Emmanuel 29 Oct) */
+const PICK_WAIT_MS = 4000;
 async function pickGot(f){
   if (!CAM || !CAM.el.classList.contains("b3-pick")) openScanner("pickq");
   const c = CAM; if (!c) return; pickReset(); const tok = c.pickTok;
   try { c.pickUrl = URL.createObjectURL(f); } catch(e){ c.pickUrl = ""; } c.pickFile = f;
   msgState("pickread"); msg(""); sfx("tap");
-  let r = {code:"", qr:false}; try { r = await stillCode(f); } catch(e){}
+  let r = {code:"", qr:false, late:false};
+  try { r = await Promise.race([stillCode(f), new Promise(ok => setTimeout(() => ok({code:"", qr:false, late:true}), PICK_WAIT_MS))]); } catch(e){}
   if (CAM !== c || c.pickTok !== tok) return; /* closed, or a newer photo came in */
   if (r.code) { msgState("pick"); found(r.code); return; }
-  msgState(r.qr ? "pickqr" : "picknone"); sfx("error"); }
-/* Only this tap sends the photo to the AI: the existing photo result sheet (same check as in chat); it logs nothing by itself */
-function pickAI(){ const c = CAM, S = window.LowiSpirit; if (!c || !c.pickFile || !S || typeof S.photoFile !== "function") return;
-  const f = c.pickFile; sfx("tap"); closeScanner(true); try { S.photoFile(f); } catch(e){ console.warn(e); } }
+  pickAI(true); } /* no barcode (or a QR code without a product number, or too slow): the AI checks the food photo, no card, no tap */
+/* The AI photo check for the kept photo: the existing photo result sheet (same check as in chat); it logs nothing by itself.
+   Reached on its own from pickGot when the photo has no readable barcode (29 Oct 2026). */
+function pickAI(auto){ const c = CAM, S = window.LowiSpirit; if (!c || !c.pickFile || !S || typeof S.photoFile !== "function") return;
+  const f = c.pickFile; if (!auto) sfx("tap"); closeScanner(true); try { S.photoFile(f); } catch(e){ console.warn(e); } }
 function zxQrReader(){ const Z = window.ZXing, h = new Map(); h.set(Z.DecodeHintType.POSSIBLE_FORMATS, [Z.BarcodeFormat.QR_CODE]); h.set(Z.DecodeHintType.TRY_HARDER, true);
   const r = new Z.MultiFormatReader(); r.setHints(h); return r; }
 /* A QR code counts only when it carries a product number: a GS1 Digital Link (.../01/<GTIN>...) or the bare digits */
@@ -16296,6 +16299,7 @@ function qrGtin(raw){ raw = String(raw || "").trim(); let m = raw.match(/(?:^|\/
    Each pass yields to the screen so the scanning sweep keeps moving. Returns {code, qr} (qr: a QR code was read but has no product number). */
 async function stillCode(f){
   let url = "", code = "", qr = false; const idle = () => new Promise(ok => setTimeout(ok, 0));
+  const c0 = CAM, tok0 = c0 ? c0.pickTok : 0, gone = () => !!c0 && (CAM !== c0 || c0.pickTok !== tok0); /* 29 Oct: stop once the AI took over */
   try {
     url = URL.createObjectURL(f); const img = new Image(); img.src = url; await img.decode();
     const W0 = img.naturalWidth, H0 = img.naturalHeight; if (!W0 || !H0) return {code:"", qr:false};
@@ -16309,7 +16313,7 @@ async function stillCode(f){
     const turned = () => { const rc = document.createElement("canvas"); rc.width = cv.height; rc.height = cv.width; const rg = rc.getContext("2d", {willReadFrequently:true});
       rg.translate(rc.width, 0); rg.rotate(Math.PI / 2); rg.drawImage(cv, 0, 0); const v = validCode(zxDecodeCanvas(rc, reader)); freeCv(rc); return v; };
     for (const [max, crop] of [[1400, false], [1400, true], [2000, false]]) {
-      await idle(); if (CAM && !CAM.el.isConnected) break;
+      await idle(); if ((CAM && !CAM.el.isConnected) || gone()) break;
       draw(max, crop); code = validCode(zxDecodeCanvas(cv, reader)); if (code) break;
       await idle(); code = turned(); if (code) break; }
     if (!code) { let qrR = null; try { qrR = zxQrReader(); } catch(e){}

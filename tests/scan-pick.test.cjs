@@ -46,19 +46,24 @@ test('the picker is a plain image file input like Community: the phone camera, n
   assert.match(fnSrc(html, 'function shopResume()'), /b3-pick[\s\S]*pickReset\(\); return;/, 'closing a product card goes back to Take photo');
 });
 
-test('AI is spent only from the explicit Analyse with AI tap', () => {
+test('photo: barcode quietly first, else the AI photo check starts by itself (Emmanuel 29 Oct 2026)', () => {
   const ai = /photoFile|LowiFoodAI|food-photo/;
-  for (const sig of ['async function pickGot(f)', 'async function stillCode(f)', 'function pickReset()', 'function pickOpen(lib)', 'function pickInput(lib)', 'function shopResume()', 'function camResume()'])
+  for (const sig of ['async function stillCode(f)', 'function pickReset()', 'function pickOpen(lib)', 'function pickInput(lib)', 'function shopResume()', 'function camResume()'])
     assert.ok(!ai.test(fnSrc(html, sig)), sig + ' must not reach the AI');
-  assert.match(fnSrc(html, 'function pickAI()'), /S\.photoFile\(f\)/);
-  assert.match(html, /case "pickai": pickAI\(\); break;/);
+  assert.match(fnSrc(html, 'function pickAI(auto)'), /S\.photoFile\(f\)/);
   /* Oct 28 2026 late: Neues Foto also marks the picker so cancelling it leaves Scan (tests/scan-live-exit.test.cjs) */
   assert.match(html, /case "pickretake": pickReset\(\); pickOpen\(false\); if \(CAM\) CAM\.pickAgain = Date\.now\(\); break;/);
   const g = fnSrc(html, 'async function pickGot(f)');
-  assert.match(g, /if \(r\.code\) \{[^}]*found\(r\.code\)/, 'a barcode goes to the product card');
-  assert.match(g, /msgState\(r\.qr \? "pickqr" : "picknone"\)/, 'no code: the choice, not the AI');
-  const none = fnSrc(html, 'function pickHTML(s)');
-  assert.match(none, /data-b3="pickretake"/); assert.match(none, /data-b3="pickai"/); assert.match(none, /data-b3="picklive"/);
+  assert.match(g, /Promise\.race\(\[stillCode\(f\), new Promise\([^)]*setTimeout\([^;]*PICK_WAIT_MS\)/, 'the quiet read is capped at a few seconds');
+  assert.match(g, /if \(CAM !== c \|\| c\.pickTok !== tok\) return;/, 'a closed scanner or a newer photo never spends a photo check');
+  assert.match(g, /if \(r\.code\) \{[^}]*found\(r\.code\); return; \}\s*pickAI\(true\);/, 'a barcode goes to the product card, otherwise straight to the AI');
+  assert.ok(!/picknone|pickqr|sfx\("error"\)/.test(g), 'no "Kein Barcode erkannt" card and no error sound');
+  const w = Number((html.match(/const PICK_WAIT_MS = (\d+);/) || [])[1]); assert.ok(w >= 2000 && w <= 6000, 'a few seconds: ' + w);
+  const ph = fnSrc(html, 'function pickHTML(s)');
+  assert.ok(!/pickai|pickretake|pickNone|pickAI/.test(ph), 'no Analyse with AI / Neues Foto card');
+  assert.match(ph, /data-b3="picklive"/);
+  assert.ok(!/"Kein Barcode erkannt",|"Mit KI analysieren",/.test(html), 'the old popup strings are gone');
+  assert.match(fnSrc(html, 'async function stillCode(f)'), /gone\(\)\) break;/, 'the read stops once the AI took over');
 });
 
 test('QR codes count only with a product number (GS1 Digital Link or bare GTIN)', () => {
@@ -89,7 +94,7 @@ test('pick panel styling: no live-camera chrome, Home navy, a scanning sweep tha
 });
 
 test('every new scanner string exists in English, German and Spanish', () => {
-  for (const k of ['pickShoot', 'pickT', 'pickS', 'pickLib', 'pickLive', 'pickRead', 'pickNone', 'pickNoneS', 'pickQr', 'pickAgain', 'pickAI']) {
+  for (const k of ['pickShoot', 'pickT', 'pickS', 'pickLib', 'pickLive', 'pickRead']) {
     const m = html.match(new RegExp('\\n  ' + k + ': \\[("[^"]+", ){2}"[^"]+"\\],'));
     assert.ok(m, k);
   }

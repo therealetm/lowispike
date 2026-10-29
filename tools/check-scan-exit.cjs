@@ -1,6 +1,6 @@
 'use strict';
 /* Scan exit + live-scan probe: node check-scan-exit.cjs <root|url> [engine] [outprefix]
-   1 Home Scan -> picker; food photo -> "Kein Barcode erkannt"; Neues Foto -> picker cancelled -> where are we; X -> where are we.
+   1 Home Scan -> picker; food photo -> no barcode, the AI photo check opens by itself (29 Oct 2026); X -> where are we.
    2 Home Scan -> picker cancelled -> Barcode live scannen -> what shows (camera prompt count, clutter); X -> where are we. */
 const path = require('path');
 const arg = process.argv[2] || path.join(__dirname, '..');
@@ -51,10 +51,8 @@ const GRANT = process.env.GRANT === '1';
     if (bx) return 'lwBX ' + await tap('#lwBX'); return 'own ' + await tap('#b3Cam [data-b3="camclose"]'); };
   // A: photo -> none -> Neues Foto -> cancel -> X
   const fc1 = await tapChoose('#whHud [data-orbit="scan"]', FOOD, 'A home scan');
-  await P.waitForFunction(() => { const c = document.getElementById('b3Cam'); return c && /picknone|pickqr/.test(c.dataset.st || ''); }, null, { timeout: 20000 }).catch(() => { });
-  ok('A after food', await where()); await P.screenshot({ path: out + '-A1-none.png' });
-  await tapChoose('#b3Cam [data-b3="pickretake"]', null, 'A retake');
-  await cancelPicker(); ok('A after retake cancel', await where()); await P.screenshot({ path: out + '-A2-retake-cancel.png' });
+  await P.waitForFunction(() => !document.getElementById('b3Cam'), null, { timeout: 20000 }).catch(() => { }); await H.sleep(2000);
+  ok('A after food (AI sheet, no scanner)', await where()); await P.screenshot({ path: out + '-A1-ai.png' });
   ok('A tap X', await tapX()); await H.sleep(1200);
   ok('A after X', await where()); await P.screenshot({ path: out + '-A3-after-x.png' });
   // B: scan -> cancel -> live -> X

@@ -212,7 +212,6 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
   border-bottom: 2px solid #dff8ff; animation: b3psweep .9s cubic-bezier(.45, 0, .55, 1) infinite alternate; will-change: transform; }
 .b3-pgrid { position: absolute; inset: 0; background-image: linear-gradient(rgba(191, 240, 255, .14) 1px, transparent 1px), linear-gradient(90deg, rgba(191, 240, 255, .14) 1px, transparent 1px); background-size: 18px 18px; }
 @keyframes b3psweep { from { transform: translateY(-40%); } to { transform: translateY(240%); } }
-.b3-pnone .b3-pthumb { width: 120px; height: 120px; opacity: .9; }
 @media (prefers-reduced-motion: reduce) { .b3-psweep { animation: none; top: 33%; } .b3-pshoot { transition: none; } }
 /* Oct 29 2026 (bug hunt, iPhone SE): the photo card never runs over the typing panel. Its box ends just above the panel's real top
    (--b3-cbot-top, scan-glass.js), the card stays centred while it fits (auto margins) and scrolls inside its box when it does not,

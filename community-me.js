@@ -54,7 +54,10 @@
         if (has('presence') && !you.includes('presence')) you.splice(at < 0 ? 0 : at + 1, 0, 'presence');
         return [{ key: 'you', ids: you, more: light }, { key: 'settings', ids: set.concat(acc.filter(id => id !== 'deleteAccount')).filter(has) }, { key: 'danger', ids: acc.filter(id => id === 'deleteAccount').filter(has) }].filter(g => g.ids.length);
     }
-    const core = { TX, HOME_FIRST, SKIP, groups };
+    /* 29 Oct 2026 bug hunt: the XP under your name followed the phone's own locale (2,400 in a German app on an English phone) while
+       Misty's card already formats by the app language (companion.js nf). Same rule here: de 2.400, es 2400, en 2,400. */
+    const xpText = (n, l) => { let s; try { s = Number(n).toLocaleString({ de: 'de-DE', es: 'es-ES' }[l] || 'en-US'); } catch (e) { s = String(n); } return s + ' XP'; };
+    const core = { TX, HOME_FIRST, SKIP, groups, xpText };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root || !root.document) return;
 
@@ -105,7 +108,7 @@
                 : '<section class="cme-sec" aria-label="' + T[g.key] + '"><h3>' + T[g.key] + '</h3><div class="cme-list">' + g.ids.map(row).join('') + moreRow(g.more) + '</div></section>';
         el.innerHTML = '<div class="cme-head">' +
             '<span class="cme-av" aria-hidden="true">' + av + '</span>' +
-            '<span class="cme-who"><b id="cmeTitle">' + esc(m.name || T.guest) + '</b>' + (m.xp ? '<small>' + m.xp.toLocaleString() + ' XP</small>' : '') + '</span>' +
+            '<span class="cme-who"><b id="cmeTitle">' + esc(m.name || T.guest) + '</b>' + (m.xp ? '<small>' + xpText(m.xp, lang()) + '</small>' : '') + '</span>' +
             (ov ? '' : '<button type="button" class="cme-ibtn" data-cme="close" aria-label="' + T.close + '">' + svg('x') + '</button>') + '</div>' +
             '<div class="cme-body">' + gs.map(sec).join('') +
             '<p class="cme-tip">' + T.hold + '</p>' + (ver ? '<p class="cme-ver">' + esc(ver) + '</p>' : '') + '</div>';

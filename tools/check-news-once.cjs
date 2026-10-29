@@ -33,7 +33,7 @@ const click = (P, keys) => P.evaluate(ks => { const vis = e => e && e.getBoundin
     const first = await waitCard(25); res[tag + '_first'] = first;
     if (!first.ob && !first.tour) { fails.push(tag + ': no announcement at all'); return; }
     let cards = 1, steps = [];
-    if (path === 'gotit') { const k = await click(P, ['later', 'done', 'skipall', 'skip']); steps.push(k); await H.sleep(1500); }
+    if (path === 'gotit') { const k = await click(P, ['later', 'done', 'skipall', 'skip', 'next']); steps.push(k || 'NOTHING CLICKED'); await H.sleep(1500); }
     else {
       const k = first.lt ? 'tutorial-card' : await click(P, ['showme']); steps.push(k || 'NO SHOWME'); if (!k) fails.push(tag + ': no Show me button');
       for (let i = 0; i < 12; i++) { await H.sleep(1400); const s = await look(P); if (!s.ob && !s.tour && !s.lt) break; if (!s.ob && !s.tour) continue; /* tutorial between two steps (tab switch) */

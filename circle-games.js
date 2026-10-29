@@ -155,7 +155,9 @@
       const d = need(bottom, br.top);
       if (d > 0) sb.scrollTop = Math.min(sb.scrollTop + d, Math.max(0, sb.scrollHeight - sb.clientHeight));
     };
-    [200, 600, 1200, 2000, 3000].forEach(t => setTimeout(step, t));
+    /* 29 Oct 03:02 check: on a slow open the back button only fades in after ~3.9 s, so a check that ended at 3 s always found it
+       hidden and never scrolled (Rückgängig stayed under it, a tap on Undo closed the game). Keep checking until 7 s. */
+    [200, 600, 1200, 2000, 3000, 4000, 5000, 7000].forEach(t => setTimeout(step, t));
   }
 
   /* taps */

@@ -11,8 +11,9 @@ const SRC = fs.readFileSync(path.join(__dirname, '..', 'circle-games.js'), 'utf8
 
 function cls(list) { const s = new Set(list); return { contains: c => s.has(c), add: (...c) => c.forEach(x => s.add(x)), remove: (...c) => c.forEach(x => s.delete(x)), toggle: (c, on) => { if (on === undefined ? !s.has(c) : on) s.add(c); else s.delete(c); } }; }
 
-function boot() {
+function boot(hiddenChecks) {
   const timers = [];
+  let hidden = hiddenChecks || 0;
   const sb = { scrollTop: 6, scrollHeight: 414, clientHeight: 334, on: {}, addEventListener(ev, f) { this.on[ev] = f; } };
   /* Swipen's action row: at scrollTop 6 it sits at 514-569 (live iPhone SE measurement) */
   const row = ['Nie wieder', 'Heute nicht', 'Rückgängig', 'Bald kochen', 'Heute kochen'].map((t, i) => ({ t, getBoundingClientRect: () => { const top = 514 - (sb.scrollTop - 6); return { top, bottom: top + (i === 2 ? 55 : 50), width: 50, height: 50 }; } }));
@@ -27,7 +28,7 @@ function boot() {
   };
   const win = {
     document: doc, LowiHost: { tab: () => 'shelf' }, LowiFood: { setView() { } }, goTab() { },
-    getComputedStyle: () => ({ display: 'block', visibility: 'visible', opacity: '1' }), addEventListener() { }
+    getComputedStyle: () => (hidden-- > 0 ? { display: 'flex', visibility: 'hidden', opacity: '0' } : { display: 'block', visibility: 'visible', opacity: '1' }), addEventListener() { }
   };
   /* in the browser window is the global object, so the context is the window too */
   const ctx = Object.assign(win, { setTimeout: (f, t) => { timers.push([t, f]); return timers.length; }, setInterval: () => 0, MutationObserver: class { observe() { } }, requestAnimationFrame: f => f() });
@@ -55,6 +56,17 @@ test('opening Swipen in Circle on an iPhone SE scrolls Rückgängig out from und
   assert.ok(sb.scrollTop > 6, 'the panel scrolled');
   assert.ok(undo.bottom <= 498, 'Undo ends above the button top (498), got ' + undo.bottom);
   assert.ok(sb.scrollTop <= sb.scrollHeight - sb.clientHeight, 'never past the end');
+});
+
+test('the back button fading in late (after 3 s, as on a slow open) still gets Rückgängig scrolled clear', () => {
+  const { G, sb, row, timers } = boot(5); /* hidden at the 200, 600, 1200, 2000 and 3000 ms checks */
+  G.select('swipen');
+  sb.scrollTop = 6;
+  timers.sort((a, b) => a[0] - b[0]);
+  assert.ok(timers.some(([t]) => t > 3900), 'a check runs after the button fades in (~3.9 s)');
+  timers.splice(0).forEach(([, f]) => f());
+  assert.ok(sb.scrollTop > 6, 'the panel scrolled');
+  assert.ok(row[2].getBoundingClientRect().bottom <= 498, 'Undo ends above the button top');
 });
 
 test('it leaves the panel alone once the user touches it', () => {

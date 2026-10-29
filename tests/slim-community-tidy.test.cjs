@@ -22,6 +22,8 @@ test('C-06: no Chat settings row in the Community menu, Profile keeps the way in
     const m = js.slice(js.indexOf('function menuItems()'), js.indexOf('function paintMenu()'));
     assert.doesNotMatch(m, /it\.push\(\['settings'/);
     assert.match(m, /it\.push\(\['welcome'/, 'Welcome & rules stays in the menu');
-    assert.match(m, /it\.push\(\['profile'/, 'Profile stays in the menu');
-    assert.match(me, /has\('presence'\)/, 'Profile has the presence tile that opens LowiCommunity.settings');
+    /* Oct 29 2026 settings hub: the Community name opens the one settings page instead of this menu; its Your presence row is the
+       one way into LowiCommunity.settings, and with #pfBtn gone the menu would list no Profile row either */
+    assert.match(js, /a==='menu'[\s\S]{0,900}LowiCommunityMe\.open\(\)/, 'the Community name opens the settings page');
+    assert.match(me, /\{ key: 'circle', ids: \['presence'/, 'the settings page has the presence row that opens LowiCommunity.settings');
 });

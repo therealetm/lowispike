@@ -233,7 +233,10 @@
        'go' closes Settings and runs its route */
     /* Oct 22 2026 (item 42, Emmanuel): a hold on the Community bubble opens the profile hub (community-me.js), not the slim Settings;
        the hub's gear still reaches Settings. -> 'hub' | null */
-    function holdIntent(bubble) { return bubble === 'settings' ? 'hub' : null; }
+    /* Oct 29 2026 (Emmanuel: "wenn man lange drückt auf Community ... dann passiert gar nichts"): a hold does nothing now. The one
+       settings page opens from the Community name inside Circle (community-me.js); the hold only eats the click that ends it, so a long
+       press does not enter Community either. */
+    function holdIntent(bubble) { return null; }
     /* 'lang' = three language buttons in the row; 'confirm' = asks inside the panel first (Delete account) */
     const PANEL_ROWS = ['worldSound'], TOGGLE_ROWS = ['quest', 'theme'];
     function rowAction(id) { return id === 'language' ? 'lang' : id === 'deleteAccount' ? 'confirm' : PANEL_ROWS.includes(id) ? 'panel' : TOGGLE_ROWS.includes(id) ? 'toggle' : 'go'; }
@@ -704,13 +707,15 @@
         if (e.isPrimary === false) { holdCancel(); return; } /* BH-023: a second finger is a pinch, not a hold */
         const el = e.target && e.target.closest && e.target.closest('[data-orbit="settings"]');
         if (!el || el.dataset.o8Adapter !== 'settings-sleep' || (e.button && e.button !== 0) || e.isPrimary === false) return;
-        holdCancel(); holdAt = { x: e.clientX, y: e.clientY }; holdEl = el; holdCue(true);
+        const intent = holdIntent('settings');
+        holdCancel(); holdAt = { x: e.clientX, y: e.clientY }; holdEl = el; if (intent) holdCue(true);
         holdT = setTimeout(() => {
             holdT = 0; holdAt = null; holdCue(false); holdFired = true; swallowUntil = Date.now() + 60000;
-            try { if (root.navigator && fn(root.navigator, 'vibrate')) root.navigator.vibrate(12); } catch (err) { }
             hintDone(); hideHint(); detached = false;
+            if (!intent) return; /* Oct 29 2026: nothing happens on a hold */
+            try { if (root.navigator && fn(root.navigator, 'vibrate')) root.navigator.vibrate(12); } catch (err) { }
             if (open) close(false);
-            if (holdIntent('settings') === 'hub') openHub(); else show('page');
+            if (intent === 'hub') openHub(); else show('page');
         }, HOLD_MS);
     }
     function onHoldClick(e) {
@@ -724,6 +729,7 @@
     function hintDone() { ls.set(HINT_KEY, String(Date.now())); }
     function hideHint() { if (hintEl) { const h = hintEl; hintEl = null; h.classList.add('out'); setTimeout(() => h.remove(), 300); } }
     function maybeHint() {
+        if (!holdIntent('settings')) return; /* Oct 29 2026: no hold, so no "hold Community" hint */
         if (hintEl || ls.get(HINT_KEY) || open || D.hidden) return;
         if (!hintSince) { hintSince = Date.now(); return; }
         if (Date.now() - hintSince < 3000) return;

@@ -112,10 +112,11 @@ test('water: press and hold resets today, the tap that ends the hold adds nothin
     assert.ok(css.includes('left: calc(50% + var(--wh-sx)); top: calc(var(--wh-cy) + var(--wh-sy));'));
 });
 
-test('chat privacy & quiet hours have a home in Profile > Community', () => {
-    const nm = read('nav-moves.js'), html = read('index.html');
+test('chat privacy & quiet hours have one home: Your presence in the settings page (Oct 29 2026, no second copy in Profile)', () => {
+    const nm = read('nav-moves.js'), html = read('index.html'), me = read('community-me.js');
     assert.ok(nm.includes("c.className = 'card nm-privacy'") && nm.includes('W.LowiCommunity.settings()'));
-    assert.ok(html.includes('c.contains("nm-privacy")) return "comm"'));
+    assert.ok(html.includes('if (c.contains("nm-privacy")) return "dup";'), 'the Profile copy is parked, never a panel of its own');
+    assert.ok(me.includes("if (id === 'presence') { if (hasPresence()) root.LowiCommunity.settings(); return; }"), 'Your presence opens the same sheet');
     assert.ok(read('community-chat.js').includes('W.LowiCommunity={mount,refresh,send,comment,isQuiet,unread,messageHTML:renderMessage,mentions,fit,settings,'));
 });
 

@@ -11,11 +11,11 @@ const C = require('../home-settings-sleep-v2.js');
 const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const JS = read('home-settings-sleep-v2.js'), CSS = read('home-settings-sleep-v2.css');
 
-test('Oct 21 2026: the bubble is Community: a tap opens Community, a hold opens Settings, a tap while Settings is open closes it', () => {
+test('Oct 21 2026: the bubble is Community: a tap opens Community, a tap while Settings is open closes it; Oct 29 2026: the hold opens nothing', () => {
     assert.strictEqual(typeof C.tapIntent, 'function', 'tapIntent(bubble, open) is exported');
     assert.strictEqual(C.tapIntent('settings', null), 'community', 'closed: one tap opens Community');
     assert.strictEqual(C.tapIntent('settings', 'sleep'), 'community', 'Sleep bloom open: a tap still goes to Community');
-    assert.strictEqual(C.holdIntent('settings'), 'hub', 'a hold opens the profile hub (item 42)');
+    assert.strictEqual(C.holdIntent('settings'), null, 'the hold opens nothing; the settings page opens from the Community name in Circle');
     assert.strictEqual(C.holdIntent('sleep'), null, 'only the Community bubble has a hold');
     assert.ok(C.HOLD_MS >= 400 && C.HOLD_MS <= 600, 'hold time like iOS (about half a second)');
     for (const o of ['page', 'settings', 'more']) assert.strictEqual(C.tapIntent('settings', o), 'close', 'open ' + o + ': a second tap closes');

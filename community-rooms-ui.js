@@ -101,12 +101,16 @@ let bar=null,banner=null,menu=null,msg='',msgT=0;
 function ensure(){const pane=D.getElementById('cmPaneChat');if(!pane||!pane.hasAttribute('data-spirit-chat'))return null;
  if(bar&&bar.isConnected&&bar.parentNode===pane)return bar;
  bar=D.createElement('nav');bar.className='rm-bar';bar.setAttribute('data-noi18n','');
- bar.innerHTML='<div class="rm-head"><button type="button" class="rm-id rm-menu-btn" data-rm="menu" aria-haspopup="menu" aria-expanded="false"><span class="rm-logo" aria-hidden="true"><i></i></span><span class="rm-idt"><b class="rm-name"></b><span class="rm-live"></span></span><span class="rm-chev" aria-hidden="true"></span></button></div>'
+ bar.innerHTML='<div class="rm-head"><button type="button" class="rm-id rm-menu-btn" data-rm="menu" aria-haspopup="dialog"><span class="rm-logo" aria-hidden="true"><i></i></span><span class="rm-idt"><b class="rm-name"></b><span class="rm-live"></span></span><span class="rm-chev" aria-hidden="true"></span></button></div>'
   +'<div class="rm-tabs" role="tablist">'+tabOrder().map(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'+k+'"></button>').join('')+'</div><div class="rm-crumb" hidden><button type="button" class="rm-back" data-rm="back"></button><span class="rm-crumb-t"></span></div><div class="rm-banner" role="status" aria-live="polite"></div>';
  pane.insertBefore(bar,pane.firstChild);banner=bar.querySelector('.rm-banner');
  for(const ms of [60,250,600,1100])setTimeout(()=>fit(bar),ms);setTimeout(maybeWelcome,1200);
  bar.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const a=b.dataset.rm;
-  if(a==='back')goBack();else if(a==='room')setTab(false);else if(a==='chat')setTab(true);else if(a==='create'||a==='aff'||a==='rank'||a==='fy'||a==='studio')showView(a);else if(a==='copy')copyView();else if(a==='menu'){if(e.target.closest('.rm-live[data-here]')&&W.LowiPeopleDir&&W.LowiPeopleDir.open){toggleMenu(false);try{W.LowiPeopleDir.open({at:'here'});return;}catch(x){}}toggleMenu();}});
+  if(a==='back')goBack();else if(a==='room')setTab(false);else if(a==='chat')setTab(true);else if(a==='create'||a==='aff'||a==='rank'||a==='fy'||a==='studio')showView(a);else if(a==='copy')copyView();else if(a==='menu'){if(e.target.closest('.rm-live[data-here]')&&W.LowiPeopleDir&&W.LowiPeopleDir.open){toggleMenu(false);try{W.LowiPeopleDir.open({at:'here'});return;}catch(x){}}
+   /* Oct 29 2026 (Emmanuel: "wenn du in eine Einstellung möchtest, drückst du auf Community ... und nochmal auf diese Community-Taste"):
+      the Community name, now in the middle, opens the ONE settings page (community-me.js). Its Circle group holds what this
+      drop-down had (People, invite link, rules); the drop-down stays only as a fallback when that page is missing. */
+   toggleMenu(false);try{if(W.LowiCommunityMe&&typeof W.LowiCommunityMe.open==='function'&&W.LowiCommunityMe.open())return;}catch(x){}toggleMenu();}});
  bar.querySelector('.rm-tabs').addEventListener('keydown',e=>{if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;const ts=[...bar.querySelectorAll('.rm-tab')],i=ts.indexOf(D.activeElement);if(i<0)return;e.preventDefault();const n=ts[(i+(e.key==='ArrowRight'?1:ts.length-1))%ts.length];n.focus();n.click();});
  return bar;}
 function note(s){msg=s;clearTimeout(msgT);if(s)msgT=setTimeout(()=>{msg='';paint();},6000);paint();}
@@ -360,5 +364,5 @@ function openOn(v){try{if(W.LowiCommunityTabs&&W.LowiCommunityTabs.want)W.LowiCo
  /* BH-034: switch the view in the same task as goTab, before the browser draws. A timer let the default view (the galaxy, with
     people you can tap) show for 0.3-2.5 s on a busy phone, and a tap meant for the new view picked a person there. */
  let k=0;const t=()=>{k++;if(!ensure()||!on()){if(k<30)setTimeout(t,100);return;}const was=view;showView(v);if(v==='fy'&&was==='fy')paintFyFeed();/* already there: show the newest post */};t();}
-W.LowiRoomsUI={paint,setTab,back,from:()=>from,fit,showView,openOn,tab:()=>open()?'chat':tabOfView(view)||'room',view:()=>view,frames:()=>Object.keys(frames),menu:toggleMenu,copyView,inviteUrl,_chanRows:chanRows,_menuKeys:()=>menuItems().map(x=>x[0])};
+W.LowiRoomsUI={paint,setTab,back,from:()=>from,fit,showView,openOn,tab:()=>open()?'chat':tabOfView(view)||'room',view:()=>view,frames:()=>Object.keys(frames),menu:toggleMenu,copyView,inviteUrl,invite:()=>copyText(inviteUrl(),tr('copied')),_chanRows:chanRows,_menuKeys:()=>menuItems().map(x=>x[0])};
 })(window,document);

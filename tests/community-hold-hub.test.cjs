@@ -11,16 +11,21 @@ const ROOT = path.join(__dirname, '..');
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const C = require(path.join(ROOT, 'home-settings-sleep-v2.js'));
 
-test('a hold on the Community bubble means the profile hub, a tap still means Community', () => {
-    assert.strictEqual(C.holdIntent('settings'), 'hub');
+/* Oct 29 2026 (Emmanuel, live call: "wenn man lange drückt auf Community ... dann passiert gar nichts"): the one settings page opens
+   from the Community name inside Circle (community-me.js / community-rooms-ui.js). A hold on the bubble does nothing; it still eats
+   the click that ends it, so a long press does not enter Community either. */
+test('a hold on the Community bubble does nothing now, a tap still means Community', () => {
+    assert.strictEqual(C.holdIntent('settings'), null);
     assert.strictEqual(C.holdIntent('sleep'), null);
     assert.strictEqual(C.tapIntent('settings', null), 'community');
 });
 
-test('the hold timer opens the hub through LowiCommunityMe, Settings only as a fallback', () => {
+test('the hold timer stops before opening anything; the Circle heading opens the settings page', () => {
     const js = read('home-settings-sleep-v2.js');
     const body = js.slice(js.indexOf('function onHoldDown'), js.indexOf('function onHoldClick'));
-    assert.match(body, /holdIntent\('settings'\) === 'hub'\) openHub\(\)/);
+    assert.match(body, /if \(!intent\) return;/, 'no intent, nothing opens');
+    assert.match(body, /if \(intent\) holdCue\(true\)/, 'no hold cue either');
+    assert.match(read('community-rooms-ui.js'), /a==='menu'[\s\S]{0,900}LowiCommunityMe\.open\(\)/, 'the Community name opens the one settings page');
     assert.match(js, /function openHub\(\)[\s\S]{0,200}LowiCommunityMe[\s\S]{0,200}M\.open\(\)/);
 });
 
@@ -45,9 +50,10 @@ test('a light cue while the finger is down, no callout or selection on the bubbl
     assert.match(js, /addEventListener\('contextmenu'/);
 });
 
-test('in the hub, the picture and the name open the profile', () => {
+test('in the settings page, your picture card opens Your details', () => {
     const js = read('community-me.js');
-    assert.match(js, /closest\('\.cme-av,\.cme-who'\)[\s\S]{0,120}run\('me'\)/);
+    assert.match(js, /class="cme-head cme-me" data-cme="me"/);
+    assert.match(js, /if \(id === 'me'\) \{ const Y = root\.LowiYourDetails;/);
     assert.match(read('community-me.css'), /\.cme-av, \.cme-who \{ cursor: pointer; \}/);
 });
 

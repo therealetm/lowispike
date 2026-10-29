@@ -11,53 +11,56 @@
 (function (root) {
     'use strict';
     const TX = {
-        en: { more: 'More places', title: 'You', you: 'You', settings: 'Settings', account: 'Account', close: 'Close', level: 'Level', guest: 'You', hold: 'Tip: hold the Community bubble on Home to open this from anywhere.' },
-        de: { more: 'Weitere Orte', title: 'Du', you: 'Du', settings: 'Einstellungen', account: 'Konto', close: 'Schlie\u00dfen', level: 'Level', guest: 'Du', hold: 'Tipp: Halte die Community-Blase auf Home, um das hier jederzeit zu \u00f6ffnen.' },
-        es: { more: 'M\u00e1s lugares', title: 'T\u00fa', you: 'T\u00fa', settings: 'Ajustes', account: 'Cuenta', close: 'Cerrar', level: 'Nivel', guest: 'T\u00fa', hold: 'Consejo: mant\u00e9n la burbuja Comunidad en Inicio para abrir esto desde cualquier sitio.' }
+        en: { title: 'Settings', you: 'You', circle: 'Circle', settings: 'App', help: 'Help & info', account: 'Account', close: 'Close', level: 'Level', guest: 'You', mine: 'Name, photo, weight, health, account' },
+        de: { title: 'Einstellungen', you: 'Du', circle: 'Circle', settings: 'App', help: 'Hilfe & Info', account: 'Konto', close: 'Schlie\u00dfen', level: 'Level', guest: 'Du', mine: 'Name, Foto, Gewicht, Gesundheit, Konto' },
+        es: { title: 'Ajustes', you: 'T\u00fa', circle: 'Circle', settings: 'App', help: 'Ayuda e info', account: 'Cuenta', close: 'Cerrar', level: 'Nivel', guest: 'T\u00fa', mine: 'Nombre, foto, peso, salud, cuenta' }
     };
     /* the places that only work on Home (they press a Home control): go Home first, then run */
     const HOME_FIRST = ['gift', 'myday'];  /* myday: its bubbles open Home's old day panels (index.html g2h) */
     const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
     const LABELS = {
-        en: { me: 'Profile', presence: 'Your presence', body: 'Weight & BMI', weight: 'Weight journey' }, de: { me: 'Profil', presence: 'Dein Auftritt', body: 'Gewicht & BMI', weight: 'Gewichtsreise' }, es: { me: 'Perfil', presence: 'Tu presencia', body: 'Peso e IMC', weight: 'Tu camino de peso' }
-    };
-    const SUB = {
-        en: { me: 'Name, photo, goals', presence: 'Companion in the galaxy, sharing, quiet hours, blocked people', body: 'Weigh in, BMI, goal and chart', weight: 'Start date, chart and goal', foryou: 'Shuffle of recipes and moves', care: 'Look after each other', workouts: 'Guided sessions', gift: 'Misty\u2019s daily gift', hunt: 'Find it in the shop' },
-        de: { me: 'Name, Foto, Ziele', presence: 'Begleiter in der Galaxie, Freigaben, Ruhezeiten, Blockierte', body: 'Wiegen, BMI, Ziel und Verlauf', weight: 'Startdatum, Verlauf und Ziel', foryou: 'Mix aus Rezepten und Moves', care: 'Aufeinander achten', workouts: 'Gef\u00fchrte Einheiten', gift: 'Mistys Tagesgeschenk', hunt: 'Im Laden finden' },
-        es: { me: 'Nombre, foto, metas', presence: 'Compa\u00f1ero en la galaxia, compartir, horas de silencio, bloqueados', body: 'Pesarte, IMC, meta y gr\u00e1fico', weight: 'Fecha de inicio, gr\u00e1fico y meta', foryou: 'Mezcla de recetas y movimientos', care: 'Cuidarnos entre todos', workouts: 'Sesiones guiadas', gift: 'El regalo diario de Misty', hunt: 'Encu\u00e9ntralo en la tienda' }
+        en: { presence: 'Your presence', swaps: 'My swaps', glow: 'Your glow', cycle: 'My cycle', todo: 'Finish your profile', people: 'People', posts: 'Posts & ranking', invite: 'Invite friends', rules: 'Circle rules', look: 'Look & sound' },
+        de: { presence: 'Dein Auftritt', swaps: 'Meine Swaps', glow: 'Dein Glow', cycle: 'Mein Zyklus', todo: 'Profil fertig machen', people: 'Leute', posts: 'Posts & Ranking', invite: 'Freunde einladen', rules: 'Regeln im Circle', look: 'Aussehen & Ton' },
+        es: { presence: 'Tu presencia', swaps: 'Mis swaps', glow: 'Tu glow', cycle: 'Mi ciclo', todo: 'Completa tu perfil', people: 'Gente', posts: 'Posts y ranking', invite: 'Invitar amigos', rules: 'Normas del Circle', look: 'Aspecto y sonido' }
     };
     const P = 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"';
     const ICON = {
-        foryou: '<path d="M4 7h4l8 10h4M4 17h4l2.5-3.1M13.5 10.1 16 7h4M18 5l2 2-2 2M18 15l2 2-2 2" ' + P + '/>',
-        care: '<path d="M12 19s-7-4.3-7-9.2A3.8 3.8 0 0 1 12 7.6a3.8 3.8 0 0 1 7 2.2C19 14.7 12 19 12 19z" ' + P + '/>',
-        workouts: '<path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10" ' + P + '/>',
-        gift: '<rect x="4.5" y="9" width="15" height="10.5" rx="2" ' + P + '/><path d="M3.5 9h17M12 9v10.5M12 9c-1.5-3.5-5.5-3.5-5-1 .3 1 2.5 1 5 1zm0 0c1.5-3.5 5.5-3.5 5-1-.3 1-2.5 1-5 1z" ' + P + '/>',
-        hunt: '<path d="M4 5h2l2 10h10l2-7H7" ' + P + '/><circle cx="9.5" cy="19" r="1.3" ' + P + '/><circle cx="16.5" cy="19" r="1.3" ' + P + '/>',
         presence: '<path d="M12 3l7 3v5.5c0 4.4-3 8-7 9.5-4-1.5-7-5.1-7-9.5V6z" ' + P + '/><path d="M9.2 12.2l2 2 3.8-4" ' + P + '/>',
-        weight: '<path d="M4 19h16M5 15l4-4 3 2 6-7" ' + P + '/><circle cx="18" cy="6" r="1.6" ' + P + '/>',
-        gear: '<circle cx="12" cy="12" r="3" ' + P + '/><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4 18 18M6 18l1.6-1.6M16.4 7.6 18 6" ' + P + '/>',
+        swaps: '<path d="M7 4h10a1 1 0 011 1v15l-6-4-6 4V5a1 1 0 011-1z" ' + P + '/>',
+        glow: '<circle cx="12" cy="12" r="4" ' + P + '/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" ' + P + '/>',
+        cycle: '<circle cx="12" cy="12" r="7.5" ' + P + '/><circle cx="10.6" cy="10.8" r="2.6" ' + P + '/><circle cx="15.3" cy="14.6" r="1" ' + P + '/>',
+        todo: '<rect x="5" y="4" width="14" height="16.5" rx="2.5" ' + P + '/><path d="M8.5 10l2 2 4-4M8.5 16h7" ' + P + '/>',
+        people: '<circle cx="9" cy="9" r="3.2" ' + P + '/><path d="M3.5 19.5a5.5 5.5 0 0 1 11 0" ' + P + '/><circle cx="16.8" cy="9.8" r="2.5" ' + P + '/><path d="M15.6 14.4a4.6 4.6 0 0 1 5.4 4.6" ' + P + '/>',
+        posts: '<path d="M4 5.5h12a1.5 1.5 0 011.5 1.5v7a1.5 1.5 0 01-1.5 1.5H9l-4 3.5V7A1.5 1.5 0 014 5.5z" ' + P + '/><path d="M17.5 9H20a1 1 0 011 1v9.5L18 17h-6.5" ' + P + '/>',
+        invite: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" ' + P + '/>',
+        rules: '<path d="M6 4h9l3 3v13H6z" ' + P + '/><path d="M9 10h6M9 13.5h6M9 17h4" ' + P + '/>',
         x: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ' + P + ' stroke-width="2.2"/>',
         chev: '<path d="M9.5 6l6 6-6 6" ' + P + '/>'
     };
-    /* YOU, then SETTINGS (the switches, language, tutorial, account), then Delete account on its own at the bottom; World sound is left
-       out (it lives inside Look & sound) and so are places, which now have their own way in */
-    const SKIP = ['worldSound'];
+    /* Oct 29 2026 (Emmanuel: "alles bei Community ... sinngemäß, richtig sortiert ... so wie Apple iOS mit der Einstellung", then
+       "doppelt gemappte ... alles in einer Seite, schmeiß alles andere raus"): this is the ONE settings page. It opens from the
+       Community name in the middle of the Circle header; the picture and the day/night button top right, the hold on the Community
+       bubble, the Circle drop-down menu and the Profile tile grid are gone as ways in. Your picture card at the top opens Your details
+       (name, photo, weight & BMI, health, email/password), so Profile, Weight & BMI and Account are no longer rows of their own.
+       Heute nachtragen moved into My day. Each id is listed once, in one group, iOS style. */
+    const GROUPS = [
+        { key: 'you', ids: ['myday', 'swaps', 'glow', 'cycle', 'todo'] },
+        { key: 'circle', ids: ['presence', 'people', 'posts', 'invite'] },
+        { key: 'settings', ids: ['theme', 'language', 'notifications', 'look'] },
+        { key: 'help', ids: ['tutorial', 'support', 'rules', 'about'] },
+        { key: 'danger', ids: ['deleteAccount'] }
+    ];
+    const SKIP = ['worldSound', 'catchUp', 'me', 'body', 'account'];
+    /* the rows this page runs itself; every other id runs through the Settings routes (home-settings-sleep-v2.js) */
+    const OWN = ['presence', 'swaps', 'glow', 'cycle', 'todo', 'people', 'posts', 'invite', 'rules', 'look'];
+    const G2E = { swaps: 'swaps', glow: 'glow', todo: 'todo', posts: 'comm', look: 'look' };
     function groups(has) {
-        const S = root && root.LowiHomeSettingsSleepV2, C = S && S.COMMUNITY_PLACES || { you: ['me', 'body'] };
-        const set = (S && S.SETTINGS_IDS || ['theme', 'look', 'language', 'tutorial']).filter(id => !SKIP.includes(id));
-        const acc = S && S.ACCOUNT_IDS || ['account', 'deleteAccount'];
-        const light = (S && S.EXPLORE_LIGHT || []).filter(has);
-        /* Oct 22 2026 (Emmanuel: "why don't we just put that into where my profile is? So it's not a different badge"): Your presence
-           (companion form in the galaxy, sharing, quiet hours, blocked people) is a tile right after Profile; the shield badge next to
-           the Community name is gone. It opens the same sheet (LowiCommunity.settings), so saved settings and saving stay as they were. */
-        const you = C.you.filter(has), at = you.indexOf('me');
-        if (has('presence') && !you.includes('presence')) you.splice(at < 0 ? 0 : at + 1, 0, 'presence');
-        return [{ key: 'you', ids: you, more: light }, { key: 'settings', ids: set.concat(acc.filter(id => id !== 'deleteAccount')).filter(has) }, { key: 'danger', ids: acc.filter(id => id === 'deleteAccount').filter(has) }].filter(g => g.ids.length);
+        return GROUPS.map(g => ({ key: g.key, ids: g.ids.filter(id => !SKIP.includes(id) && has(id)) })).filter(g => g.ids.length);
     }
     /* 29 Oct 2026 bug hunt: the XP under your name followed the phone's own locale (2,400 in a German app on an English phone) while
        Misty's card already formats by the app language (companion.js nf). Same rule here: de 2.400, es 2400, en 2,400. */
     const xpText = (n, l) => { let s; try { s = Number(n).toLocaleString({ de: 'de-DE', es: 'es-ES' }[l] || 'en-US'); } catch (e) { s = String(n); } return s + ' XP'; };
-    const core = { TX, HOME_FIRST, SKIP, groups, xpText };
+    const core = { TX, HOME_FIRST, SKIP, OWN, GROUPS, G2E, groups, xpText };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root || !root.document) return;
 
@@ -66,7 +69,7 @@
     const S = () => root.LowiHomeSettingsSleepV2 || null;
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     const svg = (k, cls) => '<svg class="' + (cls || 'cme-ico') + '" viewBox="0 0 24 24" aria-hidden="true">' + (ICON[k] || '') + '</svg>';
-    let ov = null, el = null, back = null, lastFocus = null, asking = false, armed = false, moreOpen = false;
+    let ov = null, el = null, back = null, lastFocus = null, asking = false, armed = false;
     const inCommunity = () => { const t = D.getElementById('tab-foryou'); return !!(t && (t.classList.contains('active') || t.classList.contains('on') || t.getBoundingClientRect().width > 2 && getComputedStyle(t).display !== 'none')) && !H.classList.contains('wh-home'); };
     const hasPresence = () => !!(root.LowiCommunity && typeof root.LowiCommunity.settings === 'function');
     function me() {
@@ -76,42 +79,40 @@
     }
     const sT = () => { const s = S(), l = lang(); return (s && s.TX && (s.TX[l] || s.TX.en)) || {}; };
     function row(id) {
-        const s = S(), l = lang(), ST = sT(), lab = wnm(LABELS[l] && LABELS[l][id]) || s.label(id), sub = (SUB[l] && SUB[l][id]) || '';
+        const s = S(), l = lang(), ST = sT(), lab = wnm(LABELS[l] && LABELS[l][id]) || s.label(id);
         const ico = ICON[id] ? svg(id) : s.icon(id).replace('ss2-ico', 'cme-ico');
         if (id === 'language') { return '<div class="cme-row cme-langrow" role="group" aria-label="' + esc(lab) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><span class="cme-langs">' + ['en', 'de', 'es'].map(x => '<button type="button" data-lang="' + x + '" aria-pressed="' + (x === l) + '"' + (x === l ? ' class="on"' : '') + '>' + x.toUpperCase() + '</button>').join('') + '</span></div>'; }
         if (id === 'theme') { const dark = s.state ? s.state('theme') : true, st = dark ? ST.night : ST.day; return '<button type="button" class="cme-row" role="switch" data-cme="theme" aria-checked="' + dark + '" aria-label="' + esc(lab) + ': ' + esc(st) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><small class="cme-st">' + esc(st) + '</small></button>'; }
         if (id === 'deleteAccount') return '<button type="button" class="cme-row cme-danger" data-cme="deleteAccount" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
-        return '<button type="button" class="cme-row" data-cme="' + id + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b>' + (sub && !ov ? '<small>' + esc(sub) + '</small>' : '') + '</span>' + svg('chev', 'cme-chev') + '</button>';
+        return '<button type="button" class="cme-row" data-cme="' + id + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
     }
-    /* Oct 22 One UI (Emmanuel: "every UI should look the same ... the Japanese convenient logic"): You is a small grid of tiles, icon
-       over a short label, one tap each; the line under the label stays as the button's description for screen readers */
-    function tile(id) {
-        const s = S(), l = lang(), lab = wnm(LABELS[l] && LABELS[l][id]) || s.label(id), sub = (SUB[l] && SUB[l][id]) || '';
-        const ico = ICON[id] ? svg(id) : s.icon(id).replace('ss2-ico', 'cme-ico');
-        return '<button type="button" class="cme-tile" data-cme="' + id + '"' + (sub ? ' title="' + esc(sub) + '"' : '') + '>' + ico + '<b>' + esc(lab) + '</b></button>';
-    }
-    /* the light way in to the places nothing else reaches: one folded row, small chips when unfolded */
-    function moreRow(ids) {
-        if (!ids || !ids.length) return '';
-        const s = S(), l = lang(), T = TX[l];
-        return '<div class="cme-more' + (moreOpen ? ' on' : '') + '"><button type="button" class="cme-row cme-more-btn" data-cme="more" aria-expanded="' + moreOpen + '" aria-controls="cmeMore"><span class="cme-tx"><b>' + esc(T.more) + '</b></span>' + svg('chev', 'cme-chev') + '</button>' +
-            '<div class="cme-chips" id="cmeMore"' + (moreOpen ? '' : ' hidden') + '>' + ids.map(id => '<button type="button" class="cme-chip" data-cme="' + id + '">' + esc(wnm(LABELS[l] && LABELS[l][id]) || s.label(id)) + '</button>').join('') + '</div></div>';
+    /* which rows exist right now: a Profile part only while Profile has it, My cycle only for whom it is on, Finish your profile only
+       while steps are left */
+    const PART = { swaps: '.r3a-saved', glow: '[data-act="glow"]', posts: '.r3-comm, .fy-prof', todo: '.r3-todo', look: '.r2-look, .sfx-card, .sfx-sec, [data-act=install]' };
+    function hasRow(id) {
+        const s = S();
+        if (id === 'presence') return hasPresence();
+        if (G2E[id]) { if (!(root.LowiG2E && typeof root.LowiG2E.direct === 'function')) return id === 'look' && s.has('look'); const t = D.getElementById('tab-profile'); return !!(t && t.querySelector(PART[id])); }
+        if (id === 'cycle') { try { const C = root.LowiCycleWorld; return !!(C && typeof C.open === 'function' && (typeof C.eligible !== 'function' || C.eligible())); } catch (e) { return false; } }
+        if (id === 'people') return !!(root.LowiPeopleDir && typeof root.LowiPeopleDir.open === 'function');
+        if (id === 'invite') return !!(root.LowiRoomsUI && typeof root.LowiRoomsUI.invite === 'function');
+        if (id === 'rules') return !!(root.LowiCommunityWelcome && typeof root.LowiCommunityWelcome.open === 'function');
+        return s.has(id);
     }
     function render() {
         const s = S(), T = TX[lang()], m = me(), pf = D.getElementById('pfBtn');
         const av = pf ? pf.innerHTML : '';
-        const gs = groups(id => id === 'presence' ? hasPresence() : s.has(id)), ver = s.version ? s.version() : '';
+        const gs = groups(hasRow), ver = s.version ? s.version() : '';
         const sec = g => g.key === 'danger'
             ? '<section class="cme-sec cme-sec-danger" aria-label="' + T.account + '"><div class="cme-list">' + g.ids.map(row).join('') + '</div></section>'
-            : (ov && g.key === 'you')
-                ? '<section class="cme-sec" aria-label="' + T[g.key] + '"><h3>' + T[g.key] + '</h3><div class="cme-tiles">' + g.ids.map(tile).join('') + '</div>' + (g.more && g.more.length ? '<div class="cme-list">' + moreRow(g.more) + '</div>' : '') + '</section>'
-                : '<section class="cme-sec" aria-label="' + T[g.key] + '"><h3>' + T[g.key] + '</h3><div class="cme-list">' + g.ids.map(row).join('') + moreRow(g.more) + '</div></section>';
-        el.innerHTML = '<div class="cme-head">' +
-            '<span class="cme-av" aria-hidden="true">' + av + '</span>' +
-            '<span class="cme-who"><b id="cmeTitle">' + esc(m.name || T.guest) + '</b>' + (m.xp ? '<small>' + xpText(m.xp, lang()) + '</small>' : '') + '</span>' +
+            : '<section class="cme-sec" aria-label="' + T[g.key] + '"><h3>' + T[g.key] + '</h3><div class="cme-list">' + g.ids.map(row).join('') + '</div></section>';
+        /* iOS style: the title, then your card (picture, name, level) that opens Your details */
+        el.innerHTML = '<div class="cme-top"><h2 class="cme-h" id="cmeTitle">' + esc(T.title) + '</h2>' +
             (ov ? '' : '<button type="button" class="cme-ibtn" data-cme="close" aria-label="' + T.close + '">' + svg('x') + '</button>') + '</div>' +
-            '<div class="cme-body">' + gs.map(sec).join('') +
-            '<p class="cme-tip">' + T.hold + '</p>' + (ver ? '<p class="cme-ver">' + esc(ver) + '</p>' : '') + '</div>';
+            '<div class="cme-body"><button type="button" class="cme-head cme-me" data-cme="me">' +
+            '<span class="cme-av" aria-hidden="true">' + av + '</span>' +
+            '<span class="cme-who"><b>' + esc(m.name || T.guest) + '</b><small>' + (m.xp ? xpText(m.xp, lang()) + ' \u00b7 ' : '') + esc(T.mine) + '</small></span>' + svg('chev', 'cme-chev') + '</button>' +
+            gs.map(sec).join('') + (ver ? '<p class="cme-ver">' + esc(ver) + '</p>' : '') + '</div>';
     }
     /* Delete account asks first, inside the hub; only the server's ok clears the phone (home-settings-sleep-v2.js serverDelete) */
     function askDelete() {
@@ -134,7 +135,7 @@
     function open() {
         const s = S(); if (!s || typeof s.has !== 'function') return false;
         if (el) return true;
-        lastFocus = D.activeElement; asking = false; moreOpen = false;
+        lastFocus = D.activeElement; asking = false;
         /* opened by a hold, the finger is still down: the click that ends that hold must not close the hub or press a row, so only a
            press that starts after it opened (or a keyboard click) counts */
         armed = false;
@@ -159,7 +160,7 @@
         el.addEventListener('pointerdown', arm, true); el.addEventListener('click', e => { if (!armed && e.detail !== 0) { e.preventDefault(); e.stopPropagation(); return; } onClick(e); }, true);
         render();
         D.body.appendChild(back); D.body.appendChild(el); H.classList.add('cme-open');
-        const f = el.querySelector('.cme-row') || el.querySelector('button'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } }
+        const f = el.querySelector('.cme-me') || el.querySelector('button'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } }
         return true;
     }
     function done(refocus) {
@@ -174,21 +175,31 @@
         if (refocus && lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) { } }
     }
     function onClick(e) {
-        /* Oct 22 2026 (item 42): your picture or name at the top opens your profile, like the Profile row */
-        const who = e.target && e.target.closest && e.target.closest('.cme-av,.cme-who');
-        if (who) { e.preventDefault(); close(false); const s0 = S(); if (s0) away(() => s0.run('me')); return; }
         const b = e.target && e.target.closest && e.target.closest('[data-cme]'); if (!b) return;
         e.preventDefault();
         const id = b.getAttribute('data-cme'), s = S();
         if (id === 'close') { close(true); return; }
-        if (id === 'more') { moreOpen = !moreOpen; const w = el.querySelector('.cme-more'), c = el.querySelector('#cmeMore'); if (w) w.classList.toggle('on', moreOpen); if (c) c.hidden = !moreOpen; b.setAttribute('aria-expanded', String(moreOpen)); return; }
         if (id === 'deleteAccount') { askDelete(); return; }
         if (id === 'delCancel') { asking = false; render(); const f = el && el.querySelector('[data-cme="deleteAccount"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } return; }
         if (id === 'delGo') { delGo(b); return; }
-        /* Day/night switches in place and the hub stays open */
+        /* Day/night switches in place and the page stays open */
         if (id === 'theme') { s.run('theme'); setTimeout(() => { if (el && !asking) { render(); const f = el.querySelector('[data-cme="theme"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } } }, 60); return; }
         close(false);
-        if (id === 'presence') { try { if (hasPresence()) root.LowiCommunity.settings(); } catch (x) { console.error(x); } return; }
+        run(id);
+    }
+    /* one place that knows where each row goes; a page or sheet you open from here brings this page back when you leave it */
+    function run(id) {
+        const s = S();
+        try {
+            if (id === 'me') { const Y = root.LowiYourDetails; if (Y && typeof Y.open === 'function') Y.open({ onDone: () => open() }); else if (s) away(() => s.run('me')); return; }
+            if (id === 'presence') { if (hasPresence()) root.LowiCommunity.settings(); return; }
+            if (G2E[id] && root.LowiG2E && typeof root.LowiG2E.direct === 'function') { away(() => root.LowiG2E.direct(G2E[id])); return; }
+            if (id === 'look') { away(() => s.run('look')); return; }
+            if (id === 'cycle') { root.LowiCycleWorld.open(); return; }
+            if (id === 'people') { root.LowiPeopleDir.open(); return; }
+            if (id === 'invite') { root.LowiRoomsUI.invite(); return; }
+            if (id === 'rules') { root.LowiCommunityWelcome.open(); return; }
+        } catch (x) { console.error(x); return; }
         if (HOME_FIRST.includes(id) && typeof root.goTab === 'function') { root.goTab('home'); setTimeout(() => s.run(id), 700); return; }
         away(() => s.run(id));
     }
@@ -199,11 +210,7 @@
         go();
         try { if (L && typeof L.reopen === 'function' && L.tab() !== t0) L.reopen(() => open()); } catch (x) { }
     }
-    /* in Community, your picture opens this panel (capture: before the shell's own Profile jump) */
-    D.addEventListener('click', e => {
-        const pf = e.target && e.target.closest && e.target.closest('#pfBtn'); if (!pf || !inCommunity()) return;
-        if (open()) { e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); }
-    }, true);
+    /* Oct 29 2026: the picture top right is gone; the Community name in the Circle header opens this page (community-rooms-ui.js) */
     D.addEventListener('keydown', e => {
         if (!el) return;
         if (e.key === 'Escape') { close(true); return; }

@@ -36,7 +36,8 @@ test('overview(): closes any open part and goes to Profile; coming back to Profi
     assert.match(ov, /classList\.remove\("g2e-open"\)/);
     assert.match(ov, /lowiOpen\("profile"\)|goTab\("profile"\)/);
     /* no last-panel memory: Profile becoming visible again drops a part left open */
-    assert.match(g2e, /if \(vis && !wasShown && H\.classList\.contains\("g2e-open"\)\) \{ H\.classList\.remove\("g2e-open"\)/);
+    /* Oct 29 2026: except a part opened straight from the settings page (LowiG2E.direct), which Profile is opening right then */
+    assert.match(g2e, /if \(vis && !wasShown && H\.classList\.contains\("g2e-open"\) && !direct\) \{ H\.classList\.remove\("g2e-open"\)/);
     assert.doesNotMatch(g2e, /localStorage|sessionStorage/, 'the open part is never stored');
     /* a tile tap marks Profile as shown so the reset does not undo it */
     assert.match(g2e, /wasShown = shown\(t\); H\.setAttribute\("data-g2e-k", k\); H\.classList\.add\("g2e-open"\)/);

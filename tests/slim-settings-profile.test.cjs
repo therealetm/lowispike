@@ -27,7 +27,9 @@ test('Mitteilungen opens the one notification sheet, About opens a small info sh
     assert.match(a, /Open Food Facts/);
 });
 
-test('Profile (Du) picks the new rows up from the same list', () => {
-    const me = fs.readFileSync(path.join(__dirname, '..', 'community-me.js'), 'utf8');
-    assert.match(me, /SETTINGS_IDS/);
+test('the one settings page (Oct 29 2026) lists Notifications and About & info and runs them through the same routes', () => {
+    const M = require('../community-me.js');
+    const ids = M.groups(() => true).flatMap(g => g.ids);
+    assert.ok(ids.includes('notifications') && ids.includes('about'));
+    assert.ok(!M.OWN.includes('notifications') && !M.OWN.includes('about'), 'both run through the Settings routes');
 });

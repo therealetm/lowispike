@@ -97,15 +97,24 @@
     }
 
     /* ---- the sheet ---- */
-    let ov = null, back = null, sig = '', timer = 0, reopen = '';
+    let ov = null, back = null, sig = '', timer = 0, reopen = '', done = null;
+    /* Oct 29 2026 settings hub: opened from the one settings page (open({ onDone })), closing Your details goes back there, also
+       after a detour through one of its Profile parts (Back from Profile first, then the settings page) */
+    function closeUser() {
+        close(); const f = done; done = null; if (typeof f !== 'function') return;
+        let tab = ''; try { tab = W.LowiHost && LowiHost.tab ? LowiHost.tab() : ''; } catch (e) { }
+        if (tab === 'profile') { try { if (W.LowiSections && typeof LowiSections.close === 'function') LowiSections.close(); } catch (e) { } setTimeout(() => { try { f(); } catch (e) { } }, 160); return; }
+        try { f(); } catch (e) { }
+    }
     function render() { if (!ov) return; const html = bodyHTML() + '|' + lang(); if (html === sig) return; sig = html; ov.querySelector('.yd-ht').textContent = tr('title'); const b = ov.querySelector('.yd-back'); b.setAttribute('aria-label', tr('back')); b.querySelector('span').textContent = tr('back'); const sc = ov.querySelector('.yd-body'), top = sc.scrollTop; sc.innerHTML = bodyHTML(); sc.scrollTop = top; }
-    function open() {
+    function open(opts) {
+        if (opts && typeof opts.onDone === 'function') done = opts.onDone;
         if (ov) { render(); return true; }
         back = D.activeElement; sig = '';
         ov = D.createElement('div'); ov.id = 'ydOv'; ov.className = 'yd-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'ydTitle'); ov.setAttribute('data-noi18n', ''); ov.setAttribute('lang', lang());
         ov.innerHTML = '<header class="yd-head"><button type="button" class="yd-back" data-yd-x data-sfx="close">' + IC.back + '<span></span></button><h2 class="yd-ht" id="ydTitle"></h2></header><div class="yd-body"></div>';
         D.body.appendChild(ov); H.classList.add('yd-on'); render();
-        ov.addEventListener('click', e => { const t = e.target; if (t.closest('[data-yd-x]')) { e.preventDefault(); close(); return; } const g = t.closest('[data-yd-go]'); if (g) { e.preventDefault(); go(g.getAttribute('data-yd-go')); } });
+        ov.addEventListener('click', e => { const t = e.target; if (t.closest('[data-yd-x]')) { e.preventDefault(); closeUser(); return; } const g = t.closest('[data-yd-go]'); if (g) { e.preventDefault(); go(g.getAttribute('data-yd-go')); } });
         clearInterval(timer); timer = setInterval(render, 900);
         try { ov.querySelector('.yd-back').focus({ preventScroll: true }); } catch (e) { }
         return true;
@@ -141,14 +150,14 @@
     }
     /* Back on a panel opened from here comes back to Your details */
     try { new MutationObserver(() => { if (reopen && !H.classList.contains('g2e-open')) { const was = reopen; reopen = ''; let tab = 'profile'; try { tab = W.LowiHost && LowiHost.tab ? LowiHost.tab() : 'profile'; } catch (e) { } if (tab === 'profile' && was) open(); } else if (reopen && H.getAttribute('data-g2e-k') && H.getAttribute('data-g2e-k') !== reopen) reopen = ''; }).observe(H, { attributes: true, attributeFilter: ['class', 'data-g2e-k'] }); } catch (e) { }
-    D.addEventListener('keydown', e => { if (e.key === 'Escape' && ov && !D.querySelector('.r2-ov.on:not(.off), #wjOv, .bs-ov')) close(); });
+    D.addEventListener('keydown', e => { if (e.key === 'Escape' && ov && !D.querySelector('.r2-ov.on:not(.off), #wjOv, .bs-ov')) closeUser(); });
     /* entry points: the header chips / Your details button / tile ([data-yd]) */
     D.addEventListener('click', e => {
         const t = e.target && e.target.closest && e.target.closest('[data-yd]'); if (!t || (ov && ov.contains(t))) return;
         e.preventDefault(); e.stopPropagation();
-        const v = t.getAttribute('data-yd'); if (v === 'weight') go('weight'); else open();
+        const v = t.getAttribute('data-yd'); done = null; if (v === 'weight') go('weight'); else open();
     }, true);
     /* leaving Profile closes it */
-    D.addEventListener('click', e => { if (ov && e.target && e.target.closest && e.target.closest('#tabbar .tb')) close(); }, true);
+    D.addEventListener('click', e => { if (e.target && e.target.closest && e.target.closest('#tabbar .tb')) { done = null; if (ov) close(); } }, true);
     W.LowiYourDetails = { open, close, isOpen: () => !!ov, rows, go, tr, _t: T };
 })();

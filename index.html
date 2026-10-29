@@ -3727,6 +3727,7 @@ html.g2d-on.g2d-t2 #cmPaneBoard .r3-lbrow.t1{padding-top:12px}
 </style>
 <style id="g2eCss">/* G2 part 5: Profile is one game screen on a phone (hero + level + streak + tiles; each tile opens its part with Back) */
 #g2eTiles,#g2eHead{display:none}
+html.g2e-dw #tab-profile{visibility:hidden!important}
 html.g2e-on:not(.g2e-open) #tab-profile{overflow:hidden;overscroll-behavior:contain;padding-bottom:0}
 html.g2e-on:not(.g2e-open) #tab-profile > :not([data-g2e="home"]):not(#g2eTiles){display:none!important}
 html.g2e-on:not(.g2e-open) #tab-profile > *{margin-top:0!important;margin-bottom:12px!important}
@@ -21130,14 +21131,19 @@ function idOf(e){
   const c = e.classList;
   if (c.contains("r2-hero") || e.id === "lvCard" || (c.contains("row") && q(e, ":scope > .stat"))) return "home";
   if (c.contains("r3-todo")) return "todo";
-  if (c.contains("r3-comm") || c.contains("fy-prof") || c.contains("nm-privacy")) return "comm";
+  /* Oct 29 2026 settings hub (Emmanuel: "doppelt gemappt ... alles in eine Seite"): the chat privacy card is the same sheet as
+     "Dein Auftritt" in the one settings page, so it is no longer shown a second time under Posts & ranking */
+  if (c.contains("nm-privacy")) return "dup";
+  if (c.contains("r3-comm") || c.contains("fy-prof")) return "comm";
   if (c.contains("r3a-saved")) return "swaps";
   if (q(e, '[data-act="glow"]')) return "glow";
   if (c.contains("r3a-pf")) return "about";
   if (e.id === "health") return "health";
   if (e.id === "lcAcct") return "acct";
   if (c.contains("r2-look") || c.contains("sfx-card") || c.contains("sfx-sec")) return "look";
-  if (q(e, '[data-act="editname"]') || e.matches('[data-act="reset"]') || q(e, "[data-act=install]")) return "app";
+  /* Oct 29 2026: the old App card (audio mode, read aloud, home screen, reset) lives inside Look & sound now; its name, type,
+     reminders and language rows are hidden there because the settings page and Your details already hold them */
+  if (q(e, '[data-act="editname"]') || e.matches('[data-act="reset"]') || q(e, "[data-act=install]")) return "look";
   return null;
 }
 function tag(t){
@@ -21164,17 +21170,29 @@ function openPanel(k){
   addL(); wasShown = shown(t); H.setAttribute("data-g2e-k", k); H.classList.add("g2e-open");
   pass(); t.scrollTop = 0;
 }
-function closePanel(){
+let direct = "";
+function closePanel(stay){
+  const was = direct; direct = ""; H.classList.remove("g2e-dw");
   if (!H.classList.contains("g2e-open")) return;
   H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k");
   const t = tab(); if (t) t.scrollTop = 0; schedule();
+  /* opened straight from the settings page: Back leaves Profile the way you came, so the settings page comes back (its reopen) */
+  if (was && stay !== true) { try { if (window.LowiSections && typeof LowiSections.close === "function") LowiSections.close(); } catch(e){} }
+}
+/* Oct 29 2026 settings hub (Emmanuel: "alles in eine Seite ... doppelt gemappt"): a row in the one settings page opens its part
+   straight away, with no tile grid in between; the grid stays hidden while Profile opens */
+function openDirect(k){
+  if (!ORDER.includes(k)) return false;
+  H.classList.add("g2e-dw"); overview(); let n = 0;
+  const go = () => { const t = tab(); if (on() && t && shown(t)) { openPanel(k); direct = k; H.classList.remove("g2e-dw"); return; } if (++n < 40) setTimeout(go, 40); else H.classList.remove("g2e-dw"); };
+  go(); return true;
 }
 D.addEventListener("click", e => {
   const t = e.target; if (!t || !t.closest) return;
   const b = t.closest("[data-g2e-open]"); if (b) { e.preventDefault(); openPanel(b.dataset.g2eOpen); return; }
   if (t.closest("[data-g2e-back]")) { e.preventDefault(); closePanel(); return; }
   /* the profile button or another tab: back to the main Profile screen */
-  if (H.classList.contains("g2e-open") && t.closest("#tabbar .tb, #pfBtn")) closePanel();
+  if (H.classList.contains("g2e-open") && t.closest("#tabbar .tb, #pfBtn")) closePanel(true);
 });
 D.addEventListener("keydown", e => { if (e.key === "Escape" && H.classList.contains("g2e-open") && !D.querySelector(".r2-ov.on:not(.off)")) closePanel(); });
 
@@ -21206,11 +21224,11 @@ function pass(){
   try {
     addL();
     const vis = !!t && shown(t);
-    if (vis && !wasShown && H.classList.contains("g2e-open")) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); } /* Oct 22: no last-panel memory */
+    if (vis && !wasShown && H.classList.contains("g2e-open") && !direct) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); } /* Oct 22: no last-panel memory */
     wasShown = vis;
     const want = !!t && phone() && shown(t) && !H.classList.contains("g2e-full") && !!q(t, ":scope > .r2-hero");
     if (want !== on()) H.classList.toggle("g2e-on", want);
-    if (!want) { LV.forEach(c => H.classList.remove(c)); eFitKey = ""; if (H.classList.contains("g2e-open") && !(t && shown(t))) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); } return; }
+    if (!want) { LV.forEach(c => H.classList.remove(c)); eFitKey = ""; if (H.classList.contains("g2e-open") && !(t && shown(t))) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); direct = ""; } return; }
     const have = tag(t), hero = q(t, ":scope > .r2-hero");
     if (H.classList.contains("g2e-open") && !have[H.getAttribute("data-g2e-k")]) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); }
     /* the Back header sits right after the hero (the hero is hidden while a part is open) */
@@ -21255,7 +21273,7 @@ function overview(){
   if (H.classList.contains("g2e-open")) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); }
   const t = tab(); if (t) t.scrollTop = 0; schedule();
 }
-window.LowiG2E = {open:openPanel, close:closePanel, overview, fit:() => fit(tab()), state:() => ({on:on(), open:H.getAttribute("data-g2e-k") || null, level:LV.filter(c => H.classList.contains(c)).length, tiles:Array.from(D.querySelectorAll("#g2eTiles [data-g2e-open]")).map(b => b.dataset.g2eOpen)})};
+window.LowiG2E = {open:openPanel, close:closePanel, overview, direct:openDirect, isDirect:() => !!direct, fit:() => fit(tab()), state:() => ({on:on(), open:H.getAttribute("data-g2e-k") || null, level:LV.filter(c => H.classList.contains(c)).length, tiles:Array.from(D.querySelectorAll("#g2eTiles [data-g2e-open]")).map(b => b.dataset.g2eOpen)})};
 if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
 })();
 </script>
@@ -22587,6 +22605,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="ss2Css" href="home-settings-sleep-v2.css?v=20261029-120351">
 <script src="home-settings-sleep-v2.js?v=20261029-120351"></script>
 <link rel="stylesheet" href="community-me.css?v=20261029-120351">
+<link rel="stylesheet" href="settings-hub.css?v=20261029-120351">
 <link rel="stylesheet" id="ctgCss" href="community-tg.css?v=20261029-120351">
 <script src="community-me.js?v=20261029-120351"></script>
 <!-- Oct 22 One UI step 1: the one sheet shell (dark glass, grab, X under the sheet), the profile hub uses it -->

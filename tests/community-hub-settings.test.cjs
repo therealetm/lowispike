@@ -10,26 +10,28 @@ globalThis.LowiHomeSettingsSleepV2 = SS;
 delete require.cache[require.resolve('../community-me.js')];
 const M = require('../community-me.js');
 
-test('hub groups: YOU, then Settings without World sound, then Delete account alone at the bottom; no Explore', () => {
+/* Oct 29 2026 settings hub (Emmanuel: "alles bei Community ... sinngemäß, richtig sortiert ... so wie Apple iOS", "doppelt gemappt ...
+   alles in einer Seite"): ONE settings page, iOS style. Your picture card on top opens Your details (so Profile, Weight & BMI and
+   Account are no rows of their own), then You, Circle, App, Help & info, Delete account alone at the bottom. Each id once. */
+test('settings page groups: You, Circle, App, Help & info, then Delete account alone at the bottom; no Explore', () => {
     const g = M.groups(() => true);
-    assert.deepStrictEqual(g.map(x => x.key), ['you', 'settings', 'danger']);
-    assert.deepStrictEqual(g[0].ids, ['me', 'presence', 'body', 'myday'], 'Weight journey lives inside Weight & BMI (Oct 22 2026); presence tile after Profile; My day last (Oct 25 2026, the retired Today sheet\'s parts)');
-    assert.deepStrictEqual(M.groups(id => id !== 'presence')[0].ids, ['me', 'body', 'myday'], 'no presence tile without the Community sheet');
-    assert.deepStrictEqual(g[1].ids, ['catchUp', 'theme', 'look', 'language', 'notifications', 'tutorial', 'support', 'about', 'account']);  /* Oct 28 2026 slim batch 9: notifications + About in Settings */  /* Oct 26 2026 (MAYA-HANDOFF 0.39): Catch up on today first */
-    assert.deepStrictEqual(g[2].ids, ['deleteAccount'], 'Delete account is last, on its own');
-    for (const id of ['worldSound', 'foryou', 'care', 'workouts', 'map', 'gift', 'hunt']) assert.ok(!g.some(x => x.ids.includes(id)), id + ' is not in the hub');
+    assert.deepStrictEqual(g.map(x => x.key), ['you', 'circle', 'settings', 'help', 'danger']);
+    assert.deepStrictEqual(g[0].ids, ['myday', 'swaps', 'glow', 'cycle', 'todo']);
+    assert.deepStrictEqual(g[1].ids, ['presence', 'people', 'posts', 'invite']);
+    assert.deepStrictEqual(g[2].ids, ['theme', 'language', 'notifications', 'look']);
+    assert.deepStrictEqual(g[3].ids, ['tutorial', 'support', 'rules', 'about']);
+    assert.deepStrictEqual(g[4].ids, ['deleteAccount'], 'Delete account is last, on its own');
+    const all = g.flatMap(x => x.ids); assert.strictEqual(new Set(all).size, all.length, 'every row once');
+    for (const id of ['me', 'body', 'account', 'catchUp', 'worldSound', 'foryou', 'care', 'workouts', 'map', 'gift', 'hunt']) assert.ok(!all.includes(id), id + ' is not a row');
+    assert.deepStrictEqual(M.groups(id => id !== 'presence')[1].ids, ['people', 'posts', 'invite'], 'no presence row without the Community sheet');
     assert.deepStrictEqual(SS.COMMUNITY_PLACES.places, [], 'no Explore section');
-    assert.deepStrictEqual(M.groups(id => id === 'tutorial').map(x => x.key), ['settings'], 'empty groups drop');
+    assert.deepStrictEqual(M.groups(id => id === 'about').map(x => x.key), ['help'], 'empty groups drop');
 });
 
-test('every former Explore place says where it is reached now; the More places row is gone (Emmanuel, Oct 22 5:40 PM)', () => {
+test('every former Explore place says where it is reached now; no More places row', () => {
     for (const id of ['foryou', 'care', 'workouts', 'gift', 'hunt']) assert.ok(typeof SS.EXPLORE_MOVED[id] === 'string' && SS.EXPLORE_MOVED[id].length > 3, id);
-    assert.deepStrictEqual(M.groups(() => true)[0].more, [], 'no More places entries');
     assert.deepStrictEqual(SS.EXPLORE_LIGHT, [], 'no folded More places row');
-    assert.ok(!SS.EXPLORE_LIGHT.includes('workouts'), 'Workouts is the Move bubble');
-    assert.match(SRC, /data-cme="more" aria-expanded="' \+ moreOpen/);
-    assert.match(SRC, /lastFocus = D\.activeElement; asking = false; moreOpen = false;/, 'folded each time the hub opens');
-    for (const l of ['en', 'de', 'es']) assert.ok(M.TX[l].more, l);
+    assert.ok(!/data-cme="more"/.test(SRC), 'no More places row in the settings page');
 });
 
 test('the old Settings sheet is a fallback: show(page) opens the hub first', () => {
@@ -53,7 +55,7 @@ test('a hold that opened the hub cannot close it or press a row when the finger 
     assert.match(SRC, /if \(!armed && e\.detail !== 0\) \{ e\.preventDefault\(\); e\.stopPropagation\(\); return; \}/);
 });
 
-test('footer tip in EN, DE and ES no longer says the hold opens Settings', () => {
-    for (const l of ['en', 'de', 'es']) { assert.ok(M.TX[l].hold, l); for (const k of Object.keys(M.TX.en)) assert.ok(k in M.TX[l], l + ' ' + k); }
-    assert.ok(!/for settings/i.test(M.TX.en.hold));
+test('EN, DE and ES carry every label; no footer tip about holding the bubble (the hold does nothing now)', () => {
+    for (const l of ['en', 'de', 'es']) for (const k of Object.keys(M.TX.en)) assert.ok(k in M.TX[l], l + ' ' + k);
+    assert.ok(!/cme-tip/.test(SRC), 'no hold tip');
 });

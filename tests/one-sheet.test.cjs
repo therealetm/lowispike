@@ -15,11 +15,11 @@ test('the hub opens in the shared shell (LowiR2.sheet, one-sheet class), with th
     assert.match(js, /ov\.addEventListener\('click', e => \{ if \(!armed && e\.detail !== 0\) \{ e\.preventDefault\(\); e\.stopPropagation\(\); return; \}/);
 });
 
-test('You items are tiles, settings rows drop their second line inside the shell', () => {
+test('the settings page is one iOS list: every group is rows with one line, no tile grid (Oct 29 2026)', () => {
     const js = R('community-me.js');
-    assert.match(js, /function tile\(id\)/);
-    assert.match(js, /\(ov && g\.key === 'you'\)[\s\S]{0,200}cme-tiles[\s\S]{0,80}g\.ids\.map\(tile\)/);
-    assert.match(js, /\(sub && !ov \?/);
+    assert.ok(!/function tile\(id\)/.test(js), 'no tiles');
+    assert.match(js, /<\/h3><div class="cme-list">' \+ g\.ids\.map\(row\)\.join\(''\) \+ '<\/div><\/section>'/);
+    assert.match(js, /'<span class="cme-tx"><b>' \+ esc\(lab\) \+ '<\/b><\/span>' \+ svg\('chev', 'cme-chev'\)/, 'one line per row');
 });
 
 test('one-sheet.css: no band behind the grab, the sheet ends above the round X, tiles three across', () => {

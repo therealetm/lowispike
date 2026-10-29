@@ -1,0 +1,19 @@
+/* Oct 29 2026 settings hub (Emmanuel, live call): "das mit meinem Profilbild ... kannst du rausschmeißen ... und dieses Tag-Dings
+   auch, dass es da überhaupt ist ... wo Community steht, mittig ... wenn du in eine Einstellung möchtest, drückst du auf Community".
+   1. The picture and the day/night button that floated top right on every page are gone. Day/night and your profile live in the
+      ONE settings page (community-me.js), opened from the Community name.
+   2. The Community name sits in the middle of the Circle header.
+   3. Inside Look & sound (the old App card moved there) the rows that the settings page or Your details already hold are hidden,
+      so nothing is reachable twice: name, personality type, community profile, bubble reminders, language. */
+html body #pfBtn#pfBtn#pfBtn, html body #tbTheme#tbTheme#tbTheme { display: none !important; }
+html body #cmPaneChat[data-spirit-chat] > .rm-bar .rm-head.rm-head {
+    justify-content: center;
+    padding-left: calc(52px + env(safe-area-inset-left, 0px)) !important;
+    padding-right: calc(52px + env(safe-area-inset-right, 0px)) !important;
+}
+html body #cmPaneChat[data-spirit-chat] > .rm-bar .rm-head > .rm-menu-btn { margin: 0 auto; }
+#tab-profile .setrow:has([data-act="editname"]),
+#tab-profile .setrow:has([data-r5="mbti-pick"]),
+#tab-profile .setrow:has(#r5MyProfile),
+#tab-profile .n1-prow,
+#tab-profile #profLang { display: none !important; }

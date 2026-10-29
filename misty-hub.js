@@ -441,6 +441,8 @@
     const DAY_ICO = { macro: ICO.macro, inside: ICO.inside };
     function dayItems() {
         const out = [];
+        /* Oct 29 2026 settings hub: "Heute nachtragen" is logging, not a setting, so it moved here from the settings list */
+        if (W.LowiEveningCatchup && typeof W.LowiEveningCatchup.open === 'function') out.push({ k: 'catchup', b: T('Catch up today', 'Heute nachtragen', 'Completar hoy'), sub: '', ico: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" style="fill:none;stroke:currentColor;stroke-width:1.8"/><path d="M8.4 12.2l2.5 2.5 4.8-5.2" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"/></svg>' });
         if (W.LowiDayRecap) out.push({ k: 'recap', b: T('Day recap', 'Tagesr\u00fcckblick', 'Resumen del d\u00eda'), sub: '', ico: ICO.moon });
         D.querySelectorAll('#g2hTiles [data-g2h-open]').forEach(b => {
             const k = b.dataset.g2hOpen, lab = b.querySelector('b'), ic = b.querySelector('.g2h-ic'), sm = b.querySelector('small');
@@ -452,6 +454,7 @@
         return out;
     }
     function dayAct(k) {
+        if (k === 'catchup') { try { W.LowiEveningCatchup.open({ from: 'myday' }); } catch (x) { console.error(x); } return; }
         if (k.indexOf('g-') === 0) return proxy('data-g2h-open', k.slice(2));
         if (k === 'macro') return proxy('data-sp', 'goals');
         if (k === 'inside') { const r = D.getElementById('brRow'); if (r) r.click(); }

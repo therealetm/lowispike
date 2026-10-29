@@ -33,6 +33,14 @@
     milch: 'milk', joghurt: 'yogurt', quark: 'cottage cheese', salat: 'salad', gemuse: 'vegetables', bohnen: 'beans', linsen: 'lentils', erbsen: 'peas',
     mohren: 'carrots', karotten: 'carrots', zwiebel: 'onion', tomate: 'tomato', tomaten: 'tomato', apfel: 'apple', banane: 'banana', haferflocken: 'oatmeal',
     wurst: 'sausage', wurstchen: 'sausage', speck: 'bacon', schinken: 'ham', mit: 'with', und: 'and', gebraten: 'fried', gekocht: 'boiled', gebacken: 'baked',
+    /* 29 Oct 2026: foods people type when they fix a wrong photo guess ("Gurke" read as a mixed meal kept the old 47 g carbs) */
+    gurke: 'cucumber', gurken: 'cucumber', salatgurke: 'cucumber', paprika: 'raw sweet red pepper', brokkoli: 'broccoli', blumenkohl: 'cauliflower', rucola: 'arugula',
+    kohl: 'cabbage', weisskohl: 'cabbage', rotkohl: 'red cabbage', spargel: 'asparagus', kurbis: 'pumpkin', radieschen: 'radish', sellerie: 'celery',
+    lauch: 'leek', porree: 'leek', oliven: 'olives', mais: 'corn', kichererbsen: 'chickpeas', hahnchenbrust: 'chicken breast', hackfleisch: 'ground beef',
+    rinderhack: 'ground beef', frischkase: 'cream cheese', olivenol: 'olive oil', nusse: 'nuts', walnusse: 'nuts', mandeln: 'almonds', beeren: 'berries',
+    erdbeeren: 'raw strawberries', heidelbeeren: 'raw blueberries', himbeeren: 'raw raspberries', birne: 'raw pear', trauben: 'raw grapes', weintrauben: 'raw grapes',
+    haferbrei: 'oatmeal', vollkornbrot: 'whole wheat bread', brezel: 'pretzel', lasagne: 'lasagna', susskartoffel: 'sweet potato', huttenkase: 'cottage cheese',
+    krauterquark: 'cottage cheese', skyr: 'greek yogurt', senf: 'mustard', honig: 'honey', marmelade: 'jam',
     pfannkuchen: 'pancakes', kuchen: 'cake', schokolade: 'chocolate', sosse: 'sauce', sauce: 'sauce', spinat: 'spinach', pilze: 'mushrooms', champignons: 'mushrooms',
     // Spanish
     pollo: 'chicken', pavo: 'turkey', res: 'beef', carne: 'beef', cerdo: 'pork', cordero: 'lamb', pescado: 'fish', salmon: 'salmon', atun: 'tuna', camarones: 'shrimp',

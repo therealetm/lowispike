@@ -30,6 +30,8 @@
             whyMid: 'About {net} g net carbs.',
             whyHigh: 'About {net} g net carbs. That’s enough to spike.',
             whyDrink: 'The sugary drink alone is enough to spike.',
+            cause1: 'This tips it:', causeN: 'These tip it:', cNet: '{net} g net carbs', cModel: 'the photo check rates it strictly', cMost: 'most of the carbs',
+            flag: 'Tips the verdict', dup: 'Maybe already part of “{other}”. Counted twice? Then tap ×.',
             est: 'Estimate from the photo, not a measurement.', lowConf: 'The photo was hard to read, so check the foods below.',
             see: 'What I see', tapFix: 'Tap a food to fix it', edit: 'Fix', what: 'What is it really?', many: 'How many pieces?', manyD: 'How many? (optional)', manyServ: 'How many servings? (1 = {g})', manyEach: 'How many servings?', manyPh: 'e.g. 2',
             sugL: 'Products the app knows', srcScan: 'Scanned', srcLog: 'Logged before', srcDex: 'LOWiSPIKE products', srcTable: 'Known product', srcHome: 'In your kitchen', srcCart: 'In your shopping cart', addFood: 'Add food', addWhat: 'What else is on the plate?', addPh: 'e.g. pesto, 2 eggs', new0: 'I don’t know “{name}” yet, so it counts as 0 kcal.', perPc: '{kcal} kcal / piece', perSrv: '{kcal} kcal / {g}', perEach: '{kcal} kcal / serving', srvOne: 'serving', srvMany: 'servings',
@@ -47,6 +49,8 @@
             whyMid: 'Etwa {net} g Netto-Kohlenhydrate.',
             whyHigh: 'Etwa {net} g Netto-Kohlenhydrate. Das reicht für einen Spike.',
             whyDrink: 'Allein das süße Getränk reicht für einen Spike.',
+            cause1: 'Den Ausschlag gibt:', causeN: 'Den Ausschlag geben:', cNet: '{net} g Netto-KH', cModel: 'der Foto-Check stuft es streng ein', cMost: 'die meisten Kohlenhydrate',
+            flag: 'Gibt den Ausschlag', dup: 'Steckt vielleicht schon in „{other}“. Doppelt gezählt? Dann tipp auf ×.',
             est: 'Schätzung aus dem Foto, keine Messung.', lowConf: 'Das Foto war schwer zu erkennen, prüf die Lebensmittel unten.',
             see: 'Das sehe ich', tapFix: 'Tipp ein Lebensmittel an, um es zu korrigieren', edit: 'Ändern', what: 'Was ist es wirklich?', many: 'Wie viele Stück?', manyD: 'Wie viele? (optional)', manyServ: 'Wie viele Portionen? (1 = {g})', manyEach: 'Wie viele Portionen?', manyPh: 'z. B. 2',
             sugL: 'Produkte, die die App kennt', srcScan: 'Gescannt', srcLog: 'Schon mal geloggt', srcDex: 'LOWiSPIKE-Produkte', srcTable: 'Bekanntes Produkt', srcHome: 'In deiner Küche', srcCart: 'Im Einkaufswagen', addFood: 'Lebensmittel hinzufügen', addWhat: 'Was ist noch auf dem Teller?', addPh: 'z. B. Pesto, 2 Eier', new0: 'Ich kenne „{name}“ noch nicht, also zählt es mit 0 kcal.', perPc: '{kcal} kcal / Stück', perSrv: '{kcal} kcal / {g}', perEach: '{kcal} kcal / Portion', srvOne: 'Portion', srvMany: 'Portionen',
@@ -64,6 +68,8 @@
             whyMid: 'Unos {net} g de carbohidratos netos.',
             whyHigh: 'Unos {net} g de carbohidratos netos. Suficiente para un pico.',
             whyDrink: 'Solo la bebida azucarada ya basta para un pico.',
+            cause1: 'Esto es lo que pesa:', causeN: 'Esto es lo que pesa:', cNet: '{net} g de carbohidratos netos', cModel: 'el control de la foto lo valora estricto', cMost: 'la mayoría de los carbohidratos',
+            flag: 'Es lo que pesa', dup: 'Quizá ya forma parte de «{other}». ¿Contado dos veces? Toca ×.',
             est: 'Estimación a partir de la foto, no una medición.', lowConf: 'La foto era difícil de leer, revisa los alimentos.',
             see: 'Lo que veo', tapFix: 'Toca un alimento para corregirlo', edit: 'Corregir', what: '¿Qué es en realidad?', many: '¿Cuántas piezas?', manyD: '¿Cuántos? (opcional)', manyServ: '¿Cuántas raciones? (1 = {g})', manyEach: '¿Cuántas raciones?', manyPh: 'p. ej. 2',
             sugL: 'Productos que la app conoce', srcScan: 'Escaneado', srcLog: 'Registrado antes', srcDex: 'Productos LOWiSPIKE', srcTable: 'Producto conocido', srcHome: 'En tu cocina', srcCart: 'En tu carrito', addFood: 'Añadir alimento', addWhat: '¿Qué más hay en el plato?', addPh: 'p. ej. pesto, 2 huevos', new0: 'Aún no conozco «{name}», así que cuenta como 0 kcal.', perPc: '{kcal} kcal / pieza', perSrv: '{kcal} kcal / {g}', perEach: '{kcal} kcal / ración', srvOne: 'ración', srvMany: 'raciones',
@@ -541,6 +547,95 @@
         if (v.level === 'mid') return { cls: 'mid', ans: t('mid', l), why: t('whyMid', l, { net: v.net }) };
         return { cls: 'low', ans: t('low', l), why: t('whyLow', l, { net: v.net }) };
     }
+
+    /* 29 Oct 2026 (Emmanuel, photo check: "says insulin spike but doesn't say why or which one, and when I tap X on what it
+       guessed wrong, nothing updates"): two fixes on the result screen.
+       1) causes(): which foods on the plate tip the verdict, each with its own short reason from the shared rulebook
+          (food-policy-core / Master Knowledge v3), its net carbs when carbs are the reason, or "the photo check rates it
+          strictly" when only the photo model's own per-food verdict explains it. Shown under the headline and on each card.
+       2) liveBlock(): the photo model's verdict block describes the plate it saw. Once the user removes or fixes a food,
+          its whole-meal verdict no longer applies: its per-food verdicts (parts) for the foods still on the plate stay,
+          the rest is dropped, and the app's own rules decide. Pure local math, no new photo credits. */
+    const low_ = s => String(s || '').trim().toLowerCase();
+    const sig = list => JSON.stringify((list || []).filter(d => d && d.name).map(d => [low_(d.name), +d.carbs || 0, +d.fiber || 0, +d.sugar || 0, +d.count || 1]));
+    function liveBlock(b, items, origSig) {
+        if (!b || origSig == null || sig(items) === origSig) return b || null;
+        const P = Array.isArray(b.parts) ? b.parts : null;
+        if (!P || !P.length) return null;
+        const names = (items || []).filter(d => d && d.name).map(d => low_(d.name));
+        const K = fk();
+        /* a SELTEN guess from the photo for a food the shared rulebook itself calls everyday (avocado, egg, salad) no longer
+           outweighs the rulebook once the user has corrected the plate; a NEIN guess always stays */
+        const keep = P.filter(p => {
+            if (!p || !names.includes(low_(p.name))) return false;
+            if (String(p.verdict || '').toUpperCase() !== 'SELTEN' || !K || !K.rateFood) return true;
+            const d = items.find(x => x && low_(x.name) === low_(p.name));
+            let r = null; try { r = K.rateFood(p.name, d && d.grams != null ? d.grams : null, 'en'); } catch (e) { r = null; }
+            return !(r && r.verdict === 'JA');
+        });
+        if (!keep.length) return null;
+        const R = { JA: 0, SELTEN: 1, NEIN: 2 };
+        let v = 'JA';
+        for (const p of keep) { const pv = String(p.verdict || '').toUpperCase(); if (R[pv] > R[v]) v = pv; }
+        return Object.assign({}, b, { verdict: v, light: { JA: 'green', SELTEN: 'yellow', NEIN: 'red' }[v], parts: keep });
+    }
+    const netOfItem = d => Math.max(0, Math.round((+d.carbs || 0) - (+d.fiber || 0)));
+    // [{ id: 'f2', name, why, net }] for a verdict that is not insulin-friendly; [] when it is.
+    function causes(v, items, drinks, aiBlock, l) {
+        const h = headline0(v, l);
+        if (!h || h.cls === 'low') return [];
+        const K = fk(), fd = v.food || {};
+        const named = (items || []).map((d, i) => ({ d, id: 'f' + i })).concat((drinks || []).map((d, i) => ({ d, id: 'd' + i }))).filter(x => x.d && x.d.name);
+        const rated = Array.isArray(fd.dishes) ? fd.dishes : [];
+        const out = [], R = { JA: 0, SELTEN: 1, NEIN: 2 };
+        const add = (k, why, rank) => {
+            const x = named[k]; if (!x) return;
+            const net = netOfItem(x.d), have = out.find(o => o.id === x.id);
+            if (have) { if (why && have.whys.indexOf(why) < 0) have.whys.push(why); have.rank = Math.max(have.rank, rank); return; }
+            out.push({ id: x.id, name: x.d.name, whys: why ? [why] : [], net, rank, k });
+        };
+        // a) foods the rulebook itself does not call everyday (NEIN / SELTEN), with that food's own reason
+        rated.forEach((r, k) => {
+            const fv = r && (r.mealVerdict || r.verdict);
+            if (fv === 'NEIN' || fv === 'SELTEN') add(k, K && r.rules && r.rules[0] ? K.reasonText(r.rules[0], l) : '', R[fv] + 2);
+        });
+        // b) the photo model's own per-food verdict, when that is what made the meal stricter
+        const blk = aiBlock && K && K.parse ? K.parse(aiBlock) : null;
+        if (fd.source === 'model' && blk && Array.isArray(blk.parts)) blk.parts.forEach(p => {
+            if (p.verdict === 'JA') return;
+            const k = named.findIndex(x => low_(x.d.name) === low_(p.name));
+            if (k >= 0) add(k, t('cModel', l), R[p.verdict] + 1);
+        });
+        // c) carbs: when the estimate is the reason (or nothing above names a food), the foods that bring most of them
+        const carbDriven = v.level !== 'low' || /^glucose\.|^unknown$|^model$/.test(String(fd.rule || '')) || !out.length;
+        if (carbDriven && v.net > 0) {
+            const byNet = named.map((x, k) => ({ k, net: netOfItem(x.d) })).filter(o => o.net >= 5).sort((a, b) => b.net - a.net);
+            let sum = 0;
+            for (const o of byNet.slice(0, 3)) {
+                if (sum >= v.net * 0.6) break;
+                sum += o.net;
+                add(o.k, '', 1);
+                const c = out.find(z => z.k === o.k); if (c) c.carb = true;
+            }
+        }
+        out.forEach(c => { if (c.carb || !c.whys.length) c.whys.push(t('cNet', l, { net: c.net })); });
+        out.sort((a, b) => b.rank - a.rank || b.net - a.net);
+        return out.slice(0, 4).map(c => ({ id: c.id, name: c.name, why: c.whys.filter(Boolean).join(' · '), net: c.net }));
+    }
+    // "Gekochtes Ei" next to "Gemischter Salat mit Avocado und Ei": the photo model listed a part of a combined dish again.
+    function dupOf(items, i) {
+        const me = items[i]; if (!me || !me.name) return '';
+        const words = low_(me.name).split(/[^a-zäöüßáéíóúñ]+/).filter(w => w.length >= 2);
+        if (!words.length || words.length > 3) return '';
+        const key = words[words.length - 1];
+        for (let j = 0; j < items.length; j++) {
+            if (j === i || !items[j] || !items[j].name) continue;
+            const other = low_(items[j].name), ow = other.split(/[^a-zäöüßáéíóúñ]+/).filter(Boolean);
+            if (ow.length < 3 || !/\b(mit|und|with|and|con|y)\b/.test(other) || low_(me.name) === other) continue;
+            if (ow.indexOf(key) >= 0) return items[j].name;
+        }
+        return '';
+    }
     function fk() { try { return (typeof window !== 'undefined' && window.LowiFoodKnowledge) || (typeof require === 'function' ? require('./food-knowledge-core.js') : null); } catch (e) { return null; } }
 
     /* XP for logging it, from the app's own rules (index.html LowiVitalsBridge), never a second point system:
@@ -591,7 +686,7 @@
     function macroLine(d, l) {
         return [['protein', d.protein], ['carbs', d.carbs], ['fat', d.fat]].map(([k, v]) => '<span><b>' + Math.round(v) + ' g</b> ' + esc(t(k, l)) + '</span>').join('');
     }
-    function cardHTML(d, i, kind, editing, l, pick, fresh) {
+    function cardHTML(d, i, kind, editing, l, pick, fresh, cause, dup) {
         const id = kind + i;
         if (editing) {
             const f = kind === 'f', lab = t(fresh ? 'addWhat' : f ? 'what' : 'drinkWhat', l);
@@ -603,13 +698,15 @@
                 (f ? '<p class="mr-live" data-mr-live aria-live="polite"' + (pick ? '' : ' hidden') + '>' + (pick ? esc(portionL(d.portion, l) + ' · ' + Math.round(d.kcal) + ' ' + t('kcal', l)) : '') + '</p>' : '') +
                 '<div class="mr-ed-acts"><button type="button" class="mr-save" data-mr-save="' + id + '">' + esc(t('save', l)) + '</button><button type="button" class="mr-cancel" data-mr-cancel="' + id + '">' + esc(t('cancel', l)) + '</button></div></div></li>';
         }
-        return '<li class="mr-item' + (d.src === 'kept' || d.src === 'unknown' || d.src === 'new0' ? ' mr-kept' : '') + '" data-mr="' + id + '">' +
+        return '<li class="mr-item' + (d.src === 'kept' || d.src === 'unknown' || d.src === 'new0' ? ' mr-kept' : '') + (cause ? ' mr-bad' : '') + '" data-mr="' + id + '">' +
             '<button type="button" class="mr-tap" data-mr-edit="' + id + '" aria-label="' + esc(t('edit', l) + ': ' + d.name) + '">' +
             '<span class="mr-nm"><b>' + esc(d.name) + '</b>' + (d.portion ? '<small>' + esc(portionL(d.portion, l)) + '</small>' : '') + '</span>' +
             '<span class="mr-kc"><b>' + Math.round(d.kcal) + '</b><small>' + esc(t('kcal', l)) + '</small></span>' +
             '<span class="mr-pen" aria-hidden="true">' + esc(t('edit', l)) + '</span></button>' +
             '<button type="button" class="mr-x" data-mr-rm="' + id + '" aria-label="' + esc(t('remove', l) + ' ' + d.name) + '">×</button>' +
             '<p class="mr-mac">' + macroLine(d, l) + '</p>' +
+            (cause ? '<p class="mr-flag"><b>' + esc(t('flag', l)) + '</b> ' + esc(cause.why) + '</p>' : '') +
+            (dup ? '<p class="mr-note mr-dup">' + esc(t('dup', l, { other: dup })) + '</p>' : '') +
             (d.src === 'kept' || d.src === 'unknown' ? '<p class="mr-note">' + esc(t('kept', l, { name: d.name })) + '</p>' : d.src === 'new0' ? '<p class="mr-note">' + esc(t('new0', l, { name: d.name })) + '</p>' : '') + '</li>';
     }
 
@@ -620,6 +717,8 @@
         if (!box) return null;
         const l = opts.lang || lang();
         const st = { items: (opts.dishes || []).slice(0, MAX_FOODS).map(clean).filter(d => d.name), drinks: [], edit: '', adding: false, pick: null, orig: null, sugs: [], sugAct: -1, fresh: '' };
+        const origSig = sig(st.items);
+        const block = () => liveBlock(opts.verdictBlock, st.items, origSig);
         const titleIn = form && form.querySelector('[name="title"]');
         let typed = false;
         if (titleIn) titleIn.addEventListener('input', () => { typed = true; });
@@ -643,8 +742,9 @@
         };
 
         const render = (focusSel, keepSel) => {
-            const fv = formValues(st.items, st.drinks, l, opts.verdictBlock), v = fv.verdict;
+            const blk = block(), fv = formValues(st.items, st.drinks, l, blk), v = fv.verdict;
             writeForm(fv);
+            const cz = v.empty ? [] : causes(v, st.items, st.drinks, blk, l), czOf = id => cz.find(c => c.id === id) || null;
             if (sheet) sheet.classList.toggle('mr-on', !v.empty);
             const mealTitle = (titleIn && titleIn.value.trim()) || fv.title;
             const x = xpFor(v, mealTitle, bridge());
@@ -653,14 +753,16 @@
                 '<section class="mr-verdict mr-' + hl.cls + '" aria-live="polite" aria-atomic="true">' +
                 '<div class="mr-vt"><small class="mr-q">' + esc(t('q', l)) + '</small><b class="mr-ans"><i aria-hidden="true"></i>' + esc(hl.ans) + '</b>' +
                 '<span class="mr-why">' + esc(hl.why) + '</span>' +
+                (cz.length ? '<span class="mr-cause"><b>' + esc(t(cz.length > 1 ? 'causeN' : 'cause1', l)) + '</b>' +
+                    cz.map(c => '<span class="mr-cz"><b>' + esc(c.name) + '</b> ' + esc(c.why) + '</span>').join('') + '</span>' : '') +
                 (hl.energy ? '<span class="mr-energy">' + esc(hl.energy) + '</span>' : '') +
                 '</div>' +
                 (opts.photo ? '<img class="mr-thumb" alt="" src="' + esc(opts.photo) + '">' : '') + '</section>';
             const foods = st.items.length ? '<div class="mr-sec"><p class="mr-h"><b>' + esc(t('see', l)) + '</b><small>' + esc(t('tapFix', l)) + '</small></p><ul class="mr-list">' +
-                st.items.map((d, i) => cardHTML(d, i, 'f', st.edit === 'f' + i, l, st.pick && st.pick.id === 'f' + i ? st.pick.p : null, st.fresh === 'f' + i)).join('') + '</ul>' +
+                st.items.map((d, i) => cardHTML(d, i, 'f', st.edit === 'f' + i, l, st.pick && st.pick.id === 'f' + i ? st.pick.p : null, st.fresh === 'f' + i, czOf('f' + i), dupOf(st.items, i))).join('') + '</ul>' +
                 (st.items.length < MAX_FOODS && !st.fresh ? '<button type="button" class="mr-add-btn mr-add-food" data-mr-add-food><span aria-hidden="true">+</span> ' + esc(t('addFood', l)) + '</button>' : '') + '</div>' : '';
             const drinks = '<div class="mr-sec mr-drinks"><p class="mr-h"><b>' + esc(t('drinks', l)) + '</b></p>' +
-                (st.drinks.length ? '<ul class="mr-list">' + st.drinks.map((d, i) => cardHTML(d, i, 'd', st.edit === 'd' + i, l)).join('') + '</ul>' : '') +
+                (st.drinks.length ? '<ul class="mr-list">' + st.drinks.map((d, i) => cardHTML(d, i, 'd', st.edit === 'd' + i, l, null, false, czOf('d' + i))).join('') + '</ul>' : '') +
                 (st.drinks.length >= MAX_DRINKS ? '' : st.adding ?
                     '<div class="mr-add" role="group" aria-label="' + esc(t('addDrink', l)) + '"><div class="mr-chips">' + t('chips', l).map(c => '<button type="button" class="mr-chip" data-mr-chip="' + esc(c) + '">' + esc(c) + '</button>').join('') + '</div>' +
                     '<div class="mr-add-row"><input data-mr-drink maxlength="60" autocomplete="off" enterkeyhint="done" aria-label="' + esc(t('drinkWhat', l)) + '" placeholder="' + esc(t('drinkPh', l)) + '"><button type="button" class="mr-save" data-mr-add-go>' + esc(t('add', l)) + '</button></div>' +
@@ -966,12 +1068,12 @@
         render();
         return {
             items: () => st.items.filter(d => d.name), drinks: () => st.drinks.slice(), all: () => st.items.filter(d => d.name).concat(st.drinks),
-            values: () => formValues(st.items, st.drinks, l, opts.verdictBlock), refresh: () => render(),
+            values: () => formValues(st.items, st.drinks, l, block()), refresh: () => render(),
             _edit(i, text, count) { st.items[i] = clean(estimateItem(text, count, st.items[i], db(), l)); return render(); },
             _pick(q, k) { const li = box.querySelector('.mr-editing'); const inp = li && li.querySelector('[data-mr-name]'); if (!inp) return null; inp.value = q; sugFor(li, li.dataset.mr); const list = st.sugs.slice(); if (k != null) pick(k, li); return list; },
             _drink(text, count) { const d = estimateDrink(text, count, db(), l); if (d) st.drinks.push(clean(d)); return render(); }
         };
     }
 
-    return { KEYS, STR, TABLE, lookup, parseAmount, estimateItem, estimateDrink, matchScore, pieceOf, fromProduct, fromLog, fromKitchen, kitchenHit, estFor, knownList, suggest, itemFrom, perText, manyLabel, clean, totals, title, verdict, xpFor, xpText, formValues, headline, mount, portionL };
+    return { KEYS, STR, TABLE, lookup, parseAmount, estimateItem, estimateDrink, matchScore, pieceOf, fromProduct, fromLog, fromKitchen, kitchenHit, estFor, knownList, suggest, itemFrom, perText, manyLabel, clean, totals, title, verdict, xpFor, xpText, formValues, headline, causes, liveBlock, dupOf, mount, portionL };
 });

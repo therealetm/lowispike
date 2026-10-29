@@ -67,7 +67,10 @@ test('Home coming back without the X drops the section entry once and stays in t
     assert.strictEqual(a.st.tab, 'home');
     assert.strictEqual(a.st.backs, 1, 'only the quiet back, no second back out of LOWiSPIKE');
     assert.strictEqual(a.st.left, false);
-    assert.strictEqual(a.st.i, 0);
+    /* Oct 29 19:02 bug hunt: the guard goes back once the quiet drop has landed, so a sheet opened on Home right after it (Settings >
+       My day) closes on back instead of leaving the app */
+    assert.strictEqual(a.st.i, 1);
+    assert.strictEqual(JSON.stringify(a.st.stack[a.st.i]), '{"lowiBack":1}');
 });
 
 test('same with the guard entry under the app: still one back, the guard stays', () => {
@@ -85,7 +88,7 @@ test('a real swipe back on Home with nothing open still leaves, as before', () =
 
 test('section-nav.js tells back-swipe.js about its quiet back; index.html loads back-swipe.js first', () => {
     assert.match(R('section-nav.js'), /api\.swallowed = e => swallow > 0 \|\| \(!!e && e === swallowedEvt\);/);
-    assert.match(R('back-swipe.js'), /W\.LowiSections\.swallowed\(e\)\) return;/);
+    assert.match(R('back-swipe.js'), /W\.LowiSections\.swallowed\(e\)\) \{ setTimeout\(guard, 0\); return; \}/);
     const h = R('index.html');
     assert.ok(h.indexOf('back-swipe.js?v=') < h.indexOf('section-nav.js?v='));
 });

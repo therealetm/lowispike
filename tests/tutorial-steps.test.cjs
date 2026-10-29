@@ -110,13 +110,13 @@ test('the rule is written down for future tasks', () => {
     }
 });
 
-test('Settings has a Tutorial row in all three languages that starts the tour', () => {
+test('Settings keeps a Tutorial row in all three languages that starts the tour, hidden while the tutorial is off', () => {
     const SS = require('../home-settings-sleep-v2.js');
     assert.deepStrictEqual(SS.pageGroups({ has: () => true })[0].ids, ['catchUp', 'theme', 'look', 'worldSound', 'language', 'notifications', 'tutorial', 'support', 'about']);  /* Oct 28 2026 slim batch 9: notifications + About in Settings. Oct 26 2026 (MAYA-HANDOFF 0.39): Catch up on today is the first row */
     for (const l of LANGS) assert.ok(SS.TX[l].tutorial, 'label ' + l);
     assert.strictEqual(SS.rowAction('tutorial'), 'go', 'a place: Settings closes, then the tour starts');
     const src = read('home-settings-sleep-v2.js');
-    assert.match(src, /tutorial: \{ has: \(\) => !!\(root\.LowiTutorial && fn\(root\.LowiTutorial, 'start'\)\), run: \(\) => root\.LowiTutorial\.start\(\{ from: 'settings' \}\) \}/);
+    assert.match(src, /tutorial: \{ has: \(\) => !!\(root\.LowiTutorial && fn\(root\.LowiTutorial, 'start'\) && !root\.LowiTutorial\.off\), run: \(\) => root\.LowiTutorial\.start\(\{ from: 'settings' \}\) \}/, 'the row shows only while the tutorial is on');
     assert.match(src, /tutorial: '<circle/, 'its own icon');
 });
 

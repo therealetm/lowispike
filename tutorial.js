@@ -489,6 +489,7 @@
         } catch (e) { }
     }
     function start(opts) {
+        if (S.OFF) return false;   /* Oct 29 2026: tutorial removed for now (tutorial-steps.js OFF) */
         const o = opts || {};
         if (on) stop('restart');
         mode = 'tour'; opened = '';
@@ -553,7 +554,7 @@
     try { D.addEventListener('visibilitychange', () => { if (D.hidden) cancelAuto(); keepAwake(); }); } catch (e) { }
     if (!D.getElementById('ltCss') && !D.querySelector('link[href^="tutorial.css"]')) { const m = $('meta[name="lowi-build"]'), l = D.createElement('link'); l.id = 'ltCss'; l.rel = 'stylesheet'; l.href = 'tutorial.css?v=' + encodeURIComponent(m ? m.content : '1'); D.head.appendChild(l); }
     /* tutorial-auto.js (new accounts get the tour once) loads from here, so index.html's versioned script list stays untouched */
-    if (!W.LowiTutorialAuto && !D.querySelector('script[src^="tutorial-auto.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-auto.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
+    if (!S.OFF && !W.LowiTutorialAuto && !D.querySelector('script[src^="tutorial-auto.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-auto.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     /* tutorial-voice.js (the speaker on every card) loads the same way */
     /* Oct 26: when it arrives, the card on screen gets its speaker (voicePaint); a failed load is tried again, up to 3 times */
     if (!W.LowiTutorialVoice && !D.querySelector('script[src^="tutorial-voice.js"]')) {
@@ -567,11 +568,11 @@
     /* tutorial-show.js (item 42: the finger on the real control, lit spots, the picture of what opens) loads the same way */
     if (!W.LowiTutorialShow && !D.querySelector('script[src^="tutorial-show.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-show.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     /* tutorial-resume.js (the floating "Continue tutorial" button until the tour is finished or skipped) loads the same way */
-    if (!W.LowiTutorialResume && !D.querySelector('script[src^="tutorial-resume.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-resume.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
+    if (!S.OFF && !W.LowiTutorialResume && !D.querySelector('script[src^="tutorial-resume.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-resume.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     /* tutorial-demo.js (the short tour's brown finger and the mocked Scan) and tutorial-flight.js (her first real autopilot flight after
        the first finished tour) load the same way */
     ['tutorial-demo.js', 'tutorial-flight.js'].forEach(f => { if (!D.querySelector('script[src^="' + f + '"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = f + '?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); } });
-    W.LowiTutorial = { start, news, mode: () => (on ? mode : ''), opened: () => opened, stage: () => stage(), stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S, ids: () => list.map(x => x.id),
+    W.LowiTutorial = { off: !!S.OFF, start, news, mode: () => (on ? mode : ''), opened: () => opened, stage: () => stage(), stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S, ids: () => list.map(x => x.id),
         paused: () => paused, pause: v => setPaused(v == null ? true : v), auto: () => !!autoT,
         demo: () => ({ at: demoAt, shown: demoDone, voice: voiceDone, read: readDone, opened: demoOpened }) };
 })();

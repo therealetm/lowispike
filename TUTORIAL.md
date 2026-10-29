@@ -1,5 +1,7 @@
 # Tutorial (Settings > Tutorial)
 
+**OFF since 29 Oct 2026 (Emmanuel, on a call): "remove the current tutorial for now".** `tutorial-steps.js` `OFF = true`: no Settings row, no auto start for new accounts, no "Continue tutorial" pill, no Community Walkthrough card; `LowiTutorial.start()` returns false. What's New is not affected. Do NOT update, rebuild or replace the tour, and do not spend time keeping its steps current, until he asks for a new tutorial (once the app is finished). Loud releases still need the `"tutorial"` field in `news.json`; use `{"none": "tutorial is off (29 Oct 2026)"}`.
+
 Emmanuel, 19 Oct 2026: "There should be a tutorial button where you can click on it and then basically our companion takes you
 through everything from the beginning, as if you were new. Obviously, you can skip if you already know this. So, with every new
 update, the tutorial also needs to be updated."

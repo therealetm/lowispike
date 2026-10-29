@@ -354,7 +354,8 @@
         gift: { has: () => !!$('.hs-gift'), run: clickSel('.hs-gift') },
         weather: { has: () => !!(root.LowiTopBar && fn(root.LowiTopBar, 'openWeather')), run: () => root.LowiTopBar.openWeather() },
         /* Oct 19 2026 (Emmanuel): replay the guided tour (tutorial.js / tutorial-steps.js); Settings closes first, the tour waits for it */
-        tutorial: { has: () => !!(root.LowiTutorial && fn(root.LowiTutorial, 'start')), run: () => root.LowiTutorial.start({ from: 'settings' }) },
+        /* Oct 29 2026: hidden while the tutorial is removed (tutorial-steps.js OFF) */
+        tutorial: { has: () => !!(root.LowiTutorial && fn(root.LowiTutorial, 'start') && !root.LowiTutorial.off), run: () => root.LowiTutorial.start({ from: 'settings' }) },
         /* slim batch 9: the notification master controls (LowiN1 sheet: on/off, how often, quiet hours, phone push) */
         notifications: { has: () => !!(root.LowiN1 && fn(root.LowiN1, 'openSet')), run: () => root.LowiN1.openSet() },
         /* slim batch 9: About & info (build, what the numbers are, where data comes from) */

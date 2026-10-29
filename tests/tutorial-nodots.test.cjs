@@ -49,7 +49,7 @@ function page() {
         querySelectorAll() { return []; }
     };
     const W = {
-        document: D, innerWidth: 390, innerHeight: 844, LowiTutorialSteps: S, LowiRitualCore: { BUSY: R.BUSY },
+        document: D, innerWidth: 390, innerHeight: 844, LowiTutorialSteps: Object.assign({}, S, { OFF: false }) /* the parked engine, switched on (tutorial-steps.js OFF, Oct 29 2026) */, LowiRitualCore: { BUSY: R.BUSY },
         localStorage: { _v: {}, getItem(k) { return this._v[k] || null; }, setItem(k, v) { this._v[k] = v; } },
         addEventListener() { }, dispatchEvent() { }, CustomEvent: function (n, o) { this.type = n; this.detail = o && o.detail; },
         matchMedia: () => ({ matches: false }), setInterval: f => { timers.push(f); return timers.length; }, clearInterval() { }, setTimeout() { return 0; },

@@ -580,7 +580,13 @@
     /* GESTURES id -> the step id that teaches it */
     function taught() { const m = {}; STEPS.forEach(s => (s.teaches || []).forEach(g => { if (!m[g]) m[g] = s.id; })); return m; }
 
-    const api = { VERSION, AREAS, STEPS, MAX_BASE, base, SHORT_SKIPS, NO_TUTORIAL, GESTURES, GESTURE_EXEMPT, UI, text, fill, plan, skipIndex, covered, newsOk, tourOf, newsCard, unseenNews, tryMatch, taught, TRY_CUE, tryResume, kind, PRACTICE_HOW, LATER_MARK, INSTRUCTION };
+    /* OFF (Oct 29 2026, Emmanuel on a call: remove the current tutorial for now, no update and no rebuild; he asks for a new one once
+       the app is finished): while true, users cannot reach the guided tour anywhere. tutorial.js start() returns false, the
+       auto start for new accounts (tutorial-auto.js) and the "Continue tutorial" pill (tutorial-resume.js) are not loaded, the
+       Settings > Tutorial row and the Community welcome's Walkthrough card are hidden. What's New (news()) is not the tour and
+       stays. The steps below are parked as they are: do not update, extend or replace them until he asks. */
+    const OFF = true;
+    const api = { OFF, VERSION, AREAS, STEPS, MAX_BASE, base, SHORT_SKIPS, NO_TUTORIAL, GESTURES, GESTURE_EXEMPT, UI, text, fill, plan, skipIndex, covered, newsOk, tourOf, newsCard, unseenNews, tryMatch, taught, TRY_CUE, tryResume, kind, PRACTICE_HOW, LATER_MARK, INSTRUCTION };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.LowiTutorialSteps = api;
 })(typeof window !== 'undefined' ? window : null);

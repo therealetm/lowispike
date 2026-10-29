@@ -124,6 +124,8 @@ The complete inline-module, screen, persistence, backend, asset, and test invent
 
 ## The tutorial stays current (rule since 19 Oct 2026, Emmanuel)
 
+**OFF since 29 Oct 2026 (Emmanuel, on a call): "remove the current tutorial for now".** `tutorial-steps.js` `OFF = true`: no Settings row, no auto start for new accounts, no "Continue tutorial" pill, no Community Walkthrough card; `LowiTutorial.start()` returns false. What's New is not affected. Do NOT update, rebuild or replace the tour, and do not spend time keeping its steps current, until he asks for a new tutorial (once the app is finished). Loud releases still need the `"tutorial"` field in `news.json`; use `{"none": "tutorial is off (29 Oct 2026)"}`.
+
 Settings > Tutorial replays a guided tour where the user's own companion walks them through every main feature (`tutorial.js`). Its content lives ONLY in `tutorial-steps.js`. Every release keeps it current:
 - `news.json` carries `"tutorial": "<step id>"` (the step that explains the change; update its text in EN/DE/ES when the feature changed, add a new step for a new feature) or `"tutorial": {"none": "why no step is needed"}`. `scripts/bump-build.cjs` refuses the release without it, and `scripts/release-check.cjs` fails a published What's New that lacks it.
 - A new Home ring control (`home-orbit-v2.js` ORDER) or Settings row (`home-settings-sleep-v2.js` pageGroups / MORE) needs a step in `tutorial-steps.js` (its `covers`) or a `NO_TUTORIAL` reason. `tests/tutorial-steps.test.cjs` fails otherwise.

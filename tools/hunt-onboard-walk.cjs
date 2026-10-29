@@ -91,6 +91,13 @@ const EN = /\b(the|your|you|Next|Add|Pick|Later|Choose|Use my|Skip|Birthday|Name
       const num = await P.$('#r2ob input[type=number], #r2ob input[inputmode=numeric]'); if (num) { await num.fill('0'); await click('[data-r2o=shopdone]'); await dump('step3-zero'); await num.fill('999'); await click('[data-r2o=shopdone]'); await dump('step3-999'); await num.fill('2'); }
       await click('[data-r2o=shopdone]'); await H.sleep(2500);
     }
+    /* 29 Oct: the grocery-rhythm step (shop-plan.js) needs a frequency before Let's go; try empty first, then pick one + two days */
+    for (let w = 0; w < 8 && !(await P.$('#r2ob [data-spl-freq]')); w++) await H.sleep(1000);
+    if (await P.$('#r2ob [data-spl-freq]')) {
+      await click('#r2ob [data-r2o=shopdone]'); await dump('shop-empty');
+      await click('#r2ob [data-spl-freq]:nth-child(2)'); await click('#r2ob [data-spl-day="1"]'); await click('#r2ob [data-spl-day="5"]'); await dump('shop-picked');
+      await click('#r2ob [data-r2o=shopdone]'); await H.sleep(2500);
+    }
     d = await dump('after-setup');
     /* whatever comes next (starter plan / tutorial cards): read and press the primary button up to 40 times */
     let idle = 0;

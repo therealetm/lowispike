@@ -75,7 +75,10 @@
     function onPop(e) {
         if (ours(history.state)) return;
         /* Oct 22: section-nav.js dropping a section's entry quietly is not a back; acting on it left the app */
-        try { if (W.LowiSections && W.LowiSections.swallowed && W.LowiSections.swallowed(e)) return; } catch (x) { }                 /* the Move player's own entry popped down to ours: not for us */
+        /* Oct 29 19:02 (bug hunt): that quiet drop lands on the bare app entry with no guard under it, and the guard only came back
+           on the next touch. Settings > My day goes Home (dropping Community's entry) and opens the My day sheet; one back before
+           any touch left LOWiSPIKE. Put the guard back once the drop has landed (the same state the next touch would leave). */
+        try { if (W.LowiSections && W.LowiSections.swallowed && W.LowiSections.swallowed(e)) { setTimeout(guard, 0); return; } } catch (x) { }                 /* the Move player's own entry popped down to ours: not for us */
         if (D.querySelector('#mv-player.on')) return;      /* the Move player handles its own back */
         const before = sig();
         /* Oct 24 12:40 (back and close sweep): Body stats and Weight journey (body-stats.js) keep role=dialog / aria-modal and

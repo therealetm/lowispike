@@ -45,7 +45,9 @@ function make({ tab = 'home', sheetOpen = false, mv = false, r2 = false, dialog 
     vm.runInNewContext(SRC, ctx);
     const touch = () => (listeners['d:pointerdown'] || []).forEach(f => f({}));
     const swipeBack = () => { history.back(); (listeners['w:popstate'] || []).forEach(f => f({})); while (timers.length) timers.shift()(); };
-    return { st, history, touch, swipeBack };
+    const pop = e => (listeners['w:popstate'] || []).forEach(f => f(e || {}));
+    const flush = () => { while (timers.length) timers.shift()(); };
+    return { st, history, touch, swipeBack, W, pop, flush };
 }
 
 test('a touch puts one guard entry under the app, only once', () => {
@@ -95,6 +97,21 @@ test('back on Today with nothing open leaves as before', () => {
     a.touch(); a.swipeBack();
     assert.strictEqual(a.st.backs, 2, 'the swipe plus one more step out of the app');
     assert.strictEqual(a.st.homeClicks, 0);
+});
+
+test('a section entry dropped quietly (Settings > My day goes Home) puts the guard back, so back closes the sheet and stays in the app', () => {
+    const a = make({ tab: 'foryou' });
+    a.st.stack = [null, { lowiSec: 'foryou' }]; a.st.i = 1;
+    let swallow = 1, ev = null;
+    a.W.LowiSections.swallowed = e => swallow > 0 || (!!e && e === ev);
+    /* section-nav.js goTab('home'): its quiet history.back(), back-swipe.js sees the popstate first */
+    a.st.tab = 'home'; a.history.back(); ev = {}; a.pop(ev); swallow = 0; a.flush();
+    assert.strictEqual(JSON.stringify(a.history.state), '{"lowiBack":1}', 'guard is back without a touch');
+    /* My day opens on Home; back (no touch in between) */
+    a.st.sheetOpen = true; a.swipeBack();
+    assert.strictEqual(a.st.escapes, 1);
+    assert.strictEqual(a.st.sheetOpen, false);
+    assert.strictEqual(a.st.i, 1, 'still inside the app (on the guard put back)');
 });
 
 test('the Move player keeps its own back: no Escape, no tab change', () => {

@@ -1,0 +1,20 @@
+const H = require('/home/sprite/lowispike/tools/sim/harness.cjs');
+(async () => {
+  const device = process.argv[2] || 'iPhone 15', lang = process.argv[3] || 'de';
+  const where = process.argv[4] || "https://therealetm.github.io/lowispike/index.html"; const o = { device, engine: "webkit", members: 20, messages: 60, probe: false, lang }; if (/^https?:/.test(where)) o.url = where; else o.root = where; const R = await H.open(o), P = R.page;
+  await R.ctx.addInitScript(l => { try { localStorage.setItem('lowispike.lang', l); localStorage.setItem('lowi.lang', l); } catch (e) { } }, lang);
+  await R.goto(); await H.sleep(5000);
+  const log = (k, v) => console.log('STEP', k, JSON.stringify(v));
+  const st = () => P.evaluate(() => { let t = ''; try { t = LowiRoomsUI.tab(); } catch (e) { } const m = document.querySelector('.cx-menu'); const s = m && getComputedStyle(m); return { tab: (document.querySelector('#main>.tab.active') || {}).id, rm: t, menu: !!m && s.display !== 'none' && s.visibility !== 'hidden' && +s.opacity > .05 && !m.classList.contains('off'), mcls: m && m.className, hist: history.length, state: JSON.stringify(history.state).slice(0, 80) }; });
+  const toChat = async () => { await P.evaluate(() => goTab('foryou')); await H.sleep(1500); await R.tap('#cmPaneChat .rm-tab[data-rm="chat"]'); await H.sleep(2500); };
+  const other = async () => { const id = await P.evaluate(() => { const vh = innerHeight; const r = [...document.querySelectorAll('#cmList [id^="cm-"]')].filter(r => r.querySelector('.cm-bub') && !r.classList.contains('me') && !r.classList.contains('mine')).filter(r => { const y = r.getBoundingClientRect().top; return y > 120 && y < vh - 180; }).pop(); return r && r.id; }); await R.tap('#' + id + ' .cm-bub'); await H.sleep(1500); return id; };
+  await toChat(); log('chat', await st());
+  await P.evaluate(() => history.back()); await H.sleep(1600); log('plain back from chat', await st());
+  await toChat(); await other(); log('menu open', await st());
+  await P.evaluate(() => history.back()); await H.sleep(1600); log('back with menu', await st());
+  await toChat(); const id = await other(); await R.tapEl(P.locator('.cx-menu button').first()); await H.sleep(1500); log('after emoji tap', await st());
+  await H.sleep(2000); log('after emoji +2s', await st());
+  await toChat(); await other(); await P.mouse.click(5, 5).catch(()=>{}); await P.touchscreen.tap(Math.round((await P.evaluate(()=>innerWidth))/2), 20); await H.sleep(1500); log('tap outside', await st());
+  await toChat(); await other(); const n = await P.locator('.cx-menu button').count(); await R.tapEl(P.locator('.cx-menu button').nth(n - 2)); await H.sleep(1500); log('after Antworten', await st()); await P.evaluate(() => history.back()); await H.sleep(1600); log('back after reply', await st());
+  log('errs', R.errs); await R.close();
+})().catch(e => { console.log('BROKEN', e && e.stack || e); process.exit(1); });

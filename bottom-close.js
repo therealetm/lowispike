@@ -50,6 +50,10 @@
         if (r.width < 4 || r.height < 4 || r.bottom < 0 || r.right < 0 || r.top > innerHeight || r.left > innerWidth) return false;
         const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.display === 'none') return false;
         if (el.closest('#main>.tab:not(.active),.holo-under')) return false;   /* Home drawn under a rising panel is not the layer on top */
+        /* Oct 29 2026 bug hunt: a sheet on its way out (.r2-ov.off, still sliding down for about two seconds) is not the layer on
+           top. Settings > Your details: the closing Settings sheet (z 250) took the button from Your details (z 240), so a tap on
+           the X right after opening Your details pressed the closing sheet's X and nothing happened. */
+        if (el.closest('.r2-ov.off')) return false;
         for (let a = el.parentElement; a && a !== D.body; a = a.parentElement) {
             const s = getComputedStyle(a);
             if (s.display === 'none' || s.visibility === 'hidden' || +s.opacity < 0.08 || a.hidden || a.getAttribute('aria-hidden') === 'true' && !a.matches('#main,#app')) return false;

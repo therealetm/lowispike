@@ -23,6 +23,12 @@ test('one round button at the bottom center, above the home indicator', () => {
     assert.match(css, /\.lw-bx-src\{opacity:0!important;pointer-events:none!important\}/);
 });
 
+test('a sheet that is closing never takes the button from the page that opened over it (Settings > Your details)', () => {
+    const js = read('bottom-close.js');
+    const shown = js.slice(js.indexOf('function shown(el)'), js.indexOf('function layerZ('));
+    assert.ok(shown.includes("el.closest('.r2-ov.off')"), 'controls inside a closing .r2-ov.off sheet are skipped');
+});
+
 test('it presses the screen\'s own back / close, steps away while typing, and rises above fields, the composer and the bin', () => {
     const js = read('bottom-close.js');
     assert.ok(js.includes('t.click()'), 'presses the original control');

@@ -137,3 +137,18 @@ test('Weight & BMI shows as a section in the Stats sheet (LowiStatsPlugins, COOR
     assert.match(p.render(0), /data-body-open/);
     delete global.LowiBodyStats; delete global.LowiBodyStatsCore; delete global.LowiStatsPlugins;
 });
+
+test('a weigh-in typed in lb reads back as typed: 236.5 lb stays 236.5, not 236.6 from the 0.1 kg rounded summary (bug hunt 13:02)', () => {
+    global.window = global; global.document = { addEventListener() {}, documentElement: {} }; global.addEventListener = () => {};
+    global.LowiBodyStatsCore = C;
+    const S = { user: {}, health: { weight: '107.27', heightCm: 178, body: { weights: [{ ts: Date.now(), kg: 107.27 }] } }, lang: 'en' };
+    global.LowiR2 = { S: () => S }; global.LowiWeightJourney = { unit: () => 'lb' };
+    delete require.cache[require.resolve('../body-stats.js')];
+    require('../body-stats.js');
+    const html = global.LowiBodyStats.cardHTML();
+    assert.match(html, /236\.5 lb/, html.slice(0, 200));
+    assert.doesNotMatch(html, /236\.6/);
+    global.LowiWeightJourney = { unit: () => 'kg' };
+    assert.match(global.LowiBodyStats.cardHTML(), /107\.3 kg/);
+    delete global.LowiBodyStats; delete global.LowiBodyStatsCore; delete global.LowiR2; delete global.LowiWeightJourney;
+});

@@ -42,6 +42,9 @@
     const LB = 0.45359237;
     const unitOf = st => { try { const j = W.LowiWeightJourney; return j && j.unit && j.unit(st) === 'lb' ? 'lb' : 'kg'; } catch (e) { return 'kg'; } };
     const inU = (kg, st) => unitOf(st) === 'lb' ? kg / LB : kg;
+    /* the weight to show: in lb from the stored exact kg (a 236.5 lb weigh-in is kept as 107.27 kg), not the 0.1 kg rounded
+       summary, which read back as 236.6 lb */
+    const shownW = (sm, st) => { if (unitOf(st) === 'lb') { const x = parseFloat(String(st && st.health && st.health.weight || '').replace(',', '.')); if (Number.isFinite(x) && Math.abs(x - sm.kg) < 0.06) return x / LB; } return inU(sm.kg, st); };
     /* level: one short line, no second bar (the goal bar lives in the journey part below) and no number the sheet shows elsewhere */
     function levelHTML(sm) {
         const p = sm.progress, st = state();
@@ -66,7 +69,7 @@
         const showH = sm.needsHeight || editH, askSex = !sm.gender, st = state(), U = unitOf(st);
         const today = sm.history.some(w => C.dayKey(w.ts) === C.dayKey(Date.now()));
         return '<form class="bs-form" novalidate>' +
-            '<label class="bs-field"><span>' + esc(tr('weight')) + '</span><span class="bs-in"><input id="bsKg" name="kg" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="' + esc(sm.kg === null ? '' : fmt(inU(sm.kg, st))) + '" aria-describedby="bsErr"><em>' + U + '</em></span></label>' +
+            '<label class="bs-field"><span>' + esc(tr('weight')) + '</span><span class="bs-in"><input id="bsKg" name="kg" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="' + esc(sm.kg === null ? '' : fmt(shownW(sm, st))) + '" aria-describedby="bsErr"><em>' + U + '</em></span></label>' +
             (showH ? '<label class="bs-field"><span>' + esc(tr('height')) + '</span><span class="bs-in"><input id="bsCm" name="cm" inputmode="numeric" autocomplete="off" value="' + esc(sm.cm === null ? '' : sm.cm) + '"><em>cm</em></span></label>'
                 : '<p class="bs-hline">' + esc(tr('height')) + ' ' + sm.cm + ' cm · <button type="button" class="bs-link" data-bs="edit-h">' + esc(tr('change')) + '</button></p>') +
             (askSex ? '<fieldset class="bs-sex"><legend>' + esc(tr('sex')) + '</legend>' + ['f', 'm', 'x'].map(g => '<button type="button" class="bs-pill' + (pickSex === g ? ' on' : '') + '" aria-pressed="' + (pickSex === g) + '" data-bs-sex="' + g + '">' + esc(tr(g)) + '</button>').join('') + '</fieldset>' : '') +
@@ -152,7 +155,7 @@
         const s = state(); const sm = s ? C.summary(s) : null;
         if (!sm || sm.kg === null) return '<button type="button" class="bs-card" data-body-open aria-label="' + esc(tr('open')) + '"><small>' + esc(tr('title')) + '</small><b>' + esc(tr('none')) + '</b><span>' + esc(tr('weighIn')) + ' ›</span></button>';
         const p = sm.progress, U = unitOf(s);
-        return '<button type="button" class="bs-card" data-body-open aria-label="' + esc(tr('open')) + '"><small>' + esc(tr('title')) + '</small><b>' + fmt(inU(sm.kg, s)) + ' ' + U + (sm.bmi !== null ? ' · ' + esc(tr('bmi')) + ' ' + fmt(sm.bmi) : '') + '</b><span>' + (sm.category ? esc(tr(sm.category)) : esc(tr('needH'))) + (p && p.count > 1 ? ' · ' + signed(inU(p.delta, s)) + ' ' + U + ' · ' + esc(tr('level', { n: p.level })) : '') + '</span></button>';
+        return '<button type="button" class="bs-card" data-body-open aria-label="' + esc(tr('open')) + '"><small>' + esc(tr('title')) + '</small><b>' + fmt(shownW(sm, s)) + ' ' + U + (sm.bmi !== null ? ' · ' + esc(tr('bmi')) + ' ' + fmt(sm.bmi) : '') + '</b><span>' + (sm.category ? esc(tr(sm.category)) : esc(tr('needH'))) + (p && p.count > 1 ? ' · ' + signed(inU(p.delta, s)) + ' ' + U + ' · ' + esc(tr('level', { n: p.level })) : '') + '</span></button>';
     }
     D.addEventListener('click', e => { const t = e.target && e.target.closest && e.target.closest('[data-body-open]'); if (t && !(ov && ov.contains(t))) { e.preventDefault(); open(); } });
     W.addEventListener('lowi:lang', () => { if (ov) render(true); });

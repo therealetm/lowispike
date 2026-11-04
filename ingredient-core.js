@@ -11,7 +11,12 @@
    and `top` (one of the first three). Marketing claims (High Protein, Low Carb, Keto, Zero, Sugar free, Organic,
    Gluten free, ...) are recognised and always carry approves:false: a claim never approves a product.
    No list -> status 'missing'; text that cannot be read -> 'unusable'. Nothing is ever guessed: a missing list means
-   the ingredient assessment is incomplete, never "no added sugar". */
+   the ingredient assessment is incomplete, never "no added sugar".
+   Juice trace (4 Nov 2026, Rhön Sprudel Limette scanned as "liquid sugar" with 0 g sugar): with {unit: 'ml', sugar100}
+   from the label, a fruit-juice concentrate used for flavour does not count as added sugar when the drink shows at most
+   0.5 g sugar per 100 ml (the EU "sugars-free" limit, Regulation (EC) 1924/2006 annex, the same value as the policy's
+   unsweetenedSugarMaxPer100). Those hits move to flags.juiceTrace. Sugar, syrup, honey, Dicksaft or a sweetener still
+   count, label sugar above 0.5 g keeps the concentrate as added sugar, and without both opts nothing changes. */
 (function (root, factory) {
     const api = factory();
     if (typeof module === 'object' && module.exports) module.exports = api;
@@ -21,6 +26,10 @@
 
     const VERSION = 'ingredient-core c 2026-10-22';
     const NOT_SUGAR = /ohne zucker|zuckerfrei|no added sugar|sugar[- ]?free|sin azúcar|sin azucar|ohne zuckerzusatz|sans sucre|kulör|couleur|colou?r|färbend|farbstoff|zuckerrüben?faser/;
+    // Juice trace (see header): a juice concentrate alone, in a drink with at most 0.5 g sugar per 100 ml on the label.
+    const TRACE_SUGAR_MAX_ML = 0.5;
+    const JUICE_CONC = /saftkonzentrat|juice concentrate|concentrado de zumo|concentrado de jugo|zumo concentrado|jugo concentrado/;
+    const OTHER_SUGAR = /zucker|sugar|sucre|azúcar|azucar|sirup|syrup|sirop|jarabe|dextros|glukose|glucose|fruktose|fructose|saccharose|sucrose|honig|honey|\bmiel\b|agave|malz|malt|melasse|molasses|karamell|caramel|dicksaft|kandis/;
     const RX = {
         addedSugar: /zucker|sugar|sucre|azúcar|azucar|sirup|syrup|sirop|jarabe|dextros|glukose|glucose|fruktose|fructose|saccharose|sucrose|honig|honey|\bmiel\b|agave|maltodextrin|malzextrakt|malt extract|gerstenmalz|invertzucker|melasse|molasses|karamell|caramel|traubensüße|saftkonzentrat|juice concentrate|concentrado de zumo|dicksaft|kandis/,
         refinedStarch: /mehl|flour|harina|farine|grieß|griess|semolina|sémola|\breis|reis\b|reismehl|\brice\b|arroz|stärke|staerke|starch|almidón|almidon|amidon|maltodextrin|kartoffelflocken|kartoffelpüree|potato flakes|puffreis|puffed|cornflakes|paniermehl|breadcrumb/,
@@ -170,8 +179,14 @@
         const it = p.items;
         const sugarAlcohols = hits(it, RX.sugarAlcohol);
         const sweeteners = hits(it, RX.sweetener);
+        const sugarHits = hits(it, RX.addedSugar, NOT_SUGAR);
+        const s100 = typeof o.sugar100 === 'number' ? o.sugar100 : (o.sugar100 != null && o.sugar100 !== '' && isFinite(+o.sugar100) ? +o.sugar100 : null);
+        const traceOk = o.unit === 'ml' && s100 != null && s100 >= 0 && s100 <= TRACE_SUGAR_MAX_ML;
+        const isTrace = h => JUICE_CONC.test(h.w) && !OTHER_SUGAR.test(h.w);
+        const juiceTrace = traceOk ? sugarHits.filter(isTrace) : [];
         const flags = {
-            addedSugar: hits(it, RX.addedSugar, NOT_SUGAR),
+            addedSugar: traceOk ? sugarHits.filter(h => !isTrace(h)) : sugarHits,
+            juiceTrace,
             refinedStarch: hits(it, RX.refinedStarch, RX.notRefined),
             wholeGrain: hits(it, RX.wholeGrain),
             sweeteners,
@@ -203,6 +218,7 @@
             allergenHits,
             summary: {
                 addedSugar: flags.addedSugar.length > 0,
+                juiceTrace: flags.juiceTrace.length > 0,
                 addedSugarTop: first(flags.addedSugar, true),
                 sugarFirst: flags.addedSugar.some(h => h.i === 0 && h.depth === 0),
                 refinedStarch: flags.refinedStarch.length > 0,
@@ -220,7 +236,7 @@
     }
     function emptyFlags() {
         const f = {};
-        for (const k of ['addedSugar', 'refinedStarch', 'wholeGrain', 'sweeteners', 'sugarAlcohols', 'proteinIsolate', 'proteinWhole', 'nuts', 'seeds', 'veg', 'fruit', 'coating', 'pork', 'alcohol']) f[k] = [];
+        for (const k of ['addedSugar', 'juiceTrace', 'refinedStarch', 'wholeGrain', 'sweeteners', 'sugarAlcohols', 'proteinIsolate', 'proteinWhole', 'nuts', 'seeds', 'veg', 'fruit', 'coating', 'pork', 'alcohol']) f[k] = [];
         return f;
     }
 

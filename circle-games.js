@@ -24,7 +24,11 @@
   let cur = 'billard', busy = false;
 
   const tab = () => { try { if (W.LowiHost && LowiHost.tab) return LowiHost.tab(); } catch (e) { } const a = D.querySelector('#main>.tab.active'); return a ? a.id.replace('tab-', '') : ''; };
-  const go = t => { try { if (typeof W.goTab === 'function') W.goTab(t); } catch (e) { } };
+  /* 4 Nov 2026 (Emmanuel: "selecting a Circle item changes content in place instead of unexpectedly changing the whole
+     interface"): a game panel opens and closes through a tab switch underneath (Kochen draws the game), and that switch played the
+     normal sideways page slide: on iPhone-size WebKit the whole Community page slid away for about two seconds and then snapped
+     back. Circle's own switches are instant (LowiSections.instant, the same flag the X and back use), so only the panel changes. */
+  const go = t => { try { if (W.LowiSections) W.LowiSections.instant = true; } catch (e) { } try { if (typeof W.goTab === 'function') W.goTab(t); } catch (e) { } };
   const community = () => D.getElementById('tab-foryou');
   /* the Circle view: Community open on its Circle tab and no chat thread on top */
   function circleOn() {

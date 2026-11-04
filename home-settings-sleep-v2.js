@@ -313,10 +313,12 @@
         try { a = root.LowiCrashLog ? root.LowiCrashLog.list() : []; } catch (e) { a = []; }
         const head = '<h3>' + esc2(L3('Crash log (this device)', 'Absturz-Protokoll (dieses Ger\u00e4t)', 'Registro de fallos (este dispositivo)')) + '</h3>';
         if (!a.length) return head + '<p class="ss2-ab-crash">' + esc2(L3('Nothing recorded.', 'Nichts aufgezeichnet.', 'Nada registrado.')) + '</p>';
-        const kind = k => k === 'reload' ? L3('Page reloaded', 'Seite neu geladen', 'P\u00e1gina recargada') : k === 'promise' ? L3('Promise error', 'Promise-Fehler', 'Error de promesa') : k === 'note' ? L3('Note', 'Notiz', 'Nota') : L3('Error', 'Fehler', 'Error');
+        const kind = k => k === 'reload' ? L3('Page reloaded', 'Seite neu geladen', 'P\u00e1gina recargada') : k === 'gpu' ? L3('3D graphics lost', '3D-Grafik verloren', 'Gr\u00e1ficos 3D perdidos') : k === 'promise' ? L3('Promise error', 'Promise-Fehler', 'Error de promesa') : k === 'note' ? L3('Note', 'Notiz', 'Nota') : L3('Error', 'Fehler', 'Error');
         const when = t => { try { const d = new Date(t); return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '. ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); } catch (e) { return ''; } };
         return head + '<ul class="ss2-ab-crash">' + a.slice(-8).reverse().map(x => '<li><b>' + esc2(when(x.t) + ' \u00b7 ' + kind(x.k) + (x.n > 1 ? ' \u00d7' + x.n : '')) + '</b><br>' +
-            esc2([x.a, x.m, x.s, x.b].filter(Boolean).join(' \u00b7 ')) + '</li>').join('') + '</ul>';
+            esc2([x.a, x.m, x.s, x.b].filter(Boolean).join(' \u00b7 ')) + '</li>').join('') + '</ul>' +
+            /* Nov 3: Copy the whole log for a support email (store-ready.js handles the tap) */
+            (root.LowiCrashLog && root.LowiCrashLog.text ? '<p><button type="button" class="lis-link" data-lis-about="copylog">' + esc2(L3('Copy crash log', 'Absturz-Protokoll kopieren', 'Copiar registro')) + '</button> <span data-lis-copied></span></p>' : '');
     }
     function openAbout() {
         const L3 = (en, de, es) => { const l = lang(); return l === 'de' ? de : l === 'es' ? es : en; };
@@ -332,6 +334,9 @@
             '<h3>' + esc2(L3('Where the data comes from', 'Woher die Daten kommen', 'De d\u00f3nde vienen los datos')) + '</h3>' +
             '<ul>' + li(L3('Products: the label you scan, or Open Food Facts', 'Produkte: das Etikett, das du scannst, oder Open Food Facts', 'Productos: la etiqueta que escaneas, o Open Food Facts')) +
             li(L3('Steps: your own pick, LOWiSPIKE does not count steps', 'Schritte: deine eigene Wahl, LOWiSPIKE z\u00e4hlt keine Schritte', 'Pasos: tu propia elecci\u00f3n, LOWiSPIKE no cuenta pasos')) + '</ul>' +
+            /* Nov 3 (App Store prep): privacy policy, support contact, the Google Gemini AI switch and "not medical advice" (store-ready.js) */
+            '<h3>' + esc2(L3('Privacy & help', 'Datenschutz & Hilfe', 'Privacidad y ayuda')) + '</h3>' +
+            (root.LowiStore && fn(root.LowiStore, 'aboutHTML') ? root.LowiStore.aboutHTML() : '') +
             crashHTML(L3, esc2) +
             '</div>';
         try { return root.LowiR2.sheet(html, { cls: 'ss2-about-ov' }); } catch (e) { return null; }
@@ -377,7 +382,8 @@
         quest: { has: () => !!$('#f3Board'), run: () => H.classList.toggle('o8-quest'), toggle: () => H.classList.contains('o8-quest') }
     };
     /* today, cook, theme and quest stay as routes (nothing deleted) but are out of More: see MORE_REMOVED */
-    const env = { has: id => !!(ROUTES[id] && (() => { try { return ROUTES[id].has(); } catch (e) { return false; } })()) };
+    /* Nov 3 (App Store 3.1.1): the iPhone app (window.LIS_NATIVE) has no Ko-fi "pay what you want" row; the website keeps it */
+    const env = { has: id => !(id === 'support' && root.LIS_NATIVE) && !!(ROUTES[id] && (() => { try { return ROUTES[id].has(); } catch (e) { return false; } })()) };
 
     /* ---- bloom ---- */
     let mounted = false, rootEl = D, open = null, layer = null, lastBubble = null;

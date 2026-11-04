@@ -337,6 +337,7 @@
 
   /* ---------- success moment: first start from the Home Screen ---------- */
   function welcomeWanted() {
+    if (W.LIS_NATIVE) return false; /* Nov 3: the App Store app was never "added to the Home Screen", so no "You did it!" card */
     if (!standalone()) return false;
     try { if (localStorage.getItem(Core.WELCOME)) return false; return FRESH || localStorage.getItem(Core.SEEN) === '1'; } catch (e) { return false; }
   }

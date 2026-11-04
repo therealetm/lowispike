@@ -5,6 +5,7 @@ const STATIC = ["community-room.css", "room-table.css", "room-table-core.js", "r
 /* Oct 15 clean start: files the page asks for with ?v=<this build> never change, so they come straight from this build's cache
    (filled at install, or on first use) instead of a network round trip per file on every launch. A page from another build
    (?v=other) still goes to the network first, so old and new files never mix. */
+STATIC.push("store-ready.js", "privacy.html"); /* Nov 3 App Store prep: AI consent, privacy policy + support page */
 STATIC.push("foryou.css", "foryou-core.js", "inspo-core.js", "nibblo-core.js", "foryou.js", "foryou-stay.js"); /* Oct 24 For You: insulin-friendly rule + inspiration bot */
 STATIC.push("rubberband.js", "spring.js"); /* Oct 25 iOS feel: shared springs + rubber band, own line */
 STATIC.push("gift-basket-core.js", "gift-basket.js", "gift-basket.css"); /* Oct 25 Give a hand in Shop: own line, like kitchen-core.js */

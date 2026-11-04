@@ -26,6 +26,9 @@
                 if (c.contains('rm-room-open')) a += '/chat'; else if (on && on.dataset && on.dataset.rm) a += '/' + on.dataset.rm;
             }
             if (c.contains('gx-in') || c.contains('gx-out')) a += ' (warp)';
+            /* Nov 3: the galaxy white screen. Name the string ride and the Außenwelt so the next log says where it died. */
+            try { const P = W.LowiStringPov; if (P && P.heavy && P.heavy()) a += ' (strings)'; } catch (e) { }
+            if (W.LIS_NATIVE) a += ' [app]';
             return a;
         } catch (e) { return '?'; }
     }
@@ -54,11 +57,18 @@
         W.addEventListener('error', e => { if (!e || (!e.message && !e.error)) return; add('error', e.message || (e.error && e.error.message) || 'error', (String(e.filename || '').split('/').pop().split('?')[0]) + ':' + (e.lineno || 0)); }, true);
         W.addEventListener('unhandledrejection', e => { const r = e && e.reason; add('promise', (r && (r.message || r.name)) || String(r), ''); });
         W.addEventListener('pagehide', () => mark(false));
+        /* Nov 3: the GPU giving up (iOS drops the WebGL context under memory pressure, which turns the 3D world white) */
+        D.addEventListener('webglcontextlost', e => { const t = e && e.target; add('gpu', 'WebGL context lost', t && t.width ? t.width + 'x' + t.height : ''); }, true);
         D.addEventListener('visibilitychange', () => { if (D.hidden) mark(false); else mark(true); });
         /* the place is refreshed a moment after each tap, so a crash while opening the chat names the chat */
         W.addEventListener('pointerup', soon, { passive: true, capture: true });
         W.addEventListener('keyup', soon, { passive: true, capture: true });
     } catch (e) { }
     function clear() { set(KEY, '[]'); }
-    W.LowiCrashLog = { list, clear, area, note: (m, s) => add('note', m, s) };
+    /* Nov 3: plain text for "Copy" in About & info, so a crash can be pasted into a support email */
+    function text() {
+        const head = 'LOWiSPIKE crash log · build ' + build() + (W.LIS_NATIVE ? ' · iPhone app' : ' · web') + ' · ' + String(W.navigator && W.navigator.userAgent || '').slice(0, 160);
+        return [head].concat(list().map(r => new Date(r.t).toISOString() + ' ' + r.k + (r.n > 1 ? ' x' + r.n : '') + ' | ' + r.a + ' | ' + r.m + (r.s ? ' | ' + r.s : '') + ' | ' + r.b)).join('\n');
+    }
+    W.LowiCrashLog = { list, clear, area, text, note: (m, s) => add('note', m, s) };
 })(window);

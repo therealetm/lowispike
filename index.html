@@ -83,6 +83,28 @@
 (()=>{try{const P=DOMTokenList.prototype,A=P.add,R=P.remove;
 P.add=function(){for(let i=0;i<arguments.length;i++)if(!this.contains(arguments[i]))return A.apply(this,arguments);};
 P.remove=function(){for(let i=0;i<arguments.length;i++)if(this.contains(arguments[i]))return R.apply(this,arguments);};}catch(e){}})();</script>
+<!-- App Store prep (Nov 3, branch app-store-prep): the iPhone app is this same site inside a Capacitor shell (capacitor.config.json, ios/).
+     Capacitor's bridge sets window.Capacitor before any page script runs, and the bundled files are served from capacitor://localhost.
+     window.LIS_NATIVE + html.lis-native let the rest of the app hide what Apple does not allow in a store app (Ko-fi tips, the
+     "Premium coming soon" items, web push, "Add to Home Screen" help). The native app IS the installed app, so it answers the
+     standalone checks (navigator.standalone / display-mode: standalone) the same way the Home Screen web app does. -->
+<script id="lisNative">(function(){
+  var W = window, N = false;
+  try { N = !!(W.Capacitor && (W.Capacitor.isNativePlatform ? W.Capacitor.isNativePlatform() : W.Capacitor.platform && W.Capacitor.platform !== "web")) || location.protocol === "capacitor:"; } catch (e) {}
+  W.LIS_NATIVE = N;
+  if (!N) return;
+  document.documentElement.classList.add("lis-native");
+  try { Object.defineProperty(navigator, "standalone", { configurable: true, get: function(){ return true; } }); } catch (e) {}
+  var mm = W.matchMedia && W.matchMedia.bind(W);
+  if (mm) W.matchMedia = function(q){
+    if (/display-mode\s*:\s*standalone/i.test(String(q))) {
+      var nop = function(){};
+      return { matches: true, media: String(q), onchange: null, addListener: nop, removeListener: nop, addEventListener: nop, removeEventListener: nop, dispatchEvent: function(){ return false; } };
+    }
+    return mm(q);
+  };
+})();</script>
+<style id="lisNativeCss">html.lis-native .hs-plus-card,html.lis-native .hs-giftkofi,html.lis-native [data-shop="plus"],html.lis-native #lcA2hs{display:none!important}</style>
 <!-- Oct 25 heat pass: one calm/rest ladder + battery saver for every heavy loop (power-saver.js) -->
 <script src="fresh-scrim.js?v=20261105-025626"></script>
 <style id="spdCss">
@@ -2207,7 +2229,7 @@ window.LowiFE = {OPTS, target, at, atTxt, chooser, goalLine, short, w, _st: st};
 html.gate-up,html.gate-up body{overflow:hidden!important}
 #r2ob .r2-err{min-height:20px;margin:6px 0 0;text-align:center}
 #r2ob .r2-obacts .r2-btn.ghost{margin-top:10px}
-html.gate-boot body > :not(#r2gate):not(script):not(style){visibility:hidden!important}
+html.gate-boot body > :not(#r2gate):not(script):not(style):not(.lis-scrim):not(.lis-full){visibility:hidden!important}
 html.gate-boot .r2-gate{opacity:1!important;transition:none!important}
 </style>
 <script id="gatejs">
@@ -2238,6 +2260,9 @@ function addLang(){ if (!window.LowiLang || !LowiLang.add) return setTimeout(add
   ["Free. Takes 20 seconds.", "Kostenlos. Dauert 20 Sekunden.", "Gratis. Tarda 20 segundos."],
   ["Add your birthday to go on.", "Gib deinen Geburtstag ein, um weiterzumachen.", "Añade tu cumpleaños para seguir."],
   ["Check your birthday.", "Prüfe deinen Geburtstag.", "Revisa tu cumpleaños."],
+  ["Sorry, LOWiSPIKE is for people aged 16 and over.", "Sorry, LOWiSPIKE ist für Menschen ab 16 Jahren.", "Lo siento, LOWiSPIKE es para personas de 16 años o más."],
+  ["Sorry, you are too young for LOWiSPIKE.", "Sorry, du bist noch zu jung für LOWiSPIKE.", "Lo siento, aún eres muy joven para LOWiSPIKE."],
+  ["LOWiSPIKE gives food guidance, not medical advice. Talk to your doctor about your health.", "LOWiSPIKE gibt Ernährungs-Tipps, keine medizinische Beratung. Sprich mit deiner Ärztin oder deinem Arzt über deine Gesundheit.", "LOWiSPIKE da orientación alimentaria, no consejo médico. Habla con tu médico sobre tu salud."],
   ["Use my initial", "Meinen Anfangsbuchstaben nehmen", "Usar mi inicial"],
   ["Choose another", "Anderes wählen", "Elegir otra"],
   [". Sign in again any time to get it all back. This phone goes back to the sign-in screen.", ". Melde dich jederzeit wieder an, um alles zurückzubekommen. Dieses Handy geht zurück zum Anmeldebildschirm.", ". Vuelve a entrar cuando quieras para recuperarlo todo. Este móvil vuelve a la pantalla de inicio de sesión."]
@@ -5156,7 +5181,7 @@ async function readMeal(){ const M = window.LowiMealSnap, A = window.LowiFoodAI;
   C.mealBusy = true; C.mealErr = ""; paintRest();
   let meal = null, err = "";
   try { const r = await A.analyse(ph); if (r && r.isFood) meal = M.remember(ph, {dishes:r.dishes, name:A.title(r.dishes)}); else err = A.strings[(window.LowiLang && LowiLang.get && A.strings[LowiLang.get()]) ? LowiLang.get() : "en"].none; }
-  catch(e){ const L = A.strings[(window.LowiLang && LowiLang.get && A.strings[LowiLang.get()]) ? LowiLang.get() : "en"]; err = e && e.code === "limit" ? M.leftText() || L.limit : e && e.code === "busy" ? L.busy : M.t("readFail"); }
+  catch(e){ const L = A.strings[(window.LowiLang && LowiLang.get && A.strings[LowiLang.get()]) ? LowiLang.get() : "en"]; err = e && e.code === "limit" ? M.leftText() || L.limit : e && e.code === "busy" ? L.busy : e && e.code === "consent" ? (L.consent || M.t("readFail")) : M.t("readFail"); }
   if (C !== c0 || C.photo !== ph) return;
   C.mealBusy = false; C.meal = meal; C.mealErr = err; paintRest(); }
 function updPost(){ const b = $("#trPost"); if (!b || !C) return; const need = !(C.meta && C.meta.title), cap = C.cap.trim();
@@ -11619,7 +11644,7 @@ function showGate(view){
   gateEl.firstChild.classList.add("r2-swap");
   if (!a1 && (view === "signup" || view === "signin")) setTimeout(() => { const i = gateEl.querySelector("input"); if (i && !i.value) i.focus(); }, 380);
 }
-function lockApp(on){ Array.prototype.forEach.call(document.body.children, el => { if (el.id === "r2gate" || el.tagName === "SCRIPT" || el.tagName === "STYLE") return; if (on) { if (!el.inert) { el.inert = true; el.setAttribute("data-gate-inert", ""); } } else if (el.hasAttribute("data-gate-inert")) { el.inert = false; el.removeAttribute("data-gate-inert"); } }); document.documentElement.classList.toggle("gate-up", !!on); if (!on) document.documentElement.classList.remove("gate-boot");
+function lockApp(on){ Array.prototype.forEach.call(document.body.children, el => { if (el.id === "r2gate" || el.tagName === "SCRIPT" || el.tagName === "STYLE" || (el.classList && (el.classList.contains("lis-scrim") || el.classList.contains("lis-full")))) return; /* Nov 3: the AI consent sheet + privacy policy (store-ready.js) stay usable above the sign-in screen */ if (on) { if (!el.inert) { el.inert = true; el.setAttribute("data-gate-inert", ""); } } else if (el.hasAttribute("data-gate-inert")) { el.inert = false; el.removeAttribute("data-gate-inert"); } }); document.documentElement.classList.toggle("gate-up", !!on); if (!on) document.documentElement.classList.remove("gate-boot");
   if (on && !lockApp.mo) { lockApp.mo = new MutationObserver(() => { if (gateEl) lockApp(true); }); lockApp.mo.observe(document.body, {childList:true}); } }
 function hideGate(force){ if (!gateEl) return; if (!force && needsGate()) return; const g = gateEl; gateEl = null; /* BH-060 */ try { const F = window.LowiFreshScrim; if (F && F.closed) F.closed(g); } catch(e){} lockApp(false); g.classList.remove("on"); g.classList.add("off"); setTimeout(() => g.remove(), 450); }
 R2.gateUp = () => !!gateEl;
@@ -11806,6 +11831,8 @@ function paintOb(){
       (PS && PS.TYPES ? '<label class="r2-fl r2ob-type"><span data-noi18n>' + esc(PS.testUI(obL).pick) + '</span><select id="r2obType" data-noi18n><option value="">' + esc(PS.testUI(obL).none) + '</option>' +
         PS.TYPES.map(t => '<option value="' + t + '"' + (ob.mbti === t ? " selected" : "") + '>' + t + ' · ' + esc(PS.typeName(t, obL)) + '</option>').join("") + '</select></label>' +
         '<div id="r2obTest" class="r2ob-test">' + (ob.mbti ? "" : PS.testHTML(obL)) + '</div>' : "") +
+      /* Nov 3 (App Store 1.4.1): "not medical advice" is said before the app gives its first food verdict */
+      '<p class="r2-obs r2ob-med" style="font-size:12.5px;opacity:.72;margin:10px 2px 0">LOWiSPIKE gives food guidance, not medical advice. Talk to your doctor about your health.</p>' +
       '<div class="r2-err" id="r2obErr" role="alert"></div><div class="r2-obacts"><button class="r2-btn pri big" data-r2o="next">Next</button></div>';
   } else if (ob.step === 1) {
     h = dots() + '<div class="r2-obt">Add a photo</div><div class="r2-obs">People in Community see it next to your messages.</div>' +
@@ -12066,6 +12093,8 @@ document.addEventListener("click", e => {
         if (ob.askName && !ob.name) return bad("Add your name.", n);
         if (!ob.bday || !signOf(ob.bday)) return bad("Add your birthday to go on.", b);
         const ag = age(ob.bday); if (ag == null || ag < 1 || ag > 119) return bad("Check your birthday.", b);
+        /* Nov 3 (App Store prep): a minimum age (LowiStore.MIN_AGE in store-ready.js, 16 for now); the App Store age rating must match */
+        const minAge = (window.LowiStore && LowiStore.MIN_AGE) || 16; if (ag < minAge) return bad(minAge === 16 ? "Sorry, LOWiSPIKE is for people aged 16 and over." : "Sorry, you are too young for LOWiSPIKE.", b);
         const bt = $("#r2obT"); if (bt) ob.btime = bt.value; }
       saveOb(false);
       /* Oct 16 birth companion: the birthday (+ optional birth time) brings the user's own companion to life before the next step */
@@ -21901,6 +21930,7 @@ const ios = () => /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platf
 const standalone = () => { try { return matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; } catch(e){ return false; } };
 /* on | off | home (iPhone: add to Home Screen first) | denied | unsup */
 function mode(){
+  if (window.LIS_NATIVE) return "unsup"; /* Nov 3: the iPhone app has no web push (a native push plugin would come later) */
   if (ios() && !standalone()) return "home";
   if (!supported()) return "unsup";
   const p = Notification.permission; if (p === "denied") return "denied";
@@ -22518,6 +22548,7 @@ window.LowiCommunityHost = {
 <script src="misty-bump.js?v=20261105-025626"></script>
 <script src="galaxy-bubbles.js?v=20261105-025626"></script>
 <script src="misty-explore.js?v=20261105-025626"></script>
+<script src="store-ready.js?v=20261105-025626"></script>
 <script src="meal-photo.js?v=20261105-025626"></script>
 <script src="food-photo-ai.js?v=20261105-025626"></script>
 <script src="scan-swap-core.js?v=20261105-025626"></script>

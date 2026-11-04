@@ -82,6 +82,9 @@
         if (/grüne bohnen|gruene bohnen|green beans|string beans|judías verdes|brechbohnen|prinzessbohnen|stangenbohnen|haricots verts/.test(text)) delete cats.legumes;
         if (/(puten|geflügel|hähnchen|rinder|turkey|chicken|beef|pavo|pollo)\s*-?\s*(schinken|ham|jamón)|jamón de pavo/.test(text)) { delete cats.pork; cats.processed_meat = true; }
         if (cats.berries && (cats.candy_dessert || cats.juice || cats.smoothie || cats.sugar_drink || cats.sweet_sauce || cats.breakfast_cereal)) delete cats.berries;
+        // 4 Nov 2026 (Rhön Sprudel Limette): a flavour word in a drink (Limette, Zitrone, Ingwer, Gurke) is not a vegetable
+        // portion. A drink keeps its drink rule (unsweetened, sugary, juice, smoothie) and never earns "Non-starchy vegetables".
+        if (cats.nonstarchy_veg && p.unit === 'ml' && (cats.unsweetened_drink || cats.sugar_drink || cats.juice || cats.smoothie)) delete cats.nonstarchy_veg;
         if (cats.starch_grain && /reiswaffel|maiswaffel|rice ?cakes?|corn ?cakes?|tortitas de arroz/.test(text)) delete cats.candy_dessert;
         // Salami, chorizo, speck, bacon or leberwurst named after another animal (Geflügelsalami, Rindfleisch-Salami,
         // Putenspeck) or plant-based is not pork by name; the same notPork rule ingredient-core uses. Pork in the

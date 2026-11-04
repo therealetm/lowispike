@@ -98,7 +98,7 @@
         const drink = (p.cat === 'drink' || !!f.drink) && !veg;
         if (!hasI && !hasN) return {verdict: 'unknown', why: [], score: null, est: true};
         I0 = I0 || lib('LowiIngredients', './ingredient-core.js');
-        const A = I0 && hasI ? I0.analyzeIngredients(p.ingredients, {name: p.name}) : null;
+        const A = I0 && hasI ? I0.analyzeIngredients(p.ingredients, {name: p.name, unit: drink ? 'ml' : 'g', sugar100: s}) : null;
         const AS = A && A.summary ? A.summary : {};
         const sweet = hasI ? (find(L, RX.sweet, 0, 99) || AS.sweetenerHit || null) : null;
         const sugarTop = hasI ? (find(L, RX.addedSugar, 0, 3, RX.noSugar) || AS.addedSugarTop || null) : null;

@@ -327,7 +327,7 @@
         ASS = ASS || lib('LowiFoodAssess', './food-assess-core.js');
         const val = validateNutrition(p.per100, p.unit);
         const srv = calculateServing(val, serving == null ? {manufacturerG: p.servingG, packG: p.packG, group: p.group} : serving);
-        const ingredients = ING ? ING.analyzeIngredients(p.ingredients, {name: p.name, brand: p.brand, claims: p.claims}) : null;
+        const ingredients = ING ? ING.analyzeIngredients(p.ingredients, {name: p.name, brand: p.brand, claims: p.claims, unit: val.unit || p.unit, sugar100: val.per100 ? val.per100.sugar : null}) : null;
         const sugar = sugarSource({name: p.name, genericName: p.genericName, unit: p.unit, per100: val.per100, categories: p.categories || []}, ingredients);
         const glucose = estimateGlucoseImpact({serving: srv, category: {liquid: p.unit === 'ml'}, evidence: p.evidence, withMeal: !!(ctx && ctx.withMeal), sugarSource: sugar});
         const policy = POL ? POL.applyPolicy({product: p, ingredients, glucose, serving: srv, profile: ctx && ctx.profile}) : null;

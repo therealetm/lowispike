@@ -81,7 +81,8 @@ function plusHTML(){const st=read(),m=st.support,url=K.kofiUrl();
 function paint(focusSel){if(!V.ov)return;const sc=V.ov.querySelector('.hs-scroll'),top=sc?sc.scrollTop:0;const catOpen=!!V.ov.querySelector('.hs-cat[open]');V.ov.innerHTML=V.view==='plus'?plusHTML():shopHTML();if(catOpen){const c=V.ov.querySelector('.hs-cat');if(c)c.open=true;}const ns=V.ov.querySelector('.hs-scroll');if(ns&&focusSel!=='top')ns.scrollTop=top;
  const f=focusSel&&focusSel!=='top'?V.ov.querySelector(focusSel):null;(f||V.ov.querySelector('.hs-head .hs-x:last-of-type')||V.ov).focus({preventScroll:true});}
 function tick(){if(!V.ov)return;const now=Date.now();let stale=false;V.ov.querySelectorAll('[data-shop-count]').forEach(el=>{const t=+el.dataset.shopCount;if(t<=now)stale=true;});if(stale){V.msg='';paint();}}
-function open(view){if(V.ov)return;V.back=D.activeElement;V.view='plus';V.back2=false;V.msg='';V.sel='';
+/* Nov 3 (App Store 3.1.1): the iPhone app (window.LIS_NATIVE) never opens the Ko-fi support view */
+function open(view){if(V.ov||root.LIS_NATIVE)return;V.back=D.activeElement;V.view='plus';V.back2=false;V.msg='';V.sel='';
  const ov=D.createElement('div');ov.className='hs-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','hsTitle');ov.tabIndex=-1;if(reduced())ov.dataset.still='';
  V.ov=ov;D.body.appendChild(ov);paint('top');V.timer=setInterval(tick,30000);root.dispatchEvent(new CustomEvent('lowi:shop',{detail:{open:true}}));}
 function close(then){if(!V.ov)return;clearInterval(V.timer);/* BH-060 */try{const F=window.LowiFreshScrim;if(F&&F.closed)F.closed(V.ov);}catch(e){}V.ov.remove();V.ov=null;

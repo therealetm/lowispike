@@ -62,6 +62,7 @@ const KNOWN = {
   'companion.js': 'only when the user has no companion of their own (the default IS Misty)',
   'food-photo-ai.js': 't() -> wnm',
   'herb-quests.js': 't() -> wnm',
+  'store-ready.js': 'AI consent title via nm() -> LowiBirthCompanion.withName',
   'herb-tamagotchi.js': 'legacy room screen, open() hands over to LowiSpirit; label fallback only',
   'install-guide.js': 'w_t rendered via wnm',
   'misty-hunt.js': 'say() -> wnm',

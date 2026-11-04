@@ -149,7 +149,8 @@
         if ((k0 < 0.01) !== (k < 0.01)) note(k >= 0.01 ? 'in ' + B.si : 'out');
         fadeOld(dt);
         const g = a && cosmos(a);
-        if (k < 0.002 || !g || B.si < 0) { if (B.tube) { B.old.push(B.tube); B.tube = null; } B.last = null; B.near = 1e9; return nominal; }
+        /* Nov 3 (galaxy white screen on iPhone): never more than two fading cables in the scene, however fast she hops on and off */
+        if (k < 0.002 || !g || B.si < 0) { if (B.tube) { B.old.push(B.tube); B.tube = null; while (B.old.length > 2) drop(B.old.shift()); } B.last = null; B.near = 1e9; return nominal; }
         const d = povDist(nominal, S.gxD0 || S.d0, k);
         /* her size scales with the camera distance (fixed on screen): her size once the camera is all the way in */
         const cd = a.camera && a.camera.position ? a.camera.position.distanceTo(S.p) : r.dist;
@@ -192,6 +193,9 @@
         if (B.tube) { drop(B.tube); B.tube = null; } while (B.old.length) drop(B.old.pop());
         if (was) note('reset');
     }
-    W.LowiStringPov = { core, cam, reset,
+    /* Nov 3: true while the big glass cable is on screen, so power-saver.js renders at a lower pixel ratio there (a phone-filling
+       additive cable at 3x retina is the heaviest frame in the app) and crash-log.js can name the place. */
+    function heavy() { return B.s.k > 0.05 || !!B.tube || B.old.length > 0; }
+    W.LowiStringPov = { core, cam, reset, heavy,
         state: () => ({ k: +B.s.k.toFixed(3), want: B.gate ? B.gate.want : 0, string: B.si, tube: B.tube ? { si: B.tube.si, R: +B.tube.R.toFixed(3), op: +B.tube.m.material.uniforms.uO.value.toFixed(3) } : null, old: B.old.length, at: B.last, log: B.log.slice(-8) }) };
 })();

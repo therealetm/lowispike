@@ -9,8 +9,9 @@
 const fs = require('fs'), path = require('path'), cp = require('child_process');
 
 /* Left out of the published site. Folders end with '/'. */
-const EXCLUDE_DIRS = ['.agents/', '.github/', 'playtest/', 'scripts/', 'supabase/', 'tests/', 'tools/'];
-const EXCLUDE_FILES = [/\.md$/i, /^skills-lock\.json$/, /^\.gitignore$/, /^package(-lock)?\.json$/];
+/* Nov 3: ios/ (the Xcode project of the App Store app) and capacitor.config.json are build files, never served */
+const EXCLUDE_DIRS = ['.agents/', '.github/', 'playtest/', 'scripts/', 'supabase/', 'tests/', 'tools/', 'ios/'];
+const EXCLUDE_FILES = [/\.md$/i, /^skills-lock\.json$/, /^\.gitignore$/, /^package(-lock)?\.json$/, /^capacitor\.config\.json$/];
 
 function published(f) {
   if (EXCLUDE_DIRS.some(d => f.startsWith(d))) return false;

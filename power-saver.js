@@ -138,7 +138,9 @@
         return {
             T, FPS, state: () => sync(), saver, poke, reportFrame, busy,
             interval: back => intervalFor(sync(), saver(), !!back),
-            dprCap: cap => dprCapFor(cap, saver()),
+            /* Nov 3 (galaxy white screen on iPhone): while the big string cable is on screen (string-pov.js) the world draws at
+               most 1.5x too, the same cap as battery saver; full sharpness comes back once she leaves the string */
+            dprCap: cap => dprCapFor(cap, saver() || !!(W && W.LowiStringPov && W.LowiStringPov.heavy && W.LowiStringPov.heavy())),
             idleMs: () => now() - lastIn,
             onChange: fn => { subs.push(fn); return () => { const i = subs.indexOf(fn); if (i >= 0) subs.splice(i, 1); }; },
             scan, pausedCount: () => paused.size,

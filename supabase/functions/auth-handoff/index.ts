@@ -12,7 +12,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const TTL_S = 30 * 60;
 const MAX_PER_HOUR = 30;
 const ABC = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
-const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
+// capacitor://localhost is the origin of the bundled iPhone app (Capacitor iOS shell, branch app-store-prep).
+const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, /^capacitor:\/\/localhost$/];
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
   auth: { persistSession: false, autoRefreshToken: false },

@@ -1,0 +1,14 @@
+{
+  "appId": "com.therealetm.lowispike",
+  "appName": "LOWiSPIKE",
+  "webDir": "www",
+  "backgroundColor": "#03050a",
+  "loggingBehavior": "debug",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#03050a",
+    "scrollEnabled": true,
+    "allowsLinkPreview": false,
+    "limitsNavigationsToAppBoundDomains": false
+  }
+}

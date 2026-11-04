@@ -1916,7 +1916,8 @@
             m,
             p,
             eq: WC.cleanEquipment(p.equipment, m.xp),
-            items: WC.wardrobeItems(m.xp, p.equipment)
+            /* Nov 3 (App Store 2.1 / 3.1.1): the iPhone app (window.LIS_NATIVE) shows no "Premium · coming soon" items */
+            items: WC.wardrobeItems(m.xp, p.equipment).filter(c => !(window.LIS_NATIVE && (c.premium || c.status === 'premium')))
         };
     }
 

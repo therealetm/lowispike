@@ -20,7 +20,8 @@
 // logged or stored. Deploy: Supabase dashboard > Edge Functions > Deploy a new function > name "food-photo" > paste this file.
 // Optional secret GEMINI_MODEL picks the model; default tries gemini-3.5-flash-lite, then 3.1, then 2.5 Flash-Lite.
 
-const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
+// capacitor://localhost is the origin of the bundled iPhone app (Capacitor iOS shell, branch app-store-prep).
+const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, /^capacitor:\/\/localhost$/];
 const MAX_B64 = 1_500_000;
 const WIN_MS = 10 * 60 * 1000, WIN_MAX = 12, DAY_MAX = 10, ROLL_MAX = DAY_MAX * 2, DAY_MS = 24 * 3600 * 1000;
 const MODELS = (Deno.env.get("GEMINI_MODEL") || "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite")

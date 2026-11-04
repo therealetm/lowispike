@@ -14,9 +14,9 @@
     const KEYS = ['kcal', 'protein', 'carbs', 'sugar', 'fiber', 'fat'];
     const LIMIT = { kcal: 3000, protein: 200, carbs: 400, sugar: 300, fiber: 100, fat: 250, grams: 3000 };
     const STR = {
-        en: { net: 'I can’t reach the photo check right now (no connection?). Tap Try again, or type what it is.', slow: 'The photo check took too long. Tap Try again, or type what it is.', sign_in: 'Your sign-in ran out, so I can’t check the photo. Type what it is: that always works.', limit: 'You’ve used today’s 10 photo checks. New ones at midnight. Type what it is: typed meals are unlimited.', look: 'Misty is looking…', look2: 'Still looking. Busy plates take a few seconds more…', again: 'Misty is taking another look…', retry: 'Try again', found: 'Here’s what I see', est: 'Estimates from your photo. Change the name if I got it wrong.', total: 'Total', remove: 'Remove', off: 'Photo recognition isn’t switched on yet, so type what it is.', fail: 'I couldn’t read this photo. Tap Try again, or type what it is.', busy: 'Too many photos right now. Type what it is, or try again in a few minutes.', none: 'I don’t see food in this photo. Type what it is if I’m wrong.', low: 'Not sure about this one, so check the name.', kcal: 'kcal', protein: 'Protein', carbs: 'Carbs', sugar: 'Sugar', fiber: 'Fiber', fat: 'Fat', and: 'and' },
-        de: { net: 'Ich erreiche die Foto-Prüfung gerade nicht (keine Verbindung?). Tipp auf Nochmal versuchen oder schreib, was es ist.', slow: 'Die Foto-Prüfung hat zu lange gedauert. Tipp auf Nochmal versuchen oder schreib, was es ist.', sign_in: 'Deine Anmeldung ist abgelaufen, deshalb kann ich das Foto nicht prüfen. Schreib, was es ist: Das klappt immer.', limit: 'Du hast heute deine 10 Foto-Checks genutzt. Neue gibt es um Mitternacht. Schreib, was es ist: Getippte Mahlzeiten sind unbegrenzt.', look: 'Misty schaut sich das an…', look2: 'Ich schaue noch. Volle Teller dauern ein paar Sekunden länger…', again: 'Misty schaut noch einmal hin…', retry: 'Nochmal versuchen', found: 'Das sehe ich', est: 'Schätzungen aus deinem Foto. Ändere den Namen, wenn ich falsch liege.', total: 'Gesamt', remove: 'Entfernen', off: 'Die Fotoerkennung ist noch nicht eingeschaltet. Schreib bitte, was es ist.', fail: 'Ich konnte das Foto nicht lesen. Tipp auf Nochmal versuchen oder schreib, was es ist.', busy: 'Gerade zu viele Fotos. Schreib, was es ist, oder versuch es in ein paar Minuten nochmal.', none: 'Ich sehe kein Essen auf dem Foto. Schreib, was es ist, falls ich falsch liege.', low: 'Da bin ich unsicher, prüf den Namen.', kcal: 'kcal', protein: 'Eiweiß', carbs: 'Kohlenhydrate', sugar: 'Zucker', fiber: 'Ballaststoffe', fat: 'Fett', and: 'und' },
-        es: { net: 'No puedo conectar con el análisis de fotos ahora (¿sin conexión?). Toca Reintentar o escribe qué es.', slow: 'El análisis de la foto tardó demasiado. Toca Reintentar o escribe qué es.', sign_in: 'Tu sesión caducó, así que no puedo analizar la foto. Escribe qué es: eso siempre funciona.', limit: 'Ya usaste tus 10 análisis de foto de hoy. Vuelven a medianoche. Escribe qué es: las comidas escritas no tienen límite.', look: 'Misty está mirando…', look2: 'Sigo mirando. Los platos llenos tardan unos segundos más…', again: 'Misty mira otra vez…', retry: 'Reintentar', found: 'Esto es lo que veo', est: 'Estimaciones de tu foto. Cambia el nombre si me equivoqué.', total: 'Total', remove: 'Quitar', off: 'El reconocimiento de fotos aún no está activado, así que escribe qué es.', fail: 'No pude leer esta foto. Toca Reintentar o escribe qué es.', busy: 'Demasiadas fotos ahora mismo. Escribe qué es o inténtalo en unos minutos.', none: 'No veo comida en esta foto. Escribe qué es si me equivoco.', low: 'No estoy seguro, revisa el nombre.', kcal: 'kcal', protein: 'Proteína', carbs: 'Carbohidratos', sugar: 'Azúcar', fiber: 'Fibra', fat: 'Grasa', and: 'y' }
+        en: { consent: 'Photo check is off, so nothing was sent. Type what it is, or tap Try again to turn it on.', net: 'I can’t reach the photo check right now (no connection?). Tap Try again, or type what it is.', slow: 'The photo check took too long. Tap Try again, or type what it is.', sign_in: 'Your sign-in ran out, so I can’t check the photo. Type what it is: that always works.', limit: 'You’ve used today’s 10 photo checks. New ones at midnight. Type what it is: typed meals are unlimited.', look: 'Misty is looking…', look2: 'Still looking. Busy plates take a few seconds more…', again: 'Misty is taking another look…', retry: 'Try again', found: 'Here’s what I see', est: 'Estimates from your photo. Change the name if I got it wrong.', total: 'Total', remove: 'Remove', off: 'Photo recognition isn’t switched on yet, so type what it is.', fail: 'I couldn’t read this photo. Tap Try again, or type what it is.', busy: 'Too many photos right now. Type what it is, or try again in a few minutes.', none: 'I don’t see food in this photo. Type what it is if I’m wrong.', low: 'Not sure about this one, so check the name.', kcal: 'kcal', protein: 'Protein', carbs: 'Carbs', sugar: 'Sugar', fiber: 'Fiber', fat: 'Fat', and: 'and' },
+        de: { consent: 'Die Foto-Prüfung ist aus, es wurde nichts gesendet. Schreib, was es ist, oder tipp auf Nochmal versuchen, um sie einzuschalten.', net: 'Ich erreiche die Foto-Prüfung gerade nicht (keine Verbindung?). Tipp auf Nochmal versuchen oder schreib, was es ist.', slow: 'Die Foto-Prüfung hat zu lange gedauert. Tipp auf Nochmal versuchen oder schreib, was es ist.', sign_in: 'Deine Anmeldung ist abgelaufen, deshalb kann ich das Foto nicht prüfen. Schreib, was es ist: Das klappt immer.', limit: 'Du hast heute deine 10 Foto-Checks genutzt. Neue gibt es um Mitternacht. Schreib, was es ist: Getippte Mahlzeiten sind unbegrenzt.', look: 'Misty schaut sich das an…', look2: 'Ich schaue noch. Volle Teller dauern ein paar Sekunden länger…', again: 'Misty schaut noch einmal hin…', retry: 'Nochmal versuchen', found: 'Das sehe ich', est: 'Schätzungen aus deinem Foto. Ändere den Namen, wenn ich falsch liege.', total: 'Gesamt', remove: 'Entfernen', off: 'Die Fotoerkennung ist noch nicht eingeschaltet. Schreib bitte, was es ist.', fail: 'Ich konnte das Foto nicht lesen. Tipp auf Nochmal versuchen oder schreib, was es ist.', busy: 'Gerade zu viele Fotos. Schreib, was es ist, oder versuch es in ein paar Minuten nochmal.', none: 'Ich sehe kein Essen auf dem Foto. Schreib, was es ist, falls ich falsch liege.', low: 'Da bin ich unsicher, prüf den Namen.', kcal: 'kcal', protein: 'Eiweiß', carbs: 'Kohlenhydrate', sugar: 'Zucker', fiber: 'Ballaststoffe', fat: 'Fett', and: 'und' },
+        es: { consent: 'El análisis de fotos está apagado, no se envió nada. Escribe qué es o toca Reintentar para activarlo.', net: 'No puedo conectar con el análisis de fotos ahora (¿sin conexión?). Toca Reintentar o escribe qué es.', slow: 'El análisis de la foto tardó demasiado. Toca Reintentar o escribe qué es.', sign_in: 'Tu sesión caducó, así que no puedo analizar la foto. Escribe qué es: eso siempre funciona.', limit: 'Ya usaste tus 10 análisis de foto de hoy. Vuelven a medianoche. Escribe qué es: las comidas escritas no tienen límite.', look: 'Misty está mirando…', look2: 'Sigo mirando. Los platos llenos tardan unos segundos más…', again: 'Misty mira otra vez…', retry: 'Reintentar', found: 'Esto es lo que veo', est: 'Estimaciones de tu foto. Cambia el nombre si me equivoqué.', total: 'Total', remove: 'Quitar', off: 'El reconocimiento de fotos aún no está activado, así que escribe qué es.', fail: 'No pude leer esta foto. Toca Reintentar o escribe qué es.', busy: 'Demasiadas fotos ahora mismo. Escribe qué es o inténtalo en unos minutos.', none: 'No veo comida en esta foto. Escribe qué es si me equivoco.', low: 'No estoy seguro, revisa el nombre.', kcal: 'kcal', protein: 'Proteína', carbs: 'Carbohidratos', sugar: 'Azúcar', fiber: 'Fibra', fat: 'Grasa', and: 'y' }
     };
     const lang = () => { try { const l = root.LowiLang && root.LowiLang.get ? root.LowiLang.get() : (root.document && document.documentElement.lang) || 'en'; return STR[l] ? l : 'en'; } catch (e) { return 'en'; } };
     const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
@@ -175,6 +175,22 @@
        photo check, not two. Every caller keeps food reads; only a caller that passes opts.reuse (Community) reads them back. */
     const seen = new Map(), SEEN_MAX = 8;
     function seenKey(b64, l) { let h = 2166136261; const s = String(b64 || ''); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + ':' + s.length + ':' + (l || ''); }
+
+    /* Nov 3 (App Store prep, Apple guideline 5.1.2: personal data may only go to a third-party AI after the person agrees):
+       meal photos and typed food names go to Google Gemini only after "Allow" in the consent sheet (store-ready.js,
+       LowiConsent). "Not now" sends nothing: the photo sheet asks to type the food, name lookups keep the app's own rules.
+       The choice can be changed any time in Profile > About & info. In node (tests) there is no sheet, so the gate is open. */
+    function consentState() { const C = root.LowiConsent; return C && C.get ? C.get() : ''; }
+    async function consentOk(ask, force) {
+        if (typeof document === 'undefined') return true;
+        const C = root.LowiConsent;
+        if (!C || !C.get) return true; // store-ready.js is part of every build (bundled in the app); without it there is no sheet to show
+        const v = C.get();
+        if (v === 'yes') return true;
+        if (!ask || !C.ask || (v === 'no' && !force)) return false; // a "Not now" is not asked again on every photo
+        try { return (await C.ask(!!force)) === true; } catch (e) { return false; }
+    }
+    function noConsent(code) { const e = new Error(code); e.code = code; return e; }
     async function analyse(dataURL, opts) {
         opts = opts || {};
         const url = endpoint();
@@ -183,6 +199,7 @@
         if (!m) { const e = new Error('failed'); e.code = 'failed'; throw e; }
         const sk = seenKey(m[2], opts.lang || lang());
         if (opts.reuse && seen.has(sk)) return Object.assign(JSON.parse(JSON.stringify(seen.get(sk))), { cached: true });
+        if (!(await consentOk(true, opts.askConsent))) throw noConsent('consent');
         const out = await ask(url, m, opts);
         if (out && out.isFood) { seen.delete(sk); seen.set(sk, JSON.parse(JSON.stringify(out))); while (seen.size > SEEN_MAX) seen.delete(seen.keys().next().value); }
         return out;
@@ -223,6 +240,7 @@
         if (q.length < 2) { const e = new Error('failed'); e.code = 'failed'; throw e; }
         const url = endpoint();
         if (!url || !(await available()) || !nameOn) { const e = new Error('off'); e.code = 'off'; throw e; }
+        if (!(await consentOk(true))) throw noConsent('off'); // 'off' = the scanner keeps its own name rules, nothing is sent
         const tok = opts.token != null ? opts.token : await token();
         const tm = timed(opts.timeout || 15000);
         let r;
@@ -247,6 +265,7 @@
         const list = (names || []).map(n => String(n || '').replace(/\s+/g, ' ').trim().slice(0, 80)).filter(Boolean).slice(0, 8);
         const url = endpoint();
         if (!list.length || !url || typeof fetch !== 'function') return null;
+        if (!(await consentOk(false))) return null; // background job: never opens the consent sheet, only follows the choice
         const tok = opts.token != null ? opts.token : await token(); if (!tok) return null;
         const tm = timed(opts.timeout || 12000);
         try {
@@ -267,6 +286,7 @@
     // Fills a photo sheet: box = <div class="sp-ai">, form = the meal form with name="title".
     // Writes hidden macro inputs into the form so the normal Log as meal saves them. Never throws.
     function mount(box, form, dataURL, opts) {
+        let retried = false; // Nov 3: after "Not now", only a tap on Try again opens the AI consent sheet again
         opts = opts || {};
         if (!box || !form) return Promise.resolve(null);
         const l = opts.lang || lang();
@@ -306,13 +326,14 @@
             const b = ev.target.closest && ev.target.closest('[data-fai-retry]');
             if (!b || busy) return;
             ev.preventDefault();
+            retried = true;
             run();
         });
         const MS = snap();
         const q = MS && MS.left ? MS.left() : null;
         if (q && q.left === 0) { say('fai-err fai-limit', t('limit', l)); return Promise.resolve(null); }
         const once = (n) => (aiURL ? Promise.resolve(aiURL) : prep(dataURL, opts.file).then(u => (aiURL = u)))
-            .then(u => analyse(u, { lang: l }))
+            .then(u => analyse(u, { lang: l, askConsent: retried }))
             .catch(err => {
                 const c = err && err.code;
                 if (n < 1 && AUTO_RETRY.includes(c) && box.isConnected) { wait('again'); return new Promise(ok => setTimeout(ok, 800)).then(() => once(n + 1)); }
@@ -321,7 +342,7 @@
         const run = () => {
             busy = true;
             wait('look');
-            return go().then(v => { busy = false; clearTimeout(slowT); return v; }, () => { busy = false; clearTimeout(slowT); sayRetry(t('fail', l)); return null; });
+            return go().then(v => { busy = false; clearTimeout(slowT); return v; }, (err) => { busy = false; clearTimeout(slowT); sayRetry(t(err && err.code === 'consent' ? 'consent' : 'fail', l)); return null; });
         };
         const go = () => available().then(on => {
             if (!on) { if (why() === 'net') sayRetry(t('net', l)); else say('fai-off', t('off', l)); return null; }
@@ -336,6 +357,7 @@
                 let ctl = null;
                 if (MR && MR.mount) { try { ctl = MR.mount(box, form, { dishes, lang: l, low: res.confidence === 'low', note: res.note, verdictBlock: res.verdictBlock, photo: dataURL, db: opts.db, dbReady: opts.dbReady }); } catch (e) { console.warn(e); ctl = null; } }
                 if (!ctl) { setHidden(); paint(res); }
+                try { if (root.LowiStore && root.LowiStore.medNote) root.LowiStore.medNote(box, l); } catch (e) {} // Nov 3: "food guidance, not medical advice" under the result
                 /* Oct 19: the read is remembered by photo (sharing never asks the AI again); under it: checks left today,
                    (Oct 22: sharing moved to "Share to Community" after Log as meal, meal-journal.js) and the optional mealtime reminder offer. */
                 if (MS) {
@@ -361,6 +383,7 @@
             }, err => {
                 const c = err && err.code;
                 if (!box.isConnected) return null;
+                if (c === 'consent') { sayRetry(t('consent', l)); return null; } // Nov 3: "Not now" on the AI sheet, nothing was sent
                 if (['limit', 'off', 'sign_in'].includes(c)) say('fai-err', t(c, l));
                 else sayRetry(['busy', 'net', 'slow'].includes(c) ? t(c, l) : t('fail', l));
                 return null;
@@ -368,5 +391,5 @@
         });
         return run();
     }
-    return { KEYS, normalize, totals, title, endpoint, available, allowance, analyse, analyseName, translateNames, nameReady: () => nameOn, mount, prep, TRY_MS, AI_PX, strings: STR, _reset() { probe = null; probeAt = 0; probeWhy = ''; nameOn = false; seen.clear(); }, _why: why };
+    return { KEYS, normalize, totals, title, endpoint, available, allowance, analyse, analyseName, translateNames, nameReady: () => nameOn, mount, prep, TRY_MS, AI_PX, strings: STR, consentState, _reset() { probe = null; probeAt = 0; probeWhy = ''; nameOn = false; seen.clear(); }, _why: why };
 });

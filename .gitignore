@@ -7,3 +7,13 @@ node_modules
 .env.*
 
 _site/
+
+# Nov 3: Capacitor iOS build (npm run ios:sync copies the site into www/; ios/ itself is tracked)
+www/
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/App/App/config.xml
+ios/App/Pods/
+ios/App/build/
+ios/DerivedData/
+xcuserdata/

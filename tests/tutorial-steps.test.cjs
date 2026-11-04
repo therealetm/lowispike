@@ -110,7 +110,7 @@ test('the rule is written down for future tasks', () => {
     }
 });
 
-test('Settings keeps a Tutorial row in all three languages that starts the tour, hidden while the tutorial is off', () => {
+test('Settings keeps a Tutorial row in all three languages that starts the tour, hidden only while the tutorial is parked (OFF)', () => {
     const SS = require('../home-settings-sleep-v2.js');
     assert.deepStrictEqual(SS.pageGroups({ has: () => true })[0].ids, ['catchUp', 'theme', 'look', 'worldSound', 'language', 'notifications', 'tutorial', 'support', 'about']);  /* Oct 28 2026 slim batch 9: notifications + About in Settings. Oct 26 2026 (MAYA-HANDOFF 0.39): Catch up on today is the first row */
     for (const l of LANGS) assert.ok(SS.TX[l].tutorial, 'label ' + l);

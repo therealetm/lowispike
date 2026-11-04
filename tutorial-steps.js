@@ -584,8 +584,11 @@
        the app is finished): while true, users cannot reach the guided tour anywhere. tutorial.js start() returns false, the
        auto start for new accounts (tutorial-auto.js) and the "Continue tutorial" pill (tutorial-resume.js) are not loaded, the
        Settings > Tutorial row and the Community welcome's Walkthrough card are hidden. What's New (news()) is not the tour and
-       stays. The steps below are parked as they are: do not update, extend or replace them until he asks. */
-    const OFF = true;
+       stays. The steps below are parked as they are: do not update, extend or replace them until he asks.
+       ON again (4 Nov 2026, Emmanuel: "Restore the first-time guided tutorial for newly signed-in users ... Preserve a way to restart
+       or continue it"): the auto start for new accounts, the Continue tutorial pill, Settings > Tutorial and the Community
+       Walkthrough card are back. Accounts that finished setup before this build are still never forced into it. */
+    const OFF = false;
     const api = { OFF, VERSION, AREAS, STEPS, MAX_BASE, base, SHORT_SKIPS, NO_TUTORIAL, GESTURES, GESTURE_EXEMPT, UI, text, fill, plan, skipIndex, covered, newsOk, tourOf, newsCard, unseenNews, tryMatch, taught, TRY_CUE, tryResume, kind, PRACTICE_HOW, LATER_MARK, INSTRUCTION };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.LowiTutorialSteps = api;

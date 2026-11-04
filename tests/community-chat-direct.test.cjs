@@ -33,12 +33,12 @@ test('the Chat tab opens the galaxy chat itself, never the channel list', () => 
 
 test('back from the chat: the tab you came from, else nothing to go back to (Community closes)', () => {
   const { U, open } = load();
-  U.showView('aff'); U.setTab(true); assert.strictEqual(U.from(), 'aff');
-  assert.strictEqual(U.back(), true); assert.strictEqual(U.view(), 'aff'); assert.strictEqual(open(), false);
+  U.showView('rank'); U.setTab(true); assert.strictEqual(U.from(), 'rank');
+  assert.strictEqual(U.back(), true); assert.strictEqual(U.view(), 'rank'); assert.strictEqual(open(), false);
   U.setTab(false); U.setTab(true); assert.strictEqual(U.from(), 'room');
   assert.strictEqual(U.back(), true); assert.strictEqual(open(), false); assert.strictEqual(U.view(), '');
   /* Chat as the first tab: nothing behind it */
-  U.showView('create'); U.setTab(true, true); assert.strictEqual(U.from(), '');
+  U.showView('fy'); U.setTab(true, true); assert.strictEqual(U.from(), '');
   assert.strictEqual(U.back(), false, 'the caller (section-nav) closes Community');
   assert.strictEqual(U.back(), false);
 });

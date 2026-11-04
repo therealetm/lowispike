@@ -133,7 +133,7 @@
         },
         {
             id: 'community', area: 'together', target: ['#whHud .o8-settings'], demo: { g: 'tap', open: 'community-tab' },
-            covers: ['community', 'community-tabs', 'person-card', 'community-post', 'community-chat', 'voice-message', 'photo-message', 'community-tab-order', 'community-energy', 'creation', 'affiliates'],
+            covers: ['community', 'community-tabs', 'person-card', 'community-post', 'community-chat', 'voice-message', 'photo-message', 'community-tab-order', 'community-energy'],
             teaches: ['community-tap'],
             title: { en: 'Community', de: 'Community', es: 'Comunidad' },
             text: {
@@ -451,7 +451,7 @@
         G('page-swipe', 'home', 'swipe', ['liquid-glass.js', 'community-spirit.js'], 'swipe sideways: between Home and Community'),
         G('back-swipe', 'any', 'swipe', ['back-swipe.js', 'section-nav.js', 'companion.js'], 'swipe in from the left edge: back'),
         G('sheet-drag', 'any', 'drag', ['apple-ui.js', 'gap-view.js', 'people-directory.js', 'store-picks.js', 'companion.js'], 'drag a sheet\'s top bar down: close it'),
-        G('cm-tabs', 'community', 'tap', ['community-rooms-ui.js'], 'tap Circle, Chat, For You, Studio, Ranking'),
+        G('cm-tabs', 'community', 'tap', ['community-rooms-ui.js'], 'tap Circle, Chat, For You, Ranking'),
         G('cm-tab-order', 'community', 'hold', ['community-tab-order.js'], 'hold a Community tab until it wiggles, slide it: new tab order'),
         G('cm-name', 'community', 'tap', ['community-rooms-ui.js', 'community-me.js'], 'tap the Community name / your picture: rooms, profile, invite'),
         G('cm-pan', 'community', 'drag', ['community-chat.js'], 'drag the galaxy: move around'),

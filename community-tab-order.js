@@ -18,19 +18,21 @@
        Cook, and Creation + Affiliates are one tab, Studio ('studio'), with a small Affiliates | Creation switch inside. Still five
        tabs. A saved order from before keeps its places: 'create' / 'aff' become 'studio' where the first of them was, and For You
        goes right before Studio (rank, chat, room, aff, create -> rank, chat, room, fy, studio). */
-    const IDS = ['room', 'chat', 'fy', 'studio', 'rank'];
-    const LEGACY = { create: 'studio', aff: 'studio' };
+    /* 4 Nov 2026: Studio (Affiliates + Creation) is removed from the app. A saved order that still has 'studio', 'create' or
+       'aff' simply drops it; the other tabs keep their places. Four tabs now. */
+    const IDS = ['room', 'chat', 'fy', 'rank'];
+    const LEGACY = {};
     const KEY = 'lowispike.community.tabs';
     const HOLD_MS = 450, SLOP = 10;
     function normalize(list) {
         const src = Array.isArray(list) ? list : [], out = [];
         src.forEach(k => { k = LEGACY[k] || k; if (IDS.includes(k) && !out.includes(k)) out.push(k); });
-        if (src.length && !src.includes('fy')) { const i = out.indexOf('studio'); if (i >= 0) out.splice(i, 0, 'fy'); }
+        if (src.length && !src.includes('fy')) { const i = src.findIndex(k => k === 'studio' || k === 'aff' || k === 'create'); if (i >= 0) out.splice(Math.min(out.length, src.slice(0, i).filter(k => IDS.includes(k)).length), 0, 'fy'); }
         IDS.forEach(k => { if (!out.includes(k)) out.push(k); });
         return out;
     }
     /* the tab a view belongs to: Affiliates and Creation are the two halves of Studio */
-    function tabOf(view) { return view === 'aff' || view === 'create' ? 'studio' : view; }
+    function tabOf(view) { return view; }
     function parse(raw) { try { return normalize(JSON.parse(raw || 'null')); } catch (e) { return IDS.slice(); } }
     /* move the tab `id` to position `to` (0-based, clamped) */
     function moveTo(list, id, to) {

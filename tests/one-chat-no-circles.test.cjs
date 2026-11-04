@@ -64,9 +64,9 @@ test('Community menu: People first, no Circles, no "Chat rooms & people", no "Fi
   assert.doesNotMatch(R('community-rooms.css'), /\.rm-(?:find|list|crew|yes)\b/, 'room sheet styles removed');
 });
 
-test('the tabs stay: Rangliste · Chat · Raum · Für dich · Studio, one live line without a room number', () => {
+test('the tabs stay: Rangliste · Chat · Raum · Für dich (Studio removed 4 Nov 2026), one live line without a room number', () => {
   const js = R('community-rooms-ui.js');
-  assert.match(js, /\['room','chat','fy','studio','rank'\]/, 'Raum, Chat, Für dich, Studio, Rangliste');
+  assert.match(js, /\['room','chat','fy','rank'\]/, 'Raum, Chat, Für dich, Rangliste');
   assert.match(js, /esc\(tr\('hereNow',\{c:ms\.length\}\)\)\+'<\/span>'/, 'live line: "12 here now", nothing else');
   assert.doesNotMatch(js, /tr\('roomN'/);
 });

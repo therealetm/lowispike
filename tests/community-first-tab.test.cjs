@@ -9,13 +9,11 @@ const C = require('../community-tab-order.js');
 
 test('firstAction: every opening lands on the first tab of the order', () => {
   const A = C.firstAction;
-  /* first = Studio (Affiliates + Creation since 24 Oct 2026): from Room, from Chat, from a chat room left open, already there */
-  assert.strictEqual(A('studio', '', false, false, false), 'studio');
-  assert.strictEqual(A('studio', 'chans', false, false, false), 'studio');
-  assert.strictEqual(A('studio', '', true, false, false), 'studio', 'a chat room left open on the last visit no longer wins');
-  assert.strictEqual(A('studio', 'aff', false, false, false), null, 'already in Studio (Affiliates half)');
-  assert.strictEqual(A('studio', 'create', false, false, false), null, 'already in Studio (Creation half)');
-  assert.strictEqual(A('aff', 'chans', false, false, false), 'studio', 'an old saved first tab reads as Studio');
+  /* 4 Nov 2026: Studio is removed. An old saved first tab 'studio' / 'aff' / 'create' reads as the default first tab, Circle (room) */
+  assert.strictEqual(A('studio', '', false, false, false), null, 'already on Circle');
+  assert.strictEqual(A('studio', 'chans', false, false, false), 'room');
+  assert.strictEqual(A('studio', '', true, false, false), 'room', 'a chat room left open on the last visit no longer wins');
+  assert.strictEqual(A('aff', 'chans', false, false, false), 'room', 'an old saved first tab reads as Circle');
   /* first = For You */
   assert.strictEqual(A('fy', '', false, false, false), 'fy');
   assert.strictEqual(A('fy', 'fy', false, false, false), null);

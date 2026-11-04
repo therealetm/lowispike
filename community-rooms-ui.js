@@ -26,7 +26,7 @@ function people(){try{const B=W.LowiBotAccounts;return ((H()&&H().people&&H().pe
 function nameOf(uid){const p=people().find(x=>x&&x.uid===uid);return p&&p.n?String(p.n):'';}
 function me(){try{return (H()&&H().uid&&H().uid())||'';}catch(e){return '';}}
 /* tab order is the user's (community-tab-order.js: hold a tab to move it) */
-function tabOrder(){const O=W.LowiCommunityTabs;try{return O&&O.order?O.order():['room','chat','fy','studio','rank'];}catch(e){return ['room','chat','fy','studio','rank'];}}
+function tabOrder(){const O=W.LowiCommunityTabs;try{return O&&O.order?O.order():['room','chat','fy','rank'];}catch(e){return ['room','chat','fy','rank'];}}
 function open(){const t=D.getElementById('cgThread');return !!(t&&t.hasAttribute('data-open'));}
 /* 21 Oct evening (Eden's Chat): the Chat tab opens the channel list; a channel opens its thread, "‹ Channels" comes back. */
 /* 22 Oct (item 36, Emmanuel: "I don't understand what all these rooms are. Remove it so they get straight to the chat group."):
@@ -57,7 +57,11 @@ function openThread(){view='';const c=W.LowiCommunity;if(c&&c.thread&&!open())c.
    like Ranking that holds the feed, moved out of Cook), and Creation + Affiliates are one tab, Studio, with a small
    Affiliates | Creation switch at the top of its panel. Both pages keep their own frame and address; Studio opens the half you
    used last (STUDIO_KEY, Affiliates first). */
-const VIEWS={create:'create/',aff:'affiliates/'},PANES={chans:1,rank:1,fy:1};let view='';const frames={};
+/* 4 Nov 2026 (Emmanuel: remove Studio and the unfinished creator/affiliate features from the app, do not move the affiliate flow
+   elsewhere): no Studio tab, no Affiliates or Creation page in Community, no affiliate question or card in the welcome, no copy
+   links for them. VIEWS is empty, so showView('studio'|'aff'|'create') does nothing and old #community/affiliates|create links
+   just open Community. The standalone pages (affiliates/, create/) and any backend data are untouched. */
+const VIEWS={},PANES={chans:1,rank:1,fy:1};let view='';const frames={};
 const STUDIO_KEY='lowispike.community.studio';
 function studioLast(){try{return localStorage.getItem(STUDIO_KEY)==='create'?'create':'aff';}catch(e){return 'aff';}}
 function tabOfView(v){return v==='aff'||v==='create'?'studio':v;}
@@ -87,7 +91,7 @@ function ensureView(pane){let box=pane.querySelector(':scope>.rm-view');
 /* Oct 25 2026 (Emmanuel's TikTok, spring.js): the sliding glow under the open section rides a spring instead of a .32 s CSS
    timer. Tapping another section while it still slides turns it from where it is, with the speed it has, instead of restarting. */
 function pillTo(el,name,i){if(W.LowiSpring&&W.LowiSpring.cssVar)W.LowiSpring.cssVar(el,name,i);else el.style.setProperty(name,String(i));}
-function studioSwitch(box){let sw=box.querySelector(':scope>.rm-sw');const on=!!VIEWS[view];
+function studioSwitch(box){let sw=box.querySelector(':scope>.rm-sw');const on=!!VIEWS[view];if(!on){if(sw)sw.remove();return;}
  if(!sw){sw=D.createElement('div');sw.className='rm-sw';sw.setAttribute('role','tablist');sw.innerHTML=['aff','create'].map(k=>'<button type="button" role="tab" class="rm-swb" data-rmsw="'+k+'"></button>').join('');box.insertBefore(sw,box.firstChild);
   sw.addEventListener('click',e=>{const b=e.target.closest('[data-rmsw]');if(!b)return;e.preventDefault();showView(b.dataset.rmsw);const n=sw.querySelector('[data-rmsw="'+view+'"]');if(n&&D.activeElement===b)n.focus({preventScroll:true});});
   sw.addEventListener('keydown',e=>{if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;e.preventDefault();showView(view==='aff'?'create':'aff');const n=sw.querySelector('[data-rmsw="'+view+'"]');if(n)n.focus({preventScroll:true});});}
@@ -180,7 +184,6 @@ function chanRows(){const c=W.LowiCommunity,r=R(),rows=[];let last=null,un=0,dm=
  rows.push({k:'galaxy',ic:'🌌',t:tr('chGalaxy'),p:last?((last.mine?tr('you'):(last.by||nameOf(last.uid)||'Member'))+': '+last.text):tr('chGalaxyEmpty'),ts:last&&last.ts,n:un});
  const dl=(dm.list||[]),dn=dl.filter(m=>!m.seen).length,dlast=dl[dl.length-1];
  rows.push({k:'replies',ic:'💬',t:tr('chReplies'),p:dlast?((dlast.by||nameOf(dlast.uid)||'Member')+': '+dlast.text):tr('chRepliesEmpty'),ts:dlast&&dlast.ts,n:dn,dis:!dlast});
- rows.push({k:'aff',ic:'🚀',t:tr('aff'),p:tr('chAff')});rows.push({k:'create',ic:'✨',t:tr('create'),p:tr('chCreate')});
  return rows;}
 function paintChans(pane){let box=pane.querySelector(':scope>.rm-chans');if(view!=='chans'){if(box)box.hidden=true;return;}
  if(!box){box=D.createElement('section');box.className='rm-chans';box.setAttribute('data-noi18n','');pane.appendChild(box);
@@ -287,7 +290,7 @@ const OT={obStep:['{i} of 4','{i} von 4','{i} de 4'],obClose:['Close','Schließe
  obR:['Community rules','Community-Regeln','Normas de la comunidad'],
  obR1:['Be kind. Everyone here is working on something hard.','Sei freundlich. Alle hier arbeiten an etwas Schwerem.','Sé amable. Todos aquí trabajan en algo difícil.'],
  obR2:['Share experience, not medical advice.','Teile Erfahrungen, keine medizinischen Ratschläge.','Comparte experiencias, no consejos médicos.'],
- obR3:['No spam or selling. Promotion belongs in Affiliates.','Kein Spam und kein Verkaufen. Werbung gehört zu Affiliates.','Nada de spam ni ventas. La promoción va en Afiliados.'],
+ obR3:['No spam, no selling and no promotion.','Kein Spam, kein Verkaufen und keine Werbung.','Nada de spam, ni ventas, ni promoción.'],
  obR4:['Keep it real: no fake results or edited before-and-afters.','Bleib echt: keine falschen Ergebnisse oder bearbeiteten Vorher-nachher-Bilder.','Sé real: nada de resultados falsos ni antes y después editados.'],
  obR5:['If someone bothers you, block them from their message.','Wenn dich jemand stört, blockiere ihn über seine Nachricht.','Si alguien te molesta, bloquéalo desde su mensaje.'],
  obAgree:['I agree','Ich stimme zu','Estoy de acuerdo'],
@@ -309,20 +312,18 @@ let ob=null,obI=0,obA={};
 function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function chip(group,val,label){const on=group==='work'?(obA.work||[]).includes(val):obA[group]===val;return '<button type="button" class="rm-chipq" data-q="'+group+'" data-v="'+val+'" aria-pressed="'+(on?'true':'false')+'">'+esc(label)+'</button>';}
-function obBody(){const p=Object.assign({},lsGet(OPK)||{}),aff=obA.aff==='yes';
+function obBody(){const p=Object.assign({},lsGet(OPK)||{});
  /* Slim batch 7 (C-08): welcome and the community rules are one card, "I agree" under the rules; 4 steps instead of 5. */
- if(obI===0)return '<div class="rm-ob-hero" aria-hidden="true"><span class="rm-logo"><i></i></span></div><h2 class="rm-ob-h">'+esc(tr('obW1'))+'</h2><p class="rm-ob-p">'+esc(tr('obW2'))+'</p><h3 class="rm-ob-h3">'+esc(tr('obKnow'))+'</h3><ul class="rm-ob-know">'+['obK1','obK2','obK3','obK4'].map(k=>'<li>'+esc(tr(k))+'</li>').join('')+'</ul>'
+ if(obI===0)return '<div class="rm-ob-hero" aria-hidden="true"><span class="rm-logo"><i></i></span></div><h2 class="rm-ob-h">'+esc(tr('obW1'))+'</h2><p class="rm-ob-p">'+esc(tr('obW2'))+'</p><h3 class="rm-ob-h3">'+esc(tr('obKnow'))+'</h3><ul class="rm-ob-know">'+['obK1','obK2'].map(k=>'<li>'+esc(tr(k))+'</li>').join('')+'</ul>'
   +'<h3 class="rm-ob-h3 rm-ob-rules-h">'+esc(tr('obR'))+'</h3><ol class="rm-ob-rules">'+['obR1','obR2','obR3','obR4','obR5'].map(k=>'<li>'+esc(tr(k))+'</li>').join('')+'</ol>';
- if(obI===1)return '<h2 class="rm-ob-h">'+esc(tr('obQ'))+'</h2><p class="rm-ob-p">'+esc(tr('obQs'))+'</p><h3 class="rm-ob-h3">'+esc(tr('obQ1'))+'</h3><div class="rm-chips">'+['f','a','b','c','d','e'].map(x=>chip('work',x,tr('obQ1'+x))).join('')+'</div>'
-  +'<h3 class="rm-ob-h3">'+esc(tr('obQ2'))+'</h3><div class="rm-chips">'+chip('aff','yes',tr('obQ2y'))+chip('aff','no',tr('obQ2n'))+'</div>'
-  +'<h3 class="rm-ob-h3">'+esc(tr('obQ3'))+'</h3><div class="rm-chips">'+chip('fol','0',tr('obQ3a'))+chip('fol','1k','1K–10K')+chip('fol','10k','10K–100K')+chip('fol','100k','100K+')+'</div>';
+ if(obI===1)return '<h2 class="rm-ob-h">'+esc(tr('obQ'))+'</h2><p class="rm-ob-p">'+esc(tr('obQs'))+'</p><h3 class="rm-ob-h3">'+esc(tr('obQ1'))+'</h3><div class="rm-chips">'+['f','a','b','c','d'].map(x=>chip('work',x,tr('obQ1'+x))).join('')+'</div>';
  if(obI===2){const f=(k,l,ph,big)=>'<label class="rm-fld"><span>'+esc(l)+'</span>'+(big?'<textarea data-p="'+k+'" rows="3" maxlength="280">'+esc(p[k]||'')+'</textarea>':'<input data-p="'+k+'" maxlength="80" value="'+esc(p[k]||'')+'" placeholder="'+esc(ph||'')+'" autocomplete="off" autocapitalize="off">')+'</label>';
   const nm=nameOf(me())||'';
   return '<h2 class="rm-ob-h">'+esc(tr('obP'))+'</h2><div class="rm-ob-me"><span class="rm-ob-av" aria-hidden="true">'+esc(initials(nm||'?'))+'</span><div><b>'+esc(nm||tr('obP'))+'</b><small>'+esc(tr('obPs'))+'</small></div></div>'
    +(D.getElementById('pfBtn')?'<button type="button" class="rm-ob-sec" data-ob="photo">'+esc(tr('obPhoto'))+'</button>':'')
    +f('working',tr('obPw'),'',false)+f('bio',tr('obPb'),'',true)+'<h3 class="rm-ob-h3">'+esc(tr('obPh'))+'</h3><div class="rm-ob-handles">'+f('x','X','@')+f('ig','Instagram','@')+f('yt','YouTube','@')+f('tt','TikTok','@')+'</div><p class="rm-ob-note">'+esc(tr('obSaved'))+'</p>';}
  /* Oct 29 2026: no Walkthrough card while the tutorial is removed (tutorial-steps.js OFF) */
- const cards=[['intro','👋','obC1','obC1s']].concat(W.LowiTutorial&&W.LowiTutorial.off?[]:[['walk','🧭','obC2','obC2s']],[['help','🆘','obC3','obC3s']]);if(aff)cards.unshift(['aff','🚀','obC4','obC4s']);
+ const cards=[['intro','👋','obC1','obC1s']].concat(W.LowiTutorial&&W.LowiTutorial.off?[]:[['walk','🧭','obC2','obC2s']],[['help','🆘','obC3','obC3s']]);
  return '<h2 class="rm-ob-h">'+esc(tr('obIn'))+'</h2><div class="rm-ob-cards">'+cards.map(([k,ic,t,s2])=>'<button type="button" class="rm-ob-card'+(k==='aff'?' rm-ob-hot':'')+'" data-ob="'+k+'"><span class="rm-ch-ic" aria-hidden="true">'+ic+'</span><span><b>'+esc(tr(t))+'</b><small>'+esc(tr(s2))+'</small></span></button>').join('')+'</div>';}
 function obPaint(){if(!ob)return;const last=obI===3,next=obI===0?tr('obAgree'):last?tr('obDone'):tr('obNext');
  ob.innerHTML='<div class="rm-ob-card-wrap" role="dialog" aria-modal="true" aria-labelledby="rmObH"><div class="rm-ob-top"><div class="rm-ob-bar" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="'+(obI+1)+'"><i style="width:'+((obI+1)*25)+'%"></i></div><span class="rm-ob-step">'+esc(tr('obStep',{i:obI+1}))+'</span><button type="button" class="rm-x" data-ob="close" aria-label="'+esc(tr('obClose'))+'">×</button></div>'
@@ -341,9 +342,8 @@ function openWelcome(){if(ob)return;obI=0;obA=Object.assign({},((lsGet(OBK)||{})
    q.parentNode.querySelectorAll('[data-q]').forEach(b=>b.setAttribute('aria-pressed',(g==='work'?(obA.work||[]).includes(b.dataset.v):obA[g]===b.dataset.v)?'true':'false'));return;}
   const b=e.target.closest('[data-ob]');if(!b)return;const k=b.dataset.ob;
   if(k==='close')obClose(false);else if(k==='back'){if(obI===2)obSaveProfile();obI=Math.max(0,obI-1);obPaint();}
-  else if(k==='next'){if(obI===2)obSaveProfile();if(obI<3){obI++;obPaint();}else{const aff=obA.aff==='yes';obClose(true);if(aff)showView('aff');}}
+  else if(k==='next'){if(obI===2)obSaveProfile();if(obI<3){obI++;obPaint();}else obClose(true);}
   else if(k==='photo'){obSaveProfile();obClose(false);const p=D.getElementById('pfBtn');if(p)p.click();}
-  else if(k==='aff'){obClose(true);showView('aff');}
   else if(k==='intro'){const p=lsGet(OPK)||{};obClose(true);prefill(tr('obHi')+(p.working?' '+p.working:''));}
   else if(k==='help'){obClose(true);prefill(tr('obHelp'));}
   else if(k==='walk'){obClose(true);try{W.LowiTutorial&&W.LowiTutorial.start({at:'community',from:'community-welcome'});}catch(x){}}});
@@ -352,10 +352,10 @@ function openWelcome(){if(ob)return;obI=0;obA=Object.assign({},((lsGet(OBK)||{})
 function maybeWelcome(){if(ob||lsGet(OBK)||(navigator&&navigator.webdriver))return;const b=bar;if(!b||!b.isConnected||!b.getBoundingClientRect().width)return;
  if(W.LowiTutorial&&W.LowiTutorial.isOn&&W.LowiTutorial.isOn())return;openWelcome();}
 W.LowiCommunityWelcome={open:openWelcome,close:()=>obClose(false),seen:()=>!!lsGet(OBK)};
-/* Invite links (menu > Copy invite link): …/lowispike/#community opens Community; #community/affiliates and #community/create open that tab. */
+/* Invite links (menu > Copy invite link): …/lowispike/#community opens Community; #community/ranking and #community/foryou open that tab; old #community/affiliates|create links just open Community. */
 (function deep(){let h='';try{h=location.hash||'';}catch(e){}const m=h.match(/^#community(?:\/(affiliates|create|ranking|foryou))?$/);if(!m)return;let n=0;
  const tick=()=>{n++;if(typeof W.goTab!=='function'||!D.getElementById('whPad')){if(n<60)setTimeout(tick,500);return;}
-  try{W.goTab('foryou');}catch(e){}const v=m[1]==='affiliates'?'aff':m[1]==='create'?'create':m[1]==='ranking'?'rank':m[1]==='foryou'?'fy':'';
+  try{W.goTab('foryou');}catch(e){}const v=m[1]==='ranking'?'rank':m[1]==='foryou'?'fy':'';
   let k=0;const t2=()=>{k++;if(!ensure()){if(k<30)setTimeout(t2,300);return;}if(v)showView(v);try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}};setTimeout(t2,400);};
  setTimeout(tick,600);})();
 /* open Community right on one tab (For You after a post, Settings > For You); the first-tab rule leaves it */

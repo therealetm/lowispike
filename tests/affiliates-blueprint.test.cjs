@@ -96,12 +96,13 @@ test('pages: shareable, private, branded, and the app tabs point at them', () =>
   assert.ok(!/fetch\(|XMLHttpRequest|sendBeacon/.test(read('affiliates/blueprint.js') + read('affiliates/blueprint-core.js')), 'the page sends nothing anywhere');
   assert.ok(!/innerHTML/.test(read('affiliates/blueprint.js')), 'text never becomes HTML');
   const ui = read('community-rooms-ui.js');
-  assert.match(ui, /create:'create\/',aff:'affiliates\/'/);
+  // 4 Nov 2026: Studio is removed from the app. The pages stay published for their own links, but Community no longer opens them.
+  assert.match(ui, /const VIEWS=\{\},PANES=/);
   // tabs are built from the user's saved order (community-tab-order.js), so check the default order and the generated button
-  assert.match(ui, /\['room','chat','fy','studio','rank'\]/);   /* 23 Oct: Ranking joined the bar; 24 Oct: For You + Studio (Affiliates | Creation) */
+  assert.match(ui, /\['room','chat','fy','rank'\]/);   /* 23 Oct: Ranking joined the bar; 24 Oct: For You + Studio; 4 Nov: Studio removed */
   assert.match(ui, /tabOrder\(\)\.map\(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'\+k\+'"><\/button>'\)/);
   assert.match(ui, /a==='create'\|\|a==='aff'\|\|a==='rank'\|\|a==='fy'\|\|a==='studio'\)showView\(a\)/);
-  assert.match(ui, /data-rmsw="'\+k\+'"/, 'Studio opens Affiliates or Creation with its small switch');
+  assert.match(ui, /if\(!on\)\{if\(sw\)sw\.remove\(\);return;\}/, 'no Affiliates | Creation switch is ever shown');
   const S = require('../scripts/site-files.cjs'), pub = new Set(S.list(root));
   for (const f of ['affiliates/index.html', 'affiliates/blueprint.js', 'affiliates/blueprint-core.js', 'affiliates/blueprint.css', 'create/index.html']) assert.ok(pub.has(f), f + ' is published');
 });

@@ -70,7 +70,7 @@ function rows(community) {
 }
 test('channels: empty data gives honest empty states, no invented members or counts', () => {
   const r = rows({ latest: () => null, unread: () => 0, directed: () => ({ list: [] }) });
-  assert.deepEqual(r.map(x => x.k), ['galaxy', 'replies', 'aff', 'create'], 'one chat for everyone: no room row (Oct 24 2026)');
+  assert.deepEqual(r.map(x => x.k), ['galaxy', 'replies'], 'one chat for everyone: no room row (Oct 24 2026); no Affiliates / Creation rows since Studio was removed (4 Nov 2026)');
   assert.equal(r[0].p, 'No messages yet. Say hi to everyone.'); assert.equal(r[0].n, 0);
   assert.equal(r[1].p, 'Nothing for you yet.'); assert.equal(r[1].dis, true);
   assert.ok(!r.some(x => /here now|Room \d/.test(x.p || '')), 'no presence count or room number invented');
@@ -81,11 +81,12 @@ test('channels: real newest message, unread count and replies are shown as they 
   assert.equal(r[1].p, 'Ben: @you nice'); assert.equal(r[1].n, 1); assert.ok(!r[1].dis);
 });
 
-test('welcome sheet: 4 steps (welcome + rules one card, slim batch 7), rules agree, affiliate yes leads to Affiliates, every line in EN/DE/ES, shown once', () => {
+test('welcome sheet: 4 steps (welcome + rules one card, slim batch 7), rules agree, no affiliate question or card since Studio was removed (4 Nov 2026), every line in EN/DE/ES, shown once', () => {
   const js = read('community-rooms-ui.js');
   assert.match(js, /obStep:\['\{i\} of 4','\{i\} von 4','\{i\} de 4'\]/);
   assert.match(js, /if\(obI===0\)return[^\n]*\n[^\n]*rm-ob-rules/, 'rules sit on the welcome card'); assert.match(js, /obI===0\?tr\('obAgree'\)/);
-  assert.match(js, /if\(aff\)cards\.unshift\(\['aff'/); assert.match(js, /const aff=obA\.aff==='yes';obClose\(true\);if\(aff\)showView\('aff'\)/);
+  assert.doesNotMatch(js, /cards\.unshift\(\['aff'/); assert.doesNotMatch(js, /showView\('aff'\)/); assert.doesNotMatch(js, /chip\('aff'/);
+  assert.doesNotMatch(js, /\['obK1','obK2','obK3'/, 'no Creation / Affiliates lines in the welcome');
   assert.match(js, /function maybeWelcome\(\)\{if\(ob\|\|lsGet\(OBK\)/);
   const block = js.slice(js.indexOf('const OT={'), js.indexOf('Object.assign(T,OT);'));
   const keys = block.match(/\b(ob[A-Za-z0-9]+):\[/g).map(k => k.slice(0, -2));

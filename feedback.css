@@ -1,0 +1,141 @@
+/* LOWiSPIKE feedback sheet + owner inbox (Nov 5 2026), feedback.js. Neutral black / grey (true-black friendly, no navy), gold accent,
+   solid panel under Reduce Transparency, no motion under Reduce Motion or battery saver, 44 pt tap targets. Day look: light panel. */
+.fbk-ov { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: flex-end; justify-content: center; background: rgba(0, 0, 0, .62);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); animation: fbk-fade .18s ease both; }
+.fbk-panel { box-sizing: border-box; width: min(520px, 100vw); max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 10px); display: flex; flex-direction: column;
+    background: rgba(18, 18, 20, .96); color: #f2f2f4; border: 1px solid rgba(255, 255, 255, .12); border-bottom: 0; border-radius: 22px 22px 0 0;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, .5); animation: fbk-up .24s cubic-bezier(.2, .9, .3, 1) both; font: 15px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; }
+.fbk-head { display: flex; align-items: center; gap: 8px; padding: 14px 14px 6px 18px; }
+.fbk-head h2 { flex: 1; margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+.fbk-x { width: 44px; height: 44px; border-radius: 22px; border: 0; background: rgba(255, 255, 255, .08); color: inherit; display: grid; place-items: center; cursor: pointer; }
+.fbk-x svg { width: 20px; height: 20px; }
+.fbk-body { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 18px calc(env(safe-area-inset-bottom, 0px) + 18px); }
+.fbk-lead { margin: 0 0 12px; color: rgba(242, 242, 244, .78); }
+.fbk-hint, .fbk-limits, .fbk-anon-info { margin: 6px 0 10px; font-size: 13px; color: rgba(242, 242, 244, .62); }
+.fbk-lbl { display: block; font-size: 13px; font-weight: 600; color: rgba(242, 242, 244, .7); margin: 10px 0 6px; }
+.fbk-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0; }
+.fbk-ov button { font: inherit; -webkit-tap-highlight-color: transparent; }
+.fbk-ov button:focus-visible, .fbk-ov textarea:focus-visible, .fbk-ov input:focus-visible, .fbk-view:focus-visible { outline: 2px solid #e8c46a; outline-offset: 2px; }
+
+/* the big voice button: the easiest way in */
+.fbk-rec { width: 100%; min-height: 72px; display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 18px; border: 0; cursor: pointer;
+    background-color: #e3bb5c; background-image: linear-gradient(180deg, #f0cf78, #d9ae4a); color: #1a1408; text-align: left; box-shadow: 0 6px 18px rgba(217, 174, 74, .25); transition: transform .3s cubic-bezier(.34, 1.56, .64, 1); }
+.fbk-rec:active { transform: scale(.97); transition-duration: .08s; }
+.fbk-rec svg { width: 34px; height: 34px; flex: none; }
+.fbk-rec b { display: block; font-size: 17px; }
+.fbk-rec small { display: block; font-size: 13px; opacity: .75; }
+.fbk-recbox { display: flex; align-items: center; gap: 10px; min-height: 64px; padding: 10px 12px 10px 16px; border-radius: 18px; background: rgba(255, 69, 58, .14); border: 1px solid rgba(255, 69, 58, .45); }
+.fbk-dot { width: 12px; height: 12px; border-radius: 6px; background: #ff453a; animation: fbk-pulse 1.2s ease-in-out infinite; }
+.fbk-rec-l { font-weight: 600; }
+.fbk-time { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 18px; margin-left: auto; }
+.fbk-max { font-size: 13px; opacity: .6; font-variant-numeric: tabular-nums; }
+.fbk-stop { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; border-radius: 22px; border: 0; background: #ff453a; color: #fff; font-weight: 700; cursor: pointer; }
+.fbk-stop svg { width: 18px; height: 18px; }
+.fbk-voicebox { padding: 10px 12px; border-radius: 16px; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .1); }
+.fbk-voicebox .fbk-lbl { margin-top: 0; }
+.fbk-voicebox audio, .fbk-aud audio { width: 100%; height: 40px; }
+
+/* screenshots */
+.fbk-add { width: 100%; min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 16px; cursor: pointer;
+    background: rgba(255, 255, 255, .06); color: inherit; border: 1px dashed rgba(255, 255, 255, .28); }
+.fbk-add svg { width: 22px; height: 22px; }
+.fbk-add:disabled, .fbk-th-add:disabled { opacity: .4; cursor: default; }
+.fbk-view { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; border-radius: 16px;
+    background: #000; border: 1px solid rgba(255, 255, 255, .1); scrollbar-width: none; touch-action: pan-x pan-y; }
+.fbk-view::-webkit-scrollbar { display: none; }
+.fbk-slide { flex: 0 0 100%; margin: 0; scroll-snap-align: center; scroll-snap-stop: always; position: relative; height: clamp(170px, 100dvh - 430px, 420px); display: grid; place-items: center; }
+.fbk-slide img { max-width: 100%; max-height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.fbk-slide figcaption { position: absolute; right: 10px; bottom: 8px; padding: 2px 9px; border-radius: 10px; background: rgba(0, 0, 0, .7); color: #fff; font-size: 12px; font-variant-numeric: tabular-nums; }
+.fbk-ov.is-rec .fbk-slide { height: clamp(200px, 100dvh - 330px, 520px); }
+/* with screenshots the intro line steps aside, and the voice bar sticks to the bottom so Record / Stop is always one tap away */
+.fbk-send.has-shots .fbk-lead { display: none; }
+.fbk-send.has-shots .fbk-voice { position: sticky; bottom: calc(-18px - env(safe-area-inset-bottom, 0px)); z-index: 2; margin: 0 -18px; padding: 8px 18px calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(18, 18, 20, .98); }
+html[data-black] .fbk-send.has-shots .fbk-voice { background: #000; }
+html[data-theme="light"] .fbk-send.has-shots .fbk-voice { background: rgb(250, 249, 246); }
+.fbk-ctl { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.fbk-ctl button { width: 44px; height: 44px; padding: 0; border: 0; border-radius: 22px; background: rgba(255, 255, 255, .08); color: inherit; display: grid; place-items: center; cursor: pointer; }
+.fbk-ctl button:disabled { opacity: .3; cursor: default; }
+.fbk-ctl svg { width: 20px; height: 20px; }
+.fbk-ctl-n { flex: 1; text-align: center; font-size: 14px; font-variant-numeric: tabular-nums; opacity: .8; }
+.fbk-strip { display: flex; gap: 8px; overflow-x: auto; padding: 8px 2px 2px; scrollbar-width: none; }
+.fbk-strip::-webkit-scrollbar { display: none; }
+.fbk-th { position: relative; flex: none; width: 60px; height: 60px; padding: 0; border-radius: 12px; overflow: hidden; border: 2px solid transparent; background: #000; cursor: pointer; }
+.fbk-th.on { border-color: #e8c46a; }
+.fbk-th img { width: 100%; height: 100%; object-fit: cover; }
+.fbk-th b, .fbk-tn b { position: absolute; left: 4px; top: 4px; min-width: 18px; padding: 0 4px; border-radius: 9px; background: rgba(0, 0, 0, .72); color: #fff; font-size: 11px; line-height: 18px; text-align: center; }
+.fbk-th-add { flex: none; width: 60px; height: 60px; border-radius: 12px; border: 1px dashed rgba(255, 255, 255, .3); background: transparent; color: inherit; font-size: 28px; cursor: pointer; }
+
+/* text, anonymous, send */
+.fbk-text { box-sizing: border-box; width: 100%; min-height: 84px; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, .14); background: rgba(255, 255, 255, .05);
+    color: inherit; font: inherit; font-size: 16px; resize: vertical; }
+.fbk-anon, .fbk-selall { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-top: 8px; font-weight: 600; cursor: pointer; }
+.fbk-anon input, .fbk-selall input, .fbk-pick input { width: 22px; height: 22px; accent-color: #e8c46a; }
+.fbk-anon-info { margin-top: 0; }
+.fbk-status { min-height: 1.2em; margin: 8px 0; font-size: 14px; color: rgba(242, 242, 244, .82); }
+.fbk-status.warn { color: #ffb4a8; }
+.fbk-send-btn { width: 100%; min-height: 50px; border-radius: 25px; border: 0; background: #f2f2f4; color: #000; font-weight: 700; font-size: 17px; cursor: pointer; }
+.fbk-send-btn:disabled { opacity: .35; cursor: default; }
+.fbk-ov.is-rec .fbk-text, .fbk-ov.is-busy .fbk-body { opacity: .7; }
+/* the app's shared dictation mic (mic-dictate.js) stays in the text box, but not while a voice note is recording: one microphone at a time */
+.fbk-ov.is-rec .mic-btn { pointer-events: none; opacity: .35; }
+.fbk-thanks { text-align: center; padding: 30px 6px 10px; }
+.fbk-check { width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 32px; display: grid; place-items: center; background: rgba(48, 209, 88, .18); color: #30d158; font-size: 32px; font-weight: 700; }
+.fbk-thanks h3 { margin: 0 0 6px; font-size: 19px; }
+.fbk-thanks p { margin: 0 0 18px; color: rgba(242, 242, 244, .7); }
+
+/* owner inbox */
+.fbk-inbox .fbk-panel { height: calc(100dvh - env(safe-area-inset-top, 0px) - 10px); }
+.fbk-ibar { position: sticky; top: -4px; z-index: 1; padding: 4px 0 6px; background: inherit; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+.fbk-inbox .fbk-ibar { background: rgba(18, 18, 20, .98); }
+.fbk-seg { display: inline-flex; padding: 3px; border-radius: 12px; background: rgba(255, 255, 255, .07); }
+.fbk-seg button { min-height: 44px; padding: 0 14px; border: 0; border-radius: 10px; background: transparent; color: inherit; cursor: pointer; }
+.fbk-seg button[aria-pressed="true"] { background: rgba(255, 255, 255, .16); font-weight: 700; }
+.fbk-chip { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; border-radius: 22px; border: 1px solid rgba(255, 255, 255, .16); background: rgba(255, 255, 255, .06); color: inherit; cursor: pointer; font-weight: 600; }
+.fbk-chip svg { width: 18px; height: 18px; }
+.fbk-chip.sm { min-height: 44px; padding: 0 12px; font-size: 13px; }
+.fbk-chip:disabled { opacity: .4; cursor: default; }
+.fbk-count { margin-left: auto; font-size: 13px; opacity: .65; }
+.fbk-acts .fbk-chip { flex: 1 1 auto; justify-content: center; }
+.fbk-list { padding-top: 8px; }
+.fbk-card { padding: 12px; margin: 0 0 10px; border-radius: 16px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .09); }
+.fbk-card.is-done { opacity: .6; }
+.fbk-card header { display: flex; align-items: center; gap: 10px; }
+.fbk-pick { display: grid; place-items: center; width: 44px; height: 44px; margin: -6px -4px -6px -8px; cursor: pointer; }
+.fbk-meta { flex: 1; min-width: 0; }
+.fbk-meta b { display: block; }
+.fbk-meta small { display: block; font-size: 12px; opacity: .6; overflow-wrap: anywhere; }
+.fbk-msg, .fbk-tr { margin: 10px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.fbk-tr { padding: 10px 12px; border-radius: 12px; background: rgba(232, 196, 106, .08); border: 1px solid rgba(232, 196, 106, .22); }
+.fbk-tr .fbk-lbl { margin-top: 0; }
+.fbk-aud { margin-top: 8px; }
+.fbk-thumbs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.fbk-tn { position: relative; width: 64px; height: 64px; border-radius: 10px; overflow: hidden; background: #000; display: block; }
+.fbk-tn img { width: 100%; height: 100%; object-fit: cover; }
+.fbk-copybox { min-height: 160px; font-size: 13px; margin-bottom: 10px; }
+
+@keyframes fbk-fade { from { opacity: 0; } }
+@keyframes fbk-up { from { transform: translateY(40px); opacity: 0; } }
+@keyframes fbk-pulse { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .fbk-ov, .fbk-panel, .fbk-dot { animation: none; } .fbk-rec { transition: none; } .fbk-rec:active { transform: none; } }
+html.lowi-saver .fbk-ov, html.lowi-saver .fbk-panel, html.lowi-saver .fbk-dot { animation: none; }
+html.lowi-saver .fbk-ov { -webkit-backdrop-filter: none; backdrop-filter: none; }
+@media (prefers-reduced-transparency: reduce) { .fbk-ov { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(0, 0, 0, .85); } .fbk-panel { background: #1c1c1e; } }
+@media (prefers-contrast: more) { .fbk-panel, .fbk-card, .fbk-chip, .fbk-text { border-color: rgba(255, 255, 255, .4); } .fbk-hint, .fbk-limits, .fbk-anon-info { color: rgba(242, 242, 244, .85); } }
+html[data-black] .fbk-panel { background: rgba(0, 0, 0, .97); }
+@media (prefers-reduced-transparency: reduce) { html[data-black] .fbk-panel { background: #1c1c1e; } }
+
+/* Day look */
+html[data-theme="light"] .fbk-panel { background: rgba(250, 249, 246, .98); color: #1c1c1e; border-color: rgba(0, 0, 0, .1); }
+html[data-theme="light"] .fbk-lead { color: rgba(28, 28, 30, .78); }
+html[data-theme="light"] .fbk-hint, html[data-theme="light"] .fbk-limits, html[data-theme="light"] .fbk-anon-info, html[data-theme="light"] .fbk-lbl { color: rgba(28, 28, 30, .7); }
+html[data-theme="light"] .fbk-x, html[data-theme="light"] .fbk-ctl button, html[data-theme="light"] .fbk-seg { background: rgba(0, 0, 0, .06); }
+html[data-theme="light"] .fbk-add, html[data-theme="light"] .fbk-th-add { background: rgba(0, 0, 0, .03); border-color: rgba(0, 0, 0, .3); }
+html[data-theme="light"] .fbk-text, html[data-theme="light"] .fbk-voicebox, html[data-theme="light"] .fbk-card, html[data-theme="light"] .fbk-chip { background: #fff; border-color: rgba(0, 0, 0, .14); }
+html[data-theme="light"] .fbk-status { color: rgba(28, 28, 30, .85); }
+html[data-theme="light"] .fbk-status.warn { color: #b3261e; }
+html[data-theme="light"] .fbk-send-btn { background: #1c1c1e; color: #fff; }
+html[data-theme="light"] .fbk-seg button[aria-pressed="true"] { background: #fff; }
+html[data-theme="light"] .fbk-inbox .fbk-ibar { background: rgba(250, 249, 246, .98); border-color: rgba(0, 0, 0, .08); }
+html[data-theme="light"] .fbk-tr { background: rgba(160, 120, 20, .08); border-color: rgba(160, 120, 20, .3); }
+html[data-theme="light"] .fbk-thanks p { color: rgba(28, 28, 30, .7); }
+html[data-theme="light"] .fbk-recbox { background: rgba(255, 59, 48, .08); }

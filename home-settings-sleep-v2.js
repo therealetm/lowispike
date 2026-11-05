@@ -24,17 +24,17 @@
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'not logged',
             settings: 'Settings', me: 'Me', look: 'Look & sound', account: 'Account', on: 'on', off: 'off', more: 'More', back: 'Back', close: 'Close',
             moreTitle: 'Everything else', today: 'Today & history', community: 'Community', care: 'Ranking', cook: 'Cook', workouts: 'Workouts',
-            vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest', goTo: 'Go to', settingsGroup: 'Settings', notifications: 'Notifications', support: 'Pay what you want', about: 'About & info', tutorial: 'Tutorial', quickTour: 'Quick tour', catchUp: 'Catch up on today', body: 'Weight & BMI', myday: 'My day', weight: 'Weight journey', version: 'Version' },
+            vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest', goTo: 'Go to', settingsGroup: 'Settings', feedback: 'Send feedback', feedbackInbox: 'Feedback inbox', notifications: 'Notifications', support: 'Pay what you want', about: 'About & info', tutorial: 'Tutorial', quickTour: 'Quick tour', catchUp: 'Catch up on today', body: 'Weight & BMI', myday: 'My day', weight: 'Weight journey', version: 'Version' },
         de: { sleep: 'Schlaf', log: 'Eintragen', ask: 'Wie lange hast du letzte Nacht geschlafen?', under6: 'Unter 6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std. oder mehr',
             short: { under6: '<6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std.+' }, notLogged: 'nicht eingetragen',
             settings: 'Einstellungen', me: 'Ich', look: 'Aussehen & Ton', account: 'Konto', on: 'an', off: 'aus', more: 'Mehr', back: 'Zur\u00fcck', close: 'Schlie\u00dfen',
             moreTitle: 'Alles andere', today: 'Heute & Verlauf', community: 'Community', care: 'Rangliste', cook: 'Kochen', workouts: 'Workouts',
-            vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest', goTo: 'Gehe zu', settingsGroup: 'Einstellungen', notifications: 'Mitteilungen', support: 'Zahl, was du willst', about: '\u00dcber & Hinweise', tutorial: 'Tutorial', quickTour: 'Kurze Tour', catchUp: 'Heute nachtragen', body: 'Gewicht & BMI', myday: 'Mein Tag', weight: 'Gewichtsreise', version: 'Version' },
+            vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest', goTo: 'Gehe zu', settingsGroup: 'Einstellungen', feedback: 'Feedback senden', feedbackInbox: 'Feedback-Postfach', notifications: 'Mitteilungen', support: 'Zahl, was du willst', about: '\u00dcber & Hinweise', tutorial: 'Tutorial', quickTour: 'Kurze Tour', catchUp: 'Heute nachtragen', body: 'Gewicht & BMI', myday: 'Mein Tag', weight: 'Gewichtsreise', version: 'Version' },
         es: { sleep: 'Sue\u00f1o', log: 'Anotar', ask: '\u00bfCu\u00e1nto dormiste anoche?', under6: 'Menos de 6 h', '6to7': '6\u20137 h', '7plus': '7 h o m\u00e1s',
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'sin anotar',
             settings: 'Ajustes', me: 'Yo', look: 'Aspecto y sonido', account: 'Cuenta', on: 's\u00ed', off: 'no', more: 'M\u00e1s', back: 'Atr\u00e1s', close: 'Cerrar',
             moreTitle: 'Todo lo dem\u00e1s', today: 'Hoy e historial', community: 'Comunidad', care: 'Ranking', cook: 'Cocinar', workouts: 'Entrenos',
-            vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', notifications: 'Avisos', support: 'Paga lo que quieras', about: 'Acerca de', tutorial: 'Tutorial', quickTour: 'Tour r\u00e1pido', catchUp: 'Ponerme al d\u00eda', body: 'Peso e IMC', myday: 'Mi d\u00eda', weight: 'Tu camino de peso', version: 'Versi\u00f3n' }
+            vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', feedback: 'Enviar comentarios', feedbackInbox: 'Buz\u00f3n de comentarios', notifications: 'Avisos', support: 'Paga lo que quieras', about: 'Acerca de', tutorial: 'Tutorial', quickTour: 'Tour r\u00e1pido', catchUp: 'Ponerme al d\u00eda', body: 'Peso e IMC', myday: 'Mi d\u00eda', weight: 'Tu camino de peso', version: 'Versi\u00f3n' }
     };
     /* Oct 21 2026 (Emmanuel: the Home bubble is Community now, a hold opens a slim Settings with only what is needed) */
     Object.assign(TX.en, { language: 'Language', deleteAccount: 'Delete account', hint: 'Hold Community for profile & settings', day: 'Day', night: 'Night', foryou: 'For You', hunt: 'Shopping hunt',
@@ -162,7 +162,7 @@
     /* Oct 28 2026 (slim structure: all tutorials into ONE optional guide): the video tour row is gone; Tutorial is the one guide */
     /* Oct 28 2026 slim structure batch 9: notification controls (on/off, how often, quiet hours, phone push) and About & info sit in Settings,
        so every setting is in Profile (Du) and in the Community hold's Settings, one list */
-    const SETTINGS_IDS = ['catchUp', 'theme', 'look', 'worldSound', 'language', 'notifications', 'tutorial', 'support', 'about'], ACCOUNT_IDS = ['account', 'deleteAccount'];
+    const SETTINGS_IDS = ['catchUp', 'theme', 'look', 'worldSound', 'language', 'notifications', 'tutorial', 'feedback', 'feedbackInbox', 'support', 'about'], ACCOUNT_IDS = ['account', 'deleteAccount'];
     const HINT_KEY = 'lowi.hint.holdCommunity.v2', HOLD_MS = 480;   /* v2 (Nov 5 2026): the hold is back, so everyone sees the hint once more */
     /* out of the panel, and where each one is still reached (their routes and features stay in the app):
        today: Emmanuel dropped Today from Home; cook: Fuel bubble > Cook; theme: Settings > Look & sound > Day & night;
@@ -269,6 +269,8 @@
         account: '<rect x="5" y="10.5" width="14" height="9.5" rx="2" ' + P + '/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" ' + P + '/>',
         tutorial: '<circle cx="12" cy="12" r="8.5" ' + P + '/><path d="M10 8.8v6.4l5.2-3.2z" ' + P + '/>',
         notifications: '<path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 1.5H5z" ' + P + '/><path d="M10 20.5a2.2 2.2 0 0 0 4 0" ' + P + '/>',
+        feedback: '<path d="M5 6.5h14a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H10l-4 3v-3H5A1.5 1.5 0 0 1 3.5 16V8A1.5 1.5 0 0 1 5 6.5z" ' + P + '/><path d="M12 9.2v4.2M10.3 11.3h3.4" ' + P + '/>',
+        feedbackInbox: '<path d="M4 13.5l2.2-7h11.6l2.2 7v4.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18z" ' + P + '/><path d="M4 13.5h4.5l1 2h5l1-2H20" ' + P + '/>',
         support: '<path d="M12 19.5s-7-4.3-7-9.2A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.3c0 4.9-7 9.2-7 9.2z" ' + P + '/>',
         about: '<circle cx="12" cy="12" r="8.5" ' + P + '/><path d="M12 11v5.5" ' + P + '/><circle cx="12" cy="7.8" r="1" fill="currentColor"/>',
         catchUp: '<circle cx="12" cy="12" r="8.5" ' + P + '/><path d="M8.4 12.2l2.5 2.5 4.8-5.2" ' + P + '/>',
@@ -369,6 +371,10 @@
         /* slim batch 9: About & info (build, what the numbers are, where data comes from) */
         /* Oct 28 2026 (X-16, slim structure): "Zahl, was du willst" gets its tap path in Profile; it opens the existing support view */
         support: { has: () => !!(root.LowiHerbShop && fn(root.LowiHerbShop, 'open')), run: () => root.LowiHerbShop.open() },
+        /* Nov 5 2026 (feedback.js): everyone can send feedback (voice note first, screenshots, text, optionally without name);
+           the inbox row only shows for the app owner, and the server only gives the rows and files to the owner either way */
+        feedback: { has: () => !!(root.LowiFeedback && fn(root.LowiFeedback, 'open')), run: () => root.LowiFeedback.open() },
+        feedbackInbox: { has: () => !!(root.LowiFeedback && fn(root.LowiFeedback, 'openInbox') && root.LowiFeedback.isOwner()), run: () => root.LowiFeedback.openInbox() },
         about: { has: () => !!(root.LowiR2 && fn(root.LowiR2, 'sheet')), run: openAbout },
         /* Oct 26 2026 (MAYA-HANDOFF 0.38): the video tour (quick-tour.js, VIDEO config), right next to Tutorial; Settings closes first */
         /* Oct 26 2026 (MAYA-HANDOFF 0.39): the evening bubble checklist (evening-catchup.js); Settings closes first */

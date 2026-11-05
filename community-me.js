@@ -51,7 +51,7 @@
         /* Nov 5 2026 (owner, Phase B item 4: "keep Körperklang and VR accessible from Settings"): neither had a row here (World sound sat in
            SKIP, VR was gone from every list), so the only way in was the Home HUD. Both are rows now and run Home's own controls. */
         { key: 'settings', ids: ['theme', 'sky', 'language', 'notifications', 'look', 'worldSound', 'vr'] },
-        { key: 'help', ids: ['tutorial', 'support', 'rules', 'about'] },
+        { key: 'help', ids: ['tutorial', 'feedback', 'feedbackInbox', 'support', 'rules', 'about'] },
         { key: 'danger', ids: ['deleteAccount'] }
     ];
     const SKIP = ['catchUp', 'me', 'body', 'account'];

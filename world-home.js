@@ -1050,7 +1050,7 @@
     }
     function wear(a) {
         const id = a.id;
-        try { localStorage.setItem(AKEY, id); } catch (e) { }
+        try { localStorage.setItem(AKEY, id); localStorage.removeItem(AURA_OFF_KEY); } catch (e) { }   /* wearing one turns Settings > Aura back on */
         applyAura(); repaintMisty(); st.mistyKey = '';
         /* Oct 19 (Emmanuel: "I've changed the color of the aura ... click back to my Misty and nothing changed"): Misty's card under
            this sheet and anything else showing her glow redraw now */

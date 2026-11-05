@@ -22,7 +22,8 @@ def stat(name, info, mem):
     if body is not None and body.shape == fx.shape:
         bm = body.max(axis=2) > 28
         over = 100 * (lit & bm).sum() / max(1, lit.sum())
-    return f'inside {100*(r<.92).mean():3.0f}%  on {100*((r>=.92)&(r<=1.12)).mean():3.0f}%  outside {100*(r>1.12).mean():3.0f}% | median {np.median(r):.2f} p5 {np.percentile(r,5):.2f} p95 {np.percentile(r,95):.2f} | over her body {over:4.1f}%'
+    rb = np.percentile(np.hypot(*(np.nonzero(body.max(axis=2) > 28)[::-1] - np.array([[cx], [cy]]))), 99.5) / (mem * dpr) if body is not None and (body.max(axis=2) > 28).any() else 0
+    return f'[in her reach: median {np.median(r)/rb if rb else 0:.2f} p5 {np.percentile(r,5)/rb if rb else 0:.2f}] inside {100*(r<.92).mean():3.0f}%  on {100*((r>=.92)&(r<=1.12)).mean():3.0f}%  outside {100*(r>1.12).mean():3.0f}% | median {np.median(r):.2f} p5 {np.percentile(r,5):.2f} p95 {np.percentile(r,95):.2f} | over her body {over:4.1f}%'
 for m in json.load(open(d + '/meta.json')):
     if m.get('home'):
         mem = m['home']['box']['w'] / 2 * (1.08 if m['live'] else 1)

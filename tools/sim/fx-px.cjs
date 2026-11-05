@@ -39,7 +39,7 @@ const ISO = sel => 'html,body{background:#000 !important} *{visibility:hidden !i
         await P.reload(); await H.sleep(4200);
         const home = await shot(`home-${id}`, '#spBubble');
         const live = await P.evaluate(() => document.documentElement.classList.contains('wh-world-live'));
-        await P.evaluate(() => LowiMistyHub.open()); await H.sleep(1300);
+        await P.evaluate(() => LowiMistyHub.open()); await H.sleep(2600);
         const card = await shot(`card-${id}`, '.mh-art');
         meta.push({ id, live, home, card }); fs.writeFileSync(out + '/meta.json', JSON.stringify(meta));
         await P.evaluate(() => LowiMistyHub.close()); await H.sleep(600);

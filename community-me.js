@@ -21,9 +21,9 @@
     const HOME_FIRST = ['gift', 'myday'];  /* myday: its bubbles open Home's old day panels (index.html g2h); */
     const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
     const LABELS = {
-        en: { presence: 'Your presence', swaps: 'My swaps', glow: 'Your glow', cycle: 'My cycle', todo: 'Finish your profile', people: 'People', posts: 'Posts & ranking', invite: 'Invite friends', rules: 'Circle rules', look: 'Look & sound', worldSound: 'Body sound', vr: 'VR' },
-        de: { presence: 'Dein Auftritt', swaps: 'Meine Swaps', glow: 'Dein Glow', cycle: 'Mein Zyklus', todo: 'Profil fertig machen', people: 'Leute', posts: 'Posts & Ranking', invite: 'Freunde einladen', rules: 'Regeln im Circle', look: 'Aussehen & Ton', worldSound: 'K\u00f6rperklang', vr: 'VR' },
-        es: { presence: 'Tu presencia', swaps: 'Mis swaps', glow: 'Tu glow', cycle: 'Mi ciclo', todo: 'Completa tu perfil', people: 'Gente', posts: 'Posts y ranking', invite: 'Invitar amigos', rules: 'Normas del Circle', look: 'Aspecto y sonido', worldSound: 'Sonido del cuerpo', vr: 'RV' }
+        en: { presence: 'Your presence', swaps: 'My swaps', glow: 'Your glow', cycle: 'My cycle', todo: 'Finish your profile', people: 'People', posts: 'Posts & ranking', invite: 'Invite friends', rules: 'Circle rules', look: 'Look & sound', worldSound: 'Body sound', vr: 'VR', aura: 'Aura' },
+        de: { presence: 'Dein Auftritt', swaps: 'Meine Swaps', glow: 'Dein Glow', cycle: 'Mein Zyklus', todo: 'Profil fertig machen', people: 'Leute', posts: 'Posts & Ranking', invite: 'Freunde einladen', rules: 'Regeln im Circle', look: 'Aussehen & Ton', worldSound: 'K\u00f6rperklang', vr: 'VR', aura: 'Aura' },
+        es: { presence: 'Tu presencia', swaps: 'Mis swaps', glow: 'Tu glow', cycle: 'Mi ciclo', todo: 'Completa tu perfil', people: 'Gente', posts: 'Posts y ranking', invite: 'Invitar amigos', rules: 'Normas del Circle', look: 'Aspecto y sonido', worldSound: 'Sonido del cuerpo', vr: 'RV', aura: 'Aura' }
     };
     const P = 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"';
     const ICON = {
@@ -38,6 +38,7 @@
         posts: '<path d="M4 5.5h12a1.5 1.5 0 011.5 1.5v7a1.5 1.5 0 01-1.5 1.5H9l-4 3.5V7A1.5 1.5 0 014 5.5z" ' + P + '/><path d="M17.5 9H20a1 1 0 011 1v9.5L18 17h-6.5" ' + P + '/>',
         invite: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" ' + P + '/>',
         rules: '<path d="M6 4h9l3 3v13H6z" ' + P + '/><path d="M9 10h6M9 13.5h6M9 17h4" ' + P + '/>',
+        aura: '<circle cx="12" cy="12" r="4" ' + P + '/><path d="M12 2.8v2M12 19.2v2M2.8 12h2M19.2 12h2M5.5 5.5l1.4 1.4M17.1 17.1l1.4 1.4M5.5 18.5l1.4-1.4M17.1 6.9l1.4-1.4" ' + P + '/>',
         vr: '<path d="M3.5 8.5h17a1 1 0 011 1v5a2 2 0 01-2 2h-3.6l-1.9-2.4a1.3 1.3 0 00-2 0l-1.9 2.4H4.5a2 2 0 01-2-2v-5a1 1 0 011-1z" ' + P + '/>',
         x: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ' + P + ' stroke-width="2.2"/>',
         chev: '<path d="M9.5 6l6 6-6 6" ' + P + '/>'
@@ -54,7 +55,7 @@
         /* Nov 5 2026 (owner, Phase B item 4: "keep Körperklang and VR accessible from Settings"): neither had a row here (World sound sat in
            SKIP, VR was gone from every list), so the only way in was the Home HUD. Both are rows now and run Home's own controls. */
         /* Nov 5 2026: Still galaxy (galaxy-still.js, LowiGalaxyStill) sits right under the theme rows */
-        { key: 'settings', ids: ['theme', 'galaxyStill', 'sky', 'language', 'notifications', 'look', 'worldSound', 'vr'] },
+        { key: 'settings', ids: ['theme', 'galaxyStill', 'aura', 'sky', 'language', 'notifications', 'look', 'worldSound', 'vr'] },
         { key: 'help', ids: ['tutorial', 'feedback', 'feedbackInbox', 'support', 'rules', 'about'] },
         { key: 'danger', ids: ['deleteAccount'] }
     ];
@@ -133,6 +134,9 @@
             return '<button type="button" class="cme-row cme-swrow" role="switch" data-cme="vr" aria-checked="' + (v.st === 'on') + '"' + (v.st === 'none' ? ' aria-disabled="true"' : '') + ' aria-label="' + esc(lab) + '" aria-describedby="cmeVrSt">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b><small class="cme-sub" id="cmeVrSt">' + esc(txt) + '</small></span><span class="cme-sw" aria-hidden="true"><i></i></span></button>'; }
         if (id === 'worldSound') { const on = !!(root.LowiWorldAudio && root.LowiWorldAudio.on), stx = VRT[l] || VRT.en;
             return '<button type="button" class="cme-row" data-cme="worldSound" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><small class="cme-st">' + esc(on ? stx.on : stx.off) + '</small>' + svg('chev', 'cme-chev') + '</button>'; }
+        /* Nov 5 2026 (owner: "can't even turn off the aura"): a plain iOS switch, the aura's name written under it while it is on */
+        if (id === 'aura') { const Wh = root.LowiWorldHome, on = Wh.auraOn(), stx = VRT[l] || VRT.en; let nm = ''; try { const C2 = root.LowiWorldHomeCore, a = C2 && C2.aura(Wh.auraId()); nm = a && a.n ? (a.n[{ en: 0, de: 1, es: 2 }[l] || 0] || '') : ''; } catch (e) { }
+            return '<button type="button" class="cme-row cme-swrow" role="switch" data-cme="aura" aria-checked="' + on + '" aria-label="' + esc(lab) + '" aria-describedby="cmeAuraSt">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b><small class="cme-sub" id="cmeAuraSt">' + esc(on ? (nm ? stx.on + ' \u00b7 ' + nm : stx.on) : stx.off) + '</small></span><span class="cme-sw" aria-hidden="true"><i></i></span></button>'; }
         if (id === 'galaxyStill') { const G = root.LowiGalaxyStill, gl = G.label(l), gs = G.status(l); return '<button type="button" class="cme-row" role="switch" data-cme="galaxyStill" aria-checked="' + G.on() + '" aria-label="' + esc(gl) + ': ' + esc(gs) + '">' + ico + '<span class="cme-tx"><b>' + esc(gl) + '</b><small>' + esc(G.sub(l)) + '</small></span><small class="cme-st">' + esc(gs) + '</small></button>'; }
         if (id === 'deleteAccount') return '<button type="button" class="cme-row cme-danger" data-cme="deleteAccount" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
         return '<button type="button" class="cme-row" data-cme="' + id + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
@@ -150,6 +154,7 @@
         if (id === 'vr') return !!(root.LowiWorld3D && root.LowiWorld3D.gyro);
         if (id === 'cycle') { try { const C = root.LowiCycleWorld; return !!(C && typeof C.open === 'function' && (typeof C.eligible !== 'function' || C.eligible())); } catch (e) { return false; } }
         if (id === 'galaxyStill') { try { const G = root.LowiGalaxyStill; return !!(G && typeof G.available === 'function' && G.available()); } catch (e) { return false; } }
+        if (id === 'aura') return !!(root.LowiWorldHome && typeof root.LowiWorldHome.setAuraOn === 'function');
         if (id === 'people') return !!(root.LowiPeopleDir && typeof root.LowiPeopleDir.open === 'function');
         if (id === 'invite') return !!(root.LowiRoomsUI && typeof root.LowiRoomsUI.invite === 'function');
         if (id === 'rules') return !!(root.LowiCommunityWelcome && typeof root.LowiCommunityWelcome.open === 'function');
@@ -251,6 +256,7 @@
         if (id === 'delGo') { delGo(b); return; }
         /* Day/night switches in place and the page stays open */
         if (id === 'vr') { vrToggle(b); return; }
+        if (id === 'aura') { const Wh = root.LowiWorldHome; if (Wh && Wh.setAuraOn) Wh.setAuraOn(!Wh.auraOn()); render(); const f = el && el.querySelector('[data-cme="aura"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } return; }
         if (id === 'worldSound') { const A = root.LowiWorldAudio; if (A && typeof A.open === 'function') { A.open(); return; } }
         if (id === 'theme') { s.run('theme'); setTimeout(() => { if (el && !asking) { render(); const f = el.querySelector('[data-cme="theme"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } } }, 60); return; }
         close(false);

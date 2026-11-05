@@ -120,7 +120,8 @@ test('Shop sheet: plain "Scan in the shop" and "Shopping list" buttons, in three
     assert.match(sp, /T\('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda'\)/);
     /* Oct 26 (MAYA-HANDOFF 0.22): the Shopping list pill became the Cart (Warenkorb / Carrito); its sheet has Go shopping (the same list in shop mode) */
     assert.match(sp, /T\('Cart', 'Warenkorb', 'Carrito'\)/);
-    assert.match(sp, /T\('Go shopping', 'Einkaufen gehen', 'Ir a comprar'\)/);
+    /* Nov 5 2026 (test changed, why): owner walkthrough, the Cart ends in two equal choices: "I'll buy it" and "Someone else pays" */
+    assert.match(sp, /T\('I’ll buy it', 'Ich kaufe selbst', 'Lo compro yo'\)/);
     assert.match(sp, /if \(a === 'scanshop'\) \{ close\(\); setTimeout\(\(\) => \{ try \{ W\.LowiShopScan\.open\(\); \}/);
     assert.match(sp, /if \(a === 'mylist'\) \{ close\(\); setTimeout\(\(\) => \{ try \{ W\.tdShopOpen\(\); \}/);
 });

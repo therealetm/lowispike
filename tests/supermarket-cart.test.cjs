@@ -25,8 +25,8 @@ test('cart-core: lines are the items still to buy, quantities default to 1, the 
     const ls = C.lines(list, id => ({ lidl: 'Lidl', aldi: 'Aldi' })[id]);
     assert.deepEqual(ls.map(l => [l.id, l.q, l.store, l.p]), [['a', 2, 'Lidl', 1.29], ['b', 1, '', null]]);
     assert.equal(C.count(list), 3);
-    assert.deepEqual(C.total(list), { sum: 2.58, priced: 1, all: 2, complete: false });
-    assert.deepEqual(C.total([]), { sum: 0, priced: 0, all: 0, complete: false });
+    assert.deepEqual(C.total(list), { sum: 2.58, priced: 1, all: 2, complete: false, approx: 0 }); /* Nov 5 2026 (test changed, why): total also counts estimated lines (approx) */
+    assert.deepEqual(C.total([]), { sum: 0, priced: 0, all: 0, complete: false, approx: 0 });
     assert.equal(C.total([list[0]]).complete, true);
 });
 
@@ -67,12 +67,13 @@ test('Cart sheet: quantities, honest estimate, empty state and the three ways on
     const h = fnBody(sp, 'cartHTML');
     assert.match(h, /data-stp-cq=/); assert.match(h, /data-stp-cd="-1"/); assert.match(h, /data-stp-cd="1"/);
     assert.match(h, /T\('Estimated total', 'Geschätzte Summe', 'Total estimado'\)/);
-    assert.match(h, /From prices people reported on the shelf/);
+    /* Nov 5 2026 (test changed, why): Plan my week estimates now count toward the total, marked ≈, never passed off as shop prices */
+    assert.match(h, /not live shop prices/);
     assert.match(h, /have no price yet/);
-    assert.match(h, /no price reported yet', 'noch kein Preis gemeldet', 'aún sin precio'/);
+    assert.match(h, /no price yet', 'noch kein Preis', 'aún sin precio'/);
     assert.match(h, /Your cart is empty/);
     assert.match(h, /same list as your shopping list/);
-    assert.match(h, /data-stp="mylist"/); assert.match(h, /data-stp="scanshop"/);
+    assert.match(h, /data-stp="mylist"/); assert.doesNotMatch(h, /data-stp="scanshop"/);
     /* Oct 26 2026 (MAYA-HANDOFF 0.34, Emmanuel): "I could use a hand" became "Someone else pays", which turns the whole cart into a
        Give a hand basket; the third way on is now data-stp="giftcart" (still opens Give a hand, see the next test) */
     assert.match(h, /data-stp="giftcart"/);

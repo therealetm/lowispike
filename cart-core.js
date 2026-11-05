@@ -10,22 +10,27 @@
     const MAX_Q = 99;
     const qOf = i => { const q = Math.round(Number(i && i.q)); return q >= 1 ? Math.min(MAX_Q, q) : 1; };
     const priceOf = i => { const p = Number(i && i.p); return i && i.p != null && isFinite(p) && p > 0 ? p : null; };
+    /* Nov 5 2026 (owner walkthrough: "I see the total price in my Warenkorb"): Plan my week puts each thing on the list with its
+       pack count (q) and the planner's store estimate per pack (pe). A reported shelf price (p) always wins; an estimate is
+       marked approx so the Cart can say "≈" and never pass it off as a real shop price. */
+    const estOf = i => { const p = Number(i && i.pe); return i && i.pe != null && isFinite(p) && p > 0 ? p : null; };
     /* the cart lines, newest last as on the list; storeName(id) turns a store id into its name ('' for any store) */
     function lines(list, storeName) {
         return (Array.isArray(list) ? list : []).filter(i => i && !i.done && String(i.n || '').trim()).map(i => {
             let store = '';
             if (i.s && i.s !== 'any' && i.s !== 'other' && typeof storeName === 'function') { try { store = String(storeName(i.s) || ''); } catch (e) { store = ''; } }
-            const p = priceOf(i), q = qOf(i);
-            return { id: String(i.id), n: String(i.n).trim(), e: i.e || '\u{1F6D2}', photo: i.photo || '', store, q, p, line: p == null ? null : Math.round(p * q * 100) / 100 };
+            const p = priceOf(i), pe = p == null ? estOf(i) : null, unit = p != null ? p : pe, q = qOf(i);
+            return { id: String(i.id), n: String(i.n).trim(), e: i.e || '\u{1F6D2}', photo: i.photo || '', store, q, p, pe, unit, approx: p == null && pe != null, line: unit == null ? null : Math.round(unit * q * 100) / 100 };
         });
     }
     /* how many things are in the cart (quantities count) */
     function count(list) { return lines(list).reduce((a, l) => a + l.q, 0); }
     /* the estimated total: only lines with a reported price; priced/all say how much of the cart it covers */
+    /* Nov 5 2026: estimates (pe) count too, and approx says how many lines are estimates, not reported prices */
     function total(list) {
-        const ls = lines(list), pr = ls.filter(l => l.p != null);
-        const sum = Math.round(pr.reduce((a, l) => a + l.p * l.q, 0) * 100) / 100;
-        return { sum, priced: pr.length, all: ls.length, complete: ls.length > 0 && pr.length === ls.length };
+        const ls = lines(list), pr = ls.filter(l => l.unit != null);
+        const sum = Math.round(pr.reduce((a, l) => a + l.unit * l.q, 0) * 100) / 100;
+        return { sum, priced: pr.length, all: ls.length, complete: ls.length > 0 && pr.length === ls.length, approx: pr.filter(l => l.approx).length };
     }
     /* change a line's quantity in place; 0 or less takes it out of the cart. Returns 'set' | 'removed' | null (not found) */
     function setQty(list, id, q) {

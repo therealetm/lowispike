@@ -361,14 +361,14 @@
         const n = ls.reduce((a, l) => a + l.q, 0);
         const row = l => '<li class="stp-cart-row" data-stp-cart-id="' + esc(l.id) + '">' +
             '<span class="stp-cart-ph" aria-hidden="true">' + (l.photo ? '<img src="' + esc(l.photo) + '" alt="" loading="lazy">' : esc(l.e)) + '</span>' +
-            '<span class="stp-cart-txt"><b>' + esc(foodName(l.n)) + '</b><small>' + esc([l.store, l.p != null ? money(l.p) + T(' each', ' pro Stück', ' c/u') : T('no price reported yet', 'noch kein Preis gemeldet', 'aún sin precio')].filter(Boolean).join(' · ')) + '</small></span>' +
+            '<span class="stp-cart-txt"><b>' + esc(foodName(l.n)) + '</b><small>' + esc([l.store, l.p != null ? money(l.p) + T(' each', ' pro Stück', ' c/u') : l.pe != null ? '\u2248 ' + money(l.pe) + T(' each', ' pro Stück', ' c/u') : T('no price yet', 'noch kein Preis', 'aún sin precio')].filter(Boolean).join(' · ')) + '</small></span>' +
             '<span class="stp-cart-q" role="group" aria-label="' + esc(T('Quantity of ', 'Menge von ', 'Cantidad de ') + l.n) + '">' +
             '<button type="button" class="stp-cart-step"' + (l.q <= 1 ? ' data-spend="1"' : '') + ' data-stp-cq="' + esc(l.id) + '" data-stp-cd="-1" aria-label="' + esc((l.q > 1 ? T('One less: ', 'Eins weniger: ', 'Uno menos: ') : T('Remove from the cart: ', 'Aus dem Warenkorb nehmen: ', 'Quitar del carrito: ')) + l.n) + '">\u2212</button>' +
             '<b aria-live="polite">' + l.q + '</b>' +
             '<button type="button" class="stp-cart-step" data-stp-cq="' + esc(l.id) + '" data-stp-cd="1" aria-label="' + esc(T('One more: ', 'Eins mehr: ', 'Uno más: ') + l.n) + '"' + (CC && l.q >= CC.MAX_Q ? ' disabled' : '') + '>+</button></span></li>';
         const totalHTML = !ls.length ? '' : tot.priced
             ? '<p class="stp-cart-total"><span>' + esc(tot.complete ? T('Estimated total', 'Geschätzte Summe', 'Total estimado') : T('Estimate so far', 'Bisher geschätzt', 'Estimado hasta ahora')) + '</span><b>' + esc(money(tot.sum)) + '</b></p>' +
-              '<p class="stp-fine">' + esc(T('From prices people reported on the shelf. In the shop it can differ.', 'Aus Preisen, die Leute am Regal gemeldet haben. Im Laden kann es anders sein.', 'Con precios que la gente ha visto en la tienda. Allí puede variar.') +
+              '<p class="stp-fine">' + esc((tot.approx ? T('\u2248 marks store estimates from Plan my week, not live shop prices. ', '\u2248 sind Schätzungen aus Meine Woche planen, keine echten Ladenpreise. ', '\u2248 son estimaciones de Planear mi semana, no precios reales. ') : '') + T('In the shop it can differ.', 'Im Laden kann es anders sein.', 'En la tienda puede variar.') +
                 (tot.complete ? '' : ' ' + T((tot.all - tot.priced) + ' of ' + tot.all + ' have no price yet.', (tot.all - tot.priced) + ' von ' + tot.all + ' haben noch keinen Preis.', (tot.all - tot.priced) + ' de ' + tot.all + ' aún no tienen precio.'))) + '</p>'
             : '<p class="stp-fine">' + esc(T('Nobody has reported prices for these yet, so there’s no total.', 'Für diese Sachen hat noch niemand Preise gemeldet, deshalb gibt es keine Summe.', 'Nadie ha indicado aún precios para esto, así que no hay total.')) + '</p>';
         const scan = W.LowiShopScan && W.LowiShopScan.open, list = typeof W.tdShopOpen === 'function', G = giftDoor();
@@ -376,11 +376,13 @@
            pills grew into huge circles that spilled out of the sheet. Now: title fixed on top, the list scrolls, and the actions
            sit under it: Go shopping full width, then two matching pills with the same 18 px icon. "Someone else pays" turns
            the whole cart into a Give a hand basket (gift-basket.js fromCart). */
-        const two = (scan ? '<button type="button" class="stp-pill stp-cart-act" data-stp="scanshop">' + ic.scan + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>' : '') +
-            (G ? '<button type="button" class="stp-pill stp-cart-act" data-stp="giftcart" data-spend="1">' + ic.gift + '<span>' + esc(T('Someone else pays', 'Jemand anderes zahlt', 'Que pague otra persona')) + '</span></button>' : '');
-        const acts = !ls.length ? '' : '<div class="stp-cart-acts">' +
-            (list ? '<button type="button" class="stp-go stp-cart-go" data-stp="mylist">' + ic.cart + '<span>' + esc(T('Go shopping', 'Einkaufen gehen', 'Ir a comprar')) + '</span></button>' : '') +
-            (two ? '<div class="stp-cart-two">' + two + '</div>' : '') + '</div>';
+        /* Nov 5 2026 (owner walkthrough): two equal choices under the total, nothing else. "I'll buy it" = the shopping list in shop
+           mode; "Someone else pays" sends the WHOLE cart to Give a hand (no longer a small hidden pill). Scan in the shop is gone
+           from the Cart ("we don't need scan in the shop in the cart"); scanning stays on the Scan tab and in Supermarkt. */
+        void scan;
+        const acts = !ls.length ? '' : '<div class="stp-cart-acts stp-cart-choice">' +
+            (list ? '<button type="button" class="stp-go stp-cart-go" data-stp="mylist">' + ic.cart + '<span>' + esc(T('I’ll buy it', 'Ich kaufe selbst', 'Lo compro yo')) + '</span></button>' : '') +
+            (G ? '<button type="button" class="stp-go stp-cart-go stp-cart-gift" data-stp="giftcart" data-spend="1">' + ic.gift + '<span>' + esc(T('Someone else pays', 'Jemand anderes zahlt', 'Que pague otra persona')) + '</span></button>' : '') + '</div>';
         return '<div class="stp-qv-card stp-cart-card" role="dialog" aria-modal="true" aria-labelledby="stpCartT">' +
             '<div class="stp-cart-head"><h3 id="stpCartT">\u{1F6D2} ' + esc(T('Cart', 'Warenkorb', 'Carrito')) + (n ? ' <i class="stp-cart-n">' + n + '</i>' : '') + '</h3>' +
             '<p class="stp-qv-sub">' + esc(T('It’s the same list as your shopping list.', 'Das ist dieselbe Liste wie deine Einkaufsliste.', 'Es la misma lista que tu lista de la compra.')) + '</p></div>' +

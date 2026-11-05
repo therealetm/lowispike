@@ -8258,7 +8258,15 @@ function shBoot(){
   window.LOWI_SHELF = {open:openShelf, showTab, state:() => SH, rules:SH_RULES, reset:() => { SH = shFresh(); shSave(); render(); },
     priceCompareHTML:(name, ean, compact) => priceCompareFor(name, ean, compact),
     priceReports:(name, ean) => { const p = findDup(name, ean); return p && isLive(p) ? liveSightings(p).filter(s => s.p > 0 && s.at).map(s => ({amount:Number(s.p),currency:"EUR",store:storeById(s.s).n,area:s.br || "",date:new Date(s.at).toISOString(),expires:s.until || 0,source:"community-shelf",reporterStatus:"user-reported"})) : []; },
-    addIngredients:(items, title) => { const before = SH.list.length; items.forEach(i => { const p = findDup(i.n, i.barcode || ""); if (p && isLive(p)) addToList(p, null, title); else addPlain(i.n + (i.q ? " · " + i.q : ""), title); }); return SH.list.length - before; },
+    /* Nov 5 2026 (owner walkthrough, Give a hand total): Plan my week sends packs (how many) and pe (its store estimate per pack).
+       They land on the line as q and pe, so the Cart and Give a hand keep "3 cucumbers" and a total instead of 1 and no price.
+       Adding the same week again never doubles a line: the bigger count stays. A reported shelf price (p) always wins over pe. */
+    addIngredients:(items, title) => { const before = SH.list.length; items.forEach(i => {
+      const q = Math.max(1, Math.min(99, Math.round(Number(i.packs) || 1))), pe = Number(i.pe) > 0 ? Math.round(Number(i.pe) * 100) / 100 : null;
+      const p = findDup(i.n, i.barcode || ""); let it = null;
+      if (p && isLive(p)) { addToList(p, null, title); it = SH.list.find(x => x.pid === p.id && !x.done); }
+      else { const name = i.n + (i.q ? " · " + i.q : ""); addPlain(name, title); it = SH.list.find(x => !x.pid && x.n === name && !x.done); }
+      if (it) { if (q > (it.q || 1)) it.q = q; if (pe != null && it.p == null) it.pe = pe; } }); shSave(); return SH.list.length - before; },
     searchIngredients:term => { openShelf("regal"); V.q = String(term || "").slice(0, 100); V.sub = ""; render(); },
     /* Oct 8: Today's shopping list and shop mode read member finds and the extra list from here */
     findsFor:(g, name) => { const ws = words(name).filter(w => w.length > 3);

@@ -339,6 +339,11 @@ button.stp-again:active { background: rgba(255, 255, 255, .13); }
 .stp-cart-acts .stp-pill span, .stp-cart-acts .stp-go span { min-width: 0; overflow-wrap: break-word; }
 .stp-cart-card .stp-foot { flex: 0 0 auto; }
 @media (max-width: 360px) { .stp-cart-two { grid-template-columns: 1fr; } }
+/* Nov 5 2026 (owner walkthrough): two equal choices under the total, "I'll buy it" and "Someone else pays" */
+.stp-cart-choice { flex-direction: row; }
+.stp-cart-choice > .stp-go { flex: 1 1 0; }
+.stp-cart-acts .stp-go.stp-cart-gift { background: transparent; color: inherit; border: 1.5px solid currentColor; }
+@media (max-width: 340px) { .stp-cart-choice { flex-direction: column; } }
 
 /* Oct 26 quick "+" on every product row (MAYA-HANDOFF 0.35, quick-add-core.js): the verdict is a small tag by the name, the
    quick column sits on the right of the row with a fixed width, so turning "+" into "- 1 +" never reflows the row under the

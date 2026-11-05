@@ -69,7 +69,9 @@ test('cart sheet: compact matching actions outside the scrolling list, Someone e
     const i = S.indexOf('    function cartHTML'), body = S.slice(i, S.indexOf('\n    }\n', i));
     assert.match(body, /data-stp="giftcart" data-spend="1"/, 'the cart\'s Someone else pays carries data-spend (BH-043 rule)');
     assert.match(body, /Someone else pays', 'Jemand anderes zahlt', 'Que pague otra persona'/);
-    assert.match(body, /ic\.scan/); assert.match(body, /ic\.gift/);
+    /* Nov 5 2026 (test changed, why): owner said the Cart doesn't need Scan in the shop; scanning stays on Scan and in Supermarkt */
+    assert.doesNotMatch(body, /data-stp="scanshop"/); assert.match(body, /ic\.gift/);
+    assert.match(body, /stp-go stp-cart-go stp-cart-gift" data-stp="giftcart"/, 'Someone else pays is a full-size choice, not a small pill');
     assert.ok(body.indexOf("'</div>' + acts") > 0, 'the actions sit after the scroll area, not inside it');
     assert.match(body, /esc\(foodName\(l\.n\)\)/, 'cart rows show names in the app language');
     assert.match(S, /a2 === 'giftcart'[^\n]*spend\(e\)[^\n]*G\.fromCart\('shop'\)/);
@@ -86,10 +88,11 @@ test('Give a hand: the cart basket shares the whole cart and lands in the swipe 
     assert.match(G, /open: openPanel, fromCart,/, 'LowiGiftBasket.fromCart is public');
     assert.match(G, /data-gb="cartshare" data-spend="1"/, 'Share carries data-spend');
     const sc = G.slice(G.indexOf('    function shareCart'), G.indexOf('    function missing('));
-    assert.match(sc, /C\.build\(cartDraft\(\), rate\)/, 'same build rules (low-spike only, €5-150, real pay link)');
+    /* Nov 5 2026 (test changed, why): the rules now come from the server (LIM): every food once the open-cart setup ran */
+    assert.match(sc, /C\.build\(cartDraft\(\), rate, LIM\)/, 'same build rules (server limits, €5-150, real pay link)');
     assert.match(sc, /api\(\)\.share\(/, 'same server call as the normal basket');
     assert.match(sc, /tab = 'give'/, 'then straight to the swipe feed');
     assert.doesNotMatch(G, /Not for a basket \(not low-spike\): /, 'unknown foods are no longer called spiky');
     assert.match(G, /\(kann die App noch nicht bewerten\)/);
-    assert.match(G, /C\.fromCart\(cart, rate, fname\)/, 'builder chips: names in the app language');
+    assert.match(G, /C\.fromCart\(cart, rate, fname, LIM\)/, 'builder chips: names in the app language');
 });

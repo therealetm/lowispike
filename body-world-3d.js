@@ -136,7 +136,7 @@
             canvas.addEventListener('webglcontextrestored', () => ctxBack());
             world = S.createWorld(THREE, canvas, { places: PLACES, small: W.innerWidth < 380, dprCap: dprCap({ w: W.innerWidth, mem: navigator.deviceMemory }), theme: themeNow(), inBack: () => mode === 'back', shouldRender, onFrameError,
                 /* Oct 28 2026 item 29: faded behind steady Community = rest (1x1 buffer, canvas hidden, no blur filter kept) */
-                rest: backFaded, onRest: r => { try { canvas.classList.toggle('bw3-rest', !!r); } catch (e) { } } });
+                rest: backFaded, idle: () => moveStill(), onRest: r => { try { canvas.classList.toggle('bw3-rest', !!r); } catch (e) { } } });
             Object.assign(api, { THREE, scene: world.scene, camera: world.camera, renderer: world.renderer, hub: world.hub, regions: world.regions, rig: world.rig, memU: world.memU || null });
             pendingFrames.forEach(fn => { const t = pendingBind.get(fn); const off = world.onFrame(fn); if (t) t.bind(off); }); pendingFrames.clear(); pendingBind.clear();
             api.ready = true; api.state = 'ready'; H.classList.add('bw3-ready');
@@ -197,12 +197,25 @@
        not gx-in / gx-out = canvas opacity 0) and shows a still deep-blue space instead. Drawing a canvas nobody can see only heats the
        phone, so while it is fully faded nothing is drawn. Read from the canvas's own style, so it only applies when that CSS is live
        and the fade has finished; the pull-out and the dive home (gx-in / gx-out) are never touched. */
+    /* Nov 5 2026 (owner: the Move/gym background "looks animated/live" and glitches on the way back Home): Move is a still page.
+       Its own background is opaque (move-bubble.css: true black in Dark, a still dark sky otherwise), so while Move is the open,
+       settled page nothing behind it is drawn: no world frames, no camera flight, no drifting motes. The world wakes the moment a
+       slide starts, a workout player that uses the world opens (html.mp-world), or the warp runs. Move no longer pulls the camera
+       out into the spirit world, so coming back Home has no dive to play: Home is exactly where you left it. */
+    function moveStill() {
+        if (mode !== 'back') return false;
+        if (/(^|\s)(gx-in|gx-out|gx-hold|rw-scanworld|mp-world)(\s|$)/.test(H.className)) return false;
+        const t = D.querySelector('#main > .tab.active');
+        if (!t || t.id !== 'tab-move') return false;
+        return !D.querySelector('#main > .tab.lg-in, #main > .tab.lg-out, #main > .tab.lg-peek');
+    }
     function backFaded() {
         if (!canvas || !H.classList.contains('wb-comm') || H.classList.contains('gx-in') || H.classList.contains('gx-out')) return false;
         try { return +W.getComputedStyle(canvas).opacity === 0; } catch (e) { return false; }
     }
     function shouldRender() {
         if (D.hidden) return false;
+        if (moveStill()) return false;
         if (H.classList.contains('mm-open')) return false;   /* Mirror mode covers the screen: no world frames behind it */
         if (H.classList.contains('stp-open')) return false;
         if (H.classList.contains('sz-open')) return false;
@@ -461,17 +474,21 @@
         /* Oct 16 (task 1 rework, E-man: "Cook, Move and Scan share the expanded Community spirit world; Today stays as it is"):
            Community, Cook, Move and Scan, however they are opened, are the live world pulled out past our bubble into the spirit
            world; only Today brings the camera back down into Misty's world (above). Any other page keeps Misty's world. */
-        const REALM = ['tab-foryou', 'tab-shelf', 'tab-move', 'tab-scan'];
+        /* Nov 5 2026: Move left the shared spirit world: a still page (moveStill above). Opening it puts the camera back where Home
+           left it at once, unseen behind Move's opaque page, so the way back Home is a plain slide with no dive. */
+        const REALM = ['tab-foryou', 'tab-shelf', 'tab-scan'];
         const otherIn = !!(w === true && t && t.id !== 'tab-home' && REALM.indexOf(t.id) < 0 && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
         /* Oct 21: an instant X / back to Home has no slide, so homeIn above never fires: put the camera back where Home left it now */
         if (w === false && t && t.id === 'tab-home') { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull) { if (W.LowiSections && W.LowiSections.instant && WH.settle) WH.settle(); else if (WH.diveIn) WH.diveIn(); } } catch (e) { } }
-        if (otherIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); } catch (e) { } }
+        if (otherIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull) { if (t.id === 'tab-move' && WH.settle) WH.settle(); else if (WH.diveIn) WH.diveIn(); } } catch (e) { } }
         const commIn = !!(w === true && t && REALM.indexOf(t.id) >= 0 && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
         if (commIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && !WH.state.pull && WH.pullOut) WH.pullOut(); } catch (e) { } }
         H.classList.toggle('wb-home', homeIn); if (w === true && mode !== 'back') backdrop(true); else if (w === false && mode === 'back') backdrop(false);
+        H.classList.toggle('wb-mvstill', moveStill());
     }
     /* Oct 28 item 29: a resting world (faded behind steady Community) wakes the moment the page or the warp changes, not on its next look */
-    function queueBack() { try { if (world && world.resting && world.nudge) world.nudge(); } catch (e) { } if (!backQ) backQ = (W.requestAnimationFrame || setTimeout)(syncBack, 0); }
+    api.moveStill = () => moveStill();
+    function queueBack() { try { if (world && (world.resting || world.idling) && world.nudge) world.nudge(); } catch (e) { } if (!backQ) backQ = (W.requestAnimationFrame || setTimeout)(syncBack, 0); }
     if (typeof MutationObserver !== 'undefined') {
         const mo = new MutationObserver(queueBack);
         const watchTabs = () => { mo.observe(H, { attributes: true, attributeFilter: ['class'] }); const m = D.getElementById('main'); if (m) mo.observe(m, { attributes: true, attributeFilter: ['class'], subtree: true }); else setTimeout(watchTabs, 300); };

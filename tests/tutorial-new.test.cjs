@@ -6,7 +6,7 @@ const S = require('../tutorial-steps.js');
 const card = id => S.STEPS.find(s => s.id === id);
 
 test('the new tour follows a day: Misty, Scan, Gap, Water/Move/Sleep, Shopping, Supermarket, Community, Settings, flying', () => {
-    assert.deepStrictEqual(S.plan({}).map(s => s.id), ['hello', 'scan', 'gap', 'day', 'fuel', 'shop-week', 'community', 'settings', 'done']);
+    assert.deepStrictEqual(S.plan({}).map(s => s.id), ['hello', 'scan', 'gap', 'day', 'mirror', 'fuel', 'shop-week', 'community', 'settings', 'done']);
     assert.ok(S.VERSION >= 38, 'the tour version moved on, so What\'s new knows the tour changed');
     for (const s of S.plan({})) for (const l of ['en', 'de', 'es']) {
         assert.ok(s.text[l] && s.title[l], s.id + ' has ' + l);

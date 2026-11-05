@@ -12,8 +12,9 @@ const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const C = require('../realm-backdrop-core.js');
 const noComments = s => s.replace(/\/\*[\s\S]*?\*\//g, '');
 
-test('the realm shows on Cook, Move and Scan only; never on Today; never during the Home <-> Community warp', () => {
-    for (const id of ['tab-shelf', 'tab-move', 'tab-scan']) {
+test('the realm shows on Cook and Scan only; never on Today, never on Move (a still page since Nov 5 2026); never during the warp', () => {
+    assert.equal(C.want({ active: 'tab-move' }), false, 'Move is a still page: no realm motes behind it (owner: the gym background looked live)');
+    for (const id of ['tab-shelf', 'tab-scan']) {
         assert.equal(C.want({ active: id }), true, id);
         assert.equal(C.want({ active: id, zoom: true }), false, id + ' during the warp');
     }
@@ -27,8 +28,8 @@ test('the realm shows on Cook, Move and Scan only; never on Today; never during 
 
 test('how it comes and goes: from Today it arrives from further away, from Community it is already there, to Today it fades', () => {
     assert.equal(C.change('tab-home', 'tab-shelf', true), 'arrive');
-    assert.equal(C.change('tab-foryou', 'tab-move', true), 'instant', 'same picture as Community: no flash between them');
-    assert.equal(C.change('', 'tab-move', true), 'fade');
+    assert.equal(C.change('tab-foryou', 'tab-scan', true), 'instant', 'same picture as Community: no flash between them');
+    assert.equal(C.change('', 'tab-scan', true), 'fade');
     assert.equal(C.change('tab-shelf', 'tab-home', false), 'fade', 'Misty\'s world shows through');
     assert.equal(C.change('tab-shelf', 'tab-foryou', false), 'instant', 'hidden behind Community\'s own picture');
     assert.ok(C.FAR > 1 && C.FAR < 1.18 + 1e-9, 'never farther than the Community warp itself');
@@ -141,10 +142,10 @@ test('the wallpaper sits right under the pages, above the live world, and follow
     const go = t => { Object.values(env.tabs).forEach(e => e.classList.remove('active')); env.tabs[t].classList.add('active'); R.sync(); };
     go('shelf'); assert.ok(back.classList.contains('rw-show') && back.classList.contains('rw-arrive'), 'from Today it arrives');
     assert.ok(env.html.classList.contains('rw-page'));
-    go('move'); assert.ok(back.classList.contains('rw-show'));
+    go('move'); assert.ok(!back.classList.contains('rw-show'), 'Move is a still page (Nov 5 2026): no wallpaper motes behind it');
     go('scan'); assert.ok(back.classList.contains('rw-show'));
     go('foryou'); assert.ok(!back.classList.contains('rw-show') && back.classList.contains('rw-instant'));
-    go('move'); assert.ok(back.classList.contains('rw-show') && back.classList.contains('rw-instant'), 'Community -> Move: no flash');
+    go('scan'); assert.ok(back.classList.contains('rw-show') && back.classList.contains('rw-instant'), 'Community -> Scan: no flash');
     env.html.classList.add('b3-camon'); R.sync(); assert.ok(back.classList.contains('rw-under'), 'paused under the camera');
     env.html.classList.remove('b3-camon'); R.sync(); assert.ok(!back.classList.contains('rw-under'));
     go('home'); assert.ok(!back.classList.contains('rw-show') && back.classList.contains('rw-fade'), 'back to Today it fades');

@@ -15,7 +15,7 @@ test('the base tour is the short one: these cards, in this order, never more tha
     assert.strictEqual(S.MAX_BASE, 12);
     /* Nov 5 2026 (the complete new tutorial): a day in the app, in 9 cards: Misty, Scan (meal or pack, then log or cart), Gap, Water /
        Move / Sleep in one card, Shopping with its three doors, inside Supermarkt (cart + Plan my week), Community, Settings, flying */
-    assert.deepStrictEqual(S.plan({}).map(s => s.id), ['hello', 'scan', 'gap', 'day', 'fuel', 'shop-week', 'community', 'settings', 'done']);
+    assert.deepStrictEqual(S.plan({}).map(s => s.id), ['hello', 'scan', 'gap', 'day', 'mirror', 'fuel', 'shop-week', 'community', 'settings', 'done']);
     assert.deepStrictEqual(S.plan({ claimReady: true }).map(s => s.id)[0], 'claim', 'a standard-Misty account first claims its own companion');
     assert.ok(S.plan({ claimReady: true }).length <= S.MAX_BASE);
 });

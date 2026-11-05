@@ -67,8 +67,9 @@ test('the zoom out of our world brings it in from far away, and the way back rev
 test('Today brings the camera back down into Misty\'s world; Community, Cook, Move and Scan pull out to the spirit world', () => {
     const b = read('body-world-3d.js');
     assert.ok(b.includes("if (commIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && !WH.state.pull && WH.pullOut) WH.pullOut(); }"));
-    assert.ok(b.includes("const REALM = ['tab-foryou', 'tab-shelf', 'tab-move', 'tab-scan'];"), 'Community, Cook, Move and Scan share the pulled-out spirit world');
+    assert.ok(b.includes("const REALM = ['tab-foryou', 'tab-shelf', 'tab-scan'];"), 'Community, Cook and Scan share the pulled-out spirit world (Move is a still page since Nov 5 2026)');
     assert.match(b, /const otherIn = !!\(w === true && t && t\.id !== 'tab-home' && REALM\.indexOf\(t\.id\) < 0/);
     assert.match(b, /const commIn = !!\(w === true && t && REALM\.indexOf\(t\.id\) >= 0/);
-    assert.ok(b.includes("if (otherIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); }"));
+    /* Nov 5 2026: opening Move (a still, opaque page) snaps the camera home unseen instead of a dive behind it; other pages dive */
+    assert.ok(b.includes("if (otherIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull) { if (t.id === 'tab-move' && WH.settle) WH.settle(); else if (WH.diveIn) WH.diveIn(); } }"));
 });

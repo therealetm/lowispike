@@ -238,3 +238,20 @@ html:not(.mm-cam) .mm-video { display: none; }
 .mh-vb:focus-visible { outline: 2px solid #8fe7ff; outline-offset: 2px; }
 .mh-vsub { margin: 4px 0 2px; text-align: center; font-size: 13px; line-height: 1.35; color: rgba(234, 246, 255, .72); }
 @media (prefers-reduced-motion: reduce) { .mh-vb { transition: none; } .mh-vb:active { transform: none; } }
+
+/* Nov 5 2026 (owner: the Move/gym page "looks animated/live"; Dark must be true black, no blue tint).
+   Dark: the Mirror card is neutral black glass, the blue Start button stays the one accent.
+   Still galaxy on, battery saver, or the phone resting: the card's loops (rim, glow, scan line, the little figure) stand still. */
+html[data-black][data-black] #mv-screen .mm-hero, html[data-black][data-black] .mm-hero {
+    background: linear-gradient(180deg, #161616, #0a0a0a) !important; border-color: rgba(255, 255, 255, .14) !important;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .06) inset !important; text-shadow: none;
+}
+html[data-black][data-black] .mm-hero::after { display: none; }
+html[data-black][data-black] .mm-hero::before { opacity: .55; }
+html[data-black][data-black] .mm-hero-art { background: #121212 !important; border-color: rgba(255, 255, 255, .16) !important; }
+html[data-black][data-black] .mm-hero-tag { color: #d9d9d9; }
+html[data-black][data-black] .mm-strip { background: #111 !important; border-color: rgba(255, 255, 255, .16) !important; }
+html.gs-on .mm-hero::before, html.gs-on .mm-hero::after, html.gs-on .mm-hero-glow, html.gs-on .mm-hero-scan, html.gs-on .mm-hero-arm,
+html.lowi-saver .mm-hero::before, html.lowi-saver .mm-hero::after, html.lowi-saver .mm-hero-glow, html.lowi-saver .mm-hero-scan, html.lowi-saver .mm-hero-arm,
+html.lowi-rest .mm-hero::before, html.lowi-rest .mm-hero::after, html.lowi-rest .mm-hero-glow, html.lowi-rest .mm-hero-scan, html.lowi-rest .mm-hero-arm { animation: none !important; }
+html.gs-on .mm-hero-scan, html.lowi-saver .mm-hero-scan, html.lowi-rest .mm-hero-scan { opacity: 0; }

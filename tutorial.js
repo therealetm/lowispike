@@ -80,6 +80,8 @@
         'home-shop': { stage: '.stp-card', go: () => { const P = W.LowiStorePicks; if (P && !P.isOpen()) P.open('tour'); }, back: () => { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
         'fuel-bloom': bloom('fuel'), 'gap-bloom': bloom('gap') /* Oct 28 2026, 22:54: Gap blooms Letzte / Erste Mahlzeit */, 'water-bloom': bloom('water'), 'move-bloom': bloom('move'), 'sleep-bloom': bloom('sleep'),
         'community-tab': { stage: '', go: () => { if (typeof W.goTab === 'function') W.goTab('foryou'); }, back: goHome },
+        /* Nov 5 2026: the Mirror card's demo opens the real Move page (what holding Move does), then back Home */
+        'move-page': { stage: '', go: () => { if (W.LowiMoveBubble && W.LowiMoveBubble.page) W.LowiMoveBubble.page(); }, back: goHome },
         'settings-sheet': { stage: '.cme-ov', go: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.open(); }, back: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.close(); } },
         /* never the camera: the mocked Scan screen inside the tour's own layer (tutorial-demo.js) */
         'scan-demo': { stage: '.lt-scan', go: () => { if (W.LowiTutorialDemo && root) W.LowiTutorialDemo.scanOpen(root, lang()); }, back: () => { if (W.LowiTutorialDemo) W.LowiTutorialDemo.scanClose(); } }

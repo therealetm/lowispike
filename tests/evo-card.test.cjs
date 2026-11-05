@@ -45,6 +45,11 @@ test('a reached card shows the name, owner, family, phase, what it grew, reached
     assert.strictEqual(E.cardText(reached, { lang: 'es' }).grewK, 'Nuevo en esta forma');
 });
 
+test('a doubled first word in a trait is said once (Glow glow core)', () => {
+    assert.strictEqual(E.cardText({ i: 0, name: 'Glow Spark', trait: 'Glow glow core', xp: 0, reached: true }, { lang: 'en' }).grew, 'Glow core');
+    assert.strictEqual(E.cardText(reached, { lang: 'en' }).grew, reached.trait);
+});
+
 test('a locked card is a sealed back: no name, no trait, only when it unlocks', () => {
     const t = E.cardText(locked, { owner: 'Tide', lang: 'en' });
     assert.strictEqual(t.locked, true);

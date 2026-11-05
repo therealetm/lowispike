@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 44;  /* 44: Nov 5 2026, every card's words rewritten as whole spoken sentences in EN/DE/ES (owner: the voice read fragments and
+    const VERSION = 45;  /* 45: Nov 5 2026, new-misty-tabs (Misty's card: Today / History / {name}) and the hello card names the card's new content. 44: Nov 5 2026, every card's words rewritten as whole spoken sentences in EN/DE/ES (owner: the voice read fragments and
        sounded broken, as if words were missing), voice re-recorded; plus the Mirror mode card from the Move lane */
     /* 43: Nov 5 2026, new-people points at Ranking (Members, the round button there, opens People; the Community heading is gone, the round profile button at the end of the tabs opens Settings); 42: Nov 5 2026, new-look-weather in part 'new' (App theme lives inside Look, time of day & weather; Dark for everyone) and the settings card names the look row; 41: Nov 5 2026, new-cart-total in part 'new' (Cart: real quantities and the whole total, I'll buy it / Someone else pays, Give a hand asks for the cart total, never €5; Plan my week says plainly when the budget is too small); 40: Nov 5 2026, new-my-day in part 'new' (My day: a Today card and short lists; a photo with no food offers Retake photo); 39: Nov 5 2026, new-still-galaxy in part 'new' (Settings > Still galaxy); 38: Nov 5 2026, the complete new tutorial (Emmanuel: "a complete new one that is up to date with our version"): Scan with photo, barcode, Log as eaten and Add to cart; Water / Move / Sleep in one card; Shopping with its three doors and Supermarkt with Plan my week; Settings from the Community name (the hold on the bubble does nothing since Oct 29); flying out into the galaxy on the last card. Old step ids water / move / sleep land on day (MOVED). 37: Oct 28 2026, 22:54, Gap blooms Letzte / Erste Mahlzeit (the old Essenspause window is not what a tap opens); 36: Oct 28 2026, new-humans now says the chat is people only too (bot posts live in For You); 35: Oct 27 2026, new-day-recap in part 'new' (Day recap from the companion card and My day: the day read back, care sent, one journal line; shows after the evening catch-up Save); 34: Oct 26 2026, new-evening-catchup in part 'new' (Catch up on today: the evening bubble checklist, first row in Settings); 33: Oct 26 2026, new-quick-tour in part 'new' (the 45-second video tour, Settings row after Tutorial); 32: Oct 26 2026, new-cart-ask in part 'new' (Someone else pays: the whole Cart as a Give a hand basket); 31: Oct 26 2026, new-mic-dictation in part 'new' (a small mic in text fields: speak instead of typing; Home Screen app on iPhone uses the keyboard's mic); 30: Oct 26 2026, new-cook-tabs (Cook opens on Kitchen, the first tab; hold a Cook tab to move it) and new-kitchen no longer says next to Swipe; 29: Oct 26 2026, new-scan-why in part 'new' (the scanner card's curve, How often and Why?); 28: Oct 26 2026, new-kitchen rewritten (Kitchen is a game in Cook next to Shuffle and Swipe) and new-give-hand opens Shop on Seller Zone (Kitchen left Shop); 27: Oct 25 2026, new-give-hand in part 'new' (Give a hand is its own Shop tab next to Kitchen); 26: Oct 25 2026, the short base tour (11 cards, auto demo, What's New never in the base tour); 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'shop', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
@@ -71,9 +71,9 @@
             teaches: ['misty-hold'],
             title: { en: 'Hi, I’m {name}', de: 'Hi, ich bin {name}', es: 'Hola, soy {name}' },
             text: {
-                en: 'I’m your companion. Hold me, and my card opens. It shows my energy, my level and what I still need.',
-                de: 'Ich bin dein Begleiter. Halt mich gedrückt, dann öffnet sich meine Karte. Dort siehst du meine Energie, mein Level und was mir noch fehlt.',
-                es: 'Soy tu compañero. Mantenme pulsado y se abre mi tarjeta. Ahí ves mi energía, mi nivel y lo que todavía me falta.'
+                en: 'I’m your companion. Hold me, and my card opens. It shows your day, my level and the world.',
+                de: 'Ich bin dein Begleiter. Halt mich gedrückt, dann öffnet sich meine Karte. Dort siehst du deinen Tag, mein Level und die Welt.',
+                es: 'Soy tu compañero. Mantenme pulsado y se abre mi tarjeta. Ahí ves tu día, mi nivel y el mundo.'
             }
         },
         {
@@ -230,6 +230,17 @@
                 en: 'The Cart now keeps every food with its real amount. When you tap Someone else pays, it asks for the cart’s total, and never for five euros.',
                 de: 'Der Warenkorb behält jetzt jedes Essen mit der echten Menge. Wenn du auf Jemand anderes zahlt tippst, geht es um die ganze Summe und nie mehr um fünf Euro.',
                 es: 'El carrito ahora guarda cada alimento con su cantidad real. Si tocas Que pague otra persona, pide el total del carrito y nunca cinco euros.'
+            }
+        },
+        {
+            /* Nov 5 2026 (owner: "your world stats, your companion stats and your human stats ... a nice experience to open"):
+               misty-hub.js tabsHtml / todayTab, misty-sheet.js, misty-history.js */
+            id: 'new-misty-tabs', area: 'new', where: 'home', open: 'misty-card', target: ['#mistyHub .mh-seg', '#mistyHub'], covers: ['misty-today', 'misty-history', 'misty-sheet-tabs'],
+            title: { en: 'Today, History, {name}', de: 'Heute, Verlauf, {name}', es: 'Hoy, Historial, {name}' },
+            text: {
+                en: 'My card now has three tabs. Today shows your meals with their photos. History goes back from yesterday to a whole year. And my own tab has my looks and my aura.',
+                de: 'Meine Karte hat jetzt drei Tabs. Heute zeigt deine Mahlzeiten mit ihren Fotos. Verlauf geht von gestern bis zu einem ganzen Jahr zurück. Und mein eigener Tab hat mein Aussehen und meine Aura.',
+                es: 'Mi tarjeta ahora tiene tres pestañas. Hoy muestra tus comidas con sus fotos. Historial va de ayer hasta un año entero. Y mi propia pestaña tiene mi aspecto y mi aura.'
             }
         },
         {

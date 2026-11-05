@@ -222,7 +222,46 @@
     }
     const mmss = s => { s = Math.max(0, Math.floor(+s || 0)); return Math.floor(s / 60) + ':' + pad(s % 60); };
 
-    const api = { MAX_SHOTS, MAX_VOICE, MAX_TEXT, SHOT_EDGE, SHOT_Q, UUID, newKey, shotPath, voicePath, voiceExt, row, ready, classify, who, stamp, ref, label, folder, shotName, voiceName, exportText, manifest, move, needsTranscript, crc32, zip, fit, mmss, micError, micSetup, voiceType, recOptions, PATH_SHOT, PATH_VOICE };
+    /* Nov 5 2026 (Emmanuel: "I can't delete it. I should be able to delete it so it's deleted completely ... it doesn't fill up memory
+       or space or storage ... a simple delete or delete all"). The files of some feedback rows: their voice notes and screenshots in the
+       private 'feedback' bucket, each once; only names of the form the server itself accepts (fb/<key>/shot-N.jpg | voice.*). */
+    const FILE_RE = /^fb\/[0-9a-z-]{8,40}\/(shot-[0-9]{1,2}\.jpg|voice\.(m4a|webm|ogg|aac))$/;
+    function filesOf(rows) {
+        const out = [], seen = new Set();
+        (rows || []).forEach(r => {
+            if (!r) return;
+            [r.voice_path].concat(Array.isArray(r.shots) ? r.shots : []).forEach(p => { if (typeof p === 'string' && FILE_RE.test(p) && !seen.has(p)) { seen.add(p); out.push(p); } });
+        });
+        return out;
+    }
+    /* delete feedback for good: the files first, then the rows (the owner's delete rights: supabase/proposals/feedback_20261105.sql),
+       so no file is ever left behind that nobody can reach any more. signed = the files known to exist (the inbox signed links to
+       them): if some exist and the bucket deleted none, the owner has no delete right on it and nothing is deleted. The rows come
+       back from the delete, so a row the server kept (no delete right) is never counted as gone.
+       -> { ok, rows, files, ids, why ('denied' | 'missing' | 'offline' | ...), stage ('files' | 'rows') } */
+    async function removeAll(sb, rows, signed) {
+        rows = (rows || []).filter(r => r && r.id);
+        if (!rows.length) return { ok: true, rows: 0, files: 0, ids: [] };
+        if (!sb) return { ok: false, rows: 0, files: 0, ids: [], why: 'offline', stage: 'files' };
+        const paths = filesOf(rows);
+        let files = 0;
+        for (let i = 0; i < paths.length; i += 100) {
+            let r;
+            try { r = await sb.storage.from('feedback').remove(paths.slice(i, i + 100)); } catch (e) { r = { error: e }; }
+            if (!r || r.error) return { ok: false, rows: 0, files, ids: [], why: classify(r && r.error), stage: 'files' };
+            files += Array.isArray(r.data) ? r.data.length : 0;
+        }
+        const known = signed && typeof signed.has === 'function' ? paths.filter(p => signed.has(p)).length : 0;
+        if (known && !files) return { ok: false, rows: 0, files: 0, ids: [], why: 'denied', stage: 'files' };
+        let r;
+        try { r = await sb.from('app_feedback').delete().in('id', rows.map(x => x.id)).select('id'); } catch (e) { r = { error: e }; }
+        if (!r || r.error) return { ok: false, rows: 0, files, ids: [], why: classify(r && r.error), stage: 'rows' };
+        const ids = (Array.isArray(r.data) ? r.data : []).map(x => x && x.id).filter(Boolean);
+        if (!ids.length) return { ok: false, rows: 0, files, ids: [], why: 'denied', stage: 'rows' };
+        return { ok: true, rows: ids.length, files, ids };
+    }
+
+    const api = { MAX_SHOTS, MAX_VOICE, MAX_TEXT, SHOT_EDGE, SHOT_Q, UUID, filesOf, removeAll, newKey, shotPath, voicePath, voiceExt, row, ready, classify, who, stamp, ref, label, folder, shotName, voiceName, exportText, manifest, move, needsTranscript, crc32, zip, fit, mmss, micError, micSetup, voiceType, recOptions, PATH_SHOT, PATH_VOICE };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.LowiFeedbackCore = api;
 })(typeof window !== 'undefined' ? window : null);

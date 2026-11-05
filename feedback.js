@@ -50,6 +50,10 @@
             /* inbox */
             inbox: 'Feedback inbox', fNew: 'New', fAll: 'All', selAll: 'Select all', trSel: n => 'Transcribe (' + n + ')', copySel: n => 'Copy (' + n + ')',
             pkg: n => 'Download package (' + n + ')', markDone: 'Mark done', reopen: 'Mark new', transcribe: 'Transcribe', transcript: 'Transcript',
+            del: n => 'Delete (' + n + ')', del1: 'Delete', delSure: 'Tap again to delete', delBusy: 'Deleting\u2026',
+            deleted: n => (n === 1 ? 'Deleted for good, with its voice note and screenshots.' : 'Deleted ' + n + ' for good, with their voice notes and screenshots.'),
+            delDenied: 'Could not delete: run supabase/proposals/feedback_20261105.sql again in the Supabase SQL editor (it gives the owner the right to delete).',
+            delFail: 'Could not delete everything. Try again.',
             noTr: 'not transcribed yet', empty: 'No feedback yet.', emptyNew: 'No new feedback.', loading: 'Loading\u2026',
             trBusy: (a, b) => 'Transcribing ' + a + ' of ' + b + '\u2026', trDone: (a, b) => a + ' of ' + b + ' transcribed.',
             trNone: 'Nothing to transcribe in the selection.', copied: n => 'Copied ' + n + ' feedback entries.', copyFail: 'Copy failed. Long-press the text below to copy it.',
@@ -89,6 +93,10 @@
             files: 'Ein Upload wurde nicht fertig. Bitte versuch es nochmal.', error: 'Etwas ist schiefgelaufen. Dein Entwurf ist noch da, versuch es nochmal.',
             inbox: 'Feedback-Postfach', fNew: 'Neu', fAll: 'Alle', selAll: 'Alle ausw\u00e4hlen', trSel: n => 'Transkribieren (' + n + ')', copySel: n => 'Kopieren (' + n + ')',
             pkg: n => 'Paket laden (' + n + ')', markDone: 'Erledigt', reopen: 'Wieder neu', transcribe: 'Transkribieren', transcript: 'Transkript',
+            del: n => 'L\u00f6schen (' + n + ')', del1: 'L\u00f6schen', delSure: 'Nochmal tippen zum L\u00f6schen', delBusy: 'L\u00f6sche\u2026',
+            deleted: n => (n === 1 ? 'Endg\u00fcltig gel\u00f6scht, mit Sprachnachricht und Screenshots.' : n + ' endg\u00fcltig gel\u00f6scht, mit Sprachnachrichten und Screenshots.'),
+            delDenied: 'L\u00f6schen ging nicht: f\u00fchre supabase/proposals/feedback_20261105.sql nochmal im Supabase SQL Editor aus (das gibt dem Owner das L\u00f6schrecht).',
+            delFail: 'Nicht alles konnte gel\u00f6scht werden. Versuch es nochmal.',
             noTr: 'noch nicht transkribiert', empty: 'Noch kein Feedback.', emptyNew: 'Kein neues Feedback.', loading: 'L\u00e4dt\u2026',
             trBusy: (a, b) => 'Transkribiere ' + a + ' von ' + b + '\u2026', trDone: (a, b) => a + ' von ' + b + ' transkribiert.',
             trNone: 'In der Auswahl gibt es nichts zu transkribieren.', copied: n => n + ' Feedback-Eintr\u00e4ge kopiert.', copyFail: 'Kopieren fehlgeschlagen. Halte den Text unten gedr\u00fcckt, um ihn zu kopieren.',
@@ -128,6 +136,10 @@
             files: 'Una subida no termin\u00f3. Int\u00e9ntalo de nuevo.', error: 'Algo sali\u00f3 mal. Tu borrador sigue aqu\u00ed, int\u00e9ntalo de nuevo.',
             inbox: 'Buz\u00f3n de comentarios', fNew: 'Nuevos', fAll: 'Todos', selAll: 'Seleccionar todo', trSel: n => 'Transcribir (' + n + ')', copySel: n => 'Copiar (' + n + ')',
             pkg: n => 'Descargar paquete (' + n + ')', markDone: 'Hecho', reopen: 'Marcar nuevo', transcribe: 'Transcribir', transcript: 'Transcripci\u00f3n',
+            del: n => 'Borrar (' + n + ')', del1: 'Borrar', delSure: 'Toca otra vez para borrar', delBusy: 'Borrando\u2026',
+            deleted: n => (n === 1 ? 'Borrado para siempre, con su nota de voz y capturas.' : n + ' borrados para siempre, con sus notas de voz y capturas.'),
+            delDenied: 'No se pudo borrar: vuelve a ejecutar supabase/proposals/feedback_20261105.sql en el editor SQL de Supabase (da al propietario el derecho a borrar).',
+            delFail: 'No se pudo borrar todo. Int\u00e9ntalo de nuevo.',
             noTr: 'a\u00fan sin transcribir', empty: 'A\u00fan no hay comentarios.', emptyNew: 'No hay comentarios nuevos.', loading: 'Cargando\u2026',
             trBusy: (a, b) => 'Transcribiendo ' + a + ' de ' + b + '\u2026', trDone: (a, b) => a + ' de ' + b + ' transcritos.',
             trNone: 'No hay nada que transcribir en la selecci\u00f3n.', copied: n => n + ' comentarios copiados.', copyFail: 'No se pudo copiar. Mant\u00e9n pulsado el texto de abajo para copiarlo.',
@@ -559,7 +571,8 @@
             '<button type="button" class="fbk-chip" data-fbk="trsel"' + (n && !I.busy ? '' : ' disabled') + '>' + esc(t.trSel(n)) + '</button>' +
             '<button type="button" class="fbk-chip" data-fbk="copysel"' + (n && !I.busy ? '' : ' disabled') + '>' + esc(t.copySel(n)) + '</button>' +
             '<button type="button" class="fbk-chip" data-fbk="pkg"' + (n && !I.busy ? '' : ' disabled') + '>' + esc(t.pkg(n)) + '</button>' +
-            '<button type="button" class="fbk-chip" data-fbk="done"' + (n && !I.busy ? '' : ' disabled') + '>' + esc(t.markDone) + '</button></div>';
+            '<button type="button" class="fbk-chip" data-fbk="done"' + (n && !I.busy ? '' : ' disabled') + '>' + esc(t.markDone) + '</button>' +
+            '<button type="button" class="fbk-chip fbk-del" data-fbk="delsel"' + (n && !I.busy ? '' : ' disabled') + '>' + esc(t.del(n)) + '</button></div>';
     }
     function card(r) {
         const t = T(), shots = Array.isArray(r.shots) ? r.shots : [], u = p => I.urls.get(p) || '';
@@ -567,7 +580,8 @@
         return '<article class="fbk-card' + (r.status === 'done' ? ' is-done' : '') + '" data-id="' + esc(r.id) + '">' +
             '<header><label class="fbk-pick"><input type="checkbox" data-fbk-sel="' + esc(r.id) + '"' + (I.sel.has(r.id) ? ' checked' : '') + ' aria-label="' + esc(C.ref(r)) + '"></label>' +
             '<div class="fbk-meta"><b>' + esc(who) + '</b><small>' + esc(C.ref(r)) + ' \u00b7 ' + esc(C.stamp(r.created_at)) + (r.app_version ? ' \u00b7 ' + esc(r.app_version) : '') + (r.lang ? ' \u00b7 ' + esc(r.lang) : '') + '</small></div>' +
-            '<button type="button" class="fbk-chip sm" data-fbk="toggle" data-id="' + esc(r.id) + '">' + esc(r.status === 'done' ? t.reopen : t.markDone) + '</button></header>' +
+            '<button type="button" class="fbk-chip sm" data-fbk="toggle" data-id="' + esc(r.id) + '">' + esc(r.status === 'done' ? t.reopen : t.markDone) + '</button>' +
+            '<button type="button" class="fbk-chip sm fbk-del" data-fbk="del1" data-id="' + esc(r.id) + '"' + (I.busy ? ' disabled' : '') + '>' + esc(t.del1) + '</button></header>' +
             (r.message ? '<p class="fbk-msg">' + esc(r.message) + '</p>' : '') +
             (r.voice_path ? '<div class="fbk-aud"><span class="fbk-lbl">' + esc(t.voice) + ' \u00b7 ' + esc(t.secs(r.voice_secs || 0)) + '</span>' + (u(r.voice_path) ? '<audio controls preload="none" src="' + esc(u(r.voice_path)) + '"></audio>' : '') +
                 (String(r.transcript || '').trim() ? '<p class="fbk-tr"><span class="fbk-lbl">' + esc(t.transcript) + '</span>' + esc(r.transcript) + '</p>' :
@@ -597,6 +611,35 @@
         else if (a === 'pkg') pack(selRows());
         else if (a === 'done') setStatus(selRows(), 'done');
         else if (a === 'toggle') { const r = I.rows.find(x => x.id === id); if (r) setStatus([r], r.status === 'done' ? 'new' : 'done'); }
+        else if (a === 'delsel' || a === 'del1') {
+            /* two taps: the first arms the button ("Tap again to delete", 6 s), the second deletes for good */
+            if (!b.classList.contains('armed')) { armDel(b); return; }
+            remove(a === 'del1' ? [I.rows.find(r => r.id === id)].filter(Boolean) : selRows());
+        }
+    }
+    function armDel(b) {
+        const t = T(), label = b.textContent;
+        b.classList.add('armed'); b.textContent = t.delSure;
+        clearTimeout(b._fbkT); b._fbkT = setTimeout(() => { if (b.isConnected && b.classList.contains('armed')) { b.classList.remove('armed'); b.textContent = label; } }, 6000);
+    }
+    /* Nov 5 2026 (Emmanuel: "a simple delete or delete all", gone completely so it takes no space): the files (voice notes,
+       screenshots) and then the rows, for good (feedback-core.js removeAll). Only what the server really deleted leaves the list. */
+    async function remove(rows) {
+        const t = T();
+        if (!rows.length || I.busy) return;
+        const sb = await client();
+        if (!sb) { sayI(t.offline, 'warn'); return; }
+        I.busy = true; paintBar(); sayI(t.delBusy);
+        let res;
+        try { res = await C.removeAll(sb, rows, I.urls); } catch (e) { res = { ok: false, why: 'error', ids: [] }; }
+        I.busy = false;
+        const gone = new Set(res.ids || []);
+        if (gone.size) {
+            C.filesOf(I.rows.filter(r => gone.has(r.id))).forEach(p => I.urls.delete(p));
+            I.rows = I.rows.filter(r => !gone.has(r.id)); gone.forEach(x => I.sel.delete(x));
+        }
+        paintAll();
+        if (res.ok) sayI(t.deleted(res.rows)); else sayI(res.why === 'denied' ? t.delDenied : res.why === 'offline' ? t.offline : t.delFail, 'warn');
     }
 
     /* one server call per voice note, two at a time; stops early when the server is not set up */

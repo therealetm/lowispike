@@ -94,6 +94,9 @@ html[data-theme="light"] .fbk-send.has-shots .fbk-voice { background: rgb(250, 2
 .fbk-chip svg { width: 18px; height: 18px; }
 .fbk-chip.sm { min-height: 44px; padding: 0 12px; font-size: 13px; }
 .fbk-chip:disabled { opacity: .4; cursor: default; }
+/* Nov 5 2026: Delete / Delete (n) are red (they remove for good); the first tap arms it, filled red: "Tap again to delete" */
+.fbk-chip.fbk-del { color: #ff6961; border-color: rgba(255, 105, 97, .45); }
+.fbk-chip.fbk-del.armed { color: #fff; background: #ff3b30; border-color: #ff3b30; }
 .fbk-count { margin-left: auto; font-size: 13px; opacity: .65; }
 .fbk-acts .fbk-chip { flex: 1 1 auto; justify-content: center; }
 .fbk-list { padding-top: 8px; }

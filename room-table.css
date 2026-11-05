@@ -44,12 +44,41 @@
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .rt-toast.on{opacity:1;transform:translate(-50%,0)}
 .rt-toast:empty{display:none}
-/* 5 Nov 2026: the hint line under the board is gone; the aim stick sits lower left in that strip (room-table.js placeStick) */
-.rt-stick{position:absolute;left:12px;bottom:6px;width:44px;height:44px;border-radius:50%;pointer-events:auto;touch-action:none;cursor:grab;
-  background:radial-gradient(circle at 50% 45%,rgba(120,200,255,.16),rgba(10,20,40,.55) 70%);border:1px solid rgba(160,220,255,.32);box-sizing:border-box;z-index:3}
-.rt-stick.on{cursor:grabbing;border-color:rgba(160,230,255,.6)}
-.rt-knob{position:absolute;left:50%;top:50%;width:46%;height:46%;margin:-23% 0 0 -23%;border-radius:50%;background:rgba(200,236,255,.85);box-shadow:0 1px 4px rgba(0,0,0,.4);pointer-events:none}
-html[data-black] .rt-stick{background:#1c1c1e;border-color:rgba(255,255,255,.14)}
+/* 5 Nov 2026 (Emmanuel: redesign the Billiards room: the table centred, a big reachable aim stick, use the empty space, a scoreboard):
+   one control row just above the round back button (room-table.js dock / placeDock). Left: the aim stick, the table rail's glass,
+   a dashed guide for the pull, a white knob with a crosshair that follows the thumb, and a gold rim that fills with the shot's
+   power while you pull (--p). Right: the scoreboard in the same glass (room-table.js board). */
+.rt-stick{position:absolute;border-radius:50%;pointer-events:auto;touch-action:none;cursor:grab;box-sizing:border-box;z-index:3;--p:0;
+  background:radial-gradient(circle at 50% 40%,rgba(64,112,196,.55),rgba(10,22,52,.92) 72%);
+  box-shadow:inset 0 .5px 0 rgba(255,255,255,.3),inset 0 0 0 1px rgba(143,231,255,.28),0 14px 30px -14px rgba(10,132,255,.6)}
+.rt-stick.on{cursor:grabbing}
+.rt-stick:focus-visible{outline:2px solid #8fe7ff;outline-offset:3px}
+.rt-pull{position:absolute;inset:-4px;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .15s;
+  background:conic-gradient(from 0deg,#ffd678 calc(var(--p) * 360deg),rgba(255,214,120,.14) 0);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3.5px))}
+.rt-stick.on .rt-pull{opacity:1}
+.rt-well{position:absolute;inset:15%;border-radius:50%;border:1px dashed rgba(190,232,255,.32);pointer-events:none}
+.rt-knob{position:absolute;left:50%;top:50%;width:44%;height:44%;margin:-22% 0 0 -22%;border-radius:50%;display:grid;place-items:center;pointer-events:none;color:#0b2a55;
+  background:radial-gradient(circle at 35% 30%,#fff,#d8edff 55%,#a3cbf2);box-shadow:0 4px 10px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.55);
+  transition:transform .22s cubic-bezier(.2,.9,.3,1.15)}
+.rt-stick.on .rt-knob{transition:none}
+.rt-knob svg{width:60%;height:60%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.rt-knob svg .rt-dot{fill:currentColor;stroke:none}
+.rt-board{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;padding:6px 14px;border-radius:22px;pointer-events:none;z-index:3;
+  background:linear-gradient(160deg,rgba(40,66,120,.62),rgba(10,20,48,.88) 60%,rgba(22,40,86,.82));color:#eaf6ff;
+  box-shadow:inset 0 .5px 0 rgba(255,255,255,.26),inset 0 0 0 .5px rgba(143,231,255,.24),0 14px 30px -14px rgba(10,132,255,.5);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.rt-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;flex:1}
+.rt-row+.rt-row{box-shadow:inset 0 .5px 0 rgba(143,231,255,.16)}
+.rt-k{display:flex;align-items:center;gap:6px;flex:none;font:700 10px/1.2 -apple-system,system-ui,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:rgba(190,225,255,.66)}
+.rt-v{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;font:700 13.5px/1.25 -apple-system,system-ui,sans-serif;color:#fff}
+.rt-ring{width:10px;height:10px;box-sizing:border-box;border-radius:50%;border:1.5px dashed rgba(143,231,255,.65);flex:none}
+.rt-board.held .rt-ring{border-style:solid;border-color:#ffd678;box-shadow:0 0 6px rgba(255,214,120,.8)}
+.rt-board.held .rt-r-mid .rt-v{color:#ffd678}
+.rt-board.mine .rt-r-mid .rt-v{color:#bff3e2}
+html[data-black] .rt-stick{background:#1c1c1e;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+html[data-black] .rt-board{background:#1c1c1e;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);-webkit-backdrop-filter:none;backdrop-filter:none}
+@media (prefers-reduced-motion:reduce){.rt-knob,.rt-pull{transition:none}}
 /* Oct 28 2026: the middle (room-table.js). The holder's ball wears a gold ring; one small line on the felt under the ring says who holds it */
 .rt-ball.mid .rt-orb{box-shadow:0 3px 6px rgba(0,0,0,.45),0 0 0 2px #ffd678,0 0 16px rgba(255,214,120,.8)}
 .rt-ball.me.mid .rt-orb{box-shadow:0 3px 6px rgba(0,0,0,.45),0 0 0 2px #ffd678,0 0 0 4px rgba(156,218,199,.85),0 0 18px rgba(255,214,120,.85)}

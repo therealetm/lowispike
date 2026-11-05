@@ -26,6 +26,16 @@ const T=C.T;
 const COPY={
   table:['Pool table: everyone in the Room','Billardtisch: alle im Raum','Mesa de billar: todos en la sala'],
   stick:['Aim stick: pull back, let go to shoot','Zielstick: zurückziehen, loslassen zum Stoßen','Palanca de tiro: tira hacia atrás y suelta para tirar'],
+  board:['Scoreboard','Punktetafel','Marcador'],
+  sbMid:['Middle','Mitte','Centro'],
+  sbNobody:['Nobody yet','Noch niemand','Nadie aún'],
+  sbYouFor:['You · {t}','Du · {t}','Tú · {t}'],
+  sbDay:['You today','Du heute','Tú hoy'],
+  sbDayV:['{h}/{c} h · +{x} XP','{h}/{c} Std · +{x} XP','{h}/{c} h · +{x} XP'],
+  sbRoom:['Players','Spieler','Jugadores'],
+  sbRoomV:['{n} in the room','{n} im Raum','{n} en la sala'],
+  sbMin:['{m} min','{m} Min','{m} min'],
+  sbHour:['{h} h {m} min','{h} Std {m} Min','{h} h {m} min'],
   pushed:['{n} knocked you away while you were gone','{n} hat dich weggestoßen, während du weg warst','{n} te empujó mientras no estabas'],
   pushedAnon:['Someone knocked you away while you were gone','Jemand hat dich weggestoßen, während du weg warst','Alguien te empujó mientras no estabas'],
   hitYou:['{n} knocked you','{n} hat dich getroffen','{n} te golpeó'],
@@ -52,7 +62,7 @@ let off=false;try{off=localStorage.getItem(OFF_KEY)==='1';}catch(e){}
 
 const rest=C.table();          /* where every ball rests (the shared truth on this phone) */
 let play=null,playEnd=null;    /* a shot being animated: its own table, and the rest positions it must end on */
-let gal=null,wrap=null,felt=null,fx=null,ctx=null,ballsEl=null,toastEl=null,liveEl=null,stickEl=null,midEl=null;
+let gal=null,wrap=null,felt=null,fx=null,ctx=null,ballsEl=null,toastEl=null,liveEl=null,stickEl=null,midEl=null,boardEl=null;
 let scale=.3,dpr=1,fw=0,fh=0,raf=0,acc=0,lastT=0;
 let people=[],peopleKey='',me='',sel='';
 const els=new Map(),arts=new Map(),trails=new Map(),sparks=[];
@@ -73,28 +83,47 @@ function build(g){gal=g;g.classList.add('rt-on');
   wrap=D.createElement('div');wrap.className='rt-wrap';
   wrap.innerHTML='<div class="rt-rail"><div class="rt-felt" role="group"><canvas class="rt-fx" aria-hidden="true"></canvas><div class="rt-mid"></div><div class="rt-balls"></div></div>'+
     '<span class="rt-pocket p1" aria-hidden="true"></span><span class="rt-pocket p2" aria-hidden="true"></span><span class="rt-pocket p3" aria-hidden="true"></span><span class="rt-pocket p4" aria-hidden="true"></span><span class="rt-pocket p5" aria-hidden="true"></span><span class="rt-pocket p6" aria-hidden="true"></span></div>'+
-    '<div class="rt-toast" role="status" aria-live="polite"></div><div class="rt-stick" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="rt-knob" aria-hidden="true"></span></div><span class="sr-only rt-live" aria-live="polite"></span>';
+    '<div class="rt-toast" role="status" aria-live="polite"></div>'+
+    '<div class="rt-stick" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i class="rt-pull" aria-hidden="true"></i><i class="rt-well" aria-hidden="true"></i>'+
+      '<span class="rt-knob" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="6.2"/><path d="M12 2.8v4M12 17.2v4M2.8 12h4M17.2 12h4"/><circle cx="12" cy="12" r="1.6" class="rt-dot"/></svg></span></div>'+
+    '<div class="rt-board" role="group"><div class="rt-row rt-r-mid"><span class="rt-k"><i class="rt-ring" aria-hidden="true"></i><span class="rt-kt"></span></span><b class="rt-v"></b></div>'+
+      '<div class="rt-row rt-r-day"><span class="rt-k"><span class="rt-kt"></span></span><b class="rt-v"></b></div><div class="rt-row rt-r-n"><span class="rt-k"><span class="rt-kt"></span></span><b class="rt-v"></b></div></div>'+
+    '<span class="sr-only rt-live" aria-live="polite"></span>';
   felt=wrap.querySelector('.rt-felt');fx=wrap.querySelector('.rt-fx');ctx=fx.getContext&&fx.getContext('2d');ballsEl=wrap.querySelector('.rt-balls');
-  toastEl=wrap.querySelector('.rt-toast');stickEl=wrap.querySelector('.rt-stick');liveEl=wrap.querySelector('.rt-live');midEl=wrap.querySelector('.rt-mid');
-  felt.setAttribute('aria-label',tr('table'));stickEl.setAttribute('aria-label',tr('stick'));
+  toastEl=wrap.querySelector('.rt-toast');stickEl=wrap.querySelector('.rt-stick');liveEl=wrap.querySelector('.rt-live');midEl=wrap.querySelector('.rt-mid');boardEl=wrap.querySelector('.rt-board');
+  felt.setAttribute('aria-label',tr('table'));stickEl.setAttribute('aria-label',tr('stick'));boardEl.setAttribute('aria-label',tr('board'));boardT='';
   g.appendChild(wrap);els.clear();wire();layout();
   try{if(W.ResizeObserver){const ro=new ResizeObserver(()=>{layout();render();});ro.observe(g);}}catch(e){}}
 function layout(){if(!wrap||!gal)return;const gw=gal.clientWidth,gh=gal.clientHeight;if(!gw||!gh)return;
-  /* leave the bottom strip for the Freundesbaum button and the hint, and a rail round the felt */
-  const rail=Math.max(7,Math.min(14,Math.round(gw*.028))),bottom=gh>420?52:42,top=6;
-  const aw=gw-2*rail-8,ah=gh-top-bottom-2*rail;scale=Math.max(.12,Math.min(aw/T.W,ah/T.H));
-  fw=Math.round(T.W*scale);fh=Math.round(T.H*scale);const left=Math.round((gw-fw)/2-rail),tp=top;
-  const r=wrap.querySelector('.rt-rail');r.style.cssText='left:'+left+'px;top:'+tp+'px;width:'+(fw+2*rail)+'px;height:'+(fh+2*rail)+'px;--rail:'+rail+'px';
+  /* 5 Nov 2026, later (Emmanuel: "Look at where the billiard is, look at where the joystick is ... Just redesign it ... a nice billiard
+     that's centered, the joystick ... reachable, big enough ... there's so much space there ... put something there like a
+     scoreboard"): one control row (aim stick + scoreboard) just above the round back button, the table centred in all the space
+     above it, both ways (room-table-core.js roomLayout). */
+  const L=C.roomLayout({gw,gh,backTop:backTop(gh)}),rail=L.rail;scale=L.scale;fw=L.fw;fh=L.fh;
+  const r=wrap.querySelector('.rt-rail');r.style.cssText='left:'+L.table.left+'px;top:'+L.table.top+'px;width:'+L.table.width+'px;height:'+L.table.height+'px;--rail:'+rail+'px';
   felt.style.cssText='left:'+rail+'px;top:'+rail+'px;width:'+fw+'px;height:'+fh+'px';
   wrap.style.setProperty('--d',Math.round(2*T.R*scale)+'px');
   dpr=Math.min(2,W.devicePixelRatio||1);fx.width=Math.round(fw*dpr);fx.height=Math.round(fh*dpr);fx.style.width=fw+'px';fx.style.height=fh+'px';
-  toastEl.style.top=(tp+rail+8)+'px';placeStick(bottom);}
-/* 5 Nov 2026 (owner: "remove the sentence beneath the board; a lower-left aim joystick"): the hint line is gone and a small stick
-   sits lower left in the strip under the board, just right of the Freundesbaum button. It drives the same aim as pulling back
-   on the felt (C.aim) and the same fire(); it never shoots by itself, and a cancel, a lost capture or leaving the page drops the aim. */
-function placeStick(bottom){if(!stickEl||!gal)return;const sz=Math.max(34,Math.min(46,bottom-8));let left=12;
-  try{const t=D.querySelector('#cpRoom > .nm-ctree'),g=gal.getBoundingClientRect();if(t&&t.offsetParent){const b=t.getBoundingClientRect();if(b.width&&b.bottom>g.bottom-bottom-4)left=Math.max(left,Math.round(b.right-g.left+10));}}catch(e){}
-  stickEl.style.cssText='left:'+left+'px;bottom:'+Math.max(4,Math.round((bottom-sz)/2))+'px;width:'+sz+'px;height:'+sz+'px';}
+  toastEl.style.top=(L.table.top+rail+8)+'px';
+  if(stickEl)stickEl.style.cssText='left:'+L.stick.left+'px;top:'+L.stick.top+'px;width:'+L.stick.size+'px;height:'+L.stick.size+'px';
+  if(boardEl)boardEl.style.cssText=L.board?'left:'+L.board.left+'px;top:'+L.board.top+'px;width:'+L.board.width+'px;height:'+L.board.height+'px':'display:none';
+  board();}
+/* the round back button at the bottom centre (bottom-close.js #lwBX): its top edge in the table's box, measured so every safe area
+   and phone works; null when it is not showing or not down there */
+function backTop(gh){try{const x=D.getElementById('lwBX'),g=gal.getBoundingClientRect();if(!x||!x.classList.contains('on'))return null;const b=x.getBoundingClientRect();
+  return b.height&&b.top>g.top+gh*.4&&b.top<g.bottom+40?b.top-g.top:null;}catch(e){return null;}}
+/* the scoreboard: the fight for the middle at a glance, only from what the table already knows (no new data): who holds the middle
+   (you: for how long, on the server's clock), your paid middle hours today (+MID_XP each, at most MID_CAP) and how many are in the
+   Room. Written only when a line changes. */
+let boardT='';
+function dur(ms){const m=Math.max(0,Math.floor(ms/60000));return m<60?tr('sbMin',null,{m}):tr('sbHour',null,{h:Math.floor(m/60),m:m%60});}
+function board(){if(!boardEl)return;const mh=midShown,o=midLoad(),now=srvNow(),st=o.st;
+  const mid=mh&&mh===me?(st&&st.u===me&&isFinite(now)&&isFinite(st.since)?tr('sbYouFor',null,{t:dur(now-st.since)}):tr('you')):mh?(nameOf(mh)||tr('someone')):tr('sbNobody');
+  const h=isFinite(now)&&o.d===dayOf(now)?Math.min(T.MID_CAP,o.n|0):0;
+  const rows=[[tr('sbMid'),mid],[tr('sbDay'),tr('sbDayV',null,{h,c:T.MID_CAP,x:h*T.MID_XP})],[tr('sbRoom'),tr('sbRoomV',people.length)]];
+  const key=JSON.stringify(rows)+(mh===me?'m':mh?'o':'');if(key===boardT)return;boardT=key;
+  ['.rt-r-mid','.rt-r-day','.rt-r-n'].forEach((q,i)=>{const el=boardEl.querySelector(q),k=el&&el.querySelector('.rt-kt'),v=el&&el.querySelector('.rt-v');if(k)k.textContent=rows[i][0];if(v)v.textContent=rows[i][1];});
+  boardEl.classList.toggle('held',!!mh);boardEl.classList.toggle('mine',!!mh&&mh===me);}
 function stickAim(dx,dy,r){const k=Math.max(90,Math.min(170,fw*.42))/Math.max(1,r);return C.aim(dx*k,dy*k,Math.max(90,Math.min(170,fw*.42)));}
 function ballEl(p){let el=els.get(p.uid);if(el&&el.isConnected)return el;
   el=D.createElement('button');el.type='button';el.className='rt-ball'+(p.me?' me':'');el.dataset.uid=p.uid;el.setAttribute('data-sfx','none');
@@ -125,7 +154,7 @@ function render(){if(!wrap)return;const d=2*T.R*scale;const mh=play?midShown:(mi
     if(el._mid!==(u===mh)){el._mid=u===mh;el.classList.toggle('mid',el._mid);}
     const x=b.x*scale-d/2,y=b.y*scale-d/2;const tf='translate3d('+x.toFixed(1)+'px,'+y.toFixed(1)+'px,0)';if(el._tf!==tf){el.style.transform=tf;el._tf=tf;}
     const sp=Math.round((b.spin||0)*114.6)/114.6;if(el._sp!==sp){const a=el.firstChild&&el.firstChild.firstChild;if(a)a.style.transform='rotate('+(sp*57.2958).toFixed(1)+'deg)';el._sp=sp;}}
-  midLine(mh);draw();}
+  midLine(mh);if(!play&&!tween)board();draw();}
 function midLine(mh){if(!midEl)return;let t;
   if(mh&&mh===me&&realUid(me)&&midInfo.u===me&&midInfo.at&&performance.now()-midInfo.at<20*60000){t=midInfo.cap?tr('midCap'):tr('midYou',null,{x:T.MID_XP,m:Math.max(1,Math.ceil((midInfo.next-(performance.now()-midInfo.at))/60000))});}
   else if(mh&&mh===me)t=tr('midHold');
@@ -221,14 +250,16 @@ function wire(){
     if(!cancel&&d.uid&&performance.now()-d.t<700)tap(d.uid);};
   felt.addEventListener('pointerup',e=>up(e,false));felt.addEventListener('pointercancel',e=>up(e,true));
   let stk=null;const knob=stickEl.querySelector('.rt-knob');
-  const stickShow=(dx,dy)=>{knob.style.transform=dx||dy?'translate('+dx+'px,'+dy+'px)':'';stickEl.classList.toggle('on',!!stk);stickEl.setAttribute('aria-valuenow',String(aim?Math.round(aim.p*100):0));};
+  const stickShow=(dx,dy)=>{knob.style.transform=dx||dy?'translate('+dx+'px,'+dy+'px)':'';stickEl.classList.toggle('on',!!stk);stickEl.setAttribute('aria-valuenow',String(aim?Math.round(aim.p*100):0));
+    /* the rim fills with the shot's power while you pull (the same power as the ring round your ball) */
+    stickEl.style.setProperty('--p',aim&&stk?Math.max(0,Math.min(1,aim.p)).toFixed(3):'0');};
   const stickEnd=(e,cancel)=>{if(!stk||(e&&e.pointerId!=null&&e.pointerId!==stk.id))return;if(e&&e.stopPropagation)e.stopPropagation();const id=stk.id;stk=null;
     try{stickEl.releasePointerCapture(id);}catch(x){}const a=aim;aim=null;stickShow(0,0);if(a&&!cancel&&a.p>=.08)fire(a.dx,a.dy,a.p);kick();};
   stickEl.addEventListener('pointerdown',e=>{if(e.button>0||stk||down)return;e.stopPropagation();const b=stickEl.getBoundingClientRect();
-    stk={id:e.pointerId,cx:b.left+b.width/2,cy:b.top+b.height/2,r:Math.max(24,b.width*.9)};aim=null;try{stickEl.setPointerCapture(e.pointerId);}catch(x){}if(e.cancelable)e.preventDefault();stickShow(0,0);});
+    stk={id:e.pointerId,cx:b.left+b.width/2,cy:b.top+b.height/2,r:Math.max(24,b.width*.9)};stk.k=b.width*.3/stk.r; /* full pull: the knob is at the base's edge, it follows the thumb 1:1 in direction */aim=null;try{stickEl.setPointerCapture(e.pointerId);}catch(x){}if(e.cancelable)e.preventDefault();stickShow(0,0);});
   stickEl.addEventListener('pointermove',e=>{if(!stk||e.pointerId!==stk.id)return;e.stopPropagation();let dx=e.clientX-stk.cx,dy=e.clientY-stk.cy;const d=Math.hypot(dx,dy);
     if(d<4){aim=null;stickShow(0,0);kick();return;}if(d>stk.r){dx*=stk.r/d;dy*=stk.r/d;}const a=stickAim(dx,dy,stk.r);aim=a?{dx:a.dx,dy:a.dy,p:a.p}:null;
-    stickShow(Math.round(dx*.4),Math.round(dy*.4));kick();});
+    stickShow(Math.round(dx*stk.k),Math.round(dy*stk.k));kick();});
   stickEl.addEventListener('pointerup',e=>stickEnd(e,false));stickEl.addEventListener('pointercancel',e=>stickEnd(e,true));
   stickEl.addEventListener('lostpointercapture',e=>stickEnd(e,true));
   for(const ev of ['touchstart','touchmove','dblclick'])stickEl.addEventListener(ev,e=>{e.stopPropagation();if(ev!=='touchstart'&&e.cancelable)e.preventDefault();},{passive:false});
@@ -301,8 +332,10 @@ function midCheck(force){if(!realUid(me)||!loaded||play||typeof W.award!=='funct
 /* ---------- entry: community-chat.js place() hands the Room view over ---------- */
 function mount(g){if(off||!g||!g.appendChild)return false;if(!mapApi()||!mapApi().people)return false;
   if(gal!==g||!wrap||!wrap.isConnected){if(wrap&&wrap.isConnected&&gal!==g)wrap.remove();build(g);}else if(!g.classList.contains('rt-on'))g.classList.add('rt-on');
-  sync();if(!loaded||Date.now()-lastLoad>15000)loadRows(!loaded);showNote();poll();return true;}
-function poll(){if(pollT)return;pollT=setInterval(()=>{if(!visible()){return;}if(!play)loadRows();showNote();},15000);if(pollT&&pollT.unref)pollT.unref();}
+  sync();if(!loaded||Date.now()-lastLoad>15000)loadRows(!loaded);showNote();poll();
+  /* the round back button slides in after the Room opens: measure the control row again once it has settled */
+  for(const ms of [450,1300])setTimeout(()=>{if(wrap&&wrap.isConnected){layout();render();}},ms);return true;}
+function poll(){if(pollT)return;pollT=setInterval(()=>{if(!visible()){return;}if(!play)loadRows();showNote();board();},15000);if(pollT&&pollT.unref)pollT.unref();}
 try{D.addEventListener('lowi:energy-shot',e=>{try{remote(e.detail);}catch(x){}});
   D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='visible'&&wrap){loadRows(true).then(()=>showNote());}});
   W.addEventListener('online',()=>{if(wrap)loadRows(true);});

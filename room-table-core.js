@@ -158,7 +158,17 @@ function midTick(st,o){o=o||{};const now=+o.now;if(!o.u||!isFinite(now))return {
   const s=cont?{u:st.u,id:st.id,since:st.since,last:Math.max(now,st.last),x:o.x,y:o.y,paid:Math.max(0,st.paid|0)}:{u:o.u,id:Math.floor(now),since:now,last:now,x:o.x,y:o.y,paid:0};
   const held=s.last-s.since,due=Math.floor(held/T.HOUR),pay=[];for(let h=s.paid+1;h<=due;h++)pay.push(h);s.paid=Math.max(s.paid,due);
   return {st:s,pay,held,next:T.HOUR-held%T.HOUR,fresh:!cont};}
-const api={T,table,simulate,homeSpots,pack,unpack,enc,dec,aim,guide,guidePath,inMid,midHolder,midTick,hash};
+/* 5 Nov 2026 (Emmanuel: "a nice billiard that's centered, the joystick ... reachable, big enough ... there's so much space there ...
+   put something there like a scoreboard"): the Room's layout inside its box (gw x gh px). One control row (the aim stick, size S, and
+   the scoreboard) sits 12 px above the round back button (backTop: its top edge in the box, or null when it is not there), never
+   below the box; the table (rails included) is centred in all the space above that row, both ways. Pure: tests/room-table-layout.test.cjs */
+function roomLayout(o){o=o||{};const gw=Math.max(0,+o.gw||0),gh=Math.max(0,+o.gh||0),rail=Math.max(7,Math.min(14,Math.round(gw*.028))),top=8,pad=14;
+  const S=Math.round(Math.max(84,Math.min(104,gw*.27)));let cy=gh-12-S/2;if(o.backTop!=null&&isFinite(+o.backTop))cy=Math.min(cy,+o.backTop-12-S/2);cy=Math.round(cy);
+  const room=Math.max(120,Math.round(cy-S/2-12-top)),aw=gw-2*rail-8,ah=room-2*rail,scale=Math.max(.12,Math.min(aw/T.W,ah/T.H));
+  const fw=Math.round(T.W*scale),fh=Math.round(T.H*scale),left=Math.round((gw-fw)/2-rail),tp=top+Math.max(0,Math.round((room-(fh+2*rail))/2));
+  const stick={left:pad,top:Math.round(cy-S/2),size:S},bl=pad+S+12,bw=gw-pad-bl;
+  return {rail,scale,fw,fh,room:{top,height:room},table:{left,top:tp,width:fw+2*rail,height:fh+2*rail},stick,board:bw<120?null:{left:bl,top:stick.top,width:bw,height:S}};}
+const api={T,table,simulate,homeSpots,pack,unpack,enc,dec,aim,guide,guidePath,inMid,midHolder,midTick,hash,roomLayout};
 if(typeof module==='object'&&module.exports){module.exports=api;}
 if(W)W.LowiTableCore=api;
 })(typeof window==='object'?window:(typeof globalThis==='object'?globalThis:null));

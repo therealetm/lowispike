@@ -177,3 +177,7 @@ html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .g2h-tile b{margin
 html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .g2h-tile small{display:none}
 html[data-lay=phone].apple-ui #tab-scan:has(.b3-compact){padding-bottom:calc(var(--sab) + 28px)}
 @media(max-height:740px){html[data-lay=phone].apple-ui #tab-scan .b3-capture-go{min-height:118px;padding:8px}html[data-lay=phone].apple-ui #tab-scan .b3-compact{gap:8px;margin-top:10px}html[data-lay=phone].apple-ui #tab-scan .b3-capture-icon{width:42px;height:42px}html[data-lay=phone].apple-ui.g2h-on #tab-home .td-top .small{display:none}html[data-lay=phone].apple-ui.g2h-on #tab-home .td-top{min-height:36px}html[data-lay=phone].apple-ui.g2h-on #tab-home{gap:6px}}
+/* 5 Nov 2026: screen-reader-only text (the pool table's shot line, the Circle energy line, the chat's announcer). The class had no rule,
+   so the table's "Energy blast at {name}" line was drawn as white text behind the top of the pool table (Emmanuel's screenshot).
+   Hidden from sight, still read by VoiceOver. */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important}

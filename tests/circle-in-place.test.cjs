@@ -20,4 +20,3 @@ test('Circle switches tabs instantly: no page slide under a game panel', () => {
   assert.match(lg, /!quiet && !\(window\.LowiSections && window\.LowiSections\.instant\)\) \{ const d = pendingDx; pendingDx = 0; slide\(prevTab, t, d\); \}/);
   assert.match(nav, /instantUntil = v \? performance\.now\(\) \+ 700 : 0/);
 });
-

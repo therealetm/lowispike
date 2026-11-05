@@ -36,7 +36,7 @@ test('a title is only said when none of its words is in the text', () => {
        "Tap X ..." card (the bubbles, Scan, Community) says its name once, in the text */
     const ADDS = new Set(['claim', 'hello', 'settings', 'done']);
     for (const l of LANGS) for (const st of S.plan({ claimReady: true })) if (V.spoken(st, l, 'Misty').t >= 0) assert.ok(ADDS.has(st.id), st.id + '/' + l + ': title said although the text repeats it');
-    for (const l of LANGS) for (const id of ['gap', 'fuel', 'water', 'move', 'sleep', 'scan', 'community']) assert.strictEqual(V.spoken(S.STEPS.find(x => x.id === id), l, 'Misty').t, -1, id + '/' + l + ': said once');
+    for (const l of LANGS) for (const id of ['gap', 'fuel', 'day', 'shop-week', 'scan', 'community'])   /* Nov 5 2026: water / move / sleep are one card, day */ assert.strictEqual(V.spoken(S.STEPS.find(x => x.id === id), l, 'Misty').t, -1, id + '/' + l + ': said once');
 });
 
 test('Emmanuel\'s examples: repeated titles are gone, titles that add something stay', () => {
@@ -44,7 +44,8 @@ test('Emmanuel\'s examples: repeated titles are gone, titles that add something 
     /* Oct 25 2026 short tour: the long tour's "Tap me" / "Hold me" cards are gone; the same rule on the short cards */
     assert.strictEqual(sp('gap').t, -1, '"Gap" + "Tap Gap to see..." says it once');
     assert.strictEqual(sp('scan').t, -1, '"Scan" + "Tap Scan and point..." says it once');
-    assert.strictEqual(sp('water', 'de').t, -1, '"Wasser" + "Tipp auf Wasser..." says it once');
+    assert.strictEqual(sp('day', 'de').t, -1, '"Wasser, Bewegung, Schlaf" + "Wasser, Bewegung und Schlaf gehen gleich..." says it once');
+    assert.strictEqual(sp('shop-week').t, -1, '"Supermarket" + "In Supermarket, + puts..." says it once');
     for (const l of LANGS) assert.ok(sp('hello', l).t > 0, 'hello/' + l + ': "Hi, I\'m Misty" adds the greeting and the name');
     assert.ok(sp('settings').s.startsWith('Settings. ') && sp('settings').s.endsWith(S.STEPS.find(x => x.id === 'settings').text.en), 'a title that adds something is said once, then the text');
     const ren = V.spoken(S.STEPS.find(s => s.id === 'hello'), 'en', 'Nova');

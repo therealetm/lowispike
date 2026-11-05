@@ -1,6 +1,27 @@
 # Tutorial (Settings > Tutorial)
 
-**OFF since 29 Oct 2026 (Emmanuel, on a call): "remove the current tutorial for now".** `tutorial-steps.js` `OFF = true`: no Settings row, no auto start for new accounts, no "Continue tutorial" pill, no Community Walkthrough card; `LowiTutorial.start()` returns false. What's New is not affected. Do NOT update, rebuild or replace the tour, and do not spend time keeping its steps current, until he asks for a new tutorial (once the app is finished). Loud releases still need the `"tutorial"` field in `news.json`; use `{"none": "tutorial is off (29 Oct 2026)"}`.
+**ON again since Phase A (4 Nov 2026), `OFF = false`.** (It was off from 29 Oct 2026 to 4 Nov 2026: "remove the current tutorial for now".)
+
+**The complete new tutorial (5 Nov 2026, VERSION 38; Emmanuel: "a complete new one that is up to date with our version").** The base
+tour is 9 cards that follow a day in the app, each one short sentence in EN / DE / ES with a recorded voice clip:
+
+1. `hello`: Misty, hold her for her card (energy, level, what she needs)
+2. `scan`: Scan a meal or a pack (barcode); after the verdict, Log as eaten or Add to cart. Demo only, never the real camera
+3. `gap`: Gap, Last meal starts the timer, First meal stops it
+4. `day`: Water (10 sips / a glass / a bottle), Move (Casual / Steady / Epic), Sleep, one card (old ids water / move / sleep -> `MOVED`)
+5. `fuel`: Shopping and its three doors: Supermarkt (shop and plan), Seller Zone (ready snacks), Hilf mit (help pay)
+6. `shop-week`: inside Supermarkt, + puts a product in the cart, Meine Woche planen makes dinners, a budget and a list
+7. `community`: Community (play, chat, For You, Ranking)
+8. `settings`: Settings open from the Community name at the top of Community (a hold on the Community bubble does nothing since
+   29 Oct 2026). The card keeps Community open and its demo lays the real Settings page over it (`OPEN['settings-sheet'].over`)
+9. `done`: fly with the joystick, autopilot, or past the edge into the galaxy
+
+Everyone can start it again from Settings > Tutorial; new accounts get it by themselves after setup; existing accounts are never
+pushed into it and no entry, language or theme changes. A tour left halfway on an old card continues on the card that took it over
+(`tutorial-steps.js` `MOVED` / `moved()`). Checks: `tests/tutorial-new.test.cjs`, `node tools/tutorial-new/check.cjs` (Settings row,
+resume, Settings over Community, auto start, no data changes) and `node tools/tutorial-short/check.cjs` (the hands-free walk).
+When the galaxy settings or the feedback page land on main, add them to an existing card's text (one sentence) or as an optional
+deep-dive card; do not mention them before their code is on main.
 
 Emmanuel, 19 Oct 2026: "There should be a tutorial button where you can click on it and then basically our companion takes you
 through everything from the beginning, as if you were new. Obviously, you can skip if you already know this. So, with every new

@@ -97,8 +97,10 @@ test('hold Move on Home opens the Move page; a tap still blooms', () => {
   assert.match(mb, /onTap: \(\) => \{[^}]*openBloom|openBloom\(/, 'tap still opens the bloom');
   const tut = R('tutorial-steps.js');
   /* Oct 25 2026 short tour (max 12 cards): one Move card; its demo finger taps Move and only the bloom opens, the page is part of it */
-  const TS = require('../tutorial-steps.js'), mv = TS.STEPS.find(s => s.id === 'move');
-  assert.ok(mv && mv.target.includes('#whHud .wh-move') && mv.demo && mv.demo.g === 'tap' && mv.demo.open === 'move-bloom', 'the Move card taps the real Move bubble');
-  assert.strictEqual(TS.covered()['move-page'], 'move'); assert.strictEqual(TS.covered()['community-tab-order'], 'community');
-  assert.match(tut, /id: 'move',/);
+  /* Nov 5 2026 (new tutorial): Water, Move and Sleep are one card (day); its finger taps Water, and Move is taught on it (move-tap) */
+  const TS = require('../tutorial-steps.js'), mv = TS.STEPS.find(s => s.id === 'day');
+  assert.ok(mv && mv.demo && mv.demo.g === 'tap' && mv.teaches.includes('move-tap') && mv.covers.includes('move-page') && /\bMove\b/.test(mv.text.en), 'the day card teaches the Move tap');
+  assert.ok(TS.GESTURES.find(g => g.id === 'move-tap'), 'the Move tap is still a gesture');
+  assert.strictEqual(TS.covered()['move-page'], 'day'); assert.strictEqual(TS.covered()['community-tab-order'], 'community');
+  assert.match(tut, /id: 'day',/);   /* Nov 5 2026: Move is on the day card */
 });

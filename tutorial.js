@@ -32,7 +32,9 @@
     const OWN = '#ltTour';
     /* a sheet that is already on its way out (LowiR2 marks it .off at once; the Gap sheet drops .on) is not a panel to wait for: the
        You sheet's close animation took 4.6 s in the short tour, and the next card stayed hidden behind it (Oct 25 2026) */
-    const closing = el => { try { return !!(el.closest('.r2-ov.off') || (el.closest('#gvSheet, .gv-ov') && !el.closest('#gvSheet, .gv-ov').classList.contains('on'))); } catch (e) { return false; } };
+    /* Nov 5 2026 (new tutorial): Shop's panel (store-picks.js close(): .stp-ov loses .in, gets .out, is removed after 260 ms) counts as
+       closing too, so leaving the Supermarket card does not hide the next card for two ticks */
+    const closing = el => { try { return !!(el.closest('.r2-ov.off') || el.closest('.stp-ov.out') || (el.closest('#gvSheet, .gv-ov') && !el.closest('#gvSheet, .gv-ov').classList.contains('on'))); } catch (e) { return false; } };
     function busyBy() {
         const stg = stage(), mine = el => !!(el.closest(OWN) || (stg && el.closest(stg)) || closing(el));
         if (H.classList.contains('gate-up') || H.classList.contains('gate-boot')) return 'setup';
@@ -65,7 +67,8 @@
         cook: { go() { if (typeof W.goTab === 'function') W.goTab('shelf'); }, stage: '', back() { goHome(); } },
     };
     function stage() {
-        const s = step(), r = s && (s.open || (s.demo && mode !== 'news' && s.demo.open));   /* a demo card's page is its stage too */
+        const s = step(), d = s && s.demo && mode !== 'news' && s.demo.open;
+        const r = s && (d && opened === d ? d : (s.open || d));   /* a demo card's page is its stage too (also when it lies over the card's own page) */
         return (on && r && opened === r && OPEN[r] && OPEN[r].stage) || '';
     }
     /* the short base tour's demo routes (Oct 25 2026): the finger taps or holds the real bubble, then the tour opens the real place
@@ -78,14 +81,19 @@
         'home-shop': { stage: '.stp-card', go: () => { const P = W.LowiStorePicks; if (P && !P.isOpen()) P.open('tour'); }, back: () => { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
         'fuel-bloom': bloom('fuel'), 'gap-bloom': bloom('gap') /* Oct 28 2026, 22:54: Gap blooms Letzte / Erste Mahlzeit */, 'water-bloom': bloom('water'), 'move-bloom': bloom('move'), 'sleep-bloom': bloom('sleep'),
         'community-tab': { stage: '', go: () => { if (typeof W.goTab === 'function') W.goTab('foryou'); }, back: goHome },
-        'settings-sheet': { stage: '.cme-ov', go: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.open(); }, back: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.close(); } },
+        /* Nov 5 2026 (new tutorial): Settings open from the Community name at the top of Community (the hold on the Community bubble
+           does nothing since Oct 29 2026), so this page opens OVER Community: the Settings card keeps Community open (open:
+           'community-tab') and its demo lays the real Settings page on top without closing Community first (over). */
+        'settings-sheet': { over: 'community-tab', stage: '.cme-ov', go: () => { const p = D.getElementById('tab-foryou'); if (p && !p.classList.contains('active') && typeof W.goTab === 'function') W.goTab('foryou'); if (W.LowiCommunityMe) W.LowiCommunityMe.open(); }, back: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.close(); goHome(); } },
         /* never the camera: the mocked Scan screen inside the tour's own layer (tutorial-demo.js) */
         'scan-demo': { stage: '.lt-scan', go: () => { if (W.LowiTutorialDemo && root) W.LowiTutorialDemo.scanOpen(root, lang()); }, back: () => { if (W.LowiTutorialDemo) W.LowiTutorialDemo.scanClose(); } }
     });
     function leave() { const o = opened; opened = ''; if (o && OPEN[o]) { try { OPEN[o].back(); } catch (e) { } } }
+    /* the page that is open belongs to this card: its own page, or a page its demo laid over it (settings-sheet over community-tab) */
+    const ours = s => !!(s && opened && (s.open === opened || (s.open && OPEN[opened] && OPEN[opened].over === s.open && s.demo && s.demo.open === opened)));
     function openFor(s) {
-        if (opened && (!s || s.open !== opened)) leave();
-        if (s && s.open && OPEN[s.open] && opened !== s.open) { opened = s.open; try { OPEN[s.open].go(); } catch (e) { } }
+        if (opened && !ours(s)) leave();
+        if (s && s.open && OPEN[s.open] && !ours(s)) { opened = s.open; try { OPEN[s.open].go(); } catch (e) { } }
         if (root) root.classList.toggle('lt-staged', !!(s && (s.open || (s.demo && opened && opened === s.demo.open))));
         if (!(s && s.open) && !(s && s.demo && opened)) room('');
     }
@@ -208,7 +216,7 @@
     function readMs(s) { const t = S.text(s, 'text', lang(), { name: companionName() }) || ''; return Math.max(DEMO.READ_MIN, t.length * DEMO.READ_PER_CHAR); }
     function demoOpen(s) {
         const r = s && s.demo && s.demo.open; if (!r || !OPEN[r]) return;
-        if (opened && opened !== r) leave();
+        if (opened && opened !== r && OPEN[r].over !== opened) leave();
         if (opened !== r) { opened = r; try { OPEN[r].go(); } catch (e) { } }
         demoOpened = i;
         if (root) root.classList.add('lt-staged');
@@ -503,7 +511,9 @@
         store.set(Object.assign(store.get(), { v: S.VERSION, at: new Date().toISOString(), done: false, from: o.from || '' }));
         clearInterval(timer); timer = setInterval(tick, 350);
         /* opts.at: begin at that step id (tutorial-auto.js: continue a tour that was left halfway) */
-        let at = 0; const want = o.at; if (want) { const k = list.findIndex(x => x.id === want); if (k > 0) at = k; }
+        let at = 0; const want = S.moved ? S.moved(o.at) : o.at; if (want) {   /* Nov 5 2026: an old step id (water / move / sleep) continues on the card that took it over */
+            const k = list.findIndex(x => x.id === want); if (k > 0) at = k;
+        }
         { const st0 = store.get(); if (st0.resume && st0.resume.via === 'tryit') { delete st0.resume.via; store.set(st0); } }   /* picked up once */
         go(at, 'start');
         return true;

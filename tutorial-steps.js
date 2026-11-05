@@ -40,8 +40,8 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 37;  /* 37: Oct 28 2026, 22:54, Gap blooms Letzte / Erste Mahlzeit (the old Essenspause window is not what a tap opens); 36: Oct 28 2026, new-humans now says the chat is people only too (bot posts live in For You); 35: Oct 27 2026, new-day-recap in part 'new' (Day recap from the companion card and My day: the day read back, care sent, one journal line; shows after the evening catch-up Save); 34: Oct 26 2026, new-evening-catchup in part 'new' (Catch up on today: the evening bubble checklist, first row in Settings); 33: Oct 26 2026, new-quick-tour in part 'new' (the 45-second video tour, Settings row after Tutorial); 32: Oct 26 2026, new-cart-ask in part 'new' (Someone else pays: the whole Cart as a Give a hand basket); 31: Oct 26 2026, new-mic-dictation in part 'new' (a small mic in text fields: speak instead of typing; Home Screen app on iPhone uses the keyboard's mic); 30: Oct 26 2026, new-cook-tabs (Cook opens on Kitchen, the first tab; hold a Cook tab to move it) and new-kitchen no longer says next to Swipe; 29: Oct 26 2026, new-scan-why in part 'new' (the scanner card's curve, How often and Why?); 28: Oct 26 2026, new-kitchen rewritten (Kitchen is a game in Cook next to Shuffle and Swipe) and new-give-hand opens Shop on Seller Zone (Kitchen left Shop); 27: Oct 25 2026, new-give-hand in part 'new' (Give a hand is its own Shop tab next to Kitchen); 26: Oct 25 2026, the short base tour (11 cards, auto demo, What's New never in the base tour); 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
-    const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
+    const VERSION = 38;  /* 38: Nov 5 2026, the complete new tutorial (Emmanuel: "a complete new one that is up to date with our version"): Scan with photo, barcode, Log as eaten and Add to cart; Water / Move / Sleep in one card; Shopping with its three doors and Supermarkt with Plan my week; Settings from the Community name (the hold on the bubble does nothing since Oct 29); flying out into the galaxy on the last card. Old step ids water / move / sleep land on day (MOVED). 37: Oct 28 2026, 22:54, Gap blooms Letzte / Erste Mahlzeit (the old Essenspause window is not what a tap opens); 36: Oct 28 2026, new-humans now says the chat is people only too (bot posts live in For You); 35: Oct 27 2026, new-day-recap in part 'new' (Day recap from the companion card and My day: the day read back, care sent, one journal line; shows after the evening catch-up Save); 34: Oct 26 2026, new-evening-catchup in part 'new' (Catch up on today: the evening bubble checklist, first row in Settings); 33: Oct 26 2026, new-quick-tour in part 'new' (the 45-second video tour, Settings row after Tutorial); 32: Oct 26 2026, new-cart-ask in part 'new' (Someone else pays: the whole Cart as a Give a hand basket); 31: Oct 26 2026, new-mic-dictation in part 'new' (a small mic in text fields: speak instead of typing; Home Screen app on iPhone uses the keyboard's mic); 30: Oct 26 2026, new-cook-tabs (Cook opens on Kitchen, the first tab; hold a Cook tab to move it) and new-kitchen no longer says next to Swipe; 29: Oct 26 2026, new-scan-why in part 'new' (the scanner card's curve, How often and Why?); 28: Oct 26 2026, new-kitchen rewritten (Kitchen is a game in Cook next to Shuffle and Swipe) and new-give-hand opens Shop on Seller Zone (Kitchen left Shop); 27: Oct 25 2026, new-give-hand in part 'new' (Give a hand is its own Shop tab next to Kitchen); 26: Oct 25 2026, the short base tour (11 cards, auto demo, What's New never in the base tour); 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const AREAS = ['you', 'home', 'food', 'shop', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- the base tour (Oct 25 2026, Emmanuel: "far too long ... only the essentials, at most 12 steps"). One card per
            place, one short sentence each. demo: the brown finger (tutorial-demo.js) taps or holds the REAL bubble (g), then the tour
@@ -62,14 +62,30 @@
             cta: { en: 'Let’s do it', de: 'Los geht’s', es: '¡Vamos!' }
         },
         {
+            /* Nov 5 2026 (new tutorial, Emmanuel: "a complete new one that is up to date with our version"): the base tour follows a
+               day: who Misty is, scanning food, meal times, the small daily bubbles, shopping, Community, Settings, then flying. */
             id: 'hello', area: 'you', target: ['[data-home-misty]', '#spBubble'], demo: { g: 'hold', open: 'misty-card' },
             covers: ['companion', 'misty', 'companion-card', 'energy', 'mood', 'energy-peak', 'welcome-energy', 'forms', 'evolution', 'care-room', 'cell-room', 'rename', 'aura', 'mirror-mode'],
             teaches: ['misty-hold'],
             title: { en: 'Hi, I’m {name}', de: 'Hi, ich bin {name}', es: 'Hola, soy {name}' },
             text: {
-                en: 'Hold me and my card opens: my energy, my level and what I still need.',
-                de: 'Halt mich gedrückt, dann geht meine Karte auf: Energie, Level und was mir noch fehlt.',
-                es: 'Mantenme pulsado y se abre mi tarjeta: mi energía, mi nivel y lo que aún me falta.'
+                en: 'I’m your companion: hold me and my card opens with my energy, my level and what I still need.',
+                de: 'Ich bin dein Begleiter: Halt mich gedrückt, dann zeigt meine Karte Energie, Level und was mir fehlt.',
+                es: 'Soy tu compañero: mantenme pulsado y mi tarjeta muestra mi energía, mi nivel y lo que me falta.'
+            }
+        },
+        {
+            /* Scan in the tour NEVER calls the camera (no iOS permission prompt): 'scan-demo' is a mocked Scan screen with a sample
+               photo; the finger presses its shutter and a verdict marked Demo appears. The camera is asked at the first REAL scan.
+               Nov 5 2026: food photo AND packaged product (barcode) in one card, and what comes after the verdict: the verdict card
+               has "Log as eaten" and "Add to cart" (shop-scan.js T.ate / T.add). */
+            id: 'scan', area: 'food', target: ['#whHud .o8-scan'], demo: { g: 'tap', open: 'scan-demo' }, sayTitle: { es: false },
+            covers: ['scan', 'barcode', 'deep-analyze', 'fix-food', 'snap-food', 'photo-checks', 'log-meal'], teaches: ['scan-tap', 'scan-buttons'],
+            title: { en: 'Scan', de: 'Scannen', es: 'Escanear' },
+            text: {
+                en: 'Tap Scan and point the camera at your meal or a pack: I show the spike, then log it as eaten or add it to your cart.',
+                de: 'Tipp auf Scannen, halt die Kamera auf Essen oder eine Packung: Ich zeig den Spike, dann eintragen oder ab in den Korb.',
+                es: 'Toca Escanear y apunta la cámara a tu comida o a un paquete: te digo cuánto sube y lo anotas o va al carrito.'
             }
         },
         {
@@ -83,74 +99,64 @@
             }
         },
         {
-            /* Oct 28 2026 food plan: this bubble is Einkaufen (cart + open count of the shopping list); meals are logged in the Gap hub */
-            id: 'fuel', area: 'home', target: ['#whHud .wh-meals'], demo: { g: 'tap', open: 'fuel-bloom' }, covers: ['fuel', 'shop'], teaches: ['fuel-tap'],
+            /* Nov 5 2026 (new tutorial): Water, Move and Sleep are one card. All three are a tap and a pick (home-blooms-v2.js,
+               home-settings-sleep-v2.js); the finger shows it on Water. The old ids water / move / sleep land here (MOVED). */
+            id: 'day', area: 'home', target: ['#whHud .wh-water'], demo: { g: 'tap', open: 'water-bloom' },
+            covers: ['water', 'hydration', 'move', 'move-page', 'workouts-page', 'sleep'], teaches: ['water-tap', 'move-tap', 'sleep-tap'],
+            title: { en: 'Water, Move, Sleep', de: 'Wasser, Bewegung, Schlaf', es: 'Agua, Movimiento, Sueño' },
+            text: {
+                en: 'Tap Water for 10 sips, a glass or a bottle, Move for Casual, Steady or Epic, and Sleep for your night.',
+                de: 'Tipp auf Wasser für 10 Sips, ein Glas oder eine Flasche, Bewegung für Locker, Stetig oder Episch, Schlaf für die Nacht.',
+                es: 'Toca Agua para 10 sorbos, un vaso o una botella, Movimiento para Tranquilo, Constante o Épico, y Sueño para tu noche.'
+            }
+        },
+        {
+            /* Oct 28 2026 food plan: this bubble is Einkaufen. Nov 5 2026 (Phase B item 3): a tap blooms three doors with their purpose
+               lines (store-picks.js doors()): Supermarkt (Einkauf & Wochenplan), Seller Zone (Fertige Snacks), Hilf mit (Mitbezahlen). */
+            id: 'fuel', area: 'shop', target: ['#whHud .wh-meals'], demo: { g: 'tap', open: 'fuel-bloom' }, covers: ['fuel', 'shop', 'seller-zone', 'give-hand'], teaches: ['fuel-tap'],
             title: { en: 'Shopping', de: 'Einkaufen', es: 'Compras' },
             text: {
-                en: 'Tap Shopping for Supermarket with Plan my week, the Seller Zone and Help out.',
-                de: 'Tipp auf Einkaufen für Supermarkt mit Meine Woche planen, Seller Zone und Hilf mit.',
-                es: 'Toca Compras para el súper con Planear mi semana, la Seller Zone y Ayudar.'
+                en: 'Tap Shopping: Supermarket to shop and plan, Seller Zone for ready snacks, Help out to pay for someone’s food.',
+                de: 'Tipp auf Einkaufen: Supermarkt zum Einkaufen und Planen, Seller Zone für Snacks, Hilf mit zum Mitbezahlen.',
+                es: 'Toca Compras: Súper para comprar y planear, Seller Zone para snacks, Ayudar para pagar la comida de alguien.'
             }
         },
         {
-            id: 'water', area: 'home', target: ['#whHud .wh-water'], demo: { g: 'tap', open: 'water-bloom' }, covers: ['water', 'hydration'], teaches: ['water-tap'],
-            title: { en: 'Water', de: 'Wasser', es: 'Agua' },
+            /* Nov 5 2026 (new tutorial): inside Supermarkt. + on a product row puts it in the Cart (quick-add-core.js); Meine Woche
+               planen (Phase B: the old Zu Hause tab) plans dinners, a budget and a shopping list. Opens Shop read-only on that tab. */
+            id: 'shop-week', area: 'shop', target: ['#whHud .wh-meals'], demo: { g: 'tap', open: 'supermarket' }, covers: ['quick-add', 'week-shop', 'cart'], teaches: ['fuel-tap'],
+            title: { en: 'Supermarket', de: 'Supermarkt', es: 'Supermercado' },
             text: {
-                en: 'Tap Water and pick what you drank: 10 sips, a glass or a bottle.',
-                de: 'Tipp auf Wasser und wähl, was du getrunken hast: 10 Sips, ein Glas oder eine Flasche.',
-                es: 'Toca Agua y elige lo que bebiste: 10 sorbos, un vaso o una botella.'
-            }
-        },
-        {
-            id: 'move', area: 'home', target: ['#whHud .wh-move'], demo: { g: 'tap', open: 'move-bloom' }, covers: ['move', 'move-page', 'workouts-page'], teaches: ['move-tap'],
-            title: { en: 'Move', de: 'Bewegung', es: 'Movimiento' },
-            text: {
-                en: 'Tap Move in the evening and pick Casual, Steady or Epic for your steps.',
-                de: 'Tipp abends auf Bewegung und wähl Locker, Stetig oder Episch für deine Schritte.',
-                es: 'Toca Movimiento por la noche y elige Tranquilo, Constante o Épico según tus pasos.'
-            }
-        },
-        {
-            id: 'sleep', area: 'home', target: ['#whHud .o8-sleep'], demo: { g: 'tap', open: 'sleep-bloom' }, covers: ['sleep'], teaches: ['sleep-tap'],
-            title: { en: 'Sleep', de: 'Schlaf', es: 'Sueño' },
-            text: {
-                en: 'Tap Sleep once a day and tell me how long you slept.',
-                de: 'Tipp einmal am Tag auf Schlaf und sag mir, wie lange du geschlafen hast.',
-                es: 'Toca Sueño una vez al día y dime cuánto dormiste.'
-            }
-        },
-        {
-            /* Scan in the tour NEVER calls the camera (no iOS permission prompt): 'scan-demo' is a mocked Scan screen with a sample
-               photo; the finger presses its shutter and a verdict marked Demo appears. The camera is asked at the first REAL scan. */
-            id: 'scan', area: 'food', target: ['#whHud .o8-scan'], demo: { g: 'tap', open: 'scan-demo' }, sayTitle: { es: false },
-            covers: ['scan', 'barcode', 'deep-analyze', 'fix-food', 'snap-food', 'photo-checks', 'log-meal'], teaches: ['scan-tap'],
-            title: { en: 'Scan', de: 'Scannen', es: 'Escanear' },
-            text: {
-                en: 'Tap Scan and point the camera at your food: I tell you how much it spikes.',
-                de: 'Tipp auf Scannen und halt die Kamera auf dein Essen: Ich sag dir, wie stark es spiked.',
-                es: 'Toca Escanear y apunta la cámara a tu comida: te digo cuánto te sube el azúcar.'
+                en: 'In Supermarket, + puts a product in your cart, and Plan my week makes dinners, a budget and a shopping list.',
+                de: 'Im Supermarkt legt + ein Produkt in den Korb, und Meine Woche planen macht Abendessen, Budget und Einkaufsliste.',
+                es: 'En el súper, + pone un producto en el carrito y Planear mi semana hace cenas, un presupuesto y una lista.'
             }
         },
         {
             id: 'community', area: 'together', target: ['#whHud .o8-settings'], demo: { g: 'tap', open: 'community-tab' },
             covers: ['community', 'community-tabs', 'person-card', 'community-post', 'community-chat', 'voice-message', 'photo-message', 'community-tab-order', 'community-energy'],
-            teaches: ['community-tap'],
+            teaches: ['community-tap', 'cm-tabs'],
             title: { en: 'Community', de: 'Community', es: 'Comunidad' },
             text: {
-                en: 'Tap Community to meet everyone else and their companions.',
-                de: 'Tipp auf Community und triff alle anderen und ihre Begleiter.',
-                es: 'Toca Comunidad para conocer a los demás y a sus compañeros.'
+                en: 'Tap Community to play, chat, see For You and the Ranking, with everyone else and their companions.',
+                de: 'Tipp auf Community zum Spielen, Chatten, für Für dich und die Rangliste, mit allen anderen und ihren Begleitern.',
+                es: 'Toca Comunidad para jugar, chatear, ver Para ti y el Ranking, con todos los demás y sus compañeros.'
             }
         },
         {
-            id: 'settings', area: 'settings', target: ['#whHud .o8-settings'], demo: { g: 'hold', open: 'settings-sheet' },
-            covers: ['settings', 'cook', 'theme', 'language', 'day-night', 'me', 'look', 'account', 'deleteAccount', 'body', 'weight', 'bmi', 'care', 'workouts', 'foryou', 'hunt', 'tutorial', 'quickTour', 'back-x', 'home-visit', 'day-card', 'whats-new', 'update'],
-            teaches: ['community-hold'],
+            /* Nov 5 2026 (new tutorial): since Oct 29 2026 a hold on the Community bubble does nothing (home-settings-sleep-v2.js,
+               Emmanuel: "wenn man lange drückt auf Community ... dann passiert gar nichts"); Settings open from the Community name at
+               the top of Community (community-rooms-ui.js .rm-menu-btn -> community-me.js). The card stays in Community (open:
+               'community-tab'), the finger taps that name and the real Settings page opens on top (route settings-sheet, over: community-tab).
+               Settings rows (community-me.js): Day / Night with Dark (true black), language, Notifications, Körperklang, VR, Tutorial. */
+            id: 'settings', area: 'settings', where: 'community', open: 'community-tab', target: ['.rm-menu-btn', '.rm-name'], demo: { g: 'tap', open: 'settings-sheet' },
+            covers: ['settings', 'cook', 'theme', 'language', 'day-night', 'me', 'look', 'account', 'deleteAccount', 'body', 'weight', 'bmi', 'care', 'workouts', 'foryou', 'hunt', 'tutorial', 'quickTour', 'back-x', 'home-visit', 'day-card', 'whats-new', 'update', 'true-black', 'koerperklang', 'vr'],
+            teaches: ['cm-name'],
             title: { en: 'Settings', de: 'Einstellungen', es: 'Ajustes' },
             text: {
-                en: 'Hold Community for your profile, day or night, language and your account.',
-                de: 'Halt Community gedrückt für dein Profil, Tag oder Nacht, Sprache und dein Konto.',
-                es: 'Mantén pulsada Comunidad para tu perfil, día o noche, idioma y tu cuenta.'
+                en: 'Tap the Community name at the top: the Dark look, language, Body sound, VR and this tutorial are there.',
+                de: 'Tipp oben auf den Namen Community: Dort sind Dunkel, Sprache, Körperklang, VR und dieses Tutorial.',
+                es: 'Toca el nombre Comunidad arriba: ahí están el aspecto Oscuro, el idioma, Sonido del cuerpo, RV y este tutorial.'
             }
         },
         /* ---------- part: new (Oct 23 2026, Emmanuel: "every time I do an update it's not in the tutorial style ... take them to the
@@ -385,12 +391,12 @@
             /* Oct 28 2026 (slim structure, batch 10): the old 'fly' card is merged in here. The ring points at the joystick, no
                finger demo; she does not really fly during the tour (her real first flight comes after Done, tutorial-flight.js) */
             id: 'done', area: 'end', target: ['#whPad'], demo: { g: 'drag', open: null },
-            covers: ['joy', 'joy-hold', 'autopilot', 'zoom', 'fly-out', 'worlds', 'half-energy', 'spirit-world', 'worldSound'], teaches: ['pad-drag', 'pad-triple'],
+            covers: ['joy', 'joy-hold', 'autopilot', 'zoom', 'fly-out', 'worlds', 'half-energy', 'spirit-world', 'worldSound', 'galaxy'], teaches: ['pad-drag', 'pad-triple', 'edge-push'],
             title: { en: 'You’re set', de: 'Startklar', es: 'Todo listo' },
             text: {
-                en: 'Drag the joystick and I fly, or tap it three times for autopilot.',
-                de: 'Zieh am Joystick und ich fliege, oder tipp dreimal drauf für den Autopilot.',
-                es: 'Arrastra el joystick y vuelo, o tócalo tres veces para el piloto automático.'
+                en: 'Drag the joystick and I fly, tap it three times for autopilot, or fly me past the edge into the galaxy.',
+                de: 'Zieh am Joystick und ich fliege, tipp dreimal für den Autopilot, oder flieg mich über den Rand in die Galaxie.',
+                es: 'Arrastra el joystick y vuelo, tócalo tres veces para el piloto automático o sal por el borde a la galaxia.'
             },
             cta: { en: 'Done', de: 'Fertig', es: 'Listo' }
         }
@@ -426,7 +432,6 @@
         /* Oct 24 2026: hold Scan opens every bubble at once (replaces the taught two-finger tap on Misty; bloom-ring.js still answers a
            two-finger tap on Misty as a quiet duplicate of this shortcut, untaught on Emmanuel's word: the tour teaches hold Scan) */
         G('community-tap', 'home', 'tap', ['home-settings-sleep-v2.js'], 'tap Community: Community'),
-        G('community-hold', 'home', 'hold', ['home-settings-sleep-v2.js'], 'hold Community: slim Settings'),
         G('theme-tap', 'home', 'tap', ['top-bar.js'], 'tap the moon/sun: day or night'),
         G('theme-triple', 'home', 'triple', ['top-bar.js', 'atmosphere.js'], 'tap the moon/sun three times: Day & night adjuster'),
         G('world-drag', 'home', 'drag', ['body-world-3d.js', 'world-home.js', 'body-world-3d-scene.js'], 'drag the world: look around'),
@@ -474,7 +479,7 @@
        either taught by a base card or listed here, so nothing is forgotten silently (tests/tutorial-gestures.test.cjs). */
     const SHORT_SKIP_WHY = 'not in the short base tour (Oct 25 2026, max 12 cards): found in place or shown by What\u2019s New';
     const SHORT_SKIPS = {};
-    ['mic-dictate', 'give-hand-swipe', 'ck-tab-order', 'misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'move-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'edge-push', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-buttons', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tabs', 'cm-tab-order', 'cm-name', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
+    ['mic-dictate', 'give-hand-swipe', 'ck-tab-order', 'misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'move-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tab-order', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
     const GESTURE_EXEMPT = {
         'bloom-ring.js': 'Oct 28 2026 slim structure (S-02 deleted): the old hold-Scan helpers stay as code only, nothing wires them; a hold on Scan is a plain tap that opens the one scanner',
         'kitchen-game.js': 'Cook > Kitchen: dragging something that ran out onto the bin is only a shortcut; the Ran out: bin it button on the same card does it with a plain tap, and the shelf says so',
@@ -503,15 +508,15 @@
         en: { next: 'Next', back: 'Back', skip: 'Skip', skipAll: 'Skip all', of: '{i} of {n}', label: 'Tutorial', newsLabel: 'New', newsSkip: 'Skip', newsDone: 'Got it', newsTitle: 'New in this update', guide: 'Your companion', tryIt: 'Try it now', nice: 'Nice, that’s it.', pause: 'Pause', play: 'Play',
             practice: 'Practise here. Nothing in your app changes.', laterTag: 'After the tour', how: { tap: 'Tap', hold: 'Hold', touch: 'Touch', double: 'Tap twice', drag: 'Drag', swipe: 'Swipe', pinch: 'Pinch' }, looks: { ring: 'Bubbles', water: 'Water · 3', world: 'World', fade: 'Buttons', companion: 'Companion', mic: 'Mic', joystick: 'Joystick', galaxy: 'Galaxy', sun: 'Day', sheet: 'Window', edge: 'Page', cards: 'Cards' }, done: { water: 'Water · 0', sun: 'Night', fade: 'Back again', mic: 'Sent', sheet: 'Closed', edge: 'Home', ring: 'Stopped' },
             peek: { title: 'Scan a barcode', aim: 'Hold the barcode inside the frame', field: 'Barcode number', barcode: 'Barcode', deep: 'Deep analyze', deepS: 'Opens the LOWiSPIKE GPT in ChatGPT', note: 'A look inside. The camera stays off.' },
-            areas: { you: 'Me', home: 'Your day', food: 'Scan', play: 'Flying', companion: 'My card', together: 'Community', settings: 'Settings', extras: 'Good to know', new: 'New', end: 'Done' } },
+            areas: { you: 'Me', home: 'Your day', food: 'Scan', shop: 'Shopping', play: 'Flying', companion: 'My card', together: 'Community', settings: 'Settings', extras: 'Good to know', new: 'New', end: 'Done' } },
         de: { next: 'Weiter', back: 'Zurück', skip: 'Überspringen', skipAll: 'Alles überspringen', of: '{i} von {n}', label: 'Tutorial', newsLabel: 'Neu', newsSkip: 'Überspringen', newsDone: 'Alles klar', newsTitle: 'Neu in diesem Update', guide: 'Dein Begleiter', tryIt: 'Probier’s jetzt', nice: 'Super, genau so.', pause: 'Pause', play: 'Abspielen',
             practice: 'Hier üben. In deiner App ändert sich nichts.', laterTag: 'Nach der Tour', how: { tap: 'Tippen', hold: 'Halten', touch: 'Berühren', double: 'Zweimal tippen', drag: 'Ziehen', swipe: 'Wischen', pinch: 'Zwei Finger' }, looks: { ring: 'Blasen', water: 'Wasser · 3', world: 'Welt', fade: 'Knöpfe', companion: 'Begleiter', mic: 'Mikro', joystick: 'Joystick', galaxy: 'Galaxie', sun: 'Tag', sheet: 'Fenster', edge: 'Seite', cards: 'Karten' }, done: { water: 'Wasser · 0', sun: 'Nacht', fade: 'Wieder da', mic: 'Gesendet', sheet: 'Zu', edge: 'Home', ring: 'Steht' },
             peek: { title: 'Barcode scannen', aim: 'Halte den Barcode in den Rahmen', field: 'Barcode-Nummer', barcode: 'Barcode', deep: 'Deep analyze', deepS: 'Öffnet den LOWiSPIKE GPT in ChatGPT', note: 'Ein Blick hinein. Die Kamera bleibt aus.' },
-            areas: { you: 'Ich', home: 'Dein Tag', food: 'Scan', play: 'Fliegen', companion: 'Meine Karte', together: 'Community', settings: 'Einstellungen', extras: 'Gut zu wissen', new: 'Neu', end: 'Fertig' } },
+            areas: { you: 'Ich', home: 'Dein Tag', food: 'Scan', shop: 'Einkaufen', play: 'Fliegen', companion: 'Meine Karte', together: 'Community', settings: 'Einstellungen', extras: 'Gut zu wissen', new: 'Neu', end: 'Fertig' } },
         es: { next: 'Siguiente', back: 'Atrás', skip: 'Saltar', skipAll: 'Saltar todo', of: '{i} de {n}', label: 'Tutorial', newsLabel: 'Nuevo', newsSkip: 'Saltar', newsDone: 'Entendido', newsTitle: 'Novedades de esta versión', guide: 'Tu compañero', tryIt: 'Pruébalo ahora', nice: 'Bien, así es.', pause: 'Pausa', play: 'Reproducir',
             practice: 'Practica aquí. En tu app no cambia nada.', laterTag: 'Después del recorrido', how: { tap: 'Toca', hold: 'Mantén', touch: 'Toca', double: 'Toca dos veces', drag: 'Arrastra', swipe: 'Desliza', pinch: 'Pellizca' }, looks: { ring: 'Burbujas', water: 'Agua · 3', world: 'Mundo', fade: 'Botones', companion: 'Compañero', mic: 'Micro', joystick: 'Joystick', galaxy: 'Galaxia', sun: 'Día', sheet: 'Ventana', edge: 'Página', cards: 'Tarjetas' }, done: { water: 'Agua · 0', sun: 'Noche', fade: 'Ya están', mic: 'Enviado', sheet: 'Cerrada', edge: 'Inicio', ring: 'Parado' },
             peek: { title: 'Escanear código', aim: 'Pon el código dentro del marco', field: 'Número del código', barcode: 'Código', deep: 'Deep analyze', deepS: 'Abre el GPT de LOWiSPIKE en ChatGPT', note: 'Un vistazo dentro. La cámara sigue apagada.' },
-            areas: { you: 'Yo', home: 'Tu día', food: 'Scan', play: 'Volar', companion: 'Mi tarjeta', together: 'Comunidad', settings: 'Ajustes', extras: 'Bueno saber', new: 'Nuevo', end: 'Listo' } }
+            areas: { you: 'Yo', home: 'Tu día', food: 'Scan', shop: 'Compras', play: 'Volar', companion: 'Mi tarjeta', together: 'Comunidad', settings: 'Ajustes', extras: 'Bueno saber', new: 'Nuevo', end: 'Listo' } }
     };
 
     /* pure helpers (tests + tutorial.js) */
@@ -589,7 +594,11 @@
        or continue it"): the auto start for new accounts, the Continue tutorial pill, Settings > Tutorial and the Community
        Walkthrough card are back. Accounts that finished setup before this build are still never forced into it. */
     const OFF = false;
-    const api = { OFF, VERSION, AREAS, STEPS, MAX_BASE, base, SHORT_SKIPS, NO_TUTORIAL, GESTURES, GESTURE_EXEMPT, UI, text, fill, plan, skipIndex, covered, newsOk, tourOf, newsCard, unseenNews, tryMatch, taught, TRY_CUE, tryResume, kind, PRACTICE_HOW, LATER_MARK, INSTRUCTION };
+    /* Nov 5 2026 (new tutorial): step ids that were merged or renamed. A tour left halfway on an old card (tutorial-auto.js / the
+       Continue tutorial pill keep the step id in the account) continues on the card that took it over, not from the start. */
+    const MOVED = { water: 'day', move: 'day', sleep: 'day' };
+    function moved(id) { return (id && MOVED[id]) || id || ''; }
+    const api = { OFF, VERSION, MOVED, moved, AREAS, STEPS, MAX_BASE, base, SHORT_SKIPS, NO_TUTORIAL, GESTURES, GESTURE_EXEMPT, UI, text, fill, plan, skipIndex, covered, newsOk, tourOf, newsCard, unseenNews, tryMatch, taught, TRY_CUE, tryResume, kind, PRACTICE_HOW, LATER_MARK, INSTRUCTION };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.LowiTutorialSteps = api;
 })(typeof window !== 'undefined' ? window : null);

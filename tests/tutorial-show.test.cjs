@@ -16,7 +16,9 @@ test('every plan belongs to a real tutorial step, or to a long-tour card retired
     const ids = new Set(steps().map(s => s.id));
     /* the long tour's cards (the short tour replaced them); their pictures stay for the moment, and nothing can plan them again:
        none of these ids is a step, and every base card that has a plan is a demo card (the finger shows the real control, not Show) */
-    const RETIRED = new Set(['touch', 'misty-hold', 'misty-turn', 'mirror', 'energy', 'mood', 'energy-peak', 'bubbles', 'ring-still', 'gap-tap', 'fuel-hold', 'log-meal', 'water-hold', 'move-hold']);
+    const RETIRED = new Set(['touch', 'misty-hold', 'misty-turn', 'mirror', 'energy', 'mood', 'energy-peak', 'bubbles', 'ring-still', 'gap-tap', 'fuel-hold', 'log-meal', 'water-hold', 'move-hold',
+        /* Nov 5 2026 (new tutorial): Water, Move and Sleep are one card, day; their own cards are gone (tutorial-steps.js MOVED) */
+        'water', 'move', 'sleep']);
     for (const id of X.ids()) assert.ok(ids.has(id) || RETIRED.has(id), id + ' is not a step in tutorial-steps.js');
     for (const id of RETIRED) assert.ok(!ids.has(id), id + ' is retired and must not come back as a step');
     for (const s of require('../tutorial-steps.js').base()) if (X.ids().includes(s.id)) assert.ok(s.demo, s.id + ': a base card with a plan is shown by the demo finger');

@@ -148,7 +148,8 @@ test('the bloom: three step orbs after Mirror, the picked one marked (aria-press
 
 test('onboarding copy matches: the Move card tells the step ranges, not Quick / Medium / Long / Epic', () => {
     const steps = read('tutorial-steps.js'), show = read('tutorial-show.js');
-    const card = steps.slice(steps.indexOf("id: 'move', area: 'home'"), steps.indexOf("id: 'move-hold'"));
+    /* Nov 5 2026 (new tutorial): Move lives on the day card (Water, Move, Sleep) */
+    const card = steps.slice(steps.indexOf("id: 'day', area: 'home'"), steps.indexOf("id: 'fuel', area:"));
     assert.match(card, /Casual, Steady or Epic/); assert.doesNotMatch(card, /Quick, Medium/);
     assert.match(show, /moves: \['Casual', 'Steady', 'Epic'\]/);
 });

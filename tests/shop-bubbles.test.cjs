@@ -148,5 +148,5 @@ test('the static Home layout (no ring) asks the same map first', () => {
 });
 
 test('the tour\'s Einkaufen card shows the bloom (fuel-bloom), not the panel', () => {
-    assert.match(read('tutorial-steps.js'), /id: 'fuel', area: 'home', target: \['#whHud \.wh-meals'\], demo: \{ g: 'tap', open: 'fuel-bloom' \}/);
+    assert.match(read('tutorial-steps.js'), /id: 'fuel', area: '(?:home|shop)', target: \['#whHud \.wh-meals'\], demo: \{ g: 'tap', open: 'fuel-bloom' \}/);
 });

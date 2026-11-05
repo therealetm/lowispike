@@ -9,7 +9,8 @@ const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 
 test('Einkaufen > Hilf mit keeps the Einkaufen section bar, Hilf mit lit, and its other sections switch directly', () => {
   const sp = read('store-picks.js'), gb = read('gift-basket.js');
-  assert.match(sp, /const cur = tabOver \|\| tab;/);
+  /* Nov 5 2026 (test changed, why): Plan my week (old Zu Hause tab) lives inside Supermarkt, so Supermarkt stays lit there */
+  assert.match(sp, /const cur = tabOver \|\| \(tab === 'home' \? 'shop' : tab\);/);
   assert.match(sp, /tabsHTML: active => \{ if \(!ov\) return ''; tabOver = active \|\| ''; try \{ return tabsHTML\(\); \} finally \{ tabOver = ''; \} \}/);
   assert.match(gb, /aria-labelledby="gb-title">' \+ shopBar\(\) \+/);
   assert.match(gb, /getAttribute\('data-from'\) !== 'shop'/);

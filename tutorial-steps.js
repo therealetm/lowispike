@@ -87,9 +87,9 @@
             id: 'fuel', area: 'home', target: ['#whHud .wh-meals'], demo: { g: 'tap', open: 'fuel-bloom' }, covers: ['fuel', 'shop'], teaches: ['fuel-tap'],
             title: { en: 'Shopping', de: 'Einkaufen', es: 'Compras' },
             text: {
-                en: 'Tap Shopping for the supermarket, your kitchen, the Seller Zone and Help out.',
-                de: 'Tipp auf Einkaufen für Supermarkt, Zu Hause, Seller Zone und Hilf mit.',
-                es: 'Toca Compras para el súper, tu cocina, la Seller Zone y Ayuda.'
+                en: 'Tap Shopping for Supermarket with Plan my week, the Seller Zone and Help out.',
+                de: 'Tipp auf Einkaufen für Supermarkt mit Meine Woche planen, Seller Zone und Hilf mit.',
+                es: 'Toca Compras para el súper con Planear mi semana, la Seller Zone y Ayudar.'
             }
         },
         {
@@ -209,13 +209,13 @@
             }
         },
         {
-            id: 'new-week-shop', area: 'new', where: 'home', open: 'supermarket', target: ['.stp-card [data-stp-tab="home"]', '.stp-card'], covers: ['week-shop'],
-            info: 'Oct 27 2026: Shop from home is its own Shop tab now (Zu Hause / From home / Desde casa), right next to Supermarket; the spotlight points at that tab (Emmanuel: "Vielleicht möchte Von zu Hause einkaufen seine eigene Sektion haben"). Oct 26 2026: Shop from home at the top of Supermarket (week-basket.js, MAYA-HANDOFF 0.21). Household, budget and dinners in, a week of low-spike dinners and one grocery list out, priced with the existing store estimates; it fills the Cart (0.22).',
-            title: { en: 'Shop from home', de: 'Von zu Hause einkaufen', es: 'Compra desde casa' },
+            id: 'new-week-shop', area: 'new', where: 'home', open: 'supermarket', target: ['.stp-card .stp-plan', '.stp-card'], covers: ['week-shop'],
+            info: 'Nov 5 2026 (Phase B item 3): the Zu Hause tab is Supermarkt > Plan my week now; the spotlight points at that row. Oct 27 2026: Shop from home is its own Shop tab now (Zu Hause / From home / Desde casa), right next to Supermarket; the spotlight points at that tab (Emmanuel: "Vielleicht möchte Von zu Hause einkaufen seine eigene Sektion haben"). Oct 26 2026: Shop from home at the top of Supermarket (week-basket.js, MAYA-HANDOFF 0.21). Household, budget and dinners in, a week of low-spike dinners and one grocery list out, priced with the existing store estimates; it fills the Cart (0.22).',
+            title: { en: 'Plan my week', de: 'Meine Woche planen', es: 'Planear mi semana' },
             text: {
-                en: 'New: From home, right next to Supermarket. Pick people, budget and dinners for a low-spike week with store estimates, then fill your Cart.',
-                de: 'Neu: Zu Hause, gleich neben Supermarkt. Personen, Budget, Abendessen wählen: eine Low-Spike-Woche mit Schätzpreis, ab in den Warenkorb.',
-                es: 'Nuevo: Desde casa, junto a Súper. Elige personas, presupuesto y cenas: una semana low-spike con precio estimado, al carrito.'
+                en: 'In Supermarket, tap Plan my week. Pick people, budget and dinners for a low-spike week with store estimates, then fill your Cart.',
+                de: 'Im Supermarkt auf Meine Woche planen tippen. Personen, Budget, Abendessen wählen: eine Low-Spike-Woche mit Schätzpreis, ab in den Warenkorb.',
+                es: 'En el súper, toca Planear mi semana. Elige personas, presupuesto y cenas: una semana low-spike con precio estimado, al carrito.'
             }
         },
         {

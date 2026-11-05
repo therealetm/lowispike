@@ -50,7 +50,8 @@ test('the Shop panel shows Snacks to buy at the top, with its own storage, in th
     assert.match(sp, /const SKEY = 'lowi\.snackBuy\.v1';/);
     /* Oct 27 2026 (test changed, why): Emmanuel found Supermarket "so overwhelming". Snacks to buy (with Buy again) folds into one
        quiet line, My snack list, at the top of the product list and at the end of the store choice; it opens in place */
-    assert.match(sp, /'<div class="stp-scroll">' \+ snackBox\(\) \+ gen \+ inner/, 'product list: the snack line comes first');
+    /* Nov 5 2026 (test changed, why): Plan my week (owner Phase B item 3) sits just above it */
+    assert.match(sp, /'<div class="stp-scroll">' \+ planRowHTML\(\) \+ snackBox\(\) \+ gen \+ inner/, 'product list: Plan my week, then the snack line first');
     assert.match(sp, /chains \+ '<\/div>' \+\s+snackBox\(\) \+ '<p class="stp-fine">'/, 'store choice: the snack line after the chains');
     assert.match(sp, /function snackBox\(\)[\s\S]{0,500}snackHTML\(\) \+ '<\/details>'/);
     assert.match(sp, /T\('Snacks to buy', 'Snacks zum Einkaufen', 'Snacks para comprar'\)/);

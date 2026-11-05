@@ -277,17 +277,18 @@
     function tabsHTML() {
         const Z = SZ(); if (!Z && !K && !homeTab()) return '';
         if (K && !kit) kitLoad();
-        const cur = tabOver || tab;
+        /* Nov 5 2026 (owner, Phase B item 3): Plan my week (the old Zu Hause tab) lives inside Supermarkt, so Supermarkt stays lit there */
+        const cur = tabOver || (tab === 'home' ? 'shop' : tab);
         const b = (id, icon, txt, n) => '<button type="button" class="stp-tab' + (cur === id ? ' on' : '') + '" role="tab" aria-selected="' + (cur === id) + '" data-stp-tab="' + id + '"><span aria-hidden="true">' + icon + '</span><b>' + esc(txt) + '</b>' + (n ? '<i>' + n + '</i>' : '') + '</button>';
         /* Oct 25 (Emmanuel: Give a hand gets "its own place next to Supermarket, Seller Zone and Kitchen", not inside Kitchen):
            the fourth peer. A door, not a pane: it opens the Give a hand panel on top of Shop and is never the remembered tab. */
         const G = giftDoor();
         /* Oct 27: Shop from home sits right next to Supermarket, both are about the weekly shop. Short words, so four tabs fit an
            iPhone SE on one line each: Zu Hause / From home / Desde casa */
-        const H = homeTab();
-        const n = (Z ? 1 : 0) + (kitTab() ? 1 : 0) + (G ? 1 : 0) + (H ? 1 : 0) + 1;
+        /* Nov 5 2026: no own Zu Hause tab any more; it is Supermarkt > Plan my week (planRowHTML) */
+        const n = (Z ? 1 : 0) + (kitTab() ? 1 : 0) + (G ? 1 : 0) + 1;
         return '<div class="stp-tabs' + (n > 2 ? ' stp-tabs3' : '') + (n > 3 ? ' stp-tabs4' : '') + (n > 4 ? ' stp-tabs5' : '') + '" role="tablist" aria-label="' + esc(T('Shop', 'Einkaufen', 'Comprar')) + '">' +
-            b('shop', '\u{1F6D2}', T('Supermarket', 'Supermarkt', n > 3 ? 'Súper' : 'Supermercado')) + (H ? b('home', '\u{1F3E0}', T('From home', 'Zu Hause', 'Desde casa')) : '') + (Z ? b('sz', '\u{1F6CD}\uFE0F', Z.name(), Z.count ? Z.count() : 0) : '') +
+            b('shop', '\u{1F6D2}', T('Supermarket', 'Supermarkt', n > 3 ? 'Súper' : 'Supermercado')) + (Z ? b('sz', '\u{1F6CD}\uFE0F', Z.name(), Z.count ? Z.count() : 0) : '') +
             (kitTab() ? b('kitchen', '\u{1F9FA}', T('Kitchen', 'Küche', 'Cocina'), K.count(kit)) : '') +
             (G ? b('gift', '\u{1F91D}', n > 3 ? T('Help out', 'Hilf mit', 'Ayudar') : T('Give a hand', 'Hilf mit', 'Echa una mano')) : '') + '</div>';
     }
@@ -331,13 +332,22 @@
         return '<details class="stp-snackbox"' + (snackOpen ? ' open' : '') + '><summary><span aria-hidden="true">\ud83e\udd5c</span><b>' + esc(T('My snack list', 'Meine Snackliste', 'Mi lista de snacks')) + '</b>' +
             '<i class="stp-snackbox-n"' + (n ? '' : ' hidden') + '>' + n + '</i><span class="stp-snackbox-go" aria-hidden="true">\u203a</span></summary>' + snackHTML() + '</details>';
     }
+    /* Nov 5 2026 (owner, Phase B item 3: "Incorporate Zu Hause planning into Supermarkt as Plan my week"): one plain row at the top of
+       Supermarkt opens the weekly planner (week-basket.js) inside Supermarkt; its head has "\u2039 Supermarkt" to come back. */
+    function planRowHTML() {
+        if (!homeTab()) return '';
+        return '<button type="button" class="stp-plan" data-stp="weekshop"><span class="stp-plan-ic" aria-hidden="true">\u{1F4C5}</span><span class="stp-plan-tx"><b>' +
+            esc(T('Plan my week', 'Meine Woche planen', 'Planear mi semana')) + '</b><small>' +
+            esc(T('Dinners, budget and one shopping list', 'Abendessen, Budget und eine Einkaufsliste', 'Cenas, presupuesto y una lista de la compra')) +
+            '</small></span><span class="stp-plan-go" aria-hidden="true">\u203A</span></button>';
+    }
     function homeHTML() {
         return shell('<div class="stp-home"></div>' + footBtns(''));
     }
     function mountHome() {
         const el = ov && ov.querySelector('.stp-home'); if (!el || !WB()) return;
         try {
-            WB().mount(el, { store: S.range, head: () => (hasCart() ? cartBtnHTML() : ''), onCart: openCart, cartOn: () => hasCart() });
+            WB().mount(el, { store: S.range, head: () => (hasCart() ? cartBtnHTML() : ''), onCart: openCart, cartOn: () => hasCart(), onBack: () => setTab('shop') });
         } catch (e) {}
     }
     function unmountHome() { try { if (WB() && WB().unmount) WB().unmount(); } catch (e) {} }
@@ -439,7 +449,7 @@
             RANGES.map(r => '<button type="button" class="stp-chip' + (S.range === r.id && !S.store ? ' on' : '') + '" data-stp-range="' + r.id + '">' + esc(r.label) + '</button>').join('');
         return shell('<div class="stp-head">' + titleRow(T('Which shop?', 'Welcher Laden?', '¿Qué tienda?')) + '<p>' +
             esc(T('Share your location to see the supermarkets nearest to you, or type a town or postcode.', 'Teil deinen Standort, um die Supermärkte in deiner Nähe zu sehen, oder gib einen Ort oder eine Postleitzahl ein.', 'Comparte tu ubicación para ver los supermercados más cercanos, o escribe una ciudad o un código postal.')) + '</p></div>' +
-            '<div class="stp-scroll"><button type="button" class="stp-go" data-stp="locate"' + (busy ? ' disabled aria-busy="true"' : '') + '>' + ic.pin + '<span>' + esc(T('Share my location', 'Meinen Standort teilen', 'Compartir mi ubicación')) + '</span></button>' +
+            '<div class="stp-scroll">' + planRowHTML() + '<button type="button" class="stp-go" data-stp="locate"' + (busy ? ' disabled aria-busy="true"' : '') + '>' + ic.pin + '<span>' + esc(T('Share my location', 'Meinen Standort teilen', 'Compartir mi ubicación')) + '</span></button>' +
             whereForm() + (msg ? '<p class="stp-msg" role="status">' + esc(msg) + '</p>' : '') + hereHTML() + shopRowsHTML() +
             '<button type="button" class="stp-more stp-skip" data-stp="general">' + esc(T('Skip: show the general lists', 'Überspringen: allgemeine Listen zeigen', 'Omitir: ver las listas generales')) + '</button>' +
             '<h4 class="stp-h4">' + esc(T('Or pick a chain', 'Oder eine Kette wählen', 'O elige una cadena')) + '</h4><div class="stp-chips stp-wrap">' + chains + '</div>' +
@@ -762,7 +772,7 @@
         return shell('<div class="stp-head">' + titleRow(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) +
             '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || label(S.range) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>' +
             '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" aria-label="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '"></div></div>' +
-            '<div class="stp-scroll">' + snackBox() + gen + inner +
+            '<div class="stp-scroll">' + planRowHTML() + snackBox() + gen + inner +
             '<p class="stp-note">' + esc(T('General food guidance, not medical advice.', 'Allgemeine Ernährungshilfe, keine medizinische Beratung.', 'Orientación general sobre alimentos, no consejo médico.')) + '</p></div>' +
             footBtns(scanBtn()));
     }
@@ -1014,11 +1024,12 @@
     /* Oct 28 2026, 23:00: the doors of Einkaufen, in tab-bar order, for the Einkaufen bubble's orbs (home-blooms-v2.js). One list, so
        an orb exists exactly when its tab does (Zu Hause needs week-basket.js, Hilf mit the server table). */
     function doors() {
-        const out = [{ id: 'shop', label: T('Supermarket', 'Supermarkt', 'Súper') }];
-        if (homeTab()) out.push({ id: 'home', label: T('From home', 'Zu Hause', 'Desde casa') });
-        const Z = SZ(); if (Z) { let n = 0; try { n = Z.count ? Z.count() : 0; } catch (e) {} out.push({ id: 'sz', label: Z.name(), n }); }
+        /* Nov 5 2026 (owner, Phase B item 3): three distinct doors, each with a short line saying what it is for. Zu Hause is no own
+           door any more: it is Supermarkt > Plan my week (openAt('home') still lands there, for old links and tours). */
+        const out = [{ id: 'shop', label: T('Supermarket', 'Supermarkt', 'Súper'), sub: T('Groceries & week plan', 'Einkauf & Wochenplan', 'Compra y semana') }];
+        const Z = SZ(); if (Z) { let n = 0; try { n = Z.count ? Z.count() : 0; } catch (e) {} out.push({ id: 'sz', label: Z.name(), n, sub: T('Packaged snacks', 'Fertige Snacks', 'Snacks envasados') }); }
         if (kitTab()) out.push({ id: 'kitchen', label: T('Kitchen', 'Küche', 'Cocina') });
-        if (giftDoor()) out.push({ id: 'gift', label: T('Help out', 'Hilf mit', 'Ayudar') });
+        if (giftDoor()) out.push({ id: 'gift', label: T('Help out', 'Hilf mit', 'Ayudar'), sub: T('Help pay', 'Mitbezahlen', 'Ayuda a pagar') });
         return out;
     }
     /* open Einkaufen right on one door. Hilf mit opens in Einkaufen's frame, as from its tab, so X / back / Escape close Einkaufen

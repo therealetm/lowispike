@@ -16,12 +16,12 @@
         es: { title: 'Ajustes', you: 'T\u00fa', circle: 'Circle', settings: 'App', help: 'Ayuda e info', account: 'Cuenta', close: 'Cerrar', level: 'Nivel', guest: 'T\u00fa', mine: 'Nombre, foto, peso, salud, cuenta' }
     };
     /* the places that only work on Home (they press a Home control): go Home first, then run */
-    const HOME_FIRST = ['gift', 'myday'];  /* myday: its bubbles open Home's old day panels (index.html g2h) */
+    const HOME_FIRST = ['gift', 'myday', 'worldSound', 'vr'];  /* myday: its bubbles open Home's old day panels (index.html g2h); worldSound + vr (Nov 5 2026): the Body sound panel and the VR switch belong to Home's world */
     const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
     const LABELS = {
-        en: { presence: 'Your presence', swaps: 'My swaps', glow: 'Your glow', cycle: 'My cycle', todo: 'Finish your profile', people: 'People', posts: 'Posts & ranking', invite: 'Invite friends', rules: 'Circle rules', look: 'Look & sound' },
-        de: { presence: 'Dein Auftritt', swaps: 'Meine Swaps', glow: 'Dein Glow', cycle: 'Mein Zyklus', todo: 'Profil fertig machen', people: 'Leute', posts: 'Posts & Ranking', invite: 'Freunde einladen', rules: 'Regeln im Circle', look: 'Aussehen & Ton' },
-        es: { presence: 'Tu presencia', swaps: 'Mis swaps', glow: 'Tu glow', cycle: 'Mi ciclo', todo: 'Completa tu perfil', people: 'Gente', posts: 'Posts y ranking', invite: 'Invitar amigos', rules: 'Normas del Circle', look: 'Aspecto y sonido' }
+        en: { presence: 'Your presence', swaps: 'My swaps', glow: 'Your glow', cycle: 'My cycle', todo: 'Finish your profile', people: 'People', posts: 'Posts & ranking', invite: 'Invite friends', rules: 'Circle rules', look: 'Look & sound', worldSound: 'Body sound', vr: 'VR' },
+        de: { presence: 'Dein Auftritt', swaps: 'Meine Swaps', glow: 'Dein Glow', cycle: 'Mein Zyklus', todo: 'Profil fertig machen', people: 'Leute', posts: 'Posts & Ranking', invite: 'Freunde einladen', rules: 'Regeln im Circle', look: 'Aussehen & Ton', worldSound: 'K\u00f6rperklang', vr: 'VR' },
+        es: { presence: 'Tu presencia', swaps: 'Mis swaps', glow: 'Tu glow', cycle: 'Mi ciclo', todo: 'Completa tu perfil', people: 'Gente', posts: 'Posts y ranking', invite: 'Invitar amigos', rules: 'Normas del Circle', look: 'Aspecto y sonido', worldSound: 'Sonido del cuerpo', vr: 'RV' }
     };
     const P = 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"';
     const ICON = {
@@ -34,6 +34,7 @@
         posts: '<path d="M4 5.5h12a1.5 1.5 0 011.5 1.5v7a1.5 1.5 0 01-1.5 1.5H9l-4 3.5V7A1.5 1.5 0 014 5.5z" ' + P + '/><path d="M17.5 9H20a1 1 0 011 1v9.5L18 17h-6.5" ' + P + '/>',
         invite: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" ' + P + '/>',
         rules: '<path d="M6 4h9l3 3v13H6z" ' + P + '/><path d="M9 10h6M9 13.5h6M9 17h4" ' + P + '/>',
+        vr: '<path d="M3.5 8.5h17a1 1 0 011 1v5a2 2 0 01-2 2h-3.6l-1.9-2.4a1.3 1.3 0 00-2 0l-1.9 2.4H4.5a2 2 0 01-2-2v-5a1 1 0 011-1z" ' + P + '/>',
         x: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ' + P + ' stroke-width="2.2"/>',
         chev: '<path d="M9.5 6l6 6-6 6" ' + P + '/>'
     };
@@ -46,11 +47,13 @@
     const GROUPS = [
         { key: 'you', ids: ['myday', 'swaps', 'glow', 'cycle', 'todo'] },
         { key: 'circle', ids: ['presence', 'people', 'posts', 'invite'] },
-        { key: 'settings', ids: ['theme', 'language', 'notifications', 'look'] },
+        /* Nov 5 2026 (owner, Phase B item 4: "keep Körperklang and VR accessible from Settings"): neither had a row here (World sound sat in
+           SKIP, VR was gone from every list), so the only way in was the Home HUD. Both are rows now and run Home's own controls. */
+        { key: 'settings', ids: ['theme', 'language', 'notifications', 'look', 'worldSound', 'vr'] },
         { key: 'help', ids: ['tutorial', 'support', 'rules', 'about'] },
         { key: 'danger', ids: ['deleteAccount'] }
     ];
-    const SKIP = ['worldSound', 'catchUp', 'me', 'body', 'account'];
+    const SKIP = ['catchUp', 'me', 'body', 'account'];
     /* the rows this page runs itself; every other id runs through the Settings routes (home-settings-sleep-v2.js) */
     const OWN = ['presence', 'swaps', 'glow', 'cycle', 'todo', 'people', 'posts', 'invite', 'rules', 'look'];
     const G2E = { swaps: 'swaps', glow: 'glow', todo: 'todo', posts: 'comm', look: 'look' };

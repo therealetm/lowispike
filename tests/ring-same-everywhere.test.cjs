@@ -159,7 +159,9 @@ test('path 5, tutorial picture of the Einkaufen card: the bubble and its Superma
         assert.doesNotMatch(h, OLD_TRIO, lang + ': ' + h);
         assert.doesNotMatch(h, /1\/3/, lang + ': no meal count on the Einkaufen bubble');
     }
-    assert.match(T.visHtml('fuel', 'de'), /Einkaufen[\s\S]*Supermarkt[\s\S]*Zu Hause[\s\S]*Hilf mit/);
+    /* Nov 5 2026 (test changed, why): owner Phase B item 3, three distinct doors; Zu Hause is Supermarkt > Plan my week */
+    assert.match(T.visHtml('fuel', 'de'), /Einkaufen[\s\S]*Supermarkt[\s\S]*Seller Zone[\s\S]*Hilf mit/);
+    for (const lang of ['de', 'en', 'es']) assert.doesNotMatch(T.visHtml('fuel', lang), /Zu Hause|From home|Desde casa/);
 });
 
 test('no app file asks for the old Fuel menu any more', () => {

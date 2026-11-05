@@ -32,11 +32,18 @@ test('the snack list (with Buy again) is folded into one closed line, My snack l
   assert.match(sp, /T\('My snack list', 'Meine Snackliste', 'Mi lista de snacks'\)/);
 });
 
-test('Shop from home is its own tab right next to Supermarket, remembered, drawn inside Shop (no second sheet)', () => {
+/* Nov 5 2026 (test changed, why): owner Phase B item 3, "Incorporate Zu Hause planning into Supermarkt as Plan my week". The planner
+   is no own tab any more: a Plan my week row in Supermarkt opens it inside Supermarkt (Supermarkt stays lit, a back link returns). */
+test('Plan my week (old Shop from home) lives inside Supermarkt, remembered, drawn inside Shop (no second sheet)', () => {
   const tabs = sp.slice(sp.indexOf('function tabsHTML()'), sp.indexOf('function szHTML()'));
-  const iS = tabs.indexOf("b('shop'"), iH = tabs.indexOf("b('home'"), iZ = tabs.indexOf("b('sz'");
-  assert.ok(iS > 0 && iH > iS && iZ > iH, 'Supermarket, then From home, then Seller Zone');
-  assert.match(tabs, /T\('From home', 'Zu Hause', 'Desde casa'\)/);
+  const iS = tabs.indexOf("b('shop'"), iZ = tabs.indexOf("b('sz'");
+  assert.ok(iS > 0 && iZ > iS, 'Supermarket, then Seller Zone');
+  assert.equal(tabs.indexOf("b('home'"), -1, 'no Zu Hause tab');
+  assert.match(sp, /function planRowHTML\(\)[\s\S]{0,300}data-stp="weekshop"/);
+  assert.match(sp, /T\('Plan my week', 'Meine Woche planen', 'Planear mi semana'\)/);
+  assert.match(sp, /onBack: \(\) => setTab\('shop'\)/);
+  assert.match(wb, /T\('Plan my week', 'Meine Woche planen', 'Planear mi semana'\)/);
+  assert.match(wb, /if \(a === 'tosm'\) \{ if \(inl && inl\.onBack\) inl\.onBack\(\); return; \}/);
   assert.match(sp, /home: 'home' \}\)\[localStorage\.getItem\(TKEY\)\]/);
   assert.match(wb, /function mount\(el, opts\)/);
   assert.match(wb, /W\.LowiWeekBasket = \{ open, close, mount, unmount,/);
@@ -49,11 +56,11 @@ test('swipe down on the From home title closes Shop: the title is a drag zone an
   assert.match(css, /\.stp-card \.wb-inline > \.wb-head h3 > span, \.stp-titlerow h3 > span \{ display: inline; \}/);
 });
 
-test('the tour step for Shop from home points at its tab and says where it is', () => {
+test('the tour step for Plan my week points at its row in Supermarkt and says where it is', () => {
   const step = require('../tutorial-steps.js').STEPS.find(s => s.id === 'new-week-shop');
-  assert.equal(step.target[0], '.stp-card [data-stp-tab="home"]');
-  assert.match(step.text.en, /From home, right next to Supermarket/);
-  assert.match(step.text.de, /Zu Hause, gleich neben Supermarkt/);
-  assert.match(step.text.es, /Desde casa, junto a Súper/);
+  assert.equal(step.target[0], '.stp-card .stp-plan');
+  assert.match(step.text.en, /In Supermarket, tap Plan my week/);
+  assert.match(step.text.de, /Im Supermarkt auf Meine Woche planen tippen/);
+  assert.match(step.text.es, /En el súper, toca Planear mi semana/);
   for (const l of ['en', 'de', 'es']) assert.doesNotMatch(step.text[l], /insulin/i);
 });

@@ -1707,6 +1707,28 @@ wt-day-recap, branch day-recap, COORD-day-recap.md.
 - Trap: on a loaded build computer the sheets' spring takes seconds; probes wait until the target stops moving before a
   tap. A closed sheet can linger as .r2-ov.off for a few seconds in headless WebKit; open() then waits at most 2 s.
 
+### 0.41 Five requests after the 5 Nov releases (Emmanuel, voice + 6 iPhone screenshots, Thu 5 Nov 2026 ~20:26 CET)
+Recorded before building (standing rule). Branch: `claude/zen-tesla-wanom8` (mirror `sheet-bubble-20261105`). Status per item: requested.
+1. **Hold the joystick = really every bubble.** "when I long press on the joystick, it's not everything that opens ... the supermarket
+   doesn't open at all ... You can make the bubbles smaller ... It's just important to me that they're still all in that circle,
+   symmetrical." So Einkaufen (and Gap) join the all-bubbles circle (they were left out on 28 Oct); orbs may shrink to fit.
+2. **The camera bubble opens a chooser, not the camera.** "when you click on it, the camera opens directly. It's confusing ... I
+   would want the option ... live code, or take a photo of your food ... 2 clicks, but it's better." Live barcode scan stays open
+   to "walk around the supermarket, scan products ... put it into Warenkorb or skip ... the live ... still stays open". Photo =
+   the iOS camera ("if possible without the flash"). Also a Deep analyze button (the custom GPT) there. "Have the interface look
+   really, really nice ... like it's analyzing ... fit our whole vibe."
+3. **"Are you Tim?"** A profile "Tim" appeared. Answer (Claude Code session): not made by it; every test of that session used a
+   fake local backend or blocked all writes. Rule restated: a test account always has "bot" in its name (or is deleted after).
+4. **Supermarket room redesign.** "Why do we have a special place for snacks and then a snacks button? ... not giving iOS 17,
+   minimalistic, convenient, organized ... I'm going grocery shopping and I'm sitting at home ... so that I have the things in
+   Warenkorb ... the interface was so annoying and just so inconvenient."
+5. **Carousels on For You, shareable, savable, and a weekly card planner.** Post carousels (swipe right through the pictures) on
+   For You and in Community; a share button that sends one post (logged out: that one post plus "become a member / log in");
+   saving a carousel puts it somewhere the person can reach (he suggests the companion's long-press card; "you strategize");
+   a planner "like Yu-Gi-Oh or Pokemon cards": place cards on Monday..Sunday x breakfast, lunch, dinner, snack, from many saved
+   carousels; "this should go into the circle with the billiard, the shuffle, the swipe". Needs new tables/storage (SQL he runs).
+Plan of that session: 1 and 2 first (one quiet release each, verified live), then 4, then 5 in parts with its SQL proposal.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

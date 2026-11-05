@@ -50,7 +50,7 @@ test('tutorial: Mirror mode has its own card (hold Move, Nov 5 2026), never a "t
     const m = S.STEPS.find(x => x.id === 'mirror');
     assert.ok(m && m.demo.g === 'hold' && m.demo.open === 'move-page' && m.covers.includes('mirror-mode') && m.teaches.includes('move-hold'), 'hold Move, the Move page opens');
     assert.deepStrictEqual(S.plan({}).map(x => x.id).slice(3, 5), ['day', 'mirror']);
-    for (const l of ['en', 'de', 'es']) assert.ok(m.text[l].length <= 120 && /Mirror|Spiegel|espejo/.test(m.text[l]) && /Hold|Halt|Mantén/.test(m.text[l]), 'mirror/' + l);
+    for (const l of ['en', 'de', 'es']) assert.ok(m.text[l].length <= 200 && /Mirror|Spiegel|espejo/.test(m.text[l]) && /Hold|Halt|Mantén/.test(m.text[l]), 'mirror/' + l);
     assert.strictEqual(S.covered()['mirror-mode'], 'mirror');
     const s = S.STEPS.find(x => x.id === 'hello');
     assert.ok(!s.covers.includes('mirror-mode'), 'the companion card does not mention Mirror mode, so it does not claim it');

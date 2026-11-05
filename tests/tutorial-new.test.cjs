@@ -10,15 +10,15 @@ test('the new tour follows a day: Misty, Scan, Gap, Water/Move/Sleep, Shopping, 
     assert.ok(S.VERSION >= 38, 'the tour version moved on, so What\'s new knows the tour changed');
     for (const s of S.plan({})) for (const l of ['en', 'de', 'es']) {
         assert.ok(s.text[l] && s.title[l], s.id + ' has ' + l);
-        assert.ok(s.text[l].length <= 125, s.id + '.' + l + ' stays one short sentence (' + s.text[l].length + ')');
+        assert.ok(s.text[l].length <= 200, s.id + '.' + l + ' stays short (' + s.text[l].length + ')');   /* Nov 5 2026: whole spoken sentences */
     }
 });
 
 test('Scan covers a meal photo and a packaged product, and what comes after the verdict', () => {
     const s = card('scan');
-    assert.match(s.text.en, /meal or a pack/); assert.match(s.text.en, /log it as eaten/); assert.match(s.text.en, /cart/);
-    assert.match(s.text.de, /Essen oder eine Packung/); assert.match(s.text.de, /eintragen/); assert.match(s.text.de, /Korb/);
-    assert.match(s.text.es, /comida o a un paquete/); assert.match(s.text.es, /anotas/); assert.match(s.text.es, /carrito/);
+    assert.match(s.text.en, /meal or at a product/); assert.match(s.text.en, /log it as eaten/); assert.match(s.text.en, /cart/);
+    assert.match(s.text.de, /Essen oder auf ein Produkt/); assert.match(s.text.de, /als gegessen ein/); assert.match(s.text.de, /Korb/);
+    assert.match(s.text.es, /comida o a un producto/); assert.match(s.text.es, /anotas/); assert.match(s.text.es, /carrito/);
     assert.ok(s.covers.includes('barcode') && s.covers.includes('log-meal'));
     assert.strictEqual(s.demo.open, 'scan-demo', 'the tour never opens the real camera');
     const sc = read('shop-scan.js'); assert.match(sc, /Log as eaten|Als gegessen|Eintragen/i); assert.match(sc, /cart|Korb/i);
@@ -26,8 +26,8 @@ test('Scan covers a meal photo and a packaged product, and what comes after the 
 
 test('Shopping names its three doors by their purpose, and Supermarket names Plan my week and the cart', () => {
     const f = card('fuel'), w = card('shop-week');
-    assert.match(f.text.en, /Supermarket to shop and plan, Seller Zone for ready snacks, Help out to pay/);
-    assert.match(f.text.de, /Supermarkt zum Einkaufen und Planen, Seller Zone für Snacks, Hilf mit zum Mitbezahlen/);
+    assert.match(f.text.en, /In the Supermarket, you shop and plan\. Seller Zone has ready snacks\. And with Help out, you can pay/);
+    assert.match(f.text.de, /Im Supermarkt kaufst du ein und planst\. In der Seller Zone gibt es fertige Snacks\. Und bei Hilf mit kannst du jemandem das Essen mitbezahlen/);
     assert.strictEqual(f.demo.open, 'fuel-bloom');
     assert.strictEqual(w.demo.open, 'supermarket', 'the Supermarket card opens Shop read-only');
     assert.match(w.text.en, /Plan my week/); assert.match(w.text.de, /Meine Woche planen/); assert.match(w.text.es, /Planear mi semana/);

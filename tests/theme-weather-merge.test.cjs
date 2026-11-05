@@ -85,10 +85,10 @@ test('the sheet from Settings is grouped Look / Time of day / World, the look fi
 test('the tour names the new place: the Settings card and a What\'s New card that points at the look row', () => {
     const S = require('../tutorial-steps.js');
     const st = S.STEPS.find(s => s.id === 'settings');
-    assert.ok(/look and weather/.test(st.text.en) && /Design & Wetter/.test(st.text.de) && /aspecto y tiempo/.test(st.text.es));
+    assert.ok(/look and weather/.test(st.text.en) && /Design und Wetter/.test(st.text.de) && /aspecto y (el )?tiempo/.test(st.text.es));
     const n = S.STEPS.find(s => s.id === 'new-look-weather');
     assert.ok(n && n.area === 'new' && n.open === 'settings-sheet');
     assert.deepEqual(n.target, ['.cme-ov [data-cme="sky"]']);
-    for (const l of ['en', 'de', 'es']) assert.ok(n.text[l].length <= 125 && n.title[l].length <= 32, l);
+    for (const l of ['en', 'de', 'es']) assert.ok(n.text[l].length <= 200 && n.title[l].length <= 32, l);   /* Nov 5 2026: whole spoken sentences ("&" is said as "und") */
     assert.ok(S.VERSION >= 41);
 });

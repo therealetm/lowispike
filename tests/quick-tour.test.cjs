@@ -91,5 +91,5 @@ test('tutorial: a new-quick-tour card in three languages, and Settings covers th
     const st = S.STEPS.find(s => s.id === 'new-quick-tour');
     assert.ok(st && st.area === 'new', 'step in part new');
     assert.ok(S.covered().quickTour, 'quickTour covered');
-    for (const l of LANGS) assert.ok(st.text[l].length <= 140);
+    for (const l of LANGS) assert.ok(st.text[l].length <= 200);   /* Nov 5 2026: whole spoken sentences, up to 200 */
 });

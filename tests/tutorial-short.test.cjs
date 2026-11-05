@@ -20,11 +20,14 @@ test('the base tour is the short one: these cards, in this order, never more tha
     assert.ok(S.plan({ claimReady: true }).length <= S.MAX_BASE);
 });
 
-test('every base card is one short sentence with a title, in English, German and Spanish', () => {
+test('every base card is a few short, whole sentences with a title, in English, German and Spanish', () => {
+    /* Nov 5 2026 (owner, listening to the tour voice: the one-sentence cap made cards that are not real sentences, "brüchig"):
+       cards are now up to four whole spoken sentences and 200 characters; tests/tutorial-sentences.test.cjs checks they read aloud well */
+
     for (const s of S.plan({ claimReady: true })) for (const l of LANGS) {
         assert.ok(s.title[l] && s.title[l].length <= 32, s.id + '/' + l + ' title');
-        assert.ok(s.text[l].length <= 120, s.id + '/' + l + ' too long: ' + s.text[l]);
-        assert.ok((s.text[l].match(/[.!?](\s|$)/g) || []).length <= 1, s.id + '/' + l + ' more than one sentence: ' + s.text[l]);
+        assert.ok(s.text[l].length <= 200, s.id + '/' + l + ' too long: ' + s.text[l]);
+        assert.ok((s.text[l].match(/[.!?](\s|$)/g) || []).length <= 4, s.id + '/' + l + ' more than four sentences: ' + s.text[l]);
     }
 });
 

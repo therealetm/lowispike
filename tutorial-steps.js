@@ -40,7 +40,9 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 43;  /* 43: Nov 5 2026, new-people points at Ranking (Members, the round button there, opens People; the Community heading is gone, the round profile button at the end of the tabs opens Settings); 42: Nov 5 2026, new-look-weather in part 'new' (App theme lives inside Look, time of day & weather; Dark for everyone) and the settings card names the look row; 41: Nov 5 2026, new-cart-total in part 'new' (Cart: real quantities and the whole total, I'll buy it / Someone else pays, Give a hand asks for the cart total, never €5; Plan my week says plainly when the budget is too small); 40: Nov 5 2026, new-my-day in part 'new' (My day: a Today card and short lists; a photo with no food offers Retake photo); 39: Nov 5 2026, new-still-galaxy in part 'new' (Settings > Still galaxy); 38: Nov 5 2026, the complete new tutorial (Emmanuel: "a complete new one that is up to date with our version"): Scan with photo, barcode, Log as eaten and Add to cart; Water / Move / Sleep in one card; Shopping with its three doors and Supermarkt with Plan my week; Settings from the Community name (the hold on the bubble does nothing since Oct 29); flying out into the galaxy on the last card. Old step ids water / move / sleep land on day (MOVED). 37: Oct 28 2026, 22:54, Gap blooms Letzte / Erste Mahlzeit (the old Essenspause window is not what a tap opens); 36: Oct 28 2026, new-humans now says the chat is people only too (bot posts live in For You); 35: Oct 27 2026, new-day-recap in part 'new' (Day recap from the companion card and My day: the day read back, care sent, one journal line; shows after the evening catch-up Save); 34: Oct 26 2026, new-evening-catchup in part 'new' (Catch up on today: the evening bubble checklist, first row in Settings); 33: Oct 26 2026, new-quick-tour in part 'new' (the 45-second video tour, Settings row after Tutorial); 32: Oct 26 2026, new-cart-ask in part 'new' (Someone else pays: the whole Cart as a Give a hand basket); 31: Oct 26 2026, new-mic-dictation in part 'new' (a small mic in text fields: speak instead of typing; Home Screen app on iPhone uses the keyboard's mic); 30: Oct 26 2026, new-cook-tabs (Cook opens on Kitchen, the first tab; hold a Cook tab to move it) and new-kitchen no longer says next to Swipe; 29: Oct 26 2026, new-scan-why in part 'new' (the scanner card's curve, How often and Why?); 28: Oct 26 2026, new-kitchen rewritten (Kitchen is a game in Cook next to Shuffle and Swipe) and new-give-hand opens Shop on Seller Zone (Kitchen left Shop); 27: Oct 25 2026, new-give-hand in part 'new' (Give a hand is its own Shop tab next to Kitchen); 26: Oct 25 2026, the short base tour (11 cards, auto demo, What's New never in the base tour); 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 44;  /* 44: Nov 5 2026, every card's words rewritten as whole spoken sentences in EN/DE/ES (owner: the voice read fragments and
+       sounded broken, as if words were missing), voice re-recorded; plus the Mirror mode card from the Move lane */
+    /* 43: Nov 5 2026, new-people points at Ranking (Members, the round button there, opens People; the Community heading is gone, the round profile button at the end of the tabs opens Settings); 42: Nov 5 2026, new-look-weather in part 'new' (App theme lives inside Look, time of day & weather; Dark for everyone) and the settings card names the look row; 41: Nov 5 2026, new-cart-total in part 'new' (Cart: real quantities and the whole total, I'll buy it / Someone else pays, Give a hand asks for the cart total, never €5; Plan my week says plainly when the budget is too small); 40: Nov 5 2026, new-my-day in part 'new' (My day: a Today card and short lists; a photo with no food offers Retake photo); 39: Nov 5 2026, new-still-galaxy in part 'new' (Settings > Still galaxy); 38: Nov 5 2026, the complete new tutorial (Emmanuel: "a complete new one that is up to date with our version"): Scan with photo, barcode, Log as eaten and Add to cart; Water / Move / Sleep in one card; Shopping with its three doors and Supermarkt with Plan my week; Settings from the Community name (the hold on the bubble does nothing since Oct 29); flying out into the galaxy on the last card. Old step ids water / move / sleep land on day (MOVED). 37: Oct 28 2026, 22:54, Gap blooms Letzte / Erste Mahlzeit (the old Essenspause window is not what a tap opens); 36: Oct 28 2026, new-humans now says the chat is people only too (bot posts live in For You); 35: Oct 27 2026, new-day-recap in part 'new' (Day recap from the companion card and My day: the day read back, care sent, one journal line; shows after the evening catch-up Save); 34: Oct 26 2026, new-evening-catchup in part 'new' (Catch up on today: the evening bubble checklist, first row in Settings); 33: Oct 26 2026, new-quick-tour in part 'new' (the 45-second video tour, Settings row after Tutorial); 32: Oct 26 2026, new-cart-ask in part 'new' (Someone else pays: the whole Cart as a Give a hand basket); 31: Oct 26 2026, new-mic-dictation in part 'new' (a small mic in text fields: speak instead of typing; Home Screen app on iPhone uses the keyboard's mic); 30: Oct 26 2026, new-cook-tabs (Cook opens on Kitchen, the first tab; hold a Cook tab to move it) and new-kitchen no longer says next to Swipe; 29: Oct 26 2026, new-scan-why in part 'new' (the scanner card's curve, How often and Why?); 28: Oct 26 2026, new-kitchen rewritten (Kitchen is a game in Cook next to Shuffle and Swipe) and new-give-hand opens Shop on Seller Zone (Kitchen left Shop); 27: Oct 25 2026, new-give-hand in part 'new' (Give a hand is its own Shop tab next to Kitchen); 26: Oct 25 2026, the short base tour (11 cards, auto demo, What's New never in the base tour); 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'shop', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
     const STEPS = [
         /* ---------- the base tour (Oct 25 2026, Emmanuel: "far too long ... only the essentials, at most 12 steps"). One card per
@@ -53,9 +55,9 @@
             /* HOOK (claim-your-own-companion): OFF until the own-companion task ships LowiBirthCompanion.claim(opts).
                tutorial.js only plans this step when that function exists (ctx.claimReady), so the tour never depends on it. */
             id: 'claim', area: 'you', when: 'claimReady', hook: 'own-companion-claim', action: 'claim', target: null, covers: ['companion-claim'], info: 'the claim form opens right on this card; ‘type’ is the personality type',
-            title: { en: 'Make me yours', de: 'Mach mich zu deinem', es: 'Hazme tuyo' },
+            title: { en: 'Make me yours', de: 'Mach mich zu deinem Begleiter', es: 'Hazme tuyo' },
             text: {
-                en: 'Tell me your birthday and I become your very own companion.',
+                en: 'Tell me your birthday, and I become your very own companion.',
                 de: 'Sag mir deinen Geburtstag, dann werde ich dein ganz eigener Begleiter.',
                 es: 'Dime tu cumpleaños y me convierto en tu propio compañero.'
             },
@@ -69,9 +71,9 @@
             teaches: ['misty-hold'],
             title: { en: 'Hi, I’m {name}', de: 'Hi, ich bin {name}', es: 'Hola, soy {name}' },
             text: {
-                en: 'I’m your companion: hold me and my card opens with my energy, my level and what I still need.',
-                de: 'Ich bin dein Begleiter: Halt mich gedrückt, dann zeigt meine Karte Energie, Level und was mir fehlt.',
-                es: 'Soy tu compañero: mantenme pulsado y mi tarjeta muestra mi energía, mi nivel y lo que me falta.'
+                en: 'I’m your companion. Hold me, and my card opens. It shows my energy, my level and what I still need.',
+                de: 'Ich bin dein Begleiter. Halt mich gedrückt, dann öffnet sich meine Karte. Dort siehst du meine Energie, mein Level und was mir noch fehlt.',
+                es: 'Soy tu compañero. Mantenme pulsado y se abre mi tarjeta. Ahí ves mi energía, mi nivel y lo que todavía me falta.'
             }
         },
         {
@@ -83,9 +85,9 @@
             covers: ['scan', 'barcode', 'deep-analyze', 'fix-food', 'snap-food', 'photo-checks', 'log-meal'], teaches: ['scan-tap', 'scan-buttons'],
             title: { en: 'Scan', de: 'Scannen', es: 'Escanear' },
             text: {
-                en: 'Tap Scan and point the camera at your meal or a pack: I show the spike, then log it as eaten or add it to your cart.',
-                de: 'Tipp auf Scannen, halt die Kamera auf Essen oder eine Packung: Ich zeig den Spike, dann eintragen oder ab in den Korb.',
-                es: 'Toca Escanear y apunta la cámara a tu comida o a un paquete: te digo cuánto sube y lo anotas o va al carrito.'
+                en: 'Tap Scan and point the camera at your meal or at a product. I show you how big the spike is. Then you log it as eaten or put it in your cart.',
+                de: 'Tipp auf Scannen und richte die Kamera auf dein Essen oder auf ein Produkt. Ich zeige dir, wie groß der Spike ist. Dann trägst du es als gegessen ein oder legst es in den Korb.',
+                es: 'Toca Escanear y apunta la cámara a tu comida o a un producto. Te digo cuánto te sube el azúcar. Luego lo anotas como comido o lo pones en el carrito.'
             }
         },
         {
@@ -93,9 +95,9 @@
             id: 'gap', area: 'home', target: ['#spFast'], demo: { g: 'tap', open: 'gap-bloom' }, covers: ['home-ring', 'gap', 'fasting'], teaches: ['gap-tap'],
             title: { en: 'Gap', de: 'Gap', es: 'Gap' },
             text: {
-                en: 'Tap Gap: Last meal starts the timer and First meal stops it.',
-                de: 'Tipp auf Gap: Letzte Mahlzeit startet die Uhr und Erste Mahlzeit stoppt sie.',
-                es: 'Toca Gap: Última comida pone el reloj en marcha y Primera comida lo para.'
+                en: 'Tap Gap, and then tap Last meal to start the timer. Tap First meal to stop it.',
+                de: 'Tipp auf Gap und dann auf Letzte Mahlzeit, um die Uhr zu starten. Mit Erste Mahlzeit stoppst du sie.',
+                es: 'Toca Gap y luego Última comida para poner el reloj en marcha. Con Primera comida lo paras.'
             }
         },
         {
@@ -103,11 +105,11 @@
                home-settings-sleep-v2.js); the finger shows it on Water. The old ids water / move / sleep land here (MOVED). */
             id: 'day', area: 'home', target: ['#whHud .wh-water'], demo: { g: 'tap', open: 'water-bloom' },
             covers: ['water', 'hydration', 'move', 'move-page', 'workouts-page', 'sleep'], teaches: ['water-tap', 'move-tap', 'sleep-tap'],
-            title: { en: 'Water, Move, Sleep', de: 'Wasser, Bewegung, Schlaf', es: 'Agua, Movimiento, Sueño' },
+            title: { en: 'Water, Move and Sleep', de: 'Wasser, Bewegung und Schlaf', es: 'Agua, Movimiento y Sueño' },
             text: {
-                en: 'Tap Water for 10 sips, a glass or a bottle, Move for Casual, Steady or Epic, and Sleep for your night.',
-                de: 'Tipp auf Wasser für 10 Sips, ein Glas oder eine Flasche, Bewegung für Locker, Stetig oder Episch, Schlaf für die Nacht.',
-                es: 'Toca Agua para 10 sorbos, un vaso o una botella, Movimiento para Tranquilo, Constante o Épico, y Sueño para tu noche.'
+                en: 'Tap Water to log 10 sips, a glass or a bottle. Tap Move to pick Casual, Steady or Epic. Tap Sleep to log your night.',
+                de: 'Tipp auf Wasser, um 10 Sips, ein Glas oder eine Flasche einzutragen. Tipp auf Bewegung und wähl Locker, Stetig oder Episch. Tipp auf Schlaf, um deine Nacht einzutragen.',
+                es: 'Toca Agua para anotar 10 sorbos, un vaso o una botella. Toca Movimiento para elegir Tranquilo, Constante o Épico. Toca Sueño para anotar tu noche.'
             }
         },
         {
@@ -119,9 +121,9 @@
             covers: ['mirror-mode'], teaches: ['move-hold'],
             title: { en: 'Mirror mode', de: 'Spiegel-Modus', es: 'Modo espejo' },
             text: {
-                en: 'Hold Move to open your Move page: Mirror mode is the first card, you move along with the camera, workouts below.',
-                de: 'Halt Bewegung gedrückt für deine Bewegungsseite: oben der Spiegel-Modus, du bewegst dich mit der Kamera mit.',
-                es: 'Mantén pulsado Movimiento para tu página: arriba el modo espejo, te mueves con la cámara; debajo, entrenos.'
+                en: 'Hold Move to open your Move page. Mirror mode is the first card there. You move along with the camera, and your workouts are below it.',
+                de: 'Halt Bewegung gedrückt, dann öffnet sich deine Bewegungsseite. Ganz oben ist der Spiegel-Modus. Dort bewegst du dich mit der Kamera mit, und darunter findest du deine Workouts.',
+                es: 'Mantén pulsado Movimiento y se abre tu página de movimiento. Arriba está el modo espejo, donde te mueves con la cámara. Debajo tienes tus entrenamientos.'
             }
         },
         {
@@ -130,9 +132,9 @@
             id: 'fuel', area: 'shop', target: ['#whHud .wh-meals'], demo: { g: 'tap', open: 'fuel-bloom' }, covers: ['fuel', 'shop', 'seller-zone', 'give-hand'], teaches: ['fuel-tap'],
             title: { en: 'Shopping', de: 'Einkaufen', es: 'Compras' },
             text: {
-                en: 'Tap Shopping: Supermarket to shop and plan, Seller Zone for ready snacks, Help out to pay for someone’s food.',
-                de: 'Tipp auf Einkaufen: Supermarkt zum Einkaufen und Planen, Seller Zone für Snacks, Hilf mit zum Mitbezahlen.',
-                es: 'Toca Compras: Súper para comprar y planear, Seller Zone para snacks, Ayudar para pagar la comida de alguien.'
+                en: 'Tap Shopping to find three places. In the Supermarket, you shop and plan. Seller Zone has ready snacks. And with Help out, you can pay for someone’s food.',
+                de: 'Tipp auf Einkaufen, dort gibt es drei Bereiche. Im Supermarkt kaufst du ein und planst. In der Seller Zone gibt es fertige Snacks. Und bei Hilf mit kannst du jemandem das Essen mitbezahlen.',
+                es: 'Toca Compras y verás tres zonas. En Súper compras y planeas. En Seller Zone hay snacks listos. Y en Ayudar puedes pagar la comida de otra persona.'
             }
         },
         {
@@ -141,9 +143,9 @@
             id: 'shop-week', area: 'shop', target: ['#whHud .wh-meals'], demo: { g: 'tap', open: 'supermarket' }, covers: ['quick-add', 'week-shop', 'cart'], teaches: ['fuel-tap'],
             title: { en: 'Supermarket', de: 'Supermarkt', es: 'Supermercado' },
             text: {
-                en: 'In Supermarket, + puts a product in your cart, and Plan my week makes dinners, a budget and a shopping list.',
-                de: 'Im Supermarkt legt + ein Produkt in den Korb, und Meine Woche planen macht Abendessen, Budget und Einkaufsliste.',
-                es: 'En el súper, + pone un producto en el carrito y Planear mi semana hace cenas, un presupuesto y una lista.'
+                en: 'In the Supermarket, tap the plus sign to put a product in your cart. Plan my week makes your dinners, a budget and a shopping list.',
+                de: 'Im Supermarkt tippst du auf das Plus, dann kommt ein Produkt in den Warenkorb. Meine Woche planen macht dir Abendessen, ein Budget und eine Einkaufsliste.',
+                es: 'En el súper, toca el signo más para poner un producto en el carrito. Planear mi semana te prepara cenas, un presupuesto y una lista de la compra.'
             }
         },
         {
@@ -152,9 +154,9 @@
             teaches: ['community-tap', 'cm-tabs'],
             title: { en: 'Community', de: 'Community', es: 'Comunidad' },
             text: {
-                en: 'Tap Community to play, chat, see For You and the Ranking, with everyone else and their companions.',
-                de: 'Tipp auf Community zum Spielen, Chatten, für Für dich und die Rangliste, mit allen anderen und ihren Begleitern.',
-                es: 'Toca Comunidad para jugar, chatear, ver Para ti y el Ranking, con todos los demás y sus compañeros.'
+                en: 'Tap Community to play and chat with everyone else and their companions. You also find For You and the Ranking there.',
+                de: 'Tipp auf Community, um mit allen anderen und ihren Begleitern zu spielen und zu chatten. Dort findest du auch Für dich und die Rangliste.',
+                es: 'Toca Comunidad para jugar y chatear con todos los demás y sus compañeros. Ahí también están Para ti y el Ranking.'
             }
         },
         {
@@ -168,9 +170,9 @@
             teaches: ['community-hold', 'cm-name'],
             title: { en: 'Settings', de: 'Einstellungen', es: 'Ajustes' },
             text: {
-                en: 'Hold Community, or tap its name inside Community: the look and weather, language, Body sound, VR and this tutorial.',
-                de: 'Halt Community gedrückt oder tipp drinnen auf den Namen: Design & Wetter, Sprache, Körperklang, VR und dieses Tutorial.',
-                es: 'Mantén pulsada Comunidad o toca su nombre dentro: aspecto y tiempo, idioma, Sonido del cuerpo, RV y este tutorial.'
+                en: 'Hold Community, or tap its name inside Community. In Settings, you change the look and weather, your aura, the language, Body sound and VR. You can also send feedback there.',
+                de: 'Halt Community gedrückt oder tipp drinnen auf ihren Namen. In den Einstellungen änderst du Design und Wetter, Aura, Sprache, Körperklang und VR. Dort kannst du auch Feedback senden.',
+                es: 'Mantén pulsada Comunidad o toca su nombre dentro. En Ajustes cambias el aspecto y el tiempo, tu aura, el idioma, Sonido del cuerpo y RV. Ahí también puedes enviar comentarios.'
             }
         },
         /* ---------- part: new (Oct 23 2026, Emmanuel: "every time I do an update it's not in the tutorial style ... take them to the
@@ -182,9 +184,9 @@
             id: 'new-intro', area: 'new', target: null, covers: ['whats-new-tour'],
             title: { en: 'New in this update', de: 'Neu in diesem Update', es: 'Novedades de esta versión' },
             text: {
-                en: 'A few new things. I’ll show you where they are. You can skip anytime.',
-                de: 'Ein paar neue Sachen. Ich zeig dir, wo sie sind. Überspringen geht jederzeit.',
-                es: 'Hay algunas novedades. Te enseño dónde están. Puedes saltarlo cuando quieras.'
+                en: 'There are a few new things. I’ll show you where they are, and you can skip at any time.',
+                de: 'In diesem Update gibt es ein paar neue Sachen. Ich zeige dir, wo sie sind, und du kannst jederzeit überspringen.',
+                es: 'Hay algunas novedades. Te enseño dónde están, y puedes saltarlo cuando quieras.'
             },
             cta: { en: 'Let’s go', de: 'Los geht’s', es: 'Vamos' }
         },
@@ -192,11 +194,11 @@
            mode the universal mode for everyone"): one Settings row 'sky' opens Look / Time of day / World; true black Dark for all. */
         {
             id: 'new-look-weather', area: 'new', target: ['.cme-ov [data-cme="sky"]'], open: 'settings-sheet', covers: ['sky', 'theme', 'true-black'],
-            title: { en: 'Look, time of day & weather', de: 'Design, Tageszeit & Wetter', es: 'Aspecto, hora y tiempo' },
+            title: { en: 'Look, time of day and weather', de: 'Design, Tageszeit und Wetter', es: 'Aspecto, hora y tiempo' },
             text: {
-                en: 'Dark is now the look for everyone. Day, Night and Auto are here too, together with time of day and weather.',
-                de: 'Dunkel ist jetzt das Design für alle. Tag, Nacht und Auto sind auch hier, zusammen mit Tageszeit und Wetter.',
-                es: 'Oscuro es ahora el aspecto para todos. Día, Noche y Auto también están aquí, junto con la hora y el tiempo.'
+                en: 'Dark is now the look for everyone. You also find Day, Night and Auto here, together with the time of day and the weather.',
+                de: 'Dunkel ist jetzt das Design für alle. Hier findest du auch Tag, Nacht und Auto, zusammen mit der Tageszeit und dem Wetter.',
+                es: 'Oscuro es ahora el aspecto para todos. Aquí también tienes Día, Noche y Auto, junto con la hora del día y el tiempo.'
             }
         },
         /* Nov 5 2026: Calm mode (galaxy-still.js, Settings row 'galaxyStill', was Still galaxy) */
@@ -204,30 +206,30 @@
             id: 'new-still-galaxy', area: 'new', target: null, open: 'settings-sheet', covers: ['galaxyStill'],
             title: { en: 'Calm mode', de: 'Ruhemodus', es: 'Modo calma' },
             text: {
-                en: 'New in Settings: Calm mode. Step by step, the world stays put, the background goes still or away, then nothing moves. Taps keep working.',
-                de: 'Neu in den Einstellungen: Ruhemodus. Stufe für Stufe bleibt die Welt stehen, der Hintergrund ruht oder geht, dann steht alles still.',
-                es: 'Nuevo en Ajustes: Modo calma. Paso a paso, el mundo se queda fijo, el fondo se calma o desaparece y al final nada se mueve.'
+                en: 'Calm mode is new in Settings, right under the look. Step by step, the world stays put, the background goes still or away, and in the end nothing moves. Your taps always keep working.',
+                de: 'Der Ruhemodus ist neu in den Einstellungen, direkt unter dem Design. Stufe für Stufe bleibt die Welt stehen, der Hintergrund ruht oder verschwindet, und am Ende steht alles still. Tippen geht immer.',
+                es: 'El Modo calma es nuevo en Ajustes, justo debajo del aspecto. Paso a paso, el mundo se queda fijo, el fondo se calma o desaparece, y al final nada se mueve. Tocar sigue funcionando siempre.'
             }
         },
         {
             /* Nov 5 2026 (Emmanuel: "nuke the bloat" in My day; a toothpaste photo offered Log as meal): misty-hub.js dayHtml, food-photo-ai.js sayNone */
             id: 'new-my-day', area: 'new', target: null, open: 'settings-sheet', covers: ['myday', 'photo-nofood'],
-            title: { en: 'My day, simpler', de: 'Mein Tag, einfacher', es: 'Mi d\u00eda, m\u00e1s simple' },
+            title: { en: 'A simpler My day', de: 'Mein Tag ist einfacher', es: 'Mi día es más simple' },
             text: {
-                en: 'My day is one calm page: a Today card, then short lists. A photo that isn\u2019t food just offers Retake photo.',
-                de: 'Mein Tag ist jetzt eine ruhige Seite: eine Heute-Karte, dann kurze Listen. Ein Foto ohne Essen bietet Neues Foto an.',
-                es: 'Mi d\u00eda es una p\u00e1gina tranquila: una tarjeta Hoy y listas cortas. Una foto sin comida ofrece Repetir foto.'
+                en: 'My day is now one calm page. It starts with a Today card, followed by short lists. If a photo isn’t food, you simply get the option to retake it.',
+                de: 'Mein Tag ist jetzt eine ruhige Seite. Oben steht eine Heute-Karte, darunter kommen kurze Listen. Ist auf einem Foto kein Essen, machst du einfach ein neues Foto.',
+                es: 'Mi día es ahora una página tranquila. Arriba hay una tarjeta Hoy y debajo, listas cortas. Si una foto no es comida, solo te ofrece repetirla.'
             }
         },
         {
             /* Nov 5 2026 (owner walkthrough: the €5 ask, 1 instead of 3 cucumbers, halloumi left out, €83.77 plan on a €40 budget):
                store-picks.js cartHTML, gift-basket.js fromCart, week-basket.js budget fit */
             id: 'new-cart-total', area: 'new', where: 'home', open: 'shop', target: ['.stp-card .stp-cartbtn', '.stp-card'], covers: ['supermarket-cart', 'give-hand', 'week-budget'],
-            title: { en: 'The whole cart, the real total', de: 'Der ganze Warenkorb, die echte Summe', es: 'Todo el carrito, el total real' },
+            title: { en: 'The whole cart with the real total', de: 'Der ganze Warenkorb mit der echten Summe', es: 'Todo el carrito con el total real' },
             text: {
-                en: 'The Cart keeps every food and its real amount. Someone else pays asks for the cart total, never \u20ac5.',
-                de: 'Der Warenkorb beh\u00e4lt jedes Essen mit echter Menge. Jemand anderes zahlt fragt nach der ganzen Summe, nie nach 5 \u20ac.',
-                es: 'El carrito guarda cada alimento con su cantidad real. Que pague otra persona pide el total, nunca 5 \u20ac.'
+                en: 'The Cart now keeps every food with its real amount. When you tap Someone else pays, it asks for the cart’s total, and never for five euros.',
+                de: 'Der Warenkorb behält jetzt jedes Essen mit der echten Menge. Wenn du auf Jemand anderes zahlt tippst, geht es um die ganze Summe und nie mehr um fünf Euro.',
+                es: 'El carrito ahora guarda cada alimento con su cantidad real. Si tocas Que pague otra persona, pide el total del carrito y nunca cinco euros.'
             }
         },
         {
@@ -235,9 +237,9 @@
             info: 'points at the Gap bubble on Home; the After your meal strip is at the top of the Gap card once it is open',
             title: { en: 'After your meal', de: 'Nach dem Essen', es: 'Después de comer' },
             text: {
-                en: 'New in Gap: what your blood sugar typically does after a meal, phase by phase, and easy ways to lower the spike.',
-                de: 'Neu in Gap: was dein Blutzucker nach dem Essen typischerweise macht, Phase für Phase, und einfache Wege, den Spike zu senken.',
-                es: 'Nuevo en Gap: lo que suele hacer tu azúcar después de comer, fase a fase, y formas fáciles de bajar el pico.'
+                en: 'Gap has something new. It shows what your blood sugar typically does after a meal, phase by phase, and easy ways to lower the spike.',
+                de: 'In Gap gibt es etwas Neues. Du siehst, was dein Blutzucker nach dem Essen typischerweise macht, Phase für Phase, und einfache Wege, den Spike zu senken.',
+                es: 'Hay algo nuevo en Gap. Ves lo que suele hacer tu azúcar después de comer, fase a fase, y formas fáciles de bajar el pico.'
             }
         },
         {
@@ -245,9 +247,9 @@
             info: 'points at the Gap bubble on Home; each After your meal phase card inside Gap has a round speaker next to its title (Oct 24 2026)',
             title: { en: 'Listen instead of reading', de: 'Hören statt lesen', es: 'Escuchar en vez de leer' },
             text: {
-                en: 'New in Gap: tap the speaker on an After your meal card and the tutorial voice reads it to you. Tap again to stop.',
-                de: 'Neu in Gap: Tippe bei Nach dem Essen auf den Lautsprecher, dann liest dir die Tutorial-Stimme die Karte vor. Nochmal tippen stoppt.',
-                es: 'Nuevo en Gap: toca el altavoz en una tarjeta de Después de comer y la voz del tutorial te la lee. Toca otra vez para parar.'
+                en: 'In Gap, tap the speaker on an After your meal card, and the tutorial voice reads it to you. Tap it again to stop.',
+                de: 'Du kannst Karten jetzt hören statt lesen. Tipp in Gap bei einer Nach-dem-Essen-Karte auf den Lautsprecher, dann wird sie vorgelesen. Tipp noch mal, um zu stoppen.',
+                es: 'En Gap, toca el altavoz de una tarjeta de Después de comer y la voz del tutorial te la lee. Toca otra vez para parar.'
             }
         },
         {
@@ -255,9 +257,9 @@
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.22): the Supermarket tab in Shop has a Cart (Warenkorb / Carrito; cart-core.js, store-picks.js cartHTML) with quantities and an estimate from reported prices; the Seller Zone strip left the Supermarket (Seller Zone keeps its own tab); Give a hand is a swipe deck (gift-basket.js deckHTML): right = pay for these groceries, left = skip.',
             title: { en: 'Your cart', de: 'Dein Warenkorb', es: 'Tu carrito' },
             text: {
-                en: 'New in Supermarket: a Cart with amounts and an estimated total. In Give a hand, swipe a basket right to pay for it, left to skip.',
-                de: 'Neu im Supermarkt: ein Warenkorb mit Mengen und Schätzsumme. In Hilf mit wischst du Körbe: rechts bezahlen, links überspringen.',
-                es: 'Nuevo en el súper: carrito con cantidades y total estimado. En Echa una mano, desliza cestas: derecha para pagar, izquierda para saltar.'
+                en: 'The Supermarket has a Cart with amounts and a total. In Give a hand, swipe a basket right to open its pay link, or left to skip it.',
+                de: 'Im Supermarkt gibt es einen Warenkorb mit Mengen und Summe. Bei Hilf mit wischst du einen Korb nach rechts, um den Zahlungslink zu öffnen, oder nach links, um ihn zu überspringen.',
+                es: 'En el súper tienes un carrito con cantidades y total. En Echa una mano, desliza una cesta a la derecha para abrir su enlace de pago, o a la izquierda para saltarla.'
             }
         },
         {
@@ -265,9 +267,9 @@
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.35, quick-add-core.js): a quick + on every Supermarket product row. + puts it in the Cart and turns into - 1 +, the house puts it straight into the Kitchen, nothing opens',
             title: { en: 'Add while you scroll', de: 'Beim Scrollen hinzufügen', es: 'Añade mientras bajas' },
             text: {
-                en: 'In Supermarket, tap + on any product to put it in your Cart without opening it. Tap the house if you already have it at home.',
-                de: 'Tippe im Supermarkt bei jedem Produkt auf +, und es landet im Warenkorb, ohne es zu öffnen. Hast du es schon, tippe aufs Haus.',
-                es: 'En Supermercado, toca + en cualquier producto y va a tu carrito sin abrirlo. Si ya lo tienes en casa, toca la casita.'
+                en: 'While you scroll through the Supermarket, tap the plus sign on any product, and it goes into your Cart. If you already have it at home, tap the house.',
+                de: 'Beim Scrollen durch den Supermarkt tippst du bei einem Produkt auf das Plus, dann landet es im Warenkorb. Hast du es schon zu Hause, tipp auf das Haus.',
+                es: 'Mientras bajas por el súper, toca el signo más en cualquier producto y va a tu carrito. Si ya lo tienes en casa, toca la casita.'
             }
         },
         {
@@ -275,28 +277,28 @@
             info: 'Nov 5 2026 (Phase B item 3): the Zu Hause tab is Supermarkt > Plan my week now; the spotlight points at that row. Oct 27 2026: Shop from home is its own Shop tab now (Zu Hause / From home / Desde casa), right next to Supermarket; the spotlight points at that tab (Emmanuel: "Vielleicht möchte Von zu Hause einkaufen seine eigene Sektion haben"). Oct 26 2026: Shop from home at the top of Supermarket (week-basket.js, MAYA-HANDOFF 0.21). Household, budget and dinners in, a week of low-spike dinners and one grocery list out, priced with the existing store estimates; it fills the Cart (0.22).',
             title: { en: 'Plan my week', de: 'Meine Woche planen', es: 'Planear mi semana' },
             text: {
-                en: 'In Supermarket, tap Plan my week. Pick people, budget and dinners for a low-spike week with store estimates, then fill your Cart.',
-                de: 'Im Supermarkt auf Meine Woche planen tippen. Personen, Budget, Abendessen wählen: eine Low-Spike-Woche mit Schätzpreis, ab in den Warenkorb.',
-                es: 'En el súper, toca Planear mi semana. Elige personas, presupuesto y cenas: una semana low-spike con precio estimado, al carrito.'
+                en: 'In the Supermarket, tap Plan my week. Pick the people, your budget and the dinners. You get a low-spike week with estimated prices, and then you fill your Cart.',
+                de: 'Tipp im Supermarkt auf Meine Woche planen. Wähl Personen, Budget und Abendessen. Du bekommst eine Low-Spike-Woche mit geschätzten Preisen und legst alles in den Warenkorb.',
+                es: 'En el súper, toca Planear mi semana. Elige personas, presupuesto y cenas. Recibes una semana low-spike con precios estimados y lo pasas todo al carrito.'
             }
         },
         {
             id: 'new-one-scanner', area: 'new', where: 'home', target: ['#whHud .o8-scan'], covers: ['scan'],
             title: { en: 'One scanner everywhere', de: 'Ein Scanner überall', es: 'Un solo escáner en todas partes' },
             text: {
-                en: 'Every scan now shows the same short card: one verdict, a better pick when it helps, and the rest under Details.',
-                de: 'Jeder Scan zeigt jetzt dieselbe kurze Karte: ein Urteil, eine bessere Wahl, wenn sie hilft, und der Rest unter Details.',
-                es: 'Cada escaneo muestra ahora la misma tarjeta corta: un veredicto, una opción mejor cuando ayuda, y el resto en Detalles.'
+                en: 'Every scan now shows the same short card. It gives you one verdict, a better pick when that helps, and everything else under Details.',
+                de: 'Jeder Scan zeigt jetzt dieselbe kurze Karte. Du bekommst ein Urteil, eine bessere Wahl, wenn sie hilft, und alles andere unter Details.',
+                es: 'Cada escaneo muestra ahora la misma tarjeta corta. Te da un veredicto, una opción mejor cuando ayuda, y todo lo demás en Detalles.'
             }
         },
         {
             id: 'new-shop-finds', area: 'new', where: 'home', open: 'shop', target: ['.gh-entry', '.stp-card'], covers: ['scan'],
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.32, grocery-hunt.js): Shop finds made simple. One plain line, Power combos first, Caught today with the scanner card words, the shop picked once (reuses Supermarket), and one short line on the scanner card only when a scan earned something',
-            title: { en: 'Shop finds, simpler', de: 'Ladenfunde, einfacher', es: 'Hallazgos, más simple' },
+            title: { en: 'Simpler shop finds', de: 'Einfachere Ladenfunde', es: 'Hallazgos más simples' },
             text: {
-                en: 'Shop finds is simpler: scan food while you shop to earn XP for your companion, with Power combos right at the top.',
-                de: 'Ladenfunde ist einfacher: Scanne Essen beim Einkaufen, sammle XP für deinen Begleiter, Power-Kombis ganz oben.',
-                es: 'Hallazgos es más simple: escanea comida al comprar, gana XP para tu compañero, con los combos de poder arriba.'
+                en: 'Shop finds is simpler now. Scan food while you shop to earn XP for your companion. Power combos are right at the top.',
+                de: 'Ladenfunde ist jetzt einfacher. Scanne Essen beim Einkaufen und sammle XP für deinen Begleiter. Die Power-Kombis stehen ganz oben.',
+                es: 'Hallazgos es ahora más simple. Escanea comida mientras compras y gana XP para tu compañero. Los combos de poder están arriba del todo.'
             }
         },
         {
@@ -304,9 +306,9 @@
             info: 'Oct 26 2026 scan-why: the scanner card shows a tiny estimated blood sugar curve, How often in numbers and a Why? button (shop-scan.js verdictHTML)',
             title: { en: 'How often, and why', de: 'Wie oft und warum', es: 'Cada cuánto y por qué' },
             text: {
-                en: 'Scan a food: a small curve shows the estimated rise, How often says how often it fits, and Why? explains it in plain words.',
-                de: 'Scanne ein Essen: Eine kleine Kurve zeigt den geschätzten Anstieg, Wie oft sagt, wie oft es passt, Warum? erklärt es einfach.',
-                es: 'Escanea un alimento: una curva muestra la subida estimada, Cada cuánto dice cuántas veces encaja y ¿Por qué? lo explica fácil.'
+                en: 'When you scan a food, a small curve shows the estimated rise. How often tells you how often it fits, and the Why button explains it in plain words.',
+                de: 'Wenn du ein Essen scannst, zeigt eine kleine Kurve den geschätzten Anstieg. Unter Wie oft siehst du, wie oft es passt, und der Button Warum erklärt es in einfachen Worten.',
+                es: 'Cuando escaneas un alimento, una curva pequeña muestra la subida estimada. En Cada cuánto ves cuántas veces encaja, y el botón Por qué te lo explica con palabras sencillas.'
             }
         },
         {
@@ -314,9 +316,9 @@
             info: 'Oct 26 2026 mic-dictate.js: a small glass mic inside the right edge of free-text fields (food names, searches, Kitchen add, snacks, captions, chat). It uses only the phone\u2019s own free speech recognition; in the Home Screen app on iPhone it opens the keyboard and points at the keyboard\u2019s dictation mic',
             title: { en: 'Speak instead of typing', de: 'Sprechen statt tippen', es: 'Habla en vez de escribir' },
             text: {
-                en: 'See the small mic in a text field? Tap it and just say your food, I write it down. In the Home Screen app, tap the mic on your keyboard.',
-                de: 'Siehst du das Mikro im Textfeld? Tipp drauf und sag dein Essen, ich schreibe mit. In der Home-Bildschirm-App: Mikro der Tastatur.',
-                es: '¿Ves el micro en el campo de texto? Tócalo y di tu comida, yo la escribo. En la app de inicio, toca el micro del teclado.'
+                en: 'Do you see the small mic in a text field? Tap it and just say your food, and I write it down. In the Home Screen app, tap the mic on your keyboard instead.',
+                de: 'Siehst du das kleine Mikro im Textfeld? Tipp drauf und sag einfach dein Essen, dann schreibe ich es auf. In der App auf dem Home-Bildschirm tippst du stattdessen auf das Mikro der Tastatur.',
+                es: '¿Ves el pequeño micro en el campo de texto? Tócalo y di tu comida, y yo la escribo. En la app de la pantalla de inicio, toca mejor el micro del teclado.'
             }
         },
         {
@@ -324,9 +326,9 @@
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.34): the Supermarket Cart sheet covers the whole Shop card with a blurred page behind it and compact matching buttons; "Someone else pays" turns the whole cart (items + amounts, low-spike foods only) into a Give a hand basket (gift-basket.js fromCart / cartBasketHTML)',
             title: { en: 'Someone else pays', de: 'Jemand anderes zahlt', es: 'Que pague otra persona' },
             text: {
-                en: 'In your Cart, tap Someone else pays: the whole cart becomes a Give a hand basket. Add a rough total and your pay link, then share.',
-                de: 'Im Warenkorb auf Jemand anderes zahlt tippen: Der ganze Korb landet bei Hilf mit. Ungefähre Summe und Zahlungslink rein, teilen.',
-                es: 'En tu carrito, toca Que pague otra persona: todo pasa a ser una cesta de Echa una mano. Pon total y enlace de pago, y comparte.'
+                en: 'In your Cart, tap Someone else pays, and the whole cart becomes a Give a hand basket. It asks for the cart’s total. Add your pay link and share it.',
+                de: 'Tipp im Warenkorb auf Jemand anderes zahlt, dann landet der ganze Warenkorb bei Hilf mit. Er fragt nach der Summe des Warenkorbs. Füg deinen Zahlungslink hinzu und teile ihn.',
+                es: 'En tu carrito, toca Que pague otra persona y todo el carrito pasa a ser una cesta de Echa una mano. Pide el total del carrito. Añade tu enlace de pago y compártela.'
             }
         },
         {
@@ -334,9 +336,9 @@
             info: 'Oct 25 2026: the Give a hand tab in Shop (store-picks.js giftDoor); it shows once the server has the basket table, otherwise the card points at Shop. Oct 26: the Kitchen tab left Shop for Cook, so the card opens Shop on Seller Zone and Give a hand sits right beside it',
             title: { en: 'Give a hand', de: 'Hilf mit', es: 'Echa una mano' },
             text: {
-                en: 'New in Shop: Give a hand has its own tab, right next to Seller Zone. Pay for someone’s healthy groceries, or share your own basket.',
-                de: 'Neu im Shop: Hilf mit hat jetzt einen eigenen Tab, neben Seller Zone. Bezahl jemandem gesunde Lebensmittel oder teile deinen eigenen Korb.',
-                es: 'Nuevo en Shop: Echa una mano tiene su propia pestaña, junto a Seller Zone. Paga la compra sana de alguien o comparte tu propia cesta.'
+                en: 'Give a hand now has its own tab in the shop, right next to Seller Zone. You can pay for someone’s healthy groceries, or share your own basket.',
+                de: 'Hilf mit hat jetzt einen eigenen Tab im Shop, direkt neben der Seller Zone. Du kannst jemandem gesunde Lebensmittel bezahlen oder deinen eigenen Korb teilen.',
+                es: 'Echa una mano tiene ahora su propia pestaña en la tienda, junto a Seller Zone. Puedes pagar la compra sana de alguien o compartir tu propia cesta.'
             }
         },
         {
@@ -344,9 +346,9 @@
             info: 'the speed pill is on this very card, right after Pause while the voice is on, so the card itself is where you tap it',
             title: { en: 'Voice speed', de: 'Sprechtempo', es: 'Velocidad de voz' },
             text: {
-                en: 'Tap my picture and I read aloud. Tap the speed next to Pause for 1.5 or 2 times as fast, like a voice note. I remember it.',
-                de: 'Tipp auf mein Bild, dann lese ich vor. Tipp aufs Tempo neben Pause für 1,5- oder 2-mal so schnell. Ich merke es mir.',
-                es: 'Toca mi imagen y leo en voz alta. Toca la velocidad junto a Pausa para 1,5 o 2 veces más rápido. Lo recuerdo.'
+                en: 'Tap my picture, and I read aloud. Tap the speed next to Pause, and I talk one and a half or two times as fast, like a voice note. I remember your choice.',
+                de: 'Tipp auf mein Bild, dann lese ich vor. Tipp auf das Tempo neben Pause, dann spreche ich anderthalbmal oder doppelt so schnell, wie bei einer Sprachnachricht. Ich merke mir deine Wahl.',
+                es: 'Toca mi imagen y leo en voz alta. Toca la velocidad junto a Pausa y hablo una vez y media o el doble de rápido, como una nota de voz. Recuerdo tu elección.'
             }
         },
         {
@@ -354,65 +356,65 @@
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.37, move-finish-core.js / move-finish.js): every finished Move session, Mirror mode and Kreuzheben included, is saved to This week and History, pays the biggest reward in the app (150 + 5 per minute, up to 60 min, 3 a day) and ends with a grand finish.',
             title: { en: 'Finish strong', de: 'Stark ins Ziel', es: 'Termina a lo grande' },
             text: {
-                en: 'Finish any Move session, Mirror mode and Deadlift too, and you get the biggest reward in the app, plus a big celebration.',
-                de: 'Beende eine Bewegen-Einheit, auch Spiegel-Modus und Kreuzheben: Du bekommst die größte Belohnung der App und ein großes Fest.',
-                es: 'Termina cualquier sesión de Moverse, también modo espejo y peso muerto: la mayor recompensa de la app y una gran celebración.'
+                en: 'When you finish any Move session, including Mirror mode and Deadlift, you get the biggest reward in the app and a big celebration.',
+                de: 'Wenn du eine Bewegungs-Einheit beendest, auch im Spiegel-Modus oder beim Kreuzheben, bekommst du die größte Belohnung der App und ein großes Fest.',
+                es: 'Cuando terminas cualquier sesión de Movimiento, también en modo espejo o con peso muerto, recibes la mayor recompensa de la app y una gran celebración.'
             }
         },
         {
             id: 'new-day-recap', area: 'new', where: 'home', open: 'misty-card', target: ['[data-mh="t-recap"]'], scroll: true, covers: ['day-recap', 'dayRecap'],
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.40, day-recap.js): Day recap, your companion\'s read-only look back at today (meals with their likely blood sugar spike verdicts, longest gap, Move, water, XP, level up), one takeaway and one nudge for tomorrow, care sent today, an optional journal line (type or speak, saved on the phone); shows once after the evening catch-up Save. On the companion card (Your day bubble, glows from 6 PM) and in My day. Otherwise never opens by itself, no notification.',
-            title: { en: 'Your day, looked back', de: 'Dein Tag im R\u00fcckblick', es: 'Tu d\u00eda, en resumen' },
+            title: { en: 'Looking back on your day', de: 'Dein Tag im Rückblick', es: 'Tu día en resumen' },
             text: {
-                en: 'Hold your companion and tap Your day: meals, longest gap, Move and care, one tip for tomorrow, and a line for your journal.',
-                de: 'Begleiter gedr\u00fcckt halten, dann Dein Tag: Mahlzeiten, l\u00e4ngste Pause, Move und F\u00fcrsorge, ein Tipp f\u00fcr morgen und eine Zeile f\u00fcrs Tagebuch.',
-                es: 'Mant\u00e9n pulsado a tu compa\u00f1ero y toca Tu d\u00eda: comidas, pausa m\u00e1s larga, Move y cuidado, un consejo para ma\u00f1ana y una l\u00ednea para tu diario.'
+                en: 'Open My day in Settings and tap Day recap. You see your meals, your longest gap, Move and care, one tip for tomorrow and a line for your journal.',
+                de: 'Öffne in den Einstellungen Mein Tag und tipp auf Tagesrückblick. Du siehst deine Mahlzeiten, deine längste Pause, Bewegung und Fürsorge, einen Tipp für morgen und eine Zeile fürs Tagebuch.',
+                es: 'Abre Mi día en Ajustes y toca Resumen del día. Ves tus comidas, tu pausa más larga, el movimiento y el cuidado, un consejo para mañana y una línea para tu diario.'
             }
         },
         {
             id: 'new-quick-tour', area: 'new', where: 'home', target: ['#whHud .o8-settings'], covers: ['quickTour', 'quick-tour'],
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.38, quick-tour.js): the promo video (one VIDEO config, easy to swap) as a Quick tour, on the first onboarding screen and as a Settings row right after Tutorial. Muted first, Tap for sound, Skip any time; lazy-loaded, never cached by the service worker.',
-            title: { en: 'Quick tour', de: 'Kurze Tour', es: 'Tour r\u00e1pido' },
+            title: { en: 'Quick tour', de: 'Kurze Tour', es: 'Tour rápido' },
             text: {
-                en: 'The whole app in one short video: Settings has a Quick tour right after Tutorial. It starts muted, tap for sound.',
-                de: 'Die ganze App in einem kurzen Video: In den Einstellungen gibt es gleich nach Tutorial die kurze Tour. Tipp f\u00fcr Ton.',
-                es: 'Toda la app en un v\u00eddeo corto: en Ajustes, justo despu\u00e9s de Tutorial, est\u00e1 el tour r\u00e1pido. Toca para o\u00edr el sonido.'
+                en: 'The quick tour shows the whole app in one short video. You find it on the very first screen when you set up the app. It starts muted, so tap it for sound.',
+                de: 'Die kurze Tour zeigt die ganze App in einem kurzen Video. Du findest sie auf dem ersten Bildschirm, wenn du die App einrichtest. Sie startet ohne Ton, also tipp drauf, um sie zu hören.',
+                es: 'El tour rápido muestra toda la app en un vídeo corto. Lo encuentras en la primera pantalla cuando configuras la app. Empieza sin sonido, así que tócalo para oírlo.'
             }
         },
         {
             id: 'new-evening-catchup', area: 'new', where: 'home', target: ['#whHud .o8-settings'], covers: ['catchUp', 'evening-catchup'],
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.39, evening-catchup.js): for people who can only open the app at night. A gentle evening greeting and the first Settings row open a calm checklist: one big bubble at a time (Breakfast, Lunch, Dinner, Snacks, Water, Movement), big choices, Something else or Skip, points on every pick, one Save at the end.',
-            title: { en: 'Catch up on today', de: 'Heute nachtragen', es: 'Ponerme al d\u00eda' },
+            title: { en: 'Catch up on today', de: 'Heute nachtragen', es: 'Completar hoy' },
             text: {
-                en: 'Couldn\u2019t log during the day? Settings has Catch up on today: one big bubble at a time, tap what you had, then Save.',
-                de: 'Tags\u00fcber nicht zum Eintragen gekommen? In den Einstellungen: Heute nachtragen. Eine gro\u00dfe Blase nach der anderen, dann Speichern.',
-                es: '\u00bfNo pudiste anotar durante el d\u00eda? En Ajustes est\u00e1 Ponerme al d\u00eda: una burbuja grande cada vez, toca lo que tomaste y luego Guardar.'
+                en: 'Couldn’t log during the day? Open My day in Settings and tap Catch up on today. You get one big bubble at a time, tap what you had, and then tap Save.',
+                de: 'Bist du tagsüber nicht zum Eintragen gekommen? Öffne in den Einstellungen Mein Tag und tipp auf Heute nachtragen. Tipp in jeder großen Blase an, was du hattest, und am Ende auf Speichern.',
+                es: '¿No pudiste anotar durante el día? Abre Mi día en Ajustes y toca Completar hoy. Verás una burbuja grande cada vez. Toca lo que tomaste y luego Guardar.'
             }
         },
         {
             id: 'new-deadlift', area: 'new', where: 'move', open: 'move', target: ['.mm-hero-dl'], covers: ['deadlift-mirror'],
             title: { en: 'Deadlift in Mirror mode', de: 'Kreuzheben im Spiegel-Modus', es: 'Peso muerto en modo espejo' },
             text: {
-                en: 'Stand sideways to your phone. The glowing outline shows the move and counts every clean rep.',
-                de: 'Stell dich seitlich zum Handy. Der leuchtende Umriss macht es vor und zählt jede saubere Wiederholung.',
-                es: 'Ponte de lado al móvil. La silueta brillante te enseña el movimiento y cuenta cada repetición limpia.'
+                en: 'For a deadlift in Mirror mode, stand sideways to your phone. The glowing outline shows you the move and counts every clean rep.',
+                de: 'Für Kreuzheben im Spiegel-Modus stellst du dich seitlich zum Handy. Der leuchtende Umriss macht dir die Bewegung vor und zählt jede saubere Wiederholung.',
+                es: 'Para el peso muerto en modo espejo, ponte de lado al móvil. La silueta brillante te enseña el movimiento y cuenta cada repetición limpia.'
             }
         },
         {
             id: 'new-seller', area: 'new', where: 'home', open: 'shop', target: ['.stp-card .stp-tab[data-stp-tab="sz"]', '.stp-card'], covers: ['seller-zone'],
             title: { en: 'Seller Zone', de: 'Seller Zone', es: 'Seller Zone' },
             text: {
-                en: 'Real snacks you can order: chips, chocolate, gummies. Strictly checked, with photo and price. Shops near you first.',
-                de: 'Echte Snacks zum Bestellen: Chips, Schoko, Gummis. Streng geprüft, mit Foto und Preis. Shops in deiner Nähe zuerst.',
-                es: 'Snacks de verdad para pedir: patatas, chocolate, gominolas. Revisados a fondo, con foto y precio. Primero las tiendas cerca de ti.'
+                en: 'In Seller Zone, you can order real snacks, like chips, chocolate and gummies. Every snack is strictly checked and has a photo and a price. Shops near you come first.',
+                de: 'In der Seller Zone bestellst du echte Snacks, etwa Chips, Schokolade und Gummibärchen. Jeder Snack ist streng geprüft und hat ein Foto und einen Preis. Shops in deiner Nähe kommen zuerst.',
+                es: 'En Seller Zone puedes pedir snacks de verdad, como patatas, chocolate y gominolas. Cada uno está revisado a fondo y tiene foto y precio. Primero salen las tiendas cerca de ti.'
             }
         },
         {
             id: 'new-sleep', area: 'new', where: 'home', target: ['#whHud .o8-sleep'], covers: ['sleep-ring'],
-            title: { en: 'Sleep in your ring', de: 'Sleep im Bubble-Ring', es: 'El sueño en tu anillo' },
+            title: { en: 'Sleep in your ring', de: 'Schlaf in deinem Ring', es: 'El sueño en tu anillo' },
             text: {
-                en: 'Sleep now lives in the ring with your other bubbles, in the same living style.',
-                de: 'Sleep wohnt jetzt mit deinen anderen Bubbles im Ring, im selben lebendigen Stil.',
+                en: 'Sleep now lives in the ring with your other bubbles, in the same lively style.',
+                de: 'Schlaf wohnt jetzt mit deinen anderen Blasen im Ring, im selben lebendigen Stil.',
                 es: 'El sueño ahora vive en el anillo con tus otras burbujas, con el mismo estilo vivo.'
             }
         },
@@ -420,17 +422,17 @@
             id: 'new-people', area: 'new', where: 'community', target: ['.rm-tab[data-rm="rank"]', '.rm-tabs'], covers: ['people-directory'], /* 5 Nov 2026: People opens from Ranking's round Members button (ranking.js) */
             title: { en: 'Everyone in LOWiSPIKE', de: 'Alle bei LOWiSPIKE', es: 'Todos en LOWiSPIKE' },
             text: {
-                en: 'New: Members, the round button in Ranking, opens People: everyone in the app, offline too, and who is online right now.',
-                de: 'Neu: Mitglieder, der runde Knopf in der Rangliste, öffnet Leute: alle in der App, auch offline, und wer gerade online ist.',
-                es: 'Nuevo: Miembros, el botón redondo de Ranking, abre Personas: todos en la app, también sin conexión, y quién está en línea ahora.'
+                en: 'In the Ranking, there is a new round button called Members. It opens People, with everyone in the app, even when they are offline, and who is online right now.',
+                de: 'In der Rangliste gibt es einen neuen runden Knopf namens Mitglieder. Er öffnet Leute, mit allen in der App, auch wenn sie offline sind, und wer gerade online ist.',
+                es: 'En el Ranking hay un botón redondo nuevo llamado Miembros. Abre Personas, con todos en la app, también sin conexión, y quién está en línea ahora.'
             }
         },
         {
             id: 'new-humans', area: 'new', where: 'community', target: null, covers: ['humans-only-ranking'],
             title: { en: 'Only real people', de: 'Nur echte Menschen', es: 'Solo personas reales' },
             text: {
-                en: 'The Ranking, Add a friend and the chat show only real people. Bot posts like Nibblo\'s meals live in For You.',
-                de: 'Ranking, Freund hinzufügen und der Chat zeigen nur echte Menschen. Bot-Posts wie Nibblos Mahlzeiten findest du in Für dich.',
+                en: 'The Ranking, Add a friend and the chat show only real people. Bot posts, like Nibblo’s meals, are in For You.',
+                de: 'Das Ranking, Freund hinzufügen und der Chat zeigen nur echte Menschen. Bot-Posts, wie Nibblos Mahlzeiten, findest du in Für dich.',
                 es: 'El Ranking, Añadir un amigo y el chat muestran solo personas reales. Los posts de bots, como las comidas de Nibblo, están en Para ti.'
             }
         },
@@ -438,9 +440,9 @@
             id: 'new-sync', area: 'new', where: 'home', target: null, covers: ['account-sync'],
             title: { en: 'iPhone and iPad in sync', de: 'iPhone und iPad synchron', es: 'iPhone y iPad sincronizados' },
             text: {
-                en: 'Signed in on both? Your companion, level and logs are the same on every device.',
-                de: 'Auf beiden angemeldet? Dein Begleiter, Level und Einträge sind auf jedem Gerät gleich.',
-                es: '¿Has iniciado sesión en los dos? Tu compañero, nivel y registros son iguales en cada dispositivo.'
+                en: 'If you are signed in on your iPhone and your iPad, your companion, your level and your logs stay in sync on both.',
+                de: 'Bist du auf iPhone und iPad angemeldet, dann bleiben dein Begleiter, dein Level und deine Einträge auf beiden synchron.',
+                es: 'Si inicias sesión en tu iPhone y en tu iPad, tu compañero, tu nivel y tus registros se quedan sincronizados en los dos.'
             }
         },
         {
@@ -448,11 +450,11 @@
                finger demo; she does not really fly during the tour (her real first flight comes after Done, tutorial-flight.js) */
             id: 'done', area: 'end', target: ['#whPad'], demo: { g: 'drag', open: null },
             covers: ['joy', 'joy-hold', 'autopilot', 'zoom', 'fly-out', 'worlds', 'half-energy', 'spirit-world', 'worldSound', 'galaxy'], teaches: ['pad-drag', 'pad-triple', 'edge-push'],
-            title: { en: 'You’re set', de: 'Startklar', es: 'Todo listo' },
+            title: { en: 'You’re all set', de: 'Du bist startklar', es: 'Todo listo' },
             text: {
-                en: 'Drag the joystick and I fly, tap it three times for autopilot, or fly me past the edge into the galaxy.',
-                de: 'Zieh am Joystick und ich fliege, tipp dreimal für den Autopilot, oder flieg mich über den Rand in die Galaxie.',
-                es: 'Arrastra el joystick y vuelo, tócalo tres veces para el piloto automático o sal por el borde a la galaxia.'
+                en: 'Drag the joystick, and I fly. Tap it three times for autopilot, or fly me past the edge into the galaxy.',
+                de: 'Zieh am Joystick, dann fliege ich. Tipp dreimal für den Autopiloten, oder flieg mit mir über den Rand in die Galaxie.',
+                es: 'Arrastra el joystick y vuelo. Tócalo tres veces para el piloto automático, o llévame más allá del borde, hasta la galaxia.'
             },
             cta: { en: 'Done', de: 'Fertig', es: 'Listo' }
         }

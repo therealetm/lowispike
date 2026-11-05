@@ -19,7 +19,7 @@ test('part new: intro first, every step short, three languages, a known route', 
   for (const s of nw) {
     for (const l of ['en', 'de', 'es']) {
       assert.ok(s.title[l] && s.text[l], s.id + ' ' + l);
-      assert.ok(s.text[l].length <= 140, s.id + ' ' + l + ': keep it short (' + s.text[l].length + ')');
+      assert.ok(s.text[l].length <= 200, s.id + ' ' + l + ': keep it short (' + s.text[l].length + ')');   /* Nov 5 2026: whole spoken sentences */
     }
     /* Oct 26 (day recap): quoted keys like 'misty-card' and stage-first routes count too */
     if (s.open) assert.match(js, new RegExp("(\\b|')" + s.open + "'?: \\{[^\\n]*\\bgo(\\(|: )"), s.id + ': open route ' + s.open + ' exists in tutorial.js OPEN');

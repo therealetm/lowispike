@@ -47,7 +47,9 @@ test('Emmanuel\'s examples: repeated titles are gone, titles that add something 
     assert.strictEqual(sp('day', 'de').t, -1, '"Wasser, Bewegung, Schlaf" + "Wasser, Bewegung und Schlaf gehen gleich..." says it once');
     assert.strictEqual(sp('shop-week').t, -1, '"Supermarket" + "In Supermarket, + puts..." says it once');
     for (const l of LANGS) assert.ok(sp('hello', l).t > 0, 'hello/' + l + ': "Hi, I\'m Misty" adds the greeting and the name');
-    assert.ok(sp('settings').s.startsWith('Settings. ') && sp('settings').s.endsWith(S.STEPS.find(x => x.id === 'settings').text.en), 'a title that adds something is said once, then the text');
+    /* Nov 5 2026: the Settings card's text now says "In Settings, ..." itself, so its title is not said; the end card's title adds something */
+    assert.strictEqual(sp('settings').t, -1, '"Settings" + "... In Settings, you change ..." says it once');
+    assert.ok(sp('done').s.startsWith('You\u2019re all set. ') && sp('done').s.endsWith(S.STEPS.find(x => x.id === 'done').text.en), 'a title that adds something is said once, then the text');
     const ren = V.spoken(S.STEPS.find(s => s.id === 'hello'), 'en', 'Nova');
     assert.strictEqual(ren.key, 'hello~', 'a renamed companion: the recorded title with Misty in it is left out');
 });

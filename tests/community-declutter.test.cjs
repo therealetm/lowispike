@@ -68,6 +68,7 @@ test('Billiard (Circle) page: no To-everyone chat button and no message field; t
 test('tutorial: the People card now points at Ranking', () => {
   const s = read('tutorial-steps.js');
   assert.match(s, /id: 'new-people', area: 'new', where: 'community', target: \['\.rm-tab\[data-rm="rank"\]', '\.rm-tabs'\]/);
-  assert.match(s, /en: 'New: Members, the round button in Ranking, opens People/);
+  /* Nov 5 2026 (tutorial in whole spoken sentences): same meaning, said as sentences */
+  assert.match(s, /en: 'In the Ranking, there is a new round button called Members\. It opens People/);
   assert.doesNotMatch(s, /target: \[[^\]]*\.rm-name/);
 });

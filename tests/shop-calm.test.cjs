@@ -59,8 +59,9 @@ test('swipe down on the From home title closes Shop: the title is a drag zone an
 test('the tour step for Plan my week points at its row in Supermarkt and says where it is', () => {
   const step = require('../tutorial-steps.js').STEPS.find(s => s.id === 'new-week-shop');
   assert.equal(step.target[0], '.stp-card .stp-plan');
-  assert.match(step.text.en, /In Supermarket, tap Plan my week/);
-  assert.match(step.text.de, /Im Supermarkt auf Meine Woche planen tippen/);
+  /* Nov 5 2026: tour cards are whole spoken sentences (tests/tutorial-sentences.test.cjs), up to 200 characters */
+  assert.match(step.text.en, /In the Supermarket, tap Plan my week/);
+  assert.match(step.text.de, /Tipp im Supermarkt auf Meine Woche planen/);
   assert.match(step.text.es, /En el súper, toca Planear mi semana/);
   for (const l of ['en', 'de', 'es']) assert.doesNotMatch(step.text[l], /insulin/i);
 });

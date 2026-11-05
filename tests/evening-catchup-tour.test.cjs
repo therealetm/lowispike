@@ -14,13 +14,14 @@ test('tutorial: a new-evening-catchup card in part new, three languages, short, 
     assert.strictEqual(st.area, 'new', 'step in part new (What\'s New), never the base tour');
     for (const l of LANGS) {
         assert.ok(st.title[l] && st.text[l], 'title and text in ' + l);
-        assert.ok(st.text[l].length <= 160, l + ' text is short: ' + st.text[l].length);
+        assert.ok(st.text[l].length <= 200, l + ' text is short: ' + st.text[l].length);
         assert.ok(!/lowi\s*spike|misty/i.test(st.title[l] + ' ' + st.text[l]), 'no app name or Misty in ' + l);
         assert.ok(!/insulin/i.test(st.text[l]), 'no insulin claim in ' + l);
     }
     assert.ok(/Catch up on today/.test(st.text.en), 'English names the Settings row');
     assert.ok(/Heute nachtragen/.test(st.text.de), 'German names the Settings row');
-    assert.ok(/Ponerme al d\u00eda/.test(st.text.es), 'Spanish names the Settings row');
+    /* Nov 5 2026: the row moved into My day (community-me.js), where its Spanish button reads "Completar hoy" (misty-hub.js) */
+    assert.ok(/Completar hoy/.test(st.text.es) && /Completar hoy/.test(require('fs').readFileSync(require('path').join(ROOT, 'misty-hub.js'), 'utf8')), 'Spanish names the My day button');
 });
 
 test('tutorial: Settings row catchUp is covered by a tour card', () => {

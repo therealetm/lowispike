@@ -1,46 +1,89 @@
-/* Nov 5 2026, Still galaxy (owner: an optional Settings battery-save mode that turns the active galaxy exploration into a beautiful
-   STATIC background, "not an animated screensaver"; then refined: hold Community to open Settings, switch it on, go back Home, zoom and
-   frame the galaxy with the interface still on screen, and tap Save in the corner to keep exactly that view as the background).
+/* Nov 5 2026, Calm mode (was "Still galaxy"). Pure part: the levels, the stored choice, the words. galaxy-still.js is the browser part.
 
-   Pure part (no DOM): the saved state, what the 3D world may do at launch, which background to paint, the words, and the walk over a
-   three.js scene that collects every geometry, material and texture so they can be released. galaxy-still.js is the browser part;
-   body-world-3d.js asks LowiGalaxyStill.on() before it builds the world; tests/galaxy-still-*.test.cjs check this file directly.
+   Owner, after trying the first Still galaxy on the iPhone (zoom the galaxy, save the view as a picture, then the app swapped to its
+   layout without the 3D world): "It's a complete mess ... I didn't say it should create a new interface. I don't know why it's
+   creating new circles, new bubbles". The saved picture was a screenshot of the 3D world, its glass bubbles and Misty included, and
+   the app then drew its bubbles again on top of it: a ghost bubble behind every bubble and a thin ring around Misty, and Community and
+   the long press on Move stopped working until the app was closed. All of that is gone: nothing is photographed, the 3D world is never
+   let go, the interface is never swapped. Instead, one stepped choice, each level adding to the one before:
+     0 off            everything as it always was
+     1 world stays    no flying around the world: dragging, pinching and double tapping the world do nothing, places are not
+                      travelled to, and the joystick is gone. All there is is what you see.
+     2 still bg       the world's scenery stops moving too (the bloodstream, the cells, the slow turn of the camera)
+     3 no bg          the scenery is taken away: plain black (Dark, Night) or plain light (Day) behind the same glass bubbles
+     4 all still      the bubbles and Misty stop moving as well, and the world is only drawn again when something changes.
+                      "If you're a grown-up and you don't need all this gamification, it just becomes a holographic bubble tracker."
+   Every level applies at once, every tap keeps working, and nothing restarts. "The bubble is our thing": no level adds a circle, a
+   ring or a second bubble.
 
-   Stored per device (it is about this device's battery):
-   localStorage 'lowi.galaxyStill'       {v:1, on:true, at:<ms>, w, h, pic:'idb'|'thumb'|'none'}
-   localStorage 'lowi.galaxyStill.thumb' a small JPEG data URL of the saved view (shown at once on launch, and the fallback when the
-                                          full picture is gone)
-   IndexedDB 'lowi-galaxy-still' / 'pics' / 'bg'  {blob:<JPEG>, at, w, h}: the full-size picture
-   sessionStorage 'lowi.galaxyStill.frame' = '1': the next launch starts the live galaxy once so a new view can be chosen. */
+   Stored per device (it is about this device's battery): localStorage 'lowi.calm' = '0'..'4'. The first Still galaxy's own record
+   ('lowi.galaxyStill' {on:true}) becomes level 2 once, and its saved pictures are removed. */
 (function (root, factory) {
     const api = factory();
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.LowiGalaxyStillCore = api;
 })(typeof window !== 'undefined' ? window : null, function () {
-    const KEY = 'lowi.galaxyStill', THUMB_KEY = 'lowi.galaxyStill.thumb', FRAME_KEY = 'lowi.galaxyStill.frame';
-    const DB = 'lowi-galaxy-still', STORE = 'pics', PIC = 'bg';
-    const THUMB_W = 540;   /* the launch / fallback copy: small enough for localStorage (~40-120 KB as JPEG) */
-    const FULL_MAX = 2600; /* longest side of the full picture; a 3x iPhone screen is 2532 px tall */
-
-    function parse(raw) {
-        if (!raw) return null;
-        try { const s = JSON.parse(raw); return s && s.v === 1 && s.on === true ? s : null; } catch (e) { return null; }
+    const KEY = 'lowi.calm', MAX = 4;
+    const OLD = { KEY: 'lowi.galaxyStill', THUMB: 'lowi.galaxyStill.thumb', FRAME: 'lowi.galaxyStill.frame', DB: 'lowi-galaxy-still' };
+    /* html classes per level; each level keeps the ones below it */
+    const CLS = ['cm-on', 'cm-nav', 'cm-bg', 'cm-nobg', 'cm-all'];
+    function clamp(n) { n = Math.round(+n); return isFinite(n) ? Math.max(0, Math.min(MAX, n)) : 0; }
+    function parse(raw) { if (raw == null || raw === '') return null; const n = +raw; return isFinite(n) ? clamp(n) : null; }
+    /* the first Still galaxy: on = level 2 (the galaxy stood still, the interface stayed) */
+    function migrate(oldRaw) {
+        if (!oldRaw) return null;
+        try { const o = JSON.parse(oldRaw); return o && o.on ? 2 : null; } catch (e) { return null; }
     }
-    /* the 3D world at launch: Still keeps it from starting at all, except for the one launch that was asked for to choose a new view */
-    function worldAtLaunch(saved, framing) { return saved && !framing ? 'off' : 'live'; }
-    /* which picture to paint: the full one when it loaded, else the small copy, else the plain still background (CSS) */
-    function pick(full, thumb) { return full ? 'full' : thumb ? 'thumb' : 'plain'; }
-    /* where the picture ended up, so the words can tell the truth */
-    function storedAs(idbOk, thumbOk) { return idbOk ? 'idb' : thumbOk ? 'thumb' : 'none'; }
-    function fitSize(w, h, max) {
-        w = Math.max(1, w | 0); h = Math.max(1, h | 0); max = max || FULL_MAX;
-        const k = Math.min(1, max / Math.max(w, h));
-        return { w: Math.max(1, Math.round(w * k)), h: Math.max(1, Math.round(h * k)) };
-    }
-    function record(o) { return { v: 1, on: true, at: o.at || Date.now(), w: o.w | 0, h: o.h | 0, pic: o.pic || 'none' }; }
+    /* which html classes are on at a level: cm-on from 1, cm-nav from 1, cm-bg from 2, cm-nobg from 3, cm-all at 4 */
+    function classes(lv) { lv = clamp(lv); if (!lv) return []; return ['cm-on', 'cm-nav'].concat(lv >= 2 ? ['cm-bg'] : [], lv >= 3 ? ['cm-nobg'] : [], lv >= 4 ? ['cm-all'] : []); }
+    /* what each part of the app may do at a level */
+    const navOff = lv => clamp(lv) >= 1;     /* world drag / pinch / double tap / travel, joystick */
+    const bgStill = lv => clamp(lv) >= 2;    /* world time, the camera's slow turn, the tilt */
+    const bgGone = lv => clamp(lv) >= 3;     /* scenery not drawn, plain background */
+    const allStill = lv => clamp(lv) >= 4;   /* bubbles, Misty, every endless animation; world drawn only on a change */
+    /* the plain background at level 3+: black unless the app is in its light Day look */
+    function plainBg(theme) { return theme === 'light' ? 0xf2f2f7 : 0x000000; }
+    /* a three.js object that stays drawn when the scenery is taken away: lights, the companion's hub, and everything the app marks
+       as "keep" (the living glass bubbles, Misty's sprites and face: userData.lwKeep, the same mark the world travel uses) */
+    function keeps(o) { return !!(o && (o.isLight || o.name === 'lowi-hub' || (o.userData && o.userData.lwKeep))); }
 
-    /* every geometry, material and texture a three.js scene holds (meshes, points, sprites, instanced meshes, shader uniforms), each
-       once, so the world can hand them all back to the graphics chip and not just stop drawing them */
+    const TX = {
+        en: {
+            row: 'Calm mode', sub: 'Less motion, saves battery', off: 'Off',
+            title: 'Calm mode', intro: 'Each step adds to the one before. Everything you tap keeps working, nothing restarts.',
+            l0: 'Off', d0: 'Everything moves as usual.',
+            l1: 'World stays put', d1: 'No flying around the world. The joystick goes away.',
+            l2: 'Still background', d2: 'The world behind the bubbles stops moving.',
+            l3: 'No background', d3: 'Plain black, or light in Day, behind the bubbles.',
+            l4: 'Everything still', d4: 'The bubbles and your companion stop moving too. Saves the most battery.',
+            done: 'Done'
+        },
+        de: {
+            row: 'Ruhemodus', sub: 'Weniger Bewegung, spart Akku', off: 'Aus',
+            title: 'Ruhemodus', intro: 'Jede Stufe legt etwas auf die vorige drauf. Alles, was du antippst, funktioniert weiter, nichts startet neu.',
+            l0: 'Aus', d0: 'Alles bewegt sich wie gewohnt.',
+            l1: 'Welt bleibt stehen', d1: 'Kein Herumfliegen in der Welt. Der Joystick verschwindet.',
+            l2: 'Ruhiger Hintergrund', d2: 'Die Welt hinter den Bubbles bewegt sich nicht mehr.',
+            l3: 'Kein Hintergrund', d3: 'Schlichtes Schwarz, im Tag-Look Hell, hinter den Bubbles.',
+            l4: 'Alles steht still', d4: 'Auch die Bubbles und dein Begleiter bewegen sich nicht mehr. Spart am meisten Akku.',
+            done: 'Fertig'
+        },
+        es: {
+            row: 'Modo calma', sub: 'Menos movimiento, ahorra bater\u00eda', off: 'No',
+            title: 'Modo calma', intro: 'Cada paso se suma al anterior. Todo lo que tocas sigue funcionando y nada se reinicia.',
+            l0: 'No', d0: 'Todo se mueve como siempre.',
+            l1: 'Mundo fijo', d1: 'No se vuela por el mundo. El joystick desaparece.',
+            l2: 'Fondo quieto', d2: 'El mundo detr\u00e1s de las burbujas deja de moverse.',
+            l3: 'Sin fondo', d3: 'Negro liso, o claro en el modo D\u00eda, detr\u00e1s de las burbujas.',
+            l4: 'Todo quieto', d4: 'Las burbujas y tu compa\u00f1ero tambi\u00e9n se quedan quietos. Ahorra m\u00e1s bater\u00eda.',
+            done: 'Listo'
+        }
+    };
+    const t = (l, k) => ((TX[l] || TX.en)[k]) || TX.en[k] || k;
+    const levelName = (lv, l) => t(l, 'l' + clamp(lv));
+
+    /* Kept from the first Still galaxy: the walk over a three.js scene that hands every geometry, material and texture back
+       (body-world-3d-scene.js dispose(true) still uses it when the world is torn down for good). */
     function collect(scene) {
         const geo = new Set(), mat = new Set(), tex = new Set();
         const addTex = v => { if (v && v.isTexture) tex.add(v); };
@@ -68,43 +111,5 @@
         return n;
     }
 
-    const TX = {
-        en: {
-            row: 'Still galaxy', sub: 'Saves battery', on: 'On', off: 'Off', missing: 'Picture missing, choose again',
-            hint: 'Zoom and move the galaxy, then tap Save.', save: 'Save', cancel: 'Cancel',
-            saved: 'Background saved. The galaxy stands still now and no longer runs in the background.',
-            savedThumb: 'Background saved, in lower quality: this device could not keep the full picture.',
-            savedNone: 'This device could not store the picture, so a calm plain background is used.',
-            no3d: 'The moving galaxy is not running on this device right now, so a calm plain background is used.',
-            fail: 'The picture could not be taken. Nothing was changed.',
-            title: 'Still galaxy', body: 'The galaxy is a still picture now. The app restarts for a moment to start the moving galaxy again.',
-            reframe: 'Choose a new view', explore: 'Explore the galaxy again', keep: 'Keep it still'
-        },
-        de: {
-            row: 'Ruhige Galaxie', sub: 'Spart Akku', on: 'An', off: 'Aus', missing: 'Bild fehlt, neu w\u00e4hlen',
-            hint: 'Zoome und verschiebe die Galaxie, dann tippe auf Speichern.', save: 'Speichern', cancel: 'Abbrechen',
-            saved: 'Hintergrund gespeichert. Die Galaxie steht jetzt still und l\u00e4uft nicht mehr im Hintergrund.',
-            savedThumb: 'Hintergrund gespeichert, in geringerer Qualit\u00e4t: Dieses Ger\u00e4t konnte das ganze Bild nicht behalten.',
-            savedNone: 'Dieses Ger\u00e4t konnte das Bild nicht speichern, deshalb gibt es einen ruhigen schlichten Hintergrund.',
-            no3d: 'Die bewegte Galaxie l\u00e4uft auf diesem Ger\u00e4t gerade nicht, deshalb gibt es einen ruhigen schlichten Hintergrund.',
-            fail: 'Das Bild konnte nicht aufgenommen werden. Es wurde nichts ge\u00e4ndert.',
-            title: 'Ruhige Galaxie', body: 'Die Galaxie ist gerade ein stilles Bild. Die App startet kurz neu, um die bewegte Galaxie wieder zu starten.',
-            reframe: 'Neuen Ausschnitt w\u00e4hlen', explore: 'Galaxie wieder erkunden', keep: 'Ruhig lassen'
-        },
-        es: {
-            row: 'Galaxia quieta', sub: 'Ahorra bater\u00eda', on: 'S\u00ed', off: 'No', missing: 'Falta la imagen, elige otra vez',
-            hint: 'Haz zoom y mueve la galaxia; luego toca Guardar.', save: 'Guardar', cancel: 'Cancelar',
-            saved: 'Fondo guardado. La galaxia ahora est\u00e1 quieta y ya no se mueve en segundo plano.',
-            savedThumb: 'Fondo guardado, con menos calidad: este dispositivo no pudo guardar la imagen completa.',
-            savedNone: 'Este dispositivo no pudo guardar la imagen, as\u00ed que se usa un fondo sencillo y tranquilo.',
-            no3d: 'La galaxia en movimiento no funciona ahora en este dispositivo, as\u00ed que se usa un fondo sencillo y tranquilo.',
-            fail: 'No se pudo tomar la imagen. No se cambi\u00f3 nada.',
-            title: 'Galaxia quieta', body: 'La galaxia es ahora una imagen quieta. La app se reinicia un momento para volver a iniciar la galaxia en movimiento.',
-            reframe: 'Elegir otra vista', explore: 'Explorar la galaxia otra vez', keep: 'Dejarla quieta'
-        }
-    };
-    const t = (l, k) => ((TX[l] || TX.en)[k]) || TX.en[k] || k;
-    function savedText(pic, l) { return t(l, pic === 'idb' ? 'saved' : pic === 'thumb' ? 'savedThumb' : 'savedNone'); }
-
-    return { KEY, THUMB_KEY, FRAME_KEY, DB, STORE, PIC, THUMB_W, FULL_MAX, parse, worldAtLaunch, pick, storedAs, fitSize, record, collect, disposeAll, TX, t, savedText };
+    return { KEY, MAX, OLD, CLS, clamp, parse, migrate, classes, navOff, bgStill, bgGone, allStill, plainBg, keeps, TX, t, levelName, collect, disposeAll };
 });

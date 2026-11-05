@@ -380,9 +380,9 @@
         const calm = !b.ptr && !b.drops.length && energy(b.s) < 0.002 && Math.abs(b.target - b.lv) < 0.002;
         b.odd = !b.odd;
         if (!calm || b.odd) draw(b, calm ? dt * 2 : dt);
-        /* Nov 5 2026 (Still galaxy, the battery-save background, galaxy-still.js): once the water has settled the loop stops and looks
+        /* Nov 5 2026 (Calm mode, galaxy-still.js, level 4 "everything still"): once the water has settled the loop stops and looks
            again once a second; a touch, a glass added or a state change kicks it back to every frame */
-        if (calm && window.LowiGalaxyStill && window.LowiGalaxyStill.on() && window.LowiWorld3D && window.LowiWorld3D.state === 'fallback') { b.last = 0; clearTimeout(b.idle); b.idle = setTimeout(kick, 1000); return; }
+        if (calm && window.LowiGalaxyStill && window.LowiGalaxyStill.allStill && window.LowiGalaxyStill.allStill()) { b.last = 0; clearTimeout(b.idle); b.idle = setTimeout(kick, 1000); return; }
         b.raf = requestAnimationFrame(frame);
     }
     function kick() {

@@ -21,7 +21,9 @@
     const T = (en, de, es) => ({ de, es })[lang()] || en;
     const P = arr => C.pick(arr, lang());
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-    const reduced = () => { try { return W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+    /* Nov 5 2026: Calm mode 4 "everything still" (galaxy-still.js) counts as reduced motion for the world on Home: Misty doesn't
+       bob or fly, her wand doesn't sway, the camera goes to where it's going at once */
+    const reduced = () => { try { const G = W.LowiGalaxyStill; if (G && G.allStill && G.allStill()) return true; return W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
     const w3 = () => W.LowiWorld3D || null;
     if (!D.getElementById('whCss')) {
         const me = D.currentScript || D.querySelector('script[src*="world-home.js"]'), l = D.createElement('link'); l.id = 'whCss'; l.rel = 'stylesheet';
@@ -454,6 +456,8 @@
         setTimeout(go, 120);
     }
     function toggleZoom() {
+        /* Nov 5 2026: Calm mode 1+ (galaxy-still.js), the world stays where it is */
+        try { if (W.LowiGalaxyStill && W.LowiGalaxyStill.navOff && W.LowiGalaxyStill.navOff()) return; } catch (e) { }
         const z = zoomState();
         if (!z || inRegion()) return zoomOutWhole();
         const r = rig();

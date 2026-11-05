@@ -185,14 +185,14 @@
                 es: 'Oscuro es ahora el aspecto para todos. Día, Noche y Auto también están aquí, junto con la hora y el tiempo.'
             }
         },
-        /* Nov 5 2026: Still galaxy (galaxy-still.js, Settings row 'galaxyStill' right under the look) */
+        /* Nov 5 2026: Calm mode (galaxy-still.js, Settings row 'galaxyStill', was Still galaxy) */
         {
             id: 'new-still-galaxy', area: 'new', target: null, open: 'settings-sheet', covers: ['galaxyStill'],
-            title: { en: 'Still galaxy', de: 'Ruhige Galaxie', es: 'Galaxia quieta' },
+            title: { en: 'Calm mode', de: 'Ruhemodus', es: 'Modo calma' },
             text: {
-                en: 'New in Settings, right under the look: Still galaxy. The galaxy stops moving and stays as a calm picture, which saves battery.',
-                de: 'Neu in den Einstellungen, direkt unter dem Look: Ruhige Galaxie. Die Galaxie steht still wie ein ruhiges Bild und spart Akku.',
-                es: 'Nuevo en Ajustes, justo debajo del aspecto: Galaxia quieta. La galaxia deja de moverse y queda como una imagen tranquila que ahorra batería.'
+                en: 'New in Settings: Calm mode. Step by step, the world stays put, the background goes still or away, then nothing moves. Taps keep working.',
+                de: 'Neu in den Einstellungen: Ruhemodus. Stufe für Stufe bleibt die Welt stehen, der Hintergrund ruht oder geht, dann steht alles still.',
+                es: 'Nuevo en Ajustes: Modo calma. Paso a paso, el mundo se queda fijo, el fondo se calma o desaparece y al final nada se mueve.'
             }
         },
         {

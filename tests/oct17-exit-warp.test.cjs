@@ -25,7 +25,8 @@ function fnSrc(src, sig) {
 test('a resized canvas is drawn again in the same refresh, never left wiped', () => {
   const rs = fnSrc(scene, 'function resize(w, h)');
   assert.match(rs, /renderer\.setSize\(W, H, false\); paintNow = true;/);
-  assert.match(rs, /if \(paintNow && running\) \{ try \{ renderer\.render\(scene, camera\); \}/, 'resize must draw at once');
+  /* Nov 5 2026: every draw goes through calmRender() (Calm mode, galaxy-still.js), which is renderer.render(scene, camera) below level 3 */
+  assert.match(rs, /if \(paintNow && running\) \{ try \{ calmRender\(\); \}/, 'resize must draw at once');
   // every sharpness change marks the picture for an immediate redraw
   const sets = scene.match(/renderer\.setPixelRatio\(dpr\); renderer\.setSize\(W, H, false\);[^}]*/g) || [];
   assert.ok(sets.length >= 2);

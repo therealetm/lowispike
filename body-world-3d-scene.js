@@ -236,7 +236,7 @@ export function createWorld(THREE, canvas, opts) {
     }
     /* Oct 16: Home re-lays itself out every 1.2 s; setting the canvas size again, even to the same numbers, wipes and re-allocates the
        WebGL buffer (a dropped frame on iPhone). Only a real change touches the canvas. */
-    function resize(w, h) { const nw = Math.max(1, w | 0), nh = Math.max(1, h | 0); if (nw !== W || nh !== H) { W = nw; H = nh; renderer.setSize(W, H, false); paintNow = true; } applyView(); if (paintNow && running) { try { renderer.render(scene, camera); } catch (e) { } } }
+    function resize(w, h) { const nw = Math.max(1, w | 0), nh = Math.max(1, h | 0); if (nw !== W || nh !== H) { W = nw; H = nh; renderer.setSize(W, H, false); paintNow = true; } applyView(); if (paintNow && running) { try { calmRender(); } catch (e) { } } }
     function setFocus(f) { focus = f; applyView(); }
     const HOME_OUT = 1.4; /* the resting Home view: Misty at 1/1.4 of her close-up size (above wh-mapview's 0.6) */
     function homeDistFor(px) { return CR / ((px / (H / 2)) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); }
@@ -337,7 +337,8 @@ export function createWorld(THREE, canvas, opts) {
     let running = false, raf = 0, last = 0, t = 0, frames = [], lowFor = 0;
     /* Oct 16 (E-man): a speed control for the world's own motion (cells drifting, platelets, mitochondria...). The camera, gestures,
        glow fades and Misty (DOM, her own animations) keep real time. Set by atmosphere.js as window.LowiWorldSpeed (0.25..3). */
-    function worldSpeed() { const v = +(typeof window !== 'undefined' && window.LowiWorldSpeed); return v > 0 ? Math.min(3, Math.max(0.1, v)) : 1; }
+    /* Calm mode 2+ (galaxy-still.js): the scenery's own time stands still */
+    function worldSpeed() { if (calmLv() >= 2) return 0; const v = +(typeof window !== 'undefined' && window.LowiWorldSpeed); return v > 0 ? Math.min(3, Math.max(0.1, v)) : 1; }
     /* Oct 19 (E-man: "at a hundred percent ... the world should be moving, everything should be looking extremely beautiful ...
        when their power goes down, they notice"): her energy's feel (world-home.js publishes window.LowiVigorFeel from
        LowiSun.feel, eased): pace = how fast the whole world moves (0.8 resting .. 1 mid .. 1.6 peak, 1 with Reduce Motion),
@@ -704,6 +705,28 @@ export function createWorld(THREE, canvas, opts) {
         curBg.lerp(C.tissue, walls * 0.88); scene.background.copy(curBg); scene.fog.color.copy(curBg);
         scene.fog.density = baseFog + (0.0011 - baseFog) * walls;
     }
+    /* Nov 5 2026, Calm mode (galaxy-still.js, levels in galaxy-still-core.js): 2+ the scenery's time and the camera's slow turn stop,
+       3+ only the glass bubbles, Misty and the lights are drawn, on plain black (light in Day), 4 the quiet frames are drawn about
+       4 times a second (the glass still follows the page's bubbles, so nothing is left behind as a ghost). Nothing is hidden for
+       good and nothing is rebuilt: a level change shows on the next frame. */
+    function calmLv() { try { const G = typeof window !== 'undefined' && window.LowiGalaxyStill; return G && G.level ? (G.level() | 0) : 0; } catch (e) { return 0; } }
+    const calmCore = () => (typeof window !== 'undefined' && window.LowiGalaxyStillCore) || null;
+    const calmHid = [], calmBg = new THREE.Color(), calmPlain = new THREE.Color(), calmFog = new THREE.Color();
+    function calmRender() {
+        const lv = calmLv(), CC = calmCore();
+        if (lv < 3 || !CC) { renderer.render(scene, camera); return; }
+        calmHid.length = 0;
+        scene.children.forEach(o => { if (o.visible && !CC.keeps(o)) { o.visible = false; calmHid.push(o); } });
+        calmPlain.setHex(CC.plainBg(theme));
+        const bgc = scene.background && scene.background.isColor ? scene.background : null;
+        if (bgc) { calmBg.copy(bgc); bgc.copy(calmPlain); }
+        if (scene.fog) { calmFog.copy(scene.fog.color); scene.fog.color.copy(calmPlain); }
+        try { renderer.render(scene, camera); } finally {
+            calmHid.forEach(o => { o.visible = true; }); calmHid.length = 0;
+            if (bgc) bgc.copy(calmBg);
+            if (scene.fog) scene.fog.color.copy(calmFog);
+        }
+    }
     function step(dt) {
         const ef = energyFeel(), wdt = dt * worldSpeed() * ef.pace;
         t += wdt; clockT += dt; peakNow = ef.peak;
@@ -716,6 +739,7 @@ export function createWorld(THREE, canvas, opts) {
         } else {
             rig.yaw += rig.vy * dt * 3.2; rig.pitch += rig.vp * dt * 3.2;
             const damp = Math.pow(0.04, dt); rig.vy *= damp; rig.vp *= damp;
+            const calmYaw = calmLv() >= 2 ? rig.yaw : null;   /* Calm mode 2+: no slow turn by itself */
             rig.idle += dt;
             /* Oct 16 (E-man: "when you open the community section, it takes about 4 seconds until the background starts playing, where
                we're seeing everything circle each other. That's a lag"): the slow orbit that makes the worlds circle each other used to
@@ -725,6 +749,7 @@ export function createWorld(THREE, canvas, opts) {
             rig.drift += ((realmBack() ? 1 : 0) - rig.drift) * Math.min(1, dt * 5);
             const spin = rig.idle > 6 ? 1 : rig.drift;
             if (spin > 0.001) rig.yaw += dt * (rig.mode === 'home' ? 0.05 : 0.025) * spin;
+            if (calmYaw !== null) rig.yaw = calmYaw;
         }
         rig.pitch = Math.max(-rig.pMax, Math.min(rig.pMax, rig.pitch));
         rig.gy += (rig.gyT - rig.gy) * Math.min(1, dt * 8); rig.gp += (rig.gpT - rig.gp) * Math.min(1, dt * 8);
@@ -846,6 +871,9 @@ export function createWorld(THREE, canvas, opts) {
         acc += dt;
         if (!wasChained) acc += Math.max(0, Math.min(0.25, raw) - dt); /* a frame that slept on a timer carries its whole gap: real-speed time */
         sinceDraw += raw * 1000;
+        { const lv = calmLv();
+          if (quiet) { if (lv >= 4) iv = Math.max(iv, 250); else if (lv >= 2) iv = Math.max(iv, 1000 / 20); }
+          else if (lv >= 2 && !paintNow && !inTransit()) iv = Math.max(iv, 1000 / 30); }   /* Calm 2+: still scenery never needs more than 30 a second */
         const drawNow = !iv || sinceDraw >= iv - 6;
         paintNow = false;
         nextGap = iv >= 60 ? Math.max(0, Math.round(iv - (drawNow ? 0 : sinceDraw) - 12)) : 0;
@@ -855,7 +883,7 @@ export function createWorld(THREE, canvas, opts) {
             if (!opts.shouldRender || opts.shouldRender()) {
                 const stepped = guard.run('step', () => step(d));
                 frameFns.forEach(fn => hookGuard.run('onFrame', () => fn(d, now)));
-                const drawn = guard.run('render', () => renderer.render(scene, camera));
+                const drawn = guard.run('render', () => calmRender());
                 if (stepped && drawn) guard.ok();
             }
         }
@@ -876,7 +904,8 @@ export function createWorld(THREE, canvas, opts) {
     const IN_EV = ['pointerdown', 'pointermove', 'touchstart', 'touchmove', 'wheel', 'keydown'];
     try { IN_EV.forEach(ev => window.addEventListener(ev, markIn, { passive: true, capture: true })); } catch (e) { }
     function calm(now) {
-        if (now - lastIn < 2500 || rig.fly) return false;
+        /* Calm mode 4 (everything still): a touch can't move the world, so it doesn't wake the full frame rate either */
+        if ((now - lastIn < 2500 && calmLv() < 4) || rig.fly) return false;
         if (Math.abs(rig.vy) + Math.abs(rig.vp) > 0.002 || Math.abs(rig.gyT - rig.gy) + Math.abs(rig.gpT - rig.gp) > 0.002) return false;
         const H = typeof document !== 'undefined' && document.documentElement;
         return !(H && /(^|\s)gx-(in|out|hold)(\s|$)/.test(H.className));
@@ -884,7 +913,7 @@ export function createWorld(THREE, canvas, opts) {
     function start() { if (running) return; running = true; last = 0; nextGap = 0; gapFrame = true; paintNow = true; raf = requestAnimationFrame(frame); }
     function stop() { running = false; if (raf) cancelAnimationFrame(raf); raf = 0; if (wake) { clearTimeout(wake); wake = 0; } nextGap = 0; }
     function fps() { if (!frames.length) return 0; return Math.round(frames.length / frames.reduce((a, b) => a + b, 0)); }
-    function renderOnce() { step(0.016); renderer.render(scene, camera); }
+    function renderOnce() { step(0.016); calmRender(); }
     /* the camera is out past the World Map (spirit world) and the world is the layer under a page (html.wb-on: Community, Cook...) */
     function realmBack() {
         if (rig.mode !== 'home' || !(rig.dist > (rig.maxD || 13) * 1.06) || (reduceMq && reduceMq.matches)) return false;
@@ -927,5 +956,5 @@ export function createWorld(THREE, canvas, opts) {
         return n || {};
     }
     setTheme(opts.theme || 'dark');
-    return { scene, camera, hub, regions, onFrame, memU, resize, placesLook, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, get resting() { return resting; }, nudge() { if (resting && (wake || nextGap > 0)) { nextGap = 0; askFrame(); } }, cosmosLook: () => ({ vis: !!(cosmos && cosmos.g.visible), rv: typeof cosmosRv === 'number' ? +cosmosRv.toFixed(3) : -1, gx: +cosmosGx.toFixed(3), d: +rig.dist.toFixed(2), m: +((rig.maxD || 14) * 1.05).toFixed(2), stars: cosmos ? +cosmos.stars.material.uniforms.uO.value.toFixed(3) : 0, oth: cosmos && cosmos.others[0] ? +cosmos.others[0].material.uniforms.uO.value.toFixed(3) : 0 }), rig, renderer };
+    return { scene, camera, hub, regions, onFrame, memU, resize, placesLook, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, get resting() { return resting; }, nudge() { if (resting && (wake || nextGap > 0)) { nextGap = 0; askFrame(); } }, repaint() { paintNow = true; sinceDraw = 1e9; if (wake || nextGap > 0) { nextGap = 0; askFrame(); } }, cosmosLook: () => ({ vis: !!(cosmos && cosmos.g.visible), rv: typeof cosmosRv === 'number' ? +cosmosRv.toFixed(3) : -1, gx: +cosmosGx.toFixed(3), d: +rig.dist.toFixed(2), m: +((rig.maxD || 14) * 1.05).toFixed(2), stars: cosmos ? +cosmos.stars.material.uniforms.uO.value.toFixed(3) : 0, oth: cosmos && cosmos.others[0] ? +cosmos.others[0].material.uniforms.uO.value.toFixed(3) : 0 }), rig, renderer };
 }

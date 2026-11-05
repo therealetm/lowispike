@@ -135,7 +135,8 @@
 
     const W = root, D = root.document, H = D.documentElement;
     const reduceMq = W.matchMedia ? W.matchMedia('(prefers-reduced-motion: reduce)') : null;
-    const still = () => !!(reduceMq && reduceMq.matches);
+    /* Nov 5 2026: Calm mode level 4 "everything still" (galaxy-still.js) holds the glass still too: no turn, no breath, flat water */
+    const still = () => !!(reduceMq && reduceMq.matches) || !!(W.LowiGalaxyStill && W.LowiGalaxyStill.allStill && W.LowiGalaxyStill.allStill());
     const list = new Map(); /* el -> { mesh, mat, phase, spin, o, oT, opts } */
     let api = null, mem = null, group = null, offFrame = null, geo = null, vs = '', fs = '', lfs = '', lastVis = 0, tmp = null;
 

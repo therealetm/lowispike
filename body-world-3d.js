@@ -234,6 +234,12 @@
     /* Oct 17 energy shot: is a finger on Misty's controller right now (misty-pad.js)? */
     function padHeld() { try { return !!(W.LowiPad && W.LowiPad.held && W.LowiPad.held()); } catch (e) { return false; } }
     function padDouble() { try { W.dispatchEvent(new CustomEvent('lowi:pad-double')); } catch (e) { } }
+    /* Nov 5 2026, Calm mode level 1+ (galaxy-still.js): the world can't be flown around. Drags, pinches, the mouse wheel, the
+       fling after a drag, double taps and taps on a glowing place do nothing; a tap or a long press on Misty still pets her or
+       opens her sheet, and every bubble (they are page buttons above the world) works as always. */
+    function navOff() { try { const G = W.LowiGalaxyStill; return !!(G && G.navOff && G.navOff()); } catch (e) { return false; } }
+    api.navOff = navOff;
+    api.calmChanged = function () { try { if (world && world.repaint) world.repaint(); else if (world && world.nudge) world.nudge(); } catch (e) { } };
     function bindGestures(el, onTap, allowPinch, opts) {
         opts = opts || {};
         const pts = new Map(); let start = null, pinch0 = 0, moved = 0, lastX = 0, lastY = 0, vx = 0, vy = 0, lastT = 0, lpT = 0, lpFired = false, lastTap = null;
@@ -249,6 +255,7 @@
         el.addEventListener('pointermove', e => {
             if (!world || !pts.has(e.pointerId)) return;
             pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (pts.size >= 2 && allowPinch && navOff()) { moved = 99; return; }
             if (pts.size >= 2 && allowPinch) {
                 const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
                 world.zoom(pinchFactor(pinch0, d), (a.x + b.x) / 2, (a.y + b.y) / 2); pinch0 = d; moved = 99; e.preventDefault(); return;
@@ -256,6 +263,7 @@
             if (pts.size !== 1) return;
             const dx = e.clientX - lastX, dy = e.clientY - lastY, dt = Math.max(1, e.timeStamp - lastT);
             moved += Math.abs(dx) + Math.abs(dy);
+            if (navOff()) { lastX = e.clientX; lastY = e.clientY; lastT = e.timeStamp; return; }
             world.drag(dx, dy);
             vx = 0.7 * vx + 0.3 * (dx / dt * 16); vy = 0.7 * vy + 0.3 * (dy / dt * 16);
             lastX = e.clientX; lastY = e.clientY; lastT = e.timeStamp;
@@ -274,12 +282,12 @@
                     if (padHeld()) { if (dbl) { lastTap = null; padDouble(); } else lastTap = { x, y, t: e.timeStamp }; }
                     else if (dbl) { lastTap = null; opts.onDouble(x, y); } else { lastTap = { x, y, t: e.timeStamp }; onTap(x, y); }
                 }
-                else if (world && e.timeStamp - lastT < 90) world.release(vx, vy);
+                else if (world && e.timeStamp - lastT < 90 && !navOff()) world.release(vx, vy);
                 start = null;
             }
         };
         el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
-        if (allowPinch) el.addEventListener('wheel', e => { if (!world) return; e.preventDefault(); world.zoom(e.deltaY > 0 ? 1.08 : 1 / 1.08, e.clientX, e.clientY); }, { passive: false });
+        if (allowPinch) el.addEventListener('wheel', e => { if (!world) return; e.preventDefault(); if (navOff()) return; world.zoom(e.deltaY > 0 ? 1.08 : 1 / 1.08, e.clientX, e.clientY); }, { passive: false });
     }
 
     /* ---------- gyroscope ---------- */
@@ -348,10 +356,10 @@
             [...els.heroes.children].forEach(c => { if (c !== stage && getComputedStyle(c).position === 'static') c.style.position = 'relative'; });
             /* Home is the world itself: drag orbits, two fingers zoom, tapping a glowing place warps there; tapping empty space does nothing */
             /* Oct 16 (E-man): a tap on Misty pets her (no sheet popping up mid-play); a long press opens her sheet; a double tap zooms */
-            bindGestures(stage, (x, y) => { if (!world) return; const id = world.pick(x, y); if (id === 'cell') { try { W.dispatchEvent(new CustomEvent('lowi:misty-pet')); } catch (e) {} } else if (id) api.flyTo(id); }, true,
+            bindGestures(stage, (x, y) => { if (!world) return; const id = world.pick(x, y); if (id === 'cell') { try { W.dispatchEvent(new CustomEvent('lowi:misty-pet')); } catch (e) {} } else if (id && !navOff()) api.flyTo(id); }, true,
                 { onLong: (x, y) => { if (!world) return; if (world.pick(x, y) === 'cell') { try { W.dispatchEvent(new CustomEvent('lowi:misty-open')); } catch (e) {} } },
                   /* Oct 16: on Home the re-layout resets rig.fly, so a double tap uses Home's own glide (the World map <-> Misty toggle, same as a tap on the stick) */
-                  onDouble: (x, y) => { if (!world) return; const id = world.pick(x, y); if (id && id !== 'cell') return; const H2 = W.LowiWorldHome; if (H2 && H2.toggleZoom) H2.toggleZoom(); else zoomTap(); } });
+                  onDouble: (x, y) => { if (!world) return; if (navOff()) return; const id = world.pick(x, y); if (id && id !== 'cell') return; const H2 = W.LowiWorldHome; if (H2 && H2.toggleZoom) H2.toggleZoom(); else zoomTap(); } });
             if (io) io.disconnect();
             if ('IntersectionObserver' in W) { io = new IntersectionObserver(es => { visibleHome = es.some(x => x.isIntersecting); }, { threshold: 0.01 }); io.observe(stage); }
             if (mode === 'home' && canvas) stage.insertBefore(canvas, stage.firstChild);
@@ -511,7 +519,7 @@
         const gb = full.querySelector('.bw3-gyro');
         if (gb) { paintGyro(gb, gyroOn ? 'on' : 'off'); gb.addEventListener('click', () => gyroTap(gb)); }
         bindGestures(view, (x, y) => { if (!world) return; const id = world.pick(x, y); if (id === 'cell') showCell(); else if (id) go(id); }, true,
-            { onDouble: (x, y) => { if (!world) return; const id = world.pick(x, y); if (!id || id === 'cell') zoomTap(); } });
+            { onDouble: (x, y) => { if (!world) return; if (navOff()) return; const id = world.pick(x, y); if (!id || id === 'cell') zoomTap(); } });
         D.addEventListener('keydown', onKey);
         load().then(w => {
             if (!w || !full) return;
@@ -583,29 +591,8 @@
         setTimeout(() => { if (W.requestIdleCallback) W.requestIdleCallback(go, { timeout: 2500 }); else go(); }, 2500);
     }
     /* ---------- boot ---------- */
-    /* ---------- Nov 5 2026, Still galaxy (galaxy-still.js): the chosen view is copied out of the world, then the world is let go ----------
-       stillShot draws one frame without the companion's 3D sprite (she stays on screen as Home's own companion, at her usual size,
-       whatever the zoom) and copies it into an ordinary 2D canvas in the same moment, before anything is released. */
-    api.stillShot = function (maxSide) {
-        if (!world || !canvas || api.state !== 'ready' || api.lost || !world.renderOnce) return null;
-        const hid = [];
-        try {
-            const sc = world.scene;
-            if (sc && sc.traverse) sc.traverse(o => { if (o.visible && ((o.userData && o.userData.wh) || /^(wh-misty|mf-misty|mt-facing|mt-shot)/.test(o.name || ''))) { o.visible = false; hid.push(o); } });
-            world.renderOnce();
-            const C = W.LowiGalaxyStillCore, sz = C ? C.fitSize(canvas.width, canvas.height, maxSide) : { w: canvas.width, h: canvas.height };
-            const out = D.createElement('canvas'); out.width = sz.w; out.height = sz.h;
-            const x = out.getContext('2d'); if (!x) return null;
-            x.drawImage(canvas, 0, 0, sz.w, sz.h);
-            return { canvas: out, cssW: canvas.clientWidth || W.innerWidth, cssH: canvas.clientHeight || W.innerHeight };
-        } catch (e) { return null; } finally {
-            hid.forEach(o => { o.visible = true; });
-        }
-    };
     api.release = function (why) { if (api.state === 'fallback') return api.released || null; fail(why || 'still'); return api.released || null; };
     function boot() {
-        /* Still galaxy saved: the world is never built on this launch (no three.js, no graphics context, no frame loop) */
-        try { const GS = W.LowiGalaxyStill; if (GS && GS.worldAtLaunch && GS.worldAtLaunch() === 'off') { api.state = 'fallback'; api.why = 'still'; H.classList.add('bw3-off'); return; } } catch (e) { }
         const e = env(), d = shouldUse3D(e);
         if (!d.ok) { api.state = 'fallback'; api.why = d.why; H.classList.add('bw3-off'); return; }
         mountHome();

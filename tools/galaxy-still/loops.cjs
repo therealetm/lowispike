@@ -1,10 +1,10 @@
 'use strict';
-/* which scripts ask for animation frames on Home, live galaxy vs still galaxy. node tools/galaxy-still/loops.cjs still|live */
+/* which scripts ask for animation frames on Home: Off vs Calm mode level 4. node tools/galaxy-still/loops.cjs still|live */
 const { launch, openApp, sleep, existingSeed } = require('../interface-audit/lib.cjs');
 (async () => {
     const still = process.argv[2] !== 'live';
     const kv = { 'lowispike.lang': 'de', 'lowi.lang': 'de' };
-    if (still) kv['lowi.galaxyStill'] = JSON.stringify({ v: 1, on: true, at: Date.now(), w: 10, h: 10, pic: 'none' });
+    if (still) kv['lowi.calm'] = '4';
     const seed = existingSeed({ lang: 'de', kv });
     const h = await launch({ engine: 'chromium', seed, lang: 'de', locale: 'de-DE', viewport: { width: 390, height: 844 } });
     await h.ctx.addInitScript(() => {

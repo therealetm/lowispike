@@ -1,27 +1,85 @@
-# Handoff: sheet-bubble-20261105 (WIP, NOT deployed)
+# Handoff: sheet-bubble-20261105
 
-Branch: `sheet-bubble-20261105`, from origin/main `b89991b` (live build 20261105-122814).
+**Status of this copy: written before the release step. NOT verified live.** The result of the release attempt (build id,
+CI and live check, or the exact blocker) is recorded in the next commit of this file on branch `sheet-bubble-20261105`
+(mirror: `claude/zen-tesla-wanom8`). If you read this copy on `main`, check that branch for the result.
 
-## Pushed commits
-- `fa24929`: shared pop-up shell (`sheet-style.css`, linked in index.html before bottom-close.css, cached in sw.js), plus `tests/sheet-style.test.cjs`.
-- `d2a98d0`: round-X gap set to 76px (measured 12px clearance in Chromium at 375x667, 390x844 and 430x932).
-- The WIP increment-2 commit is listed in `git log` (labelled "WIP").
+Branch: `sheet-bubble-20261105`, from origin/main `b89991b` (live build 20261105-122814). Main had not moved when this was
+written (merge-base = main tip). The branch is fast-forward only; nothing was force-pushed.
 
-## Increment 2 (WIP commit)
-- `misty-pad.js`: holding the Home joystick (520ms, cancelled by 10px drift, release, blur or hidden page) calls `LowiBloomRing.toggleAll()`. In Calm, steering is inert but the long press still works.
-- `galaxy-still.css`: the joystick is no longer hidden in Calm levels. Only the chip and pins are hidden.
-- `galaxy-still-core.js`: `keeps()` honours `userData.calmKeep`. The `living-bubbles` group and `misty-face` are marked with it.
-- `bloom-ring.js` / `home-blooms-v2.js`: a single group is now taken from the shared all-groups layout (`placeShared` / `only`). Not checked in a browser.
-- `sun-meter.js`: `TIMED_TRIPS = false`. `depart()` is a no-op and the send block/copy are hidden. `endTimedTrips()` brings trips that are still out home now, idempotently; collection goes through the existing `collect()`.
-- `room-table.js`/`.css`: the hint sentence under the board is removed. A lower-left aim stick `.rt-stick` sits right of the Freundesbaum button and uses `C.aim` + `fire()`. It never fires by itself; cancel, lost capture, blur, hidden page and pagehide drop the aim.
-- Tests: new `tests/companion-open-all.test.cjs`. `tests/galaxy-still-wiring.test.cjs` was changed on purpose: the joystick now stays visible in Calm, where the old test asserted it was hidden.
+## Commits on the branch (oldest first)
+- `fa24929`: shared pop-up shell (`sheet-style.css`, linked in index.html before bottom-close.css, precached in sw.js), `tests/sheet-style.test.cjs`.
+- `d2a98d0`: round-X gap 76px (was one-sheet.css's 72px).
+- `3f0efa1`: WIP increment 2 (joystick hold, Calm joystick, calmKeep, no timed trips, Billiards aim stick); left 2 tests failing.
+- `16ba446`: joystick conflict fixed (below); new `tests/ui-joystick-open-all.test.cjs`; ONBOARDING.md controls line.
+- The commit that adds this file version: DECISIONS.md entry + this handoff (docs only).
 
-## Tests
-- Focused suites pass.
-- Full suite: 4454 tests, 4452 pass, 2 FAIL in `tests/ui-joystick-fade.test.cjs` (lines ~130 and ~165: "holding it (forward) fades / disappears after VANISH_MS").
-- Cause: a press at home now arms the long press instead of the forward hold, so the joystick-fade-on-forward-hold behaviour conflicts with the new open-all long press.
+## What the branch does (all verified in Chromium, see "Checks")
+- **Joystick (`misty-pad.js`).** A steady press on the MIDDLE of the joystick (inner 70 % of its measured radius = the dashed
+  well, 21 of 30 px) held 520 ms (`misty-turn.js` `K.LONG_MS`) within 10 px (`K.TAP_PX`) while the companion rests at home
+  opens every bubble (`LowiBloomRing.toggleAll`; a second hold folds them). A press on the RIM (stick tilted, forward or
+  sideways) and any press while she is out (flying, inside a world, in the galaxy, `wh-away`) keep the old hold: forward after
+  280 ms, faded, gone after 1.5 s. A drag past 10 px cancels the hold and steers as before. Calm (level 1+): any hold opens every
+  bubble, dragging is inert. Lift, pointercancel, lost capture, blur, hidden page and pagehide clear the pending hold; a hidden
+  page or pagehide also drop a pending forward hold and a pending double-tap back burst; pagehide ends the press. The click that
+  ends a hold that opened the bubbles never reaches the bubbles' backdrop (touchend cancelled; mouse/pen: one click within
+  450 ms eaten). VoiceOver label: "hold the middle to open all bubbles" (EN/DE/ES).
+- **Why the WIP failed:** it armed the hold for every press while the pad mode was `''`, so the old still hold could never start
+  at home (2 failing tests: `tests/ui-joystick-fade.test.cjs` "holding it still (forward) fades it ..." AND
+  `tests/ui-joystick-vanish.test.cjs` "holding it (forward) also disappears ..."; the previous handoff named only the fade file).
+  It also armed the hold inside a world reached by the World map (mode stays `''` there), where a still press used to fly forward.
+- **Calm:** the joystick stays visible at every level (`galaxy-still.css`; on main it is `display:none`); its chip and the place
+  pins still go. `keeps()` honours `userData.calmKeep`, but the two objects marked with it (living-bubbles group, companion face)
+  already carried `lwKeep`, so Calm 3/4 rendering is unchanged (screenshots of main and branch are the same apart from the joystick).
+- **No timed trips (`sun-meter.js` `TIMED_TRIPS = false`):** no "Send her exploring"; `depart()` returns false; a trip still out
+  comes home on the next open with its find, once (`endTimedTrips` + the normal `collect()`).
+- **Shared pop-up shell (`sheet-style.css`, Dark only):** near-black panel #0e0e10, 1px rgba(255,255,255,.12) rim, radius 28px, no
+  backdrop blur, no stripes; the round X sits 4px further below tall sheets (`--one-x-gap` 76px instead of 72px).
+- **Bubble layout (`bloom-ring.js` `placeShared` / `only`, `home-blooms-v2.js`):** a single Water / Move / Sleep bloom opens exactly
+  where its orbs sit when every bubble is open. Gap and Fuel are not part of open-all (by design) and keep their own layout.
+- **Billiards (`room-table.js` / `.css`):** the hint sentence under the board is gone; a lower-left aim stick `.rt-stick` drives
+  `C.aim` + `fire()`, never shoots by itself; cancel, lost capture, blur, hidden page and pagehide drop the aim. It looks for the
+  Freundesbaum button (`#cpRoom > .nm-ctree`) to sit right of it; that button is removed elsewhere in the current app, so the stick
+  uses its 12px fallback.
 
-## Remaining work and blockers
-1. Choose how the two holds coexist. For example: arm the long press only while the knob is near the centre (no forward tilt), and keep the forward hold once the knob is tilted. Then make ui-joystick-fade pass without weakening it.
-2. Re-run the full suite and `node scripts/release-check.cjs`, then `scripts/release.sh "..." --quiet` and `node scripts/verify-live.cjs <build> --at-least`.
-3. Not checked: WebKit and a real iPhone, the EN/DE/ES visual matrix, bubble geometry in a browser, and the Billiards stick in a browser.
+## Checks actually run (5 Nov 2026, this session)
+- Baseline on `3f0efa1`: `node --test tests/*.test.cjs` = 4454 tests, 4452 pass, 2 fail (the two named above).
+- After the fix (`16ba446`): `node --test tests/*.test.cjs` = 4465 tests, 4465 pass, 0 fail. `node scripts/release-check.cjs` =
+  OK (5 standing warnings). `git diff --check` clean. GitHub CI "Release check and tests" passed on `16ba446` (runs 42030916188
+  and 42030920994, Node 24).
+- Focused: ui-joystick-open-all (11), ui-joystick-fade, ui-joystick-vanish, companion-open-all, misty-pad, misty-pad-anchor,
+  misty-turn, pad-autopilot-world, guide-bubble-joystick, joystick-bubble-style, zoom-out-hides-pad, galaxy-still-wiring,
+  bloom-ring, home-blooms-v2: 115/115 pass. `ui-joystick-fade.test.cjs`, `ui-joystick-vanish.test.cjs` and their fixture are unchanged.
+- `tests/companion-open-all.test.cjs`: its two source-regex checks for blur / hidden-page cleanup were replaced by behavioural
+  checks on the fake page (with a control press that does open the bubbles).
+- Mutation checks (scratch, not committed): making every home press arm the hold (the WIP rule) fails the 2 original tests and
+  the new rim test; dropping the middle, the out-of-home rule, the 10px tolerance, pagehide, the touchend guard, the click eater
+  or the hidden-page timer cleanup each fails at least one test.
+- Browser, Chromium only (this VM has no WebKit), local server, fixture session or the repo's fake cloud, every other request
+  blocked, scratch probes (not in the repo):
+  - joystick 390x844 + 375x667: middle hold opens every bubble and they stay open after the lift; no flight, no fade; rim hold =
+    faded forward hold, no bubbles; drag from the middle steers; Calm 1: hold opens, drag inert; blur cancels; inside the liver
+    world a still press is the forward hold (390x844 only). 0 page errors, 0 blocked writes.
+  - Calm 1/3/4 at 390x844: joystick shown (main: hidden), chip hidden, companion drawn.
+  - single bloom vs open-all at 390x844: Water / Move / Sleep orbs 0px apart (main: up to 156 / 81 / 77 px).
+  - Dark shell at 375x667, 390x844, 430x932 (companion card): computed paint as above; sheet bottom to round-X box = 16px (main 12px
+    by the same method; the previous handoff's 8 -> 12px used another reference, the +4px matches).
+  - aim stick 390x844 + 375x667: under the board, lower left; tap never shoots; pull and release shoots once; cancel and blur drop the aim.
+  - a manual trip still out at load: comes home once with its find ("I'm back! ... Morning dew drop"), departures refused.
+- The repo's own `tests/ui-joystick-fade-live.cjs` (Chromium) FAILS here on the branch AND on main: this VM's software renderer
+  delays Playwright's mouse moves past the hold timers (main starts the forward hold mid-"drag", the branch opens the bubbles).
+  Not a regression; the scratch probe above sends the drag synchronously instead.
+
+## Not checked / known limitations
+- No WebKit and no real iPhone: the 70 % middle zone may need tuning for real thumbs; the iOS click after a long press is handled
+  by cancelling touchend but was not observed on a device; heat/memory not measured.
+- EN/DE/ES visual matrix not checked (copy changes: joystick label and chip, Calm level 1 text, aim stick label).
+- The Freundesbaum-adjacent placement of the aim stick was not exercised (the button was not present in the probed views).
+- `tests/ui-joystick-fade-live.cjs` / `ui-joystick-vanish-live.cjs` cannot pass on this VM (timing), on main either.
+
+## Release
+- Planned: `NODE_OPTIONS=--test-reporter=spec scripts/release.sh "<summary>" --quiet`. Node here is v22, which writes TAP when the
+  test output is redirected; release.sh and scripts/test-floor.cjs read the spec reporter's "ℹ pass N" lines (CI's Node 24 writes
+  spec by default). The option only selects the reporter; no check is skipped.
+- This sandbox's network policy denies `therealetm.github.io` (proxy 403), so `scripts/verify-live.cjs` cannot run here; the CI
+  "Live on GitHub Pages" job runs the same `scripts/verify-live.cjs --at-least --compare` on GitHub's runner after the deploy.

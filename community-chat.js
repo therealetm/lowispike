@@ -17,11 +17,12 @@ const COPY={
  mateSaved:['Saved.','Gespeichert.','Guardado.'],
  sharedDetails:['Sharing enabled','Freigaben aktiv','Compartir activado'],
  sharedType:['Shared in the galaxy','In der Galaxie geteilt','Compartido en la galaxia'],
- presence:['Your presence','Dein Auftritt','Tu presencia'],
+ /* Nov 5 2026: the page, its Settings row and the button on your own card share one plain name ("Privacy & quiet" said nothing) */
+ presence:['Privacy & quiet hours','Privatsphäre & Ruhezeiten','Privacidad y horas de silencio'],
  private:['Only you · private','Nur für dich · privat','Solo tú · privado'],
  style:['Your personality','Deine Persönlichkeit','Tu personalidad'],
  setstyle:['Personality is optional','Persönlichkeit ist freiwillig','La personalidad es opcional'],
- controls:['Privacy & quiet','Privat & ruhig','Privacidad y calma'],
+ controls:['Privacy & quiet hours','Privatsphäre & Ruhezeiten','Privacidad y horas de silencio'],
  loading:['Loading the conversation…','Gespräch wird geladen…','Cargando la conversación…'],
  offline:['Offline · history may be out of date','Offline · Verlauf eventuell nicht aktuell','Sin conexión · el historial puede estar desactualizado'],
  signIn:['Sign in to join the conversation','Melde dich an, um mitzuschreiben','Inicia sesión para conversar'],
@@ -1019,7 +1020,7 @@ function openPerson(id,name){if(!id)return;const bt=botOf(id),mine=id===scope;co
  const acts=mine?button('settings','<i aria-hidden="true">⚙︎</i><span>'+tr('controls')+'</span>','','cp-act'):
   button('select-close','<i aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" focusable="false"><path d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v6a2.5 2.5 0 0 1-2.5 2.5H11l-4 4v-4h0A2 2 0 0 1 5 13z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></i><span>'+tr('pcChat')+'</span>','data-uid="'+esc(id)+'" aria-label="'+esc(fill('talkBtn',n))+'"','cp-act cp-act-pri')+
   button('energy','<i aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" focusable="false"><path d="M13 3 6 13.5h5L10 21l7-10.5h-5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></i><span>'+tr('pcEnergy')+'</span>','data-uid="'+esc(id)+'" data-name="'+esc(n)+'"'+(care?'':' disabled aria-disabled="true" title="'+esc(tr('pcEnergyNo'))+'"'),'cp-act');
- const foot=bt?(bt.line&&bt.line[Math.max(0,lang())]?'<p class="cg-pline">“'+esc(bt.line[Math.max(0,lang())])+'”</p>':'')+'<p class="cp-note">'+tr('botNote')+'</p>':(!mine&&!md?'<p class="cp-note">'+tr('pcSoon')+'</p>':'')+'<p class="cp-note">'+tr('pcSharedNote')+(mine?'':' '+tr('pcLiveNote'))+'</p>'+(!mine?'<p>'+tr('blockNote')+'</p>'+button('block',tr('block'),'data-uid="'+esc(id)+'" data-name="'+esc(n)+'"')+'<p class="cs-result" id="csBlockResult" role="status"></p>':'');
+ const foot=bt?(bt.line&&bt.line[Math.max(0,lang())]?'<p class="cg-pline">“'+esc(bt.line[Math.max(0,lang())])+'”</p>':'')+'<p class="cp-note">'+tr('botNote')+'</p>':(!mine&&!md?'<p class="cp-note">'+tr('pcSoon')+'</p>':'')+(!mine?'<div class="cp-blk">'+button('block',tr('block'),'data-uid="'+esc(id)+'" data-name="'+esc(n)+'"')+'<p class="cp-blk-note">'+tr('blockNote')+'</p><p class="cs-result" id="csBlockResult" role="status"></p></div>':'')+'<p class="cp-note">'+tr('pcSharedNote')+(mine?'':' '+tr('pcLiveNote'))+'</p>';/* Nov 5 2026 (owner's screenshot of Antje's card): Block sat under the long "Everyone sees..." note, below the sheet's edge, cut mid-line. It now comes right after the details, its line under it like an iOS footer; the general note closes the card. */
  return sheet('<div class="cp-card" data-person="'+esc(id)+'"><div class="cp-hero"><div class="cp-photo'+(!bt&&p.avatar?' has-pic':'')+'">'+art+'</div><h2>'+esc(n)+(bt?' <span class="cg-bottag">'+tr('botTag')+'</span>':botDash(id,n))+'</h2><p class="cp-live cp-'+cls+'"><i aria-hidden="true"></i><span>'+esc(st)+'</span></p></div><div class="cp-acts">'+acts+'</div><div class="cp-rows">'+rows+'</div>'+foot+'</div>');}
 /* 24 Oct 2026 08:30 (Emmanuel: birthday and star sign always on the Community card, no consent ask, no hide toggle). Only an account
    with no birthday saved gets this sheet, from "Add my birthday" on its own card; it says what shows and saves the date (setBday). */

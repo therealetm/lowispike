@@ -5,7 +5,7 @@
   position:fixed;inset:0;z-index:2147482990;display:flex;align-items:flex-end;justify-content:center;background:rgba(2,4,14,.55);
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding-top:calc(env(safe-area-inset-top,0px) + 24px);box-sizing:border-box;
   animation:pdFade .2s ease both}
-.cs-overlay.pd-above{z-index:2147482995!important}
+.cs-overlay.pd-above,.r2-ov.pd-above{z-index:2147482995!important}
 .pd-card{width:min(560px,100%);height:min(86vh,760px);max-height:100%;display:flex;flex-direction:column;gap:12px;box-sizing:border-box;
   padding:18px max(18px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));
   border-radius:26px 26px 0 0;background:var(--pd-glass);color:var(--pd-ink);border:1px solid var(--pd-edge);border-bottom:0;

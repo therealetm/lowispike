@@ -21,9 +21,9 @@
     const HOME_FIRST = ['gift', 'myday'];  /* myday: its bubbles open Home's old day panels (index.html g2h); */
     const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
     const LABELS = {
-        en: { presence: 'Your presence', swaps: 'My swaps', glow: 'Your glow', cycle: 'My cycle', todo: 'Finish your profile', people: 'People', posts: 'Posts & ranking', invite: 'Invite friends', rules: 'Circle rules', look: 'Look & sound', worldSound: 'Body sound', vr: 'VR', aura: 'Aura' },
-        de: { presence: 'Dein Auftritt', swaps: 'Meine Swaps', glow: 'Dein Glow', cycle: 'Mein Zyklus', todo: 'Profil fertig machen', people: 'Leute', posts: 'Posts & Ranking', invite: 'Freunde einladen', rules: 'Regeln im Circle', look: 'Aussehen & Ton', worldSound: 'K\u00f6rperklang', vr: 'VR', aura: 'Aura' },
-        es: { presence: 'Tu presencia', swaps: 'Mis swaps', glow: 'Tu glow', cycle: 'Mi ciclo', todo: 'Completa tu perfil', people: 'Gente', posts: 'Posts y ranking', invite: 'Invitar amigos', rules: 'Normas del Circle', look: 'Aspecto y sonido', worldSound: 'Sonido del cuerpo', vr: 'RV', aura: 'Aura' }
+        en: { presence: 'Privacy & quiet hours', swaps: 'My swaps', glow: 'Your glow', cycle: 'My cycle', todo: 'Finish your profile', people: 'People', posts: 'Posts & ranking', invite: 'Invite friends', rules: 'Circle rules', look: 'Look & sound', worldSound: 'Body sound', vr: 'VR', aura: 'Aura' },
+        de: { presence: 'Privatsph\u00e4re & Ruhezeiten', swaps: 'Meine Swaps', glow: 'Dein Glow', cycle: 'Mein Zyklus', todo: 'Profil fertig machen', people: 'Leute', posts: 'Posts & Ranking', invite: 'Freunde einladen', rules: 'Regeln im Circle', look: 'Aussehen & Ton', worldSound: 'K\u00f6rperklang', vr: 'VR', aura: 'Aura' },
+        es: { presence: 'Privacidad y horas de silencio', swaps: 'Mis swaps', glow: 'Tu glow', cycle: 'Mi ciclo', todo: 'Completa tu perfil', people: 'Gente', posts: 'Posts y ranking', invite: 'Invitar amigos', rules: 'Normas del Circle', look: 'Aspecto y sonido', worldSound: 'Sonido del cuerpo', vr: 'RV', aura: 'Aura' }
     };
     const P = 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"';
     const ICON = {
@@ -155,7 +155,9 @@
     }
     function render() {
         const s = S(), T = TX[lang()], m = me(), pf = D.getElementById('pfBtn');
-        const av = pf ? pf.innerHTML : '';
+        /* Nov 5 2026: draw the plain round photo at this row's own size (the header button's copy was 40 px and carried the old ring) */
+        let av = ''; try { const R3 = root.LowiR3; if (R3 && typeof R3.bubble === 'function' && typeof R3.me === 'function') av = R3.bubble(R3.me(), 52); } catch (e) { }
+        if (!av) av = pf ? pf.innerHTML : '';
         const gs = groups(hasRow), ver = s.version ? s.version() : '';
         const sec = g => g.key === 'danger'
             ? '<section class="cme-sec cme-sec-danger" aria-label="' + T.account + '"><div class="cme-list">' + g.ids.map(row).join('') + '</div></section>'

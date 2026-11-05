@@ -240,3 +240,11 @@ html.cs-chat-map-typing #cmPaneChat[data-spirit-chat] .cm-compose{transform:tran
 .cp-ask form{margin-top:14px}
 .cp-ask .cp-rows{margin-top:6px}
 .cs-sheet .cp-ask .cp-later{width:100%;margin-top:8px;background:transparent}
+/* Nov 5 2026: Block on someone's card sits right after the details (was cut off under the sheet's edge), iOS style: a full-width
+   red row with its explanation under it. The sheet's last line also keeps room so nothing ends under the floating close. */
+.cs-sheet .cp-blk{margin:14px 0 4px}
+.cs-sheet .cp-blk>button[data-chat="block"]{display:block;width:100%;min-height:44px;text-align:center;font-weight:600;color:#ff453a}
+.cs-sheet .cp-blk-note{font-size:12.5px;line-height:1.45;color:rgba(223,242,255,.66);margin:6px 4px 0}
+.cs-overlay .r2-sh{scroll-padding-bottom:24px}
+html[data-ui=light] .cs-sheet .cp-blk>button[data-chat="block"]{color:#d70015}
+html[data-ui=light] .cs-sheet .cp-blk-note{color:rgba(60,60,67,.7)}

@@ -24,9 +24,10 @@ test('the labels go through the translator or carry their own de/es words', () =
   for (const lab of ['Audio mode', 'Read notifications aloud', 'Show my weight', 'Back']) {
     assert.ok(html.includes('aria-label="\' + (window.LowiLang ? LowiLang.t("' + lab + '")'), lab + ' does not go through LowiLang');
   }
-  for (const w of ['Profil schließen', 'Cerrar perfil', 'addEventListener("lowi:lang", b.__lbl)', 'Mistys Wachstum öffnen', 'Abrir el crecimiento de Misty', ', nivel ']) {
+  for (const w of ['Profil schließen', 'Cerrar perfil', 'addEventListener("lowi:lang", b.__lbl)', 'Mistys Wachstum öffnen', 'Abrir el crecimiento de Misty']) {
     assert.ok(html.includes(w), 'missing ' + w);
   }
+  /* Nov 5 2026: the old water-filled avatar (and its "name, level N" label) is gone; the avatar is a plain photo labelled with the name */
   /* the Back header is rebuilt when the language changes, not only when the part changes */
   assert.ok(html.includes('const kl = k + "|" +'), 'Back header key ignores the language');
 });

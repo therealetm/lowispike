@@ -88,8 +88,8 @@ test('the directory reuses the real-human list, leaves blocked people out and op
 test('the card sits above the directory and Chat / Energy close it', () => {
     const js = read('people-directory.js'), css = read('people-directory.css');
     assert.match(js, /classList\.add\('pd-above'\)/);
-    assert.match(css, /\.cs-overlay\.pd-above\{z-index:(\d+)!important\}/);
-    const above = +css.match(/\.cs-overlay\.pd-above\{z-index:(\d+)/)[1], dir = +css.match(/\.pd-ov\{[\s\S]*?z-index:(\d+)/)[1];
+    assert.match(css, /\.cs-overlay\.pd-above,\.r2-ov\.pd-above\{z-index:(\d+)!important\}/);
+    const above = +css.match(/\.cs-overlay\.pd-above,\.r2-ov\.pd-above\{z-index:(\d+)/)[1], dir = +css.match(/\.pd-ov\{[\s\S]*?z-index:(\d+)/)[1];
     assert.ok(above > dir, 'person card above the directory');
     assert.match(js, /data-chat=\\?"select-close\\?"/);
     assert.match(js, /data-chat=\\?"energy\\?"/);

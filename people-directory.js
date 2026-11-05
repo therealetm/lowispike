@@ -103,6 +103,14 @@
         const card = Array.from(D.querySelectorAll('.cs-overlay')).filter(o => !before.has(o)).pop() || Array.from(D.querySelectorAll('.cs-overlay')).pop();
         if (card) card.classList.add('pd-above');
     }
+    /* Nov 5 2026 (owner: "I clicked on this Privacy & quiet thing button ... and nothing happened"): a sheet opened FROM the person card
+       (Privacy & quiet hours on your own card, Add birthday, ...) is the app's plain z-index 250 sheet, so it opened BEHIND this list
+       while the card parked itself: the tap looked dead. While the list is open, every new app sheet opens above it too. */
+    let lift = null;
+    function liftSheets(muts) {
+        if (!ov) return;
+        for (const m of muts) for (const n of m.addedNodes) if (n.nodeType === 1 && n.classList.contains('r2-ov') && !n.classList.contains('pd-above')) n.classList.add('pd-above');
+    }
     function onCardClick(e) {
         if (!ov || !e.target || !e.target.closest) return;
         if (e.target.closest('.cs-overlay [data-chat="select-close"], .cs-overlay [data-chat="energy"]:not([disabled])')) setTimeout(close, 0);
@@ -157,6 +165,7 @@
         ov.querySelector('.pd-q').addEventListener('input', e => { q = String(e.target.value || '').slice(0, 40); paint(); });
         D.addEventListener('keydown', onKey, true);
         D.addEventListener('click', onCardClick, true);
+        try { lift = new MutationObserver(liftSheets); lift.observe(D.body, { childList: true }); } catch (e) { lift = null; }
         W.addEventListener('lowi-bots', paint);
         D.addEventListener('lowi:room', paint);
         dragDown(ov);
@@ -211,6 +220,7 @@
         clearInterval(poll); poll = 0;
         D.removeEventListener('keydown', onKey, true);
         D.removeEventListener('click', onCardClick, true);
+        if (lift) { lift.disconnect(); lift = null; }
         W.removeEventListener('lowi-bots', paint);
         D.removeEventListener('lowi:room', paint);
         if (ov.parentNode) ov.parentNode.removeChild(ov);

@@ -43,10 +43,17 @@ test('fromCart: the whole cart with quantities; left-out foods say why; same foo
     const de = n => F.name(n, 'de');
     const r = C.fromCart(lines, rate, de);
     const names = r.items.map(x => x.n);
-    assert.deepEqual(names, ['Kopfsalat', 'Mageres Rinderhack', 'Geräuchertes Paprikapulver', 'Salsa ohne Zucker', 'Oregano']);
+    /* Nov 5 2026 (test changed, why): owner: "Everything in a freaking Warenkorb should go in there". The app no longer leaves
+       foods out by its own rating; only what the live server still refuses (its spike word list) stays out, said by name. */
+    assert.deepEqual(names, ['Kopfsalat', 'Mageres Rinderhack', 'Geräuchertes Paprikapulver', 'Salsa ohne Zucker', 'Oregano', 'Tortilla-Wraps', 'Blorptastic snack']);
     assert.equal(r.items[0].q, 3, 'Lettuce 1 + Kopfsalat 2');
     assert.equal(r.items[1].q, 2);
-    assert.deepEqual(r.left.map(x => [x.n, x.why]), [['Tortilla-Wraps', 'spike'], ['Blorptastic snack', 'unknown']]);
+    assert.deepEqual(r.left, []);
+    const srv = C.fromCart([{ n: 'Halloumi', q: 1 }, { n: 'Courgette', q: 3 }, { n: 'Mint' }, { n: 'Cola', q: 2 }, { n: 'Toastbrot' }], rate, n => n);
+    assert.deepEqual(srv.items.map(x => x.n), ['Halloumi', 'Courgette', 'Mint'], 'Halloumi, Courgette and Mint (owner screenshots) go in');
+    assert.deepEqual(srv.left.map(x => [x.n, x.why]), [['Cola', 'server'], ['Toastbrot', 'server']], 'only what the live server refuses stays out');
+    const open = C.fromCart([{ n: 'Cola', q: 2 }, { n: 'Toastbrot' }], rate, n => n, C.limitsOf({ any_food: true, max_items: 60 }));
+    assert.deepEqual(open.left, [], 'after the open-cart setup file: everything');
     const many = Array.from({ length: 15 }, (_, i) => ({ n: ['Lettuce', 'Eggs', 'Spinach', 'Broccoli', 'Cucumber', 'Tomatoes', 'Garlic', 'Onion', 'Salmon', 'Tofu', 'Feta', 'Almonds', 'Walnuts', 'Kale', 'Leek'][i], q: 1 }));
     const m = C.fromCart(many, rate, n => n);
     assert.equal(m.items.length, C.MAX_ITEMS);
@@ -93,6 +100,60 @@ test('Give a hand: the cart basket shares the whole cart and lands in the swipe 
     assert.match(sc, /api\(\)\.share\(/, 'same server call as the normal basket');
     assert.match(sc, /tab = 'give'/, 'then straight to the swipe feed');
     assert.doesNotMatch(G, /Not for a basket \(not low-spike\): /, 'unknown foods are no longer called spiky');
-    assert.match(G, /\(kann die App noch nicht bewerten\)/);
+    /* Nov 5 2026 (test changed, why): no more rating reasons; only the server's refusal or a full basket, said by name */
+    assert.doesNotMatch(G, /kann die App noch nicht bewerten/);
+    assert.match(G, /Give a hand can’t take these yet: /);
     assert.match(G, /C\.fromCart\(cart, rate, fname, LIM\)/, 'builder chips: names in the app language');
+});
+
+/* Nov 5 2026 (cart lane): the money path the owner's screenshots broke */
+test('Nov 5: Fit my budget tries every dinner and says plainly when the budget is too small', () => {
+    const W = require('../week-basket-core.js');
+    const cost = { a: 20, b: 18, c: 15, d: 9, e: 8, f: 7, g: 6 };
+    const build = ids => ({ sum: ids.reduce((s, id) => s + cost[id], 0) });
+    /* the old search only swapped the priciest dinner; now any swap that lowers the week wins */
+    const f = W.fitBudget(['a', 'b', 'c'], Object.keys(cost), 22, build);
+    assert.deepEqual(f.plan.slice().sort(), ['e', 'f', 'g']);
+    assert.equal(f.sum, 21); assert.equal(f.fits, true);
+    const g = W.fitBudget(['a', 'b', 'c'], Object.keys(cost), 10, build);
+    assert.equal(g.fits, false); assert.equal(g.sum, 21);
+    const bp = W.budgetPlan(g.plan, 10, build);
+    assert.equal(bp.fits, false); assert.equal(bp.needBudget, 21);
+    assert.equal(bp.nights, 1); assert.ok(build(bp.nightsPlan).sum <= 10);
+    assert.equal(W.budgetPlan(['g'], 10, build).fits, true);
+});
+test('Nov 5: Nori sheets, Greek yogurt to top, Bell pepper and Courgette merge with their plain names', () => {
+    const W = require('../week-basket-core.js');
+    const b = W.basket([{ id: 'a', items: [{ k: 'nori', n: 'Nori' }, { k: 'gy', n: 'Greek yogurt' }, { k: 'p', n: 'Peppers' }, { k: 'z', n: 'Zucchini' }] },
+        { id: 'b', items: [{ k: 'nori2', n: 'Nori sheets' }, { k: 'gy2', n: 'Greek yogurt to top' }, { k: 'bp', n: 'Bell pepper' }, { k: 'c', n: 'Courgette' }, { k: 'bk', n: 'Black pepper', g: 'wuerze' }] }], 2);
+    assert.deepEqual(b.map(i => [i.n, i.uses]), [['Nori', 2], ['Greek yogurt', 2], ['Peppers', 2], ['Zucchini', 2], ['Black pepper', 1]]);
+});
+test('Nov 5: Courgette and Zucchini are one English name; Give a hand mirrors the live server word list exactly', () => {
+    global.window = global.window || global;
+    const N = require('../food-names-core.js');
+    assert.equal(N.name('Courgette', 'en'), 'Zucchini'); assert.equal(N.name('zucchini', 'en'), 'Zucchini');
+    const C = require('../gift-basket-core.js'), D = require('../tools/gift-basket/deny.cjs');
+    for (const n of ['Halloumi', 'Courgette', 'Mint', 'Cola', 'Zuckerschoten', 'Apfelsaft', 'Toastbrot', 'Fish & chips', 'Eier']) assert.equal(C.serverRefuses(n), D.refused(n), n);
+    assert.equal(C.serverRefuses('Halloumi'), false); assert.equal(C.serverRefuses('Cola'), true);
+    assert.equal(C.basketCheck('Cola', C.limitsOf({ any_food: true, max_items: 60 })).ok, true);
+    assert.equal(C.basketCheck('Cola').why, 'server');
+});
+test('Nov 5: open-cart proposal exists, is not live, keeps money out and shape checks in', () => {
+    const fs = require('fs'), path = require('path');
+    const sql = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'proposals', 'gift_baskets_open_cart_20261105.sql'), 'utf8');
+    assert.match(sql, /PROPOSAL ONLY: nobody has run this/);
+    assert.match(sql, /between 1 and 60/); assert.match(sql, /'any_food', true, 'max_items', 60/);
+    assert.match(sql, /\[<>\[:cntrl:\]\]/);
+    assert.doesNotMatch(sql, /stripe_|card_number|insert into/i);
+});
+test('Nov 5: Give a hand never prefills an old total, swipe right opens only a checked pay link, Cart has no Scan in the shop', () => {
+    const fs = require('fs'), path = require('path');
+    const G = fs.readFileSync(path.join(__dirname, '..', 'gift-basket.js'), 'utf8'), S = fs.readFileSync(path.join(__dirname, '..', 'store-picks.js'), 'utf8');
+    assert.match(G, /draft\.total = e2 > 0 \? e2\.toFixed\(2\) : ''/);
+    assert.match(G, /const L = b && C\.payLink\(b\.link\);\n\s+if \(!L \|\| !L\.ok\) return false;/);
+    assert.match(G, /W\.open\(L\.url, '_blank', 'noopener,noreferrer'\)/);
+    assert.match(G, /Nothing is paid until you pay there\./);
+    const cart = S.slice(S.indexOf('function cartHTML'), S.indexOf('let cartOpen = false'));
+    assert.doesNotMatch(cart, /data-stp="(?:scan|shopscan)|T\(.Scan in the shop/);
+    assert.match(cart, /data-stp="mylist"/); assert.match(cart, /data-stp="giftcart"/);
 });

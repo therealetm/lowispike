@@ -1,7 +1,7 @@
 /* Oct 25 2026: "Give a hand" under Fuel > Shop (Emmanuel, after the Instagram app "A little help"): people pay for each
    other's HEALTHY groceries, and LOWiSPIKE never touches the money.
-   - "I could use a hand": a basket of low-spike staples (from the shopping cart or picked from rated foods; only foods the
-     app rates low-spike go in), a rough euro total and the person's OWN Ko-fi / Stripe Payment Link / PayPal.me link.
+   - "I could use a hand": a basket of groceries (from the shopping cart or picked by hand; Nov 5 2026: every food goes in,
+     see gift-basket-core.js serverRefuses), a rough euro total and the person's OWN Ko-fi / Stripe Payment Link / PayPal.me link.
    - "Give a hand": a calm list of baskets (no swiping on people). The card shows the food, not the hardship: first name or
      anonymous, city optional. The giver leaves the app for the person's link, then taps "I helped"; the first "I helped"
      takes the basket so nobody pays the same groceries twice. +1 sunbeam on the Care board per basket, never per euro.
@@ -88,7 +88,7 @@
     function loadSkips() { try { return C.freshSkips((o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(SKIP_KEY) || '{}'))); } catch (e) { return {}; } }
     function saveSkips() { try { localStorage.setItem(SKIP_KEY, JSON.stringify(C.freshSkips(skipped))); } catch (e) {} }
     function loadDraft() {
-        try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); if (d && typeof d === 'object') return { items: Array.isArray(d.items) ? d.items.slice(0, C.MAX_ITEMS).map(String) : [], firstName: String(d.firstName || ''), anon: !!d.anon, city: String(d.city || ''), total: String(d.total || ''), payUrl: String(d.payUrl || '') }; } catch (e) {}
+        try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); if (d && typeof d === 'object') return { items: Array.isArray(d.items) ? d.items.slice(0, 60).map(String) : [], firstName: String(d.firstName || ''), anon: !!d.anon, city: String(d.city || ''), total: String(d.total || ''), payUrl: String(d.payUrl || '') }; } catch (e) {}
         return { items: [], firstName: '', anon: false, city: '', total: '', payUrl: '' };
     }
     function saveDraft() { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch (e) {} }
@@ -105,7 +105,16 @@
     }
     function who(b) { return b.name || T('Someone', 'Jemand', 'Alguien'); }
     /* qtys (Oct 26 2026): how many of each, from the cart; a basket without them shows plain names */
-    function itemsHTML(items, qtys) { return '<ul class="gb-items">' + items.map((n, i) => '<li>' + esc(fname(n)) + (qtys && qtys[i] > 1 ? ' <i class="gb-q">×' + qtys[i] + '</i>' : '') + '</li>').join('') + '</ul>'; }
+    /* Nov 5 2026 (owner: "a minimal preview, groceries or meals, and you can expand it"): a card shows the first few foods and
+       a "+ N more" that opens the rest in place (native <details>, nothing is sent). A short basket shows everything. */
+    const PREVIEW = 4;
+    function itemsHTML(items, qtys) {
+        const li1 = (n, i) => '<li>' + esc(fname(n)) + (qtys && qtys[i] > 1 ? ' <i class="gb-q">×' + qtys[i] + '</i>' : '') + '</li>';
+        if (items.length <= PREVIEW + 1) return '<ul class="gb-items">' + items.map(li1).join('') + '</ul>';
+        const more = items.length - PREVIEW, rest = items.slice(PREVIEW).map((n, i) => li1(n, i + PREVIEW)).join('');
+        return '<ul class="gb-items">' + items.slice(0, PREVIEW).map(li1).join('') + '</ul>' +
+            '<details class="gb-more"><summary>' + esc(T('+ ' + more + ' more', '+ ' + more + ' weitere', '+ ' + more + ' más')) + '</summary><ul class="gb-items">' + rest + '</ul></details>';
+    }
     function linkText(kind) { return T('Pay with ', 'Bezahlen mit ', 'Pagar con ') + (C.linkName(kind) || 'link'); }
     function left(b) { const d = C.daysLeft(b); return T(d === 1 ? '1 day left' : d + ' days left', d === 1 ? 'noch 1 Tag' : 'noch ' + d + ' Tage', d === 1 ? 'queda 1 día' : 'quedan ' + d + ' días'); }
 
@@ -147,7 +156,7 @@
         const arrived = given.filter(b => b.receipt && (!s[b.id] || momentIds[b.id]));
         const moment = arrived.length ? '<div class="gb-moment" role="note"><span aria-hidden="true">\u{1F9FA}</span><div><b>' + esc(T('Your basket arrived', 'Dein Korb ist angekommen', 'Tu cesta ha llegado')) + '</b><small>' +
             esc(T(who(arrived[0]) + ' added the receipt. Have a look below.', who(arrived[0]) + ' hat den Kassenbon hochgeladen. Schau unten nach.', who(arrived[0]) + ' ha subido el ticket. Míralo abajo.')) + '</small></div></div>' : '';
-        const intro = '<p class="gb-intro">' + esc(T('Pay for someone’s healthy groceries. Each basket only holds low-spike food.', 'Bezahl jemandem gesunde Lebensmittel. In jedem Korb ist nur Essen ohne großen Zuckerspike.', 'Paga la compra sana de alguien. Cada cesta solo lleva comida sin grandes picos.')) + '</p>' +
+        const intro = '<p class="gb-intro">' + esc(T('Pay for someone’s groceries. You pay them on their own page.', 'Bezahl jemandem den Einkauf. Du zahlst auf der eigenen Seite der Person.', 'Paga la compra de alguien. Pagas en su propia página.')) + '</p>' +
             '<p class="gb-money">' + esc(MONEY()) + '</p>';
         const list = C.deck(open, me, skipped, picked);
         const giv = given.length ? '<h4 class="stp-h4">' + esc(T('Baskets you helped', 'Körbe, bei denen du geholfen hast', 'Cestas que has ayudado')) + ' <i>' + given.length + '</i></h4>' + given.map(givenHTML).join('') : '';
@@ -169,12 +178,12 @@
             (lastSkip ? '<div class="gb-deck-btns"><button type="button" class="stp-pill gb-undo" data-gb="undo">' + esc(T('Undo skip', 'Überspringen rückgängig', 'Deshacer')) + '</button></div>' : '');
         const b = list[0], on = picked === b.id;
         const peeks = list.slice(1, 3).map((x, i) => '<div class="gb-peek gb-peek' + (i + 1) + '" aria-hidden="true"><b>' + esc(who(x)) + '</b><span>' + esc(x.items.slice(0, 3).join(' · ')) + '</span></div>').join('');
-        const hint = on ? '' : '<p class="gb-swipe-hint">' + esc(T('Swipe right to pay for these groceries, left to skip.', 'Wisch nach rechts, um diesen Einkauf zu bezahlen, nach links zum Überspringen.', 'Desliza a la derecha para pagar esta compra, a la izquierda para saltarla.')) + '</p>';
+        const hint = on ? '' : '<p class="gb-swipe-hint">' + esc(T('Swipe right to open their pay page, left to skip.', 'Wisch nach rechts für die Bezahlseite der Person, nach links zum Überspringen.', 'Desliza a la derecha para abrir su página de pago, a la izquierda para saltarla.')) + '</p>';
         const top = '<article class="gb-basket gb-swipe' + (on ? ' gb-picked' : '') + '" data-gb-id="' + esc(b.id) + '" data-gb-top="1" aria-roledescription="' + esc(T('swipe card', 'Wischkarte', 'tarjeta deslizable')) + '" aria-label="' + esc(who(b) + ', ' + T('about ', 'etwa ', 'unos ') + eur(b.total)) + '">' +
             '<span class="gb-stamp gb-stamp-pay" aria-hidden="true">' + esc(T('Pay', 'Zahlen', 'Pagar')) + '</span><span class="gb-stamp gb-stamp-skip" aria-hidden="true">' + esc(T('Skip', 'Weiter', 'Saltar')) + '</span>' +
             '<header><b>' + esc(who(b)) + '</b>' + (b.city ? '<small>' + esc(b.city) + '</small>' : '') + badge(trustBy[b.owner]) + '</header>' +
             itemsHTML(b.items, b.qtys) + '<p class="gb-total">' + esc(T('About ', 'Etwa ', 'Unos ')) + '<b>' + esc(eur(b.total)) + '</b></p>' +
-            (on ? '<p class="gb-pick-msg">' + esc(T('You picked ' + who(b) + '’s groceries. Pay through their own link, then tap I helped.', 'Du hast den Einkauf von ' + who(b) + ' gewählt. Bezahl über den eigenen Link der Person und tipp dann auf Ich habe geholfen.', 'Elegiste la compra de ' + who(b) + '. Paga con su propio enlace y luego toca He ayudado.')) + '</p>' + actHTML(b) : hint) + '</article>';
+            (on ? '<p class="gb-pick-msg">' + esc(!opened[b.id] ? T('Pay through ' + who(b) + '’s own link below, then tap I helped.', 'Bezahl über den eigenen Link von ' + who(b) + ' unten und tipp dann auf Ich habe geholfen.', 'Paga con el enlace de ' + who(b) + ' abajo y luego toca He ayudado.') : T('Their pay page opened outside the app. Nothing is paid until you pay there.', 'Die Bezahlseite der Person ist außerhalb der App offen. Bezahlt ist erst, wenn du dort bezahlst.', 'Su página de pago se abrió fuera de la app. No se paga nada hasta que pagues allí.')) + '</p>' + actHTML(b) : hint) + '</article>';
         const btns = '<div class="gb-deck-btns">' +
             '<button type="button" class="gb-round gb-skip" data-gb="skip" data-spend="1" data-gb-for="' + esc(b.id) + '" aria-label="' + esc(T('Skip ', 'Überspringen: ', 'Saltar ') + who(b)) + '"><span aria-hidden="true">\u2715</span><small>' + esc(T('Skip', 'Weiter', 'Saltar')) + '</small></button>' +
             (lastSkip ? '<button type="button" class="stp-pill gb-undo" data-gb="undo">' + esc(T('Undo', 'Zurück', 'Deshacer')) + '</button>' : '<span class="gb-count">' + esc(T('1 of ', '1 von ', '1 de ') + list.length) + '</span>') +
@@ -188,7 +197,25 @@
               '<a class="stp-pill gb-pay" href="' + esc(b.link) + '" target="_blank" rel="noopener noreferrer external" data-spend="1" data-gb-pay="' + esc(b.id) + '">' + esc(T('Open link again', 'Link nochmal öffnen', 'Abrir otra vez')) + ' ↗</a></div>'
             : '<a class="stp-go gb-pay" href="' + esc(b.link) + '" target="_blank" rel="noopener noreferrer external" data-spend="1" data-gb-pay="' + esc(b.id) + '">' + esc(linkText(b.kind)) + ' ↗</a>';
     }
-    function pick(id) { if (!open.some(b => b.id === id)) return; picked = id; lastSkip = ''; msg = ''; paint(); const a = ov && ov.querySelector('.gb-swipe .gb-pay'); if (a) try { a.focus({ preventScroll: true }); } catch (e) {} }
+    /* Nov 5 2026 (owner: "swipe right opens their Ko-fi"): swipe right (or Pay) opens the person's own pay page straight away,
+       from the same tap, in the phone's browser. It pays nothing by itself: the app never knows if you paid, so the card then
+       asks "Did the payment go through?" with I helped and Open link again. Only a link that passes C.payLink (https, Ko-fi,
+       Stripe or PayPal.me) is opened; a blocked pop-up leaves the Pay with link button, as before. */
+    function openPay(b) {
+        const L = b && C.payLink(b.link);
+        if (!L || !L.ok) return false;
+        let w = null;
+        try { w = W.open(L.url, '_blank', 'noopener,noreferrer'); } catch (e) { w = null; }
+        /* with noopener most browsers return null even when the page opened; only a thrown error counts as blocked */
+        return w !== undefined;
+    }
+    function pick(id) {
+        const b = open.find(x => x.id === id); if (!b) return;
+        picked = id; lastSkip = ''; msg = '';
+        if (openPay(b)) opened[id] = true;
+        paint();
+        const a = ov && (ov.querySelector('.gb-swipe .gb-helped') || ov.querySelector('.gb-swipe .gb-pay')); if (a) try { a.focus({ preventScroll: true }); } catch (e) {}
+    }
     function skip(id) {
         if (!id) return; skipped[id] = Date.now(); saveSkips(); if (picked === id) picked = ''; lastSkip = id; msg = ''; paint();
         const n = ov && (ov.querySelector('.gb-yes') || ov.querySelector('.gb-undo')); if (n) try { n.focus({ preventScroll: true }); } catch (e) {}
@@ -319,7 +346,7 @@
         const linkMsg = !link ? '' : link.ok ? '✓ ' + C.linkName(link.kind) : linkWhy(link);
         const built = C.build(draft, rate, LIM);
         return '<h4 class="stp-h4">' + esc(T('Share a basket', 'Korb teilen', 'Compartir una cesta')) + '</h4>' +
-            '<p class="gb-intro">' + esc(T('Pick the healthy groceries you need. Only low-spike food can go in a basket.', 'Wähl die gesunden Lebensmittel, die du brauchst. In einen Korb kommt nur Essen ohne großen Zuckerspike.', 'Elige la compra sana que necesitas. En una cesta solo entra comida sin grandes picos.')) + '</p>' +
+            '<p class="gb-intro">' + esc(T('Pick the groceries you need.', 'Wähl die Lebensmittel, die du brauchst.', 'Elige la compra que necesitas.')) + '</p>' +
             '<div class="gb-chosen" aria-label="' + esc(T('Your basket', 'Dein Korb', 'Tu cesta')) + '">' + (chosen.length ? chosen.map(n => '<button type="button" class="stp-chip on" data-gb-drop="' + esc(n) + '" aria-label="' + esc(T('Remove ', 'Entfernen: ', 'Quitar ') + n) + '">' + esc(n) + ' <i aria-hidden="true">×</i></button>').join('') : '<span class="gb-empty">' + esc(T('Your basket is empty.', 'Dein Korb ist leer.', 'Tu cesta está vacía.')) + '</span>') + '</div>' +
             '<form class="stp-snack-add gb-addf" data-gb-form="item"><input id="gb-item" type="text" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="' + esc(T('Add a food, like eggs', 'Lebensmittel hinzufügen, z. B. Eier', 'Añade un alimento, p. ej. huevos')) + '" aria-label="' + esc(T('Add a food to the basket', 'Lebensmittel zum Korb hinzufügen', 'Añadir un alimento a la cesta')) + '"><button type="submit" class="stp-pill">' + esc(T('Add', 'Hinzufügen', 'Añadir')) + '</button></form>' +
             (cartOk.filter(n => !has(n)).length ? '<p class="gb-sub">' + esc(T('From your cart', 'Aus deinem Warenkorb', 'De tu carrito')) + '</p><div class="gb-chips">' + cartOk.filter(n => !has(n)).map(chip).join('') + '</div>' : '') +
@@ -339,15 +366,16 @@
             '<p class="stp-fine gb-fine gb-missing"' + (built.ok ? ' hidden' : '') + '>' + esc(missing(built)) + '</p>';
     }
     /* one short line: which cart foods stay out of the basket and why */
+    /* Nov 5 2026 (owner: "Everything in a freaking Warenkorb should go in there"): the app no longer leaves foods out by its own
+       rating. Only two reasons are left, both said by name: the live server still refuses its short spike word list until the
+       open-cart setup file runs (why 'server'), or the basket is full. */
     function leftLine(left) {
         const by = w => left.filter(x => x.why === w).map(x => x.n);
-        const spike = by('spike'), unk = by('unknown'), full = by('full'), cut = a => a.slice(0, 5).join(', ') + (a.length > 5 ? ' …' : '');
+        const srv = by('server').concat(by('spike'), by('unknown')), full = by('full'), cut = a => a.slice(0, 5).join(', ') + (a.length > 5 ? ' …' : '');
         const parts = [];
-        if (spike.length) parts.push(cut(spike) + T(' (not low-spike)', ' (kein Low-Spike)', ' (no es bajo en picos)'));
-        if (unk.length) parts.push(cut(unk) + T(' (the app can’t rate it yet)', ' (kann die App noch nicht bewerten)', ' (la app aún no lo valora)'));
+        if (srv.length) parts.push(T('Give a hand can’t take these yet: ', 'Hilf mit kann das noch nicht nehmen: ', 'Echa una mano aún no admite: ') + cut(srv));
         if (full.length) parts.push(cut(full) + T(' (a basket holds ' + LIM.maxItems + ' foods)', ' (in einen Korb passen ' + LIM.maxItems + ' Lebensmittel)', ' (en una cesta caben ' + LIM.maxItems + ' alimentos)'));
-        /* Nov 5 2026: said plainly, the server still has the old rules (until the open-cart setup file runs) */
-        return parts.length ? (LIM.anyFood ? '' : T('Give a hand can’t take these yet: ', 'Hilf mit kann das noch nicht nehmen: ', 'Echa una mano aún no admite: ')) + parts.join(' · ') : '';
+        return parts.join(' · ');
     }
     /* Oct 26 2026 (MAYA-HANDOFF 0.34, Emmanuel): "Someone else pays" in the Supermarket cart. The WHOLE cart becomes the basket:
        every low-spike food with its quantity, nothing to type or pick. Total comes from the cart's reported prices when there
@@ -360,8 +388,9 @@
         const none = !p.items.length;
         return '<h4 class="stp-h4">' + esc(T('Your cart as a basket', 'Dein Warenkorb als Korb', 'Tu carrito como cesta')) + '</h4>' +
             '<article class="gb-basket gb-mine gb-fromcart">' +
-            (none ? '<p class="gb-intro">' + esc(LIM.anyFood ? T('Your cart is empty.', 'Dein Warenkorb ist leer.', 'Tu carrito está vacío.') : T('Give a hand can’t take anything from this cart yet (it still only takes low-spike food).', 'Hilf mit kann aus diesem Warenkorb noch nichts nehmen (es nimmt bisher nur Low-Spike-Essen).', 'Echa una mano aún no admite nada de este carrito (por ahora solo comida baja en picos).')) + '</p>'
-                : '<p class="gb-intro">' + esc(T('Everything from your cart, ready to go. Helpers see it in Give a hand and can pay for it.', 'Alles aus deinem Warenkorb, fertig. Helfer sehen ihn unter Hilf mit und können ihn bezahlen.', 'Todo lo de tu carrito, listo. Quien quiera ayudar la ve en Echa una mano y puede pagarla.')) + '</p>' +
+            (none ? '<p class="gb-intro">' + esc(p.left.length ? T('Give a hand can’t take anything from this cart yet.', 'Hilf mit kann aus diesem Warenkorb noch nichts nehmen.', 'Echa una mano aún no admite nada de este carrito.') : T('Your cart is empty.', 'Dein Warenkorb ist leer.', 'Tu carrito está vacío.')) + '</p>'
+                : '<p class="gb-intro">' + esc(p.left.length ? T(p.items.length + ' of ' + (p.items.length + p.left.length) + ' foods from your cart go in. Helpers see it in Give a hand and can pay for it.', p.items.length + ' von ' + (p.items.length + p.left.length) + ' Lebensmitteln aus deinem Warenkorb kommen mit. Helfer sehen ihn unter Hilf mit und können ihn bezahlen.', 'Entran ' + p.items.length + ' de ' + (p.items.length + p.left.length) + ' alimentos de tu carrito. Quien quiera ayudar la ve en Echa una mano y puede pagarla.')
+                    : T('Everything from your cart, ready to go. Helpers see it in Give a hand and can pay for it.', 'Alles aus deinem Warenkorb, fertig. Helfer sehen ihn unter Hilf mit und können ihn bezahlen.', 'Todo lo de tu carrito, listo. Quien quiera ayudar la ve en Echa una mano y puede pagarla.')) + '</p>' +
                   itemsHTML(p.items.map(x => x.n), p.items.map(x => x.q))) +
             (p.left.length ? '<p class="stp-fine gb-fine gb-left">' + esc(leftLine(p.left)) + '</p>' : '') + '</article>' +
             (none ? '' :
@@ -387,8 +416,18 @@
         const est = tot && tot.priced && tot.sum > 0 ? Math.round(tot.sum * 100) / 100 : 0;
         const go = () => {
             const pick = C.fromCart(lines, rate, fname, LIM);
-            fromCartPick = { items: pick.items, left: pick.left, est, tot };
-            if (est) { draft.total = est.toFixed(2); saveDraft(); }
+            /* Nov 5 2026: when some foods can't go in yet, the asked total is what the foods that DO go in cost, not the whole cart */
+            let e2 = est, t2 = tot;
+            if (pick.left.length && tot) {
+                const out = {}; pick.left.forEach(x => { out[C.norm(x.n)] = 1; });
+                const inn = lines.filter(l => !out[C.norm(fname(l.n))] && !out[C.norm(l.n)]);
+                const pr = inn.filter(l => l.line != null);
+                e2 = Math.round(pr.reduce((a, l) => a + l.line, 0) * 100) / 100;
+                t2 = { sum: e2, priced: pr.length, all: inn.length, complete: pr.length === inn.length, approx: pr.filter(l => l.approx).length, part: true };
+            }
+            fromCartPick = { items: pick.items, left: pick.left, est: e2 > 0 ? e2 : 0, tot: t2 };
+            /* Nov 5 2026: never an old basket's total (that is where the €5 came from); no prices means an empty field to fill in */
+            draft.total = e2 > 0 ? e2.toFixed(2) : ''; saveDraft();
             if (ov) { tab = 'mine'; msg = ''; paint(); } else openPanel(from || 'shop', 'mine');
         };
         go(); loadLimits().then(go, () => {});
@@ -396,7 +435,8 @@
     function totalNote(p) {
         const t = p.tot, money = v => '€' + Number(v).toFixed(2);
         if (!p.est) return T('No prices for these yet: type what it should roughly cost (€5 to €150).', 'Für diese Sachen gibt es noch keine Preise: trag ein, was es ungefähr kostet (5 bis 150 €).', 'Aún no hay precios: escribe cuánto costaría más o menos (5 a 150 €).');
-        let s = T('Your cart comes to ' + money(p.est), 'Dein Warenkorb kostet ' + money(p.est), 'Tu carrito suma ' + money(p.est));
+        let s = t && t.part ? T('The foods that go in come to ' + money(p.est), 'Die Lebensmittel, die mitkommen, kosten ' + money(p.est), 'Los alimentos que entran suman ' + money(p.est))
+            : T('Your cart comes to ' + money(p.est), 'Dein Warenkorb kostet ' + money(p.est), 'Tu carrito suma ' + money(p.est));
         if (t && t.approx) s += T(' (≈ store estimates, not live shop prices)', ' (≈ Schätzung, keine echten Ladenpreise)', ' (≈ estimación, no precios reales)');
         s += '.';
         if (t && !t.complete) s += ' ' + T((t.all - t.priced) + ' have no price yet.', (t.all - t.priced) + ' haben noch keinen Preis.', (t.all - t.priced) + ' aún no tienen precio.');
@@ -560,15 +600,14 @@
     function onKey(e) { if (e.key === 'Escape' && ov) { e.stopImmediatePropagation(); closeUser(true); } }
 
     function addItem(name) {
-        const c = C.itemCheck(name, rate);
+        const c = C.basketCheck(name, LIM);
         if (!c.ok) {
             if (c.why === 'empty') return false;
-            say(c.why === 'spike' ? T(c.name + ' isn’t low-spike, so it can’t go in a basket.', c.name + ' ist kein Low-Spike-Essen und kann nicht in den Korb.', c.name + ' no es bajo en picos, así que no puede ir en una cesta.')
-                : T('The app doesn’t know "' + c.name + '" yet. Try a plain name, like eggs or broccoli.', 'Die App kennt „' + c.name + '“ noch nicht. Versuch einen einfachen Namen, z. B. Eier oder Brokkoli.', 'La app aún no conoce «' + c.name + '». Prueba con un nombre sencillo, como huevos o brócoli.'), 'low');
+            say(T('Give a hand can’t take ' + c.name + ' yet.', 'Hilf mit kann ' + c.name + ' noch nicht nehmen.', 'Echa una mano aún no admite ' + c.name + '.'), 'low');
             return false;
         }
         if (draft.items.some(x => C.norm(x) === C.norm(c.name))) { say(T('Already in your basket.', 'Schon im Korb.', 'Ya está en tu cesta.')); return true; }
-        if (draft.items.length >= C.MAX_ITEMS) { say(T('A basket holds up to 12 foods.', 'Ein Korb fasst bis zu 12 Lebensmittel.', 'Una cesta lleva hasta 12 alimentos.'), 'low'); return false; }
+        if (draft.items.length >= LIM.maxItems) { say(T('A basket holds up to ' + LIM.maxItems + ' foods.', 'Ein Korb fasst bis zu ' + LIM.maxItems + ' Lebensmittel.', 'Una cesta lleva hasta ' + LIM.maxItems + ' alimentos.'), 'low'); return false; }
         draft.items.push(c.name); saveDraft(); msg = ''; paint(); return true;
     }
     function share() {
@@ -618,6 +657,7 @@
         if (ov) return;
         fromCartReq = !!fromCartPick && startTab === 'mine';
         if (startTab === 'mine' || startTab === 'give') tab = startTab; /* Oct 26: the Supermarket Cart's "Ask for a hand with it" opens on I could use a hand */
+        loadLimits().then(() => { if (ov && tab === 'mine') paint(); }); /* Nov 5 2026: hand-picked foods follow the server's rules too */
         ov = D.createElement('div');
         /* Oct 28 2026 (Emmanuel: Zu Hause and Supermarkt switch smoothly, but Hilf mit "feels like a new window"): opened from
            Einkaufen, Hilf mit takes the same frame. No fade, no zoom, no second dark backdrop, and the Einkaufen card under it is hidden
@@ -686,7 +726,7 @@
     function entryHTML() {
         if (!serverReady()) { probe(); return ''; }
         return '<button type="button" class="stp-row gb-entry" data-stp="gift"><span class="gb-entry-i" aria-hidden="true">\u{1F91D}</span><span class="stp-sos-t"><b>' + esc(T('Give a hand', 'Hilf mit', 'Echa una mano')) + '</b><small>' +
-            esc(T('Pay for someone’s healthy groceries, or share your own basket', 'Bezahl jemandem gesunde Lebensmittel oder teile deinen eigenen Korb', 'Paga la compra sana de alguien o comparte tu propia cesta')) + '</small></span></button>';
+            esc(T('Pay for someone’s groceries, or share your own basket', 'Bezahl jemandem den Einkauf oder teile deinen eigenen Korb', 'Paga la compra de alguien o comparte tu propia cesta')) + '</small></span></button>';
     }
     W.addEventListener('lowi:lang', () => { if (ov) paint(); });
     /* check the server after start (the cloud account needs a moment to come online) */

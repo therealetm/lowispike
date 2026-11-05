@@ -37,7 +37,8 @@ test('Give a hand renders a swipe deck with Skip and Pay buttons, stamps, a hint
     assert.match(gb, /deckHTML\(list\)/);
     assert.match(gb, /class="gb-basket gb-swipe/);
     assert.match(gb, /data-gb="skip"/); assert.match(gb, /data-gb="yes"/); assert.match(gb, /data-gb="undo"/);
-    assert.match(gb, /T\('Swipe right to pay for these groceries, left to skip\.', 'Wisch nach rechts, um diesen Einkauf zu bezahlen, nach links zum Überspringen\.', 'Desliza a la derecha para pagar esta compra, a la izquierda para saltarla\.'\)/);
+    /* Nov 5 2026 (test changed, why): owner: "swipe right opens their Ko-fi", so the hint says that now */
+    assert.match(gb, /T\('Swipe right to open their pay page, left to skip\.', 'Wisch nach rechts für die Bezahlseite der Person, nach links zum Überspringen\.', 'Desliza a la derecha para abrir su página de pago, a la izquierda para saltarla\.'\)/);
     assert.match(gb, /T\('Pay', 'Zahlen', 'Pagar'\)/); assert.match(gb, /T\('Skip', 'Weiter', 'Saltar'\)/);
     assert.match(gb, /The ones you skipped come back tomorrow/);
 });

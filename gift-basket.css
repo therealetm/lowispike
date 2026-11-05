@@ -96,3 +96,9 @@ html[data-theme="light"] .gb-state.gb-low, html[data-theme="light"] .gb-linkmsg.
 .stp-ov.gb-ov.gb-inframe { background: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 .stp-ov.gb-ov.gb-inframe .stp-card { transform: none !important; }
 html.gb-inframe-on .stp-ov:not(.gb-ov) > .stp-card { visibility: hidden; }
+
+/* Nov 5 2026: short basket preview, the rest opens in place */
+.gb-more { margin: 2px 0 6px; }
+.gb-more > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .28); font-size: 13px; opacity: .9; }
+.gb-more > summary::-webkit-details-marker { display: none; }
+.gb-more[open] > summary { margin-bottom: 4px; }

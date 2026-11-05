@@ -98,7 +98,9 @@
     function basket(dinners, people) {
         const m = {}, list = [];
         /* Nov 5 2026 (owner screenshots: Nori twice on the list): two keys with the same shown name are one thing to buy */
-        const byName = {}, nameKey = n => String(n || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim().replace(/(?:es|s)$/, '');
+        const byName = {}, nameKey = n => String(n || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
+            /* Nov 5 2026: "Greek yogurt to top" is Greek yogurt, "Bell pepper" and "Peppers" are one vegetable, "Courgette" is Zucchini */
+            .replace(/ (?:to (?:top|serve|garnish)|for (?:topping|serving))$/, '').replace(/^bell (?=pepper)/, '').replace(/^courgette/, 'zucchini').replace(/^(nori) sheets?$/, '$1').replace(/(?:es|s)$/, '');
         (dinners || []).forEach(d => (d.items || []).forEach(i => {
             let k = String(i.k || i.n || '').toLowerCase(); if (!k) return;
             const nk = nameKey(i.n); if (!m[k] && nk && byName[nk]) k = byName[nk];
@@ -222,23 +224,42 @@
     ].map(r => Object.assign({}, r, { ing: r.ing.map(([g, n]) => ({ g, n })), steps: r.make.slice() }));
     /* Fit my budget: swap the dinner that costs most for the cheapest one not on the plan, while that brings the week down,
        until it fits. build(planIds) -> {items, cost(id)} lets the caller price it with the real store estimate. */
+    /* Nov 5 2026 (owner screenshot: "€40 for 7 dinners" gave a plan for €83.77): only the single most expensive dinner was ever
+       tried, so the search stopped early (the cheapest seven dinners came to about €64). Now every dinner on the plan may be
+       swapped, the best swap wins each round, until it fits or nothing lowers the week any more. */
     function fitBudget(planIds, poolIds, budget, build, maxSteps, keyOf) {
         let p = planIds.slice(), steps = 0, b = build(p);
-        const lim = maxSteps || 12;
+        const lim = maxSteps || 30;
         /* fitting the budget never brings back the same meat twice (keyOf = weekKeys) */
         const meatRepeat = trial => { if (!keyOf) return false; const seen = {}; return trial.some(id => keysOf(keyOf, id).some(k => k.indexOf('meat:') === 0 && (seen[k] = (seen[k] || 0) + 1) > 1)); };
         while (b.sum > budget && steps < lim) {
-            const byCost = p.map(id => [id, b.cost(id)]).sort((x, y) => y[1] - x[1]);
             let best = null;
-            poolIds.forEach(c => {
+            const rep = meatRepeat(p);
+            p.forEach((out, at) => poolIds.forEach(c => {
                 if (p.indexOf(c) >= 0) return;
-                const trial = p.slice(); trial[p.indexOf(byCost[0][0])] = c; const tb = build(trial);
-                if (meatRepeat(trial) && !meatRepeat(p)) return; if (tb.sum < b.sum - 0.005 && (!best || tb.sum < best[1].sum)) best = [trial, tb];
-            });
+                const trial = p.slice(); trial[at] = c;
+                if (!rep && meatRepeat(trial)) return;
+                const tb = build(trial);
+                if (tb.sum < b.sum - 0.005 && (!best || tb.sum < best[1].sum - 0.005)) best = [trial, tb];
+            }));
             if (!best) break;
             p = best[0]; b = best[1]; steps++;
         }
         return { plan: p, sum: b.sum, fits: b.sum <= budget };
+    }
+    /* Nov 5 2026: when even the cheapest week is over the budget, say so plainly and offer the two honest ways out:
+       fewer dinners (n = how many still fit, dropping the one that saves most each time) or the budget the week needs.
+       plan: an already fitted plan. Returns {fits, sum, nights, nightsPlan, needBudget}. */
+    function budgetPlan(plan, budget, build) {
+        const b = build(plan);
+        if (b.sum <= budget) return { fits: true, sum: b.sum, nights: plan.length, nightsPlan: plan.slice(), needBudget: 0 };
+        let p = plan.slice(), s = b.sum;
+        while (p.length > 1 && s > budget) {
+            let best = null;
+            p.forEach((id, at) => { const t = p.slice(0, at).concat(p.slice(at + 1)), ts = build(t).sum; if (!best || ts < best[1]) best = [t, ts]; });
+            p = best[0]; s = best[1];
+        }
+        return { fits: false, sum: b.sum, nights: s <= budget ? p.length : 0, nightsPlan: s <= budget ? p : [], needBudget: Math.ceil(b.sum) };
     }
     /* saved settings: people, nights, budget, store, the week's plan and its reshuffle count, what you have */
     function load(raw, wk) {
@@ -264,5 +285,5 @@
         return (title || 'LOWiSPIKE') + ' \u00b7 ' + storeName + '\n' + need.map(i => '- ' + (i.packs > 1 ? i.packs + ' \u00d7 ' : '') + i.n + '  ' + eur((Number(priceFn(i, sid)) || 0) * i.packs)).join('\n') +
             '\n\n\u2248 ' + eur(total(items, priceFn, sid, have));
     }
-    return { KEY, PEOPLE, NIGHTS, DEF, BUDGET_MIN, BUDGET_MAX, FEAT_DINNERS, VIBES, DIETS, KITS, EXTRA, weekKey, pool, main, meats, weekKeys, order, rank, plan, swap, profile, fits, vibeScore, freshFirst, days, ymd, once, packsFor, basket, total, storeTotals, dinnerCost, budgetState, fitBudget, load, seedOf, text, hash };
+    return { KEY, PEOPLE, NIGHTS, DEF, BUDGET_MIN, BUDGET_MAX, FEAT_DINNERS, VIBES, DIETS, KITS, EXTRA, weekKey, pool, main, meats, weekKeys, order, rank, plan, swap, profile, fits, vibeScore, freshFirst, days, ymd, once, packsFor, basket, total, storeTotals, dinnerCost, budgetState, fitBudget, budgetPlan, load, seedOf, text, hash };
 });

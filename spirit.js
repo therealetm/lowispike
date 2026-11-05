@@ -1494,8 +1494,9 @@
     function photoSheet() {
         if (!photoURL) return mealForm();
         lastMealId = uid();
-        /* one clear flow: the photo, what it is, Log as meal; Retake / Save photo / deeper analysis below it */
-        showSheet('<h2>' + esc(tr('photoTitle')) + '</h2><img class="sp-photo-prev" alt="" src="' + esc(photoURL) + '"><div class="sp-ai" aria-live="polite"></div><form id="spMeal" class="sp-photo-form" data-id="' + esc(lastMealId) + '"><label>' + esc(tr('photoName')) + '<input name="title" required maxlength="100" autocomplete="off" enterkeyhint="done" placeholder="' + esc(tr('photoPh')) + '"></label>' + mtRow(lmAt(), photoAt) + '<button type="submit" class="sp-action sp-primary">' + icon('plate') + '<span>' + esc(tr('photoLog')) + '</span></button></form><div class="sp-photo-acts">' + button('retake', 'camera', 'photo') + button('savePhoto', 'arrow', 'savePhoto') + '</div>' + gptHTML() + '<p class="sp-note small">' + esc(tr('photoGptHint')) + '</p>', { cls: 'sp-sheet ss-sheet' });
+        /* one clear flow: the photo, what it is, Log as meal; Retake / Save photo / deeper analysis below it.
+           Nov 5 2026: the long "Save it, then upload it in the LOWiSPIKE GPT" line under the GPT link is gone (the link says it). */
+        showSheet('<h2>' + esc(tr('photoTitle')) + '</h2><img class="sp-photo-prev" alt="" src="' + esc(photoURL) + '"><div class="sp-ai" aria-live="polite"></div><form id="spMeal" class="sp-photo-form" data-id="' + esc(lastMealId) + '"><label>' + esc(tr('photoName')) + '<input name="title" required maxlength="100" autocomplete="off" enterkeyhint="done" placeholder="' + esc(tr('photoPh')) + '"></label>' + mtRow(lmAt(), photoAt) + '<button type="submit" class="sp-action sp-primary">' + icon('plate') + '<span>' + esc(tr('photoLog')) + '</span></button></form><div class="sp-photo-acts">' + button('retake', 'camera', 'photo') + button('savePhoto', 'arrow', 'savePhoto') + '</div>' + gptHTML(), { cls: 'sp-sheet ss-sheet' });
         mtMount(D.querySelector('form#spMeal.sp-photo-form'), lmAt(), photoAt);
         /* Oct 19 2026 food photo AI: the photo goes to LowiFoodAI (Supabase function food-photo, Gemini). It fills the
            dishes, the name and hidden macro inputs; when it is off or fails, the plain "What is it?" form above still works. */

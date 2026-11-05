@@ -436,21 +436,37 @@
        The other things that only lived in the retired Today sheet: the six old day shortcuts (Check-ins, Meals, Your plate,
        Medicine, Shopping, Extras: index.html g2h panels), the macro goals (spirit.js data-sp=goals) and the "Your inside" row
        (inside-row.js #brRow). Reached from Community hold -> You -> My day (home-settings-sleep-v2.js route 'myday'): one small
-       sheet of round bubbles, nothing else on it. The bubbles mirror whatever #g2hTiles holds right now (index.html shows a tile
+       sheet, nothing else on it (Nov 5 2026: a Today card and grouped rows, see below). The rows mirror whatever #g2hTiles holds right now (index.html shows a tile
        only when its part has something), and a tap closes the sheet and does exactly what the old tile did. */
+    /* Nov 5 2026 (Emmanuel: "nuke the bloat" in My day): the ten equal round bubbles, each a different old screen with no hint of
+       what it held, became one calm list. On top one Today card: what today looks like in a few words (meals eaten, medicine taken,
+       check-ins), with Catch up on today as the one main button and the day recap as a small second one. Below, short iOS-style
+       groups (Food, Body, More), every row with its own live status line and a chevron. Nothing is gone: every row still does
+       exactly what the old bubble did, and a row still only shows when its part has something (same #g2hTiles source). */
     const DAY_ICO = { macro: ICO.macro, inside: ICO.inside };
+    const DAY_NAME = {
+        morn: ['Check-ins', 'Check-ins', 'Controles'], meals: ['Meals today', 'Mahlzeiten heute', 'Comidas de hoy'],
+        plan: ['Food log', 'Ess-Tagebuch', 'Registro de comidas'], meds: ['Medicine', 'Medikamente', 'Medicinas'],
+        have: ['Shopping list', 'Einkaufsliste', 'Lista de compras'], more: ['SOS & streak', 'SOS & Serie', 'SOS y racha'],
+        book: ['Recipes', 'Rezepte', 'Recetas']
+    };
+    const DAY_GROUP = { plan: 'food', meals: 'food', book: 'food', morn: 'body', meds: 'body', have: 'more', more: 'more' };
     function dayItems() {
         const out = [];
         /* Oct 29 2026 settings hub: "Heute nachtragen" is logging, not a setting, so it moved here from the settings list */
-        if (W.LowiEveningCatchup && typeof W.LowiEveningCatchup.open === 'function') out.push({ k: 'catchup', b: T('Catch up today', 'Heute nachtragen', 'Completar hoy'), sub: '', ico: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" style="fill:none;stroke:currentColor;stroke-width:1.8"/><path d="M8.4 12.2l2.5 2.5 4.8-5.2" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"/></svg>' });
-        if (W.LowiDayRecap) out.push({ k: 'recap', b: T('Day recap', 'Tagesr\u00fcckblick', 'Resumen del d\u00eda'), sub: '', ico: ICO.moon });
+        if (W.LowiEveningCatchup && typeof W.LowiEveningCatchup.open === 'function') out.push({ k: 'catchup', g: 'top', b: T('Catch up on today', 'Heute nachtragen', 'Completar hoy'), sub: '', ico: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" style="fill:none;stroke:currentColor;stroke-width:1.8"/><path d="M8.4 12.2l2.5 2.5 4.8-5.2" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"/></svg>' });
+        if (W.LowiDayRecap) out.push({ k: 'recap', g: 'top', b: T('Day recap', 'Tagesr\u00fcckblick', 'Resumen del d\u00eda'), sub: '', ico: ICO.moon });
         D.querySelectorAll('#g2hTiles [data-g2h-open]').forEach(b => {
             const k = b.dataset.g2hOpen, lab = b.querySelector('b'), ic = b.querySelector('.g2h-ic'), sm = b.querySelector('small');
             if (!k || out.some(o => o.k === 'g-' + k)) return;
-            out.push({ k: 'g-' + k, b: lab ? lab.textContent.trim() : k, sub: sm ? sm.textContent.trim() : '', ico: ic ? ic.innerHTML : ICO.macro });
+            const nm = DAY_NAME[k];
+            out.push({ k: 'g-' + k, g: DAY_GROUP[k] || 'more', b: nm ? T(nm[0], nm[1], nm[2]) : (lab ? lab.textContent.trim() : k), sub: sm ? sm.textContent.trim() : '', ico: ic ? ic.innerHTML : ICO.macro });
         });
-        if (W.LowiSpirit) out.push({ k: 'macro', b: T('Macro goals', 'Makro-Ziele', 'Metas de macros'), sub: '', ico: DAY_ICO.macro });
-        if (D.getElementById('brRow')) out.push({ k: 'inside', b: T('Your inside', 'Dein Inneres', 'Tu interior'), sub: '', ico: DAY_ICO.inside });
+        if (W.LowiSpirit) out.push({ k: 'macro', g: 'food', b: T('Macro goals', 'Makro-Ziele', 'Metas de macros'), sub: T('Protein, carbs, fat', 'Eiwei\u00df, Kohlenhydrate, Fett', 'Prote\u00edna, carbohidratos, grasa'), ico: DAY_ICO.macro });
+        if (D.getElementById('brRow')) {
+            let line = ''; try { line = W.LowiInside && W.LowiInside.health ? String(W.LowiInside.health().line || '') : ''; } catch (e) { }
+            out.push({ k: 'inside', g: 'body', b: T('Your inside', 'Dein Inneres', 'Tu interior'), sub: line, ico: DAY_ICO.inside });
+        }
         return out;
     }
     function dayAct(k) {
@@ -460,13 +476,38 @@
         if (k === 'inside') { const r = D.getElementById('brRow'); if (r) r.click(); }
         if (k === 'recap' && W.LowiDayRecap) W.LowiDayRecap.open({ after: true });
     }
+    const CHEV = '<svg class="mh-row-chev" viewBox="0 0 8 14" aria-hidden="true"><path d="M1.5 1.5L6.5 7l-5 5.5" style="fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"/></svg>';
+    function dayRow(it) {
+        return '<button type="button" class="mh-row" data-myday="' + esc(it.k) + '"><span class="mh-row-ic" aria-hidden="true">' + it.ico + '</span>' +
+            '<span class="mh-row-tx"><b>' + esc(it.b) + '</b>' + (it.sub ? '<small>' + esc(it.sub) + '</small>' : '') + '</span>' + CHEV + '</button>';
+    }
+    function dayDate() {
+        try { return new Date().toLocaleDateString({ de: 'de-DE', es: 'es-ES' }[lang()] || 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' }); } catch (e) { return ''; }
+    }
     function dayHtml() {
         const its = dayItems();
         const a = aura() || {};
+        const by = k => its.find(o => o.k === k);
+        const top = its.filter(o => o.g === 'top');
+        /* Today card: the three live status lines that say most about the day, as plain words */
+        const noMeds = !D.querySelector('#tdMeds .td-med'); /* "Add a reminder" is a hint, not a fact about today */
+        const facts = ['g-plan', 'g-meds', 'g-morn'].filter(k => !(k === 'g-meds' && noMeds)).map(by).filter(o => o && o.sub).map(o => o.sub);
+        const catchup = by('catchup'), recap = by('recap');
+        const card = (facts.length || top.length) ? '<section class="mh-dcard">' +
+            '<p class="mh-dcard-k">' + esc(T('Today', 'Heute', 'Hoy')) + '</p>' +
+            '<p class="mh-dcard-v">' + (facts.length ? esc(facts.join(' \u00b7 ')) : esc(T('Nothing logged yet', 'Noch nichts eingetragen', 'A\u00fan no hay nada'))) + '</p>' +
+            (top.length ? '<div class="mh-dcard-acts">' +
+                (catchup ? '<button type="button" class="mh-dbtn mh-dbtn-1" data-myday="catchup">' + esc(catchup.b) + '</button>' : '') +
+                (recap ? '<button type="button" class="mh-dbtn mh-dbtn-2" data-myday="recap">' + esc(recap.b) + '</button>' : '') + '</div>' : '') +
+            '</section>' : '';
+        const GROUPS = [['food', T('Food', 'Essen', 'Comida')], ['body', T('Body', 'K\u00f6rper', 'Cuerpo')], ['more', T('More', 'Mehr', 'M\u00e1s')]];
+        const lists = GROUPS.map(([g, name]) => {
+            const rows = its.filter(o => o.g === g); if (!rows.length) return '';
+            return '<p class="mh-dgrp">' + esc(name) + '</p><nav class="mh-list" aria-label="' + esc(name) + '">' + rows.map(dayRow).join('') + '</nav>';
+        }).join('');
         return '<div class="mh mh-day" id="myDay" data-noi18n style="--a:' + esc(a.a || '#7cf0c0') + ';--b:' + esc(a.b || '#5ab0ff') + '">' +
-            '<h2 class="mh-day-t">' + esc(T('My day', 'Mein Tag', 'Mi d\u00eda')) + '</h2>' +
-            (its.length ? '<nav class="mh-today mh-day-grid">' + its.map(it => orb(it, 'data-myday="' + esc(it.k) + '"')).join('') + '</nav>'
-                : '<p class="mh-day-none">' + esc(T('Nothing here yet.', 'Hier ist noch nichts.', 'A\u00fan no hay nada.')) + '</p>') + '</div>';
+            '<header class="mh-day-h"><h2 class="mh-day-t">' + esc(T('My day', 'Mein Tag', 'Mi d\u00eda')) + '</h2><small class="mh-day-d">' + esc(dayDate()) + '</small></header>' +
+            (its.length ? card + lists : '<p class="mh-day-none">' + esc(T('Nothing here yet.', 'Hier ist noch nichts.', 'A\u00fan no hay nada.')) + '</p>') + '</div>';
     }
     function daySheet() { return Array.from(D.querySelectorAll('#myDay')).find(e => !(e.closest && e.closest('.r2-ov.off'))) || null; }
     function dayOpen() {

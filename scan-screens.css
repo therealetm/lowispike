@@ -339,3 +339,13 @@ html:root body .r2-ov.ss-sheet .sp-fast-note[hidden] { display: none; }
 @keyframes spSlotIn { from { opacity: 0; transform: translateY(14px) scale(.86); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { html:root body .r2-ov.ss-sheet :is(.sp-slot, .sp-how) { animation: none; transition: none; } }
 @media (prefers-reduced-transparency: reduce) { html:root body .r2-ov.ss-sheet :is(.sp-slot, .sp-how, .sp-slot-change) { background: #1b2740; } }
+
+/* Nov 5 2026 no food on the photo (food-photo-ai.js sayNone): the sheet shows the photo, one line and Retake photo as the main
+   button. The meal form, Save photo and the GPT link stay hidden until "It's food, let me type it" (.fai-typing). */
+html:root body .r2-ov .r2-sh.fai-nofood:not(.fai-typing) :is(.sp-photo-form, .sp-photo-acts, .sp-gpt) { display: none !important; }
+html:root body .r2-ov .r2-sh.fai-nofood.fai-typing .sp-gpt { display: none !important; }
+html:root body .r2-ov .fai-none-acts { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+html:root body .r2-ov .fai-none-acts .fai-retake { min-height: 50px; border-radius: 14px; border: 0; background: #fff; color: #000; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+html:root body .r2-ov .fai-none-acts .fai-type { min-height: 44px; border: 0; background: none; color: var(--ms-accent, #8fd8ff); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+html:root body .r2-ov .fai-none-acts button:active { opacity: .8; transform: scale(.98); }
+html:root body .r2-ov .fai-none-acts button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }

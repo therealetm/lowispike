@@ -14,9 +14,9 @@
     const KEYS = ['kcal', 'protein', 'carbs', 'sugar', 'fiber', 'fat'];
     const LIMIT = { kcal: 3000, protein: 200, carbs: 400, sugar: 300, fiber: 100, fat: 250, grams: 3000 };
     const STR = {
-        en: { consent: 'Photo check is off, so nothing was sent. Type what it is, or tap Try again to turn it on.', net: 'I can’t reach the photo check right now (no connection?). Tap Try again, or type what it is.', slow: 'The photo check took too long. Tap Try again, or type what it is.', sign_in: 'Your sign-in ran out, so I can’t check the photo. Type what it is: that always works.', limit: 'You’ve used today’s 10 photo checks. New ones at midnight. Type what it is: typed meals are unlimited.', look: 'Misty is looking…', look2: 'Still looking. Busy plates take a few seconds more…', again: 'Misty is taking another look…', retry: 'Try again', found: 'Here’s what I see', est: 'Estimates from your photo. Change the name if I got it wrong.', total: 'Total', remove: 'Remove', off: 'Photo recognition isn’t switched on yet, so type what it is.', fail: 'I couldn’t read this photo. Tap Try again, or type what it is.', busy: 'Too many photos right now. Type what it is, or try again in a few minutes.', none: 'I don’t see food in this photo. Type what it is if I’m wrong.', low: 'Not sure about this one, so check the name.', kcal: 'kcal', protein: 'Protein', carbs: 'Carbs', sugar: 'Sugar', fiber: 'Fiber', fat: 'Fat', and: 'and' },
-        de: { consent: 'Die Foto-Prüfung ist aus, es wurde nichts gesendet. Schreib, was es ist, oder tipp auf Nochmal versuchen, um sie einzuschalten.', net: 'Ich erreiche die Foto-Prüfung gerade nicht (keine Verbindung?). Tipp auf Nochmal versuchen oder schreib, was es ist.', slow: 'Die Foto-Prüfung hat zu lange gedauert. Tipp auf Nochmal versuchen oder schreib, was es ist.', sign_in: 'Deine Anmeldung ist abgelaufen, deshalb kann ich das Foto nicht prüfen. Schreib, was es ist: Das klappt immer.', limit: 'Du hast heute deine 10 Foto-Checks genutzt. Neue gibt es um Mitternacht. Schreib, was es ist: Getippte Mahlzeiten sind unbegrenzt.', look: 'Misty schaut sich das an…', look2: 'Ich schaue noch. Volle Teller dauern ein paar Sekunden länger…', again: 'Misty schaut noch einmal hin…', retry: 'Nochmal versuchen', found: 'Das sehe ich', est: 'Schätzungen aus deinem Foto. Ändere den Namen, wenn ich falsch liege.', total: 'Gesamt', remove: 'Entfernen', off: 'Die Fotoerkennung ist noch nicht eingeschaltet. Schreib bitte, was es ist.', fail: 'Ich konnte das Foto nicht lesen. Tipp auf Nochmal versuchen oder schreib, was es ist.', busy: 'Gerade zu viele Fotos. Schreib, was es ist, oder versuch es in ein paar Minuten nochmal.', none: 'Ich sehe kein Essen auf dem Foto. Schreib, was es ist, falls ich falsch liege.', low: 'Da bin ich unsicher, prüf den Namen.', kcal: 'kcal', protein: 'Eiweiß', carbs: 'Kohlenhydrate', sugar: 'Zucker', fiber: 'Ballaststoffe', fat: 'Fett', and: 'und' },
-        es: { consent: 'El análisis de fotos está apagado, no se envió nada. Escribe qué es o toca Reintentar para activarlo.', net: 'No puedo conectar con el análisis de fotos ahora (¿sin conexión?). Toca Reintentar o escribe qué es.', slow: 'El análisis de la foto tardó demasiado. Toca Reintentar o escribe qué es.', sign_in: 'Tu sesión caducó, así que no puedo analizar la foto. Escribe qué es: eso siempre funciona.', limit: 'Ya usaste tus 10 análisis de foto de hoy. Vuelven a medianoche. Escribe qué es: las comidas escritas no tienen límite.', look: 'Misty está mirando…', look2: 'Sigo mirando. Los platos llenos tardan unos segundos más…', again: 'Misty mira otra vez…', retry: 'Reintentar', found: 'Esto es lo que veo', est: 'Estimaciones de tu foto. Cambia el nombre si me equivoqué.', total: 'Total', remove: 'Quitar', off: 'El reconocimiento de fotos aún no está activado, así que escribe qué es.', fail: 'No pude leer esta foto. Toca Reintentar o escribe qué es.', busy: 'Demasiadas fotos ahora mismo. Escribe qué es o inténtalo en unos minutos.', none: 'No veo comida en esta foto. Escribe qué es si me equivoco.', low: 'No estoy seguro, revisa el nombre.', kcal: 'kcal', protein: 'Proteína', carbs: 'Carbohidratos', sugar: 'Azúcar', fiber: 'Fibra', fat: 'Grasa', and: 'y' }
+        en: { consent: 'Photo check is off, so nothing was sent. Type what it is, or tap Try again to turn it on.', net: 'I can’t reach the photo check right now (no connection?). Tap Try again, or type what it is.', slow: 'The photo check took too long. Tap Try again, or type what it is.', sign_in: 'Your sign-in ran out, so I can’t check the photo. Type what it is: that always works.', limit: 'You’ve used today’s 10 photo checks. New ones at midnight. Type what it is: typed meals are unlimited.', look: 'Misty is looking…', look2: 'Still looking. Busy plates take a few seconds more…', again: 'Misty is taking another look…', retry: 'Try again', found: 'Here’s what I see', est: 'Estimates from your photo. Change the name if I got it wrong.', total: 'Total', remove: 'Remove', off: 'Photo recognition isn’t switched on yet, so type what it is.', fail: 'I couldn’t read this photo. Tap Try again, or type what it is.', busy: 'Too many photos right now. Type what it is, or try again in a few minutes.', none: 'This doesn’t look like food, so nothing was logged.', noneRetake: 'Retake photo', noneType: 'It’s food, let me type it', low: 'Not sure about this one, so check the name.', kcal: 'kcal', protein: 'Protein', carbs: 'Carbs', sugar: 'Sugar', fiber: 'Fiber', fat: 'Fat', and: 'and' },
+        de: { consent: 'Die Foto-Prüfung ist aus, es wurde nichts gesendet. Schreib, was es ist, oder tipp auf Nochmal versuchen, um sie einzuschalten.', net: 'Ich erreiche die Foto-Prüfung gerade nicht (keine Verbindung?). Tipp auf Nochmal versuchen oder schreib, was es ist.', slow: 'Die Foto-Prüfung hat zu lange gedauert. Tipp auf Nochmal versuchen oder schreib, was es ist.', sign_in: 'Deine Anmeldung ist abgelaufen, deshalb kann ich das Foto nicht prüfen. Schreib, was es ist: Das klappt immer.', limit: 'Du hast heute deine 10 Foto-Checks genutzt. Neue gibt es um Mitternacht. Schreib, was es ist: Getippte Mahlzeiten sind unbegrenzt.', look: 'Misty schaut sich das an…', look2: 'Ich schaue noch. Volle Teller dauern ein paar Sekunden länger…', again: 'Misty schaut noch einmal hin…', retry: 'Nochmal versuchen', found: 'Das sehe ich', est: 'Schätzungen aus deinem Foto. Ändere den Namen, wenn ich falsch liege.', total: 'Gesamt', remove: 'Entfernen', off: 'Die Fotoerkennung ist noch nicht eingeschaltet. Schreib bitte, was es ist.', fail: 'Ich konnte das Foto nicht lesen. Tipp auf Nochmal versuchen oder schreib, was es ist.', busy: 'Gerade zu viele Fotos. Schreib, was es ist, oder versuch es in ein paar Minuten nochmal.', none: 'Das sieht nicht nach Essen aus, also wurde nichts eingetragen.', noneRetake: 'Neues Foto', noneType: 'Doch Essen, ich tippe es ein', low: 'Da bin ich unsicher, prüf den Namen.', kcal: 'kcal', protein: 'Eiweiß', carbs: 'Kohlenhydrate', sugar: 'Zucker', fiber: 'Ballaststoffe', fat: 'Fett', and: 'und' },
+        es: { consent: 'El análisis de fotos está apagado, no se envió nada. Escribe qué es o toca Reintentar para activarlo.', net: 'No puedo conectar con el análisis de fotos ahora (¿sin conexión?). Toca Reintentar o escribe qué es.', slow: 'El análisis de la foto tardó demasiado. Toca Reintentar o escribe qué es.', sign_in: 'Tu sesión caducó, así que no puedo analizar la foto. Escribe qué es: eso siempre funciona.', limit: 'Ya usaste tus 10 análisis de foto de hoy. Vuelven a medianoche. Escribe qué es: las comidas escritas no tienen límite.', look: 'Misty está mirando…', look2: 'Sigo mirando. Los platos llenos tardan unos segundos más…', again: 'Misty mira otra vez…', retry: 'Reintentar', found: 'Esto es lo que veo', est: 'Estimaciones de tu foto. Cambia el nombre si me equivoqué.', total: 'Total', remove: 'Quitar', off: 'El reconocimiento de fotos aún no está activado, así que escribe qué es.', fail: 'No pude leer esta foto. Toca Reintentar o escribe qué es.', busy: 'Demasiadas fotos ahora mismo. Escribe qué es o inténtalo en unos minutos.', none: 'Esto no parece comida, así que no se registró nada.', noneRetake: 'Repetir foto', noneType: 'Es comida, la escribo', low: 'No estoy seguro, revisa el nombre.', kcal: 'kcal', protein: 'Proteína', carbs: 'Carbohidratos', sugar: 'Azúcar', fiber: 'Fibra', fat: 'Grasa', and: 'y' }
     };
     const lang = () => { try { const l = root.LowiLang && root.LowiLang.get ? root.LowiLang.get() : (root.document && document.documentElement.lang) || 'en'; return STR[l] ? l : 'en'; } catch (e) { return 'en'; } };
     const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
@@ -303,6 +303,28 @@
             if (titleIn && !typed) titleIn.value = title(dishes, l);
         };
         const say = (cls, msg) => { box.className = 'sp-ai fai ' + cls; box.innerHTML = '<p class="fai-msg" role="status">' + esc(msg) + '</p>'; };
+        /* Nov 5 2026 (Emmanuel: a photo of toothpaste still offered "What is it?", the eat time and "Log as meal" as if it were food):
+           when the check sees no food, the sheet shows only that, with Retake photo as the main button. The meal form, the eat time,
+           Save photo and the GPT link hide until the person taps "It's food, let me type it" (the check can be wrong). */
+        const sheetOf = () => (box.closest && (box.closest('.r2-sh') || box.parentNode)) || null;
+        const noFood = (on) => {
+            const sh = sheetOf();
+            if (sh && sh.classList) { sh.classList.toggle('fai-nofood', !!on); if (!on) sh.classList.remove('fai-typing'); }
+        };
+        const sayNone = () => {
+            say('fai-none', t('none', l));
+            box.insertAdjacentHTML('beforeend', '<div class="fai-none-acts"><button type="button" class="fai-retake" data-sp="photo">' + esc(t('noneRetake', l)) + '</button>' +
+                '<button type="button" class="fai-type" data-fai-type>' + esc(t('noneType', l)) + '</button></div>');
+            noFood(true);
+        };
+        box.addEventListener('click', ev => {
+            const b = ev.target.closest && ev.target.closest('[data-fai-type]');
+            if (!b) return;
+            ev.preventDefault();
+            const sh = sheetOf(); if (sh && sh.classList) sh.classList.add('fai-typing');
+            b.remove();
+            try { titleIn && titleIn.focus(); } catch (e) { }
+        });
         const paint = (res) => {
             box.className = 'sp-ai fai fai-done';
             box.innerHTML = '<p class="fai-h">' + esc(t('found', l)) + '</p><ul class="fai-list">' + rowsHTML(dishes, l) + '</ul>' +
@@ -313,7 +335,7 @@
         let slowT = 0, aiURL = null, busy = false;
         const wait = (k) => {
             clearTimeout(slowT);
-            box.className = 'sp-ai fai fai-wait';
+            box.className = 'sp-ai fai fai-wait'; noFood(false);
             box.innerHTML = '<p class="fai-msg" role="status" aria-live="polite"><i class="fai-spin" aria-hidden="true"></i><span class="fai-wt">' + esc(t(k, l)) + '</span></p>';
             slowT = setTimeout(() => { const w = box.querySelector('.fai-wt'); if (w && box.classList.contains('fai-wait')) w.textContent = t('look2', l); }, 9000);
         };
@@ -348,7 +370,7 @@
             if (!on) { if (why() === 'net') sayRetry(t('net', l)); else say('fai-off', t('off', l)); return null; }
             return once(0).then(res => {
                 if (!box.isConnected) return res;
-                if (!res.isFood) { say('fai-none', t('none', l)); return res; }
+                if (!res.isFood) { sayNone(); return res; }
                 dishes = res.dishes.slice();
                 /* Oct 21: the result screen is LowiMealResult (meal-result.js): spike verdict first, then each food (tap to
                    fix it), drinks, the XP. Fixes are estimated on the device, so they never use another photo check.
@@ -377,7 +399,7 @@
                     ev.preventDefault();
                     dishes.splice(+b.dataset.faiRm, 1);
                     setHidden();
-                    if (dishes.length) paint(res); else say('fai-none', t('none', l));
+                    if (dishes.length) paint(res); else sayNone();
                 });
                 return res;
             }, err => {

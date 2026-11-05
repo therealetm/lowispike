@@ -3,7 +3,7 @@
    pieces that review needs and that the web app had no home for yet:
    - LowiConsent: asks once before a meal photo or a typed food name goes to Google Gemini (guideline 5.1.2). food-photo-ai.js
      calls LowiConsent.ask() and sends nothing on "Not now". The answer sits in localStorage (lowi.aiConsent.v1 = yes|no) and
-     can be changed in Profile > About & info (home-settings-sleep-v2.js shows LowiStore.aboutHTML()).
+     can be changed in Settings > About & info (home-settings-sleep-v2.js shows LowiStore.aboutHTML()).
    - LowiStore.openPrivacy(): the privacy policy (privacy.html) inside the app, with a close button, so the native app never
      leaves its only page. LowiStore.SUPPORT is the support contact shown in About & info and in privacy.html.
    - LowiStore.medNote(box): one quiet line "Food guidance, not medical advice" under a photo check result.
@@ -76,9 +76,9 @@
                 '<p>' + esc(T('Nothing else: no name, email or health data, and Google does not get your account.',
                     'Sonst nichts: kein Name, keine E-Mail, keine Gesundheitsdaten, und Google bekommt dein Konto nicht.',
                     'Nada más: ni nombre, ni email, ni datos de salud, y Google no recibe tu cuenta.')) + '</p>' +
-                '<p>' + esc(T('Without it you can still type and log every meal. You can change this any time in Profile > About & info.',
-                    'Ohne KI kannst du trotzdem jedes Essen eintippen und speichern. Du kannst das jederzeit unter Profil > Über & Hinweise ändern.',
-                    'Sin ella puedes escribir y guardar cada comida. Puedes cambiarlo cuando quieras en Perfil > Acerca de.')) +
+                '<p>' + esc(T('Without it you can still type and log every meal. You can change this any time in Settings > About & info.',
+                    'Ohne KI kannst du trotzdem jedes Essen eintippen und speichern. Du kannst das jederzeit unter Einstellungen > Über & Hinweise ändern.',
+                    'Sin ella puedes escribir y guardar cada comida. Puedes cambiarlo cuando quieras en Ajustes > Acerca de.')) +
                 ' <button type="button" class="lis-link" data-lis="privacy">' + esc(T('Privacy policy', 'Datenschutz', 'Privacidad')) + '</button></p>' +
                 '<div class="lis-row"><button type="button" class="lis-b" data-lis="no">' + esc(T('Not now', 'Jetzt nicht', 'Ahora no')) + '</button>' +
                 '<button type="button" class="lis-b pri" data-lis="yes">' + esc(T('Allow', 'Erlauben', 'Permitir')) + '</button></div></div>';
@@ -126,7 +126,7 @@
         host.insertBefore(p, box.nextSibling);
     }
 
-    /* ---------- Profile > About & info block ---------- */
+    /* ---------- Settings > About & info block ---------- */
     function aboutHTML() {
         css();
         const on = get() === 'yes';

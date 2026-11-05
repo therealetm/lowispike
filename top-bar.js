@@ -251,7 +251,10 @@
         const to = nextTheme(effective());
         const R2 = root.LowiR2;
         /* Day & night atmosphere (atmosphere.js): one tap jumps to its Day or Night stop; the slider lives in Look & Ton */
-        if (root.LowiAtmos && root.LowiAtmos.quick) root.LowiAtmos.quick(to === 'light' ? 'day' : 'night', { toast: false });
+        /* Nov 5 fix: the dark side keeps the look the person chose (Dark = true black, or the blue Night). It used to pass 'night',
+           which saved the blue Night over Dark on the first Day -> dark tap, so Dark could never come back from this switch. */
+        const darkKind = root.LowiTrueBlack && typeof root.LowiTrueBlack.kind === 'function' ? root.LowiTrueBlack.kind() : 'night';
+        if (root.LowiAtmos && root.LowiAtmos.quick) root.LowiAtmos.quick(to === 'light' ? 'day' : darkKind, { toast: false });
         else if (R2 && R2.applyTheme) R2.applyTheme(to);
         else { try { localStorage.setItem('lowi.theme', to); } catch (e) {} H.setAttribute('data-theme', to); H.setAttribute('data-theme-mode', to); }
         paintBtn();

@@ -55,7 +55,7 @@ test('loaded first in <head>, right after the class guard, and cached for offlin
 test('the switch: Look & sound has Dark, Night, Day and Auto, and only Dark / Night change the dark kind', () => {
     const atm = read('atmosphere.js'), core = read('atmosphere-core.js'), html = read('index.html'), tb = read('top-bar.js');
     assert.ok(atm.includes('data-atm-quick="black"') && atm.includes('data-atm-quick="night"'));
-    assert.ok(atm.includes("TB.set(which)") && atm.includes("(blk ? 'black' : 'night')"));
+    assert.ok(atm.includes("TB.set(which, { byHand: !!(opts && opts.byHand) })") && atm.includes("(blk ? 'black' : 'night')"));
     assert.ok(core.includes("dark: ['Dark', 'Dunkel', 'Oscuro']"));
     assert.ok(html.includes('if (t === "black" || t === "night") {'), 'plain "dark" keeps the chosen kind');
     assert.ok(html.includes('data-r2theme="black"') && html.includes('data-r2theme="night"'));
@@ -85,6 +85,8 @@ test('the look buttons press and spring back, never under Reduce Motion or batte
     assert.ok(css.includes('html.lowi-saver .atm-quick button:active'));
 });
 
-test('the Settings theme row names Dark when the true black look is on', () => {
-    assert.ok(read('community-me.js').includes("blk ? ({ de: 'Dunkel', en: 'Dark', es: 'Oscuro' }[l] || 'Dark') : ST.night"));
+test('the Settings theme row offers Dark (Dunkel / Oscuro) next to Day, Night and Auto', () => {
+    const src = read('community-me.js');
+    assert.ok(src.includes("black: 'Dark'") && src.includes("black: 'Dunkel'") && src.includes("black: 'Oscuro'"));
+    assert.ok(src.includes("['day', 'black', 'night', 'auto'].map(x =>"));
 });

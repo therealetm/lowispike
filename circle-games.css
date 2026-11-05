@@ -43,3 +43,6 @@ html.csp-game #tab-shelf #shTop,html.csp-game #tab-shelf .sh-top,html.csp-game #
 .cr-ov.cr-ov-tree.csp-inline>.cr-panel{width:100%;max-width:none;height:100%;max-height:none;border-radius:26px;margin:0;
   border:1.2px solid rgba(143,231,255,.5)}
 .cr-ov.cr-ov-tree.csp-inline .cr-x{display:none!important}
+/* Nov 5 2026: the chosen game's label (white) sat on its light cyan pill at 1.2:1 in every theme, because
+   "#cmPaneChat[data-spirit-chat] button { color: inherit }" outranks the class rule above. Dark ink on the light pill again. */
+#cmPaneChat[data-spirit-chat] .csp-tab[aria-selected="true"]{color:#062033}

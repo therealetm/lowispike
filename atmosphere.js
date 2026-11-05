@@ -96,8 +96,11 @@
             /* Oct 16 (E-man): a speed slider right next to the day-night control: how fast the world moves (Misty keeps her pace) */
             '<div class="atm-speed"><div class="atm-speedhd"><b>' + W('speed') + '</b><output class="atm-spdout">' + speedWord(worldSpeed()) + '</output></div>' +
             '<div class="atm-speedrow"><span aria-hidden="true">🐢</span><input class="atm-spd" type="range" min="0.25" max="3" step="0.05" value="' + worldSpeed() + '" aria-label="' + W('speed') + '"><span aria-hidden="true">🐇</span></div>' +
-            '<small class="atm-spdnote">' + W('speedNote') + '</small></div>';
+            '<small class="atm-spdnote">' + W('speedNote') + '</small></div>' +
+            /* Nov 5: the live-weather switch lived only in the old Appearance sheet, which has no entry any more; it sits here now */
+            (window.LowiSky ? '<button type="button" class="wx-toggle atm-wx" role="switch" data-atm-wx aria-checked="' + skyOn() + '"><span><b>' + W('wx') + '</b><small>' + W('wxNote') + '</small></span><i aria-hidden="true"></i></button>' : '');
     }
+    function skyOn() { try { return localStorage.getItem('lowi.sky.off') !== '1'; } catch (e) { return true; } }
     const SPD_KEY = 'lowi.world.speed.v1';
     function worldSpeed() { let v = 1; try { v = +localStorage.getItem(SPD_KEY) || 1; } catch (e) { } return Math.min(3, Math.max(0.25, v)); }
     function speedWord(v) { return (Math.round(v * 100) / 100).toString().replace(/\.?0+$/, '') + '×'; }
@@ -116,6 +119,7 @@
             card.querySelectorAll('[data-atm-quick]').forEach(b => { const on = b.getAttribute('data-atm-quick') === q; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
             card.querySelectorAll('.atm-mark').forEach(b => b.classList.toggle('on', state.mode === 'manual' && b.getAttribute('data-atm-goto') === String(k.mark === 'night' ? C.NIGHT : (C.MARKS.find(m => m.id === k.mark) || {}).p)));
             card.classList.toggle('atm-is-auto', state.mode === 'auto');
+            const wx = card.querySelector('[data-atm-wx]'); if (wx) { const onWx = skyOn(); wx.setAttribute('aria-checked', String(onWx)); wx.setAttribute('aria-pressed', String(onWx)); }
         });
     }
     function mountCard() {
@@ -135,7 +139,7 @@
         /* Nov 5 2026: Dark and Night both go to the night stop; Dark is true black, Night the blue night look. The choice is kept
            (lowi.theme.dark), so the top-bar moon, Auto after sunset and the slider's night side use the same one. */
         const TB = window.LowiTrueBlack;
-        if ((which === 'black' || which === 'night') && TB) TB.set(which);
+        if ((which === 'black' || which === 'night') && TB) TB.set(which, { byHand: !!(opts && opts.byHand) });
         if (which === 'auto') apply({ mode: 'auto' });
         else apply({ mode: 'manual', p: which === 'day' ? C.DAY : C.NIGHT });
         const nightWord = TB && TB.kind() === 'black' ? 'blackOn' : 'nightOn';
@@ -144,7 +148,9 @@
     }
     document.addEventListener('click', e => {
         const q = e.target.closest && e.target.closest('[data-atm-quick]');
-        if (q) { quick(q.getAttribute('data-atm-quick')); return; }
+        if (q) { quick(q.getAttribute('data-atm-quick'), { byHand: true }); return; }
+        const wx = e.target.closest && e.target.closest('[data-atm-wx]');
+        if (wx && window.LowiSky && typeof window.LowiSky.setEnabled === 'function') { window.LowiSky.setEnabled(!skyOn()); updateUI(); return; }
         const g = e.target.closest && e.target.closest('[data-atm-goto]');
         if (g) apply({ mode: 'manual', p: +g.getAttribute('data-atm-goto') });
     });

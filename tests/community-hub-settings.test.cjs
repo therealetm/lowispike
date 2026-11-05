@@ -19,7 +19,7 @@ test('settings page groups: You, Circle, App, Help & info, then Delete account a
     assert.deepStrictEqual(g[0].ids, ['myday', 'swaps', 'glow', 'cycle', 'todo']);
     assert.deepStrictEqual(g[1].ids, ['presence', 'people', 'posts', 'invite']);
     /* Nov 5 2026 (test changed, why): owner Phase B item 4, Körperklang (World sound panel) and VR stay reachable from Settings */
-    assert.deepStrictEqual(g[2].ids, ['theme', 'language', 'notifications', 'look', 'worldSound', 'vr']);
+    assert.deepStrictEqual(g[2].ids, ['theme', 'sky', 'language', 'notifications', 'look', 'worldSound', 'vr']);
     assert.deepStrictEqual(g[3].ids, ['tutorial', 'support', 'rules', 'about']);
     assert.deepStrictEqual(g[4].ids, ['deleteAccount'], 'Delete account is last, on its own');
     const all = g.flatMap(x => x.ids); assert.strictEqual(new Set(all).size, all.length, 'every row once');
@@ -40,8 +40,8 @@ test('the old Settings sheet is a fallback: show(page) opens the hub first', () 
     assert.ok(!/data-cme="settings"/.test(SRC), 'no gear in the hub that would open itself');
 });
 
-test('the hub renders Settings rows: day/night switch, EN/DE/ES, red Delete account that asks first, version line', () => {
-    assert.match(SRC, /role="switch" data-cme="theme"/);
+test('the hub renders Settings rows: Day/Dark/Night/Auto choice, EN/DE/ES, red Delete account that asks first, version line', () => {
+    assert.match(SRC, /cme-themerow" role="group"/); assert.match(SRC, /data-cme-theme="' \+ x \+ '"/);
     assert.match(SRC, /data-lang="' \+ x \+ '"/);
     assert.match(SRC, /cme-row cme-danger" data-cme="deleteAccount" aria-haspopup="dialog"/);
     assert.match(SRC, /data-cme="delGo"/); assert.match(SRC, /data-cme="delCancel"/);

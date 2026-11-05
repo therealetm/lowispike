@@ -100,7 +100,7 @@ test('css vars are complete and the head can restore them before first paint', (
 test('wiring: loader, offline cache, top bar, Look card, weather and seasons kept', () => {
     assert.ok(/'season\.js','atmosphere-core\.js','atmosphere\.js'/.test(loader), 'loaded after season.js');
     for (const f of ['atmosphere-core.js', 'atmosphere.js', 'atmosphere.css']) assert.strictEqual(sw.split('"' + f + '"').length - 1, 2, f + ' in both sw lists');
-    assert.ok(topbar.includes('root.LowiAtmos.quick(to === \'light\' ? \'day\' : \'night\''), 'top bar jumps Day/Night');
+    assert.ok(topbar.includes('root.LowiAtmos.quick(to === \'light\' ? \'day\' : darkKind'), 'top bar jumps Day/the chosen dark look');
     assert.ok(!/Cloud einschalten|Switch to Cloud/.test(topbar), 'no Cloud wording left in the top bar');
     assert.ok(js.includes("'.r2-look:not([data-atm-card])'") && js.includes('data-atm-quick="day"') && js.includes('data-atm-quick="night"') && js.includes('data-atm-quick="auto"'));
     assert.ok(js.includes('type="range" min="0" max="100" step="0.5"'), 'a real slider, half steps');

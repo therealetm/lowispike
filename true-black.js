@@ -127,6 +127,11 @@
     }
 
     /* ---------- state ---------- */
+    /* Nov 5 repair: build 20261105-030004's Day/night switch saved 'night' (the blue look) on its first Day -> dark tap, without the
+       person ever choosing Night. Once per device, a saved 'night' that was not picked by hand goes back to Dark. A Night picked by
+       hand from now on is marked (PICKED) and stays. */
+    const FIX = 'lowi.theme.dark.fix1', PICKED = 'lowi.theme.dark.picked';
+    try { if (!ls.get(FIX)) { if (ls.get(C.KEY) === 'night' && !ls.get(PICKED)) ls.set(C.KEY, 'black'); ls.set(FIX, '1'); } } catch (e) { }
     const kind = () => C.kindOf(ls.get(C.KEY));
     function meta() {
         if (!on) return;
@@ -141,9 +146,10 @@
         else { H.removeAttribute('data-black'); restore(); cache.clear(); }
         try { D.dispatchEvent(new CustomEvent('lowi:trueblack', { detail: { on } })); } catch (e) { }
     }
-    function set(k) {
+    function set(k, opts) {
         k = C.kindOf(k);
         if (k !== ls.get(C.KEY)) ls.set(C.KEY, k);
+        if (opts && opts.byHand) { try { ls.set(PICKED, k); } catch (e) { } }
         sync();
     }
     try { new MutationObserver(sync).observe(H, { attributes: true, attributeFilter: ['data-theme'] }); } catch (e) { }

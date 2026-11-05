@@ -95,3 +95,14 @@ html[data-theme="light"] .cme-langs button.on { background: rgba(0,150,210,.18);
 html[data-theme="light"] .cme-me { background: rgba(255,255,255,.65); border-color: rgba(0,150,210,.4); }
 html[data-theme="light"] .cme-list { background: rgba(255,255,255,.6); border-color: rgba(0,150,210,.35); }
 html[data-theme="light"] .cme-list > .cme-row + .cme-row { box-shadow: inset 0 1px 0 rgba(0,60,110,.12); }
+/* Nov 5 2026: App theme is one choice of four (Day, Dark, Night, Auto). The four sit on their own line under the name so the words
+   fit a 320 px phone, each at least 44 px tall to tap (HIG). */
+.cme-themerow { flex-wrap: wrap; row-gap: 8px; }
+.cme-themes { flex: 1 1 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding-left: 36px; }
+.cme-themes button { min-width: 0; height: 44px; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background-color .18s ease-out, border-color .18s ease-out; }
+html[data-black="1"] .cme-themes button.on, html[data-black="1"] .cme-langs button.on, html[data-black="1"] .one-sheet .cme-in .cme-langs button.on { background: rgba(230,184,92,.2); border-color: rgba(230,184,92,.85); color: #f6e3b4; }
+html[data-black="1"] .cme-langs button { border-color: rgba(255,255,255,.18); }
+@media (prefers-reduced-motion: reduce) { .cme-themes button { transition: none; } }
+/* Nov 5 2026, Day mode: Settings sits on the dark glass sheet in Day too (one-sheet.css paints the text white), but the profile card
+   at the top kept the old light-sheet card (white at 65 %), so the name and its line were white on near-white (contrast 1:1). */
+html[data-theme="light"] .one-sheet .cme-in .cme-me { background: rgba(255,255,255,.1); border-color: var(--one-cell-line, rgba(143,231,255,.32)); }

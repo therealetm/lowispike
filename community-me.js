@@ -25,6 +25,7 @@
     };
     const P = 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"';
     const ICON = {
+        sky: '<circle cx="9" cy="9" r="3.2" ' + P + '/><path d="M9 2.8v1.4M3 9h1.4M4.8 4.8l1 1M13.2 4.8l-1 1" ' + P + '/><path d="M8.5 19.5h9a3.5 3.5 0 0 0 .3-7 5 5 0 0 0-9.6 1.2A2.9 2.9 0 0 0 8.5 19.5z" ' + P + '/>',
         presence: '<path d="M12 3l7 3v5.5c0 4.4-3 8-7 9.5-4-1.5-7-5.1-7-9.5V6z" ' + P + '/><path d="M9.2 12.2l2 2 3.8-4" ' + P + '/>',
         swaps: '<path d="M7 4h10a1 1 0 011 1v15l-6-4-6 4V5a1 1 0 011-1z" ' + P + '/>',
         glow: '<circle cx="12" cy="12" r="4" ' + P + '/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" ' + P + '/>',
@@ -49,7 +50,7 @@
         { key: 'circle', ids: ['presence', 'people', 'posts', 'invite'] },
         /* Nov 5 2026 (owner, Phase B item 4: "keep Körperklang and VR accessible from Settings"): neither had a row here (World sound sat in
            SKIP, VR was gone from every list), so the only way in was the Home HUD. Both are rows now and run Home's own controls. */
-        { key: 'settings', ids: ['theme', 'language', 'notifications', 'look', 'worldSound', 'vr'] },
+        { key: 'settings', ids: ['theme', 'sky', 'language', 'notifications', 'look', 'worldSound', 'vr'] },
         { key: 'help', ids: ['tutorial', 'support', 'rules', 'about'] },
         { key: 'danger', ids: ['deleteAccount'] }
     ];
@@ -81,11 +82,29 @@
         return { name, xp };
     }
     const sT = () => { const s = S(), l = lang(); return (s && s.TX && (s.TX[l] || s.TX.en)) || {}; };
+    const THEME_W = { en: { t: 'App theme', day: 'Day', black: 'Dark', night: 'Night', auto: 'Auto' }, de: { t: 'App-Design', day: 'Tag', black: 'Dunkel', night: 'Nacht', auto: 'Auto' }, es: { t: 'Tema de la app', day: 'D\u00eda', black: 'Oscuro', night: 'Noche', auto: 'Auto' } };
+    const SKY_W = { en: ['Time of day & weather', 'Slider, live weather, world speed'], de: ['Tageszeit & Wetter', 'Regler, Live-Wetter, Tempo der Welt'], es: ['Hora del d\u00eda y tiempo', 'Control, tiempo en vivo, velocidad'] };
+    /* which of the four is on: Auto while the day follows the clock, else Day, or the dark look that was chosen */
+    function themeNow() {
+        try { const A = root.LowiAtmos, st = A && A.state ? A.state() : null; if (st && st.mode === 'auto') return 'auto'; } catch (e) { }
+        if (H.getAttribute('data-theme') === 'light' || H.getAttribute('data-theme') === 'sunrise') return 'day';
+        const TB = root.LowiTrueBlack; return TB && TB.kind() === 'night' ? 'night' : 'black';
+    }
+    function pickTheme(x) {
+        const A = root.LowiAtmos, TB = root.LowiTrueBlack;
+        if (A && typeof A.quick === 'function') { A.quick(x, { byHand: true }); return; }
+        if (x === 'black' || x === 'night') { if (TB) TB.set(x, { byHand: true }); }
+        const R2 = root.LowiR2, to = x === 'day' ? 'light' : 'dark';
+        if (x !== 'auto') { if (R2 && R2.applyTheme) R2.applyTheme(to); else { try { root.localStorage.setItem('lowi.theme', to); } catch (e) { } H.setAttribute('data-theme', to); H.setAttribute('data-theme-mode', to); } }
+    }
     function row(id) {
         const s = S(), l = lang(), ST = sT(), lab = wnm(LABELS[l] && LABELS[l][id]) || s.label(id);
         const ico = ICON[id] ? svg(id) : s.icon(id).replace('ss2-ico', 'cme-ico');
         if (id === 'language') { return '<div class="cme-row cme-langrow" role="group" aria-label="' + esc(lab) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><span class="cme-langs">' + ['en', 'de', 'es'].map(x => '<button type="button" data-lang="' + x + '" aria-pressed="' + (x === l) + '"' + (x === l ? ' class="on"' : '') + '>' + x.toUpperCase() + '</button>').join('') + '</span></div>'; }
-        if (id === 'theme') { const dark = s.state ? s.state('theme') : true, blk = !!(typeof window !== 'undefined' && window.LowiTrueBlack && window.LowiTrueBlack.kind() === 'black'), st = dark ? (blk ? ({ de: 'Dunkel', en: 'Dark', es: 'Oscuro' }[l] || 'Dark') : ST.night) : ST.day; /* Nov 5: Dark = true black */ return '<button type="button" class="cme-row" role="switch" data-cme="theme" aria-checked="' + dark + '" aria-label="' + esc(lab) + ': ' + esc(st) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><small class="cme-st">' + esc(st) + '</small></button>'; }
+        /* Nov 5 fix (owner: "you said I got the dark mode, but I don't"): the row was a Day <-> Night switch, and that switch saved the blue
+           Night over Dark. It is now one choice of four, like Language: Day, Dark (true black), Night (blue) and Auto. */
+        if (id === 'theme') { const cur = themeNow(), W4 = THEME_W[l] || THEME_W.en; return '<div class="cme-row cme-langrow cme-themerow" role="group" aria-label="' + esc(W4.t) + '">' + ico + '<span class="cme-tx"><b>' + esc(W4.t) + '</b></span><span class="cme-langs cme-themes">' + ['day', 'black', 'night', 'auto'].map(x => '<button type="button" data-cme-theme="' + x + '" aria-pressed="' + (x === cur) + '"' + (x === cur ? ' class="on"' : '') + '>' + esc(W4[x]) + '</button>').join('') + '</span></div>'; }
+        if (id === 'sky') { const W2 = SKY_W[l] || SKY_W.en; return '<button type="button" class="cme-row" data-cme="sky" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(W2[0]) + '</b><small>' + esc(W2[1]) + '</small></span>' + svg('chev', 'cme-chev') + '</button>'; }
         if (id === 'deleteAccount') return '<button type="button" class="cme-row cme-danger" data-cme="deleteAccount" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
         return '<button type="button" class="cme-row" data-cme="' + id + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
     }
@@ -95,6 +114,8 @@
     function hasRow(id) {
         const s = S();
         if (id === 'presence') return hasPresence();
+        if (id === 'sky') return !!(root.LowiAtmos && typeof root.LowiAtmos.openSheet === 'function');
+        if (id === 'theme') return true;
         if (G2E[id]) { if (!(root.LowiG2E && typeof root.LowiG2E.direct === 'function')) return id === 'look' && s.has('look'); const t = D.getElementById('tab-profile'); return !!(t && t.querySelector(PART[id])); }
         if (id === 'cycle') { try { const C = root.LowiCycleWorld; return !!(C && typeof C.open === 'function' && (typeof C.eligible !== 'function' || C.eligible())); } catch (e) { return false; } }
         if (id === 'people') return !!(root.LowiPeopleDir && typeof root.LowiPeopleDir.open === 'function');
@@ -177,10 +198,21 @@
         el.remove(); if (back) back.remove(); el = null; back = null; asking = false; H.classList.remove('cme-open');
         if (refocus && lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) { } }
     }
+    /* the Day & night adjuster (atmosphere.js): Day / Dark / Night / Auto, the time-of-day slider, live weather, world speed.
+       This page comes back when the sheet closes. */
+    function openSky() {
+        const A = root.LowiAtmos; let sh = null;
+        try { sh = A.openSheet(); } catch (x) { console.error(x); }
+        if (!sh) { open(); return; }
+        const iv = setInterval(() => { if (!sh.isConnected || sh.classList.contains('off')) { clearInterval(iv); if (!el) open(); } }, 250);
+    }
     function onClick(e) {
+        const tp = e.target && e.target.closest && e.target.closest('[data-cme-theme]');
+        if (tp) { e.preventDefault(); pickTheme(tp.getAttribute('data-cme-theme')); setTimeout(() => { if (el && !asking) { render(); const f = el.querySelector('[data-cme-theme="' + tp.getAttribute('data-cme-theme') + '"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (x) { } } } }, 60); return; }
         const b = e.target && e.target.closest && e.target.closest('[data-cme]'); if (!b) return;
         e.preventDefault();
         const id = b.getAttribute('data-cme'), s = S();
+        if (id === 'sky') { close(false); openSky(); return; }
         if (id === 'close') { close(true); return; }
         if (id === 'deleteAccount') { askDelete(); return; }
         if (id === 'delCancel') { asking = false; render(); const f = el && el.querySelector('[data-cme="deleteAccount"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } return; }

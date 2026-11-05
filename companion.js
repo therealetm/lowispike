@@ -20,6 +20,12 @@
         l.href = me && me.getAttribute('src') ? me.getAttribute('src').replace('companion.js', 'companion.css') : 'companion.css';
         D.head.appendChild(l);
     }
+    /* Nov 5 2026: the collectible evolution cards (evo-card.js / .css), loaded beside this file with the same build stamp */
+    if (!D.getElementById('evcCss')) {
+        const src = me && me.getAttribute('src') ? me.getAttribute('src') : 'companion.js';
+        const l = D.createElement('link'); l.id = 'evcCss'; l.rel = 'stylesheet'; l.href = src.replace('companion.js', 'evo-card.css'); D.head.appendChild(l);
+        if (!W.LowiEvoCard) { const s = D.createElement('script'); s.id = 'evcJs'; s.src = src.replace('companion.js', 'evo-card.js'); s.async = true; D.head.appendChild(s); }
+    }
     const KEY = 'lowispike.companionprefs.v1', BIRTH_KEY = 'lowispike.companion.v1', FKEY = 'lowispike.friendlooks.v1';
     const RM = () => { try { return W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
     const lang = () => { try { return (W.LowiLang.get() || 'de').slice(0, 2); } catch (e) { return (H.lang || 'de').slice(0, 2); } };
@@ -292,13 +298,17 @@
            Reached forms show their art, name and what they grew; locked forms stay a mystery orb with ??? and only their XP. */
         const nf = n => { try { return Number(n).toLocaleString({ de: 'de-DE', es: 'es-ES' }[lang()] || 'en-US'); } catch (e) { return String(n); } };
         const found = steps.filter(s => s.reached).length;
+        /* Nov 5 2026 (Eman: "each evolution tappable, view it as a card and save it as a picture"): every row opens its card */
+        V.cards = { steps, nm, fam, pal, m, hp, g, ci };
+        const cardLbl = (s, i) => s.reached ? L('Open card: Form ' + (i + 1) + ', ' + s.name, 'Karte öffnen: Form ' + (i + 1) + ', ' + s.name, 'Abrir carta: forma ' + (i + 1) + ', ' + s.name)
+            : L('Open sealed card: Form ' + (i + 1), 'Versiegelte Karte öffnen: Form ' + (i + 1), 'Abrir carta sellada: forma ' + (i + 1));
         const forms = steps.map((s, i) => {
             const meta = s.reached ? s.trait : (i === ci + 1 && s.left > 0 ? L(nf(s.left) + ' XP to go', 'Noch ' + nf(s.left) + ' XP', 'Faltan ' + nf(s.left) + ' XP') : L('Not discovered yet', 'Noch nicht entdeckt', 'Aún sin descubrir'));
             const tag = s.current ? L('Now', 'Jetzt', 'Ahora') : s.reached ? L('Reached', 'Erreicht', 'Alcanzada') : nf(s.xp) + ' XP';
             return '<li class="cf-step' + (s.reached ? ' on' : ' cf-locked') + (s.current ? ' cur' : '') + (i === ci + 1 ? ' cf-nextup' : '') + '"' + (s.current ? ' aria-current="step"' : '') + '>' +
                 (s.reached ? '<span class="cf-sm">' + formArt(m, hp, g, s.i) + '</span><b>' + esc(s.name) + '</b>' : '<span class="cf-mystery" aria-hidden="true">?</span><b aria-hidden="true">???</b>') +
                 '<small class="cf-k" aria-hidden="true">' + esc(L('Form ', 'Form ', 'Forma ') + (i + 1)) + '</small><small class="cf-meta" aria-hidden="true">' + esc(meta) + '</small><em aria-hidden="true">' + esc(tag) + '</em><span class="cf-sr">' +
-                esc(L('Form ', 'Form ', 'Forma ') + (i + 1) + ': ' + (s.reached ? s.name + (s.current ? ', ' + L('now', 'jetzt', 'ahora') : '') : L('not discovered yet', 'noch nicht entdeckt', 'aún sin descubrir') + ', ' + L('from ', 'ab ', 'desde ') + nf(s.xp) + ' XP')) + '</span></li>';
+                esc(L('Form ', 'Form ', 'Forma ') + (i + 1) + ': ' + (s.reached ? s.name + (s.current ? ', ' + L('now', 'jetzt', 'ahora') : '') : L('not discovered yet', 'noch nicht entdeckt', 'aún sin descubrir') + ', ' + L('from ', 'ab ', 'desde ') + nf(s.xp) + ' XP')) + '</span><button type="button" class="cf-cardbtn" data-cf="card" data-i="' + i + '" aria-label="' + esc(cardLbl(s, i)) + '"></button></li>';
         }).join('');
         const sel = V.pend || (t ? t.split('') : ['', '', '', '']);
         const typeBtns = AX.map((a, i) => '<div class="cf-ax" role="group">' + [0, 1].map(j => '<button type="button" data-cf="ax" data-i="' + i + '" data-v="' + a[j] + '" aria-pressed="' + (sel[i] === a[j]) + '">' + esc(pick3(a[2 + j])) + '</button>').join('') + '</div>').join('');
@@ -307,7 +317,7 @@
             '<b class="cf-fname">' + esc(now.name) + '</b><small class="cf-sub">' + esc(L('Form ' + (ci + 1) + ' of ' + steps.length, 'Form ' + (ci + 1) + ' von ' + steps.length, 'Forma ' + (ci + 1) + ' de ' + steps.length) + (sign ? ' · ' + signTxt + ' · ' + fam : '')) + '</small>' +
             '<i class="cf-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-label="' + esc(L('XP to the next evolution', 'XP bis zur nächsten Entwicklung', 'XP hasta la próxima evolución')) + '"><i style="width:' + pct + '%"></i></i>' +
             '<small class="cf-next"><b>' + xp + ' XP</b> · ' + esc(nextTxt) + '</small></div>' +
-            '<h3 class="cf-path-h"><span>' + esc(L('Evolution path', 'Entwicklungsweg', 'Camino de evolución')) + '</span><small>' + esc(L(found + ' of ' + steps.length + ' discovered', found + ' von ' + steps.length + ' entdeckt', found + ' de ' + steps.length + ' descubiertas')) + '</small></h3><ol class="cf-path">' + forms + '</ol>' +
+            '<h3 class="cf-path-h"><span>' + esc(L('Evolution path', 'Entwicklungsweg', 'Camino de evolución')) + '</span><small>' + esc(L(found + ' of ' + steps.length + ' discovered', found + ' von ' + steps.length + ' entdeckt', found + ' de ' + steps.length + ' descubiertas')) + '</small></h3><p class="cf-cardhint">' + esc(L('Tap a form to see its card and save it as a picture.', 'Tippe auf eine Form, um ihre Karte zu sehen und als Bild zu speichern.', 'Toca una forma para ver su carta y guardarla como imagen.')) + '</p><ol class="cf-path">' + forms + '</ol>' +
             (evo.E.length ? '<p class="cf-tiny cf-evo-more">' + esc(L('More evolutions at level ' + evo.E.join(', ') + '.', 'Weitere Entwicklungen bei Level ' + evo.E.join(', ') + '.', 'Más evoluciones en el nivel ' + evo.E.join(', ') + '.')) + '</p>' : '') +
             '<p class="cf-tiny">' + esc(L('It evolves with what you log: meals, water, moves, scans. Forms never shrink.', 'Es entwickelt sich mit dem, was du loggst: Essen, Wasser, Bewegung, Scans. Formen schrumpfen nie.', 'Evoluciona con lo que registras: comidas, agua, movimiento, escaneos. Las formas nunca encogen.')) + '</p>' +
             '<details class="cf-pick"' + (V.pickOpen ? ' open' : '') + '><summary>' + esc(L('Style (optional)', 'Stil (optional)', 'Estilo (opcional)')) + (t ? '<span class="cf-pick-t">' + esc(t) + '</span>' : '') + '</summary>' + typeBtns +
@@ -350,6 +360,7 @@
         if (!t || !V.ov.contains(t)) return;
         const a = t.getAttribute('data-cf');
         if (a === 'close') close();
+        else if (a === 'card') openCard(+t.getAttribute('data-i'), t);
         else if (a === 'ax') {
             const i = +t.getAttribute('data-i'), v = t.getAttribute('data-v');
             V.pickOpen = true;
@@ -372,6 +383,13 @@
     /* Oct 28 2026 (slim structure batch 1, "one back press returns to where you came from"): opened from the companion card, Escape /
        back steps back to the card instead of closing both. R2 adopted this panel over the card, so R2.back closes it and brings
        the card back; without a card under it, it simply closes. */
+    /* Nov 5 2026: one form's collectible card (evo-card.js). Read-only: the same path data and art the sheet just drew */
+    function openCard(i, btn) {
+        const c = V.cards, E = W.LowiEvoCard;
+        if (!c || !E || !E.open) return false;
+        const forms = c.steps.map((s, k) => ({ i: s.i, name: s.name, trait: s.trait, xp: s.xp, left: s.left, reached: !!s.reached, current: !!s.current, next: k === c.ci + 1 }));
+        return E.open({ forms, start: i, owner: c.nm, fam: c.fam, pal: c.pal, lang: lang(), back: btn, art: k => formArt(c.m, c.hp, c.g, k) });
+    }
     function dismiss() {
         try { const R = W.LowiR2; if (R && R.back && R.top && R.top() === V.ov) { R.back(V.ov); if (!V.ov) return; } } catch (x) { }
         close();

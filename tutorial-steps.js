@@ -481,6 +481,7 @@
     const SHORT_SKIPS = {};
     ['mic-dictate', 'give-hand-swipe', 'ck-tab-order', 'misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'move-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tab-order', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
     const GESTURE_EXEMPT = {
+        'evo-card.js': 'Nov 5 2026 evolution card viewer: swiping between forms is only a shortcut; the arrow buttons on both sides of the card do it with a plain tap, and tapping a form on the Evolution path opens it',
         'bloom-ring.js': 'Oct 28 2026 slim structure (S-02 deleted): the old hold-Scan helpers stay as code only, nothing wires them; a hold on Scan is a plain tap that opens the one scanner',
         'kitchen-game.js': 'Cook > Kitchen: dragging something that ran out onto the bin is only a shortcut; the Ran out: bin it button on the same card does it with a plain tap, and the shelf says so',
         'mirror-move.js': 'camera workout: it tells you each move out loud while you do it',

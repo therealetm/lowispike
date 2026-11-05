@@ -28,6 +28,7 @@ STATIC.push("day-recap-core.js", "day-recap.js", "day-recap.css"); /* Oct 26 Day
 STATIC.push("meal-sheet.css"); /* Oct 27 calm Log meal sheet: own line */
 STATIC.push("crash-log.js"); /* Oct 28 item 29 light crash log (Profil > Über & Hinweise): own line */
 STATIC.push("you-stats-core.js", "you-stats.js", "you-stats.css"); /* Oct 27 You & companion stats: own line */
+STATIC.push("evo-card.js", "evo-card.css"); /* Nov 5 collectible evolution cards (opened from the Evolution path): own line */
 STATIC.push("kitchen-core.js"); /* Oct 24 Kitchen in Shop: on its own line so it never collides with the build stamp next to the STATIC line */
 const OWN = STATIC.filter(f => /\.(js|css)$/.test(f) && f.indexOf("vendor/") !== 0), PLAIN = STATIC.filter(f => OWN.indexOf(f) < 0);
 self.addEventListener("install", e => {

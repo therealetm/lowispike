@@ -1,0 +1,53 @@
+/* sheet-style.css: one Settings-style pop-up shell (Nov 5 2026, shared pop-up design).
+   Settings, Look / time / weather, the companion card (#mistyHub, .mh-ov), My Day / Today, companion Look, Aura shop, People and
+   member cards (.cme), Shopping, Cart, Plan my week, Give a hand, Feedback, Koerperklang and the tutorial cards all open in the
+   LowiR2.sheet shell (.r2-ov > .r2-sh) or paint with the shared --mb-* / --one-* panel tokens (misty-panels.css, one-sheet.css).
+   Dark (html[data-black], true-black.js) gives all of them ONE look: a near-black panel, one thin neutral rim, the same radius,
+   no cyan membrane stripes and no blue glow. Day, Night and Auto keep their own looks; only the close-control gap below is shared.
+   Paint and spacing only: no markup, handler, scroll, safe-area or keyboard behaviour changes. Loaded once, after every older
+   style sheet (index.html: the last stylesheet link before bottom-close.css); the doubled [data-black] selectors win regardless of load order. */
+
+/* the round bottom X (58px at 16px above the safe area, world-home.css .wh-x) keeps a 12px gap below a tall sheet
+   (one-sheet.css used 72px, which left the sheet 2px over the X): 16 + 58 + 12 = 86px */
+:root:root { --one-x-gap: calc(var(--sab, env(safe-area-inset-bottom)) + 86px); }
+
+/* Dark tokens: every panel painted with the shared tokens turns near-black with a neutral rim */
+html[data-black][data-black] {
+  --sh-panel: #0e0e10; --sh-cell: #1c1c1e; --sh-cell-2: #2c2c2e; --sh-rim: rgba(255, 255, 255, .12); --sh-sep: rgba(255, 255, 255, .08);
+  --sh-ink: #fff; --sh-ink-2: rgba(235, 235, 245, .72); --sh-r: 28px; --sh-r-cell: 16px;
+  --mb-surface: var(--sh-panel); --mb-rim: var(--sh-rim); --mb-glow: 0 20px 50px -20px rgba(0, 0, 0, .8); --mb-r: var(--sh-r);
+  --one-glass: var(--sh-panel); --one-line: var(--sh-rim); --one-cell: var(--sh-cell); --one-cell-line: var(--sh-rim); --one-r: var(--sh-r);
+}
+
+/* the shell: one near-black panel, one thin neutral rim, matching corners; full-screen sheets stay plain black, no rim */
+html[data-black][data-black] body .r2-ov:not(.full) .r2-sh,
+html[data-black][data-black] body .r2-ov.one-sheet:not(.full) .r2-sh,
+html[data-black][data-black].wh-on body .r2-ov.mh-ov:not(.full) .r2-sh,
+html[data-black][data-black] body .r2-ov.mh-ov:not(.full) .r2-sh {
+  background: var(--sh-panel) !important; color: var(--sh-ink) !important; border: 1px solid var(--sh-rim) !important;
+  border-radius: var(--sh-r) !important; box-shadow: 0 20px 50px -20px rgba(0, 0, 0, .8) !important; text-shadow: none !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background-image: none !important;
+}
+html[data-black][data-black] body .r2-ov.full .r2-sh { background: #000 !important; border: 0 !important; box-shadow: none !important; text-shadow: none !important; }
+html[data-black][data-black] body .r2-ov .r2-scrim { background: rgba(0, 0, 0, .55) !important; }
+html[data-black][data-black] body .r2-ov .r2-grab { background: rgba(255, 255, 255, .28) !important; opacity: 1 !important; }
+
+/* header, close and back controls: the Settings look (neutral grey disc, white glyph) */
+html[data-black][data-black] body .r2-ov .r2-sh > .r2-x,
+html[data-black][data-black] body .r2-pback { background: var(--sh-cell-2) !important; color: var(--sh-ink) !important; border: 1px solid var(--sh-rim) !important; box-shadow: none !important; }
+
+/* the tutorial cards use the same panel */
+html[data-black][data-black] .lt-card { background: var(--sh-panel) !important; border: 1px solid var(--sh-rim) !important; border-radius: var(--sh-r) !important;
+  box-shadow: 0 20px 50px -20px rgba(0, 0, 0, .8) !important; text-shadow: none !important; }
+html[data-black][data-black] .lt-card::after { box-shadow: none !important; }
+
+/* rows, lists, tiles and segmented switches inside a sheet: one grey cell, one neutral rim, separators, no cyan edge */
+html[data-black][data-black] body .mh { --mh-card: var(--sh-cell); --mh-rim: var(--sh-rim); --mh-ink-2: var(--sh-ink-2); }
+html[data-black][data-black] body .cme.cme-in { background: none !important; border: 0 !important; box-shadow: none !important; }
+html[data-black][data-black] body .cme-head { color: var(--sh-ink) !important; }
+html[data-black][data-black] body :is(.cme-list, .cme-me) { background: var(--sh-cell) !important; border: 1px solid var(--sh-rim) !important; border-radius: var(--sh-r-cell) !important; box-shadow: none !important; }
+html[data-black][data-black] body .cme-list > .cme-row + .cme-row { box-shadow: inset 0 1px 0 var(--sh-sep) !important; }
+html[data-black][data-black] body :is(.cme-list > .cme-row, .cme-me):active { background: var(--sh-cell-2) !important; }
+html[data-black][data-black] body .cme-tiles > * { background: var(--sh-cell) !important; border: 1px solid var(--sh-rim) !important; box-shadow: none !important; }
+html[data-black][data-black] body .mh-seg { background: var(--sh-cell) !important; border: 1px solid var(--sh-rim) !important; box-shadow: none !important; }
+html[data-black][data-black] body .cme-sec-danger .cme-list { border-color: rgba(255, 110, 110, .40) !important; }

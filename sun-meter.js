@@ -257,7 +257,24 @@
         }
         return n;
     }
-    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, RECALL_KEEP, tended, classify, points, model, pickItem, fmtLeft, fmtBack, fmtHM, msToMidnight, dayKey, verdict, energy, WELCOME, welcomeStart, welcomeK, FEEL, feel, mayDepart, tripFinds, makeTrip, recallPlan, recallTrip, settleAuto };
+    /* Nov 5 2026 (owner handoff: no timed disappearance, no automatic trips): the companion no longer leaves for a timed trip.
+       Departures are off (TIMED_TRIPS false: no "Send her exploring", the depart function does nothing) and a trip still out, whoever
+       started it, ends now: its return time becomes now and it is collected the normal way (collect(): got flag, finds deduped per
+       day + bonus), so the find comes home once and nothing pays twice. Ended trips keep their record; runs once per trip. */
+    const TIMED_TRIPS = false;
+    function endTimedTrips(g, now) {
+        now = +now || Date.now();
+        if (!g || !g.trips || typeof g.trips !== 'object') return 0;
+        let n = 0;
+        for (const key of Object.keys(g.trips)) {
+            const t = g.trips[key];
+            if (!t || typeof t !== 'object' || t.got || !(+t.start > 0) || !(+t.back > now)) continue;
+            g.trips[key] = Object.assign({}, t, { back: now, ended: now });
+            n++;
+        }
+        return n;
+    }
+    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, RECALL_KEEP, tended, classify, points, model, pickItem, fmtLeft, fmtBack, fmtHM, msToMidnight, dayKey, verdict, energy, WELCOME, welcomeStart, welcomeK, FEEL, feel, mayDepart, tripFinds, makeTrip, recallPlan, recallTrip, settleAuto, endTimedTrips, TIMED_TRIPS };
     if (!D) {
         if (typeof module !== 'undefined' && module.exports) module.exports = core;
         return;
@@ -333,7 +350,7 @@
     const save = () => { try { B().save(); } catch (e) {} };
     function garden() { const s = S(); if (!s.garden || typeof s.garden !== 'object') s.garden = { trips: {}, items: [] }; s.garden.trips = s.garden.trips || {}; s.garden.items = s.garden.items || []; return s.garden; }
     /* Oct 26: an old automatic trip comes home before anything reads "away", so she is never shown out on her own */
-    const live = () => { const s = S(), now = Date.now(); if (s.garden && s.garden.trips && typeof s.garden === 'object') { let n = 0; try { n = settleAuto(s.garden, now); } catch (e) { n = 0; } if (n) save(); } return model({ now, ledger: s.ledger || [], garden: s.garden }); };
+    const live = () => { const s = S(), now = Date.now(); if (s.garden && s.garden.trips && typeof s.garden === 'object') { let n = 0; try { n = settleAuto(s.garden, now); n += endTimedTrips(s.garden, now); } catch (e) { n = 0; } if (n) save(); } return model({ now, ledger: s.ledger || [], garden: s.garden }); };
     function waterToday(now) { try { const f = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')); return +((f.water || {})[dayKey(now)]) || 0; } catch (e) { return 0; } }
     const powerBoost = () => { try { const P = W.LowiMistyPower, r = P && P.read && P.read(); return r ? +r.boost || 0 : 0; } catch (e) { return 0; } };
     /* the gentle day (My cycle): only with cycle tracking on and a gentle day she switched on for today */
@@ -422,8 +439,8 @@
         if (!R() || !R().sheet) return;
         try { localStorage.setItem('lowi.sun.sheet', v.key); } catch (e) {}
         /* Oct 26 (Emmanuel): filling the sun no longer sends her off. The sheet asks; only "Send her exploring" starts the trip. */
-        const can = !v.trip && mayDepart(v, energyNow());
-        const html = '<div class="ls-sheet"><div class="ls-big">' + sunSvg(1) + '</div><h2>' + esc(tr('title')) + '</h2><p class="ls-say">' + esc(tr(can ? 'goAsk' : v.trip ? 'thanksDone' : 'tiredT')) + '</p>' +
+        const can = TIMED_TRIPS && !v.trip && mayDepart(v, energyNow());
+        const html = '<div class="ls-sheet"><div class="ls-big">' + sunSvg(1) + '</div><h2>' + esc(tr('title')) + '</h2><p class="ls-say">' + esc(tr(can ? 'goAsk' : TIMED_TRIPS && !v.trip ? 'tiredT' : 'thanksDone')) + '</p>' +
             '<p class="ls-bonus num">+' + BONUS + ' XP</p>' +
             (Object.keys(v.parts).length ? '<h3>' + esc(tr('filled')) + '</h3>' + partsHtml(v) : '') +
             '<p class="ls-note">' + esc(tr('tomorrow')) + '</p>' +
@@ -465,7 +482,7 @@
     }
     /* Oct 26: the one way she sets off: a deliberate tap on "Send her exploring" (sun full, today's trip free, enough energy) */
     function sendBlock(v) {
-        if (v.trip || !mayDepart(v, energyNow())) return '';
+        if (!TIMED_TRIPS || v.trip || !mayDepart(v, energyNow())) return '';
         return '<p class="ls-note ls-send-note">' + esc(tr('sendNote')) + '</p>' +
             '<button type="button" class="ls-cta ls-send-btn" data-ls="go">' + esc(tr('sendOut')) + '</button>';
     }
@@ -514,6 +531,7 @@
     }
     /* Oct 26: called only from a tap on "Send her exploring" (data-ls="go"); nothing calls it on a timer or on a reward */
     function depart() {
+        if (!TIMED_TRIPS) return false;
         const v = live(), en = energyNow();
         if (v.fullDone && !v.trip && !v.away && !en.canTravel) { try { if (W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('tiredTap')); } catch (e) {} return false; }
         if (!mayDepart(v, en)) return false;

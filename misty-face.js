@@ -229,7 +229,7 @@
         const THREE = a.THREE;
         const mat = new THREE.MeshBasicMaterial({ map: S.faceTex, transparent: true, depthWrite: false, depthTest: false, fog: false, opacity: 0, side: THREE.DoubleSide });
         const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
-        m.name = 'mf-misty-face'; m.userData.lwKeep = true; m.renderOrder = 62; m.frustumCulled = false;
+        m.name = 'mf-misty-face'; m.userData.lwKeep = true; m.userData.calmKeep = true; m.renderOrder = 62; m.frustumCulled = false;
         m.matrixAutoUpdate = false; m.matrixWorldAutoUpdate = false; m.visible = false;
         T.p = new THREE.Vector3(); T.cr = new THREE.Vector3(); T.cu = new THREE.Vector3(); T.cf = new THREE.Vector3();
         m.onBeforeRender = faceRender;

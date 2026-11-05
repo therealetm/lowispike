@@ -236,7 +236,7 @@
         const f = CORE.fadeShader(m.material.fragmentShader); if (!f) return false;
         api = a; mem = m; vs = m.material.vertexShader; fs = f; geo = m.geometry; lfs = CORE.liquidShader(f) || '';
         const THREE = a.THREE; tmp = { v: new THREE.Vector3(), f: new THREE.Vector3(), q: new THREE.Quaternion(), y: new THREE.Vector3(0, 1, 0), x: new THREE.Vector3(1, 0, 0) };
-        group = new THREE.Group(); group.name = 'lowi-living-bubbles'; group.userData.lwKeep = true; a.scene.add(group);
+        group = new THREE.Group(); group.name = 'lowi-living-bubbles'; group.userData.lwKeep = true; group.userData.calmKeep = true; a.scene.add(group);
         list.forEach((s, el) => build(el));
         offFrame = a.onFrame(frame);
         H.classList.add('lb3d');

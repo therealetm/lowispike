@@ -34,7 +34,10 @@ test('"The bubble is our thing": Calm mode CSS only takes things away, it never 
     const css = read('galaxy-still.css');
     const home = css.slice(0, css.indexOf('/* ---------- the sheet'));
     assert.ok(!/border|box-shadow|outline|radial-gradient|::before|::after/.test(home), 'nothing drawn on Home');
-    assert.match(home, /html\.cm-nav #whPad[^{]*\{ display: none !important; \}/, 'joystick gone from level 1');
+    /* Nov 5 2026: the joystick now stays in every Calm level as the "hold: all bubbles" control (steering is inert there);
+       only the chip and pins still go. Was: the joystick hidden from level 1. */
+    assert.doesNotMatch(home.replace(/\/\*[\s\S]*?\*\//g, ''), /#whPad|\.wh-pad[,\s{]/, 'joystick stays in every Calm level');
+    assert.match(home, /html\.cm-nav \.wh-pad-chip[^{]*\{ display: none !important; \}/, 'its chip still goes');
     assert.match(home, /html\.cm-nobg, html\.cm-nobg body \{ background: #000 !important; \}/);
 });
 

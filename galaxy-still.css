@@ -3,7 +3,9 @@
 
 /* level 1+: the world can't be flown around, so its controls are gone (the joystick, its Autopilot chip, the place pins).
    display:none also takes the joystick's living glass bubble away (living-bubbles.js hides a bubble whose box has no size). */
-html.cm-nav #whPad, html.cm-nav .wh-pad, html.cm-nav .wh-pad-chip, html.cm-nav .bwr-pins, html.cm-nav .bwr-pin { display: none !important; }
+/* Nov 5 2026 (owner handoff): the joystick (#whPad) stays in every Calm level as the open-all control (hold it: every bubble opens;
+   misty-pad.js keeps dragging inert while navigation is off). Its steering chip and the travel pins still go. */
+html.cm-nav .wh-pad-chip, html.cm-nav .bwr-pins, html.cm-nav .bwr-pin { display: none !important; }
 
 /* level 3+: no scenery. The 3D world draws only the glass bubbles and Misty on plain black (or light in Day,
    body-world-3d-scene.js); the page behind it is the same plain colour, so nothing shows through at the edges or behind a page. */

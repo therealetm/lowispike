@@ -25,7 +25,7 @@ const D=W.document,C=W.LowiTableCore;if(!C)return;
 const T=C.T;
 const COPY={
   table:['Pool table: everyone in the Room','Billardtisch: alle im Raum','Mesa de billar: todos en la sala'],
-  hint:['Pull back, let go: energy blast. It bounces off the cushions','Zurückziehen, loslassen: Energy Blast. Er prallt an der Bande ab','Tira hacia atrás y suelta: energy blast. Rebota en la banda'],
+  stick:['Aim stick: pull back, let go to shoot','Zielstick: zurückziehen, loslassen zum Stoßen','Palanca de tiro: tira hacia atrás y suelta para tirar'],
   pushed:['{n} knocked you away while you were gone','{n} hat dich weggestoßen, während du weg warst','{n} te empujó mientras no estabas'],
   pushedAnon:['Someone knocked you away while you were gone','Jemand hat dich weggestoßen, während du weg warst','Alguien te empujó mientras no estabas'],
   hitYou:['{n} knocked you','{n} hat dich getroffen','{n} te golpeó'],
@@ -52,7 +52,7 @@ let off=false;try{off=localStorage.getItem(OFF_KEY)==='1';}catch(e){}
 
 const rest=C.table();          /* where every ball rests (the shared truth on this phone) */
 let play=null,playEnd=null;    /* a shot being animated: its own table, and the rest positions it must end on */
-let gal=null,wrap=null,felt=null,fx=null,ctx=null,ballsEl=null,toastEl=null,liveEl=null,hintEl=null,midEl=null;
+let gal=null,wrap=null,felt=null,fx=null,ctx=null,ballsEl=null,toastEl=null,liveEl=null,stickEl=null,midEl=null;
 let scale=.3,dpr=1,fw=0,fh=0,raf=0,acc=0,lastT=0;
 let people=[],peopleKey='',me='',sel='';
 const els=new Map(),arts=new Map(),trails=new Map(),sparks=[];
@@ -73,10 +73,10 @@ function build(g){gal=g;g.classList.add('rt-on');
   wrap=D.createElement('div');wrap.className='rt-wrap';
   wrap.innerHTML='<div class="rt-rail"><div class="rt-felt" role="group"><canvas class="rt-fx" aria-hidden="true"></canvas><div class="rt-mid"></div><div class="rt-balls"></div></div>'+
     '<span class="rt-pocket p1" aria-hidden="true"></span><span class="rt-pocket p2" aria-hidden="true"></span><span class="rt-pocket p3" aria-hidden="true"></span><span class="rt-pocket p4" aria-hidden="true"></span><span class="rt-pocket p5" aria-hidden="true"></span><span class="rt-pocket p6" aria-hidden="true"></span></div>'+
-    '<div class="rt-toast" role="status" aria-live="polite"></div><div class="rt-hint" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" focusable="false"><path d="M13 3 6 13.5h5L10 21l7-10.5h-5z" fill="currentColor"/></svg><span></span></div><span class="sr-only rt-live" aria-live="polite"></span>';
+    '<div class="rt-toast" role="status" aria-live="polite"></div><div class="rt-stick" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="rt-knob" aria-hidden="true"></span></div><span class="sr-only rt-live" aria-live="polite"></span>';
   felt=wrap.querySelector('.rt-felt');fx=wrap.querySelector('.rt-fx');ctx=fx.getContext&&fx.getContext('2d');ballsEl=wrap.querySelector('.rt-balls');
-  toastEl=wrap.querySelector('.rt-toast');hintEl=wrap.querySelector('.rt-hint');liveEl=wrap.querySelector('.rt-live');midEl=wrap.querySelector('.rt-mid');
-  felt.setAttribute('aria-label',tr('table'));hintEl.querySelector('span').textContent=tr('hint');
+  toastEl=wrap.querySelector('.rt-toast');stickEl=wrap.querySelector('.rt-stick');liveEl=wrap.querySelector('.rt-live');midEl=wrap.querySelector('.rt-mid');
+  felt.setAttribute('aria-label',tr('table'));stickEl.setAttribute('aria-label',tr('stick'));
   g.appendChild(wrap);els.clear();wire();layout();
   try{if(W.ResizeObserver){const ro=new ResizeObserver(()=>{layout();render();});ro.observe(g);}}catch(e){}}
 function layout(){if(!wrap||!gal)return;const gw=gal.clientWidth,gh=gal.clientHeight;if(!gw||!gh)return;
@@ -88,7 +88,14 @@ function layout(){if(!wrap||!gal)return;const gw=gal.clientWidth,gh=gal.clientHe
   felt.style.cssText='left:'+rail+'px;top:'+rail+'px;width:'+fw+'px;height:'+fh+'px';
   wrap.style.setProperty('--d',Math.round(2*T.R*scale)+'px');
   dpr=Math.min(2,W.devicePixelRatio||1);fx.width=Math.round(fw*dpr);fx.height=Math.round(fh*dpr);fx.style.width=fw+'px';fx.style.height=fh+'px';
-  toastEl.style.top=(tp+rail+8)+'px';}
+  toastEl.style.top=(tp+rail+8)+'px';placeStick(bottom);}
+/* 5 Nov 2026 (owner: "remove the sentence beneath the board; a lower-left aim joystick"): the hint line is gone and a small stick
+   sits lower left in the strip under the board, just right of the Freundesbaum button. It drives the same aim as pulling back
+   on the felt (C.aim) and the same fire(); it never shoots by itself, and a cancel, a lost capture or leaving the page drops the aim. */
+function placeStick(bottom){if(!stickEl||!gal)return;const sz=Math.max(34,Math.min(46,bottom-8));let left=12;
+  try{const t=D.querySelector('#cpRoom > .nm-ctree'),g=gal.getBoundingClientRect();if(t&&t.offsetParent){const b=t.getBoundingClientRect();if(b.width&&b.bottom>g.bottom-bottom-4)left=Math.max(left,Math.round(b.right-g.left+10));}}catch(e){}
+  stickEl.style.cssText='left:'+left+'px;bottom:'+Math.max(4,Math.round((bottom-sz)/2))+'px;width:'+sz+'px;height:'+sz+'px';}
+function stickAim(dx,dy,r){const k=Math.max(90,Math.min(170,fw*.42))/Math.max(1,r);return C.aim(dx*k,dy*k,Math.max(90,Math.min(170,fw*.42)));}
 function ballEl(p){let el=els.get(p.uid);if(el&&el.isConnected)return el;
   el=D.createElement('button');el.type='button';el.className='rt-ball'+(p.me?' me':'');el.dataset.uid=p.uid;el.setAttribute('data-sfx','none');
   let art=arts.get(p.uid);if(art==null){const m=mapApi();art=(m&&m.art)?m.art(p.me?(me||'me'):p.uid,'bt'+(arts.size+1)):'';arts.set(p.uid,art);}
@@ -213,6 +220,19 @@ function wire(){
     if(aim){const a=aim;aim=null;if(!cancel&&a.p>=.08)fire(a.dx,a.dy,a.p);kick();return;}
     if(!cancel&&d.uid&&performance.now()-d.t<700)tap(d.uid);};
   felt.addEventListener('pointerup',e=>up(e,false));felt.addEventListener('pointercancel',e=>up(e,true));
+  let stk=null;const knob=stickEl.querySelector('.rt-knob');
+  const stickShow=(dx,dy)=>{knob.style.transform=dx||dy?'translate('+dx+'px,'+dy+'px)':'';stickEl.classList.toggle('on',!!stk);stickEl.setAttribute('aria-valuenow',String(aim?Math.round(aim.p*100):0));};
+  const stickEnd=(e,cancel)=>{if(!stk||(e&&e.pointerId!=null&&e.pointerId!==stk.id))return;if(e&&e.stopPropagation)e.stopPropagation();const id=stk.id;stk=null;
+    try{stickEl.releasePointerCapture(id);}catch(x){}const a=aim;aim=null;stickShow(0,0);if(a&&!cancel&&a.p>=.08)fire(a.dx,a.dy,a.p);kick();};
+  stickEl.addEventListener('pointerdown',e=>{if(e.button>0||stk||down)return;e.stopPropagation();const b=stickEl.getBoundingClientRect();
+    stk={id:e.pointerId,cx:b.left+b.width/2,cy:b.top+b.height/2,r:Math.max(24,b.width*.9)};aim=null;try{stickEl.setPointerCapture(e.pointerId);}catch(x){}if(e.cancelable)e.preventDefault();stickShow(0,0);});
+  stickEl.addEventListener('pointermove',e=>{if(!stk||e.pointerId!==stk.id)return;e.stopPropagation();let dx=e.clientX-stk.cx,dy=e.clientY-stk.cy;const d=Math.hypot(dx,dy);
+    if(d<4){aim=null;stickShow(0,0);kick();return;}if(d>stk.r){dx*=stk.r/d;dy*=stk.r/d;}const a=stickAim(dx,dy,stk.r);aim=a?{dx:a.dx,dy:a.dy,p:a.p}:null;
+    stickShow(Math.round(dx*.4),Math.round(dy*.4));kick();});
+  stickEl.addEventListener('pointerup',e=>stickEnd(e,false));stickEl.addEventListener('pointercancel',e=>stickEnd(e,true));
+  stickEl.addEventListener('lostpointercapture',e=>stickEnd(e,true));
+  for(const ev of ['touchstart','touchmove','dblclick'])stickEl.addEventListener(ev,e=>{e.stopPropagation();if(ev!=='touchstart'&&e.cancelable)e.preventDefault();},{passive:false});
+  D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='hidden')stickEnd(null,true);});W.addEventListener('pagehide',()=>stickEnd(null,true));W.addEventListener('blur',()=>stickEnd(null,true));
   /* keyboard / switch control: Enter on a ball picks it */
   felt.addEventListener('click',e=>{if(e.detail!==0)return;const t=e.target&&e.target.closest?e.target.closest('.rt-ball'):null;if(t)tap(t.dataset.uid);});
   for(const ev of ['touchstart','touchmove','wheel','gesturestart','dblclick'])felt.addEventListener(ev,e=>{e.stopPropagation();if(ev!=='touchstart'&&e.cancelable)e.preventDefault();},{passive:false});}

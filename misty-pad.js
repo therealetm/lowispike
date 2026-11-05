@@ -52,7 +52,14 @@
         /* bug hunt Oct 23 2026: the one-time "New: drag here to fly" hint showed 2.5 s after Home came up, even while a new user's
            setup sheet (or any sheet, dialog or the tour) covered Home, and was then marked seen, so nobody ever saw it. It waits
            now until Home is up and nothing covers it: c = { live, home, seen, busy, tour, mode }. 'show', 'wait' or 'never'. */
-        hint(c) { c = c || {}; if (c.seen) return 'never'; if (!c.live || !c.home || c.busy || c.tour || c.mode) return 'wait'; return 'show'; }
+        hint(c) { c = c || {}; if (c.seen) return 'never'; if (!c.live || !c.home || c.busy || c.tour || c.mode) return 'wait'; return 'show'; },
+        /* Nov 5 2026 (owner handoff): a long press on the HOME joystick opens every bubble (bloom-ring.js toggleAll), not Sleep and not
+           the old back-up hold. It is armed while the companion rests at home (no controller mode) or whenever Calm mode has turned
+           navigation off (galaxy-still-core navOff, html.cm-nav: the joystick stays as the open-all control, dragging is inert).
+           A drag past DRIFT px cancels it; lift, cancel, lost capture, blur and a hidden page clear its timer. */
+        LONG_MS: 520, DRIFT: 10,
+        longArmed(mode, calmNav) { return !!calmNav || !mode; },
+        press(held, moved) { return (+moved || 0) > A.DRIFT ? 'drag' : (+held || 0) >= A.LONG_MS ? 'long' : 'tap'; }
     };
     if (typeof module === 'object' && module.exports) module.exports = A;
     if (root) root.LowiPadAnchor = A;
@@ -75,11 +82,23 @@
         auto: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c-2.2-3-6.6-3-6.6 0s4.4 3 6.6 0 6.6-3 6.6 0-4.4 3-6.6 0z"/><circle cx="18.6" cy="12" r="1.3" class="mp-dot"/></svg>',
         sleepy: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h5l-5 6h5M13 6h4l-4 4.5h4"/></svg>'
     };
-    const st = { el: null, knob: null, chip: null, mode: '', id: null, x0: 0, y0: 0, moved: false, lastUp: 0, taps: 0, holdT: 0, backT: 0, thr: 0, downT: 0, ignoreDbl: 0, chipT: 0, enT: 0, tier: '', value: 0, R: 22, hinted: false, fade: false, gone: false, goneT: 0 };
+    const st = { el: null, knob: null, chip: null, mode: '', id: null, x0: 0, y0: 0, moved: false, lastUp: 0, taps: 0, holdT: 0, backT: 0, thr: 0, downT: 0, ignoreDbl: 0, chipT: 0, enT: 0, tier: '', value: 0, R: 22, hinted: false, fade: false, gone: false, goneT: 0, longT: 0, longFired: false };
     const VANISH_MS = 1500; /* steering this long without a break: the joystick is gone (Oct 19) */
     const wh = () => W.LowiWorldHome && W.LowiWorldHome.pad ? W.LowiWorldHome : null;
     function send(cmd) { const w = wh(); if (!w) return null; try { return w.pad(cmd); } catch (e) { return null; } }
     function low() { return st.tier === 'weak' || st.tier === 'tired'; }
+    /* Calm mode level 1+ (galaxy-still.js): navigation is off, the joystick only opens all bubbles */
+    function calmNav() { return H.classList.contains('cm-nav'); }
+    function longCancel() { if (st.longT) { clearTimeout(st.longT); st.longT = 0; } if (st.el) st.el.classList.remove('mp-longing'); }
+    function longFire() {
+        st.longT = 0; if (st.el) st.el.classList.remove('mp-longing');
+        if (st.id == null || st.moved) return;
+        const R = W.LowiBloomRing; let ok = false;
+        try { ok = !!(R && R.toggleAll && R.toggleAll()); } catch (e) { ok = false; }
+        if (!ok) return;
+        st.longFired = true; clearTimeout(st.holdT); if (st.thr) thrust(0);
+        try { navigator.vibrate && navigator.vibrate(10); } catch (e) { }
+    }
 
     function build() {
         const hud = D.getElementById('whHud'); if (!hud) return null;
@@ -101,7 +120,7 @@
     function label() { return nm(label0()); }
     function label0() {
         if (st.mode === 'auto') return low() ? T('Autopilot, Misty is drifting sleepily. Tap to steer', 'Autopilot, Misty treibt m\u00fcde. Tippen zum Steuern', 'Piloto autom\u00e1tico, Misty flota con sue\u00f1o. Toca para dirigir') : T('Autopilot, Misty flies on its own. Tap to steer', 'Autopilot, Misty fliegt allein. Tippen zum Steuern', 'Piloto autom\u00e1tico, Misty vuela por su cuenta. Toca para dirigir');
-        return T('Controller: drag to fly Misty, hold the middle to go forward, tap then hold to go back, three taps for autopilot. While you hold it, double tap the world with another finger to shoot energy', 'Steuerung: ziehen, um Misty zu fliegen, Mitte halten f\u00fcr vorw\u00e4rts, tippen und halten f\u00fcr r\u00fcckw\u00e4rts, dreimal tippen f\u00fcr Autopilot. W\u00e4hrend du sie h\u00e4ltst, mit einem anderen Finger zweimal auf die Welt tippen f\u00fcr einen Energiesto\u00df', 'Control: arrastra para volar con Misty, mant\u00e9n el centro para avanzar, toca y mant\u00e9n para retroceder, tres toques para piloto autom\u00e1tico. Mientras lo mantienes, toca dos veces el mundo con otro dedo para disparar energ\u00eda');
+        return T('Controller: drag to fly Misty, hold it to open all bubbles, while flying hold the middle to go forward, tap then hold to go back, three taps for autopilot. While you hold it, double tap the world with another finger to shoot energy', 'Steuerung: ziehen, um Misty zu fliegen, halten \u00f6ffnet alle Bubbles, im Flug Mitte halten f\u00fcr vorw\u00e4rts, tippen und halten f\u00fcr r\u00fcckw\u00e4rts, dreimal tippen f\u00fcr Autopilot. W\u00e4hrend du sie h\u00e4ltst, mit einem anderen Finger zweimal auf die Welt tippen f\u00fcr einen Energiesto\u00df', 'Control: arrastra para volar con Misty, mant\u00e9n pulsado para abrir todas las burbujas, en vuelo mant\u00e9n el centro para avanzar, toca y mant\u00e9n para retroceder, tres toques para piloto autom\u00e1tico. Mientras lo mantienes, toca dos veces el mundo con otro dedo para disparar energ\u00eda');
     }
     function paint() {
         const b = st.el; if (!b) return;
@@ -217,6 +236,14 @@
             b.classList.add('mp-down');
             /* autopilot: any touch hands control back to you (and that touch never counts towards the taps) */
             const t0 = performance.now(); st.downT = t0;
+            longCancel(); st.longFired = false;
+            const PA0 = W.LowiPadAnchor;
+            if (PA0 && PA0.longArmed(st.mode, calmNav())) {
+                b.classList.add('mp-longing'); const lid = e.pointerId;
+                st.longT = setTimeout(() => { if (st.id === lid) longFire(); else longCancel(); }, PA0.LONG_MS);
+                clearTimeout(st.holdT); clearTimeout(st.backT);
+                return; /* at home or in Calm mode a still hold opens all bubbles; it never starts the forward / back hold */
+            }
             if (st.mode === 'auto') { st.ignoreDbl = t0 + 450; userMode('drive'); }
             /* misty-turn: held still in the middle = straight ahead; right after a tap = back */
             clearTimeout(st.holdT); clearTimeout(st.backT); if (st.thr < 0 && st.id === e.pointerId) thrust(0);
@@ -227,6 +254,9 @@
             if (e.pointerId !== st.id) return;
             e.stopPropagation(); if (e.cancelable) e.preventDefault();
             const dx = e.clientX - st.x0, dy = e.clientY - st.y0;
+            if (st.longT && W.LowiPadAnchor && W.LowiPadAnchor.press(0, Math.hypot(dx, dy)) === 'drag') longCancel();
+            if (st.longFired) return;
+            if (calmNav()) { if (Math.hypot(dx, dy) >= 6) st.moved = true; return; } /* navigation off: dragging is inert */
             if (!st.moved && Math.hypot(dx, dy) < 6) return;
             if (!st.moved) { st.moved = true; clearTimeout(st.holdT); if (st.mode !== 'drive') setMode('drive'); hintDone(); }
             fade(true); steer(dx, dy);
@@ -234,7 +264,9 @@
         const up = e => {
             if (e.pointerId !== st.id) return;
             e.stopPropagation();
-            st.id = null; fade(false); b.classList.remove('mp-down'); knob(0, 0); send({ vx: 0, vy: 0 }); clearTimeout(st.holdT);
+            st.id = null; fade(false); b.classList.remove('mp-down'); knob(0, 0); clearTimeout(st.holdT); longCancel();
+            if (st.longFired || calmNav()) { st.longFired = false; st.lastUp = 0; st.taps = 0; if (st.thr) thrust(0); return; } /* the hold opened the bubbles / Calm: no tap actions */
+            send({ vx: 0, vy: 0 });
             const held = !!st.thr; if (held) thrust(0);
             if (held || st.moved || e.type === 'pointercancel') { st.lastUp = 0; st.taps = 0; return; }
             const now = performance.now();
@@ -246,20 +278,21 @@
             const n = st.taps;
             setTimeout(() => {
                 if (st.lastUp !== now || st.id != null) return;
-                if (n === 1 && !st.mode) chip(T('Drag to fly \u00b7 hold: forward \u00b7 2 taps: back \u00b7 3 taps: autopilot', 'Ziehen zum Fliegen \u00b7 halten: vorw\u00e4rts \u00b7 2\u00d7: zur\u00fcck \u00b7 3\u00d7: Autopilot', 'Arrastra para volar \u00b7 mant\u00e9n: adelante \u00b7 2 toques: atr\u00e1s \u00b7 3: autom\u00e1tico'), 2600);
+                if (n === 1 && !st.mode) chip(T('Drag to fly \u00b7 hold: all bubbles \u00b7 2 taps: back \u00b7 3 taps: autopilot', 'Ziehen zum Fliegen \u00b7 halten: alle Bubbles \u00b7 2\u00d7: zur\u00fcck \u00b7 3\u00d7: Autopilot', 'Arrastra para volar \u00b7 mant\u00e9n: todas las burbujas \u00b7 2 toques: atr\u00e1s \u00b7 3: autom\u00e1tico'), 2600);
                 /* misty-turn: a plain double tap = she backs up for a moment (tap, then hold = keep backing up) */
                 else if (n === 2) backBurst();
             }, 360);
         };
         b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
         b.addEventListener('lostpointercapture', e => { if (e.pointerId === st.id) up({ pointerId: e.pointerId, type: 'pointercancel', stopPropagation() { } }); });
-        D.addEventListener('visibilitychange', () => { if (D.hidden) { fade(false); if (st.thr) thrust(0); } });
+        D.addEventListener('visibilitychange', () => { if (D.hidden) { longCancel(); fade(false); if (st.thr) thrust(0); } });
         b.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); });
         b.addEventListener('dblclick', e => { e.stopPropagation(); e.preventDefault(); });
         b.addEventListener('contextmenu', e => e.preventDefault());
         /* keyboard: Enter / Space toggles autopilot, arrow keys steer, W / S hold = forward / back */
         const keys = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
         b.addEventListener('keydown', e => {
+            if (calmNav()) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); try { W.LowiBloomRing && W.LowiBloomRing.toggleAll && W.LowiBloomRing.toggleAll(); } catch (er) { } } return; }
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); userMode(st.mode === 'auto' ? 'drive' : 'auto'); return; }
             const fk = e.key === 'w' || e.key === 'W' ? 1 : e.key === 's' || e.key === 'S' ? -1 : 0;
             if (fk) { e.preventDefault(); if (st.thr !== fk) startHold(fk); return; }
@@ -278,7 +311,7 @@
         if (e.type === 'pointerdown') { const A = W.LowiAdventure; let rec = false; if (A && A.on) { try { A.stop('recall'); rec = true; } catch (er) { } } if (!rec) setMode('home', true); chip(nm(T('Misty is flying home', 'Misty fliegt nach Hause', 'Misty vuelve a casa')), 1600) /* BH-045 */; }
     }
     ['pointerdown', 'click'].forEach(n => D.addEventListener(n, callHome, true));
-    W.addEventListener('blur', () => fade(false)); /* the window lost focus: the joystick comes back (a finger still moving fades it again) */
+    W.addEventListener('blur', () => { longCancel(); fade(false); }); /* the window lost focus: the joystick comes back (a finger still moving fades it again) */
     /* BH-004: a language switch without a reload repaints the joystick's VoiceOver label and the autopilot chip */
     W.addEventListener('lowi:companion', () => paint()); /* Oct 19: a rename shows in the controller's label */
     W.addEventListener('lowi:lang', () => { paint(); if (st.mode === 'auto' && st.chip && st.chip.classList.contains('on')) chip(autoText()); });

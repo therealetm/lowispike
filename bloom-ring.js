@@ -116,6 +116,15 @@
         return Object.assign(layoutAt(Object.assign({}, o, { d }), minS), { fit: false });
     }
 
+    /* Nov 5 2026 (owner handoff, one mathematical layout): one bubble's bloom is cut out of the all-bubbles layout instead of being
+       solved on its own, so the centre, the zoom s, the circle radius rho, the orb size d and the angle between neighbours are the
+       same whether one group or every group is open; switching never moves, resizes or re-spaces an orb. Pure. */
+    function only(L, key) {
+        if (!L || !L.orbs) return null;
+        const orbs = L.orbs.filter(p => p.key === key);
+        if (!orbs.length) return null;
+        return Object.assign({}, L, { orbs, groups: (L.groups || []).filter(g => g.key === key), shared: true });
+    }
     /* ---------------- DOM ---------------- */
     let W = null, D = null, H = null;
     const z = { on: false, s: 1, saved: null, t: 0, owner: null };
@@ -178,6 +187,8 @@
         out.c = g.c;
         return out;
     }
+    /* one group, placed exactly where it sits when every group is open (groups = the all-bubbles list, key = the one to show) */
+    function placeShared(groups, key) { const L = place(groups, { even: true }); return L ? Object.assign(only(L, key) || {}, { c: L.c }) : null; }
     function zoom(s, c, owner) {
         if (!H || !c) return;
         const els = layers();
@@ -289,5 +300,5 @@
         W.addEventListener('resize', () => { if (z.on) { const B = W.LowiHomeBloomsV2; try { if (B && B.close) B.close(); } catch (e) { } try { const S = W.LowiHomeSettingsSleepV2; if (S && S.close) S.close(); } catch (e) { } unzoom(); } });
     }
     const state = () => ({ on: z.on, s: z.s, owner: z.owner });
-    return { solve, pack, layoutAt, scanPress, SCAN_HOLD_MS, SCAN_DRIFT, stepFor, place, zoom, unzoom, state, toggleAll, mount: typeof window !== 'undefined' ? mount : null, _ring: ring, _layers: typeof window !== 'undefined' ? layers : null, _layoutBox: typeof window !== 'undefined' ? layoutBox : null };
+    return { solve, pack, layoutAt, only, placeShared, scanPress, SCAN_HOLD_MS, SCAN_DRIFT, stepFor, place, zoom, unzoom, state, toggleAll, mount: typeof window !== 'undefined' ? mount : null, _ring: ring, _layers: typeof window !== 'undefined' ? layers : null, _layoutBox: typeof window !== 'undefined' ? layoutBox : null };
 });

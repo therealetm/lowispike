@@ -8,7 +8,7 @@
    let go, the interface is never swapped. Instead, one stepped choice, each level adding to the one before:
      0 off            everything as it always was
      1 world stays    no flying around the world: dragging, pinching and double tapping the world do nothing, places are not
-                      travelled to, and the joystick is gone. All there is is what you see.
+                      travelled to; the joystick stays only to open all bubbles (hold it).
      2 still bg       the world's scenery stops moving too (the bloodstream, the cells, the slow turn of the camera)
      3 no bg          the scenery is taken away: plain black (Dark, Night) or plain light (Day) behind the same glass bubbles
      4 all still      the bubbles and Misty stop moving as well, and the world is only drawn again when something changes.
@@ -37,22 +37,23 @@
     /* which html classes are on at a level: cm-on from 1, cm-nav from 1, cm-bg from 2, cm-nobg from 3, cm-all at 4 */
     function classes(lv) { lv = clamp(lv); if (!lv) return []; return ['cm-on', 'cm-nav'].concat(lv >= 2 ? ['cm-bg'] : [], lv >= 3 ? ['cm-nobg'] : [], lv >= 4 ? ['cm-all'] : []); }
     /* what each part of the app may do at a level */
-    const navOff = lv => clamp(lv) >= 1;     /* world drag / pinch / double tap / travel, joystick */
+    const navOff = lv => clamp(lv) >= 1;     /* world drag / pinch / double tap / travel, joystick steering (its hold still opens all bubbles) */
     const bgStill = lv => clamp(lv) >= 2;    /* world time, the camera's slow turn, the tilt */
     const bgGone = lv => clamp(lv) >= 3;     /* scenery not drawn, plain background */
     const allStill = lv => clamp(lv) >= 4;   /* bubbles, Misty, every endless animation; world drawn only on a change */
     /* the plain background at level 3+: black unless the app is in its light Day look */
     function plainBg(theme) { return theme === 'light' ? 0xf2f2f7 : 0x000000; }
     /* a three.js object that stays drawn when the scenery is taken away: lights, the companion's hub, and everything the app marks
-       as "keep" (the living glass bubbles, Misty's sprites and face: userData.lwKeep, the same mark the world travel uses) */
-    function keeps(o) { return !!(o && (o.isLight || o.name === 'lowi-hub' || (o.userData && o.userData.lwKeep))); }
+       as "keep" (the living glass bubbles, Misty's sprites and face: userData.lwKeep, the same mark the world travel uses;
+       userData.calmKeep marks the companion's own render group for Calm only, so it stays in No background / Everything still) */
+    function keeps(o) { return !!(o && (o.isLight || o.name === 'lowi-hub' || (o.userData && (o.userData.lwKeep || o.userData.calmKeep)))); }
 
     const TX = {
         en: {
             row: 'Calm mode', sub: 'Less motion, saves battery', off: 'Off',
             title: 'Calm mode', intro: 'Each step adds to the one before. Everything you tap keeps working, nothing restarts.',
             l0: 'Off', d0: 'Everything moves as usual.',
-            l1: 'World stays put', d1: 'No flying around the world. The joystick goes away.',
+            l1: 'World stays put', d1: 'No flying around the world. Hold the joystick to open all bubbles.',
             l2: 'Still background', d2: 'The world behind the bubbles stops moving.',
             l3: 'No background', d3: 'Plain black, or light in Day, behind the bubbles.',
             l4: 'Everything still', d4: 'The bubbles and your companion stop moving too. Saves the most battery.',
@@ -62,7 +63,7 @@
             row: 'Ruhemodus', sub: 'Weniger Bewegung, spart Akku', off: 'Aus',
             title: 'Ruhemodus', intro: 'Jede Stufe legt etwas auf die vorige drauf. Alles, was du antippst, funktioniert weiter, nichts startet neu.',
             l0: 'Aus', d0: 'Alles bewegt sich wie gewohnt.',
-            l1: 'Welt bleibt stehen', d1: 'Kein Herumfliegen in der Welt. Der Joystick verschwindet.',
+            l1: 'Welt bleibt stehen', d1: 'Kein Herumfliegen in der Welt. Joystick halten \u00f6ffnet alle Bubbles.',
             l2: 'Ruhiger Hintergrund', d2: 'Die Welt hinter den Bubbles bewegt sich nicht mehr.',
             l3: 'Kein Hintergrund', d3: 'Schlichtes Schwarz, im Tag-Look Hell, hinter den Bubbles.',
             l4: 'Alles steht still', d4: 'Auch die Bubbles und dein Begleiter bewegen sich nicht mehr. Spart am meisten Akku.',
@@ -72,7 +73,7 @@
             row: 'Modo calma', sub: 'Menos movimiento, ahorra bater\u00eda', off: 'No',
             title: 'Modo calma', intro: 'Cada paso se suma al anterior. Todo lo que tocas sigue funcionando y nada se reinicia.',
             l0: 'No', d0: 'Todo se mueve como siempre.',
-            l1: 'Mundo fijo', d1: 'No se vuela por el mundo. El joystick desaparece.',
+            l1: 'Mundo fijo', d1: 'No se vuela por el mundo. Mant\u00e9n el joystick para abrir todas las burbujas.',
             l2: 'Fondo quieto', d2: 'El mundo detr\u00e1s de las burbujas deja de moverse.',
             l3: 'Sin fondo', d3: 'Negro liso, o claro en el modo D\u00eda, detr\u00e1s de las burbujas.',
             l4: 'Todo quieto', d4: 'Las burbujas y tu compa\u00f1ero tambi\u00e9n se quedan quietos. Ahorra m\u00e1s bater\u00eda.',

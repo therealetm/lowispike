@@ -511,7 +511,13 @@
         let L = null, ring = null;
         /* Oct 23 (Emmanuel: "the Rundung symmetry"): the orbs sit on ONE circle round Misty, centred on their bubble's direction,
            one fixed spacing, and the view pulls back to make room (bloom-ring.js). The old fan is the fallback only. */
-        try { const R = W.LowiBloomRing; ring = R && R.place && st.ring !== false ? R.place([{ key: kind, n: Math.max(1, acts.length) }]) : null; } catch (e) { ring = null; }
+        /* Nov 5 2026: the same geometry as the all-bubbles ring (bloom-ring.js placeShared), so one group opens exactly where it sits
+           when every group is open; a group whose single bloom has extra orbs keeps its own solve (same rules, own count) */
+        try {
+            const R = W.LowiBloomRing, AG = allGroups(), mine = AG.groups.filter(g => g.key === kind)[0];
+            if (R && st.ring !== false && R.placeShared && mine && mine.n === Math.max(1, acts.length)) ring = R.placeShared(AG.groups, kind);
+            if ((!ring || !ring.orbs) && R && R.place && st.ring !== false) ring = R.place([{ key: kind, n: Math.max(1, acts.length) }]);
+        } catch (e) { ring = null; }
         if (ring && ring.orbs && ring.orbs.length === Math.max(1, acts.length)) {
             L = { pts: ring.orbs.map(p => ({ x: p.x, y: p.y, from: p.from })), rot: 0, ring };
             orb = ring.d;
@@ -547,9 +553,8 @@
     /* Oct 28 2026: from the RING map. Einkaufen's orbs open pages (like Joy and Community), so the overview leaves them out, as before.
        Gap blooms since Oct 28, 22:54, but its two orbs open times (a second step), so the overview leaves Gap out too */
     const ALL = BLOOMS.filter(k => k !== 'fuel' && k !== 'gap');
-    function renderAll() {
-        const R = W.LowiBloomRing;
-        if (!R || !R.place) return null;
+    /* every Home bubble that is on screen and has actions: the groups of the all-bubbles ring (shared by one bloom and by open-all) */
+    function allGroups() {
         const scope = st.root && st.root !== D ? st.root : D;
         const groups = [], acts = [];
         ALL.forEach(k => {
@@ -560,6 +565,12 @@
             groups.push({ key: k, n: a.length });
             a.forEach(x => acts.push(Object.assign({ group: k }, x)));
         });
+        return { groups, acts };
+    }
+    function renderAll() {
+        const R = W.LowiBloomRing;
+        if (!R || !R.place) return null;
+        const { groups, acts } = allGroups();
         if (!groups.length) return null;
         let ring = null;
         try { ring = R.place(groups, { even: true }); } catch (e) { ring = null; }

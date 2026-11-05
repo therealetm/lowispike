@@ -163,7 +163,7 @@
     /* Oct 28 2026 slim structure batch 9: notification controls (on/off, how often, quiet hours, phone push) and About & info sit in Settings,
        so every setting is in Profile (Du) and in the Community hold's Settings, one list */
     const SETTINGS_IDS = ['catchUp', 'theme', 'look', 'worldSound', 'language', 'notifications', 'tutorial', 'support', 'about'], ACCOUNT_IDS = ['account', 'deleteAccount'];
-    const HINT_KEY = 'lowi.hint.holdCommunity', HOLD_MS = 480;
+    const HINT_KEY = 'lowi.hint.holdCommunity.v2', HOLD_MS = 480;   /* v2 (Nov 5 2026): the hold is back, so everyone sees the hint once more */
     /* out of the panel, and where each one is still reached (their routes and features stay in the app):
        today: Emmanuel dropped Today from Home; cook: Fuel bubble > Cook; theme: Settings > Look & sound > Day & night;
        quest: Emmanuel dropped Daily quest */
@@ -236,7 +236,10 @@
     /* Oct 29 2026 (Emmanuel: "wenn man lange drückt auf Community ... dann passiert gar nichts"): a hold does nothing now. The one
        settings page opens from the Community name inside Circle (community-me.js); the hold only eats the click that ends it, so a long
        press does not enter Community either. */
-    function holdIntent(bubble) { return null; }
+    /* Nov 5 2026 (owner: "Add a long-press gesture on the Community section that opens Settings"): the hold is back. Held still for
+       HOLD_MS, the Community bubble opens the one settings page (community-me.js, the same page as the Community name in Circle); the
+       click that ends the hold is still eaten, so a long press never enters Community as well. A tap is unchanged: Community. */
+    function holdIntent(bubble) { return bubble === 'settings' ? 'hub' : null; }
     /* 'lang' = three language buttons in the row; 'confirm' = asks inside the panel first (Delete account) */
     const PANEL_ROWS = ['worldSound'], TOGGLE_ROWS = ['quest', 'theme'];
     function rowAction(id) { return id === 'language' ? 'lang' : id === 'deleteAccount' ? 'confirm' : PANEL_ROWS.includes(id) ? 'panel' : TOGGLE_ROWS.includes(id) ? 'toggle' : 'go'; }

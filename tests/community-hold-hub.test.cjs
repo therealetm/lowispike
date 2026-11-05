@@ -14,8 +14,8 @@ const C = require(path.join(ROOT, 'home-settings-sleep-v2.js'));
 /* Oct 29 2026 (Emmanuel, live call: "wenn man lange drückt auf Community ... dann passiert gar nichts"): the one settings page opens
    from the Community name inside Circle (community-me.js / community-rooms-ui.js). A hold on the bubble does nothing; it still eats
    the click that ends it, so a long press does not enter Community either. */
-test('a hold on the Community bubble does nothing now, a tap still means Community', () => {
-    assert.strictEqual(C.holdIntent('settings'), null);
+test('Nov 5 2026: a hold on the Community bubble opens Settings again, a tap still means Community', () => {
+    assert.strictEqual(C.holdIntent('settings'), 'hub', 'Nov 5 2026: a hold on the Community bubble opens Settings (community-me.js)');
     assert.strictEqual(C.holdIntent('sleep'), null);
     assert.strictEqual(C.tapIntent('settings', null), 'community');
 });

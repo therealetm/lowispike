@@ -15,7 +15,7 @@ test('Oct 21 2026: the bubble is Community: a tap opens Community, a tap while S
     assert.strictEqual(typeof C.tapIntent, 'function', 'tapIntent(bubble, open) is exported');
     assert.strictEqual(C.tapIntent('settings', null), 'community', 'closed: one tap opens Community');
     assert.strictEqual(C.tapIntent('settings', 'sleep'), 'community', 'Sleep bloom open: a tap still goes to Community');
-    assert.strictEqual(C.holdIntent('settings'), null, 'the hold opens nothing; the settings page opens from the Community name in Circle');
+    assert.strictEqual(C.holdIntent('settings'), 'hub', 'Nov 5 2026: the hold opens the one settings page again (it also opens from the Community name in Circle)');
     assert.strictEqual(C.holdIntent('sleep'), null, 'only the Community bubble has a hold');
     assert.ok(C.HOLD_MS >= 400 && C.HOLD_MS <= 600, 'hold time like iOS (about half a second)');
     for (const o of ['page', 'settings', 'more']) assert.strictEqual(C.tapIntent('settings', o), 'close', 'open ' + o + ': a second tap closes');

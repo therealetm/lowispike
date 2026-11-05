@@ -73,7 +73,7 @@
     const $ = s => D.querySelector(s);
     const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } } };
     const ICON = {
-        scan: 'M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M8 9v6M11 9v6M14 9v6M17 9v6',
+        scan: 'M3.5 8.5A2 2 0 0 1 5.5 6.5h2l1.5-2.2h6l1.5 2.2h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2zM15.6 13a3.6 3.6 0 1 1-7.2 0 3.6 3.6 0 0 1 7.2 0z',
         sleep: 'M19.5 14.6A7.8 7.8 0 1 1 9.4 4.5a6.2 6.2 0 0 0 10.1 10.1z',
         /* Oct 21 2026 (Emmanuel): the top bubble is Community (tap); a hold opens Settings. The slot keeps its key 'settings' so every
            module that finds the bubble by [data-orbit="settings"] still does. Two speech bubbles. */
@@ -120,7 +120,7 @@
     /* BH-004: the three bubbles this module builds keep their words in every language, so a language switch without a reload
        can repaint them. [aria-label, small label] per language (en, de, es). */
     const WORDS = {
-        scan: [['Scan a product', 'Scan'], ['Produkt scannen', 'Scannen'], ['Escanear un producto', 'Escanear']],
+        scan: [['Take a photo of a product or a meal', 'Scan'], ['Produkt oder Essen fotografieren', 'Scannen'], ['Haz una foto de un producto o una comida', 'Escanear']],
         sleep: [['Sleep', 'Sleep'], ['Schlaf', 'Schlaf'], ['Sueño', 'Sueño']],
         settings: [['Community. Hold for settings', 'Community'], ['Community. Halten f\u00fcr Einstellungen', 'Community'], ['Comunidad. Mant\u00e9n para los ajustes', 'Comunidad']]
     };

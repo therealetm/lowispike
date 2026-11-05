@@ -61,7 +61,7 @@ test('a tap on a language picker goes through LowiLang.set, so module wrappers o
 test('the ring repaints its own bubbles (Scan, Sleep, Settings) in all three languages on lowi:lang', () => {
     const js = read('home-orbit-v2.js');
     assert.ok(/D\.addEventListener\('lowi:lang', \(\) => \{ relabel\(\);/.test(js), 'ring listens for lowi:lang');
-    assert.ok(/scan: \[\['Scan a product', 'Scan'\], \['Produkt scannen', 'Scannen'\], \['Escanear un producto', 'Escanear'\]\]/.test(js));
+    assert.ok(/scan: \[\['Take a photo of a product or a meal', 'Scan'\], \['Produkt oder Essen fotografieren', 'Scannen'\], \['Haz una foto de un producto o una comida', 'Escanear'\]\]/.test(js), 'Nov 5 2026: the Scan bubble is a camera (products and meals)');
     assert.ok(/settings: \[\['Community\. Hold for settings', 'Community'\], \['Community\. Halten f\\u00fcr Einstellungen', 'Community'\], \['Comunidad\. Mant\\u00e9n para los ajustes', 'Comunidad'\]\]/.test(js), 'the top bubble is Community (Oct 21 2026)');
     assert.ok(/if \(labelLang !== lang\(\)\)/.test(js), 'also catches a language change without the event (compares with the last language written)');
     /* the core export (node): offscreen added for the ring-return fix (Misty flying back in) */

@@ -102,7 +102,7 @@
     function hasWebGL() { try { const c = D.createElement('canvas'), g = W.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl')); try { const x = g && g.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } catch (e) { } return !!g; } catch (e) { return false; } }
     const mqReduce = W.matchMedia ? W.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
     function env() { return { webgl: hasWebGL(), reduced: mqReduce.matches, saveData: !!(navigator.connection && navigator.connection.saveData), disabled: /[?&]no3d\b/.test(location.search) }; }
-    const themeNow = () => (H.dataset.theme === 'light' ? 'light' : 'dark');
+    const themeNow = () => (H.dataset.theme === 'light' ? 'light' : H.hasAttribute('data-black') ? 'black' : 'dark'); /* Nov 5: Dark = true black (true-black.js) */
     const isTouch = () => ('ontouchstart' in W) || (navigator.maxTouchPoints || 0) > 0;
 
     if (!D.getElementById('bw3Css')) {
@@ -590,7 +590,7 @@
         const homeSeen = () => { const t = D.getElementById('tab-home'); return !t || t.classList.contains('active') || /(^|\s)gx-(hold|in)(\s|$)/.test(H.className) || mode === 'full'; };
         setInterval(() => { if (api.state !== 'fallback' && !D.hidden && homeSeen()) { mountHome(); syncGlow(); } }, 1200);
         W.addEventListener('resize', () => { lastLay = ''; if (mode === 'back' && back && world) world.resize(back.clientWidth || W.innerWidth, back.clientHeight || W.innerHeight); else if (mode === 'home') layoutHome(); else if (full && world) { const r = full.querySelector('.bw3-view').getBoundingClientRect(); world.resize(r.width, r.height); } });
-        new MutationObserver(() => { if (world) world.setTheme(themeNow()); }).observe(H, { attributes: true, attributeFilter: ['data-theme'] });
+        new MutationObserver(() => { if (world) world.setTheme(themeNow()); }).observe(H, { attributes: true, attributeFilter: ['data-theme', 'data-black'] });
         D.addEventListener('visibilitychange', () => { if (D.hidden && world) world.stop(); else if (world && !api.lost) world.start(); });
         if (mqReduce.addEventListener) mqReduce.addEventListener('change', () => { if (mqReduce.matches) fail('reduced-motion'); });
         ['lowi:award', 'lowi:meal-logged'].forEach(n => W.addEventListener(n, () => setTimeout(syncGlow, 300)));

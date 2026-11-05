@@ -1,0 +1,22 @@
+/* LOWiSPIKE Dark (true black), Nov 5 2026. The fixed parts of the Dark look; true-black.js rewrites every other navy colour in
+   the app's own style sheets to neutral grey while html[data-black] is set. The selectors repeat [data-black] so they win over
+   the sky gradient (atmosphere.css, !important) and the weather looks (apple-ui.css) without depending on load order. */
+html[data-black][data-black] { --bg: #000; --tb-surface: #1c1c1e; --tb-surface-2: #2c2c2e; --tb-line: rgba(255, 255, 255, .14); color-scheme: dark; }
+html[data-black][data-black],
+html[data-black][data-black] body,
+html[data-black][data-black] body #app { background: #000 !important; }
+/* Reduce transparency (iOS Accessibility > Display): the glass turns into solid dark grey, no blur */
+@media (prefers-reduced-transparency: reduce) {
+    html[data-black][data-black] .r2-sh,
+    html[data-black][data-black] .r2-ov .r2-sh,
+    html[data-black][data-black] .lb-bub,
+    html[data-black][data-black] .card,
+    html[data-black][data-black] .sheet { background: var(--tb-surface) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+}
+/* Increase contrast: clearer edges on black */
+@media (prefers-contrast: more) {
+    html[data-black][data-black] { --tb-line: rgba(255, 255, 255, .32); }
+    html[data-black][data-black] .r2-sh,
+    html[data-black][data-black] .lb-bub,
+    html[data-black][data-black] .card { outline: 1px solid var(--tb-line); }
+}

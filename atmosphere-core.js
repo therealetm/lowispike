@@ -28,6 +28,8 @@
         sub: ['Slide through the day like a timelapse.', 'Schieb dich durch den Tag wie im Zeitraffer.', 'Desliza por el día como en un timelapse.'],
         day: ['Day', 'Tag', 'Día'],
         night: ['Night', 'Nacht', 'Noche'],
+        dark: ['Dark', 'Dunkel', 'Oscuro'], /* Nov 5 2026: Dark = true black (true-black.js); Night = the blue night look */
+        blackOn: ['Dark on: true black', 'Dunkel an: echtes Schwarz', 'Oscuro activado: negro puro'],
         auto: ['Auto', 'Auto', 'Auto'],
         autoLong: ['Auto: follows the real sun', 'Auto: folgt der echten Sonne', 'Auto: sigue al sol real'],
         slider: ['Time of day in the app', 'Tageszeit in der App', 'Hora del día en la app'],

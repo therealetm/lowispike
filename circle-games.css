@@ -21,9 +21,10 @@ html.lt:not(.lg).csp-circle #cmPaneChat>#cspBar{background:rgba(255,255,255,.6);
    A real problem (offline, an error with its retry button) still shows. */
 html.csp-circle #cmPaneChat:not([data-room]) #csStatus:not([data-state="error"]):not([data-state="offline"]):not([data-state="auth"]){display:none!important}
 /* Mischen / Swipen: Kochen rises in a panel right under the bar. Circle (its header and the bar) stays fully drawn and tappable
-   above it, there is no dim scrim, so it reads as part of Circle and not as a new window. */
+   above it, there is no dim scrim, so it reads as part of Circle and not as a new window. 5 Nov 2026: only the header row and
+   the games bar take taps; the rest of Circle under and around the panel takes none (see the 5 Nov block below). */
 html.csp-game #cookHoloScrim{display:none!important}
-html.csp-game.cook-holo #main>#tab-foryou.holo-under,.apple-ui html.csp-game.cook-holo #main #tab-foryou.holo-under,html.csp-game.cook-holo.apple-ui #main #tab-foryou.holo-under{opacity:1!important;pointer-events:auto!important;content-visibility:visible!important}
+html.csp-game.cook-holo #main>#tab-foryou.holo-under,.apple-ui html.csp-game.cook-holo #main #tab-foryou.holo-under,html.csp-game.cook-holo.apple-ui #main #tab-foryou.holo-under{opacity:1!important;pointer-events:none!important;content-visibility:visible!important}
 html.csp-game.cook-holo #main>#tab-foryou.holo-under .rm-bar,html.csp-game.cook-holo #main>#tab-foryou.holo-under #cspBar{-webkit-backdrop-filter:blur(16px) saturate(1.25)!important;backdrop-filter:blur(16px) saturate(1.25)!important}
 html.csp-game.cook-holo.cook-holo.cook-holo #app #main#main>#tab-shelf.tab.active:not(#bw3x):not(#csp0){
   top:var(--csp-top, calc(var(--sat, env(safe-area-inset-top, 0px)) + 210px))!important;bottom:calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 10px)!important;
@@ -40,9 +41,11 @@ html.csp-game.cook-holo.cook-holo.cook-holo #app #main#main>#tab-shelf.tab.activ
   outline:0!important;background:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 html.csp-game.cook-holo #main>#tab-shelf.active::before,html.csp-game.cook-holo #main>#tab-shelf.active::after{display:none!important}
 html.csp-game.cook-holo #main>#tab-shelf.active #shelf,html.csp-game.cook-holo #main>#tab-shelf.active #shBody{background:transparent!important;background-image:none!important}
-/* the thin strip between the bar and the panel: Circle's page itself takes no taps there, only the bar does */
-html.csp-game.cook-holo #main>#tab-foryou.holo-under #cmPaneChat{pointer-events:none!important}
-html.csp-game.cook-holo #main>#tab-foryou.holo-under #cspBar{pointer-events:auto!important}
+/* the thin strips above and below the panel: Circle's page (its pager too, which a swipe would turn to Chat) takes no taps or
+   swipes there, only the Billard | Mischen | Swipen bar does */
+html.csp-game.cook-holo.cook-holo #app #main #tab-foryou.holo-under *{pointer-events:none!important}
+html.csp-game.cook-holo.cook-holo #app #main #tab-foryou.holo-under #cspBar,html.csp-game.cook-holo.cook-holo #app #main #tab-foryou.holo-under #cspBar *,
+html.csp-game.cook-holo.cook-holo #app #main #tab-foryou.holo-under .rm-bar,html.csp-game.cook-holo.cook-holo #app #main #tab-foryou.holo-under .rm-bar *{pointer-events:auto!important}
 html.csp-game.cook-holo #main>#tab-foryou.holo-under #cpRoom,html.csp-game.cook-holo #main>#tab-foryou.holo-under .cm-compose,
 html.csp-game.cook-holo #main>#tab-foryou.holo-under #cgThread{visibility:hidden!important;pointer-events:none!important}
 /* Dark (true black): Circle's three games sit on pure #000, not the dimmed galaxy (it measured 4..10 grey behind Billard). The panel

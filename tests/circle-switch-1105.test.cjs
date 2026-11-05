@@ -84,7 +84,9 @@ test('the Circle bar has only Billard, Mischen and Swipen; Billard is reached wi
 test('Mischen / Swipen fill the page under the bar and Circle cannot be tapped through them', () => {
   const css = R('circle-games.css');
   assert.match(css, /html\.csp-game\.cook-holo[^{]*#tab-shelf\.tab\.active[^{]*\{\s*left:0!important;right:0!important;width:auto!important;border-radius:0!important;border:0!important;box-shadow:none!important;\s*outline:0!important;background:transparent!important/);
-  assert.match(css, /holo-under #cmPaneChat\{pointer-events:none!important\}\nhtml\.csp-game\.cook-holo #main>#tab-foryou\.holo-under #cspBar\{pointer-events:auto!important\}/, 'only the bar takes taps in the strip above the panel');
+  assert.match(css, /html\.csp-game\.cook-holo\.apple-ui #main #tab-foryou\.holo-under\{opacity:1!important;pointer-events:none!important/, 'Circle under the panel takes no taps');
+  assert.match(css, /html\.csp-game\.cook-holo\.cook-holo #app #main #tab-foryou\.holo-under \*\{pointer-events:none!important\}/, 'nor its pager (a swipe there turned to Chat)');
+  assert.match(css, /#tab-foryou\.holo-under #cspBar \*,\nhtml\.csp-game\.cook-holo\.cook-holo #app #main #tab-foryou\.holo-under \.rm-bar,[^{]*\.rm-bar \*\{pointer-events:auto!important\}/, 'only the header row and the games bar do');
   assert.match(css, /#tab-foryou\.holo-under #cpRoom,[^{]*holo-under \.cm-compose,[^{]*holo-under #cgThread\{visibility:hidden!important;pointer-events:none!important\}/);
 });
 

@@ -18,7 +18,8 @@ function boot(hiddenChecks, mos) {
   /* Swipen's action row: at scrollTop 6 it sits at 514-569 (live iPhone SE measurement) */
   const row = ['Nie wieder', 'Heute nicht', 'Rückgängig', 'Bald kochen', 'Heute kochen'].map((t, i) => ({ t, getBoundingClientRect: () => { const top = 514 - (sb.scrollTop - 6); return { top, bottom: top + (i === 2 ? 55 : 50), width: 50, height: 50 }; } }));
   const bx = { getBoundingClientRect: () => ({ top: 498, bottom: 554, left: 132, width: 56, height: 56 }) };
-  const els = { shBody: sb, lwBX: bx, 'tab-foryou': { classList: cls(['holo-under']) } };
+  /* 5 Nov 2026: gameOn() also needs the Kochen page itself open (#tab-shelf.active), as it is in the app */
+  const els = { shBody: sb, lwBX: bx, 'tab-foryou': { classList: cls(['holo-under']) }, 'tab-shelf': { classList: cls(['tab', 'active']) } };
   const doc = {
     readyState: 'complete', documentElement: { lang: 'de', classList: cls([]), style: { setProperty() { } } },
     getElementById: id => els[id] || null,

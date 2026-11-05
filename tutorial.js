@@ -355,13 +355,15 @@
             /* nothing of the page is visible yet (a bloom still at opacity 0 in its bubble, a slow phone): the card stays hidden instead
                of fading in at the top and sitting on bubbles that then fan up under it (WebKit, Oct 25 2026: Fuel covered 100% for 2.6 s).
                tick() and the settle timers place again; after 2.5 s it shows at the top anyway */
-            const waiting = opened !== 'community-tab' && !sheet && !boxes.length && Date.now() - (roomWaitAt || (roomWaitAt = Date.now())) < 2500;
+            const waiting = opened !== 'community-tab' && opened !== 'move-page' && !sheet && !boxes.length && Date.now() - (roomWaitAt || (roomWaitAt = Date.now())) < 2500;
             card.classList.toggle('lt-roomwait', waiting);
             if ((sheet || boxes.length) && !stageSeenAt) stageSeenAt = Date.now();
             if (!waiting && (sheet || boxes.length)) roomWaitAt = 0;
             /* Nov 5 2026 (new tutorial): Shop fills the screen, so the free band was a coin toss and the card sat on its header and its
                Supermarkt / Meine Woche planen tabs in DE / ES (98 %); like Community, the card goes to the bottom and the top stays readable */
-            if (opened === 'community-tab' || opened === 'supermarket') where = 'bottom';
+            /* Nov 5 2026 (tutorial sentences): the Move page's Mirror mode card sits at the top (measured 50 to 289 px on a 390 x 844 phone),
+               and the tour card at the top covered 88 % of it while saying "Mirror mode is the first card there": the card goes to the bottom */
+            if (opened === 'community-tab' || opened === 'supermarket' || opened === 'move-page') where = 'bottom';
             else if (sheet) {
                 /* the sheet shrinks until it starts below the card: measured, not guessed (the You sheet is centred, Misty's card sits
                    24 px above the bottom), so each placement takes off what still overlaps; a centred sheet loses it twice */

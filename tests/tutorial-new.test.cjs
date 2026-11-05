@@ -46,7 +46,7 @@ test('the Settings card holds the Community bubble; leaving Shop does not hide t
     assert.deepStrictEqual(st.demo, { g: 'hold', open: 'settings-sheet' });
     assert.match(js, /'settings-sheet': \{ stage: '\.cme-ov'/);
     assert.match(js, /el\.closest\('\.stp-ov\.out'\)/, 'Shop closing does not hide the next card');
-    assert.ok(js.includes("if (opened === 'community-tab' || opened === 'supermarket') where = 'bottom';"), 'the Supermarket card leaves Shop\'s header and tabs readable');
+    assert.ok(js.includes("if (opened === 'community-tab' || opened === 'supermarket' || opened === 'move-page') where = 'bottom';"), 'the Supermarket card leaves Shop\'s header and tabs readable, the Mirror card the Mirror mode card (Nov 5 2026)');
 });
 
 test('every user can start the tour from Settings; the tour changes no entries', () => {

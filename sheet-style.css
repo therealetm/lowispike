@@ -7,9 +7,9 @@
    Paint and spacing only: no markup, handler, scroll, safe-area or keyboard behaviour changes. Loaded once, after every older
    style sheet (index.html: the last stylesheet link before bottom-close.css); the doubled [data-black] selectors win regardless of load order. */
 
-/* the round bottom X (58px at 16px above the safe area, world-home.css .wh-x) keeps a 12px gap below a tall sheet
-   (one-sheet.css used 72px, which left the sheet 2px over the X): 16 + 58 + 12 = 86px */
-:root:root { --one-x-gap: calc(var(--sab, env(safe-area-inset-bottom)) + 86px); }
+/* the round bottom X (58px at 16px above the safe area, world-home.css .wh-x) keeps a 12px gap below a tall sheet. Measured in
+   Chromium at 375x667 / 390x844 / 430x932: one-sheet.css's 72px left an 8px gap (the shell sits 4px lower than its margin), 76px gives 12px */
+:root:root { --one-x-gap: calc(var(--sab, env(safe-area-inset-bottom)) + 76px); }
 
 /* Dark tokens: every panel painted with the shared tokens turns near-black with a neutral rim */
 html[data-black][data-black] {

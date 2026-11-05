@@ -43,6 +43,6 @@ test('companion and tutorial: no cme-ov added (the tutorial keys on it); tutoria
   assert.match(css, /\.r2-ov\.mh-ov:not\(\.full\) \.r2-sh/);
 });
 
-test('round X gap: 16px + 58px X + 12px = 86px above the safe area', () => {
-  assert.match(css, /--one-x-gap: calc\(var\(--sab, env\(safe-area-inset-bottom\)\) \+ 86px\)/);
+test('round X gap: 76px above the safe area leaves 12px between a tall sheet and the 58px X (measured; 72px left 8px)', () => {
+  assert.match(css, /--one-x-gap: calc\(var\(--sab, env\(safe-area-inset-bottom\)\) \+ 76px\)/);
 });

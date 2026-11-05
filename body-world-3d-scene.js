@@ -59,8 +59,12 @@ export function createWorld(THREE, canvas, opts) {
     const scene = new THREE.Scene();
     const PAL = {
         dark: { bg: '#121c33', wall: '#2a3a5a', wallHi: '#6a82ab', hemiSky: '#8fb4e6', hemiGround: '#17223b', key: '#c3cfe6', fog: 0.034, shaft: 0.11, part: 0.75 },
-        light: { bg: '#7f94b4', wall: '#9aacc8', wallHi: '#dbe4f0', hemiSky: '#eef3fa', hemiGround: '#5f7393', key: '#ffffff', fog: 0.030, shaft: 0.16, part: 0.55 }
+        light: { bg: '#7f94b4', wall: '#9aacc8', wallHi: '#dbe4f0', hemiSky: '#eef3fa', hemiGround: '#5f7393', key: '#ffffff', fog: 0.030, shaft: 0.16, part: 0.55 },
+        /* Nov 5 2026, Dark (true black): Emmanuel wants a real dark mode "from the galaxy to the app interface", not the navy
+           Night. Same light levels as dark, every colour neutral; the glowing places, Misty and the bubbles keep their colours. */
+        black: { bg: '#000000', wall: '#262628', wallHi: '#5c5c62', hemiSky: '#c9c9ce', hemiGround: '#0e0e0f', key: '#d6d6da', fog: 0.034, shaft: 0.08, part: 0.7 }
     };
+    let black = false;
     let theme = 'dark';
     scene.background = new THREE.Color(PAL.dark.bg);
     scene.fog = new THREE.FogExp2(PAL.dark.bg, PAL.dark.fog);
@@ -288,12 +292,21 @@ export function createWorld(THREE, canvas, opts) {
     function setTend(k) { tendT = Math.max(0, Math.min(1, +k || 0)); }
     function beaconLook() { const b = Object.values(beacons)[0]; return b ? { tend: +tend.toFixed(3), glowScale: +b.glow.scale.x.toFixed(3), glowOpacity: +b.glow.material.opacity.toFixed(3), ringOpacity: +b.ring.material.opacity.toFixed(3), ringScale: +b.ring.scale.x.toFixed(3), core: '#' + b.core.material.color.getHexString() } : null; }
     function setTheme(t) {
-        theme = t === 'light' ? 'light' : 'dark'; const P = PAL[theme];
+        theme = t === 'light' ? 'light' : 'dark'; black = t === 'black'; const P = black ? PAL.black : PAL[theme];
+        blackCosmos(); rim.color.set(black ? '#b8b8bc' : '#8aa7d6');
         baseBg.set(P.bg); scene.fog.density = P.fog; baseFog = P.fog; hemi.color.set(P.hemiSky); hemi.groundColor.set(P.hemiGround); key.color.set(P.key);
         wallMat.color.set(P.wall); wallMat.emissive.set(P.wallHi); shaftMat.opacity = P.shaft; pMat.opacity = P.part;
         pMat.blending = theme === 'light' ? THREE.NormalBlending : THREE.AdditiveBlending; pMat.color.set(theme === 'light' ? '#ffffff' : '#bfe9ff'); pMat.needsUpdate = true;
         memU.uIn.value.set(theme === 'light' ? '#2e8fd6' : '#3a9fe0'); memU.uBase.value = theme === 'light' ? 0.16 : 0.1;
         halo.material.opacity = theme === 'light' ? 0.22 : 0.32;
+    }
+    /* the realm outside (the galaxy): its tissue (background) and the faint blue / violet veils go black / neutral in Dark */
+    let cosmosBlack = null;
+    function blackCosmos() {
+        if (!cosmos || cosmosBlack === black) return;
+        cosmosBlack = black;
+        cosmos.tissue.set(black ? '#000000' : '#050f2a');
+        cosmos.haze.forEach((h, i) => h.material.color.set(black ? '#141414' : (i % 3 === 2 ? '#3d2c70' : '#1f3d70')));
     }
     const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     function flyTo(id) {
@@ -613,7 +626,7 @@ export function createWorld(THREE, canvas, opts) {
         cosmosRv += (rvT - cosmosRv) * Math.min(1, dt * (rvT > cosmosRv ? 1.4 : 4)); if (cosmosRv < 0.002 && rvT === 0) cosmosRv = 0;
         const rv = cosmosRv;
         if (k <= 0 && rv <= 0 && !cosmos) return;
-        if (!cosmos) cosmos = buildCosmos();
+        if (!cosmos) cosmos = buildCosmos(); blackCosmos();
         const C = cosmos, walls = smoothC((rig.maxD || 14) * 1.05, 44, d), mem = smoothC(30, 75, d), nearK = smoothC(120, 285, d);
         const show = Math.max(k, rv) > 0.001;
         C.g.visible = show;
@@ -882,7 +895,7 @@ export function createWorld(THREE, canvas, opts) {
     let warmed = false;
     function warm() {
         if (warmed) return true;
-        if (!cosmos) cosmos = buildCosmos();
+        if (!cosmos) cosmos = buildCosmos(); blackCosmos();
         const C = cosmos, gv = C.g.visible, nv = C.near.visible, tr = wallMat.transparent, dw = wallMat.depthWrite, texs = new Set();
         C.g.visible = true; C.near.visible = true;
         try {

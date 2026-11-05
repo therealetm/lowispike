@@ -83,6 +83,11 @@
 (()=>{try{const P=DOMTokenList.prototype,A=P.add,R=P.remove;
 P.add=function(){for(let i=0;i<arguments.length;i++)if(!this.contains(arguments[i]))return A.apply(this,arguments);};
 P.remove=function(){for(let i=0;i<arguments.length;i++)if(this.contains(arguments[i]))return R.apply(this,arguments);};}catch(e){}})();</script>
+<!-- Nov 5 2026 (Emmanuel: "I finally want a dark mode, for the whole entire app, from the galaxy to the app interface"): Dark, the
+     true black look beside Day and Night. Loaded first so the canvas painters and style sheets below are drawn black from the start. -->
+<link rel="stylesheet" href="true-black.css?v=20261029-210022">
+<script src="true-black-core.js?v=20261029-210022"></script>
+<script src="true-black.js?v=20261029-210022"></script>
 <!-- App Store prep (Nov 3, branch app-store-prep): the iPhone app is this same site inside a Capacitor shell (capacitor.config.json, ios/).
      Capacitor's bridge sets window.Capacitor before any page script runs, and the bundled files are served from capacitor://localhost.
      window.LIS_NATIVE + html.lis-native let the rest of the app hide what Apple does not allow in a store app (Ko-fi tips, the
@@ -11526,7 +11531,11 @@ function tuneAccent(){
   const A = mix(a, "black", .42), B = mix(b, "black", .38);
   html.style.setProperty("--acc", A.hex); html.style.setProperty("--acc2", B.hex); html.style.setProperty("--acc-rgb", A.rgb); html.style.setProperty("--acc-ink", A.hex);
 }
+/* Nov 5 2026: "black" = Dark (true black, true-black.js), "night" = the blue Night; both are the dark theme and only these two
+   tokens change lowi.theme.dark. Plain "dark" (atmosphere.js, the top bar, older callers) keeps whichever of the two was chosen. */
+R2.blackKind = () => !!(window.LowiTrueBlack && LowiTrueBlack.kind() === "black");
 R2.applyTheme = function(t){
+  if (t === "black" || t === "night") { try { window.LowiTrueBlack && LowiTrueBlack.set(t); } catch(e){} t = "dark"; }
   if (t === "dark" || t === "light" || t === "sunrise") localStorage.setItem(THEME_KEY, t);
   const mode = R2.theme(), th = R2.themeEffective(mode), html = document.documentElement;
   html.setAttribute("data-theme", th); html.setAttribute("data-theme-mode", mode);
@@ -11534,7 +11543,8 @@ R2.applyTheme = function(t){
   tuneAccent();
   const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", th === "light" ? "#f4f6fb" : "#03050a");
   const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]'); if (sb) sb.setAttribute("content", th === "light" ? "default" : "black-translucent");
-  $$("[data-r2theme]").forEach(b => b.classList.toggle("on", b.getAttribute("data-r2theme") === mode));
+  const shown = mode === "dark" ? (R2.blackKind() ? "black" : "night") : mode;
+  $$("[data-r2theme]").forEach(b => b.classList.toggle("on", b.getAttribute("data-r2theme") === shown));
   scheduleSunrise();
 };
 // the star-sign accent is re-applied by the glass layer on clicks; keep it readable in Cloud/Sunrise daytime
@@ -11542,7 +11552,8 @@ new MutationObserver(muts => { if (R2.themeEffective() !== "light") return; if (
   .observe(document.documentElement, { attributes: true, attributeFilter: ["data-sign"] });
 if (window.LowiGlass && LowiGlass.apply) { const _ap = LowiGlass.apply; LowiGlass.apply = function(){ const r = _ap.apply(this, arguments); if (R2.themeEffective() === "light") setTimeout(tuneAccent, 0); return r; }; }
 R2.themeHTML = () => '<div class="r2-seg" role="group" aria-label="Look">' +
-  '<button data-r2theme="dark" class="' + (R2.theme() === "dark" ? "on" : "") + '">' + R2.ico.moon + '<span>Night</span></button>' +
+  '<button data-r2theme="black" class="' + (R2.theme() === "dark" && R2.blackKind() ? "on" : "") + '">' + R2.ico.moon + '<span>Dark</span></button>' +
+  '<button data-r2theme="night" class="' + (R2.theme() === "dark" && !R2.blackKind() ? "on" : "") + '">' + R2.ico.moon + '<span>Night</span></button>' +
   '<button data-r2theme="light" class="' + (R2.theme() === "light" ? "on" : "") + '">' + R2.ico.sun + '<span>Day</span></button>' +
   '<button data-r2theme="sunrise" class="' + (R2.theme() === "sunrise" ? "on" : "") + '">' + R2.ico.sunrise + '<span>Auto</span></button></div>';
 
@@ -11568,7 +11579,7 @@ R2.boot = function(){
   R2.applyTheme();
   watchTabs();
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-r2theme]"); if (t) { R2.applyTheme(t.getAttribute("data-r2theme")); const m = R2.theme(); R2.toast(m === "sunrise" ? "Auto on" : m === "light" ? "Day on" : "Night on"); return; }
+    const t = e.target.closest("[data-r2theme]"); if (t) { R2.applyTheme(t.getAttribute("data-r2theme")); const m = R2.theme(); R2.toast(m === "sunrise" ? "Auto on" : m === "light" ? "Day on" : R2.blackKind() ? "Dark on" : "Night on"); return; }
     const c = e.target.closest('[data-r2="close"]'); if (c) { const ov = c.closest(".r2-ov"); R2.close(ov); }
   });
   document.addEventListener("visibilitychange", () => { if (!document.hidden && R2.theme() === "sunrise") R2.applyTheme(); });

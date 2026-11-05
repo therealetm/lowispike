@@ -1,18 +1,24 @@
 # Handoff: sheet-bubble-20261105
 
-**Status of this copy: written before the release step. NOT verified live.** The result of the release attempt (build id,
-CI and live check, or the exact blocker) is recorded in the next commit of this file on branch `sheet-bubble-20261105`
-(mirror: `claude/zen-tesla-wanom8`). If you read this copy on `main`, check that branch for the result.
+**Status (5 Nov 2026, ~13:15 UTC): NOT released, NOT deployed, NOT live.** `main` is unchanged at `b89991b` (Release
+20261105-122814); its CI run 42019551489 passed tests, deploy and the "Live on GitHub Pages" check (verify-live) at 11:33 UTC, and
+no later main run exists (the live site itself is not reachable from this sandbox). Code complete for the handoff items,
+verified by tests and Chromium probes (below). The release was
+attempted with `scripts/release.sh` and stopped at its first network step: this sandbox's network policy denies
+`therealetm.github.io` (see "Release").
 
-Branch: `sheet-bubble-20261105`, from origin/main `b89991b` (live build 20261105-122814). Main had not moved when this was
-written (merge-base = main tip). The branch is fast-forward only; nothing was force-pushed.
+Branch: `sheet-bubble-20261105` (mirror with the same commits: `claude/zen-tesla-wanom8`), from origin/main `b89991b`.
+Main had not moved (merge-base = main tip). Fast-forward pushes only; nothing was force-pushed.
+Branch tip = the commit that adds this version of the file (a file cannot hold its own hash: `git log -1 origin/sheet-bubble-20261105`);
+its parent is `2f107ee3`; the last code commit is `16ba446e`.
 
 ## Commits on the branch (oldest first)
 - `fa24929`: shared pop-up shell (`sheet-style.css`, linked in index.html before bottom-close.css, precached in sw.js), `tests/sheet-style.test.cjs`.
 - `d2a98d0`: round-X gap 76px (was one-sheet.css's 72px).
 - `3f0efa1`: WIP increment 2 (joystick hold, Calm joystick, calmKeep, no timed trips, Billiards aim stick); left 2 tests failing.
 - `16ba446`: joystick conflict fixed (below); new `tests/ui-joystick-open-all.test.cjs`; ONBOARDING.md controls line.
-- The commit that adds this file version: DECISIONS.md entry + this handoff (docs only).
+- `2f107ee`: DECISIONS.md entry + handoff (docs only).
+- Branch tip: this handoff with the release result (docs only).
 
 ## What the branch does (all verified in Chromium, see "Checks")
 - **Joystick (`misty-pad.js`).** A steady press on the MIDDLE of the joystick (inner 70 % of its measured radius = the dashed
@@ -44,9 +50,9 @@ written (merge-base = main tip). The branch is fast-forward only; nothing was fo
 
 ## Checks actually run (5 Nov 2026, this session)
 - Baseline on `3f0efa1`: `node --test tests/*.test.cjs` = 4454 tests, 4452 pass, 2 fail (the two named above).
-- After the fix (`16ba446`): `node --test tests/*.test.cjs` = 4465 tests, 4465 pass, 0 fail. `node scripts/release-check.cjs` =
-  OK (5 standing warnings). `git diff --check` clean. GitHub CI "Release check and tests" passed on `16ba446` (runs 42030916188
-  and 42030920994, Node 24).
+- After the fix (`16ba446`), and again after the docs (`2f107ee`): `node --test tests/*.test.cjs` = 4465 tests, 4465 pass,
+  0 fail. `node scripts/release-check.cjs` = OK (5 standing warnings). `git diff --check` clean. GitHub CI "Release check and
+  tests" (Node 24) passed on `16ba446` (runs 42030916188, 42030920994) and on `2f107ee` (runs 42033109002, 42033112901).
 - Focused: ui-joystick-open-all (11), ui-joystick-fade, ui-joystick-vanish, companion-open-all, misty-pad, misty-pad-anchor,
   misty-turn, pad-autopilot-world, guide-bubble-joystick, joystick-bubble-style, zoom-out-hides-pad, galaxy-still-wiring,
   bloom-ring, home-blooms-v2: 115/115 pass. `ui-joystick-fade.test.cjs`, `ui-joystick-vanish.test.cjs` and their fixture are unchanged.
@@ -77,9 +83,25 @@ written (merge-base = main tip). The branch is fast-forward only; nothing was fo
 - The Freundesbaum-adjacent placement of the aim stick was not exercised (the button was not present in the probed views).
 - `tests/ui-joystick-fade-live.cjs` / `ui-joystick-vanish-live.cjs` cannot pass on this VM (timing), on main either.
 
-## Release
-- Planned: `NODE_OPTIONS=--test-reporter=spec scripts/release.sh "<summary>" --quiet`. Node here is v22, which writes TAP when the
-  test output is redirected; release.sh and scripts/test-floor.cjs read the spec reporter's "ℹ pass N" lines (CI's Node 24 writes
-  spec by default). The option only selects the reporter; no check is skipped.
-- This sandbox's network policy denies `therealetm.github.io` (proxy 403), so `scripts/verify-live.cjs` cannot run here; the CI
-  "Live on GitHub Pages" job runs the same `scripts/verify-live.cjs --at-least --compare` on GitHub's runner after the deploy.
+## Release (attempted, blocked; nothing deployed)
+- Ran once, from a clean tree at `2f107ee`:
+  `NODE_OPTIONS=--test-reporter=spec scripts/release.sh "Hold the middle of the Home joystick: every bubble opens (rim still flies forward); joystick stays in Calm; no timed trips; one dark pop-up look; Billiards aim stick" --quiet`
+  Output: `lock held 13:09:12` / `could not read live build (fetch failed); pass --no-live to bump without it`, exit 3.
+  It stopped at `scripts/bump-build.cjs` (which must read the live version.json so the new build id is later than live), before
+  any bump, commit or push. Afterwards: HEAD `2f107ee`, origin/main `b89991b`, clean tree. No `ci/` branch, no Pages deploy.
+- Not worked around on purpose: `--no-live`, editing release.sh or a hand push to main would skip the live-build safeguard or go
+  around the guarded workflow.
+- Exact cause in this cloud sandbox: (1) its network policy denies `therealetm.github.io` (proxy log: "gateway answered 403 to
+  CONNECT"); (2) Node 22's built-in fetch does not use the sandbox proxy unless `NODE_USE_ENV_PROXY=1`; without it github.io does
+  not resolve (ENOTFOUND) and api.github.com answers 403 "API rate limit exceeded" for the shared egress IP, which would also stall
+  `scripts/wait-ci.cjs`. With `NODE_USE_ENV_PROXY=1`: api.github.com 200, github.io still denied.
+- Next step (owner or next developer): allow `therealetm.github.io` in this environment's network settings (or release from a
+  machine that can reach it), then from this branch, clean tree:
+  `NODE_OPTIONS="--use-openssl-ca --test-reporter=spec" NODE_USE_ENV_PROXY=1 scripts/release.sh "<summary>" --quiet`
+  (`--test-reporter=spec`: Node 22 writes TAP when redirected, but release.sh and scripts/test-floor.cjs read spec's "ℹ pass N"
+  lines, as CI's Node 24 writes by default; `--use-openssl-ca` is this sandbox's own NODE_OPTIONS.) release.sh then waits for CI on
+  a `ci/` branch, fast-forwards main and runs `scripts/verify-live.cjs <build> --at-least --compare`; also read the CI "Live on GitHub
+  Pages" job (same script) and check the changed files on the live site (misty-pad.js, sheet-style.css, room-table.js/.css,
+  sun-meter.js, bloom-ring.js, home-blooms-v2.js, galaxy-still.css, galaxy-still-core.js) and an upgrade from an installed service
+  worker (sw.js precaches the new sheet-style.css). Only then is it live.
+- Coordination: issue #2's newest comment is from 29 Oct (no open CLAIM / RELEASING); nothing was posted there from this session.

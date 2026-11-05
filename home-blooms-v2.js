@@ -512,10 +512,12 @@
         /* Oct 23 (Emmanuel: "the Rundung symmetry"): the orbs sit on ONE circle round Misty, centred on their bubble's direction,
            one fixed spacing, and the view pulls back to make room (bloom-ring.js). The old fan is the fallback only. */
         /* Nov 5 2026: the same geometry as the all-bubbles ring (bloom-ring.js placeShared), so one group opens exactly where it sits
-           when every group is open; a group whose single bloom has extra orbs keeps its own solve (same rules, own count) */
+           when every group is open. Later the same day (Emmanuel: "The logic needs to be fused together"): Gap and Einkaufen, which the
+           overview leaves out, and a group with a different number of orbs open on that same circle too (same zoom, radius, orb size and
+           spacing, centred on their own bubble). Only if that would leave the screen does a group keep its own solve. */
         try {
-            const R = W.LowiBloomRing, AG = allGroups(), mine = AG.groups.filter(g => g.key === kind)[0];
-            if (R && st.ring !== false && R.placeShared && mine && mine.n === Math.max(1, acts.length)) ring = R.placeShared(AG.groups, kind);
+            const R = W.LowiBloomRing, AG = allGroups();
+            if (R && st.ring !== false && R.placeShared && AG.groups.length) ring = R.placeShared(AG.groups, kind, Math.max(1, acts.length));
             if ((!ring || !ring.orbs) && R && R.place && st.ring !== false) ring = R.place([{ key: kind, n: Math.max(1, acts.length) }]);
         } catch (e) { ring = null; }
         if (ring && ring.orbs && ring.orbs.length === Math.max(1, acts.length)) {

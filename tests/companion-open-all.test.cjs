@@ -33,9 +33,18 @@ test('Calm: joystick not hidden; keeps() honours calmKeep; companion group marke
   assert.match(read('fast-bubble.js'), /\(Date\.now\(\) - start\) \/ 36e5/, 'fasting elapsed is real time');
 });
 test('bloom ring: single group derives from the shared all-groups layout', () => {
-  const R = read('bloom-ring.js'), H = read('home-blooms-v2.js');
-  assert.match(R, /function placeShared\(groups, key\) \{ const L = place\(groups, \{ even: true \}\)/);
-  assert.match(H, /R\.placeShared\(/);
+  /* each overview group's single bloom is exactly its slice of the all-bubbles layout (same orbs, zoom, radius, size); the groups the
+     overview leaves out go on the same circle (tests/bloom-zoom-reopen.test.cjs). Was a source match on placeShared(groups, key). */
+  const BR = require('../bloom-ring.js'), c = { x: 195, y: 388 }, keys = ['settings', 'water', 'move', 'scan', 'joy', 'sleep', 'gap', 'fuel'];
+  const ring = keys.map((k, i) => { const t = -Math.PI / 2 + i * Math.PI / 4; return { key: k, x: c.x + 130 * Math.cos(t), y: c.y + 130 * Math.sin(t), r: 32 }; });
+  const L = BR.layoutAt({ c, mistyR: 75, ring, groups: [{ key: 'water', n: 3 }, { key: 'move', n: 3 }, { key: 'sleep', n: 3 }], d: 66, even: true }, 0.65);
+  for (const k of ['water', 'move', 'sleep']) {
+    const one = BR.only(L, k);
+    assert.deepEqual(one.orbs, L.orbs.filter(o => o.key === k), k);
+    assert.ok(one.s === L.s && one.rho === L.rho && one.d === L.d && one.step === L.step, k);
+  }
+  assert.match(read('bloom-ring.js'), /function placeShared\(groups, key, n\) \{\s*const L = place\(groups, \{ even: true \}\)/);
+  assert.match(read('home-blooms-v2.js'), /R\.placeShared\(/);
 });
 test('no timed trips: departures off, outstanding trips end once', () => {
   const S = require('../sun-meter.js');

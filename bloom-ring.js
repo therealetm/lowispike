@@ -125,6 +125,18 @@
         if (!orbs.length) return null;
         return Object.assign({}, L, { orbs, groups: (L.groups || []).filter(g => g.key === key), shared: true });
     }
+    /* Nov 5 2026 (Emmanuel's iPhone: "when pressing on the joystick, I like how it looks. It's all very symmetrical, circle, but then
+       individually when you open these, why is it broken? ... The logic needs to be fused together"): a group that is not on the
+       all-bubbles circle (Gap and Einkaufen, which the overview leaves out, or a group with a different number of orbs) still opens
+       ON that circle: the same centre, zoom s, radius rho, orb size d and angle between neighbours, its n orbs centred on its own
+       bubble's direction b. Pure. */
+    function along(L, key, n, b) {
+        if (!L || !L.orbs || !L.c || !b || !(L.rho > 0) || !(L.step > 0)) return null;
+        n = Math.max(1, n | 0);
+        const c = L.c, s = L.s, a = Math.atan2(b.y - c.y, b.x - c.x), from = { x: c.x + (b.x - c.x) * s, y: c.y + (b.y - c.y) * s }, orbs = [];
+        for (let i = 0; i < n; i++) { const t = a + (i - (n - 1) / 2) * L.step; orbs.push({ key, i, a: t, x: c.x + Math.cos(t) * L.rho, y: c.y + Math.sin(t) * L.rho, from }); }
+        return Object.assign({}, L, { orbs, groups: [{ key, a, c: a, n }], shared: true, along: true });
+    }
     /* ---------------- DOM ---------------- */
     let W = null, D = null, H = null;
     const z = { on: false, s: 1, saved: null, t: 0, owner: null };
@@ -187,12 +199,35 @@
         out.c = g.c;
         return out;
     }
-    /* one group, placed exactly where it sits when every group is open (groups = the all-bubbles list, key = the one to show) */
-    function placeShared(groups, key) { const L = place(groups, { even: true }); return L ? Object.assign(only(L, key) || {}, { c: L.c }) : null; }
+    /* one group, placed exactly where it sits when every group is open (groups = the all-bubbles list, key = the one to show, n = its
+       orbs); a group the overview has not got (or with another count) goes on the same circle round its own bubble (along); null when
+       that would leave the screen, so the caller keeps its own solve */
+    function placeShared(groups, key, n) {
+        const L = place(groups, { even: true }); if (!L) return null;
+        const cut = only(L, key);
+        if (cut && (n == null || cut.orbs.length === n)) return Object.assign(cut, { c: L.c });
+        const g = ring(), b = g && g.ring.find(x => x.key === key);
+        const out = along(L, key, n == null ? 1 : n, b);
+        if (!out) return null;
+        const vw = W.innerWidth || 390, vh = W.innerHeight || 844, sf = safe();
+        return fits(out, { w: vw, h: vh, t: sf.t + 6, r: sf.r, b: sf.b, l: sf.l }, 8) ? out : null;
+    }
     function zoom(s, c, owner) {
         if (!H || !c) return;
         const els = layers();
-        if (!z.on) {
+        /* Nov 5 2026 (Emmanuel's iPhone: the second, third ... bubble he opened had its ring shifted up-left, off its own orbs; the
+           first one was fine). Closing a bloom eases the ring back over 0.5 s and only then clears the zoom (unzoom's done). A bloom
+           opened inside that half second measured the HUD's box while it was still scaled, so the new zoom shrank round the wrong
+           point (measured in the browser: 23 px left, 46 px up). The origins measured unscaled by the last zoom still hold while it
+           eases back round the same centre: keep them, and the ring simply turns round and zooms out again. A different centre (the
+           ring moved): finish the old ease-back at once, then measure. tests/bloom-zoom-reopen.test.cjs */
+        let reuse = false;
+        if (!z.on && z.saved) {
+            if (z.c && Math.abs(z.c.x - c.x) < 0.5 && Math.abs(z.c.y - c.y) < 0.5) reuse = true;
+            else settle();
+        }
+        if (!z.on && !reuse) {
+            z.c = { x: c.x, y: c.y };
             /* measured once while nothing is scaled. A layer with no transform of its own (the HUD) scales round Misty's centre in its own
                box. A layer that has one (Misty's button: translate(-50%, -50%) scale(--wh-mz)) keeps its transform-origin, because moving
                the origin would also move her own transform; the CSS translate property then holds her centre still: (1 - s) * (c - P0),
@@ -224,11 +259,15 @@
         try { W.dispatchEvent(new CustomEvent('lowi:bloom-zoom', { detail: { s: 1, on: false, start: true } })); } catch (e) { }
         const done = () => {
             if (tick !== z.t) return;
-            saved.forEach(x => { x.el.style.removeProperty('scale'); x.el.style.removeProperty('translate'); x.el.style.removeProperty('transform-origin'); x.el.style.transition = x.tr || ''; });
-            z.saved = null; H.classList.remove('br-zoom');
+            settle(saved); H.classList.remove('br-zoom');
             try { W.dispatchEvent(new CustomEvent('lowi:bloom-zoom', { detail: { s: 1, on: false } })); } catch (e) { }
         };
         if (reduced()) done(); else W.setTimeout(done, 520);
+    }
+    /* the zoom's inline styles off at once (unzoom's done after the ease-back; zoom when the ring's centre moved meanwhile) */
+    function settle(saved) {
+        (saved || z.saved || []).forEach(x => { x.el.style.removeProperty('scale'); x.el.style.removeProperty('translate'); x.el.style.removeProperty('transform-origin'); x.el.style.transition = x.tr || ''; });
+        z.saved = null;
     }
 
     const homeUp = () => H.classList.contains('o8') && H.classList.contains('wh-home') && !H.classList.contains('wh-away') && !D.querySelector('.ss-sheet.on, .hl-sheet.on');
@@ -300,5 +339,5 @@
         W.addEventListener('resize', () => { if (z.on) { const B = W.LowiHomeBloomsV2; try { if (B && B.close) B.close(); } catch (e) { } try { const S = W.LowiHomeSettingsSleepV2; if (S && S.close) S.close(); } catch (e) { } unzoom(); } });
     }
     const state = () => ({ on: z.on, s: z.s, owner: z.owner });
-    return { solve, pack, layoutAt, only, placeShared, scanPress, SCAN_HOLD_MS, SCAN_DRIFT, stepFor, place, zoom, unzoom, state, toggleAll, mount: typeof window !== 'undefined' ? mount : null, _ring: ring, _layers: typeof window !== 'undefined' ? layers : null, _layoutBox: typeof window !== 'undefined' ? layoutBox : null };
+    return { solve, pack, layoutAt, only, along, placeShared, scanPress, SCAN_HOLD_MS, SCAN_DRIFT, stepFor, place, zoom, unzoom, state, toggleAll, mount: typeof window !== 'undefined' ? mount : null, _ring: ring, _layers: typeof window !== 'undefined' ? layers : null, _layoutBox: typeof window !== 'undefined' ? layoutBox : null };
 });

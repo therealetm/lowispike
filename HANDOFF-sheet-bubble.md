@@ -1,16 +1,18 @@
 # Handoff: sheet-bubble-20261105
 
-**Status (5 Nov 2026, ~13:30 UTC): this copy was written right before the release.** The owner allowed `therealetm.github.io`
-for this environment; the site answered (live build 20261105-122814) and `scripts/release.sh --quiet` was started. Its outcome
-(build id, CI, live check) is recorded in the next commit of this file on branch `sheet-bubble-20261105`; if you read this
-copy on `main`, check there. Until that record says "verified live", treat it as not live.
-Earlier (~13:15 UTC) a first attempt stopped at its first network step because the host was still denied (see "Release").
-Code complete for the handoff items, verified by tests and Chromium probes (below).
+**Status (5 Nov 2026, ~13:32 UTC): VERIFIED LIVE as build 20261105-142344, released quietly (no update notice).**
+Release commit `fdc2ba7c` is on `main`, `sheet-bubble-20261105` and `claude/zen-tesla-wanom8`. Evidence: `scripts/release.sh`
+exit 0 (CI "Release check and tests" passed on the commit in 94 s, main fast-forwarded, `verify-live --at-least --compare`:
+live OK after 110 s, index.html / sw.js / version.json / apple-ui.js byte-identical); main's CI run 42035788209 (tests, Pages
+deploy, live check) passed; the 11 changed app files are byte-identical on the live site; a clean Chromium on the live site
+loads build 20261105-142344 and its service worker activates with cache `lowispike-updates-20261105-142344`, which holds
+sheet-style.css. Not checked on a real iPhone or in WebKit (see limitations). The `main` copy of this file is the pre-release
+version; this branch copy has the result.
 
 Branch: `sheet-bubble-20261105` (mirror with the same commits: `claude/zen-tesla-wanom8`), from origin/main `b89991b`.
 Main had not moved (merge-base = main tip). Fast-forward pushes only; nothing was force-pushed.
 Branch tip = the commit that adds this version of the file (a file cannot hold its own hash: `git log -1 origin/sheet-bubble-20261105`);
-its parent is `2f107ee3`; the last code commit is `16ba446e`.
+its parent is `fdc2ba7c` (the release commit, = `main`); the last code commit is `16ba446e`.
 
 ## Commits on the branch (oldest first)
 - `fa24929`: shared pop-up shell (`sheet-style.css`, linked in index.html before bottom-close.css, precached in sw.js), `tests/sheet-style.test.cjs`.
@@ -18,7 +20,10 @@ its parent is `2f107ee3`; the last code commit is `16ba446e`.
 - `3f0efa1`: WIP increment 2 (joystick hold, Calm joystick, calmKeep, no timed trips, Billiards aim stick); left 2 tests failing.
 - `16ba446`: joystick conflict fixed (below); new `tests/ui-joystick-open-all.test.cjs`; ONBOARDING.md controls line.
 - `2f107ee`: DECISIONS.md entry + handoff (docs only).
-- Branch tip: this handoff with the release result (docs only).
+- `95556165`: handoff after the first, blocked release attempt (docs only).
+- `38bd3e83`: handoff status right before the second attempt (docs only).
+- `fdc2ba7c`: Release 20261105-142344 (build ids only, made by release.sh); this is `main`.
+- Branch tip: this handoff with the verified result (docs only, not on `main`).
 
 ## What the branch does (all verified in Chromium, see "Checks")
 - **Joystick (`misty-pad.js`).** A steady press on the MIDDLE of the joystick (inner 70 % of its measured radius = the dashed
@@ -83,7 +88,21 @@ its parent is `2f107ee3`; the last code commit is `16ba446e`.
 - The Freundesbaum-adjacent placement of the aim stick was not exercised (the button was not present in the probed views).
 - `tests/ui-joystick-fade-live.cjs` / `ui-joystick-vanish-live.cjs` cannot pass on this VM (timing), on main either.
 
-## Release (attempted, blocked; nothing deployed)
+## Release 20261105-142344 (done, verified live)
+- After the owner added `therealetm.github.io` under Allowed domains (Network access: Limited, package managers on), from a clean
+  tree at `38bd3e83`:
+  `NODE_OPTIONS="--use-openssl-ca --test-reporter=spec" NODE_USE_ENV_PROXY=1 scripts/release.sh "Hold the middle of the Home joystick: every bubble opens (rim still flies forward); joystick stays in Calm; no timed trips; one dark pop-up look; Billiards aim stick" --quiet`
+  Lock 13:23:43 UTC; build 20261105-142344; release-check OK (5 standing warnings); tests 4465/4465; test floor OK (floor 4443);
+  release commit `fdc2ba7c`; pushed to `ci/20261105-142344-20261105132452`; CI passed in 94 s (run 42035554570); main
+  fast-forwarded to `fdc2ba7c`; verify-live OK after 110 s with all 4 shell files the same; exit 0.
+- The script's last cleanup (`git push --delete` of the `ci/` branch, `|| true`) was refused by this sandbox's git proxy
+  (HTTP 403), so `ci/20261105-142344-20261105132452` is still on GitHub (harmless, like the older `ci/` branches).
+- Not done: no MAYA-HANDOFF.md Log line and no RELEASED comment in issue #2 for this build (both would be extra writes to
+  `main` / GitHub the task did not ask for); add the Log line with the next docs push to main.
+- The upgrade from an already installed older service worker was not tested separately (only a clean context); the new
+  precache entry sheet-style.css is served (200), so the install step cannot fail on it.
+
+## First release attempt (13:09 UTC, blocked; nothing deployed)
 - Ran once, from a clean tree at `2f107ee`:
   `NODE_OPTIONS=--test-reporter=spec scripts/release.sh "Hold the middle of the Home joystick: every bubble opens (rim still flies forward); joystick stays in Calm; no timed trips; one dark pop-up look; Billiards aim stick" --quiet`
   Output: `lock held 13:09:12` / `could not read live build (fetch failed); pass --no-live to bump without it`, exit 3.

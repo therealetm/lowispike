@@ -199,9 +199,9 @@
             id: 'new-cart-total', area: 'new', where: 'home', open: 'shop', target: ['.stp-card .stp-cartbtn', '.stp-card'], covers: ['supermarket-cart', 'give-hand', 'week-budget'],
             title: { en: 'The whole cart, the real total', de: 'Der ganze Warenkorb, die echte Summe', es: 'Todo el carrito, el total real' },
             text: {
-                en: 'The Cart keeps every food with its real amount and the full total. Pick I\u2019ll buy it or Someone else pays: Give a hand asks for that total, never \u20ac5.',
-                de: 'Der Warenkorb beh\u00e4lt jedes Essen mit der echten Menge und der ganzen Summe. W\u00e4hl Ich kaufe selbst oder Jemand anderes zahlt: Hilf mit fragt nach genau dieser Summe, nie nach 5 \u20ac.',
-                es: 'El carrito guarda cada alimento con su cantidad real y el total completo. Elige Lo compro yo o Que pague otra persona: Echa una mano pide ese total, nunca 5 \u20ac.'
+                en: 'The Cart keeps every food and its real amount. Someone else pays asks for the cart total, never \u20ac5.',
+                de: 'Der Warenkorb beh\u00e4lt jedes Essen mit echter Menge. Jemand anderes zahlt fragt nach der ganzen Summe, nie nach 5 \u20ac.',
+                es: 'El carrito guarda cada alimento con su cantidad real. Que pague otra persona pide el total, nunca 5 \u20ac.'
             }
         },
         {

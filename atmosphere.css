@@ -88,3 +88,25 @@ html[data-atm="manual"][data-theme="light"] .cw-env::before { mix-blend-mode: so
 .atm-speedrow span { font-size: 16px; line-height: 1; }
 .atm-spd { flex: 1; min-width: 0; accent-color: #7fd1ff; height: 28px; }
 .atm-spdnote { display: block; margin-top: 6px; font-size: 12.5px; color: var(--r2-mut, inherit); opacity: .85; }
+
+/* Nov 5 2026: Look, time of day & weather (the sheet Settings opens). Apple Settings grouping: a large title, small grey section
+   headers, each group on its own inset panel, one quiet line under it. Pure black panels in Dark, no blue. */
+.atm-ov .atm-sheet .r2-look.atm-grouped { margin: 0; padding: 0; background: none; border: 0; box-shadow: none; }
+.atm-grouped .atm-title { margin: 2px 48px 14px 4px; font-size: 22px; line-height: 28px; font-weight: 750; letter-spacing: -.01em; color: var(--r2-ink, inherit); }
+.atm-grouped .atm-sec + .atm-sec { margin-top: 20px; }
+.atm-grouped .atm-sech { margin: 0 0 6px 14px; font-size: 13px; line-height: 18px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: var(--r2-mut, inherit); }
+.atm-grouped .atm-grp { padding: 12px; border-radius: 14px; background: var(--r2-field, rgba(127,127,127,.12)); border: 1px solid var(--r2-line, rgba(127,127,127,.18)); }
+.atm-grouped .atm-foot { display: block; margin: 6px 14px 0; font-size: 13px; line-height: 18px; color: var(--r2-mut, inherit); }
+.atm-grouped .atm-quick { width: 100%; }
+.atm-grouped .atm-quick button { flex: 1 1 0; min-width: 0; height: 44px; justify-content: center; padding: 0 6px; white-space: nowrap; }
+.atm-grouped .atm-quick button span { overflow: hidden; text-overflow: ellipsis; }
+.atm-grouped .atm-slider { margin-top: 0; }
+.atm-grouped .atm-wx { margin-top: 0; padding: 4px 0 12px; border: 0; border-radius: 0; min-height: 44px; }
+.atm-grouped .atm-speed { margin-top: 0; padding-top: 12px; border-top: 1px solid var(--r2-line, rgba(225,248,255,.12)); }
+.atm-grouped .atm-wx + .atm-speed { margin-top: 0; }
+.atm-grouped .atm-grp > .atm-speed:first-child { padding-top: 0; border-top: 0; }
+.atm-grouped .atm-quick button svg { display: none; } /* text only, like an iOS segmented control; the words fit DE and ES at 320 px */
+html[data-black="1"] .atm-grouped .atm-grp { background: #0b0b0b; border-color: rgba(255,255,255,.1); }
+html[data-black="1"] .atm-grouped .atm-speed { border-top-color: rgba(255,255,255,.1); }
+html[data-black="1"] .atm-grouped .atm-quick { background: #000; border-color: rgba(255,255,255,.14); }
+html[data-black="1"] .atm-grouped .atm-quick button.on { background: rgba(230,184,92,.2); color: #f6e3b4; box-shadow: inset 0 0 0 1px rgba(230,184,92,.85); }

@@ -80,6 +80,41 @@
 
     /* ---------- the Look & Ton card ---------- */
     function ico(n) { const r = R2(); return (r && r.ico && r.ico[n]) || ''; }
+    /* Nov 5 2026 (owner: "have the app theme be inside of the time of day and weather ... put it in there logically, like Apple
+       would"): in the sheet that Settings opens (.atm-sheet) the same controls sit in three grouped sections with small headers,
+       like iOS Settings: Look (Day / Dark / Night / Auto, with one line saying what the choice does), Time of day (the slider),
+       World (live weather, world speed). Home's small pop-up keeps the compact card. */
+    function quickSeg(label) {
+        return '<div class="r2-seg atm-quick" role="group" aria-label="' + label + '">' +
+            '<button type="button" data-atm-quick="day">' + ico('sun') + '<span>' + W('day') + '</span></button>' +
+            '<button type="button" data-atm-quick="black">' + ico('moon') + '<span>' + W('dark') + '</span></button>' +
+            '<button type="button" data-atm-quick="night">' + ico('moon') + '<span>' + W('night') + '</span></button>' +
+            '<button type="button" data-atm-quick="auto">' + ico('sunrise') + '<span>' + W('auto') + '</span></button></div>';
+    }
+    function lookFoot() {
+        const TB = window.LowiTrueBlack, nightKind = TB && TB.kind() === 'night';
+        if (state.mode === 'auto') return W(nightKind ? 'footAutoNight' : 'footAutoBlack');
+        if (state.p !== C.DAY && state.p !== C.NIGHT) return C.markWord(C.look(state.p).mark, lang()) + ': ' + W('footSlider');
+        if (C.themeFor(state.p) === 'light') return W('footDay');
+        return W(nightKind ? 'footNight' : 'footBlack');
+    }
+    function groupedHTML() {
+        const l = lang();
+        const marks = C.MARKS.map(m => '<button type="button" class="atm-mark" data-atm-goto="' + m.p + '">' + C.markWord(m.id, l) + '</button>').join('');
+        const sec = (id, head, body, foot) => '<section class="atm-sec" aria-labelledby="atmSec' + id + '"><h3 class="atm-sech" id="atmSec' + id + '">' + head + '</h3><div class="atm-grp">' + body + '</div>' + (foot || '') + '</section>';
+        return '<h2 class="atm-title">' + W('sheetTitle') + '</h2>' +
+            sec('Look', W('secLook'), quickSeg(W('secLook')), '<small class="atm-foot" data-atm-lookfoot aria-live="polite">' + lookFoot() + '</small>') +
+            sec('Time', W('secTime'), '<div class="atm-slider"><div class="atm-now" aria-hidden="true"></div>' +
+                '<div class="atm-trackwrap"><div class="atm-track" style="background:' + C.trackGradient() + '"></div>' +
+                '<input class="atm-range" type="range" min="0" max="100" step="0.5" aria-label="' + W('slider') + '"></div>' +
+                '<div class="atm-marks">' + marks + '</div><small class="atm-autonote">' + W('autoLong') + '</small></div>',
+                '<small class="atm-foot">' + W('sub') + '</small>') +
+            sec('World', W('secWorld'),
+                (window.LowiSky ? '<button type="button" class="wx-toggle atm-wx" role="switch" data-atm-wx aria-checked="' + skyOn() + '"><span><b>' + W('wx') + '</b><small>' + W('wxNote') + '</small></span><i aria-hidden="true"></i></button>' : '') +
+                '<div class="atm-speed"><div class="atm-speedhd"><b>' + W('speed') + '</b><output class="atm-spdout">' + speedWord(worldSpeed()) + '</output></div>' +
+                '<div class="atm-speedrow"><span aria-hidden="true">🐢</span><input class="atm-spd" type="range" min="0.25" max="3" step="0.05" value="' + worldSpeed() + '" aria-label="' + W('speed') + '"><span aria-hidden="true">🐇</span></div>' +
+                '<small class="atm-spdnote">' + W('speedNote') + '</small></div>');
+    }
     function cardHTML() {
         const l = lang();
         const marks = C.MARKS.map(m => '<button type="button" class="atm-mark" data-atm-goto="' + m.p + '">' + C.markWord(m.id, l) + '</button>').join('');
@@ -119,13 +154,16 @@
             card.querySelectorAll('[data-atm-quick]').forEach(b => { const on = b.getAttribute('data-atm-quick') === q; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
             card.querySelectorAll('.atm-mark').forEach(b => b.classList.toggle('on', state.mode === 'manual' && b.getAttribute('data-atm-goto') === String(k.mark === 'night' ? C.NIGHT : (C.MARKS.find(m => m.id === k.mark) || {}).p)));
             card.classList.toggle('atm-is-auto', state.mode === 'auto');
+            const lf = card.querySelector('[data-atm-lookfoot]'); if (lf) { const t = lookFoot(); if (lf.textContent !== t) lf.textContent = t; }
             const wx = card.querySelector('[data-atm-wx]'); if (wx) { const onWx = skyOn(); wx.setAttribute('aria-checked', String(onWx)); wx.setAttribute('aria-pressed', String(onWx)); }
         });
     }
     function mountCard() {
         document.querySelectorAll('.r2-look:not([data-atm-card])').forEach(card => {
             card.setAttribute('data-atm-card', ''); card.setAttribute('data-noi18n', ''); card.setAttribute('lang', lang());
-            card.innerHTML = cardHTML();
+            const grouped = !!card.closest('.atm-sheet');
+            if (grouped) card.classList.add('atm-grouped');
+            card.innerHTML = grouped ? groupedHTML() : cardHTML();
             const r = card.querySelector('.atm-range');
             r.addEventListener('input', () => scrub(+r.value));
             r.addEventListener('change', () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } apply({ mode: 'manual', p: +r.value }); });

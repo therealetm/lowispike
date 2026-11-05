@@ -55,7 +55,7 @@
         /* Nov 5 2026 (owner, Phase B item 4: "keep Körperklang and VR accessible from Settings"): neither had a row here (World sound sat in
            SKIP, VR was gone from every list), so the only way in was the Home HUD. Both are rows now and run Home's own controls. */
         /* Nov 5 2026: Still galaxy (galaxy-still.js, LowiGalaxyStill) sits right under the theme rows */
-        { key: 'settings', ids: ['theme', 'galaxyStill', 'aura', 'sky', 'language', 'notifications', 'look', 'worldSound', 'vr'] },
+        { key: 'settings', ids: ['sky', 'galaxyStill', 'aura', 'language', 'notifications', 'look', 'worldSound', 'vr'] },
         { key: 'help', ids: ['tutorial', 'feedback', 'feedbackInbox', 'support', 'rules', 'about'] },
         { key: 'danger', ids: ['deleteAccount'] }
     ];
@@ -88,19 +88,16 @@
     }
     const sT = () => { const s = S(), l = lang(); return (s && s.TX && (s.TX[l] || s.TX.en)) || {}; };
     const THEME_W = { en: { t: 'App theme', day: 'Day', black: 'Dark', night: 'Night', auto: 'Auto' }, de: { t: 'App-Design', day: 'Tag', black: 'Dunkel', night: 'Nacht', auto: 'Auto' }, es: { t: 'Tema de la app', day: 'D\u00eda', black: 'Oscuro', night: 'Noche', auto: 'Auto' } };
-    const SKY_W = { en: ['Time of day & weather', 'Slider, live weather, world speed'], de: ['Tageszeit & Wetter', 'Regler, Live-Wetter, Tempo der Welt'], es: ['Hora del d\u00eda y tiempo', 'Control, tiempo en vivo, velocidad'] };
+    /* Nov 5 2026 (owner: "the App theme row is redundant, put it inside Time of day & weather, logically, like Apple would"):
+       one row for the whole look. Its title names what is inside, the small line says which look is on now (like an iOS value),
+       and the sheet it opens starts with the Look choice (atmosphere.js). The old separate App theme row is gone. */
+    const SKY_W = { en: ['Look, time of day & weather', 'follows the sun'], de: ['Design, Tageszeit & Wetter', 'folgt der Sonne'], es: ['Aspecto, hora y tiempo', 'sigue al sol'] };
+    function skySub(l) { const cur = themeNow(), W4 = THEME_W[l] || THEME_W.en, W2 = SKY_W[l] || SKY_W.en; return cur === 'auto' ? W4.auto + ' \u00b7 ' + W2[1] : W4[cur]; }
     /* which of the four is on: Auto while the day follows the clock, else Day, or the dark look that was chosen */
     function themeNow() {
         try { const A = root.LowiAtmos, st = A && A.state ? A.state() : null; if (st && st.mode === 'auto') return 'auto'; } catch (e) { }
         if (H.getAttribute('data-theme') === 'light' || H.getAttribute('data-theme') === 'sunrise') return 'day';
         const TB = root.LowiTrueBlack; return TB && TB.kind() === 'night' ? 'night' : 'black';
-    }
-    function pickTheme(x) {
-        const A = root.LowiAtmos, TB = root.LowiTrueBlack;
-        if (A && typeof A.quick === 'function') { A.quick(x, { byHand: true }); return; }
-        if (x === 'black' || x === 'night') { if (TB) TB.set(x, { byHand: true }); }
-        const R2 = root.LowiR2, to = x === 'day' ? 'light' : 'dark';
-        if (x !== 'auto') { if (R2 && R2.applyTheme) R2.applyTheme(to); else { try { root.localStorage.setItem('lowi.theme', to); } catch (e) { } H.setAttribute('data-theme', to); H.setAttribute('data-theme-mode', to); } }
     }
     /* VR = Home's motion look-around (body-world-3d.js gyro). Off / On / not allowed / no sensor, said in words next to the switch */
     const VRT = { en: { on: 'On', off: 'Off', denied: 'Motion not allowed', none: 'No motion sensor here', nosig: 'No motion signal' }, de: { on: 'An', off: 'Aus', denied: 'Bewegung nicht erlaubt', none: 'Kein Bewegungssensor', nosig: 'Kein Bewegungssignal' }, es: { on: 'Activado', off: 'Desactivado', denied: 'Movimiento no permitido', none: 'Sin sensor de movimiento', nosig: 'Sin se\u00f1al de movimiento' } };
@@ -126,10 +123,7 @@
         const s = S(), l = lang(), ST = sT(), lab = wnm(LABELS[l] && LABELS[l][id]) || s.label(id);
         const ico = ICON[id] ? svg(id) : s.icon(id).replace('ss2-ico', 'cme-ico');
         if (id === 'language') { return '<div class="cme-row cme-langrow" role="group" aria-label="' + esc(lab) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><span class="cme-langs">' + ['en', 'de', 'es'].map(x => '<button type="button" data-lang="' + x + '" aria-pressed="' + (x === l) + '"' + (x === l ? ' class="on"' : '') + '>' + x.toUpperCase() + '</button>').join('') + '</span></div>'; }
-        /* Nov 5 fix (owner: "you said I got the dark mode, but I don't"): the row was a Day <-> Night switch, and that switch saved the blue
-           Night over Dark. It is now one choice of four, like Language: Day, Dark (true black), Night (blue) and Auto. */
-        if (id === 'theme') { const cur = themeNow(), W4 = THEME_W[l] || THEME_W.en; return '<div class="cme-row cme-langrow cme-themerow" role="group" aria-label="' + esc(W4.t) + '">' + ico + '<span class="cme-tx"><b>' + esc(W4.t) + '</b></span><span class="cme-langs cme-themes">' + ['day', 'black', 'night', 'auto'].map(x => '<button type="button" data-cme-theme="' + x + '" aria-pressed="' + (x === cur) + '"' + (x === cur ? ' class="on"' : '') + '>' + esc(W4[x]) + '</button>').join('') + '</span></div>'; }
-        if (id === 'sky') { const W2 = SKY_W[l] || SKY_W.en; return '<button type="button" class="cme-row" data-cme="sky" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(W2[0]) + '</b><small>' + esc(W2[1]) + '</small></span>' + svg('chev', 'cme-chev') + '</button>'; }
+        if (id === 'sky') { const W2 = SKY_W[l] || SKY_W.en, now = skySub(l); return '<button type="button" class="cme-row" data-cme="sky" aria-haspopup="dialog" aria-label="' + esc(W2[0]) + ': ' + esc(now) + '">' + ico + '<span class="cme-tx"><b>' + esc(W2[0]) + '</b><small data-cme-look>' + esc(now) + '</small></span>' + svg('chev', 'cme-chev') + '</button>'; }
         if (id === 'vr') { const v = vrState(), stx = VRT[l] || VRT.en, txt = stx[v.st] || stx.off; /* Nov 5 2026: a real iOS switch with its state written beside it */
             return '<button type="button" class="cme-row cme-swrow" role="switch" data-cme="vr" aria-checked="' + (v.st === 'on') + '"' + (v.st === 'none' ? ' aria-disabled="true"' : '') + ' aria-label="' + esc(lab) + '" aria-describedby="cmeVrSt">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b><small class="cme-sub" id="cmeVrSt">' + esc(txt) + '</small></span><span class="cme-sw" aria-hidden="true"><i></i></span></button>'; }
         if (id === 'worldSound') { const on = !!(root.LowiWorldAudio && root.LowiWorldAudio.on), stx = VRT[l] || VRT.en;
@@ -148,7 +142,6 @@
         const s = S();
         if (id === 'presence') return hasPresence();
         if (id === 'sky') return !!(root.LowiAtmos && typeof root.LowiAtmos.openSheet === 'function');
-        if (id === 'theme') return true;
         if (G2E[id]) { if (!(root.LowiG2E && typeof root.LowiG2E.direct === 'function')) return id === 'look' && s.has('look'); const t = D.getElementById('tab-profile'); return !!(t && t.querySelector(PART[id])); }
         if (id === 'worldSound') return !!(root.LowiWorldAudio && typeof root.LowiWorldAudio.open === 'function');   /* Nov 5 2026: opens in place, no Home button needed */
         if (id === 'vr') return !!(root.LowiWorld3D && root.LowiWorld3D.gyro);
@@ -244,8 +237,6 @@
         const iv = setInterval(() => { if (!sh.isConnected || sh.classList.contains('off')) { clearInterval(iv); if (!el) open(); } }, 250);
     }
     function onClick(e) {
-        const tp = e.target && e.target.closest && e.target.closest('[data-cme-theme]');
-        if (tp) { e.preventDefault(); pickTheme(tp.getAttribute('data-cme-theme')); setTimeout(() => { if (el && !asking) { render(); const f = el.querySelector('[data-cme-theme="' + tp.getAttribute('data-cme-theme') + '"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (x) { } } } }, 60); return; }
         const b = e.target && e.target.closest && e.target.closest('[data-cme]'); if (!b) return;
         e.preventDefault();
         const id = b.getAttribute('data-cme'), s = S();
@@ -258,7 +249,6 @@
         if (id === 'vr') { vrToggle(b); return; }
         if (id === 'aura') { const Wh = root.LowiWorldHome; if (Wh && Wh.setAuraOn) Wh.setAuraOn(!Wh.auraOn()); render(); const f = el && el.querySelector('[data-cme="aura"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } return; }
         if (id === 'worldSound') { const A = root.LowiWorldAudio; if (A && typeof A.open === 'function') { A.open(); return; } }
-        if (id === 'theme') { s.run('theme'); setTimeout(() => { if (el && !asking) { render(); const f = el.querySelector('[data-cme="theme"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } } }, 60); return; }
         close(false);
         if (id === 'galaxyStill') { try { root.LowiGalaxyStill.tap({ back: () => open() }); } catch (e) { } return; }
         run(id);

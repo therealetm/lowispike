@@ -130,8 +130,24 @@
     /* Nov 5 repair: build 20261105-030004's Day/night switch saved 'night' (the blue look) on its first Day -> dark tap, without the
        person ever choosing Night. Once per device, a saved 'night' that was not picked by hand goes back to Dark. A Night picked by
        hand from now on is marked (PICKED) and stays. */
+    /* Nov 5 2026: the first script that writes storage on boot, so it notes whether storage was empty before (install-guide.js
+       reads window.__lowiFresh to spot a first start from the Home Screen; the writes below used to hide that). */
+    try { if (window.__lowiFresh == null) window.__lowiFresh = localStorage.length === 0; } catch (e) { }
     const FIX = 'lowi.theme.dark.fix1', PICKED = 'lowi.theme.dark.picked';
     try { if (!ls.get(FIX)) { if (ls.get(C.KEY) === 'night' && !ls.get(PICKED)) ls.set(C.KEY, 'black'); ls.set(FIX, '1'); } } catch (e) { }
+    /* Nov 5 2026 (owner: "let's make dark mode the universal mode for everyone, cuz it just looks better"): once per device,
+       every account, new or existing, starts on true black Dark, whatever look it had (Day, Night, Auto, a slider spot).
+       Runs here in <head>, before the boot scripts read lowi.theme, so the first paint is already black. The stored sky CSS
+       of the old look is dropped (atmosphere.js rebuilds it for Dark). Any look picked after this stays: the flag never resets. */
+    const ALL = 'lowi.theme.dark.all1';
+    try {
+        if (!ls.get(ALL)) {
+            ls.set(C.KEY, 'black'); ls.set('lowi.theme', 'dark');
+            ls.set('lowi.atmos', JSON.stringify({ mode: 'manual', p: 100 }));
+            try { localStorage.removeItem('lowi.atmos.css'); localStorage.removeItem(PICKED); } catch (x) { }
+            ls.set(ALL, '1');
+        }
+    } catch (e) { }
     const kind = () => C.kindOf(ls.get(C.KEY));
     function meta() {
         if (!on) return;

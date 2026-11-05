@@ -569,7 +569,7 @@ html.lw-launch-out #lwLaunch .lwl-m{animation:lwlPop .34s cubic-bezier(.2,.7,.2,
 })();
 document.getElementById("lwLaunch").offsetWidth</script>
 <script src="power-saver.js?v=20261105-104554"></script>
-<script id="igFresh">/* install-guide.js: was storage empty before anything ran? (a first start from the iPhone Home Screen = just added) */try{window.__lowiFresh=localStorage.length===0}catch(e){}</script>
+<script id="igFresh">/* install-guide.js: was storage empty before anything ran? (a first start from the iPhone Home Screen = just added) */try{if(window.__lowiFresh==null)window.__lowiFresh=localStorage.length===0}catch(e){}</script>
 <!-- Oct 28 2026 item 29: light crash log (JS errors + a page that died in front), shown in Profil > Über & Hinweise -->
 <script src="crash-log.js?v=20261105-104554"></script>
 <!-- Oct 25 iOS feel (Emmanuel's TikTok "Why does iOS feel so nice to use"): interruptible springs + Apple's rubber band, shared by every grabbable motion -->
@@ -11604,7 +11604,7 @@ R2.boot = function(){
 "use strict";
 const R2 = window.LowiR2, $ = R2.$, $$ = R2.$$, esc = R2.esc;
 const GATE = "lowi.gate";            // "done" (has account) | "skip" (chose to try without) — per device
-const KEEP = k => k === "lowi.theme" || k === "lowi.atmos" || k === "lowi.atmos.css" || k === "lowi.a2hs" || k === "lowi.news.seen" || k === "lowi.news.build" || k === "lowi.news.tourseen" || k === "lowi.news.tourbuild" || k === "lowi.news.toured" || k === "lowi.g1" || k === "lowi.g1.bn" || k === "lowi.upd.later" || k === "lowi.upd.snooze" || k === "lowispike.lang" || k.indexOf("lowi.health.") === 0 || k === "lowi.t";
+const KEEP = k => k === "lowi.theme" || k === "lowi.atmos" || k === "lowi.atmos.css" || k === "lowi.a2hs" || k === "lowi.news.seen" || k === "lowi.news.build" || k === "lowi.news.tourseen" || k === "lowi.news.tourbuild" || k === "lowi.news.toured" || k === "lowi.g1" || k === "lowi.g1.bn" || k === "lowi.upd.later" || k === "lowi.upd.snooze" || k === "lowispike.lang" || k.indexOf("lowi.health.") === 0 || k === "lowi.t" || k.indexOf("lowi.theme.dark") === 0;
 
 function session(){ try { const j = JSON.parse(localStorage.getItem("lowi.auth") || "null"); return j && j.user ? j : null; } catch(e){ return null; } }
 function isAccount(){ const s = session(); return !!(s && s.user && !s.user.is_anonymous && s.user.email); }

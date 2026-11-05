@@ -16,6 +16,7 @@
         toDark: ['Switch to Night', 'Nacht einschalten', 'Activar Noche'],
         toLight: ['Switch to Day', 'Tag einschalten', 'Activar Día'],
         nightOn: ['Night on', 'Nacht an', 'Noche activada'],
+        blackOn: ['Dark on', 'Dunkel an', 'Oscuro activado'], /* Nov 5 2026: true black (true-black.js) */
         cloudOn: ['Day on', 'Tag an', 'Día activado'],
         weather: ['Weather', 'Wetter', 'Tiempo'],
         now: ['Now', 'Jetzt', 'Ahora'],
@@ -254,7 +255,7 @@
         else if (R2 && R2.applyTheme) R2.applyTheme(to);
         else { try { localStorage.setItem('lowi.theme', to); } catch (e) {} H.setAttribute('data-theme', to); H.setAttribute('data-theme-mode', to); }
         paintBtn();
-        try { if (!quiet && R2 && R2.toast) R2.toast(to === 'light' ? t('cloudOn') : t('nightOn')); } catch (e) {}
+        try { if (!quiet && R2 && R2.toast) R2.toast(to === 'light' ? t('cloudOn') : t(root.LowiTrueBlack && root.LowiTrueBlack.kind() === 'black' ? 'blackOn' : 'nightOn')); } catch (e) {}
         try { D.dispatchEvent(new CustomEvent('lowi:theme', { detail: { theme: to } })); } catch (e) {}
     }
     /* third tap: undo the first tap's flip (quietly) and open the Day & night adjuster */

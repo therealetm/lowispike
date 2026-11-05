@@ -86,6 +86,7 @@
         return '<div class="r2-lookrow"><div><b>' + W('title') + '</b><small>' + W('sub') + '</small></div>' +
             '<div class="r2-seg atm-quick" role="group" aria-label="' + W('title') + '">' +
             '<button type="button" data-atm-quick="day">' + ico('sun') + '<span>' + W('day') + '</span></button>' +
+            '<button type="button" data-atm-quick="black">' + ico('moon') + '<span>' + W('dark') + '</span></button>' +
             '<button type="button" data-atm-quick="night">' + ico('moon') + '<span>' + W('night') + '</span></button>' +
             '<button type="button" data-atm-quick="auto">' + ico('sunrise') + '<span>' + W('auto') + '</span></button></div></div>' +
             '<div class="atm-slider"><div class="atm-now" aria-hidden="true"></div>' +
@@ -110,7 +111,8 @@
             if (r && document.activeElement !== r && Math.abs(+r.value - p) > 0.01) r.value = String(p);
             if (r) { r.setAttribute('aria-valuetext', C.markWord(k.mark, l)); r.style.setProperty('--fill', p + '%'); }
             const now = card.querySelector('.atm-now'); if (now) { now.textContent = C.markWord(k.mark, l); now.style.setProperty('--x', p + '%'); }
-            const q = state.mode === 'auto' ? 'auto' : state.p === C.DAY ? 'day' : state.p === C.NIGHT ? 'night' : '';
+            const blk = window.LowiTrueBlack && window.LowiTrueBlack.kind() === 'black'; /* Nov 5: Dark (true black) vs Night (blue) */
+            const q = state.mode === 'auto' ? 'auto' : state.p === C.DAY ? 'day' : state.p === C.NIGHT ? (blk ? 'black' : 'night') : '';
             card.querySelectorAll('[data-atm-quick]').forEach(b => { const on = b.getAttribute('data-atm-quick') === q; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
             card.querySelectorAll('.atm-mark').forEach(b => b.classList.toggle('on', state.mode === 'manual' && b.getAttribute('data-atm-goto') === String(k.mark === 'night' ? C.NIGHT : (C.MARKS.find(m => m.id === k.mark) || {}).p)));
             card.classList.toggle('atm-is-auto', state.mode === 'auto');
@@ -130,9 +132,15 @@
     }
     function toast(k) { const r = R2(); if (r && r.toast) r.toast(W(k)); }
     function quick(which, opts) {
+        /* Nov 5 2026: Dark and Night both go to the night stop; Dark is true black, Night the blue night look. The choice is kept
+           (lowi.theme.dark), so the top-bar moon, Auto after sunset and the slider's night side use the same one. */
+        const TB = window.LowiTrueBlack;
+        if ((which === 'black' || which === 'night') && TB) TB.set(which);
         if (which === 'auto') apply({ mode: 'auto' });
         else apply({ mode: 'manual', p: which === 'day' ? C.DAY : C.NIGHT });
-        if (!opts || opts.toast !== false) toast(which === 'auto' ? 'autoOn' : which === 'day' ? 'dayOn' : 'nightOn');
+        const nightWord = TB && TB.kind() === 'black' ? 'blackOn' : 'nightOn';
+        if (!opts || opts.toast !== false) toast(which === 'auto' ? 'autoOn' : which === 'day' ? 'dayOn' : nightWord);
+        updateUI();
     }
     document.addEventListener('click', e => {
         const q = e.target.closest && e.target.closest('[data-atm-quick]');

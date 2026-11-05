@@ -197,7 +197,10 @@
         let inner = '';
         try { const H = W.LowiWorldHome; if (H && H.mistyHTML) inner = H.mistyHTML(H.state.sheetTab || sec, H.state.preview || ''); } catch (e) { console.error(e); }
         if (!inner) return '';
-        return '<section class="mh-sec" id="mhSec" aria-label="' + esc(sec === 'grow' ? T('Growth', 'Wachstum', 'Crecimiento') : T('Aura shop', 'Aura-Shop', 'Tienda de auras')) + '">' + inner + '</section>';
+        /* Nov 5 2026 (Misty sheet plan, phase 1): Growth and the Aura shop open inside the card; "\u2039 Misty" folds the section away and
+           goes back to the card's doors (the bottom button stays the card's one close, so it is kept out of it: data-no-bx) */
+        const back = '<button type="button" class="mh-sback" data-mh="sback" data-no-bx aria-label="' + esc(T('Back to ' + name(), 'Zur\u00fcck zu ' + name(), 'Volver a ' + name())) + '"><span aria-hidden="true">\u2039</span> ' + esc(name()) + '</button>';
+        return '<section class="mh-sec" id="mhSec" aria-label="' + esc(sec === 'grow' ? T('Growth', 'Wachstum', 'Crecimiento') : T('Aura shop', 'Aura-Shop', 'Tienda de auras')) + '">' + back + inner + '</section>';
     }
     /* open one section of the card in place (also the landing spot of every old Glow / growth / aura link) */
     function openSec(tab) {
@@ -250,6 +253,7 @@
             repaint(v && v.mood ? cellCopy('thanks') : '');
         } else if (k === 'goodnight') goodnight();
         else if (k === 'door') door(b.dataset.door);
+        else if (k === 'sback') { const was = sec; sec = ''; repaint(); setTimeout(() => { const d = q('#mistyHub [data-door="' + was + '"]'); if (!d) return; try { d.scrollIntoView({ block: 'center', behavior: 'smooth' }); d.focus({ preventScroll: true }); } catch (x) { } }, 40); }
         else if (k === 'forms') door('look');
         else if (k === 'glow') openSec('aura');
         else if (k === 'rename') renameOpen();

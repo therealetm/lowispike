@@ -50,3 +50,8 @@ html.lw-bx-on .stp-foot>.stp-close.lw-bx-src{position:absolute!important;right:1
 /* Profile's one-screen tiles: on a short phone the last row would sit under the button, so the screen may scroll a little
    (it ends with the spacer above) instead of the button climbing over the tiles */
 html.lw-bx-on.g2e-on:not(.g2e-open) #tab-profile{overflow-y:auto!important;-webkit-overflow-scrolling:touch}
+/* Nov 5 2026 (Misty sheet plan, phase 1): a back that names where it goes ("‹ Misty") is a pill of the same rim, same spot */
+.lw-bx.lw-bx-named{width:auto;min-width:56px;padding:0 18px 0 12px;border-radius:28px;gap:4px}
+.lw-bx.lw-bx-named::after{border-radius:34px}
+.lw-bx-lab{font:600 16px/1 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;letter-spacing:-.01em;white-space:nowrap;
+  text-shadow:0 0 1.5px rgba(0,0,0,.6),0 1px 3px rgba(0,0,0,.45)}

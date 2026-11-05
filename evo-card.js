@@ -259,7 +259,8 @@
         const ov = D.createElement('div');
         ov.className = 'evc-ov';
         ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', L('Evolution card', 'Entwicklungskarte', 'Carta de evolución'));
-        ov.innerHTML = '<button type="button" class="evc-x" data-evc="close" aria-label="' + esc(L('Close', 'Schließen', 'Cerrar')) + '">×</button>' +
+        /* Nov 5 2026 (Misty sheet plan, phase 1): the card is a child of Look, so its button goes back there: "‹ Look" */
+        ov.innerHTML = '<button type="button" class="evc-x evc-back" data-evc="close" data-bx-label="' + esc(L('Look', 'Aussehen', 'Aspecto')) + '" aria-label="' + esc(L('Back to Look', 'Zurück zu Aussehen', 'Volver a Aspecto')) + '">\u2039</button>' +
             '<div class="evc-stage"><button type="button" class="evc-nav evc-prev" data-evc="prev" aria-label="' + esc(L('Previous form', 'Vorherige Form', 'Forma anterior')) + '">‹</button>' +
             '<figure class="evc-card" data-evc="card"><img class="evc-img" alt="" draggable="false"><span class="evc-shine" aria-hidden="true"></span><span class="evc-load" aria-hidden="true"></span></figure>' +
             '<button type="button" class="evc-nav evc-next" data-evc="next" aria-label="' + esc(L('Next form', 'Nächste Form', 'Forma siguiente')) + '">›</button></div>' +

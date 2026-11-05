@@ -250,7 +250,7 @@
         act_rest: ['Saving energy', 'Spart Energie', 'Ahorra energía'],
         act_repair: ['Resting and repairing', 'Ruht und repariert', 'Descansa y repara'],
         act_glow: ['Glowing and recharging', 'Leuchtet und tankt auf', 'Brilla y se recarga'],
-        act_drift: ['Drifting through your bloodstream', 'Treibt durch deinen Blutkreislauf', 'Flota por tu torrente sanguíneo'],
+        act_drift: ['Drifting along with you', 'Treibt mit dir mit', 'Flota contigo'],   /* Nov 5 2026 Misty sheet plan: no body claim */
         why_spike: ['Spike food', 'Spike-Essen', 'Comida con pico'],
         why_move: ['Moved', 'Bewegt', 'Movimiento'],
         why_night: ['Late night', 'Späte Nacht', 'Muy tarde'],

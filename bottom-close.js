@@ -231,8 +231,14 @@
         if (!top || typing()) { b.classList.remove('on'); H.classList.toggle('lw-bx-on', !!top); return; }
         H.classList.add('lw-bx-on');
         const k = kindOf(top), lab = labelOf(top) || (k === 'back' ? T('Back', 'Zurück', 'Atrás') : T('Close', 'Schließen', 'Cerrar'));
-        const sig = k + '|' + lab;
-        if (sig !== last) { b.innerHTML = ICON[k]; b.setAttribute('aria-label', lab); b.dataset.kind = k; last = sig; }
+        /* Nov 5 2026 (Misty sheet plan): a child screen names where Back goes ("\u2039 Misty"): data-bx-label on its own back button */
+        const named = k === 'back' ? String(top.getAttribute('data-bx-label') || '').trim().slice(0, 18) : '';
+        const sig = k + '|' + lab + '|' + named;
+        if (sig !== last) {
+            b.innerHTML = ICON[k] + (named ? '<span class="lw-bx-lab">' + named.replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';') + '</span>' : '');
+            b.classList.toggle('lw-bx-named', !!named);
+            b.setAttribute('aria-label', lab); b.dataset.kind = k; last = sig;
+        }
         b.classList.add('on');
         const lift = clearance(b);
         /* Oct 28 (owner: the X must never lag behind a card or field that appears): while something around the bottom center

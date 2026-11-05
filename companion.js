@@ -273,9 +273,15 @@
     }
     /* BH-006 name chain (same helper as world-home.js / misty-hub.js): own companion > a typed name > Misty */
     function companionName() { const w = typeof window !== 'undefined' ? window : globalThis; const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(w.LowiHerbIdentity && w.LowiHerbIdentity.autoName && w.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = w.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = w.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = w.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || 'Misty'; }
+    function fromCard() { try { return !!Array.from(D.querySelectorAll('#mistyHub')).find(e => !(e.closest && e.closest('.r2-ov.off'))); } catch (e) { return false; } }
     function sheetHTML() {
         const m = model(), g = myGenome(m), p = prefs();
-        const xBtn = '<button type="button" class="cf-x" data-cf="close" aria-label="' + esc(L('Close', 'Schließen', 'Cerrar')) + '">×</button>';
+        /* Nov 5 2026 (Misty sheet plan, phase 1): opened from Misty's card, this panel is a child screen: its button goes back to
+           the card ("‹ Misty"), never a close. The app's bottom button shows it as Back with the name (bottom-close.js data-bx-label). */
+        const hubNm = fromCard() ? companionName() : '';
+        const xBtn = hubNm
+            ? '<button type="button" class="cf-x cf-x-back" data-cf="close" data-bx-label="' + esc(hubNm) + '" aria-label="' + esc(L('Back to ' + hubNm, 'Zurück zu ' + hubNm, 'Volver a ' + hubNm)) + '">\u2039 ' + esc(hubNm) + '</button>'
+            : '<button type="button" class="cf-x" data-cf="close" aria-label="' + esc(L('Close', 'Schließen', 'Cerrar')) + '">×</button>';
         if (!m || !g) return '<div class="cf-panel cf-misty" role="dialog" aria-modal="true" aria-label="Misty"><header class="cf-head"><h2>Misty</h2>' + xBtn + '</header><div class="cf-scroll"><p>' + esc(L('Your companion is still waking up.', 'Dein Begleiter wacht gerade auf.', 'Tu compañero se está despertando.')) + '</p></div></div>';
         /* Bug hunt Oct 23: the title is the same name Misty's card shows (BH-006 chain), never the old herb auto name ("Sunny Leaf") */
         const nm = companionName();
@@ -356,10 +362,10 @@
         const t = e.target && e.target.closest ? e.target.closest('[data-cf]') : null;
         if (t && t.getAttribute('data-cf') === 'open') { e.preventDefault(); open(); return; }
         if (!V.ov) return;
-        if (e.target === V.ov) { close(); return; }
+        if (e.target === V.ov) { dismiss(); return; }   /* Nov 5 2026: over Misty's card, back to the card (R2.back), never out of both */
         if (!t || !V.ov.contains(t)) return;
         const a = t.getAttribute('data-cf');
-        if (a === 'close') close();
+        if (a === 'close') dismiss();
         else if (a === 'card') openCard(+t.getAttribute('data-i'), t);
         else if (a === 'ax') {
             const i = +t.getAttribute('data-i'), v = t.getAttribute('data-v');

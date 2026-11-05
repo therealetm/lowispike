@@ -20,3 +20,12 @@ html[data-black][data-black] body #app { background: #000 !important; }
     html[data-black][data-black] .lb-bub,
     html[data-black][data-black] .card { outline: 1px solid var(--tb-line); }
 }
+
+/* Nov 5 2026, Apple HIG polish on the look switch only (Emmanuel's tip: no "vibe coded" feel): the Day / Dark / Night / Auto
+   buttons answer the finger at once with a small press and spring back; transform only, so it costs nothing on a phone.
+   Skipped under Reduce Motion and battery saver (power-saver.js sets html.lowi-saver). The buttons are 44 pt tall already. */
+.atm-quick button, [data-r2theme] { transition: transform .32s cubic-bezier(.34, 1.56, .64, 1); -webkit-tap-highlight-color: transparent; }
+.atm-quick button:active, [data-r2theme]:active { transform: scale(.94); transition-duration: .08s; }
+@media (prefers-reduced-motion: reduce) { .atm-quick button, [data-r2theme] { transition: none; } .atm-quick button:active, [data-r2theme]:active { transform: none; } }
+html.lowi-saver .atm-quick button, html.lowi-saver [data-r2theme] { transition: none; }
+html.lowi-saver .atm-quick button:active, html.lowi-saver [data-r2theme]:active { transform: none; }

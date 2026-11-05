@@ -144,19 +144,18 @@
             }
         },
         {
-            /* Nov 5 2026 (new tutorial): since Oct 29 2026 a hold on the Community bubble does nothing (home-settings-sleep-v2.js,
-               Emmanuel: "wenn man lange drückt auf Community ... dann passiert gar nichts"); Settings open from the Community name at
-               the top of Community (community-rooms-ui.js .rm-menu-btn -> community-me.js). The card stays in Community (open:
-               'community-tab'), the finger taps that name and the real Settings page opens on top (route settings-sheet, over: community-tab).
-               Settings rows (community-me.js): Day / Night with Dark (true black), language, Notifications, Körperklang, VR, Tutorial. */
-            id: 'settings', area: 'settings', where: 'community', open: 'community-tab', target: ['.rm-menu-btn', '.rm-name'], demo: { g: 'tap', open: 'settings-sheet' },
+            /* Nov 5 2026 (new tutorial): the hold on the Community bubble opens the one Settings page again (home-settings-sleep-v2.js
+               holdIntent, owner Nov 5: "Add a long-press gesture on the Community section that opens Settings"); the same page also
+               opens from the Community name at the top of Community (community-rooms-ui.js .rm-menu-btn). The finger holds the bubble.
+               Settings rows (community-me.js): App theme Day / Dark / Night / Auto, language, Body sound (Körperklang), VR, Tutorial. */
+            id: 'settings', area: 'settings', target: ['#whHud .o8-settings'], demo: { g: 'hold', open: 'settings-sheet' },
             covers: ['settings', 'cook', 'theme', 'language', 'day-night', 'me', 'look', 'account', 'deleteAccount', 'body', 'weight', 'bmi', 'care', 'workouts', 'foryou', 'hunt', 'tutorial', 'quickTour', 'back-x', 'home-visit', 'day-card', 'whats-new', 'update', 'true-black', 'koerperklang', 'vr'],
-            teaches: ['cm-name'],
+            teaches: ['community-hold', 'cm-name'],
             title: { en: 'Settings', de: 'Einstellungen', es: 'Ajustes' },
             text: {
-                en: 'Tap the Community name at the top: the Dark look, language, Body sound, VR and this tutorial are there.',
-                de: 'Tipp oben auf den Namen Community: Dort sind Dunkel, Sprache, Körperklang, VR und dieses Tutorial.',
-                es: 'Toca el nombre Comunidad arriba: ahí están el aspecto Oscuro, el idioma, Sonido del cuerpo, RV y este tutorial.'
+                en: 'Hold Community, or tap its name inside Community: the Dark look, language, Body sound, VR and this tutorial.',
+                de: 'Halt Community gedrückt oder tipp drinnen auf den Namen: Dunkel, Sprache, Körperklang, VR und dieses Tutorial.',
+                es: 'Mantén pulsada Comunidad o toca su nombre dentro: el aspecto Oscuro, idioma, Sonido del cuerpo, RV y este tutorial.'
             }
         },
         /* ---------- part: new (Oct 23 2026, Emmanuel: "every time I do an update it's not in the tutorial style ... take them to the
@@ -431,6 +430,7 @@
         G('scan-tap', 'home', 'tap', ['home-orbit-v2.js'], 'tap Scan: the Scan screen'),
         /* Oct 24 2026: hold Scan opens every bubble at once (replaces the taught two-finger tap on Misty; bloom-ring.js still answers a
            two-finger tap on Misty as a quiet duplicate of this shortcut, untaught on Emmanuel's word: the tour teaches hold Scan) */
+        G('community-hold', 'home', 'hold', ['home-settings-sleep-v2.js'], 'hold Community: Settings (back since Nov 5 2026)'),
         G('community-tap', 'home', 'tap', ['home-settings-sleep-v2.js'], 'tap Community: Community'),
         G('theme-tap', 'home', 'tap', ['top-bar.js'], 'tap the moon/sun: day or night'),
         G('theme-triple', 'home', 'triple', ['top-bar.js', 'atmosphere.js'], 'tap the moon/sun three times: Day & night adjuster'),

@@ -86,20 +86,21 @@ test('every section of the app has a card in the short tour, and the tour opens 
     assert.match(js, /const TAB_OF = \{ home: 'home', community: 'foryou' \};/, 'community maps to its tab; scan is never a tour section');
 });
 
-test('Settings open from the Community name at the top of Community; nothing teaches a hold on the Community bubble (Nov 5 2026)', () => {
-    /* Oct 29 2026 a hold on the Community bubble stopped opening Settings (home-settings-sleep-v2.js: "dann passiert gar nichts");
-       the Oct 25 card still said "Hold Community". The new tutorial shows the real way: Community opens, the finger taps its name. */
+test('Settings opens by HOLDING the Community bubble (old check expected a tap)', () => {
     const s = T.STEPS.find(x => x.id === 'settings');
     assert.ok(s, 'there is a Settings step');
-    assert.strictEqual(s.open, 'community-tab', 'the Settings card keeps Community open');
-    assert.deepStrictEqual(s.demo, { g: 'tap', open: 'settings-sheet' }, 'its finger taps the Community name and Settings opens');
-    assert.ok((s.target || []).includes('.rm-menu-btn'), 'it points at the Community name');
-    assert.ok((s.teaches || []).includes('cm-name'), 'it teaches tapping the Community name');
-    assert.ok(!T.GESTURES.some(g => g.id === 'community-hold'), 'no gesture says a hold on Community opens Settings');
-    for (const x of T.STEPS) for (const l of ['en', 'de', 'es']) assert.doesNotMatch(x.text[l], /^(Hold Community|Halt Community gedrückt|Mantén pulsada Comunidad)/, x.id + '.' + l);
-    assert.match(s.text.en, /^Tap the Community name/); assert.match(s.text.de, /^Tipp oben auf den Namen Community/); assert.match(s.text.es, /^Toca el nombre Comunidad/);
+    assert.ok((s.teaches || []).includes('community-hold'), 'it teaches holding Community');
+    assert.deepStrictEqual(s.demo, { g: 'hold', open: 'settings-sheet' }, 'its finger holds Community and Settings opens');
+    assert.match(s.text.en, /^Hold Community/);
+    assert.match(s.text.de, /^Halt Community gedrückt/);
+    assert.match(s.text.es, /^Mantén pulsada Comunidad/);
+    for (const l of ['en', 'de', 'es']) assert.doesNotMatch(s.text[l], /^(Tap|Tipp|Toca) (Settings|Einstellungen|Ajustes)/i, 'no step says tap Settings (' + l + ')');
+    const hold = T.GESTURES.find(g => g.id === 'community-hold'), tap = T.GESTURES.find(g => g.id === 'community-tap');
+    assert.strictEqual(hold.how, 'hold'); assert.strictEqual(tap.how, 'tap');
+    /* Nov 5 2026 (new tutorial): the same page also opens from the Community name inside Community; the card says both */
+    assert.ok(s.teaches.includes('cm-name') && /tap its name/.test(s.text.en), 'it names the second way in');
     assert.match(read('community-rooms-ui.js'), /rm-menu-btn/, 'the Community name is a real button');
-    const tap = T.GESTURES.find(g => g.id === 'community-tap'); assert.strictEqual(tap.how, 'tap');
+    assert.match(read('home-settings-sleep-v2.js'), /function holdIntent\(bubble\) \{ return bubble === 'settings' \? 'hub' : null; \}/, 'the hold really opens Settings');
     for (const x of T.STEPS) for (const l of ['en', 'de', 'es']) assert.doesNotMatch(x.text[l], /(tap|tipp\w*|toca) (the |die |la )?(Settings|Einstellungen|Ajustes)[- ](bubble|Blase|burbuja)/i, x.id + '.' + l);
 });
 

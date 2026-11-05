@@ -41,12 +41,12 @@ test('a tour left on an old card continues on the card that took it over, never 
     assert.match(read('tutorial.js'), /const want = S\.moved \? S\.moved\(o\.at\) : o\.at;/, 'start({ at }) maps old ids');
 });
 
-test('the Settings card opens the real Settings page over Community and closes both after', () => {
-    const js = read('tutorial.js');
-    assert.match(js, /'settings-sheet': \{ over: 'community-tab', stage: '\.cme-ov'/);
-    assert.match(js, /const ours = s =>/, 'a page laid over the card\'s own page belongs to the card');
+test('the Settings card holds the Community bubble; leaving Shop does not hide the next card', () => {
+    const js = read('tutorial.js'), st = card('settings');
+    assert.deepStrictEqual(st.demo, { g: 'hold', open: 'settings-sheet' });
+    assert.match(js, /'settings-sheet': \{ stage: '\.cme-ov'/);
     assert.match(js, /el\.closest\('\.stp-ov\.out'\)/, 'Shop closing does not hide the next card');
-    assert.match(js, /back: \(\) => \{ if \(W\.LowiCommunityMe\) W\.LowiCommunityMe\.close\(\); goHome\(\); \}/);
+    assert.ok(js.includes("if (opened === 'community-tab' || opened === 'supermarket') where = 'bottom';"), 'the Supermarket card leaves Shop\'s header and tabs readable');
 });
 
 test('every user can start the tour from Settings; the tour changes no entries', () => {

@@ -67,8 +67,7 @@
         cook: { go() { if (typeof W.goTab === 'function') W.goTab('shelf'); }, stage: '', back() { goHome(); } },
     };
     function stage() {
-        const s = step(), d = s && s.demo && mode !== 'news' && s.demo.open;
-        const r = s && (d && opened === d ? d : (s.open || d));   /* a demo card's page is its stage too (also when it lies over the card's own page) */
+        const s = step(), r = s && (s.open || (s.demo && mode !== 'news' && s.demo.open));   /* a demo card's page is its stage too */
         return (on && r && opened === r && OPEN[r] && OPEN[r].stage) || '';
     }
     /* the short base tour's demo routes (Oct 25 2026): the finger taps or holds the real bubble, then the tour opens the real place
@@ -81,19 +80,14 @@
         'home-shop': { stage: '.stp-card', go: () => { const P = W.LowiStorePicks; if (P && !P.isOpen()) P.open('tour'); }, back: () => { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
         'fuel-bloom': bloom('fuel'), 'gap-bloom': bloom('gap') /* Oct 28 2026, 22:54: Gap blooms Letzte / Erste Mahlzeit */, 'water-bloom': bloom('water'), 'move-bloom': bloom('move'), 'sleep-bloom': bloom('sleep'),
         'community-tab': { stage: '', go: () => { if (typeof W.goTab === 'function') W.goTab('foryou'); }, back: goHome },
-        /* Nov 5 2026 (new tutorial): Settings open from the Community name at the top of Community (the hold on the Community bubble
-           does nothing since Oct 29 2026), so this page opens OVER Community: the Settings card keeps Community open (open:
-           'community-tab') and its demo lays the real Settings page on top without closing Community first (over). */
-        'settings-sheet': { over: 'community-tab', stage: '.cme-ov', go: () => { const p = D.getElementById('tab-foryou'); if (p && !p.classList.contains('active') && typeof W.goTab === 'function') W.goTab('foryou'); if (W.LowiCommunityMe) W.LowiCommunityMe.open(); }, back: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.close(); goHome(); } },
+        'settings-sheet': { stage: '.cme-ov', go: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.open(); }, back: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.close(); } },
         /* never the camera: the mocked Scan screen inside the tour's own layer (tutorial-demo.js) */
         'scan-demo': { stage: '.lt-scan', go: () => { if (W.LowiTutorialDemo && root) W.LowiTutorialDemo.scanOpen(root, lang()); }, back: () => { if (W.LowiTutorialDemo) W.LowiTutorialDemo.scanClose(); } }
     });
     function leave() { const o = opened; opened = ''; if (o && OPEN[o]) { try { OPEN[o].back(); } catch (e) { } } }
-    /* the page that is open belongs to this card: its own page, or a page its demo laid over it (settings-sheet over community-tab) */
-    const ours = s => !!(s && opened && (s.open === opened || (s.open && OPEN[opened] && OPEN[opened].over === s.open && s.demo && s.demo.open === opened)));
     function openFor(s) {
-        if (opened && !ours(s)) leave();
-        if (s && s.open && OPEN[s.open] && !ours(s)) { opened = s.open; try { OPEN[s.open].go(); } catch (e) { } }
+        if (opened && (!s || s.open !== opened)) leave();
+        if (s && s.open && OPEN[s.open] && opened !== s.open) { opened = s.open; try { OPEN[s.open].go(); } catch (e) { } }
         if (root) root.classList.toggle('lt-staged', !!(s && (s.open || (s.demo && opened && opened === s.demo.open))));
         if (!(s && s.open) && !(s && s.demo && opened)) room('');
     }
@@ -216,7 +210,7 @@
     function readMs(s) { const t = S.text(s, 'text', lang(), { name: companionName() }) || ''; return Math.max(DEMO.READ_MIN, t.length * DEMO.READ_PER_CHAR); }
     function demoOpen(s) {
         const r = s && s.demo && s.demo.open; if (!r || !OPEN[r]) return;
-        if (opened && opened !== r && OPEN[r].over !== opened) leave();
+        if (opened && opened !== r) leave();
         if (opened !== r) { opened = r; try { OPEN[r].go(); } catch (e) { } }
         demoOpened = i;
         if (root) root.classList.add('lt-staged');
@@ -363,7 +357,9 @@
             card.classList.toggle('lt-roomwait', waiting);
             if ((sheet || boxes.length) && !stageSeenAt) stageSeenAt = Date.now();
             if (!waiting && (sheet || boxes.length)) roomWaitAt = 0;
-            if (opened === 'community-tab') where = 'bottom';
+            /* Nov 5 2026 (new tutorial): Shop fills the screen, so the free band was a coin toss and the card sat on its header and its
+               Supermarkt / Meine Woche planen tabs in DE / ES (98 %); like Community, the card goes to the bottom and the top stays readable */
+            if (opened === 'community-tab' || opened === 'supermarket') where = 'bottom';
             else if (sheet) {
                 /* the sheet shrinks until it starts below the card: measured, not guessed (the You sheet is centred, Misty's card sits
                    24 px above the bottom), so each placement takes off what still overlaps; a centred sheet loses it twice */

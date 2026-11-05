@@ -3,8 +3,8 @@
    1. an existing account that finished the old tour (v37) with entries: the Settings page has the Tutorial row, its tap starts the
       new 9-card tour, Skip ends it, and the entries, the language and the theme are exactly as before (no reset, no forced start)
    2. a tour left halfway on an old card (water, Continue tutorial) continues on the card that took it over (day)
-   3. Settings card: Community stays open under it, the real Settings page opens over it, Back returns to the Community card with Settings
-      closed, Next leaves both closed
+   3. Settings card: the finger holds Community and the real Settings page opens, leaving the card closes Settings,
+      Skip leaves no page open
    4. a new account (lowi:setup-done) gets the tour by itself; an existing account does not
    Screens go to /tmp/tutorial-new/. Exit 1 on a fail. */
 const H = require('../tutorial-short/harness.cjs');
@@ -33,7 +33,7 @@ const ENTRY = /meal|water|sleep|move|steps|fuel|log|journal|weight|cycle|fast|ga
             await H.sleep(4000);
             ok(!(await page.evaluate(() => window.LowiTutorial.isOn())), key, 'an existing account got the tour by itself');
             const before = await snap();
-            /* 1. Settings page -> Tutorial row */
+            /* 1. Settings page (from the Community name inside Community) -> Tutorial row */
             await page.evaluate(() => { try { goTab('foryou'); } catch (e) { } }); await H.sleep(1500);
             const nameBtn = await page.$('.rm-menu-btn'); ok(!!nameBtn, key, 'no Community name button');
             if (nameBtn) await nameBtn.click(); await H.sleep(1500);
@@ -56,12 +56,14 @@ const ENTRY = /meal|water|sleep|move|steps|fuel|log|journal|weight|cycle|fast|ga
             await page.evaluate(() => window.LowiTutorial.start({ from: 'check', at: 'settings' }));
             let st = null; const t0 = Date.now();
             while (Date.now() - t0 < 20000) { st = await page.evaluate(() => ({ id: window.LowiTutorial.step(), opened: window.LowiTutorial.opened(), fy: !!(document.getElementById('tab-foryou') || {}).classList && document.getElementById('tab-foryou').classList.contains('active'), cme: !!document.querySelector('.cme-ov:not(.off)'), held: window.LowiTutorial.held() })); if (st.opened === 'settings-sheet' && st.cme) break; await H.sleep(300); }
-            ok(st.id === 'settings' && st.opened === 'settings-sheet' && st.cme && st.fy, key, 'Settings did not open over Community: ' + JSON.stringify(st));
+            ok(st.id === 'settings' && st.opened === 'settings-sheet' && st.cme, key, 'the Settings card did not open Settings: ' + JSON.stringify(st));
             await page.screenshot({ path: OUT + '/' + key.replace(/\W+/g, '_') + '-settings-card.png' });
-            await page.evaluate(() => { const b = document.querySelector('#ltTour [data-lt="back"], #ltTour .lt-back'); if (b) b.click(); });
-            await H.sleep(2000);
-            st = await page.evaluate(() => ({ id: window.LowiTutorial.step(), opened: window.LowiTutorial.opened(), fy: document.getElementById('tab-foryou').classList.contains('active'), cme: !!document.querySelector('.cme-ov:not(.off)') }));
-            ok(st.id === 'community' && !st.cme, key, 'Back from Settings: ' + JSON.stringify(st));   /* the Community card starts at home, its finger opens Community */
+            /* when the tour leaves the Settings card (hands-free it moves on by itself; Back / Next are checked by tutorial-short/check.cjs),
+               Settings closes with it */
+            const t3 = Date.now(); while (Date.now() - t3 < 20000 && (await page.evaluate(() => window.LowiTutorial.step())) === 'settings') await H.sleep(300);
+            await H.sleep(1500);
+            st = await page.evaluate(() => ({ id: window.LowiTutorial.step(), cme: !!document.querySelector('.cme-ov:not(.off)') }));
+            ok(st.id !== 'settings' && !st.cme, key, 'Settings stayed open after its card: ' + JSON.stringify(st));
             await page.evaluate(() => window.LowiTutorial.stop('skipped')); await H.sleep(1500);
             st = await page.evaluate(() => ({ cme: !!document.querySelector('.cme-ov:not(.off)'), stp: !!document.querySelector('.stp-ov.in'), home: document.getElementById('tab-home') && document.getElementById('tab-home').classList.contains('active') }));
             ok(!st.cme && !st.stp, key, 'pages left open after Skip: ' + JSON.stringify(st));

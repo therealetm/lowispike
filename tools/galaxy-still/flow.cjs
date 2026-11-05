@@ -86,7 +86,9 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
     b = await q('#whHud [data-orbit="settings"]');
     await hold(b.x, b.y, 800); await sleep(900);
     const rows = await P.evaluate(() => [...document.querySelectorAll('#cmeSheet [data-cme]')].map(e => e.getAttribute('data-cme')));
-    ok(rows.includes('galaxyStill') && rows.includes('theme'), 'a hold on Community opens Settings with the Still galaxy row (' + rows.slice(0, 8).join(',') + ')');
+    /* Nov 5 2026: the look is now a 4-way chooser row (.cme-themerow, no data-cme of its own), so look for it by class */
+    const hasTheme = await P.evaluate(() => !!document.querySelector('#cmeSheet .cme-themerow'));
+    ok(rows.includes('galaxyStill') && (rows.includes('theme') || hasTheme), 'a hold on Community opens Settings with the Still galaxy row (' + rows.slice(0, 8).join(',') + ')');
     const row = await P.evaluate(() => { const e = document.querySelector('#cmeSheet [data-cme="galaxyStill"]'); return e ? { t: e.innerText.replace(/\s+/g, ' ').trim(), aria: e.getAttribute('aria-checked'), h: Math.round(e.getBoundingClientRect().height) } : null; });
     console.log('row', JSON.stringify(row));
     ok(row && /Ruhige Galaxie/.test(row.t) && /Aus/.test(row.t) && row.aria === 'false' && row.h >= 44, 'row reads "Ruhige Galaxie, Spart Akku, Aus", is a 44pt+ switch');

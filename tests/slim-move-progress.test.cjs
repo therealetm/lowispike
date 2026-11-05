@@ -17,7 +17,9 @@ test('no second steps sheet: the Move page line is not a button that opens one',
     assert.doesNotMatch(g, /editSheet\(\)/, 'the line opens no sheet');
     assert.doesNotMatch(g, /createElement\('button'\); r\.type/, 'the line itself is no button');
     assert.match(g, /data-wm-rmday/, 'Entfernen sits right in the line when today has a pick');
-    assert.match(g, /auf der Bewegungs-Bubble wählen/, 'an empty day points to the Move bubble, the one place to pick');
+    /* Nov 5 2026 (owner's screenshots): the empty-day hint read as a tutorial line stuck on Move; an empty day shows no line */
+    assert.doesNotMatch(g, /pick on the Move bubble|auf der Bewegungs-Bubble wählen|elige en la burbuja/, 'no stuck hint on an empty day');
+    assert.match(g, /if \(!v\.level && !n\) \{ r\.hidden = true;/, 'nothing picked today = the line is hidden');
 });
 
 test('edit() is kept for old callers and lands on the Move page, never a sheet', () => {

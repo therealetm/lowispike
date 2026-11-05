@@ -442,8 +442,13 @@
             sc.insertAdjacentElement('afterend', r);
         }
         const v = C.view(ledger(), dayKey()), n = v.estimates;
+        /* Nov 5 2026 (owner's screenshots): an empty day showed a "Steps today" hint pointing back to the Move bubble at the top of Move, read as a
+           tutorial line stuck on the page. Nothing picked today = no line at all; picking stays on the Move bubble (tap Move on Home),
+           and the line comes back with Remove as soon as today has a pick. */
+        if (!v.level && !n) { r.hidden = true; r.dataset.t = ''; r.innerHTML = ''; r.removeAttribute('aria-label'); r.removeAttribute('aria-description'); return; }
+        r.hidden = false;
         const head = T('Steps today', 'Schritte heute', 'Pasos hoy');
-        const val = v.level ? NAMES[v.level]() + ' · ' + HINTS[v.level]() : (n ? n + ' ' + (n === 1 ? T('older guess', 'ältere Schätzung', 'estimación antigua') : T('older guesses', 'ältere Schätzungen', 'estimaciones antiguas')) : T('pick on the Move bubble', 'auf der Bewegungs-Bubble wählen', 'elige en la burbuja de Movimiento'));
+        const val = v.level ? NAMES[v.level]() + ' · ' + HINTS[v.level]() : n + ' ' + (n === 1 ? T('older guess', 'ältere Schätzung', 'estimación antigua') : T('older guesses', 'ältere Schätzungen', 'estimaciones antiguas'));
         const rm = n ? T('Remove', 'Entfernen', 'Quitar') : '';
         /* the honest copy from the old sheet stays with the line, for screen readers */
         const why = T('Casual (under 5,000), Steady (5,000 to 9,999) or Epic (10,000 or more) is today\'s step total from your own phone\'s step counter. LOWiSPIKE does not count or check steps, so it is your word, not a measurement. One range a day: tapping another changes today\'s.',

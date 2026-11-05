@@ -16,9 +16,10 @@ test('the faded world rests: buffer shrinks to 1x1, resizes held back, waking re
     assert.match(sc, /if \(restNow\) \{ resting = true; sizeNow\(1, 1, false\); \}/);
     assert.match(sc, /resting = false; renderer\.setPixelRatio\(dpr\); sizeNow\(W, H, false\); paintNow = true;/);
     assert.match(sc, /if \(resting\) \{ nextGap = 400; return; \}/);
-    assert.match(sc, /nudge\(\) \{ if \(resting && \(wake \|\| nextGap > 0\)\) \{ nextGap = 0; askFrame\(\); \} \}/);
-    assert.match(bw, /function queueBack\(\) \{ try \{ if \(world && world\.resting && world\.nudge\) world\.nudge\(\);/);
-    assert.match(bw, /rest: backFaded, onRest: r => \{ try \{ canvas\.classList\.toggle\('bw3-rest', !!r\);/);
+    /* Nov 5 2026: idling (an opaque still page, Move, covers the world) wakes the same way */
+    assert.match(sc, /nudge\(\) \{ if \(\(resting \|\| idling\) && \(wake \|\| nextGap > 0\)\) \{ nextGap = 0; askFrame\(\); \} \}/);
+    assert.match(bw, /function queueBack\(\) \{ try \{ if \(world && \(world\.resting \|\| world\.idling\) && world\.nudge\) world\.nudge\(\);/);
+    assert.match(bw, /rest: backFaded, idle: \(\) => moveStill\(\), onRest: r => \{ try \{ canvas\.classList\.toggle\('bw3-rest', !!r\);/);
     /* the pull-out and the dive home are never resting: backFaded is false during gx-in / gx-out */
     assert.match(bw, /function backFaded\(\) \{\s*if \(!canvas \|\| !H\.classList\.contains\('wb-comm'\) \|\| H\.classList\.contains\('gx-in'\) \|\| H\.classList\.contains\('gx-out'\)\) return false;/);
 });

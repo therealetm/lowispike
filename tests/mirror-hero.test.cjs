@@ -44,10 +44,16 @@ test('five bubbles still fan apart and on screen on a small phone (iPhone SE siz
     for (let i = 0; i < 5; i++) for (let j = i + 1; j < 5; j++) assert.ok(Math.hypot(f.pts[i].x - f.pts[j].x, f.pts[i].y - f.pts[j].y) >= g.orb - 0.5, 'apart');
 });
 
-test('tutorial: Mirror mode is part of the companion card in the short tour (Oct 25 2026), never a "tap Move, then Mirror" path', () => {
-    assert.ok(!S.STEPS.some(s => s.id === 'mirror'), 'the separate Mirror card left with the long tour');
+test('tutorial: Mirror mode has its own card (hold Move, Nov 5 2026), never a "tap Move, then Mirror" path', () => {
+    /* Nov 5 2026 (owner: the tour never said that holding Move opens Mirror mode): Mirror mode is its own card again, right after
+       Water/Move/Sleep; its finger holds Move and the real Move page opens. The companion card no longer claims to cover it. */
+    const m = S.STEPS.find(x => x.id === 'mirror');
+    assert.ok(m && m.demo.g === 'hold' && m.demo.open === 'move-page' && m.covers.includes('mirror-mode') && m.teaches.includes('move-hold'), 'hold Move, the Move page opens');
+    assert.deepStrictEqual(S.plan({}).map(x => x.id).slice(3, 5), ['day', 'mirror']);
+    for (const l of ['en', 'de', 'es']) assert.ok(m.text[l].length <= 120 && /Mirror|Spiegel|espejo/.test(m.text[l]) && /Hold|Halt|Mantén/.test(m.text[l]), 'mirror/' + l);
+    assert.strictEqual(S.covered()['mirror-mode'], 'mirror');
     const s = S.STEPS.find(x => x.id === 'hello');
-    assert.ok(s.covers.includes('mirror-mode'), 'the companion card covers Mirror mode');
+    assert.ok(!s.covers.includes('mirror-mode'), 'the companion card does not mention Mirror mode, so it does not claim it');
     assert.ok(s.demo && s.demo.g === 'hold' && s.demo.open === 'misty-card', 'its finger holds the companion and her card opens');
     for (const l of ['en', 'de', 'es']) assert.ok(s.text[l].length < 230 && s.title[l], l);
     assert.ok(S.VERSION >= 26);

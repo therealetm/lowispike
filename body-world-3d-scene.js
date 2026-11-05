@@ -820,6 +820,7 @@ export function createWorld(THREE, canvas, opts) {
         };
         try { guard.run('frame', () => frameWork(now)); } finally { next(); }
     }
+    let idling = false;
     function frameWork(now) {
         const raw = last ? (now - last) / 1000 : 1 / 60; last = now;
         const restNow = !!(opts.rest && opts.rest());
@@ -831,6 +832,11 @@ export function createWorld(THREE, canvas, opts) {
         /* resting: no work, and the loop only looks again 2-3 times a second; a touch (markIn) or any page / class change (nudge, from
            body-world-3d.js syncBack) wakes it at once */
         if (resting) { nextGap = 400; return; }
+        /* Nov 5 2026: idle = an opaque still page covers the world (Move, body-world-3d.js moveStill). Like resting, only looks again
+           2-3 times a second, but the canvas keeps its size and its last picture, so the world is there the very first frame it shows
+           again (no 1x1 canvas, no blank flash on the way back Home). The next real frame draws at once. */
+        idling = !!(opts.idle && opts.idle());
+        if (idling) { nextGap = 400; sinceDraw = 1e4; acc = 0; return; }
         const dt = Math.min(0.05, raw);
         const wasChained = !gapFrame;
         /* the sharpness watcher and the Low Power Mode detector only look at frames that came straight from the screen refresh:
@@ -956,5 +962,5 @@ export function createWorld(THREE, canvas, opts) {
         return n || {};
     }
     setTheme(opts.theme || 'dark');
-    return { scene, camera, hub, regions, onFrame, memU, resize, placesLook, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, get resting() { return resting; }, nudge() { if (resting && (wake || nextGap > 0)) { nextGap = 0; askFrame(); } }, repaint() { paintNow = true; sinceDraw = 1e9; if (wake || nextGap > 0) { nextGap = 0; askFrame(); } }, cosmosLook: () => ({ vis: !!(cosmos && cosmos.g.visible), rv: typeof cosmosRv === 'number' ? +cosmosRv.toFixed(3) : -1, gx: +cosmosGx.toFixed(3), d: +rig.dist.toFixed(2), m: +((rig.maxD || 14) * 1.05).toFixed(2), stars: cosmos ? +cosmos.stars.material.uniforms.uO.value.toFixed(3) : 0, oth: cosmos && cosmos.others[0] ? +cosmos.others[0].material.uniforms.uO.value.toFixed(3) : 0 }), rig, renderer };
+    return { scene, camera, hub, regions, onFrame, memU, resize, placesLook, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, get resting() { return resting; }, get idling() { return idling; }, nudge() { if ((resting || idling) && (wake || nextGap > 0)) { nextGap = 0; askFrame(); } }, repaint() { paintNow = true; sinceDraw = 1e9; if (wake || nextGap > 0) { nextGap = 0; askFrame(); } }, cosmosLook: () => ({ vis: !!(cosmos && cosmos.g.visible), rv: typeof cosmosRv === 'number' ? +cosmosRv.toFixed(3) : -1, gx: +cosmosGx.toFixed(3), d: +rig.dist.toFixed(2), m: +((rig.maxD || 14) * 1.05).toFixed(2), stars: cosmos ? +cosmos.stars.material.uniforms.uO.value.toFixed(3) : 0, oth: cosmos && cosmos.others[0] ? +cosmos.others[0].material.uniforms.uO.value.toFixed(3) : 0 }), rig, renderer };
 }

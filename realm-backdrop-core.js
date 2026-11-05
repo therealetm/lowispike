@@ -6,7 +6,9 @@
 (function (root) {
     'use strict';
     /* the pages that sit in the realm (Community has its own copy of the same picture, LowiSpiritWorld, inside its page) */
-    const PAGES = ['tab-shelf', 'tab-move', 'tab-scan'];
+    /* Nov 5 2026: Move left the realm (owner: the Move/gym background looked animated/live and glitched on the way back Home).
+       Move is a still page now: move-bubble.css (end), body-world-3d.js moveStill(). */
+    const PAGES = ['tab-shelf', 'tab-scan'];
     const COMMUNITY = 'tab-foryou', HOME = 'tab-home';
     /* coming in from Today: from a little further away, as on the way out to Community (community-spirit.js FAR = 1.18) */
     const FAR = 1.08, ARRIVE_MS = 650, LEAVE_MS = 450;

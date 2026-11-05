@@ -65,7 +65,7 @@
             /* Nov 5 2026 (new tutorial, Emmanuel: "a complete new one that is up to date with our version"): the base tour follows a
                day: who Misty is, scanning food, meal times, the small daily bubbles, shopping, Community, Settings, then flying. */
             id: 'hello', area: 'you', target: ['[data-home-misty]', '#spBubble'], demo: { g: 'hold', open: 'misty-card' },
-            covers: ['companion', 'misty', 'companion-card', 'energy', 'mood', 'energy-peak', 'welcome-energy', 'forms', 'evolution', 'care-room', 'cell-room', 'rename', 'aura', 'mirror-mode'],
+            covers: ['companion', 'misty', 'companion-card', 'energy', 'mood', 'energy-peak', 'welcome-energy', 'forms', 'evolution', 'care-room', 'cell-room', 'rename', 'aura'],
             teaches: ['misty-hold'],
             title: { en: 'Hi, I’m {name}', de: 'Hi, ich bin {name}', es: 'Hola, soy {name}' },
             text: {
@@ -108,6 +108,20 @@
                 en: 'Tap Water for 10 sips, a glass or a bottle, Move for Casual, Steady or Epic, and Sleep for your night.',
                 de: 'Tipp auf Wasser für 10 Sips, ein Glas oder eine Flasche, Bewegung für Locker, Stetig oder Episch, Schlaf für die Nacht.',
                 es: 'Toca Agua para 10 sorbos, un vaso o una botella, Movimiento para Tranquilo, Constante o Épico, y Sueño para tu noche.'
+            }
+        },
+        {
+            /* Nov 5 2026 (owner: the tour never said that holding Move opens Mirror mode, the camera workout, "the most impressive part").
+               The real way in, checked in the code: hold Move on Home (home-blooms-v2.js hold -> LowiMoveBubble.page) = the Move page,
+               Mirror mode is its first card (mirror-move.js hero), workouts below it. The finger holds the real Move bubble, then the
+               tour opens the real Move page read-only and goes back Home. */
+            id: 'mirror', area: 'home', target: ['#whHud .wh-move'], demo: { g: 'hold', open: 'move-page' },
+            covers: ['mirror-mode'], teaches: ['move-hold'],
+            title: { en: 'Mirror mode', de: 'Spiegel-Modus', es: 'Modo espejo' },
+            text: {
+                en: 'Hold Move to open your Move page: Mirror mode is the first card, you move along with the camera, workouts below.',
+                de: 'Halt Bewegung gedrückt für deine Bewegungsseite: oben der Spiegel-Modus, du bewegst dich mit der Kamera mit.',
+                es: 'Mantén pulsado Movimiento para tu página: arriba el modo espejo, te mueves con la cámara; debajo, entrenos.'
             }
         },
         {
@@ -469,7 +483,7 @@
         G('water-hold', 'home', 'hold', ['world-home.js'], 'hold Water: the last entry comes off'),
         G('fuel-tap', 'home', 'tap', ['home-blooms-v2.js', 'sym-home.js'], 'tap Einkaufen (the old Fuel bubble): Shop opens (Oct 28 food plan; a hold only squishes)'),
         G('move-tap', 'home', 'tap', ['home-blooms-v2.js', 'move-bubble.js'], 'tap Move: Casual, Steady, Epic'),
-        G('move-hold', 'home', 'hold', ['home-blooms-v2.js', 'move-bubble.js'], 'hold Move: the Move page (workouts, edit today\'s moves)'),
+        G('move-hold', 'home', 'hold', ['home-blooms-v2.js', 'move-bubble.js'], 'hold Move: the Move page (Mirror mode first, then workouts)'),
         G('gap-tap', 'home', 'tap', ['home-blooms-v2.js', 'fast-bubble.js'], 'tap Gap: the eating hub (gap, last meal, Log meal, Cook, today\'s meals)'),
         G('sleep-tap', 'home', 'tap', ['home-settings-sleep-v2.js'], 'tap Sleep: how long did you sleep'),
         G('scan-tap', 'home', 'tap', ['home-orbit-v2.js'], 'tap Scan: the Scan screen'),
@@ -524,7 +538,7 @@
        either taught by a base card or listed here, so nothing is forgotten silently (tests/tutorial-gestures.test.cjs). */
     const SHORT_SKIP_WHY = 'not in the short base tour (Oct 25 2026, max 12 cards): found in place or shown by What\u2019s New';
     const SHORT_SKIPS = {};
-    ['mic-dictate', 'give-hand-swipe', 'ck-tab-order', 'misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'move-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tab-order', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
+    ['mic-dictate', 'give-hand-swipe', 'ck-tab-order', 'misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tab-order', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
     const GESTURE_EXEMPT = {
         'evo-card.js': 'Nov 5 2026 evolution card viewer: swiping between forms is only a shortcut; the arrow buttons on both sides of the card do it with a plain tap, and tapping a form on the Evolution path opens it',
         'bloom-ring.js': 'Oct 28 2026 slim structure (S-02 deleted): the old hold-Scan helpers stay as code only, nothing wires them; a hold on Scan is a plain tap that opens the one scanner',

@@ -22,7 +22,8 @@ const ok = (c, m) => { if (c) { pass++; console.log('ok   ' + m); } else { fail+
   await P.evaluate(() => LowiMistyHub.open()); await sleep(1500);
   ok(await hubOpen(), 'card opens');
   let b = await bxWait(b => b.kind === 'close'); ok(b && b.kind === 'close', 'root bottom button is a close: ' + JSON.stringify(b));
-  /* Look */
+  /* Look (Nov 5 phase 2: the doors live in the companion's own tab) */
+  await P.evaluate(() => { const t = document.querySelectorAll('#mistyHub .mh-tab')[2]; if (t) t.click(); }); await sleep(500);
   await P.evaluate(() => document.querySelector('#mistyHub [data-door="look"]').click()); await sleep(1400);
   ok(await P.evaluate(() => !!document.querySelector('.cf-ov .cf-x-back')), 'Look panel has a back button, not a close');
   b = await bxWait(b => b.kind === 'back' && /Misty/.test(b.text)); ok(b && b.kind === 'back' && /Misty/.test(b.text), 'bottom button reads Back + name: ' + JSON.stringify(b));

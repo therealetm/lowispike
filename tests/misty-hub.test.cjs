@@ -27,7 +27,7 @@ test('holding Misty and every plain "open her world" go to the new card; Scan ke
 test('the card is the same Misty over the same world: cloned Home artwork, glass sheet, no cosmic portal', () => {
     assert.ok(js.includes("#spBubble .sp-home-herb svg.tmg-plant"), 'clones the Home Misty');
     assert.ok(!/constellation|starfield|sp-stage|sp-portal/i.test(css) && !/sp-stage|sp-constellation|sp-portal/.test(js), 'no starfield or portal');
-    assert.ok(/R2\.sheet\(html\(sayOverride\), \{ cls: 'wh-ms-ov mh-ov' \}\)/.test(js), 'a normal sheet over the live world');
+    assert.ok(/R2\.sheet\(html\(sayOverride\), \{ cls: 'wh-ms-ov mh-ov one-sheet' \}\)/.test(js), 'a normal sheet over the live world, in the Settings shell (Nov 5 2026)');
     assert.ok(!js.includes('data-mh="mood"'), 'no mood check-in on the card (Oct 23)');
     for (const k of ['data-mh="goodnight"', 'data-mh="door"', 'data-door="', 'mh-xp', 'role="progressbar"'])
         assert.ok(js.includes(k), k);
@@ -38,7 +38,8 @@ test('readable text: dark ink on light fills, light ink on dark glass, nothing f
     assert.ok(/\.mh-moods button\[aria-pressed="true"\] \{ background: var\(--a\);[^}]*color: #06201a/.test(css), 'picked mood: dark text on mint');
     assert.ok(/\.mh-pri \{[^}]*color: #06201a/.test(css), 'Goodnight: dark text on mint');
     assert.ok(/html\.spirit-app #spHome \.sp-next, html\.spirit-app #spHome \.sp-next span \{ color: #06201a; \}/.test(css), 'Say goodnight in Today');
-    assert.ok(!/white-space:\s*nowrap|text-overflow:\s*ellipsis/.test(css), 'no clipped lines');
+    /* Nov 5 2026: only the short segmented tab labels and the row values may stay on one line */
+    assert.ok(!/white-space:\s*nowrap|text-overflow:\s*ellipsis/.test(css.replace(/\.mh-tab \{[^}]*\}|\.ms-row \.ms-v \{[^}]*\}|\.mh-sback \{[^}]*\}/g, '')), 'no clipped lines');
 });
 
 test('nudges: one at a time, each once, a quiet gap, a daily cap, and never over a sheet or a hint', () => {

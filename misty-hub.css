@@ -231,3 +231,35 @@ html.lowi-saver .mh-dbtn { transition: none; }
 .mh-sback span { font-size: 22px; line-height: 1; margin-top: -2px; }
 .mh-sback:active { background: rgba(255, 255, 255, .08); }
 .mh-sback:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+/* Nov 5 2026 (Misty sheet plan + owner: "Settings and Misty's sheet should be one design"): the card sits in the same one-sheet
+   shell as Settings (overlay .one-sheet, root .cme.cme-in), rows are Settings rows (.cme-list/.cme-row). Here only what Settings
+   has no piece for: the segmented Today / History / <name> control, meal thumbnails, a quiet "No entries" line. */
+.mh-seg { position: sticky; top: 0; z-index: 2; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin: 4px 0 14px; padding: 2px; border-radius: 12px;
+  background: var(--one-cell, rgba(255,255,255,.06)); border: 1px solid var(--one-cell-line, rgba(170,214,255,.18)); }
+.mh-tab { min-height: 36px; padding: 0 8px; border: 0; border-radius: 10px; background: transparent; color: inherit; opacity: .72;
+  font: 600 14px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.mh-tab.on { opacity: 1; background: rgba(255,255,255,.14); box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.mh-tab:focus-visible { outline: 2px solid var(--one-acc, #8fe7ff); outline-offset: 1px; }
+.mh-body { display: block; }
+.mh-body > .cme-sec, .mh-body > section { margin: 0 0 14px; }
+.ms-sec .mh-card { margin-top: 8px; }
+.ms-world .mh-wl { margin-top: 8px; }
+.ms-world .mh-pri { margin-top: 8px; }
+.ms-row.ms-empty .cme-tx small { opacity: .5; }
+.ms-row .ms-v { font-variant-numeric: tabular-nums; white-space: nowrap; }
+div.cme-row.ms-row { cursor: default; }
+.ms-thumbs { display: flex; gap: 4px; margin-top: 6px; }
+.ms-thumbs img { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; flex: none; background: rgba(255,255,255,.06); }
+.mh.cme-in .mh-head { flex-wrap: wrap; }
+html[data-black="1"] .mh-seg { background: #111; border-color: rgba(255,255,255,.12); }
+html[data-black="1"] .mh-tab.on { background: #2a2a2a; }
+html[data-theme="light"] .mh-tab.on { background: rgba(255,255,255,.22); }
+/* History tab (phase 3): period choice, ‹ range ›, a quiet note */
+.mh-seg.mh-seg2 { position: static; grid-template-columns: repeat(4, 1fr); margin: 0 0 8px; }
+.mh-hnav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 12px; }
+.mh-hrange { flex: 1 1 auto; text-align: center; font-size: 15px; font-weight: 600; }
+.mh-hstep { width: 44px; height: 44px; flex: none; border: 0; border-radius: 22px; background: transparent; color: inherit; font-size: 26px; line-height: 1; cursor: pointer; }
+.mh-hstep:disabled { opacity: .25; cursor: default; }
+.mh-hstep:not(:disabled):active { background: rgba(255,255,255,.1); }
+.mh-hstep:focus-visible { outline: 2px solid var(--one-acc, #8fe7ff); outline-offset: 1px; }
+.mh-hnote { margin: 4px 4px 14px; font-size: 12.5px; line-height: 17px; opacity: .6; }

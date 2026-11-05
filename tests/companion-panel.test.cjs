@@ -63,9 +63,10 @@ test('the card shows what each place still needs and whether you have been there
 });
 
 test('companion card: Forms and Glow come first, then energy, level, adventures; no mood check-in (Oct 23, E-man)', () => {
-    const js = R('misty-hub.js'), h = js.slice(js.indexOf('function html('), js.indexOf('function advHtml'));
-    const doors = h.indexOf('doorsHtml()'), say = h.indexOf('mh-say');
-    assert.ok(doors > 0 && doors < say, 'doors come before her words, right under the name');
+    /* Nov 5 2026 Misty sheet plan: the doors lead the companion's own tab (Today / History / <name>) */
+    const js = R('misty-hub.js'), h = js.slice(js.indexOf('function companionTab('), js.indexOf('function advHtml'));
+    const doors = h.indexOf('doorsHtml()');
+    assert.ok(doors > 0 && doors < h.indexOf('advHtml()'), 'doors first in the companion tab');
     const scale = h.indexOf('scaleHtml()'), adv = h.indexOf('advHtml()');
     assert.ok(doors > 0 && doors < scale && scale < adv, 'doors, then energy, level, adventures');
     /* Oct 28 2026 slim structure batch 1: one companion panel, its doors are Look, Growth, Aura shop (and Presence) */

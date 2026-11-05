@@ -90,50 +90,67 @@
         macro: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l6.2 5"/></svg>',
         inside: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.3-7-9.4A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.6C19 15.7 12 20 12 20z"/><path d="M8.6 12.4h2l1-2 1.6 4 1-2h1.4"/></svg>'
     };
+    /* Nov 5 2026 (Misty sheet plan, owner: "order everything ... your world stats, your companion stats and your human stats ...
+       very convenient and efficient and not overwhelming"): one header (picture, name, level, status), then three tabs in the
+       Settings sheet's own design (.cme rows, one-sheet shell): Today (world glow, you today, what today gave her), History
+       (yesterday, week, month, year) and the companion's own tab (looks, aura, growth, adventures). The card opens on Today. */
+    let tab = 'today';
+    const TABS = ['today', 'history', 'misty'];
+    function tabsHtml() {
+        const lab = { today: T('Today', 'Heute', 'Hoy'), history: T('History', 'Verlauf', 'Historial'), misty: name() };
+        return '<div class="mh-seg" role="tablist" aria-label="' + esc(T('Sections', 'Bereiche', 'Secciones')) + '">' +
+            TABS.map(k => '<button type="button" role="tab" class="mh-tab' + (tab === k ? ' on' : '') + '" data-mh="tab" data-tab="' + k + '" aria-selected="' + (tab === k) + '"' + (tab === k ? '' : ' tabindex="-1"') + '>' + esc(lab[k]) + '</button>').join('') + '</div>';
+    }
+    /* the old Today bubbles (Journeys, Sun, Weekly goal, Day recap) as plain rows of the World group */
+    function worldRows() {
+        const its = todayItems(); if (!its.length) return '';
+        return '<div class="cme-list mh-wl">' + its.map(it => '<button type="button" class="cme-row ms-row' + (it.on ? ' on' : '') + '" data-mh="t-' + it.k + '">' +
+            '<span class="cme-ico">' + (it.ico || '') + '</span><span class="cme-tx"><b>' + esc(it.b) + '</b>' + (it.sub && it.sub !== it.b ? '<small>' + esc(it.sub) + '</small>' : '') + '</span>' +
+            (it.n ? '<span class="cme-st num">' + esc(it.n) + '</span>' : '') +
+            '<svg class="cme-chev" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>').join('') + '</div>';
+    }
+    function xpCardHtml(xp, s) {
+        return s ? '<section class="mh-card mh-xp" aria-label="' + esc(T('Level and XP', 'Level und XP', 'Nivel y XP')) + '">' +
+            '<div class="mh-row"><b>' + esc(T('Level ', 'Level ', 'Nivel ') + s.level + ' \u00b7 ' + s.name) + '</b><span class="num">' + xp + ' XP</span></div>' +
+            '<i class="mh-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(s.pct * 100) + '" aria-label="' + esc(T('Progress to the next level', 'Fortschritt zum n\u00e4chsten Level', 'Progreso al siguiente nivel')) + '"><i style="width:' + Math.round(s.pct * 100) + '%"></i></i>' +
+            '<small>' + esc(s.next ? T(s.left + ' XP to ' + s.next, 'Noch ' + s.left + ' XP bis ' + s.next, 'Faltan ' + s.left + ' XP para ' + s.next) : T('Top level reached', 'H\u00f6chstes Level erreicht', 'Nivel m\u00e1ximo alcanzado')) + '</small>' +
+        '</section>' : '';
+    }
+    function goodnightHtml() {
+        if (!isNight()) return ''; const gn = saidGoodnight();
+        return '<button type="button" class="mh-pri" data-mh="goodnight"' + (gn ? ' aria-pressed="true"' : '') + '>' + ICO.moon + '<span>' + esc(gn ? T('Tucked in for the night', 'F\u00fcr die Nacht eingekuschelt', 'Arropada para la noche') : T('Say goodnight', 'Gute Nacht sagen', 'Dar las buenas noches')) + '</span></button>';
+    }
+    function todayTab(xp, s) {
+        const M = W.LowiMistySheet;
+        const world = peakHtml() + worldRows() + goodnightHtml();
+        if (!M) return world + xpCardHtml(xp, s);
+        return M.todayHTML(name(), world, xpCardHtml(xp, s));
+    }
+    function historyTab() {
+        try { if (W.LowiMistyHistory && W.LowiMistyHistory.html) return W.LowiMistyHistory.html(name()); } catch (e) { }
+        return '<section class="cme-sec ms-sec"><div class="cme-list"><div class="cme-row ms-row ms-empty"><span class="cme-tx"><b>' + esc(T('History is on its way', 'Der Verlauf kommt gleich', 'El historial llega pronto')) + '</b><small>' + esc(T('Yesterday, week, month and year, from what this phone keeps.', 'Gestern, Woche, Monat und Jahr, aus dem, was dieses Handy speichert.', 'Ayer, semana, mes y a\u00f1o, con lo que guarda este m\u00f3vil.')) + '</small></span></div></div></section>';
+    }
+    function companionTab() {
+        return doorsHtml() + secHtml() + cycleHtml() + scaleHtml() + advHtml() +
+            '<section class="cme-sec ms-sec"><div class="cme-list"><button type="button" class="cme-row ms-row" data-mh="rename"><span class="cme-ico">' + ICO.pen + '</span><span class="cme-tx"><b>' + esc(T('Rename ' + name(), name() + ' umbenennen', 'Cambiar el nombre de ' + name())) + '</b></span><svg class="cme-chev" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div></section>';
+    }
     function html(sayOverride) {
         const xp = xpNow(), s = stageOf(xp), a = aura(), v = cell(), st = status();
         const say = sayOverride || line(v);
-        const night = isNight(), gn = saidGoodnight();
-        return '<div class="mh" id="mistyHub" data-noi18n style="--a:' + esc(a.a) + ';--b:' + esc(a.b) + '">' +
-            '<header class="mh-head">' +
+        if (sec) tab = 'misty';
+        const body = tab === 'history' ? historyTab() : tab === 'misty' ? companionTab() : todayTab(xp, s);
+        return '<div class="mh cme cme-in" id="mistyHub" data-noi18n data-tab="' + tab + '" style="--a:' + esc(a.a) + ';--b:' + esc(a.b) + '">' +
+            '<header class="mh-head cme-head">' +
                 '<div class="mh-art"><span class="mh-glow" aria-hidden="true"></span>' + art() + fx() + '</div>' +
                 '<div class="mh-id"><div class="mh-name"><h2>' + esc(name()) + '</h2></div>' +
                     (s ? '<p class="mh-lv">' + esc(T('Level ', 'Level ', 'Nivel ') + s.level + ' \u00b7 ' + s.name) + '</p>' : '') +
                     '<p class="mh-st"><b>' + esc(st.title) + '</b>' + (st.sub ? '<span>' + esc(st.sub) + '</span>' : '') + '</p>' +
-                    /* Oct 19: below the name, not beside it: the sheet's grab handle owns the top strip when the card is pulled up */
-                    '<button type="button" class="mh-rn" data-mh="rename" aria-label="' + esc(T('Rename ' + name(), name() + ' umbenennen', 'Cambiar el nombre de ' + name())) + '">' + ICO.pen + '<span>' + esc(T('Rename', 'Umbenennen', 'Cambiar nombre')) + '</span></button>' +
                 '</div>' +
-                /* Oct 23 (Eman: "where Misty's ranked, worldwide ... a very tiny preview"): the rank peek, a full-width row of the
-                   header right under her picture and name, so it fits beside nothing on the smallest phone */
                 rankHtml() +
             '</header>' +
-            /* Oct 22 (E-man: "When I click on Misty it should say what's missing to get Misty to true 100%"): World glow, the bar to
-               her peak (Supernova) and what is missing, right under her name (misty-peak.js) */
-            peakHtml() +
-            /* Oct 19 (E-man): Forms and Glow were at the very bottom: "that's hidden ... needs to be not hidden".
-               Oct 22 (E-man: "I don't understand the food journal section ... I'd say remove it"): the Food journal door is gone;
-               the meals you logged live in the Fuel sheet's meal list. Two equal doors now come first, right under the name and level, before the companion's words (fully in view when the card opens on an iPhone 13). */
-            /* Oct 28 2026 slim structure, batch 1 (Emmanuel: "setz alles um"): ONE companion panel. Look, growth and the aura shop
-               are three doors in one row of this card; growth and the aura shop open right here in the card (in place, no second
-               sheet), Look opens the forms panel on top. The galaxy presence stays in Profile (his Oct 22 wish, P-06). */
-            doorsHtml() + secHtml() +
-            /* Oct 24 2026 (Emmanuel): with cycle tracking on, a small "Your cycle" section right under the doors opens My cycle
-               (cycle-world.js hubHtml / hubOpen). Tracking off: nothing here. */
-            cycleHtml() +
-            todayHtml() +
-            /* Oct 27 (Emmanuel: human stats "maybe next to the companion stats ... and obviously, they're linked together"): one
-               quiet row, You (kcal, protein) beside her energy; tap opens You & <name> (you-stats.js in the stats sheet). */
-            youHtml() +
             (say ? '<p class="mh-say" role="status" aria-live="polite">' + esc(say) + '</p>' : '<p class="mh-say" role="status" aria-live="polite" hidden></p>') +
-            (night ? '<button type="button" class="mh-pri" data-mh="goodnight"' + (gn ? ' aria-pressed="true"' : '') + '>' + ICO.moon + '<span>' + esc(gn ? T('Tucked in for the night', 'F\u00fcr die Nacht eingekuschelt', 'Arropada para la noche') : T('Say goodnight', 'Gute Nacht sagen', 'Dar las buenas noches')) + '</span></button>' : '') +
-            scaleHtml() +
-            (s ? '<section class="mh-card mh-xp" aria-label="' + esc(T('Level and XP', 'Level und XP', 'Nivel y XP')) + '">' +
-                '<div class="mh-row"><b>' + esc(s.name) + '</b><span class="num">' + xp + ' XP</span></div>' +
-                '<i class="mh-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(s.pct * 100) + '" aria-label="' + esc(T('Progress to the next level', 'Fortschritt zum n\u00e4chsten Level', 'Progreso al siguiente nivel')) + '"><i style="width:' + Math.round(s.pct * 100) + '%"></i></i>' +
-                '<small>' + esc(s.next ? T(s.left + ' XP to ' + s.next, 'Noch ' + s.left + ' XP bis ' + s.next, 'Faltan ' + s.left + ' XP para ' + s.next) : T('Top level reached', 'H\u00f6chstes Level erreicht', 'Nivel m\u00e1ximo alcanzado')) + '</small>' +
-            '</section>' : '') +
-            advHtml() +
-            /* Oct 23 (E-man): the optional feelings check-in card is gone from her sheet (misty-sheet-a). */
+            tabsHtml() +
+            '<div class="mh-body" role="tabpanel">' + body + '</div>' +
         '</div>';
     }
     /* Oct 17: Misty's energy scale and her way back (misty-scale.js), right under her words */
@@ -226,7 +243,8 @@
         const R2 = W.LowiR2; if (!R2 || !R2.sheet) return false;
         if (sheet()) { repaint(sayOverride); return true; }
         try { if (W.LowiWorldHome && W.LowiWorldHome.state && W.LowiWorldHome.state.today) W.LowiWorldHome.openToday(false); } catch (e) { }
-        R2.sheet(html(sayOverride), { cls: 'wh-ms-ov mh-ov' });
+        tab = 'today'; sec = '';
+        R2.sheet(html(sayOverride), { cls: 'wh-ms-ov mh-ov one-sheet' });
         try { W.LowiWorldHome && W.LowiWorldHome.syncX && setTimeout(W.LowiWorldHome.syncX, 20); } catch (e) { }
         hideNudge();
         return true;
@@ -253,6 +271,7 @@
             repaint(v && v.mood ? cellCopy('thanks') : '');
         } else if (k === 'goodnight') goodnight();
         else if (k === 'door') door(b.dataset.door);
+        else if (k === 'tab') { const t = b.dataset.tab; if (TABS.indexOf(t) >= 0 && t !== tab) { tab = t; if (t !== 'misty') sec = ''; repaint(); const sc = q('#mistyHub'); const ov = sc && sc.closest('.r2-ov'); const pane = ov && (ov.querySelector('.r2-sh') || ov); try { const hd = q('#mistyHub .mh-seg'); if (hd && pane && pane.scrollTop > hd.offsetTop) pane.scrollTop = Math.max(0, hd.offsetTop - 8); } catch (x) { } setTimeout(() => { const n = q('#mistyHub .mh-tab.on'); try { n && n.focus({ preventScroll: true }); } catch (x) { } }, 20); } }
         else if (k === 'sback') { const was = sec; sec = ''; repaint(); setTimeout(() => { const d = q('#mistyHub [data-door="' + was + '"]'); if (!d) return; try { d.scrollIntoView({ block: 'center', behavior: 'smooth' }); d.focus({ preventScroll: true }); } catch (x) { } }, 40); }
         else if (k === 'forms') door('look');
         else if (k === 'glow') openSec('aura');

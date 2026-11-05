@@ -90,8 +90,9 @@ test('aura: a pick shows on Home Misty and on the card under the Glow sheet righ
 });
 
 test('card: Rename button under the name (not in the grab strip), field with Save/Cancel, Escape cancels only the field', () => {
-    assert.match(hub, /class="mh-rn" data-mh="rename" aria-label="/);
-    assert.ok(hub.indexOf('class="mh-rn"') > hub.indexOf('class="mh-st"'), 'after the status line');
+    /* Nov 5 2026 Misty sheet plan: Rename is a row of the companion's own tab (Settings row design); the field still opens under the name */
+    assert.match(hub, /class="cme-row ms-row" data-mh="rename"/);
+    assert.ok(hub.indexOf('data-mh="rename"') > hub.indexOf('function companionTab'), 'in the companion tab');
     assert.match(hub, /maxlength="24"/);
     assert.match(hub, /e\.key !== 'Escape'[^\n]*stopImmediatePropagation\(\); renameClose\(true\)/);
     assert.match(hubCss, /\.mh-rn \{[^}]*min-height: 44px/);

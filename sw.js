@@ -25,6 +25,7 @@ STATIC.push("mic-dictate.css", "mic-session.js", "mic-dictate-core.js", "mic-dic
 STATIC.push("quick-add-core.js"); /* Oct 26 quick "+" on Supermarket rows (MAYA-HANDOFF 0.35): own line, like kitchen-core.js */
 STATIC.push("quick-tour.js", "quick-tour.css"); /* Oct 26 Quick tour video sheet (MAYA-HANDOFF 0.38): own line; the .mp4 itself is never precached */
 STATIC.push("evo-card.js", "evo-card.css"); /* Nov 5 collectible evolution cards (opened from the Evolution path): own line */
+STATIC.push("misty-sheet-core.js", "misty-sheet.js", "misty-history.js"); /* Nov 5 Misty sheet Today/History tabs: own line */
 STATIC.push("day-recap-core.js", "day-recap.js", "day-recap.css"); /* Oct 26 Day recap (MAYA-HANDOFF 0.40): own line */
 STATIC.push("meal-sheet.css"); /* Oct 27 calm Log meal sheet: own line */
 STATIC.push("crash-log.js"); /* Oct 28 item 29 light crash log (Profil > Über & Hinweise): own line */

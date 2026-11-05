@@ -22,7 +22,8 @@ test('the Today sheet never opens again, but stays built so its modules keep the
 });
 
 test('journeys (and the surprise), sun and weekly goal are round bubbles on Misty\'s card and do what the old rows did', () => {
-    assert.ok(/cycleHtml\(\) \+\s*todayHtml\(\) \+/.test(mh), 'on the card, right after the doors and the cycle');
+    /* Nov 5 2026 Misty sheet plan: they are rows of the World group in the Today tab now (Settings row design) */
+    assert.ok(/const world = peakHtml\(\) \+ worldRows\(\) \+ goodnightHtml\(\);/.test(mh) && /data-mh="t-' \+ it\.k \+ '"/.test(mh), 'World group of the Today tab');
     assert.ok(/k: 'trip'[\s\S]{0,200}T\('Surprise!', '\\u00dcberraschung!'/.test(mh), 'shows the surprise when she is back');
     assert.ok(/trip: \(\) => proxy\('data-bt', 'bar'\), sun: \(\) => proxy\('data-ls', 'info'\), goal: \(\) => proxy\('data-dr', 'chip'\)/.test(mh));
     assert.ok(/D\.body\.appendChild\(t\); try \{ t\.click\(\); \} finally \{ t\.remove\(\); \}/.test(mh), 'tapped from outside any sheet, like the old row');

@@ -149,8 +149,9 @@ test('wiring: loaded, cached offline, at the top of Misty\'s sheet, in the statu
     assert.match(read('index.html'), /<script src="misty-peak\.js\?v=[^"]+"><\/script>/);
     assert.match(read('sw.js'), /"misty-peak\.js"/);
     const hub = read('misty-hub.js');
-    assert.ok(hub.indexOf('peakHtml() +') > hub.indexOf("'</header>' +"), 'right under her name');
-    assert.ok(hub.indexOf('peakHtml() +') < hub.indexOf('doorsHtml()') || hub.indexOf('doorsHtml()') < 0 || hub.indexOf('peakHtml() +') < hub.lastIndexOf('mh-doors'));
+    /* Nov 5 2026 Misty sheet plan: World glow opens the World group, first thing of the Today tab (the card opens on Today) */
+    assert.match(hub, /const world = peakHtml\(\) \+ worldRows\(\)/);
+    assert.match(hub, /tab = 'today'; sec = '';\n        R2\.sheet\(/);
     const sp = read('spirit.js');
     assert.match(sp, /const M = window\.LowiMistyPeak; if \(M && M.now && M.statusFor\) pk = M\.statusFor\(M\.now\(\), n, lang\(\)\)/);
     assert.match(sp, /addEventListener\('lowi:peak', refresh\)/);

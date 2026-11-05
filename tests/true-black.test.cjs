@@ -77,3 +77,10 @@ test('accessibility: reduce transparency makes the glass solid, increase contras
     assert.ok(css.includes('@media (prefers-contrast: more)'));
     assert.ok(css.includes('html[data-black][data-black] body #app { background: #000 !important; }') || css.includes('body #app { background: #000 !important; }'));
 });
+
+test('the look buttons press and spring back, never under Reduce Motion or battery saver', () => {
+    const css = read('true-black.css');
+    assert.ok(css.includes('.atm-quick button:active, [data-r2theme]:active { transform: scale(.94);'));
+    assert.ok(/prefers-reduced-motion: reduce\) \{ \.atm-quick button, \[data-r2theme\] \{ transition: none; \}/.test(css));
+    assert.ok(css.includes('html.lowi-saver .atm-quick button:active'));
+});

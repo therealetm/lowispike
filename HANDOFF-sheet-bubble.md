@@ -124,3 +124,19 @@ its parent is `fdc2ba7c` (the release commit, = `main`); the last code commit is
   sun-meter.js, bloom-ring.js, home-blooms-v2.js, galaxy-still.css, galaxy-still-core.js) and an upgrade from an installed service
   worker (sw.js precaches the new sheet-style.css). Only then is it live.
 - Coordination: issue #2's newest comment is from 29 Oct (no open CLAIM / RELEASING); nothing was posted there from this session.
+
+## Follow-ups after the owner's iPhone check (5 Nov 2026, all quiet releases, all VERIFIED LIVE)
+Each: `scripts/release.sh --quiet` exit 0 (CI passed on the commit, main fast-forwarded, verify-live --compare same for the 4 shell
+files), then the changed files byte-compared on the live site and a clean Chromium on the live site (page build, service worker
+active with the new cache). Chromium only; not on a real iPhone.
+1. **20261105-184950** (main `0c585216`): every single bubble bloom uses the all-bubbles circle; the ring no longer shifts when a
+   bubble is opened while the last one is still closing (cause: `bloom-ring.js` zoom re-measured the half-scaled HUD; reproduced
+   at 23 px left / 46 px up, fixed). Gap and Einkaufen open on the same circle. Test: `tests/bloom-zoom-reopen.test.cjs`.
+2. **20261105-190735** (main `38628765`): Billiards room redesign: table centred in the space above one control row; the row sits
+   12 px above the back button (measured); big aim stick (84-104 px) with a power rim; a scoreboard (middle holder, your middle
+   hours today, players). The words behind the table were the table's screen-reader line: `.sr-only` had no CSS rule anywhere;
+   `apple-ui.css` now hides it app-wide. Tests: `tests/room-table-layout.test.cjs`.
+3. **20261105-191846** (main `bbe2f2ee`): Feedback inbox Delete (per entry) and Delete (n) (Select all = delete all), two taps,
+   files first then rows (`feedback-core.js` removeAll). Not run against the real database from here (no owner session).
+Known: "Supermarket" is still cut in its orb (label rules: no break inside a word, one size per bloom, 10 px floor). The
+leftover `ci/` branches of these releases stay on GitHub (this sandbox's git proxy refuses branch deletes).

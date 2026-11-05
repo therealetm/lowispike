@@ -14,7 +14,13 @@ const FOODS = [
   { n: 'Cucumber', packs: 3, pe: 0.59 }, { n: 'Greek yogurt', packs: 4, pe: 1.19 }, { n: 'Halloumi', packs: 1, pe: 2.79 },
   { n: 'Courgette', packs: 2, pe: 0.89 }, { n: 'Nori', packs: 1, pe: 2.49 }, { n: 'Tortilla wraps', packs: 1, pe: 1.49 }, { n: 'Eggs', packs: 1, pe: 2.29 }
 ];
-const EXPECT = Math.round(FOODS.reduce((a, f) => a + f.packs * f.pe, 0) * 100) / 100;
+/* A price a shopper reported on the shelf beats the planner's estimate (cart-core.js: "A reported shelf price (p) always wins").
+   The app's built-in community finds carry one for these foods: Halloumi, Kaufland, €2.49 (index.html, find s11). So the
+   Cart total is 3×0.59 + 4×1.19 + 1×2.49 (reported) + 2×0.89 + 2.49 + 1.49 + 2.29 = €17.07, with 6 lines marked ≈, not 7. */
+const REPORTED = { Halloumi: 2.49 };
+const EXPECT = Math.round(FOODS.reduce((a, f) => a + f.packs * (REPORTED[f.n] != null ? REPORTED[f.n] : f.pe), 0) * 100) / 100;
+const EXPECT_APPROX = FOODS.filter(f => REPORTED[f.n] == null).length;
+const EXPECT_TXT = EXPECT.toFixed(2);
 (async () => {
   const root = process.argv[2] || '.', sizes = (process.argv[3] || 'iphone,se').split(','), rules = (process.argv[4] || 'open,old').split(','), engine = process.env.ENG || 'chromium';
   let pass = 0, fail = 0; const bad = []; fs.mkdirSync('/home/sprite/walk-shots', { recursive: true });
@@ -37,11 +43,11 @@ const EXPECT = Math.round(FOODS.reduce((a, f) => a + f.packs * f.pe, 0) * 100) /
       await P.evaluate(() => LowiStorePicks.open('home-bloom')); await H.sleep(1500);
       await R.tap('.stp-card .stp-cartbtn'); await H.sleep(1800);
       const c = await P.evaluate(() => { const q = document.querySelector('.stp-cartv .stp-cart-card'); if (!q) return null;
-        const rows = [...q.querySelectorAll('.stp-cart-row')].map(r => ({ n: r.querySelector('.stp-cart-txt b').textContent, q: (r.querySelector('[data-stp-cq]') || {}).textContent || (r.querySelector('.stp-cart-q') || {}).textContent, s: r.querySelector('small').textContent }));
+        const rows = [...q.querySelectorAll('.stp-cart-row')].map(r => ({ n: r.querySelector('.stp-cart-txt b').textContent, q: (r.querySelector('.stp-cart-q > b') || {}).textContent, /* the number between − and +, not the − button */ s: r.querySelector('small').textContent }));
         const btns = [...q.querySelectorAll('.stp-cart-acts button')].map(b => { const k = b.getBoundingClientRect(); return { t: b.textContent.trim(), a: b.dataset.stp, w: Math.round(k.width), h: Math.round(k.height), inView: k.bottom <= innerHeight + 1 && k.top >= 0 }; });
         return { rows, btns, text: q.textContent, total: window.LOWI_SHELF.cartTotal() }; });
-      ok('1 the Cart keeps every food once, 3 cucumbers and 4 yogurts', c && c.rows.length === 7 && /3/.test(c.rows.find(r => r.n === 'Cucumber').q) && /4/.test(c.rows.find(r => r.n === 'Greek yogurt').q), c && c.rows);
-      ok('2 the Cart total is the sum of packs x estimate, marked ≈', c && Math.abs(c.total.sum - 0) > 0 && Math.round(c.total.sum * 100) === Math.round(16.29 * 100) && c.total.approx === 7 && /≈/.test(c.text), c && { total: c.total, expect: 16.29 });
+      ok('1 the Cart keeps every food once, 3 cucumbers and 4 yogurts', c && c.rows.length === 7 && c.rows.find(r => r.n === 'Cucumber').q === '3' && c.rows.find(r => r.n === 'Greek yogurt').q === '4' && c.rows.find(r => r.n === 'Zucchini').q === '2', c && c.rows);
+      ok('2 the Cart total is the sum of packs x estimate, marked ≈', c && Math.abs(c.total.sum - 0) > 0 && Math.round(c.total.sum * 100) === Math.round(EXPECT * 100) && c.total.approx === EXPECT_APPROX && /≈/.test(c.text) && /Kaufland · €2\.49/.test(c.rows.find(r => r.n === 'Halloumi').s), c && { total: c.total, expect: EXPECT, approx: EXPECT_APPROX });
       ok('3 two equal choices, both on screen, no Scan in the shop', c && c.btns.length === 2 && c.btns.map(b => b.a).join() === 'mylist,giftcart' && c.btns.every(b => b.inView && b.h >= 44) && !/Scan in the shop/.test(c.text), c && c.btns);
       await R.shot('/home/sprite/walk-shots/cart-' + tag + '.png').catch(() => {});
       await R.tap('.stp-cart-acts [data-stp="giftcart"]'); await H.sleep(2500);
@@ -50,14 +56,14 @@ const EXPECT = Math.round(FOODS.reduce((a, f) => a + f.packs * f.pe, 0) * 100) /
           total: (document.querySelector('#gb-total') || {}).value, note: (document.querySelector('.gb-totalnote') || {}).textContent || '' }; });
       if (rule === 'open') ok('4 open rules: EVERY food goes in (halloumi and wraps too), nothing left out', g.card && g.items.length === 7 && g.items.some(x => /Halloumi/.test(x)) && g.items.some(x => /Tortilla/.test(x)) && !g.left, g);
       else ok('4 old rules: whatever the server cannot take yet is named, nothing vanishes', g.card && g.items.length >= 1 && (g.items.length === 7 || /can’t take these yet/.test(g.left)), g);
-      ok('5 the total field is the cart total to the cent (not €5) and says it is an estimate', g.total === '16.29' && /16\.29/.test(g.note) && /estimates/.test(g.note), { total: g.total, note: g.note });
+      ok('5 the total field is the cart total to the cent (not €5) and says it is an estimate', g.total === EXPECT_TXT && g.note.includes(EXPECT_TXT) && /estimates/.test(g.note), { total: g.total, note: g.note });
       await R.shot('/home/sprite/walk-shots/give-' + tag + '.png').catch(() => {});
       await P.fill('#gb-link', 'https://ko-fi.com/fakeperson'); await H.sleep(400);
       await P.evaluate(() => document.querySelector('.gb-cartshare').scrollIntoView({ block: 'center' })); await H.sleep(300);
       await R.tap('.gb-cartshare'); await H.sleep(2200);
       const s = await P.evaluate(() => ({ n: window.__shares.length, row: window.__shares[0] && window.__shares[0].row, tab: LowiGiftBasket._state().tab }));
       const want = rule === 'open' ? 7 : (g.items.length);
-      ok('6 Share sends the cart total and the counts', s.n === 1 && s.row && s.row.total_eur === 16.29 && s.row.items.length === want && s.row.items.some(i => i.q === 3), { n: s.n, row: s.row });
+      ok('6 Share sends the cart total and the counts', s.n === 1 && s.row && s.row.total_eur === EXPECT && s.row.items.length === want && s.row.items.some(i => i.q === 3), { n: s.n, row: s.row });
       ok('7 then the Give a hand feed', s.tab === 'give', s.tab);
       ok('8 zero page errors', errs.length === 0, errs);
     } catch (e) { ok('run', false, String(e && e.stack || e).slice(0, 600)); }

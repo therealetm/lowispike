@@ -106,6 +106,7 @@
             const fresh = !S.plan.length;
             S.plan = C.plan(ids, S.nights, C.seedOf(S), S.plan.slice(0, S.nights), id => C.weekKeys(byId[id]), S.vibe.length ? id => C.vibeScore(prof[id], S.vibe) : null);
             if (fresh) S.plan = C.freshFirst(S.plan, id => prof[id].perish);
+            replanned = true;
         }
         const dinners = S.plan.map(id => ({ id, r: byId[id], items: itemsOf(byId[id]) }));
         const items = C.basket(dinners, S.people);
@@ -130,6 +131,15 @@
        Emmanuel: "I still feel like our app is so noisy and so confusing. Makes me hate it." ---- */
     const STEPS = ['store', 'people', 'budget', 'vibe', 'diet', 'kit'];
     let view = '', step = 0, makeT = 0;
+    /* Nov 5 2026: what Fit my budget found for this exact week (null = not tried yet). sig = plan, budget, store, people. */
+    let fitInfo = null, replanned = false;
+    const fitSig = () => [S.plan.join(','), S.budget, S.store, S.people, S.nights].join('|');
+    function runFit() {
+        const f = C.fitBudget(S.plan, ctx.ids, S.budget, priced, 0, id => C.weekKeys(ctx.byId[id]));
+        S.plan = f.plan; save();
+        fitInfo = Object.assign(C.budgetPlan(S.plan, S.budget, priced), { sig: fitSig() });
+        return fitInfo;
+    }
     const today = () => C.ymd(new Date());
     function companionName() { const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(W.LowiHerbIdentity && W.LowiHerbIdentity.autoName && W.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = W.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = W.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n; }
     const locale = () => lang() === 'de' ? 'de-DE' : lang() === 'es' ? 'es-ES' : 'en-GB';
@@ -197,9 +207,17 @@
                 '<span class="wb-dn"><small>' + esc(dayName(dd)) + '</small><b>' + esc(tr(r.swapName || r.n)) + '</b><em>' + meta + '</em></span></button>' +
                 '<button type="button" class="wb-swap" data-wb="swap" data-i="' + n + '" aria-label="' + esc(T('Swap ', 'Tauschen: ', 'Cambiar ') + tr(r.n)) + '">\u21bb</button></li>'; };
         const short = c.dinners.length < S.nights;
+        /* Nov 5 2026 (owner: €40 for 7 dinners gave €83.77 with only a small link): once Fit my budget has tried and the cheapest
+           week is still over, say it plainly with the two real ways out. Never a plan that quietly ignores the budget. */
+        const fi = bs.over && fitInfo && fitInfo.sig === fitSig() && !fitInfo.fits ? fitInfo : null;
+        const ppl = S.people === 1 ? T('1 person', '1 Person', '1 persona') : T(S.people + ' people', S.people + ' Personen', S.people + ' personas');
+        const overNote = !fi ? '' : '<div class="wb-over" role="note"><p><b>' + T(eur(S.budget) + ' isn\u2019t enough for ' + c.dinners.length + ' dinners for ' + ppl + '.', eur(S.budget) + ' reichen nicht f\u00fcr ' + c.dinners.length + ' Abendessen f\u00fcr ' + ppl + '.', eur(S.budget) + ' no alcanzan para ' + c.dinners.length + ' cenas para ' + ppl + '.') + '</b> ' +
+            T('The cheapest week the app can make at ' + esc(storeName(S.store)) + ' is about ' + eur(fi.sum) + '.', 'Die g\u00fcnstigste Woche, die die App bei ' + esc(storeName(S.store)) + ' planen kann, kostet etwa ' + eur(fi.sum) + '.', 'La semana m\u00e1s barata que la app puede hacer en ' + esc(storeName(S.store)) + ' cuesta unos ' + eur(fi.sum) + '.') + '</p>' +
+            '<div class="wb-over-acts">' + (fi.nights ? '<button type="button" class="wb-cta wb-over-go" data-wb="fewer">' + T(fi.nights === 1 ? '1 dinner fits' : fi.nights + ' dinners fit', fi.nights === 1 ? '1 Abendessen passt' : fi.nights + ' Abendessen passen', fi.nights === 1 ? 'Cabe 1 cena' : 'Caben ' + fi.nights + ' cenas') + '</button>' : '') +
+            (fi.needBudget <= C.BUDGET_MAX ? '<button type="button" class="wb-cta wb-over-go ghost" data-wb="needbud">' + T('Budget ', 'Budget ', 'Presupuesto ') + eur(fi.needBudget) + '</button>' : '') + '</div></div>';
         return '<section class="wb-week" aria-labelledby="wbWk"><h4 id="wbWk" class="wb-wh">' + T('Your week', 'Deine Woche', 'Tu semana') + '</h4>' +
             '<p class="wb-wl' + (bs.over ? ' over' : '') + '" aria-live="polite">\u2248 ' + eur(bs.total) + ' ' + T('of ', 'von ', 'de ') + eur(bs.budget) + ' \u00b7 ' + esc(storeName(S.store)) +
-            (bs.over ? ' \u00b7 <button type="button" class="wb-link" data-wb="fit">' + T('Fit my budget', 'In mein Budget bringen', 'Ajustar a mi presupuesto') + '</button>' : '') + '</p>' +
+            (bs.over && !overNote ? ' \u00b7 <button type="button" class="wb-link" data-wb="fit">' + T('Fit my budget', 'In mein Budget bringen', 'Ajustar a mi presupuesto') + '</button>' : '') + '</p>' + overNote +
             (short ? '<p class="wb-note">' + T('Only ' + c.dinners.length + ' dinners fit everything you said.', 'Nur ' + c.dinners.length + ' Abendessen passen zu allem, was du gesagt hast.', 'Solo ' + c.dinners.length + ' cenas encajan con todo lo que dijiste.') + '</p>' : '') +
             '<ul class="wb-days">' + c.dinners.map(day).join('') + '</ul>' +
             '<button type="button" class="wb-cta" data-wb="view" data-v="list">' + T('Shopping list', 'Einkaufsliste', 'Lista de la compra') + ' \u00b7 ' + need.length + '</button>' +
@@ -237,7 +255,11 @@
     }
     function html() {
         if (!view) view = S.setup ? 'week' : 'q';
-        const c = view === 'week' || view === 'list' ? build() : null;
+        let c = view === 'week' || view === 'list' ? build() : null;
+        /* Nov 5 2026 (owner: "€40 for 7 dinners" showed a plan for €83.77): a plan the app just picked itself (first open, more
+           or fewer nights) is fitted to the budget straight away, like a fresh week. A plan you changed by hand is never touched. */
+        if (c && replanned && c.bs.over && c.ids.length > c.dinners.length) { runFit(); c = build(); }
+        replanned = false;
         const body = view === 'q' ? qHTML() : view === 'make' ? makeHTML() : view === 'list' ? listHTML(c) : weekHTML(c);
         return (inl ? '<div class="wb-card wb-inline wb-v-' + view + '" role="region" aria-labelledby="wbTitle">' : '<div class="wb-card wb-v-' + view + '" role="dialog" aria-modal="true" aria-labelledby="wbTitle">') +
             /* Nov 5 2026 (owner, Phase B item 3): "Zu Hause" planning is part of Supermarkt now, as "Plan my week". Inside Supermarkt the
@@ -283,11 +305,13 @@
         if (a === 'have') { const k = b.dataset.k, i = ctx.items.find(x => x.k === k); if (!i) return; const at = !!ctx.have[k]; S.have[k] = at ? 0 : 1; return paint('[data-wb="have"][data-k="' + CSS.escape(k) + '"]'); }
         if (a === 'recipe') { try { if (W.LowiP2 && W.LowiP2.open) W.LowiP2.open(b.dataset.id); } catch (err) {} return; }
         if (a === 'fit') {
-            const f = C.fitBudget(S.plan, ctx.ids, S.budget, priced, 0, id => C.weekKeys(ctx.byId[id]));
-            S.plan = f.plan; paint(sel('fit')) ;
+            const f = runFit(); paint(f.fits ? '#wbWk' : '.wb-over-go');
             return toast(f.fits ? T('Fits your budget now', 'Passt jetzt in dein Budget', 'Ya cabe en tu presupuesto')
-                : T('Still over: try fewer dinners or a cheaper store', 'Noch dr\u00fcber: weniger Abendessen oder einen g\u00fcnstigeren Laden probieren', 'Sigue por encima: prueba menos cenas o una tienda m\u00e1s barata'));
+                : T('Still over budget, see the two options', 'Noch \u00fcber dem Budget, siehe die zwei M\u00f6glichkeiten', 'Sigue por encima, mira las dos opciones'));
         }
+        /* Nov 5 2026: the two ways out of a budget that can't cover the week */
+        if (a === 'fewer' && fitInfo && fitInfo.nights) { S.nights = fitInfo.nights; S.plan = fitInfo.nightsPlan.slice(); fitInfo = null; paint('#wbWk'); return toast(T('Now ' + S.nights + ' dinners, inside your budget', 'Jetzt ' + S.nights + ' Abendessen, im Budget', 'Ahora ' + S.nights + ' cenas, dentro del presupuesto')); }
+        if (a === 'needbud' && fitInfo) { S.budget = Math.min(C.BUDGET_MAX, Math.max(C.BUDGET_MIN, fitInfo.needBudget)); fitInfo = null; paint('#wbWk'); return toast(T('Budget set to ', 'Budget auf ', 'Presupuesto: ') + eur(S.budget) + T('', ' gesetzt', '')); }
         if (a === 'list') {
             const need = ctx.items.filter(i => !ctx.have[i.k]);
             let added = 0;
@@ -320,7 +344,8 @@
     function makeWeek() {
         S.setup = true; S.plan = []; S.start = today(); S.sent = '';
         const c = build();
-        if (c.bs.over && c.ids.length > c.dinners.length) { const f = C.fitBudget(S.plan, c.ids, S.budget, priced, 0, id => C.weekKeys(c.byId[id])); S.plan = f.plan; save(); }
+        fitInfo = null;
+        if (c.bs.over && c.ids.length > c.dinners.length) runFit();
         view = 'make'; paint();
         const reduce = W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches;
         clearTimeout(makeT); const el = ov;

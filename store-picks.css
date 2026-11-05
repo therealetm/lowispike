@@ -479,3 +479,6 @@ html[data-ui="light"] .stp-plan { border-color: rgba(20, 40, 70, .18); backgroun
 /* four tabs on one line each: words are kept short (Súper, Ayudar, Help out) and never hyphenated */
 .stp-tabs4 .stp-tab b { white-space: nowrap; -webkit-hyphens: manual; hyphens: manual; letter-spacing: -.01em; }
 .stp-tabs4 .stp-tab { padding: 5px 1px; }
+
+/* Nov 5 2026: what a line with more than one adds up to */
+.stp-cart-line { font-style: normal; font-weight: 600; opacity: .95; white-space: nowrap; }

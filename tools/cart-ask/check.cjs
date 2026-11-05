@@ -7,7 +7,7 @@
    Checks: the sheet covers the Shop card (nothing of the page shows around it), the page behind is blurred, every action
    button is inside the sheet, compact (<= 64 px tall), one 18 px icon each, no word cut off, the list starts at the top;
    cart names in the app language; a real finger tap on Someone else pays opens Give a hand with the WHOLE cart (quantities),
-   the left-out line names only the really spiky / unknown foods (never oregano or no-sugar salsa); a quick double tap on
+   Nov 5 2026: every cart food goes in (owner: "Everything in a freaking Warenkorb should go in there"), no left-out line; a quick double tap on
    Share shares once; then the swipe feed shows. Zero page errors. */
 const H = require('../sim/harness.cjs');
 process.env.SIM_WK_VIEWPORT = '1';
@@ -54,7 +54,7 @@ const ORE = { en: 'Oregano', de: 'Oregano', es: 'Orégano' }, SAL = { en: 'No-su
       });
       ok('1 the cart sheet covers the whole Shop card (nothing of the page shows around it)', m && m.covers && m.inView, m && { card: m.card, shop: m.shop });
       ok('2 the page behind is blurred and the sheet is solid', m && m.blur && (m.bgA.length === 3 || m.bgA[3] >= .95), m && m.bgA);
-      ok('3 three compact action buttons inside the sheet, one 18 px icon each, no word cut off', m && m.btns.length === 3 && m.btns.every(b => b.inside && b.h >= 44 && b.h <= 64 && b.svg && b.svg[0] === 18 && b.svg[1] === 18 && !b.cut), m && m.btns);
+      ok('3 two compact action buttons inside the sheet (I\'ll buy it, Someone else pays; Nov 5 2026: Scan in the shop left the Cart), one 18 px icon each, no word cut off', m && m.btns.length === 2 && m.btns.every(b => b.inside && b.h >= 44 && b.h <= 64 && b.svg && b.svg[0] === 18 && b.svg[1] === 18 && !b.cut), m && m.btns);
       ok('4 the list starts at the top, nothing sideways', m && m.firstTop !== null && m.firstTop >= 0 && m.scroll === 0 && !m.hOver && !m.pageOver, m && { firstTop: m.firstTop, scroll: m.scroll });
       ok('5 cart names in the app language', m && m.names.includes(LET[lang]) && m.names.includes(WRAP[lang]), m && m.names);
       const gb = await P.evaluate(() => { const b = [...document.querySelectorAll('.stp-cart-acts button')].find(x => x.dataset.stp === 'giftcart'); return !!b; });
@@ -63,8 +63,8 @@ const ORE = { en: 'Oregano', de: 'Oregano', es: 'Orégano' }, SAL = { en: 'No-su
         return { open: !!document.querySelector('.gb-ov, .gb-panel, [class*="gb-"][role="dialog"]'), tab: st.tab, pick: st.fromCartPick, cartOpen: !!document.querySelector('.stp-cartv'), card: !!card,
           items: card ? [...card.querySelectorAll('.gb-items li')].map(x => x.textContent.trim()) : [], left: (document.querySelector('.gb-fromcart .gb-left') || {}).textContent || '',
           share: (document.querySelector('.gb-cartshare') || {}).disabled }; });
-      ok('6 Someone else pays opens Give a hand with the WHOLE cart as the basket, no picking', gb && g.card && g.tab === 'mine' && !g.cartOpen && g.items.length === 9 && g.items.includes(LET[lang]) && g.items.includes(ORE[lang]) && g.items.includes(SAL[lang]) && g.items.some(x => /\u00d72$/.test(x)), g);
-      ok('7 one short left-out line: only the spiky wraps, never oregano or salsa', g.left.indexOf(WRAP[lang]) >= 0 && g.left.indexOf(ORE[lang]) < 0 && g.left.indexOf(SAL[lang]) < 0, g.left);
+      ok('6 Someone else pays opens Give a hand with the WHOLE cart as the basket, no picking', gb && g.card && g.tab === 'mine' && !g.cartOpen && g.items.length === 10 && g.items.includes(WRAP[lang]) && g.items.includes(LET[lang]) && g.items.includes(ORE[lang]) && g.items.includes(SAL[lang]) && g.items.some(x => /\u00d72$/.test(x)), g);
+      ok('7 nothing is left out (Nov 5 2026, owner: everything in the cart goes in), so no left-out line', !g.left && g.pick && g.pick.left.length === 0, g.left);
       await P.fill('#gb-total', '24'); await P.fill('#gb-link', 'https://ko-fi.com/fakeperson'); await H.sleep(500);
       const bx = await P.locator('.gb-cartshare').boundingBox();
       await P.evaluate(() => { const b = document.querySelector('.gb-cartshare'); b.scrollIntoView({ block: 'center' }); }); await H.sleep(300);
@@ -72,7 +72,7 @@ const ORE = { en: 'Oregano', de: 'Oregano', es: 'Orégano' }, SAL = { en: 'No-su
       if (engine === 'webkit') { await P.touchscreen.tap(x, y); await H.sleep(90); await P.touchscreen.tap(x, y); } else { await P.mouse.click(x, y); await H.sleep(90); await P.mouse.click(x, y); }
       await H.sleep(2000);
       const s = await P.evaluate(() => ({ n: window.__shares.length, row: window.__shares[0] && window.__shares[0].row, tab: LowiGiftBasket._state().tab, msg: LowiGiftBasket._state().msg, pick: LowiGiftBasket._state().fromCartPick }));
-      ok('8 a quick double tap on Share shares once, with quantities', s.n === 1 && s.row && s.row.items.length === 9 && s.row.items.some(i => i.q === 2) && s.row.total_eur === 24, { n: s.n, items: s.row && s.row.items, bx: !!bx });
+      ok('8 a quick double tap on Share shares once, with quantities', s.n === 1 && s.row && s.row.items.length === 10 && s.row.items.some(i => i.q === 2) && s.row.total_eur === 24, { n: s.n, items: s.row && s.row.items, bx: !!bx });
       ok('9 then straight to the Give a hand swipe feed, with a plain line', s.tab === 'give' && !s.pick && !!s.msg, { tab: s.tab, msg: s.msg });
       ok('10 zero page errors', errs.length === 0, errs);
       await R.shot('/home/sprite/tmp-ca/shot-' + tag + '.png').catch(() => {});

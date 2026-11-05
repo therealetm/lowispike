@@ -361,7 +361,9 @@
         const n = ls.reduce((a, l) => a + l.q, 0);
         const row = l => '<li class="stp-cart-row" data-stp-cart-id="' + esc(l.id) + '">' +
             '<span class="stp-cart-ph" aria-hidden="true">' + (l.photo ? '<img src="' + esc(l.photo) + '" alt="" loading="lazy">' : esc(l.e)) + '</span>' +
-            '<span class="stp-cart-txt"><b>' + esc(foodName(l.n)) + '</b><small>' + esc([l.store, l.p != null ? money(l.p) + T(' each', ' pro Stück', ' c/u') : l.pe != null ? '\u2248 ' + money(l.pe) + T(' each', ' pro Stück', ' c/u') : T('no price yet', 'noch kein Preis', 'aún sin precio')].filter(Boolean).join(' · ')) + '</small></span>' +
+            '<span class="stp-cart-txt"><b>' + esc(foodName(l.n)) + '</b><small>' + esc([l.store, l.p != null ? money(l.p) + T(' each', ' pro Stück', ' c/u') : l.pe != null ? '\u2248 ' + money(l.pe) + T(' each', ' pro Stück', ' c/u') : T('no price yet', 'noch kein Preis', 'aún sin precio')].filter(Boolean).join(' · ')) +
+                /* Nov 5 2026 (owner: "complete quantities and total"): a line with more than one shows what it adds up to */
+                (l.q > 1 && (l.p != null || l.pe != null) ? ' <i class="stp-cart-line">= ' + esc((l.p != null ? '' : '\u2248 ') + money((l.p != null ? l.p : l.pe) * l.q)) + '</i>' : '') + '</small></span>' +
             '<span class="stp-cart-q" role="group" aria-label="' + esc(T('Quantity of ', 'Menge von ', 'Cantidad de ') + l.n) + '">' +
             '<button type="button" class="stp-cart-step"' + (l.q <= 1 ? ' data-spend="1"' : '') + ' data-stp-cq="' + esc(l.id) + '" data-stp-cd="-1" aria-label="' + esc((l.q > 1 ? T('One less: ', 'Eins weniger: ', 'Uno menos: ') : T('Remove from the cart: ', 'Aus dem Warenkorb nehmen: ', 'Quitar del carrito: ')) + l.n) + '">\u2212</button>' +
             '<b aria-live="polite">' + l.q + '</b>' +

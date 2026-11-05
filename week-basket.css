@@ -169,6 +169,13 @@
 .wb-wl { margin: 0 0 12px; font-size: 14px; opacity: .86; font-variant-numeric: tabular-nums; }
 .wb-wl.over { color: #ffd59a; opacity: 1; }
 .wb-note { margin: -4px 0 10px; font-size: 13px; opacity: .78; }
+/* Nov 5 2026 (owner: €40 for 7 dinners gave a plan for €83.77): the budget can't cover the week, said plainly with the two ways out */
+.wb-over { margin: 0 0 12px; padding: 12px 14px; border-radius: 16px; border: 1px solid rgba(255, 213, 154, .45); background: rgba(255, 213, 154, .08); }
+.wb-over p { margin: 0 0 10px; font-size: 14px; line-height: 1.4; }
+.wb-over b { color: #ffd59a; }
+.wb-over-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.wb-over-acts .wb-cta { flex: 1 1 140px; min-height: 44px; font-size: 15px; }
+.wb-over-acts .wb-cta.ghost { background: transparent; border-color: rgba(255, 255, 255, .45); }
 .wb-days { list-style: none; margin: 0 0 14px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .wb-day { display: flex; align-items: center; gap: 4px; border-radius: 22px; background: rgba(255, 255, 255, .06); border: 1px solid var(--mb-pill-rim, rgba(143, 231, 255, .3)); }
 .wb-day.now { border-color: rgba(190, 255, 230, .75); background: rgba(95, 224, 184, .12); }

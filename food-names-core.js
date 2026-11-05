@@ -2,6 +2,8 @@
    Smoked paprika" in the German app. Shopping-list and cart names come from recipe cards, many written in English.
    name(n, lang) shows a grocery name in the app language: a whole-name match in any of EN / DE / ES gives that food's
    name in lang. A name it doesn't know stays exactly as the person typed it (never a wrong guess). Pure, no DOM. */
+/* Nov 5 2026 (owner screenshots: basket said "Courgette" while Monday's dinner was a "zucchini burger"): English names follow
+   the recipes' own words (Zucchini, Scallions, Shrimp, Eggplant); the British names stay as aliases, so both still match. */
 (function (root, factory) {
     const api = factory();
     if (typeof module === 'object' && module.exports) module.exports = api;
@@ -23,13 +25,13 @@
         ['Bell pepper', 'Paprika', 'Pimiento', 'bell peppers', 'red pepper', 'red bell pepper', 'rote Paprika', 'pimiento rojo', 'green pepper', 'grüne Paprika', 'pimiento verde', 'peppers', 'Paprikaschoten'],
         ['Onion', 'Zwiebel', 'Cebolla', 'onions', 'Zwiebeln', 'cebollas', 'yellow onion', 'brown onion'],
         ['Red onion', 'Rote Zwiebel', 'Cebolla morada', 'red onions', 'rote Zwiebeln', 'cebolla roja'],
-        ['Spring onions', 'Frühlingszwiebeln', 'Cebolletas', 'spring onion', 'green onions', 'scallions', 'Lauchzwiebeln', 'Frühlingszwiebel'],
+        ['Scallions', 'Frühlingszwiebeln', 'Cebolletas', 'scallion', 'spring onions', 'spring onion', 'green onions', 'Lauchzwiebeln', 'Frühlingszwiebel'],
         ['Garlic', 'Knoblauch', 'Ajo', 'garlic cloves', 'Knoblauchzehen', 'dientes de ajo', 'ajos'],
         ['Ginger', 'Ingwer', 'Jengibre', 'fresh ginger'],
         ['Broccoli', 'Brokkoli', 'Brócoli', 'brocoli'],
         ['Cauliflower', 'Blumenkohl', 'Coliflor'],
-        ['Courgette', 'Zucchini', 'Calabacín', 'zucchini', 'calabacin'],
-        ['Aubergine', 'Aubergine', 'Berenjena', 'eggplant'],
+        ['Zucchini', 'Zucchini', 'Calabacín', 'courgette', 'courgettes', 'calabacin'],
+        ['Eggplant', 'Aubergine', 'Berenjena', 'aubergine', 'eggplants'],
         ['Mushrooms', 'Champignons', 'Champiñones', 'mushroom', 'Pilze', 'setas'],
         ['Carrots', 'Karotten', 'Zanahorias', 'carrot', 'Möhren', 'Karotte', 'zanahoria'],
         ['Celery', 'Staudensellerie', 'Apio', 'Sellerie'],
@@ -103,7 +105,7 @@
         ['Salmon', 'Lachs', 'Salmón', 'salmon fillet', 'Lachsfilet'],
         ['Tuna', 'Thunfisch', 'Atún', 'canned tuna', 'tinned tuna', 'Thunfisch in der Dose'],
         ['Cod', 'Kabeljau', 'Bacalao', 'cod fillet'],
-        ['Prawns', 'Garnelen', 'Gambas', 'shrimp', 'Shrimps', 'langostinos'],
+        ['Shrimp', 'Garnelen', 'Gambas', 'prawns', 'prawn', 'Shrimps', 'langostinos'],
         ['Sardines', 'Sardinen', 'Sardinas'],
         ['Tofu', 'Tofu', 'Tofu', 'firm tofu'],
         ['Tempeh', 'Tempeh', 'Tempeh'],

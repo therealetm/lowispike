@@ -58,7 +58,7 @@ test('galaxy-still.js: picture before release, storage failures told truthfully,
 
 test('Settings: Still galaxy row under Day/night, a switch with its state, offered only where the moving galaxy runs or is saved', () => {
     const js = read('community-me.js');
-    assert.match(js, /ids: \['theme', 'galaxyStill',/);
+    assert.match(js, /ids: \['sky', 'galaxyStill',/); /* Nov 5 2026 (test changed, why): the look row 'sky' replaced 'theme' */
     assert.match(js, /id === 'galaxyStill'\) \{ const G = root\.LowiGalaxyStill[\s\S]{0,200}role="switch"/);
     assert.match(js, /if \(id === 'galaxyStill'\) \{ try \{ const G = root\.LowiGalaxyStill; return !!\(G && typeof G\.available === 'function' && G\.available\(\)\)/);
     assert.match(js, /if \(id === 'galaxyStill'\) \{ try \{ root\.LowiGalaxyStill\.tap\(/);

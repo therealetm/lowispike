@@ -41,7 +41,9 @@ test('a Night picked by hand stays Night, also after the one-time repair ran', (
     assert.equal(r.store['lowi.theme.dark.picked'], 'night');
     const again = boot(r.store);
     assert.equal(again.TB.kind(), 'night');
-    r = boot({ 'lowi.theme.dark': 'night', 'lowi.theme.dark.fix1': '1' });
+    /* Nov 5 2026 (test changed, why): owner "make dark mode the universal mode for everyone": every device switches to Dark once
+       (lowi.theme.dark.all1); a device that already had that switch keeps its Night */
+    r = boot({ 'lowi.theme.dark': 'night', 'lowi.theme.dark.fix1': '1', 'lowi.theme.dark.all1': '1' });
     assert.equal(r.TB.kind(), 'night', 'the repair runs only once per device');
 });
 
@@ -53,13 +55,15 @@ test('the Day/night switch keeps the chosen dark look instead of saving Night', 
     assert.ok(atm.includes("quick(q.getAttribute('data-atm-quick'), { byHand: true })"), 'a tap on Night in Day & night is a choice by hand');
 });
 
-test('Settings: App theme is Day / Dark / Night / Auto, and Time of day & weather opens the Day & night adjuster', () => {
-    const src = read('community-me.js'), css = read('community-me.css');
-    assert.ok(src.includes("if (id === 'theme') return true;"), 'the row is always there');
-    assert.ok(src.includes("A.quick(x, { byHand: true })"));
+/* Nov 5 2026 (test changed, why): owner "have the app theme be inside of the time of day and weather ... like Apple would": the
+   separate App theme row is gone; the one look row opens the sheet whose first group is Day / Dark / Night / Auto (by hand). */
+test('Settings: Look, time of day & weather opens the sheet with Day / Dark / Night / Auto first', () => {
+    const src = read('community-me.js'), atm = read('atmosphere.js'), css = read('atmosphere.css');
+    assert.ok(!src.includes("if (id === 'theme') return true;"), 'no separate App theme row');
     assert.ok(src.includes("if (id === 'sky') return !!(root.LowiAtmos && typeof root.LowiAtmos.openSheet === 'function');"));
     assert.ok(src.includes("if (id === 'sky') { close(false); openSky(); return; }"));
-    assert.ok(/\.cme-themes button \{[^}]*height: 44px/.test(css), '44 px tap targets');
+    assert.ok(atm.includes("data-atm-quick=\"black\"") && atm.includes("quick(q.getAttribute('data-atm-quick'), { byHand: true })"));
+    assert.ok(/\.atm-grouped \.atm-quick button \{[^}]*height: 44px/.test(css), '44 px tap targets');
 });
 
 test('the live weather switch sits in the Day & night card (its old Appearance sheet has no way in)', () => {

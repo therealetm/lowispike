@@ -51,7 +51,7 @@ test('Settings > Aura switches it off and on, and wearing an aura turns it back 
     assert.ok(js.includes('const a = off ? C.aura(\'\') : C.aura(auraId());'));
     assert.ok(js.includes("const fx = off ? '' : (a.fx || '');"));
     assert.ok(js.includes('localStorage.removeItem(AURA_OFF_KEY); } catch (e) { }   /* wearing one'));
-    assert.ok(/ids: \['theme', 'galaxyStill', 'aura',/.test(me));
+    assert.ok(/ids: \['sky', 'galaxyStill', 'aura',/.test(me)); /* Nov 5 2026 (test changed, why): the look row 'sky' replaced 'theme' */
     assert.ok(me.includes('data-cme="aura"') && me.includes("if (id === 'aura') { const Wh = root.LowiWorldHome; if (Wh && Wh.setAuraOn) Wh.setAuraOn(!Wh.auraOn());"));
     assert.ok(css.includes('html[data-wh-aura-off] .wh-fx:not(.wh-pv-stage .wh-fx) { display: none; }'));
 });

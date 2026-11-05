@@ -21,7 +21,8 @@ test('settings page groups: You, Circle, App, Help & info, then Delete account a
     /* Nov 5 2026 (test changed, why): owner Phase B item 4, Körperklang (World sound panel) and VR stay reachable from Settings */
     /* Nov 5 2026 (test changed, why): Still galaxy battery-save row (galaxy-still.js) sits right under the theme row */
     /* Nov 5 2026 (test changed, why): owner "can't even turn off the aura": Aura on/off row (world-home.js setAuraOn) under Still galaxy */
-    assert.deepStrictEqual(g[2].ids, ['theme', 'galaxyStill', 'aura', 'sky', 'language', 'notifications', 'look', 'worldSound', 'vr']);
+    /* Nov 5 2026 (test changed, why): owner "just have the app theme be inside of the time of day and weather": one look row 'sky' first */
+    assert.deepStrictEqual(g[2].ids, ['sky', 'galaxyStill', 'aura', 'language', 'notifications', 'look', 'worldSound', 'vr']);
     assert.deepStrictEqual(g[3].ids, ['tutorial', 'feedback', 'feedbackInbox', 'support', 'rules', 'about']); /* Nov 5 2026 (test changed, why): Emmanuel asked for a feedback form in Settings + an owner-only Feedback inbox (feedback.js) */
     assert.deepStrictEqual(g[4].ids, ['deleteAccount'], 'Delete account is last, on its own');
     const all = g.flatMap(x => x.ids); assert.strictEqual(new Set(all).size, all.length, 'every row once');
@@ -43,7 +44,8 @@ test('the old Settings sheet is a fallback: show(page) opens the hub first', () 
 });
 
 test('the hub renders Settings rows: Day/Dark/Night/Auto choice, EN/DE/ES, red Delete account that asks first, version line', () => {
-    assert.match(SRC, /cme-themerow" role="group"/); assert.match(SRC, /data-cme-theme="' \+ x \+ '"/);
+    /* Nov 5 2026 (test changed, why): the Day/Dark/Night/Auto choice lives in the sheet the look row opens (atmosphere.js) */
+    assert.match(SRC, /data-cme="sky" aria-haspopup="dialog"/); assert.match(SRC, /data-cme-look/); assert.doesNotMatch(SRC, /cme-themerow/);
     assert.match(SRC, /data-lang="' \+ x \+ '"/);
     assert.match(SRC, /cme-row cme-danger" data-cme="deleteAccount" aria-haspopup="dialog"/);
     assert.match(SRC, /data-cme="delGo"/); assert.match(SRC, /data-cme="delCancel"/);

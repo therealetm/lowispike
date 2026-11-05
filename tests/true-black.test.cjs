@@ -85,8 +85,9 @@ test('the look buttons press and spring back, never under Reduce Motion or batte
     assert.ok(css.includes('html.lowi-saver .atm-quick button:active'));
 });
 
-test('the Settings theme row offers Dark (Dunkel / Oscuro) next to Day, Night and Auto', () => {
+/* Nov 5 2026 (test changed, why): the App theme row moved into Look, time of day & weather; the row's value line names the look */
+test('the Settings look row names Dark (Dunkel / Oscuro) next to Day, Night and Auto', () => {
     const src = read('community-me.js');
     assert.ok(src.includes("black: 'Dark'") && src.includes("black: 'Dunkel'") && src.includes("black: 'Oscuro'"));
-    assert.ok(src.includes("['day', 'black', 'night', 'auto'].map(x =>"));
+    assert.ok(src.includes('function skySub(l)'));
 });

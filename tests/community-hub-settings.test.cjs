@@ -19,7 +19,9 @@ test('settings page groups: You, Circle, App, Help & info, then Delete account a
     assert.deepStrictEqual(g[0].ids, ['myday', 'swaps', 'glow', 'cycle', 'todo']);
     assert.deepStrictEqual(g[1].ids, ['presence', 'people', 'posts', 'invite']);
     /* Nov 5 2026 (test changed, why): owner Phase B item 4, Körperklang (World sound panel) and VR stay reachable from Settings */
-    assert.deepStrictEqual(g[2].ids, ['theme', 'language', 'notifications', 'look', 'worldSound', 'vr']);
+    /* Nov 5 2026 (test changed, why): owner asked for an optional battery-save mode that turns the galaxy into a still background,
+       switched on in Settings: the Still galaxy row (galaxy-still.js) sits right under Day/night */
+    assert.deepStrictEqual(g[2].ids, ['theme', 'galaxyStill', 'language', 'notifications', 'look', 'worldSound', 'vr']);
     assert.deepStrictEqual(g[3].ids, ['tutorial', 'support', 'rules', 'about']);
     assert.deepStrictEqual(g[4].ids, ['deleteAccount'], 'Delete account is last, on its own');
     const all = g.flatMap(x => x.ids); assert.strictEqual(new Set(all).size, all.length, 'every row once');

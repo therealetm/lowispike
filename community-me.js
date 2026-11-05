@@ -25,6 +25,7 @@
     };
     const P = 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"';
     const ICON = {
+        galaxyStill: '<circle cx="12" cy="12" r="2.6" ' + P + '/><path d="M3.5 12c2.2-4.6 14.8-4.6 17 0-2.2 4.6-14.8 4.6-17 0z" ' + P + '/><path d="M18 4.5v2.4M16.8 5.7h2.4" ' + P + '/>',
         presence: '<path d="M12 3l7 3v5.5c0 4.4-3 8-7 9.5-4-1.5-7-5.1-7-9.5V6z" ' + P + '/><path d="M9.2 12.2l2 2 3.8-4" ' + P + '/>',
         swaps: '<path d="M7 4h10a1 1 0 011 1v15l-6-4-6 4V5a1 1 0 011-1z" ' + P + '/>',
         glow: '<circle cx="12" cy="12" r="4" ' + P + '/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" ' + P + '/>',
@@ -49,7 +50,9 @@
         { key: 'circle', ids: ['presence', 'people', 'posts', 'invite'] },
         /* Nov 5 2026 (owner, Phase B item 4: "keep Körperklang and VR accessible from Settings"): neither had a row here (World sound sat in
            SKIP, VR was gone from every list), so the only way in was the Home HUD. Both are rows now and run Home's own controls. */
-        { key: 'settings', ids: ['theme', 'language', 'notifications', 'look', 'worldSound', 'vr'] },
+        /* Nov 5 2026 (owner: an optional battery-save mode that turns the galaxy into a still background): Still galaxy, right under
+           Day/night, its row and its whole flow live in galaxy-still.js (LowiGalaxyStill) */
+        { key: 'settings', ids: ['theme', 'galaxyStill', 'language', 'notifications', 'look', 'worldSound', 'vr'] },
         { key: 'help', ids: ['tutorial', 'support', 'rules', 'about'] },
         { key: 'danger', ids: ['deleteAccount'] }
     ];
@@ -86,6 +89,7 @@
         const ico = ICON[id] ? svg(id) : s.icon(id).replace('ss2-ico', 'cme-ico');
         if (id === 'language') { return '<div class="cme-row cme-langrow" role="group" aria-label="' + esc(lab) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><span class="cme-langs">' + ['en', 'de', 'es'].map(x => '<button type="button" data-lang="' + x + '" aria-pressed="' + (x === l) + '"' + (x === l ? ' class="on"' : '') + '>' + x.toUpperCase() + '</button>').join('') + '</span></div>'; }
         if (id === 'theme') { const dark = s.state ? s.state('theme') : true, blk = !!(typeof window !== 'undefined' && window.LowiTrueBlack && window.LowiTrueBlack.kind() === 'black'), st = dark ? (blk ? ({ de: 'Dunkel', en: 'Dark', es: 'Oscuro' }[l] || 'Dark') : ST.night) : ST.day; /* Nov 5: Dark = true black */ return '<button type="button" class="cme-row" role="switch" data-cme="theme" aria-checked="' + dark + '" aria-label="' + esc(lab) + ': ' + esc(st) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><small class="cme-st">' + esc(st) + '</small></button>'; }
+        if (id === 'galaxyStill') { const G = root.LowiGalaxyStill, gl = G.label(l), gs = G.status(l); return '<button type="button" class="cme-row" role="switch" data-cme="galaxyStill" aria-checked="' + G.on() + '" aria-label="' + esc(gl) + ': ' + esc(gs) + '">' + ico + '<span class="cme-tx"><b>' + esc(gl) + '</b><small>' + esc(G.sub(l)) + '</small></span><small class="cme-st">' + esc(gs) + '</small></button>'; }
         if (id === 'deleteAccount') return '<button type="button" class="cme-row cme-danger" data-cme="deleteAccount" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
         return '<button type="button" class="cme-row" data-cme="' + id + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
     }
@@ -97,6 +101,7 @@
         if (id === 'presence') return hasPresence();
         if (G2E[id]) { if (!(root.LowiG2E && typeof root.LowiG2E.direct === 'function')) return id === 'look' && s.has('look'); const t = D.getElementById('tab-profile'); return !!(t && t.querySelector(PART[id])); }
         if (id === 'cycle') { try { const C = root.LowiCycleWorld; return !!(C && typeof C.open === 'function' && (typeof C.eligible !== 'function' || C.eligible())); } catch (e) { return false; } }
+        if (id === 'galaxyStill') { try { const G = root.LowiGalaxyStill; return !!(G && typeof G.available === 'function' && G.available()); } catch (e) { return false; } }
         if (id === 'people') return !!(root.LowiPeopleDir && typeof root.LowiPeopleDir.open === 'function');
         if (id === 'invite') return !!(root.LowiRoomsUI && typeof root.LowiRoomsUI.invite === 'function');
         if (id === 'rules') return !!(root.LowiCommunityWelcome && typeof root.LowiCommunityWelcome.open === 'function');
@@ -188,6 +193,7 @@
         /* Day/night switches in place and the page stays open */
         if (id === 'theme') { s.run('theme'); setTimeout(() => { if (el && !asking) { render(); const f = el.querySelector('[data-cme="theme"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } } }, 60); return; }
         close(false);
+        if (id === 'galaxyStill') { try { root.LowiGalaxyStill.tap({ back: () => open() }); } catch (e) { } return; }
         run(id);
     }
     /* one place that knows where each row goes; a page or sheet you open from here brings this page back when you leave it */

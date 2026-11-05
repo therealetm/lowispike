@@ -55,7 +55,7 @@
            SKIP, VR was gone from every list), so the only way in was the Home HUD. Both are rows now and run Home's own controls. */
         /* Nov 5 2026: Still galaxy (galaxy-still.js, LowiGalaxyStill) sits right under the theme rows */
         { key: 'settings', ids: ['theme', 'galaxyStill', 'sky', 'language', 'notifications', 'look', 'worldSound', 'vr'] },
-        { key: 'help', ids: ['tutorial', 'support', 'rules', 'about'] },
+        { key: 'help', ids: ['tutorial', 'feedback', 'feedbackInbox', 'support', 'rules', 'about'] },
         { key: 'danger', ids: ['deleteAccount'] }
     ];
     const SKIP = ['catchUp', 'me', 'body', 'account'];

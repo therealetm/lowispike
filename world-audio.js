@@ -430,7 +430,8 @@
         const p = livePanel(); if (!p || e.key !== 'Tab') return;
         const f = [...p.querySelectorAll('button,input,summary,[tabindex]:not([tabindex="-1"])')].filter(x => !x.disabled && x.offsetParent !== null && !x.classList.contains('lw-bx-src'));
         if (!f.length) return; const a = f[0], z = f[f.length - 1];
-        if (e.shiftKey && (D.activeElement === a || D.activeElement === p)) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && D.activeElement === z) { e.preventDefault(); a.focus(); }
+        if (!e.shiftKey && D.activeElement === p) { e.preventDefault(); a.focus(); }
+        else if (e.shiftKey && (D.activeElement === a || D.activeElement === p)) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && D.activeElement === z) { e.preventDefault(); a.focus(); }
     }, true);
     /* Oct 26 (bug hunt run 50): Escape (and back, which sends Escape) closes the Sound panel only. It ran in the bubble phase next
        to the body world's own Escape, so one back closed the panel and the whole body world with it. Capture + stop. */

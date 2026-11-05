@@ -54,7 +54,7 @@ html.wh-home .wh-hud .wa-btn.wa-home[data-on="1"], html[data-theme="light"].wh-h
 .wa-scrim { position: fixed; inset: 0; z-index: 99994; background: rgba(0,0,0,.52); opacity: 0; transition: opacity .28s ease; touch-action: none; }
 .wa-scrim.wa-in { opacity: 1; }
 html:root body .wa-panel.wa-sheet.wa-sheet {
-    --kk-bg: #101626; --kk-ink: #f2f6ff; --kk-sub: rgba(225,235,255,.66); --kk-group: rgba(255,255,255,.06); --kk-line: rgba(255,255,255,.09); --kk-on: #4aa3ff; --kk-off: rgba(160,175,210,.34);
+    --kk-bg: #101626; --kk-ink: #f2f6ff; --kk-sub: rgba(225,235,255,.74); --kk-group: rgba(255,255,255,.06); --kk-line: rgba(255,255,255,.09); --kk-on: #4aa3ff; --kk-off: rgba(160,175,210,.34);
     position: fixed !important; z-index: 99995 !important; left: 50% !important; right: auto !important; top: auto !important;
     bottom: 0 !important; width: min(480px, 100vw) !important; max-width: none !important; box-sizing: border-box !important;
     max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 16px) !important; overflow-y: auto !important; overscroll-behavior: contain !important;
@@ -132,3 +132,5 @@ html:root body .wa-panel.wa-sheet.wa-sheet .wa-more summary { color: var(--kk-li
    faded out by bottom-close.js, like every other panel's) */
 html:root body .wa-panel.wa-sheet.wa-sheet:focus { outline: none !important; }
 html:root body .wa-panel.wa-sheet.wa-sheet .wa-x.lw-bx-src { opacity: 0 !important; pointer-events: none !important; }
+/* "Reset sound" with nothing to reset: the pad's .45 fade made it 2.9:1 in Day; it now reads as a quiet secondary button instead */
+html:root body .wa-panel.wa-sheet.wa-sheet .wa-strings .ss-reset:disabled { opacity: 1 !important; color: var(--kk-sub) !important; background: transparent !important; }

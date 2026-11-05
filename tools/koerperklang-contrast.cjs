@@ -6,7 +6,7 @@ const look = process.argv[2] || 'dark', engine = process.argv[3] || 'chromium';
 (async () => {
     const lang = 'de', theme = look === 'light' ? 'light' : 'dark';
     const kv = { 'lowispike.lang': lang, 'lowi.lang': lang, 'lowispike.theme': theme, 'lowi.theme': theme };
-    if (look === 'night') kv['lowi.theme.dark'] = 'night'; if (look === 'dark') kv['lowi.theme.dark'] = 'black';
+    if (look === 'night') { kv['lowi.theme.dark'] = 'night'; kv['lowi.theme.dark.picked'] = '1'; } if (look === 'dark') kv['lowi.theme.dark'] = 'black';
     const h = await launch({ engine, seed: existingSeed({ lang, kv }), lang, locale: 'de-DE', viewport: { width: 390, height: 844 } });
     await openApp(h, { query: '?dc=' + Date.now() }); const P = h.page; await sleep(2500);
     for (let i = 0; i < 3; i++) { await P.keyboard.press('Escape'); await sleep(200); }

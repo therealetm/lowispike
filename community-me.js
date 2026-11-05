@@ -116,7 +116,7 @@
         let tgt = hud; if (!tgt) { tgt = D.createElement('button'); tgt.appendChild(D.createElement('span')); }
         const was = !!g.on(); vrNote = '';
         try { g.tap(tgt); } catch (e) { }
-        const repaint = () => { if (!el || asking) return; if (tgt.dataset.state === 'denied' || tgt.dataset.state === 'no') vrNote = tgt.dataset.state; render(); const f = el.querySelector('[data-cme="vr"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } };
+        const repaint = () => { if (!el || asking) return; if (tgt.dataset.state === 'denied' || tgt.dataset.state === 'no') vrNote = tgt.dataset.state; if (D.querySelector('.wa-panel.wa-sheet:not(.mb-ghost)')) return; const ae = D.activeElement, hit = ae && ae.closest && el.contains(ae) && ae.closest('[data-cme]'), id = hit ? hit.getAttribute('data-cme') : (!ae || ae === D.body ? 'vr' : ''); render(); const f = id && el.querySelector('[data-cme="' + id + '"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } };   /* focus stays where it was (the re-render rebuilds the rows) */
         setTimeout(repaint, 60); if (!was) { setTimeout(repaint, 900); setTimeout(repaint, 2800); }
     }
     function row(id) {
@@ -278,6 +278,7 @@
     /* Oct 29 2026: the picture top right is gone; the Community name in the Circle header opens this page (community-rooms-ui.js) */
     D.addEventListener('keydown', e => {
         if (!el) return;
+        if (D.querySelector('.wa-panel.wa-sheet:not(.mb-ghost)')) return;   /* Nov 5 2026: the K\u00f6rperklang sheet over Settings handles its own keys */
         if (e.key === 'Escape') { close(true); return; }
         if (e.key === 'Tab' && !ov) { const bs = [...el.querySelectorAll('button')]; const i = bs.indexOf(D.activeElement), last = bs.length - 1; if (e.shiftKey && i <= 0) { e.preventDefault(); bs[last].focus(); } else if (!e.shiftKey && (i === last || i < 0)) { e.preventDefault(); bs[0].focus(); } }
     });

@@ -9,7 +9,7 @@ const OUT = '/home/sprite/kk-shots'; fs.mkdirSync(OUT, { recursive: true });
 (async () => {
     const lang = 'de', theme = look === 'light' ? 'light' : 'dark';
     const kv = { 'lowispike.lang': lang, 'lowi.lang': lang, 'lowispike.theme': theme, 'lowi.theme': theme };
-    if (look === 'night') kv['lowi.theme.dark'] = 'night'; if (look === 'dark') kv['lowi.theme.dark'] = 'black';
+    if (look === 'night') { kv['lowi.theme.dark'] = 'night'; kv['lowi.theme.dark.picked'] = '1'; } if (look === 'dark') kv['lowi.theme.dark'] = 'black';
     const seed = existingSeed({ lang, kv });
     const h = await launch({ engine, seed, lang, locale: 'de-DE', viewport: { width: vp[0], height: vp[1] } });
     if (process.env.KK_FAKE_GYRO) await h.page.addInitScript(() => { /* an iPhone-like motion sensor: asks permission (granted), then streams readings */
@@ -54,6 +54,14 @@ const OUT = '/home/sprite/kk-shots'; fs.mkdirSync(OUT, { recursive: true });
     await P.click('[data-cme="vr"]'); await sleep(1200); out.vrAfterOn = await vrRead(); await sleep(2600); out.vrStillOn = await vrRead();
     await P.screenshot({ path: OUT + '/' + tag + '-settings-vr-on.png' });
     await P.click('[data-cme="vr"]'); await sleep(1200); out.vrAfterOff = await vrRead();
+    /* keyboard: focus the row, Enter opens, Tab stays inside, Escape closes and focus comes back */
+    await P.evaluate(() => { const r = document.querySelector('[data-cme="worldSound"]'); r.scrollIntoView({ block: 'center' }); r.focus(); });
+    await P.keyboard.press('Enter'); await sleep(900);
+    const tabs = []; for (let i = 0; i < 12; i++) { await P.keyboard.press('Tab'); tabs.push(await P.evaluate(() => { const a = document.activeElement; return (a.closest('.wa-panel') ? 'in:' : 'OUT:') + (a.dataset.wa || a.tagName); })); }
+    out.kbTabs = tabs.join(' ');
+    out.kbOpener = await P.evaluate(() => 'n/a');
+    await P.keyboard.press('Escape'); await sleep(30); out.kbEsc30 = await P.evaluate(() => document.activeElement && (document.activeElement.getAttribute('data-cme') || document.activeElement.tagName)); await sleep(570);
+    out.kbAfterEsc = await P.evaluate(() => ({ sheet: !!document.querySelector('.wa-panel:not(.mb-ghost)'), settings: !!document.querySelector('.cme'), focus: document.activeElement && (document.activeElement.getAttribute('data-cme') || document.activeElement.tagName) }));
     out.wide = await P.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
     out.errors = h.errors; out.consoleErr = h.consoleErr.filter(t => !/Failed to load resource|net::ERR|supabase|ERR_FAILED/i.test(t)).slice(0, 5);
     console.log(JSON.stringify(out, null, 1));

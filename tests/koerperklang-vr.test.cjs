@@ -94,3 +94,8 @@ test('Home and its bubbles are untouched by this fix (owner likes them)', () => 
     assert.ok(!/wa-sheet|wa-scrim/.test(read('home-orbit-v2.css')));
     assert.ok(!/wa-sheet|wa-scrim/.test(read('world-home.css')));
 });
+
+test('Settings leaves the keys to the sheet while it is open, and a late VR repaint never steals focus', () => {
+    assert.ok(/if \(D\.querySelector\('\.wa-panel\.wa-sheet:not\(\.mb-ghost\)'\)\) return;   \/\* Nov 5 2026: the K\\u00f6rperklang sheet over Settings handles its own keys \*\//.test(cme));
+    assert.ok(/focus stays where it was \(the re-render rebuilds the rows\)/.test(cme));
+});

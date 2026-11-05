@@ -36,11 +36,11 @@
             return seg + nav + S.sec(T('You', 'Du', 'T\u00fa'), S.youRows(d, { weightOfDay: true, noAct: true })) + S.sec(name, S.xpRows(d, name));
         }
         const c = p.counts, vv = [];
-        if (c.low) vv.push(c.low + ' ' + T('low', 'niedrig', 'bajo')); if (c.medium) vv.push(c.medium + ' ' + T('medium', 'mittel', 'medio')); if (c.high) vv.push(c.high + ' ' + T('high', 'hoch', 'alto'));
+        if (c.low) vv.push(c.low + ' ' + T('small rise', 'kleiner Anstieg', 'subida peque\u00f1a')); if (c.medium) vv.push(c.medium + ' ' + T('medium rise', 'mittlerer Anstieg', 'subida media')); if (c.high) vv.push(c.high + ' ' + T('likely spike', 'wahrscheinlicher Spike', 'pico probable'));
         const none = T('No entries', 'Keine Eintr\u00e4ge', 'Sin registros');
         const days = n => n === 1 ? T('1 day', '1 Tag', '1 d\u00eda') : T(n + ' days', n + ' Tage', n + ' d\u00edas');
         let you = S.row({ b: T('Food', 'Essen', 'Comida'), empty: !p.meals, sub: p.meals ? T(p.meals + ' meals on ', p.meals + ' Mahlzeiten an ', p.meals + ' comidas en ') + days(p.mealDays) + (vv.length ? ' \u00b7 ' + vv.join(' \u00b7 ') : '') : none });
-        if (p.meals && (p.kcal || p.protein)) you += S.row({ b: T('Estimated, per logged day', 'Gesch\u00e4tzt, pro Tag mit Eintrag', 'Estimado, por d\u00eda con registro'), v: '\u2248 ' + fmt(p.kcal) + ' kcal \u00b7 ' + fmt(p.protein) + ' g' });
+        if (p.meals && (p.kcal || p.protein)) you += S.row({ b: T('Estimated', 'Gesch\u00e4tzt', 'Estimado'), sub: T('Average of ' + p.mealDays + ' logged days out of ' + p.n, '\u00d8 aus ' + p.mealDays + ' Tagen mit Eintrag von ' + p.n, 'Media de ' + p.mealDays + ' d\u00edas con registro de ' + p.n), v: '\u2248 ' + fmt(p.kcal) + ' kcal \u00b7 ' + fmt(p.protein) + ' g' });
         you += S.row({ b: T('Water', 'Wasser', 'Agua'), empty: !p.waterDays, sub: p.waterDays ? T('\u00d8 ' + fmt(p.water, 1) + ' glasses on ', '\u00d8 ' + fmt(p.water, 1) + ' Gl\u00e4ser an ', '\u00d8 ' + fmt(p.water, 1) + ' vasos en ') + days(p.waterDays) : none });
         const sb = p.stepsBy, sp = [];
         if (sb.casual) sp.push(T('under 5k', 'unter 5k', 'menos de 5k') + ' \u00d7' + sb.casual); if (sb.steady) sp.push('5k\u201310k \u00d7' + sb.steady); if (sb.epic) sp.push('10k+ \u00d7' + sb.epic);

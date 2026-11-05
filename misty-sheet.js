@@ -46,9 +46,10 @@
     const stepTxt = id => { const L = { casual: T('Under 5k', 'Unter 5k', 'Menos de 5k'), steady: '5k\u201310k', epic: '10k+' }; return L[id] || ''; };
     function verdicts(c) {
         const out = [];
-        if (c.low) out.push(c.low + ' ' + T('low', 'niedrig', 'bajo'));
-        if (c.medium) out.push(c.medium + ' ' + T('medium', 'mittel', 'medio'));
-        if (c.high) out.push(c.high + ' ' + T('high', 'hoch', 'alto'));
+        /* the app's own verdict words (day-recap-core): a rise is expected, a spike is only ever likely */
+        if (c.low) out.push(c.low + ' ' + T('small rise', 'kleiner Anstieg', 'subida peque\u00f1a'));
+        if (c.medium) out.push(c.medium + ' ' + T('medium rise', 'mittlerer Anstieg', 'subida media'));
+        if (c.high) out.push(c.high + ' ' + T('likely spike', 'wahrscheinlicher Spike', 'pico probable'));
         return out.join(' \u00b7 ');
     }
     function thumbs(meals) {
@@ -73,7 +74,7 @@
         let r = row({ ico: ICO.food, act: opts.noAct ? '' : 'food', empty: !m, b: T('Food', 'Essen', 'Comida'),
             sub: m ? (m === 1 ? T('1 meal', '1 Mahlzeit', '1 comida') : T(m + ' meals', m + ' Mahlzeiten', m + ' comidas')) + (verdicts(d.counts) ? ' \u00b7 ' + verdicts(d.counts) : '') : none(),
             extra: thumbs(d.meals) });
-        if (m && d.rated) r += row({ ico: '', b: T('Estimated', 'Gesch\u00e4tzt', 'Estimado'), sub: T('From your logged meals', 'Aus deinen Mahlzeiten', 'De tus comidas'),
+        if (m && d.rated) r += row({ ico: '', b: T('Estimated', 'Gesch\u00e4tzt', 'Estimado'), sub: d.rated < m ? T('From ' + d.rated + ' of ' + m + ' meals', 'Aus ' + d.rated + ' von ' + m + ' Mahlzeiten', 'De ' + d.rated + ' de ' + m + ' comidas') : T('From your logged meals', 'Aus deinen Mahlzeiten', 'De tus comidas'),
             v: '\u2248 ' + fmt(d.kcal) + ' kcal \u00b7 ' + fmt(d.protein) + ' g ' + T('protein', 'Eiwei\u00df', 'prote\u00edna') });
         r += row({ ico: ICO.water, empty: !d.water, b: T('Water', 'Wasser', 'Agua'),
             sub: d.water ? (d.water === 1 ? T('1 glass', '1 Glas', '1 vaso') : T(fmt(d.water, 1) + ' glasses', fmt(d.water, 1) + ' Gl\u00e4ser', fmt(d.water, 1) + ' vasos')) : none() });

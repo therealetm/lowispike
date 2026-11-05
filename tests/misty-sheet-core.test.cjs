@@ -70,3 +70,14 @@ test('Today tab: Settings row design, three groups, honest words', () => {
   assert.match(h, /class="mh cme cme-in" id="mistyHub"/);
   assert.doesNotMatch(s + h.slice(h.indexOf('function tabsHtml'), h.indexOf("/* Oct 17: Misty's energy scale")), /\b[Ss]he\b/);
 });
+
+test('a past day reads its level change from the XP it had then, not today\'s total; period and day agree', () => {
+  const ledger = [{ ts: at(5, 9), amt: 30, src: 'meal' }, { ts: at(4, 9), amt: 50, src: 'meal' }];
+  const o = ctx({ ledger, xp: 100 }); o.deps.levelOf = x => ({ L: Math.floor(x / 40) });
+  const y = C.day(o, '2026-11-04');
+  assert.strictEqual(y.xp, 50); assert.strictEqual(y.levelFrom, 0); assert.strictEqual(y.levelTo, 1);
+  const p = C.period(o, 'yesterday', 0).days[0];
+  assert.strictEqual(p.levelFrom, 0); assert.strictEqual(p.levelTo, 1); assert.strictEqual(p.xp, 50);
+  const w = C.period(o, 'week', 0);
+  assert.strictEqual(w.xp, 80); assert.strictEqual(w.levels, 2);
+});

@@ -29,23 +29,27 @@
     }
 
     /* one day: what you did, what it gave Misty. Today when day is omitted. */
-    function day(o, dk) {
+    /* pre (from period): this day's logs (+ the day before, for the longest gap), its ledger, the XP total at its end, the weigh-ins */
+    function day(o, dk, pre) {
         o = o || {};
         const now = num(o.now) || Date.now(), today = dayKey(now); dk = dk || today;
         const S = o.S || {}, R = o.deps && o.deps.recap, N = o.deps && o.deps.nutri;
         const isToday = dk === today, t = isToday ? now : at(dk) + 11.99 * 36e5;   /* a past day is read at 23:59 */
         let sum = null;
-        try { if (R && R.summarize) sum = R.summarize({ now: t, logs: S.logs, ledger: S.ledger, xp: S.xp, fast: o.fast, move: o.move, levelOf: o.deps.levelOf }); } catch (e) { sum = null; }
+        const dayLogs = pre ? pre.logs : S.logs, dayLedger = pre ? pre.ledger : S.ledger;
+        let xpAt = num(S.xp);
+        if (pre) xpAt = pre.xpAt; else if (!isToday) arr(S.ledger).forEach(e => { const d = e && (e.day || (num(e.ts) ? dayKey(num(e.ts)) : '')); if (d && d > dk) xpAt -= num(e.amt); });
+        try { if (R && R.summarize) sum = R.summarize({ now: t, logs: dayLogs, ledger: dayLedger, xp: Math.max(0, xpAt), fast: o.fast, move: o.move, levelOf: o.deps.levelOf }); } catch (e) { sum = null; }
         sum = sum || { meals: [], counts: { low: 0, medium: 0, high: 0, unknown: 0 }, water: 0, moveMin: 0, xp: 0, xpBy: { meal: 0, water: 0, move: 0, gap: 0, other: 0 }, levelFrom: 0, levelTo: 0 };
         /* the meals with their id and thumbnail (summarize keeps name, time and verdict only) */
         const onDay = l => (l.day ? l.day === dk : dayKey(num(l.ts)) === dk);
-        const raw = arr(S.logs).filter(l => l && (num(l.ts) > 0 || l.day) && onDay(l)).sort((a, b) => num(a.ts) - num(b.ts));
+        const raw = arr(dayLogs).filter(l => l && (num(l.ts) > 0 || l.day) && onDay(l)).sort((a, b) => num(a.ts) - num(b.ts));
         const meals = raw.map((l, i) => ({ id: l.id != null ? String(l.id) : '', t: String(l.t || (sum.meals[i] && sum.meals[i].t) || ''), ts: num(l.ts),
             v: (sum.meals[i] && sum.meals[i].v) || 'unknown', photo: typeof l.photo === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(l.photo) ? l.photo : '' }));
-        let tot = null; try { if (N && N.totals) tot = N.totals(S.logs, dk); } catch (e) { tot = null; }
+        let tot = null; try { if (N && N.totals) tot = N.totals(dayLogs, dk); } catch (e) { tot = null; }
         const g = k => Math.round(num(tot && tot.sum && tot.sum[k]));
-        const w = weights(o).filter(x => x.day === dk).pop() || null;
-        const steps = stepRange(o, dk);
+        const w = (pre ? pre.weights : weights(o)).filter(x => x.day === dk).pop() || null;
+        const steps = stepRange(pre ? Object.assign({}, o, { S: { ledger: dayLedger } }) : o, dk);
         const out = {
             day: dk, today: isToday, meals, counts: sum.counts || { low: 0, medium: 0, high: 0, unknown: 0 },
             kcal: g('kcal'), protein: g('protein'), fiber: g('fiber'), sugar: g('sugar'), rated: tot ? Math.max(0, num(tot.meals) - num(tot.unknown)) : 0,
@@ -67,12 +71,24 @@
     function period(o, kind, back) {
         o = o || {};
         const now = num(o.now) || Date.now(), w = window_(kind, Math.max(0, Math.floor(num(back))), now);
-        const days = []; for (let i = 0; i < w.n; i++) days.push(day(o, shift(w.start, i)));
+        /* bucket once (a year of meals must open in well under a second): logs and ledger by day, XP total at the end of each day */
+        const S = o.S || {}, logsBy = {}, ledBy = {}, after = {};
+        const kOf = x => (x && (x.day || (num(x.ts) ? dayKey(num(x.ts)) : ''))) || '';
+        arr(S.logs).forEach(l => { const k = kOf(l); if (k) (logsBy[k] = logsBy[k] || []).push(l); });
+        arr(S.ledger).forEach(e => { const k = kOf(e); if (k) (ledBy[k] = ledBy[k] || []).push(e); });
+        let later = 0; Object.keys(ledBy).filter(k => k > w.end).forEach(k => ledBy[k].forEach(e => { later += num(e.amt); }));
+        const wts = weights(o), days = [];
+        let xpAt = num(S.xp) - later;
+        for (let i = w.n - 1; i >= 0; i--) { const k = shift(w.start, i); after[k] = xpAt; (ledBy[k] || []).forEach(e => { xpAt -= num(e.amt); }); }
+        for (let i = 0; i < w.n; i++) {
+            const k = shift(w.start, i), prev = shift(k, -1);
+            days.push(day(o, k, { logs: (logsBy[prev] || []).concat(logsBy[k] || []), ledger: ledBy[k] || [], xpAt: Math.max(0, after[k]), weights: wts }));
+        }
         const logged = days.filter(d => d.meals.length), active = days.filter(d => !d.empty);
         const avg = (list, k) => (list.length ? Math.round(list.reduce((a, d) => a + num(d[k]), 0) / list.length) : 0);
         const counts = { low: 0, medium: 0, high: 0, unknown: 0 }; logged.forEach(d => Object.keys(counts).forEach(k => { counts[k] += num(d.counts[k]); }));
         const waterDays = days.filter(d => d.water > 0), stepsBy = { casual: 0, steady: 0, epic: 0 }; days.forEach(d => { if (d.steps) stepsBy[d.steps]++; });
-        const wAll = weights(o).filter(x => x.day >= w.start && x.day <= w.end);
+        const wAll = wts.filter(x => x.day >= w.start && x.day <= w.end);
         const xp = days.reduce((a, d) => a + d.xp, 0);
         let levels = 0;
         days.forEach(d => { if (d.levelTo > d.levelFrom) levels += d.levelTo - d.levelFrom; });

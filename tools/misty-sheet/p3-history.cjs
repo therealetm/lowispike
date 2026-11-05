@@ -38,6 +38,13 @@ const ok = (c, m) => { if (c) { pass++; console.log('ok   ' + m); } else { fail+
   h = await read(); ok(h.rows.some(r => /3/.test(r)), 'Year counts the 3 meals');
   ok(await P.evaluate(() => { const m = document.querySelector('#mistyHub'); return m.scrollWidth <= m.clientWidth + 1; }), 'no sideways overflow');
   await P.screenshot({ path: `/tmp/misty-p3-${engine}-${lang}.png` });
+  /* a year of fake data (3 meals a day, weekly weigh-ins) renders the Year view in under a second */
+  const ms = await P.evaluate(() => {
+    const base = Date.now(); const logs = []; for (let i = 1; i < 366; i++) for (let j = 0; j < 3; j++) logs.push({ id: 'y' + i + '-' + j, ts: base - i * 864e5 + j * 4 * 36e5, t: 'Meal ' + j, kcal: 500, protein: 25 });
+    S.logs = logs; const w = []; for (let i = 1; i < 366; i += 7) w.push({ ts: base - i * 864e5, kg: 80 - i / 100 }); S.health.body.weights = w;
+    const t0 = performance.now(); document.querySelector('#mistyHub [data-mhh="kind"][data-k="month"]').click(); document.querySelector('#mistyHub [data-mhh="kind"][data-k="year"]').click(); return Math.round(performance.now() - t0);
+  });
+  ok(ms < 1000, 'a year of 1,095 meals renders Year in ' + ms + ' ms (< 1 s)');
   await R.close();
   console.log(`${engine} ${lang}: ${pass}/${pass + fail}`);
   process.exit(fail ? 1 : 0);

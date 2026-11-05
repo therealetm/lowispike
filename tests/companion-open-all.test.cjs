@@ -9,8 +9,21 @@ test('joystick long press: drift cancels, hold opens all, armed at home and in C
   assert.ok(A.longArmed('', false) && A.longArmed('auto', true) && !A.longArmed('auto', false));
   const js = read('misty-pad.js');
   assert.match(js, /LowiBloomRing[\s\S]{0,80}toggleAll\(\)/);
-  assert.match(js, /visibilitychange[\s\S]{0,200}longCancel\(\)/);
-  assert.match(js, /'blur'[\s\S]{0,80}longCancel/);
+  /* a hidden page and a window blur clear the pending long press: run on the misty-pad.js fake page with real pointer events
+     (was a source match; the full set of paths is in tests/ui-joystick-open-all.test.cjs) */
+  const { fakePage } = require('./fixtures/misty-pad-page.cjs');
+  for (const end of [p => { p.D.hidden = true; p.D.fire('visibilitychange'); }, p => p.W.fire('blur')]) {
+    const p = fakePage(); let n = 0;
+    p.W.LowiBloomRing = { toggleAll() { n++; return true; } };
+    p.pad().getBoundingClientRect = () => ({ left: 165, top: 680, width: 60, height: 60, right: 225, bottom: 740 });
+    p.down({ clientX: 195, clientY: 710 }); p.advance(200); end(p); p.advance(A.LONG_MS + 300);
+    assert.equal(n, 0, 'the long press never fires after it was cleared');
+    const q = fakePage(); let m = 0;
+    q.W.LowiBloomRing = { toggleAll() { m++; return true; } };
+    q.pad().getBoundingClientRect = () => ({ left: 165, top: 680, width: 60, height: 60, right: 225, bottom: 740 });
+    q.down({ clientX: 195, clientY: 710 }); q.advance(A.LONG_MS + 10);
+    assert.equal(m, 1, 'control: the same press, not cleared, opens them');
+  }
 });
 test('Calm: joystick not hidden; keeps() honours calmKeep; companion group marked', () => {
   assert.doesNotMatch(read('galaxy-still.css').replace(/\/\*[\s\S]*?\*\//g, ''), /#whPad/);

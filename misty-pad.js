@@ -54,11 +54,26 @@
            now until Home is up and nothing covers it: c = { live, home, seen, busy, tour, mode }. 'show', 'wait' or 'never'. */
         hint(c) { c = c || {}; if (c.seen) return 'never'; if (!c.live || !c.home || c.busy || c.tour || c.mode) return 'wait'; return 'show'; },
         /* Nov 5 2026 (owner handoff): a long press on the HOME joystick opens every bubble (bloom-ring.js toggleAll), not Sleep and not
-           the old back-up hold. It is armed while the companion rests at home (no controller mode) or whenever Calm mode has turned
-           navigation off (galaxy-still-core navOff, html.cm-nav: the joystick stays as the open-all control, dragging is inert).
-           A drag past DRIFT px cancels it; lift, cancel, lost capture, blur and a hidden page clear its timer. */
-        LONG_MS: 520, DRIFT: 10,
-        longArmed(mode, calmNav) { return !!calmNav || !mode; },
+           the old back-up hold. It lives side by side with the old still hold (forward after HOLD_MS, faded while it runs:
+           tests/ui-joystick-fade.test.cjs, ui-joystick-vanish.test.cjs); where the thumb lands and where the companion is decide:
+           - a press on the MIDDLE of the stick (centred(): the inner CENTRE_K of its radius, the dashed well round the knob, 21 of
+             30 px) while the companion rests at home (no controller mode, not flying / in a world / in the galaxy / away), held
+             LONG_MS (the app's long press, misty-turn.js K.LONG_MS) within DRIFT px (misty-turn.js K.TAP_PX): every bubble opens;
+           - a press on the RIM (the stick tilted, forward or to a side), or any press while she is out: the old hold, as before;
+           - Calm mode (galaxy-still-core navOff, html.cm-nav: the joystick stays as the open-all control, dragging is inert): any press.
+           A drift past DRIFT px cancels it (then it is a drag); lift, cancel, lost capture, blur, a hidden page and pagehide clear
+           its timer. tests/ui-joystick-open-all.test.cjs */
+        LONG_MS: 520, DRIFT: 10, CENTRE_K: 0.7,
+        /* p = { x, y } in screen px, r = the joystick's box (getBoundingClientRect, so a scaled Home scales the middle too).
+           No box to measure: the middle. */
+        centred(p, r) {
+            if (!p || !r || !(+r.width > 0) || !(+r.height > 0)) return true;
+            const R = Math.min(+r.width, +r.height) / 2;
+            return Math.hypot(+p.x - (+r.left + r.width / 2), +p.y - (+r.top + r.height / 2)) <= A.CENTRE_K * R;
+        },
+        /* mode = the controller's mode, calmNav = Calm turned navigation off, centred = centred() (not given: the middle),
+           out = the page says she is out (flying() classes or wh-away) */
+        longArmed(mode, calmNav, centred, out) { return !!calmNav || (!mode && !out && centred !== false); },
         press(held, moved) { return (+moved || 0) > A.DRIFT ? 'drag' : (+held || 0) >= A.LONG_MS ? 'long' : 'tap'; }
     };
     if (typeof module === 'object' && module.exports) module.exports = A;
@@ -82,14 +97,26 @@
         auto: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c-2.2-3-6.6-3-6.6 0s4.4 3 6.6 0 6.6-3 6.6 0-4.4 3-6.6 0z"/><circle cx="18.6" cy="12" r="1.3" class="mp-dot"/></svg>',
         sleepy: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h5l-5 6h5M13 6h4l-4 4.5h4"/></svg>'
     };
-    const st = { el: null, knob: null, chip: null, mode: '', id: null, x0: 0, y0: 0, moved: false, lastUp: 0, taps: 0, holdT: 0, backT: 0, thr: 0, downT: 0, ignoreDbl: 0, chipT: 0, enT: 0, tier: '', value: 0, R: 22, hinted: false, fade: false, gone: false, goneT: 0, longT: 0, longFired: false };
+    const st = { el: null, knob: null, chip: null, mode: '', id: null, x0: 0, y0: 0, moved: false, lastUp: 0, taps: 0, holdT: 0, backT: 0, thr: 0, downT: 0, ignoreDbl: 0, chipT: 0, enT: 0, tier: '', value: 0, R: 22, hinted: false, fade: false, gone: false, goneT: 0, longT: 0, longFired: false, eatUntil: 0, eatDone: false };
     const VANISH_MS = 1500; /* steering this long without a break: the joystick is gone (Oct 19) */
+    const EAT_MS = 450;     /* after a hold that opened the bubbles: how long the one click its lift makes is waited for */
     const wh = () => W.LowiWorldHome && W.LowiWorldHome.pad ? W.LowiWorldHome : null;
     function send(cmd) { const w = wh(); if (!w) return null; try { return w.pad(cmd); } catch (e) { return null; } }
     function low() { return st.tier === 'weak' || st.tier === 'tired'; }
     /* Calm mode level 1+ (galaxy-still.js): navigation is off, the joystick only opens all bubbles */
     function calmNav() { return H.classList.contains('cm-nav'); }
+    /* she is out without a controller mode (a World map trip, inside a world, out in the galaxy): a still press flies, as before */
+    function outNow() { const P = W.LowiPadAnchor; return H.classList.contains('wh-away') || !!(P && P.flying('', c => H.classList.contains(c))); }
     function longCancel() { if (st.longT) { clearTimeout(st.longT); st.longT = 0; } if (st.el) st.el.classList.remove('mp-longing'); }
+    /* the lift of a hold that opened the bubbles makes one click (iOS even after a long press). The bubbles' backdrop is on top by
+       then and would fold them again at once, so that click is eaten: on touch by cancelling its touchend (then no click comes and
+       nothing is waited for), with a mouse or pen by eating the one click that follows within EAT_MS (window, capture phase). */
+    function eating() { return !!st.eatUntil && performance.now() < st.eatUntil; }
+    W.addEventListener('click', e => {
+        if (!eating()) return;
+        st.eatUntil = 0;
+        e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    }, true);
     function longFire() {
         st.longT = 0; if (st.el) st.el.classList.remove('mp-longing');
         if (st.id == null || st.moved) return;
@@ -120,7 +147,7 @@
     function label() { return nm(label0()); }
     function label0() {
         if (st.mode === 'auto') return low() ? T('Autopilot, Misty is drifting sleepily. Tap to steer', 'Autopilot, Misty treibt m\u00fcde. Tippen zum Steuern', 'Piloto autom\u00e1tico, Misty flota con sue\u00f1o. Toca para dirigir') : T('Autopilot, Misty flies on its own. Tap to steer', 'Autopilot, Misty fliegt allein. Tippen zum Steuern', 'Piloto autom\u00e1tico, Misty vuela por su cuenta. Toca para dirigir');
-        return T('Controller: drag to fly Misty, hold it to open all bubbles, while flying hold the middle to go forward, tap then hold to go back, three taps for autopilot. While you hold it, double tap the world with another finger to shoot energy', 'Steuerung: ziehen, um Misty zu fliegen, halten \u00f6ffnet alle Bubbles, im Flug Mitte halten f\u00fcr vorw\u00e4rts, tippen und halten f\u00fcr r\u00fcckw\u00e4rts, dreimal tippen f\u00fcr Autopilot. W\u00e4hrend du sie h\u00e4ltst, mit einem anderen Finger zweimal auf die Welt tippen f\u00fcr einen Energiesto\u00df', 'Control: arrastra para volar con Misty, mant\u00e9n pulsado para abrir todas las burbujas, en vuelo mant\u00e9n el centro para avanzar, toca y mant\u00e9n para retroceder, tres toques para piloto autom\u00e1tico. Mientras lo mantienes, toca dos veces el mundo con otro dedo para disparar energ\u00eda');
+        return T('Controller: drag to fly Misty, hold the middle to open all bubbles, while flying hold the middle to go forward, tap then hold to go back, three taps for autopilot. While you hold it, double tap the world with another finger to shoot energy', 'Steuerung: ziehen, um Misty zu fliegen, Mitte halten \u00f6ffnet alle Bubbles, im Flug Mitte halten f\u00fcr vorw\u00e4rts, tippen und halten f\u00fcr r\u00fcckw\u00e4rts, dreimal tippen f\u00fcr Autopilot. W\u00e4hrend du sie h\u00e4ltst, mit einem anderen Finger zweimal auf die Welt tippen f\u00fcr einen Energiesto\u00df', 'Control: arrastra para volar con Misty, mant\u00e9n el centro para abrir todas las burbujas, en vuelo mant\u00e9n el centro para avanzar, toca y mant\u00e9n para retroceder, tres toques para piloto autom\u00e1tico. Mientras lo mantienes, toca dos veces el mundo con otro dedo para disparar energ\u00eda');
     }
     function paint() {
         const b = st.el; if (!b) return;
@@ -236,13 +263,16 @@
             b.classList.add('mp-down');
             /* autopilot: any touch hands control back to you (and that touch never counts towards the taps) */
             const t0 = performance.now(); st.downT = t0;
-            longCancel(); st.longFired = false;
+            longCancel(); st.longFired = false; st.eatUntil = 0; st.eatDone = false;
             const PA0 = W.LowiPadAnchor;
-            if (PA0 && PA0.longArmed(st.mode, calmNav())) {
+            let box = null; try { box = b.getBoundingClientRect(); } catch (er) { }
+            if (PA0 && PA0.longArmed(st.mode, calmNav(), PA0.centred({ x: e.clientX, y: e.clientY }, box), outNow())) {
+                /* the middle at home, or Calm: a still hold opens all bubbles; it never starts the forward / back hold
+                   (a new touch still ends a back burst, as below) */
+                clearTimeout(st.holdT); clearTimeout(st.backT); if (st.thr < 0) thrust(0);
                 b.classList.add('mp-longing'); const lid = e.pointerId;
                 st.longT = setTimeout(() => { if (st.id === lid) longFire(); else longCancel(); }, PA0.LONG_MS);
-                clearTimeout(st.holdT); clearTimeout(st.backT);
-                return; /* at home or in Calm mode a still hold opens all bubbles; it never starts the forward / back hold */
+                return;
             }
             if (st.mode === 'auto') { st.ignoreDbl = t0 + 450; userMode('drive'); }
             /* misty-turn: held still in the middle = straight ahead; right after a tap = back */
@@ -254,8 +284,9 @@
             if (e.pointerId !== st.id) return;
             e.stopPropagation(); if (e.cancelable) e.preventDefault();
             const dx = e.clientX - st.x0, dy = e.clientY - st.y0;
-            if (st.longT && W.LowiPadAnchor && W.LowiPadAnchor.press(0, Math.hypot(dx, dy)) === 'drag') longCancel();
-            if (st.longFired) return;
+            if (st.longFired) return; /* the hold opened the bubbles: the rest of this press does nothing */
+            /* the long press waits: a still thumb may wobble up to DRIFT px; past it the long press is off and this is a drag */
+            if (st.longT) { if (W.LowiPadAnchor.press(0, Math.hypot(dx, dy)) !== 'drag') return; longCancel(); }
             if (calmNav()) { if (Math.hypot(dx, dy) >= 6) st.moved = true; return; } /* navigation off: dragging is inert */
             if (!st.moved && Math.hypot(dx, dy) < 6) return;
             if (!st.moved) { st.moved = true; clearTimeout(st.holdT); if (st.mode !== 'drive') setMode('drive'); hintDone(); }
@@ -265,7 +296,10 @@
             if (e.pointerId !== st.id) return;
             e.stopPropagation();
             st.id = null; fade(false); b.classList.remove('mp-down'); knob(0, 0); clearTimeout(st.holdT); longCancel();
-            if (st.longFired || calmNav()) { st.longFired = false; st.lastUp = 0; st.taps = 0; if (st.thr) thrust(0); return; } /* the hold opened the bubbles / Calm: no tap actions */
+            if (st.longFired || calmNav()) { /* the hold opened the bubbles / Calm: no tap actions */
+                if (st.longFired && !st.eatDone) st.eatUntil = performance.now() + EAT_MS; /* its click: eating() */
+                st.longFired = false; st.lastUp = 0; st.taps = 0; if (st.thr) thrust(0); return;
+            }
             send({ vx: 0, vy: 0 });
             const held = !!st.thr; if (held) thrust(0);
             if (held || st.moved || e.type === 'pointercancel') { st.lastUp = 0; st.taps = 0; return; }
@@ -285,7 +319,13 @@
         };
         b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
         b.addEventListener('lostpointercapture', e => { if (e.pointerId === st.id) up({ pointerId: e.pointerId, type: 'pointercancel', stopPropagation() { } }); });
-        D.addEventListener('visibilitychange', () => { if (D.hidden) { longCancel(); fade(false); if (st.thr) thrust(0); } });
+        /* the touch that ends a hold that opened the bubbles makes no click (see eating()); touchend comes before or after pointerup */
+        b.addEventListener('touchend', e => { if ((st.longFired || eating()) && e.cancelable) { e.preventDefault(); st.eatUntil = 0; st.eatDone = true; } }, { passive: false });
+        /* the app hidden or left: nothing that is still pending starts in the background (the long press, the forward / back hold,
+           a double tap's back burst); leaving (pagehide, maybe into the back-forward cache) also ends the press itself */
+        const drop = () => { longCancel(); clearTimeout(st.holdT); st.lastUp = 0; st.taps = 0; };
+        D.addEventListener('visibilitychange', () => { if (D.hidden) { drop(); fade(false); if (st.thr) thrust(0); } });
+        W.addEventListener('pagehide', () => { if (st.id != null) up({ pointerId: st.id, type: 'pointercancel', stopPropagation() { } }); drop(); fade(false); if (st.thr) thrust(0); });
         b.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); });
         b.addEventListener('dblclick', e => { e.stopPropagation(); e.preventDefault(); });
         b.addEventListener('contextmenu', e => e.preventDefault());

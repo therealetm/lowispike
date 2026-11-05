@@ -47,8 +47,12 @@ Profile > About you > Grocery shopping (`shop-plan.js` card), never forced.
 - **Scanner:** live barcode, typed barcode, barcode from a photo. Results are *estimates* from the label, not medical
   advice and never a promise of "no spike". The Deep analyze link opens the LOWiSPIKE GPT; the photo upload there is manual
   and nothing comes back into the app automatically.
-- **Controls:** drag the controller to fly, hold = forward, 2 taps = back, 3 taps = autopilot, double tap with a second
-  finger while flying = her shot. Exploring trips can be called back by tapping the timer.
+- **Controls:** drag the controller to fly, 2 taps = back, 3 taps = autopilot, double tap with a second finger while flying
+  = her shot. Hold (since 5 Nov 2026, `misty-pad.js`): on Home, holding the middle of the controller still for about half a
+  second opens every bubble at once (hold again to fold them); holding it while she is out flying or inside a world, or
+  pressing its rim and holding, = forward. In Calm mode the controller only opens every bubble (any hold; dragging does
+  nothing). No timed exploring trips any more (since 5 Nov 2026, `sun-meter.js` `TIMED_TRIPS = false`): a full sun no
+  longer offers "Send her exploring", and a trip that was still out comes home on the next open with its find.
 - **Before the birthday step the companion is not called Misty** (`tests/onboarding-misty.test.cjs`).
 - **Gender (since 23 Oct 2026, Emmanuel):** four choices in setup (About you) and in Profile > About you, in this order:
   Frau / Mann / Nichtbinär / Keine Angabe (Woman / Man / Non-binary / Prefer not to say; Mujer / Hombre / No binario /

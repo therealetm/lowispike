@@ -47,7 +47,7 @@
             locked: false, no, title: String(f.name || ''), sub: owner + (fam ? ' · ' + fam : ''),
             phase: ph.l[li(lang)], stars: ph.stars, power: n,
             reached: L('Reached at ' + nf(f.xp, lang) + ' XP', 'Erreicht ab ' + nf(f.xp, lang) + ' XP', 'Alcanzada con ' + nf(f.xp, lang) + ' XP'),
-            grewK: L('New at this form', 'Neu in dieser Form', 'Nuevo en esta forma'), grew: String(f.trait || ''),
+            grewK: L('New at this form', 'Neu in dieser Form', 'Nuevo en esta forma'), grew: String(f.trait || '').replace(/^(\S+)\s+\1(?=\s|$)/i, '$1'), /* the Glow family's first trait reads "Glow glow core" */
             powerK: L('Power', 'Kraft', 'Poder'), now: f.current ? L('Now', 'Jetzt', 'Ahora') : '',
             alt: L(f.name + ', Form ' + n + ' of 10. ' + ph.l[0] + '. New at this form: ' + (f.trait || '') + '. Reached at ' + nf(f.xp, lang) + ' XP.',
                 f.name + ', Form ' + n + ' von 10. ' + ph.l[1] + '. Neu in dieser Form: ' + (f.trait || '') + '. Erreicht ab ' + nf(f.xp, lang) + ' XP.',

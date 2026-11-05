@@ -147,8 +147,10 @@ test('path 3, code (old Shop module without doors): open(\'fuel\') opens Einkauf
     assert.match(read('tutorial.js'), /const bloom = k => \(\{[^\n]*LowiHomeBloomsV2\.open\(k\)/);
 });
 
-test('path 4, the all-bubbles overview takes its bubbles from the same map: no Fuel orbs', () => {
-    assert.match(SRC, /const ALL = BLOOMS\.filter\(k => k !== 'fuel' && k !== 'gap'\);/, 'Einkaufen orbs open pages; Gap times come in a second step');
+test('path 4, the all-bubbles overview takes its bubbles from the same map: every bubble that blooms', () => {
+    /* Nov 5 2026 (Emmanuel: "the supermarket doesn\'t open at all ... still all in that circle"): Einkaufen and Gap are in the overview
+       again (was: no Fuel orbs, 28 Oct). Einkaufen's orbs open their page; Gap's open Gap at its time step. */
+    assert.match(SRC, /const ALL = BLOOMS;/, 'the overview is the RING map: every bubble that blooms');
     assert.ok(core.BLOOMS.includes('fuel'), 'Einkaufen blooms on its own');
 });
 

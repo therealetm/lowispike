@@ -170,7 +170,7 @@ test('sliding away, lifting early, a second finger, a cancel or a press on Sips 
 test('the all-bubbles overview and the Water bloom share the same hold', () => {
     const m = SRC.match(/function openAll\(\)[\s\S]*?\n    }\n/); assert.ok(m, 'openAll found');
     assert.match(m[0], /ov\.addEventListener\('click', onBloomClick\);\s*orbHold\(ov\);/);
-    const o = SRC.match(/function open\(kind, src\)[\s\S]*?\n    }\n/); assert.ok(o, 'open found');
+    const o = SRC.match(/function open\(kind, src, pick\)[\s\S]*?\n    }\n/); assert.ok(o, 'open found'); /* Nov 5 2026: + Gap's time step */
     assert.match(o[0], /ov\.addEventListener\('click', onBloomClick\);\s*orbHold\(ov\);/);
     assert.match(SRC, /if \(st\.holdEat\) \{/, 'the release click after a hold is eaten');
 });

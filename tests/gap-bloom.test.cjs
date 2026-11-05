@@ -197,8 +197,11 @@ test('only Letzte / Erste Mahlzeit move the timer: the bloom never writes the ti
     /* the other paths stay cut off from the timer (index.html, DECOUPLED, covered by the timer tests) */
 });
 
-test('the all-bubbles overview keeps its four step-free groups; English and Spanish words', () => {
-    assert.match(SRC, /const ALL = BLOOMS\.filter\(k => k !== 'fuel' && k !== 'gap'\);/);
+test('the all-bubbles overview: every bubble with orbs (Nov 5 2026, Emmanuel: "it\'s not everything that opens"); English and Spanish words', () => {
+    /* Was: the overview kept its four step-free groups (Einkaufen and Gap left out, 28 Oct). Emmanuel asked on 5 Nov for every bubble in
+       the one circle; Gap's two orbs there open Gap's own bloom at its time step (tests/bloom-all-in-circle.test.cjs). */
+    assert.match(SRC, /const ALL = BLOOMS;/);
+    assert.match(SRC, /if \(st\.all && \(a\.id === 'g-last' \|\| a\.id === 'g-first'\)\)/);
     assert.match(SRC, /T\('Last meal', 'Letzte Mahlzeit', 'Última comida'\)/);
     assert.match(SRC, /T\('First meal', 'Erste Mahlzeit', 'Primera comida'\)/);
     assert.match(SRC, /T\('Other time', 'Andere Zeit', 'Otra hora'\)/);

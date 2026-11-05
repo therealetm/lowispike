@@ -176,13 +176,17 @@
 
     /* Oct 24 (Lisa via Emmanuel: "Flasch" on one line, "e" on the next): labels wrap only between words. A single word wider
        than its orb shrinks in proportion instead, in half-pixel steps, never below `min` (10px). Pure: widths in, font size out. */
+    /* Nov 5 2026: with every bubble in one circle the orbs are smaller; "Supermarket" (Supermarkt, Supermercado) then fits no
+       orb in one piece. It gets one soft hyphen after "Super": it breaks there ("Super-" / "market") only when it must, never
+       anywhere else inside a word (tests/bloom-labels.test.cjs keeps hyphens:auto and overflow-wrap:anywhere out). */
+    const softLabel = s => String(s == null ? '' : s).replace(/(^|\s)(Super)(?=[a-z\u00e0-\u00ff]{4,})/g, '$1$2\u00ad');
     function labelSize(wordPx, maxPx, base, min) {
         base = base || 12.5; min = min || 10;
         if (!(wordPx > 0) || !(maxPx > 0) || wordPx <= maxPx) return base;
         return Math.max(min, Math.floor(base * maxPx / wordPx * 2) / 2);
     }
 
-    const core = { KINDS, RING, BLOOMS, ringTarget, WATER_GOAL, SIPS_N, dayKey, gapText, waterUndo, layout, noteSpot, labelSize };
+    const core = { KINDS, RING, BLOOMS, ringTarget, WATER_GOAL, SIPS_N, dayKey, gapText, waterUndo, layout, noteSpot, labelSize, softLabel };
     if (typeof module === 'object' && module.exports) { module.exports = core; return; }
     if (!root || !root.document) return;
 
@@ -466,7 +470,8 @@
             b.style.fontSize = '';
             const cs = getComputedStyle(b);
             const max = parseFloat(cs.maxWidth) || b.clientWidth;
-            const words = (b.textContent || '').split(/[ \t\n]+/).filter(Boolean);
+            /* a soft hyphen (softLabel) is the one place a word may break: each part is measured on its own, with its hyphen */
+            const words = (b.textContent || '').split(/[ \t\n]+/).flatMap(w => { const p = w.split('\u00ad'); return p.map((x, i) => (i < p.length - 1 ? x + '-' : x)); }).filter(Boolean);
             if (!max || !words.length) return;
             if (!meter) { meter = D.createElement('span'); meter.setAttribute('aria-hidden', 'true'); meter.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;left:-9999px;top:0;font:inherit;letter-spacing:inherit'; }
             b.appendChild(meter);
@@ -537,7 +542,7 @@
             acts.map((a, i) => { const p = L.pts[i]; const tag = a.time ? 'label' : 'button'; return '<' + tag + (a.time ? '' : ' type="button"') + ' class="hb2-orb hb2-' + a.id + (a.on ? ' hb2-on' : '') + '" data-hb2="act" data-id="' + a.id + '"' + (a.disabled ? ' disabled aria-disabled="true"' : '') + (a.on != null ? ' aria-pressed="' + !!a.on + '"' : '') +
                 ' style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--hb2-dx:' + Math.round((p.from || b).x - p.x) + 'px;--hb2-dy:' + Math.round((p.from || b).y - p.y) + 'px;--hb2-i:' + i + (a.q != null ? ';--hb2-q:' + a.q : '') + '"' +
                 ' aria-label="' + esc(a.aria || (a.label + (a.sub ? ', ' + a.sub : ''))) + '">' + (a.q != null ? '<span class="hb2-fill" aria-hidden="true"></span>' : '') +
-                '<span class="hb2-tx">' + svg(a.icon) + '<b>' + esc(a.label) + '</b>' + (a.sub ? '<small>' + esc(a.sub) + '</small>' : '') + '</span>' +
+                '<span class="hb2-tx">' + svg(a.icon) + '<b>' + esc(softLabel(a.label)) + '</b>' + (a.sub ? '<small>' + esc(a.sub) + '</small>' : '') + '</span>' +
                 (a.time ? '<input type="time" class="hb2-time" value="' + hhmm(Date.now()) + '" aria-label="' + esc(a.aria || a.label) + '">' : '') + '</' + tag + '>'; }).join('') +
             (kind === 'move' ? moveNote(L.pts, orb, b, m, vw, vh) : kind === 'gap' ? gapNote(L.pts, orb, b, m, vw, vh) : '');
         skin(ov, prevOrbs);
@@ -553,8 +558,12 @@
        lopsided arc. Now all four groups (3 + 3 + 3 + 3) share ONE full circle, every orb the same angle from the next (solve even).
        Gap and Scan have no options (a tap opens the Gap view / the camera), Joy and Community open pages, so they bring no orbs. */
     /* Oct 28 2026: from the RING map. Einkaufen's orbs open pages (like Joy and Community), so the overview leaves them out, as before.
-       Gap blooms since Oct 28, 22:54, but its two orbs open times (a second step), so the overview leaves Gap out too */
-    const ALL = BLOOMS.filter(k => k !== 'fuel' && k !== 'gap');
+       Gap blooms since Oct 28, 22:54, but its two orbs open times (a second step), so the overview leaves Gap out too.
+       Nov 5 2026 (Emmanuel: "when I long press on the joystick, it's not everything that opens ... the supermarket doesn't open at
+       all ... You can make the bubbles smaller ... It's just important to me that they're still all in that circle"): every bubble
+       with orbs is in the overview again, Einkaufen and Gap included, on the one even circle (bloom-ring.js solve shrinks the orbs to
+       fit, never below 54 px). Einkaufen's orbs open their page as before; Gap's two orbs open Gap's own bloom at its time step. */
+    const ALL = BLOOMS;
     /* every Home bubble that is on screen and has actions: the groups of the all-bubbles ring (shared by one bloom and by open-all) */
     function allGroups() {
         const scope = st.root && st.root !== D ? st.root : D;
@@ -592,7 +601,7 @@
             pairs.map(({ p, a }, i) => '<button type="button" class="hb2-orb hb2-' + a.id + (a.on ? ' hb2-on' : '') + '" data-hb2="act" data-id="' + a.id + '" data-group="' + a.group + '"' + (a.disabled ? ' disabled aria-disabled="true"' : '') + (a.on != null ? ' aria-pressed="' + !!a.on + '"' : '') +
                 ' style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--hb2-dx:' + Math.round(p.from.x - p.x) + 'px;--hb2-dy:' + Math.round(p.from.y - p.y) + 'px;--hb2-i:' + i + (a.q != null ? ';--hb2-q:' + a.q : '') + '"' +
                 ' aria-label="' + esc(TITLES[a.group]() + ': ' + (a.aria || (a.label + (a.sub ? ', ' + a.sub : '')))) + '">' + (a.q != null ? '<span class="hb2-fill" aria-hidden="true"></span>' : '') +
-                '<span class="hb2-tx">' + svg(a.icon) + '<b>' + esc(a.label) + '</b>' + (a.sub ? '<small>' + esc(a.sub) + '</small>' : '') + '</span></button>').join('');
+                '<span class="hb2-tx">' + svg(a.icon) + '<b>' + esc(softLabel(a.label)) + '</b>' + (a.sub ? '<small>' + esc(a.sub) + '</small>' : '') + '</span></button>').join('');
         skin(ov, prevOrbs);
         ov.__acts = pairs.map(x => x.a);
         ov.__layout = { pts: pairs.map(x => ({ x: x.p.x, y: x.p.y, key: x.p.key })), misty: mistyCircle(), orb: ring.d, rot: 0, all: true,
@@ -672,7 +681,7 @@
         n.classList.toggle('hb2-note-dock', !!p.dock);
     }
 
-    function open(kind, src) {
+    function open(kind, src, pick) {
         /* Oct 28 2026: a bubble that opens a page opens that page, whoever asks (companion sheet, tutorial, deep link, old code) */
         const tg = ringTarget(kind);
         if (tg === 'shop') return shop();
@@ -685,7 +694,7 @@
         if (!src || !src.getBoundingClientRect().width) return false;
         if (st.open) close(true);
         try { if (fn(W.LowiMoveBubble, 'close')) W.LowiMoveBubble.close(false); } catch (e) { }
-        st.ov = null; st.gapPick = null;
+        st.ov = null; st.gapPick = kind === 'gap' && (pick === 'last' || pick === 'first') ? pick : null;
         const ov = render(kind, src);
         D.body.appendChild(ov);
         try { fitLabels(ov); } catch (e) { }
@@ -802,6 +811,9 @@
 
         if (!a || a.disabled) return;
         buzz(10);
+        /* Nov 5 2026: in the all-bubbles circle Gap's Last / First meal open Gap's own bloom right at its time step (the circle has no
+           room for a second step); First meal with no gap running only says so, as in Gap's own bloom */
+        if (st.all && (a.id === 'g-last' || a.id === 'g-first')) { try { a.run(); } catch (err) { console.error(err); } const pick = st.gapPick; st.gapPick = null; if (pick) open('gap', null, pick); return; }
         if (a.keep) { try { a.run(); } catch (err) { console.error(err); } refreshOpen(); return; }
         /* Oct 21 (E-man: "go back without the bubbles all of a sudden being closed"): an action that opens a page (Cook, fitness...)
            leaves this bloom open, hidden under the page (section-nav.css), so the X / back finds Home exactly as it was.

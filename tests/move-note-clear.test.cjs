@@ -61,11 +61,11 @@ test('with no clear spot anywhere it still lands on screen at the least-covered 
 
 test('the page places the note after it is in the DOM, against the ring, the joystick and the orbs, on open and refresh', () => {
   assert.match(src, /function placeNote\(/);
-  const body = src.slice(src.indexOf('function placeNote('), src.indexOf('function open(kind, src)'));
+  const body = src.slice(src.indexOf('function placeNote('), src.indexOf('function open(kind, src, pick)')); /* Nov 5 2026: open() also takes Gap's time step (pick) */
   assert.match(body, /\[data-orbit\]/);
   assert.match(body, /whPad/);
   assert.match(body, /noteSpot\(/);
-  const openFn = src.slice(src.indexOf('function open(kind, src)'), src.indexOf('function refreshOpen('));
+  const openFn = src.slice(src.indexOf('function open(kind, src, pick)'), src.indexOf('function refreshOpen('));
   assert.ok(openFn.indexOf('placeNote(ov)') > openFn.indexOf('D.body.appendChild(ov)'), 'open(): placeNote after the bloom is attached');
   const refresh = src.slice(src.indexOf('function refreshOpen('), src.indexOf('function close('));
   assert.match(refresh, /placeNote\(st\.ov\)/);

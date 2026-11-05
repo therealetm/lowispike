@@ -115,9 +115,10 @@ test('only the doors Einkaufen really has become orbs (no Hilf mit before the se
     assert.deepStrictEqual(p.plain(p.B.actions('fuel')).map(a => a.id), ['buy-shop', 'buy-sz']);
 });
 
-test('the bloom is titled Einkaufen and the overview (hold Scan) keeps its four groups without the shop doors', () => {
+test('the bloom is titled Einkaufen and the overview (hold the joystick) holds the shop doors too', () => {
     assert.match(SRC, /fuel: \(\) => T\('Shopping', 'Einkaufen', 'Compras'\)/);
-    assert.match(SRC, /const ALL = BLOOMS\.filter\(k => k !== 'fuel' && k !== 'gap'\);/, 'Gap (times in a second step, Oct 28 22:54) stays out too');
+    /* Nov 5 2026 (Emmanuel): every bubble in the one circle, Einkaufen's doors included (was: left out, 28 Oct) */
+    assert.match(SRC, /const ALL = BLOOMS;/, 'Einkaufen and Gap are in the overview');
 });
 
 test('Hilf mit appearing later refreshes an open Einkaufen bloom', () => {

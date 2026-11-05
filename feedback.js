@@ -33,7 +33,13 @@
             thanks: 'Thank you! Your feedback is in.', thanksSub: 'It helps us make LOWiSPIKE better.', done: 'Done',
             left: 'Move left', right: 'Move right', remove: 'Remove', shotN: (i, n) => 'Screenshot ' + i + ' of ' + n,
             tooMany: 'You can add up to 30 screenshots.', badPic: 'This picture could not be read. Try a screenshot (PNG or JPEG).',
-            noMic: 'The microphone is not available. Allow it in your phone settings, or type your feedback instead.',
+            micAsk: 'iPhone did not ask for the microphone yet. Tap Record a voice note again and choose Allow.',
+            micStarting: 'Starting the microphone\u2026',
+            micDeniedIosWeb: 'The microphone is off for LOWiSPIKE. On your iPhone open Settings \u203a Apps \u203a Safari \u203a Microphone (older iOS: Settings \u203a Safari \u203a Microphone), choose Ask or Allow, then close and reopen LOWiSPIKE.',
+            micDeniedIosApp: 'The microphone is off for LOWiSPIKE. Open iPhone Settings \u203a Apps \u203a LOWiSPIKE and turn on Microphone, then tap Record again.',
+            micDeniedWeb: 'The microphone is blocked for this site. Allow it in your browser\u2019s site settings, then tap Record again.',
+            micBusy: 'Another app is using the microphone. Close it and tap Record again.',
+            micNone: 'No microphone was found on this device. You can type your feedback instead.',
             noRec: 'This browser cannot record voice notes. Type your feedback instead.',
             maxVoice: 'Five minutes reached, recording stopped.', keepRec: 'Stop the recording first.',
             leave: 'Leave without sending? Your draft will be lost.',
@@ -67,7 +73,13 @@
             thanks: 'Danke! Dein Feedback ist angekommen.', thanksSub: 'Es hilft uns, LOWiSPIKE besser zu machen.', done: 'Fertig',
             left: 'Nach links', right: 'Nach rechts', remove: 'Entfernen', shotN: (i, n) => 'Screenshot ' + i + ' von ' + n,
             tooMany: 'Du kannst bis zu 30 Screenshots hinzuf\u00fcgen.', badPic: 'Dieses Bild lie\u00df sich nicht lesen. Versuch einen Screenshot (PNG oder JPEG).',
-            noMic: 'Das Mikrofon ist nicht verf\u00fcgbar. Erlaube es in den Einstellungen deines Handys oder schreib dein Feedback.',
+            micAsk: 'Das iPhone hat noch nicht nach dem Mikrofon gefragt. Tippe nochmal auf Sprachnachricht aufnehmen und w\u00e4hle Erlauben.',
+            micStarting: 'Mikrofon startet\u2026',
+            micDeniedIosWeb: 'Das Mikrofon ist f\u00fcr LOWiSPIKE aus. \u00d6ffne am iPhone Einstellungen \u203a Apps \u203a Safari \u203a Mikrofon (\u00e4lteres iOS: Einstellungen \u203a Safari \u203a Mikrofon), w\u00e4hle Fragen oder Erlauben, dann schlie\u00df LOWiSPIKE und \u00f6ffne es neu.',
+            micDeniedIosApp: 'Das Mikrofon ist f\u00fcr LOWiSPIKE aus. \u00d6ffne Einstellungen \u203a Apps \u203a LOWiSPIKE und schalte Mikrofon ein, dann tippe nochmal auf Aufnehmen.',
+            micDeniedWeb: 'Das Mikrofon ist f\u00fcr diese Seite blockiert. Erlaube es in den Website-Einstellungen deines Browsers, dann tippe nochmal auf Aufnehmen.',
+            micBusy: 'Eine andere App nutzt gerade das Mikrofon. Schlie\u00df sie und tippe nochmal auf Aufnehmen.',
+            micNone: 'Auf diesem Ger\u00e4t wurde kein Mikrofon gefunden. Du kannst dein Feedback auch schreiben.',
             noRec: 'Dieser Browser kann keine Sprachnachrichten aufnehmen. Schreib dein Feedback stattdessen.',
             maxVoice: 'F\u00fcnf Minuten erreicht, Aufnahme gestoppt.', keepRec: 'Stoppe zuerst die Aufnahme.',
             leave: 'Ohne Senden schlie\u00dfen? Dein Entwurf geht verloren.',
@@ -100,7 +112,13 @@
             thanks: '\u00a1Gracias! Recibimos tus comentarios.', thanksSub: 'Nos ayudan a mejorar LOWiSPIKE.', done: 'Listo',
             left: 'Mover a la izquierda', right: 'Mover a la derecha', remove: 'Quitar', shotN: (i, n) => 'Captura ' + i + ' de ' + n,
             tooMany: 'Puedes a\u00f1adir hasta 30 capturas.', badPic: 'No se pudo leer esta imagen. Prueba con una captura (PNG o JPEG).',
-            noMic: 'El micr\u00f3fono no est\u00e1 disponible. Perm\u00edtelo en los ajustes del m\u00f3vil o escribe tus comentarios.',
+            micAsk: 'El iPhone a\u00fan no ha pedido el micr\u00f3fono. Toca de nuevo Grabar nota de voz y elige Permitir.',
+            micStarting: 'Iniciando el micr\u00f3fono\u2026',
+            micDeniedIosWeb: 'El micr\u00f3fono est\u00e1 desactivado para LOWiSPIKE. En el iPhone abre Ajustes \u203a Apps \u203a Safari \u203a Micr\u00f3fono (iOS antiguo: Ajustes \u203a Safari \u203a Micr\u00f3fono), elige Preguntar o Permitir y luego cierra y vuelve a abrir LOWiSPIKE.',
+            micDeniedIosApp: 'El micr\u00f3fono est\u00e1 desactivado para LOWiSPIKE. Abre Ajustes \u203a Apps \u203a LOWiSPIKE y activa Micr\u00f3fono, luego toca Grabar de nuevo.',
+            micDeniedWeb: 'El micr\u00f3fono est\u00e1 bloqueado para este sitio. Perm\u00edtelo en los ajustes del sitio de tu navegador y toca Grabar de nuevo.',
+            micBusy: 'Otra app est\u00e1 usando el micr\u00f3fono. Ci\u00e9rrala y toca Grabar de nuevo.',
+            micNone: 'No se encontr\u00f3 ning\u00fan micr\u00f3fono en este dispositivo. Puedes escribir tus comentarios.',
             noRec: 'Este navegador no puede grabar notas de voz. Escribe tus comentarios.',
             maxVoice: 'Cinco minutos alcanzados, grabaci\u00f3n detenida.', keepRec: 'Para la grabaci\u00f3n primero.',
             leave: '\u00bfSalir sin enviar? Se perder\u00e1 tu borrador.',
@@ -168,7 +186,7 @@
     D.addEventListener('keydown', e => { if (e.key === 'Escape' && OV) { e.stopPropagation(); closeShell(false); } }, true);
 
     /* ======================= SEND ======================= */
-    const S = { shots: [], voice: null, rec: null, busy: false, cur: 0 };
+    const S = { shots: [], voice: null, rec: null, busy: false, cur: 0, micWait: false, micErr: null };
     function resetDraft() {
         S.shots.forEach(s => { try { URL.revokeObjectURL(s.url); } catch (e) { } });
         if (S.voice) try { URL.revokeObjectURL(S.voice.url); } catch (e) { }
@@ -318,27 +336,82 @@
             el.innerHTML = '<button type="button" class="fbk-rec" data-fbk="rec">' + IC.mic + '<span><b>' + esc(t.record) + '</b><small>' + esc(t.recordSub) + '</small></span></button>';
         }
     }
-    function pickMime() {
+    /* --- Nov 5 mic fix (owner: "Why isn't there an allow microphone button with the iOS thing that appears where you can click
+       on allow"). Cause: the app's sounds set iPhone's audio session to 'ambient' (mix with the user's music). Ambient has no
+       microphone input, so WebKit refused getUserMedia straight away, iOS never showed its "Allow microphone" question, and this
+       sheet showed one catch-all line that blamed phone settings. The Community voice messages and the dictation mic already
+       switch the session back with LowiMicSession.begin() (mic-session.js); this recorder did not. Now it does, synchronously in
+       the tap, before getUserMedia; errors are told apart (C.micError) and only a real "no" points to settings. --- */
+    let micFails = 0;
+    function micHold() { const M = window.LowiMicSession; if (!M || !M.begin) return false; try { M.begin(); return true; } catch (e) { return false; } }
+    function micRelease(h) { if (!h) return; try { window.LowiMicSession.end(); } catch (e) { } }
+    function micPerm() {
+        const M = window.LowiMicSession;
+        if (M && M.permission) return M.permission();
+        try { return navigator.permissions.query({ name: 'microphone' }).then(r => (r && r.state) || null, () => null); } catch (e) { return Promise.resolve(null); }
+    }
+    function micMsg(kind) {
+        const t = T();
+        if (kind === 'denied') {
+            let native = false;
+            try { const cap = window.Capacitor; native = !!(cap && cap.isNativePlatform && cap.isNativePlatform()); } catch (e) { }
+            const s = C.micSetup(navigator.userAgent, native, navigator.maxTouchPoints);
+            return s === 'iosApp' ? t.micDeniedIosApp : s === 'iosWeb' ? t.micDeniedIosWeb : t.micDeniedWeb;
+        }
+        return kind === 'busy' ? t.micBusy : kind === 'none' ? t.micNone : kind === 'old' ? t.noRec : t.micAsk;
+    }
+    /* the first getUserMedia call runs inside the tap; a browser that does not take the voice options gets plain audio */
+    async function getMic() {
+        const md = navigator.mediaDevices;
+        try { return await md.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+        catch (e) {
+            if (/Overconstrained|Constraint|TypeError|NotSupported/.test((e && e.name) || '')) return md.getUserMedia({ audio: true });
+            throw e;
+        }
+    }
+    /* audio/mp4 first (all iPhone Safari records), then the other formats this browser says it can, then its own default:
+       a format problem never reaches the person as a microphone problem */
+    function makeRecorder(stream) {
         const MR = window.MediaRecorder;
-        if (!MR || !MR.isTypeSupported) return '';
-        return ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'].find(m => { try { return MR.isTypeSupported(m); } catch (e) { return false; } }) || '';
+        const opts = C.recOptions(MR && MR.isTypeSupported ? m => MR.isTypeSupported(m) : null);
+        for (const o of opts) { try { return o ? new MR(stream, o) : new MR(stream); } catch (e) { } }
+        return null;
     }
     async function startRec() {
         const t = T();
-        if (S.rec || S.busy) return;
+        if (S.rec || S.busy || S.micWait) return;
         if (!window.MediaRecorder || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { say(t.noRec, 'warn'); return; }
+        const held = micHold();   /* synchronously in the tap, before getUserMedia */
+        try { if (window.LowiMic && window.LowiMic.listening && window.LowiMic.listening()) window.LowiMic.stop(); } catch (e) { }
+        S.micWait = true;
+        say(t.micStarting);
         let stream;
-        try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); } catch (e) { say(t.noMic, 'warn'); return; }
-        if (!OV) { stream.getTracks().forEach(k => k.stop()); return; }
-        let mr;
-        const mime = pickMime();
-        try { mr = new MediaRecorder(stream, mime ? { mimeType: mime, audioBitsPerSecond: 64000 } : { audioBitsPerSecond: 64000 }); }
-        catch (e) { try { mr = new MediaRecorder(stream); } catch (e2) { stream.getTracks().forEach(k => k.stop()); say(t.noRec, 'warn'); return; } }
+        try { stream = await getMic(); }
+        catch (e) {
+            S.micWait = false;
+            micRelease(held);
+            const n = (e && e.name) || '';
+            if (/NotAllowed|PermissionDenied/.test(n)) micFails++;
+            const perm = await micPerm();
+            S.micErr = { name: n, perm, fails: micFails, kind: C.micError(n, perm, micFails) };
+            if (OV) say(micMsg(S.micErr.kind), 'warn');
+            return;
+        }
+        S.micWait = false;
+        micFails = 0; S.micErr = null;
+        if (!OV) { stream.getTracks().forEach(k => k.stop()); micRelease(held); return; }
+        const mr = makeRecorder(stream);
+        if (!mr) { stream.getTracks().forEach(k => k.stop()); micRelease(held); say(t.noRec, 'warn'); return; }
         if (S.voice) { try { URL.revokeObjectURL(S.voice.url); } catch (e) { } S.voice = null; }
-        const R = S.rec = { mr, stream, chunks: [], t0: Date.now(), timer: 0, auto: false };
+        const R = S.rec = { mr, stream, held, chunks: [], t0: Date.now(), timer: 0, auto: false };
         mr.ondataavailable = ev => { if (ev.data && ev.data.size) R.chunks.push(ev.data); };
         mr.onstop = () => finishRec(R);
-        try { mr.start(1000); } catch (e) { stream.getTracks().forEach(k => k.stop()); S.rec = null; say(t.noRec, 'warn'); return; }
+        mr.onerror = () => { if (S.rec === R) stopRec(); };
+        try { mr.start(1000); }
+        catch (e) {
+            try { mr.start(); }
+            catch (e2) { stream.getTracks().forEach(k => k.stop()); S.rec = null; micRelease(held); say(t.noRec, 'warn'); return; }
+        }
         R.timer = setInterval(() => {
             const s = (Date.now() - R.t0) / 1000, el = $('.fbk-time');
             if (el) el.textContent = C.mmss(s);
@@ -363,8 +436,9 @@
         R.done = true;
         clearInterval(R.timer);
         try { R.stream.getTracks().forEach(k => k.stop()); } catch (e) { }
+        micRelease(R.held); R.held = false;
         if (S.rec === R) S.rec = null;
-        const type = (R.mr.mimeType || (R.chunks[0] && R.chunks[0].type) || 'audio/mp4').split(';')[0];
+        const type = C.voiceType(R.mr.mimeType || (R.chunks[0] && R.chunks[0].type) || 'audio/mp4');
         const secs = Math.min(C.MAX_VOICE, Math.round((Date.now() - R.t0) / 1000));
         if (R.chunks.length && secs >= 1) {
             const blob = new Blob(R.chunks, { type });

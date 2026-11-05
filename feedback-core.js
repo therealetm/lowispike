@@ -58,6 +58,52 @@
         return 'error';
     }
 
+    /* Nov 5 mic fix. What a failed voice-note start means, so the sheet never blames phone settings for something else.
+       name: the error name from getUserMedia; perm: 'granted' | 'denied' | 'prompt' | null (unknown, from the Permissions API);
+       fails: how many NotAllowed refusals in a row this sheet has seen (this one included).
+       'denied' only when the browser says denied, or when it is unknown and the same tap was refused twice in a row;
+       'ask' when iPhone refused without showing its question (the person never said no): tap again;
+       'busy' another app holds it; 'none' no microphone; 'old' this browser cannot record. */
+    function micError(name, perm, fails) {
+        const n = String(name || '');
+        if (/NotFound|DevicesNotFound/.test(n)) return 'none';
+        if (/NotReadable|TrackStart|Abort/.test(n)) return 'busy';
+        if (/NotSupported|TypeError|InvalidState|Security|Overconstrained|Constraint/.test(n)) return 'old';
+        if (/NotAllowed|PermissionDenied/.test(n)) {
+            if (perm === 'denied') return 'denied';
+            if (perm === 'granted' || perm === 'prompt') return 'ask';
+            return (+fails || 0) >= 2 ? 'denied' : 'ask';
+        }
+        return 'ask';
+    }
+    /* where to switch the microphone back on, by setup: 'iosApp' (the App Store wrapper: iPhone Settings > LOWiSPIKE),
+       'iosWeb' (Home Screen web app or Safari: the microphone belongs to Safari, so LOWiSPIKE is not listed under
+       Privacy > Microphone), 'web' (any other browser) */
+    function micSetup(ua, native, touchPoints) {
+        if (native) return 'iosApp';
+        const u = String(ua || '');
+        if (/iPhone|iPad|iPod/.test(u) || (/Macintosh/.test(u) && (+touchPoints || 0) > 1)) return 'iosWeb';
+        return 'web';
+    }
+    /* the upload type for a recording: always one the 'feedback' bucket accepts (audio/mp4 is what iPhone records) */
+    function voiceType(t) {
+        const s = String(t || '').split(';')[0].trim().toLowerCase();
+        if (/webm/.test(s)) return 'audio/webm';
+        if (/ogg|opus/.test(s)) return 'audio/ogg';
+        if (/aac/.test(s)) return 'audio/aac';
+        return 'audio/mp4';
+    }
+    /* MediaRecorder formats to try, best first. iPhone Safari records audio/mp4 only; asking it for webm makes the recorder
+       throw, so each option is only used when the browser says it can, and a plain recorder (browser default) is last. */
+    function recOptions(isSupported) {
+        const ok = m => { try { return !!(isSupported && isSupported(m)); } catch (e) { return false; } };
+        const out = [];
+        ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'].forEach(m => { if (ok(m)) { out.push({ mimeType: m, audioBitsPerSecond: 64000 }); out.push({ mimeType: m }); } });
+        out.push({ audioBitsPerSecond: 64000 });
+        out.push(null);
+        return out;
+    }
+
     /* the person a row came from, as the owner sees it */
     const who = (r, anonLabel) => r && r.anonymous ? (anonLabel || 'Anonymous') : (String(r && r.name || '').trim() || (r && r.user_id ? 'User ' + String(r.user_id).slice(0, 8) : (anonLabel || 'Anonymous')));
     const pad = n => (n < 10 ? '0' : '') + n;
@@ -176,7 +222,7 @@
     }
     const mmss = s => { s = Math.max(0, Math.floor(+s || 0)); return Math.floor(s / 60) + ':' + pad(s % 60); };
 
-    const api = { MAX_SHOTS, MAX_VOICE, MAX_TEXT, SHOT_EDGE, SHOT_Q, UUID, newKey, shotPath, voicePath, voiceExt, row, ready, classify, who, stamp, ref, label, folder, shotName, voiceName, exportText, manifest, move, needsTranscript, crc32, zip, fit, mmss, PATH_SHOT, PATH_VOICE };
+    const api = { MAX_SHOTS, MAX_VOICE, MAX_TEXT, SHOT_EDGE, SHOT_Q, UUID, newKey, shotPath, voicePath, voiceExt, row, ready, classify, who, stamp, ref, label, folder, shotName, voiceName, exportText, manifest, move, needsTranscript, crc32, zip, fit, mmss, micError, micSetup, voiceType, recOptions, PATH_SHOT, PATH_VOICE };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.LowiFeedbackCore = api;
 })(typeof window !== 'undefined' ? window : null);

@@ -63,7 +63,7 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>LOWiSPIKE can save pictures you choose to keep to your photo library.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>LOWiSPIKE uses the microphone for voice messages in Community and for dictating what you ate.</string>
+	<string>LOWiSPIKE uses the microphone for voice messages in Community, voice notes in Send feedback and for dictating what you ate.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>LOWiSPIKE turns what you say into text when you dictate a meal or a message.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

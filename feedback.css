@@ -139,3 +139,6 @@ html[data-theme="light"] .fbk-inbox .fbk-ibar { background: rgba(250, 249, 246, 
 html[data-theme="light"] .fbk-tr { background: rgba(160, 120, 20, .08); border-color: rgba(160, 120, 20, .3); }
 html[data-theme="light"] .fbk-thanks p { color: rgba(28, 28, 30, .7); }
 html[data-theme="light"] .fbk-recbox { background: rgba(255, 59, 48, .08); }
+/* Nov 5 (mic fix testing): the floating bottom-centre close button sat on top of "Send feedback" on an iPhone-sized screen.
+   Like the other sheets, the feedback sheet ends with room for it, so Send (and the inbox list end) can scroll above it. */
+html.lw-bx-on .fbk-body { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 84px); }

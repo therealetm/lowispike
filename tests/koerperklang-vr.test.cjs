@@ -90,6 +90,8 @@ test('VR row state: off, on, not allowed, no signal, no sensor', () => {
     assert.deepEqual(make({ on: () => true, kind: () => 'ask' }, 'denied'), { st: 'on' }, 'turned on later wins');
 });
 
+test("phones hide the Hz readout chips in the sheet", () => { assert.ok(/@media \(max-width: 600px\) \{ html:root body \.wa-panel\.wa-sheet\.wa-sheet \.wa-strings \.ss-now \{ display: none !important; \} \}/.test(css)); });
+
 test('Home and its bubbles are untouched by this fix (owner likes them)', () => {
     assert.ok(!/wa-sheet|wa-scrim/.test(read('home-orbit-v2.css')));
     assert.ok(!/wa-sheet|wa-scrim/.test(read('world-home.css')));

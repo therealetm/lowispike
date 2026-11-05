@@ -134,3 +134,5 @@ html:root body .wa-panel.wa-sheet.wa-sheet:focus { outline: none !important; }
 html:root body .wa-panel.wa-sheet.wa-sheet .wa-x.lw-bx-src { opacity: 0 !important; pointer-events: none !important; }
 /* "Reset sound" with nothing to reset: the pad's .45 fade made it 2.9:1 in Day; it now reads as a quiet secondary button instead */
 html:root body .wa-panel.wa-sheet.wa-sheet .wa-strings .ss-reset:disabled { opacity: 1 !important; color: var(--kk-sub) !important; background: transparent !important; }
+/* phones: the Hz readout chips under the pad go (pure display, the pad itself shows the tone), so the sheet is ~40 px shorter */
+@media (max-width: 600px) { html:root body .wa-panel.wa-sheet.wa-sheet .wa-strings .ss-now { display: none !important; } }

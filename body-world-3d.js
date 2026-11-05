@@ -180,9 +180,15 @@
     function fail(why) {
         api.lost = false; clearInterval(lostWait); H.classList.remove('bw3-lost');
         api.state = 'fallback'; api.why = why; api.ready = false; H.classList.remove('bw3-ready'); H.classList.add('bw3-off');
-        try { if (world) world.dispose(); } catch (e) {}
+        /* Nov 5 2026 (Still galaxy): dispose(true) hands every model, material and texture back and gives the graphics context up,
+           and the canvas leaves the page wherever it sat (Home's stage or the full-screen #bw3Back), not only hidden */
+        try { if (world) api.released = world.dispose(true); } catch (e) {}
         world = null; Object.assign(api, { scene: null, camera: null, renderer: null, hub: null, regions: [], rig: null, memU: null });
         if (stage) { stage.remove(); stage = null; }
+        if (io) { try { io.disconnect(); } catch (e) { } io = null; }
+        if (canvas) { try { canvas.remove(); canvas.width = canvas.height = 1; } catch (e) { } canvas = null; }
+        if (back) { try { back.remove(); } catch (e) { } back = null; }
+        H.classList.remove('wb-on', 'wb-comm', 'wb-home'); mode = 'home';
         D.querySelectorAll('.bw3-home').forEach(e => e.classList.remove('bw3-home'));
         if (full) close();
     }
@@ -577,7 +583,29 @@
         setTimeout(() => { if (W.requestIdleCallback) W.requestIdleCallback(go, { timeout: 2500 }); else go(); }, 2500);
     }
     /* ---------- boot ---------- */
+    /* ---------- Nov 5 2026, Still galaxy (galaxy-still.js): the chosen view is copied out of the world, then the world is let go ----------
+       stillShot draws one frame without the companion's 3D sprite (she stays on screen as Home's own companion, at her usual size,
+       whatever the zoom) and copies it into an ordinary 2D canvas in the same moment, before anything is released. */
+    api.stillShot = function (maxSide) {
+        if (!world || !canvas || api.state !== 'ready' || api.lost || !world.renderOnce) return null;
+        const hid = [];
+        try {
+            const sc = world.scene;
+            if (sc && sc.traverse) sc.traverse(o => { if (o.visible && ((o.userData && o.userData.wh) || /^(wh-misty|mf-misty|mt-facing|mt-shot)/.test(o.name || ''))) { o.visible = false; hid.push(o); } });
+            world.renderOnce();
+            const C = W.LowiGalaxyStillCore, sz = C ? C.fitSize(canvas.width, canvas.height, maxSide) : { w: canvas.width, h: canvas.height };
+            const out = D.createElement('canvas'); out.width = sz.w; out.height = sz.h;
+            const x = out.getContext('2d'); if (!x) return null;
+            x.drawImage(canvas, 0, 0, sz.w, sz.h);
+            return { canvas: out, cssW: canvas.clientWidth || W.innerWidth, cssH: canvas.clientHeight || W.innerHeight };
+        } catch (e) { return null; } finally {
+            hid.forEach(o => { o.visible = true; });
+        }
+    };
+    api.release = function (why) { if (api.state === 'fallback') return api.released || null; fail(why || 'still'); return api.released || null; };
     function boot() {
+        /* Still galaxy saved: the world is never built on this launch (no three.js, no graphics context, no frame loop) */
+        try { const GS = W.LowiGalaxyStill; if (GS && GS.worldAtLaunch && GS.worldAtLaunch() === 'off') { api.state = 'fallback'; api.why = 'still'; H.classList.add('bw3-off'); return; } } catch (e) { }
         const e = env(), d = shouldUse3D(e);
         if (!d.ok) { api.state = 'fallback'; api.why = d.why; H.classList.add('bw3-off'); return; }
         mountHome();

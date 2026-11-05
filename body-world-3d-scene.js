@@ -873,7 +873,8 @@ export function createWorld(THREE, canvas, opts) {
         return /(^|\s)(bwr-warping|mf-transit)(\s|$)/.test(c) || now - cosAt < 2000;
     }
     const markIn = () => { lastIn = performance.now(); if (wake || nextGap > 0) { nextGap = 0; askFrame(); } };
-    try { ['pointerdown', 'pointermove', 'touchstart', 'touchmove', 'wheel', 'keydown'].forEach(ev => window.addEventListener(ev, markIn, { passive: true, capture: true })); } catch (e) { }
+    const IN_EV = ['pointerdown', 'pointermove', 'touchstart', 'touchmove', 'wheel', 'keydown'];
+    try { IN_EV.forEach(ev => window.addEventListener(ev, markIn, { passive: true, capture: true })); } catch (e) { }
     function calm(now) {
         if (now - lastIn < 2500 || rig.fly) return false;
         if (Math.abs(rig.vy) + Math.abs(rig.vp) > 0.002 || Math.abs(rig.gyT - rig.gy) + Math.abs(rig.gpT - rig.gp) > 0.002) return false;
@@ -910,7 +911,21 @@ export function createWorld(THREE, canvas, opts) {
         }
         warmed = true; return true;
     }
-    function dispose() { stop(); renderer.dispose(); }
+    /* Nov 5 2026 (Still galaxy, owner: release the galaxy's memory and graphics, not just stop drawing): dispose(true) also takes the
+       input listeners off the window, hands every geometry, material and texture back (galaxy-still-core.js disposeAll), drops the
+       render lists and gives the WebGL context up. Without true it stays what it was. Returns what it released. */
+    function dispose(deep) {
+        stop();
+        if (!deep) { renderer.dispose(); return null; }
+        try { IN_EV.forEach(ev => window.removeEventListener(ev, markIn, { capture: true })); } catch (e) { }
+        let n = null;
+        try { const C = typeof window !== 'undefined' && window.LowiGalaxyStillCore; if (C) n = C.disposeAll(scene); } catch (e) { }
+        try { renderer.renderLists.dispose(); } catch (e) { }
+        try { renderer.dispose(); } catch (e) { }
+        try { renderer.forceContextLoss(); } catch (e) { }
+        try { scene.clear(); } catch (e) { }
+        return n || {};
+    }
     setTheme(opts.theme || 'dark');
     return { scene, camera, hub, regions, onFrame, memU, resize, placesLook, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, get resting() { return resting; }, nudge() { if (resting && (wake || nextGap > 0)) { nextGap = 0; askFrame(); } }, cosmosLook: () => ({ vis: !!(cosmos && cosmos.g.visible), rv: typeof cosmosRv === 'number' ? +cosmosRv.toFixed(3) : -1, gx: +cosmosGx.toFixed(3), d: +rig.dist.toFixed(2), m: +((rig.maxD || 14) * 1.05).toFixed(2), stars: cosmos ? +cosmos.stars.material.uniforms.uO.value.toFixed(3) : 0, oth: cosmos && cosmos.others[0] ? +cosmos.others[0].material.uniforms.uO.value.toFixed(3) : 0 }), rig, renderer };
 }

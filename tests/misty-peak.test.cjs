@@ -77,16 +77,17 @@ test('a Move now clears the sugar rush (the cell\'s own rule), and it fades by i
     assert.strictEqual(row(later, 'sugar').done, true);
 });
 
-test('peak: everything done reads Supernova, 100%, with the peak status line and no missing list', () => {
+test('peak: everything done reads Full glow (Nov 5 2026, was Supernova), 100%, with the peak status line and no missing list', () => {
     const { p } = reading({ logs: [{ ts: at(8, 30), t: 'Eier', lvl: 'low' }, { ts: at(13, 0), t: 'Lachs', lvl: 'low' }], ledger: [move(9), move(14, 30)], water: 6 });
     assert.strictEqual(p.missing, 0, p.rows.filter(r => !r.done).map(r => r.k).join());
     assert.strictEqual(p.peak, true);
     assert.strictEqual(p.pct, 100);
     const st = P.statusFor(p, 'Misty', 'en');
-    assert.deepStrictEqual([st.mood, st.title], ['peak', 'Misty is in Supernova mode']);
+    assert.deepStrictEqual([st.mood, st.title], ['peak', 'Misty is at Full glow']);
     const h = P.cardHTML(p, { lang: 'en', name: 'Misty' });
     assert.match(h, /data-peak="1"/);
-    assert.match(h, /Supernova<\/h3>/);
+    assert.match(h, /Full glow<\/h3>/);
+    assert.doesNotMatch(h, /Supernova/, 'Supernova is only level 16');
     assert.match(h, /Everything done\. Misty shines at full power\./);
     assert.doesNotMatch(h, /What\u2019s missing/);
     assert.doesNotMatch(h, /data-mp=/, 'nothing left to tap');

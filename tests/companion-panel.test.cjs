@@ -67,8 +67,8 @@ test('companion card: Forms and Glow come first, then energy, level, adventures;
     const js = R('misty-hub.js'), h = js.slice(js.indexOf('function companionTab('), js.indexOf('function advHtml'));
     const doors = h.indexOf('doorsHtml()');
     assert.ok(doors > 0 && doors < h.indexOf('advHtml()'), 'doors first in the companion tab');
-    const scale = h.indexOf('scaleHtml()'), adv = h.indexOf('advHtml()');
-    assert.ok(doors > 0 && doors < scale && scale < adv, 'doors, then energy, level, adventures');
+    /* Nov 5 2026 phase 5: no energy scale on the sheet (World glow is the one daily reading) */
+    assert.ok(h.indexOf('scaleHtml()') < 0, 'no energy card in the companion tab');
     /* Oct 28 2026 slim structure batch 1: one companion panel, its doors are Look, Growth, Aura shop (and Presence) */
     const dj = js.slice(js.indexOf('function doorsHtml'), js.indexOf('function secHtml'));
     for (const k of ["'look'", "'grow'", "'aura'", 'Aussehen', 'Wachstum', 'Aura-Shop']) assert.ok(dj.includes(k), k);

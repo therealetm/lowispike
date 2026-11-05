@@ -24,10 +24,11 @@
 
     const STR = {
         bar: ['World glow', 'Weltleuchten', 'Brillo del mundo'],
-        peak: ['Supernova', 'Supernova', 'Supernova'],
+        /* Nov 5 2026 (Misty sheet plan phase 5): the daily peak is "Full glow"; Supernova is only level 16 */
+        peak: ['Full glow', 'Volles Leuchten', 'Brillo total'],
         peakSub: ['Everything done. {n} shines at full power.', 'Alles geschafft. {n} strahlt mit voller Kraft.', 'Todo hecho. {n} brilla a máxima potencia.'],
-        left1: ['1 thing to Supernova', 'Noch 1 Sache bis Supernova', 'Falta 1 cosa para Supernova'],
-        leftN: ['{x} things to Supernova', 'Noch {x} Dinge bis Supernova', 'Faltan {x} cosas para Supernova'],
+        left1: ['1 thing to Full glow', 'Noch 1 Sache bis Volles Leuchten', 'Falta 1 cosa para el brillo total'],
+        leftN: ['{x} things to Full glow', 'Noch {x} Dinge bis Volles Leuchten', 'Faltan {x} cosas para el brillo total'],
         missing: ['What’s missing', 'Was noch fehlt', 'Lo que falta'],
         sugar_ok: ['No sugar rush', 'Keine Zuckerflut', 'Sin subidón de azúcar'],
         sugar_no: ['Sugar rush · clears in about {t}', 'Zuckerflut · weg in etwa {t}', 'Subidón de azúcar · se va en unos {t}'],
@@ -73,7 +74,7 @@
         st_sugar_sub: ['Fades in about {t} · a short Move clears it', 'Weg in etwa {t} · eine kurze Bewegung räumt sie weg', 'Se va en unos {t} · un Movimiento corto lo despeja'],
         st_storm: ['{n} is in a stormy world', '{n} ist in einer stürmischen Welt', '{n} está en un mundo tormentoso'],
         st_storm_sub: ['Spiky food today · a Move calms it', 'Heute Spike-Essen · eine Bewegung beruhigt sie', 'Hoy comida con picos · un Movimiento lo calma'],
-        st_peak: ['{n} is in Supernova mode', '{n} ist im Supernova-Modus', '{n} está en modo Supernova'],
+        st_peak: ['{n} is at Full glow', '{n} leuchtet voll', '{n} brilla al máximo'],
         st_peak_sub: ['Everything done today · full power', 'Heute alles geschafft · volle Kraft', 'Todo hecho hoy · máxima potencia'],
         btn_move: ['Move', 'Bewegen', 'Moverse'],
         open: ['Open', 'Öffnen', 'Abrir']

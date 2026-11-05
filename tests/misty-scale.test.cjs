@@ -116,5 +116,6 @@ test('design + speed: no new buttons, no timers or frame loops, loaded and cache
     const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
     assert.ok(sw.includes('"misty-scale.js"') && sw.includes('"misty-scale.css"'));
     const hub = fs.readFileSync(path.join(root, 'misty-hub.js'), 'utf8');
-    assert.ok(/scaleHtml\(\)/.test(hub), 'scale sits in Misty\'s card');
+    /* Nov 5 2026 (Misty sheet plan phase 5): the scale's card left Misty's sheet; World glow is the one daily reading there */
+    assert.ok(!/\+ scaleHtml\(\) \+/.test(hub), 'no energy card on Misty\'s sheet');
 });

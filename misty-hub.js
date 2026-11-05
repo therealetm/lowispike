@@ -103,7 +103,8 @@
     }
     /* the old Today bubbles (Journeys, Sun, Weekly goal, Day recap) as plain rows of the World group */
     function worldRows() {
-        const its = todayItems(); if (!its.length) return '';
+        /* the Sun meter is no separate bar on the sheet (phase 5: one daily goal = World glow); its bonus and trips are unchanged */
+        const its = todayItems().filter(it => it.k !== 'sun'); if (!its.length) return '';
         return '<div class="cme-list mh-wl">' + its.map(it => '<button type="button" class="cme-row ms-row' + (it.on ? ' on' : '') + '" data-mh="t-' + it.k + '">' +
             '<span class="cme-ico">' + (it.ico || '') + '</span><span class="cme-tx"><b>' + esc(it.b) + '</b>' + (it.sub && it.sub !== it.b ? '<small>' + esc(it.sub) + '</small>' : '') + '</span>' +
             (it.n ? '<span class="cme-st num">' + esc(it.n) + '</span>' : '') +
@@ -131,7 +132,9 @@
         return '<section class="cme-sec ms-sec"><div class="cme-list"><div class="cme-row ms-row ms-empty"><span class="cme-tx"><b>' + esc(T('History is on its way', 'Der Verlauf kommt gleich', 'El historial llega pronto')) + '</b><small>' + esc(T('Yesterday, week, month and year, from what this phone keeps.', 'Gestern, Woche, Monat und Jahr, aus dem, was dieses Handy speichert.', 'Ayer, semana, mes y a\u00f1o, con lo que guarda este m\u00f3vil.')) + '</small></span></div></div></section>';
     }
     function companionTab() {
-        return doorsHtml() + secHtml() + cycleHtml() + scaleHtml() + advHtml() +
+        /* Nov 5 2026 (Misty sheet plan phase 5, one daily goal): the energy scale card is gone from the sheet; World glow (Today tab,
+           with its "what's missing" list) is the one daily reading, XP and level the long-term one */
+        return doorsHtml() + secHtml() + cycleHtml() + advHtml() +
             '<section class="cme-sec ms-sec"><div class="cme-list"><button type="button" class="cme-row ms-row" data-mh="rename"><span class="cme-ico">' + ICO.pen + '</span><span class="cme-tx"><b>' + esc(T('Rename ' + name(), name() + ' umbenennen', 'Cambiar el nombre de ' + name())) + '</b></span><svg class="cme-chev" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div></section>';
     }
     function html(sayOverride) {

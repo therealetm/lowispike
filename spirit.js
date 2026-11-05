@@ -1119,7 +1119,7 @@
     const hm = ts => { const d = new Date(+ts || 0); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
     const logId = l => String(l.id || l.eventId || l.ts);
     function thumb(l, big) {
-        const ph = /^data:image\//.test(String(l.photo || '')) ? l.photo : '';
+        const MJ = window.LowiMealJournal, ph = MJ && MJ.thumb ? MJ.thumb(l) : (/^data:image\//.test(String(l.photo || '')) ? l.photo : '');
         return ph ? '<img class="sp-td-ph' + (big ? ' big' : '') + '" src="' + esc(ph) + '" alt="">' : '<span class="sp-td-ic">' + icon(SLOT_IC[kindOf(l.slot)]) + '</span>';
     }
     function todayList(logs) {
@@ -1133,7 +1133,7 @@
     function editToday(id) {
         const l = findLog(id);
         if (!l) { slotPicker(); return; }
-        const k = kindOf(l.slot), ph = /^data:image\//.test(String(l.photo || ''));
+        const k = kindOf(l.slot), MJ = window.LowiMealJournal, ph = !!(MJ && MJ.thumb ? MJ.thumb(l) : /^data:image\//.test(String(l.photo || '')));
         const kinds = ['meal', 'snack'].map(s => '<button type="button" class="sp-when-c" data-sp="editKind" data-kind="' + s + '" aria-pressed="' + (s === k) + '">' + esc(slotName(s)) + '</button>').join('');
         showSheet('<h2>' + esc(tr('editH')) + '</h2><form id="spEdit" class="sp-edit" data-id="' + esc(logId(l)) + '" data-kind="' + k + '">' +
             '<div class="sp-edit-top">' + (ph ? '<button type="button" class="sp-edit-ph" data-mj-open="' + esc(String(l.id)) + '" aria-label="' + esc(tr('editPhoto')) + '">' + thumb(l, true) + '</button>' : thumb(l, true)) +

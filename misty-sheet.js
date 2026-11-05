@@ -26,7 +26,7 @@
     };
     function deps() {
         let lv = null; try { if (typeof levelOf === 'function') lv = x => levelOf(x, true); } catch (e) { lv = null; }
-        return { recap: W.LowiDayRecapCore, nutri: W.LowiNutriStatsCore, move: W.LowiMoveEstimateCore, weight: W.LowiWeightJourneyCore, levelOf: lv };
+        return { recap: W.LowiDayRecapCore, nutri: W.LowiNutriStatsCore, move: W.LowiMoveEstimateCore, weight: W.LowiWeightJourneyCore, levelOf: lv, thumb: W.LowiMealJournal && W.LowiMealJournal.thumb };
     }
     function ctx() { return { now: Date.now(), S: state() || {}, fast: js('lowi_fast_v1'), move: js('lowispike.move.v1'), deps: deps() }; }
     function data(dk) { try { return C() ? C().day(ctx(), dk) : null; } catch (e) { return null; } }

@@ -98,7 +98,60 @@
     /* bytes, not a Blob: Blobs inside IndexedDB are unreliable on some WebKit builds; an ArrayBuffer always stores */
     const putPhoto = (id, blob) => blob.arrayBuffer().then(buf => tx('readwrite', s => s.put({ buf, type: blob.type || 'image/jpeg', ts: Date.now() }, String(id))));
     const getPhoto = id => tx('readonly', s => s.get(String(id))).then(v => v && v.buf ? new Blob([v.buf], { type: v.type || 'image/jpeg' }) : null).catch(() => null);
-    const delPhoto = id => tx('readwrite', s => s.delete(String(id))).catch(() => {});
+    const delPhoto = id => { thumbs.delete(String(id)); return tx('readwrite', s => { s.delete(String(id)); s.delete(TK(id)); }).catch(() => {}); };
+
+    /* ---------- Nov 5 2026 (Misty sheet plan, phase 4): the small photo lives next to the full one, not on the log ----------
+       Measured with real food photos: one 160 px thumbnail is about 7,800 characters as a data URL, so three photo meals a day
+       make about 8.5 million characters a year inside lowispike.v2. That is more than Safari keeps for one site, and the log
+       list is copied into the account backup (user_state), against "photos stay on this phone". Now each thumbnail is kept in
+       this database under 't:<id>', the log keeps only ph: 1, and older logs are moved the first time a build with this runs.
+       A log loses its photo only after its thumbnail is safely stored. */
+    const TK = id => 't:' + String(id);
+    const thumbs = new Map();
+    const isPic = s => /^data:image\/(jpeg|png|webp);base64,/.test(String(s || ''));
+    function thumbOf(log) { if (!log) return ''; if (isPic(log.photo)) return log.photo; return log.id != null ? (thumbs.get(String(log.id)) || '') : ''; }
+    function movable(logs) { return (Array.isArray(logs) ? logs : []).filter(l => l && l.id != null && isPic(l.photo)); }
+    const putThumb = (id, s) => tx('readwrite', st => st.put({ thumb: s, ts: Date.now() }, TK(id)));
+    function readThumbs() {
+        return idb().then(d => new Promise(res => {
+            const out = []; let x, rq;
+            try { x = d.transaction(ST, 'readonly'); rq = x.objectStore(ST).openCursor(root.IDBKeyRange.bound('t:', 't:\uffff')); } catch (e) { return res(out); }
+            rq.onsuccess = () => { const c = rq.result; if (!c) return; if (c.value && isPic(c.value.thumb)) out.push([String(c.key).slice(2), c.value.thumb]); c.continue(); };
+            x.oncomplete = () => res(out); x.onerror = x.onabort = () => res(out);
+        })).catch(() => []);
+    }
+    let tidying = null;
+    function tidy() {
+        if (tidying) return tidying;
+        tidying = (async () => {
+            const v = VB(), s = v && v.state && v.state(); if (!s || typeof v.save !== 'function') return 0;
+            let n = 0;
+            for (const l of movable(s.logs)) {
+                const id = String(l.id), ph = l.photo;
+                try { await putThumb(id, ph); } catch (e) { continue; }
+                thumbs.set(id, ph);
+                if (l.photo === ph) { delete l.photo; l.ph = 1; n++; }
+            }
+            if (n) { try { v.save(); } catch (e) {} }
+            return n;
+        })().finally(() => { tidying = null; });
+        return tidying;
+    }
+    const ping = () => { try { root.dispatchEvent(new root.CustomEvent('lowi:meal-thumbs')); } catch (e) {} };
+    let loaded = null;
+    const loadThumbs = () => loaded || (loaded = readThumbs().then(got => { got.forEach(([id, s]) => { if (!thumbs.has(id)) thumbs.set(id, s); }); if (got.length) ping(); return got; }));
+    async function boot() {
+        const got = await loadThumbs();
+        let moved = 0; try { moved = await tidy(); } catch (e) {}
+        /* a log another device already tidied (ph: 1, no photo) gets its small photo drawn again from the full one, if it is here */
+        const v = VB(), s = v && v.state && v.state();
+        const miss = (s && Array.isArray(s.logs) ? s.logs : []).filter(l => l && l.id != null && l.ph && !thumbs.has(String(l.id))).slice(-60);
+        let redrawn = 0;
+        for (const l of miss) {
+            try { const b = await getPhoto(l.id); if (!b) continue; const pic = await pictures(b); if (pic && pic.thumb) { await putThumb(l.id, pic.thumb); thumbs.set(String(l.id), pic.thumb); redrawn++; } } catch (e) {}
+        }
+        if (moved || redrawn) ping();
+    }
 
     /* ---------- pictures: one JPEG at most `max` px on its longest side ---------- */
     function load(src) {
@@ -134,7 +187,13 @@
     }
     // spirit.js finishMeal: the thumbnail for the log (synchronous enough to go in the seed) and the full photo once the id is known
     async function prepare(src) { try { return await pictures(src); } catch (e) { return null; } }
-    async function keep(id, pic) { if (!id || !pic || !pic.blob) return false; try { await putPhoto(id, pic.blob); return true; } catch (e) { return false; } }
+    async function keep(id, pic) {
+        if (!id || !pic) return false;
+        let ok = false;
+        if (pic.blob) { try { await putPhoto(id, pic.blob); ok = true; } catch (e) {} }
+        if (pic.thumb) { thumbs.set(String(id), pic.thumb); try { await tidy(); } catch (e) {} }
+        return ok;
+    }
 
     /* ---------- the logs ---------- */
     const VB = () => root.LowiVitalsBridge || null;
@@ -143,9 +202,9 @@
         if (!log) return '';
         const b = await getPhoto(log.id);
         if (b) { try { return URL.createObjectURL(b); } catch (e) {} }
-        return /^data:image\//.test(String(log.photo || '')) ? log.photo : '';
+        return thumbOf(log);
     }
-    async function photoBlob(log) { if (!log) return null; const b = await getPhoto(log.id); return b || blobOf(log.photo); }
+    async function photoBlob(log) { if (!log) return null; const b = await getPhoto(log.id); return b || blobOf(thumbOf(log)); }
 
     /* ---------- UI ---------- */
     const R = () => root.LowiR2 || null;
@@ -235,7 +294,7 @@
     // a thumbnail button for a meal row (Fuel's today list, the Saved sheet)
     function thumbHTML(log, l) {
         if (!log) return '';
-        const src = /^data:image\/(jpeg|png|webp);base64,/.test(String(log.photo || '')) ? log.photo : '';
+        const src = thumbOf(log);
         return '<button type="button" class="mj-thumb' + (src ? '' : ' mj-thumb-none') + '" data-mj-open="' + esc(log.id) + '" aria-label="' + esc(t('open', l || lang()) + ': ' + (log.t || '')) + '">' + (src ? '<img alt="" src="' + esc(src) + '">' : '<span aria-hidden="true">\u{1F37D}</span>') + '</button>';
     }
     if (root.document && root.document.addEventListener) {
@@ -250,6 +309,7 @@
         }, true);
     }
 
-    const api = { STR, KEYS, t, estimate, level, levelOf, shareOf, prepare, keep, getPhoto, delPhoto, open, share, remove, thumbHTML, blobOf, DB };
+    const api = { STR, KEYS, t, estimate, level, levelOf, shareOf, prepare, keep, getPhoto, delPhoto, open, share, remove, thumbHTML, blobOf, DB, thumb: thumbOf, tidy, movable, boot };
+    if (root.document && root.indexedDB) { loadThumbs(); const go = () => setTimeout(() => { boot().catch(() => {}); }, 1200); if (root.document.readyState === 'complete') go(); else root.addEventListener('load', go, { once: true }); }
     if (typeof module === 'object' && module.exports) module.exports = api; else root.LowiMealJournal = api;
 })(typeof window === 'object' ? window : globalThis);

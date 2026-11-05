@@ -42,10 +42,13 @@
         try { if (R && R.summarize) sum = R.summarize({ now: t, logs: dayLogs, ledger: dayLedger, xp: Math.max(0, xpAt), fast: o.fast, move: o.move, levelOf: o.deps.levelOf }); } catch (e) { sum = null; }
         sum = sum || { meals: [], counts: { low: 0, medium: 0, high: 0, unknown: 0 }, water: 0, moveMin: 0, xp: 0, xpBy: { meal: 0, water: 0, move: 0, gap: 0, other: 0 }, levelFrom: 0, levelTo: 0 };
         /* the meals with their id and thumbnail (summarize keeps name, time and verdict only) */
+        /* the thumbnail: from the photo store on this phone (meal-journal.js thumb, phase 4), or an older log's own photo */
+        const ok = x => typeof x === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(x) ? x : '';
+        const pic = l => { let x = ''; try { const th = o.deps && o.deps.thumb; if (typeof th === 'function') x = ok(th(l)); } catch (e) { x = ''; } return x || ok(l.photo); };
         const onDay = l => (l.day ? l.day === dk : dayKey(num(l.ts)) === dk);
         const raw = arr(dayLogs).filter(l => l && (num(l.ts) > 0 || l.day) && onDay(l)).sort((a, b) => num(a.ts) - num(b.ts));
         const meals = raw.map((l, i) => ({ id: l.id != null ? String(l.id) : '', t: String(l.t || (sum.meals[i] && sum.meals[i].t) || ''), ts: num(l.ts),
-            v: (sum.meals[i] && sum.meals[i].v) || 'unknown', photo: typeof l.photo === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(l.photo) ? l.photo : '' }));
+            v: (sum.meals[i] && sum.meals[i].v) || 'unknown', photo: pic(l) }));
         let tot = null; try { if (N && N.totals) tot = N.totals(dayLogs, dk); } catch (e) { tot = null; }
         const g = k => Math.round(num(tot && tot.sum && tot.sum[k]));
         const w = (pre ? pre.weights : weights(o)).filter(x => x.day === dk).pop() || null;

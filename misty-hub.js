@@ -329,7 +329,7 @@
     function openDetails(tab) { try { if (W.LowiWorldHome && W.LowiWorldHome.openDetails) return W.LowiWorldHome.openDetails(tab); } catch (e) { } return false; }
     /* lowi:aura / lowi:companion (Oct 19): a new aura or name shows on the card right away; a background repaint never wipes a
        half-typed rename */
-    ['lowi:herb-xp', 'lowi:cell-state', 'lowi:meal-logged', 'lowi:lang', 'lowi:aura', 'lowi:companion'].forEach(ev => W.addEventListener(ev, () => { if (sheet() && !renaming()) repaint(); }));
+    ['lowi:herb-xp', 'lowi:cell-state', 'lowi:meal-logged', 'lowi:lang', 'lowi:aura', 'lowi:companion', 'lowi:meal-thumbs'].forEach(ev => W.addEventListener(ev, () => { if (sheet() && !renaming()) repaint(); }));
 
     /* ---------- Misty's nudges on Home ---------- */
     /* Oct 25 2026, 08:01 (Eman, iPhone screenshot of the little bubble and the Today sheet it opened: "Nuke it. I don't know what

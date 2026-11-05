@@ -1,11 +1,11 @@
 # Handoff: sheet-bubble-20261105
 
-**Status (5 Nov 2026, ~13:15 UTC): NOT released, NOT deployed, NOT live.** `main` is unchanged at `b89991b` (Release
-20261105-122814); its CI run 42019551489 passed tests, deploy and the "Live on GitHub Pages" check (verify-live) at 11:33 UTC, and
-no later main run exists (the live site itself is not reachable from this sandbox). Code complete for the handoff items,
-verified by tests and Chromium probes (below). The release was
-attempted with `scripts/release.sh` and stopped at its first network step: this sandbox's network policy denies
-`therealetm.github.io` (see "Release").
+**Status (5 Nov 2026, ~13:30 UTC): this copy was written right before the release.** The owner allowed `therealetm.github.io`
+for this environment; the site answered (live build 20261105-122814) and `scripts/release.sh --quiet` was started. Its outcome
+(build id, CI, live check) is recorded in the next commit of this file on branch `sheet-bubble-20261105`; if you read this
+copy on `main`, check there. Until that record says "verified live", treat it as not live.
+Earlier (~13:15 UTC) a first attempt stopped at its first network step because the host was still denied (see "Release").
+Code complete for the handoff items, verified by tests and Chromium probes (below).
 
 Branch: `sheet-bubble-20261105` (mirror with the same commits: `claude/zen-tesla-wanom8`), from origin/main `b89991b`.
 Main had not moved (merge-base = main tip). Fast-forward pushes only; nothing was force-pushed.

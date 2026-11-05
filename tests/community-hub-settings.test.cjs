@@ -20,7 +20,8 @@ test('settings page groups: You, Circle, App, Help & info, then Delete account a
     assert.deepStrictEqual(g[1].ids, ['presence', 'people', 'posts', 'invite']);
     /* Nov 5 2026 (test changed, why): owner Phase B item 4, Körperklang (World sound panel) and VR stay reachable from Settings */
     /* Nov 5 2026 (test changed, why): Still galaxy battery-save row (galaxy-still.js) sits right under the theme row */
-    assert.deepStrictEqual(g[2].ids, ['theme', 'galaxyStill', 'sky', 'language', 'notifications', 'look', 'worldSound', 'vr']);
+    /* Nov 5 2026 (test changed, why): owner "can't even turn off the aura": Aura on/off row (world-home.js setAuraOn) under Still galaxy */
+    assert.deepStrictEqual(g[2].ids, ['theme', 'galaxyStill', 'aura', 'sky', 'language', 'notifications', 'look', 'worldSound', 'vr']);
     assert.deepStrictEqual(g[3].ids, ['tutorial', 'feedback', 'feedbackInbox', 'support', 'rules', 'about']); /* Nov 5 2026 (test changed, why): Emmanuel asked for a feedback form in Settings + an owner-only Feedback inbox (feedback.js) */
     assert.deepStrictEqual(g[4].ids, ['deleteAccount'], 'Delete account is last, on its own');
     const all = g.flatMap(x => x.ids); assert.strictEqual(new Set(all).size, all.length, 'every row once');

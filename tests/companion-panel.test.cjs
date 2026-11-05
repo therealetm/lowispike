@@ -113,5 +113,7 @@ test('Oct 28 2026 slim structure batch 1: one companion panel; growth and the au
     assert.match(wh, /W\.LowiMistyHub\.openSec\(tab \|\| 'aura'\)/, 'every old Glow / growth link lands in the card section');
     assert.match(wh, /closeTop, openDetails, mistyHTML,/);
     assert.doesNotMatch(js, /data-door="presence"|'presence'/, 'the galaxy presence stays in Profile (P-06), no second way');
-    assert.match(css, /\.mh-sec \.wh-ms-stage, \.mh-sec \.wh-ms-id, \.mh-sec \.wh-ms-forms \{ display: none !important; \}/, 'no second picture or name inside the card');
+    /* Nov 5 2026 (test changed, why): owner "the aura I bought looks nothing like the preview": the shop preview (.wh-pv-stage,
+       Misty wearing the aura you tapped) shows in the card; her big sheet picture and name stay hidden there */
+    assert.match(css, /\.mh-sec \.wh-ms-stage:not\(\.wh-pv-stage\), \.mh-sec \.wh-ms-id, \.mh-sec \.wh-ms-forms \{ display: none !important; \}/, 'no second picture or name inside the card');
 });

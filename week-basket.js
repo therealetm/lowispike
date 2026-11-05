@@ -240,7 +240,9 @@
         const c = view === 'week' || view === 'list' ? build() : null;
         const body = view === 'q' ? qHTML() : view === 'make' ? makeHTML() : view === 'list' ? listHTML(c) : weekHTML(c);
         return (inl ? '<div class="wb-card wb-inline wb-v-' + view + '" role="region" aria-labelledby="wbTitle">' : '<div class="wb-card wb-v-' + view + '" role="dialog" aria-modal="true" aria-labelledby="wbTitle">') +
-            '<div class="wb-head"><div><h3 id="wbTitle">' + T('Shop from home', 'Von zu Hause einkaufen', 'Compra desde casa') + '</h3></div>' +
+            /* Nov 5 2026 (owner, Phase B item 3): "Zu Hause" planning is part of Supermarkt now, as "Plan my week". Inside Supermarkt the
+               head carries a way back to the Supermarkt list (inl.onBack). */
+            '<div class="wb-head"><div>' + (inl && inl.onBack ? '<button type="button" class="wb-backl wb-backsm" data-wb="tosm">\u2039 ' + T('Supermarket', 'Supermarkt', 'Supermercado') + '</button>' : '') + '<h3 id="wbTitle">' + T('Plan my week', 'Meine Woche planen', 'Planear mi semana') + '</h3></div>' +
             (inl ? (inl.head ? inl.head() : '') : '<button type="button" class="wb-x" data-wb="close" aria-label="' + T('Back to Supermarket', 'Zur\u00fcck zum Supermarkt', 'Volver al supermercado') + '">\u00d7</button>') + '</div>' +
             '<div class="wb-scroll">' + body + '</div><div class="wb-toast" role="status" aria-live="polite"></div></div>';
     }
@@ -263,6 +265,7 @@
         const b = e.target.closest('[data-wb]'); if (!b || !ov || ov.classList.contains('closing')) return;
         const a = b.dataset.wb;
         if (a === 'close') return close();
+        if (a === 'tosm') { if (inl && inl.onBack) inl.onBack(); return; }
         /* the guided questions: a single answer moves on by itself, a multi answer toggles and waits for the one button */
         if (a === 'a_store' || a === 'a_people') { if (a === 'a_store') S.store = b.dataset.v; else S.people = +b.dataset.v; save(); return qGo(1); }
         if (a.indexOf('m_') === 0) { const k = a.slice(2), v = b.dataset.v, l = S[k] || [], i = l.indexOf(v); if (i >= 0) l.splice(i, 1); else l.push(v); S[k] = l; save(); return paint('[data-wb="' + a + '"][data-v="' + v + '"]'); }
@@ -349,7 +352,7 @@
         if (!el) return;
         if (ov && !inl) close();
         load(opts);
-        inl = { head: opts && opts.head, onCart: opts && opts.onCart, cartOn: opts && opts.cartOn };
+        inl = { head: opts && opts.head, onCart: opts && opts.onCart, cartOn: opts && opts.cartOn, onBack: opts && opts.onBack };
         ov = el;
         el.addEventListener('click', onClick); el.addEventListener('change', onChange); el.addEventListener('input', onInput);
         el.addEventListener('keydown', e => { if (ov === el && e.key === 'Enter' && e.target && e.target.id === 'wbBud') { e.preventDefault(); onChange(e); } });

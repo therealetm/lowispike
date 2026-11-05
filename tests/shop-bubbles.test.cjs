@@ -128,9 +128,14 @@ test('Hilf mit appearing later refreshes an open Einkaufen bloom', () => {
 test('store-picks.js: doors() in tab-bar order and openAt() opens on that door; Hilf mit in Einkaufen\'s frame', () => {
     const s = read('store-picks.js');
     const d = s.slice(s.indexOf('function doors()'), s.indexOf('function openAt('));
-    const order = ["id: 'shop'", "id: 'home'", "id: 'sz'", "id: 'kitchen'", "id: 'gift'"].map(x => d.indexOf(x));
+    /* Nov 5 2026 (test changed, why): owner Phase B item 3. Three distinct doors (Supermarkt, Seller Zone, Hilf mit), each with a line
+       saying what it is for; Zu Hause is no own door, it is Supermarkt > Plan my week (openAt('home') still lands there) */
+    const order = ["id: 'shop'", "id: 'sz'", "id: 'kitchen'", "id: 'gift'"].map(x => d.indexOf(x));
     assert.ok(order.every(i => i > 0) && order.every((v, i) => !i || v > order[i - 1]), 'same order as the tab bar');
-    assert.match(d, /if \(homeTab\(\)\)/, 'Zu Hause only with week-basket.js');
+    assert.doesNotMatch(d, /id: 'home'/, 'no Zu Hause door of its own');
+    assert.match(d, /sub: T\('Groceries & week plan', 'Einkauf & Wochenplan', 'Compra y semana'\)/);
+    assert.match(d, /sub: T\('Packaged snacks', 'Fertige Snacks', 'Snacks envasados'\)/);
+    assert.match(d, /sub: T\('Help pay', 'Mitbezahlen', 'Ayuda a pagar'\)/);
     assert.match(d, /if \(giftDoor\(\)\)/, 'Hilf mit only once the server table is there');
     const o = s.slice(s.indexOf('function openAt('), s.indexOf('W.LowiStorePicks = {'));
     assert.match(o, /if \(!ov\) openPanel\(from \|\| 'home-shop', id\);/);

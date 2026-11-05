@@ -84,3 +84,7 @@ test('the look buttons press and spring back, never under Reduce Motion or batte
     assert.ok(/prefers-reduced-motion: reduce\) \{ \.atm-quick button, \[data-r2theme\] \{ transition: none; \}/.test(css));
     assert.ok(css.includes('html.lowi-saver .atm-quick button:active'));
 });
+
+test('the Settings theme row names Dark when the true black look is on', () => {
+    assert.ok(read('community-me.js').includes("blk ? ({ de: 'Dunkel', en: 'Dark', es: 'Oscuro' }[l] || 'Dark') : ST.night"));
+});

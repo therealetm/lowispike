@@ -90,7 +90,7 @@ test('step 2 hooks: size and shape unlockables live in the same wallet', () => {
 test('wiring: sparks wallet key, preview with Unlock / missing sparks, Misty wears it on Home and her card', () => {
     assert.ok(js.includes("SKEY = 'lowispike.sparks.v1'"));
     assert.ok(js.includes("data-wh=\"aurabuy\"") && js.includes('wh-pv-need'));
-    assert.ok(js.includes("ensureFx(D.getElementById('spBubble'), fx)"));
+    assert.ok(js.includes("ensureFx(D.getElementById('spBubble'), fx);"));
     assert.ok(hub.includes('H.fxHTML(H.auraLook().fx)'));
     assert.ok(/prefers-reduced-motion: reduce\)\s*\{\s*\.wh-fx i/.test(css), 'reduced motion holds every aura still');
     for (const s of ['Unlock for ', 'freischalten', 'Desbloquear por ', 'Animated auras', 'Animierte Auren', 'Auras animadas']) assert.ok(js.includes(s), s);

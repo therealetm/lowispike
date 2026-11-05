@@ -69,22 +69,61 @@
     /* the moving part of a shop aura: a few spans the CSS animates (transform / opacity only, so the GPU does it; still under
        reduced motion). Used on Home Misty, her card, her sheet and the preview, so she wears it everywhere she shows. */
     const FX_N = { ember: 7, orbs: 3, trail: 8, electric: 3, prism: 1, galaxy: 2 };
+    /* fxHTML(fx): Misty's aura layer. Nov 5 2026 (owner: "the aura I bought looks nothing like the preview, it sits inside the
+       bubble", then "Misty has her own circle and still a bubble around it"): one geometry everywhere (world-home.css "AURA
+       GEOMETRY"): the effects are drawn around Misty's own outline, measured per form (measureReach), never over her and never
+       as an extra circle. Home, her sheet, her card and the shop preview use the same layer. */
     function fxHTML(fx) {
-        if (!FX_N[fx]) return '';
-        let h = '<span class="wh-fx wh-fx-' + fx + '" aria-hidden="true" data-fx="' + fx + '">';
-        if (fx === 'electric') h += '<svg viewBox="0 0 100 100"><path d="M50 3l-4 9 7 3-5 10M93 38l-9 2 1 8-9 4M14 78l8-5 4 7 9-3M80 84l-6-7 6-5-4-8"/><path d="M8 30l9 2-1 8 9 3M60 96l2-9 8 1 2-9"/></svg>';
-        for (let i = 0; i < FX_N[fx]; i++) h += '<i style="--i:' + i + '"></i>';
+        const k = FX_N[fx] ? fx : '';
+        if (!k) return '';
+        let h = '<span class="wh-fx wh-fx-' + k + '" aria-hidden="true" data-fx="' + k + '">';
+        if (k === 'electric') h += '<svg viewBox="0 0 100 100"><path d="M50 2l-3 6 5 2-3 6M96 40l-7 2 1 6-6 3M7 74l6-4 3 5 6-2M83 88l-4-6 5-4-3-6"/><path d="M5 28l7 2-1 6 6 2M58 98l2-6 6 1 1-6"/></svg>';
+        for (let i = 0; i < FX_N[k]; i++) h += '<i style="--i:' + i + '"></i>';
         return h + '</span>';
     }
     function fxOf(id) { return (C.aura(id) || {}).fx || ''; }
     /* keeps one live .wh-fx in an element (Home's bubble gets rebuilt now and then); '' removes it */
     function ensureFx(el, fx) {
         if (!el) return;
-        const ex = el.querySelector(':scope > .wh-fx');
-        if (ex && ex.dataset.fx === fx) return;
+        const ex = el.querySelector(':scope > .wh-fx'), k = FX_N[fx] ? fx : '';
+        if (ex && ex.dataset.fx === k) return;
         if (ex) ex.remove();
-        if (!fx) return;
-        const t = D.createElement('div'); t.innerHTML = fxHTML(fx); if (t.firstChild) el.appendChild(t.firstChild);
+        if (!k) return;
+        const t = D.createElement('div'); t.innerHTML = fxHTML(k); if (t.firstChild) el.appendChild(t.firstChild);
+    }
+    /* Nov 5 2026: how far Misty's drawing really reaches from the middle of her bubble (fins, tails and traits included, the
+       cell alone is about 0.4 of it), so the aura hugs her own outline on every form instead of a fixed circle. Written as
+       --wh-rb (in bubble radii, for Home) and --wh-rs (in halves of her drawing box, for her card, sheet and the preview, which
+       draw the same form). Measured again only when her drawing is replaced or the bubble changes size. */
+    function measureReach() {
+        const b = D.getElementById('spBubble'), sv = b && b.querySelector('svg.tmg-plant');
+        if (!sv) return;
+        const br = b.getBoundingClientRect(), sr = sv.getBoundingClientRect();
+        if (!br.width || !sr.width) return;
+        const key = Math.round(br.width) + ':' + sv.getAttribute('data-cf-st') + ':' + sv.childElementCount;
+        if (st.reachSv === sv && st.reachKey === key) return;
+        const cx = br.left + br.width / 2, cy = br.top + br.height / 2;
+        let e = 0;
+        sv.querySelectorAll(':scope > g, :scope > ellipse, :scope > circle, :scope > path').forEach(n => {
+            if (/cw-env|cw-pill|sp-bubble|cf-rx|lh-pot/.test(n.getAttribute('class') || '')) return;
+            const cs = getComputedStyle(n); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return;
+            const r = n.getBoundingClientRect(); if (!r.width) return;
+            e = Math.max(e, cx - r.left, r.right - cx, cy - r.top, r.bottom - cy);
+        });
+        if (!e) return;
+        st.reachSv = sv; st.reachKey = key;
+        const rb = Math.min(.86, Math.max(.4, e / (br.width / 2))), rs = Math.min(1, Math.max(.45, e / (sr.width / 2)));
+        H.style.setProperty('--wh-rb', rb.toFixed(3)); H.style.setProperty('--wh-rs', rs.toFixed(3));
+    }
+    /* Settings > Aura (Nov 5 2026, owner: "can't even turn off the aura"): off = Misty plain, no effect and no coloured glow,
+       on Home, her card and her sheet. What you own and picked stays saved for when you turn it back on. */
+    const AURA_OFF_KEY = 'lowispike.aura.off';
+    function auraOn() { try { return localStorage.getItem(AURA_OFF_KEY) !== '1'; } catch (e) { return true; } }
+    function setAuraOn(on) {
+        try { if (on) localStorage.removeItem(AURA_OFF_KEY); else localStorage.setItem(AURA_OFF_KEY, '1'); } catch (e) { }
+        applyAura();
+        try { W.dispatchEvent(new CustomEvent('lowi:aura', { detail: { id: auraId(), on: !!on } })); } catch (e) { }
+        return auraOn();
     }
     /* Stardust trail: while Home Misty swims (moves), a few glitter specks stay behind where she was. Polls her spot 8x a second
        only while that aura is on and Home is showing; at most 14 specks, each gone after 0.9 s. Nothing under reduced motion. */
@@ -103,18 +142,21 @@
         }
     }
     function applyAura() {
-        const a = C.aura(auraId());
+        const off = !auraOn();
+        const a = off ? C.aura('') : C.aura(auraId());
         /* Oct 18 game-perf: tick() calls this every 700 ms; a write with the same value still wakes every <html>/<body> observer,
            so write only when the aura changes */
         if (H.style.getPropertyValue('--wh-aura-a') !== a.a) H.style.setProperty('--wh-aura-a', a.a);
         if (H.style.getPropertyValue('--wh-aura-b') !== a.b) H.style.setProperty('--wh-aura-b', a.b);
         if (H.dataset.whAura !== a.id) H.dataset.whAura = a.id;
-        const fx = a.fx || '';
+        const fx = off ? '' : (a.fx || '');
         if ((H.dataset.whFx || '') !== fx) { if (fx) H.dataset.whFx = fx; else delete H.dataset.whFx; }
+        const set = !off && auraChosen();
         ensureFx(D.getElementById('spBubble'), fx);
+        if (fx) measureReach();
+        if (off !== (H.dataset.whAuraOff === '1')) { if (off) H.dataset.whAuraOff = '1'; else delete H.dataset.whAuraOff; }
         if (fx === 'trail' && !st.trailT) st.trailT = setInterval(trailTick, 125);
         else if (fx !== 'trail' && st.trailT) { clearInterval(st.trailT); st.trailT = 0; st.trailAt = null; }
-        const set = auraChosen();
         if (set && H.dataset.whAuraSet !== '1') H.dataset.whAuraSet = '1';
         else if (!set && H.dataset.whAuraSet) delete H.dataset.whAuraSet;
     }
@@ -927,7 +969,8 @@
             '<button type="button" class="wh-ms-btn wh-pv-no" data-wh="pvclose">' + esc(T('Not now', 'Jetzt nicht', 'Ahora no')) + '</button></div></div>';
     }
     function panelAura(xp) {
-        const items = C.auraItems(xp, auraId()), w = walletNow(), have = C.sparks(xpTotal(), w), shop = C.shopItems(xpTotal(), auraId(), w);
+        /* Nov 5: the wallet goes in, or a bought aura counted as not owned here and the free glow list said "Morning dew: Active" beside it */
+        const w = walletNow(), items = C.auraItems(xp, auraId(), w), have = C.sparks(xpTotal(), w), shop = C.shopItems(xpTotal(), auraId(), w);
         return '<p class="wh-ms-lead">' + esc(T('A cell doesn\u2019t wear clothes. It wears light. Pick the glow of your membrane.', 'Eine Zelle tr\u00e4gt keine Kleidung. Sie tr\u00e4gt Licht. W\u00e4hl das Leuchten deiner Membran.', 'Una c\u00e9lula no lleva ropa. Lleva luz. Elige el brillo de tu membrana.')) + '</p>' +
             '<div class="wh-spk" role="status"><span class="wh-spk-i">' + SPK + '</span><span><b>' + have + ' ' + esc(spWord(have)) + '</b><small>' + esc(T('You get 1 spark for every XP. Spending sparks never lowers your level.', 'F\u00fcr jeden XP bekommst du 1 Funken. Ausgeben senkt nie dein Level.', 'Ganas 1 chispa por cada XP. Gastarlas nunca baja tu nivel.')) + '</small></span></div>' +
             (st.preview ? previewBox(st.preview, xpTotal(), w) : '') +
@@ -1262,8 +1305,8 @@
     function mistyFaceArt() { const txt = mistySvg(); if (!txt) return null; let aura = ''; try { aura = C.aura(auraId()).a; } catch (e) { aura = ''; } return { svg: txt, aura }; }
     /* auraLook(): what Misty wears now, for any other place that draws her (a Community / leaderboard avatar: put fxHTML(fx) inside
        an element with position:relative and --a/--b set) */
-    function auraLook() { const a = C.aura(auraId()); return { id: a.id, a: a.a, b: a.b, fx: a.fx || '' }; }
-    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, todayRetired: TODAY_RETIRED, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, mistyHTML, heroTurn, state: st, auraId, sparks: sparksNow, wallet: walletNow, buyAura, fxHTML, ensureFx, auraLook, syncX, rig };
+    function auraLook() { if (!auraOn()) { const d = C.aura(''); return { id: d.id, a: d.a, b: d.b, fx: '', off: true }; } const a = C.aura(auraId()); return { id: a.id, a: a.a, b: a.b, fx: a.fx || '' }; }
+    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, todayRetired: TODAY_RETIRED, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, mistyHTML, heroTurn, state: st, auraId, sparks: sparksNow, wallet: walletNow, buyAura, fxHTML, ensureFx, auraLook, auraOn, setAuraOn, syncX, rig };
     W.LowiWorldHome.mistyFaceArt = mistyFaceArt;
     W.LowiWorldHome.pad = pad;
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();

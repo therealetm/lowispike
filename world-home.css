@@ -20,7 +20,13 @@ html.wh-home #spBubble .tmg-plant { filter: drop-shadow(0 0 6px color-mix(in srg
 /* Oct 19 (aura-rename task, Emmanuel: "I've changed the color of the aura ... click back to my Misty and nothing changed"): once an
    aura is picked in Glow, Home Misty wears it: her glow takes the aura colours. Her own body colours (star sign)
    stay; without a pick she keeps the soft star-colour glow above. */
-html.wh-home[data-wh-aura-set] #spHome #spBubble .tmg-plant { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--wh-aura-a) 70%, transparent)) drop-shadow(0 0 18px color-mix(in srgb, var(--wh-aura-b) 45%, transparent)); }
+/* the chosen glow follows her own outline; the same glow on her sheet, card and the shop preview (Nov 5 2026) */
+html.wh-home[data-wh-aura-set] #spHome #spBubble .tmg-plant { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--wh-aura-a) 70%, transparent)) drop-shadow(0 0 15px color-mix(in srgb, var(--wh-aura-b) 42%, transparent)); }
+/* Nov 5 2026 (owner: "Misty has her own circle and then still a bubble around it, like two circles", worst with Still galaxy): without
+   the live 3D world the bubble drew a glass ring of its own around Misty's cell. It is gone; her own cell wall is her one circle.
+   With the 3D world on, line 193 already clears it. */
+html.wh-home:not(.wh-world-live) #spHome #spBubble { border-color: transparent !important; background: none !important; box-shadow: none !important; }
+html.wh-home:not(.wh-world-live) #spHome #spBubble::before, html.wh-home:not(.wh-world-live) #spHome #spBubble::after { display: none !important; }
 /* the fasting cell floats next to Misty (same node, same tap: the fasting sheet) */
 html.wh-home #spHome #spFast { position: absolute !important; width: var(--wh-fs) !important; height: var(--wh-fs) !important; margin: 0 !important;
     left: calc(50% - var(--wh-sx)) !important; top: calc(var(--wh-cy) + var(--wh-sy)) !important; transform: translate(-50%, -50%) !important; z-index: 2; pointer-events: auto; }
@@ -113,12 +119,14 @@ html.wh-on.wh-r2-on .r2-ov:not(.full) .r2-x { display: none !important; }
 
 /* ---------- Misty's sheet ---------- */
 .wh-ms { --a: var(--wh-aura-a); --b: var(--wh-aura-b); }
-.wh-ms-stage { position: relative; height: 176px; display: flex; align-items: center; justify-content: center; margin: -4px 0 4px; }
-.wh-ms-glow { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--a) 55%, transparent), transparent 70%); box-shadow: 0 0 0 2px color-mix(in srgb, var(--a) 50%, transparent), 0 0 50px -6px var(--a); transition: box-shadow .4s, background .4s; }
+.wh-ms-stage { --m: 128px; position: relative; height: 176px; display: flex; align-items: center; justify-content: center; margin: -4px 0 4px; }
+.wh-ms-glow { position: absolute; width: var(--m); height: var(--m); border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--a) 34%, transparent), transparent 68%); transition: background .4s; }
 @media (prefers-reduced-motion: no-preference) { .wh-ms-glow { animation: wh-breathe 4.5s ease-in-out infinite; } }
 @keyframes wh-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-.wh-ms-art { position: relative; width: 130px; height: 150px; display: flex; align-items: center; justify-content: center; }
-.wh-ms-art svg { width: 100%; height: 100%; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--a) 60%, transparent)); }
+.wh-ms-art { position: relative; width: calc(var(--m) * .82); height: calc(var(--m) * .82); display: flex; align-items: center; justify-content: center; }
+.wh-ms-art svg { width: 100%; height: 100%; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--a) 70%, transparent)) drop-shadow(0 0 15px color-mix(in srgb, var(--b, var(--a)) 42%, transparent)); }
+/* no aura picked, or Settings > Aura off: the faint plain glow Home shows (the shop preview always shows the aura you tapped) */
+html:not([data-wh-aura-set]) .wh-ms-stage:not(.wh-pv-stage) .wh-ms-art svg, html:not([data-wh-aura-set]) .mh-art > svg { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tmg-a, #8fe7ff) 28%, transparent)); }
 .wh-ms-art .lh-acc, .wh-ms-art .lh-pot-fx { display: none !important; }
 .wh-ms-id { text-align: center; }
 .wh-ms-id h2 { margin: 0; font-size: 22px; }
@@ -500,56 +508,67 @@ html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #main #pfBtn#pf
    One .wh-fx layer sits over Misty wherever she shows (Home bubble, her card, her sheet, the shop preview and the shop cards).
    Every moving part is a full-size <i> layer that only animates transform / opacity, so the GPU does it and percentages
    scale with Misty (46 px card orb up to the Home bubble). Reduced motion: everything holds still. Colours come from --a / --b
-   (the aura) or the html data-wh-aura colours on Home. */
-.wh-fx { position: absolute; inset: -12%; pointer-events: none; z-index: 3; border-radius: 50%; contain: layout style; }
+   (the aura) or the html data-wh-aura colours on Home.
+   AURA GEOMETRY (Nov 5 2026, owner: "the aura I bought looks nothing like the preview, it renders inside the bubble", then "Misty
+   has her own circle and then still a bubble around it"). Before: Home cut the layer off at the bubble's edge (spirit.css overflow:
+   hidden), galaxy was drawn inside her over her body, and Home, card, sheet and preview each used their own sizes. Now the effects
+   sit in a band just outside Misty's own outline (fins and traits included), measured per form by world-home.js measureReach():
+   --wh-rb = her reach in bubble radii (Home), --wh-rs = her reach in halves of her drawing box (card, sheet, preview, where her
+   drawing is 0.82 x --m). The layer's radius is 1.387 x her reach, so the band (0.75 to 1 of the layer) starts 4% outside her.
+   No ring of its own: a level glow is the glow on her outline (.tmg-plant drop-shadow). */
+.wh-fx { position: absolute; inset: -18%; pointer-events: none; z-index: 3; border-radius: 50%; contain: layout style; }
 .wh-fx i { position: absolute; inset: 0; display: block; will-change: transform, opacity; }
 .wh-fx i::before { content: ""; position: absolute; border-radius: 50%; }
 .mh-art .wh-fx > svg, .wh-ms-stage .wh-fx > svg, #spBubble .wh-fx > svg, .wh-fx > svg { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; overflow: visible; fill: none !important; stroke: var(--a, var(--wh-aura-a, #b8f4ff)) !important; stroke-width: 1.6 !important; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 #spBubble > .wh-fx { --a: var(--wh-aura-a); --b: var(--wh-aura-b); }
-html:not([data-wh-aura]) #spBubble > .wh-fx { display: none; }
-.wh-ms-stage .wh-fx { inset: calc(50% - 74px); }
+html:not([data-wh-aura]) #spBubble > .wh-fx, html[data-wh-aura-off] .wh-fx:not(.wh-pv-stage .wh-fx) { display: none; }
+/* Home: the layer is no longer cut off at the bubble's edge */
+html.wh-home #spHome #spBubble:has(> .wh-fx) { overflow: visible !important; }
+html.wh-home #spHome #spBubble > .wh-fx { inset: calc(50% - var(--wh-rb, .75) * 69.35%); }
+/* her sheet, the shop preview and her card: the same band around the same form */
+.wh-ms-stage .wh-fx { inset: calc(50% - var(--m) * var(--wh-rs, .85) * .5687); }
 .wh-aura-orb { position: relative; }
 .wh-aura-orb .wh-fx { inset: -18%; }
 .wh-aura-orb > svg { position: relative; z-index: 4; }
 
-/* Ember: warm sparks rise */
-.wh-fx-ember i::before { width: 6%; height: 6%; min-width: 3px; min-height: 3px; left: calc(17% + var(--i) * 10%); top: 66%; background: radial-gradient(circle, #fff6d0 0 30%, var(--a, #ffb36b) 55%, transparent 72%); box-shadow: 0 0 6px var(--b, #ff4d2e); }
-.wh-fx-ember i { opacity: .9; transform: translateY(calc(var(--i) * -6%)); animation: whEmber 2.6s ease-in infinite; animation-delay: calc(var(--i) * -.37s); }
-@keyframes whEmber { 0% { transform: translate(0, 0) scale(1); opacity: 0; } 18% { opacity: 1; } 100% { transform: translate(calc((var(--i) - 3) * 1.6%), -58%) scale(.4); opacity: 0; } }
+/* Ember: warm sparks lift off the membrane all round her and fade */
+@keyframes whEmber { 0% { transform: translateY(0) scale(1); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-190%) scale(.45); opacity: 0; } }
+.wh-fx-ember i { transform: rotate(calc(var(--i) * 51.43deg + 12deg)); }
+.wh-fx-ember i::before { width: 6%; height: 6%; min-width: 3px; min-height: 3px; left: 47%; top: 9%; background: radial-gradient(circle, #fff6d0 0 30%, var(--a, #ffb36b) 55%, transparent 72%); box-shadow: 0 0 6px var(--b, #ff4d2e); opacity: 0; animation: whEmber 2.6s ease-out infinite; animation-delay: calc(var(--i) * -.37s); }
 
-/* Orbiting orbs: three small orbs circle the membrane */
-.wh-fx-orbs i { transform: rotate(calc(var(--i) * 120deg)); animation: whSpin 7s linear infinite; animation-delay: calc(var(--i) * -2.333s); }
-.wh-fx-orbs i::before { width: 13%; height: 13%; min-width: 6px; min-height: 6px; left: 43.5%; top: -2%; background: radial-gradient(circle at 35% 30%, #fff 0 18%, var(--a, #9ef7ff) 48%, var(--b, #5a8cff)); box-shadow: 0 0 8px 1px var(--a, #9ef7ff); }
+/* Orbiting orbs: three small orbs circle just outside the membrane */
 @keyframes whSpin { to { transform: rotate(360deg); } }
+.wh-fx-orbs i { transform: rotate(calc(var(--i) * 120deg)); animation: whSpin 7s linear infinite; animation-delay: calc(var(--i) * -2.333s); }
+.wh-fx-orbs i::before { width: 11%; height: 11%; min-width: 6px; min-height: 6px; left: 44.5%; top: 1%; background: radial-gradient(circle at 35% 30%, #fff 0 18%, var(--a, #9ef7ff) 48%, var(--b, #5a8cff)); box-shadow: 0 0 8px 1px var(--a, #9ef7ff); }
 
-/* Stardust trail: glitter twinkles round her (the trail behind her when she swims is .wh-trail, made by world-home.js) */
+/* Stardust trail: glitter twinkles on a ring just outside the membrane (the trail behind her when she swims is .wh-trail, made by world-home.js) */
+@keyframes whTwinkle { 0%, 100% { opacity: .15; transform: scale(.6); } 50% { opacity: 1; transform: scale(1); } }
 .wh-fx-trail i::before { width: 4%; height: 4%; min-width: 3px; min-height: 3px; background: radial-gradient(circle, #fff 0 30%, var(--a, #fff3b0) 50%, transparent 72%); box-shadow: 0 0 5px var(--b, #5AA9FF); }
 .wh-fx-trail i { animation: whTwinkle 1.9s ease-in-out infinite; animation-delay: calc(var(--i) * -.29s); }
-.wh-fx-trail i:nth-child(1)::before { left: 48%; top: 2%; } .wh-fx-trail i:nth-child(2)::before { left: 84%; top: 18%; }
-.wh-fx-trail i:nth-child(3)::before { left: 95%; top: 52%; } .wh-fx-trail i:nth-child(4)::before { left: 80%; top: 86%; }
-.wh-fx-trail i:nth-child(5)::before { left: 46%; top: 96%; } .wh-fx-trail i:nth-child(6)::before { left: 12%; top: 82%; }
-.wh-fx-trail i:nth-child(7)::before { left: 2%; top: 46%; } .wh-fx-trail i:nth-child(8)::before { left: 16%; top: 12%; }
-@keyframes whTwinkle { 0%, 100% { opacity: .15; transform: scale(.6); } 50% { opacity: 1; transform: scale(1); } }
+.wh-fx-trail i:nth-child(1)::before { left: 48%; top: 4.5%; } .wh-fx-trail i:nth-child(2)::before { left: 78.8%; top: 17.2%; }
+.wh-fx-trail i:nth-child(3)::before { left: 91.5%; top: 48%; } .wh-fx-trail i:nth-child(4)::before { left: 78.8%; top: 78.8%; }
+.wh-fx-trail i:nth-child(5)::before { left: 48%; top: 91.5%; } .wh-fx-trail i:nth-child(6)::before { left: 17.2%; top: 78.8%; }
+.wh-fx-trail i:nth-child(7)::before { left: 4.5%; top: 48%; } .wh-fx-trail i:nth-child(8)::before { left: 17.2%; top: 17.2%; }
 .wh-trail { position: fixed; z-index: 6; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, #fff 0 30%, var(--wh-aura-a, #fff3b0) 55%, transparent 72%); box-shadow: 0 0 6px var(--wh-aura-b, #5AA9FF); animation: whTrail .9s ease-out forwards; }
 @keyframes whTrail { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: translateY(10px) scale(.3); } }
 
-/* Electric: crackling arcs flicker and turn */
+/* Electric: crackling arcs flicker and turn, reaching out from the membrane */
+@keyframes whZap { 0%, 100% { opacity: 1; } 18% { opacity: .15; } 30% { opacity: .9; } 46% { opacity: .35; } 62% { opacity: 1; } 80% { opacity: .2; } }
 .wh-fx-electric > svg { filter: drop-shadow(0 0 2px var(--b, #4f7bff)); animation: whSpin 11s linear infinite, whZap 1.3s steps(1) infinite; }
 .wh-fx-electric > svg path + path { animation: whZap 0.9s steps(1) infinite reverse; }
 .wh-fx-electric i { animation: whZap 1.7s steps(1) infinite; animation-delay: calc(var(--i) * -.55s); }
 .wh-fx-electric i::before { width: 7%; height: 7%; min-width: 4px; min-height: 4px; background: radial-gradient(circle, #fff 0 35%, var(--a, #b8f4ff) 60%, transparent 75%); }
 .wh-fx-electric i:nth-child(2)::before { left: 46%; top: 0; } .wh-fx-electric i:nth-child(3)::before { left: 90%; top: 40%; } .wh-fx-electric i:nth-child(4)::before { left: 10%; top: 76%; }
-@keyframes whZap { 0%, 100% { opacity: 1; } 18% { opacity: .15; } 30% { opacity: .9; } 46% { opacity: .35; } 62% { opacity: 1; } 80% { opacity: .2; } }
 
-/* Prism: a rainbow ring of refracted light turns round her */
-.wh-fx-prism i { inset: 3%; border-radius: 50%; opacity: .8; background: conic-gradient(from 0deg, #ff6b9e, #ffd36b, #8FE7FF, #6be4ff, #0A84FF, #ff8fc8, #ff6b9e); -webkit-mask: radial-gradient(circle, transparent 0 60%, #000 64% 70%, transparent 76%); mask: radial-gradient(circle, transparent 0 60%, #000 64% 70%, transparent 76%); animation: whSpin 9s linear infinite; }
+/* Prism: a rainbow ring of refracted light turns just outside the membrane */
+.wh-fx-prism i { inset: 0; border-radius: 50%; opacity: .85; background: conic-gradient(from 0deg, #ff6b9e, #ffd36b, #8FE7FF, #6be4ff, #0A84FF, #ff8fc8, #ff6b9e); -webkit-mask: radial-gradient(closest-side, transparent 0 75%, #000 79% 89%, transparent 96%); mask: radial-gradient(closest-side, transparent 0 75%, #000 79% 89%, transparent 96%); animation: whSpin 9s linear infinite; }
 .wh-fx-prism i::before { inset: 0; background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.75) 48%, transparent 58%); }
 
-/* Galaxy: a swirling star field inside her */
-.wh-fx-galaxy i { inset: 26%; border-radius: 50%; opacity: .85; animation: whSpin 22s linear infinite;
-    background: radial-gradient(circle at 30% 40%, #fff 0 1.2%, transparent 2%), radial-gradient(circle at 70% 28%, #fff 0 1%, transparent 1.8%), radial-gradient(circle at 62% 70%, #fff 0 1.4%, transparent 2.2%), radial-gradient(circle at 22% 72%, #fff 0 .9%, transparent 1.7%), radial-gradient(circle at 48% 16%, #fff 0 .8%, transparent 1.6%), radial-gradient(circle at 84% 56%, #fff 0 1%, transparent 1.8%),
-        conic-gradient(from 30deg, transparent, color-mix(in srgb, var(--a, #8FE7FF) 55%, transparent), transparent 30%, color-mix(in srgb, var(--b, #0A3A8F) 60%, transparent) 55%, transparent 75%); -webkit-mask: radial-gradient(circle, #000 55%, transparent 72%); mask: radial-gradient(circle, #000 55%, transparent 72%); }
-.wh-fx-galaxy i + i { inset: 32%; opacity: .7; animation-duration: 34s; animation-direction: reverse; background: radial-gradient(circle at 40% 60%, #fff 0 1.3%, transparent 2.1%), radial-gradient(circle at 66% 44%, #fff 0 1%, transparent 1.8%), radial-gradient(circle at 30% 30%, #fff 0 .9%, transparent 1.7%), radial-gradient(circle, color-mix(in srgb, var(--a, #8FE7FF) 40%, transparent), transparent 70%); }
+/* Galaxy: a swirling band of stars round her membrane (Nov 5: was a star field drawn inside her, over her body) */
+.wh-fx-galaxy i { inset: 0; border-radius: 50%; opacity: .9; animation: whSpin 22s linear infinite;
+    background: radial-gradient(circle at 61.1% 8.5%, #fff 0 1.2%, transparent 2%), radial-gradient(circle at 87.2% 28.5%, #fff 0 1%, transparent 1.8%), radial-gradient(circle at 91.5% 61.1%, #fff 0 1.4%, transparent 2.2%), radial-gradient(circle at 71.5% 87.2%, #fff 0 .9%, transparent 1.7%), radial-gradient(circle at 38.9% 91.5%, #fff 0 1.1%, transparent 1.9%), radial-gradient(circle at 12.8% 71.5%, #fff 0 1%, transparent 1.8%), radial-gradient(circle at 8.5% 38.9%, #fff 0 1.3%, transparent 2.1%), radial-gradient(circle at 28.5% 12.8%, #fff 0 .9%, transparent 1.7%),
+        conic-gradient(from 30deg, transparent, color-mix(in srgb, var(--a, #8FE7FF) 60%, transparent), transparent 30%, color-mix(in srgb, var(--b, #0A3A8F) 65%, transparent) 55%, transparent 75%); -webkit-mask: radial-gradient(closest-side, transparent 0 73%, #000 79% 92%, transparent 100%); mask: radial-gradient(closest-side, transparent 0 73%, #000 79% 92%, transparent 100%); }
+.wh-fx-galaxy i + i { inset: 0; opacity: .75; animation-duration: 34s; animation-direction: reverse; background: radial-gradient(circle at 72.4% 18.1%, #fff 0 1.3%, transparent 2.1%), radial-gradient(circle at 87.7% 76.4%, #fff 0 1%, transparent 1.8%), radial-gradient(circle at 27.6% 81.9%, #fff 0 .9%, transparent 1.7%), radial-gradient(circle at 12.3% 23.6%, #fff 0 1.1%, transparent 1.9%), radial-gradient(circle at 95.3% 42%, #fff 0 .8%, transparent 1.6%), radial-gradient(circle at 11.6% 56.8%, #fff 0 1%, transparent 1.8%), radial-gradient(closest-side, transparent 72%, color-mix(in srgb, var(--a, #8FE7FF) 35%, transparent) 84%, transparent 100%); }
 
 /* the shop: the spark balance, the cards and the preview */
 .wh-spk { display: flex; align-items: center; gap: 10px; margin: 2px 0 12px; padding: 10px 12px; border-radius: 16px; background: linear-gradient(120deg, rgba(255, 214, 120, .16), rgba(90, 169, 255, .14)); border: 1px solid rgba(255, 214, 120, .3); }
@@ -565,9 +584,8 @@ html:not([data-wh-aura]) #spBubble > .wh-fx { display: none; }
 html[data-theme="light"] .wh-aura-fx.wh-aura-locked small { color: #a35a00; }
 .wh-aura-pv { border-color: rgba(255, 201, 90, .7) !important; }
 .wh-pv { display: flex; gap: 12px; align-items: center; margin: 0 0 12px; padding: 10px; border-radius: 18px; background: rgba(127, 127, 127, .12); border: 1px solid rgba(255, 201, 90, .45); scroll-margin: 12px; }
-.wh-pv-stage.wh-ms-stage { flex: none; width: 112px; height: 112px; margin: 0; }
-.wh-pv-stage .wh-ms-art svg { width: 84px !important; height: 84px !important; }
-.wh-pv-stage .wh-fx { inset: 4px; }
+.wh-pv-stage.wh-ms-stage { --m: 90px; flex: none; width: 124px; height: 124px; margin: 0; }
+.wh-pv-stage .wh-ms-art svg { width: 100% !important; height: 100% !important; }
 .wh-pv-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .wh-pv-tx b { font-size: 16px; }
 .wh-pv-tx small { opacity: .8; font-size: 12.5px; line-height: 1.3; }
@@ -580,8 +598,8 @@ html[data-theme="light"] .wh-pv-need { color: #8a4b00; }
 @media (max-width: 360px) { .wh-pv { flex-direction: column; align-items: stretch; } .wh-pv-stage.wh-ms-stage { align-self: center; } }
 
 @media (prefers-reduced-motion: reduce) {
-    .wh-fx i, .wh-fx > svg, .wh-fx > svg path { animation: none !important; }
-    .wh-fx-ember i { opacity: .85; }
+    .wh-fx i, .wh-fx i::before, .wh-fx > svg, .wh-fx > svg path { animation: none !important; }
+    .wh-fx-ember i::before { opacity: .85; }
     .wh-fx-trail i { opacity: .8; }
     .wh-trail { display: none; }
 }

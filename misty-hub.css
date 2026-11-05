@@ -9,10 +9,13 @@ html .r2-ov.mh-ov .r2-sh, html.wh-on .r2-ov.mh-ov:not(.full) .r2-sh { background
 
 /* Misty herself: the same artwork as on Home, cloned live */
 .mh-head { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 14px; align-items: center; padding-right: 40px; }
-.mh-art { position: relative; width: 104px; height: 104px; display: flex; align-items: center; justify-content: center; }
-.mh-glow { position: absolute; inset: 6px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--a) 45%, transparent), transparent 70%); }
+.mh-art { --m: 96px; position: relative; width: 104px; height: 104px; display: flex; align-items: center; justify-content: center; }
+/* Nov 5 2026: the same aura geometry as Home (world-home.css AURA GEOMETRY): Misty's drawing is 0.82 x --m, the aura a band just outside her outline */
+.mh-art > .wh-fx { inset: calc(50% - var(--m) * var(--wh-rs, .85) * .5687); }
+.mh-art > svg { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--a) 70%, transparent)) drop-shadow(0 0 15px color-mix(in srgb, var(--b, var(--a)) 42%, transparent)); }
+.mh-glow { position: absolute; inset: calc(50% - var(--m) / 2); border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--a) 34%, transparent), transparent 68%); }
 @media (prefers-reduced-motion: no-preference) { .mh-glow { animation: wh-breathe 4.5s ease-in-out infinite; } }
-.mh-art svg.tmg-plant, .mh-art svg { position: relative; width: 100px !important; height: 100px !important; stroke: none; fill: initial; stroke-width: initial; pointer-events: none; }
+.mh-art svg.tmg-plant, .mh-art > svg { position: relative; width: calc(var(--m) * .82) !important; height: calc(var(--m) * .82) !important; stroke: none; fill: initial; stroke-width: initial; pointer-events: none; }
 .mh-art .lh-acc, .mh-art .lh-pot-fx, .mh-art .cw-pill { display: none !important; }
 .mh-id { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .mh-id h2 { font-size: 24px; font-weight: 700; letter-spacing: -.01em; line-height: 1.15; overflow-wrap: anywhere; }
@@ -186,7 +189,9 @@ html #cmPaneChat .cs-compose-meta, html #cmPaneChat[data-spirit-chat] .cg-chip:n
 .mh-doors.mh-doors3 button small { font-size: 11px; line-height: 1.25; }
 .mh-doors button[aria-expanded="true"] { border-color: color-mix(in srgb, var(--a) 70%, transparent); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--a) 55%, transparent), var(--lg-edge, 0 0 0 transparent); }
 .mh-sec { margin: 12px 0 4px; padding: 4px 14px 14px; border-radius: 18px; border: .5px solid var(--mh-rim); background: var(--mh-card); color: var(--mh-ink); scroll-margin-top: 12px; }
-.mh-sec .wh-ms-stage, .mh-sec .wh-ms-id, .mh-sec .wh-ms-forms { display: none !important; }
+/* Nov 5 2026: the shop preview (Misty wearing the aura you tapped, .wh-pv-stage) stays visible in the card; before, this rule hid
+   it too, so a locked aura could only be judged by the small coloured ball, which is not what she looks like wearing it */
+.mh-sec .wh-ms-stage:not(.wh-pv-stage), .mh-sec .wh-ms-id, .mh-sec .wh-ms-forms { display: none !important; }
 .mh-sec .wh-ms-tabs { margin-top: 10px; }
 .mh-sec .wh-ms-panel { min-height: 0; }
 /* Oct 28 2026 (slim structure rule: panels have a solid frosted backdrop, nothing bleeds through): beta.css's solid-sheet rule

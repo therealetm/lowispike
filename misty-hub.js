@@ -49,7 +49,9 @@
         if (live) {
             const c = live.cloneNode(true);
             c.removeAttribute('id'); c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
-            c.setAttribute('aria-hidden', 'true'); c.classList.add('mh-misty');
+            /* Nov 5 2026: was class "mh-misty", which mirror-move.css also uses (absolute, top 122px), so on her card Misty sat
+               120px under her circle while the aura stayed in it. Own name now. */
+            c.setAttribute('aria-hidden', 'true'); c.classList.add('mh-art-misty');
             return c.outerHTML;
         }
         const x = cur();

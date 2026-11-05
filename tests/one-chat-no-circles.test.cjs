@@ -67,7 +67,7 @@ test('Community menu: People first, no Circles, no "Chat rooms & people", no "Fi
 test('the tabs stay: Rangliste · Chat · Raum · Für dich (Studio removed 4 Nov 2026), one live line without a room number', () => {
   const js = R('community-rooms-ui.js');
   assert.match(js, /\['room','chat','fy','rank'\]/, 'Raum, Chat, Für dich, Rangliste');
-  assert.match(js, /esc\(tr\('hereNow',\{c:ms\.length\}\)\)\+'<\/span>'/, 'live line: "12 here now", nothing else');
+  assert.doesNotMatch(js, /class="rm-live"/, '5 Nov 2026: no live line above the tabs (who is online is in Ranking > Members)');
   assert.doesNotMatch(js, /tr\('roomN'/);
 });
 

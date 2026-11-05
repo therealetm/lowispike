@@ -101,18 +101,14 @@ test('People paints Online right now first (you, then the others), then Everyone
     for (const k of ['B.isBot(p)', 'H.isHidden(p)', 'isBlocked(String(p.uid))', 'LOWI_BOTS']) assert.ok(js.includes(k), k);
 });
 
-test('the header count and faces come from the same list, and tapping "N here now" opens People at Online right now', () => {
+test('the fallback menu count and faces come from the same list; "N here now" is no longer shown above the Chat (5 Nov 2026)', () => {
     const ui = code(read('community-rooms-ui.js'));
     assert.match(ui, /const P=W\.LowiPeopleDir;\s*if\(P&&P\.here\)\{try\{return P\.here\(\);/);
     assert.ok(!/tr\('hereNow',\{c:r\.members\(\)\.length\}\)/.test(ui), 'no raw presence count in the header, the menu label or the pill');
-    assert.match(ui, /const ms=\(h\.me\?\[\{uid:me\(\)\}\]:\[\]\)\.concat\(h\.rows\);/, 'the live line counts you + the people listed');
-    assert.match(ui, /tr\('hereNow',\{c:hn\.count\}\)/);
     assert.match(ui, /tr\('hereNow',\{c:hc\}\)/);
-    assert.match(ui, /lv\.toggleAttribute\('data-here',!!hn\.count\)/);
-    assert.match(ui, /e\.target\.closest\('\.rm-live\[data-here\]'\)[\s\S]{0,80}W\.LowiPeopleDir\.open\(\{at:'here'\}\)/);
-    const css = read('community-rooms.css');
-    assert.match(css, /\.rm-live\[data-here\]::after\{content:'';position:absolute;/, 'a bigger tap area for the live line');
-    assert.match(css, /\.rm-live\[data-here\] \*\{pointer-events:none\}/, 'a repaint mid-tap cannot detach the tapped element');
+    // 5 Nov 2026: no "N here now" line above the Chat any more (owner: the chat must not be a snitch); People opens from Ranking
+    assert.doesNotMatch(ui, /class="rm-live"|\.rm-live\[data-here\]|LowiPeopleDir\.open\(\{at:'here'\}\)/);
+    assert.match(read('ranking.js'), /data-rk="members"[\s\S]*dataset\.rk === 'members'\) \{ openMembers\(t\)/);
 });
 
 test('the online dot and section look: green dot with a ring, headings are not buttons, nothing new moves', () => {

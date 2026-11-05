@@ -146,7 +146,7 @@
         {
             /* Nov 5 2026 (new tutorial): the hold on the Community bubble opens the one Settings page again (home-settings-sleep-v2.js
                holdIntent, owner Nov 5: "Add a long-press gesture on the Community section that opens Settings"); the same page also
-               opens from the Community name at the top of Community (community-rooms-ui.js .rm-menu-btn). The finger holds the bubble.
+               opens from the round profile button at the end of Community's tabs (community-rooms-ui.js .rm-pf / .rm-menu-btn). The finger holds the bubble.
                Settings rows (community-me.js): Look, time of day & weather (Day / Dark / Night / Auto inside it since Nov 5 2026; the
                separate App theme row is gone), Still galaxy, language, Body sound (Körperklang), VR, Tutorial. */
             id: 'settings', area: 'settings', target: ['#whHud .o8-settings'], demo: { g: 'hold', open: 'settings-sheet' },
@@ -403,12 +403,12 @@
             }
         },
         {
-            id: 'new-people', area: 'new', where: 'community', target: ['.rm-menu-btn', '.rm-name'], covers: ['people-directory'],
+            id: 'new-people', area: 'new', where: 'community', target: ['.rm-tab[data-rm="rank"]', '.rm-tabs'], covers: ['people-directory'], /* 5 Nov 2026: People opens from Ranking's round Members button (ranking.js) */
             title: { en: 'Everyone in LOWiSPIKE', de: 'Alle bei LOWiSPIKE', es: 'Todos en LOWiSPIKE' },
             text: {
-                en: 'New: People in the Community menu lists everyone in the app, offline too, with name and photo. Pick one for their profile.',
-                de: 'Neu: Leute im Community-Menü zeigt alle in der App, auch offline, mit Name und Foto. Wähle jemanden für das Profil.',
-                es: 'Nuevo: Personas, en el menú de Comunidad, muestra a todos en la app, también sin conexión, con nombre y foto. Elige a alguien.'
+                en: 'New: Members, the round button in Ranking, opens People: everyone in the app, offline too, and who is online right now.',
+                de: 'Neu: Mitglieder, der runde Knopf in der Rangliste, öffnet Leute: alle in der App, auch offline, und wer gerade online ist.',
+                es: 'Nuevo: Miembros, el botón redondo de Ranking, abre Personas: todos en la app, también sin conexión, y quién está en línea ahora.'
             }
         },
         {

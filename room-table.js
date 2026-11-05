@@ -216,8 +216,14 @@ function wire(){
   /* keyboard / switch control: Enter on a ball picks it */
   felt.addEventListener('click',e=>{if(e.detail!==0)return;const t=e.target&&e.target.closest?e.target.closest('.rt-ball'):null;if(t)tap(t.dataset.uid);});
   for(const ev of ['touchstart','touchmove','wheel','gesturestart','dblclick'])felt.addEventListener(ev,e=>{e.stopPropagation();if(ev!=='touchstart'&&e.cancelable)e.preventDefault();},{passive:false});}
-function tap(uid){const m=mapApi();if(!m||!m.pick)return;const p=people.find(x=>x.uid===uid);if(!p)return;
-  if(p.me||uid===sel)m.pick(me||'me');else m.pick(uid,p.n||p.label);try{sel=m.selected?m.selected()||'':'';}catch(e){}for(const [u,el] of els)el.classList.toggle('sel',!!sel&&u===sel);}
+/* 5 Nov 2026 (owner: "remove the old chat button and 'Write to the galaxy' from the Billiard page, the main Chat has it"): the
+   message field is hidden on the Circle page (community-rooms.css), so "tap to write to them" opens the Chat tab with that person
+   picked (your own ball: everyone), and back returns to the table. Where the field still shows, a tap only picks, as before. */
+function fieldHidden(){const c=D.querySelector('#cmPaneChat .cm-compose');if(!c)return false;try{return W.getComputedStyle(c).display==='none';}catch(e){return false;}}
+function toChat(){const U=W.LowiRoomsUI;if(U&&typeof U.setTab==='function'){try{U.setTab(true);}catch(e){}}}
+function tap(uid){const m=mapApi();if(!m||!m.pick)return;const p=people.find(x=>x.uid===uid);if(!p)return;const go=fieldHidden();
+  if(p.me||(uid===sel&&!go))m.pick(me||'me');else m.pick(uid,p.n||p.label);try{sel=m.selected?m.selected()||'':'';}catch(e){}for(const [u,el] of els)el.classList.toggle('sel',!!sel&&u===sel);
+  if(go)toChat();}
 
 /* ---------- shared positions: public.companion_rest ---------- */
 const saved=new Map();         /* uid -> {x,y} last known rest position from the database or a shot */

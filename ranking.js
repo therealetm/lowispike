@@ -53,6 +53,7 @@
         close: ['Close', 'Schließen', 'Cerrar'],
         /* the rules, behind the ⓘ: one short line each */
         info: ['How it works', 'So funktioniert es', 'Cómo funciona'],
+        members: ['Members', 'Mitglieder', 'Miembros'],
         iW: ['Sunbeams since Monday, {d}', 'Sonnenstrahlen seit Montag, {d}', 'Rayos de sol desde el lunes {d}'],
         iM: ['Sunbeams since {d}', 'Sonnenstrahlen seit dem {d}', 'Rayos de sol desde el {d}'],
         iA: ['All XP ever earned', 'Alle XP, die je gesammelt wurden', 'Toda la XP ganada'],
@@ -250,9 +251,13 @@
         const left = sp ? sp.left + 1 : 0;
         let h = '<div class="rk-top"><div class="rk-seg" role="tablist" aria-label="' + esc(tr('title') + ', ' + tr('periods')) + '" style="--rk-i:' + K.PERIODS.indexOf(per) + '">' +
             K.PERIODS.map(k => '<button type="button" role="tab" class="rk-segb" data-rk="per" data-k="' + k + '" aria-selected="' + (k === per) + '" tabindex="' + (k === per ? 0 : -1) + '">' + esc(tr(k)) + '</button>').join('') + '</div>' +
-            '<button type="button" class="rk-info" data-rk="info" aria-haspopup="dialog" aria-label="' + esc(tr('info')) + '">' + ico('info', '', 'rk-info-i', 'i') + '</button></div>' +
+            /* 5 Nov 2026 (owner: "move the members to ranking ... that round button there becomes members, we can see everyone and who is
+               online, so the chat doesn't become a snitch"): the round button opens People (people-directory.js: everyone, with Online
+               right now at the top), which used to open from the Community heading. How it works moved next to the XP / Forever chips. */
+            '<button type="button" class="rk-info rk-mem" data-rk="members" aria-haspopup="dialog" aria-label="' + esc(tr('members')) + '">' + ico('users', '', 'rk-info-i', '\u25cf') + '</button></div>' +
             '<div class="rk-chips"><span class="rk-chip">' + pIco(per) + '<span>' + esc(per === 'all' ? tr('xp') : tr('sun')) + '</span></span>' +
-            '<span class="rk-chip">' + (sp ? ico('hourglass', '', 'rk-hg', '\u231b') : '<b class="rk-inf8" aria-hidden="true">\u221e</b>') + '<span>' + esc(sp ? (left <= 1 ? tr('left1') : tr('leftN', { n: left })) : tr('forever')) + '</span></span></div>' +
+            '<span class="rk-chip">' + (sp ? ico('hourglass', '', 'rk-hg', '\u231b') : '<b class="rk-inf8" aria-hidden="true">\u221e</b>') + '<span>' + esc(sp ? (left <= 1 ? tr('left1') : tr('leftN', { n: left })) : tr('forever')) + '</span></span>' +
+            '<button type="button" class="rk-chip rk-how" data-rk="info" aria-haspopup="dialog">' + ico('info', '', 'rk-how-i', 'i') + '<span>' + esc(tr('info')) + '</span></button></div>' +
             meHTML(list, mv);
         if (!list.length) h += '<p class="rk-empty">' + ico('trophy', '', 'rk-empty-i', '') + '<span>' + sunHTML(esc(tr(per === 'w' ? 'emptyW' : per === 'm' ? 'emptyM' : 'empty'))) + '</span>' +
             (per === 'w' && K.rows(people(), 'm', now, myCare()).length ? '<button type="button" class="rk-seem" data-rk="per" data-k="m">' + esc(tr('seeM')) + '</button>' : '') + '</p>';
@@ -262,12 +267,19 @@
         }
         return { h, uids: list.map(x => x.p && x.p.uid).filter(Boolean) };
     }
+    /* People needs a signed-in account (people-directory.js returns null otherwise): then the button says so in place of opening nothing */
+    function openMembers(t) {
+        const P = W.LowiPeopleDir;
+        let ok = null; try { ok = P && typeof P.open === 'function' ? P.open({ at: 'here' }) : null; } catch (e) { ok = null; }
+        if (!ok && t) { t.classList.remove('rk-nudge'); void t.offsetWidth; t.classList.add('rk-nudge'); }
+    }
     function wire(b) {
         if (b.__rk) return; b.__rk = 1;
         b.addEventListener('click', e => {
             const t = e.target.closest('[data-rk]'); if (!t || !b.contains(t)) return;
             if (t.dataset.rk === 'per') { per = K.period(t.dataset.k); render(b); const n = b.querySelector('.rk-segb[aria-selected="true"]'); if (n) n.focus({ preventScroll: true }); return; }
             if (t.dataset.rk === 'info') { openInfo(t); return; }
+            if (t.dataset.rk === 'members') { openMembers(t); return; }
             if (t.dataset.rk === 'ladder') { openLadder(t); return; }
             /* 23 Oct, 15:00 (Eman: "only if I click on someone do I see the comparison of the stats"): a companion opens You vs them,
                your own entry opens your levels */

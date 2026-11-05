@@ -9,7 +9,7 @@
 #cmPaneChat[data-spirit-chat]>.rm-bar{position:relative;z-index:30;display:flex;flex-direction:column;gap:12px;margin:0 0 12px;padding:2px 2px 0;color:var(--rm-ink)}
 .rm-head{display:flex;align-items:center;min-height:52px}
 /* keeps clear of the Day/Night switch and the profile picture floating top right (--rm-tr, community-rooms-ui.js fit) */
-#cmPaneChat[data-spirit-chat]>.rm-bar .rm-head{padding-right:var(--rm-tr,0px)}
+#cmPaneChat[data-spirit-chat]>.rm-bar .rm-top{padding-right:var(--rm-tr,0px);padding-left:var(--rm-tl,0px)}
 #cmPaneChat[data-spirit-chat] .rm-id{appearance:none;display:flex;align-items:center;gap:12px;max-width:100%;min-width:0;min-height:52px;padding:6px 14px 6px 6px;border-radius:22px;cursor:pointer;color:var(--rm-ink);text-align:left;
  background:var(--rm-glass);border:1px solid var(--rm-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 24px rgba(0,0,0,.28),0 0 16px var(--rm-glow);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);transition:border-color .2s,box-shadow .2s}
 #cmPaneChat[data-spirit-chat] .rm-id[aria-expanded=true]{border-color:rgba(143,231,255,.75);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 0 1px rgba(143,231,255,.3),0 0 22px rgba(28,247,249,.35)}
@@ -255,3 +255,23 @@ html.sec-open #cmPaneChat[data-spirit-chat]>.rm-bar .rm-head{padding-left:calc(5
 #cmPaneChat .rm-fy .fy-rail{gap:10px;right:6px}
 #cmPaneChat .rm-fy .fy-feed{touch-action:pan-y;overscroll-behavior:contain}
 #cmPaneChat .rm-fy .fy-slide{width:100%;margin:0;border-radius:0;outline:0;box-shadow:none}
+
+/* 5 Nov 2026 (owner: "the community thingy up there makes everything crammed ... nuke it ... chat, circle, ranking, for you and then
+   profile"): no Community heading. The tabs are the top row, and a round profile button in the same glass sits at its end and opens
+   the one settings page (community-rooms-ui.js .rm-pf). Who is online lives behind Ranking's Members button, not above the Chat. */
+#cmPaneChat[data-spirit-chat]>.rm-bar .rm-top{display:flex;align-items:center;gap:8px;min-width:0}
+#cmPaneChat[data-spirit-chat]>.rm-bar .rm-top>.rm-tabs{flex:1 1 auto;min-width:0}
+#cmPaneChat[data-spirit-chat] .rm-pf{appearance:none;flex:none;display:grid;place-items:center;width:52px;height:52px;padding:0;border-radius:50%;cursor:pointer;color:var(--rm-ink);
+ background:var(--rm-glass);border:1px solid var(--rm-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 6px 20px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);transition:border-color .2s,box-shadow .2s}
+#cmPaneChat[data-spirit-chat] .rm-pf svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#cmPaneChat[data-spirit-chat] .rm-pf[aria-expanded=true]{border-color:rgba(143,231,255,.75)}
+#cmPaneChat[data-spirit-chat] .rm-pf:focus-visible{outline:2px solid var(--rm-cyan);outline-offset:2px}
+#cmPaneChat[data-spirit-chat] .rm-pf:active{transform:scale(.94)}
+@media (max-width:399px){#cmPaneChat[data-spirit-chat]>.rm-bar .rm-top{gap:6px}#cmPaneChat[data-spirit-chat] .rm-pf{width:48px;height:48px}#cmPaneChat[data-spirit-chat] .rm-tabs .rm-tab{font-size:12.5px;padding:0 2px}}
+@media (max-width:359px){#cmPaneChat[data-spirit-chat] .rm-pf{width:44px;height:44px}#cmPaneChat[data-spirit-chat] .rm-tabs .rm-tab{font-size:11px;padding:0 1px}}
+@media (prefers-reduced-motion:reduce){#cmPaneChat[data-spirit-chat] .rm-pf{transition:none}#cmPaneChat[data-spirit-chat] .rm-pf:active{transform:none}}
+/* 5 Nov 2026 (owner: "remove the old chat button and 'Write to the galaxy' from the Billiard page, the main Chat has it"): on the
+   Circle (billiard table) page the To-everyone row with its Chat button and the message field are hidden; they stay in the Chat tab
+   (html.cr-room) and in the games' own screens are untouched. A tap on a companion still opens their card. */
+html.csp-circle:not(.cr-room):not(.csp-game) #cmPaneChat[data-spirit-chat]:not([data-room]) #cgTo,
+html.csp-circle:not(.cr-room):not(.csp-game) #cmPaneChat[data-spirit-chat]:not([data-room]) .cm-compose{display:none!important}

@@ -9,7 +9,7 @@ const T={room:['Circle','Circle','Circle'],chat:['Chat','Chat','Chat'],
  close:['Close','Schließen','Cerrar'],
  create:['Creation','Erstellen','Crear'],rank:['Ranking','Rangliste','Ranking'],aff:['Affiliates','Affiliates','Afiliados'],fy:['For You','Für dich','Para ti'],studio:['Studio','Studio','Estudio'],studioSw:['Studio: Affiliates or Creation','Studio: Affiliates oder Erstellen','Estudio: Afiliados o Crear'],copyLink:['Copy link','Link kopieren','Copiar enlace'],copied:['Link copied','Link kopiert','Enlace copiado'],
  tabs:['Community sections','Community-Bereiche','Secciones de la comunidad'],community:['Community','Community','Comunidad'],hereNow:['{c} here now','{c} gerade da','{c} aquí ahora'],
- menu:['Community menu','Community-Menü','Menú de la comunidad'],mDir:['People','Leute','Personas'],mProfile:['Edit profile','Profil bearbeiten','Editar perfil'],mInvite:['Copy invite link','Einladungslink kopieren','Copiar enlace de invitación'],
+ menu:['Community menu','Community-Menü','Menú de la comunidad'],profile:['Profile & settings','Profil & Einstellungen','Perfil y ajustes'],mDir:['People','Leute','Personas'],mProfile:['Edit profile','Profil bearbeiten','Editar perfil'],mInvite:['Copy invite link','Einladungslink kopieren','Copiar enlace de invitación'],
  mCopyAff:['Copy Affiliates link','Affiliates-Link kopieren','Copiar enlace de Afiliados'],mCopyCreate:['Copy Creation link','Erstellen-Link kopieren','Copiar enlace de Crear'],mSettings:['Chat settings','Chat-Einstellungen','Ajustes del chat'],mWelcome:['Welcome & rules','Willkommen & Regeln','Bienvenida y normas'],
  channels:['Channels','Kanäle','Canales'],chGalaxy:['Galaxy chat','Galaxie-Chat','Chat de la galaxia'],chGalaxyEmpty:['No messages yet. Say hi to everyone.','Noch keine Nachrichten. Sag allen Hallo.','Aún no hay mensajes. Saluda a todos.'],
  chReplies:['Replies & mentions','Antworten & Erwähnungen','Respuestas y menciones'],chRepliesEmpty:['Nothing for you yet.','Noch nichts für dich.','Todavía nada para ti.'],
@@ -102,15 +102,20 @@ function copyText(u,label){const done=()=>note(label+': '+u);
  if(navigator.clipboard&&W.isSecureContext)navigator.clipboard.writeText(u).then(done,()=>note(u));else note(u);}
 function copyView(v){v=v||view;if(PANES[v])v='';if(!VIEWS[v])return copyText(inviteUrl(),tr('copied'));copyText(viewUrl(v),tr('copied'));}
 let bar=null,banner=null,menu=null,msg='',msgT=0;
+/* 5 Nov 2026 (owner: "the community thingy up there makes everything crammed ... the word opens the people list, the arrow opens
+   settings, that's confusing ... nuke it, have settings next to For You: chat, circle, ranking, for you and then profile"): no Community
+   heading any more. The tabs are the top row, and the round profile button at its end (.rm-pf, still .rm-menu-btn / data-rm=menu)
+   opens the ONE settings page (community-me.js). People / who is online moved to Ranking's round Members button (ranking.js), so
+   nothing above the Chat says who is online. */
 function ensure(){const pane=D.getElementById('cmPaneChat');if(!pane||!pane.hasAttribute('data-spirit-chat'))return null;
  if(bar&&bar.isConnected&&bar.parentNode===pane)return bar;
  bar=D.createElement('nav');bar.className='rm-bar';bar.setAttribute('data-noi18n','');
- bar.innerHTML='<div class="rm-head"><button type="button" class="rm-id rm-menu-btn" data-rm="menu" aria-haspopup="dialog"><span class="rm-logo" aria-hidden="true"><i></i></span><span class="rm-idt"><b class="rm-name"></b><span class="rm-live"></span></span><span class="rm-chev" aria-hidden="true"></span></button></div>'
-  +'<div class="rm-tabs" role="tablist">'+tabOrder().map(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'+k+'"></button>').join('')+'</div><div class="rm-crumb" hidden><button type="button" class="rm-back" data-rm="back"></button><span class="rm-crumb-t"></span></div><div class="rm-banner" role="status" aria-live="polite"></div>';
+ bar.innerHTML='<div class="rm-top"><div class="rm-tabs" role="tablist">'+tabOrder().map(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'+k+'"></button>').join('')+'</div>'
+  +'<button type="button" class="rm-pf rm-menu-btn" data-rm="menu" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.7"/><path d="M4.8 20c.9-3.9 3.7-6 7.2-6s6.3 2.1 7.2 6"/></svg></button></div><div class="rm-crumb" hidden><button type="button" class="rm-back" data-rm="back"></button><span class="rm-crumb-t"></span></div><div class="rm-banner" role="status" aria-live="polite"></div>';
  pane.insertBefore(bar,pane.firstChild);banner=bar.querySelector('.rm-banner');
  for(const ms of [60,250,600,1100])setTimeout(()=>fit(bar),ms);setTimeout(maybeWelcome,1200);
  bar.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const a=b.dataset.rm;
-  if(a==='back')goBack();else if(a==='room')setTab(false);else if(a==='chat')setTab(true);else if(a==='create'||a==='aff'||a==='rank'||a==='fy'||a==='studio')showView(a);else if(a==='copy')copyView();else if(a==='menu'){if(e.target.closest('.rm-live[data-here]')&&W.LowiPeopleDir&&W.LowiPeopleDir.open){toggleMenu(false);try{W.LowiPeopleDir.open({at:'here'});return;}catch(x){}}
+  if(a==='back')goBack();else if(a==='room')setTab(false);else if(a==='chat')setTab(true);else if(a==='create'||a==='aff'||a==='rank'||a==='fy'||a==='studio')showView(a);else if(a==='copy')copyView();else if(a==='menu'){
    /* Oct 29 2026 (Emmanuel: "wenn du in eine Einstellung möchtest, drückst du auf Community ... und nochmal auf diese Community-Taste"):
       the Community name, now in the middle, opens the ONE settings page (community-me.js). Its Circle group holds what this
       drop-down had (People, invite link, rules); the drop-down stays only as a fallback when that page is missing. */
@@ -122,15 +127,11 @@ function initials(n){const p=String(n||'').trim().split(/\s+/).filter(Boolean);r
 function colorOf(uid){try{return (W.LowiCommunity&&W.LowiCommunity.colorOf&&W.LowiCommunity.colorOf(uid))||'';}catch(e){return '';}}
 /* 25 Oct 2026 (Emmanuel: "When someone is online, it says '2 here now', but when I click, I don't see who"): the count and the
    faces come from LowiPeopleDir.here(), the same list as Online right now in People, so they always match and bots, test, hidden
-   and removed accounts never count. A tap on this line opens People at that section (bar click, .rm-live[data-here]). */
+   and removed accounts never count. 5 Nov 2026: the header line is gone; the count still feeds the fallback menu, and People / who is
+   online opens from Ranking's round Members button (ranking.js). */
 function hereNow(){const r=R();if(!r||!C()||r.status()!=='in')return {me:false,rows:[],count:0};const P=W.LowiPeopleDir;
  if(P&&P.here){try{return P.here();}catch(e){return {me:false,rows:[],count:0};}}
  const ms=r.members(),id=me(),rows=ms.filter(u=>u!==id).map(u=>({uid:u,n:nameOf(u)})).filter(x=>x.n);return {me:ms.includes(id),rows,count:rows.length+(ms.includes(id)?1:0)};}
-function liveHTML(h){h=h||hereNow();const ms=(h.me?[{uid:me()}]:[]).concat(h.rows);/* everyone here, you first: ms.length === h.count */
- if(!ms.length)return '<span class="rm-sub">'+esc(tr('community'))+'</span>';
- const faces=h.rows.slice(0,3);
- return (faces.length?'<span class="rm-faces" aria-hidden="true">'+faces.map(f=>'<i style="'+(colorOf(f.uid)?'--fc:'+esc(colorOf(f.uid)):'')+'">'+esc(initials(f.n))+'</i>').join('')+'</span>':'')
-  +'<span class="rm-dot" aria-hidden="true"></span><span class="rm-sub">'+esc(tr('hereNow',{c:ms.length}))+'</span>';}
 function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  if(chat&&view)view='';/* the message room was opened by other code: Chat wins */
  if(chat)dropFrames('');
@@ -146,9 +147,7 @@ function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  if(pane.__rmV!==(view||'')){pane.__rmV=view||'';if(pane.scrollTop)pane.scrollTop=0;}
  paintChans(pane);paintRank(pane);paintFy(pane);
  const cr=b.querySelector('.rm-crumb');cr.hidden=!(chat&&!view);if(!cr.hidden){const bk=cr.querySelector('.rm-back');if(bk.getAttribute('aria-label')!==tr('back')){bk.innerHTML='<i aria-hidden="true"></i>';bk.setAttribute('aria-label',tr('back'));}cr.querySelector('.rm-crumb-t').textContent=tr('chGalaxy');}
- const nm=b.querySelector('.rm-name');if(nm.textContent!==tr('community'))nm.textContent=tr('community');
- const hn=hereNow(),lv=b.querySelector('.rm-live'),lh=liveHTML(hn);if(lv.__h!==lh){lv.innerHTML=lh;lv.__h=lh;}if(lv.hasAttribute('data-here')!==!!hn.count)lv.toggleAttribute('data-here',!!hn.count);
- b.querySelector('.rm-menu-btn').setAttribute('aria-label',tr('menu')+' · '+(hn.count?tr('hereNow',{c:hn.count}):tr('community')));
+ const pf=b.querySelector('.rm-menu-btn');if(pf.getAttribute('aria-label')!==tr('profile'))pf.setAttribute('aria-label',tr('profile'));
  let h='';
  if(msg)h='<span>'+esc(msg)+'</span>';
  if(banner.__h!==h){banner.innerHTML=h;banner.__h=h;}banner.toggleAttribute('data-on',!!h);
@@ -243,9 +242,14 @@ function clearLeft(br){let left=Infinity;
   if(s&&(s.display==='none'||s.visibility==='hidden'))continue;const r=e.getBoundingClientRect();
   if(r.width<1||r.bottom<=br.top||r.top>=br.top+56||r.right<=br.left)continue;left=Math.min(left,r.left,id==='pfBtn'?r.left-52:Infinity);}
  return left;}
-function fit(b){if(!b||!b.getBoundingClientRect)return;const head=b.querySelector('.rm-head')||b,br=head.getBoundingClientRect();if(br.width<1)return;
+function fit(b){if(!b||!b.getBoundingClientRect)return;const head=b.querySelector('.rm-top')||b,br=head.getBoundingClientRect();if(br.width<1)return;
  const left=clearLeft(br),need=left===Infinity?0:Math.max(0,Math.ceil(br.right-left+8));
- const v=need+'px';if(b.__fit!==v){b.__fit=v;b.style.setProperty('--rm-tr',v);}}
+ const v=need+'px';if(b.__fit!==v){b.__fit=v;b.style.setProperty('--rm-tr',v);}
+ /* 5 Nov 2026: with the Community heading gone the tabs are the top row, so they also keep clear of the page's own back (#secX) when
+    it shows top left (it is usually handed to the bottom button). Measured, so no space is reserved when it is hidden. */
+ let ln=0;const x=D.getElementById('secX');if(x&&x.getBoundingClientRect){const s=W.getComputedStyle?W.getComputedStyle(x):null,r=x.getBoundingClientRect();
+  if((!s||(s.display!=='none'&&s.visibility!=='hidden'&&+s.opacity>0.05))&&r.width>0&&r.bottom>br.top&&r.top<br.bottom&&r.left<br.left+60)ln=Math.max(0,Math.ceil(r.right-br.left+8));}
+ const lv=ln+'px';if(b.__fitL!==lv){b.__fitL=lv;b.style.setProperty('--rm-tl',lv);}}
 D.addEventListener('lowi:room',()=>{paint();try{W.LowiCommunity&&W.LowiCommunity.refresh();}catch(x){}});
 D.addEventListener('lowi:chat',()=>paint());
 /* keep the tab state honest when other code opens or closes the message room (history button, Escape, back) */

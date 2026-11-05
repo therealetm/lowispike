@@ -15,9 +15,9 @@ test('composer: the field comes first, camera then mic/send float to its right (
  for(const f of ['community-chat.css','community-voice.css','community-composer.css','liquid-glass.css'])assert.doesNotMatch(read(f).replace(/textarea#cmInput\{order:0\}/g,''),/#cm(Photo|Mic|Input)[^{,]*\{[^}]*[{;\s]order\s*:/,f);
 });
 
-test('room bar: row 1 reserves the floating buttons, the tabs get their own full row',()=>{
+test('room bar: the top row (tabs + profile button, 5 Nov 2026: no Community heading) reserves the floating buttons',()=>{
  const css=read('community-rooms.css');
- assert.match(css,/\.rm-bar \.rm-head\{padding-right:var\(--rm-tr,0px\)\}/);
+ assert.match(css,/\.rm-bar \.rm-top\{padding-right:var\(--rm-tr,0px\);padding-left:var\(--rm-tl,0px\)\}/);
  assert.match(css,/\.rm-tabs\{display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
 });
 
@@ -26,7 +26,7 @@ function world(opts){
  const els={};const mk=(id,r,extra)=>Object.assign({id,__r:r,getBoundingClientRect(){return this.__r;},hidden:false,attrs:{},style:{props:{},setProperty(k,v){this.props[k]=v;}},
   toggleAttribute(k,on){if(on)this.attrs[k]=1;else delete this.attrs[k];},hasAttribute(k){return !!this.attrs[k];}},extra||{});
  const head=mk('head',rect(18,12,opts.vw-36,52));
- const bar=mk('bar',rect(18,12,opts.vw-36,112),{querySelector:s=>s==='.rm-head'?head:null});
+ const bar=mk('bar',rect(18,12,opts.vw-36,112),{querySelector:s=>s==='.rm-top'?head:null});
  if(opts.pf)els.pfBtn=mk('pfBtn',rect(opts.vw-58,9,44,44),{display:opts.pfDisplay||'block'});
  if(opts.dn)els.tbTheme=mk('tbTheme',rect(opts.vw-108,9,44,44),{display:'grid'});
  const D={readyState:'loading',addEventListener(){},getElementById:id=>els[id]||null,documentElement:{}};

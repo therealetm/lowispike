@@ -291,7 +291,7 @@
         if (a === 'list') {
             const need = ctx.items.filter(i => !ctx.have[i.k]);
             let added = 0;
-            try { if (W.LOWI_SHELF && W.LOWI_SHELF.addIngredients) added = W.LOWI_SHELF.addIngredients(need.map(i => ({ n: i.n, g: i.g })), T('Week shop', 'Wocheneinkauf', 'Compra semanal')); } catch (err) { added = -1; }
+            try { if (W.LOWI_SHELF && W.LOWI_SHELF.addIngredients) added = W.LOWI_SHELF.addIngredients(need.map(i => ({ n: i.n, g: i.g, packs: i.packs, pe: price(i, S.store) })), T('Week shop', 'Wocheneinkauf', 'Compra semanal')); } catch (err) { added = -1; }
             if (added < 0) return toast(T('Could not save the list. Try again.', 'Liste nicht gespeichert. Bitte nochmal.', 'No se pudo guardar la lista. Int\u00e9ntalo de nuevo.'));
             S.sent = S.wk + '#' + S.shuffle + '#' + need.length; paint(sel('list'));
             /* Oct 27 2026 (Emmanuel: "select the grocery store, how many people, the budget, and then you see a kitchen"): after the setup lands on the list (or the Cart, the same list), you end up in the kitchen, the list note glowing on the fridge */

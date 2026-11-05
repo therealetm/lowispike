@@ -97,9 +97,12 @@
     /* merge the dinners' shopping items. dinners: [{id, n, items:[{k, n, g, e, p}]}] (items from LowiStoreList.items) */
     function basket(dinners, people) {
         const m = {}, list = [];
+        /* Nov 5 2026 (owner screenshots: Nori twice on the list): two keys with the same shown name are one thing to buy */
+        const byName = {}, nameKey = n => String(n || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim().replace(/(?:es|s)$/, '');
         (dinners || []).forEach(d => (d.items || []).forEach(i => {
-            const k = String(i.k || i.n || '').toLowerCase(); if (!k) return;
-            if (!m[k]) { m[k] = { k, n: i.n, g: i.g, e: i.e, p: i.p, uses: 0, for: [] }; list.push(m[k]); }
+            let k = String(i.k || i.n || '').toLowerCase(); if (!k) return;
+            const nk = nameKey(i.n); if (!m[k] && nk && byName[nk]) k = byName[nk];
+            if (!m[k]) { m[k] = { k, n: i.n, g: i.g, e: i.e, p: i.p, uses: 0, for: [] }; list.push(m[k]); if (nk) byName[nk] = k; }
             if (m[k].for.indexOf(d.id) < 0) { m[k].for.push(d.id); m[k].uses++; }
         }));
         list.forEach(i => { i.packs = packsFor(i, i.uses, people); });

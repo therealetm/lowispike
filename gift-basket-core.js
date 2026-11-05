@@ -85,15 +85,27 @@
     /* Oct 26 2026 (MAYA-HANDOFF 0.34, Emmanuel): "someone else pays" turns the WHOLE cart into a basket, no typing.
        lines: the cart [{n, q}]. name(n): the name to show and store (app language). Same rule as build(): only foods the
        rating calls low-spike go in. Returns {items:[{n,q}], left:[{n, why:'spike'|'unknown'|'full'}]}; same food twice adds up. */
-    function fromCart(lines, rate, name) {
+    /* Nov 5 2026 (owner walkthrough: "Why is it even leaving out stuff? Everything in a freaking Warenkorb should go in there"):
+       lim = what the server takes, from the gift_limits() function (supabase/proposals/gift_baskets_open_cart_20261105.sql).
+       {anyFood:true, maxItems:60} once that file has run: every food in the cart goes in. Until then the live database still
+       refuses spike foods and more than 12 foods, so those are listed plainly as left out, never dropped silently. */
+    const OLD_LIMITS = Object.freeze({ anyFood: false, maxItems: MAX_ITEMS });
+    function limitsOf(raw) {
+        if (!raw || typeof raw !== 'object') return OLD_LIMITS;
+        const mi = Math.floor(Number(raw.max_items != null ? raw.max_items : raw.maxItems));
+        return { anyFood: !!(raw.any_food != null ? raw.any_food : raw.anyFood), maxItems: mi >= 1 ? Math.min(60, mi) : MAX_ITEMS };
+    }
+    const anyCheck = name => { const n = cleanText(name, 40); return n.length < 2 ? { ok: false, why: 'empty', name: n } : { ok: true, name: n, verdict: null }; };
+    function fromCart(lines, rate, name, lim) {
+        const L = lim && lim.maxItems ? lim : OLD_LIMITS;
         const items = [], left = [], at = new Map();
         (Array.isArray(lines) ? lines : []).forEach(l => {
             const raw = cleanText(l && l.n, 40); if (raw.length < 2) return;
             const shown = cleanText(name ? name(raw) : raw, 40) || raw;
-            const c = itemCheck(shown, rate), k = norm(shown), q = qty(l && l.q);
+            const c = L.anyFood ? anyCheck(shown) : itemCheck(shown, rate), k = norm(shown), q = qty(l && l.q);
             if (!c.ok) { if (!left.some(x => norm(x.n) === k)) left.push({ n: shown, why: c.why === 'empty' ? 'unknown' : c.why }); return; }
             if (at.has(k)) { const it = items[at.get(k)]; it.q = Math.min(99, it.q + q); return; }
-            if (items.length >= MAX_ITEMS) { left.push({ n: shown, why: 'full' }); return; }
+            if (items.length >= L.maxItems) { left.push({ n: shown, why: 'full' }); return; }
             at.set(k, items.length); items.push({ n: c.name, q });
         });
         return { items, left };
@@ -105,18 +117,19 @@
         return n >= MIN_EUR && n <= MAX_EUR ? n : null;
     }
     /* draft: {items:[name], firstName, anon, city, total, payUrl}. Returns {ok, row, errors:[key]} (row = DB insert columns). */
-    function build(draft, rate) {
+    function build(draft, rate, lim) {
+        const L = lim && lim.maxItems ? lim : OLD_LIMITS;
         const d = draft || {}, errors = [];
         const seen = new Set(), items = [];
         (Array.isArray(d.items) ? d.items : []).forEach(x => {
-            const c = itemCheck(typeof x === 'string' ? x : x && x.n, rate);
+            const c = L.anyFood ? anyCheck(typeof x === 'string' ? x : x && x.n) : itemCheck(typeof x === 'string' ? x : x && x.n, rate);
             const k = norm(c.name);
             if (!c.ok || !k || seen.has(k)) return;
             const q = qty(x && x.q);
             seen.add(k); items.push(q > 1 ? { n: c.name, q } : { n: c.name });
         });
         if (!items.length) errors.push('items');
-        if (items.length > MAX_ITEMS) items.length = MAX_ITEMS;
+        if (items.length > L.maxItems) items.length = L.maxItems;
         const t = total(d.total);
         if (t == null) errors.push('total');
         const link = payLink(d.payUrl);
@@ -131,7 +144,7 @@
     function view(row) {
         if (!row || !row.id) return null;
         const link = payLink(row.pay_url);
-        const good = (Array.isArray(row.items) ? row.items : []).filter(x => cleanText(x && x.n, 40)).slice(0, MAX_ITEMS);
+        const good = (Array.isArray(row.items) ? row.items : []).filter(x => cleanText(x && x.n, 40)).slice(0, 60);
         const items = good.map(x => cleanText(x.n, 40)), qtys = good.map(x => qty(x.q));
         return {
             id: String(row.id), owner: row.user_id || '', anon: !!row.anon,
@@ -229,5 +242,5 @@
     }
 
     return { DAY, WINDOW_DAYS, MAX_ITEMS, MIN_EUR, MAX_EUR, MAX_URL, PAY_RE_SQL, KOFI_RESERVED,
-        payLink, linkName, itemCheck, qty, fromCart, total, build, view, status, canReceipt, canVerdict, daysLeft, trust, fromCounts, careEventId, norm, SKIP_MS, deck, freshSkips, swipeDecision, project, releaseVelocity, txOf };
+        payLink, linkName, itemCheck, qty, fromCart, limitsOf, OLD_LIMITS, total, build, view, status, canReceipt, canVerdict, daysLeft, trust, fromCounts, careEventId, norm, SKIP_MS, deck, freshSkips, swipeDecision, project, releaseVelocity, txOf };
 });

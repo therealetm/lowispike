@@ -85,7 +85,7 @@ test('aura: a pick shows on Home Misty and on the card under the Glow sheet righ
     assert.match(wh, /dispatchEvent\(new CustomEvent\('lowi:aura'/);
     assert.match(wh, /H\.dataset\.whAuraSet = '1'/);
     assert.match(whCss, /html\.wh-home\[data-wh-aura-set\] #spHome #spBubble \.tmg-plant \{ filter: drop-shadow\([^}]*--wh-aura-a/);
-    assert.match(hub, /'lowi:aura', 'lowi:companion'\]\.forEach\(ev => W\.addEventListener\(ev, \(\) => \{ if \(sheet\(\) && !renaming\(\)\) repaint\(\)/);
+    assert.match(hub, /'lowi:aura', 'lowi:companion'(, 'lowi:meal-thumbs')?\]\.forEach\(ev => W\.addEventListener\(ev, \(\) => \{ if \(sheet\(\) && !renaming\(\)\) repaint\(\)/);
     assert.ok(!/T\('Misty glows in '/.test(wh), 'the toast says her own name');
 });
 

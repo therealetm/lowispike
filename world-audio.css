@@ -43,3 +43,92 @@ html.wh-home .wh-hud .wa-btn.wa-home[data-on="1"], html[data-theme="light"].wh-h
     border: 1.5px solid rgba(170,225,255,.9); background: radial-gradient(circle at 32% 24%, rgba(255,255,255,.4), rgba(255,255,255,0) 36%), radial-gradient(closest-side, rgba(90,180,255,.3), rgba(30,90,190,.6));
     color: #fff; box-shadow: inset 0 0 18px rgba(140,210,255,.4), 0 0 18px rgba(80,170,255,.55); }
 @media (max-height: 700px) { .wa-panel .wa-quiet { display: none; } }
+
+/* ---------- Nov 5 2026 (owner: "Körperklang looks old, opens in a weird place and is way too big"): an iOS-style bottom sheet ----------
+   It used to be a 304 x 628 px blue glass card hung at the top right of Home's HUD (75% of an iPhone 13 screen), blooming from a
+   hidden button with the Home bubbles still live around it. Now: one sheet over the whole app, anchored to the bottom edge above
+   the home indicator, a dimmed backdrop that closes it, a grabber, a 44 pt close, a shorter pad, the three controls in one grouped
+   card and the long explanation folded under "How it works". Colours follow the look: true black (html[data-black]), the old
+   bluish Night, and Day. Solid surfaces (no blur), so Reduce Transparency and battery saver need nothing extra. The doubled class
+   outranks misty-panels.css, which still styles every other panel. */
+.wa-scrim { position: fixed; inset: 0; z-index: 99994; background: rgba(0,0,0,.52); opacity: 0; transition: opacity .28s ease; touch-action: none; }
+.wa-scrim.wa-in { opacity: 1; }
+html:root body .wa-panel.wa-sheet.wa-sheet {
+    --kk-bg: #101626; --kk-ink: #f2f6ff; --kk-sub: rgba(225,235,255,.66); --kk-group: rgba(255,255,255,.06); --kk-line: rgba(255,255,255,.09); --kk-on: #4aa3ff; --kk-off: rgba(160,175,210,.34);
+    position: fixed !important; z-index: 99995 !important; left: 50% !important; right: auto !important; top: auto !important;
+    bottom: 0 !important; width: min(480px, 100vw) !important; max-width: none !important; box-sizing: border-box !important;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 16px) !important; overflow-y: auto !important; overscroll-behavior: contain !important;
+    margin: 0 !important; padding: 6px 16px calc(env(safe-area-inset-bottom, 0px) + 16px) !important;
+    border-radius: 22px 22px 0 0 !important; border: 1px solid var(--kk-line) !important; border-bottom: 0 !important;
+    background: var(--kk-bg) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+    color: var(--kk-ink) !important; text-shadow: none !important; box-shadow: 0 -10px 40px rgba(0,0,0,.45) !important;
+    font: 400 15px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif !important;
+    transform: translate(-50%, 100%) !important; transition: transform .36s cubic-bezier(.32,.72,0,1) !important; animation: none !important;
+}
+html:root body .wa-panel.wa-sheet.wa-sheet.wa-in { transform: translate(-50%, 0) !important; }
+html:root body .wa-panel.wa-sheet.wa-sheet.mb-ghost { pointer-events: none !important; transition-duration: .26s !important; transition-timing-function: cubic-bezier(.4,0,1,1) !important; }
+html:root[data-black] body .wa-panel.wa-sheet.wa-sheet { --kk-bg: #0e0e10; --kk-ink: #f5f5f7; --kk-sub: rgba(235,235,245,.7); --kk-group: #1c1c1e; --kk-line: rgba(255,255,255,.08); --kk-on: #e9b44c; --kk-off: rgba(120,120,128,.42); box-shadow: 0 -1px 0 rgba(255,255,255,.06), 0 -10px 40px rgba(0,0,0,.7) !important; }
+html:root[data-theme="light"] body .wa-panel.wa-sheet.wa-sheet, html:root[data-ui=light] body .wa-panel.wa-sheet.wa-sheet { --kk-bg: #f2f2f7; --kk-ink: #1c1c1e; --kk-sub: rgba(60,60,67,.8); --kk-group: #fff; --kk-line: rgba(0,0,0,.08); --kk-on: #c4860f; --kk-link: #8a5a00; --kk-off: rgba(120,120,128,.24); box-shadow: 0 -8px 30px rgba(0,0,0,.16) !important; }
+html:root body .wa-sheet .wa-grab { width: 36px; height: 5px; border-radius: 3px; margin: 2px auto 4px; background: var(--kk-off); }
+html:root body .wa-sheet .wa-hd { display: flex !important; align-items: center !important; justify-content: space-between !important; min-height: 44px !important; margin: 0 0 6px !important; padding: 0 !important; }
+html:root body .wa-sheet .wa-hd b { font: 700 20px/1.2 -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif !important; letter-spacing: -.01em; color: var(--kk-ink) !important; }
+html:root body .wa-panel.wa-sheet .wa-x { width: 44px !important; height: 44px !important; min-width: 44px !important; margin: 0 -6px 0 0 !important; padding: 0 !important; border-radius: 22px !important; border: 0 !important;
+    display: inline-flex !important; align-items: center !important; justify-content: center !important; background: transparent !important; color: var(--kk-sub) !important; box-shadow: none !important; }
+html:root body .wa-panel.wa-sheet .wa-x svg { width: 30px; height: 30px; padding: 7px; box-sizing: border-box; border-radius: 50%; background: var(--kk-group); fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+html:root body .wa-sheet .wa-strings { margin: 0 0 12px !important; }
+html:root body .wa-sheet .wa-strings .ss-hd { font-size: 13px !important; color: var(--kk-sub) !important; opacity: 1 !important; font-weight: 600 !important; }
+html:root body .wa-sheet .wa-strings .ss-pad { height: clamp(104px, 14dvh, 150px) !important; }
+html:root body .wa-sheet .wa-strings .ss-hint, html:root body .wa-sheet .wa-strings .ss-off { color: var(--kk-sub) !important; opacity: 1 !important; text-shadow: none !important; }
+html:root body .wa-sheet .wa-group { border-radius: 14px; background: var(--kk-group); overflow: hidden; }
+html:root body .wa-panel.wa-sheet .wa-row { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 12px !important; min-height: 48px !important;
+    margin: 0 !important; padding: 2px 12px 2px 16px !important; border: 0 !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; opacity: 1 !important; color: var(--kk-ink) !important; }
+html:root body .wa-panel.wa-sheet .wa-row + .wa-row { box-shadow: inset 0 1px 0 var(--kk-line) !important; }
+html:root body .wa-panel.wa-sheet .wa-row > span:first-child { font-weight: 500 !important; font-size: 16px !important; }
+html:root body .wa-panel.wa-sheet .wa-vol { display: grid !important; grid-template-columns: auto 1fr auto !important; }
+html:root body .wa-panel.wa-sheet .wa-vol input { accent-color: var(--kk-on) !important; height: 44px !important; }
+html:root body .wa-panel.wa-sheet .wa-vol output { color: var(--kk-sub) !important; opacity: 1 !important; font-size: 14px !important; }
+html:root body .wa-panel.wa-sheet .wa-sw { font: 500 14px/1 -apple-system, system-ui, sans-serif !important; color: var(--kk-sub) !important; }
+html:root body .wa-panel.wa-sheet .wa-sw i, html:root body .wa-panel.wa-sheet .wa-sw.wa-sm i { width: 51px !important; height: 31px !important; border-radius: 16px !important; background: var(--kk-off) !important; box-shadow: none !important; }
+html:root body .wa-panel.wa-sheet .wa-sw i::after, html:root body .wa-panel.wa-sheet .wa-sw.wa-sm i::after { left: 2px !important; top: 2px !important; width: 27px !important; height: 27px !important; }
+html:root body .wa-panel.wa-sheet .wa-sw[aria-checked="true"] i { background: var(--kk-on) !important; }
+html:root body .wa-panel.wa-sheet .wa-sw[aria-checked="true"] i::after { transform: translateX(20px) !important; }
+html:root body .wa-panel.wa-sheet:not(.wa-is-on) .wa-row { opacity: 1 !important; }
+html:root body .wa-panel.wa-sheet.wa-sheet:not(.wa-is-on) .wa-vol > span:first-child, html:root body .wa-panel.wa-sheet.wa-sheet:not(.wa-is-on) .wa-vol output { color: var(--kk-sub) !important; }
+html:root body .wa-panel.wa-sheet.wa-sheet:not(.wa-is-on) .wa-vol input { opacity: .5 !important; }
+html:root body .wa-sheet .wa-more { margin: 10px 2px 0; color: var(--kk-sub); }
+html:root body .wa-sheet .wa-more summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-size: 15px; font-weight: 500; color: var(--kk-on); list-style: none; }
+html:root body .wa-sheet .wa-more summary::-webkit-details-marker { display: none; }
+html:root body .wa-sheet .wa-more summary::after { content: ""; width: 7px; height: 7px; margin-left: 8px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg) translateY(-2px); transition: transform .2s; }
+html:root body .wa-sheet .wa-more[open] summary::after { transform: rotate(-135deg) translateY(-2px); }
+html:root body .wa-panel.wa-sheet .wa-more p { margin: 0 0 8px !important; font-size: 14px !important; line-height: 1.45 !important; opacity: 1 !important; color: var(--kk-sub) !important; text-shadow: none !important; }
+html:root body .wa-panel.wa-sheet button:focus-visible, html:root body .wa-panel.wa-sheet input:focus-visible, html:root body .wa-sheet .wa-more summary:focus-visible { outline: 2px solid var(--kk-on) !important; outline-offset: 2px !important; }
+@media (max-height: 700px) { html:root body .wa-sheet .wa-strings .ss-pad { height: 104px !important; } html:root body .wa-sheet .wa-grab { margin-bottom: 0; } }
+@media (prefers-reduced-motion: reduce) { .wa-scrim, html:root body .wa-panel.wa-sheet.wa-sheet { transition: none !important; } }
+html.lowi-saver .wa-scrim, html.lowi-saver body .wa-panel.wa-sheet.wa-sheet { transition: none !important; }
+@media (prefers-contrast: more) { html:root body .wa-panel.wa-sheet.wa-sheet { --kk-line: rgba(255,255,255,.3); --kk-sub: rgba(240,240,250,.85); } }
+/* compact pad block: the readout chips stay on one line (scrolls sideways if a language runs long), the "background is off" line
+   is left to the switch right below, and the app's one-hand close button at the bottom centre gets its own room */
+html:root body .wa-sheet .wa-strings .ss-top { margin-bottom: 6px !important; }
+html:root body .wa-sheet .wa-strings .ss-reset { min-height: 36px !important; padding: 0 12px !important; font-size: 13px !important; position: relative; }
+html:root body .wa-sheet .wa-strings .ss-reset::before { content: ""; position: absolute; inset: -4px 0; }
+html:root body .wa-sheet .wa-strings .ss-now { flex-wrap: nowrap !important; overflow-x: auto; scrollbar-width: none; margin-top: 8px !important; }
+html:root body .wa-sheet .wa-strings .ss-now::-webkit-scrollbar { display: none; }
+html:root body .wa-sheet .wa-strings .ss-now > span { flex: none; padding: 5px 9px !important; }
+html:root body .wa-sheet .wa-strings .ss-off { display: none !important; }
+html:root body .wa-sheet .wa-strings .ss-hint { margin-top: 6px !important; font-size: 13px !important; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+html:root body .wa-sheet .wa-strings .ss-hint:empty { display: none; }
+html.lw-bx-on body .wa-panel.wa-sheet.wa-sheet { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 84px) !important; }
+/* Chromium still lays out a closed <details>' paragraphs (off screen, below the sheet); the bottom close read them as text under it */
+html:root body .wa-sheet .wa-more:not([open]) > p { display: none !important; }
+
+/* readouts and the reset take the sheet's own ink (the pad's blue-glass chips were white on white in Day; small grey text was
+   under 4.5:1 in true black) */
+html:root body .wa-panel.wa-sheet.wa-sheet .wa-strings .ss-now > span, html:root body .wa-panel.wa-sheet.wa-sheet .wa-strings.ss-bg-off .ss-now > span { background: var(--kk-group) !important; border: 1px solid var(--kk-line) !important; color: var(--kk-sub) !important; opacity: 1 !important; box-shadow: none !important; }
+html:root body .wa-panel.wa-sheet.wa-sheet .wa-strings .ss-now b { color: var(--kk-ink) !important; }
+html:root body .wa-panel.wa-sheet.wa-sheet .wa-strings .ss-now .ss-hz { color: var(--kk-sub) !important; font-size: 12px !important; }
+html:root body .wa-panel.wa-sheet.wa-sheet .wa-strings .ss-reset { background: var(--kk-group) !important; border: 1px solid var(--kk-line) !important; color: var(--kk-ink) !important; box-shadow: none !important; text-shadow: none !important; }
+html:root body .wa-panel.wa-sheet.wa-sheet .wa-more summary { color: var(--kk-link, var(--kk-on)) !important; }
+/* the sheet itself takes focus on open (a 44 pt close at the top that the app's one-hand close at the bottom stands in for is
+   faded out by bottom-close.js, like every other panel's) */
+html:root body .wa-panel.wa-sheet.wa-sheet:focus { outline: none !important; }
+html:root body .wa-panel.wa-sheet.wa-sheet .wa-x.lw-bx-src { opacity: 0 !important; pointer-events: none !important; }

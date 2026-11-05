@@ -92,8 +92,12 @@ test('the hooks: every panel is aimed before it shows, and folds back on close',
   assert.ok(/LowiBloom\.prep\(\$\("#sheet"\)\); \}catch\(e\)\{\} \$\("#sheetwrap"\)\.classList\.add\("open"\)/.test(html), 'Fasting, before it opens');
   assert.ok(/LowiBloom\.prep\(ov\.querySelector\('\.tbw-sheet'\)\)[\s\S]{0,80}classList\.add\('in'\)/.test(topBar), 'Weather, before .in');
   assert.ok(/LowiBloom\.prep\(box\)[\s\S]{0,60}wh-today-open/.test(home), 'Today, before it opens');
-  assert.ok(/LowiBloom\.open\(p\)/.test(audio) && /LowiBloom\.close\(p, \(\) => p\.remove\(\)\)/.test(audio), 'Body sound');
-  assert.equal((audio.match(/querySelector\('\.wa-panel:not\(\.mb-ghost\)'\)/g) || []).length, 3, 'a closing Body sound panel no longer counts as open');
+  /* Nov 5 2026 (test changed, why): owner said Körperklang "looks old, opens in a weird place and is way too big". Body sound is
+     now an iOS bottom sheet that slides up from the bottom edge over a dimmed backdrop (world-audio.css .wa-sheet), so it no longer
+     blooms from Home's (hidden) Sound button; misty-bloom.js skips it. A closing sheet still does not count as open. */
+  assert.ok(!/LowiBloom\.open\(p\)/.test(audio) && /p\.className = 'wa-panel wa-sheet'/.test(audio), 'Body sound: its own slide-up sheet');
+  assert.ok(/const livePanel = \(\) => D\.querySelector\('\.wa-panel:not\(\.mb-ghost\)'\)/.test(audio), 'a closing Body sound panel no longer counts as open');
+  assert.ok(/el\.classList\.contains\('wa-panel'\) && !el\.classList\.contains\('wa-sheet'\)/.test(read('misty-bloom.js')), 'misty-bloom skips the sheet');
 });
 
 /* a tiny DOM, enough to run misty-bloom.js */

@@ -83,7 +83,7 @@
             return /(^|\s)(sp-sheet|wm-sheet-ov)(\s|$)/.test(cls) || !!el.querySelector('.sp-quick-log,.wm-sheet');
         }
         if (el.id === 'sheet') return !!el.querySelector('.fst-sh');
-        return el.id === 'whToday' || el.classList.contains('tbw-sheet') || el.classList.contains('wa-panel');
+        return el.id === 'whToday' || el.classList.contains('tbw-sheet') || (el.classList.contains('wa-panel') && !el.classList.contains('wa-sheet'));  /* Nov 5 2026: the K\u00f6rperklang bottom sheet slides up on its own */
     }
 
     /* 3. aim: centre of the panel -> the finger, in px (the CSS keyframes start the panel there, small and round) */

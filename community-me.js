@@ -16,7 +16,9 @@
         es: { title: 'Ajustes', you: 'T\u00fa', circle: 'Circle', settings: 'App', help: 'Ayuda e info', account: 'Cuenta', close: 'Cerrar', level: 'Nivel', guest: 'T\u00fa', mine: 'Nombre, foto, peso, salud, cuenta' }
     };
     /* the places that only work on Home (they press a Home control): go Home first, then run */
-    const HOME_FIRST = ['gift', 'myday', 'worldSound', 'vr'];  /* myday: its bubbles open Home's old day panels (index.html g2h); worldSound + vr (Nov 5 2026): the Body sound panel and the VR switch belong to Home's world */
+    /* Nov 5 2026 (owner: K\u00f6rperklang "opens in a weird place"; VR off was hard to find): worldSound and vr left HOME_FIRST.
+       K\u00f6rperklang opens as a bottom sheet right over Settings, and VR is an on/off switch in its row that works in place */
+    const HOME_FIRST = ['gift', 'myday'];  /* myday: its bubbles open Home's old day panels (index.html g2h); */
     const wnm = s => { try { const B = (typeof window !== 'undefined' ? window : globalThis).LowiBirthCompanion; return s && B && B.withName ? B.withName(s) : s; } catch (e) { return s; } }; /* BH-045: the user's own companion name, never the default "Misty" */
     const LABELS = {
         en: { presence: 'Your presence', swaps: 'My swaps', glow: 'Your glow', cycle: 'My cycle', todo: 'Finish your profile', people: 'People', posts: 'Posts & ranking', invite: 'Invite friends', rules: 'Circle rules', look: 'Look & sound', worldSound: 'Body sound', vr: 'VR' },
@@ -97,6 +99,26 @@
         const R2 = root.LowiR2, to = x === 'day' ? 'light' : 'dark';
         if (x !== 'auto') { if (R2 && R2.applyTheme) R2.applyTheme(to); else { try { root.localStorage.setItem('lowi.theme', to); } catch (e) { } H.setAttribute('data-theme', to); H.setAttribute('data-theme-mode', to); } }
     }
+    /* VR = Home's motion look-around (body-world-3d.js gyro). Off / On / not allowed / no sensor, said in words next to the switch */
+    const VRT = { en: { on: 'On', off: 'Off', denied: 'Motion not allowed', none: 'No motion sensor here', nosig: 'No motion signal' }, de: { on: 'An', off: 'Aus', denied: 'Bewegung nicht erlaubt', none: 'Kein Bewegungssensor', nosig: 'Kein Bewegungssignal' }, es: { on: 'Activado', off: 'Desactivado', denied: 'Movimiento no permitido', none: 'Sin sensor de movimiento', nosig: 'Sin se\u00f1al de movimiento' } };
+    let vrNote = '';
+    function vrState() {
+        const a = root.LowiWorld3D, g = a && a.gyro; if (!g) return { st: 'none' };
+        let on = false, kind = 'none'; try { on = !!g.on(); kind = g.kind(); } catch (e) { }
+        if (on) return { st: 'on' };
+        if (kind === 'none') return { st: 'none' };
+        return { st: vrNote === 'denied' ? 'denied' : vrNote === 'no' ? 'nosig' : 'off' };
+    }
+    /* inside the tap itself, so iPhone shows its motion permission prompt (the old row went to Home and tapped 700 ms later, outside the tap) */
+    function vrToggle(b) {
+        const a = root.LowiWorld3D, g = a && a.gyro; if (!g || vrState().st === 'none') return;
+        const hud = D.querySelector('#whHud .wh-vr');
+        let tgt = hud; if (!tgt) { tgt = D.createElement('button'); tgt.appendChild(D.createElement('span')); }
+        const was = !!g.on(); vrNote = '';
+        try { g.tap(tgt); } catch (e) { }
+        const repaint = () => { if (!el || asking) return; if (tgt.dataset.state === 'denied' || tgt.dataset.state === 'no') vrNote = tgt.dataset.state; render(); const f = el.querySelector('[data-cme="vr"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } };
+        setTimeout(repaint, 60); if (!was) { setTimeout(repaint, 900); setTimeout(repaint, 2800); }
+    }
     function row(id) {
         const s = S(), l = lang(), ST = sT(), lab = wnm(LABELS[l] && LABELS[l][id]) || s.label(id);
         const ico = ICON[id] ? svg(id) : s.icon(id).replace('ss2-ico', 'cme-ico');
@@ -105,6 +127,10 @@
            Night over Dark. It is now one choice of four, like Language: Day, Dark (true black), Night (blue) and Auto. */
         if (id === 'theme') { const cur = themeNow(), W4 = THEME_W[l] || THEME_W.en; return '<div class="cme-row cme-langrow cme-themerow" role="group" aria-label="' + esc(W4.t) + '">' + ico + '<span class="cme-tx"><b>' + esc(W4.t) + '</b></span><span class="cme-langs cme-themes">' + ['day', 'black', 'night', 'auto'].map(x => '<button type="button" data-cme-theme="' + x + '" aria-pressed="' + (x === cur) + '"' + (x === cur ? ' class="on"' : '') + '>' + esc(W4[x]) + '</button>').join('') + '</span></div>'; }
         if (id === 'sky') { const W2 = SKY_W[l] || SKY_W.en; return '<button type="button" class="cme-row" data-cme="sky" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(W2[0]) + '</b><small>' + esc(W2[1]) + '</small></span>' + svg('chev', 'cme-chev') + '</button>'; }
+        if (id === 'vr') { const v = vrState(), stx = VRT[l] || VRT.en, txt = stx[v.st] || stx.off; /* Nov 5 2026: a real iOS switch with its state written beside it */
+            return '<button type="button" class="cme-row cme-swrow" role="switch" data-cme="vr" aria-checked="' + (v.st === 'on') + '"' + (v.st === 'none' ? ' aria-disabled="true"' : '') + ' aria-label="' + esc(lab) + '" aria-describedby="cmeVrSt">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b><small class="cme-sub" id="cmeVrSt">' + esc(txt) + '</small></span><span class="cme-sw" aria-hidden="true"><i></i></span></button>'; }
+        if (id === 'worldSound') { const on = !!(root.LowiWorldAudio && root.LowiWorldAudio.on), stx = VRT[l] || VRT.en;
+            return '<button type="button" class="cme-row" data-cme="worldSound" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><small class="cme-st">' + esc(on ? stx.on : stx.off) + '</small>' + svg('chev', 'cme-chev') + '</button>'; }
         if (id === 'deleteAccount') return '<button type="button" class="cme-row cme-danger" data-cme="deleteAccount" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
         return '<button type="button" class="cme-row" data-cme="' + id + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
     }
@@ -117,6 +143,8 @@
         if (id === 'sky') return !!(root.LowiAtmos && typeof root.LowiAtmos.openSheet === 'function');
         if (id === 'theme') return true;
         if (G2E[id]) { if (!(root.LowiG2E && typeof root.LowiG2E.direct === 'function')) return id === 'look' && s.has('look'); const t = D.getElementById('tab-profile'); return !!(t && t.querySelector(PART[id])); }
+        if (id === 'worldSound') return !!(root.LowiWorldAudio && typeof root.LowiWorldAudio.open === 'function');   /* Nov 5 2026: opens in place, no Home button needed */
+        if (id === 'vr') return !!(root.LowiWorld3D && root.LowiWorld3D.gyro);
         if (id === 'cycle') { try { const C = root.LowiCycleWorld; return !!(C && typeof C.open === 'function' && (typeof C.eligible !== 'function' || C.eligible())); } catch (e) { return false; } }
         if (id === 'people') return !!(root.LowiPeopleDir && typeof root.LowiPeopleDir.open === 'function');
         if (id === 'invite') return !!(root.LowiRoomsUI && typeof root.LowiRoomsUI.invite === 'function');
@@ -218,6 +246,8 @@
         if (id === 'delCancel') { asking = false; render(); const f = el && el.querySelector('[data-cme="deleteAccount"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } return; }
         if (id === 'delGo') { delGo(b); return; }
         /* Day/night switches in place and the page stays open */
+        if (id === 'vr') { vrToggle(b); return; }
+        if (id === 'worldSound') { const A = root.LowiWorldAudio; if (A && typeof A.open === 'function') { A.open(); return; } }
         if (id === 'theme') { s.run('theme'); setTimeout(() => { if (el && !asking) { render(); const f = el.querySelector('[data-cme="theme"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } } }, 60); return; }
         close(false);
         run(id);

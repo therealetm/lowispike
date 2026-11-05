@@ -324,13 +324,18 @@
     }
     /* Oct 16 (handoff task 9): Sound on Home opens the glass string pad first (sound-strings.js mounts into .wa-strings);
        the background sound switch, its volume and the warp sounds sit below it */
+    /* Nov 5 2026 (owner: "K\u00f6rperklang looks old, opens in a weird place and is way too big"): one iOS-style bottom sheet with a
+       grabber, a 44 pt close, the pad, the three controls in one grouped card and the long explanation folded under "How it works" */
     function panelHtml() {
-        return '<div class="wa-hd"><b>' + tr('title') + '</b><button type="button" class="wa-x" data-wa="x" aria-label="' + tr('close') + '">\u00d7</button></div>' +
+        return '<div class="wa-grab" aria-hidden="true"></div>' +
+            '<div class="wa-hd"><b id="waTitle">' + tr('title') + '</b><button type="button" class="wa-x" data-wa="x" aria-label="' + tr('close') + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
             '<div class="wa-strings" data-wa-strings></div>' +
+            '<div class="wa-group">' +
             '<div class="wa-row wa-amb"><span>' + tr('ambient') + '</span><button type="button" class="wa-sw" role="switch" data-wa="on"><i></i><span></span></button></div>' +
             '<label class="wa-row wa-vol"><span>' + tr('vol') + '</span><input type="range" min="0" max="100" step="1" data-wa="vol" aria-label="' + tr('vol') + '"><output></output></label>' +
             '<div class="wa-row wa-warp"><span>' + tr('warp') + '</span><button type="button" class="wa-sw wa-sm" role="switch" data-wa="warp" aria-label="' + tr('warp') + '"><i></i><span></span></button></div>' +
-            '<p>' + tr('note') + '</p><p class="wa-quiet">' + tr('quiet') + '</p>';
+            '</div>' +
+            '<details class="wa-more"><summary>' + tr('more') + '</summary><p>' + tr('note') + '</p><p class="wa-quiet">' + tr('quiet') + '</p></details>';
     }
     /* the string pad plays through this world's audio graph, bypassing the ambient master (so it works with the background
        sound off) but following the same volume slider and the app-wide sound switch. Call only inside a user gesture. */
@@ -353,42 +358,56 @@
         clearTimeout(st.idleT);
         st.idleT = setTimeout(() => { if (st.ctx && !audible() && running()) st.ctx.suspend().catch(() => { }); }, 2200);
     }
+    const livePanel = () => D.querySelector('.wa-panel:not(.mb-ghost)');
+    const calmMotion = () => { try { return W.matchMedia('(prefers-reduced-motion: reduce)').matches || H.classList.contains('battery-saver') || H.classList.contains('lowi-saver'); } catch (e) { return false; } };
+    let opener = null;
     function removePanel(p) {
         if (!p) return;
         try { W.LowiSoundStrings && W.LowiSoundStrings.unmount(p.querySelector('[data-wa-strings]')); } catch (e) { }
-        /* fold back into the Sound button like Move's choices (misty-bloom.js); gone at once with reduced motion */
+        /* Nov 5 2026: slides back down with its backdrop (gone at once with reduced motion); the backdrop keeps catching taps
+           while it fades so the tap that closed it never lands on what is underneath */
         p.removeAttribute('id'); p.classList.add('mb-ghost'); p.setAttribute('aria-hidden', 'true'); try { p.inert = true; } catch (e) { }
-        if (!(W.LowiBloom && W.LowiBloom.close(p, () => p.remove()))) p.remove();
+        const sc = D.querySelector('.wa-scrim:not(.wa-gone)');
+        const gone = () => { p.remove(); if (sc) sc.remove(); };
+        if (calmMotion()) gone();
+        else { p.classList.remove('wa-in'); if (sc) { sc.classList.add('wa-gone'); sc.classList.remove('wa-in'); } setTimeout(gone, 300); }
+        H.classList.remove('wa-sheet-open');
         instrumentIdle();
     }
     function togglePanel(force) {
-        const host = uiHost(); if (!host) return;
-        let p = host.querySelector('.wa-panel:not(.mb-ghost)'); const want = force == null ? !p : !!force;
-        if (!want) { if (p) removePanel(p); paint(); return; }
+        let p = livePanel(); const want = force == null ? !p : !!force;
+        if (!want) {
+            if (p) { removePanel(p); let o = opener; opener = null; if (!(o && o.isConnected)) o = D.querySelector('[data-cme="worldSound"]'); if (o && o.focus) { try { o.focus({ preventScroll: true }); } catch (e) { } } }
+            paint(); return;
+        }
         if (p) return;
-        p = D.createElement('div'); p.className = 'wa-panel'; p.id = 'waPanel'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', tr('aria'));
-        p.innerHTML = panelHtml(); stop(p);
+        opener = D.activeElement && D.activeElement !== D.body ? D.activeElement : null;
+        const sc = D.createElement('div'); sc.className = 'wa-scrim'; sc.setAttribute('aria-hidden', 'true');
+        p = D.createElement('div'); p.className = 'wa-panel wa-sheet'; p.id = 'waPanel'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-modal', 'true'); p.setAttribute('aria-labelledby', 'waTitle');
+        p.innerHTML = panelHtml(); stop(p); stop(sc);
         p.addEventListener('click', e => {
             e.stopPropagation();
             const b = e.target.closest('[data-wa]'); if (!b || b.tagName === 'INPUT') return;
             if (b.dataset.wa === 'on') { st.userOff = st.on; setOn(!st.on); }
-            else if (b.dataset.wa === 'x') { togglePanel(false); const bt = host.querySelector('.wa-btn'); bt && bt.focus && bt.focus({ preventScroll: true }); }
+            else if (b.dataset.wa === 'x') togglePanel(false);
             else if (b.dataset.wa === 'warp') { prefs.warp = !prefs.warp; save(); if (!prefs.warp) killWarp(0.2); paint(); }
         });
         const r = p.querySelector('input[data-wa=vol]');
         r.addEventListener('input', () => { prefs.vol = C.clampVol(r.value); if (st.on && st.master && running()) ramp(st.master.gain, C.masterGain(prefs.vol) * calmK(), 0.06); paint(); });
         r.addEventListener('change', save);
-        host.appendChild(p); paint();
+        D.body.appendChild(sc); D.body.appendChild(p); H.classList.add('wa-sheet-open'); paint();
         const sp = p.querySelector('[data-wa-strings]');
         if (W.LowiSoundStrings && sp) { try { W.LowiSoundStrings.mount(sp, { instrument, idle: instrumentIdle, lang, tune: () => Object.assign({}, tune), setTune, resetTune, wake, ambientOn: () => st.on }); } catch (e) { sp.remove(); } }
         else if (sp) sp.remove();
-        /* aimed once the strings pad is in, so it grows from the Sound button at its full size */
-        try { W.LowiBloom && W.LowiBloom.open(p); } catch (e) { }
-        const sw = p.querySelector('[data-wa=x]') || p.querySelector('[data-wa=on]'); sw && sw.focus && sw.focus({ preventScroll: true });
+        /* slide up from the bottom edge (one frame later so the transition runs) */
+        if (calmMotion()) { p.classList.add('wa-in'); sc.classList.add('wa-in'); }
+        else { void p.offsetHeight; void sc.offsetHeight; p.classList.add('wa-in'); sc.classList.add('wa-in'); }   /* the forced layout lets the slide run; no rAF (paused in background WebKit tabs) */
+        /* focus the sheet (its name is read out); Tab then walks the pad and the switches, and stays inside */
+        p.tabIndex = -1; try { p.focus({ preventScroll: true }); } catch (e) { }
     }
     function paint() {
-        const host = uiHost(); if (!host) return;
-        const btn = host.querySelector('.wa-btn'), p = host.querySelector('.wa-panel:not(.mb-ghost)'), on = st.on;
+        const host = uiHost();
+        const btn = host && host.querySelector('.wa-btn'), p = livePanel(), on = st.on;
         if (btn) {
             const sig = (on ? 1 : 0) + lang() + (p ? 1 : 0);
             if (btn.dataset.sig !== sig) { btn.innerHTML = (on ? ICON_ON : ICON_OFF) + '<span>' + tr('btn') + '</span>'; btn.dataset.sig = sig; }
@@ -405,7 +424,14 @@
         }
     }
     /* outside tap closes the panel (the world keeps its drag) */
-    D.addEventListener('pointerdown', e => { const p = D.querySelector('.wa-panel:not(.mb-ghost)'); if (p && !p.contains(e.target) && !(e.target.closest && e.target.closest('.wa-btn'))) togglePanel(false); }, true);
+    D.addEventListener('pointerdown', e => { const p = livePanel(); if (p && !p.contains(e.target) && !(e.target.closest && e.target.closest('.wa-btn'))) togglePanel(false); }, true);
+    /* Nov 5 2026: a modal sheet keeps keyboard focus inside it (Tab wraps) */
+    D.addEventListener('keydown', e => {
+        const p = livePanel(); if (!p || e.key !== 'Tab') return;
+        const f = [...p.querySelectorAll('button,input,summary,[tabindex]:not([tabindex="-1"])')].filter(x => !x.disabled && x.offsetParent !== null && !x.classList.contains('lw-bx-src'));
+        if (!f.length) return; const a = f[0], z = f[f.length - 1];
+        if (e.shiftKey && (D.activeElement === a || D.activeElement === p)) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && D.activeElement === z) { e.preventDefault(); a.focus(); }
+    }, true);
     /* Oct 26 (bug hunt run 50): Escape (and back, which sends Escape) closes the Sound panel only. It ran in the bubble phase next
        to the body world's own Escape, so one back closed the panel and the whole body world with it. Capture + stop. */
     D.addEventListener('keydown', e => { if (e.key === 'Escape' && D.getElementById('waPanel')) { togglePanel(false); e.stopPropagation(); } }, true);
@@ -415,7 +441,9 @@
     function sync() {
         const open = isOpen();
         if (open) ensureUi();
-        if (open !== wasOpen) { wasOpen = open; if (!open) removePanel(D.getElementById('waPanel')); }
+        /* Nov 5 2026: the panel is a bottom sheet over the whole app now (opened in place from Settings too), so leaving the world
+           no longer pulls it away; it closes with its \u00d7, the dimmed backdrop, Escape or back */
+        if (open !== wasOpen) wasOpen = open;
         const want = audible();
         if (want !== wasPlay) {
             wasPlay = want;

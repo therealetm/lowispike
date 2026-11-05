@@ -106,3 +106,18 @@ html[data-black="1"] .cme-langs button { border-color: rgba(255,255,255,.18); }
 /* Nov 5 2026, Day mode: Settings sits on the dark glass sheet in Day too (one-sheet.css paints the text white), but the profile card
    at the top kept the old light-sheet card (white at 65 %), so the name and its line were white on near-white (contrast 1:1). */
 html[data-theme="light"] .one-sheet .cme-in .cme-me { background: rgba(255,255,255,.1); border-color: var(--one-cell-line, rgba(143,231,255,.32)); }
+
+/* Nov 5 2026 (owner: VR off was hard to find): the VR row is an iOS switch with its state written under the name. Owned by the
+   Körperklang / VR task; the switch takes the app's gold in true black and Day, blue in the old Night. */
+.cme-swrow .cme-sw { flex: none; position: relative; width: 51px; height: 31px; border-radius: 16px; background: rgba(120,130,150,.42); transition: background .25s; }
+.cme-swrow .cme-sw i { position: absolute; left: 2px; top: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.28); transition: transform .25s cubic-bezier(.32,.72,0,1); }
+.cme-swrow[aria-checked="true"] .cme-sw { background: #4aa3ff; }
+html[data-black] .cme-swrow[aria-checked="true"] .cme-sw { background: #e9b44c; }
+html[data-black] .cme-swrow .cme-sw { background: rgba(120,120,128,.42); }
+html[data-theme="light"] .cme-swrow .cme-sw { background: rgba(120,120,128,.24); }
+html[data-theme="light"] .cme-swrow[aria-checked="true"] .cme-sw { background: #c4860f; }
+.cme-swrow[aria-checked="true"] .cme-sw i { transform: translateX(20px); }
+.cme-swrow[aria-disabled="true"] { cursor: default; }
+.cme-swrow[aria-disabled="true"] .cme-sw { opacity: .4; }
+@media (prefers-reduced-motion: reduce) { .cme-swrow .cme-sw, .cme-swrow .cme-sw i { transition: none; } }
+html.lowi-saver .cme-swrow .cme-sw, html.lowi-saver .cme-swrow .cme-sw i { transition: none; }

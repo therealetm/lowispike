@@ -38,7 +38,9 @@ test('My day: the six old shortcuts, macro goals and Your inside, from Community
     assert.ok(/myday: \{ has: \(\) => !!\(root\.LowiMyDay && fn\(root\.LowiMyDay, 'open'\)\), run: \(\) => root\.LowiMyDay\.open\(\) \}/.test(hs));
     for (const l of ["myday: 'My day'", "myday: 'Mein Tag'", "myday: 'Mi d\\u00eda'"]) assert.ok(hs.includes(l), l);
     /* Nov 5 2026 (test changed, why): worldSound + vr joined HOME_FIRST (owner Phase B item 4, Körperklang and VR from Settings) */
-    assert.ok(/HOME_FIRST = \['gift', 'myday', 'worldSound', 'vr'\]/.test(cme));
+    /* Nov 5 2026 (test changed again, why): owner said Körperklang opened "in a weird place" and VR off was hard to find. Körperklang
+       now opens as a sheet right over Settings and VR is a switch in its row, so neither jumps to Home first any more */
+    assert.ok(/HOME_FIRST = \['gift', 'myday'\]/.test(cme));
 });
 
 test('living-bubble look: round glass, label under it that wraps, only a bubble that needs you breathes (and only with motion on)', () => {

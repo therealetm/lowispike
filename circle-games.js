@@ -3,11 +3,13 @@
    Supermarkt ... wenn man auf Circle drückt, kann man dann ein Spiel auswählen", "ohne dass man das Gefühl hat, es öffnet neue
    Fenster", "Ruhezeit · Updates bleiben still ... kannst du raushauen, und dann kann da das sein, dass man auf Shuffle drückt",
    "Billard, Mischen und Swipen zusammen in ein Spiele-Menü" and "der Freundesbaum kommt auch in das Menü".
+   5 Nov 2026 (Emmanuel: "Friend's Tree might be even unnecessary, so we can nuke it ... It doesn't bring any value"): the
+   Freundesbaum is gone from the bar and from the app. Three tabs: Billard · Mischen · Swipen.
 
    So the Circle view gets one menu bar (the Spiele bar) in the strip where the quiet-hours line sat, built like the Supermarkt bar:
-     Billard (the Circle room itself, the default) · Mischen · Swipen · Freundesbaum.
+     Billard (the Circle room itself, the default) · Mischen · Swipen.
    Mischen and Swipen are the Kochen games; they rise in a panel right under the bar while the Circle header and the bar stay put
-   and stay tappable, so it never feels like a new window. The Freundesbaum sits in the same spot. Tapping Billard (or any Circle
+   and stay tappable, so it never feels like a new window. Tapping Billard (or any Circle
    tab, or back) closes it again. Kochen's own Mischen | Swipen switch and its title row are hidden there, the bar replaces them. */
 (function (W, D) {
   'use strict';
@@ -18,8 +20,7 @@
   const GAMES = [
     { id: 'billard', ic: '\uD83C\uDFB1', t: () => L('Billiards', 'Billard', 'Billar') },
     { id: 'mischen', ic: '\uD83D\uDD00', t: () => L('Shuffle', 'Mischen', 'Mezclar'), view: 'shuffle' },
-    { id: 'swipen', ic: '\uD83C\uDCCF', t: () => L('Swipe', 'Swipen', 'Deslizar'), view: 'swipe' },
-    { id: 'baum', ic: '\uD83C\uDF33', t: () => L('Friends tree', 'Freundesbaum', '\u00C1rbol') }
+    { id: 'swipen', ic: '\uD83C\uDCCF', t: () => L('Swipe', 'Swipen', 'Deslizar'), view: 'swipe' }
   ];
   let cur = 'billard', busy = false;
 
@@ -42,10 +43,12 @@
   function gameOn() {
     if (cur !== 'mischen' && cur !== 'swipen') return false;
     if (tab() !== 'shelf') return false;
+    /* 5 Nov 2026: after the phone's back from Mischen the host's tab name can still say shelf for a moment; the bar then kept
+       showing Mischen over Billard. Kochen must really be the open page. */
+    const sh = D.getElementById('tab-shelf'); if (!sh || !sh.classList.contains('active')) return false;
     const c = community();
     return !!c && c.classList.contains('holo-under');
   }
-  const treeOv = () => D.querySelector('.cr-ov.cr-ov-tree');
 
   function barHTML() {
     return GAMES.map(g => '<button type="button" class="csp-tab" role="tab" data-csp="' + g.id + '" aria-selected="' + (g.id === cur) + '"><span aria-hidden="true">' + g.ic + '</span><b>' + g.t() + '</b></button>').join('');
@@ -72,24 +75,12 @@
     const r = bar.getBoundingClientRect();
     if (r.height > 4) H.style.setProperty('--csp-top', Math.round(r.bottom + 6) + 'px');
   }
-  function inlineTree() {
-    const ov = treeOv(); if (!ov) return false;
-    if (!ov.classList.contains('csp-inline')) { ov.classList.add('csp-inline'); ov.setAttribute('aria-modal', 'false'); }
-    return true;
-  }
-  function closeTree() {
-    const ov = treeOv();
-    if (ov && ov.classList.contains('csp-inline')) { try { W.LowiCellRoom && LowiCellRoom.closeTree ? LowiCellRoom.closeTree(true) : ov.remove(); } catch (e) { ov.remove(); } }
-  }
-
   function sync() {
     if (busy) return;
     const circle = circleOn(), game = gameOn();
-    if (cur === 'baum' && (!circle || !inlineTree())) { if (!circle) closeTree(); cur = 'billard'; }
     if ((cur === 'mischen' || cur === 'swipen') && !game) cur = 'billard';
     H.classList.toggle('csp-circle', circle || game);
     H.classList.toggle('csp-game', game);
-    H.classList.toggle('csp-tree', circle && cur === 'baum');
     if (circle || game) { const bar = ensureBar(); if (circle) measure(bar); watchPane(); }
     else { const bar = D.getElementById('cspBar'); if (bar && bar.dataset.k !== li() + ':billard') { bar.innerHTML = barHTML(); bar.dataset.k = li() + ':billard'; } }
   }
@@ -107,14 +98,9 @@
     const g = GAMES.find(x => x.id === id); if (!g) return;
     busy = true;
     try {
-      if (id !== 'baum') closeTree();
-      if (id === 'billard' || id === 'baum') {
+      if (id === 'billard') {
         if (tab() === 'shelf') go('foryou');
         cur = id;
-        if (id === 'baum') {
-          try { if (W.LowiCellRoom && LowiCellRoom.openTree) LowiCellRoom.openTree(); } catch (e) { }
-          if (!inlineTree()) cur = 'billard';
-        }
       } else {
         const bar = D.getElementById('cspBar'); if (bar && tab() !== 'shelf') measure(bar);
         cur = id;

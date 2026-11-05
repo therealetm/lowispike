@@ -13,7 +13,7 @@ const COPY={
  more:['Message options','Nachrichtenoptionen','Opciones del mensaje'],
  says:['says','sagt','dice'],
  mateShare:['Show my companion’s form in the galaxy','Die Form meines Begleiters in der Galaxie zeigen','Mostrar la forma de mi compañero en la galaxia'],
- mateNote:['Others see your companion only when this is on (it also shows in friends trees). Otherwise they see a plain spirit. Only the look is shared.','Andere sehen deinen Begleiter nur, wenn das an ist (auch im Freundesbaum). Sonst sehen sie einen schlichten Geist. Geteilt wird nur das Aussehen.','Los demás solo ven a tu compañero si esto está activado (también en el árbol de amigos). Si no, ven un espíritu sencillo. Solo se comparte el aspecto.'],
+ mateNote:['Others see your companion only when this is on. Otherwise they see a plain spirit. Only the look is shared.','Andere sehen deinen Begleiter nur, wenn das an ist. Sonst sehen sie einen schlichten Geist. Geteilt wird nur das Aussehen.','Los demás solo ven a tu compañero si esto está activado. Si no, ven un espíritu sencillo. Solo se comparte el aspecto.'],
  mateSaved:['Saved.','Gespeichert.','Guardado.'],
  sharedDetails:['Sharing enabled','Freigaben aktiv','Compartir activado'],
  sharedType:['Shared in the galaxy','In der Galaxie geteilt','Compartido en la galaxia'],

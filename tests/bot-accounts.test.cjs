@@ -63,7 +63,8 @@ test('Freund hinzufügen: one entry per name (Sim, Fixture, T showed up to six t
   const out = onePerName(L);
   assert.deepEqual(out.map(p => p.uid), ['c', 'd', 'f'], 'higher level, then more XP stays; first-seen order kept');
   assert.equal(L.length, 7, 'the input list is not changed');
-  assert.ok(s.includes('const ppl=onePerName(roomPeople());'), 'the add-friend list uses it');
+  /* 5 Nov 2026: the add-friend list lived in the friends tree, which is gone; the People list (LowiCellRoom.people) still uses it */
+  assert.ok(s.includes('people:()=>onePerName(roomPeople())'), 'the People list uses it');
   assert.ok(/function personOf\(uid\)\{return roomPeople\(\)\.find/.test(s), 'friends you already have are still found by id');
 });
 

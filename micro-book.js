@@ -27,8 +27,7 @@
         noTrips: T('No body journey finished yet. When your cell comes back from one, it lands here with what it discovered.', 'Noch keine Körperreise beendet. Wenn deine Zelle von einer zurückkommt, steht hier, was sie entdeckt hat.', 'Aún no has terminado ningún viaje. Cuando tu célula vuelva de uno, aquí verás lo que descubrió.'),
         today: T('Today', 'Heute', 'Hoy'), great: T('Great', 'Super', 'Genial'), logBtn: T('Adventure log', 'Reisetagebuch', 'Diario de viajes'),
         fIntro: T('Send your friends something kind. It’s free: each kind of message once a day per friend.', 'Schick deinen Freunden etwas Liebes. Es kostet nichts: jede Art einmal am Tag pro Freund.', 'Envía algo bonito a tus amigos. Es gratis: cada tipo una vez al día por amigo.'),
-        noFr: T('No friends here yet. Friends join through your friends tree with your invite link, only real people.', 'Noch keine Freunde hier. Freunde kommen über deinen Freundesbaum mit deinem Einladungslink dazu, nur echte Menschen.', 'Aún no hay amigos. Se unen desde tu árbol de amigos con tu enlace de invitación, solo personas reales.'),
-        tree: T('Open friends tree', 'Freundesbaum öffnen', 'Abrir árbol de amigos'),
+        noFr: T('No friends here yet. Only real people.', 'Noch keine Freunde hier. Nur echte Menschen.', 'Aún no hay amigos. Solo personas reales.'),
         sendKind: T('Send something kind', 'Etwas Liebes senden', 'Enviar algo bonito'),
         send: T('Send', 'Senden', 'Enviar'), sent: T('Sent', 'Gesendet', 'Enviado'),
         lockLv: T('from level {n}', 'ab Level {n}', 'desde nivel {n}'), from: T('from {h}:00', 'ab {h} Uhr', 'desde las {h}:00'), until: T('until {h}:00', 'bis {h} Uhr', 'hasta las {h}:00'),
@@ -114,7 +113,8 @@
     }
     function frHTML() {
         const list = friends();
-        const tree = W.LowiCellRoom && W.LowiCellRoom.openTree ? '<button type="button" class="mb-cta ghost" data-mb="tree">' + esc(tr('tree')) + '</button>' : '';
+        /* 5 Nov 2026: the Friends tree is gone, so no "Open friends tree" button here any more */
+        const tree = '';
         return '<p class="mb-intro">' + esc(tr('fIntro')) + '</p>' +
             (list.length ? '<ul class="mb-frs">' + list.map(friendRow).join('') + '</ul>' : '<div class="mb-empty">' + cellSvg('blob', 200, true) + '<p>' + esc(tr('noFr')) + '</p>' + tree + '</div>');
     }

@@ -241,12 +241,18 @@
             } catch (e) { console.error(e); }
         })();
     }
+    /* 5 Nov 2026 (Emmanuel, iPhone: "When I'm in Circle and I click on shuffle and I say I go back to Billiard, then it just takes me
+       to chat ... Or it just crashes and restarts"): Mischen / Swipen raise Kochen as a panel over Circle (section-nav.js holo: the
+       Community page stays drawn underneath with .holo-under). Coming back to Billard then counted as "Community opened", so the
+       first-tab rule ran and switched to the first tab (Chat when Chat is first, For You after a recent For You visit) and, on a big
+       account, built the whole chat list again under the game. Community held under the Kochen panel never closed: no first-tab rule. */
+    function heldUnder() { const p = D.getElementById('tab-foryou'); return !!(p && p.classList.contains('holo-under')); }
     function check() {
         stampWrap();
         const open = isOpen();
         D.documentElement.classList.toggle('cm-open', open);
         if (open && !wasOpen) openFirst(/^#community\//i.test(W.location.hash || ''));
-        wasOpen = open;
+        wasOpen = open || heldUnder();
         const t = tabsEl(); if (t) { wire(t); apply(); }
     }
     function boot() {

@@ -1,8 +1,8 @@
 /* LOWiSPIKE · Circle games bar (29 Oct 2026, see circle-games.js). Same pill bar as the Supermarkt bar (store-picks.css
-   .stp-tabs.stp-tabs3.stp-tabs4): four round tabs, emoji over a short word, the open one glows. */
+   .stp-tabs.stp-tabs3.stp-tabs4): three round tabs (Billard · Mischen · Swipen; the Freundesbaum tab is gone since 5 Nov), emoji over a short word, the open one glows. */
 #cspBar{display:none}
 html.csp-circle #cmPaneChat>#cspBar{
-  flex:0 0 auto;display:grid;grid-template-columns:repeat(4,auto);gap:2px;margin:4px 12px 6px;padding:4px;border-radius:26px;position:relative;z-index:4;
+  flex:0 0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin:4px 12px 6px;padding:4px;border-radius:26px;position:relative;z-index:4;
   border:1.2px solid var(--mb-pill-rim, rgba(143,231,255,.42));background:rgba(10,22,58,.38);
   box-shadow:inset 0 0 14px rgba(155,135,210,.32),0 0 16px rgba(143,231,255,.14);
   -webkit-backdrop-filter:blur(16px) saturate(1.25);backdrop-filter:blur(16px) saturate(1.25);color:#fff}
@@ -20,9 +20,6 @@ html.lt:not(.lg).csp-circle #cmPaneChat>#cspBar{background:rgba(255,255,255,.6);
 /* the quiet-hours line ("Ruhezeit · Updates bleiben still") is gone from Circle; the games bar sits in its place.
    A real problem (offline, an error with its retry button) still shows. */
 html.csp-circle #cmPaneChat:not([data-room]) #csStatus:not([data-state="error"]):not([data-state="offline"]):not([data-state="auth"]){display:none!important}
-/* the Freundesbaum lives in the bar now, so its old corner button in the Circle room goes */
-html.csp-circle .nm-ctree{display:none!important}
-
 /* Mischen / Swipen: Kochen rises in a panel right under the bar. Circle (its header and the bar) stays fully drawn and tappable
    above it, there is no dim scrim, so it reads as part of Circle and not as a new window. */
 html.csp-game #cookHoloScrim{display:none!important}
@@ -31,18 +28,34 @@ html.csp-game.cook-holo #main>#tab-foryou.holo-under .rm-bar,html.csp-game.cook-
 html.csp-game.cook-holo.cook-holo.cook-holo #app #main#main>#tab-shelf.tab.active:not(#bw3x):not(#csp0){
   top:var(--csp-top, calc(var(--sat, env(safe-area-inset-top, 0px)) + 210px))!important;bottom:calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 10px)!important;
   border-radius:26px!important;animation:cspRise .22s cubic-bezier(.2,.9,.3,1)}
+/* 5 Nov 2026 (Emmanuel, iPhone: "when I click on shuffle ... I can see the galaxy still in the background ... it's just opening a page
+   above another page ... I can even click on it ... and now I'm back into the chat"; and "Billiard has a different background ... even
+   though they're supposed to mimic being on the same page"). Mischen / Swipen were a grey rounded card 10px in from each side, with
+   Circle's room and its message bar still drawn (and tappable) around and under it. Now the panel is full width with no card, no
+   border and no fill of its own, so Circle's own background shows behind all three games (true black in Dark, the same sky as
+   Billard in Night / Day), and Circle's room and message bar are hidden and untouchable under it. Only Circle's header
+   and the Billard | Mischen | Swipen bar stay. */
+html.csp-game.cook-holo.cook-holo.cook-holo #app #main#main>#tab-shelf.tab.active:not(#bw3x):not(#csp0){
+  left:0!important;right:0!important;width:auto!important;border-radius:0!important;border:0!important;box-shadow:none!important;
+  outline:0!important;background:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html.csp-game.cook-holo #main>#tab-shelf.active::before,html.csp-game.cook-holo #main>#tab-shelf.active::after{display:none!important}
+html.csp-game.cook-holo #main>#tab-shelf.active #shelf,html.csp-game.cook-holo #main>#tab-shelf.active #shBody{background:transparent!important;background-image:none!important}
+/* the thin strip between the bar and the panel: Circle's page itself takes no taps there, only the bar does */
+html.csp-game.cook-holo #main>#tab-foryou.holo-under #cmPaneChat{pointer-events:none!important}
+html.csp-game.cook-holo #main>#tab-foryou.holo-under #cspBar{pointer-events:auto!important}
+html.csp-game.cook-holo #main>#tab-foryou.holo-under #cpRoom,html.csp-game.cook-holo #main>#tab-foryou.holo-under .cm-compose,
+html.csp-game.cook-holo #main>#tab-foryou.holo-under #cgThread{visibility:hidden!important;pointer-events:none!important}
+/* Dark (true black): Circle's three games sit on pure #000, not the dimmed galaxy (it measured 4..10 grey behind Billard). The panel
+   above is see-through, so this one black is what Billard, Mischen and Swipen all show. Night / Day keep Circle's sky. */
+html[data-black="1"].csp-circle #main>#tab-foryou #cmPaneChat{background:#000!important;background-image:none!important}
+/* Night / Day: one soft veil over Circle's sky, shared by all three games, so Mischen / Swipen text (white on the bright Day sky, it
+   measured 3.4:1 without Kochen's old card) reads at 4.5:1 or better and Billard looks the same as the other two. */
+html.csp-circle:not([data-black="1"]) #main>#tab-foryou #cmPaneChat{background-color:rgba(0,0,0,.38)!important}
 @keyframes cspRise{from{opacity:.5;translate:0 10px}to{opacity:1;translate:0 0}}
 @media (prefers-reduced-motion:reduce){html.csp-game #main>#tab-shelf.active{animation:none!important}}
 /* inside Circle the bar is the Mischen | Swipen switch, so Kochen's own title row and switch are not shown */
 html.csp-game #tab-shelf #shTop,html.csp-game #tab-shelf .sh-top,html.csp-game #tab-shelf #ckBar .ck-view{display:none!important}
 
-/* Freundesbaum: the tree sits in the same spot under the bar, as part of Circle (no dark cover, no close button; Billard closes it) */
-.cr-ov.cr-ov-tree.csp-inline{inset:auto;top:var(--csp-top, 200px);left:max(10px, calc(50% - 290px));right:max(10px, calc(50% - 290px));
-  bottom:calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 10px);background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;
-  align-items:stretch;justify-content:stretch;padding:0;z-index:30;animation:cspRise .22s cubic-bezier(.2,.9,.3,1)}
-.cr-ov.cr-ov-tree.csp-inline>.cr-panel{width:100%;max-width:none;height:100%;max-height:none;border-radius:26px;margin:0;
-  border:1.2px solid rgba(143,231,255,.5)}
-.cr-ov.cr-ov-tree.csp-inline .cr-x{display:none!important}
 /* Nov 5 2026: the chosen game's label (white) sat on its light cyan pill at 1.2:1 in every theme, because
    "#cmPaneChat[data-spirit-chat] button { color: inherit }" outranks the class rule above. Dark ink on the light pill again. */
 #cmPaneChat[data-spirit-chat] .csp-tab[aria-selected="true"]{color:#062033}

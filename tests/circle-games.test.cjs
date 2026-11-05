@@ -1,5 +1,6 @@
 'use strict';
-/* 29 Oct 2026: Circle games bar (Billard · Mischen · Swipen · Freundesbaum) replaces the quiet-hours line in Circle. */
+/* 29 Oct 2026: Circle games bar (Billard · Mischen · Swipen · Freundesbaum) replaces the quiet-hours line in Circle.
+   5 Nov 2026: the Freundesbaum is gone (owner: "we can nuke it"), three games left. */
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -15,11 +16,12 @@ test('index.html and the service worker load the Circle games bar', () => {
   assert.match(sw, /"circle-games\.css", "circle-games\.js"/);
 });
 
-test('the bar has exactly the four games in order, one menu, German labels', () => {
+test('the bar has exactly the three games in order, one menu, German labels, no Freundesbaum', () => {
   const src = read('circle-games.js');
   const ids = [...src.matchAll(/\{ id: '([a-z]+)'/g)].map(m => m[1]);
-  assert.deepStrictEqual(ids, ['billard', 'mischen', 'swipen', 'baum']);
-  for (const w of ['Billard', 'Mischen', 'Swipen', 'Freundesbaum', 'Spiele']) assert.ok(src.includes("'" + w + "'"), w);
+  assert.deepStrictEqual(ids, ['billard', 'mischen', 'swipen']);
+  for (const w of ['Billard', 'Mischen', 'Swipen', 'Spiele']) assert.ok(src.includes("'" + w + "'"), w);
+  assert.ok(!src.includes("'Freundesbaum'") && !/openTree|csp-tree/.test(src), 'no Friends tree tab or tree hook');
   assert.match(src, /view: 'shuffle'/);
   assert.match(src, /view: 'swipe'/);
 });
@@ -27,7 +29,7 @@ test('the bar has exactly the four games in order, one menu, German labels', () 
 test('Circle hides the quiet-hours line and the old tree corner button, keeps real errors', () => {
   const css = read('circle-games.css');
   assert.match(css, /html\.csp-circle #cmPaneChat:not\(\[data-room\]\) #csStatus:not\(\[data-state="error"\]\)[^{]*\{display:none!important\}/);
-  assert.match(css, /html\.csp-circle \.nm-ctree\{display:none!important\}/);
+  assert.ok(!/csp-tree|cr-ov-tree/.test(css), 'no Friends tree styles left');
   /* inside Circle Kochen shows no title row and no own Mischen | Swipen switch, and no dim scrim over Circle */
   assert.match(css, /html\.csp-game #tab-shelf #shTop/);
   assert.match(css, /#ckBar \.ck-view\{display:none!important\}|#ckBar \.ck-view\{display:none/);

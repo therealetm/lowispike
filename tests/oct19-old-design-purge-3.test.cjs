@@ -70,7 +70,9 @@ test('a friend who shares no look is the plain current cell (never the mini-blob
 
 test('friends tree, picked card, More friends list, invite card and your room never draw the Oct 15 cell when the current one exists', () => {
   const src = read('cell-room.js');
-  for (const k of ["'f'+i", "'sel'", "'r'+x.uid", "'inv'"]) { assert.ok(src.includes('friendCell(' + k), k + ' uses friendCell'); assert.ok(!src.includes('cellSVG(' + k), k + ' still draws the old cell'); }
+  /* 5 Nov 2026: the tree, its picked card and the More friends list are gone; the invite card is what is left */
+  assert.ok(!src.includes("friendCell('f'+i") && !src.includes("friendCell('sel'"), 'friends tree is gone');
+  for (const k of ["'inv'"]) { assert.ok(src.includes('friendCell(' + k), k + ' uses friendCell'); assert.ok(!src.includes('cellSVG(' + k), k + ' still draws the old cell'); }
   assert.ok(!src.includes("cellSVG('room'"), 'your room still draws the old cell for you');
   assert.match(src, /class="cr-me"[^\n]*mineSVG\(\)/);
   const a = src.indexOf('function friendCell('), fn = src.slice(a, src.indexOf('\n', a));

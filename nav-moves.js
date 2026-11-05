@@ -257,16 +257,8 @@
         /* Oct 22 (Emmanuel: "put that into where my profile is, so it's not a different badge"): no shield badge next to the
            Community name any more; Your presence is a tile in your profile panel (community-me.js) and the Profile row below */
         const old = pane.querySelector('.rm-head > .nm-cpriv'); if (old) old.remove();
-        const room = pane.querySelector('#cpRoom');
-        if (room) {
-            let t = room.querySelector(':scope > .nm-ctree');
-            if (!t) {
-                t = D.createElement('button'); t.type = 'button'; t.className = 'nm-ctree'; t.dataset.cr = 'tree'; t.setAttribute('data-noi18n', '');
-                t.innerHTML = ICO.tree + '<span></span>'; room.appendChild(t);
-            }
-            const tl = T('Friends tree', 'Freundesbaum', '\u00c1rbol de amigos'), sp = t.querySelector('span');
-            if (sp.textContent !== tl) { sp.textContent = tl; t.setAttribute('aria-label', tl); }
-        }
+        /* 5 Nov 2026 (Emmanuel: "we can nuke it"): no Friends tree button in the galaxy corner any more; an old one is removed */
+        const t = pane.querySelector('#cpRoom > .nm-ctree'); if (t) t.remove();
     }
     /* Move (Oct 16): the Leaderboard is a card right under the Move title, above the Start card, in the same card style.
        The odd Safety shield in the header is gone; its notes now sit as a quiet "Safety notes" line under the tiles. */

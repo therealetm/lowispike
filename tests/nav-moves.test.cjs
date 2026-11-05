@@ -49,16 +49,16 @@ test('Community declutter (Oct 21): small privacy icon, labelled friends tree, M
     // Oct 22: the privacy shield badge next to the Community name is gone (Your presence lives in the profile panel)
     assert.doesNotMatch(js, /s\.className = 'nm-cpriv'/);
     assert.match(js, /const old = pane\.querySelector\('\.rm-head > \.nm-cpriv'\); if \(old\) old\.remove\(\);/);
-    // friends tree: a labelled button in the galaxy, opened by cell-room.js through data-cr="tree"
-    assert.match(js, /t\.className = 'nm-ctree'; t\.dataset\.cr = 'tree'/);
-    assert.match(js, /T\('Friends tree', 'Freundesbaum', '\\u00c1rbol de amigos'\)/);
+    // 5 Nov 2026 (owner: "we can nuke it"): no friends tree button in the galaxy; one an older build left is removed;
+    // a stray data-cr="tree" tap still lands in cell-room.js, which now opens Circle
+    assert.doesNotMatch(js, /t\.className = 'nm-ctree'/);
+    assert.match(js, /const t = pane\.querySelector\('#cpRoom > \.nm-ctree'\); if \(t\) t\.remove\(\);/);
     assert.match(read('cell-room.js'), /if\(a==='tree'&&/);
     // 23 Oct (E-man: one board, the companion Ranking): the Milestones row and the Care board card are no longer in Move
     assert.doesNotMatch(js, /m\.className = 'card nm-milescard'/);
     assert.match(read('finch-extras.js'), /if \(a === 'miles'\) \{ e\.preventDefault\(\); e\.stopPropagation\(\); openMiles\(\); \}/);
     // labels are only written when they change (tick() runs on every DOM change: no endless loop)
-    assert.match(js, /if \(sp\.textContent !== tl\)/);
-    assert.match(js, /raf = 0; hook\(\); align\(\); privacy\(\); communityTools\(\); moveCard\(\);/);
+        assert.match(js, /raf = 0; hook\(\); align\(\); privacy\(\); communityTools\(\); moveCard\(\);/);
 });
 
 test('Community shows the galaxy alone: no tabs, no big title, no Privacy & quiet button', () => {

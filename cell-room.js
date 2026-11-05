@@ -1,4 +1,4 @@
-/* LOWiSPIKE cell room + friends tree UI (Oct 15). Finch-style home for the living cell and a friends tree.
+/* LOWiSPIKE cell room + friends list (Oct 15; the friends tree screen is gone since 5 Nov 2026, see toCircle below). Finch-style home for the living cell and a friends tree.
    Room: RETIRED Oct 15 (user: "remove the window, plasma cushion and all that stuff, we go the Pokémon route").
    The room code below stays only so old saves (lowispike.room.v1) still parse; nothing opens it any more.
    Friends tree: opens from Community (button next to Milestones, and a row in the Milestones sheet). Real people only:
@@ -113,85 +113,41 @@ const careOK=()=>!!(root.LowiCare&&LowiCare.open);
 function careFor(uid){const f=friends().list.find(x=>x.uid===uid);if(!f||!careOK())return false;
  const ov=LowiCare.open({uid:f.uid,n:f.n,c:f.c},{top:true,onClose:u=>{if(!T.ov)return;paintTree('.cr-fcard .cr-care');}});return!!ov;}
 function personOf(uid){return roomPeople().find(p=>p.uid===uid)||null;}
-function treeHTML(){const fl=friends().list,onTree=fl.slice(0,K.TREE.spots.length),rest=fl.slice(K.TREE.spots.length),S=K.TREE.spots,M=K.TREE.me;
- const branch=([x,y],i)=>{const sx=50+(x-50)*.18,sy=Math.min(80,M[1]+12+(y>M[1]?6:0));return'<path d="M'+sx.toFixed(1)+' '+sy+'Q'+((sx+x)/2+(x<50?-4:4)).toFixed(1)+' '+((sy+y)/2-8).toFixed(1)+' '+x+' '+y+'" class="cr-br'+(onTree[i]?' on':'')+'"/>';};
- const svg='<svg class="cr-tsvg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="crTrunk" x1="0" x2="0" y1="1" y2="0"><stop stop-color="#5b3fa8"/><stop offset="1" stop-color="#9fe6ff"/></linearGradient></defs><path d="M44 100C47 86 46 70 50 '+(M[1]+6)+'C54 70 53 86 56 100Z" fill="url(#crTrunk)" opacity=".75"/>'+S.map(branch).join('')+
-  [[30,40],[70,40],[40,24],[60,24],[18,64],[82,64],[50,22]].map((c,i)=>'<circle cx="'+c[0]+'" cy="'+c[1]+'" r="1.1" class="cr-leaf cr-l'+(i%3)+'"/>').join('')+'</svg>';
- const spot=(f,i)=>{const [x,y]=S[i];if(!f)return'<button type="button" class="cr-spot cr-empty" style="left:'+x+'%;top:'+y+'%" data-cr="addOpen" aria-label="'+esc(L('Add a friend','Freund hinzufügen','Añadir amigo'))+'">'+ICO.plus+'</button>';
-  return'<button type="button" class="cr-spot'+(T.sel===f.uid?' sel':'')+'" style="left:'+x+'%;top:'+y+'%" data-cr="friend" data-uid="'+esc(f.uid)+'" data-care-uid="'+esc(f.uid)+'" aria-pressed="'+(T.sel===f.uid)+'" aria-label="'+esc((f.c||L('Cell','Zelle','Célula'))+', '+f.n)+'">'+friendCell('f'+i,K.hue(f.uid),{cls:'cr-fc'})+'<b>'+esc(f.c||L('Cell','Zelle','Célula'))+'</b><small>'+esc(f.n)+'</small></button>';};
- const meName=myName()||L('You','Du','Tú');
- let out='<div class="cr-panel cr-treep"><header class="cr-head"><button type="button" class="cr-x" data-cr="close" aria-label="'+esc(L('Close','Schließen','Cerrar'))+'">×</button><h2 id="crTreeTitle">'+esc(L('Friends tree','Freundesbaum','Árbol de amigos'))+'</h2><span class="cr-count">'+fl.length+'</span></header><div class="cr-scroll">'+
-  '<div class="cr-tree">'+svg+S.map((_,i)=>spot(onTree[i],i)).join('')+'<div class="cr-spot cr-mine" style="left:'+M[0]+'%;top:'+M[1]+'%">'+mineSVG()+'<b>'+esc(cellName())+'</b><small>'+esc(meName)+'</small></div></div>';
- if(!fl.length)out+='<p class="cr-empty-t">'+esc(L('Your tree is still empty. Invite someone with your link or find people from the Community.','Dein Baum ist noch leer. Lade jemanden mit deinem Link ein oder finde Leute aus der Community.','Tu árbol aún está vacío. Invita a alguien con tu enlace o encuentra gente de la Comunidad.'))+'</p>';
- if(T.msg)out+='<p class="cr-note" role="status">'+esc(T.msg)+'</p>';
- const f=T.sel&&fl.find(x=>x.uid===T.sel);
- if(f){const p=personOf(f.uid);out+='<section class="cr-fcard" aria-label="'+esc(f.n)+'">'+friendCell('sel',K.hue(f.uid),{cls:'cr-fc'})+'<div><b>'+esc(f.n)+'</b><small>'+esc((f.c?f.c+' · ':'')+(p?L('Level ','Level ','Nivel ')+p.lv:f.src==='link'?L('added by invite link','per Einladungslink','añadido por enlace'):L('from the Community','aus der Community','de la Comunidad')))+'</small></div>'+
-  (careOK()?'<button type="button" class="cr-btn cr-care" data-cr="care" data-uid="'+esc(f.uid)+'">'+ICO.heart+esc(L('Send something kind','Etwas Liebes senden','Enviar algo bonito'))+'</button>':'')+'<button type="button" class="cr-btn" data-cr="miles">'+ICO.vibe+esc(L('Milestones & good vibes','Meilensteine & gute Vibes','Logros y buenas vibras'))+'</button><button type="button" class="cr-link" data-cr="remove" data-uid="'+esc(f.uid)+'">'+esc(T.sure?L('Really remove?','Wirklich entfernen?','¿Quitar de verdad?'):L('Remove from tree','Aus dem Baum nehmen','Quitar del árbol'))+'</button></section>';}
- out+='<button type="button" class="cr-btn cr-go" data-cr="addOpen" aria-expanded="'+T.adding+'">'+ICO.plus+esc(L('Add friend','Freund hinzufügen','Añadir amigo'))+'</button>';
- if(T.adding)out+=addHTML(fl);
- out+='<p class="cr-priv">'+ICO.shield+'<span>'+esc(L('Others can\'t see your health data. The tree only shows names, cell names and levels.','Andere können deine Gesundheitsdaten nicht sehen. Im Baum stehen nur Namen, Zellnamen und Level.','Los demás no pueden ver tus datos de salud. El árbol solo muestra nombres, nombres de célula y niveles.'))+'</span></p>';
- if(rest.length)out+='<h3 class="cr-h3">'+esc(L('More friends','Weitere Freunde','Más amigos'))+'</h3><ul class="cr-rest">'+rest.map(x=>'<li><button type="button" data-cr="friend" data-uid="'+esc(x.uid)+'" data-care-uid="'+esc(x.uid)+'" aria-pressed="'+(T.sel===x.uid)+'">'+friendCell('r'+x.uid,K.hue(x.uid),{cls:'cr-fc',face:false})+'<span><b>'+esc(x.c||L('Cell','Zelle','Célula'))+'</b><small>'+esc(x.n)+'</small></span></button></li>').join('')+'</ul>';
- if(root.LowiExtras&&LowiExtras.openMiles)out+='<button type="button" class="cr-link cr-milesl" data-cr="miles">'+ICO.vibe+esc(L('Milestones & good vibes in the Community','Meilensteine & gute Vibes in der Community','Logros y buenas vibras en la Comunidad'))+'</button>';
- return out+'</div></div>';}
-function addHTML(fl){const m=me(),url=K.inviteURL(root.location.origin+root.location.pathname,m),has=new Set(fl.map(x=>x.uid)),full=fl.length>=K.MAX_FRIENDS;
- let h='<section class="cr-add" aria-label="'+esc(L('Add friend','Freund hinzufügen','Añadir amigo'))+'"><h3 class="cr-h3">'+ICO.link+esc(L('Your invite link','Dein Einladungslink','Tu enlace de invitación'))+'</h3>';
- if(url)h+='<p class="cr-sub">'+esc(L('Whoever opens it can put your cell in their tree. Add them back so you see each other.','Wer ihn öffnet, kann deine Zelle in den eigenen Baum holen. Füg die Person auch hinzu, dann seht ihr euch gegenseitig.','Quien lo abra puede poner tu célula en su árbol. Añádela tú también para veros mutuamente.'))+'</p><div class="cr-inv"><input readonly value="'+esc(url)+'" aria-label="'+esc(L('Invite link','Einladungslink','Enlace de invitación'))+'"><button type="button" class="cr-btn" data-cr="share">'+esc(root.navigator&&navigator.share?L('Share','Teilen','Compartir'):L('Copy','Kopieren','Copiar'))+'</button></div>';
- else h+='<p class="cr-sub">'+esc(L('Sign in first so your link can find you. Your tree is saved with your account.','Melde dich zuerst an, damit dein Link dich findet. Dein Baum wird mit deinem Konto gespeichert.','Inicia sesión primero para que tu enlace te encuentre. Tu árbol se guarda con tu cuenta.'))+'</p>';
- h+='<h3 class="cr-h3">'+esc(L('From the Community','Aus der Community','De la Comunidad'))+'</h3>';
- const ppl=onePerName(roomPeople());
- if(!live())h+='<p class="cr-sub">'+esc(L('Signed in, you can add people from the Circle here.','Angemeldet kannst du hier Leute aus dem Circle hinzufügen.','Con sesión iniciada puedes añadir aquí a gente del Circle.'))+'</p>';
- else if(!ppl.length)h+='<p class="cr-sub">'+esc(L('Nobody else is in the Circle yet.','Noch niemand sonst ist im Circle.','Aún no hay nadie más en el Circle.'))+'</p>';
- else{const q=T.q.toLowerCase(),list=ppl.filter(p=>!q||p.n.toLowerCase().includes(q)).sort((a,b)=>(b.lv||0)-(a.lv||0)).slice(0,20);
-  h+='<input class="cr-q" type="search" data-cr="q" value="'+esc(T.q)+'" placeholder="'+esc(L('Search by name','Nach Namen suchen','Buscar por nombre'))+'" aria-label="'+esc(L('Search by name','Nach Namen suchen','Buscar por nombre'))+'"><ul class="cr-ppl">'+list.map(p=>'<li><span><b>'+esc(p.n)+'</b><small>'+esc(L('Level ','Level ','Nivel ')+(p.lv||1))+'</small></span>'+(has.has(p.uid)?'<span class="cr-in">'+ICO.check+esc(L('In your tree','Im Baum','En tu árbol'))+'</span>':'<button type="button" class="cr-btn" data-cr="addP" data-uid="'+esc(p.uid)+'"'+(full?' disabled':'')+'>'+esc(L('Add','Hinzufügen','Añadir'))+'</button>')+'</li>').join('')+'</ul>';}
- if(full)h+='<p class="cr-sub">'+esc(L('Your tree holds '+K.MAX_FRIENDS+' friends.','Dein Baum hat Platz für '+K.MAX_FRIENDS+' Freunde.','Tu árbol tiene sitio para '+K.MAX_FRIENDS+' amigos.'))+'</p>';
- return h+'</section>';}
-function paintTree(focus){if(!T.ov)return;const sc=T.ov.querySelector('.cr-scroll'),top=sc?sc.scrollTop:0;T.ov.innerHTML=treeHTML();const ns=T.ov.querySelector('.cr-scroll');if(ns)ns.scrollTop=top;
- const f=focus?T.ov.querySelector(focus):null;(f||T.ov.querySelector('.cr-x')).focus({preventScroll:true});}
-function openTree(){if(T.ov)return;closeRoom();T.back=D.activeElement;T.sel='';T.adding=false;T.q='';T.msg='';T.sure=false;T.ov=overlay('cr-ov-tree','crTreeTitle');paintTree();}
+/* 5 Nov 2026 (Emmanuel: "Friend's Tree might be even unnecessary, so we can nuke it. We can delete it. I don't think people are actually
+   using it, and I don't even use it. It doesn't bring any value."): the friends tree screen is gone. Your friends list stays saved
+   (lowispike.friends.v1 and the server copy are untouched) because Care (micro-book.js) and the People list read it, and an invite link
+   still asks before adding someone. Every old door to the tree (buttons, the Milestones row, LowiCellRoom.openTree) opens Circle. */
+function paintTree(){}
+function toCircle(){closeTree(true);try{if(typeof root.goTab==='function')root.goTab('foryou');}catch(e){}
+ setTimeout(()=>{try{const U=root.LowiRoomsUI;if(U&&U.setTab&&U.tab()!=='room')U.setTab(false);}catch(e){}},80);}
+function openTree(){toCircle();}
 function closeTree(silent){if(!T.ov)return;T.ov.remove();T.ov=null;if(!silent){const b=T.back;if(b&&b.focus&&D.contains(b))b.focus({preventScroll:true});}}
 function addFriend(f,src){const n=K.addFriend(friends(),{...f,src},myUid(),Date.now());if(!n)return false;write(K.FKEY,n);return true;}
-function share(){const url=K.inviteURL(root.location.origin+root.location.pathname,me());if(!url)return;
- const done=()=>{T.msg=L('Link copied.','Link kopiert.','Enlace copiado.');paintTree('[data-cr="share"]');};
- if(root.navigator&&navigator.share){navigator.share({title:'LOWiSPIKE',text:L('Put my cell in your friends tree on LOWiSPIKE.','Hol meine Zelle in deinen Freundesbaum bei LOWiSPIKE.','Pon mi célula en tu árbol de amigos en LOWiSPIKE.'),url}).catch(()=>{});return;}
- try{navigator.clipboard.writeText(url).then(done,()=>{const i=T.ov&&T.ov.querySelector('.cr-inv input');if(i){i.focus();i.select();}});}catch(e){const i=T.ov&&T.ov.querySelector('.cr-inv input');if(i){i.focus();i.select();}}}
 /* invite link opened: ask first, never add silently */
 const I={ov:null};
-function inviteHTML(inv){return'<div class="cr-panel cr-invp"><button type="button" class="cr-x" data-cr="invNo" aria-label="'+esc(L('Close','Schließen','Cerrar'))+'">×</button>'+friendCell('inv',K.hue(inv.uid),{cls:'cr-fc cr-invc'})+'<h2 id="crInvTitle">'+esc(L(inv.n+' invites you to their friends tree',inv.n+' lädt dich in den Freundesbaum ein',inv.n+' te invita a su árbol de amigos'))+'</h2>'+(inv.c?'<p class="cr-sub">'+esc(L('Cell: ','Zelle: ','Célula: ')+inv.c)+'</p>':'')+
- '<p class="cr-priv">'+ICO.shield+'<span>'+esc(L('Only names, cell names and levels. No health data.','Nur Namen, Zellnamen und Level. Keine Gesundheitsdaten.','Solo nombres, nombres de célula y niveles. Sin datos de salud.'))+'</span></p><button type="button" class="cr-btn cr-go" data-cr="invYes">'+esc(L('Put in my tree','In meinen Baum','Añadir a mi árbol'))+'</button><button type="button" class="cr-link" data-cr="invNo">'+esc(L('Not now','Nicht jetzt','Ahora no'))+'</button></div>';}
+function inviteHTML(inv){return'<div class="cr-panel cr-invp"><button type="button" class="cr-x" data-cr="invNo" aria-label="'+esc(L('Close','Schließen','Cerrar'))+'">×</button>'+friendCell('inv',K.hue(inv.uid),{cls:'cr-fc cr-invc'})+'<h2 id="crInvTitle">'+esc(L(inv.n+' wants to be friends',inv.n+' möchte mit dir befreundet sein',inv.n+' quiere ser tu amigo'))+'</h2>'+(inv.c?'<p class="cr-sub">'+esc(L('Cell: ','Zelle: ','Célula: ')+inv.c)+'</p>':'')+
+ '<p class="cr-priv">'+ICO.shield+'<span>'+esc(L('Only names, cell names and levels. No health data.','Nur Namen, Zellnamen und Level. Keine Gesundheitsdaten.','Solo nombres, nombres de célula y niveles. Sin datos de salud.'))+'</span></p><button type="button" class="cr-btn cr-go" data-cr="invYes">'+esc(L('Add as friend','Als Freund hinzufügen','Añadir como amigo'))+'</button><button type="button" class="cr-link" data-cr="invNo">'+esc(L('Not now','Nicht jetzt','Ahora no'))+'</button></div>';}
 function checkInvite(){const inv=K.parseInvite(root.location.search);if(!inv)return;
  try{const u=new URL(root.location.href);['friend','fn','fc'].forEach(k=>u.searchParams.delete(k));history.replaceState(history.state,'',u.pathname+u.search+u.hash);}catch(e){}
  setTimeout(()=>{if(inv.uid===myUid()||I.ov)return;T.invite=inv;I.ov=overlay('cr-ov-inv','crInvTitle');I.ov.innerHTML=inviteHTML(inv);const b=I.ov.querySelector('[data-cr="invYes"]');b&&b.focus({preventScroll:true});},2200);}
 function closeInvite(){if(I.ov){I.ov.remove();I.ov=null;}}
 /* ---------- entry points (friends tree only; the room door is gone since Oct 15) ---------- */
-function btn(cls,act,label,icon,text){const b=D.createElement('button');b.type='button';b.className=cls;b.dataset.cr=act;b.setAttribute('aria-label',label);b.setAttribute('data-noi18n','');b.innerHTML=icon+(text?'<span>'+esc(text)+'</span>':'');return b;}
 function inject(){
- const h1=D.querySelector('#tab-foryou .ls-phd .h1');if(h1&&!h1.querySelector('#crTreeBtn')){const b=btn('cr-treeb','tree',L('Friends tree','Freundesbaum','Árbol de amigos'),ICO.tree,'');b.id='crTreeBtn';h1.appendChild(b);}
- const fs=D.querySelector('.fx-sheet');if(fs&&!fs.querySelector('.cr-mrow')){const n=friends().list.length,b=btn('cr-mrow','tree',L('Friends tree','Freundesbaum','Árbol de amigos'),ICO.tree,L('Your friends tree','Dein Freundesbaum','Tu árbol de amigos')+(n?' · '+n:''));const sub=fs.querySelector('.fx-sub');sub?sub.after(b):fs.prepend(b);}}
+ /* 5 Nov 2026: no Friends tree buttons any more; a copy an older build left on the page is taken away */
+ D.querySelectorAll('#crTreeBtn,.cr-mrow,#cpRoom > .nm-ctree').forEach(o=>o.remove());}
 let qd=0;const queue=()=>{if(qd)return;qd=requestAnimationFrame(()=>{qd=0;try{inject();}catch(e){}});};
 /* ---------- events ---------- */
 D.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-cr]');if(!b||b.tagName==='INPUT')return;const a=b.dataset.cr;
  /* Oct 15 (user): Misty's room (window, plasma cushion, decor) is retired. Old room buttons do nothing harmful. */
  if(a==='room'){e.preventDefault();e.stopPropagation();return;}
  if(a==='tree'&&!(T.ov&&T.ov.contains(b))){e.preventDefault();e.stopPropagation();try{if(D.querySelector('.fx-sheet')&&root.LowiHost&&LowiHost.closeSheet)LowiHost.closeSheet();}catch(x){}openTree();return;}
- if(I.ov&&I.ov.contains(b)){e.preventDefault();e.stopPropagation();const inv=T.invite;closeInvite();if(a==='invYes'&&inv){addFriend(inv,'link');openTree();T.sel=inv.uid;T.msg=L(inv.n+' is in your tree now.',inv.n+' ist jetzt in deinem Baum.',inv.n+' ya está en tu árbol.');paintTree();}return;}
+ if(I.ov&&I.ov.contains(b)){e.preventDefault();e.stopPropagation();const inv=T.invite;closeInvite();if(a==='invYes'&&inv){addFriend(inv,'link');toCircle();}return;}
  if(R.ov&&R.ov.contains(b)){e.preventDefault();e.stopPropagation();
   if(a==='close')closeRoom();
   else if(a==='cat'){R.cat=b.dataset.cat;R.msg='';paintRoom('tab');}
   else if(a==='toggle')toggleRoom(b.dataset.id);
   return;}
- if(T.ov&&T.ov.contains(b)){e.preventDefault();e.stopPropagation();
-  if(a==='close')closeTree();
-  else if(a==='addOpen'){T.adding=!T.adding||b.classList.contains('cr-empty');T.msg='';paintTree(T.adding?'.cr-add .cr-btn,.cr-add input':'.cr-go');if(T.adding){const s=T.ov.querySelector('.cr-add');s&&s.scrollIntoView&&s.scrollIntoView({block:'nearest',behavior:reduced()?'auto':'smooth'});}}
-  else if(a==='friend'&&careOK()){T.sel=b.dataset.uid;T.sure=false;T.msg='';paintTree(null);careFor(T.sel);}
-  else if(a==='care'){careFor(b.dataset.uid);}
-  else if(a==='friend'){T.sel=T.sel===b.dataset.uid?'':b.dataset.uid;T.sure=false;T.msg='';paintTree(T.sel?'.cr-fcard .cr-btn':null);const c=T.ov.querySelector('.cr-fcard');c&&c.scrollIntoView&&c.scrollIntoView({block:'nearest',behavior:reduced()?'auto':'smooth'});}
-  else if(a==='remove'){if(!T.sure){T.sure=true;paintTree('[data-cr="remove"]');}else{const f=friends().list.find(x=>x.uid===b.dataset.uid);write(K.FKEY,K.removeFriend(friends(),b.dataset.uid));T.sel='';T.sure=false;T.msg=f?L(f.n+' is no longer in your tree.',f.n+' ist nicht mehr in deinem Baum.',f.n+' ya no está en tu árbol.'):'';paintTree('.cr-go');}}
-  else if(a==='addP'){const p=roomPeople().find(x=>x.uid===b.dataset.uid);if(p&&addFriend({uid:p.uid,n:p.n},'room')){T.sel=p.uid;T.msg=L(p.n+' is in your tree now.',p.n+' ist jetzt in deinem Baum.',p.n+' ya está en tu árbol.');}paintTree('.cr-fcard .cr-btn');}
-  else if(a==='share')share();
-  else if(a==='miles'){closeTree(true);try{root.LowiExtras.openMiles();}catch(x){}}
-  return;}
 },true);
-D.addEventListener('input',e=>{const t=e.target;if(!T.ov||!T.ov.contains(t)||!t.dataset||t.dataset.cr!=='q')return;T.q=t.value.slice(0,40);const pos=t.selectionStart;paintTree('.cr-q');const n=T.ov.querySelector('.cr-q');if(n&&n.setSelectionRange)try{n.setSelectionRange(pos,pos);}catch(x){}},true);
 D.addEventListener('keydown',e=>{const ov=I.ov||T.ov||R.ov;if(!ov)return;if(D.querySelector('.hs-ov'))return;
  const top=D.querySelector('.r2-ov.mb-ov-top:not(.off)');if(top){if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();try{root.LowiR2.close(top);}catch(x){top.remove();}}return;}
  if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(I.ov)closeInvite();else if(T.ov)closeTree();else closeRoom();return;}

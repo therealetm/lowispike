@@ -1,6 +1,8 @@
 'use strict';
 /* Oct 15: care from the friends tree. Tree nodes carry data-care-uid, the micro-book care sheet opens above the
-   tree (z above 99990) and closes back to it, one friend source, heart bubble after care is sent, daily limits kept. */
+   tree (z above 99990) and closes back to it, one friend source, heart bubble after care is sent, daily limits kept.
+   5 Nov 2026: the friends tree screen is gone (owner: "we can nuke it"). The tree-only checks became one check that it is gone;
+   Care itself (one friend source, care ids, heart bubble, daily limits) keeps its checks. */
 const assert = require('assert'), fs = require('fs'), path = require('path');
 const root = path.join(__dirname, '..');
 const C = require('../micro-book-core.js');
@@ -10,17 +12,12 @@ const cr = fs.readFileSync(path.join(root, 'cell-room.js'), 'utf8'), crc = fs.re
 let n = 0; const t = (name, fn) => { fn(); n++; };
 const zOf = (css, sel) => { const m = new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\{[^}]*z-index:(\\d+)').exec(css); return m ? +m[1] : -1; };
 
-t('tree friend nodes (branches and the rest list) carry data-care-uid with the same uid', () => {
-  const nodes = cr.match(/data-cr="friend" data-uid="'\+esc\((\w)\.uid\)\+'" data-care-uid="'\+esc\(\1\.uid\)\+'"/g) || [];
-  assert.strictEqual(nodes.length, 2);
-});
-t('care sheet and toast sit above the tree overlay', () => {
-  const tree = zOf(crc, '.cr-ov');
-  assert.strictEqual(tree, 99990);
-  assert.ok(zOf(mbc, '.r2-ov.mb-ov-top') > tree);
-  assert.ok(zOf(mbc, '.mb-toast.mb-top') > tree);
-  assert.ok(/\.r2-ov\.mb-ov-top\.off\{pointer-events:none\}/.test(mbc), 'closing sheet lets taps through to the tree');
-  assert.ok(/mb-ov-top/.test(mb) && /LowiCellRoom\.isOpen/.test(mb));
+t('5 Nov 2026: no friends tree screen left; Care still reads the saved friends list', () => {
+  assert.ok(!/function treeHTML|cr-ov-tree|data-cr="friend"|b\.id='crTreeBtn'/.test(cr), 'tree screen, its nodes and its buttons are gone');
+  assert.ok(/D\.querySelectorAll\('#crTreeBtn,\.cr-mrow,#cpRoom > \.nm-ctree'\)\.forEach\(o=>o\.remove\(\)\)/.test(cr), 'a button an older build left is removed');
+  assert.ok(/function openTree\(\)\{toCircle\(\);\}/.test(cr), 'an old call to openTree opens Circle');
+  assert.ok(/friends:\(\)=>friends\(\)\.list\.slice\(\)/.test(cr), 'the saved friends list is still offered to Care');
+  assert.ok(!/data-mb="tree"/.test(mb), 'Care has no "Open friends tree" button');
 });
 t('one friend source: micro-book reads the tree list first; tree uids are valid care uids', () => {
   assert.ok(/W\.LowiCellRoom\.friends\(\)/.test(mb));
@@ -30,23 +27,10 @@ t('one friend source: micro-book reads the tree list first; tree uids are valid 
   const id = C.careId(f.uid, C.CARE[0].id, '2026-10-15');
   assert.deepStrictEqual(C.parseCare(id), { to: 'abcdef12', kind: C.CARE[0].id, day: '2026-10-15' });
 });
-t('openCare takes a uid or {uid,n} and an onClose that returns to the tree', () => {
+t('openCare takes a uid or {uid,n} and an onClose', () => {
   assert.ok(/function openCare\(uid, opts\)/.test(mb));
   assert.ok(/typeof uid === 'object' && C\.okUid\(uid\.uid\) && uid\.n/.test(mb));
   assert.ok(/onClose: \(\) =>/.test(mb) && /opts\.onClose/.test(mb));
-  assert.ok(/LowiCare\.open\(\{uid:f\.uid,n:f\.n,c:f\.c\},\{top:true,onClose:/.test(cr));
-  assert.ok(/paintTree\('\.cr-fcard \.cr-care'\)/.test(cr));
-});
-t('tapping a friend opens care (no double open from the delegated handler); friend card keeps a care button', () => {
-  assert.ok(/a==='friend'&&careOK\(\)\)\{T\.sel=b\.dataset\.uid;[^}]*careFor\(T\.sel\)/.test(cr));
-  assert.ok(/if \(!t\.dataset\.mb && t\.dataset\.cr\) return;/.test(mb));
-  assert.ok(/data-cr="care" data-uid=/.test(cr));
-  /* without the microbe book the old select / deselect stays */
-  assert.ok(/else if\(a==='friend'\)\{T\.sel=T\.sel===b\.dataset\.uid\?'':b\.dataset\.uid;/.test(cr));
-});
-t('Escape and Tab go to the care sheet while it is on top of the tree', () => {
-  assert.ok(/querySelector\('\.r2-ov\.mb-ov-top:not\(\.off\)'\)/.test(cr));
-  assert.ok(/LowiR2\.close\(top\)/.test(cr));
 });
 t('heart bubble after care is sent today; incoming care still wins', () => {
   assert.ok(/const sentToday = /.test(mb));

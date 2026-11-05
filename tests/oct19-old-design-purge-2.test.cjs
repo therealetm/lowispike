@@ -16,7 +16,8 @@ test('friends tree: your own spot is the real Misty cell, with the old cell only
   ctx.root.LowiHerbTamagotchi = { current: () => ({ m: {}, p: 'p' }), plantHTML: (m, size) => '<svg class="tmg-plant cf-form" data-size="' + size + '"></svg>' };
   const out = ctx.f();
   assert.match(out, /^<svg class="cr-fc cr-own tmg-plant cf-form" data-size="node">/);
-  assert.match(src, /mineSVG\(\)\+/, 'the mine spot uses it');
+  /* 5 Nov 2026: the friends tree screen is gone, so there is no tree spot any more; mineSVG stays for the invite card */
+  assert.match(src, /class="cr-me"[^\n]*mineSVG\(\)/, 'the invite card uses it');
 });
 
 test('companion traits never paint the mini-blob over Misty on the friends tree', () => {

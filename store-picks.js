@@ -19,7 +19,6 @@
     /* food names in the app language (Oct 26 2026: cart names came from English recipe cards); unknown names stay as typed */
     const foodName = n => (W.LowiFoodNames ? W.LowiFoodNames.name(n, ['en', 'de', 'es'][li()]) : String(n || ''));
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-    const fmt = n => { try { return Number(n).toLocaleString(['en-GB', 'de-DE', 'es-ES'][li()]); } catch (e) { return String(n); } };
     const dec = n => { const s = (Math.round(n * 10) / 10).toFixed(n >= 10 ? 0 : 1).replace(/\.0$/, ''); return li() ? s.replace('.', ',') : s; };
 
     /* the ranges the app knows; the Salling file covers Føtex, Bilka and Danish Netto */
@@ -291,7 +290,8 @@
         return '<div class="stp-tabs' + (n > 2 ? ' stp-tabs3' : '') + (n > 3 ? ' stp-tabs4' : '') + (n > 4 ? ' stp-tabs5' : '') + '" role="tablist" aria-label="' + esc(T('Shop', 'Einkaufen', 'Comprar')) + '">' +
             b('shop', '\u{1F6D2}', T('Supermarket', 'Supermarkt', n > 3 ? 'Súper' : 'Supermercado')) + (Z ? b('sz', '\u{1F6CD}\uFE0F', Z.name(), Z.count ? Z.count() : 0) : '') +
             (kitTab() ? b('kitchen', '\u{1F9FA}', T('Kitchen', 'Küche', 'Cocina'), K.count(kit)) : '') +
-            (G ? b('gift', '\u{1F91D}', n > 3 ? T('Help out', 'Hilf mit', 'Ayudar') : T('Give a hand', 'Hilf mit', 'Echa una mano')) : '') + '</div>';
+            /* Nov 6 2026 (design review point 7): "Give a hand" / "Help out" is called Baskets / Körbe / Cestas everywhere */
+            (G ? b('gift', '\u{1F91D}', T('Baskets', 'Körbe', 'Cestas')) : '') + '</div>';
     }
     function szHTML() {
         const Z = SZ();
@@ -735,22 +735,22 @@
         if (g.pass.length) {
             body = '<ul class="stp-items">' + g.pass.slice(0, pg.show).map(it => itemHTML(it)).join('') + '</ul>' + moreHTML(g.id, pg);
         } else {
-            body = '<p class="stp-none">' + esc(T('None of the ' + fmt(total) + ' products here pass.', 'Keins der ' + fmt(total) + ' Produkte hier besteht.', 'Ninguno de los ' + fmt(total) + ' productos de aquí pasa.')) + '</p>';
+            body = '<p class="stp-none">' + esc(T('None of the products here pass.', 'Keins der Produkte hier besteht.', 'Ninguno de los productos de aquí pasa.')) + '</p>';
         }
         const pf = C.page(g.fail.length, open[g.id + ':f']);
         if (showFail && g.fail.length) {
-            body += '<h5 class="stp-h5">' + esc(T('Left out', 'Aussortiert', 'Excluidos')) + ' · ' + fmt(g.fail.length) + '</h5><ul class="stp-items">' +
+            body += '<h5 class="stp-h5">' + esc(T('Left out', 'Aussortiert', 'Excluidos')) + '</h5><ul class="stp-items">' +
                 g.fail.slice(0, pf.show).map(it => itemHTML(it, true)).join('') + '</ul>' + moreHTML(g.id + ':f', pf);
         }
-        return '<section class="stp-group" id="stpg-' + g.id + '"><h4 class="stp-gh"><span aria-hidden="true">' + meta.ic + '</span>' + esc(name) +
-            '<i>' + esc(fmt(g.pass.length)) + ' / ' + esc(fmt(total)) + '</i></h4>' + body + '</section>';
+        /* Nov 6 2026 (design review point 7, Emmanuel: counters like "115 / 294" go; the screen only answers "What can I buy here?"):
+           no count on a section, its chip, its left-out heading, its "Show more" or in How the rating works */
+        return '<section class="stp-group" id="stpg-' + g.id + '"><h4 class="stp-gh"><span aria-hidden="true">' + meta.ic + '</span>' + esc(name) + '</h4>' + body + '</section>';
     }
-    /* a page at a time (C.page): "Show 40 more · 610 left", never the whole range at once */
+    /* a page at a time (C.page), never the whole range at once; Nov 6 2026: "Show more", no count */
     function moreHTML(id, pg) {
         if (!pg.left) return '';
-        const n = fmt(pg.next), l = fmt(pg.left);
         return '<button type="button" class="stp-more" data-stp-more="' + id + '" data-stp-ask="' + pg.ask + '">' +
-            esc(T('Show ' + n + ' more · ' + l + ' left', 'Noch ' + n + ' zeigen · ' + l + ' übrig', 'Ver ' + n + ' más · quedan ' + l)) + '</button>';
+            esc(T('Show more', 'Mehr zeigen', 'Ver más')) + '</button>';
     }
     function listHTML(state, err) {
         let inner = '';
@@ -760,16 +760,14 @@
             built = C.build(data, { q });
             shown = [];
             const c = built.counts;
-            const chips = built.groups.filter(g => g.pass.length + g.fail.length + g.unrated).map(g => '<button type="button" class="stp-chip" data-stp-jump="' + g.id + '"><span aria-hidden="true">' + C.G[g.id].ic + '</span>' + esc(C.G[g.id][['en', 'de', 'es'][li()]].split(/[,&]| y | und /)[0].trim()) + ' <i>' + fmt(g.pass.length) + '</i></button>').join('');
-            /* Oct 27 (Emmanuel: "So viel auf einmal"): the product count moved from the top into How the rating works, and Show left
-               out is the last chip of the category row instead of a checkbox next to the search */
-            const sum = '<p class="stp-sum"><b>' + esc(fmt(c.pass)) + '</b> ' + esc(T('of ' + fmt(c.total) + ' products pass', 'von ' + fmt(c.total) + ' Produkten bestehen', 'de ' + fmt(c.total) + ' productos pasan')) +
-                (c.unrated ? ' · ' + esc(T(fmt(c.unrated) + ' without a label', fmt(c.unrated) + ' ohne Etikett', fmt(c.unrated) + ' sin etiqueta')) : '') + '</p>';
+            const chips = built.groups.filter(g => g.pass.length + g.fail.length + g.unrated).map(g => '<button type="button" class="stp-chip" data-stp-jump="' + g.id + '"><span aria-hidden="true">' + C.G[g.id].ic + '</span>' + esc(C.G[g.id][['en', 'de', 'es'][li()]].split(/[,&]| y | und /)[0].trim()) + '</button>').join('');
+            /* Oct 27 (Emmanuel: "So viel auf einmal"): Show left out is the last chip of the category row instead of a checkbox next
+               to the search. Nov 6 2026: the product count is gone from How the rating works too (no counters) */
             const tog = '<button type="button" class="stp-chip stp-tog' + (showFail ? ' on' : '') + '" data-stp="fails" aria-pressed="' + (showFail ? 'true' : 'false') + '"><span aria-hidden="true">' + (showFail ? '\u2713' : '\u25cc') + '</span>' + esc(T('Show left out', 'Aussortierte zeigen', 'Ver excluidos')) + '</button>';
             inner = '<div class="stp-chips stp-jumps">' + chips + tog + '</div>' +
                 built.groups.map(groupHTML).join('') +
                 (c.total ? '' : '<p class="stp-none">' + esc(T('Nothing matches that search.', 'Nichts passt zu der Suche.', 'Nada coincide con la búsqueda.')) + '</p>') +
-                '<details class="stp-how"><summary>' + esc(T('How the rating works', 'So wird bewertet', 'Cómo se valora')) + '</summary>' + sum + '<p>' +
+                '<details class="stp-how"><summary>' + esc(T('How the rating works', 'So wird bewertet', 'Cómo se valora')) + '</summary><p>' +
                 esc(T('For each product: carbs and sugar per typical portion from its label (100 g meat or fish, 30 g cheese, 40 g bread, 25 g sweets, 30 g snacks, 250 ml drink, 150 g yoghurt). The same Food check as the scanner card says Insulin-friendly or Not insulin-friendly. A product passes when it is insulin-friendly with no more than 6 g sugar per portion. It is an estimate, not a guarantee.',
                     'Für jedes Produkt: Kohlenhydrate und Zucker pro typischer Portion laut Etikett (100 g Fleisch oder Fisch, 30 g Käse, 40 g Brot, 25 g Süßes, 30 g Snacks, 250 ml Getränk, 150 g Joghurt). Derselbe Food-Check wie auf der Scanner-Karte sagt Insulinfreundlich oder Nicht insulinfreundlich. Ein Produkt besteht, wenn es insulinfreundlich ist und höchstens 6 g Zucker pro Portion hat. Das ist eine Schätzung, keine Garantie.',
                     'Para cada producto: carbohidratos y azúcar por porción típica según su etiqueta (100 g de carne o pescado, 30 g de queso, 40 g de pan, 25 g de dulces, 30 g de snacks, 250 ml de bebida, 150 g de yogur). El mismo Food check que la tarjeta del escáner dice Apto para la insulina o No apto para la insulina. Un producto pasa si es apto para la insulina y tiene como máximo 6 g de azúcar por porción. Es una estimación, no una garantía.')) + '</p>' +
@@ -1041,7 +1039,7 @@
         const out = [{ id: 'shop', label: T('Supermarket', 'Supermarkt', 'Súper'), sub: T('Groceries & week plan', 'Einkauf & Wochenplan', 'Compra y semana') }];
         const Z = SZ(); if (Z) { let n = 0; try { n = Z.count ? Z.count() : 0; } catch (e) {} out.push({ id: 'sz', label: Z.name(), n, sub: T('Packaged snacks', 'Fertige Snacks', 'Snacks envasados') }); }
         if (kitTab()) out.push({ id: 'kitchen', label: T('Kitchen', 'Küche', 'Cocina') });
-        if (giftDoor()) out.push({ id: 'gift', label: T('Help out', 'Hilf mit', 'Ayudar'), sub: T('Help pay', 'Mitbezahlen', 'Ayuda a pagar') });
+        if (giftDoor()) out.push({ id: 'gift', label: T('Baskets', 'Körbe', 'Cestas'), sub: T('Help pay', 'Mitbezahlen', 'Ayuda a pagar') });
         return out;
     }
     /* open Einkaufen right on one door. Hilf mit opens in Einkaufen's frame, as from its tab, so X / back / Escape close Einkaufen

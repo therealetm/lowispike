@@ -26,12 +26,14 @@ test('Scan covers a meal photo and a packaged product, and what comes after the 
 
 test('Shopping names its three doors by their purpose, and Supermarket names Plan my week and the cart', () => {
     const f = card('fuel'), w = card('shop-week');
-    assert.match(f.text.en, /In the Supermarket, you shop and plan\. Seller Zone has ready snacks\. And with Help out, you can pay/);
-    assert.match(f.text.de, /Im Supermarkt kaufst du ein und planst\. In der Seller Zone gibt es fertige Snacks\. Und bei Hilf mit kannst du jemandem das Essen mitbezahlen/);
+    /* Nov 6 2026 (test changed, why): design review point 7, Help out / Hilf mit is called Baskets / Körbe / Cestas now */
+    assert.match(f.text.en, /In the Supermarket, you shop and plan\. Seller Zone has ready snacks\. And in Baskets, you can pay/);
+    assert.match(f.text.de, /Im Supermarkt kaufst du ein und planst\. In der Seller Zone gibt es fertige Snacks\. Und unter Körbe kannst du jemandem das Essen mitbezahlen/);
+    assert.match(f.text.es, /Y en Cestas puedes pagar la comida de otra persona/);
     assert.strictEqual(f.demo.open, 'fuel-bloom');
     assert.strictEqual(w.demo.open, 'supermarket', 'the Supermarket card opens Shop read-only');
     assert.match(w.text.en, /Plan my week/); assert.match(w.text.de, /Meine Woche planen/); assert.match(w.text.es, /Planear mi semana/);
-    const sp = read('store-picks.js'); for (const word of ['Seller Zone', 'Hilf mit', 'Meine Woche planen']) assert.ok(sp.includes(word), 'store-picks.js really has ' + word);
+    const sp = read('store-picks.js'); for (const word of ['Seller Zone', "T('Baskets', 'Körbe', 'Cestas')", 'Meine Woche planen']) assert.ok(sp.includes(word), 'store-picks.js really has ' + word);
 });
 
 test('a tour left on an old card continues on the card that took it over, never from the start', () => {

@@ -20,6 +20,8 @@ import asyncio, hashlib, json, os, subprocess, sys
 
 APPROVED = {'en': 'en-US-AvaNeural', 'de': 'de-DE-SeraphinaMultilingualNeural', 'es': 'es-ES-XimenaNeural'}
 SETTINGS = {'rate': '+0%', 'pitch': '+0Hz', 'volume': '+0%'}
+# Nov 6 2026: a cloud session reaches the voices only through its HTTPS proxy (edge-tts does not read it from the environment)
+PROXY = os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy') or None
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'tutorial-voice')
 DATA = os.path.join(ROOT, 'tutorial-voice-data.js')
@@ -65,6 +67,8 @@ async def record(voice, text, path):
     for attempt in range(4):
         try:
             com = edge_tts.Communicate(text, voice, boundary='WordBoundary', **SETTINGS)
+            if PROXY:
+                com.proxy = PROXY
             words, audio = [], bytearray()
             async for ch in com.stream():
                 if ch['type'] == 'audio':

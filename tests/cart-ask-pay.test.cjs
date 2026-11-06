@@ -102,7 +102,8 @@ test('Give a hand: the cart basket shares the whole cart and lands in the swipe 
     assert.doesNotMatch(G, /Not for a basket \(not low-spike\): /, 'unknown foods are no longer called spiky');
     /* Nov 5 2026 (test changed, why): no more rating reasons; only the server's refusal or a full basket, said by name */
     assert.doesNotMatch(G, /kann die App noch nicht bewerten/);
-    assert.match(G, /Give a hand can’t take these yet: /);
+    /* Nov 6 2026 (test changed, why): design review point 7 renamed Give a hand to Baskets / Körbe / Cestas */
+    assert.match(G, /Baskets can’t take these yet: /);
     assert.match(G, /C\.fromCart\(cart, rate, fname, LIM\)/, 'builder chips: names in the app language');
 });
 

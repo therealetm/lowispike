@@ -195,7 +195,7 @@
             '<p>' + T('Picking ' + S.nights + ' low-spike dinners for ' + esc(storeName(S.store)), S.nights + ' Low-Spike-Abendessen f\u00fcr ' + esc(storeName(S.store)), 'Eligiendo ' + S.nights + ' cenas low-spike para ' + esc(storeName(S.store))) + '</p></section>';
     }
     function weekHTML(c) {
-        const bs = c.bs, cheapest = c.totals[0] && c.totals[0][0], dl = C.days(S.start, c.dinners.length);
+        const bs = c.bs, cheapest = c.totals[0] && c.totals[0][0], dl = C.days(S.start, c.dinners.length), up = C.ahead(dl, today());
         const need = c.items.filter(i => !c.have[i.k]);
         if (!c.dinners.length) return '<section class="wb-week"><h4 class="wb-wh">' + T('Nothing fits all of that yet', 'Dazu passt noch nichts', 'A\u00fan no hay nada que encaje') + '</h4>' +
             '<p class="wb-wl">' + T('Try fewer things you don\u2019t eat, or tell us about another way to cook.', 'Probier weniger Ausschl\u00fcsse oder eine andere Kochm\u00f6glichkeit.', 'Prueba con menos exclusiones o con otra forma de cocinar.') + '</p>' +
@@ -219,8 +219,12 @@
             '<p class="wb-wl' + (bs.over ? ' over' : '') + '" aria-live="polite">\u2248 ' + eur(bs.total) + ' ' + T('of ', 'von ', 'de ') + eur(bs.budget) + ' \u00b7 ' + esc(storeName(S.store)) +
             (bs.over && !overNote ? ' \u00b7 <button type="button" class="wb-link" data-wb="fit">' + T('Fit my budget', 'In mein Budget bringen', 'Ajustar a mi presupuesto') + '</button>' : '') + '</p>' + overNote +
             (short ? '<p class="wb-note">' + T('Only ' + c.dinners.length + ' dinners fit everything you said.', 'Nur ' + c.dinners.length + ' Abendessen passen zu allem, was du gesagt hast.', 'Solo ' + c.dinners.length + ' cenas encajan con todo lo que dijiste.') + '</p>' : '') +
-            '<ul class="wb-days">' + c.dinners.map(day).join('') + '</ul>' +
-            '<button type="button" class="wb-cta" data-wb="view" data-v="list">' + T('Shopping list', 'Einkaufsliste', 'Lista de la compra') + ' \u00b7 ' + need.length + '</button>' +
+            /* Nov 6 2026 (design review point 7): only tonight and the days still to come, Tonight on top; a week that is all behind
+               you offers the next one */
+            (up.length ? '<ul class="wb-days">' + up.map(n => day(c.dinners[n], n)).join('') + '</ul>' +
+                '<button type="button" class="wb-cta" data-wb="view" data-v="list">' + T('Shopping list', 'Einkaufsliste', 'Lista de la compra') + ' \u00b7 ' + need.length + '</button>'
+                : '<p class="wb-note wb-past">' + T('This week\u2019s dinners are behind you.', 'Die Abendessen dieser Woche sind vorbei.', 'Las cenas de esta semana ya pasaron.') + '</p>' +
+                '<button type="button" class="wb-cta" data-wb="new">' + T('Plan the next dinners', 'N\u00e4chste Abendessen planen', 'Planear las pr\u00f3ximas cenas') + '</button>') +
             '<div class="wb-links"><button type="button" class="wb-link" data-wb="edit">' + T('Change my answers', 'Antworten \u00e4ndern', 'Cambiar mis respuestas') + '</button><span aria-hidden="true">\u00b7</span>' +
             '<button type="button" class="wb-link" data-wb="new">' + T('New week', 'Neue Woche', 'Nueva semana') + '</button>' +
             (W.LowiKitchenGame ? '<span aria-hidden="true">\u00b7</span><button type="button" class="wb-link" data-wb="kitchen">' + T('My kitchen', 'Meine K\u00fcche', 'Mi cocina') + '</button>' : '') + '</div>' +

@@ -162,7 +162,8 @@ test('path 5, tutorial picture of the Einkaufen card: the bubble and its Superma
         assert.doesNotMatch(h, /1\/3/, lang + ': no meal count on the Einkaufen bubble');
     }
     /* Nov 5 2026 (test changed, why): owner Phase B item 3, three distinct doors; Zu Hause is Supermarkt > Plan my week */
-    assert.match(T.visHtml('fuel', 'de'), /Einkaufen[\s\S]*Supermarkt[\s\S]*Seller Zone[\s\S]*Hilf mit/);
+    /* Nov 6 2026 (test changed, why): design review point 7, Hilf mit is called Körbe now */
+    assert.match(T.visHtml('fuel', 'de'), /Einkaufen[\s\S]*Supermarkt[\s\S]*Seller Zone[\s\S]*Körbe/);
     for (const lang of ['de', 'en', 'es']) assert.doesNotMatch(T.visHtml('fuel', lang), /Zu Hause|From home|Desde casa/);
 });
 

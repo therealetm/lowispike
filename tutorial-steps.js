@@ -132,9 +132,9 @@
             id: 'fuel', area: 'shop', target: ['#whHud .wh-meals'], demo: { g: 'tap', open: 'fuel-bloom' }, covers: ['fuel', 'shop', 'seller-zone', 'give-hand'], teaches: ['fuel-tap'],
             title: { en: 'Shopping', de: 'Einkaufen', es: 'Compras' },
             text: {
-                en: 'Tap Shopping to find three places. In the Supermarket, you shop and plan. Seller Zone has ready snacks. And with Help out, you can pay for someone’s food.',
-                de: 'Tipp auf Einkaufen, dort gibt es drei Bereiche. Im Supermarkt kaufst du ein und planst. In der Seller Zone gibt es fertige Snacks. Und bei Hilf mit kannst du jemandem das Essen mitbezahlen.',
-                es: 'Toca Compras y verás tres zonas. En Súper compras y planeas. En Seller Zone hay snacks listos. Y en Ayudar puedes pagar la comida de otra persona.'
+                en: 'Tap Shopping to find three places. In the Supermarket, you shop and plan. Seller Zone has ready snacks. And in Baskets, you can pay for someone’s food.',
+                de: 'Tipp auf Einkaufen, dort gibt es drei Bereiche. Im Supermarkt kaufst du ein und planst. In der Seller Zone gibt es fertige Snacks. Und unter Körbe kannst du jemandem das Essen mitbezahlen.',
+                es: 'Toca Compras y verás tres zonas. En Súper compras y planeas. En Seller Zone hay snacks listos. Y en Cestas puedes pagar la comida de otra persona.'
             }
         },
         {
@@ -268,9 +268,9 @@
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.22): the Supermarket tab in Shop has a Cart (Warenkorb / Carrito; cart-core.js, store-picks.js cartHTML) with quantities and an estimate from reported prices; the Seller Zone strip left the Supermarket (Seller Zone keeps its own tab); Give a hand is a swipe deck (gift-basket.js deckHTML): right = pay for these groceries, left = skip.',
             title: { en: 'Your cart', de: 'Dein Warenkorb', es: 'Tu carrito' },
             text: {
-                en: 'The Supermarket has a Cart with amounts and a total. In Give a hand, swipe a basket right to open its pay link, or left to skip it.',
-                de: 'Im Supermarkt gibt es einen Warenkorb mit Mengen und Summe. Bei Hilf mit wischst du einen Korb nach rechts, um den Zahlungslink zu öffnen, oder nach links, um ihn zu überspringen.',
-                es: 'En el súper tienes un carrito con cantidades y total. En Echa una mano, desliza una cesta a la derecha para abrir su enlace de pago, o a la izquierda para saltarla.'
+                en: 'The Supermarket has a Cart with amounts and a total. In Baskets, swipe a basket right to open its pay link, or left to skip it.',
+                de: 'Im Supermarkt gibt es einen Warenkorb mit Mengen und Summe. Unter Körbe wischst du einen Korb nach rechts, um den Zahlungslink zu öffnen, oder nach links, um ihn zu überspringen.',
+                es: 'En el súper tienes un carrito con cantidades y total. En Cestas, desliza una cesta a la derecha para abrir su enlace de pago, o a la izquierda para saltarla.'
             }
         },
         {
@@ -337,19 +337,19 @@
             info: 'Oct 26 2026 (MAYA-HANDOFF 0.34): the Supermarket Cart sheet covers the whole Shop card with a blurred page behind it and compact matching buttons; "Someone else pays" turns the whole cart (items + amounts, low-spike foods only) into a Give a hand basket (gift-basket.js fromCart / cartBasketHTML)',
             title: { en: 'Someone else pays', de: 'Jemand anderes zahlt', es: 'Que pague otra persona' },
             text: {
-                en: 'In your Cart, tap Someone else pays, and the whole cart becomes a Give a hand basket. It asks for the cart’s total. Add your pay link and share it.',
-                de: 'Tipp im Warenkorb auf Jemand anderes zahlt, dann landet der ganze Warenkorb bei Hilf mit. Er fragt nach der Summe des Warenkorbs. Füg deinen Zahlungslink hinzu und teile ihn.',
-                es: 'En tu carrito, toca Que pague otra persona y todo el carrito pasa a ser una cesta de Echa una mano. Pide el total del carrito. Añade tu enlace de pago y compártela.'
+                en: 'In your Cart, tap Someone else pays, and the whole cart becomes a basket in Baskets. It asks for the cart’s total. Add your pay link and share it.',
+                de: 'Tipp im Warenkorb auf Jemand anderes zahlt, dann landet der ganze Warenkorb unter Körbe. Er fragt nach der Summe des Warenkorbs. Füg deinen Zahlungslink hinzu und teile ihn.',
+                es: 'En tu carrito, toca Que pague otra persona y todo el carrito pasa a ser una cesta en Cestas. Pide el total del carrito. Añade tu enlace de pago y compártela.'
             }
         },
         {
             id: 'new-give-hand', area: 'new', where: 'home', open: 'shop', target: ['.stp-card .stp-tab[data-stp-tab="gift"]', '.stp-card'], covers: ['give-a-hand'],
             info: 'Oct 25 2026: the Give a hand tab in Shop (store-picks.js giftDoor); it shows once the server has the basket table, otherwise the card points at Shop. Oct 26: the Kitchen tab left Shop for Cook, so the card opens Shop on Seller Zone and Give a hand sits right beside it',
-            title: { en: 'Give a hand', de: 'Hilf mit', es: 'Echa una mano' },
+            title: { en: 'Baskets', de: 'Körbe', es: 'Cestas' },
             text: {
-                en: 'Give a hand now has its own tab in the shop, right next to Seller Zone. You can pay for someone’s healthy groceries, or share your own basket.',
-                de: 'Hilf mit hat jetzt einen eigenen Tab im Shop, direkt neben der Seller Zone. Du kannst jemandem gesunde Lebensmittel bezahlen oder deinen eigenen Korb teilen.',
-                es: 'Echa una mano tiene ahora su propia pestaña en la tienda, junto a Seller Zone. Puedes pagar la compra sana de alguien o compartir tu propia cesta.'
+                en: 'Baskets now has its own tab in the shop, right next to Seller Zone. You can pay for someone’s healthy groceries, or share your own basket.',
+                de: 'Körbe hat jetzt einen eigenen Tab im Shop, direkt neben der Seller Zone. Du kannst jemandem gesunde Lebensmittel bezahlen oder deinen eigenen Korb teilen.',
+                es: 'Cestas tiene ahora su propia pestaña en la tienda, junto a Seller Zone. Puedes pagar la compra sana de alguien o compartir tu propia cesta.'
             }
         },
         {

@@ -121,9 +121,10 @@
     /* ---------- paint ---------- */
     function shell(inner) {
         return '<div class="stp-card gb-card" role="dialog" aria-modal="true" aria-labelledby="gb-title">' + shopBar() +
-            '<div class="stp-head gb-head"><h3 id="gb-title">\u{1F91D} ' + esc(T('Give a hand', 'Hilf mit', 'Echa una mano')) + '</h3>' +
+            '<div class="stp-head gb-head"><h3 id="gb-title">\u{1F91D} ' + esc(T('Baskets', 'Körbe', 'Cestas')) + '</h3>' +
             '<div class="stp-tabs gb-tabs" role="tablist">' +
-            tabBtn('give', T('Give a hand', 'Helfen', 'Ayudar')) + tabBtn('mine', T('I could use a hand', 'Ich brauche Hilfe', 'Necesito ayuda')) + '</div></div>' +
+            /* Nov 6 2026 (design review point 7): Baskets / Körbe / Cestas; its tabs Pay a basket and Share my basket */
+            tabBtn('give', T('Pay a basket', 'Korb bezahlen', 'Pagar una cesta')) + tabBtn('mine', T('Share my basket', 'Korb teilen', 'Compartir mi cesta')) + '</div></div>' +
             '<p class="gb-msg' + (msg ? ' on' : '') + (msgKind ? ' gb-' + msgKind : '') + '" role="status" aria-live="polite">' + esc(msg) + '</p>' +
             '<div class="stp-scroll gb-scroll" data-noi18n>' + inner + '</div>' +
             '<div class="stp-foot gb-foot"><span></span><button type="button" class="stp-orb gb-x" data-stp="close" data-gb="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' +
@@ -146,7 +147,7 @@
         loadReceipts();
     }
     function offlineHTML() {
-        return '<p class="stp-msg">' + esc(T('Give a hand needs you to be online and signed in, so baskets can reach other people.', 'Helfen geht nur online und angemeldet, damit Körbe andere Menschen erreichen.', 'Para ayudar tienes que estar en línea y con sesión iniciada, así las cestas llegan a otras personas.')) + '</p>' +
+        return '<p class="stp-msg">' + esc(T('Baskets only work online and signed in, so they can reach other people.', 'Körbe gehen nur online und angemeldet, damit sie andere Menschen erreichen.', 'Las cestas solo funcionan en línea y con sesión iniciada, así llegan a otras personas.')) + '</p>' +
             '<button type="button" class="stp-pill" data-gb="reload">' + esc(T('Try again', 'Nochmal versuchen', 'Reintentar')) + '</button><p class="stp-fine">' + esc(MONEY()) + '</p>';
     }
 
@@ -317,7 +318,7 @@
         return '<h4 class="stp-h4">' + esc(T('Your basket is shared', 'Dein Korb ist geteilt', 'Tu cesta está compartida')) + '</h4>' +
             '<article class="gb-basket gb-mine"><header><b>' + esc(who(b)) + '</b>' + (b.city ? '<small>' + esc(b.city) + '</small>' : '') + '</header>' + itemsHTML(b.items, b.qtys) +
             '<p class="gb-total">' + esc(T('About ', 'Etwa ', 'Unos ')) + '<b>' + esc(eur(b.total)) + '</b> · ' + esc(C.linkName(b.kind)) + '</p>' +
-            '<p class="stp-fine gb-fine">' + esc(T('Others see it under Give a hand until someone helps. It goes away by itself after 3 weeks.', 'Andere sehen ihn unter Helfen, bis jemand hilft. Nach 3 Wochen verschwindet er von selbst.', 'Los demás la ven en Ayudar hasta que alguien ayude. Desaparece sola a las 3 semanas.')) + '</p>' +
+            '<p class="stp-fine gb-fine">' + esc(T('Others see it under Baskets until someone pays for it. It goes away by itself after 3 weeks.', 'Andere sehen ihn unter Körbe, bis jemand ihn bezahlt. Nach 3 Wochen verschwindet er von selbst.', 'Los demás la ven en Cestas hasta que alguien la pague. Desaparece sola a las 3 semanas.')) + '</p>' +
             '<button type="button" class="stp-pill gb-down" data-gb="down" data-gb-for="' + esc(b.id) + '"' + (busy ? ' disabled' : '') + '>' + esc(T('Take my basket down', 'Meinen Korb zurücknehmen', 'Retirar mi cesta')) + '</button></article>' +
             '<p class="gb-money">' + esc(MONEY()) + '</p>';
     }
@@ -373,7 +374,7 @@
         const by = w => left.filter(x => x.why === w).map(x => x.n);
         const srv = by('server').concat(by('spike'), by('unknown')), full = by('full'), cut = a => a.slice(0, 5).join(', ') + (a.length > 5 ? ' …' : '');
         const parts = [];
-        if (srv.length) parts.push(T('Give a hand can’t take these yet: ', 'Hilf mit kann das noch nicht nehmen: ', 'Echa una mano aún no admite: ') + cut(srv));
+        if (srv.length) parts.push(T('Baskets can’t take these yet: ', 'Körbe nehmen das noch nicht: ', 'Las cestas aún no admiten: ') + cut(srv));
         if (full.length) parts.push(cut(full) + T(' (a basket holds ' + LIM.maxItems + ' foods)', ' (in einen Korb passen ' + LIM.maxItems + ' Lebensmittel)', ' (en una cesta caben ' + LIM.maxItems + ' alimentos)'));
         return parts.join(' · ');
     }
@@ -388,9 +389,9 @@
         const none = !p.items.length;
         return '<h4 class="stp-h4">' + esc(T('Your cart as a basket', 'Dein Warenkorb als Korb', 'Tu carrito como cesta')) + '</h4>' +
             '<article class="gb-basket gb-mine gb-fromcart">' +
-            (none ? '<p class="gb-intro">' + esc(p.left.length ? T('Give a hand can’t take anything from this cart yet.', 'Hilf mit kann aus diesem Warenkorb noch nichts nehmen.', 'Echa una mano aún no admite nada de este carrito.') : T('Your cart is empty.', 'Dein Warenkorb ist leer.', 'Tu carrito está vacío.')) + '</p>'
-                : '<p class="gb-intro">' + esc(p.left.length ? T(p.items.length + ' of ' + (p.items.length + p.left.length) + ' foods from your cart go in. Helpers see it in Give a hand and can pay for it.', p.items.length + ' von ' + (p.items.length + p.left.length) + ' Lebensmitteln aus deinem Warenkorb kommen mit. Helfer sehen ihn unter Hilf mit und können ihn bezahlen.', 'Entran ' + p.items.length + ' de ' + (p.items.length + p.left.length) + ' alimentos de tu carrito. Quien quiera ayudar la ve en Echa una mano y puede pagarla.')
-                    : T('Everything from your cart, ready to go. Helpers see it in Give a hand and can pay for it.', 'Alles aus deinem Warenkorb, fertig. Helfer sehen ihn unter Hilf mit und können ihn bezahlen.', 'Todo lo de tu carrito, listo. Quien quiera ayudar la ve en Echa una mano y puede pagarla.')) + '</p>' +
+            (none ? '<p class="gb-intro">' + esc(p.left.length ? T('Baskets can’t take anything from this cart yet.', 'Körbe nehmen aus diesem Warenkorb noch nichts.', 'Las cestas aún no admiten nada de este carrito.') : T('Your cart is empty.', 'Dein Warenkorb ist leer.', 'Tu carrito está vacío.')) + '</p>'
+                : '<p class="gb-intro">' + esc(p.left.length ? T(p.items.length + ' of ' + (p.items.length + p.left.length) + ' foods from your cart go in. Helpers see it in Baskets and can pay for it.', p.items.length + ' von ' + (p.items.length + p.left.length) + ' Lebensmitteln aus deinem Warenkorb kommen mit. Helfer sehen ihn unter Körbe und können ihn bezahlen.', 'Entran ' + p.items.length + ' de ' + (p.items.length + p.left.length) + ' alimentos de tu carrito. Quien quiera ayudar la ve en Cestas y puede pagarla.')
+                    : T('Everything from your cart, ready to go. Helpers see it in Baskets and can pay for it.', 'Alles aus deinem Warenkorb, fertig. Helfer sehen ihn unter Körbe und können ihn bezahlen.', 'Todo lo de tu carrito, listo. Quien quiera ayudar la ve en Cestas y puede pagarla.')) + '</p>' +
                   itemsHTML(p.items.map(x => x.n), p.items.map(x => x.q))) +
             (p.left.length ? '<p class="stp-fine gb-fine gb-left">' + esc(leftLine(p.left)) + '</p>' : '') + '</article>' +
             (none ? '' :
@@ -401,7 +402,7 @@
             '<label class="gb-check"><input type="checkbox" id="gb-anon" data-gb-in="anon"' + (draft.anon ? ' checked' : '') + '> ' + esc(T('Stay anonymous', 'Anonym bleiben', 'Quedarme anónimo')) + '</label>' +
             (cur ? '<p class="stp-fine gb-fine">' + esc(T('This replaces the foods in the basket you already shared.', 'Das ersetzt die Lebensmittel in deinem schon geteilten Korb.', 'Esto sustituye la comida de la cesta que ya compartiste.')) + '</p>' : '') +
             '<p class="gb-money">' + esc(MONEY()) + '</p>' +
-            '<button type="button" class="stp-go gb-share gb-cartshare" data-gb="cartshare" data-spend="1"' + (busy || !built.ok ? ' disabled' : '') + '>' + esc(cur ? T('Update my basket', 'Meinen Korb aktualisieren', 'Actualizar mi cesta') : T('Share in Give a hand', 'Bei Hilf mit teilen', 'Compartir en Echa una mano')) + '</button>' +
+            '<button type="button" class="stp-go gb-share gb-cartshare" data-gb="cartshare" data-spend="1"' + (busy || !built.ok ? ' disabled' : '') + '>' + esc(cur ? T('Update my basket', 'Meinen Korb aktualisieren', 'Actualizar mi cesta') : T('Share my basket', 'Korb teilen', 'Compartir mi cesta')) + '</button>' +
             '<p class="stp-fine gb-fine gb-missing"' + (built.ok ? ' hidden' : '') + '>' + esc(missing(built)) + '</p>') +
             '<button type="button" class="stp-pill gb-cartoff" data-gb="cartoff">' + esc(T('Pick foods myself instead', 'Lieber selbst auswählen', 'Prefiero elegir yo')) + '</button>';
     }
@@ -451,7 +452,7 @@
             const row = await api().share(b.row, cur ? cur.id : '');
             const v = C.view(row); if (v) mine = [v].concat(mine.filter(x => x.id !== v.id));
             fromCartPick = null; tab = 'give';
-            msg = T('Your cart is in Give a hand now. Helpers see it as they swipe.', 'Dein Warenkorb ist jetzt bei Hilf mit. Helfer sehen ihn beim Wischen.', 'Tu carrito ya está en Echa una mano. Quien ayuda lo ve al deslizar.'); msgKind = 'good';
+            msg = T('Your cart is a basket in Baskets now. Helpers see it as they swipe.', 'Dein Warenkorb ist jetzt ein Korb unter Körbe. Helfer sehen ihn beim Wischen.', 'Tu carrito ya es una cesta en Cestas. Quien ayuda la ve al deslizar.'); msgKind = 'good';
         });
     }
     function missing(built) { return built.ok ? '' : T('Still missing: ', 'Es fehlt noch: ', 'Falta: ') + built.errors.map(e => ({ items: T('food', 'Essen', 'comida'), total: T('total', 'Betrag', 'total'), link: T('payment link', 'Zahlungslink', 'enlace de pago') })[e]).join(', '); }
@@ -603,7 +604,7 @@
         const c = C.basketCheck(name, LIM);
         if (!c.ok) {
             if (c.why === 'empty') return false;
-            say(T('Give a hand can’t take ' + c.name + ' yet.', 'Hilf mit kann ' + c.name + ' noch nicht nehmen.', 'Echa una mano aún no admite ' + c.name + '.'), 'low');
+            say(T('Baskets can’t take ' + c.name + ' yet.', 'Körbe nehmen ' + c.name + ' noch nicht.', 'Las cestas aún no admiten ' + c.name + '.'), 'low');
             return false;
         }
         if (draft.items.some(x => C.norm(x) === C.norm(c.name))) { say(T('Already in your basket.', 'Schon im Korb.', 'Ya está en tu cesta.')); return true; }
@@ -616,7 +617,7 @@
             const cur = mine.find(x => !x.helped);
             const row = await api().share(b.row, cur ? cur.id : '');
             const v = C.view(row); if (v) mine = [v].concat(mine.filter(x => x.id !== v.id));
-            msg = T('Your basket is shared. Others can see it under Give a hand.', 'Dein Korb ist geteilt. Andere sehen ihn unter Helfen.', 'Tu cesta está compartida. Los demás la ven en Ayudar.'); msgKind = 'good';
+            msg = T('Your basket is shared. Others can see it under Baskets.', 'Dein Korb ist geteilt. Andere sehen ihn unter Körbe.', 'Tu cesta está compartida. Los demás la ven en Cestas.'); msgKind = 'good';
         });
     }
     function takeDown(id) {
@@ -725,7 +726,7 @@
     }
     function entryHTML() {
         if (!serverReady()) { probe(); return ''; }
-        return '<button type="button" class="stp-row gb-entry" data-stp="gift"><span class="gb-entry-i" aria-hidden="true">\u{1F91D}</span><span class="stp-sos-t"><b>' + esc(T('Give a hand', 'Hilf mit', 'Echa una mano')) + '</b><small>' +
+        return '<button type="button" class="stp-row gb-entry" data-stp="gift"><span class="gb-entry-i" aria-hidden="true">\u{1F91D}</span><span class="stp-sos-t"><b>' + esc(T('Baskets', 'Körbe', 'Cestas')) + '</b><small>' +
             esc(T('Pay for someone’s groceries, or share your own basket', 'Bezahl jemandem den Einkauf oder teile deinen eigenen Korb', 'Paga la compra de alguien o comparte tu propia cesta')) + '</small></span></button>';
     }
     W.addEventListener('lowi:lang', () => { if (ov) paint(); });

@@ -69,7 +69,7 @@ async function run(engine, url) {
         /* Oct 21: the card under Cook it / Shop it is gone (Home's Fuel bubble Shop orb is the one entry), so open the panel the way that orb does, on top of Cook */
         await ev(() => LowiStorePicks.open('home-bloom'));
         const t0 = Date.now();
-        try { await page.waitForSelector('.stp-ov .stp-sum', { timeout: 30000 }); } catch (e) { fails.push(lap + 'the list never showed'); break; }
+        try { await page.waitForSelector('.stp-ov .stp-how', { timeout: 30000 }); } catch (e) { fails.push(lap + 'the list never showed'); break; }
         await sleep(900);
         const m = await ev(() => {
             const ov = document.querySelector('.stp-ov');

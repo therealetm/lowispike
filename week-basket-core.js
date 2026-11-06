@@ -192,6 +192,10 @@
         return out;
     }
     const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    /* Nov 6 2026 (design review point 7, Emmanuel: past days disappear, Tonight is always on top; Thursday stood above Tonight):
+       the places in the plan whose day is today or later, in order. The days run from the day the week was made, so today's
+       dinner, when there is one, comes first. */
+    function ahead(dl, today) { const out = []; (dl || []).forEach((d, i) => { if (d && d.date >= today) out.push(i); }); return out; }
     const pickList = (v, allowed) => Array.isArray(v) ? v.filter((x, i) => allowed.indexOf(x) >= 0 && v.indexOf(x) === i) : [];
 
     /* six low-spike vegetarian dinners, so "I don't eat meat" still gets a real week (the Cook recipes are mostly meat or fish).
@@ -285,5 +289,5 @@
         return (title || 'LOWiSPIKE') + ' \u00b7 ' + storeName + '\n' + need.map(i => '- ' + (i.packs > 1 ? i.packs + ' \u00d7 ' : '') + i.n + '  ' + eur((Number(priceFn(i, sid)) || 0) * i.packs)).join('\n') +
             '\n\n\u2248 ' + eur(total(items, priceFn, sid, have));
     }
-    return { KEY, PEOPLE, NIGHTS, DEF, BUDGET_MIN, BUDGET_MAX, FEAT_DINNERS, VIBES, DIETS, KITS, EXTRA, weekKey, pool, main, meats, weekKeys, order, rank, plan, swap, profile, fits, vibeScore, freshFirst, days, ymd, once, packsFor, basket, total, storeTotals, dinnerCost, budgetState, fitBudget, budgetPlan, load, seedOf, text, hash };
+    return { KEY, PEOPLE, NIGHTS, DEF, BUDGET_MIN, BUDGET_MAX, FEAT_DINNERS, VIBES, DIETS, KITS, EXTRA, weekKey, pool, main, meats, weekKeys, order, rank, plan, swap, profile, fits, vibeScore, freshFirst, days, ahead, ymd, once, packsFor, basket, total, storeTotals, dinnerCost, budgetState, fitBudget, budgetPlan, load, seedOf, text, hash };
 });

@@ -17,8 +17,9 @@ test('Shop tab bar: Give a hand is the fourth peer after Supermarket, Seller Zon
   const iK = tabs.indexOf("b('kitchen'"), iG = tabs.indexOf("b('gift'");
   assert.ok(iK > 0 && iG > iK, 'Give a hand comes after Kitchen');
   /* Oct 27 2026 (test changed, why): From home is a tab too, so with four tabs the words get short enough for one line on an
-     iPhone SE (Help out / Hilf mit / Ayudar); with three it keeps the old name */
-  assert.match(tabs, /b\('gift', '\\u\{1F91D\}', n > 3 \? T\('Help out', 'Hilf mit', 'Ayudar'\) : T\('Give a hand', 'Hilf mit', 'Echa una mano'\)\)/, 'same icon, short words with four tabs');
+     iPhone SE. Nov 6 2026 (test changed, why: design review point 7, Emmanuel): the name is Baskets / Körbe / Cestas everywhere,
+     short enough for any number of tabs */
+  assert.match(tabs, /b\('gift', '\\u\{1F91D\}', T\('Baskets', 'Körbe', 'Cestas'\)\)/, 'same icon, the new name');
   assert.match(tabs, /const G = giftDoor\(\);/);
   assert.match(tabs, /n > 3 \? ' stp-tabs4' : ''/);
   /* same gate as the old row: only once the server has the basket table; otherwise ask the server again */
@@ -52,7 +53,8 @@ test('What\'s New mini tour: new-give-hand opens Shop and points at the Give a h
   assert.doesNotMatch(s.text.en + s.text.de + s.text.es, /next to Kitchen|neben Küche|junto a Cocina/, 'never says Kitchen is next to it');
   assert.strictEqual(s.target[0], '.stp-card .stp-tab[data-stp-tab="gift"]');
   assert.strictEqual(s.target[s.target.length - 1], '.stp-card', 'falls back to Shop while the server gate is shut');
-  assert.deepStrictEqual([s.title.en, s.title.de, s.title.es], ['Give a hand', 'Hilf mit', 'Echa una mano'], 'same name as the tab');
+  /* Nov 6 2026 (test changed, why): design review point 7 renamed it Baskets / Körbe / Cestas */
+  assert.deepStrictEqual([s.title.en, s.title.de, s.title.es], ['Baskets', 'Körbe', 'Cestas'], 'same name as the tab');
   assert.ok(S.VERSION >= 28);
   assert.deepStrictEqual(S.tourOf({ tour: ['new-give-hand'] }), ['new-give-hand']);
 });

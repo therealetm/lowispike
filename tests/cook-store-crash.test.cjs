@@ -65,7 +65,8 @@ test('store-picks.js renders passes and left-outs through C.page, with no "show 
     assert.match(src, /g\.pass\.slice\(0, pg\.show\)/);
     assert.match(src, /g\.fail\.slice\(0, pf\.show\)/);
     assert.match(src, /open\[b\.getAttribute\('data-stp-more'\)\] = \+b\.getAttribute\('data-stp-ask'\) \|\| 0/);
-    assert.match(src, /Show ' \+ n \+ ' more · ' \+ l \+ ' left', 'Noch ' \+ n \+ ' zeigen · ' \+ l \+ ' übrig', 'Ver ' \+ n \+ ' más · quedan ' \+ l/);
+    /* Nov 6 2026 (test changed, why: design review point 7, no counters on the Supermarket screen): the page button says Show more */
+    assert.match(src, /esc\(T\('Show more', 'Mehr zeigen', 'Ver más'\)\)/);
 });
 
 test('while the panel covers the screen the 3D world draws nothing, and closing lets go of the rows', () => {

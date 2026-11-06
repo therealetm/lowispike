@@ -44,13 +44,13 @@
     };
     /* the few words on the pictures, EN / DE / ES (the same words the cards and the app use) */
     const L = {
-        en: { market: 'Supermarket', athome: 'Seller Zone', help: 'Give a hand', energy: 'Energy', mood: ['Calm', 'Happy', 'Tired'], full: 'Full!', gap: 'since your last meal', noMeal: 'no meal yet', meals: 'meals', log: 'Log meal', shop: 'Shop', cook: 'Cook',
+        en: { market: 'Supermarket', athome: 'Seller Zone', help: 'Baskets', energy: 'Energy', mood: ['Calm', 'Happy', 'Tired'], full: 'Full!', gap: 'since your last meal', noMeal: 'no meal yet', meals: 'meals', log: 'Log meal', shop: 'Shop', cook: 'Cook',
             photo: 'Photo', type: 'chicken stew', recent: 'Recent', cup: 'Glass', sips: 'Sips', bottle: 'Bottle', undo: 'Undo', cups: 'glasses', moves: ['Casual', 'Steady', 'Epic'], mirror: 'Mirror', workouts: 'Workouts', care: 'Care board', today: 'Today', edit: 'Edit',
             sleep: ['Slept well', 'Okay', 'Short night'], still: 'stops', fuel: 'Fuel', water: 'Water', move: 'Move', sleepW: 'Sleep', gapW: 'Gap', scan: 'Scan', set: 'Settings', joy: 'Play', reset: 'last one off' },
-        de: { market: 'Supermarkt', athome: 'Seller Zone', help: 'Hilf mit', energy: 'Energie', mood: ['Ruhig', 'Froh', 'Müde'], full: 'Voll!', gap: 'seit der letzten Mahlzeit', noMeal: 'noch kein Essen', meals: 'Mahlzeiten', log: 'Mahlzeit eintragen', shop: 'Einkaufen', cook: 'Kochen',
+        de: { market: 'Supermarkt', athome: 'Seller Zone', help: 'Körbe', energy: 'Energie', mood: ['Ruhig', 'Froh', 'Müde'], full: 'Voll!', gap: 'seit der letzten Mahlzeit', noMeal: 'noch kein Essen', meals: 'Mahlzeiten', log: 'Mahlzeit eintragen', shop: 'Einkaufen', cook: 'Kochen',
             photo: 'Foto', type: 'Hühnereintopf', recent: 'Letzte', cup: 'Glas', sips: 'Sips', bottle: 'Flasche', undo: 'Rückgängig', cups: 'Gläser', moves: ['Locker', 'Stetig', 'Episch'], mirror: 'Spiegel', workouts: 'Workouts', care: 'Care-Board', today: 'Heute', edit: 'Bearbeiten',
             sleep: ['Gut', 'Okay', 'Kurz'], still: 'stoppt', fuel: 'Essen', water: 'Wasser', move: 'Bewegung', sleepW: 'Schlaf', gapW: 'Gap', scan: 'Scannen', set: 'Einstellungen', joy: 'Spielen', reset: 'letzte weg' },
-        es: { market: 'Súper', athome: 'Seller Zone', help: 'Ayudar', energy: 'Energía', mood: ['Calma', 'Feliz', 'Cansada'], full: '¡Llena!', gap: 'desde tu última comida', noMeal: 'sin comida aún', meals: 'comidas', log: 'Registrar comida', shop: 'Comprar', cook: 'Cocinar',
+        es: { market: 'Súper', athome: 'Seller Zone', help: 'Cestas', energy: 'Energía', mood: ['Calma', 'Feliz', 'Cansada'], full: '¡Llena!', gap: 'desde tu última comida', noMeal: 'sin comida aún', meals: 'comidas', log: 'Registrar comida', shop: 'Comprar', cook: 'Cocinar',
             photo: 'Foto', type: 'guiso de pollo', recent: 'Recientes', cup: 'Vaso', sips: 'Sorbos', bottle: 'Botella', undo: 'Deshacer', cups: 'vasos', moves: ['Tranquilo', 'Constante', 'Épico'], mirror: 'Espejo', workouts: 'Entrenos', care: 'Care board', today: 'Hoy', edit: 'Editar',
             sleep: ['Bien', 'Regular', 'Corta'], still: 'se para', fuel: 'Comida', water: 'Agua', move: 'Movimiento', sleepW: 'Sueño', gapW: 'Gap', scan: 'Escanear', set: 'Ajustes', joy: 'Jugar', reset: 'quita la última' }
     };

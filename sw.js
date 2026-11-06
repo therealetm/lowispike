@@ -22,6 +22,7 @@ STATIC.push("cart-core.js"); /* Oct 26 Supermarket Cart (Warenkorb): own line */
 STATIC.push("carousel-core.js"); /* Nov 6 carousel posts in For You (up to 6 photos): own line */
 STATIC.push("last-meal-ask.js", "last-meal-ask.css"); /* Nov 6 2026 "Last meal today?" after Log as eaten: own line */
 STATIC.push("missing-pulse.js", "missing-pulse.css"); /* Nov 6 2026 the Home bubble for what is missing pulses: own line */
+STATIC.push("hold-ring.js", "hold-ring.css"); /* Nov 6 2026 the hold ring on Home: own line */
 STATIC.push("food-names-core.js"); /* Oct 26 food names in the app language (cart + Give a hand): own line */
 STATIC.push("week-basket-core.js", "week-basket.js", "week-basket.css"); /* Oct 26 Shop from home weekly basket in Supermarket (MAYA-HANDOFF 0.21): own line */
 STATIC.push("mic-dictate.css", "mic-session.js", "mic-dictate-core.js", "mic-dictate.js"); /* Oct 26 mic dictation in text fields: own line */

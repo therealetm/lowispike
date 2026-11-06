@@ -553,6 +553,7 @@
     const SHORT_SKIPS = {};
     ['mic-dictate', 'give-hand-swipe', 'ck-tab-order', 'misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tab-order', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
     const GESTURE_EXEMPT = {
+        'hold-ring.js': 'Nov 6 2026 the hold ring on Home: only a picture of a hold the bubbles already have (Move, Gap, Water, Community, each taught by its own card); it never takes or changes a tap or a hold',
         'last-meal-ask.js': 'Nov 6 2026 "Last meal today?" after Log as eaten: a tap anywhere else (or Escape) just means Not yet; the card has its own two plain buttons',
         'evo-card.js': 'Nov 5 2026 evolution card viewer: swiping between forms is only a shortcut; the arrow buttons on both sides of the card do it with a plain tap, and tapping a form on the Evolution path opens it',
         'bloom-ring.js': 'Oct 28 2026 slim structure (S-02 deleted): the old hold-Scan helpers stay as code only, nothing wires them; a hold on Scan is a plain tap that opens the one scanner',

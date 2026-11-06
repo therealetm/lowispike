@@ -1,0 +1,18 @@
+/* LOWiSPIKE · the hold ring on Home (6 Nov 2026, design review point 3; hold-ring.js).
+   A thin hologram line just outside the held bubble: a faint track, the line filling clockwise from the top in cyan to violet with a
+   soft glow and a light flicker. Full, it glows once more and fades. Reduced motion: no filling, no flicker, a still ring. */
+.hr-ring { position: fixed; z-index: 9100; pointer-events: none; opacity: 0; transition: opacity .12s ease; }
+.hr-ring.on { opacity: 1; }
+.hr-ring.done { opacity: 0; transition: opacity .3s ease .12s; }
+.hr-ring svg { display: block; width: 100%; height: 100%; overflow: visible; transform: rotate(-90deg);
+    filter: drop-shadow(0 0 3px rgba(143, 243, 255, .9)) drop-shadow(0 0 9px rgba(199, 166, 255, .5)); }
+.hr-ring circle { fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.hr-ring .hr-track { stroke: rgba(143, 243, 255, .18); }
+.hr-ring.done .hr-fill { stroke-width: 3.5; }
+@keyframes hr-flicker { 0%, 100% { opacity: 1; } 50% { opacity: .72; } }
+.hr-ring.on:not(.hr-still) .hr-fill { animation: hr-flicker .8s ease-in-out infinite; }
+.hr-ring.hr-still { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+    .hr-ring, .hr-ring.done { transition: none; }
+    .hr-ring .hr-fill { animation: none !important; transition: none !important; }
+}

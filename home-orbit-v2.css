@@ -59,19 +59,10 @@ html.o8 #whHud [data-orbit="fuel"] { --o8-i: var(--o8-i-fuel); }
 html.o8 #whHud [data-orbit="water"] { --o8-i: var(--o8-i-water); }
 html.o8 #whHud [data-orbit="move"] { --o8-i: var(--o8-i-move); }
 html.o8 #spHome #spFast[data-orbit] { --o8-i: var(--o8-i-gap); }
-/* Meals reads "Fuel", Fasting reads "Gap" (Emmanuel's names), in the bubble's own label slot */
+/* 6 Nov 2026 (Emmanuel, design review: bubbles show only numbers or symbols): the old word labels for Fuel / Gap
+   ("Einkaufen", "Pause", ...) are gone; they were hidden since 24 Oct by the symbols-only rule below anyway */
 html.o8.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx > small:first-of-type,
 html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy > small:first-child { display: none; }
-html.o8.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx::after,
-html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::after { order: -1; font-size: 11px; opacity: .9; line-height: 1.1; }
-html.o8.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx::after { content: 'Shopping'; }
-html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::after { content: 'Gap'; }
-html.o8.wh-home[lang^="de"] #whHud [data-orbit="fuel"] .wh-cell-tx::after { content: 'Einkaufen'; }
-html.o8.wh-home[lang^="de"] #spHome #spFast[data-orbit] .sp-fast-copy::after { content: 'Pause'; }
-html.o8.wh-home[lang^="es"] #whHud [data-orbit="fuel"] .wh-cell-tx::after { content: 'Compras'; }
-html.o8.wh-home[lang^="es"] #spHome #spFast[data-orbit] .sp-fast-copy::after { content: 'Pausa'; }
-html.o8-wide.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx::after,
-html.o8-wide.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::after { font-size: 13px; }
 
 /* ---- one page: the old Home chrome steps back (every one of these stays reachable from the Settings bubble) ---- */
 html.o8.wh-home:not(.o8-quest) #f3Board,html.o8.wh-home:not(.o8-quest) #tab-home #f3Board,html.o8.wh-home:not(.o8-quest) #hcLine,html.o8.wh-home #tab-home .sp-top,html.o8.wh-home #tab-home #spHome .sp-top,html.o8.wh-home #whHud .wh-todaybtn,html.o8.wh-home #whHud .wh-vr,html.o8.wh-home:not(.wh-away) #whHud .wh-zoom,html.o8.wh-home #whHud .wa-btn,html.o8.wh-home #tbTheme,html.o8.wh-home .hs-gift,html.o8.wh-home #pfBtn,html.o8.wh-home #fxHint { display: none !important; }
@@ -126,7 +117,8 @@ html.o8.wh-home #whHud #whPad.mp-back .mp-knob svg { filter: drop-shadow(0 0 6px
     :root { --wh-bs: clamp(116px, 42vh, 190px); --wh-cy: 50%; }
 }
 
-/* ---- symbols only (24 Oct 2026, Emmanuel: in German "Eintragen", "Bewegung", "Mahlzeiten" were squeezed into the bubbles and looked
+/* ---- symbols only (6 Nov 2026 design review, now the written rule in AGENTS.md: bubbles show only numbers or symbols, never
+   words or units). 24 Oct 2026, Emmanuel: in German "Eintragen", "Bewegung", "Mahlzeiten" were squeezed into the bubbles and looked
    like another font; "remove the text labels entirely, symbol first, only the numbers that matter"). One rule for every language: the
    icon and real numbers stay (0/6, 0/3, the time since a meal, steps, sleep hours); word labels, units and the "Log" word go. Each
    button keeps its full aria-label, so screen readers still say what it is. Bloom orbs (after a tap) keep their labels. */

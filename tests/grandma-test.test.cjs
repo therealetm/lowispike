@@ -1,7 +1,8 @@
 'use strict';
 /* The grandma test (Oct 21, 2026, from the TikTok Emmanuel sent: "would a drunk grandma understand this? If not, simplify it.")
-   Every number says its unit, every empty state says in words what is missing, option lists show their question,
-   subtitles name the benefit. These lock the cases fixed on Home, Scan, Fuel, Gap, Move and Sleep. */
+   Every empty state says in words what is missing, option lists show their question, subtitles name the benefit. Bubbles are the
+   exception (Emmanuel, 6 Nov 2026): only numbers or symbols, never words or units; the words live in the spoken label and on the
+   screen the bubble opens. These lock the cases fixed on Home, Scan, Fuel, Gap, Move and Sleep. */
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -19,7 +20,18 @@ test('Einkaufen bubble (Oct 28 2026, Emmanuel read the list count and the fill a
     const o8 = R('home-orbit-v2.css');
     assert.match(o8, /--o8-i-fuel: url\("data:image\/svg\+xml,[^"]*circle cx='10' cy='20'/, 'the ring draws a shopping cart (wheels), not a fork and knife');
     assert.match(o8, /\[data-orbit="fuel"\]\.wh-shop \.wh-cell-tx > b \{ display: none !important; \}/, 'no number on the ring bubble');
-    for (const w of ['Shopping', 'Einkaufen', 'Compras']) assert.ok(o8.includes("content: '" + w + "'"), w);
+    /* Nov 6 2026 (test changed, why): Emmanuel's new rule, bubbles show only numbers or symbols (AGENTS.md). The word was hidden
+       since 24 Oct by the symbols-only rule; now it is gone from the CSS: the cart alone, the name in the spoken label */
+    for (const w of ['Shopping', 'Einkaufen', 'Compras']) assert.ok(!o8.includes("content: '" + w + "'"), 'no word in the bubble: ' + w);
+});
+
+test('Nov 6 2026 rule: every Home bubble shows only its symbol and real numbers, never words or units; it keeps its spoken label', () => {
+    const o8 = R('home-orbit-v2.css');
+    assert.match(o8, /html\.o8\.wh-home #whHud \[data-orbit\] \.wh-cell-tx small,\nhtml\.o8\.wh-home #whHud \[data-orbit\] \.wh-unit,\nhtml\.o8\.wh-home #spHome #spFast\[data-orbit\] \.sp-fast-copy small,\nhtml\.o8\.wh-home #whHud \[data-orbit\] b\.o8-word \{ display: none !important; \}/, 'labels, units and words hidden');
+    assert.match(o8, /html\.o8\.wh-home #whHud \[data-orbit\] \.wh-cell-tx::after,\nhtml\.o8\.wh-home #spHome #spFast\[data-orbit\] \.sp-fast-copy::after \{ content: none !important; display: none !important; \}/, 'no generated words');
+    assert.doesNotMatch(o8, /\.wh-cell-tx::after \{ content: '[A-Za-z]/, 'no word written into a bubble by CSS');
+    const orbit = R('home-orbit-v2.js');
+    assert.match(orbit, /b\.setAttribute\('aria-label', label\)/, 'each ring bubble built here keeps a spoken label');
 });
 
 test('Gap bubble: an empty Gap is the label alone on Home, says "no meal yet" in its spoken label', () => {
@@ -81,5 +93,8 @@ test('Fly hint: one instruction, not three gestures in a row', () => {
 
 test('the rule is written down where every agent reads it', () => {
     assert.ok(/The grandma test \(21 Oct 2026/.test(R('AGENTS.md')));
+    assert.ok(/Bubbles show only numbers or symbols, never words or units \(Emmanuel, 6 Nov 2026\)/.test(R('AGENTS.md')), 'the 6 Nov bubble rule');
+    assert.ok(!/"0\/6 cups"/.test(R('AGENTS.md')), 'the old unit rule for bubbles is gone');
+    assert.ok(/ON again since 4 Nov 2026/.test(R('AGENTS.md')) && !/\*\*OFF since 29 Oct 2026/.test(R('AGENTS.md')), 'AGENTS.md says the tutorial is on');
     assert.ok(/## 2026-10-21 — The grandma test for every screen and ad/.test(R('DECISIONS.md')));
 });

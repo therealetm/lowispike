@@ -38,10 +38,14 @@ test('onboarding names the bubbles the way the ring does: Fuel (not Meals), Gap 
     assert(/'Fuel \(meals\)'/.test(hs) && /'Gap \(fasting\)'/.test(hs));
     assert(/'Pause \(Fasten\)'/.test(hs) && /'Pausa \(ayuno\)'/.test(hs));
     assert(!/'Shop & scan','Meals'/.test(hs));
-    /* the ring labels those words point at */
+    /* the ring names those words point at. Nov 6 2026 (test changed, why): Emmanuel's rule "bubbles show only numbers or symbols"
+       (AGENTS.md); the word labels inside the bubbles were hidden since 24 Oct and are gone from the CSS, so the names live in each
+       bubble's spoken label (VoiceOver) and in its bloom title, never inside the bubble */
     const css = read('home-orbit-v2.css');
-    /* Oct 28 2026: the ring's Fuel bubble is the way into Einkaufen, so its label is Shopping / Einkaufen / Compras */
-    for (const w of ['Shopping', 'Einkaufen', 'Compras', 'Gap', 'Pause', 'Pausa']) assert(css.includes("'" + w + "'"), w);
+    for (const w of ['Shopping', 'Einkaufen', 'Compras', 'Pause', 'Pausa']) assert(!css.includes("content: '" + w + "'"), 'no word inside a bubble: ' + w);
+    assert(/const aria = T\('Shopping\. Tap to open Shopping\.', 'Einkaufen\. Tippen öffnet Einkaufen\.', 'Compras\. Toca para abrir Compras\.'\);/.test(read('sym-home.js')), 'Einkaufen in its spoken label');
+    assert(/fuel: \(\) => T\('Shopping', 'Einkaufen', 'Compras'\)/.test(read('home-blooms-v2.js')), 'and as its bloom title');
+    assert(/gapAria: \['Meal gap: /.test(read('spirit.js')), 'Gap in its spoken label');
 });
 
 test('VoiceOver hears the Fuel bubble by its ring name, not "Meals"', () => {

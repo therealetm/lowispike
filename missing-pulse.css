@@ -1,0 +1,18 @@
+/* LOWiSPIKE · the Home bubble for what is missing pulses (6 Nov 2026, design review point 2; missing-pulse.js).
+   A soft blue halo just outside that one bubble swells and fades every 2.8 s. The bubble clips its inside and its glass is drawn
+   from its box by living-bubbles.js, so the halo is its own element next to it in the ring (.mp-halo, the bubble's own --o8-x and
+   --o8-y): the bubble keeps its exact size and place, and the ring and its symmetry stay. Hidden while a bloom is open, off in Calm
+   mode and with reduced motion. */
+.mp-halo { display: none; }
+@keyframes mp-halo {
+    0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(.94); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.03); }
+}
+html.o8.wh-home #whHud .mp-halo {
+    display: block; position: absolute; z-index: 1; left: var(--o8-x); top: var(--o8-y);
+    width: calc(var(--o8-d) + 12px); height: calc(var(--o8-d) + 12px); border-radius: 50%; pointer-events: none;
+    box-shadow: 0 0 0 1.5px rgba(159, 216, 255, .5), 0 0 20px 6px rgba(120, 200, 255, .4), inset 0 0 16px rgba(159, 216, 255, .22);
+    opacity: 0; transform: translate(-50%, -50%); animation: mp-halo 2.8s ease-in-out infinite;
+}
+html.hb2-open #whHud .mp-halo, html.cm-on #whHud .mp-halo { display: none !important; }
+@media (prefers-reduced-motion: reduce) { html #whHud .mp-halo { display: none !important; animation: none !important; } }

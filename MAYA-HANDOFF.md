@@ -1733,6 +1733,27 @@ Add to cart or Skip); 3 answered; 4 live as 20261106-070854 (one list: the snack
 sticky categories); 5 in parts: carousels live as 20261106-072917, Saved one tap away live as 20261106-074237; share one post,
 "post to Community too" and the weekly card planner not started (notes in HANDOFF-sheet-bubble.md). Details and checks: HANDOFF-sheet-bubble.md, DECISIONS.md.
 
+### 0.42 Design review of 6 Nov 2026 (Emmanuel, written, "von mir entschieden")
+Recorded before building (standing rule). Decisions in DECISIONS.md ("6 Nov 2026: design review"). Each point is its own small
+release, bug fixes quiet; he wants one short line per point with the live build id. Status per item: requested.
+1. Food scan result: "Log as eaten" primary for food (photo / typed name, not barcode products), "Add to cart" small; then "Letzte
+   Mahlzeit heute?" (Ja, Gap starten = the Gap bubble's Last meal / Noch nicht). 28 Oct decoupling stays. Auto Bubble catch only if
+   XP rules stay the same, else ask him.
+2. The Home bubble of the first open "What's missing" item pulses gently; one at a time; off in Calm mode and reduced motion.
+3. Hold ring filling on every long-press Home bubble (hologram look), reduced motion respected.
+4. Rule: bubbles show only numbers or symbols (no words, no units); AGENTS.md grandma rule + grandma test; AGENTS.md says the
+   tutorial is off, but it is on since 4 Nov.
+5. Tutorial in 60 s for a TikTok screen recording: one narration per language (DE ~130 words), same Microsoft voices
+   (tools/tutorial-voice/build.py), one audio track, demos on word timestamps, interactive and hands-free stay; report text + seconds.
+   (6 Nov: speech.platform.bing.com added to this cloud environment's allowed hosts so the voices can be recorded.)
+6. Billiard tables: 24 active per table, auto-assign, 14 days inactive frees the seat, invites to the inviter's table, own middle and
+   XP per table; chat/ranking shared. Supabase change as a proposal with exact steps.
+7. Supermarket counters gone; Plan my week: past days gone, Tonight on top; Give a hand / Help out -> Körbe / Baskets / Cestas, tabs
+   Korb bezahlen / Pay a basket and Korb teilen / Share my basket.
+8. Small: Swipe legend row gone; "in Fuel" gone from the companion panel; Move page one big blue button, Mirror card buttons inset,
+   back button off the tiles; Move bubble runner icon; New post X off the Post button; Billiards "Middle: Name" off the ball name.
+Not: no Cook bubble, no Workouts bubble, no "Next" line under the companion, no words in bubbles; bubble symmetry stays.
+
 ## 1. What LOWiSPIKE is
 
 **The idea.** A mobile-first health and food web app (a PWA, added to the iPhone home screen) that turns everyday

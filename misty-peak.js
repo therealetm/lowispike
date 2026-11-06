@@ -40,7 +40,7 @@
         fuel_ok: ['Meals: {m} logged', 'Essen: {m} eingetragen', 'Comidas: {m} registradas'],
         fuel_ok1: ['Meals: 1 logged', 'Essen: 1 eingetragen', 'Comidas: 1 registrada'],
         fuel_none: ['No meal logged yet', 'Noch kein Essen eingetragen', 'Aún no hay comidas'],
-        fuel_none_do: ['Log a low-spike meal in Fuel', 'Trag ein Low-Spike-Essen in Fuel ein', 'Registra una comida sin picos en Fuel'],
+        fuel_none_do: ['Log a low-spike meal', 'Trag ein Low-Spike-Essen ein', 'Registra una comida sin picos'], /* Nov 6 2026: Fuel no longer exists */
         fuel_no: ['Meals today: some spiky ones', 'Essen heute: ein paar mit Spike', 'Comidas de hoy: algunas con picos'],
         fuel_do: ['Make the next meal low-spike', 'Mach das nächste Essen Low-Spike', 'Que la próxima comida sea sin picos'],
         water_ok: ['Water: {w} of {g} glasses', 'Wasser: {w} von {g} Gläsern', 'Agua: {w} de {g} vasos'],

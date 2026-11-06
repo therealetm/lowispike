@@ -97,7 +97,7 @@ test('each missing factor has its own row, words and place to go', () => {
     /* no meal, no water, no move */
     let p = reading({ now: at(9, 0) }).p;
     assert.deepStrictEqual([row(p, 'fuel').done, row(p, 'fuel').act], [false, 'fuel']);
-    assert.deepStrictEqual(P.rowText(row(p, 'fuel'), 'en'), ['No meal logged yet', 'Log a low-spike meal in Fuel']);
+    assert.deepStrictEqual(P.rowText(row(p, 'fuel'), 'en'), ['No meal logged yet', 'Log a low-spike meal']);
     assert.deepStrictEqual([row(p, 'water').act, P.rowText(row(p, 'water'), 'en')[0]], ['water', 'Water: 6 more glasses']);
     assert.deepStrictEqual([row(p, 'move').act, P.rowText(row(p, 'move'), 'en')[0]], ['move', 'No Move yet today']);
     assert.strictEqual(P.rowText(Object.assign({}, row(p, 'water'), { need: 1 }), 'en')[0], 'Water: 1 more glass');

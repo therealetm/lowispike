@@ -84,4 +84,6 @@ html[data-black] .rt-board{background:#1c1c1e;box-shadow:inset 0 0 0 1px rgba(25
 .rt-ball.me.mid .rt-orb{box-shadow:0 3px 6px rgba(0,0,0,.45),0 0 0 2px #ffd678,0 0 0 4px rgba(156,218,199,.85),0 0 18px rgba(255,214,120,.85)}
 .rt-mid{position:absolute;left:50%;top:60%;transform:translateX(-50%);z-index:1;white-space:nowrap;font:700 10px/1.2 -apple-system,system-ui,sans-serif;color:rgba(200,235,255,.6);pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.6)}
 .rt-mid.on{color:#ffd678}
+/* Nov 6 2026 (design review point 8: "Middle: Name" covered the ball's name): the holder's own name hides while the line names them */
+.rt-ball.mid .rt-name{visibility:hidden}
 @media (prefers-reduced-motion:reduce){.rt-toast{transition:none}}

@@ -1621,6 +1621,10 @@ ol.steps{margin:14px 0 0 20px;line-height:1.7;font-size:15px}
 #tab-foryou.paged{padding:0;overflow:hidden}
 .ls-post .tr-urlrow{margin-top:12px}
 .ls-postfoot{display:flex;gap:10px;margin-top:16px}
+/* Nov 6 2026 (design review point 8: "New post: Das X liegt auf dem Post-Button"): in the New post sheet the Post row stays above
+   the round X at the bottom (bottom-close.js) on every phone, also before you scroll */
+#sheet.r3f-sheet .ls-postfoot{position:sticky;bottom:calc(var(--sab) + 84px);z-index:3;margin:16px -10px 0;padding:8px 10px;border-radius:30px;background:linear-gradient(180deg,rgba(14,17,26,0),rgba(14,17,26,.92) 30%)}
+html[data-ui=light] #sheet.r3f-sheet .ls-postfoot{background:linear-gradient(180deg,rgba(246,248,252,0),rgba(246,248,252,.94) 30%)}
 .ls-postfoot .btn{flex:1}
 .ls-swipehint{font-size:11.5px;color:rgba(255,255,255,.4);text-align:center;margin-top:8px;letter-spacing:.02em}
 
@@ -3868,6 +3872,14 @@ html.g2f-sne.g2e-on:not(.g2e-open) #tab-profile::after{content:"";display:block;
 html.g2f-snd.g2d-on #cmPaneBoard{overflow-y:auto!important}
 html.g2f-snd.g2d-on #cmPaneBoard::after{content:"";display:block;flex:none;order:99;height:var(--g2fSp,calc(var(--sab) + 124px))}
 html.g2f-snm #mv-screen.tabmode{padding-bottom:0!important}
+/* Nov 6 2026 (design review point 8, nothing under the back button): tight, when the page would otherwise reach under the round
+   back button: the small heading over the session tiles steps aside and each session tile is one row, its name and its play
+   button (its picture steps aside), so no word is cut */
+html.g2f-mvq #mv-screen.tabmode .mv-quick-h{display:none}
+html.g2f-mvq #mv-screen.tabmode .stack.g2 .mv-fmts{margin-top:0}
+html[data-lay=phone].g2f-mvq #mv-screen.tabmode .stack.g2 .mv-fmt{flex-direction:row;align-items:center;justify-content:flex-start;height:calc(60px + var(--g2fFmt,0px));padding:10px 48px 10px 14px}
+html.g2f-mvq #mv-screen.tabmode .stack.g2 .mv-fmt .mv-ic{display:none}
+html.g2f-mvq #mv-screen.tabmode .stack.g2 .mv-fmt .mv-fmt-go{top:50%;right:10px;width:32px;height:32px;margin-top:-16px}
 html.g2f-snm #mv-screen.tabmode > .stack.g2::after{content:"";display:block;height:var(--g2fSp,calc(var(--sab) + 124px))}
 /* Move: the free height goes to the session tiles, the quick tiles, the start button and the gaps */
 html[data-lay=phone] #mv-screen.tabmode .stack.g2 .mv-fmt{height:calc(96px + var(--g2fFmt,0px))}
@@ -3981,7 +3993,10 @@ function shift(el){
 function bottom(el){ if (!el) return 0; const b = deep(el, 2); return b ? b + (el.scrollTop || 0) - shift(el) : 0; }
 function over(el){ return bottom(el) > limit() + .5; }
 /* the safety-net scroll room: from the bottom of the scroll box up to the free space */
-function sp(el){ if (!el) return; const r = el.getBoundingClientRect(); el.style.setProperty("--g2fSp", Math.max(12, Math.round(r.bottom - limit() + 8)) + "px"); }
+function sp(el, lim){ if (!el) return; const r = el.getBoundingClientRect(); el.style.setProperty("--g2fSp", Math.max(12, Math.round(r.bottom - (lim == null ? limit() : lim) + 8)) + "px"); }
+/* Nov 6 2026 (design review point 8: "der Zurück-Button liegt auf den Kacheln"): a screen that fills the phone stops above the round
+   back / close button at the bottom (bottom-close.js), not at the screen's edge */
+function clearOrb(lim){ const o = D.getElementById("lwBX"); if (!o || !o.classList.contains("on") || !vis(o)) return lim; const t = o.getBoundingClientRect().top; return t > 0 ? Math.min(lim, t - 12) : lim; }
 window.LowiFit = {limit, bottom, over, sp, gap: () => gapNow, check: gapCheck};
 
 /* ---- 3. Move ---- */
@@ -4000,15 +4015,29 @@ function chips(m){
 }
 function fitMove(){
   const m = mv();
-  if (!m) { H.classList.remove("g2f-snm"); return; }
+  if (!m) { H.classList.remove("g2f-snm", "g2f-mvq"); return; }
   m.classList.add("g2f-meas");
-  setV({}); H.classList.remove("g2f-snm");
+  setV({}); H.classList.remove("g2f-snm", "g2f-mvq");
   const st = m.scrollTop; m.scrollTop = 0;
   chips(m);
   const s = m.querySelector(".stack.g2");
   const rows = Math.ceil(s.querySelectorAll(".mv-fmts > .mv-fmt").length / 2) || 0;
-  const tiles = s.querySelector(".g2-tiles") ? 1 : 0, gaps = Math.max(1, Array.from(s.children).filter(vis).length - 1);
-  const lim = limit();
+  const tiles = s.querySelector(".g2-tiles") ? 1 : 0;
+  const lim = clearOrb(limit());
+  /* Nov 6 2026 (design review point 8, nothing under the back button): first as it is; when that cannot stay above the round back
+     button, the tight way (the small "Or tap one to start now" heading over the session tiles steps aside and the tiles' insides
+     get a little smaller); when even that does not fit, the page scrolls at its own size */
+  for (let tight = 0; tight < 2; tight++) {
+    if (tight) { setV({}); H.classList.add("g2f-mvq"); }
+    if (fitMoveIn(s, lim, rows, tiles)) break;
+  }
+  if (bottom(s) > lim + .5) { H.classList.remove("g2f-mvq"); const v = {}; setV(v); uncut(s, v); H.classList.add("g2f-snm"); sp(m, lim); }
+  m.scrollTop = st;
+  void m.offsetHeight; m.classList.remove("g2f-meas");
+}
+/* one try: the free height goes to the tiles and gaps, or a little is taken from them; true when it fits */
+function fitMoveIn(s, lim, rows, tiles){
+  const gaps = Math.max(1, Array.from(s.children).filter(vis).length - 1);
   let free = lim - bottom(s) - 4;
   const v = {};
   if (free > 2) {
@@ -4026,9 +4055,31 @@ function fitMove(){
   setV(v);
   /* never cut: if it still overflows, trim the growth, then let it scroll */
   for (let i = 0; i < 6 && bottom(s) > lim + .5 && free > 0; i++) { Object.keys(v).forEach(k => v[k] *= .7); setV(v); }
-  if (bottom(s) > lim + .5) { H.classList.add("g2f-snm"); sp(m); }
-  m.scrollTop = st;
-  void m.offsetHeight; m.classList.remove("g2f-meas");
+  /* and no tile ever gets shorter than its own words */
+  uncut(s, v);
+  return bottom(s) <= lim + .5;
+}
+/* Nov 6 2026: how much taller the most crowded tile of a kind must be so nothing in it is cut (0 when all fit): its words run from
+   its first to its last child in the flow; a progress bar along the bottom keeps 2px to them */
+function cutBy(s, sel){
+  let c = 0;
+  s.querySelectorAll(sel).forEach(t => {
+    if (!vis(t)) return;
+    const cs = getComputedStyle(t), r = t.getBoundingClientRect(), bar = t.querySelector(".g2-bar");
+    const top = r.top + parseFloat(cs.borderTopWidth) + parseFloat(cs.paddingTop);
+    let bot = r.bottom - parseFloat(cs.borderBottomWidth) - parseFloat(cs.paddingBottom);
+    if (vis(bar)) bot = Math.min(bot, bar.getBoundingClientRect().top - 2);
+    let lo = Infinity, hi = -Infinity;
+    for (const k of t.children) { if (!vis(k) || getComputedStyle(k).position === "absolute") continue; const q = k.getBoundingClientRect(); lo = Math.min(lo, q.top); hi = Math.max(hi, q.bottom); }
+    if (hi > lo) c = Math.max(c, hi - lo - (bot - top));
+  });
+  return c > .5 ? Math.ceil(c) : 0;
+}
+function uncut(s, v){
+  const f = cutBy(s, ".mv-fmt"), t = cutBy(s, ".g2-tile");
+  if (f) v["--g2fFmt"] = (v["--g2fFmt"] || 0) + f;
+  if (t) v["--g2fTile"] = (v["--g2fTile"] || 0) + t;
+  if (f || t) setV(v);
 }
 
 /* ---- the pass ---- */
@@ -10036,7 +10087,7 @@ function dkSectionHTML(){
   const b = (dir, cls) => { const D = DKDIR[dir]; return '<button class="r3k-b ' + cls + '" data-r5="swipe-' + dir + '" data-sfx="none" aria-label="' + (window.LowiLang ? LowiLang.t(D.lab) : D.lab) + '"><span class="r3k-bi">' + DKIC[D.k] + '</span><span class="r3k-bl">' + D.lab + '</span></button>'; };
   return '<section class="r3k-sec" id="r3kSwipe" aria-label="' + (window.LowiLang ? LowiLang.t("Swipe foods") : "Swipe foods") + '">' +
     '<div class="r3k-head"><span class="r3k-hic">' + R5IC.cards + '</span><span class="r3k-ht">Swipe foods</span><span class="r3k-n num" id="r5DkN"></span></div>' +
-    '<div class="r3k-legend"><span class="lt"><b>' + DKARROW.up + '</b>Today</span><span class="lr"><b>' + DKARROW.right + '</b>Soon</span><span class="ll"><b>' + DKARROW.left + '</b>Not today</span><span class="ld"><b>' + DKARROW.down + '</b>Never</span></div>' +
+    /* Nov 6 2026 (design review point 8): no legend row (Today / Soon / Not today / Never); the buttons at the bottom say it */
     '<div class="r5-dk-stack r3k-stack" id="r5Stack"></div>' +
     '<div class="r3k-btns">' + b("down", "never") + b("left", "skip") + '<button class="r3k-b undo" data-r5="swipe-undo" data-sfx="none" aria-label="' + (window.LowiLang ? LowiLang.t("Undo") : "Undo") + '"><span class="r3k-bi">' + DKIC.undo + '</span><span class="r3k-bl">Undo</span></button>' + b("right", "soon") + b("up", "today") + '</div>' +
     '<div class="r3k-foot small muted" id="r3kFoot">' + dkFootHTML() + '</div>' +
@@ -17018,10 +17069,6 @@ window.LowiDex = {open:openDex, scan:openScanner, reveal,
 .r3k-ht{font-size:20px;font-weight:800;letter-spacing:-.01em}
 .r3k-n{font-size:13px;opacity:.6;min-width:0}
 .r3k-n:empty{display:none}
-.r3k-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:10px auto 0;padding:0 8px}
-.r3k-legend span{display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1)}
-.r3k-legend b{font-size:14px;line-height:1}
-.r3k-legend .lt b{color:#FFB020}.r3k-legend .lr b{color:#3DDC84}.r3k-legend .ll b{color:#9FB2C6}.r3k-legend .ld b{color:#FF5A5F}
 .r3k-sec .r3k-stack{flex:none;width:min(100% - 64px,320px);height:min(54vh,420px);min-height:330px;margin:16px auto 0}
 .r3k-sec .r5-dc{touch-action:none;overscroll-behavior:contain}
 .r3k-sec .r5-dc:focus-visible{outline:3px solid var(--gold,#caa15a);outline-offset:3px}
@@ -17077,8 +17124,6 @@ window.LowiDex = {open:openDex, scan:openScanner, reveal,
 @media (prefers-reduced-motion:reduce){.r3k-fx,.r3k-sec::before{animation-duration:.01s!important}}
 
 /* Cloud (light) */
-html[data-ui=light] .r3k-legend span{background:rgba(22,28,46,.05);border-color:rgba(22,28,46,.12)}
-html[data-ui=light] .r3k-legend .lt b{color:#B86E00}html[data-ui=light] .r3k-legend .lr b{color:#0A8F48}html[data-ui=light] .r3k-legend .ll b{color:#4F6275}html[data-ui=light] .r3k-legend .ld b{color:#C4161C}
 html[data-ui=light] .r3k-bi{border-color:rgba(22,28,46,.2);background:rgba(22,28,46,.06)}
 html[data-ui=light] .r3k-b.today .r3k-bi{color:#A86200;border-color:rgba(184,110,0,.55);background:rgba(255,176,32,.16)}
 html[data-ui=light] .r3k-b.soon .r3k-bi{color:#0A8F48;border-color:rgba(10,143,72,.5);background:rgba(61,220,132,.14)}
@@ -20404,6 +20449,11 @@ html:not([data-lay=phone]) #k9Out > .k9-res{grid-column:auto;margin-bottom:0}
 /* G2 part 1: Move as one game screen, no scrolling */
 #mv-screen > .stack.g2 > *+*{margin-top:10px}
 #mv-screen.tabmode > .stack.g2 > *{padding-right:0}
+/* Nov 6 2026 (design review point 8): the Mirror mode card keeps its own 14px on the right too (the rule above took it, so its
+   buttons ran to the card's edge), and the page has one big blue button: Mirror mode's; Desk Spike Breaker's start is the glass kind */
+#mv-screen.tabmode > .stack.g2 > .mm-hero{padding-right:14px}
+#mv-screen .mv-go.btn.primary{background:rgba(255,255,255,.1)!important;color:#eaf6ff!important;border:1.5px solid rgba(200,235,255,.45)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.3)!important}
+html[data-ui=light] #mv-screen .mv-go.btn.primary{background:rgba(10,132,255,.08)!important;color:#0a5bd8!important;border-color:rgba(10,132,255,.45)!important;box-shadow:none!important}
 #mv-screen.tabmode > .stack.g2 > .mv-head{padding-right:54px;margin-bottom:0}
 .stack.g2 .mv-head .h1{line-height:1.15}
 .g2-safe{flex:none;display:flex;align-items:center;gap:6px;height:36px;padding:0 12px 0 10px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.06);color:var(--text);font:inherit;font-size:13px;font-weight:600;cursor:pointer}

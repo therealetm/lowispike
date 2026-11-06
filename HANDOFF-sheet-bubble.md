@@ -140,3 +140,24 @@ active with the new cache). Chromium only; not on a real iPhone.
    files first then rows (`feedback-core.js` removeAll). Not run against the real database from here (no owner session).
 Known: "Supermarket" is still cut in its orb (label rules: no break inside a word, one size per bloom, 10 px floor). The
 leftover `ci/` branches of these releases stay on GitHub (this sandbox's git proxy refuses branch deletes).
+
+## Five requests of 5 Nov evening (MAYA-HANDOFF 0.41), status
+Same release path and checks as above (Chromium only, not on a real iPhone).
+1. **All bubbles = really every bubble** (Einkaufen and Gap on the one circle): **20261105-204524** (main `d972ccdc`), VERIFIED LIVE.
+   Test `tests/bloom-all-in-circle.test.cjs`. This also settles the "Supermarket" cut-label note above (it may break after "Super").
+2. **Scan opens a chooser** (Live barcode scan that keeps scanning with Add to cart or Skip; Photo of your food via the phone's
+   camera; Deep analyze = the GPT link): **20261106-064324** (main `0bb99eb8`), VERIFIED LIVE: release.sh exit 0, CI green,
+   verify-live --compare same for the 4 shell files, the 8 changed files byte-identical live, clean Chromium on the live site with
+   the service worker active, 0 page errors. Test `tests/scan-chooser.test.cjs`; walk `tools/check-scan-chooser.cjs` (390x844 de,
+   375x667 de/en, 430x932 es). The flash of the iPhone camera cannot be switched by a web page (its own ⚡ switch).
+3. **"Are you Tim?"**: not this session's account; every test here ran on a local copy with the network blocked or a fake backend.
+   Rule kept: a test account always carries "bot" in its name, or is deleted after.
+4. **Supermarkt is one list** (no snack list of its own; everything in the Warenkorb; Buy again and adding by name in the Warenkorb;
+   compact inset product list, store and Warenkorb in one row, sticky category bar): **20261106-070854** (main `0db6dbcd`), VERIFIED
+   LIVE the same way (6 changed files byte-identical live, clean Chromium with the service worker, 0 page errors). Test
+   `tests/supermarket-one-list.test.cjs`; walk `tools/check-supermarket-one-list.cjs` (390x844 de, 375x667 en).
+   `tests/meal-slots-live.cjs` (WebKit) stops on a Home "Log" orb that no longer exists, before its Shop step (stale before this).
+5. **Carousels, share, save, weekly card planner**: not started in code. Findings so far: For You posts have a `meta` jsonb and
+   one `photo_url`; a carousel can ride in `meta.slides` (photos uploaded as `<uid>/<id>-<n>.jpg` in the same bucket), saving and
+   the week planner can be `lowi.*` keys that travel with the account, so phase 1 may need no new table. Sharing one post to
+   logged-out people needs a check of who may read `posts` (RLS) before any SQL proposal.

@@ -1728,6 +1728,9 @@ Recorded before building (standing rule). Branch: `claude/zen-tesla-wanom8` (mir
    a planner "like Yu-Gi-Oh or Pokemon cards": place cards on Monday..Sunday x breakfast, lunch, dinner, snack, from many saved
    carousels; "this should go into the circle with the billiard, the shuffle, the swipe". Needs new tables/storage (SQL he runs).
 Plan of that session: 1 and 2 first (one quiet release each, verified live), then 4, then 5 in parts with its SQL proposal.
+Status (6 Nov 2026, morning): 1 live as 20261105-204524; 2 live as 20261106-064324 (Scan chooser, live scan keeps going with
+Add to cart or Skip); 3 answered; 4 live as 20261106-070854 (one list: the snack list folded into the Warenkorb, compact inset list,
+sticky categories); 5 not started in code (findings in HANDOFF-sheet-bubble.md). Details and checks: HANDOFF-sheet-bubble.md, DECISIONS.md.
 
 ## 1. What LOWiSPIKE is
 

@@ -2000,6 +2000,21 @@ html[data-lay=desktop] #cmPaneChat.cm-pane{padding-bottom:16px}
   backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);cursor:pointer}
 .fyv-fab svg{width:20px;height:20px}
 /* 25 Oct 2026: My posts on the For You feed (top right, opposite + Post, the same glass) and the "not out yet" label on his own slides */
+/* Nov 6 2026: My posts and, under it, Saved (bookmark + count) share the top right corner; stacked, so no language or phone
+   width pushes them into + Post */
+.fy-tops{position:absolute;top:12px;right:12px;z-index:6;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.fy-tops>.fy-mine{position:static}
+.fy-svd{display:inline-flex;align-items:center;gap:5px;height:40px;min-width:44px;padding:0 12px;border-radius:999px;color:#fff;font:inherit;font-size:14px;font-weight:700;cursor:pointer;
+  background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 24px rgba(0,0,0,.3);
+  backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%)}
+.fy-svd svg{width:17px;height:17px}
+.fy-svd:active{transform:scale(.95)}
+html[data-ui=light] .fy-svd{color:#111318;background:linear-gradient(135deg,rgba(255,255,255,.7),rgba(255,255,255,.4));border:1px solid rgba(22,28,46,.3)}
+.fy-lth{position:relative}
+.fy-lcar{position:absolute;right:3px;top:3px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;font-size:11px;font-weight:800;line-height:18px;text-align:center;color:#fff;background:rgba(0,0,0,.6)}
+.fy-lrow[data-tr="open-saved"]{cursor:pointer}
+.fy-lrow.gone .fy-lth{opacity:.45}
+.fy-gone{color:var(--hi,#f0a08a)}
 .fy-mine{position:absolute;top:12px;right:12px;z-index:6;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:999px;color:#fff;font:inherit;font-size:14px;font-weight:700;
   background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 24px rgba(0,0,0,.3);
   backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);cursor:pointer}
@@ -5087,6 +5102,11 @@ function retryShares(){
   go.reduce((pr, p) => pr.then(() => sharePost(p, null, true)).then(() => fySending.delete(p.id)), Promise.resolve())
     .then(() => { if ($("#fyFeed")) renderForYou(); });
 }
+/* Nov 6 2026: the Saved button on the feed (a bookmark and how many), shown once something is saved */
+function fySavedBtnHTML(){ const n = Object.keys(T.saved || {}).length; if (!n) return "";
+  return '<button class="fy-svd" data-tr="list-saved" aria-label="' + esc(fyT("Saved") + ", " + n) + '">' + FIC.save + '<b>' + n + '</b></button>'; }
+function fySavedBtnPaint(){ const t = $(".fy-tops"); if (!t) return; const old = t.querySelector(".fy-svd"), h = fySavedBtnHTML();
+  if (old) { if (h) old.outerHTML = h; else old.remove(); } else if (h) t.insertAdjacentHTML("beforeend", h); }
 function heldPosts(){ return (T.posts || []).filter(p => window.LowiForYou && LowiForYou.held(Object.assign({}, p, {me: true}))); }
 let fyTop = 0;
 function renderForYou(el){
@@ -5094,7 +5114,7 @@ function renderForYou(el){
   const prev = $("#fyFeed"), y = prev ? prev.scrollTop : 0;
   /* 25 Oct 2026: "My posts" sits on the feed itself (it only lived on the old Tribe profile); after posting, the feed opens at the top */
   const mineN = fyMineAll().length, mineLbl = window.LowiForYou ? LowiForYou.note("mine") : "My posts";
-  el.innerHTML = (window.FYV ? FYV.fabHTML() : "") + '<button class="fy-mine" data-tr="list-mine" aria-label="' + esc(mineLbl) + '">' + esc(mineLbl) + (mineN ? ' <b>' + mineN + '</b>' : '') + '</button>' + '<div class="fy-feed" id="fyFeed">' + list.map(slideHTML).join("") +
+  el.innerHTML = (window.FYV ? FYV.fabHTML() : "") + '<div class="fy-tops"><button class="fy-mine" data-tr="list-mine" aria-label="' + esc(mineLbl) + '">' + esc(mineLbl) + (mineN ? ' <b>' + mineN + '</b>' : '') + '</button>' + fySavedBtnHTML() + '</div>' + '<div class="fy-feed" id="fyFeed">' + list.map(slideHTML).join("") +
     '<section class="fy-slide fy-end"><div class="fy-endin"><b>' + esc(fyT("That's everyone")) + '</b><span class="small muted">' + esc(fyT("Newest first. No algorithm.")) + '</span><button class="btn primary sm" data-r3f="post" data-sfx="open">' + esc(fyT("Post something")) + '</button></div></section></div>';
   const f = $("#fyFeed"); if (f) { f.scrollTop = fyTop ? 0 : y; fyTop = 0; if (window.FYV) FYV.attach(f); fyCarBind(f); }
 }
@@ -5125,14 +5145,22 @@ function fyMineAll(){
   (cloud || []).forEach(p => { if (p && p.me && !ids.has(p.id)) { ids.add(p.id); own.push(Object.assign({}, p, {me:true})); } });
   return own;
 }
-function listSheet(kind){ const h = H(); load(); const all = DEMO.concat(kind === "mine" ? fyMineAll() : T.posts.map(p => Object.assign({me:true}, p)), window.LowiForYou ? LowiForYou.botPosts() : []);
+/* Nov 6 2026 (Emmanuel: carousels saved "somewhere the person can reach"): Saved lists every saved post, also other members' (the
+   shared table, or its last copy on this phone), not only his own and the app's; one copy per post */
+function fySavedAll(){ const CL = window.LOWI_CLOUD, cloud = CL && CL.live && CL.live() ? CL.posts() : fyCacheRead(), seen = new Set(), out = [];
+  DEMO.concat(T.posts.map(p => Object.assign({me:true}, p)), cloud || [], window.LowiForYou ? LowiForYou.botPosts() : []).forEach(p => { if (p && p.id && !seen.has(p.id)) { seen.add(p.id); out.push(p); } });
+  return out; }
+function listSheet(kind){ const h = H(); load(); const all = kind === "mine" ? DEMO.concat(fyMineAll(), window.LowiForYou ? LowiForYou.botPosts() : []) : fySavedAll();
   const list = (kind === "mine" ? all.filter(p => p.me) : all.filter(p => (T.saved || {})[p.id])).sort((a, b) => b.ts - a.ts);
+  /* Nov 6 2026: a saved post that left For You (deleted by its author, hidden or blocked) says so in its row and does not open */
+  let inFeed = null; if (kind !== "mine") { try { inFeed = new Set(feed().map(p => p.id)); } catch(e){ inFeed = null; } }
   /* 25 Oct: each own post says where it is (In For You / Not in For You yet / Only you); posts the old food rule kept back can be shared in one tap */
   const F = window.LowiForYou, fn = (k, en, v) => (F ? F.note(k, v) : en), held = kind === "mine" ? heldPosts() : [];
   const where = p => p.vis !== "tribe" ? fn("onlyYou", "Only you") : (F && F.held(p)) ? fn("heldTag", "Not in For You yet") : p.pend ? fn("sending", "Sharing…") : fn("inFy", "In For You");
   const banner = held.length ? '<div class="fy-held"><p class="small">' + esc(held.length === 1 ? fn("heldOne", "") : fn("heldWhy", "", {n: held.length})) + '</p><button class="btn primary sm" data-tr="share-held">' + esc(held.length === 1 ? fn("shareNow", "Share to For You") : fn("shareAll", "Share all", {n: held.length})) + '</button></div>' : "";
   h.openSheet('<div class="h2" style="margin-bottom:10px">' + (kind === "mine" ? "My posts" : "Saved") + '</div>' + banner + (list.length ? list.map(p => { const d = describe(p.meta), rr = p.rec && postRecipe(p.rec), cap = p.cap || d.line || (rr && rr.n) || PLAT[p.plat || "web"].n;
-    return '<div class="fy-lrow"><div class="fy-lth">' + fyBg(p, true) + '</div><div style="flex:1;min-width:0"><div class="small fy-lcap">' + esc(cap) + '</div><div class="tiny dim">' + (p.me ? (p.vid ? "Video · " : "") + '<span class="fy-where' + (p.vis === "tribe" && F && F.held(p) ? ' held' : '') + '">' + esc(where(p)) + '</span>' : esc(p.who)) + " · " + ago(p.ts) + '</div></div>' +
+    const nSl = window.LowiCarousel ? (LowiCarousel.slidesOf(p) || []).length : 0, gone = !!(inFeed && !inFeed.has(p.id));
+    return '<div class="fy-lrow' + (gone ? ' gone' : '') + '"' + (kind === "mine" || gone ? '' : ' data-tr="open-saved" data-id="' + p.id + '" role="button" tabindex="0"') + '><div class="fy-lth">' + fyBg(p, true) + (nSl ? '<span class="fy-lcar" aria-label="' + nSl + ' photos">' + nSl + '</span>' : '') + '</div><div style="flex:1;min-width:0"><div class="small fy-lcap">' + esc(cap) + '</div><div class="tiny dim">' + (p.me ? (p.vid ? "Video · " : "") + '<span class="fy-where' + (p.vis === "tribe" && F && F.held(p) ? ' held' : '') + '">' + esc(where(p)) + '</span>' : esc(p.who)) + " · " + ago(p.ts) + (inFeed && !inFeed.has(p.id) ? ' · <span class="fy-gone">Not in For You any more</span>' : '') + '</div></div>' +
       (kind === "mine" ? '<button class="fy-lbtn" data-tr="post-menu" data-id="' + p.id + '" aria-label="More">' + IC.more + '</button>' : '<button class="fy-lbtn" data-tr="save" data-id="' + p.id + '" aria-label="Remove">' + FIC.save + '</button>') + '</div>'; }).join("")
     : '<div class="small muted">' + (kind === "mine" ? "Nothing yet. Your posts show up here." : "Tap Save on any post in For You.") + '</div>')); }
 
@@ -5307,7 +5335,11 @@ document.addEventListener("click", e => {
     case "filter": T.filter = b.dataset.f; save(); rerender(); break;
     case "save": { T.saved = T.saved || {}; if (T.saved[id]) delete T.saved[id]; else T.saved[id] = 1; save(); const on = !!T.saved[id];
       $$('[data-tr="save"][data-id="' + id + '"]').forEach(x => { x.classList.toggle("on", on); const sp = x.querySelector("span"); if (sp) sp.textContent = fyT(on ? "Saved" : "Save"); });
-      if (b.classList.contains("fy-lbtn")) { const r = b.closest(".fy-lrow"); if (r) r.remove(); } else h.toast(on ? "Saved to Profile" : "Removed from Saved"); break; }
+      if (b.classList.contains("fy-lbtn")) { const r = b.closest(".fy-lrow"); if (r) r.remove(); } else h.toast(on ? "Saved. Find it under the bookmark at the top." : "Removed from Saved");
+      fySavedBtnPaint(); break; }
+    /* Nov 6 2026: a saved post opens where it is in For You */
+    case "open-saved": { if (e.target.closest('.fy-lbtn')) break; h.closeSheet(); const at = () => { const el = $('.fy-slide[data-id="' + id + '"]'), f = $("#fyFeed"); if (el && f) { f.scrollTop = el.offsetTop; return true; } return false; };
+      setTimeout(() => { if (at()) return; showFeed(); setTimeout(at, 500); }, 260); break; }
     case "comment": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (window.cmComment) window.cmComment(p && !p.me ? p.who : ""); break; }
     case "share": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id) || (window.LowiForYou && LowiForYou.botPost(id)); if (!p) break; const rr = p.rec && postRecipe(p.rec); const txt = (p.cap || describe(p.meta).line || (rr && rr.n) || "LOWiSPIKE") + (p.url ? " " + p.url : "");
       if (navigator.share && !p.demo) { navigator.share({text:txt}).catch(() => {}); } else { try { navigator.clipboard.writeText(txt).then(() => h.toast("Copied to share"), () => h.toast("Copied to share")); } catch(err){ h.toast("Copied to share"); } } break; }
@@ -8847,7 +8879,7 @@ const T = [
   ["one room, newest at the bottom", "ein Raum, Neuestes unten", "una sala, lo nuevo abajo"], ["Message everyone", "Nachricht an alle", "Mensaje para todos"],
   /* button sweep 16:20: For You rail buttons for screen readers */ ["Like", "Gefällt mir", "Me gusta"], ["Comment", "Kommentieren", "Comentar"], ["More", "Mehr", "Más"],
   ["That's everyone", "Das war's", "Eso es todo"], ["Newest first. No algorithm.", "Neueste zuerst. Kein Algorithmus.", "Lo más nuevo primero. Sin algoritmo."], ["Post something", "Etwas posten", "Publica algo"],
-  ["Saved to Profile", "Im Profil gemerkt", "Guardado en tu perfil"], ["Removed from Saved", "Aus Gemerkt entfernt", "Quitado de guardados"], ["Copied to share", "Zum Teilen kopiert", "Copiado para compartir"],
+  ["Saved to Profile", "Im Profil gemerkt", "Guardado en tu perfil"], ["Saved. Find it under the bookmark at the top.", "Gespeichert. Du findest es oben beim Lesezeichen.", "Guardado. Lo encuentras arriba, en el marcador."], ["Not in For You any more", "Nicht mehr in Für dich", "Ya no está en Para ti"], ["Removed from Saved", "Aus Gemerkt entfernt", "Quitado de guardados"], ["Copied to share", "Zum Teilen kopiert", "Copiado para compartir"],
   ["For You and Chat show sample members until launch.", "Für dich und Chat zeigen bis zum Start Beispiel-Mitglieder.", "Para ti y Chat muestran miembros de ejemplo hasta el lanzamiento."],
   ["Nothing yet. Your posts show up here.", "Noch nichts. Deine Posts erscheinen hier.", "Nada aún. Tus posts aparecen aquí."], ["Tap Save on any post in For You.", "Tippe bei einem Post in Für dich auf Merken.", "Toca Guardar en cualquier post de Para ti."],
   ["New here?", "Neu hier?", "¿Nuevo aquí?"], ["Say hi", "Sag hallo", "Saluda"], ["In For You", "In Für dich", "En Para ti"], ["Only you", "Nur du", "Solo tú"],

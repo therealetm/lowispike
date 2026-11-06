@@ -1736,7 +1736,9 @@ sticky categories); 5 in parts: carousels live as 20261106-072917, Saved one tap
 ### 0.42 Design review of 6 Nov 2026 (Emmanuel, written, "von mir entschieden")
 Recorded before building (standing rule). Decisions in DECISIONS.md ("6 Nov 2026: design review"). Each point is its own small
 release, bug fixes quiet; he wants one short line per point with the live build id. Status: 4 live 20261106-175345;
-8 live 20261106-183649; 7 built (Supermarket without counters, Plan my week from tonight, Baskets / Körbe / Cestas); 1, 2, 3, 5, 6 open.
+8 live 20261106-183649; 7 on main as 20261106-185443 (Supermarket without counters, Plan my week from tonight,
+Baskets / Körbe / Cestas): GitHub Pages refused its first deploy ("Deployment failed, try again later"), the docs push after it
+deploys it again; 1, 2, 3, 5, 6 open.
 1. Food scan result: "Log as eaten" primary for food (photo / typed name, not barcode products), "Add to cart" small; then "Letzte
    Mahlzeit heute?" (Ja, Gap starten = the Gap bubble's Last meal / Noch nicht). 28 Oct decoupling stays. Auto Bubble catch only if
    XP rules stay the same, else ask him.

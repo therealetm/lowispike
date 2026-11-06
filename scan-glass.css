@@ -28,6 +28,9 @@ html.lg .b3-cam.sg-xbot.b3-shop .b3-cbot:has(> .ss-row) > .sg-xrow { position: a
 html.lg .b3-cam.sg-xbot.b3-shop .b3-cbot:has(> .ss-row) > .ss-row { box-sizing: border-box; padding-right: 54px; }
 /* Oct 28 2026: once the bottom-center close (bottom-close.js) has taken this X over (.lw-bx-src), the row gets its full width back */
 html.lg .b3-cam.sg-xbot.b3-shop .b3-cbot:has(> .sg-xrow .lw-bx-src) > .ss-row { padding-right: 0; }
+/* Nov 5 2026 live scan: with the cart row under the hint, the X leaves the flow the same way, so no empty band is left above the
+   bottom close (its source X stays laid out, faded, where bottom-close.js looks for it) */
+html.lg .b3-cam.sg-xbot.b3-livebc .b3-cbot:has(> .ss-liverow) > .sg-xrow { position: absolute; right: 12px; bottom: 12px; }
 @media (max-height: 720px) {
     html.lg .b3-cam.sg-xbot.sg-docked .sg-xrow > .b3-cx { width: 42px; height: 42px; min-width: 42px; }
     html.lg .b3-cam.sg-xbot.sg-docked.b3-shop .b3-cbot:has(> .ss-row) > .sg-xrow { right: 10px; bottom: 12px; }
@@ -200,14 +203,6 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
   box-shadow: 0 18px 50px rgba(8, 30, 60, .28), inset 0 1px 0 rgba(255, 255, 255, .35); color: #fff; }
 .b3-pickbox b { font-size: 19px; line-height: 1.25; font-weight: 700; }
 .b3-pickbox small { font-size: 14.5px; line-height: 1.4; opacity: .88; }
-.b3-pshoot { width: 96px; height: 96px; border-radius: 50%; border: 4px solid rgba(255, 255, 255, .92); background: rgba(255, 255, 255, .16); display: grid; place-items: center;
-  color: #fff; cursor: pointer; box-shadow: 0 0 0 8px rgba(120, 200, 255, .16), 0 10px 30px rgba(0, 40, 90, .3); transition: transform .15s; margin-bottom: 4px; }
-.b3-pshoot i { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(160deg, #7fd3ff, #3b8cff); display: grid; place-items: center; }
-.b3-pshoot svg { width: 34px; height: 34px; }
-.b3-pshoot:active { transform: scale(.94); }
-.b3-pbtns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 4px; width: 100%; }
-.b3-pbtns .b3-cbtn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 16px; font-size: 15px; flex: 1 1 auto; }
-.b3-pbtns .b3-cbtn svg { width: 18px; height: 18px; flex: none; }
 .b3-pthumb { position: relative; width: 168px; height: 168px; border-radius: 22px; overflow: hidden; background: rgba(0, 0, 0, .25); border: 1px solid rgba(255, 255, 255, .3); }
 .b3-pthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .b3-pread .b3-pthumb { box-shadow: 0 0 0 3px rgba(127, 211, 255, .55), 0 0 28px rgba(127, 211, 255, .45); }
@@ -215,27 +210,79 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
   border-bottom: 2px solid #dff8ff; animation: b3psweep .9s cubic-bezier(.45, 0, .55, 1) infinite alternate; will-change: transform; }
 .b3-pgrid { position: absolute; inset: 0; background-image: linear-gradient(rgba(191, 240, 255, .14) 1px, transparent 1px), linear-gradient(90deg, rgba(191, 240, 255, .14) 1px, transparent 1px); background-size: 18px 18px; }
 @keyframes b3psweep { from { transform: translateY(-40%); } to { transform: translateY(240%); } }
-@media (prefers-reduced-motion: reduce) { .b3-psweep { animation: none; top: 33%; } .b3-pshoot { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .b3-psweep { animation: none; top: 33%; } }
 /* Oct 29 2026 (bug hunt, iPhone SE): the photo card never runs over the typing panel. Its box ends just above the panel's real top
    (--b3-cbot-top, scan-glass.js), the card stays centred while it fits (auto margins) and scrolls inside its box when it does not,
    so the barcode field, Check, the food-name field and Analyze by name stay tappable. Short screens get a more compact card. */
 .b3-cam.b3-pick .b3-cmsg, html.lg .b3-cam.sg-docked.b3-pick .b3-cmsg { bottom: calc(var(--b3-cbot-top, 250px) + 8px) !important; align-items: flex-start; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 .b3-cam.b3-pick .b3-cmsg > .b3-pickbox { margin-top: auto; margin-bottom: auto; flex: none; }
+/* Nov 5 2026 Scan chooser (index.html pickHTML; Emmanuel: "the option that I can see there ... Have the interface look really, really
+   nice ... like it's analyzing"): Scan no longer opens the camera by itself. A calm analysing lens (two slow rings and a sweep), one
+   question, the three ways in as one iOS-style inset list (Live scan in Misty blue, Photo of your food in mint, Deep analyze in the gold
+   it has everywhere), and the photo library as a quiet text button under it. The title bar says nothing here: the question is the title. */
+.b3-cam.b3-pick .b3-ctitle { visibility: hidden; }
+.b3-pchoose { gap: 6px; padding: 20px 14px 10px; }
+.b3-plens { position: relative; width: 84px; height: 84px; margin: 2px 0 8px; flex: none; }
+.b3-pring { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, rgba(127, 211, 255, 0) 0 62%, rgba(127, 211, 255, .95) 88%, rgba(127, 211, 255, 0) 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+  animation: b3pspin 2.4s linear infinite; will-change: transform; }
+.b3-pring2 { inset: -9px; opacity: .6; background: conic-gradient(from 180deg, rgba(50, 213, 131, 0) 0 70%, rgba(50, 213, 131, .9) 92%, rgba(50, 213, 131, 0) 100%); animation-duration: 3.8s; animation-direction: reverse; }
+.b3-pcore { position: absolute; inset: 7px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; color: #e6f8ff;
+  background: radial-gradient(circle at 50% 35%, rgba(127, 211, 255, .45), rgba(59, 140, 255, .18) 55%, rgba(7, 16, 41, .6) 100%);
+  border: 1px solid rgba(255, 255, 255, .28); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 0 34px rgba(127, 211, 255, .35); }
+.b3-pcore svg { position: relative; z-index: 1; width: 30px; height: 30px; filter: drop-shadow(0 0 8px rgba(191, 240, 255, .8)); }
+.b3-pbeam { position: absolute; left: 0; right: 0; top: 0; height: 40%; background: linear-gradient(180deg, rgba(127, 211, 255, 0), rgba(127, 211, 255, .38) 85%, rgba(223, 248, 255, .9));
+  border-bottom: 1.5px solid rgba(223, 248, 255, .95); animation: b3psweep 1.5s cubic-bezier(.45, 0, .55, 1) infinite alternate; will-change: transform; }
+@keyframes b3pspin { to { transform: rotate(1turn); } }
+.b3-pickbox .b3-pq { font-size: 20px; letter-spacing: -.01em; }
+.b3-pickbox .b3-pqs { font-size: 14px; opacity: .78; margin-bottom: 8px; }
+.b3-popts { width: 100%; display: flex; flex-direction: column; border-radius: 20px; overflow: hidden; text-align: left;
+  background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .16); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12); }
+.b3-popt { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; box-sizing: border-box; padding: 10px 12px; margin: 0;
+  color: #fff; text-align: left; text-decoration: none; background: transparent; border: 0; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background .15s; }
+.b3-popt + .b3-popt::before { content: ""; position: absolute; left: 62px; right: 0; top: 0; height: 1px; background: rgba(255, 255, 255, .12); }
+.b3-popt:active { background: rgba(255, 255, 255, .1); }
+.b3-popt:focus-visible { outline: 2px solid #9fd6ff; outline-offset: -3px; border-radius: 18px; }
+.b3-poic { width: 38px; height: 38px; flex: none; border-radius: 11px; display: grid; place-items: center; color: #fff; }
+.b3-poic svg { width: 21px; height: 21px; }
+.b3-popt-live .b3-poic { background: linear-gradient(160deg, #7fd3ff, #3b8cff); box-shadow: 0 6px 16px -6px rgba(59, 140, 255, .9); }
+.b3-popt-photo .b3-poic { background: linear-gradient(160deg, #5be3a0, #1fa463); box-shadow: 0 6px 16px -6px rgba(31, 164, 99, .9); }
+.b3-popt-deep .b3-poic { background: linear-gradient(160deg, #f3dca6, #c9a250); color: #2b1d02; box-shadow: 0 6px 16px -6px rgba(201, 162, 80, .9); }
+.b3-potx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.b3-pickbox .b3-potx b { font-size: 16px; line-height: 1.2; font-weight: 650; }
+.b3-pickbox .b3-potx small { font-size: 13px; line-height: 1.3; opacity: .72; }
+.b3-pochev { flex: none; display: grid; color: rgba(235, 235, 245, .45); }
+.b3-plib { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 14px; margin: 2px 0 0; border: 0; background: none; color: #9fd6ff;
+  font: 600 15px/1 var(--lg-font, -apple-system, system-ui, sans-serif); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.b3-plib svg { width: 19px; height: 19px; }
+.b3-plib:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 2px; border-radius: 12px; }
+@media (prefers-reduced-motion: reduce) { .b3-pring, .b3-pbeam { animation: none; } .b3-pbeam { top: 30%; } .b3-popt { transition: none; } }
+/* short phones (iPhone SE): the lens shrinks to sit beside the question, so the three rows and Photos fit above the typing panel */
 @media (max-height: 700px) {
-  .b3-cam.b3-pick .b3-pickbox { padding: 14px 14px 12px; gap: 6px; border-radius: 24px; }
-  .b3-cam.b3-pick .b3-pshoot { width: 72px; height: 72px; border-width: 3px; box-shadow: 0 0 0 6px rgba(120, 200, 255, .16), 0 8px 22px rgba(0, 40, 90, .3); margin-bottom: 2px; }
-  .b3-cam.b3-pick .b3-pshoot i { width: 54px; height: 54px; }
-  .b3-cam.b3-pick .b3-pshoot svg { width: 28px; height: 28px; }
-  .b3-cam.b3-pick .b3-pickbox b { font-size: 17px; }
-  .b3-cam.b3-pick .b3-pickbox small { font-size: 13.5px; line-height: 1.35; }
+  .b3-cam.b3-pick .b3-pickbox { padding: 12px 12px 6px; gap: 5px; border-radius: 24px; }
+  .b3-cam.b3-pick .b3-pchoose { display: grid; grid-template-columns: 40px minmax(0, 1fr); column-gap: 14px; row-gap: 10px; align-items: center; justify-items: start; text-align: left; }
+  .b3-cam.b3-pick .b3-pchoose .b3-plens { width: 40px; height: 40px; margin: 6px 0 2px; }
+  .b3-cam.b3-pick .b3-pchoose .b3-pq { grid-column: 2; }
+  .b3-cam.b3-pick .b3-pchoose .b3-pqs { display: none; }
+  .b3-cam.b3-pick .b3-pchoose .b3-popts, .b3-cam.b3-pick .b3-pchoose .b3-plib { grid-column: 1 / -1; }
+  .b3-cam.b3-pick .b3-pchoose .b3-plib { justify-self: center; }
+  .b3-cam.b3-pick .b3-pring2 { inset: -6px; }
+  .b3-cam.b3-pick .b3-pcore { inset: 4px; }
+  .b3-cam.b3-pick .b3-pcore svg { width: 17px; height: 17px; }
+  .b3-cam.b3-pick .b3-pickbox .b3-pq { font-size: 17px; }
+  .b3-cam.b3-pick .b3-popt { min-height: 52px; padding: 6px 10px; }
+  .b3-cam.b3-pick .b3-pickbox .b3-potx b { font-size: 15px; }
+  .b3-cam.b3-pick .b3-pickbox .b3-potx small { font-size: 12.5px; }
+  .b3-cam.b3-pick .b3-plib { min-height: 40px; font-size: 14px; }
   .b3-cam.b3-pick .b3-pthumb { width: 128px; height: 128px; }
-  .b3-cam.b3-pick .b3-pbtns .b3-cbtn { padding: 0 12px; font-size: 14px; }
+  .b3-cam.b3-pread small { font-size: 13.5px; line-height: 1.35; }
 }
 @media (max-height: 600px) {
-  .b3-cam.b3-pick .b3-pstart small { display: none; }
-  .b3-cam.b3-pick .b3-pshoot { width: 62px; height: 62px; }
-  .b3-cam.b3-pick .b3-pshoot i { width: 46px; height: 46px; }
-  .b3-cam.b3-pick .b3-pshoot svg { width: 24px; height: 24px; }
+  .b3-cam.b3-pick .b3-pchoose { grid-template-columns: minmax(0, 1fr); }
+  .b3-cam.b3-pick .b3-plens, .b3-cam.b3-pick .b3-pickbox .b3-pqs { display: none; }
+  .b3-cam.b3-pick .b3-pchoose .b3-pq { grid-column: 1; }
+  .b3-cam.b3-pick .b3-pickbox .b3-potx small { display: none; }
+  .b3-cam.b3-pick .b3-popt { min-height: 48px; }
   .b3-cam.b3-pick .b3-pthumb { width: 104px; height: 104px; }
 }
 
@@ -247,3 +294,9 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
 .b3-cam.b3-livebc { background: radial-gradient(120% 80% at 50% 36%, #0d1d42 0, #071029 45%, #03050a 92%) #03050a; }
 .b3-cam.b3-livebc .b3-cmsg { z-index: 4; pointer-events: auto; }
 .b3-cam.b3-livebc:not(.live) .b3-frame { opacity: .35; }
+/* Nov 5 2026 live scan in the supermarket: a breathing live dot by the title while the camera reads; the card's Skip and the cart row
+   under the hint are in shop-scan.css */
+.b3-cam.b3-livebc.live .b3-ctitle::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; vertical-align: 2px;
+  background: #32d583; box-shadow: 0 0 0 0 rgba(50, 213, 131, .7); animation: b3livedot 1.6s ease-out infinite; }
+@keyframes b3livedot { 0% { box-shadow: 0 0 0 0 rgba(50, 213, 131, .7); } 70%, 100% { box-shadow: 0 0 0 9px rgba(50, 213, 131, 0); } }
+@media (prefers-reduced-motion: reduce) { .b3-cam.b3-livebc.live .b3-ctitle::before { animation: none; } }

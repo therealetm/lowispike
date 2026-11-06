@@ -63,6 +63,7 @@
         ticked: ['Ticked off your list', 'Auf deiner Liste abgehakt', 'Tachado de tu lista'],
         undo: ['Undo', 'Rückgängig', 'Deshacer'],
         next: ['Scan next', 'Nächstes scannen', 'Escanear otro'],
+        skip: ['Skip', 'Überspringen', 'Saltar'],
         cart: ['Shopping list', 'Einkaufsliste', 'Lista de compra'],
         details: ['Details', 'Details', 'Detalles'],
         per100: ['Per 100 g', 'Pro 100 g', 'Por 100 g'],

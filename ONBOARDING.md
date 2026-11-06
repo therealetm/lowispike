@@ -44,7 +44,9 @@ Profile > About you > Grocery shopping (`shop-plan.js` card), never forced.
   "What you cooked": type it (Log it) or Snap a photo, with chips for the groceries that went in. That meal goes into the
   normal meal journal (same XP cap and same-food-once rule); the bucket only links it to the items used. The Log meal scan
   and the shopping camera's own cart don't show the bucket row.
-- **Scanner:** live barcode, typed barcode, barcode from a photo. Results are *estimates* from the label, not medical
+- **Scanner:** Scan opens a chooser (5 Nov 2026): live barcode scan (keeps reading product after product: Add to cart or
+  Skip), a photo of your food (the phone's camera; a barcode in it is read for free, otherwise the AI checks the food) and
+  Deep analyze; typed barcode or food name under it. Results are *estimates* from the label, not medical
   advice and never a promise of "no spike". The Deep analyze link opens the LOWiSPIKE GPT; the photo upload there is manual
   and nothing comes back into the app automatically.
 - **Controls:** drag the controller to fly, 2 taps = back, 3 taps = autopilot, double tap with a second finger while flying

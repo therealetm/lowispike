@@ -24,13 +24,20 @@ function fnSrc(s, sig) {
   throw new Error('unclosed ' + sig);
 }
 
-test('Scan opens the native picker first, inside the tap, before anything else in openScanner', () => {
+/* Nov 5 2026 (Emmanuel, screenshots: "when you click on it, the camera opens directly. It's confusing for a lot of people ... I would
+   want the option that I can see there"): Scan opens the chooser (Live scan, Photo of your food, Deep analyze). The Oct 28 rule here
+   (the phone camera first, from every Scan tap) is replaced: only a tap that already asked for the photo opens the picker, and that
+   is still the first thing openScanner does, inside the tap. The chooser itself: tests/scan-chooser.test.cjs. */
+test('Scan opens the chooser; only a tap that asked for the photo opens the phone camera, first thing inside the tap', () => {
   const f = fnSrc(html, 'function openScanner(mode)');
-  const body = f.slice(f.indexOf('{') + 1).trim();
-  assert.match(body.split('\n')[0] + body.split('\n')[1], /pickMode\(mode\)[\s\S]*pickOpen\(/);
+  const code = f.slice(f.indexOf('{') + 1).replace(/\/\*[\s\S]*?\*\//g, '').trim();
+  assert.ok(code.startsWith('const pick = pickMode(mode); if (pick && pickNow(mode)) pickOpen(mode === "lib");'), 'the first statement, inside the tap');
   assert.match(f, /if \(pick\) \{ el\.classList\.add\("b3-pick"\); msgState\("pick"\);.*return; \}/);
+  const ctx = {}; vm.createContext(ctx); vm.runInContext(fnSrc(html, 'function pickNow(mode)'), ctx);
+  for (const m of ['photo', 'lib']) assert.strictEqual(ctx.pickNow(m), true, m + ' opens the camera / photos at once');
+  for (const m of ['cam', undefined, 'pickq', 'live', 'shop', 'type']) assert.strictEqual(ctx.pickNow(m), false, String(m) + ': no camera by itself');
   const pm = fnSrc(html, 'function pickMode(mode)');
-  for (const m of ['"cam"', '"photo"']) assert.ok(pm.includes(m), 'default Scan modes go photo-first: ' + m);
+  for (const m of ['"cam"', '"photo"']) assert.ok(pm.includes(m), 'Scan and photo taps land on the photo screen: ' + m);
   assert.ok(!pm.includes('"shop"'), 'the shopping camera keeps its live scanner');
 });
 
@@ -94,7 +101,8 @@ test('pick panel styling: no live-camera chrome, Home navy, a scanning sweep tha
 });
 
 test('every new scanner string exists in English, German and Spanish', () => {
-  for (const k of ['pickShoot', 'pickT', 'pickS', 'pickLib', 'pickLive', 'pickRead']) {
+  /* Nov 5 2026: pickT and pickS (the old one-button card's title and line) left with that card; the chooser's words joined */
+  for (const k of ['pickShoot', 'pickLib', 'pickLive', 'pickRead', 'chooseT', 'chooseS', 'optLiveS', 'optPhoto', 'optPhotoS']) {
     const m = html.match(new RegExp('\\n  ' + k + ': \\[("[^"]+", ){2}"[^"]+"\\],'));
     assert.ok(m, k);
   }

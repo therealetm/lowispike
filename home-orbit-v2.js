@@ -120,7 +120,8 @@
     /* BH-004: the three bubbles this module builds keep their words in every language, so a language switch without a reload
        can repaint them. [aria-label, small label] per language (en, de, es). */
     const WORDS = {
-        scan: [['Take a photo of a product or a meal', 'Scan'], ['Produkt oder Essen fotografieren', 'Scannen'], ['Haz una foto de un producto o una comida', 'Escanear']],
+        /* Nov 5 2026: a tap opens the Scan chooser (Live scan, Photo of your food, Deep analyze), no longer the camera itself */
+        scan: [['Scan: live barcode scan, photo of your food or Deep analyze', 'Scan'], ['Scannen: Barcode live, Foto von deinem Essen oder Deep analyze', 'Scannen'], ['Escanear: c\u00f3digo en vivo, foto de tu comida o Deep analyze', 'Escanear']],
         sleep: [['Sleep', 'Sleep'], ['Schlaf', 'Schlaf'], ['Sueño', 'Sueño']],
         settings: [['Community. Hold for settings', 'Community'], ['Community. Halten f\u00fcr Einstellungen', 'Community'], ['Comunidad. Mant\u00e9n para los ajustes', 'Comunidad']]
     };

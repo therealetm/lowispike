@@ -1,10 +1,12 @@
 'use strict';
 /* photo-first Scan probe (29 Oct 2026, quiet barcode, else the AI on its own):
    node check-scan-pick.cjs <root|url> [engine] [outprefix]   env W/HGT viewport, SLOW=1 a barcode reader that never answers
-   A Home Scan -> food photo: only "Foto wird geprüft…", never a no-barcode card, then the AI photo check by itself (one hand-off)
-   B Home Scan -> barcode photo: product card, no AI
-   C Scan -> cancel -> Aus Fotos -> food photo: the AI by itself
-   D Scan -> food photo -> X straight away: no AI
+   Nov 5 2026: Scan opens the chooser first (no camera by itself); "Foto von deinem Essen" there opens the phone camera.
+   A Home Scan -> Foto von deinem Essen -> food photo: only "Foto wird geprüft…", never a no-barcode card, then the AI photo check by
+     itself (one hand-off)
+   B Home Scan -> Foto von deinem Essen -> barcode photo: product card, no AI
+   C Scan -> Aus Fotos -> food photo: the AI by itself
+   D Scan -> Foto von deinem Essen -> food photo -> X straight away: no AI
    SLOW=1: the reader hangs, the AI still starts after PICK_WAIT_MS */
 const path = require('path');
 const arg = process.argv[2] || path.join(__dirname, '..');
@@ -41,17 +43,24 @@ const SLOW = process.env.SLOW === '1';
     /* headless sometimes opens no chooser for the hidden input: hand the photo to the same input the way the picker would */
     if (!fc && file) { const id = /picklib/.test(sel) ? '#b3PickLib' : '#b3Pick'; await P.setInputFiles(id, file).then(() => ok(label + ' via input', id), e => ok(label + ' input err', String(e).slice(0, 120))); }
     return fc || true; };
+  /* the Scan bubble opens the chooser and never the camera; its photo row opens the phone camera */
+  const homePhoto = async (file, label) => {
+    const wait = P.waitForEvent('filechooser', { timeout: 1500 }).catch(() => null);
+    const b = await P.$('#whHud [data-orbit="scan"]'); if (!b) { ok(label, 'NO SCAN BUBBLE'); return null; }
+    const bb = await b.boundingBox(); await P.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
+    ok(label + ' no camera by itself', !(await wait)); await H.sleep(600);
+    return file === undefined ? true : tapChoose('#b3Cam [data-b3="pickshoot"]', file, label); };
   const waitAI = async (from, ms) => { const t0 = Date.now(); await P.waitForFunction((k) => window.__n.photoFile > k, from, { timeout: ms }).catch(() => { }); return Date.now() - t0; };
   // A food photo from Home Scan
   let before = (await n()).photoFile;
-  await tapChoose('#whHud [data-orbit="scan"]', FOOD, 'A home scan');
+  await homePhoto(FOOD, 'A home scan');
   await H.sleep(150); await P.screenshot({ path: out + '-A1-reading.png' });
   ok('A ms until AI', await waitAI(before, 15000)); await H.sleep(2500);
   const a = await n(); ok('A after', a); ok('A one hand-off', a.photoFile - before === 1); await P.screenshot({ path: out + '-A2-ai.png' });
   await reset();
   // B barcode photo
   before = (await n()).photoFile;
-  await tapChoose('#whHud [data-orbit="scan"]', BC, 'B home scan');
+  await homePhoto(BC, 'B home scan');
   const t1 = Date.now(); await P.waitForFunction(() => !!document.querySelector('#b3Cam .ss-card'), null, { timeout: 20000 }).catch(() => { });
   ok('B ms until card', Date.now() - t1); await H.sleep(PICK() + 1500);
   const b = await n(); ok('B after', Object.assign({}, b, { cardText: await P.evaluate(() => ((document.querySelector('#b3Cam .ss-card') || {}).innerText || '').replace(/\s+/g, ' ').slice(0, 120)) }));
@@ -59,8 +68,7 @@ const SLOW = process.env.SLOW === '1';
   await reset();
   // C Aus Fotos
   before = (await n()).photoFile;
-  await tapChoose('#whHud [data-orbit="scan"]', null, 'C home scan');
-  await P.evaluate(() => { const i = document.getElementById('b3Pick'); if (i) i.dispatchEvent(new Event('cancel', { bubbles: true })); }); await H.sleep(900);
+  await homePhoto(undefined, 'C home scan');
   ok('C start', await n());
   await tapChoose('#b3Cam [data-b3="picklib"]', FOOD, 'C from photos');
   ok('C ms until AI', await waitAI(before, 15000)); await H.sleep(1500);
@@ -68,7 +76,7 @@ const SLOW = process.env.SLOW === '1';
   await reset();
   // D X while reading
   before = (await n()).photoFile;
-  await tapChoose('#whHud [data-orbit="scan"]', FOOD, 'D home scan');
+  await homePhoto(FOOD, 'D home scan');
   await H.sleep(120); await P.evaluate(() => { const x = document.querySelector('#b3Cam [data-b3="camclose"]'); if (x) x.click(); });
   await H.sleep(PICK() + 2500); const d = await n(); ok('D after X', d); ok('D no AI', d.photoFile === before);
   res.errs = errs;

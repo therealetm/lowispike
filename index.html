@@ -15441,12 +15441,17 @@ Object.assign(B3_TX, {
   shoot: ["Take photo", "Foto aufnehmen", "Hacer foto"],
   /* Oct 28 2026 photo-first Scan (E-man, call): the phone's own camera, one photo, the barcode read from it on the phone */
   pickShoot: ["Take photo", "Foto machen", "Hacer foto"],
-  pickT: ["Snap your food or a product", "Fotografier dein Essen oder ein Produkt", "Fotografía tu comida o un producto"],
-  pickS: ["A barcode is read for free, otherwise the AI checks your food", "Ein Barcode wird kostenlos gelesen, sonst prüft die KI dein Essen", "Un código de barras se lee gratis; si no, la IA revisa tu comida"],
   pickLib: ["From photos", "Aus Fotos", "De tus fotos"],
   pickLive: ["Live barcode scan", "Barcode live scannen", "Escanear en vivo"],
   /* 29 Oct 2026 (Emmanuel): one neutral wait while the photo is checked; no no-barcode card, no Analyse-with-AI button */
   pickRead: ["Checking your photo…", "Foto wird geprüft…", "Revisando tu foto…"],
+  /* Nov 5 2026 Scan chooser (Emmanuel: "the camera opens directly. It's confusing ... I would want the option that I can see there"):
+     the three ways in, one tap each, each said in two short lines (a barcode in a food photo is still read for free, quietly). */
+  chooseT: ["What do you want to check?", "Was möchtest du prüfen?", "¿Qué quieres revisar?"],
+  chooseS: ["Spike or not, in seconds", "Spike oder nicht, in Sekunden", "¿Pico o no? En segundos"],
+  optLiveS: ["Product after product: into your cart or skip", "Produkt für Produkt: in den Wagen oder überspringen", "Producto tras producto: al carro o saltar"],
+  optPhoto: ["Photo of your food", "Foto von deinem Essen", "Foto de tu comida"],
+  optPhotoS: ["Opens your camera, the AI checks your plate", "Öffnet deine Kamera, die KI prüft dein Essen", "Abre tu cámara; la IA revisa tu plato"],
   /* Oct 28 2026 live barcode scan from the photo screen (E-man, call: "Barcode live" led into the old cluttered camera screen) */
   liveOff: ["The camera is off", "Die Kamera ist aus", "La cámara está apagada"],
   liveOffS: ["Just take a photo of the barcode instead. That needs no camera permission.", "Mach stattdessen einfach ein Foto vom Barcode. Dafür braucht es keine Kamera-Erlaubnis.", "Haz simplemente una foto del código. No necesita permiso de cámara."],
@@ -15972,6 +15977,7 @@ const DEEP_GPT = "https://chatgpt.com/g/g-69481a874bf08191b8118f8d88c9c90e-lowis
 const deepURL = () => { try { const g = window.LowiVitalsBridge && LowiVitalsBridge.gpt; if (g && /^https:\/\/chatgpt\.com\/g\//.test(g)) return g; } catch(e){} return DEEP_GPT; };
 const IC_DROP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c3.2 4 5.5 7.1 5.5 10a5.5 5.5 0 0 1-11 0c0-2.9 2.3-6 5.5-10z"/></svg>';
 const IC_SPARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>';
+const IC_PICS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M20.5 15.5 16 11l-7.5 7.5"/></svg>';
 /* bottom of the scanner. Oct 21 Scan / Fuel / Gap (E-man: "Scan is simply for scanning a product when you go grocery shopping"):
    Barcode (check a product) and Deep analyze. Log meal left the scanner: meals are logged in Fuel; Snap food is the Snap button inside Log meal.
    Oct 21 evening (E-man: "That deep analyze button is simply a shortcut to my custom GPT. It should be very quick. I open the app, I click on
@@ -16016,8 +16022,10 @@ function camShot(){ const c = CAM; if (!c || !c.photo || c.shooting) return; con
 /* Oct 21 Scan / Fuel / Gap: Scan identifies. Only a camera opened from Log meal's own Scan button (spirit.js sets LowiScanIntent the
    moment before) may offer "Ate it, log it"; the Scan tab, the Scan bubble and shopping never log a meal or touch the Gap. */
 function openScanner(mode){
-  /* Oct 28 2026 photo-first Scan: the picker opens first, still inside the tap (iOS only opens it from a tap) */
-  const pick = pickMode(mode); if (pick && mode !== "pickq") pickOpen(mode === "lib");
+  /* Nov 5 2026 Scan chooser: Scan opens the chooser (Live scan, Photo of your food, Deep analyze), never the camera by itself. Only a
+     tap that already chose the photo ("photo", "lib") opens the phone's camera or photos at once, still inside the tap (iOS only
+     opens a file picker from a tap). Oct 28 2026 photo-first Scan opened the camera from every Scan tap. */
+  const pick = pickMode(mode); if (pick && pickNow(mode)) pickOpen(mode === "lib");
   /* Oct 28 2026 (E-man, call, screenshots): "Barcode live scannen" opened the old scanner inside Misty's world (Barcode / Essen-Foto
      switch, Deep analyze, the mood row, the fields). Live is now its own clean full-screen layer: camera, frame, Snap / Focus / torch, X. */
   const live = mode === "live"; if (live) scanWorldOff();
@@ -16044,6 +16052,8 @@ function openScanner(mode){
   /* Oct 19 food paths (E-man: "at the top there, it says shopping ... so complicated and so hidden"): the Scan camera checks a product
      and logs food; shopping (Shopping pill, Search by name, Shopping list, Finds) lives only in the camera opened from Shop. */
   if (window.LowiShopScan) shopMode(mode === "shop" ? LowiShopScan.want(mode) : false);
+  /* Nov 5 2026 live scan in the supermarket: how full the cart is, one tap to the list (shop-scan.js) */
+  if (live && window.LowiShopScan && LowiShopScan.live) LowiShopScan.live(el);
   if (mode === "photo") camMode(true);
   kbWire(el);
   $("#b3BcF", el).addEventListener("submit", e => { e.preventDefault(); const v = $("#b3Bc", el).value, c = validCode(v); if (!c) { msg(t("bcBad"), "warn"); sfx("error"); return; } found(c); });
@@ -16285,6 +16295,8 @@ async function decodeFile(f){
    ===================================================================== */
 let pickIn = null, pickLibIn = null;
 function pickMode(mode){ return (mode === "cam" || mode === "photo" || mode === "lib" || mode === "pickq") && !!(window.LowiSpirit && typeof LowiSpirit.photoFile === "function"); }
+/* Nov 5 2026: the phone's camera or photos open straight away only for a tap that asked for the photo; Scan ("cam") shows the chooser */
+function pickNow(mode){ return mode === "photo" || mode === "lib"; }
 function pickInput(lib){ let i = lib ? pickLibIn : pickIn; if (i && i.isConnected) return i;
   i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; if (!lib) i.setAttribute("capture", "environment");
   i.id = lib ? "b3PickLib" : "b3Pick"; i.className = "b3-pickin"; i.tabIndex = -1; i.setAttribute("aria-hidden", "true");
@@ -16307,11 +16319,24 @@ function scanWorldOff(){ try { const w = document.getElementById("spWorld"); if 
 function scanExit(){ const inWorld = !!(CAM && CAM.el.closest("#spWorld")); closeScanner(); if (inWorld) scanWorldOff(); }
 /* both inputs exist (laid out) before the first tap: a file input made and clicked in the same moment may not open */
 (function(){ const mk = () => { try { pickInput(false); pickInput(true); } catch(e){} }; if (document.body) mk(); else document.addEventListener("DOMContentLoaded", mk); })();
+/* Nov 5 2026 Scan chooser (Emmanuel: "the option that I can see there ... the live code, or take a photo of your food ... another
+   button ... the deep analyzer ... Have the interface look really, really nice ... like it's analyzing"): a calm analysing lens, one
+   question, three rows. Live scan opens the live layer, which keeps scanning after Add to cart or Skip; Photo of your food opens the
+   phone's own camera (its flash is the camera's own setting, a web page cannot switch it); Deep analyze is the plain link to the
+   LOWiSPIKE GPT (gpt-open.js hands it to the ChatGPT app). A photo from the library stays one small tap under the rows. */
 function pickHTML(s){
   const c = CAM, img = c && c.pickUrl ? '<img alt="" src="' + esc(c.pickUrl) + '">' : "";
   if (s === "pickread") return '<div class="b3-pickbox b3-pread" role="status"><div class="b3-pthumb">' + img + '<i class="b3-psweep"></i><i class="b3-pgrid"></i></div><small>' + esc(t("pickRead")) + '</small></div>';
-  return '<div class="b3-pickbox b3-pstart"><button type="button" class="b3-pshoot" data-b3="pickshoot" aria-label="' + esc(t("pickShoot")) + '"><i>' + IC.cam + '</i></button><b>' + esc(t("pickT")) + '</b><small>' + esc(t("pickS")) + '</small>' +
-    '<div class="b3-pbtns"><button type="button" class="b3-cbtn ghost" data-b3="picklib">' + esc(t("pickLib")) + '</button><button type="button" class="b3-cbtn ghost" data-b3="picklive">' + IC.bc + '<span>' + esc(t("pickLive")) + '</span></button></div></div>'; }
+  const row = (tag, attrs, cls, ic, title, sub) => '<' + tag + ' class="b3-popt ' + cls + '" ' + attrs + '><span class="b3-poic" aria-hidden="true">' + ic + '</span><span class="b3-potx"><b>' + esc(title) + '</b><small>' + esc(sub) + '</small></span><span class="b3-pochev" aria-hidden="true">' + IC.chev + '</span></' + tag + '>';
+  return '<div class="b3-pickbox b3-pstart b3-pchoose">' +
+    '<div class="b3-plens" aria-hidden="true"><i class="b3-pring"></i><i class="b3-pring b3-pring2"></i><span class="b3-pcore"><i class="b3-pbeam"></i>' + IC_SPARK + '</span></div>' +
+    '<b class="b3-pq">' + esc(t("chooseT")) + '</b><small class="b3-pqs">' + esc(t("chooseS")) + '</small>' +
+    '<div class="b3-popts">' +
+      row("button", 'type="button" data-b3="picklive"', "b3-popt-live", IC.bc, t("pickLive"), t("optLiveS")) +
+      row("button", 'type="button" data-b3="pickshoot"', "b3-popt-photo", IC.cam, t("optPhoto"), t("optPhotoS")) +
+      row("a", 'href="' + esc(deepURL()) + '" target="_blank" rel="noopener"', "b3-popt-deep", IC_SPARK, t("deep"), t("deepS")) +
+    '</div>' +
+    '<button type="button" class="b3-plib" data-b3="picklib">' + IC_PICS + '<span>' + esc(t("pickLib")) + '</span></button></div>'; }
 function pickFree(c){ if (!c) return; c.pickTok = (c.pickTok || 0) + 1; if (c.pickUrl) { try { URL.revokeObjectURL(c.pickUrl); } catch(e){} } c.pickUrl = ""; c.pickFile = null; }
 /* back to Take photo: the kept photo is dropped (no AI call), a product card on it closes */
 function pickReset(){ const c = CAM; if (!c) return; pickFree(c); c.hold = false; c.done = false; c.el.classList.remove("held", "got");

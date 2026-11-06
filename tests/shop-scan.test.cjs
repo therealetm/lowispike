@@ -146,7 +146,10 @@ test('look: black space and iOS blue glass, one big verdict and Add to cart, det
     const r = js.slice(js.indexOf('function result('), js.indexOf('function unknown('));
     // Oct 26 one scanner: verdict, then the buttons (Add to cart first outside Log meal), then the better pick / bubble, then the folded details
     assert.match(r, /verdictHTML\(lvl, o\.est, q, rr\.g\) \+ acts \+ extrasHTML\(pv, lvl\) \+ detailsHTML\(q, r\)/, 'verdict, buttons, extras, details');
-    assert.match(r, /: kIn \? kitB\(true\) \+ cartB\(false\) : cartB\(true\) \+ kitB\(false\) \+ \(ctx === 'scan' \? ateS : ''\);/, 'Add to cart is the big button outside Log meal and the Kitchen (Oct 28: small Log as eaten under it on the Scan camera)');
+    /* Nov 5 2026 (Emmanuel: "put it into Warenkorb or skip"): the big button now shares its row with Skip (pair); the order is unchanged */
+    assert.match(r, /: kIn \? pair\(kitB\(true\)\) \+ cartB\(false\) : pair\(cartB\(true\)\) \+ kitB\(false\) \+ \(ctx === 'scan' \? ateS : ''\);/, 'Add to cart is the big button outside Log meal and the Kitchen (Oct 28: small Log as eaten under it on the Scan camera)');
+    assert.match(r, /const pair = big => '<div class="ss-acts">' \+ big \+ skipB \+ '<\/div>';/, 'Skip right after the big button, in one row');
+    assert.match(r, /const skipB = '<button type="button" class="ss-skip" data-ss="next">' \+ esc\(T\('skip'\)\) \+ '<\/button>';/, 'Skip goes on to the next product, like the X');
     assert.match(r, /data-ss="add"/);
     assert.match(js, /<details class="ss-more">/, 'details closed by default');
     assert.doesNotMatch(js, /<details class="ss-more" open/);

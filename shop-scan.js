@@ -67,6 +67,18 @@
         count(el);
         if (!on) closeCard(el);
     }
+    /* Nov 5 2026 live scan (index.html openScanner("live")): walking the aisles you see how full the cart is; a tap opens the list */
+    function live(el) {
+        if (!el) return;
+        const bot = el.querySelector('.b3-cbot');
+        if (bot && !bot.querySelector('.ss-liverow')) {
+            const r = D.createElement('div'); r.className = 'ss-liverow';
+            r.innerHTML = '<button type="button" class="ss-chip ss-cartchip" data-ss="cart">' + IC.cart + '<span>' + esc(T('cart')) + '</span><b class="ss-count">0</b></button>';
+            const hint = bot.querySelector('.b3-chint');
+            if (hint && hint.nextSibling) bot.insertBefore(r, hint.nextSibling); else bot.appendChild(r);
+        }
+        count(el);
+    }
     function count(el) {
         el = el || cam(); if (!el) return;
         let n = 0; try { n = shelf() && shelf().cartCount ? shelf().cartCount() : 0; } catch (e) {}
@@ -222,7 +234,11 @@
         /* Oct 28 2026 (E-man, call): the Scan camera's card also offers "Als gegessen eintragen", small under Add to cart. The scan
            itself logs nothing; only this tap does. The shopping camera (ctx 'shop') never logs a meal. */
         const ateS = '<button type="button" class="ss-kit ss-ate" data-ss="ate">' + IC.ok + '<span>' + esc(T('ate')) + '</span></button>';
-        const acts = ctx === 'meal' ? ateB + kitB(false) : kIn ? kitB(true) + cartB(false) : cartB(true) + kitB(false) + (ctx === 'scan' ? ateS : '');
+        /* Nov 5 2026 (Emmanuel: "walk around the supermarket, scan products ... put it into Warenkorb or skip ... when they skip, the live
+           [scan] still stays open"): Skip sits next to the big button and goes on to the next product, the same as the card's X */
+        const skipB = '<button type="button" class="ss-skip" data-ss="next">' + esc(T('skip')) + '</button>';
+        const pair = big => '<div class="ss-acts">' + big + skipB + '</div>';
+        const acts = ctx === 'meal' ? ateB + kitB(false) : kIn ? pair(kitB(true)) + cartB(false) : pair(cartB(true)) + kitB(false) + (ctx === 'scan' ? ateS : '');
         const c = card(el);
         c.innerHTML = '<div class="ss-sheet ss-v-' + lvl + '" data-ctx="' + esc(ctx) + '">' +
             '<div class="ss-head"><span class="ss-img">' + (img ? '<img alt="" src="' + esc(img) + '">' : IC.bc) + '</span><div class="ss-name"><b>' + esc(name) + '</b>' + (q.brand ? '<small>' + esc(q.brand) + '</small>' : '') + '</div>' +
@@ -432,5 +448,5 @@
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', watch); else watch();
 
-    W.LowiShopScan = { want, pill, title, decorate, found, show, open, entryHTML, _cur: () => cur, _add: () => { const el = cam(); if (el) add(el); } };
+    W.LowiShopScan = { want, pill, title, decorate, found, show, open, entryHTML, live, _cur: () => cur, _add: () => { const el = cam(); if (el) add(el); } };
 })();

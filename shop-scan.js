@@ -238,7 +238,12 @@
            [scan] still stays open"): Skip sits next to the big button and goes on to the next product, the same as the card's X */
         const skipB = '<button type="button" class="ss-skip" data-ss="next">' + esc(T('skip')) + '</button>';
         const pair = big => '<div class="ss-acts">' + big + skipB + '</div>';
-        const acts = ctx === 'meal' ? ateB + kitB(false) : kIn ? pair(kitB(true)) + cartB(false) : pair(cartB(true)) + kitB(false) + (ctx === 'scan' ? ateS : '');
+        /* Nov 6 2026 (design review point 1, Emmanuel): in the Scan camera a food (a typed name or a plate: no barcode) is mostly eaten,
+           not bought, so "Log as eaten" is the big button and Add to cart the small one. A barcode product keeps Add to cart big. */
+        const food = !code;
+        const acts = ctx === 'meal' ? ateB + kitB(false) : kIn ? pair(kitB(true)) + cartB(false)
+            : ctx === 'scan' && food ? pair(ateB) + cartB(false) + kitB(false)
+            : pair(cartB(true)) + kitB(false) + (ctx === 'scan' ? ateS : '');
         const c = card(el);
         c.innerHTML = '<div class="ss-sheet ss-v-' + lvl + '" data-ctx="' + esc(ctx) + '">' +
             '<div class="ss-head"><span class="ss-img">' + (img ? '<img alt="" src="' + esc(img) + '">' : IC.bc) + '</span><div class="ss-name"><b>' + esc(name) + '</b>' + (q.brand ? '<small>' + esc(q.brand) + '</small>' : '') + '</div>' +
@@ -280,7 +285,11 @@
         if (!cur || !cur.p || btn.disabled || !X().eat) return; btn.disabled = true;
         const p = cur.p; closeCard(el);
         try { X().stop(); } catch (e) {}
-        try { X().eat(p); } catch (e) {}
+        let r = null; try { r = X().eat(p); } catch (e) {}
+        /* Nov 6 2026 (design review point 1): then "Last meal today?" (last-meal-ask.js); Yes is the Gap bubble's own Last meal.
+           Only after a real log: a meal that was already logged asks nothing. */
+        const A = W.LowiLastMealAsk;
+        if (A && r && r.log && !r.dup) setTimeout(() => { try { A.ask(r.log.ts); } catch (e) {} }, 700);
     }
     function swap(el) {
         const s = swapCur; if (!s) return;

@@ -16805,7 +16805,8 @@ function fillHerb(root){
   else av.classList.add("b3-herb-fallback");
 }
 function eatCur(btn, prod){ /* Oct 26 one scanner: prod = the product on the compact scan card (LowiDex.eat) */
-  const p = prod || CUR; if (!p || !window.LowiVitalsBridge || btn.disabled) return; btn.disabled = true;
+  /* Nov 6 2026 (design review point 1): returns what the log said, so the scan card can ask "Last meal today?" after a real log */
+  const p = prod || CUR; if (!p || !window.LowiVitalsBridge || btn.disabled) return null; btn.disabled = true;
   const meta = LV_B3[scView(p, scServing(p)).verdict] || LV_B3[p.verdict] || ["", 0]; /* scanfe-g2: the level for the amount you ate */
   const code = String(p.code || p.barcode || (p.nameEst ? "name:" + String(p.name || "").toLowerCase().replace(/\s+/g, " ").trim().slice(0, 60) : ""));
   const ne = p.nameEst && !scanHasData(p); /* Oct 23: a name estimate counts like a typed meal, marked as an estimate with its confidence */
@@ -16818,6 +16819,7 @@ function eatCur(btn, prod){ /* Oct 26 one scanner: prod = the product on the com
   /* Oct 14: the herb world closes on its own after a scan log; a small XP pop on Home instead */
   if (window.LowiSpirit && LowiSpirit.afterScan) LowiSpirit.afterScan(res && res.xp || 0, text, res && res.dup ? "curious" : "eat");
   else toast(text + (res && res.xp ? " · +" + res.xp + " XP" : ""));
+  return res || null;
 }
 /* Oct 26 one scanner (Emmanuel: "one thing, one ultimate scanner"): the re-rating every result gets, shared by reveal() and the
    compact scan card (shop-scan.js via LowiDex.prep), so both always show the same verdict for the same product */
@@ -22732,6 +22734,8 @@ window.LowiCommunityHost = {
 <script src="shop-scan-core.js?v=20261106-185443"></script>
 <script src="scan-snap-core.js?v=20261106-185443"></script>
 <script src="shop-scan.js?v=20261106-185443"></script>
+<link rel="stylesheet" href="last-meal-ask.css?v=20261106-185443">
+<script src="last-meal-ask.js?v=20261106-185443"></script>
 <!-- Oct 26: speak instead of typing, a small mic in every free-text field (mic-dictate.js; opt in/out per field with data-mic) -->
 <link rel="stylesheet" id="micCss" href="mic-dictate.css?v=20261106-185443">
 <script src="mic-session.js?v=20261106-185443"></script>

@@ -1292,6 +1292,8 @@
         });
     }
     async function finishMeal(form) {
+        /* Nov 6 2026 (design review point 1): the plate photo's "Log as eaten" is followed by "Last meal today?" (last-meal-ask.js) */
+        const askLast = !!(form.classList && form.classList.contains('sp-photo-form') && !form.dataset.edit);
         const data = new FormData(form),
             values = {};
         for (const k of Object.keys(K.macros({}))) values[k] = data.get(k) == null || data.get(k) === '' ? null : +data.get(k);
@@ -1346,7 +1348,8 @@
         await flight(flyURL || seed.photo);
         feedback('eat', tr('saved') + whyNote(result), result.xp);
         checkBonuses(false);
-        showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + (log.slot ? '<span class="sp-slot-tag">' + esc(tr(log.slot)) + '</span> ' : '') + esc(log.t) + '</p>' + estHTML(log) + macroHTML(log) + '<p class="sp-earned">' + (result.xp ? '+' + result.xp + ' XP' : esc(result.reason || (form.dataset.edit ? '' : '0 XP'))) + '</p>' + (ysBefore ? window.LowiYouStats.afterHTML(ysBefore) : '') + savedPhotoHTML(log) + gptHTML());
+        const lma = askLast && window.LowiLastMealAsk ? window.LowiLastMealAsk.html(log.ts) : '';
+        showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + (log.slot ? '<span class="sp-slot-tag">' + esc(tr(log.slot)) + '</span> ' : '') + esc(log.t) + '</p>' + lma + estHTML(log) + macroHTML(log) + '<p class="sp-earned">' + (result.xp ? '+' + result.xp + ' XP' : esc(result.reason || (form.dataset.edit ? '' : '0 XP'))) + '</p>' + (ysBefore ? window.LowiYouStats.afterHTML(ysBefore) : '') + savedPhotoHTML(log) + gptHTML());
     }
 
     /* Oct 22: under a saved photo meal, its thumbnail (opens the photo with its estimate) and a small opt-in "Share to Community" */

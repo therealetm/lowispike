@@ -61,7 +61,8 @@ test('after posting, the feed opens where it lives (Cook window), not through th
     const show = fnSource(html, 'function showFeed(');
     assert.match(show, /nm\.open\("fy"\)/);
     assert.match(show, /renderForYou\(\)/);
-    assert.match(html, /save\(\); C = null; h\.closeSheet\(\); showFeed\(\);/, 'link / photo / text posts');
+    /* Nov 6 2026 (test changed, why): the post is marked as being sent before the feed repaints (one send per post, carousels) */
+    assert.match(html, /save\(\); C = null; h\.closeSheet\(\);\n[\s\S]{0,400}?if \(p\.vis === "tribe"\) fySending\.add\(p\.id\);\n  showFeed\(\);/, 'link / photo / text posts');
     assert.match(html, /if \(window\.LowiNavMoves && TRIBE\.showFeed\) TRIBE\.showFeed\(\);/, 'video posts');
     assert.match(html, /renderForYou, compose, showFeed,/);
     // uploaded videos play in the Cook window too (they used to need the Community tab)

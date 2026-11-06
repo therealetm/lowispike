@@ -19,6 +19,7 @@ STATIC.push("fresh-scrim.js"); /* Oct 25 bug hunt BH-025: a fresh backdrop ignor
 STATIC.push("tutorial-voice.js", "tutorial-voice.css", "tutorial-voice-data.js", "tutorial-show.js", "tutorial-auto.js", "tutorial-resume.js"); /* Oct 26: the speaker on every tutorial card ships with the build, so a slow connection right after an update cannot leave a card without it */
 STATIC.push("cook-tab-order.js"); /* Oct 26 Cook opens on its first tab, tabs held and moved like Community's (MAYA-HANDOFF 0.29): own line */
 STATIC.push("cart-core.js"); /* Oct 26 Supermarket Cart (Warenkorb): own line */
+STATIC.push("carousel-core.js"); /* Nov 6 carousel posts in For You (up to 6 photos): own line */
 STATIC.push("food-names-core.js"); /* Oct 26 food names in the app language (cart + Give a hand): own line */
 STATIC.push("week-basket-core.js", "week-basket.js", "week-basket.css"); /* Oct 26 Shop from home weekly basket in Supermarket (MAYA-HANDOFF 0.21): own line */
 STATIC.push("mic-dictate.css", "mic-session.js", "mic-dictate-core.js", "mic-dictate.js"); /* Oct 26 mic dictation in text fields: own line */

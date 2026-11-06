@@ -103,7 +103,8 @@ test('Share -> Community also posts to For You when it passes; otherwise Communi
    longer holds a member's own post back by the food rule. The full behaviour is in foryou-public.test.cjs. */
 test('the composer publishes a member\'s own For You post (no food gate) and tells the poster when it could not go', () => {
   assert.ok(!/const fyOk = /.test(html), 'no food gate left in the composer, the video upload or the visibility switch');
-  assert.match(html, /if \(p\.vis === "tribe"\) \{\n    h\.award\("tribe-post", null, POST_XP\);\n    sharePost\(p\)\.then\(ok => \{ h\.toast\(window\.LowiForYou \? LowiForYou\.note\(ok \? "shared" : "post"\)/);
+  /* Nov 6 2026 (test changed, why): the send-once mark (fySending) is cleared first, then the same toast */
+  assert.match(html, /if \(p\.vis === "tribe"\) \{\n    h\.award\("tribe-post", null, POST_XP\);\n    sharePost\(p\)\.then\(ok => \{ fySending\.delete\(p\.id\); h\.toast\(window\.LowiForYou \? LowiForYou\.note\(ok \? "shared" : "post"\)/);
   assert.match(html, /const shared = TRIBE\.sharePost \? TRIBE\.sharePost\(p, u\.file\)/);
   assert.match(html, /p\.vis = "tribe"; sharePost\(p\)\.then\(ok => \{ h\.toast\(ok \? fn\("nowIn", "Now in For You"\) : fn\("post", "Saved in My posts\."\)\)/);
 });

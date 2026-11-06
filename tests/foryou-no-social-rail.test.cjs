@@ -23,7 +23,7 @@ function mainSlide() {
     PLAT: { web: { open: 'Open' }, tiktok: { open: 'Open TikTok' } }, PICON: { web: '', tiktok: '' },
     FIC: { heart: '<svg/>', chat: '<svg/>', save: '<svg/>', share: '<svg/>' }, IC: { more: '<svg/>', play: '', gem: '', ext: '' },
     H: () => ({ user: () => ({ name: 'Eman' }), avatar: () => '<i></i>' }),
-    describe: () => ({ line: '', tags: [] }), byline: () => 'link', fyBg: () => '<div class="fy-bg"></div>',
+    describe: () => ({ line: '', tags: [] }), byline: () => 'link', fyBg: () => '<div class="fy-bg"></div>', fyCarDots: () => '', /* Nov 6 2026: carousel dots above the name (tests/carousel-posts.test.cjs) */
     fyOut: () => '<button class="fy-out" data-tr="open"></button>', ago: () => 'now', fyT: s => s,
     esc: s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])),
     window: {

@@ -1417,6 +1417,13 @@ ol.steps{margin:14px 0 0 20px;line-height:1.7;font-size:15px}
 .tr-photo{margin-top:10px;border-radius:16px;overflow:hidden;border:1px solid var(--line2)}
 .tr-photo img{display:block;width:100%;max-height:360px;object-fit:cover}
 .tr-thumbsm{width:44px;height:44px;border-radius:10px;object-fit:cover}
+/* Nov 6 2026 carousels: the picked photos in a row, each with its own remove (a 32 px round x on a 44 px tap area) */
+.tr-photos{flex-wrap:wrap;align-items:center}
+.tr-ph1{position:relative;display:inline-block;width:44px;height:44px}
+.tr-ph1 .tr-thumbsm{display:block}
+.tr-phx{position:absolute;top:-10px;right:-10px;width:28px;height:28px;padding:0;border-radius:50%;border:2px solid var(--bg,#03050a);background:rgba(30,33,45,.96);color:#fff;font:700 16px/1 inherit;display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tr-phx::after{content:"";position:absolute;inset:-8px}
+.tr-carhint{margin:8px 0 0}
 /* ===== Einkaufswagen (Oct 8, 2026) ===== */
 #lsCart{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;background:radial-gradient(120% 50% at 50% -10%,rgba(var(--acc-rgb,159,216,255),.14),transparent 60%),rgba(3,5,10,.94);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);transform:translateY(100%);transition:transform .34s cubic-bezier(.2,.8,.2,1);padding-top:var(--sat)}
 #lsCart.open{transform:none}
@@ -1757,6 +1764,15 @@ html:not([data-lay=phone]) button:focus-visible,html:not([data-lay=phone]) a:foc
 .fy-art{background:radial-gradient(120% 80% at 20% 10%,hsla(var(--h1),80%,55%,.55),transparent 60%),radial-gradient(120% 90% at 90% 90%,hsla(var(--h2),80%,50%,.5),transparent 60%),#070a12}
 .fy-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .fy-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.28) 0,rgba(0,0,0,0) 22%,rgba(0,0,0,0) 48%,rgba(0,0,0,.78) 100%)}
+/* Nov 6 2026 carousels: up to 6 pictures swipe sideways inside the card (the feed still scrolls up and down); the dots say where you are */
+.fy-car{overflow:hidden}
+.fy-car-track{position:absolute;inset:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.fy-car-track::-webkit-scrollbar{display:none}
+.fy-car-track>img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:center;scroll-snap-stop:always}
+.fy-car-dots{display:flex;gap:6px;margin:0 0 10px;pointer-events:none}
+.fy-car-dots i{width:7px;height:7px;border-radius:4px;background:rgba(255,255,255,.5);box-shadow:0 1px 4px rgba(0,0,0,.35);transition:width .2s ease,background-color .2s ease}
+.fy-car-dots i.on{width:18px;background:#fff}
+@media (prefers-reduced-motion:reduce){.fy-car-dots i{transition:none}}
 .fy-text .fy-shade{background:rgba(0,0,0,.18)}
 .fy-big{position:absolute;left:24px;right:76px;top:50%;transform:translateY(-60%);font-size:24px;line-height:1.3;font-weight:700;letter-spacing:-.01em;text-shadow:0 2px 18px rgba(0,0,0,.4)}
 .fy-play{position:absolute;left:50%;top:44%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
@@ -3316,6 +3332,7 @@ html[data-ui=light] #tab-home .g1-more{background:rgba(20,24,38,.04);border-colo
 #tab-home .g1-more:focus-visible{outline:3px solid #9fd8ff;outline-offset:2px}
 </style>
 <script src="cart-core.js?v=20261106-070854"></script>
+<script src="carousel-core.js?v=20261106-070854"></script>
 <script src="food-names-core.js?v=20261106-070854"></script>
 <script id="homejs">
 /* ===== LOWiSPIKE G1 part 2 (Oct 10, 2026): a simpler Today (Home) =====
@@ -4968,7 +4985,7 @@ const FIC = {
 };
 function fyBg(p, thumb){
   if (p.vid && window.FYV) return FYV.bgHTML(p, thumb);
-  if (p.photo) return '<img class="fy-bg" src="' + p.photo + '" alt="">';
+  if (p.photo) { const sl = !thumb && window.LowiCarousel ? LowiCarousel.slidesOf(p) : null; if (sl) return fyCarHTML(sl); return '<img class="fy-bg" src="' + p.photo + '" alt="">'; }
   if (p.bot && p.img && /^fy-img\/[a-z_]+\.webp$/.test(p.img)) return '<img class="fy-bg" src="' + p.img + '" alt="" decoding="async">';
   if (p.rec && typeof FOOD_IMG !== "undefined" && FOOD_IMG[p.rec]) return '<img class="fy-bg" src="' + FOOD_IMG[p.rec] + '" alt="" decoding="async">';
   const k = FY_IMG[p.id];
@@ -4979,6 +4996,17 @@ function fyBg(p, thumb){
   const a = p.art || (ex && FY_PLAT_ART[ex.plat]) || ["✨", 40, 280];
   return '<div class="fy-bg fy-art' + (ex ? ' fy-art-ext' : '') + '" style="--h1:' + a[1] + ';--h2:' + a[2] + '">' + (ex ? '<span class="fy-art-pl" aria-hidden="true">' + (PICON[ex.plat] || PICON.web) + '<b>' + esc(ex.name) + '</b></span>' : '') + (th ? fyThumbImg(th, thumb) : "") + '</div>';
 }
+/* Nov 6 2026 carousels (carousel-core.js): the pictures sit side by side and snap one per swipe; the card itself still scrolls up
+   and down with the feed. The dots sit in the post's text block, just above the name (the top of the card holds + Post and My
+   posts), and show which picture is on screen (fyCarBind). Only the cover loads at once. */
+function fyCarHTML(sl){
+  return '<div class="fy-bg fy-car" data-n="' + sl.length + '"><div class="fy-car-track">' + sl.map((src, i) => '<img src="' + esc(src) + '" alt=""' + (i ? ' loading="lazy"' : '') + ' decoding="async">').join('') + '</div></div>';
+}
+function fyCarDots(p){ const sl = p && p.photo && window.LowiCarousel ? LowiCarousel.slidesOf(p) : null; if (!sl) return "";
+  return '<div class="fy-car-dots" aria-hidden="true">' + sl.map((x, i) => '<i' + (i ? '' : ' class="on"') + '></i>').join('') + '</div>'; }
+function fyCarBind(root){ const K = window.LowiCarousel; if (!K || !root || !root.querySelectorAll) return;
+  root.querySelectorAll(".fy-car-track").forEach(t => { if (t.__car) return; t.__car = 1; const sl = t.closest(".fy-slide"), dots = sl ? sl.querySelectorAll(".fy-car-dots i") : []; let last = 0;
+    t.addEventListener("scroll", () => { const i = K.dot(t.scrollLeft, t.clientWidth, dots.length); if (i === last) return; last = i; dots.forEach((d, k) => d.classList.toggle("on", k === i)); }, {passive:true}); }); }
 /* 25 Oct 2026 (Emmanuel: "every TikTok video ... we see a thumbnail"): the still fills the card (cover), is fetched only when it
    is near the screen, at the size it is drawn (a small one in My posts); a stored copy that fails falls back to the full picture */
 function fyThumbImg(th, small){
@@ -5013,7 +5041,7 @@ function slideHTML(p){
       '<button class="fy-act' + (saved ? " on" : "") + '" data-tr="save" data-id="' + p.id + '" aria-label="' + fyT("Save") + '">' + FIC.save + '<span>' + fyT(saved ? "Saved" : "Save") + '</span></button>' +
       (window.LowiFood && LowiFood.isFoodPost(p, FY_IMG[p.id]) ? LowiFood.railBtn(p.id) : "")) +
       '<button class="fy-act fy-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="' + fyT("More") + '">' + IC.more + '</button></div>' +
-    '<div class="fy-meta"><div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b>' + (p.nb ? '<span class="fy-bot" title="Bot">Bot</span>' : '') + '<span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
+    '<div class="fy-meta">' + fyCarDots(p) + '<div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b>' + (p.nb ? '<span class="fy-bot" title="Bot">Bot</span>' : '') + '<span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
       (p.meta && p.meta.meal && window.LowiMealSnap ? LowiMealSnap.cardHTML(p.meta.meal, {compact:true, noName:!!cap && cap === p.meta.meal.name}) : "") +
       (window.LowiMealDetail ? LowiMealDetail.fyChip(p) : "") + /* Oct 25: tap the spike label for the meal details (meal-detail.js, task 31c545da) */
@@ -5031,6 +5059,9 @@ function sharePost(p, file){
   return Promise.resolve(CL && CL.publish ? CL.publish(p, file, quiet) : false).catch(() => false).then(ok => {
     const q = (T.posts || []).find(x => x.id === p.id) || p; delete q.pend;
     if (ok) { q.pub = Date.now(); delete q.fail; } else q.fail = 1;
+    /* Nov 6 2026 carousels: once the pictures are up, the stored post keeps their links, not the pictures (publish set them on p;
+       the list may have been read again from storage meanwhile, so q can be another copy) */
+    if (ok && q !== p && Array.isArray(p.slides) && p.slides.length > 1 && p.slides.every(x => /^https:\/\//.test(x))) { q.photo = p.photo; q.slides = p.slides.slice(); }
     save(); return !!ok;
   });
 }
@@ -5065,7 +5096,7 @@ function renderForYou(el){
   const mineN = fyMineAll().length, mineLbl = window.LowiForYou ? LowiForYou.note("mine") : "My posts";
   el.innerHTML = (window.FYV ? FYV.fabHTML() : "") + '<button class="fy-mine" data-tr="list-mine" aria-label="' + esc(mineLbl) + '">' + esc(mineLbl) + (mineN ? ' <b>' + mineN + '</b>' : '') + '</button>' + '<div class="fy-feed" id="fyFeed">' + list.map(slideHTML).join("") +
     '<section class="fy-slide fy-end"><div class="fy-endin"><b>' + esc(fyT("That's everyone")) + '</b><span class="small muted">' + esc(fyT("Newest first. No algorithm.")) + '</span><button class="btn primary sm" data-r3f="post" data-sfx="open">' + esc(fyT("Post something")) + '</button></div></section></div>';
-  const f = $("#fyFeed"); if (f) { f.scrollTop = fyTop ? 0 : y; fyTop = 0; if (window.FYV) FYV.attach(f); }
+  const f = $("#fyFeed"); if (f) { f.scrollTop = fyTop ? 0 : y; fyTop = 0; if (window.FYV) FYV.attach(f); fyCarBind(f); }
 }
 /* 25 Oct 2026: TikTok posts in the shared table without their stored picture get it now (once per post per session); the copy on
    this phone takes the same picture and video id, so a later re-send never puts the expired one back */
@@ -5111,7 +5142,7 @@ function compose(prefill, text, rec){
   const h = H(); if (!h) return;
   if (window.LowiR3F && LowiR3F.postSheet) { LowiR3F.postSheet(prefill, text, rec); return; }
   if (h.tab() !== "foryou") { if (window.cmSetView) cmSetView("feed"); h.go("foryou"); }
-  C = {raw:"", p:null, meta:null, loading:false, cap:text || "", vis:"tribe", mine:false, photo:"", rec:rec || ""};
+  C = {raw:"", p:null, meta:null, loading:false, cap:text || "", vis:"tribe", mine:false, photo:"", photos:[], rec:rec || ""};
   h.openSheet('<button class="xbtn" data-act="close-sheet">' + h.icon.x + '</button><div class="sheetbody" id="trCompose"><div class="h2" style="margin:4px 40px 4px 0">Share to For You</div><div class="small muted">Paste a link from TikTok, Instagram, YouTube or anywhere else. No link? Just write below.</div>' +
     '<div class="tr-urlrow"><input class="input" id="trUrl" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.tiktok.com/@…"><button class="tr-paste" data-tr="paste">' + IC.paste + 'Paste</button></div>' +
     '<div id="trPrev"></div><div id="trRest"></div></div><div class="sheetfoot"><button class="btn ghost" data-act="close-sheet" style="flex:1">Cancel</button><button class="btn primary" id="trPost" data-tr="post" style="flex:1.4" disabled>Post</button></div>');
@@ -5119,7 +5150,7 @@ function compose(prefill, text, rec){
 }
 /* Oct 8: the composer as its own pane (Community > Post), no pop-up. */
 function composeInto(el, prefill, text, rec){
-  if (!el) return; C = {raw:"", p:null, meta:null, loading:false, cap:text || "", vis:"tribe", mine:false, photo:"", rec:rec || "", inline:true};
+  if (!el) return; C = {raw:"", p:null, meta:null, loading:false, cap:text || "", vis:"tribe", mine:false, photo:"", photos:[], rec:rec || "", inline:true};
   el.innerHTML = (window.FYV ? FYV.postCardHTML() : "") + '<div class="card" id="trCompose"><div class="h3">Share to For You</div><div class="small muted" style="margin-top:4px">Paste a TikTok, Reel or YouTube link. No link? Just write below.</div>' +
     '<div class="tr-urlrow"><input class="input" id="trUrl" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.tiktok.com/@…"><button class="tr-paste" data-tr="paste">' + IC.paste + 'Paste</button></div>' +
     '<div id="trPrev"></div><div id="trRest"></div><div class="ls-postfoot"><button class="btn primary" id="trPost" data-tr="post" disabled>Post</button></div></div>' +
@@ -5168,13 +5199,23 @@ function paintRest(){
   const link = !!C.p, need = link && !(C.meta && C.meta.title), pl = link ? PLAT[C.p.plat] : {};
   el.innerHTML = (link ? '<div class="field"><label for="trCap">' + (need ? "One line about it (needed)" : "Add your take (optional)") + '</label><input class="input" id="trCap" maxlength="' + CAPTION_MAX + '" placeholder="' + (need ? "What is it and why is it good?" : "Why you're sharing it") + '" value="' + esc(C.cap) + '"></div>'
       : '<div class="field"><label for="trCap">Or just write a post</label><textarea class="input" id="trCap" rows="3" maxlength="' + TEXT_MAX + '" placeholder="A swap, a win, a question…" style="height:84px;padding:12px 14px;resize:none">' + esc(C.cap) + '</textarea></div>' +
-        '<div class="tr-row" style="margin-top:10px;gap:10px"><button class="chip" data-tr="photo">' + (C.photo ? "Change photo" : "Add a photo") + '</button>' + (C.photo ? '<img class="tr-thumbsm" src="' + C.photo + '" alt=""><button class="small dim" data-tr="nophoto">Remove</button>' : '') + '</div>' + (C.photo ? mealRowHTML() : '')) +
+        trPhotosHTML() + (C.photo ? mealRowHTML() : '')) +
     postRecField() +
     '<div class="card" style="margin-top:14px;padding:4px 14px">' +
       '<div class="trow" style="padding:10px 0"><span><span style="display:block;font-weight:600">Show it in For You</span><span class="small muted">' + (C.vis === "tribe" ? "The whole tribe can see it." : "Only you. It stays on your phone.") + '</span></span><button class="toggle' + (C.vis === "tribe" ? " on" : "") + '" data-tr="vis" aria-label="Visible to the tribe"></button></div>' +
       (link && pl.mine ? '<div class="trow" style="padding:10px 0;border-top:1px solid var(--line2)"><span><span style="display:block;font-weight:600">This is my own video</span><span class="small muted">It gets the <span class="tr-holo-t" style="font-weight:700">Tribe Original</span> highlight.</span></span><button class="toggle holo' + (C.mine ? " on" : "") + '" data-tr="mine" aria-label="This is my own video"></button></div>' : '') +
     '</div>' + (C.vis === "tribe" ? '<p class="foot" style="margin-top:10px">' + (C.meal && window.LowiMealSnap && !link ? esc(LowiMealSnap.t("foot")) : (link ? "Only the link, the title it comes with and your line are shared." : "Only what you write here is shared.") + ' Nothing about your health or goals.') + '</p>' : '');
   updPost();
+}
+/* Nov 6 2026 carousels (Emmanuel: carousels on For You, "swipe right through the pictures"): a photo post takes up to 6 photos
+   (carousel-core.js). The first is the cover (C.photo, as before: the meal card reads it); each has its own remove. */
+const CAR = () => window.LowiCarousel || null;
+const carMax = () => (CAR() ? CAR().MAX : 1);
+function trPhotosHTML(){
+  const ph = C.photos || [], more = ph.length < carMax() || carMax() === 1; /* one photo only (no carousel-core): Change photo */
+  return '<div class="tr-row tr-photos" style="margin-top:10px;gap:10px">' + (more ? '<button class="chip" data-tr="photo">' + (ph.length ? (carMax() > 1 ? "Add more photos" : "Change photo") : (carMax() > 1 ? "Add photos" : "Add a photo")) + '</button>' : '') +
+    ph.map((src, i) => '<span class="tr-ph1"><img class="tr-thumbsm" src="' + src + '" alt=""><button type="button" class="tr-phx" data-tr="nophoto" data-i="' + i + '" aria-label="Remove photo">\u00d7</button></span>').join('') + '</div>' +
+    (ph.length > 1 ? '<p class="small muted tr-carhint">A carousel: people swipe through your photos. The first one is the cover.</p>' : '');
 }
 /* Oct 19 meal photos: a photo in a post can carry its meal card (name, estimated ingredients, nutrition, likely blood
    sugar response). A photo already read in Snap food is reused for free; a new one costs 1 of the 3 photo checks a day. */
@@ -5207,15 +5248,20 @@ function doPost(btn){
     if (!C.cap.trim() && !C.photo && !C.rec) return;
     const meal = C.photo && C.meal ? C.meal : null; /* Oct 19: the meal card rides in meta.meal; no caption needed */
     p = {id:"t" + uid(), ts:Date.now(), plat:"", url:"", meta:meal ? {meal} : null, cap:(C.cap.trim() || (meal ? meal.name : "")).slice(0, TEXT_MAX), photo:C.photo || "", rec:C.rec || "", vis:C.vis, mine:false};
+    if ((C.photos || []).length > 1) p.slides = C.photos.slice(0, carMax()); /* Nov 6 2026 carousels: cover first */
   }
   T.posts.unshift(p); if (T.posts.length > 80) T.posts.length = 80;
   if (p.vis !== "tribe") T.filter = "mine"; else if (T.filter === "orig" && !p.mine) T.filter = "all";
-  fyTop = 1; save(); C = null; h.closeSheet(); showFeed();
+  fyTop = 1; save(); C = null; h.closeSheet();
+  /* Nov 6 2026: marked as being sent before the feed repaints, so the feed's own retry (retryShares) never sends it a second time
+     (it did: every new post went up twice; a carousel would upload its photos twice) */
+  if (p.vis === "tribe") fySending.add(p.id);
+  showFeed();
   /* 25 Oct (Emmanuel): "when someone, me or anyone, posts on the For You page, it's actually there." A member's own post is
    * never held back by the food rule; if it cannot reach the shared table the poster is told and it tries again by itself. */
   if (p.vis === "tribe") {
     h.award("tribe-post", null, POST_XP);
-    sharePost(p).then(ok => { h.toast(window.LowiForYou ? LowiForYou.note(ok ? "shared" : "post") : (ok ? "Posted." : "Saved in My posts.")); if (ok && p.mine) setTimeout(() => h.toast("Live as a Tribe Original"), 2300); if ($("#fyFeed")) renderForYou(); });
+    sharePost(p).then(ok => { fySending.delete(p.id); h.toast(window.LowiForYou ? LowiForYou.note(ok ? "shared" : "post") : (ok ? "Posted." : "Saved in My posts.")); if (ok && p.mine) setTimeout(() => h.toast("Live as a Tribe Original"), 2300); if ($("#fyFeed")) renderForYou(); });
   }
   else h.toast("Saved. Only you can see it.");
   setTimeout(() => { const el = $('.fy-slide[data-id="' + p.id + '"]'), f = $("#fyFeed"); if (el && f) f.scrollTop = el.offsetTop; }, 220);
@@ -5241,7 +5287,12 @@ function postMenu(id){
    photo landed in the new, empty post. The photo now only goes into the composer it was picked for. */
 async function trPhotoPick(x, h){ const c0 = C; if (!x || !c0 || !h) return; let src = "";
   try { src = await h.resizeImage(x, 640); } catch(e){ console.error(e); }
-  if (C !== c0) return; c0.photo = src || ""; c0.meal = null; c0.mealErr = ""; paintRest(); }
+  if (C !== c0) return; c0.photo = src || ""; c0.photos = src ? [src] : []; c0.meal = null; c0.mealErr = ""; paintRest(); }
+/* Nov 6 2026 carousels: the picked photos join the post in the order they were picked; the cover changes only when there was none */
+async function trPhotosPick(xs, h){ const c0 = C; if (!xs || !xs.length || !c0 || !h) return;
+  for (const x of xs) { let src = ""; try { src = await h.resizeImage(x, 640); } catch(e){ console.error(e); }
+    if (C !== c0) return; if (!src || c0.photos.indexOf(src) >= 0 || c0.photos.length >= carMax()) continue;
+    c0.photos.push(src); if (c0.photos.length === 1) { c0.photo = src; c0.meal = null; c0.mealErr = ""; } paintRest(); } }
 /* ---------- events (own namespace: data-tr) ---------- */
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-tr]"); if (!b) return; const h = H(); if (!h) return;
@@ -5290,9 +5341,11 @@ document.addEventListener("click", e => {
     case "report": T.reported.push(id); save(); h.closeSheet(); rerender(); h.toast("Reported. It's hidden for you."); break;
     case "block": if (T.blocked.indexOf(b.dataset.who) < 0) T.blocked.push(b.dataset.who); save(); h.closeSheet(); rerender(); h.toast("You won't see " + b.dataset.who + " anymore."); break;
     case "photo": { let f = $("#trPhotoIn"); if (!f) { f = document.createElement("input"); f.type = "file"; f.accept = "image/*"; f.id = "trPhotoIn"; f.className = "hidden"; document.body.appendChild(f);
-        f.addEventListener("change", () => { const x = f.files[0]; f.value = ""; trPhotoPick(x, H()); }); }
-      f.click(); break; }
-    case "nophoto": if (C) { C.photo = ""; C.meal = null; C.mealErr = ""; paintRest(); } break;
+        f.addEventListener("change", () => { const K = CAR(), xs = K ? K.take(f.files, C ? (C.photos || []).length : 0) : [f.files[0]]; f.value = "";
+          if (K) trPhotosPick(xs, H()); else trPhotoPick(xs[0], H()); }); }
+      f.multiple = carMax() > 1; f.click(); break; }
+    case "nophoto": if (C) { const i = +(b.dataset.i || 0), was = C.photo; C.photos = (C.photos || []).filter((x, k) => k !== i); C.photo = C.photos[0] || "";
+        if (C.photo !== was) { C.meal = null; C.mealErr = ""; } paintRest(); } break;
     case "meal-read": readMeal(); break;
     case "meal-x": if (C) { C.meal = null; paintRest(); } break;
   }
@@ -5318,7 +5371,7 @@ function showFeed(){ const h = H(); if (!h) return;
   if (nm && nm.open) { if (nm.isOpen && nm.isOpen("fy") && h.tab() === "shelf" && $("#cmFeed")) renderForYou(); else nm.open("fy"); return; }
   if (window.cmSetView) cmSetView("feed"); h.go("foryou"); }
 window.TRIBE = {
-  renderForYou, compose, showFeed, composeInto, setPhoto:ph => { if (C) { C.photo = ph || ""; C.meal = null; C.mealErr = ""; paintRest(); } } /* f2-photo */,
+  renderForYou, compose, showFeed, composeInto, setPhoto:ph => { if (C) { C.photo = ph || ""; C.photos = ph ? [ph] : []; C.meal = null; C.mealErr = ""; paintRest(); } } /* f2-photo */,
   /* Oct 19 meal photos (meal-photo.js): Snap food's "Also share to Community" attaches the read it already has */
   sharePost /* 25 Oct: FYV videos publish through the same marks (pub / pend / fail) */,
   openMine: () => listSheet("mine") /* My posts, for Community settings and checks */,
@@ -10336,7 +10389,8 @@ function mapPost(r){ const p = mapPostRow(r); return window.LowiNibblo ? LowiNib
 function mapPostRow(r){
   return {id:r.id, uid:r.user_id, me:r.user_id === uid, cloud:true, who:r.who || "Member", ts:ts(r.created_at), plat:r.url ? (PLATS.indexOf(r.plat) >= 0 ? r.plat : "web") : "", url:r.url || "", meta:r.meta || null,
     cap:r.cap || "", photo:r.photo_url || r.photo || "", avatar:r.avatar_url || r.avatar || avatarOf(r.user_id), vid:r.video_url ? 1 : 0, vurl:r.video_url || "", poster:r.poster || "", w:r.w || 0, h:r.h || 0, dur:r.dur || 0,
-    rec:r.rec || "", mine:!!r.mine, art:r.art || ["✨", 40, 280], vis:"tribe", rank:r.lv ? "Lv " + r.lv : "", get likes(){ return likeCount(this.id); }};
+    rec:r.rec || "", mine:!!r.mine, art:r.art || ["✨", 40, 280], vis:"tribe", rank:r.lv ? "Lv " + r.lv : "", get likes(){ return likeCount(this.id); },
+    slides:(window.LowiCarousel && LowiCarousel.slidesOf(r)) || null}; /* Nov 6 2026 carousels: meta.slides */
 }
 function mapMsg(r){ return {id:r.id, uid:r.user_id, by:r.who || "Member", t:r.body || "", ts:ts(r.created_at), re:r.reply_to || null, rx:rxOf(r.id), md:(r.meal && typeof r.meal === "object") ? r.meal : null}; } /* Oct 25: md = meal details (messages.meal) */
 /* Oct 28 2026 (Emmanuel: "Chat einfach wirklich nur für Menschen ... nuken wir mal alle Nachrichten von Bot im Chat ... lassen aber
@@ -10476,6 +10530,14 @@ async function publish(p, file, quiet){
   try {
     let photo_url = /^https?:/.test(p.photo || "") ? p.photo : "", video_url = "";
     if (p.photo && !photo_url) { const b = dataUrlBlob(p.photo); if (b) photo_url = await upload(uid + "/" + p.id + ".jpg", b, b.type); }
+    /* Nov 6 2026 carousels (carousel-core.js): the other pictures go next to the cover as <id>-2.jpg ... <id>-6.jpg and meta.slides
+       lists all of them, cover first; once they are up, this phone keeps the links instead of the pictures (storage, backup) */
+    const K = window.LowiCarousel, sl0 = K ? K.slidesOf(p) : null; let slides = null;
+    if (sl0 && photo_url) {
+      slides = [photo_url];
+      for (let i = 1; i < sl0.length; i++) { const sv = sl0[i]; if (/^https:\/\//.test(sv)) { slides.push(sv); continue; } const b = dataUrlBlob(sv); if (b) slides.push(await upload(K.path(uid, p.id, i), b, b.type)); }
+      p.photo = photo_url; p.slides = slides.slice();
+    }
     if (p.vid) {
       const prev = POSTS.find(x => x.id === p.id); video_url = prev && prev.vurl || "";
       if (!video_url) {
@@ -10490,6 +10552,7 @@ async function publish(p, file, quiet){
     let lv = 1; try { lv = levelOf(S.xp, true).L; } catch(e){}
     /* 25 Oct 2026: a post whose stored TikTok picture the server already wrote keeps it when this phone sends it again */
     let meta = p.meta || null; const was = POSTS.find(x => x.id === p.id), TT = window.LowiTikTok;
+    if (slides && slides.length > 1) meta = Object.assign({}, meta || {}, {slides});
     if (TT && was && was.meta && TT.stable(was.meta.thumb) && !(meta && TT.stable(meta.thumb))) { meta = Object.assign({}, meta || {}); TT.merge({meta}, was.meta); }
     const row = {id:p.id, who:myName() || "Member", plat:p.plat || "", url:p.url || "", meta, cap:p.cap || "", photo_url, video_url, poster:p.poster || "",
       w:p.w || 0, h:p.h || 0, dur:Math.round(p.dur || 0), rec:p.rec || "", mine:!!p.mine, art:p.art || null, lv};
@@ -10506,7 +10569,7 @@ async function publish(p, file, quiet){
   } catch(e){ console.info("[LOWiSPIKE] publish failed", e && (e.message || e)); if (!quiet) toast(p.vid ? "Upload failed. It's still on this phone." : "No connection. Try again in a moment.", 3200); return false; }
 }
 async function unpublish(id){ if (!live || !id) return; const p = POSTS.find(x => x.id === id); POSTS = POSTS.filter(x => x.id !== id);
-  try { await sb.from("posts").delete().eq("id", id); if (p && p.me) { const files = ["jpg", "mp4", "mov", "webm"].map(x => uid + "/" + id + "." + x); sb.storage.from(BUCKET).remove(files).then(() => {}); } } catch(e){} }
+  try { await sb.from("posts").delete().eq("id", id); if (p && p.me) { const files = window.LowiCarousel ? LowiCarousel.files(uid, id) : ["jpg", "mp4", "mov", "webm"].map(x => uid + "/" + id + "." + x); sb.storage.from(BUCKET).remove(files).then(() => {}); } } catch(e){} } /* Nov 6 2026: with the carousel pictures */
 function like(id, on){ if (!live || !id) return; const s = LIKES[id] = LIKES[id] || new Set();
   if (on) { s.add(uid); sb.from("post_likes").insert({post_id:id}).then(() => {}); } else { s.delete(uid); sb.from("post_likes").delete().match({post_id:id, user_id:uid}).then(() => {}); } }
 
@@ -13216,6 +13279,9 @@ const ROWS = [
   ["Later", "Später", "Más tarde"],
   ["Back", "Zurück", "Atrás"],
   ["Add a photo", "Füge ein Foto hinzu", "Añade una foto"],
+  ["Add photos", "Fotos hinzufügen", "Añadir fotos"],
+  ["Add more photos", "Weitere Fotos", "Más fotos"],
+  ["A carousel: people swipe through your photos. The first one is the cover.", "Ein Karussell: Man wischt durch deine Fotos. Das erste ist das Titelbild.", "Un carrusel: se pasa de una foto a otra deslizando. La primera es la portada."],
   ["Add photo", "Foto hinzufügen", "Añadir foto"],
   ["Change photo", "Foto ändern", "Cambiar foto"],
   ["Change profile photo", "Profilfoto ändern", "Cambiar foto de perfil"],

@@ -1,5 +1,5 @@
 'use strict';
-/* Live check for Log meal slots + Snacks to buy (Oct 19, 2026). Not part of `node --test` (needs Playwright).
+/* Live check for Log meal slots + the Shop's snacks (Oct 19, 2026; Nov 6 2026: the snacks are the Cart's). Not part of `node --test` (needs Playwright).
    node tests/meal-slots-live.cjs                                            -> this worktree on a local port
    BASE=https://therealetm.github.io/lowispike/ node tests/meal-slots-live.cjs -> the live site
    WebKit iPhone 13, WebKit iPad landscape and portrait; English, German, Spanish. Backend calls are blocked (only GETs to the site pass),
@@ -97,27 +97,24 @@ const NAMES = { en: ['Breakfast', 'Lunch', 'Dinner', 'Snacks'], de: ['Frühstüc
             }
             await page.evaluate(() => { window.LowiR2 && window.LowiR2.closeAll && window.LowiR2.closeAll(); try { window.LowiLang.set('en'); } catch (e) { } });
             await sleep(600);
-            // 5. Shop: Snacks to buy
+            // 5. Shop: one list (Nov 6 2026: the snack list is the Cart's now). Adding by name goes into the Cart; the snack logged in
+            //    step 3 (Paprika) waits under Buy again in the Cart; one tap puts it in, Undo takes it back out.
             await page.evaluate(() => window.LowiStorePicks.open());
-            await page.waitForSelector('.stp-snacks', { timeout: 15000 }); await sleep(900);
-            await page.fill('.stp-snack-add input', 'Rice cakes');
-            await page.tap('.stp-snack-add button[type="submit"]');
+            await page.waitForSelector('.stp-card .stp-cartbtn', { timeout: 15000 }); await sleep(900);
+            ok(await page.evaluate(() => !document.querySelector('.stp-snackbox, .stp-snacks')), P + 'Shop: no snack list of its own');
+            await page.tap('.stp-card .stp-cartbtn'); await sleep(900);
+            await page.fill('.stp-cartv .stp-cart-add input', 'Rice cakes');
+            await page.tap('.stp-cartv .stp-cart-add button[type="submit"]');
             await sleep(500);
-            let sn = await page.evaluate(() => window.LowiStorePicks.snacks());
-            ok(sn.length === 1 && sn[0].n === 'Rice cakes' && !sn[0].got, P + 'Shop: snack added to buy ' + JSON.stringify(sn));
-            // Oct 26: the Again pills became one Buy again row; its preview line names the recent snacks
-            const again = await page.evaluate(() => { const r = document.querySelector('[data-stp-snack-refill] .stp-again-t small'); return r ? r.textContent.split(' · ') : []; });
-            ok(again.includes('Paprika'), P + 'Shop: logged snack Paprika offered under Buy again ' + JSON.stringify(again));
-            const row = await onScreen('.stp-snack');
-            ok(row.length === 1 && row[0].in, P + 'Shop: the snack row is on screen ' + JSON.stringify(row));
-            await page.screenshot({ path: path.join(OUT, name + '-shop-snacks.png') });
-            await page.tap('.stp-snack-tick');
-            await sleep(500);
-            sn = await page.evaluate(() => window.LowiStorePicks.snacks());
-            const buyRows = await page.evaluate(() => document.querySelectorAll('.stp-snack').length);
-            ok(sn[0].got > 0 && buyRows === 0, P + 'Shop: ticked = bought, off the buy list');
-            ok(await page.evaluate(() => { const r = document.querySelector('[data-stp-snack-refill] .stp-again-t small'); return !!r && r.textContent.split(' · ').includes('Rice cakes'); }), P + 'Shop: bought snack waits under Buy again');
-            ok(await page.evaluate(() => JSON.parse(localStorage.getItem('lowi.snackBuy.v1') || '[]').length === 1), P + 'Shop: list kept on the phone');
+            const cartNames = () => page.evaluate(() => (window.LOWI_SHELF && LOWI_SHELF.cartLines ? LOWI_SHELF.cartLines() : []).map(l => l.n));
+            ok((await cartNames()).includes('Rice cakes'), P + 'Shop: added by name into the Cart ' + JSON.stringify(await cartNames()));
+            const again = await page.evaluate(() => { const r = document.querySelector('.stp-cartv [data-stp-snack-refill] .stp-again-t small'); return r ? r.textContent.split(' · ') : []; });
+            ok(again.includes('Paprika'), P + 'Shop: logged snack Paprika offered under Buy again in the Cart ' + JSON.stringify(again));
+            await page.screenshot({ path: path.join(OUT, name + '-shop-cart.png') });
+            await page.tap('.stp-cartv [data-stp-snack-refill]'); await sleep(500);
+            ok((await cartNames()).includes('Paprika'), P + 'Shop: Buy again put Paprika in the Cart');
+            await sleep(500); await page.tap('.stp-cartv [data-stp-snack-undo]'); await sleep(500);
+            ok(!(await cartNames()).includes('Paprika') && (await cartNames()).includes('Rice cakes'), P + 'Shop: Undo took only Paprika back out');
             await page.evaluate(() => window.LowiStorePicks.close());
             const bad = errs.filter(e => !/Load failed|NetworkError|Failed to fetch|access control|cancelled/i.test(e));
             ok(bad.length === 0, P + 'no page errors ' + bad.slice(0, 3).join(' / '));

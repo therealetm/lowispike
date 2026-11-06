@@ -25,7 +25,7 @@
   // Food logging, search and names come first (Emmanuel: "when I don't always want to type what food I wrote"): these keep their
   // mic even when a screen squeezes them narrower than the 150 px rule.
   var OPT_IN = ['#b3Nm', '#b3Name', '#b3MName', '#b3Dq', '#scanText', '#scanType', '#f2In', '#kgQ', '#k9Q', '#gb-item',
-    '.stp-snack-add input[name="snack"]', 'input[data-mr-drink]', '#fyvCap', '#trCap', 'input[name="herbName"]', '.lc-in', '#hqGoalText'];
+    '.stp-cart-add input[name="item"]', 'input[data-mr-drink]', '#fyvCap', '#trCap', 'input[name="herbName"]', '.lc-in', '#hqGoalText'];
   // typed confirmations and codes never get one
   // Oct 28: the Community chat composer has ONE mic (community-chat.js #cmMic: tap = dictate via LowiMic.dictate, hold = voice
   // message), so the speak-to-type icon inside its text box is gone (owner: two mic buttons were a duplicate).

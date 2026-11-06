@@ -99,45 +99,69 @@
     try { snacks = JSON.parse(localStorage.getItem(SKEY) || '[]') || []; } catch (e) { snacks = []; }
     if (!Array.isArray(snacks)) snacks = [];
     function saveSnacks(next) { snacks = next; try { localStorage.setItem(SKEY, JSON.stringify(snacks)); } catch (e) {} }
-    /* the list as it was before the last Buy again fill, for its Undo; any other snack action drops it */
-    let snackUndo = null;
+    /* Nov 6 2026 (Emmanuel, Supermarkt: "Why do we have a special place for snacks and then a snacks button? ... so that I have the
+       things in Warenkorb"): one list. The old snack list (lowi.snackBuy.v1, Oct 19) is no longer a place of its own: what was still
+       on it goes into the Cart once and counts as moved there (snackGot), so it is never moved twice and shows up under Buy again
+       once it is bought. Buy again (Oct 26: one row, never a pill per snack) and adding something by name live in the Cart now. The
+       key stays as it is; it travels with the account. */
+    let cartUndo = null; /* the Cart lines one Buy again fill added, for its Undo; any other Cart change drops it */
     function loggedSnacks() {
         try { const st = W.LowiVitalsBridge && W.LowiVitalsBridge.state && W.LowiVitalsBridge.state(); return ((st && st.logs) || []).filter(l => l && l.slot === 'snack').slice().reverse().map(l => l.t || l.n); } catch (e) { return []; }
     }
-    function snackHTML() {
-        const v = C.snackView(snacks, loggedSnacks());
-        const rows = v.buy.map(i => '<li class="stp-snack"><button type="button" class="stp-snack-tick" data-spend="1" data-stp-snack-got="' + esc(i.id) + '" aria-label="' + esc(T('Bought ', 'Gekauft: ', 'Comprado: ') + i.n) + '"><span aria-hidden="true"></span></button><b>' + esc(i.n) + '</b>' +
-            '<button type="button" class="stp-snack-x" data-stp-snack-drop="' + esc(i.id) + '" aria-label="' + esc(T('Remove ', 'Entfernen: ', 'Quitar: ') + i.n) + '">' + ic.x + '</button></li>').join('');
-        /* Oct 26 (Emmanuel: "a buy again auto fill option. Recent or something, but not stack it up like that"): one row, never a
-           pill per snack. A one-line preview of the recent snacks; one tap puts them all back on the list (C.snackRefill); Undo
-           right after brings the list back as it was. */
-        let again = '';
-        if (snackUndo) {
-            const k = snackUndo.n;
-            again = '<div class="stp-again stp-again-done" role="status"><span class="stp-again-ic" aria-hidden="true">\u2713</span><span class="stp-again-t"><b>' +
-                esc(k === 1 ? T('1 recent snack is back on your list', '1 Snack ist wieder auf deiner Liste', '1 snack vuelve a tu lista') : T(k + ' recent snacks are back on your list', k + ' Snacks sind wieder auf deiner Liste', k + ' snacks vuelven a tu lista')) +
-                '</b></span><button type="button" class="stp-again-undo" data-spend="1" data-stp-snack-undo="1">' + esc(T('Undo', 'Rückgängig', 'Deshacer')) + '</button></div>';
-        } else if (v.again.length) {
-            const n = v.again.length, names = v.again.join(' · ');
-            /* BH-042: Buy again and its Undo swap places under the finger: data-spend keeps a double tap from pressing both */
-            again = '<button type="button" class="stp-again" data-spend="1" data-stp-snack-refill="1" aria-label="' +
-                esc(T('Buy again: put your ' + n + ' recent snacks back on the list: ', 'Wieder kaufen: deine ' + n + ' letzten Snacks wieder auf die Liste: ', 'Comprar otra vez: vuelve a poner tus ' + n + ' snacks recientes en la lista: ') + v.again.join(', ')) + '">' +
-                '<span class="stp-again-ic" aria-hidden="true">\u21bb</span><span class="stp-again-t" aria-hidden="true"><b>' + esc(T('Buy again', 'Wieder kaufen', 'Comprar otra vez')) + ' <em>· ' + esc(T('recent', 'zuletzt', 'reciente')) + '</em></b><small>' + esc(names) + '</small></span>' +
-                '<span class="stp-again-add" aria-hidden="true">' + esc(T('Add ' + n, n + ' dazu', 'Añadir ' + n)) + '</span></button>';
-        }
-        return '<section class="stp-snacks" aria-label="' + esc(T('Snacks to buy', 'Snacks zum Einkaufen', 'Snacks para comprar')) + '"><h4 class="stp-h4">\u{1F95C} ' + esc(T('Snacks to buy', 'Snacks zum Einkaufen', 'Snacks para comprar')) + (v.buy.length ? ' <i>' + v.buy.length + '</i>' : '') + '</h4>' +
-            (rows ? '<ul class="stp-snack-list">' + rows + '</ul>' : '<p class="stp-snack-none">' + esc(T('Only snacks you still need to buy. Tick one when it’s in your bag.', 'Nur Snacks, die du noch kaufen willst. Hak sie ab, wenn sie in der Tasche sind.', 'Solo los snacks que aún vas a comprar. Márcalos cuando estén en tu bolsa.')) + '</p>') +
-            '<form class="stp-snack-add" data-stp-snack-form="1"><input type="text" name="snack" maxlength="60" autocomplete="off" enterkeyhint="done" placeholder="' + esc(T('Add a snack, like bell pepper', 'Snack hinzufügen, z. B. Paprika', 'Añade un snack, p. ej. pimiento')) + '" aria-label="' + esc(T('Add a snack to buy', 'Snack zum Einkaufen hinzufügen', 'Añadir snack para comprar')) + '"><button type="submit" class="stp-pill">' + esc(T('Add', 'Hinzufügen', 'Añadir')) + '</button></form>' + again + '</section>';
+    function inCart(name) { const ls = qaLines(); return Q ? !!Q.lineFor(ls, name) : ls.some(l => String(l.n || '').trim().toLowerCase() === String(name || '').trim().toLowerCase()); }
+    function snacksToCart() {
+        if (!shelf()) return 0;
+        const buy = C.snackView(snacks).buy; if (!buy.length) return 0;
+        let next = snacks, n = 0;
+        buy.forEach(i => { if (cartAdd(i.n) || inCart(i.n)) { next = C.snackGot(next, i.id); n++; } });
+        if (next !== snacks) saveSnacks(next);
+        return n;
     }
-    function repaintSnacks(focusAgain) {
-        const el = ov && ov.querySelector('.stp-snacks');
-        if (!el) return;
-        const w = D.createElement('div'); w.innerHTML = snackHTML();
-        const nw = w.firstChild;
-        el.replaceWith(nw);
-        const sn = ov.querySelector('.stp-snackbox-n'); if (sn) { const n = C.snackView(snacks).buy.length; sn.textContent = n; sn.hidden = !n; }
+    /* recent snacks (bought before, or logged as a snack in Log meal) that are not in the Cart */
+    function againNames() { return C.snackView(snacks, loggedSnacks()).again.filter(n => !inCart(n)); }
+    function cartAgainHTML() {
+        if (cartUndo) {
+            const k = cartUndo.n;
+            return '<div class="stp-again stp-again-done" role="status"><span class="stp-again-ic" aria-hidden="true">\u2713</span><span class="stp-again-t"><b>' +
+                esc(k === 1 ? T('1 recent snack is in your cart', '1 Snack ist wieder im Warenkorb', '1 snack vuelve a tu carrito') : T(k + ' recent snacks are in your cart', k + ' Snacks sind wieder im Warenkorb', k + ' snacks vuelven a tu carrito')) +
+                '</b></span><button type="button" class="stp-again-undo" data-spend="1" data-stp-snack-undo="1">' + esc(T('Undo', 'Rückgängig', 'Deshacer')) + '</button></div>';
+        }
+        const a = againNames(); if (!a.length) return '';
+        const n = a.length, names = a.join(' · ');
+        /* BH-042: Buy again and its Undo swap places under the finger: data-spend keeps a double tap from pressing both */
+        return '<button type="button" class="stp-again" data-spend="1" data-stp-snack-refill="1" aria-label="' +
+            esc(T('Buy again: put your ' + n + ' recent snacks in the cart: ', 'Wieder kaufen: deine ' + n + ' letzten Snacks in den Warenkorb: ', 'Comprar otra vez: pon tus ' + n + ' snacks recientes en el carrito: ') + a.join(', ')) + '">' +
+            '<span class="stp-again-ic" aria-hidden="true">\u21bb</span><span class="stp-again-t" aria-hidden="true"><b>' + esc(T('Buy again', 'Wieder kaufen', 'Comprar otra vez')) + ' <em>· ' + esc(T('recent', 'zuletzt', 'reciente')) + '</em></b><small>' + esc(names) + '</small></span>' +
+            '<span class="stp-again-add" aria-hidden="true">' + esc(T('Add ' + n, n + ' dazu', 'Añadir ' + n)) + '</span></button>';
+    }
+    /* anything by name, straight into the Cart (it was the snack list's own field) */
+    function cartAddForm() {
+        return '<form class="stp-snack-add stp-cart-add" data-stp-cart-form="1"><input type="text" name="item" maxlength="60" autocomplete="off" enterkeyhint="done" placeholder="' +
+            esc(T('Add something…', 'Etwas hinzufügen…', 'Añadir algo…')) + '" aria-label="' + esc(T('Add something to the cart', 'Etwas in den Warenkorb legen', 'Añadir algo al carrito')) + '">' +
+            '<button type="submit" class="stp-pill">' + esc(T('Add', 'Hinzufügen', 'Añadir')) + '</button></form>';
+    }
+    function repaintCart(focusSel) {
+        if (!qv || !cartOpen) return;
+        const sc0 = qv.querySelector('.stp-cart-scroll'), top = sc0 ? sc0.scrollTop : 0;
+        qv.innerHTML = cartHTML();
+        const sc1 = qv.querySelector('.stp-cart-scroll'); if (sc1 && top) sc1.scrollTop = top;
+        if (focusSel) { const f = qv.querySelector(focusSel); if (f) try { f.focus({ preventScroll: true }); } catch (e) {} }
+        const cb = ov && ov.querySelector('.stp-card .stp-cartbtn'); if (cb) cb.outerHTML = cartBtnHTML();
+    }
+    function cartAgain(t) {
+        const b = t.closest('[data-stp-snack-refill],[data-stp-snack-undo]'); if (!b) return false;
+        const sh = shelf(); if (!sh) return true;
+        if (b.hasAttribute('data-stp-snack-refill')) {
+            const ids = [];
+            againNames().forEach(n => { if (cartAdd(n)) { const l = Q ? Q.lineFor(qaLines(), n) : null; if (l) ids.push(l.id); } });
+            cartUndo = ids.length ? { ids, n: ids.length } : null;
+        } else {
+            if (cartUndo) cartUndo.ids.forEach(id => { try { sh.setQty(id, 0); } catch (e) {} });
+            cartUndo = null;
+        }
         /* after Buy again / Undo the button under the finger is gone: keep focus in the row (Undo, else the fill button) */
-        if (focusAgain) { const f = nw.querySelector('[data-stp-snack-undo],[data-stp-snack-refill]') || nw.querySelector('.stp-snack-add input'); if (f && f.tagName === 'BUTTON') try { f.focus({ preventScroll: true }); } catch (e) {} }
+        repaintCart('[data-stp-snack-undo],[data-stp-snack-refill]');
+        return true;
     }
     function onSubmit(e) {
         const f = e.target;
@@ -148,36 +172,13 @@
             return;
         }
         if (f && f.getAttribute && f.getAttribute('data-stp-kit-form')) { e.preventDefault(); kitSubmit(f); return; }
-        if (!f || !f.getAttribute || !f.getAttribute('data-stp-snack-form')) return;
+        if (!f || !f.getAttribute || !f.getAttribute('data-stp-cart-form')) return;
         e.preventDefault();
-        const inp = f.querySelector('input[name="snack"]'), v = inp ? inp.value : '';
-        if (!String(v).trim()) return;
-        snackUndo = null;
-        saveSnacks(C.snackAdd(snacks, v));
-        repaintSnacks();
-        const ni = ov && ov.querySelector('.stp-snack-add input'); if (ni) ni.focus();
-    }
-    function snackClick(t) {
-        const b = t.closest('[data-stp-snack-got],[data-stp-snack-drop],[data-stp-snack-qv],[data-stp-snack-refill],[data-stp-snack-undo]');
-        if (!b) return false;
-        if (b.hasAttribute('data-stp-snack-refill')) {
-            const r = C.snackRefill(snacks, C.snackView(snacks, loggedSnacks()).again);
-            if (r.added) { const prev = snacks; saveSnacks(r.list); snackUndo = { list: prev, n: r.added }; }
-            repaintSnacks(true);
-            return true;
-        }
-        if (b.hasAttribute('data-stp-snack-undo')) {
-            if (snackUndo) saveSnacks(snackUndo.list);
-            snackUndo = null;
-            repaintSnacks(true);
-            return true;
-        }
-        snackUndo = null;
-        if (b.hasAttribute('data-stp-snack-got')) saveSnacks(C.snackGot(snacks, b.getAttribute('data-stp-snack-got')));
-        else if (b.hasAttribute('data-stp-snack-drop')) saveSnacks(C.snackDrop(snacks, b.getAttribute('data-stp-snack-drop')));
-        else { saveSnacks(C.snackAdd(snacks, b.getAttribute('data-stp-snack-qv'))); b.disabled = true; b.textContent = T('✓ On your snack list', '✓ Auf deiner Snackliste', '✓ En tu lista de snacks'); }
-        repaintSnacks();
-        return true;
+        const inp = f.querySelector('input[name="item"]'), v = inp ? String(inp.value || '').trim() : '';
+        if (!v) return;
+        cartUndo = null;
+        cartAdd(v);
+        repaintCart('.stp-cart-add input');
     }
 
     /* ---------------- Kitchen (Oct 24, first simple version; HANDOFF-shop-kitchen.md) ----------------
@@ -325,13 +326,6 @@
         if (!(W.LowiShopScan && W.LowiShopScan.open)) return '';
         return '<button type="button" class="stp-go stp-scanshop" data-stp="scanshop">' + ic.scan + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>';
     }
-    /* the snack list (with Buy again) folded into one quiet line; it opens in place and remembers that it is open */
-    let snackOpen = false;
-    function snackBox() {
-        const v = C.snackView(snacks), n = v.buy.length;
-        return '<details class="stp-snackbox"' + (snackOpen ? ' open' : '') + '><summary><span aria-hidden="true">\ud83e\udd5c</span><b>' + esc(T('My snack list', 'Meine Snackliste', 'Mi lista de snacks')) + '</b>' +
-            '<i class="stp-snackbox-n"' + (n ? '' : ' hidden') + '>' + n + '</i><span class="stp-snackbox-go" aria-hidden="true">\u203a</span></summary>' + snackHTML() + '</details>';
-    }
     /* Nov 5 2026 (owner, Phase B item 3: "Incorporate Zu Hause planning into Supermarkt as Plan my week"): one plain row at the top of
        Supermarkt opens the weekly planner (week-basket.js) inside Supermarkt; its head has "\u2039 Supermarkt" to come back. */
     function planRowHTML() {
@@ -388,9 +382,10 @@
         return '<div class="stp-qv-card stp-cart-card" role="dialog" aria-modal="true" aria-labelledby="stpCartT">' +
             '<div class="stp-cart-head"><h3 id="stpCartT">\u{1F6D2} ' + esc(T('Cart', 'Warenkorb', 'Carrito')) + (n ? ' <i class="stp-cart-n">' + n + '</i>' : '') + '</h3>' +
             '<p class="stp-qv-sub">' + esc(T('It’s the same list as your shopping list.', 'Das ist dieselbe Liste wie deine Einkaufsliste.', 'Es la misma lista que tu lista de la compra.')) + '</p></div>' +
-            '<div class="stp-qv-scroll stp-cart-scroll">' +
-            (ls.length ? '<ul class="stp-cart-list">' + ls.map(row).join('') + '</ul>' : '<p class="stp-snack-none">' + esc(T('Your cart is empty. Tap a product, then + Cart.', 'Dein Warenkorb ist leer. Tipp auf ein Produkt und dann auf + Warenkorb.', 'Tu carrito está vacío. Toca un producto y luego + Carrito.')) + '</p>') +
-            totalHTML + '</div>' + acts +
+            /* Nov 6 2026 one list: Buy again on top, adding something by name under the lines (both were the snack list's) */
+            '<div class="stp-qv-scroll stp-cart-scroll">' + cartAgainHTML() +
+            (ls.length ? '<ul class="stp-cart-list">' + ls.map(row).join('') + '</ul>' : '<p class="stp-snack-none">' + esc(T('Your cart is empty. Tap + on a product, or add something below.', 'Dein Warenkorb ist leer. Tipp bei einem Produkt auf + oder füg unten etwas hinzu.', 'Tu carrito está vacío. Toca + en un producto o añade algo abajo.')) + '</p>') +
+            cartAddForm() + totalHTML + '</div>' + acts +
             '<div class="stp-foot"><button type="button" class="stp-pill" data-stp="qv-close">' + esc(T('‹ Back to list', '‹ Zurück zur Liste', '‹ Volver a la lista')) + '</button>' +
             '<button type="button" class="stp-orb stp-close" data-stp="qv-close" aria-label="' + esc(T('Close cart', 'Warenkorb schließen', 'Cerrar carrito')) + '">' + ic.x + '</button></div></div>';
     }
@@ -411,6 +406,7 @@
         const b = t.closest('[data-stp-cq]'); if (!b) return false;
         const sh = shelf(); if (!sh || !sh.setQty || b.disabled) return true;
         const id = b.getAttribute('data-stp-cq'), d = +b.getAttribute('data-stp-cd') || 0;
+        cartUndo = null;
         const l = (sh.cartLines() || []).find(x => x.id === id); if (!l) return true;
         const r = sh.setQty(id, l.q + d);
         const sc0 = qv.querySelector('.stp-cart-scroll'), top = sc0 ? sc0.scrollTop : 0; /* repaint keeps the list where it was */
@@ -457,7 +453,7 @@
             whereForm() + (msg ? '<p class="stp-msg" role="status">' + esc(msg) + '</p>' : '') + hereHTML() + shopRowsHTML() +
             '<button type="button" class="stp-more stp-skip" data-stp="general">' + esc(T('Skip: show the general lists', 'Überspringen: allgemeine Listen zeigen', 'Omitir: ver las listas generales')) + '</button>' +
             '<h4 class="stp-h4">' + esc(T('Or pick a chain', 'Oder eine Kette wählen', 'O elige una cadena')) + '</h4><div class="stp-chips stp-wrap">' + chains + '</div>' +
-            snackBox() + '<p class="stp-fine">' + esc(T('Your location is only used on this phone to look up your address and the shops near you on OpenStreetMap. It isn’t sent to us or saved. Map data © OpenStreetMap contributors. ',
+            '<p class="stp-fine">' + esc(T('Your location is only used on this phone to look up your address and the shops near you on OpenStreetMap. It isn’t sent to us or saved. Map data © OpenStreetMap contributors. ',
                 'Dein Standort wird nur auf diesem Handy genutzt, um deine Adresse und die Läden in der Nähe bei OpenStreetMap nachzuschlagen. Er wird nicht an uns geschickt und nicht gespeichert. Kartendaten © OpenStreetMap-Mitwirkende. ',
                 'Tu ubicación solo se usa en este teléfono para buscar tu dirección y las tiendas cercanas en OpenStreetMap. No se nos envía ni se guarda. Datos del mapa © colaboradores de OpenStreetMap. ')) +
             '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">openstreetmap.org/copyright</a></p></div>' +
@@ -476,6 +472,15 @@
     function checkWord(v) {
         /* 27 Oct 2026: the one label is the impact word above; no second tier word next to it */
         return '';
+    }
+    /* Nov 6 2026 (Supermarket redesign): a row in the list is insulin-friendly by being there (its tag says Top or Good), so its line
+       gives the portion and the numbers only; a left-out row keeps the whole reason */
+    function numbers(it) {
+        const r = it.r, parts = [dec(r.carbs) + ' g ' + T('carbs', 'KH', 'carbohidratos')];
+        if (r.sugar >= 1) parts.push(dec(r.sugar) + ' g ' + T('sugar', 'Zucker', 'azúcar'));
+        if (r.protein >= 3) parts.push(dec(r.protein) + ' g ' + T('protein', 'Eiweiß', 'proteína'));
+        if (r.fibre >= 2) parts.push(dec(r.fibre) + ' g ' + T('fibre', 'Ballaststoffe', 'fibra'));
+        return r.serve + ' ' + r.unit + ': ' + parts.join(' · ');
     }
     function reason(it) {
         const r = it.r, u = r.unit;
@@ -505,7 +510,7 @@
            outside the row button (a button never sits in a button); the row button still opens the product */
         return '<li class="stp-li' + (qa ? ' qa' : '') + '"><button type="button" class="stp-item' + (failed ? ' fail' : '') + '" data-stp-item="' + i + '" aria-haspopup="dialog">' + thumbHTML(p) +
             '<span class="stp-it">' + (qa ? '<span class="stp-nm"><b>' + esc(p.n) + '</b> ' + tagHTML(r, failed) + '</span>' : '<b>' + esc(p.n) + '</b>') + '<small>' + esc([p.b, p.q].filter(Boolean).join(' · ')) +
-            (r.typical ? ' · ' + esc(T('typical values, no label online', 'typische Werte, kein Etikett online', 'valores típicos, sin etiqueta en línea')) : '') + '</small><span class="stp-why">' + esc(reason(it)) + '</span></span>' + (qa ? '' : tagHTML(r, failed)) + '</button>' + (qa ? qaCol(i) : '') + '</li>';
+            (r.typical ? ' · ' + esc(T('typical values, no label online', 'typische Werte, kein Etikett online', 'valores típicos, sin etiqueta en línea')) : '') + '</small><span class="stp-why">' + esc(failed ? reason(it) : numbers(it)) + '</span></span>' + (qa ? '' : tagHTML(r, failed)) + '</button>' + (qa ? qaCol(i) : '') + '</li>';
     }
 
     /* ---------------- Oct 26 quick "+" on every product row (MAYA-HANDOFF 0.35, quick-add-core.js) ----------------
@@ -666,7 +671,6 @@
             '<p class="stp-fine">' + esc(T('General food guidance from the label, not medical advice. How your own blood sugar reacts can be different; check with your doctor for your own limits.',
                 'Allgemeine Ernährungshilfe vom Etikett, keine medizinische Beratung. Dein eigener Blutzucker kann anders reagieren; deine Grenzen klärst du mit deiner Ärztin oder deinem Arzt.',
                 'Orientación general a partir de la etiqueta, no consejo médico. Tu azúcar en sangre puede reaccionar distinto; consulta tus límites con tu médico.')) + '</p></div>' +
-            (/^(snacks|sweets|fruit)$/.test(r.group || '') ? '<button type="button" class="stp-go stp-snack-qv" data-stp-snack-qv="' + esc(p.n) + '">' + esc(T('+ Snacks to buy', '+ Snacks zum Einkaufen', '+ Snacks para comprar')) + '</button>' : '') +
             (shelf() ? '<button type="button" class="stp-go stp-kit-qv" data-stp-kit-qv="' + esc(p.n) + '">' + esc(T('+ Cart', '+ Warenkorb', '+ Carrito')) + '</button>' : '') +
             '<div class="stp-foot"><button type="button" class="stp-pill" data-stp="qv-close">' + esc(T('‹ Back to list', '‹ Zurück zur Liste', '‹ Volver a la lista')) + '</button>' +
             '<button type="button" class="stp-orb stp-close" data-stp="qv-close" aria-label="' + esc(T('Close product', 'Produkt schließen', 'Cerrar producto')) + '">' + ic.x + '</button></div></div>';
@@ -773,10 +777,12 @@
                 '<p>' + esc(T('Source: ', 'Quelle: ', 'Fuente: ') + (data && data.source || '') + ' · ' + (data && data.built || '')) + '</p></details>';
         }
         const gen = S.range === 'general' && S.store ? '<p class="stp-fine stp-gen">' + esc(T('We have no product list for this shop’s chain, so this is the general list. Supermarkets mostly carry the same items.', 'Für die Kette dieses Ladens haben wir keine eigene Liste, deshalb siehst du die allgemeine Liste. Supermärkte führen meist dieselben Produkte.', 'No tenemos una lista de esta cadena, así que ves la lista general. Los supermercados suelen tener los mismos productos.')) + '</p>' : '';
-        return shell('<div class="stp-head">' + titleRow(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) +
-            '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || label(S.range) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>' +
+        /* Nov 6 2026 Supermarket redesign: the tab already says Supermarkt, so the question is for VoiceOver only and the store row carries
+           the Cart at its end: one row instead of two above the search */
+        return shell('<div class="stp-head stp-head-list"><h3 class="sr-only">' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '</h3><div class="stp-shoprow">' +
+            '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || label(S.range) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>' + (hasCart() ? cartBtnHTML() : '') + '</div>' +
             '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" aria-label="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '"></div></div>' +
-            '<div class="stp-scroll">' + planRowHTML() + snackBox() + gen + inner +
+            '<div class="stp-scroll">' + planRowHTML() + gen + inner +
             '<p class="stp-note">' + esc(T('General food guidance, not medical advice.', 'Allgemeine Ernährungshilfe, keine medizinische Beratung.', 'Orientación general sobre alimentos, no consejo médico.')) + '</p></div>' +
             footBtns(scanBtn()));
     }
@@ -856,6 +862,7 @@
         const t = e.target.closest ? e.target : null; if (!t) return;
         if (qv && (e.target === qv || (t.closest('[data-stp="qv-close"]') && qv.contains(t)))) { closeQuick(); return; }
         if (qv && cartOpen && qv.contains(t)) {
+            if (cartAgain(t)) return;
             if (cartClick(t)) return;
             const ca = t.closest('[data-stp]'), a2 = ca && ca.getAttribute('data-stp');
             /* Oct 26 2026 (MAYA-HANDOFF 0.34): "Someone else pays" turns the whole cart into a Give a hand basket */
@@ -864,8 +871,7 @@
             return;
         }
         if (qv && qv.contains(t) && qvCart(t)) return;
-        if (qv && qv.contains(t)) { snackClick(t); return; }
-        if (snackClick(t)) return;
+        if (qv && qv.contains(t)) return;
         /* Oct 25 Give a hand (gift-basket.js): opens on top of Shop; Back brings Shop back */
         if (t.closest && t.closest('[data-stp="gift"]')) { try { W.LowiGiftBasket.open('shop'); } catch (x) {} return; }
         if (qaClick(t, e)) return; /* Oct 26 quick "+": never opens the product (MAYA-HANDOFF 0.35) */
@@ -905,7 +911,9 @@
         if (b.hasAttribute('data-stp-more')) { open[b.getAttribute('data-stp-more')] = +b.getAttribute('data-stp-ask') || 0; return paint('keep'); }
         if (b.hasAttribute('data-stp-jump')) {
             const g = ov.querySelector('#stpg-' + b.getAttribute('data-stp-jump')), sc = ov.querySelector('.stp-scroll');
-            if (g && sc) sc.scrollTo({ top: g.offsetTop - sc.offsetTop - 6, behavior: 'smooth' });
+            /* Nov 6 2026: the category bar stays on top of the list, so the section lands just under it */
+            const bar = sc && sc.querySelector('.stp-jumps');
+            if (g && sc) sc.scrollTo({ top: g.offsetTop - sc.offsetTop - (bar ? bar.offsetHeight : 0) - 6, behavior: 'smooth' });
         }
     }
     /* switch tabs; from a snack on the swipe shelf, the zone opens on that snack's card and it glows once */
@@ -946,14 +954,14 @@
            Oct 28 2026, 23:00 (Emmanuel: Supermarkt, Zu Hause, Seller Zone and Hilf mit "also be bubbles"): the Einkaufen bubble
            opens those four as orbs (home-blooms-v2.js); the orb that was tapped is the one tab this opens on (openAt). */
         tab = start === 'sz' && SZ() ? 'sz' : start === 'home' && homeTab() ? 'home' : start === 'kitchen' && kitTab() ? 'kitchen' : 'shop';
-        snackUndo = null;
+        cartUndo = null;
+        snacksToCart();
         ov = D.createElement('div');
         ov.className = 'stp-ov';
         ov.addEventListener('click', onClick);
         ov.addEventListener('input', onInput);
         ov.addEventListener('change', onChange);
         ov.addEventListener('submit', onSubmit);
-        ov.addEventListener('toggle', e => { if (e.target && e.target.classList && e.target.classList.contains('stp-snackbox')) snackOpen = e.target.open; }, true);
         dragDown(ov);
         D.addEventListener('keydown', onKey);
         D.body.appendChild(ov);

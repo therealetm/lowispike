@@ -21,8 +21,11 @@ test('BH-042: Buy again (fill) and its Undo carry data-spend', () => {
     }
 });
 
-test('BH-042: a snack tick (Bought) and Kitchen cart ✓ Bought carry data-spend; the x already counts as a close control', () => {
-    for (const a of ['data-stp-snack-got', 'data-stp-kit-got']) {
+/* Nov 6 2026 (test changed, why): the snack list's own rows (tick, x) left with the snack list; its snacks are Cart lines, whose
+   last minus is data-spend (below). The Kitchen's ✓ Bought keeps the rule. */
+test('BH-042: Kitchen cart ✓ Bought carries data-spend; the x already counts as a close control', () => {
+    assert.equal(tags('data-stp-snack-got').length, 0, 'no snack tick any more');
+    for (const a of ['data-stp-kit-got']) {
         const t = tags(a); assert.ok(t.length, a + ' is drawn');
         t.forEach(tg => assert.ok(/data-spend/.test(tg), a + ' carries data-spend: ' + tg.slice(0, 140)));
     }

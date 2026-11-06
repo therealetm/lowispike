@@ -47,7 +47,8 @@ test('the list and the Shop from home door line up with the store row and search
 });
 
 test('Buy again is one row, never a stack of pills that grows with every snack', () => {
-    const fn = sp.slice(sp.indexOf('function snackHTML()'), sp.indexOf('function repaintSnacks()'));
+    /* Nov 6 2026 (test changed, why): Buy again moved from the snack list into the Cart (one list); the one-row rule is the same */
+    const fn = sp.slice(sp.indexOf('function cartAgainHTML()'), sp.indexOf('function cartAddForm()'));
     assert.ok(fn.length > 100);
     assert.doesNotMatch(fn, /v\.again\.map\(/, 'no button per snack');
     assert.doesNotMatch(fn, /data-stp-snack-again=/);
@@ -55,9 +56,10 @@ test('Buy again is one row, never a stack of pills that grows with every snack',
     assert.match(fn, /data-stp-snack-undo/, 'Undo after the fill');
     assert.match(fn, /T\('Buy again', 'Wieder kaufen', 'Comprar otra vez'\)/);
     assert.match(fn, /T\('Undo', 'Rückgängig', 'Deshacer'\)/);
-    const click = sp.slice(sp.indexOf('function snackClick(t)'), sp.indexOf('/* ---------------- Kitchen'));
-    assert.match(click, /C\.snackRefill\(/);
+    const click = sp.slice(sp.indexOf('function cartAgain(t)'), sp.indexOf('function onSubmit(e)'));
+    assert.match(click, /againNames\(\)\.forEach\(n => \{ if \(cartAdd\(n\)\)/, 'every recent snack into the Cart in one go');
     assert.match(click, /data-stp-snack-undo/);
+    assert.match(click, /sh\.setQty\(id, 0\)/, 'Undo takes exactly those lines back out');
     const rowCss = rule(css, '.stp-again-t small');
     assert.strictEqual(prop(rowCss, 'white-space'), 'nowrap');
     assert.strictEqual(prop(rowCss, 'text-overflow'), 'ellipsis', 'the preview is one line that ends in ...');

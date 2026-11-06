@@ -46,17 +46,18 @@ test('Again also offers the snacks you logged in Log meal, never one already on 
     assert.deepStrictEqual(C.snackView(null, null), { buy: [], again: [] });
 });
 
-test('the Shop panel shows Snacks to buy at the top, with its own storage, in three languages', () => {
+/* Nov 6 2026 (test changed, why): Emmanuel asked why snacks have a place of their own next to the Snacks category ("so that I have the
+   things in Warenkorb"). The list keeps its storage (it travels with the account); what is still to buy on it moves into the Cart
+   once, logged snacks from Log meal still feed Buy again, and Buy again fills the Cart. Run for real in tests/supermarket-one-list.test.cjs. */
+test('the snack list keeps its storage; its snacks, Buy again (with logged snacks) and adding by name are the Cart\'s now', () => {
     assert.match(sp, /const SKEY = 'lowi\.snackBuy\.v1';/);
-    /* Oct 27 2026 (test changed, why): Emmanuel found Supermarket "so overwhelming". Snacks to buy (with Buy again) folds into one
-       quiet line, My snack list, at the top of the product list and at the end of the store choice; it opens in place */
-    /* Nov 5 2026 (test changed, why): Plan my week (owner Phase B item 3) sits just above it */
-    assert.match(sp, /'<div class="stp-scroll">' \+ planRowHTML\(\) \+ snackBox\(\) \+ gen \+ inner/, 'product list: Plan my week, then the snack line first');
-    assert.match(sp, /chains \+ '<\/div>' \+\s+snackBox\(\) \+ '<p class="stp-fine">'/, 'store choice: the snack line after the chains');
-    assert.match(sp, /function snackBox\(\)[\s\S]{0,500}snackHTML\(\) \+ '<\/details>'/);
-    assert.match(sp, /T\('Snacks to buy', 'Snacks zum Einkaufen', 'Snacks para comprar'\)/);
     assert.match(sp, /l\.slot === 'snack'/, 'logged snacks from Log meal');
+    assert.match(sp, /function snacksToCart\(\) \{[\s\S]{0,400}C\.snackGot\(next, i\.id\)/, 'moved once, counted as moved');
+    assert.match(sp, /cartUndo = null;\n        snacksToCart\(\);\n        ov = D\.createElement\('div'\);/, 'when Shop opens');
+    assert.match(sp, /function againNames\(\) \{ return C\.snackView\(snacks, loggedSnacks\(\)\)\.again\.filter\(n => !inCart\(n\)\); \}/);
     assert.match(sp, /ov\.addEventListener\('submit', onSubmit\);/);
-    assert.match(sp, /\/\^\(snacks\|sweets\|fruit\)\$\/\.test\(r\.group/, 'snack products can go straight on the list');
-    assert.match(sp, /if \(qv && qv\.contains\(t\)\) \{ snackClick\(t\); return; \}/);
+    assert.match(sp, /getAttribute\('data-stp-cart-form'\)/, 'the Cart\'s own add field');
+    assert.match(sp, /T\('Add something to the cart', 'Etwas in den Warenkorb legen', 'Añadir algo al carrito'\)/);
+    assert.doesNotMatch(sp, /data-stp-snack-qv|stp-snack-qv/, 'a product card has one add button, + Cart');
+    assert.match(sp, /if \(qv && qv\.contains\(t\)\) return;/, 'a tap inside an open product card never reaches the list under it');
 });

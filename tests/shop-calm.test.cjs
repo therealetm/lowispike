@@ -27,9 +27,15 @@ test('Supermarket: Cart is a round button in the title row, Scan in the shop is 
   assert.match(sp, /if \(a === 'scanshop'\) \{ close\(\); setTimeout\(\(\) => \{ try \{ W\.LowiShopScan\.open\(\); \} catch \(x\) \{\} \}, 200\); return; \}/);
 });
 
-test('the snack list (with Buy again) is folded into one closed line, My snack list / Meine Snackliste / Mi lista de snacks', () => {
-  assert.match(sp, /<details class="stp-snackbox"/);
-  assert.match(sp, /T\('My snack list', 'Meine Snackliste', 'Mi lista de snacks'\)/);
+/* Nov 6 2026 (test changed, why): Emmanuel, Supermarkt: "Why do we have a special place for snacks and then a snacks button? ...
+   so that I have the things in Warenkorb". The folded snack line (Oct 27) is gone: snacks are the Snacks category like any product,
+   and what the snack list held (to buy, Buy again, adding by name) lives in the Cart. tests/supermarket-one-list.test.cjs runs it. */
+test('one list: no snack line in Supermarkt or the store choice; Buy again and adding by name sit in the Cart', () => {
+  assert.doesNotMatch(sp, /stp-snackbox|function snackBox\(|T\('My snack list'/, 'no own snack place');
+  assert.match(sp, /'<div class="stp-scroll">' \+ planRowHTML\(\) \+ gen \+ inner/);
+  const cart = sp.slice(sp.indexOf('    function cartHTML() {'), sp.indexOf('    let cartOpen = false;'));
+  assert.match(cart, /'<div class="stp-qv-scroll stp-cart-scroll">' \+ cartAgainHTML\(\) \+/, 'Buy again on top of the Cart');
+  assert.match(cart, /cartAddForm\(\) \+ totalHTML/, 'adding by name under the lines');
 });
 
 /* Nov 5 2026 (test changed, why): owner Phase B item 3, "Incorporate Zu Hause planning into Supermarkt as Plan my week". The planner

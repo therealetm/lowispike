@@ -157,7 +157,21 @@ Same release path and checks as above (Chromium only, not on a real iPhone).
    LIVE the same way (6 changed files byte-identical live, clean Chromium with the service worker, 0 page errors). Test
    `tests/supermarket-one-list.test.cjs`; walk `tools/check-supermarket-one-list.cjs` (390x844 de, 375x667 en).
    `tests/meal-slots-live.cjs` (WebKit) stops on a Home "Log" orb that no longer exists, before its Shop step (stale before this).
-5. **Carousels, share, save, weekly card planner**: not started in code. Findings so far: For You posts have a `meta` jsonb and
-   one `photo_url`; a carousel can ride in `meta.slides` (photos uploaded as `<uid>/<id>-<n>.jpg` in the same bucket), saving and
-   the week planner can be `lowi.*` keys that travel with the account, so phase 1 may need no new table. Sharing one post to
-   logged-out people needs a check of who may read `posts` (RLS) before any SQL proposal.
+5. **Carousels, share, save, weekly card planner**, in parts:
+   - **Carousels** (up to 6 photos in one post, swipe sideways in the For You card, dots above the name; pictures stored as
+     `<uid>/<id>-N.jpg`, listed in `meta.slides`, no new column; the phone keeps links once shared; delete removes every picture;
+     plus a fix: every new post used to be sent twice): **20261106-072917** (main `da786398`), VERIFIED LIVE (carousel-core.js and
+     the shell files byte-identical live, clean Chromium, 0 errors). Test `tests/carousel-posts.test.cjs`; walks: local Chromium
+     390x844 de, 375x667 en; the repo's fake Supabase (tools/sim): 3 uploads, meta.slides, stored post 695 bytes.
+   - **Saved one tap away** (bookmark + count under My posts once something is saved; the list holds other members' posts too;
+     a tap opens the post; one that left For You says so): **20261106-074237** (main `0e4d4475`), VERIFIED LIVE. Test
+     `tests/foryou-saved.test.cjs`; walk 390x844 de/en, 375x667 es.
+   - **Share one post** (share sheet / link; logged-out people see that one post with "Become a member / Log in"): not started.
+     Note: Share left For You on 28 Oct at the owner's request; this brings it back on purpose. Every visitor is signed in
+     anonymously, so reading one post by id should need no SQL; check before building.
+   - **"Post to Community too"**: not started; meaning to confirm (For You is already a Community tab; probably also a card in Chat).
+   - **Weekly card planner** (Circle tab next to Billard / Mischen / Swipen; Mon-Sun x breakfast, lunch, dinner, snack; cards from
+     saved carousels and recipes; "very smart"): not started. Saved posts and recipes are the card source; can live in a
+     `lowi.*` key that travels with the account (no table).
+   - Voice: a new toast sentence needs a recorded clip (`tools/app-voice/build.py`, edge-tts); this sandbox cannot reach it, so the
+     Saved fallback is plain text in the row instead of a new toast.

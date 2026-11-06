@@ -34,6 +34,11 @@ const COPY={
   sbDayV:['{h}/{c} h · +{x} XP','{h}/{c} Std · +{x} XP','{h}/{c} h · +{x} XP'],
   sbRoom:['Players','Spieler','Jugadores'],
   sbRoomV:['{n} in the room','{n} im Raum','{n} en la sala'],
+  /* Nov 6 2026 tables of 24: the line names your table; the invite brings a friend to it when it has room */
+  sbTableV:['{n} at table {t}','{n} an Tisch {t}','{n} en la mesa {t}'],
+  invite:['Invite to my table','An meinen Tisch einladen','Invitar a mi mesa'],
+  inviteText:['Come and play at my table in LOWiSPIKE','Komm an meinen Tisch in LOWiSPIKE','Ven a jugar a mi mesa en LOWiSPIKE'],
+  inviteCopied:['Link copied','Link kopiert','Enlace copiado'],
   sbMin:['{m} min','{m} Min','{m} min'],
   sbHour:['{h} h {m} min','{h} Std {m} Min','{h} h {m} min'],
   pushed:['{n} knocked you away while you were gone','{n} hat dich weggestoßen, während du weg warst','{n} te empujó mientras no estabas'],
@@ -65,6 +70,7 @@ let play=null,playEnd=null;    /* a shot being animated: its own table, and the 
 let gal=null,wrap=null,felt=null,fx=null,ctx=null,ballsEl=null,toastEl=null,liveEl=null,stickEl=null,midEl=null,boardEl=null;
 let scale=.3,dpr=1,fw=0,fh=0,raf=0,acc=0,lastT=0;
 let people=[],peopleKey='',me='',sel='';
+let tableNo=0,members=null;   /* Nov 6 2026 tables of 24: your table and its members (null = no tables yet, everyone) */
 const els=new Map(),arts=new Map(),trails=new Map(),sparks=[];
 const hold=new Map();          /* uid -> time until which a database row must not move this ball (a shot just wrote it) */
 const seenIds=new Set();
@@ -87,11 +93,13 @@ function build(g){gal=g;g.classList.add('rt-on');
     '<div class="rt-stick" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i class="rt-pull" aria-hidden="true"></i><i class="rt-well" aria-hidden="true"></i>'+
       '<span class="rt-knob" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="6.2"/><path d="M12 2.8v4M12 17.2v4M2.8 12h4M17.2 12h4"/><circle cx="12" cy="12" r="1.6" class="rt-dot"/></svg></span></div>'+
     '<div class="rt-board" role="group"><div class="rt-row rt-r-mid"><span class="rt-k"><i class="rt-ring" aria-hidden="true"></i><span class="rt-kt"></span></span><b class="rt-v"></b></div>'+
-      '<div class="rt-row rt-r-day"><span class="rt-k"><span class="rt-kt"></span></span><b class="rt-v"></b></div><div class="rt-row rt-r-n"><span class="rt-k"><span class="rt-kt"></span></span><b class="rt-v"></b></div></div>'+
+      '<div class="rt-row rt-r-day"><span class="rt-k"><span class="rt-kt"></span></span><b class="rt-v"></b></div><div class="rt-row rt-r-n"><span class="rt-k"><span class="rt-kt"></span></span><b class="rt-v"></b></div>'+
+      '<button type="button" class="rt-inv" hidden></button></div>'+
     '<span class="sr-only rt-live" aria-live="polite"></span>';
   felt=wrap.querySelector('.rt-felt');fx=wrap.querySelector('.rt-fx');ctx=fx.getContext&&fx.getContext('2d');ballsEl=wrap.querySelector('.rt-balls');
   toastEl=wrap.querySelector('.rt-toast');stickEl=wrap.querySelector('.rt-stick');liveEl=wrap.querySelector('.rt-live');midEl=wrap.querySelector('.rt-mid');boardEl=wrap.querySelector('.rt-board');
   felt.setAttribute('aria-label',tr('table'));stickEl.setAttribute('aria-label',tr('stick'));boardEl.setAttribute('aria-label',tr('board'));boardT='';
+  const inv=boardEl.querySelector('.rt-inv');if(inv)inv.addEventListener('click',e=>{e.stopPropagation();invite();});
   g.appendChild(wrap);els.clear();wire();layout();
   try{if(W.ResizeObserver){const ro=new ResizeObserver(()=>{layout();render();});ro.observe(g);}}catch(e){}}
 function layout(){if(!wrap||!gal)return;const gw=gal.clientWidth,gh=gal.clientHeight;if(!gw||!gh)return;
@@ -120,8 +128,9 @@ function dur(ms){const m=Math.max(0,Math.floor(ms/60000));return m<60?tr('sbMin'
 function board(){if(!boardEl)return;const mh=midShown,o=midLoad(),now=srvNow(),st=o.st;
   const mid=mh&&mh===me?(st&&st.u===me&&isFinite(now)&&isFinite(st.since)?tr('sbYouFor',null,{t:dur(now-st.since)}):tr('you')):mh?(nameOf(mh)||tr('someone')):tr('sbNobody');
   const h=isFinite(now)&&o.d===dayOf(now)?Math.min(T.MID_CAP,o.n|0):0;
-  const rows=[[tr('sbMid'),mid],[tr('sbDay'),tr('sbDayV',null,{h,c:T.MID_CAP,x:h*T.MID_XP})],[tr('sbRoom'),tr('sbRoomV',people.length)]];
-  const key=JSON.stringify(rows)+(mh===me?'m':mh?'o':'');if(key===boardT)return;boardT=key;
+  const rows=[[tr('sbMid'),mid],[tr('sbDay'),tr('sbDayV',null,{h,c:T.MID_CAP,x:h*T.MID_XP})],[tr('sbRoom'),tableNo?tr('sbTableV',people.length,{t:tableNo}):tr('sbRoomV',people.length)]];
+  const key=JSON.stringify(rows)+(mh===me?'m':mh?'o':'')+(tableNo?'t':'');if(key===boardT)return;boardT=key;
+  const inv=boardEl.querySelector('.rt-inv');if(inv){inv.hidden=!tableNo;inv.textContent=tr('invite');}
   ['.rt-r-mid','.rt-r-day','.rt-r-n'].forEach((q,i)=>{const el=boardEl.querySelector(q),k=el&&el.querySelector('.rt-kt'),v=el&&el.querySelector('.rt-v');if(k)k.textContent=rows[i][0];if(v)v.textContent=rows[i][1];});
   boardEl.classList.toggle('held',!!mh);boardEl.classList.toggle('mine',!!mh&&mh===me);}
 function stickAim(dx,dy,r){const k=Math.max(90,Math.min(170,fw*.42))/Math.max(1,r);return C.aim(dx*k,dy*k,Math.max(90,Math.min(170,fw*.42)));}
@@ -134,6 +143,7 @@ function ballEl(p){let el=els.get(p.uid);if(el&&el.isConnected)return el;
 
 /* ---------- people on the table ---------- */
 function sync(){const m=mapApi();if(!m||!m.people)return;let list=[];try{list=m.people()||[];}catch(e){list=[];}
+  list=C.atTable(list,members);   /* Nov 6 2026: only your table's balls (everyone while there are no tables yet) */
   me=myUid();if(!me&&!list.some(p=>p.me))list.unshift({uid:'me',me:true,n:'',label:tr('you'),c:'#9cdac7'});
   try{sel=m.selected?m.selected()||'':'';}catch(e){sel='';}
   const key=list.map(p=>p.uid+':'+p.label).join('|');
@@ -231,7 +241,7 @@ function onBlastHit(uid){if(!play)return;
   /* a direct hit on a real member from your own shot still sends them energy (the same checks and limits as before) */
   if(play._mine&&uid!==me&&realUid(uid)){const t=giftAt.get(uid)||0,now=Date.now();if(now-t>60000){giftAt.set(uid,now);try{const m=mapApi();if(m&&m.energy&&m.energy(uid)==='sent'&&W.LowiEnergy&&W.LowiEnergy.gift)W.LowiEnergy.gift(uid);}catch(e){}}}
   if(uid===me&&play._by&&play._by!==me)toast(tr('hitYou',play._byName||nameOf(play._by)||'?'),2600);}
-function remote(raw){const m=C.unpack(raw);if(!m)return false;if(m.by===me||seenIds.has(m.id))return false;seenIds.add(m.id);if(seenIds.size>200)seenIds.delete(seenIds.values().next().value);
+function remote(raw){const m=C.unpack(raw);if(!m)return false;if(m.by===me||seenIds.has(m.id))return false;if(members&&!members.has(m.by))return false;   /* a shot at another table */seenIds.add(m.id);if(seenIds.size>200)seenIds.delete(seenIds.values().next().value);
   stats.remote++;stats.lastRemote={id:m.id,by:m.by,n:m.s.length};if(play){play.settle();finishPlay();}tween=null;
   const res=C.simulate(m.s,m.by,m.dx,m.dy,m.p,m.legacy);const end=(m.f&&m.f.length)?m.f:(res?res.final:m.s);
   play=C.table();play.load(m.s);play._t0=Date.now();play._by=m.by;play._byName=m.n;if(!play.shoot(m.by,m.dx,m.dy,m.p,m.legacy)){play=null;for(const r of end){if(rest.find(r[0]))rest.set(r[0],r[1],r[2]);saved.set(r[0],{x:r[1],y:r[2]});}render();return true;}
@@ -332,10 +342,33 @@ function midCheck(force){if(!realUid(me)||!loaded||play||typeof W.award!=='funct
 /* ---------- entry: community-chat.js place() hands the Room view over ---------- */
 function mount(g){if(off||!g||!g.appendChild)return false;if(!mapApi()||!mapApi().people)return false;
   if(gal!==g||!wrap||!wrap.isConnected){if(wrap&&wrap.isConnected&&gal!==g)wrap.remove();build(g);}else if(!g.classList.contains('rt-on'))g.classList.add('rt-on');
-  sync();if(!loaded||Date.now()-lastLoad>15000)loadRows(!loaded);showNote();poll();
+  sync();seat();if(!loaded||Date.now()-lastLoad>15000)loadRows(!loaded);showNote();poll();
   /* the round back button slides in after the Room opens: measure the control row again once it has settled */
   for(const ms of [450,1300])setTimeout(()=>{if(wrap&&wrap.isConnected){layout();render();}},ms);return true;}
-function poll(){if(pollT)return;pollT=setInterval(()=>{if(!visible()){return;}if(!play)loadRows();showNote();board();},15000);if(pollT&&pollT.unref)pollT.unref();}
+function poll(){if(pollT)return;pollT=setInterval(()=>{if(!visible()){return;}if(!play)loadRows();seat();showNote();board();},15000);if(pollT&&pollT.unref)pollT.unref();}
+
+/* ---------- tables of 24 (Nov 6 2026, design review point 6, Emmanuel) ----------
+   The Room asks the server for your seat (public.room_seat: your table, or the inviter's when you came with an invite and it has room,
+   else the first table with a free seat, else a new one; 14 days away frees a seat) and shows only that table's members. Chat,
+   ranking and everything else stay shared. Until the SQL (supabase/proposals/room_tables_20261106.sql) runs, the function is not
+   there: one table for everyone, as before, and the app stops asking until it starts again. */
+const INV_KEY='lowi.room.invite.v1';
+let seatP=null,seatAt=0,seatOff=false;
+try{const u=C.inviteFrom(W.location&&W.location.search);if(u){localStorage.setItem(INV_KEY,JSON.stringify({u,at:Date.now()}));
+  try{const url=new URL(W.location.href);url.searchParams.delete('tisch');W.history.replaceState(W.history.state,'',url.pathname+url.search+url.hash);}catch(e){}}}catch(e){}
+function inviter(){try{const o=JSON.parse(localStorage.getItem(INV_KEY)||'null');return o&&realUid(o.u)&&o.u!==me?o.u:null;}catch(e){return null;}}
+function seat(){if(seatOff||seatP||!realUid(me)||Date.now()-seatAt<60000)return seatP||Promise.resolve(tableNo);const c=cloud();if(!c||!c.client)return Promise.resolve(tableNo);seatAt=Date.now();
+  seatP=Promise.resolve(c.client()).then(sb=>{if(!sb||!sb.rpc)return 0;return sb.rpc('room_seat',{p_inviter:inviter()}).then(r=>{
+      if(!r||r.error){if(r&&r.error&&/PGRST202|42883|404|not find|does not exist/i.test(String(r.error.code||'')+' '+String(r.error.message||'')))seatOff=true;return 0;}
+      const t=+r.data;if(!(t>0))return 0;try{localStorage.removeItem(INV_KEY);}catch(e){}
+      return sb.from('room_seats').select('user_id').eq('table_no',t).limit(200).then(q=>{if(!q||q.error)return 0;
+        tableNo=t;members=new Set((q.data||[]).map(x=>x.user_id));members.add(me);peopleKey='';boardT='';sync();board();return t;});});})
+    .catch(()=>0).then(t=>{seatP=null;return t;});
+  return seatP;}
+/* the invite: a link with your member id; whoever opens it and joins sits at your table when it has a free seat */
+function invite(){if(!tableNo||!realUid(me))return;const url=W.location.origin+W.location.pathname+'?tisch='+me,text=tr('inviteText');
+  try{if(navigator.share){navigator.share({title:'LOWiSPIKE',text,url}).catch(()=>{});return;}}catch(e){}
+  try{navigator.clipboard.writeText(text+' '+url).then(()=>toast(tr('inviteCopied'),2200),()=>{});}catch(e){}}
 try{D.addEventListener('lowi:energy-shot',e=>{try{remote(e.detail);}catch(x){}});
   D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='visible'&&wrap){loadRows(true).then(()=>showNote());}});
   W.addEventListener('online',()=>{if(wrap)loadRows(true);});

@@ -1739,7 +1739,8 @@ release, bug fixes quiet; he wants one short line per point with the live build 
 8 live 20261106-183649; 7 live 20261106-185443 (GitHub Pages refused its first deploy, "Deployment failed, try again later";
 the docs push after it deployed it); 1 live 20261106-220855 (Log as eaten first, then "Letzte Mahlzeit heute?"; Bubble catch stays a
 tap: making it automatic changes the XP rules, his call); 2 live 20261106-222034 (the bubble for the first missing line pulses);
-3 built (the hold ring); 5, 6 open.
+3 live 20261106-223650 (the hold ring); 6 built (tables of 24; needs supabase/proposals/room_tables_20261106.sql run once by him,
+one table for everyone until then); 5 open.
 1. Food scan result: "Log as eaten" primary for food (photo / typed name, not barcode products), "Add to cart" small; then "Letzte
    Mahlzeit heute?" (Ja, Gap starten = the Gap bubble's Last meal / Noch nicht). 28 Oct decoupling stays. Auto Bubble catch only if
    XP rules stay the same, else ask him.

@@ -168,7 +168,15 @@ function roomLayout(o){o=o||{};const gw=Math.max(0,+o.gw||0),gh=Math.max(0,+o.gh
   const fw=Math.round(T.W*scale),fh=Math.round(T.H*scale),left=Math.round((gw-fw)/2-rail),tp=top+Math.max(0,Math.round((room-(fh+2*rail))/2));
   const stick={left:pad,top:Math.round(cy-S/2),size:S},bl=pad+S+12,bw=gw-pad-bl;
   return {rail,scale,fw,fh,room:{top,height:room},table:{left,top:tp,width:fw+2*rail,height:fh+2*rail},stick,board:bw<120?null:{left:bl,top:stick.top,width:bw,height:S}};}
-const api={T,table,simulate,homeSpots,pack,unpack,enc,dec,aim,guide,guidePath,inMid,midHolder,midTick,hash,roomLayout};
+/* Nov 6 2026 (design review point 6, Emmanuel): tables of 24. The server seats every member at one table (public.room_seat,
+   supabase/proposals/room_tables_20261106.sql); a table shows only its own members' balls, so each has its own middle and its own
+   middle XP. SEATS is the most a table holds (the SQL's cap). inviteFrom: the inviter's member id from an invite link (?tisch=<id>).
+   atTable: the balls of your table (members = null while there are no tables yet: everyone, as before). */
+const SEATS=24;
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function inviteFrom(search){const m=/[?&]tisch=([^&#]*)/.exec(String(search||''));let v='';try{v=m?decodeURIComponent(m[1]).trim():'';}catch(e){v='';}return UUID.test(v)?v.toLowerCase():null;}
+function atTable(list,members){if(!members)return (list||[]).slice();return (list||[]).filter(p=>p&&(p.me||members.has(p.uid)));}
+const api={T,table,simulate,homeSpots,pack,unpack,enc,dec,aim,guide,guidePath,inMid,midHolder,midTick,hash,roomLayout,SEATS,inviteFrom,atTable};
 if(typeof module==='object'&&module.exports){module.exports=api;}
 if(W)W.LowiTableCore=api;
 })(typeof window==='object'?window:(typeof globalThis==='object'?globalThis:null));

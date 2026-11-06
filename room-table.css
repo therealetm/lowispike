@@ -76,6 +76,16 @@
 .rt-board.held .rt-ring{border-style:solid;border-color:#ffd678;box-shadow:0 0 6px rgba(255,214,120,.8)}
 .rt-board.held .rt-r-mid .rt-v{color:#ffd678}
 .rt-board.mine .rt-r-mid .rt-v{color:#bff3e2}
+/* Nov 6 2026 (design review point 6, tables of 24): the invite pill sits on the scoreboard's top edge, only once you have a table;
+   the board itself lets taps through, the pill takes them (44 pt with its ::after) */
+.rt-inv{position:absolute;right:12px;top:0;transform:translateY(-60%);pointer-events:auto;display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:999px;
+  border:1px solid rgba(143,231,255,.45);background:rgba(10,20,48,.94);color:#bff3ff;font:700 12px/1 -apple-system,system-ui,sans-serif;letter-spacing:.01em;cursor:pointer;-webkit-tap-highlight-color:transparent}
+/* the Community pane's general button rules (16 px, full width from the left) must not stretch the pill */
+.rt-wrap .rt-board .rt-inv{left:auto!important;width:auto!important;min-width:0!important;display:inline-flex!important;font-size:12px!important;line-height:1!important;white-space:nowrap!important;margin:0!important}
+.rt-wrap .rt-board .rt-inv[hidden]{display:none!important}
+.rt-inv::after{content:"";position:absolute;inset:-8px}
+.rt-inv[hidden]{display:none}
+.rt-inv:focus-visible{outline:2px solid #9fd8ff;outline-offset:2px}
 html[data-black] .rt-stick{background:#1c1c1e;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 html[data-black] .rt-board{background:#1c1c1e;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);-webkit-backdrop-filter:none;backdrop-filter:none}
 @media (prefers-reduced-motion:reduce){.rt-knob,.rt-pull{transition:none}}

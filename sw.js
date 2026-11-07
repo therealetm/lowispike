@@ -24,6 +24,7 @@ STATIC.push("last-meal-ask.js", "last-meal-ask.css"); /* Nov 6 2026 "Last meal t
 STATIC.push("missing-pulse.js", "missing-pulse.css"); /* Nov 6 2026 the Home bubble for what is missing pulses: own line */
 STATIC.push("hold-ring.js", "hold-ring.css"); /* Nov 6 2026 the hold ring on Home: own line */
 STATIC.push("chat-react-who.js", "chat-react-who.css"); /* Nov 7 2026 who reacted (long press on a reaction): own line */
+STATIC.push("chat-photo-save.js", "chat-photo-save.css"); /* Nov 7 2026 hold a chat photo to save it: own line */
 STATIC.push("food-names-core.js"); /* Oct 26 food names in the app language (cart + Give a hand): own line */
 STATIC.push("week-basket-core.js", "week-basket.js", "week-basket.css"); /* Oct 26 Shop from home weekly basket in Supermarket (MAYA-HANDOFF 0.21): own line */
 STATIC.push("mic-dictate.css", "mic-session.js", "mic-dictate-core.js", "mic-dictate.js"); /* Oct 26 mic dictation in text fields: own line */

@@ -248,3 +248,14 @@ html.cs-chat-map-typing #cmPaneChat[data-spirit-chat] .cm-compose{transform:tran
 .cs-overlay .r2-sh{scroll-padding-bottom:24px}
 html[data-ui=light] .cs-sheet .cp-blk>button[data-chat="block"]{color:#d70015}
 html[data-ui=light] .cs-sheet .cp-blk-note{color:rgba(60,60,67,.7)}
+/* Nov 7 2026 (Emmanuel: chat photos "exactly like WhatsApp bubble or iMessage bubble when you post a picture. Very important"):
+   the photo is the bubble: a thin frame of the bubble's own colour, the same rounded corners, the photo's own shape (portrait stays
+   portrait), the name above it in a group, the time on the photo when there are no words; a caption or meal sits under the photo */
+#cmPaneChat[data-spirit-chat] .cp-msg .cm-bub.cm-pbub{padding:3px;min-width:0}
+#cmPaneChat .cm-pbub .cs-by:not(:empty){padding:3px 9px 4px}
+#cmPaneChat .cm-pbub .cs-photo{margin:0;border-radius:15px;width:min(268px,68vw);max-width:100%;background:rgba(0,0,0,.25);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#cmPaneChat .cm-pbub .cs-photo img{width:100%;height:auto;min-height:96px;max-height:min(420px,58vh);object-fit:cover;-webkit-touch-callout:none}
+#cmPaneChat .cm-pbub .cm-t{padding:6px 9px 0}
+#cmPaneChat .cm-pbub:not(.cm-pcap) .cm-foot{position:absolute;right:9px;bottom:9px;margin:0;padding:2px 8px;border-radius:999px;background:rgba(0,0,0,.5);color:#fff}
+#cmPaneChat .cm-pbub:not(.cm-pcap) .cm-foot time{color:#fff;opacity:.95}
+#cmPaneChat .cm-pbub.cm-pcap .cm-foot{padding:2px 9px 4px}

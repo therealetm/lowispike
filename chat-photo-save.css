@@ -1,0 +1,16 @@
+/* LOWiSPIKE · save a chat photo (7 Nov 2026; chat-photo-save.js): the one button over a held picture, and the big view. */
+.cps-pill { position: fixed; z-index: 2147483100; display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 18px;
+    border-radius: 999px; border: 1px solid rgba(255, 255, 255, .22); color: #fff; font: 700 15px/1 -apple-system, system-ui, sans-serif;
+    background: rgba(28, 31, 42, .86); -webkit-backdrop-filter: blur(22px) saturate(170%); backdrop-filter: blur(22px) saturate(170%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 12px 30px rgba(0, 0, 0, .45); cursor: pointer; -webkit-tap-highlight-color: transparent;
+    opacity: 0; transform: scale(.94); transition: opacity .14s ease, transform .16s ease; touch-action: manipulation; }
+.cps-pill.on { opacity: 1; transform: none; }
+.cps-pill svg { width: 20px; height: 20px; }
+.cps-pill:focus-visible { outline: 3px solid #9fd8ff; outline-offset: 2px; }
+.cps-view { position: fixed; inset: 0; z-index: 2147483200; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    padding: calc(env(safe-area-inset-top, 0px) + 20px) 16px calc(env(safe-area-inset-bottom, 0px) + 20px); background: rgba(0, 0, 0, .92); }
+.cps-view img { max-width: 100%; max-height: 78vh; border-radius: 14px; -webkit-touch-callout: default; -webkit-user-select: auto; user-select: auto; }
+.cps-view p { margin: 0; color: rgba(255, 255, 255, .8); font: 600 15px/1.3 -apple-system, system-ui, sans-serif; text-align: center; }
+.cps-x { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); right: 14px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .3);
+    background: rgba(255, 255, 255, .12); color: #fff; font: 400 26px/1 -apple-system, system-ui, sans-serif; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .cps-pill { transition: none; transform: none; } }

@@ -292,3 +292,15 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose #cmMention>*
    takes no room. The floating actions menu styles itself (CX_CSS in community-chat.js), it lives outside the room. ---- */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-rx:empty,html body #cmPaneChat[data-spirit-chat] .cm-rx:empty{display:none!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-rx .cm-chip .cm-emo{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",system-ui,sans-serif;font-size:15px;line-height:1}
+/* Nov 7 2026 (Emmanuel: chat photos "exactly like WhatsApp bubble or iMessage bubble when you post a picture. Very important"): a photo
+   message is the photo in a thin frame of its own bubble colour, one width for every photo (portrait stays portrait, up to 58% of the
+   screen high), the sender's name above it, the time on the photo when there are no words; a caption or meal sits under the photo
+   (cm-pbub / cm-pcap from community-chat.js photoBub) */
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cp-msg .cm-bub.cm-pbub{padding:3px!important;width:min(272px,70vw)!important;max-width:min(76%,272px)!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub .cs-photo{margin:0!important;width:100%;border-radius:15px!important;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub .cs-photo img{width:100%;height:auto;min-height:96px;max-height:min(420px,58vh);object-fit:cover;border-radius:15px;-webkit-touch-callout:none}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub .cs-by:not(:empty){padding:3px 9px 4px}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub .cm-t{display:block!important;padding:6px 9px 0!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub:not(.cm-pcap) .cm-foot{float:none!important;position:absolute!important;right:10px;bottom:10px;height:20px;margin:0!important;padding:0 8px!important;border-radius:999px;background:rgba(0,0,0,.5)!important;color:#fff!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub:not(.cm-pcap) .cm-foot time{color:#fff!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub.cm-pcap .cm-foot{margin:6px 6px 2px 10px!important}

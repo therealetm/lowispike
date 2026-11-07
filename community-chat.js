@@ -598,6 +598,10 @@ function mmss(s){s=Math.max(0,Math.round(+s||0));return Math.floor(s/60)+':'+Str
 function voiceHtml(vo,by,cls){let h=0;for(const ch of vo.src)h=(h*31+ch.charCodeAt(0))>>>0;let bars='';for(let i=0;i<24;i++){h=(h*1103515245+12345)>>>0;bars+='<i style="height:'+(28+(h>>>8)%64)+'%"></i>';}
  return '<button type="button" class="'+cls+'" data-chat="voice" data-sfx="none" data-src="'+esc(vo.src)+'" data-dur="'+vo.dur+'" aria-pressed="false" aria-label="'+esc(fill('voicePlay',by||'')+', '+mmss(vo.dur))+'"><span class="cs-vi" aria-hidden="true"></span><span class="cs-vw" aria-hidden="true">'+bars+'<span class="cs-vp">'+bars+'</span></span><span class="cs-vt">'+esc(mmss(vo.dur))+'</span></button>';}
 function plain(m){const vo=voiceOf(m);if(vo)return '\u{1F3A4} '+tr('voiceNote')+' \u00b7 '+mmss(vo.dur);const ph=photoOf(m);return ph?(ph.meal?'\u{1F37D} '+ph.meal.name:'\u{1F4F7} '+tr('newPic'))+(ph.caption?' \u00b7 '+ph.caption:''):String(m&&m.t||'');}
+/* Nov 7 2026 (Emmanuel: chat photos "exactly like WhatsApp bubble or iMessage bubble when you post a picture. Very important"):
+   a photo message's bubble is the photo with a thin frame (cm-pbub); without words the time sits on the photo, with a caption or a
+   meal it stays under them (cm-pcap) */
+function photoBub(m){if(voiceOf(m))return '';const ph=photoOf(m);return ph?' cm-pbub'+(ph.caption||ph.meal?' cm-pcap':''):'';}
 function msgBody(m){const vo=voiceOf(m);if(vo)return voiceHtml(vo,m.by,'cs-voice')+(vo.rest?'<div class="cm-t">'+text(vo.rest)+'</div>':'');const ph=photoOf(m);if(!ph)return '<div class="cm-t">'+text(m.t)+'</div>';const md=!!(ph.meal&&W.LowiMealDetail&&m.id&&(!botMeal(m)||(W.LowiMealDetail.hasBotRoute&&W.LowiMealDetail.hasBotRoute())));if(md)ph.meal.mid=String(m.id);return '<button type="button" class="cs-photo" data-chat="photo" data-sfx="none"'+(md?' data-md="'+esc(m.id)+'" aria-haspopup="dialog"':'')+' data-src="'+esc(ph.src)+'" data-name="'+esc(m.by||'')+'" aria-label="'+esc(fill(ph.meal?'mealOf':'photoOf',m.by||''))+'"><img loading="lazy" decoding="async" alt="" src="'+esc(ph.src)+'"></button>'+(ph.meal?mealHtml(ph.meal,m.md)+(W.LowiBotRecipe&&W.LowiBotRecipe.chatRow?W.LowiBotRecipe.chatRow(m):''):'')+(ph.caption?'<div class="cm-t">'+text(ph.caption)+'</div>':'');}
 function time(ts){try{return new Date(ts).toLocaleTimeString(['en','de','es'][Math.max(0,lang())],{hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
 /* Oct 16, round 5 (E-man: "the Chat room only shows my own messages"): the chats with the galaxy companions live on this
@@ -656,7 +660,7 @@ function renderMessage(m,all,prev,next){
  /* time sits bottom-right inside the bubble, Telegram-style; the ··· actions button rides next to it */
  const foot='<div class="cm-foot">'+(pending?'':button('more','<span aria-hidden="true">···</span>','data-id="'+esc(m.id)+'" aria-label="'+tr('more')+'" aria-haspopup="menu" aria-expanded="false"','cp-more'))+'<time datetime="'+new Date(m.ts).toISOString()+'">'+esc(time(m.ts))+'</time></div>';
  return '<article class="cm-msg cp-msg'+(mine?' mine':'')+(start?' cp-start':'')+(end?' cp-end':'')+'" id="cm-'+esc(m.id)+'" data-who="'+esc(m.by)+'" data-chat-id="'+esc(m.id)+'" style="--chat-color:'+esc(color)+'">'+who+
- '<div class="cm-bub" data-chat-bub="'+esc(m.id)+'">'+head+quote+msgBody(m)+foot+
+ '<div class="cm-bub'+photoBub(m)+'" data-chat-bub="'+esc(m.id)+'">'+head+quote+msgBody(m)+foot+
  (pending?'<div class="cs-delivery" role="status">'+tr(m.status==='sending'?'sending':'unconfirmed')+(m.status==='sending'?'':button('retry-send',tr('checkRetry'),'data-id="'+esc(m.id)+'"','')+button('discard',tr('discard'),'data-id="'+esc(m.id)+'"',''))+'</div>':'<div class="cm-rx" data-rx="'+esc(m.id)+'"></div>')+'</div></article>';
 }
 /* Oct 19, crash round 2: update a long list (the chat, the galaxy) piece by piece. parts are HTML strings (one or two elements

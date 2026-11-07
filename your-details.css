@@ -44,3 +44,5 @@ html[data-theme="light"] .yd-row:active { background: rgba(31, 143, 214, .1); }
 html[data-theme="light"] .r3-det button.yd-chip.yd-w { background: rgba(31, 143, 214, .12); border-color: rgba(31, 143, 214, .4); }
 @keyframes yd-in { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .yd-ov { animation: none; } .yd-ov.yd-out { transition: none; transform: none; } }
+/* Nov 7 2026 (design pass; his screenshot: the round back button lay on "Deine Ziele"): the last row scrolls up above the button */
+html.lw-bx-on .yd-body { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 96px); }

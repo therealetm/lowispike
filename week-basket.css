@@ -200,3 +200,5 @@
 /* Nov 7 2026: with the round back / close button at the bottom (bottom-close.js), the card's own buttons (Weiter, Einkaufsliste) end
    above it; it sat on Weiter in "Meine Woche planen" */
 html.lw-bx-on .wb-ov .wb-card { padding-bottom: 68px; }
+/* Nov 7 2026 (design pass): each question is one screen; its full height plus the 16 px section margin made it scroll 16 px */
+.wb-scroll .wb-q { margin-bottom: 0; }

@@ -197,3 +197,6 @@
 .wb-deliv summary::-webkit-details-marker { display: none; }
 .wb-deliv .wb-dls { justify-content: center; padding-top: 4px; }
 @media (min-width: 700px) { .wb-tiles { grid-template-columns: repeat(4, 1fr); } .wb-tiles.three { grid-template-columns: repeat(6, 1fr); } .wb-scroll .wb-qh { font-size: 30px; } }
+/* Nov 7 2026: with the round back / close button at the bottom (bottom-close.js), the card's own buttons (Weiter, Einkaufsliste) end
+   above it; it sat on Weiter in "Meine Woche planen" */
+html.lw-bx-on .wb-ov .wb-card { padding-bottom: 68px; }

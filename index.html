@@ -5467,6 +5467,8 @@ function showFeed(){ const h = H(); if (!h) return;
   if (window.cmSetView) cmSetView("feed"); h.go("foryou"); }
 window.TRIBE = {
   renderForYou, compose, showFeed, composeInto, setPhoto:ph => { if (C) { C.photo = ph || ""; C.photos = ph ? [ph] : []; C.meal = null; C.mealErr = ""; paintRest(); } } /* f2-photo */,
+  /* Nov 7 2026 week carousel (week-carousel.js): several pictures at once, the first is the cover */
+  setPhotos:list => { if (!C || !Array.isArray(list)) return; const ph = list.filter(Boolean).slice(0, carMax()); C.photos = ph; C.photo = ph[0] || ""; C.meal = null; C.mealErr = ""; paintRest(); },
   /* Oct 19 meal photos (meal-photo.js): Snap food's "Also share to Community" attaches the read it already has */
   sharePost /* 25 Oct: FYV videos publish through the same marks (pub / pend / fail) */,
   openMine: () => listSheet("mine") /* My posts, for Community settings and checks */,
@@ -22823,6 +22825,7 @@ window.LowiCommunityHost = {
 <script src="store-picks.js?v=20261107-213441"></script>
 <link rel="stylesheet" id="wbCss" href="week-basket.css?v=20261107-213441">
 <script src="week-basket-core.js?v=20261107-213441"></script>
+<script src="week-carousel.js?v=20261107-213441"></script>
 <script src="week-basket.js?v=20261107-213441"></script>
 <link rel="stylesheet" id="szCss" href="seller-zone.css?v=20261107-213441">
 <script src="seller-zone-data.js?v=20261107-213441"></script>

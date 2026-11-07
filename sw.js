@@ -26,7 +26,7 @@ STATIC.push("hold-ring.js", "hold-ring.css"); /* Nov 6 2026 the hold ring on Hom
 STATIC.push("chat-react-who.js", "chat-react-who.css"); /* Nov 7 2026 who reacted (long press on a reaction): own line */
 STATIC.push("chat-photo-save.js", "chat-photo-save.css"); /* Nov 7 2026 hold a chat photo to save it: own line */
 STATIC.push("food-names-core.js"); /* Oct 26 food names in the app language (cart + Give a hand): own line */
-STATIC.push("week-basket-core.js", "week-basket.js", "week-basket.css"); /* Oct 26 Shop from home weekly basket in Supermarket (MAYA-HANDOFF 0.21): own line */
+STATIC.push("week-basket-core.js", "week-basket.js", "week-basket.css", "week-carousel.js"); /* Oct 26 Shop from home weekly basket in Supermarket (MAYA-HANDOFF 0.21): own line */
 STATIC.push("mic-dictate.css", "mic-session.js", "mic-dictate-core.js", "mic-dictate.js"); /* Oct 26 mic dictation in text fields: own line */
 STATIC.push("quick-add-core.js"); /* Oct 26 quick "+" on Supermarket rows (MAYA-HANDOFF 0.35): own line, like kitchen-core.js */
 STATIC.push("quick-tour.js", "quick-tour.css"); /* Oct 26 Quick tour video sheet (MAYA-HANDOFF 0.38): own line; the .mp4 itself is never precached */

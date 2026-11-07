@@ -9,7 +9,8 @@
     if (root) root.LowiCarousel = api;
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null), function () {
     'use strict';
-    const MAX = 6;
+    /* Nov 7 2026: 8 = the week carousel's cart plus seven dinners (was 6) */
+    const MAX = 8;
     /* a picture we draw: our own https link, or a photo still on this phone (a data URL from the picker) */
     const okSrc = s => typeof s === 'string' && (/^https:\/\/[^\s"'<>]+$/.test(s) || /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(s));
     /* the pictures of a post, cover first; null when it is no carousel (fewer than 2 usable pictures) */

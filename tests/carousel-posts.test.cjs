@@ -34,15 +34,16 @@ test('which pictures a post swipes through: cover first, 2 to 6, only our own li
     assert.deepEqual(K.slidesOf({ slides: [U(1), U(1), U(2)] }), [U(1), U(2)], 'never the same picture twice');
     const bad = ['javascript:alert(1)', 'http://plain.example/x.jpg', 'https://x.example/a".jpg', 'data:text/html;base64,PHNjcmlwdD4=', 'https://x.example/a b.jpg', 7, null];
     assert.deepEqual(K.slidesOf({ slides: [U(1)].concat(bad, [U(2)]) }), [U(1), U(2)], 'anything else is left out');
-    assert.equal(K.slidesOf({ slides: Array.from({ length: 9 }, (x, i) => U(i + 1)) }).length, 6, 'at most 6');
-    assert.equal(K.MAX, 6);
+    /* test changed 7 Nov 2026 (Emmanuel's week carousel: the cart, then each day's dinner): at most 8, was 6 (week-carousel.test.cjs) */
+    assert.equal(K.slidesOf({ slides: Array.from({ length: 11 }, (x, i) => U(i + 1)) }).length, 8, 'at most 8');
+    assert.equal(K.MAX, 8);
 });
 
 test('where the pictures live and what a delete removes', () => {
     assert.equal(K.path('u1', 't1', 0), 'u1/t1.jpg', 'the cover keeps the old place');
     assert.equal(K.path('u1', 't1', 1), 'u1/t1-2.jpg');
     assert.equal(K.path('u1', 't1', 5), 'u1/t1-6.jpg');
-    assert.deepEqual(K.files('u1', 't1'), ['u1/t1.jpg', 'u1/t1.mp4', 'u1/t1.mov', 'u1/t1.webm', 'u1/t1-2.jpg', 'u1/t1-3.jpg', 'u1/t1-4.jpg', 'u1/t1-5.jpg', 'u1/t1-6.jpg']);
+    assert.deepEqual(K.files('u1', 't1'), ['u1/t1.jpg', 'u1/t1.mp4', 'u1/t1.mov', 'u1/t1.webm', 'u1/t1-2.jpg', 'u1/t1-3.jpg', 'u1/t1-4.jpg', 'u1/t1-5.jpg', 'u1/t1-6.jpg', 'u1/t1-7.jpg', 'u1/t1-8.jpg'], 'test changed 7 Nov 2026: 8 pictures, so a delete also removes -7 and -8');
 });
 
 test('the lit dot follows the swipe; the picker gives pictures only, never more than still fit', () => {
@@ -50,8 +51,8 @@ test('the lit dot follows the swipe; the picker gives pictures only, never more 
     assert.equal(K.dot(5000, 348, 3), 2); assert.equal(K.dot(-20, 348, 3), 0); assert.equal(K.dot(100, 0, 3), 0);
     const f = (n, type) => ({ name: n, type });
     assert.deepEqual(K.take([f('a', 'image/jpeg'), f('b', 'video/mp4'), f('c', 'image/png')], 0).map(x => x.name), ['a', 'c']);
-    assert.deepEqual(K.take([f('a', 'image/heic'), f('b', 'image/jpeg'), f('c', 'image/jpeg')], 4).map(x => x.name), ['a', 'b'], 'room for 2');
-    assert.deepEqual(K.take([f('a', 'image/jpeg')], 6), []);
+    assert.deepEqual(K.take([f('a', 'image/heic'), f('b', 'image/jpeg'), f('c', 'image/jpeg')], 6).map(x => x.name), ['a', 'b'], 'room for 2 (test changed 7 Nov 2026: MAX 8)');
+    assert.deepEqual(K.take([f('a', 'image/jpeg')], 8), []);
     assert.deepEqual(K.take(null, 0), []);
 });
 

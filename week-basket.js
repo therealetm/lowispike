@@ -117,6 +117,22 @@
         save();
         return ctx;
     }
+    /* the week as a carousel: the cart with the week's price first, then the dinners still to come (week-carousel.js) */
+    function postCarousel() {
+        const c = ctx, K = W.LowiWeekCarousel; if (!c || !K || !c.dinners.length) return;
+        const dl = C.days(S.start, c.dinners.length), up = C.ahead(dl, today());
+        const days = up.map(n => { const d = c.dinners[n], pr = c.prof[d.id], cost = C.dinnerCost(d.id, c.items, price, S.store, c.have);
+            return { day: dayName(dl[n]), name: tr(d.r.swapName || d.r.n), img: pic(d.id), e: d.r.e || '', meta: [pr && pr.min ? T(pr.min + ' min', pr.min + ' Min.', pr.min + ' min') : '', '\u2248 ' + eur(cost)].filter(Boolean).join(' \u00b7 ') }; });
+        if (!days.length) return;
+        const ppl = S.people === 1 ? T('1 person', '1 Person', '1 persona') : T(S.people + ' people', S.people + ' Personen', S.people + ' personas');
+        const o = { title: T('My week of dinners', 'Mein Wochenkorb', 'Mi cesta de la semana'), price: '\u2248 ' + eur(c.bs.total),
+            sub: T(days.length + ' dinners \u00b7 ' + ppl + ' \u00b7 ' + storeName(S.store), days.length + ' Abendessen \u00b7 ' + ppl + ' \u00b7 ' + storeName(S.store), days.length + ' cenas \u00b7 ' + ppl + ' \u00b7 ' + storeName(S.store)),
+            note: T('Prices are estimates', 'Preise sind Sch\u00e4tzungen', 'Precios estimados'),
+            caption: T('My low-spike week \u2248 ', 'Meine Low-Spike-Woche \u2248 ', 'Mi semana sin picos \u2248 ') + eur(c.bs.total), days };
+        toast(T('Making your carousel\u2026', 'Dein Karussell wird gemacht\u2026', 'Haciendo tu carrusel\u2026'));
+        close();
+        K.post(o).catch(e => console.error(e));
+    }
     function itemsOf(r) { try { return SL().items(r) || []; } catch (e) { return []; } }
     /* priced build of any plan, for Fit my budget */
     function priced(planIds) {
@@ -227,6 +243,9 @@
                 '<button type="button" class="wb-cta" data-wb="new">' + T('Plan the next dinners', 'N\u00e4chste Abendessen planen', 'Planear las pr\u00f3ximas cenas') + '</button>') +
             '<div class="wb-links"><button type="button" class="wb-link" data-wb="edit">' + T('Change my answers', 'Antworten \u00e4ndern', 'Cambiar mis respuestas') + '</button><span aria-hidden="true">\u00b7</span>' +
             '<button type="button" class="wb-link" data-wb="new">' + T('New week', 'Neue Woche', 'Nueva semana') + '</button>' +
+            /* Nov 7 2026 (Emmanuel: carousels that start with the grocery cart and its price, then each day's dinner): one tap draws
+               them (week-carousel.js) and opens New post with them */
+            (W.LowiWeekCarousel && up.length ? '<span aria-hidden="true">\u00b7</span><button type="button" class="wb-link wb-car" data-wb="carousel">' + T('Post as carousel', 'Als Karussell posten', 'Publicar como carrusel') + '</button>' : '') +
             (W.LowiKitchenGame ? '<span aria-hidden="true">\u00b7</span><button type="button" class="wb-link" data-wb="kitchen">' + T('My kitchen', 'Meine K\u00fcche', 'Mi cocina') + '</button>' : '') + '</div>' +
             '<p class="wb-fine">' + T('Prices are estimates, not live prices. Tap a dinner for its recipe.', 'Preise sind Sch\u00e4tzungen, keine Live-Preise. Tipp ein Abendessen f\u00fcr das Rezept.', 'Los precios son estimaciones, no precios en vivo. Toca una cena para ver la receta.') + '</p></section>' +
             (cheapest ? '' : '');
@@ -299,6 +318,7 @@
         if (a === 'qback') return qGo(-1);
         if (a === 'qcancel') { view = 'week'; return paint(); }
         if (a === 'edit') { view = 'q'; step = 0; return paint('#wbQ'); }
+        if (a === 'carousel') return postCarousel();
         if (a === 'view') { view = b.dataset.v === 'list' ? 'list' : 'week'; const sc = ov.querySelector('.wb-scroll'); if (sc) sc.scrollTop = 0; paint(); const sc2 = ov.querySelector('.wb-scroll'); if (sc2) sc2.scrollTop = 0; const h = ov.querySelector(view === 'list' ? '#wbLs' : '#wbWk'); if (h) { h.tabIndex = -1; try { h.focus({ preventScroll: true }); } catch (err) { } } return; }
         if (a === 'people') { S.people = +b.dataset.v; return paint(sel('people', S.people)); }
         if (a === 'nights') { S.nights = +b.dataset.v; return paint(sel('nights', S.nights)); }

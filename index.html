@@ -7,7 +7,10 @@
      WebKit to start from a dark canvas, and the iOS startup images below (plain dark, no logo) cover the moment before the page paints. -->
 <meta name="color-scheme" content="dark">
 <style id="firstPaint">html,body{background:#03050a}</style>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<!-- Nov 7 2026 (Emmanuel: "the whole interface moves to the left or moves to the right ... very wobbly"): maximum-scale=1 stops
+     iPhone Safari from zooming in when a text field with type under 16 px gets the keyboard; zoomed in, the whole app slid sideways
+     on every swipe until you pinched back. A pinch by hand still zooms (iOS keeps that for accessibility). -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
 <meta name="lowi-build" content="20261107-074521">
 <!-- Oct 21 (open instantly): Home's 3D world (three.js + its scene) starts downloading with the page, not after the app has booted.
@@ -3735,6 +3738,15 @@ html.g2c-on.g2c-t5 .g2c-tile small{display:none}
 html.g2c-on.g2c-t5 #shelf.tabmode #shBody .r5-stage{width:min(42vw,164px)}
 html.g2c-on.g2c-t6 #shelf.tabmode #shBody .r5-stage{width:min(34vw,132px)}
 html.g2c-on.g2c-t6 #shelf.tabmode #shBody .r5-shuf .r5-go{margin-top:12px;min-height:46px}
+/* Nov 7 2026: on the sixth step the small line over Cook's title (Cook opened on its own, not as a Circle game) steps aside and
+   the machine moves up to the bar */
+html.g2c-on.g2c-t6 #tab-shelf #shTop .sh-row .small.muted{display:none}
+html.g2c-on.g2c-t6 #shelf.tabmode #shBody .r5-shuf{padding-top:10px}
+/* Nov 7 2026: the last step, the machine shrinks by exactly what is still over (fit() sets --g2cSt) */
+html.g2c-on.g2c-t7 #shelf.tabmode #shBody .r5-stage{width:var(--g2cSt,96px)}
+/* when Cook fits above the round back button, the spacer that lets a long page scroll its end above the button (bottom-close.css)
+   only made a small scroll of its own */
+html.g2c-on:not(.g2f-snc) #shelf.tabmode #shBody::after{display:none}
 /* the sheets */
 .g2c-ov .g2c-pt{margin:0 0 12px;padding-right:44px}
 .g2c-pb > *{margin-top:0;margin-bottom:0}
@@ -3997,7 +4009,7 @@ function sp(el, lim){ if (!el) return; const r = el.getBoundingClientRect(); el.
 /* Nov 6 2026 (design review point 8: "der Zurück-Button liegt auf den Kacheln"): a screen that fills the phone stops above the round
    back / close button at the bottom (bottom-close.js), not at the screen's edge */
 function clearOrb(lim){ const o = D.getElementById("lwBX"); if (!o || !o.classList.contains("on") || !vis(o)) return lim; const t = o.getBoundingClientRect().top; return t > 0 ? Math.min(lim, t - 12) : lim; }
-window.LowiFit = {limit, bottom, over, sp, gap: () => gapNow, check: gapCheck};
+window.LowiFit = {limit, bottom, over, sp, gap: () => gapNow, check: gapCheck, clear: clearOrb};
 
 /* ---- 3. Move ---- */
 const VARS = ["--g2fFmt", "--g2fTile", "--g2fGo", "--g2fGapM"];
@@ -10350,7 +10362,10 @@ document.addEventListener("click", e => { const b = e.target && e.target.closest
 /* ck-src: in Swipe the card stack takes exactly the room that is left, so Cook never scrolls */
 function ckFitDeck(b){ b = b || document.getElementById("shBody"); const st = r5$("#r5Stack"); if (!b || !st || !st.offsetHeight || fView() !== "swipe") return;
   if (!document.documentElement.classList.contains("g2c-on")) { st.style.height = ""; return; } /* only the phone Cook is a fixed screen */
-  st.style.height = ""; st.style.minHeight = "0"; const over = b.scrollHeight - b.clientHeight;
+  st.style.height = ""; st.style.minHeight = "0"; let over = b.scrollHeight - b.clientHeight;
+  /* Nov 7 2026: the deck also ends above the round back button (LowiFit.clear), not only inside the scroll box: Cook's fit now
+     measures to the button, and a deck that reached under it made Swipen scroll */
+  try { const F = window.LowiFit; if (F && F.clear) over = Math.max(over, Math.ceil(F.bottom(b) - F.clear(F.limit()))); } catch(e){}
   if (over > 0) st.style.height = Math.max(150, st.offsetHeight - over - 4) + "px"; }
 window.LowiFood = {fitDeck:ckFitDeck, source:fSrc, setSource:ckSource, category:fCatSel, setCategory:ckCat, view:fView, setView:ckView, srcPool:fSrcPool,
   homeHTML:fHomeHTML, meP, mounted(){ /* r3k-mounted */ dkPaint(); swPull(); }, dk:() => ({order:DK.order.slice(), i:DK.i, never:R5.never.slice(), today:R5.today.slice(), liked:R5.liked.slice(), skipped:R5.skipped.slice(), shared:SW.length}), swPull:() => swPull(true), shuffle:fShuffle, pool:fPool, pick:fShowPick, openDeck:dkOpen, isFoodPost, railBtn, state:() => R5, reset(){ R5 = r5fresh(); r5save(); }};
@@ -19480,6 +19495,12 @@ const R3W_SOURCES = [
 #sheet{max-height:calc(100% - max(var(--sat,env(safe-area-inset-top,0px)),20px) - 24px)}
 #rsSheet .rs-sh{max-height:calc(100% - max(var(--sat,env(safe-area-inset-top,0px)),20px) - 24px)}
 .r2-sh,#sheet,#rsSheet .rs-sh{overscroll-behavior:contain}
+/* Nov 7 2026 (Emmanuel: "When you swipe down, the whole interface moves to the left or moves to the right ... very wobbly, especially
+   settings"): a sheet or page that scrolls up and down never slides sideways. Such a box also scrolled sideways as soon as anything
+   in it was a few px wider: the sticky grab bar (.pf-hd) of every one-sheet sheet (Settings, the companion's sheet, Log a meal, the
+   lists) stuck out 8 px on each side (one-sheet.css now sizes it to the sheet). The box clipped that already; only the sideways
+   scroll goes. Rows that do scroll sideways (tiles, chips, carousels) are boxes of their own and keep it. */
+.r2-sh,#sheet,#rsSheet .rs-sh,.tab,.cme-body,.ss2-page-body,.ss2-body,.ls-pane,.gv-scroll{overflow-x:hidden!important}
 
 /* sticky header: handle + close */
 .pf-hd{position:sticky;top:0;z-index:6;height:30px;margin:-10px -22px 0;display:block;cursor:grab;touch-action:none;
@@ -21024,7 +21045,22 @@ D.addEventListener("click", e => { const t = e.target; if (t && t.closest && t.c
 
 /* ---- fit: tighten step by step until Cook fits ---- */
 const LV = ["g2c-t1", "g2c-t2", "g2c-t3", "g2c-t4", "g2c-t5", "g2c-t6"];
-function over(b){ return window.LowiFit ? LowiFit.over(b) : b.scrollHeight - b.clientHeight > 1; }
+/* Nov 7 2026 (Emmanuel: "If something can fit in one page, then it should clearly fit in one page ... in shuffle or in mixing,
+   where there's like a little scroll ... That's stupid"): Cook and the Circle games (Mischen, Swipen) fit above the round back
+   button at the bottom (bottom-close.js) while it is shown, not above the screen's edge. Before, the tiles lay under the button and
+   the panel kept a small scroll: 15 px on a 393 x 852 iPhone, 57 px on an iPhone SE. After the six steps the shuffle machine gives up
+   exactly what is still over (never under 96 px); only then does the screen scroll. */
+function fitLim(){ const F = window.LowiFit; if (!F) return innerHeight; const l = F.limit(); return F.clear ? F.clear(l) : l; }
+function over(b){ return window.LowiFit ? LowiFit.bottom(b) > fitLim() + .5 : b.scrollHeight - b.clientHeight > 1; }
+/* the width the machine (.r5-stage, a circle) needs so the screen ends d px higher */
+function squeezeW(w, d){ return Math.max(96, Math.floor(w - d - 2)); }
+function squeeze(b){
+  const st = b.querySelector(".r5-stage"); if (!st || !window.LowiFit) return;
+  const w = st.getBoundingClientRect().width, d = LowiFit.bottom(b) - fitLim(); if (!(w > 0) || !(d > 0)) return;
+  const w2 = squeezeW(w, d); if (w2 >= w) return;
+  if (H.style.getPropertyValue("--g2cSt") !== w2 + "px") H.style.setProperty("--g2cSt", w2 + "px");
+  H.classList.add("g2c-t7");
+}
 /* Oct 18 game-perf: fit() used to strip every g2c-t level off <html> and add them back on every pass, so each pass wrote 6+
    class changes on <html> even when nothing moved. Those woke the top bar, the 3D world and the layout passes, whose writes
    started the next pass: a loop that ran every frame after Cook or Community, on Home and with the phone locked too.
@@ -21035,12 +21071,13 @@ function fitSig(b){ return [innerWidth, innerHeight, b.clientWidth, b.clientHeig
 function fit(b){
   if (on() && b && b.offsetHeight && fitKey && fitSig(b) === fitKey) return;
   fitKey = "";
-  LV.forEach(c => H.classList.remove(c)); H.classList.remove("g2f-snc");
+  LV.forEach(c => H.classList.remove(c)); H.classList.remove("g2f-snc"); H.classList.remove("g2c-t7");
   if (!on() || !b || !b.offsetHeight) return;
   try { if (H.getAttribute("data-ckview") === "swipe" && window.LowiFood && LowiFood.fitDeck) LowiFood.fitDeck(b); } catch(e){}
   const st = b.scrollTop; b.scrollTop = 0;
   let lv = 0; while (over(b) && lv < LV.length) { H.classList.add(LV[lv]); lv++; }
-  if (over(b)) { H.classList.add("g2f-snc"); if (window.LowiFit) LowiFit.sp(b); }
+  if (over(b)) squeeze(b);
+  if (over(b)) { H.classList.add("g2f-snc"); if (window.LowiFit) LowiFit.sp(b, fitLim()); }
   b.scrollTop = st;
   fitKey = fitSig(b);
 }

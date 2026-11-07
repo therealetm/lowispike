@@ -44,6 +44,9 @@ html:root:root body .r2-ov.one-sheet:not(.full) .r2-sh {
 html:root:root body .r2-ov.one-sheet:not(.full) .r2-grab { background: rgba(143, 231, 255, .5) !important; opacity: 1 !important; }
 html:root:root body .r2-ov.one-sheet:not(.full) .r2-scrim { background: rgba(4, 10, 30, .32) !important; }
 html:root:root body .r2-ov.one-sheet:not(.full) .r2-sh { padding-left: var(--one-pad) !important; padding-right: var(--one-pad) !important; }
+/* Nov 7 2026: the sticky grab bar spans exactly the sheet. With the shared -22px it stuck out 8 px on each side of the 14 px padding
+   here, so the sheet slid sideways when you swiped down (Settings, "very wobbly"); index.html also stops sideways scrolling */
+html:root:root body .r2-ov.one-sheet:not(.full) .r2-sh > .pf-hd { margin-left: calc(-1 * var(--one-pad)) !important; margin-right: calc(-1 * var(--one-pad)) !important; }
 html:root:root body .r2-ov.one-sheet:not(.full) .r2-shb { padding-left: 0 !important; padding-right: 0 !important; padding-top: 2px !important; }
 
 /* 4. the profile hub inside the shell: the old floating card's own frame, X and backdrop are gone */

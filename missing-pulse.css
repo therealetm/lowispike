@@ -1,18 +1,18 @@
-/* LOWiSPIKE · the Home bubble for what is missing pulses (6 Nov 2026, design review point 2; missing-pulse.js).
-   A soft blue halo just outside that one bubble swells and fades every 2.8 s. The bubble clips its inside and its glass is drawn
-   from its box by living-bubbles.js, so the halo is its own element next to it in the ring (.mp-halo, the bubble's own --o8-x and
-   --o8-y): the bubble keeps its exact size and place, and the ring and its symmetry stay. Hidden while a bloom is open, off in Calm
-   mode and with reduced motion. */
-.mp-halo { display: none; }
-@keyframes mp-halo {
-    0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(.94); }
-    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.03); }
+/* LOWiSPIKE · the Home bubble for what is missing glows (6 Nov 2026, design review point 2; reworked 7 Nov 2026; missing-pulse.js).
+   7 Nov (Emmanuel: no extra circle, it "kills the symmetrical logic"): a soft light inside the bubble, under its glass, that breathes
+   three times and goes. Nothing outside the bubble, nothing moves or grows, so the ring and its symmetry stay exactly as they are.
+   The symbol stays above the light. Off in Calm mode, with reduced motion and while a bloom is open. */
+.mp-glow { display: none; }
+@keyframes mp-breathe {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
 }
-html.o8.wh-home #whHud .mp-halo {
-    display: block; position: absolute; z-index: 1; left: var(--o8-x); top: var(--o8-y);
-    width: calc(var(--o8-d) + 12px); height: calc(var(--o8-d) + 12px); border-radius: 50%; pointer-events: none;
-    box-shadow: 0 0 0 1.5px rgba(159, 216, 255, .5), 0 0 20px 6px rgba(120, 200, 255, .4), inset 0 0 16px rgba(159, 216, 255, .22);
-    opacity: 0; transform: translate(-50%, -50%); animation: mp-halo 2.8s ease-in-out infinite;
+html.o8.wh-home #whHud .lb-bub[data-orbit] > .mp-glow {
+    display: block; position: absolute; inset: 12%; z-index: 0; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle at 50% 46%, rgba(214, 242, 255, .85), rgba(140, 210, 255, .38) 44%, rgba(120, 200, 255, 0) 72%);
+    mix-blend-mode: screen;
+    opacity: 0; animation: mp-breathe 2.4s ease-in-out 3;
 }
-html.hb2-open #whHud .mp-halo, html.cm-on #whHud .mp-halo { display: none !important; }
-@media (prefers-reduced-motion: reduce) { html #whHud .mp-halo { display: none !important; animation: none !important; } }
+html.o8.wh-home #whHud .lb-bub[data-orbit].mp-pulse > .wh-cell-tx { position: relative; z-index: 1; }
+html.hb2-open #whHud .mp-glow, html.cm-on #whHud .mp-glow { display: none !important; }
+@media (prefers-reduced-motion: reduce) { html #whHud .mp-glow { display: none !important; animation: none !important; } }

@@ -1,58 +1,68 @@
-/* LOWiSPIKE · the Home bubble for what is missing pulses (6 Nov 2026, design review point 2, Emmanuel).
-   The Home bubble for the first open line of your companion's "What's missing" list (misty-peak.js, the order its panel shows:
-   the missing lines first) pulses gently. One bubble at a time, no text, no sound. It stops as soon as that line is done (then the
-   next missing line's bubble takes over, or none). Never in Calm mode (galaxy-still.js puts html.cm-on) or with reduced motion.
-   The name and the % under the companion stay as they are; nothing else on Home changes.
-   Which bubble: water -> Water, move -> Move, fuel and scan -> Scan (a meal is logged from Scan: Photo of your food or a typed
-   name, then Log as eaten; the Einkaufen bubble is shopping, so a missing meal never pulses it). A line without a bubble (the night
-   line) pulses nothing. */
+/* LOWiSPIKE · the Home bubble for what is missing glows (6 Nov 2026, design review point 2; reworked 7 Nov 2026).
+   6 Nov (Emmanuel): the Home bubble for the first open line of your companion's "What's missing" list pulses gently, one at a time,
+   no text, no sound, stops when done, off in Calm mode and with reduced motion; the name and % under the companion stay.
+   7 Nov (Emmanuel, screenshot of the camera with a ring round it: "why is the camera pulsating? ... It makes me feel like I have to
+   click on it and then nothing happens ... It shouldn't have an extra circle pulsating the whole time. That just kills the
+   symmetrical logic"): no ring outside the bubble any more, and no light on a bubble that a tap does not settle. Now:
+   - only Water and Move: one tap there fixes the line (a missing meal, protein, fibre ... light nothing; the camera never glows);
+   - the bubble itself glows from inside (a soft light under its glass), nothing outside it, nothing moves, the ring stays symmetric;
+   - three slow breaths when you come to Home (or when the line changes), then still: never "the whole time". Again after
+     REST_MS on Home, or the next time you come back to Home.
+   Off in Calm mode (html.cm-on), with reduced motion, and while a bloom is open. */
 (function (W) {
     'use strict';
-    const BUBBLE = Object.freeze({ water: 'water', move: 'move', fuel: 'scan', scan: 'scan' });
-    /* pure: the first open line of the list and the bubble it lights, or null */
+    const BUBBLE = Object.freeze({ water: 'water', move: 'move' });
+    const REST_MS = 180000;
+    /* pure: the first open line of the list and the bubble that one tap there settles, or null */
     function pick(p) {
         const r = p && Array.isArray(p.rows) ? p.rows.find(x => x && !x.done) : null;
         return r && BUBBLE[r.act] ? { k: r.k, bubble: BUBBLE[r.act] } : null;
     }
-    const api = { BUBBLE, pick };
+    /* pure: breathe now? (a new line or bubble, or the rest is over) */
+    function due(last, want, now) {
+        if (!want) return false;
+        if (!last || last.k !== want.k || last.bubble !== want.bubble) return true;
+        return now - (last.at || 0) >= REST_MS;
+    }
+    const api = { BUBBLE, REST_MS, pick, due };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (!W || !W.document || W.LowiMissingPulse) return;
     const D = W.document, H = D.documentElement;
     const reduced = () => !!(W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const calm = () => H.classList.contains('cm-on');
-    let cur = null, soon = 0, halo = null, watch = null;
-    /* the glow is its own element next to the bubble in the Home ring (the bubble clips its inside and its glass is drawn from its
-       box by living-bubbles.js): it takes the bubble's place variables, so it sits exactly around it and follows the ring */
-    function place(t) {
-        if (!halo) { halo = D.createElement('i'); halo.className = 'mp-halo'; halo.setAttribute('aria-hidden', 'true'); }
-        if (halo.parentNode !== t.parentNode) t.parentNode.insertBefore(halo, t);
-        ['--o8-x', '--o8-y'].forEach(k => halo.style.setProperty(k, t.style.getPropertyValue(k)));
-    }
-    function follow(t) {
-        if (watch) { watch.disconnect(); watch = null; }
-        if (!t) return;
-        try { watch = new MutationObserver(() => { if (halo && cur === t) place(t); }); watch.observe(t, { attributes: true, attributeFilter: ['style'] }); } catch (e) { watch = null; }
-    }
-    function target() {
+    const home = () => H.classList.contains('wh-home') && !H.classList.contains('hb2-open');
+    let cur = null, last = null, soon = 0, wasHome = false;
+    function want() {
         if (calm() || reduced()) return null;
-        let want = null; try { const P = W.LowiMistyPeak; want = P && typeof P.now === 'function' ? pick(P.now()) : null; } catch (e) { want = null; }
-        return want ? D.querySelector('#whHud [data-orbit="' + want.bubble + '"]') : null;
+        try { const P = W.LowiMistyPeak; return P && typeof P.now === 'function' ? pick(P.now()) : null; } catch (e) { return null; }
+    }
+    function clear() {
+        D.querySelectorAll('.mp-glow').forEach(n => n.remove());
+        D.querySelectorAll('.mp-pulse').forEach(n => n.classList.remove('mp-pulse'));
+        cur = null;
+    }
+    function breathe(el) {
+        clear();
+        const g = D.createElement('i'); g.className = 'mp-glow'; g.setAttribute('aria-hidden', 'true');
+        g.addEventListener('animationend', () => { if (g.parentNode) g.remove(); if (cur === el) { el.classList.remove('mp-pulse'); cur = null; } });
+        el.appendChild(g); el.classList.add('mp-pulse'); cur = el;
     }
     function paint() {
         soon = 0;
-        const t = target();
-        D.querySelectorAll('.mp-pulse').forEach(n => { if (n !== t) n.classList.remove('mp-pulse'); });
-        if (t) { t.classList.add('mp-pulse'); place(t); } else if (halo && halo.parentNode) halo.remove();
-        if (t !== cur) follow(t);
-        cur = t;
+        const w = want(), onHome = home(), back = onHome && !wasHome; wasHome = onHome;
+        if (!w) { clear(); last = null; return; }
+        const el = D.querySelector('#whHud [data-orbit="' + w.bubble + '"]');
+        if (!el || !onHome) { if (cur && cur !== el) clear(); return; }
+        const now = Date.now();
+        if (back || due(last, w, now)) { breathe(el); last = { k: w.k, bubble: w.bubble, at: now }; }
     }
-    const schedule = () => { if (!soon) soon = setTimeout(paint, 200); };
-    /* the same moments the panel repaints on, plus Calm mode and the motion setting */
+    const schedule = () => { if (!soon) soon = setTimeout(paint, 250); };
+    /* the moments the list changes, Calm mode, the motion setting, and coming to Home */
     ['lowi:reward', 'lowi:state', 'lowi:water', 'lowi:meal', 'lowi:meal-logged', 'lowi:fast', 'lowi:move', 'lowi:world-mood', 'lowi:cell-state', 'lowi:calm', 'storage', 'focus'].forEach(n => W.addEventListener(n, schedule));
-    D.addEventListener('visibilitychange', () => { if (!D.hidden) schedule(); });
+    D.addEventListener('visibilitychange', () => { if (!D.hidden) { wasHome = false; schedule(); } });
     try { const m = W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)'); if (m && m.addEventListener) m.addEventListener('change', schedule); } catch (e) { }
-    /* the Home ring is drawn a little after start: look a few times then, and every 30 s (cheap: one reading, one class) */
-    const boot = () => [0, 1500, 4000, 9000].forEach(t => setTimeout(schedule, t));
+    try { new MutationObserver(() => { if (home() !== wasHome) schedule(); }).observe(H, { attributes: true, attributeFilter: ['class'] }); } catch (e) { }
+    const boot = () => [1500, 4000, 9000].forEach(t => setTimeout(schedule, t));
     setInterval(() => { if (!D.hidden) schedule(); }, 30000);
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
     W.LowiMissingPulse = Object.assign({}, api, { paint, current: () => (cur && cur.getAttribute('data-orbit')) || '' });

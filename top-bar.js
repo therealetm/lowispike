@@ -343,6 +343,8 @@
     }
     function locate() {
         return new Promise((res) => {
+            /* Nov 7 2026: the place kept from the last location yes (spirit.js weather) first, so opening the weather asks nothing */
+            try { const at = JSON.parse(localStorage.getItem('lowi.weather.v1.at') || 'null'); if (at && Number.isFinite(+at.lat) && Number.isFinite(+at.lon)) return res({ lat: +at.lat, lon: +at.lon }); } catch (e) { }
             if (!navigator.geolocation) return res(null);
             let done = false;
             const fin = v => { if (!done) { done = true; res(v); } };

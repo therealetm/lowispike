@@ -2683,11 +2683,15 @@
         if (cached && Date.now() - cached.ts < (launch ? 10 : 30) * 60000 && !ask) return paintWeather(cached);
         paintWeather(cached);
         if (!navigator.geolocation) return;
-        const go = () => navigator.geolocation.getCurrentPosition(async pos => {
-            /* iOS home-screen apps often report 'prompt' at launch: remember the yes as soon as a position arrives, even if the weather fetch then fails offline */
-            try { localStorage.setItem(WEATHER_KEY + '.optin', '1'); } catch (e) {}
+        /* Nov 7 2026 (Emmanuel, screenshot of iPhone's location question at launch: "Diese Benachrichtigung ist nervig ... erst dann,
+           wenn man in der Einstellung das manuell aktivieren möchte"): an iPhone Home Screen app does not keep the location yes between
+           launches, so every launch that read the location asked again. The place from the last yes is kept (rounded to about 1 km,
+           only on this phone) and launches fetch the weather for it without asking; the phone asks only when you turn the weather on in
+           Settings (ask). No yes yet: no question at launch at all. */
+        const AT_KEY = WEATHER_KEY + '.at';
+        const fetchAt = async (lat, lon) => {
             try {
-                const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + pos.coords.latitude.toFixed(2) + '&longitude=' + pos.coords.longitude.toFixed(2) + '&current=temperature_2m,weather_code,is_day&daily=sunrise,sunset&forecast_days=1&timezone=auto';
+                const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + (+lat).toFixed(2) + '&longitude=' + (+lon).toFixed(2) + '&current=temperature_2m,weather_code,is_day&daily=sunrise,sunset&forecast_days=1&timezone=auto';
                 const response = await fetch(url, {
                     signal: AbortSignal.timeout ? AbortSignal.timeout(7000) : undefined
                 });
@@ -2707,6 +2711,11 @@
                 } catch (e) {}
                 paintWeather(w);
             } catch (e) {}
+        };
+        const go = () => navigator.geolocation.getCurrentPosition(async pos => {
+            /* iOS home-screen apps often report 'prompt' at launch: remember the yes as soon as a position arrives, even if the weather fetch then fails offline */
+            try { localStorage.setItem(WEATHER_KEY + '.optin', '1'); localStorage.setItem(AT_KEY, JSON.stringify({ lat: +pos.coords.latitude.toFixed(2), lon: +pos.coords.longitude.toFixed(2) })); } catch (e) {}
+            return fetchAt(pos.coords.latitude, pos.coords.longitude);
         }, err => {
             if (err && err.code === 1 && !ask) {
                 try {
@@ -2726,24 +2735,24 @@
             timeout: 8000
         });
         if (ask) return go();
-        /* iOS home-screen apps often report 'prompt' even after the user allowed location, so the
-           user's own opt-in (a reading we fetched before) also counts. 'denied' always wins. */
+        let at = null;
+        try { at = JSON.parse(localStorage.getItem(AT_KEY) || 'null'); } catch (e) {}
+        try { if (localStorage.getItem(WEATHER_KEY + '.off') === '1') return; } catch (e) {}
+        if (at && Number.isFinite(+at.lat) && Number.isFinite(+at.lon)) return fetchAt(at.lat, at.lon);
+        /* before Nov 7 2026 a launch asked for the location when the permission said granted or the user had opted in; on an iPhone that
+           question came at every launch. Now only a granted permission reads it quietly (no question); an opt-in without a kept place
+           waits for Settings. */
         let optin = false;
         try {
             const o = localStorage.getItem(WEATHER_KEY + '.optin');
             optin = o === '1' || (o === null && !!cached && localStorage.getItem(WEATHER_KEY + '.off') !== '1');
         } catch (e) {}
-        if (!navigator.permissions) {
-            if (optin) go();
-            return;
-        }
+        if (!navigator.permissions) return;
         navigator.permissions.query({
             name: 'geolocation'
         }).then(p => {
-            if (p.state === 'granted' || (optin && p.state !== 'denied')) go();
-        }).catch(() => {
-            if (optin) go();
-        });
+            if (p.state === 'granted') go();
+        }).catch(() => {});
     }
     /* after "Ate it" / "Skip" on a scan: the full-screen herb world closes by itself, a small XP pop instead */
     function afterScan(xp, text, kind) {

@@ -304,3 +304,6 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub:not(.cm-pcap) .cm-foot{float:none!important;position:absolute!important;right:10px;bottom:10px;height:20px;margin:0!important;padding:0 8px!important;border-radius:999px;background:rgba(0,0,0,.5)!important;color:#fff!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub:not(.cm-pcap) .cm-foot time{color:#fff!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub.cm-pcap .cm-foot{margin:6px 6px 2px 10px!important}
+/* Nov 7 2026: albums in the room keep each picture full width of the bubble while the row swipes (community-chat.css) */
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cs-alb-track > .cs-photo{flex:0 0 100%!important;width:100%!important;margin:0!important;border-radius:0!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cs-album:not(:last-child) ~ .cm-foot,html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-pbub:not(.cm-pcap) .cs-album + .cm-foot{bottom:26px}

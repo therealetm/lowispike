@@ -21,6 +21,15 @@ const VOICE_RE = /(^|\s)\u{1F3A4} (https:\/\/[a-z0-9-]{8,40}\.supabase\.co\/stor
 function voice(text, uid){ const s=String(text||''), m=VOICE_RE.exec(s); if(!m||(uid&&m[3]!==uid))return null; const rest=(s.slice(0,m.index)+m[1]+s.slice(m.index+m[0].length)).replace(/\s+/g,' ').trim(); return {src:m[2],dur:Math.min(600,+m[4]||0),rest}; }
 function voiceBody(src, dur){ const s=String(src||''); if(!voice('\u{1F3A4} '+s))return ''; const d=Math.max(1,Math.min(600,Math.round(+dur||0))); return '\u{1F3A4} '+s+'#d='+d; }
 function photoBody(src, caption){ const s=String(src||''); if(!photo('\u{1F4F7} '+s))return ''; const c=String(caption||'').replace(/\s+/g,' ').trim().slice(0,600-s.length-4); return '\u{1F4F7} '+s+(c?' '+c:''); }
+/* 7 Nov 2026 (Emmanuel: "inside of the community, they should be able to flick through the images ... without having to open it ...
+   like ... iMessage"): an album is a photo message whose first picture is <uid>/chat-<id>-1.jpg followed by ' \u29C9<n>' (2 to 8);
+   pictures 2..n sit next to it as chat-<id>-2.jpg ... so the message stays short. Older clients read it as a photo with the first
+   picture (the count shows in the caption). */
+const ALBUM_RE = /(^|\s)\u{1F4F7} (https:\/\/[a-z0-9-]{8,40}\.supabase\.co\/storage\/v1\/object\/public\/media\/([A-Za-z0-9_-]{6,64})\/chat-[A-Za-z0-9_-]{4,72})-1\.jpg \u29C9([2-8])(?=\s|$)/u;
+function album(text, uid){ const s=String(text||''), m=ALBUM_RE.exec(s); if(!m||(uid&&m[3]!==uid))return null; const n=+m[4], srcs=[]; for(let k=1;k<=n;k++)srcs.push(m[2]+'-'+k+'.jpg');
+ const caption=(s.slice(0,m.index)+m[1]+s.slice(m.index+m[0].length)).replace(/\s+/g,' ').trim(); return {srcs,caption}; }
+function albumBody(src1, n, caption){ const s=String(src1||''); n=Math.floor(+n||0); if(n<2||n>8||!/-1\.jpg$/.test(s))return ''; const head='\u{1F4F7} '+s+' \u29C9'+n; if(!album(head))return '';
+ const c=String(caption||'').replace(/\s+/g,' ').trim().slice(0,Math.max(0,600-head.length-1)); return head+(c?' '+c:''); }
 /* 22 Oct (Emmanuel: "As the admin, I should be able to pin things when I want to"): a pin is an ordinary message in the room whose
    body is '📌⁠pin:<message id> <short text>' (U+2060 after the pin), unpin is '📌⁠unpin'. No schema change: everyone in the room loads and
    gets it live like any message. The newest marker wins; markers never show as chat lines. Only the owner's app offers Pin
@@ -87,6 +96,6 @@ function afterCaption(sent, cur){
  let text=ct;if(st.trim()){if(ct===st||ct.trim()===st.trim())text='';else if(ct.startsWith(st))text=ct.slice(st.length).replace(/^\s+/,'');}
  return {text,reply:cr&&cr!==sr?cr:null};
 }
-const api={EMOJI,SHOW,glyph,SIGNS,type,esc,image,photo,photoBody,voice,voiceBody,meal,mealBody,pinOf,pinBody,unpinBody,pinned,identity,quiet,message,visible,read,write,session,afterCaption};
+const api={EMOJI,SHOW,glyph,SIGNS,type,esc,image,photo,photoBody,album,albumBody,voice,voiceBody,meal,mealBody,pinOf,pinBody,unpinBody,pinned,identity,quiet,message,visible,read,write,session,afterCaption};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiChatCore=api;
 })(typeof window==='object'?window:globalThis);

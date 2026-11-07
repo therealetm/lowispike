@@ -259,3 +259,11 @@ html[data-ui=light] .cs-sheet .cp-blk-note{color:rgba(60,60,67,.7)}
 #cmPaneChat .cm-pbub:not(.cm-pcap) .cm-foot{position:absolute;right:9px;bottom:9px;margin:0;padding:2px 8px;border-radius:999px;background:rgba(0,0,0,.5);color:#fff}
 #cmPaneChat .cm-pbub:not(.cm-pcap) .cm-foot time{color:#fff;opacity:.95}
 #cmPaneChat .cm-pbub.cm-pcap .cm-foot{padding:2px 9px 4px}
+/* Nov 7 2026: an album (2 to 8 pictures) swipes sideways inside its bubble, iMessage style, dots under it (community-chat.js albumHtml) */
+#cmPaneChat .cs-album { position: relative; width: 100%; }
+#cmPaneChat .cs-alb-track { display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; border-radius: 15px; -webkit-overflow-scrolling: touch; }
+#cmPaneChat .cs-alb-track::-webkit-scrollbar { display: none; }
+#cmPaneChat .cs-alb-track > .cs-photo { flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; margin: 0; }
+#cmPaneChat .cs-alb-dots { display: flex; justify-content: center; gap: 5px; padding: 7px 0 3px; }
+#cmPaneChat .cs-alb-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .35); transition: background .2s; }
+#cmPaneChat .cs-alb-dots i.on { background: #fff; }

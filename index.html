@@ -5295,6 +5295,7 @@ function paintRest(){
     '<div class="card" style="margin-top:14px;padding:4px 14px">' +
       '<div class="trow" style="padding:10px 0"><span><span style="display:block;font-weight:600">Show it in For You</span><span class="small muted">' + (C.vis === "tribe" ? "The whole tribe can see it." : "Only you. It stays on your phone.") + '</span></span><button class="toggle' + (C.vis === "tribe" ? " on" : "") + '" data-tr="vis" aria-label="Visible to the tribe"></button></div>' +
       (link && pl.mine ? '<div class="trow" style="padding:10px 0;border-top:1px solid var(--line2)"><span><span style="display:block;font-weight:600">This is my own video</span><span class="small muted">It gets the <span class="tr-holo-t" style="font-weight:700">Tribe Original</span> highlight.</span></span><button class="toggle holo' + (C.mine ? " on" : "") + '" data-tr="mine" aria-label="This is my own video"></button></div>' : '') +
+      (!link && (C.photo || (C.photos || []).length) && window.LowiCommunity && LowiCommunity.sharePics ? '<div class="trow" style="padding:10px 0;border-top:1px solid var(--line2)"><span><span style="display:block;font-weight:600">Also in the Community chat</span><span class="small muted">' + ((C.photos || []).length > 1 ? "People swipe through your pictures right in the chat." : "Your picture goes to the chat too.") + '</span></span><button class="toggle' + (C.chat ? " on" : "") + '" data-tr="chat" aria-label="Also in the Community chat"></button></div>' : '') +
     '</div>' + (C.vis === "tribe" ? '<p class="foot" style="margin-top:10px">' + (C.meal && window.LowiMealSnap && !link ? esc(LowiMealSnap.t("foot")) : (link ? "Only the link, the title it comes with and your line are shared." : "Only what you write here is shared.") + ' Nothing about your health or goals.') + '</p>' : '');
   updPost();
 }
@@ -5343,11 +5344,16 @@ function doPost(btn){
   }
   T.posts.unshift(p); if (T.posts.length > 80) T.posts.length = 80;
   if (p.vis !== "tribe") T.filter = "mine"; else if (T.filter === "orig" && !p.mine) T.filter = "all";
+  /* Nov 7 2026 (Emmanuel: "when I post on the For You page, I want to be able to choose to also push that into the community"):
+     the post's pictures also go to the current Community room, one picture as a chat photo, 2 to 8 as an album people swipe */
+  const toChat = C.chat && !C.p ? (C.photos && C.photos.length ? C.photos : C.photo ? [C.photo] : []).slice(0, 8) : [];
   fyTop = 1; save(); C = null; h.closeSheet();
   /* Nov 6 2026: marked as being sent before the feed repaints, so the feed's own retry (retryShares) never sends it a second time
      (it did: every new post went up twice; a carousel would upload its photos twice) */
   if (p.vis === "tribe") fySending.add(p.id);
   showFeed();
+  if (toChat.length && window.LowiCommunity && LowiCommunity.sharePics) Promise.all(toChat.map(u => fetch(u).then(r => r.blob()))).then(bl => LowiCommunity.sharePics({blobs:bl, caption:p.cap}))
+    .then(() => h.toast(fyT("Also in the Community chat."))).catch(() => h.toast(fyT("Could not reach the Community chat.")));
   /* 25 Oct (Emmanuel): "when someone, me or anyone, posts on the For You page, it's actually there." A member's own post is
    * never held back by the food rule; if it cannot reach the shared table the poster is told and it tries again by itself. */
   if (p.vis === "tribe") {
@@ -5392,6 +5398,7 @@ document.addEventListener("click", e => {
     case "compose": compose(); break;
     case "paste": (async () => { try { const t = await navigator.clipboard.readText(); if (t && C) { $("#trUrl").value = t; onUrl(t, true); } } catch(err){ h.toast("Long-press the field and tap Paste"); const i = $("#trUrl"); if (i) i.focus(); } })(); break;
     case "vis": if (C) { C.vis = C.vis === "tribe" ? "me" : "tribe"; paintRest(); } break;
+    case "chat": if (C) { C.chat = !C.chat; paintRest(); } break;
     case "mine": if (C) { C.mine = !C.mine; b.classList.toggle("on", C.mine); paintPrev(); updPost(); } break;
     case "post": doPost(b); break;
     case "share-recipe": shareRecipe(b.dataset.r); break;
@@ -8950,6 +8957,11 @@ const T = [
   ["New here?", "Neu hier?", "¿Nuevo aquí?"], ["Say hi", "Sag hallo", "Saluda"], ["In For You", "In Für dich", "En Para ti"], ["Only you", "Nur du", "Solo tú"],
   ["Post", "Posten", "Publicar"],
   ["Upload a video", "Video hochladen", "Subir un vídeo"],
+  ["Also in the Community chat", "Auch in den Community-Chat", "También en el chat de la Comunidad"],
+  ["People swipe through your pictures right in the chat.", "Man wischt im Chat direkt durch deine Bilder.", "Se pasan tus fotos deslizando en el chat."],
+  ["Your picture goes to the chat too.", "Dein Bild kommt auch in den Chat.", "Tu foto también va al chat."],
+  ["Also in the Community chat.", "Auch im Community-Chat.", "También en el chat de la Comunidad."],
+  ["Could not reach the Community chat.", "Community-Chat nicht erreicht.", "No se pudo llegar al chat de la Comunidad."],
   ["Share to For You", "Teilen in Für dich", "Compartir en Para ti"],
   ["Link a recipe (optional)", "Rezept verknüpfen (optional)", "Enlazar una receta (opcional)"], ["No recipe", "Kein Rezept", "Sin receta"],
   ["Recipe linked", "Rezept verknüpft", "Receta enlazada"], ["Open", "Öffnen", "Abrir"],

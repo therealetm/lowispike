@@ -17,7 +17,8 @@ const P = 'html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room ';
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 test('a photo message is the photo in a thin frame, the time on it, a caption under it', () => {
-    assert.match(chat, /function photoBub\(m\)\{if\(voiceOf\(m\)\)return '';const ph=photoOf\(m\);return ph\?' cm-pbub'\+\(ph\.caption\|\|ph\.meal\?' cm-pcap':''\):'';\}/);
+    /* test changed 7 Nov 2026 (chat albums, tests/chat-album.test.cjs): an album is framed the same way, by its own caption */
+    assert.match(chat, /function photoBub\(m\)\{if\(voiceOf\(m\)\)return '';const al=albumOf\(m\),ph=al\?\{caption:al\.caption\}:photoOf\(m\);return ph\?' cm-pbub'\+\(ph\.caption\|\|ph\.meal\?' cm-pcap':''\):'';\}/);
     assert.match(chat, /'<div class="cm-bub'\+photoBub\(m\)\+'" data-chat-bub="'\+esc\(m\.id\)\+'">'\+head\+quote\+msgBody\(m\)\+foot\+/);
     assert.match(tg, new RegExp(esc(P + '.cp-msg .cm-bub.cm-pbub{padding:3px!important;width:min(272px,70vw)!important;')), 'a thin frame, one width for every photo');
     assert.match(tg, new RegExp(esc(P + '.cm-bub.cm-pbub:not(.cm-pcap) .cm-foot{float:none!important;position:absolute!important;right:10px;bottom:10px;')), 'the time on the photo');

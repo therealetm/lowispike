@@ -85,3 +85,12 @@ test('the opening: lens, card, rows one after another, one sheen; none of it whe
     for (const sel of ['.b3-cam.b3-pick .b3-shade::before', '.b3-cam.b3-pick .b3-pickbox.b3-pchoose', '.b3-pchoose::after', '.b3-pchoose .b3-plens', '.b3-cam.b3-pick .b3-pchoose .b3-popt']) assert.ok(rm.includes(sel), sel);
     assert.match(rm, /\{ animation: none !important; \}/);
 });
+
+test('the photo gallery is a row like the others, and five rows fit above the round X on a usual iPhone', () => {
+    assert.match(html, /row\("button", 'type="button" data-b3="picklib"', "b3-popt-lib", IC_PICS, t\("optLib"\), t\("optLibS"\)\)/);
+    assert.ok(html.includes('optLib: ["Photo from your gallery", "Foto aus deiner Galerie", "Foto de tu galería"],'));
+    assert.ok(!html.includes('class="b3-plib" data-b3="picklib"'), 'no small link left');
+    assert.match(css, /\.b3-popt-lib \.b3-poic \{ background: linear-gradient\(160deg, #ffc6a8, #f0727a\);/);
+    assert.match(css, /@media \(max-height: 900px\) \{\n  \.b3-cam\.b3-pick \.b3-pchoose \{ display: grid; grid-template-columns: 52px minmax\(0, 1fr\);/);
+    assert.match(css, /\.b3-popt:nth-child\(5\) \{ animation-delay: \.38s; \}/);
+});

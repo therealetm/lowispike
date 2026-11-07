@@ -248,6 +248,7 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
 /* glossy round icons: a light on top, a little shade below, the colour's own glow */
 .b3-popt-live .b3-poic { background: linear-gradient(160deg, #7fd3ff, #3b8cff); box-shadow: inset 0 2px 3px rgba(255, 255, 255, .55), inset 0 -4px 8px rgba(0, 0, 0, .18), 0 6px 16px -6px rgba(59, 140, 255, .9); }
 .b3-popt-photo .b3-poic { background: linear-gradient(160deg, #5be3a0, #1fa463); box-shadow: inset 0 2px 3px rgba(255, 255, 255, .55), inset 0 -4px 8px rgba(0, 0, 0, .18), 0 6px 16px -6px rgba(31, 164, 99, .9); }
+.b3-popt-lib .b3-poic { background: linear-gradient(160deg, #ffc6a8, #f0727a); box-shadow: inset 0 2px 3px rgba(255, 255, 255, .55), inset 0 -4px 8px rgba(0, 0, 0, .18), 0 6px 16px -6px rgba(240, 114, 122, .9); }
 .b3-popt-man .b3-poic { background: linear-gradient(160deg, #c9bcff, #7b61ff); box-shadow: inset 0 2px 3px rgba(255, 255, 255, .55), inset 0 -4px 8px rgba(0, 0, 0, .18), 0 6px 16px -6px rgba(123, 97, 255, .9); }
 .b3-popt-deep .b3-poic { background: linear-gradient(160deg, #f3dca6, #c9a250); color: #2b1d02; box-shadow: inset 0 2px 3px rgba(255, 255, 255, .6), inset 0 -4px 8px rgba(0, 0, 0, .14), 0 6px 16px -6px rgba(201, 162, 80, .9); }
 .b3-potx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -260,6 +261,17 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
 .b3-plib:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 2px; border-radius: 12px; }
 @media (prefers-reduced-motion: reduce) { .b3-pring, .b3-pbeam { animation: none; } .b3-pbeam { top: 30%; } .b3-popt { transition: none; } .b3-popt:active { transform: none; } }
 /* short phones (iPhone SE): the lens shrinks to sit beside the question, so the three rows and Photos fit above the typing panel */
+/* Nov 7 2026: with five rows (the gallery is a row now) a usual iPhone height (up to 900 pt) puts the lens beside the question, so every
+   row shows above the round X; the rows keep their full size there */
+@media (max-height: 900px) {
+  .b3-cam.b3-pick .b3-pchoose { display: grid; grid-template-columns: 52px minmax(0, 1fr); column-gap: 14px; row-gap: 12px; align-items: center; justify-items: start; text-align: left; padding: 16px 14px 14px; }
+  .b3-cam.b3-pick .b3-pchoose .b3-plens { width: 52px; height: 52px; margin: 4px 0; grid-row: 1 / span 2; }
+  .b3-cam.b3-pick .b3-pchoose .b3-pq, .b3-cam.b3-pick .b3-pchoose .b3-pqs { grid-column: 2; margin: 0; }
+  .b3-cam.b3-pick .b3-pchoose .b3-popts { grid-column: 1 / -1; }
+  .b3-cam.b3-pick .b3-pring2 { inset: -6px; }
+  .b3-cam.b3-pick .b3-pcore { inset: 5px; }
+  .b3-cam.b3-pick .b3-pcore svg { width: 20px; height: 20px; }
+}
 @media (max-height: 700px) {
   .b3-cam.b3-pick .b3-pickbox { padding: 12px 12px 6px; gap: 5px; border-radius: 24px; }
   .b3-cam.b3-pick .b3-pchoose { display: grid; grid-template-columns: 40px minmax(0, 1fr); column-gap: 14px; row-gap: 10px; align-items: center; justify-items: start; text-align: left; }
@@ -354,6 +366,7 @@ html.lw-bx-on .b3-cam.b3-pick:not(.b3-man) .b3-cmsg, html.lw-bx-on.lg .b3-cam.sg
 .b3-cam.b3-pick .b3-pchoose .b3-popt:nth-child(2) { animation-delay: .2s; }
 .b3-cam.b3-pick .b3-pchoose .b3-popt:nth-child(3) { animation-delay: .26s; }
 .b3-cam.b3-pick .b3-pchoose .b3-popt:nth-child(4) { animation-delay: .32s; }
+.b3-cam.b3-pick .b3-pchoose .b3-popt:nth-child(5) { animation-delay: .38s; }
 .b3-cam.b3-pick .b3-pchoose .b3-plib { animation: b3pup .48s cubic-bezier(.2, .9, .25, 1) .38s both; }
 
 @keyframes b3pin { from { opacity: 0; transform: translateY(22px) scale(.94); } to { opacity: 1; transform: none; } }

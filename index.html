@@ -15633,6 +15633,8 @@ Object.assign(B3_TX, {
   optPhotoS: ["Opens your camera, the AI checks your plate", "Öffnet deine Kamera, die KI prüft dein Essen", "Abre tu cámara; la IA revisa tu plato"],
   /* Nov 7 2026 (Emmanuel: "Typing in a barcode and or typing in the food's name, I feel like that should just go into a button, das
      heißt manually or something, damit alles einfach einheitlich aussieht"): the fourth way in opens the two typing fields */
+  optLib: ["Photo from your gallery", "Foto aus deiner Galerie", "Foto de tu galería"],
+  optLibS: ["A picture you already took", "Ein Bild, das du schon gemacht hast", "Una foto que ya hiciste"],
   optMan: ["Type it in", "Manuell eingeben", "Escribirlo"],
   optManS: ["Barcode number or the food's name", "Barcode-Nummer oder Name vom Essen", "Número del código o nombre del alimento"],
   manBack: ["Back", "Zurück", "Atrás"],
@@ -16519,10 +16521,12 @@ function pickHTML(s){
     '<div class="b3-popts">' +
       row("button", 'type="button" data-b3="picklive"', "b3-popt-live", IC.bc, t("pickLive"), t("optLiveS")) +
       row("button", 'type="button" data-b3="pickshoot"', "b3-popt-photo", IC.cam, t("optPhoto"), t("optPhotoS")) +
+      /* Nov 7 2026 (Emmanuel: "Warum ist dieses Aus Fotogalerie so komisch? ... nicht einfach in demselben Design wie alle anderen
+         Knöpfe"): the photo library is a row like the others, right under the camera, no longer a small link at the bottom */
+      row("button", 'type="button" data-b3="picklib"', "b3-popt-lib", IC_PICS, t("optLib"), t("optLibS")) +
       row("button", 'type="button" data-b3="pickman"', "b3-popt-man", IC.key, t("optMan"), t("optManS")) +
       row("a", 'href="' + esc(deepURL()) + '" target="_blank" rel="noopener"', "b3-popt-deep", IC_SPARK, t("deep"), t("deepS")) +
-    '</div>' +
-    '<button type="button" class="b3-plib" data-b3="picklib">' + IC_PICS + '<span>' + esc(t("pickLib")) + '</span></button></div>'; }
+    '</div></div>'; }
 /* Nov 7 2026: Type it in (the fourth row) opens the two typing fields under the chooser, the food name with the keyboard up; Back
    (or the phone's back / Escape) brings the four ways back. The fields, their checks and the keyboard lift are unchanged. While the
    fields are open the scanner carries data-back-layer, so the phone's back counts closing them as its step (back-swipe.js). */

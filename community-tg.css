@@ -307,3 +307,7 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub
 /* Nov 7 2026: albums in the room keep each picture full width of the bubble while the row swipes (community-chat.css) */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cs-alb-track > .cs-photo{flex:0 0 100%!important;width:100%!important;margin:0!important;border-radius:0!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cs-album:not(:last-child) ~ .cm-foot,html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-pbub:not(.cm-pcap) .cs-album + .cm-foot{bottom:26px}
+/* Nov 7 2026 (Emmanuel: scrolling up the chat room "isn't really fluid"): a chat photo loads lazily and used to grow from 96 px to its
+   own height while you scrolled past it; iPhone Safari does not hold the scroll position for that, so the list jumped. Every photo
+   now has its box before it loads (4:5, the Instagram photo shape, the picture filled in), so nothing above you changes height */
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cm-bub.cm-pbub .cs-photo img{aspect-ratio:4/5;min-height:0;max-height:none}

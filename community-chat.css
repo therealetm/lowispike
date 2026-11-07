@@ -267,3 +267,5 @@ html[data-ui=light] .cs-sheet .cp-blk-note{color:rgba(60,60,67,.7)}
 #cmPaneChat .cs-alb-dots { display: flex; justify-content: center; gap: 5px; padding: 7px 0 3px; }
 #cmPaneChat .cs-alb-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .35); transition: background .2s; }
 #cmPaneChat .cs-alb-dots i.on { background: #fff; }
+/* Nov 7 2026: the same outside the room: a chat photo keeps its box while it loads (no jump while scrolling up) */
+#cmPaneChat .cm-bub .cs-photo img { aspect-ratio: 4 / 5; object-fit: cover; }

@@ -121,8 +121,12 @@ function layout(){if(!wrap||!gal)return;const gw=gal.clientWidth,gh=gal.clientHe
   board();}
 /* the round back button at the bottom centre (bottom-close.js #lwBX): its top edge in the table's box, measured so every safe area
    and phone works; null when it is not showing or not down there */
+/* Nov 7 2026 (Emmanuel, screenshot: "why is the billiard getting smaller when the thing opens?"): a card at the bottom (the evening
+   "Deine Blase" invite) lifts the round back button above it for a while (bottom-close.js --bx-lift); the table is laid out against
+   the button's resting place, so it no longer shrinks while such a card is open */
 function backTop(gh){try{const x=D.getElementById('lwBX'),g=gal.getBoundingClientRect();if(!x||!x.classList.contains('on'))return null;const b=x.getBoundingClientRect();
-  return b.height&&b.top>g.top+gh*.4&&b.top<g.bottom+40?b.top-g.top:null;}catch(e){return null;}}
+  const lift=parseFloat(getComputedStyle(x).getPropertyValue('--bx-lift'))||0,top=b.top+Math.max(0,lift);
+  return b.height&&top>g.top+gh*.4&&top<g.bottom+40?top-g.top:null;}catch(e){return null;}}
 /* the scoreboard: the fight for the middle at a glance, only from what the table already knows (no new data): who holds the middle
    (you: for how long, on the server's clock), your paid middle hours today (+MID_XP each, at most MID_CAP) and how many are in the
    Room. Written only when a line changes. */

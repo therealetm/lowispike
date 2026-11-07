@@ -8947,6 +8947,7 @@ const T = [
   ["Nothing yet. Your posts show up here.", "Noch nichts. Deine Posts erscheinen hier.", "Nada aún. Tus posts aparecen aquí."], ["Tap Save on any post in For You.", "Tippe bei einem Post in Für dich auf Merken.", "Toca Guardar en cualquier post de Para ti."],
   ["New here?", "Neu hier?", "¿Nuevo aquí?"], ["Say hi", "Sag hallo", "Saluda"], ["In For You", "In Für dich", "En Para ti"], ["Only you", "Nur du", "Solo tú"],
   ["Post", "Posten", "Publicar"],
+  ["Upload a video", "Video hochladen", "Subir un vídeo"],
   ["Share to For You", "Teilen in Für dich", "Compartir en Para ti"],
   ["Link a recipe (optional)", "Rezept verknüpfen (optional)", "Enlazar una receta (opcional)"], ["No recipe", "Kein Rezept", "Sin receta"],
   ["Recipe linked", "Rezept verknüpft", "Receta enlazada"], ["Open", "Öffnen", "Abrir"],
@@ -18249,6 +18250,15 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
 .r3f-post .r3f-psub{margin-bottom:14px}
 .r3f-post .ls-post .card{margin-top:12px}
 .r3f-post .ls-post .foot{margin-bottom:0}
+/* Nov 7 2026 (Emmanuel: posting "looks completely overwhelming ... like TikTok or Instagram"): one header with the title and Post top
+   right (stays put while you scroll), no second title and no explainer lines; media first, then your words, link, recipe, who sees it */
+.r3f-post .r3f-head{position:sticky;top:20px;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 -6px 12px;padding:6px 6px 8px;border-radius:18px;background:rgba(14,17,26,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+html[data-ui=light] .r3f-post .r3f-head{background:rgba(246,248,252,.94)}
+.r3f-post .r3f-head .r3f-ph{margin:0}
+#sheet.r3f-sheet .r3f-head .ls-postfoot{position:static;margin:0;padding:0;background:none;border-radius:0;flex:none}
+#sheet.r3f-sheet .r3f-head .ls-postfoot .btn{flex:none;min-height:40px;padding:0 22px;border-radius:20px;font-weight:700}
+.r3f-post .r3f-psub,.r3f-post #trCompose > .h3,.r3f-post #trCompose > .h3 + .small.muted,.r3f-post .ls-post > .foot{display:none}
+.r3f-post #trCompose.card{background:none;border:0;box-shadow:none;padding:0;margin-top:14px}
 </style>
 <script id="r3fjs">
 /* ===== LOWiSPIKE round 3, part F (Oct 9, 2026): Community tabs cleanup =====
@@ -18312,11 +18322,15 @@ function postSheet(prefill, text, rec){
      The posting sheet works on any tab, so with For You in Cook there is no tab switch at all. */
   try { if (!window.LowiNavMoves && typeof TAB !== "undefined" && TAB !== "foryou") { if (window.cmSetView) cmSetView("feed"); goTab("foryou"); } } catch(e){}
   const html = '<button class="xbtn" data-act="close-sheet" aria-label="' + esc(T("Close")) + '">' + XI + '</button>' +
-    '<div class="sheetbody r3f-post"><div class="h2 r3f-ph" data-noi18n>' + esc(T("New post")) + '</div><div class="small muted r3f-psub" data-noi18n>' + esc(T("Video, photo, a TikTok or Instagram link, or just a few words.")) + '</div>' +
+    '<div class="sheetbody r3f-post"><div class="r3f-head"><div class="h2 r3f-ph" data-noi18n>' + esc(T("New post")) + '</div><span class="r3f-postslot"></span></div><div class="small muted r3f-psub" data-noi18n>' + esc(T("Video, photo, a TikTok or Instagram link, or just a few words.")) + '</div>' +
     '<div class="ls-post" id="r3fCompose"></div></div>';
   try { sheet(html); } catch(e){ console.error(e); return; }
   const sh = $("#sheet"); if (sh) { sh.classList.add("r3f-sheet"); sh.scrollTop = 0; }
   TRIBE.composeInto($("#r3fCompose"), prefill || "", text || "", rec || "");
+  /* Nov 7 2026 (Emmanuel: "The whole FYP interface to posting ... looks completely overwhelming ... like TikTok or Instagram"; the
+     sticky Post row lay on the recipe field): Post sits top right in the sheet's own header, like Instagram's Share, so it never
+     covers a field and is always in reach. Same button (#trPost), same checks (updPost) */
+  { const pf = $("#r3fCompose .ls-postfoot"), slot = $(".r3f-postslot", sh || document); if (pf && slot && slot.appendChild) slot.appendChild(pf); }
   if (prefill || text) return;
 }
 R3F.postSheet = postSheet;

@@ -25,3 +25,10 @@
 .fyb-gold .fyb-why{font-size:13px;-webkit-line-clamp:2}
 .fyb-src{margin:3px 0 0;font-size:11px;opacity:.75}
 @media (max-height:700px){.fyb-slide .fyb-why{-webkit-line-clamp:2}.fyb-gold .fyb-why{display:none}}
+/* Nov 7 2026 (Emmanuel: For You "completely overwhelming ... like TikTok or Instagram"): less over the picture. The swap reason keeps two
+   lines, the shelf find is one folded line until you tap it (foryou.js), so the photo shows like a TikTok card */
+.fyb-slide .fyb-why{-webkit-line-clamp:2}
+.fyb-gold{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fyb-gold:not(.fyb-open) .fyb-why,.fyb-gold:not(.fyb-open) .fyb-src,.fyb-gold:not(.fyb-open) .fyb-nums,.fyb-gold:not(.fyb-open) .fyb-img{display:none}
+.fyb-gold:not(.fyb-open) .fyb-k{margin-bottom:2px}
+.fyb-gold:not(.fyb-open) .fyb-prod b::after{content:" \203A";opacity:.7}

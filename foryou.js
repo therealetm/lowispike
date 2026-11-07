@@ -96,5 +96,9 @@
   /* the For You list re-checks when the server's bot list arrives (a crowd account's post then follows the insulin rule) */
   try { root.addEventListener && root.addEventListener('lowi-bots', () => { try { const T = root.TRIBE; if (T && T.renderForYou && doc().getElementById('fyFeed')) T.renderForYou(); } catch (e) { /* not on screen */ } }); } catch (e) { /* no window */ }
 
+  /* Nov 7 2026 (Emmanuel: For You "looks completely overwhelming ... like TikTok or Instagram"): the shelf find under a swap starts
+     folded to one line (heading and product name); a tap opens the label values and why it is a good pick, a second tap folds it */
+  try { const d = doc(); if (d && d.addEventListener) d.addEventListener('click', e => { const g = e.target && e.target.closest && e.target.closest('.fyb-gold'); if (!g) return; g.classList.toggle('fyb-open'); g.setAttribute('aria-expanded', g.classList.contains('fyb-open') ? 'true' : 'false'); }); } catch (e) { /* no page */ }
+
   root.LowiForYou = { feed, botPosts, botPost, verdict, passes, held, toPublish, freeLinks: C.freeLinks, shows, love, external: C.external, thumbOf: C.thumbOf, creatorOf: C.creatorOf, slideHTML, fromCommunityShare, note, ctx };
 })(typeof window !== 'undefined' ? window : this);

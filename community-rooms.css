@@ -251,6 +251,8 @@ html.sec-open #cmPaneChat[data-spirit-chat]>.rm-bar .rm-head{padding-left:calc(5
 #cmPaneChat .rm-fy .fy-slide{height:100%;min-height:0}
 #cmPaneChat .rm-fy .fyv-fab{top:12px;left:12px;right:auto}
 #cmPaneChat .rm-fy .fy-rail,#cmPaneChat .rm-fy .fy-meta{bottom:16px}
+/* Nov 7 2026 (For You like TikTok): with the round back button at the bottom (bottom-close.js), the words and Save end above it */
+html.lw-bx-on #cmPaneChat .rm-fy .fy-rail,html.lw-bx-on #cmPaneChat .rm-fy .fy-meta{bottom:64px}
 #cmPaneChat .rm-fy .fy-endin{padding-bottom:0}
 #cmPaneChat .rm-fy .fy-rail{gap:10px;right:6px}
 #cmPaneChat .rm-fy .fy-feed{touch-action:pan-y;overscroll-behavior:contain}

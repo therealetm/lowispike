@@ -76,6 +76,8 @@
 .rt-board.held .rt-ring{border-style:solid;border-color:#ffd678;box-shadow:0 0 6px rgba(255,214,120,.8)}
 .rt-board.held .rt-r-mid .rt-v{color:#ffd678}
 .rt-board.mine .rt-r-mid .rt-v{color:#bff3e2}
+/* Nov 7 2026: the middle holder's time and points under the name, never cut */
+.rt-r-mid .rt-v .rt-vt{display:block;font:600 11px/1.2 -apple-system,system-ui,sans-serif;color:rgba(255,214,120,.85);white-space:nowrap}
 /* Nov 6 2026 (design review point 6, tables of 24): the invite pill sits on the scoreboard's top edge, only once you have a table;
    the board itself lets taps through, the pill takes them (44 pt with its ::after) */
 .rt-inv{position:absolute;right:12px;top:0;transform:translateY(-60%);pointer-events:auto;display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:999px;

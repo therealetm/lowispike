@@ -176,7 +176,11 @@ const SEATS=24;
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function inviteFrom(search){const m=/[?&]tisch=([^&#]*)/.exec(String(search||''));let v='';try{v=m?decodeURIComponent(m[1]).trim():'';}catch(e){v='';}return UUID.test(v)?v.toLowerCase():null;}
 function atTable(list,members){if(!members)return (list||[]).slice();return (list||[]).filter(p=>p&&(p.me||members.has(p.uid)));}
-const api={T,table,simulate,homeSpots,pack,unpack,enc,dec,aim,guide,guidePath,inMid,midHolder,midTick,hash,roomLayout,SEATS,inviteFrom,atTable};
+/* Nov 7 2026 (Emmanuel: "next to the name when it says middle and their name ... how many minutes someone has been in the middle
+   ... and gathered this many points"): what a hold of ms has earned so far, the same rule as midTick (MID_XP per full hour, at most
+   MID_CAP hours a day) */
+function midPoints(ms){const h=Math.floor(Math.max(0,+ms||0)/T.HOUR);return Math.min(T.MID_CAP,h)*T.MID_XP;}
+const api={T,table,simulate,homeSpots,pack,unpack,enc,dec,aim,guide,guidePath,inMid,midHolder,midTick,hash,roomLayout,SEATS,inviteFrom,atTable,midPoints};
 if(typeof module==='object'&&module.exports){module.exports=api;}
 if(W)W.LowiTableCore=api;
 })(typeof window==='object'?window:(typeof globalThis==='object'?globalThis:null));

@@ -54,6 +54,9 @@ const COPY={
   midHold:['Your middle','Deine Mitte','Tu centro'],
   midCap:['Your middle · 8 h paid today','Deine Mitte · heute 8 Std bezahlt','Tu centro · hoy 8 h cobradas'],
   midOther:['Middle: {n}','Mitte: {n}','Centro: {n}'],
+  /* Nov 7 2026: how long the holder has been in the middle and what that hold has earned */
+  midOtherFor:['Middle: {n} · {t} · +{x} XP','Mitte: {n} · {t} · +{x} XP','Centro: {n} · {t} · +{x} XP'],
+  sbHeld:['{t} · +{x} XP','{t} · +{x} XP','{t} · +{x} XP'],
   midFree:['Middle · 1 h = +{x} XP','Mitte · 1 Std = +{x} XP','Centro · 1 h = +{x} XP'],
   someone:['Someone','Jemand','Alguien'],
   midXp:['1 hour in the middle of the pool table','1 Stunde in der Mitte vom Billardtisch','1 hora en el centro de la mesa de billar']};
@@ -124,14 +127,22 @@ function backTop(gh){try{const x=D.getElementById('lwBX'),g=gal.getBoundingClien
    (you: for how long, on the server's clock), your paid middle hours today (+MID_XP each, at most MID_CAP) and how many are in the
    Room. Written only when a line changes. */
 let boardT='';
+/* Nov 7 2026: since when each ball rests where it is (server ms: the row's updated_at, or the end of a shot seen here) */
+const restAt=new Map();
+function heldFor(uid){const t=restAt.get(uid),now=isFinite(srvNow())?srvNow():Date.now();return t&&isFinite(t)&&now>=t?now-t:NaN;}
 function dur(ms){const m=Math.max(0,Math.floor(ms/60000));return m<60?tr('sbMin',null,{m}):tr('sbHour',null,{h:Math.floor(m/60),m:m%60});}
 function board(){if(!boardEl)return;const mh=midShown,o=midLoad(),now=srvNow(),st=o.st;
   const mid=mh&&mh===me?(st&&st.u===me&&isFinite(now)&&isFinite(st.since)?tr('sbYouFor',null,{t:dur(now-st.since)}):tr('you')):mh?(nameOf(mh)||tr('someone')):tr('sbNobody');
+  /* Nov 7 2026: someone else holds it: how long, and the points that hold has made (yours: the line above already says how long) */
+  const hf=mh&&mh!==me?heldFor(mh):(mh===me&&st&&st.u===me&&isFinite(now)&&isFinite(st.since)?now-st.since:NaN);
+  const held=isFinite(hf)?tr('sbHeld',null,{t:dur(hf),x:C.midPoints(hf)}):'';
   const h=isFinite(now)&&o.d===dayOf(now)?Math.min(T.MID_CAP,o.n|0):0;
   const rows=[[tr('sbMid'),mid],[tr('sbDay'),tr('sbDayV',null,{h,c:T.MID_CAP,x:h*T.MID_XP})],[tr('sbRoom'),tableNo?tr('sbTableV',people.length,{t:tableNo}):tr('sbRoomV',people.length)]];
-  const key=JSON.stringify(rows)+(mh===me?'m':mh?'o':'')+(tableNo?'t':'');if(key===boardT)return;boardT=key;
+  const key=JSON.stringify(rows)+held+(mh===me?'m':mh?'o':'')+(tableNo?'t':'');if(key===boardT)return;boardT=key;
   const inv=boardEl.querySelector('.rt-inv');if(inv){inv.hidden=!tableNo;inv.textContent=tr('invite');}
   ['.rt-r-mid','.rt-r-day','.rt-r-n'].forEach((q,i)=>{const el=boardEl.querySelector(q),k=el&&el.querySelector('.rt-kt'),v=el&&el.querySelector('.rt-v');if(k)k.textContent=rows[i][0];if(v)v.textContent=rows[i][1];});
+  /* the holder's name may be cut, the time and points never: they get their own line under it */
+  const mv=boardEl.querySelector('.rt-r-mid .rt-v');if(mv){let h=mv.querySelector('.rt-vt');if(held&&mh!==me){if(!h){h=D.createElement('small');h.className='rt-vt';mv.appendChild(h);}h.textContent=held;}else if(h)h.remove();}
   boardEl.classList.toggle('held',!!mh);boardEl.classList.toggle('mine',!!mh&&mh===me);}
 function stickAim(dx,dy,r){const k=Math.max(90,Math.min(170,fw*.42))/Math.max(1,r);return C.aim(dx*k,dy*k,Math.max(90,Math.min(170,fw*.42)));}
 function ballEl(p){let el=els.get(p.uid);if(el&&el.isConnected)return el;
@@ -168,7 +179,7 @@ function render(){if(!wrap)return;const d=2*T.R*scale;const mh=play?midShown:(mi
 function midLine(mh){if(!midEl)return;let t;
   if(mh&&mh===me&&realUid(me)&&midInfo.u===me&&midInfo.at&&performance.now()-midInfo.at<20*60000){t=midInfo.cap?tr('midCap'):tr('midYou',null,{x:T.MID_XP,m:Math.max(1,Math.ceil((midInfo.next-(performance.now()-midInfo.at))/60000))});}
   else if(mh&&mh===me)t=tr('midHold');
-  else if(mh)t=tr('midOther',nameOf(mh)||tr('someone'));else t=tr('midFree',null,{x:T.MID_XP});
+  else if(mh){const hf=heldFor(mh);t=isFinite(hf)?tr('midOtherFor',nameOf(mh)||tr('someone'),{t:dur(hf),x:C.midPoints(hf)}):tr('midOther',nameOf(mh)||tr('someone'));}else t=tr('midFree',null,{x:T.MID_XP});
   if(midEl._t!==t){midEl._t=t;midEl.textContent=t;}midEl.classList.toggle('on',!!mh);
   /* the line sits on the felt right under the ring */
   const l=Math.round(T.MID_X*scale)+'px',tp=Math.round((T.MID_Y+T.MID_R)*scale+3)+'px';if(midEl.style.left!==l)midEl.style.left=l;if(midEl.style.top!==tp)midEl.style.top=tp;}
@@ -229,6 +240,7 @@ function fire(dx,dy,p){const by=me||'me';if(!rest.find(by))return false;if(play)
   play=C.table();play.load(start);for(const b of play.balls()){const r=rest.find(b.uid);if(r)b.spin=r.spin||0;}play.shoot(by,dx,dy,p);play._mine=true;play._t0=Date.now();playEnd=res.final;acc=0;
   const id=rid(),now=Date.now();stats.shots++;stats.lastShot={id,hit:res.hit,self:!!res.self,cushions:res.cushions|0,moved:res.moved.length,steps:res.steps};seenIds.add(id);
   for(const r of res.moved)hold.set(r[0],now+20000);
+  {const sn=isFinite(srvNow())?srvNow():now;for(const r of res.moved)restAt.set(r[0],sn);}   /* a moved ball starts resting again */
   /* everyone else in the Room replays it from the same start */
   try{const c=cloud();if(c&&c.energyShot&&realUid(by))c.energyShot(C.pack({id,by,n:(people.find(x=>x.me)||{}).n||'',t:now,dx,dy,p,s:start,f:res.final}));}catch(e){}
   /* and where everyone came to rest is saved, also for the ones who are not here */
@@ -246,6 +258,7 @@ function remote(raw){const m=C.unpack(raw);if(!m)return false;if(m.by===me||seen
   const res=C.simulate(m.s,m.by,m.dx,m.dy,m.p,m.legacy);const end=(m.f&&m.f.length)?m.f:(res?res.final:m.s);
   play=C.table();play.load(m.s);play._t0=Date.now();play._by=m.by;play._byName=m.n;if(!play.shoot(m.by,m.dx,m.dy,m.p,m.legacy)){play=null;for(const r of end){if(rest.find(r[0]))rest.set(r[0],r[1],r[2]);saved.set(r[0],{x:r[1],y:r[2]});}render();return true;}
   playEnd=end;acc=0;const now=Date.now();for(const r of end)hold.set(r[0],now+20000);
+  {const sn=isFinite(srvNow())?srvNow():now,was={};for(const q of m.s||[])was[q[0]]=q;for(const r of end){const q=was[r[0]];if(!q||Math.abs(q[1]-r[1])>1||Math.abs(q[2]-r[2])>1)restAt.set(r[0],sn);}}
   if(!visible()){play.settle();finishPlay();render();return true;}kick();return true;}
 
 /* ---------- input: tap a ball = write to them; pull back anywhere = aim; let go = blast ---------- */
@@ -302,6 +315,7 @@ function loadRows(force){const now=Date.now();if(loading)return loading;if(!forc
   loading=Promise.resolve(c.client()).then(sb=>sb&&sb.from('companion_rest').select('user_id,rx,ry,moved_by,updated_at').order('updated_at',{ascending:false}).limit(400)).then(r=>{loading=null;
     if(!r||r.error||!Array.isArray(r.data))return false;stats.loads++;const t=Date.now();let mine=null,n=0;
     for(const x of r.data){if(!x||!x.user_id)continue;const p=C.dec(x.rx,x.ry);if(!p)continue;n++;if(x.user_id===me)mine={p,by:x.moved_by,at:x.updated_at};
+      {const ra=Date.parse(x.updated_at||'');if(isFinite(ra)&&!((hold.get(x.user_id)||0)>t))restAt.set(x.user_id,ra);}
       if((hold.get(x.user_id)||0)>t)continue;saved.set(x.user_id,p);if(!play&&!(tween&&tween.uid===x.user_id)&&rest.find(x.user_id))rest.set(x.user_id,p.x,p.y);}
     stats.rowsIn=n;if(!play)rest.relax(10);
     /* your ball has no table spot yet: save the one it has, so everyone sees you in the same place */

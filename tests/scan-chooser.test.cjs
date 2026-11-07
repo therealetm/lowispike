@@ -41,13 +41,16 @@ test('the chooser: one question, then Live scan, Photo of your food, Deep analyz
     const at = re => { const m = h.match(re); assert.ok(m, String(re)); return m.index; };
     const live = at(/<button class="b3-popt b3-popt-live" type="button" data-b3="picklive">/);
     const photo = at(/<button class="b3-popt b3-popt-photo" type="button" data-b3="pickshoot">/);
+    /* test changed 7 Nov 2026 (Emmanuel: "Typing in a barcode and or typing in the food's name ... should just go into a button, das
+       heißt manually"): a fourth row, Type it in, sits between Photo of your food and Deep analyze (tests/scan-chooser-liquid.test.cjs) */
+    const man = at(/<button class="b3-popt b3-popt-man" type="button" data-b3="pickman">/);
     const deep = at(/<a class="b3-popt b3-popt-deep" href="https:\/\/chatgpt\.com\/g\/g-69481a874bf08191b8118f8d88c9c90e-lowispike" target="_blank" rel="noopener">/);
     const lib = at(/<button type="button" class="b3-plib" data-b3="picklib">/);
-    assert.ok(live < photo && photo < deep && deep < lib, 'Live scan, Photo of your food, Deep analyze, then Photos');
+    assert.ok(live < photo && photo < man && man < deep && deep < lib, 'Live scan, Photo of your food, Type it in, Deep analyze, then Photos');
     assert.match(h, /data-b3="picklive"><span class="b3-poic" aria-hidden="true"><svg data-i="bc"\/><\/span><span class="b3-potx"><b>\{pickLive\}<\/b><small>\{optLiveS\}<\/small>/);
     assert.match(h, /data-b3="pickshoot"><span class="b3-poic" aria-hidden="true"><svg data-i="cam"\/><\/span><span class="b3-potx"><b>\{optPhoto\}<\/b><small>\{optPhotoS\}<\/small>/);
     assert.match(h, /rel="noopener"><span class="b3-poic" aria-hidden="true"><svg data-i="spark"\/><\/span><span class="b3-potx"><b>\{deep\}<\/b><small>\{deepS\}<\/small>/, 'gpt-open.js writes its no-app hint into this <small>');
-    assert.equal((h.match(/class="b3-popt /g) || []).length, 3, 'three rows');
+    assert.equal((h.match(/class="b3-popt /g) || []).length, 4, 'four rows (test changed 7 Nov 2026: Type it in joined them)');
     assert.doesNotMatch(h, /data-b3="[^"]*"[^>]*href|href[^>]*data-b3=/, 'the GPT link carries no data-b3, so the scanner click handler never swallows it');
     assert.doesNotMatch(h, /class="b3-deep/, 'not the bottom bar Deep analyze, which the photo screen hides');
     assert.doesNotMatch(h, /getUserMedia|startCam|pickOpen/, 'drawing the chooser opens no camera');
@@ -71,9 +74,12 @@ test('each row does what it says: live layer, the phone camera, the photo librar
 test('the chooser look: no title over the question, rows like an iOS list, motion off when asked', () => {
     const css = read('scan-glass.css');
     assert.match(css, /\.b3-cam\.b3-pick \.b3-ctitle \{ visibility: hidden; \}/);
-    assert.match(css, /\.b3-popts \{[^}]*border-radius: 20px;[^}]*overflow: hidden;/);
+    /* test changed 7 Nov 2026 (Emmanuel: "Transparenz, Design, Liquid, Bubble, Style"): each row is its own glass bubble, no longer one
+       inset list with hairlines between rows */
+    assert.match(css, /\.b3-popts \{ width: 100%; display: flex; flex-direction: column; gap: 10px; text-align: left; \}/);
     assert.match(css, /\.b3-popt \{[^}]*min-height: 64px;/, 'rows are easy to hit');
-    assert.match(css, /\.b3-popt \+ \.b3-popt::before \{/, 'hairline separators between rows');
+    assert.doesNotMatch(css, /\.b3-popt \+ \.b3-popt::before \{/, 'no hairlines: each row is its own bubble');
+    assert.match(css, /\.b3-popt \{[^}]*border-radius: 24px; background: rgba\(255, 255, 255, \.08\); border: 1px solid rgba\(255, 255, 255, \.17\);/);
     assert.match(css, /@keyframes b3pspin/);
     assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{ \.b3-pring, \.b3-pbeam \{ animation: none; \}/);
     assert.match(css, /@media \(max-height: 700px\) \{\n  \.b3-cam\.b3-pick \.b3-pickbox \{[^}]*\}\n  \.b3-cam\.b3-pick \.b3-pchoose \{ display: grid; grid-template-columns: 40px minmax\(0, 1fr\);/, 'short phones: the lens beside the question, so everything fits');

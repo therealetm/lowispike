@@ -15616,6 +15616,11 @@ Object.assign(B3_TX, {
   optLiveS: ["Product after product: into your cart or skip", "Produkt für Produkt: in den Wagen oder überspringen", "Producto tras producto: al carro o saltar"],
   optPhoto: ["Photo of your food", "Foto von deinem Essen", "Foto de tu comida"],
   optPhotoS: ["Opens your camera, the AI checks your plate", "Öffnet deine Kamera, die KI prüft dein Essen", "Abre tu cámara; la IA revisa tu plato"],
+  /* Nov 7 2026 (Emmanuel: "Typing in a barcode and or typing in the food's name, I feel like that should just go into a button, das
+     heißt manually or something, damit alles einfach einheitlich aussieht"): the fourth way in opens the two typing fields */
+  optMan: ["Type it in", "Manuell eingeben", "Escribirlo"],
+  optManS: ["Barcode number or the food's name", "Barcode-Nummer oder Name vom Essen", "Número del código o nombre del alimento"],
+  manBack: ["Back", "Zurück", "Atrás"],
   /* Oct 28 2026 live barcode scan from the photo screen (E-man, call: "Barcode live" led into the old cluttered camera screen) */
   liveOff: ["The camera is off", "Die Kamera ist aus", "La cámara está apagada"],
   liveOffS: ["Just take a photo of the barcode instead. That needs no camera permission.", "Mach stattdessen einfach ein Foto vom Barcode. Dafür braucht es keine Kamera-Erlaubnis.", "Haz simplemente una foto del código. No necesita permiso de cámara."],
@@ -16142,6 +16147,7 @@ const deepURL = () => { try { const g = window.LowiVitalsBridge && LowiVitalsBri
 const IC_DROP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c3.2 4 5.5 7.1 5.5 10a5.5 5.5 0 0 1-11 0c0-2.9 2.3-6 5.5-10z"/></svg>';
 const IC_SPARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>';
 const IC_PICS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M20.5 15.5 16 11l-7.5 7.5"/></svg>';
+const IC_BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6 8.5 12l6 6"/></svg>';
 /* bottom of the scanner. Oct 21 Scan / Fuel / Gap (E-man: "Scan is simply for scanning a product when you go grocery shopping"):
    Barcode (check a product) and Deep analyze. Log meal left the scanner: meals are logged in Fuel; Snap food is the Snap button inside Log meal.
    Oct 21 evening (E-man: "That deep analyze button is simply a shortcut to my custom GPT. It should be very quick. I open the app, I click on
@@ -16201,7 +16207,7 @@ function openScanner(mode){
     '<div class="b3-ctop"><button class="b3-cx" data-b3="camclose" aria-label="' + esc(t("close")) + '">' + IC.x + '</button><span class="b3-ctitle">' + esc(t("scanBig")) + '</span>' + (window.LowiShopScan && mode === "shop" ? LowiShopScan.pill() : "") + '<button class="b3-torch" data-b3="torch" hidden aria-label="' + esc(t("torch")) + '">' + IC.bolt + '</button></div>' +
     '<div class="b3-frame" id="b3Frame"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><i class="b3-laser"></i></div>' +
     '<div class="b3-cmsg" id="b3CMsg"></div>' +
-    '<div class="b3-cbot"><div class="b3-chint" id="b3Hint">' + esc(mode === "photo" ? t("aimPhoto") : t("aim")) + '</div>' +
+    '<div class="b3-cbot"><button type="button" class="b3-mback" data-b3="pickback">' + IC_BACK + '<span>' + esc(t("manBack")) + '</span></button><div class="b3-chint" id="b3Hint">' + esc(mode === "photo" ? t("aimPhoto") : t("aim")) + '</div>' +
       '<button type="button" class="b3-shut" data-b3="camshot" aria-label="' + esc(t("shoot")) + '"><i></i></button>' +
       '<form class="b3-type b3-ctype" id="b3BcF" autocomplete="off"><input class="input" id="b3Bc" inputmode="numeric" pattern="[0-9]*" maxlength="14" placeholder="' + esc(t("bcPh")) + '" enterkeyhint="go"><button class="b3-go" aria-label="' + esc(t("check")) + '">' + IC.go + '</button></form>' +
       /* Oct 23 name check: the food-name field next to the barcode field. A typed food or product name gets its verdict straight away */
@@ -16498,9 +16504,17 @@ function pickHTML(s){
     '<div class="b3-popts">' +
       row("button", 'type="button" data-b3="picklive"', "b3-popt-live", IC.bc, t("pickLive"), t("optLiveS")) +
       row("button", 'type="button" data-b3="pickshoot"', "b3-popt-photo", IC.cam, t("optPhoto"), t("optPhotoS")) +
+      row("button", 'type="button" data-b3="pickman"', "b3-popt-man", IC.key, t("optMan"), t("optManS")) +
       row("a", 'href="' + esc(deepURL()) + '" target="_blank" rel="noopener"', "b3-popt-deep", IC_SPARK, t("deep"), t("deepS")) +
     '</div>' +
     '<button type="button" class="b3-plib" data-b3="picklib">' + IC_PICS + '<span>' + esc(t("pickLib")) + '</span></button></div>'; }
+/* Nov 7 2026: Type it in (the fourth row) opens the two typing fields under the chooser, the food name with the keyboard up; Back
+   (or the phone's back / Escape) brings the four ways back. The fields, their checks and the keyboard lift are unchanged. While the
+   fields are open the scanner carries data-back-layer, so the phone's back counts closing them as its step (back-swipe.js). */
+function pickManual(on){ const c = CAM; if (!c || !c.el) return; const el = c.el; on = !!on && el.classList.contains("b3-pick");
+  el.classList.toggle("b3-man", on); if (on) el.setAttribute("data-back-layer", "man"); else el.removeAttribute("data-back-layer");
+  if (on) { const i = $("#b3Nm", el); if (i) { try { i.focus({preventScroll:true}); } catch(e){ try { i.focus(); } catch(x){} } } return; }
+  try { const a = document.activeElement; if (a && el.contains(a)) a.blur(); } catch(e){} }
 function pickFree(c){ if (!c) return; c.pickTok = (c.pickTok || 0) + 1; if (c.pickUrl) { try { URL.revokeObjectURL(c.pickUrl); } catch(e){} } c.pickUrl = ""; c.pickFile = null; }
 /* back to Take photo: the kept photo is dropped (no AI call), a product card on it closes */
 function pickReset(){ const c = CAM; if (!c) return; pickFree(c); c.hold = false; c.done = false; c.el.classList.remove("held", "got");
@@ -16982,6 +16996,8 @@ document.addEventListener("click", e => {
     case "pickshoot": pickOpen(false); break;
     case "picklib": pickOpen(true); break;
     case "picklive": sfx("tap"); openScanner("live"); break;
+    case "pickman": sfx("tap"); pickManual(true); break;
+    case "pickback": sfx("tap"); pickManual(false); break;
     case "pickretake": pickReset(); pickOpen(false); if (CAM) CAM.pickAgain = Date.now(); break;
     case "livephoto": sfx("tap"); pickOpen(false); if (window.LowiLiving && LowiLiving.scan) LowiLiving.scan("pickq"); else openScanner("pickq"); /* the photo screen on its own, like Home's Scan */ if (CAM) CAM.pickAgain = Date.now(); break;
     case "pickai": pickAI(); break;
@@ -17026,7 +17042,7 @@ document.addEventListener("click", e => {
     case "asmeal": try { runAnalyse(b.dataset.q); } catch(x){} break;
   }
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && CAM) closeScanner(); });
+document.addEventListener("keydown", e => { if (e.key !== "Escape" || !CAM) return; if (CAM.el && CAM.el.classList.contains("b3-man")) { pickManual(false); return; } closeScanner(); });
 /* Oct 15: leaving the app stops the camera; coming back starts it again on its own (no second "Allow camera" tap) */
 function camResume(){ if (!CAM || CAM.done || CAM.stream || CAM.el.classList.contains("typing") || CAM.el.classList.contains("b3-pick")) return; const st = CAM.el.dataset.st; if (st === "denied" || st === "nocam" || st === "lookup") return;
   /* Oct 28 2026 live barcode layer: never asks for the camera again by itself (iOS shows the site's camera prompt for each new

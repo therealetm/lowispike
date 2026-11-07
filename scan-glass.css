@@ -236,18 +236,20 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
 @keyframes b3pspin { to { transform: rotate(1turn); } }
 .b3-pickbox .b3-pq { font-size: 20px; letter-spacing: -.01em; }
 .b3-pickbox .b3-pqs { font-size: 14px; opacity: .78; margin-bottom: 8px; }
-.b3-popts { width: 100%; display: flex; flex-direction: column; border-radius: 20px; overflow: hidden; text-align: left;
-  background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .16); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12); }
-.b3-popt { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; box-sizing: border-box; padding: 10px 12px; margin: 0;
-  color: #fff; text-align: left; text-decoration: none; background: transparent; border: 0; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background .15s; }
-.b3-popt + .b3-popt::before { content: ""; position: absolute; left: 62px; right: 0; top: 0; height: 1px; background: rgba(255, 255, 255, .12); }
-.b3-popt:active { background: rgba(255, 255, 255, .1); }
-.b3-popt:focus-visible { outline: 2px solid #9fd6ff; outline-offset: -3px; border-radius: 18px; }
-.b3-poic { width: 38px; height: 38px; flex: none; border-radius: 11px; display: grid; place-items: center; color: #fff; }
+/* Nov 7 2026 (liquid, see the end of this file): each way in is its own glass bubble, no longer one inset list with hairlines */
+.b3-popts { width: 100%; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.b3-popt { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; box-sizing: border-box; padding: 10px 14px 10px 10px; margin: 0;
+  color: #fff; text-align: left; text-decoration: none; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .16s ease, background .16s ease;
+  border-radius: 24px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .17); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 10px 26px -16px rgba(0, 0, 0, .7); }
+.b3-popt:active { transform: scale(.97); background: rgba(255, 255, 255, .15); }
+.b3-popt:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 2px; }
+.b3-poic { width: 40px; height: 40px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff; }
 .b3-poic svg { width: 21px; height: 21px; }
-.b3-popt-live .b3-poic { background: linear-gradient(160deg, #7fd3ff, #3b8cff); box-shadow: 0 6px 16px -6px rgba(59, 140, 255, .9); }
-.b3-popt-photo .b3-poic { background: linear-gradient(160deg, #5be3a0, #1fa463); box-shadow: 0 6px 16px -6px rgba(31, 164, 99, .9); }
-.b3-popt-deep .b3-poic { background: linear-gradient(160deg, #f3dca6, #c9a250); color: #2b1d02; box-shadow: 0 6px 16px -6px rgba(201, 162, 80, .9); }
+/* glossy round icons: a light on top, a little shade below, the colour's own glow */
+.b3-popt-live .b3-poic { background: linear-gradient(160deg, #7fd3ff, #3b8cff); box-shadow: inset 0 2px 3px rgba(255, 255, 255, .55), inset 0 -4px 8px rgba(0, 0, 0, .18), 0 6px 16px -6px rgba(59, 140, 255, .9); }
+.b3-popt-photo .b3-poic { background: linear-gradient(160deg, #5be3a0, #1fa463); box-shadow: inset 0 2px 3px rgba(255, 255, 255, .55), inset 0 -4px 8px rgba(0, 0, 0, .18), 0 6px 16px -6px rgba(31, 164, 99, .9); }
+.b3-popt-man .b3-poic { background: linear-gradient(160deg, #c9bcff, #7b61ff); box-shadow: inset 0 2px 3px rgba(255, 255, 255, .55), inset 0 -4px 8px rgba(0, 0, 0, .18), 0 6px 16px -6px rgba(123, 97, 255, .9); }
+.b3-popt-deep .b3-poic { background: linear-gradient(160deg, #f3dca6, #c9a250); color: #2b1d02; box-shadow: inset 0 2px 3px rgba(255, 255, 255, .6), inset 0 -4px 8px rgba(0, 0, 0, .14), 0 6px 16px -6px rgba(201, 162, 80, .9); }
 .b3-potx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .b3-pickbox .b3-potx b { font-size: 16px; line-height: 1.2; font-weight: 650; }
 .b3-pickbox .b3-potx small { font-size: 13px; line-height: 1.3; opacity: .72; }
@@ -256,7 +258,7 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
   font: 600 15px/1 var(--lg-font, -apple-system, system-ui, sans-serif); cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .b3-plib svg { width: 19px; height: 19px; }
 .b3-plib:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 2px; border-radius: 12px; }
-@media (prefers-reduced-motion: reduce) { .b3-pring, .b3-pbeam { animation: none; } .b3-pbeam { top: 30%; } .b3-popt { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .b3-pring, .b3-pbeam { animation: none; } .b3-pbeam { top: 30%; } .b3-popt { transition: none; } .b3-popt:active { transform: none; } }
 /* short phones (iPhone SE): the lens shrinks to sit beside the question, so the three rows and Photos fit above the typing panel */
 @media (max-height: 700px) {
   .b3-cam.b3-pick .b3-pickbox { padding: 12px 12px 6px; gap: 5px; border-radius: 24px; }
@@ -271,6 +273,8 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
   .b3-cam.b3-pick .b3-pcore svg { width: 17px; height: 17px; }
   .b3-cam.b3-pick .b3-pickbox .b3-pq { font-size: 17px; }
   .b3-cam.b3-pick .b3-popt { min-height: 52px; padding: 6px 10px; }
+  .b3-cam.b3-pick .b3-popts { gap: 8px; }
+  .b3-cam.b3-pick .b3-poic { width: 36px; height: 36px; }
   .b3-cam.b3-pick .b3-pickbox .b3-potx b { font-size: 15px; }
   .b3-cam.b3-pick .b3-pickbox .b3-potx small { font-size: 12.5px; }
   .b3-cam.b3-pick .b3-plib { min-height: 40px; font-size: 14px; }
@@ -300,3 +304,64 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
   background: #32d583; box-shadow: 0 0 0 0 rgba(50, 213, 131, .7); animation: b3livedot 1.6s ease-out infinite; }
 @keyframes b3livedot { 0% { box-shadow: 0 0 0 0 rgba(50, 213, 131, .7); } 70%, 100% { box-shadow: 0 0 0 9px rgba(50, 213, 131, 0); } }
 @media (prefers-reduced-motion: reduce) { .b3-cam.b3-livebc.live .b3-ctitle::before { animation: none; } }
+
+/* Nov 7 2026 Scan chooser, liquid (Emmanuel: "Typing in a barcode and or typing in the food's name, I feel like that should just go
+   into a button, das heißt manually or something, damit alles einfach einheitlich aussieht ... Transparenz, Design, Liquid, Bubble,
+   Style ... It should have looked more impressive when opening ... very meh, very boring"):
+   - the two typing fields wait behind one row, Type it in (index.html pickManual); until then the panel under the card is only the
+     round X, no empty glass, and the card has the whole screen above it;
+   - the card is clear glass over two slow colour orbs, each way in is its own glass bubble with a glossy round icon, all alike;
+   - opening: the lens springs in with one ring of light, the card rises, the rows float up one after another, a sheen crosses once.
+   Motion stays off when the phone asks for less motion. */
+.b3-cam.b3-pick:not(.b3-man) .b3-ctype, .b3-cam.b3-pick:not(.b3-man) .b3-nmlive { display: none !important; }
+.b3-cam.b3-pick:not(.b3-man) .b3-cbot, html.lg .b3-cam.b3-pick:not(.b3-man) .b3-cbot { background: none !important; border-color: transparent !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.b3-cam.b3-pick.b3-man .b3-cmsg { display: none !important; }
+/* with the round X at the bottom (bottom-close.js) the panel holds nothing else, so the card's box reaches down to just above the X */
+html.lw-bx-on .b3-cam.b3-pick:not(.b3-man) .b3-cmsg, html.lw-bx-on.lg .b3-cam.sg-docked.b3-pick:not(.b3-man) .b3-cmsg { bottom: calc(env(safe-area-inset-bottom, 0px) + 86px) !important; }
+.b3-mback { display: none; }
+.b3-cam.b3-pick.b3-man .b3-mback { display: inline-flex; align-items: center; gap: 2px; align-self: flex-start; min-height: 40px; padding: 0 14px 0 8px; margin: 0 0 2px;
+  border-radius: 20px; border: 1px solid rgba(255, 255, 255, .24); background: rgba(255, 255, 255, .1); color: #fff; font: 600 15px/1 var(--lg-font, -apple-system, system-ui, sans-serif);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3); cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.b3-mback svg { width: 18px; height: 18px; }
+.b3-mback:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 2px; }
+.b3-cam.b3-pick.b3-man .b3-cbot { animation: b3pup .34s cubic-bezier(.2, .9, .25, 1.1) both; }
+
+/* the colour behind the glass: two soft orbs drifting slowly in Home's navy */
+.b3-cam.b3-pick .b3-shade { background: none !important; overflow: hidden; }
+.b3-cam.b3-pick .b3-shade::before, .b3-cam.b3-pick .b3-shade::after { content: ""; position: absolute; width: 74vmin; height: 74vmin; border-radius: 50%; filter: blur(44px); opacity: .8; will-change: transform; }
+.b3-cam.b3-pick .b3-shade::before { left: -22vmin; top: 6%; background: radial-gradient(circle, rgba(70, 175, 255, .95), rgba(70, 120, 255, .3) 45%, rgba(64, 170, 255, 0) 70%); animation: b3orb 16s ease-in-out infinite alternate; }
+.b3-cam.b3-pick .b3-shade::after { right: -26vmin; bottom: 18%; background: radial-gradient(circle, rgba(64, 224, 170, .8), rgba(120, 90, 255, .25) 45%, rgba(64, 224, 170, 0) 70%); animation: b3orb 19s ease-in-out -6s infinite alternate-reverse; }
+@keyframes b3orb { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(9vmin, -7vmin, 0) scale(1.12); } }
+
+/* the card: clear liquid glass with a bright rim and a soft glare */
+.b3-cam.b3-pick .b3-pickbox.b3-pchoose { position: relative; overflow: hidden; width: min(360px, 100%); padding: 22px 14px 12px; gap: 6px; border-radius: 34px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .17), rgba(255, 255, 255, .06)); border: 1px solid rgba(255, 255, 255, .26);
+  -webkit-backdrop-filter: blur(26px) saturate(1.8); backdrop-filter: blur(26px) saturate(1.8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 -1px 0 rgba(255, 255, 255, .08), 0 30px 80px -24px rgba(0, 10, 40, .75);
+  animation: b3pin .52s cubic-bezier(.2, .9, .25, 1.12) both; }
+.b3-pchoose::before { content: ""; position: absolute; left: -20%; top: -40%; width: 90%; height: 70%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0)); }
+.b3-pchoose::after { content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 45%; pointer-events: none; transform: skewX(-18deg) translateX(0); opacity: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .22), rgba(255, 255, 255, 0)); animation: b3sheen 1.1s cubic-bezier(.45, 0, .2, 1) .55s 1 both; }
+.b3-pchoose > * { position: relative; z-index: 1; }
+.b3-pchoose .b3-plens { animation: b3lens .7s cubic-bezier(.2, .9, .25, 1.25) both; }
+.b3-pchoose .b3-plens::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid rgba(160, 225, 255, .9); opacity: 0; pointer-events: none; animation: b3ring 1s ease-out .2s 1 both; }
+.b3-pchoose .b3-pq, .b3-pchoose .b3-pqs { animation: b3pup .5s cubic-bezier(.2, .9, .25, 1) .1s both; }
+
+/* the rows float up one after another (each row is its own glass bubble, base rules above) */
+.b3-cam.b3-pick .b3-pchoose .b3-popt { animation: b3pup .48s cubic-bezier(.2, .9, .25, 1.12) both; }
+.b3-cam.b3-pick .b3-pchoose .b3-popt:nth-child(1) { animation-delay: .14s; }
+.b3-cam.b3-pick .b3-pchoose .b3-popt:nth-child(2) { animation-delay: .2s; }
+.b3-cam.b3-pick .b3-pchoose .b3-popt:nth-child(3) { animation-delay: .26s; }
+.b3-cam.b3-pick .b3-pchoose .b3-popt:nth-child(4) { animation-delay: .32s; }
+.b3-cam.b3-pick .b3-pchoose .b3-plib { animation: b3pup .48s cubic-bezier(.2, .9, .25, 1) .38s both; }
+
+@keyframes b3pin { from { opacity: 0; transform: translateY(22px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes b3pup { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes b3lens { from { opacity: 0; transform: scale(.3); } to { opacity: 1; transform: none; } }
+@keyframes b3ring { 0% { opacity: .9; transform: scale(.8); } 100% { opacity: 0; transform: scale(1.9); } }
+@keyframes b3sheen { 0% { opacity: 0; transform: skewX(-18deg) translateX(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: skewX(-18deg) translateX(420%); } }
+@media (prefers-reduced-motion: reduce) {
+  .b3-cam.b3-pick .b3-shade::before, .b3-cam.b3-pick .b3-shade::after, .b3-cam.b3-pick .b3-pickbox.b3-pchoose, .b3-pchoose::after, .b3-pchoose .b3-plens, .b3-pchoose .b3-plens::after,
+  .b3-pchoose .b3-pq, .b3-pchoose .b3-pqs, .b3-cam.b3-pick .b3-pchoose .b3-popt, .b3-cam.b3-pick .b3-pchoose .b3-plib, .b3-cam.b3-pick.b3-man .b3-cbot { animation: none !important; }
+}

@@ -1733,14 +1733,35 @@ Add to cart or Skip); 3 answered; 4 live as 20261106-070854 (one list: the snack
 sticky categories); 5 in parts: carousels live as 20261106-072917, Saved one tap away live as 20261106-074237; share one post,
 "post to Community too" and the weekly card planner not started (notes in HANDOFF-sheet-bubble.md). Details and checks: HANDOFF-sheet-bubble.md, DECISIONS.md.
 
+### 0.43 Requests of 7 Nov 2026 (Emmanuel, voice + 5 screenshots, after the design review)
+Recorded before building (standing rule). Each its own small release, bug fixes quiet; one line per point with the live build id.
+1. Tutorial: finish 0.42 item 5 (one 60 s narration per language, demos on the word timestamps) with today's app, so nobody is
+   confused where things are; "TikTok ready", he screen-records it as a subtle ad. Then ONE notification on everyone's next open:
+   "New tutorial" with Play. Send him the list of what the tour leaves out and why (only the important things, "Facebook / ChatGPT
+   don't explain every detail either").
+2. Carousel in his style: first the grocery cart with its price, then each day's meals (Monday breakfast / lunch / dinner / snack ...);
+   post it on For You and choose to push it into the Community chat too; there the photos swipe inline without opening (like
+   iMessage / Sesame); long-press saves a photo, for every image in the chat.
+3. Chat photos look odd: place them exactly like a WhatsApp / iMessage photo bubble. "Very important".
+4. Scan chooser (screenshot): looks "meh"; the barcode and food-name fields go behind one button (manually); liquid / transparent
+   bubble look; more impressive when it opens.
+5. The ring pulsing round the camera bubble (0.42 item 2: a missing meal lit Scan) confused him ("I have to click on it and then
+   nothing happens ... kills the symmetrical logic"): no extra ring; if anything, the bubble itself, and only when one tap fixes it.
+6. Chat: long press on a reaction (heart, 2, 3) shows who left it.
+7. Billiards: next to "Mitte: Name" how long they have held the middle and the points gathered.
+8. For You and New post: "completely overwhelming" (screenshot: Post covers the recipe field); like TikTok / Instagram / Snapchat,
+   buttons placed smartly.
+9. No sideways wobble when swiping down (Settings especially); no tiny scrolls on pages that almost fit (e.g. Mischen): make them fit.
+10. Design matters most: learn from popular design / critique skills and how others do it, and apply that everywhere.
+
 ### 0.42 Design review of 6 Nov 2026 (Emmanuel, written, "von mir entschieden")
 Recorded before building (standing rule). Decisions in DECISIONS.md ("6 Nov 2026: design review"). Each point is its own small
 release, bug fixes quiet; he wants one short line per point with the live build id. Status: 4 live 20261106-175345;
 8 live 20261106-183649; 7 live 20261106-185443 (GitHub Pages refused its first deploy, "Deployment failed, try again later";
 the docs push after it deployed it); 1 live 20261106-220855 (Log as eaten first, then "Letzte Mahlzeit heute?"; Bubble catch stays a
 tap: making it automatic changes the XP rules, his call); 2 live 20261106-222034 (the bubble for the first missing line pulses);
-3 live 20261106-223650 (the hold ring); 6 built (tables of 24; needs supabase/proposals/room_tables_20261106.sql run once by him,
-one table for everyone until then); 5 open.
+3 live 20261106-223650 (the hold ring); 6 live 20261106-224513 (tables of 24; they start once he runs
+supabase/proposals/room_tables_20261106.sql in the Supabase SQL editor; one table for everyone until then); 5 open (see 0.43).
 1. Food scan result: "Log as eaten" primary for food (photo / typed name, not barcode products), "Add to cart" small; then "Letzte
    Mahlzeit heute?" (Ja, Gap starten = the Gap bubble's Last meal / Noch nicht). 28 Oct decoupling stays. Auto Bubble catch only if
    XP rules stay the same, else ask him.

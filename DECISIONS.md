@@ -1471,3 +1471,9 @@ Live 20261027-004442: a saved profile whose list or object field was null (healt
 - The link is post/#d=...: the post's pictures (up to 8) or video and caption travel inside the link (`post-link-core.js`), so post/ needs no account, no server and no database change. It shows the carousel full size with swipe, dots and 1/8, the name and caption, and "In LOWiSPIKE öffnen". Only pictures from the app's own media storage are shown; the caption is plain text.
 - A post still uploading says so; Nibblo's posts link to the app.
 **Checks:** `tests/post-share-link.test.cjs` (new); changed and marked: foryou-no-social-rail, tiktok-foryou, new-post-tiktok-1108. Chromium: a 3-picture link -> post/ shows 3 pictures, swipe 1/3 -> 2/3.
+
+## 8 Nov 2026: For You buttons like Instagram/TikTok; the New post pictures are big and swipeable
+**Decision applied (Emmanuel, 8 Nov: "where the save button is, the swipe button, the share button, the post button, all the buttons are just wrong ... That's not how a social media platform would do it" and "when I uploaded the carousels, I wasn't able to scroll through them ... a little bit more bigger ... see if the text is right, which one I want to delete").**
+- Rail: every button is an icon in a small dark glass circle with a short label, so it reads on any picture. Top: one slim row (Posten left; Meine Beiträge and a bookmark pill for Gemerkt right).
+- New post: the picked pictures are 112 x 140 in a strip that scrolls sideways; a tap opens all of them full size to swipe through (n / total) with "Dieses entfernen" (`carousel-review.js`, it presses the picture's own ×).
+**Checks:** `tests/foryou-rail-strip-1108.test.cjs` (new). Chromium 393 x 852.

@@ -1,0 +1,44 @@
+/* LOWiSPIKE · For You buttons and the New post photo strip (8 Nov 2026).
+   Emmanuel (iPhone): "the interface looks bad ... where the save button is, the swipe button, the share button, the post button, all the
+   buttons are just wrong. They just look weird there. That's not how a social media platform would do it." and "when I uploaded the
+   carousels, I wasn't able to scroll through them ... I needed to be a little bit more bigger so I can scroll through them, see if I
+   like it, see if the text is right, which one I want to delete".
+   Like Instagram / TikTok: every rail button is an icon in a small dark glass circle with a short label under it, so it reads on any
+   picture; the top row is one slim line (Posten left, my posts and saved as small icon pills right). Loaded after the app's styles. */
+#fyFeed .fy-rail,.fy-slide .fy-rail{right:10px;gap:12px}
+.fy-slide .fy-act{gap:4px;min-width:52px;font-size:10.5px;font-weight:700;letter-spacing:.01em;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.fy-slide .fy-act svg{box-sizing:border-box;width:46px;height:46px;padding:11px;border-radius:50%;background:rgba(8,12,24,.42);border:1px solid rgba(255,255,255,.22);
+  -webkit-backdrop-filter:blur(12px) saturate(1.3);backdrop-filter:blur(12px) saturate(1.3);filter:none;box-shadow:0 4px 14px rgba(0,0,0,.28)}
+.fy-slide .fy-act.fy-more svg{padding:12px}
+html[data-ui=light] .fy-slide .fy-act{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+html[data-ui=light] .fy-slide .fy-act svg{filter:none}
+html[data-ui=light] .fy-slide .fy-act>span{background:none;padding:0}
+.fy-slide .fy-act.on[data-tr=save] svg{background:rgba(245,200,75,.22);border-color:rgba(245,200,75,.6)}
+/* the top row: slim, one line */
+#cmFeed .fy-tops{top:10px;right:10px;flex-direction:row;align-items:center;gap:6px}
+#cmFeed .fy-tops .fy-mine,#cmFeed .fy-tops .fy-svd{height:34px;min-width:0;padding:0 10px;font-size:13px;gap:5px;
+  background:rgba(8,12,24,.42);border:1px solid rgba(255,255,255,.22);box-shadow:none;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+#cmFeed .fy-tops .fy-svd span{display:none}
+#cmFeed .fy-tops .fy-mine b,#cmFeed .fy-tops .fy-svd b{font-size:12px}
+#cmFeed .fyv-fab,#cmFeed .r3f-fab{top:10px;left:10px;right:auto;height:34px;padding:0 13px 0 10px;font-size:13.5px}
+#cmFeed .fyv-fab svg,#cmFeed .r3f-fab svg{width:17px;height:17px}
+
+/* New post: the picked pictures are big enough to judge and swipe sideways; a tap opens them full size (carousel-review.js) */
+#trCompose .tr-strip{flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;touch-action:pan-x pan-y;padding:12px 4px 8px;margin:6px -4px 0;scrollbar-width:none}
+#trCompose .tr-strip::-webkit-scrollbar{display:none}
+#trCompose .tr-strip .tr-ph1{flex:0 0 auto;width:112px;height:140px;scroll-snap-align:start}
+#trCompose .tr-strip .tr-thumbsm{width:112px;height:140px;border-radius:14px;cursor:zoom-in}
+#trCompose .tr-strip .tr-phadd{flex:0 0 auto;width:112px;height:140px}
+#trCompose .tr-strip .tr-phx{top:-8px;right:-8px}
+.crv-ov{position:fixed;inset:0;z-index:2147483000;background:#02050e;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 10px) 0 calc(env(safe-area-inset-bottom,0px) + 96px);color:#fff}
+.crv-top{display:flex;align-items:center;justify-content:space-between;padding:0 14px 10px;font-weight:800;font-size:16px}
+.crv-x{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;font-size:24px;line-height:1}
+.crv-tr{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
+.crv-tr::-webkit-scrollbar{display:none}
+.crv-tr img{flex:0 0 100%;width:100%;height:100%;object-fit:contain;scroll-snap-align:center;scroll-snap-stop:always;touch-action:pan-x pinch-zoom}
+.crv-bot{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 14px 0}
+.crv-del{min-height:46px;padding:0 20px;border-radius:999px;border:1px solid rgba(255,107,107,.6);background:rgba(255,107,107,.14);color:#ff8f8f;font-weight:800;font-size:15px}
+.crv-dots{display:flex;gap:6px}
+.crv-dots i{width:7px;height:7px;border-radius:4px;background:rgba(255,255,255,.4)}
+.crv-dots i.on{width:18px;background:#fff}

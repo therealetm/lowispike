@@ -1477,3 +1477,9 @@ Live 20261027-004442: a saved profile whose list or object field was null (healt
 - Rail: every button is an icon in a small dark glass circle with a short label, so it reads on any picture. Top: one slim row (Posten left; Meine Beiträge and a bookmark pill for Gemerkt right).
 - New post: the picked pictures are 112 x 140 in a strip that scrolls sideways; a tap opens all of them full size to swipe through (n / total) with "Dieses entfernen" (`carousel-review.js`, it presses the picture's own ×).
 **Checks:** `tests/foryou-rail-strip-1108.test.cjs` (new). Chromium 393 x 852.
+
+## 8 Nov 2026: For You like Instagram: a bar on top, the picture whole, actions and text under it
+**Decision applied (Emmanuel, 8 Nov: "the corners are not showing, so it's like really cut off ... there's just so much covering the actual pictures ... make like a menu bar for the For You page, just like we have in the circle ... constant ... That's where then everything can go, sorted ... so that the pictures don't have stuff just covering it").**
+- One constant bar above the feed: Posten left, Meine Beiträge and Gemerkt right; nothing of it lies on a picture.
+- A member post shows its picture or carousel whole (contain, all four corners) with nothing on it. Under it one row: Speichern, Swipe, Teilen, ··· (right); then the name and the caption (2 lines). Nibblo's swap cards keep their own card design.
+**Checks:** `tests/foryou-rail-strip-1108.test.cjs` (one test added). Chromium 393 x 852 with a 3-picture post marked in all four corners.

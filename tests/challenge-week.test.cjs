@@ -84,6 +84,7 @@ test('in place under the games bar, not a new page', () => {
   assert.match(css, /html\.csp-chal #cmPaneChat>#cpRoom/);
   assert.match(css, /\.cwk-pane\{position:fixed;left:0;right:0;z-index:30;top:var\(--csp-top/);
   assert.match(html, /<script src="faw-core\.js\?v=[^"]+"><\/script>\n<script src="challenge-week\.js\?v=/);
-  assert.match(read('sw.js'), /STATIC\.push\("challenge-week\.js", "challenge-week\.css", "faw-core\.js"\);/);
+  /* test changed 8 Nov 2026: the same line now also carries the spoken guides (challenge-voice.test.cjs) */
+  assert.match(read('sw.js'), /STATIC\.push\("challenge-week\.js", "challenge-week\.css", "faw-core\.js", /);
   assert.match(read('tools/fakeaway/src/build.cjs'), /fs\.writeFileSync\(path\.join\(d, '\.\.', '\.\.', '\.\.', 'faw-core\.js'\), core\);/);
 });

@@ -1451,3 +1451,9 @@ Live 20261027-004442: a saved profile whose list or object field was null (healt
 - Pictures: the plan's own food illustrations (the 7 dishes, every meal). There are no photos of these dishes yet.
 - Data, prices, amounts and steps are the Fakeaway week's own: `tools/fakeaway/src/build.cjs` now also writes `faw-core.js` (data, texts, icons and helpers, no page and no listeners).
 **Checks:** `tests/challenge-week.test.cjs` (new). Chromium 393 x 852 German: intro -> Ich bin dabei -> 1 Tag bis zum Start -> a running day with ticks -> recipe in the panel -> Billard removes the panel.
+
+## 8 Nov 2026: Challenge recipes can be listened to (a written script, spoken)
+**Decision applied (Emmanuel, 8 Nov: "instead of just reading, they can like play the tutorial on how to prepare the food ... you're in the kitchen and you just click on play ... almost like your grandma talking to you ... it's important that it's not just text to speech, but it's a script").**
+- Each of the 12 Challenge recipes has a hand-written spoken walk-through in German and English (`tools/fakeaway/voice/scripts.json`): warm, in the order you cook, with the tips that matter ("richtig gut abtropfen lassen"), no exact amounts (those follow the number of people and stay on the screen). Recorded once with the tutorial voices (`make.py` -> `media/challenge/*.mp3`, about 20 to 60 s each, 5.9 MB in all, loaded only when played).
+- In the recipe (inside the Challenge panel) one big button: Anhören: mitkochen, "Dein Begleiter führt dich durch"; Pause / Weiter, a progress bar. It stops when the recipe or the panel closes.
+**Checks:** `tests/challenge-voice.test.cjs` (new): every recipe and language has its recording and the recording's hash matches the script. Chromium 393 x 852: pancakes -> Anhören -> playing, Pause, progress.

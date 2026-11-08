@@ -328,11 +328,25 @@
     }
     /* Nov 5 2026 (owner, Phase B item 3: "Incorporate Zu Hause planning into Supermarkt as Plan my week"): one plain row at the top of
        Supermarkt opens the weekly planner (week-basket.js) inside Supermarkt; its head has "\u2039 Supermarkt" to come back. */
+    function openFakeaway() {
+        if (D.getElementById('fawOv')) return;
+        const o = D.createElement('div'); o.id = 'fawOv'; o.className = 'faw-ov'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true');
+        o.setAttribute('aria-label', T('Fakeaway week', 'Fakeaway-Woche', 'Semana fakeaway'));
+        o.innerHTML = '<iframe class="faw-fr" src="fakeaway/index.html?app=1&amp;lang=' + (li() === 1 ? 'de' : 'en') + '&amp;theme=' + (D.documentElement.getAttribute('data-ui') === 'light' ? 'light' : 'dark') + '" title="' + esc(T('Fakeaway week', 'Fakeaway-Woche', 'Semana fakeaway')) + '"></iframe>' +
+            '<button type="button" class="faw-x" aria-label="' + esc(T('Close', 'Schlie\u00dfen', 'Cerrar')) + '">\u00d7</button>';
+        const shut = () => { o.remove(); D.removeEventListener('keydown', esc1); };
+        const esc1 = e => { if (e.key === 'Escape') shut(); };
+        o.querySelector('.faw-x').addEventListener('click', shut); D.addEventListener('keydown', esc1);
+        D.body.appendChild(o);
+    }
     function planRowHTML() {
         if (!homeTab()) return '';
-        return '<button type="button" class="stp-plan" data-stp="weekshop"><span class="stp-plan-ic" aria-hidden="true">\u{1F4C5}</span><span class="stp-plan-tx"><b>' +
-            esc(T('Plan my week', 'Meine Woche planen', 'Planear mi semana')) + '</b><small>' +
-            esc(T('Dinners, budget and one shopping list', 'Abendessen, Budget und eine Einkaufsliste', 'Cenas, presupuesto y una lista de la compra')) +
+        /* Nov 8 2026 (Emmanuel: "replace it with the weekly meal thingy that's in supermarket, because that's kind of useless ... fuse it
+           with ... the shopping, supermarket, the prices"): the row opens the Fakeaway week (fakeaway/, a page anyone can open from a
+           shared link without an account) right here; its shopping list goes into this app's list with packs and prices */
+        return '<button type="button" class="stp-plan" data-stp="weekshop"><span class="stp-plan-ic" aria-hidden="true">\u{1F354}</span><span class="stp-plan-tx"><b>' +
+            esc(T('Fakeaway week', 'Fakeaway-Woche', 'Semana fakeaway')) + '</b><small>' +
+            esc(T('Burger, pizza & co. without the spike · list with prices', 'Burger, Pizza & Co. ohne Spike · Liste mit Preisen', 'Hamburguesa, pizza y más sin picos · lista con precios')) +
             '</small></span><span class="stp-plan-go" aria-hidden="true">\u203A</span></button>';
     }
     function homeHTML() {
@@ -890,7 +904,7 @@
         if (a === 'close') return close();
         if (a === 'scanshop') { close(); setTimeout(() => { try { W.LowiShopScan.open(); } catch (x) {} }, 200); return; }
         if (a === 'sellerzone') { setTab('sz'); return; }
-        if (a === 'weekshop') { if (homeTab()) setTab('home'); else try { W.LowiWeekBasket.open({ store: S.range }); } catch (x) {} return; }
+        if (a === 'weekshop') return openFakeaway();
         if (a === 'fails') { showFail = !showFail; if (data) paint('keep'); return; }
         if (a === 'mylist') { close(); setTimeout(() => { try { W.tdShopOpen(); } catch (x) {} }, 200); return; }
         if (a === 'cart') { openCart(); return; }

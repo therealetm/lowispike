@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050b1e">
+<meta name="description" content="Eine Woche Burger, Pizza, Döner & Co. ohne Zucker und Mehl. Mit Uhrzeiten, Mengen, Einkaufsliste und Preis.">
+<meta property="og:title" content="Fakeaway-Woche">
+<meta property="og:description" content="Eine Woche Burger, Pizza, Döner & Co. ohne Zucker und Mehl. Mit Einkaufsliste und Preis.">
+<meta property="og:type" content="website">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Fakeaway-Woche</title>
+<style>
+/* Layout: one phone column. Hero (today) > day strip > timeline > sticky shopping button. Sheets slide up for recipe and list. */
+:root{
+  /* Nov 8 2026: LOWiSPIKE's own look (the app's navy glass, cyan accent, light-blue primary pill, system type), no web fonts */
+  --bg:#050b1e; --surface:rgba(255,255,255,.07); --surface2:rgba(255,255,255,.12); --line:rgba(143,231,255,.22);
+  --fg:#eef6ff; --muted:#a9bdd6; --accent:#8fe7ff; --accent-ink:#06213f; --accent-text:#8fe7ff;
+  --pill:linear-gradient(180deg,#f4fbff,#cfe6ff); --pill-ink:#0a2140;
+  --ok:#86e3b0; --okbg:rgba(80,200,140,.16); --bad:#ff9a8a; --badbg:rgba(255,120,100,.14); --plate:rgba(255,255,255,.1); --shadow:0 14px 34px rgba(0,8,30,.55);
+  --display:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,'Segoe UI',Roboto,sans-serif; --body:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,'Segoe UI',Roboto,sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#eef4fb; --surface:#ffffff; --surface2:#e3edf8; --line:rgba(31,127,196,.22);
+  --fg:#0f2340; --muted:#4f6684; --accent:#1f7fc4; --accent-ink:#ffffff; --accent-text:#1663a0; --pill:linear-gradient(180deg,#2d8fd6,#1f6fb2); --pill-ink:#ffffff;
+  --ok:#17683a; --okbg:#dff1e5; --bad:#a4372a; --badbg:#f8e1dc; --plate:#eaf3fc; --shadow:0 10px 30px rgba(40,70,120,.16); color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#eef4fb; --surface:#ffffff; --surface2:#e3edf8; --line:rgba(31,127,196,.22);
+  --fg:#0f2340; --muted:#4f6684; --accent:#1f7fc4; --accent-ink:#ffffff; --accent-text:#1663a0; --pill:linear-gradient(180deg,#2d8fd6,#1f6fb2); --pill-ink:#ffffff;
+  --ok:#17683a; --okbg:#dff1e5; --bad:#a4372a; --badbg:#f8e1dc; --plate:#eaf3fc; --shadow:0 10px 30px rgba(40,70,120,.16); color-scheme:light}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:600 17px/1.45 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 120px}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;text-wrap:balance;line-height:1.1}
+.top{display:flex;align-items:center;justify-content:space-between;padding-top:14px}
+.brand{display:flex;align-items:center;gap:8px;font:600 15px var(--display);letter-spacing:.14em}
+.brand svg{width:22px;height:22px}
+.seg{display:flex;background:var(--surface2);border-radius:99px;padding:3px}
+.seg button{min-width:44px;min-height:34px;border-radius:99px;font:800 13px var(--body);color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.hero{background:var(--surface);border-radius:28px;padding:20px;display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center}
+.hero .kick{font:800 13px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--accent-text)}
+.hero h1{font-size:34px}
+.hero p{margin:6px 0 0;color:var(--muted);font-weight:700}
+.bubble{width:96px;height:96px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;flex:none}
+.bubble svg{width:76%;height:76%}
+.bubble.sm{width:46px;height:46px}.bubble.md{width:64px;height:64px}
+.first{background:var(--accent);color:var(--accent-ink);border-radius:24px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.first h2{font-size:22px}
+.first ol{margin:0;padding-left:1.2em;font-weight:800}
+.first button{align-self:flex-start;background:var(--accent-ink);color:var(--accent);border-radius:99px;padding:10px 20px;min-height:44px;font-weight:800}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dayb{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0 6px;border-radius:18px;background:var(--surface);min-height:72px;font:800 12px var(--body);color:var(--muted)}
+.dayb svg{width:30px;height:30px}
+.dayb[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.dayb.today:not([aria-pressed="true"]){box-shadow:inset 0 0 0 2px var(--accent)}
+.dayhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.dayhead h2{font-size:24px}
+.dayhead span{color:var(--muted);font-weight:800;font-size:14px}
+.tl{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.row{display:grid;grid-template-columns:58px 1fr;gap:10px;align-items:stretch}
+.t{font:600 19px var(--display);padding-top:14px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border-radius:22px;padding:12px 14px;min-height:72px}
+.card .tx{min-width:0;flex:1}
+.card b{display:block;font:600 19px/1.15 var(--display)}
+.card small{display:block;color:var(--muted);font-weight:700;font-size:14px;margin-top:2px}
+.card .go{color:var(--muted);font-size:22px;flex:none}
+.rw.now .card{box-shadow:0 0 0 3px var(--accent)}
+.rw.now .t{color:var(--accent-text)}
+.rw.past{opacity:.5}
+.rw.past .card{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line)}
+.flag{display:inline-block;background:var(--accent);color:var(--accent-ink);border-radius:99px;font:800 12px var(--body);padding:2px 10px;margin-bottom:4px}
+.card.task{background:var(--surface2);border-radius:18px;min-height:0;cursor:default}
+.card.task svg{width:28px;height:28px;flex:none}
+.card.task b{font:800 16px/1.25 var(--body)}
+.card.shop{background:var(--okbg)}
+.cta{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;pointer-events:none;
+  padding:14px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:linear-gradient(to top,var(--bg) 55%,transparent);z-index:5}
+.cta button{pointer-events:auto;width:100%;max-width:520px;min-height:60px;border-radius:99px;background:var(--accent);color:var(--accent-ink);font:600 20px var(--display);box-shadow:var(--shadow)}
+.foot{color:var(--muted);font-size:13px;font-weight:700;text-align:center;display:flex;flex-direction:column;gap:6px;padding:8px 0 4px}
+.foot b{color:var(--fg);font-family:var(--display);font-weight:500;font-size:14px}
+/* sheets */
+.veil{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;opacity:0;pointer-events:none;transition:opacity .2s}
+.veil.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);pointer-events:none;max-height:94%}
+.sheet.on{transform:none;pointer-events:auto}
+.sheet .in{width:100%;max-width:560px;max-height:94dvh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:30px 30px 0 0;box-shadow:var(--shadow);
+  padding:8px max(18px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px}
+.grab{display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:2}
+.grab::before{content:"";position:absolute;left:50%;top:6px;width:44px;height:5px;margin-left:-22px;border-radius:9px;background:var(--line)}
+.x{width:48px;height:48px;border-radius:50%;background:var(--surface2);font-size:22px;margin-left:auto}
+.rh{display:flex;gap:14px;align-items:center}
+.rh h2{font-size:28px}
+.swap{display:inline-block;margin-top:6px;background:var(--badbg);color:var(--bad);border-radius:99px;padding:3px 12px;font:800 13px var(--body)}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fact{background:var(--surface);border-radius:18px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;gap:2px}
+.fact b{font:600 22px var(--display)}
+.fact span{font-size:12px;color:var(--muted);font-weight:800}
+.eat{background:var(--okbg);color:var(--ok);border-radius:22px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.eat b{font:600 21px/1.2 var(--display);color:var(--fg)}
+.eat span{font-weight:800;font-size:15px}
+.who{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border-radius:22px;padding:10px 12px 10px 16px}
+.who small{display:block;color:var(--muted);font-size:13px;font-weight:700}
+.step{display:flex;gap:10px;align-items:center}
+.step button{width:48px;height:48px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:600 26px var(--display)}
+.step output{min-width:44px;text-align:center;font:600 24px var(--display);font-variant-numeric:tabular-nums}
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec>h3{font-size:20px}
+.chk{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.chk label{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:16px;padding:10px 14px;min-height:52px;cursor:pointer}
+.chk input{appearance:none;-webkit-appearance:none;width:28px;height:28px;border-radius:9px;border:2.5px solid var(--muted);flex:none;display:grid;place-items:center;margin:0;background:transparent}
+.chk input:checked{background:var(--accent);border-color:var(--accent)}
+.chk input:checked::after{content:"";width:8px;height:14px;border:solid var(--accent-ink);border-width:0 3.5px 3.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.chk .nm{flex:1;min-width:0}
+.chk .am{font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chk li.done .nm{text-decoration:line-through;opacity:.55}
+.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface);border-radius:20px;padding:14px 16px 14px 56px;position:relative;font-size:18px}
+.steps li::before{content:counter(s);position:absolute;left:14px;top:12px;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:600 17px var(--display)}
+.steps b{color:var(--accent-text);font-weight:800}
+.note{background:var(--surface);border-radius:20px;padding:12px 16px;display:flex;gap:12px;align-items:center;font-weight:700}
+.note svg{width:30px;height:30px;flex:none}
+details.more{background:var(--surface);border-radius:20px;padding:4px 16px}
+details.more summary{min-height:52px;display:flex;align-items:center;cursor:pointer;font:600 18px var(--display);list-style:none}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::after{content:"+";margin-left:auto;font-size:26px;color:var(--muted)}
+details.more[open] summary::after{content:"–"}
+.nut{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:2px 0 12px}
+.nut div{background:var(--surface2);border-radius:14px;padding:8px 4px;text-align:center;display:flex;flex-direction:column}
+.nut b{font:600 20px var(--display)}.nut span{font-size:12px;color:var(--muted);font-weight:800}
+.why{margin:0 0 12px;color:var(--muted);font-weight:700;font-size:16px}
+.big{background:var(--surface);border-radius:28px;padding:18px 20px;display:flex;flex-direction:column;gap:4px}
+.big .eur{font:600 52px/1 var(--display);color:var(--accent-text);font-variant-numeric:tabular-nums}
+.big p{margin:0;color:var(--muted);font-weight:800;font-size:15px}
+.bar{height:10px;border-radius:9px;background:var(--surface2);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+.aisle{display:flex;align-items:center;gap:8px}
+.aisle h3{font-size:20px}.aisle small{margin-left:auto;color:var(--muted);font-weight:800}
+.chk .pk{display:block;color:var(--muted);font-size:13px;font-weight:700}
+.btn2{min-height:52px;border-radius:99px;background:var(--surface2);font:600 18px var(--display);padding:0 22px}
+.sm-note{color:var(--muted);font-size:13px;font-weight:700}
+.sm-note a{color:var(--accent-text)}
+.chk .am{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15}
+.chk .am b{font:600 20px var(--display)}
+.chk label:has(.am:only-child){cursor:default}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--fg);color:var(--bg);border-radius:99px;padding:10px 22px;font-weight:800;opacity:0;pointer-events:none;transition:.2s;z-index:40}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.tl>li{list-style:none}
+@media (prefers-reduced-motion:reduce){.sheet,.veil,.bar i{transition:none}}
+@media (max-width:360px){.hero h1{font-size:28px}.bubble{width:76px;height:76px}.row{grid-template-columns:50px 1fr}}
+/* Nov 8 2026: the app's glass and backdrop */
+body{background:radial-gradient(ellipse 90% 60% at 50% 0%,#0d2a5e 0%,#071636 45%,var(--bg) 100%) fixed,var(--bg)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) body{background:var(--bg)}}
+.hero,.card,.dayb,.big,.sec .chk li,.who{border:1px solid var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.cta button{background:var(--pill);color:var(--pill-ink);border:1px solid rgba(255,255,255,.6)}
+.first{background:linear-gradient(160deg,rgba(143,231,255,.22),rgba(80,140,255,.16));color:var(--fg);border:1px solid var(--line)}
+.first button{background:var(--pill);color:var(--pill-ink)}
+.topr{display:flex;align-items:center;gap:8px}
+.shr{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--surface2);border:1px solid var(--line)}
+.shr svg{width:20px;height:20px}
+.in-app .cta{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 86px)}
+.in-app body{padding-bottom:190px}
+.in-app .sheet .in{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 100px)}
+.btnapp{min-height:56px;border-radius:99px;background:var(--pill);color:var(--pill-ink);font:700 18px var(--display);padding:0 22px;border:1px solid rgba(255,255,255,.6)}
+</style>
+
+</head>
+<body>
+<main class="wrap" id="app"></main>
+<div class="cta" id="cta"></div>
+<div class="veil" id="veil"></div>
+<section class="sheet" id="sheet-r" aria-hidden="true" role="dialog" aria-modal="true"><div class="in"></div></section>
+<section class="sheet" id="sheet-l" aria-hidden="true" role="dialog" aria-modal="true"><div class="in"></div></section>
+<div class="toast" id="toast" role="status"></div>
+<noscript>JavaScript is needed.</noscript>
+<script>
+document.getElementById('sheet-r').inert = true; document.getElementById('sheet-l').inert = true;
+/* Fakeaway week: all data and the pure math, shared by the page and check.cjs. */
+(function (root) {
+'use strict';
+
+/* Shopping items. pack = what you buy (g, or pieces for eggs), price in EUR.
+   Prices: Aldi Süd online shop, 6 Nov 2026, unless est (fruit and veg guide price) or store says otherwise.
+   n = per 100 g: kcal, protein, carbs, fat.  show = how an amount is written.
+   nm = noun [singular, plural] used in recipe steps. */
+const ITEMS = {
+  beef:     { aisle: 'meat', pack: 500, price: 5.79, n: [215, 19, 0, 15.5], show: 'g', keep: 1,
+              de: 'Rinderhackfleisch', en: 'Ground beef', pk: ['500 g', '500 g'], nm: { de: ['Rinderhack'], en: ['ground beef'] } },
+  chicken:  { aisle: 'meat', pack: 1500, price: 12.99, n: [105, 23.5, 0, 1.2], show: 'g', keep: 1,
+              de: 'Hähnchenbrustfilet', en: 'Chicken breast', pk: ['1,5 kg', '1.5 kg'], nm: { de: ['Hähnchen'], en: ['chicken'] } },
+  fish:     { aisle: 'frozen', pack: 900, price: 5.49, n: [85, 15, 0, 2.5], show: 'g', keep: 1,
+              de: 'Pangasiusfilet, tiefgekühlt', en: 'Pangasius fillet, frozen', pk: ['900 g', '900 g'], nm: { de: ['Fisch'], en: ['fish'] } },
+  eggs:     { aisle: 'dairy', pack: 18, price: 4.19, n: [137, 12.5, 0.7, 9.3], each: 55, show: 'egg',
+              de: 'Eier', en: 'Eggs', pk: ['18 Stück', '18 pack'], nm: { de: ['Ei', 'Eier'], en: ['egg', 'eggs'] } },
+  quark:    { aisle: 'dairy', pack: 500, price: 1.19, n: [67, 12, 4, 0.2], show: 'g',
+              de: 'Magerquark', en: 'Low-fat quark (Magerquark)', pk: ['500 g', '500 g'], nm: { de: ['Quark'], en: ['quark'] } },
+  yogurt:   { aisle: 'dairy', pack: 1000, price: 2.19, n: [118, 3.6, 4.2, 10], show: 'spoon', spoonG: 20,
+              de: 'Joghurt griechischer Art', en: 'Greek-style yogurt', pk: ['1 kg', '1 kg'], nm: { de: ['Joghurt'], en: ['yogurt'] } },
+  gouda:    { aisle: 'dairy', pack: 250, price: 1.79, n: [360, 25, 0, 28.5], show: 'g',
+              de: 'Gouda, gerieben', en: 'Grated Gouda', pk: ['250 g', '250 g'], nm: { de: ['Käse'], en: ['cheese'] } },
+  mozz:     { aisle: 'dairy', pack: 125, price: 0.89, n: [240, 18, 1, 18], show: 'g',
+              de: 'Mozzarella', en: 'Mozzarella', pk: ['125 g', '125 g'], nm: { de: ['Mozzarella'], en: ['mozzarella'] } },
+  cauli:    { aisle: 'frozen', pack: 750, price: 2.69, n: [25, 2, 2.3, 0.3], show: 'g', keep: 1,
+              de: 'Blumenkohl, tiefgekühlt', en: 'Cauliflower, frozen', pk: ['750 g', '750 g'], nm: { de: ['Blumenkohl'], en: ['cauliflower'] } },
+  broc:     { aisle: 'frozen', pack: 750, price: 2.69, n: [34, 3.5, 2.7, 0.4], show: 'g', keep: 1,
+              de: 'Brokkoli, tiefgekühlt', en: 'Broccoli, frozen', pk: ['750 g', '750 g'], nm: { de: ['Brokkoli'], en: ['broccoli'] } },
+  straw:    { aisle: 'frozen', pack: 750, price: 3.29, n: [32, 0.7, 5.5, 0.3], show: 'g', keep: 1,
+              de: 'Erdbeeren, tiefgekühlt', en: 'Strawberries, frozen', pk: ['750 g', '750 g'], nm: { de: ['Erdbeeren'], en: ['strawberries'] } },
+  cabbage:  { aisle: 'veg', pack: 1500, price: 1.49, est: 1, n: [25, 1.4, 4.2, 0.2], show: 'head',
+              de: 'Weißkohl', en: 'White cabbage', pk: ['1 Kopf', '1 head'], nm: { de: ['Weißkohl'], en: ['white cabbage'] } },
+  iceberg:  { aisle: 'veg', pack: 450, price: 1.09, est: 1, n: [14, 0.9, 1.8, 0.1], show: 'leaf', pc: 25,
+              de: 'Eisbergsalat', en: 'Iceberg lettuce', pk: ['1 Kopf', '1 head'], nm: { de: ['Salatblatt', 'Salatblätter'], en: ['lettuce leaf', 'lettuce leaves'] } },
+  cucumber: { aisle: 'veg', pack: 400, price: 0.79, est: 1, n: [13, 0.6, 1.8, 0.1], show: 'pc', pc: 400,
+              de: 'Salatgurke', en: 'Cucumber', pk: ['1 Stück', '1 piece'], nm: { de: ['Gurke', 'Gurken'], en: ['cucumber', 'cucumbers'] } },
+  tomato:   { aisle: 'veg', pack: 500, price: 1.49, est: 1, n: [18, 0.9, 2.6, 0.2], show: 'pc', pc: 100,
+              de: 'Tomaten', en: 'Tomatoes', pk: ['500 g', '500 g'], nm: { de: ['Tomate', 'Tomaten'], en: ['tomato', 'tomatoes'] } },
+  pepper:   { aisle: 'veg', pack: 510, price: 1.99, est: 1, n: [30, 1, 5, 0.3], show: 'pc', pc: 170,
+              de: 'Paprika', en: 'Bell peppers', pk: ['3 Stück', '3 pack'], nm: { de: ['Paprika', 'Paprika'], en: ['bell pepper', 'bell peppers'] } },
+  onion:    { aisle: 'veg', pack: 1000, price: 1.29, est: 1, n: [40, 1.2, 7.5, 0.1], show: 'pc', pc: 80,
+              de: 'Zwiebeln', en: 'Onions', pk: ['1 kg', '1 kg'], nm: { de: ['Zwiebel', 'Zwiebeln'], en: ['onion', 'onions'] } },
+  garlic:   { aisle: 'veg', pack: 150, price: 0.99, est: 1, n: [140, 6, 28, 0.1], show: 'clove', pc: 5,
+              de: 'Knoblauch', en: 'Garlic', pk: ['3 Knollen', '3 bulbs'], nm: { de: ['Knoblauchzehe', 'Knoblauchzehen'], en: ['garlic clove', 'garlic cloves'] } },
+  kohlrabi: { aisle: 'veg', pack: 300, price: 0.79, est: 1, n: [27, 1.9, 3.7, 0.1], show: 'pc', pc: 300,
+              de: 'Kohlrabi', en: 'Kohlrabi', pk: ['1 Stück', '1 piece'], nm: { de: ['Kohlrabi', 'Kohlrabi'], en: ['kohlrabi', 'kohlrabi'] } },
+  lemon:    { aisle: 'veg', pack: 120, price: 1.19, n: [30, 0.4, 7, 0.2], show: 'lemon', pc: 30,
+              de: 'Zitronen', en: 'Lemons', pk: ['500 g', '500 g'], nm: { de: ['Zitrone', 'Zitronen'], en: ['lemon', 'lemons'] } },
+  passata:  { aisle: 'shelf', pack: 500, price: 0.65, n: [30, 1.3, 5, 0.2], show: 'g',
+              de: 'Passierte Tomaten', en: 'Passata', pk: ['500 g', '500 g'], nm: { de: ['passierte Tomaten'], en: ['passata'] } },
+  paste:    { aisle: 'shelf', pack: 200, price: 0.89, n: [85, 4.5, 13, 0.5], show: 'tsp', tspG: 5,
+              de: 'Tomatenmark', en: 'Tomato paste', pk: ['200 g', '200 g'], nm: { de: ['Tomatenmark'], en: ['tomato paste'] } },
+  almond:   { aisle: 'shelf', pack: 200, price: 2.49, n: [600, 21, 5.7, 52], show: 'g', keep: 1,
+              de: 'Mandeln, gemahlen', en: 'Ground almonds', pk: ['200 g', '200 g'], nm: { de: ['gemahlene Mandeln'], en: ['ground almonds'] } },
+  cocoa:    { aisle: 'shelf', pack: 250, price: 3.29, n: [360, 20, 11, 11], show: 'tsp', tspG: 4, keep: 1, store: 'Lidl',
+              de: 'Backkakao, ungesüßt', en: 'Unsweetened cocoa', pk: ['250 g', '250 g'], nm: { de: ['Kakao'], en: ['cocoa'] } },
+  /* basics: most kitchens have them; shown separately with a guide price */
+  oil:      { basic: 1, price: 1.79, n: [884, 0, 0, 100], show: 'tsp', tspG: 4.5, de: 'Öl (Raps oder Oliven)', en: 'Oil (rapeseed or olive)', nm: { de: ['Öl'], en: ['oil'] } },
+  mustard:  { basic: 1, price: 0.55, n: [70, 5, 4, 4], show: 'tsp', tspG: 5, de: 'Senf', en: 'Mustard', nm: { de: ['Senf'], en: ['mustard'] } },
+  vinegar:  { basic: 1, price: 0.49, n: [20, 0, 1, 0], show: 'tsp', tspG: 5, de: 'Essig', en: 'Vinegar', nm: { de: ['Essig'], en: ['vinegar'] } },
+  paprika:  { basic: 1, price: 0.79, show: 'tsp', de: 'Paprikapulver', en: 'Paprika powder', nm: { de: ['Paprikapulver'], en: ['paprika'] } },
+  oregano:  { basic: 1, price: 0.79, show: 'tsp', de: 'Oregano', en: 'Oregano', nm: { de: ['Oregano'], en: ['oregano'] } },
+  cumin:    { basic: 1, price: 0.99, show: 'tsp', de: 'Kreuzkümmel', en: 'Cumin', nm: { de: ['Kreuzkümmel'], en: ['cumin'] } },
+  cinnamon: { basic: 1, price: 0.79, show: 'tsp', de: 'Zimt', en: 'Cinnamon', nm: { de: ['Zimt'], en: ['cinnamon'] } },
+  salt:     { basic: 1, price: 1.24, show: 'none', de: 'Salz & Pfeffer', en: 'Salt & pepper', nm: { de: ['Salz & Pfeffer'], en: ['salt & pepper'] } },
+};
+const AISLES = ['veg', 'dairy', 'meat', 'frozen', 'shelf'];
+const KID = 0.7;   /* a child eats about 70 % of an adult portion */
+
+/* Recipes. ing: [item, amount per adult portion]: grams; eggs in pieces; tsp items in teaspoons.
+   Steps write {item} for "amount + name" and {leftover}, {trays}, {pieces} for computed lines. */
+const RECIPES = {
+  pancakes: { slot: 'brunch', min: 15, icon: 'pancakes', ing: [['straw', 40], ['eggs', 2], ['quark', 100], ['almond', 30], ['cinnamon', 0.5], ['oil', 1.5], ['yogurt', 80]] },
+  froyo:    { slot: 'breakfast', min: 5, icon: 'froyo', ing: [['straw', 40], ['quark', 150], ['yogurt', 100], ['almond', 20], ['cinnamon', 0.25]] },
+  eggpizza: { slot: 'breakfast', min: 7, icon: 'eggpizza', ing: [['tomato', 20], ['pepper', 25], ['oil', 1.5], ['eggs', 3], ['gouda', 15], ['oregano', 0.25], ['salt', 0]] },
+  maccheese:{ slot: 'dinner', min: 35, active: 10, icon: 'maccheese', leftover: 1, ing: [['cauli', 200], ['quark', 75], ['eggs', 1], ['yogurt', 60], ['mustard', 0.5], ['garlic', 2.5], ['gouda', 40], ['almond', 10], ['salt', 0]] },
+  burger:   { slot: 'dinner', min: 20, icon: 'burger', leftover: 1, ing: [['cabbage', 100], ['vinegar', 0.5], ['oil', 2], ['cucumber', 60], ['tomato', 35], ['onion', 15], ['yogurt', 50], ['paste', 1], ['mustard', 0.5], ['paprika', 0.25], ['beef', 80], ['gouda', 20], ['eggs', 1], ['salt', 0]] },
+  pizza:    { slot: 'dinner', min: 35, active: 10, icon: 'pizza', leftover: 1, perTray: 4, ing: [['quark', 125], ['eggs', 1], ['almond', 20], ['gouda', 15], ['oregano', 0.5], ['passata', 50], ['pepper', 40], ['onion', 10], ['mozz', 31], ['oil', 1], ['salt', 0]] },
+  nuggets:  { slot: 'dinner', min: 30, active: 12, icon: 'nuggets', leftover: 1, ing: [['chicken', 125], ['eggs', 0.34], ['almond', 20], ['gouda', 5], ['paprika', 0.5], ['broc', 125], ['oil', 2], ['passata', 35], ['paste', 1], ['vinegar', 0.25], ['yogurt', 30], ['salt', 0]] },
+  doener:   { slot: 'dinner', min: 25, icon: 'doener', leftover: 1, ing: [['chicken', 125], ['paprika', 0.5], ['cumin', 0.25], ['oregano', 0.25], ['oil', 3], ['cabbage', 120], ['lemon', 5], ['tomato', 30], ['cucumber', 50], ['onion', 15], ['yogurt', 80], ['quark', 60], ['garlic', 2.5], ['salt', 0]] },
+  taco:     { slot: 'dinner', min: 25, icon: 'taco', leftover: 1, ing: [['onion', 15], ['pepper', 50], ['cauli', 50], ['beef', 80], ['oil', 1.5], ['passata', 40], ['paprika', 0.5], ['cumin', 0.5], ['garlic', 2.5], ['tomato', 30], ['lemon', 3], ['iceberg', 75], ['gouda', 25], ['yogurt', 70], ['salt', 0]] },
+  fish:     { slot: 'dinner', min: 40, active: 15, icon: 'fish', ing: [['kohlrabi', 250], ['oil', 3], ['paprika', 0.5], ['fish', 150], ['eggs', 0.34], ['almond', 15], ['yogurt', 40], ['cucumber', 15], ['mustard', 0.5], ['lemon', 10], ['salt', 0]] },
+  pudding:  { slot: 'snack', min: 3, icon: 'pudding', ing: [['straw', 30], ['quark', 200], ['yogurt', 30], ['cocoa', 2], ['cinnamon', 0.25]] },
+  chips:    { slot: 'snack', min: 5, icon: 'chips', ing: [['cucumber', 140], ['yogurt', 60], ['quark', 40], ['garlic', 1.25], ['oil', 1], ['salt', 0]] },
+};
+
+/* The week, Monday first. 'rest' = yesterday's dinner. tasks: [time, kind, item, share of the pack]. */
+const WEEK = [
+  { d: 0, theme: 'burger',   slots: [['07:30', 'froyo'], ['12:30', 'rest', 'maccheese'], ['16:00', 'chips'], ['18:00', 'burger']], tasks: [] },
+  { d: 1, theme: 'pizza',    slots: [['07:30', 'eggpizza'], ['12:30', 'rest', 'burger'], ['16:00', 'pudding'], ['18:00', 'pizza']], tasks: [['20:00', 'thaw', 'chicken', 'half']] },
+  { d: 2, theme: 'nuggets',  slots: [['07:30', 'froyo'], ['12:30', 'rest', 'pizza'], ['16:00', 'chips'], ['18:00', 'nuggets']], tasks: [['20:00', 'thaw', 'chicken', 'half']] },
+  { d: 3, theme: 'doener',   slots: [['07:30', 'eggpizza'], ['12:30', 'rest', 'nuggets'], ['16:00', 'pudding'], ['18:00', 'doener']], tasks: [['20:00', 'thaw', 'beef', 'one']] },
+  { d: 4, theme: 'taco',     slots: [['07:30', 'froyo'], ['12:30', 'rest', 'doener'], ['16:00', 'chips'], ['18:00', 'taco']], tasks: [['20:00', 'thaw', 'fish', 'meal']] },
+  { d: 5, theme: 'fish',     slots: [['07:30', 'eggpizza'], ['10:00', 'shop'], ['12:30', 'rest', 'taco'], ['16:00', 'pudding'], ['18:00', 'fish']], tasks: [] },
+  { d: 6, theme: 'pancakes', slots: [['10:30', 'pancakes'], ['15:30', 'chips'], ['18:00', 'maccheese']], tasks: [['20:00', 'thaw', 'beef', 'one']] },
+];
+
+const portionsOf = (adults, kids) => Math.max(0, adults) + KID * Math.max(0, kids);
+/* dinners that feed tomorrow's lunch are cooked double */
+const times = id => (RECIPES[id].leftover ? 2 : 1);
+
+/* everything to buy for the week. Eggs round up per cooking session; the rest rounds up per pack. */
+function basket(adults, kids) {
+  const P = portionsOf(adults, kids), need = {};
+  WEEK.forEach(day => day.slots.forEach(s => {
+    const r = RECIPES[s[1]]; if (!r) return;
+    r.ing.forEach(([it, q]) => {
+      if (ITEMS[it].basic) return;
+      const amt = q * P * times(s[1]);
+      need[it] = (need[it] || 0) + (it === 'eggs' ? Math.ceil(amt - 1e-9) : amt);
+    });
+  }));
+  const rows = Object.keys(need).map(it => {
+    const I = ITEMS[it], packs = Math.max(1, Math.ceil(need[it] / I.pack - 1e-9));
+    return { it, need: need[it], packs, cost: packs * I.price, spare: packs * I.pack - need[it] };
+  });
+  const total = rows.reduce((a, r) => a + r.cost, 0);
+  /* leftovers worth keeping: frozen goods, almonds, cocoa, eggs, onions, garlic, passata, paste, lemon */
+  const KEEP = ['eggs', 'onion', 'garlic', 'passata', 'paste', 'lemon'];
+  const spare = rows.reduce((a, r) => (ITEMS[r.it].keep || KEEP.indexOf(r.it) >= 0) ? a + r.spare / ITEMS[r.it].pack * ITEMS[r.it].price : a, 0);
+  return { P, rows, total, spare };
+}
+
+/* grams of an ingredient amount, for nutrition */
+function grams(it, q) {
+  const I = ITEMS[it];
+  if (it === 'eggs') return q * I.each;
+  if (I.show === 'tsp') return I.tspG ? q * I.tspG : 0;
+  if (I.show === 'none') return 0;
+  return q;
+}
+/* nutrition and cost of one adult portion */
+function perPortion(id) {
+  const r = RECIPES[id], o = { kcal: 0, protein: 0, carbs: 0, fat: 0, eur: 0 };
+  r.ing.forEach(([it, q]) => {
+    const I = ITEMS[it], g = grams(it, q);
+    if (I.n) { o.kcal += g * I.n[0] / 100; o.protein += g * I.n[1] / 100; o.carbs += g * I.n[2] / 100; o.fat += g * I.n[3] / 100; }
+    if (!I.basic) o.eur += q / I.pack * I.price;
+  });
+  return o;
+}
+
+const api = { ITEMS, AISLES, KID, RECIPES, WEEK, portionsOf, times, basket, grams, perPortion };
+if (typeof module === 'object' && module.exports) module.exports = api; else root.FAW = api;
+})(typeof self !== 'undefined' ? self : this);
+
+/* Flat food icons, 64x64. Colors are food colors and read on both themes (they sit in a bubble). */
+const S = (inner, label) => '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">' + inner + '</svg>';
+const ICONS = {
+  burger: S('<path d="M8 34h48a24 24 0 0 1-48 0z" fill="#d9d2c0"/><path d="M8 34h48v3H8z" fill="#b9b19c"/><path d="M12 33c4-9 10-4 14-9s10 3 14-2 10 4 12 11H12z" fill="#6cc070"/><circle cx="24" cy="30" r="5" fill="#e5533d"/><circle cx="40" cy="31" r="4" fill="#e5533d"/><ellipse cx="32" cy="26" rx="13" ry="7" fill="#fff"/><circle cx="32" cy="26" r="5" fill="#ffc533"/>'),
+  pizza: S('<path d="M6 16c16-8 36-8 52 0L32 58z" fill="#f2b04a"/><path d="M6 16c16-8 36-8 52 0l-2 4C40 13 24 13 8 20z" fill="#d98a2b"/><circle cx="25" cy="27" r="4.5" fill="#e5533d"/><circle cx="39" cy="26" r="4" fill="#6cc070"/><circle cx="32" cy="38" r="4.5" fill="#fff6e0"/><circle cx="31" cy="48" r="2.5" fill="#e5533d"/>'),
+  nuggets: S('<path d="M10 30c0-9 9-14 17-12 8-3 17 2 17 12 3 9-3 17-13 17-6 4-18 0-21-17z" fill="#e0a04a"/><path d="M34 14c7-4 17 0 18 9 6 5 5 14-2 17-4 6-13 6-16 1 8-3 10-12 6-19-2-3-4-6-6-8z" fill="#c9852f"/><circle cx="22" cy="31" r="1.6" fill="#a96a1f"/><circle cx="30" cy="38" r="1.6" fill="#a96a1f"/><circle cx="42" cy="26" r="1.6" fill="#8f5818"/><circle cx="18" cy="39" r="1.6" fill="#a96a1f"/>'),
+  doener: S('<path d="M8 28h48l-5 26a4 4 0 0 1-4 3H17a4 4 0 0 1-4-3z" fill="#e8dcc0"/><path d="M8 28h48" stroke="#b9b19c" stroke-width="3"/><path d="M10 26c4-6 8-2 12-6s8 2 12-3 10 3 14-1 4 4 6 10H10z" fill="#9bd36a"/><path d="M14 30h36l-2 8H16z" fill="#b5764a"/><path d="M18 40h28l-2 7H20z" fill="#e5533d"/><path d="M22 49h20l-1 5H23z" fill="#fff6e0"/>'),
+  taco: S('<path d="M6 44a26 26 0 0 1 52 0z" fill="#9bd36a"/><path d="M10 44a22 22 0 0 1 44 0z" fill="#7a4a2e"/><circle cx="24" cy="32" r="4" fill="#e5533d"/><circle cx="38" cy="29" r="3.5" fill="#ffc533"/><circle cx="32" cy="38" r="3.5" fill="#e5533d"/><circle cx="45" cy="38" r="3" fill="#fff6e0"/><path d="M6 44h52a4 4 0 0 1-4 6H10a4 4 0 0 1-4-6z" fill="#7fb85a"/>'),
+  fish: S('<path d="M6 32c8-12 22-16 34-8l10-8v32l-10-8c-12 8-26 4-34-8z" fill="#f0b25a"/><path d="M6 32c8-12 22-16 34-8l10-8" fill="none" stroke="#d98a2b" stroke-width="3"/><circle cx="18" cy="30" r="3" fill="#2b2118"/><path d="M26 22c3 6 3 14 0 20M34 22c3 6 3 14 0 20" stroke="#d98a2b" stroke-width="2.5" fill="none"/>'),
+  maccheese: S('<path d="M8 30h48a24 22 0 0 1-48 0z" fill="#d9d2c0"/><path d="M12 30c0-9 8-14 20-14s20 5 20 14z" fill="#ffc533"/><circle cx="24" cy="26" r="5" fill="#fff6e0"/><circle cx="36" cy="22" r="4.5" fill="#fff6e0"/><circle cx="43" cy="28" r="3.5" fill="#fff6e0"/><circle cx="30" cy="30" r="3" fill="#e5a82a"/><circle cx="20" cy="31" r="2.5" fill="#6cc070"/>'),
+  pancakes: S('<ellipse cx="32" cy="46" rx="24" ry="8" fill="#d9d2c0"/><path d="M12 42v-6c0-4 40-4 40 0v6c0 5-40 5-40 0z" fill="#e2a553"/><path d="M12 36v-6c0-4 40-4 40 0v6c0 4-40 4-40 0z" fill="#efbd6f"/><path d="M12 30v-4c0-4 40-4 40 0v4c0 4-40 4-40 0z" fill="#e2a553"/><ellipse cx="32" cy="26" rx="20" ry="5" fill="#f4c982"/><circle cx="26" cy="24" r="4.5" fill="#e5484d"/><circle cx="37" cy="23" r="4.5" fill="#e5484d"/><circle cx="31" cy="19" r="4" fill="#d63a40"/>'),
+  froyo: S('<path d="M10 30h44l-5 22a6 6 0 0 1-6 4H21a6 6 0 0 1-6-4z" fill="#d9d2c0"/><path d="M14 30c-2-8 6-12 10-10 2-8 16-8 18 0 6-2 12 4 8 10z" fill="#ffd9e0"/><circle cx="26" cy="22" r="4" fill="#e5484d"/><circle cx="40" cy="23" r="3.5" fill="#e5484d"/><circle cx="33" cy="27" r="3" fill="#e5484d"/>'),
+  eggpizza: S('<circle cx="32" cy="34" r="25" fill="#d9d2c0"/><circle cx="32" cy="34" r="20" fill="#f6df6a"/><circle cx="23" cy="28" r="4.5" fill="#e5533d"/><circle cx="41" cy="27" r="4" fill="#6cc070"/><circle cx="36" cy="42" r="4.5" fill="#e5533d"/><circle cx="24" cy="41" r="3" fill="#ffb02e"/><path d="M30 20l3 3-3 3" stroke="#e5a82a" stroke-width="2" fill="none"/>'),
+  pudding: S('<path d="M12 28h40l-4 24a5 5 0 0 1-5 4H21a5 5 0 0 1-5-4z" fill="#d9d2c0"/><path d="M15 30h34l-3 20H18z" fill="#6b4226"/><path d="M14 28c0-6 10-8 18-8s18 2 18 8z" fill="#8a5a36"/><circle cx="32" cy="17" r="5" fill="#e5484d"/><path d="M32 12l-2-4m2 4l3-3" stroke="#6cc070" stroke-width="3" stroke-linecap="round"/>'),
+  chips: S('<path d="M10 22h44l-4 32H14z" fill="#e8dcc0"/><ellipse cx="22" cy="20" rx="9" ry="5" fill="#9bd36a" transform="rotate(-18 22 20)"/><ellipse cx="34" cy="16" rx="9" ry="5" fill="#8fcf6a" transform="rotate(10 34 16)"/><ellipse cx="45" cy="21" rx="8" ry="5" fill="#9bd36a" transform="rotate(-8 45 21)"/><circle cx="30" cy="38" r="9" fill="#fff6e0"/><circle cx="30" cy="38" r="5" fill="#d9e8c4"/>'),
+  thaw: S('<path d="M32 6v52M8 19l48 26M8 45l48-26" stroke="#6cc3f0" stroke-width="5" stroke-linecap="round"/><circle cx="32" cy="32" r="6" fill="#bfe6fa"/>'),
+  shop: S('<path d="M6 12h9l6 28h30l5-20H18" fill="none" stroke="#86d9a2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="26" cy="51" r="5" fill="#86d9a2"/><circle cx="46" cy="51" r="5" fill="#86d9a2"/>'),
+  drink: S('<path d="M16 12h32l-4 44H20z" fill="#bfe6fa" opacity=".85"/><path d="M18 24h28l-2 32H20z" fill="#6cc3f0"/><circle cx="30" cy="38" r="2.5" fill="#fff"/><circle cx="38" cy="46" r="2" fill="#fff"/><circle cx="26" cy="48" r="1.8" fill="#fff"/><path d="M38 6l4 18" stroke="#ffb02e" stroke-width="3.5" stroke-linecap="round"/><circle cx="46" cy="18" r="9" fill="#ffd84a"/>'),
+  more: S('<path d="M10 40c0-12 10-20 22-20s22 8 22 20z" fill="#6cc070"/><circle cx="26" cy="32" r="4" fill="#e5533d"/><path d="M8 42h48v6a6 6 0 0 1-6 6H14a6 6 0 0 1-6-6z" fill="#d9d2c0"/>'),
+  leaf: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 19C4 9 10 4 20 4c0 10-5 16-15 15z" fill="#ffb02e"/><path d="M5 19c3-5 6-8 11-11" stroke="#1c1304" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>',
+};
+
+/* All words. Steps use {item} (amount + name) and {item*0.5} (half the amount); {trays} {pieces} are computed. */
+const UI = {
+  de: {
+    title: 'Fakeaway-Woche', today: 'Heute', kick: d => d, cookAt: t => 'Heute kochst du einmal. Start: ' + t, noCook: 'Heute ist nichts zu kochen.',
+    daysS: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
+    daysL: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'],
+    themes: { burger: 'Burger-Montag', pizza: 'Pizza-Dienstag', nuggets: 'Nugget-Mittwoch', doener: 'Döner-Donnerstag', taco: 'Taco-Freitag', fish: 'Fish & Chips Samstag', pancakes: 'Pancake-Sonntag' },
+    firstT: 'So startest du', first: ['Samstag einkaufen. Die Liste ist unten.', 'Zu Hause: Hähnchen in 2 Beutel teilen. Fleisch und Fisch einfrieren.', 'Sonntag geht’s los. Hier siehst du immer, was jetzt dran ist.'], ok: 'Alles klar',
+    shopBtn: p => 'Einkaufsliste · ca. ' + p, people: n => n + (n === 1 ? ' Person' : ' Personen'),
+    now: 'Jetzt', next: 'Als Nächstes', rest: 'Rest von gestern',
+    thaw: { chicken: ['Hähnchen für morgen in den Kühlschrank', '1 Beutel'], beef: ['Hack für morgen in den Kühlschrank', '1 Packung'], fish: ['Fisch für morgen in den Kühlschrank', 'die Hälfte der Packung'] },
+    thawSub: 'Aus dem Gefrierfach nehmen, über Nacht auftauen', shop: 'Einkaufen', shopSub: p => 'Liste öffnen · ca. ' + p,
+    min: 'Min', persons: 'Personen', perPortion: 'pro Portion', eat: 'Das isst du', drink: 'Dazu trinken',
+    who: 'Wie viele essen mit?', whoHint: 'Kleines Kind = ½ Person', double: 'Heute doppelt kochen. Die Hälfte ist morgen dein Mittagessen.', reheat: 'Aufwärmen',
+    ing: 'Zutaten', steps: 'So geht’s', hungry: 'Noch Hunger? Nimm mehr Gemüse oder ein Ei extra.', more: 'Mehr Infos', kcal: 'kcal', protein: 'Eiweiß', carbs: 'Kohlenhydrate', fat: 'Fett', perPer: 'Werte pro Portion',
+    why: 'Warum das passt', close: 'Schließen',
+    list: 'Einkaufsliste', forP: (p, s) => 'für ' + p + ' · 7 Tage · ca. ' + s + ' pro Person und Tag', spare: s => 'Davon bleibt ca. ' + s + ' Vorrat für die nächste Woche übrig.',
+    inBasket: (a, b) => a + ' von ' + b + ' im Korb', aisles: { veg: 'Obst & Gemüse', dairy: 'Kühlregal', meat: 'Fleisch', frozen: 'Tiefkühl', shelf: 'Regal' },
+    basics: 'Hast du meist zu Hause', basicsSub: s => 'Falls etwas fehlt, ca. ' + s + ' extra. Nicht in der Summe.',
+    after: 'Nach dem Einkauf (2 Min)', afterL: ['Hähnchen in 2 Beutel teilen.', 'Hähnchen, Hack und Fisch einfrieren.'],
+    copy: 'Liste kopieren', copied: 'Kopiert', share: 'Teilen', shared: 'Link kopiert', toApp: 'In meine LOWiSPIKE-Liste', added: n => n + ' Sachen in deiner Einkaufsliste', prices: 'Preise: Aldi Süd Online-Shop, 6.11.2026. Obst und Gemüse sind Richtpreise (ca.). Backkakao: Lidl.',
+    med: 'Kein Ersatz für ärztlichen Rat. Wenn du Medikamente gegen Diabetes nimmst, sprich vorher mit deiner Ärztin oder deinem Arzt.',
+    brand: 'Smarter essen. Gleicher Genuss. Stabilere Energie.',
+    slotN: { breakfast: 'Frühstück', brunch: 'Brunch', dinner: 'Abendessen', snack: 'Snack' },
+    pcs: { tray: ['Backblech', 'Backbleche'] }, tspS: 'TL', tbsS: 'EL', spoonS: 'EL', headOf: 'Kopf', pinch: '1 Spritzer', lemonN: ['Zitrone', 'Zitronen'], eggN: ['Ei', 'Eier'],
+  },
+  en: {
+    title: 'Fakeaway Week', today: 'Today', kick: d => d, cookAt: t => 'You cook once today. Start: ' + t, noCook: 'Nothing to cook today.',
+    daysS: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+    daysL: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    themes: { burger: 'Burger Monday', pizza: 'Pizza Tuesday', nuggets: 'Nugget Wednesday', doener: 'Doner Thursday', taco: 'Taco Friday', fish: 'Fish & Chips Saturday', pancakes: 'Pancake Sunday' },
+    firstT: 'How to start', first: ['Shop on Saturday. The list is below.', 'At home: split the chicken into 2 bags. Freeze meat and fish.', 'It starts on Sunday. This page always shows what is next.'], ok: 'Got it',
+    shopBtn: p => 'Shopping list · about ' + p, people: n => n + (n === 1 ? ' person' : ' people'),
+    now: 'Now', next: 'Next', rest: 'Left over from yesterday',
+    thaw: { chicken: ['Put chicken in the fridge for tomorrow', '1 bag'], beef: ['Put ground beef in the fridge for tomorrow', '1 pack'], fish: ['Put fish in the fridge for tomorrow', 'half the pack'] },
+    thawSub: 'Take it out of the freezer, thaw overnight', shop: 'Shopping', shopSub: p => 'Open the list · about ' + p,
+    min: 'min', persons: 'people', perPortion: 'per portion', eat: 'Your plate', drink: 'To drink',
+    who: 'How many are eating?', whoHint: 'Small child = ½ person', double: 'Cook double today. Half is tomorrow’s lunch.', reheat: 'Reheat',
+    ing: 'Ingredients', steps: 'How to', hungry: 'Still hungry? Add more veg or one extra egg.', more: 'More info', kcal: 'kcal', protein: 'Protein', carbs: 'Carbs', fat: 'Fat', perPer: 'Values per portion',
+    why: 'Why it works', close: 'Close',
+    list: 'Shopping list', forP: (p, s) => 'for ' + p + ' · 7 days · about ' + s + ' per person per day', spare: s => 'About ' + s + ' of that stays as stock for next week.',
+    inBasket: (a, b) => a + ' of ' + b + ' in the basket', aisles: { veg: 'Fruit & veg', dairy: 'Dairy', meat: 'Meat', frozen: 'Frozen', shelf: 'Shelf' },
+    basics: 'Usually at home', basicsSub: s => 'If something is missing, about ' + s + ' extra. Not in the total.',
+    after: 'After shopping (2 min)', afterL: ['Split the chicken into 2 bags.', 'Freeze chicken, ground beef and fish.'],
+    copy: 'Copy list', copied: 'Copied', share: 'Share', shared: 'Link copied', toApp: 'Into my LOWiSPIKE list', added: n => n + ' things in your shopping list', prices: 'Prices: Aldi Süd online shop, 6 Nov 2026. Fruit and veg are guide prices (about). Cocoa: Lidl.',
+    med: 'Not a substitute for medical advice. If you take diabetes medication, talk to your doctor first.',
+    brand: 'Eat smarter. Same joy. More stable energy.',
+    slotN: { breakfast: 'Breakfast', brunch: 'Brunch', dinner: 'Dinner', snack: 'Snack' },
+    pcs: { tray: ['baking tray', 'baking trays'] }, tspS: 'tsp', tbsS: 'tbsp', spoonS: 'tbsp', headOf: 'head', pinch: '1 squeeze', lemonN: ['lemon', 'lemons'], eggN: ['egg', 'eggs'],
+  },
+};
+
+const REC = {
+  pancakes: {
+    de: { name: 'Pancakes mit Erdbeeren', statt: 'statt Pancakes mit Sirup', portion: '4 Pancakes + Erdbeeren', drink: 'Tee ohne Zucker', why: 'Ohne Mehl und Zucker. Quark, Ei und Mandeln machen satt, die Süße kommt von den Erdbeeren.',
+      steps: ['{straw} auftauen lassen und mit einer Gabel zerdrücken.', '{eggs}, {quark}, {almond} und {cinnamon} zu einem Teig verrühren.', '{oil} in der Pfanne heiß machen. Kleine Häufchen backen ({pieces}). Pro Seite 2 Min.', '{yogurt} und die Erdbeeren drauf. Fertig.'] },
+    en: { name: 'Strawberry pancakes', statt: 'instead of pancakes with syrup', portion: '4 pancakes + strawberries', drink: 'Unsweetened tea', why: 'No flour, no sugar. Quark, egg and almonds keep you full. The sweetness comes from the strawberries.',
+      steps: ['Let {straw} thaw and mash with a fork.', 'Stir {eggs}, {quark}, {almond} and {cinnamon} into a batter.', 'Heat {oil} in a pan. Fry small piles ({pieces}). 2 min per side.', 'Top with {yogurt} and the strawberries. Done.'] },
+  },
+  froyo: {
+    de: { name: 'Erdbeer-Frozen-Joghurt', statt: 'statt Frozen Yogurt mit Zucker', portion: '1 Schüssel', drink: 'Wasser oder Tee ohne Zucker', why: 'Gefrorene Erdbeeren geben das Eis-Gefühl. Kein Zucker, viel Eiweiß.',
+      steps: ['{straw} aus dem Gefrierfach in eine Schüssel geben.', '{quark} und {yogurt} dazu. Mit einer Gabel zerdrücken und cremig rühren. Es bleibt eisig.', '{almond} und {cinnamon} drüber. Sofort essen.'] },
+    en: { name: 'Strawberry frozen yogurt', statt: 'instead of frozen yogurt with sugar', portion: '1 bowl', drink: 'Water or unsweetened tea', why: 'Frozen strawberries give the ice cream feel. No sugar, lots of protein.',
+      steps: ['Put {straw} straight from the freezer into a bowl.', 'Add {quark} and {yogurt}. Mash with a fork and stir until creamy. It stays icy.', 'Sprinkle {almond} and {cinnamon} on top. Eat right away.'] },
+  },
+  eggpizza: {
+    de: { name: 'Pizza-Rührei', statt: 'statt Toast mit Schokocreme', portion: '1 Teller (3 Eier)', drink: 'Wasser oder Tee ohne Zucker', why: 'Eiweiß zum Start, darum hält es lange satt. Schmeckt nach Pizza, ganz ohne Teig.',
+      steps: ['{tomato} und {pepper} klein schneiden.', '{oil} in der Pfanne heiß machen. Das Gemüse 2 Min braten.', '{eggs} verquirlen und drübergießen. Rühren, bis es fest ist.', '{gouda} und {oregano} drauf. {salt}. Fertig.'] },
+    en: { name: 'Pizza scramble', statt: 'instead of toast with chocolate spread', portion: '1 plate (3 eggs)', drink: 'Water or unsweetened tea', why: 'Protein to start the day, so it keeps you full. Tastes like pizza, with no dough at all.',
+      steps: ['Chop {tomato} and {pepper}.', 'Heat {oil} in a pan. Fry the veg for 2 min.', 'Whisk {eggs} and pour over. Stir until set.', 'Add {gouda} and {oregano}. {salt}. Done.'] },
+  },
+  maccheese: {
+    de: { name: 'Mac & Cheese aus Blumenkohl', statt: 'statt Mac & Cheese mit Nudeln', portion: '1 großer Teller', drink: 'Tee ohne Zucker', reheat: '2 Min in der Mikrowelle oder Pfanne', why: 'Blumenkohl statt Nudeln: kaum Stärke. Ei und Quark machen die Käsesoße cremig und satt.',
+      steps: ['Ofen auf 200 °C. {cauli} 8 Min in Salzwasser kochen und gut abtropfen lassen.', '{quark}, {eggs}, {yogurt}, {mustard} und {garlic} (gepresst) verrühren. {salt}.', 'Blumenkohl untermischen und in eine Form geben.', '{gouda} und {almond} drüber. 20 Min backen, bis es goldbraun ist.', '{leftover}'] },
+    en: { name: 'Cauliflower mac & cheese', statt: 'instead of mac & cheese with pasta', portion: '1 big plate', drink: 'Unsweetened tea', reheat: '2 min in the microwave or pan', why: 'Cauliflower instead of pasta: hardly any starch. Egg and quark make the cheese sauce creamy and filling.',
+      steps: ['Oven to 200 °C. Boil {cauli} in salted water for 8 min and drain well.', 'Stir {quark}, {eggs}, {yogurt}, {mustard} and {garlic} (pressed). {salt}.', 'Fold in the cauliflower and tip into a baking dish.', 'Top with {gouda} and {almond}. Bake 20 min until golden.', '{leftover}'] },
+  },
+  burger: {
+    de: { name: 'Burger-Bowl mit Spiegelei', statt: 'statt Cheeseburger im Brötchen', portion: '1 große Schüssel + 1 Spiegelei', drink: 'Sprudel mit Zitrone und Eis', reheat: 'Hack und Ei kurz warm, Salat kalt', why: 'Kohl und Gurke statt Brötchen: gleicher Burger-Geschmack, kaum Stärke. Die Spezialsoße ist ohne Zucker.',
+      steps: ['{cabbage} ganz fein schneiden. Mit {vinegar}, {oil*0.5} und Salz mischen. Das ist die Basis.', '{cucumber}, {tomato} und {onion} klein schneiden. In die Schüsseln auf den Kohl.', 'Spezialsoße: {yogurt}, {paste}, {mustard} und {paprika} verrühren.', '{beef} 6 Min krümelig braten. {salt}. {gouda} drüber und kurz schmelzen lassen.', '{oil*0.5} in einer Pfanne heiß machen, {eggs} als Spiegeleier braten. Alles auf die Basis, Soße drüber.', '{leftover}'] },
+    en: { name: 'Burger bowl with fried egg', statt: 'instead of a cheeseburger in a bun', portion: '1 big bowl + 1 fried egg', drink: 'Sparkling water with lemon and ice', reheat: 'Beef and egg briefly warm, salad cold', why: 'Cabbage and cucumber instead of a bun: same burger taste, hardly any starch. The special sauce has no sugar.',
+      steps: ['Slice {cabbage} very finely. Mix with {vinegar}, {oil*0.5} and salt. This is the base.', 'Chop {cucumber}, {tomato} and {onion}. Put on the cabbage in the bowls.', 'Special sauce: stir {yogurt}, {paste}, {mustard} and {paprika}.', 'Fry {beef} for 6 min until crumbly. {salt}. Add {gouda} and let it melt.', 'Heat {oil*0.5} in a pan and fry {eggs} as sunny-side-up. Put all on the base, sauce on top.', '{leftover}'] },
+  },
+  pizza: {
+    de: { name: 'Pizza vom Blech', statt: 'statt Lieferpizza', portion: '2 große Stücke', drink: 'Wasser mit Gurkenscheiben', reheat: 'Kalt essen oder kurz in der Pfanne', why: 'Der Boden ist aus Quark, Ei und Mandeln statt Mehl: viel Eiweiß, kaum Stärke.',
+      steps: ['Ofen auf 200 °C. {quark}, {eggs}, {almond}, {gouda} und {oregano} verrühren. {salt}.', '{trays} mit Backpapier auslegen und mit {oil} einölen. Den Teig 1 cm dünn streichen. 15 Min backen.', '{pepper} und {onion} klein schneiden.', 'Boden mit {passata} bestreichen. Paprika, Zwiebel und {mozz} drauf. Noch 10 Min backen.', '{leftover}'] },
+    en: { name: 'Sheet-pan pizza', statt: 'instead of delivery pizza', portion: '2 big slices', drink: 'Water with cucumber slices', reheat: 'Eat cold or warm briefly in a pan', why: 'The base is made of quark, egg and almonds instead of flour: lots of protein, hardly any starch.',
+      steps: ['Oven to 200 °C. Stir {quark}, {eggs}, {almond}, {gouda} and {oregano}. {salt}.', 'Line {trays} with baking paper and brush with {oil}. Spread the dough 1 cm thin. Bake 15 min.', 'Chop {pepper} and {onion}.', 'Spread {passata} on the base. Add pepper, onion and {mozz}. Bake 10 more min.', '{leftover}'] },
+  },
+  nuggets: {
+    de: { name: 'Knusper-Nuggets mit Ketchup', statt: 'statt Nuggets mit Panade', portion: '6 Nuggets + Brokkoli', drink: 'Kalter Tee ohne Zucker mit Zitrone', reheat: 'Kalt essen oder 5 Min in der Pfanne', why: 'Mandel-Kruste statt Paniermehl. Der Ketchup ist ohne Zucker, nur Tomate.',
+      steps: ['Ofen auf 200 °C. {chicken} in Stücke schneiden (ca. 3 cm).', 'Kruste: {almond}, {gouda}, {paprika} und Salz mischen. {eggs} auf einem Teller verquirlen.', 'Stücke erst ins Ei, dann in die Kruste drücken. Aufs Blech legen ({pieces}).', '{broc} mit {oil} mischen und mit aufs Blech. Alles 20 Min backen.', 'Ketchup: {passata}, {paste} und {vinegar} 5 Min einkochen. Dip: {yogurt} mit Salz.', '{leftover}'] },
+    en: { name: 'Crispy nuggets with ketchup', statt: 'instead of breaded nuggets', portion: '6 nuggets + broccoli', drink: 'Cold unsweetened tea with lemon', reheat: 'Eat cold or 5 min in a pan', why: 'Almond crust instead of breadcrumbs. The ketchup has no sugar, only tomato.',
+      steps: ['Oven to 200 °C. Cut {chicken} into pieces (about 3 cm).', 'Crust: mix {almond}, {gouda}, {paprika} and salt. Whisk {eggs} on a plate.', 'Press the pieces into the egg, then into the crust. Put on a tray ({pieces}).', 'Mix {broc} with {oil} and add to the tray. Bake everything 20 min.', 'Ketchup: simmer {passata}, {paste} and {vinegar} for 5 min. Dip: {yogurt} with salt.', '{leftover}'] },
+  },
+  doener: {
+    de: { name: 'Döner-Box', statt: 'statt Döner im Brot', portion: '1 volle Box', drink: 'Sprudel mit Zitrone', reheat: 'Fleisch kurz warm, Rest kalt', why: 'Ohne Brot und Pommes. Der Krautsalat gibt den Crunch, die Knoblauchsoße bleibt.',
+      steps: ['{chicken} in dünne Streifen schneiden. Mit {paprika}, {cumin}, {oregano}, {oil} und Salz mischen.', 'In einer heißen Pfanne 8 Min braten, bis es durch und goldbraun ist.', '{cabbage} fein schneiden und mit {lemon} und Salz kneten. {tomato}, {cucumber} und {onion} klein schneiden.', 'Knoblauchsoße: {yogurt}, {quark}, {garlic} (gepresst) und Salz verrühren.', 'In Boxen füllen: Krautsalat, Gemüse, Fleisch, Soße drüber.', '{leftover}'] },
+    en: { name: 'Doner box', statt: 'instead of a doner in bread', portion: '1 full box', drink: 'Sparkling water with lemon', reheat: 'Meat briefly warm, the rest cold', why: 'No bread, no fries. The cabbage salad gives the crunch and the garlic sauce stays.',
+      steps: ['Cut {chicken} into thin strips. Mix with {paprika}, {cumin}, {oregano}, {oil} and salt.', 'Fry in a hot pan for 8 min until cooked through and golden.', 'Slice {cabbage} finely and knead with {lemon} and salt. Chop {tomato}, {cucumber} and {onion}.', 'Garlic sauce: stir {yogurt}, {quark}, {garlic} (pressed) and salt.', 'Fill the boxes: cabbage salad, veg, meat, sauce on top.', '{leftover}'] },
+  },
+  taco: {
+    de: { name: 'Salat-Tacos', statt: 'statt Tacos mit Tortilla', portion: '3 Tacos', drink: 'Sprudel mit Zitrone und Eis', reheat: 'Füllung warm, frische Salatblätter', why: 'Salatblätter statt Tortilla. Blumenkohl in der Füllung macht sie satt, ohne Stärke.',
+      steps: ['{onion} und {pepper} klein schneiden. {cauli} kurz antauen lassen und sehr fein hacken.', '{beef} mit {oil} scharf anbraten, 5 Min. Zwiebel, Paprika und Blumenkohl dazu.', '{passata}, {paprika}, {cumin}, {garlic} (gepresst) und Salz dazu. 10 Min köcheln, bis es dick ist.', 'Frisch: {tomato} würfeln und mit {lemon} und Salz mischen. {iceberg} waschen.', 'Füllung in die Salatblätter. {gouda}, Tomaten und {yogurt} drauf.', '{leftover}'] },
+    en: { name: 'Lettuce tacos', statt: 'instead of tacos with tortillas', portion: '3 tacos', drink: 'Sparkling water with lemon and ice', reheat: 'Filling warm, fresh lettuce leaves', why: 'Lettuce leaves instead of tortillas. Cauliflower in the filling makes it filling without starch.',
+      steps: ['Chop {onion} and {pepper}. Let {cauli} thaw briefly and chop very finely.', 'Sear {beef} with {oil} for 5 min. Add onion, pepper and cauliflower.', 'Add {passata}, {paprika}, {cumin}, {garlic} (pressed) and salt. Simmer 10 min until thick.', 'Fresh: dice {tomato} and mix with {lemon} and salt. Wash {iceberg}.', 'Fill the lettuce leaves. Top with {gouda}, tomatoes and {yogurt}.', '{leftover}'] },
+  },
+  fish: {
+    de: { name: 'Fish & Chips', statt: 'statt Backfisch mit Pommes', portion: '1 Stück Fisch + 1 Handvoll Pommes', drink: 'Wasser mit Zitrone', why: 'Pommes aus Kohlrabi statt Kartoffeln. Mandel-Kruste statt Backteig.',
+      steps: ['Ofen auf 220 °C. {kohlrabi} schälen und in Stifte schneiden. Mit {oil*0.5}, {paprika} und Salz mischen.', 'Auf ein Blech legen und 25 Min backen. Einmal wenden.', '{fish} trocken tupfen. {eggs} verquirlen, {almond} mit Salz mischen. Fisch erst ins Ei, dann in die Mandeln drücken.', 'Fisch mit {oil*0.5} auf ein zweites Blech. Die letzten 12 Min mitbacken.', 'Soße: {yogurt}, {cucumber} (fein gehackt), {mustard} und {lemon} verrühren.'] },
+    en: { name: 'Fish & chips', statt: 'instead of battered fish and fries', portion: '1 piece of fish + a handful of chips', drink: 'Water with lemon', why: 'Kohlrabi chips instead of potatoes. Almond crust instead of batter.',
+      steps: ['Oven to 220 °C. Peel {kohlrabi} and cut into sticks. Mix with {oil*0.5}, {paprika} and salt.', 'Put on a tray and bake 25 min. Turn once.', 'Pat {fish} dry. Whisk {eggs}, mix {almond} with salt. Press the fish into egg, then almonds.', 'Put the fish on a second tray with {oil*0.5}. Bake for the last 12 min.', 'Sauce: stir {yogurt}, {cucumber} (finely chopped), {mustard} and {lemon}.'] },
+  },
+  pudding: {
+    de: { name: 'Schoko-Pudding', statt: 'statt Schokopudding aus dem Becher', portion: '1 kleine Schüssel', drink: 'Wasser', why: 'Echter Kakao ohne Zucker. Die zerdrückten Erdbeeren machen ihn süß.',
+      steps: ['{straw} antauen lassen und mit einer Gabel zerdrücken.', '{quark}, {yogurt}, {cocoa} und {cinnamon} glatt rühren.', 'Erdbeeren unterrühren. Kalt essen.'] },
+    en: { name: 'Chocolate pudding', statt: 'instead of pudding from a cup', portion: '1 small bowl', drink: 'Water', why: 'Real cocoa, no sugar. The mashed strawberries make it sweet.',
+      steps: ['Let {straw} thaw and mash with a fork.', 'Stir {quark}, {yogurt}, {cocoa} and {cinnamon} until smooth.', 'Fold in the strawberries. Eat cold.'] },
+  },
+  chips: {
+    de: { name: 'Gurken-Chips mit Dip', statt: 'statt Chips aus der Tüte', portion: '1 Teller zum Dippen', drink: 'Wasser mit Zitrone', why: 'Knackig und salzig wie Chips, aber ohne Stärke und Frittierfett.',
+      steps: ['{cucumber} in dünne Scheiben schneiden und mit Küchenpapier trocken tupfen.', 'Mit {oil} und Salz mischen.', 'Dip: {yogurt}, {quark}, {garlic} (gepresst) und Salz verrühren.'] },
+    en: { name: 'Cucumber chips with dip', statt: 'instead of chips from a bag', portion: '1 plate for dipping', drink: 'Water with lemon', why: 'Crunchy and salty like chips, but no starch and no frying fat.',
+      steps: ['Slice {cucumber} thin and pat dry with paper towel.', 'Toss with {oil} and salt.', 'Dip: stir {yogurt}, {quark}, {garlic} (pressed) and salt.'] },
+  },
+};
+/* extra leftover tips per recipe */
+const LEFT_TIP = {
+  de: { _: 'Die Hälfte in Dosen in den Kühlschrank. Das ist morgen dein Mittagessen.', burger: ' Salat und Soße extra lagern.', taco: ' Nur die Füllung in die Dose, Salatblätter morgen frisch.', doener: ' Soße extra lagern.' },
+  en: { _: 'Put half into boxes in the fridge. That is tomorrow’s lunch.', burger: ' Store salad and sauce separately.', taco: ' Only the filling goes in the box. Fresh lettuce tomorrow.', doener: ' Store the sauce separately.' },
+};
+
+(function () {
+'use strict';
+const F = FAW, KEY = 'faw.v1';
+let st = { lang: null, people: 2, seen: false, checks: {} };
+try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && typeof s === 'object') st = Object.assign(st, s); } catch (e) {}
+if (st.lang !== 'de' && st.lang !== 'en') st.lang = /^de/i.test(navigator.language || 'de') ? 'de' : 'en';
+if (!(st.people >= 1 && st.people <= 6)) st.people = 2;
+/* Nov 8 2026 (LOWiSPIKE): opened from the app (?app=1&lang=de&theme=dark), the page speaks the app's language, wears the app's
+   Day or Night, and leaves the bottom strip to the app's round close button; a shared link (no app) keeps its own choice */
+try { const q = new URLSearchParams(location.search);
+  if (q.get('app') === '1') document.documentElement.classList.add('in-app');
+  const ql = q.get('lang'); if ((ql === 'de' || ql === 'en') && q.get('app') === '1') st.lang = ql;
+  const th = q.get('theme'); if (th === 'dark' || th === 'light') document.documentElement.setAttribute('data-theme', th); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
+const L = () => st.lang, T = () => UI[st.lang], DE = () => st.lang === 'de';
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const todayIdx = () => (new Date().getDay() + 6) % 7;
+const cur = { sel: todayIdx(), sheet: null, rec: null, last: null, more: false };
+
+/* ---------- number words ---------- */
+const FR3 = [[0, ''], [.25, '¼'], [1 / 3, '⅓'], [.5, '½'], [2 / 3, '⅔'], [.75, '¾'], [1, '']];
+const FR4 = [[0, ''], [.25, '¼'], [.5, '½'], [.75, '¾'], [1, '']];
+function frac(n, set) {
+  set = set || FR3;
+  let w = Math.floor(n + 1e-9), r = n - w, best = set[0];
+  set.forEach(f => { if (Math.abs(f[0] - r) < Math.abs(best[0] - r)) best = f; });
+  let val = w + best[0], txt;
+  if (best[0] === 1) { w += 1; val = w; txt = String(w); } else txt = (w ? String(w) : '') + best[1];
+  if (!txt || val === 0) { txt = '¼'; val = .25; }
+  return { txt, val };
+}
+function gramTxt(g) {
+  const r = g < 20 ? Math.max(5, Math.round(g / 5) * 5) : Math.round(g / 10) * 10;
+  if (r >= 1000) { const kg = Math.round(r / 100) / 10; return (DE() ? String(kg).replace('.', ',') : String(kg)) + ' kg'; }
+  return r + ' g';
+}
+const eur = v => DE() ? v.toFixed(2).replace('.', ',') + ' €' : '€' + v.toFixed(2);
+const eur0 = v => DE() ? Math.round(v) + ' €' : '€' + Math.round(v);
+const ppl = n => { const s = n % 1 ? frac(n, FR4).txt : String(n); return s + ' ' + (DE() ? (n > 1 ? 'Personen' : 'Person') : (n > 1 ? 'people' : 'person')); };
+const about = () => DE() ? 'ca.' : 'about';
+
+/* amount of an item as text. returns {am, noun}; noun = the name is already inside am */
+function fmt(it, q) {
+  const I = F.ITEMS[it], t = T(), i = DE() ? 0 : 1, nm = I.nm[L()];
+  if (it === 'eggs') { const n = Math.max(1, Math.ceil(q - 1e-9)); return { am: n + ' ' + nm[n > 1 ? 1 : 0], noun: true }; }
+  if (I.show === 'none') return { am: '', noun: true, name: nm[0] };
+  if (I.show === 'tsp') {
+    if (q >= 3) { const v = Math.max(1, Math.round(q / 3 * 2) / 2); return { am: frac(v, FR4).txt + ' ' + t.tbsS, noun: false }; }
+    return { am: frac(q, FR4).txt + ' ' + t.tspS, noun: false };
+  }
+  if (I.show === 'spoon') {
+    if (q <= 120) return { am: frac(Math.max(.5, Math.round(q / I.spoonG * 2) / 2), FR4).txt + ' ' + t.spoonS, noun: false };
+    return { am: gramTxt(q), noun: false };
+  }
+  if (I.show === 'pc') { const f = frac(q / I.pc, FR4); return { am: f.txt + ' ' + nm[f.val > 1 ? 1 : 0], noun: true }; }
+  if (I.show === 'leaf') { const n = Math.max(1, Math.ceil(q / I.pc - 1e-9)); return { am: n + ' ' + nm[n > 1 ? 1 : 0], noun: true }; }
+  if (I.show === 'clove') { const f = frac(Math.max(.5, Math.round(q / I.pc * 2) / 2), FR4); return { am: f.txt + ' ' + nm[f.val > 1 ? 1 : 0], noun: true }; }
+  if (I.show === 'lemon') {
+    if (q < 8) return { am: t.pinch + ' ' + t.lemonN[0], noun: true };
+    const f = frac(q / I.pc, FR4); return { am: f.txt + ' ' + t.lemonN[f.val > 1 ? 1 : 0], noun: true };
+  }
+  if (I.show === 'head') { const f = frac(q / I.pack, FR4); return { am: about() + ' ' + gramTxt(q) + ' (' + f.txt + ' ' + t.headOf + ')', noun: false }; }
+  return { am: gramTxt(q), noun: false };
+}
+
+/* ---------- recipe text ---------- */
+const PIECES = { pancakes: 4, nuggets: 6 };
+function stepHtml(s, id, P, tm) {
+  const r = F.RECIPES[id], t = T();
+  return esc(s).replace(/\{(\w+)(?:\*([\d.]+))?\}/g, (m, k, mul) => {
+    if (k === 'leftover') return esc(LEFT_TIP[L()]._ + (LEFT_TIP[L()][id] || ''));
+    if (k === 'trays') { const n = Math.max(1, Math.ceil(P * tm / (r.perTray || 4) - 1e-9)); return '<b>' + n + ' ' + t.pcs.tray[n > 1 ? 1 : 0] + '</b>'; }
+    if (k === 'pieces') { const n = Math.round(PIECES[id] * P * tm); return '<b>' + about() + ' ' + n + '</b>'; }
+    const e = r.ing.find(x => x[0] === k); if (!e) return k;
+    const f = fmt(k, e[1] * P * tm * (mul ? parseFloat(mul) : 1)), I = F.ITEMS[k];
+    if (f.name) return f.name;
+    return f.noun ? '<b>' + esc(f.am) + '</b>' : '<b>' + esc(f.am) + '</b> ' + esc(I.nm[L()][0]);
+  });
+}
+const startTime = (day) => {
+  const s = day.slots.find(x => F.RECIPES[x[1]] && F.RECIPES[x[1]].slot === 'dinner'); if (!s) return null;
+  const m = 18 * 60 - F.RECIPES[s[1]].min; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+};
+const hm = s => +s.slice(0, 2) * 60 + +s.slice(3);
+
+/* ---------- main page ---------- */
+function render() {
+  const fid = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.fid : null;
+  const t = T(), P = F.portionsOf(st.people, 0), b = F.basket(st.people, 0), tdy = todayIdx(), day = F.WEEK[cur.sel];
+  document.documentElement.lang = st.lang; document.title = t.title;
+  const dish = k => k === 'pancakes' ? 'pancakes' : k;
+  const st0 = startTime(day);
+  const now = new Date(), nowM = now.getHours() * 60 + now.getMinutes();
+  const items = day.slots.map(s => ({ time: s[0], kind: s[1] === 'shop' ? 'shop' : s[1] === 'rest' ? 'rest' : 'meal', id: s[1] === 'rest' ? s[2] : s[1] }))
+    .concat(day.tasks.map(k => ({ time: k[0], kind: 'thaw', id: k[2] }))).sort((a, c) => a.time < c.time ? -1 : a.time > c.time ? 1 : 0);
+  let nowIdx = -1;
+  if (cur.sel === tdy) { nowIdx = items.findIndex(x => hm(x.time) + 60 > nowM); }
+  const rows = items.map((x, i) => {
+    const cls = 'rw' + (cur.sel === tdy && i < nowIdx ? ' past' : '') + (i === nowIdx ? ' now' : '');
+    const flag = i === nowIdx ? '<span class="flag">' + (hm(x.time) <= nowM + 15 ? t.now : t.next) + '</span>' : '';
+    let card;
+    if (x.kind === 'thaw') {
+      const th = t.thaw[x.id];
+      card = '<div class="card task">' + ICONS.thaw + '<div class="tx">' + flag + '<b>' + esc(th[0]) + ' (' + esc(th[1]) + ')</b><small>' + esc(t.thawSub) + '</small></div></div>';
+    } else if (x.kind === 'shop') {
+      card = '<button class="card shop" data-act="shop" data-fid="shop' + i + '"><span class="bubble sm">' + ICONS.shop + '</span><span class="tx">' + flag + '<b>' + t.shop + '</b><small>' + esc(t.shopSub(eur0(b.total))) + '</small></span><span class="go">›</span></button>';
+    } else {
+      const r = F.RECIPES[x.id], tx = REC[x.id][L()], rest = x.kind === 'rest';
+      const sub = rest ? (tx.reheat || '') : tx.portion + (r.slot === 'dinner' ? ' · ' + r.min + ' ' + t.min : '');
+      card = '<button class="card" data-rec="' + x.id + (rest ? ':rest' : '') + '" data-fid="r' + i + '"><span class="bubble sm">' + ICONS[r.icon] + '</span><span class="tx">' +
+        (rest ? '<span class="flag">' + t.rest + '</span>' : flag) + '<b>' + esc(tx.name) + '</b><small>' + esc(sub) + '</small></span><span class="go">›</span></button>';
+    }
+    return '<li class="' + cls + '"><div class="row"><div class="t">' + x.time + '</div>' + card + '</div></li>';
+  }).join('');
+  const strip = F.WEEK.map((d, i) => '<button class="dayb' + (i === tdy ? ' today' : '') + '" data-d="' + i + '" data-fid="d' + i + '" aria-pressed="' + (i === cur.sel) + '" aria-label="' + t.daysL[i] + ', ' + esc(t.themes[d.theme]) + '">' + ICONS[dish(d.theme)] + '<span>' + t.daysS[i] + '</span></button>').join('');
+  $('#app').innerHTML =
+    '<div class="top"><div class="brand">' + ICONS.leaf + 'LOWISPIKE</div><div class="topr"><button class="shr" data-act="share" data-fid="share" aria-label="' + esc(t.share) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 13v6h14v-6"/></svg></button><div class="seg" role="group" aria-label="Language"><button data-lang="de" data-fid="ld" aria-pressed="' + DE() + '">DE</button><button data-lang="en" data-fid="le" aria-pressed="' + !DE() + '">EN</button></div></div></div>' +
+    '<section class="hero"><div><div class="kick">' + (cur.sel === tdy ? t.today + ' · ' : '') + t.daysL[cur.sel] + '</div><h1>' + esc(t.themes[day.theme]) + '</h1><p>' + esc(st0 ? t.cookAt(st0) : t.noCook) + '</p></div><div class="bubble">' + ICONS[dish(day.theme)] + '</div></section>' +
+    (st.seen ? '' : '<section class="first"><h2>' + t.firstT + '</h2><ol>' + t.first.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol><button data-act="ok" data-fid="ok">' + t.ok + '</button></section>') +
+    '<div class="days">' + strip + '</div>' +
+    '<div class="dayhead"><h2>' + t.daysL[cur.sel] + '</h2><span>' + ppl(st.people) + '</span></div>' +
+    '<ul class="tl">' + rows + '</ul>' +
+    '<div class="foot"><span>' + esc(t.med) + '</span><b>' + esc(t.brand) + '</b></div>';
+  $('#cta').innerHTML = '<button data-act="shop" data-fid="cta">' + esc(t.shopBtn(eur0(b.total))) + '</button>';
+  if (fid) { const el = document.querySelector('[data-fid="' + fid + '"]'); if (el && el !== document.activeElement) el.focus({ preventScroll: true }); }
+}
+
+/* ---------- recipe sheet ---------- */
+function who() {
+  const t = T();
+  return '<div class="who"><div><b>' + t.who + '</b><small>' + t.whoHint + '</small></div><div class="step"><button data-act="pm" data-fid="pm" aria-label="−">−</button><output>' + (st.people % 1 ? frac(st.people, FR4).txt : st.people) + '</output><button data-act="pp" data-fid="pp" aria-label="+">+</button></div></div>';
+}
+function renderRecipe() {
+  const { id, rest } = cur.rec, r = F.RECIPES[id], x = REC[id][L()], t = T(), P = F.portionsOf(st.people, 0), tm = F.times(id), pp = F.perPortion(id), el = $('#sheet-r .in');
+  const ings = r.ing.map(e => {
+    const f = fmt(e[0], e[1] * P * tm), I = F.ITEMS[e[0]];
+    return '<li><label><input type="checkbox"><span class="nm">' + esc(I[L()]) + '</span><span class="am">' + esc(f.am) + '</span></label></li>';
+  }).join('');
+  const steps = x.steps.map(s => '<li>' + stepHtml(s, id, P, tm) + '</li>').join('');
+  el.innerHTML =
+    '<div class="grab"><button class="x" data-act="close" data-fid="x" aria-label="' + t.close + '">×</button></div>' +
+    '<div class="rh"><div class="bubble md">' + ICONS[r.icon] + '</div><div><h2>' + esc(x.name) + '</h2><span class="swap">' + esc(x.statt) + '</span></div></div>' +
+    (rest ? '<div class="note">' + ICONS.more + '<span><b>' + t.rest + '</b><br>' + t.reheat + ': ' + esc(x.reheat || '') + '</span></div>' : '') +
+    '<div class="facts"><div class="fact"><b>' + r.min + '</b><span>' + t.min + (r.active ? ' · ' + r.active + (DE() ? ' aktiv' : ' active') : '') + '</span></div><div class="fact"><b>' + (P % 1 ? frac(P, FR4).txt : P) + '</b><span>' + t.persons + '</span></div><div class="fact"><b>' + eur(pp.eur) + '</b><span>' + t.perPortion + '</span></div></div>' +
+    '<div class="eat"><span>' + t.eat + '</span><b>' + esc(x.portion) + '</b></div>' +
+    '<div class="note">' + ICONS.drink + '<span><small>' + t.drink + '</small><br>' + esc(x.drink) + '</span></div>' +
+    who() +
+    (rest ? '' : (r.leftover ? '<div class="note">' + ICONS.more + '<span>' + t.double + '</span></div>' : '') +
+      '<div class="sec"><h3>' + t.ing + '</h3><ul class="chk">' + ings + '</ul></div>' +
+      '<div class="sec"><h3>' + t.steps + '</h3><ol class="steps">' + steps + '</ol></div>') +
+    (r.slot !== 'snack' ? '<div class="note">' + ICONS.more + '<span>' + t.hungry + '</span></div>' : '') +
+    '<details class="more"' + (cur.more ? ' open' : '') + '><summary>' + t.more + '</summary><p class="why"><b>' + t.why + '</b><br>' + esc(x.why) + '</p>' +
+    '<p class="sm-note">' + t.perPer + '</p><div class="nut"><div><b>' + Math.round(pp.kcal) + '</b><span>' + t.kcal + '</span></div><div><b>' + Math.round(pp.protein) + ' g</b><span>' + t.protein + '</span></div><div><b>' + Math.round(pp.carbs) + ' g</b><span>' + t.carbs + '</span></div><div><b>' + Math.round(pp.fat) + ' g</b><span>' + t.fat + '</span></div></div></details>';
+}
+
+/* ---------- shopping sheet ---------- */
+function renderList() {
+  const t = T(), b = F.basket(st.people, 0), el = $('#sheet-l .in'), i = DE() ? 0 : 1;
+  const perDay = (b.total - b.spare) / b.P / 7;
+  const groups = F.AISLES.map(a => {
+    const rs = b.rows.filter(r => F.ITEMS[r.it].aisle === a); if (!rs.length) return '';
+    const sub = rs.reduce((s, r) => s + r.cost, 0);
+    return '<div class="sec"><div class="aisle"><h3>' + t.aisles[a] + '</h3><small>' + eur(sub) + '</small></div><ul class="chk">' + rs.map(r => {
+      const I = F.ITEMS[r.it], on = !!st.checks[r.it];
+      return '<li class="' + (on ? 'done' : '') + '"><label><input type="checkbox" data-it="' + r.it + '"' + (on ? ' checked' : '') + '><span class="nm">' + esc(I[L()]) + '<span class="pk">' + esc(I.pk[i]) + (I.store ? ' · ' + I.store : '') + '</span></span><span class="am"><b>' + r.packs + '×</b><span class="pk">' + (I.est ? about() + ' ' : '') + eur(r.cost) + '</span></span></label></li>';
+    }).join('') + '</ul></div>';
+  }).join('');
+  const basics = Object.keys(F.ITEMS).filter(k => F.ITEMS[k].basic);
+  const bsum = basics.reduce((s, k) => s + F.ITEMS[k].price, 0);
+  const n = b.rows.length, d = b.rows.filter(r => st.checks[r.it]).length;
+  el.innerHTML =
+    '<div class="grab"><button class="x" data-act="close" data-fid="x" aria-label="' + t.close + '">×</button></div>' +
+    '<div class="big"><h2>' + t.list + '</h2><div class="eur">' + about() + ' ' + eur0(b.total) + '</div><p>' + esc(t.forP(ppl(st.people), eur(perDay))) + '</p><p>' + esc(t.spare(eur0(b.spare))) + '</p>' +
+    '<div class="bar"><i id="barfill" style="width:' + Math.round(d / n * 100) + '%"></i></div><p id="barlabel">' + esc(t.inBasket(d, n)) + '</p></div>' +
+    who() + groups +
+    '<details class="more"><summary>' + t.basics + '</summary><p class="sm-note">' + esc(t.basicsSub(eur(bsum))) + '</p><ul class="chk">' + basics.map(k => '<li><label><span class="nm">' + esc(F.ITEMS[k][L()]) + '</span><span class="am">' + eur(F.ITEMS[k].price) + '</span></label></li>').join('') + '</ul></details>' +
+    '<div class="note">' + ICONS.thaw + '<span><b>' + t.after + '</b><br>' + t.afterL.map(esc).join('<br>') + '</span></div>' +
+    (appList() ? '<button class="btnapp" data-act="toapp" data-fid="toapp">' + esc(t.toApp) + '</button>' : '') +
+    '<button class="btn2" data-act="copy" data-fid="copy">' + t.copy + '</button>' +
+    '<p class="sm-note">' + esc(t.prices) + '</p>';
+}
+/* Nov 8 2026 (LOWiSPIKE): opened inside the app (Supermarkt), the list can go straight into the app's own shopping list, with the
+   packs and the price of each pack; the shared page (no app around it) only shows Teilen and Liste kopieren */
+function appList() { try { const P = window.parent; return P && P !== window && P.LOWI_SHELF && typeof P.LOWI_SHELF.addIngredients === 'function' ? P.LOWI_SHELF : null; } catch (e) { return null; } }
+function toApp() {
+  const S = appList(); if (!S) return; const b = F.basket(st.people, 0);
+  const items = b.rows.map(r => ({ n: F.ITEMS[r.it][L()], packs: r.packs, pe: F.ITEMS[r.it].price }));
+  let n = 0; try { n = S.addIngredients(items, T().list) || items.length; } catch (e) { n = 0; }
+  toast(T().added(n || items.length));
+}
+function pageUrl() { return location.origin + location.pathname.replace(/index\.html$/, ''); }
+function share() {
+  const url = pageUrl(), t = T();
+  if (navigator.share) { navigator.share({ title: t.title, url }).catch(() => {}); return; }
+  try { navigator.clipboard.writeText(url).then(() => toast(t.shared), () => {}); } catch (e) {}
+}
+function listText() {
+  const b = F.basket(st.people, 0), i = DE() ? 0 : 1, t = T(), out = [t.list + ' · ' + ppl(st.people) + ' · ' + eur0(b.total)];
+  F.AISLES.forEach(a => { const rs = b.rows.filter(r => F.ITEMS[r.it].aisle === a); if (!rs.length) return; out.push('', t.aisles[a]); rs.forEach(r => out.push('[ ] ' + r.packs + '× ' + F.ITEMS[r.it][L()] + ' (' + F.ITEMS[r.it].pk[i] + ')')); });
+  return out.join('\n');
+}
+function toast(msg) { const e = $('#toast'); e.textContent = msg; e.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => e.classList.remove('on'), 1800); }
+function copy() {
+  const txt = listText(), done = () => toast(T().copied);
+  const fb = () => { try { const a = document.createElement('textarea'); a.value = txt; a.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove(); done(); } catch (e) {} };
+  try { navigator.clipboard.writeText(txt).then(done, fb); } catch (e) { fb(); }
+}
+
+/* ---------- sheets ---------- */
+function openSheet(w) {
+  cur.sheet = w; cur.last = document.activeElement;
+  if (w === 'r') renderRecipe(); else renderList();
+  const el = $('#sheet-' + w); el.inert = false; el.setAttribute('aria-hidden', 'false'); el.classList.add('on');
+  el.querySelector('.in').scrollTop = 0; $('#veil').classList.add('on'); document.body.style.overflow = 'hidden';
+  const x = el.querySelector('.x'); if (x) x.focus({ preventScroll: true });
+}
+function closeSheet() {
+  if (!cur.sheet) return;
+  const el = $('#sheet-' + cur.sheet); el.classList.remove('on'); el.inert = true; el.setAttribute('aria-hidden', 'true');
+  $('#veil').classList.remove('on'); document.body.style.overflow = ''; cur.sheet = null;
+  if (cur.last && document.contains(cur.last)) cur.last.focus({ preventScroll: true });
+}
+function refresh() {
+  const fid = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.fid : null;
+  render();
+  if (cur.sheet === 'r') renderRecipe(); else if (cur.sheet === 'l') renderList();
+  if (fid) { const el = document.querySelector('[data-fid="' + fid + '"]'); if (el) el.focus({ preventScroll: true }); }
+}
+
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-act],[data-rec],[data-d],[data-lang]'); if (!a) return;
+  if (a.dataset.rec) { const p = a.dataset.rec.split(':'); cur.rec = { id: p[0], rest: p[1] === 'rest' }; openSheet('r'); return; }
+  if (a.dataset.d) { cur.sel = +a.dataset.d; render(); return; }
+  if (a.dataset.lang) { st.lang = a.dataset.lang; save(); refresh(); return; }
+  const k = a.dataset.act;
+  if (k === 'shop') openSheet('l');
+  else if (k === 'close') closeSheet();
+  else if (k === 'ok') { st.seen = true; save(); render(); }
+  else if (k === 'pm' || k === 'pp') { st.people = Math.min(6, Math.max(1, st.people + (k === 'pp' ? .5 : -.5))); save(); refresh(); }
+  else if (k === 'copy') copy();
+  else if (k === 'share') share();
+  else if (k === 'toapp') toApp();
+});
+$('#veil').addEventListener('click', closeSheet);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+document.addEventListener('change', e => {
+  const c = e.target; if (c.dataset && c.dataset.it) {
+    st.checks[c.dataset.it] = c.checked; save(); c.closest('li').classList.toggle('done', c.checked);
+    const b = F.basket(st.people, 0), n = b.rows.length, d = b.rows.filter(r => st.checks[r.it]).length;
+    $('#barfill').style.width = Math.round(d / n * 100) + '%'; $('#barlabel').textContent = T().inBasket(d, n);
+  } else if (c.type === 'checkbox') c.closest('li').classList.toggle('done', c.checked);
+});
+document.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('more') && cur.sheet === 'r') cur.more = e.target.open; }, true);
+window.FAWAPP = { fmt, stepHtml, startTime, frac, FR4, eur, eur0, ppl, about, st };
+if (!window.FAW_PRINT) {
+render();
+setInterval(() => { if (!cur.sheet) render(); }, 60000);
+}
+})();
+
+</script>
+</body>
+</html>

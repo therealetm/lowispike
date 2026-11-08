@@ -113,6 +113,13 @@ self.addEventListener("fetch", e => {
     e.respondWith(caches.open("lowispike-steps-seller-img").then(c => c.match(req).then(hit => hit || fetch(req).then(res => { if (res && res.ok) c.put(req, res.clone()); return res; }))).catch(() => fetch(req)));
     return;
   }
+  /* Nov 8 2026: the shared Fakeaway week (fakeaway/) is its own page, never the app: network first, the last copy offline */
+  if (url.pathname.indexOf("/fakeaway/") >= 0 && req.method === "GET") {
+    const key = url.origin + url.pathname.replace(/index\.html$/, "");
+    e.respondWith(fetch(req, {cache:"no-cache"}).then(res => { if (res && res.ok && res.type !== "opaque") { const cp = res.clone(); caches.open("lowispike-steps-fakeaway").then(c => c.put(key, cp)); } return res; })
+      .catch(() => caches.open("lowispike-steps-fakeaway").then(c => c.match(key)).then(r => r || Response.error())));
+    return;
+  }
   if (req.mode === "navigate" && !isShell(url)) return;
   if (isPage(req, url)) {
     /* Oct 21 (open instantly; Oct 28 below goes further): still network first, but a launch no longer waits on a slow or half-dead connection. If the network

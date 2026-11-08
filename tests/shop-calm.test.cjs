@@ -45,8 +45,10 @@ test('Plan my week (old Shop from home) lives inside Supermarkt, remembered, dra
   const iS = tabs.indexOf("b('shop'"), iZ = tabs.indexOf("b('sz'");
   assert.ok(iS > 0 && iZ > iS, 'Supermarket, then Seller Zone');
   assert.equal(tabs.indexOf("b('home'"), -1, 'no Zu Hause tab');
-  assert.match(sp, /function planRowHTML\(\)[\s\S]{0,300}data-stp="weekshop"/);
-  assert.match(sp, /T\('Plan my week', 'Meine Woche planen', 'Planear mi semana'\)/);
+  /* test changed 8 Nov 2026 (Emmanuel: replace the weekly planner in Supermarkt with the Fakeaway week, tests/fakeaway-week.test.cjs):
+     the same row now opens the Fakeaway week; the planner below keeps its code but no button */
+  assert.match(sp, /function planRowHTML\(\)[\s\S]{0,900}data-stp="weekshop"/);
+  assert.match(sp, /T\('Fakeaway week', 'Fakeaway-Woche', 'Semana fakeaway'\)/);
   assert.match(sp, /onBack: \(\) => setTab\('shop'\)/);
   assert.match(wb, /T\('Plan my week', 'Meine Woche planen', 'Planear mi semana'\)/);
   assert.match(wb, /if \(a === 'tosm'\) \{ if \(inl && inl\.onBack\) inl\.onBack\(\); return; \}/);

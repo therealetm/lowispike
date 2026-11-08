@@ -57,7 +57,7 @@ body{display:flex;flex-direction:column;min-height:100dvh;padding:env(safe-area-
   const en = !/^de/i.test(navigator.language || 'de');
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   if (en) { document.documentElement.lang = 'en'; document.getElementById('go').textContent = 'Open in LOWiSPIKE'; document.getElementById('fine').textContent = 'Blood-sugar-friendly food · free'; }
-  const p = K ? K.decode(location.hash) : null;
+  const p = K ? K.fromUrl(location.search, location.hash) : null;
   if (!p) { app.innerHTML = '<div class="empty">' + (en ? 'This link is incomplete.' : 'Dieser Link ist unvollständig.') + '</div>'; return; }
   let slides = [];
   if (p.v) slides.push('<video src="' + esc(p.v) + '"' + (p.s && p.s[0] ? ' poster="' + esc(p.s[0]) + '"' : '') + ' controls playsinline preload="metadata"></video>');

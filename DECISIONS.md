@@ -1483,3 +1483,7 @@ Live 20261027-004442: a saved profile whose list or object field was null (healt
 - One constant bar above the feed: Posten left, Meine Beiträge and Gemerkt right; nothing of it lies on a picture.
 - A member post shows its picture or carousel whole (contain, all four corners) with nothing on it. Under it one row: Speichern, Swipe, Teilen, ··· (right); then the name and the caption (2 lines). Nibblo's swap cards keep their own card design.
 **Checks:** `tests/foryou-rail-strip-1108.test.cjs` (one test added). Chromium 393 x 852 with a 3-picture post marked in all four corners.
+
+## 8 Nov 2026: the share link is short (post/?k=..., about 80 characters)
+**Decision applied (Emmanuel, 8 Nov: "the link on that looks horrible. I can't send that link to someone on WhatsApp. They're gonna think I'm hacking them ... shorter? Why is it so long?").** It was long because the whole post (every picture address and the caption) was packed into the link. An uploaded post's pictures always sit at <user>/<post>.jpg, <post>-2.jpg ..., so the link now carries only the user id (22 letters), the number of pictures (or the video kind) and the post id; the caption goes in the share message. Posts with only text, or pictures off the pattern, keep the long form; old long links still open. A truly short link with a picture preview in WhatsApp needs a small server table (one SQL by the owner); not done.
+**Checks:** `tests/post-share-link.test.cjs` (one test added). Chromium: a short 3-picture link opens 3 pictures, swipe 1/3 -> 2/3.

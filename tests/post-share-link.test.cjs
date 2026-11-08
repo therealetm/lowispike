@@ -46,3 +46,20 @@ test('the rail button is Teilen, it uses the share sheet or copies; the page esc
   assert.match(page, /scroll-snap-type:x mandatory/);
   assert.match(page, /<a class="go" id="go" href="\.\.\/#fy">/);
 });
+
+/* Nov 8 2026, later (Emmanuel: "the link ... looks horrible ... They're gonna think I'm hacking them ... shorter? Why is it so long?"):
+   an uploaded post's pictures follow one storage pattern, so the link carries only the user id (22 letters), the number of pictures
+   and the post id: post/?k=..., about 80 characters in all. */
+test('the short link: about 80 characters, and it opens the same pictures', () => {
+  const H = 'https://vnfwmifmsfecascwaody.supabase.co/storage/v1/object/public/media/', u = '3f2a9c1e-7b44-4d2e-9a10-0c5e8b7d6f21', id = 'tlq3x9a2k7b1';
+  const sl = [0, 1, 2, 3, 4, 5, 6, 7].map(i => H + u + '/' + id + (i ? '-' + (i + 1) : '') + '.jpg');
+  const url = K.encode({ who: 'eman', cap: 'An insulin friendly EU-African week', photo: sl[0], slides: sl }, 'https://therealetm.github.io/lowispike/post/');
+  assert.match(url, /^https:\/\/therealetm\.github\.io\/lowispike\/post\/\?k=[A-Za-z0-9_-]{22}8tlq3x9a2k7b1$/);
+  assert.ok(url.length <= 90, url.length);
+  assert.deepEqual(K.fromUrl(url.slice(url.indexOf('?')), '').s, sl);
+  const v = K.fromUrl('?k=' + K.short({ vid: 1, vurl: H + u + '/' + id + '.mp4' }), '');
+  assert.equal(v.v, H + u + '/' + id + '.mp4');
+  assert.equal(K.short({ photo: H + u + '/' + id + '.jpg', slides: [H + u + '/' + id + '.jpg', H + u + '/other.jpg'] }), '', 'pictures off the pattern keep the long link');
+  assert.equal(K.fromUrl('?k=short', ''), null);
+  assert.match(read('post/index.html'), /K\.fromUrl\(location\.search, location\.hash\)/);
+});

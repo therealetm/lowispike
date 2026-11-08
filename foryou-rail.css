@@ -65,7 +65,9 @@ html[data-ui=light] .fy-slide .fy-act>span{background:none;padding:0}
 #fyFeed .fy-slide:not(.fyb-slide) .fy-rail .fy-act svg{width:40px;height:40px;padding:9px}
 #fyFeed .fy-slide:not(.fyb-slide) .fy-rail .fy-more{margin-left:auto}
 #fyFeed .fy-slide:not(.fyb-slide) .fy-meta{top:calc(100% - var(--fyp) + 58px);bottom:6px!important;left:14px;right:14px;overflow:hidden;text-shadow:none}
-#fyFeed .fy-slide:not(.fyb-slide) .fy-meta .fy-car-dots{position:absolute;top:-36px;left:0;right:0;justify-content:center;margin:0}
+/* Nov 8 2026 (Emmanuel: "dieses Teilen verdeckt irgendwie diese Punkte"): the carousel dots sit on the bottom edge of the picture in a
+   small dark pill, never in the action row */
+#fyFeed .fy-slide:not(.fyb-slide) .fy-meta .fy-car-dots{position:absolute;top:-82px;left:50%;right:auto;transform:translateX(-50%);justify-content:center;margin:0;padding:5px 9px;border-radius:999px;background:rgba(0,0,0,.45)}
 #fyFeed .fy-slide:not(.fyb-slide) .fy-meta{overflow:visible}
 #fyFeed .fy-slide:not(.fyb-slide) .fy-cap{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px}
 #fyFeed .fy-slide:not(.fyb-slide) .fy-play{top:calc((100% - var(--fyp)) / 2)}

@@ -149,6 +149,10 @@
         }
     } catch (e) { }
     const kind = () => C.kindOf(ls.get(C.KEY));
+    /* Nov 8 2026 (Emmanuel: "wenn ich die App öffne, dann erscheint das erstmal blau und dann erst Dark Mode"): Dark used to switch on
+       only once the boot code set data-theme, so the first frames were the blue Night. When the saved look is Dark and the saved theme
+       is not Day, Dark is on from the first paint; sync() below still corrects it either way. */
+    try { const th = ls.get('lowi.theme'); if (kind() === 'black' && th !== 'light' && th !== 'sunrise') { H.setAttribute('data-black', '1'); on = true; meta(); } } catch (e) { }
     function meta() {
         if (!on) return;
         const m = D.querySelector('meta[name="theme-color"]');

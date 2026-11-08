@@ -1426,6 +1426,19 @@ ol.steps{margin:14px 0 0 20px;line-height:1.7;font-size:15px}
 .tr-ph1 .tr-thumbsm{display:block}
 .tr-phx{position:absolute;top:-10px;right:-10px;width:28px;height:28px;padding:0;border-radius:50%;border:2px solid var(--bg,#03050a);background:rgba(30,33,45,.96);color:#fff;font:700 16px/1 inherit;display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .tr-phx::after{content:"";position:absolute;inset:-8px}
+/* Nov 8 2026 New post: two big pick tiles (Photos = carousel, Video), numbered photo strip, + tile */
+.tr-picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:10px;margin:2px 0 12px}
+.tr-pick{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:112px;padding:14px 10px;border-radius:22px;border:1.2px solid rgba(143,231,255,.38);background:linear-gradient(160deg,rgba(143,231,255,.16),rgba(10,22,58,.42));color:#fff;font:inherit;cursor:pointer;box-shadow:inset 0 0 14px rgba(155,135,210,.22)}
+.tr-pick-ic{font-size:30px;line-height:1}
+.tr-pick b{font-size:16px;font-weight:800}
+.tr-pick small{font-size:12px;opacity:.75;text-align:center}
+.tr-pick:active{transform:scale(.97)}
+html[data-ui=light] .tr-pick{color:#111318;background:linear-gradient(160deg,rgba(143,231,255,.35),rgba(255,255,255,.6));border-color:rgba(22,28,46,.25)}
+.tr-strip{flex-wrap:wrap;padding-top:8px}
+.tr-strip .tr-ph1,.tr-strip .tr-thumbsm{width:64px;height:80px;border-radius:12px}
+.tr-phn{position:absolute;left:5px;top:5px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#8fe7ff;color:#062033;font-size:12.5px;font-weight:800;line-height:22px;font-style:normal;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.tr-phadd{width:64px;height:80px;border-radius:12px;border:1.5px dashed rgba(143,231,255,.55);background:rgba(143,231,255,.08);color:#8fe7ff;font-size:32px;font-weight:300;line-height:1;cursor:pointer}
+.fy-svd span{font-size:13.5px}
 .tr-carhint{margin:8px 0 0}
 /* ===== Einkaufswagen (Oct 8, 2026) ===== */
 #lsCart{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;background:radial-gradient(120% 50% at 50% -10%,rgba(var(--acc-rgb,159,216,255),.14),transparent 60%),rgba(3,5,10,.94);-webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);transform:translateY(100%);transition:transform .34s cubic-bezier(.2,.8,.2,1);padding-top:var(--sat)}
@@ -5101,7 +5114,7 @@ function fyOut(p, ex){
 /* button sweep 16:20: For You sits in a data-noi18n pane (posts stay as written), so its own buttons and end card ask LowiLang for their words */
 const fyT = s => { try { return window.LowiLang && LowiLang.t ? LowiLang.t(s) : s; } catch (e) { return s; } };
 function slideHTML(p){
-  if (p.bot && window.LowiForYou) return LowiForYou.slideHTML(p, {bg: fyBg(p), saved: !!(T.saved || {})[p.id], FIC, chip: p.rec && window.FYV ? FYV.recChip(p) : ""});
+  if (p.bot && window.LowiForYou) return LowiForYou.slideHTML(p, {bg: fyBg(p), saved: !!(T.saved || {})[p.id], FIC, chip: p.rec && window.FYV ? FYV.recChip(p) : "", toChat: window.LowiCommunity ? '<button class="fy-act fy-tochat" data-tr="to-chat" data-id="' + p.id + '" aria-label="' + esc(fyT("Send to Community")) + '">' + FIC.share + '<span>' + esc(fyT("Chat")) + '</span></button>' : ""});
   const h = H(), u = h.user(), d = describe(p.meta), saved = !!(T.saved || {})[p.id], pl = PLAT[p.plat] || PLAT.web;
   const name = p.me ? (u.name || "You") : p.who, cap = p.cap || d.line || "", textOnly = !p.url && !p.photo && !p.vid && !p.rec && !FY_IMG[p.id];
   const ex = p.url && window.LowiForYou ? LowiForYou.external(p.url) : null, watch = ex ? LowiForYou.note("loveBtn") + " \u00b7 " + LowiForYou.note("watchOn", {p: ex.name}) : pl.open;
@@ -5117,7 +5130,10 @@ function slideHTML(p){
        No For You card has Like, Chat or Share any more (no double-tap like either); Save, + Swipe / In swipe and ··· stay. */
     '<div class="fy-rail' + (ex ? ' fy-rail-ext' : '') + '">' + (ex ? '' :
       '<button class="fy-act' + (saved ? " on" : "") + '" data-tr="save" data-id="' + p.id + '" aria-label="' + fyT("Save") + '">' + FIC.save + '<span>' + fyT(saved ? "Saved" : "Save") + '</span></button>' +
-      (window.LowiFood && LowiFood.isFoodPost(p, FY_IMG[p.id]) ? LowiFood.railBtn(p.id) : "")) +
+      (window.LowiFood && LowiFood.isFoodPost(p, FY_IMG[p.id]) ? LowiFood.railBtn(p.id) : "") +
+      /* Nov 8 2026 (Emmanuel: "von der For You Page aus Dinge in die Community dann weiterleiten, posten. Dafür müsste auch einen
+         Knopf geben"): one button sends the post to the Community chat (fyToChat) */
+      (window.LowiCommunity ? '<button class="fy-act fy-tochat" data-tr="to-chat" data-id="' + p.id + '" aria-label="' + esc(fyT("Send to Community")) + '">' + FIC.share + '<span>' + esc(fyT("Chat")) + '</span></button>' : "")) +
       '<button class="fy-act fy-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="' + fyT("More") + '">' + IC.more + '</button></div>' +
     '<div class="fy-meta">' + fyCarDots(p) + '<div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b>' + (p.nb ? '<span class="fy-bot" title="Bot">Bot</span>' : '') + '<span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
@@ -5166,8 +5182,31 @@ function retryShares(){
     .then(() => { if ($("#fyFeed")) renderForYou(); });
 }
 /* Nov 6 2026: the Saved button on the feed (a bookmark and how many), shown once something is saved */
-function fySavedBtnHTML(){ const n = Object.keys(T.saved || {}).length; if (!n) return "";
-  return '<button class="fy-svd" data-tr="list-saved" aria-label="' + esc(fyT("Saved") + ", " + n) + '">' + FIC.save + '<b>' + n + '</b></button>'; }
+/* Nov 8 2026 (Emmanuel: people save carousels but "brauchen halt einen Ort, wo die das dann halt auch wieder öffnen können"): the
+   button is always there and says its word, so the place to reopen saved posts is found before anything is saved */
+function fySavedBtnHTML(){ const n = Object.keys(T.saved || {}).length;
+  return '<button class="fy-svd" data-tr="list-saved" aria-label="' + esc(fyT("Saved") + ", " + n) + '">' + FIC.save + '<span>' + esc(fyT("Saved")) + '</span>' + (n ? '<b>' + n + '</b>' : '') + '</button>'; }
+/* For You -> Community chat: pictures go as a chat photo or album (sharePics, the same as New post's "Also in the Community chat");
+   a link, video or text post opens the chat with it written in the box, so you can add a word and send */
+let fyChatBusy = false;
+function fyToChat(id){
+  const p = (feed() || []).find(x => x.id === id) || (T.posts || []).find(x => x.id === id), h = H(); if (!p || !h || fyChatBusy) return;
+  const sl = window.LowiCarousel ? LowiCarousel.slidesOf(p) : null, pics = p.vid ? [] : (sl || (p.photo ? [p.photo] : [])).slice(0, 8);
+  const sw = p.inspo && p.inspo.swap, who = p.me ? "" : (p.who || ""), cap = (p.cap || (sw ? (sw.e ? sw.e + " " : "") + sw.from + " \u2192 " + sw.to : "")).trim(), line = (cap + (who ? " \u00b7 " + fyT("from") + " " + who : "")).trim();
+  if (pics.length && window.LowiCommunity && LowiCommunity.sharePics) {
+    fyChatBusy = true; h.toast(fyT("Sending to the Community…"));
+    Promise.all(pics.map(u => fetch(u).then(r => { if (!r.ok) throw new Error("img"); return r.blob(); })))
+      .then(bl => LowiCommunity.sharePics({blobs:bl, caption:line}))
+      .then(() => h.toast(fyT("Sent to the Community chat.")))
+      .catch(e => { console.error(e); h.toast(fyT(e && e.message === "signin" ? "Sign in to use the Community chat." : "Could not reach the Community chat.")); })
+      .then(() => { fyChatBusy = false; });
+    return;
+  }
+  const text = (line + (p.url ? " " + p.url : "")).trim() || fyT("Look at this in For You");
+  try { goTab("foryou"); } catch(e){}
+  setTimeout(() => { try { if (window.LowiRoomsUI && LowiRoomsUI.setTab) LowiRoomsUI.setTab(true); else if (typeof cmSeg === "function") cmSeg("chat"); } catch(e){}
+    setTimeout(() => { const i = document.querySelector("#cmInput"); if (i) { i.value = text; i.focus(); try { i.dispatchEvent(new Event("input", {bubbles:true})); } catch(e){} } }, 350); }, 120);
+}
 function fySavedBtnPaint(){ const t = $(".fy-tops"); if (!t) return; const old = t.querySelector(".fy-svd"), h = fySavedBtnHTML();
   if (old) { if (h) old.outerHTML = h; else old.remove(); } else if (h) t.insertAdjacentHTML("beforeend", h); }
 function heldPosts(){ return (T.posts || []).filter(p => window.LowiForYou && LowiForYou.held(Object.assign({}, p, {me: true}))); }
@@ -5242,11 +5281,19 @@ function compose(prefill, text, rec){
 /* Oct 8: the composer as its own pane (Community > Post), no pop-up. */
 function composeInto(el, prefill, text, rec){
   if (!el) return; C = {raw:"", p:null, meta:null, loading:false, cap:text || "", vis:"tribe", mine:false, photo:"", photos:[], rec:rec || "", inline:true};
-  el.innerHTML = (window.FYV ? FYV.postCardHTML() : "") + '<div class="card" id="trCompose"><div class="h3">Share to For You</div><div class="small muted" style="margin-top:4px">Paste a TikTok, Reel or YouTube link. No link? Just write below.</div>' +
-    '<div class="tr-urlrow"><input class="input" id="trUrl" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.tiktok.com/@…"><button class="tr-paste" data-tr="paste">' + IC.paste + 'Paste</button></div>' +
+  el.innerHTML = trPickTilesHTML() + '<div class="card" id="trCompose"><div class="h3">Share to For You</div><div class="small muted" style="margin-top:4px">Paste a TikTok, Reel or YouTube link. No link? Just write below.</div>' +
+    '<div class="tr-urlrow"><input class="input" id="trUrl" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.tiktok.com/@…"><button class="tr-paste" data-tr="paste">' + IC.paste + esc(fyT("Paste")) + '</button></div>' +
     '<div id="trPrev"></div><div id="trRest"></div><div class="ls-postfoot"><button class="btn primary" id="trPost" data-tr="post" disabled>Post</button></div></div>' +
     '<p class="foot" style="text-align:center;margin-top:12px">It lands at the top of For You. Newest first, no algorithm.</p>';
   if (prefill) { $("#trUrl").value = prefill; onUrl(prefill, true); } else paintRest();
+}
+/* Nov 8 2026 (Emmanuel: "das mit dem Karussell, das sollte einfach auf der For You-Page beim Posten leben ... So wie bei Instagram
+   und TikTok ... von selber aus meine Bilder auswählen können und als Carousel posten"): New post opens on two big tiles, Photos
+   (the phone's own picker, several at once, up to the carousel limit) and Video; the old small "Add photos" chip went */
+function trPickTilesHTML(){
+  const n = carMax();
+  return '<div class="tr-picks"><button type="button" class="tr-pick" data-tr="photo"><span class="tr-pick-ic" aria-hidden="true">\u{1F5BC}\uFE0F</span><b>' + esc(fyT("Photos")) + '</b><small>' + esc(n > 1 ? fyT("Up to " + n + " · carousel") : fyT("One picture")) + '</small></button>' +
+    (window.FYV ? '<button type="button" class="tr-pick" data-fyv="pick"><span class="tr-pick-ic" aria-hidden="true">\u{1F3AC}</span><b>' + esc(fyT("Video")) + '</b><small>' + esc(fyT("From your gallery")) + '</small></button>' : '') + '</div>';
 }
 function onUrl(v, now){
   clearTimeout(debT); if (!C) return; C.raw = v;
@@ -5289,7 +5336,7 @@ function paintRest(){
   if (C.loading || (!C.p && C.raw.trim())) { el.innerHTML = ""; updPost(); return; }
   const link = !!C.p, need = link && !(C.meta && C.meta.title), pl = link ? PLAT[C.p.plat] : {};
   el.innerHTML = (link ? '<div class="field"><label for="trCap">' + (need ? "One line about it (needed)" : "Add your take (optional)") + '</label><input class="input" id="trCap" maxlength="' + CAPTION_MAX + '" placeholder="' + (need ? "What is it and why is it good?" : "Why you're sharing it") + '" value="' + esc(C.cap) + '"></div>'
-      : '<div class="field"><label for="trCap">Or just write a post</label><textarea class="input" id="trCap" rows="3" maxlength="' + TEXT_MAX + '" placeholder="A swap, a win, a question…" style="height:84px;padding:12px 14px;resize:none">' + esc(C.cap) + '</textarea></div>' +
+      : '<div class="field"><label for="trCap">Or just write a post</label><textarea class="input" id="trCap" rows="3" maxlength="' + TEXT_MAX + '" placeholder="' + esc(fyT("A swap, a win, a question…")) + '" style="height:84px;padding:12px 14px;resize:none">' + esc(C.cap) + '</textarea></div>' +
         trPhotosHTML() + (C.photo ? mealRowHTML() : '')) +
     postRecField() +
     '<div class="card" style="margin-top:14px;padding:4px 14px">' +
@@ -5305,9 +5352,12 @@ const CAR = () => window.LowiCarousel || null;
 const carMax = () => (CAR() ? CAR().MAX : 1);
 function trPhotosHTML(){
   const ph = C.photos || [], more = ph.length < carMax() || carMax() === 1; /* one photo only (no carousel-core): Change photo */
-  return '<div class="tr-row tr-photos" style="margin-top:10px;gap:10px">' + (more ? '<button class="chip" data-tr="photo">' + (ph.length ? (carMax() > 1 ? "Add more photos" : "Change photo") : (carMax() > 1 ? "Add photos" : "Add a photo")) + '</button>' : '') +
-    ph.map((src, i) => '<span class="tr-ph1"><img class="tr-thumbsm" src="' + src + '" alt=""><button type="button" class="tr-phx" data-tr="nophoto" data-i="' + i + '" aria-label="Remove photo">\u00d7</button></span>').join('') + '</div>' +
-    (ph.length > 1 ? '<p class="small muted tr-carhint">A carousel: people swipe through your photos. The first one is the cover.</p>' : '');
+  if (!ph.length) return '';
+  /* Nov 8 2026: like TikTok's picker, each picture carries its number (1 = the cover); a + tile adds more */
+  return '<div class="tr-row tr-photos tr-strip" style="margin-top:10px;gap:10px">' +
+    ph.map((src, i) => '<span class="tr-ph1"><img class="tr-thumbsm" src="' + src + '" alt=""><i class="tr-phn" aria-hidden="true">' + (i + 1) + '</i><button type="button" class="tr-phx" data-tr="nophoto" data-i="' + i + '" aria-label="' + esc(fyT("Remove photo")) + '">\u00d7</button></span>').join('') +
+    (more ? '<button type="button" class="tr-phadd" data-tr="photo" aria-label="' + esc(carMax() > 1 ? fyT("Add more photos") : fyT("Change photo")) + '">+</button>' : '') + '</div>' +
+    (ph.length > 1 ? '<p class="small muted tr-carhint">' + esc(fyT("A carousel. Number 1 is the cover.")) + '</p>' : '');
 }
 /* Oct 19 meal photos: a photo in a post can carry its meal card (name, estimated ingredients, nutrition, likely blood
    sugar response). A photo already read in Snap food is reused for free; a new one costs 1 of the 3 photo checks a day. */
@@ -5446,6 +5496,7 @@ document.addEventListener("click", e => {
         f.addEventListener("change", () => { const K = CAR(), xs = K ? K.take(f.files, C ? (C.photos || []).length : 0) : [f.files[0]]; f.value = "";
           if (K) trPhotosPick(xs, H()); else trPhotoPick(xs[0], H()); }); }
       f.multiple = carMax() > 1; f.click(); break; }
+    case "to-chat": fyToChat(id); break;
     case "nophoto": if (C) { const i = +(b.dataset.i || 0), was = C.photo; C.photos = (C.photos || []).filter((x, k) => k !== i); C.photo = C.photos[0] || "";
         if (C.photo !== was) { C.meal = null; C.mealErr = ""; } paintRest(); } break;
     case "meal-read": readMeal(); break;
@@ -8957,6 +9008,15 @@ const T = [
   ["New here?", "Neu hier?", "¿Nuevo aquí?"], ["Say hi", "Sag hallo", "Saluda"], ["In For You", "In Für dich", "En Para ti"], ["Only you", "Nur du", "Solo tú"],
   ["Post", "Posten", "Publicar"],
   ["Upload a video", "Video hochladen", "Subir un vídeo"],
+  /* Nov 8 2026 New post tiles, numbered photos, Saved word, For You -> Community */
+  ["Photos", "Fotos", "Fotos"], ["Video", "Video", "Vídeo"], ["From your gallery", "Aus deiner Galerie", "De tu galería"], ["One picture", "Ein Bild", "Una foto"],
+  ["Up to 8 · carousel", "Bis zu 8 · Karussell", "Hasta 8 · carrusel"], ["Up to 6 · carousel", "Bis zu 6 · Karussell", "Hasta 6 · carrusel"],
+  ["Paste", "Einfügen", "Pegar"], ["A swap, a win, a question…", "Ein Swap, ein Erfolg, eine Frage…", "Un cambio, un logro, una pregunta…"],
+  ["A carousel. Number 1 is the cover.", "Ein Karussell. Nummer 1 ist das Titelbild.", "Un carrusel. La número 1 es la portada."],
+  ["Send to Community", "In die Community schicken", "Enviar a la Comunidad"], ["from", "von", "de"],
+  ["Sending to the Community…", "Wird in die Community geschickt…", "Enviando a la Comunidad…"], ["Sent to the Community chat.", "Im Community-Chat geteilt.", "Compartido en el chat de la Comunidad."],
+  ["Sign in to use the Community chat.", "Melde dich an, um den Community-Chat zu nutzen.", "Inicia sesión para usar el chat de la Comunidad."],
+  ["Look at this in For You", "Schau mal in Für dich", "Mira esto en Para ti"],
   ["Also in the Community chat", "Auch in den Community-Chat", "También en el chat de la Comunidad"],
   ["People swipe through your pictures right in the chat.", "Man wischt im Chat direkt durch deine Bilder.", "Se pasan tus fotos deslizando en el chat."],
   ["Your picture goes to the chat too.", "Dein Bild kommt auch in den Chat.", "Tu foto también va al chat."],

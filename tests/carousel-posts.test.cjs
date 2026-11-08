@@ -80,9 +80,11 @@ test('the feed card: the pictures side by side, the dots above the name, the sma
 
 test('the composer: up to 6 photos picked at once, each with its own remove, the post carries them all', () => {
     const row = fnSrc(html, 'function trPhotosHTML()');
-    assert.match(row, /data-tr="nophoto" data-i="' \+ i \+ '" aria-label="Remove photo"/);
-    assert.match(row, /"Add more photos"/); assert.match(row, /"Add photos"/);
-    assert.match(row, /A carousel: people swipe through your photos\. The first one is the cover\./);
+    /* test changed 8 Nov 2026 (Emmanuel: carousels "So wie bei Instagram und TikTok"): the Photos tile picks the first ones, the strip
+       numbers them and adds more with a + tile; the words go through the app dictionary (new-post-tiktok-1108.test.cjs) */
+    assert.match(row, /data-tr="nophoto" data-i="' \+ i \+ '" aria-label="' \+ esc\(fyT\("Remove photo"\)\)/);
+    assert.match(row, /fyT\("Add more photos"\)/); assert.match(html, /<b>' \+ esc\(fyT\("Photos"\)\)/);
+    assert.match(row, /fyT\("A carousel\. Number 1 is the cover\."\)/);
     assert.match(html, /f\.multiple = carMax\(\) > 1; f\.click\(\);/);
     assert.match(html, /const K = CAR\(\), xs = K \? K\.take\(f\.files, C \? \(C\.photos \|\| \[\]\)\.length : 0\) : \[f\.files\[0\]\];/);
     const pick = fnSrc(html, 'async function trPhotosPick(xs, h)');

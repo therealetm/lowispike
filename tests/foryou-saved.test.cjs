@@ -41,9 +41,11 @@ test('Saved holds every saved post wherever it came from, other members\' too, o
     assert.match(ls, /all\.filter\(p => \(T\.saved \|\| \{\}\)\[p\.id\]\)/, 'only what is saved');
 });
 
-test('the Saved button: shown once something is saved, with its count and a label', () => {
-    assert.equal(load().fySavedBtnHTML(), '', 'nothing saved, no button');
-    assert.equal(load({ T: { posts: [], saved: { a: 1, b: 1 } } }).fySavedBtnHTML(), '<button class="fy-svd" data-tr="list-saved" aria-label="Saved, 2"><svg/><b>2</b></button>');
+/* test changed 8 Nov 2026 (Emmanuel: saved carousels need "einen Ort, wo die das dann halt auch wieder öffnen können"): the button is
+   always there and says Saved; the count comes once something is saved */
+test('the Saved button: always there, with its word, and its count once something is saved', () => {
+    assert.equal(load().fySavedBtnHTML(), '<button class="fy-svd" data-tr="list-saved" aria-label="Saved, 0"><svg/><span>Saved</span></button>', 'nothing saved: still findable');
+    assert.equal(load({ T: { posts: [], saved: { a: 1, b: 1 } } }).fySavedBtnHTML(), '<button class="fy-svd" data-tr="list-saved" aria-label="Saved, 2"><svg/><span>Saved</span><b>2</b></button>');
     assert.match(html, /'<div class="fy-tops"><button class="fy-mine" data-tr="list-mine" aria-label="' \+ esc\(mineLbl\) \+ '">' \+ esc\(mineLbl\) \+ \(mineN \? ' <b>' \+ mineN \+ '<\/b>' : ''\) \+ '<\/button>' \+ fySavedBtnHTML\(\) \+ '<\/div>'/, 'under My posts');
     assert.match(fnSrc(html, 'function fySavedBtnPaint()'), /insertAdjacentHTML\("beforeend", h\)/);
     assert.match(html, /h\.toast\(on \? "Saved\. Find it under the bookmark at the top\." : "Removed from Saved"\);\n      fySavedBtnPaint\(\); break; \}/, 'saving updates the button at once');

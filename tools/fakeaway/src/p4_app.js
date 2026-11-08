@@ -136,7 +136,9 @@ function render() {
     '<div class="days">' + strip + '</div>' +
     '<div class="dayhead"><h2>' + t.daysL[cur.sel] + '</h2><span>' + ppl(st.people) + '</span></div>' +
     '<ul class="tl">' + rows + '</ul>' +
-    '<div class="foot"><span>' + esc(t.med) + '</span><b>' + esc(t.brand) + '</b></div>';
+    '<div class="foot"><span>' + esc(t.med) + '</span><b>' + esc(t.brand) + '</b>' +
+    /* Nov 8 2026: a public page needs the legal notice and the privacy policy one tap away */
+    '<span><a href="https://versteckmich.de/emanwel/impressum" target="_blank" rel="noopener" style="color:inherit">Impressum</a> · <a href="../privacy.html" style="color:inherit">' + (DE() ? 'Datenschutz' : 'Privacy') + '</a></span></div>';
   $('#cta').innerHTML = '<button data-act="shop" data-fid="cta">' + esc(t.shopBtn(eur0(b.total))) + '</button>';
   if (fid) { const el = document.querySelector('[data-fid="' + fid + '"]'); if (el && el !== document.activeElement) el.focus({ preventScroll: true }); }
 }

@@ -238,3 +238,4 @@ html body .r2-ov.hs-ivov .hs-opt.on{border-color:#8fdcff}
  html body .r2-start.hs .hs-scene:not(.sm) .hs-misty:not(.mini){--hs-m:min(28vw,100px)}
  html body .r2-start.hs .hs-scene .hs-bubble{font-size:13.5px;padding:8px 12px;margin-bottom:8px}
 }
+.hs-legal{margin:10px 0 0;font-size:12px;text-align:center;color:var(--r2-mut,rgba(255,255,255,.6))}.hs-legal a{color:inherit;text-decoration:underline}

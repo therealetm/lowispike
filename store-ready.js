@@ -127,6 +127,7 @@
     }
 
     /* ---------- Settings > About & info block ---------- */
+    const IMPRINT = 'https://versteckmich.de/emanwel/impressum';
     function aboutHTML() {
         css();
         const on = get() === 'yes';
@@ -134,7 +135,9 @@
             '<div class="lis-ai"><span>' + esc(T('AI food check (Google Gemini)', 'KI-Essensprüfung (Google Gemini)', 'Revisión con IA (Google Gemini)')) + ': <b>' +
             esc(on ? T('on', 'an', 'activada') : T('off', 'aus', 'desactivada')) + '</b></span>' +
             '<button type="button" data-lis-about="ai">' + esc(on ? T('Turn off', 'Ausschalten', 'Desactivar') : T('Turn on', 'Einschalten', 'Activar')) + '</button></div>' +
-            '<p><button type="button" class="lis-link" data-lis-about="privacy">' + esc(T('Privacy policy', 'Datenschutzerklärung', 'Política de privacidad')) + '</button></p>' +
+            '<p><button type="button" class="lis-link" data-lis-about="privacy">' + esc(T('Privacy policy', 'Datenschutzerklärung', 'Política de privacidad')) + '</button>' +
+            /* Nov 8 2026 (owner: "Alles bezüglich meiner Impressum findest du hier"): the legal notice (§ 5 DDG) one tap away */
+            ' · <a class="lis-link" href="' + IMPRINT + '" target="_blank" rel="noopener">' + esc(T('Legal notice', 'Impressum', 'Aviso legal')) + '</a></p>' +
             '<p>' + esc(T('Help or questions:', 'Hilfe oder Fragen:', 'Ayuda o preguntas:')) + ' <a href="mailto:' + SUPPORT + '?subject=LOWiSPIKE">' + SUPPORT + '</a></p></div>';
     }
     function refreshAbout() {
@@ -156,5 +159,5 @@
     }, true);
 
     W.LowiConsent = { get, set, ask, KEY };
-    W.LowiStore = { openPrivacy, medNote, aboutHTML, SUPPORT, MIN_AGE, native: () => !!W.LIS_NATIVE };
+    W.LowiStore = { IMPRINT, openPrivacy, medNote, aboutHTML, SUPPORT, MIN_AGE, native: () => !!W.LIS_NATIVE };
 })();

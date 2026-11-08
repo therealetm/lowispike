@@ -9028,6 +9028,8 @@ const T = [
   ["New here?", "Neu hier?", "¿Nuevo aquí?"], ["Say hi", "Sag hallo", "Saluda"], ["In For You", "In Für dich", "En Para ti"], ["Only you", "Nur du", "Solo tú"],
   ["Post", "Posten", "Publicar"],
   ["Upload a video", "Video hochladen", "Subir un vídeo"],
+  ["Legal notice", "Impressum", "Aviso legal"],
+  ["Privacy policy", "Datenschutz", "Privacidad"],
   ["Still uploading. Try again in a moment.", "Wird noch hochgeladen. Gleich nochmal versuchen.", "Aún se está subiendo. Inténtalo en un momento."],
   ["Link copied. Paste it in WhatsApp.", "Link kopiert. Einfach in WhatsApp einfügen.", "Enlace copiado. Pégalo en WhatsApp."],
   /* Nov 8 2026 New post tiles, numbered photos, Saved word, For You -> Community */
@@ -9293,6 +9295,7 @@ window.LowiLang = {t:s => (LANG !== "en" && DICT[LANG] && DICT[LANG][s]) || s, /
 .a2-logo{margin:14px 24px 0!important;position:relative;z-index:1}
 .a2-track{flex:1 1 auto;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative;z-index:1;outline:none;overscroll-behavior-x:contain}
 .a2-track::-webkit-scrollbar{display:none}
+.a2-legal{margin-top:6px;font-size:12px;opacity:.7}.a2-legal a{color:inherit;text-decoration:underline}
 .a2-card{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;flex-direction:column;justify-content:center;padding:6px 24px 0;box-sizing:border-box;min-width:0}
 .a2-card h1{font-size:30px!important;line-height:1.1;margin:18px 0 8px!important}
 .a2-card p{font-size:15.5px!important;margin:0!important}
@@ -9435,7 +9438,9 @@ function html(){
     '<div class="a2-dots" role="tablist">' + cs.map((c, i) => '<button type="button" class="a2-dot' + (i === last ? " on" : "") + '" data-a2="dot" data-i="' + i + '" aria-label="' + (i + 1) + '"></button>').join("") + '</div>' +
     '<div class="r2-st-acts a2-acts"><button class="r2-btn pri big" data-r2a="signup">Create account</button>' +
     '<div class="r2-fine a2-free">Free. No card.</div>' +
-    '<button type="button" class="a2-in" data-r2a="signin">I already have an account</button></div>' +
+    '<button type="button" class="a2-in" data-r2a="signin">I already have an account</button>' +
+    /* Nov 8 2026: the legal notice (§ 5 DDG) and the privacy policy on the very first screen, before any sign-up */
+    '<div class="r2-fine a2-legal"><a href="https://versteckmich.de/emanwel/impressum" target="_blank" rel="noopener">Legal notice</a> · <a href="privacy.html" target="_blank" rel="noopener">Privacy policy</a></div></div>' +
     '</div>';
 }
 function paint(t){

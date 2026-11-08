@@ -317,13 +317,17 @@ let st = { lang: null, people: 2, seen: false, checks: {} };
 try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && typeof s === 'object') st = Object.assign(st, s); } catch (e) {}
 if (st.lang !== 'de' && st.lang !== 'en') st.lang = /^de/i.test(navigator.language || 'de') ? 'de' : 'en';
 if (!(st.people >= 1 && st.people <= 6)) st.people = 2;
-const cur0 = { ch: 0 };
+const cur0 = { ch: 0, app: false };
 /* Nov 8 2026 (LOWiSPIKE): opened from the app (?app=1&lang=de&theme=dark), the page speaks the app's language, wears the app's
    Day or Night, and leaves the bottom strip to the app's round close button; a shared link (no app) keeps its own choice */
 try { const q = new URLSearchParams(location.search);
   if (q.get('app') === '1') document.documentElement.classList.add('in-app');
   const ql = q.get('lang'); if ((ql === 'de' || ql === 'en') && q.get('app') === '1') st.lang = ql;
   const th = q.get('theme'); if (th === 'dark' || th === 'light') document.documentElement.setAttribute('data-theme', th);
+  /* Nov 8 2026 (Emmanuel, opening the shared link in a private browser: "nun sieht das nicht mehr so aus, als würde das von derselben
+     App kommen"): a shared link wears the app's own night look, whatever the phone's light setting */
+  else document.documentElement.setAttribute('data-theme', 'dark');
+  if (q.get('app') === '1') cur0.app = true;
   /* Nov 8 2026: opened as the app's Weekly Challenge (?ch=<calendar week>), the wordmark says so */
   const ch = q.get('ch'); if (q.get('app') === '1' && /^\d{1,2}$/.test(ch || '')) cur0.ch = +ch; } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
@@ -531,9 +535,27 @@ function copy() {
 }
 
 /* ---------- sheets ---------- */
+/* Nov 8 2026 (Emmanuel: "wenn man ... klickt ... bei irgendein Rezept oder das mit der Einkaufsliste ... dass das dann ein zur Homepage
+   bringt ... registrieren ... Oder wenn jemand schon einen Account hat, dann ... öffnet er sich halt in dem richtigen ... Sektion"):
+   on a shared link (not inside the app) a recipe or the list opens this card instead: join in the app, which opens the Weekly
+   Challenge right away (#challenge, challenge-week.js) once you are signed in or have signed up. The week itself stays readable. */
+const APP_URL = () => location.pathname.replace(/fakeaway\/(index\.html)?$/, '') + '#challenge';
+function hasAccount() { try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i) || ''; if (/^sb-.*-auth-token$/.test(k) || k === 'lowispike.lang') return true; } } catch (e) { } return false; }
+function renderJoin() {
+  const de = DE(), acc = hasAccount(), el = $('#sheet-j .in');
+  const pts = de ? ['\u{1F680} Start am Montag, mit Haken für jede Mahlzeit', '\u{1F3A7} Jedes Rezept zum Anhören, Schritt für Schritt', '\u{1F6D2} Die Einkaufsliste mit Preisen, zum Abhaken', '\u{1F4B8} Wie viel du im Monat sparst']
+    : ['\u{1F680} Start on Monday, tick every meal', '\u{1F3A7} Every recipe to listen to, step by step', '\u{1F6D2} The shopping list with prices, to tick off', '\u{1F4B8} How much you save a month'];
+  el.innerHTML = '<div class="grab"><button class="x" data-act="close" data-fid="x" aria-label="' + T().close + '">\u00d7</button></div>' +
+    '<div class="join"><div class="bubble md">' + ICONS.leaf + '</div><h2>' + esc(de ? 'Mach die Challenge in der App' : 'Do the challenge in the app') + '</h2>' +
+    '<p>' + esc(de ? 'Rezepte, Einkaufsliste und deine Woche gibt es in LOWiSPIKE. Kostenlos.' : 'Recipes, the shopping list and your week live in LOWiSPIKE. Free.') + '</p>' +
+    '<ul>' + pts.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' +
+    '<a class="btnapp" href="' + esc(APP_URL()) + '" data-fid="join">' + esc(acc ? (de ? 'In der App öffnen' : 'Open in the app') : (de ? 'Kostenlos mitmachen' : 'Join for free')) + '</a>' +
+    (acc ? '' : '<a class="btn2" href="' + esc(APP_URL()) + '">' + esc(de ? 'Ich habe schon ein Konto' : 'I already have an account') + '</a>') + '</div>';
+}
 function openSheet(w) {
+  if (!cur0.app && (w === 'r' || w === 'l')) w = 'j';
   cur.sheet = w; cur.last = document.activeElement;
-  if (w === 'r') renderRecipe(); else renderList();
+  if (w === 'r') renderRecipe(); else if (w === 'j') renderJoin(); else renderList();
   const el = $('#sheet-' + w); el.inert = false; el.setAttribute('aria-hidden', 'false'); el.classList.add('on');
   el.querySelector('.in').scrollTop = 0; $('#veil').classList.add('on'); document.body.style.overflow = 'hidden';
   const x = el.querySelector('.x'); if (x) x.focus({ preventScroll: true });

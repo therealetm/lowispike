@@ -267,5 +267,34 @@
   });
   D.addEventListener('keydown', e => { if (e.key === 'Escape' && sheet && pane && pane.isConnected) { sheet = ''; paint(true); } });
 
-  W.LowiChallenge = { mount, unmount, paint, html, startFor, phase, slotOf, rowsOf, kcalOf, kcalWeek, savedPerMonth, EXTRAS, isoWeek, ymd, KEY };
+  /* Nov 8 2026 (Emmanuel: a tap on a recipe or the list on the shared page should bring people into the app, "registrieren ... Oder
+     wenn jemand schon einen Account hat, dann ... öffnet er sich halt in dem richtigen ... Sektion"): the shared page links to
+     <app>#challenge. The wish is kept (PEND) until it can be done: after sign-up or sign-in (the start screen #r2gate is gone), open
+     Community > Circle > Challenge. It is tried for a while and again on the next app start, then dropped after a day. */
+  const PEND = 'lowi.challenge.open';
+  function wantOpen() { try { const t = +localStorage.getItem(PEND) || 0; return t && Date.now() - t < DAY ? t : 0; } catch (e) { return 0; } }
+  function tryOpen() {
+    if (!wantOpen()) return true;
+    if (D.getElementById('r2gate') || H.classList.contains('gate-boot')) return false;
+    const G = W.LowiCircleGames, R = W.LowiRoomsUI; if (!G || !R || typeof W.goTab !== 'function') return false;
+    try {
+      if (!G.circleOn()) { W.goTab('foryou'); if (R.setTab) R.setTab(false); return false; }
+      G.select('challenge');
+      if (D.getElementById('cwkPane')) { try { localStorage.removeItem(PEND); } catch (e) { } return true; }
+    } catch (e) { }
+    return false;
+  }
+  function deepLink() {
+    if (/^#challenge\b/.test(location.hash || '')) {
+      try { localStorage.setItem(PEND, String(Date.now())); history.replaceState(history.state, '', location.pathname + location.search); } catch (e) { }
+    }
+    if (!wantOpen()) { try { localStorage.removeItem(PEND); } catch (e) { } return; }
+    let n = 0; const t = setInterval(() => { if (tryOpen() || ++n > 400) clearInterval(t); }, 1500);
+  }
+  if (W.location && W.addEventListener) {
+    if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', () => setTimeout(deepLink, 1200)); else setTimeout(deepLink, 1200);
+  }
+  if (W.addEventListener) W.addEventListener('hashchange', () => { if (/^#challenge\b/.test(location.hash || '')) deepLink(); });
+
+  W.LowiChallenge = { tryOpen, PEND, mount, unmount, paint, html, startFor, phase, slotOf, rowsOf, kcalOf, kcalWeek, savedPerMonth, EXTRAS, isoWeek, ymd, KEY };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

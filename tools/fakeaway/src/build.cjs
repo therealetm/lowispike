@@ -6,10 +6,11 @@ const body = `
 <div class="veil" id="veil"></div>
 <section class="sheet" id="sheet-r" aria-hidden="true" role="dialog" aria-modal="true"><div class="in"></div></section>
 <section class="sheet" id="sheet-l" aria-hidden="true" role="dialog" aria-modal="true"><div class="in"></div></section>
+<section class="sheet" id="sheet-j" aria-hidden="true" role="dialog" aria-modal="true"><div class="in"></div></section>
 <div class="toast" id="toast" role="status"></div>
 <noscript>JavaScript is needed.</noscript>
 <script>
-document.getElementById('sheet-r').inert = true; document.getElementById('sheet-l').inert = true;
+document.getElementById('sheet-r').inert = true; document.getElementById('sheet-l').inert = true; document.getElementById('sheet-j').inert = true;
 ${r('data.js')}
 ${r('p2_icons.js')}
 ${r('p3_text.js')}

@@ -54,3 +54,12 @@ test('Back instead of closing everything', () => {
   assert.match(bc, /\(z === topZ && \(kindOf\(el\) === 'back' \|\| !top \|\| kindOf\(top\) !== 'back'\)\)/);
   assert.match(html, /if \(v === "edit"\) \{ if \(typeof TAB !== "undefined" && TAB === "profile"\) \{ openEdit\(\); return; \}/);
 });
+
+/* Nov 8 2026 crawl (Chromium, German, every visible button on Home, Kochen, Community, Profile, and two levels deep on Profile; 0 JS
+   errors): two English example chips under "Etwas anderes gegessen?" and the "you" tag next to your own name were not translated */
+test('crawl finds: example chips and the "you" tag are German', () => {
+  const html = read('index.html');
+  assert.ok(html.includes('["Döner with fries", "Döner mit Pommes", "Kebab con patatas"]'));
+  assert.ok(html.includes('["cola zero", "Cola Zero", "Coca-Cola Zero"]'));
+  assert.ok(html.includes('["you", "du", "tú"]'));
+});

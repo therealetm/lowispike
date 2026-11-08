@@ -70,7 +70,8 @@ test('the short link: about 80 characters, and it opens the same pictures', () =
    the post may be deleted. Browser check: card opens, Link kopieren -> "Kopiert"; a link whose pictures answer 400 -> the message. */
 test('the share card and the missing-picture message', () => {
   const sh = read('share-sheet.js'), html = read('index.html'), page = read('post/index.html');
-  assert.match(html, /if \(window\.LowiShareSheet\) \{ LowiShareSheet\.open\(\{url, title, text:title\}\); return; \}/);
+  /* test changed 8 Nov 2026 night: the card also gets the story picture data (story-card-1108.test.cjs) */
+  assert.match(html, /if \(window\.LowiShareSheet\) \{ LowiShareSheet\.open\(\{url, title, text:title, story:/);
   assert.match(sh, /href="https:\/\/wa\.me\/\?text=' \+ encodeURIComponent\(text\) \+ '"/);
   assert.match(sh, /navigator\.clipboard\.writeText\(cur\.url\)\.then\(ok, manual\)/);
   assert.match(sh, /D\.execCommand\('copy'\)/);

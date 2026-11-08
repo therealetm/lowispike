@@ -29,6 +29,8 @@
       '<a class="shs-wa" href="https://wa.me/?text=' + encodeURIComponent(text) + '" target="_blank" rel="noopener">' +
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.1-4.7-4.1-4.9-4.3-.1-.2-1.2-1.6-1.2-3s.8-2.2 1-2.5c.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.3 0 .5l-.3.5-.4.5c-.1.1-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .9 1.8 1.1 2.1 1.3.3.1.4.1.6-.1l.8-1c.2-.3.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.7-.2 1.3z"/></svg>WhatsApp</a>' +
       '<button type="button" class="shs-copy">' + L('Copy link', 'Link kopieren') + '</button>' +
+      /* Nov 8 2026 (roadmap 1): the post as a ready story picture, and its description with hashtags (story-card.js) */
+      (cur.story && W.LowiStoryCard ? '<div class="shs-row"><button type="button" class="shs-story">' + L('Save as story', 'Als Story speichern') + '</button><button type="button" class="shs-desc">' + L('Copy description', 'Beschreibung kopieren') + '</button></div>' : '') +
       (navigator.share ? '<button type="button" class="shs-more">' + L('More…', 'Mehr…') + '</button>' : '') +
       '<p class="shs-msg" role="status"></p></div>';
     D.body.appendChild(ov);
@@ -37,6 +39,17 @@
     if (!ov) return; const t = e.target; if (!t || !t.closest) return;
     if (t === ov || t.closest('.shs-x')) { close(); return; }
     if (t.closest('.shs-copy')) { copy(); return; }
+    if (t.closest('.shs-story') && cur && cur.story) {
+      const b = t.closest('.shs-story'), st = cur.story; b.disabled = true; say(L('Making your story picture…', 'Dein Story-Bild wird gemacht…'));
+      W.LowiStoryCard.save(Object.assign({ lang: L('en', 'de') }, st)).then(r => { b.disabled = false;
+        say(r === 'fail' ? L('Could not make the picture.', 'Das Bild konnte nicht gemacht werden.') : r === 'cancel' ? '' : L('Done. Post it in your story.', 'Fertig. Jetzt in deiner Story posten.')); });
+      return;
+    }
+    if (t.closest('.shs-desc') && cur && cur.story) {
+      const txt = W.LowiStoryCard.caption(Object.assign({ url: cur.url }, cur.story), L('en', 'de'));
+      try { navigator.clipboard.writeText(txt).then(() => say(L('Description copied.', 'Beschreibung kopiert.')), () => say(txt)); } catch (er) { say(txt); }
+      return;
+    }
     if (t.closest('.shs-more') && cur) { navigator.share({ title: cur.title || 'LOWiSPIKE', text: cur.text || '', url: cur.url }).catch(() => { }); return; }
     if (t.closest('.shs-url')) { try { t.select(); } catch (er) { } }
   });

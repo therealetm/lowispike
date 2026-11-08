@@ -17909,7 +17909,9 @@ function onClick(e){
   if (v === "board") { if (window.LowiR3F && LowiR3F.openBoardTab) { LowiR3F.openBoardTab(); return; } openBoard(); return; }
   if (v === "showweight") { toggleWeight(); const ov = b.closest(".r2-ov"); if (ov) { const S_ = R2.S(); b.classList.toggle("on", !!(S_.user.showWeight && S_.health && S_.health.weight)); } return; }
   if (v === "share") { share(b.getAttribute("data-uid"), b.getAttribute("data-who")); return; }
-  if (v === "edit") { R2.closeAll(); setTimeout(openEdit, 250); return; }
+  /* Nov 8 2026 (Emmanuel: "so many pages don't have a back button. You just click on X and then ... you have to start again"): on
+     Profile, Edit opens on top of this card, so its bottom button goes back to the card; elsewhere it still goes to Profile first */
+  if (v === "edit") { if (typeof TAB !== "undefined" && TAB === "profile") { openEdit(); return; } R2.closeAll(); setTimeout(openEdit, 250); return; }
   if (v === "dm") { const n = b.getAttribute("data-who"); R2.closeAll(); setTimeout(() => dm(n), 250); return; }
   if (v === "post") { const id = b.getAttribute("data-id"); R2.closeAll(); setTimeout(() => openPost(id), 250); return; }
 }

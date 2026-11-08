@@ -32,6 +32,7 @@
     }
     const ICO = {
         x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+        back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
         out: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="8.6" stroke-dasharray="2.4 2.6"/><path d="M3 3l3.2 3.2M21 3l-3.2 3.2M3 21l3.2-3.2M21 21l-3.2-3.2"/></svg>',
         inn: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M4 4l4 4M20 4l-4 4M4 20l4-4M20 20l-4-4M8 4.6V8H4.6M16 4.6V8h3.4M8 19.4V16H4.6M16 19.4V16h3.4"/></svg>',
         vr: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16a2 2 0 0 1 2 2v5a2.5 2.5 0 0 1-2.5 2.5h-3.3l-2-2.4a2.8 2.8 0 0 0-4.4 0l-2 2.4H4.5A2.5 2.5 0 0 1 2 15v-5a2 2 0 0 1 2-2z"/><circle cx="7.5" cy="12.4" r="1.5"/><circle cx="16.5" cy="12.4" r="1.5"/></svg>',
@@ -330,7 +331,9 @@
         if (topHost()) { try { W.LowiHost.closeSheet(); } catch (e) { const w = topHost(); w && w.click(); } setTimeout(syncX, 30); return true; }
         const r = topR2();
         if (r) {
-            try { W.LowiR2.close(r); } catch (e) { const b = r.querySelector('.r2-x'); b && b.click(); }
+            /* Nov 8 2026 (Emmanuel: "so many pages don't have a back button. You just click on X and then ... you have to start again"):
+               a sheet opened on top of another goes back to it (R2.back unparks the one under it); a single sheet just closes */
+            try { if (r.querySelector && r.querySelector('.r2-pback') && W.LowiR2.back) W.LowiR2.back(r); else W.LowiR2.close(r); } catch (e) { const b = r.querySelector('.r2-x'); b && b.click(); }
             /* the close spring runs on animation frames; if the device is busy and it stalls, the closed sheet must not linger over the world */
             setTimeout(() => { if (r.isConnected && r.classList.contains('off')) r.remove(); syncX(); }, 900);
             setTimeout(syncX, 30); return true;
@@ -358,6 +361,11 @@
         H.classList.toggle('wh-x-on', on);
         H.classList.toggle('wh-r2-on', !!r);
         if (r) glassSheet(r);
+        /* Nov 8 2026: with a sheet under the top one, this round button is Back (arrow), else Close (X) */
+        try {
+            const back = !!(r && r.querySelector && r.querySelector('.r2-pback')), lab = back ? T('Back', 'Zurück', 'Atrás') : T('Close', 'Schließen', 'Cerrar');
+            if (x.getAttribute('aria-label') !== lab) { x.setAttribute('aria-label', lab); x.innerHTML = back ? ICO.back : ICO.x; x.classList.toggle('wh-x-back', back); }
+        } catch (e) { }
         /* Oct 24 back & close sweep: a few R2 sheets sit far above this X's z-index 300 (Send energy's care sheet is 99995, so it
            opens over the person card). Their own X is hidden here (wh-r2-on), so the one X sat under that sheet's scrim: dimmed, and
            a tap on it landed on the scrim. Lift the X one above the sheet it closes; back to the stylesheet's 300 otherwise. */

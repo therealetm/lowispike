@@ -15,7 +15,10 @@
     const CLOSE_ANY = /(^|\s)(close|schlie(ß|ss)en|cerrar)\b/i;
     const BACK_RE = /^\s*(back|zur(ü|u)ck|atr(á|a)s|volver)\b/i;
     /* close / back controls known by class (some carry no label); per-item remove buttons (a snack, a photo, a list row) never match */
-    const KNOWN = '#secX,.sec-x,.gv-x,.stp-close,.kg-back,.kg-qx,.sh-back,.hs-back,.hs-x,.ss2-back,.ss2-page-x,.r5-sback,.f2-back,.f2-x,.gb-x,.bs-close,.ap-close,.sz-close,.tmg-close,.cf-back,.cf-x,.cf-aura-close,.rm-back,.rm-x,.r2-back,.r2-x,.cr-back,.cr-x,.a1-back,.a1-x,.mv-back,.nm-back,.yd-back,.g1-back,.wb-back,.bw3-x,.ck-out-x,.ltp-x,.hq-x,.e1-x,.ec-x,.fai-x,.pd-x,.mp-x,.ig-x,.cs-x,.dr-x,.r3a-x,[data-close],[data-bx]';
+    /* Nov 8 2026 (Emmanuel: "so many pages don't have a back button. You just click on X and then ... you have to start again"): a
+       sheet opened on top of another has its Back (.r2-pback, R2's stack); it comes later in the sheet than the X, so the round
+       bottom button takes Back, not the X. */
+    const KNOWN = '.r2-pback,#secX,.sec-x,.gv-x,.stp-close,.kg-back,.kg-qx,.sh-back,.hs-back,.hs-x,.ss2-back,.ss2-page-x,.r5-sback,.f2-back,.f2-x,.gb-x,.bs-close,.ap-close,.sz-close,.tmg-close,.cf-back,.cf-x,.cf-aura-close,.rm-back,.rm-x,.r2-back,.r2-x,.cr-back,.cr-x,.a1-back,.a1-x,.mv-back,.nm-back,.yd-back,.g1-back,.wb-back,.bw3-x,.ck-out-x,.ltp-x,.hq-x,.e1-x,.ec-x,.fai-x,.pd-x,.mp-x,.ig-x,.cs-x,.dr-x,.r3a-x,[data-close],[data-bx]';
     const NEVER = '.cs-mic-card .cs-photo-x,#n1B *,.stp-snack-x,.mr-add-x,.cg-photo-x,.rk-lad-x,.lw-bx,[data-no-bx],#ltTour *,.lt-tour *';
     const SRC = 'lw-bx-src';
     const obs = [];
@@ -78,7 +81,8 @@
             hide.push(el);
             /* the page's own back (#secX) is the floor: a sheet, a zoomed shelf or an overlay on that page closes first */
             const z = el.matches('#secX,.sec-x') ? -1 : layerZ(el);
-            if (z >= topZ) { top = el; topZ = z; }
+            /* same layer: a Back wins over an X (Nov 8 2026, one step back instead of closing everything) */
+            if (z > topZ || (z === topZ && (kindOf(el) === 'back' || !top || kindOf(top) !== 'back'))) { top = el; topZ = z; }
         }
         return { top, hide };
     }

@@ -1508,3 +1508,8 @@ Live 20261027-004442: a saved profile whose list or object field was null (healt
 ## 8 Nov 2026 night: Nibblo's cards in the new For You order; the tour drops the removed week planner
 - Nibblo's swap cards: picture whole on top, Speichern / Teilen row under it, then the swap card (scrolls inside if long). Nothing on the picture.
 - The tour card "Meine Woche planen" (new-week-shop) is removed with the planner. Changed and marked: shop-calm, week-basket.
+
+## 8 Nov 2026 night: one step back instead of closing everything
+**Found (Emmanuel: "so many pages don't have a back button. You just click on X and then it just takes [you out], and you have to start again").** On the Home-world pages (Profile and the others), every sheet's own X is hidden and one round button (#whX) closes the top sheet. It used R2.close, which also closes the sheets parked under it, so from a sheet opened on top of another the button closed both. Now: with a sheet under it, the button shows an arrow, says Zurück and goes one step back (R2.back); a single sheet still closes. Profile > So sehen dich andere > Profil bearbeiten opens on top of the card instead of replacing it. Bottom-close: R2's Back counts as a back control and wins over an X on the same layer.
+**Checks:** `tests/night-fixes-1108.test.cjs` (one test added). Chromium crawl: Profil bearbeiten -> Zurück -> the card; card -> Schließen.
+**Not done:** a full crawl of every page (only the Profile rows were crawled); other flows that close one sheet and open the next (Chat, DM, Post from a member card) still go to the new place on purpose.

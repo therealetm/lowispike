@@ -42,3 +42,15 @@ test('Nibblo cards: picture whole, actions and card under it', () => {
   assert.match(css, /#fyFeed \.fy-slide\.fyb-slide \.fy-meta\{top:calc\(100% - var\(--fyp\) \+ 58px\);/);
   assert.match(css, /#fyFeed \.fy-slide\.fyb-slide \.fy-shade\{display:none\}/);
 });
+
+/* Emmanuel: "so many pages don't have a back button. You just click on X and then it just takes [you out], and you have to start
+   again". Browser check (Profile > So sehen dich andere > Profil bearbeiten): the round button says Zurück with an arrow and returns
+   to the card; on the card alone it says Schließen. */
+test('Back instead of closing everything', () => {
+  const wh = read('world-home.js'), bc = read('bottom-close.js'), html = read('index.html');
+  assert.match(wh, /if \(r\.querySelector && r\.querySelector\('\.r2-pback'\) && W\.LowiR2\.back\) W\.LowiR2\.back\(r\); else W\.LowiR2\.close\(r\);/);
+  assert.match(wh, /lab = back \? T\('Back', 'Zurück', 'Atrás'\) : T\('Close', 'Schließen', 'Cerrar'\)/);
+  assert.match(bc, /const KNOWN = '\.r2-pback,#secX,/);
+  assert.match(bc, /\(z === topZ && \(kindOf\(el\) === 'back' \|\| !top \|\| kindOf\(top\) !== 'back'\)\)/);
+  assert.match(html, /if \(v === "edit"\) \{ if \(typeof TAB !== "undefined" && TAB === "profile"\) \{ openEdit\(\); return; \}/);
+});

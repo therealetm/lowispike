@@ -41,7 +41,8 @@ test('a resized canvas is drawn again in the same refresh, never left wiped', ()
 });
 
 test('no sharpness change (canvas resize) while a world transition runs', () => {
-  assert.match(scene, /if \(inTransit\(\)\) \{ lowFor = 0; hiFor = 0; \}\s*else if \(avg > 1 \/ 38 && dpr > dprFloor\)/);
+  /* test changed 8 Nov 2026 (Emmanuel: zooming in the galaxy crashes): also no sharpness change in the 1.5 s after a pinch or zoom */
+  assert.match(scene, /if \(inTransit\(\) \|\| \(rig\.zoomAt && now - rig\.zoomAt < 1500\)\) \{ lowFor = 0; hiFor = 0; \}\s*else if \(avg > 1 \/ 38 && dpr > dprFloor\)/);
 });
 
 test('transition detection: world moves, Misty transit, and 2 s around crossing into the spirit world', () => {

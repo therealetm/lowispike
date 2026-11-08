@@ -15,3 +15,22 @@ test('Dark is on from the first paint when Dark is saved', () => {
 test('carousel dots sit on the picture edge, not under the share button', () => {
   assert.match(read('foryou-rail.css'), /\.fy-meta \.fy-car-dots\{position:absolute;top:-82px;left:50%;right:auto;transform:translateX\(-50%\);/);
 });
+
+/* Emmanuel: "the galaxy ... rauszoomen, reinzoomen ... das stürzt ab". The 3D world no longer re-allocates its canvas during and right
+   after a pinch, and stays at the floor sharpness out in the cosmos (less graphics memory on iPhone). */
+test('no canvas re-allocation while zooming; floor sharpness in the cosmos', () => {
+  const sc = read('body-world-3d-scene.js');
+  assert.match(sc, /function zoom\(f, sx, sy\) \{\n\s+rig\.zoomAt = performance\.now\(\);[^\n]*\n\s+if \(!\(f > 0\) \|\| !isFinite\(f\)\) return;/);
+  assert.match(sc, /const top = rig\.dist > rig\.maxD \* 1\.2 \? dprFloor : topNow\(\);/);
+});
+
+/* "füge mal so Vibrationen hinzu ... in the appropriate spot": a 10 ms tick (Android) or the iOS 18 switch tick on tabs, main actions,
+   switches, Speichern / Teilen; lowi.haptics = '0' turns it off. */
+test('haptics: where, how, and off', () => {
+  const h = read('haptics.js');
+  assert.match(h, /navigator\.vibrate\(10\)/);
+  assert.match(h, /inp\.setAttribute\('switch', ''\)/);
+  assert.match(h, /getItem\('lowi\.haptics'\) === '0'/);
+  assert.match(h, /if \(!t \|\| !t\.closest \|\| !e\.isTrusted\) return;/, 'its own label click never loops');
+  assert.ok(read('sw.js').includes('"share-sheet.js", "haptics.js"'));
+});

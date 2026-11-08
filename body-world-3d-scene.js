@@ -264,6 +264,8 @@ export function createWorld(THREE, canvas, opts) {
     function release(vx, vy) { rig.vy = -vx * 0.0062 * 16; rig.vp = vy * 0.005 * 16; }
     const zv = new THREE.Vector3(), zp = new THREE.Vector3(), PLACE_MIN = 0.75;
     function zoom(f, sx, sy) {
+        rig.zoomAt = performance.now(); /* Nov 8 2026: see the sharpness rule below */
+        if (!(f > 0) || !isFinite(f)) return;
         /* past the World Map (Home only, while rig.outer is on): the same pinch keeps going, like Google Earth, and moves faster the
            farther out it is, so the spirit world is one or two pinches away and not twenty */
         if (rig.mode === 'home' && rig.outer && (rig.dist >= rig.maxD * 0.999 && f > 1 || rig.dist > rig.maxD)) {
@@ -854,14 +856,18 @@ export function createWorld(THREE, canvas, opts) {
             /* Oct 17 (E-man, flat blue screen while leaving a world): a sharpness change resizes the canvas, which wipes the picture.
                Never during a world transition (the heaviest frames, so the likeliest moment for it), and when it happens the picture
                is drawn again in the same screen refresh (paintNow), never left blank for a skipped one. */
-            if (inTransit()) { lowFor = 0; hiFor = 0; }
+            /* Nov 8 2026 (Emmanuel: "das Bewegen durch die Mappe bei der Galaxie ... rauszoomen, reinzoomen ... das stürzt ab"): every
+               sharpness step re-allocates the whole canvas; during a pinch the frames are slow, so steps came one after another while the
+               cosmos was being built, and an iPhone that runs out of graphics memory reloads the page. No sharpness change while a pinch
+               or zoom happened in the last 1.5 s, and out in the cosmos (past the World Map) the canvas stays at the floor sharpness. */
+            if (inTransit() || (rig.zoomAt && now - rig.zoomAt < 1500)) { lowFor = 0; hiFor = 0; }
             else if (avg > 1 / 38 && dpr > dprFloor) { lowFor += dt; hiFor = 0; if (lowFor > 2) { dprDropAt = now; dpr = Math.max(dprFloor, dpr - 0.25); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); paintNow = true; lowFor = 0; frames = []; } }
             else if (avg < 1 / 50 && dpr < topNow() && now - dprDropAt > 20000) { lowFor = 0; hiFor += dt; if (hiFor > 4) { dpr = Math.min(dprTop, dpr + 0.25); dpr = Math.min(dpr, topNow()); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); paintNow = true; hiFor = 0; frames = []; } }
             else { lowFor = 0; hiFor = 0; }
         }
         /* Oct 25: battery saver (Low Power Mode or a hot phone, power-saver.js) draws the world at most 1.5x sharp; back to full when it ends */
-        if (!inTransit()) {
-            const top = topNow();
+        if (!inTransit() && !(rig.zoomAt && now - rig.zoomAt < 1500)) {
+            const top = rig.dist > rig.maxD * 1.2 ? dprFloor : topNow();
             if (dpr > top + 0.01) { dpr = top; renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); paintNow = true; frames = []; dprDropAt = now; }
         }
         /* Oct 16 speed pass (E-man: the newest iPhone overheats): nobody touching, no camera flight, no Community warp, no gyro swing,

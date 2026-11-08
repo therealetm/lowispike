@@ -34,3 +34,11 @@ test('haptics: where, how, and off', () => {
   assert.match(h, /if \(!t \|\| !t\.closest \|\| !e\.isTrusted\) return;/, 'its own label click never loops');
   assert.ok(read('sw.js').includes('"share-sheet.js", "haptics.js"'));
 });
+
+/* Nibblo's swap cards in the same order as member posts: the picture whole on top, actions, then the card (nothing on the picture) */
+test('Nibblo cards: picture whole, actions and card under it', () => {
+  const css = read('foryou-rail.css');
+  assert.match(css, /#fyFeed \.fy-slide\.fyb-slide>img\.fy-bg\{object-fit:contain!important\}/);
+  assert.match(css, /#fyFeed \.fy-slide\.fyb-slide \.fy-meta\{top:calc\(100% - var\(--fyp\) \+ 58px\);/);
+  assert.match(css, /#fyFeed \.fy-slide\.fyb-slide \.fy-shade\{display:none\}/);
+});

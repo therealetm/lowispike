@@ -65,9 +65,12 @@ test('swipe down on the From home title closes Shop: the title is a drag zone an
   assert.match(css, /\.stp-card \.wb-inline > \.wb-head h3 > span, \.stp-titlerow h3 > span \{ display: inline; \}/);
 });
 
-test('the tour step for Plan my week points at its row in Supermarkt and says where it is', () => {
+/* test changed 8 Nov 2026 (Emmanuel: "Dieses meine Woche, ich schmeiß das komplett raus"): the planner and its tour card are gone,
+   so the tour must not point at it any more */
+test('the tour has no card for the removed week planner', () => {
   const step = require('../tutorial-steps.js').STEPS.find(s => s.id === 'new-week-shop');
-  assert.equal(step.target[0], '.stp-card .stp-plan');
+  assert.equal(step, undefined);
+  return;
   /* Nov 5 2026: tour cards are whole spoken sentences (tests/tutorial-sentences.test.cjs), up to 200 characters */
   assert.match(step.text.en, /In the Supermarket, tap Plan my week/);
   assert.match(step.text.de, /Tipp im Supermarkt auf Meine Woche planen/);

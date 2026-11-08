@@ -87,3 +87,15 @@ html[data-ui=light] .fy-slide .fy-act>span{background:none;padding:0}
 .shs-row{display:flex;gap:8px}
 .shs-story,.shs-desc{flex:1;min-height:46px;border-radius:999px;font-size:14.5px;font-weight:800;border:1px solid rgba(143,231,255,.45);background:rgba(143,231,255,.12);color:#fff}
 .shs-story[disabled]{opacity:.6}
+
+/* Nov 8 2026 night: Nibblo's swap cards in the same order (picture whole on top, actions, then the card), no text on the picture */
+#fyFeed .fy-slide.fyb-slide{--fyp:min(330px,52%);background:#05070c}
+#fyFeed .fy-slide.fyb-slide>.fy-bg{top:0!important;bottom:auto!important;height:calc(100% - var(--fyp))!important;background:#000}
+#fyFeed .fy-slide.fyb-slide>img.fy-bg{object-fit:contain!important}
+#fyFeed .fy-slide.fyb-slide .fy-shade{display:none}
+#fyFeed .fy-slide.fyb-slide .fy-rail{top:calc(100% - var(--fyp) + 8px);bottom:auto!important;left:10px;right:10px;flex-direction:row;align-items:center;gap:6px}
+#fyFeed .fy-slide.fyb-slide .fy-rail .fy-act{min-width:0;flex-direction:row;gap:0}
+#fyFeed .fy-slide.fyb-slide .fy-rail .fy-act>span{display:none}
+#fyFeed .fy-slide.fyb-slide .fy-rail .fy-act svg{width:40px;height:40px;padding:9px}
+#fyFeed .fy-slide.fyb-slide .fy-meta{top:calc(100% - var(--fyp) + 58px);bottom:6px!important;left:12px;right:12px;overflow-y:auto;overscroll-behavior:contain;text-shadow:none;scrollbar-width:none}
+#fyFeed .fy-slide.fyb-slide .fy-meta::-webkit-scrollbar{display:none}

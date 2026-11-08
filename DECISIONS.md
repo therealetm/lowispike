@@ -1504,3 +1504,7 @@ Live 20261027-004442: a saved profile whose list or object field was null (healt
 ## 8 Nov 2026 night: "Als Story speichern" and "Beschreibung kopieren" (roadmap item 1)
 **Decision applied (Emmanuel: "we even give them an option to save it so that they can now post it on, for example, Instagram or TikTok. And everything's already done ... an automatic description ... that they could copy"; "Mach bitte alles fertig, wofür du mich nicht brauchst").** The share card has two more buttons: Als Story speichern makes a 1080 x 1920 picture on the phone (the post's picture whole in a glass frame, the name, up to three lines of caption, "gemacht mit LOWiSPIKE") and gives it to the phone's share sheet as a file (Instagram, TikTok, Fotos) or downloads it; Beschreibung kopieren copies the caption, hashtags and the link. Nothing is uploaded (`story-card.js`).
 **Checks:** `tests/story-card-1108.test.cjs` (new); changed and marked: post-share-link. Chromium: story picture drawn from a 3-picture post.
+
+## 8 Nov 2026 night: Nibblo's cards in the new For You order; the tour drops the removed week planner
+- Nibblo's swap cards: picture whole on top, Speichern / Teilen row under it, then the swap card (scrolls inside if long). Nothing on the picture.
+- The tour card "Meine Woche planen" (new-week-shop) is removed with the planner. Changed and marked: shop-calm, week-basket.

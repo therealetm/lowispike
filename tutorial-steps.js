@@ -283,16 +283,8 @@
                 es: 'Mientras bajas por el súper, toca el signo más en cualquier producto y va a tu carrito. Si ya lo tienes en casa, toca la casita.'
             }
         },
-        {
-            id: 'new-week-shop', area: 'new', where: 'home', open: 'supermarket', target: ['.stp-card .stp-plan', '.stp-card'], covers: ['week-shop'],
-            info: 'Nov 5 2026 (Phase B item 3): the Zu Hause tab is Supermarkt > Plan my week now; the spotlight points at that row. Oct 27 2026: Shop from home is its own Shop tab now (Zu Hause / From home / Desde casa), right next to Supermarket; the spotlight points at that tab (Emmanuel: "Vielleicht möchte Von zu Hause einkaufen seine eigene Sektion haben"). Oct 26 2026: Shop from home at the top of Supermarket (week-basket.js, MAYA-HANDOFF 0.21). Household, budget and dinners in, a week of low-spike dinners and one grocery list out, priced with the existing store estimates; it fills the Cart (0.22).',
-            title: { en: 'Plan my week', de: 'Meine Woche planen', es: 'Planear mi semana' },
-            text: {
-                en: 'In the Supermarket, tap Plan my week. Pick the people, your budget and the dinners. You get a low-spike week with estimated prices, and then you fill your Cart.',
-                de: 'Tipp im Supermarkt auf Meine Woche planen. Wähl Personen, Budget und Abendessen. Du bekommst eine Low-Spike-Woche mit geschätzten Preisen und legst alles in den Warenkorb.',
-                es: 'En el súper, toca Planear mi semana. Elige personas, presupuesto y cenas. Recibes una semana low-spike con precios estimados y lo pasas todo al carrito.'
-            }
-        },
+        /* Nov 8 2026: the 'new-week-shop' card (Meine Woche planen) went with the week planner itself (Emmanuel: "Dieses meine Woche,
+           ich schmeiß das komplett raus"); the tour no longer points at a row that does not exist. */
         {
             id: 'new-one-scanner', area: 'new', where: 'home', target: ['#whHud .o8-scan'], covers: ['scan'],
             title: { en: 'One scanner everywhere', de: 'Ein Scanner überall', es: 'Un solo escáner en todas partes' },

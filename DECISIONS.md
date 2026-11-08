@@ -1464,3 +1464,10 @@ Live 20261027-004442: a saved profile whose list or object field was null (healt
 - On the shared page the week stays readable; a recipe or the shopping list opens one card: "Mach die Challenge in der App", four short points with pictures, "Kostenlos mitmachen" and "Ich habe schon ein Konto" ("In der App öffnen" when this browser already used the app). Both go to the app with #challenge.
 - The app keeps that wish (`lowi.challenge.open`, one day): signed in it opens Community > Circle > Challenge right away; on the start screen it waits and opens the Challenge after sign-up or sign-in.
 **Checks:** `tests/challenge-share-join.test.cjs` (new). Chromium: shared page in a light-mode browser is dark; recipe and list open the join card (href /lowispike/#challenge on the live site); app with #challenge and an account -> Challenge open, hash removed; without an account the start screen shows and the wish is kept.
+
+## 8 Nov 2026: Teilen on For You posts makes a WhatsApp link (no Community forward)
+**Decision applied (Emmanuel, 8 Nov: "the share button ... sends it to the community. That's unnecessary ... I should be able to send it, copy it, and then send that directly to someone on WhatsApp so they can see it, open it, scroll through it").**
+- The rail button is Teilen again (this replaces the 28 Oct "no Share" rule for this one button; Like and Comment stay gone). It opens the phone's share sheet (WhatsApp, Messages ...) with a link, or copies it.
+- The link is post/#d=...: the post's pictures (up to 8) or video and caption travel inside the link (`post-link-core.js`), so post/ needs no account, no server and no database change. It shows the carousel full size with swipe, dots and 1/8, the name and caption, and "In LOWiSPIKE öffnen". Only pictures from the app's own media storage are shown; the caption is plain text.
+- A post still uploading says so; Nibblo's posts link to the app.
+**Checks:** `tests/post-share-link.test.cjs` (new); changed and marked: foryou-no-social-rail, tiktok-foryou, new-post-tiktok-1108. Chromium: a 3-picture link -> post/ shows 3 pictures, swipe 1/3 -> 2/3.

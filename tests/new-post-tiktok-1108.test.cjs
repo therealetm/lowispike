@@ -39,9 +39,11 @@ test('Saved is always on the feed with its word', () => {
   assert.match(html, /'<span>' \+ esc\(fyT\("Saved"\)\) \+ '<\/span>' \+ \(n \? '<b>' \+ n \+ '<\/b>' : ''\)/);
 });
 
-test('every For You post (members and the bot) has a Chat button that forwards it', () => {
-  assert.match(html, /'<button class="fy-act fy-tochat" data-tr="to-chat" data-id="' \+ p\.id \+ '"/);
-  assert.match(html, /toChat: window\.LowiCommunity \?/);
+/* test changed 8 Nov 2026 (Emmanuel: the Community forward is "unnecessary"; Teilen sends a link instead, post-share-link.test.cjs).
+   The forward code stays for old buttons; the rail button is now Teilen. */
+test('every For You post (members and the bot) has a share button; the old forward still works', () => {
+  assert.match(html, /'<button class="fy-act fy-share" data-tr="share-link" data-id="' \+ p\.id \+ '"/);
+  assert.match(html, /toChat: '<button class="fy-act fy-share" data-tr="share-link"/);
   assert.match(read('foryou.js'), /\+ \(env\.toChat \|\| ''\) \+ '<\/div>'/);
   assert.match(html, /case "to-chat": fyToChat\(id\); break;/);
   const i = html.indexOf('function fyToChat(id){'), fn = html.slice(i, html.indexOf('\n}', i));

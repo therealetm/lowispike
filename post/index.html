@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050b1e">
+<title>LOWiSPIKE · Post</title>
+<meta name="description" content="Ein Post aus LOWiSPIKE, der Community für Blutzucker-freundliches Essen.">
+<meta property="og:title" content="Ein Post aus LOWiSPIKE">
+<meta property="og:description" content="Blutzucker-freundliches Essen. Zum Durchwischen, ohne Konto.">
+<meta property="og:type" content="website">
+<!-- Nov 8 2026 (Emmanuel: "the share button, I should be able to send it, copy it, and then send that directly to someone on WhatsApp so
+     they can see it, open it, scroll through it"). A For You post as a link: the post travels inside the link (#d=..., see post-link-core.js),
+     so this page needs no account and no server. It shows only pictures and videos from the app's own media storage, the caption as
+     plain text, and a way into the app. -->
+<style>
+:root{--bg:#050b1e;--acc:#8fe7ff;--ink:#062033;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+body{display:flex;flex-direction:column;min-height:100dvh;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:.14em;font-size:14px}
+.brand svg{width:20px;height:20px}
+.card{position:relative;flex:1;margin:0 10px;border-radius:26px;overflow:hidden;border:1.2px solid rgba(143,231,255,.35);background:#0a1530;min-height:0;display:flex}
+.track{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
+.track::-webkit-scrollbar{display:none}
+.track>*{flex:0 0 100%;width:100%;height:100%;scroll-snap-align:center;scroll-snap-stop:always;object-fit:contain;background:#000}
+.text{display:flex;align-items:center;justify-content:center;padding:28px;font-size:24px;font-weight:700;line-height:1.3;text-align:center;background:linear-gradient(160deg,#123a6e,#0d5b57)}
+.dots{position:absolute;left:0;right:0;bottom:12px;display:flex;justify-content:center;gap:6px;pointer-events:none}
+.dots i{width:7px;height:7px;border-radius:4px;background:rgba(255,255,255,.45);transition:width .2s}
+.dots i.on{width:20px;background:#fff}
+.count{position:absolute;top:12px;right:12px;padding:4px 10px;border-radius:99px;background:rgba(0,0,0,.55);font-size:13px;font-weight:700}
+.arrow{position:absolute;top:50%;width:40px;height:40px;margin-top:-20px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;font-size:22px;cursor:pointer}
+.arrow.l{left:8px}.arrow.r{right:8px}
+@media (hover:none){.arrow{display:none}}
+.meta{padding:12px 16px 4px}
+.by{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px}
+.av{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle,#8be0a8,#2fbf71);display:flex;align-items:center;justify-content:center;color:#04210f;font-weight:800;font-size:14px}
+.cap{margin:8px 0 0;font-size:15px;line-height:1.4;opacity:.92;white-space:pre-wrap;word-break:break-word}
+.cta{padding:12px 16px 16px;display:flex;flex-direction:column;gap:8px}
+.cta a{display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:99px;text-decoration:none;font-weight:800;font-size:16px}
+.go{background:radial-gradient(circle at 35% 30%,#c9f5ff,#6fd6ff);color:var(--ink);box-shadow:0 0 18px rgba(143,231,255,.4)}
+.small{text-align:center;font-size:12px;opacity:.6}
+.empty{margin:auto;padding:30px;text-align:center;opacity:.8}
+</style>
+</head>
+<body>
+<div class="top"><div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20c0-9 6-15 16-16-1 10-7 16-16 16z" fill="#f5b942"/><path d="M4 20 14 10" stroke="#7a4b00" stroke-width="1.6"/></svg>LOWISPIKE</div></div>
+<main id="app" class="card"><div class="empty">…</div></main>
+<div class="meta" id="meta"></div>
+<div class="cta"><a class="go" id="go" href="../#fy">In LOWiSPIKE öffnen</a><div class="small" id="fine">Blutzucker-freundliches Essen · kostenlos</div></div>
+<script src="../post-link-core.js"></script>
+<script>
+(function () {
+  'use strict';
+  const K = window.LowiPostLink, app = document.getElementById('app'), meta = document.getElementById('meta');
+  const en = !/^de/i.test(navigator.language || 'de');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  if (en) { document.documentElement.lang = 'en'; document.getElementById('go').textContent = 'Open in LOWiSPIKE'; document.getElementById('fine').textContent = 'Blood-sugar-friendly food · free'; }
+  const p = K ? K.decode(location.hash) : null;
+  if (!p) { app.innerHTML = '<div class="empty">' + (en ? 'This link is incomplete.' : 'Dieser Link ist unvollständig.') + '</div>'; return; }
+  let slides = [];
+  if (p.v) slides.push('<video src="' + esc(p.v) + '"' + (p.s && p.s[0] ? ' poster="' + esc(p.s[0]) + '"' : '') + ' controls playsinline preload="metadata"></video>');
+  else if (p.s && p.s.length) slides = p.s.map((u, i) => '<img src="' + esc(u) + '" alt="' + (i + 1) + '" loading="' + (i ? 'lazy' : 'eager') + '" decoding="async">');
+  else slides.push('<div class="text">' + esc(p.c || '') + '</div>');
+  const n = slides.length;
+  app.innerHTML = '<div class="track" id="tr">' + slides.join('') + '</div>' + (n > 1 ? '<div class="dots">' + slides.map((x, i) => '<i' + (i ? '' : ' class="on"') + '></i>').join('') + '</div><span class="count" id="ct">1/' + n + '</span><button class="arrow l" aria-label="zurück">‹</button><button class="arrow r" aria-label="weiter">›</button>' : '');
+  const name = (p.w || 'LOWiSPIKE').slice(0, 40);
+  meta.innerHTML = '<div class="by"><span class="av">' + esc(name.charAt(0).toUpperCase()) + '</span>' + esc(name) + '</div>' + (p.c && (p.s && p.s.length || p.v) ? '<p class="cap">' + esc(p.c) + '</p>' : '');
+  document.title = name + ' · LOWiSPIKE';
+  const tr = document.getElementById('tr'), dots = app.querySelectorAll('.dots i'), ct = document.getElementById('ct');
+  if (n > 1) {
+    let last = 0;
+    tr.addEventListener('scroll', () => { const i = Math.round(tr.scrollLeft / tr.clientWidth); if (i === last) return; last = i; dots.forEach((d, k) => d.classList.toggle('on', k === i)); if (ct) ct.textContent = (i + 1) + '/' + n; }, { passive: true });
+    app.querySelector('.arrow.l').onclick = () => tr.scrollBy({ left: -tr.clientWidth, behavior: 'smooth' });
+    app.querySelector('.arrow.r').onclick = () => tr.scrollBy({ left: tr.clientWidth, behavior: 'smooth' });
+  }
+})();
+</script>
+</body>
+</html>

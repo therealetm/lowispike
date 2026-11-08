@@ -136,8 +136,9 @@ test('a creator\'s video has no save or Swipe in the rail; only ··· stays; ot
   for (const k of ['data-tr="save"', 'LowiFood.railBtn']) assert.ok(gated.includes(k), k + ' only for non-creator posts');
   /* test changed 8 Nov 2026 (Emmanuel: "von der For You Page aus Dinge in die Community dann weiterleiten ... Dafür müsste auch einen
      Knopf geben"): the Chat button joined Save inside the gate, so a creator's video still keeps only ··· (new-post-tiktok-1108) */
-  assert.ok(gated.includes('data-tr="to-chat"'), 'Chat only for non-creator posts');
-  assert.ok(/: ""\)\) \+\n      '<button class="$/.test(gated.trim() === gated ? gated : gated.trimEnd()), 'the ··· button sits outside the gate');
+  /* test changed 8 Nov 2026: the Chat button became Teilen (a WhatsApp-ready link, post-share-link.test.cjs) */
+  assert.ok(gated.includes('data-tr="share-link"'), 'Teilen only for non-creator posts');
+  assert.ok(/\)\) \+\n      '<button class="$/.test(gated.trimEnd()), 'the ··· button sits outside the gate');
 });
 
 test('server: oEmbed with a page fallback, the picture copied into our storage, the stable link written on the post', () => {

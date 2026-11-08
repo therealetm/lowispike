@@ -5114,7 +5114,7 @@ function fyOut(p, ex){
 /* button sweep 16:20: For You sits in a data-noi18n pane (posts stay as written), so its own buttons and end card ask LowiLang for their words */
 const fyT = s => { try { return window.LowiLang && LowiLang.t ? LowiLang.t(s) : s; } catch (e) { return s; } };
 function slideHTML(p){
-  if (p.bot && window.LowiForYou) return LowiForYou.slideHTML(p, {bg: fyBg(p), saved: !!(T.saved || {})[p.id], FIC, chip: p.rec && window.FYV ? FYV.recChip(p) : "", toChat: window.LowiCommunity ? '<button class="fy-act fy-tochat" data-tr="to-chat" data-id="' + p.id + '" aria-label="' + esc(fyT("Send to Community")) + '">' + FIC.share + '<span>' + esc(fyT("Chat")) + '</span></button>' : ""});
+  if (p.bot && window.LowiForYou) return LowiForYou.slideHTML(p, {bg: fyBg(p), saved: !!(T.saved || {})[p.id], FIC, chip: p.rec && window.FYV ? FYV.recChip(p) : "", toChat: '<button class="fy-act fy-share" data-tr="share-link" data-id="' + p.id + '" aria-label="' + esc(fyT("Share")) + '">' + FIC.share + '<span>' + esc(fyT("Share")) + '</span></button>'});
   const h = H(), u = h.user(), d = describe(p.meta), saved = !!(T.saved || {})[p.id], pl = PLAT[p.plat] || PLAT.web;
   const name = p.me ? (u.name || "You") : p.who, cap = p.cap || d.line || "", textOnly = !p.url && !p.photo && !p.vid && !p.rec && !FY_IMG[p.id];
   const ex = p.url && window.LowiForYou ? LowiForYou.external(p.url) : null, watch = ex ? LowiForYou.note("loveBtn") + " \u00b7 " + LowiForYou.note("watchOn", {p: ex.name}) : pl.open;
@@ -5133,7 +5133,7 @@ function slideHTML(p){
       (window.LowiFood && LowiFood.isFoodPost(p, FY_IMG[p.id]) ? LowiFood.railBtn(p.id) : "") +
       /* Nov 8 2026 (Emmanuel: "von der For You Page aus Dinge in die Community dann weiterleiten, posten. Dafür müsste auch einen
          Knopf geben"): one button sends the post to the Community chat (fyToChat) */
-      (window.LowiCommunity ? '<button class="fy-act fy-tochat" data-tr="to-chat" data-id="' + p.id + '" aria-label="' + esc(fyT("Send to Community")) + '">' + FIC.share + '<span>' + esc(fyT("Chat")) + '</span></button>' : "")) +
+      ('<button class="fy-act fy-share" data-tr="share-link" data-id="' + p.id + '" aria-label="' + esc(fyT("Share")) + '">' + FIC.share + '<span>' + esc(fyT("Share")) + '</span></button>')) +
       '<button class="fy-act fy-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="' + fyT("More") + '">' + IC.more + '</button></div>' +
     '<div class="fy-meta">' + fyCarDots(p) + '<div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b>' + (p.nb ? '<span class="fy-bot" title="Bot">Bot</span>' : '') + '<span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
@@ -5188,6 +5188,22 @@ function fySavedBtnHTML(){ const n = Object.keys(T.saved || {}).length;
   return '<button class="fy-svd" data-tr="list-saved" aria-label="' + esc(fyT("Saved") + ", " + n) + '">' + FIC.save + '<span>' + esc(fyT("Saved")) + '</span>' + (n ? '<b>' + n + '</b>' : '') + '</button>'; }
 /* For You -> Community chat: pictures go as a chat photo or album (sharePics, the same as New post's "Also in the Community chat");
    a link, video or text post opens the chat with it written in the box, so you can add a word and send */
+/* Nov 8 2026 (Emmanuel: "the share button ... sends it to the community. That's unnecessary ... I should be able to send it, copy it,
+   and then send that directly to someone on WhatsApp so they can see it, open it, scroll through it"): Teilen makes a link to post/
+   with the post inside it (post-link-core.js); the phone's share sheet sends it (WhatsApp ...), else it is copied. A post whose
+   pictures are not uploaded yet says so; Nibblo's posts link to the app. */
+function fyShareLink(id){
+  const p = (feed() || []).find(x => x.id === id) || (T.posts || []).find(x => x.id === id), h = H(); if (!p || !h) return;
+  const K = window.LowiPostLink, home = location.href.split("#")[0].split("?")[0], base = new URL("post/", home).href;
+  const sw = p.inspo && p.inspo.swap, cap = (p.cap || (sw ? sw.from + " \u2192 " + sw.to : "")).trim();
+  let url = K && !p.bot ? K.encode(p, base) : "";
+  if (!url && !p.bot && (p.photo || p.vid || (p.slides && p.slides.length))) { h.toast(fyT("Still uploading. Try again in a moment.")); return; }
+  if (!url) url = home + "#fy";
+  const title = (p.me ? "" : (p.who || "LOWiSPIKE") + ": ") + (cap || "LOWiSPIKE").slice(0, 80);
+  const copy = () => { try { navigator.clipboard.writeText(url).then(() => h.toast(fyT("Link copied. Paste it in WhatsApp."))).catch(() => h.toast(url)); } catch(e){ h.toast(url); } };
+  if (navigator.share) navigator.share({title, text:title, url}).catch(e => { if (!e || e.name !== "AbortError") copy(); });
+  else copy();
+}
 let fyChatBusy = false;
 function fyToChat(id){
   const p = (feed() || []).find(x => x.id === id) || (T.posts || []).find(x => x.id === id), h = H(); if (!p || !h || fyChatBusy) return;
@@ -5497,6 +5513,7 @@ document.addEventListener("click", e => {
           if (K) trPhotosPick(xs, H()); else trPhotoPick(xs[0], H()); }); }
       f.multiple = carMax() > 1; f.click(); break; }
     case "to-chat": fyToChat(id); break;
+    case "share-link": fyShareLink(id); break;
     case "nophoto": if (C) { const i = +(b.dataset.i || 0), was = C.photo; C.photos = (C.photos || []).filter((x, k) => k !== i); C.photo = C.photos[0] || "";
         if (C.photo !== was) { C.meal = null; C.mealErr = ""; } paintRest(); } break;
     case "meal-read": readMeal(); break;
@@ -9008,6 +9025,8 @@ const T = [
   ["New here?", "Neu hier?", "¿Nuevo aquí?"], ["Say hi", "Sag hallo", "Saluda"], ["In For You", "In Für dich", "En Para ti"], ["Only you", "Nur du", "Solo tú"],
   ["Post", "Posten", "Publicar"],
   ["Upload a video", "Video hochladen", "Subir un vídeo"],
+  ["Still uploading. Try again in a moment.", "Wird noch hochgeladen. Gleich nochmal versuchen.", "Aún se está subiendo. Inténtalo en un momento."],
+  ["Link copied. Paste it in WhatsApp.", "Link kopiert. Einfach in WhatsApp einfügen.", "Enlace copiado. Pégalo en WhatsApp."],
   /* Nov 8 2026 New post tiles, numbered photos, Saved word, For You -> Community */
   ["Photos", "Fotos", "Fotos"], ["Video", "Video", "Vídeo"], ["From your gallery", "Aus deiner Galerie", "De tu galería"], ["One picture", "Ein Bild", "Una foto"],
   ["Up to 8 · carousel", "Bis zu 8 · Karussell", "Hasta 8 · carrusel"], ["Up to 6 · carousel", "Bis zu 6 · Karussell", "Hasta 6 · carrusel"],
@@ -22911,6 +22930,7 @@ window.LowiCommunityHost = {
 <script src="challenge-week.js?v=20261108-110947"></script>
 <script src="challenge-voice-data.js?v=20261108-110947"></script>
 <script src="challenge-voice.js?v=20261108-110947"></script>
+<script src="post-link-core.js?v=20261108-110947"></script>
 <link rel="stylesheet" id="szCss" href="seller-zone.css?v=20261108-110947">
 <script src="seller-zone-data.js?v=20261108-110947"></script>
 <script src="seller-zone-core.js?v=20261108-110947"></script>

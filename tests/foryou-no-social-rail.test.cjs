@@ -52,7 +52,9 @@ test('For You: member, own, food and Nibblo server posts have no Like, Chat or S
   for (const [k, p] of Object.entries(posts)) {
     const out = slide(p);
     assert.doesNotMatch(out, SOCIAL, k + ': no Like, Chat or Share');
-    assert.doesNotMatch(out, /class="num"|aria-label="(Like|Comment|Share)"/, k + ': no like count or social labels');
+    /* test changed 8 Nov 2026 (Emmanuel: "I should be able to send it, copy it, and then send that directly to someone on WhatsApp"):
+       Teilen (a link, data-tr="share-link", post-share-link.test.cjs) is back; Like and Comment stay gone */
+    assert.doesNotMatch(out, /class="num"|aria-label="(Like|Comment)"/, k + ': no like count or social labels');
     assert.match(out, /data-tr="save"[^>]*aria-label="Save"/, k + ': Save stays');
     assert.match(out, /fy-act fy-more" data-tr="post-menu"/, k + ': ··· stays');
   }

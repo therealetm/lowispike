@@ -54,8 +54,8 @@ h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;text-wrap:balance;l
 .dayhead h2{font-size:24px}
 .dayhead span{color:var(--muted);font-weight:800;font-size:14px}
 .tl{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
-.row{display:grid;grid-template-columns:58px 1fr;gap:10px;align-items:stretch}
-.t{font:600 19px var(--display);padding-top:14px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.row{display:grid;grid-template-columns:1fr;gap:4px;align-items:stretch}
+.t{font:700 13px var(--display);padding:6px 4px 0;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border-radius:22px;padding:12px 14px;min-height:72px}
 .card .tx{min-width:0;flex:1}
 .card b{display:block;font:600 19px/1.15 var(--display)}
@@ -144,7 +144,7 @@ details.more[open] summary::after{content:"–"}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .tl>li{list-style:none}
 @media (prefers-reduced-motion:reduce){.sheet,.veil,.bar i{transition:none}}
-@media (max-width:360px){.hero h1{font-size:28px}.bubble{width:76px;height:76px}.row{grid-template-columns:50px 1fr}}
+@media (max-width:360px){.hero h1{font-size:28px}.bubble{width:76px;height:76px}}
 /* Nov 8 2026: the app's glass and backdrop */
 body{background:radial-gradient(ellipse 90% 60% at 50% 0%,#0d2a5e 0%,#071636 45%,var(--bg) 100%) fixed,var(--bg)}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]) body{background:var(--bg)}}

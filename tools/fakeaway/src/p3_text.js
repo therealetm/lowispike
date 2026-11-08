@@ -22,6 +22,9 @@ const UI = {
     med: 'Kein Ersatz für ärztlichen Rat. Wenn du Medikamente gegen Diabetes nimmst, sprich vorher mit deiner Ärztin oder deinem Arzt.',
     brand: 'Smarter essen. Gleicher Genuss. Stabilere Energie.',
     slotN: { breakfast: 'Frühstück', brunch: 'Brunch', dinner: 'Abendessen', snack: 'Snack' },
+    /* Nov 8 2026 (Emmanuel: "We shouldn't lock in the time. It should just say morning, brunch, evening, nighttime ... or snack"): */
+    slotW: { morning: 'Morgens', forenoon: 'Vormittags', brunch: 'Brunch', midday: 'Mittags', snack: 'Snack', evening: 'Abends', night: 'Vor dem Schlafen' },
+    cookOnce: 'Heute kochst du einmal, am Abend.',
     pcs: { tray: ['Backblech', 'Backbleche'] }, tspS: 'TL', tbsS: 'EL', spoonS: 'EL', headOf: 'Kopf', pinch: '1 Spritzer', lemonN: ['Zitrone', 'Zitronen'], eggN: ['Ei', 'Eier'],
   },
   en: {
@@ -46,6 +49,8 @@ const UI = {
     med: 'Not a substitute for medical advice. If you take diabetes medication, talk to your doctor first.',
     brand: 'Eat smarter. Same joy. More stable energy.',
     slotN: { breakfast: 'Breakfast', brunch: 'Brunch', dinner: 'Dinner', snack: 'Snack' },
+    slotW: { morning: 'Morning', forenoon: 'Late morning', brunch: 'Brunch', midday: 'Midday', snack: 'Snack', evening: 'Evening', night: 'Before bed' },
+    cookOnce: 'You cook once today, in the evening.',
     pcs: { tray: ['baking tray', 'baking trays'] }, tspS: 'tsp', tbsS: 'tbsp', spoonS: 'tbsp', headOf: 'head', pinch: '1 squeeze', lemonN: ['lemon', 'lemons'], eggN: ['egg', 'eggs'],
   },
 };

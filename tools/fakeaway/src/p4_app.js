@@ -86,6 +86,14 @@ const startTime = (day) => {
   const m = 18 * 60 - F.RECIPES[s[1]].min; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
 };
 const hm = s => +s.slice(0, 2) * 60 + +s.slice(3);
+/* Nov 8 2026 (Emmanuel: "We shouldn't lock in the time ... morning, brunch, evening, nighttime ... or snack. So people don't feel
+   fixed"): the plan keeps its order by the old times, but shows a part of the day instead of a clock time */
+function slotOf(time, kind) {
+  if (kind === 'thaw') return 'night';
+  if (kind === 'shop') return 'forenoon';
+  const m = hm(time);
+  return m < 600 ? 'morning' : m < 720 ? 'brunch' : m < 900 ? 'midday' : m < 1020 ? 'snack' : 'evening';
+}
 
 /* ---------- main page ---------- */
 function render() {
@@ -114,12 +122,12 @@ function render() {
       card = '<button class="card" data-rec="' + x.id + (rest ? ':rest' : '') + '" data-fid="r' + i + '"><span class="bubble sm">' + ICONS[r.icon] + '</span><span class="tx">' +
         (rest ? '<span class="flag">' + t.rest + '</span>' : flag) + '<b>' + esc(tx.name) + '</b><small>' + esc(sub) + '</small></span><span class="go">›</span></button>';
     }
-    return '<li class="' + cls + '"><div class="row"><div class="t">' + x.time + '</div>' + card + '</div></li>';
+    return '<li class="' + cls + '"><div class="row"><div class="t">' + esc(t.slotW[slotOf(x.time, x.kind)]) + '</div>' + card + '</div></li>';
   }).join('');
   const strip = F.WEEK.map((d, i) => '<button class="dayb' + (i === tdy ? ' today' : '') + '" data-d="' + i + '" data-fid="d' + i + '" aria-pressed="' + (i === cur.sel) + '" aria-label="' + t.daysL[i] + ', ' + esc(t.themes[d.theme]) + '">' + ICONS[dish(d.theme)] + '<span>' + t.daysS[i] + '</span></button>').join('');
   $('#app').innerHTML =
     '<div class="top"><div class="brand">' + (cur0.ch ? '<span class="chl">\u{1F3C6} ' + esc(DE() ? 'Wochen-Challenge \u00b7 KW\u00a0' + cur0.ch : 'Weekly challenge \u00b7 Wk\u00a0' + cur0.ch) + '</span>' : ICONS.leaf + 'LOWISPIKE') + '</div><div class="topr"><button class="shr" data-act="share" data-fid="share" aria-label="' + esc(t.share) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 13v6h14v-6"/></svg></button><div class="seg" role="group" aria-label="Language"><button data-lang="de" data-fid="ld" aria-pressed="' + DE() + '">DE</button><button data-lang="en" data-fid="le" aria-pressed="' + !DE() + '">EN</button></div></div></div>' +
-    '<section class="hero"><div><div class="kick">' + (cur.sel === tdy ? t.today + ' · ' : '') + t.daysL[cur.sel] + '</div><h1>' + esc(t.themes[day.theme]) + '</h1><p>' + esc(st0 ? t.cookAt(st0) : t.noCook) + '</p></div><div class="bubble">' + ICONS[dish(day.theme)] + '</div></section>' +
+    '<section class="hero"><div><div class="kick">' + (cur.sel === tdy ? t.today + ' · ' : '') + t.daysL[cur.sel] + '</div><h1>' + esc(t.themes[day.theme]) + '</h1><p>' + esc(st0 ? t.cookOnce : t.noCook) + '</p></div><div class="bubble">' + ICONS[dish(day.theme)] + '</div></section>' +
     (st.seen ? '' : '<section class="first"><h2>' + t.firstT + '</h2><ol>' + t.first.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol><button data-act="ok" data-fid="ok">' + t.ok + '</button></section>') +
     '<div class="days">' + strip + '</div>' +
     '<div class="dayhead"><h2>' + t.daysL[cur.sel] + '</h2><span>' + ppl(st.people) + '</span></div>' +
@@ -231,6 +239,8 @@ function refresh() {
   if (fid) { const el = document.querySelector('[data-fid="' + fid + '"]'); if (el) el.focus({ preventScroll: true }); }
 }
 
+/* Nov 8 2026: inside LOWiSPIKE (fakeaway/faw-core.js, FAW_HEADLESS) only the helpers are used; no page, no listeners */
+if (!window.FAW_HEADLESS) {
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act],[data-rec],[data-d],[data-lang]'); if (!a) return;
   if (a.dataset.rec) { const p = a.dataset.rec.split(':'); cur.rec = { id: p[0], rest: p[1] === 'rest' }; openSheet('r'); return; }
@@ -255,8 +265,9 @@ document.addEventListener('change', e => {
   } else if (c.type === 'checkbox') c.closest('li').classList.toggle('done', c.checked);
 });
 document.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('more') && cur.sheet === 'r') cur.more = e.target.open; }, true);
-window.FAWAPP = { fmt, stepHtml, startTime, frac, FR4, eur, eur0, ppl, about, st };
-if (!window.FAW_PRINT) {
+}
+window.FAWAPP = { fmt, stepHtml, startTime, frac, FR4, eur, eur0, ppl, about, st, slotOf, hm, gramTxt };
+if (!window.FAW_PRINT && !window.FAW_HEADLESS) {
 render();
 setInterval(() => { if (!cur.sheet) render(); }, 60000);
 }

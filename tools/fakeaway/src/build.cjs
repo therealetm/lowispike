@@ -40,3 +40,21 @@ ${head}
 /* Nov 8 2026: in LOWiSPIKE the page is served from the repo's fakeaway/ (https://therealetm.github.io/lowispike/fakeaway/) */
 fs.writeFileSync(path.join(d, '..', '..', '..', 'fakeaway', 'index.html'), standalone);
 console.log('built index.html', standalone.length, 'bytes');
+
+/* Nov 8 2026: the same data, texts, icons and helpers for the app's Weekly Challenge panel (challenge-week.js). No page, no
+   listeners (FAW_HEADLESS); window.FAW (data.js) and window.FAW_TX (texts, icons) are all it adds. */
+const core = `/* built by tools/fakeaway/src/build.cjs: do not edit by hand */
+(function () {
+'use strict';
+window.FAW_HEADLESS = true;
+var module; /* data.js always sets self.FAW here */
+${r('data.js')}
+var FAW = self.FAW;
+${r('p2_icons.js')}
+${r('p3_text.js')}
+${r('p4_app.js')}
+window.FAW_TX = { UI, REC, LEFT_TIP, ICONS };
+})();
+`;
+fs.writeFileSync(path.join(d, '..', '..', '..', 'faw-core.js'), core);
+console.log('built faw-core.js', core.length, 'bytes');

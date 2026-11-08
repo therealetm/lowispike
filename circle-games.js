@@ -23,8 +23,11 @@
     { id: 'swipen', ic: '\uD83C\uDCCF', t: () => L('Swipe', 'Swipen', 'Deslizar'), view: 'swipe' },
     /* Nov 8 2026 (Emmanuel: "vielleicht haben wir einfach einen Challenge-Raum ... Weekly Challenge, wo jeder mitmachen kann ... wie
        bei wo Mission und Shuffle ist, weil das ja fast auch wie ein Spiel ist"): the creator's week plan as this week's challenge.
-       It opens over Circle (the bar keeps Billard lit underneath); which plan runs is picked by calendar week from CHALLENGES. */
-    { id: 'challenge', ic: '\uD83C\uDFC6', t: () => L('Challenge', 'Challenge', 'Reto'), open: () => openChallenge() }
+       Which plan runs is picked by calendar week from CHALLENGES.
+       8 Nov 2026, later (Emmanuel: "when clicking on challenge, it opens a new page ... it's very important that it is in the same
+       style ... so it doesn't feel like it's opening a new page"): it is drawn in place under the bar like the other games
+       (challenge-week.js), lit in the bar; the page overlay stays only as a fallback without challenge-week.js. */
+    { id: 'challenge', ic: '\uD83C\uDFC6', t: () => L('Challenge', 'Challenge', 'Reto'), panel: true }
   ];
   /* the weekly rotation: the newest entry whose start week has come runs; add a plan here and it takes over on its week by itself */
   const CHALLENGES = [{ from: '2026-W45', id: 'fakeaway' }];
@@ -102,10 +105,18 @@
     if (busy) return;
     const circle = circleOn(), game = gameOn();
     if ((cur === 'mischen' || cur === 'swipen') && !game) cur = 'billard';
+    if (cur === 'challenge' && !circle) cur = 'billard';
+    challengePane(circle && cur === 'challenge');
     H.classList.toggle('csp-circle', circle || game);
     H.classList.toggle('csp-game', game);
     if (circle || game) { const bar = ensureBar(); if (circle) measure(bar); watchPane(); }
     else { const bar = D.getElementById('cspBar'); if (bar && bar.dataset.k !== li() + ':billard') { bar.innerHTML = barHTML(); bar.dataset.k = li() + ':billard'; } }
+  }
+  /* the Weekly Challenge panel lives in Circle's pane, under the bar, while Challenge is the chosen tab */
+  function challengePane(on) {
+    H.classList.toggle('csp-chal', !!on);
+    const C = W.LowiChallenge; if (!C) return;
+    try { if (on) { const p = D.getElementById('cmPaneChat'); if (p && !D.getElementById('cwkPane')) C.mount(p); } else if (D.getElementById('cwkPane')) C.unmount(); } catch (e) { }
   }
   let watched = null;
   function watchPane() {
@@ -119,10 +130,13 @@
 
   function select(id) {
     const g = GAMES.find(x => x.id === id); if (!g) return;
-    if (g.open) { g.open(); return; }
+    if (g.panel && !(W.LowiChallenge && W.LowiChallenge.mount)) { openChallenge(); return; }
     busy = true;
     try {
-      if (id === 'billard') {
+      if (g.panel) {
+        if (tab() === 'shelf') go('foryou');
+        cur = id;
+      } else if (id === 'billard') {
         if (tab() === 'shelf') go('foryou');
         cur = id;
       } else {

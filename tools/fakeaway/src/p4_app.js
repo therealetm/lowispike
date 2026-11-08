@@ -5,12 +5,15 @@ let st = { lang: null, people: 2, seen: false, checks: {} };
 try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && typeof s === 'object') st = Object.assign(st, s); } catch (e) {}
 if (st.lang !== 'de' && st.lang !== 'en') st.lang = /^de/i.test(navigator.language || 'de') ? 'de' : 'en';
 if (!(st.people >= 1 && st.people <= 6)) st.people = 2;
+const cur0 = { ch: 0 };
 /* Nov 8 2026 (LOWiSPIKE): opened from the app (?app=1&lang=de&theme=dark), the page speaks the app's language, wears the app's
    Day or Night, and leaves the bottom strip to the app's round close button; a shared link (no app) keeps its own choice */
 try { const q = new URLSearchParams(location.search);
   if (q.get('app') === '1') document.documentElement.classList.add('in-app');
   const ql = q.get('lang'); if ((ql === 'de' || ql === 'en') && q.get('app') === '1') st.lang = ql;
-  const th = q.get('theme'); if (th === 'dark' || th === 'light') document.documentElement.setAttribute('data-theme', th); } catch (e) {}
+  const th = q.get('theme'); if (th === 'dark' || th === 'light') document.documentElement.setAttribute('data-theme', th);
+  /* Nov 8 2026: opened as the app's Weekly Challenge (?ch=<calendar week>), the wordmark says so */
+  const ch = q.get('ch'); if (q.get('app') === '1' && /^\d{1,2}$/.test(ch || '')) cur0.ch = +ch; } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
 const L = () => st.lang, T = () => UI[st.lang], DE = () => st.lang === 'de';
 const $ = s => document.querySelector(s);
@@ -115,7 +118,7 @@ function render() {
   }).join('');
   const strip = F.WEEK.map((d, i) => '<button class="dayb' + (i === tdy ? ' today' : '') + '" data-d="' + i + '" data-fid="d' + i + '" aria-pressed="' + (i === cur.sel) + '" aria-label="' + t.daysL[i] + ', ' + esc(t.themes[d.theme]) + '">' + ICONS[dish(d.theme)] + '<span>' + t.daysS[i] + '</span></button>').join('');
   $('#app').innerHTML =
-    '<div class="top"><div class="brand">' + ICONS.leaf + 'LOWISPIKE</div><div class="topr"><button class="shr" data-act="share" data-fid="share" aria-label="' + esc(t.share) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 13v6h14v-6"/></svg></button><div class="seg" role="group" aria-label="Language"><button data-lang="de" data-fid="ld" aria-pressed="' + DE() + '">DE</button><button data-lang="en" data-fid="le" aria-pressed="' + !DE() + '">EN</button></div></div></div>' +
+    '<div class="top"><div class="brand">' + (cur0.ch ? '<span class="chl">\u{1F3C6} ' + esc(DE() ? 'Wochen-Challenge \u00b7 KW\u00a0' + cur0.ch : 'Weekly challenge \u00b7 Wk\u00a0' + cur0.ch) + '</span>' : ICONS.leaf + 'LOWISPIKE') + '</div><div class="topr"><button class="shr" data-act="share" data-fid="share" aria-label="' + esc(t.share) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 13v6h14v-6"/></svg></button><div class="seg" role="group" aria-label="Language"><button data-lang="de" data-fid="ld" aria-pressed="' + DE() + '">DE</button><button data-lang="en" data-fid="le" aria-pressed="' + !DE() + '">EN</button></div></div></div>' +
     '<section class="hero"><div><div class="kick">' + (cur.sel === tdy ? t.today + ' · ' : '') + t.daysL[cur.sel] + '</div><h1>' + esc(t.themes[day.theme]) + '</h1><p>' + esc(st0 ? t.cookAt(st0) : t.noCook) + '</p></div><div class="bubble">' + ICONS[dish(day.theme)] + '</div></section>' +
     (st.seen ? '' : '<section class="first"><h2>' + t.firstT + '</h2><ol>' + t.first.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol><button data-act="ok" data-fid="ok">' + t.ok + '</button></section>') +
     '<div class="days">' + strip + '</div>' +

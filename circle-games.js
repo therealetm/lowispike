@@ -20,8 +20,31 @@
   const GAMES = [
     { id: 'billard', ic: '\uD83C\uDFB1', t: () => L('Billiards', 'Billard', 'Billar') },
     { id: 'mischen', ic: '\uD83D\uDD00', t: () => L('Shuffle', 'Mischen', 'Mezclar'), view: 'shuffle' },
-    { id: 'swipen', ic: '\uD83C\uDCCF', t: () => L('Swipe', 'Swipen', 'Deslizar'), view: 'swipe' }
+    { id: 'swipen', ic: '\uD83C\uDCCF', t: () => L('Swipe', 'Swipen', 'Deslizar'), view: 'swipe' },
+    /* Nov 8 2026 (Emmanuel: "vielleicht haben wir einfach einen Challenge-Raum ... Weekly Challenge, wo jeder mitmachen kann ... wie
+       bei wo Mission und Shuffle ist, weil das ja fast auch wie ein Spiel ist"): the creator's week plan as this week's challenge.
+       It opens over Circle (the bar keeps Billard lit underneath); which plan runs is picked by calendar week from CHALLENGES. */
+    { id: 'challenge', ic: '\uD83C\uDFC6', t: () => L('Challenge', 'Challenge', 'Reto'), open: () => openChallenge() }
   ];
+  /* the weekly rotation: the newest entry whose start week has come runs; add a plan here and it takes over on its week by itself */
+  const CHALLENGES = [{ from: '2026-W45', id: 'fakeaway' }];
+  function isoWeek(d) {
+    const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), day = t.getUTCDay() || 7;
+    t.setUTCDate(t.getUTCDate() + 4 - day);
+    const y = t.getUTCFullYear(), w = Math.ceil(((t - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7);
+    return { y, w, key: y + '-W' + (w < 10 ? '0' : '') + w };
+  }
+  function challengeNow(d) {
+    const k = isoWeek(d || new Date()).key;
+    let c = null; CHALLENGES.forEach(x => { if (x.from <= k && (!c || x.from >= c.from)) c = x; });
+    return c;
+  }
+  function openChallenge() {
+    const c = challengeNow(); if (!c) return false;
+    const P = W.LowiStorePicks;
+    if (c.id === 'fakeaway' && P && P.fakeaway) { P.fakeaway({ ch: isoWeek(new Date()).w }); return true; }
+    return false;
+  }
   let cur = 'billard', busy = false;
 
   const tab = () => { try { if (W.LowiHost && LowiHost.tab) return LowiHost.tab(); } catch (e) { } const a = D.querySelector('#main>.tab.active'); return a ? a.id.replace('tab-', '') : ''; };
@@ -96,6 +119,7 @@
 
   function select(id) {
     const g = GAMES.find(x => x.id === id); if (!g) return;
+    if (g.open) { g.open(); return; }
     busy = true;
     try {
       if (id === 'billard') {
@@ -186,5 +210,5 @@
     sync();
   }
   if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
-  W.LowiCircleGames = { select, sync, current: () => cur, circleOn, gameOn, GAMES, need };
+  W.LowiCircleGames = { select, sync, current: () => cur, circleOn, gameOn, GAMES, need, isoWeek, challengeNow, CHALLENGES };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

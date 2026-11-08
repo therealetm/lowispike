@@ -76,7 +76,8 @@ test('leaving Community for real still opens the first tab next time (the first-
 test('the Circle bar has only Billard, Mischen and Swipen; Billard is reached without leaving Circle', () => {
   const js = R('circle-games.js');
   const ids = [...js.matchAll(/\{ id: '([a-z]+)', ic:/g)].map(m => m[1]);
-  assert.deepStrictEqual(ids, ['billard', 'mischen', 'swipen']);
+  /* test changed 8 Nov 2026: the Weekly Challenge joined the bar as a fourth tab (circle-weekly-challenge.test.cjs) */
+  assert.deepStrictEqual(ids, ['billard', 'mischen', 'swipen', 'challenge']);
   assert.ok(!/baum|openTree|LowiCellRoom/.test(js.replace(/\/\*[\s\S]*?\*\//g, '')), 'no Friends tree anywhere in the bar');
   assert.match(js, /if \(id === 'billard'\) \{\n\s+if \(tab\(\) === 'shelf'\) go\('foryou'\);/);
 });

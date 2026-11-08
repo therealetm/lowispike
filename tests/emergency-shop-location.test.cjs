@@ -152,7 +152,9 @@ test('the panel source: Share my location -> address -> nearest shops -> product
     const js = read('store-picks.js');
     assert.match(js, /Share my location[\s\S]*Meinen Standort teilen[\s\S]*Compartir mi ubicación/);
     assert.match(js, /Town or postcode[\s\S]*Ort oder Postleitzahl[\s\S]*Ciudad o código postal/);
-    assert.match(js, /Skip: show the general lists/);
+    /* test changed 8 Nov 2026 (Emmanuel: "I hate feeling overwhelmed"): the Skip button went, the first chain chip "All supermarkets"
+       (data-stp="general") is the same way to the general lists (supermarket-calm-1108.test.cjs) */
+    assert.match(js, /data-stp="general">' \+ esc\(label\('general'\)\)/);
     assert.match(js, /Supermarkets near you[\s\S]*Supermärkte in deiner Nähe[\s\S]*Supermercados cerca de ti/);
     assert.match(js, /this is the general list\. Supermarkets mostly carry the same items/);
     assert.match(js, /OpenStreetMap contributors[\s\S]*openstreetmap\.org\/copyright/);

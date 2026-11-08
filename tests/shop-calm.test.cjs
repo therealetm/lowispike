@@ -32,7 +32,8 @@ test('Supermarket: Cart is a round button in the title row, Scan in the shop is 
    and what the snack list held (to buy, Buy again, adding by name) lives in the Cart. tests/supermarket-one-list.test.cjs runs it. */
 test('one list: no snack line in Supermarkt or the store choice; Buy again and adding by name sit in the Cart', () => {
   assert.doesNotMatch(sp, /stp-snackbox|function snackBox\(|T\('My snack list'/, 'no own snack place');
-  assert.match(sp, /'<div class="stp-scroll">' \+ planRowHTML\(\) \+ gen \+ inner/);
+  /* test changed 8 Nov 2026: the Fakeaway row left Supermarkt for the Weekly Challenge (supermarket-calm-1108.test.cjs) */
+  assert.match(sp, /'<div class="stp-scroll">' \+ gen \+ inner/);
   const cart = sp.slice(sp.indexOf('    function cartHTML() {'), sp.indexOf('    let cartOpen = false;'));
   assert.match(cart, /'<div class="stp-qv-scroll stp-cart-scroll">' \+ cartAgainHTML\(\) \+/, 'Buy again on top of the Cart');
   assert.match(cart, /cartAddForm\(\) \+ totalHTML/, 'adding by name under the lines');

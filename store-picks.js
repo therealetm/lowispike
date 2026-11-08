@@ -75,7 +75,10 @@
        Seller Zone und Hilf mit"): Shop from home (week-basket.js) is its own tab now, drawn inside Shop instead of a big card on
        top of the Supermarket list. */
     const WB = () => (W.LowiWeekBasket && W.LowiWeekBasket.mount ? W.LowiWeekBasket : null);
-    const homeTab = () => !!WB();
+    /* Nov 8 2026 (Emmanuel: "Dieses meine Woche, ich schmeiß das komplett raus, das ist kompliziert ... ich nutze das nicht mal"): the
+       week planner has no door any more; old links and tours that ask for 'home' land on Supermarkt. week-basket*.js stay loaded only
+       for their pure helpers (cart merge, store estimates). */
+    const homeTab = () => false;
     const onHome = () => tab === 'home' && homeTab();
     const onShop = () => !onSz() && !onKit() && !onHome();
     const ic = {
@@ -328,11 +331,12 @@
     }
     /* Nov 5 2026 (owner, Phase B item 3: "Incorporate Zu Hause planning into Supermarkt as Plan my week"): one plain row at the top of
        Supermarkt opens the weekly planner (week-basket.js) inside Supermarkt; its head has "\u2039 Supermarkt" to come back. */
-    function openFakeaway() {
+    function openFakeaway(opt) {
         if (D.getElementById('fawOv')) return;
+        const ch = opt && opt.ch > 0 && opt.ch < 54 ? Math.floor(opt.ch) : 0;
         const o = D.createElement('div'); o.id = 'fawOv'; o.className = 'faw-ov'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true');
         o.setAttribute('aria-label', T('Fakeaway week', 'Fakeaway-Woche', 'Semana fakeaway'));
-        o.innerHTML = '<iframe class="faw-fr" src="fakeaway/index.html?app=1&amp;lang=' + (li() === 1 ? 'de' : 'en') + '&amp;theme=' + (D.documentElement.getAttribute('data-ui') === 'light' ? 'light' : 'dark') + '" title="' + esc(T('Fakeaway week', 'Fakeaway-Woche', 'Semana fakeaway')) + '"></iframe>' +
+        o.innerHTML = '<iframe class="faw-fr" src="fakeaway/index.html?app=1&amp;lang=' + (li() === 1 ? 'de' : 'en') + '&amp;theme=' + (D.documentElement.getAttribute('data-ui') === 'light' ? 'light' : 'dark') + (ch ? '&amp;ch=' + ch : '') + '" title="' + esc(T('Fakeaway week', 'Fakeaway-Woche', 'Semana fakeaway')) + '"></iframe>' +
             '<button type="button" class="faw-x" aria-label="' + esc(T('Close', 'Schlie\u00dfen', 'Cerrar')) + '">\u00d7</button>';
         const shut = () => { o.remove(); D.removeEventListener('keydown', esc1); };
         const esc1 = e => { if (e.key === 'Escape') shut(); };
@@ -340,7 +344,6 @@
         D.body.appendChild(o);
     }
     function planRowHTML() {
-        if (!homeTab()) return '';
         /* Nov 8 2026 (Emmanuel: "replace it with the weekly meal thingy that's in supermarket, because that's kind of useless ... fuse it
            with ... the shopping, supermarket, the prices"): the row opens the Fakeaway week (fakeaway/, a page anyone can open from a
            shared link without an account) right here; its shopping list goes into this app's list with packs and prices */
@@ -461,15 +464,18 @@
     function pickHTML(msg) {
         const chains = '<button type="button" class="stp-chip' + (S.range === 'general' && !S.store ? ' on' : '') + '" data-stp="general">' + esc(label('general')) + '</button>' +
             RANGES.map(r => '<button type="button" class="stp-chip' + (S.range === r.id && !S.store ? ' on' : '') + '" data-stp-range="' + r.id + '">' + esc(r.label) + '</button>').join('');
-        return shell('<div class="stp-head">' + titleRow(T('Which shop?', 'Welcher Laden?', '¿Qué tienda?')) + '<p>' +
-            esc(T('Share your location to see the supermarkets nearest to you, or type a town or postcode.', 'Teil deinen Standort, um die Supermärkte in deiner Nähe zu sehen, oder gib einen Ort oder eine Postleitzahl ein.', 'Comparte tu ubicación para ver los supermercados más cercanos, o escribe una ciudad o un código postal.')) + '</p></div>' +
-            '<div class="stp-scroll">' + planRowHTML() + '<button type="button" class="stp-go" data-stp="locate"' + (busy ? ' disabled aria-busy="true"' : '') + '>' + ic.pin + '<span>' + esc(T('Share my location', 'Meinen Standort teilen', 'Compartir mi ubicación')) + '</span></button>' +
+        /* Nov 8 2026 (Emmanuel: "Supermarket, die Knöpfe und der Stil ... kompliziert ... I hate feeling overwhelmed ... people also hate
+           having to read a lot"): the question alone, no paragraph under it; the chains come first (Alle Supermärkte = the general
+           lists, so the separate Skip button went); location and town search are the quieter second way; one short privacy line.
+           The Fakeaway row moved to the Weekly Challenge in the Circle games bar (circle-games.js). */
+        return shell('<div class="stp-head">' + titleRow(T('Which shop?', 'Welcher Laden?', '¿Qué tienda?')) + '</div>' +
+            '<div class="stp-scroll stp-pick-calm"><div class="stp-chips stp-wrap">' + chains + '</div>' +
+            '<h4 class="stp-h4">' + esc(T('Or nearby', 'Oder in der Nähe', 'O cerca de ti')) + '</h4>' +
+            '<button type="button" class="stp-more stp-loc" data-stp="locate"' + (busy ? ' disabled aria-busy="true"' : '') + '>' + ic.pin + '<span>' + esc(T('Share my location', 'Meinen Standort teilen', 'Compartir mi ubicación')) + '</span></button>' +
             whereForm() + (msg ? '<p class="stp-msg" role="status">' + esc(msg) + '</p>' : '') + hereHTML() + shopRowsHTML() +
-            '<button type="button" class="stp-more stp-skip" data-stp="general">' + esc(T('Skip: show the general lists', 'Überspringen: allgemeine Listen zeigen', 'Omitir: ver las listas generales')) + '</button>' +
-            '<h4 class="stp-h4">' + esc(T('Or pick a chain', 'Oder eine Kette wählen', 'O elige una cadena')) + '</h4><div class="stp-chips stp-wrap">' + chains + '</div>' +
-            '<p class="stp-fine">' + esc(T('Your location is only used on this phone to look up your address and the shops near you on OpenStreetMap. It isn’t sent to us or saved. Map data © OpenStreetMap contributors. ',
-                'Dein Standort wird nur auf diesem Handy genutzt, um deine Adresse und die Läden in der Nähe bei OpenStreetMap nachzuschlagen. Er wird nicht an uns geschickt und nicht gespeichert. Kartendaten © OpenStreetMap-Mitwirkende. ',
-                'Tu ubicación solo se usa en este teléfono para buscar tu dirección y las tiendas cercanas en OpenStreetMap. No se nos envía ni se guarda. Datos del mapa © colaboradores de OpenStreetMap. ')) +
+            '<p class="stp-fine">' + esc(T('Your location stays on this phone. Map data © OpenStreetMap contributors. ',
+                'Dein Standort bleibt auf diesem Handy. Kartendaten © OpenStreetMap-Mitwirkende. ',
+                'Tu ubicación se queda en este teléfono. Datos del mapa © colaboradores de OpenStreetMap. ')) +
             '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">openstreetmap.org/copyright</a></p></div>' +
             footBtns(S.range ? '<button type="button" class="stp-pill" data-stp="list">' + esc(T('Back to list', 'Zurück zur Liste', 'Volver a la lista')) + '</button>' : scanBtn()));
     }
@@ -794,7 +800,7 @@
         return shell('<div class="stp-head stp-head-list"><h3 class="sr-only">' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '</h3><div class="stp-shoprow">' +
             '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || label(S.range) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>' + (hasCart() ? cartBtnHTML() : '') + '</div>' +
             '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" aria-label="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '"></div></div>' +
-            '<div class="stp-scroll">' + planRowHTML() + gen + inner +
+            '<div class="stp-scroll">' + gen + inner +
             '<p class="stp-note">' + esc(T('General food guidance, not medical advice.', 'Allgemeine Ernährungshilfe, keine medizinische Beratung.', 'Orientación general sobre alimentos, no consejo médico.')) + '</p></div>' +
             footBtns(scanBtn()));
     }
@@ -1064,5 +1070,5 @@
         if (id === 'gift') { try { if (W.LowiGiftBasket && W.LowiGiftBasket.open) W.LowiGiftBasket.open('shop'); } catch (x) {} }
         return true;
     }
-    W.LowiStorePicks = { open: openPanel, openAt, doors, close, tabsHTML: active => { if (!ov) return ''; tabOver = active || ''; try { return tabsHTML(); } finally { tabOver = ''; } }, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)), tab: () => (onSz() ? 'sz' : onKit() ? 'kitchen' : onHome() ? 'home' : 'shop'), kitchen: () => (K ? (kitLoad(), K.view(kit)) : []), setTab: id => { if (id === 'kitchen' && KG()) { if (ov) close(); KG().open(); return; } if (ov) setTab(id); else { tab = ({ sz: 'sz', kitchen: 'kitchen', home: 'home' })[id] || 'shop'; try { localStorage.setItem(TKEY, tab); } catch (e) {} } } };
+    W.LowiStorePicks = { open: openPanel, openAt, doors, close, fakeaway: openFakeaway, tabsHTML: active => { if (!ov) return ''; tabOver = active || ''; try { return tabsHTML(); } finally { tabOver = ''; } }, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)), tab: () => (onSz() ? 'sz' : onKit() ? 'kitchen' : onHome() ? 'home' : 'shop'), kitchen: () => (K ? (kitLoad(), K.view(kit)) : []), setTab: id => { if (id === 'kitchen' && KG()) { if (ov) close(); KG().open(); return; } if (ov) setTab(id); else { tab = ({ sz: 'sz', kitchen: 'kitchen', home: 'home' })[id] || 'shop'; try { localStorage.setItem(TKEY, tab); } catch (e) {} } } };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

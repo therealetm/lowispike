@@ -63,3 +63,18 @@ test('the short link: about 80 characters, and it opens the same pictures', () =
   assert.equal(K.fromUrl('?k=short', ''), null);
   assert.match(read('post/index.html'), /K\.fromUrl\(location\.search, location\.hash\)/);
 });
+
+/* Nov 8 2026, later (Emmanuel: "when I go into my app and I try to copy it, nothing happens" and, in a private browser, the pictures
+   showed a "?"). Teilen opens a card: the link, WhatsApp (wa.me with the text and the link), Link kopieren (copies in the same tap,
+   else selects the link), Mehr (the phone's share sheet). A picture that cannot be loaded says so; if the first one fails the page says
+   the post may be deleted. Browser check: card opens, Link kopieren -> "Kopiert"; a link whose pictures answer 400 -> the message. */
+test('the share card and the missing-picture message', () => {
+  const sh = read('share-sheet.js'), html = read('index.html'), page = read('post/index.html');
+  assert.match(html, /if \(window\.LowiShareSheet\) \{ LowiShareSheet\.open\(\{url, title, text:title\}\); return; \}/);
+  assert.match(sh, /href="https:\/\/wa\.me\/\?text=' \+ encodeURIComponent\(text\) \+ '"/);
+  assert.match(sh, /navigator\.clipboard\.writeText\(cur\.url\)\.then\(ok, manual\)/);
+  assert.match(sh, /D\.execCommand\('copy'\)/);
+  assert.match(page, /Dieses Bild ist nicht mehr verfügbar\./);
+  assert.match(page, /if \(k === 0 \|\| bad === n\)/);
+  assert.ok(read('sw.js').includes('"carousel-review.js", "share-sheet.js"'));
+});

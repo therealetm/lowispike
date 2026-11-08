@@ -25,6 +25,7 @@ body{display:flex;flex-direction:column;min-height:100dvh;padding:env(safe-area-
 .track{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
 .track::-webkit-scrollbar{display:none}
 .track>*{flex:0 0 100%;width:100%;height:100%;scroll-snap-align:center;scroll-snap-stop:always;object-fit:contain;background:#000}
+.gone{font-size:17px;font-weight:600;opacity:.8;background:#0a1530!important}
 .text{display:flex;align-items:center;justify-content:center;padding:28px;font-size:24px;font-weight:700;line-height:1.3;text-align:center;background:linear-gradient(160deg,#123a6e,#0d5b57)}
 .dots{position:absolute;left:0;right:0;bottom:12px;display:flex;justify-content:center;gap:6px;pointer-events:none}
 .dots i{width:7px;height:7px;border-radius:4px;background:rgba(255,255,255,.45);transition:width .2s}
@@ -68,6 +69,14 @@ body{display:flex;flex-direction:column;min-height:100dvh;padding:env(safe-area-
   const name = (p.w || 'LOWiSPIKE').slice(0, 40);
   meta.innerHTML = '<div class="by"><span class="av">' + esc(name.charAt(0).toUpperCase()) + '</span>' + esc(name) + '</div>' + (p.c && (p.s && p.s.length || p.v) ? '<p class="cap">' + esc(p.c) + '</p>' : '');
   document.title = name + ' · LOWiSPIKE';
+  /* a picture that cannot be loaded (the post was deleted, or the network refused it) says so instead of a "?" */
+  let bad = 0;
+  app.querySelectorAll('img').forEach((im, k) => im.addEventListener('error', () => {
+    const d = document.createElement('div'); d.className = 'text gone';
+    d.textContent = en ? 'This picture is not available any more.' : 'Dieses Bild ist nicht mehr verfügbar.';
+    im.replaceWith(d); bad++;
+    if (k === 0 || bad === n) meta.insertAdjacentHTML('afterbegin', '<p class="cap">' + (en ? 'This post may have been deleted. Ask for a new link.' : 'Dieser Post wurde vielleicht gelöscht. Frag nach einem neuen Link.') + '</p>'); bad = n + 1;
+  }));
   const tr = document.getElementById('tr'), dots = app.querySelectorAll('.dots i'), ct = document.getElementById('ct');
   if (n > 1) {
     let last = 0;

@@ -69,3 +69,16 @@ html[data-ui=light] .fy-slide .fy-act>span{background:none;padding:0}
 #fyFeed .fy-slide:not(.fyb-slide) .fy-meta{overflow:visible}
 #fyFeed .fy-slide:not(.fyb-slide) .fy-cap{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px}
 #fyFeed .fy-slide:not(.fyb-slide) .fy-play{top:calc((100% - var(--fyp)) / 2)}
+
+/* the share card (share-sheet.js) */
+.shs-ov{position:fixed;inset:0;z-index:2147483000;background:rgba(2,5,14,.6);display:flex;align-items:flex-end;justify-content:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.shs-card{position:relative;width:100%;max-width:520px;margin:0 8px calc(env(safe-area-inset-bottom,0px) + 96px);padding:18px 16px 12px;border-radius:26px;background:rgba(10,22,58,.96);border:1.2px solid rgba(143,231,255,.42);color:#fff;display:flex;flex-direction:column;gap:10px}
+.shs-card h3{margin:0 44px 2px 2px;font-size:18px;font-weight:800}
+.shs-x{position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;font-size:22px}
+.shs-url{width:100%;box-sizing:border-box;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.35);color:#cfefff;font-size:14px;-webkit-user-select:text;user-select:text}
+.shs-wa,.shs-copy,.shs-more{display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;border-radius:999px;font-size:16px;font-weight:800;text-decoration:none;border:0}
+.shs-wa{background:#25d366;color:#05210f}
+.shs-wa svg{width:22px;height:22px}
+.shs-copy{background:radial-gradient(circle at 35% 30%,#c9f5ff,#6fd6ff);color:#062033}
+.shs-more{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.22)}
+.shs-msg{margin:0;min-height:18px;text-align:center;font-size:13.5px;color:#8be0a8}

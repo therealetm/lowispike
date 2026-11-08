@@ -5201,6 +5201,8 @@ function fyShareLink(id){
   if (!url) url = home + "#fy";
   const title = (p.me ? "" : (p.who || "LOWiSPIKE") + ": ") + (cap || "LOWiSPIKE").slice(0, 80);
   const copy = () => { try { navigator.clipboard.writeText(url).then(() => h.toast(fyT("Link copied. Paste it in WhatsApp."))).catch(() => h.toast(url)); } catch(e){ h.toast(url); } };
+  /* Nov 8 2026, later (Emmanuel: "when I ... try to copy it, nothing happens"): one card with the link, WhatsApp, Link kopieren, Mehr */
+  if (window.LowiShareSheet) { LowiShareSheet.open({url, title, text:title}); return; }
   if (navigator.share) navigator.share({title, text:title, url}).catch(e => { if (!e || e.name !== "AbortError") copy(); });
   else copy();
 }
@@ -22933,6 +22935,7 @@ window.LowiCommunityHost = {
 <script src="post-link-core.js?v=20261108-172921"></script>
 <link rel="stylesheet" href="foryou-rail.css?v=20261108-172921">
 <script src="carousel-review.js?v=20261108-172921"></script>
+<script src="share-sheet.js?v=20261108-172921"></script>
 <link rel="stylesheet" id="szCss" href="seller-zone.css?v=20261108-172921">
 <script src="seller-zone-data.js?v=20261108-172921"></script>
 <script src="seller-zone-core.js?v=20261108-172921"></script>

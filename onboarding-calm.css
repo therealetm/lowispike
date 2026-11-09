@@ -1,0 +1,37 @@
+/* LOWiSPIKE · a calm first start (9 Nov 2026).
+   Emmanuel, from people who tried it: "wenn man das öffnet, ist man direkt overwhelmed ... a bit confused. But the goal of the
+   onboarding was not to overwhelm them and confuse them." The video is out of date ("nicht wirklich zum neuesten Standard").
+   One thing per screen: what stays is the picture, one headline, at most one short line, and the next step. Everything else is
+   hidden here (still in the code, so it can come back) or moved to later (Profile). The main button is always on the first view. */
+
+/* ---- iPhone / Android browser, first screen: put LOWiSPIKE on the Home Screen ---- */
+#r2gate .r2-start.a1-first .ig-pick,
+#r2gate .r2-start.a1-first .ig-sel,
+#r2gate .r2-start.a1 .a1-qt,
+#r2gate .r2-start.a1-first .a1-why { display: none !important; }
+#r2gate .r2-start.a1-first .ig-stage { min-height: 0; max-height: 46vh; }
+#r2gate .r2-start.a1-first .ig-phone { max-height: 44vh; }
+#r2gate .r2-start.a1-first .a1-what { font-size: 15px; opacity: .8; margin: 6px auto 0; max-width: 320px; }
+#r2gate .r2-start.a1-first .a1-h { margin-top: 8px; }
+@media (max-height: 740px) { #r2gate .r2-start.a1-first .ig-stage { max-height: 38vh; } #r2gate .r2-start.a1-first .ig-phone { max-height: 36vh; } }
+
+/* ---- first screen in the app: the companion, one headline, one line, Loslegen ---- */
+#r2gate .r2-start.hs[data-hs-step="0"] .hs-over,
+#r2gate .r2-start.hs[data-hs-step="0"] .hs-habits,
+#r2gate .r2-start.hs .hs-qt { display: none !important; }
+#r2gate .r2-start.hs[data-hs-step="0"] .hs-p { max-width: 300px; margin-left: auto; margin-right: auto; }
+
+/* ---- the name screen: the bubble asks, one field, one button ---- */
+#r2gate .r2-start.hs[data-hs-step="1"] .hs-over,
+#r2gate .r2-start.hs[data-hs-step="1"] .hs-chip,
+#r2gate .r2-start.hs[data-hs-step="1"] .hs-fine { display: none !important; }
+
+/* ---- setup after the account: one question per screen; the optional extras fold away ---- */
+.r2-ob .r2-more { margin: 14px 0 0; border-radius: 16px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .1); }
+.r2-ob .r2-more > summary { list-style: none; cursor: pointer; padding: 13px 16px; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: space-between; }
+.r2-ob .r2-more > summary::-webkit-details-marker { display: none; }
+.r2-ob .r2-more > summary::after { content: "+"; font-size: 20px; font-weight: 400; opacity: .7; }
+.r2-ob .r2-more[open] > summary::after { content: "\2212"; }
+.r2-ob .r2-more > .r2-more-in { padding: 0 14px 14px; }
+.r2-ob .r2-sign.empty { display: none; }
+html[data-ui=light] .r2-ob .r2-more { background: rgba(255, 255, 255, .6); border-color: rgba(22, 28, 46, .14); }

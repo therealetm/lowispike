@@ -19,7 +19,9 @@
        sheet opened on top of another has its Back (.r2-pback, R2's stack); it comes later in the sheet than the X, so the round
        bottom button takes Back, not the X. */
     const KNOWN = '.r2-pback,#secX,.sec-x,.gv-x,.stp-close,.kg-back,.kg-qx,.sh-back,.hs-back,.hs-x,.ss2-back,.ss2-page-x,.r5-sback,.f2-back,.f2-x,.gb-x,.bs-close,.ap-close,.sz-close,.tmg-close,.cf-back,.cf-x,.cf-aura-close,.rm-back,.rm-x,.r2-back,.r2-x,.cr-back,.cr-x,.a1-back,.a1-x,.mv-back,.nm-back,.yd-back,.g1-back,.wb-back,.bw3-x,.ck-out-x,.ltp-x,.hq-x,.e1-x,.ec-x,.fai-x,.pd-x,.mp-x,.ig-x,.cs-x,.dr-x,.r3a-x,[data-close],[data-bx]';
-    const NEVER = '.cs-mic-card .cs-photo-x,#n1B *,.stp-snack-x,.mr-add-x,.cg-photo-x,.rk-lad-x,.lw-bx,[data-no-bx],#ltTour *,.lt-tour *';
+    /* Nov 9 2026: the start gate (#r2gate) keeps its own back buttons; the round button never shows over it, so taking them hid the
+       only way back from Create account to the name screen */
+    const NEVER = '#r2gate *,.cs-mic-card .cs-photo-x,#n1B *,.stp-snack-x,.mr-add-x,.cg-photo-x,.rk-lad-x,.lw-bx,[data-no-bx],#ltTour *,.lt-tour *';
     const SRC = 'lw-bx-src';
     const obs = [];
     let btn = null, target = null, raf = 0, last = '', bottomPx = 0, shownAt = 0;

@@ -9028,6 +9028,7 @@ const T = [
   ["New here?", "Neu hier?", "¿Nuevo aquí?"], ["Say hi", "Sag hallo", "Saluda"], ["In For You", "In Für dich", "En Para ti"], ["Only you", "Nur du", "Solo tú"],
   ["Post", "Posten", "Publicar"],
   ["Upload a video", "Video hochladen", "Subir un vídeo"],
+  /* Nov 9 2026 calm setup */ ["More (optional)", "Mehr (optional)", "Más (opcional)"], ["More about you (optional)", "Mehr über dich (optional)", "Más sobre ti (opcional)"],
   /* Nov 8 2026 crawl: the last two "Ate something else?" example chips were English in German */
   ["Döner with fries", "Döner mit Pommes", "Kebab con patatas"], ["cola zero", "Cola Zero", "Coca-Cola Zero"], ["you", "du", "tú"], /* the "you" tag next to your own name in member lists */
   ["Legal notice", "Impressum", "Aviso legal"],
@@ -9596,6 +9597,7 @@ html[data-ui=light] .a1-toast{background:#161c2e}
 @media (prefers-reduced-motion:reduce){ .a1-hit::after,.a1-mine .a1-icon,.a1-glow .a1-icon{animation:none} .a1-f{transition:none} }
 </style>
 <link rel="stylesheet" href="install-guide.css?v=20261108-232216">
+<link rel="stylesheet" href="onboarding-calm.css?v=20261108-232216">
 <script src="install-guide.js?v=20261108-232216"></script>
 <script id="a1js">
 /* ===== LOWiSPIKE A1 (Oct 11, 2026): Add to Home Screen before sign-up =====
@@ -12095,9 +12097,13 @@ R2.onboard = function(opts){
   paintOb();
   return ov;
 };
-/* Oct 17: a 4th setup step, the person's own grocery shopping rhythm (shop-plan.js), when that module is loaded */
-const obShop = () => !!(window.LowiShopPlan && LowiShopPlan.formHTML);
-function dots(){ return '<div class="r2-dots">' + (obShop() ? [0,1,2,3] : [0,1,2]).map(i => '<i class="' + (i === ob.step ? "on" : i < ob.step ? "done" : "") + '"></i>').join("") + '</div>'; }
+/* Oct 17: a 4th setup step, the person's own grocery shopping rhythm (shop-plan.js), when that module is loaded.
+   Nov 9 2026 (Emmanuel, from people who tried it: "wenn man das öffnet, ist man direkt overwhelmed ... a bit confused"): the calm
+   setup (OB_CALM) asks one thing per screen: the birthday (the companion is born from it), then what you want. The photo and the
+   shopping rhythm are not asked here any more; both stay in Profile (photo: your card; rhythm: Profile > About you). */
+const OB_CALM = true;
+const obShop = () => !OB_CALM && !!(window.LowiShopPlan && LowiShopPlan.formHTML);
+function dots(){ return '<div class="r2-dots">' + (OB_CALM ? [0,2] : obShop() ? [0,1,2,3] : [0,1,2]).map(i => '<i class="' + (i === ob.step ? "on" : i < ob.step ? "done" : "") + '"></i>').join("") + '</div>'; }
 function signReveal(){
   const z = signOf(ob.bday);
   if (!z) return '<div class="r2-sign empty"><div class="r2-sg">✦</div><div class="r2-sn">Your star sign shows up here</div><div class="r2-sc">It shapes your companion and the colour of your app.</div></div>';
@@ -12112,31 +12118,36 @@ function paintOb(){
     h = dots() + '<div class="r2-obt">' + (ob.askName ? "Nice to meet you" : "Hi " + esc(ob.name) + "!") + '</div><div class="r2-obs">When\'s your birthday?</div>' +
       (ob.askName ? '<label class="r2-fl"><span>Name</span><input id="r2obName" maxlength="40" placeholder="Your first name" value="' + esc(ob.name) + '"></label>' : "") +
       '<label class="r2-fl date"><span>Birthday</span><input id="r2obB" type="date" max="' + todayISO() + '" min="1920-01-01" value="' + esc(ob.bday) + '"></label>' +
-      '<label class="r2-fl date r2ob-btime"><span>Birth time (optional)</span><input id="r2obT" type="time" value="' + esc(ob.btime || "") + '"></label>' +
       '<div id="r2obSign">' + signReveal() + '</div>' +
       '<p class="r2-obs r2ob-share" style="font-size:13px;opacity:.8;margin:8px 2px 0">Your day and month (never the year) show on your Community card with a birthday countdown and your star sign.</p>' + /* 24 Oct 2026: birthday + sign are shared on the Community card; said here, before Next */
+      (OB_CALM ? '<details class="r2-more"><summary>More (optional)</summary><div class="r2-more-in">' : '') +
+      '<label class="r2-fl date r2ob-btime"><span>Birth time (optional)</span><input id="r2obT" type="time" value="' + esc(ob.btime || "") + '"></label>' +
       /* 25 Oct 2026 (Emmanuel: a link to the personality test for people who don't know their type): the type is optional, next to the sign it sits beside on the card;
          "Not sure yet" shows the free test link (app language, about 10 minutes); the pick is saved in saveOb. Text comes in the app language from profile-share-core.js. */
       (PS && PS.TYPES ? '<label class="r2-fl r2ob-type"><span data-noi18n>' + esc(PS.testUI(obL).pick) + '</span><select id="r2obType" data-noi18n><option value="">' + esc(PS.testUI(obL).none) + '</option>' +
         PS.TYPES.map(t => '<option value="' + t + '"' + (ob.mbti === t ? " selected" : "") + '>' + t + ' · ' + esc(PS.typeName(t, obL)) + '</option>').join("") + '</select></label>' +
         '<div id="r2obTest" class="r2ob-test">' + (ob.mbti ? "" : PS.testHTML(obL)) + '</div>' : "") +
+      (OB_CALM ? '</div></details>' : '') +
       /* Nov 3 (App Store 1.4.1): "not medical advice" is said before the app gives its first food verdict */
       '<p class="r2-obs r2ob-med" style="font-size:12.5px;opacity:.72;margin:10px 2px 0">LOWiSPIKE gives food guidance, not medical advice. Talk to your doctor about your health.</p>' +
       '<div class="r2-err" id="r2obErr" role="alert"></div><div class="r2-obacts"><button class="r2-btn pri big" data-r2o="next">Next</button></div>';
+  } else if (ob.step === 1 && OB_CALM) {
+    ob.step = 2; return paintOb();
   } else if (ob.step === 1) {
     h = dots() + '<div class="r2-obt">Add a photo</div><div class="r2-obs">People in Community see it next to your messages.</div>' +
       '<button class="r2-bigav" data-r2o="photo" aria-label="Add photo">' + (ob.avatar ? '<img src="' + ob.avatar + '" alt="">' : '<span>' + esc((ob.name || "?").charAt(0).toUpperCase()) + '</span>') + '<b>' + R2.ico.cam + '</b></button>' +
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="' + (ob.avatar ? "next" : "photo") + '">' + (ob.avatar ? "Looks good" : "Choose a photo") + '</button><button class="r2-btn ghost big" data-r2o="' + (ob.avatar ? "photo" : "initial") + '">' + (ob.avatar ? "Choose another" : "Use my initial") + '</button></div>';
   } else if (ob.step === 2 || !obShop()) {
     /* Oct 23 (Emmanuel): this step is about the person, not "what do you want most": title About you, subtitle says why we ask */
+    /* Nov 9 2026 calm setup: what you want comes first; gender, cycle and conditions fold into "More about you (optional)" */
+    const obG = '<div class="r2-obsub">Gender</div><div class="r2-chips r2-gender">' + GENDERS.map(g => '<button type="button" class="r2-chip' + (ob.gender === g[0] ? " on" : "") + '" aria-pressed="' + (ob.gender === g[0]) + '" data-r2g="' + g[0] + '">' + g[1] + '</button>').join("") + '</div>';
+    /* Oct 23 2026, cycle tracking stage 1: only women are asked, and only a yes turns it on (off for everyone else) */
+    const obC = (ob.gender === "f" ? '<div class="r2-obsub r2-cyq">Track your cycle? <span>(optional)</span></div><div class="r2-obhint">See your phase as a little cell world. Private on this phone.</div><div class="r2-chips r2-cycle">' + [["1", "Yes, track it", true], ["0", "No thanks", false]].map(c => '<button type="button" class="r2-chip' + (ob.cycle === c[2] ? " on" : "") + '" aria-pressed="' + (ob.cycle === c[2]) + '" data-r2cy="' + c[0] + '">' + c[1] + '</button>').join("") + '</div>' : "");
+    const obW = '<div class="r2-obsub">I want</div>' + '<div class="r2-chips r2-goals">' + goalList().map(t => '<button type="button" class="r2-chip' + (ob.tags.includes(t[0]) ? " on" : "") + '" aria-pressed="' + ob.tags.includes(t[0]) + '" data-r2tag="' + esc(t[0]) + '">' + esc(t[1]) + '</button>').join("") + ownChips("goals", ob.ownGoals) + '</div>' + ownRow("goals", "r2obOwnG");
+    const obK = condBlock("data-r2tag", "data-r2none", ob.tags, ob.noCond, ob.gender, ob.condNote, "r2obCondNote");
     h = dots() + '<div class="r2-obt">About you</div><div class="r2-obs">So your tips fit you. Change it any time in Profile.</div>' +
       /* round 3A: gender (Oct 23: woman, man, non-binary, prefer not to say) and conditions (tailor tips; private) */
-      '<div class="r2-obsub">Gender</div><div class="r2-chips r2-gender">' + GENDERS.map(g => '<button type="button" class="r2-chip' + (ob.gender === g[0] ? " on" : "") + '" aria-pressed="' + (ob.gender === g[0]) + '" data-r2g="' + g[0] + '">' + g[1] + '</button>').join("") + '</div>' +
-      /* Oct 23 2026, cycle tracking stage 1: only women are asked, and only a yes turns it on (off for everyone else) */
-      (ob.gender === "f" ? '<div class="r2-obsub r2-cyq">Track your cycle? <span>(optional)</span></div><div class="r2-obhint">See your phase as a little cell world. Private on this phone.</div><div class="r2-chips r2-cycle">' + [["1", "Yes, track it", true], ["0", "No thanks", false]].map(c => '<button type="button" class="r2-chip' + (ob.cycle === c[2] ? " on" : "") + '" aria-pressed="' + (ob.cycle === c[2]) + '" data-r2cy="' + c[0] + '">' + c[1] + '</button>').join("") + '</div>' : "") +
-      '<div class="r2-obsub">I want</div>' +
-      '<div class="r2-chips r2-goals">' + goalList().map(t => '<button type="button" class="r2-chip' + (ob.tags.includes(t[0]) ? " on" : "") + '" aria-pressed="' + ob.tags.includes(t[0]) + '" data-r2tag="' + esc(t[0]) + '">' + esc(t[1]) + '</button>').join("") + ownChips("goals", ob.ownGoals) + '</div>' + ownRow("goals", "r2obOwnG") +
-      condBlock("data-r2tag", "data-r2none", ob.tags, ob.noCond, ob.gender, ob.condNote, "r2obCondNote") +
+      (OB_CALM ? obW + '<details class="r2-more"' + (ob.moreOpen ? ' open' : '') + '><summary>More about you (optional)</summary><div class="r2-more-in">' + obG + obC + obK + '</div></details>' : obG + obC + obW + obK) +
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="' + (obShop() ? "next" : "finish") + '">' + (obShop() ? "Next" : "Let\'s go") + '</button></div>';
   } else {
     /* step 3 (Oct 17): grocery shopping rhythm. Oct 25: times-per-week bubbles (or It varies); weekdays and shop are optional; Later skips */
@@ -12144,6 +12155,7 @@ function paintOb(){
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="shopdone">Let\'s go</button><button class="r2-btn ghost big spl-later" data-r2o="shoplater">Later</button></div>';
   }
   el.innerHTML = '<div class="r2-obpane">' + h + '</div>';
+  { const mo = $("#r2ob .r2-more"); if (mo && ob.step === 2) mo.addEventListener("toggle", () => { ob.moreOpen = mo.open; }); }
   /* sweep Oct 23 (BQ-1): an old error under the form ('Check your birthday.') goes as soon as the person edits the name or birthday */
   const obErrClear = () => { const er = $("#r2obErr"); if (er && er.textContent) { er.textContent = ""; er.classList.remove("shake"); } };
   const b = $("#r2obB"); if (b) { const onB = () => { ob.bday = b.value; $("#r2obSign").innerHTML = signReveal(); obErrClear(); }; b.addEventListener("input", onB); b.addEventListener("change", onB); }

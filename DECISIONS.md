@@ -1521,3 +1521,12 @@ Live 20261027-004442: a saved profile whose list or object field was null (healt
 
 ## 8 Nov 2026: app crawl (round 1)
 Chromium 393 x 852, German, Dark: every visible button on Home, Kochen, Community and Profile, and two levels deep on Profile (destructive buttons such as Löschen / Abmelden skipped). 0 JavaScript errors. Found and fixed: two English example chips under "Etwas anderes gegessen?" (Döner with fries, cola zero) and the English "you" tag next to your own name in member lists. Not crawled yet: deeper levels in Kochen and Community, the onboarding flow, Day mode.
+
+## 9 Nov 2026: a calm onboarding (one thing per screen)
+**Decision applied (Emmanuel, from people who tried it: "wenn man das öffnet, ist man direkt overwhelmed ... a bit confused. But the goal of the onboarding was not to overwhelm them and confuse them"; the video "nicht wirklich zum neuesten Standard").**
+- iPhone/Android browser, first screen (Home Screen guide): the walkthrough, one line, the heading and "Hab ich hinzugefügt" on the first view. Hidden: the iPhone/Android chooser (the device is detected), "Gezeigt: ...", the long reason, the video pill.
+- App start: the companion, the headline, one line ("Jede gesunde Gewohnheit lädt deinen Begleiter auf."), Loslegen. Hidden: the kicker, the five habit chips, the video pill. Name screen: the bubble ("Hi! Ich bin dein Begleiter. Wie heißt du?"), one field, one button.
+- Bug fixed: Create account had no back button (the round bottom button took it, but never shows over the start gate). Controls inside #r2gate are never taken now.
+- Setup after the account (OB_CALM): two dots. Birthday (birth time and personality type under "Mehr (optional)"; the sign card appears once a date is set; what the Community card shows is still said), the companion reveal, then "Über dich" with the goals first and gender, cycle and conditions under "Mehr über dich (optional)". The photo and the shopping rhythm are not asked any more; both stay in Profile.
+- Nothing is deleted: hidden parts stay in the code (onboarding-calm.css, OB_CALM) so they can come back.
+**Checks:** `tests/onboarding-calm-1109.test.cjs` (new). Chromium 393 x 852 German, iPhone Safari user agent and plain: every screen above.

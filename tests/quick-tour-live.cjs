@@ -1,10 +1,11 @@
 'use strict';
 /* Browser check (Oct 26 2026, MAYA-HANDOFF 0.38): the Quick tour video.
-   A) a brand-new visitor's first onboarding screen shows the Quick tour pill (EN / DE / ES label, on screen, 44 pt); nothing of
-      the video is downloaded before the tap; the tap opens the sheet: the video gets its src, starts muted and inline, the Tap for
-      sound button turns the sound on, Skip closes it, the src is dropped and focus returns to the pill; Escape and the browser
-      Back (Safari's back swipe) close it and the visitor stays on the onboarding screen;
-   B) a signed-in fixture: Settings has Quick tour right after Tutorial; tapping it closes Settings and opens the video.
+   A) a brand-new visitor: the Add to Home Screen screen has no pill (Nov 9 2026, calm onboarding); the first onboarding screen
+      (step 0) shows the Quick tour pill (EN / DE / ES label, 32 pt drawn, 44 pt to tap, Get started still on the first view);
+      nothing of the video is downloaded before the tap; the tap opens the sheet: the video gets its src, starts muted and inline,
+      the Tap for sound button turns the sound on, Skip closes it, the src is dropped and focus returns to the pill; Escape and the
+      browser Back (Safari's back swipe) close it and the visitor stays on the onboarding screen;
+   B) a signed-in fixture: Settings has Tutorial and no second tour row (Oct 28 2026 slim structure; changed here on Nov 9).
    Also: no page errors, the sheet fits the screen, and the mp4 answers Range requests (what Safari sends for video).
      node tests/quick-tour-live.cjs [--root DIR | --url URL] [--views iphone13_webkit,ipad_portrait_webkit,iphone_chromium] [--langs en,de,es]
    Exit 0 = pass. */
@@ -52,19 +53,29 @@ const Q = require('../quick-tour.js'), SS = require('../home-settings-sleep-v2.j
                 page.on('pageerror', e => errs.push(e.message.slice(0, 160)));
                 try {
                     await page.goto(url + (url.includes('?') ? '&' : '?') + 'tb=' + Date.now(), { waitUntil: 'load', timeout: 180000 });
-                    await page.waitForFunction(() => window.LowiQuickTour && document.querySelector('#r2gate .a1-qt'), null, { timeout: 120000, polling: 250 }).catch(() => { });
+                    /* test changed, why (Nov 9 2026): the calm onboarding (onboarding-calm.css) took the pill off the browser's Add to Home Screen
+                       screen (its one job is the Home Screen) and the new 37 s cut is offered on the app's first screen (herb-start step 0)
+                       as a small quiet pill (32 pt drawn, 44 pt to tap). So: no pill on the install screen, then the whole tour flow on step 0. */
+                    const PILL = '.r2-start.hs[data-hs-step="0"] .hs-qt';
+                    await page.waitForFunction(() => window.LowiQuickTour && document.querySelector('#r2gate .r2-start'), null, { timeout: 120000, polling: 250 }).catch(() => { });
                     if (lang !== 'en') { await page.evaluate(l => { try { window.LowiLang && window.LowiLang.set && window.LowiLang.set(l); } catch (e) { } }, lang); await sleep(600); }
-                    const pill = await page.evaluate(() => { const b = document.querySelector('#r2gate .a1-qt'); if (!b) return null; const r = b.getBoundingClientRect(), A = () => document.querySelector('#r2gate .a1-acts').getBoundingClientRect().bottom, h = document.querySelector('#r2gate .a1-h').getBoundingClientRect(); const withPill = A(); b.style.display = 'none'; const without = A(); b.style.display = ''; return { text: b.textContent.trim(), x: r.left, y: r.top, w: r.width, h: r.height, vw: innerWidth, vh: innerHeight, pushes: Math.round(withPill - without), h1Top: h.top, first: !!b.closest('.a1-first') }; });
+                    const a1 = await page.evaluate(() => { const g = document.querySelector('#r2gate .a1-first'); if (!g) return null; const b = g.querySelector('.a1-qt'); return { pill: !!b && getComputedStyle(b).display !== 'none' }; });
+                    steps.a1 = a1;
+                    if (a1) {
+                        ok(!a1.pill, P, 'the Add to Home Screen screen shows the tour pill again (calm onboarding hides it)');
+                        await page.tap('#r2gate [data-a1="continue"]');
+                    }
+                    await page.waitForSelector(PILL, { timeout: 15000 }).catch(() => { }); await sleep(800);
+                    const pill = await page.evaluate(sel => { const b = document.querySelector(sel); if (!b || getComputedStyle(b).display === 'none') return null; const r = b.getBoundingClientRect(), go = document.querySelector('#r2gate [data-hs=plant]'), g = go && go.getBoundingClientRect(), hit = getComputedStyle(b, '::after'); return { text: b.textContent.trim(), x: r.left, y: r.top, w: r.width, h: r.height, vw: innerWidth, vh: innerHeight, goBottom: g ? g.bottom : null, tap: hit && hit.content !== 'none' ? r.height + 2 * (parseFloat(hit.top) < 0 ? -parseFloat(hit.top) : 0) : r.height }; }, PILL);
                     steps.pill = pill;
-                    ok(!!pill, P, 'no Quick tour pill on the first screen (Add to Home Screen guide)');
+                    ok(!!pill, P, 'no Quick tour pill on the first onboarding screen (step 0)');
                     if (!pill) throw new Error('skip');
                     ok(pill.text.includes(Q.TX[lang].open), P, 'pill label not in ' + lang + ': ' + pill.text);
-                    ok(pill.first, P, 'pill not on the first screen');
-                    ok(pill.pushes <= 40 && pill.y + pill.h <= pill.h1Top + 1, P, 'the pill pushes the install buttons down too far or overlaps the heading ' + JSON.stringify(pill));
-                    ok(pill.h >= 30 && pill.x >= 0 && pill.x + pill.w <= pill.vw + 1, P, 'pill too small or off screen ' + JSON.stringify(pill));
-                                        ok(mp4.length === 0, P, 'the video downloaded before the tap: ' + mp4.join(','));
+                    ok(pill.h >= 30 && pill.tap >= 44 && pill.x >= 0 && pill.x + pill.w <= pill.vw + 1 && pill.y + pill.h <= pill.vh, P, 'pill too small, too small to tap or off screen ' + JSON.stringify(pill));
+                    ok(pill.goBottom != null && pill.goBottom <= pill.vh, P, 'Loslegen / Get started is not on the first view with the pill ' + JSON.stringify(pill));
+                    ok(mp4.length === 0, P, 'the video downloaded before the tap: ' + mp4.join(','));
                     await page.screenshot({ path: `${OUT}/${v}-${lang}-1-pill.png` });
-                    await page.tap('#r2gate .a1-qt');
+                    await page.tap(PILL);
                     await page.waitForSelector('.qt-ov.on', { timeout: 8000 }).catch(() => { });
                     await sleep(1500);
                     const st = await page.evaluate(() => { const o = document.querySelector('.qt-ov.on'), v = o && o.querySelector('video'), b = o && o.querySelector('.qt-box').getBoundingClientRect(); return o && { src: v.getAttribute('src'), muted: v.muted, inline: v.hasAttribute('playsinline'), t: v.currentTime, paused: v.paused, err: v.error && v.error.code, can: v.canPlayType('video/mp4; codecs="avc1.4D401F, mp4a.40.2"'), box: [b.left, b.top, b.right, b.bottom], vw: innerWidth, vh: innerHeight, sound: o.querySelector('[data-qt="sound"]').textContent.trim(), skip: o.querySelector('[data-qt="skip"]').textContent.trim(), focus: document.activeElement && document.activeElement.className, role: o.getAttribute('role') }; });
@@ -88,38 +99,25 @@ const Q = require('../quick-tour.js'), SS = require('../home-settings-sleep-v2.j
                     ok(!s2.muted && s2.label === Q.TX[lang].mute && s2.pressed === 'true', P, 'Tap for sound did not unmute ' + JSON.stringify(s2));
                     await page.screenshot({ path: `${OUT}/${v}-${lang}-3-sound.png` });
                     await page.tap('[data-qt="skip"]'); await sleep(500);
-                    const s3 = await page.evaluate(() => ({ ov: document.querySelectorAll('.qt-ov').length, vids: [...document.querySelectorAll('video')].filter(v => v.getAttribute('src') && /quick-tour/.test(v.getAttribute('src'))).length, focus: document.activeElement && document.activeElement.className, onb: !!document.querySelector('#r2gate .a1-qt') }));
+                    const s3 = await page.evaluate(sel => ({ ov: document.querySelectorAll('.qt-ov').length, vids: [...document.querySelectorAll('video')].filter(v => v.getAttribute('src') && /quick-tour/.test(v.getAttribute('src'))).length, focus: document.activeElement && document.activeElement.className, onb: !!document.querySelector(sel) }), PILL);
                     ok(s3.ov === 0 && s3.vids === 0, P, 'Skip did not close and free the video ' + JSON.stringify(s3));
-                    ok(/a1-qt/.test(s3.focus || ''), P, 'focus did not go back to the pill: ' + s3.focus);
+                    ok(/hs-qt/.test(s3.focus || ''), P, 'focus did not go back to the pill: ' + s3.focus);
                     /* Escape */
-                    await page.tap('#r2gate .a1-qt'); await page.waitForSelector('.qt-ov.on', { timeout: 5000 }).catch(() => { }); await sleep(400);
+                    await page.tap(PILL); await page.waitForSelector('.qt-ov.on', { timeout: 5000 }).catch(() => { }); await sleep(400);
                     await page.keyboard.press('Escape'); await sleep(500);
-                    ok(await page.evaluate(() => document.querySelectorAll('.qt-ov').length === 0 && !!document.querySelector('#r2gate .a1-qt')), P, 'Escape did not close it');
+                    ok(await page.evaluate(sel => document.querySelectorAll('.qt-ov').length === 0 && !!document.querySelector(sel), PILL), P, 'Escape did not close it');
                     /* browser Back = Safari's back swipe */
-                    await page.tap('#r2gate .a1-qt'); await page.waitForSelector('.qt-ov.on', { timeout: 5000 }).catch(() => { }); await sleep(900);
+                    await page.tap(PILL); await page.waitForSelector('.qt-ov.on', { timeout: 5000 }).catch(() => { }); await sleep(900);
                     const before = page.url();
                     await page.evaluate(() => history.back()); await sleep(1200);
-                    const s4 = await page.evaluate(() => ({ ov: document.querySelectorAll('.qt-ov.on').length, onb: !!document.querySelector('#r2gate .a1-qt') }));
+                    const s4 = await page.evaluate(sel => ({ ov: document.querySelectorAll('.qt-ov.on').length, onb: !!document.querySelector(sel) }), PILL);
                     steps.back = s4;
                     ok(s4.ov === 0 && s4.onb && page.url().split('?')[0] === before.split('?')[0], P, 'Back did not just close the tour ' + JSON.stringify(s4) + ' ' + page.url());
-                    /* A2: Continue in the browser -> the first onboarding screen (herb-start step 0) has the pill too */
-                    await page.tap('#r2gate [data-a1="continue"]'); await page.waitForSelector('.r2-start.hs[data-hs-step="0"] .hs-qt', { timeout: 15000 }).catch(() => { }); await sleep(800);
-                    const hp = await page.evaluate(() => { const b = document.querySelector('.r2-start.hs[data-hs-step="0"] .hs-qt'); if (!b) return null; b.scrollIntoView({ block: 'center' }); const r = b.getBoundingClientRect(); return { text: b.textContent.trim(), h: r.height, x: r.left, w: r.width, vw: innerWidth }; });
-                    steps.step0 = hp;
-                    ok(!!hp && hp.text.includes(Q.TX[lang].open) && hp.h >= 44 && hp.x >= 0 && hp.x + hp.w <= hp.vw + 1, P, 'onboarding step 0 pill missing or wrong ' + JSON.stringify(hp));
-                    if (hp) {
-                        await sleep(300); await page.screenshot({ path: `${OUT}/${v}-${lang}-6-step0.png` });
-                        await page.tap('.r2-start.hs .hs-qt'); await page.waitForSelector('.qt-ov.on', { timeout: 5000 }).catch(() => { }); await sleep(600);
-                        ok(await page.evaluate(() => !!document.querySelector('.qt-ov.on video[src]')), P, 'step 0 pill did not open the tour');
-                        await page.tap('[data-qt="skip"]'); await sleep(500);
-                        const s5 = await page.evaluate(() => ({ ov: document.querySelectorAll('.qt-ov').length, step: (document.querySelector('.r2-start.hs') || {}).getAttribute ? document.querySelector('.r2-start.hs').getAttribute('data-hs-step') : null }));
-                        ok(s5.ov === 0 && s5.step === '0', P, 'Skip from step 0 did not return to step 0 ' + JSON.stringify(s5));
-                    }
                     ok(errs.length === 0, P, 'page errors: ' + errs.join(' | '));
                 } catch (e) { if (e.message !== 'skip') P.push('A error: ' + e.message.slice(0, 200)); }
                 await ctx.close();
             }
-            /* ---------- B) Settings row after Tutorial (signed-in fixture) ---------- */
+            /* ---------- B) Settings: Tutorial is the one guide, no second tour row (signed-in fixture) ---------- */
             if (lang === 'en' || v === 'iphone13_webkit') {
                 const ctx = await browser.newContext(Object.assign({}, dev, { serviceWorkers: 'block' }));
                 await ctx.route('**/*', r => { const q = r.request(), u = new URL(q.url()); if (u.protocol === 'data:' || u.protocol === 'blob:' || (u.host === host && q.method() === 'GET')) return r.continue(); return r.abort(); });
@@ -134,26 +132,17 @@ const Q = require('../quick-tour.js'), SS = require('../home-settings-sleep-v2.j
                     await sleep(1000);
                     await page.evaluate(l => { try { window.LowiLang && window.LowiLang.set && window.LowiLang.set(l); } catch (e) { } window.LowiHomeSettingsSleepV2.openSettings(); }, lang);
                     /* since Oct 22 2026 Settings open in the profile hub (community-me.js); the old ss2 page is only its fallback */
-                    await page.waitForSelector('[data-cme="quickTour"],[data-ss2="quickTour"]', { timeout: 8000 }).catch(() => { });
+                    await page.waitForSelector('[data-cme="tutorial"],[data-ss2="tutorial"]', { timeout: 8000 }).catch(() => { });
                     await sleep(700);
                     const rows = await page.evaluate(() => [...document.querySelectorAll('.cme-row[data-cme],.ss2-page [data-ss2]')].map(b => ({ id: b.dataset.cme || b.dataset.ss2, label: b.textContent.trim() || b.getAttribute('aria-label'), vis: b.getBoundingClientRect().height > 0 })));
                     const hubOpen = () => (window.LowiCommunityMe && window.LowiCommunityMe.isOpen()) || !!(window.LowiHomeSettingsSleepV2 && window.LowiHomeSettingsSleepV2.isOpen());
                     steps.rows = rows.map(r => r.id).join(','); steps.home = await page.evaluate(hubOpen);
-                    const ids = rows.map(r => r.id), i = ids.indexOf('quickTour');
-                    ok(i > 0 && ids[i - 1] === 'tutorial', P, 'Quick tour is not right after Tutorial: ' + ids.join(','));
-                    if (i > 0) ok(rows[i].label.includes(SS.TX[lang].quickTour) && rows[i].vis, P, 'row label/visibility ' + JSON.stringify(rows[i]));
+                    /* test changed, why (Nov 9 2026): since the Oct 28 slim structure Settings has ONE optional guide, Tutorial
+                       (tests/slim-structure, tests/quick-tour: "no separate Quick tour row any more"); the video lives on the first
+                       onboarding screen only. This live check said the opposite and failed since then; it now checks the decision. */
+                    const ids = rows.map(r => r.id);
+                    ok(ids.includes('tutorial') && ids.indexOf('quickTour') === -1, P, 'Settings should list Tutorial and no second tour row: ' + ids.join(','));
                     await page.screenshot({ path: `${OUT}/${v}-${lang}-4-settings.png` });
-                    if (i > 0) {
-                        const sel = '.cme-row[data-cme="quickTour"],.ss2-page [data-ss2="quickTour"]';
-                        await page.evaluate(s => document.querySelector(s).scrollIntoView({ block: 'center' }), sel); await sleep(300);
-                        await page.tap(sel); await page.waitForSelector('.qt-ov.on', { timeout: 8000 }).catch(() => { }); await sleep(900);
-                        const s = await page.evaluate(h => ({ ov: !!document.querySelector('.qt-ov.on'), settingsOpen: (0, eval)('(' + h + ')')(), muted: (document.querySelector('.qt-ov video') || {}).muted }), hubOpen.toString());
-                        steps.fromSettings = s;
-                        ok(s.ov && !s.settingsOpen && s.muted, P, 'Settings row did not close Settings and open the muted tour ' + JSON.stringify(s));
-                        await page.screenshot({ path: `${OUT}/${v}-${lang}-5-from-settings.png` });
-                        await page.evaluate(() => history.back()); await sleep(1000);
-                        ok(await page.evaluate(() => !document.querySelector('.qt-ov.on') && document.documentElement.classList.contains('wh-home')), P, 'Back from the tour did not land on Home');
-                    }
                     ok(errs.length === 0, P, 'page errors: ' + errs.join(' | '));
                 } catch (e) { P.push('B error: ' + e.message.slice(0, 200)); }
                 await ctx.close();

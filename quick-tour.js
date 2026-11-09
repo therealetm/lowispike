@@ -7,8 +7,11 @@
      or touches .mp4 (sw.js), so Safari's range requests reach the server;
    - Escape, Safari's back swipe (back-swipe.js sends Escape to the open dialog) and the end of the video close it; closing
      pauses it, drops the src (frees memory, no sound left playing) and gives focus back to the button that opened it.
-   EN / DE / ES labels. The video itself is English with burned-in English captions; SRC maps a language to its own cut
-   when one exists and falls back to English. */
+   EN / DE / ES labels. SRC maps a language to its own cut when one exists and falls back to English.
+   Nov 9 2026 (Emmanuel: "Das Video, was da ist, ist zwar gut, aber es ist immer noch falsch ... nicht wirklich zum neuesten
+   Standard"): a new cut from today's app, one German and one English, the same scenes and the same length: the companion, scan,
+   carousel posts, share on WhatsApp or as a story, the weekly challenge, recipes to listen to, the supermarket. Short captions,
+   a spoken line per scene (de Seraphina, en Ava), slow zoom, soft fades. Spanish plays the English cut. */
 (function (root) {
     'use strict';
     const LANGS = ['en', 'de', 'es'];
@@ -22,10 +25,10 @@
        at them, set seconds to its length and bump version. Labels, title and the cache-buster follow; tests/quick-tour-swap
        checks the file's real length against seconds. A language with its own cut gets its own src entry (de: ..., es: ...). */
     const VIDEO = {
-        src: { en: 'media/quick-tour-en.mp4' },
+        src: { en: 'media/quick-tour-en.mp4', de: 'media/quick-tour-de.mp4' },
         poster: 'media/quick-tour-poster.jpg',
-        seconds: 45,
-        version: '1'
+        seconds: 37,
+        version: '2'
     };
     const SRC = VIDEO.src, POSTER = VIDEO.poster;
     const SEEN_KEY = 'lowi.quickTour.seen';

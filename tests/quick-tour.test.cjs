@@ -16,15 +16,18 @@ test('core: labels in English, German and Spanish, real translations, an English
     const Q = require('../quick-tour.js');
     for (const l of LANGS) for (const k of ['open', 'len', 'title', 'sound', 'mute', 'skip', 'replay', 'done']) assert.ok(Q.TX[l][k] && Q.TX[l][k].trim(), l + '.' + k);
     for (const k of ['open', 'sound', 'skip']) { assert.notStrictEqual(Q.TX.de[k], Q.TX.en[k], 'de ' + k); assert.notStrictEqual(Q.TX.es[k], Q.TX.en[k], 'es ' + k); }
-    assert.strictEqual(Q.label('en'), 'Quick tour \u00b7 45 s');
-    assert.strictEqual(Q.label('de'), 'Kurze Tour \u00b7 45 Sek.');
+    /* test changed, why (Nov 9 2026): the new cut is 37 s, so the label no longer says 45; it follows VIDEO.seconds
+       (tests/quick-tour-swap checks that number against the real files) */
+    assert.strictEqual(Q.label('en'), 'Quick tour \u00b7 ' + Q.VIDEO.seconds + ' s');
+    assert.strictEqual(Q.label('de'), 'Kurze Tour \u00b7 ' + Q.VIDEO.seconds + ' Sek.');
     /* Oct 26 2026: the URL now carries VIDEO.version as a cache-buster (tests/quick-tour-swap.test.cjs), so the path is checked on SRC */
     for (const l of LANGS) assert.match(Q.src(l), /^media\/quick-tour-[a-z]{2}\.mp4\?v=[\w.-]+$/, 'video for ' + l);
     for (const f of Object.values(Q.SRC)) assert.match(f, /^media\/quick-tour-[a-z]{2}\.mp4$/, f);
     assert.strictEqual(Q.src('fr'), Q.src('en'), 'unknown language falls back to English');
 });
 
-test('the video: a real web-sized H.264 file and a poster, 45 seconds, under 4 MB, faststart (moov before mdat)', () => {
+/* test changed, why (Nov 9 2026): the title said 45 seconds; the length is checked in tests/quick-tour-swap, the new cut is 37 s */
+test('the video: a real web-sized H.264 file and a poster, under 4 MB, faststart (moov before mdat)', () => {
     const Q = require('../quick-tour.js');
     const files = new Set(Object.values(Q.SRC));
     for (const f of files) {

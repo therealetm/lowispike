@@ -17,9 +17,13 @@
 
 /* ---- first screen in the app: the companion, one headline, one line, Loslegen ---- */
 #r2gate .r2-start.hs[data-hs-step="0"] .hs-over,
-#r2gate .r2-start.hs[data-hs-step="0"] .hs-habits,
-#r2gate .r2-start.hs .hs-qt { display: none !important; }
+#r2gate .r2-start.hs[data-hs-step="0"] .hs-habits { display: none !important; }
 #r2gate .r2-start.hs[data-hs-step="0"] .hs-p { max-width: 300px; margin-left: auto; margin-right: auto; }
+/* the new tour video (9 Nov, today's app, 37 s) is back as one small quiet pill under the line; the browser's install screen keeps
+   it hidden, its job is the Home Screen */
+#r2gate .r2-start.hs[data-hs-step="0"] .hs-qt { min-height: 32px; padding: 0 14px; gap: 7px; margin: 10px auto 0; font-size: 13.5px; position: relative; }
+#r2gate .r2-start.hs[data-hs-step="0"] .hs-qt::after { content: ""; position: absolute; inset: -6px 0; }
+#r2gate .r2-start.hs[data-hs-step="0"] .hs-qt i { width: 20px; height: 20px; font-size: 9px; }
 
 /* ---- the name screen: the bubble asks, one field, one button ---- */
 #r2gate .r2-start.hs[data-hs-step="1"] .hs-over,

@@ -54,6 +54,8 @@ html[data-ui=light] .fy-slide .fy-act>span{background:none;padding:0}
 #cmFeed:has(> #fyFeed)>.fyv-fab,#cmFeed:has(> #fyFeed)>.r3f-fab{position:static!important;grid-column:1;grid-row:1;align-self:center}
 #cmFeed:has(> #fyFeed)>.fy-tops{position:static!important;grid-column:2;grid-row:1;justify-self:end;align-self:center}
 #cmFeed:has(> #fyFeed)>#fyFeed{grid-column:1 / -1;grid-row:2;min-height:0;height:100%;border-radius:22px;overflow-y:auto}
+/* Nov 9 2026: the round back button sat on the caption at the foot of each post; while it is on, the feed ends above it */
+html.lw-bx-on #cmFeed:has(> #fyFeed){padding-bottom:58px}
 #fyFeed .fy-slide:not(.fyb-slide){--fyp:136px;background:#05070c}
 #fyFeed .fy-slide:not(.fyb-slide)>.fy-bg{top:0!important;bottom:auto!important;height:calc(100% - var(--fyp))!important;background:#000}
 #fyFeed .fy-slide:not(.fyb-slide)>img.fy-bg,#fyFeed .fy-slide:not(.fyb-slide) .fy-car-track>img{object-fit:contain!important}

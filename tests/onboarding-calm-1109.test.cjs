@@ -11,8 +11,11 @@ const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const css = read('onboarding-calm.css'), html = read('index.html'), hs = read('herb-start.js');
 
 test('first screens: one headline, one line, the next step; the rest is hidden, the outdated video pill too', () => {
-  for (const sel of ['.r2-start.a1-first .ig-pick', '.r2-start.a1-first .ig-sel', '.r2-start.a1 .a1-qt', '.r2-start.a1-first .a1-why', '.r2-start.hs[data-hs-step="0"] .hs-over', '.r2-start.hs[data-hs-step="0"] .hs-habits', '.r2-start.hs .hs-qt'])
+  /* test changed, why (Nov 9 2026, later the same day): the video was remade from today's app (37 s, German + English), so the app's
+     first screen shows it again as one small pill (tests/tour-video-1109); the browser's install screen keeps it hidden */
+  for (const sel of ['.r2-start.a1-first .ig-pick', '.r2-start.a1-first .ig-sel', '.r2-start.a1 .a1-qt', '.r2-start.a1-first .a1-why', '.r2-start.hs[data-hs-step="0"] .hs-over', '.r2-start.hs[data-hs-step="0"] .hs-habits'])
     assert.ok(css.includes(sel), sel);
+  assert.ok(!/\.r2-start\.hs \.hs-qt \{ display: none/.test(css), 'the step 0 pill is not hidden any more');
   assert.match(css, /\.r2-start\.a1-first \.ig-stage \{ min-height: 0; max-height: 46vh; \}/, 'the button stays on the first view');
   assert.match(hs, /plantP:'Jede gesunde Gewohnheit l\\u00e4dt deinen Begleiter auf\.'/);
   assert.match(hs, /ask:'Hi! Ich bin dein Begleiter\. Wie hei\\u00dft du\?'/, 'Begleiter, not Lichtwesen');

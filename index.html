@@ -5047,7 +5047,9 @@ function feedAll(){
   me.filter(p=>p.vis!=="me").forEach(p=>{const r=merged.get(p.id);merged.set(p.id,Object.assign({},p,r,{me:true,photo:r&&r.photo||p.photo||"",vurl:r&&r.vurl||p.vurl||"",poster:r&&r.poster||p.poster||""}));});
   return Array.from(merged.values()).filter(p=>!hidden.includes(p.id)&&!blocked.includes(p.who)).sort((a,b)=>b.ts-a.ts);
 }
-function ago(ts){ const m = Math.max(0, Math.round((Date.now() - ts) / 60000)); if (m < 1) return "now"; if (m < 60) return m + " min"; const h = Math.round(m / 60); if (h < 24) return h + " h"; const d = Math.round(h / 24); return d === 1 ? "yesterday" : d + " days"; }
+/* Nov 9 2026: For You is a data-noi18n pane, so the dictionary never reached these words ("Fixture · now" in German); they come in the app language now */
+function ago(ts){ let l = "en"; try { const LL = window.LowiLang; l = String((LL && LL.get && LL.get()) || localStorage.getItem("lowispike.lang") || "en").slice(0, 2); } catch(e){} const de = l === "de", es = l === "es";
+  const m = Math.max(0, Math.round((Date.now() - ts) / 60000)); if (m < 1) return de ? "jetzt" : es ? "ahora" : "now"; if (m < 60) return m + " min"; const h = Math.round(m / 60); if (h < 24) return h + " h"; const d = Math.round(h / 24); return d === 1 ? (de ? "gestern" : es ? "ayer" : "yesterday") : d + (de ? " Tage" : es ? " días" : " days"); }
 function art(p){ const a = p.art || ["✨", 40, 280]; return '<div class="tr-art" style="--h1:' + a[1] + ';--h2:' + a[2] + '"><span>' + a[0] + '</span></div>'; }
 function mediaHTML(p){
   const pl = PLAT[p.plat] || PLAT.web, th = window.LowiForYou ? LowiForYou.thumbOf(p) : p.meta && p.meta.thumb;

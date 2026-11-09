@@ -10796,9 +10796,20 @@ function pushProfile(){ clearTimeout(profT); profT = setTimeout(async () => { if
   const r = await sb.from("profiles").upsert(Object.assign({updated_at:new Date().toISOString()}, row)); if (r.error) lastProf = ""; }, 1500); }
 const SYNC = () => window.LowiSyncCore || null;
 const syncedKey = k => { const c = SYNC(); return c ? c.synced(k) : (typeof k === "string" && k.indexOf("lowispike.") === 0 && k !== "lowispike.chat.v1"); };
+/* Nov 9 2026: the "watch out for" chips (PCOS, insulin resistance, pre-diabetes) and "none of these" are health data too. The
+   form says "Stays on this phone" and S.health never leaves it, but these chips were kept in S.user.tags / S.user.noCond, which
+   the account backup copied to the server. Now the backup never carries them, and a merged or restored copy gets this phone's
+   own back; goals and everything else in S.user sync as before. */
+const condTag = t => { try { const T = window.LowiTags; if (T && T.isCond) return T.isCond(t); } catch(e){} return t === "PCOS" || t === "Insulin resistance" || t === "Pre-diabetes"; };
+function stripCondUser(st){ if (st && st.user && typeof st.user === "object") { if (Array.isArray(st.user.tags)) st.user.tags = st.user.tags.filter(t => !condTag(t)); delete st.user.noCond; } return st; }
+function keepCondUser(st, cur){ if (!st || !st.user || typeof st.user !== "object" || !cur || !cur.user || typeof cur.user !== "object") return st;
+  const mine = Array.isArray(cur.user.tags) ? cur.user.tags.filter(condTag) : [];
+  st.user.tags = (Array.isArray(st.user.tags) ? st.user.tags.filter(t => !condTag(t)) : []).concat(mine);
+  if (cur.user.noCond !== undefined) st.user.noCond = cur.user.noCond; else delete st.user.noCond;
+  return st; }
 function snapshot(){ const o = {};
   Object.keys(localStorage).forEach(k => { if (!syncedKey(k)) return; let v = localStorage.getItem(k);
-    if (k === "lowispike.v2") { try { const s = JSON.parse(v); PRIVATE_KEYS.forEach(x => delete s[x]); v = JSON.stringify(s); } catch(e){} }
+    if (k === "lowispike.v2") { try { const s = JSON.parse(v); PRIVATE_KEYS.forEach(x => delete s[x]); try { stripCondUser(s); } catch(e){} v = JSON.stringify(s); } catch(e){} }
     o[k] = v; });
   o["lowispike.sync.v"] = "1";   /* written by a build that merges; an older build's blind push lacks it */
   return o; }
@@ -10819,9 +10830,9 @@ function saveSyncMeta(m){ try { _set.call(localStorage, SYNC_META, JSON.stringif
 function syncLang(){ const l = (localStorage.getItem("lowi.lang") || document.documentElement.lang || "en").slice(0, 2); return l === "de" || l === "es" ? l : "en"; }
 function canReload(){ try { const now = Date.now(), a = JSON.parse(sessionStorage.getItem("lowi.sync.reloads") || "[]").filter(t => now - t < 90000); if (a.length >= 3) return false; a.push(now); sessionStorage.setItem("lowi.sync.reloads", JSON.stringify(a)); return true; } catch(e){ return false; } }
 function applyMerged(res){
-  let priv = {}; try { const cur = JSON.parse(localStorage.getItem("lowispike.v2") || "{}"); PRIVATE_KEYS.forEach(x => { if (cur && cur[x] !== undefined) priv[x] = cur[x]; }); } catch(e){}
+  let priv = {}, curV2 = null; try { const cur = JSON.parse(localStorage.getItem("lowispike.v2") || "{}"); curV2 = cur; PRIVATE_KEYS.forEach(x => { if (cur && cur[x] !== undefined) priv[x] = cur[x]; }); } catch(e){}
   syncFrozen = true;
-  res.changedKeys.forEach(k => { let v = res.merged[k]; if (k === "lowispike.v2") { try { const o = JSON.parse(v); Object.assign(o, priv); v = JSON.stringify(o); } catch(e){} } try { _set.call(localStorage, k, v); } catch(e){} });
+  res.changedKeys.forEach(k => { let v = res.merged[k]; if (k === "lowispike.v2") { try { const o = JSON.parse(v); Object.assign(o, priv); try { keepCondUser(o, curV2); } catch(e){} v = JSON.stringify(o); } catch(e){} } try { _set.call(localStorage, k, v); } catch(e){} });
   res.removedKeys.forEach(k => { try { localStorage.removeItem(k); } catch(e){} });
 }
 async function pushState(o){ const at = new Date().toISOString(); const r = await sb.from("user_state").upsert({id:uid, data:o, updated_at:at}); if (r.error) return null; lastBack = JSON.stringify(o); return at; }
@@ -10883,9 +10894,9 @@ document.addEventListener("visibilitychange", () => {
 });
 function backupSoon(ms){ clearTimeout(backT); backT = setTimeout(() => { if (!live) return; const o = snapshot(), j = JSON.stringify(o); if (j === lastBack) return; syncNow("backup"); }, ms || 5000); }
 async function restore(){ const r = await sb.from("user_state").select("data,updated_at").eq("id", uid).maybeSingle(); if (r.error || !r.data || !r.data.data) return false;
-  const o = r.data.data; let keepHealth = null; try { keepHealth = JSON.parse(localStorage.getItem("lowispike.v2") || "{}").health || null; } catch(e){}
+  const o = r.data.data; let keepHealth = null, keepUser = null; try { const c = JSON.parse(localStorage.getItem("lowispike.v2") || "{}"); keepHealth = c.health || null; keepUser = c.user && typeof c.user === "object" && (Array.isArray(c.user.tags) && c.user.tags.some(condTag) || c.user.noCond !== undefined) ? c : null; } catch(e){}
   Object.keys(localStorage).filter(k => k.indexOf("lowispike.") === 0).forEach(k => localStorage.removeItem(k));
-  Object.keys(o).forEach(k => { let v = o[k]; if (typeof v !== "string" || !syncedKey(k)) return; if (k === "lowispike.v2" && keepHealth) { try { const s = JSON.parse(v); s.health = keepHealth; v = JSON.stringify(s); } catch(e){} } localStorage.setItem(k, v); });
+  Object.keys(o).forEach(k => { let v = o[k]; if (typeof v !== "string" || !syncedKey(k)) return; if (k === "lowispike.v2" && (keepHealth || keepUser)) { try { const s = JSON.parse(v); if (keepHealth) s.health = keepHealth; if (keepUser) try { keepCondUser(s, keepUser); } catch(e){} v = JSON.stringify(s); } catch(e){} } localStorage.setItem(k, v); });
   /* what came down is what both sides agree on now */
   try { const C = SYNC(); if (C) { const got = {}; Object.keys(o).forEach(k => { if (typeof o[k] === "string" && syncedKey(k)) got[k] = o[k]; }); saveSyncMeta({base:C.hashes(C.units(got)), at:r.data.updated_at || ""}); } } catch(e){}
   return true; }

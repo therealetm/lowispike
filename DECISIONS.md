@@ -1545,3 +1545,8 @@ Chromium 393 x 852, German, Dark: every visible button on Home, Kochen, Communit
 - privacy.html (EN/DE/ES, Stand 9 Nov): health details stay on the phone and are not part of the account backup; weight shows on the Community card only with the switch on.
 - Still for the owner/lawyer: whether meal logs in the backup need an explicit consent (Art. 9), the Gemini US transfer wording, "Insulinfreundlich".
 **Checks:** `tests/health-chips-private-1109.test.cjs` (new: runs the real sync block against a fake cloud with two devices).
+
+## 9 Nov 2026: round "Eigenes, z. B. ..." fields; the privacy release went out with this one
+- The two type-your-own fields in the setup ("Eigenes, z. B. besser schlafen", "Eigenes, z. B. Hashimoto") had square corners next to round chips and buttons; now 16 px like every other field (also in Profile's edit sheet).
+- Release 20261109-112633 (health chips stay on the phone) passed every check but GitHub Pages stopped at "syncing_files" and cancelled the deployment after its 10-minute timeout; re-running the job from here was refused (403). It goes live with this release, a real change, not an empty commit.
+**Checks:** `tests/onboarding-calm-1109.test.cjs` (one new test).

@@ -38,3 +38,8 @@ test('setup after the account: birthday, the companion, what you want; extras fo
   assert.ok(i > 0 && j > i && j < k, 'what is shared on the Community card is said outside the fold');
   assert.match(css, /\.r2-ob \.r2-sign\.empty \{ display: none; \}/);
 });
+
+test('the "Eigenes, z. B. ..." fields are round like every other field and chip in the setup (they had square corners)', () => {
+  assert.match(html, /\.r2-ownadd input\{flex:1;min-width:0;height:46px;font-size:16px;border-radius:16px;padding-left:14px;box-sizing:border-box\}/);
+  assert.match(html, /\.r2-fl input\{width:100%;box-sizing:border-box;height:52px;border-radius:16px;/, 'the same 16 px as the other fields');
+});

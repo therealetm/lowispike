@@ -488,7 +488,10 @@
             const k = b.dataset.g2hOpen, lab = b.querySelector('b'), ic = b.querySelector('.g2h-ic'), sm = b.querySelector('small');
             if (!k || out.some(o => o.k === 'g-' + k)) return;
             const nm = DAY_NAME[k];
-            out.push({ k: 'g-' + k, g: DAY_GROUP[k] || 'more', b: nm ? T(nm[0], nm[1], nm[2]) : (lab ? lab.textContent.trim() : k), sub: sm ? sm.textContent.trim() : '', ico: ic ? ic.innerHTML : ICO.macro });
+            /* Nov 10 2026: the hidden Home tiles are drawn in English and translated a moment later, so "Mein Tag" could show
+               "2 meals" / "0/2 eaten" / "Add a reminder"; the words go through the dictionary here (a line already translated stays) */
+            const tl = v => { try { return W.LowiLang && W.LowiLang.line ? W.LowiLang.line(v) : v; } catch (e) { return v; } };
+            out.push({ k: 'g-' + k, g: DAY_GROUP[k] || 'more', b: nm ? T(nm[0], nm[1], nm[2]) : (lab ? tl(lab.textContent.trim()) : k), sub: sm ? tl(sm.textContent.trim()) : '', ico: ic ? ic.innerHTML : ICO.macro });
         });
         if (W.LowiSpirit) out.push({ k: 'macro', g: 'food', b: T('Macro goals', 'Makro-Ziele', 'Metas de macros'), sub: T('Protein, carbs, fat', 'Eiwei\u00df, Kohlenhydrate, Fett', 'Prote\u00edna, carbohidratos, grasa'), ico: DAY_ICO.macro });
         if (D.getElementById('brRow')) {

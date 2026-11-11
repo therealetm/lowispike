@@ -5361,7 +5361,7 @@ function paintRest(){
         trPhotosHTML() + (C.photo ? mealRowHTML() : '')) +
     postRecField() +
     '<div class="card" style="margin-top:14px;padding:4px 14px">' +
-      '<div class="trow" style="padding:10px 0"><span><span style="display:block;font-weight:600">Show it in For You</span><span class="small muted">' + (C.vis === "tribe" ? "The whole tribe can see it." : "Only you. It stays on your phone.") + '</span></span><button class="toggle' + (C.vis === "tribe" ? " on" : "") + '" data-tr="vis" aria-label="Visible to the tribe"></button></div>' +
+      '<div class="trow" style="padding:10px 0"><span><span style="display:block;font-weight:600">Show it in For You</span><span class="small muted">' + (C.vis === "tribe" ? "The whole tribe can see it." : "Only you. It stays on your phone.") + '</span></span><button class="toggle' + (C.vis === "tribe" ? " on" : "") + '" data-tr="vis" role="switch" aria-checked="' + (C.vis === "tribe") + '" aria-label="' + esc(fyT("Show it in For You")) + '"></button></div>' +
       (link && pl.mine ? '<div class="trow" style="padding:10px 0;border-top:1px solid var(--line2)"><span><span style="display:block;font-weight:600">This is my own video</span><span class="small muted">It gets the <span class="tr-holo-t" style="font-weight:700">Tribe Original</span> highlight.</span></span><button class="toggle holo' + (C.mine ? " on" : "") + '" data-tr="mine" aria-label="This is my own video"></button></div>' : '') +
       (!link && (C.photo || (C.photos || []).length) && window.LowiCommunity && LowiCommunity.sharePics ? '<div class="trow" style="padding:10px 0;border-top:1px solid var(--line2)"><span><span style="display:block;font-weight:600">Also in the Community chat</span><span class="small muted">' + ((C.photos || []).length > 1 ? "People swipe through your pictures right in the chat." : "Your picture goes to the chat too.") + '</span></span><button class="toggle' + (C.chat ? " on" : "") + '" data-tr="chat" aria-label="Also in the Community chat"></button></div>' : '') +
     '</div>' + (C.vis === "tribe" ? '<p class="foot" style="margin-top:10px">' + (C.meal && window.LowiMealSnap && !link ? esc(LowiMealSnap.t("foot")) : (link ? "Only the link, the title it comes with and your line are shared." : "Only what you write here is shared.") + ' Nothing about your health or goals.') + '</p>' : '');
@@ -13528,6 +13528,8 @@ const ROWS = [
   ["Add birthday for your star sign", "Geburtstag für dein Sternzeichen eintragen", "Añade tu cumpleaños para ver tu signo"],
   ["Add your birthday to see your star sign", "Trag deinen Geburtstag ein, um dein Sternzeichen zu sehen", "Añade tu cumpleaños para ver tu signo"],
   ["Edit profile", "Profil bearbeiten", "Editar perfil"],
+  ["Share profile", "Profil teilen", "Compartir perfil"], ["See Ranking", "Zur Rangliste", "Ver ranking"], ["Next birthday", "Nächster Geburtstag", "Próximo cumpleaños"], /* Nov 10 2026: the member card said these in English */
+  [/^in (\d+) days$/, "in $1 Tagen", "en $1 días"],
   ["Change password", "Passwort ändern", "Cambiar contraseña"],
   ["Sign out", "Abmelden", "Cerrar sesión"],
   ["Sign out?", "Abmelden?", "¿Cerrar sesión?"],
@@ -17615,7 +17617,10 @@ function ageOf(b){ if (!b || !/^\d{4}-\d{2}-\d{2}$/.test(b)) return null; const 
   let a = t.getFullYear() - p[0]; if (t.getMonth() + 1 < p[1] || (t.getMonth() + 1 === p[1] && t.getDate() < p[2])) a--; return a >= 5 && a < 120 ? a : null; }
 function daysToBday(b){ if (!b || !/^\d{4}-\d{2}-\d{2}$/.test(b)) return null; const PS = window.LowiProfileShare, md = PS && (PS.decode(b) || PS.monthDay(b)); if (md) return PS.next(md).days; /* 24 Oct: 29 Feb kept on 28 Feb in other years */ const p = b.split("-").map(Number), t = new Date(); t.setHours(0, 0, 0, 0);
   let n = new Date(t.getFullYear(), p[1] - 1, p[2]); if (n < t) n = new Date(t.getFullYear() + 1, p[1] - 1, p[2]); return Math.round((n - t) / 864e5); }
-function bdayLong(b){ const p = b.split("-").map(Number); const M = ["January","February","March","April","May","June","July","August","September","October","November","December"]; return p[2] + " " + M[p[1] - 1] + (p[0] >= 1900 ? " " + p[0] : ""); } /* a shared birthday (year 0004) is day + month only */
+function bdayLong(b){ const p = b.split("-").map(Number); const M = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  /* Nov 10 2026: the month in the app language ("1. Januar 1990"), it was always English */
+  try { const l = String((window.LowiLang && LowiLang.get && LowiLang.get()) || "en").slice(0, 2), loc = {de:"de-DE", es:"es-ES"}[l]; if (loc) { const o = {day:"numeric", month:"long", timeZone:"UTC"}; if (p[0] >= 1900) o.year = "numeric"; return new Date(Date.UTC(p[0] >= 1900 ? p[0] : 2000, p[1] - 1, p[2])).toLocaleDateString(loc, o); } } catch(e){}
+  return p[2] + " " + M[p[1] - 1] + (p[0] >= 1900 ? " " + p[0] : ""); } /* a shared birthday (year 0004) is day + month only */
 
 /* ---------- care by period (Oct 17, 2026): the care board ranks the sunbeams Misty got from you, care-board-core.js ---------- */
 const CB = () => window.LowiCareBoard || null;
@@ -21590,7 +21595,10 @@ D.addEventListener("keydown", e => { if (e.key === "Escape" && H.classList.conta
 
 /* ---- fit: tighten step by step until the main screen fits above the tab bar ---- */
 const LV = ["g2e-t1", "g2e-t2", "g2e-t3", "g2e-t4", "g2e-t5"];
-function limit(){ if (window.LowiFit) return LowiFit.limit(); const tb = D.getElementById("tabbar"); const r = tb && tb.offsetHeight ? tb.getBoundingClientRect().top : innerHeight; return r - 6; }
+/* Nov 10 2026 design pass: the round back button sat on the last tile ("Look & Ton"; a tap on the tile went Home). The screen
+   now fits above that button, not just above the screen edge. */
+function bxTop(){ try { const b = D.getElementById("lwBX"); if (b && b.classList.contains("on")) { const r = b.getBoundingClientRect(); if (r.height) return r.top - 8; } } catch(e){} return Infinity; }
+function limit(){ let r; if (window.LowiFit) r = LowiFit.limit(); else { const tb = D.getElementById("tabbar"); r = (tb && tb.offsetHeight ? tb.getBoundingClientRect().top : innerHeight) - 6; } return Math.min(r, bxTop()); }
 function bottom(t){ let m = 0; Array.from(t.children).forEach(k => { if (k.offsetHeight) m = Math.max(m, k.getBoundingClientRect().bottom); }); return m; }
 /* Oct 18 game-perf: skip a pass that finds the Profile screen as the last fit left it (see the Cook fit) */
 let eFitKey = "";
@@ -22974,6 +22982,7 @@ window.LowiCommunityHost = {
 <script src="story-card.js?v=20261109-143456"></script>
 <script src="share-sheet.js?v=20261109-143456"></script>
 <script src="haptics.js?v=20261109-143456"></script>
+<link rel="stylesheet" href="design-pass.css?v=20261109-143456"><!-- Nov 10 2026 design pass: legibility, 44 pt tap areas, layout fixes; after the other sheets -->
 <link rel="stylesheet" id="szCss" href="seller-zone.css?v=20261109-143456">
 <script src="seller-zone-data.js?v=20261109-143456"></script>
 <script src="seller-zone-core.js?v=20261109-143456"></script>

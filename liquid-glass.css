@@ -30,7 +30,7 @@ html.lg {
         radial-gradient(1px 1px at 4% 52%, rgba(255, 255, 255, .45), transparent 60%);
     /* the app's own tokens, pointed at the glass system (one source of colour for every older component) */
     --gold: #0a84ff !important; --gold2: #64d2ff !important; --line: rgba(143, 231, 255, .24) !important; --line2: rgba(143, 231, 255, .13) !important;
-    --text: #fff !important; --muted: rgba(235, 235, 245, .62) !important; --dim: rgba(235, 235, 245, .34) !important;
+    --text: #fff !important; --muted: rgba(235, 235, 245, .62) !important; --dim: rgba(235, 235, 245, .55) !important; /* Nov 10 2026 design pass: was .34 (2.6:1 on black, below readable); notes and footers use it, so it reads like iOS secondary text now (5.4:1) */
     --panel: rgba(30, 32, 40, .46) !important; --panel2: rgba(58, 60, 70, .5) !important;
     --acc: #5aa9ff !important; --acc2: #9fd0ff !important; --acc-rgb: 90, 169, 255 !important; --acc-ink: #5aa9ff !important;
     --hi: #ff6b6b; --mid: #ffd60a; --lo: #30d158;

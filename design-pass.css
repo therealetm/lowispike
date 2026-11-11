@@ -1,0 +1,57 @@
+/* LOWiSPIKE · design pass (10 Nov 2026).
+   Emmanuel: "der Design-Feinschliff, damit die ganze App einheitlich wirkt und iOS ... style und konform ist. Schau noch mal überall
+   nach, behebe Fehler, Design Fehler, Dinge, die einfach unlogisch sind."
+   Every main screen was opened and measured (38 screens, German, 393 x 852): tap areas, text sizes, contrast, clipped labels.
+   What iOS asks for and this file brings: text people can read (11 pt at least, secondary text near 60 %), 44 pt to tap,
+   16 px in fields (Safari zooms below that), nothing drawn over a label. Loaded last, so each rule here is the final word. */
+
+/* ---------- 1. Legibility ---------- */
+/* Move: "min" under the picked minutes was pale on a white pill (1:1). liquid-glass.css greys every small in a tab. */
+html.lg #app #main .tab #mv-screen .mv-hero .mv-row.mv-mins.mvd > .chip small { font-size: 11px; opacity: 1; }
+html.lg #app #main .tab #mv-screen .mv-hero .mv-row.mv-mins.mvd > .chip.on small { color: #0b1d3f !important; opacity: .8; }
+/* small print that was under 11 px */
+#tab-shelf #g2cTiles .g2c-tile small { font-size: 11px !important; }
+.cwk-dish small, .fyb-tag, .r5-dci .sh-pk, .rt-kt { font-size: 11px !important; }
+/* small labels that were under 4.5:1 on black (opacity on top of an already grey colour) */
+html.lg #app #main .tab :is(.fyb-from, .fyb-to) small,
+html.lg #app #main .tab .cwk-dish small,
+html.lg #app #main .tab [class^="cwk-"] li > small,
+html.lg #app #main .tab .rk-own .rk-ownr { opacity: 1 !important; color: rgba(235, 235, 245, .62) !important; }
+
+/* ---------- 2. Fields ---------- */
+/* the share card's link field: 14 px made iPhone Safari zoom the page on focus */
+.shs-card .shs-url { font-size: 16px; }
+/* the dictation mic keeps its size in every form (the swap form's "every button is full width" rule stretched it into an oval) */
+.mic-btn { width: 34px !important; height: 34px !important; min-width: 0 !important; min-height: 0 !important; flex: none !important; }
+
+/* ---------- 3. Layout ---------- */
+/* Kochen tools row: a tile is as wide as its title ("Mein Reze..." was cut); the row still swipes sideways */
+#tab-shelf #g2cTiles .g2c-tile { flex: 0 0 auto !important; min-width: calc((100% - 16px) / 3.3); padding-left: 10px !important; padding-right: 10px !important; }
+#tab-shelf #g2cTiles .g2c-tile small { width: 0; min-width: 100%; }
+/* a dish without a photo: the icon is a quiet watermark behind the name, not a second thing fighting it */
+#tab-shelf .ck-ph svg, .r5-dcph.ck-ph svg { opacity: .2; }
+/* Move: the start button reads on one line ("10-Min Desk Spike Breaker starten" broke in two) */
+#mv-screen .mv-go.btn.primary { font-size: 16px; text-wrap: balance; }
+/* sheets of the Kochen tools end above the round close button, so it stays at the bottom like everywhere else
+   (it had climbed next to the title) */
+html.lw-bx-on #bSheet .b-sh { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 84px); }
+/* Circle: "Nachrichten nicht geladen" is about the chat; it does not belong over the billiard table */
+html.csp-circle #cmPaneChat .cs-status { display: none !important; }
+/* Profile: "Deine Daten" was there twice (a chip under the name and the first tile); the tile stays. The three number cards are
+   the same height. */
+html.g2e-on:not(.g2e-open) #tab-profile > .r2-hero > .r3-hacts [data-yd="open"] { display: none !important; }
+html.g2e-on:not(.g2e-open) #tab-profile > .row { align-items: stretch; }
+
+/* ---------- 4. 44 pt to tap ---------- */
+/* segmented buttons a little taller (were 36 to 40) */
+#tab-shelf .ck-b, .rk-seg .rk-segb, .sf-toggle button { min-height: 44px; }
+html.g2e-on:not(.g2e-open) #tab-profile > .r2-hero > .r3-hacts .r2-btn { min-height: 44px; }
+/* everything else keeps its look and gets an invisible area around it */
+.k9-chips .chip, .sh-chips .chip, #cmFeed > .fyv-fab, #cmFeed .fy-tops > button, #fyFeed .fy-rail .fy-act, .rk-top .rk-info,
+.r3-det .r3-signchip, .r3-lvcard .r3-link, .cme-langs > button, .sec > button.small { position: relative; }
+.k9-chips .chip::after, .sh-chips .chip::after, #cmFeed > .fyv-fab::after, #cmFeed .fy-tops > button::after, #fyFeed .fy-rail .fy-act::after,
+.rk-top .rk-info::after, .r3-lvcard .r3-link::after, .cme-langs > button::after { content: ""; position: absolute; inset: -5px -2px; }
+.r3-det .r3-signchip::after { content: ""; position: absolute; inset: -8px -2px; }
+.sec > button.small::after { content: ""; position: absolute; inset: -13px -6px; }
+.rt-balls .rt-ball::after { content: ""; position: absolute; inset: -9px; border-radius: 50%; }
+.toggle::before { content: ""; position: absolute; inset: -7px 0; }

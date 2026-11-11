@@ -98,7 +98,10 @@ test('the database pings n1-push only when a slot is really posted, and Nibblo\'
   assert.doesNotMatch(read('supabase/proposals/nibblo_meals_20261025.sql'), /net\.http|push|notify|webhook/i);
 });
 
-test('the app: a fifth switch in EN/DE/ES, sent with the subscription; a tap opens For You at that post (28 Oct: bots no longer in Chat)', () => {
+/* test changed, why: 11 Nov 2026 (Emmanuel) the bot's meal ideas left For You ("the For You page has more value when they know it's
+   just humans posting there"). A tapped Nibblo notification no longer opens For You at the post; it shows that one idea as a card
+   (nibblo-idea.js). The old expectation was ['tab:foryou', 'seg:feed', 'recipe:<id>']. */
+test('the app: a fifth switch in EN/DE/ES, sent with the subscription; a tap shows that one idea as a card (11 Nov: bots no longer in For You)', () => {
   const js = read('lis-push.js');
   assert.match(js, /const ORDER = \["d", "c", "n", "a", "b"\];/);
   assert.equal((js.match(/\bn:"[^"]+", nSub:"[^"]+"/g) || []).length, 3, 'labels in EN, DE, ES');
@@ -107,7 +110,7 @@ test('the app: a fifth switch in EN/DE/ES, sent with the subscription; a tap ope
   const D = { documentElement: docEl, readyState: 'complete', addEventListener() {}, getElementById: () => null, querySelector: () => null };
   W.document = D; W.window = W;
   W.lowiOpen = t => clicks.push('tab:' + t); W.cmSeg = v => clicks.push('seg:' + v);
-  W.LowiNibblo = { openRecipe: id => clicks.push('recipe:' + id) };
+  W.LowiNibbloIdea = { open: id => clicks.push('idea:' + id) };
   new Function('window', 'document', 'localStorage', 'setTimeout', js)(W, D, W.localStorage, W.setTimeout);
   assert.deepEqual(Object.keys(W.LisPush.pillars()), ['d', 'c', 'n', 'a', 'b']);
   assert.equal(W.LisPush.extra().pillars.n, true, 'on by default, sent with the subscription');
@@ -115,6 +118,6 @@ test('the app: a fifth switch in EN/DE/ES, sent with the subscription; a tap ope
   assert.match(W.LisPush.pillarHTML(), /data-lisp="n"[^>]*role="switch" aria-checked="false"><span class="lisp-t"><b>Nibblos Mahlzeiten<\/b>/);
   assert.equal(W.LisPush.route('nb:nb-20261026-n'), true);
   while (timers.length) timers.shift()();
-  assert.deepEqual(clicks, ['tab:foryou', 'seg:feed', 'recipe:nb-20261026-n']);
+  assert.deepEqual(clicks, ['idea:nb-20261026-n']);
   assert.equal(W.LisPush.route('nb:"]evil'), false, 'only real Nibblo ids');
 });

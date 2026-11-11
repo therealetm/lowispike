@@ -1,6 +1,6 @@
 /* LOWiSPIKE For You glue (browser). Rule and data are pure in foryou-core.js and inspo-core.js; this file wires them into
  * the For You feed (index.html feed()/slideHTML), the composer (doPost) and Share -> Community (meal-journal.js).
- *  - feed(list): the For You list (25 Oct: every real member's post; the app's own bot/crowd posts keep the insulin-friendly rule), plus the inspiration bot's daily slides.
+ *  - feed(list): the For You list. Since 11 Nov 2026 people only: no bot slides, no Nibblo meal posts, no crowd/bot accounts.
  *  - slideHTML(p, env): the bot's slide (no like/chat/menu: there is nobody to like or chat with; Save stays. 28 Oct 2026:
  *    Share is gone too, Emmanuel wants no Like, Chat or Share anywhere in For You).
  *  - fromCommunityShare({row,name,lvl,caption}): a meal shared to Community also posts to For You when it passes.
@@ -19,6 +19,7 @@
     recipe(id) { return recipes().find(r => r && r.id === id) || null; },
     /* 25 Oct: the app's own crowd/bot accounts keep the insulin rule; hidden test accounts never show; a real member's post shows */
     botAccount(p) { try { const B = root.LowiBotAccounts; return !!(B && p && !p.me && p.uid && B.isBot(p)); } catch (e) { return false; } },
+    nibblo(p) { try { const N = root.LowiNibblo; return !!(N && N.isPost && N.isPost(p)); } catch (e) { return false; } },
     hidden(p) { try { const Hd = root.LowiHiddenAccounts; return !!(Hd && p && !p.me && p.uid && Hd.isHidden(p.uid)); } catch (e) { return false; } },
     inCloud(id) { try { const CL = root.LOWI_CLOUD; return !!(CL && CL.live && CL.live() && CL.post && CL.post(id)); } catch (e) { return false; } }
   };
@@ -33,7 +34,9 @@
     return botCache.list;
   }
   const botPost = id => botPosts().find(p => p.id === id) || null;
-  const feed = list => C.merge(list, botPosts(), ctx);
+  /* 11 Nov 2026 (Emmanuel): For You is people only. The bot's slides and meal posts no longer join the list (they stay findable
+     by id for a post someone saved earlier: botPost); crowd/bot accounts are left out too. Ideas arrive as a notification (nibblo-idea.js). */
+  const feed = list => C.merge(list, [], ctx).filter(p => C.human(p, ctx));
   const verdict = p => C.verdict(p, ctx);
   const passes = p => C.passes(p, ctx);
 

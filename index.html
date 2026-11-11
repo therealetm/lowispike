@@ -5015,7 +5015,7 @@ const DEMO = (() => {
   return L;
 })();
 
-/* For You shows only insulin-friendly items, plus the inspiration bot's daily slides (foryou-core.js, DECISIONS 24 Oct 2026). */
+/* For You shows people's posts only (11 Nov 2026: the bot's slides and meal posts left, foryou.js feed()). */
 function feed(){ const all = feedAll(); return window.LowiForYou ? LowiForYou.feed(all).filter(p => !T.hidden.includes(p.id)) : all; }
 /* 25 Oct 2026: the last real For You feed, per account, on this device only. lowi.* keys are outside the account backup. */
 function fyUid(){ try { const a = JSON.parse(localStorage.getItem("lowi.auth") || "null"); return a && a.user && a.user.id || ""; } catch(e){ return ""; } }
@@ -23085,6 +23085,10 @@ window.LowiCommunityHost = {
 <script src="inspo-core.js?v=20261111-090951"></script>
 <script src="nibblo-core.js?v=20261111-090951"></script>
 <script src="foryou.js?v=20261111-090951"></script>
+<!-- Nov 11 2026: the bot's meal ideas left For You; one idea card behind a notification (cook it or close it) -->
+<link rel="stylesheet" href="nibblo-idea.css?v=20261111-090951">
+<script src="nibblo-idea-core.js?v=20261111-090951"></script>
+<script src="nibblo-idea.js?v=20261111-090951"></script>
 <script src="foryou-stay.js?v=20261111-090951"></script>
 <link rel="stylesheet" id="gnCss" href="glass-nav.css?v=20261111-090951">
 <link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261111-090951">

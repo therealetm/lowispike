@@ -1,0 +1,34 @@
+/* Nibblo idea card and its small notice (nibblo-idea.js). 11 Nov 2026: the bot's meal ideas left For You. */
+.nbi{position:fixed;inset:0;z-index:9200;display:flex;align-items:center;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 18px calc(120px + env(safe-area-inset-bottom));
+  background:rgba(4,8,14,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);animation:nbiIn .22s ease-out}
+.nbi.out{opacity:0;transition:opacity .2s}
+.nbi-card{position:relative;width:min(100%,380px);max-height:100%;overflow:auto;padding:14px 14px 16px;border-radius:30px;color:#fff;
+  background:linear-gradient(180deg,rgba(34,44,58,.94),rgba(14,20,28,.96));border:1px solid rgba(160,220,255,.28);box-shadow:0 18px 50px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.12)}
+.nbi-ph{position:relative;aspect-ratio:1/1;border-radius:22px;overflow:hidden;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center}
+.nbi-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.nbi-e{font-size:72px;line-height:1}
+.nbi-k{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:14px 4px 4px;font-size:14px;color:rgba(255,255,255,.78)}
+.nbi-k b{color:#fff}
+.nbi-tag{padding:1px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.4);font-size:12px;font-weight:700}
+.nbi-n{margin:0 4px 6px;font-size:24px;line-height:1.15;font-weight:800}
+.nbi-l{margin:0 4px 14px;font-size:16px;line-height:1.4;color:rgba(255,255,255,.86)}
+.nbi-cook{display:block;width:100%;min-height:54px;border:0;border-radius:27px;font-size:18px;font-weight:800;color:#06241a;
+  background:linear-gradient(180deg,#6fdcb4,#2fa884);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 6px 18px rgba(47,168,132,.35)}
+.nbi-x{position:absolute;top:22px;right:22px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(10,14,20,.6);color:#fff;font-size:24px;line-height:1}
+html.light .nbi-card,body.light .nbi-card{background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(240,246,250,.97));color:#14202e;border-color:rgba(20,60,90,.18)}
+html.light .nbi-k,body.light .nbi-k,html.light .nbi-l,body.light .nbi-l{color:#3b4a5a}
+html.light .nbi-k b,body.light .nbi-k b{color:#14202e}
+html.light .nbi-tag,body.light .nbi-tag{border-color:rgba(20,32,46,.4)}
+.nbn{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9100;width:min(94vw,400px);min-height:60px;display:flex;align-items:center;gap:12px;
+  padding:10px 16px;border-radius:24px;text-align:left;color:#fff;background:rgba(20,28,40,.9);border:1px solid rgba(160,220,255,.3);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 10px 30px rgba(0,0,0,.4);animation:nbnIn .28s ease-out}
+.nbn.out{opacity:0;transform:translate(-50%,-12px);transition:opacity .2s,transform .2s}
+.nbn-e{font-size:30px;line-height:1}
+.nbn-t{display:flex;flex-direction:column;min-width:0}
+.nbn-t small{font-size:13px;color:rgba(255,255,255,.78)}
+.nbn-t b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.light .nbn,body.light .nbn{background:rgba(255,255,255,.95);color:#14202e;border-color:rgba(20,60,90,.18)}
+html.light .nbn-t small,body.light .nbn-t small{color:#3b4a5a}
+@keyframes nbiIn{from{opacity:0}to{opacity:1}}
+@keyframes nbnIn{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
+@media (prefers-reduced-motion:reduce){.nbi,.nbn{animation:none}.nbi.out,.nbn.out{transition:none}}

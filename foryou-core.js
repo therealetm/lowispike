@@ -116,6 +116,17 @@
     }
     return n;
   }
+  /* 11 Nov 2026 (Emmanuel: "the For You page has more value when they know it's just humans posting there"): a post by a person.
+   * The inspiration bot's slides (p.bot), Nibblo's meal posts (p.nb or ctx.nibblo) and the app's own crowd/bot accounts are not;
+   * the bot's ideas now arrive as a notification (nibblo-idea.js). foryou.js feed() keeps only these. */
+  function human(p, ctx) {
+    ctx = ctx || {};
+    if (!p || typeof p !== 'object' || !p.id) return false;
+    if (p.bot || p.nb) return false;
+    if (ctx.nibblo && ctx.nibblo(p)) return false;
+    if (ctx.botAccount && ctx.botAccount(p)) return false;
+    return true;
+  }
   function shows(p, ctx) {
     ctx = ctx || {};
     if (!p || typeof p !== 'object' || !p.id) return false;
@@ -240,5 +251,5 @@
     return note(who ? 'love' : 'loveAnon', lang, { who, p: e.name });
   }
 
-  return { level, recipeLevel, verdict, passes, filter, merge, sharePost, srcOfRow, NOTE, note, held, shows, toPublish, freeLinks, external, ytId, thumbOf, expired, creatorOf, love };
+  return { level, recipeLevel, verdict, passes, filter, merge, human, sharePost, srcOfRow, NOTE, note, held, shows, toPublish, freeLinks, external, ytId, thumbOf, expired, creatorOf, love };
 });

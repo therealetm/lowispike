@@ -115,8 +115,10 @@ test('Shop sheet: plain "Scan in the shop" and "Shopping list" buttons, in three
     const sp = read('store-picks.js');
     /* Oct 27 2026 (test changed, why): Emmanuel found Supermarket "so overwhelming", so Scan in the shop is the one big button,
        pinned in the bottom bar next to the X, and the Cart is a quiet round button in the title row (tests/shop-calm.test.cjs) */
-    assert.match(sp, /footBtns\(scanBtn\(\)\)\);/, 'Supermarket: Scan in the shop sits in the bottom bar');
-    assert.match(sp, /: scanBtn\(\)\)\);/, 'store picker: Scan in the shop sits in the bottom bar while no shop is picked');
+    /* Nov 11 2026 (test changed, why): Emmanuel, Supermarket screenshots: "I don't know why there's a ... scan button there". The big
+       Scan in the shop button no longer sits under the shelves or the shop picker (it did since Oct 27); scanning stays on Home's Scan. */
+    assert.doesNotMatch(sp, /footBtns\(scanBtn\(\)\)\);/, 'Supermarket: no Scan in the shop in the bottom bar');
+    assert.doesNotMatch(sp, /: scanBtn\(\)\)\);/, 'store picker: no Scan in the shop in the bottom bar');
     assert.match(sp, /T\('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda'\)/);
     /* Oct 26 (MAYA-HANDOFF 0.22): the Shopping list pill became the Cart (Warenkorb / Carrito); its sheet has Go shopping (the same list in shop mode) */
     assert.match(sp, /T\('Cart', 'Warenkorb', 'Carrito'\)/);

@@ -477,7 +477,7 @@
                 'Dein Standort bleibt auf diesem Handy. Kartendaten © OpenStreetMap-Mitwirkende. ',
                 'Tu ubicación se queda en este teléfono. Datos del mapa © colaboradores de OpenStreetMap. ')) +
             '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">openstreetmap.org/copyright</a></p></div>' +
-            footBtns(S.range ? '<button type="button" class="stp-pill" data-stp="list">' + esc(T('Back to list', 'Zurück zur Liste', 'Volver a la lista')) + '</button>' : scanBtn()));
+            footBtns(S.range ? '<button type="button" class="stp-pill" data-stp="list">' + esc(T('Back to list', 'Zurück zur Liste', 'Volver a la lista')) + '</button>' : ''));
     }
 
     /* ---------------- the list ---------------- */
@@ -780,12 +780,17 @@
             built = C.build(data, { q });
             shown = [];
             const c = built.counts;
-            const chips = built.groups.filter(g => g.pass.length + g.fail.length + g.unrated).map(g => '<button type="button" class="stp-chip" data-stp-jump="' + g.id + '"><span aria-hidden="true">' + C.G[g.id].ic + '</span>' + esc(C.G[g.id][['en', 'de', 'es'][li()]].split(/[,&]| y | und /)[0].trim()) + '</button>').join('');
+            const chips = built.groups.filter(g => g.pass.length).map(g => '<button type="button" class="stp-chip" data-stp-jump="' + g.id + '"><span aria-hidden="true">' + C.G[g.id].ic + '</span>' + esc(C.G[g.id][['en', 'de', 'es'][li()]].split(/[,&]| y | und /)[0].trim()) + '</button>').join('');
             /* Oct 27 (Emmanuel: "So viel auf einmal"): Show left out is the last chip of the category row instead of a checkbox next
                to the search. Nov 6 2026: the product count is gone from How the rating works too (no counters) */
             const tog = '<button type="button" class="stp-chip stp-tog' + (showFail ? ' on' : '') + '" data-stp="fails" aria-pressed="' + (showFail ? 'true' : 'false') + '"><span aria-hidden="true">' + (showFail ? '\u2713' : '\u25cc') + '</span>' + esc(T('Show left out', 'Aussortierte zeigen', 'Ver excluidos')) + '</button>';
-            inner = '<div class="stp-chips stp-jumps">' + chips + tog + '</div>' +
-                built.groups.map(groupHTML).join('') +
+            /* Nov 11 2026 (Emmanuel: "a supermarket where I only see the insulin friendly stuff"): the Show left out chip is gone, the
+               shelves list only what passes. A search that only finds left-out products says so in one line. */
+            void tog;
+            const onlyOut = !!(q && c.total && !c.pass);
+            inner = '<div class="stp-chips stp-jumps">' + chips + '</div>' +
+                (onlyOut ? '<p class="stp-none stp-onlyout">' + esc(T('Nothing insulin-friendly matches that search.', 'Zu der Suche gibt es hier nichts Insulinfreundliches.', 'No hay nada apto para la insulina con esa búsqueda.')) + '</p>' : '') +
+                built.groups.filter(g => g.pass.length).map(groupHTML).join('') + /* Nov 11: an aisle with nothing that passes is not shown */
                 (c.total ? '' : '<p class="stp-none">' + esc(T('Nothing matches that search.', 'Nichts passt zu der Suche.', 'Nada coincide con la búsqueda.')) + '</p>') +
                 '<details class="stp-how"><summary>' + esc(T('How the rating works', 'So wird bewertet', 'Cómo se valora')) + '</summary><p>' +
                 esc(T('For each product: carbs and sugar per typical portion from its label (100 g meat or fish, 30 g cheese, 40 g bread, 25 g sweets, 30 g snacks, 250 ml drink, 150 g yoghurt). The same Food check as the scanner card says Insulin-friendly or Not insulin-friendly. A product passes when it is insulin-friendly with no more than 6 g sugar per portion. It is an estimate, not a guarantee.',
@@ -802,7 +807,9 @@
             '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" aria-label="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '"></div></div>' +
             '<div class="stp-scroll">' + gen + inner +
             '<p class="stp-note">' + esc(T('General food guidance, not medical advice.', 'Allgemeine Ernährungshilfe, keine medizinische Beratung.', 'Orientación general sobre alimentos, no consejo médico.')) + '</p></div>' +
-            footBtns(scanBtn()));
+            /* Nov 11 2026 (Emmanuel: "I don't know why there's a ... scan button there"): no Scan in the shop under the shelves or the shop
+               picker any more; scanning lives on Home's Scan bubble. scanBtn() stays for a later surface, nothing renders it now. */
+            footBtns(''));
     }
 
     function paint(state) {

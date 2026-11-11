@@ -160,7 +160,9 @@ test('wiring: the emergency button, Move-style panel, medical note, cache list a
     assert.match(js, /not medical advice/);
     assert.match(js, /keine medizinische Beratung/);
     assert.match(js, /no consejo médico/);
-    assert.match(js, /Show left out/);
+    /* Nov 11 2026 (test changed, why): Emmanuel wants a supermarket "where I only see the insulin friendly stuff"; the Show left out
+       chip is not in the category row any more (it was since Oct 27) */
+    assert.doesNotMatch(js, /chips \+ tog \+/);
     assert.match(js, /None of the/);
     assert.match(js, /Share my location/);
     const css = read('store-picks.css');

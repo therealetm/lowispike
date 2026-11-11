@@ -29,6 +29,7 @@ States: first-time/onboarding, signed out, no active fast, active fast, all ques
 Inner sections are Chat, For You, and Leaderboard. Their order may be customized.
 
 - Chat: internally scrolling message list, replies, mentions, reactions, member profiles, and composer above the bottom navigation.
+- Einkaufen > Supermarkt: since 11 Nov 2026 a game market with four stations (Regale, Korb, Kühlschrank, Tisch; `market-game.js`); "Einfache Liste" shows the plain list.
 - For You: intentionally scrollable media/feed surface and unified New Post sheet. People only since 11 Nov 2026 (no bot posts); the bot's meal ideas open as one card from a notification (`nibblo-idea.js`).
 - Leaderboard: compact current progress, period selector, podium, visible ranks, Full ranking sheet, and Unlocks sheet.
 

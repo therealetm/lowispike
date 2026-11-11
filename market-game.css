@@ -1,0 +1,142 @@
+/* Game supermarket (market-game.js), inside the Einkaufen panel (.stp-card). 11 Nov 2026.
+   Four stations: shelves, basket, fridge, table. Glass bubbles like the rest of the app; tap areas 44 px or more. */
+.mk { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; color: #fff; }
+.mk svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
+.mk-scene { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; position: relative; }
+.mk-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 10px 14px 14px; overscroll-behavior: contain; }
+.mk button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+
+/* top row: the shop and the way out to the plain list */
+.mk-top { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; padding: 10px 14px 6px; }
+.mk-top .stp-shop { flex: 1 1 auto; min-width: 0; margin: 0; }
+.mk-listbtn { flex: 0 0 auto; min-height: 48px; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 700;
+  background: rgba(255, 255, 255, .08); border: 1px solid rgba(143, 231, 255, .35); }
+.mk-listbtn svg { width: 18px; height: 18px; }
+
+/* aisle signs */
+.mk-aisles { flex: 0 0 auto; display: flex; gap: 8px; overflow-x: auto; padding: 6px 14px 10px; scrollbar-width: none; }
+.mk-aisles::-webkit-scrollbar { display: none; }
+.mk-aisle { flex: 0 0 auto; min-height: 46px; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; font-size: 15px; font-weight: 700; white-space: nowrap;
+  background: rgba(255, 255, 255, .07); border: 1px solid rgba(143, 231, 255, .3); }
+.mk-aisle.on { background: linear-gradient(180deg, #bfeeff, #6fd8ff); color: #062033; border-color: rgba(255, 255, 255, .7); box-shadow: 0 0 18px rgba(111, 216, 255, .45); }
+.mk-sign { margin: 4px 2px 8px; display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+.mk-hint, .mk-fine, .mk-none { margin: 0 2px 10px; font-size: 14px; line-height: 1.35; color: rgba(255, 255, 255, .8); }
+.mk-fine { font-size: 12.5px; color: rgba(255, 255, 255, .62); margin-top: 12px; }
+
+/* a shelf board with three packs standing on it */
+.mk-board { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 10px 8px 12px; margin: 0 0 14px; border-radius: 18px 18px 8px 8px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .07)); }
+.mk-board::after { content: ""; position: absolute; left: -4px; right: -4px; bottom: -6px; height: 10px; border-radius: 6px;
+  background: linear-gradient(180deg, rgba(190, 240, 255, .75), rgba(90, 150, 190, .35)); box-shadow: 0 6px 16px rgba(0, 0, 0, .45), 0 0 14px rgba(143, 231, 255, .3); }
+.mk-prod { position: relative; min-width: 0; }
+.mk-pack { position: relative; width: 100%; min-height: 132px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 2px 2px; border: 0; background: none; text-align: center; }
+.mk-ph { width: 100%; aspect-ratio: 1 / 1; max-width: 92px; border-radius: 16px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(160deg, rgba(190, 235, 255, .34), rgba(110, 160, 205, .16));
+  border: 1px solid rgba(190, 240, 255, .55); box-shadow: 0 6px 14px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .35); }
+.mk-ph, .mk-disc { position: relative; }
+.mk-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #fff; }
+.mk-ph .mk-emo { font-size: 34px; line-height: 1; color: #fff; font-weight: 800; }
+.mk-ph.sm { width: 52px; max-width: 52px; flex: 0 0 52px; border-radius: 12px; }
+.mk-ph.sm .mk-emo { font-size: 24px; }
+.mk-pack b { font-size: 13px; line-height: 1.2; font-weight: 700; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.mk-pack small { font-size: 11.5px; line-height: 1.2; color: rgba(255, 255, 255, .66); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.mk-n { position: absolute; top: 0; left: 4px; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 13px; display: grid; place-items: center; font-style: normal; font-size: 14px; font-weight: 800;
+  color: #06241a; background: linear-gradient(180deg, #8ff0c8, #2fa884); border: 1.5px solid #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, .4); }
+.mk-n[hidden], .mk-cnt[hidden] { display: none; }
+.mk-i { position: absolute; top: -4px; right: -2px; width: 44px; height: 44px; border: 0; background: none; display: grid; place-items: start end; padding: 4px; font-size: 0; }
+.mk-i::before { content: "i"; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 800; font-style: italic; color: #fff;
+  background: rgba(10, 20, 34, .78); border: 1px solid rgba(143, 231, 255, .6); }
+.mk-out::before { content: "\00d7"; font-style: normal; font-size: 16px; }
+.mk-hop { animation: mkHop .42s cubic-bezier(.3, 1.6, .5, 1); }
+.mk-bump { animation: mkBump .4s cubic-bezier(.3, 1.6, .5, 1); }
+.mk-more { display: block; width: 100%; min-height: 48px; margin: 6px 0 0; border-radius: 999px; font-size: 15px; font-weight: 700; background: rgba(255, 255, 255, .08); border: 1px solid rgba(143, 231, 255, .35); }
+
+/* basket */
+.mk-lines { list-style: none; margin: 8px 0 0; padding: 0; }
+.mk-line { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, .1); }
+.mk-lt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.mk-lt b { font-size: 15.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mk-lt small { font-size: 13.5px; color: rgba(255, 255, 255, .72); }
+.mk-q { flex: 0 0 auto; display: flex; align-items: center; gap: 4px; }
+.mk-q > b { min-width: 24px; text-align: center; font-size: 16px; }
+.mk-step { width: 44px; height: 44px; border-radius: 50%; font-size: 22px; font-weight: 700; line-height: 1; background: rgba(255, 255, 255, .1); border: 1px solid rgba(143, 231, 255, .4); }
+.mk-total { display: flex; justify-content: space-between; align-items: baseline; margin: 14px 2px 0; font-size: 16px; }
+.mk-total b { font-size: 22px; font-weight: 800; }
+.mk-acts { flex: 0 0 auto; display: flex; flex-direction: column; gap: 8px; padding: 8px 14px 4px; }
+.mk-go { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 52px; padding: 10px 16px; border-radius: 999px; font-size: 16px; font-weight: 800;
+  color: #06241a; background: linear-gradient(180deg, #8ff0c8, #2fa884); border: 1px solid rgba(255, 255, 255, .5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 6px 18px rgba(47, 168, 132, .3); }
+.mk-go.mk-alt { color: #fff; background: rgba(255, 255, 255, .1); border-color: rgba(143, 231, 255, .45); box-shadow: none; }
+.mk-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 14px 20px; }
+.mk-empty > svg { width: 64px; height: 64px; stroke-width: 1.2; color: rgba(143, 231, 255, .85); }
+.mk-empty p { margin: 0; font-size: 16px; line-height: 1.4; color: rgba(255, 255, 255, .86); }
+.mk-empty .mk-go { width: auto; padding: 10px 26px; }
+
+/* fridge: cold light, glass shelves */
+.mk[data-st="fridge"] .mk-scene { background: radial-gradient(120% 60% at 50% 0%, rgba(150, 220, 255, .16), transparent 70%); }
+.mk-glass { background: linear-gradient(180deg, rgba(170, 225, 255, .05), rgba(170, 225, 255, .12)); }
+.mk-glass::after { background: linear-gradient(180deg, rgba(220, 245, 255, .85), rgba(140, 200, 235, .3)); }
+.mk-cold { min-height: 118px; }
+.mk-cold.on .mk-ph { outline: 3px solid #8ff0c8; outline-offset: 2px; }
+.mk-ok { left: auto; right: 4px; }
+.mk-have { display: flex; gap: 8px; margin: 6px 0 4px; }
+.mk-have input { flex: 1 1 auto; min-width: 0; min-height: 48px; padding: 0 16px; border-radius: 16px; font: inherit; font-size: 16px; color: #fff; background: rgba(255, 255, 255, .08); border: 1px solid rgba(143, 231, 255, .35); }
+.mk-have input::placeholder { color: rgba(255, 255, 255, .6); }
+.mk-add { flex: 0 0 auto; min-height: 48px; padding: 0 18px; border-radius: 16px; font-weight: 800; background: rgba(255, 255, 255, .12); border: 1px solid rgba(143, 231, 255, .45); }
+
+/* table and plate */
+.mk[data-st="table"] .mk-scene { background: radial-gradient(90% 46% at 50% 22%, rgba(255, 200, 140, .14), transparent 72%); }
+.mk-tbl { text-align: center; }
+.mk-plate { position: relative; width: min(62vw, 240px); aspect-ratio: 1 / 1; margin: 14px auto 10px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 46%, #fdfdfb 0 52%, #e9edf0 53% 61%, #ffffff 62% 100%); box-shadow: 0 18px 34px rgba(0, 0, 0, .55), inset 0 -6px 14px rgba(0, 0, 0, .12), 0 0 0 1px rgba(255, 255, 255, .7); transition: box-shadow .3s, filter .3s; }
+.mk-rim { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; transition: box-shadow .3s, background .3s; }
+.mk-plate .mk-disc { position: absolute; width: 34%; aspect-ratio: 1 / 1; transform: translate(-50%, -50%); border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: #f2f4f6;
+  border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0, 0, 0, .35); transition: filter .3s, box-shadow .3s; }
+.mk-disc img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #fff; }
+.mk-disc .mk-emo { font-size: 26px; font-weight: 800; color: #14202e; }
+.mk-steam { position: absolute; left: 50%; top: -6%; width: 60%; height: 30%; transform: translateX(-50%); pointer-events: none; opacity: 0; transition: opacity .3s; }
+.mk-steam i { position: absolute; bottom: 0; width: 10px; height: 100%; border-radius: 10px; background: linear-gradient(0deg, rgba(255, 255, 255, .55), transparent); filter: blur(4px); animation: mkSteam 2.4s ease-in-out infinite; }
+.mk-steam i:nth-child(1) { left: 18%; } .mk-steam i:nth-child(2) { left: 48%; animation-delay: .6s; } .mk-steam i:nth-child(3) { left: 76%; animation-delay: 1.2s; }
+.mk-plate[class*="dev-"] .mk-steam { opacity: 1; }
+/* pan: dark cast-iron rim, seared food */
+.mk-plate.dev-pan { background: radial-gradient(circle at 50% 46%, #3a3f46 0 58%, #1c1f24 59% 100%); box-shadow: 0 18px 34px rgba(0, 0, 0, .6), 0 0 0 5px #111418, 0 0 0 6px rgba(255, 255, 255, .25); }
+.mk-plate.dev-pan .mk-disc { filter: sepia(.45) saturate(1.5) contrast(1.15) brightness(.86); border-color: #5a4636; box-shadow: 0 0 0 2px rgba(60, 30, 10, .5), 0 4px 10px rgba(0, 0, 0, .5); }
+/* oven: warm glow, golden food */
+.mk-plate.dev-oven { box-shadow: 0 18px 34px rgba(0, 0, 0, .55), 0 0 34px 6px rgba(255, 170, 70, .5), 0 0 0 1px rgba(255, 220, 170, .9); }
+.mk-plate.dev-oven .mk-rim { background: radial-gradient(circle, transparent 55%, rgba(255, 170, 70, .28) 100%); }
+.mk-plate.dev-oven .mk-disc { filter: sepia(.35) saturate(1.6) hue-rotate(-8deg) brightness(1.04); border-color: #ffd9a0; }
+/* air fryer: crisp, bright edges, basket dots */
+.mk-plate.dev-airfryer { background: radial-gradient(circle, rgba(20, 24, 30, .9) 1.4px, transparent 1.8px) 0 0 / 12px 12px, radial-gradient(circle at 50% 46%, #d9dee3 0 60%, #aeb6be 61% 100%); box-shadow: 0 18px 34px rgba(0, 0, 0, .55), 0 0 0 4px #2a2f36, 0 0 22px rgba(143, 231, 255, .35); }
+.mk-plate.dev-airfryer .mk-disc { filter: saturate(1.35) contrast(1.2) brightness(1.05); border-color: #f4c56a; box-shadow: 0 0 0 2px rgba(244, 197, 106, .55), 0 4px 10px rgba(0, 0, 0, .4); }
+.mk-cap { margin: 0 0 12px; display: flex; flex-direction: column; gap: 2px; }
+.mk-cap b { font-size: 19px; font-weight: 800; }
+.mk-cap span { font-size: 14px; color: rgba(255, 255, 255, .78); }
+.mk-q4 { margin: 12px 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: rgba(255, 255, 255, .7); }
+.mk-devs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.mk-dev { min-height: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 22px; background: rgba(255, 255, 255, .07); border: 1px solid rgba(143, 231, 255, .3); }
+.mk-dev svg { width: 28px; height: 28px; }
+.mk-dev b { font-size: 14px; font-weight: 700; }
+.mk-dev.on { background: linear-gradient(180deg, #ffe2b0, #ffb65c); color: #2a1600; border-color: rgba(255, 255, 255, .7); box-shadow: 0 0 20px rgba(255, 182, 92, .5); }
+.mk-laid, .mk-fits { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 12px 0 0; }
+.mk-chip, .mk-fit { min-height: 44px; padding: 8px 14px; border-radius: 999px; font-size: 14.5px; font-weight: 700; background: rgba(255, 255, 255, .08); border: 1px solid rgba(143, 231, 255, .3); }
+.mk-fit { background: rgba(143, 240, 200, .14); border-color: rgba(143, 240, 200, .55); }
+.mk-fits { margin-top: 0; }
+.mk-tbl .mk-more { margin-top: 16px; }
+.mk-msg { position: absolute; left: 14px; right: 14px; bottom: 8px; margin: 0; padding: 10px 14px; border-radius: 16px; text-align: center; font-size: 14.5px; font-weight: 700; background: rgba(10, 20, 34, .92); border: 1px solid rgba(143, 231, 255, .45); }
+
+/* the station dock */
+.mk-dock { flex: 0 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 8px 12px 2px; border-top: 1px solid rgba(143, 231, 255, .18); }
+.mk-stn { position: relative; min-height: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 6px 2px; border-radius: 20px; background: rgba(255, 255, 255, .06); border: 1px solid rgba(143, 231, 255, .22); }
+.mk-stn b { font-size: 11.5px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; max-width: 100%; }
+.mk-stn.on { background: linear-gradient(180deg, #bfeeff, #6fd8ff); color: #062033; border-color: rgba(255, 255, 255, .7); box-shadow: 0 0 18px rgba(111, 216, 255, .45); }
+.mk-cnt { position: absolute; top: -6px; right: 4px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; display: grid; place-items: center; font-style: normal; font-size: 12.5px; font-weight: 800;
+  color: #06241a; background: linear-gradient(180deg, #8ff0c8, #2fa884); border: 1.5px solid #fff; }
+
+/* the frame around it (store-picks.js): the foot only carries the round close button */
+.stp-card.stp-game .stp-foot { padding-top: 4px; }
+.stp-tomarket { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 46px; margin: 8px 0 0; padding: 8px 14px; border-radius: 999px; font: inherit; font-size: 15px; font-weight: 800; cursor: pointer;
+  color: #062033; background: linear-gradient(180deg, #bfeeff, #6fd8ff); border: 1px solid rgba(255, 255, 255, .7); }
+
+@keyframes mkHop { 0% { transform: none; } 40% { transform: translateY(-14px) scale(1.06); } 100% { transform: none; } }
+@keyframes mkBump { 0% { transform: none; } 45% { transform: scale(1.14); } 100% { transform: none; } }
+@keyframes mkSteam { 0% { transform: translateY(20%) scaleX(1); opacity: 0; } 40% { opacity: .9; } 100% { transform: translateY(-60%) scaleX(1.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .mk-hop, .mk-bump, .mk-steam i { animation: none; } .mk-plate, .mk-disc, .mk-rim { transition: none; } .mk-plate[class*="dev-"] .mk-steam { opacity: 0; } }
+@media (max-width: 350px) { .mk-listbtn span { display: none; } .mk-stn b { font-size: 11px; } .mk-dock { gap: 3px; padding-left: 6px; padding-right: 6px; } }

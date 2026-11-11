@@ -19,6 +19,7 @@ STATIC.push("tutorial-demo.js", "tutorial-demo.css", "tutorial-flight.js", "tuto
 STATIC.push("fresh-scrim.js"); /* Oct 25 bug hunt BH-025: a fresh backdrop ignores the 2nd tap of a double tap, own line */
 STATIC.push("tutorial-voice.js", "tutorial-voice.css", "tutorial-voice-data.js", "tutorial-show.js", "tutorial-auto.js", "tutorial-resume.js"); /* Oct 26: the speaker on every tutorial card ships with the build, so a slow connection right after an update cannot leave a card without it */
 STATIC.push("cook-tab-order.js"); /* Oct 26 Cook opens on its first tab, tabs held and moved like Community's (MAYA-HANDOFF 0.29): own line */
+STATIC.push("market-game-core.js", "market-game.js", "market-game.css"); /* Nov 11 game market in Supermarket: own line */
 STATIC.push("cart-core.js"); /* Oct 26 Supermarket Cart (Warenkorb): own line */
 STATIC.push("carousel-core.js"); /* Nov 6 carousel posts in For You (up to 6 photos): own line */
 STATIC.push("last-meal-ask.js", "last-meal-ask.css"); /* Nov 6 2026 "Last meal today?" after Log as eaten: own line */

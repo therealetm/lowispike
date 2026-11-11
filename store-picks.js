@@ -725,6 +725,7 @@
         if (wasCart && ov) { const cb = ov.querySelector('.stp-card .stp-cartbtn'); if (cb) { cb.outerHTML = cartBtnHTML(); const nb = ov.querySelector('.stp-card .stp-cartbtn'); if (nb) try { nb.focus({ preventScroll: true }); } catch (e) {} } }
         if (!ov) return;
         qaRefresh(); /* Oct 26: the quick "+" steppers show what the Cart or quick view changed */
+        try { if (ov.querySelector('#mkRoot') && W.LowiMarket) W.LowiMarket.repaint(); } catch (e) {} /* Nov 11: the game market's counts too */
         const card = ov.querySelector('.stp-card'); if (card) card.removeAttribute('aria-hidden');
         const b = ov.querySelector('[data-stp-item="' + qvFrom + '"]');
         if (b) try { b.focus({ preventScroll: true }); } catch (e) {}
@@ -776,6 +777,12 @@
         let inner = '';
         if (state === 'loading') inner = '<p class="stp-msg">' + esc(T('Loading the shop’s products…', 'Lade die Produkte des Ladens…', 'Cargando los productos de la tienda…')) + '</p>';
         else if (state === 'error') inner = '<p class="stp-msg">' + esc(T('Couldn’t load the products. Check your connection and try again.', 'Die Produkte ließen sich nicht laden. Prüf die Verbindung und versuch es nochmal.', 'No se pudieron cargar los productos. Revisa la conexión e inténtalo de nuevo.')) + '</p><button type="button" class="stp-go" data-stp="retry">' + esc(T('Try again', 'Nochmal', 'Reintentar')) + '</button>';
+        else if (gameOn() && data) {
+            /* Nov 11 2026 (Emmanuel: "almost like a game where I can pretend to go grocery shopping"): Supermarket opens as the game
+               market (market-game.js: shelves, basket, fridge, table). The plain list below stays one tap away ("Plain list"). */
+            built = C.build(data, {}); shown = [];
+            return shell('<h3 class="sr-only">' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '</h3><div id="mkRoot"></div>' + footBtns('')).replace('<div class="stp-card', '<div class="stp-card stp-game');
+        }
         else {
             built = C.build(data, { q });
             shown = [];
@@ -804,13 +811,40 @@
            the Cart at its end: one row instead of two above the search */
         return shell('<div class="stp-head stp-head-list"><h3 class="sr-only">' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '</h3><div class="stp-shoprow">' +
             '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || label(S.range) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>' + (hasCart() ? cartBtnHTML() : '') + '</div>' +
-            '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" aria-label="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '"></div></div>' +
+            '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" aria-label="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '"></div>' +
+            (MK() && state !== 'loading' && state !== 'error' ? '<button type="button" class="stp-tomarket" data-stp="market">\u{1F6D2} ' + esc(W.LowiMarketCore.word('game', lang())) + '</button>' : '') + '</div>' +
             '<div class="stp-scroll">' + gen + inner +
             '<p class="stp-note">' + esc(T('General food guidance, not medical advice.', 'Allgemeine Ernährungshilfe, keine medizinische Beratung.', 'Orientación general sobre alimentos, no consejo médico.')) + '</p></div>' +
             /* Nov 11 2026 (Emmanuel: "I don't know why there's a ... scan button there"): no Scan in the shop under the shelves or the shop
                picker any more; scanning lives on Home's Scan bubble. scanBtn() stays for a later surface, nothing renders it now. */
             footBtns(''));
     }
+
+    /* ---------------- Nov 11 2026: the game market (market-game.js) ----------------
+       store-picks keeps the frame (tabs, shop row, close) and hands the game what it needs: the passing products of this shop, the
+       Cart (the shopping list), the Kitchen (lowispike.kitchen.v1, the fridge) and the ways out. */
+    const MK = () => (W.LowiMarket && W.LowiMarketCore && W.LowiKitchenCore && shelf() && W.LOWI_SHELF.cartLines && W.LOWI_SHELF.setQty ? W.LowiMarket : null);
+    const gameOn = () => !!(MK() && MK().mode() === 'game' && onShop() && view === 'list');
+    function marketEnv() {
+        const KC = W.LowiKitchenCore, sh = shelf(), CC = W.LowiCartCore;
+        return {
+            lang, K: KC, foodName,
+            groups: () => (built ? built.groups : []),
+            groupMeta: id => { const m = C.G[id]; if (!m) return null; const name = m[lang()] || m.en; return { ic: m.ic, name, short: name.split(/[,&]| y | und /)[0].trim() }; },
+            photo: p => C.photo(p) || '',
+            storeRowHTML: () => '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || label(S.range) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>',
+            cartLines: () => sh.cartLines(), cartTotal: () => sh.cartTotal(), cartSetQty: (id, n) => sh.setQty(id, n), cartDrop: id => sh.dropList(id), cartAdd,
+            money: v => (CC ? CC.money(v, lang()) : '\u20ac' + Number(v).toFixed(2)),
+            kit: () => { let raw = null; try { raw = localStorage.getItem(KC.KEY); } catch (e) {} return KC.parse(raw); },
+            kitSave: next => { try { localStorage.setItem(KC.KEY, JSON.stringify(next)); } catch (e) {} try { W.dispatchEvent(new CustomEvent('lowi:kitchen', { detail: { count: KC.count(next) } })); } catch (e) {} },
+            openInfo: it => { const i = shown.push({ it, failed: false }) - 1; openQuick(i); },
+            giftReady: () => giftDoor(),
+            giftFromCart: () => { try { const G = W.LowiGiftBasket; if (G.fromCart) G.fromCart('shop'); else G.open('shop', 'mine'); } catch (x) {} },
+            openRecipe: id => { close(); setTimeout(() => { try { W.LowiP2.open(id); } catch (x) {} }, 220); },
+            repaint: () => paint()
+        };
+    }
+    function mountMarket() { const r = ov && ov.querySelector('#mkRoot'); if (r && MK()) { try { MK().mount(r, marketEnv()); } catch (e) {} } }
 
     function paint(state) {
         if (!ov) return;
@@ -820,6 +854,7 @@
         unmountHome();
         ov.innerHTML = onSz() ? szHTML() : onKit() ? kitHTML() : onHome() ? homeHTML() : view === 'pick' ? pickHTML(state) : listHTML(state);
         if (onHome()) mountHome();
+        mountMarket();
         watchThumbs();
         const sc2 = ov.querySelector('.stp-scroll'); if (sc2 && state === 'keep') sc2.scrollTop = top;
         if (hadQ) { const i = ov.querySelector('.stp-q'); if (i) { i.focus(); try { i.setSelectionRange(i.value.length, i.value.length); } catch (e) {} } }
@@ -921,6 +956,7 @@
         if (a === 'fails') { showFail = !showFail; if (data) paint('keep'); return; }
         if (a === 'mylist') { close(); setTimeout(() => { try { W.tdShopOpen(); } catch (x) {} }, 200); return; }
         if (a === 'cart') { openCart(); return; }
+        if (a === 'market') { try { W.LowiMarket.setMode('game'); } catch (x) {} q = ''; return paint(); }
         if (a === 'pick') { view = 'pick'; return paint(); }
         if (a === 'list') return showList();
         if (a === 'locate') return locate();

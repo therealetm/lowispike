@@ -174,5 +174,10 @@
         if (a) e.stopPropagation();
     }, true);
     W.addEventListener('pagehide', () => D.documentElement.classList.remove('sz-open'));
-    W.LowiSellerZone = { open, close, swapHTML, entryHTML, stripHTML, inlineHTML, inlineHeadHTML, inlineClick, setCat, count: () => ((DATA && DATA.P) || []).length, isOpen: () => !!ov, name: NAME };
+    /* Nov 11 2026 (Emmanuel: "throw the seller zone out ... a community snack wardrobe"): the snack shelf (snack-shelf.js) shows these
+       checked snacks on its "to order" shelf: the list for this region, the region chips and one snack's card with its shop link */
+    function orderItems() { return C.list(DATA, 'all', myRegion()); }
+    function regionsHTML() { const r = myRegion(); return '<div class="sz-chips sz-regs" role="group" aria-label="' + esc(T('Region', 'Region', 'Región')) + '">' + REGIONS.map(([id, f, l, full]) => '<button type="button" class="sz-chip sz-reg' + (r === id ? ' on' : '') + '" data-sz-reg="' + id + '" aria-pressed="' + (r === id) + '"' + (full ? ' aria-label="' + esc(full()) + '"' : '') + '>' + f + ' ' + esc(l()) + '</button>').join('') + '</div>'; }
+    function cardHTML(id) { const x = (DATA.P || []).find(y => y.id === id); return x ? card(x) : ''; }
+    W.LowiSellerZone = { open, close, swapHTML, entryHTML, stripHTML, inlineHTML, inlineHeadHTML, inlineClick, setCat, orderItems, regionsHTML, cardHTML, count: () => ((DATA && DATA.P) || []).length, isOpen: () => !!ov, name: NAME };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

@@ -1,0 +1,15 @@
+/* Snack shelf (snack-shelf.js) in the Einkaufen panel: the shelf boards and packs come from market-game.css (.mk-board, .mk-pack). */
+.mk-sn { display: block; padding: 4px 0 8px; }
+.sn-head h3 { margin: 0 0 4px; }
+.sn-scan { margin: 6px 0 4px; }
+.sn-mineline { margin: 8px 2px 0; font-size: 14.5px; font-weight: 700; color: #ffe2a0; }
+.sn-sign { margin-top: 18px; }
+.sn-none { padding: 14px; border-radius: 18px; background: rgba(255, 255, 255, .06); border: 1px dashed rgba(143, 231, 255, .35); }
+.mk-pack.sn-mine .mk-ph { outline: 2px solid #ffd77a; outline-offset: 2px; }
+.mk-pack.sn-open .mk-ph { outline: 3px solid #8ff0c8; outline-offset: 2px; }
+.sn-regs { margin: 0 0 10px; }
+.sn-regs .sz-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.sn-card { margin: 0 0 14px; }
+.sn-card .sz-card { margin: 0; }
+.sn-regs .sz-chip { min-height: 44px; min-width: 44px; }
+.mk-sn .mk-pack small { -webkit-line-clamp: 2; }

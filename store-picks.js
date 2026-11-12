@@ -291,13 +291,23 @@
         /* Nov 5 2026: no own Zu Hause tab any more; it is Supermarkt > Plan my week (planRowHTML) */
         const n = (Z ? 1 : 0) + (kitTab() ? 1 : 0) + (G ? 1 : 0) + 1;
         return '<div class="stp-tabs' + (n > 2 ? ' stp-tabs3' : '') + (n > 3 ? ' stp-tabs4' : '') + (n > 4 ? ' stp-tabs5' : '') + '" role="tablist" aria-label="' + esc(T('Shop', 'Einkaufen', 'Comprar')) + '">' +
-            b('shop', '\u{1F6D2}', T('Supermarket', 'Supermarkt', n > 3 ? 'Súper' : 'Supermercado')) + (Z ? b('sz', '\u{1F6CD}\uFE0F', Z.name(), Z.count ? Z.count() : 0) : '') +
+            b('shop', '\u{1F6D2}', T('Supermarket', 'Supermarkt', n > 3 ? 'Súper' : 'Supermercado')) + (Z ? b('sz', SN() ? '\u{1F36A}' : '\u{1F6CD}\uFE0F', SN() ? SN().name() : Z.name(), SN() ? 0 : (Z.count ? Z.count() : 0)) : '') +
             (kitTab() ? b('kitchen', '\u{1F9FA}', T('Kitchen', 'Küche', 'Cocina'), K.count(kit)) : '') +
             /* Nov 6 2026 (design review point 7): "Give a hand" / "Help out" is called Baskets / Körbe / Cestas everywhere */
             (G ? b('gift', '\u{1F91D}', T('Baskets', 'Körbe', 'Cestas')) : '') + '</div>';
     }
+    /* Nov 11 2026 (Emmanuel: "throw the seller zone out ... a community cross-platform snack wardrobe"): this tab is the snack shelf
+       (snack-shelf.js): what people found in shops that passes, plus the checked snacks to order. Without that module the old zone shows. */
+    const SN = () => (W.LowiSnackShelf && W.LowiSnackShelf.html && shelf() && W.LOWI_SHELF.cartLines && W.LOWI_SHELF.setQty ? W.LowiSnackShelf : null);
+    function snackEnv() {
+        const sh = shelf();
+        return { cartLines: () => sh.cartLines(), cartSetQty: (id, n) => sh.setQty(id, n), cartAdd,
+            showProduct: p => { try { W.LowiDex.showProduct(p); } catch (x) {} },
+            scan: () => { close(); setTimeout(() => { try { if (W.LowiShopScan && W.LowiShopScan.open) W.LowiShopScan.open(); else W.LowiDex.scan(); } catch (x) {} }, 200); } };
+    }
     function szHTML() {
-        const Z = SZ();
+        const Z = SZ(), N = SN();
+        if (N) { N.refresh(() => { if (ov && onSz()) paint('keep'); }); return shell(N.headHTML() + '<div class="stp-scroll stp-sz">' + N.html(snackEnv()) + '</div>' + footBtns('')); }
         return shell(Z.inlineHeadHTML() + '<div class="stp-scroll stp-sz">' + Z.inlineHTML() + '</div>' + footBtns(''));
     }
     /* Oct 19 food paths (E-man: Shop "so complicated and so hidden"): Shop is the one place for shopping. Two plain ways on from
@@ -942,6 +952,7 @@
             if (tb.getAttribute('data-stp-tab') === 'gift') { try { W.LowiGiftBasket.open('shop'); } catch (x) {} return; }
             setTab(tb.getAttribute('data-stp-tab'), tb.getAttribute('data-sz-focus')); return;
         }
+        if (onSz() && SN()) { const r = SN().click(t, snackEnv()); if (r === 'paint') { paint('keep'); return; } if (r) return; }
         if (onSz() && SZ().inlineClick(t)) { paint('keep'); return; }
         const row = t.closest('[data-stp-item]');
         if (row) { openQuick(+row.getAttribute('data-stp-item')); return; }
@@ -1100,7 +1111,7 @@
         /* Nov 5 2026 (owner, Phase B item 3): three distinct doors, each with a short line saying what it is for. Zu Hause is no own
            door any more: it is Supermarkt > Plan my week (openAt('home') still lands there, for old links and tours). */
         const out = [{ id: 'shop', label: T('Supermarket', 'Supermarkt', 'Súper'), sub: T('Groceries & week plan', 'Einkauf & Wochenplan', 'Compra y semana') }];
-        const Z = SZ(); if (Z) { let n = 0; try { n = Z.count ? Z.count() : 0; } catch (e) {} out.push({ id: 'sz', label: Z.name(), n, sub: T('Packaged snacks', 'Fertige Snacks', 'Snacks envasados') }); }
+        const Z = SZ(); if (Z) { let n = 0; try { n = Z.count ? Z.count() : 0; } catch (e) {} out.push(SN() ? { id: 'sz', label: SN().name(), n: 0, sub: T('Found by the community', 'Von der Community gefunden', 'Encontrados por la comunidad') } : { id: 'sz', label: Z.name(), n, sub: T('Packaged snacks', 'Fertige Snacks', 'Snacks envasados') }); }
         if (kitTab()) out.push({ id: 'kitchen', label: T('Kitchen', 'Küche', 'Cocina') });
         if (giftDoor()) out.push({ id: 'gift', label: T('Baskets', 'Körbe', 'Cestas'), sub: T('Help pay', 'Mitbezahlen', 'Ayuda a pagar') });
         return out;

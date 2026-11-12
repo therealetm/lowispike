@@ -161,7 +161,8 @@
             '<p class="gb-money">' + esc(MONEY()) + '</p>';
         const list = C.deck(open, me, skipped, picked);
         const giv = given.length ? '<h4 class="stp-h4">' + esc(T('Baskets you helped', 'Körbe, bei denen du geholfen hast', 'Cestas que has ayudado')) + ' <i>' + given.length + '</i></h4>' + given.map(givenHTML).join('') : '';
-        return moment + intro + '<h4 class="stp-h4">' + esc(T('Baskets', 'Körbe', 'Cestas')) + (list.length ? ' <i>' + list.length + '</i>' : '') + '</h4>' + deckHTML(list) + giv;
+        /* Nov 11 2026: the swipe card comes first and fills the screen; the explanation and the money note follow under the buttons */
+        return moment + '<h4 class="sr-only">' + esc(T('Baskets', 'Körbe', 'Cestas')) + (list.length ? ' ' + list.length : '') + '</h4>' + deckHTML(list) + '<div class="gb-after">' + (list.length && picked !== list[0].id ? '<p class="gb-swipe-hint gb-hint-out">' + esc(T('Swipe right to open their pay page, left to skip.', 'Wisch nach rechts für die Bezahlseite der Person, nach links zum Überspringen.', 'Desliza a la derecha para abrir su página de pago, a la izquierda para saltarla.')) + '</p>' : '') + intro + '</div>' + giv;
     }
     /* Oct 26 (Emmanuel, MAYA-HANDOFF 0.22: "our Tinder version ... people who have money, who want to pay the groceries for
        someone, and just swipe. Swipe through groceries to pay for."): one basket at a time, swipe right = I'll pay for this one,
@@ -180,16 +181,27 @@
         const b = list[0], on = picked === b.id;
         const peeks = list.slice(1, 3).map((x, i) => '<div class="gb-peek gb-peek' + (i + 1) + '" aria-hidden="true"><b>' + esc(who(x)) + '</b><span>' + esc(x.items.slice(0, 3).join(' · ')) + '</span></div>').join('');
         const hint = on ? '' : '<p class="gb-swipe-hint">' + esc(T('Swipe right to open their pay page, left to skip.', 'Wisch nach rechts für die Bezahlseite der Person, nach links zum Überspringen.', 'Desliza a la derecha para abrir su página de pago, a la izquierda para saltarla.')) + '</p>';
-        const top = '<article class="gb-basket gb-swipe' + (on ? ' gb-picked' : '') + '" data-gb-id="' + esc(b.id) + '" data-gb-top="1" aria-roledescription="' + esc(T('swipe card', 'Wischkarte', 'tarjeta deslizable')) + '" aria-label="' + esc(who(b) + ', ' + T('about ', 'etwa ', 'unos ') + eur(b.total)) + '">' +
+        const top = '<article class="gb-basket gb-swipe gb-tinder' + (on ? ' gb-picked' : '') + '" data-gb-id="' + esc(b.id) + '" data-gb-top="1" aria-roledescription="' + esc(T('swipe card', 'Wischkarte', 'tarjeta deslizable')) + '" aria-label="' + esc(who(b) + ', ' + T('about ', 'etwa ', 'unos ') + eur(b.total)) + '">' +
             '<span class="gb-stamp gb-stamp-pay" aria-hidden="true">' + esc(T('Pay', 'Zahlen', 'Pagar')) + '</span><span class="gb-stamp gb-stamp-skip" aria-hidden="true">' + esc(T('Skip', 'Weiter', 'Saltar')) + '</span>' +
-            '<header><b>' + esc(who(b)) + '</b>' + (b.city ? '<small>' + esc(b.city) + '</small>' : '') + badge(trustBy[b.owner]) + '</header>' +
-            itemsHTML(b.items, b.qtys) + '<p class="gb-total">' + esc(T('About ', 'Etwa ', 'Unos ')) + '<b>' + esc(eur(b.total)) + '</b></p>' +
+            /* Nov 11 2026 (Emmanuel: "more like Tinder, because that was the whole point"): the card is a tall profile card. Its "photo" is
+               the food itself (big tiles, never a picture of a person); the name, city and badge sit on it at the bottom, the rough total
+               as a chip on top. The full list opens under it. */
+            photoHTML(b) +
+            '<details class="gb-more gb-all"><summary>' + esc(T('All ' + b.items.length + ' foods', 'Alle ' + b.items.length + ' Lebensmittel', 'Los ' + b.items.length + ' alimentos')) + '</summary>' + itemsHTML(b.items, b.qtys).replace(/<\/?details[^>]*>|<summary>[^<]*<\/summary>/g, '') + '</details>' +
             (on ? '<p class="gb-pick-msg">' + esc(!opened[b.id] ? T('Pay through ' + who(b) + '’s own link below, then tap I helped.', 'Bezahl über den eigenen Link von ' + who(b) + ' unten und tipp dann auf Ich habe geholfen.', 'Paga con el enlace de ' + who(b) + ' abajo y luego toca He ayudado.') : T('Their pay page opened outside the app. Nothing is paid until you pay there.', 'Die Bezahlseite der Person ist außerhalb der App offen. Bezahlt ist erst, wenn du dort bezahlst.', 'Su página de pago se abrió fuera de la app. No se paga nada hasta que pagues allí.')) + '</p>' + actHTML(b) : hint) + '</article>';
         const btns = '<div class="gb-deck-btns">' +
             '<button type="button" class="gb-round gb-skip" data-gb="skip" data-spend="1" data-gb-for="' + esc(b.id) + '" aria-label="' + esc(T('Skip ', 'Überspringen: ', 'Saltar ') + who(b)) + '"><span aria-hidden="true">\u2715</span><small>' + esc(T('Skip', 'Weiter', 'Saltar')) + '</small></button>' +
-            (lastSkip ? '<button type="button" class="stp-pill gb-undo" data-gb="undo">' + esc(T('Undo', 'Zurück', 'Deshacer')) + '</button>' : '<span class="gb-count">' + esc(T('1 of ', '1 von ', '1 de ') + list.length) + '</span>') +
+            (lastSkip ? '<button type="button" class="gb-round gb-undo gb-undo-r" data-gb="undo" aria-label="' + esc(T('Undo skip', 'Überspringen rückgängig', 'Deshacer')) + '"><span aria-hidden="true">\u21A9</span><small>' + esc(T('Undo', 'Zurück', 'Deshacer')) + '</small></button>' : '<span class="gb-count">' + esc(T('1 of ', '1 von ', '1 de ') + list.length) + '</span>') +
             '<button type="button" class="gb-round gb-yes" data-gb="yes" data-spend="1" data-gb-for="' + esc(b.id) + '"' + (on ? ' disabled aria-disabled="true"' : '') + ' aria-label="' + esc(T('Pay for ', 'Bezahlen für ', 'Pagar a ') + who(b)) + '"><span aria-hidden="true">\u{1F91D}</span><small>' + esc(T('Pay', 'Zahlen', 'Pagar')) + '</small></button></div>';
         return '<div class="gb-deck">' + peeks + top + '</div>' + btns;
+    }
+    function photoHTML(b) {
+        const m = C.mosaic(b.items, b.qtys);
+        return '<div class="gb-photo gb-n' + Math.min(6, m.tiles.length + (m.more ? 1 : 0)) + '">' +
+            m.tiles.map(t => '<span class="gb-tile"><i aria-hidden="true">' + t.e + '</i><b>' + esc(fname(t.n)) + (t.q > 1 ? ' <em>×' + t.q + '</em>' : '') + '</b></span>').join('') +
+            (m.more ? '<span class="gb-tile gb-tile-more"><i aria-hidden="true">+' + m.more + '</i><b>' + esc(T('more', 'weitere', 'más')) + '</b></span>' : '') +
+            '<span class="gb-price">' + esc(T('about ', 'etwa ', 'unos ')) + '<b>' + esc(eur(b.total)) + '</b></span>' +
+            '<header class="gb-id"><b>' + esc(who(b)) + '</b>' + (b.city ? '<small>' + esc(b.city) + '</small>' : '') + badge(trustBy[b.owner]) + '</header></div>';
     }
     function actHTML(b) {
         return opened[b.id]
@@ -431,7 +443,10 @@
             draft.total = e2 > 0 ? e2.toFixed(2) : ''; saveDraft();
             if (ov) { tab = 'mine'; msg = ''; paint(); } else openPanel(from || 'shop', 'mine');
         };
-        go(); loadLimits().then(go, () => {});
+        /* Nov 11 2026 (Emmanuel: "You pick your groceries, you click one button, it goes to the ... swipe thingy"): with a saved pay link,
+           a total in range and every food accepted, "Someone else pays" shares the basket straight away and lands on the swipe cards.
+           Anything missing (first time: the pay link; no prices: the total) shows the short form instead. Taking it back: Share my basket. */
+        go(); loadLimits().then(() => { go(); if (!busy && C.oneTap(C.build(cartDraft(), rate, LIM), fromCartPick)) shareCart(); }, () => {});
     }
     function totalNote(p) {
         const t = p.tot, money = v => '€' + Number(v).toFixed(2);
@@ -452,7 +467,7 @@
             const row = await api().share(b.row, cur ? cur.id : '');
             const v = C.view(row); if (v) mine = [v].concat(mine.filter(x => x.id !== v.id));
             fromCartPick = null; tab = 'give';
-            msg = T('Your cart is a basket in Baskets now. Helpers see it as they swipe.', 'Dein Warenkorb ist jetzt ein Korb unter Körbe. Helfer sehen ihn beim Wischen.', 'Tu carrito ya es una cesta en Cestas. Quien ayuda la ve al deslizar.'); msgKind = 'good';
+            msg = T('Your basket is with the helpers now: they see it as they swipe. Take it back any time under Share my basket.', 'Dein Korb ist jetzt bei den Helfern: sie sehen ihn beim Wischen. Zurücknehmen kannst du ihn jederzeit unter Korb teilen.', 'Tu cesta ya está con quienes ayudan: la ven al deslizar. Puedes retirarla cuando quieras en Compartir mi cesta.'); msgKind = 'good';
         });
     }
     function missing(built) { return built.ok ? '' : T('Still missing: ', 'Es fehlt noch: ', 'Falta: ') + built.errors.map(e => ({ items: T('food', 'Essen', 'comida'), total: T('total', 'Betrag', 'total'), link: T('payment link', 'Zahlungslink', 'enlace de pago') })[e]).join(', '); }

@@ -288,6 +288,30 @@
         return 'back';
     }
 
-    return { DAY, WINDOW_DAYS, MAX_ITEMS, MIN_EUR, MAX_EUR, MAX_URL, PAY_RE_SQL, KOFI_RESERVED,
+    /* Nov 11 2026 (Emmanuel: "the giver hand should be looking more like Tinder, because that was the whole point"): the swipe card
+       shows the basket like a profile photo: up to six big food tiles, each with a food symbol, then "+ N". The symbol is picked
+       from the food's name (English, German or Spanish words); an unknown food gets the basket. Nothing here rates a food. */
+    const FOOD_EMOJI = [
+        [/\b(eggs?|eier|ei|huevos?)\b/, '\u{1F95A}'], [/brokkoli|broccoli|brocoli/, '\u{1F966}'], [/lachs|salmon|fisch|fish|thunfisch|tuna|atun|sardine|hering|forelle|pescado|makrele/, '\u{1F41F}'],
+        [/garnele|shrimp|prawn|gamba/, '\u{1F364}'], [/gurke|cucumber|pepino|zucchini|calabacin/, '\u{1F952}'], [/kase|cheese|queso|feta|mozzarella|halloumi|parmesan|gouda/, '\u{1F9C0}'],
+        [/joghurt|yogh?urt|yogur|skyr|quark|milch|milk|leche|kefir|sahne|cream|nata/, '\u{1F95B}'], [/butter|mantequilla|ghee/, '\u{1F9C8}'],
+        [/hahnchen|huhn|chicken|pollo|pute|turkey|pavo/, '\u{1F357}'], [/rind|beef|steak|hack|fleisch|meat|carne|schwein|pork|cerdo|lamm|lamb|schinken|ham|jamon|speck|bacon/, '\u{1F969}'],
+        [/avocado|aguacate/, '\u{1F951}'], [/tomate|tomato/, '\u{1F345}'], [/paprika|pepper|pimiento/, '\u{1FAD1}'], [/pilz|champignon|mushroom|seta/, '\u{1F344}'],
+        [/spinat|spinach|espinaca|salat|salad|lettuce|lechuga|rucola|kohl|kale|mangold/, '\u{1F96C}'], [/karotte|mohre|carrot|zanahoria/, '\u{1F955}'], [/zwiebel|onion|cebolla/, '\u{1F9C5}'], [/knoblauch|garlic|ajo/, '\u{1F9C4}'],
+        [/olive|aceituna|\bol\b|\boil\b|aceite/, '\u{1FAD2}'], [/nuss|nusse|nut|nuts|mandel|almond|almendra|walnuss|cashew|erdnuss|peanut|nuez|samen|seeds?|semilla|leinsa|chia/, '\u{1F95C}'],
+        [/beere|berry|berries|himbeer|erdbeer|blaubeer|heidelbeer|fresa|frambuesa|arandano/, '\u{1FAD0}'], [/zitrone|lemon|limon|limette|lime/, '\u{1F34B}'], [/kokos|coconut|coco/, '\u{1F965}'],
+        [/tofu|tempeh|edamame|bohne|bean|linse|lentil|kichererbse|chickpea|frijol|lenteja/, '\u{1FAD8}'], [/aubergine|eggplant|berenjena/, '\u{1F346}'], [/kaffee|coffee|cafe/, '\u2615'], [/\btee\b|\btea\b|\bte\b/, '\u{1F375}'],
+        [/wasser|water|agua/, '\u{1F4A7}'], [/kakao|cacao|schoko|chocolate/, '\u{1F36B}'], [/nori|alge|seaweed|alga/, '\u{1F33F}'], [/blumenkohl|cauliflower|coliflor|spargel|asparagus|esparrago|sellerie|celery|apio|fenchel|rosenkohl/, '\u{1F966}']
+    ];
+    function foodEmoji(name) { const k = norm(name); for (const [rx, e] of FOOD_EMOJI) if (rx.test(k)) return e; return '\u{1F9FA}'; }
+    const MOSAIC = 6;
+    function mosaic(items, qtys, max) {
+        max = max || MOSAIC; const all = Array.isArray(items) ? items : [], many = all.length > max, n = many ? max - 1 : all.length;
+        return { tiles: all.slice(0, n).map((x, i) => ({ n: x, q: qtys && qtys[i] > 1 ? qtys[i] : 1, e: foodEmoji(x) })), more: all.length - n };
+    }
+    /* "Someone else pays" in one tap: allowed when the cart built a complete basket (food, total within range, the saved pay link)
+       and nothing from the cart had to stay out. Otherwise the short form shows what is missing. */
+    function oneTap(built, pick) { return !!(built && built.ok && pick && Array.isArray(pick.items) && pick.items.length && !(pick.left && pick.left.length)); }
+    return { foodEmoji, mosaic, MOSAIC, oneTap, DAY, WINDOW_DAYS, MAX_ITEMS, MIN_EUR, MAX_EUR, MAX_URL, PAY_RE_SQL, KOFI_RESERVED,
         payLink, linkName, itemCheck, basketCheck, serverRefuses, DENY_TERMS, DENY_EXCEPT, qty, fromCart, limitsOf, OLD_LIMITS, total, build, view, status, canReceipt, canVerdict, daysLeft, trust, fromCounts, careEventId, norm, SKIP_MS, deck, freshSkips, swipeDecision, project, releaseVelocity, txOf };
 });

@@ -14,7 +14,7 @@ const { buildIds } = require('./release-check.cjs');
 const root = path.join(__dirname, '..');
 const args = process.argv.slice(2);
 const opt = k => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : undefined; };
-const base = (opt('--base') || 'https://therealetm.github.io/lowispike/').replace(/\/?$/, '/');
+const base = (opt('--base') || 'https://lowispike.com/').replace(/\/?$/, '/');
 const timeout = +(opt('--timeout') || 600) * 1000;
 const atLeast = args.includes('--at-least');
 const want = args.find(a => /^\d{8}-\d{6}$/.test(a)) || buildIds(root)['version.json build'];

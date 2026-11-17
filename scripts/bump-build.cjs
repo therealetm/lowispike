@@ -11,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const { buildIds, BUILD_RE } = require('./release-check.cjs');
 
-const LIVE = 'https://therealetm.github.io/lowispike/version.json';
+const LIVE = 'https://lowispike.com/version.json';
 const ID_FILES = ['index.html', 'sw.js', 'apple-ui.js'];
 
 function toDate(id) { return new Date(Date.UTC(+id.slice(0, 4), +id.slice(4, 6) - 1, +id.slice(6, 8), +id.slice(9, 11), +id.slice(11, 13), +id.slice(13, 15))); }

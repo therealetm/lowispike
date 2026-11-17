@@ -150,7 +150,7 @@
     x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>'
   };
   const ICON = '<img class="ig-icon" src="icon-180.png" alt="" width="60" height="60" decoding="async">';
-  const URLT = 'therealetm.github.io';
+  const URLT = 'lowispike.com';
 
   /* ---------- one frame of the mock phone ---------- */
   function page(dim) { return '<div class="ig-page' + (dim ? ' dim' : '') + '">' + ICON + '<b>LOWiSPIKE</b><i class="ig-ln"></i><i class="ig-ln s"></i></div>'; }

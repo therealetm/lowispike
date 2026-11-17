@@ -89,7 +89,7 @@ test('start screen fits one iPhone screen: the round button sits in the bar, no 
 test('pages: shareable, private, branded, and the app tabs point at them', () => {
   const a = read('affiliates/index.html'), c = read('create/index.html');
   for (const [f, html] of [['affiliates', a], ['create', c]]) {
-    assert.match(html, new RegExp('<link rel="canonical" href="https://therealetm.github.io/lowispike/' + f + '/">'));
+    assert.match(html, new RegExp('<link rel="canonical" href="https://lowispike.com/' + f + '/">'));
     assert.match(html, /og:image/); assert.match(html, /viewport-fit=cover/); assert.ok(!/console\.log/.test(html));
   }
   assert.match(a, /<meta name="robots" content="noindex">/);

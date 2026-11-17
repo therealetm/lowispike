@@ -1,7 +1,6 @@
 # LOWiSPIKE
-# Crawlers read robots.txt only at the root of a host (therealetm.github.io/robots.txt), which a project site cannot serve,
-# so this file starts working once the app has its own domain. Until then the sitemap is linked from index.html.
+# The app lives at the root of its own domain (lowispike.com), so crawlers read this file and the sitemap below.
 User-agent: *
 Allow: /
 
-Sitemap: https://therealetm.github.io/lowispike/sitemap.xml
+Sitemap: https://lowispike.com/sitemap.xml

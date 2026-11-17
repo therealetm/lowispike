@@ -372,7 +372,7 @@
   function cleanId(v) { v = String(v == null ? '' : v).trim(); return /^[A-Za-z0-9_-]{1,64}$/.test(v) ? v : ''; }
   function shareUrl(o) {
     o = o || {};
-    const base = String(o.base || 'https://therealetm.github.io/lowispike/affiliates/').split('#')[0].split('?')[0];
+    const base = String(o.base || 'https://lowispike.com/affiliates/').split('#')[0].split('?')[0];
     const q = [];
     if (SERIES[o.track]) q.push('track=' + o.track);
     if (normLang(o.lang)) q.push('lang=' + normLang(o.lang));

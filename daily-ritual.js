@@ -196,7 +196,7 @@
     let A2 = null;
     function a2Art(i, kind) {
         const ios = kind !== 'android';
-        if (i === 0) return '<div class="dr-phone"><div class="dr-screen"><div class="dr-url">therealetm.github.io</div><div class="dr-page"><i></i><i></i><i class="s"></i></div>' +
+        if (i === 0) return '<div class="dr-phone"><div class="dr-screen"><div class="dr-url">lowispike.com</div><div class="dr-page"><i></i><i></i><i class="s"></i></div>' +
             (ios ? '<div class="dr-sbar"><span></span><span></span><b class="dr-hot">' + ICON.share + '</b><span></span><span></span></div>' : '<div class="dr-abar"><span class="dr-url2"></span><b class="dr-hot">' + ICON.dots + '</b></div>') + '</div></div>';
         if (i === 1) return '<div class="dr-phone"><div class="dr-screen dr-dim"><div class="dr-menu"><div class="dr-row"><i></i>' + esc(T('Copy', 'Kopieren', 'Copiar')) + '</div><div class="dr-row"><i></i>' + esc(T('Add bookmark', 'Lesezeichen', 'Marcador')) + '</div>' +
             '<div class="dr-row dr-hot">' + ICON.plus + esc(ios ? T('Add to Home Screen', 'Zum Home-Bildschirm', 'A\u00f1adir a inicio') : T('Install app', 'App installieren', 'Instalar app')) + '</div><div class="dr-row"><i></i>' + esc(T('Find on page', 'Auf Seite suchen', 'Buscar')) + '</div></div></div></div>';

@@ -10,7 +10,7 @@
 // Deploy: Supabase dashboard > Edge Functions > Deploy a new function > name "feedback-transcribe" > paste this file.
 // Needs supabase/proposals/feedback_20261105.sql first. Optional secret GEMINI_MODEL picks the model, like food-photo.
 
-const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, /^capacitor:\/\/localhost$/];
+const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^https:\/\/(www\.)?lowispike\.com$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, /^capacitor:\/\/localhost$/];
 const MODELS = (Deno.env.get("GEMINI_MODEL") || "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite")
   .split(",").map((s) => s.trim()).filter(Boolean);
 const MAX_BYTES = 8_400_000; // bucket limit is 8 MB per file (about 5 minutes of voice)

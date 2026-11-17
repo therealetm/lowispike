@@ -14,7 +14,7 @@
   const STORE = 'lowi.aff.unlock.v1', REF = 'lowi.aff.ref', MINE = 'lowi.aff.me', SALES = 'lowi.aff.sales';
   const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const RECRUIT = { salesPerRecruit: 5, recruitsPerLevel: 3 };
-  const SITE = 'https://therealetm.github.io/lowispike/affiliates/';
+  const SITE = 'https://lowispike.com/affiliates/';
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   /* Codes look like VIP-K7QM-9XDR-2HPW; spaces, dashes and case do not matter when typed. */

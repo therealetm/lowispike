@@ -78,7 +78,11 @@
     /* Nov 8 2026 (Emmanuel: "Dieses meine Woche, ich schmeiß das komplett raus, das ist kompliziert ... ich nutze das nicht mal"): the
        week planner has no door any more; old links and tours that ask for 'home' land on Supermarkt. week-basket*.js stay loaded only
        for their pure helpers (cart merge, store estimates). */
-    const homeTab = () => false;
+    /* Nov 17 2026 (Emmanuel: "This whole interface in my app is messy & confusing for people, so make it like" Piatto, a weekly plan
+       app): the week plan is back, redesigned as Supermarkt's front page: a short setup with a progress bar, then shopping card +
+       budget ring + dinner cards (week-basket.js). The products (market) are one card away and lead back with "Week plan". */
+    const homeTab = () => !!WB();
+    const lastSm = () => { try { return localStorage.getItem(TKEY); } catch (e) { return ''; } };
     const onHome = () => tab === 'home' && homeTab();
     const onShop = () => !onSz() && !onKit() && !onHome();
     const ic = {
@@ -445,6 +449,8 @@
         return true;
     }
     function footBtns(left) {
+        /* Nov 17 2026: on the products, the left of the foot is the way back to the week plan */
+        if (!left && onShop() && homeTab()) left = '<button type="button" class="stp-pill stp-toplan" data-stp="toplan">\u2039 ' + esc(T('Week plan', 'Wochenplan', 'Plan semanal')) + '</button>';
         return '<div class="stp-foot">' + (left || '<span></span>') + '<button type="button" class="stp-orb stp-close" data-stp="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + ic.x + '</button></div>';
     }
 
@@ -964,6 +970,7 @@
         if (a === 'scanshop') { close(); setTimeout(() => { try { W.LowiShopScan.open(); } catch (x) {} }, 200); return; }
         if (a === 'sellerzone') { setTab('sz'); return; }
         if (a === 'weekshop') return openFakeaway();
+        if (a === 'toplan') return setTab('home');
         if (a === 'fails') { showFail = !showFail; if (data) paint('keep'); return; }
         if (a === 'mylist') { close(); setTimeout(() => { try { W.tdShopOpen(); } catch (x) {} }, 200); return; }
         if (a === 'cart') { openCart(); return; }
@@ -1025,7 +1032,9 @@
            opens on its first tab, Supermarkt. Picking another tab still works while the panel is open (the tour sets its tab after open).
            Oct 28 2026, 23:00 (Emmanuel: Supermarkt, Zu Hause, Seller Zone and Hilf mit "also be bubbles"): the Einkaufen bubble
            opens those four as orbs (home-blooms-v2.js); the orb that was tapped is the one tab this opens on (openAt). */
-        tab = start === 'sz' && SZ() ? 'sz' : start === 'home' && homeTab() ? 'home' : start === 'kitchen' && kitTab() ? 'kitchen' : 'shop';
+        /* Nov 17 2026: Supermarkt opens on the week plan, unless the products were the last thing open there */
+        const smHome = homeTab() && (start === 'home' || ((!start || start === 'shop') && lastSm() !== 'shop'));
+        tab = start === 'sz' && SZ() ? 'sz' : smHome ? 'home' : start === 'kitchen' && kitTab() ? 'kitchen' : 'shop';
         cartUndo = null;
         snacksToCart();
         ov = D.createElement('div');

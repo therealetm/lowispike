@@ -157,6 +157,8 @@
         return fitInfo;
     }
     const today = () => C.ymd(new Date());
+    /* Nov 17 2026: a friendly hello by the time of day, like the reference's "Guten Tag" */
+    function hello() { const h = new Date().getHours(); return h < 11 ? T('Good morning!', 'Guten Morgen!', '\u00a1Buenos d\u00edas!') : h < 18 ? T('Good afternoon!', 'Guten Tag!', '\u00a1Buenas tardes!') : T('Good evening!', 'Guten Abend!', '\u00a1Buenas noches!'); }
     function companionName() { const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(W.LowiHerbIdentity && W.LowiHerbIdentity.autoName && W.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = W.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = W.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n; }
     const locale = () => lang() === 'de' ? 'de-DE' : lang() === 'es' ? 'es-ES' : 'en-GB';
     function dayName(d) {
@@ -175,7 +177,10 @@
         (emoji ? '<span class="wb-te" aria-hidden="true">' + emoji + '</span>' : '') + '<span class="wb-tl2">' + label + '</span>' + (multi ? '<span class="wb-tck" aria-hidden="true">' + (on ? '\u2713' : '') + '</span>' : '') + '</button>';
     function qHTML() {
         const k = STEPS[step], n = step + 1;
-        const dots = '<div class="wb-dots" aria-hidden="true">' + STEPS.map((x, i) => '<i class="' + (i < step ? 'done' : i === step ? 'now' : '') + '"></i>').join('') + '</div>';
+        /* Nov 17 2026 (Emmanuel: "This whole interface in my app is messy & confusing for people, so make it like" Piatto): one thin
+           progress bar across the top instead of the dots, so it reads as a short setup with an end */
+        const pct = Math.round(n / STEPS.length * 100);
+        const dots = '<div class="wb-prog" role="progressbar" aria-valuemin="1" aria-valuemax="' + STEPS.length + '" aria-valuenow="' + n + '" aria-label="' + T('Step ' + n + ' of ' + STEPS.length, 'Schritt ' + n + ' von ' + STEPS.length, 'Paso ' + n + ' de ' + STEPS.length) + '"><i style="width:' + pct + '%"></i></div>';
         const top = '<div class="wb-qtop">' + (step > 0 ? '<button type="button" class="wb-back" data-wb="qback" aria-label="' + T('Back', 'Zur\u00fcck', 'Atr\u00e1s') + '">\u2039</button>' : '<span class="wb-back-sp"></span>') + dots +
             (S.setup ? '<button type="button" class="wb-qx" data-wb="qcancel">' + T('Cancel', 'Abbrechen', 'Cancelar') + '</button>' : '<span class="wb-qn">' + n + '/' + STEPS.length + '</span>') + '</div>';
         let q = '', sub = '', body = '', next = '';
@@ -201,8 +206,10 @@
             next = k === 'kit' ? T('Make my week', 'Meine Woche planen', 'Planear mi semana')
                 : none ? (k === 'vibe' ? T('Surprise me', '\u00dcberrasch mich', 'Sorpr\u00e9ndeme') : T('I eat everything', 'Ich esse alles', 'Como de todo')) : T('Next', 'Weiter', 'Siguiente');
         }
+        /* Nov 17 2026: before the first plan, the shelves stay one quiet tap away, so nobody is forced through the questions */
+        const browse = !S.setup && inl && inl.onBack ? '<button type="button" class="wb-link wb-qbrowse" data-wb="tosm">' + T('Just look at products first', 'Erst mal nur Produkte ansehen', 'Solo ver productos primero') + '</button>' : '';
         return '<section class="wb-q" aria-labelledby="wbQ">' + top + '<h4 id="wbQ" class="wb-qh">' + q + '</h4>' + (sub ? '<p class="wb-qs">' + sub + '</p>' : '') + body +
-            (next ? '<button type="button" class="wb-cta wb-qnext" data-wb="qnext">' + next + '</button>' : '') + '</section>';
+            (next ? '<button type="button" class="wb-cta wb-qnext" data-wb="qnext">' + next + '</button>' : '') + browse + '</section>';
     }
     function makeHTML() {
         const nm = esc(companionName());
@@ -217,7 +224,8 @@
             '<p class="wb-wl">' + T('Try fewer things you don\u2019t eat, or tell us about another way to cook.', 'Probier weniger Ausschl\u00fcsse oder eine andere Kochm\u00f6glichkeit.', 'Prueba con menos exclusiones o con otra forma de cocinar.') + '</p>' +
             '<button type="button" class="wb-cta" data-wb="edit">' + T('Change my answers', 'Antworten \u00e4ndern', 'Cambiar mis respuestas') + '</button></section>';
         const day = (d, n) => { const r = d.r, img = pic(d.id), cost = C.dinnerCost(d.id, c.items, price, S.store, c.have), pr = c.prof[d.id], dd = dl[n];
-            const meta = [pr && pr.min ? T(pr.min + ' min', pr.min + ' Min.', pr.min + ' min') : '', '\u2248 ' + eur(cost)].filter(Boolean).join(' \u00b7 ');
+            /* Nov 17 2026: like the reference, time, how many it feeds and the estimated price per portion (this dinner's share of the bill / people) */
+            const meta = [pr && pr.min ? T(pr.min + ' min', pr.min + ' Min.', pr.min + ' min') : '', T('for ' + S.people, 'f\u00fcr ' + S.people, 'para ' + S.people), '\u2248 ' + eur(cost / Math.max(1, S.people)) + T('/portion', '/Portion', '/raci\u00f3n')].filter(Boolean).join(' \u00b7 ');
             return '<li class="wb-day' + (dd.date === today() ? ' now' : '') + '"><button type="button" class="wb-dopen" data-wb="recipe" data-id="' + esc(d.id) + '">' +
                 '<span class="wb-dpic"' + (img ? ' style="background-image:url(\'' + img + '\')"' : '') + ' aria-hidden="true">' + (img ? '' : esc(r.e || '\ud83c\udf7d\ufe0f')) + '</span>' +
                 '<span class="wb-dn"><small>' + esc(dayName(dd)) + '</small><b>' + esc(tr(r.swapName || r.n)) + '</b><em>' + meta + '</em></span></button>' +
@@ -231,23 +239,44 @@
             T('The cheapest week the app can make at ' + esc(storeName(S.store)) + ' is about ' + eur(fi.sum) + '.', 'Die g\u00fcnstigste Woche, die die App bei ' + esc(storeName(S.store)) + ' planen kann, kostet etwa ' + eur(fi.sum) + '.', 'La semana m\u00e1s barata que la app puede hacer en ' + esc(storeName(S.store)) + ' cuesta unos ' + eur(fi.sum) + '.') + '</p>' +
             '<div class="wb-over-acts">' + (fi.nights ? '<button type="button" class="wb-cta wb-over-go" data-wb="fewer">' + T(fi.nights === 1 ? '1 dinner fits' : fi.nights + ' dinners fit', fi.nights === 1 ? '1 Abendessen passt' : fi.nights + ' Abendessen passen', fi.nights === 1 ? 'Cabe 1 cena' : 'Caben ' + fi.nights + ' cenas') + '</button>' : '') +
             (fi.needBudget <= C.BUDGET_MAX ? '<button type="button" class="wb-cta wb-over-go ghost" data-wb="needbud">' + T('Budget ', 'Budget ', 'Presupuesto ') + eur(fi.needBudget) + '</button>' : '') + '</div></div>';
-        return '<section class="wb-week" aria-labelledby="wbWk"><h4 id="wbWk" class="wb-wh">' + T('Your week', 'Deine Woche', 'Tu semana') + '</h4>' +
-            '<p class="wb-wl' + (bs.over ? ' over' : '') + '" aria-live="polite">\u2248 ' + eur(bs.total) + ' ' + T('of ', 'von ', 'de ') + eur(bs.budget) + ' \u00b7 ' + esc(storeName(S.store)) +
-            (bs.over && !overNote ? ' \u00b7 <button type="button" class="wb-link" data-wb="fit">' + T('Fit my budget', 'In mein Budget bringen', 'Ajustar a mi presupuesto') + '</button>' : '') + '</p>' + overNote +
+        /* Nov 17 2026 (Emmanuel: "messy & confusing for people, so make it like" Piatto): the week opens with two cards, the shopping
+           list (how many things, sorted by aisle, one button) and the budget ring (estimate of budget, what is left or over); then the
+           dinners as cards with photo, time, people and an estimated price per portion. Only what the app really does: estimates are
+           marked, Swap and New week are the real reshuffles, there is no lunch plan and no drag and drop. */
+        const nA = Object.keys(need.reduce((m, i) => { m[aisle(i.g)] = 1; return m; }, {})).length;
+        const R = 26, CIRC = 2 * Math.PI * R, arc = (CIRC * Math.min(1, bs.pct)).toFixed(1);
+        const ring = '<svg class="wb-ring" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="' + R + '" class="wb-ring-bg"/><circle cx="32" cy="32" r="' + R + '" class="wb-ring-fg" stroke-dasharray="' + arc + ' ' + CIRC.toFixed(1) + '" transform="rotate(-90 32 32)"/></svg>';
+        const shopCard = '<button type="button" class="wb-shopcard" data-wb="view" data-v="list"><span class="wb-sc-k">' + T('Shopping', 'Einkauf', 'Compra') + '</span>' +
+            '<b>' + T(need.length === 1 ? '1 item' : need.length + ' items', need.length === 1 ? '1 Artikel' : need.length + ' Artikel', need.length === 1 ? '1 art\u00edculo' : need.length + ' art\u00edculos') + '</b>' +
+            '<small>' + T(nA === 1 ? 'in 1 aisle' : 'in ' + nA + ' aisles', nA === 1 ? 'in 1 Abteilung' : 'in ' + nA + ' Abteilungen', nA === 1 ? 'en 1 pasillo' : 'en ' + nA + ' pasillos') + '</small>' +
+            '<span class="wb-sc-go">' + T('Open list', 'Liste \u00f6ffnen', 'Abrir lista') + '</span></button>';
+        const budCard = '<div class="wb-budcard' + (bs.over ? ' over' : '') + '" aria-live="polite">' + ring +
+            '<div class="wb-bc-t"><b>\u2248 ' + eur(bs.total) + '</b><small>' + T('of ', 'von ', 'de ') + eur(bs.budget) + '</small>' +
+            '<em>' + (bs.over ? T(eur(-bs.left) + ' over', eur(-bs.left) + ' dr\u00fcber', eur(-bs.left) + ' de m\u00e1s') : T(eur(bs.left) + ' left', eur(bs.left) + ' \u00fcbrig', eur(bs.left) + ' libres')) + '</em>' +
+            (bs.over && !overNote ? '<button type="button" class="wb-link" data-wb="fit">' + T('Fit my budget', 'Ins Budget bringen', 'Ajustar') + '</button>' : '') + '</div></div>';
+        const browse = inl && inl.onBack ? '<button type="button" class="wb-browse" data-wb="tosm"><span class="wb-br-ic" aria-hidden="true">\ud83d\udecd\ufe0f</span><span class="wb-br-t"><b>' +
+            T('Browse products', 'Produkte st\u00f6bern', 'Ver productos') + '</b><small>' +
+            T('Your shop\u2019s shelves. What you tap goes in your Cart.', 'Die Regale deines Ladens. Was du antippst, landet im Warenkorb.', 'Los estantes de tu tienda. Lo que tocas va a tu carrito.') +
+            '</small></span><span class="wb-br-go" aria-hidden="true">\u203a</span></button>' : '';
+        return '<section class="wb-week" aria-labelledby="wbWk">' +
+            (up.length ? '<div class="wb-overview">' + shopCard + budCard + '</div>' : '') + overNote +
+            '<h4 id="wbWk" class="wb-wh">' + T('Your week', 'Deine Woche', 'Tu semana') + '</h4>' +
+            '<p class="wb-wl">' + T(c.dinners.length + ' dinners \u00b7 ' + ppl + ' \u00b7 ' + esc(storeName(S.store)), c.dinners.length + ' Abendessen \u00b7 ' + ppl + ' \u00b7 ' + esc(storeName(S.store)), c.dinners.length + ' cenas \u00b7 ' + ppl + ' \u00b7 ' + esc(storeName(S.store))) + '</p>' +
             (short ? '<p class="wb-note">' + T('Only ' + c.dinners.length + ' dinners fit everything you said.', 'Nur ' + c.dinners.length + ' Abendessen passen zu allem, was du gesagt hast.', 'Solo ' + c.dinners.length + ' cenas encajan con todo lo que dijiste.') + '</p>' : '') +
             /* Nov 6 2026 (design review point 7): only tonight and the days still to come, Tonight on top; a week that is all behind
                you offers the next one */
             (up.length ? '<ul class="wb-days">' + up.map(n => day(c.dinners[n], n)).join('') + '</ul>' +
-                '<button type="button" class="wb-cta" data-wb="view" data-v="list">' + T('Shopping list', 'Einkaufsliste', 'Lista de la compra') + ' \u00b7 ' + need.length + '</button>'
+                '<p class="wb-tip">' + T('Tap a dinner for its recipe. \u21bb swaps it for another one.', 'Tipp ein Abendessen f\u00fcr das Rezept. \u21bb tauscht es gegen ein anderes.', 'Toca una cena para ver la receta. \u21bb la cambia por otra.') + '</p>'
                 : '<p class="wb-note wb-past">' + T('This week\u2019s dinners are behind you.', 'Die Abendessen dieser Woche sind vorbei.', 'Las cenas de esta semana ya pasaron.') + '</p>' +
                 '<button type="button" class="wb-cta" data-wb="new">' + T('Plan the next dinners', 'N\u00e4chste Abendessen planen', 'Planear las pr\u00f3ximas cenas') + '</button>') +
+            browse +
             '<div class="wb-links"><button type="button" class="wb-link" data-wb="edit">' + T('Change my answers', 'Antworten \u00e4ndern', 'Cambiar mis respuestas') + '</button><span aria-hidden="true">\u00b7</span>' +
             '<button type="button" class="wb-link" data-wb="new">' + T('New week', 'Neue Woche', 'Nueva semana') + '</button>' +
             /* Nov 7 2026 (Emmanuel: carousels that start with the grocery cart and its price, then each day's dinner): one tap draws
                them (week-carousel.js) and opens New post with them */
             (W.LowiWeekCarousel && up.length ? '<span aria-hidden="true">\u00b7</span><button type="button" class="wb-link wb-car" data-wb="carousel">' + T('Post as carousel', 'Als Karussell posten', 'Publicar como carrusel') + '</button>' : '') +
             (W.LowiKitchenGame ? '<span aria-hidden="true">\u00b7</span><button type="button" class="wb-link" data-wb="kitchen">' + T('My kitchen', 'Meine K\u00fcche', 'Mi cocina') + '</button>' : '') + '</div>' +
-            '<p class="wb-fine">' + T('Prices are estimates, not live prices. Tap a dinner for its recipe.', 'Preise sind Sch\u00e4tzungen, keine Live-Preise. Tipp ein Abendessen f\u00fcr das Rezept.', 'Los precios son estimaciones, no precios en vivo. Toca una cena para ver la receta.') + '</p></section>' +
+            '<p class="wb-fine">' + T('Prices are estimates, not live shop prices.', 'Preise sind Sch\u00e4tzungen, keine Live-Preise des Ladens.', 'Los precios son estimaciones, no precios en vivo de la tienda.') + '</p></section>' +
             (cheapest ? '' : '');
     }
     function listHTML(c) {
@@ -277,7 +306,7 @@
                 'Los precios son estimaciones de un paquete t\u00edpico en cada cadena, no precios en vivo. Un paquete por cena alcanza para hasta dos personas; especias, salsas, aceites y semillas cuentan una vez por semana. Orientaci\u00f3n general sobre alimentaci\u00f3n, no consejo m\u00e9dico.') + '</p></section>';
     }
     function html() {
-        if (!view) view = S.setup ? 'week' : 'q';
+        if (!view) { view = S.setup ? 'week' : 'q'; if (!S.setup && S.store && step === 0) step = 1; }   /* Nov 17 2026: shop known from Supermarkt -> skip that question */
         let c = view === 'week' || view === 'list' ? build() : null;
         /* Nov 5 2026 (owner: "€40 for 7 dinners" showed a plan for €83.77): a plan the app just picked itself (first open, more
            or fewer nights) is fitted to the budget straight away, like a fresh week. A plan you changed by hand is never touched. */
@@ -287,7 +316,9 @@
         return (inl ? '<div class="wb-card wb-inline wb-v-' + view + '" role="region" aria-labelledby="wbTitle">' : '<div class="wb-card wb-v-' + view + '" role="dialog" aria-modal="true" aria-labelledby="wbTitle">') +
             /* Nov 5 2026 (owner, Phase B item 3): "Zu Hause" planning is part of Supermarkt now, as "Plan my week". Inside Supermarkt the
                head carries a way back to the Supermarkt list (inl.onBack). */
-            '<div class="wb-head"><div>' + (inl && inl.onBack ? '<button type="button" class="wb-backl wb-backsm" data-wb="tosm">\u2039 ' + T('Supermarket', 'Supermarkt', 'Supermercado') + '</button>' : '') + '<h3 id="wbTitle">' + T('Plan my week', 'Meine Woche planen', 'Planear mi semana') + '</h3></div>' +
+            /* Nov 17 2026 (Piatto pass): Supermarkt opens on this plan. Head = hello + "Wochenplan" + which shop it is planned for. */
+            '<div class="wb-head"><div>' + (inl ? '<p class="wb-hello">' + hello() + '</p>' : '') + '<h3 id="wbTitle">' + T('Week plan', 'Wochenplan', 'Plan semanal') + '</h3>' +
+            (S.store && (view === 'week' || view === 'list') ? '<span class="wb-badge">' + T('planned for ', 'geplant f\u00fcr ', 'planeado para ') + esc(storeName(S.store)) + '</span>' : '') + '</div>' +
             (inl ? (inl.head ? inl.head() : '') : '<button type="button" class="wb-x" data-wb="close" aria-label="' + T('Back to Supermarket', 'Zur\u00fcck zum Supermarkt', 'Volver al supermercado') + '">\u00d7</button>') + '</div>' +
             '<div class="wb-scroll">' + body + '</div><div class="wb-toast" role="status" aria-live="polite"></div></div>';
     }

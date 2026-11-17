@@ -54,7 +54,8 @@ test('Einkaufen always opens on Supermarkt', () => {
   const sp = R('store-picks.js');
   const o = sp.slice(sp.indexOf('function openPanel('), sp.indexOf('snackUndo = null;', sp.indexOf('function openPanel(')));
   /* Oct 28 2026, 23:00: Supermarkt unless the Einkaufen bloom's orb names another door (openAt); never the remembered tab */
-  assert.match(o, /tab = start === 'sz' && SZ\(\) \? 'sz' : start === 'home' && homeTab\(\) \? 'home' : start === 'kitchen' && kitTab\(\) \? 'kitchen' : 'shop';/);
+  /* 17 Nov 2026: Supermarkt opens on the week plan unless the products were the last thing open in Supermarkt */
+  assert.match(o, /tab = start === 'sz' && SZ\(\) \? 'sz' : smHome \? 'home' : start === 'kitchen' && kitTab\(\) \? 'kitchen' : 'shop';/);
   assert.doesNotMatch(o, /tab = (load|get)\w*\(/, 'the remembered tab no longer decides the first view');
 });
 

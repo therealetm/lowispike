@@ -8,9 +8,12 @@ const fs = require('fs'), path = require('path');
 const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const sp = read('store-picks.js'), css = read('store-picks.css');
 
-test('Meine Woche planen has no door: no Zu Hause tab, old links land on Supermarkt', () => {
-  assert.match(sp, /const homeTab = \(\) => false;/);
-  assert.match(sp, /tab = start === 'sz' && SZ\(\) \? 'sz' : start === 'home' && homeTab\(\) \? 'home'/, 'openAt(\'home\') falls through to shop');
+/* 17 Nov 2026 (owner: "make it like" Piatto): the 8 Nov "no door" is superseded; the week plan is Supermarkt's front page,
+   still no own Zu Hause tab (tabsHTML lights Supermarkt for 'home') */
+test('the week plan is Supermarkt\'s front page, no own Zu Hause tab', () => {
+  assert.match(sp, /const homeTab = \(\) => !!WB\(\);/);
+  assert.match(sp, /const smHome = homeTab\(\) && \(start === 'home' \|\| \(\(!start \|\| start === 'shop'\) && lastSm\(\) !== 'shop'\)\);/);
+  assert.match(sp, /const cur = tabOver \|\| \(tab === 'home' \? 'shop' : tab\);/, 'Supermarkt stays lit on the plan');
 });
 
 test('the Fakeaway row left both Supermarkt views (it lives in the Weekly Challenge)', () => {

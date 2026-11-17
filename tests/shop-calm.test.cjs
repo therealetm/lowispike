@@ -51,7 +51,7 @@ test('Plan my week (old Shop from home) lives inside Supermarkt, remembered, dra
   assert.match(sp, /function planRowHTML\(\)[\s\S]{0,900}data-stp="weekshop"/);
   assert.match(sp, /T\('Fakeaway week', 'Fakeaway-Woche', 'Semana fakeaway'\)/);
   assert.match(sp, /onBack: \(\) => setTab\('shop'\)/);
-  assert.match(wb, /T\('Plan my week', 'Meine Woche planen', 'Planear mi semana'\)/);
+  assert.match(wb, /T\('Week plan', 'Wochenplan', 'Plan semanal'\)/);   /* 17 Nov 2026: the plan's title */
   assert.match(wb, /if \(a === 'tosm'\) \{ if \(inl && inl\.onBack\) inl\.onBack\(\); return; \}/);
   assert.match(sp, /home: 'home' \}\)\[localStorage\.getItem\(TKEY\)\]/);
   assert.match(wb, /function mount\(el, opts\)/);

@@ -46,3 +46,4 @@ For gesture, sheet, spring, translucency, or motion changes, read `.agents/skill
 
 `vendor/`, generated image assets, recipe step images, and unrelated user assets are not refactoring targets.
 
+<!-- Publishing test, 17 Nov 2026: comment only, no app change. -->

@@ -255,9 +255,8 @@
                online, so the chat doesn't become a snitch"): the round button opens People (people-directory.js: everyone, with Online
                right now at the top), which used to open from the Community heading. How it works moved next to the XP / Forever chips. */
             '<button type="button" class="rk-info rk-mem" data-rk="members" aria-haspopup="dialog" aria-label="' + esc(tr('members')) + '">' + ico('users', '', 'rk-info-i', '\u25cf') + '</button></div>' +
-            '<div class="rk-chips"><span class="rk-chip">' + pIco(per) + '<span>' + esc(per === 'all' ? tr('xp') : tr('sun')) + '</span></span>' +
-            '<span class="rk-chip">' + (sp ? ico('hourglass', '', 'rk-hg', '\u231b') : '<b class="rk-inf8" aria-hidden="true">\u221e</b>') + '<span>' + esc(sp ? (left <= 1 ? tr('left1') : tr('leftN', { n: left })) : tr('forever')) + '</span></span>' +
-            '<button type="button" class="rk-chip rk-how" data-rk="info" aria-haspopup="dialog">' + ico('info', '', 'rk-how-i', 'i') + '<span>' + esc(tr('info')) + '</span></button></div>' +
+            /* Nov 18 2026 (owner, v9 redesign: the ranking "looked really cool ... just too many distracting buttons"): the XP / Forever /
+               How it works chips are gone from the top. How it works is one quiet line under the board (see below). */
             meHTML(list, mv);
         if (!list.length) h += '<p class="rk-empty">' + ico('trophy', '', 'rk-empty-i', '') + '<span>' + sunHTML(esc(tr(per === 'w' ? 'emptyW' : per === 'm' ? 'emptyM' : 'empty'))) + '</span>' +
             (per === 'w' && K.rows(people(), 'm', now, myCare()).length ? '<button type="button" class="rk-seem" data-rk="per" data-k="m">' + esc(tr('seeM')) + '</button>' : '') + '</p>';
@@ -265,6 +264,7 @@
             h += '<div class="rk-pod n' + top.length + '">' + K.podium(list).map((x, i) => podHTML(x, i, mv)).join('') + '</div>';
             if (rest.length) h += '<ol class="rk-list">' + rest.map((x, i) => rowHTML(x, i, mv)).join('') + '</ol>';
         }
+        h += '<button type="button" class="rk-how-l" data-rk="info" aria-haspopup="dialog">' + ico('info', '', 'rk-how-i', 'i') + '<span>' + esc(tr('info')) + '</span></button>';
         return { h, uids: list.map(x => x.p && x.p.uid).filter(Boolean) };
     }
     /* People needs a signed-in account (people-directory.js returns null otherwise): then the button says so in place of opening nothing */
@@ -474,10 +474,11 @@
             duelV(a, 'me', a.pts > b.pts) + '<span class="rk-duel-bar" aria-hidden="true"><i class="me"></i><i class="them"></i></span>' + duelV(b, 'them', b.pts > a.pts) + '</div>';
         const goal = goalText(me, them, k);
         if (goal) h += '<p class="rk-goal">' + ico('target', tr('goal'), 'rk-goal-i', '\u25ce') + '<span>' + sunHTML(esc(goal)) + '</span></p>';
-        const rows = K.PERIODS.map(kk => ({ i: pIco(kk), l: tr(kk), a: (aM[kk] || {}).pts || 0, b: (aT[kk] || {}).pts || 0, cur: kk === k, nm }));
-        rows.push({ i: ico('medal', '', 'rk-medal-i', '\u2605'), l: tr('lvRow'), a: lvM, b: lvT, nm });
+        /* Nov 18 2026 (owner, v9 redesign): no Week / Month / All time rows (the switch above already picks the board) and no Level
+           row (the level sits under each name). What is left compares what you did: full-sun days, then meals, scans, Moves... */
+        const rows = [];
         if (sp) rows.push({ i: ico('sun', '', 'rk-sun full', '\u2600'), l: tr('fullDays'), a: a.full || 0, b: b.full || 0, nm });
-        h += '<ul class="rk-mir">' + rows.map(mirRow).join('') + '</ul>' + srcHTML(k, them, tp, cT, nm);
+        h += (rows.length ? '<ul class="rk-mir">' + rows.map(mirRow).join('') + '</ul>' : '') + srcHTML(k, them, tp, cT, nm);
         if (tp && (tp.uid || tp.n)) h += '<button type="button" class="rk-pf" data-cmp="profile" data-uid="' + esc(tp.uid || '') + '" data-who="' + esc(tp.n || '') + '" aria-label="' + esc(tr('profileL', { n: nm })) + '">' + ico('user', '', 'rk-pf-i', '') + '<span>' + esc(tr('profile')) + '</span><b aria-hidden="true">\u203a</b></button>';
         return h + '</div>';
     }

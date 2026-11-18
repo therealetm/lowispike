@@ -21,7 +21,7 @@
   const W = {
     shelf: ['Shelves', 'Regale', 'Estantes'], basket: ['Basket', 'Korb', 'Cesta'], fridge: ['Fridge', 'Kühlschrank', 'Nevera'], table: ['Table', 'Tisch', 'Mesa'],
     stations: ['From the shelf to your plate', 'Vom Regal bis auf den Teller', 'Del estante al plato'],
-    list: ['Plain list', 'Einfache Liste', 'Lista simple'], game: ['Back to the market', 'Zurück zum Markt', 'Volver al mercado'],
+    list: ['Plain list', 'Einfache Liste', 'Lista simple'], game: ['Shop it like a game', 'Einkaufen wie im Spiel', 'Comprar como en un juego'],
     listSub: ['Type or scroll, no game', 'Tippen oder scrollen, ohne Spiel', 'Escribe o desliza, sin juego'],
     aisle: ['Aisle', 'Gang', 'Pasillo'], moreShelf: ['Next shelf', 'Nächstes Regal', 'Siguiente estante'],
     tapAdd: ['Tap a product to put it in your basket.', 'Tipp auf ein Produkt, dann liegt es im Korb.', 'Toca un producto y va a tu cesta.'],
@@ -62,7 +62,9 @@
     const cut = m && m.index >= 2 ? s.slice(0, m.index).trim() : s;
     return cut.length > 44 ? cut.slice(0, 43).trim() + '\u2026' : cut;
   }
-  const mode = raw => (raw === 'list' ? 'list' : 'game');
+  /* Nov 18 2026 (v9 redesign, owner override): Find food opens on the ranked list (best first); the game market stays one tap
+     away (its button in the list) and is remembered once picked */
+  const mode = raw => (raw === 'game' ? 'game' : 'list');
   const station = s => (STATIONS.indexOf(s) >= 0 ? s : 'shelf');
 
   /* the aisles of the market: only groups with something that passes, each cut into shelves of nine */

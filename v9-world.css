@@ -178,3 +178,9 @@ html .lw-bx.lw-bx-named .lw-bx-lab{position:absolute;top:calc(100% + 5px);left:5
 /* short phones */
 @media (max-height:720px){.v9-hero{transform:translateY(-82px)}.v9-heroch .v9b{--s:160px}.v9-misty .v9b{--s:176px}.v9-mi-art{width:98px;height:98px}.v9-arc{top:69%}.v9-hl{margin-top:16px}.v9-grid{gap:10px 6px;margin-top:14px}.v9-tv{height:34vh}}
 @media (prefers-reduced-motion:reduce){.v9b{transition:none}.v9-drawer{animation:none}}
+/* v9 colour rule (handoff 2.3, "no red for food or health"): the scanner verdict is mint when it fits, a calm peach when it
+   spikes. Words, levels and the two-state rule stay as they are (shop-scan-core.js); only the red ink goes. */
+html .ss-v-spike .ss-verdict,html .ss-v-mild .ss-verdict,html .ss-v-mild .ss-verdict{--ss-c:#F5A27E!important;--ss-bg:rgba(245,162,126,.13)!important}
+html .ss-v-none .ss-verdict{--ss-c:#8FE6C8!important;--ss-bg:rgba(143,230,200,.12)!important}
+/* Find food (v9 06): the ranked list is the screen; the game market is a quiet link, not a big bright button */
+html .stp-ov .stp-tomarket{background:transparent!important;box-shadow:inset 0 0 0 1.5px rgba(150,175,255,.35)!important;color:rgba(255,255,255,.78)!important;font-size:14px!important;min-height:40px!important;height:auto!important}

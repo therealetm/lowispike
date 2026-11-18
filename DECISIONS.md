@@ -1625,3 +1625,9 @@ Every Home bubble now opens its world from the v9 PDF, same four zones everywher
 - Worlds award no XP and change no data; features keep their own logic. `localStorage lowi.v9 = 'off'` brings the old taps back.
 - Not done yet: tutorial words + voice (edge-tts), XP-only currency, plate / product result redesign, VS animation, Watch together.
 **Checks:** `tests/v9-worlds.test.cjs` (new, 7); Chromium 390 x 844 every world, Shop > Find food > Back lands on Shopping, Move > Walk & Lift starts the player, Check > Type it opens the name field.
+
+## 18 Nov 2026: v9 polish (no red for food, Find food = ranked list)
+- Scanner verdict cards use the v9 colours: peach when it spikes, mint when it fits (handoff 2.3 "no red for food or health"). Words and the two-state rule unchanged.
+- Find food (Supermarket) opens on the ranked list, best first; the game market (shelves, basket, fridge, table) is a quiet "Shop it like a game" link and is remembered once picked (`market-game-core.js` mode default 'list').
+- Lounge: no "Watch together" label until it really plays for everyone; Chat and Billiards press the real Community tabs.
+**Checks:** `tests/v9-worlds.test.cjs` (+3), `tests/market-game.test.cjs` (test changed, why: list is the default now).

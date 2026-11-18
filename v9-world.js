@@ -69,7 +69,7 @@
     const S = () => tryc(() => W.LowiR2.S(), null) || {};
     const onHome = () => !!D.querySelector('#tab-home.active') || !D.querySelector('#main .tab.active');
     function goTab(t) { try { if (fn(W, 'lowiOpen')) W.lowiOpen(t); else if (fn(W, 'goTab')) W.goTab(t); } catch (e) { console.warn('[v9] tab', t, e); } }
-    function clickText(scope, re) { const r = D.querySelector(scope); if (!r) return false; const b = [...r.querySelectorAll('button,[role="tab"],[role="button"]')].find(x => re.test((x.textContent || '').trim())); if (b) { b.click(); return true; } return false; }
+    function clickText(scope, re) { const r = D.querySelector(scope); if (!r) return false; const b = [...r.querySelectorAll('button,[role="tab"],[role="button"]')].find(x => re.test((x.textContent || '').trim()) && x.getBoundingClientRect().width > 0); if (b) { b.click(); return true; } return false; }
     function later(f, ms) { setTimeout(() => { try { f(); } catch (e) { console.warn('[v9]', e); } }, ms || 0); }
     function toast(m) { try { if (W.LowiR2 && fn(W.LowiR2, 'toast')) return W.LowiR2.toast(m); } catch (e) { } }
     function route(id) { const R = W.LowiHomeSettingsSleepV2; try { return !!(R && fn(R, 'run') && R.has(id) && R.run(id)); } catch (e) { return false; } }
@@ -236,7 +236,7 @@
         const stack = (Array.isArray(ppl) ? ppl : []).filter(p => p && (p.online || p.here)).slice(0, 3).map(p => '<i class="v9-av">' + (p.avatar ? '<img src="' + esc(p.avatar) + '" alt="">' : esc(String(p.name || '?').slice(0, 1).toUpperCase())) + '</i>').join('');
         const last = tryc(() => W.LowiCommunity.latest(), null);
         const tv = '<button type="button" class="v9-tv" data-v9="fy">' + (bot && bot.img ? '<img src="' + esc(bot.img) + '" alt="">' : '') +
-            '<span class="v9-tv-tabs"><i class="on">For You</i><i>' + esc(T('Watch together', 'Zusammen schauen', 'Ver juntos')) + '</i></span>' +
+            '<span class="v9-tv-tabs"><i class="on">For You</i></span>' +
             '<span class="v9-tv-play">' + I.play + '</span>' +
             '<span class="v9-tv-cap"><b>' + esc(bot ? ('@' + (bot.who || 'Nibblo') + ' · ' + ((bot.inspo && bot.inspo.swap && bot.inspo.swap.to) || '')) : 'For You') + '</b><small><i class="v9-dot"></i>' + esc(T('Low spike', 'Wenig Spike', 'Pico bajo')) + '</small></span>' +
             '<span class="v9-tv-save" aria-hidden="true">' + I.save + '</span></button>';
@@ -368,8 +368,10 @@
     function say() {
         try { const m = bodyModel(), s = (m.stages || [])[bodyPick >= 0 ? bodyPick : Math.max(0, m.cur)]; if (!s) return; const txt = s.n + '. ' + String(s.x || '').replace(/<[^>]+>/g, ''); if (W.LowiVoice && fn(W.LowiVoice, 'speak')) { try { W.LowiVoice.cancel(); } catch (e) { } W.LowiVoice.speak(txt, { lang: L() }); } } catch (e) { }
     }
-    function community(then) { away(() => { goTab('foryou'); if (then) later(then, 450); }); }
-    function cook(re) { away(() => { goTab('shelf'); later(() => clickText('#tab-shelf', re), 450); }); }
+    /* press a tab inside a page that is still mounting: try for up to two seconds */
+    function pressSoon(scope, re) { let n = 0; const t = setInterval(() => { const ok = clickText(scope, re) || clickText('body', re); if (ok || ++n > 20) clearInterval(t); }, 100); }
+    function community(re) { away(() => { goTab('foryou'); if (re) later(() => pressSoon('#tab-foryou', re), 250); }); }
+    function cook(re) { away(() => { goTab('shelf'); later(() => pressSoon('#tab-shelf', re), 250); }); }
     const ACT = {
         back, photo: () => scan('pickshoot'), barcode: () => scan('picklive'),
         gallery: () => scan('picklib'),
@@ -390,9 +392,9 @@
         worlds: () => { if (fn(W.LowiMistyHub, 'openSec')) W.LowiMistyHub.openSec('aura'); },
         night: () => { if (fn(W.LowiMistyHub, 'goodnight')) W.LowiMistyHub.goodnight(); else if (fn(W.LowiDayRecap, 'open')) W.LowiDayRecap.open(); },
         fy: () => { if (W.LowiNavMoves && fn(W.LowiNavMoves, 'open')) away(() => W.LowiNavMoves.open('fy')); else community(); },
-        chat: () => community(() => clickText('#tab-foryou', /^(Chat)$/)),
+        chat: () => community(/^(Chat)$/),
         play: () => { drawer = !drawer; render(); },
-        pool: () => community(() => clickText('#tab-foryou', /^(Room|Raum|Sala)$/)),
+        pool: () => community(/^(Circle|Room|Raum|Sala|Kreis|C\u00edrculo)$/),
         rank: () => { if (W.LowiRanking && fn(W.LowiRanking, 'open')) away(() => W.LowiRanking.open()); },
         swipe: () => cook(/^(Swipe|Wischen|Desliza)/), shuffle: () => cook(/^(Shuffle|Mischen|Mezclar)/),
         me: () => route('me') || route('account'), vr: () => route('vr'), alerts: () => route('notifications'), privacy: () => route('about'), calm: () => route('look'),

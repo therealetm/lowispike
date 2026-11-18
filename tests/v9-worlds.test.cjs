@@ -49,3 +49,21 @@ test('Baskets stay parked: no world leads to them', () => {
 test('a switch brings the old taps back', () => {
     assert.match(src, /localStorage\.getItem\('lowi\.v9'\) === 'off'/);
 });
+
+test('no red for food: the scanner verdict is peach when it spikes and mint when it fits (words unchanged)', () => {
+    const css = read('v9-world.css');
+    assert.match(css, /html \.ss-v-spike \.ss-verdict,html \.ss-v-mild \.ss-verdict[^{]*\{--ss-c:#F5A27E!important/);
+    assert.match(css, /html \.ss-v-none \.ss-verdict\{--ss-c:#8FE6C8!important/);
+});
+
+test('Find food opens on the ranked list; the game market is a quiet link and remembered once picked', () => {
+    const C = require('../market-game-core.js');
+    assert.strictEqual(C.mode(null), 'list');
+    assert.strictEqual(C.mode('game'), 'game');
+    assert.match(read('v9-world.css'), /\.stp-ov \.stp-tomarket\{background:transparent!important/);
+});
+
+test('Lounge shows no fake controls: no Watch together until it really plays for everyone', () => {
+    assert.doesNotMatch(src, /Watch together/);
+    assert.match(src, /chat: \(\) => community\(\/\^\(Chat\)\$\/\)/);
+});

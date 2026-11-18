@@ -545,6 +545,7 @@
     const SHORT_SKIPS = {};
     ['mic-dictate', 'give-hand-swipe', 'ck-tab-order', 'misty-tap', 'misty-squish', 'misty-turn', 'ring-still', 'water-hold', 'theme-tap', 'theme-triple', 'world-drag', 'world-pinch', 'pad-hold', 'pad-back', 'energy-shot', 'clean-tap', 'galaxy-bubble', 'place-tap', 'world-inside', 'region-pal', 'arrival-x', 'tilt', 'sound-strings', 'scan-deep', 'fix-field', 'page-swipe', 'back-swipe', 'sheet-drag', 'cm-tab-order', 'cm-pan', 'cm-zoom', 'cm-hold', 'cm-room', 'cm-mic', 'cm-photo', 'cm-energy', 'aff-card', 'cook-swipe', 'foryou-swipe', 'visit-reply'].forEach(id => { SHORT_SKIPS[id] = SHORT_SKIP_WHY; });
     const GESTURE_EXEMPT = {
+        'v9-world.js': 'Nov 18 2026 v9 worlds: its pointerdown only times a tap on a Home bubble, so a hold keeps its old job (Scan opens every bubble, Community opens settings); the tap opens the world, taught by the cards for each bubble',
         'chat-photo-save.js': 'Nov 7 2026 hold a picture in the chat to save it, the way every messenger does it (right-click on a computer); the tap on a picture keeps opening it',
         'chat-react-who.js': 'Nov 7 2026 a long press on a reaction under a chat message shows who left it (right-click on a computer); the tap on it keeps its own job, so nothing to learn',
         'hold-ring.js': 'Nov 6 2026 the hold ring on Home: only a picture of a hold the bubbles already have (Move, Gap, Water, Community, each taught by its own card); it never takes or changes a tap or a hold',

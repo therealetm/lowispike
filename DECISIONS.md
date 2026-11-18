@@ -1611,3 +1611,17 @@ Emmanuel approved the v9 redesign (handoff: `handoff/design-v9-20261118/` on bra
 - **Snack shelf scan button is calm glass** (no bright green block).
 - Still the old tutorial words on the Shopping card (three places, Baskets) and its recorded voice: the clips need `tools/tutorial-voice/build.py` (edge-tts, not reachable from the cloud sandbox). Next agent with network: rewrite card `fuel` (two places) + `tutorial-show.js` fuel visual, re-record EN/DE/ES.
 **Checks:** `tests/ranking-compare.test.cjs`, `tests/community-declutter.test.cjs` updated (test changed, why: v9 redesign); full suite green. Chromium 390 x 844 with a fixture account: Shop shows "⌂ Home" and two doors; Ranking shows "⌂ Home", the How it works line and no chip row.
+
+## 18 Nov 2026: v9 worlds (owner: "I want the whole thing finished ... it doesn't look like what you showed me in the PDF")
+Every Home bubble now opens its world from the v9 PDF, same four zones everywhere (header bubble + title + status, one glowing hero, at most four choice bubbles on a soft arc with words under them, the round back bubble at the bottom with the place it goes under it). `v9-world.js` / `v9-world.css`.
+- Scan bubble tap -> **Check your food** (Take a photo, Barcode, Gallery, Type it, Deep check GPT): each presses the scanner's own row.
+- Cart bubble tap -> **Shopping** (hero Your list with the count, Find food, This week, From others = snack shelf, Send list = share sheet / copy; Change = shop plan editor).
+- Timer bubble tap -> **Your body**: Misty on the journey of the six typical phases (LowiGapView.model), the phase card with the text, "Typical, not measured.", one tip, a speaker (LowiVoice). "I ate" opens the old Last / First meal bubbles. No extra points for longer fasts (16 h cap unchanged).
+- Community bubble tap -> **Lounge**: For You like a TV on top (Save only), the latest chat line, the message field and the **Playroom** door (Billiards, Ranking, Swipe, Shuffle). Hold still opens settings.
+- Hold Misty -> **Misty** with Eat / Move / Water rings (all three = full-sun day), Food-Dex, History, Worlds, Goodnight; the profile photo opens **Settings** (VR, Language, Alerts, Privacy, Invite, Look & calm + Help, Feedback, Pay what you want, About, Account).
+- Hold Move -> **Move** (Walk & Lift 5 min, Mirror, Desk 3, Seated 8, In bed 6: the Move player starts directly).
+- **Food-Dex**: every food you logged, one bubble each, no limit, search + Products / Meals.
+- The round bottom button is the v9 back bubble everywhere: glass circle, the place under it.
+- Worlds award no XP and change no data; features keep their own logic. `localStorage lowi.v9 = 'off'` brings the old taps back.
+- Not done yet: tutorial words + voice (edge-tts), XP-only currency, plate / product result redesign, VS animation, Watch together.
+**Checks:** `tests/v9-worlds.test.cjs` (new, 7); Chromium 390 x 844 every world, Shop > Find food > Back lands on Shopping, Move > Walk & Lift starts the player, Check > Type it opens the name field.

@@ -1,5 +1,5 @@
 /* v9-world.css: Nov 18 2026, the v9 redesign worlds (v9-world.js). Tokens: handoff/design-v9-20261118 section 2. */
-#v9W{position:fixed;inset:0;z-index:95;background:#08090E;color:#fff;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;
+#v9W{position:fixed;inset:0;z-index:30;background:#08090E;color:#fff;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;
   -webkit-font-smoothing:antialiased;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
   --g-glass:rgba(46,58,98,.62);--r-glass:rgba(150,175,255,.42);--a-glass:rgba(120,140,220,.22);
   --g-green:rgba(30,86,52,.66);--r-green:rgba(150,240,180,.6);--a-green:rgba(80,210,140,.34);
@@ -11,10 +11,12 @@
   --g-gold:rgba(90,70,30,.66);--r-gold:rgba(240,210,140,.7);--a-gold:rgba(230,190,100,.32);
   --top:calc(env(safe-area-inset-top,0px) + 18px)}
 #v9W[hidden],html.v9-away #v9W{display:none!important}
+/* the world sits over Home (#main is z 1) and under every page, panel and sheet a choice opens (Move player 37, list 60,
+   sheets 240+): they simply open on top and close back into the world */
 /* the world covers Home: Home's own floating bits stay out of the way while it is up */
 html.v9-on:not(.v9-away) #whHud,html.v9-on:not(.v9-away) #spBubble,html.v9-on:not(.v9-away) .ss2-hint,html.v9-on:not(.v9-away) .wh-hint{visibility:hidden}
-#v9W :where(*){box-sizing:border-box}
-#v9W :where(button){font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+:where(#v9W *){box-sizing:border-box}
+html :where(#v9W button){font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 /* background: soft beams, the world's aura behind the hero */
 .v9-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden;background:radial-gradient(120% 70% at 50% 0%,rgba(40,48,90,.35),transparent 60%),#08090E}
 .v9-beam{position:absolute;width:140%;height:120px;left:-20%;top:18%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.055),transparent);transform:rotate(-24deg);filter:blur(10px)}
@@ -184,3 +186,5 @@ html .ss-v-spike .ss-verdict,html .ss-v-mild .ss-verdict,html .ss-v-mild .ss-ver
 html .ss-v-none .ss-verdict{--ss-c:#8FE6C8!important;--ss-bg:rgba(143,230,200,.12)!important}
 /* Find food (v9 06): the ranked list is the screen; the game market is a quiet link, not a big bright button */
 html .stp-ov .stp-tomarket{background:transparent!important;box-shadow:inset 0 0 0 1.5px rgba(150,175,255,.35)!important;color:rgba(255,255,255,.78)!important;font-size:14px!important;min-height:40px!important;height:auto!important}
+/* v9 rule: no scanner in Shop (scanning lives in Check): the shopping list keeps the list only */
+html.v9-on #tdShop .ss-entry.in-shop,html.v9-on #tdShop .gh-entry{display:none!important}

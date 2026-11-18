@@ -67,3 +67,9 @@ test('Lounge shows no fake controls: no Watch together until it really plays for
     assert.doesNotMatch(src, /Watch together/);
     assert.match(src, /chat: \(\) => community\(\/\^\(Chat\)\$\/\)/);
 });
+
+test('the world opens inside #app, so every page, panel and player a choice opens lies on top of it', () => {
+    assert.match(src, /\(D\.getElementById\('app'\) \|\| D\.body\)\.appendChild\(el\)/);
+    assert.match(read('v9-world.css'), /#v9W\{position:fixed;inset:0;z-index:30;/);
+    assert.match(read('v9-world.css'), /html\.v9-on #tdShop \.ss-entry\.in-shop,html\.v9-on #tdShop \.gh-entry\{display:none!important\}/);
+});

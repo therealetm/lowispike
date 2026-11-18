@@ -208,7 +208,7 @@
         let dDone = ''; if (cur >= 0) pts.slice(0, cur + 1).forEach((p, i) => { if (!i) { dDone = 'M' + p.x + ' ' + p.y; return; } const q = pts[i - 1], my = (q.y + p.y) / 2; dDone += ' C' + q.x + ' ' + my + ' ' + p.x + ' ' + my + ' ' + p.x + ' ' + p.y; });
         const stops = stg.map((s, i) => {
             const p = pts[i], done = cur >= 0 && i < cur, now = i === cur, left = p.x < 170, inH = started ? Math.max(0, s.h - m.hours) : s.h;
-            const sub = now ? T('now', 'jetzt', 'ahora') + ' · ' + hm(m.hours) : done ? s.t : (started ? T('in ', 'in ', 'en ') + hm(inH).replace(/ 00 min$/, '') : s.t);
+            const sub = now ? T('now', 'jetzt', 'ahora') + ' \u00b7 ' + hm(m.hours) : done ? T('done', 'geschafft', 'hecho') : (started ? T('in ', 'in ', 'en ') + hm(inH).replace(/ 00 min$/, '') : (s.h ? T('after ', 'nach ', 'tras ') + s.h + ' h' : T('right after eating', 'direkt nach dem Essen', 'justo despu\u00e9s de comer')));
             return '<button type="button" class="v9-stop' + (done ? ' done' : '') + (now ? ' now' : '') + (i === sel ? ' sel' : '') + (left ? ' l' : ' r') + '" data-v9="stop" data-i="' + i + '" style="left:' + (p.x / 340 * 100) + '%;top:' + (p.y / 330 * 100) + '%">' +
                 (now ? '<span class="v9-stop-m">' + mistyArt() + '</span>' : '<span class="v9-stop-d">' + (done ? I.check : I.lockS) + '</span>') +
                 '<span class="v9-stop-t">' + (now ? '<em>' + esc(companionName() + T(' is here', ' ist hier', ' est\u00e1 aqu\u00ed')) + '</em>' : '') + '<b>' + esc(s.n) + '</b><small>' + esc(sub) + '</small></span></button>';
@@ -322,7 +322,8 @@
         if (!el) {
             el = D.createElement('section'); el.id = 'v9W'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
             el.addEventListener('click', onClick); el.addEventListener('submit', onSubmit); el.addEventListener('input', onInput);
-            D.body.appendChild(el);
+            /* inside #app, next to #main (z 1) and the pages, panels and players a choice opens (z 37, 60, ...), so they open on top */
+            (D.getElementById('app') || D.body).appendChild(el);
         }
         if (!keep) stack = []; else if (stack[stack.length - 1] === id) return true;
         stack.push(id); drawer = false; bodyPick = -1;

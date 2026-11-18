@@ -2931,3 +2931,4 @@ Area: Settings, What's New, language switch, day/night, live 20261029-032336 at 
 - 2026-11-18 (Claude, cloud). v9 worlds live: every Home bubble opens its PDF world (Check, Shopping, Your body, Lounge + Playroom, Misty + Food-Dex + Settings, Move). DECISIONS 18 Nov (second entry). Open: tutorial voice, XP-only, result screens, VS animation.
 - 2026-11-18 (Claude, cloud). v9 fixes: world inside #app (list, players, sheets open on top and Back lands in the world), no scanner rows in the shop list, quieter labels on Your body.
 - 2026-11-18 late (Claude, cloud). Rolled back the whole v9 redesign on Emmanuel's word; app = build 20261112-060325 again. DECISIONS 18 Nov evening.
+- 2026-11-19 (Claude, cloud). Sign-in: Forgot password? sends a Supabase reset link (pw-reset.js); "Ask Emmanuel" line gone. Needs Supabase Redirect URL + custom SMTP.

@@ -257,9 +257,3 @@
 /* Nov 7 2026 (design pass): the small "how it works" chip keeps its look but takes a finger-sized tap */
 .rm-rank .rk-how{position:relative}
 .rm-rank .rk-how::after{content:"";position:absolute;inset:-10px -4px}
-/* Nov 18 2026 (owner, v9 redesign): How it works is one quiet line under the board, not a chip on top */
-.rm-rank .rk-how-l{appearance:none;display:flex;align-items:center;justify-content:center;gap:6px;margin:16px auto 6px;padding:10px 16px;
-  min-height:44px;border:0;background:none;cursor:pointer;font:600 13.5px/1.2 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
-  color:rgba(255,255,255,.55);-webkit-tap-highlight-color:transparent}
-.rm-rank .rk-how-l svg,.rm-rank .rk-how-l .rk-fb{width:15px;height:15px;font:italic 700 12px/1 Georgia,serif;color:var(--rm-cyan,#8fe7ff)}
-.rm-rank .rk-how-l:focus-visible{outline:2px solid var(--rm-cyan,#8fe7ff);outline-offset:2px;border-radius:12px}

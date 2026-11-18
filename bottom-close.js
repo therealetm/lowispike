@@ -28,8 +28,7 @@
     const T = (en, de, es) => { const l = (H.lang || 'en').slice(0, 2); return l === 'de' ? de : l === 'es' ? es : en; };
     const ICON = {
         back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
-        close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
-        home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7M6.5 9.5V20h11V9.5"/></svg>'
+        close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
     };
     const labelOf = el => ((el.getAttribute('aria-label') || el.getAttribute('title') || '') + '').trim();
     function kindOf(el) {
@@ -240,19 +239,11 @@
         const k = kindOf(top), lab = labelOf(top) || (k === 'back' ? T('Back', 'Zurück', 'Atrás') : T('Close', 'Schließen', 'Cerrar'));
         /* Nov 5 2026 (Misty sheet plan): a child screen names where Back goes ("\u2039 Misty"): data-bx-label on its own back button */
         const named = k === 'back' ? String(top.getAttribute('data-bx-label') || '').trim().slice(0, 18) : '';
-        /* Nov 18 2026 (owner, v9 redesign: "I keep seeing X button but no back button. I don't know what happens if I click back. I
-           don't want it to close. Maybe I want to go back to where I was"): the round button never shows an X any more. It always says
-           where it goes: "‹ Misty" (data-bx-label), "‹ Back" when another screen lies under this one, "⌂ Home" when this layer is
-           the last one above Home. Same press as before (the layer's own back / close), only the face changes. */
-        const tz = top.matches('#secX,.sec-x') ? -1 : layerZ(top);
-        const under = !top.matches('#secX,.sec-x') && hide.some(el => el !== top && (el.matches('#secX,.sec-x') ? -1 : layerZ(el)) < tz);
-        const face = named ? 'back' : (k === 'back' && !top.matches('#secX,.sec-x')) || under ? 'back' : 'home';
-        const text = named || (face === 'back' ? T('Back', 'Zurück', 'Atrás') : T('Home', 'Start', 'Inicio'));
-        const sig = k + '|' + lab + '|' + named + '|' + face;
+        const sig = k + '|' + lab + '|' + named;
         if (sig !== last) {
-            b.innerHTML = ICON[face] + '<span class="lw-bx-lab">' + text.replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';') + '</span>';
-            b.classList.add('lw-bx-named');
-            b.setAttribute('aria-label', text); b.dataset.kind = k; b.dataset.face = face; last = sig;
+            b.innerHTML = ICON[k] + (named ? '<span class="lw-bx-lab">' + named.replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';') + '</span>' : '');
+            b.classList.toggle('lw-bx-named', !!named);
+            b.setAttribute('aria-label', lab); b.dataset.kind = k; last = sig;
         }
         b.classList.add('on');
         const lift = clearance(b);

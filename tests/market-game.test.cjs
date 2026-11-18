@@ -10,8 +10,7 @@ const C = require('../market-game-core.js');
 test('four stations in order, three cookers, the game is the default and the list is remembered', () => {
   assert.deepStrictEqual(C.STATIONS, ['shelf', 'basket', 'fridge', 'table']);
   assert.deepStrictEqual(C.DEVICES, ['airfryer', 'oven', 'pan']);
-  /* test changed 18 Nov 2026, why: v9 redesign, Find food opens on the ranked list; the game market is one tap away and remembered */
-  assert.strictEqual(C.mode(null), 'list'); assert.strictEqual(C.mode('list'), 'list'); assert.strictEqual(C.mode('game'), 'game'); assert.strictEqual(C.mode('x'), 'list');
+  assert.strictEqual(C.mode(null), 'game'); assert.strictEqual(C.mode('list'), 'list'); assert.strictEqual(C.mode('x'), 'game');
   assert.strictEqual(C.station('nope'), 'shelf'); assert.strictEqual(C.station('table'), 'table');
 });
 

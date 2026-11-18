@@ -1631,3 +1631,6 @@ Every Home bubble now opens its world from the v9 PDF, same four zones everywher
 - Find food (Supermarket) opens on the ranked list, best first; the game market (shelves, basket, fridge, table) is a quiet "Shop it like a game" link and is remembered once picked (`market-game-core.js` mode default 'list').
 - Lounge: no "Watch together" label until it really plays for everyone; Chat and Billiards press the real Community tabs.
 **Checks:** `tests/v9-worlds.test.cjs` (+3), `tests/market-game.test.cjs` (test changed, why: list is the default now).
+
+## 18 Nov 2026, evening: v9 redesign rolled back (owner)
+Emmanuel: "I don't like the new update ... set it back to what the people in my community already knew before you made any changes." Every app file is back to build 20261112-060325 (commit 1bcf6a5): no v9 worlds, X bottom button, Ranking chips, Baskets door, game market first, old verdict colours. The v9 handoff (branch design-v9-handoff) and the one-world concept PDF stay as ideas only; do not ship either without a new decision from him. **Checks:** `tests/v9-rollback.test.cjs` (14 guards).

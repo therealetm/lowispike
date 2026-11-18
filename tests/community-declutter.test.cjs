@@ -44,11 +44,10 @@ test('Community: the top row keeps clear of the page back button only while it s
   assert.strictEqual(fitWorld({ vw: 390 })['--rm-tl'], '0px');
 });
 
-test('Ranking: the round button is Members (People: everyone + online now), How it works is one line under the board', () => {
+test('Ranking: the round button is Members (People: everyone + online now), How it works sits with the XP / Forever chips', () => {
   const js = read('ranking.js');
   assert.match(js, /'<button type="button" class="rk-info rk-mem" data-rk="members" aria-haspopup="dialog" aria-label="' \+ esc\(tr\('members'\)\)/);
-  // 18 Nov 2026 (test changed, why: v9 redesign, fewer buttons on the ranking): How it works is one quiet line under the board
-  assert.match(js, /h \+= '<button type="button" class="rk-how-l" data-rk="info" aria-haspopup="dialog">' \+ ico\('info'/, 'How it works is one line under the board');
+  assert.match(js, /'<button type="button" class="rk-chip rk-how" data-rk="info" aria-haspopup="dialog">' \+ ico\('info'[^\n]*esc\(tr\('info'\)\) \+ '<\/span><\/button><\/div>'/, 'How it works is the last chip');
   assert.match(js, /members: \['Members', 'Mitglieder', 'Miembros'\]/);
   assert.match(js, /if \(t\.dataset\.rk === 'members'\) \{ openMembers\(t\); return; \}/);
   assert.match(js, /function openMembers\(t\) \{\s*const P = W\.LowiPeopleDir;[\s\S]{0,120}P\.open\(\{ at: 'here' \}\)/, 'opens the existing People list');

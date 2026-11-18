@@ -68,7 +68,6 @@
     const Q = W.LowiQuickAdd && W.LowiQuickAdd.html ? W.LowiQuickAdd : null; /* Oct 26 quick "+" on product rows (MAYA-HANDOFF 0.35) */
     /* Oct 26: the Kitchen moved to Cook (kitchen-game.js, Cook > Kitchen; MAYA-HANDOFF 0.19). While that game is loaded, Shop has
        no Kitchen tab, and anything that asks for it opens Cook > Kitchen instead. The data (lowispike.kitchen.v1) is the same. */
-    const BASKETS_OFF = true; /* Nov 18 2026 (owner, v9 redesign): the Baskets door (gift-basket.js) is parked; flip to false to bring it back */
     const KG = () => (W.LowiKitchenGame && W.LowiKitchenGame.open ? W.LowiKitchenGame : null);
     const kitTab = () => !!K && !KG();
     const onKit = () => tab === 'kitchen' && kitTab();
@@ -316,7 +315,6 @@
     /* Oct 25 Give a hand (gift-basket.js owns the panel): its own tab in the bar above, behind the same server gate the old row
        had (only once the server has the basket table; until then ask the server again, and lowi:gift-ready repaints Shop) */
     function giftDoor() {
-        if (BASKETS_OFF) return false; /* Nov 18 2026, owner (v9 redesign): "Körbe ... completely unnecessary": no Baskets door for now */
         const GB = W.LowiGiftBasket;
         try { if (GB && GB.serverReady && GB.serverReady()) return true; if (GB && GB.probe) GB.probe(); } catch (x) {}
         return false;

@@ -13,8 +13,3 @@
 .sn-card .sz-card { margin: 0; }
 .sn-regs .sz-chip { min-height: 44px; min-width: 44px; }
 .mk-sn .mk-pack small { -webkit-line-clamp: 2; }
-/* Nov 18 2026 (owner, v9 redesign: the snack shelf is "too highlighted"): the scan button is a calm glass button, not a bright
-   green bar; the community's snacks are the content, scanning is the side action */
-.mk-sn .mk-go.sn-scan { background: rgba(255, 255, 255, .07) !important; border: 1.5px solid rgba(143, 231, 255, .38) !important;
-  color: #dff6ff !important; box-shadow: none !important; text-shadow: none !important; }
-.mk-sn .mk-go.sn-scan svg { color: #8fe7ff; }

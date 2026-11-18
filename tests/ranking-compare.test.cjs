@@ -201,11 +201,10 @@ test('page: the board is symbols, not sentences; no Compare the top 3; tapping a
   for (const lg of ['en', 'de', 'es']) {
     const h = page(screenshot(now), { lang: lg }).LowiRanking._html();
     assert.doesNotMatch(h, /class="rk-t"|class="rk-sub"|class="rk-per"|data-rk="cmp3"|class="rk-cmpb"/, lg + ': no title, explainer or Compare the top 3');
-    // 18 Nov 2026 (test changed, why: v9 redesign, the owner asked for fewer buttons on the ranking): the XP / Forever chips are
-    // gone; the rules sit behind one quiet How it works line under the board; the round button at the top is Members (People)
-    assert.match(h, /<button type="button" class="rk-how-l" data-rk="info"/, lg + ': the rules sit behind one quiet How it works line');
+    // 5 Nov 2026: the rules are a How it works chip beside XP / Forever; the round button at the top is Members (People)
+    assert.match(h, /<button type="button" class="rk-chip rk-how" data-rk="info"/, lg + ': the rules sit behind a small How it works chip');
     assert.match(h, /<button type="button" class="rk-info rk-mem" data-rk="members"/, lg + ': the round button is Members');
-    assert.doesNotMatch(h, /class="rk-chips"|class="rk-chip /, lg + ': no chip row on top of the board');
+    assert.match(h, /class="rk-chips"/, lg + ': what counts and the time left are two symbol chips');
     assert.match(h, /rk-pod n3[\s\S]*?rk-medal m1/, lg + ': podium with medals');
   }
   const src = R('ranking.js');
@@ -220,9 +219,7 @@ test('page: You vs Joseph is a visual duel: VS header, one bar, one "what it tak
   assert.match(h, /<div class="rk-duel" style="--a:0\.\d+"/);
   assert.equal((h.match(/<p class="rk-goal">/g) || []).length, 1, 'one line for what it takes');
   assert.match(h.match(/<p class="rk-goal">[\s\S]*?<\/p>/)[0].replace(/<[^>]+>/g, ''), /\+4 \u2600 by Sun · a Move today does it/);
-  // 18 Nov 2026 (test changed, why: v9 redesign): no Week / Month / All time rows and no Level row; the switch picks the board
-  assert.doesNotMatch(h, /rk-medal-i/, 'no Level row (the level sits under each name)');
-  assert.match(h, /rk-sun full/, 'full-sun days side by side');
+  assert.equal((h.match(/class="rk-mir-r/g) || []).length >= 3, true, 'Week, Month and All time side by side');
   assert.doesNotMatch(h, /Why the boards differ|Where the sunbeams came from|rk-cmp-need/, 'the long explanations are gone');
   for (const [lg, re] of [['de', /\+4 \u2600 bis So · Heute reicht ein Move/], ['es', /\+4 \u2600 para el dom · Hoy basta un Move/]]) {
     const g = page(screenshot(now), { lang: lg, looks: { 'u-Joseph Castellar': 'GOOD' } }).LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');

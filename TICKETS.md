@@ -81,3 +81,10 @@ When adding a ticket, include:
 - **Explicitly out of scope:** anything that changes the health bar, the scanner verdicts or nutrition advice; paid items; a second currency (Emmanuel removed confusing currency overlaps).
 - **Acceptance:** an upgrade costs points once, shows right away, survives reload and a new device; Reduce Motion gets fades instead of animations; EN/DE/ES text.
 - **Evidence:** unit tests for spending and caps, WebKit iPhone 13 (390x844) check with Reduce Motion in EN/DE/ES, live check after a quiet release.
+
+## LS-V9 — v9 redesign, remaining slices (owner-approved 18 Nov 2026)
+- **Source:** branch `design-v9-handoff`, folder `handoff/design-v9-20261118/` (HANDOFF.md = 17 screens, rules, owner decisions, release order; LOWiSPIKE-v9.pdf = the screens; overview.jpg). Owner override 18 Nov: "do everything to your desire ... I just want this app live."
+- **Live already (Release 20261118-131906):** bottom button Back / Home instead of X, Ranking chip row gone + VS without period/Level rows, Baskets door parked, calm Snack shelf scan button.
+- **Next, one quiet release each, in this order:** plate result (one verdict, one better pick, Log / Skip), barcode result first-find (log, skip, XP, legendary first find), Shop world (store + budget, Find food ranked best to spikes, Your list, Send list), This week planner (from Fakeaway), Lounge (For You + chat + who is online, Playroom door for games), Your body journey (fasting phase card, smaller Misty), Misty rings (Apple Watch style) and Worlds, Food-Dex, Settings as bubbles (VR stays).
+- **Debt from slice 1:** tutorial card `fuel` and the `tutorial-show.js` fuel visual still name Baskets ("three places"); rewrite to two places and re-record EN/DE/ES with `tools/tutorial-voice/build.py` (edge-tts needs network the cloud sandbox lacks). Same for `new-cart-ask`, `new-give-hand`, `new-cart-swipe` in part 'new' (mention Baskets).
+- **Rules:** Home galaxy unchanged; bubbles show symbols/numbers only; XP stops at 16 h fasting; no medical claims; EN/DE/ES; test count only goes up.

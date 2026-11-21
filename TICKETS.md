@@ -88,3 +88,8 @@ When adding a ticket, include:
 - **Next, one quiet release each, in this order:** plate result (one verdict, one better pick, Log / Skip), barcode result first-find (log, skip, XP, legendary first find), Shop world (store + budget, Find food ranked best to spikes, Your list, Send list), This week planner (from Fakeaway), Lounge (For You + chat + who is online, Playroom door for games), Your body journey (fasting phase card, smaller Misty), Misty rings (Apple Watch style) and Worlds, Food-Dex, Settings as bubbles (VR stays).
 - **Debt from slice 1:** tutorial card `fuel` and the `tutorial-show.js` fuel visual still name Baskets ("three places"); rewrite to two places and re-record EN/DE/ES with `tools/tutorial-voice/build.py` (edge-tts needs network the cloud sandbox lacks). Same for `new-cart-ask`, `new-give-hand`, `new-cart-swipe` in part 'new' (mention Baskets).
 - **Rules:** Home galaxy unchanged; bubbles show symbols/numbers only; XP stops at 16 h fasting; no medical claims; EN/DE/ES; test count only goes up.
+
+## Studio follow-ups (21 Nov 2026)
+- Tour step for the For You tool row and Studio (part `new` in tutorial-steps.js, with recorded voice EN/DE/ES).
+- Compact For You header (+ / title / heart) that returns while scrolling up; today the floating "+ Post" stays.
+- Studio card text is German only; EN/ES translations if wanted.

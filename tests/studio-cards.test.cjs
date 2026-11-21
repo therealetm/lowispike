@@ -46,3 +46,12 @@ test('For You opens at the top (circles showing) and uses the app blue, not gold
   assert.match(css, /\.fy-tool-c\{color:#fff!important;[^}]*--acc-rgb/);
   assert.doesNotMatch(st, /#e9cb88|#caa15a|#b08540/i, 'Studio has no gold');
 });
+test('Studio is a tool: tiles, one copy button with your profile, copy only reports success when it worked', () => {
+  const st = R('studio/index.html');
+  assert.match(st, /class="tile"/);
+  assert.match(st, /Für meinen Agenten kopieren/);
+  assert.match(st, /function buildPrompt/);
+  assert.match(st, /lowi\.studio\.me\.v1/);
+  assert.match(st, /Dein Agent erstellt, du postest selbst/);
+  assert.match(st, /copy\(text\)\.then\(function \(ok\) \{ if \(!ok\) return fallback\(text\)/);
+});

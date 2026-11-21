@@ -3,124 +3,133 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#03050a">
+<meta name="theme-color" content="#050912">
 <meta name="color-scheme" content="dark">
 <meta name="robots" content="noindex">
 <title>Studio · LOWiSPIKE</title>
-<meta name="description" content="Bewährte Video-Strukturen zum Kopieren: für deine Marke, deine Nische und deinen Agenten.">
+<meta name="description" content="Such dir ein Video, das funktioniert, und bau es für deine Marke um.">
 <link rel="icon" type="image/png" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-180.png">
 <style>
-/* LOWiSPIKE Studio (21 Nov 2026). A knowledge page, not a renderer: nothing here generates, posts or schedules.
-   Content lives ONLY in cards.json (the same file agents read). This page renders it and never rewrites it.
-   Backdrop: the app's deep-blue bloodstream world, drawn static on purpose (readable, cheap, reduced-motion safe). */
-:root{--ink:#f3efe6;--muted:#b9b3a6;--dim:#8d8879;--gold:#5aa9ff;--gold2:#9fd8ff;--glass:rgba(14,18,30,.72);--line:rgba(159,216,255,.28);--line2:rgba(255,255,255,.08);--ok:#8fe6c8;--warn:#f0c48a}
+/* LOWiSPIKE Studio (21 Nov 2026, reworked after Emmanuel's Yorby inspiration: "more efficient, dark mode, cozy, not overwhelming").
+   A tool, not a course: tiles of proven videos -> tap one -> your brand and voice once -> copy the finished prompt for your own agent.
+   Content lives ONLY in cards.json (also read by agents). Nothing here generates, posts or schedules anything. App blue, no gold. */
+:root{--ink:#eef3fb;--muted:#a9b6cb;--dim:#7f8ca3;--acc:#7cc4ff;--acc2:#bfe6ff;--glass:rgba(16,24,42,.74);--line:rgba(159,216,255,.24);--line2:rgba(255,255,255,.08);--ok:#8fe6c8;--warn:#f0c48a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
-html{overflow-x:hidden;background:#03050a}
+html{overflow-x:hidden;background:#050912}
 body{min-height:100vh;min-height:100dvh;color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;
-  background:radial-gradient(120% 60% at 50% -10%,#14306a 0%,#0a1a3e 38%,#050912 72%,#03050a 100%) fixed,#03050a}
+  background:radial-gradient(120% 55% at 50% -8%,#15316b 0%,#0b1b40 40%,#060a15 75%,#050912 100%) fixed,#050912}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(38% 22% at 12% 30%,rgba(196,58,72,.16),transparent 70%),radial-gradient(30% 18% at 88% 62%,rgba(196,58,72,.12),transparent 70%),
-  radial-gradient(60% 30% at 50% 108%,rgba(90,169,255,.12),transparent 70%),
-  radial-gradient(2px 2px at 18% 14%,rgba(159,216,255,.8) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 72% 22%,rgba(255,255,255,.7) 50%,transparent 51%),
-  radial-gradient(2px 2px at 40% 66%,rgba(159,216,255,.6) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 90% 84%,rgba(255,255,255,.6) 50%,transparent 51%),
-  radial-gradient(1.5px 1.5px at 8% 78%,rgba(159,216,255,.7) 50%,transparent 51%),radial-gradient(2px 2px at 60% 92%,rgba(255,255,255,.5) 50%,transparent 51%)}
-.wrap{position:relative;z-index:1;width:min(640px,100%);margin:0 auto;padding:0 16px calc(32px + env(safe-area-inset-bottom))}
-header.top{position:relative;z-index:5;margin:0 -16px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:linear-gradient(180deg,rgba(3,5,10,.92),rgba(3,5,10,.78));backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border-bottom:1px solid var(--line2)}
-.bar{display:flex;align-items:center;gap:10px}
-.back{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line2);text-decoration:none;font-size:22px;cursor:pointer}
-.brand{flex:1;min-width:0}
-.brand b{display:block;font-size:20px;letter-spacing:.01em}
-.brand b span{color:var(--gold2)}
-.brand small{display:block;color:var(--muted);font-size:13px;line-height:1.3}
-.seg{display:flex;gap:6px;margin-top:10px;padding:4px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line2)}
-.seg button{flex:1;min-height:44px;border:0;border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:15px;cursor:pointer}
-.seg button[aria-selected=true]{background:linear-gradient(180deg,#bfe6ff,#5aa9ff);color:#03050a}
-.seg button small{display:block;font-size:11px;font-weight:600;opacity:.8;line-height:1}
-.tools{display:flex;gap:8px;margin-top:8px;align-items:center}
-.search{flex:1;min-width:0;height:44px;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.06);color:var(--ink);font:inherit;font-size:16px;padding:0 12px}
-.search::placeholder{color:var(--dim)}
-.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:8px;padding-bottom:2px}
+  background:radial-gradient(34% 20% at 10% 34%,rgba(196,58,72,.14),transparent 70%),radial-gradient(28% 18% at 92% 64%,rgba(196,58,72,.10),transparent 70%),
+  radial-gradient(2px 2px at 16% 12%,rgba(159,216,255,.8) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 74% 20%,rgba(255,255,255,.7) 50%,transparent 51%),
+  radial-gradient(2px 2px at 42% 64%,rgba(159,216,255,.6) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 90% 86%,rgba(255,255,255,.6) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 8% 80%,rgba(159,216,255,.7) 50%,transparent 51%)}
+.wrap{position:relative;z-index:1;width:min(680px,100%);margin:0 auto;padding:0 16px calc(104px + env(safe-area-inset-bottom))}
+header{padding:calc(12px + env(safe-area-inset-top)) 0 4px;display:flex;align-items:center;gap:12px}
+.back{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line2);text-decoration:none;font-size:24px;line-height:1}
+h1{margin:0;font-size:26px;letter-spacing:.01em;line-height:1.15}
+.sub{margin:2px 0 0;color:var(--muted);font-size:15px;line-height:1.35}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:14px -16px 6px;padding:0 16px 4px}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:none;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:rgba(159,216,255,.06);color:var(--gold2);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
-.chip[aria-pressed=true]{background:var(--gold2);color:#03050a;border-color:var(--gold2)}
-.panel{margin-top:14px;padding:14px;border-radius:20px;background:var(--glass);border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.panel p{margin:0 0 8px}.panel p:last-child{margin:0}
-.note{color:var(--muted);font-size:14px}
-.warn{border-color:rgba(240,196,138,.35)}
-.warn b{color:var(--warn)}
-h2.grp{font-size:15px;color:var(--gold2);margin:22px 4px 0;font-weight:700}
-.grpnote{margin:4px 4px 0;color:var(--dim);font-size:13px}
-.list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
-.card{border-radius:20px;background:var(--glass);border:1px solid var(--line2);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);overflow:hidden}
-.card[open]{border-color:var(--line)}
-.card summary{list-style:none;cursor:pointer;padding:14px;display:flex;gap:12px;align-items:flex-start;min-height:44px}
-.card summary::-webkit-details-marker{display:none}
-.id{flex:none;min-width:44px;height:44px;padding:0 6px;border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:14px;color:#03050a;background:linear-gradient(180deg,#bfe6ff,#5aa9ff)}
-.hd{flex:1;min-width:0}
-.hd b{display:block;font-size:16px;line-height:1.3;overflow-wrap:anywhere}
-.hd .why{display:block;color:var(--muted);font-size:14px;margin-top:3px;line-height:1.35}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.tag{font-size:12px;line-height:1.2;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.07);color:var(--muted);overflow-wrap:anywhere}
+.chip{flex:none;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:rgba(159,216,255,.06);color:var(--acc2);font:inherit;font-size:15px;font-weight:600;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--acc2);color:#050912;border-color:var(--acc2)}
+.gh{margin:20px 2px 8px;color:var(--muted);font-size:14px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-height:168px;padding:14px;border-radius:22px;border:1px solid var(--line2);background:var(--glass);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:var(--ink);font:inherit;text-align:left;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:transform .12s,border-color .2s}
+.tile:active{transform:scale(.97);border-color:var(--line)}
+.tile .id{font-size:12px;font-weight:800;letter-spacing:.06em;color:#050912;background:linear-gradient(180deg,var(--acc2),var(--acc));border-radius:8px;padding:3px 8px}
+.tile .hk{flex:1;font-size:16px;font-weight:650;line-height:1.3;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.tile .meta{display:flex;flex-wrap:wrap;gap:6px;color:var(--muted);font-size:12.5px}
+.tile .meta span{background:rgba(255,255,255,.07);border-radius:8px;padding:3px 8px}
+.empty{padding:28px 12px;text-align:center;color:var(--muted)}
+nav.tabs{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:8;width:min(420px,calc(100% - 28px));display:flex;gap:4px;padding:5px;border-radius:999px;
+  background:rgba(10,16,30,.86);border:1px solid var(--line);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);box-shadow:0 10px 30px rgba(0,0,0,.45)}
+nav.tabs button{flex:1;min-height:48px;border:0;border-radius:999px;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+nav.tabs button[aria-selected=true]{background:linear-gradient(180deg,var(--acc2),var(--acc));color:#050912}
+/* the sheet */
+.shade{position:fixed;inset:0;z-index:20;background:rgba(2,5,12,.66);display:none}
+.shade.on{display:block}
+.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:21;width:min(680px,100%);max-height:92dvh;display:none;flex-direction:column;background:#0a1224;border:1px solid var(--line);border-bottom:0;border-radius:26px 26px 0 0;box-shadow:0 -20px 50px rgba(0,0,0,.5)}
+.sheet.on{display:flex}
+.sh-top{display:flex;align-items:center;gap:10px;padding:14px 16px 6px}
+.sh-top .id{font-size:12px;font-weight:800;letter-spacing:.06em;color:#050912;background:linear-gradient(180deg,var(--acc2),var(--acc));border-radius:8px;padding:4px 9px}
+.sh-top b{flex:1;min-width:0;font-size:17px;line-height:1.25;overflow-wrap:anywhere}
+.x{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:rgba(255,255,255,.07);color:var(--ink);font-size:22px;cursor:pointer}
+.sh-body{overflow-y:auto;overscroll-behavior:contain;padding:4px 16px 12px}
+.hook{margin:6px 0 0;padding:14px;border-radius:18px;background:rgba(124,196,255,.08);border:1px solid var(--line);font-size:17px;font-weight:650;line-height:1.35;overflow-wrap:anywhere;white-space:pre-wrap}
+.flow{margin:10px 2px 0;color:var(--muted);font-size:15px;overflow-wrap:anywhere;white-space:pre-wrap}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.tag{font-size:12.5px;padding:4px 9px;border-radius:8px;background:rgba(255,255,255,.07);color:var(--muted);overflow-wrap:anywhere}
 .tag.st{background:rgba(240,196,138,.12);color:var(--warn)}
-.chev{flex:none;color:var(--dim);font-size:18px;transition:transform .2s;margin-top:10px}
-.card[open] .chev{transform:rotate(90deg)}
-.body{padding:0 14px 14px}
+.me{margin:16px 0 0;padding:14px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line2)}
+.me h3{margin:0 0 8px;font-size:14px;color:var(--acc2)}
+.me label{display:block;margin:8px 0 4px;color:var(--muted);font-size:13px}
+.me input{width:100%;height:46px;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.06);color:var(--ink);font:inherit;font-size:16px;padding:0 12px}
+.me input::placeholder{color:var(--dim)}
+.lv{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px}
+.lv button{min-height:46px;border-radius:14px;border:1px solid var(--line);background:rgba(159,216,255,.06);color:var(--acc2);font:inherit;font-size:13px;font-weight:700;cursor:pointer;line-height:1.15;padding:4px}
+.lv button[aria-pressed=true]{background:var(--acc2);color:#050912}
+details.more{margin-top:14px;border-top:1px solid var(--line2);padding-top:10px}
+details.more summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--acc2);font-weight:650;font-size:15px}
 .f{margin-top:12px}
-.f h3{margin:0 0 4px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--gold2)}
+.f h4{margin:0 0 4px;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--acc2)}
 .f .t{white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px}
 .f.copy .t{padding:12px;border-radius:14px;background:rgba(0,0,0,.35);border:1px solid var(--line2)}
-.cp{margin-top:8px;min-height:44px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:rgba(159,216,255,.1);color:var(--gold2);font:inherit;font-weight:700;font-size:15px;cursor:pointer}
-.cp.ok{color:var(--ok);border-color:rgba(143,230,200,.4)}
-.links a{display:block;color:var(--gold2);font-size:14px;overflow-wrap:anywhere;padding:6px 0;min-height:32px}
-.empty{padding:24px 14px;text-align:center;color:var(--muted)}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:20;max-width:calc(100% - 32px);padding:12px 16px;border-radius:14px;background:rgba(14,18,30,.95);border:1px solid var(--line);font-size:15px;display:none}
+.cp2{margin-top:8px;min-height:44px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:rgba(159,216,255,.1);color:var(--acc2);font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.links a{display:block;color:var(--acc2);font-size:14px;overflow-wrap:anywhere;padding:6px 0}
+.sh-bar{padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line2);background:#0a1224}
+.go{width:100%;min-height:54px;border-radius:18px;border:0;background:linear-gradient(180deg,var(--acc2),var(--acc));color:#050912;font:inherit;font-size:17px;font-weight:800;cursor:pointer}
+.go.ok{background:linear-gradient(180deg,#c9f5e6,var(--ok))}
+.hint{margin:8px 2px 0;color:var(--dim);font-size:12.5px;line-height:1.35;text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;max-width:calc(100% - 32px);padding:12px 16px;border-radius:14px;background:rgba(14,22,40,.97);border:1px solid var(--line);font-size:15px;display:none}
 .toast.on{display:block}
-.fb{position:fixed;inset:0;z-index:30;display:none;align-items:flex-end;background:rgba(0,0,0,.6)}
+.fb{position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;background:rgba(0,0,0,.6)}
 .fb.on{display:flex}
-.fb .in{width:100%;max-height:80dvh;display:flex;flex-direction:column;gap:10px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));background:#0b0f1a;border-top:1px solid var(--line);border-radius:20px 20px 0 0}
-.fb textarea{flex:1;min-height:200px;width:100%;border-radius:12px;border:1px solid var(--line2);background:#03050a;color:var(--ink);font:inherit;font-size:16px;padding:10px}
-.fb button{min-height:44px;border-radius:14px;border:0;background:var(--gold2);color:#03050a;font:inherit;font-weight:700}
-footer{margin-top:22px;color:var(--dim);font-size:13px}
-footer a{color:var(--gold2)}
-:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+.fb .in{width:100%;max-height:80dvh;display:flex;flex-direction:column;gap:10px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));background:#0a1224;border-top:1px solid var(--line);border-radius:20px 20px 0 0}
+.fb textarea{flex:1;min-height:200px;width:100%;border-radius:12px;border:1px solid var(--line2);background:#050912;color:var(--ink);font:inherit;font-size:16px;padding:10px}
+.fb button{min-height:44px;border-radius:14px;border:0;background:var(--acc2);color:#050912;font:inherit;font-weight:700}
+.note{color:var(--muted);font-size:14px}
+:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
-    <div class="bar">
-      <a class="back" id="back" href="../" aria-label="Zurück zu LOWiSPIKE">‹</a>
-      <div class="brand"><b>LOWiSPIKE <span>Studio</span></b><small>Bewährte Video-Strukturen zum Kopieren und Umbauen</small></div>
-    </div>
-    <div class="seg" role="tablist" aria-label="Bereich">
-      <button role="tab" data-a="start" aria-selected="true">Start<small>Grundlagen</small></button>
-      <button role="tab" data-a="make" aria-selected="false">Make<small>Video bauen</small></button>
-      <button role="tab" data-a="swipe" aria-selected="false">Swipe<small>Vorbilder</small></button>
-    </div>
-    <div class="tools"><input class="search" id="q" type="search" placeholder="Karte suchen, z. B. Hook" aria-label="Karten durchsuchen" autocomplete="off"></div>
-    <div class="chips" role="group" aria-label="Nach Aufwand filtern">
-      <button class="chip" data-e="" aria-pressed="true">Alle</button>
-      <button class="chip" data-e="E1" aria-pressed="false">E1 Gesichtslos</button>
-      <button class="chip" data-e="E2" aria-pressed="false">E2 Stimme</button>
-      <button class="chip" data-e="E3" aria-pressed="false">E3 Hände</button>
-      <button class="chip" data-e="E4" aria-pressed="false">E4 Gesicht</button>
-    </div>
+  <header>
+    <a class="back" id="back" href="../" aria-label="Zurück zu LOWiSPIKE">‹</a>
+    <div><h1>Studio</h1><p class="sub" id="sub">Such dir ein Video, das funktioniert.</p></div>
   </header>
-  <main id="main"><div class="empty">Karten werden geladen…</div></main>
-  <footer id="foot"></footer>
+  <div class="chips" role="group" aria-label="Wie viel von dir ist im Video?">
+    <button class="chip" data-e="" aria-pressed="true">Alle</button>
+    <button class="chip" data-e="E1" aria-pressed="false">Gesichtslos</button>
+    <button class="chip" data-e="E2" aria-pressed="false">Mit Stimme</button>
+    <button class="chip" data-e="E3" aria-pressed="false">Hände</button>
+    <button class="chip" data-e="E4" aria-pressed="false">Gesicht</button>
+  </div>
+  <main id="main"><div class="empty">Lädt…</div></main>
 </div>
+<nav class="tabs" role="tablist" aria-label="Bereich">
+  <button role="tab" data-a="swipe" aria-selected="true">Vorbilder</button>
+  <button role="tab" data-a="make" aria-selected="false">Bausteine</button>
+  <button role="tab" data-a="start" aria-selected="false">Start</button>
+</nav>
+<div class="shade" id="shade"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Karte"></section>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="fb" id="fb" role="dialog" aria-modal="true" aria-label="Text zum Kopieren"><div class="in"><b>Kopieren hat nicht geklappt</b><span class="note">Der Text ist unten markiert. Halte darauf gedrückt und tippe auf „Kopieren“.</span><textarea id="fbt" readonly></textarea><button id="fbx">Fertig</button></div></div>
 <script>
 (function () {
   'use strict';
-  var D = document, DATA = null, AREA = 'start', EFF = '', Q = '';
+  var D = document, DATA = null, AREA = 'swipe', EFF = '', OPEN = null;
+  var PK = 'lowi.studio.me.v1', ME = {niche: '', voice: '', level: 'E1'};
   var $ = function (s) { return D.querySelector(s); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
-  var COPY = /^(Kopier das|Remix-Prompt|Agent-Ansicht|Hook)/;
+  var LV = {E1: 'gesichtslos (Text auf dem Bild, B-Roll, Bildschirmaufnahme, KI-Bilder)', E2: 'mit Stimme, eigene oder KI-Stimme, kein Gesicht', E3: 'Hände und Dinge im Bild, kein Gesicht', E4: 'mit Gesicht, ich rede selbst in die Kamera'};
+  var LVN = {E1: 'Gesichtslos', E2: 'Stimme', E3: 'Hände', E4: 'Gesicht'};
+  try { var s = JSON.parse(localStorage.getItem(PK) || 'null'); if (s && typeof s === 'object') ME = {niche: String(s.niche || ''), voice: String(s.voice || ''), level: LV[s.level] ? s.level : 'E1'}; } catch (e) {}
+  function saveMe() { try { localStorage.setItem(PK, JSON.stringify(ME)); } catch (e) {} }
+
   /* honest copy: success only when the browser confirms it */
   function copy(text) {
     if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) return navigator.clipboard.writeText(text).then(function () { return true; }, legacy);
@@ -130,53 +139,101 @@ footer a{color:var(--gold2)}
   function toast(m) { var t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.k); toast.k = setTimeout(function () { t.classList.remove('on'); }, 2200); }
   function fallback(text) { var f = $('#fb'), a = $('#fbt'); a.value = text; f.classList.add('on'); setTimeout(function () { a.focus(); a.select(); a.setSelectionRange(0, text.length); }, 50); }
   $('#fbx').onclick = function () { $('#fb').classList.remove('on'); };
-  /* a card fits a level when its effort text names it, or a range ("E1 bis E4") covers it */
-  function levels(s) { var o = {}; s.replace(/E(\d)\s*bis\s*E(\d)/g, function (m, a, b) { for (var i = +a; i <= +b; i++) o['E' + i] = 1; return ''; }).replace(/E\d/g, function (m) { o[m] = 1; return m; }); return o; }
+
+  function levels(s) { var o = {}; if (/als Remix/.test(s)) { /* "E4 im Original · E1 als Remix": the level you would make it at */ s.split('·').forEach(function (p) { if (/als Remix/.test(p)) { var l = levels(p.replace(/als Remix.*/, '')); for (var k in l) o[k] = 1; } }); return o; }
+    s.replace(/E(\d)\s*bis\s*E(\d)/g, function (m, a, b) { for (var i = +a; i <= +b; i++) o['E' + i] = 1; return ''; }).replace(/E\d/g, function (m) { o[m] = 1; return m; }); return o; }
   function effOk(c) { return !EFF || !!levels(c.effort)[EFF]; }
-  function match(c) { if (!effOk(c)) return false; if (!Q) return true; var h = (c.id + ' ' + c.title + ' ' + c.effort + ' ' + c.fields.map(function (f) { return f.text; }).join(' ')).toLowerCase(); return Q.split(/\s+/).every(function (w) { return h.indexOf(w) >= 0; }); }
-  function purpose(c) { var f = c.fields.filter(function (x) { return x.label === 'Wofür' || x.label === 'Hook' || x.label === 'Hook (wörtlich)' || x.label === 'Kopier das'; })[0]; return f ? f.text.split('\n')[0] : ''; }
-  function cardHTML(c) {
-    var body = c.fields.map(function (f, i) {
-      var cp = COPY.test(f.label);
-      return '<div class="f' + (cp ? ' copy' : '') + '"><h3>' + esc(f.label) + '</h3><div class="t">' + esc(f.text) + '</div>' + (cp ? '<button class="cp" data-id="' + esc(c.id) + '" data-i="' + i + '">Kopieren</button>' : '') + '</div>';
-    }).join('');
-    var links = c.links.length ? '<div class="f links"><h3>Link' + (c.links.length > 1 ? 's' : '') + ' (öffnet die Originalplattform)</h3>' + c.links.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + esc(u) + '</a>'; }).join('') + '</div>' : '';
-    var all = '<button class="cp" data-id="' + esc(c.id) + '" data-i="all">Ganze Karte für den Agenten kopieren</button>';
-    return '<details class="card" id="' + esc(c.id) + '"><summary><span class="id">' + esc(c.id) + '</span><span class="hd"><b>' + esc(c.title) + '</b><span class="why">' + esc(purpose(c)) + '</span><span class="tags"><span class="tag">Aufwand ' + esc(c.effort) + '</span><span class="tag st">' + esc(c.status) + '</span></span></span><span class="chev" aria-hidden="true">›</span></summary><div class="body">' + body + links + all + '</div></details>';
+  function field(c, re) { for (var i = 0; i < c.fields.length; i++) if (re.test(c.fields[i].label)) return c.fields[i].text; return ''; }
+  function hookOf(c) { var h = field(c, /^Hook/); if (h) return h; var w = field(c, /^Wofür/); return w || (field(c, /^Kopier das/).split('\n')[0]); }
+  function viewsOf(c) { var z = field(c, /^Zahlen/); var m = z.match(/[\d.,]+\s?[KM]\s*Views/i); return m ? m[0] : ''; }
+  function byId(id) { for (var i = 0; i < DATA.cards.length; i++) if (DATA.cards[i].id === id) return DATA.cards[i]; return null; }
+
+  /* ---- the finished prompt: your profile + the card's own remix prompt + the card's agent steps. Placeholders are filled only here, the card text itself is never changed. */
+  function fill(t) {
+    var n = ME.niche.trim(), v = ME.voice.trim();
+    return t.replace(/\[(Marke\/Nische\/Stimme|Marke\/Nische|meine Nische|meine Marke|Nische|Marke)\]/g, function (m, k) {
+      if (k === 'Marke/Nische/Stimme') return n || v ? ((n || '[Marke/Nische]') + (v ? ', Stimme: ' + v : '')) : m;
+      return n || m;
+    });
   }
-  function cardText(c) { return c.id + ' · ' + c.title + '\nAufwand: ' + c.effort + '\nStatus: ' + c.status + '\n' + c.fields.map(function (f) { return f.label + ':\n' + f.text; }).join('\n') + (c.links.length ? '\nLinks:\n' + c.links.join('\n') : '') + '\n(Quelle: LOWiSPIKE Studio, ' + DATA.version + '. Der Agent erstellt, die Person postet selbst.)'; }
+  function buildPrompt(c) {
+    var remix = field(c, /^Remix-Prompt/), agent = field(c, /^Agent-Ansicht/), ref = remix.match(/Siehe (M\d+)/);
+    if (ref && byId(ref[1])) { var o = byId(ref[1]); remix = field(o, /^Remix-Prompt/); agent = field(o, /^Agent-Ansicht/); }
+    var p = ['Du bist mein Content-Agent. Du erstellst nur Text und Pläne. Ich poste selbst, du veröffentlichst nichts.', '',
+      'Mein Profil:', '- Marke/Nische: ' + (ME.niche.trim() || '[bitte nachfragen]'), '- Stimme: ' + (ME.voice.trim() || '[bitte nachfragen]'), '- Stufe: ' + ME.level + ' ' + LV[ME.level], '',
+      'Karte ' + c.id + ' · ' + c.title, 'Aufgabe:', fill(remix)];
+    if (agent) p.push('', 'So gehst du vor:', fill(agent));
+    p.push('', 'Wichtig: Das Referenzvideo nur analysieren und die Struktur übernehmen, nie fremde Clips oder Texte 1:1 kopieren. Fakten nur mit Beleg. Zahlen in der Karte stammen aus der Quelle und sind nicht neu geprüft.');
+    return p.join('\n');
+  }
+  function cardText(c) { return c.id + ' · ' + c.title + '\nAufwand: ' + c.effort + '\nStatus: ' + c.status + '\n' + c.fields.map(function (f) { return f.label + ':\n' + f.text; }).join('\n') + (c.links.length ? '\nLinks:\n' + c.links.join('\n') : '') + '\n(Quelle: LOWiSPIKE Studio ' + DATA.version + '. Der Agent erstellt, die Person postet selbst.)'; }
+
+  function tileHTML(c) {
+    var lv = Object.keys(levels(c.effort)).sort().map(function (k) { return '<span>' + esc(LVN[k]) + '</span>'; }).join(''), v = viewsOf(c);
+    return '<button class="tile" data-id="' + esc(c.id) + '"><span class="id">' + esc(c.id) + '</span><span class="hk">' + esc(c.area === 'swipe' ? hookOf(c).replace(/^„|“$/g, '') : c.title) + '</span><span class="meta">' + lv + (v ? '<span>' + esc(v) + '</span>' : '') + '</span></button>';
+  }
+  var AREAS = {swipe: ['Vorbilder', 'Tippe ein Video an und bau es für dich um.'], make: ['Bausteine', 'Hooks, Skripte und Abschlüsse zum Kopieren.'], start: ['Start', 'Einmal einrichten, dann läuft es.']};
   function render() {
-    var m = $('#main'), cards = DATA.cards.filter(function (c) { return (Q ? true : c.area === AREA) && match(c); }), h = '';
-    if (AREA === 'start' && !Q && !EFF) h += '<div class="panel"><p>' + esc(DATA.intro) + '</p><p class="note">' + esc(DATA.legend['Aufwand']) + '</p></div><div class="panel warn"><p><b>Wichtig:</b> ' + esc(DATA.legend['Wichtig']) + ' Studio ist eine Wissensseite: Kopieren startet keinen Agenten und erzeugt kein Video.</p></div>';
-    if (AREA === 'swipe' && !Q) h += '<div class="panel warn"><p class="note">' + esc(DATA.swipeNote) + ' Vorbilder dienen zur Analyse und für eigene Versionen: keine fremden Clips oder Texte 1:1 übernehmen.</p></div>';
-    if (Q) h += '<p class="grpnote">' + cards.length + ' Treffer in allen Bereichen</p>';
-    if (!cards.length) h += '<div class="empty">Keine Karte passt. Versuch ein anderes Wort oder tippe auf „Alle“.</div>';
-    var g = null;
-    cards.forEach(function (c) { if (c.group && c.group !== g) { if (g !== null || h) h += '</div>'; g = c.group; h += '<h2 class="grp">' + esc(g) + '</h2>' + (DATA.groupNotes[g] ? '<p class="grpnote">' + esc(DATA.groupNotes[g]) + '</p>' : '') + '<div class="list">'; } else if (g === null && !h.endsWith('<div class="list">')) { h += '<div class="list">'; g = ''; } h += cardHTML(c); });
+    var cards = DATA.cards.filter(function (c) { return c.area === AREA && effOk(c); }), h = '', g = null;
+    $('#sub').textContent = AREAS[AREA][1];
+    if (!cards.length) h = '<div class="empty">Dafür gibt es hier keine Karte. Tippe oben auf „Alle“.</div>';
+    cards.forEach(function (c) {
+      if (c.group && c.group !== g) { if (g !== null) h += '</div>'; g = c.group; h += '<h2 class="gh">' + esc(g) + '</h2><div class="grid">'; }
+      else if (g === null) { h += '<div class="grid">'; g = c.group || ''; }
+      h += tileHTML(c);
+    });
     if (cards.length) h += '</div>';
-    if (AREA === 'swipe' && !Q && !EFF) h += '<h2 class="grp">Weggelassen (du kannst es zurückholen)</h2><div class="panel"><p class="note">' + DATA.omitted.map(esc).join('<br>') + '</p><p class="note">' + esc(DATA.originals) + '</p></div>';
-    m.innerHTML = h;
+    $('#main').innerHTML = h;
   }
-  function setArea(a) { AREA = a; D.querySelectorAll('.seg button').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.a === a ? 'true' : 'false'); }); render(); window.scrollTo(0, 0); }
+  function setArea(a) { AREA = a; D.querySelectorAll('nav.tabs button').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.a === a ? 'true' : 'false'); }); render(); window.scrollTo(0, 0); }
+
+  /* ---- the sheet */
+  function openCard(id, fromHash) {
+    var c = byId(id); if (!c) return; OPEN = c;
+    var hook = hookOf(c), flow = field(c, /^Ablauf/) || field(c, /^Wofür/);
+    var more = c.fields.map(function (f, i) {
+      var cp = /^(Kopier das|Remix-Prompt|Agent-Ansicht)/.test(f.label);
+      return '<div class="f' + (cp ? ' copy' : '') + '"><h4>' + esc(f.label) + '</h4><div class="t">' + esc(f.text) + '</div>' + (cp ? '<button class="cp2" data-i="' + i + '">Nur diesen Text kopieren</button>' : '') + '</div>';
+    }).join('');
+    var links = c.links.length ? '<div class="f links"><h4>Original ansehen (öffnet die Plattform)</h4>' + c.links.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + esc(u) + '</a>'; }).join('') + '</div>' : '';
+    $('#sheet').innerHTML = '<div class="sh-top"><span class="id">' + esc(c.id) + '</span><b>' + esc(c.title) + '</b><button class="x" id="sx" aria-label="Schließen">×</button></div>' +
+      '<div class="sh-body"><div class="hook">' + esc(hook) + '</div>' + (flow && flow !== hook ? '<p class="flow">' + esc(flow) + '</p>' : '') +
+      '<div class="tags"><span class="tag">' + esc(c.effort) + '</span><span class="tag st">' + esc(c.status) + '</span></div>' +
+      '<div class="me"><h3>Für wen soll es sein?</h3><label for="mn">Deine Marke oder Nische</label><input id="mn" autocomplete="off" placeholder="z. B. Insulinresistenz, Frauen ab 35" value="' + esc(ME.niche) + '">' +
+      '<label for="mv">Deine Stimme</label><input id="mv" autocomplete="off" placeholder="z. B. locker, ruhig, frech" value="' + esc(ME.voice) + '">' +
+      '<label>Wie viel von dir ist im Video?</label><div class="lv" id="lv">' + ['E1', 'E2', 'E3', 'E4'].map(function (k) { return '<button data-l="' + k + '" aria-pressed="' + (ME.level === k) + '">' + LVN[k] + '</button>'; }).join('') + '</div></div>' +
+      '<details class="more"><summary>Ganze Karte ansehen</summary>' + more + links + '<button class="cp2" data-i="all">Ganze Karte kopieren</button></details></div>' +
+      '<div class="sh-bar"><button class="go" id="go">Für meinen Agenten kopieren</button><p class="hint">Dein Agent erstellt, du postest selbst. Studio erzeugt und veröffentlicht nichts.</p></div>';
+    $('#shade').classList.add('on'); $('#sheet').classList.add('on'); D.body.style.overflow = 'hidden';
+    if (!fromHash) { try { history.pushState(null, '', '#' + id); } catch (e) { location.hash = id; } }
+  }
+  function closeCard(fromHash) {
+    OPEN = null; $('#shade').classList.remove('on'); $('#sheet').classList.remove('on'); D.body.style.overflow = '';
+    if (!fromHash && location.hash) { try { history.back(); } catch (e) {} }
+  }
   D.addEventListener('click', function (e) {
     var t = e.target.closest('button'); if (!t) return;
+    if (t.classList.contains('tile')) return openCard(t.dataset.id);
+    if (t.id === 'sx') return closeCard();
     if (t.dataset.a) return setArea(t.dataset.a);
     if (t.hasAttribute('data-e')) { EFF = t.dataset.e; D.querySelectorAll('.chip').forEach(function (b) { b.setAttribute('aria-pressed', b === t ? 'true' : 'false'); }); return render(); }
-    if (t.classList.contains('cp')) {
-      var c = DATA.cards.filter(function (x) { return x.id === t.dataset.id; })[0]; if (!c) return;
-      var text = t.dataset.i === 'all' ? cardText(c) : c.fields[+t.dataset.i].text;
-      copy(text).then(function (ok) { if (ok) { var l = t.textContent; t.classList.add('ok'); t.textContent = 'Kopiert ✓'; toast('Kopiert. Füg es bei deinem Agenten ein.'); setTimeout(function () { t.classList.remove('ok'); t.textContent = l; }, 1800); } else fallback(text); });
-    }
+    if (t.dataset.l) { ME.level = t.dataset.l; saveMe(); D.querySelectorAll('#lv button').forEach(function (b) { b.setAttribute('aria-pressed', b === t ? 'true' : 'false'); }); return; }
+    var text = null, btn = t;
+    if (t.id === 'go' && OPEN) text = buildPrompt(OPEN);
+    else if (t.classList.contains('cp2') && OPEN) text = t.dataset.i === 'all' ? cardText(OPEN) : OPEN.fields[+t.dataset.i].text;
+    if (text == null) return;
+    copy(text).then(function (ok) { if (!ok) return fallback(text); var l = btn.textContent; btn.classList.add('ok'); btn.textContent = 'Kopiert ✓'; toast('Kopiert. Füg es bei deinem Agenten ein.'); setTimeout(function () { btn.classList.remove('ok'); btn.textContent = l; }, 1800); });
   });
-  $('#q').addEventListener('input', function (e) { Q = e.target.value.trim().toLowerCase(); render(); });
+  D.addEventListener('input', function (e) { if (e.target.id === 'mn') { ME.niche = e.target.value; saveMe(); } else if (e.target.id === 'mv') { ME.voice = e.target.value; saveMe(); } });
+  $('#shade').addEventListener('click', function () { closeCard(); });
   /* back: inside the app (opened from For You) go back; opened directly, go to the app */
   $('#back').addEventListener('click', function (e) { try { if (D.referrer && new URL(D.referrer).origin === location.origin && history.length > 1) { e.preventDefault(); history.back(); } } catch (x) {} });
-  function openHash() { var id = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); if (!id || !DATA) return; var c = DATA.cards.filter(function (x) { return x.id === id; })[0]; if (!c) return; if (c.area !== AREA) setArea(c.area); var el = D.getElementById(c.id); if (el) { el.open = true; el.scrollIntoView({block: 'start'}); } }
-  window.addEventListener('hashchange', openHash);
-  fetch('cards.json', {cache: 'no-cache'}).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
-    DATA = d; render(); openHash();
-    $('#foot').innerHTML = esc(d.stand) + ' ' + d.cards.length + ' Karten.<br>Für Agenten: dieselben Karten als Daten unter <a href="cards.json">studio/cards.json</a>. Jede Karte hat einen festen Link, z. B. <a href="#M4">#M4</a>.';
-  }).catch(function () { $('#main').innerHTML = '<div class="empty">Die Karten konnten nicht geladen werden. Prüf deine Internetverbindung und lade die Seite neu.</div>'; });
+  function fromHash() { var id = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(), c = id && DATA ? byId(id) : null; if (!c) { if (OPEN) closeCard(true); return; } if (c.area !== AREA) setArea(c.area); openCard(c.id, true); }
+  window.addEventListener('hashchange', fromHash);
+  window.addEventListener('popstate', fromHash);
+  D.addEventListener('keydown', function (e) { if (e.key === 'Escape' && OPEN) closeCard(); });
+  fetch('cards.json', {cache: 'no-cache'}).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) { DATA = d; render(); fromHash(); })
+    .catch(function () { $('#main').innerHTML = '<div class="empty">Die Karten konnten nicht geladen werden. Prüf deine Internetverbindung und lade die Seite neu.</div>'; });
 })();
 </script>
 </body>

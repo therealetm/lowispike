@@ -48,7 +48,7 @@ test('For You opens at the top (circles showing) and uses the app blue, not gold
 });
 test('Studio is a tool: tiles, one copy button with your profile, copy only reports success when it worked', () => {
   const st = R('studio/index.html');
-  assert.match(st, /class="tile"/);
+  assert.match(st, /class="tile/);
   assert.match(st, /Für Agent kopieren/);
   assert.match(st, /function buildPrompt/);
   assert.match(st, /lowi\.studio\.me\.v1/);
@@ -92,4 +92,15 @@ test('My posts is an Instagram-style profile with two tabs, and the Saved circle
   assert.match(h, /data-tr="list-tab" data-k="saved"/);
   assert.match(h, /case "list-tab": listSheet\(b\.dataset\.k\); break;/);
   assert.match(h, /\["posts", "Beiträge", "publicaciones"\]/);
+});
+test('Studio: real folders the owner can rename and fill, sort by most views, owner-only edits saved on the server', () => {
+  const st = R('studio/index.html'), sql = R('supabase/proposals/studio_config_20261121.sql');
+  assert.match(st, /function defaultFolders\(\)/);
+  assert.match(st, /SORT === 'views'/);
+  assert.match(st, /SB\.rpc\('is_app_owner'\)/, 'edit mode only for the owner, decided by the server');
+  assert.match(st, /SB\.rpc\('studio_save', \{doc: DOC\}\)/);
+  assert.match(st, /Video hinzufügen/);
+  assert.match(sql, /if not coalesce\(public\.is_app_owner\(\), false\) then/);
+  assert.match(sql, /revoke all on public\.studio_config from anon, authenticated;/, 'no direct writes');
+  assert.match(sql, /octet_length\(doc::text\) > 400000/);
 });

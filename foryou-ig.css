@@ -96,3 +96,10 @@ html[data-lay=phone] #cmPaneChat[data-spirit-chat]>.rm-view:has(>.rm-fy:not([hid
 #cmPaneFeed .fy-tools.fyb-pin{background:rgba(5,7,12,.86)!important;-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3)}
 #cmPaneFeed .fy-tools.fyb-hide{transform:translateY(-105%);pointer-events:none}
 @media (prefers-reduced-motion:reduce){#cmPaneFeed .fy-tools{transition:none}}
+/* 21 Nov 2026 (Emmanuel, New post screenshot: "I see 3 x which is weird"). One way out of New post: the round X at the bottom
+   (bottom-close.js). The sheet's own X (it sat on the Post button) and the page's ‹ behind the sheet stay out of sight while that
+   round X is on screen; when the round X steps aside, the sheet's own X shows again so there is always a way out. The sheet ends
+   above the round X, so its last line never sits under it. */
+html:has(#lwBX.on:not(.bx-aside)) #sheet.r3f-sheet [data-act=close-sheet]{opacity:0!important;pointer-events:none!important}
+html:has(#sheetwrap.open) .nm-back{opacity:0!important;pointer-events:none!important}
+#sheet.r3f-sheet{padding-bottom:calc(var(--sab,0px) + 104px)!important}

@@ -75,3 +75,10 @@ test('Studio looks like Instagram Explore: search, topic chips, 3-column edge-to
   assert.match(st, /class="chk"/, 'guide steps as a checklist where the caption would be');
   assert.doesNotMatch(st, /<nav class="tabs"/, 'no bottom tab pill');
 });
+test('New post: one way out, and the circles open only on a real tap', () => {
+  const h = R('index.html'), css = R('foryou-ig.css');
+  assert.ok(css.includes('html:has(#lwBX.on:not(.bx-aside)) #sheet.r3f-sheet [data-act=close-sheet]{opacity:0'), 'sheet X hidden only while the round X is on screen');
+  assert.ok(css.includes('html:has(#sheetwrap.open) .nm-back{opacity:0'), 'page back hidden behind an open sheet');
+  assert.match(h, /function fyTapIntent\(\)/);
+  assert.ok(h.includes('e.detail === 0) return;'), 'keyboard activation always works');
+});

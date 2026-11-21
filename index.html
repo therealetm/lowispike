@@ -5256,6 +5256,20 @@ function fyToolsHTML(){ const n = Object.keys(T.saved || {}).length;
 /* 21 Nov 2026 (Emmanuel: "When you open the For You page, that new bar isn't showing ... When they open it, it should be
    there."): every time For You comes into view (its rooms frame loses [hidden], or the pane is moved in), the feed starts at
    the top with the circles showing. Scrolling inside For You is left alone. */
+/* 21 Nov 2026 (Emmanuel: "Click should open the interface & be intentional"): the circle row slides back in while you scroll
+   up, so a finger that lands on it mid-scroll must not open New post, My posts, Saved or Studio. A circle opens only on a real
+   tap: the finger stays put (under 10 px), lifts within 0.8 s, the feed was not scrolling in the quarter second before, and the
+   row was fully in view. Keyboard activation (click with detail 0) always works. */
+(function fyTapIntent(){ let down = null, lastScroll = 0;
+  addEventListener("scroll", e => { const t = e.target; if (t && t.id === "fyFeed" || t && t.classList && t.classList.contains("fy-tools")) lastScroll = performance.now(); }, true);
+  addEventListener("pointerdown", e => { const row = e.target && e.target.closest && e.target.closest(".fy-tools"); if (!row) { down = null; return; }
+    const f = document.getElementById("fyFeed"), rr = row.getBoundingClientRect(), fr = f ? f.getBoundingClientRect() : rr;
+    down = { x: e.clientX, y: e.clientY, t: performance.now(), ok: performance.now() - lastScroll > 250 && rr.top >= fr.top - 2 && !row.classList.contains("fyb-hide") }; }, true);
+  addEventListener("pointermove", e => { if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 10) down.ok = false; }, true);
+  addEventListener("click", e => { const b = e.target && e.target.closest && e.target.closest(".fy-tools .fy-tool"); if (!b || e.detail === 0) return;
+    const ok = down && down.ok && performance.now() - down.t < 800; down = null;
+    if (!ok) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+})();
 (function fyTopOnOpen(){ let was = false;
   const vis = () => { const f = document.getElementById("fyFeed"); if (!f) return false; const r = f.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !f.closest("[hidden]"); };
   const check = () => { const now = vis(); if (now && !was) { const f = document.getElementById("fyFeed"); f.scrollTop = 0; requestAnimationFrame(() => { f.scrollTop = 0; }); setTimeout(() => { if (vis()) f.scrollTop = 0; }, 250); } was = now; };

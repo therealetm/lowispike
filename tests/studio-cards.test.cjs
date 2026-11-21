@@ -77,7 +77,7 @@ test('Studio looks like Instagram Explore: search, topic chips, 3-column edge-to
 });
 test('New post: one way out, and the circles open only on a real tap', () => {
   const h = R('index.html'), css = R('foryou-ig.css');
-  assert.ok(css.includes('html:has(#lwBX.on:not(.bx-aside)) #sheet.r3f-sheet [data-act=close-sheet]{opacity:0'), 'sheet X hidden only while the round X is on screen');
+  assert.ok(css.includes('html:has(#lwBX.on:not(.bx-aside)) #sheet.r3f-sheet .xbtn[data-act=close-sheet]{opacity:0'), 'sheet X hidden only while the round X is on screen');
   assert.ok(css.includes('html:has(#sheetwrap.open) .nm-back{opacity:0'), 'page back hidden behind an open sheet');
   assert.match(h, /function fyTapIntent\(\)/);
   assert.ok(h.includes('e.detail === 0) return;'), 'keyboard activation always works');
@@ -111,4 +111,27 @@ test('a meal in the chat is a 9:16 photo post with the brand mark, only meal bub
   assert.match(css, /content:"LOWiSPIKE"/);
   assert.equal((cc.match(/const mealPost=!voiceOf\(m\)&&!albumOf\(m\)/g) || []).length, 2, 'both renderers name the poster');
   assert.match(R('sw.js'), /STATIC\.push\("chat-meal-post\.css"\)/);
+});
+test('My posts and New post open as their own page with a Back button; profile has Photos, Links and Saved', () => {
+  const h = R('index.html'), css = R('foryou-ig.css');
+  assert.match(h, /function pageHead\(title, right\)/);
+  assert.match(h, /h\.openSheet\(pageHead\(fyT\("My posts"\)\) \+ html\); pageMode\(\);/);
+  assert.match(h, /PG \? PG\.head\(T\("New post"\)/);
+  assert.match(h, /data-tr="list-tab" data-k="links"/);
+  assert.match(h, /const isLink = p => !!p\.url && !p\.photo && !p\.vid;/);
+  assert.match(css, /#sheet\.lw-page\{top:0!important/);
+  assert.match(css, /html:has\(#sheetwrap\.open #sheet\.lw-page\) #lwBX\{display:none!important\}/, 'one way out: the Back button');
+});
+test('Studio: folders can be renamed and deleted in one place', () => {
+  const st = R('studio/index.html');
+  assert.match(st, /data-add="manage">✎ Ordner verwalten/);
+  assert.match(st, /function manageDlg\(\)/);
+  assert.match(st, /k === 'msave'/);
+  assert.match(st, /k === 'mdel'/);
+});
+test('the meal post beats the chat room styles and fills the chat list', () => {
+  const css = R('chat-meal-post.css');
+  assert.match(css, /html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat \.cp-msg \.cm-bub\.cm-pbub:has\(> \.cs-meal\)\{width:100%!important/);
+  assert.match(css, /var\(--cml-h,460px\)/);
+  assert.match(R('index.html'), /function chatListHeight\(\)/);
 });

@@ -100,6 +100,31 @@ html[data-lay=phone] #cmPaneChat[data-spirit-chat]>.rm-view:has(>.rm-fy:not([hid
    (bottom-close.js). The sheet's own X (it sat on the Post button) and the page's ‹ behind the sheet stay out of sight while that
    round X is on screen; when the round X steps aside, the sheet's own X shows again so there is always a way out. The sheet ends
    above the round X, so its last line never sits under it. */
-html:has(#lwBX.on:not(.bx-aside)) #sheet.r3f-sheet [data-act=close-sheet]{opacity:0!important;pointer-events:none!important}
+html:has(#lwBX.on:not(.bx-aside)) #sheet.r3f-sheet .xbtn[data-act=close-sheet]{opacity:0!important;pointer-events:none!important}
 html:has(#sheetwrap.open) .nm-back{opacity:0!important;pointer-events:none!important}
 #sheet.r3f-sheet{padding-bottom:calc(var(--sab,0px) + 104px)!important}
+/* page: My posts and New post open as their own full screen (Emmanuel 21 Nov 2026: "it should open its own interface ... not a
+   wardrobe opening ... a clear back button"). index.html pageHead()/pageMode(). The sheet fills the screen, sits above the app
+   chrome, shows at once (no slide up), and the one way out is the Back button top left; the round bottom X and the sheet's own X
+   are hidden while a page is open. */
+#sheetwrap:has(#sheet.lw-page){z-index:400!important;background:#05070c!important;transition:opacity .18s}
+#sheet.lw-page{top:0!important;bottom:0!important;left:0!important;right:0!important;height:100%!important;max-height:none!important;transform:none!important;
+  border:0!important;border-radius:0!important;padding:0 16px calc(env(safe-area-inset-bottom,0px) + 28px)!important;background:#05070c!important;overflow-y:auto!important;overscroll-behavior:contain}
+#sheet.lw-page>.grab,#sheet.lw-page .xbtn[data-act=close-sheet],#sheet.lw-page>.xbtn{display:none!important}
+html:has(#sheetwrap.open #sheet.lw-page) #lwBX{display:none!important}
+#sheet.lw-page .pg-head{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;margin:0 -16px 10px;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px;
+  background:rgba(5,7,12,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.08)}
+#sheet.lw-page .pg-back{flex:none;display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 12px 0 6px;border-radius:999px;border:0;background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:16px;font-weight:600;cursor:pointer}
+#sheet.lw-page .pg-back svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+#sheet.lw-page .pg-title{flex:1;min-width:0;text-align:center;font-size:17px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sheet.lw-page .pg-right,#sheet.lw-page .pg-head .r3f-postslot{flex:none;min-width:84px;display:flex;justify-content:flex-end}
+#sheet.lw-page .pg-head .r3f-postslot .ls-postfoot{position:static!important;margin:0!important;padding:0!important;background:none!important}
+#sheet.lw-page .pg-head .r3f-postslot .btn{min-height:40px;padding:0 18px;width:auto}
+#sheet.lw-page.r3f-sheet .r3f-post{padding-top:0}
+#sheet.lw-page #fyProf{margin:0 -16px}
+.fy-ptabs button{flex-direction:column;gap:2px;height:56px!important}
+.fy-ptabs button span{font-size:11.5px;font-weight:600;line-height:1}
+.fy-ptabs button svg{width:22px!important;height:22px!important}
+#sheet.lw-page .grab{display:none!important}
+#sheet.lw-page .pg-head,#sheet.lw-page .pg-back,#sheet.lw-page .pg-title{opacity:1!important;visibility:visible!important;pointer-events:auto}
+html:has(#sheetwrap.open #sheet.lw-page) #fxHint{display:none!important}

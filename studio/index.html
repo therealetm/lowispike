@@ -273,7 +273,7 @@ details.more summary{cursor:pointer;min-height:44px;display:flex;align-items:cen
   function rebuild() { CARDS = DATA.cards.concat((DOC.added || []).map(addedCard)); CARDS.forEach(function (c) { if (c.thumb && videoLink(c) && !THUMB[videoLink(c)]) THUMB[videoLink(c)] = {thumb: c.thumb, t: Date.now()}; }); }
   function chipsHTML() {
     var fs = folders(), h = '<button class="chip" data-f="all" aria-pressed="' + (TAB === 'all') + '">Für dich</button>' + fs.map(function (f) { return '<button class="chip" data-f="' + esc(f.id) + '" aria-pressed="' + (TAB === f.id) + '">' + esc(f.name) + '</button>'; }).join('');
-    return h + (EDIT ? '<button class="chip add" data-add="folder">+ Ordner</button>' : '');
+    return h + (EDIT ? '<button class="chip add" data-add="manage">✎ Ordner verwalten</button><button class="chip add" data-add="folder">+ Ordner</button>' : '');
   }
   function render() {
     if (!folders().some(function (f) { return f.id === TAB; })) TAB = 'all';
@@ -321,6 +321,15 @@ details.more summary{cursor:pointer;min-height:44px;display:flex;align-items:cen
     dlg('<h3>' + (f ? 'Ordner bearbeiten' : 'Neuer Ordner') + '</h3><label for="fn">Name</label><input id="fn" maxlength="40" value="' + esc(f ? f.name : '') + '" autocomplete="off">' +
       '<div class="btns">' + (f ? '<button class="abtn red" data-dl="fdel" data-id="' + esc(f.id) + '">Löschen</button>' : '') + '<button class="abtn" data-dl="cancel">Abbrechen</button><button class="abtn pri" data-dl="fsave" data-id="' + esc(f ? f.id : '') + '">Speichern</button></div>');
   }
+  /* 21 Nov 2026 (Emmanuel: "I should be able to delete the folders ... not just rename them"): every folder in one list, each
+     with its name to edit, how many videos are in it, and a delete button. Renames save with Speichern; delete asks first. */
+  function manageDlg() {
+    var fs = folders();
+    dlg('<h3>Ordner verwalten</h3><p class="note" style="margin:0 0 6px">Namen ändern und auf Speichern tippen. Löschen entfernt nur den Ordner, die Videos bleiben in „Für dich“.</p>' +
+      fs.map(function (f) { var n = CARDS.filter(function (c) { return inFolders(c).indexOf(f.id) >= 0; }).length;
+        return '<div class="arow"><input data-mf="' + esc(f.id) + '" value="' + esc(f.name) + '" maxlength="40" aria-label="Name von ' + esc(f.name) + '"><span class="note" style="flex:none;min-width:58px;text-align:right">' + n + ' Videos</span><button class="abtn red" data-dl="mdel" data-id="' + esc(f.id) + '" aria-label="' + esc(f.name) + ' löschen">Löschen</button></div>'; }).join('') +
+      '<div class="btns"><button class="abtn" data-dl="cancel">Abbrechen</button><button class="abtn pri" data-dl="msave">Speichern</button></div>');
+  }
   function videoDlg() {
     dlg('<h3>Video hinzufügen</h3><label for="vl">Link (TikTok oder Instagram)</label><input id="vl" inputmode="url" autocapitalize="off" autocomplete="off" placeholder="https://vm.tiktok.com/…">' +
       '<label for="vc">Von wem (optional)</label><input id="vc" maxlength="80" autocomplete="off" placeholder="z. B. Ray Fu @ray_fu">' +
@@ -335,6 +344,8 @@ details.more summary{cursor:pointer;min-height:44px;display:flex;align-items:cen
     if (k === 'cancel') return dlgClose();
     if (k === 'fsave') { var n = ($('#fn').value || '').trim(); if (!n) return; ensureFolders(); if (t.dataset.id) DOC.folders.forEach(function (f) { if (f.id === t.dataset.id) f.name = n; }); else { var id = 'f' + Date.now().toString(36); DOC.folders.push({id: id, name: n}); TAB = id; } dlgClose(); render(); return save(); }
     if (k === 'fdel') { ensureFolders(); var fid = t.dataset.id; DOC.folders = DOC.folders.filter(function (f) { return f.id !== fid; }); Object.keys(DOC.items || {}).forEach(function (i) { var it = DOC.items[i]; if (it.f) it.f = it.f.filter(function (x) { return x !== fid; }); }); (DOC.added || []).forEach(function (a) { if (a.f) a.f = a.f.filter(function (x) { return x !== fid; }); }); if (TAB === fid) TAB = 'all'; dlgClose(); render(); return save(); }
+    if (k === 'msave') { ensureFolders(); D.querySelectorAll('#dlg [data-mf]').forEach(function (i) { var n = i.value.trim(); if (n) DOC.folders.forEach(function (f) { if (f.id === i.dataset.mf) f.name = n; }); }); dlgClose(); render(); return save(); }
+    if (k === 'mdel') { var df = folders().filter(function (f) { return f.id === t.dataset.id; })[0]; if (!df || !confirm('Ordner „' + df.name + '“ löschen?')) return; onDlg({dataset: {dl: 'fdel', id: df.id}}); return manageDlg(); }
     if (k === 'vsave') {
       var link = ($('#vl').value || '').trim(), e = $('#ve');
       if (!/^https:\/\/([a-z0-9-]+\.)*(tiktok\.com|instagram\.com)\//i.test(link)) { e.textContent = 'Bitte einen TikTok- oder Instagram-Link einfügen.'; e.hidden = false; return; }
@@ -408,6 +419,7 @@ details.more summary{cursor:pointer;min-height:44px;display:flex;align-items:cen
     if (t.dataset.vf) { t.setAttribute('aria-pressed', t.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); return; }
     if (t.dataset.add === 'video') return videoDlg();
     if (t.dataset.add === 'folder') return folderDlg('');
+    if (t.dataset.add === 'manage') return manageDlg();
     if ((t.dataset.af || t.dataset.ad) && OPEN && EDIT) return onAdmin(t, OPEN);
     if (t.classList.contains('tile')) return openCard(t.dataset.id);
     if (t.id === 'sx') return closeCard();

@@ -49,7 +49,7 @@ test('For You opens at the top (circles showing) and uses the app blue, not gold
 test('Studio is a tool: tiles, one copy button with your profile, copy only reports success when it worked', () => {
   const st = R('studio/index.html');
   assert.match(st, /class="tile"/);
-  assert.match(st, /Für meinen Agenten kopieren/);
+  assert.match(st, /Für Agent kopieren/);
   assert.match(st, /function buildPrompt/);
   assert.match(st, /lowi\.studio\.me\.v1/);
   assert.match(st, /Dein Agent erstellt, du postest selbst/);
@@ -60,8 +60,18 @@ test('Studio shows videos: cover tiles, view counts, three ways to remake, no Yo
   assert.match(st, /tiktok-meta/);
   assert.match(st, /Mich ersetzen: Higgsfield/);
   assert.match(st, /Mich ersetzen: Agent-Avatar/);
-  assert.match(st, /youtu\\\.\?be/, 'YouTube links get no preview tile');
+  assert.match(st, /youtu\\.\?be/, 'YouTube links get no preview tile');
   assert.match(st, /class="cv' \+ \(th \? '' : ' nf'\)/, 'designed fallback cover');
   assert.match(st, /Nur mein eigenes Gesicht und meine eigene Stimme/);
   assert.match(st, /vor jedem Render|Kosten in Credits/);
+});
+test('Studio looks like Instagram Explore: search, topic chips, 3-column edge-to-edge grid with view counts, tap opens a post with our guide', () => {
+  const st = R('studio/index.html');
+  assert.match(st, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(st, /id="q" type="search"/);
+  assert.match(st, /id="chips"/);
+  assert.match(st, /class="vw"/);
+  assert.match(st, /id="post"/);
+  assert.match(st, /class="chk"/, 'guide steps as a checklist where the caption would be');
+  assert.doesNotMatch(st, /<nav class="tabs"/, 'no bottom tab pill');
 });

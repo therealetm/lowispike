@@ -25,12 +25,12 @@ test('page renders from cards.json and has no generate/post button', () => {
   assert.match(h, /fetch\('cards\.json'/);
   assert.doesNotMatch(h, />\s*(Generieren|Generate|Veröffentlichen|Publish)\s*</i);
 });
-test('For You tool row: Post, Saved, Create content -> studio/, Affiliate -> affiliates/, inside the feed', () => {
+test('For You tool row: Post, My posts, Saved, Create content -> studio/, no Affiliate (removed 21 Nov), inside the feed', () => {
   const h = R('index.html');
   assert.match(h, /'<div class="fy-feed" id="fyFeed">' \+ fyToolsHTML\(\)/);
   assert.match(h, /Content erstellen/);
   assert.match(h, /href="studio\/"/);
-  assert.ok(fs.existsSync(path.join(__dirname, '..', 'affiliates', 'index.html')));
+  assert.doesNotMatch(h.slice(h.indexOf('function fyToolsHTML'), h.indexOf('function renderForYou')), /affiliates\//, 'no Affiliate circle');
 });
 test('For You looks like Instagram: foryou-ig.css loads last, hides the doubled floating buttons, My posts is a circle', () => {
   const h = R('index.html'), css = R('foryou-ig.css');

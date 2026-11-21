@@ -55,3 +55,13 @@ test('Studio is a tool: tiles, one copy button with your profile, copy only repo
   assert.match(st, /Dein Agent erstellt, du postest selbst/);
   assert.match(st, /copy\(text\)\.then\(function \(ok\) \{ if \(!ok\) return fallback\(text\)/);
 });
+test('Studio shows videos: cover tiles, view counts, three ways to remake, no YouTube preview, fallback never empty', () => {
+  const st = R('studio/index.html');
+  assert.match(st, /tiktok-meta/);
+  assert.match(st, /Mich ersetzen: Higgsfield/);
+  assert.match(st, /Mich ersetzen: Agent-Avatar/);
+  assert.match(st, /youtu\\\.\?be/, 'YouTube links get no preview tile');
+  assert.match(st, /class="cv' \+ \(th \? '' : ' nf'\)/, 'designed fallback cover');
+  assert.match(st, /Nur mein eigenes Gesicht und meine eigene Stimme/);
+  assert.match(st, /vor jedem Render|Kosten in Credits/);
+});

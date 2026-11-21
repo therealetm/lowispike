@@ -35,13 +35,21 @@ h1{margin:0;font-size:26px;letter-spacing:.01em;line-height:1.15}
 .chip[aria-pressed=true]{background:var(--acc2);color:#050912;border-color:var(--acc2)}
 .gh{margin:20px 2px 8px;color:var(--muted);font-size:14px;font-weight:600}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.tile{display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-height:168px;padding:14px;border-radius:22px;border:1px solid var(--line2);background:var(--glass);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:var(--ink);font:inherit;text-align:left;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.06);transition:transform .12s,border-color .2s}
+.tile{position:relative;display:block;aspect-ratio:9/14;padding:0;border-radius:22px;border:1px solid var(--line2);background:#0c1426;color:var(--ink);font:inherit;text-align:left;cursor:pointer;overflow:hidden;box-shadow:0 8px 22px rgba(0,0,0,.35);transition:transform .12s,border-color .2s}
 .tile:active{transform:scale(.97);border-color:var(--line)}
-.tile .id{font-size:12px;font-weight:800;letter-spacing:.06em;color:#050912;background:linear-gradient(180deg,var(--acc2),var(--acc));border-radius:8px;padding:3px 8px}
-.tile .hk{flex:1;font-size:16px;font-weight:650;line-height:1.3;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
-.tile .meta{display:flex;flex-wrap:wrap;gap:6px;color:var(--muted);font-size:12.5px}
-.tile .meta span{background:rgba(255,255,255,.07);border-radius:8px;padding:3px 8px}
+.cv{position:absolute;inset:0;background-size:cover;background-position:center}
+.cv.nf{display:flex;align-items:center;justify-content:center;padding:16px 14px 70px}
+.cv.nf q{font-size:15px;font-weight:700;line-height:1.3;text-align:center;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden;quotes:none;text-shadow:0 2px 10px rgba(0,0,0,.45)}
+.tile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(180deg,transparent,rgba(3,6,14,.88));pointer-events:none}
+.tile .pl{position:absolute;top:10px;left:10px;z-index:2;font-size:11.5px;font-weight:800;letter-spacing:.04em;padding:4px 9px;border-radius:999px;background:rgba(5,9,18,.66);color:#fff;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.tile .play{position:absolute;top:50%;left:50%;width:46px;height:46px;margin:-23px 0 0 -23px;z-index:2;border-radius:50%;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);display:grid;place-items:center;color:#fff;font-size:18px;padding-left:3px}
+.tile .st{position:absolute;left:12px;right:12px;bottom:12px;z-index:2}
+.tile .st b{display:block;font-size:22px;line-height:1.1;letter-spacing:-.01em}
+.tile .st small{display:block;color:#cbd6ea;font-size:12.5px;margin-top:2px}
+.tile.txt{aspect-ratio:auto;min-height:150px;padding:14px;background:var(--glass)}
+.tile.txt::after{display:none}
+.tile.txt .id{font-size:12px;font-weight:800;letter-spacing:.06em;color:#050912;background:linear-gradient(180deg,var(--acc2),var(--acc));border-radius:8px;padding:3px 8px}
+.tile.txt .hk{display:block;margin-top:10px;font-size:16px;font-weight:650;line-height:1.3;overflow-wrap:anywhere}
 .empty{padding:28px 12px;text-align:center;color:var(--muted)}
 nav.tabs{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:8;width:min(420px,calc(100% - 28px));display:flex;gap:4px;padding:5px;border-radius:999px;
   background:rgba(10,16,30,.86);border:1px solid var(--line);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);box-shadow:0 10px 30px rgba(0,0,0,.45)}
@@ -50,6 +58,21 @@ nav.tabs button[aria-selected=true]{background:linear-gradient(180deg,var(--acc2
 /* the sheet */
 .shade{position:fixed;inset:0;z-index:20;background:rgba(2,5,12,.66);display:none}
 .shade.on{display:block}
+.cover{position:relative;aspect-ratio:16/10;border-radius:18px;overflow:hidden;background:#0c1426;margin-top:6px}
+.cover .cv{position:absolute;inset:0}
+.stats{display:flex;gap:8px;margin-top:10px}
+.stats div{flex:1;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line2);padding:8px 6px;text-align:center}
+.stats b{display:block;font-size:18px}.stats small{color:var(--muted);font-size:12px}
+.open{display:block;margin-top:10px;min-height:44px;line-height:44px;text-align:center;border-radius:14px;border:1px solid var(--line);color:var(--acc2);text-decoration:none;font-weight:700;font-size:15px}
+h3.sec{margin:18px 2px 8px;font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--acc2)}
+.steps{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:6px;counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.04);font-size:15px;overflow-wrap:anywhere}
+.steps li::before{content:counter(s);flex:none;width:22px;height:22px;border-radius:50%;background:var(--acc2);color:#050912;font-size:12px;font-weight:800;display:grid;place-items:center;margin-top:1px}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;min-height:64px;padding:10px 14px;border-radius:18px;border:1.5px solid var(--line2);background:rgba(255,255,255,.04);color:var(--ink);font:inherit;cursor:pointer}
+.opt[aria-pressed=true]{border-color:var(--acc);background:rgba(124,196,255,.12)}
+.opt .ic{flex:none;font-size:24px}
+.opt b{display:block;font-size:16px}.opt small{display:block;color:var(--muted);font-size:13px;line-height:1.3}
 .sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:21;width:min(680px,100%);max-height:92dvh;display:none;flex-direction:column;background:#0a1224;border:1px solid var(--line);border-bottom:0;border-radius:26px 26px 0 0;box-shadow:0 -20px 50px rgba(0,0,0,.5)}
 .sheet.on{display:flex}
 .sh-top{display:flex;align-items:center;gap:10px;padding:14px 16px 6px}
@@ -67,7 +90,8 @@ nav.tabs button[aria-selected=true]{background:linear-gradient(180deg,var(--acc2
 .me label{display:block;margin:8px 0 4px;color:var(--muted);font-size:13px}
 .me input{width:100%;height:46px;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.06);color:var(--ink);font:inherit;font-size:16px;padding:0 12px}
 .me input::placeholder{color:var(--dim)}
-.lv{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px}
+.lv{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
+.lv[hidden],.hint[hidden]{display:none}
 .lv button{min-height:46px;border-radius:14px;border:1px solid var(--line);background:rgba(159,216,255,.06);color:var(--acc2);font:inherit;font-size:13px;font-weight:700;cursor:pointer;line-height:1.15;padding:4px}
 .lv button[aria-pressed=true]{background:var(--acc2);color:#050912}
 details.more{margin-top:14px;border-top:1px solid var(--line2);padding-top:10px}
@@ -98,7 +122,7 @@ details.more summary{cursor:pointer;min-height:44px;display:flex;align-items:cen
 <div class="wrap">
   <header>
     <a class="back" id="back" href="../" aria-label="Zurück zu LOWiSPIKE">‹</a>
-    <div><h1>Studio</h1><p class="sub" id="sub">Such dir ein Video, das funktioniert.</p></div>
+    <div><h1>Studio</h1><p class="sub" id="sub">Tippe ein Video an.</p></div>
   </header>
   <div class="chips" role="group" aria-label="Wie viel von dir ist im Video?">
     <button class="chip" data-e="" aria-pressed="true">Alle</button>
@@ -122,12 +146,12 @@ details.more summary{cursor:pointer;min-height:44px;display:flex;align-items:cen
 (function () {
   'use strict';
   var D = document, DATA = null, AREA = 'swipe', EFF = '', OPEN = null;
-  var PK = 'lowi.studio.me.v1', ME = {niche: '', voice: '', level: 'E1'};
+  var PK = 'lowi.studio.me.v1', ME = {niche: '', voice: '', level: 'E1', way: 'self'};
   var $ = function (s) { return D.querySelector(s); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
   var LV = {E1: 'gesichtslos (Text auf dem Bild, B-Roll, Bildschirmaufnahme, KI-Bilder)', E2: 'mit Stimme, eigene oder KI-Stimme, kein Gesicht', E3: 'Hände und Dinge im Bild, kein Gesicht', E4: 'mit Gesicht, ich rede selbst in die Kamera'};
   var LVN = {E1: 'Gesichtslos', E2: 'Stimme', E3: 'Hände', E4: 'Gesicht'};
-  try { var s = JSON.parse(localStorage.getItem(PK) || 'null'); if (s && typeof s === 'object') ME = {niche: String(s.niche || ''), voice: String(s.voice || ''), level: LV[s.level] ? s.level : 'E1'}; } catch (e) {}
+  try { var s = JSON.parse(localStorage.getItem(PK) || 'null'); if (s && typeof s === 'object') ME = {niche: String(s.niche || ''), voice: String(s.voice || ''), level: LV[s.level] ? s.level : 'E1', way: /^(self|hf|avatar)$/.test(s.way) ? s.way : 'self'}; } catch (e) {}
   function saveMe() { try { localStorage.setItem(PK, JSON.stringify(ME)); } catch (e) {} }
 
   /* honest copy: success only when the browser confirms it */
@@ -156,23 +180,62 @@ details.more summary{cursor:pointer;min-height:44px;display:flex;align-items:cen
       return n || m;
     });
   }
+  var WAYS = {
+    self: ['🙋', 'Ich selbst', 'Du filmst dich, wie viel von dir zeigst du, bestimmst du.'],
+    hf: ['✨', 'Mich ersetzen: Higgsfield', 'Deine Figur übernimmt die Bewegung des Originals (Motion Control / Genjutsu).'],
+    avatar: ['🤖', 'Mich ersetzen: Agent-Avatar', 'Dein Agent schneidet per Code, mit einem animierten Avatar von dir.']
+  };
+  var WAYTXT = {
+    hf: ['Ich will mich im Video ersetzen: Higgsfield (Motion Control / Genjutsu), die Bewegung des Referenzvideos auf meine eigene Figur übertragen.',
+      ['Schreib zuerst Skript und Szenenliste wie oben (neue Worte für mich, nichts vom Original).', 'Prüf, ob Higgsfield bei dir als Werkzeug (MCP) verbunden ist. Wenn nicht, sag mir, was ich verbinden muss.', 'Frag mich nach meinem Foto oder meiner Figur.', 'Nenn mir vor jedem Render die Kosten in Credits und warte auf mein OK. Nichts ohne OK.', 'Poste nichts. Ich gebe das Video selbst frei und poste selbst.']],
+    avatar: ['Ich will mich im Video durch einen animierten Avatar ersetzen, den mein Agent per Code schneidet (z. B. mit ffmpeg oder Remotion), mit meinem Foto und meiner Stimme.',
+      ['Schreib zuerst Skript und Szenenliste wie oben.', 'Frag mich nach Foto, Stimme (eigene Aufnahme oder KI-Stimme) und Stil des Avatars.', 'Mach einen Plan: pro Satz Szene, Avatar-Pose, Bildschirmtext, B-Roll.', 'Baue das Video lokal per Code. Sag mir vorher, ob etwas Geld kostet (z. B. eine KI-Stimme).', 'Poste nichts. Ich gebe das Video selbst frei und poste selbst.']]
+  };
   function buildPrompt(c) {
     var remix = field(c, /^Remix-Prompt/), agent = field(c, /^Agent-Ansicht/), ref = remix.match(/Siehe (M\d+)/);
     if (ref && byId(ref[1])) { var o = byId(ref[1]); remix = field(o, /^Remix-Prompt/); agent = field(o, /^Agent-Ansicht/); }
-    var p = ['Du bist mein Content-Agent. Du erstellst nur Text und Pläne. Ich poste selbst, du veröffentlichst nichts.', '',
-      'Mein Profil:', '- Marke/Nische: ' + (ME.niche.trim() || '[bitte nachfragen]'), '- Stimme: ' + (ME.voice.trim() || '[bitte nachfragen]'), '- Stufe: ' + ME.level + ' ' + LV[ME.level], '',
+    var p = ['Du bist mein Content-Agent. Du erstellst nur Text, Pläne und (mit meinem OK) Videos. Ich poste selbst, du veröffentlichst nichts.', '',
+      'Mein Profil:', '- Marke/Nische: ' + (ME.niche.trim() || '[bitte nachfragen]'), '- Stimme: ' + (ME.voice.trim() || '[bitte nachfragen]'),
+      ME.way === 'self' ? '- Stufe: ' + ME.level + ' ' + LV[ME.level] : '- ' + WAYTXT[ME.way][0], '',
       'Karte ' + c.id + ' · ' + c.title, 'Aufgabe:', fill(remix)];
     if (agent) p.push('', 'So gehst du vor:', fill(agent));
+    if (ME.way !== 'self') p.push('', 'So baust du es nach:', WAYTXT[ME.way][1].map(function (x, i) { return (i + 1) + '. ' + x; }).join('\n'), 'Nur mein eigenes Gesicht und meine eigene Stimme verwenden, nie die einer anderen Person.');
     p.push('', 'Wichtig: Das Referenzvideo nur analysieren und die Struktur übernehmen, nie fremde Clips oder Texte 1:1 kopieren. Fakten nur mit Beleg. Zahlen in der Karte stammen aus der Quelle und sind nicht neu geprüft.');
     return p.join('\n');
   }
   function cardText(c) { return c.id + ' · ' + c.title + '\nAufwand: ' + c.effort + '\nStatus: ' + c.status + '\n' + c.fields.map(function (f) { return f.label + ':\n' + f.text; }).join('\n') + (c.links.length ? '\nLinks:\n' + c.links.join('\n') : '') + '\n(Quelle: LOWiSPIKE Studio ' + DATA.version + '. Der Agent erstellt, die Person postet selbst.)'; }
 
-  function tileHTML(c) {
-    var lv = Object.keys(levels(c.effort)).sort().map(function (k) { return '<span>' + esc(LVN[k]) + '</span>'; }).join(''), v = viewsOf(c);
-    return '<button class="tile" data-id="' + esc(c.id) + '"><span class="id">' + esc(c.id) + '</span><span class="hk">' + esc(c.area === 'swipe' ? hookOf(c).replace(/^„|“$/g, '') : c.title) + '</span><span class="meta">' + lv + (v ? '<span>' + esc(v) + '</span>' : '') + '</span></button>';
+  /* ---- video previews: the app's own tiktok-meta function gives a stable picture for a TikTok link. When it cannot (it may not know a link), the tile is a designed cover with the hook, never an empty box. */
+  var FN = 'https://vnfwmifmsfecascwaody.supabase.co/functions/v1/tiktok-meta', PUBKEY = 'sb_publishable_iVA3wCYxzfWu2q8SSgieWw_adXbx4Qd', TK = 'lowi.studio.thumb.v1', THUMB = {}, fails = 0, busy = false, queue = [];
+  try { THUMB = JSON.parse(localStorage.getItem(TK) || '{}') || {}; } catch (e) { THUMB = {}; }
+  function saveThumb() { try { localStorage.setItem(TK, JSON.stringify(THUMB)); } catch (e) {} }
+  function videoLink(c) { for (var i = 0; i < c.links.length; i++) { var u = c.links[i]; if (/youtu\.?be/i.test(u)) continue; if (/vm\.tiktok\.com|tiktok\.com\/.+\/video\/|instagram\.com\/(reel|p)\//i.test(u)) return u; } return ''; }
+  function platform(u) { return /instagram/i.test(u) ? 'Instagram' : /tiktok/i.test(u) ? 'TikTok' : ''; }
+  function thumbOf(c) { var u = videoLink(c), t = u && THUMB[u]; return t && t.thumb ? t.thumb : ''; }
+  function stats(c) { var z = field(c, /^Zahlen/), o = {}; z.replace(/([\d.,]+\s?[KM]?)\s*(Views|Saves|Shares)/gi, function (m, n, k) { o[k.toLowerCase()] = n.replace(/\s/g, ''); return m; }); return o; }
+  function hue(id) { var n = 0; for (var i = 0; i < id.length; i++) n = (n * 31 + id.charCodeAt(i)) % 360; return n; }
+  function coverCss(c) { var t = thumbOf(c); return t ? 'background-image:url(&quot;' + esc(t) + '&quot;)' : ''; }
+  function pump() {
+    if (busy || fails >= 3 || !queue.length) return; var c = queue.shift(), u = videoLink(c); if (!u || THUMB[u]) return pump(); busy = true;
+    var ctl = new AbortController(), to = setTimeout(function () { ctl.abort(); }, 15000);
+    fetch(FN, {method: 'POST', signal: ctl.signal, headers: {'Content-Type': 'application/json', apikey: PUBKEY, Authorization: 'Bearer ' + PUBKEY}, body: JSON.stringify({url: u})})
+      .then(function (r) { return r.json(); }).then(function (j) {
+        var th = j && j.ok && j.meta && j.meta.thumb ? j.meta.thumb : ''; THUMB[u] = {thumb: th, t: Date.now()}; if (th) fails = 0; else fails++; saveThumb();
+        var el = D.querySelector('[data-id="' + c.id + '"] .cv'); if (el && th) { el.classList.remove('nf'); el.style.backgroundImage = 'url("' + th + '")'; var tl = el.parentElement; if (tl && !tl.querySelector('.play') && tl.classList.contains('tile')) tl.insertAdjacentHTML('beforeend', '<span class="play" aria-hidden="true">▶</span>'); var q = el.querySelector('q'); if (q) q.remove(); }
+      }).catch(function () { fails++; }).then(function () { clearTimeout(to); busy = false; pump(); });
   }
-  var AREAS = {swipe: ['Vorbilder', 'Tippe ein Video an und bau es für dich um.'], make: ['Bausteine', 'Hooks, Skripte und Abschlüsse zum Kopieren.'], start: ['Start', 'Einmal einrichten, dann läuft es.']};
+  function want(c) { var u = videoLink(c); if (!u) return; var t = THUMB[u]; if (t && (t.thumb || Date.now() - t.t < 6 * 3600e3)) return; queue.push(c); pump(); }
+  var IO = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { IO.unobserve(e.target); var c = byId(e.target.dataset.id); if (c) want(c); } }); }, {rootMargin: '200px'}) : null;
+
+  function tileHTML(c) {
+    if (c.area !== 'swipe') return '<button class="tile txt" data-id="' + esc(c.id) + '"><span class="id">' + esc(c.id) + '</span><span class="hk">' + esc(c.title) + '</span></button>';
+    var st = stats(c), v = st.views, pl = platform(videoLink(c)), th = thumbOf(c), hk = hookOf(c).replace(/^„|“$/g, '');
+    var bg = 'hsl(' + hue(c.id) + ' 46% 24%)', bg2 = 'hsl(' + ((hue(c.id) + 40) % 360) + ' 50% 12%)';
+    return '<button class="tile" data-id="' + esc(c.id) + '"><div class="cv' + (th ? '' : ' nf') + '" style="' + (th ? coverCss(c) : 'background-image:linear-gradient(160deg,' + bg + ',' + bg2 + ')') + '">' + (th ? '' : '<q>' + esc(hk) + '</q>') + '</div>' +
+      (pl ? '<span class="pl">' + esc(pl) + '</span>' + (th ? '<span class="play" aria-hidden="true">▶</span>' : '') : '') +
+      '<span class="st">' + (v ? '<b>' + esc(v) + '</b><small>Aufrufe</small>' : '<b>' + esc(c.id) + '</b><small>Vorlage</small>') + '</span></button>';
+  }
+  var AREAS = {swipe: ['Vorbilder', 'Tippe ein Video an.'], make: ['Bausteine', 'Hooks, Skripte und Abschlüsse zum Kopieren.'], start: ['Start', 'Einmal einrichten, dann läuft es.']};
   function render() {
     var cards = DATA.cards.filter(function (c) { return c.area === AREA && effOk(c); }), h = '', g = null;
     $('#sub').textContent = AREAS[AREA][1];
@@ -184,28 +247,36 @@ details.more summary{cursor:pointer;min-height:44px;display:flex;align-items:cen
     });
     if (cards.length) h += '</div>';
     $('#main').innerHTML = h;
+    if (IO) D.querySelectorAll('.tile:not(.txt)').forEach(function (t) { IO.observe(t); });
   }
   function setArea(a) { AREA = a; D.querySelectorAll('nav.tabs button').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.a === a ? 'true' : 'false'); }); render(); window.scrollTo(0, 0); }
 
   /* ---- the sheet */
   function openCard(id, fromHash) {
     var c = byId(id); if (!c) return; OPEN = c;
-    var hook = hookOf(c), flow = field(c, /^Ablauf/) || field(c, /^Wofür/);
+    var hook = hookOf(c).replace(/^„|“$/g, ''), flow = (field(c, /^Ablauf/) || '').split('→').map(function (x) { return x.trim(); }).filter(Boolean);
     var more = c.fields.map(function (f, i) {
       var cp = /^(Kopier das|Remix-Prompt|Agent-Ansicht)/.test(f.label);
       return '<div class="f' + (cp ? ' copy' : '') + '"><h4>' + esc(f.label) + '</h4><div class="t">' + esc(f.text) + '</div>' + (cp ? '<button class="cp2" data-i="' + i + '">Nur diesen Text kopieren</button>' : '') + '</div>';
     }).join('');
-    var links = c.links.length ? '<div class="f links"><h4>Original ansehen (öffnet die Plattform)</h4>' + c.links.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + esc(u) + '</a>'; }).join('') + '</div>' : '';
+    var links = c.links.length ? '<div class="f links"><h4>Links (öffnen die Originalplattform)</h4>' + c.links.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + esc(u) + '</a>'; }).join('') + '</div>' : '';
+    var vl = videoLink(c), st = stats(c), th = thumbOf(c), isV = c.area === 'swipe';
+    var cover = isV ? '<div class="cover"><div class="cv' + (th ? '' : ' nf') + '" style="' + (th ? coverCss(c) : 'background-image:linear-gradient(160deg,hsl(' + hue(c.id) + ' 46% 24%),hsl(' + ((hue(c.id) + 40) % 360) + ' 50% 12%))') + '">' + (th ? '' : '<q>' + esc(hook) + '</q>') + '</div></div>' +
+      ((st.views || st.saves || st.shares) ? '<div class="stats">' + [['views', 'Aufrufe'], ['saves', 'Gespeichert'], ['shares', 'Geteilt']].filter(function (k) { return st[k[0]]; }).map(function (k) { return '<div><b>' + esc(st[k[0]]) + '</b><small>' + k[1] + '</small></div>'; }).join('') + '</div><p class="hint" style="text-align:left">Zahlen aus der Quelle, nicht neu geprüft.</p>' : '') +
+      (vl ? '<a class="open" href="' + esc(vl) + '" target="_blank" rel="noopener noreferrer">Original ansehen ↗</a>' : '') : '';
+    var steps = flow.length > 1 ? '<ol class="steps">' + flow.slice(0, 6).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' : '';
+    var ways = '<h3 class="sec">So baust du es nach</h3><div class="opts" id="ways">' + ['self', 'hf', 'avatar'].map(function (k) { return '<button class="opt" data-w="' + k + '" aria-pressed="' + (ME.way === k) + '"><span class="ic">' + WAYS[k][0] + '</span><span><b>' + esc(WAYS[k][1]) + '</b><small>' + esc(WAYS[k][2]) + '</small></span></button>'; }).join('') + '</div>' +
+      '<div class="lv" id="lv"' + (ME.way === 'self' ? '' : ' hidden') + '>' + ['E1', 'E2', 'E3', 'E4'].map(function (k) { return '<button data-l="' + k + '" aria-pressed="' + (ME.level === k) + '">' + LVN[k] + '</button>'; }).join('') + '</div>' +
+      '<p class="hint" id="wayhint" style="text-align:left"' + (ME.way === 'self' ? ' hidden' : '') + '>Noch nicht von uns getestet. Dein Agent fragt vor jedem Schritt, der Geld kostet.</p>';
     $('#sheet').innerHTML = '<div class="sh-top"><span class="id">' + esc(c.id) + '</span><b>' + esc(c.title) + '</b><button class="x" id="sx" aria-label="Schließen">×</button></div>' +
-      '<div class="sh-body"><div class="hook">' + esc(hook) + '</div>' + (flow && flow !== hook ? '<p class="flow">' + esc(flow) + '</p>' : '') +
+      '<div class="sh-body">' + cover + '<h3 class="sec">So wird es kopiert</h3><div class="hook">' + esc(hook) + '</div>' + steps + ways +
+      '<div class="me"><label for="mn">Deine Marke oder Nische</label><input id="mn" autocomplete="off" placeholder="z. B. Insulinresistenz, Frauen ab 35" value="' + esc(ME.niche) + '"><label for="mv">Deine Stimme</label><input id="mv" autocomplete="off" placeholder="z. B. locker, ruhig, frech" value="' + esc(ME.voice) + '"></div>' +
       '<div class="tags"><span class="tag">' + esc(c.effort) + '</span><span class="tag st">' + esc(c.status) + '</span></div>' +
-      '<div class="me"><h3>Für wen soll es sein?</h3><label for="mn">Deine Marke oder Nische</label><input id="mn" autocomplete="off" placeholder="z. B. Insulinresistenz, Frauen ab 35" value="' + esc(ME.niche) + '">' +
-      '<label for="mv">Deine Stimme</label><input id="mv" autocomplete="off" placeholder="z. B. locker, ruhig, frech" value="' + esc(ME.voice) + '">' +
-      '<label>Wie viel von dir ist im Video?</label><div class="lv" id="lv">' + ['E1', 'E2', 'E3', 'E4'].map(function (k) { return '<button data-l="' + k + '" aria-pressed="' + (ME.level === k) + '">' + LVN[k] + '</button>'; }).join('') + '</div></div>' +
       '<details class="more"><summary>Ganze Karte ansehen</summary>' + more + links + '<button class="cp2" data-i="all">Ganze Karte kopieren</button></details></div>' +
       '<div class="sh-bar"><button class="go" id="go">Für meinen Agenten kopieren</button><p class="hint">Dein Agent erstellt, du postest selbst. Studio erzeugt und veröffentlicht nichts.</p></div>';
     $('#shade').classList.add('on'); $('#sheet').classList.add('on'); D.body.style.overflow = 'hidden';
     if (!fromHash) { try { history.pushState(null, '', '#' + id); } catch (e) { location.hash = id; } }
+    if (isV) want(c);
   }
   function closeCard(fromHash) {
     OPEN = null; $('#shade').classList.remove('on'); $('#sheet').classList.remove('on'); D.body.style.overflow = '';
@@ -217,6 +288,7 @@ details.more summary{cursor:pointer;min-height:44px;display:flex;align-items:cen
     if (t.id === 'sx') return closeCard();
     if (t.dataset.a) return setArea(t.dataset.a);
     if (t.hasAttribute('data-e')) { EFF = t.dataset.e; D.querySelectorAll('.chip').forEach(function (b) { b.setAttribute('aria-pressed', b === t ? 'true' : 'false'); }); return render(); }
+    if (t.dataset.w) { ME.way = t.dataset.w; saveMe(); D.querySelectorAll('#ways .opt').forEach(function (b) { b.setAttribute('aria-pressed', b === t ? 'true' : 'false'); }); var lv = $('#lv'), wh = $('#wayhint'); if (lv) lv.hidden = ME.way !== 'self'; if (wh) wh.hidden = ME.way === 'self'; return; }
     if (t.dataset.l) { ME.level = t.dataset.l; saveMe(); D.querySelectorAll('#lv button').forEach(function (b) { b.setAttribute('aria-pressed', b === t ? 'true' : 'false'); }); return; }
     var text = null, btn = t;
     if (t.id === 'go' && OPEN) text = buildPrompt(OPEN);

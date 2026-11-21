@@ -37,8 +37,9 @@ test('Saved holds every saved post wherever it came from, other members\' too, o
     const off = load({ window: { LOWI_CLOUD: { live: () => false, posts: () => [] }, LowiForYou: { botPosts: () => [] } } });
     assert.deepEqual(Array.from(off.fySavedAll(), p => p.id), ['d1', 'm1', 'k1'], 'offline: the last copy on this phone');
     const ls = fnSrc(html, 'function listSheet(kind)');
-    assert.match(ls, /const all = kind === "mine" \? DEMO\.concat\(fyMineAll\(\), window\.LowiForYou \? LowiForYou\.botPosts\(\) : \[\]\) : fySavedAll\(\);/);
-    assert.match(ls, /all\.filter\(p => \(T\.saved \|\| \{\}\)\[p\.id\]\)/, 'only what is saved');
+    /* 21 Nov 2026: My posts became an Instagram-style profile with two tabs; the same sources feed them */
+    assert.match(ls, /const mineAll = DEMO\.concat\(fyMineAll\(\), window\.LowiForYou \? LowiForYou\.botPosts\(\) : \[\]\)\.filter\(p => p\.me\)/);
+    assert.match(ls, /const savedAll = fySavedAll\(\)\.filter\(p => \(T\.saved \|\| \{\}\)\[p\.id\]\)/, 'only what is saved');
 });
 
 /* test changed 8 Nov 2026 (Emmanuel: saved carousels need "einen Ort, wo die das dann halt auch wieder öffnen können"): the button is
@@ -48,21 +49,23 @@ test('the Saved button: always there, with its word, and its count once somethin
     assert.equal(load({ T: { posts: [], saved: { a: 1, b: 1 } } }).fySavedBtnHTML(), '<button class="fy-svd" data-tr="list-saved" aria-label="Saved, 2"><svg/><span>Saved</span><b>2</b></button>');
     assert.match(html, /'<div class="fy-tops"><button class="fy-mine" data-tr="list-mine" aria-label="' \+ esc\(mineLbl\) \+ '">' \+ esc\(mineLbl\) \+ \(mineN \? ' <b>' \+ mineN \+ '<\/b>' : ''\) \+ '<\/button>' \+ fySavedBtnHTML\(\) \+ '<\/div>'/, 'under My posts');
     assert.match(fnSrc(html, 'function fySavedBtnPaint()'), /insertAdjacentHTML\("beforeend", h\)/);
-    assert.match(html, /h\.toast\(on \? "Saved\. Find it under the bookmark at the top\." : "Removed from Saved"\);\n      fySavedBtnPaint\(\); break; \}/, 'saving updates the button at once');
+    assert.match(html, /h\.toast\(fyT\(on \? "Saved\. Find it in My posts, under the bookmark\." : "Removed from Saved"\)\);\n      fySavedBtnPaint\(\); break; \}/, 'saving updates the button at once (21 Nov 2026: Saved lives in My posts)');
     assert.match(html, /\.fy-tops\{position:absolute;top:12px;right:12px;z-index:6;display:flex;flex-direction:column;align-items:flex-end;gap:8px\}/, 'stacked: no language pushes it into + Post');
     assert.match(html, /\.fy-tops>\.fy-mine\{position:static\}/);
     assert.match(html, /\.fy-svd\{display:inline-flex;align-items:center;gap:5px;height:40px;min-width:44px;/);
 });
 
-test('a saved post opens where it is in For You; a carousel row shows its photo count', () => {
+test('a saved post opens where it is in For You; a carousel tile shows it is a carousel', () => {
     const ls = fnSrc(html, 'function listSheet(kind)');
-    assert.match(ls, /\(kind === "mine" \|\| gone \? '' : ' data-tr="open-saved" data-id="' \+ p\.id \+ '" role="button" tabindex="0"'\)/);
-    assert.match(ls, /'<span class="fy-lcar" aria-label="' \+ nSl \+ ' photos">' \+ nSl \+ '<\/span>'/);
+    /* 21 Nov 2026: grid tiles (Instagram-style profile) instead of rows */
+    assert.match(ls, /const act = kind === "mine" \? ' data-tr="post-menu" data-id="' \+ p\.id \+ '"' : gone \? '' : ' data-tr="open-saved" data-id="' \+ p\.id \+ '"';/);
+    assert.match(ls, /nSl > 1 \? '<span class="fy-gti" aria-hidden="true">❐<\/span>'/);
+    assert.match(ls, /nSl > 1 \? " · " \+ nSl \+ " photos" : ""/, 'the photo count is spoken');
     assert.match(html, /case "open-saved": \{ if \(e\.target\.closest\('\.fy-lbtn'\)\) break; h\.closeSheet\(\);/);
     assert.match(html, /if \(at\(\)\) return; showFeed\(\); setTimeout\(at, 500\);/);
     assert.match(ls, /gone = !!\(inFeed && !inFeed\.has\(p\.id\)\)/, 'a saved post that left For You');
-    assert.match(ls, /\(kind === "mine" \|\| gone \? '' : ' data-tr="open-saved"/, 'does not open');
-    assert.match(ls, /' · <span class="fy-gone">Not in For You any more<\/span>'/, 'and says so (plain text, no new spoken sentence)');
+    assert.match(ls, /gone \? '' : ' data-tr="open-saved"/, 'does not open');
+    assert.match(ls, /gone \? '<span class="fy-gst">' \+ esc\(fyT\("Not in For You any more"\)\) \+ '<\/span>'/, 'and says so');
 });
 
 test('the new words exist in German and Spanish', () => {

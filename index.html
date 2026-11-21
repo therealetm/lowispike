@@ -1836,6 +1836,24 @@ html[data-lay=desktop] .fy-rail,html[data-lay=desktop] .fy-meta{bottom:28px}
 .fy-prow b{flex:1}
 .fy-prow:last-of-type{border-bottom:0}
 .fy-lrow{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2)}
+#fyProf{margin:0 -18px}
+.fy-phead{display:flex;align-items:center;gap:18px;padding:4px 18px 14px}
+.fy-phead>:first-child{flex:none}
+.fy-pmeta{flex:1;min-width:0}.fy-pmeta>b{display:block;font-size:18px;line-height:1.2;overflow-wrap:anywhere}
+.fy-pnums{display:flex;gap:22px;margin-top:6px}.fy-pnums span{display:flex;flex-direction:column;font-size:13px;color:var(--muted)}.fy-pnums span b{font-size:18px;color:var(--text,#fff)}
+.fy-ptabs{display:flex;border-bottom:1px solid var(--line2)}
+.fy-ptabs button{flex:1;height:48px;display:grid;place-items:center;border:0;background:none;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}
+.fy-ptabs button svg{width:24px;height:24px;fill:currentColor}
+.fy-ptabs button[aria-selected=true]{color:var(--text,#fff);border-bottom-color:var(--text,#fff)}
+.fy-pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px}
+.fy-gt{position:relative;aspect-ratio:3/4;overflow:hidden;background:#0c1426;cursor:pointer}
+.fy-gt>.fy-bg,.fy-gt>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.fy-gt.gone>.fy-bg,.fy-gt.gone>img{opacity:.35}
+.fy-gti{position:absolute;top:6px;right:8px;color:#fff;font-size:16px;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.fy-gsv{position:absolute!important;top:2px;left:2px;width:40px;height:40px;display:grid;place-items:center;color:#fff;background:none;border:0}
+.fy-gsv svg{width:20px;height:20px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6))}
+.fy-gst{position:absolute;left:6px;right:6px;bottom:6px;font-size:11px;font-weight:700;line-height:1.2;padding:3px 6px;border-radius:7px;background:rgba(5,9,18,.72);color:#fff;text-align:center}
+.fy-pempty{padding:36px 18px;text-align:center;color:var(--muted)}
 .fy-lth{position:relative;flex:none;width:52px;height:52px;border-radius:12px;overflow:hidden}
 .fy-lcap{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .fy-lbtn{flex:none;width:36px;height:36px;display:grid;place-items:center;color:var(--gold,#f5c84b)}
@@ -5251,7 +5269,6 @@ function fyToolsHTML(){ const n = Object.keys(T.saved || {}).length;
   return '<nav class="fy-tools" aria-label="' + esc(L[2]) + '">' +
     it('b data-r3f="post" data-sfx="open"', '+', L[0]) +
     it('b data-tr="list-mine"', '\u25A6' + num(mine), L[4], L[4] + (mine ? ", " + mine : "")) +
-    it('b data-tr="list-saved"', (typeof FIC !== "undefined" && FIC.save) || '\u{1F516}', L[1], L[1] + (n ? ", " + n : "")) +
     it('a href="studio/"', '\u270E', L[2]) + '</nav>'; }
 /* 21 Nov 2026 (Emmanuel: "When you open the For You page, that new bar isn't showing ... When they open it, it should be
    there."): every time For You comes into view (its rooms frame loses [hidden], or the pane is moved in), the feed starts at
@@ -5317,19 +5334,35 @@ function fyMineAll(){
 function fySavedAll(){ const CL = window.LOWI_CLOUD, cloud = CL && CL.live && CL.live() ? CL.posts() : fyCacheRead(), seen = new Set(), out = [];
   DEMO.concat(T.posts.map(p => Object.assign({me:true}, p)), cloud || [], window.LowiForYou ? LowiForYou.botPosts() : []).forEach(p => { if (p && p.id && !seen.has(p.id)) { seen.add(p.id); out.push(p); } });
   return out; }
-function listSheet(kind){ const h = H(); load(); const all = kind === "mine" ? DEMO.concat(fyMineAll(), window.LowiForYou ? LowiForYou.botPosts() : []) : fySavedAll();
-  const list = (kind === "mine" ? all.filter(p => p.me) : all.filter(p => (T.saved || {})[p.id])).sort((a, b) => b.ts - a.ts);
-  /* Nov 6 2026: a saved post that left For You (deleted by its author, hidden or blocked) says so in its row and does not open */
-  let inFeed = null; if (kind !== "mine") { try { inFeed = new Set(feed().map(p => p.id)); } catch(e){ inFeed = null; } }
-  /* 25 Oct: each own post says where it is (In For You / Not in For You yet / Only you); posts the old food rule kept back can be shared in one tap */
+/* 21 Nov 2026 (Emmanuel, with an Instagram profile screenshot: "My posts should be like instagram, where they see things they
+   posted & can switch from my own to saved from others"): one profile sheet. Avatar, name and counts on top, two tabs (your own
+   posts, posts from others you saved), then a 3-column grid. Your own tile opens its menu (edit, share, delete); a saved tile jumps
+   to the post in For You; a saved post that left For You is dimmed and says so. The old list rows and the separate Saved circle
+   are gone. Kind "mine" or "saved" picks the tab. */
+function listSheet(kind){ const h = H(); load(); kind = kind === "saved" ? "saved" : "mine";
+  const mineAll = DEMO.concat(fyMineAll(), window.LowiForYou ? LowiForYou.botPosts() : []).filter(p => p.me).sort((a, b) => b.ts - a.ts);
+  const savedAll = fySavedAll().filter(p => (T.saved || {})[p.id]).sort((a, b) => b.ts - a.ts);
+  const list = kind === "mine" ? mineAll : savedAll;
+  let inFeed = null; if (kind === "saved") { try { inFeed = new Set(feed().map(p => p.id)); } catch(e){ inFeed = null; } }
   const F = window.LowiForYou, fn = (k, en, v) => (F ? F.note(k, v) : en), held = kind === "mine" ? heldPosts() : [];
   const where = p => p.vis !== "tribe" ? fn("onlyYou", "Only you") : (F && F.held(p)) ? fn("heldTag", "Not in For You yet") : p.pend ? fn("sending", "Sharing…") : fn("inFy", "In For You");
-  const banner = held.length ? '<div class="fy-held"><p class="small">' + esc(held.length === 1 ? fn("heldOne", "") : fn("heldWhy", "", {n: held.length})) + '</p><button class="btn primary sm" data-tr="share-held">' + esc(held.length === 1 ? fn("shareNow", "Share to For You") : fn("shareAll", "Share all", {n: held.length})) + '</button></div>' : "";
-  h.openSheet('<div class="h2" style="margin-bottom:10px">' + (kind === "mine" ? "My posts" : "Saved") + '</div>' + banner + (list.length ? list.map(p => { const d = describe(p.meta), rr = p.rec && postRecipe(p.rec), cap = p.cap || d.line || (rr && rr.n) || PLAT[p.plat || "web"].n;
-    const nSl = window.LowiCarousel ? (LowiCarousel.slidesOf(p) || []).length : 0, gone = !!(inFeed && !inFeed.has(p.id));
-    return '<div class="fy-lrow' + (gone ? ' gone' : '') + '"' + (kind === "mine" || gone ? '' : ' data-tr="open-saved" data-id="' + p.id + '" role="button" tabindex="0"') + '><div class="fy-lth">' + fyBg(p, true) + (nSl ? '<span class="fy-lcar" aria-label="' + nSl + ' photos">' + nSl + '</span>' : '') + '</div><div style="flex:1;min-width:0"><div class="small fy-lcap">' + esc(cap) + '</div><div class="tiny dim">' + (p.me ? (p.vid ? "Video · " : "") + '<span class="fy-where' + (p.vis === "tribe" && F && F.held(p) ? ' held' : '') + '">' + esc(where(p)) + '</span>' : esc(p.who)) + " · " + ago(p.ts) + (inFeed && !inFeed.has(p.id) ? ' · <span class="fy-gone">Not in For You any more</span>' : '') + '</div></div>' +
-      (kind === "mine" ? '<button class="fy-lbtn" data-tr="post-menu" data-id="' + p.id + '" aria-label="More">' + IC.more + '</button>' : '<button class="fy-lbtn" data-tr="save" data-id="' + p.id + '" aria-label="Remove">' + FIC.save + '</button>') + '</div>'; }).join("")
-    : '<div class="small muted">' + (kind === "mine" ? "Nothing yet. Your posts show up here." : "Tap Save on any post in For You.") + '</div>')); }
+  const inFyWord = fn("inFy", "In For You");
+  const banner = held.length ? '<div class="fy-held"><p class="small">' + esc(held.length === 1 ? fn("heldOne", "") : fn("heldWhy", "", {n: held.length})) + '</p><button class="btn primary sm" data-tr="share-held">' + esc(held.length === 1 ? fn("shareNow", "Share to For You") : fn("shareAll", "Share all", {n: held.length})) + '</button></div>' : '';
+  const u = h.user() || {}, nm = u.name || fyT("You");
+  const tile = p => { const d = describe(p.meta), rr = p.rec && postRecipe(p.rec), cap = p.cap || d.line || (rr && rr.n) || PLAT[p.plat || "web"].n;
+    const nSl = window.LowiCarousel ? (LowiCarousel.slidesOf(p) || []).length : 0, gone = !!(inFeed && !inFeed.has(p.id)), wh = kind === "mine" ? where(p) : "", w = wh === inFyWord ? "" : wh;
+    const act = kind === "mine" ? ' data-tr="post-menu" data-id="' + p.id + '"' : gone ? '' : ' data-tr="open-saved" data-id="' + p.id + '"';
+    return '<div class="fy-gt' + (gone ? ' gone' : '') + '"' + act + (act ? ' role="button" tabindex="0"' : '') + ' aria-label="' + esc(cap + (wh ? " · " + wh : "") + (nSl > 1 ? " · " + nSl + " photos" : "")) + '">' + fyBg(p, true) +
+      (nSl > 1 ? '<span class="fy-gti" aria-hidden="true">❐</span>' : p.vid ? '<span class="fy-gti" aria-hidden="true">▶</span>' : '') +
+      (kind === "saved" ? '<button class="fy-lbtn fy-gsv" data-tr="save" data-id="' + p.id + '" aria-label="' + esc(fyT("Remove from Saved")) + '">' + FIC.save + '</button>' : '') +
+      (w ? '<span class="fy-gst">' + esc(w) + '</span>' : gone ? '<span class="fy-gst">' + esc(fyT("Not in For You any more")) + '</span>' : '') + '</div>'; };
+  const empty = kind === "mine" ? fyT("Nothing yet. Your posts show up here.") : fyT("Nothing saved yet. Tap the bookmark on any post in For You.");
+  const tabs = '<div class="fy-ptabs" role="tablist"><button role="tab" data-tr="list-tab" data-k="mine" aria-selected="' + (kind === "mine") + '" aria-label="' + esc(fyT("My posts")) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h4v4H4zM10 4h4v4h-4zM16 4h4v4h-4zM4 10h4v4H4zM10 10h4v4h-4zM16 10h4v4h-4zM4 16h4v4H4zM10 16h4v4h-4zM16 16h4v4h-4z"/></svg></button>' +
+    '<button role="tab" data-tr="list-tab" data-k="saved" aria-selected="' + (kind === "saved") + '" aria-label="' + esc(fyT("Saved")) + '">' + FIC.save + '</button></div>';
+  const html = '<div id="fyProf"><div class="fy-phead">' + h.avatar(76, u.name, u.avatar) + '<div class="fy-pmeta"><b>' + esc(nm) + '</b><div class="fy-pnums"><span><b>' + mineAll.length + '</b>' + esc(fyT("posts")) + '</span><span><b>' + savedAll.length + '</b>' + esc(fyT("saved")) + '</span></div></div></div>' +
+    tabs + banner + (list.length ? '<div class="fy-pgrid">' + list.map(tile).join("") + '</div>' : '<div class="fy-pempty">' + esc(empty) + '</div>') + '</div>';
+  const cur = $("#fyProf"); if (cur) { cur.outerHTML = html; return; }
+  h.openSheet(html); }
 
 /* ---------- composer ---------- */
 let C = null, fetchTok = 0, debT;
@@ -5520,7 +5553,7 @@ document.addEventListener("click", e => {
     case "filter": T.filter = b.dataset.f; save(); rerender(); break;
     case "save": { T.saved = T.saved || {}; if (T.saved[id]) delete T.saved[id]; else T.saved[id] = 1; save(); const on = !!T.saved[id];
       $$('[data-tr="save"][data-id="' + id + '"]').forEach(x => { x.classList.toggle("on", on); const sp = x.querySelector("span"); if (sp) sp.textContent = fyT(on ? "Saved" : "Save"); });
-      if (b.classList.contains("fy-lbtn")) { const r = b.closest(".fy-lrow"); if (r) r.remove(); } else h.toast(on ? "Saved. Find it under the bookmark at the top." : "Removed from Saved");
+      if (b.classList.contains("fy-lbtn")) { if ($("#fyProf")) listSheet("saved"); else { const r = b.closest(".fy-lrow"); if (r) r.remove(); } } else h.toast(fyT(on ? "Saved. Find it in My posts, under the bookmark." : "Removed from Saved"));
       fySavedBtnPaint(); break; }
     /* Nov 6 2026: a saved post opens where it is in For You */
     case "open-saved": { if (e.target.closest('.fy-lbtn')) break; h.closeSheet(); const at = () => { const el = $('.fy-slide[data-id="' + id + '"]'), f = $("#fyFeed"); if (el && f) { f.scrollTop = el.offsetTop; return true; } return false; };
@@ -5530,6 +5563,7 @@ document.addEventListener("click", e => {
       if (navigator.share && !p.demo) { navigator.share({text:txt}).catch(() => {}); } else { try { navigator.clipboard.writeText(txt).then(() => h.toast("Copied to share"), () => h.toast("Copied to share")); } catch(err){ h.toast("Copied to share"); } } break; }
     case "list-mine": listSheet("mine"); break;
     case "list-saved": listSheet("saved"); break;
+    case "list-tab": listSheet(b.dataset.k); break;
     case "like": { if (T.likes[id]) delete T.likes[id]; else T.likes[id] = 1; save(); const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); b.classList.toggle("on", !!T.likes[id]); b.querySelector("span").textContent = ((p && p.likes) || 0) + (T.likes[id] ? 1 : 0); if (T.likes[id]) { b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); } if (window.LOWI_CLOUD) LOWI_CLOUD.like(id, !!T.likes[id]); break; }
     case "open": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p || !p.url) break; if (p.demo) { h.toast("Sample post. Real videos open on the creator's own page."); break; }
       /* 25 Oct (Emmanuel): another platform's video never plays inside LOWiSPIKE; the original opens there, so the creator gets the view */
@@ -9067,6 +9101,11 @@ const T = [
   ["Save", "Merken", "Guardar"], ["Saved", "Gemerkt", "Guardado"], ["Share", "Teilen", "Compartir"], ["Everyone", "Alle", "Todos"],
   ["one room, newest at the bottom", "ein Raum, Neuestes unten", "una sala, lo nuevo abajo"], ["Message everyone", "Nachricht an alle", "Mensaje para todos"],
   /* button sweep 16:20: For You rail buttons for screen readers */ ["Like", "Gefällt mir", "Me gusta"], ["Comment", "Kommentieren", "Comentar"], ["More", "Mehr", "Más"],
+  /* 21 Nov 2026 My posts profile */
+  ["posts", "Beiträge", "publicaciones"], ["saved", "gespeichert", "guardados"], ["My posts", "Meine Beiträge", "Mis posts"], ["Remove from Saved", "Aus Gespeichert entfernen", "Quitar de guardados"],
+  ["Nothing yet. Your posts show up here.", "Noch nichts. Deine Beiträge erscheinen hier.", "Aún nada. Tus posts aparecen aquí."],
+  ["Nothing saved yet. Tap the bookmark on any post in For You.", "Noch nichts gespeichert. Tippe in Für dich bei einem Beitrag auf das Lesezeichen.", "Aún no has guardado nada. Toca el marcador en cualquier post de Para ti."],
+  ["Saved. Find it in My posts, under the bookmark.", "Gespeichert. Du findest es in Meine Beiträge unter dem Lesezeichen.", "Guardado. Lo encuentras en Mis posts, bajo el marcador."],
   ["That's everyone", "Das war's", "Eso es todo"], ["Newest first. No algorithm.", "Neueste zuerst. Kein Algorithmus.", "Lo más nuevo primero. Sin algoritmo."], ["Post something", "Etwas posten", "Publica algo"],
   ["Saved to Profile", "Im Profil gemerkt", "Guardado en tu perfil"], ["Saved. Find it under the bookmark at the top.", "Gespeichert. Du findest es oben beim Lesezeichen.", "Guardado. Lo encuentras arriba, en el marcador."], ["Not in For You any more", "Nicht mehr in Für dich", "Ya no está en Para ti"], ["Removed from Saved", "Aus Gemerkt entfernt", "Quitado de guardados"], ["Copied to share", "Zum Teilen kopiert", "Copiado para compartir"],
   ["For You and Chat show sample members until launch.", "Für dich und Chat zeigen bis zum Start Beispiel-Mitglieder.", "Para ti y Chat muestran miembros de ejemplo hasta el lanzamiento."],

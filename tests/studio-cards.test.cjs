@@ -82,3 +82,14 @@ test('New post: one way out, and the circles open only on a real tap', () => {
   assert.match(h, /function fyTapIntent\(\)/);
   assert.ok(h.includes('e.detail === 0) return;'), 'keyboard activation always works');
 });
+test('My posts is an Instagram-style profile with two tabs, and the Saved circle is gone', () => {
+  const h = R('index.html');
+  const row = h.slice(h.indexOf('function fyToolsHTML'), h.indexOf('function renderForYou'));
+  assert.doesNotMatch(row, /data-tr="list-saved"/, 'no Saved circle in the row');
+  assert.match(row, /data-tr="list-mine"/);
+  assert.match(h, /id="fyProf"/);
+  assert.match(h, /data-tr="list-tab" data-k="mine"/);
+  assert.match(h, /data-tr="list-tab" data-k="saved"/);
+  assert.match(h, /case "list-tab": listSheet\(b\.dataset\.k\); break;/);
+  assert.match(h, /\["posts", "Beiträge", "publicaciones"\]/);
+});

@@ -1,0 +1,1501 @@
+{
+ "title": "LOWiSPIKE Studio: Karten",
+ "version": "2026-11-20.1",
+ "intro": "Studio ist kein Kurs zum Lesen. Jede Karte hier ist etwas, das du oder dein Agent sofort kopieren und benutzen kannst: etwas nehmen, das schon funktioniert, für deine Marke, Nische und Stimme umbauen, posten. Gesichtslos (E1) kommt immer zuerst, alles darüber ist eine Wahl, keine Pflicht.",
+ "stand": "Stand: 20. November 2026, erste Runde aus „Emans Wissensbasis“.",
+ "legend": {
+  "Aufwand": "E1 Gesichtslos (Text auf dem Bild, B-Roll, Bildschirmaufnahme, KI-Bilder wie Axiom) · E2 Stimme (eigene oder KI-Stimme) · E3 Hände und Dinge im Bild, kein Gesicht · E4 Gesicht (in die Kamera reden, essen und reden, Reaktionen)",
+  "Bereich": "Start · Make · Swipe",
+  "Status": "Getestet · Nicht test-run · Geplant",
+  "Quellen-Kürzel": "[PB] Playbook „Stop inventing content ideas“ (Daily Selling OS) · [ESM] Notion „Effizienz-SM-Methode“ · [CAA] Creator Agency Autopilot · [VSF] Viral video swipe file (14 Videos) · [VAULT] The Vault File · [EMAN] Emans eigene Projekte",
+  "Wichtig": "Der Agent erstellt die Inhalte. Posten tust du selbst. Studio postet, plant oder veröffentlicht nichts von allein."
+ },
+ "swipeNote": "Zahlen aus den Quellen, nicht neu geprüft. Die Videos selbst habe ich nicht angeschaut: Hook und Ablauf stammen aus den Transkripten und Analysen in den Quellen. Jede Karte hat im Remix-Prompt eine gesichtslose Variante.",
+ "groupNotes": {
+  "Creator nach Format (The Vault File)": "Deine Gruppen, unverändert. Follower-Zahlen von TikTok am 19. November 2026. Die Videos habe ich nicht angeschaut, das Format ist deine Einordnung."
+ },
+ "omitted": [
+  "MrBeast-Geschichte, „TikTok ist ein Casino“, Reflexionsfragen: Motivation, nichts zum Kopieren. Bleibt in der Wissensbasis.",
+  "Algorithmus-Stufen bis Stufe 8 und Ablauf-Grafik: Theorie, laut Kurs selbst „nur als Beispiel“.",
+  "Creator Agency Autopilot: Betriebsmodi, Befehle, Verhandlungsmatrix, Mail-Vorlagen: eigenes Produkt mit eigener Anleitung, hier nur die Preisformel (M14).",
+  "Werkzeugliste: nur Namen, keine Anleitung.",
+  "Sechs Playbook-Links ohne Transkript: noch kein Muster dokumentiert.",
+  "Acht Referenz-Analysen der Axiom-Videos: für Videos gemacht, noch nicht als Swipe-Karten eingeordnet."
+ ],
+ "originals": "Deine Originale bleiben vollständig in „Emans Wissensbasis“.",
+ "cards": [
+  {
+   "id": "S1",
+   "area": "start",
+   "title": "Die tägliche Mission: nicht erfinden, klauen und umbauen",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Jeden Tag ein Video, ohne neue Idee suchen zu müssen."
+    },
+    {
+     "label": "Kopier das",
+     "text": "1. Watch one proven video.\n2. Steal the structure.\n3. Record today’s proof.\n4. Give people a way to buy.\n5. Post the episode.\n„You do not need another idea. Finish this episode and come back tomorrow.“\n„Copy like a thief. Build like Artist.“"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Hier ist ein Video, das in meiner Nische funktioniert: [Link oder Beschreibung]. Ich bin [Marke/Nische], meine Stimme ist [locker/ruhig/frech]. Nimm nur die Struktur (Einstieg, Ablauf, Schluss), nicht den Inhalt, und schreib mir daraus mein Video für heute. Gesichtslos: Text auf dem Bild plus B-Roll.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Frag nach einem Referenzvideo oder nimm eine Karte aus der Swipe-Bibliothek.\n2. Schreib die Struktur in Beats auf: Einstieg, Identität, Ziel, Beweis, Schluss.\n3. Fülle jeden Beat mit dem Angebot und der Nische der Person.\n4. Gib Bildschirmtext pro Beat und einen Schluss mit Kauf- oder Folge-Möglichkeit aus.\n5. Erinnere: Die Person postet selbst."
+    },
+    {
+     "label": "Quelle",
+     "text": "[PB] [ESM] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "S2",
+   "area": "start",
+   "title": "Wähle deine Stufe auf der Aufwand-Leiter",
+   "effort": "E1 bis E4",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Entscheiden, wie viel von dir im Video sein soll, bevor du anfängst."
+    },
+    {
+     "label": "Kopier das",
+     "text": "Ich starte mit: E1 Gesichtslos / E2 Stimme / E3 Hände / E4 Gesicht\nMein Format bleibt gleich, nur die Stufe ändert sich. Jede Swipe-Karte unten hat eine gesichtslose Variante im Remix-Prompt."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Diese Swipe-Karte ist E4 (Gesicht). Bau sie für mich auf [E1/E2/E3] um: Was ersetzt das Gesicht (Text, Stimme, Hände, KI-Bild)?“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Frag einmal nach der Stufe, sonst nimm E1.\n2. Ersetze bei jeder Karte Gesicht durch: Bildschirmtext (E1), Voiceover (E2) oder Hände/Produkt im Bild (E3).\n3. Lass Hook und Struktur unverändert."
+    },
+    {
+     "label": "Quelle",
+     "text": "Studio-Aufbau (Feed-LOWiSPIKE-Studio-Skill) · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "S3",
+   "area": "start",
+   "title": "Nische in 10 Minuten",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Eine Nische wählen, bei der du lange dranbleibst."
+    },
+    {
+     "label": "Kopier das",
+     "text": "Was sind deine Leidenschaften?\nWofür bist du unter den Leuten, die du kennst, am bekanntesten?\nWas sind deine Hobbies?\nWas kannst du ständig tun, ohne dass es dir langweilig wird?\nNr. 1 Nische: ___ · Warum es deine Nr. 1 ist: Weil... / Weil... / Weil...\nMeine Ziele sind: Spaß haben · Mein Wissen teilen · Geschäft erweitern · Marke aufbauen · Leben teilen · Sponsoring\nSchlüsselwörter davon in Bio und Videobeschreibung, damit der Algorithmus deine Nische versteht."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Hier sind meine Antworten: [Antworten]. Schlag mir eine Nr. 1 Nische mit drei ‚Weil‘ vor und schreib mir eine Bio mit diesen Schlüsselwörtern.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Stell die vier Fragen.\n2. Wähle eine Nische, begründe sie dreimal mit „Weil...“.\n3. Schreib eine Bio (max. 80 Zeichen) mit 2 bis 3 Schlüsselwörtern."
+    },
+    {
+     "label": "Quelle",
+     "text": "[ESM] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "S4",
+   "area": "start",
+   "title": "15 Creator, Top 5, je 3 Themen und 3 Hooks",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Deine eigene Swipe-Liste bauen statt Originalität zu erzwingen."
+    },
+    {
+     "label": "Kopier das",
+     "text": "„Leider wird Originalität auf TikTok selten gefördert.“\n1. Liste 15 Creator deiner Nische.\n2. Wähle die Top 5 und schreib auf, warum.\n3. Pro Creator: 3 populäre Themen, 3 Hooks.\n4. Speichere die Videos in TikTok-Favoriten-Ordnern wie ein digitales Archiv.\n5. Achte frame by frame auf: Farben, Hook, Positionierung, Licht, Stimme, Hashtags, Schriftart, Perspektive, Körpersprache."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Hier sind 5 Creator aus meiner Nische: [Handles]. Mach mir pro Creator 3 Themen und 3 Hooks, umgeschrieben für [meine Marke], gesichtslos machbar.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Nimm die Liste der Person (oder die Vault-Karten unten).\n2. Fülle pro Creator eine Tabelle: Warum, 3 Themen, 3 Hooks.\n3. Schreib die Hooks auf die Nische der Person um, Struktur gleich lassen.\n4. Sag ehrlich, welche Videos du nicht anschauen konntest."
+    },
+    {
+     "label": "Quelle",
+     "text": "[ESM] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "S5",
+   "area": "start",
+   "title": "Zielgruppe in einem Absatz",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Wissen, für wen jedes Video ist."
+    },
+    {
+     "label": "Kopier das",
+     "text": "Alter:  · Ort/Sprache:  · Bedürfnisse:  · Tägliche Gewohnheiten:  · Bildung vs. Unterhaltung:  % /  %"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Das ist meine Zielgruppe: [Absatz]. Was würde diese Person um 22 Uhr im Bett sehen wollen? Gib mir 5 Videoideen dazu.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Fülle die fünf Felder mit der Person aus.\n2. Prüfe jeden neuen Hook: Spricht er genau diese Person an?"
+    },
+    {
+     "label": "Quelle",
+     "text": "[ESM] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M1",
+   "area": "make",
+   "title": "Das wiederholbare Skelett (die tägliche Show)",
+   "effort": "E1 (als Bildschirmtext), auch E2 bis E4",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Jede Folge gleich öffnen, neuen Beweis zeigen, Tür zum Kauf geben."
+    },
+    {
+     "label": "Kopier das",
+     "text": "Hi, I’m [name].\nI [make / help / build] [thing].\nThis is part [X] of [goal].\nToday, I’m [action].\nShow the work or result.\nBuy, book, download, message, or follow.\nDeutsch: „Ich bin [Name]. Ich [baue/helfe bei/mache] [Sache]. Das ist Teil [X] von [Ziel]. Heute [Aktion]. [Ergebnis zeigen]. [Kaufen/Buchen/Laden/Schreiben/Folgen].“\n„Every video is someone’s first video.“ Stell dich jedes Mal vor, die meisten Zuschauer sind Fremde.\n„Every. Single. Day.“"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Füll das Skelett für mich aus: Name [ ], ich [ ], Ziel [ ], heute Teil [X]. Heute habe ich [ ] gemacht. Schluss: [Link/DM/Folgen]. Gesichtslos als 5 Bildschirmtexte über B-Roll.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Speichere Identität, Sache und Ziel einmal. Die bleiben jeden Tag gleich.\n2. Frag täglich nur: Was hast du heute gemacht? Wie soll es enden?\n3. Gib 6 Zeilen aus (eine pro Beat) plus Bildschirmtext und B-Roll-Vorschlag pro Zeile.\n4. Zähle die Teilnummer automatisch hoch."
+    },
+    {
+     "label": "Quelle",
+     "text": "[PB] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M2",
+   "area": "make",
+   "title": "Dein Einstieg je nach Situation",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Das richtige Swipe-Vorbild für deine Lage wählen."
+    },
+    {
+     "label": "Kopier das",
+     "text": "Ich habe noch nichts zu verkaufen: Learn something useful, apply it, and document the result. (Learning • building • first client) → Vorbild: Tobi, Kai\nIch verkaufe ein physisches Produkt: Making • packaging • customer orders → Vorbild: Nicole\nIch verkaufe ein digitales Produkt oder eine App: Building • using • giving a free version → Vorbild: Trey, Nick\nIch verkaufe einen Service: Before & after • proof of skill • book a call → Vorbild: Jill, Kai\nLeute schauen mir zu, aber ich verkaufe nichts: Authority • daily updates • direct offer → Vorbild: Nick"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Meine Situation ist [eine der fünf]. Welches Vorbild passt, und wie sieht meine Folge 1 danach aus?“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Frag, welcher Satz passt.\n2. Öffne die passende Swipe-Karte (W1 bis W6).\n3. Bau Folge 1 mit M1."
+    },
+    {
+     "label": "Quelle",
+     "text": "[PB] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M3",
+   "area": "make",
+   "title": "Vi-Di-Karte und Vi-Di-Deck",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Einen Vorrat bauen, aus dem du jeden Tag drei oder mehr Videos ziehst."
+    },
+    {
+     "label": "Kopier das",
+     "text": "„Vi-Di-Karte = B-Roll + Skriptzeile + Hook“\n„Vi-Di-Deck = Sammlung : Vi-Di-Karten“\nBeispiel-Deck mit festen Uhrzeiten: Morgen-Mindfulness (6 AM), Affirmations-Dosis (8 AM), Weisheits-Flüstern (1 PM), Media-Mindfulness (4 PM), Relatable-Reflexionen (6 PM), Tägliche Denkanstöße (8 PM), Nachtgeschichten (10 PM).\nKarte: Hook:  · Skriptzeile:  · B-Roll:  · Uhrzeit: "
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Bau mir ein Vi-Di-Deck mit 7 Serien für [meine Nische], je mit fester Uhrzeit, und pro Serie 5 Karten (Hook + Skriptzeile + B-Roll-Idee).“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Leg pro Serie einen Namen und eine Uhrzeit fest.\n2. Schreib pro Karte genau drei Felder: Hook, Skriptzeile, B-Roll.\n3. Gib das Deck als Liste aus, die die Person täglich durchgeht."
+    },
+    {
+     "label": "Quelle",
+     "text": "[ESM] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M4",
+   "area": "make",
+   "title": "Hook-Baukasten (14 bewährte Muster)",
+   "effort": "E1 (als Bildschirmtext)",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Die ersten 1 bis 3 Sekunden."
+    },
+    {
+     "label": "Kopier das (Muster → Lückentext)",
+     "text": "Konkrete Summe + Tool + einfache Idee: „3 [Tool]-[Dinge], die du für [Betrag] verkaufen kannst“\nErgebnis zuerst, Tool danach: „Diese/s [Ergebnis] wurde von KI extra für dieses Video gemacht.“\nÜberraschende Automatisierung: „Jemand hat gerade [Tool] gebaut, das [lästige Aufgabe] für dich erledigt.“\nVerrückte Zukunftsbehauptung: „[Land/Firma] hat jetzt ein Tool, das [unglaubliche Fähigkeit].“\nExtreme Behauptung, versteckte Welt: „Diese/s [Ding] macht [riesige Wirkung].“\nAngst + Enthüllung: „[Große Firma] hat gerade [etwas] auf dein [Gerät] gepackt, ohne dass du es weißt.“\nSchnelle Nutzen-Frage: „Willst du [Nutzen]? Nimm das.“\nKlingt fake, ist echt: „[Firma] hat offiziell [unglaubliche Tatsache].“\nWiderspruch zum Glauben: „Ein [Ding] kann eigentlich [überraschende Zahl].“\nPsychologie + Identität: „Laut Psychologie erkennst du [Typ Mensch] an diesen [Zahl] Eigenschaften.“\nSchock + Dringlichkeit: „[Tool] ist heute aufgewacht und hat Gewalt gewählt.“\nVerstecktes Phänomen benennen: „Ein [Begriff] ist [kurze Erklärung].“\nStatus-Angst + Beweis: „[Gruppe] wird dich nie akzeptieren, egal was du tust, und hier ist der Beweis.“\nWissenschaft + Nostalgie: „Wenn du als Kind [Ding] gemacht hast, hast du [überraschende Folge].“"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Nimm diese 14 Muster und schreib je einen Hook für [mein Thema heute]. Max. 12 Wörter, als Bildschirmtext lesbar.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Nimm das Thema des Tages.\n2. Schreib pro Muster einen Hook, max. 12 Wörter.\n3. Markiere die 3 stärksten und begründe kurz.\n4. Keine Behauptung erfinden, die nicht stimmt: Fakten im Hook müssen belegbar sein."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] (Originale siehe Swipe-Karten W7 bis W20) · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M5",
+   "area": "make",
+   "title": "Video-Aufbau in 8 Schritten",
+   "effort": "E1, E2",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Ein Skript mit Anfang, Spannung und Schluss."
+    },
+    {
+     "label": "Kopier das",
+     "text": "Zielgruppe verstehen → Ideenfindung → Hook & Schlusssatz → „Aber-deshalb“-Methode → kurz und prägnant → Problem-Lösungs-Struktur → Abschluss mit Twist → Call-to-Action\nAber-deshalb-Lückentext: „[Situation]. Aber [Problem]. Deshalb [Lösung]. Aber [neue Hürde]. Deshalb [Ergebnis].“"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir ein 20-Sekunden-Skript über [Thema] mit Hook, Aber-deshalb-Kette, Twist am Ende und CTA [Kommentar-Wort/Link].“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Leg zuerst Hook und Schlusssatz fest.\n2. Bau dazwischen eine Aber-deshalb-Kette aus Problem und Lösung.\n3. Streich alles, was nicht zur Kette gehört.\n4. Ende mit Twist oder Denkanstoß, dann CTA."
+    },
+    {
+     "label": "Quelle",
+     "text": "[ESM] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M6",
+   "area": "make",
+   "title": "Watch-Time-Check vor dem Posten",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Länge und Schnitt auf Zuschauzeit prüfen."
+    },
+    {
+     "label": "Kopier das",
+     "text": "Ziel-Watch-Time: 4 bis 7 Sek.: 100 bis 120 % · 8 bis 15 Sek.: 95 bis 110 % · 16 bis 30 Sek.: 75 bis 95 % · 31 bis 45 Sek.: 60 bis 80 % · 46 bis 60 Sek.: 50 bis 70 % · 61 Sek.: mind. 50 %\nHook in den ersten 1 bis 3 Sekunden · versteckte Details und schnelle Schnitte · Untertitel und Musikwechsel · Loops und Cliffhanger · Retention-Kurve analysieren\n„Ein 6-Sekunden-Video mit 250 % Watch Time kann TikTok genauso beeindrucken wie ein 45-Sekunden-Video mit 65 %.“"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Hier ist mein Skript: [Skript]. Wie lang wird es? Kürz es so, dass es in die Länge mit der leichtesten Watch-Time-Zielmarke passt, und bau einen Loop ans Ende.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Schätze die Länge (ca. 2,5 Wörter pro Sekunde gesprochen).\n2. Prüf: Hook in Sekunde 1 bis 3? Schnitt mindestens alle paar Sekunden? Untertitel?\n3. Schlag einen Loop vor (letzter Satz führt zum ersten).\n4. Nach dem Posten: Die Person liest die Watch Time ab, der Agent vergleicht mit der Tabelle."
+    },
+    {
+     "label": "Quelle",
+     "text": "[ESM] (die Zielwerte stammen aus dem Kurs, nicht von TikTok selbst) · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M7",
+   "area": "make",
+   "title": "Kommentar-Trigger als Schluss",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Aus Zuschauern Leads machen."
+    },
+    {
+     "label": "Kopier das",
+     "text": "„Die meisten Creator spielen Content wie Roulette. Aber die, die wirklich wachsen, spielen Schach – Zug für Zug, Serie für Serie. Das hier ist kein Hack. Das ist das Fundament. Wenn du wissen willst, wie man daraus eine Maschine baut, die nie wieder aufhört zu wachsen – Schreib „Kernsystem“ in die Kommentare, und ich zeig dir, wie du deinen ersten viralen Funnel aufbaust.“\nKurz: „Schreib „[WORT]“ in die Kommentare und ich schick dir [Sache].“\nOriginal Ray Fu: „Just comment ‘plugin’ and I’ll send it to you.“"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir einen Kommentar-Trigger-Schluss für [Angebot], mit einem Wort, das zu meiner Marke passt, max. 2 Sätze.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Wähle ein kurzes, eindeutiges Wort (ein Wort, Großbuchstaben).\n2. Sag genau, was die Person bekommt.\n3. Nur versprechen, was wirklich verschickt wird. Das Verschicken macht die Person selbst."
+    },
+    {
+     "label": "Quelle",
+     "text": "[ESM] [VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M8",
+   "area": "make",
+   "title": "Die Tür zum Kauf, je nach Angebot",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Jedes Video endet mit einem Ort, wohin die Aufmerksamkeit gehen kann."
+    },
+    {
+     "label": "Kopier das",
+     "text": "„A video creates attention. The ending gives that attention somewhere to go.“\nGENERATE LEADS: Advertise the offer daily. CONVERT CLIENTS: Reach out and follow up daily.\nEinmal-Produkt (Ebook, Magnet, Template): im Video zeigen, einfache Bezahlseite verlinken.\nApp, Mitgliedschaft, Community: laufendes Ergebnis zeigen, Beitrittsseite verlinken.\nService (Website, Automation, Editing): Arbeitsbeweis zeigen, Kalender oder DM verlinken.\nGratis + bezahlte Hilfe: Workflow verschenken, Installation oder Anpassung anbieten."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Mein Angebot ist [Art + Preis]. Schreib mir 5 Schlusszeilen, die dazu passen, und sag, was in meinen Bio-Link gehört.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Ordne das Angebot einer der vier Arten zu.\n2. Schreib einen Schluss, der genau eine Handlung verlangt.\n3. Prüf, dass der Link oder die DM-Möglichkeit wirklich existiert."
+    },
+    {
+     "label": "Quelle",
+     "text": "[PB] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M9",
+   "area": "make",
+   "title": "Mit einer Serie starten",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Wiedererkennbar werden, statt auf einen Zufallstreffer zu hoffen."
+    },
+    {
+     "label": "Kopier das",
+     "text": "„Ein virales Video ist wie ein Lottogewinn. Aber eine Serie ist wie ein eigener Online-Shop mit Stammkunden.“\nStarte mit einer einzigen Serie. „Teil 1“, „Teil 2“ nur als Text auf dem Video.\nDenke in Playlists, damit deine Seite ein „organisierter Content-Funnel“ wird.\nTeste verschiedene Serien. Gewinner haben oft 3 bis 5 Serien gleichzeitig."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Gib mir eine Serie für [Nische] mit Namen, festem Einstiegssatz und 10 Folgen-Themen. Gesichtslos machbar.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Ein Serienname, ein fester Einstieg, eine feste Länge.\n2. 10 Folgen-Themen vorschlagen, Teilnummer als Bildschirmtext.\n3. Nach 10 Folgen: Zahlen mit M10 bewerten, dann zweite Serie dazunehmen."
+    },
+    {
+     "label": "Quelle",
+     "text": "[ESM] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M10",
+   "area": "make",
+   "title": "Board und Aufrufe-Bewertung",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Den Überblick behalten und sehen, was funktioniert."
+    },
+    {
+     "label": "Kopier das",
+     "text": "Spalten: To-do → In progress → Complete (wenn das Video die Endbewertung hat)\nBewertung: 0️⃣ <100 · 1️⃣ ≥100 und <500 · 2️⃣ ≥500 und <1K · 3️⃣ ≥1K und <5K · 4️⃣ ≥5K und <10K Aufrufe (der Rest der Skala ließ sich aus dem Kurs nicht laden)"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Hier sind meine letzten 10 Videos mit Aufrufen: [Liste]. Bewerte sie mit der Skala und sag mir, welche Serie ich weitermachen soll.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Leg pro Video eine Karte an (Titel, Serie, Hook).\n2. Trag nach dem Posten die Aufrufe ein, die die Person nennt, und vergib die Stufe.\n3. Empfiehl, die Serie mit den meisten Videos ab Stufe 2 fortzusetzen."
+    },
+    {
+     "label": "Quelle",
+     "text": "[ESM] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M11",
+   "area": "make",
+   "title": "Ergebnis zuerst, Werkzeug danach",
+   "effort": "E1 (KI-Bilder), E2 mit Stimme",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "KI-Tools oder eigene Ergebnisse zeigen, ohne Gesicht."
+    },
+    {
+     "label": "Kopier das",
+     "text": "„Show impressive AI result first → reveal AI tool → explain simplicity → emphasize time savings“\nLückentext: „[Ergebnis zeigen, 2 Sek. ohne Erklärung]. Das hier hat [Tool] gemacht. Du gibst ihm nur [Eingabe]. Es macht [Schritte]. Spart dir [Zeit/Aufwand].“"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Ich will [mein Ergebnis/Tool] zeigen. Schreib mir ein 15-Sekunden-Video nach ‚Ergebnis zuerst‘, mit Bildschirmtext pro Sekunde-Block.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Starte mit dem stärksten Bild des Ergebnisses, ohne Text oder nur mit dem Hook.\n2. Erst dann das Tool nennen.\n3. Drei kurze Schritte, wie es geht.\n4. Schluss mit Zeitersparnis oder Kommentar-Trigger (M7)."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] Dasha Chepizhko · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M12",
+   "area": "make",
+   "title": "Axiom Motion Graphics (Goldnaniten-Look)",
+   "effort": "E1 (plus E2, wenn eine Stimme dazukommt)",
+   "status": "In Emans eigenen Projekten getestet. Für Käufer in einem frischen Setup: nicht test-run.",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Gesichtslose Videos mit einer Figur, die Sätze in Formen, Symbole und Wörter verwandelt."
+    },
+    {
+     "label": "Kopier das",
+     "text": "Look: Axiom bewegt sich über warm beleuchtete Golddünen unter dunkelblauem Himmel, Goldstaub, Kinolicht.\nBewegung: Kopf führt, Körper folgt, Klingen und Perlen ziehen nach. Kamera folgt, umkreist, fährt heran und wechselt bei wichtigen Beats.\nNaniten bauen klare Formen, Diagramme, Symbole und Wörter passend zur Erzählung und verwandeln sich in das nächste Bild. Keine zufälligen Symbole, keine sinnlosen Linien."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Mach aus diesem Skript [Skript] ein Motion-Graphics-Video: pro Satz eine Form, die die Aussage zeigt. Mein Look: [Goldnaniten oder eigener Stil].“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Teil das Skript in Sätze.\n2. Gib pro Satz genau eine Form an, die die Aussage sichtbar macht.\n3. Leg Kamerawechsel auf die wichtigen Beats.\n4. Sag vorher, dass ein volles Rendern viele Credits kostet. Erst Text-Plan, dann ein Render nach Freigabe.\n5. Der Agent erstellt das Video, die Person postet."
+    },
+    {
+     "label": "Quelle",
+     "text": "[EMAN] Axiom House Design V3 · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M13",
+   "area": "make",
+   "title": "Referenz kopieren und verbessern (Remix)",
+   "effort": "E1",
+   "status": "In Emans eigenen Projekten benutzt. Als Käufer-Version: nicht test-run.",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Aus einem TikTok- oder Instagram-Link ein eigenes, besseres Video machen."
+    },
+    {
+     "label": "Kopier das",
+     "text": "1. Link schicken.\n2. Agent zerlegt: Hook (wörtlich), Beats mit Zeit, Schnitte, Tempo, Schluss.\n3. Eigener Text: gleiche Struktur, eigene Worte, eigene Nische.\n4. Eigene Bilder (z. B. M12), Tempo und Schnitte wie im Original.\n5. Kein 1:1-Nachbau, keine fremden Clips oder Texte übernehmen."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Hier ist ein Video, das ich gut finde: [Link]. Zerleg es in Beats und schreib mir meine Version für [Marke/Nische/Stimme]. Struktur, Tempo und Energie übernehmen, Inhalt und Worte neu.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Hol Beschreibung, Untertitel oder Transkript. Was du nicht anschauen konntest, sagst du ehrlich.\n2. Schreib die Beats mit Zeitstempel.\n3. Schreib neuen Text pro Beat.\n4. Plane Bilder pro Beat, dann Freigabe vor dem Rendern."
+    },
+    {
+     "label": "Quelle",
+     "text": "[EMAN] Skill „Copy and improve a video“, Yorby-Idee · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "M14",
+   "area": "make",
+   "title": "Preis für einen Markendeal berechnen",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Wofür",
+     "text": "Eine Anfrage einer Marke mit einem nachvollziehbaren Preis beantworten."
+    },
+    {
+     "label": "Kopier das",
+     "text": "„Follower-Zahlen spielen für den Preis keine Rolle.“\nC = H × R + D (Kosten des Pakets) · K = C / 0,7 (Kosten plus 30 % Marge) · W = V / 1.000 × M × N · Rundung auf volle 25 €\nH = Stunden für das ganze Paket inklusive Abstimmung und einer Revision · R = Stundensatz (Start 35 €) · D = direkte Kosten · V = Median der organischen Views deiner letzten 15 vergleichbaren Posts (mindestens 10) der letzten 90 Tage · M = 20 € je 1.000 typische Views (vorsichtiger Startwert, keine Marktstudie) · N = Nischenfaktor 1,0\nDrei Routen: UGC (Marke kauft Inhalt), Audience-Sponsoring (Post auf deinem Kanal), Hybrid. Mit null Followern: UGC mit Portfolio.\nRegeln: keine Zusage im Namen des Creators · „Schweigen ist nie Zustimmung“ · nie unter die Untergrenze F · F wird der Marke nie genannt · „Im Zweifel nichts senden“"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Eine Marke fragt nach [Paket]. Ich brauche [H] Stunden, Kosten [D] €, meine letzten Views: [Liste]. Rechne mir C, K und W aus, mit Rechenweg.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Frag nach H, D und den letzten Views.\n2. Rechne C, K und W mit Rechenweg und runde auf 25 €.\n3. Schick nichts an die Marke ohne ausdrückliche Freigabe der Person.\n4. Für Verhandlung und Untergrenze F die volle Anleitung im Creator Agency Autopilot nutzen."
+    },
+    {
+     "label": "Quelle",
+     "text": "[CAA] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": []
+  },
+  {
+   "id": "W1",
+   "area": "swipe",
+   "title": "Nick: tägliche Updates mit Autorität",
+   "effort": "E4 im Original · E1 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Hook (wörtlich)",
+     "text": "„Hey, my name is Nick. We make over $300,000 a month throughout my companies. And these are my daily updates…“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "Wer er ist und warum zuhören → öffentliches Ziel: $300K auf $500K → immer gleiche Folge erklären → Kommentar-Q&A → Bauen und Planen in der Öffentlichkeit → Wachstumszahlen zu Kanälen und Produkten"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Identität + Autorität + öffentliches Ziel + exakt gleiche Show. Er öffnet einen Loop: Stell eine Frage, morgen kommt dasselbe Format wieder."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Bau mir Nicks Daily-Update-Format für [mein Projekt]: fester Einstieg, mein Ziel [von X auf Y], dann Kommentar-Frage, Fortschritt, Zahlen. Gesichtslos: Bildschirmaufnahme der Zahlen plus Text.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Einstieg mit Name, Ergebnis, Ziel festlegen.\n2. Jede Folge: eine Kommentarfrage beantworten, einen Fortschritt zeigen, eine Zahl zeigen.\n3. Gleiche Reihenfolge jeden Tag."
+    },
+    {
+     "label": "Quelle",
+     "text": "[PB] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://youtu.be/dKkQjeWkwrU?is=_FcF8noMjNsB1c5b"
+   ],
+   "group": "Tägliche-Show-Vorbilder (Playbook)"
+  },
+  {
+   "id": "W2",
+   "area": "swipe",
+   "title": "Trey: Aufbau ab null neben dem Job",
+   "effort": "E4 im Original · E1 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Hook (wörtlich)",
+     "text": "Bildschirmtext „Day 1 of building a dropshipping store until I hit $100K/month.“ · „My name is Trey. I’m 28, just moved to San Diego, and I work a hospitality job that pays the bills, but it isn’t the plan.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "Tag-1-Ziel als Text → Identität und aktuelle Lage → Grund für die Änderung → öffentliches Versprechen → Beweis der aktuellen Arbeit → ehrliches Alltagsdetail („filming this on my break at my actual job“) → „So follow along. Week one, zero dollars, one goal. Let’s see how far we can get with this.“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Underdog-Geschichte plus sichtbares Ziel. Zuschauer wollen wissen, ob er es schafft."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir Tag 1 im Trey-Format: Tag [X] von [Ziel], wer ich bin, warum jetzt, was ich heute gemacht habe, ehrliches Detail, Folge-CTA. Als Bildschirmtext über Alltags-B-Roll.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Ziel als Zahl formulieren.\n2. Ein ehrliches Detail aus dem Alltag einbauen.\n3. Mit „follow along“-Schluss enden.\n4. Tageszähler hochzählen."
+    },
+    {
+     "label": "Quelle",
+     "text": "[PB] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGd9osgT9/"
+   ],
+   "group": "Tägliche-Show-Vorbilder (Playbook)"
+  },
+  {
+   "id": "W3",
+   "area": "swipe",
+   "title": "Nicole: Produkt-Reise ohne Angeberei",
+   "effort": "E4 im Original · E3 als Remix (Hände, Material)",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Hook (wörtlich)",
+     "text": "„I’m starting a clothing brand… Except… I’m not famous. So nobody’s really watching yet.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "Unerwarteter Anti-Flex-Einstieg → ehrlicher Startpunkt → Vorstellung und Marke → wofür das Produkt steht → Material und Produktbeweis → „I don’t know if this will work, but I want you guys to be a part of it, so make sure to follow along!“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Ehrlichkeit statt Show. Zuschauer werden Teil des Experiments."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib meinen Start im Nicole-Format für [Produkt]: Anti-Flex-Hook, ehrlicher Startpunkt, wofür es steht, Material zeigen, Einladung zum Mitverfolgen. Nur Hände und Produkt im Bild.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Hook mit „Except…“-Wendung.\n2. Einen Satz, wofür das Produkt steht.\n3. Material oder Herstellung zeigen.\n4. Offen sagen, dass es ein Versuch ist."
+    },
+    {
+     "label": "Quelle",
+     "text": "[PB] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGd9oPUVY/"
+   ],
+   "group": "Tägliche-Show-Vorbilder (Playbook)"
+  },
+  {
+   "id": "W4",
+   "area": "swipe",
+   "title": "Tobi: Build in Public ohne feste Nische",
+   "effort": "E4 im Original · E2 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Hook (wörtlich)",
+     "text": "„My name is Tobi. I’m 23 years old, and I’m a software engineer at a startup that you’ve probably never heard of, but things are going to change.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "Bescheidener Einstieg → normaler Hintergrund → Komfortfalle → Entscheidung, nicht mehr zu überdenken → drei konkrete Projekte → messbares Ziel (10.000 Follower) → „If you want to follow along for the success, the failures, and everything else in between, follow me.“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Mehrere Interessen werden zu einer Reise mit klarem Nordstern."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib meinen Build-in-Public-Start im Tobi-Format: meine 3 Projekte [ ], mein Zahlenziel [ ]. Voiceover über Bildschirmaufnahmen.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Drei Projekte konkret benennen.\n2. Ein Zahlenziel setzen.\n3. Erfolge und Fehlschläge ankündigen."
+    },
+    {
+     "label": "Quelle",
+     "text": "[PB] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGd9oVvQf/"
+   ],
+   "group": "Tägliche-Show-Vorbilder (Playbook)"
+  },
+  {
+   "id": "W5",
+   "area": "swipe",
+   "title": "Kai: erster Kunde mit Arbeitsprobe",
+   "effort": "E4 kurz im Original, Rest ist die Arbeit · E1 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Hook (wörtlich)",
+     "text": "„Hey, my name’s Kai. I’m 18, I’m from the Philippines, and this is my first day of posting my edits to hopefully get my first client.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "Name, Alter, Ort → Tag-1-Ziel → genau die Dienstleistung nennen → fertige Arbeit zeigen → „That’s it, and if you could give me feedback, I’d really appreciate it.“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Sofortiger Beweis der Fähigkeit, Feedback-Bitte senkt die Hürde zum Kommentieren."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir einen Tag-1-Text im Kai-Format für meine Dienstleistung [ ]: ein Satz Bildschirmtext, dann meine Arbeitsprobe, dann Feedback-Bitte.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Einstieg als ein Bildschirmtext.\n2. Arbeitsprobe nimmt 80 % des Videos.\n3. Schluss: Feedback-Bitte."
+    },
+    {
+     "label": "Quelle",
+     "text": "[PB] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGd9osgnP/"
+   ],
+   "group": "Tägliche-Show-Vorbilder (Playbook)"
+  },
+  {
+   "id": "W6",
+   "area": "swipe",
+   "title": "Jill: direkter Beweis eines Service",
+   "effort": "E2 (Stimme ist das Produkt)",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Hook (wörtlich)",
+     "text": "„I’m a voiceover artist, and these are the three voices I get paid the most to do.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "Service nennen → drei bezahlte Beispiele versprechen → Stil 1 elegant → Stil 2 energisch → Stil 3 seriös → „If your project needs this kind of voice, let’s talk.“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Der Käufer sieht genau, was er bekommt, und wofür jeder Stil passt."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir ein Video im Jill-Format: ‚Das sind die 3 [Leistungen], für die ich am meisten bezahlt werde‘, je ein Beispiel und wofür es passt, Schluss ‚Wenn dein Projekt das braucht, schreib mir.‘“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Drei Varianten der Leistung auswählen.\n2. Pro Variante: Beispiel plus „passt für...“.\n3. Direkter Kauf-CTA."
+    },
+    {
+     "label": "Quelle",
+     "text": "[PB] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGd9oDgKw/"
+   ],
+   "group": "Tägliche-Show-Vorbilder (Playbook)"
+  },
+  {
+   "id": "W7",
+   "area": "swipe",
+   "title": "Ray Fu (@ray_fu): „3 Claude Plugins that you can sell for $5000“",
+   "effort": "E4 im Original (Talking Head, große Hook-Schrift) · E1 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "215.4K Views, 15.8K Saves, 2,129 Shares"
+    },
+    {
+     "label": "Hook",
+     "text": "„3 Claude Plugins that you can sell for $5000“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Specific income number + AI tool + simplified business opportunity“ → Liste mit drei Ideen → „Just comment ‘plugin’ and I’ll send it to you.“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Sehr viele Saves und Shares: konkrete Geschäftsidee zum Aufheben. Die Zahl in der Liste hält bis zum Ende."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir ‚3 [Tools/Ideen] für [meine Nische], mit denen du [konkretes Ergebnis]‘. Gelb hervorgehoben: Zahl und Ergebnis. Schluss mit Kommentar-Wort.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Drei konkrete Ideen.\n2. Zahl und Ergebnis groß im Text.\n3. Kommentar-Trigger (M7).\n4. Keine erfundenen Geldversprechen."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHC1g2J/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W8",
+   "area": "swipe",
+   "title": "Dasha Chepizhko (@dashachepizhko): KI-Musik mit Suno",
+   "effort": "E1 bis E2 machbar (Ergebnis zuerst)",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "201.7K Views"
+    },
+    {
+     "label": "Hook",
+     "text": "„This music was created by AI specifically for this video.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Show impressive AI result first → reveal AI tool → explain simplicity → emphasize time savings“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Zuschauer denkt erst, es sei von Hand geschnitten, dann kommt die KI-Auflösung."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "Siehe M11."
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "Siehe M11."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHQwAUK/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W9",
+   "area": "swipe",
+   "title": "Angel (@creativelyange): Jobsuche mit Claude Code",
+   "effort": "E4 im Original · E1 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "550.9K Views, 33.5K Saves, 6,977 Shares (Account: 11.7K Follower)"
+    },
+    {
+     "label": "Hook",
+     "text": "„Someone just made a GitHub repo to apply to jobs for you“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Unexpected AI automation → explain powerful workflow → future-of-work implication“ → Schluss: „I’m gonna try this out today and let you guys know how it works“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Fähigkeiten werden gestapelt, jede beeindruckender. Der Schluss verspricht eine Folge."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir ‚Jemand hat gerade [Tool] gebaut, das [Aufgabe] für dich erledigt‘ über [echtes Tool aus meiner Nische], 3 Fähigkeiten steigernd, Schluss: ‚Ich teste es heute und sag euch, wie es läuft.‘“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Echtes, prüfbares Tool wählen.\n2. Drei Fähigkeiten steigernd.\n3. Folge-Video ankündigen und in die Serienliste schreiben."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHQKsJU/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W10",
+   "area": "swipe",
+   "title": "GigaQian (@gigaqian): China-Vorhersage-Tool",
+   "effort": "E4 im Original · E2 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "685.9K Views"
+    },
+    {
+     "label": "Hook",
+     "text": "„China now has a tool that takes information from everywhere and shows you the future“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Crazy future-tech claim → underdog founder story → technical explanation → massive implications“ → Schluss: „Yeah, so what would you use this for?“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Ständige Steigerung von Studentenprojekt zu Millionen zu „Zukunft vorhersagen“."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Erzähl [echte Geschichte aus meiner Nische] im GigaQian-Format: große Behauptung, Underdog, kurz Technik, große Folge, offene Frage am Ende. Voiceover über Bilder.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Nur echte, belegbare Geschichten.\n2. Jede Zeile steigert den Einsatz.\n3. Offene Frage als Schluss."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHQEVXn/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W11",
+   "area": "swipe",
+   "title": "nateate (@nateate67): EUV-Maschine erklärt",
+   "effort": "E2 (B-Roll + Voiceover, nur kurzer Gesichts-Einstieg)",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "923.5K Views, 9,817 Shares"
+    },
+    {
+     "label": "Hook",
+     "text": "„This machine creates all the technology on Earth.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Massive claim → shocking technical explanation → scale comparisons → civilization-level implications“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Vergleiche und Zahlen machen schwere Technik greifbar und teilbar."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir ein Erklärvideo über [Ding in meiner Nische]: riesige Behauptung, 3 Vergleiche zur Größe, große Folge. Voiceover über schnell geschnittene B-Roll.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Eine belegbare große Behauptung.\n2. Drei Vergleiche.\n3. B-Roll-Liste pro Satz."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHQwkxw/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W12",
+   "area": "swipe",
+   "title": "justinbuilds.mov: Chrome installiert 4-GB-KI-Modell",
+   "effort": "E4 im Original · E1 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "591.9K Views (Account: 10.5K Follower)"
+    },
+    {
+     "label": "Hook",
+     "text": "„Google Chrome just installed a four gigabyte AI model onto your computer without you knowing.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Hidden tech behavior → shocking implication → simplified technical explanation → broader societal warning“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Angst plus Enthüllung über eine große Firma, Folgen steigen Satz für Satz."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir ein Enthüllungsvideo über [echtes, belegtes Verhalten in meiner Nische], z. B. versteckter Zucker. Riesige Überschrift als Bildschirmtext.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Nur belegte Fakten, Quelle notieren.\n2. Folgen steigernd.\n3. Keine Panikmache ohne Beleg."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHCV8tX/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W13",
+   "area": "swipe",
+   "title": "Sabrina Ramonov (@sabrina_ramonov): KI-Tools für jeden Zweck",
+   "effort": "E4 im Original · E1 als Remix (schnelle Textkarten)",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "250K Views"
+    },
+    {
+     "label": "Hook",
+     "text": "„Do you wanna save time? Use this.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Rapid utility questions → AI solution stacking → broad applicability → keyword CTA“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Jeder Satz ist ein neuer Anwendungsfall, also kein Grund abzuspringen."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir 8 schnelle Fragen ‚Willst du [Nutzen]? Nimm [Lösung].‘ für [meine Nische], je eine Textkarte, Schluss mit Kommentar-Wort.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. 6 bis 8 Frage-Antwort-Paare.\n2. Eine Karte pro Paar, schnelle Schnitte.\n3. Kommentar-Trigger."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHXN8gS/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W14",
+   "area": "swipe",
+   "title": "RealDenigma (@realdenigma): Toyotas Zukunftsstadt",
+   "effort": "E1 bis E2 machbar (KI-B-Roll + Erzählung)",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "1.9M Views (Account: 19.9K Follower)"
+    },
+    {
+     "label": "Hook",
+     "text": "„Toyota officially moved 2,000 people into a city of the future.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„This sounds fake → reveal it’s real → stack futuristic systems → civilization-level implications“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Klingt erfunden, ist echt. Die Bilder sind das Spektakel, nicht das Gesicht."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Such mir eine echte, unglaublich klingende Tatsache aus [Nische] und schreib ‚Klingt fake, ist echt‘ mit 3 gestapelten Enthüllungen. KI-Bilder statt Gesicht.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Tatsache mit Quelle prüfen.\n2. Drei Enthüllungen steigernd.\n3. Bildliste pro Satz."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHCpG5s/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W15",
+   "area": "swipe",
+   "title": "nasir (@bynasiraziz): Pferdestärke ist geschönt",
+   "effort": "E4 im Original (Greenscreen) · E2 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "1M Views (Account: 28.9K Follower)"
+    },
+    {
+     "label": "Hook",
+     "text": "„A horse can actually produce fifteen horsepower.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Common belief → contradiction → historical backstory → surprising reveal“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Widerspricht etwas, das alle glauben. Kein CTA, die Auflösung reicht."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Welcher Glaube in [Nische] ist falsch? Schreib mir ‚Glaube → Widerspruch → Hintergrund → Auflösung‘, Voiceover über Bilder.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Verbreiteten Glauben wählen.\n2. Widerspruch mit Beleg.\n3. Auflösung als letzter Satz."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHCcnA5/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W16",
+   "area": "swipe",
+   "title": "Deeptalkpodcast (@deeptalkpodcastt): 5 Eigenschaften eines guten Mannes",
+   "effort": "E4 im Original · E2 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "800K Views (Account: 17.9K Follower)"
+    },
+    {
+     "label": "Hook",
+     "text": "„According to psychology, you recognize a truly good man by these five traits.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Psychology claim → rare personality traits → emotional validation → identity-based CTA“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Nummerierte Liste plus Identität: Zuschauer prüft sich selbst."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib ‚Du erkennst [Typ Mensch aus meiner Nische] an diesen 5 Eigenschaften‘, ruhige Stimme, warme dunkle Bilder.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Fünf Eigenschaften steigernd.\n2. Identitäts-Schluss („Wenn das du bist, ...“).\n3. „Laut Psychologie“ nur mit echter Quelle."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHXNaMw/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W17",
+   "area": "swipe",
+   "title": "Your Chief AI Officer (@digitalsamaritan): „Claude woke up and chose violence today.“",
+   "effort": "E4 im Original · E1 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "250K Views"
+    },
+    {
+     "label": "Hook",
+     "text": "„Claude woke up and chose violence today.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Urgent AI hook → rapid update breakdown → future implications → reassuring conclusion“ (drei Updates)"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "„Drei Updates“ lässt bis zum dritten warten."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir ‚[Tool] ist heute aufgewacht und hat Gewalt gewählt‘ mit den 3 echten neuesten Updates von [Tool], beruhigender Schluss.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Drei echte, aktuelle Updates prüfen.\n2. Je ein Satz plus Folge.\n3. Beruhigender Schluss."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHC3AQc/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W18",
+   "area": "swipe",
+   "title": "Designing Spaces (@dspacestv): Trampelpfade",
+   "effort": "E4 im Original (Facecam über Bildern) · E2 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "6M Views, 77.8K Saves, 38.5K Shares"
+    },
+    {
+     "label": "Hook",
+     "text": "„A desire path is an unofficial trail that forms naturally from repeated foot traffic.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Name hidden phenomenon → show examples → explain psychology → reveal larger implication“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Gibt etwas, das alle kennen, einen Namen. Beispiele steigern von Menschen zu Tieren zu Stadtplanern."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Welches Phänomen aus [Nische] kennt jeder, aber keiner kennt den Namen? Schreib es im Format Name → Beispiele → Psychologie → größere Folge.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Begriff plus ein Satz Erklärung als Hook.\n2. Drei bis vier Beispiele steigernd.\n3. Bild pro Beispiel."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHCTT5g/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W19",
+   "area": "swipe",
+   "title": "Rickie Ho (@maisonrickie): Bourdieu und Eliten",
+   "effort": "E4 im Original · E1 als Remix (Untertitel-Brocken)",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "6M Views, 150.6K Saves"
+    },
+    {
+     "label": "Hook",
+     "text": "„The elite will never accept you, no matter what you do, and here's proof.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Bold societal claim → academic framework → modern examples → deeper philosophical implication“ → offenes Ende mit Ankündigung der nächsten Folge"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Status-Angst plus Theorie, ruhige Monologe in kurzen Untertitel-Stücken."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib eine kühne These über [Nische] mit einem echten Denkmodell, 2 heutigen Beispielen und offenem Ende für Teil 2.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. These, Denkmodell mit Quelle, Beispiele.\n2. Untertitel in kurzen Brocken.\n3. Teil 2 in die Serienliste."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHCtfQe/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W20",
+   "area": "swipe",
+   "title": "Frank Niu (@frankniu): Pokémon im Gehirn",
+   "effort": "E4 im Original · E2 als Remix",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Zahlen (aus der Quelle, nicht neu geprüft)",
+     "text": "24.2K Views (Account: 961.4K Follower)"
+    },
+    {
+     "label": "Hook",
+     "text": "„You play Pokémon as a kid, you have a tiny region in your brain that is specifically dedicated to Pokémon.“"
+    },
+    {
+     "label": "Ablauf",
+     "text": "„Unexpected fact → scientific study → broader implication → emotional reassurance“"
+    },
+    {
+     "label": "Warum es wirkt",
+     "text": "Wissenschaft plus Kindheitserinnerung. Hinweis: In der Quelle stehen nur 24.2K Views, also eher ein Muster als ein Beweis für Reichweite."
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib ‚Wenn du als Kind [Ding] gemacht hast, hast du [belegte Folge]‘ für [Nische], mit Studie und beruhigendem Schluss.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Echte Studie finden und nennen.\n2. Folge erklären.\n3. Beruhigender Schluss."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VSF] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://vm.tiktok.com/ZGdHCWSc5/"
+   ],
+   "group": "Virale Hooks (Viral video swipe file)"
+  },
+  {
+   "id": "W21",
+   "area": "swipe",
+   "title": "Text on screen Tweeters",
+   "effort": "E1",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Creator",
+     "text": "@mid.20s „Maxi“, 963K Follower, 5.480 Videos"
+    },
+    {
+     "label": "Kopier das",
+     "text": "Ein Gedanke im Tweet-Stil als Bildschirmtext über ruhiges Bild. „[Beobachtung aus dem Alltag]. [Wendung].“"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir 10 Tweet-artige Gedanken für [Nische], je max. 20 Wörter, als Bildschirmtext über ruhiger B-Roll.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. 10 Gedanken, je eine Wendung.\n2. Ein Gedanke pro Video.\n3. Viele Videos, gleiche Optik."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VAULT] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://www.tiktok.com/@mid.20s?_r=1&_t=ZG-9BX9xDz2U1A"
+   ],
+   "group": "Creator nach Format (The Vault File)"
+  },
+  {
+   "id": "W22",
+   "area": "swipe",
+   "title": "The Spoken Tweeters",
+   "effort": "E2 als gesprochener Gedanke, E4 wenn mit Gesicht (nicht angeschaut)",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Creator",
+     "text": "@ddp8792 „Davi“ (3,4 Mio. Follower) · @ant_on_knee „anthony hui“ (260K) · @yourgirisfavorite „Girls Favorite Woo“ (618K) · @bkharthun „Toon“ (261K) · @imjustkesha7 „imjustkesha“ (396K) · @eaphiri „Aaron“ (408K) · @yourjimbff „Yusuf Richardson“ (306K), Video 21 Sek., 1,4 Mio. Aufrufe"
+    },
+    {
+     "label": "Kopier das",
+     "text": "Ein kurzer, nachvollziehbarer Gedanke laut gesagt. „Mal ehrlich: [Alltagsbeobachtung]. [Pointe].“"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir 10 gesprochene ‚Tweets‘ für [Nische], je 10 bis 20 Sekunden, mit Pointe. Für KI-Stimme oder meine Stimme.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. Gedanken kurz und alltagsnah.\n2. Pointe am Ende.\n3. Untertitel groß."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VAULT] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://www.tiktok.com/@ddp8792?_r=1&_t=ZG-9BOBThZpH3h",
+    "https://www.tiktok.com/@ant_on_knee?_r=1&_t=ZG-9BOBVlU8twv",
+    "https://www.tiktok.com/@yourgirisfavorite?_r=1&_t=ZG-9BOBa3Malrl",
+    "https://www.tiktok.com/@bkharthun?_r=1&_t=ZG-9BOBXn33Zir",
+    "https://www.tiktok.com/@imjustkesha7?_r=1&_t=ZG-9BOBwMKqSmn",
+    "https://www.tiktok.com/@eaphiri?_r=1&_t=ZG-9BODZLVfOhE",
+    "https://vm.tiktok.com/ZGdXxWPDQ/"
+   ],
+   "group": "Creator nach Format (The Vault File)"
+  },
+  {
+   "id": "W23",
+   "area": "swipe",
+   "title": "The intellectual Tweeters",
+   "effort": "E2 bis E4 (nicht angeschaut)",
+   "status": "Nicht test-run",
+   "fields": [
+    {
+     "label": "Creator",
+     "text": "@therealniccoy (493K) · @theliberationprotocol „cypherian“ (90K), Video 2 Min. 35 Sek., 750K Aufrufe, „Learn how to engage people with stories.“ · @thegreygame_ „ddgrey10“ (113K)"
+    },
+    {
+     "label": "Kopier das",
+     "text": "„[Scharfe These über Menschen/Macht/Leben]. Hier ist warum: [1], [2], [3].“"
+    },
+    {
+     "label": "Remix-Prompt",
+     "text": "„Schreib mir 5 scharfe Thesen für [Nische] mit je drei Begründungen, ruhig erzählt.“"
+    },
+    {
+     "label": "Agent-Ansicht",
+     "text": "1. These in einem Satz.\n2. Drei Begründungen.\n3. Ruhiger Ton, kein Clickbait ohne Inhalt."
+    },
+    {
+     "label": "Quelle",
+     "text": "[VAULT] · hinzugefügt 20.11.2026"
+    }
+   ],
+   "links": [
+    "https://www.tiktok.com/@therealniccoy?_r=1&_t=ZG-9BOG4cVJuAy",
+    "https://vm.tiktok.com/ZGdX9rTmv/",
+    "https://www.tiktok.com/@thegreygame_?_r=1&_t=ZG-9BOKBoL6JTl"
+   ],
+   "group": "Creator nach Format (The Vault File)"
+  }
+ ]
+}

@@ -1,0 +1,34 @@
+/* Studio (21 Nov 2026): all 42 cards stay complete, one source (studio/cards.json) drives the page, For You opens it. */
+const test = require('node:test'), assert = require('node:assert'), fs = require('fs'), path = require('path');
+const R = p => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
+const D = JSON.parse(R('studio/cards.json'));
+const ids = D.cards.map(c => c.id);
+test('42 cards: S1-S5, M1-M14, W1-W23, unique and in order', () => {
+  const want = [...Array(5)].map((_, i) => 'S' + (i + 1)).concat([...Array(14)].map((_, i) => 'M' + (i + 1)), [...Array(23)].map((_, i) => 'W' + (i + 1)));
+  assert.deepStrictEqual(ids, want);
+});
+for (const c of D.cards) test('card ' + c.id + ' is complete', () => {
+  assert.ok(c.title && c.effort && c.status, 'title, effort, status');
+  assert.strictEqual(c.area, c.id[0] === 'S' ? 'start' : c.id[0] === 'M' ? 'make' : 'swipe');
+  const L = c.fields.map(f => f.label);
+  for (const need of ['Remix-Prompt', 'Agent-Ansicht', 'Quelle']) assert.ok(L.includes(need), c.id + ' needs ' + need);
+  c.fields.forEach(f => assert.ok(f.text.trim().length > 1, c.id + ' ' + f.label + ' empty'));
+  if (c.area === 'swipe') { assert.ok(c.links.length >= 1, c.id + ' link'); assert.ok(c.group, c.id + ' group'); c.links.forEach(u => assert.match(u, /^https:\/\//)); }
+});
+test('caveats stay visible: agent creates, the person posts; swipe numbers not re-checked', () => {
+  assert.match(D.legend.Wichtig, /Posten tust du selbst/);
+  assert.match(D.swipeNote, /nicht neu geprüft/);
+  assert.match(D.cards.find(c => c.id === 'M12').status, /frischen Setup: nicht test-run/);
+});
+test('page renders from cards.json and has no generate/post button', () => {
+  const h = R('studio/index.html');
+  assert.match(h, /fetch\('cards\.json'/);
+  assert.doesNotMatch(h, />\s*(Generieren|Generate|Veröffentlichen|Publish)\s*</i);
+});
+test('For You tool row: Post, Saved, Create content -> studio/, Affiliate -> affiliates/, inside the feed', () => {
+  const h = R('index.html');
+  assert.match(h, /'<div class="fy-feed" id="fyFeed">' \+ fyToolsHTML\(\)/);
+  assert.match(h, /Content erstellen/);
+  assert.match(h, /href="studio\/"/);
+  assert.ok(fs.existsSync(path.join(__dirname, '..', 'affiliates', 'index.html')));
+});

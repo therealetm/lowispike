@@ -1780,6 +1780,14 @@ html:not([data-lay=phone]) button:focus-visible,html:not([data-lay=phone]) a:foc
 .fy-feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .fy-feed::-webkit-scrollbar{display:none}
 .fy-slide{position:relative;height:100%;width:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:#05070c}
+.fy-tools{display:flex;justify-content:space-around;gap:6px;padding:72px 10px 14px;scroll-snap-align:start;background:#05070c}
+.fy-tool{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;color:#f3efe6;font:inherit;text-decoration:none;cursor:pointer}
+.fy-tool-c{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-size:24px;line-height:1;color:#e9cb88;background:radial-gradient(circle at 35% 30%,rgba(233,203,136,.22),rgba(14,18,30,.85) 70%);border:1.5px solid rgba(233,203,136,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.fy-tool-c svg{width:24px;height:24px;color:#e9cb88;fill:currentColor}
+.fy-tool-t{font-size:12px;font-weight:600;line-height:1.2;text-align:center;max-width:84px}
+.fy-tool:active .fy-tool-c{transform:scale(.94)}
+#fyFeed:has(.fy-tools) ~ .fy-tops .fy-svd,.fy-tops:has(~ #fyFeed .fy-tools) .fy-svd{display:none}
+html:not([data-lay=phone]) .fy-tools{width:min(520px,100%);margin:0 auto}
 .fy-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background-size:cover;background-position:center;border-radius:0!important;margin:0!important;min-height:0!important}
 .fy-art{background:radial-gradient(120% 80% at 20% 10%,hsla(var(--h1),80%,55%,.55),transparent 60%),radial-gradient(120% 90% at 90% 90%,hsla(var(--h2),80%,50%,.5),transparent 60%),#070a12}
 .fy-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -5232,12 +5240,24 @@ function fySavedBtnPaint(){ const t = $(".fy-tops"); if (!t) return; const old =
   if (old) { if (h) old.outerHTML = h; else old.remove(); } else if (h) t.insertAdjacentHTML("beforeend", h); }
 function heldPosts(){ return (T.posts || []).filter(p => window.LowiForYou && LowiForYou.held(Object.assign({}, p, {me: true}))); }
 let fyTop = 0;
+/* 21 Nov 2026, Emmanuel (Studio handoff): the top of For You is a row of four tool circles, not stories: Post, Saved,
+   Create content (opens Studio, studio/) and Affiliate (affiliates/). It is the first item of the feed, so it scrolls away with
+   the posts and never floats over them. Saved moved here from the floating .fy-tops pill (hidden there by CSS). */
+function fyToolsHTML(){ const n = Object.keys(T.saved || {}).length;
+  let l = "en"; try { l = String((window.LowiLang && LowiLang.get ? LowiLang.get() : localStorage.getItem("lowispike.lang")) || "en").slice(0, 2); } catch (e) {}
+  const L = {en: ["Post", "Saved", "Create content", "Affiliate"], de: ["Posten", "Gespeichert", "Content erstellen", "Affiliate"], es: ["Publicar", "Guardado", "Crear contenido", "Afiliados"]}[l] || ["Post", "Saved", "Create content", "Affiliate"];
+  const it = (attrs, ic, t, aria) => '<' + (attrs[0] === "a" ? 'a' : 'button type="button"') + attrs.slice(1) + ' class="fy-tool" aria-label="' + esc(aria || t) + '"><span class="fy-tool-c" aria-hidden="true">' + ic + '</span><span class="fy-tool-t">' + esc(t) + '</span></' + (attrs[0] === "a" ? 'a' : 'button') + '>';
+  return '<nav class="fy-tools" aria-label="' + esc(L[2]) + '">' +
+    it('b data-r3f="post" data-sfx="open"', '+', L[0]) +
+    it('b data-tr="list-saved"', (typeof FIC !== "undefined" && FIC.save) || '\u{1F516}', L[1], L[1] + (n ? ", " + n : "")) +
+    it('a href="studio/"', '\u270E', L[2]) +
+    it('a href="affiliates/"', '\u20AC', L[3]) + '</nav>'; }
 function renderForYou(el){
   el = el || $("#cmFeed"); if (!el) return; fyHealThumbs(); load(); retryShares(); const list = feed();
   const prev = $("#fyFeed"), y = prev ? prev.scrollTop : 0;
   /* 25 Oct 2026: "My posts" sits on the feed itself (it only lived on the old Tribe profile); after posting, the feed opens at the top */
   const mineN = fyMineAll().length, mineLbl = window.LowiForYou ? LowiForYou.note("mine") : "My posts";
-  el.innerHTML = (window.FYV ? FYV.fabHTML() : "") + '<div class="fy-tops"><button class="fy-mine" data-tr="list-mine" aria-label="' + esc(mineLbl) + '">' + esc(mineLbl) + (mineN ? ' <b>' + mineN + '</b>' : '') + '</button>' + fySavedBtnHTML() + '</div>' + '<div class="fy-feed" id="fyFeed">' + list.map(slideHTML).join("") +
+  el.innerHTML = (window.FYV ? FYV.fabHTML() : "") + '<div class="fy-tops"><button class="fy-mine" data-tr="list-mine" aria-label="' + esc(mineLbl) + '">' + esc(mineLbl) + (mineN ? ' <b>' + mineN + '</b>' : '') + '</button>' + fySavedBtnHTML() + '</div>' + '<div class="fy-feed" id="fyFeed">' + fyToolsHTML() + list.map(slideHTML).join("") +
     '<section class="fy-slide fy-end"><div class="fy-endin"><b>' + esc(fyT("That's everyone")) + '</b><span class="small muted">' + esc(fyT("Newest first. No algorithm.")) + '</span><button class="btn primary sm" data-r3f="post" data-sfx="open">' + esc(fyT("Post something")) + '</button></div></section></div>';
   const f = $("#fyFeed"); if (f) { f.scrollTop = fyTop ? 0 : y; fyTop = 0; if (window.FYV) FYV.attach(f); fyCarBind(f); }
 }

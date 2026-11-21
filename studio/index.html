@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#03050a">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<title>Studio · LOWiSPIKE</title>
+<meta name="description" content="Bewährte Video-Strukturen zum Kopieren: für deine Marke, deine Nische und deinen Agenten.">
+<link rel="icon" type="image/png" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<style>
+/* LOWiSPIKE Studio (21 Nov 2026). A knowledge page, not a renderer: nothing here generates, posts or schedules.
+   Content lives ONLY in cards.json (the same file agents read). This page renders it and never rewrites it.
+   Backdrop: the app's deep-blue bloodstream world, drawn static on purpose (readable, cheap, reduced-motion safe). */
+:root{--ink:#f3efe6;--muted:#b9b3a6;--dim:#8d8879;--gold:#caa15a;--gold2:#e9cb88;--glass:rgba(14,18,30,.72);--line:rgba(233,203,136,.22);--line2:rgba(255,255,255,.08);--ok:#8fe6c8;--warn:#f0c48a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+html{overflow-x:hidden;background:#03050a}
+body{min-height:100vh;min-height:100dvh;color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;
+  background:radial-gradient(120% 60% at 50% -10%,#14306a 0%,#0a1a3e 38%,#050912 72%,#03050a 100%) fixed,#03050a}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(38% 22% at 12% 30%,rgba(196,58,72,.16),transparent 70%),radial-gradient(30% 18% at 88% 62%,rgba(196,58,72,.12),transparent 70%),
+  radial-gradient(60% 30% at 50% 108%,rgba(202,161,90,.16),transparent 70%),
+  radial-gradient(2px 2px at 18% 14%,rgba(233,203,136,.8) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 72% 22%,rgba(255,255,255,.7) 50%,transparent 51%),
+  radial-gradient(2px 2px at 40% 66%,rgba(233,203,136,.6) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 90% 84%,rgba(255,255,255,.6) 50%,transparent 51%),
+  radial-gradient(1.5px 1.5px at 8% 78%,rgba(233,203,136,.7) 50%,transparent 51%),radial-gradient(2px 2px at 60% 92%,rgba(255,255,255,.5) 50%,transparent 51%)}
+.wrap{position:relative;z-index:1;width:min(640px,100%);margin:0 auto;padding:0 16px calc(32px + env(safe-area-inset-bottom))}
+header.top{position:relative;z-index:5;margin:0 -16px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:linear-gradient(180deg,rgba(3,5,10,.92),rgba(3,5,10,.78));backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border-bottom:1px solid var(--line2)}
+.bar{display:flex;align-items:center;gap:10px}
+.back{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line2);text-decoration:none;font-size:22px;cursor:pointer}
+.brand{flex:1;min-width:0}
+.brand b{display:block;font-size:20px;letter-spacing:.01em}
+.brand b span{color:var(--gold2)}
+.brand small{display:block;color:var(--muted);font-size:13px;line-height:1.3}
+.seg{display:flex;gap:6px;margin-top:10px;padding:4px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line2)}
+.seg button{flex:1;min-height:44px;border:0;border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.seg button[aria-selected=true]{background:linear-gradient(180deg,#e9cb88,#b08540);color:#14100a}
+.seg button small{display:block;font-size:11px;font-weight:600;opacity:.8;line-height:1}
+.tools{display:flex;gap:8px;margin-top:8px;align-items:center}
+.search{flex:1;min-width:0;height:44px;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.06);color:var(--ink);font:inherit;font-size:16px;padding:0 12px}
+.search::placeholder{color:var(--dim)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:8px;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:rgba(202,161,90,.06);color:var(--gold2);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--gold2);color:#14100a;border-color:var(--gold2)}
+.panel{margin-top:14px;padding:14px;border-radius:20px;background:var(--glass);border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.panel p{margin:0 0 8px}.panel p:last-child{margin:0}
+.note{color:var(--muted);font-size:14px}
+.warn{border-color:rgba(240,196,138,.35)}
+.warn b{color:var(--warn)}
+h2.grp{font-size:15px;color:var(--gold2);margin:22px 4px 0;font-weight:700}
+.grpnote{margin:4px 4px 0;color:var(--dim);font-size:13px}
+.list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.card{border-radius:20px;background:var(--glass);border:1px solid var(--line2);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);overflow:hidden}
+.card[open]{border-color:var(--line)}
+.card summary{list-style:none;cursor:pointer;padding:14px;display:flex;gap:12px;align-items:flex-start;min-height:44px}
+.card summary::-webkit-details-marker{display:none}
+.id{flex:none;min-width:44px;height:44px;padding:0 6px;border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:14px;color:#14100a;background:linear-gradient(180deg,#e9cb88,#b08540)}
+.hd{flex:1;min-width:0}
+.hd b{display:block;font-size:16px;line-height:1.3;overflow-wrap:anywhere}
+.hd .why{display:block;color:var(--muted);font-size:14px;margin-top:3px;line-height:1.35}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag{font-size:12px;line-height:1.2;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.07);color:var(--muted);overflow-wrap:anywhere}
+.tag.st{background:rgba(240,196,138,.12);color:var(--warn)}
+.chev{flex:none;color:var(--dim);font-size:18px;transition:transform .2s;margin-top:10px}
+.card[open] .chev{transform:rotate(90deg)}
+.body{padding:0 14px 14px}
+.f{margin-top:12px}
+.f h3{margin:0 0 4px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--gold2)}
+.f .t{white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px}
+.f.copy .t{padding:12px;border-radius:14px;background:rgba(0,0,0,.35);border:1px solid var(--line2)}
+.cp{margin-top:8px;min-height:44px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:rgba(202,161,90,.1);color:var(--gold2);font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.cp.ok{color:var(--ok);border-color:rgba(143,230,200,.4)}
+.links a{display:block;color:var(--gold2);font-size:14px;overflow-wrap:anywhere;padding:6px 0;min-height:32px}
+.empty{padding:24px 14px;text-align:center;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:20;max-width:calc(100% - 32px);padding:12px 16px;border-radius:14px;background:rgba(14,18,30,.95);border:1px solid var(--line);font-size:15px;display:none}
+.toast.on{display:block}
+.fb{position:fixed;inset:0;z-index:30;display:none;align-items:flex-end;background:rgba(0,0,0,.6)}
+.fb.on{display:flex}
+.fb .in{width:100%;max-height:80dvh;display:flex;flex-direction:column;gap:10px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));background:#0b0f1a;border-top:1px solid var(--line);border-radius:20px 20px 0 0}
+.fb textarea{flex:1;min-height:200px;width:100%;border-radius:12px;border:1px solid var(--line2);background:#03050a;color:var(--ink);font:inherit;font-size:16px;padding:10px}
+.fb button{min-height:44px;border-radius:14px;border:0;background:var(--gold2);color:#14100a;font:inherit;font-weight:700}
+footer{margin-top:22px;color:var(--dim);font-size:13px}
+footer a{color:var(--gold2)}
+:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="bar">
+      <a class="back" id="back" href="../" aria-label="Zurück zu LOWiSPIKE">‹</a>
+      <div class="brand"><b>LOWiSPIKE <span>Studio</span></b><small>Bewährte Video-Strukturen zum Kopieren und Umbauen</small></div>
+    </div>
+    <div class="seg" role="tablist" aria-label="Bereich">
+      <button role="tab" data-a="start" aria-selected="true">Start<small>Grundlagen</small></button>
+      <button role="tab" data-a="make" aria-selected="false">Make<small>Video bauen</small></button>
+      <button role="tab" data-a="swipe" aria-selected="false">Swipe<small>Vorbilder</small></button>
+    </div>
+    <div class="tools"><input class="search" id="q" type="search" placeholder="Karte suchen, z. B. Hook" aria-label="Karten durchsuchen" autocomplete="off"></div>
+    <div class="chips" role="group" aria-label="Nach Aufwand filtern">
+      <button class="chip" data-e="" aria-pressed="true">Alle</button>
+      <button class="chip" data-e="E1" aria-pressed="false">E1 Gesichtslos</button>
+      <button class="chip" data-e="E2" aria-pressed="false">E2 Stimme</button>
+      <button class="chip" data-e="E3" aria-pressed="false">E3 Hände</button>
+      <button class="chip" data-e="E4" aria-pressed="false">E4 Gesicht</button>
+    </div>
+  </header>
+  <main id="main"><div class="empty">Karten werden geladen…</div></main>
+  <footer id="foot"></footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="fb" id="fb" role="dialog" aria-modal="true" aria-label="Text zum Kopieren"><div class="in"><b>Kopieren hat nicht geklappt</b><span class="note">Der Text ist unten markiert. Halte darauf gedrückt und tippe auf „Kopieren“.</span><textarea id="fbt" readonly></textarea><button id="fbx">Fertig</button></div></div>
+<script>
+(function () {
+  'use strict';
+  var D = document, DATA = null, AREA = 'start', EFF = '', Q = '';
+  var $ = function (s) { return D.querySelector(s); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var COPY = /^(Kopier das|Remix-Prompt|Agent-Ansicht|Hook)/;
+  /* honest copy: success only when the browser confirms it */
+  function copy(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) return navigator.clipboard.writeText(text).then(function () { return true; }, legacy);
+    return Promise.resolve(legacy());
+    function legacy() { try { var t = D.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0'; D.body.appendChild(t); t.select(); t.setSelectionRange(0, text.length); var ok = D.execCommand('copy'); t.remove(); return !!ok; } catch (e) { return false; } }
+  }
+  function toast(m) { var t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.k); toast.k = setTimeout(function () { t.classList.remove('on'); }, 2200); }
+  function fallback(text) { var f = $('#fb'), a = $('#fbt'); a.value = text; f.classList.add('on'); setTimeout(function () { a.focus(); a.select(); a.setSelectionRange(0, text.length); }, 50); }
+  $('#fbx').onclick = function () { $('#fb').classList.remove('on'); };
+  /* a card fits a level when its effort text names it, or a range ("E1 bis E4") covers it */
+  function levels(s) { var o = {}; s.replace(/E(\d)\s*bis\s*E(\d)/g, function (m, a, b) { for (var i = +a; i <= +b; i++) o['E' + i] = 1; return ''; }).replace(/E\d/g, function (m) { o[m] = 1; return m; }); return o; }
+  function effOk(c) { return !EFF || !!levels(c.effort)[EFF]; }
+  function match(c) { if (!effOk(c)) return false; if (!Q) return true; var h = (c.id + ' ' + c.title + ' ' + c.effort + ' ' + c.fields.map(function (f) { return f.text; }).join(' ')).toLowerCase(); return Q.split(/\s+/).every(function (w) { return h.indexOf(w) >= 0; }); }
+  function purpose(c) { var f = c.fields.filter(function (x) { return x.label === 'Wofür' || x.label === 'Hook' || x.label === 'Hook (wörtlich)' || x.label === 'Kopier das'; })[0]; return f ? f.text.split('\n')[0] : ''; }
+  function cardHTML(c) {
+    var body = c.fields.map(function (f, i) {
+      var cp = COPY.test(f.label);
+      return '<div class="f' + (cp ? ' copy' : '') + '"><h3>' + esc(f.label) + '</h3><div class="t">' + esc(f.text) + '</div>' + (cp ? '<button class="cp" data-id="' + esc(c.id) + '" data-i="' + i + '">Kopieren</button>' : '') + '</div>';
+    }).join('');
+    var links = c.links.length ? '<div class="f links"><h3>Link' + (c.links.length > 1 ? 's' : '') + ' (öffnet die Originalplattform)</h3>' + c.links.map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + esc(u) + '</a>'; }).join('') + '</div>' : '';
+    var all = '<button class="cp" data-id="' + esc(c.id) + '" data-i="all">Ganze Karte für den Agenten kopieren</button>';
+    return '<details class="card" id="' + esc(c.id) + '"><summary><span class="id">' + esc(c.id) + '</span><span class="hd"><b>' + esc(c.title) + '</b><span class="why">' + esc(purpose(c)) + '</span><span class="tags"><span class="tag">Aufwand ' + esc(c.effort) + '</span><span class="tag st">' + esc(c.status) + '</span></span></span><span class="chev" aria-hidden="true">›</span></summary><div class="body">' + body + links + all + '</div></details>';
+  }
+  function cardText(c) { return c.id + ' · ' + c.title + '\nAufwand: ' + c.effort + '\nStatus: ' + c.status + '\n' + c.fields.map(function (f) { return f.label + ':\n' + f.text; }).join('\n') + (c.links.length ? '\nLinks:\n' + c.links.join('\n') : '') + '\n(Quelle: LOWiSPIKE Studio, ' + DATA.version + '. Der Agent erstellt, die Person postet selbst.)'; }
+  function render() {
+    var m = $('#main'), cards = DATA.cards.filter(function (c) { return (Q ? true : c.area === AREA) && match(c); }), h = '';
+    if (AREA === 'start' && !Q && !EFF) h += '<div class="panel"><p>' + esc(DATA.intro) + '</p><p class="note">' + esc(DATA.legend['Aufwand']) + '</p></div><div class="panel warn"><p><b>Wichtig:</b> ' + esc(DATA.legend['Wichtig']) + ' Studio ist eine Wissensseite: Kopieren startet keinen Agenten und erzeugt kein Video.</p></div>';
+    if (AREA === 'swipe' && !Q) h += '<div class="panel warn"><p class="note">' + esc(DATA.swipeNote) + ' Vorbilder dienen zur Analyse und für eigene Versionen: keine fremden Clips oder Texte 1:1 übernehmen.</p></div>';
+    if (Q) h += '<p class="grpnote">' + cards.length + ' Treffer in allen Bereichen</p>';
+    if (!cards.length) h += '<div class="empty">Keine Karte passt. Versuch ein anderes Wort oder tippe auf „Alle“.</div>';
+    var g = null;
+    cards.forEach(function (c) { if (c.group && c.group !== g) { if (g !== null || h) h += '</div>'; g = c.group; h += '<h2 class="grp">' + esc(g) + '</h2>' + (DATA.groupNotes[g] ? '<p class="grpnote">' + esc(DATA.groupNotes[g]) + '</p>' : '') + '<div class="list">'; } else if (g === null && !h.endsWith('<div class="list">')) { h += '<div class="list">'; g = ''; } h += cardHTML(c); });
+    if (cards.length) h += '</div>';
+    if (AREA === 'swipe' && !Q && !EFF) h += '<h2 class="grp">Weggelassen (du kannst es zurückholen)</h2><div class="panel"><p class="note">' + DATA.omitted.map(esc).join('<br>') + '</p><p class="note">' + esc(DATA.originals) + '</p></div>';
+    m.innerHTML = h;
+  }
+  function setArea(a) { AREA = a; D.querySelectorAll('.seg button').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.a === a ? 'true' : 'false'); }); render(); window.scrollTo(0, 0); }
+  D.addEventListener('click', function (e) {
+    var t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.a) return setArea(t.dataset.a);
+    if (t.hasAttribute('data-e')) { EFF = t.dataset.e; D.querySelectorAll('.chip').forEach(function (b) { b.setAttribute('aria-pressed', b === t ? 'true' : 'false'); }); return render(); }
+    if (t.classList.contains('cp')) {
+      var c = DATA.cards.filter(function (x) { return x.id === t.dataset.id; })[0]; if (!c) return;
+      var text = t.dataset.i === 'all' ? cardText(c) : c.fields[+t.dataset.i].text;
+      copy(text).then(function (ok) { if (ok) { var l = t.textContent; t.classList.add('ok'); t.textContent = 'Kopiert ✓'; toast('Kopiert. Füg es bei deinem Agenten ein.'); setTimeout(function () { t.classList.remove('ok'); t.textContent = l; }, 1800); } else fallback(text); });
+    }
+  });
+  $('#q').addEventListener('input', function (e) { Q = e.target.value.trim().toLowerCase(); render(); });
+  /* back: inside the app (opened from For You) go back; opened directly, go to the app */
+  $('#back').addEventListener('click', function (e) { try { if (D.referrer && new URL(D.referrer).origin === location.origin && history.length > 1) { e.preventDefault(); history.back(); } } catch (x) {} });
+  function openHash() { var id = decodeURIComponent((location.hash || '').slice(1)).toUpperCase(); if (!id || !DATA) return; var c = DATA.cards.filter(function (x) { return x.id === id; })[0]; if (!c) return; if (c.area !== AREA) setArea(c.area); var el = D.getElementById(c.id); if (el) { el.open = true; el.scrollIntoView({block: 'start'}); } }
+  window.addEventListener('hashchange', openHash);
+  fetch('cards.json', {cache: 'no-cache'}).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
+    DATA = d; render(); openHash();
+    $('#foot').innerHTML = esc(d.stand) + ' ' + d.cards.length + ' Karten.<br>Für Agenten: dieselben Karten als Daten unter <a href="cards.json">studio/cards.json</a>. Jede Karte hat einen festen Link, z. B. <a href="#M4">#M4</a>.';
+  }).catch(function () { $('#main').innerHTML = '<div class="empty">Die Karten konnten nicht geladen werden. Prüf deine Internetverbindung und lade die Seite neu.</div>'; });
+})();
+</script>
+</body>
+</html>

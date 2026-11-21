@@ -1634,3 +1634,8 @@ Every Home bubble now opens its world from the v9 PDF, same four zones everywher
 
 ## 18 Nov 2026, evening: v9 redesign rolled back (owner)
 Emmanuel: "I don't like the new update ... set it back to what the people in my community already knew before you made any changes." Every app file is back to build 20261112-060325 (commit 1bcf6a5): no v9 worlds, X bottom button, Ranking chips, Baskets door, game market first, old verdict colours. The v9 handoff (branch design-v9-handoff) and the one-world concept PDF stay as ideas only; do not ship either without a new decision from him. **Checks:** `tests/v9-rollback.test.cjs` (14 guards).
+
+## 21 Nov 2026: Studio (review build, not released)
+- Studio is a knowledge page at `studio/` (direct link `/lowispike/studio/`, deep links `#S1`…`#W23`). All 42 cards (S1-S5, M1-M14, W1-W23) live verbatim in `studio/cards.json`, the one source for the page and for agents. No generate, post or schedule button: the agent creates, the person posts.
+- For You: the first item of the feed is a row of four tool circles (Posten, Gespeichert, Content erstellen -> Studio, Affiliate -> `affiliates/`). It scrolls away with the posts; it never floats. Saved moved from the floating pill into the row. No new Home bubble, no Studio button in Circle.
+- Studio card text is German only (source material); the row labels are EN/DE/ES. Held for Emmanuel's approval before any release to main.

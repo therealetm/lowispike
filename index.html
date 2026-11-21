@@ -5252,8 +5252,7 @@ function fyToolsHTML(){ const n = Object.keys(T.saved || {}).length;
     it('b data-r3f="post" data-sfx="open"', '+', L[0]) +
     it('b data-tr="list-mine"', '\u25A6' + num(mine), L[4], L[4] + (mine ? ", " + mine : "")) +
     it('b data-tr="list-saved"', (typeof FIC !== "undefined" && FIC.save) || '\u{1F516}', L[1], L[1] + (n ? ", " + n : "")) +
-    it('a href="studio/"', '\u270E', L[2]) +
-    it('a href="affiliates/"', '\u20AC', L[3]) + '</nav>'; }
+    it('a href="studio/"', '\u270E', L[2]) + '</nav>'; }
 /* 21 Nov 2026 (Emmanuel: "When you open the For You page, that new bar isn't showing ... When they open it, it should be
    there."): every time For You comes into view (its rooms frame loses [hidden], or the pane is moved in), the feed starts at
    the top with the circles showing. Scrolling inside For You is left alone. */

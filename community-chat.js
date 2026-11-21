@@ -645,7 +645,10 @@ function roomHead(q,ms,state,el){const rp=roomPeople(ms),meta=q('#crMeta'),link=
  if(crew){const h=rp.crew.length?'<span class="cr-crewl">'+esc(tr('roomCrew'))+'</span><div class="cr-crews">'+rp.crew.map(p=>button('profile',mate(p.uid,'cr'+sid(p.uid)),'data-uid="'+esc(p.uid)+'" data-name="'+esc(p.n)+'" aria-label="'+esc(botName(p.n,p.uid))+' · '+tr('profile')+'" style="--chat-color:'+hueColor(p.uid,false)+'"','cr-mate')).join('')+'</div>':'<span class="cr-crewl">'+esc(tr('roomCrew'))+'</span><p class="cr-crewnone">'+esc(tr('roomNoCrew'))+'</p>';if(crew.__html!==h){crew.innerHTML=h;crew.__html=h;}}}
 function renderLocal(m,prev,next){const mine=m.uid===scope,start=!prev||prev.uid!==m.uid||m.ts-prev.ts>300000,end=!next||next.uid!==m.uid||next.ts-m.ts>300000;
  const who=end?'<span class="cs-avatar cp-av" aria-hidden="true">'+mate(mine?(scope||'me'):m.uid,'l'+sid(m.id))+'</span>':'<span class="cp-av cp-gap" aria-hidden="true"></span>';
- const head='<div class="cs-by">'+(start&&!mine?'<b class="cs-name">'+esc(m.by)+'</b>'+botDash(m.uid,m.by):'<span class="cp-sr">'+esc(mine?tr('you'):botName(m.by,m.uid))+' '+tr('says')+'</span>')+'</div>';
+ /* 21 Nov 2026 (Emmanuel: the chat should look so good people screenshot it): a meal photo is drawn as a photo post
+    (chat-meal-post.css), so it always carries its poster's name, also on your own */
+ const mealPost=!voiceOf(m)&&!albumOf(m)&&(()=>{const ph=photoOf(m);return !!(ph&&ph.meal);})();
+ const head='<div class="cs-by">'+(mealPost?'<b class="cs-name cs-postname">'+esc(mine?(String(own().n||'').trim()||m.by):m.by)+'</b>':start&&!mine?'<b class="cs-name">'+esc(m.by)+'</b>'+botDash(m.uid,m.by):'<span class="cp-sr">'+esc(mine?tr('you'):botName(m.by,m.uid))+' '+tr('says')+'</span>')+'</div>';
  const foot='<div class="cm-foot"><time datetime="'+new Date(m.ts).toISOString()+'">'+esc(time(m.ts))+'</time></div>';
  return '<article class="cm-msg cp-msg cp-local'+(mine?' mine':'')+(start?' cp-start':'')+(end?' cp-end':'')+'" id="cm-'+esc(m.id)+'" data-who="'+esc(m.by)+'" style="--chat-color:'+(mine?'#9cdac7':hueColor(m.uid,false))+'">'+who+'<div class="cm-bub">'+head+msgBody(m)+foot+'</div></article>';}
 function renderMessage(m,all,prev,next){
@@ -661,7 +664,10 @@ function renderMessage(m,all,prev,next){
     so tapping a bubble, reacting or opening the menu never re-parses the row: same photo, same companion, same scroll. */
  const reacts=K.SHOW.map(([em,g,lab])=>{const rows=rx.filter(x=>x.emoji===em);return rows.length?button('react','<span class="cm-emo" aria-hidden="true">'+g+'</span> '+rows.length,'aria-label="'+esc(lab[Math.max(0,lang())]||lab[0])+' · '+rows.length+'" data-id="'+esc(m.id)+'" data-emoji="'+esc(em)+'" aria-pressed="'+rows.some(x=>x.user_id===scope)+'"'+(transport.reactionBusy(m.id,em)?' disabled':''),'cm-chip'+(rows.some(x=>x.user_id===scope)?' on':'')):'';}).join('');rxHTML.set(m.id,reacts);
  const who=end?button('profile',mate(m.uid,'m'+sid(m.id)),'data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'" aria-label="'+esc(mine?tr('you'):botName(m.by,m.uid))+' · '+tr('profile')+'"','cs-avatar cp-av'):'<span class="cp-av cp-gap" aria-hidden="true"></span>';
- const head='<div class="cs-by">'+(start&&!mine?'<b class="cs-name" data-chat="profile" data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'">'+esc(m.by)+'</b>'+botDash(m.uid,m.by):'<span class="cp-sr">'+esc(mine?tr('you'):botName(m.by,m.uid))+' '+tr('says')+'</span>')+'</div>';
+ /* 21 Nov 2026 (Emmanuel: the chat should look so good people screenshot it): a meal photo is drawn as a photo post
+    (chat-meal-post.css), so it always carries its poster's name, also on your own */
+ const mealPost=!voiceOf(m)&&!albumOf(m)&&(()=>{const ph=photoOf(m);return !!(ph&&ph.meal);})();
+ const head='<div class="cs-by">'+(mealPost?'<b class="cs-name cs-postname">'+esc(mine?(String(own().n||'').trim()||m.by):m.by)+'</b>':start&&!mine?'<b class="cs-name" data-chat="profile" data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'">'+esc(m.by)+'</b>'+botDash(m.uid,m.by):'<span class="cp-sr">'+esc(mine?tr('you'):botName(m.by,m.uid))+' '+tr('says')+'</span>')+'</div>';
  /* time sits bottom-right inside the bubble, Telegram-style; the ··· actions button rides next to it */
  const foot='<div class="cm-foot">'+(pending?'':button('more','<span aria-hidden="true">···</span>','data-id="'+esc(m.id)+'" aria-label="'+tr('more')+'" aria-haspopup="menu" aria-expanded="false"','cp-more'))+'<time datetime="'+new Date(m.ts).toISOString()+'">'+esc(time(m.ts))+'</time></div>';
  return '<article class="cm-msg cp-msg'+(mine?' mine':'')+(start?' cp-start':'')+(end?' cp-end':'')+'" id="cm-'+esc(m.id)+'" data-who="'+esc(m.by)+'" data-chat-id="'+esc(m.id)+'" style="--chat-color:'+esc(color)+'">'+who+

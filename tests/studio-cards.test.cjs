@@ -104,3 +104,11 @@ test('Studio: real folders the owner can rename and fill, sort by most views, ow
   assert.match(sql, /revoke all on public\.studio_config from anon, authenticated;/, 'no direct writes');
   assert.match(sql, /octet_length\(doc::text\) > 400000/);
 });
+test('a meal in the chat is a 9:16 photo post with the brand mark, only meal bubbles change', () => {
+  const css = R('chat-meal-post.css'), h = R('index.html'), cc = R('community-chat.js');
+  assert.ok(h.indexOf('href="chat-meal-post.css') > h.indexOf('href="community-chat.css'), 'loads after the chat styles');
+  assert.match(css, /\.cm-bub\.cm-pbub:has\(> \.cs-meal\)\{[^}]*aspect-ratio:9\/16/);
+  assert.match(css, /content:"LOWiSPIKE"/);
+  assert.equal((cc.match(/const mealPost=!voiceOf\(m\)&&!albumOf\(m\)/g) || []).length, 2, 'both renderers name the poster');
+  assert.match(R('sw.js'), /STATIC\.push\("chat-meal-post\.css"\)/);
+});

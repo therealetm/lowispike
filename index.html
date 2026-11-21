@@ -5254,6 +5254,15 @@ function fyToolsHTML(){ const n = Object.keys(T.saved || {}).length;
     it('b data-tr="list-saved"', (typeof FIC !== "undefined" && FIC.save) || '\u{1F516}', L[1], L[1] + (n ? ", " + n : "")) +
     it('a href="studio/"', '\u270E', L[2]) +
     it('a href="affiliates/"', '\u20AC', L[3]) + '</nav>'; }
+/* 21 Nov 2026 (Emmanuel: "When you open the For You page, that new bar isn't showing ... When they open it, it should be
+   there."): every time For You comes into view (its rooms frame loses [hidden], or the pane is moved in), the feed starts at
+   the top with the circles showing. Scrolling inside For You is left alone. */
+(function fyTopOnOpen(){ let was = false;
+  const vis = () => { const f = document.getElementById("fyFeed"); if (!f) return false; const r = f.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !f.closest("[hidden]"); };
+  const check = () => { const now = vis(); if (now && !was) { const f = document.getElementById("fyFeed"); f.scrollTop = 0; requestAnimationFrame(() => { f.scrollTop = 0; }); setTimeout(() => { if (vis()) f.scrollTop = 0; }, 250); } was = now; };
+  const start = () => { try { new MutationObserver(check).observe(document.body, {subtree: true, childList: true, attributes: true, attributeFilter: ["hidden", "class", "data-rm-view"]}); } catch (e) {} check(); };
+  if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
+})();
 function renderForYou(el){
   el = el || $("#cmFeed"); if (!el) return; fyHealThumbs(); load(); retryShares(); const list = feed();
   const prev = $("#fyFeed"), y = prev ? prev.scrollTop : 0;

@@ -81,3 +81,10 @@ html[data-ui=light] #cmPaneFeed .fy-slide .fy-by,html[data-ui=light] #cmPaneFeed
 /* full bleed on phones: the chat pane keeps its own padding for the other views; the For You view spans the screen */
 html[data-lay=phone] #cmPaneChat[data-spirit-chat]>.rm-view:has(>.rm-fy:not([hidden])){width:100vw!important;max-width:100vw!important;margin-left:calc(50% - 50vw)!important;margin-right:0!important}
 #cmPaneFeed .fy-slide .fy-meta>.md-fy{margin:2px 14px 14px!important;padding:6px 12px!important;width:auto!important;align-self:flex-start;min-height:0!important}
+/* 21 Nov 2026 (Emmanuel: "why is it gold? That's not the branding of my app"): the circles wear the app's own chrome, the same
+   dark glass, white text and blue glow as the Chat / Circle / Ranking / For You tabs above them. No gold on For You. */
+#cmPaneFeed .fy-tool-c{color:#fff!important;background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.03))!important;
+  border:1.5px solid rgba(var(--acc-rgb,159,216,255),.55)!important;box-shadow:0 0 14px rgba(var(--acc-rgb,159,216,255),.22),inset 0 1px 0 rgba(255,255,255,.14)!important}
+#cmPaneFeed .fy-tool-c svg{color:#fff!important}
+#cmPaneFeed .fy-tool-n{background:var(--acc,#9fd8ff)!important;color:#03050a!important}
+#cmPaneFeed #fyFeed .fy-slide .fy-act.on[data-tr=save] svg,#cmPaneFeed .fy-slide .fy-rail .fy-act.on{color:var(--acc,#9fd8ff)!important}

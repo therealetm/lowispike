@@ -40,3 +40,9 @@ test('For You looks like Instagram: foryou-ig.css loads last, hides the doubled 
   assert.match(h, /data-tr="list-mine"', '\\u25A6'/);
   assert.match(R('sw.js'), /STATIC\.push\("foryou-ig\.css"\)/);
 });
+test('For You opens at the top (circles showing) and uses the app blue, not gold', () => {
+  const h = R('index.html'), css = R('foryou-ig.css'), st = R('studio/index.html');
+  assert.match(h, /function fyTopOnOpen\(\)/);
+  assert.match(css, /\.fy-tool-c\{color:#fff!important;[^}]*--acc-rgb/);
+  assert.doesNotMatch(st, /#e9cb88|#caa15a|#b08540/i, 'Studio has no gold');
+});

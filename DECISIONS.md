@@ -1639,3 +1639,7 @@ Emmanuel: "I don't like the new update ... set it back to what the people in my 
 - Studio is a knowledge page at `studio/` (direct link `/lowispike/studio/`, deep links `#S1`…`#W23`). All 42 cards (S1-S5, M1-M14, W1-W23) live verbatim in `studio/cards.json`, the one source for the page and for agents. No generate, post or schedule button: the agent creates, the person posts.
 - For You: the first item of the feed is a row of four tool circles (Posten, Gespeichert, Content erstellen -> Studio, Affiliate -> `affiliates/`). It scrolls away with the posts; it never floats. Saved moved from the floating pill into the row. No new Home bubble, no Studio button in Circle.
 - Studio card text is German only (source material); the row labels are EN/DE/ES. Held for Emmanuel's approval before any release to main.
+
+## 21 Nov 2026: For You looks like Instagram (Emmanuel, with Instagram screenshots)
+- "Why do we got it twice?" / "Make it resemble Instagram" / "don't have our For You page in like this weird box". For You is one scrolling list, edge to edge, no frame: each post is name and time, the picture full width at its own shape (at most 4:5, never letterboxed), the plain icon row (Save, food, Share, ···), then the caption and the insulin chip.
+- The circles at the top are the only controls: Post, My posts, Saved, Create content (Studio), Affiliate; they scroll sideways and scroll away. The floating "+ Post" button and "My posts" pill are hidden on For You. Layout lives in foryou-ig.css (loaded last); markup and handlers are unchanged.

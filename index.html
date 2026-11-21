@@ -5245,10 +5245,12 @@ let fyTop = 0;
    the posts and never floats over them. Saved moved here from the floating .fy-tops pill (hidden there by CSS). */
 function fyToolsHTML(){ const n = Object.keys(T.saved || {}).length;
   let l = "en"; try { l = String((window.LowiLang && LowiLang.get ? LowiLang.get() : localStorage.getItem("lowispike.lang")) || "en").slice(0, 2); } catch (e) {}
-  const L = {en: ["Post", "Saved", "Create content", "Affiliate"], de: ["Posten", "Gespeichert", "Content erstellen", "Affiliate"], es: ["Publicar", "Guardado", "Crear contenido", "Afiliados"]}[l] || ["Post", "Saved", "Create content", "Affiliate"];
+  const L = {en: ["Post", "Saved", "Create content", "Affiliate", "My posts"], de: ["Posten", "Gespeichert", "Content erstellen", "Affiliate", "Meine Beiträge"], es: ["Publicar", "Guardado", "Crear contenido", "Afiliados", "Mis posts"]}[l] || ["Post", "Saved", "Create content", "Affiliate", "My posts"];
+  const mine = fyMineAll().length, num = k => k ? '<span class="fy-tool-n">' + k + '</span>' : '';
   const it = (attrs, ic, t, aria) => '<' + (attrs[0] === "a" ? 'a' : 'button type="button"') + attrs.slice(1) + ' class="fy-tool" aria-label="' + esc(aria || t) + '"><span class="fy-tool-c" aria-hidden="true">' + ic + '</span><span class="fy-tool-t">' + esc(t) + '</span></' + (attrs[0] === "a" ? 'a' : 'button') + '>';
   return '<nav class="fy-tools" aria-label="' + esc(L[2]) + '">' +
     it('b data-r3f="post" data-sfx="open"', '+', L[0]) +
+    it('b data-tr="list-mine"', '\u25A6' + num(mine), L[4], L[4] + (mine ? ", " + mine : "")) +
     it('b data-tr="list-saved"', (typeof FIC !== "undefined" && FIC.save) || '\u{1F516}', L[1], L[1] + (n ? ", " + n : "")) +
     it('a href="studio/"', '\u270E', L[2]) +
     it('a href="affiliates/"', '\u20AC', L[3]) + '</nav>'; }
@@ -23015,6 +23017,7 @@ window.LowiCommunityHost = {
 <script src="share-sheet.js?v=20261121-024250"></script>
 <script src="haptics.js?v=20261121-024250"></script>
 <link rel="stylesheet" href="design-pass.css?v=20261121-024250"><!-- Nov 10 2026 design pass: legibility, 44 pt tap areas, layout fixes; after the other sheets -->
+<link rel="stylesheet" href="foryou-ig.css?v=20261121-024250"><!-- Nov 21 2026: For You looks like Instagram (one list, no frame, nothing twice); last on purpose -->
 <link rel="stylesheet" id="szCss" href="seller-zone.css?v=20261121-024250">
 <script src="seller-zone-data.js?v=20261121-024250"></script>
 <script src="seller-zone-core.js?v=20261121-024250"></script>

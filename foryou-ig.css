@@ -1,0 +1,83 @@
+/* foryou-ig.css (21 Nov 2026, Emmanuel with Instagram screenshots: "Make it resemble Instagram because people are used to it.
+   And don't have our For You page in like this weird box ... It should feel seamlessly." and "Why do we got it twice?").
+   Loaded after every other sheet. For You is a plain scrolling list like Instagram's home feed:
+   - no frame around the feed, edge to edge, free scroll (no one-post-per-screen snapping);
+   - each post: name and time on top, the picture full width, the buttons under it, the caption below;
+   - the tool circles (fy-tools) are the only controls at the top; the old floating "+ Post" and "My posts" are gone
+     (both live in the circles now), so nothing is shown twice and nothing floats over the posts.
+   Markup and handlers are unchanged (index.html slideHTML, foryou.js bot slides): this file only lays them out. */
+
+/* 1. no box: the rooms frame and the feed lose their border, radius, inset and backdrop */
+#cmPaneChat[data-spirit-chat][data-rm-view=fy]>.rm-view{padding-left:0!important;padding-right:0!important}
+#cmPaneChat .rm-frame.rm-fy{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;margin-left:0!important;margin-right:0!important;width:100%!important;left:0!important;right:0!important}
+#cmPaneFeed #fyFeed,#cmPaneFeed .fy-feed{border-radius:0!important;margin:0!important;width:100%!important;max-width:none!important;left:0!important;right:0!important;inset:auto!important;position:relative!important;height:100%!important;
+  scroll-snap-type:none!important;background:transparent!important;box-shadow:none!important;border:0!important;outline:0!important}
+
+/* 2. nothing twice, nothing floating: the circles replace the floating Post button and the My posts pill */
+#cmPaneFeed .fyv-fab,#cmPaneFeed .fy-tops,#cmPaneFeed .r3f-fab{display:none!important}
+
+/* 3. the circle row: Instagram's story row, scrolls sideways, scrolls away with the feed */
+#cmPaneFeed .fy-tools{display:flex!important;justify-content:flex-start;gap:14px;padding:12px 14px 14px!important;overflow-x:auto;scrollbar-width:none;
+  scroll-snap-align:none!important;background:transparent!important;border-bottom:1px solid rgba(255,255,255,.08);width:100%!important;margin:0!important}
+#cmPaneFeed .fy-tools::-webkit-scrollbar{display:none}
+#cmPaneFeed .fy-tool{flex:0 0 auto;width:76px}
+#cmPaneFeed .fy-tool-c{width:68px;height:68px}
+#cmPaneFeed .fy-tool-n{position:absolute;top:-2px;right:-2px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#e9cb88;color:#14100a;font-size:12px;font-weight:800;line-height:22px;text-align:center}
+#cmPaneFeed .fy-tool-c{position:relative}
+
+/* 4. a post is a block in the list, not a full-screen slide */
+#cmPaneFeed .fy-slide:not(.fy-end){position:relative!important;display:flex!important;flex-direction:column!important;height:auto!important;min-height:0!important;max-height:none!important;
+  width:100%!important;max-width:none!important;margin:0 0 6px!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;outline:0!important;
+  background:transparent!important;overflow:visible!important;scroll-snap-align:none!important;scroll-snap-stop:normal!important;transform:none!important}
+#cmPaneFeed .fy-slide .fy-shade{display:none!important}
+/* header row on top: avatar, name, time (Instagram order) */
+#cmPaneFeed .fy-slide .fy-meta{display:contents!important}
+#cmPaneFeed .fy-slide .fy-by{order:1;position:static!important;display:flex!important;align-items:center;gap:10px;padding:10px 14px!important;margin:0!important;background:none!important;
+  color:#f3efe6;font-size:15px;min-height:52px}
+#cmPaneFeed .fy-slide .fy-by b{font-weight:700}
+#cmPaneFeed .fy-slide .fy-by span{color:#a9a49a;font-size:14px}
+/* the picture, video or carousel: full width, 4:5 like Instagram, no rounding */
+#cmPaneFeed .fy-slide>.fy-bg{order:2;position:relative!important;inset:auto!important;display:block;width:100%!important;height:auto!important;aspect-ratio:4/5;max-height:72vh;object-fit:cover;
+  border-radius:0!important;margin:0!important;transform:none!important;filter:none!important;opacity:1!important;background:#0b0e15}
+#cmPaneFeed .fy-slide>.fy-bg.fy-car{overflow:hidden}
+#cmPaneFeed .fy-slide>.fy-bg.fy-car .fy-car-track,#cmPaneFeed .fy-slide>.fy-bg.fy-car img{height:100%}
+/* text-only posts: the text sits where the picture would */
+#cmPaneFeed .fy-slide.fy-text .fy-big{order:2;position:static!important;padding:28px 18px!important;font-size:22px;line-height:1.35;background:linear-gradient(160deg,#141722,#0a0b11)}
+/* the play button and the sound button stay over the picture */
+#cmPaneFeed .fy-slide .fy-play{position:absolute!important;left:50%!important;top:calc(52px + min(62.5vw,36vh))!important;transform:translate(-50%,-50%)!important;z-index:2}
+#cmPaneFeed .fy-slide .fyv-snd{position:absolute!important;top:auto!important;bottom:auto!important;right:12px!important;left:auto!important;margin-top:calc(52px + min(125vw,72vh) - 52px);z-index:2}
+#cmPaneFeed .fy-slide .fy-state{position:absolute!important;top:62px!important;left:12px!important;z-index:2}
+/* buttons under the picture, in one row, icons only (Instagram's action bar); ··· goes right */
+#cmPaneFeed .fy-slide .fy-rail{order:3;position:static!important;inset:auto!important;display:flex!important;flex-direction:row!important;align-items:center;gap:4px!important;
+  padding:4px 8px!important;margin:0!important;width:100%!important;transform:none!important;background:none!important}
+#cmPaneFeed .fy-slide .fy-rail .fy-act{width:44px!important;height:44px!important;min-width:44px;padding:0!important;margin:0!important;border:0!important;border-radius:50%!important;
+  background:none!important;box-shadow:none!important;color:#f3efe6;display:grid!important;place-items:center}
+#cmPaneFeed .fy-slide .fy-rail .fy-act>span{display:none!important}
+#cmPaneFeed .fy-slide .fy-rail .fy-act svg{width:26px;height:26px}
+#cmPaneFeed .fy-slide .fy-rail .fy-act.on{color:#e9cb88}
+#cmPaneFeed .fy-slide .fy-rail .fy-more{margin-left:auto!important}
+/* caption, chips and the rest of the post text below the buttons */
+#cmPaneFeed .fy-slide .fy-meta>:not(.fy-by){order:4;position:static!important;margin:0!important;padding:0 14px 6px!important;color:#f3efe6;background:none!important;max-width:none!important}
+#cmPaneFeed .fy-slide .fy-meta>:last-child{padding-bottom:14px!important}
+/* the end card is a short line, not a screen */
+#cmPaneFeed .fy-slide.fy-end{height:auto!important;min-height:0!important;padding:28px 16px 120px!important;background:transparent!important;scroll-snap-align:none!important}
+html[data-ui=light] #cmPaneFeed .fy-slide .fy-by,html[data-ui=light] #cmPaneFeed .fy-slide .fy-meta>:not(.fy-by),html[data-ui=light] #cmPaneFeed .fy-slide .fy-rail .fy-act{color:#f3efe6}
+@media (prefers-reduced-motion:reduce){#cmPaneFeed .fy-tools{scroll-behavior:auto}}
+/* fixes from the first look: older rules letterbox the picture and pad the pane; buttons carry ring pseudo-elements */
+#cmPaneChat[data-spirit-chat][data-rm-view=fy]{padding-left:0!important;padding-right:0!important}
+#cmPaneChat[data-spirit-chat][data-rm-view=fy]>.rm-view{margin-left:0!important;margin-right:0!important}
+#cmPaneFeed #cmFeed{padding:0!important}
+#cmPaneFeed .fy-slide>img.fy-bg,#cmPaneFeed .fy-slide>video.fy-bg,#cmPaneFeed .fy-slide>.fy-bg.fy-car img{object-fit:cover!important;object-position:center!important}
+#cmPaneFeed .fy-slide .fy-rail .fy-act{outline:0!important}
+#cmPaneFeed .fy-slide .fy-rail .fy-act::before,#cmPaneFeed .fy-slide .fy-rail .fy-act::after{display:none!important}
+/* photos keep their own shape like Instagram (full width, natural height, at most 4:5), never letterboxed;
+   foryou-rail.css forces contain with #fyFeed, so these use two ids */
+#cmPaneFeed #fyFeed .fy-slide>img.fy-bg{aspect-ratio:auto!important;height:auto!important;max-height:125vw!important;object-fit:cover!important}
+#cmPaneFeed #fyFeed .fy-slide .fy-car-track>img{object-fit:cover!important}
+/* Instagram's plain icons: no ringed discs behind them */
+#cmPaneFeed #fyFeed .fy-slide .fy-act svg{width:26px!important;height:26px!important;padding:0!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+#cmPaneFeed #fyFeed .fy-slide .fy-act.on[data-tr=save] svg{background:none!important;color:#e9cb88}
+#cmPaneChat[data-spirit-chat][data-rm-view=fy]>.rm-view{width:100%!important;max-width:none!important;left:0!important;right:0!important;transform:none!important}
+/* full bleed on phones: the chat pane keeps its own padding for the other views; the For You view spans the screen */
+html[data-lay=phone] #cmPaneChat[data-spirit-chat]>.rm-view:has(>.rm-fy:not([hidden])){width:100vw!important;max-width:100vw!important;margin-left:calc(50% - 50vw)!important;margin-right:0!important}
+#cmPaneFeed .fy-slide .fy-meta>.md-fy{margin:2px 14px 14px!important;padding:6px 12px!important;width:auto!important;align-self:flex-start;min-height:0!important}

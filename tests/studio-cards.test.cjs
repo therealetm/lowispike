@@ -32,3 +32,11 @@ test('For You tool row: Post, Saved, Create content -> studio/, Affiliate -> aff
   assert.match(h, /href="studio\/"/);
   assert.ok(fs.existsSync(path.join(__dirname, '..', 'affiliates', 'index.html')));
 });
+test('For You looks like Instagram: foryou-ig.css loads last, hides the doubled floating buttons, My posts is a circle', () => {
+  const h = R('index.html'), css = R('foryou-ig.css');
+  assert.ok(h.indexOf('href="foryou-ig.css') > h.indexOf('href="design-pass.css'), 'loads after design-pass.css');
+  assert.match(css, /#cmPaneFeed \.fyv-fab,#cmPaneFeed \.fy-tops/);
+  assert.match(css, /scroll-snap-type:none/);
+  assert.match(h, /data-tr="list-mine"', '\\u25A6'/);
+  assert.match(R('sw.js'), /STATIC\.push\("foryou-ig\.css"\)/);
+});

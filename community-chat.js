@@ -785,10 +785,10 @@ function photoBar(toBot){const el=D.getElementById('csPhoto'),btn=D.getElementBy
  const mic=D.getElementById('cmMic');if(mic){const ml=micCanDictate()?tr('micBtn'):tr('voiceBtn');mic.setAttribute('aria-label',ml);mic.title=ml;mic.disabled=photoBusy||voiceBusy||!!pendingPhoto;mic.setAttribute('aria-disabled',String(!scope));}
  if(!el)return;
  if(!pendingPhoto){if(el.innerHTML)el.innerHTML='';return;}
- const pin=pendingPhoto,ai=pin.ai||{},key=pin.id+':'+(ai.st||'')+':'+(pin.wait?1:0);
+ const pin=pendingPhoto,ai=pin.ai||{},key=pin.id+':'+(ai.st||'')+':'+(pin.wait?1:0)+':'+(pin.fx?pin.fx.st:'')+':'+(pin.fv||0);
  if(el.dataset.pid===key&&el.innerHTML)return;el.dataset.pid=key;
  el.innerHTML='<div class="cs-photo-ready'+(ai.st?' cs-food-'+esc(ai.st):'')+'"><img alt="" src="'+esc(pin.preview)+'"><div>'+foodChip(pin)+'<small>'+tr('photoNote')+'</small></div>'+button('photo-clear','×','aria-label="'+tr('photoRemove')+'"','cs-photo-x')+'</div>';
- const ti=el.querySelector('.cs-food-t');if(ti){ti.addEventListener('input',()=>{if(pin.ai)pin.ai.title=ti.value;});ti.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send();}});}}
+ fixWire(el,pin);const ti=el.querySelector('.cs-food-t');if(ti){ti.addEventListener('input',()=>{if(pin.ai)pin.ai.title=ti.value;});ti.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send();}});}}
 /* Oct 27 (E-man, in German: "Wo bleibt eigentlich meine Analyse, wenn ich während oder bevor ich ein Bild in der Community reinposte?
    Der sollte doch das Essen erkennen, genauso wie wenn man bei Mahlzeit sein Essen analysiert ... bevor man das da reinschickt, wenn man
    halt ein paar Sekunden wartet, alles ausgefüllt sein: Titel, was das ist und die ganzen Daten ... damit es dann praktisch genauso aussieht
@@ -807,8 +807,31 @@ function spikePill(lvl){const k={low:'mealLow',mid:'mealMid',high:'mealHigh'}[lv
 function foodChip(pin){const ai=pin.ai||{};
  if(ai.st==='look')return '<b class="cs-food-l" role="status"><i aria-hidden="true"></i>'+esc((pin.wait?tr('foodWait'):tr('foodLook')).replace('{c}',compName()))+'</b>';
  if(ai.st==='ok'){const nums=foodNums(ai.total,ai.net);return '<input class="cs-food-t" type="text" maxlength="80" enterkeyhint="send" autocomplete="off" spellcheck="false" aria-label="'+esc(tr('foodName'))+'" value="'+esc(ai.title)+'">'+
-  '<span class="cs-food-row">'+spikePill(ai.lvl)+(nums?'<span class="cs-food-k">'+esc(nums)+'</span>':'')+'</span>'+(ai.desc?'<span class="cs-food-d">'+esc(ai.desc)+'</span>':'');}
+  '<span class="cs-food-row">'+spikePill(ai.lvl)+(nums?'<span class="cs-food-k">'+esc(nums)+'</span>':'')+'</span>'+(ai.desc?'<span class="cs-food-d">'+esc(ai.desc)+'</span>':'')+fixHTML(pin);}
  return '<b>'+tr('photoReady')+'</b>';}
+/* 22 Nov 2026 (Emmanuel, in German: "Ich möchte hier in diesem Fenster bearbeiten können. Der hat das falsch analysiert ... ein
+   Edit-Knopf, damit ich die Sachen umändern, nachtragen kann, damit er das nochmal neu kalibriert"): under a food read in the composer,
+   "Bearbeiten" opens a box (typed or dictated with the shared mic) and "Neu berechnen" sends the foods and those words to lowi-ai
+   (action mealfix, the same fix as the photo result screen); the card is rebuilt from the corrected foods before it is sent. */
+const FXS={en:{edit:'Edit',h:'What is really on the plate?',ph:'e.g. lettuce burger, 2 beef patties, cheese, no bun',go:'Recalculate',busy:'Recalculating…',cancel:'Cancel',fail:'That did not work. Try again.',limit:'That was a lot of fixes today. Try again tomorrow.',signin:'Sign in to use the AI fix.',done:'Updated from what you said.'},
+ de:{edit:'Bearbeiten',h:'Was ist wirklich auf dem Teller?',ph:'z. B. Salat-Burger, 2 Rindfleisch-Patties, Käse, ohne Brötchen',go:'Neu berechnen',busy:'Rechne neu…',cancel:'Abbrechen',fail:'Hat nicht geklappt. Versuch es noch mal.',limit:'Heute waren es viele Korrekturen. Morgen wieder.',signin:'Melde dich an, um die KI-Korrektur zu nutzen.',done:'Nach deinen Angaben neu berechnet.'},
+ es:{edit:'Editar',h:'¿Qué hay de verdad en el plato?',ph:'p. ej. hamburguesa en lechuga, 2 carnes, queso, sin pan',go:'Recalcular',busy:'Recalculando…',cancel:'Cancelar',fail:'No funcionó. Inténtalo de nuevo.',limit:'Muchas correcciones hoy. Vuelve mañana.',signin:'Inicia sesión para usar la corrección.',done:'Actualizado con lo que dijiste.'}};
+const fxt=k=>(FXS[LC()]||FXS.en)[k];
+function fixHTML(pin){const f=pin.fx;if(!W.LowiAsk||!W.LowiAsk.call)return '';
+ if(!f||f.st==='done'||f.st==='err')return (f&&f.st==='done'?'<span class="cs-fix-ok" role="status">✓ '+esc(f.note||fxt('done'))+'</span>':'')+(f&&f.st==='err'?'<span class="cs-fix-err" role="status">'+esc(f.msg)+'</span>':'')+'<button type="button" class="cs-fix-btn" data-csfix="open">✏️ '+esc(fxt('edit'))+'</button>';
+ return '<span class="cs-fix-box"><b>'+esc(fxt('h'))+'</b><textarea data-mic class="cs-fix-ta" rows="3" maxlength="1500" placeholder="'+esc(fxt('ph'))+'"'+(f.st==='busy'?' disabled':'')+'>'+esc(f.text||'')+'</textarea>'+
+  '<span class="cs-fix-row"><button type="button" class="cs-fix-go" data-csfix="go"'+(f.st==='busy'?' disabled':'')+'>'+esc(fxt(f.st==='busy'?'busy':'go'))+'</button><button type="button" class="cs-fix-x" data-csfix="x">'+esc(fxt('cancel'))+'</button></span></span>';}
+function fixWire(el,pin){const ta=el.querySelector('.cs-fix-ta');if(ta){ta.addEventListener('input',()=>{if(pin.fx)pin.fx.text=ta.value;});if(pin.fx&&pin.fx.st==='open')setTimeout(()=>{try{ta.focus();}catch(e){}},30);}
+ el.querySelectorAll('[data-csfix]').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const k=b.dataset.csfix;
+  if(k==='open'){pin.fx={st:'open',text:''};refresh();}else if(k==='x'){pin.fx=null;refresh();}else if(k==='go')fixGo(pin);}));}
+async function fixGo(pin){const f=pin.fx,ai=pin.ai||{},r=ai.res;if(!f||f.st==='busy'||!r)return;const text=String(f.text||'').trim();if(!text)return;f.st='busy';refresh();
+ try{const j=await W.LowiAsk.call({action:'mealfix',lang:LC(),text,dishes:(r.dishes||[]).map(d=>({name:d.name,portion:d.portion,grams:d.grams,kcal:d.kcal,protein:d.protein,carbs:d.carbs,fiber:d.fiber}))});
+  if(pendingPhoto!==pin)return;const A=W.LowiFoodAI,dishes=(j.dishes||[]).filter(d=>d&&d.name);if(!dishes.length)throw new Error('fail');
+  let title='';try{title=A&&A.title?String(A.title(dishes,LC())||''):'';}catch(e){}
+  const card=foodCard(Object.assign({},r,{isFood:true,dishes,total:null,title,desc:'',verdictBlock:null,note:j.note||''}));if(!card)throw new Error('fail');
+  pin.ai=card;pin.fx={st:'done',note:j.note||''};pin.fv=(pin.fv||0)+1;}
+ catch(e){const c=e&&(e.code||e.message);if(pendingPhoto!==pin)return;pin.fx={st:'err',msg:fxt(c==='limit'?'limit':c==='sign_in'?'signin':'fail')};}
+ refresh();}
 function foodWanted(){if(sel&&botOf(sel))return false;const A=W.LowiFoodAI;if(!A||!A.analyse||!A.prep||!A.endpoint)return false;try{if(!A.endpoint())return false;}catch(e){return false;}return navigator.onLine!==false;}
 /* a food read -> what the card shows ({st:'ok', title, lvl, total, net, desc, detail}), or null for a plain photo. The spike label is the
    result screen's own headline (LowiMealResult.verdict + headline: the stricter of the estimate and the food verdict), else bloodSugar(). */

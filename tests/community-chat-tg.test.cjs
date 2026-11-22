@@ -31,7 +31,7 @@ test('room strings exist in English, German and Spanish',()=>{
 });
 test('room composer: photo button moves left of the field in the room (DOM order too), right of it in the galaxy',()=>{
  assert.match(js,/const left=!!threadOpen&&!selN;if\(left&&ph\.nextElementSibling!==inp\)inp\.parentNode\.insertBefore\(ph,inp\)/);
- assert.match(js,/threadOpen\?tr\('roomMsg'\):tr\('message'\)/,'the room field says Message');
+ assert.match(js,/threadOpen\?'LOWiSPIKE':tr\('message'\)/,'the room field says LOWiSPIKE (22 Nov 2026, was Message)');
 });
 test('Telegram sheet is scoped to the room, loads after the other community sheets, is precached, and never uses white borders',()=>{
  const i=html.indexOf('community-tg.css');assert(i>html.indexOf('community-room.css')&&i>html.indexOf('community-composer.css')&&i>html.indexOf('community-chat.css'));

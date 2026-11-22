@@ -122,3 +122,6 @@ html.lw-chat-on body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cr-down{displ
 .cps-edit{display:flex;gap:8px;width:100%}
 .cps-edit[hidden]{display:none}
 .cps-edit input{flex:1;min-width:0;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:16px;padding:0 12px}
+/* 22 Nov 2026 (Emmanuel: "leave out the details about the calories, protein, and net ... because it could be wrong"): a photo post
+   shows the poster's words, their name and the insulin check only (the numbers stay in Details) */
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-meal-k{display:none!important}

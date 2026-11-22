@@ -247,8 +247,9 @@ function fit(b){if(!b||!b.getBoundingClientRect)return;const head=b.querySelecto
  const v=need+'px';if(b.__fit!==v){b.__fit=v;b.style.setProperty('--rm-tr',v);}
  /* 5 Nov 2026: with the Community heading gone the tabs are the top row, so they also keep clear of the page's own back (#secX) when
     it shows top left (it is usually handed to the bottom button). Measured, so no space is reserved when it is hidden. */
- let ln=0;const x=D.getElementById('secX');if(x&&x.getBoundingClientRect){const s=W.getComputedStyle?W.getComputedStyle(x):null,r=x.getBoundingClientRect();
-  if((!s||(s.display!=='none'&&s.visibility!=='hidden'&&+s.opacity>0.05))&&r.width>0&&r.bottom>br.top&&r.top<br.bottom&&r.left<br.left+60)ln=Math.max(0,Math.ceil(r.right-br.left+8));}
+ /* 22 Nov 2026: the universal back (#lwBX, top-left since today) counts the same way, so it never covers the Chat tab */
+ let ln=0;for(const x of [D.getElementById('secX'),D.getElementById('lwBX')]){if(!x||!x.getBoundingClientRect)continue;const s=W.getComputedStyle?W.getComputedStyle(x):null,r=x.getBoundingClientRect();
+  if((!s||(s.display!=='none'&&s.visibility!=='hidden'&&+s.opacity>0.05))&&r.width>0&&r.bottom>br.top&&r.top<br.bottom&&r.left<br.left+60)ln=Math.max(ln,Math.ceil(r.right-br.left+8));}
  const lv=ln+'px';if(b.__fitL!==lv){b.__fitL=lv;b.style.setProperty('--rm-tl',lv);}}
 D.addEventListener('lowi:room',()=>{paint();try{W.LowiCommunity&&W.LowiCommunity.refresh();}catch(x){}});
 D.addEventListener('lowi:chat',()=>paint());
@@ -272,6 +273,8 @@ function watchPage(){const p=D.getElementById('tab-foryou');if(!p||typeof Mutati
  pageWatch.observe(p,{attributes:true,attributeFilter:['class'],childList:true});}
 setInterval(watchPage,1500);if(D.readyState!=='loading')watchPage();else D.addEventListener('DOMContentLoaded',watchPage);
 W.addEventListener('resize',()=>{if(bar&&bar.isConnected)fit(bar);});
+/* 22 Nov 2026: the top-left back can appear after the bar is drawn; measure again now and then (cheap: two rects) */
+setInterval(()=>{if(bar&&bar.isConnected&&bar.offsetWidth)fit(bar);},800);
 /* the profile picture and the switch appear, move and hide on their own (top-bar.js): re-fit the moment they do */
 let fitRaf=0;const refit=()=>{if(fitRaf||!bar||!bar.isConnected)return;fitRaf=(W.requestAnimationFrame||setTimeout)(()=>{fitRaf=0;fit(bar);});};
 const fmo=typeof MutationObserver==='function'?new MutationObserver(refit):null;

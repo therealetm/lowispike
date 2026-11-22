@@ -56,7 +56,8 @@
             g.fillStyle = p.lvl === 'high' ? '#f0a08a' : p.lvl === 'mid' ? '#e6c98a' : '#5fd37a'; g.beginPath(); g.arc(px + 30, y, 9, 0, Math.PI * 2); g.fill();
             g.shadowBlur = 6; g.shadowColor = 'rgba(0,0,0,.4)'; g.fillStyle = '#fff'; g.fillText(p.label, px + 52, y + 1);
         }
-        if (p.nums) { g.shadowBlur = 10; g.font = '500 40px ' + F; g.fillStyle = 'rgba(255,255,255,.92)'; g.fillText(wrap(p.nums, Wd - 112, x => g.measureText(x).width, 1)[0] || '', x0, y + 72); }
+        /* 22 Nov 2026 (Emmanuel: "leave out the calories, protein and net ... it could be wrong"): name and insulin check only */
+        if (false && p.nums) { g.shadowBlur = 10; g.font = '500 40px ' + F; g.fillStyle = 'rgba(255,255,255,.92)'; g.fillText(wrap(p.nums, Wd - 112, x => g.measureText(x).width, 1)[0] || '', x0, y + 72); }
         return new Promise((ok, no) => c.toBlob(b => (b ? ok(b) : no(new Error('blob'))), 'image/jpeg', 0.92));
     }
     async function share(blob) {

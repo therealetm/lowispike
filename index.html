@@ -5268,7 +5268,7 @@ let fyTop = 0;
 function fyToolsHTML(){ const n = Object.keys(T.saved || {}).length;
   let l = "en"; try { l = String((window.LowiLang && LowiLang.get ? LowiLang.get() : localStorage.getItem("lowispike.lang")) || "en").slice(0, 2); } catch (e) {}
   const L = {en: ["Post", "Saved", "Create content", "Affiliate", "My posts"], de: ["Posten", "Gespeichert", "Content erstellen", "Affiliate", "Meine Beiträge"], es: ["Publicar", "Guardado", "Crear contenido", "Afiliados", "Mis posts"]}[l] || ["Post", "Saved", "Create content", "Affiliate", "My posts"];
-  const mine = fyMineAll().filter(fyIsLink).length, num = k => k ? '<span class="fy-tool-n">' + k + '</span>' : '';
+  const mine = fyMineAll().length, num = k => k ? '<span class="fy-tool-n">' + k + '</span>' : '';
   const it = (attrs, ic, t, aria) => '<' + (attrs[0] === "a" ? 'a' : 'button type="button"') + attrs.slice(1) + ' class="fy-tool" aria-label="' + esc(aria || t) + '"><span class="fy-tool-c" aria-hidden="true">' + ic + '</span><span class="fy-tool-t">' + esc(t) + '</span></' + (attrs[0] === "a" ? 'a' : 'button') + '>';
   return '<nav class="fy-tools" aria-label="' + esc(L[2]) + '">' +
     it('b data-r3f="post" data-sfx="open"', '+', L[0]) +
@@ -5360,8 +5360,8 @@ function listSheet(kind){ const h = H(); load(); kind = kind === "saved" || kind
      photos and videos, the links you shared from other creators, and what you saved are three separate tabs */
   const isLink = p => !!p.url && !p.photo && !p.vid;
   const ownAll = mineAll.filter(p => !isLink(p)), linkAll = mineAll.filter(isLink);
-  if (kind === "mine") kind = "links"; /* 22 Nov 2026: For You is links only, so My posts is your links + what you saved */
-  const list = kind === "links" ? linkAll : savedAll;
+  /* 22 Nov 2026 (Emmanuel): photos are off For You, but My posts keeps them in their own tab, like an Instagram grid */
+  const list = kind === "mine" ? ownAll : kind === "links" ? linkAll : savedAll;
   let inFeed = null; if (kind === "saved") { try { inFeed = new Set(feed().map(p => p.id)); } catch(e){ inFeed = null; } }
   const F = window.LowiForYou, fn = (k, en, v) => (F ? F.note(k, v) : en), held = kind === "mine" ? heldPosts() : [];
   const where = p => p.vis !== "tribe" ? fn("onlyYou", "Only you") : (F && F.held(p)) ? fn("heldTag", "Not in For You yet") : p.pend ? fn("sending", "Sharing…") : fn("inFy", "In For You");
@@ -5376,10 +5376,10 @@ function listSheet(kind){ const h = H(); load(); kind = kind === "saved" || kind
       (kind === "saved" ? '<button class="fy-lbtn fy-gsv" data-tr="save" data-id="' + p.id + '" aria-label="' + esc(fyT("Remove from Saved")) + '">' + FIC.save + '</button>' : '') +
       (w ? '<span class="fy-gst">' + esc(w) + '</span>' : gone ? '<span class="fy-gst">' + esc(fyT("Not in For You any more")) + '</span>' : '') + '</div>'; };
   const empty = kind === "mine" ? fyT("Nothing yet. Your posts show up here.") : kind === "links" ? fyT("No links yet. Paste a TikTok or Instagram link in Post.") : fyT("Nothing saved yet. Tap the bookmark on any post in For You.");
-  const tabs = '<div class="fy-ptabs" role="tablist">' +
+  const tabs = '<div class="fy-ptabs" role="tablist"><button role="tab" data-tr="list-tab" data-k="mine" aria-selected="' + (kind === "mine") + '" aria-label="' + esc(fyT("Photos")) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h4v4H4zM10 4h4v4h-4zM16 4h4v4h-4zM4 10h4v4H4zM10 10h4v4h-4zM16 10h4v4h-4zM4 16h4v4H4zM10 16h4v4h-4zM16 16h4v4h-4z"/></svg><span>' + esc(fyT("Photos")) + '</span></button>' +
     '<button role="tab" data-tr="list-tab" data-k="links" aria-selected="' + (kind === "links") + '" aria-label="' + esc(fyT("Links")) + '"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg><span>' + esc(fyT("Links")) + '</span></button>' +
     '<button role="tab" data-tr="list-tab" data-k="saved" aria-selected="' + (kind === "saved") + '" aria-label="' + esc(fyT("Saved")) + '">' + FIC.save + '<span>' + esc(fyT("Saved")) + '</span></button></div>';
-  const html = '<div id="fyProf"><div class="fy-phead">' + h.avatar(76, u.name, u.avatar) + '<div class="fy-pmeta"><b>' + esc(nm) + '</b><div class="fy-pnums"><span><b>' + linkAll.length + '</b>' + esc(fyT("links")) + '</span><span><b>' + savedAll.length + '</b>' + esc(fyT("saved")) + '</span></div></div></div>' +
+  const html = '<div id="fyProf"><div class="fy-phead">' + h.avatar(76, u.name, u.avatar) + '<div class="fy-pmeta"><b>' + esc(nm) + '</b><div class="fy-pnums"><span><b>' + ownAll.length + '</b>' + esc(fyT("posts")) + '</span><span><b>' + linkAll.length + '</b>' + esc(fyT("links")) + '</span><span><b>' + savedAll.length + '</b>' + esc(fyT("saved")) + '</span></div></div></div>' +
     tabs + banner + (list.length ? '<div class="fy-pgrid">' + list.map(tile).join("") + '</div>' : '<div class="fy-pempty">' + esc(empty) + '</div>') + '</div>';
   const cur = $("#fyProf"); if (cur) { cur.outerHTML = html; return; }
   h.openSheet(pageHead(fyT("My posts")) + html); pageMode(); }

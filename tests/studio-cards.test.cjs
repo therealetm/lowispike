@@ -58,7 +58,7 @@ test('My posts is an Instagram-style profile with two tabs, and the Saved circle
   assert.doesNotMatch(row, /data-tr="list-saved"/, 'no Saved circle in the row');
   assert.match(row, /data-tr="list-mine"/);
   assert.match(h, /id="fyProf"/);
-  assert.match(h, /if \(kind === "mine"\) kind = "links";/, '22 Nov 2026: My posts = your links + Saved');
+  assert.match(h, /data-tr="list-tab" data-k="mine"/, 'Photos tab is back in My posts');
   assert.match(h, /data-tr="list-tab" data-k="saved"/);
   assert.match(h, /case "list-tab": listSheet\(b\.dataset\.k\); break;/);
   assert.match(h, /\["posts", "Beiträge", "publicaciones"\]/);
@@ -148,7 +148,7 @@ test('if nav-moves.js failed to load, the app loads it again (else the old Commu
 test('For You shows only shared links; photos, uploaded videos and text posts stay out', () => {
   const h = R('index.html');
   assert.match(h, /const fyIsLink = p => !!\(p && p\.url && !p\.photo && !p\.vid\);/);
-  assert.match(h, /const mine = fyMineAll\(\)\.filter\(fyIsLink\)\.length/, 'the My posts count is your links');
+  assert.match(h, /function feed\(\)\{ const all = feedAll\(\)\.filter\(fyIsLink\);/, 'only links in the feed');
 });
 test('Studio: the owner can delete any video or prompt for good, built-in ones too', () => {
   const st = R('studio/index.html');

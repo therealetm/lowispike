@@ -5042,7 +5042,11 @@ const DEMO = (() => {
 })();
 
 /* For You shows people's posts only (11 Nov 2026: the bot's slides and meal posts left, foryou.js feed()). */
-function feed(){ const all = feedAll(); return window.LowiForYou ? LowiForYou.feed(all).filter(p => !T.hidden.includes(p.id)) : all; }
+/* 22 Nov 2026 (Emmanuel: "remove everything that isn't a link ... the For You page only a cross-platform place, the images only live
+   within the community"): For You shows only shared links (your own video's link or someone else's). Photos, uploaded videos and text
+   posts are not shown here any more; nothing is deleted, they stay where they were stored. */
+const fyIsLink = p => !!(p && p.url && !p.photo && !p.vid);
+function feed(){ const all = feedAll().filter(fyIsLink); return window.LowiForYou ? LowiForYou.feed(all).filter(p => !T.hidden.includes(p.id)) : all; }
 /* 25 Oct 2026: the last real For You feed, per account, on this device only. lowi.* keys are outside the account backup. */
 function fyUid(){ try { const a = JSON.parse(localStorage.getItem("lowi.auth") || "null"); return a && a.user && a.user.id || ""; } catch(e){ return ""; } }
 function fyCacheRead(){
@@ -5264,7 +5268,7 @@ let fyTop = 0;
 function fyToolsHTML(){ const n = Object.keys(T.saved || {}).length;
   let l = "en"; try { l = String((window.LowiLang && LowiLang.get ? LowiLang.get() : localStorage.getItem("lowispike.lang")) || "en").slice(0, 2); } catch (e) {}
   const L = {en: ["Post", "Saved", "Create content", "Affiliate", "My posts"], de: ["Posten", "Gespeichert", "Content erstellen", "Affiliate", "Meine Beiträge"], es: ["Publicar", "Guardado", "Crear contenido", "Afiliados", "Mis posts"]}[l] || ["Post", "Saved", "Create content", "Affiliate", "My posts"];
-  const mine = fyMineAll().length, num = k => k ? '<span class="fy-tool-n">' + k + '</span>' : '';
+  const mine = fyMineAll().filter(fyIsLink).length, num = k => k ? '<span class="fy-tool-n">' + k + '</span>' : '';
   const it = (attrs, ic, t, aria) => '<' + (attrs[0] === "a" ? 'a' : 'button type="button"') + attrs.slice(1) + ' class="fy-tool" aria-label="' + esc(aria || t) + '"><span class="fy-tool-c" aria-hidden="true">' + ic + '</span><span class="fy-tool-t">' + esc(t) + '</span></' + (attrs[0] === "a" ? 'a' : 'button') + '>';
   return '<nav class="fy-tools" aria-label="' + esc(L[2]) + '">' +
     it('b data-r3f="post" data-sfx="open"', '+', L[0]) +
@@ -5356,7 +5360,8 @@ function listSheet(kind){ const h = H(); load(); kind = kind === "saved" || kind
      photos and videos, the links you shared from other creators, and what you saved are three separate tabs */
   const isLink = p => !!p.url && !p.photo && !p.vid;
   const ownAll = mineAll.filter(p => !isLink(p)), linkAll = mineAll.filter(isLink);
-  const list = kind === "mine" ? ownAll : kind === "links" ? linkAll : savedAll;
+  if (kind === "mine") kind = "links"; /* 22 Nov 2026: For You is links only, so My posts is your links + what you saved */
+  const list = kind === "links" ? linkAll : savedAll;
   let inFeed = null; if (kind === "saved") { try { inFeed = new Set(feed().map(p => p.id)); } catch(e){ inFeed = null; } }
   const F = window.LowiForYou, fn = (k, en, v) => (F ? F.note(k, v) : en), held = kind === "mine" ? heldPosts() : [];
   const where = p => p.vis !== "tribe" ? fn("onlyYou", "Only you") : (F && F.held(p)) ? fn("heldTag", "Not in For You yet") : p.pend ? fn("sending", "Sharing…") : fn("inFy", "In For You");
@@ -5371,10 +5376,10 @@ function listSheet(kind){ const h = H(); load(); kind = kind === "saved" || kind
       (kind === "saved" ? '<button class="fy-lbtn fy-gsv" data-tr="save" data-id="' + p.id + '" aria-label="' + esc(fyT("Remove from Saved")) + '">' + FIC.save + '</button>' : '') +
       (w ? '<span class="fy-gst">' + esc(w) + '</span>' : gone ? '<span class="fy-gst">' + esc(fyT("Not in For You any more")) + '</span>' : '') + '</div>'; };
   const empty = kind === "mine" ? fyT("Nothing yet. Your posts show up here.") : kind === "links" ? fyT("No links yet. Paste a TikTok or Instagram link in Post.") : fyT("Nothing saved yet. Tap the bookmark on any post in For You.");
-  const tabs = '<div class="fy-ptabs" role="tablist"><button role="tab" data-tr="list-tab" data-k="mine" aria-selected="' + (kind === "mine") + '" aria-label="' + esc(fyT("My posts")) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h4v4H4zM10 4h4v4h-4zM16 4h4v4h-4zM4 10h4v4H4zM10 10h4v4h-4zM16 10h4v4h-4zM4 16h4v4H4zM10 16h4v4h-4zM16 16h4v4h-4z"/></svg><span>' + esc(fyT("Photos")) + '</span></button>' +
+  const tabs = '<div class="fy-ptabs" role="tablist">' +
     '<button role="tab" data-tr="list-tab" data-k="links" aria-selected="' + (kind === "links") + '" aria-label="' + esc(fyT("Links")) + '"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg><span>' + esc(fyT("Links")) + '</span></button>' +
     '<button role="tab" data-tr="list-tab" data-k="saved" aria-selected="' + (kind === "saved") + '" aria-label="' + esc(fyT("Saved")) + '">' + FIC.save + '<span>' + esc(fyT("Saved")) + '</span></button></div>';
-  const html = '<div id="fyProf"><div class="fy-phead">' + h.avatar(76, u.name, u.avatar) + '<div class="fy-pmeta"><b>' + esc(nm) + '</b><div class="fy-pnums"><span><b>' + ownAll.length + '</b>' + esc(fyT("posts")) + '</span><span><b>' + linkAll.length + '</b>' + esc(fyT("links")) + '</span><span><b>' + savedAll.length + '</b>' + esc(fyT("saved")) + '</span></div></div></div>' +
+  const html = '<div id="fyProf"><div class="fy-phead">' + h.avatar(76, u.name, u.avatar) + '<div class="fy-pmeta"><b>' + esc(nm) + '</b><div class="fy-pnums"><span><b>' + linkAll.length + '</b>' + esc(fyT("links")) + '</span><span><b>' + savedAll.length + '</b>' + esc(fyT("saved")) + '</span></div></div></div>' +
     tabs + banner + (list.length ? '<div class="fy-pgrid">' + list.map(tile).join("") + '</div>' : '<div class="fy-pempty">' + esc(empty) + '</div>') + '</div>';
   const cur = $("#fyProf"); if (cur) { cur.outerHTML = html; return; }
   h.openSheet(pageHead(fyT("My posts")) + html); pageMode(); }
@@ -5403,7 +5408,7 @@ function compose(prefill, text, rec){
 /* Oct 8: the composer as its own pane (Community > Post), no pop-up. */
 function composeInto(el, prefill, text, rec){
   if (!el) return; C = {raw:"", p:null, meta:null, loading:false, cap:text || "", vis:"tribe", mine:false, photo:"", photos:[], rec:rec || "", inline:true};
-  el.innerHTML = trPickTilesHTML() + '<div class="card" id="trCompose"><div class="h3">Share to For You</div><div class="small muted" style="margin-top:4px">Paste a TikTok, Reel or YouTube link. No link? Just write below.</div>' +
+  el.innerHTML = '<div class="card" id="trCompose"><div class="h3">' + esc(fyT("Share a link")) + '</div><div class="small muted" style="margin-top:4px">' + esc(fyT("Paste a TikTok, Instagram or YouTube link: your own video or someone else's. Photos go in the Community chat.")) + '</div>' +
     '<div class="tr-urlrow"><input class="input" id="trUrl" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.tiktok.com/@…"><button class="tr-paste" data-tr="paste">' + IC.paste + esc(fyT("Paste")) + '</button></div>' +
     '<div id="trPrev"></div><div id="trRest"></div><div class="ls-postfoot"><button class="btn primary" id="trPost" data-tr="post" disabled>Post</button></div></div>' +
     '<p class="foot" style="text-align:center;margin-top:12px">It lands at the top of For You. Newest first, no algorithm.</p>';
@@ -5458,8 +5463,8 @@ function paintRest(){
   if (C.loading || (!C.p && C.raw.trim())) { el.innerHTML = ""; updPost(); return; }
   const link = !!C.p, need = link && !(C.meta && C.meta.title), pl = link ? PLAT[C.p.plat] : {};
   el.innerHTML = (link ? '<div class="field"><label for="trCap">' + (need ? "One line about it (needed)" : "Add your take (optional)") + '</label><input class="input" id="trCap" maxlength="' + CAPTION_MAX + '" placeholder="' + (need ? "What is it and why is it good?" : "Why you're sharing it") + '" value="' + esc(C.cap) + '"></div>'
-      : '<div class="field"><label for="trCap">Or just write a post</label><textarea class="input" id="trCap" rows="3" maxlength="' + TEXT_MAX + '" placeholder="' + esc(fyT("A swap, a win, a question…")) + '" style="height:84px;padding:12px 14px;resize:none">' + esc(C.cap) + '</textarea></div>' +
-        trPhotosHTML() + (C.photo ? mealRowHTML() : '')) +
+      : (C.inline ? '' : '<div class="field"><label for="trCap">Or just write a post</label><textarea class="input" id="trCap" rows="3" maxlength="' + TEXT_MAX + '" placeholder="' + esc(fyT("A swap, a win, a question…")) + '" style="height:84px;padding:12px 14px;resize:none">' + esc(C.cap) + '</textarea></div>' +
+        trPhotosHTML() + (C.photo ? mealRowHTML() : ''))) +
     postRecField() +
     '<div class="card" style="margin-top:14px;padding:4px 14px">' +
       '<div class="trow" style="padding:10px 0"><span><span style="display:block;font-weight:600">Show it in For You</span><span class="small muted">' + (C.vis === "tribe" ? "The whole tribe can see it." : "Only you. It stays on your phone.") + '</span></span><button class="toggle' + (C.vis === "tribe" ? " on" : "") + '" data-tr="vis" role="switch" aria-checked="' + (C.vis === "tribe") + '" aria-label="' + esc(fyT("Show it in For You")) + '"></button></div>' +
@@ -5500,7 +5505,7 @@ async function readMeal(){ const M = window.LowiMealSnap, A = window.LowiFoodAI;
   if (C !== c0 || C.photo !== ph) return;
   C.mealBusy = false; C.meal = meal; C.mealErr = err; paintRest(); }
 function updPost(){ const b = $("#trPost"); if (!b || !C) return; const need = !(C.meta && C.meta.title), cap = C.cap.trim();
-  b.disabled = C.loading || (C.p ? need && !cap : (C.raw.trim() || (!cap && !C.photo && !C.rec))); b.textContent = C.vis === "tribe" ? "Post" : "Save for me"; }
+  b.disabled = C.loading || (C.p ? need && !cap : (C.inline || C.raw.trim() || (!cap && !C.photo && !C.rec))); /* 22 Nov 2026: For You posts are links only */ b.textContent = C.vis === "tribe" ? "Post" : "Save for me"; }
 function doPost(btn){
   const h = H(); if (!h || !C || (!C.p && C.raw.trim())) return;
   let p;
@@ -9128,7 +9133,7 @@ const T = [
   ["one room, newest at the bottom", "ein Raum, Neuestes unten", "una sala, lo nuevo abajo"], ["Message everyone", "Nachricht an alle", "Mensaje para todos"],
   /* button sweep 16:20: For You rail buttons for screen readers */ ["Like", "Gefällt mir", "Me gusta"], ["Comment", "Kommentieren", "Comentar"], ["More", "Mehr", "Más"],
   /* 21 Nov 2026 My posts profile */
-  ["posts", "Beiträge", "publicaciones"], ["links", "Links", "enlaces"], ["Links", "Links", "Enlaces"], ["No links yet. Paste a TikTok or Instagram link in Post.", "Noch keine Links. Füge in Posten einen TikTok- oder Instagram-Link ein.", "Aún no hay enlaces. Pega un enlace de TikTok o Instagram en Publicar."], ["saved", "gespeichert", "guardados"], ["My posts", "Meine Beiträge", "Mis posts"], ["Remove from Saved", "Aus Gespeichert entfernen", "Quitar de guardados"],
+  ["posts", "Beiträge", "publicaciones"], ["Share a link", "Link teilen", "Compartir un enlace"], ["Paste a TikTok, Instagram or YouTube link: your own video or someone else's. Photos go in the Community chat.", "Füge einen TikTok-, Instagram- oder YouTube-Link ein: dein eigenes Video oder das von jemand anderem. Fotos gehören in den Community-Chat.", "Pega un enlace de TikTok, Instagram o YouTube: tu vídeo o el de otra persona. Las fotos van al chat de la Comunidad."], ["links", "Links", "enlaces"], ["Links", "Links", "Enlaces"], ["No links yet. Paste a TikTok or Instagram link in Post.", "Noch keine Links. Füge in Posten einen TikTok- oder Instagram-Link ein.", "Aún no hay enlaces. Pega un enlace de TikTok o Instagram en Publicar."], ["saved", "gespeichert", "guardados"], ["My posts", "Meine Beiträge", "Mis posts"], ["Remove from Saved", "Aus Gespeichert entfernen", "Quitar de guardados"],
   ["Nothing yet. Your posts show up here.", "Noch nichts. Deine Beiträge erscheinen hier.", "Aún nada. Tus posts aparecen aquí."],
   ["Nothing saved yet. Tap the bookmark on any post in For You.", "Noch nichts gespeichert. Tippe in Für dich bei einem Beitrag auf das Lesezeichen.", "Aún no has guardado nada. Toca el marcador en cualquier post de Para ti."],
   ["Saved. Find it in My posts, under the bookmark.", "Gespeichert. Du findest es in Meine Beiträge unter dem Lesezeichen.", "Guardado. Lo encuentras en Mis posts, bajo el marcador."],
@@ -18530,7 +18535,7 @@ const LANG = () => { try { return (window.LowiLang && LowiLang.get()) || "en"; }
 const ROWS = [
   ["Leaderboard", "Bestenliste", "Clasificación"],
   ["Post", "Posten", "Publicar"],
-  ["New post", "Neuer Post", "Nueva publicación"],
+  ["A TikTok, Instagram or YouTube link that is insulin-friendly.", "Ein TikTok-, Instagram- oder YouTube-Link, der insulinfreundlich ist.", "Un enlace de TikTok, Instagram o YouTube que sea apto para la insulina."], ["New post", "Neuer Post", "Nueva publicación"],
   ["Video, photo, a TikTok or Instagram link, or just a few words.", "Video, Foto, ein TikTok- oder Instagram-Link oder einfach ein paar Worte.", "Vídeo, foto, un enlace de TikTok o Instagram, o solo unas palabras."],
   ["Post something", "Etwas posten", "Publicar algo"],
   ["Close", "Schließen", "Cerrar"]
@@ -18579,7 +18584,7 @@ function postSheet(prefill, text, rec){
   try { if (!window.LowiNavMoves && typeof TAB !== "undefined" && TAB !== "foryou") { if (window.cmSetView) cmSetView("feed"); goTab("foryou"); } } catch(e){}
   const PG = window.LowiPage;
   const html = (PG ? '' : '<button class="xbtn" data-act="close-sheet" aria-label="' + esc(T("Close")) + '">' + XI + '</button>') +
-    '<div class="sheetbody r3f-post">' + (PG ? PG.head(T("New post"), '<span class="r3f-postslot"></span>') : '<div class="r3f-head"><div class="h2 r3f-ph" data-noi18n>' + esc(T("New post")) + '</div><span class="r3f-postslot"></span></div>') + '<div class="small muted r3f-psub" data-noi18n>' + esc(T("Video, photo, a TikTok or Instagram link, or just a few words.")) + '</div>' +
+    '<div class="sheetbody r3f-post">' + (PG ? PG.head(T("New post"), '<span class="r3f-postslot"></span>') : '<div class="r3f-head"><div class="h2 r3f-ph" data-noi18n>' + esc(T("New post")) + '</div><span class="r3f-postslot"></span></div>') + '<div class="small muted r3f-psub" data-noi18n>' + esc(T("A TikTok, Instagram or YouTube link that is insulin-friendly.")) + '</div>' +
     '<div class="ls-post" id="r3fCompose"></div></div>';
   try { sheet(html); } catch(e){ console.error(e); return; }
   const sh = $("#sheet"); if (sh) { sh.classList.add("r3f-sheet"); sh.scrollTop = 0; } if (PG) PG.on();

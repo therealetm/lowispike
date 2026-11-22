@@ -118,7 +118,8 @@ test('the bot\'s For You slides stay out of Chat; it is not in People, the Room 
   const html=read('index.html');
   assert.doesNotMatch(html,/inspo\.css|inspo\.js\?v=/);
   assert.match(html,/if \(p\.bot && window\.LowiForYou\) return LowiForYou\.slideHTML\(p,/);
-  assert.match(html,/function feed\(\)\{ const all = feedAll\(\); return window\.LowiForYou \? LowiForYou\.feed\(all\)/);
+  /* 22 Nov 2026: For You is links only (fyIsLink), the rest of the pipeline is unchanged */
+  assert.match(html,/function feed\(\)\{ const all = feedAll\(\)\.filter\(fyIsLink\); return window\.LowiForYou \? LowiForYou\.feed\(all\)/);
 });
 
 test('For You shows today\'s slide and the four before it, newest first, each a different recipe with a photo',()=>{

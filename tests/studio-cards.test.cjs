@@ -58,7 +58,7 @@ test('My posts is an Instagram-style profile with two tabs, and the Saved circle
   assert.doesNotMatch(row, /data-tr="list-saved"/, 'no Saved circle in the row');
   assert.match(row, /data-tr="list-mine"/);
   assert.match(h, /id="fyProf"/);
-  assert.match(h, /data-tr="list-tab" data-k="mine"/);
+  assert.match(h, /if \(kind === "mine"\) kind = "links";/, '22 Nov 2026: My posts = your links + Saved');
   assert.match(h, /data-tr="list-tab" data-k="saved"/);
   assert.match(h, /case "list-tab": listSheet\(b\.dataset\.k\); break;/);
   assert.match(h, /\["posts", "Beiträge", "publicaciones"\]/);
@@ -144,4 +144,9 @@ test('if nav-moves.js failed to load, the app loads it again (else the old Commu
   const a = h.indexOf('<script src="nav-moves.js'), b = h.indexOf('if(window.LowiNavMoves||n>2)return;');
   assert.ok(a > 0 && b > a, 'the retry sits right after nav-moves.js');
   assert.match(h, /s\.src="nav-moves\.js\?r="\+Date\.now\(\)/);
+});
+test('For You shows only shared links; photos, uploaded videos and text posts stay out', () => {
+  const h = R('index.html');
+  assert.match(h, /const fyIsLink = p => !!\(p && p\.url && !p\.photo && !p\.vid\);/);
+  assert.match(h, /const mine = fyMineAll\(\)\.filter\(fyIsLink\)\.length/, 'the My posts count is your links');
 });

@@ -9,11 +9,11 @@ const fs = require('fs'), path = require('path');
 const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const html = read('index.html');
 
-test('New post opens on two big tiles: Photos (several at once) and Video', () => {
-  assert.match(html, /el\.innerHTML = trPickTilesHTML\(\) \+ '<div class="card" id="trCompose">/);
-  assert.match(html, /<button type="button" class="tr-pick" data-tr="photo">/);
-  assert.match(html, /<button type="button" class="tr-pick" data-fyv="pick">/);
-  assert.match(html, /f\.multiple = carMax\(\) > 1; f\.click\(\);/, 'the phone\'s own picker, several at once');
+test('New post on For You takes a link only (22 Nov 2026: photos go in the Community chat); the photo tiles stay for other composers', () => {
+  assert.match(html, /el\.innerHTML = '<div class="card" id="trCompose"><div class="h3">' \+ esc\(fyT\("Share a link"\)\)/, 'no Photos / Video tiles in the For You composer');
+  assert.match(html, /b\.disabled = C\.loading \|\| \(C\.p \? need && !cap : \(C\.inline \|\| /, 'no link, no Post');
+  assert.match(html, /<button type="button" class="tr-pick" data-tr="photo">/, 'the tile code itself is kept');
+  assert.match(html, /f\.multiple = carMax\(\) > 1; f\.click\(\);/);
   assert.match(html, /\.tr-picks\{display:grid;/);
 });
 

@@ -22990,6 +22990,10 @@ window.LowiCommunityHost = {
 <script src="realm-backdrop.js?v=20261122-092710"></script>
 <link rel="stylesheet" href="nav-moves.css?v=20261122-092710">
 <script src="nav-moves.js?v=20261122-092710"></script>
+<script>/* 22 Nov 2026 (Emmanuel's screenshot: the old Community header, the old tab pill and "Community galaxy" over the chat): that is the
+   screen without nav-moves.js. If the phone failed to fetch it (a flaky network during an update), the app loads it again, fresh. */
+(function(){function again(n){if(window.LowiNavMoves||n>2)return;var s=document.createElement("script");s.src="nav-moves.js?r="+Date.now();s.onload=function(){if(!window.LowiNavMoves)setTimeout(function(){again(n+1);},2500);};s.onerror=function(){setTimeout(function(){again(n+1);},2500);};document.body.appendChild(s);}
+window.addEventListener("load",function(){setTimeout(function(){again(0);},2500);});})();</script>
 <script src="back-swipe.js?v=20261122-092710"></script>
 <link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261122-092710">
 <link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261122-092710">

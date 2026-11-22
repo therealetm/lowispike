@@ -139,3 +139,9 @@ test('Studio: an open video has Copy for agent, Transcript, Translate and Previo
 test('Studio: Copy for agent carries link, transcript and strategy', () => { const st = R('studio/index.html'); assert.match(st, /'Link: ' \+ \(x\.link \|\| '-'\)/); assert.match(st, /t\('transcript'\) \+ ':'/); assert.match(st, /t\('strategy'\) \+ ':'/); });
 test('Studio: the owner adds a video by link + transcript and lets the AI fill hook, strategy and why', () => { const st = R('studio/index.html'); assert.match(st, /ai\(\{action: 'fill', link: v\('f_link'\), transcript: v\('f_tr'\), lang: L\}\)/); assert.match(st, /data-add="swipe"/); assert.match(st, /data-add="agent"/); });
 test('studio-ai: fill is owner only, uses the server Gemini key, translate limited to en/de/es', () => { const fn = R('supabase/functions/studio-ai/index.ts'); assert.match(fn, /return out\(req, 403, \{ error: "owner_only" \}\)/); assert.match(fn, /Deno\.env\.get\("GEMINI_API_KEY"\)/); assert.match(fn, /const LANG: Record<string, string> = \{ en: "English", de: "German", es: "Spanish" \}/); });
+test('if nav-moves.js failed to load, the app loads it again (else the old Community header shows)', () => {
+  const h = R('index.html');
+  const a = h.indexOf('<script src="nav-moves.js'), b = h.indexOf('if(window.LowiNavMoves||n>2)return;');
+  assert.ok(a > 0 && b > a, 'the retry sits right after nav-moves.js');
+  assert.match(h, /s\.src="nav-moves\.js\?r="\+Date\.now\(\)/);
+});

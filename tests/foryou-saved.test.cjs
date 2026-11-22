@@ -58,12 +58,12 @@ test('the Saved button: always there, with its word, and its count once somethin
 test('a saved post opens where it is in For You; a carousel tile shows it is a carousel', () => {
     const ls = fnSrc(html, 'function listSheet(kind)');
     /* 21 Nov 2026: grid tiles (Instagram-style profile) instead of rows */
-    assert.match(ls, /const act = kind !== "saved" \? ' data-tr="post-menu" data-id="' \+ p\.id \+ '"' : gone \? '' : ' data-tr="open-saved" data-id="' \+ p\.id \+ '"';/, 'own photos and own links open their menu, a saved post opens in For You');
+    assert.match(ls, /const act = kind !== "saved" \? ' data-tr="post-menu" data-id="' \+ p\.id \+ '"' : p\.chat \? ' data-tr="open-chatsaved" data-id="' \+ p\.id \+ '"' : gone \? '' : ' data-tr="open-saved" data-id="' \+ p\.id \+ '"';/, 'own photos and own links open their menu, a saved post opens in For You');
     assert.match(ls, /nSl > 1 \? '<span class="fy-gti" aria-hidden="true">❐<\/span>'/);
     assert.match(ls, /nSl > 1 \? " · " \+ nSl \+ " photos" : ""/, 'the photo count is spoken');
     assert.match(html, /case "open-saved": \{ if \(e\.target\.closest\('\.fy-lbtn'\)\) break; h\.closeSheet\(\);/);
     assert.match(html, /if \(at\(\)\) return; showFeed\(\); setTimeout\(at, 500\);/);
-    assert.match(ls, /gone = !!\(inFeed && !inFeed\.has\(p\.id\)\)/, 'a saved post that left For You');
+    assert.match(ls, /gone = !p\.chat && !!\(inFeed && !inFeed\.has\(p\.id\)\)/, 'a saved post that left For You (a saved chat photo never counts as gone)');
     assert.match(ls, /gone \? '' : ' data-tr="open-saved"/, 'does not open');
     assert.match(ls, /gone \? '<span class="fy-gst">' \+ esc\(fyT\("Not in For You any more"\)\) \+ '<\/span>'/, 'and says so');
 });

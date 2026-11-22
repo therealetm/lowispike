@@ -52,3 +52,34 @@ html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cm-foot{float:none!important;height:auto!important;right:auto!important;bottom:auto!important}
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-meal-n{font-size:27px!important}
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-by .cs-name{color:#fff!important;font-size:16px!important;font-weight:700!important;line-height:1.2!important}
+/* 22 Nov 2026, third pass (Emmanuel, with TikTok photo posts: "it doesn't look like a TikTok For You page ... the text on screen should
+   come from the text that they wrote themselves ... no watermarks ... the name worded like TikTok, the insulin thingy where TikTok says
+   Photo, the calories where TikTok has the description ... we do not need to display the time"). The chat room keeps its menu bar
+   and composer; the box around the chat goes, and a meal post runs edge to edge like a TikTok photo:
+     - the poster's own caption is the big text in the middle (no caption, no text); the AI dish name is only in the details panel;
+     - bottom left: the name, then the spike pill as a small "Photo"-style badge; under it the numbers as the description;
+     - no LOWiSPIKE mark, no time, no rounded card. The ··· (reactions, reply, delete) stays as a small dot menu top right. */
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .rm-frame:has(#cmList){border:0!important;border-radius:0!important;box-shadow:none!important;background:#000!important}
+html[data-lay=phone] body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat[data-spirit-chat]>.rm-view:has(#cmList){width:100vw!important;max-width:100vw!important;margin-left:calc(50% - 50vw)!important;margin-right:0!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cp-msg .cm-bub.cm-pbub:has(> .cs-meal){width:calc(100% + 20px)!important;max-width:none!important;margin:0 -10px!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0 0 18px!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)::before{content:none!important;display:none!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)::after{background:linear-gradient(180deg,rgba(0,0,0,.18) 0%,rgba(0,0,0,0) 14%,rgba(0,0,0,0) 58%,rgba(0,0,0,.62) 100%)!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-meal-n,
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-meal>.cs-meal-bs,
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cm-foot time{display:none!important}
+/* the poster's own words, big in the middle */
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cm-t{position:absolute!important;left:22px;right:22px;top:46%;transform:translateY(-50%);z-index:2;order:0;
+  padding:0!important;margin:0!important;text-align:center;font-size:27px!important;font-weight:700!important;line-height:1.22!important;letter-spacing:-.01em;color:#fff!important;
+  text-shadow:0 2px 12px rgba(0,0,0,.55),0 1px 2px rgba(0,0,0,.5);display:-webkit-box!important;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;background:none!important}
+/* name + pill, like "sara [Photo]" */
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-by{display:flex!important;align-items:center;gap:8px;flex-wrap:wrap;padding:0 16px 4px!important;margin-top:auto!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-by .cs-name{font-size:17px!important;font-weight:700!important;color:#fff!important;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-postpill{display:inline-flex;padding:0;margin:0;border:0;background:none;cursor:pointer}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-by .cs-meal-bs{display:inline-flex!important;align-items:center;gap:6px;padding:3px 9px 3px 8px!important;border-radius:7px!important;
+  background:rgba(40,44,52,.72)!important;border:0!important;color:#fff!important;font-size:13px!important;font-weight:600!important;line-height:1.3;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-by .cs-meal-bs i{width:8px;height:8px}
+/* the numbers as the description */
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-meal{padding:0 16px!important;gap:0!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-meal-k{font-size:15px!important;color:#fff!important;opacity:.95!important}
+/* the dot menu (reactions, reply, delete) stays, small, top right */
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cm-foot{position:absolute!important;top:10px!important;right:10px!important;z-index:3;margin:0!important;padding:0!important;background:rgba(0,0,0,.35)!important;border-radius:999px}

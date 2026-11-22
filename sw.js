@@ -33,6 +33,7 @@ STATIC.push("week-basket-core.js", "week-basket.js", "week-basket.css", "week-ca
 STATIC.push("challenge-week.js", "challenge-week.css", "faw-core.js", "challenge-voice.js", "challenge-voice-data.js", "post-link-core.js", "foryou-rail.css", "carousel-review.js", "share-sheet.js", "haptics.js", "design-pass.css", "story-card.js", "onboarding-calm.css"); /* Nov 8 2026 Weekly Challenge panel in Circle (faw-core.js is built by tools/fakeaway) */
 STATIC.push("foryou-ig.css"); // Nov 21 2026: For You Instagram layout
 STATIC.push("chat-meal-post.css"); // Nov 21 2026: meal photo posts in the chat
+STATIC.push("chat-post-save.js"); // Nov 22 2026: save chat photo posts
 STATIC.push("foryou-bar.js"); // Nov 21 2026: For You circle row comes back on scroll up
 STATIC.push("mic-dictate.css", "mic-session.js", "mic-dictate-core.js", "mic-dictate.js"); /* Oct 26 mic dictation in text fields: own line */
 STATIC.push("quick-add-core.js"); /* Oct 26 quick "+" on Supermarket rows (MAYA-HANDOFF 0.35): own line, like kitchen-core.js */

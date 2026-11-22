@@ -5347,7 +5347,9 @@ function fySavedAll(){ const CL = window.LOWI_CLOUD, cloud = CL && CL.live && CL
    are gone. Kind "mine" or "saved" picks the tab. */
 function listSheet(kind){ const h = H(); load(); kind = kind === "saved" || kind === "links" ? kind : "mine";
   const mineAll = DEMO.concat(fyMineAll(), window.LowiForYou ? LowiForYou.botPosts() : []).filter(p => p.me).sort((a, b) => b.ts - a.ts);
-  const savedAll = fySavedAll().filter(p => (T.saved || {})[p.id]).sort((a, b) => b.ts - a.ts);
+  /* 22 Nov 2026: chat photo posts saved from the chat (chat-post-save.js) sit in Saved too */
+  const chatSaved = (window.LowiChatPost ? LowiChatPost.saved() : []).map(x => ({ id: "chat:" + x.id, photo: x.src, cap: x.caption || x.label || "", who: x.by, ts: x.at || x.ts || 0, chat: true }));
+  const savedAll = fySavedAll().filter(p => (T.saved || {})[p.id]).concat(chatSaved).sort((a, b) => b.ts - a.ts);
   /* 21 Nov 2026 (Emmanuel: "switch ... my actual images that I posted, or the links from other creators that I posted"): your own
      photos and videos, the links you shared from other creators, and what you saved are three separate tabs */
   const isLink = p => !!p.url && !p.photo && !p.vid;
@@ -5360,8 +5362,8 @@ function listSheet(kind){ const h = H(); load(); kind = kind === "saved" || kind
   const banner = held.length ? '<div class="fy-held"><p class="small">' + esc(held.length === 1 ? fn("heldOne", "") : fn("heldWhy", "", {n: held.length})) + '</p><button class="btn primary sm" data-tr="share-held">' + esc(held.length === 1 ? fn("shareNow", "Share to For You") : fn("shareAll", "Share all", {n: held.length})) + '</button></div>' : '';
   const u = h.user() || {}, nm = u.name || fyT("You");
   const tile = p => { const d = describe(p.meta), rr = p.rec && postRecipe(p.rec), cap = p.cap || d.line || (rr && rr.n) || PLAT[p.plat || "web"].n;
-    const nSl = window.LowiCarousel ? (LowiCarousel.slidesOf(p) || []).length : 0, gone = !!(inFeed && !inFeed.has(p.id)), wh = kind !== "saved" ? where(p) : "", w = wh === inFyWord ? "" : wh;
-    const act = kind !== "saved" ? ' data-tr="post-menu" data-id="' + p.id + '"' : gone ? '' : ' data-tr="open-saved" data-id="' + p.id + '"';
+    const nSl = window.LowiCarousel ? (LowiCarousel.slidesOf(p) || []).length : 0, gone = !p.chat && !!(inFeed && !inFeed.has(p.id)), wh = kind !== "saved" ? where(p) : "", w = wh === inFyWord ? "" : wh;
+    const act = kind !== "saved" ? ' data-tr="post-menu" data-id="' + p.id + '"' : p.chat ? ' data-tr="open-chatsaved" data-id="' + p.id + '"' : gone ? '' : ' data-tr="open-saved" data-id="' + p.id + '"';
     return '<div class="fy-gt' + (gone ? ' gone' : '') + '"' + act + (act ? ' role="button" tabindex="0"' : '') + ' aria-label="' + esc(cap + (wh ? " · " + wh : "") + (nSl > 1 ? " · " + nSl + " photos" : "")) + '">' + fyBg(p, true) +
       (nSl > 1 ? '<span class="fy-gti" aria-hidden="true">❐</span>' : p.vid ? '<span class="fy-gti" aria-hidden="true">▶</span>' : '') +
       (kind === "saved" ? '<button class="fy-lbtn fy-gsv" data-tr="save" data-id="' + p.id + '" aria-label="' + esc(fyT("Remove from Saved")) + '">' + FIC.save + '</button>' : '') +
@@ -5571,7 +5573,9 @@ document.addEventListener("click", e => {
     case "post": doPost(b); break;
     case "share-recipe": shareRecipe(b.dataset.r); break;
     case "filter": T.filter = b.dataset.f; save(); rerender(); break;
-    case "save": { T.saved = T.saved || {}; if (T.saved[id]) delete T.saved[id]; else T.saved[id] = 1; save(); const on = !!T.saved[id];
+    case "open-chatsaved": { if (e.target.closest('.fy-lbtn')) break; const x = (window.LowiChatPost ? LowiChatPost.saved() : []).find(q => "chat:" + q.id === id); if (!x) break;
+      const o = document.createElement("div"); o.className = "cg-photo"; o.setAttribute("role", "dialog"); o.setAttribute("aria-modal", "true"); o.style.zIndex = "500"; o.innerHTML = '<img alt="" src="' + esc(x.src) + '">'; o.addEventListener("click", () => o.remove()); document.body.appendChild(o); break; }
+    case "save": if (String(id).indexOf("chat:") === 0) { if (window.LowiChatPost) LowiChatPost.remove(String(id).slice(5)); listSheet("saved"); break; } { T.saved = T.saved || {}; if (T.saved[id]) delete T.saved[id]; else T.saved[id] = 1; save(); const on = !!T.saved[id];
       $$('[data-tr="save"][data-id="' + id + '"]').forEach(x => { x.classList.toggle("on", on); const sp = x.querySelector("span"); if (sp) sp.textContent = fyT(on ? "Saved" : "Save"); });
       if (b.classList.contains("fy-lbtn")) { if ($("#fyProf")) listSheet("saved"); else { const r = b.closest(".fy-lrow"); if (r) r.remove(); } } else h.toast(fyT(on ? "Saved. Find it in My posts, under the bookmark." : "Removed from Saved"));
       fySavedBtnPaint(); break; }
@@ -22965,6 +22969,7 @@ window.LowiCommunityHost = {
 <script src="chat-react-who.js?v=20261121-235916"></script>
 <link rel="stylesheet" href="chat-photo-save.css?v=20261121-235916">
 <script src="chat-photo-save.js?v=20261121-235916"></script>
+<script src="chat-post-save.js?v=20261121-235916"></script><!-- Nov 22 2026: Save photo (with its text) and Save for chat photo posts -->
 <script src="room-table-core.js?v=20261121-235916"></script>
 <script src="room-table.js?v=20261121-235916"></script>
 <link rel="stylesheet" href="home-visit.css?v=20261121-235916">

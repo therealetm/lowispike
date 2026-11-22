@@ -591,7 +591,11 @@ try{W.addEventListener('lowi:meal-bot-route',()=>{try{refresh();}catch(e){}});}c
 function botMeal(m){return !!(m&&W.LowiMealDetail&&W.LowiMealDetail.isBot&&W.LowiMealDetail.isBot(m));}
 function mealDetail(id){const m=messages().find(x=>String(x.id)===String(id));if(!m||!W.LowiMealDetail)return null;const ph=photoOf(m);if(!ph||!ph.meal)return null;
  if(botMeal(m)){const MD=W.LowiMealDetail;return MD.openBot&&MD.openBot(MD.botInfo('chat',m,{name:ph.meal.name,lvl:ph.meal.lvl,photo:ph.src}))?true:null;}
- return W.LowiMealDetail.open(m.md||null,{by:m.by||'',name:ph.meal.name,lvl:ph.meal.lvl,photo:ph.src});}
+ const ov=W.LowiMealDetail.open(m.md||null,{by:m.by||'',name:ph.meal.name,lvl:ph.meal.lvl,photo:ph.src});
+ /* 22 Nov 2026: Save photo (the picture with its text, as posted) and Save (into My posts > Saved), chat-post-save.js */
+ try{if(ov&&W.LowiChatPost){const k={low:'mealLow',mid:'mealMid',high:'mealHigh'}[ph.meal.lvl]||'mealMid',md=m.md||{};const mine=!!(m.uid&&m.uid===scope);
+  W.LowiChatPost.attach(ov,{id:String(m.id),src:ph.src,by:mine?(String(own().n||'').trim()||m.by||''):(m.by||''),caption:ph.caption||'',lvl:ph.meal.lvl,label:tr(k),nums:(md&&typeof md==='object'?foodNums(md.total,md.net):'')||'',ts:m.ts||Date.now()});}}catch(e){}
+ return ov;}
 function voiceOf(m){return m&&K.voice?K.voice(m.t,String(m.uid||'').indexOf('bot:')===0?'x':m.uid):null;}
 function mmss(s){s=Math.max(0,Math.round(+s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
 /* A voice note in the chat: a glass play button, a little waveform that fills as it plays, and its length. */
@@ -647,8 +651,9 @@ function renderLocal(m,prev,next){const mine=m.uid===scope,start=!prev||prev.uid
  const who=end?'<span class="cs-avatar cp-av" aria-hidden="true">'+mate(mine?(scope||'me'):m.uid,'l'+sid(m.id))+'</span>':'<span class="cp-av cp-gap" aria-hidden="true"></span>';
  /* 21 Nov 2026 (Emmanuel: the chat should look so good people screenshot it): a meal photo is drawn as a photo post
     (chat-meal-post.css), so it always carries its poster's name, also on your own */
- const mealPost=!voiceOf(m)&&!albumOf(m)&&(()=>{const ph=photoOf(m);return !!(ph&&ph.meal);})();
- const head='<div class="cs-by">'+(mealPost?'<b class="cs-name cs-postname">'+esc(mine?(String(own().n||'').trim()||m.by):m.by)+'</b>':start&&!mine?'<b class="cs-name">'+esc(m.by)+'</b>'+botDash(m.uid,m.by):'<span class="cp-sr">'+esc(mine?tr('you'):botName(m.by,m.uid))+' '+tr('says')+'</span>')+'</div>';
+ const mealPh=!voiceOf(m)&&!albumOf(m)?photoOf(m):null,mealPost=!!(mealPh&&mealPh.meal);
+ /* 22 Nov 2026 (Emmanuel: like a TikTok photo post): name, then the spike pill where TikTok writes "Photo" */
+ const head='<div class="cs-by">'+(mealPost?'<b class="cs-name cs-postname">'+esc(mine?(String(own().n||'').trim()||m.by):m.by)+'</b>'+(m.id?'<button type="button" class="cs-postpill" data-chat="meal-detail" data-id="'+esc(m.id)+'" aria-haspopup="dialog">'+spikePill(mealPh.meal.lvl)+'</button>':spikePill(mealPh.meal.lvl)):start&&!mine?'<b class="cs-name">'+esc(m.by)+'</b>'+botDash(m.uid,m.by):'<span class="cp-sr">'+esc(mine?tr('you'):botName(m.by,m.uid))+' '+tr('says')+'</span>')+'</div>';
  const foot='<div class="cm-foot"><time datetime="'+new Date(m.ts).toISOString()+'">'+esc(time(m.ts))+'</time></div>';
  return '<article class="cm-msg cp-msg cp-local'+(mine?' mine':'')+(start?' cp-start':'')+(end?' cp-end':'')+'" id="cm-'+esc(m.id)+'" data-who="'+esc(m.by)+'" style="--chat-color:'+(mine?'#9cdac7':hueColor(m.uid,false))+'">'+who+'<div class="cm-bub">'+head+msgBody(m)+foot+'</div></article>';}
 function renderMessage(m,all,prev,next){
@@ -666,8 +671,9 @@ function renderMessage(m,all,prev,next){
  const who=end?button('profile',mate(m.uid,'m'+sid(m.id)),'data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'" aria-label="'+esc(mine?tr('you'):botName(m.by,m.uid))+' · '+tr('profile')+'"','cs-avatar cp-av'):'<span class="cp-av cp-gap" aria-hidden="true"></span>';
  /* 21 Nov 2026 (Emmanuel: the chat should look so good people screenshot it): a meal photo is drawn as a photo post
     (chat-meal-post.css), so it always carries its poster's name, also on your own */
- const mealPost=!voiceOf(m)&&!albumOf(m)&&(()=>{const ph=photoOf(m);return !!(ph&&ph.meal);})();
- const head='<div class="cs-by">'+(mealPost?'<b class="cs-name cs-postname">'+esc(mine?(String(own().n||'').trim()||m.by):m.by)+'</b>':start&&!mine?'<b class="cs-name" data-chat="profile" data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'">'+esc(m.by)+'</b>'+botDash(m.uid,m.by):'<span class="cp-sr">'+esc(mine?tr('you'):botName(m.by,m.uid))+' '+tr('says')+'</span>')+'</div>';
+ const mealPh=!voiceOf(m)&&!albumOf(m)?photoOf(m):null,mealPost=!!(mealPh&&mealPh.meal);
+ /* 22 Nov 2026 (Emmanuel: like a TikTok photo post): name, then the spike pill where TikTok writes "Photo" */
+ const head='<div class="cs-by">'+(mealPost?'<b class="cs-name cs-postname">'+esc(mine?(String(own().n||'').trim()||m.by):m.by)+'</b>'+(m.id?'<button type="button" class="cs-postpill" data-chat="meal-detail" data-id="'+esc(m.id)+'" aria-haspopup="dialog">'+spikePill(mealPh.meal.lvl)+'</button>':spikePill(mealPh.meal.lvl)):start&&!mine?'<b class="cs-name" data-chat="profile" data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'">'+esc(m.by)+'</b>'+botDash(m.uid,m.by):'<span class="cp-sr">'+esc(mine?tr('you'):botName(m.by,m.uid))+' '+tr('says')+'</span>')+'</div>';
  /* time sits bottom-right inside the bubble, Telegram-style; the ··· actions button rides next to it */
  const foot='<div class="cm-foot">'+(pending?'':button('more','<span aria-hidden="true">···</span>','data-id="'+esc(m.id)+'" aria-label="'+tr('more')+'" aria-haspopup="menu" aria-expanded="false"','cp-more'))+'<time datetime="'+new Date(m.ts).toISOString()+'">'+esc(time(m.ts))+'</time></div>';
  return '<article class="cm-msg cp-msg'+(mine?' mine':'')+(start?' cp-start':'')+(end?' cp-end':'')+'" id="cm-'+esc(m.id)+'" data-who="'+esc(m.by)+'" data-chat-id="'+esc(m.id)+'" style="--chat-color:'+esc(color)+'">'+who+

@@ -104,12 +104,11 @@ test('Studio: real folders the owner can rename and fill, sort by most views, ow
   assert.match(sql, /revoke all on public\.studio_config from anon, authenticated;/, 'no direct writes');
   assert.match(sql, /octet_length\(doc::text\) > 400000/);
 });
-test('a meal in the chat is a 9:16 photo post with the brand mark, only meal bubbles change', () => {
+test('a meal in the chat is a full photo post, only meal bubbles change (22 Nov: no brand mark)', () => {
   const css = R('chat-meal-post.css'), h = R('index.html'), cc = R('community-chat.js');
   assert.ok(h.indexOf('href="chat-meal-post.css') > h.indexOf('href="community-chat.css'), 'loads after the chat styles');
   assert.match(css, /\.cm-bub\.cm-pbub:has\(> \.cs-meal\)\{[^}]*aspect-ratio:9\/16/);
-  assert.match(css, /content:"LOWiSPIKE"/);
-  assert.equal((cc.match(/const mealPost=!voiceOf\(m\)&&!albumOf\(m\)/g) || []).length, 2, 'both renderers name the poster');
+  assert.equal((cc.match(/mealPost=!!\(mealPh&&mealPh\.meal\)/g) || []).length, 2, 'both renderers name the poster');
   assert.match(R('sw.js'), /STATIC\.push\("chat-meal-post\.css"\)/);
 });
 test('My posts and New post open as their own page with a Back button; profile has Photos, Links and Saved', () => {
@@ -134,4 +133,23 @@ test('the meal post beats the chat room styles and fills the chat list', () => {
   assert.match(css, /html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat \.cp-msg \.cm-bub\.cm-pbub:has\(> \.cs-meal\)\{width:100%!important/);
   assert.match(css, /var\(--cml-h,460px\)/);
   assert.match(R('index.html'), /function chatListHeight\(\)/);
+});
+test('chat photo post reads like TikTok: own words in the middle, name + pill, numbers, no watermark, no time', () => {
+  const css = R('chat-meal-post.css'), cc = R('community-chat.js');
+  assert.match(css, /:has\(> \.cs-meal\)::before\{content:none!important/, 'no LOWiSPIKE mark');
+  assert.match(css, /:has\(> \.cs-meal\)>\.cm-foot time\{display:none!important\}/, 'no time');
+  assert.match(css, /:has\(> \.cs-meal\) \.cs-meal-n,/, 'the AI dish name is not on the image');
+  assert.match(css, /:has\(> \.cs-meal\)>\.cm-t\{position:absolute!important;[^}]*top:46%/, 'the poster\'s own words in the middle');
+  assert.equal((cc.match(/class="cs-postpill" data-chat="meal-detail"/g) || []).length, 2, 'pill next to the name in both renderers');
+  assert.match(cc, /W\.LowiChatPost\.attach\(ov,/);
+});
+test('Save photo draws the post with its text; Save puts it into My posts > Saved', () => {
+  const P = require(path.join(__dirname, '..', 'chat-post-save.js')), h = R('index.html');
+  const m = s => s.length * 10;
+  assert.deepEqual(P.wrap('one two three four', 100, m, 3), ['one two', 'three four']);
+  const cut = P.wrap('aa bb cc dd ee ff gg', 50, m, 2); assert.equal(cut.length, 2); assert.ok(cut[1].endsWith('…'));
+  assert.match(P.fileName(new Date(2026, 10, 22, 2, 1, 5)), /^lowispike-20261122-020105\.jpg$/);
+  assert.match(h, /const chatSaved = \(window\.LowiChatPost \? LowiChatPost\.saved\(\) : \[\]\)/);
+  assert.match(h, /case "open-chatsaved":/);
+  assert.match(R('sw.js'), /STATIC\.push\("chat-post-save\.js"\)/);
 });

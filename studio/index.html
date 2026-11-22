@@ -116,6 +116,45 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .fb .in{width:100%;max-height:80dvh;display:flex;flex-direction:column;gap:10px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));background:#0a1224;border-top:1px solid var(--line);border-radius:20px 20px 0 0}
 .fb textarea{flex:1;min-height:200px;width:100%;border-radius:12px;border:1px solid var(--line2);background:#050912;color:var(--ink);font:inherit;font-size:16px;padding:10px}
 :focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+/* 22 Nov 2026: Studio > Profile (accounts.js), a profile page like TikTok's */
+.tabs button{padding:0 6px}
+.av{flex:none;display:inline-grid;place-items:center;border-radius:50%;background-size:cover;background-position:center;color:#fff;font-weight:800;box-shadow:0 0 0 2px rgba(255,255,255,.14)}
+.ap{display:flex;flex-direction:column;align-items:center;text-align:center;padding:4px 0 14px}
+.ap-sw{display:inline-flex;align-items:center;gap:7px;min-height:44px;margin-bottom:10px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:var(--ink);font:inherit;font-size:19px;cursor:pointer}
+.ap-sw b{max-width:60vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ap-sw span{font-size:14px;color:var(--muted)}
+.ap-sw i{font-style:normal;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:rgba(255,255,255,.16);color:var(--ink);font-size:12px;font-weight:800;line-height:20px}
+.ap-h{margin-top:10px;font-size:16px;font-weight:700}
+.ap-st{display:flex;gap:30px;margin:14px 0 4px}
+.ap-st span{display:flex;flex-direction:column;align-items:center;color:var(--muted);font-size:13px}
+.ap-st b{color:var(--ink);font-size:18px}
+.ap-bt{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.ap-ln{width:46px;justify-content:center;padding:0;text-decoration:none}
+.ap-bio{max-width:520px;margin:12px 0 0;font-size:15px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere}
+.ap-gh{align-self:stretch;display:flex;align-items:center;justify-content:space-between;margin-top:16px;color:var(--muted);font-weight:700;font-size:14px}
+.ap-empty{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:36px 12px}
+.ap-empty h2{margin:6px 0 0;font-size:21px}
+.ap-empty p{margin:0;max-width:420px;color:var(--muted);line-height:1.45}
+.ap-empty small{color:var(--muted)}
+.ac-list{display:grid;gap:4px;margin-top:8px}
+.ac-row{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:8px 10px;border:0;border-radius:14px;background:transparent;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.ac-row.on{background:rgba(255,255,255,.07)}
+.ac-row span:not(.av){flex:1;min-width:0}
+.ac-row b{display:block;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac-row small{color:var(--muted);font-size:13px}
+.ac-row em{font-style:normal;color:var(--acc2);font-size:20px;font-weight:800}
+.ac-plus{width:46px;height:46px;font-size:26px;background:rgba(255,255,255,.08);color:var(--acc2)}
+.ac-prev{display:flex;justify-content:center;margin:4px 0}
+.ac-lrow{display:flex;gap:8px}.ac-lrow input{flex:1;min-width:0}.ac-lrow .btn{flex:none}
+.ac-del{flex:1;justify-content:center;color:#ff6b61;border-color:rgba(255,59,48,.5)}
+.note{color:var(--muted);font-size:13px}
+#accpick{z-index:30}
+#accpick .cnt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#accpick .grid{margin:10px -18px 0}
+.ap-ps{display:flex;margin-top:4px}.ap-ps input{flex:1}
+.xb.ok{background:var(--acc2);border-color:var(--acc2);color:#050912}
+.tile.picked::before{content:"";position:absolute;inset:0;z-index:2;box-shadow:inset 0 0 0 3px var(--acc2);background:rgba(124,196,255,.18)}
+#accpick .vnav .btn{flex:1;justify-content:center}
 @media (min-width:700px){.grid{margin:0}.tile{border-radius:6px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -127,7 +166,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><input id="q" type="search" autocomplete="off"></label>
     <button class="ib" id="share" aria-label="Share"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
   </div>
-  <div class="tabs" role="tablist"><button role="tab" data-tab="swipe" aria-selected="true"></button><button role="tab" data-tab="agent" aria-selected="false"></button></div>
+  <div class="tabs" role="tablist"><button role="tab" data-tab="swipe" aria-selected="true"></button><button role="tab" data-tab="agent" aria-selected="false"></button><button role="tab" data-tab="profile" aria-selected="false"></button></div>
   <div class="row"><button class="pill" id="sortb"></button><button class="pill acc" id="editb" hidden></button></div>
   <main id="main"></main>
 </div>
@@ -161,6 +200,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     shareT: ['LOWiSPIKE Studio: videos that work and agent prompts', 'LOWiSPIKE Studio: Videos, die funktionieren, und Agent-Prompts', 'LOWiSPIKE Studio'], linkCopied: ['Link copied', 'Link kopiert', 'Enlace copiado'],
     copyFail: ['Copy did not work. Hold the text below and tap Copy.', 'Kopieren ging nicht. Halte den Text unten gedrückt und tippe auf Kopieren.', 'No se pudo copiar. Mantén pulsado el texto.'], empty: ['Nothing here yet.', 'Hier ist noch nichts.', 'Aún no hay nada.'], none: ['Nothing found.', 'Nichts gefunden.', 'Nada encontrado.'],
     agentAsk: ['Here is a short video that works. Make my own version of it for my niche and voice (ask me for them if you do not know them). Keep the structure and pacing, use new words, never copy the original clips or text 1:1. I post it myself.', 'Hier ist ein kurzes Video, das funktioniert. Mach mir eine eigene Version für meine Nische und meine Stimme (frag mich danach, wenn du sie nicht kennst). Struktur und Tempo übernehmen, neue Worte, nie fremde Clips oder Texte 1:1 kopieren. Ich poste selbst.', 'Aquí hay un vídeo corto que funciona. Haz mi propia versión para mi nicho y mi voz (pregúntame si no los conoces). Mantén la estructura, usa palabras nuevas, nunca copies 1:1. Yo lo publico.'],
+    profile: ['Profile', 'Profil', 'Perfil'],
     confirmDel: ['Delete this for good?', 'Wirklich löschen?', '¿Eliminar definitivamente?']
   };
   var t = function (k) { var r = W[k]; return r ? r[L === 'de' ? 1 : L === 'es' ? 2 : 0] : k; };
@@ -223,6 +263,10 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   var IO = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { IO.unobserve(e.target); var x = SW.filter(function (s) { return s.id === e.target.dataset.id; })[0]; if (x) want(x); } }); }, {rootMargin: '300px'}) : null;
 
   function render() {
+    if (TAB === 'profile') { D.querySelectorAll('.tabs button').forEach(function (b) { b.textContent = t(b.dataset.tab); b.setAttribute('aria-selected', b.dataset.tab === TAB ? 'true' : 'false'); });
+      $('#q').placeholder = t('search'); $('#sortb').hidden = true; $('#editb').hidden = true; var sb0 = $('#selbar'); if (sb0) sb0.hidden = true; D.body.style.paddingBottom = '';
+      return window.StudioAcc ? StudioAcc.render($('#main')) : null; }
+    $('#editb').hidden = !OWNER;
     D.querySelectorAll('.tabs button').forEach(function (b) { b.textContent = t(b.dataset.tab); b.setAttribute('aria-selected', b.dataset.tab === TAB ? 'true' : 'false'); });
     $('#q').placeholder = t('search'); $('#sortb').hidden = TAB !== 'swipe'; $('#sortb').textContent = SORT === 'views' ? t('most') : t('newest');
     var nSel = Object.keys(SEL).length, bar = $('#selbar');
@@ -244,15 +288,15 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 
   /* ---- the open item: Transcript, Translate, Copy for agent, strategy, Previous / Next ---- */
   var ICO = {tr: '<svg viewBox="0 0 24 24"><path d="M5 6h14M5 10h14M5 14h9M5 18h6"/></svg>', lang: '<svg viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M6 5c0 4 3 7 6 8M11 5c-1 4-4 7-7 8M13 21l4-9 4 9M14.5 18h5"/></svg>', cp: '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>'};
-  function cur() { return visible(TAB === 'swipe' ? SW : AG); }
+  function cur() { if (TAB === 'profile') return window.StudioAcc ? StudioAcc.items(SW) : []; return visible(TAB === 'swipe' ? SW : AG); }
   function open(id, keep) {
     var list = cur(), i = -1; for (var k = 0; k < list.length; k++) if (list[k].id === id) i = k; if (i < 0) return; var x = list[i]; OPEN = x;
     var tr = TR[x.id], body;
-    if (TAB === 'swipe') {
+    if (TAB !== 'agent') {
       var v = fmtViews(x.views), strat = tr && tr.strategy ? tr.strategy : x.strategy || [], why = tr && tr.why != null ? tr.why : x.why;
       body = '<' + (x.link ? 'a href="' + esc(x.link) + '" target="_blank" rel="noopener noreferrer"' : 'div') + ' class="vid" aria-label="' + esc(t('original')) + '">' + cover(x) + (x.link && thumbOf(x) ? '<span class="play" aria-hidden="true">▶</span>' : '') + '</' + (x.link ? 'a' : 'div') + '>' +
         '<div class="who"><b>' + esc(x.creator) + '</b>' + (v ? '<small>' + esc(v) + ' ' + esc(t('views')) + '</small>' : '') + '</div>' +
-        '<div class="acts"><button class="btn" data-a="tr" aria-pressed="false">' + ICO.tr + esc(t('transcript')) + '</button><button class="btn" data-a="lang">' + ICO.lang + esc(t('translate')) + '</button><button class="btn pri" data-a="copy">' + ICO.cp + esc(t('copyAgent')) + '</button></div>' +
+        '<div class="acts"><button class="btn" data-a="tr" aria-pressed="false">' + ICO.tr + esc(t('transcript')) + '</button><button class="btn" data-a="lang">' + ICO.lang + esc(t('translate')) + '</button><button class="btn pri" data-a="copy">' + ICO.cp + esc(t('copyAgent')) + '</button>' + (window.StudioAcc ? StudioAcc.addBtn(x) : '') + '</div>' +
         '<div class="box" id="trbox" hidden>' + esc((tr && tr.transcript) || x.transcript || t('noTranscript')) + '</div>' +
         (strat.length ? '<h3>' + esc(t('strategy')) + '</h3><ol class="steps">' + strat.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' : '') + (why ? '<p class="why"><b>' + esc(t('why')) + ':</b> ' + esc(why) + '</p>' : '');
     } else {
@@ -264,7 +308,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
       '<div class="vbody">' + body + '</div><div class="vnav"><button class="btn" data-a="prev"' + (i ? '' : ' disabled') + '>' + esc(t('prev')) + '</button><button class="btn" data-a="next"' + (i < list.length - 1 ? '' : ' disabled') + '>' + esc(t('next')) + '</button></div>';
     V.classList.add('on'); D.body.style.overflow = 'hidden'; V.querySelector('.vbody').scrollTop = 0;
     if (!keep) { try { history.pushState({s: 1}, '', '#' + x.id); } catch (e) {} } else { try { history.replaceState({s: 1}, '', '#' + x.id); } catch (e) {} }
-    if (TAB === 'swipe') want(x);
+    if (TAB !== 'agent') want(x);
   }
   function close(fromPop) { OPEN = null; $('#view').classList.remove('on'); D.body.style.overflow = ''; if (!fromPop && location.hash) { try { history.back(); } catch (e) {} } }
   function step(d) { var list = cur(), i = -1; for (var k = 0; k < list.length; k++) if (OPEN && list[k].id === OPEN.id) i = k; var n = list[i + d]; if (n) open(n.id, true); }
@@ -283,9 +327,9 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   function translate(x, btn) {
     if (TR[x.id]) { delete TR[x.id]; return open(x.id, true); }
     var lab = btn.innerHTML; btn.disabled = true; btn.textContent = t('translating');
-    var parts = TAB === 'swipe' ? [x.transcript || '', (x.strategy || []).join('\n'), x.why || ''] : [x.title, x.text], SEP = '\n\n§§§\n\n';
+    var parts = TAB !== 'agent' ? [x.transcript || '', (x.strategy || []).join('\n'), x.why || ''] : [x.title, x.text], SEP = '\n\n§§§\n\n';
     ai({action: 'translate', text: parts.join(SEP), to: L}).then(function (j) { var o = String(j.text || '').split(/\s*§§§\s*/);
-      TR[x.id] = TAB === 'swipe' ? {transcript: o[0] || x.transcript, strategy: (o[1] || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean), why: o[2] || x.why} : {title: o[0] || x.title, text: o[1] || x.text};
+      TR[x.id] = TAB !== 'agent' ? {transcript: o[0] || x.transcript, strategy: (o[1] || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean), why: o[2] || x.why} : {title: o[0] || x.title, text: o[1] || x.text};
       open(x.id, true); }).catch(function () { btn.disabled = false; btn.innerHTML = lab; toast(t('trFail')); });
   }
 
@@ -294,7 +338,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   function loadScript(src) { return new Promise(function (ok, no) { var s = D.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; D.head.appendChild(s); }); }
   function checkOwner() {
     var has = false; try { has = !!localStorage.getItem('lowi.auth'); } catch (e) {} if (!has) return;
-    loadScript('../vendor/supabase-2.117.3.js').then(function () { SB = window.supabase.createClient(SBURL, PUBKEY, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'lowi.auth', storage: window.localStorage}}); return SB.rpc('is_app_owner'); })
+    loadScript('../vendor/supabase-2.117.3.js').then(function () { SB = window.supabase.createClient(SBURL, PUBKEY, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'lowi.auth', storage: window.localStorage}}); if (window.StudioAcc) StudioAcc.cloud(SB); return SB.rpc('is_app_owner'); })
       .then(function (r) { OWNER = !!(r && r.data === true); $('#editb').hidden = !OWNER; }).catch(function () {});
   }
   function xbox(x) { return EDIT ? '<span class="xb' + (SEL[x.id] ? ' on' : '') + '" data-x role="checkbox" aria-checked="' + !!SEL[x.id] + '" aria-label="' + esc(t('del')) + '">' + (SEL[x.id] ? '✓' : '✕') + '</span>' : ''; }
@@ -368,6 +412,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     if (!x) return;
     if (a === 'tr') { var bx = $('#trbox'); bx.hidden = !bx.hidden; b.setAttribute('aria-pressed', bx.hidden ? 'false' : 'true'); return; }
     if (a === 'lang') return translate(x, b);
+    if (a === 'toacc') return window.StudioAcc && StudioAcc.addTo(x, b);
     if (a === 'copy') { var txt = agentText(x); return copy(txt).then(function (ok) { if (!ok) return fallback(txt); var l = b.innerHTML; b.classList.add('ok'); b.textContent = t('copied'); setTimeout(function () { b.classList.remove('ok'); b.innerHTML = l; }, 1800); }); }
     if (a === 'edit') return TAB === 'swipe' ? swipeDlg(x) : agentDlg(x);
     if (a === 'hide') { var ov = over(x.id); ov.hide = !x.hide; return save().then(function () { rebuild(); render(); open(x.id, true); }, function () {}); }
@@ -383,11 +428,14 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   $('#q').addEventListener('input', function (e) { Q = e.target.value.trim().toLowerCase(); render(); });
   $('#back').addEventListener('click', function (e) { try { if (D.referrer && new URL(D.referrer).origin === location.origin && history.length > 1) { e.preventDefault(); history.back(); } } catch (x) {} });
   D.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if ($('#dlg').classList.contains('on')) dlgClose(); else if (OPEN) close(); } else if (OPEN && e.key === 'ArrowRight') step(1); else if (OPEN && e.key === 'ArrowLeft') step(-1); });
-  function fromHash() { var id = decodeURIComponent((location.hash || '').slice(1)); if (!id) { if (OPEN) close(true); return; } var inS = SW.some(function (x) { return x.id === id; }), inA = AG.some(function (x) { return x.id === id; }); if (!inS && !inA) return; TAB = inS ? 'swipe' : 'agent'; render(); open(id, true); }
+  /* 22 Nov 2026: Studio > Profile (studio/accounts.js) uses these */
+  window.STUDIO = {t: t, L: L, esc: esc, $: $, cover: cover, fmtViews: fmtViews, hue: hue, EYE: EYE, toast: toast, dlg: dlg, dlgClose: dlgClose, ai: ai, render: render, sw: function () { return SW; }, tab: function () { return TAB; }, setTab: function (k) { TAB = k; render(); }, sb: function () { return SB; }};
+  function fromHash() { var id = decodeURIComponent((location.hash || '').slice(1)); if (!id) { if (OPEN) close(true); return; } var inS = SW.some(function (x) { return x.id === id; }), inA = AG.some(function (x) { return x.id === id; }); if (!inS && !inA) return; if (TAB !== 'profile' || !inS) TAB = inS ? 'swipe' : 'agent'; render(); open(id, true); }
   window.addEventListener('popstate', fromHash);
   Promise.all([fetch('cards.json', {cache: 'no-cache'}).then(function (r) { return r.json(); }), loadDoc()]).then(function (x) { DATA = x[0]; rebuild(); render(); fromHash(); checkOwner(); })
     .catch(function () { $('#main').innerHTML = '<div class="empty">' + esc(t('none')) + '</div>'; });
 })();
 </script>
+<script src="accounts.js?v=1"></script>
 </body>
 </html>

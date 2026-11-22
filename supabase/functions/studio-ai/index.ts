@@ -7,6 +7,7 @@
 //        reads the TikTok link (creator, caption, cover, via the tiktok-meta function), tries to fetch the video and have Gemini
 //        transcribe it when no transcript is given, then writes a short strategy. Returns {ok, meta, transcript, transcribed, hook, strategy, why}.
 //        If TikTok refuses the video download, transcribed=false and the owner pastes the transcript (then the strategy is written from it).
+//   POST {action:"profile", link}  anyone (30 a day per connection): a TikTok / Instagram profile -> {name, handle, bio, avatar, followers}
 //   POST {action:"translate", text, to}  anyone on the app's origin: translates text (max 6000 chars) into en / de / es.
 // Deploy: supabase functions deploy studio-ai --no-verify-jwt  (it checks the session itself for fill)
 const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, /^capacitor:\/\/localhost$/];
@@ -68,6 +69,30 @@ async function meta(link: string) {
   const url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY");
   try { const r = await fetch(url + "/functions/v1/tiktok-meta", { method: "POST", headers: { apikey: anon!, Authorization: "Bearer " + anon, "Content-Type": "application/json" }, body: JSON.stringify({ url: link }) }); const j = await r.json(); return j && j.ok && j.meta ? j.meta : {}; } catch (_e) { return {}; }
 }
+/* 22 Nov 2026 (Emmanuel: "they can even just paste in their profile link ... then that takes the bio and their profile picture"):
+   a public TikTok or Instagram profile page -> name, @handle, bio, numbers and the picture (as a small data URL, because TikTok's own
+   picture links expire). Best effort: when the page gives nothing, ok:false and the person types the name themselves. */
+async function asDataUrl(src: string): Promise<string> {
+  try { const r = await fetch(src, { headers: { "User-Agent": UA, Referer: "https://www.tiktok.com/" } }); if (!r.ok) return "";
+    const b = new Uint8Array(await r.arrayBuffer()); if (!b.length || b.length > 200_000) return "";
+    let s = ""; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode(...b.subarray(i, i + 0x8000));
+    return "data:" + (r.headers.get("content-type") || "image/jpeg").split(";")[0] + ";base64," + btoa(s); } catch (_e) { return ""; }
+}
+const og = (h: string, k: string) => { const m = new RegExp('<meta[^>]+(?:property|name)="' + k + '"[^>]+content="([^"]*)"', "i").exec(h) || new RegExp('<meta[^>]+content="([^"]*)"[^>]+(?:property|name)="' + k + '"', "i").exec(h); return m ? m[1].replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'") : ""; };
+async function profile(link: string) {
+  const tt = /tiktok\.com\/@([A-Za-z0-9._]+)/i.exec(link), ig = /instagram\.com\/([A-Za-z0-9._]+)/i.exec(link);
+  const url = tt ? "https://www.tiktok.com/@" + tt[1] : ig ? "https://www.instagram.com/" + ig[1] + "/" : "";
+  if (!url) return null;
+  const r = await fetch(url, { headers: { "User-Agent": UA, "Accept-Language": "en" }, redirect: "follow" }); if (!r.ok) return { handle: "@" + (tt || ig)![1] };
+  const h = await r.text();
+  if (tt) {
+    const m = /<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"[^>]*>([\s\S]*?)<\/script>/.exec(h);
+    try { const ui = m ? JSON.parse(m[1])?.__DEFAULT_SCOPE__?.["webapp.user-detail"]?.userInfo : null, u = ui?.user || {}, st = ui?.stats || {};
+      if (u.uniqueId) return { name: clip(u.nickname, 80), handle: "@" + clip(u.uniqueId, 60), bio: clip(u.signature, 300), avatar: await asDataUrl(u.avatarMedium || u.avatarThumb || ""), followers: Number(st.followerCount) || 0, likes: Number(st.heartCount) || 0, videos: Number(st.videoCount) || 0 }; } catch (_e) { /* fall through */ }
+  }
+  const title = og(h, "og:title"), desc = og(h, "og:description"), img = og(h, "og:image");
+  return { name: clip(title.replace(/\s*[(|•].*$/, ""), 80), handle: "@" + (tt || ig)![1], bio: clip(desc, 300), avatar: img ? await asDataUrl(img) : "" };
+}
 const FILL = { type: "OBJECT", properties: { transcript: { type: "STRING" }, hook: { type: "STRING" }, strategy: { type: "ARRAY", items: { type: "STRING" } }, why: { type: "STRING" } }, required: ["hook", "strategy", "why"] };
 const TRANS = { type: "OBJECT", properties: { text: { type: "STRING" } }, required: ["text"] };
 
@@ -84,6 +109,13 @@ Deno.serve(async (req) => {
       if ((await take(sub, "translate", 20)) !== "ok") return out(req, 429, { error: "limit" });
       const r = await gemini([{ text: "Translate the following text into " + LANG[lang] + ". Keep line breaks, keep names, handles and numbers as they are. Return JSON {text}.\n\n" + text }], TRANS, 4096);
       return out(req, 200, { ok: true, text: clip(r.text, 8000) });
+    }
+    if (body.action === "profile") {
+      const link = clip(body.link, 300); if (!/^https:\/\/([a-z0-9-]+\.)*(tiktok\.com\/@|instagram\.com\/)/i.test(link)) return out(req, 400, { error: "bad_link" });
+      const sub = "ip:" + clip((req.headers.get("x-forwarded-for") || "").split(",")[0], 60);
+      if ((await take(sub, "profile", 30)) !== "ok") return out(req, 429, { error: "limit" });
+      const p = await profile(link); if (!p) return out(req, 400, { error: "bad_link" });
+      return out(req, 200, { ok: true, profile: p });
     }
     if (body.action === "fill") {
       if (!(await isOwner(req))) return out(req, 403, { error: "owner_only" });

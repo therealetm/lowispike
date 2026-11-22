@@ -1,0 +1,9 @@
+// 22 Nov 2026 (Emmanuel): Studio > Profile: several accounts, a TikTok-like switcher, profile from a link, inspo picked from the Swipe file.
+const test = require('node:test'), assert = require('node:assert'), fs = require('fs'), path = require('path');
+const R = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+const html = R('studio/index.html'), js = R('studio/accounts.js'), fn = R('supabase/functions/studio-ai/index.ts'), sql = R('supabase/proposals/studio_accounts_20261122.sql');
+test('Studio has a third tab, Profile, in three languages', () => { assert.match(html, /data-tab="profile"/); assert.match(html, /profile: \['Profile', 'Profil', 'Perfil'\]/); assert.match(html, /<script src="accounts\.js\?v=\d+"><\/script>/); });
+test('Profile tab hands rendering and the open list to accounts.js', () => { assert.match(html, /if \(TAB === 'profile'\) \{/); assert.match(html, /StudioAcc\.items\(SW\)/); assert.match(html, /StudioAcc\.addBtn\(x\)/); });
+test('accounts: switcher, add / edit / delete, inspo picker, remove from one account', () => { for (const k of ["'switch'", "'use'", "'add'", "'saveacc'", "'delacc'", "'pick'", "'ptog'", "'psave'", "'rmone'", "'fetch'"]) assert.ok(js.includes("k === " + k), k); });
+test('accounts are kept on the phone and in the person\'s own cloud row', () => { assert.match(js, /lowi\.studio\.accounts\.v1/); assert.match(js, /from\('studio_accounts'\)\.upsert\(\{user_id: UID/); assert.match(sql, /using \(user_id = auth\.uid\(\)\)/); assert.match(sql, /revoke all on public\.studio_accounts from anon/); });
+test('profile link reader returns name, handle, bio and a lasting picture', () => { assert.match(fn, /body\.action === "profile"/); assert.match(fn, /webapp\.user-detail/); assert.match(fn, /async function asDataUrl/); assert.match(fn, /take\(sub, "profile", 30\)/); });

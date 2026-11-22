@@ -1,0 +1,147 @@
+/* LOWiSPIKE Studio > Profile (22 Nov 2026, Emmanuel: "add one more thing here, which is profile ... I manage multiple accounts ...
+   for each of my accounts I should be able to manage my strategy ... it's just creating a folder that looks like a profile feed ...
+   for that specific account, the content creator that I'm trying to emulate ... add inspo from the swipe file ... paste in their
+   profile link and it takes the bio and their profile picture ... click on the name and switch from account to account, like TikTok
+   or YouTube").
+   - Everyone can add their own accounts (only the owner adds to the shared Swipe file). Each account: picture, name, @handle, bio,
+     numbers when the profile link gave them, and its own grid of inspo videos picked from the Swipe file.
+   - Tap the name at the top to switch accounts or add one (a sheet like TikTok's account switcher).
+   - Saved on this phone (lowi.studio.accounts.v1) and, when signed in to the app, in public.studio_accounts (one row per person,
+     only they can read it), so the accounts follow them to another phone.
+   - The inspo grid opens the usual video view (Transcript, Translate, Copy for agent); its "+ @handle" button adds or removes the
+     video for the current account. */
+(function () {
+  'use strict';
+  var S = window.STUDIO; if (!S || window.StudioAcc) return;
+  var D = document, KEY = 'lowi.studio.accounts.v1', esc = S.esc, $ = S.$, L = S.L;
+  var W = {
+    accounts: ['Accounts', 'Accounts', 'Cuentas'], switchT: ['Switch account', 'Account wechseln', 'Cambiar de cuenta'], addAcc: ['Add account', 'Account hinzufügen', 'Añadir cuenta'],
+    editAcc: ['Edit profile', 'Profil bearbeiten', 'Editar perfil'], delAcc: ['Delete account', 'Account löschen', 'Eliminar cuenta'], delAccQ: ['Delete this account and its inspo list? The Swipe file stays.', 'Diesen Account und seine Inspo-Liste löschen? Die Swipe-Datei bleibt.', '¿Eliminar esta cuenta y su lista? El archivo de swipe se queda.'],
+    plink: ['Profile link (TikTok or Instagram, optional)', 'Profil-Link (TikTok oder Instagram, optional)', 'Enlace del perfil (TikTok o Instagram, opcional)'], getP: ['Get profile', 'Profil holen', 'Obtener perfil'], getting: ['Getting…', 'Hole…', 'Obteniendo…'],
+    gotP: ['Profile filled in. Check it and save.', 'Profil ausgefüllt. Prüf es und speichere.', 'Perfil rellenado. Revísalo y guarda.'], noP: ['Could not read that profile. Type the name yourself.', 'Profil nicht lesbar. Tipp den Namen selbst ein.', 'No se pudo leer el perfil. Escribe el nombre.'],
+    name: ['Name', 'Name', 'Nombre'], handle: ['@handle', '@Handle', '@usuario'], bio: ['Bio', 'Bio', 'Bio'], needName: ['Give the account a name or @handle.', 'Gib dem Account einen Namen oder @Handle.', 'Pon un nombre o @usuario.'],
+    inspo: ['Inspo', 'Inspo', 'Inspo'], followers: ['Followers', 'Follower', 'Seguidores'], likes: ['Likes', 'Likes', 'Me gusta'], addInspo: ['+ Add inspo', '+ Inspo hinzufügen', '+ Añadir inspo'],
+    remove: ['Remove', 'Entfernen', 'Quitar'], done: ['Done', 'Fertig', 'Listo'], openOn: ['Open profile', 'Profil öffnen', 'Abrir perfil'],
+    pickT: ['Pick videos to copy for {h}', 'Videos für {h} auswählen', 'Elige vídeos para {h}'], saveN: ['Save ({n})', 'Speichern ({n})', 'Guardar ({n})'], search: ['Search the Swipe file', 'Swipe-Datei durchsuchen', 'Buscar en el archivo'],
+    emptyT: ['Your accounts', 'Deine Accounts', 'Tus cuentas'], emptyP: ['Add each account you run. Then pick the videos from the Swipe file you want to copy for it, so every account has its own plan.', 'Füg jeden Account hinzu, den du führst. Dann wähl aus der Swipe-Datei die Videos, die du dafür nachmachen willst. So hat jeder Account seinen eigenen Plan.', 'Añade cada cuenta que llevas. Luego elige del archivo de swipe los vídeos que quieres copiar para ella.'],
+    noInspo: ['No inspo yet. Tap “+ Add inspo” and pick videos from the Swipe file.', 'Noch keine Inspo. Tipp auf „+ Inspo hinzufügen“ und wähl Videos aus der Swipe-Datei.', 'Aún no hay inspo. Toca «+ Añadir inspo».'],
+    added: ['Added to {h}', 'Zu {h} hinzugefügt', 'Añadido a {h}'], removed: ['Removed from {h}', 'Von {h} entfernt', 'Quitado de {h}'], local: ['Sign in to the app to keep your accounts on every phone.', 'Melde dich in der App an, damit deine Accounts auf jedem Handy da sind.', 'Inicia sesión para tener tus cuentas en cada móvil.'],
+    cancel: ['Cancel', 'Abbrechen', 'Cancelar'], save: ['Save', 'Speichern', 'Guardar'], back: ['Back', 'Zurück', 'Atrás']
+  };
+  var t = function (k, v) { var r = W[k], s = r ? r[L === 'de' ? 1 : L === 'es' ? 2 : 0] : S.t(k); if (v) for (var q in v) s = s.replace('{' + q + '}', v[q]); return s; };
+  var A = {t: 0, cur: '', list: []}, SB = null, UID = '', RM = false, PICK = null, saveT = 0, signed = false;
+  try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw && Array.isArray(raw.list)) A = raw; } catch (e) {}
+  try { signed = !!localStorage.getItem('lowi.auth'); } catch (e) {}
+
+  function cur() { for (var i = 0; i < A.list.length; i++) if (A.list[i].id === A.cur) return A.list[i]; return A.list[0] || null; }
+  function label(a) { return a ? (a.handle || a.name || '') : ''; }
+  function persist() { A.t = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(A)); } catch (e) {} clearTimeout(saveT); saveT = setTimeout(push, 600); }
+  function push() { if (!SB || !UID) return; SB.from('studio_accounts').upsert({user_id: UID, doc: A, updated_at: new Date().toISOString()}).then(function (r) { if (r && r.error) S.toast(S.t('notSaved')); }); }
+  function cloud(sb) {
+    SB = sb; sb.auth.getSession().then(function (r) { var s = r && r.data && r.data.session; if (!s) return; UID = s.user.id;
+      return sb.from('studio_accounts').select('doc').eq('user_id', UID).maybeSingle().then(function (q) { var d = q && q.data && q.data.doc;
+        if (d && Array.isArray(d.list) && (d.t || 0) > (A.t || 0)) { A = d; try { localStorage.setItem(KEY, JSON.stringify(A)); } catch (e) {} if (S.tab() === 'profile') S.render(); }
+        else if (A.list.length && (!d || (d.t || 0) < (A.t || 0))) push(); }); }).catch(function () {});
+  }
+  function avatar(a, size) { var n = (a && (a.name || a.handle) || '?').replace(/^@/, ''), h = S.hue((a && a.id) || 'x');
+    return a && a.avatar ? '<span class="av" style="width:' + size + 'px;height:' + size + 'px;background-image:url(&quot;' + esc(a.avatar) + '&quot;)"></span>'
+      : '<span class="av" style="width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * .42) + 'px;background:linear-gradient(150deg,hsl(' + h + ' 55% 46%),hsl(' + ((h + 50) % 360) + ' 55% 26%))">' + esc(n.charAt(0).toUpperCase()) + '</span>'; }
+  function num(n) { return S.fmtViews(n) || '0'; }
+  function items(SW) { var a = cur(); if (!a) return []; var by = {}; SW.forEach(function (x) { by[x.id] = x; }); return (a.inspo || []).map(function (id) { return by[id]; }).filter(Boolean); }
+
+  function render(main) {
+    var a = cur();
+    if (!a) { main.innerHTML = '<div class="ap-empty">' + avatar(null, 76) + '<h2>' + esc(t('emptyT')) + '</h2><p>' + esc(t('emptyP')) + '</p><button class="btn pri" data-acc="add">+ ' + esc(t('addAcc')) + '</button>' + (signed ? '' : '<small>' + esc(t('local')) + '</small>') + '</div>'; return; }
+    var list = items(S.sw()), stats = [[list.length, t('inspo')]];
+    if (a.followers) stats.push([num(a.followers), t('followers')]); if (a.likes) stats.push([num(a.likes), t('likes')]);
+    var h = '<div class="ap"><button class="ap-sw" data-acc="switch" aria-haspopup="dialog" aria-label="' + esc(t('switchT')) + '"><b>' + esc(a.name || a.handle) + '</b><span aria-hidden="true">▾</span>' + (A.list.length > 1 ? '<i>' + A.list.length + '</i>' : '') + '</button>' +
+      avatar(a, 96) + (a.handle ? '<div class="ap-h">' + esc(a.handle) + '</div>' : '') +
+      '<div class="ap-st">' + stats.map(function (s) { return '<span><b>' + esc(String(s[0])) + '</b>' + esc(s[1]) + '</span>'; }).join('') + '</div>' +
+      '<div class="ap-bt"><button class="btn pri" data-acc="pick">' + esc(t('addInspo')) + '</button><button class="btn" data-acc="edit">' + esc(t('editAcc')) + '</button>' + (a.link ? '<a class="btn ap-ln" href="' + esc(a.link) + '" target="_blank" rel="noopener noreferrer" aria-label="' + esc(t('openOn')) + '">↗</a>' : '') + '</div>' +
+      (a.bio ? '<p class="ap-bio">' + esc(a.bio) + '</p>' : '') +
+      (list.length ? '<div class="ap-gh"><span>' + esc(t('inspo')) + '</span><button class="pill' + (RM ? ' acc' : '') + '" data-acc="rm">' + esc(RM ? t('done') : t('remove')) + '</button></div>' : '') + '</div>';
+    h += list.length ? '<div class="grid">' + list.map(function (x) { var v = S.fmtViews(x.views);
+      return '<button class="tile" ' + (RM ? 'data-acc="rmone" data-x="' + esc(x.id) + '"' : 'data-id="' + esc(x.id) + '"') + ' aria-label="' + esc((RM ? t('remove') + ': ' : '') + x.creator) + '">' + S.cover(x) + (RM ? '<span class="xb on">✕</span>' : '') + (v ? '<span class="vw">' + S.EYE + esc(v) + '</span>' : '') + '</button>'; }).join('') + '</div>'
+      : '<div class="empty">' + esc(t('noInspo')) + '</div>';
+    main.innerHTML = h;
+  }
+
+  /* the switcher, like TikTok / YouTube: tap the name, pick an account or add one */
+  function switcher() {
+    S.dlg('<h2>' + esc(t('switchT')) + '</h2><div class="ac-list">' + A.list.map(function (a) { var on = a.id === (cur() || {}).id;
+      return '<button class="ac-row' + (on ? ' on' : '') + '" data-acc="use" data-k="' + esc(a.id) + '">' + avatar(a, 46) + '<span><b>' + esc(a.name || a.handle) + '</b><small>' + esc([a.name && a.handle ? a.handle : '', (a.inspo || []).length + ' ' + t('inspo')].filter(Boolean).join(' · ')) + '</small></span>' + (on ? '<em aria-hidden="true">✓</em>' : '') + '</button>'; }).join('') +
+      '<button class="ac-row add" data-acc="add"><span class="av ac-plus">+</span><span><b>' + esc(t('addAcc')) + '</b></span></button></div>' + (signed ? '' : '<p class="note">' + esc(t('local')) + '</p>'));
+  }
+  function accDlg(a) {
+    a = a || {};
+    S.dlg('<h2>' + esc(a.id ? t('editAcc') : t('addAcc')) + '</h2><div class="ac-prev" id="acPrev">' + avatar(a.id ? a : null, 72) + '</div>' +
+      '<label for="a_ln">' + esc(t('plink')) + '</label><div class="ac-lrow"><input id="a_ln" inputmode="url" autocapitalize="off" placeholder="https://www.tiktok.com/@…" value="' + esc(a.link || '') + '"><button class="btn" data-acc="fetch">' + esc(t('getP')) + '</button></div>' +
+      '<label for="a_nm">' + esc(t('name')) + '</label><input id="a_nm" value="' + esc(a.name || '') + '"><label for="a_hd">' + esc(t('handle')) + '</label><input id="a_hd" autocapitalize="off" value="' + esc(a.handle || '') + '">' +
+      '<label for="a_bio">' + esc(t('bio')) + '</label><textarea id="a_bio" style="min-height:80px">' + esc(a.bio || '') + '</textarea><input type="hidden" id="a_av" value="' + esc(a.avatar || '') + '"><input type="hidden" id="a_st" value="' + esc(JSON.stringify({f: a.followers || 0, l: a.likes || 0})) + '">' +
+      '<div class="btns"><button class="btn" data-acc="cancel">' + esc(t('cancel')) + '</button><button class="btn pri" data-acc="saveacc" data-k="' + esc(a.id || '') + '">' + esc(t('save')) + '</button></div>' +
+      (a.id ? '<div class="btns"><button class="btn ac-del" data-acc="delacc" data-k="' + esc(a.id) + '">' + esc(t('delAcc')) + '</button></div>' : ''));
+  }
+  function v(id) { var e = $('#' + id); return e ? e.value.trim() : ''; }
+  function fetchProfile(b) {
+    var link = v('a_ln'); if (!/^https:\/\/([a-z0-9-]+\.)*(tiktok\.com\/@|instagram\.com\/)/i.test(link)) return S.toast(t('noP'));
+    var lab = b.textContent; b.disabled = true; b.textContent = t('getting');
+    S.ai({action: 'profile', link: link}).then(function (j) { var p = j.profile || {}, set = function (id, val) { var e = $('#' + id); if (e && val) e.value = val; };
+      set('a_nm', p.name); set('a_hd', p.handle); set('a_bio', p.bio); set('a_av', p.avatar); $('#a_st').value = JSON.stringify({f: p.followers || 0, l: p.likes || 0});
+      $('#acPrev').innerHTML = avatar({id: 'n', name: p.name || p.handle, avatar: p.avatar}, 72); S.toast(p.name || p.avatar ? t('gotP') : t('noP')); })
+      .catch(function () { S.toast(t('noP')); }).then(function () { b.disabled = false; b.textContent = lab; });
+  }
+  function saveAcc(id) {
+    var name = v('a_nm'), hd = v('a_hd').replace(/^@?/, '@').replace(/^@$/, ''); if (!name && !hd) return S.toast(t('needName'));
+    var st = {}; try { st = JSON.parse(v('a_st') || '{}'); } catch (e) {}
+    var a = id ? A.list.filter(function (q) { return q.id === id; })[0] : null;
+    if (!a) { a = {id: 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), inspo: [], ts: Date.now()}; A.list.push(a); }
+    a.name = name; a.handle = hd; a.bio = v('a_bio'); a.link = v('a_ln'); a.avatar = v('a_av'); a.followers = st.f || 0; a.likes = st.l || 0; A.cur = a.id;
+    persist(); S.dlgClose(); S.setTab('profile');
+  }
+
+  /* pick inspo from the Swipe file for the current account */
+  function picker() {
+    var a = cur(); if (!a) return accDlg(); PICK = {}; (a.inspo || []).forEach(function (id) { PICK[id] = 1; });
+    var el = $('#accpick'); if (!el) { el = D.createElement('section'); el.id = 'accpick'; el.className = 'view'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); D.body.appendChild(el); }
+    el.innerHTML = '<div class="vtop"><button class="ib" data-acc="pclose" aria-label="' + esc(t('back')) + '">‹</button><span class="cnt">' + esc(t('pickT', {h: label(a)})) + '</span><span style="width:46px"></span></div>' +
+      '<div class="vbody"><label class="search ap-ps"><input id="apq" type="search" autocomplete="off" placeholder="' + esc(t('search')) + '"></label><div class="grid" id="apgrid"></div></div>' +
+      '<div class="vnav"><button class="btn pri" data-acc="psave" id="apsave"></button></div>';
+    el.classList.add('on'); D.body.style.overflow = 'hidden'; paintPick();
+    $('#apq').addEventListener('input', paintPick);
+  }
+  function paintPick() {
+    var q = ($('#apq') || {}).value || ''; q = q.trim().toLowerCase();
+    var list = S.sw().filter(function (x) { return !x.hide && (!q || [x.creator, x.hook, x.transcript].join(' ').toLowerCase().indexOf(q) >= 0); }).slice().sort(function (a, b) { return (b.views || 0) - (a.views || 0); });
+    $('#apgrid').innerHTML = list.map(function (x) { var v2 = S.fmtViews(x.views), on = !!PICK[x.id];
+      return '<button class="tile' + (on ? ' picked' : '') + '" data-acc="ptog" data-x="' + esc(x.id) + '" role="checkbox" aria-checked="' + on + '" aria-label="' + esc(x.creator) + '">' + S.cover(x) + '<span class="xb' + (on ? ' ok' : '') + '">' + (on ? '✓' : '') + '</span>' + (v2 ? '<span class="vw">' + S.EYE + esc(v2) + '</span>' : '') + '</button>'; }).join('');
+    $('#apsave').textContent = t('saveN', {n: Object.keys(PICK).length});
+  }
+  function pclose() { var el = $('#accpick'); if (el) el.classList.remove('on'); D.body.style.overflow = ''; PICK = null; }
+
+  /* "+ @handle" in the open video */
+  function addBtn(x) { var a = cur(); if (!a) return '<button class="btn" data-a="toacc">＋ ' + esc(t('addAcc')) + '</button>'; var on = (a.inspo || []).indexOf(x.id) >= 0;
+    return '<button class="btn" data-a="toacc" aria-pressed="' + on + '">' + (on ? '✓ ' : '＋ ') + esc(label(a)) + '</button>'; }
+  function addTo(x, b) { var a = cur(); if (!a) { S.setTab('profile'); return accDlg(); } a.inspo = a.inspo || []; var i = a.inspo.indexOf(x.id), on = i < 0;
+    if (on) a.inspo.unshift(x.id); else a.inspo.splice(i, 1); persist(); b.setAttribute('aria-pressed', on); b.textContent = (on ? '✓ ' : '＋ ') + label(a); S.toast(t(on ? 'added' : 'removed', {h: label(a)})); }
+
+  D.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-acc]'); if (!b) return; var k = b.dataset.acc; e.preventDefault(); e.stopPropagation();
+    if (k === 'switch') return switcher();
+    if (k === 'use') { A.cur = b.dataset.k; RM = false; persist(); S.dlgClose(); return S.setTab('profile'); }
+    if (k === 'add') return accDlg();
+    if (k === 'edit') return accDlg(cur());
+    if (k === 'cancel') return S.dlgClose();
+    if (k === 'fetch') return fetchProfile(b);
+    if (k === 'saveacc') return saveAcc(b.dataset.k);
+    if (k === 'delacc') { if (!confirm(t('delAccQ'))) return; A.list = A.list.filter(function (q) { return q.id !== b.dataset.k; }); A.cur = A.list[0] ? A.list[0].id : ''; persist(); S.dlgClose(); return S.setTab('profile'); }
+    if (k === 'rm') { RM = !RM; return S.render(); }
+    if (k === 'rmone') { var a = cur(); if (a) { a.inspo = (a.inspo || []).filter(function (id) { return id !== b.dataset.x; }); persist(); if (!a.inspo.length) RM = false; } return S.render(); }
+    if (k === 'pick') return picker();
+    if (k === 'pclose') return pclose();
+    if (k === 'ptog') { var id = b.dataset.x; if (PICK[id]) delete PICK[id]; else PICK[id] = 1; return paintPick(); }
+    if (k === 'psave') { var c = cur(); if (c) { var keep = (c.inspo || []).filter(function (id2) { return PICK[id2]; }), add = Object.keys(PICK).filter(function (id2) { return keep.indexOf(id2) < 0; }); c.inspo = add.concat(keep); persist(); } pclose(); return S.setTab('profile'); }
+  }, true);
+
+  window.StudioAcc = {render: render, items: items, addBtn: addBtn, addTo: addTo, cloud: cloud};
+  if (S.tab() === 'profile') S.render();
+})();

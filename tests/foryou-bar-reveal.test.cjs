@@ -8,7 +8,8 @@ test('foryou-bar.js is loaded by the app and cached by the service worker', () =
 test('the circle row is sticky and has hide/pin states with reduced motion', () => {
   const c = R('foryou-ig.css');
   assert.match(c, /#cmPaneFeed \.fy-tools\{position:sticky!important;top:0/);
-  assert.match(c, /\.fy-tools\.fyb-hide\{transform:translateY\(-105%\)/);
+  assert.match(c, /\.fy-tools\.fyb-hide\{opacity:0;visibility:hidden;pointer-events:none/, 'hidden by fading, never moved (22 Nov 2026: iPhone kept the moved tap area)');
+  assert.doesNotMatch(c, /fyb-hide\{transform/);
   assert.match(c, /prefers-reduced-motion:reduce\)\{#cmPaneFeed \.fy-tools\{transition:none/);
 });
 test('down past the row hides it, any scroll up shows it, the top resets it', () => {

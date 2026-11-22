@@ -122,3 +122,5 @@ html.lw-chat-on #lwBX,html.lw-chat-on body #cmPaneChat#cmPaneChat#cmPaneChat#cmP
 .cps-edit{display:flex;gap:8px;width:100%}
 .cps-edit[hidden]{display:none}
 .cps-edit input{flex:1;min-width:0;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:16px;padding:0 12px}
+/* 22 Nov 2026: the empty send button is a ✕ back to Home (chat-post-save.js leaveBtn) */
+#cmSend.cs-leave{font-size:20px;font-weight:700;opacity:1!important;background:rgba(255,255,255,.14)!important;color:#fff!important}

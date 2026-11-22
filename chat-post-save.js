@@ -88,5 +88,23 @@
             try { await share(blob); } catch (x) { toast(t('fail')); }
         });
     }
+    /* 22 Nov 2026 (Emmanuel: "there's still no back button, but there's this arrow pointing upwards that does nothing. Just put the
+       back button there. Or an X button so I can get back to the main page"): with nothing typed and no photo waiting, the send
+       button is a ✕ that leaves the chat for Home; as soon as there is something to send it is the send arrow again. */
+    (function leaveBtn() {
+        const BACK = { en: 'Back to Home', de: 'Zurück zum Start', es: 'Volver al inicio' };
+        const empty = () => { const i = D.getElementById('cmInput'), ph = D.getElementById('csPhoto'); return !(i && i.value.trim()) && !(ph && ph.children.length); };
+        let busy = false;
+        function sync() { const b = D.getElementById('cmSend'); if (!b || busy) return; busy = true;
+            const leave = empty(); b.classList.toggle('cs-leave', leave);
+            if (leave) { if (b.textContent !== '✕') b.textContent = '✕'; b.disabled = false; b.setAttribute('aria-label', BACK[lang()] || BACK.en); }
+            else if (b.textContent === '✕') b.textContent = '↑';
+            busy = false; }
+        D.addEventListener('click', e => { const b = e.target.closest && e.target.closest('#cmSend.cs-leave'); if (!b || !empty()) return;
+            e.preventDefault(); e.stopImmediatePropagation(); try { const x = D.getElementById('cgClose'); if (x && x.offsetParent) x.click(); } catch (er) {} try { W.goTab('home'); } catch (er) {} }, true);
+        D.addEventListener('input', e => { if (e.target && e.target.id === 'cmInput') setTimeout(sync, 0); });
+        let q = 0; new MutationObserver(() => { if (!q) q = setTimeout(() => { q = 0; sync(); }, 30); }).observe(D.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['disabled'] });
+        sync();
+    })();
     W.LowiChatPost = { attach, saved: list, isSaved, remove, toggle, render };
 })(typeof window !== 'undefined' ? window : null);

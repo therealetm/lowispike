@@ -60,7 +60,7 @@ test('My posts is an Instagram-style profile with two tabs, and the Saved circle
   assert.match(h, /id="fyProf"/);
   assert.match(h, /data-tr="list-tab" data-k="mine"/, 'Photos tab is back in My posts');
   assert.match(h, /data-tr="list-tab" data-k="saved"/);
-  assert.match(h, /case "list-tab": listSheet\(b\.dataset\.k\); break;/);
+  assert.match(h, /case "list-tab": profArm = ""; listSheet\(b\.dataset\.k\); break;/);
   assert.match(h, /\["posts", "Beiträge", "publicaciones"\]/);
 });
 

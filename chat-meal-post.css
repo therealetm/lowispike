@@ -109,7 +109,7 @@ html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-by .cs-meal-mid i{background:#ffd166!important;box-shadow:0 0 8px 2px rgba(255,209,102,.85)}
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-by .cs-meal-high i{background:#ff5a4a!important;box-shadow:0 0 8px 2px rgba(255,90,74,.9)}
 /* nothing floats over a photo post: while the chat list shows on screen (index.html chatListHeight sets html.lw-chat-on) */
-html.lw-chat-on #lwBX,html.lw-chat-on body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cr-down{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+html.lw-chat-on body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cr-down{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
 /* the buttons in the details panel: Save photo, Save, Text on screen */
 .cps-acts{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
 .cps-b{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.28);color:#fff;font:inherit;font-size:15px;font-weight:650;cursor:pointer;
@@ -122,5 +122,3 @@ html.lw-chat-on #lwBX,html.lw-chat-on body #cmPaneChat#cmPaneChat#cmPaneChat#cmP
 .cps-edit{display:flex;gap:8px;width:100%}
 .cps-edit[hidden]{display:none}
 .cps-edit input{flex:1;min-width:0;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:16px;padding:0 12px}
-/* 22 Nov 2026: the empty send button is a ✕ back to Home (chat-post-save.js leaveBtn) */
-#cmSend.cs-leave{font-size:20px;font-weight:700;opacity:1!important;background:rgba(255,255,255,.14)!important;color:#fff!important}

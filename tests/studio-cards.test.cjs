@@ -110,7 +110,7 @@ test('Save photo draws the post with its text; Save puts it into My posts > Save
 test('chat photo post: own words, name with a liquid-glass spike badge, numbers; nothing floating over it; Save photo, Save and edit work', () => {
   const css = R('chat-meal-post.css'), cc = R('community-chat.js'), ps = R('chat-post-save.js'), h = R('index.html'), sql = R('supabase/proposals/meal_caption_edit_20261122.sql');
   assert.match(css, /\.cs-by \.cs-meal-bs\{border-radius:999px!important;[^}]*backdrop-filter:blur\(18px\) saturate\(180%\)/, 'glass badge');
-  assert.match(css, /html\.lw-chat-on #lwBX,html\.lw-chat-on body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat \.cr-down\{display:none!important/, 'no round back button or scroll arrow over posts');
+  assert.match(css, /html\.lw-chat-on body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat \.cr-down\{display:none!important/, 'no scroll arrow over posts (the back is top-left since 22 Nov 2026, off the photos)');
   assert.match(h, /classList\.toggle\("lw-chat-on"/);
   assert.match(css, /\.cps-b\{display:inline-flex/, 'styled buttons');
   assert.match(cc, /K\.mealBody\(src,title,food\.lvl,cap\|\|''\)/, 'the AI description never becomes the caption');

@@ -76,5 +76,6 @@ test('the "Anhören: mitkochen" button keeps its second line dark on cyan, above
 
 test('a For You post ends above the round back button, so its caption is never under it', () => {
   assert.match(read('foryou-rail.css'), /html\.lw-bx-on #cmFeed:has\(> #fyFeed\)\{padding-bottom:58px\}/);
-  assert.match(read('bottom-close.css'), /\.lw-bx\{position:fixed;left:50%;bottom:calc\(env\(safe-area-inset-bottom, 0px\) \+ 14px/, 'the button sits 14 px above the safe area, 56 px tall');
+  /* 22 Nov 2026: the back sits top-left now; the padding stays harmless */
+  assert.match(read('bottom-close.css'), /\.lw-bx\{position:fixed;left:calc\(env\(safe-area-inset-left, 0px\) \+ 14px\);top:/, 'the back is top-left, off the captions');
 });

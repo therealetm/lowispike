@@ -16,7 +16,8 @@ const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 test('the billiard table is laid out against the round button\'s resting place, not where a card lifted it', () => {
     const js = read('room-table.js');
     assert.match(js, /const lift=parseFloat\(getComputedStyle\(x\)\.getPropertyValue\('--bx-lift'\)\)\|\|0,top=b\.top\+Math\.max\(0,lift\);/);
-    assert.match(read('bottom-close.css'), /bottom:calc\(env\(safe-area-inset-bottom, 0px\) \+ 14px \+ var\(--bx-lift, 0px\)\)/, 'why: the lift moves the button up by exactly --bx-lift');
+    /* 22 Nov 2026: the button moved to the top-left corner and never lifts (lift 0), so the table keeps its resting layout */
+    assert.match(read('bottom-close.js'), /const lift = 0; cardBlock = false;/, 'the button never lifts any more');
 });
 test('a chat photo keeps its box while it loads, so scrolling up never jumps', () => {
     assert.ok(read('community-tg.css').includes('.cr-room .cm-bub.cm-pbub .cs-photo img{aspect-ratio:4/5;min-height:0;max-height:none}'));

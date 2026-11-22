@@ -611,3 +611,6 @@ html[data-peak="1"] #spBubble { filter: drop-shadow(0 0 14px color-mix(in srgb, 
 html[data-peak="1"] #spBubble .cw-env { filter: brightness(1.15) saturate(1.15); }
 html[data-peak="1"] .bw3-canvas { filter: brightness(1.1) saturate(1.15) !important; }
 html[data-peak="1"] .wm-veil { opacity: 0 !important; }
+/* 22 Nov 2026 (Emmanuel: "make it a back button ... move all the other ones to the same corner, so it's universal"): Home's sheet
+   close is the same back arrow, top-left corner, as every other screen (bottom-close.css .lw-bx) */
+html body .wh-x { left: calc(env(safe-area-inset-left, 0px) + 14px); top: calc(env(safe-area-inset-top, 0px) + 10px); bottom: auto; margin-left: 0; width: 46px; height: 46px; background: rgba(10,14,22,.55) !important; -webkit-backdrop-filter: blur(10px) !important; backdrop-filter: blur(10px) !important; }

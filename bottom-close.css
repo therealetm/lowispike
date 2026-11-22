@@ -1,8 +1,8 @@
 /* bottom-close.css: Oct 28 2026, owner request 14. One back / close button at the bottom center, like a home button, for one hand.
    See bottom-close.js and the design rule in MAYA-HANDOFF section 5. */
-.lw-bx{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom, 0px) + 14px + var(--bx-lift, 0px));z-index:2147483646;
-  width:56px;height:56px;margin:0;padding:0;border-radius:50%;display:none;align-items:center;justify-content:center;
-  transform:translateX(-50%);color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+.lw-bx{position:fixed;left:calc(env(safe-area-inset-left, 0px) + 14px);top:calc(env(safe-area-inset-top, 0px) + 10px);bottom:auto;z-index:2147483646;
+  width:46px;height:46px;margin:0;padding:0;border-radius:50%;display:none;align-items:center;justify-content:center;
+  transform:none;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
   background:transparent;
   border:1.5px solid rgba(255,255,255,.42);
   -webkit-backdrop-filter:none;backdrop-filter:none;
@@ -11,13 +11,15 @@
 .lw-bx.on{display:flex;animation:lwBxIn .22s ease both}
 .lw-bx svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;
   filter:drop-shadow(0 0 1.5px rgba(0,0,0,.6)) drop-shadow(0 1px 3px rgba(0,0,0,.45))}
-.lw-bx:active{transform:translateX(-50%) scale(.9);background:rgba(255,255,255,.14)}
+.lw-bx:active{transform:scale(.9);background:rgba(255,255,255,.14)}
 /* Oct 29 2026 (Emmanuel): "alle Backbuttons ... die sind so blau ... durchsichtig, transparent", "the X buttons genauso":
    back and X have no blue fill, no blue glow, no frosted plate; only a thin rim and the arrow / X. White ink in both themes
    (Day mode keeps the dark world behind it), a soft dark halo keeps it readable over a bright photo. */
 .lw-bx::after{content:"";position:absolute;inset:-6px;border-radius:50%}
 .lw-bx:focus-visible{outline:2px solid #7fd4ff;outline-offset:3px}
-@keyframes lwBxIn{from{opacity:0;transform:translateX(-50%) translateY(10px) scale(.9)}to{opacity:1;transform:translateX(-50%)}}
+@keyframes lwBxIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+/* 22 Nov 2026 (Emmanuel): one universal back, top-left corner (was the bottom-centre X). Rim on a dark glass so it reads over any header or photo. */
+.lw-bx{background:rgba(10,14,22,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 @media (prefers-reduced-motion: reduce){.lw-bx.on{animation:none}.lw-bx{transition:none}}
 /* the screen's own back / close (top-left arrow, top-corner X) stays in the page for its logic, out of sight */
 .lw-bx-src{opacity:0!important;pointer-events:none!important}

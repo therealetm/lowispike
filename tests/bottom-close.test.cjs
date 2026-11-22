@@ -14,11 +14,12 @@ test('bottom-close loads on every page and is cached offline', () => {
     assert.ok(sw.includes('"bottom-close.js"') && sw.includes('"bottom-close.css"'));
 });
 
-test('one round button at the bottom center, above the home indicator', () => {
+test('one round back button in the top-left corner, below the status bar (22 Nov 2026, was bottom centre)', () => {
     const css = read('bottom-close.css');
-    assert.match(css, /\.lw-bx\{position:fixed;left:50%;bottom:calc\(env\(safe-area-inset-bottom, 0px\) \+ 14px \+ var\(--bx-lift, 0px\)\)/);
+    assert.match(css, /\.lw-bx\{position:fixed;left:calc\(env\(safe-area-inset-left, 0px\) \+ 14px\);top:calc\(env\(safe-area-inset-top, 0px\) \+ 10px\);bottom:auto/);
     assert.match(css, /border-radius:50%/);
-    assert.match(css, /transform:translateX\(-50%\)/);
+    assert.match(read('bottom-close.js'), /b\.innerHTML = ICON\.back \+ \(named/, 'always an arrow, never an X');
+    assert.match(read('world-home.css'), /html body \.wh-x \{ left: calc\(env\(safe-area-inset-left, 0px\) \+ 14px\); top: calc\(env\(safe-area-inset-top, 0px\) \+ 10px\)/, 'Home sheets use the same corner');
     /* the screen's own top-left arrow / top-corner X stays for its logic but is out of sight */
     assert.match(css, /\.lw-bx-src\{opacity:0!important;pointer-events:none!important\}/);
 });

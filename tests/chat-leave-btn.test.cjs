@@ -1,5 +1,6 @@
-// 22 Nov 2026 (Emmanuel): the useless up arrow in the chat becomes a ✕ back to Home while nothing is typed.
+// 22 Nov 2026 (Emmanuel: "the X button still doesn't work ... make it a back button just like the other ones ... move all the other
+// ones to the same corner, so it's universal"): the send button is only Send again; the way out is the universal back, top-left.
 const test = require('node:test'), assert = require('node:assert'), fs = require('fs'), path = require('path');
-const js = fs.readFileSync(path.join(__dirname, '..', 'chat-post-save.js'), 'utf8'), css = fs.readFileSync(path.join(__dirname, '..', 'chat-meal-post.css'), 'utf8');
-test('empty send button is a back ✕ that goes Home', () => { assert.match(js, /classList\.toggle\('cs-leave', leave\)/); assert.match(js, /#cmSend\.cs-leave/); assert.match(js, /W\.goTab\('home'\)/); assert.match(js, /Zurück zum Start/); });
-test('typing turns it back into the send arrow', () => { assert.match(js, /else if \(b\.textContent === '✕'\) b\.textContent = '↑'/); assert.match(css, /#cmSend\.cs-leave\{/); });
+const R = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+test('the chat send button is a send button only (the ✕ there is gone)', () => { const js = R('chat-post-save.js'); assert.doesNotMatch(js, /cs-leave/); assert.doesNotMatch(R('chat-meal-post.css'), /cs-leave/); });
+test('the universal back shows in the chat too (no longer hidden while the chat list is on screen)', () => { assert.doesNotMatch(R('chat-meal-post.css'), /html\.lw-chat-on #lwBX/); assert.match(R('bottom-close.css'), /\.lw-bx\{position:fixed;left:calc\(env\(safe-area-inset-left, 0px\) \+ 14px\)/); });

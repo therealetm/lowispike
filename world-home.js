@@ -321,7 +321,8 @@
     function ensureX() {
         let x = D.getElementById('whX');
         if (x && x.isConnected) return x;
-        x = btn('wh-x', T('Close', 'Schließen', 'Cerrar'), ICO.x, { id: 'whX' });
+        /* 22 Nov 2026 (Emmanuel): the universal back, top-left corner, an arrow (it still closes / steps back the same way) */
+        x = btn('wh-x', T('Back', 'Zurück', 'Atrás'), '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>', { id: 'whX' });
         x.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); closeTop(); });
         D.body.appendChild(x);
         return x;

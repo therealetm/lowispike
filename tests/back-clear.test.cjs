@@ -16,7 +16,8 @@ test('bottom back / X is see-through: no blue fill, no glow, no frosted plate', 
     assert.match(r, /box-shadow:none;/);
     assert.doesNotMatch(r, /rgba\(10,22,58|rgba\(120,180,255|rgba\(80,170,255|rgba\(143,216,255/, 'no blue left in the button');
     assert.match(r, /border:1\.5px solid rgba\(255,255,255,\.42\)/, 'a thin neutral rim keeps the 56 px target visible');
-    assert.match(r, /width:56px;height:56px/, 'tap target unchanged');
+    /* 22 Nov 2026: top-left back, 46 px (above the 44 px minimum), see bottom-close.test.cjs */
+    assert.match(r, /width:46px;height:46px/, 'tap target at least 44 px');
 });
 
 test('icon stays readable on any background, in both themes, with a pressed and focus state', () => {

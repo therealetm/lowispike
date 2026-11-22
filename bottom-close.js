@@ -241,19 +241,22 @@
         const named = k === 'back' ? String(top.getAttribute('data-bx-label') || '').trim().slice(0, 18) : '';
         const sig = k + '|' + lab + '|' + named;
         if (sig !== last) {
-            b.innerHTML = ICON[k] + (named ? '<span class="lw-bx-lab">' + named.replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';') + '</span>' : '');
+            /* 22 Nov 2026 (Emmanuel: "make it a back button just like the other ones ... move all the other ones to the same corner, so
+               it's universal"): one back arrow in the top-left corner for every screen, whether the screen's own control was a Back or an X */
+            b.innerHTML = ICON.back + (named ? '<span class="lw-bx-lab">' + named.replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';') + '</span>' : '');
             b.classList.toggle('lw-bx-named', !!named);
             b.setAttribute('aria-label', lab); b.dataset.kind = k; last = sig;
         }
         b.classList.add('on');
-        const lift = clearance(b);
+        /* top-left corner (22 Nov 2026): nothing at the bottom to climb over, so no lift, no waiting for bottom cards or the tour */
+        const lift = 0; cardBlock = false;
         /* Oct 28 (owner: the X must never lag behind a card or field that appears): while something around the bottom center
            is still sliding, fading or growing in, the X is measured against a layout that is about to change, so it stays out
            of sight until that motion ends and then appears in its final place (no slide, see bottom-close.css) */
-        const moving = settling(b, lift);
+        const moving = false;
         b.classList.toggle('bx-settle', moving);
         /* Oct 28: the talking tutorial lies over the screen the X would close: the tour has its own buttons, so the X waits */
-        const veiled = tourOver(b, lift);
+        const veiled = false;
         b.classList.toggle('bx-aside', cardBlock || veiled);
         /* Oct 29 2026 bug hunt (Settings > Your details, iPhone SE): the X was on screen a moment ago and only waits out of sight
            while the new page slides in, so a tap on its spot still belongs to it, not to the row of the new page under it (that

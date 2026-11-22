@@ -46,6 +46,15 @@ body{min-height:100vh;min-height:100dvh;color:var(--ink);font:16px/1.5 -apple-sy
 .tile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,transparent,rgba(0,0,0,.6));pointer-events:none}
 .tile .vw{position:absolute;left:8px;bottom:7px;z-index:2;display:flex;align-items:center;gap:5px;font-size:16px;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 .tile .vw svg{width:20px;height:20px}
+.xb{position:absolute;top:6px;right:6px;z-index:3;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.55);border:2px solid #fff;color:#fff;font-size:17px;font-weight:800}
+.xb::after{content:"";position:absolute;inset:-8px}
+.xb.on{background:#ff3b30;border-color:#ff3b30}
+.prompt{position:relative}.prompt .xb{top:10px;right:10px}
+.tile.sel::before,.prompt.sel::before{content:"";position:absolute;inset:0;z-index:2;background:rgba(255,59,48,.35);box-shadow:inset 0 0 0 3px #ff3b30;border-radius:inherit}
+#selbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(10,16,32,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.12)}
+#selbar[hidden]{display:none}
+#selbar button{flex:1;min-height:48px;border-radius:14px;border:0;background:rgba(255,255,255,.12);color:#fff;font:600 16px system-ui}
+#selbar .delb{background:#ff3b30}#selbar .delb:disabled{opacity:.4}
 .tile.hid{opacity:.35}
 .tile.add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(124,196,255,.08);border:1.5px dashed var(--line);color:var(--acc2);font-weight:700;font-size:14px}
 .tile.add span{font-size:30px;line-height:1}
@@ -140,7 +149,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     copyAgent: ['Copy for agent', 'Für Agent kopieren', 'Copiar para agente'], copy: ['Copy', 'Kopieren', 'Copiar'], copied: ['Copied ✓', 'Kopiert ✓', 'Copiado ✓'],
     strategy: ['Strategy', 'Strategie', 'Estrategia'], why: ['Why it works', 'Warum es wirkt', 'Por qué funciona'], prev: ['‹ Previous', '‹ Zurück', '‹ Anterior'], next: ['Next ›', 'Weiter ›', 'Siguiente ›'],
     noTranscript: ['No transcript yet.', 'Noch kein Transkript.', 'Aún no hay transcripción.'], translating: ['Translating…', 'Übersetze…', 'Traduciendo…'], trFail: ['Could not translate. Try again.', 'Übersetzen ging nicht. Versuch es nochmal.', 'No se pudo traducir.'],
-    addVideo: ['Add video', 'Video hinzufügen', 'Añadir vídeo'], addPrompt: ['Add prompt', 'Prompt hinzufügen', 'Añadir prompt'], hide: ['Hide', 'Verstecken', 'Ocultar'], show: ['Show again', 'Wieder zeigen', 'Mostrar'], del: ['Delete', 'Löschen', 'Eliminar'],
+    addVideo: ['Add video', 'Video hinzufügen', 'Añadir vídeo'], addPrompt: ['Add prompt', 'Prompt hinzufügen', 'Añadir prompt'], hide: ['Hide', 'Verstecken', 'Ocultar'], show: ['Show again', 'Wieder zeigen', 'Mostrar'], del: ['Delete', 'Löschen', 'Eliminar'], selAll: ['Select all', 'Alle auswählen', 'Seleccionar todo'], confirmDelN: ['Delete {n} for good?', '{n} endgültig löschen?', '¿Eliminar {n} para siempre?'],
     link: ['TikTok or Instagram link', 'TikTok- oder Instagram-Link', 'Enlace de TikTok o Instagram'], creator: ['Creator', 'Creator', 'Creador'], viewsF: ['Views (e.g. 1.2M)', 'Aufrufe (z. B. 1.2M)', 'Vistas (p. ej. 1.2M)'],
     trF: ['Transcript (paste it: TikTok ··· > Transcript, or iPhone Live Text)', 'Transkript (einfügen: TikTok ··· > Transkript, oder iPhone Live Text)', 'Transcripción (pégala)'], hookF: ['Hook', 'Hook', 'Gancho'], stratF: ['Strategy, one step per line', 'Strategie, ein Schritt pro Zeile', 'Estrategia, un paso por línea'], whyF: ['Why it works', 'Warum es wirkt', 'Por qué funciona'],
     fill: ['✨ Fill with AI', '✨ Mit KI ausfüllen', '✨ Rellenar con IA'], filling: ['Filling…', 'Fülle aus…', 'Rellenando…'], fillNote: ['The AI reads the link and your transcript and writes hook, strategy and why. You can change everything before saving.', 'Die KI liest den Link und dein Transkript und schreibt Hook, Strategie und Warum. Du kannst alles ändern, bevor du speicherst.', 'La IA lee el enlace y tu transcripción.'],
@@ -153,7 +162,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     confirmDel: ['Delete this for good?', 'Wirklich löschen?', '¿Eliminar definitivamente?']
   };
   var t = function (k) { var r = W[k]; return r ? r[L === 'de' ? 1 : L === 'es' ? 2 : 0] : k; };
-  var TAB = 'swipe', Q = '', SORT = 'views', OWNER = false, EDIT = false, SB = null, DOC = {}, DATA = null, SW = [], AG = [], OPEN = null, TR = {};
+  var TAB = 'swipe', Q = '', SORT = 'views', OWNER = false, EDIT = false, SEL = {}, SB = null, DOC = {}, DATA = null, SW = [], AG = [], OPEN = null, TR = {};
 
   /* copy that reports success only when it worked */
   function copy(text) {
@@ -213,14 +222,17 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   function render() {
     D.querySelectorAll('.tabs button').forEach(function (b) { b.textContent = t(b.dataset.tab); b.setAttribute('aria-selected', b.dataset.tab === TAB ? 'true' : 'false'); });
     $('#q').placeholder = t('search'); $('#sortb').hidden = TAB !== 'swipe'; $('#sortb').textContent = SORT === 'views' ? t('most') : t('newest');
+    var nSel = Object.keys(SEL).length, bar = $('#selbar');
+    if (!bar) { bar = D.createElement('div'); bar.id = 'selbar'; D.body.appendChild(bar); }
+    D.body.style.paddingBottom = EDIT ? '96px' : ''; bar.hidden = !EDIT; bar.innerHTML = '<button data-sel="all">' + esc(t('selAll')) + '</button><button class="delb" data-sel="del"' + (nSel ? '' : ' disabled') + '>🗑 ' + esc(t('del')) + (nSel ? ' (' + nSel + ')' : '') + '</button>';
     $('#editb').textContent = EDIT ? t('done') : t('edit'); $('#editb').setAttribute('aria-pressed', EDIT ? 'true' : 'false');
     var list = visible(TAB === 'swipe' ? SW : AG), h = '';
     if (TAB === 'swipe') {
-      h = (EDIT ? '<button class="tile add" data-add="swipe"><span>+</span>' + esc(t('addVideo')) + '</button>' : '') + list.map(function (x) { var v = fmtViews(x.views); return '<button class="tile' + (x.hide ? ' hid' : '') + '" data-id="' + esc(x.id) + '" aria-label="' + esc(x.creator) + '">' + cover(x) + (v ? '<span class="vw">' + EYE + esc(v) + '</span>' : '') + '</button>'; }).join('');
+      h = (EDIT ? '<button class="tile add" data-add="swipe"><span>+</span>' + esc(t('addVideo')) + '</button>' : '') + list.map(function (x) { var v = fmtViews(x.views); return '<button class="tile' + (x.hide ? ' hid' : '') + (SEL[x.id] ? ' sel' : '') + '" data-id="' + esc(x.id) + '" aria-label="' + esc(x.creator) + '">' + cover(x) + xbox(x) + (v ? '<span class="vw">' + EYE + esc(v) + '</span>' : '') + '</button>'; }).join('');
       $('#main').innerHTML = list.length || EDIT ? '<div class="grid">' + h + '</div>' : '<div class="empty">' + esc(Q ? t('none') : t('empty')) + '</div>';
       if (IO) D.querySelectorAll('.tile[data-id]').forEach(function (e) { IO.observe(e); });
     } else {
-      h = (EDIT ? '<button class="prompt add" data-add="agent">+ ' + esc(t('addPrompt')) + '</button>' : '') + list.map(function (x) { return '<button class="prompt' + (x.hide ? ' hid' : '') + '" data-id="' + esc(x.id) + '"><b>' + esc(x.title) + '</b><small>' + esc(x.text) + '</small></button>'; }).join('');
+      h = (EDIT ? '<button class="prompt add" data-add="agent">+ ' + esc(t('addPrompt')) + '</button>' : '') + list.map(function (x) { return '<button class="prompt' + (x.hide ? ' hid' : '') + (SEL[x.id] ? ' sel' : '') + '" data-id="' + esc(x.id) + '">' + xbox(x) + '<b>' + esc(x.title) + '</b><small>' + esc(x.text) + '</small></button>'; }).join('');
       $('#main').innerHTML = list.length || EDIT ? '<div class="list">' + h + '</div>' : '<div class="empty">' + esc(Q ? t('none') : t('empty')) + '</div>';
     }
   }
@@ -280,6 +292,10 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     loadScript('../vendor/supabase-2.117.3.js').then(function () { SB = window.supabase.createClient(SBURL, PUBKEY, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'lowi.auth', storage: window.localStorage}}); return SB.rpc('is_app_owner'); })
       .then(function (r) { OWNER = !!(r && r.data === true); $('#editb').hidden = !OWNER; }).catch(function () {});
   }
+  function xbox(x) { return EDIT ? '<span class="xb' + (SEL[x.id] ? ' on' : '') + '" data-x role="checkbox" aria-checked="' + !!SEL[x.id] + '" aria-label="' + esc(t('del')) + '">' + (SEL[x.id] ? '✓' : '✕') + '</span>' : ''; }
+  function delOne(id) { var x = (SW.concat(AG)).filter(function (q) { return q.id === id; })[0]; if (!x) return;
+    if (x.builtin) { DOC.items = DOC.items || {}; DOC.items[x.id] = {gone: true}; }
+    else { DOC.swipe = (DOC.swipe || []).filter(function (s) { return s.id !== x.id; }); DOC.agent = (DOC.agent || []).filter(function (s) { return s.id !== x.id; }); if (DOC.items) delete DOC.items[x.id]; } }
   function save() { if (!SB || !OWNER) return Promise.reject(new Error('owner')); DOC.v = 2; return SB.rpc('studio_save', {doc: DOC}).then(function (r) { if (r && r.error) throw r.error; toast(t('saved')); }).catch(function (e) { toast(t('notSaved')); throw e; }); }
   function dlg(html) { var d = $('#dlg'); d.innerHTML = '<div class="in">' + html + '</div>'; d.classList.add('on'); }
   function dlgClose() { $('#dlg').classList.remove('on'); }
@@ -328,7 +344,13 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     if (b.dataset.d) return onDlg(b);
     if (b.dataset.tab) { TAB = b.dataset.tab; render(); return window.scrollTo(0, 0); }
     if (b.id === 'sortb') { SORT = SORT === 'views' ? 'new' : 'views'; return render(); }
-    if (b.id === 'editb') { EDIT = !EDIT; return render(); }
+    if (b.id === 'editb') { EDIT = !EDIT; SEL = {}; return render(); }
+    /* 22 Nov 2026 (Emmanuel: "when I click on edit, an X toggle where I can easily just mass delete things"): in Edit every tile has an X;
+       tapping it marks the tile, the bar at the bottom deletes all marked at once. Tapping the rest of the tile still opens it. */
+    if (EDIT && e.target.closest('[data-x]') && b.dataset.id) { var k = b.dataset.id; if (SEL[k]) delete SEL[k]; else SEL[k] = 1; return render(); }
+    if (b.dataset.sel === 'all') { var all = cur(), on = all.every(function (x) { return SEL[x.id]; }); SEL = {}; if (!on) all.forEach(function (x) { SEL[x.id] = 1; }); return render(); }
+    if (b.dataset.sel === 'del') { var ids = Object.keys(SEL); if (!ids.length || !confirm(t('confirmDelN').replace('{n}', ids.length))) return;
+      ids.forEach(delOne); return save().then(function () { SEL = {}; rebuild(); render(); }, function () {}); }
     if (b.id === 'share') return share(location.origin + location.pathname);
     if (b.dataset.add === 'swipe') return swipeDlg();
     if (b.dataset.add === 'agent') return agentDlg();
@@ -346,8 +368,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     if (a === 'hide') { var ov = over(x.id); ov.hide = !x.hide; return save().then(function () { rebuild(); render(); open(x.id, true); }, function () {}); }
     if (a === 'del') { if (!confirm(t('confirmDel'))) return;
       var list0 = cur(), at = -1; for (var q = 0; q < list0.length; q++) if (list0[q].id === x.id) at = q;
-      if (x.builtin) { DOC.items = DOC.items || {}; DOC.items[x.id] = {gone: true}; }
-      else { DOC.swipe = (DOC.swipe || []).filter(function (s) { return s.id !== x.id; }); DOC.agent = (DOC.agent || []).filter(function (s) { return s.id !== x.id; }); if (DOC.items) delete DOC.items[x.id]; }
+      delOne(x.id);
       return save().then(function () { rebuild(); render(); var l2 = cur(), nx = l2[Math.min(at, l2.length - 1)]; if (nx) open(nx.id, true); else close(); }, function () {}); }
   });
   /* swipe left / right in an open item = Next / Previous */

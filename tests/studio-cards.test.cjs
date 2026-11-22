@@ -153,3 +153,10 @@ test('Save photo draws the post with its text; Save puts it into My posts > Save
   assert.match(h, /case "open-chatsaved":/);
   assert.match(R('sw.js'), /STATIC\.push\("chat-post-save\.js"\)/);
 });
+test('nothing covers a chat photo post except the poster\'s own words', () => {
+  const css = R('chat-meal-post.css'), cc = R('community-chat.js'), ps = R('chat-post-save.js');
+  assert.match(css, /:has\(> \.cs-meal\)>\.cs-by,\s*\n?html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat \.cm-bub\.cm-pbub:has\(> \.cs-meal\)>\.cs-meal\{display:none!important\}/, 'no name, badge or numbers on the photo');
+  assert.match(css, /#lwBX,\s*\n?html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat \.cr-down\{display:none!important\}/, 'no round back button or scroll arrow over posts');
+  assert.match(cc, /K\.mealBody\(src,title,food\.lvl,cap\|\|''\)/, 'the AI description never becomes the caption');
+  assert.doesNotMatch(ps, /p\.nums \?|g\.fillText\(nm/, 'the saved picture carries only the words');
+});

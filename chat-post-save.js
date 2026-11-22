@@ -3,8 +3,8 @@
    saved folder, when they click on the image, next to the download button should be the save button").
    community-chat.js mealDetail() opens the meal details panel and calls LowiChatPost.attach(panel, post). This adds two buttons at the
    top of that panel:
-     - Foto speichern: the post drawn as one 1080x1920 picture (photo filling the frame, the poster's own words big in the middle,
-       name with the spike pill, the numbers line), no watermark, no time. It is drawn as soon as the panel opens, so the tap can hand
+     - Foto speichern: the post drawn as one 1080x1920 picture (photo filling the frame, the poster's own words big in the middle),
+       nothing else on it: no name, no badge, no numbers, no watermark, no time. It is drawn as soon as the panel opens, so the tap can hand
        it straight to the phone's share sheet (iPhone: "Save Image"); where sharing files is not possible it downloads.
      - Speichern: keeps the post in My posts > Saved (on this phone, key lowi.chatSaved.v1; index.html listSheet reads LowiChatPost.saved()).
    Pure helpers (wrap, fileName) are exported for the tests. */
@@ -44,19 +44,10 @@
         const img = await loadImg(p.src), Wd = 1080, Ht = 1920, c = D.createElement('canvas'); c.width = Wd; c.height = Ht;
         const g = c.getContext('2d'), s = Math.max(Wd / img.naturalWidth, Ht / img.naturalHeight), w = img.naturalWidth * s, h = img.naturalHeight * s;
         g.fillStyle = '#05070c'; g.fillRect(0, 0, Wd, Ht); g.drawImage(img, (Wd - w) / 2, (Ht - h) / 2, w, h);
-        let gr = g.createLinearGradient(0, Ht * 0.55, 0, Ht); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.72)'); g.fillStyle = gr; g.fillRect(0, Ht * 0.55, Wd, Ht * 0.45);
+        /* 22 Nov 2026 (Emmanuel: "the only thing that is on the image is the text on screen"): just the poster's own words */
         const F = '-apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif';
         g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#fff'; g.shadowColor = 'rgba(0,0,0,.55)'; g.shadowBlur = 18; g.shadowOffsetY = 3;
         if (p.caption) { g.font = '700 74px ' + F; const ls = wrap(p.caption, Wd - 160, x => g.measureText(x).width, 5), lh = 90, y0 = Ht * 0.46 - (ls.length - 1) * lh / 2; ls.forEach((l, i) => g.fillText(l, Wd / 2, y0 + i * lh)); }
-        g.textAlign = 'left'; g.shadowBlur = 10; const x0 = 56; let y = Ht - 150;
-        g.font = '700 50px ' + F; const nm = String(p.by || ''); g.fillText(nm, x0, y);
-        if (p.label) {
-            const nw = g.measureText(nm).width; g.font = '600 36px ' + F; const lw = g.measureText(p.label).width, px = x0 + nw + 22, bw = lw + 78, bh = 58;
-            g.shadowBlur = 0; g.fillStyle = 'rgba(40,44,52,.78)'; const r = 14, by = y - bh / 2; g.beginPath(); g.moveTo(px + r, by); g.arcTo(px + bw, by, px + bw, by + bh, r); g.arcTo(px + bw, by + bh, px, by + bh, r); g.arcTo(px, by + bh, px, by, r); g.arcTo(px, by, px + bw, by, r); g.closePath(); g.fill();
-            g.fillStyle = p.lvl === 'high' ? '#f0a08a' : p.lvl === 'mid' ? '#e6c98a' : '#5fd37a'; g.beginPath(); g.arc(px + 30, y, 9, 0, Math.PI * 2); g.fill();
-            g.fillStyle = '#fff'; g.fillText(p.label, px + 52, y + 1);
-        }
-        if (p.nums) { g.shadowBlur = 10; g.font = '500 40px ' + F; g.fillStyle = 'rgba(255,255,255,.92)'; g.fillText(wrap(p.nums, Wd - 112, x => g.measureText(x).width, 1)[0] || '', x0, y + 72); }
         return new Promise((ok, no) => c.toBlob(b => (b ? ok(b) : no(new Error('blob'))), 'image/jpeg', 0.92));
     }
     async function share(blob) {

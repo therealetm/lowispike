@@ -145,7 +145,7 @@ test('send: no text needed; waits while the check runs; posts the meal card (mea
     assert.match(chat, /if\(!bot&&pin\.ai&&pin\.ai\.st==='look'\)\{pin\.wait=true;refresh\(\);return;\}/);
     assert.match(chat, /if\(pin\.wait\)\{pin\.wait=false;notice='';refresh\(\);sendPhoto\(\);return;\}/);
     assert.match(chat, /mediaUpload\(scope\+'\/meal-'\+pin\.id\+'\.jpg',pin\.blob,\['image\/jpeg'\]\)/);
-    assert.match(chat, /K\.mealBody\(src,title,food\.lvl,cap\|\|food\.desc\)/, 'typed text replaces the menu line');
+    assert.match(chat, /K\.mealBody\(src,title,food\.lvl,cap\|\|''\)/, 'only typed text becomes the caption, never the AI description (22 Nov 2026)');
     assert.match(chat, /md=MD&&d\?MD\.clean\(d\):null/);
     assert.match(chat, /store\.submitPhoto\(name,body,pin\.id,ds\.draft\.reply\|\|null,md\)/);
     assert.match(chat, /if\(!body\)\{const path=scope\+'\/chat-'\+pin\.id\+'\.jpg'/, 'plain photo path unchanged');

@@ -839,7 +839,7 @@ async function sendPhoto(){if(photoBusy||!pendingPhoto)return;const bot=sel&&bot
  photoBusy=true;notice=tr('photoSending');refresh();
  try{let body='',md=null;
   if(food&&K.mealBody){const title=String(food.title||'').replace(/\s+/g,' ').trim()||food.base;const src=pin.msrc||(pin.msrc=await mediaUpload(scope+'/meal-'+pin.id+'.jpg',pin.blob,['image/jpeg']));
-   const mb=K.mealBody(src,title,food.lvl,cap||food.desc);if(mb&&K.meal(mb,scope)){body=(tag?tag+' ':'')+mb;const MD=W.LowiMealDetailCore,d=foodDetail(food,title);md=MD&&d?MD.clean(d):null;}}
+   const mb=K.mealBody(src,title,food.lvl,cap||'');/* 22 Nov 2026: only the words the person typed go on the photo, never the AI description (it stays in the details) */if(mb&&K.meal(mb,scope)){body=(tag?tag+' ':'')+mb;const MD=W.LowiMealDetailCore,d=foodDetail(food,title);md=MD&&d?MD.clean(d):null;}}
   if(!body){const path=scope+'/chat-'+pin.id+'.jpg';if(!pin.src)pin.src=await mediaUpload(path,pin.blob,['image/jpeg']);
   body=(tag?tag+' ':'')+K.photoBody(pin.src,cap);if(!K.photo(body,scope))throw new Error('url');}
   if(pendingPhoto===pin)clearPhoto();const left=K.afterCaption(ds.draft,draftState().draft);draft(left.text,left.reply);const inp=D.getElementById('cmInput');if(inp)inp.value=left.text;notice='';photoBusy=false;

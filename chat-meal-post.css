@@ -83,3 +83,18 @@ html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-meal-k{font-size:15px!important;color:#fff!important;opacity:.95!important}
 /* the dot menu (reactions, reply, delete) stays, small, top right */
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cm-foot{position:absolute!important;top:10px!important;right:10px!important;z-index:3;margin:0!important;padding:0!important;background:rgba(0,0,0,.35)!important;border-radius:999px}
+/* 22 Nov 2026, fourth pass (Emmanuel: "make sure that nothing is covering the image when screenshotting ... the only thing on the image is
+   the text on screen they typed ... the chat almost becomes like a text on screen feature"). On the photo there is only the poster's
+   own words. Name, spike badge and numbers live in the details panel (tap the photo). The small ··· and reactions sit in a thin strip
+   UNDER the photo, never on it. While the chat is open, the round back button and the scroll-down arrow are not drawn over posts. */
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-by,
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-meal{display:none!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)::after{content:none!important;display:none!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal){padding:0!important;justify-content:flex-end!important;background:#000!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-photo{bottom:36px!important;height:auto!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cm-t{top:calc(46% - 18px)!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cm-foot{position:static!important;order:4;align-self:flex-end;height:36px!important;display:flex!important;align-items:center;
+  margin:0 6px 0 0!important;padding:0 6px!important;background:none!important;border-radius:0}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cm-rx{position:absolute!important;left:8px;bottom:4px;z-index:3;margin:0!important;padding:0!important;max-width:calc(100% - 60px)}
+html:has(#cmPaneChat .rm-frame:has(#cmList):not([hidden]) #cmList .cs-meal) #lwBX,
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cr-down{display:none!important}

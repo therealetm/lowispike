@@ -34,6 +34,7 @@ STATIC.push("challenge-week.js", "challenge-week.css", "faw-core.js", "challenge
 STATIC.push("foryou-ig.css"); // Nov 21 2026: For You Instagram layout
 STATIC.push("chat-meal-post.css"); // Nov 21 2026: meal photo posts in the chat
 STATIC.push("chat-post-save.js"); // Nov 22 2026: save chat photo posts
+STATIC.push("lowi-ask.js"); // Nov 22 2026: the app AI chat
 STATIC.push("foryou-bar.js"); // Nov 21 2026: For You circle row comes back on scroll up
 STATIC.push("mic-dictate.css", "mic-session.js", "mic-dictate-core.js", "mic-dictate.js"); /* Oct 26 mic dictation in text fields: own line */
 STATIC.push("quick-add-core.js"); /* Oct 26 quick "+" on Supermarket rows (MAYA-HANDOFF 0.35): own line, like kitchen-core.js */

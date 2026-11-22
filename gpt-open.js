@@ -72,17 +72,17 @@
      portion, nutrients, ingredients, the verdict and its reason. He pastes it in the GPT. No ?q= prompt in the link: the
      ChatGPT app link carries none, and on the web it would send a message for him (decision of 21 Oct). */
   var DX = {
-    en: { b: "Deeper analysis in the GPT", s: "Copies the data, opens your GPT", ok: "Copied. Paste it in the GPT.", no: "Opens your GPT. Copying didn't work here.",
+    en: { b: "Deeper analysis", s: "Ask your companion in the app", ok: "Copied. Paste it in the GPT.", no: "Opens your GPT. Copying didn't work here.",
       head: "LOWISPIKE SCAN: please analyse this in more depth.", prod: "Product", meal: "Meal (photo check)", brand: "Brand", code: "Barcode", pack: "Pack", portion: "Portion", per100: "Per 100 g", per100ml: "Per 100 ml", ing: "Ingredients",
       foods: "On the plate", drinks: "Drinks", total: "Total", verdict: "App verdict", often: "How often", why: "App's reason",
       kcal: "kcal", carbs: "carbs", sugar: "sugar", fiber: "fibre", protein: "protein", fat: "fat",
       ask: "Check the verdict against your rules, explain it in more depth and name concrete LOWiSPIKE alternatives." },
-    de: { b: "Tiefer analysieren im GPT", s: "Kopiert die Daten, öffnet deinen GPT", ok: "Kopiert. Im GPT einfügen.", no: "Öffnet deinen GPT. Kopieren ging hier nicht.",
+    de: { b: "Tiefer analysieren", s: "Frag deinen Begleiter in der App", ok: "Kopiert. Im GPT einfügen.", no: "Öffnet deinen GPT. Kopieren ging hier nicht.",
       head: "LOWISPIKE SCAN: Bitte analysiere das genauer.", prod: "Produkt", meal: "Mahlzeit (Foto-Check)", brand: "Marke", code: "Barcode", pack: "Packung", portion: "Portion", per100: "Pro 100 g", per100ml: "Pro 100 ml", ing: "Zutaten",
       foods: "Auf dem Teller", drinks: "Getränke", total: "Gesamt", verdict: "Urteil der App", often: "Wie oft", why: "Grund der App",
       kcal: "kcal", carbs: "KH", sugar: "Zucker", fiber: "Ballaststoffe", protein: "Eiweiß", fat: "Fett",
       ask: "Prüf das Urteil nach deinen Regeln, erklär es genauer und nenn konkrete LOWiSPIKE-Alternativen." },
-    es: { b: "Análisis a fondo en el GPT", s: "Copia los datos y abre tu GPT", ok: "Copiado. Pégalo en el GPT.", no: "Abre tu GPT. Aquí no se pudo copiar.",
+    es: { b: "Análisis más profundo", s: "Pregunta a tu compañero en la app", ok: "Copiado. Pégalo en el GPT.", no: "Abre tu GPT. Aquí no se pudo copiar.",
       head: "LOWISPIKE SCAN: analiza esto más a fondo, por favor.", prod: "Producto", meal: "Comida (control de la foto)", brand: "Marca", code: "Código de barras", pack: "Envase", portion: "Porción", per100: "Por 100 g", per100ml: "Por 100 ml", ing: "Ingredientes",
       foods: "En el plato", drinks: "Bebidas", total: "Total", verdict: "Veredicto de la app", often: "Con qué frecuencia", why: "Motivo de la app",
       kcal: "kcal", carbs: "carbohidratos", sugar: "azúcar", fiber: "fibra", protein: "proteína", fat: "grasa",

@@ -151,7 +151,7 @@ test('wiring: loaded, cached offline, at the top of Misty\'s sheet, in the statu
     assert.match(read('sw.js'), /"misty-peak\.js"/);
     const hub = read('misty-hub.js');
     /* Nov 5 2026 Misty sheet plan: World glow opens the World group, first thing of the Today tab (the card opens on Today) */
-    assert.match(hub, /const world = peakHtml\(\) \+ worldRows\(\)/);
+    assert.match(hub, /const world = (talkRow\(\) \+ )?peakHtml\(\) \+ worldRows\(\)/, 'the peak still leads the world rows (22 Nov 2026: Talk to Misty may sit above)');
     assert.match(hub, /tab = 'today'; sec = '';\n        R2\.sheet\(/);
     const sp = read('spirit.js');
     assert.match(sp, /const M = window\.LowiMistyPeak; if \(M && M.now && M.statusFor\) pk = M\.statusFor\(M\.now\(\), n, lang\(\)\)/);

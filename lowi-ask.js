@@ -1,0 +1,121 @@
+/* lowi-ask.js (22 Nov 2026, Emmanuel: "apply all the AI stuff ... for the free stuff without me having to do nothing").
+   The app's own AI chat, in the companion's voice (supabase/functions/lowi-ai, the project's free Gemini key, daily limits in
+   public.ai_usage). It replaces the Custom GPT that OpenAI deletes in December:
+     - every "Deep analyze" link to chatgpt.com/g/... (scanner, meal result, product, Cook card) opens this chat instead, with the
+       meal or product the person was looking at as context, and asks for the analysis at once;
+     - Misty's card has "Talk to Misty" (misty-hub.js);
+     - a photo button sends a meal photo; three quick chips: make it insulin-friendly, is it a spike, a recipe idea.
+   The conversation lives only on this phone, for this session (sessionStorage), and is never stored on the server. */
+(function (W, D) {
+    'use strict';
+    if (!W || !D || W.LowiAsk) return;
+    const FN = 'https://vnfwmifmsfecascwaody.supabase.co/functions/v1/lowi-ai', PUBKEY = 'sb_publishable_iVA3wCYxzfWu2q8SSgieWw_adXbx4Qd', KEY = 'lowi.ask.v1';
+    const L = () => { let l = ''; try { l = (W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || localStorage.getItem('lowispike.lang') || D.documentElement.lang || 'en'; } catch (e) { l = 'en'; } l = String(l).slice(0, 2); return l === 'de' || l === 'es' ? l : 'en'; };
+    const W3 = { title: ['Talk to {n}', 'Mit {n} reden', 'Habla con {n}'], ph: ['Ask {n}…', 'Frag {n}…', 'Pregunta a {n}…'], back: ['Back', 'Zurück', 'Atrás'],
+        hello: ['Hi, I’m {n}! Ask me anything about insulin-friendly food, or send me a photo of your meal.', 'Hi, ich bin {n}! Frag mich alles über insulinfreundliches Essen oder schick mir ein Foto von deinem Essen.', '¡Hola, soy {n}! Pregúntame sobre comida apta para la insulina o mándame una foto.'],
+        c1: ['Make it insulin-friendly', 'Mach es insulinfreundlich', 'Hazlo apto para la insulina'], c2: ['Will this spike?', 'Gibt das einen Spike?', '¿Esto da un pico?'], c3: ['Quick recipe idea', 'Schnelle Rezeptidee', 'Idea de receta rápida'],
+        analyze: ['Please analyze this for me: is it insulin-friendly, and what is one easy improvement?', 'Bitte analysier das für mich: Ist es insulinfreundlich, und was ist eine einfache Verbesserung?', 'Analízalo por favor: ¿es apto para la insulina y cuál es una mejora fácil?'],
+        photo: ['What do you see, and is it insulin-friendly?', 'Was siehst du, und ist es insulinfreundlich?', '¿Qué ves y es apto para la insulina?'],
+        limit: ['{n} is resting for today. Back tomorrow!', '{n} ruht sich für heute aus. Morgen wieder!', '{n} descansa por hoy. ¡Mañana vuelve!'], fail: ['I could not answer just now. Check your connection and try again.', 'Ich konnte gerade nicht antworten. Prüf deine Verbindung und versuch es nochmal.', 'No pude responder ahora. Inténtalo de nuevo.'],
+        signin: ['Sign in to talk to {n}.', 'Melde dich an, um mit {n} zu reden.', 'Inicia sesión para hablar con {n}.'], note: ['Answers come from Google’s free AI. Please don’t share private health details. Not medical advice.', 'Antworten kommen von Googles kostenloser KI. Bitte teile keine privaten Gesundheitsdaten. Keine medizinische Beratung.', 'Las respuestas vienen de la IA gratuita de Google. No compartas datos privados de salud. No es consejo médico.'],
+        thinking: ['{n} is thinking…', '{n} denkt nach…', '{n} está pensando…'], clear: ['New chat', 'Neuer Chat', 'Nuevo chat'] };
+    const t = (k, n) => W3[k][['en', 'de', 'es'].indexOf(L())].replace(/\{n\}/g, n || name());
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    function name() { try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); if (c && c.name) return String(c.name).slice(0, 24); } } catch (e) {} return 'Misty'; }
+    function sign() { try { const B = W.LowiBirthCompanion, c = B && B.has && B.has() ? B.get() : null; return String((c && (c.sign || c.zodiac)) || '').slice(0, 20); } catch (e) { return ''; } }
+    let msgs = [], ctx = '', el = null, busy = false;
+    try { const s = JSON.parse(sessionStorage.getItem(KEY) || 'null'); if (s && Array.isArray(s.m)) { msgs = s.m.slice(-30); ctx = String(s.c || ''); } } catch (e) {}
+    const keep = () => { try { sessionStorage.setItem(KEY, JSON.stringify({ m: msgs.slice(-30).map(m => ({ role: m.role, text: m.text })), c: ctx })); } catch (e) {} };
+    async function token() {
+        try { const x = W.LowiR2 && W.LowiR2.X && W.LowiR2.X(); const sb = x && await x.client(); const r = sb && await sb.auth.getSession(); const s = r && r.data && r.data.session; if (s && s.access_token) return s.access_token; } catch (e) {}
+        try { const a = JSON.parse(localStorage.getItem('lowi.auth') || 'null'); if (a && a.access_token) return a.access_token; } catch (e) {}
+        return '';
+    }
+    async function call(body) {
+        const tk = await token();
+        const r = await fetch(FN, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: PUBKEY, Authorization: 'Bearer ' + (tk || PUBKEY) }, body: JSON.stringify(body) });
+        let j = {}; try { j = await r.json(); } catch (e) {}
+        if (!r.ok || !j.ok) { const e = new Error(j.error || 'fail'); e.code = j.error || (r.status === 401 ? 'sign_in' : 'fail'); throw e; }
+        return j;
+    }
+    function css() {
+        if (D.getElementById('lwAskCss')) return; const s = D.createElement('style'); s.id = 'lwAskCss';
+        s.textContent = '#lwAsk{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;background:#05070c;color:#f3f6fb;font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}' +
+            '#lwAsk .ak-h{flex:none;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px;border-bottom:1px solid rgba(255,255,255,.08)}' +
+            '#lwAsk .ak-b{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 12px 0 6px;border-radius:999px;border:0;background:rgba(255,255,255,.08);color:#fff;font:inherit;font-weight:600;cursor:pointer}' +
+            '#lwAsk .ak-b svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}' +
+            '#lwAsk .ak-t{flex:1;text-align:center;font-weight:700;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+            '#lwAsk .ak-new{min-height:44px;padding:0 12px;border-radius:999px;border:0;background:none;color:#9fd8ff;font:inherit;font-size:14px;font-weight:600;cursor:pointer}' +
+            '#lwAsk .ak-l{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px 14px 8px;display:flex;flex-direction:column;gap:10px}' +
+            '#lwAsk .ak-m{max-width:84%;padding:10px 14px;border-radius:20px;white-space:pre-wrap;overflow-wrap:anywhere}' +
+            '#lwAsk .ak-m.u{align-self:flex-end;background:linear-gradient(180deg,#2e7cf6,#1f63d6);border-bottom-right-radius:6px}' +
+            '#lwAsk .ak-m.a{align-self:flex-start;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-bottom-left-radius:6px}' +
+            '#lwAsk .ak-m img{display:block;max-width:220px;max-height:260px;border-radius:14px;margin-bottom:6px;object-fit:cover}' +
+            '#lwAsk .ak-m.w{opacity:.7;font-style:italic}' +
+            '#lwAsk .ak-c{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:6px 14px}#lwAsk .ak-c::-webkit-scrollbar{display:none}' +
+            '#lwAsk .ak-c button{flex:none;min-height:38px;padding:0 14px;border-radius:999px;border:1px solid rgba(159,216,255,.35);background:rgba(159,216,255,.08);color:#bfe6ff;font:inherit;font-size:14px;font-weight:600;cursor:pointer}' +
+            '#lwAsk .ak-f{flex:none;display:flex;gap:8px;align-items:flex-end;padding:8px 12px calc(env(safe-area-inset-bottom,0px) + 10px);border-top:1px solid rgba(255,255,255,.08)}' +
+            '#lwAsk .ak-f textarea{flex:1;min-width:0;min-height:46px;max-height:120px;resize:none;border-radius:22px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:16px;padding:11px 16px}' +
+            '#lwAsk .ak-i{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;display:grid;place-items:center;cursor:pointer}' +
+            '#lwAsk .ak-i svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}#lwAsk .ak-i.s{background:linear-gradient(180deg,#bfe6ff,#7cc4ff);color:#05070c;border:0}#lwAsk .ak-i:disabled{opacity:.45}' +
+            '#lwAsk .ak-n{padding:0 16px 6px;color:rgba(255,255,255,.45);font-size:12px;text-align:center}';
+        D.head.appendChild(s);
+    }
+    const IC = { back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>', cam: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>', send: '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>' };
+    function paint() {
+        if (!el) return; const l = el.querySelector('.ak-l');
+        const all = [{ role: 'model', text: t('hello') }].concat(msgs);
+        l.innerHTML = all.map(m => '<div class="ak-m ' + (m.role === 'user' ? 'u' : 'a') + (m.wait ? ' w' : '') + '">' + (m.img ? '<img alt="" src="' + esc(m.img) + '">' : '') + esc(m.text) + '</div>').join('');
+        l.scrollTop = l.scrollHeight;
+    }
+    async function send(text, img) {
+        text = String(text || '').trim(); if ((!text && !img) || busy) return;
+        busy = true; const f = el && el.querySelector('.ak-f'); if (f) f.querySelectorAll('button,textarea').forEach(x => { x.disabled = true; });
+        const um = { role: 'user', text: text || t('photo') }; if (img) um.img = img.url; msgs.push(um);
+        msgs.push({ role: 'model', text: t('thinking'), wait: true }); paint();
+        try {
+            const j = await call({ action: 'ask', lang: L(), name: name(), sign: sign(), context: ctx, image: img ? img.b64 : undefined, messages: msgs.filter(m => !m.wait).slice(-12).map(m => ({ role: m.role, text: m.text })) });
+            msgs.pop(); msgs.push({ role: 'model', text: j.text || '…' });
+        } catch (e) { msgs.pop(); msgs.push({ role: 'model', text: e.code === 'limit' ? t('limit') : e.code === 'sign_in' ? t('signin') : t('fail') }); }
+        busy = false; keep(); paint(); if (f) f.querySelectorAll('button,textarea').forEach(x => { x.disabled = false; });
+    }
+    /* a picked photo: shrunk to 1024 px JPEG before it leaves the phone */
+    function pickPhoto() {
+        const i = D.createElement('input'); i.type = 'file'; i.accept = 'image/*';
+        i.onchange = () => { const f = i.files && i.files[0]; if (!f) return; const u = URL.createObjectURL(f), im = new Image();
+            im.onload = () => { const s = Math.min(1, 1024 / Math.max(im.width, im.height)), c = D.createElement('canvas'); c.width = Math.round(im.width * s); c.height = Math.round(im.height * s); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+                const d = c.toDataURL('image/jpeg', 0.82); URL.revokeObjectURL(u); send('', { url: d, b64: d.split(',')[1] }); };
+            im.src = u; };
+        i.click();
+    }
+    function open(o) {
+        o = o || {}; css();
+        if (o.context != null && o.context !== ctx) { ctx = String(o.context || '').slice(0, 3000); msgs = []; }
+        if (!el) {
+            el = D.createElement('div'); el.id = 'lwAsk'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+            el.innerHTML = '<div class="ak-h"><button type="button" class="ak-b" data-ak="close">' + IC.back + '<span></span></button><b class="ak-t"></b><button type="button" class="ak-new" data-ak="new"></button></div><div class="ak-l" aria-live="polite"></div>' +
+                '<div class="ak-c"><button type="button" data-ak="chip" data-c="c1"></button><button type="button" data-ak="chip" data-c="c2"></button><button type="button" data-ak="chip" data-c="c3"></button></div><p class="ak-n"></p>' +
+                '<div class="ak-f"><button type="button" class="ak-i" data-ak="photo" aria-label="Photo">' + IC.cam + '</button><textarea rows="1" enterkeyhint="send"></textarea><button type="button" class="ak-i s" data-ak="send" aria-label="Send">' + IC.send + '</button></div>';
+            el.addEventListener('click', e => { const b = e.target.closest('[data-ak]'); if (!b) return; const k = b.dataset.ak, ta = el.querySelector('textarea');
+                if (k === 'close') close(); else if (k === 'new') { msgs = []; ctx = ''; keep(); paint(); } else if (k === 'photo') pickPhoto();
+                else if (k === 'send') { const v = ta.value; ta.value = ''; send(v); } else if (k === 'chip') send(t(b.dataset.c)); });
+            el.querySelector('textarea').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const ta = e.target, v = ta.value; ta.value = ''; send(v); } });
+            D.body.appendChild(el);
+        }
+        el.querySelector('.ak-b span').textContent = t('back'); el.querySelector('.ak-t').textContent = t('title'); el.querySelector('.ak-new').textContent = t('clear');
+        el.querySelector('textarea').placeholder = t('ph'); el.querySelector('.ak-n').textContent = t('note');
+        el.querySelectorAll('[data-c]').forEach(b => { b.textContent = t(b.dataset.c); });
+        el.hidden = false; paint();
+        if (o.ask && !busy) send(o.ask);
+    }
+    function close() { if (el) { el.remove(); el = null; } }
+    /* every link to the old Custom GPT opens this chat instead (window capture: before gpt-open.js) */
+    W.addEventListener('click', e => {
+        const a = e.target && e.target.closest ? e.target.closest('a[href*="chatgpt.com/g/"], a[href*="chat.openai.com/g/"]') : null; if (!a) return;
+        e.preventDefault(); e.stopImmediatePropagation();
+        const c = a.getAttribute('data-gpt-deep') || '';
+        open({ context: c, ask: c ? t('analyze') : '' });
+    }, true);
+    D.addEventListener('keydown', e => { if (e.key === 'Escape' && el) close(); });
+    W.LowiAsk = { open, close, call };
+})(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

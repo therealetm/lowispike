@@ -48,7 +48,7 @@ test('the button is a plain link to his Custom GPT, no handler attributes the ca
   const h = G.deepHTML(MILKY, 'de', 'ss-gpt');
   assert.ok(h.startsWith('<a class="gpt-deep ss-gpt" href="' + GPT + '" target="_blank" rel="noopener" data-gpt-deep="'), h);
   assert.ok(!/data-(ss|b3|mr)\b|\?q=|onclick/.test(h));
-  assert.ok(h.includes('Tiefer analysieren im GPT') && h.includes('deinen GPT'));
+  assert.ok(h.includes('Tiefer analysieren') && h.includes('deinen Begleiter in der App'), '22 Nov 2026: the link now opens the in-app chat (lowi-ask.js)');
   assert.ok(!/<script|<img/.test(G.deepHTML({ name: '<img src=x onerror=1>' }, 'de')), 'escaped');
 });
 

@@ -91,7 +91,7 @@ test('index.html: a new post lands at the top in view, My posts sits on the feed
   const rf = html.slice(html.indexOf('function renderForYou(el){'), html.indexOf('function fyBurst('));
   assert.ok(rf.includes('data-tr="list-mine"') && rf.includes('fy-mine'), 'a My posts button on the feed itself');
   assert.ok(rf.includes('fyTop') && rf.includes('f.scrollTop = fyTop ? 0 : y'));
-  const dp = html.slice(html.indexOf('function doPost(btn){'), html.indexOf('function doPost(btn){') + 2500);
+  const dp = html.slice(html.indexOf('function doPost(btn){'), html.indexOf('function doPost(btn){') + 4000); /* 22 Nov 2026: the link check sits at the top of doPost */
   assert.ok(dp.includes('fyTop = 1'));
   const ls = html.slice(html.indexOf('function listSheet(kind){'), html.indexOf('function listSheet(kind){') + 900);
   assert.ok(ls.includes('fyMineAll()'), 'My posts shows every post of his, also those only in the shared table');

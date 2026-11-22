@@ -5508,6 +5508,16 @@ function updPost(){ const b = $("#trPost"); if (!b || !C) return; const need = !
   b.disabled = C.loading || (C.p ? need && !cap : (C.inline || C.raw.trim() || (!cap && !C.photo && !C.rec))); /* 22 Nov 2026: For You posts are links only */ b.textContent = C.vis === "tribe" ? "Post" : "Save for me"; }
 function doPost(btn){
   const h = H(); if (!h || !C || (!C.p && C.raw.trim())) return;
+  /* 22 Nov 2026 (Emmanuel: "with our For You page, it is always insulin friendly related"): before a link goes to the whole tribe,
+     the app's free AI (lowi-ai linkcheck) reads its title and caption. Clearly off-topic links are not posted and say why; if the
+     AI cannot answer (offline, daily limit), the post goes through. */
+  if (C.p && C.vis === "tribe" && window.LowiAsk && !C.__lc) {
+    const m0 = C.meta || {}; if (btn) btn.disabled = true;
+    const go = () => { C.__lc = true; doPost(btn); C && (C.__lc = false); };
+    LowiAsk.call({action: "linkcheck", lang: (document.documentElement.lang || "en").slice(0, 2), title: m0.title || "", caption: C.cap || "", url: C.p.url})
+      .then(j => { if (j && j.fits === false) { if (btn) btn.disabled = false; h.toast(fyT("This link doesn't look insulin-friendly, so it can't go in For You.") + (j.why ? " " + j.why : "")); return; } go(); }, go);
+    return;
+  }
   let p;
   if (C.p) {
     const m = C.meta || {}; if (!m.title && !C.cap.trim()) return;
@@ -9133,7 +9143,7 @@ const T = [
   ["one room, newest at the bottom", "ein Raum, Neuestes unten", "una sala, lo nuevo abajo"], ["Message everyone", "Nachricht an alle", "Mensaje para todos"],
   /* button sweep 16:20: For You rail buttons for screen readers */ ["Like", "Gefällt mir", "Me gusta"], ["Comment", "Kommentieren", "Comentar"], ["More", "Mehr", "Más"],
   /* 21 Nov 2026 My posts profile */
-  ["posts", "Beiträge", "publicaciones"], ["Share a link", "Link teilen", "Compartir un enlace"], ["Paste a TikTok, Instagram or YouTube link: your own video or someone else's. Photos go in the Community chat.", "Füge einen TikTok-, Instagram- oder YouTube-Link ein: dein eigenes Video oder das von jemand anderem. Fotos gehören in den Community-Chat.", "Pega un enlace de TikTok, Instagram o YouTube: tu vídeo o el de otra persona. Las fotos van al chat de la Comunidad."], ["links", "Links", "enlaces"], ["Links", "Links", "Enlaces"], ["No links yet. Paste a TikTok or Instagram link in Post.", "Noch keine Links. Füge in Posten einen TikTok- oder Instagram-Link ein.", "Aún no hay enlaces. Pega un enlace de TikTok o Instagram en Publicar."], ["saved", "gespeichert", "guardados"], ["My posts", "Meine Beiträge", "Mis posts"], ["Remove from Saved", "Aus Gespeichert entfernen", "Quitar de guardados"],
+  ["This link doesn't look insulin-friendly, so it can't go in For You.", "Dieser Link wirkt nicht insulinfreundlich, deshalb kann er nicht in Für dich.", "Este enlace no parece apto para la insulina, así que no puede ir en Para ti."], ["posts", "Beiträge", "publicaciones"], ["Share a link", "Link teilen", "Compartir un enlace"], ["Paste a TikTok, Instagram or YouTube link: your own video or someone else's. Photos go in the Community chat.", "Füge einen TikTok-, Instagram- oder YouTube-Link ein: dein eigenes Video oder das von jemand anderem. Fotos gehören in den Community-Chat.", "Pega un enlace de TikTok, Instagram o YouTube: tu vídeo o el de otra persona. Las fotos van al chat de la Comunidad."], ["links", "Links", "enlaces"], ["Links", "Links", "Enlaces"], ["No links yet. Paste a TikTok or Instagram link in Post.", "Noch keine Links. Füge in Posten einen TikTok- oder Instagram-Link ein.", "Aún no hay enlaces. Pega un enlace de TikTok o Instagram en Publicar."], ["saved", "gespeichert", "guardados"], ["My posts", "Meine Beiträge", "Mis posts"], ["Remove from Saved", "Aus Gespeichert entfernen", "Quitar de guardados"],
   ["Nothing yet. Your posts show up here.", "Noch nichts. Deine Beiträge erscheinen hier.", "Aún nada. Tus posts aparecen aquí."],
   ["Nothing saved yet. Tap the bookmark on any post in For You.", "Noch nichts gespeichert. Tippe in Für dich bei einem Beitrag auf das Lesezeichen.", "Aún no has guardado nada. Toca el marcador en cualquier post de Para ti."],
   ["Saved. Find it in My posts, under the bookmark.", "Gespeichert. Du findest es in Meine Beiträge unter dem Lesezeichen.", "Guardado. Lo encuentras en Mis posts, bajo el marcador."],
@@ -22989,6 +22999,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261122-101156">
 <script src="scan-glass.js?v=20261122-101156"></script>
 <script src="gpt-open.js?v=20261122-101156"></script>
+<script src="lowi-ask.js?v=20261122-101156"></script><!-- Nov 22 2026: the app's own AI chat (replaces the Custom GPT) -->
 <script src="tiktok-open.js?v=20261122-101156"></script>
 <link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261122-101156">
 <script src="realm-backdrop-core.js?v=20261122-101156"></script>

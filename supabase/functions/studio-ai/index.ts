@@ -27,6 +27,11 @@ async function isOwner(req: Request): Promise<boolean> {
   if (!/^Bearer\s+\S+/.test(auth) || !url || !anon) return false;
   try { const r = await fetch(url + "/rest/v1/rpc/is_app_owner", { method: "POST", headers: { apikey: anon, Authorization: auth, "Content-Type": "application/json" }, body: "{}" }); return r.ok && (await r.json()) === true; } catch (_e) { return false; }
 }
+/* 22 Nov 2026: Studio shares the app's AI limits (public.ai_usage): translate 20 a day per person, fill 100 a day for the owner */
+async function take(subject: string, feature: string, max: number): Promise<string> {
+  const url = Deno.env.get("SUPABASE_URL"), key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  try { const r = await fetch(url + "/rest/v1/rpc/ai_take", { method: "POST", headers: { apikey: key!, Authorization: "Bearer " + key, "Content-Type": "application/json" }, body: JSON.stringify({ p_subject: subject, p_feature: feature, p_user_max: max, p_global_max: 400 }) }); return r.ok ? String(await r.json()) : "error"; } catch (_e) { return "error"; }
+}
 async function gemini(parts: unknown[], schema: unknown, maxTokens = 2048) {
   const key = Deno.env.get("GEMINI_API_KEY") || ""; if (!key) throw new Error("not_configured");
   for (const model of MODELS) {
@@ -75,11 +80,14 @@ Deno.serve(async (req) => {
   try {
     if (body.action === "translate") {
       const text = clip(body.text, 6000); if (!text) return out(req, 400, { error: "bad_request" });
+      const sub = "ip:" + clip((req.headers.get("x-forwarded-for") || "").split(",")[0], 60) + ":" + clip((req.headers.get("authorization") || "").slice(-24), 24);
+      if ((await take(sub, "translate", 20)) !== "ok") return out(req, 429, { error: "limit" });
       const r = await gemini([{ text: "Translate the following text into " + LANG[lang] + ". Keep line breaks, keep names, handles and numbers as they are. Return JSON {text}.\n\n" + text }], TRANS, 4096);
       return out(req, 200, { ok: true, text: clip(r.text, 8000) });
     }
     if (body.action === "fill") {
       if (!(await isOwner(req))) return out(req, 403, { error: "owner_only" });
+      if ((await take("owner", "fill", 100)) !== "ok") return out(req, 429, { error: "limit" });
       const link = clip(body.link, 400); if (!/^https:\/\/([a-z0-9-]+\.)*(tiktok\.com|instagram\.com)\//i.test(link)) return out(req, 400, { error: "bad_link" });
       const m = await meta(link); let transcript = clip(body.transcript, 8000), transcribed = false;
       const parts: unknown[] = [];

@@ -1688,3 +1688,4 @@ Emmanuel: "I don't like the new update ... set it back to what the people in my 
 - Not done: voice notes as text.
 - 22 Nov 2026 (Emmanuel): My posts has an Edit button. In edit mode every tile in the open tab gets a red minus: Saved removes in one tap; own photos and links ask "Delete?" on the first tap and delete on the second (also from For You). Done ends it. Everyone gets it on their own profile.
 - 22 Nov 2026 (Emmanuel): Studio Edit shows an X on every video and prompt; tapping X marks it, a bottom bar has Select all and Delete (N) to delete many at once for good (one confirm). Tapping the rest of a tile still opens it.
+- 22 Nov 2026 (Emmanuel): Studio Agent file looks like the Swipe file: a 3-column grid of covers, each prompt's title as the text on screen and a small Prompt label; Edit gives the same X toggles and Delete bar; an open prompt keeps Edit / Hide / Delete.

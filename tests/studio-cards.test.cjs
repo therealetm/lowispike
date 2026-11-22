@@ -166,3 +166,6 @@ test('Studio Edit: X toggle on every item and a mass delete bar (22 Nov 2026)', 
   const s = require('fs').readFileSync(require('path').join(__dirname, '..', 'studio', 'index.html'), 'utf8');
   assert.match(s, /function xbox\(x\)/); assert.match(s, /data-x role="checkbox"/); assert.match(s, /data-sel="del"/); assert.match(s, /ids\.forEach\(delOne\)/);
   assert.match(s, /confirmDelN: \['Delete \{n\} for good\?', '\{n\} endgültig löschen\?'/); });
+test('Studio Agent file is a grid of covers with the title as text on screen (22 Nov 2026)', () => {
+  const s = require('fs').readFileSync(require('path').join(__dirname, '..', 'studio', 'index.html'), 'utf8');
+  assert.match(s, /'<button class="tile ag'/); assert.match(s, /<q>' \+ esc\(x\.title\) \+ '<\/q>/); assert.match(s, /data-add="agent"><span>\+<\/span>/); });

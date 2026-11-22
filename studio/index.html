@@ -46,6 +46,8 @@ body{min-height:100vh;min-height:100dvh;color:var(--ink);font:16px/1.5 -apple-sy
 .tile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,transparent,rgba(0,0,0,.6));pointer-events:none}
 .tile .vw{position:absolute;left:8px;bottom:7px;z-index:2;display:flex;align-items:center;gap:5px;font-size:16px;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 .tile .vw svg{width:20px;height:20px}
+.tile.ag .cv.nf q{font-size:15px;-webkit-line-clamp:7}
+.tile.ag .vw{font-size:13px;opacity:.9}
 .xb{position:absolute;top:6px;right:6px;z-index:3;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.55);border:2px solid #fff;color:#fff;font-size:17px;font-weight:800}
 .xb::after{content:"";position:absolute;inset:-8px}
 .xb.on{background:#ff3b30;border-color:#ff3b30}
@@ -149,7 +151,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     copyAgent: ['Copy for agent', 'Für Agent kopieren', 'Copiar para agente'], copy: ['Copy', 'Kopieren', 'Copiar'], copied: ['Copied ✓', 'Kopiert ✓', 'Copiado ✓'],
     strategy: ['Strategy', 'Strategie', 'Estrategia'], why: ['Why it works', 'Warum es wirkt', 'Por qué funciona'], prev: ['‹ Previous', '‹ Zurück', '‹ Anterior'], next: ['Next ›', 'Weiter ›', 'Siguiente ›'],
     noTranscript: ['No transcript yet.', 'Noch kein Transkript.', 'Aún no hay transcripción.'], translating: ['Translating…', 'Übersetze…', 'Traduciendo…'], trFail: ['Could not translate. Try again.', 'Übersetzen ging nicht. Versuch es nochmal.', 'No se pudo traducir.'],
-    addVideo: ['Add video', 'Video hinzufügen', 'Añadir vídeo'], addPrompt: ['Add prompt', 'Prompt hinzufügen', 'Añadir prompt'], hide: ['Hide', 'Verstecken', 'Ocultar'], show: ['Show again', 'Wieder zeigen', 'Mostrar'], del: ['Delete', 'Löschen', 'Eliminar'], selAll: ['Select all', 'Alle auswählen', 'Seleccionar todo'], confirmDelN: ['Delete {n} for good?', '{n} endgültig löschen?', '¿Eliminar {n} para siempre?'],
+    addVideo: ['Add video', 'Video hinzufügen', 'Añadir vídeo'], addPrompt: ['Add prompt', 'Prompt hinzufügen', 'Añadir prompt'], hide: ['Hide', 'Verstecken', 'Ocultar'], show: ['Show again', 'Wieder zeigen', 'Mostrar'], del: ['Delete', 'Löschen', 'Eliminar'], prompt: ['Prompt', 'Prompt', 'Prompt'], selAll: ['Select all', 'Alle auswählen', 'Seleccionar todo'], confirmDelN: ['Delete {n} for good?', '{n} endgültig löschen?', '¿Eliminar {n} para siempre?'],
     link: ['TikTok or Instagram link', 'TikTok- oder Instagram-Link', 'Enlace de TikTok o Instagram'], creator: ['Creator', 'Creator', 'Creador'], viewsF: ['Views (e.g. 1.2M)', 'Aufrufe (z. B. 1.2M)', 'Vistas (p. ej. 1.2M)'],
     trF: ['Transcript (paste it: TikTok ··· > Transcript, or iPhone Live Text)', 'Transkript (einfügen: TikTok ··· > Transkript, oder iPhone Live Text)', 'Transcripción (pégala)'], hookF: ['Hook', 'Hook', 'Gancho'], stratF: ['Strategy, one step per line', 'Strategie, ein Schritt pro Zeile', 'Estrategia, un paso por línea'], whyF: ['Why it works', 'Warum es wirkt', 'Por qué funciona'],
     fill: ['✨ Fill with AI', '✨ Mit KI ausfüllen', '✨ Rellenar con IA'], filling: ['Filling…', 'Fülle aus…', 'Rellenando…'], fillNote: ['The AI reads the link and your transcript and writes hook, strategy and why. You can change everything before saving.', 'Die KI liest den Link und dein Transkript und schreibt Hook, Strategie und Warum. Du kannst alles ändern, bevor du speicherst.', 'La IA lee el enlace y tu transcripción.'],
@@ -216,6 +218,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   }
   function hue(id) { var n = 0; for (var i = 0; i < id.length; i++) n = (n * 31 + id.charCodeAt(i)) % 360; return n; }
   function cover(x) { var th = thumbOf(x); return '<div class="cv' + (th ? '' : ' nf') + '" style="background-image:' + (th ? 'url(&quot;' + esc(th) + '&quot;)' : 'linear-gradient(160deg,hsl(' + hue(x.id) + ' 46% 24%),hsl(' + ((hue(x.id) + 40) % 360) + ' 50% 12%))') + '">' + (th ? '' : '<q>' + esc(x.hook || x.creator) + '</q>') + '</div>'; }
+  var ROBOT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 14h.01M15 14h.01"/></svg>';
   var EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
   var IO = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { IO.unobserve(e.target); var x = SW.filter(function (s) { return s.id === e.target.dataset.id; })[0]; if (x) want(x); } }); }, {rootMargin: '300px'}) : null;
 
@@ -232,8 +235,10 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
       $('#main').innerHTML = list.length || EDIT ? '<div class="grid">' + h + '</div>' : '<div class="empty">' + esc(Q ? t('none') : t('empty')) + '</div>';
       if (IO) D.querySelectorAll('.tile[data-id]').forEach(function (e) { IO.observe(e); });
     } else {
-      h = (EDIT ? '<button class="prompt add" data-add="agent">+ ' + esc(t('addPrompt')) + '</button>' : '') + list.map(function (x) { return '<button class="prompt' + (x.hide ? ' hid' : '') + (SEL[x.id] ? ' sel' : '') + '" data-id="' + esc(x.id) + '">' + xbox(x) + '<b>' + esc(x.title) + '</b><small>' + esc(x.text) + '</small></button>'; }).join('');
-      $('#main').innerHTML = list.length || EDIT ? '<div class="list">' + h + '</div>' : '<div class="empty">' + esc(Q ? t('none') : t('empty')) + '</div>';
+      /* 22 Nov 2026 (Emmanuel: "organized just like the other page ... a text on screen ... to make it easier to understand what they're
+         clicking on"): agent prompts are a 3-column grid of covers like the Swipe file; the prompt's title is the text on screen. */
+      h = (EDIT ? '<button class="tile add" data-add="agent"><span>+</span>' + esc(t('addPrompt')) + '</button>' : '') + list.map(function (x) { return '<button class="tile ag' + (x.hide ? ' hid' : '') + (SEL[x.id] ? ' sel' : '') + '" data-id="' + esc(x.id) + '" aria-label="' + esc(x.title) + '"><div class="cv nf" style="background-image:linear-gradient(160deg,hsl(' + hue(x.id) + ' 46% 24%),hsl(' + ((hue(x.id) + 40) % 360) + ' 50% 12%))"><q>' + esc(x.title) + '</q></div>' + xbox(x) + '<span class="vw">' + ROBOT + esc(t('prompt')) + '</span></button>'; }).join('');
+      $('#main').innerHTML = list.length || EDIT ? '<div class="grid">' + h + '</div>' : '<div class="empty">' + esc(Q ? t('none') : t('empty')) + '</div>';
     }
   }
 

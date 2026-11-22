@@ -87,14 +87,38 @@ html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs
    the text on screen they typed ... the chat almost becomes like a text on screen feature"). On the photo there is only the poster's
    own words. Name, spike badge and numbers live in the details panel (tap the photo). The small ··· and reactions sit in a thin strip
    UNDER the photo, never on it. While the chat is open, the round back button and the scroll-down arrow are not drawn over posts. */
-html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-by,
-html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-meal{display:none!important}
-html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)::after{content:none!important;display:none!important}
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal){padding:0!important;justify-content:flex-end!important;background:#000!important}
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-photo{bottom:36px!important;height:auto!important}
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cm-t{top:calc(46% - 18px)!important}
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cm-foot{position:static!important;order:4;align-self:flex-end;height:36px!important;display:flex!important;align-items:center;
   margin:0 6px 0 0!important;padding:0 6px!important;background:none!important;border-radius:0}
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cm-rx{position:absolute!important;left:8px;bottom:4px;z-index:3;margin:0!important;padding:0!important;max-width:calc(100% - 60px)}
-html:has(#cmPaneChat .rm-frame:has(#cmList):not([hidden]) #cmList .cs-meal) #lwBX,
-html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cr-down{display:none!important}
+/* 22 Nov 2026, fifth pass (Emmanuel: "put their name there so we know who sent the picture and the insulin ... button, very aesthetically
+   liquid, transparent ... it was actually cool seeing the calories ... when I screenshot it, it makes sense"). On the photo: the
+   poster's own words in the middle; bottom left their name with a liquid-glass spike badge (green / amber / red light), and the
+   numbers under it. Still no AI dish name, no time, no watermark, no floating buttons. */
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)::after{content:""!important;display:block!important;position:absolute;left:0;right:0;top:auto!important;bottom:36px;height:38%;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.55))!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-by,html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-meal{position:absolute!important;left:0;right:0;z-index:2;margin:0!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-by{bottom:72px;display:flex!important;align-items:center;gap:9px;padding:0 16px!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal)>.cs-meal{bottom:46px;display:block!important;padding:0 16px!important}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-by .cs-meal-bs{border-radius:999px!important;padding:4px 12px 4px 9px!important;font-size:13px!important;font-weight:600!important;color:#fff!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.08))!important;border:1px solid rgba(255,255,255,.42)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(255,255,255,.12),0 6px 18px rgba(0,0,0,.25)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(180%)!important;backdrop-filter:blur(18px) saturate(180%)!important;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-by .cs-meal-bs i{width:9px!important;height:9px!important;background:#3ee07a!important;box-shadow:0 0 8px 2px rgba(62,224,122,.85)}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-by .cs-meal-mid i{background:#ffd166!important;box-shadow:0 0 8px 2px rgba(255,209,102,.85)}
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-by .cs-meal-high i{background:#ff5a4a!important;box-shadow:0 0 8px 2px rgba(255,90,74,.9)}
+/* nothing floats over a photo post: while the chat list shows on screen (index.html chatListHeight sets html.lw-chat-on) */
+html.lw-chat-on #lwBX,html.lw-chat-on body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cr-down{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+/* the buttons in the details panel: Save photo, Save, Text on screen */
+.cps-acts{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
+.cps-b{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.28);color:#fff;font:inherit;font-size:15px;font-weight:650;cursor:pointer;
+  background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.05));box-shadow:inset 0 1px 0 rgba(255,255,255,.35);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.cps-b svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cps-b[aria-pressed=true]{background:rgba(124,196,255,.22);border-color:rgba(159,216,255,.6)}
+.cps-b[aria-pressed=true] svg{fill:currentColor}
+.cps-b.cps-pri{background:linear-gradient(180deg,#bfe6ff,#7cc4ff);color:#050912;border:0}
+.cps-b:disabled{opacity:.5}
+.cps-edit{display:flex;gap:8px;width:100%}
+.cps-edit[hidden]{display:none}
+.cps-edit input{flex:1;min-width:0;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:16px;padding:0 12px}

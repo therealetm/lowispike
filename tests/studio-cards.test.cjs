@@ -153,10 +153,15 @@ test('Save photo draws the post with its text; Save puts it into My posts > Save
   assert.match(h, /case "open-chatsaved":/);
   assert.match(R('sw.js'), /STATIC\.push\("chat-post-save\.js"\)/);
 });
-test('nothing covers a chat photo post except the poster\'s own words', () => {
-  const css = R('chat-meal-post.css'), cc = R('community-chat.js'), ps = R('chat-post-save.js');
-  assert.match(css, /:has\(> \.cs-meal\)>\.cs-by,\s*\n?html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat \.cm-bub\.cm-pbub:has\(> \.cs-meal\)>\.cs-meal\{display:none!important\}/, 'no name, badge or numbers on the photo');
-  assert.match(css, /#lwBX,\s*\n?html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat \.cr-down\{display:none!important\}/, 'no round back button or scroll arrow over posts');
+test('chat photo post: own words, name with a liquid-glass spike badge, numbers; nothing floating over it; Save photo, Save and edit work', () => {
+  const css = R('chat-meal-post.css'), cc = R('community-chat.js'), ps = R('chat-post-save.js'), h = R('index.html'), sql = R('supabase/proposals/meal_caption_edit_20261122.sql');
+  assert.match(css, /\.cs-by \.cs-meal-bs\{border-radius:999px!important;[^}]*backdrop-filter:blur\(18px\) saturate\(180%\)/, 'glass badge');
+  assert.match(css, /html\.lw-chat-on #lwBX,html\.lw-chat-on body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat \.cr-down\{display:none!important/, 'no round back button or scroll arrow over posts');
+  assert.match(h, /classList\.toggle\("lw-chat-on"/);
+  assert.match(css, /\.cps-b\{display:inline-flex/, 'styled buttons');
   assert.match(cc, /K\.mealBody\(src,title,food\.lvl,cap\|\|''\)/, 'the AI description never becomes the caption');
-  assert.doesNotMatch(ps, /p\.nums \?|g\.fillText\(nm/, 'the saved picture carries only the words');
+  assert.match(cc, /sb\.rpc\('set_meal_caption',\{msg_id:String\(m\.id\),new_body:nb\}\)/, 'edit the text on screen afterwards');
+  assert.match(ps, /data-cps="edit"/);
+  assert.match(ps, /p\.nums/, 'the saved picture carries name, badge and numbers');
+  assert.match(sql, /only the caption may change/);
 });

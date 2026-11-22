@@ -5280,7 +5280,9 @@ function fyToolsHTML(){ const n = Object.keys(T.saved || {}).length;
 /* 21 Nov 2026: a meal post in the chat is as tall as the visible chat list (chat-meal-post.css reads --cml-h) */
 (function chatListHeight(){ let ro = null, el = null;
   const hook = () => { const l = document.getElementById("cmList"); if (!l || l === el || !window.ResizeObserver) return; if (ro) ro.disconnect(); el = l;
-    ro = new ResizeObserver(() => { const h = Math.round(l.clientHeight); if (h > 200) document.documentElement.style.setProperty("--cml-h", h + "px"); }); ro.observe(l); };
+    ro = new ResizeObserver(() => { const h = Math.round(l.clientHeight); if (h > 200) document.documentElement.style.setProperty("--cml-h", h + "px");
+      /* 22 Nov 2026: while the chat list is on screen nothing floats over photo posts (chat-meal-post.css html.lw-chat-on) */
+      document.documentElement.classList.toggle("lw-chat-on", h > 120 && l.getClientRects().length > 0); }); ro.observe(l); };
   try { new MutationObserver(hook).observe(document.documentElement, {childList: true, subtree: true}); } catch (e) {} hook();
 })();
 (function fyTapIntent(){ let down = null, lastScroll = 0;

@@ -594,7 +594,10 @@ function mealDetail(id){const m=messages().find(x=>String(x.id)===String(id));if
  const ov=W.LowiMealDetail.open(m.md||null,{by:m.by||'',name:ph.meal.name,lvl:ph.meal.lvl,photo:ph.src});
  /* 22 Nov 2026: Save photo (the picture with its text, as posted) and Save (into My posts > Saved), chat-post-save.js */
  try{if(ov&&W.LowiChatPost){const k={low:'mealLow',mid:'mealMid',high:'mealHigh'}[ph.meal.lvl]||'mealMid',md=m.md||{};const mine=!!(m.uid&&m.uid===scope);
-  W.LowiChatPost.attach(ov,{id:String(m.id),src:ph.src,by:mine?(String(own().n||'').trim()||m.by||''):(m.by||''),caption:ph.caption||'',lvl:ph.meal.lvl,label:tr(k),nums:(md&&typeof md==='object'?foodNums(md.total,md.net):'')||'',ts:m.ts||Date.now()});}}catch(e){}
+  W.LowiChatPost.attach(ov,{id:String(m.id),src:ph.src,by:mine?(String(own().n||'').trim()||m.by||''):(m.by||''),caption:ph.caption||'',lvl:ph.meal.lvl,label:tr(k),nums:(md&&typeof md==='object'?foodNums(md.total,md.net):'')||'',ts:m.ts||Date.now(),
+  /* 22 Nov 2026: your own photo post can get its text on screen afterwards (server: public.set_meal_caption, own message, caption only) */
+  edit:mine&&String(m.t||'').startsWith('\u{1F37D} ')?async cap=>{const sb=H.client?await H.client():null,nb=K.mealBody(ph.src,ph.meal.name,ph.meal.lvl,cap);if(!sb||!nb)throw new Error('client');
+   const r=await sb.rpc('set_meal_caption',{msg_id:String(m.id),new_body:nb});if(r&&r.error)throw r.error;const row=H.messages().find(x=>String(x.id)===String(m.id));if(row)row.t=nb;m.t=nb;refresh();return true;}:null});}}catch(e){}
  return ov;}
 function voiceOf(m){return m&&K.voice?K.voice(m.t,String(m.uid||'').indexOf('bot:')===0?'x':m.uid):null;}
 function mmss(s){s=Math.max(0,Math.round(+s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}

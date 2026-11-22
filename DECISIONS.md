@@ -1690,3 +1690,4 @@ Emmanuel: "I don't like the new update ... set it back to what the people in my 
 - 22 Nov 2026 (Emmanuel): Studio Edit shows an X on every video and prompt; tapping X marks it, a bottom bar has Select all and Delete (N) to delete many at once for good (one confirm). Tapping the rest of a tile still opens it.
 - 22 Nov 2026 (Emmanuel): Studio Agent file looks like the Swipe file: a 3-column grid of covers, each prompt's title as the text on screen and a small Prompt label; Edit gives the same X toggles and Delete bar; an open prompt keeps Edit / Hide / Delete.
 - 22 Nov 2026 (Emmanuel): in the chat the send button is a ✕ ("Back to Home") while nothing is typed and no photo waits; tapping it goes back to Home. With text or a photo it is the send arrow again (chat-post-save.js leaveBtn).
+  (Pages deploy of 20261122-111437 failed once on GitHub's side; redeployed by the next push.)

@@ -20,11 +20,7 @@ test('caveats stay visible: agent creates, the person posts; swipe numbers not r
   assert.match(D.swipeNote, /nicht neu geprüft/);
   assert.match(D.cards.find(c => c.id === 'M12').status, /frischen Setup: nicht test-run/);
 });
-test('page renders from cards.json and has no generate/post button', () => {
-  const h = R('studio/index.html');
-  assert.match(h, /fetch\('cards\.json'/);
-  assert.doesNotMatch(h, />\s*(Generieren|Generate|Veröffentlichen|Publish)\s*</i);
-});
+
 test('For You tool row: Post, My posts, Saved, Create content -> studio/, no Affiliate (removed 21 Nov), inside the feed', () => {
   const h = R('index.html');
   assert.match(h, /'<div class="fy-feed" id="fyFeed">' \+ fyToolsHTML\(\)/);
@@ -46,35 +42,9 @@ test('For You opens at the top (circles showing) and uses the app blue, not gold
   assert.match(css, /\.fy-tool-c\{color:#fff!important;[^}]*--acc-rgb/);
   assert.doesNotMatch(st, /#e9cb88|#caa15a|#b08540/i, 'Studio has no gold');
 });
-test('Studio is a tool: tiles, one copy button with your profile, copy only reports success when it worked', () => {
-  const st = R('studio/index.html');
-  assert.match(st, /class="tile/);
-  assert.match(st, /Für Agent kopieren/);
-  assert.match(st, /function buildPrompt/);
-  assert.match(st, /lowi\.studio\.me\.v1/);
-  assert.match(st, /Dein Agent erstellt, du postest selbst/);
-  assert.match(st, /copy\(text\)\.then\(function \(ok\) \{ if \(!ok\) return fallback\(text\)/);
-});
-test('Studio shows videos: cover tiles, view counts, three ways to remake, no YouTube preview, fallback never empty', () => {
-  const st = R('studio/index.html');
-  assert.match(st, /tiktok-meta/);
-  assert.match(st, /Mich ersetzen: Higgsfield/);
-  assert.match(st, /Mich ersetzen: Agent-Avatar/);
-  assert.match(st, /youtu\\.\?be/, 'YouTube links get no preview tile');
-  assert.match(st, /class="cv' \+ \(th \? '' : ' nf'\)/, 'designed fallback cover');
-  assert.match(st, /Nur mein eigenes Gesicht und meine eigene Stimme/);
-  assert.match(st, /vor jedem Render|Kosten in Credits/);
-});
-test('Studio looks like Instagram Explore: search, topic chips, 3-column edge-to-edge grid with view counts, tap opens a post with our guide', () => {
-  const st = R('studio/index.html');
-  assert.match(st, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
-  assert.match(st, /id="q" type="search"/);
-  assert.match(st, /id="chips"/);
-  assert.match(st, /class="vw"/);
-  assert.match(st, /id="post"/);
-  assert.match(st, /class="chk"/, 'guide steps as a checklist where the caption would be');
-  assert.doesNotMatch(st, /<nav class="tabs"/, 'no bottom tab pill');
-});
+
+
+
 test('New post: one way out, and the circles open only on a real tap', () => {
   const h = R('index.html'), css = R('foryou-ig.css');
   assert.ok(css.includes('html:has(#lwBX.on:not(.bx-aside)) #sheet.r3f-sheet .xbtn[data-act=close-sheet]{opacity:0'), 'sheet X hidden only while the round X is on screen');
@@ -93,17 +63,7 @@ test('My posts is an Instagram-style profile with two tabs, and the Saved circle
   assert.match(h, /case "list-tab": listSheet\(b\.dataset\.k\); break;/);
   assert.match(h, /\["posts", "Beiträge", "publicaciones"\]/);
 });
-test('Studio: real folders the owner can rename and fill, sort by most views, owner-only edits saved on the server', () => {
-  const st = R('studio/index.html'), sql = R('supabase/proposals/studio_config_20261121.sql');
-  assert.match(st, /function defaultFolders\(\)/);
-  assert.match(st, /SORT === 'views'/);
-  assert.match(st, /SB\.rpc\('is_app_owner'\)/, 'edit mode only for the owner, decided by the server');
-  assert.match(st, /SB\.rpc\('studio_save', \{doc: DOC\}\)/);
-  assert.match(st, /Video hinzufügen/);
-  assert.match(sql, /if not coalesce\(public\.is_app_owner\(\), false\) then/);
-  assert.match(sql, /revoke all on public\.studio_config from anon, authenticated;/, 'no direct writes');
-  assert.match(sql, /octet_length\(doc::text\) > 400000/);
-});
+
 test('a meal in the chat is a full photo post, only meal bubbles change (22 Nov: no brand mark)', () => {
   const css = R('chat-meal-post.css'), h = R('index.html'), cc = R('community-chat.js');
   assert.ok(h.indexOf('href="chat-meal-post.css') > h.indexOf('href="community-chat.css'), 'loads after the chat styles');
@@ -121,13 +81,7 @@ test('My posts and New post open as their own page with a Back button; profile h
   assert.match(css, /#sheet\.lw-page\{top:0!important/);
   assert.match(css, /html:has\(#sheetwrap\.open #sheet\.lw-page\) #lwBX\{display:none!important\}/, 'one way out: the Back button');
 });
-test('Studio: folders can be renamed and deleted in one place', () => {
-  const st = R('studio/index.html');
-  assert.match(st, /data-add="manage">✎ Ordner verwalten/);
-  assert.match(st, /function manageDlg\(\)/);
-  assert.match(st, /k === 'msave'/);
-  assert.match(st, /k === 'mdel'/);
-});
+
 test('the meal post beats the chat room styles and fills the chat list', () => {
   const css = R('chat-meal-post.css');
   assert.match(css, /html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat \.cp-msg \.cm-bub\.cm-pbub:has\(> \.cs-meal\)\{width:100%!important/);
@@ -165,3 +119,23 @@ test('chat photo post: own words, name with a liquid-glass spike badge, numbers;
   assert.match(ps, /p\.nums/, 'the saved picture carries name, badge and numbers');
   assert.match(sql, /only the caption may change/);
 });
+test('Studio (22 Nov): two sections, app language, share, transcript / translate / copy for agent, next, owner fill with AI', () => {
+  const st = R('studio/index.html'), fn = R('supabase/functions/studio-ai/index.ts');
+  assert.match(st, /data-tab="swipe"/); assert.match(st, /data-tab="agent"/);
+  assert.doesNotMatch(st, /id="chips"|Ordner verwalten/, 'no folders');
+  assert.match(st, /localStorage\.getItem\('lowispike\.lang'\)/, 'follows the app language');
+  assert.match(st, /id="share"/); assert.match(st, /navigator\.share/);
+  assert.match(st, /data-a="tr"/); assert.match(st, /data-a="lang"/); assert.match(st, /data-a="copy"/);
+  assert.match(st, /data-a="next"/); assert.match(st, /data-a="prev"/);
+  assert.match(st, /action: 'fill'/); assert.match(st, /SB\.rpc\('is_app_owner'\)/); assert.match(st, /SB\.rpc\('studio_save', \{doc: DOC\}\)/);
+  assert.match(st, /fetch\('cards\.json'/, 'built-in items still come from cards.json');
+  assert.match(fn, /if \(!\(await isOwner\(req\)\)\) return out\(req, 403, \{ error: "owner_only" \}\)/, 'fill is owner only');
+  assert.match(fn, /GEMINI_API_KEY/);
+});
+test('Studio: only Swipe file and Agent file, no folders', () => { const st = R('studio/index.html'); assert.match(st, /data-tab="swipe"/); assert.match(st, /data-tab="agent"/); assert.doesNotMatch(st, /id="chips"|Ordner verwalten|defaultFolders/); });
+test('Studio: speaks the app language (EN/DE/ES) and starts in English', () => { const st = R('studio/index.html'); assert.match(st, /<html lang="en">/); assert.match(st, /swipe: \['Swipe file', 'Swipe-Datei', 'Archivo de swipe'\]/); });
+test('Studio: share button at the top and on each open item', () => { const st = R('studio/index.html'); assert.match(st, /class="ib" id="share"/); assert.match(st, /data-a="share"/); });
+test('Studio: an open video has Copy for agent, Transcript, Translate and Previous / Next', () => { const st = R('studio/index.html'); for (const a of ['copy', 'tr', 'lang', 'prev', 'next']) assert.match(st, new RegExp('data-a="' + a + '"')); });
+test('Studio: Copy for agent carries link, transcript and strategy', () => { const st = R('studio/index.html'); assert.match(st, /'Link: ' \+ \(x\.link \|\| '-'\)/); assert.match(st, /t\('transcript'\) \+ ':'/); assert.match(st, /t\('strategy'\) \+ ':'/); });
+test('Studio: the owner adds a video by link + transcript and lets the AI fill hook, strategy and why', () => { const st = R('studio/index.html'); assert.match(st, /ai\(\{action: 'fill', link: v\('f_link'\), transcript: v\('f_tr'\), lang: L\}\)/); assert.match(st, /data-add="swipe"/); assert.match(st, /data-add="agent"/); });
+test('studio-ai: fill is owner only, uses the server Gemini key, translate limited to en/de/es', () => { const fn = R('supabase/functions/studio-ai/index.ts'); assert.match(fn, /return out\(req, 403, \{ error: "owner_only" \}\)/); assert.match(fn, /Deno\.env\.get\("GEMINI_API_KEY"\)/); assert.match(fn, /const LANG: Record<string, string> = \{ en: "English", de: "German", es: "Spanish" \}/); });

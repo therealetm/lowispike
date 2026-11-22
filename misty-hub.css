@@ -263,3 +263,25 @@ html[data-theme="light"] .mh-tab.on { background: rgba(255,255,255,.22); }
 .mh-hstep:not(:disabled):active { background: rgba(255,255,255,.1); }
 .mh-hstep:focus-visible { outline: 2px solid var(--one-acc, #8fe7ff); outline-offset: 1px; }
 .mh-hnote { margin: 4px 4px 14px; font-size: 12.5px; line-height: 17px; opacity: .6; }
+/* 22 Nov 2026: Today opens on today's meals (edit / delete), one line of water, Move and steps, the rest behind More (misty-sheet.js) */
+.ms-mlist { display: grid; gap: 6px; }
+.ms-meal { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 10px; border-radius: 16px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); }
+.ms-meal.arm { border-color: rgba(255,59,48,.6); }
+.ms-mimg { flex: none; width: 46px; height: 46px; border-radius: 12px; object-fit: cover; background: rgba(255,255,255,.07); }
+.ms-mico { display: grid; place-items: center; color: #8fd8ff; } .ms-mico svg { width: 22px; height: 22px; }
+.ms-mtx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ms-mtx b { font-size: 16px; overflow-wrap: anywhere; line-height: 1.25; }
+.ms-mtx small { color: rgba(255,255,255,.62); font-size: 13.5px; }
+.ms-dot { display: inline-block; width: 8px; height: 8px; margin: 0 5px 1px 0; border-radius: 50%; background: #8a93a3; vertical-align: middle; }
+.ms-dot.ms-low { background: #34d399; } .ms-dot.ms-medium { background: #fbbf24; } .ms-dot.ms-high { background: #f87171; }
+.ms-mb { flex: none; display: grid; place-items: center; min-width: 44px; height: 44px; padding: 0 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.ms-mb svg { width: 19px; height: 19px; }
+.ms-mdel { color: #ff8a80; }
+.ms-mdel.arm { background: #ff3b30; border-color: #ff3b30; color: #fff; font-size: 14px; }
+.ms-none { margin: 4px 2px; color: rgba(255,255,255,.62); }
+.ms-mtot { margin: 8px 4px 0; color: rgba(255,255,255,.7); font-size: 14px; font-variant-numeric: tabular-nums; }
+.ms-chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 0; }
+.ms-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); color: rgba(255,255,255,.85); font: inherit; font-size: 14px; }
+.ms-chip svg { width: 17px; height: 17px; color: #8fd8ff; }
+.ms-more { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 46px; margin: 12px 0 0; border: 0; background: none; color: #8fd8ff; font: inherit; font-size: 15px; font-weight: 650; cursor: pointer; }
+.ms-rest[hidden] { display: none; }

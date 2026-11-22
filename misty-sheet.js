@@ -103,12 +103,54 @@
             (d.levelTo > d.levelFrom ? row({ ico: '', b: T('Level up', 'Level-Aufstieg', 'Subida de nivel'), v: d.levelFrom + ' \u2192 ' + d.levelTo }) : '');
     }
     /* Today: world glow (passed in, misty-peak.js), you, Misty */
+    /* 22 Nov 2026 (Emmanuel: "still too overwhelming ... I accidentally put in what I ate twice ... I want to be able to delete it ...
+       go back onto my record of today, a nice overview ... and actually be able to edit stuff in there"): Today opens on today's
+       meals, each with its time, its rise and two buttons, Edit (the app's own meal form) and Delete (tap twice: the meal, its photo
+       and the XP it earned go). Under it one line of water, Move and steps. World, journeys, the goal and the XP wait behind "More". */
+    let more = false;
+    const vWord = v => v === 'low' ? T('small rise', 'kleiner Anstieg', 'subida peque\u00f1a') : v === 'medium' ? T('medium rise', 'mittlerer Anstieg', 'subida media') : v === 'high' ? T('likely spike', 'wahrscheinlicher Spike', 'pico probable') : '';
+    const hm = ts => { try { return new Date(ts).toLocaleTimeString(lang() === 'de' ? 'de-DE' : lang() === 'es' ? 'es-ES' : 'en-GB', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+    function mealsHTML(d) {
+        const ms = d.meals.slice().sort((a, b) => a.ts - b.ts);
+        const rows = ms.length ? ms.map(m => '<div class="ms-meal" data-ms-meal="' + esc(m.id) + '">' +
+            (m.photo ? '<img class="ms-mimg" alt="" src="' + esc(m.photo) + '" loading="lazy" decoding="async">' : '<span class="ms-mimg ms-mico">' + ICO.food + '</span>') +
+            '<span class="ms-mtx"><b>' + esc(m.t || T('Meal', 'Mahlzeit', 'Comida')) + '</b><small>' + esc(hm(m.ts)) + (vWord(m.v) ? ' \u00b7 <i class="ms-dot ms-' + esc(m.v) + '"></i>' + esc(vWord(m.v)) : '') + '</small></span>' +
+            (m.id ? '<button type="button" class="ms-mb" data-ms-edit="' + esc(m.id) + '" aria-label="' + esc(T('Edit', 'Bearbeiten', 'Editar') + ': ' + m.t) + '">' + I('<path d="M4 20h4L19 9l-4-4L4 16v4z"/>') + '</button>' +
+                '<button type="button" class="ms-mb ms-mdel" data-ms-del="' + esc(m.id) + '" aria-label="' + esc(T('Delete', 'L\u00f6schen', 'Borrar') + ': ' + m.t) + '">' + I('<path d="M5 7h14M10 11v6M14 11v6M7 7l1 13h8l1-13M9 7V4h6v3"/>') + '</button>' : '') + '</div>').join('')
+            : '<p class="ms-none">' + esc(T('No meals logged today yet.', 'Heute noch keine Mahlzeit eingetragen.', 'Hoy a\u00fan no hay comidas.')) + '</p>';
+        const tot = d.rated ? '<p class="ms-mtot">\u2248 ' + fmt(d.kcal) + ' kcal \u00b7 ' + fmt(d.protein) + ' g ' + T('protein', 'Eiwei\u00df', 'prote\u00edna') + '</p>' : '';
+        return '<section class="cme-sec ms-sec ms-meals"><h3>' + esc(T('Today\u2019s meals', 'Heutige Mahlzeiten', 'Comidas de hoy')) + '</h3><div class="ms-mlist">' + rows + '</div>' + tot + '</section>';
+    }
+    function chipsHTML(d) {
+        const c = (ico, txt, act) => '<' + (act ? 'button type="button" data-msx="' + act + '"' : 'span') + ' class="ms-chip">' + ico + '<span>' + esc(txt) + '</span></' + (act ? 'button' : 'span') + '>';
+        return '<div class="ms-chips">' + c(ICO.water, d.water ? fmt(d.water, 1) + ' ' + T('glasses', 'Gl\u00e4ser', 'vasos') : T('No water', 'Kein Wasser', 'Sin agua')) +
+            c(ICO.move, d.moveMin ? fmt(d.moveMin) + ' min Move' : T('No Move', 'Kein Move', 'Sin Move'), 'move') +
+            c(ICO.steps, d.steps ? stepTxt(d.steps) : T('No steps', 'Keine Schritte', 'Sin pasos'), 'move') + '</div>';
+    }
     function todayHTML(name, worldHtml, xpCard) {
         const d = data(); if (!d) return '';
-        return (worldHtml ? '<section class="cme-sec ms-sec ms-world"><h3>' + esc(T('World', 'Welt', 'Mundo')) + '</h3>' + worldHtml + '</section>' : '') +
-            sec(T('You today', 'Du heute', 'T\u00fa hoy'), youRows(d)) +
+        const rest = (worldHtml ? '<section class="cme-sec ms-sec ms-world"><h3>' + esc(T('World', 'Welt', 'Mundo')) + '</h3>' + worldHtml + '</section>' : '') +
             '<section class="cme-sec ms-sec ms-comp"><h3>' + esc(name) + '</h3><div class="cme-list">' + xpRows(d, name) + '</div>' + (xpCard || '') + '</section>';
+        return mealsHTML(d) + chipsHTML(d) +
+            '<button type="button" class="ms-more" data-ms-more aria-expanded="' + more + '">' + esc(more ? T('Less', 'Weniger', 'Menos') : T('More: world, goal, XP', 'Mehr: Welt, Ziel, XP', 'M\u00e1s: mundo, meta, XP')) + ' <span aria-hidden="true">' + (more ? '\u25b4' : '\u25be') + '</span></button>' +
+            '<div class="ms-rest"' + (more ? '' : ' hidden') + '>' + rest + '</div>';
     }
+    const hubRepaint = () => { try { W.LowiMistyHub && W.LowiMistyHub.repaint && W.LowiMistyHub.repaint(); } catch (e) { } };
+    D.addEventListener('click', e => {
+        const b = e.target.closest && e.target.closest('#mistyHub [data-ms-more], #mistyHub [data-ms-edit], #mistyHub [data-ms-del]'); if (!b) return;
+        e.preventDefault(); e.stopPropagation();
+        if (b.hasAttribute('data-ms-more')) { more = !more; const r = b.nextElementSibling; if (r) r.hidden = !more; b.setAttribute('aria-expanded', more); b.innerHTML = esc(more ? T('Less', 'Weniger', 'Menos') : T('More: world, goal, XP', 'Mehr: Welt, Ziel, XP', 'M\u00e1s: mundo, meta, XP')) + ' <span aria-hidden="true">' + (more ? '\u25b4' : '\u25be') + '</span>'; return; }
+        if (b.hasAttribute('data-ms-edit')) {
+            const id = b.getAttribute('data-ms-edit');
+            try { W.LowiMistyHub && W.LowiMistyHub.close && W.LowiMistyHub.close(); } catch (x) { }
+            setTimeout(() => { const t = D.createElement('button'); t.type = 'button'; t.hidden = true; t.dataset.sp = 'editMeal'; t.dataset.id = id; D.body.appendChild(t); try { t.click(); } finally { t.remove(); } }, 360);
+            return;
+        }
+        const id = b.getAttribute('data-ms-del'), row = b.closest('.ms-meal');
+        if (!b.classList.contains('arm')) { b.classList.add('arm'); b.innerHTML = '<span>' + esc(T('Delete?', 'L\u00f6schen?', '\u00bfBorrar?')) + '</span>'; if (row) row.classList.add('arm'); setTimeout(() => { if (b.isConnected && b.classList.contains('arm')) hubRepaint(); }, 4000); return; }
+        const J = W.LowiMealJournal;
+        Promise.resolve(J && J.remove ? J.remove(id) : false).then(ok => { if (row && ok) row.remove(); hubRepaint(); try { W.LowiR2 && W.LowiR2.toast && W.LowiR2.toast(ok ? T('Meal deleted', 'Mahlzeit gel\u00f6scht', 'Comida borrada') : T('Could not delete it.', 'Konnte nicht l\u00f6schen.', 'No se pudo borrar.')); } catch (x) { } });
+    }, true);
     /* a tap on a Today row opens the screen that owns it; the card stays underneath, Back returns to it */
     function tap(b) {
         const k = b && b.getAttribute && b.getAttribute('data-msx'); if (!k) return false;

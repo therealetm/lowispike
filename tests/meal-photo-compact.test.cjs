@@ -1,0 +1,8 @@
+// 22 Nov 2026 (Emmanuel): the photo result is compact (insulin check + 3 numbers + Details), an AI fix takes spoken or typed words,
+// and "Log & share to Community" logs the meal (the Gap updates with it) and opens the share card.
+const test = require('node:test'), assert = require('node:assert'), fs = require('fs'), path = require('path');
+const R = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+const mr = R('meal-result.js'), sp = R('spirit.js'), fn = R('supabase/functions/lowi-ai/index.ts'), css = R('scan-screens.css');
+test('compact by default, Details shows foods, drinks, XP and totals', () => { assert.match(mr, /more: false, fix: false/); assert.match(mr, /\(st\.more \|\| v\.empty \? foods \+/); assert.match(mr, /function quickHTML\(v\)/); assert.match(mr, /sheet\.classList\.toggle\('mr-compact'/); assert.match(css, /\.r2-ov\.mr-compact :is\(\.ns-strip, \.sp-gpt, \.ms-host\)/); });
+test('AI fix: words (typed or via the shared mic) go to lowi-ai mealfix and replace the foods', () => { assert.match(mr, /'<textarea data-mic data-mr-fix-text/); assert.match(mr, /action: 'mealfix'/); assert.match(mr, /st\.items = fresh;/); assert.match(fn, /action === "mealfix"/); assert.match(fn, /mealfix: 15/); });
+test('Log & share logs first, then opens the share card', () => { assert.match(sp, /data-share="1"/); assert.match(sp, /e\.target\.__share = !!\(sub && sub\.dataset && sub\.dataset\.share\)/); assert.match(sp, /if \(form\.__share && log && J && J\.share && kept\)/); assert.match(sp, /photoLogShare: \['Log & share to Community', 'Eintragen & in der Community teilen', 'Registrar y compartir'\]/); });

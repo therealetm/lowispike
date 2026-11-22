@@ -6,13 +6,15 @@
 //   POST {action:"ask", messages:[{role:"user"|"model", text}], image?:base64 jpeg, context?, name?, sign?, lang}
 //        Misty / Ask LOWiSPIKE: the in-app chat that replaces the Custom GPT ("Deep analyze"), meal photos, swaps.
 //   POST {action:"translate", text, to}       translate a chat message (en / de / es)
+//   POST {action:"mealfix", dishes:[{name,grams,portion,kcal,protein,carbs,sugar,fiber,fat}], text, lang}  the photo check got the meal
+//        wrong: the person says (voice or typed) how they made it; returns corrected dishes {ok, dishes, note}
 //   POST {action:"linkcheck", title, caption, url}  is a For You link about insulin-friendly food / health? {ok, fits, why}
 // Deploy: supabase functions deploy lowi-ai --no-verify-jwt
 const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, /^capacitor:\/\/localhost$/];
 const MODELS = (Deno.env.get("GEMINI_MODEL") || "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite").split(",").map((s) => s.trim()).filter(Boolean);
 const LANG: Record<string, string> = { en: "English", de: "German", es: "Spanish" };
 /* the daily limits (per person per feature) and the whole-app cap */
-export const LIMITS: Record<string, number> = { ask: 15, translate: 20, linkcheck: 10 };
+export const LIMITS: Record<string, number> = { ask: 15, translate: 20, linkcheck: 10, mealfix: 15 };
 export const GLOBAL = 400;
 
 function cors(req: Request): Record<string, string> {
@@ -79,6 +81,23 @@ Deno.serve(async (req) => {
       const r = await gemini({ contents: [{ role: "user", parts: [{ text: "LOWiSPIKE's For You page only shows links about insulin-friendly eating, low-carb / low-sugar food, recipes, food swaps, blood sugar friendly habits, movement or healthy lifestyle. Decide if this link fits. Be generous: food, cooking, fitness and wellbeing fit; clearly unrelated topics (politics, pranks, gaming, dating, music, ads for unrelated products) do not. When there is too little information, it fits.\n" + info + "\nReturn JSON {fits:boolean, why:string (one short sentence in " + LANG[lang] + ")}." }] }], generationConfig: { temperature: 0, maxOutputTokens: 200, responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { fits: { type: "BOOLEAN" }, why: { type: "STRING" } }, required: ["fits"] } } });
       let j: { fits?: boolean; why?: string } = {}; try { j = JSON.parse(r); } catch (_e) { j = { fits: true }; }
       return out(req, 200, { ok: true, fits: j.fits !== false, why: clip(j.why, 200) });
+    }
+    if (action === "mealfix") {
+      const text = clip(b.text, 1500); if (!text) return out(req, 400, { error: "bad_request" });
+      const dishes = (Array.isArray(b.dishes) ? b.dishes : []).slice(0, 8).map((d: Record<string, unknown>) => ({ name: clip(d && d.name, 80), portion: clip(d && d.portion, 40), grams: Number(d && d.grams) || 0, kcal: Number(d && d.kcal) || 0, carbs: Number(d && d.carbs) || 0, fiber: Number(d && d.fiber) || 0, protein: Number(d && d.protein) || 0 }));
+      const N = { type: "NUMBER" };
+      const schema = { type: "OBJECT", properties: { dishes: { type: "ARRAY", items: { type: "OBJECT", properties: { name: { type: "STRING" }, portion: { type: "STRING" }, grams: N, kcal: N, protein: N, carbs: N, sugar: N, fiber: N, fat: N }, required: ["name", "grams", "kcal", "protein", "carbs", "sugar", "fiber", "fat"] } }, note: { type: "STRING" } }, required: ["dishes"] };
+      const prompt = [
+        "A food photo check estimated this meal (one person's plate):", JSON.stringify(dishes),
+        "The person says how they really made it and what is on the plate:", "\"" + text + "\"",
+        "Rewrite the list of foods so it matches what the person says (they are right; keep foods they did not mention when they still make sense). Estimate realistic grams for the portion on the plate and the nutrition for that amount: kcal, protein, carbs (total, including sugar and fibre), sugar, fiber, fat in grams. Use typical values from food tables (e.g. USDA). Names short, in " + LANG[lang] + ". `portion` like \"about 200 g\" or \"2 pieces\". `note`: one short sentence in " + LANG[lang] + " on what changed. Return JSON.",
+      ].join("\n");
+      const r = await gemini({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { temperature: 0.2, maxOutputTokens: 1500, responseMimeType: "application/json", responseSchema: schema } });
+      let j: { dishes?: Record<string, unknown>[]; note?: string } = {}; try { j = JSON.parse(r); } catch (_e) { return out(req, 502, { error: "ai_failed" }); }
+      const num = (v: unknown, max: number) => Math.max(0, Math.min(max, Math.round((Number(v) || 0) * 10) / 10));
+      const out2 = (j.dishes || []).slice(0, 8).map((d) => ({ name: clip(d.name, 60), portion: clip(d.portion, 40), grams: num(d.grams, 3000), kcal: Math.round(num(d.kcal, 3000)), protein: num(d.protein, 200), carbs: num(d.carbs, 400), sugar: num(d.sugar, 300), fiber: num(d.fiber, 100), fat: num(d.fat, 250) })).filter((d) => d.name);
+      if (!out2.length) return out(req, 502, { error: "ai_failed" });
+      return out(req, 200, { ok: true, dishes: out2, note: clip(j.note, 200) });
     }
     /* ask */
     const msgs = (Array.isArray(b.messages) ? b.messages : []).slice(-12).map((m: { role?: string; text?: string }) => ({ role: m && m.role === "model" ? "model" : "user", parts: [{ text: clip(m && m.text, 2000) || "…" }] }));

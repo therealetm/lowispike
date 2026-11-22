@@ -54,7 +54,8 @@ test('a food in the Scan camera: Log as eaten is the big button, Add to cart the
     assert.match(r, /const ateB = '<button type="button" class="ss-add ss-ate" data-ss="ate">'/, 'ss-add is the big style');
     assert.match(r, /const cartB = big => '<button type="button" class="' \+ \(big \? 'ss-add' : 'ss-kit'\) \+ '" data-ss="add">'/);
     assert.ok(/ate: \['Log as eaten', 'Als gegessen eintragen', 'Registrar como comido'\]/.test(read('shop-scan-core.js')));
-    assert.match(sp, /<button type="submit" class="sp-action sp-primary">' \+ icon\('plate'\) \+ '<span>' \+ esc\(tr\('photoLog'\)\)/, 'the plate photo sheet: Log as eaten is its main button');
+    assert.match(sp, /<button type="submit" class="sp-action sp-primary sp-logshare" data-share="1">' \+ icon\('plate'\) \+ '<span>' \+ esc\(tr\('photoLogShare'\)\)/, 'the plate photo sheet: Log & share is its main button (22 Nov 2026), Log only under it');
+    assert.match(sp, /<button type="submit" class="sp-action sp-logonly">' \+ esc\(tr\('photoLogOnly'\)\)/);
 });
 
 test('after a real log the scan card asks "Last meal today?"; logging alone never touches the Gap', () => {

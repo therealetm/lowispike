@@ -349,3 +349,22 @@ html:root body .r2-ov .fai-none-acts .fai-retake { min-height: 50px; border-radi
 html:root body .r2-ov .fai-none-acts .fai-type { min-height: 44px; border: 0; background: none; color: var(--ms-accent, #8fd8ff); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 html:root body .r2-ov .fai-none-acts button:active { opacity: .8; transform: scale(.98); }
 html:root body .r2-ov .fai-none-acts button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+/* 22 Nov 2026 (Emmanuel: "crowded and too much ... all you care about is the insulin check, with a few data ... click on details"):
+   the photo result opens compact (meal-result.js mr-compact): verdict, three numbers, "Wrong? Tell me", Details. Today's stats,
+   the old GPT link and the extras wait behind Details. "Log & share to Community" is the main button, "Log only" sits under it. */
+html:root body .r2-ov.mr-compact :is(.ns-strip, .sp-gpt, .ms-host) { display: none !important; }
+.mr-quick { display: flex; gap: 8px; margin-top: 12px; }
+.mr-quick > span { flex: 1; display: flex; flex-direction: column; align-items: flex-start; padding: 8px 10px; border-radius: 14px; background: rgba(255,255,255,.07); font-size: 12.5px; color: rgba(255,255,255,.7); }
+.mr-quick b { font-size: 18px; color: #fff; }
+.mr-fixbtn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; margin: 12px 0 0; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(143,216,255,.45); background: rgba(143,216,255,.1); color: #cfeeff; font: inherit; font-size: 15.5px; font-weight: 650; cursor: pointer; }
+.mr-fixed { margin: 8px 2px 0; color: #7de3b8; font-size: 14px; }
+.mr-fixbox { margin: 12px 0 0; padding: 14px; border-radius: 18px; background: rgba(255,255,255,.06); border: 1px solid rgba(143,216,255,.35); }
+.mr-fixbox > b { display: block; margin-bottom: 8px; font-size: 16px; }
+.mr-fixbox textarea { width: 100%; min-height: 84px; border-radius: 12px; border: 1px solid rgba(255,255,255,.18); background: rgba(0,0,0,.3); color: #fff; font: inherit; font-size: 16px; padding: 10px 12px; resize: vertical; }
+.mr-fixrow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.mr-fixrow > button { min-height: 44px; }
+.mr-fixgo { flex: 1; }
+.mr-fixtip, .mr-fixmsg { display: block; margin: 8px 2px 0; color: rgba(255,255,255,.65); font-size: 13px; }
+.mr-fixmsg { color: #ffb0a8; }
+.mr-more { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 44px; margin: 10px 0 4px; border: 0; background: none; color: #8fd8ff; font: inherit; font-size: 15px; font-weight: 650; cursor: pointer; }
+html:root body .r2-ov.ss-sheet .sp-photo-form .sp-logonly { margin-top: 8px; background: transparent !important; border: 1px solid rgba(255,255,255,.22) !important; color: #fff !important; box-shadow: none !important; justify-content: center; }

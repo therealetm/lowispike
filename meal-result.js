@@ -732,7 +732,17 @@
         opts = opts || {};
         if (!box) return null;
         const l = opts.lang || lang();
-        const st = { items: (opts.dishes || []).slice(0, MAX_FOODS).map(clean).filter(d => d.name), drinks: [], edit: '', adding: false, pick: null, orig: null, sugs: [], sugAct: -1, fresh: '' };
+        const st = { items: (opts.dishes || []).slice(0, MAX_FOODS).map(clean).filter(d => d.name), drinks: [], edit: '', adding: false, pick: null, orig: null, sugs: [], sugAct: -1, fresh: '', more: false, fix: false, fixText: '', fixBusy: false, fixMsg: '', fixNote: '' };
+        /* 22 Nov 2026 (Emmanuel: "It's crowded and too much. All you care about is the insulin check, with a few data where they can
+           click on details ... and oftentimes the AI gets it wrong, so there should be an AI in there that you can simply send a voice
+           note ... tell it exactly how you cooked it ... it would regenerate the data"): the result opens compact (verdict, kcal, net
+           carbs, protein; "Details" shows the foods, drinks, XP and totals), and "Wrong? Tell me" takes words (typed or spoken) that
+           lowi-ai (action mealfix) turns into corrected foods. */
+        const FX = { en: { more: 'Details', less: 'Less', fix: 'Wrong? Tell me how you made it', fixH: 'How did you make it?', fixPh: 'e.g. konjac noodles, not pasta. 4 beef meatballs, tomato sauce without sugar.', talkTip: 'Tap the mic in the box and just say it.', go: 'Recalculate', busy: 'Recalculating…', fail: 'That did not work. Try again in a moment.', limit: 'That was a lot of fixes today. Try again tomorrow.', signin: 'Sign in to use the AI fix.', net: 'net carbs', prot: 'protein', fixed: 'Updated from what you said.' },
+            de: { more: 'Details', less: 'Weniger', fix: 'Falsch? Sag mir, wie du es gemacht hast', fixH: 'Wie hast du es gemacht?', fixPh: 'z. B. Konjak-Nudeln, keine Pasta. 4 Rindfleischbällchen, Tomatensoße ohne Zucker.', talkTip: 'Tipp aufs Mikro im Feld und sag es einfach.', go: 'Neu berechnen', busy: 'Rechne neu…', fail: 'Hat nicht geklappt. Versuch es gleich noch mal.', limit: 'Heute waren es viele Korrekturen. Morgen wieder.', signin: 'Melde dich an, um die KI-Korrektur zu nutzen.', net: 'Netto-KH', prot: 'Eiweiß', fixed: 'Nach deinen Angaben neu berechnet.' },
+            es: { more: 'Detalles', less: 'Menos', fix: '¿Mal? Dime cómo lo hiciste', fixH: '¿Cómo lo hiciste?', fixPh: 'p. ej. fideos konjac, no pasta. 4 albóndigas de ternera, tomate sin azúcar.', talkTip: 'Toca el micro del cuadro y dilo.', go: 'Recalcular', busy: 'Recalculando…', fail: 'No funcionó. Inténtalo de nuevo.', limit: 'Muchas correcciones hoy. Vuelve mañana.', signin: 'Inicia sesión para usar la corrección con IA.', net: 'carbos netos', prot: 'proteína', fixed: 'Actualizado con lo que dijiste.' } };
+        const fx = k => (FX[l] || FX.en)[k];
+        /* the microphone is the app's one shared dictation mic (mic-dictate.js), opted in with data-mic on the box */
         const origSig = sig(st.items);
         const block = () => liveBlock(opts.verdictBlock, st.items, origSig);
         const titleIn = form && form.querySelector('[name="title"]');
@@ -769,10 +779,11 @@
                 '<section class="mr-verdict mr-' + hl.cls + '" aria-live="polite" aria-atomic="true">' +
                 '<div class="mr-vt"><small class="mr-q">' + esc(t('q', l)) + '</small><b class="mr-ans"><i aria-hidden="true"></i>' + esc(hl.ans) + '</b>' +
                 '<span class="mr-why">' + esc(hl.why) + '</span>' +
-                (cz.length ? '<span class="mr-cause"><b>' + esc(t(cz.length > 1 ? 'causeN' : 'cause1', l)) + '</b>' +
+                (st.more && cz.length ? '<span class="mr-cause"><b>' + esc(t(cz.length > 1 ? 'causeN' : 'cause1', l)) + '</b>' +
                     cz.map(c => '<span class="mr-cz"><b>' + esc(c.name) + '</b> ' + esc(c.why) + '</span>').join('') + '</span>' : '') +
-                (hl.energy ? '<span class="mr-energy">' + esc(hl.energy) + '</span>' : '') +
-                gptHTML(st.items, st.drinks, hl, cz, l) +
+                (st.more && hl.energy ? '<span class="mr-energy">' + esc(hl.energy) + '</span>' : '') +
+                quickHTML(v) +
+                (st.more ? gptHTML(st.items, st.drinks, hl, cz, l) : '') +
                 '</div>' +
                 (opts.photo ? '<img class="mr-thumb" alt="" src="' + esc(opts.photo) + '">' : '') + '</section>';
             const foods = st.items.length ? '<div class="mr-sec"><p class="mr-h"><b>' + esc(t('see', l)) + '</b><small>' + esc(t('tapFix', l)) + '</small></p><ul class="mr-list">' +
@@ -792,7 +803,9 @@
                 '<p class="mr-tot"><b>' + esc(t('total', l)) + '</b> ' + Math.round(tot.kcal) + ' ' + esc(t('kcal', l)) + ' · ' + macroLine(tot, l) + '</p>' +
                 '<p class="fai-msg mr-est">' + esc(opts.low ? t('lowConf', l) + ' ' + t('est', l) : t('est', l)) + (opts.note ? ' ' + esc(opts.note) : '') + '</p>';
             box.className = 'sp-ai fai fai-done mr';
-            const html = head + foods + (v.empty ? '' : drinks) + foot;
+            if (sheet) sheet.classList.toggle('mr-compact', !st.more && !v.empty);
+            const moreBtn = v.empty ? '' : '<button type="button" class="mr-more" data-mr-more aria-expanded="' + st.more + '">' + esc(fx(st.more ? 'less' : 'more')) + ' <span aria-hidden="true">' + (st.more ? '▴' : '▾') + '</span></button>';
+            const html = head + fixHTML(v) + moreBtn + (st.more || v.empty ? foods + (v.empty ? '' : drinks) + foot : '');
             if (!(keepSel && keep(html, keepSel))) box.innerHTML = html;
             else liveLine(keepSel);
             if (focusSel) { const f = box.querySelector(focusSel); if (f && f.focus) { try { f.focus({ preventScroll: false }); } catch (e) { f.focus(); } } }
@@ -800,6 +813,41 @@
             return fv;
         };
 
+        function quickHTML(v) {
+            if (v.empty) return '';
+            const tt = v.total, net = Math.max(0, Math.round((tt.carbs || 0) - (tt.fiber || 0)));
+            return '<span class="mr-quick"><span><b>' + Math.round(tt.kcal || 0) + '</b>' + esc(t('kcal', l)) + '</span><span><b>' + net + ' g</b>' + esc(fx('net')) + '</span><span><b>' + Math.round(tt.protein || 0) + ' g</b>' + esc(fx('prot')) + '</span></span>';
+        }
+        function fixHTML(v) {
+            if (v.empty && !st.fix) return '';
+            if (!st.fix) return '<button type="button" class="mr-fixbtn" data-mr-fix><span aria-hidden="true">🎙</span> ' + esc(fx('fix')) + '</button>' + (st.fixNote ? '<p class="mr-fixed" role="status">✓ ' + esc(st.fixNote) + '</p>' : '');
+            return '<div class="mr-fixbox" role="group" aria-label="' + esc(fx('fixH')) + '"><b>' + esc(fx('fixH')) + '</b>' +
+                '<textarea data-mic data-mr-fix-text rows="3" maxlength="1500" placeholder="' + esc(fx('fixPh')) + '"' + (st.fixBusy ? ' disabled' : '') + '>' + esc(st.fixText) + '</textarea>' +
+                '<div class="mr-fixrow">' +
+                '<button type="button" class="mr-save mr-fixgo" data-mr-fix-go' + (st.fixBusy ? ' disabled' : '') + '>' + esc(fx(st.fixBusy ? 'busy' : 'go')) + '</button><button type="button" class="mr-cancel" data-mr-fix-x>' + esc(t('cancel', l)) + '</button></div>' +
+'<small class="mr-fixtip">' + esc(fx('talkTip')) + '</small>' + (st.fixMsg ? '<p class="mr-fixmsg" role="status">' + esc(st.fixMsg) + '</p>' : '') + '</div>';
+        }
+        async function fixGo() {
+            const text = st.fixText.trim(); if (!text || st.fixBusy) return;
+            const A = root.LowiAsk; if (!A || !A.call) { st.fixMsg = fx('fail'); return render(); }
+            st.fixBusy = true; st.fixMsg = ''; render();
+            try {
+                const j = await A.call({ action: 'mealfix', lang: l, text, dishes: st.items.map(d => ({ name: d.name, portion: d.portion, grams: d.grams, kcal: d.kcal, protein: d.protein, carbs: d.carbs, fiber: d.fiber })) });
+                const fresh = (j.dishes || []).slice(0, MAX_FOODS).map(d => clean(Object.assign({}, d, { src: 'ai-fix' }))).filter(d => d.name);
+                if (!fresh.length) throw new Error('fail');
+                st.items = fresh; st.edit = ''; st.fix = false; st.fixText = ''; st.fixNote = j.note || fx('fixed');
+            } catch (e) { const c = e && (e.code || e.message); st.fixMsg = fx(c === 'limit' ? 'limit' : c === 'sign_in' ? 'signin' : 'fail'); }
+            st.fixBusy = false; render();
+        }
+        box.addEventListener('input', ev => { const ta = ev.target; if (ta && ta.hasAttribute && ta.hasAttribute('data-mr-fix-text')) st.fixText = ta.value; });
+        box.addEventListener('click', ev => {
+            const b = ev.target.closest && ev.target.closest('[data-mr-more],[data-mr-fix],[data-mr-fix-x],[data-mr-fix-go]'); if (!b) return;
+            ev.preventDefault(); ev.stopPropagation();
+            if (b.hasAttribute('data-mr-more')) { st.more = !st.more; return render(); }
+            if (b.hasAttribute('data-mr-fix')) { st.fix = true; st.fixMsg = ''; render('[data-mr-fix-text]'); return; }
+            if (b.hasAttribute('data-mr-fix-x')) { st.fix = false; st.fixMsg = ''; return render(); }
+            if (b.hasAttribute('data-mr-fix-go')) fixGo();
+        }, true);
         /* Live update while a food is being fixed: everything around the open card is redrawn (verdict, other cards, XP,
            totals) but the open card itself stays the same element, so the keyboard and the caret stay where they are. */
         const keep = (html, sel) => {

@@ -63,6 +63,8 @@
         photoHold: ['Press and hold the photo to save it to your Photos.', 'Halte das Foto gedr\u00fcckt, um es in deinen Fotos zu sichern.', 'Mant\u00e9n pulsada la foto para guardarla en tus Fotos.'],
         photoGptHint: ['Save it, then upload it in the LOWiSPIKE GPT for a deeper analysis or to create content.', 'Speichere es und lade es dann im LOWiSPIKE GPT hoch, für eine tiefere Analyse oder für Inhalte.', 'Guárdala y súbela al GPT de LOWiSPIKE para un análisis más profundo o para crear contenido.'],
         photoLog: ['Log as eaten', 'Als gegessen eintragen', 'Registrar como comido'],
+        photoLogOnly: ['Log only', 'Nur eintragen', 'Solo registrar'],
+        photoLogShare: ['Log & share to Community', 'Eintragen & in der Community teilen', 'Registrar y compartir'],
         photoName: ['What is it?', 'Was ist das?', '¿Qué es?'],
         funny: ['My leaves raised an eyebrow. Fancy a swap?', 'Meine Blätter ziehen eine Augenbraue hoch. Lust auf einen Tausch?', 'Mis hojas alzaron una ceja. ¿Probamos un cambio?'],
         unknown: ['Let’s take a closer look at the label.', 'Schauen wir uns das Etikett genauer an.', 'Veamos la etiqueta de cerca.'],
@@ -1344,12 +1346,13 @@
             ownedSheet = null;
         }
         const log = result.log;
-        if (pic && log && J) J.keep(log.id, pic);
+        const kept = pic && log && J ? J.keep(log.id, pic) : null;
         await flight(flyURL || seed.photo);
         feedback('eat', tr('saved') + whyNote(result), result.xp);
         checkBonuses(false);
         const lma = askLast && window.LowiLastMealAsk ? window.LowiLastMealAsk.html(log.ts) : '';
         showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + (log.slot ? '<span class="sp-slot-tag">' + esc(tr(log.slot)) + '</span> ' : '') + esc(log.t) + '</p>' + lma + estHTML(log) + macroHTML(log) + '<p class="sp-earned">' + (result.xp ? '+' + result.xp + ' XP' : esc(result.reason || (form.dataset.edit ? '' : '0 XP'))) + '</p>' + (ysBefore ? window.LowiYouStats.afterHTML(ysBefore) : '') + savedPhotoHTML(log) + gptHTML());
+        if (form.__share && log && J && J.share && kept) { try { await Promise.race([kept, new Promise(r => setTimeout(r, 3000))]); J.share(log.id); } catch (e) {} }
     }
 
     /* Oct 22: under a saved photo meal, its thumbnail (opens the photo with its estimate) and a small opt-in "Share to Community" */
@@ -1499,7 +1502,7 @@
         lastMealId = uid();
         /* one clear flow: the photo, what it is, Log as meal; Retake / Save photo / deeper analysis below it.
            Nov 5 2026: the long "Save it, then upload it in the LOWiSPIKE GPT" line under the GPT link is gone (the link says it). */
-        showSheet('<h2>' + esc(tr('photoTitle')) + '</h2><img class="sp-photo-prev" alt="" src="' + esc(photoURL) + '"><div class="sp-ai" aria-live="polite"></div><form id="spMeal" class="sp-photo-form" data-id="' + esc(lastMealId) + '"><label>' + esc(tr('photoName')) + '<input name="title" required maxlength="100" autocomplete="off" enterkeyhint="done" placeholder="' + esc(tr('photoPh')) + '"></label>' + mtRow(lmAt(), photoAt) + '<button type="submit" class="sp-action sp-primary">' + icon('plate') + '<span>' + esc(tr('photoLog')) + '</span></button></form><div class="sp-photo-acts">' + button('retake', 'camera', 'photo') + button('savePhoto', 'arrow', 'savePhoto') + '</div>' + gptHTML(), { cls: 'sp-sheet ss-sheet' });
+        showSheet('<h2>' + esc(tr('photoTitle')) + '</h2><img class="sp-photo-prev" alt="" src="' + esc(photoURL) + '"><div class="sp-ai" aria-live="polite"></div><form id="spMeal" class="sp-photo-form" data-id="' + esc(lastMealId) + '"><label>' + esc(tr('photoName')) + '<input name="title" required maxlength="100" autocomplete="off" enterkeyhint="done" placeholder="' + esc(tr('photoPh')) + '"></label>' + mtRow(lmAt(), photoAt) + '<button type="submit" class="sp-action sp-primary sp-logshare" data-share="1">' + icon('plate') + '<span>' + esc(tr('photoLogShare')) + '</span></button><button type="submit" class="sp-action sp-logonly">' + esc(tr('photoLogOnly')) + '</button></form><div class="sp-photo-acts">' + button('retake', 'camera', 'photo') + button('savePhoto', 'arrow', 'savePhoto') + '</div>' + gptHTML(), { cls: 'sp-sheet ss-sheet' });
         mtMount(D.querySelector('form#spMeal.sp-photo-form'), lmAt(), photoAt);
         /* Oct 19 2026 food photo AI: the photo goes to LowiFoodAI (Supabase function food-photo, Gemini). It fills the
            dishes, the name and hidden macro inputs; when it is off or fails, the plain "What is it?" form above still works. */
@@ -2490,9 +2493,12 @@
             setText(pager.querySelector('span'), (pager.__index + 1) + ' / ' + pages.length);
         }
     });
+    D.addEventListener('click', e => { const b = e.target.closest && e.target.closest('#spMeal [type="submit"]'); if (b && b.form) b.form.__sub = b; }, true);
     D.addEventListener('submit', e => {
         if (e.target.id === 'spMeal') {
             e.preventDefault();
+            /* 22 Nov 2026 (Emmanuel: "share it into community"): the photo sheet's "Log & share to Community" logs, then opens the share card */
+            const sub = e.submitter || e.target.__sub; e.target.__sub = null; e.target.__share = !!(sub && sub.dataset && sub.dataset.share);
             /* Oct 28 2026: one tap logs once; a second tap while it saves does nothing (the meal id dedups as well) */
             if (e.target.__saving) return;
             e.target.__saving = true;

@@ -150,3 +150,8 @@ test('For You shows only shared links; photos, uploaded videos and text posts st
   assert.match(h, /const fyIsLink = p => !!\(p && p\.url && !p\.photo && !p\.vid\);/);
   assert.match(h, /const mine = fyMineAll\(\)\.filter\(fyIsLink\)\.length/, 'the My posts count is your links');
 });
+test('Studio: the owner can delete any video or prompt for good, built-in ones too', () => {
+  const st = R('studio/index.html');
+  assert.match(st, /if \(x\.builtin\) \{ DOC\.items = DOC\.items \|\| \{\}; DOC\.items\[x\.id\] = \{gone: true\}; \}/);
+  assert.match(st, /var keep = function \(x\) \{ return !x\.gone; \};/, 'a deleted one never shows again, also not in edit mode');
+});

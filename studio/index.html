@@ -181,8 +181,11 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   function merged(base) { var o = (DOC.items || {})[base.id]; if (!o) return base; var r = {}; for (var k in base) r[k] = base[k]; for (var k2 in o) r[k2] = o[k2]; return r; }
   function rebuild() {
     var cards = DATA ? DATA.cards : [];
-    SW = cards.filter(function (c) { return c.area === 'swipe'; }).map(builtinSwipe).concat(DOC.swipe || []).map(merged);
-    AG = cards.filter(function (c) { return c.area !== 'swipe'; }).map(builtinAgent).concat(DOC.agent || []).map(merged);
+    /* 22 Nov 2026 (Emmanuel: "I should be able to delete any video ... permanently ... I don't want it reappearing"): a deleted
+       built-in item is remembered on the server (items[id].gone) and never shown again, also not in edit mode */
+    var keep = function (x) { return !x.gone; };
+    SW = cards.filter(function (c) { return c.area === 'swipe'; }).map(builtinSwipe).concat(DOC.swipe || []).map(merged).filter(keep);
+    AG = cards.filter(function (c) { return c.area !== 'swipe'; }).map(builtinAgent).concat(DOC.agent || []).map(merged).filter(keep);
   }
   function hay(x) { return [x.creator, x.hook, x.transcript, x.title, x.text, (x.strategy || []).join(' ')].join(' ').toLowerCase(); }
   function visible(list) {
@@ -238,7 +241,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     } else {
       body = '<div class="who"><b>' + esc((tr && tr.title) || x.title) + '</b></div><div class="acts"><button class="btn pri" data-a="copy">' + ICO.cp + esc(t('copy')) + '</button><button class="btn" data-a="lang">' + ICO.lang + esc(t('translate')) + '</button></div><div class="box">' + esc((tr && tr.text) || x.text) + '</div>';
     }
-    if (EDIT) body += '<div class="owner"><button class="btn" data-a="edit">' + esc(t('edit')) + '</button><button class="btn" data-a="hide">' + esc(x.hide ? t('show') : t('hide')) + '</button>' + (x.builtin ? '' : '<button class="btn" data-a="del">' + esc(t('del')) + '</button>') + '</div>';
+    if (EDIT) body += '<div class="owner"><button class="btn" data-a="edit">' + esc(t('edit')) + '</button><button class="btn" data-a="hide">' + esc(x.hide ? t('show') : t('hide')) + '</button>' + '<button class="btn" data-a="del">' + esc(t('del')) + '</button>' + '</div>';
     var V = $('#view');
     V.innerHTML = '<div class="vtop"><button class="ib" data-a="close" aria-label="Back">‹</button><span class="cnt">' + (i + 1) + ' / ' + list.length + '</span><button class="ib" data-a="share" aria-label="Share"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button></div>' +
       '<div class="vbody">' + body + '</div><div class="vnav"><button class="btn" data-a="prev"' + (i ? '' : ' disabled') + '>' + esc(t('prev')) + '</button><button class="btn" data-a="next"' + (i < list.length - 1 ? '' : ' disabled') + '>' + esc(t('next')) + '</button></div>';
@@ -341,7 +344,11 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     if (a === 'copy') { var txt = agentText(x); return copy(txt).then(function (ok) { if (!ok) return fallback(txt); var l = b.innerHTML; b.classList.add('ok'); b.textContent = t('copied'); setTimeout(function () { b.classList.remove('ok'); b.innerHTML = l; }, 1800); }); }
     if (a === 'edit') return TAB === 'swipe' ? swipeDlg(x) : agentDlg(x);
     if (a === 'hide') { var ov = over(x.id); ov.hide = !x.hide; return save().then(function () { rebuild(); render(); open(x.id, true); }, function () {}); }
-    if (a === 'del') { if (!confirm(t('confirmDel'))) return; DOC.swipe = (DOC.swipe || []).filter(function (s) { return s.id !== x.id; }); DOC.agent = (DOC.agent || []).filter(function (s) { return s.id !== x.id; }); if (DOC.items) delete DOC.items[x.id]; return save().then(function () { close(); rebuild(); render(); }, function () {}); }
+    if (a === 'del') { if (!confirm(t('confirmDel'))) return;
+      var list0 = cur(), at = -1; for (var q = 0; q < list0.length; q++) if (list0[q].id === x.id) at = q;
+      if (x.builtin) { DOC.items = DOC.items || {}; DOC.items[x.id] = {gone: true}; }
+      else { DOC.swipe = (DOC.swipe || []).filter(function (s) { return s.id !== x.id; }); DOC.agent = (DOC.agent || []).filter(function (s) { return s.id !== x.id; }); if (DOC.items) delete DOC.items[x.id]; }
+      return save().then(function () { rebuild(); render(); var l2 = cur(), nx = l2[Math.min(at, l2.length - 1)]; if (nx) open(nx.id, true); else close(); }, function () {}); }
   });
   /* swipe left / right in an open item = Next / Previous */
   var sx = 0, sy = 0; $('#view').addEventListener('touchstart', function (e) { var p = e.touches[0]; sx = p.clientX; sy = p.clientY; }, {passive: true});

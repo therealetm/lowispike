@@ -41,3 +41,32 @@ html.lsp-open,html.lsp-open body{overflow:hidden}
 html.lsp-open #r2gate,html.lsp-open #lwBX,html.lsp-open #whX,html.lsp-open #ltTour{visibility:hidden!important}
 /* index.html hides everything but the gate while it boots (html.gate-boot body > :not(#r2gate) ...); the store page is the exception */
 html.gate-boot body > #lspStore#lspStore.lsp.lsp.lsp.lsp,html body > #lspStore#lspStore.lsp.lsp.lsp.lsp{visibility:visible!important}
+/* 23 Nov 2026, more of the store: description with "more", What's New, App Privacy, Accessibility, Information, a slim top bar */
+.lsp-about{position:relative;margin:12px 20px 0}
+.lsp-about p{margin:0;color:#d1d1d6;font-size:15.5px;line-height:1.5}
+.lsp-about:not(.open) p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.lsp-about button{position:absolute;right:0;bottom:0;border:0;padding:0 0 0 28px;background:linear-gradient(90deg,transparent,#000 24px);color:#0a84ff;font:inherit;font-size:15.5px;cursor:pointer}
+.lsp-sec{margin:26px 20px 0;padding-top:20px;border-top:1px solid #2c2c2e}
+.lsp-sec h2{margin:0 0 6px;font-size:22px;font-weight:700;letter-spacing:-.01em}
+.lsp-sec>p{margin:0 0 8px;color:#d1d1d6;font-size:15.5px;line-height:1.45}
+.lsp-sec>p.lsp-dim{color:#8e8e93;font-size:14px}
+.lsp-card{margin:12px 0 0;padding:18px 16px;border-radius:18px;background:#1c1c1e;text-align:center}
+.lsp-card i{display:inline-grid;place-items:center;width:44px;height:44px;color:#0a84ff}
+.lsp-card svg{width:40px;height:40px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.lsp-card h3{margin:6px 0 4px;font-size:18px}
+.lsp-card p{margin:0;color:#98989d;font-size:14.5px;line-height:1.4}
+.lsp-card ul{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:12px 0 0;padding:0}
+.lsp-card li{padding:6px 12px;border-radius:999px;background:#2c2c2e;font-size:14px;color:#f5f5f7}
+.lsp-link{display:inline-block;margin-top:12px;color:#0a84ff;text-decoration:none;font-size:15px}
+.lsp-dl{margin:6px 0 0}
+.lsp-dl div{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #2c2c2e;font-size:15.5px}
+.lsp-dl dt{color:#8e8e93}
+.lsp-dl dd{margin:0;text-align:right;color:#f5f5f7}
+.lsp-dl a{color:#0a84ff;text-decoration:none}
+.lsp-mini{position:sticky;top:0;z-index:2;height:0;overflow:visible;pointer-events:none}
+.lsp-mini img,.lsp-mini .lsp-get{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);opacity:0;transition:opacity .2s ease}
+.lsp-mini::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 56px);background:rgba(18,18,20,.88);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid #2c2c2e;opacity:0;transition:opacity .2s ease}
+.lsp-mini img{left:50%;width:36px;height:36px;margin-left:-18px;border-radius:9px}
+.lsp-mini .lsp-get{right:16px;min-height:32px;padding:0 18px;font-size:15px}
+.lsp.mini .lsp-mini{pointer-events:auto}
+.lsp.mini .lsp-mini::before,.lsp.mini .lsp-mini img,.lsp.mini .lsp-mini .lsp-get{opacity:1}

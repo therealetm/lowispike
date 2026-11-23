@@ -12,3 +12,9 @@ test('Get leads on to the Add to Home Screen guide; Impressum and Privacy in the
   for (const i of [1, 2, 3]) assert.ok(fs.existsSync(path.join(__dirname, '..', 'store', 'shot-' + i + '.webp')));
 });
 test('it shows above the boot screen and the gate waits behind it', () => { assert.match(css, /#lspStore#lspStore\.lsp\.lsp\.lsp\.lsp\{visibility:visible!important\}/); assert.match(css, /html\.lsp-open #r2gate/); assert.match(R('index.html'), /<script src="store-page\.js\?v=/); });
+test('store sections: What’s New, App Privacy (matches privacy.html), Accessibility, Information, slim top bar (23 Nov 2026)', () => {
+  for (const k of ['newH', 'privH', 'accH', 'infoH']) assert.ok(js.includes(k + ": '"), k);
+  assert.match(js, /p1t: 'No ads, no tracking, no analytics tools\./); assert.match(R('privacy.html'), /We do not sell your data, show ads, or use tracking or analytics tools\./);
+  assert.match(js, /iAgeV: '16\+'/); assert.match(R('privacy.html'), /people aged 16 and over/);
+  assert.match(js, /el\.classList\.toggle\('mini', on\)/); assert.match(css, /\.lsp\.mini \.lsp-mini::before/);
+});

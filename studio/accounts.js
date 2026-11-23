@@ -26,9 +26,13 @@
     emptyT: ['Your accounts', 'Deine Accounts', 'Tus cuentas'], emptyP: ['Add each account you run. Then pick the videos from the Swipe file you want to copy for it, so every account has its own plan.', 'Füg jeden Account hinzu, den du führst. Dann wähl aus der Swipe-Datei die Videos, die du dafür nachmachen willst. So hat jeder Account seinen eigenen Plan.', 'Añade cada cuenta que llevas. Luego elige del archivo de swipe los vídeos que quieres copiar para ella.'],
     noInspo: ['No inspo yet. Tap “+ Add inspo” and pick videos from the Swipe file.', 'Noch keine Inspo. Tipp auf „+ Inspo hinzufügen“ und wähl Videos aus der Swipe-Datei.', 'Aún no hay inspo. Toca «+ Añadir inspo».'],
     added: ['Added to {h}', 'Zu {h} hinzugefügt', 'Añadido a {h}'], removed: ['Removed from {h}', 'Von {h} entfernt', 'Quitado de {h}'], local: ['Sign in to the app to keep your accounts on every phone.', 'Melde dich in der App an, damit deine Accounts auf jedem Handy da sind.', 'Inicia sesión para tener tus cuentas en cada móvil.'],
-    cancel: ['Cancel', 'Abbrechen', 'Cancelar'], order: ['Change order', 'Reihenfolge ändern', 'Cambiar orden'], up: ['Move up', 'Nach oben', 'Subir'], down: ['Move down', 'Nach unten', 'Bajar'], pic: ['Change picture', 'Bild ändern', 'Cambiar foto'], save: ['Save', 'Speichern', 'Guardar'], back: ['Back', 'Zurück', 'Atrás']
+    cancel: ['Cancel', 'Abbrechen', 'Cancelar'], drafts: ['Drafts', 'Entwürfe', 'Borradores'], noDrafts: ['Your ideas go here', 'Hier landen deine Ideen', 'Aquí van tus ideas'], idea: ['Idea', 'Idee', 'Idea'],
+    newIdea: ['New idea', 'Neue Idee', 'Nueva idea'], editDraft: ['Draft', 'Entwurf', 'Borrador'], ideaPh: ['Type your idea, the text on screen or what you will say…', 'Schreib deine Idee, den Text fürs Video oder was du sagen willst…', 'Escribe tu idea, el texto en pantalla o lo que dirás…'],
+    speak: ['Tap and speak your idea', 'Tippen und Idee sagen', 'Toca y di tu idea'], listening: ['Listening… tap to stop', 'Hört zu… tippen zum Stoppen', 'Escuchando… toca para parar'], kbMic: ['Tip: tap the microphone on your keyboard to speak.', 'Tipp: Tippe aufs Mikrofon deiner Tastatur, um zu sprechen.', 'Consejo: toca el micrófono del teclado para hablar.'],
+    saveDraft: ['Save draft', 'Als Entwurf speichern', 'Guardar borrador'], delDraft: ['Delete draft', 'Entwurf löschen', 'Borrar borrador'], delDraftQ: ['Delete this draft?', 'Diesen Entwurf löschen?', '¿Borrar este borrador?'], ideaEmpty: ['Write or say your idea first.', 'Schreib oder sag zuerst deine Idee.', 'Escribe o di tu idea primero.'], drafted: ['Saved in Drafts', 'In Entwürfen gespeichert', 'Guardado en borradores'], order: ['Change order', 'Reihenfolge ändern', 'Cambiar orden'], up: ['Move up', 'Nach oben', 'Subir'], down: ['Move down', 'Nach unten', 'Bajar'], pic: ['Change picture', 'Bild ändern', 'Cambiar foto'], save: ['Save', 'Speichern', 'Guardar'], back: ['Back', 'Zurück', 'Atrás']
   };
   var t = function (k, v) { var r = W[k], s = r ? r[L === 'de' ? 1 : L === 'es' ? 2 : 0] : S.t(k); if (v) for (var q in v) s = s.replace('{' + q + '}', v[q]); return s; };
+  var DV = false, IDEA = null, recog = null;
   var A = {t: 0, cur: '', list: []}, SB = null, UID = '', RM = false, PICK = null, saveT = 0, signed = false;
   try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw && Array.isArray(raw.list)) A = raw; } catch (e) {}
   try { signed = !!localStorage.getItem('lowi.auth'); } catch (e) {}
@@ -57,13 +61,60 @@
     var h = '<div class="ap"><button class="ap-sw" data-acc="switch" aria-haspopup="dialog" aria-label="' + esc(t('switchT')) + '"><b>' + esc(a.name || a.handle) + '</b><span aria-hidden="true">▾</span>' + (A.list.length > 1 ? '<i>' + A.list.length + '</i>' : '') + '</button>' +
       avatar(a, 96) + (a.handle ? '<div class="ap-h">' + esc(a.handle) + '</div>' : '') +
       '<div class="ap-st">' + stats.map(function (s) { return '<span><b>' + esc(String(s[0])) + '</b>' + esc(s[1]) + '</span>'; }).join('') + '</div>' +
-      '<div class="ap-bt"><button class="btn pri" data-acc="pick">' + esc(t('addInspo')) + '</button><button class="btn" data-acc="edit">' + esc(t('editAcc')) + '</button>' + (a.link ? '<a class="btn ap-ln" href="' + esc(a.link) + '" target="_blank" rel="noopener noreferrer" aria-label="' + esc(t('openOn')) + '">↗</a>' : '') + '</div>' +
+      '<div class="ap-bt"><button class="btn pri" data-acc="pick">' + esc(t('addInspo')) + '</button><button class="btn" data-acc="idea">＋ ' + esc(t('idea')) + '</button><button class="btn" data-acc="edit">' + esc(t('editAcc')) + '</button>' + (a.link ? '<a class="btn ap-ln" href="' + esc(a.link) + '" target="_blank" rel="noopener noreferrer" aria-label="' + esc(t('openOn')) + '">↗</a>' : '') + '</div>' +
       (a.bio ? '<p class="ap-bio">' + esc(a.bio) + '</p>' : '') +
       (list.length ? '<div class="ap-gh"><span>' + esc(t('inspo')) + '</span><button class="pill' + (RM ? ' acc' : '') + '" data-acc="rm">' + esc(RM ? t('done') : t('remove')) + '</button></div>' : '') + '</div>';
-    h += list.length ? '<div class="grid">' + list.map(function (x) { var v = S.fmtViews(x.views);
-      return '<button class="tile" ' + (RM ? 'data-acc="rmone" data-x="' + esc(x.id) + '"' : 'data-id="' + esc(x.id) + '"') + ' aria-label="' + esc((RM ? t('remove') + ': ' : '') + x.creator) + '">' + S.cover(x) + (RM ? '<span class="xb on">✕</span>' : '') + (v ? '<span class="vw">' + S.EYE + esc(v) + '</span>' : '') + '</button>'; }).join('') + '</div>'
-      : '<div class="empty">' + esc(t('noInspo')) + '</div>';
+    /* 23 Nov 2026 (Emmanuel: "quickly note down my content ideas ... speak ... it writes it ... click on draft ... like TikTok has
+       the drafts on the left ... in the form of that text on screen thingy"): the first tile is Drafts (like TikTok); it opens this
+       account's drafts as text-on-screen tiles. "+ Idea" (and the + tile in Drafts) opens a page to type or speak an idea. */
+    var drafts = (a.drafts || []);
+    if (DV) {
+      h += '<div class="ap-gh"><button class="pill" data-acc="dback">‹ ' + esc(t('inspo')) + '</button><span>' + esc(t('drafts')) + ' · ' + drafts.length + '</span></div><div class="grid">' +
+        '<button class="tile add" data-acc="idea"><span>+</span>' + esc(t('idea')) + '</button>' + drafts.map(draftTile).join('') + '</div>';
+      main.innerHTML = h; return;
+    }
+    var dTile = '<button class="tile dr dtile" data-acc="drafts" aria-label="' + esc(t('drafts') + ': ' + drafts.length) + '">' + (drafts[0] ? '<div class="cv nf" style="background-image:' + grad(drafts[0].id) + '"><q>' + esc(drafts[0].text) + '</q></div>' : '<div class="cv nf dempty"><q>' + esc(t('noDrafts')) + '</q></div>') + '<span class="dlab">' + esc(t('drafts')) + ': ' + drafts.length + '</span></button>';
+    h += '<div class="grid">' + (RM ? '' : dTile) + list.map(function (x) { var v = S.fmtViews(x.views);
+      return '<button class="tile" ' + (RM ? 'data-acc="rmone" data-x="' + esc(x.id) + '"' : 'data-id="' + esc(x.id) + '"') + ' aria-label="' + esc((RM ? t('remove') + ': ' : '') + x.creator) + '">' + S.cover(x) + (RM ? '<span class="xb on">✕</span>' : '') + (v ? '<span class="vw">' + S.EYE + esc(v) + '</span>' : '') + '</button>'; }).join('') + '</div>' +
+      (list.length ? '' : '<div class="empty">' + esc(t('noInspo')) + '</div>');
     main.innerHTML = h;
+  }
+
+  function grad(id) { var h = S.hue(String(id || 'd')); return 'linear-gradient(160deg,hsl(' + h + ' 46% 24%),hsl(' + ((h + 40) % 360) + ' 50% 12%))'; }
+  function draftTile(d) { return '<button class="tile dr" data-acc="dopen" data-x="' + esc(d.id) + '" aria-label="' + esc(d.text.slice(0, 80)) + '"><div class="cv nf" style="background-image:' + grad(d.id) + '"><q>' + esc(d.text) + '</q></div><span class="vw dt">' + esc(dayTxt(d.ts)) + '</span></button>'; }
+  function dayTxt(ts) { try { return new Date(ts).toLocaleDateString(L === 'de' ? 'de-DE' : L === 'es' ? 'es-ES' : 'en-GB', {day: 'numeric', month: 'short'}); } catch (e) { return ''; } }
+  /* the idea page: a big box to type in, and a big mic that writes what you say (the phone's own speech recognition; where the browser
+     has none, the keyboard's mic works in the box). Save draft keeps it on this account. */
+  var SR = W.SpeechRecognition || W.webkitSpeechRecognition;
+  function ideaPage(d) {
+    IDEA = d ? {id: d.id, text: d.text} : {id: '', text: ''};
+    var el = $('#accidea'); if (!el) { el = D.createElement('section'); el.id = 'accidea'; el.className = 'view'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); D.body.appendChild(el); }
+    el.innerHTML = '<div class="vtop"><button class="ib" data-acc="iclose" aria-label="' + esc(t('back')) + '">‹</button><span class="cnt">' + esc(d ? t('editDraft') : t('newIdea')) + '</span><span style="width:46px"></span></div>' +
+      '<div class="vbody"><textarea id="ideaTx" class="idea-tx" placeholder="' + esc(t('ideaPh')) + '">' + esc(IDEA.text) + '</textarea>' +
+      (SR ? '<button type="button" class="idea-mic" data-acc="imic"><span class="idea-dot" aria-hidden="true"></span><b>' + esc(t('speak')) + '</b></button>' : '<p class="note">' + esc(t('kbMic')) + '</p>') +
+      (d ? '<button type="button" class="btn ac-del idea-del" data-acc="idel">' + esc(t('delDraft')) + '</button>' : '') + '</div>' +
+      '<div class="vnav"><button class="btn" data-acc="iclose">' + esc(t('cancel')) + '</button><button class="btn pri" data-acc="isave">' + esc(t('saveDraft')) + '</button></div>';
+    el.classList.add('on'); D.body.style.overflow = 'hidden';
+    var tx = $('#ideaTx'); tx.addEventListener('input', function () { IDEA.text = tx.value; }); if (!d) setTimeout(function () { try { tx.focus(); } catch (e) { } }, 60);
+  }
+  function micStop() { if (recog) { try { recog.stop(); } catch (e) { } recog = null; } var b = D.querySelector('.idea-mic'); if (b) { b.classList.remove('on'); b.querySelector('b').textContent = t('speak'); } }
+  function micToggle() {
+    if (recog) return micStop();
+    var tx = $('#ideaTx'); if (!SR || !tx) return; var base = tx.value ? tx.value.replace(/\s*$/, ' ') : '';
+    var r = new SR(); r.lang = L === 'de' ? 'de-DE' : L === 'es' ? 'es-ES' : 'en-US'; r.continuous = true; r.interimResults = true;
+    r.onresult = function (e) { var s = ''; for (var i = 0; i < e.results.length; i++) s += e.results[i][0].transcript; tx.value = base + s; IDEA.text = tx.value; };
+    r.onerror = function (e) { if (e && /not-allowed|service-not-allowed/.test(e.error)) S.toast(t('kbMic')); micStop(); };
+    r.onend = function () { if (recog === r) micStop(); };
+    recog = r; try { r.start(); } catch (e) { recog = null; return; }
+    var b = D.querySelector('.idea-mic'); if (b) { b.classList.add('on'); b.querySelector('b').textContent = t('listening'); }
+  }
+  function ideaClose() { micStop(); var el = $('#accidea'); if (el) el.classList.remove('on'); D.body.style.overflow = ''; IDEA = null; }
+  function ideaSave() {
+    micStop(); var a = cur(); if (!a || !IDEA) return; var txt = String(IDEA.text || '').trim(); if (!txt) return S.toast(t('ideaEmpty'));
+    a.drafts = a.drafts || [];
+    if (IDEA.id) a.drafts = a.drafts.map(function (q) { return q.id === IDEA.id ? {id: q.id, text: txt, ts: Date.now()} : q; }).sort(function (x, y) { return y.ts - x.ts; });
+    else a.drafts.unshift({id: 'd' + Date.now().toString(36), text: txt.slice(0, 4000), ts: Date.now()});
+    persist(); ideaClose(); DV = true; S.render(); S.toast(t('drafted'));
   }
 
   /* the switcher, like TikTok / YouTube: tap the name, pick an account or add one */
@@ -147,7 +198,7 @@
     if (k === 'ord') { ORD = !ORD; return switcher(); }
     if (k === 'up' || k === 'down') return move(b.dataset.k, k === 'up' ? -1 : 1);
     if (k === 'pic') return pickPic();
-    if (k === 'use') { A.cur = b.dataset.k; RM = false; persist(); S.dlgClose(); return S.setTab('profile'); }
+    if (k === 'use') { A.cur = b.dataset.k; RM = false; DV = false; persist(); S.dlgClose(); return S.setTab('profile'); }
     if (k === 'add') return accDlg();
     if (k === 'edit') return accDlg(cur());
     if (k === 'cancel') return S.dlgClose();
@@ -157,6 +208,14 @@
     if (k === 'rm') { RM = !RM; return S.render(); }
     if (k === 'rmone') { var a = cur(); if (a) { a.inspo = (a.inspo || []).filter(function (id) { return id !== b.dataset.x; }); persist(); if (!a.inspo.length) RM = false; } return S.render(); }
     if (k === 'pick') return picker();
+    if (k === 'drafts') { DV = true; return S.render(); }
+    if (k === 'dback') { DV = false; return S.render(); }
+    if (k === 'idea') return ideaPage(null);
+    if (k === 'dopen') { var ad = cur(), dd = ad && (ad.drafts || []).filter(function (q) { return q.id === b.dataset.x; })[0]; return dd ? ideaPage(dd) : null; }
+    if (k === 'imic') return micToggle();
+    if (k === 'iclose') return ideaClose();
+    if (k === 'isave') return ideaSave();
+    if (k === 'idel') { if (!confirm(t('delDraftQ'))) return; var ax = cur(); if (ax && IDEA) { ax.drafts = (ax.drafts || []).filter(function (q) { return q.id !== IDEA.id; }); persist(); } ideaClose(); return S.render(); }
     if (k === 'pclose') return pclose();
     if (k === 'ptog') { var id = b.dataset.x; if (PICK[id]) delete PICK[id]; else PICK[id] = 1; return paintPick(); }
     if (k === 'psave') { var c = cur(); if (c) { var keep = (c.inspo || []).filter(function (id2) { return PICK[id2]; }), add = Object.keys(PICK).filter(function (id2) { return keep.indexOf(id2) < 0; }); c.inspo = add.concat(keep); persist(); } pclose(); return S.setTab('profile'); }

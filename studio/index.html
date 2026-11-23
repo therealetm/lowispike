@@ -46,6 +46,18 @@ body{min-height:100vh;min-height:100dvh;color:var(--ink);font:16px/1.5 -apple-sy
 .tile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,transparent,rgba(0,0,0,.6));pointer-events:none}
 .tile .vw{position:absolute;left:8px;bottom:7px;z-index:2;display:flex;align-items:center;gap:5px;font-size:16px;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 .tile .vw svg{width:20px;height:20px}
+/* 23 Nov 2026: playlists in the Swipe file (one swipeable row each; the name opens the full grid) */
+.pl{margin:0 -16px 14px}
+.pl-h{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:0 16px;border:0;background:none;color:var(--ink);font:inherit;cursor:pointer;text-align:left}
+.pl-h b{font-size:18px}.pl-h span{color:var(--muted);font-weight:700}.pl-h:disabled{cursor:default;opacity:1}
+.pl-row{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 4px) / 3);gap:2px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.pl-row::-webkit-scrollbar{display:none}
+.pl-row .tile{scroll-snap-align:start}
+.pl-top{display:flex;align-items:center;gap:12px;margin:0 0 12px}.pl-top b{flex:1;font-size:20px}.pl-top span{color:var(--muted);font-weight:700}
+.pl-edit{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}.pl-edit b{width:100%;font-size:15px;color:var(--muted)}
+.pl-chip{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.07);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.pl-chip.add{border-style:dashed;color:var(--acc2)}
+.pl-pick{margin:6px -18px 0}.pl-pick .tile.picked::before{content:"";position:absolute;inset:0;z-index:2;box-shadow:inset 0 0 0 3px var(--acc2);background:rgba(124,196,255,.18)}
 .tile.ag .cv.nf q{font-size:15px;-webkit-line-clamp:7}
 .tile.ag .vw{font-size:13px;opacity:.9}
 .xb{position:absolute;top:6px;right:6px;z-index:3;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.55);border:2px solid #fff;color:#fff;font-size:17px;font-weight:800}
@@ -169,6 +181,19 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .xb.ok{background:var(--acc2);border-color:var(--acc2);color:#050912}
 .tile.picked::before{content:"";position:absolute;inset:0;z-index:2;box-shadow:inset 0 0 0 3px var(--acc2);background:rgba(124,196,255,.18)}
 #accpick .vnav .btn{flex:1;justify-content:center}
+/* 23 Nov 2026: Drafts (ideas) in Profile, like TikTok's Drafts tile; the idea page to type or speak */
+.tile.dr .cv.nf q{font-size:14px;-webkit-line-clamp:8}
+.tile.dtile .cv.nf{padding-top:36px}
+.tile.dtile .dlab{position:absolute;left:8px;top:8px;z-index:3;font-size:15px;font-weight:800;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.tile.dtile .cv.dempty{background:rgba(255,255,255,.06)}.tile.dtile .cv.dempty q{color:var(--muted);font-weight:600}
+.tile.dr .vw.dt{font-size:12.5px;opacity:.85}
+#accidea{z-index:31}#accidea .vnav .btn{flex:1;justify-content:center}
+.idea-tx{display:block;width:100%;min-height:42dvh;border-radius:18px;border:1px solid var(--line2);background:rgba(255,255,255,.05);color:var(--ink);font:inherit;font-size:19px;line-height:1.45;padding:16px;resize:none}
+.idea-mic{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:64px;margin-top:14px;border-radius:20px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.07);color:var(--ink);font:inherit;font-size:17px;cursor:pointer}
+.idea-dot{width:18px;height:18px;border-radius:50%;background:#ff3b30}
+.idea-mic.on{background:rgba(255,59,48,.16);border-color:#ff3b30}
+@media (prefers-reduced-motion:no-preference){.idea-mic.on .idea-dot{animation:ideaP 1s ease-in-out infinite}@keyframes ideaP{50%{opacity:.3}}}
+.idea-del{display:flex;width:100%;justify-content:center;margin-top:18px}
 @media (min-width:700px){.grid{margin:0}.tile{border-radius:6px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -214,13 +239,16 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     shareT: ['LOWiSPIKE Studio: videos that work and agent prompts', 'LOWiSPIKE Studio: Videos, die funktionieren, und Agent-Prompts', 'LOWiSPIKE Studio'], linkCopied: ['Link copied', 'Link kopiert', 'Enlace copiado'],
     copyFail: ['Copy did not work. Hold the text below and tap Copy.', 'Kopieren ging nicht. Halte den Text unten gedrückt und tippe auf Kopieren.', 'No se pudo copiar. Mantén pulsado el texto.'], empty: ['Nothing here yet.', 'Hier ist noch nichts.', 'Aún no hay nada.'], none: ['Nothing found.', 'Nichts gefunden.', 'Nada encontrado.'],
     agentAsk: ['Here is a short video that works. Make my own version of it for my niche and voice (ask me for them if you do not know them). Keep the structure and pacing, use new words, never copy the original clips or text 1:1. I post it myself.', 'Hier ist ein kurzes Video, das funktioniert. Mach mir eine eigene Version für meine Nische und meine Stimme (frag mich danach, wenn du sie nicht kennst). Struktur und Tempo übernehmen, neue Worte, nie fremde Clips oder Texte 1:1 kopieren. Ich poste selbst.', 'Aquí hay un vídeo corto que funciona. Haz mi propia versión para mi nicho y mi voz (pregúntame si no los conoces). Mantén la estructura, usa palabras nuevas, nunca copies 1:1. Yo lo publico.'],
-    profile: ['Profile', 'Profil', 'Perfil'],
+    profile: ['Profile', 'Profil', 'Perfil'], back: ['Back', 'Zurück', 'Atrás'],
+    plMore: ['More', 'Weitere', 'Más'], plH: ['Playlists', 'Playlists', 'Listas'], plNew: ['New playlist', 'Neue Playlist', 'Nueva lista'], plEditH: ['Edit playlist', 'Playlist bearbeiten', 'Editar lista'],
+    plName: ['Name of the playlist', 'Name der Playlist', 'Nombre de la lista'], plPh: ['e.g. Spoken tweeters', 'z. B. Spoken Tweeters', 'p. ej. Tweets hablados'], plPick: ['Tap the videos that belong in it', 'Tippe die Videos an, die reingehören', 'Toca los vídeos que van en ella'],
+    plDel: ['Delete playlist', 'Playlist löschen', 'Borrar lista'], plDelQ: ['Delete this playlist? The videos stay in the Swipe file.', 'Diese Playlist löschen? Die Videos bleiben in der Swipe-Datei.', '¿Borrar esta lista? Los vídeos se quedan.'], plEmpty: ['No videos in this playlist yet.', 'Noch keine Videos in dieser Playlist.', 'Aún no hay vídeos en esta lista.'],
     dupQ: ['Already in the Swipe file: {x}. Add it anyway?', 'Schon in der Swipe-Datei: {x}. Trotzdem hinzufügen?', 'Ya está en el archivo: {x}. ¿Añadir igualmente?'],
     followers: ['followers', 'Follower', 'seguidores'],
     confirmDel: ['Delete this for good?', 'Wirklich löschen?', '¿Eliminar definitivamente?']
   };
   var t = function (k) { var r = W[k]; return r ? r[L === 'de' ? 1 : L === 'es' ? 2 : 0] : k; };
-  var TAB = 'swipe', Q = '', SORT = 'views', OWNER = false, EDIT = false, SEL = {}, SB = null, DOC = {}, DATA = null, SW = [], AG = [], OPEN = null, TR = {};
+  var TAB = 'swipe', Q = '', SORT = 'views', OWNER = false, EDIT = false, SEL = {}, PL = '', PLSEL = null, SB = null, DOC = {}, DATA = null, SW = [], AG = [], OPEN = null, TR = {};
 
   /* copy that reports success only when it worked */
   function copy(text) {
@@ -293,8 +321,25 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     $('#editb').textContent = EDIT ? t('done') : t('edit'); $('#editb').setAttribute('aria-pressed', EDIT ? 'true' : 'false');
     var list = visible(TAB === 'swipe' ? SW : AG), h = '';
     if (TAB === 'swipe') {
-      h = (EDIT ? '<button class="tile add" data-add="swipe"><span>+</span>' + esc(t('addVideo')) + '</button>' : '') + list.map(function (x) { var v = fmtViews(x.views); return '<button class="tile' + (x.hide ? ' hid' : '') + (SEL[x.id] ? ' sel' : '') + '" data-id="' + esc(x.id) + '" aria-label="' + esc(x.creator) + '">' + cover(x) + xbox(x) + (v ? '<span class="vw">' + EYE + esc(v) + '</span>' : x.followers ? '<span class="vw">' + PERSON + esc(fmtViews(x.followers)) + '</span>' : '') + '</button>'; }).join('');
-      $('#main').innerHTML = list.length || EDIT ? '<div class="grid">' + h + '</div>' : '<div class="empty">' + esc(Q ? t('none') : t('empty')) + '</div>';
+      /* 23 Nov 2026 (Emmanuel: "organize the videos ... almost like a playlist ... one row ... if I swipe right, I see all the videos in
+         that playlist ... organized by views ... or you click on the playlist name and it takes you to ... all the videos"): with
+         playlists, the Swipe file is one row per playlist (swipe sideways, sorted like the grid), then the rest under "More". The name
+         opens the playlist as a full grid. Edit and search keep the plain grid; Edit also lists the playlists to manage them. */
+      var pls = lists();
+      if (PL && !pls.some(function (q) { return q.id === PL; })) PL = '';
+      if (PL) {
+        var pl = pls.filter(function (q) { return q.id === PL; })[0], pli = cur();
+        $('#main').innerHTML = '<div class="pl-top"><button class="ib" data-pl-back aria-label="' + esc(t('back')) + '">‹</button><b>' + esc(pl.name) + '</b><span>' + pli.length + '</span></div>' +
+          (pli.length ? '<div class="grid">' + pli.map(tileHTML).join('') + '</div>' : '<div class="empty">' + esc(t('plEmpty')) + '</div>');
+      } else if (pls.length && !EDIT && !Q) {
+        var inAny = {}; pls.forEach(function (q) { (q.items || []).forEach(function (id) { inAny[id] = 1; }); });
+        var sec = function (id, name, xs) { return xs.length ? '<section class="pl"><button class="pl-h" ' + (id ? 'data-pl="' + esc(id) + '"' : 'disabled') + '><b>' + esc(name) + '</b><span>' + xs.length + (id ? ' ›' : '') + '</span></button><div class="pl-row">' + xs.map(tileHTML).join('') + '</div></section>' : ''; };
+        $('#main').innerHTML = pls.map(function (q) { return sec(q.id, q.name, plItems(q)); }).join('') + sec('', t('plMore'), list.filter(function (x) { return !inAny[x.id]; }));
+      } else {
+      h = (EDIT ? '<div class="pl-edit"><b>' + esc(t('plH')) + '</b>' + pls.map(function (q) { return '<button class="pl-chip" data-pl-edit="' + esc(q.id) + '">' + esc(q.name) + ' · ' + (q.items || []).length + '</button>'; }).join('') + '<button class="pl-chip add" data-pl-edit="">+ ' + esc(t('plNew')) + '</button></div>' : '') +
+        (EDIT ? '<button class="tile add" data-add="swipe"><span>+</span>' + esc(t('addVideo')) + '</button>' : '') + list.map(tileHTML).join('');
+      $('#main').innerHTML = list.length || EDIT ? (EDIT ? h.replace('<button class="tile add"', '<div class="grid"><button class="tile add"') + '</div>' : '<div class="grid">' + h + '</div>') : '<div class="empty">' + esc(Q ? t('none') : t('empty')) + '</div>';
+      }
       if (IO) D.querySelectorAll('.tile[data-id]').forEach(function (e) { IO.observe(e); });
     } else {
       /* 22 Nov 2026 (Emmanuel: "organized just like the other page ... a text on screen ... to make it easier to understand what they're
@@ -306,7 +351,10 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 
   /* ---- the open item: Transcript, Translate, Copy for agent, strategy, Previous / Next ---- */
   var ICO = {tr: '<svg viewBox="0 0 24 24"><path d="M5 6h14M5 10h14M5 14h9M5 18h6"/></svg>', lang: '<svg viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M6 5c0 4 3 7 6 8M11 5c-1 4-4 7-7 8M13 21l4-9 4 9M14.5 18h5"/></svg>', cp: '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>'};
-  function cur() { if (TAB === 'profile') return window.StudioAcc ? StudioAcc.items(SW) : []; return visible(TAB === 'swipe' ? SW : AG); }
+  function tileHTML(x) { var v = fmtViews(x.views); return '<button class="tile' + (x.hide ? ' hid' : '') + (SEL[x.id] ? ' sel' : '') + '" data-id="' + esc(x.id) + '" aria-label="' + esc(x.creator) + '">' + cover(x) + xbox(x) + (v ? '<span class="vw">' + EYE + esc(v) + '</span>' : x.followers ? '<span class="vw">' + PERSON + esc(fmtViews(x.followers)) + '</span>' : '') + '</button>'; }
+  function lists() { return Array.isArray(DOC.lists) ? DOC.lists : []; }
+  function plItems(q) { var ids = {}; (q.items || []).forEach(function (id) { ids[id] = 1; }); return visible(SW.filter(function (x) { return ids[x.id]; })); }
+  function cur() { if (TAB === 'profile') return window.StudioAcc ? StudioAcc.items(SW) : []; if (TAB === 'swipe' && PL) { var q = lists().filter(function (z) { return z.id === PL; })[0]; return q ? plItems(q) : []; } return visible(TAB === 'swipe' ? SW : AG); }
   function open(id, keep) {
     var list = cur(), i = -1; for (var k = 0; k < list.length; k++) if (list[k].id === id) i = k; if (i < 0) return; var x = list[i]; OPEN = x;
     var tr = TR[x.id], body;
@@ -382,6 +430,14 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     var all = function (x) { return (String(x.creator || '') + ' ' + (x.link || '') + ' ' + (x.links || []).join(' ') + ' ' + (x.who || '')).toLowerCase().match(/@[a-z0-9._]{2,30}/g) || []; };
     return SW.filter(function (x) { return (l && (clipLink(x.link) === l || (x.links || []).some(function (q) { return clipLink(q) === l; }))) || (h && all(x).some(function (q) { return q.replace(/\.$/, '') === '@' + h; })); }); }
   window.STUDIO_dupOf = dupOf;
+  /* owner: make or change a playlist: its name and which Swipe file videos are in it (tap to tick) */
+  function plDlg(id) {
+    var q = id ? lists().filter(function (z) { return z.id === id; })[0] : null; PLSEL = {}; ((q && q.items) || []).forEach(function (x) { PLSEL[x] = 1; });
+    dlg('<h2>' + esc(q ? t('plEditH') : t('plNew')) + '</h2><label for="f_pl">' + esc(t('plName')) + '</label><input id="f_pl" maxlength="60" value="' + esc(q ? q.name : '') + '" placeholder="' + esc(t('plPh')) + '">' +
+      '<label>' + esc(t('plPick')) + '</label><div class="grid pl-pick">' + visible(SW).map(function (x) { var on = !!PLSEL[x.id]; return '<button type="button" class="tile' + (on ? ' picked' : '') + '" data-d="pltog" data-id="' + esc(x.id) + '" aria-pressed="' + on + '">' + cover(x) + '<span class="xb' + (on ? ' ok' : '') + '">' + (on ? '✓' : '') + '</span></button>'; }).join('') + '</div>' +
+      (q ? '<div class="btns"><button class="btn ac-del" data-d="pldel" data-id="' + esc(q.id) + '">' + esc(t('plDel')) + '</button></div>' : '') +
+      '<div class="btns pin"><button class="btn" data-d="cancel">' + esc(t('cancel')) + '</button><button class="btn pri" data-d="plsave" data-id="' + esc(q ? q.id : '') + '">' + esc(t('save')) + '</button></div>');
+  }
   function linkOk(u) { return /^https:\/\/([a-z0-9-]+\.)*(tiktok\.com|instagram\.com)\//i.test(u); }
   function onDlg(b) {
     var k = b.dataset.d, v = function (id) { var e = $('#' + id); return e ? e.value.trim() : ''; };
@@ -404,6 +460,11 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
       if (isB) { var ov = over(id); for (var f in o) ov[f] = o[f]; } else if (id) { DOC.swipe = DOC.swipe.map(function (s) { if (s.id !== id) return s; for (var f2 in o) s[f2] = o[f2]; return s; }); } else { o.id = 'V' + Date.now().toString(36).toUpperCase(); o.ts = Date.now(); DOC.swipe = (DOC.swipe || []).concat([o]); }
       return save().then(function () { dlgClose(); rebuild(); render(); if (OPEN) open(id || o.id, true); }, function () {});
     }
+    if (k === 'pltog') { var pid = b.dataset.id; if (PLSEL[pid]) delete PLSEL[pid]; else PLSEL[pid] = 1; var on = !!PLSEL[pid]; b.classList.toggle('picked', on); b.setAttribute('aria-pressed', on); var xb = b.querySelector('.xb'); xb.classList.toggle('ok', on); xb.textContent = on ? '✓' : ''; return; }
+    if (k === 'plsave') { var nm = v('f_pl'); if (!nm) return toast(t('plName')); var ids = Object.keys(PLSEL), L0 = lists().slice(), qid = b.dataset.id;
+      if (qid) L0 = L0.map(function (z) { return z.id === qid ? {id: z.id, name: nm, items: ids} : z; }); else L0.push({id: 'L' + Date.now().toString(36), name: nm, items: ids});
+      DOC.lists = L0; return save().then(function () { dlgClose(); render(); }, function () {}); }
+    if (k === 'pldel') { if (!confirm(t('plDelQ'))) return; DOC.lists = lists().filter(function (z) { return z.id !== b.dataset.id; }); return save().then(function () { dlgClose(); render(); }, function () {}); }
     if (k === 'saveA') {
       var a = {title: v('f_ti'), text: v('f_tx')}; if (!a.title || !a.text) return; var aid = b.dataset.id, isBA = aid && !(DOC.agent || []).some(function (s) { return s.id === aid; });
       if (isBA) { var oa = over(aid); oa.title = a.title; oa.text = a.text; } else if (aid) { DOC.agent = DOC.agent.map(function (s) { return s.id === aid ? (s.title = a.title, s.text = a.text, s) : s; }); } else { a.id = 'P' + Date.now().toString(36).toUpperCase(); a.ts = Date.now(); DOC.agent = (DOC.agent || []).concat([a]); }
@@ -418,9 +479,12 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   D.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
     if (b.dataset.d) return onDlg(b);
-    if (b.dataset.tab) { TAB = b.dataset.tab; render(); return window.scrollTo(0, 0); }
+    if (b.dataset.tab) { TAB = b.dataset.tab; PL = ''; render(); return window.scrollTo(0, 0); }
     if (b.id === 'sortb') { SORT = SORT === 'views' ? 'new' : 'views'; return render(); }
-    if (b.id === 'editb') { EDIT = !EDIT; SEL = {}; return render(); }
+    if (b.id === 'editb') { EDIT = !EDIT; SEL = {}; PL = ''; return render(); }
+    if (b.dataset.pl) { PL = b.dataset.pl; render(); return window.scrollTo(0, 0); }
+    if (b.hasAttribute('data-pl-back')) { PL = ''; return render(); }
+    if (b.hasAttribute('data-pl-edit')) return plDlg(b.dataset.plEdit);
     /* 22 Nov 2026 (Emmanuel: "when I click on edit, an X toggle where I can easily just mass delete things"): in Edit every tile has an X;
        tapping it marks the tile, the bar at the bottom deletes all marked at once. Tapping the rest of the tile still opens it. */
     if (EDIT && e.target.closest('[data-x]') && b.dataset.id) { var k = b.dataset.id; if (SEL[k]) delete SEL[k]; else SEL[k] = 1; return render(); }

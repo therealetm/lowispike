@@ -125,3 +125,8 @@ html.lw-chat-on body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cr-down{displ
 /* 22 Nov 2026 (Emmanuel: "leave out the details about the calories, protein, and net ... because it could be wrong"): a photo post
    shows the poster's words, their name and the insulin check only (the numbers stay in Details) */
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-meal-k{display:none!important}
+
+/* 23 Nov 2026 (Emmanuel, a plain photo in the chat: "it should still be in the same style of all the other stuff that we send into the
+   chat ... The text then is always on the picture"): a photo that is not a meal carries an empty .cs-meal-plain marker
+   (community-chat.js msgBody), so it gets the same full photo post with the caption big on the picture, just without a spike pill. */
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub>.cs-meal.cs-meal-plain{display:none!important}

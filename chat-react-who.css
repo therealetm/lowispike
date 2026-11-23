@@ -16,3 +16,7 @@ html[data-ui=light] .rw-card { background: rgba(250, 251, 255, .94); color: #111
 @media (prefers-reduced-motion: reduce) { .rw-card { transition: none; transform: none; } }
 /* a hold on a chip shows the names: no iOS callout or text selection on the way */
 .cm-rx [data-chat="react"] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+/* 23 Nov 2026: a tap opens the card; its button adds or takes back your own reaction */
+.rw-tog { display: block; width: 100%; min-height: 40px; margin-top: 8px; padding: 8px 12px; border: 0; border-radius: 12px; cursor: pointer;
+    background: rgba(255, 255, 255, .12); color: inherit; font: 700 14.5px/1.2 -apple-system, system-ui, sans-serif; }
+html[data-ui=light] .rw-tog { background: rgba(10, 30, 60, .08); }

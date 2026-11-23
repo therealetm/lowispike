@@ -21,6 +21,10 @@ const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers
 const J = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...CORS, "Content-Type": "application/json" } });
 const H = { apikey: SRK, Authorization: "Bearer " + SRK, "Content-Type": "application/json" };
 const T = "/rest/v1/n1_push";
+/* 23 Nov 2026 (Emmanuel: "disable any notification that people get. There are these annoying food notifications and daily checkup
+   notification ... Nuke them"): the automatic pushes stop: Nibblo meal ideas and every timed nudge (morning, fast end, evening, bedtime,
+   companion / For You / product). What one person sends another (energy gifts) still arrives. Set to false to bring them back. */
+const AUTO_OFF = true;
 
 async function db(path: string, init: RequestInit = {}) {
   const r = await fetch(URL0 + path, { ...init, headers: { ...H, ...(init.headers || {}) } });
@@ -258,6 +262,7 @@ Deno.serve(async req => {
     if (b.a === "cron") {
       if (!CRON || req.headers.get("x-n1-key") !== CRON) return J({ ok: false }, 401);
       if (!b.dry) { try { await gifts(); } catch (_e) { /* the pillar pushes still go out */ } }
+      if (AUTO_OFF && !b.dry) return J({ ok: true, off: true });
       if (!b.dry) { try { await nibblo(); } catch (_e) { /* fallback only; the database trigger is the main path */ } }
       return await cron(!!b.dry, typeof b.at === "number" ? b.at : undefined);
     }
@@ -268,6 +273,7 @@ Deno.serve(async req => {
       const key = !!CRON && req.headers.get("x-n1-key") === CRON;
       if (b.a === "nbtest") return key ? await nbtest(b) : J({ ok: false }, 401);
       if (b.dry) return key && typeof b.id === "string" ? await nibblo({ id: b.id, at: typeof b.at === "number" ? b.at : undefined }) : J({ ok: false }, 401);
+      if (AUTO_OFF) return J({ ok: true, off: true });
       return await nibblo();
     }
     return J({ ok: false, err: "action" }, 400);

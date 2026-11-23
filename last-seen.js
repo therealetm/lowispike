@@ -3,7 +3,7 @@
    - While the app is open and visible, a signed-in person's profiles.last_seen is set to now (RPC touch_seen, at most every 3 min,
      the server ignores more often than every 2 min). Nothing else is sent.
    - LowiLastSeen.get(uid) gives that time (ms) from one small read of profiles (id, last_seen), refreshed at most every minute.
-   - LowiLastSeen.label(ms, lang) says it short: "Online now", "5 min ago", "3 h ago", "Yesterday", "4 days ago", or a date.
+   - LowiLastSeen.label(ms, lang) says it short with the clock time: "Online now", "5 min ago", "Today, 18:42", "Yesterday, 21:03", "Mon 17 Nov, 09:12".
    people-directory.js shows it under each name. */
 (function (W, D) {
   'use strict';
@@ -23,26 +23,32 @@
     if (loading) return loading;
     loading = (async () => {
       const c = await client(); if (!c) return map;
-      try { const r = await c.from('profiles').select('id,last_seen').not('last_seen', 'is', null).limit(5000);
-        if (r && !r.error && Array.isArray(r.data)) { const m = {}; r.data.forEach(x => { const t = Date.parse(x.last_seen); if (x.id && t) m[String(x.id)] = t; }); map = m; loadedAt = Date.now();
+      /* 23 Nov 2026 (Emmanuel: "the online timestamp didn't work for all of the accounts"): people_seen() takes the latest trace an open
+         app leaves (session refresh, cloud save of the app state incl. games, messages, reactions, posts, likes, last_seen); plain
+         profiles.last_seen is the fallback */
+      try { let r = await c.rpc('people_seen'), key = 'seen';
+        if (!r || r.error) { r = await c.from('profiles').select('id,last_seen').not('last_seen', 'is', null).limit(5000); key = 'last_seen'; }
+        if (r && !r.error && Array.isArray(r.data)) { const m = {}; r.data.forEach(x => { const t = Date.parse(x[key]); if (x.id && t) m[String(x.id)] = t; }); map = m; loadedAt = Date.now();
           try { D.dispatchEvent(new CustomEvent('lowi:lastseen')); } catch (e) { } } } catch (e) { }
       return map;
     })();
     try { return await loading; } finally { loading = null; }
   }
-  const T = { en: { now: 'Online now', min: '{n} min ago', h: '{n} h ago', y: 'Yesterday', d: '{n} days ago', never: 'Not seen yet' },
-    de: { now: 'Gerade online', min: 'vor {n} Min.', h: 'vor {n} Std.', y: 'Gestern', d: 'vor {n} Tagen', never: 'Noch nicht gesehen' },
-    es: { now: 'En línea ahora', min: 'hace {n} min', h: 'hace {n} h', y: 'Ayer', d: 'hace {n} días', never: 'Aún no visto' } };
+  /* 23 Nov 2026 (Emmanuel: "it's not showing me the exact time. It's just showing me the date"): always the clock time too */
+  const T = { en: { now: 'Online now', min: '{n} min ago', today: 'Today, {t}', y: 'Yesterday, {t}', never: 'Not seen yet' },
+    de: { now: 'Gerade online', min: 'vor {n} Min.', today: 'Heute, {t}', y: 'Gestern, {t}', never: 'Noch nicht gesehen' },
+    es: { now: 'En línea ahora', min: 'hace {n} min', today: 'Hoy, {t}', y: 'Ayer, {t}', never: 'Aún no visto' } };
+  const LOC = { en: 'en-GB', de: 'de-DE', es: 'es-ES' };
   function label(ms, lang) {
-    const L = T[lang] || T.en; if (!ms) return '';
-    const s = (Date.now() - ms) / 1000;
+    const L = T[lang] || T.en, loc = LOC[lang] || 'en-GB'; if (!ms) return '';
+    const s = (Date.now() - ms) / 1000, d = new Date(ms);
     if (s < 300) return L.now;
     if (s < 3600) return L.min.replace('{n}', Math.round(s / 60));
-    if (s < 86400) return L.h.replace('{n}', Math.round(s / 3600));
-    const days = Math.floor(s / 86400);
-    if (days < 2) return L.y;
-    if (days < 7) return L.d.replace('{n}', days);
-    try { return new Date(ms).toLocaleDateString(lang === 'de' ? 'de-DE' : lang === 'es' ? 'es-ES' : 'en-GB', { day: 'numeric', month: 'short' }); } catch (e) { return ''; }
+    let t = ''; try { t = d.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' }); } catch (e) { t = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+    const day0 = new Date(); day0.setHours(0, 0, 0, 0);
+    if (ms >= day0.getTime()) return L.today.replace('{t}', t);
+    if (ms >= day0.getTime() - 864e5) return L.y.replace('{t}', t);
+    try { return d.toLocaleDateString(loc, { weekday: s < 6 * 86400 ? 'short' : undefined, day: 'numeric', month: 'short' }) + ', ' + t; } catch (e) { return t; }
   }
   D.addEventListener('visibilitychange', () => { if (D.visibilityState === 'visible') touch(true); });
   setInterval(() => touch(false), 60e3);

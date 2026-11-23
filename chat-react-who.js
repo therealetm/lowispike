@@ -1,8 +1,8 @@
 /* LOWiSPIKE · who reacted (7 Nov 2026, Emmanuel: "When I long press on an emoji that someone ... reacts to the bubbles with just
    emojis ... a heart or the number 2 or 3, I should be able to see who left that").
    A long press (HOLD_MS with the finger still) on a reaction chip under a chat message opens a small card over the chip: the
-   reaction and the names of everyone who left it, you first as "You". A tap still adds or takes back your own reaction; the click
-   that ends a long press does nothing. Right-click does the same on a computer. The card closes on a tap elsewhere, on scroll and on
+   reaction and the names of everyone who left it, you first as "You". Since 23 Nov 2026 a plain tap opens it as well, and its
+   button adds or takes back your own reaction; the click that ends a long press does nothing. Right-click does the same on a computer. The card closes on a tap elsewhere, on scroll and on
    Escape. Names come from the Community (LowiCommunityHost.people), else from that person's messages, else "Member". */
 (function (W) {
     'use strict';
@@ -43,7 +43,10 @@
         const shown = list.slice(0, MAX), more = list.length - shown.length;
         c.innerHTML = '<div class="rw-head"><span class="rw-emo" aria-hidden="true">' + esc(glyph) + '</span><b>' + list.length + '</b></div><ul class="rw-list">' +
             shown.map(p => '<li' + (p.me ? ' class="me"' : '') + '>' + esc(p.me ? T('You', 'Du', 'Tú') : p.n) + '</li>').join('') +
-            (more > 0 ? '<li class="more">' + esc(T('+' + more + ' more', '+' + more + ' weitere', '+' + more + ' más')) + '</li>' : '') + '</ul>';
+            (more > 0 ? '<li class="more">' + esc(T('+' + more + ' more', '+' + more + ' weitere', '+' + more + ' más')) + '</li>' : '') + '</ul>' +
+            '<button type="button" class="rw-tog">' + esc(list.some(p => p.me) ? T('Take mine back', 'Meine zurücknehmen', 'Quitar la mía') : T('React too', 'Auch reagieren', 'Reaccionar también')) + '</button>';
+        c.__chip = chip;
+        c.querySelector('.rw-tog').addEventListener('click', ev => { ev.stopPropagation(); close(); pass = chip; try { chip.click(); } finally { pass = null; } });
         D.body.appendChild(c); card = c;
         const r = chip.getBoundingClientRect(), w = c.offsetWidth, h = c.offsetHeight, vw = D.documentElement.clientWidth || W.innerWidth;
         const left = Math.max(10, Math.min(vw - w - 10, r.left + r.width / 2 - w / 2)), above = r.top - h - 10 > 10;
@@ -62,12 +65,17 @@
     }, true);
     D.addEventListener('pointermove', e => { if (hold && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > SLOP) cancel(); }, true);
     ['pointerup', 'pointercancel'].forEach(n => D.addEventListener(n, cancel, true));
-    /* the click that ends a long press must not toggle your own reaction */
+    /* 23 Nov 2026 (Emmanuel: "I want to be able to actually click on the emoji that was left and see who left it"): a plain tap on a
+       chip opens the card too; the card's own button adds or takes back your reaction (it lets one click through to the chip).
+       The click that ends a long press must not toggle your own reaction either. */
+    let pass = null;
     W.addEventListener('click', e => {
-        if (!swallow || Date.now() > swallow.until) { swallow = null; return; }
         const chip = e.target && e.target.closest && e.target.closest(SEL);
-        if (chip && chip === swallow.chip) { e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); }
+        if (chip && chip === pass) return;
+        const stop = () => { e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); };
+        if (swallow && Date.now() <= swallow.until && chip && chip === swallow.chip) { swallow = null; stop(); return; }
         swallow = null;
+        if (chip) { stop(); if (card && card.__chip === chip) close(); else open(chip); }
     }, true);
     D.addEventListener('contextmenu', e => { const chip = e.target && e.target.closest && e.target.closest(SEL); if (chip) { e.preventDefault(); open(chip); } }, true);
     D.addEventListener('keydown', e => { if (card && e.key === 'Escape') close(); });

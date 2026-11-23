@@ -208,11 +208,15 @@
         if (!el) mount(); else if (el.hidden) { el.hidden = false; paint(); }
         else { const m = el.querySelector('.pmc-ht small'); if (m && !el.classList.contains('fin')) { const now = Date.now(), want = sub(now); if (m.textContent !== want) m.textContent = want; tickTiles(now); } }
     }
-    function go() { if (!timer) timer = setInterval(loop, 1000); setTimeout(loop, 1200); }
+    /* 23 Nov 2026 (Emmanuel: "every time I put in the food, there's like a pop-up that appears from the bottom ... not necessary. Nuke
+       them"): logging a meal no longer opens the "Flatten the spike" card. false brings it back. */
+    const OFF = true;
+    function go() { if (OFF) return; if (!timer) timer = setInterval(loop, 1000); setTimeout(loop, 1200); }
     function stop() { if (timer) { clearInterval(timer); timer = 0; } }
 
     W.addEventListener('lowi:meal-logged', ev => {
         const d = ev && ev.detail, now = Date.now();
+        if (OFF) return;
         if (!C.justAte(d, now)) return;
         if (P && P.id === String(d.id)) return;   /* the same meal announced again: keep its ticks and its skip */
         P = C.pending(d, now); note = ''; save(); remove(); go();
@@ -223,6 +227,7 @@
     W.addEventListener('lowi:lang', () => { if (el && !el.classList.contains('fin')) { el.setAttribute('aria-label', s('region')); paint(); } });
 
     P = load();
+    if (OFF && P) { P = null; save(); }
     if (P && !P.run) P.run = {};
     if (P && C.open(P, Date.now())) go(); else if (P && !P.fin && C.minsLeft(P, Date.now()) <= 0) { P = null; save(); }
 

@@ -64,7 +64,11 @@
     } catch (e) { return true; }
     return false;
   }
+  /* 23 Nov 2026 (Emmanuel: "these annoying food notifications ... Nuke them"): the little idea banner at the top no longer shows by
+     itself; the idea itself still opens when someone taps an old link to it. false brings the banner back. */
+  const OFF = true;
   function notice() {
+    if (OFF) return false;
     if (D.visibilityState && D.visibilityState !== 'visible') return false;
     const k = C.latest(Date.now(), N()); if (!k || !C.fresh(state(), k.id) || busy()) return false;
     const c = C.card(k.id, lang(), N()); if (!c) return false;

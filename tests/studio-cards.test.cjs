@@ -68,7 +68,7 @@ test('a meal in the chat is a full photo post, only meal bubbles change (22 Nov:
   const css = R('chat-meal-post.css'), h = R('index.html'), cc = R('community-chat.js');
   assert.ok(h.indexOf('href="chat-meal-post.css') > h.indexOf('href="community-chat.css'), 'loads after the chat styles');
   assert.match(css, /\.cm-bub\.cm-pbub:has\(> \.cs-meal\)\{[^}]*aspect-ratio:9\/16/);
-  assert.equal((cc.match(/mealPost=!!\(mealPh&&mealPh\.meal\)/g) || []).length, 2, 'both renderers name the poster');
+  assert.equal((cc.match(/mealPost=!!\(mealPh&&\(mealPh\.meal\|\|mealPh\.src\)\)/g) || []).length, 2, 'both renderers name the poster (23 Nov 2026: plain photos too)');
   assert.match(R('sw.js'), /STATIC\.push\("chat-meal-post\.css"\)/);
 });
 test('My posts and New post open as their own page with a Back button; profile has Photos, Links and Saved', () => {

@@ -21,12 +21,14 @@ test('the names for one reaction: you first, each person once, only that message
     assert.deepEqual(R.who(null, 'm1', 'heart', 'me', u => u), []);
 });
 
-test('the chat\'s own chips: a long press, never instead of the tap', () => {
+/* changed 23 Nov 2026 (Emmanuel: "click on the emoji that was left and see who left it"): a plain tap opens the card as well; the
+   card's button adds or takes back your own reaction (see the last test in this file) */
+test('the chat\'s own chips: a long press or a tap opens the card', () => {
     assert.match(chat, /button\('react','<span class="cm-emo" aria-hidden="true">'\+g\+'<\/span> '\+rows\.length,'aria-label="[^]*?data-id="'\+esc\(m\.id\)\+'" data-emoji="'\+esc\(em\)\+'"/, 'the chips carry the message and the emoji');
     assert.match(js, /const D = W\.document, SEL = '\.cm-rx \[data-chat="react"\]';/);
     assert.equal(R.HOLD_MS, 450); assert.equal(R.SLOP, 10);
     assert.match(js, /swallow = \{ chip: c, until: Date\.now\(\) \+ 900 \}; open\(c\);/);
-    assert.match(js, /if \(chip && chip === swallow\.chip\) \{ e\.preventDefault\(\); e\.stopPropagation\(\);/, 'the click that ends a long press does not toggle');
+    assert.match(js, /if \(swallow && Date\.now\(\) <= swallow\.until && chip && chip === swallow\.chip\) \{ swallow = null; stop\(\); return; \}/, 'the click that ends a long press does not toggle');
     assert.match(js, /D\.addEventListener\('contextmenu', e => \{ const chip = [^]*?if \(chip\) \{ e\.preventDefault\(\); open\(chip\); \} \}, true\);/, 'right-click on a computer');
     assert.match(js, /D\.addEventListener\('scroll', \(\) => \{ cancel\(\); if \(card\) close\(\); \}, true\);/);
     assert.match(read('chat-react-who.css'), /\.cm-rx \[data-chat="react"\] \{ -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; \}/);
@@ -39,4 +41,12 @@ test('names from the Community, then from messages, then "Member"; three languag
     const html = read('index.html');
     assert.match(html, /<script src="community-energy\.js\?v=[^"]+"><\/script>\n<link rel="stylesheet" href="chat-react-who\.css\?v=[^"]+">\n<script src="chat-react-who\.js\?v=[^"]+"><\/script>/, 'after the chat (and its energy add-on)');
     assert.match(read('sw.js'), /STATIC\.push\("chat-react-who\.js", "chat-react-who\.css"\);/);
+});
+
+test('a tap on a reaction shows who left it; React too / Take mine back toggles your own (23 Nov 2026)', () => {
+    assert.match(js, /if \(chip\) \{ stop\(\); if \(card && card\.__chip === chip\) close\(\); else open\(chip\); \}/);
+    assert.match(js, /if \(chip && chip === pass\) return;/);
+    assert.match(js, /pass = chip; try \{ chip\.click\(\); \} finally \{ pass = null; \}/);
+    for (const w of ["'React too', 'Auch reagieren', 'Reaccionar también'", "'Take mine back', 'Meine zurücknehmen', 'Quitar la mía'"]) assert.ok(js.includes(w), w);
+    assert.match(read('chat-react-who.css'), /\.rw-tog \{/);
 });

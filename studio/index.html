@@ -77,6 +77,7 @@ body{min-height:100vh;min-height:100dvh;color:var(--ink);font:16px/1.5 -apple-sy
 .vid .play{position:absolute;top:50%;left:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);display:grid;place-items:center;font-size:19px;padding-left:4px}
 .who b{display:block;font-size:18px;line-height:1.25;overflow-wrap:anywhere}
 .who small{color:var(--muted);font-size:14px}
+.who .bio{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
 .acts .btn{justify-content:center}
 .acts .btn.pri{grid-column:1/-1;order:-1;min-height:52px;font-size:16px}
@@ -201,6 +202,8 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     copyFail: ['Copy did not work. Hold the text below and tap Copy.', 'Kopieren ging nicht. Halte den Text unten gedrückt und tippe auf Kopieren.', 'No se pudo copiar. Mantén pulsado el texto.'], empty: ['Nothing here yet.', 'Hier ist noch nichts.', 'Aún no hay nada.'], none: ['Nothing found.', 'Nichts gefunden.', 'Nada encontrado.'],
     agentAsk: ['Here is a short video that works. Make my own version of it for my niche and voice (ask me for them if you do not know them). Keep the structure and pacing, use new words, never copy the original clips or text 1:1. I post it myself.', 'Hier ist ein kurzes Video, das funktioniert. Mach mir eine eigene Version für meine Nische und meine Stimme (frag mich danach, wenn du sie nicht kennst). Struktur und Tempo übernehmen, neue Worte, nie fremde Clips oder Texte 1:1 kopieren. Ich poste selbst.', 'Aquí hay un vídeo corto que funciona. Haz mi propia versión para mi nicho y mi voz (pregúntame si no los conoces). Mantén la estructura, usa palabras nuevas, nunca copies 1:1. Yo lo publico.'],
     profile: ['Profile', 'Profil', 'Perfil'],
+    dupQ: ['Already in the Swipe file: {x}. Add it anyway?', 'Schon in der Swipe-Datei: {x}. Trotzdem hinzufügen?', 'Ya está en el archivo: {x}. ¿Añadir igualmente?'],
+    followers: ['followers', 'Follower', 'seguidores'],
     confirmDel: ['Delete this for good?', 'Wirklich löschen?', '¿Eliminar definitivamente?']
   };
   var t = function (k) { var r = W[k]; return r ? r[L === 'de' ? 1 : L === 'es' ? 2 : 0] : k; };
@@ -225,6 +228,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     var z = field(c, /^Zahlen/), vm = z.match(/([\d.,]+\s?[KM]?)\s*Views/i), m = c.title.match(/^(.*?)\s*\((@[^)]+)\)/), fl = field(c, /^Ablauf/);
     return {id: c.id, builtin: true, link: videoLink(c.links), creator: m ? m[1] + ' ' + m[2] : c.title.split(':')[0], views: vm ? parseViews(vm[1]) : 0,
       transcript: (field(c, /^Hook/) || field(c, /^Kopier das/)).replace(/^„|“$/g, ''), hook: field(c, /^Hook/).replace(/^„|“$/g, '') || c.title,
+      links: c.links || [], who: field(c, /^Creator/),
       strategy: fl ? fl.split('→').map(function (x) { return x.trim().replace(/^„|“$/g, ''); }).filter(Boolean) : [], why: field(c, /^Warum es wirkt/), thumb: ''};
   }
   function builtinAgent(c) { var rx = field(c, /^Remix-Prompt/), ag = field(c, /^Agent-Ansicht/), cp = field(c, /^Kopier das/); return {id: c.id, builtin: true, title: c.title, text: [rx.replace(/^„|“$/g, ''), ag, rx ? '' : cp].filter(Boolean).join('\n\n')}; }
@@ -241,7 +245,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   function hay(x) { return [x.creator, x.hook, x.transcript, x.title, x.text, (x.strategy || []).join(' ')].join(' ').toLowerCase(); }
   function visible(list) {
     var l = list.filter(function (x) { return (EDIT || !x.hide) && (!Q || hay(x).indexOf(Q) >= 0); });
-    if (TAB === 'swipe') l = l.map(function (x, i) { return [x, i]; }).sort(function (a, b) { return SORT === 'views' ? ((b[0].views || 0) - (a[0].views || 0)) || (a[1] - b[1]) : ((b[0].ts || 0) - (a[0].ts || 0)) || (a[1] - b[1]); }).map(function (x) { return x[0]; });
+    if (TAB === 'swipe') l = l.map(function (x, i) { return [x, i]; }).sort(function (a, b) { return SORT === 'views' ? ((b[0].views || b[0].followers || 0) - (a[0].views || a[0].followers || 0)) || (a[1] - b[1]) : ((b[0].ts || 0) - (a[0].ts || 0)) || (a[1] - b[1]); }).map(function (x) { return x[0]; });
     return l;
   }
 
@@ -259,6 +263,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   function hue(id) { var n = 0; for (var i = 0; i < id.length; i++) n = (n * 31 + id.charCodeAt(i)) % 360; return n; }
   function cover(x) { var th = thumbOf(x); return '<div class="cv' + (th ? '' : ' nf') + '" style="background-image:' + (th ? 'url(&quot;' + esc(th) + '&quot;)' : 'linear-gradient(160deg,hsl(' + hue(x.id) + ' 46% 24%),hsl(' + ((hue(x.id) + 40) % 360) + ' 50% 12%))') + '">' + (th ? '' : '<q>' + esc(x.hook || x.creator) + '</q>') + '</div>'; }
   var ROBOT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 14h.01M15 14h.01"/></svg>';
+  var PERSON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.4 4.2-6.5 8-6.5s7 2.1 8 6.5"/></svg>';
   var EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
   var IO = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { IO.unobserve(e.target); var x = SW.filter(function (s) { return s.id === e.target.dataset.id; })[0]; if (x) want(x); } }); }, {rootMargin: '300px'}) : null;
 
@@ -275,7 +280,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     $('#editb').textContent = EDIT ? t('done') : t('edit'); $('#editb').setAttribute('aria-pressed', EDIT ? 'true' : 'false');
     var list = visible(TAB === 'swipe' ? SW : AG), h = '';
     if (TAB === 'swipe') {
-      h = (EDIT ? '<button class="tile add" data-add="swipe"><span>+</span>' + esc(t('addVideo')) + '</button>' : '') + list.map(function (x) { var v = fmtViews(x.views); return '<button class="tile' + (x.hide ? ' hid' : '') + (SEL[x.id] ? ' sel' : '') + '" data-id="' + esc(x.id) + '" aria-label="' + esc(x.creator) + '">' + cover(x) + xbox(x) + (v ? '<span class="vw">' + EYE + esc(v) + '</span>' : '') + '</button>'; }).join('');
+      h = (EDIT ? '<button class="tile add" data-add="swipe"><span>+</span>' + esc(t('addVideo')) + '</button>' : '') + list.map(function (x) { var v = fmtViews(x.views); return '<button class="tile' + (x.hide ? ' hid' : '') + (SEL[x.id] ? ' sel' : '') + '" data-id="' + esc(x.id) + '" aria-label="' + esc(x.creator) + '">' + cover(x) + xbox(x) + (v ? '<span class="vw">' + EYE + esc(v) + '</span>' : x.followers ? '<span class="vw">' + PERSON + esc(fmtViews(x.followers)) + '</span>' : '') + '</button>'; }).join('');
       $('#main').innerHTML = list.length || EDIT ? '<div class="grid">' + h + '</div>' : '<div class="empty">' + esc(Q ? t('none') : t('empty')) + '</div>';
       if (IO) D.querySelectorAll('.tile[data-id]').forEach(function (e) { IO.observe(e); });
     } else {
@@ -295,7 +300,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     if (TAB !== 'agent') {
       var v = fmtViews(x.views), strat = tr && tr.strategy ? tr.strategy : x.strategy || [], why = tr && tr.why != null ? tr.why : x.why;
       body = '<' + (x.link ? 'a href="' + esc(x.link) + '" target="_blank" rel="noopener noreferrer"' : 'div') + ' class="vid" aria-label="' + esc(t('original')) + '">' + cover(x) + (x.link && thumbOf(x) ? '<span class="play" aria-hidden="true">▶</span>' : '') + '</' + (x.link ? 'a' : 'div') + '>' +
-        '<div class="who"><b>' + esc(x.creator) + '</b>' + (v ? '<small>' + esc(v) + ' ' + esc(t('views')) + '</small>' : '') + '</div>' +
+        '<div class="who"><b>' + esc(x.creator) + '</b>' + (v ? '<small>' + esc(v) + ' ' + esc(t('views')) + '</small>' : x.followers ? '<small>' + esc(fmtViews(x.followers)) + ' ' + esc(t('followers')) + '</small>' : '') + (x.bio ? '<p class="bio">' + esc(x.bio) + '</p>' : '') + '</div>' +
         '<div class="acts"><button class="btn" data-a="tr" aria-pressed="false">' + ICO.tr + esc(t('transcript')) + '</button><button class="btn" data-a="lang">' + ICO.lang + esc(t('translate')) + '</button><button class="btn pri" data-a="copy">' + ICO.cp + esc(t('copyAgent')) + '</button>' + (window.StudioAcc ? StudioAcc.addBtn(x) : '') + '</div>' +
         '<div class="box" id="trbox" hidden>' + esc((tr && tr.transcript) || x.transcript || t('noTranscript')) + '</div>' +
         (strat.length ? '<h3>' + esc(t('strategy')) + '</h3><ol class="steps">' + strat.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' : '') + (why ? '<p class="why"><b>' + esc(t('why')) + ':</b> ' + esc(why) + '</p>' : '');
@@ -358,6 +363,12 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
       '<input type="hidden" id="f_th" value="' + esc(x.thumb || '') + '"><div class="btns"><button class="btn" data-d="cancel">' + esc(t('cancel')) + '</button><button class="btn pri" data-d="saveS" data-id="' + esc(x.id || '') + '">' + esc(t('save')) + '</button></div>');
   }
   function agentDlg(x) { x = x || {}; dlg('<h2>' + esc(x.id ? t('edit') : t('addPrompt')) + '</h2><label for="f_ti">' + esc(t('title')) + '</label><input id="f_ti" value="' + esc(x.title || '') + '"><label for="f_tx">' + esc(t('text')) + '</label><textarea id="f_tx" style="min-height:220px">' + esc(x.text || '') + '</textarea><div class="btns"><button class="btn" data-d="cancel">' + esc(t('cancel')) + '</button><button class="btn pri" data-d="saveA" data-id="' + esc(x.id || '') + '">' + esc(t('save')) + '</button></div>'); }
+  function handleOf(x) { var m = String(x || '').match(/@([A-Za-z0-9._]{2,30})/); return m ? m[1].toLowerCase().replace(/\.$/, '') : ''; }
+  function clipLink(u) { return String(u || '').split('?')[0].replace(/\/+$/, '').toLowerCase(); }
+  function dupOf(o) { var h = handleOf(o.creator) || handleOf(o.link), l = clipLink(o.link);
+    var all = function (x) { return (String(x.creator || '') + ' ' + (x.link || '') + ' ' + (x.links || []).join(' ') + ' ' + (x.who || '')).toLowerCase().match(/@[a-z0-9._]{2,30}/g) || []; };
+    return SW.filter(function (x) { return (l && (clipLink(x.link) === l || (x.links || []).some(function (q) { return clipLink(q) === l; }))) || (h && all(x).some(function (q) { return q.replace(/\.$/, '') === '@' + h; })); }); }
+  window.STUDIO_dupOf = dupOf;
   function linkOk(u) { return /^https:\/\/([a-z0-9-]+\.)*(tiktok\.com|instagram\.com)\//i.test(u); }
   function onDlg(b) {
     var k = b.dataset.d, v = function (id) { var e = $('#' + id); return e ? e.value.trim() : ''; };
@@ -374,6 +385,9 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
       if (!linkOk(v('f_link'))) return toast(t('badLink'));
       var o = {link: v('f_link'), creator: v('f_cr'), views: parseViews(v('f_vw')), transcript: v('f_tr'), hook: v('f_hk'), strategy: v('f_st').split('\n').map(function (s) { return s.trim(); }).filter(Boolean), why: v('f_why'), thumb: v('f_th')};
       var id = b.dataset.id, isB = id && !(DOC.swipe || []).some(function (s) { return s.id === id; });
+      /* 23 Nov 2026 (Emmanuel: "make sure you're able to check ... if I'm not sending you the same profile again"): a new item whose
+         link or @handle is already in the Swipe file asks first, naming what is there */
+      if (!id) { var same = dupOf(o); if (same.length && !confirm(t('dupQ').replace('{x}', same.slice(0, 3).map(function (q) { return q.creator; }).join(', ')))) return; }
       if (isB) { var ov = over(id); for (var f in o) ov[f] = o[f]; } else if (id) { DOC.swipe = DOC.swipe.map(function (s) { if (s.id !== id) return s; for (var f2 in o) s[f2] = o[f2]; return s; }); } else { o.id = 'V' + Date.now().toString(36).toUpperCase(); o.ts = Date.now(); DOC.swipe = (DOC.swipe || []).concat([o]); }
       return save().then(function () { dlgClose(); rebuild(); render(); if (OPEN) open(id || o.id, true); }, function () {});
     }

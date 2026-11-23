@@ -7,3 +7,7 @@ test('Profile tab hands rendering and the open list to accounts.js', () => { ass
 test('accounts: switcher, add / edit / delete, inspo picker, remove from one account', () => { for (const k of ["'switch'", "'use'", "'add'", "'saveacc'", "'delacc'", "'pick'", "'ptog'", "'psave'", "'rmone'", "'fetch'"]) assert.ok(js.includes("k === " + k), k); });
 test('accounts are kept on the phone and in the person\'s own cloud row', () => { assert.match(js, /lowi\.studio\.accounts\.v1/); assert.match(js, /from\('studio_accounts'\)\.upsert\(\{user_id: UID/); assert.match(sql, /using \(user_id = auth\.uid\(\)\)/); assert.match(sql, /revoke all on public\.studio_accounts from anon/); });
 test('profile link reader returns name, handle, bio and a lasting picture', () => { assert.match(fn, /body\.action === "profile"/); assert.match(fn, /webapp\.user-detail/); assert.match(fn, /async function asDataUrl/); assert.match(fn, /take\(sub, "profile", 30\)/); });
+test('Swipe file: adding a link or @handle that is already there asks first; profile tiles show followers and bio (23 Nov 2026)', () => {
+  assert.match(html, /function dupOf\(o\)/); assert.match(html, /if \(!id\) \{ var same = dupOf\(o\); if \(same\.length && !confirm\(t\('dupQ'\)/);
+  assert.match(html, /x\.followers \? '<span class="vw">' \+ PERSON/); assert.match(html, /<p class="bio">/);
+});

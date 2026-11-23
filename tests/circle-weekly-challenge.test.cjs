@@ -15,9 +15,9 @@ function load() {
 
 test('the bar: Billard, Mischen, Swipen, Challenge; four columns', () => {
   const G = load().LowiCircleGames;
-  assert.deepEqual(G.GAMES.map(g => g.id), ['billard', 'mischen', 'swipen', 'challenge']);
+  assert.deepEqual(G.GAMES.map(g => g.id), ['billard', 'mischen', 'swipen', 'challenge', 'rank']); /* 23 Nov 2026: + Ranking */
   assert.equal(G.GAMES[3].t(), 'Challenge');
-  assert.match(read('circle-games.css'), /grid-template-columns:repeat\(4,1fr\)/);
+  assert.match(read('circle-games.css'), /grid-template-columns:repeat\(5,1fr\)/); /* 23 Nov 2026: five tabs */
 });
 
 test('calendar weeks (ISO) are right across the year change', () => {

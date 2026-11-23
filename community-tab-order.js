@@ -64,7 +64,10 @@
     if (!root || !root.document) return;
 
     const W = root, D = W.document;
-    function order() { try { return parse(W.localStorage.getItem(KEY)); } catch (e) { return IDS.slice(); } }
+    /* 23 Nov 2026 (Emmanuel): Circle and Ranking left the top bar, so Community opens on Chat or For You (whichever comes first in
+       the saved order); Circle and Ranking keep their place after them */
+    const TOP = k => k === 'chat' || k === 'fy';
+    function order() { let o; try { o = parse(W.localStorage.getItem(KEY)); } catch (e) { o = IDS.slice(); } return o.filter(TOP).concat(o.filter(k => !TOP(k))); }
     function save(list) {
         const v = JSON.stringify(normalize(list));
         try { if (W.localStorage.getItem(KEY) !== v) W.localStorage.setItem(KEY, v); } catch (e) { }

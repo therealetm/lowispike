@@ -27,7 +27,9 @@
        8 Nov 2026, later (Emmanuel: "when clicking on challenge, it opens a new page ... it's very important that it is in the same
        style ... so it doesn't feel like it's opening a new page"): it is drawn in place under the bar like the other games
        (challenge-week.js), lit in the bar; the page overlay stays only as a fallback without challenge-week.js. */
-    { id: 'challenge', ic: '\uD83C\uDFC6', t: () => L('Challenge', 'Challenge', 'Reto'), panel: true }
+    { id: 'challenge', ic: '\uD83C\uDFC6', t: () => L('Challenge', 'Challenge', 'Reto'), panel: true },
+    /* 23 Nov 2026 (Emmanuel: "put ranking into the menu bar from circle"): Ranking left the top bar and opens from here */
+    { id: 'rank', ic: '\uD83E\uDD47', t: () => L('Ranking', 'Ranking', 'Ranking'), rank: true }
   ];
   /* the weekly rotation: the newest entry whose start week has come runs; add a plan here and it takes over on its week by itself */
   const CHALLENGES = [{ from: '2026-W45', id: 'fakeaway' }];
@@ -130,6 +132,7 @@
 
   function select(id) {
     const g = GAMES.find(x => x.id === id); if (!g) return;
+    if (g.rank) { try { if (tab() === 'shelf') go('foryou'); W.LowiRoomsUI && W.LowiRoomsUI.showView('rank'); } catch (e) { console.error(e); } return; }
     if (g.panel && !(W.LowiChallenge && W.LowiChallenge.mount)) { openChallenge(); return; }
     busy = true;
     try {

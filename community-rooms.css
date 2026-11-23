@@ -277,3 +277,5 @@ html.lw-bx-on #cmPaneChat .rm-fy .fy-rail,html.lw-bx-on #cmPaneChat .rm-fy .fy-m
    (html.cr-room) and in the games' own screens are untouched. A tap on a companion still opens their card. */
 html.csp-circle:not(.cr-room):not(.csp-game) #cmPaneChat[data-spirit-chat]:not([data-room]) #cgTo,
 html.csp-circle:not(.cr-room):not(.csp-game) #cmPaneChat[data-spirit-chat]:not([data-room]) .cm-compose{display:none!important}
+/* 23 Nov 2026: Circle / Ranking open with no top tab, so no pill */
+#cmPaneChat[data-spirit-chat] .rm-tabs.rm-nosel::before{opacity:0}

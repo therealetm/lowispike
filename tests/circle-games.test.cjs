@@ -21,7 +21,8 @@ test('the bar has exactly the three games in order, one menu, German labels, no 
   const ids = [...src.matchAll(/\{ id: '([a-z]+)'/g)].map(m => m[1]);
   /* test changed 8 Nov 2026 (Emmanuel: "Weekly Challenge, wo jeder mitmachen kann ... wie bei wo Mission und Shuffle"): a fourth
      tab, Challenge, after the three games (circle-weekly-challenge.test.cjs) */
-  assert.deepStrictEqual(ids, ['billard', 'mischen', 'swipen', 'challenge']);
+  /* 23 Nov 2026: Ranking joined the bar as a fifth tab (Emmanuel: "put ranking into the menu bar from circle") */
+  assert.deepStrictEqual(ids, ['billard', 'mischen', 'swipen', 'challenge', 'rank']);
   for (const w of ['Billard', 'Mischen', 'Swipen', 'Spiele']) assert.ok(src.includes("'" + w + "'"), w);
   assert.ok(!src.includes("'Freundesbaum'") && !/openTree|csp-tree/.test(src), 'no Friends tree tab or tree hook');
   assert.match(src, /view: 'shuffle'/);

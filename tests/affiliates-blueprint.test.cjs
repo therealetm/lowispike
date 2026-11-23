@@ -100,7 +100,7 @@ test('pages: shareable, private, branded, and the app tabs point at them', () =>
   assert.match(ui, /const VIEWS=\{\},PANES=/);
   // tabs are built from the user's saved order (community-tab-order.js), so check the default order and the generated button
   assert.match(ui, /\['room','chat','fy','rank'\]/);   /* 23 Oct: Ranking joined the bar; 24 Oct: For You + Studio; 4 Nov: Studio removed */
-  assert.match(ui, /tabOrder\(\)\.map\(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'\+k\+'"><\/button>'\)/);
+  assert.match(ui, /tabOrder\(\)\.filter\(k=>k==='chat'\|\|k==='fy'\)\.map\(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'\+k\+'"><\/button>'\)/);
   assert.match(ui, /a==='create'\|\|a==='aff'\|\|a==='rank'\|\|a==='fy'\|\|a==='studio'\)showView\(a\)/);
   assert.match(ui, /if\(!on\)\{if\(sw\)sw\.remove\(\);return;\}/, 'no Affiliates | Creation switch is ever shown');
   const S = require('../scripts/site-files.cjs'), pub = new Set(S.list(root));

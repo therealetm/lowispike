@@ -24,7 +24,7 @@ test('caveats stay visible: agent creates, the person posts; swipe numbers not r
 test('For You tool row: Post, My posts, Saved, Create content -> studio/, no Affiliate (removed 21 Nov), inside the feed', () => {
   const h = R('index.html');
   assert.match(h, /'<div class="fy-feed" id="fyFeed">' \+ fyToolsHTML\(\)/);
-  assert.match(h, /Content erstellen/);
+  assert.match(h, /"Erstellen", "Affiliate", "Feed", "Circle"/); /* 23 Nov 2026: Post, Feed, Create, Circle */
   assert.match(h, /href="studio\/"/);
   assert.doesNotMatch(h.slice(h.indexOf('function fyToolsHTML'), h.indexOf('function renderForYou')), /affiliates\//, 'no Affiliate circle');
 });

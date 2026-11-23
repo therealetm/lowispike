@@ -77,7 +77,8 @@ test('the Circle bar has only Billard, Mischen and Swipen; Billard is reached wi
   const js = R('circle-games.js');
   const ids = [...js.matchAll(/\{ id: '([a-z]+)', ic:/g)].map(m => m[1]);
   /* test changed 8 Nov 2026: the Weekly Challenge joined the bar as a fourth tab (circle-weekly-challenge.test.cjs) */
-  assert.deepStrictEqual(ids, ['billard', 'mischen', 'swipen', 'challenge']);
+  /* 23 Nov 2026: Ranking joined the bar as a fifth tab (Emmanuel: "put ranking into the menu bar from circle") */
+  assert.deepStrictEqual(ids, ['billard', 'mischen', 'swipen', 'challenge', 'rank']);
   assert.ok(!/baum|openTree|LowiCellRoom/.test(js.replace(/\/\*[\s\S]*?\*\//g, '')), 'no Friends tree anywhere in the bar');
   assert.match(js, /if \(id === 'billard'\) \{\n\s+if \(tab\(\) === 'shelf'\) go\('foryou'\);/);
 });

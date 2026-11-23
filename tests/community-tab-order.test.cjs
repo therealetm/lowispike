@@ -48,14 +48,16 @@ test('the order is saved per user and read back on the next open (lowispike.* ke
   assert.ok(R('index.html').includes('Object.keys(localStorage).forEach(k => { if (!syncedKey(k)) return;'), 'the account backup still takes lowispike.* keys');
   const store = {};
   let T = boot(store);
-  assert.deepStrictEqual(Array.from(T.order()), C.IDS, 'first visit: the default order');
+  /* 23 Nov 2026: Chat and For You come first (Circle and Ranking left the top bar), the saved order is kept within each group */
+  const top = l => l.filter(k => k === 'chat' || k === 'fy').concat(l.filter(k => k !== 'chat' && k !== 'fy'));
+  assert.deepStrictEqual(Array.from(T.order()), top(C.IDS), 'first visit: the default order');
   T.save(['chat', 'room', 'fy', 'rank']);
   assert.strictEqual(store[C.KEY], '["chat","room","fy","rank"]');
   T = boot(store);   /* a reload / another device after restore */
-  assert.deepStrictEqual(Array.from(T.order()), ['chat', 'room', 'fy', 'rank']);
+  assert.deepStrictEqual(Array.from(T.order()), ['chat', 'fy', 'room', 'rank']);
   assert.strictEqual(T.order()[0], 'chat', 'Community opens on this tab');
   store[C.KEY] = '{broken';
-  assert.deepStrictEqual(Array.from(boot(store).order()), C.IDS, 'a broken value falls back instead of breaking Community');
+  assert.deepStrictEqual(Array.from(boot(store).order()), top(C.IDS), 'a broken value falls back instead of breaking Community');
 });
 
 test('wired in: tabs built in the saved order, labelled by id, hold-drag on window, opens on the first tab', () => {
@@ -63,7 +65,7 @@ test('wired in: tabs built in the saved order, labelled by id, hold-drag on wind
   const iOrder = html.indexOf('community-tab-order.js?v='), iUi = html.indexOf('community-rooms-ui.js?v=');
   assert.ok(iOrder > 0 && iOrder < iUi, 'loaded before community-rooms-ui.js');
   assert.ok(html.includes('community-tab-order.css?v='));
-  assert.match(ui, /tabOrder\(\)\.map\(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'\+k\+'"><\/button>'\)/);
+  assert.match(ui, /tabOrder\(\)\.filter\(k=>k==='chat'\|\|k==='fy'\)\.map\(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'\+k\+'"><\/button>'\)/);
   assert.match(ui, /tabs\.forEach\(t=>\{t\.textContent=tr\(t\.dataset\.rm\);\}\)/, 'labels follow the tab, not its position');
   assert.doesNotMatch(ui, /tabs\[0\]\.textContent/);
   assert.match(js, /setTimeout\(lift, HOLD_MS\)/);

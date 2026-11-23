@@ -110,7 +110,9 @@ let bar=null,banner=null,menu=null,msg='',msgT=0;
 function ensure(){const pane=D.getElementById('cmPaneChat');if(!pane||!pane.hasAttribute('data-spirit-chat'))return null;
  if(bar&&bar.isConnected&&bar.parentNode===pane)return bar;
  bar=D.createElement('nav');bar.className='rm-bar';bar.setAttribute('data-noi18n','');
- bar.innerHTML='<div class="rm-top"><div class="rm-tabs" role="tablist">'+tabOrder().map(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'+k+'"></button>').join('')+'</div>'
+ /* 23 Nov 2026 (Emmanuel: "put ranking into the menu bar from circle ... put circle into the for you as one of those bubbles"): the
+    top bar is Chat and For You only; Circle opens from For You's Circle bubble, Ranking from Circle's game bar (circle-games.js) */
+ bar.innerHTML='<div class="rm-top"><div class="rm-tabs" role="tablist">'+tabOrder().filter(k=>k==='chat'||k==='fy').map(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'+k+'"></button>').join('')+'</div>'
   +'<button type="button" class="rm-pf rm-menu-btn" data-rm="menu" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="3.7"/><path d="M4.8 20c.9-3.9 3.7-6 7.2-6s6.3 2.1 7.2 6"/></svg></button></div><div class="rm-crumb" hidden><button type="button" class="rm-back" data-rm="back"></button><span class="rm-crumb-t"></span></div><div class="rm-banner" role="status" aria-live="polite"></div>';
  pane.insertBefore(bar,pane.firstChild);banner=bar.querySelector('.rm-banner');
  for(const ms of [60,250,600,1100])setTimeout(()=>fit(bar),ms);setTimeout(maybeWelcome,1200);
@@ -140,7 +142,7 @@ function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  const tabs=b.querySelectorAll('.rm-tab');tabs.forEach(t=>{t.textContent=tr(t.dataset.rm);});b.querySelector('.rm-tabs').setAttribute('aria-label',tr('tabs'));
  tabs.forEach(t=>{const on=t.dataset.rm===sel;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;});
  /* Phase E: one glowing pill slides under the open section (CSS .rm-tabs::before reads --rm-i) */
- const ti=[...tabs].findIndex(t=>t.dataset.rm===sel),tl=b.querySelector('.rm-tabs');if(tl.__n!==tabs.length){tl.__n=tabs.length;tl.style.setProperty('--rm-n',String(tabs.length));}if(tl.__i!==ti){tl.__i=ti;pillTo(tl,'--rm-i',Math.max(0,ti));}
+ const ti=[...tabs].findIndex(t=>t.dataset.rm===sel),tl=b.querySelector('.rm-tabs');tl.classList.toggle('rm-nosel',ti<0);/* 23 Nov 2026: in Circle / Ranking (no top tab) no pill lights up */if(tl.__n!==tabs.length){tl.__n=tabs.length;tl.style.setProperty('--rm-n',String(tabs.length));}if(tl.__i!==ti){tl.__i=ti;pillTo(tl,'--rm-i',Math.max(0,ti));}
  if(view){pane.setAttribute('data-rm-view',view);D.documentElement.classList.toggle('rm-view',pageActive());/* Oct 23 2026: only while Community is open (watch() repaints every 1.5 s, also behind Home) */if(VIEWS[view])ensureView(pane);else{const bx=pane.querySelector(':scope>.rm-view');if(bx)ensureView(pane);}}
  else{pane.removeAttribute('data-rm-view');D.documentElement.classList.remove('rm-view');if(pane.querySelector(':scope>.rm-view'))ensureView(pane);}
  /* a new section starts at the top: a pane left scrolled by the last one slid the tabs under the floating profile picture (iPhone SE) */

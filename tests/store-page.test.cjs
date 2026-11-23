@@ -19,3 +19,7 @@ test('store sections: What’s New, App Privacy (matches privacy.html), Accessib
   assert.match(js, /iAgeV: '16\+'/); assert.match(R('privacy.html'), /people aged 16 and over/);
   assert.match(js, /el\.classList\.toggle\('mini', on\)/); assert.match(css, /\.lsp\.mini \.lsp-mini::before/);
 });
+test('the store page is never made inert by the sign-in lock (23 Nov 2026 bug: the whole page was frozen)', () => {
+  assert.match(R('index.html'), /function lockApp\(on\)\{ Array\.prototype\.forEach\.call\(document\.body\.children, el => \{ if \(el\.id === "r2gate" \|\| el\.id === "lspStore"/);
+  assert.match(js, /attributeFilter: \['inert'\]/);
+});

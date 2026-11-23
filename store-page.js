@@ -126,6 +126,10 @@
       else if (b.dataset.lsp === 'share') { const u = location.origin + location.pathname; if (navigator.share) navigator.share({ title: 'LOWiSPIKE', text: t('sub'), url: u }).catch(() => { }); else if (navigator.clipboard) navigator.clipboard.writeText(u).then(() => { b.title = t('shared'); }); }
     });
     D.body.appendChild(el); D.documentElement.classList.add('lsp-open'); loadReviews();
+    /* 23 Nov 2026 bug (Emmanuel: "the whole page is frozen"): the sign-in screen's lock (index.html lockApp) made every other layer inert,
+       this page too, so nothing could be tapped or scrolled. lockApp now skips it; and should anything else mark it inert, undo it. */
+    const unlock = () => { if (el && (el.inert || el.hasAttribute('inert'))) { el.inert = false; el.removeAttribute('inert'); el.removeAttribute('data-gate-inert'); } };
+    unlock(); try { new MutationObserver(unlock).observe(el, { attributes: true, attributeFilter: ['inert'] }); } catch (e) { }
     return el;
   }
   W.LowiStorePage = { open, close, want, _TX: TX };

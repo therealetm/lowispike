@@ -148,19 +148,20 @@
   function instOn(mode) {
     const L = layer(); if (!L) return; el.classList.add('inst');
     const where = crios() ? 'tr' : safariMajor() >= 26 ? 'br' : 'bc';
-    if (mode === 'sharing') L.innerHTML = '<div class="ix-top"><p>' + esc(ix('top')) + '</p>' + anim() + '</div>';
-    else if (mode === 'after') L.innerHTML = '<div class="ix-top"><p>' + esc(ix('top')) + '</p>' + anim() + '</div><div class="ix-card"><h3>' + esc(ix('doneH')) + '</h3><p>' + esc(ix('doneT')) + '</p><h3>' + esc(ix('notH')) + '</h3><p>' + esc(crios() ? ix('notTc') : safariMajor() >= 26 ? ix('notT') : ix('notTold')) + '</p>' +
-      (navigator.share ? '<button type="button" class="lsp-get ix-big" data-lsp="again">' + esc(ix('again')) + '</button>' : '') + '<button type="button" class="ix-link" data-lsp="cont">' + esc(ix('cont')) + '</button></div>' + arrow(where);
+    if (mode === 'after') L.innerHTML = '<div class="ix-top"><p>' + esc(ix('top')) + '</p>' + anim() + '</div><div class="ix-card"><h3>' + esc(ix('doneH')) + '</h3><p>' + esc(ix('doneT')) + '</p><h3>' + esc(ix('notH')) + '</h3><p>' + esc(crios() ? ix('notTc') : safariMajor() >= 26 ? ix('notT') : ix('notTold')) + '</p>' +
+      '<button type="button" class="ix-link" data-lsp="cont">' + esc(ix('cont')) + '</button></div>' + arrow(where);
     else if (mode === 'inapp') L.innerHTML = '<div class="ix-card ix-mid"><h3>' + esc(ix('inH')) + '</h3><p>' + esc(ix('inT')) + '</p>' + (ios() ? '<button type="button" class="lsp-get ix-big" data-lsp="safari">' + esc(ix('safari')) + '</button>' : '') + '<button type="button" class="ix-btn" data-lsp="copy">' + esc(ix('copy')) + '</button><button type="button" class="ix-link" data-lsp="cont">' + esc(ix('cont')) + '</button></div>' + arrow('tr');
     else if (mode === 'done') L.innerHTML = '<div class="ix-card ix-mid"><h3>' + esc(ix('doneH')) + '</h3><p>' + esc(ix('doneT')) + '</p><button type="button" class="ix-link" data-lsp="cont">' + esc(ix('cont')) + '</button></div>';
     else if (mode === 'android') L.innerHTML = '<div class="ix-card ix-mid"><h3>' + esc(ix('anH')) + '</h3><p>' + esc(ix('anT')) + '</p><button type="button" class="ix-link" data-lsp="cont">' + esc(ix('cont')) + '</button></div>' + arrow('tr');
     L.insertAdjacentHTML('afterbegin', '<button type="button" class="ix-back" data-lsp="ixback" aria-label="Back">‹</button>');
   }
   function instOff() { if (!el) return; el.classList.remove('inst'); const L = el.querySelector('#lspInst'); if (L) L.remove(); }
-  function shareSheet() {
-    instOn('sharing');
-    let p; try { p = navigator.share({ title: 'LOWiSPIKE', url: url() }); } catch (e) { p = Promise.reject(e); }
-    Promise.resolve(p).catch(() => { }).then(() => { if (el && el.classList.contains('inst')) instOn('after'); });
+  /* 23 Nov 2026, tried on his iPhone: the share menu a page can open (navigator.share) has no "Add to Home Screen" row, only Safari's
+     own menu has it, and no page can open that one. So Get on an iPhone plays the replay (install-replay.js): Safari's own screens,
+     tapped by themselves, step by step, then "Your turn" with an arrow at the real button. */
+  function replay(variant) {
+    const R = W.LowiInstallReplay; if (!R || !el) return instOn(android() ? 'android' : 'after');
+    R.open(el, { variant, lang, onBrowser: goBrowser, onClose: () => { } });
   }
   function openSafari() { location.href = 'x-safari-' + url(); }
   function copyLink(b) { const u = url(); const ok = () => { b.textContent = ix('copied'); };
@@ -173,8 +174,9 @@
   }
   function get() {
     if (inapp()) { instOn('inapp'); if (ios()) setTimeout(openSafari, 50); return; }
-    if (android()) { if (bip) { const e = bip; bip = null; try { e.prompt(); Promise.resolve(e.userChoice).then(c => instOn(c && c.outcome === 'accepted' ? 'done' : 'android')).catch(() => instOn('android')); } catch (x) { instOn('android'); } } else instOn('android'); return; }
-    if (ios()) { if (navigator.share) shareSheet(); else instOn('after'); return; }
+    /* Android: the browser's own install window opens at once when it offers one; otherwise (or when they say no) the replay */
+    if (android()) { if (bip) { const e = bip; bip = null; try { e.prompt(); Promise.resolve(e.userChoice).then(c => { if (c && c.outcome === 'accepted') instOn('done'); else replay('android'); }).catch(() => replay('android')); } catch (x) { replay('android'); } } else replay('android'); return; }
+    if (ios()) { replay(W.LowiInstallReplay ? W.LowiInstallReplay.variantFor(UA) : ''); return; }
     goBrowser();   /* a computer: the app works right here */
   }
   function close() { ss.set(SEEN, '1'); if (!el) return; const e = el; el = null; e.classList.add('out'); D.documentElement.classList.remove('lsp-open'); setTimeout(() => e.remove(), 260); }
@@ -188,7 +190,6 @@
       const l = e.target.closest('[data-lsp-l]'); if (l) { lang = l.dataset.lspL; try { localStorage.setItem('lowispike.lang', lang); } catch (x) { } paint(); try { if (W.LowiLang && W.LowiLang.set) W.LowiLang.set(lang); } catch (x) { } return; }
       const b = e.target.closest('[data-lsp]'); if (!b) return;
       if (b.dataset.lsp === 'get') get();
-      else if (b.dataset.lsp === 'again') shareSheet();
       else if (b.dataset.lsp === 'cont') goBrowser();
       else if (b.dataset.lsp === 'safari') openSafari();
       else if (b.dataset.lsp === 'copy') copyLink(b);

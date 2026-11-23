@@ -1,0 +1,177 @@
+/* install-replay.js (23 Nov 2026): a full-screen replay that looks like the phone's own Safari / Chrome, drawn over the page.
+   Sizes are the phone's own points (CSS px = iOS points), measured on Emmanuel's screenshots of Safari 26 (23 Nov 2026). */
+.rp{position:fixed;inset:0;z-index:7;overflow:hidden;color:#000;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
+  font:17px/1.25 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;letter-spacing:-.01em}
+.rp *{box-sizing:border-box}
+.rp-screen{position:absolute;inset:0}
+.rp-dim{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background-color .3s ease}
+.rp.st-menu .rp-dim,.rp.st-amenu .rp-dim{background:rgba(0,0,0,.16)}
+.rp.st-sheet .rp-dim,.rp.st-list .rp-dim{background:rgba(0,0,0,.24)}
+.rp.st-full .rp-dim,.rp.st-a2hs .rp-dim{background:rgba(0,0,0,.36)}
+.rp.st-adlg .rp-dim{background:rgba(0,0,0,.42)}
+.rp.st-end .rp-dim{background:rgba(0,0,0,.6)}
+.rp svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+/* the page menu (≡ in the address field), frosted, popping out of the bar */
+.rp-menu{position:absolute;bottom:8px;left:19.5%;width:min(58%,262px);padding:6px 0;border-radius:26px;background:rgba(236,236,241,.82);
+  -webkit-backdrop-filter:blur(26px) saturate(1.7);backdrop-filter:blur(26px) saturate(1.7);box-shadow:0 14px 44px rgba(0,0,0,.28);
+  transform-origin:12% 100%;transform:scale(.4);opacity:0;transition:transform .32s cubic-bezier(.2,.9,.25,1.12),opacity .2s ease}
+.rp-menu.rp-menu-r{left:auto;right:10px;transform-origin:92% 100%}
+.rp.st-menu .rp-menu{transform:none;opacity:1}
+.rp-menu .rpr{display:flex;align-items:center;gap:15px;height:44px;padding:0 18px;font-size:17px;color:#000;white-space:nowrap}
+.rp-menu .rpr i{display:grid;place-items:center;width:24px}
+.rp-menu hr{border:0;height:1px;margin:5px 0;background:rgba(60,60,67,.18)}
+.rp .rpr.hit,.rp .rpact.hit b,.rp .rpa-add.hit,.rp .rph-me.hit img,.rp .rpad-i.hit{filter:brightness(.82)}
+.rp .rpr.hit{background:rgba(0,0,0,.08)}
+
+/* the share sheet: frosted at half height, white and full after View More (Safari 26); white with the list at once (older) */
+.rp-sheet{position:absolute;left:8px;right:8px;top:max(calc(env(safe-area-inset-top,0px) + 98px),calc(100% - 500px));bottom:8px;border-radius:38px;overflow:hidden;background:rgba(216,220,228,.88);
+  -webkit-backdrop-filter:blur(30px) saturate(1.6);backdrop-filter:blur(30px) saturate(1.6);box-shadow:0 -6px 40px rgba(0,0,0,.18);
+  transform:translateY(112%);transition:transform .45s cubic-bezier(.2,.9,.25,1),top .42s cubic-bezier(.2,.9,.25,1),left .42s ease,right .42s ease,bottom .42s ease,background-color .3s ease,border-radius .42s ease}
+.rp.st-sheet .rp-sheet,.rp.st-full .rp-sheet,.rp.st-list .rp-sheet{transform:none}
+.rp.st-full .rp-sheet{top:calc(env(safe-area-inset-top,0px) + 98px);left:0;right:0;bottom:0;border-radius:38px 38px 0 0;background:#fff}
+.rp-sheet.rp-old{top:34%;left:0;right:0;bottom:0;border-radius:14px 14px 0 0;background:#fff}
+.rps-in{position:relative;padding:20px 22px 30px;transition:transform .6s cubic-bezier(.3,.8,.3,1)}
+.rps-x{position:absolute;right:16px;top:16px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.14);opacity:0;transition:opacity .2s}
+.rp.st-full .rps-x{opacity:1}
+.rps-h{display:flex;align-items:center;gap:15px;padding-right:44px}
+.rps-h img{width:64px;height:64px;border-radius:15px;flex:none;object-fit:cover;background:#0b1430}
+.rps-h div{min-width:0}
+.rps-h b{display:block;font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rps-h small{display:block;color:#8a8a8e;font-size:16px;margin-top:1px}
+.rps-opt{display:inline-block;margin-top:7px;padding:6px 13px;border-radius:999px;background:rgba(0,0,0,.06);font-size:15px}
+.rps-ppl,.rps-apps,.rps-acts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:16px 0 14px;border-top:1px solid rgba(60,60,67,.16);margin-top:16px}
+.rps-ppl div,.rps-apps .rpapp,.rpact{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center}
+.rpp{width:62px;height:62px;border-radius:50%;background:linear-gradient(150deg,#c8b8a8,#7a6a5e)}
+.rpp-b{background:linear-gradient(150deg,#b9c6d6,#56667a)}.rpp-c{background:linear-gradient(150deg,#d6c2b0,#8a6f5a)}.rpp-d{background:linear-gradient(150deg,#cfd6dd,#7b8794)}
+.rps-ppl span{width:46px;height:7px;border-radius:4px;background:rgba(60,60,67,.2)}
+.rpai{width:62px;height:62px;border-radius:15px;display:grid;place-items:center;position:relative;overflow:hidden}
+.rpai.ad{background:radial-gradient(circle at 50% 62%,#fff 0 5px,#d9dde3 5.5px 12px,#fff 12.5px 18px,#cfd4db 18.5px 26px,#e9ecf0 26.5px)}
+.rpai.ms{background:linear-gradient(#5cf777,#0ebe2c)}.rpai.ms i{width:38px;height:30px;border-radius:50%;background:#fff}
+.rpai.ml{background:linear-gradient(#1e9cff,#1366e6)}.rpai.ml i{width:38px;height:26px;border-radius:4px;background:#fff;clip-path:polygon(0 0,50% 55%,100% 0,100% 100%,0 100%)}
+.rpai.nt{background:#fff;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}.rpai.nt i{position:absolute;inset:0;background:linear-gradient(#ffd60a 0 13px,transparent 13px),repeating-linear-gradient(transparent 0 10px,rgba(0,0,0,.12) 10px 11px)}
+.rpapp span,.rpact span{font-size:13px;color:#000;line-height:1.2}
+.rpact b{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.62)}
+.rp.st-full .rpact b{background:#f0f0f3}
+.rpact b svg{width:26px;height:26px}
+.rp-more .rp-lv{display:none}.rp.st-full .rp-more .rp-mv{display:none}.rp.st-full .rp-more .rp-lv{display:grid}.rp.st-full .rp-more span.rp-lv{display:block}
+.rps-list{display:none;margin-top:6px;border-radius:22px;background:#efeff2;overflow:hidden}
+.rp.st-full .rps-list,.rp-old .rps-list{display:block}
+.rps-list2{margin-top:16px}
+.rps-list .rpr{display:flex;align-items:center;gap:16px;height:56px;padding:0 20px;font-size:18px;border-top:1px solid rgba(60,60,67,.14)}
+.rps-list .rpr:first-child{border-top:0}
+.rps-list .rpr i{display:grid;place-items:center;width:28px}.rps-list .rpr i svg{width:25px;height:25px}
+.rp-old .rps-oldlist{margin-top:14px}
+
+/* Add to Home Screen */
+.rp-a2{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 98px);bottom:0;border-radius:38px 38px 0 0;background:#f2f2f7;
+  transform:translateY(112%);transition:transform .45s cubic-bezier(.2,.9,.25,1)}
+.rp-a2.rp-old{border-radius:14px 14px 0 0}
+.rp.st-a2hs .rp-a2{transform:none}
+.rp.st-a2hs .rp-sheet{transform:translateY(112%)}
+.rpa-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:16px 16px 18px}
+.rpa-x{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.12)}
+.rpa-t{font-size:17px;font-weight:600;text-align:center;flex:1}
+.rpa-add{padding:10px 18px;border-radius:999px;background:#0a84ff;color:#fff;font-weight:600}
+.rp-old .rpa-add{padding:10px 4px;background:none;color:#0a84ff}
+.rpa-c{color:#0a84ff;padding:10px 4px}
+.rpa-card{display:flex;align-items:center;gap:14px;margin:0 16px;padding:14px;border-radius:16px;background:#fff}
+.rpa-card img{width:62px;height:62px;border-radius:14px;object-fit:cover}
+.rpa-name{display:block;font-size:17px;padding-bottom:6px;border-bottom:1px solid rgba(60,60,67,.16)}
+.rpa-card small{display:block;margin-top:6px;color:#8a8a8e;font-size:14px}
+.rpa-row{display:flex;align-items:center;justify-content:space-between;margin:16px 16px 0;padding:12px 16px;border-radius:16px;background:#fff}
+.rpa-tg{width:51px;height:31px;border-radius:999px;background:#34c759;position:relative}
+.rpa-tg::after{content:"";position:absolute;right:2px;top:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+.rpa-note{margin:10px 32px 0;color:#6e6e73;font-size:13px;line-height:1.35}
+
+/* Chrome on Android */
+.rp-amenu{position:absolute;top:4px;right:4px;width:min(66%,270px);padding:6px 0;border-radius:16px;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.3);
+  transform-origin:96% 2%;transform:scale(.4);opacity:0;transition:transform .28s cubic-bezier(.2,.9,.25,1.1),opacity .18s ease;font-family:Roboto,"Google Sans",system-ui,sans-serif}
+.rp.st-amenu .rp-amenu{transform:none;opacity:1}
+.rpam-top{display:flex;justify-content:space-around;padding:8px 6px 10px;border-bottom:1px solid #e3e3e3;font-size:20px;color:#444}
+.rpam-top i{font-style:normal;display:grid;place-items:center;width:32px}.rpam-top svg{width:20px;height:20px}
+.rp-amenu .rpr{height:46px;display:flex;align-items:center;padding:0 18px;font-size:15.5px;color:#1f1f1f}
+.rp-adlg{position:absolute;left:50%;top:42%;width:min(84%,320px);padding:22px 22px 14px;border-radius:28px;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.35);
+  transform:translate(-50%,-50%) scale(.9);opacity:0;transition:transform .25s ease,opacity .2s ease;font-family:Roboto,"Google Sans",system-ui,sans-serif}
+.rp.st-adlg .rp-adlg{transform:translate(-50%,-50%);opacity:1}
+.rp-adlg>b{display:block;font-size:21px;font-weight:500;color:#1f1f1f}
+.rpad-r{display:flex;align-items:center;gap:14px;margin:18px 0 10px;padding-bottom:8px;border-bottom:2px solid #0b57d0}
+.rpad-r img{width:44px;height:44px;border-radius:50%}
+.rpad-b{display:flex;justify-content:flex-end;gap:22px;padding:8px 0 4px;color:#0b57d0;font-weight:600;font-size:15px}
+.rpad-b span{padding:8px 4px}
+
+/* the Home Screen, the new icon pops in, then the app opens */
+.rp-home{position:absolute;inset:0;background:linear-gradient(165deg,#3b5ea8 0%,#16264f 52%,#3e2156 100%);opacity:0;transition:opacity .35s ease}
+.rp.st-home .rp-home,.rp.st-launch .rp-home{opacity:1}
+.rph-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px 10px;padding:calc(env(safe-area-inset-top,0px) + 112px) 22px 0}
+.rph-app{display:flex;flex-direction:column;align-items:center;gap:6px}
+.rph-app b{width:62px;height:62px;border-radius:15px;background:hsl(var(--h) 42% 56% / .92)}
+.rph-app span{width:44px;height:6px;border-radius:3px;background:rgba(255,255,255,.35)}
+.rph-me img{width:62px;height:62px;border-radius:15px;object-fit:cover;box-shadow:0 0 0 2px rgba(255,255,255,.18)}
+.rph-me span{width:auto;height:auto;background:none;color:#fff;font-size:12px;font-weight:500}
+.rp.st-home .rph-me{animation:rphPop .7s .3s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes rphPop{from{transform:scale(0);opacity:0}to{transform:none;opacity:1}}
+.rph-dock{position:absolute;left:14px;right:14px;bottom:14px;display:flex;justify-content:space-around;padding:14px;border-radius:34px;background:rgba(255,255,255,.2);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.rph-dock b{width:58px;height:58px;border-radius:14px;background:rgba(255,255,255,.5)}
+.rp-launch{position:absolute;inset:0;display:grid;place-items:center;background:#05070c;opacity:0;transition:opacity .35s ease}
+.rp-launch img{width:96px;height:96px;border-radius:22px;transform:scale(.6);transition:transform .45s cubic-bezier(.2,.9,.25,1)}
+.rp.st-launch .rp-launch{opacity:1}.rp.st-launch .rp-launch img{transform:none}
+
+/* the touch circle, like a screen recording with touches shown */
+.rp-touch{position:absolute;left:0;top:0;z-index:9;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(120,120,128,.5);border:2.5px solid rgba(255,255,255,.92);
+  box-shadow:0 2px 10px rgba(0,0,0,.3);transform:translate(var(--tx,50vw),var(--ty,60vh));opacity:0;transition:transform .6s cubic-bezier(.3,.8,.3,1),opacity .2s ease}
+.rp-touch.on{opacity:1}
+.rp-touch.press{transition:transform .6s cubic-bezier(.3,.8,.3,1),opacity .2s ease,width .12s,height .12s;background:rgba(90,90,96,.75)}
+.rp-touch.press::after{content:"";position:absolute;inset:-12px;border-radius:50%;border:2px solid rgba(255,255,255,.7);animation:rpRing .4s ease-out}
+@keyframes rpRing{from{transform:scale(.6);opacity:1}to{transform:scale(1.4);opacity:0}}
+
+/* the real button in the browser bar, right below (or above) the page */
+.rp-anchor{position:absolute;left:var(--x);z-index:8;display:none;flex-direction:column;align-items:center;gap:2px;transform:translateX(-50%)}
+.rp-anchor.rp-bottom{bottom:2px}
+.rp-anchor.rp-top{top:2px;flex-direction:column-reverse}
+.rp.st-page .rp-anchor,.rp.st-end .rp-anchor{display:flex}
+.rpan-g{display:grid;place-items:center;min-width:48px;height:48px;padding:0 10px;border-radius:999px;background:rgba(250,250,252,.94);color:#000;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+.rpan-g em{font-style:normal;font-size:24px;font-weight:700;line-height:1}
+.rpan-ar{font-size:34px;font-weight:900;color:#0a84ff;text-shadow:0 0 12px rgba(10,132,255,.55);line-height:1;animation:rpBob 1s ease-in-out infinite}
+.rp-top .rpan-ar{animation-name:rpBobUp}
+@keyframes rpBob{50%{transform:translateY(7px)}}@keyframes rpBobUp{50%{transform:translateY(-7px)}}
+.rp.st-end .rpan-g{box-shadow:0 0 0 4px #0a84ff,0 4px 18px rgba(0,0,0,.35)}
+
+/* the caption: replay, step n of N, taps and seconds */
+.rp-cap{position:absolute;z-index:12;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 8px);padding:10px 12px 11px;border-radius:20px;color:#fff;
+  background:rgba(18,18,22,.9);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 6px 24px rgba(0,0,0,.35)}
+.rp-chromeios .rp-cap,.rp-android .rp-cap{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
+.rpc-top{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.7)}
+.rpc-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;background:#ff3b30;color:#fff;font-weight:700;font-size:12.5px}
+.rpc-taps{flex:1;min-width:0}
+.rpc-skip{border:0;background:none;color:rgba(255,255,255,.75);font:inherit;font-size:14px;padding:6px 2px;min-height:32px;cursor:pointer}
+.rpc-step{display:flex;align-items:center;gap:9px;margin-top:7px}
+.rpc-n{flex:none;padding:3px 9px;border-radius:999px;background:#0a84ff;font-size:12.5px;font-weight:700}
+.rpc-n[hidden]{display:none}
+.rpc-t{font-size:17px;font-weight:700;line-height:1.25}
+.rp.st-end .rp-cap{display:none}
+
+/* your turn */
+.rp-end{position:absolute;inset:0;z-index:11;display:none;align-items:center;justify-content:center;padding:20px}
+.rp.st-end .rp-end{display:flex}
+.rpe-card{width:min(360px,100%);padding:22px 20px 16px;border-radius:24px;background:#1c1c1e;color:#fff;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+.rpe-card h2{margin:0 0 6px;font-size:28px}
+.rpe-go{margin:0 0 6px;font-size:18px;font-weight:700;color:#64b5ff}
+.rpe-then{margin:0 0 16px;color:#aeaeb2;font-size:15px}
+.rpe-card button{display:block;width:100%;min-height:50px;margin-top:8px;border-radius:16px;font:inherit;font-size:17px;font-weight:600;cursor:pointer}
+.rpe-again{border:0;background:#0a84ff;color:#fff}
+.rpe-other{border:1px solid #3a3a3c;background:none;color:#fff}
+.rpe-browser{border:0;background:none;color:#8e8e93;font-weight:500!important;text-decoration:underline}
+.rpe-card small{display:block;margin-top:8px;color:#8e8e93;font-size:12.5px}
+@media (prefers-reduced-motion:reduce){.rp *{transition-duration:.01s!important;animation:none!important}}
+
+/* short screens (iPhone SE and a Safari bar): smaller pictures so the share sheet's View More row stays in view, like on the phone */
+@media (max-height:640px){
+  .rps-in{padding:14px 18px 24px}
+  .rps-h img{width:54px;height:54px;border-radius:13px}
+  .rps-ppl,.rps-apps,.rps-acts{padding:10px 0 9px;margin-top:10px}
+  .rpp,.rpai{width:52px;height:52px}
+  .rpact b{width:50px;height:50px}
+  .rps-opt{margin-top:4px;padding:4px 11px}
+  .rps-list .rpr{height:50px}
+}

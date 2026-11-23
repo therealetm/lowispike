@@ -24,9 +24,11 @@ test('the store page is never made inert by the sign-in lock (23 Nov 2026 bug: t
   assert.match(R('index.html'), /function lockApp\(on\)\{ Array\.prototype\.forEach\.call\(document\.body\.children, el => \{ if \(el\.id === "r2gate" \|\| el\.id === "lspStore"/);
   assert.match(js, /attributeFilter: \['inert'\]/);
 });
-test('Get opens the share menu at once with the what-to-tap loop on top; then a small card with an arrow; in-app browsers open Safari; Android uses its prompt (23 Nov 2026)', () => {
-  assert.match(js, /if \(ios\(\)\) \{ if \(navigator\.share\) shareSheet\(\); else instOn\('after'\); return; \}/);
-  assert.match(js, /p = navigator\.share\(\{ title: 'LOWiSPIKE', url: url\(\) \}\)/); assert.match(js, /instOn\('after'\)/);
+/* changed 23 Nov 2026 (his iPhone): the share menu navigator.share opens has no "Add to Home Screen", so Get on an iPhone plays the
+   replay (install-replay.js, tests/install-replay.test.cjs); the small card with the arrow stays as the fallback */
+test('Get on an iPhone plays the replay; the card with an arrow is the fallback; in-app browsers open Safari; Android uses its prompt (23 Nov 2026)', () => {
+  assert.match(js, /if \(ios\(\)\) \{ replay\(W\.LowiInstallReplay \? W\.LowiInstallReplay\.variantFor\(UA\) : ''\); return; \}/);
+  assert.doesNotMatch(/function get\(\) \{[\s\S]*?\n  \}/.exec(js)[0], /navigator\.share|shareSheet/); assert.match(js, /if \(!R \|\| !el\) return instOn\(android\(\) \? 'android' : 'after'\);/);
   assert.match(js, /if \(inapp\(\)\) \{ instOn\('inapp'\);/); assert.match(js, /e\.prompt\(\)/);
   assert.match(js, /sessionStorage\.setItem\('lowi\.a1\.skip', '1'\)/, 'continuing in the browser skips the old step-by-step guide');
   assert.match(css, /\.ix-top\{position:absolute;left:0;right:0;top:0;height:38vh/, 'the loop sits above where the share menu opens');

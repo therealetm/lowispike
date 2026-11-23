@@ -3,8 +3,8 @@
    to download an app, people are used to that").
    The first thing a new visitor sees at lowispike.com in a browser: an app-store-style listing (icon, name, subtitle, Get, a short
    info row, real screenshots with big captions, a short description, Impressum and Privacy at the bottom).
-   Honest on purpose: no star ratings, no chart rank, no download counts (we have none). "Get" leads to the existing
-   Add to Home Screen guide (A1 in index.html), or straight into the app on a computer.
+   Honest on purpose: no star ratings, no chart rank, no download counts (we have none). "Get" opens the phone's share menu with a
+   small looping animation of what to tap (see get() below), or goes straight into the app on a computer.
    Shown once per browser session, never in the installed app (standalone), never for someone who already uses the app in this
    browser, never on a deep link (#post, ?ref ...). EN / DE / ES. */
 (function (W, D) {
@@ -110,6 +110,73 @@
       '<footer class="lsp-foot"><p>' + esc(t('med')) + '</p><a href="' + IMPRINT + '" target="_blank" rel="noopener">' + esc(t('imp')) + '</a> · <a href="privacy.html" target="_blank" rel="noopener">' + esc(t('priv')) + '</a> · © LOWiSPIKE</footer>';
   }
   function paint() { if (el) el.querySelector('.lsp-in').innerHTML = html(); }
+  /* ---------- Get (23 Nov 2026, Emmanuel: "when they click on Get ... the closest thing that gets them to the add to home screen ...
+     automatically opens that thing ... in the background they still see a motion graphic replaying what they need to do ... once they've
+     done that, they can go through the registration"; the old step-by-step guide (A1) "overwhelms people").
+     iPhone has no way for a page to open Add to Home Screen itself (WebKit bugs 198673, 193959). The closest: Get opens the share menu
+     at once (navigator.share). The share menu covers the lower part of the screen, so the top part loops a small animation of what to
+     tap in it (View More, then Add to Home Screen). When the menu closes, one small panel says what is next: open it from the Home
+     Screen, or, if the option was not in that menu, an arrow at the real ••• button. Android: the browser's own install prompt.
+     Instagram / TikTok browsers: open Safari first. A computer: straight into the app. ---------- */
+  const UA = navigator.userAgent || '';
+  const ios = () => /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && (navigator.maxTouchPoints || 0) > 1);
+  const android = () => /Android/i.test(UA);
+  const inapp = () => /Instagram|FBAN|FBAV|FB_IAB|FBIOS|TikTok|musical_ly|Bytedance|BytedanceWebview|trill_|Snapchat|LinkedInApp|Pinterest|Line\//i.test(UA);
+  const crios = () => /CriOS|FxiOS|EdgiOS/.test(UA);
+  const safariMajor = () => { const m = /Version\/(\d+)/.exec(UA); return m ? +m[1] : 0; };
+  let bip = null; W.addEventListener('beforeinstallprompt', e => { bip = e; });
+  const IX = {
+    en: { top: 'In the menu: tap “View More”, then “Add to Home Screen”.', vm: 'View More', a2: 'Add to Home Screen', copyRow: 'Copy', fav: 'Add to Favourites', find: 'Find on Page',
+      doneH: 'Added it?', doneT: 'Open LOWiSPIKE from your Home Screen. You sign up there, once.', notH: 'Not in that menu?', notT: 'Tap ••• at the bottom right, then Share, View More, Add to Home Screen.', notTold: 'Tap the Share button at the bottom, then Add to Home Screen.', notTc: 'Tap Share at the top right, then Add to Home Screen.',
+      again: 'Open the menu again', cont: 'Continue in the browser', inH: 'Open it in Safari first', inT: 'This app’s browser can’t add LOWiSPIKE to your Home Screen. Tap ••• at the top right, then “Open in browser”.', safari: 'Open in Safari', copy: 'Copy link', copied: 'Link copied. Paste it in Safari.',
+      anH: 'Install LOWiSPIKE', anT: 'Tap ⋮ at the top right, then “Add to Home screen” or “Install app”.' },
+    de: { top: 'Im Menü: tippe auf „Mehr anzeigen“, dann auf „Zum Home-Bildschirm“.', vm: 'Mehr anzeigen', a2: 'Zum Home-Bildschirm', copyRow: 'Kopieren', fav: 'Zu Favoriten', find: 'Auf der Seite suchen',
+      doneH: 'Hinzugefügt?', doneT: 'Öffne LOWiSPIKE auf deinem Home-Bildschirm. Dort registrierst du dich, einmal.', notH: 'Nicht in dem Menü?', notT: 'Tippe unten rechts auf •••, dann Teilen, Mehr anzeigen, Zum Home-Bildschirm.', notTold: 'Tippe unten auf Teilen, dann auf Zum Home-Bildschirm.', notTc: 'Tippe oben rechts auf Teilen, dann auf Zum Home-Bildschirm.',
+      again: 'Menü nochmal öffnen', cont: 'Im Browser weitermachen', inH: 'Erst in Safari öffnen', inT: 'Der Browser dieser App kann LOWiSPIKE nicht auf den Home-Bildschirm legen. Tippe oben rechts auf ••• und dann auf „Im Browser öffnen“.', safari: 'In Safari öffnen', copy: 'Link kopieren', copied: 'Link kopiert. Füg ihn in Safari ein.',
+      anH: 'LOWiSPIKE installieren', anT: 'Tippe oben rechts auf ⋮ und dann auf „Zum Startbildschirm hinzufügen“ oder „App installieren“.' },
+    es: { top: 'En el menú: toca «Ver más» y luego «Añadir a pantalla de inicio».', vm: 'Ver más', a2: 'Añadir a pantalla de inicio', copyRow: 'Copiar', fav: 'Añadir a favoritos', find: 'Buscar en la página',
+      doneH: '¿La añadiste?', doneT: 'Abre LOWiSPIKE desde tu pantalla de inicio. Allí te registras, una vez.', notH: '¿No estaba en ese menú?', notT: 'Toca ••• abajo a la derecha, luego Compartir, Ver más, Añadir a pantalla de inicio.', notTold: 'Toca Compartir abajo y luego Añadir a pantalla de inicio.', notTc: 'Toca Compartir arriba a la derecha y luego Añadir a pantalla de inicio.',
+      again: 'Abrir el menú otra vez', cont: 'Seguir en el navegador', inH: 'Ábrela primero en Safari', inT: 'El navegador de esta app no puede añadir LOWiSPIKE a tu pantalla de inicio. Toca ••• arriba a la derecha y luego «Abrir en el navegador».', safari: 'Abrir en Safari', copy: 'Copiar enlace', copied: 'Enlace copiado. Pégalo en Safari.',
+      anH: 'Instalar LOWiSPIKE', anT: 'Toca ⋮ arriba a la derecha y luego «Añadir a pantalla de inicio» o «Instalar app».' }
+  };
+  const ix = k => (IX[lang] || IX.en)[k];
+  const url = () => location.origin + location.pathname;
+  function layer() { let L = el && el.querySelector('#lspInst'); if (!L && el) { L = D.createElement('div'); L.id = 'lspInst'; L.setAttribute('role', 'dialog'); L.setAttribute('aria-modal', 'true'); el.appendChild(L); } return L; }
+  /* the loop for the top of the screen: the share menu, View More, the list, Add to Home Screen lit (pure CSS, see store-page.css) */
+  function anim() { return '<div class="ix-anim" aria-hidden="true"><div class="ix-sheet"><div class="ix-row ix-vm"><i></i>' + esc(ix('vm')) + ' ⌄</div><div class="ix-list"><div class="ix-row">' + esc(ix('copyRow')) + '</div><div class="ix-row">' + esc(ix('fav')) + '</div><div class="ix-row">' + esc(ix('find')) + '</div><div class="ix-row ix-a2"><b>⊞</b>' + esc(ix('a2')) + '</div></div><span class="ix-finger"></span></div></div>'; }
+  function arrow(pos) { return '<span class="ix-arrow ix-' + pos + '" aria-hidden="true">' + (pos === 'br' || pos === 'bc' ? '↓' : '↑') + '</span>'; }
+  function instOn(mode) {
+    const L = layer(); if (!L) return; el.classList.add('inst');
+    const where = crios() ? 'tr' : safariMajor() >= 26 ? 'br' : 'bc';
+    if (mode === 'sharing') L.innerHTML = '<div class="ix-top"><p>' + esc(ix('top')) + '</p>' + anim() + '</div>';
+    else if (mode === 'after') L.innerHTML = '<div class="ix-top"><p>' + esc(ix('top')) + '</p>' + anim() + '</div><div class="ix-card"><h3>' + esc(ix('doneH')) + '</h3><p>' + esc(ix('doneT')) + '</p><h3>' + esc(ix('notH')) + '</h3><p>' + esc(crios() ? ix('notTc') : safariMajor() >= 26 ? ix('notT') : ix('notTold')) + '</p>' +
+      (navigator.share ? '<button type="button" class="lsp-get ix-big" data-lsp="again">' + esc(ix('again')) + '</button>' : '') + '<button type="button" class="ix-link" data-lsp="cont">' + esc(ix('cont')) + '</button></div>' + arrow(where);
+    else if (mode === 'inapp') L.innerHTML = '<div class="ix-card ix-mid"><h3>' + esc(ix('inH')) + '</h3><p>' + esc(ix('inT')) + '</p>' + (ios() ? '<button type="button" class="lsp-get ix-big" data-lsp="safari">' + esc(ix('safari')) + '</button>' : '') + '<button type="button" class="ix-btn" data-lsp="copy">' + esc(ix('copy')) + '</button><button type="button" class="ix-link" data-lsp="cont">' + esc(ix('cont')) + '</button></div>' + arrow('tr');
+    else if (mode === 'done') L.innerHTML = '<div class="ix-card ix-mid"><h3>' + esc(ix('doneH')) + '</h3><p>' + esc(ix('doneT')) + '</p><button type="button" class="ix-link" data-lsp="cont">' + esc(ix('cont')) + '</button></div>';
+    else if (mode === 'android') L.innerHTML = '<div class="ix-card ix-mid"><h3>' + esc(ix('anH')) + '</h3><p>' + esc(ix('anT')) + '</p><button type="button" class="ix-link" data-lsp="cont">' + esc(ix('cont')) + '</button></div>' + arrow('tr');
+    L.insertAdjacentHTML('afterbegin', '<button type="button" class="ix-back" data-lsp="ixback" aria-label="Back">‹</button>');
+  }
+  function instOff() { if (!el) return; el.classList.remove('inst'); const L = el.querySelector('#lspInst'); if (L) L.remove(); }
+  function shareSheet() {
+    instOn('sharing');
+    let p; try { p = navigator.share({ title: 'LOWiSPIKE', url: url() }); } catch (e) { p = Promise.reject(e); }
+    Promise.resolve(p).catch(() => { }).then(() => { if (el && el.classList.contains('inst')) instOn('after'); });
+  }
+  function openSafari() { location.href = 'x-safari-' + url(); }
+  function copyLink(b) { const u = url(); const ok = () => { b.textContent = ix('copied'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(ok, ok); else ok(); }
+  /* the browser instead: the old guide (A1) is skipped for this visit and sign-up goes on in the browser */
+  function goBrowser() {
+    try { sessionStorage.setItem('lowi.a1.skip', '1'); } catch (e) { }
+    close();
+    setTimeout(() => { const c = D.querySelector('#r2gate [data-a1="continue"]'); if (c) c.click(); }, 60);
+  }
+  function get() {
+    if (inapp()) { instOn('inapp'); if (ios()) setTimeout(openSafari, 50); return; }
+    if (android()) { if (bip) { const e = bip; bip = null; try { e.prompt(); Promise.resolve(e.userChoice).then(c => instOn(c && c.outcome === 'accepted' ? 'done' : 'android')).catch(() => instOn('android')); } catch (x) { instOn('android'); } } else instOn('android'); return; }
+    if (ios()) { if (navigator.share) shareSheet(); else instOn('after'); return; }
+    goBrowser();   /* a computer: the app works right here */
+  }
   function close() { ss.set(SEEN, '1'); if (!el) return; const e = el; el = null; e.classList.add('out'); D.documentElement.classList.remove('lsp-open'); setTimeout(() => e.remove(), 260); }
   function open() {
     if (el) return el;
@@ -120,7 +187,12 @@
     el.addEventListener('click', e => {
       const l = e.target.closest('[data-lsp-l]'); if (l) { lang = l.dataset.lspL; try { localStorage.setItem('lowispike.lang', lang); } catch (x) { } paint(); try { if (W.LowiLang && W.LowiLang.set) W.LowiLang.set(lang); } catch (x) { } return; }
       const b = e.target.closest('[data-lsp]'); if (!b) return;
-      if (b.dataset.lsp === 'get') close();
+      if (b.dataset.lsp === 'get') get();
+      else if (b.dataset.lsp === 'again') shareSheet();
+      else if (b.dataset.lsp === 'cont') goBrowser();
+      else if (b.dataset.lsp === 'safari') openSafari();
+      else if (b.dataset.lsp === 'copy') copyLink(b);
+      else if (b.dataset.lsp === 'ixback') instOff();
       else if (b.dataset.lsp === 'more') { moreOpen = true; paint(); }
       else if (b.dataset.lsp === 'play') play(b);
       else if (b.dataset.lsp === 'share') { const u = location.origin + location.pathname; if (navigator.share) navigator.share({ title: 'LOWiSPIKE', text: t('sub'), url: u }).catch(() => { }); else if (navigator.clipboard) navigator.clipboard.writeText(u).then(() => { b.title = t('shared'); }); }
@@ -132,6 +204,6 @@
     unlock(); try { new MutationObserver(unlock).observe(el, { attributes: true, attributeFilter: ['inert'] }); } catch (e) { }
     return el;
   }
-  W.LowiStorePage = { open, close, want, _TX: TX };
+  W.LowiStorePage = { open, close, want, get, _TX: TX, _IX: IX };
   if (want()) { if (D.body) open(); else D.addEventListener('DOMContentLoaded', open); }
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

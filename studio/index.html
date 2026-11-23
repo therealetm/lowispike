@@ -54,7 +54,13 @@ body{min-height:100vh;min-height:100dvh;color:var(--ink);font:16px/1.5 -apple-sy
 .pl-row::-webkit-scrollbar{display:none}
 .pl-row .tile{scroll-snap-align:start}
 .pl-top{display:flex;align-items:center;gap:12px;margin:0 0 12px}.pl-top b{flex:1;font-size:20px}.pl-top span{color:var(--muted);font-weight:700}
-.pl-edit{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}.pl-edit b{width:100%;font-size:15px;color:var(--muted)}
+.pl-edit{display:block;margin:0 0 12px;border:1px solid var(--line2);border-radius:16px;background:rgba(255,255,255,.04)}
+.pl-edit summary{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:0 16px;cursor:pointer;list-style:none;font-size:16px}.pl-edit summary::-webkit-details-marker{display:none}
+.pl-edit summary::after{content:'›';margin-left:8px;color:var(--muted);transition:transform .2s}.pl-edit[open] summary::after{transform:rotate(90deg)}.pl-edit summary span{margin-left:auto;color:var(--muted)}
+.pl-list{display:flex;flex-direction:column;padding:0 8px 8px}.pl-li{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:46px;padding:0 10px;border:0;border-top:1px solid var(--line2);background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.pl-li span{color:var(--muted);flex:none}.pl-li.add{color:var(--acc2);font-weight:700}
+.fab{position:fixed;right:18px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:15;width:60px;height:60px;border-radius:50%;border:0;background:linear-gradient(180deg,#bfe6ff,#7cc4ff);color:#05070c;font-size:34px;line-height:1;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.5);cursor:pointer}
+.f-pls{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 6px}.f-pls .pl-chip[aria-pressed=true]{background:var(--acc2);color:#05070c;border-color:var(--acc2)}
 .pl-chip{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.07);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
 .pl-chip.add{border-style:dashed;color:var(--acc2)}
 .pl-pick{margin:6px -18px 0}.pl-pick .tile.picked::before{content:"";position:absolute;inset:0;z-index:2;box-shadow:inset 0 0 0 3px var(--acc2);background:rgba(124,196,255,.18)}
@@ -260,7 +266,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     confirmDel: ['Delete this for good?', 'Wirklich löschen?', '¿Eliminar definitivamente?']
   };
   var t = function (k) { var r = W[k]; return r ? r[L === 'de' ? 1 : L === 'es' ? 2 : 0] : k; };
-  var TAB = 'swipe', Q = '', SORT = 'views', OWNER = false, EDIT = false, SEL = {}, PL = '', PLSEL = null, SB = null, DOC = {}, DATA = null, SW = [], AG = [], OPEN = null, TR = {};
+  var PLOPEN = false, TAB = 'swipe', Q = '', SORT = 'views', OWNER = false, EDIT = false, SEL = {}, PL = '', PLSEL = null, SB = null, DOC = {}, DATA = null, SW = [], AG = [], OPEN = null, TR = {};
 
   /* copy that reports success only when it worked */
   function copy(text) {
@@ -348,11 +354,17 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
         var sec = function (id, name, xs) { return xs.length ? '<section class="pl"><button class="pl-h" ' + (id ? 'data-pl="' + esc(id) + '"' : 'disabled') + '><b>' + esc(name) + '</b><span>' + xs.length + (id ? ' ›' : '') + '</span></button><div class="pl-row">' + xs.map(tileHTML).join('') + '</div></section>' : ''; };
         $('#main').innerHTML = pls.map(function (q) { return sec(q.id, q.name, plItems(q)); }).join('') + sec('', t('plMore'), list.filter(function (x) { return !inAny[x.id]; }));
       } else {
-      h = (EDIT ? '<div class="pl-edit"><b>' + esc(t('plH')) + '</b>' + pls.map(function (q) { return '<button class="pl-chip" data-pl-edit="' + esc(q.id) + '">' + esc(q.name) + ' · ' + (q.items || []).length + '</button>'; }).join('') + '<button class="pl-chip add" data-pl-edit="">+ ' + esc(t('plNew')) + '</button></div>' : '') +
+      /* 23 Nov 2026 (Emmanuel: "in edit, I can see all the playlist names and they're just scattered around ... not organized or tucked
+         in"): the playlists sit folded in one row; open it for a tidy list (name, count, ›) and "+ New playlist" at the end */
+      h = (EDIT ? '<details class="pl-edit"' + (PLOPEN ? ' open' : '') + '><summary><b>' + esc(t('plH')) + '</b><span>' + pls.length + '</span></summary><div class="pl-list">' + pls.map(function (q) { return '<button class="pl-li" data-pl-edit="' + esc(q.id) + '"><b>' + esc(q.name) + '</b><span>' + (q.items || []).length + ' ›</span></button>'; }).join('') + '<button class="pl-li add" data-pl-edit="">+ ' + esc(t('plNew')) + '</button></div></details>' : '') +
         (EDIT ? '<button class="tile add" data-add="swipe"><span>+</span>' + esc(t('addVideo')) + '</button>' : '') + list.map(tileHTML).join('');
       $('#main').innerHTML = list.length || EDIT ? (EDIT ? h.replace('<button class="tile add"', '<div class="grid"><button class="tile add"') + '</div>' : '<div class="grid">' + h + '</div>') : '<div class="empty">' + esc(Q ? t('none') : t('empty')) + '</div>';
       }
       if (IO) D.querySelectorAll('.tile[data-id]').forEach(function (e) { IO.observe(e); });
+      /* 23 Nov 2026 (Emmanuel: "make it easier for me to add a new video without having to click on edit and then add a video"): the owner
+         always has a + in the corner on Swipe file and Agent file (inside a playlist the new video goes into it) */
+      var fab = $('#fab'); if (!fab) { fab = D.createElement('button'); fab.id = 'fab'; fab.className = 'fab'; fab.textContent = '+'; D.body.appendChild(fab); }
+      fab.hidden = !OWNER || EDIT || (TAB !== 'swipe' && TAB !== 'agent'); fab.dataset.add = TAB === 'agent' ? 'agent' : 'swipe'; fab.setAttribute('aria-label', t(TAB === 'agent' ? 'addPrompt' : 'addVideo'));
     } else {
       /* 22 Nov 2026 (Emmanuel: "organized just like the other page ... a text on screen ... to make it easier to understand what they're
          clicking on"): agent prompts are a 3-column grid of covers like the Swipe file; the prompt's title is the text on screen. */
@@ -417,7 +429,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   function checkOwner() {
     var has = false; try { has = !!localStorage.getItem('lowi.auth'); } catch (e) {} if (!has) return;
     loadScript('../vendor/supabase-2.117.3.js').then(function () { SB = window.supabase.createClient(SBURL, PUBKEY, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'lowi.auth', storage: window.localStorage}}); if (window.StudioAcc) StudioAcc.cloud(SB); return SB.rpc('is_app_owner'); })
-      .then(function (r) { OWNER = !!(r && r.data === true); $('#editb').hidden = !OWNER; var ab = $('#aib'); if (ab && window.StudioAiUse) { ab.hidden = !OWNER; ab.textContent = StudioAiUse.label(); ab.onclick = StudioAiUse.open; }   /* 23 Nov 2026: ai-use.js */ }).catch(function () {});
+      .then(function (r) { OWNER = !!(r && r.data === true); $('#editb').hidden = !OWNER; var ab = $('#aib'); if (ab && window.StudioAiUse) { ab.hidden = !OWNER; ab.textContent = StudioAiUse.label(); ab.onclick = StudioAiUse.open; }   /* 23 Nov 2026: ai-use.js */ if (OWNER) render();   /* 23 Nov 2026: shows the owner's + button */ }).catch(function () {});
   }
   function xbox(x) { return EDIT ? '<span class="xb' + (SEL[x.id] ? ' on' : '') + '" data-x role="checkbox" aria-checked="' + !!SEL[x.id] + '" aria-label="' + esc(t('del')) + '">' + (SEL[x.id] ? '✓' : '✕') + '</span>' : ''; }
   function delOne(id) { var x = (SW.concat(AG)).filter(function (q) { return q.id === id; })[0]; if (!x) return;
@@ -433,8 +445,18 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
       '<div class="btns" style="margin-top:10px"><button class="btn pri" data-d="fill">' + esc(t('fill')) + '</button></div><p class="note">' + esc(t('fillNote')) + '</p>' +
       '<label for="f_cr">' + esc(t('creator')) + '</label><input id="f_cr" value="' + esc(x.creator || '') + '"><label for="f_vw">' + esc(t('viewsF')) + '</label><input id="f_vw" value="' + esc(x.views ? fmtViews(x.views) : '') + '">' +
       '<label for="f_hk">' + esc(t('hookF')) + '</label><input id="f_hk" value="' + esc(x.hook || '') + '"><label for="f_st">' + esc(t('stratF')) + '</label><textarea id="f_st">' + esc(s) + '</textarea><label for="f_why">' + esc(t('whyF')) + '</label><textarea id="f_why" style="min-height:70px">' + esc(x.why || '') + '</textarea>' +
+      plPick(x) +
       '<input type="hidden" id="f_th" value="' + esc(x.thumb || '') + '"><div class="btns"><button class="btn" data-d="cancel">' + esc(t('cancel')) + '</button><button class="btn pri" data-d="saveS" data-id="' + esc(x.id || '') + '">' + esc(t('save')) + '</button></div>');
   }
+  /* 23 Nov 2026 (Emmanuel: "make it easier for me to put the new videos that I fill with AI into the right folder"): the video dialog
+     shows the playlists as chips; tick one or more and Save puts it there. A new video added inside a playlist starts ticked there. */
+  var FPL = {};
+  function plPick(x) {
+    var pls = lists(); FPL = {};
+    pls.forEach(function (q) { if ((x.id && (q.items || []).indexOf(x.id) >= 0) || (!x.id && PL && q.id === PL)) FPL[q.id] = 1; });
+    return pls.length ? '<label>' + esc(t('plH')) + '</label><div class="f-pls">' + pls.map(function (q) { return '<button type="button" class="pl-chip" data-d="fpl" data-id="' + esc(q.id) + '" aria-pressed="' + !!FPL[q.id] + '">' + esc(q.name) + '</button>'; }).join('') + '</div>' : '';
+  }
+  function plApply(vid) { var any = false; DOC.lists = lists().map(function (q) { var items = (q.items || []).filter(function (i) { return i !== vid; }); if (FPL[q.id]) items.push(vid); if (items.length !== (q.items || []).length || FPL[q.id]) any = true; return {id: q.id, name: q.name, items: items}; }); return any; }
   function agentDlg(x) { x = x || {}; dlg('<h2>' + esc(x.id ? t('edit') : t('addPrompt')) + '</h2><label for="f_ti">' + esc(t('title')) + '</label><input id="f_ti" value="' + esc(x.title || '') + '"><label for="f_tx">' + esc(t('text')) + '</label><textarea id="f_tx" style="min-height:220px">' + esc(x.text || '') + '</textarea><div class="btns"><button class="btn" data-d="cancel">' + esc(t('cancel')) + '</button><button class="btn pri" data-d="saveA" data-id="' + esc(x.id || '') + '">' + esc(t('save')) + '</button></div>'); }
   function handleOf(x) { var m = String(x || '').match(/@([A-Za-z0-9._]{2,30})/); return m ? m[1].toLowerCase().replace(/\.$/, '') : ''; }
   function clipLink(u) { return String(u || '').split('?')[0].replace(/\/+$/, '').toLowerCase(); }
@@ -469,9 +491,11 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
       /* 23 Nov 2026 (Emmanuel: "make sure you're able to check ... if I'm not sending you the same profile again"): a new item whose
          link or @handle is already in the Swipe file asks first, naming what is there */
       if (!id) { var same = dupOf(o); if (same.length && !confirm(t('dupQ').replace('{x}', same.slice(0, 3).map(function (q) { return q.creator; }).join(', ')))) return; }
-      if (isB) { var ov = over(id); for (var f in o) ov[f] = o[f]; } else if (id) { DOC.swipe = DOC.swipe.map(function (s) { if (s.id !== id) return s; for (var f2 in o) s[f2] = o[f2]; return s; }); } else { o.id = 'V' + Date.now().toString(36).toUpperCase(); o.ts = Date.now(); DOC.swipe = (DOC.swipe || []).concat([o]); }
+      if (lists().length) plApply(id || (o.id = 'V' + Date.now().toString(36).toUpperCase()));
+      if (isB) { var ov = over(id); for (var f in o) ov[f] = o[f]; } else if (id) { DOC.swipe = DOC.swipe.map(function (s) { if (s.id !== id) return s; for (var f2 in o) s[f2] = o[f2]; return s; }); } else { o.id = o.id || 'V' + Date.now().toString(36).toUpperCase(); o.ts = Date.now(); DOC.swipe = (DOC.swipe || []).concat([o]); }
       return save().then(function () { dlgClose(); rebuild(); render(); if (OPEN) open(id || o.id, true); }, function () {});
     }
+    if (k === 'fpl') { var fid = b.dataset.id; if (FPL[fid]) delete FPL[fid]; else FPL[fid] = 1; b.setAttribute('aria-pressed', !!FPL[fid]); return; }
     if (k === 'pltog') { var pid = b.dataset.id; if (PLSEL[pid]) delete PLSEL[pid]; else PLSEL[pid] = 1; var on = !!PLSEL[pid]; b.classList.toggle('picked', on); b.setAttribute('aria-pressed', on); var xb = b.querySelector('.xb'); xb.classList.toggle('ok', on); xb.textContent = on ? '✓' : ''; return; }
     if (k === 'plsave') { var nm = v('f_pl'); if (!nm) return toast(t('plName')); var ids = Object.keys(PLSEL), L0 = lists().slice(), qid = b.dataset.id;
       if (qid) L0 = L0.map(function (z) { return z.id === qid ? {id: z.id, name: nm, items: ids} : z; }); else L0.push({id: 'L' + Date.now().toString(36), name: nm, items: ids});
@@ -496,7 +520,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     if (b.id === 'editb') { EDIT = !EDIT; SEL = {}; PL = ''; return render(); }
     if (b.dataset.pl) { PL = b.dataset.pl; render(); return window.scrollTo(0, 0); }
     if (b.hasAttribute('data-pl-back')) { PL = ''; return render(); }
-    if (b.hasAttribute('data-pl-edit')) return plDlg(b.dataset.plEdit);
+    if (b.hasAttribute('data-pl-edit')) { PLOPEN = true; return plDlg(b.dataset.plEdit); }
     /* 22 Nov 2026 (Emmanuel: "when I click on edit, an X toggle where I can easily just mass delete things"): in Edit every tile has an X;
        tapping it marks the tile, the bar at the bottom deletes all marked at once. Tapping the rest of the tile still opens it. */
     if (EDIT && e.target.closest('[data-x]') && b.dataset.id) { var k = b.dataset.id; if (SEL[k]) delete SEL[k]; else SEL[k] = 1; return render(); }

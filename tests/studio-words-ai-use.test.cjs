@@ -33,3 +33,11 @@ test('every AI function accepts lowispike.com as well as the GitHub address', ()
   for (const fn of ['lowi-ai', 'food-photo', 'studio-ai', 'feedback-transcribe', 'auth-handoff', 'delete-my-account', 'owner-delete-account'])
     assert.match(R('supabase/functions/' + fn + '/index.ts'), /const ORIGINS = \[\/\^https:\\\/\\\/therealetm\\\.github\\\.io\$\/, \/\^https:\\\/\\\/\(www\\\.\)\?lowispike\\\.com\$\//, fn);
 });
+test('Studio: the owner always has a + (no Edit needed), the video dialog files it into playlists, Edit folds the playlists into one list (23 Nov 2026)', () => {
+  const h = R('studio/index.html');
+  assert.match(h, /fab\.hidden = !OWNER \|\| EDIT \|\| \(TAB !== 'swipe' && TAB !== 'agent'\);/);
+  assert.match(h, /if \(OWNER\) render\(\);/);
+  assert.match(h, /function plPick\(x\) \{/); assert.match(h, /\(!x\.id && PL && q\.id === PL\)/, 'inside a playlist the new video starts ticked there');
+  assert.match(h, /if \(lists\(\)\.length\) plApply\(id \|\| \(o\.id = 'V' \+ Date\.now\(\)\.toString\(36\)\.toUpperCase\(\)\)\);/);
+  assert.match(h, /<details class="pl-edit"' \+ \(PLOPEN \? ' open' : ''\) \+ '><summary>/);
+});

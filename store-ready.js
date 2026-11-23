@@ -127,7 +127,7 @@
     }
 
     /* ---------- Settings > About & info block ---------- */
-    const IMPRINT = 'https://versteckmich.de/emanwel/impressum';
+    const IMPRINT = 'impressum.html';
     function aboutHTML() {
         css();
         const on = get() === 'yes';

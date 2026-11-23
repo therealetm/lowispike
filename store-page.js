@@ -11,7 +11,7 @@
   'use strict';
   if (!W || !D || W.LowiStorePage) return;
   const SEEN = 'lowi.store.seen';
-  const IMPRINT = 'https://versteckmich.de/emanwel/impressum';
+  const IMPRINT = 'impressum.html';
   const standalone = () => { try { return !!(navigator.standalone || (W.matchMedia && matchMedia('(display-mode: standalone)').matches)); } catch (e) { return false; } };
   const ss = { get: k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) { } } };
   function uses() { try { const s = JSON.parse(localStorage.getItem('lowispike.v2') || 'null'); return !!(s && ((s.logs && s.logs.length) || s.setupDone || (s.user && s.user.name))) || !!localStorage.getItem('lowi.auth'); } catch (e) { return false; } }

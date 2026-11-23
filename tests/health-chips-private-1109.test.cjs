@@ -114,7 +114,7 @@ test('the privacy page says it in all three languages: health details stay on th
   assert.ok(p.includes('<li><b>Nur auf deinem Handy:</b> Gesundheitsangaben (was du unter &bdquo;Worauf sollen wir achten?&ldquo; wählst, z. B. PCOS, Insulinresistenz oder Prädiabetes, dein Zyklus, Gewicht und Blutdruck)'));
   assert.ok(p.includes('Sie sind nicht Teil der Kontosicherung. Dein Gewicht erscheint nur auf deiner Community-Karte, wenn du das selbst einschaltest.'));
   assert.ok(p.includes('No forman parte de la copia de seguridad de la cuenta. Tu peso solo aparece en tu tarjeta de la Comunidad si tú lo activas.'));
-  assert.ok(p.includes('Stand: 9. November 2026'));
+  assert.ok(p.includes('Stand: 23. November 2026'));   /* updated 23 Nov 2026: privacy page completed for the GDPR */
   /* what the page promises is what the code does: weight goes out only with the switch on, health is never in the backup */
   assert.ok(html.includes('const w = (u.showWeight && S_.health && S_.health.weight) ? String(S_.health.weight).slice(0, 8) : "";'));
 });

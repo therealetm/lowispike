@@ -61,7 +61,7 @@ test('the consent sheet, privacy page and support contact are in the build', () 
   assert.match(sr, /W\.LowiConsent = \{/);
   const pp = R('privacy.html');
   for (const id of ['id="en"', 'id="de"', 'id="es"', 'mailto:therealetm@gmail.com', 'Google Gemini', 'Supabase']) assert.ok(pp.includes(id), 'privacy.html has ' + id);
-  assert.match(R('sw.js'), /STATIC\.push\("store-ready\.js", "privacy\.html"\)/);
+  assert.match(R('sw.js'), /STATIC\.push\("store-ready\.js", "privacy\.html"(, "impressum\.html")?\)/);   /* 23 Nov 2026: + the own Impressum */
   const { list } = require('../scripts/site-files.cjs');
   if (typeof list === 'function') {
     const files = list(path.join(__dirname, '..'));

@@ -9,7 +9,7 @@ test('only for a new visitor in a browser: not in the installed app, not for som
 test('no invented numbers: ratings only from real reviews, no chart rank or downloads', () => { const code = js.replace(/\/\*[\s\S]*?\*\//g, ''); assert.doesNotMatch(code, /No\.\s?\d|downloads|(avg|rating|stars)\s*[:=]\s*\d/i); assert.match(code, /const avg = REV\.reduce\(/); assert.match(code, /if \(!REV\.length\) return '';/); });
 /* changed 23 Nov 2026: Get no longer closes the page into the old guide; it opens the share menu (see the test below) */
 test('Get starts the install flow; Impressum and Privacy in the footer; three languages', () => {
-  assert.match(js, /if \(b\.dataset\.lsp === 'get'\) get\(\);/); assert.match(js, /versteckmich\.de\/emanwel\/impressum/); assert.match(js, /href="privacy\.html"/);
+  assert.match(js, /if \(b\.dataset\.lsp === 'get'\) get\(\);/); assert.match(js, /const IMPRINT = 'impressum\.html';/); /* 23 Nov 2026: own Impressum page */ assert.match(js, /href="privacy\.html"/);
   for (const l of ['en', 'de', 'es']) assert.ok(js.includes(l + ': { sub:'), l);
   for (const i of [1, 2, 3]) assert.ok(fs.existsSync(path.join(__dirname, '..', 'store', 'shot-' + i + '.webp')));
 });

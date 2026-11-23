@@ -65,7 +65,9 @@ test('returning guests, "Continue in the browser", the Home Screen app and compu
   assert.strictEqual(load({ ua: DESKTOP, touch: 5 }).kind(), 'ios', 'iPadOS Safari reports a Mac user agent with touch');
 });
 test('the gate shows the guide first for new visitors and goes on to the companion start after "Continue in the browser"', () => {
-  assert.match(html, /const a1s = view !== "signup" && view !== "signin" && !!window\.LowiA1 && !!LowiA1\.wantStart && LowiA1\.wantStart\(\);/);
+  /* changed 23 Nov 2026 (Emmanuel: "I want my app store everywhere"): the gate hook is parked with A1_OFF; the store page does this job */
+  assert.match(html, /const A1_OFF = true;\n\s+const a1s = !A1_OFF && view !== "signup" && view !== "signin" && !!window\.LowiA1 && !!LowiA1\.wantStart && LowiA1\.wantStart\(\);/);
+  assert.match(html, /const a1 = !A1_OFF && \(a1s \|\| \(view === "signup" && window\.LowiA1 && LowiA1\.want\(\)\)\);/);
   assert.match(html, /LowiA1\.html\(a1s \? "start" : "signup"\)/);
   assert.match(SRC, /v === "continue"\) \{[^\n]*gate\(mode === "start" \? "home" : "signup"\)/);
   for (const s of ['top right, next to the address bar', "in this browser's menu, or open the page in Safari", "Sign up in the app and you stay signed in. In the browser you'd have to sign in again later."])

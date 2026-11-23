@@ -3,7 +3,7 @@ const test = require('node:test'), assert = require('node:assert'), fs = require
 const R = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const js = R('store-page.js'), css = R('store-page.css');
 test('only for a new visitor in a browser: not in the installed app, not for someone who already uses it, not on a deep link, once per session', () => {
-  assert.match(js, /if \(standalone\(\) \|\| ss\.get\(SEEN\) === '1' \|\| uses\(\)\) return false;/); assert.match(js, /location\.hash && location\.hash\.length > 1/);
+  assert.match(js, /if \(standalone\(\) \|\| ss\.get\(SEEN\) === '1'\) return false;/); assert.match(js, /return !uses\(\);/); /* 23 Nov 2026: uses() is checked last, after the in-app browser case */ assert.match(js, /location\.hash && location\.hash\.length > 1/);
 });
 /* changed 23 Nov 2026: real reviews now show (review-ask.js); stars and the average come only from them, never from a typed number */
 test('no invented numbers: ratings only from real reviews, no chart rank or downloads', () => { const code = js.replace(/\/\*[\s\S]*?\*\//g, ''); assert.doesNotMatch(code, /No\.\s?\d|downloads|(avg|rating|stars)\s*[:=]\s*\d/i); assert.match(code, /const avg = REV\.reduce\(/); assert.match(code, /if \(!REV\.length\) return '';/); });
@@ -33,4 +33,9 @@ test('Get on an iPhone plays the replay; the card with an arrow is the fallback;
   assert.match(js, /sessionStorage\.setItem\('lowi\.a1\.skip', '1'\)/, 'continuing in the browser skips the old step-by-step guide');
   assert.match(css, /\.ix-top\{position:absolute;left:0;right:0;top:0;height:38vh/, 'the loop sits above where the share menu opens');
   for (const l of ['en', 'de', 'es']) assert.ok(js.includes(l + ": { top: '"), l);
+});
+test('inside Instagram / TikTok the store page always shows, also for someone who used the app there; the old A1 guide is off (23 Nov 2026)', () => {
+  assert.match(js, /if \(\/Instagram\|FBAN[^\n]*\.test\(UA\)\) return true;\n\s+return !uses\(\);/);
+  assert.match(js, /if \(standalone\(\) \|\| ss\.get\(SEEN\) === '1'\) return false;/);
+  assert.match(R('index.html'), /const A1_OFF = true;/);
 });

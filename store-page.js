@@ -15,10 +15,14 @@
   const standalone = () => { try { return !!(navigator.standalone || (W.matchMedia && matchMedia('(display-mode: standalone)').matches)); } catch (e) { return false; } };
   const ss = { get: k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) { } } };
   function uses() { try { const s = JSON.parse(localStorage.getItem('lowispike.v2') || 'null'); return !!(s && ((s.logs && s.logs.length) || s.setupDone || (s.user && s.user.name))) || !!localStorage.getItem('lowi.auth'); } catch (e) { return false; } }
+  /* 23 Nov 2026 (Emmanuel, opening lowispike.com from Instagram and TikTok: "I'm still seeing the old interface ... I want my app store
+     everywhere"): inside an app's browser (Instagram, TikTok, ...) the store page always shows, also for someone who used the app in that
+     browser before: nobody can install or stay signed in there, so Get leads them out to Safari / Chrome. */
   function want() {
-    if (standalone() || ss.get(SEEN) === '1' || uses()) return false;
+    if (standalone() || ss.get(SEEN) === '1') return false;
     if ((location.hash && location.hash.length > 1) || /[?&](ref|post|p|s|c|code|invite|app)=/.test(location.search)) return false;
-    return true;
+    if (/Instagram|FBAN|FBAV|FB_IAB|FBIOS|TikTok|musical_ly|Bytedance|BytedanceWebview|trill_|Snapchat|LinkedInApp|Pinterest|Line\//i.test(UA)) return true;
+    return !uses();
   }
   let lang = 'en';
   try { lang = (localStorage.getItem('lowispike.lang') || navigator.language || 'en').slice(0, 2); } catch (e) { }

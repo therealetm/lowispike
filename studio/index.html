@@ -110,6 +110,13 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .dlg .note{margin:6px 0 0;color:var(--dim);font-size:13px}
 .dlg .btns{display:flex;gap:10px;margin-top:16px}
 .dlg .btns .btn{flex:1;justify-content:center}
+/* 23 Nov 2026 (Emmanuel: "when I add a new video ... I can still see the select all and delete ... I can't scroll down enough to click on
+   save ... you did the wardrobe thing again"): every form is a full page that scrolls, its Cancel / Save row stays pinned at the
+   bottom, and the Edit bar (Select all / Delete) is hidden while a form is open */
+.dlg{align-items:stretch;background:#0a1224;z-index:60}
+.dlg .in{width:min(680px,100%);height:100%;max-height:none;border:0;border-radius:0;padding:calc(14px + env(safe-area-inset-top)) 18px 0;overscroll-behavior:contain}
+.dlg .in>.btns:last-child,.dlg .in>.btns.pin{position:sticky;bottom:0;z-index:2;margin:16px -18px 0;padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(10,18,36,.85),#0a1224 30%);border-top:1px solid var(--line2)}
+.dlg.on ~ #selbar,body:has(.dlg.on) #selbar{display:none!important}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;max-width:calc(100% - 32px);padding:12px 16px;border-radius:14px;background:rgba(14,22,40,.97);border:1px solid var(--line);font-size:15px;display:none}
 .toast.on{display:block}
 .fb{position:fixed;inset:0;z-index:70;display:none;align-items:flex-end;background:rgba(0,0,0,.6)}
@@ -145,7 +152,13 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .ac-row small{color:var(--muted);font-size:13px}
 .ac-row em{font-style:normal;color:var(--acc2);font-size:20px;font-weight:800}
 .ac-plus{width:46px;height:46px;font-size:26px;background:rgba(255,255,255,.08);color:var(--acc2)}
-.ac-prev{display:flex;justify-content:center;margin:4px 0}
+.ac-prev{display:flex;justify-content:center;margin:4px auto;padding:0;border:0;background:none;cursor:pointer;border-radius:50%}
+.ac-picb{display:block;margin:6px auto 0;min-height:36px;padding:0 14px;border:0;border-radius:999px;background:rgba(255,255,255,.08);color:var(--acc2);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.ac-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ac-row.ord{cursor:default}
+.ac-mv{display:flex;gap:6px;flex:none!important}
+.ac-ar{width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:rgba(255,255,255,.07);color:var(--ink);font:inherit;font-size:20px;font-weight:800;cursor:pointer}
+.ac-ar:disabled{opacity:.25}
 .ac-lrow{display:flex;gap:8px}.ac-lrow input{flex:1;min-width:0}.ac-lrow .btn{flex:none}
 .ac-del{flex:1;justify-content:center;color:#ff6b61;border-color:rgba(255,59,48,.5)}
 .note{color:var(--muted);font-size:13px}

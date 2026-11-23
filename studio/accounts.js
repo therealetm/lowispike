@@ -19,14 +19,14 @@
     editAcc: ['Edit profile', 'Profil bearbeiten', 'Editar perfil'], delAcc: ['Delete account', 'Account löschen', 'Eliminar cuenta'], delAccQ: ['Delete this account and its inspo list? The Swipe file stays.', 'Diesen Account und seine Inspo-Liste löschen? Die Swipe-Datei bleibt.', '¿Eliminar esta cuenta y su lista? El archivo de swipe se queda.'],
     plink: ['Profile link (TikTok or Instagram, optional)', 'Profil-Link (TikTok oder Instagram, optional)', 'Enlace del perfil (TikTok o Instagram, opcional)'], getP: ['Get profile', 'Profil holen', 'Obtener perfil'], getting: ['Getting…', 'Hole…', 'Obteniendo…'],
     gotP: ['Profile filled in. Check it and save.', 'Profil ausgefüllt. Prüf es und speichere.', 'Perfil rellenado. Revísalo y guarda.'], noP: ['Could not read that profile. Type the name yourself.', 'Profil nicht lesbar. Tipp den Namen selbst ein.', 'No se pudo leer el perfil. Escribe el nombre.'],
-    name: ['Name', 'Name', 'Nombre'], handle: ['@handle', '@Handle', '@usuario'], bio: ['Bio', 'Bio', 'Bio'], needName: ['Give the account a name or @handle.', 'Gib dem Account einen Namen oder @Handle.', 'Pon un nombre o @usuario.'],
+    name: ['Name (what this account is for)', 'Name (wofür der Account ist)', 'Nombre (para qué es la cuenta)'], handle: ['@handle', '@Handle', '@usuario'], bio: ['Bio', 'Bio', 'Bio'], needName: ['Give the account a name or @handle.', 'Gib dem Account einen Namen oder @Handle.', 'Pon un nombre o @usuario.'],
     inspo: ['Inspo', 'Inspo', 'Inspo'], followers: ['Followers', 'Follower', 'Seguidores'], likes: ['Likes', 'Likes', 'Me gusta'], addInspo: ['+ Add inspo', '+ Inspo hinzufügen', '+ Añadir inspo'],
     remove: ['Remove', 'Entfernen', 'Quitar'], done: ['Done', 'Fertig', 'Listo'], openOn: ['Open profile', 'Profil öffnen', 'Abrir perfil'],
     pickT: ['Pick videos to copy for {h}', 'Videos für {h} auswählen', 'Elige vídeos para {h}'], saveN: ['Save ({n})', 'Speichern ({n})', 'Guardar ({n})'], search: ['Search the Swipe file', 'Swipe-Datei durchsuchen', 'Buscar en el archivo'],
     emptyT: ['Your accounts', 'Deine Accounts', 'Tus cuentas'], emptyP: ['Add each account you run. Then pick the videos from the Swipe file you want to copy for it, so every account has its own plan.', 'Füg jeden Account hinzu, den du führst. Dann wähl aus der Swipe-Datei die Videos, die du dafür nachmachen willst. So hat jeder Account seinen eigenen Plan.', 'Añade cada cuenta que llevas. Luego elige del archivo de swipe los vídeos que quieres copiar para ella.'],
     noInspo: ['No inspo yet. Tap “+ Add inspo” and pick videos from the Swipe file.', 'Noch keine Inspo. Tipp auf „+ Inspo hinzufügen“ und wähl Videos aus der Swipe-Datei.', 'Aún no hay inspo. Toca «+ Añadir inspo».'],
     added: ['Added to {h}', 'Zu {h} hinzugefügt', 'Añadido a {h}'], removed: ['Removed from {h}', 'Von {h} entfernt', 'Quitado de {h}'], local: ['Sign in to the app to keep your accounts on every phone.', 'Melde dich in der App an, damit deine Accounts auf jedem Handy da sind.', 'Inicia sesión para tener tus cuentas en cada móvil.'],
-    cancel: ['Cancel', 'Abbrechen', 'Cancelar'], save: ['Save', 'Speichern', 'Guardar'], back: ['Back', 'Zurück', 'Atrás']
+    cancel: ['Cancel', 'Abbrechen', 'Cancelar'], order: ['Change order', 'Reihenfolge ändern', 'Cambiar orden'], up: ['Move up', 'Nach oben', 'Subir'], down: ['Move down', 'Nach unten', 'Bajar'], pic: ['Change picture', 'Bild ändern', 'Cambiar foto'], save: ['Save', 'Speichern', 'Guardar'], back: ['Back', 'Zurück', 'Atrás']
   };
   var t = function (k, v) { var r = W[k], s = r ? r[L === 'de' ? 1 : L === 'es' ? 2 : 0] : S.t(k); if (v) for (var q in v) s = s.replace('{' + q + '}', v[q]); return s; };
   var A = {t: 0, cur: '', list: []}, SB = null, UID = '', RM = false, PICK = null, saveT = 0, signed = false;
@@ -67,26 +67,43 @@
   }
 
   /* the switcher, like TikTok / YouTube: tap the name, pick an account or add one */
+  /* 23 Nov 2026 (Emmanuel: "I want to be able to puzzle my profiles ... manually which profile is first, second, third ... and I don't
+     want my @ name in there ... edit the name to a name so I instantly understand what the account is for"): the switcher shows the
+     account's name only (the name is free text, Edit profile changes it), and "Change order" gives every row up / down arrows. */
+  var ORD = false;
   function switcher() {
-    S.dlg('<h2>' + esc(t('switchT')) + '</h2><div class="ac-list">' + A.list.map(function (a) { var on = a.id === (cur() || {}).id;
-      return '<button class="ac-row' + (on ? ' on' : '') + '" data-acc="use" data-k="' + esc(a.id) + '">' + avatar(a, 46) + '<span><b>' + esc(a.name || a.handle) + '</b><small>' + esc([a.name && a.handle ? a.handle : '', (a.inspo || []).length + ' ' + t('inspo')].filter(Boolean).join(' · ')) + '</small></span>' + (on ? '<em aria-hidden="true">✓</em>' : '') + '</button>'; }).join('') +
-      '<button class="ac-row add" data-acc="add"><span class="av ac-plus">+</span><span><b>' + esc(t('addAcc')) + '</b></span></button></div>' + (signed ? '' : '<p class="note">' + esc(t('local')) + '</p>'));
+    S.dlg('<div class="ac-head"><h2>' + esc(t('switchT')) + '</h2>' + (A.list.length > 1 ? '<button class="pill' + (ORD ? ' acc' : '') + '" data-acc="ord">' + esc(ORD ? t('done') : t('order')) + '</button>' : '') + '</div><div class="ac-list">' + A.list.map(function (a, i) { var on = a.id === (cur() || {}).id, n = A.list.length;
+      var inner = avatar(a, 46) + '<span><b>' + esc(a.name || a.handle) + '</b><small>' + esc((a.inspo || []).length + ' ' + t('inspo')) + '</small></span>';
+      if (ORD) return '<div class="ac-row ord">' + inner + '<span class="ac-mv"><button class="ac-ar" data-acc="up" data-k="' + esc(a.id) + '"' + (i ? '' : ' disabled') + ' aria-label="' + esc(t('up') + ': ' + (a.name || a.handle)) + '">↑</button><button class="ac-ar" data-acc="down" data-k="' + esc(a.id) + '"' + (i < n - 1 ? '' : ' disabled') + ' aria-label="' + esc(t('down') + ': ' + (a.name || a.handle)) + '">↓</button></span></div>';
+      return '<button class="ac-row' + (on ? ' on' : '') + '" data-acc="use" data-k="' + esc(a.id) + '">' + inner + (on ? '<em aria-hidden="true">✓</em>' : '') + '</button>'; }).join('') +
+      (ORD ? '' : '<button class="ac-row add" data-acc="add"><span class="av ac-plus">+</span><span><b>' + esc(t('addAcc')) + '</b></span></button>') + '</div>' + (signed ? '' : '<p class="note">' + esc(t('local')) + '</p>') +
+      '<div class="btns"><button class="btn" data-acc="cancel">' + esc(t('back')) + '</button></div>');
+  }
+  function move(id, d) { var i = A.list.findIndex(function (q) { return q.id === id; }), j = i + d; if (i < 0 || j < 0 || j >= A.list.length) return; var x = A.list[i]; A.list[i] = A.list[j]; A.list[j] = x; persist(); switcher(); }
+  /* a picture from the phone, made small (192 px JPEG) so it fits the saved accounts */
+  function pickPic() {
+    var f = D.createElement('input'); f.type = 'file'; f.accept = 'image/*';
+    f.onchange = function () { var file = f.files && f.files[0]; if (!file) return; var r = new FileReader();
+      r.onload = function () { var img = new Image(); img.onload = function () { var c = D.createElement('canvas'), s0 = Math.min(img.width, img.height); c.width = c.height = 192;
+        c.getContext('2d').drawImage(img, (img.width - s0) / 2, (img.height - s0) / 2, s0, s0, 0, 0, 192, 192); var u = c.toDataURL('image/jpeg', 0.82);
+        $('#a_av').value = u; $('#acPrev').innerHTML = avatar({id: 'n', name: v('a_nm') || v('a_hd'), avatar: u}, 72); }; img.src = r.result; }; r.readAsDataURL(file); };
+    f.click();
   }
   function accDlg(a) {
     a = a || {};
-    S.dlg('<h2>' + esc(a.id ? t('editAcc') : t('addAcc')) + '</h2><div class="ac-prev" id="acPrev">' + avatar(a.id ? a : null, 72) + '</div>' +
+    S.dlg('<h2>' + esc(a.id ? t('editAcc') : t('addAcc')) + '</h2><button type="button" class="ac-prev" id="acPrev" data-acc="pic" aria-label="' + esc(t('pic')) + '">' + avatar(a.id ? a : null, 72) + '</button><button type="button" class="ac-picb" data-acc="pic">' + esc(t('pic')) + '</button>' +
       '<label for="a_ln">' + esc(t('plink')) + '</label><div class="ac-lrow"><input id="a_ln" inputmode="url" autocapitalize="off" placeholder="https://www.tiktok.com/@…" value="' + esc(a.link || '') + '"><button class="btn" data-acc="fetch">' + esc(t('getP')) + '</button></div>' +
       '<label for="a_nm">' + esc(t('name')) + '</label><input id="a_nm" value="' + esc(a.name || '') + '"><label for="a_hd">' + esc(t('handle')) + '</label><input id="a_hd" autocapitalize="off" value="' + esc(a.handle || '') + '">' +
       '<label for="a_bio">' + esc(t('bio')) + '</label><textarea id="a_bio" style="min-height:80px">' + esc(a.bio || '') + '</textarea><input type="hidden" id="a_av" value="' + esc(a.avatar || '') + '"><input type="hidden" id="a_st" value="' + esc(JSON.stringify({f: a.followers || 0, l: a.likes || 0})) + '">' +
-      '<div class="btns"><button class="btn" data-acc="cancel">' + esc(t('cancel')) + '</button><button class="btn pri" data-acc="saveacc" data-k="' + esc(a.id || '') + '">' + esc(t('save')) + '</button></div>' +
-      (a.id ? '<div class="btns"><button class="btn ac-del" data-acc="delacc" data-k="' + esc(a.id) + '">' + esc(t('delAcc')) + '</button></div>' : ''));
+      (a.id ? '<div class="btns"><button class="btn ac-del" data-acc="delacc" data-k="' + esc(a.id) + '">' + esc(t('delAcc')) + '</button></div>' : '') +
+      '<div class="btns pin"><button class="btn" data-acc="cancel">' + esc(t('cancel')) + '</button><button class="btn pri" data-acc="saveacc" data-k="' + esc(a.id || '') + '">' + esc(t('save')) + '</button></div>');
   }
   function v(id) { var e = $('#' + id); return e ? e.value.trim() : ''; }
   function fetchProfile(b) {
     var link = v('a_ln'); if (!/^https:\/\/([a-z0-9-]+\.)*(tiktok\.com\/@|instagram\.com\/)/i.test(link)) return S.toast(t('noP'));
     var lab = b.textContent; b.disabled = true; b.textContent = t('getting');
     S.ai({action: 'profile', link: link}).then(function (j) { var p = j.profile || {}, set = function (id, val) { var e = $('#' + id); if (e && val) e.value = val; };
-      set('a_nm', p.name); set('a_hd', p.handle); set('a_bio', p.bio); set('a_av', p.avatar); $('#a_st').value = JSON.stringify({f: p.followers || 0, l: p.likes || 0});
+      if (!v('a_nm')) set('a_nm', p.name); set('a_hd', p.handle); set('a_bio', p.bio); set('a_av', p.avatar); $('#a_st').value = JSON.stringify({f: p.followers || 0, l: p.likes || 0});
       $('#acPrev').innerHTML = avatar({id: 'n', name: p.name || p.handle, avatar: p.avatar}, 72); S.toast(p.name || p.avatar ? t('gotP') : t('noP')); })
       .catch(function () { S.toast(t('noP')); }).then(function () { b.disabled = false; b.textContent = lab; });
   }
@@ -126,7 +143,10 @@
 
   D.addEventListener('click', function (e) {
     var b = e.target.closest('[data-acc]'); if (!b) return; var k = b.dataset.acc; e.preventDefault(); e.stopPropagation();
-    if (k === 'switch') return switcher();
+    if (k === 'switch') { ORD = false; return switcher(); }
+    if (k === 'ord') { ORD = !ORD; return switcher(); }
+    if (k === 'up' || k === 'down') return move(b.dataset.k, k === 'up' ? -1 : 1);
+    if (k === 'pic') return pickPic();
     if (k === 'use') { A.cur = b.dataset.k; RM = false; persist(); S.dlgClose(); return S.setTab('profile'); }
     if (k === 'add') return accDlg();
     if (k === 'edit') return accDlg(cur());

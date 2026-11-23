@@ -11,3 +11,8 @@ test('Swipe file: adding a link or @handle that is already there asks first; pro
   assert.match(html, /function dupOf\(o\)/); assert.match(html, /if \(!id\) \{ var same = dupOf\(o\); if \(same\.length && !confirm\(t\('dupQ'\)/);
   assert.match(html, /x\.followers \? '<span class="vw">' \+ PERSON/); assert.match(html, /<p class="bio">/);
 });
+test('accounts: reorder with up / down, name only in the switcher, own picture; forms are full pages with Save pinned (23 Nov 2026)', () => {
+  assert.match(js, /k === 'up' \|\| k === 'down'\) return move\(b\.dataset\.k/); assert.match(js, /function pickPic\(\)/); assert.match(js, /toDataURL\('image\/jpeg', 0\.82\)/);
+  assert.match(js, /var inner = avatar\(a, 46\) \+ '<span><b>' \+ esc\(a\.name \|\| a\.handle\) \+ '<\/b><small>' \+ esc\(\(a\.inspo \|\| \[\]\)\.length/);
+  assert.match(html, /\.dlg \.in>\.btns:last-child,\.dlg \.in>\.btns\.pin\{position:sticky;bottom:0/); assert.match(html, /body:has\(\.dlg\.on\) #selbar\{display:none!important\}/);
+});

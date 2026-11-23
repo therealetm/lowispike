@@ -5,7 +5,8 @@ const js = R('store-page.js'), css = R('store-page.css');
 test('only for a new visitor in a browser: not in the installed app, not for someone who already uses it, not on a deep link, once per session', () => {
   assert.match(js, /if \(standalone\(\) \|\| ss\.get\(SEEN\) === '1' \|\| uses\(\)\) return false;/); assert.match(js, /location\.hash && location\.hash\.length > 1/);
 });
-test('no invented numbers: no ratings, stars, chart rank or downloads', () => { const code = js.replace(/\/\*[\s\S]*?\*\//g, ''); assert.doesNotMatch(code, /RATINGS|★|No\.\s?\d|downloads/i); });
+/* changed 23 Nov 2026: real reviews now show (review-ask.js); stars and the average come only from them, never from a typed number */
+test('no invented numbers: ratings only from real reviews, no chart rank or downloads', () => { const code = js.replace(/\/\*[\s\S]*?\*\//g, ''); assert.doesNotMatch(code, /No\.\s?\d|downloads|(avg|rating|stars)\s*[:=]\s*\d/i); assert.match(code, /const avg = REV\.reduce\(/); assert.match(code, /if \(!REV\.length\) return '';/); });
 test('Get leads on to the Add to Home Screen guide; Impressum and Privacy in the footer; three languages', () => {
   assert.match(js, /if \(b\.dataset\.lsp === 'get'\) close\(\);/); assert.match(js, /versteckmich\.de\/emanwel\/impressum/); assert.match(js, /href="privacy\.html"/);
   for (const l of ['en', 'de', 'es']) assert.ok(js.includes(l + ': { sub:'), l);

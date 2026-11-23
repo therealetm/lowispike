@@ -70,3 +70,21 @@ html.gate-boot body > #lspStore#lspStore.lsp.lsp.lsp.lsp,html body > #lspStore#l
 .lsp-mini .lsp-get{right:16px;min-height:32px;padding:0 18px;font-size:15px}
 .lsp.mini .lsp-mini{pointer-events:auto}
 .lsp.mini .lsp-mini::before,.lsp.mini .lsp-mini img,.lsp.mini .lsp-mini .lsp-get{opacity:1}
+/* 23 Nov 2026: real reviews from the app (review-ask.js) */
+.lsp-rvsum{display:flex;align-items:center;gap:14px;margin:4px 0 12px}
+.lsp-rvsum>b{font-size:56px;line-height:1;font-weight:800}
+.lsp-rvsum small{display:block;color:#8e8e93;font-size:14px;margin-top:2px}
+.lsp-st i{font-style:normal;color:#3a3a3c;font-size:17px}
+.lsp-st i.on{color:#f5f5f7}
+.lsp-rvs{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin:0 -20px;padding:0 20px 6px}
+.lsp-rvs::-webkit-scrollbar{display:none}
+.lsp-rv{flex:0 0 min(80vw,320px);scroll-snap-align:start;padding:16px;border-radius:18px;background:#1c1c1e}
+.lsp-rv header{display:flex;align-items:center;gap:10px}
+.lsp-rv header img,.lsp-rvi{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none;background:#2c2c2e;display:grid;place-items:center;font-weight:700}
+.lsp-rv header b{display:block;font-size:15.5px}
+.lsp-rv>p{margin:10px 0 0;color:#d1d1d6;font-size:15px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.lsp-voice{display:flex;align-items:center;gap:10px;margin-top:12px}
+.lsp-voice button{width:44px;height:44px;border-radius:50%;border:0;background:#0a84ff;color:#fff;font-size:15px;cursor:pointer}
+.lsp-voice span{color:#98989d;font-size:14px}
+.lsp-rv details{margin-top:8px;color:#98989d;font-size:14px}
+.lsp-rv details p{margin:6px 0 0;color:#d1d1d6}

@@ -8,13 +8,14 @@
 //   POST {action:"translate", text, to}       translate a chat message (en / de / es)
 //   POST {action:"mealfix", dishes:[{name,grams,portion,kcal,protein,carbs,sugar,fiber,fat}], text, lang}  the photo check got the meal
 //        wrong: the person says (voice or typed) how they made it; returns corrected dishes {ok, dishes, note}
+//   POST {action:"transcribe", audio: base64, mime}  a review's voice note (max ~2 MB) -> {ok, text} word for word, its own language
 //   POST {action:"linkcheck", title, caption, url}  is a For You link about insulin-friendly food / health? {ok, fits, why}
 // Deploy: supabase functions deploy lowi-ai --no-verify-jwt
 const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, /^capacitor:\/\/localhost$/];
 const MODELS = (Deno.env.get("GEMINI_MODEL") || "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite").split(",").map((s) => s.trim()).filter(Boolean);
 const LANG: Record<string, string> = { en: "English", de: "German", es: "Spanish" };
 /* the daily limits (per person per feature) and the whole-app cap */
-export const LIMITS: Record<string, number> = { ask: 15, translate: 20, linkcheck: 10, mealfix: 15 };
+export const LIMITS: Record<string, number> = { ask: 15, translate: 20, linkcheck: 10, mealfix: 15, transcribe: 5 };
 export const GLOBAL = 400;
 
 function cors(req: Request): Record<string, string> {
@@ -81,6 +82,13 @@ Deno.serve(async (req) => {
       const r = await gemini({ contents: [{ role: "user", parts: [{ text: "LOWiSPIKE's For You page only shows links about insulin-friendly eating, low-carb / low-sugar food, recipes, food swaps, blood sugar friendly habits, movement or healthy lifestyle. Decide if this link fits. Be generous: food, cooking, fitness and wellbeing fit; clearly unrelated topics (politics, pranks, gaming, dating, music, ads for unrelated products) do not. When there is too little information, it fits.\n" + info + "\nReturn JSON {fits:boolean, why:string (one short sentence in " + LANG[lang] + ")}." }] }], generationConfig: { temperature: 0, maxOutputTokens: 200, responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { fits: { type: "BOOLEAN" }, why: { type: "STRING" } }, required: ["fits"] } } });
       let j: { fits?: boolean; why?: string } = {}; try { j = JSON.parse(r); } catch (_e) { j = { fits: true }; }
       return out(req, 200, { ok: true, fits: j.fits !== false, why: clip(j.why, 200) });
+    }
+    if (action === "transcribe") {
+      const audio = typeof b.audio === "string" && /^[A-Za-z0-9+/=]+$/.test(b.audio) && b.audio.length < 2_800_000 ? b.audio : "";
+      const mime = /^audio\/(webm|mp4|mpeg|ogg|wav|aac|x-m4a)(;.*)?$/.test(String(b.mime || "")) ? String(b.mime).split(";")[0] : "";
+      if (!audio || !mime) return out(req, 400, { error: "bad_request" });
+      const r = await gemini({ contents: [{ role: "user", parts: [{ inlineData: { mimeType: mime, data: audio } }, { text: "Transcribe this voice note word for word in the language it is spoken in. It is a review of the app LOWiSPIKE (write it exactly like that), made by Eman. Only the words, no notes, no timestamps. If nothing is said, reply with an empty line." }] }], generationConfig: { temperature: 0, maxOutputTokens: 1500 } });
+      return out(req, 200, { ok: true, text: clip(r, 2000) });
     }
     if (action === "mealfix") {
       const text = clip(b.text, 1500); if (!text) return out(req, 400, { error: "bad_request" });

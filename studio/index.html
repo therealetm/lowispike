@@ -136,6 +136,18 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .fb .in{width:100%;max-height:80dvh;display:flex;flex-direction:column;gap:10px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));background:#0a1224;border-top:1px solid var(--line);border-radius:20px 20px 0 0}
 .fb textarea{flex:1;min-height:200px;width:100%;border-radius:12px;border:1px solid var(--line2);background:#050912;color:var(--ink);font:inherit;font-size:16px;padding:10px}
 :focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+/* 23 Nov 2026: AI use page (ai-use.js), owner only */
+.au-big{margin:6px 0 10px;padding:16px;border-radius:18px;border:1px solid var(--line2);background:rgba(255,255,255,.05)}.au-big small{display:block;color:var(--muted);font-size:13px}.au-big b{display:block;font-size:21px;margin:2px 0 10px}
+.au-bar{height:10px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}.au-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#7cc4ff,#bfe6ff)}.au-big span{display:block;margin-top:8px;color:var(--muted);font-size:14px}
+.au-h{margin:18px 0 6px;font-size:16px}.au-l{list-style:none;margin:0;padding:0}.au-l li{display:grid;grid-template-columns:1fr auto;gap:0 10px;padding:10px 0;border-bottom:1px solid var(--line2)}.au-l li b{text-align:right}.au-l li small{grid-column:1/-1;color:var(--muted);font-size:13px}.au-cost{margin:18px 0 8px;line-height:1.45}
+/* 23 Nov 2026: Profile > Video link -> words (video-words.js) */
+.ap-vw{display:block;width:100%;max-width:360px;margin:10px auto 0}
+.vw-in{display:flex;gap:8px;margin:12px 0 6px}.vw-in input,.vw-any input{flex:1;min-width:0;min-height:46px;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.06);color:var(--ink);font:inherit;font-size:16px;padding:0 14px}
+.vw-st{margin:8px 0;color:var(--ink);font-weight:600}.vw-warn{margin:10px 0}
+.vw-who{display:flex;align-items:center;gap:10px;margin:14px 0 4px}.vw-who img{width:44px;height:58px;object-fit:cover;border-radius:8px}
+.vw-b{margin:14px 0;padding:12px 14px;border-radius:16px;border:1px solid var(--line2);background:rgba(255,255,255,.04)}
+.vw-bh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.vw-tx{margin:0;white-space:pre-wrap;font-size:16px;line-height:1.45;-webkit-user-select:text;user-select:text}
+.vw-tr{margin:18px 0 8px}.vw-chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.vw-any{display:flex;gap:8px}.vw-orig{margin-top:10px;width:100%}
 /* 22 Nov 2026: Studio > Profile (accounts.js), a profile page like TikTok's */
 .tabs button{padding:0 6px}
 .av{flex:none;display:inline-grid;place-items:center;border-radius:50%;background-size:cover;background-position:center;color:#fff;font-weight:800;box-shadow:0 0 0 2px rgba(255,255,255,.14)}
@@ -206,7 +218,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     <button class="ib" id="share" aria-label="Share"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
   </div>
   <div class="tabs" role="tablist"><button role="tab" data-tab="swipe" aria-selected="true"></button><button role="tab" data-tab="agent" aria-selected="false"></button><button role="tab" data-tab="profile" aria-selected="false"></button></div>
-  <div class="row"><button class="pill" id="sortb"></button><button class="pill acc" id="editb" hidden></button></div>
+  <div class="row"><button class="pill" id="sortb"></button><button class="pill acc" id="editb" hidden></button><button class="pill" id="aib" hidden></button></div>
   <main id="main"></main>
 </div>
 <section class="view" id="view" role="dialog" aria-modal="true"></section>
@@ -405,7 +417,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   function checkOwner() {
     var has = false; try { has = !!localStorage.getItem('lowi.auth'); } catch (e) {} if (!has) return;
     loadScript('../vendor/supabase-2.117.3.js').then(function () { SB = window.supabase.createClient(SBURL, PUBKEY, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'lowi.auth', storage: window.localStorage}}); if (window.StudioAcc) StudioAcc.cloud(SB); return SB.rpc('is_app_owner'); })
-      .then(function (r) { OWNER = !!(r && r.data === true); $('#editb').hidden = !OWNER; }).catch(function () {});
+      .then(function (r) { OWNER = !!(r && r.data === true); $('#editb').hidden = !OWNER; var ab = $('#aib'); if (ab && window.StudioAiUse) { ab.hidden = !OWNER; ab.textContent = StudioAiUse.label(); ab.onclick = StudioAiUse.open; }   /* 23 Nov 2026: ai-use.js */ }).catch(function () {});
   }
   function xbox(x) { return EDIT ? '<span class="xb' + (SEL[x.id] ? ' on' : '') + '" data-x role="checkbox" aria-checked="' + !!SEL[x.id] + '" aria-label="' + esc(t('del')) + '">' + (SEL[x.id] ? '✓' : '✕') + '</span>' : ''; }
   function delOne(id) { var x = (SW.concat(AG)).filter(function (q) { return q.id === id; })[0]; if (!x) return;
@@ -527,6 +539,8 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     .catch(function () { $('#main').innerHTML = '<div class="empty">' + esc(t('none')) + '</div>'; });
 })();
 </script>
-<script src="accounts.js?v=1"></script>
+<script src="accounts.js?v=2"></script>
+<script src="video-words.js?v=1"></script>
+<script src="ai-use.js?v=1"></script>
 </body>
 </html>

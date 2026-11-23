@@ -62,6 +62,7 @@
       avatar(a, 96) + (a.handle ? '<div class="ap-h">' + esc(a.handle) + '</div>' : '') +
       '<div class="ap-st">' + stats.map(function (s) { return '<span><b>' + esc(String(s[0])) + '</b>' + esc(s[1]) + '</span>'; }).join('') + '</div>' +
       '<div class="ap-bt"><button class="btn pri" data-acc="pick">' + esc(t('addInspo')) + '</button><button class="btn" data-acc="idea">＋ ' + esc(t('idea')) + '</button><button class="btn" data-acc="edit">' + esc(t('editAcc')) + '</button>' + (a.link ? '<a class="btn ap-ln" href="' + esc(a.link) + '" target="_blank" rel="noopener noreferrer" aria-label="' + esc(t('openOn')) + '">↗</a>' : '') + '</div>' +
+      (W.StudioWords ? '<button class="btn ap-vw" data-acc="words">' + esc(StudioWords.label()) + '</button>' : '') +   /* 23 Nov 2026: video-words.js */
       (a.bio ? '<p class="ap-bio">' + esc(a.bio) + '</p>' : '') +
       (list.length ? '<div class="ap-gh"><span>' + esc(t('inspo')) + '</span><button class="pill' + (RM ? ' acc' : '') + '" data-acc="rm">' + esc(RM ? t('done') : t('remove')) + '</button></div>' : '') + '</div>';
     /* 23 Nov 2026 (Emmanuel: "quickly note down my content ideas ... speak ... it writes it ... click on draft ... like TikTok has
@@ -211,6 +212,7 @@
     if (k === 'drafts') { DV = true; return S.render(); }
     if (k === 'dback') { DV = false; return S.render(); }
     if (k === 'idea') return ideaPage(null);
+    if (k === 'words') return W.StudioWords && StudioWords.open();
     if (k === 'dopen') { var ad = cur(), dd = ad && (ad.drafts || []).filter(function (q) { return q.id === b.dataset.x; })[0]; return dd ? ideaPage(dd) : null; }
     if (k === 'imic') return micToggle();
     if (k === 'iclose') return ideaClose();
@@ -221,6 +223,8 @@
     if (k === 'psave') { var c = cur(); if (c) { var keep = (c.inspo || []).filter(function (id2) { return PICK[id2]; }), add = Object.keys(PICK).filter(function (id2) { return keep.indexOf(id2) < 0; }); c.inspo = add.concat(keep); persist(); } pclose(); return S.setTab('profile'); }
   }, true);
 
-  window.StudioAcc = {render: render, items: items, addBtn: addBtn, addTo: addTo, cloud: cloud};
+  /* 23 Nov 2026: Video link -> words (video-words.js) keeps its result as a draft on the current account */
+  function addDraft(txt) { var a = cur(); txt = String(txt || '').trim(); if (!a || !txt) return false; a.drafts = a.drafts || []; a.drafts.unshift({id: 'd' + Date.now().toString(36), text: txt.slice(0, 4000), ts: Date.now()}); persist(); DV = true; S.render(); return true; }
+  window.StudioAcc = {render: render, items: items, addBtn: addBtn, addTo: addTo, cloud: cloud, addDraft: addDraft};
   if (S.tab() === 'profile') S.render();
 })();

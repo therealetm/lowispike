@@ -8,9 +8,14 @@
 //        transcribe it when no transcript is given, then writes a short strategy. Returns {ok, meta, transcript, transcribed, hook, strategy, why}.
 //        If TikTok refuses the video download, transcribed=false and the owner pastes the transcript (then the strategy is written from it).
 //   POST {action:"profile", link}  anyone (30 a day per connection): a TikTok / Instagram profile -> {name, handle, bio, avatar, followers}
-//   POST {action:"translate", text, to}  anyone on the app's origin: translates text (max 6000 chars) into en / de / es.
+//   POST {action:"translate", text, to}  anyone on the app's origin: translates text (max 6000 chars) into en / de / es, or (since
+//        23 Nov 2026) into any language named in `to` ("Italian", "Türkçe", "Brazilian Portuguese").
+//   POST {action:"words", link}  owner only (23 Nov 2026, Emmanuel: "I send a link of a video that I'm about to copy, and it then gives
+//        me the transcript, if there is a transcript, or the text on the screen ... and the bio. And then I can translate it"):
+//        a TikTok video -> {caption, author, transcript (spoken words), onscreen (text shown on screen), transcribed}. When the video
+//        file cannot be fetched (Instagram, or TikTok refuses), only the caption comes back and transcribed=false.
 // Deploy: supabase functions deploy studio-ai --no-verify-jwt  (it checks the session itself for fill)
-const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, /^capacitor:\/\/localhost$/];
+const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^https:\/\/(www\.)?lowispike\.com$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, /^capacitor:\/\/localhost$/];
 const MODELS = (Deno.env.get("GEMINI_MODEL") || "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite").split(",").map((s) => s.trim()).filter(Boolean);
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15";
 const MAX_VIDEO = 18 * 1024 * 1024;
@@ -95,6 +100,9 @@ async function profile(link: string) {
 }
 const FILL = { type: "OBJECT", properties: { transcript: { type: "STRING" }, hook: { type: "STRING" }, strategy: { type: "ARRAY", items: { type: "STRING" } }, why: { type: "STRING" } }, required: ["hook", "strategy", "why"] };
 const TRANS = { type: "OBJECT", properties: { text: { type: "STRING" } }, required: ["text"] };
+const WORDS = { type: "OBJECT", properties: { transcript: { type: "STRING" }, onscreen: { type: "STRING" } }, required: ["transcript", "onscreen"] };
+/* any language a person names, kept to letters, spaces and a few marks so it cannot carry an instruction */
+const anyLang = (v: unknown) => { const x = clip(v, 40); return /^[\p{L}][\p{L} ()'-]{1,39}$/u.test(x) ? x : ""; };
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
@@ -102,12 +110,13 @@ Deno.serve(async (req) => {
   const o = req.headers.get("origin") || ""; if (o && !ORIGINS.some((r) => r.test(o))) return out(req, 403, { error: "origin" });
   let body: Record<string, unknown> = {}; try { body = await req.json(); } catch (_e) { return out(req, 400, { error: "bad_request" }); }
   const lang = LANG[String(body.lang || body.to || "en")] ? String(body.lang || body.to) : "en";
+  const toName = LANG[String(body.to || "")] || anyLang(body.to) || LANG[lang];
   try {
     if (body.action === "translate") {
       const text = clip(body.text, 6000); if (!text) return out(req, 400, { error: "bad_request" });
       const sub = "ip:" + clip((req.headers.get("x-forwarded-for") || "").split(",")[0], 60) + ":" + clip((req.headers.get("authorization") || "").slice(-24), 24);
       if ((await take(sub, "translate", 20)) !== "ok") return out(req, 429, { error: "limit" });
-      const r = await gemini([{ text: "Translate the following text into " + LANG[lang] + ". Keep line breaks, keep names, handles and numbers as they are. Return JSON {text}.\n\n" + text }], TRANS, 4096);
+      const r = await gemini([{ text: "Translate the following text into " + toName + ". Keep line breaks, keep names, handles and numbers as they are. Return JSON {text}.\n\n" + text }], TRANS, 4096);
       return out(req, 200, { ok: true, text: clip(r.text, 8000) });
     }
     if (body.action === "profile") {
@@ -116,6 +125,19 @@ Deno.serve(async (req) => {
       if ((await take(sub, "profile", 30)) !== "ok") return out(req, 429, { error: "limit" });
       const p = await profile(link); if (!p) return out(req, 400, { error: "bad_link" });
       return out(req, 200, { ok: true, profile: p });
+    }
+    if (body.action === "words") {
+      if (!(await isOwner(req))) return out(req, 403, { error: "owner_only" });
+      const link = clip(body.link, 400); if (!/^https:\/\/([a-z0-9-]+\.)*(tiktok\.com|instagram\.com)\//i.test(link)) return out(req, 400, { error: "bad_link" });
+      if ((await take("owner", "words", 60)) !== "ok") return out(req, 429, { error: "limit" });
+      const m = await meta(link), v = /tiktok\.com/i.test(link) ? await tiktokVideo(link) : null;
+      if (!v) return out(req, 200, { ok: true, caption: clip(m.title, 2200), author: clip(m.author || m.handle, 80), thumb: m.thumb || "", transcript: "", onscreen: "", transcribed: false });
+      const r = await gemini([{ inlineData: { mimeType: v.mime, data: v.b64 } }, { text: [
+        "Write down the words of this short video exactly, in the video's own language. Do not translate, do not summarise, do not add anything.",
+        "`transcript`: every spoken word, in order, as sentences (empty if nobody speaks).",
+        "`onscreen`: every piece of text shown on screen (captions burned into the video, titles, stickers), one line per piece, in order, without repeating the same line (empty if there is none).",
+        "Return JSON." ].join("\n") }], WORDS, 4096);
+      return out(req, 200, { ok: true, caption: clip(m.title, 2200), author: clip(m.author || m.handle, 80), thumb: m.thumb || "", transcript: clip(r.transcript, 8000), onscreen: clip(r.onscreen, 3000), transcribed: true });
     }
     if (body.action === "fill") {
       if (!(await isOwner(req))) return out(req, 403, { error: "owner_only" });

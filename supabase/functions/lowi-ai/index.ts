@@ -11,7 +11,7 @@
 //   POST {action:"transcribe", audio: base64, mime}  a review's voice note (max ~2 MB) -> {ok, text} word for word, its own language
 //   POST {action:"linkcheck", title, caption, url}  is a For You link about insulin-friendly food / health? {ok, fits, why}
 // Deploy: supabase functions deploy lowi-ai --no-verify-jwt
-const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, /^capacitor:\/\/localhost$/];
+const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^https:\/\/(www\.)?lowispike\.com$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, /^capacitor:\/\/localhost$/];
 const MODELS = (Deno.env.get("GEMINI_MODEL") || "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite").split(",").map((s) => s.trim()).filter(Boolean);
 const LANG: Record<string, string> = { en: "English", de: "German", es: "Spanish" };
 /* the daily limits (per person per feature) and the whole-app cap */

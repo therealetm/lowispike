@@ -5,7 +5,10 @@
        meal or product the person was looking at as context, and asks for the analysis at once;
      - Misty's card has "Talk to Misty" (misty-hub.js);
      - a photo button sends a meal photo; three quick chips: make it insulin-friendly, is it a spike, a recipe idea.
-   The conversation lives only on this phone, for this session (sessionStorage), and is never stored on the server. */
+   23 Nov 2026 (Emmanuel: "when I closed it, I tried to find it again, but that chat history was gone ... I need those chat
+   histories to stay like ChatGPT"): every conversation is kept on this phone (localStorage, never on the server), newest first:
+   "Chats" lists them, a tap reopens one, ✕ deletes one. A new Deep analyze or "New chat" starts a new conversation and keeps the
+   old one. Photos are kept as small previews. Up to 40 chats of 60 messages each; the oldest go first when the phone is full. */
 (function (W, D) {
     'use strict';
     if (!W || !D || W.LowiAsk) return;
@@ -18,14 +21,40 @@
         photo: ['What do you see, and is it insulin-friendly?', 'Was siehst du, und ist es insulinfreundlich?', '¿Qué ves y es apto para la insulina?'],
         limit: ['{n} is resting for today. Back tomorrow!', '{n} ruht sich für heute aus. Morgen wieder!', '{n} descansa por hoy. ¡Mañana vuelve!'], fail: ['I could not answer just now. Check your connection and try again.', 'Ich konnte gerade nicht antworten. Prüf deine Verbindung und versuch es nochmal.', 'No pude responder ahora. Inténtalo de nuevo.'],
         signin: ['Sign in to talk to {n}.', 'Melde dich an, um mit {n} zu reden.', 'Inicia sesión para hablar con {n}.'], note: ['Answers come from Google’s free AI. Please don’t share private health details. Not medical advice.', 'Antworten kommen von Googles kostenloser KI. Bitte teile keine privaten Gesundheitsdaten. Keine medizinische Beratung.', 'Las respuestas vienen de la IA gratuita de Google. No compartas datos privados de salud. No es consejo médico.'],
-        thinking: ['{n} is thinking…', '{n} denkt nach…', '{n} está pensando…'], clear: ['New chat', 'Neuer Chat', 'Nuevo chat'] };
+        thinking: ['{n} is thinking…', '{n} denkt nach…', '{n} está pensando…'], clear: ['New chat', 'Neuer Chat', 'Nuevo chat'],
+        chats: ['Chats', 'Chats', 'Chats'], none: ['No chats yet. Your conversations with {n} stay here.', 'Noch keine Chats. Deine Gespräche mit {n} bleiben hier.', 'Aún no hay chats. Tus conversaciones con {n} se quedan aquí.'],
+        untitled: ['Chat with {n}', 'Chat mit {n}', 'Chat con {n}'], del: ['Delete chat', 'Chat löschen', 'Borrar chat'] };
     const t = (k, n) => W3[k][['en', 'de', 'es'].indexOf(L())].replace(/\{n\}/g, n || name());
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     function name() { try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); if (c && c.name) return String(c.name).slice(0, 24); } } catch (e) {} return 'Misty'; }
     function sign() { try { const B = W.LowiBirthCompanion, c = B && B.has && B.has() ? B.get() : null; return String((c && (c.sign || c.zodiac)) || '').slice(0, 20); } catch (e) { return ''; } }
-    let msgs = [], ctx = '', el = null, busy = false;
-    try { const s = JSON.parse(sessionStorage.getItem(KEY) || 'null'); if (s && Array.isArray(s.m)) { msgs = s.m.slice(-30); ctx = String(s.c || ''); } } catch (e) {}
-    const keep = () => { try { sessionStorage.setItem(KEY, JSON.stringify({ m: msgs.slice(-30).map(m => ({ role: m.role, text: m.text })), c: ctx })); } catch (e) {} };
+    let msgs = [], ctx = '', el = null, busy = false, cur = '', view = 'chat';
+    const HK = 'lowi.ask.chats.v1', MAXC = 40, MAXM = 60;
+    let book = { cur: '', list: [] };
+    try { const b = JSON.parse(localStorage.getItem(HK) || 'null'); if (b && Array.isArray(b.list)) book = { cur: String(b.cur || ''), list: b.list.filter(x => x && x.id && Array.isArray(x.m)).slice(0, MAXC) }; } catch (e) {}
+    /* the one conversation the old version kept for the session comes along once */
+    try { const o = JSON.parse(sessionStorage.getItem(KEY) || 'null'); if (o && Array.isArray(o.m) && o.m.length && !book.list.length) book.list.push({ id: 'c' + Date.now().toString(36), at: Date.now(), c: String(o.c || ''), m: o.m.slice(-MAXM) }); sessionStorage.removeItem(KEY); } catch (e) {}
+    { const c0 = book.list.find(x => x.id === book.cur) || null; if (c0) { cur = c0.id; msgs = c0.m.slice(); ctx = c0.c || ''; } }
+    function titleOf(c) {
+        const u = (c.m || []).find(m => m.role === 'user' && m.text && m.text !== t('analyze') && m.text !== t('photo'));
+        const s0 = String(u ? u.text : (c.c || '').split('\n')[0] || '').replace(/\s+/g, ' ').trim();
+        return s0 ? s0.slice(0, 70) : t('untitled');
+    }
+    function save() {
+        for (let tries = 0; tries < 6; tries++) {
+            try { localStorage.setItem(HK, JSON.stringify(book)); return; } catch (e) { if (book.list.length > 1) book.list.pop(); else return; }
+        }
+    }
+    const keep = () => {
+        const m = msgs.filter(x => !x.wait).slice(-MAXM).map(x => x.img ? { role: x.role, text: x.text, img: x.img } : { role: x.role, text: x.text });
+        if (!m.length) return;
+        let c = book.list.find(x => x.id === cur);
+        if (!c) { cur = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); c = { id: cur }; book.list.unshift(c); }
+        c.at = Date.now(); c.c = ctx; c.m = m;
+        book.list = [c].concat(book.list.filter(x => x !== c)).slice(0, MAXC); book.cur = cur; save();
+    };
+    /* a fresh conversation; the one before stays in Chats */
+    function fresh(context) { msgs = []; ctx = String(context || ''); cur = ''; book.cur = ''; save(); }
     async function token() {
         try { const x = W.LowiR2 && W.LowiR2.X && W.LowiR2.X(); const sb = x && await x.client(); const r = sb && await sb.auth.getSession(); const s = r && r.data && r.data.session; if (s && s.access_token) return s.access_token; } catch (e) {}
         try { const a = JSON.parse(localStorage.getItem('lowi.auth') || 'null'); if (a && a.access_token) return a.access_token; } catch (e) {}
@@ -58,16 +87,26 @@
             '#lwAsk .ak-f textarea{flex:1;min-width:0;min-height:46px;max-height:120px;resize:none;border-radius:22px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:16px;padding:11px 16px}' +
             '#lwAsk .ak-i{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;display:grid;place-items:center;cursor:pointer}' +
             '#lwAsk .ak-i svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}#lwAsk .ak-i.s{background:linear-gradient(180deg,#bfe6ff,#7cc4ff);color:#05070c;border:0}#lwAsk .ak-i:disabled{opacity:.45}' +
-            '#lwAsk .ak-n{padding:0 16px 6px;color:rgba(255,255,255,.45);font-size:12px;text-align:center}';
+            '#lwAsk .ak-n{padding:0 16px 6px;color:rgba(255,255,255,.45);font-size:12px;text-align:center}' +
+            '#lwAsk .ak-new[data-v=chats]{color:#fff;background:rgba(255,255,255,.08)}#lwAsk.ak-list .ak-c,#lwAsk.ak-list .ak-f,#lwAsk.ak-list .ak-n{display:none}' +
+            '#lwAsk .ak-r{display:flex;align-items:stretch;gap:6px}#lwAsk .ak-ro{flex:1;min-width:0;min-height:56px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;padding:10px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:#fff;font:inherit;text-align:left;cursor:pointer}' +
+            '#lwAsk .ak-ro b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}#lwAsk .ak-ro small{color:rgba(255,255,255,.55);font-size:13px}' +
+            '#lwAsk .ak-rd{flex:none;width:48px;border-radius:16px;border:0;background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);font-size:16px;cursor:pointer}#lwAsk .ak-e{margin:24px 8px;color:rgba(255,255,255,.6);text-align:center}';
         D.head.appendChild(s);
     }
     const IC = { back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>', cam: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>', send: '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>' };
     function paint() {
         if (!el) return; const l = el.querySelector('.ak-l');
+        el.classList.toggle('ak-list', view === 'list');
+        if (view === 'list') {
+            l.innerHTML = book.list.length ? book.list.map(c => '<div class="ak-r"><button type="button" class="ak-ro" data-ak="pick" data-id="' + esc(c.id) + '"><b>' + esc(titleOf(c)) + '</b><small>' + esc(when(c.at)) + '</small></button><button type="button" class="ak-rd" data-ak="del" data-id="' + esc(c.id) + '" aria-label="' + esc(t('del')) + '">✕</button></div>').join('') : '<p class="ak-e">' + esc(t('none')) + '</p>';
+            l.scrollTop = 0; return;
+        }
         const all = [{ role: 'model', text: t('hello') }].concat(msgs);
         l.innerHTML = all.map(m => '<div class="ak-m ' + (m.role === 'user' ? 'u' : 'a') + (m.wait ? ' w' : '') + '">' + (m.img ? '<img alt="" src="' + esc(m.img) + '">' : '') + esc(m.text) + '</div>').join('');
         l.scrollTop = l.scrollHeight;
     }
+    function when(ms) { try { const d = new Date(ms), loc = { en: 'en-GB', de: 'de-DE', es: 'es-ES' }[L()] || 'en-GB'; return d.toLocaleDateString(loc, { day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
     async function send(text, img) {
         text = String(text || '').trim(); if ((!text && !img) || busy) return;
         busy = true; const f = el && el.querySelector('.ak-f'); if (f) f.querySelectorAll('button,textarea').forEach(x => { x.disabled = true; });
@@ -84,25 +123,33 @@
         const i = D.createElement('input'); i.type = 'file'; i.accept = 'image/*';
         i.onchange = () => { const f = i.files && i.files[0]; if (!f) return; const u = URL.createObjectURL(f), im = new Image();
             im.onload = () => { const s = Math.min(1, 1024 / Math.max(im.width, im.height)), c = D.createElement('canvas'); c.width = Math.round(im.width * s); c.height = Math.round(im.height * s); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-                const d = c.toDataURL('image/jpeg', 0.82); URL.revokeObjectURL(u); send('', { url: d, b64: d.split(',')[1] }); };
+                const d = c.toDataURL('image/jpeg', 0.82); URL.revokeObjectURL(u);
+                const k = Math.min(1, 240 / Math.max(im.width, im.height)), tc = D.createElement('canvas'); tc.width = Math.round(im.width * k); tc.height = Math.round(im.height * k); tc.getContext('2d').drawImage(im, 0, 0, tc.width, tc.height);
+                send('', { url: tc.toDataURL('image/jpeg', 0.7), b64: d.split(',')[1] }); };
             im.src = u; };
         i.click();
     }
     function open(o) {
         o = o || {}; css();
-        if (o.context != null && o.context !== ctx) { ctx = String(o.context || '').slice(0, 3000); msgs = []; }
+        if (o.context != null && o.context !== ctx) fresh(String(o.context || '').slice(0, 3000));
+        view = 'chat';
         if (!el) {
             el = D.createElement('div'); el.id = 'lwAsk'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
-            el.innerHTML = '<div class="ak-h"><button type="button" class="ak-b" data-ak="close">' + IC.back + '<span></span></button><b class="ak-t"></b><button type="button" class="ak-new" data-ak="new"></button></div><div class="ak-l" aria-live="polite"></div>' +
+            el.innerHTML = '<div class="ak-h"><button type="button" class="ak-b" data-ak="close">' + IC.back + '<span></span></button><b class="ak-t"></b><button type="button" class="ak-new" data-ak="chats" data-v="chats"></button><button type="button" class="ak-new" data-ak="new"></button></div><div class="ak-l" aria-live="polite"></div>' +
                 '<div class="ak-c"><button type="button" data-ak="chip" data-c="c1"></button><button type="button" data-ak="chip" data-c="c2"></button><button type="button" data-ak="chip" data-c="c3"></button></div><p class="ak-n"></p>' +
                 '<div class="ak-f"><button type="button" class="ak-i" data-ak="photo" aria-label="Photo">' + IC.cam + '</button><textarea rows="1" enterkeyhint="send"></textarea><button type="button" class="ak-i s" data-ak="send" aria-label="Send">' + IC.send + '</button></div>';
             el.addEventListener('click', e => { const b = e.target.closest('[data-ak]'); if (!b) return; const k = b.dataset.ak, ta = el.querySelector('textarea');
-                if (k === 'close') close(); else if (k === 'new') { msgs = []; ctx = ''; keep(); paint(); } else if (k === 'photo') pickPhoto();
+                if (k === 'close') { if (view === 'list') { view = 'chat'; paint(); } else close(); }
+                else if (k === 'new') { if (!busy) { fresh(''); view = 'chat'; paint(); } }
+                else if (k === 'chats') { view = view === 'list' ? 'chat' : 'list'; paint(); }
+                else if (k === 'pick') { const c = book.list.find(x => x.id === b.dataset.id); if (c && !busy) { cur = c.id; msgs = c.m.slice(); ctx = c.c || ''; book.cur = cur; save(); view = 'chat'; paint(); } }
+                else if (k === 'del') { book.list = book.list.filter(x => x.id !== b.dataset.id); if (cur === b.dataset.id) { msgs = []; ctx = ''; cur = ''; book.cur = ''; } save(); paint(); }
+                else if (k === 'photo') pickPhoto();
                 else if (k === 'send') { const v = ta.value; ta.value = ''; send(v); } else if (k === 'chip') send(t(b.dataset.c)); });
             el.querySelector('textarea').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const ta = e.target, v = ta.value; ta.value = ''; send(v); } });
             D.body.appendChild(el);
         }
-        el.querySelector('.ak-b span').textContent = t('back'); el.querySelector('.ak-t').textContent = t('title'); el.querySelector('.ak-new').textContent = t('clear');
+        el.querySelector('.ak-b span').textContent = t('back'); el.querySelector('.ak-t').textContent = t('title'); el.querySelector('[data-ak=new]').textContent = t('clear'); el.querySelector('[data-ak=chats]').textContent = t('chats');
         el.querySelector('textarea').placeholder = t('ph'); el.querySelector('.ak-n').textContent = t('note');
         el.querySelectorAll('[data-c]').forEach(b => { b.textContent = t(b.dataset.c); });
         el.hidden = false; paint();

@@ -67,6 +67,12 @@
     const p = D.getElementById('cmPaneChat');
     return !!p && !p.hasAttribute('data-room');
   }
+  /* 23 Nov 2026 (Emmanuel: "there needs to be the same menu bar on ranking ... you can't get out of ranking"): Ranking is a tab of
+     this bar, so the bar stays on top while the ranking shows */
+  function rankOn() {
+    let c = null; try { c = community(); } catch (e) { return false; } if (!c || !c.classList.contains('active')) return false;
+    try { return !!(W.LowiRoomsUI && LowiRoomsUI.view && LowiRoomsUI.view() === 'rank'); } catch (e) { return false; }
+  }
   /* a Circle game panel (Kochen rising over Circle) */
   function gameOn() {
     if (cur !== 'mischen' && cur !== 'swipen') return false;
@@ -105,7 +111,8 @@
   }
   function sync() {
     if (busy) return;
-    const circle = circleOn(), game = gameOn();
+    const rank = rankOn(), circle = circleOn() || rank, game = gameOn();
+    if (rank) cur = 'rank'; else if (cur === 'rank') cur = 'billard';
     if ((cur === 'mischen' || cur === 'swipen') && !game) cur = 'billard';
     if (cur === 'challenge' && !circle) cur = 'billard';
     challengePane(circle && cur === 'challenge');
@@ -132,8 +139,10 @@
 
   function select(id) {
     const g = GAMES.find(x => x.id === id); if (!g) return;
-    if (g.rank) { try { if (tab() === 'shelf') go('foryou'); W.LowiRoomsUI && W.LowiRoomsUI.showView('rank'); } catch (e) { console.error(e); } return; }
+    if (g.rank) { try { if (tab() === 'shelf') go('foryou'); W.LowiRoomsUI && W.LowiRoomsUI.showView('rank'); } catch (e) { console.error(e); } cur = 'rank'; sync(); return; }
     if (g.panel && !(W.LowiChallenge && W.LowiChallenge.mount)) { openChallenge(); return; }
+    /* from Ranking back to a Circle game: Circle first */
+    try { if (rankOn()) W.LowiRoomsUI.setTab(false); } catch (e) { }
     busy = true;
     try {
       if (g.panel) {

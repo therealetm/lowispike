@@ -22,11 +22,12 @@ function load(lang) {
   return W;
 }
 
-test('the start is the next Monday: Sunday -> tomorrow, Monday -> today, Wednesday -> next Monday', () => {
+/* changed 23 Nov 2026 (Emmanuel: "you can start anytime ... it just becomes your week of starting point"): the start is the day you join */
+test('the start is the day you join, any weekday', () => {
   const C = load().LowiChallenge;
-  assert.equal(C.ymd(C.startFor(new Date(2026, 10, 8))), '2026-11-09', 'Sunday 8 Nov -> Monday 9 Nov');
+  assert.equal(C.ymd(C.startFor(new Date(2026, 10, 8))), '2026-11-08', 'Sunday -> today');
   assert.equal(C.ymd(C.startFor(new Date(2026, 10, 9, 15))), '2026-11-09', 'Monday -> today');
-  assert.equal(C.ymd(C.startFor(new Date(2026, 10, 11))), '2026-11-16', 'Wednesday -> next Monday');
+  assert.equal(C.ymd(C.startFor(new Date(2026, 10, 11))), '2026-11-11', 'Wednesday -> today');
 });
 
 test('phases: not joined, waiting with a countdown, day n of 7, done', () => {

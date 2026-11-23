@@ -27,11 +27,9 @@
   const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   const parse = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || '')); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
   const midnight = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  /* the first day of the challenge: today when it is Monday, else the next Monday (on a Sunday: tomorrow) */
-  function startFor(now) {
-    const t = midnight(now || new Date()), wd = (t.getDay() + 6) % 7;
-    return wd === 0 ? t : new Date(t.getFullYear(), t.getMonth(), t.getDate() + 7 - wd);
-  }
+  /* 23 Nov 2026 (Emmanuel: "if you miss the starting date, it tells you to come back in a week ... No, you can start anytime ... it
+     just becomes your week of starting point"): the first day is the day you join. Day 1 is the plan's first day, whatever weekday. */
+  function startFor(now) { return midnight(now || new Date()); }
   const daysBetween = (a, b) => Math.round((midnight(b) - midnight(a)) / DAY);
   /* where you are: 'intro' (not joined), 'wait' (joined, before day 1), 'run' (day 0..6), 'done' (after day 7) */
   function phase(st, now) {
@@ -163,6 +161,7 @@
     const left = ph.left;
     return headHTML(ph) +
       '<section class="cwk-card cwk-count"><div class="cwk-big">' + left + '</div><div><b>' + esc(left === 1 ? L('day to go', 'Tag bis zum Start', 'día para empezar') : L('days to go', 'Tage bis zum Start', 'días para empezar')) + '</b><small>' + esc(L('Start: ', 'Start: ', 'Inicio: ') + dateWord(ph.start)) + '</small></div></section>' +
+      '<button type="button" class="cwk-go" data-cwk="now">' + esc(L('Start today instead', 'Lieber heute starten', 'Empezar hoy')) + '</button>' +
       '<section class="cwk-card"><h3>' + esc(L('Before Monday', 'Bis Montag', 'Antes del lunes')) + '</h3>' + listHTML() +
       '<p class="cwk-sub">' + esc(L('Back home: split the chicken into 2 bags, freeze meat and fish.', 'Zu Hause: Hähnchen in 2 Beutel teilen, Fleisch und Fisch einfrieren.', 'En casa: reparte el pollo en 2 bolsas, congela carne y pescado.')) + '</p></section>' +
       '<h3 class="cwk-h">' + esc(L('Monday’s preview', 'Vorschau Montag', 'Avance del lunes')) + '</h3>' + mealsHTML(0, false) + statsHTML() + moneyHTML() + leaveHTML() + footHTML();
@@ -170,7 +169,7 @@
   function runHTML(ph) {
     const f = F(), t = TX(), u = t.UI[fl()], d = ph.day, ate = (st().ate || {}), dk = ymd(new Date(ph.start.getTime() + d * DAY));
     const strip = f.WEEK.map((w, i) => { const k = ymd(new Date(ph.start.getTime() + i * DAY)), n = Object.keys(ate[k] || {}).length, all = rowsOf(i).filter(x => x.kind === 'meal' || x.kind === 'rest').length;
-      return '<span class="cwk-day' + (i === d ? ' now' : '') + (i < d ? ' past' : '') + (n && n >= all ? ' full' : '') + '">' + themeIcon(w.theme) + '<b>' + esc(u.daysS[i]) + '</b>' + (n && n >= all ? '<i aria-hidden="true">✓</i>' : '') + '</span>'; }).join('');
+      return '<span class="cwk-day' + (i === d ? ' now' : '') + (i < d ? ' past' : '') + (n && n >= all ? ' full' : '') + '">' + themeIcon(w.theme) + '<b>' + esc(u.daysS[(new Date(ph.start.getTime() + i * DAY).getDay() + 6) % 7]) + '</b>' + (n && n >= all ? '<i aria-hidden="true">✓</i>' : '') + '</span>'; }).join('');
     const doneN = Object.keys(ate).reduce((a, k) => a + Object.keys(ate[k] || {}).length, 0);
     return headHTML(ph) +
       '<div class="cwk-prog"><b>' + esc(L('Day ', 'Tag ', 'Día ') + (d + 1) + L(' of 7', ' von 7', ' de 7')) + '</b><span>' + esc(u.themes[f.WEEK[d].theme]) + '</span></div>' +
@@ -182,7 +181,7 @@
   function doneHTML(ph) {
     const ate = st().ate || {}, n = Object.keys(ate).reduce((a, k) => a + Object.keys(ate[k] || {}).length, 0);
     return headHTML(ph) + '<section class="cwk-card cwk-start cwk-won"><div class="cwk-big">🎉</div><h3>' + esc(L('Week done!', 'Woche geschafft!', '¡Semana hecha!')) + '</h3><p class="cwk-sub">' + esc(L(n + ' meals ticked.', n + ' Mahlzeiten abgehakt.', n + ' comidas marcadas.')) + '</p>' +
-      '<button type="button" class="cwk-go" data-cwk="again">' + esc(L('Go again next week', 'Nächste Woche nochmal', 'Otra vez la semana que viene')) + '</button></section>' + moneyHTML() + footHTML();
+      '<button type="button" class="cwk-go" data-cwk="again">' + esc(L('Start again today', 'Heute nochmal starten', 'Empezar otra vez hoy')) + '</button></section>' + moneyHTML() + footHTML();
   }
   function mealsHTML(d, tick, dk) {
     const ate = (st().ate || {})[dk] || {}, t = TX(), u = t.UI[fl()];
@@ -242,7 +241,8 @@
     const b = e.target && e.target.closest ? e.target.closest('#cwkPane [data-cwk]') : null; if (!b) return;
     const k = b.dataset.cwk, o = st();
     if (k === 'join') { o.start = ymd(startFor()); o.ate = {}; save(o); paint(); toast(L('You’re in. Let’s go!', 'Du bist dabei. Los geht’s!', '¡Te apuntaste!')); return; }
-    if (k === 'again') { o.start = ymd(startFor(new Date(Date.now() + DAY))); o.ate = {}; o.ck = {}; save(o); paint(); return; }
+    if (k === 'again') { o.start = ymd(startFor()); o.ate = {}; o.ck = {}; save(o); paint(); return; }
+    if (k === 'now') { o.start = ymd(startFor()); save(o); paint(); return; }
     if (k === 'leave') { delete o.start; o.ate = {}; save(o); paint(); return; }
     if (k === 'pm' || k === 'pp') { o.ppl = Math.min(6, Math.max(1, people() + (k === 'pp' ? 1 : -1))); save(o); paint(true); return; }
     if (k === 'ex') { o.off = o.off || {}; o.off[b.dataset.id] = !o.off[b.dataset.id]; save(o); paint(true); return; }

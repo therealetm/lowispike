@@ -65,3 +65,6 @@ html.csp-game #tab-shelf #shTop,html.csp-game #tab-shelf .sh-top,html.csp-game #
 /* 23 Nov 2026: five tabs (Ranking joined): a hair smaller so "Challenge" fits */
 .csp-tab{padding:5px 2px}
 .csp-tab b{font-size:10.5px;letter-spacing:-.02em}
+/* 23 Nov 2026 (Emmanuel: "the same menu bar on ranking ... you can't get out of ranking"): while Ranking shows, the game bar stays
+   (community-rooms.css hides every other child of the pane during a view) */
+html.csp-circle #cmPaneChat[data-spirit-chat][data-rm-view="rank"]>#cspBar{display:grid!important}

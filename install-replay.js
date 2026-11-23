@@ -124,7 +124,7 @@
     const n = v.steps.length, secs = Math.round(v.steps.length * 2.6 + 1);
     root.className = 'rp rp-' + cur + ' st-page';
     root.innerHTML = '<div class="rp-screen">' + screenHTML(v) + '</div>' + anchorHTML(v.anchor) +
-      '<div class="rp-cap" aria-live="polite"><div class="rpc-top"><span class="rpc-badge">▶ ' + esc(c('replay')) + '</span><span class="rpc-taps">' + esc(c('taps', { n, s: secs })) + '</span><button type="button" class="rpc-skip" data-rp="skip">' + esc(c('skip')) + '</button></div>' +
+      '<div class="rp-cap" aria-live="polite"><div class="rpc-top"><span class="rpc-badge"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1 9 5 2 9z"/></svg>' + esc(c('replay')) + '</span><span class="rpc-taps">' + esc(c('taps', { n, s: secs })) + '</span><button type="button" class="rpc-skip" data-rp="skip">' + esc(c('skip')) + '</button></div>' +
       '<div class="rpc-step"><b class="rpc-n"></b><span class="rpc-t">' + esc(c('first')) + '</span></div></div>' +
       '<div class="rp-end"><div class="rpe-card"><h2>' + esc(c('turnH')) + '</h2><p class="rpe-go">' + esc(c(v.anchor.edge === 'bottom' ? 'turn_bottom' : 'turn_top')) + '</p><p class="rpe-then">' + esc(c('then')) + '</p>' +
       '<button type="button" class="rpe-again" data-rp="again">↻ ' + esc(c('again')) + '</button>' + (ORDER[group()].length > 1 ? '<button type="button" class="rpe-other" data-rp="other">' + esc(c('other')) + '</button>' : '') +

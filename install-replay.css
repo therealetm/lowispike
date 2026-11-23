@@ -143,6 +143,7 @@
 .rp-chromeios .rp-cap,.rp-android .rp-cap{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
 .rpc-top{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.7)}
 .rpc-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;background:#ff3b30;color:#fff;font-weight:700;font-size:12.5px}
+.rpc-badge svg{width:8px;height:8px;fill:currentColor;stroke:none}   /* drawn, not the ▶ character: iPhones may show that as a blue emoji box */
 .rpc-taps{flex:1;min-width:0}
 .rpc-skip{border:0;background:none;color:rgba(255,255,255,.75);font:inherit;font-size:14px;padding:6px 2px;min-height:32px;cursor:pointer}
 .rpc-step{display:flex;align-items:center;gap:9px;margin-top:7px}

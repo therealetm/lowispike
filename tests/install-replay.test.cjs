@@ -67,3 +67,8 @@ test('Get on an iPhone plays the replay (no navigator.share); Android tries its 
   const html = R('index.html'); assert.ok(html.indexOf('install-replay.js?v=') > html.indexOf('store-page.js?v='));
   assert.match(R('sw.js'), /STATIC\.push\("install-replay\.js", "install-replay\.css"\)/);
 });
+test('the Replay badge draws its triangle; no ▶ character, which an iPhone may turn into a blue emoji box (23 Nov 2026)', () => {
+  assert.doesNotMatch(js.replace(/\/\*[\s\S]*?\*\//g, ''), /▶/);
+  assert.match(js, /<span class="rpc-badge"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1 9 5 2 9z"\/><\/svg>/);
+  assert.match(css, /\.rpc-badge svg\{width:8px;height:8px;fill:currentColor;stroke:none\}/);
+});

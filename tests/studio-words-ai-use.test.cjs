@@ -41,3 +41,11 @@ test('Studio: the owner always has a + (no Edit needed), the video dialog files 
   assert.match(h, /if \(lists\(\)\.length\) plApply\(id \|\| \(o\.id = 'V' \+ Date\.now\(\)\.toString\(36\)\.toUpperCase\(\)\)\);/);
   assert.match(h, /<details class="pl-edit"' \+ \(PLOPEN \? ' open' : ''\) \+ '><summary>/);
 });
+test('drafts: translate (EN/DE/ES or any language), Copy text, Back to original; a refused cloud save says so once and retries (23 Nov 2026)', () => {
+  const a = R('studio/accounts.js');
+  for (const k of ["k === 'itr'", "k === 'itrany'", "k === 'icopy'", "k === 'iundo'"]) assert.ok(a.includes(k), k);
+  assert.match(a, /S\.ai\(\{action: 'translate', text: src\.slice\(0, 6000\), to: String\(to\)\.trim\(\)\}\)/);
+  assert.doesNotMatch(a, /S\.toast\(S\.t\('notSaved'\)\)/);
+  assert.match(a, /if \(!failSaid\) \{ failSaid = true; S\.toast\(t\('cloudLater'\)\); \} clearTimeout\(retryT\); retryT = setTimeout\(push, 60000\);/);
+  assert.match(R('supabase/proposals/studio_accounts_size_20261123.sql'), /check \(pg_column_size\(doc\) <= 3000000\)/);
+});

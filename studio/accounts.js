@@ -16,6 +16,10 @@
   var D = document, KEY = 'lowi.studio.accounts.v1', esc = S.esc, $ = S.$, L = S.L;
   var W = {
     accounts: ['Accounts', 'Accounts', 'Cuentas'], switchT: ['Switch account', 'Account wechseln', 'Cambiar de cuenta'], addAcc: ['Add account', 'Account hinzufügen', 'Añadir cuenta'],
+    cloudLater: ['Saved on this phone. The cloud copy will follow.', 'Auf diesem Handy gespeichert. Die Cloud-Kopie folgt.', 'Guardado en este móvil. La copia en la nube llegará.'],
+    trTo: ['Translate into', 'Übersetzen in', 'Traducir a'], trAny: ['Any language', 'Jede Sprache', 'Cualquier idioma'], trGo: ['Translate', 'Übersetzen', 'Traducir'],
+    trWait: ['Translating…', 'Übersetze…', 'Traduciendo…'], trFail: ['Could not translate. Try again.', 'Übersetzen ging nicht. Nochmal versuchen.', 'No se pudo traducir. Inténtalo de nuevo.'],
+    trUndo: ['Back to original', 'Zurück zum Original', 'Volver al original'], copyTx: ['Copy text', 'Text kopieren', 'Copiar texto'], copiedTx: ['Copied ✓', 'Kopiert ✓', 'Copiado ✓'],
     editAcc: ['Edit profile', 'Profil bearbeiten', 'Editar perfil'], delAcc: ['Delete account', 'Account löschen', 'Eliminar cuenta'], delAccQ: ['Delete this account and its inspo list? The Swipe file stays.', 'Diesen Account und seine Inspo-Liste löschen? Die Swipe-Datei bleibt.', '¿Eliminar esta cuenta y su lista? El archivo de swipe se queda.'],
     plink: ['Profile link (TikTok or Instagram, optional)', 'Profil-Link (TikTok oder Instagram, optional)', 'Enlace del perfil (TikTok o Instagram, opcional)'], getP: ['Get profile', 'Profil holen', 'Obtener perfil'], getting: ['Getting…', 'Hole…', 'Obteniendo…'],
     gotP: ['Profile filled in. Check it and save.', 'Profil ausgefüllt. Prüf es und speichere.', 'Perfil rellenado. Revísalo y guarda.'], noP: ['Could not read that profile. Type the name yourself.', 'Profil nicht lesbar. Tipp den Namen selbst ein.', 'No se pudo leer el perfil. Escribe el nombre.'],
@@ -40,7 +44,12 @@
   function cur() { for (var i = 0; i < A.list.length; i++) if (A.list[i].id === A.cur) return A.list[i]; return A.list[0] || null; }
   function label(a) { return a ? (a.handle || a.name || '') : ''; }
   function persist() { A.t = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(A)); } catch (e) {} clearTimeout(saveT); saveT = setTimeout(push, 600); }
-  function push() { if (!SB || !UID) return; SB.from('studio_accounts').upsert({user_id: UID, doc: A, updated_at: new Date().toISOString()}).then(function (r) { if (r && r.error) S.toast(S.t('notSaved')); }); }
+  /* 23 Nov 2026 bug (Emmanuel: "Not saved. Check your connection ... keeps appearing even though the things have been saved"): the doc had
+     outgrown the database's size check (raised, supabase/proposals/studio_accounts_size_20261123.sql). Everything is always kept on the
+     phone first; when the cloud copy fails it says so once and tries again a little later, instead of a scary toast on every save. */
+  var failSaid = false, retryT = 0;
+  function push() { if (!SB || !UID) return; SB.from('studio_accounts').upsert({user_id: UID, doc: A, updated_at: new Date().toISOString()}).then(function (r) {
+    if (r && r.error) { if (!failSaid) { failSaid = true; S.toast(t('cloudLater')); } clearTimeout(retryT); retryT = setTimeout(push, 60000); } else { failSaid = false; clearTimeout(retryT); } }, function () { clearTimeout(retryT); retryT = setTimeout(push, 60000); }); }
   function cloud(sb) {
     SB = sb; sb.auth.getSession().then(function (r) { var s = r && r.data && r.data.session; if (!s) return; UID = s.user.id;
       return sb.from('studio_accounts').select('doc').eq('user_id', UID).maybeSingle().then(function (q) { var d = q && q.data && q.data.doc;
@@ -93,6 +102,11 @@
     el.innerHTML = '<div class="vtop"><button class="ib" data-acc="iclose" aria-label="' + esc(t('back')) + '">‹</button><span class="cnt">' + esc(d ? t('editDraft') : t('newIdea')) + '</span><span style="width:46px"></span></div>' +
       '<div class="vbody"><textarea id="ideaTx" class="idea-tx" placeholder="' + esc(t('ideaPh')) + '">' + esc(IDEA.text) + '</textarea>' +
       (SR ? '<button type="button" class="idea-mic" data-acc="imic"><span class="idea-dot" aria-hidden="true"></span><b>' + esc(t('speak')) + '</b></button>' : '<p class="note">' + esc(t('kbMic')) + '</p>') +
+      /* 23 Nov 2026 (Emmanuel: "a translation button ... translate it into my language ... and has a copy text perfectly, so I can just copy and
+         then go post"): translate the draft into English, German, Spanish or any language typed; Copy text; Back to original */
+      '<div class="idea-tr"><b>' + esc(t('trTo')) + '</b><div class="idea-trc"><button type="button" class="pill" data-acc="itr" data-l="en">English</button><button type="button" class="pill" data-acc="itr" data-l="de">Deutsch</button><button type="button" class="pill" data-acc="itr" data-l="es">Español</button></div>' +
+      '<div class="idea-tra"><input id="ideaAny" type="text" autocomplete="off" placeholder="' + esc(t('trAny')) + '"><button type="button" class="btn" data-acc="itrany">' + esc(t('trGo')) + '</button></div>' +
+      '<div class="idea-trb"><button type="button" class="btn" data-acc="icopy">' + esc(t('copyTx')) + '</button><button type="button" class="btn" data-acc="iundo" hidden>' + esc(t('trUndo')) + '</button></div></div>' +
       (d ? '<button type="button" class="btn ac-del idea-del" data-acc="idel">' + esc(t('delDraft')) + '</button>' : '') + '</div>' +
       '<div class="vnav"><button class="btn" data-acc="iclose">' + esc(t('cancel')) + '</button><button class="btn pri" data-acc="isave">' + esc(t('saveDraft')) + '</button></div>';
     el.classList.add('on'); D.body.style.overflow = 'hidden';
@@ -109,7 +123,17 @@
     recog = r; try { r.start(); } catch (e) { recog = null; return; }
     var b = D.querySelector('.idea-mic'); if (b) { b.classList.add('on'); b.querySelector('b').textContent = t('listening'); }
   }
-  function ideaClose() { micStop(); var el = $('#accidea'); if (el) el.classList.remove('on'); D.body.style.overflow = ''; IDEA = null; }
+  var ORIG = null;
+  function ideaTr(to, b) {
+    var tx = $('#ideaTx'); if (!tx || !String(to || '').trim()) return; var src = tx.value.trim(); if (!src) return S.toast(t('ideaEmpty'));
+    var lab = b.textContent; b.disabled = true; b.textContent = t('trWait');
+    S.ai({action: 'translate', text: src.slice(0, 6000), to: String(to).trim()}).then(function (j) {
+      if (ORIG == null) ORIG = src; tx.value = j.text || src; IDEA.text = tx.value; var u = D.querySelector('[data-acc=iundo]'); if (u) u.hidden = false;
+    }, function () { S.toast(t('trFail')); }).then(function () { b.disabled = false; b.textContent = lab; });
+  }
+  function ideaCopy(b) { var tx = $('#ideaTx'), v = tx ? tx.value : ''; var ok = function () { b.textContent = t('copiedTx'); setTimeout(function () { b.textContent = t('copyTx'); }, 1500); };
+    try { navigator.clipboard.writeText(v).then(ok, function () { tx.select(); D.execCommand('copy'); ok(); }); } catch (e) { try { tx.select(); D.execCommand('copy'); ok(); } catch (x) { } } }
+  function ideaClose() { ORIG = null; micStop(); var el = $('#accidea'); if (el) el.classList.remove('on'); D.body.style.overflow = ''; IDEA = null; }
   function ideaSave() {
     micStop(); var a = cur(); if (!a || !IDEA) return; var txt = String(IDEA.text || '').trim(); if (!txt) return S.toast(t('ideaEmpty'));
     a.drafts = a.drafts || [];
@@ -213,6 +237,10 @@
     if (k === 'dback') { DV = false; return S.render(); }
     if (k === 'idea') return ideaPage(null);
     if (k === 'words') return W.StudioWords && StudioWords.open();
+    if (k === 'itr') return ideaTr(b.dataset.l, b);
+    if (k === 'itrany') return ideaTr(($('#ideaAny') || {}).value, b);
+    if (k === 'icopy') return ideaCopy(b);
+    if (k === 'iundo') { var tx0 = $('#ideaTx'); if (tx0 && ORIG != null) { tx0.value = ORIG; IDEA.text = ORIG; ORIG = null; b.hidden = true; } return; }
     if (k === 'dopen') { var ad = cur(), dd = ad && (ad.drafts || []).filter(function (q) { return q.id === b.dataset.x; })[0]; return dd ? ideaPage(dd) : null; }
     if (k === 'imic') return micToggle();
     if (k === 'iclose') return ideaClose();

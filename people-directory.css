@@ -37,6 +37,8 @@
 .pd-pic{flex:none;width:44px;height:44px;border-radius:50%;object-fit:cover;background:rgba(143,231,255,.12);border:1px solid rgba(143,231,255,.3)}
 .pd-ini{display:grid;place-items:center;font-size:16px;font-weight:700;color:#0b1d3f;background:var(--pd-h,#9fe6ff);border-color:rgba(255,255,255,.35)}
 .pd-n{flex:1;min-width:0;font-size:16px;font-weight:600;line-height:1.25;color:var(--pd-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 23 Nov 2026: when they were last online, under the name (last-seen.js) */
+.pd-seen{display:block;margin-top:2px;font-size:13px;font-weight:500;color:var(--pd-ink2,rgba(255,255,255,.6))}
 .pd-tag{flex:none;font-size:12px;line-height:1;padding:5px 8px;border-radius:999px;color:#c9ffe9;background:rgba(124,240,196,.14);border:1px solid rgba(124,240,196,.4)}
 .pd-chev{flex:none;width:18px;height:18px;color:var(--pd-ink2)}
 html[data-theme=light] .pd-ov{background:rgba(10,20,40,.35)}

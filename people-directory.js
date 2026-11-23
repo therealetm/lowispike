@@ -63,11 +63,14 @@
         return '<li class="pd-sec"' + (id ? ' id="' + id + '"' : '') + '><h3 class="pd-sec-h"' + (id ? ' tabindex="-1"' : '') + '>' +
             (k === 'onNow' ? '<i class="pd-sec-dot" aria-hidden="true"></i>' : '') + esc(tr(k)) + '</h3></li>';
     }
+    function seenTxt(uid) { try { const L = W.LowiLastSeen; if (!L) return ''; return L.label(L.get(uid), ['en', 'de', 'es'][li()] || 'en'); } catch (e) { return ''; } }
     function rowHTML(r, fr) {
         const pic = r.img ? '<img class="pd-pic" src="' + esc(r.img) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">' :
             '<span class="pd-pic pd-ini" style="--pd-h:' + esc(hue(r.uid)) + '" aria-hidden="true">' + esc(C().initials(r.n)) + '</span>';
-        return '<li><button type="button" class="pd-row" data-uid="' + esc(r.uid) + '" aria-label="' + esc(tr('open', { n: r.n })) + '">' + pic +
-            '<span class="pd-n">' + esc(r.n) + '</span>' + (fr.has(r.uid) ? '<span class="pd-tag">' + esc(tr('friend')) + '</span>' : '') +
+        /* 23 Nov 2026 (Emmanuel: "a timestamp for everyone on here so I can see when they were last online"): last-seen.js */
+        const seen = seenTxt(r.uid);
+        return '<li><button type="button" class="pd-row" data-uid="' + esc(r.uid) + '" aria-label="' + esc(tr('open', { n: r.n }) + (seen ? ' · ' + seen : '')) + '">' + pic +
+            '<span class="pd-n">' + esc(r.n) + (seen ? '<small class="pd-seen">' + esc(seen) + '</small>' : '') + '</span>' + (fr.has(r.uid) ? '<span class="pd-tag">' + esc(tr('friend')) + '</span>' : '') +
             '<svg class="pd-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></li>';
     }
     function paint() {
@@ -168,12 +171,14 @@
         try { lift = new MutationObserver(liftSheets); lift.observe(D.body, { childList: true }); } catch (e) { lift = null; }
         W.addEventListener('lowi-bots', paint);
         D.addEventListener('lowi:room', paint);
+        D.addEventListener('lowi:lastseen', paint);
+        try { if (W.LowiLastSeen) W.LowiLastSeen.load(); } catch (e) {}
         dragDown(ov);
         D.body.appendChild(ov);
         D.documentElement.classList.add('pd-open');
         paint();
         clearInterval(poll);
-        poll = setInterval(() => { if (!ov) { clearInterval(poll); return; } paint(); }, 2500);
+        poll = setInterval(() => { if (!ov) { clearInterval(poll); return; } try { if (W.LowiLastSeen) W.LowiLastSeen.load(); } catch (e) {} paint(); }, 2500);
         try { ov.querySelector('.pd-x').focus({ preventScroll: true }); } catch (e) {}
         if (at) toHere();
         return ov;

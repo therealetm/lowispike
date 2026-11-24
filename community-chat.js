@@ -620,8 +620,11 @@ function msgBody(m){const vo=voiceOf(m);if(vo)return voiceHtml(vo,m.by,'cs-voice
 /* 24 Nov 2026 (Emmanuel: "the things that made our chat more unique ... the person's birthday countdown ... their star sign ... their
    personality type ... I don't think we should have their age"): a photo post carries one small line under the name, from what the
    person shared on their profile: sign (glyph + name), type, and the birthday as a countdown (within 30 days) or the date. Never a year. */
-function postWho(uid){try{const P=W.LowiProfileShare;if(!P)return '';const row=((H.people&&H.people())||[]).find(p=>p&&p.uid===uid);if(!row)return '';
- const pub=P.readPublic({bday:row.bday,mbti:row.t||row.mbti});if(!pub.md)return '';const l=['en','de','es'][Math.max(0,lang())],nx=P.next(pub.md);
+function postWho(uid){try{const P=W.LowiProfileShare;if(!P)return '';
+ /* 24 Nov 2026 (Emmanuel: everyone's line showed but his own): your own posts read your own profile (own(): full birthday, type), as your profile card does */
+ let pub;if(uid===scope){const me=own()||{},md=P.monthDay(me.bday);pub={md,s:md?P.signOf(md):'',t:K.type?K.type(me.t):(me.t||'')};}
+ else{const row=((H.people&&H.people())||[]).find(p=>p&&p.uid===uid);if(!row)return '';pub=P.readPublic({bday:row.bday,mbti:row.t||row.mbti});}
+ if(!pub.md)return '';const l=['en','de','es'][Math.max(0,lang())],nx=P.next(pub.md);
  const bits=[pub.s?P.glyph(pub.s)+' '+P.signName(pub.s,l):'',pub.t||'',nx?'🎂 '+(nx.days<=30?P.countdown(nx.days,l):P.dayMonth(pub.md,l)):''].filter(Boolean);
  return bits.length?'<span class="cs-whox">'+esc(bits.join(' · '))+'</span>':'';}catch(e){return '';}}
 function time(ts){try{return new Date(ts).toLocaleTimeString(['en','de','es'][Math.max(0,lang())],{hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}

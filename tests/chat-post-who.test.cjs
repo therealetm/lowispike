@@ -15,3 +15,6 @@ test('a react button under photo posts and a long press on the photo opens the r
   assert.match(c, /lp=\{x:e\.clientX,y:e\.clientY,t:setTimeout\(\(\)=>\{lp=null;lpSwallow=Date\.now\(\);try\{openMenu\(id\);\}/);
   assert.match(R('chat-meal-post.css'), /\.cs-photo img\{-webkit-touch-callout:none/);
 });
+test('your own posts show your own line too (24 Nov 2026)', () => {
+  assert.match(c, /if\(uid===scope\)\{const me=own\(\)\|\|\{\},md=P\.monthDay\(me\.bday\);pub=\{md,s:md\?P\.signOf\(md\):''/);
+});

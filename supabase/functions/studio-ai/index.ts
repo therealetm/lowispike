@@ -43,17 +43,18 @@ async function take(subject: string, feature: string, max: number): Promise<stri
   const url = Deno.env.get("SUPABASE_URL"), key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   try { const r = await fetch(url + "/rest/v1/rpc/ai_take", { method: "POST", headers: { apikey: key!, Authorization: "Bearer " + key, "Content-Type": "application/json" }, body: JSON.stringify({ p_subject: subject, p_feature: feature, p_user_max: max, p_global_max: 400 }) }); return r.ok ? String(await r.json()) : "error"; } catch (_e) { return "error"; }
 }
-async function gemini(parts: unknown[], schema: unknown, maxTokens = 2048) {
+async function gemini(parts: unknown[], schema: unknown, maxTokens = 2048, plain = false) {
   const key = Deno.env.get("GEMINI_API_KEY") || ""; if (!key) throw new Error("not_configured");
   for (const model of MODELS) {
     const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
       method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify({ contents: [{ role: "user", parts }], generationConfig: { temperature: 0.2, maxOutputTokens: maxTokens, responseMimeType: "application/json", responseSchema: schema } }),
+      body: JSON.stringify({ contents: [{ role: "user", parts }], generationConfig: plain ? { temperature: 0.7, maxOutputTokens: maxTokens } : { temperature: 0.2, maxOutputTokens: maxTokens, responseMimeType: "application/json", responseSchema: schema } }),
     });
     if (r.status === 404 || r.status === 400 && /not found|not supported|unknown model/i.test(await r.clone().text())) continue;
     if (r.status === 429) throw new Error("busy");
     if (!r.ok) throw new Error("ai_failed " + r.status);
     const j = await r.json(), text = j?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || "").join("") || "";
+    if (plain) return text;
     return JSON.parse(text);
   }
   throw new Error("no_model");
@@ -138,7 +139,10 @@ Deno.serve(async (req) => {
       if (!clips.length) return out(req, 400, { error: "bad_request" });
       if ((await take("owner", "captions", 80)) !== "ok") return out(req, 429, { error: "limit" });
       const ex = (Array.isArray(body.examples) ? body.examples : []).slice(0, 14).map((e: Record<string, unknown>, i: number) => (i + 1) + ". " + clip(e && e.hook, 200) + (e && e.text ? " | " + clip(e.text, 260) : "")).join("\n");
-      const r = await gemini([{ text: [
+      /* 24 Nov 2026 (Emmanuel: "it did not generate me the texts"): never an empty answer without a reason. The JSON answer first
+         (with room to think); when it fails or comes back short, once more as plain text, one block per clip between --- lines.
+         The reason goes to the owner (who is the only one calling this) and to the function log. */
+      const prompt = [
         "You write the text on screen for short vertical videos (TikTok / Reels): one short text over a calm B-roll clip, like viral 'text tweet' posts.",
         "The creator, in their own words (their voice, topics, audience and pillars; use it, never quote it as a whole):\n" + clip(body.bio, 3000),
         ex ? "Viral examples of the style to learn from (hooks and words; learn the rhythm and tone, never copy them):\n" + ex : "",
@@ -147,9 +151,21 @@ Deno.serve(async (req) => {
         "Styles: 'I' = first person, a confession or realisation; 'you' = speaks to the viewer; 'general' = a universal truth; 'teaching' = one useful tip; 'relatable' = a feeling people share; 'funny' = light and witty.",
         "Length: it must be readable in the clip's seconds, about 2.5 words per second minus 1 second (5 s about 10 words, 8 s about 18, 13 s about 30, 21 s about 48). Use line breaks between thoughts. Lowercase is fine. No hashtags, no emojis unless they add meaning, no quotes around it.",
         "No medical claims, no diagnoses, no promises about blood sugar numbers.",
-        "Write in " + (LANG[lang] || "English") + ". Return JSON {texts}.",
-      ].filter(Boolean).join("\n\n") }], CAPS, 4096);
-      const texts = (Array.isArray(r.texts) ? r.texts : []).map((x: unknown) => clip(x, 600));
+        "Write in " + (LANG[lang] || "English") + ".",
+      ].filter(Boolean).join("\n\n");
+      let texts: string[] = [], why = "";
+      try {
+        const r = await gemini([{ text: prompt + "\n\nReturn JSON {texts}." }], CAPS, 8192);
+        texts = (Array.isArray(r?.texts) ? r.texts : Array.isArray(r) ? r : []).map((x: unknown) => clip(typeof x === "string" ? x : (x as Record<string, unknown>)?.text, 600));
+      } catch (e) { why = String((e as Error).message || e); console.error("captions json", why); }
+      if (texts.filter(Boolean).length < clips.length) {
+        try {
+          const raw = String(await gemini([{ text: prompt + "\n\nAnswer with the texts only, in order, one block per clip, with a line containing only --- between them. No numbers, no labels." }], null, 8192, true));
+          const blocks = raw.split(/\n\s*-{3,}\s*\n/).map((x) => clip(x.replace(/^\s*\d+[.)]\s*/, ""), 600)).filter(Boolean);
+          texts = clips.map((_c, i) => texts[i] || blocks[i] || "");
+        } catch (e) { why = why || String((e as Error).message || e); console.error("captions text", String(e)); }
+      }
+      if (!texts.some(Boolean)) return out(req, why === "busy" ? 429 : 502, { error: why === "busy" ? "busy" : "ai_failed", detail: clip(why, 300) });
       return out(req, 200, { ok: true, texts: clips.map((_c, i) => texts[i] || "") });
     }
     if (body.action === "words") {

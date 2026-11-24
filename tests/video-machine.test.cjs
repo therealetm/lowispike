@@ -36,3 +36,16 @@ test('accounts.js reads the browser window as window (its W is the word list): t
   assert.doesNotMatch(a, /\bW\.(StudioVM|StudioWords|SpeechRecognition|webkitSpeechRecognition)/);
   assert.match(a, /var SR = window\.SpeechRecognition \|\| window\.webkitSpeechRecognition;/);
 });
+test('clips are made in the background so Save is one tap; drawn muted (iPhones refuse sound without a tap) (24 Nov 2026)', () => {
+  assert.match(js, /function queue\(\) \{/); assert.match(js, /frames\(\); setTimeout\(queue, 300\);/);
+  assert.match(js, /if \(k === 'saveAll'\) \{ return share\(st\.sess\.clips\.map\(function \(_c, i\) \{ return fileOf\(made\[i\], i\); \}\)\); \}/);
+  assert.match(js, /v\.muted = true; v\.setAttribute\('muted', ''\)/); assert.doesNotMatch(js, /createMediaElementSource/);
+});
+test('each clip: its own AI text, a text from the Swipe file library (with the creator\'s TikTok), translate EN/DE/ES and back; AI errors say why', () => {
+  for (const k of ["k === 'aione'", "k === 'trc'", "k === 'trundo'", "k === 'lib'", "k === 'libuse'"]) assert.ok(js.includes(k), k);
+  assert.match(js, /st\.aiNote = t\('aiWhy', whyOf\(e\)\)/);
+  const f = R('supabase/functions/studio-ai/index.ts');
+  assert.match(f, /if \(texts\.filter\(Boolean\)\.length < clips\.length\) \{/, 'a second, plain-text try');
+  assert.match(f, /return out\(req, why === "busy" \? 429 : 502, \{ error: why === "busy" \? "busy" : "ai_failed", detail: clip\(why, 300\) \}\);/);
+  assert.match(R('studio/index.html'), /er\.detail = j && j\.detail \|\| '';/);
+});

@@ -161,7 +161,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .vm-chips{display:flex;gap:8px;flex-wrap:wrap}
 .vm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin:0 -18px}
 .vm-tile{position:relative;aspect-ratio:9/16;overflow:hidden;border:0;padding:0;background:#111;color:#fff;cursor:pointer;container-type:inline-size}
-.vm-fr,.vm-fr canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.vm-fr,.vm-fr canvas,.vm-fr img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
 .vm-tt{position:absolute;transform:translate(-50%,-50%);width:max-content;max-width:72%;text-align:center;font-weight:700;font-size:calc(var(--fs,24) * 100cqw / 390);line-height:1.25;text-shadow:0 1px 4px rgba(0,0,0,.8)}
 .vm-tile i{position:absolute;left:6px;bottom:6px;font-style:normal;font-size:12px;font-weight:800;text-shadow:0 1px 3px #000}.vm-tile em{position:absolute;right:6px;bottom:6px;font-style:normal;font-size:10.5px;font-weight:800;padding:2px 6px;border-radius:8px;background:rgba(0,0,0,.55)}
 .vm-ok{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--ok);color:#03170c;display:grid;place-items:center;font-size:13px}
@@ -175,6 +175,13 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .vm-text.box{color:#000;-webkit-text-stroke:0;text-shadow:none;background:#fff;padding:.1em .35em;border-radius:.25em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .vm-safen{margin:8px 0 4px;text-align:center}.vm-tx{display:block;width:100%;min-height:84px;margin:6px 0;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.05);color:var(--ink);font:inherit;font-size:16px;padding:10px 12px;resize:vertical}
 #vmOut{width:100%;margin-top:6px}
+.vm-note{margin:0 0 10px;padding:10px 12px;border-radius:12px;background:rgba(255,120,120,.1);border:1px solid rgba(255,120,120,.35);color:#ffd2d2;font-size:14px}
+.vm-ns{margin:10px 0 0;text-align:center}
+.vm-pc{position:absolute;top:6px;right:6px;padding:2px 7px;border-radius:9px;background:rgba(0,0,0,.6);color:#fff;font-size:12px}
+.vm-lib{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.6);display:flex;align-items:flex-end}
+.vm-libin{width:100%;max-height:86dvh;overflow-y:auto;padding:14px 16px calc(16px + env(safe-area-inset-bottom));border-radius:22px 22px 0 0;background:#0c1322;border-top:1px solid var(--line2)}
+.vm-li{margin:10px 0;padding:12px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line2)}.vm-li p{margin:0 0 6px;font-size:15px;line-height:1.4}.vm-li small{flex:1;color:var(--muted)}
+.vm-li .pill{text-decoration:none;display:inline-flex;align-items:center}
 /* 24 Nov 2026: draft page: the original and each translation as cards (accounts.js) */
 .idea-card{margin:0 0 12px;padding:12px 14px 14px;border-radius:18px;border:1px solid var(--line2);background:rgba(255,255,255,.04)}
 .idea-ch{display:flex;align-items:center;gap:8px;margin-bottom:8px}.idea-ch b{flex:1;font-size:15px;color:var(--acc2)}.idea-x{width:36px;height:36px;font-size:15px}
@@ -467,7 +474,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   }
   function ai(payload) {
     var h = {'Content-Type': 'application/json', apikey: PUBKEY}, p = SB ? SB.auth.getSession().then(function (r) { var s = r && r.data && r.data.session; h.Authorization = 'Bearer ' + (s ? s.access_token : PUBKEY); }) : Promise.resolve(h.Authorization = 'Bearer ' + PUBKEY);
-    return p.then(function () { return fetch(SBURL + '/functions/v1/studio-ai', {method: 'POST', headers: h, body: JSON.stringify(payload)}); }).then(function (r) { return r.json().then(function (j) { if (!r.ok || !j.ok) throw new Error(j && j.error || 'ai'); return j; }); });
+    return p.then(function () { return fetch(SBURL + '/functions/v1/studio-ai', {method: 'POST', headers: h, body: JSON.stringify(payload)}); }).then(function (r) { return r.json().then(function (j) { if (!r.ok || !j.ok) { var er = new Error(j && j.error || 'ai'); er.detail = j && j.detail || ''; er.status = r.status; throw er; } return j; }); });
   }
   function translate(x, btn) {
     if (TR[x.id]) { delete TR[x.id]; return open(x.id, true); }
@@ -625,6 +632,6 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 <script src="accounts.js?v=5"></script>
 <script src="video-words.js?v=1"></script>
 <script src="ai-use.js?v=1"></script>
-<script src="video-machine.js?v=1"></script>
+<script src="video-machine.js?v=2"></script>
 </body>
 </html>

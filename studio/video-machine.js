@@ -33,6 +33,11 @@
     noRec: ['This browser cannot make videos. Open Studio in Safari or Chrome.', 'Dieser Browser kann keine Videos machen. Öffne Studio in Safari oder Chrome.', 'Este navegador no puede hacer vídeos. Abre Studio en Safari o Chrome.'],
     del: ['Delete this B-roll from the phone?', 'Diese B-Roll vom Handy löschen?', '¿Borrar este B-roll del móvil?'], back: ['Back', 'Zurück', 'Atrás'], all: ['All clips', 'Alle Clips', 'Todos los clips'],
     textPh: ['Text on screen', 'Text im Bild', 'Texto en pantalla'],
+    aiOne: ['↻ AI text', '↻ KI-Text', '↻ Texto IA'], lib: ['📚 Library', '📚 Bibliothek', '📚 Biblioteca'], libH: ['Pick a text from your Swipe file', 'Nimm einen Text aus deiner Swipe-Datei', 'Elige un texto de tu Swipe file'],
+    openTT: ['Open on TikTok ↗', 'Auf TikTok öffnen ↗', 'Abrir en TikTok ↗'], use: ['Use', 'Nehmen', 'Usar'], tr: ['Translate', 'Übersetzen', 'Traducir'], undo: ['↩ Back', '↩ Zurück', '↩ Atrás'],
+    prep: ['Getting your clips ready… {p}', 'Clips werden vorbereitet… {p}', 'Preparando tus clips… {p}'], aiWhy: ['The AI did not answer: {p}. Tap ↻ to try again, or type your own.', 'Die KI hat nicht geantwortet: {p}. Tipp auf ↻ für einen neuen Versuch oder schreib selbst.', 'La IA no respondió: {p}. Toca ↻ para reintentar o escribe tú.'],
+    busy: ['too many requests right now', 'gerade zu viele Anfragen', 'demasiadas solicitudes ahora'], limit: ['daily limit reached', 'Tageslimit erreicht', 'límite diario alcanzado'], owner: ['sign in as the owner', 'als Besitzer anmelden', 'inicia sesión como dueño'], net: ['no connection', 'keine Verbindung', 'sin conexión'],
+    noSound: ['Clips are saved without the B-roll’s own sound: add your sound on TikTok.', 'Clips werden ohne den Ton der B-Roll gespeichert: Füg deinen Sound auf TikTok hinzu.', 'Los clips se guardan sin el sonido del B-roll: añade tu sonido en TikTok.'],
     ST: {I: ['I', 'Ich', 'Yo'], you: ['You', 'Du', 'Tú'], general: ['General', 'Allgemein', 'General'], teaching: ['Teaching', 'Lehrreich', 'Enseña'], relatable: ['Relatable', 'Nachfühlbar', 'Identificable'], funny: ['Funny', 'Lustig', 'Gracioso']}
   };
   var t = function (k, p) { var s = T[k][I]; return p != null ? s.replace('{p}', p) : s; };
@@ -98,10 +103,12 @@
       var sh = D.getElementById('vmShelf'); if (sh) { sh.onscroll = cdFocus; setTimeout(function () { var on = sh.querySelector('.on'); if (on) on.scrollIntoView({inline: 'center', block: 'nearest'}); cdFocus(); }, 30); }
     } else if (view === 'clips') {
       var ss = st.sess;
-      p.innerHTML = top(t('clips'), 'home') + '<div class="vbody"><div class="vm-grid">' + ss.clips.map(function (c, i) {
-        return '<button class="vm-tile" data-vm="open" data-i="' + i + '"><span class="vm-fr" data-fr="' + i + '"></span><span class="vm-tt" style="top:' + (c.y * 100) + '%;left:' + (c.x * 100) + '%;--fs:' + c.size + '">' + esc(c.text).replace(/\n/g, '<br>') + '</span><i>' + fmt(c.sec) + '</i><em>' + esc(T.ST[c.style] ? T.ST[c.style][I] : c.style) + '</em>' + (made[i] ? '<b class="vm-ok">✓</b>' : '') + '</button>';
-      }).join('') + '</div></div><div class="vnav"><button class="btn" data-vm="again"' + (busy ? ' disabled' : '') + '>' + esc(busy ? t('writing') : t('again')) + '</button><button class="btn pri" data-vm="saveAll">' + esc(t('saveAll')) + '</button></div>';
-      frames();
+      var ready = ss.clips.filter(function (_c, i) { return made[i]; }).length;
+      p.innerHTML = top(t('clips'), 'home') + '<div class="vbody">' + (st.aiNote ? '<p class="vm-note">' + esc(st.aiNote) + '</p>' : '') + '<div class="vm-grid">' + ss.clips.map(function (c, i) {
+        return '<button class="vm-tile" data-vm="open" data-i="' + i + '"><span class="vm-fr" data-fr="' + i + '">' + (FR[i] ? '<img alt="" src="' + FR[i] + '">' : '') + '</span><span class="vm-tt" style="top:' + (c.y * 100) + '%;left:' + (c.x * 100) + '%;--fs:' + c.size + '">' + esc(c.text).replace(/\n/g, '<br>') + '</span><i>' + fmt(c.sec) + '</i><em>' + esc(T.ST[c.style] ? T.ST[c.style][I] : c.style) + '</em>' + (made[i] ? '<b class="vm-ok">✓</b>' : (qNow === i ? '<b class="vm-pc" data-pc>' + qPc + '%</b>' : '')) + '</button>';
+      }).join('') + '</div><p class="note vm-ns">' + esc(t('noSound')) + '</p></div><div class="vnav"><button class="btn" data-vm="again"' + (busy ? ' disabled' : '') + '>' + esc(busy ? t('writing') : t('again')) + '</button>' +
+        (ready === ss.clips.length ? '<button class="btn pri" data-vm="saveAll">' + esc(t('saveAll')) + ' (' + ready + ')</button>' : '<button class="btn pri" disabled>' + esc(t('prep', ready + '/' + ss.clips.length)) + '</button>') + '</div>';
+      frames(); setTimeout(queue, 300);
     } else if (view === 'edit') {
       var c = st.sess.clips[cur];
       p.innerHTML = top((cur + 1) + ' / ' + st.sess.clips.length, 'clips') + '<div class="vbody vm-eb"><div class="vm-stage" id="vmStage"><video id="vmV" playsinline muted loop autoplay src="' + esc(url(roll(st.sess.id))) + '"></video>' +
@@ -110,8 +117,9 @@
         '<p class="note vm-safen">' + esc(t('safe')) + '</p>' +
         '<textarea id="vmTx" class="vm-tx" placeholder="' + esc(t('textPh')) + '">' + esc(c.text) + '</textarea>' +
         '<div class="vm-row"><span class="vm-l">' + esc(t('size')) + '</span><input type="range" id="vmSz" min="16" max="40" step="1" value="' + c.size + '"><button class="pill' + (c.look !== 'box' ? ' acc' : '') + '" data-vm="look" data-l="plain">' + esc(t('plain')) + '</button><button class="pill' + (c.look === 'box' ? ' acc' : '') + '" data-vm="look" data-l="box">' + esc(t('box')) + '</button></div>' +
+        '<div class="vm-row"><button class="pill" data-vm="aione">' + esc(t('aiOne')) + '</button><button class="pill" data-vm="lib">' + esc(t('lib')) + '</button>' + ['en', 'de', 'es'].map(function (l) { return '<button class="pill" data-vm="trc" data-l="' + l + '">' + esc(t('tr')) + ' ' + l.toUpperCase() + '</button>'; }).join('') + (c.orig != null ? '<button class="pill" data-vm="trundo">' + esc(t('undo')) + '</button>' : '') + '</div>' +
         '<div id="vmOut"></div></div>' +
-        '<div class="vnav"><button class="btn" data-vm="prev">‹</button><button class="btn pri vm-wide" data-vm="make">' + esc(t('make')) + '</button><button class="btn" data-vm="next">›</button></div>';
+        '<div class="vnav"><button class="btn" data-vm="prev">‹</button><button class="btn pri vm-wide" data-vm="make">' + esc(made[cur] ? t('toPhone') : t('make')) + '</button><button class="btn" data-vm="next">›</button></div>';
       wireEditor();
     }
   }
@@ -144,9 +152,10 @@
   function write(clips) {
     busy = true; paint();
     return S.ai({action: 'captions', bio: styleText(), examples: examples(), clips: clips.map(function (c) { return {sec: c.sec, style: c.style}; }), lang: st.lang})
-      .then(function (j) { (j.texts || []).forEach(function (x, i) { if (clips[i] && x) clips[i].text = x; }); }, function () { S.toast(t('aiFail')); })
-      .then(function () { busy = false; keep(); });
+      .then(function (j) { st.aiNote = ''; (j.texts || []).forEach(function (x, i) { if (clips[i] && x) { clips[i].text = x; delete made[st.sess.clips.indexOf(clips[i])]; } }); }, function (e) { st.aiNote = t('aiWhy', whyOf(e)); S.toast(st.aiNote); })
+      .then(function () { busy = false; keep(); queue(); });
   }
+  function whyOf(e) { var m = String(e && e.message || ''); return m === 'busy' ? t('busy') : m === 'limit' ? t('limit') : m === 'owner_only' ? t('owner') : /fetch|network|load/i.test(m) ? t('net') : (e && e.detail ? String(e.detail).slice(0, 120) : m || 'error'); }
   function go() {
     var r = roll(st.sel); if (!r) return S.toast(t('pick'));
     var clips = plan(r.dur).map(function (c) { return Object.assign(c, {text: '', x: 0.5, y: 0.42, size: 24, look: 'plain'}); });
@@ -158,8 +167,9 @@
   function frames() {
     var r = roll(st.sess.id); if (!r) return; var v = D.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = url(r);
     var cs = st.sess.clips, i = 0;
-    var next = function () { if (i >= cs.length || view !== 'clips') return; v.currentTime = Math.min(cs[i].start + 0.2, (r.dur || 1) - 0.05); };
-    v.onseeked = function () { var box = el && el.querySelector('[data-fr="' + i + '"]'); try { if (box) { var c = D.createElement('canvas'); c.width = 270; c.height = 480; cover(c.getContext('2d'), v, 270, 480); box.appendChild(c); } } catch (e) { } i++; next(); };
+    if (FR.id !== st.sess.id + ':' + cs.length) { FR = []; FR.id = st.sess.id + ':' + cs.length; }
+    var next = function () { while (i < cs.length && FR[i]) i++; if (i >= cs.length || view !== 'clips') return; v.currentTime = Math.min(cs[i].start + 0.2, (r.dur || 1) - 0.05); };
+    v.onseeked = function () { var box = el && el.querySelector('[data-fr="' + i + '"]'); try { var c = D.createElement('canvas'); c.width = 270; c.height = 480; cover(c.getContext('2d'), v, 270, 480); FR[i] = c.toDataURL('image/jpeg', 0.75); if (box) box.innerHTML = '<img alt="" src="' + FR[i] + '">'; } catch (e) { } i++; next(); };
     v.onloadedmetadata = next;
   }
   function cover(ctx, v, w, h) { var vw = v.videoWidth || w, vh = v.videoHeight || h, k = Math.max(w / vw, h / vh), dw = vw * k, dh = vh * k; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h); ctx.drawImage(v, (w - dw) / 2, (h - dh) / 2, dw, dh); }
@@ -212,17 +222,27 @@
     return new Promise(function (res, rej) {
       var mt = mime(), r = roll(st.sess.id); if (!mt || !r) return rej(new Error('norec'));
       var W0 = 1080, H0 = 1920, cv = D.createElement('canvas'); cv.width = W0; cv.height = H0; var ctx = cv.getContext('2d');
-      var v = D.createElement('video'); v.playsInline = true; v.preload = 'auto'; v.src = url(r); v.muted = false;
+      /* 24 Nov 2026 (Emmanuel: "it's not saving the videos"): iPhones refuse to play a video with sound unless a finger just
+         tapped, so clips are drawn muted (they are made in the background now) and posted with a sound added on TikTok */
+      var v = D.createElement('video'); v.playsInline = true; v.preload = 'auto'; v.muted = true; v.setAttribute('muted', ''); v.src = url(r);
       var stream = cv.captureStream(30), ac = null;
-      try { ac = new (W.AudioContext || W.webkitAudioContext)(); var src = ac.createMediaElementSource(v), dst = ac.createMediaStreamDestination(); src.connect(dst); dst.stream.getAudioTracks().forEach(function (tr) { stream.addTrack(tr); }); } catch (e) { v.muted = true; }
       var rec = new MediaRecorder(stream, {mimeType: mt, videoBitsPerSecond: 8e6}), parts = [];
       rec.ondataavailable = function (e) { if (e.data && e.data.size) parts.push(e.data); };
       rec.onstop = function () { try { if (ac) ac.close(); } catch (e) { } res(new Blob(parts, {type: mt.split(';')[0]})); };
       var draw = function () { cover(ctx, v, W0, H0); drawText(ctx, c, W0, H0); if (onP) onP(Math.min(99, Math.round((v.currentTime - c.start) / (c.end - c.start) * 100))); if (v.currentTime >= c.end || v.ended) { v.pause(); if (rec.state !== 'inactive') rec.stop(); return; } requestAnimationFrame(draw); };
       v.onloadedmetadata = function () { v.currentTime = c.start; };
-      v.onseeked = function () { if (rec.state !== 'inactive') return; v.onseeked = null; cover(ctx, v, W0, H0); drawText(ctx, c, W0, H0); rec.start(250); v.play().then(function () { requestAnimationFrame(draw); }, rej); };
+      v.onseeked = function () { if (rec.state !== 'inactive') return; v.onseeked = null; cover(ctx, v, W0, H0); drawText(ctx, c, W0, H0); rec.start(250); v.play().then(function () { requestAnimationFrame(draw); }, function (e) { try { rec.stop(); } catch (x) { } rej(e); }); };
       v.onerror = function () { rej(new Error('video')); };
     });
+  }
+  /* the clips are made one after the other in the background as soon as they exist (and again after an edit), so Save is one tap */
+  var qNow = -1, qPc = 0, qRun = false, FR = [];
+  function queue() {
+    if (qRun || !st.sess || !mime()) return; var i = st.sess.clips.findIndex(function (_c, k) { return !made[k]; }); if (i < 0) { if (view === 'clips') paint(); return; }
+    qRun = true; qNow = i; qPc = 0; var sid = st.sess, snap0 = JSON.stringify(st.sess.clips[i]);
+    render(st.sess.clips[i], function (pc) { qPc = pc; var b = el && el.querySelector('[data-pc]'); if (b) b.textContent = pc + '%'; })
+      .then(function (blob) { if (st.sess === sid && JSON.stringify(st.sess.clips[i]) === snap0) made[i] = blob; }, function () { })
+      .then(function () { qRun = false; qNow = -1; if (view === 'clips') paint(); if (st.sess === sid) setTimeout(queue, 50); });
   }
   function fileOf(blob, i) { var ext = /mp4/.test(blob.type) ? 'mp4' : 'webm'; return new File([blob], 'lowispike-clip-' + (i + 1) + '.' + ext, {type: blob.type}); }
   function share(files) {
@@ -254,11 +274,30 @@
     if (k === 'again') return write(st.sess.clips).then(function () { made = {}; paint(); });
     if (k === 'open') { cur = +b.dataset.i; view = 'edit'; return paint(); }
     if (k === 'prev' || k === 'next') { var n = st.sess.clips.length; cur = (cur + (k === 'next' ? 1 : -1) + n) % n; return paint(); }
+    if (k === 'aione') { var c1 = st.sess.clips[cur]; b.disabled = true; b.textContent = t('writing'); return S.ai({action: 'captions', bio: styleText(), examples: examples(), clips: [{sec: c1.sec, style: c1.style}], lang: st.lang}).then(function (j) { if (j.texts && j.texts[0]) { c1.text = j.texts[0]; delete c1.orig; delete made[cur]; keep(); } paint(); }, function (e) { S.toast(t('aiWhy', whyOf(e))); paint(); }); }
+    if (k === 'trc') { var c2 = st.sess.clips[cur]; if (!c2.text) return; var src = c2.orig != null ? c2.orig : c2.text; b.disabled = true; return S.ai({action: 'translate', text: src, to: b.dataset.l}).then(function (j) { if (c2.orig == null) c2.orig = c2.text; c2.text = j.text || c2.text; delete made[cur]; keep(); paint(); }, function (e) { S.toast(t('aiWhy', whyOf(e))); paint(); }); }
+    if (k === 'trundo') { var c3 = st.sess.clips[cur]; if (c3.orig != null) { c3.text = c3.orig; delete c3.orig; delete made[cur]; keep(); } return paint(); }
+    if (k === 'lib') return libOpen();
+    if (k === 'libuse') { var c4 = st.sess.clips[cur]; c4.text = b.dataset.t; delete c4.orig; delete made[cur]; keep(); libClose(); return paint(); }
+    if (k === 'libx') return libClose();
     if (k === 'look') { st.sess.clips[cur].look = b.dataset.l; keep(); delete made[cur]; return paint(); }
-    if (k === 'make') { var box = D.getElementById('vmOut'); if (made[cur]) return readyBtn(box, [fileOf(made[cur], cur)]); b.disabled = true; var lab = b.textContent; make([cur], b).then(function (f) { b.disabled = false; b.textContent = lab; readyBtn(box, f); }, function () { b.disabled = false; b.textContent = lab; }); return; }
-    if (k === 'saveAll') { var all = st.sess.clips.map(function (_c, i) { return i; }), lab2 = b.textContent; b.disabled = true; make(all.filter(function (i) { return !made[i]; }), b).then(function () { b.disabled = false; b.textContent = lab2; var nav = b.parentNode; readyBtn(nav, all.map(function (i) { return fileOf(made[i], i); })); }, function () { b.disabled = false; b.textContent = lab2; }); return; }
+    if (k === 'make') { var box = D.getElementById('vmOut'); if (made[cur]) return share([fileOf(made[cur], cur)]); b.disabled = true; var lab = b.textContent; make([cur], b).then(function (f) { b.disabled = false; b.textContent = lab; readyBtn(box, f); }, function () { b.disabled = false; b.textContent = lab; }); return; }
+    if (k === 'saveAll') { return share(st.sess.clips.map(function (_c, i) { return fileOf(made[i], i); })); }   /* ready in the background: straight to the share sheet, inside the tap */
     if (k === 'share') { var holder = b.parentNode; return share(holder._files || []); }
   }
+  /* the Swipe file as a library of texts: the chosen playlist first, then everything; each with its creator's TikTok */
+  function libOpen() {
+    var all = S.sw ? S.sw() || [] : [], ids = {}, q = st.pl && S.lists ? S.lists().filter(function (z) { return z.id === st.pl; })[0] : null;
+    ((q && q.items) || []).forEach(function (i) { ids[i] = 1; });
+    var list = all.filter(function (x) { return ids[x.id]; }).concat(all.filter(function (x) { return !ids[x.id]; })).filter(function (x) { return x.hook || x.onscreen; }).slice(0, 80);
+    var d = D.createElement('div'); d.className = 'vm-lib'; d.id = 'vmLib';
+    d.innerHTML = '<div class="vm-libin"><div class="vm-ch"><b>' + esc(t('libH')) + '</b><button class="ib" data-vm="libx" aria-label="✕">✕</button></div>' + list.map(function (x) {
+      var txt = String(x.onscreen || x.hook || '');
+      return '<div class="vm-li"><p>' + esc(txt).replace(/\n/g, '<br>') + '</p><div class="vm-row"><small>' + esc(x.creator || '') + '</small>' + (x.link ? '<a class="pill" href="' + esc(x.link) + '" target="_blank" rel="noopener">' + esc(t('openTT')) + '</a>' : '') + '<button class="pill acc" data-vm="libuse" data-t="' + esc(txt) + '">' + esc(t('use')) + '</button></div></div>';
+    }).join('') + '</div>';
+    el.appendChild(d);
+  }
+  function libClose() { var d = D.getElementById('vmLib'); if (d) d.remove(); }
   function mic() {
     if (recog) return micStop(); var SR = W.SpeechRecognition || W.webkitSpeechRecognition, ta = D.getElementById('vmStyle'); if (!SR || !ta) return;
     var base = ta.value ? ta.value.replace(/\s*$/, ' ') : '', r = new SR(); r.lang = st.lang === 'de' ? 'de-DE' : st.lang === 'es' ? 'es-ES' : 'en-US'; r.continuous = true; r.interimResults = true;

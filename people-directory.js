@@ -81,6 +81,10 @@
         else {
             const all = rows(), shown = C().match(all, q), fr = friendIds(), h = hereNow();
             const onIds = new Set(h.rows.map(r => r.uid)), onShown = C().match(h.rows, q), rest = shown.filter(r => !onIds.has(r.uid));
+            /* 24 Nov 2026 (Emmanuel: "the most recent people are always on the top ... organized by the time. Last seen"): newest last seen
+               first; people with no time yet go last, by name (rows() already sorted them by name, and the sort is stable) */
+            const ls = uid => { try { return (W.LowiLastSeen && W.LowiLastSeen.get(uid)) || 0; } catch (e) { return 0; } };
+            rest.sort((a, b) => ls(b.uid) - ls(a.uid));
             const mine = h.me && !q.trim() ? myRow() : null;
             if (!all.length && !mine) note = (W.LOWI_CLOUD && W.LOWI_CLOUD.people && (W.LOWI_CLOUD.people() || []).length) ? tr('empty') : tr('loading');
             else if (!shown.length && !mine) note = tr('none');

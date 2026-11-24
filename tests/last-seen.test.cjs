@@ -28,3 +28,10 @@ test('people_seen takes every trace an open app leaves, the billiard room includ
   for (const t of ['auth.sessions', 'public.user_state', 'public.messages', 'public.reactions', 'public.posts', 'public.post_likes', 'public.companion_rest b where b.moved_by', 'p.last_seen']) assert.ok(q.includes(t), t);
   assert.match(q, /revoke all on function public\.people_seen\(\) from public, anon;/);
 });
+/* 24 Nov 2026 (Emmanuel: "the most recent people are always on the top ... organized by the time. Last seen") */
+test('People: everyone else is sorted by last seen, newest first; no time goes last (by name)', () => {
+  const pd = require('fs').readFileSync(require('path').join(__dirname, '..', 'people-directory.js'), 'utf8');
+  assert.match(pd, /rest\.sort\(\(a, b\) => ls\(b\.uid\) - ls\(a\.uid\)\);/);
+  const t = { a: 5, b: 0, c: 9 }, rest = [{ uid: 'a' }, { uid: 'b' }, { uid: 'c' }]; const ls = u => t[u];
+  rest.sort((a, b) => ls(b.uid) - ls(a.uid)); assert.deepStrictEqual(rest.map(r => r.uid), ['c', 'a', 'b']);
+});

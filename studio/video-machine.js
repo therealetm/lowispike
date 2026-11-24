@@ -255,7 +255,52 @@
   function rv() { if (!RV) { RV = D.createElement('video'); RV.playsInline = true; RV.setAttribute('playsinline', ''); RV.preload = 'auto'; RV.muted = true; RV.setAttribute('muted', ''); } return RV; }
   function unlock() { var v = rv(); if (v.__ok) return; try { if (!v.getAttribute('src') && st.sess && roll(st.sess.id)) v.src = url(roll(st.sess.id)); var pr = v.play(); if (pr && pr.then) pr.then(function () { v.__ok = 1; if (!qRun) v.pause(); if (qErr) { qErr = 0; refresh(); setTimeout(queue, 50); } }, function () { }); } catch (e) { } }
   if (D.addEventListener) { D.addEventListener('touchend', unlock, true); D.addEventListener('click', unlock, true); }   /* the taps iPhones count as a real tap */
+  /* 24 Nov 2026, night (Emmanuel: "the video ... stopping every like 2 seconds ... moving, stopping ... like a video with a bad
+     connection"): recording the screen in real time (MediaRecorder) froze whenever the phone hiccuped. Where the phone can (WebCodecs:
+     iPhone iOS 16.4+, Chrome), every frame is now built on its own exact 1/30 s timestamp and written into the MP4 (vendor mp4-muxer),
+     so a slow moment only makes saving slower, never the video choppy. Older phones keep the old recorder. */
+  var FPS = 30;
+  function wcOK() { return !!(W.VideoEncoder && W.VideoFrame && W.HTMLVideoElement && 'requestVideoFrameCallback' in W.HTMLVideoElement.prototype); }
+  function canMake() { return wcOK() || !!mime(); }
+  var muxP = null;
+  function loadMux() { if (W.Mp4Muxer) return Promise.resolve(); return muxP || (muxP = new Promise(function (res, rej) { var sc = D.createElement('script'); sc.src = '../vendor/mp4-muxer-5.1.3.js'; sc.onload = res; sc.onerror = function () { muxP = null; rej(new Error('mux')); }; D.head.appendChild(sc); })); }
   function render(c, onP) {
+    if (!wcOK()) return renderRec(c, onP);
+    return renderWC(c, onP).catch(function (e) { if (e && (e.name === 'NotAllowedError' || e.message === 'video')) throw e; return mime() ? renderRec(c, onP) : Promise.reject(e); });
+  }
+  function renderWC(c, onP) {
+    var W0 = 1080, H0 = 1920, cfg = {codec: 'avc1.640028', width: W0, height: H0, bitrate: 10e6, framerate: FPS, avc: {format: 'avc'}};
+    return loadMux().then(function () { return W.VideoEncoder.isConfigSupported(cfg); }).then(function (sup) {
+      if (!sup || !sup.supported) { cfg.codec = 'avc1.42002a'; return W.VideoEncoder.isConfigSupported(cfg); } return sup; }).then(function (sup) {
+      if (!sup || !sup.supported) throw new Error('nocodec');
+      return new Promise(function (res, rej) {
+        var r = roll(st.sess.id); if (!r) return rej(new Error('norec'));
+        var M = W.Mp4Muxer, tgt = new M.ArrayBufferTarget(), mux = new M.Muxer({target: tgt, video: {codec: 'avc', width: W0, height: H0, frameRate: FPS}, fastStart: 'in-memory'});
+        var dead = false, fail = function (e) { if (dead) return; dead = true; try { v.pause(); } catch (x) { } try { enc.close(); } catch (x) { } rej(e); };
+        var enc = new W.VideoEncoder({output: function (ch, meta) { mux.addVideoChunk(ch, meta); }, error: fail}); enc.configure(cfg);
+        var cv = D.createElement('canvas'); cv.width = W0; cv.height = H0; var ctx = cv.getContext('2d');
+        var dur = Math.max(0.2, c.end - c.start), total = Math.round(dur * FPS), k = 0, v = rv(), cb = 0;
+        /* one frame per 1/30 s step of the B-roll's own time; a step the phone skipped repeats the picture before it */
+        var put = function (upTo) {
+          while (k < total && k / FPS <= upTo + 1e-6) { cover(ctx, v, W0, H0); drawText(ctx, c, W0, H0); var f = new W.VideoFrame(cv, {timestamp: Math.round(k * 1e6 / FPS), duration: Math.round(1e6 / FPS)}); enc.encode(f, {keyFrame: k % (FPS * 2) === 0}); f.close(); k++; }
+          if (onP) onP(Math.min(99, Math.round(k / total * 100)));
+        };
+        var finish = function () { if (dead) return; dead = true; try { v.pause(); if (cb && v.cancelVideoFrameCallback) v.cancelVideoFrameCallback(cb); } catch (x) { }
+          enc.flush().then(function () { enc.close(); mux.finalize(); res(new Blob([tgt.buffer], {type: 'video/mp4'})); }, function (e) { rej(e); }); };
+        var tick = function (_now, md) {
+          if (dead) return; var t = (md && md.mediaTime != null ? md.mediaTime : v.currentTime) - c.start; put(Math.min(t, dur));
+          if (k >= total || v.ended || t >= dur) { put(dur); return finish(); }
+          if (enc.encodeQueueSize > 6) { v.pause(); var wait = function () { if (dead) return; if (enc.encodeQueueSize > 2) return setTimeout(wait, 30); v.play().then(function () { cb = v.requestVideoFrameCallback(tick); }, fail); }; return wait(); }
+          cb = v.requestVideoFrameCallback(tick);
+        };
+        v.onloadedmetadata = v.onseeked = v.onerror = null; v.onerror = function () { fail(new Error('video')); };
+        var go = function () { v.onseeked = null; put(0); v.playbackRate = 0.75; cb = v.requestVideoFrameCallback(tick); v.play().then(function () { v.__ok = 1; }, fail); };
+        var seek = function () { v.onseeked = go; v.currentTime = c.start; };
+        if (v.getAttribute('src') !== url(r)) { v.onloadedmetadata = seek; v.src = url(r); } else if (v.readyState >= 1) setTimeout(seek, 0); else v.onloadedmetadata = seek;
+      });
+    });
+  }
+  function renderRec(c, onP) {
     return new Promise(function (res, rej) {
       var mt = mime(), r = roll(st.sess.id); if (!mt || !r) return rej(new Error('norec'));
       var W0 = 1080, H0 = 1920, cv = D.createElement('canvas'); cv.width = W0; cv.height = H0; var ctx = cv.getContext('2d');
@@ -280,7 +325,7 @@
   function soft() { if (inEdit()) refresh0(); else refresh(); }
   function refresh0() { if (HOST && HOST.isConnected) mountPaint(); }
   function queue() {
-    if (qRun || qErr || qHold || !st.sess || !mime()) return; var i = st.sess.clips.findIndex(function (c0, k) { return !got(k) && (!isUsed(c0) || (inEdit() && k === cur)); }); if (i < 0) { soft(); return; }
+    if (qRun || qErr || qHold || !st.sess || !canMake()) return; var i = st.sess.clips.findIndex(function (c0, k) { return !got(k) && (!isUsed(c0) || (inEdit() && k === cur)); }); if (i < 0) { soft(); return; }
     qRun = true; qNow = i; qPc = 0; var sid = st.sess, mm = made, snap0 = ckey(st.sess.clips[i]);
     render(st.sess.clips[i], function (pc) { qPc = pc; [el, HOST].forEach(function (w0) { var b = w0 && w0.querySelector('[data-pc]'); if (b) b.textContent = pc + '%'; }); })
       .then(function (blob) { mm[i] = {b: blob, k: snap0}; }, function () { qErr = 1; })
@@ -289,7 +334,7 @@
   function toSave() { var a = st.sess.clips.map(function (_c, i) { return i; }), n = a.filter(function (i) { return !isUsed(st.sess.clips[i]); }); return n.length ? n : a; }
   function saveBtn(cls) { if (st.sess.clips.every(isUsed)) return '<button class="btn ' + cls + '" disabled>' + esc(t('allUsed')) + '</button>'; var ix = toSave(), ready = ix.filter(function (i) { return got(i); }).length, all = ix.length === st.sess.clips.length && !st.sess.clips.some(isUsed);
     if (ready === ix.length) return '<button class="btn ' + cls + '" data-vm="saveAll">' + esc(all ? t('saveAll') + ' (' + ready + ')' : t('saveNew', ready)) + '</button>';
-    if (qErr || !mime()) return '<button class="btn ' + cls + '" data-vm="kick">' + esc(t('tapMake')) + '</button>';
+    if (qErr || !canMake()) return '<button class="btn ' + cls + '" data-vm="kick">' + esc(t('tapMake')) + '</button>';
     return '<button class="btn ' + cls + '" disabled>' + esc(t('prep', ready + ' / ' + ix.length)) + '</button>'; }
   function tile(c, i, act) { var u = isUsed(c), m = got(i);
     return '<button class="vm-tile' + (u ? ' used' : '') + '" data-vm="' + act + '" data-i="' + i + '"><span class="vm-fr" data-fr="' + i + '">' + (FR[i] ? '<img alt="" src="' + FR[i] + '">' : '') + '</span><span class="vm-tt" style="top:' + (c.y * 100) + '%;left:' + (c.x * 100) + '%;--fs:' + c.size + '">' + esc(c.text).replace(/\n/g, '<br>') + '</span><i>' + fmt(c.sec) + '</i><em>' + esc(T.ST[c.style] ? T.ST[c.style][I] : c.style) + '</em>' +
@@ -302,7 +347,7 @@
     return Promise.resolve(true);
   }
   function make(idxs, out) {
-    if (!mime()) { S.toast(t('noRec')); return; }
+    if (!canMake()) { S.toast(t('noRec')); return; }
     busy = true; var files = [], n = 0; qHold++;
     /* one video player draws every clip: wait for the background one to finish first */
     var idle = new Promise(function (res) { (function w() { if (!qRun) res(); else setTimeout(w, 120); })(); });

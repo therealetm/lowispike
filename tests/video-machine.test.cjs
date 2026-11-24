@@ -92,3 +92,15 @@ test('making videos never hangs silently: when the phone blocks it, a clear butt
   assert.match(js, /var idle = new Promise/, 'Save waits for the background maker (one video player)');
   assert.match(js, /function soft\(\) \{ if \(inEdit\(\)\) refresh0\(\); else refresh\(\); \}/);
 });
+/* 24 Nov 2026, night (Emmanuel: "the video ... stopping every like 2 seconds, stopping, moving, stopping ... like a video with a bad
+   connection ... I just posted a video and I didn't even notice"). Checked in Chromium: a 13 s part came out as 390 frames, every gap
+   exactly 1/30 s, all 390 frames different (ffprobe + framemd5). */
+test('videos are built frame by frame on exact 1/30 s timestamps (WebCodecs + MP4), not screen-recorded in real time', () => {
+  assert.match(js, /function wcOK\(\) \{ return !!\(W\.VideoEncoder && W\.VideoFrame/);
+  assert.match(js, /if \(!wcOK\(\)\) return renderRec\(c, onP\);/, 'older phones keep the recorder');
+  assert.match(js, /new W\.VideoFrame\(cv, \{timestamp: Math\.round\(k \* 1e6 \/ FPS\), duration: Math\.round\(1e6 \/ FPS\)\}\)/);
+  assert.match(js, /v\.requestVideoFrameCallback\(tick\)/); assert.match(js, /if \(enc\.encodeQueueSize > 6\) \{ v\.pause\(\);/, 'waits for the encoder instead of dropping frames');
+  assert.match(js, /sc\.src = '\.\.\/vendor\/mp4-muxer-5\.1\.3\.js'/);
+  const v = R('vendor/mp4-muxer-5.1.3.js'); assert.match(v, /^\/\*! mp4-muxer 5\.1\.3/); assert.match(v, /var Mp4Muxer = \(\(\) => \{/);
+  assert.ok(fs.existsSync(path.join(__dirname, '..', 'vendor', 'mp4-muxer-5.1.3.LICENSE.txt')));
+});

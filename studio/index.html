@@ -74,6 +74,9 @@ body{min-height:100vh;min-height:100dvh;color:var(--ink);font:16px/1.5 -apple-sy
 #selbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(10,16,32,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.12)}
 #selbar[hidden]{display:none}
 #selbar button{flex:1;min-height:48px;border-radius:14px;border:0;background:rgba(255,255,255,.12);color:#fff;font:600 16px system-ui}
+#selbar .plb{background:#2f7cf6}#selbar .plb:disabled{opacity:.4}
+.ed-sec{margin:0 0 14px}.ed-h{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;width:100%;min-height:46px;padding:6px 16px;border:0;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.ed-h b{font-size:18px}.ed-h span{color:var(--muted)}.ed-h small{width:100%;color:var(--muted);font-size:13px}.ed-new b{color:var(--acc2)}
 #selbar .delb{background:#ff3b30}#selbar .delb:disabled{opacity:.4}
 .tile.hid{opacity:.35}
 .tile.add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(124,196,255,.08);border:1.5px dashed var(--line);color:var(--acc2);font-weight:700;font-size:14px}
@@ -261,7 +264,8 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     copyFail: ['Copy did not work. Hold the text below and tap Copy.', 'Kopieren ging nicht. Halte den Text unten gedrückt und tippe auf Kopieren.', 'No se pudo copiar. Mantén pulsado el texto.'], empty: ['Nothing here yet.', 'Hier ist noch nichts.', 'Aún no hay nada.'], none: ['Nothing found.', 'Nichts gefunden.', 'Nada encontrado.'],
     agentAsk: ['Here is a short video that works. Make my own version of it for my niche and voice (ask me for them if you do not know them). Keep the structure and pacing, use new words, never copy the original clips or text 1:1. I post it myself.', 'Hier ist ein kurzes Video, das funktioniert. Mach mir eine eigene Version für meine Nische und meine Stimme (frag mich danach, wenn du sie nicht kennst). Struktur und Tempo übernehmen, neue Worte, nie fremde Clips oder Texte 1:1 kopieren. Ich poste selbst.', 'Aquí hay un vídeo corto que funciona. Haz mi propia versión para mi nicho y mi voz (pregúntame si no los conoces). Mantén la estructura, usa palabras nuevas, nunca copies 1:1. Yo lo publico.'],
     profile: ['Profile', 'Profil', 'Perfil'], back: ['Back', 'Zurück', 'Atrás'],
-    plMore: ['More', 'Weitere', 'Más'], plH: ['Playlists', 'Playlists', 'Listas'], plNew: ['New playlist', 'Neue Playlist', 'Nueva lista'], plEditH: ['Edit playlist', 'Playlist bearbeiten', 'Editar lista'],
+    plMore: ['More', 'Weitere', 'Más'], plNone: ['Not in a playlist yet', 'Noch in keiner Playlist', 'Aún sin lista'], plNoneSub: ['Tick them, then tap “Add to playlist” below.', 'Antippen, dann unten auf „Zur Playlist“ tippen.', 'Márcalos y toca «A una lista» abajo.'],
+    plAdd: ['Add to playlist', 'Zur Playlist', 'A una lista'], plAddH: ['Put {n} into which playlist?', '{n} in welche Playlist?', '¿En qué lista pongo {n}?'], plH: ['Playlists', 'Playlists', 'Listas'], plNew: ['New playlist', 'Neue Playlist', 'Nueva lista'], plEditH: ['Edit playlist', 'Playlist bearbeiten', 'Editar lista'],
     plName: ['Name of the playlist', 'Name der Playlist', 'Nombre de la lista'], plPh: ['e.g. Spoken tweeters', 'z. B. Spoken Tweeters', 'p. ej. Tweets hablados'], plPick: ['Tap the videos that belong in it', 'Tippe die Videos an, die reingehören', 'Toca los vídeos que van en ella'],
     plDel: ['Delete playlist', 'Playlist löschen', 'Borrar lista'], plDelQ: ['Delete this playlist? The videos stay in the Swipe file.', 'Diese Playlist löschen? Die Videos bleiben in der Swipe-Datei.', '¿Borrar esta lista? Los vídeos se quedan.'], plEmpty: ['No videos in this playlist yet.', 'Noch keine Videos in dieser Playlist.', 'Aún no hay vídeos en esta lista.'],
     dupQ: ['Already in the Swipe file: {x}. Add it anyway?', 'Schon in der Swipe-Datei: {x}. Trotzdem hinzufügen?', 'Ya está en el archivo: {x}. ¿Añadir igualmente?'],
@@ -338,7 +342,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     $('#q').placeholder = t('search'); $('#sortb').hidden = TAB !== 'swipe'; $('#sortb').textContent = SORT === 'views' ? t('most') : t('newest');
     var nSel = Object.keys(SEL).length, bar = $('#selbar');
     if (!bar) { bar = D.createElement('div'); bar.id = 'selbar'; D.body.appendChild(bar); }
-    D.body.style.paddingBottom = EDIT ? '96px' : ''; bar.hidden = !EDIT; bar.innerHTML = '<button data-sel="all">' + esc(t('selAll')) + '</button><button class="delb" data-sel="del"' + (nSel ? '' : ' disabled') + '>🗑 ' + esc(t('del')) + (nSel ? ' (' + nSel + ')' : '') + '</button>';
+    D.body.style.paddingBottom = EDIT ? '96px' : ''; bar.hidden = !EDIT; bar.innerHTML = '<button data-sel="all">' + esc(t('selAll')) + '</button>' + (EDIT && TAB === 'swipe' && lists().length ? '<button class="plb" data-sel="pl"' + (nSel ? '' : ' disabled') + '>📁 ' + esc(t('plAdd')) + '</button>' : '') + '<button class="delb" data-sel="del"' + (nSel ? '' : ' disabled') + '>🗑 ' + esc(t('del')) + (nSel ? ' (' + nSel + ')' : '') + '</button>';
     $('#editb').textContent = EDIT ? t('done') : t('edit'); $('#editb').setAttribute('aria-pressed', EDIT ? 'true' : 'false');
     var list = visible(TAB === 'swipe' ? SW : AG), h = '';
     if (TAB === 'swipe') {
@@ -361,6 +365,20 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
          in"): the playlists sit folded in one row; open it for a tidy list (name, count, ›) and "+ New playlist" at the end */
       h = (EDIT ? '<details class="pl-edit"' + (PLOPEN ? ' open' : '') + '><summary><b>' + esc(t('plH')) + '</b><span>' + pls.length + '</span></summary><div class="pl-list">' + pls.map(function (q) { return '<button class="pl-li" data-pl-edit="' + esc(q.id) + '"><b>' + esc(q.name) + '</b><span>' + (q.items || []).length + ' ›</span></button>'; }).join('') + '<button class="pl-li add" data-pl-edit="">+ ' + esc(t('plNew')) + '</button></div></details>' : '') +
         (EDIT ? '<button class="tile add" data-add="swipe"><span>+</span>' + esc(t('addVideo')) + '</button>' : '') + list.map(tileHTML).join('');
+      /* 24 Nov 2026 (Emmanuel: "when I click on edit ... I have to restart and search for where it is ... it's really about putting the
+         new stuff into the right folder ... the ones that are in a folder should stay in their folder"): with playlists, Edit keeps the
+         folders. First "Not in a playlist yet" (newest first, the + to add), then every playlist as its own block (tap its name to
+         rename / change it). Tick videos, then "Add to playlist" in the bottom bar files them all at once. */
+      if (EDIT && TAB === 'swipe' && pls.length && !Q) {
+        var inA = {}; pls.forEach(function (q) { (q.items || []).forEach(function (id) { inA[id] = 1; }); });
+        var loose = list.filter(function (x) { return !inA[x.id]; }).sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+        var blk = function (head, xs, add) { return '<section class="ed-sec">' + head + '<div class="grid">' + (add ? '<button class="tile add" data-add="swipe"><span>+</span>' + esc(t('addVideo')) + '</button>' : '') + xs.map(tileHTML).join('') + '</div></section>'; };
+        h = h.slice(0, h.indexOf('<button class="tile add"'));
+        $('#main').innerHTML = h + blk('<div class="ed-h ed-new"><b>' + esc(t('plNone')) + '</b><span>' + loose.length + '</span><small>' + esc(t('plNoneSub')) + '</small></div>', loose, true) +
+          pls.map(function (q) { return blk('<button class="ed-h" data-pl-edit="' + esc(q.id) + '"><b>' + esc(q.name) + '</b><span>' + (q.items || []).length + ' ✎</span></button>', plItems(q), false); }).join('');
+        if (IO) D.querySelectorAll('.tile[data-id]').forEach(function (e) { IO.observe(e); });
+        return;
+      }
       $('#main').innerHTML = list.length || EDIT ? (EDIT ? h.replace('<button class="tile add"', '<div class="grid"><button class="tile add"') + '</div>' : '<div class="grid">' + h + '</div>') : '<div class="empty">' + esc(Q ? t('none') : t('empty')) + '</div>';
       }
       if (IO) D.querySelectorAll('.tile[data-id]').forEach(function (e) { IO.observe(e); });
@@ -498,6 +516,8 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
       if (isB) { var ov = over(id); for (var f in o) ov[f] = o[f]; } else if (id) { DOC.swipe = DOC.swipe.map(function (s) { if (s.id !== id) return s; for (var f2 in o) s[f2] = o[f2]; return s; }); } else { o.id = o.id || 'V' + Date.now().toString(36).toUpperCase(); o.ts = Date.now(); DOC.swipe = (DOC.swipe || []).concat([o]); }
       return save().then(function () { dlgClose(); rebuild(); render(); if (OPEN) open(id || o.id, true); }, function () {});
     }
+    if (k === 'pladd') { var add = Object.keys(SEL), tid = b.dataset.id; DOC.lists = lists().map(function (q) { if (q.id !== tid) return q; var it = (q.items || []).slice(); add.forEach(function (i) { if (it.indexOf(i) < 0) it.push(i); }); return {id: q.id, name: q.name, items: it}; });
+      return save().then(function () { SEL = {}; dlgClose(); render(); }, function () {}); }
     if (k === 'fpl') { var fid = b.dataset.id; if (FPL[fid]) delete FPL[fid]; else FPL[fid] = 1; b.setAttribute('aria-pressed', !!FPL[fid]); return; }
     if (k === 'pltog') { var pid = b.dataset.id; if (PLSEL[pid]) delete PLSEL[pid]; else PLSEL[pid] = 1; var on = !!PLSEL[pid]; b.classList.toggle('picked', on); b.setAttribute('aria-pressed', on); var xb = b.querySelector('.xb'); xb.classList.toggle('ok', on); xb.textContent = on ? '✓' : ''; return; }
     if (k === 'plsave') { var nm = v('f_pl'); if (!nm) return toast(t('plName')); var ids = Object.keys(PLSEL), L0 = lists().slice(), qid = b.dataset.id;
@@ -528,6 +548,8 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
        tapping it marks the tile, the bar at the bottom deletes all marked at once. Tapping the rest of the tile still opens it. */
     if (EDIT && e.target.closest('[data-x]') && b.dataset.id) { var k = b.dataset.id; if (SEL[k]) delete SEL[k]; else SEL[k] = 1; return render(); }
     if (b.dataset.sel === 'all') { var all = cur(), on = all.every(function (x) { return SEL[x.id]; }); SEL = {}; if (!on) all.forEach(function (x) { SEL[x.id] = 1; }); return render(); }
+    if (b.dataset.sel === 'pl') { var n0 = Object.keys(SEL).length; if (!n0) return;
+      return dlg('<h2>' + esc(t('plAddH').replace('{n}', n0)) + '</h2><div class="pl-list">' + lists().map(function (q) { return '<button class="pl-li" data-d="pladd" data-id="' + esc(q.id) + '"><b>' + esc(q.name) + '</b><span>' + (q.items || []).length + '</span></button>'; }).join('') + '</div><div class="btns"><button class="btn" data-d="cancel">' + esc(t('cancel')) + '</button></div>'); }
     if (b.dataset.sel === 'del') { var ids = Object.keys(SEL); if (!ids.length || !confirm(t('confirmDelN').replace('{n}', ids.length))) return;
       ids.forEach(delOne); return save().then(function () { SEL = {}; rebuild(); render(); }, function () {}); }
     if (b.id === 'share') return share(location.origin + location.pathname);

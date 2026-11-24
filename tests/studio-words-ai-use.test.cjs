@@ -52,3 +52,9 @@ test('drafts: translate (EN/DE/ES or any language), Copy text, Back to original;
 test('the owner can edit a video (and its playlists) from its page without turning on Edit first (24 Nov 2026)', () => {
   assert.match(R('studio/index.html'), /\(OWNER && !EDIT \? '<button class="btn" data-a="edit">✎ ' \+ esc\(t\('edit'\)\) \+ '<\/button>' : ''\)/);
 });
+test('Edit keeps the folders: "Not in a playlist yet" first, then each playlist; ticked videos go into a playlist in one tap (24 Nov 2026)', () => {
+  const h = R('studio/index.html');
+  assert.match(h, /if \(EDIT && TAB === 'swipe' && pls\.length && !Q\) \{/); assert.match(h, /esc\(t\('plNone'\)\)/);
+  assert.match(h, /data-sel="pl"/); assert.match(h, /if \(k === 'pladd'\) \{/);
+  assert.match(h, /plAdd: \['Add to playlist', 'Zur Playlist', 'A una lista'\]/);
+});

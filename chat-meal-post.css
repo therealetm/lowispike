@@ -130,3 +130,9 @@ html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs
    chat ... The text then is always on the picture"): a photo that is not a meal carries an empty .cs-meal-plain marker
    (community-chat.js msgBody), so it gets the same full photo post with the caption big on the picture, just without a spike pill. */
 html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub>.cs-meal.cs-meal-plain{display:none!important}
+/* 24 Nov 2026 (Emmanuel): under the name on a photo post, the poster's sign, type and birthday countdown (community-chat.js postWho);
+   a ☺+ react button sits in the reaction row under the picture (never on it, so screenshots stay clean); holding the photo opens the
+   reactions, so the phone's own save menu is off on post photos. */
+html body #cmPaneChat#cmPaneChat#cmPaneChat#cmPaneChat .cm-bub.cm-pbub:has(> .cs-meal) .cs-whox{flex:1 1 100%;display:block;margin-top:2px;color:rgba(255,255,255,.9);font-size:13.5px;font-weight:600;letter-spacing:.01em;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+html body #cmPaneChat .cm-rx .cm-addrx{min-width:44px;opacity:.75;background:rgba(255,255,255,.06)!important;border:1px dashed rgba(255,255,255,.28)!important}
+html body #cmPaneChat .cm-pbub .cs-photo,html body #cmPaneChat .cm-pbub .cs-photo img{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}

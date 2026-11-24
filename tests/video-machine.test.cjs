@@ -21,7 +21,7 @@ test('magnets: the text snaps to the centre lines; the safe zone keeps it off Ti
   assert.match(js, /var x = Math\.min\(SAFE\.r - hw, Math\.max\(SAFE\.l \+ hw, c\.x\)\), y = Math\.min\(SAFE\.b - hh, Math\.max\(SAFE\.t \+ hh, c\.y\)\);/);
 });
 test('B-rolls stay on the phone; the video is made on the phone and saved through the share sheet', () => {
-  assert.match(js, /W\.indexedDB\.open\('lowi-studio', 1\)/); assert.match(js, /cv\.captureStream\(30\)/); assert.match(js, /new MediaRecorder\(stream/);
+  assert.match(js, /W\.indexedDB\.open\('lowi-studio', 2\)/);   /* changed 24 Nov 2026, night: v2 adds the finished-videos store */ assert.match(js, /cv\.captureStream\(30\)/); assert.match(js, /new MediaRecorder\(stream/);
   assert.match(js, /navigator\.share\(\{files: files\}\)/); assert.doesNotMatch(js, /storage\.from\(|\.upload\(/);
 });
 test('the AI writes from the creator\'s style and the picked playlist; owner only on the server', () => {
@@ -86,11 +86,11 @@ test('saved videos go to the Used folder (a recipe, not a file) and can be saved
   assert.doesNotMatch(js, /bPut\([^)]*made/, 'made videos are never stored');
 });
 test('making videos never hangs silently: when the phone blocks it, a clear button asks for one tap; the status says "x / y done"', () => {
-  assert.match(js, /function \(\) \{ qErr = 1; \}\)/); assert.match(js, /data-vm="kick">' \+ esc\(t\('tapMake'\)\)/);
+  assert.match(js, /function \(\) \{ qErr = 1; \}\)/);   /* unchanged */ assert.match(js, /data-vm="kick">' \+ esc\(t\('tapMake'\)\)/);
   assert.match(js, /D\.addEventListener\('touchend', unlock, true\); D\.addEventListener\('click', unlock, true\);/);
   assert.match(js, /prep: \['🎬 Making your videos: \{p\} done'/); assert.doesNotMatch(js, /Getting your clips ready/);
   assert.match(js, /var idle = new Promise/, 'Save waits for the background maker (one video player)');
-  assert.match(js, /function soft\(\) \{ if \(inEdit\(\)\) refresh0\(\); else refresh\(\); \}/);
+  assert.match(js, /function soft\(\) \{ if \(inEdit\(\)\) \{ refresh0\(\); mkSync\(\); \} else refresh\(\); \}/);   /* changed 24 Nov 2026, night: the editor's button follows too */
 });
 /* 24 Nov 2026, night (Emmanuel: "the video ... stopping every like 2 seconds, stopping, moving, stopping ... like a video with a bad
    connection ... I just posted a video and I didn't even notice"). Checked in Chromium: a 13 s part came out as 390 frames, every gap
@@ -111,4 +111,15 @@ test('the editor shows the text drawn by the same drawText() and font as the sav
   assert.match(js, /<canvas class="vm-pv" id="vmC"/); assert.match(js, /x\.clearRect\(0, 0, cw, ch\); drawText\(x, c, cw, ch\);/);
   assert.match(js, /ctx\.font = '700 ' \+ fs \+ 'px ' \+ FONT;/); assert.match(js, /class="vm-text ghost" id="vmT"/);
   assert.match(R('studio/index.html'), /\.vm-text\.ghost,\.vm-text\.ghost\.box\{color:transparent;/);
+});
+/* 24 Nov 2026, night (Emmanuel: "why is it that a done video, I have to always click on make video? This is already done ... isn't
+   there a better, faster way to get these videos, especially with the ones that are done?") */
+test('finished videos are kept on the phone (one per part) and survive closing the app; the editor button shows the live state', () => {
+  assert.match(js, /W\.indexedDB\.open\('lowi-studio', 2\)/); assert.match(js, /if \(!d\.objectStoreNames\.contains\('made'\)\) d\.createObjectStore\('made', \{keyPath: 'id'\}\);/);
+  assert.match(js, /st = x\.objectStore\(store \|\| 'broll'\)/, 'the made videos go into their own store');
+  assert.match(js, /mm\[i\] = \{b: blob, k: snap0\}; mPut\(sid\.id, i, mm\[i\]\);/); assert.match(js, /function loadRolls\(\) \{ return loadMade\(\)\.then\(bAll\)/);
+  assert.match(js, /var bDel = function \(id\) \{[^\n]*mDelRoll\(id\)/, 'deleting a B-roll deletes its videos');
+  assert.match(js, /function mkLabel\(\) \{ return got\(cur\) \? t\('toPhone'\) : \(qRun && qNow === cur \? t\('making', qPc\) : t\('make'\)\); \}/);
+  assert.match(js, /var i = inEdit\(\) && !got\(cur\) \? cur :/, 'the part open in the editor is made first');
+  assert.match(js, /var MAXW = 2 \* Math\.min\(0\.5 - SAFE\.l, SAFE\.r - 0\.5\) \* 0\.97;/, 'opening a finished part does not nudge it (that made it again)');
 });

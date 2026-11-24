@@ -76,11 +76,18 @@
   W.StudioVMCore = core;
 
   /* ---------- the phone's own store for B-rolls ---------- */
-  function db() { return new Promise(function (res, rej) { var r = W.indexedDB.open('lowi-studio', 1); r.onupgradeneeded = function () { r.result.createObjectStore('broll', {keyPath: 'id'}); }; r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
-  function tx(mode, fn) { return db().then(function (d) { return new Promise(function (res, rej) { var x = d.transaction('broll', mode), st = x.objectStore('broll'), out = fn(st); x.oncomplete = function () { res(out && out.result !== undefined ? out.result : out); }; x.onerror = function () { rej(x.error); }; }); }); }
+  function db() { return new Promise(function (res, rej) { var r = W.indexedDB.open('lowi-studio', 2); r.onupgradeneeded = function () { var d = r.result; if (!d.objectStoreNames.contains('broll')) d.createObjectStore('broll', {keyPath: 'id'}); if (!d.objectStoreNames.contains('made')) d.createObjectStore('made', {keyPath: 'id'}); }; r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
+  function tx(mode, fn, store) { return db().then(function (d) { return new Promise(function (res, rej) { var x = d.transaction(store || 'broll', mode), st = x.objectStore(store || 'broll'), out = fn(st); x.oncomplete = function () { res(out && out.result !== undefined ? out.result : out); }; x.onerror = function () { rej(x.error); }; }); }); }
   var bAll = function () { return tx('readonly', function (s) { return s.getAll(); }); };
   var bPut = function (o) { return tx('readwrite', function (s) { s.put(o); }); };
-  var bDel = function (id) { return tx('readwrite', function (s) { s.delete(id); }); };
+  var bDel = function (id) { return tx('readwrite', function (s) { s.delete(id); }).then(function () { return mDelRoll(id); }); };
+  /* 24 Nov 2026, night (Emmanuel: "why is it that a done video, I have to always click on make video? This is already done"): a finished
+     video is kept on the phone (one per part, replaced when the part changes), so after closing the app it is still one tap to save */
+  var mAll = function () { return tx('readonly', function (s) { return s.getAll(); }, 'made'); };
+  var mPut = function (rollId, i, m) { return tx('readwrite', function (s) { s.put({id: rollId + ':' + i, roll: rollId, i: i, k: m.k, b: m.b, ts: Date.now()}); }, 'made').catch(function () { }); };
+  var mDelRoll = function (rollId) { return tx('readwrite', function (s) { var rq = s.openCursor(); rq.onsuccess = function () { var cu = rq.result; if (!cu) return; if (cu.value.roll === rollId) cu.delete(); cu.continue(); }; }, 'made').catch(function () { }); };
+  var madeLoaded = false;
+  function loadMade() { if (madeLoaded) return Promise.resolve(); madeLoaded = true; return mAll().then(function (l) { (l || []).forEach(function (o) { var m = MADE[o.roll] = MADE[o.roll] || {}; if (!m[o.i]) m[o.i] = {b: o.b, k: o.k}; }); }, function () { }); }
 
   /* ---------- state ---------- */
   var SKEY = 'lowi.vm.v1', st = {sel: '', pl: '', lang: S.L, sess: null, cuts: {}}, rolls = [], view = 'home', cur = -1, el = null, urls = {}, made = {}, busy = false, styleOpen = false, recog = null;
@@ -150,10 +157,12 @@
         '<div class="vm-row"><span class="vm-l">' + esc(t('size')) + '</span><input type="range" id="vmSz" min="16" max="40" step="1" value="' + c.size + '"><button class="pill' + (c.look !== 'box' ? ' acc' : '') + '" data-vm="look" data-l="plain">' + esc(t('plain')) + '</button><button class="pill' + (c.look === 'box' ? ' acc' : '') + '" data-vm="look" data-l="box">' + esc(t('box')) + '</button></div>' +
         '<div class="vm-row"><button class="pill" data-vm="aione">' + esc(t('aiOne')) + '</button><button class="pill" data-vm="lib">' + esc(t('lib')) + '</button>' + ['en', 'de', 'es'].map(function (l) { return '<button class="pill" data-vm="trc" data-l="' + l + '">' + esc(t('tr')) + ' ' + l.toUpperCase() + '</button>'; }).join('') + (c.orig != null ? '<button class="pill" data-vm="trundo">' + esc(t('undo')) + '</button>' : '') + '</div>' +
         '<div id="vmOut"></div></div>' +
-        '<div class="vnav"><button class="btn" data-vm="prev">‹</button><button class="btn pri vm-wide" data-vm="make">' + esc(got(cur) ? t('toPhone') : t('make')) + '</button><button class="btn" data-vm="next">›</button></div>';
+        '<div class="vnav"><button class="btn" data-vm="prev">‹</button><button class="btn pri vm-wide" data-vm="make" id="vmMk">' + esc(mkLabel()) + '</button><button class="btn" data-vm="next">›</button></div>';
       wireEditor();
     }
   }
+  /* the editor's button says what is true now: ready to save, being made in the background (with %), or not made yet */
+  function mkLabel() { return got(cur) ? t('toPhone') : (qRun && qNow === cur ? t('making', qPc) : t('make')); }
   function lines(s) { return esc(s || '').replace(/\n/g, '<br>'); }
   function cdFocus() { var sh = D.getElementById('vmShelf'); if (!sh) return; var mid = sh.getBoundingClientRect().left + sh.clientWidth / 2; sh.querySelectorAll('.vm-cd').forEach(function (c) { var r = c.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - mid); c.style.setProperty('--k', Math.max(0, 1 - d / (sh.clientWidth * 0.6)).toFixed(3)); }); }
 
@@ -214,7 +223,7 @@
       var r = stage.getBoundingClientRect(); if (!r.width) return; var dpr = Math.min(3, W.devicePixelRatio || 1), cw = Math.round(r.width * dpr), ch = Math.round(r.height * dpr);
       if (cvp.width !== cw || cvp.height !== ch) { cvp.width = cw; cvp.height = ch; }
       var x = cvp.getContext('2d'); x.clearRect(0, 0, cw, ch); drawText(x, c, cw, ch);
-      x.font = '700 ' + (c.size * cw / 390) + 'px ' + FONT; tEl.innerHTML = wrap(x, c.text, cw * (SAFE.r - SAFE.l) * 0.96).map(esc).join('<br>') || '&nbsp;';
+      x.font = '700 ' + (c.size * cw / 390) + 'px ' + FONT; tEl.innerHTML = wrap(x, c.text, cw * MAXW).map(esc).join('<br>') || '&nbsp;';
     }
     v.addEventListener('loadedmetadata', function () { v.currentTime = c.start; v.play().catch(function () { }); });
     v.addEventListener('timeupdate', function () { if (v.currentTime >= c.end || v.currentTime < c.start - 0.3) v.currentTime = c.start; });
@@ -234,9 +243,9 @@
     function clampText() {
       var r = stage.getBoundingClientRect(), b = tEl.getBoundingClientRect(), hw = b.width / 2 / r.width, hh = b.height / 2 / r.height;
       var x = Math.min(SAFE.r - hw, Math.max(SAFE.l + hw, c.x)), y = Math.min(SAFE.b - hh, Math.max(SAFE.t + hh, c.y));
-      if (hw * 2 > SAFE.r - SAFE.l) x = (SAFE.l + SAFE.r) / 2; c.x = Math.round(x * 1000) / 1000; c.y = Math.round(y * 1000) / 1000; place();
+      if (hw * 2 > SAFE.r - SAFE.l) x = (SAFE.l + SAFE.r) / 2; x = Math.round(x * 1000) / 1000; y = Math.round(y * 1000) / 1000; if (Math.abs(x - c.x) > 0.002) c.x = x; if (Math.abs(y - c.y) > 0.002) c.y = y; place();
     }
-    pv(); setTimeout(clampText, 50); try { if (D.fonts && D.fonts.ready) D.fonts.ready.then(pv); } catch (e) { }
+    pv(); setTimeout(clampText, 50); setTimeout(queue, 150); try { if (D.fonts && D.fonts.ready) D.fonts.ready.then(pv); } catch (e) { }
   }
 
   /* ---------- making the video on the phone ---------- */
@@ -247,10 +256,13 @@
     }); return out;
   }
   /* the same font for the editor and the saved video (iPhone canvases know system-ui; -apple-system alone could fall back to another font) */
+  /* lines are at most this wide, so a centred text already sits inside the safe zone (8% left, 16% right) and opening a finished
+     part never nudges it (a nudge counted as an edit and made the video again) */
+  var MAXW = 2 * Math.min(0.5 - SAFE.l, SAFE.r - 0.5) * 0.97;
   var FONT = 'system-ui, -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif';
   function drawText(ctx, c, w, h) {
     var fs = c.size * w / 390 * 1.0, lh = fs * 1.25; ctx.font = '700 ' + fs + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    var ls = wrap(ctx, c.text, w * (SAFE.r - SAFE.l) * 0.96), cx = c.x * w, y0 = c.y * h - (ls.length - 1) * lh / 2;
+    var ls = wrap(ctx, c.text, w * MAXW), cx = c.x * w, y0 = c.y * h - (ls.length - 1) * lh / 2;
     ls.forEach(function (l, i) {
       var y = y0 + i * lh;
       if (c.look === 'box') { var tw = ctx.measureText(l).width, px = fs * 0.35; if (l) { ctx.fillStyle = '#fff'; round(ctx, cx - tw / 2 - px, y - lh / 2, tw + px * 2, lh, fs * 0.25); ctx.fill(); } ctx.fillStyle = '#000'; ctx.fillText(l, cx, y); }
@@ -330,16 +342,17 @@
   }
   /* the clips are made one after the other in the background as soon as they exist (and again after an edit), so Save is one tap */
   var fromProf = false, qHold = 0, qNow = -1, qPc = 0, qRun = false, qErr = 0, FR = [], HOST = null, rqT = 0;
-  function requeue() { clearTimeout(rqT); rqT = setTimeout(function () { refresh0(); queue(); }, 900); }
+  function requeue() { clearTimeout(rqT); rqT = setTimeout(function () { refresh0(); queue(); mkSync(); }, 700); }
   function inEdit() { return view === 'edit' && el && el.classList.contains('on'); }
   /* never redraw the editor from the background: it would drop the Save button and the text being typed */
-  function soft() { if (inEdit()) refresh0(); else refresh(); }
+  function soft() { if (inEdit()) { refresh0(); mkSync(); } else refresh(); }
+  function mkSync() { var b = inEdit() && D.getElementById('vmMk'); if (b && !b.disabled) b.textContent = mkLabel(); }
   function refresh0() { if (HOST && HOST.isConnected) mountPaint(); }
   function queue() {
-    if (qRun || qErr || qHold || !st.sess || !canMake()) return; var i = st.sess.clips.findIndex(function (c0, k) { return !got(k) && (!isUsed(c0) || (inEdit() && k === cur)); }); if (i < 0) { soft(); return; }
+    if (qRun || qErr || qHold || !st.sess || !canMake()) return; var i = inEdit() && !got(cur) ? cur : st.sess.clips.findIndex(function (c0, k) { return !got(k) && !isUsed(c0); });   /* the part open in the editor first */ if (i < 0) { soft(); return; }
     qRun = true; qNow = i; qPc = 0; var sid = st.sess, mm = made, snap0 = ckey(st.sess.clips[i]);
-    render(st.sess.clips[i], function (pc) { qPc = pc; [el, HOST].forEach(function (w0) { var b = w0 && w0.querySelector('[data-pc]'); if (b) b.textContent = pc + '%'; }); })
-      .then(function (blob) { mm[i] = {b: blob, k: snap0}; }, function () { qErr = 1; })
+    render(st.sess.clips[i], function (pc) { qPc = pc; [el, HOST].forEach(function (w0) { var b = w0 && w0.querySelector('[data-pc]'); if (b) b.textContent = pc + '%'; }); mkSync(); })
+      .then(function (blob) { mm[i] = {b: blob, k: snap0}; mPut(sid.id, i, mm[i]); }, function () { qErr = 1; })
       .then(function () { qRun = false; qNow = -1; soft(); if (st.sess && st.sess.id === sid.id) setTimeout(queue, 50); });
   }
   function toSave() { var a = st.sess.clips.map(function (_c, i) { return i; }), n = a.filter(function (i) { return !isUsed(st.sess.clips[i]); }); return n.length ? n : a; }
@@ -362,7 +375,7 @@
     busy = true; var files = [], n = 0; qHold++;
     /* one video player draws every clip: wait for the background one to finish first */
     var idle = new Promise(function (res) { (function w() { if (!qRun) res(); else setTimeout(w, 120); })(); });
-    return idxs.reduce(function (p, i) { return p.then(function () { return render(st.sess.clips[i], function (pc) { if (out) out.textContent = t('making', Math.round((n * 100 + pc) / idxs.length)); }).then(function (b) { made[i] = {b: b, k: ckey(st.sess.clips[i])}; files.push(fileOf(b, i)); n++; }); }); }, idle)
+    return idxs.reduce(function (p, i) { return p.then(function () { return render(st.sess.clips[i], function (pc) { if (out) out.textContent = t('making', Math.round((n * 100 + pc) / idxs.length)); }).then(function (b) { made[i] = {b: b, k: ckey(st.sess.clips[i])}; mPut(st.sess.id, i, made[i]); files.push(fileOf(b, i)); n++; }); }); }, idle)
       .then(function () { busy = false; qHold--; setTimeout(queue, 50); return files; }, function (e) { busy = false; qHold--; S.toast(t('noRec')); throw e; });
   }
   function readyBtn(box, files, idxs) { box._idx = idxs; box.innerHTML = '<button class="btn pri vm-wide" data-vm="share">' + esc(t('toPhone')) + (files.length > 1 ? ' (' + files.length + ')' : '') + '</button>'; box._files = files; }
@@ -390,7 +403,8 @@
     if (k === 'libuse') { var c4 = st.sess.clips[cur]; c4.text = b.dataset.t; delete c4.orig; delete made[cur]; keep(); libClose(); return paint(); }
     if (k === 'libx') return libClose();
     if (k === 'look') { st.sess.clips[cur].look = b.dataset.l; keep(); delete made[cur]; return paint(); }
-    if (k === 'make') { var box = D.getElementById('vmOut'); var i0 = cur; if (got(i0)) return share([fileOf(got(i0), i0)]).then(function (ok) { if (ok) markUsed([i0]); }); b.disabled = true; var lab = b.textContent; make([i0], b).then(function (f) { b.disabled = false; b.textContent = lab; readyBtn(box, f, [i0]); }, function () { b.disabled = false; b.textContent = lab; }); return; }
+    if (k === 'make') { var box = D.getElementById('vmOut'); var i0 = cur; if (got(i0)) return share([fileOf(got(i0), i0)]).then(function (ok) { if (ok) markUsed([i0]); });
+      if (qRun && qNow === i0) return S.toast(t('making', qPc));   /* already being made: the button turns into Save by itself */ b.disabled = true; var lab = b.textContent; make([i0], b).then(function (f) { b.disabled = false; b.textContent = lab; readyBtn(box, f, [i0]); }, function () { b.disabled = false; b.textContent = lab; }); return; }
     if (k === 'saveAll') { var ix = toSave(); return share(ix.map(function (i) { return fileOf(got(i), i); })).then(function (ok) { if (ok) markUsed(ix); }); }
     if (k === 'kick') { qErr = 0; unlock(); setTimeout(queue, 60); return refresh(); }
     if (k === 'uopen') { var u = st.used[+b.dataset.u]; if (!u || !st.sess) return; var j = st.sess.clips.findIndex(function (c5) { return c5.start === u.c.start && c5.end === u.c.end; }); if (j < 0) return; Object.assign(st.sess.clips[j], JSON.parse(JSON.stringify(u.c))); keep(); cur = j; fromProf = true; page(); el.classList.add('on'); D.body.style.overflow = 'hidden'; view = 'edit'; paint(); return; }   /* ready in the background: straight to the share sheet, inside the tap */
@@ -417,7 +431,7 @@
     recog = r; try { r.start(); } catch (e) { recog = null; return; } var mb = el.querySelector('[data-vm=mic]'); if (mb) mb.textContent = '■ ' + t('stop');
   }
   function micStop() { if (recog) { try { recog.stop(); } catch (e) { } recog = null; } }
-  function loadRolls() { return bAll().then(function (l) { rolls = (l || []).sort(function (a, b) { return b.ts - a.ts; }); Object.keys(st.cuts).forEach(function (id) { if (!roll(id)) delete st.cuts[id]; }); if (!roll(st.sel) && rolls[0]) st.sel = rolls[0].id; if (st.sel) useRoll(st.sel); }); }
+  function loadRolls() { return loadMade().then(bAll).then(function (l) { rolls = (l || []).sort(function (a, b) { return b.ts - a.ts; }); Object.keys(st.cuts).forEach(function (id) { if (!roll(id)) delete st.cuts[id]; }); if (!roll(st.sel) && rolls[0]) st.sel = rolls[0].id; if (st.sel) useRoll(st.sel); }); }
   /* Studio > Profile > B-rolls: the shelf, the chosen B-roll's parts, Fill texts, Save all */
   function mountPaint() {
     var h = HOST; if (!h) return; var ss = st.sess && roll(st.sess.id) ? st.sess : null;

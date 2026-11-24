@@ -18,7 +18,7 @@ test('accounts: reorder with up / down, name only in the switcher, own picture; 
 });
 test('Profile drafts: + Idea (type or speak), Save draft, a Drafts tile first like TikTok, text-on-screen draft tiles (23 Nov 2026)', () => {
   for (const k of ["'idea'", "'isave'", "'imic'", "'drafts'", "'dopen'", "'idel'"]) assert.ok(js.includes("k === " + k), k);
-  assert.match(js, /var SR = W\.SpeechRecognition \|\| W\.webkitSpeechRecognition;/); assert.match(js, /a\.drafts\.unshift\(\{id: 'd'/); assert.match(js, /\(RM \? '' : dTile\)/);
+  assert.match(js, /var SR = window\.SpeechRecognition \|\| window\.webkitSpeechRecognition;/); /* 24 Nov 2026: W is the word list there, so the mic never showed */ assert.match(js, /a\.drafts\.unshift\(\{id: 'd'/); assert.match(js, /\(RM \? '' : dTile\)/);
 });
 test('Swipe file playlists: rows that swipe sideways, the name opens the full grid, the owner makes them in Edit (23 Nov 2026)', () => {
   assert.match(html, /\.pl-row\{display:grid;grid-auto-flow:column/); assert.match(html, /if \(b\.dataset\.pl\) \{ PL = b\.dataset\.pl;/); assert.match(html, /function plDlg\(id\)/); assert.match(html, /DOC\.lists = L0; return save\(\)/);

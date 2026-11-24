@@ -24,3 +24,8 @@ test('the cart bubble opens the game; the old shop doors no longer bloom; loaded
   const S = /const S = (\{[\s\S]*?\n  \});/.exec(js)[1]; for (const [k, v] of Object.entries(require('vm').runInNewContext('(' + S + ')'))) assert.ok(v.length === 3 && v.every(x => x), k);
   assert.match(R('grocery-run.css'), /@media \(prefers-reduced-motion:reduce\)/);
 });
+test('Grocery Run wears the app\'s look: dark space, glass cards, neon glow (24 Nov 2026)', () => {
+  const c = R('grocery-run.css');
+  assert.match(c, /\.gr\.gr\{--g-ink:#eef3ff;/); assert.match(c, /#05060c\}/);
+  assert.match(c, /backdrop-filter:blur\(18px\) saturate\(160%\)/); assert.match(c, /box-shadow:0 0 22px rgba\(255,216,74,\.55\)/);
+});

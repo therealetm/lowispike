@@ -89,7 +89,9 @@ test('iOS startup images cover current iPhones and iPads, each matching its scre
     }
 });
 
-test('startup images are the launch scene\'s first frame: dark deep-blue space, Misty\'s blue glow where she will be, never white', () => {
+/* changed 24 Nov 2026, night (Emmanuel: "completely darked out in black with some falling stars ... precisely fitting to how the
+   interface galaxy looks"): the first frame is Home's neutral near-black now, not blue space, and there is no glow; still never white */
+test('startup images are the launch scene\'s first frame: Home\'s near-black, no glow, never white', () => {
     /* Oct 28 (Emmanuel: "only the animation"): the startup image is the very first frame of the launch scene #lwLaunch
        (scripts/make-launch-images.cjs renders #lwBootCss + the #lwLaunch markup, every animation held at its start), so
        startup picture -> page is invisible and the scene simply starts moving. Corners are the scene's dark space; the glow sits
@@ -102,7 +104,7 @@ test('startup images are the launch scene\'s first frame: dark deep-blue space, 
         const at = (x, y) => { const i = (y * w + x) * bpp; return [px[i], px[i + 1], px[i + 2]]; };
         for (const [x, y] of [[0, 0], [w - 1, 0], [0, h - 1], [w - 1, h - 1]]) {
             const p = at(x, y);
-            assert.ok(Math.max(...p) <= 30 && p[2] >= p[0], f + ': corner ' + x + ',' + y + ' is not dark blue space (' + p + ')');
+            assert.ok(Math.max(...p) <= 30 && Math.max(...p) - Math.min(...p) <= 4, f + ': corner ' + x + ',' + y + ' is not Home\'s neutral near-black (' + p + ')');
         }
         let sum = 0, n = 0, bright = 0;
         for (let y = 0; y < h; y += 8) for (let x = 0; x < w; x += 8) { const p = at(x, y), l = 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]; sum += l; n++; if (l > 200) bright++; }
@@ -111,6 +113,6 @@ test('startup images are the launch scene\'s first frame: dark deep-blue space, 
         const cy = w / h >= 0.5 ? 0.42 : 0.46; let best = [0, 0, 0];
         for (let dy = -0.04; dy <= 0.04; dy += 0.01) for (let dx = -0.06; dx <= 0.06; dx += 0.01) {
             const p = at(Math.round(w * (0.5 + dx)), Math.round(h * (cy + dy))); if (p[2] > best[2]) best = p; }
-        assert.ok(best[2] > 150 && best[2] >= best[0] + 25, f + ': no blue launch glow where Misty will be (' + best + ')');
+        assert.ok(Math.max(...best) <= 40, f + ': a glow where Misty will be; the launch is plain near-black now (' + best + ')');
     }
 });

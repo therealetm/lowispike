@@ -1,21 +1,26 @@
-// 24 Nov 2026 (Emmanuel: "opening the app takes way too long. I don't even like the animation anymore ... black ... something glowing in
-// the middle, vibrating ... then it goes into the color of whatever the person has set to their world ... a seamless illusion ... the
-// goal is the fastest app opening in the world"). The launch scene is now only Misty's glow, breathing, in the world's aura colours; it
-// opens up into Home. The final layout wait is shorter.
+// 24 Nov 2026. First (evening): Misty's glow in the aura colours. Changed the same night (Emmanuel: "This is even worse ... When the app
+// is opened, it looks completely different to the intro. I would rather have it completely darked out in black with some falling stars
+// ... Whatever the intro is needs to be precisely fitting to how the interface galaxy looks"). Home on his iPhone is a neutral
+// near-black (#121214 to #181818), so the launch is that near-black with a few small falling stars, then a plain fade into Home.
 const test = require('node:test'), assert = require('node:assert'), fs = require('fs'), path = require('path');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const css = (/<style id="lwBootCss">([\s\S]*?)<\/style>/.exec(html) || [])[1];
 const boot = (/<script id="lwBootJs">([\s\S]*?)<\/script>/.exec(html) || [])[1];
-test('no flat bubbles flying out (they did not match Home\'s 3D glass bubbles) and no navy brightening (Home is the black world)', () => {
-  assert.match(css, /#lwLaunch \.lwl-arm\{display:none\}/); assert.match(css, /#lwLaunch\.lwl-go \.lwl-neb\{animation:none\}/);
+const red = css.slice(css.indexOf('@media (prefers-reduced-motion:reduce)'));
+test('the launch is Home\'s near-black, not navy, and shows no glow, glass or bubbles (none of them matched Home)', () => {
+  assert.match(css, /#lwLaunch\{background:linear-gradient\(180deg,#171718 0,#121213 55%,#101011 100%\) #121213\}/);
+  assert.match(css, /#lwLaunch \.lwl-neb,#lwLaunch \.lwl-m,#lwLaunch \.lwl-arm\{display:none\}/);
+  assert.ok(css.indexOf('#lwLaunch{background:linear-gradient(180deg,#171718') > css.indexOf('#lwLaunch{position:fixed'), 'overrides the old navy scene');
 });
-test('Misty\'s glow breathes in the world\'s aura colours and opens up into Home', () => {
-  assert.match(css, /#lwLaunch\.lwl-go \.lwl-core\{animation:lwlCore \.5s cubic-bezier\([^)]*\) both,lwlBreath 1\.1s ease-in-out \.5s infinite alternate\}/);
-  assert.match(css, /var\(--lwl-ca,#c9f1ff\)/); assert.match(css, /html\.lw-launch-out #lwLaunch \.lwl-m\{animation:lwlOpen \.34s/);
-  assert.match(css, /@keyframes lwlOpen\{from\{transform:scale\(1\);opacity:1\}to\{transform:scale\(1\.35\);opacity:0\}\}/);
-  assert.match(boot, /look\.au = \[aa, ab\];/); assert.match(html, /L\.style\.setProperty\("--lwl-ca", au\[0\]\); L\.style\.setProperty\("--lwl-cb", au\[1\]\);/);
-  const red = css.slice(css.indexOf('@media (prefers-reduced-motion:reduce)'));
-  assert.match(red, /#lwLaunch \.lwl-core,#lwLaunch\.lwl-go \.lwl-core\{animation:none/, 'still for reduced motion'); assert.ok(css.indexOf('lwlBreath 1.1s') < css.indexOf('@media (prefers-reduced-motion:reduce)'));
+test('a few small stars fall slowly; still for reduced motion', () => {
+  assert.match(css, /#lwLaunch\.lwl-go \.lwl-s\{animation:lwlFall var\(--t,3s\) linear var\(--dl,0s\) infinite\}/);
+  assert.match(css, /@keyframes lwlFall\{0%\{transform:translateY\(-6vh\);opacity:0\}/);
+  assert.match(red, /#lwLaunch\.lwl-go \.lwl-s\{animation:none;opacity:\.5\}/);
+  assert.ok((html.match(/<i class="lwl-s" style="--x:/g) || []).length >= 10);
+});
+test('the hand-over is a plain fade; the aura colours are still saved for later use', () => {
+  assert.match(css, /html\.lw-launch-out #lwLaunch\{pointer-events:none;animation:lwlOut \.34s/); assert.match(css, /html\.lw-launch-out #lwLaunch \.lwl-m\{animation:none\}/);
+  assert.match(boot, /look\.au = \[aa, ab\];/);
 });
 test('the last wait before Home: two still polls or 0.35 s (was three polls or 0.7 s, so every launch waited 0.7 s)', () => {
   assert.match(boot, /if \(seen && same >= 2\) \{ fin\("still"\); return; \}/); assert.match(boot, /Date\.now\(\) - q >= 350 && Date\.now\(\) - w\.at >= 150/);

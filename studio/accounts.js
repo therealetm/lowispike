@@ -19,6 +19,7 @@
     cloudLater: ['Saved on this phone. The cloud copy will follow.', 'Auf diesem Handy gespeichert. Die Cloud-Kopie folgt.', 'Guardado en este móvil. La copia en la nube llegará.'],
     trTo: ['Translate into', 'Übersetzen in', 'Traducir a'], trAny: ['Any language', 'Jede Sprache', 'Cualquier idioma'], trGo: ['Translate', 'Übersetzen', 'Traducir'],
     trWait: ['Translating…', 'Übersetze…', 'Traduciendo…'], trFail: ['Could not translate. Try again.', 'Übersetzen ging nicht. Nochmal versuchen.', 'No se pudo traducir. Inténtalo de nuevo.'],
+    orig: ['Original', 'Original', 'Original'], other: ['Other', 'Andere', 'Otro'],
     trUndo: ['Back to original', 'Zurück zum Original', 'Volver al original'], copyTx: ['Copy text', 'Text kopieren', 'Copiar texto'], copiedTx: ['Copied ✓', 'Kopiert ✓', 'Copiado ✓'],
     editAcc: ['Edit profile', 'Profil bearbeiten', 'Editar perfil'], delAcc: ['Delete account', 'Account löschen', 'Eliminar cuenta'], delAccQ: ['Delete this account and its inspo list? The Swipe file stays.', 'Diesen Account und seine Inspo-Liste löschen? Die Swipe-Datei bleibt.', '¿Eliminar esta cuenta y su lista? El archivo de swipe se queda.'],
     plink: ['Profile link (TikTok or Instagram, optional)', 'Profil-Link (TikTok oder Instagram, optional)', 'Enlace del perfil (TikTok o Instagram, opcional)'], getP: ['Get profile', 'Profil holen', 'Obtener perfil'], getting: ['Getting…', 'Hole…', 'Obteniendo…'],
@@ -96,21 +97,33 @@
   /* the idea page: a big box to type in, and a big mic that writes what you say (the phone's own speech recognition; where the browser
      has none, the keyboard's mic works in the box). Save draft keeps it on this account. */
   var SR = W.SpeechRecognition || W.webkitSpeechRecognition;
+  /* 24 Nov 2026 (Emmanuel: "when I add an English text, and I translate it to German, I should be able to still see the English text and
+     the German text, and any other text I translate it to ... the interface here looks very inconvenient and scattered"): the original
+     stays in the box; every translation is its own card under it (language, the text, Copy, ✕) and is kept with the draft. One row of
+     language buttons; "Other" opens a field for any language. Each card's text can be corrected by hand. */
+  var LN = {en: 'English', de: 'Deutsch', es: 'Español'};
+  function trCards() {
+    return (IDEA.tr || []).map(function (r, i) {
+      return '<div class="idea-card"><div class="idea-ch"><b>' + esc(LN[r.l] || r.l) + '</b><button type="button" class="pill" data-acc="icopy" data-i="' + i + '">' + esc(t('copyTx')) + '</button><button type="button" class="ib idea-x" data-acc="itrdel" data-i="' + i + '" aria-label="' + esc(t('del')) + '">✕</button></div>' +
+        '<textarea class="idea-ct" data-i="' + i + '" rows="3">' + esc(r.text) + '</textarea></div>';
+    }).join('');
+  }
+  function grow(x) { x.style.height = 'auto'; x.style.height = (x.scrollHeight + 2) + 'px'; }
+  function paintTr() { var w = $('#ideaCards'); if (w) { w.innerHTML = trCards(); w.querySelectorAll('.idea-ct').forEach(grow); } }
   function ideaPage(d) {
-    IDEA = d ? {id: d.id, text: d.text} : {id: '', text: ''};
-    var el = $('#accidea'); if (!el) { el = D.createElement('section'); el.id = 'accidea'; el.className = 'view'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); D.body.appendChild(el); }
-    el.innerHTML = '<div class="vtop"><button class="ib" data-acc="iclose" aria-label="' + esc(t('back')) + '">‹</button><span class="cnt">' + esc(d ? t('editDraft') : t('newIdea')) + '</span><span style="width:46px"></span></div>' +
-      '<div class="vbody"><textarea id="ideaTx" class="idea-tx" placeholder="' + esc(t('ideaPh')) + '">' + esc(IDEA.text) + '</textarea>' +
+    IDEA = d ? {id: d.id, text: d.text, tr: (d.tr || []).slice()} : {id: '', text: '', tr: []};
+    var el = $('#accidea'); if (!el) { el = D.createElement('section'); el.id = 'accidea'; el.className = 'view'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); D.body.appendChild(el);
+      el.addEventListener('input', function (e) { var x = e.target; if (!IDEA) return; if (x.id === 'ideaTx') IDEA.text = x.value; else if (x.classList.contains('idea-ct') && IDEA.tr[+x.dataset.i]) { IDEA.tr[+x.dataset.i].text = x.value; grow(x); } }); }
+    el.innerHTML = '<div class="vtop"><button class="ib" data-acc="iclose" aria-label="' + esc(t('back')) + '">‹</button><span class="cnt">' + esc(d ? t('editDraft') : t('newIdea')) + '</span>' + (d ? '<button class="ib idea-trash" data-acc="idel" aria-label="' + esc(t('delDraft')) + '">🗑</button>' : '<span style="width:46px"></span>') + '</div>' +
+      '<div class="vbody"><div class="idea-card idea-orig"><div class="idea-ch"><b>' + esc(t('orig')) + '</b><button type="button" class="pill" data-acc="icopy" data-i="-1">' + esc(t('copyTx')) + '</button></div>' +
+      '<textarea id="ideaTx" class="idea-tx" placeholder="' + esc(t('ideaPh')) + '">' + esc(IDEA.text) + '</textarea></div>' +
       (SR ? '<button type="button" class="idea-mic" data-acc="imic"><span class="idea-dot" aria-hidden="true"></span><b>' + esc(t('speak')) + '</b></button>' : '<p class="note">' + esc(t('kbMic')) + '</p>') +
-      /* 23 Nov 2026 (Emmanuel: "a translation button ... translate it into my language ... and has a copy text perfectly, so I can just copy and
-         then go post"): translate the draft into English, German, Spanish or any language typed; Copy text; Back to original */
-      '<div class="idea-tr"><b>' + esc(t('trTo')) + '</b><div class="idea-trc"><button type="button" class="pill" data-acc="itr" data-l="en">English</button><button type="button" class="pill" data-acc="itr" data-l="de">Deutsch</button><button type="button" class="pill" data-acc="itr" data-l="es">Español</button></div>' +
-      '<div class="idea-tra"><input id="ideaAny" type="text" autocomplete="off" placeholder="' + esc(t('trAny')) + '"><button type="button" class="btn" data-acc="itrany">' + esc(t('trGo')) + '</button></div>' +
-      '<div class="idea-trb"><button type="button" class="btn" data-acc="icopy">' + esc(t('copyTx')) + '</button><button type="button" class="btn" data-acc="iundo" hidden>' + esc(t('trUndo')) + '</button></div></div>' +
-      (d ? '<button type="button" class="btn ac-del idea-del" data-acc="idel">' + esc(t('delDraft')) + '</button>' : '') + '</div>' +
+      '<div class="idea-tr"><span>' + esc(t('trTo')) + '</span><button type="button" class="pill" data-acc="itr" data-l="en">English</button><button type="button" class="pill" data-acc="itr" data-l="de">Deutsch</button><button type="button" class="pill" data-acc="itr" data-l="es">Español</button><button type="button" class="pill" data-acc="iother">+ ' + esc(t('other')) + '</button></div>' +
+      '<div class="idea-tra" hidden><input id="ideaAny" type="text" autocomplete="off" placeholder="' + esc(t('trAny')) + '"><button type="button" class="btn pri" data-acc="itrany">' + esc(t('trGo')) + '</button></div>' +
+      '<div id="ideaCards">' + trCards() + '</div></div>' +
       '<div class="vnav"><button class="btn" data-acc="iclose">' + esc(t('cancel')) + '</button><button class="btn pri" data-acc="isave">' + esc(t('saveDraft')) + '</button></div>';
-    el.classList.add('on'); D.body.style.overflow = 'hidden';
-    var tx = $('#ideaTx'); tx.addEventListener('input', function () { IDEA.text = tx.value; }); if (!d) setTimeout(function () { try { tx.focus(); } catch (e) { } }, 60);
+    el.classList.add('on'); D.body.style.overflow = 'hidden'; el.querySelectorAll('.idea-ct').forEach(grow);
+    if (!d) setTimeout(function () { var tx = $('#ideaTx'); try { if (tx) tx.focus(); } catch (e) { } }, 60);
   }
   function micStop() { if (recog) { try { recog.stop(); } catch (e) { } recog = null; } var b = D.querySelector('.idea-mic'); if (b) { b.classList.remove('on'); b.querySelector('b').textContent = t('speak'); } }
   function micToggle() {
@@ -123,22 +136,25 @@
     recog = r; try { r.start(); } catch (e) { recog = null; return; }
     var b = D.querySelector('.idea-mic'); if (b) { b.classList.add('on'); b.querySelector('b').textContent = t('listening'); }
   }
-  var ORIG = null;
   function ideaTr(to, b) {
-    var tx = $('#ideaTx'); if (!tx || !String(to || '').trim()) return; var src = tx.value.trim(); if (!src) return S.toast(t('ideaEmpty'));
+    to = String(to || '').trim(); var src = String((IDEA && IDEA.text) || '').trim(); if (!to) return; if (!src) return S.toast(t('ideaEmpty'));
     var lab = b.textContent; b.disabled = true; b.textContent = t('trWait');
-    S.ai({action: 'translate', text: src.slice(0, 6000), to: String(to).trim()}).then(function (j) {
-      if (ORIG == null) ORIG = src; tx.value = j.text || src; IDEA.text = tx.value; var u = D.querySelector('[data-acc=iundo]'); if (u) u.hidden = false;
+    S.ai({action: 'translate', text: src.slice(0, 6000), to: to}).then(function (j) {
+      if (!IDEA) return; var key = LN[to] ? to : to.slice(0, 40), row = {l: key, text: j.text || ''};
+      IDEA.tr = (IDEA.tr || []).filter(function (r) { return r.l.toLowerCase() !== key.toLowerCase(); }).concat([row]); paintTr();
+      var w = $('#ideaCards'); if (w && w.lastElementChild) w.lastElementChild.scrollIntoView({block: 'nearest', behavior: 'smooth'});
     }, function () { S.toast(t('trFail')); }).then(function () { b.disabled = false; b.textContent = lab; });
   }
-  function ideaCopy(b) { var tx = $('#ideaTx'), v = tx ? tx.value : ''; var ok = function () { b.textContent = t('copiedTx'); setTimeout(function () { b.textContent = t('copyTx'); }, 1500); };
-    try { navigator.clipboard.writeText(v).then(ok, function () { tx.select(); D.execCommand('copy'); ok(); }); } catch (e) { try { tx.select(); D.execCommand('copy'); ok(); } catch (x) { } } }
-  function ideaClose() { ORIG = null; micStop(); var el = $('#accidea'); if (el) el.classList.remove('on'); D.body.style.overflow = ''; IDEA = null; }
+  function ideaCopy(b) { var i = +b.dataset.i, v = i < 0 ? (IDEA && IDEA.text) || '' : ((IDEA.tr || [])[i] || {}).text || '';
+    var ok = function () { b.textContent = t('copiedTx'); setTimeout(function () { b.textContent = t('copyTx'); }, 1500); };
+    try { navigator.clipboard.writeText(v).then(ok, ok); } catch (e) { ok(); } }
+  function ideaClose() { micStop(); var el = $('#accidea'); if (el) el.classList.remove('on'); D.body.style.overflow = ''; IDEA = null; }
   function ideaSave() {
     micStop(); var a = cur(); if (!a || !IDEA) return; var txt = String(IDEA.text || '').trim(); if (!txt) return S.toast(t('ideaEmpty'));
     a.drafts = a.drafts || [];
-    if (IDEA.id) a.drafts = a.drafts.map(function (q) { return q.id === IDEA.id ? {id: q.id, text: txt, ts: Date.now()} : q; }).sort(function (x, y) { return y.ts - x.ts; });
-    else a.drafts.unshift({id: 'd' + Date.now().toString(36), text: txt.slice(0, 4000), ts: Date.now()});
+    var trs = (IDEA.tr || []).filter(function (r) { return String(r.text || '').trim(); }).map(function (r) { return {l: r.l, text: String(r.text).slice(0, 4000)}; });
+    if (IDEA.id) a.drafts = a.drafts.map(function (q) { return q.id === IDEA.id ? {id: q.id, text: txt, tr: trs, ts: Date.now()} : q; }).sort(function (x, y) { return y.ts - x.ts; });
+    else a.drafts.unshift({id: 'd' + Date.now().toString(36), text: txt.slice(0, 4000), tr: trs, ts: Date.now()});
     persist(); ideaClose(); DV = true; S.render(); S.toast(t('drafted'));
   }
 
@@ -240,7 +256,8 @@
     if (k === 'itr') return ideaTr(b.dataset.l, b);
     if (k === 'itrany') return ideaTr(($('#ideaAny') || {}).value, b);
     if (k === 'icopy') return ideaCopy(b);
-    if (k === 'iundo') { var tx0 = $('#ideaTx'); if (tx0 && ORIG != null) { tx0.value = ORIG; IDEA.text = ORIG; ORIG = null; b.hidden = true; } return; }
+    if (k === 'iother') { var ow = D.querySelector('.idea-tra'); if (ow) { ow.hidden = !ow.hidden; if (!ow.hidden) { var ai0 = $('#ideaAny'); try { ai0.focus(); } catch (e) { } } } return; }
+    if (k === 'itrdel') { if (IDEA) { IDEA.tr.splice(+b.dataset.i, 1); paintTr(); } return; }
     if (k === 'dopen') { var ad = cur(), dd = ad && (ad.drafts || []).filter(function (q) { return q.id === b.dataset.x; })[0]; return dd ? ideaPage(dd) : null; }
     if (k === 'imic') return micToggle();
     if (k === 'iclose') return ideaClose();

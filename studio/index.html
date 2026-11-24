@@ -145,9 +145,13 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .fb .in{width:100%;max-height:80dvh;display:flex;flex-direction:column;gap:10px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));background:#0a1224;border-top:1px solid var(--line);border-radius:20px 20px 0 0}
 .fb textarea{flex:1;min-height:200px;width:100%;border-radius:12px;border:1px solid var(--line2);background:#050912;color:var(--ink);font:inherit;font-size:16px;padding:10px}
 :focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
-/* 23 Nov 2026: draft page translate + copy (accounts.js) */
-.idea-tr{margin:14px 0 4px}.idea-trc{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.idea-tra{display:flex;gap:8px}.idea-tra input{flex:1;min-width:0;min-height:46px;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.06);color:var(--ink);font:inherit;font-size:16px;padding:0 14px}
-.idea-trb{display:flex;gap:8px;margin-top:10px}.idea-trb .btn{flex:1}
+/* 24 Nov 2026: draft page: the original and each translation as cards (accounts.js) */
+.idea-card{margin:0 0 12px;padding:12px 14px 14px;border-radius:18px;border:1px solid var(--line2);background:rgba(255,255,255,.04)}
+.idea-ch{display:flex;align-items:center;gap:8px;margin-bottom:8px}.idea-ch b{flex:1;font-size:15px;color:var(--acc2)}.idea-x{width:36px;height:36px;font-size:15px}
+.idea-orig .idea-tx{min-height:22dvh;border:0;padding:4px 0;background:none;font-size:18px}
+.idea-ct{display:block;width:100%;min-height:70px;border:0;padding:0;background:none;color:var(--ink);font:inherit;font-size:17px;line-height:1.45;resize:vertical}
+.idea-tr{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}.idea-tr span{width:100%;color:var(--muted);font-size:14px;font-weight:600}
+.idea-tra{display:flex;gap:8px;margin:0 0 12px}.idea-tra[hidden]{display:none}.idea-tra input{flex:1;min-width:0;min-height:46px;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.06);color:var(--ink);font:inherit;font-size:16px;padding:0 14px}
 /* 23 Nov 2026: AI use page (ai-use.js), owner only */
 .au-big{margin:6px 0 10px;padding:16px;border-radius:18px;border:1px solid var(--line2);background:rgba(255,255,255,.05)}.au-big small{display:block;color:var(--muted);font-size:13px}.au-big b{display:block;font-size:21px;margin:2px 0 10px}
 .au-bar{height:10px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}.au-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#7cc4ff,#bfe6ff)}.au-big span{display:block;margin-top:8px;color:var(--muted);font-size:14px}
@@ -588,7 +592,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     .catch(function () { $('#main').innerHTML = '<div class="empty">' + esc(t('none')) + '</div>'; });
 })();
 </script>
-<script src="accounts.js?v=3"></script>
+<script src="accounts.js?v=4"></script>
 <script src="video-words.js?v=1"></script>
 <script src="ai-use.js?v=1"></script>
 </body>

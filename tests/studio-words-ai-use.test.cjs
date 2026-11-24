@@ -43,8 +43,8 @@ test('Studio: the owner always has a + (no Edit needed), the video dialog files 
 });
 test('drafts: translate (EN/DE/ES or any language), Copy text, Back to original; a refused cloud save says so once and retries (23 Nov 2026)', () => {
   const a = R('studio/accounts.js');
-  for (const k of ["k === 'itr'", "k === 'itrany'", "k === 'icopy'", "k === 'iundo'"]) assert.ok(a.includes(k), k);
-  assert.match(a, /S\.ai\(\{action: 'translate', text: src\.slice\(0, 6000\), to: String\(to\)\.trim\(\)\}\)/);
+  for (const k of ["k === 'itr'", "k === 'itrany'", "k === 'icopy'", "k === 'iother'", "k === 'itrdel'"]) assert.ok(a.includes(k), k);   /* 24 Nov 2026: no more "Back to original", the original always stays */
+  assert.match(a, /S\.ai\(\{action: 'translate', text: src\.slice\(0, 6000\), to: to\}\)/);
   assert.doesNotMatch(a, /S\.toast\(S\.t\('notSaved'\)\)/);
   assert.match(a, /if \(!failSaid\) \{ failSaid = true; S\.toast\(t\('cloudLater'\)\); \} clearTimeout\(retryT\); retryT = setTimeout\(push, 60000\);/);
   assert.match(R('supabase/proposals/studio_accounts_size_20261123.sql'), /check \(pg_column_size\(doc\) <= 3000000\)/);
@@ -57,4 +57,11 @@ test('Edit keeps the folders: "Not in a playlist yet" first, then each playlist;
   assert.match(h, /if \(EDIT && TAB === 'swipe' && pls\.length && !Q\) \{/); assert.match(h, /esc\(t\('plNone'\)\)/);
   assert.match(h, /data-sel="pl"/); assert.match(h, /if \(k === 'pladd'\) \{/);
   assert.match(h, /plAdd: \['Add to playlist', 'Zur Playlist', 'A una lista'\]/);
+});
+test('drafts keep the original and every translation side by side, saved with the draft (24 Nov 2026)', () => {
+  const a = R('studio/accounts.js');
+  assert.match(a, /IDEA = d \? \{id: d\.id, text: d\.text, tr: \(d\.tr \|\| \[\]\)\.slice\(\)\}/);
+  assert.match(a, /IDEA\.tr = \(IDEA\.tr \|\| \[\]\)\.filter\(function \(r\) \{ return r\.l\.toLowerCase\(\) !== key\.toLowerCase\(\); \}\)\.concat\(\[row\]\)/);
+  assert.match(a, /\{id: q\.id, text: txt, tr: trs, ts: Date\.now\(\)\}/);
+  assert.doesNotMatch(a, /tx\.value = j\.text/, 'a translation never replaces the original');
 });

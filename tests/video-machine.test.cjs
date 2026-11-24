@@ -130,3 +130,29 @@ test('nothing is made in the background before a tap in this visit; a visit that
   assert.match(js, /qErr = CRASHED \? 1 : 0,/); assert.match(js, /busyOn\(\); var done = function \(x\) \{ busyOff\(\); return x; \}/);
   assert.match(js, /var cv = CV \|\| \(CV = D\.createElement\('canvas'\)\);/, 'one canvas for every video');
 });
+/* 24 Nov 2026, night (Emmanuel: "there's a bug here, it keeps flickering ... think of my workflow ... What happens if I do this 10 times,
+   20 times, 30 times? How will it look organized in there? Can the ones that have been already used be tucked in somewhere else ...
+   conveniency is the most important thing"). Checked in Chromium: upload -> texts by themselves; 4 s idle -> 0 redraws, no page jump;
+   Save -> parts to "✓ Used · 3" (folded); Fill again -> 3 new parts, Used stays 3; a used video is made again and saved on its own. */
+test('the B-rolls panel never redraws in a loop and never moves the page', () => {
+  assert.match(js, /if \(i < 0\) return;   \/\* 24 Nov 2026 bug/);
+  assert.match(js, /if \(html === lastHTML && h\.firstChild\) \{ storeLine\(\); return; \}/);
+  assert.doesNotMatch(js.slice(js.indexOf('function mountPaint')), /scrollIntoView/);
+  assert.match(js, /if \(same && sl >= 0\) sh\.scrollLeft = sl;/);
+  assert.match(js, /if \(FR\.id === st\.sess\.id \+ ':' \+ st\.sess\.clips\.length && st\.sess\.clips\.every\(function \(_c, k\) \{ return FR\[k\]; \}\)\) return;/);
+});
+test('workflow: a new B-roll gets its texts by itself; text language on the panel; each part says Ready', () => {
+  assert.match(js, /\.then\(function \(\) \{ keep\(\); refresh\(\); autoFill\(\); \}/); assert.match(js, /if \(k === 'sel'\) \{ useRoll\(b\.dataset\.id\); FR = \[\]; refresh\(\); autoFill\(\); return; \}/);
+  assert.match(js, /<div class="vm-lang"><span>' \+ esc\(t\('textLang'\)\)/); assert.match(js, /'<b class="vm-ok vm-okp">✓ ' \+ esc\(t\('ready'\)\) \+ '<\/b>'/);
+  for (const l of ['Text language', 'Textsprache', 'Idioma del texto', 'Videos you saved stay in ✓ Used below.']) assert.ok(js.includes(l), l);
+});
+test('used videos are folded under "✓ Used · n", grouped by day, and made again on their own without touching the new parts', () => {
+  assert.match(js, /data-vm="utog" aria-expanded="' \+ UOPEN \+ '"/); assert.match(js, /localStorage\.setItem\('lowi\.vm\.usedOpen'/);
+  assert.match(js, /function dayOf\(ts\)/); assert.match(js, /<h5 class="vm-day">/);
+  const uo = js.slice(js.indexOf("if (k === 'uopen')"), js.indexOf("if (k === 'uopen')") + 1200);
+  assert.doesNotMatch(uo, /Object\.assign\(st\.sess\.clips/, 'never written over a new part');
+  assert.match(uo, /render\(JSON\.parse\(JSON\.stringify\(u\.c\)\)/); assert.match(uo, /if \(UM\[ky\]\) return share/);
+});
+test('the B-roll cover is replaced by the first part\'s picture (the upload cover is often black on iPhones)', () => {
+  assert.match(js, /if \(i === 0 && !r\.tf\) \{ r\.thumb = FR\[0\]; r\.tf = 1; bPut\(r\)/);
+});

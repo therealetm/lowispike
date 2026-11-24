@@ -47,6 +47,9 @@
     blocked: ['Making the videos stopped (the phone needed its memory, Low Power Mode, or the app was in the background). Tap the button to go on.', 'Das Machen der Videos hat gestoppt (das Handy brauchte Speicher, Stromsparmodus oder die App war im Hintergrund). Tipp auf den Knopf, um weiterzumachen.', 'Los vídeos se detuvieron (el móvil necesitó memoria, modo ahorro o la app estaba en segundo plano). Toca el botón para seguir.'],
     newH: ['Not used yet', 'Noch nicht benutzt', 'Aún sin usar'], usedH: ['✓ Used', '✓ Benutzt', '✓ Usados'], usedOn: ['✓ Used {p}', '✓ Benutzt {p}', '✓ Usado {p}'],
     allUsed: ['✓ All used: tap ✨ Fill texts for new ones', '✓ Alle benutzt: tipp auf ✨ Texte füllen für neue', '✓ Todos usados: toca ✨ Rellenar textos'],
+    ready: ['Ready', 'Fertig', 'Listo'], today: ['Today', 'Heute', 'Hoy'], yest: ['Yesterday', 'Gestern', 'Ayer'], textLang: ['Text language', 'Textsprache', 'Idioma del texto'],
+    fillNote: ['✨ Fill texts writes new texts on every part. Videos you saved stay in ✓ Used below.', '✨ Texte füllen schreibt neue Texte auf alle Teile. Gespeicherte Videos bleiben unten in ✓ Benutzt.', '✨ Rellenar textos escribe textos nuevos en todas las partes. Los vídeos guardados siguen abajo en ✓ Usados.'],
+    usedTap: ['Tap a video to make it again and save it for another platform.', 'Tipp ein Video an, um es nochmal zu machen und für eine andere Plattform zu speichern.', 'Toca un vídeo para hacerlo otra vez y guardarlo para otra plataforma.'],
     saveNew: ['📲 Save {p} new', '📲 {p} neue speichern', '📲 Guardar {p} nuevos'],
     usedNote: ['Saved videos move here, so you can post them again on another platform. Tap one to save it again.', 'Gespeicherte Videos landen hier, damit du sie auf einer anderen Plattform nochmal posten kannst. Tipp eins an, um es nochmal zu speichern.', 'Los vídeos guardados vienen aquí para publicarlos en otra plataforma. Toca uno para guardarlo otra vez.'], aiWhy: ['The AI did not answer: {p}. Tap ↻ to try again, or type your own.', 'Die KI hat nicht geantwortet: {p}. Tipp auf ↻ für einen neuen Versuch oder schreib selbst.', 'La IA no respondió: {p}. Toca ↻ para reintentar o escribe tú.'],
     busy: ['too many requests right now', 'gerade zu viele Anfragen', 'demasiadas solicitudes ahora'], limit: ['daily limit reached', 'Tageslimit erreicht', 'límite diario alcanzado'], owner: ['sign in as the owner', 'als Besitzer anmelden', 'inicia sesión como dueño'], net: ['no connection', 'keine Verbindung', 'sin conexión'],
@@ -179,8 +182,10 @@
   function addFiles(list) {
     var files = Array.prototype.slice.call(list || []); if (!files.length) return;
     files.reduce(function (p, f) { return p.then(function () { return meta(f).then(function (m) { var o = {id: 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: f.name, blob: f, dur: m.dur, thumb: m.thumb, ts: Date.now()}; rolls.unshift(o); st.sel = o.id; return bPut(o).then(function () { useRoll(o.id); }); }); }); }, Promise.resolve())
-      .then(function () { keep(); refresh(); }, function () { S.toast('✕'); refresh(); });
+      .then(function () { keep(); refresh(); autoFill(); }, function () { S.toast('✕'); refresh(); });
   }
+  /* a B-roll whose parts have no text yet gets its texts at once (after an upload, or when you pick one that has none) */
+  function autoFill() { if (!busy && st.sess && roll(st.sess.id) && st.sess.clips.length && st.sess.clips.every(function (c) { return !c.text; })) write(st.sess.clips); }
 
   /* ---------- AI ---------- */
   function examples() {
@@ -203,12 +208,17 @@
 
   /* ---------- grid frames ---------- */
   function frames(inHost) {
-    var r = roll(st.sess.id); if (!r) return; var v = D.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = url(r);
+    var r = roll(st.sess.id); if (!r) return;
+    if (FR.id === st.sess.id + ':' + st.sess.clips.length && st.sess.clips.every(function (_c, k) { return FR[k]; })) return;
+    var v = D.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = url(r);
     var cs = st.sess.clips, i = 0;
     if (FR.id !== st.sess.id + ':' + cs.length) { FR = []; FR.id = st.sess.id + ':' + cs.length; }
     var where = function () { return inHost ? HOST : el; };
     var next = function () { while (i < cs.length && FR[i]) i++; if (i >= cs.length || (!inHost && view !== 'clips')) return; v.currentTime = Math.min(cs[i].start + 0.2, (r.dur || 1) - 0.05); };
-    v.onseeked = function () { var w0 = where(), box = w0 && w0.querySelector('[data-fr="' + i + '"]'); try { var c = D.createElement('canvas'); c.width = 270; c.height = 480; cover(c.getContext('2d'), v, 270, 480); FR[i] = c.toDataURL('image/jpeg', 0.75); FRK[r.id + ':' + cs[i].start] = FR[i]; if (box) box.innerHTML = '<img alt="" src="' + FR[i] + '">'; } catch (e) { } i++; next(); };
+    v.onseeked = function () { var w0 = where(), box = w0 && w0.querySelector('[data-fr="' + i + '"]'); try { var c = D.createElement('canvas'); c.width = 270; c.height = 480; cover(c.getContext('2d'), v, 270, 480); FR[i] = c.toDataURL('image/jpeg', 0.75); FRK[r.id + ':' + cs[i].start] = FR[i];
+        /* the cover taken right after the upload is often black on iPhones (a frame read before the phone has drawn it); the first
+           part's picture replaces it once */
+        if (i === 0 && !r.tf) { r.thumb = FR[0]; r.tf = 1; bPut(r).catch(function () { }); var cd = HOST && HOST.querySelector('.vm-cd[data-id="' + r.id + '"] img'); if (cd) cd.src = FR[0]; } if (box) box.innerHTML = '<img alt="" src="' + FR[i] + '">'; } catch (e) { } i++; next(); };
     v.onloadedmetadata = next;
   }
   function cover(ctx, v, w, h) { var vw = v.videoWidth || w, vh = v.videoHeight || h, k = Math.max(w / vw, h / vh), dw = vw * k, dh = vh * k; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h); ctx.drawImage(v, (w - dw) / 2, (h - dh) / 2, dw, dh); }
@@ -361,7 +371,8 @@
   function mkSync() { var b = inEdit() && D.getElementById('vmMk'); if (b && !b.disabled) b.textContent = mkLabel(); }
   function refresh0() { if (HOST && HOST.isConnected) mountPaint(); }
   function queue() {
-    if (!TAPPED || qRun || qErr || qHold || !st.sess || !canMake()) return; var i = inEdit() && !got(cur) ? cur : st.sess.clips.findIndex(function (c0, k) { return !got(k) && !isUsed(c0); });   /* the part open in the editor first */ if (i < 0) { soft(); return; }
+    if (!TAPPED || qRun || qErr || qHold || !st.sess || !canMake()) return; var i = inEdit() && !got(cur) ? cur : st.sess.clips.findIndex(function (c0, k) { return !got(k) && !isUsed(c0); });   /* the part open in the editor first */
+    if (i < 0) return;   /* 24 Nov 2026 bug ("it keeps flickering"): this used to redraw the panel, whose redraw called queue() again 0.3 s later, forever */
     qRun = true; qNow = i; qPc = 0; var sid = st.sess, mm = made, snap0 = ckey(st.sess.clips[i]);
     render(st.sess.clips[i], function (pc) { qPc = pc; [el, HOST].forEach(function (w0) { var b = w0 && w0.querySelector('[data-pc]'); if (b) b.textContent = pc + '%'; }); mkSync(); })
       .then(function (blob) { mm[i] = {b: blob, k: snap0}; mPut(sid.id, i, mm[i]); }, function () { qErr = 1; })
@@ -374,7 +385,7 @@
     return '<button class="btn ' + cls + '" disabled>' + esc(t('prep', ready + ' / ' + ix.length)) + '</button>'; }
   function tile(c, i, act) { var u = isUsed(c), m = got(i);
     return '<button class="vm-tile' + (u ? ' used' : '') + '" data-vm="' + act + '" data-i="' + i + '"><span class="vm-fr" data-fr="' + i + '">' + (FR[i] ? '<img alt="" src="' + FR[i] + '">' : '') + '</span><span class="vm-tt" style="top:' + (c.y * 100) + '%;left:' + (c.x * 100) + '%;--fs:' + c.size + '">' + esc(c.text).replace(/\n/g, '<br>') + '</span><i>' + fmt(c.sec) + '</i><em>' + esc(T.ST[c.style] ? T.ST[c.style][I] : c.style) + '</em>' +
-      (u ? '<b class="vm-used">✓</b>' : m ? '<b class="vm-ok" aria-label="ready">●</b>' : (qNow === i ? '<b class="vm-pc" data-pc>' + qPc + '%</b>' : '')) + '</button>'; }
+      (u ? '<b class="vm-used">✓</b>' : m ? '<b class="vm-ok vm-okp">✓ ' + esc(t('ready')) + '</b>' : (qNow === i ? '<b class="vm-pc" data-pc>' + qPc + '%</b>' : '')) + '</button>'; }
   function fileOf(blob, i) { var ext = /mp4/.test(blob.type) ? 'mp4' : 'webm'; return new File([blob], 'lowispike-clip-' + (i + 1) + '.' + ext, {type: blob.type}); }
   function share(files) {
     if (!files.length) return Promise.resolve(false);
@@ -401,9 +412,10 @@
     if (k === 'styleSave') { micStop(); if (W.StudioAcc && StudioAcc.style) StudioAcc.style((D.getElementById('vmStyle') || {}).value || ''); styleOpen = false; S.toast('✓'); return paint(); }
     if (k === 'mic') return mic();
     if (k === 'rm') { e.stopPropagation(); if (!confirm(t('del'))) return; var id = b.dataset.id; rolls = rolls.filter(function (r) { return r.id !== id; }); if (st.sel === id) st.sel = ''; if (st.sess && st.sess.id === id) st.sess = null; keep(); bDel(id).then(paint, paint); return; }
-    if (k === 'sel') { useRoll(b.dataset.id); FR = []; refresh(); return; }
+    if (k === 'sel') { useRoll(b.dataset.id); FR = []; refresh(); autoFill(); return; }
     if (k === 'pl') { st.pl = b.dataset.id; keep(); return paint(); }
-    if (k === 'lang') { st.lang = b.dataset.l; keep(); return paint(); }
+    if (k === 'lang') { st.lang = b.dataset.l; keep(); return refresh(); }
+    if (k === 'utog') { UOPEN = !UOPEN; try { localStorage.setItem('lowi.vm.usedOpen', UOPEN ? '1' : '0'); } catch (e) { } return refresh(); }
     if (k === 'go') return go();
     if (k === 'again') return write(st.sess.clips);
     if (k === 'open') { cur = +b.dataset.i; view = 'edit'; return paint(); }
@@ -419,7 +431,17 @@
       if (qRun && qNow === i0) return S.toast(t('making', qPc));   /* already being made: the button turns into Save by itself */ b.disabled = true; var lab = b.textContent; make([i0], b).then(function (f) { b.disabled = false; b.textContent = lab; readyBtn(box, f, [i0]); }, function () { b.disabled = false; b.textContent = lab; }); return; }
     if (k === 'saveAll') { var ix = toSave(); return share(ix.map(function (i) { return fileOf(got(i), i); })).then(function (ok) { if (ok) markUsed(ix); }); }
     if (k === 'kick') { qErr = 0; CRASHED = false; TAPPED = true; unlock(); setTimeout(queue, 60); return refresh(); }
-    if (k === 'uopen') { var u = st.used[+b.dataset.u]; if (!u || !st.sess) return; var j = st.sess.clips.findIndex(function (c5) { return c5.start === u.c.start && c5.end === u.c.end; }); if (j < 0) return; Object.assign(st.sess.clips[j], JSON.parse(JSON.stringify(u.c))); keep(); cur = j; fromProf = true; page(); el.classList.add('on'); D.body.style.overflow = 'hidden'; view = 'edit'; paint(); return; }   /* ready in the background: straight to the share sheet, inside the tap */
+    /* 24 Nov 2026, night: a used video is made again from its own recipe (its text, place, size), next to the new parts, never on
+       top of one of them (before, opening it overwrote the new text in that part); a second tap saves it */
+    if (k === 'uopen') { var u = st.used[+b.dataset.u]; if (!u || !st.sess || u.roll !== st.sess.id) return; var ky = uKey(u);
+      if (UM[ky]) return share([fileOf(UM[ky], 0)]).then(function (ok) { if (ok) { u.ts = Date.now(); keep(); refresh(); } });
+      if (uBusy) return S.toast(t('making', uPc)); if (!canMake()) return S.toast(t('noRec'));
+      uBusy = ky; uPc = 0; qHold++; TAPPED = true; refresh();
+      new Promise(function (res) { (function w() { if (!qRun) res(); else setTimeout(w, 120); })(); })
+        .then(function () { return render(JSON.parse(JSON.stringify(u.c)), function (pc) { uPc = pc; var x = HOST && HOST.querySelector('[data-upc]'); if (x) x.textContent = pc + '%'; }); })
+        .then(function (bl) { UM[ky] = bl; }, function () { S.toast(t('noRec')); })
+        .then(function () { uBusy = ''; qHold--; refresh(); setTimeout(queue, 50); });
+      return; }
     if (k === 'share') { var holder = b.parentNode; return share(holder._files || []).then(function (ok) { if (ok && holder._idx) markUsed(holder._idx); }); }
   }
   /* the Swipe file as a library of texts: the chosen playlist first, then everything; each with its creator's TikTok */
@@ -445,24 +467,46 @@
   function micStop() { if (recog) { try { recog.stop(); } catch (e) { } recog = null; } }
   function loadRolls() { return loadMade().then(bAll).then(function (l) { rolls = (l || []).sort(function (a, b) { return b.ts - a.ts; }); Object.keys(st.cuts).forEach(function (id) { if (!roll(id)) delete st.cuts[id]; }); if (!roll(st.sel) && rolls[0]) st.sel = rolls[0].id; if (st.sel) useRoll(st.sel); }); }
   /* Studio > Profile > B-rolls: the shelf, the chosen B-roll's parts, Fill texts, Save all */
+  var UOPEN = false, UM = {}, uBusy = '', uPc = 0, lastHTML = '', MB = '';
+  try { UOPEN = localStorage.getItem('lowi.vm.usedOpen') === '1'; } catch (e) { }
+  function uKey(u) { return u.roll + '|' + u.k; }
+  function dayOf(ts) { var d0 = new Date(); d0.setHours(0, 0, 0, 0); return ts >= d0.getTime() ? t('today') : ts >= d0.getTime() - 864e5 ? t('yest') : dShort(ts); }
+  function usedTile(u) { var c = u.c, ky = uKey(u), src = FRK[u.roll + ':' + c.start];
+    return '<button class="vm-tile used" data-vm="uopen" data-u="' + st.used.indexOf(u) + '"><span class="vm-fr">' + (src ? '<img alt="" src="' + src + '">' : '') + '</span><span class="vm-tt" style="top:' + (c.y * 100) + '%;left:' + (c.x * 100) + '%;--fs:' + c.size + '">' + esc(c.text).replace(/\n/g, '<br>') + '</span><i>' + fmt(c.sec) + '</i>' +
+      (UM[ky] ? '<b class="vm-ok vm-okp">📲 ' + esc(t('ready')) + '</b>' : uBusy === ky ? '<b class="vm-pc" data-upc>' + uPc + '%</b>' : '<b class="vm-used">✓</b>') + '</button>'; }
+  /* Studio > Profile > B-rolls (24 Nov 2026, night, Emmanuel: "it keeps flickering ... think of my workflow ... What happens if I do this
+     10 times, 20 times, 30 times? How will it look organized ... Can the ones that have been already used be tucked in somewhere else"):
+     the shelf of B-rolls; the text language; Fill texts and Save; the parts not used yet (each says Ready or how far it is); and the
+     used ones folded away under "✓ Used", grouped by day, newest first. It is drawn again only when something in it changed, and the
+     shelf keeps where you scrolled it. */
   function mountPaint() {
     var h = HOST; if (!h) return; var ss = st.sess && roll(st.sess.id) ? st.sess : null;
     var nw = ss ? ss.clips.map(function (c, i) { return [c, i]; }).filter(function (x) { return !isUsed(x[0]); }) : [], us = ss ? usedOf(ss.id) : [];
-    h.innerHTML = '<p class="vm-store" id="vmStore">' + esc(t('storeN', rolls.length)) + '</p>' +
+    var groups = [], gi = {}; us.slice().sort(function (x, y) { return y.ts - x.ts; }).forEach(function (u) { var d = dayOf(u.ts); if (!(d in gi)) { gi[d] = groups.length; groups.push([d, []]); } groups[gi[d]][1].push(u); });
+    var html = '<p class="vm-store" id="vmStore">' + esc(t('storeN', rolls.length) + (MB ? ' · ' + MB : '')) + '</p>' +
       '<div class="vm-shelf" id="vmShelfP"><label class="vm-cd vm-add"><input type="file" accept="video/*" multiple hidden id="vmFileP"><span>＋</span><b>' + esc(t('add')) + '</b></label>' +
       rolls.map(function (r) { return '<button class="vm-cd' + (r.id === st.sel ? ' on' : '') + '" data-vm="sel" data-id="' + esc(r.id) + '">' + (r.thumb ? '<img alt="" src="' + esc(r.thumb) + '">' : '') + '<i>' + fmt(r.dur) + '</i>' + (usedOf(r.id).length ? '<b class="vm-cdn">✓ ' + usedOf(r.id).length + '</b>' : '') + '<em data-vm="rm" data-id="' + esc(r.id) + '" aria-label="✕">✕</em></button>'; }).join('') + '</div>' +
       (ss ? (st.aiNote ? '<p class="vm-note">' + esc(st.aiNote) + '</p>' : '') + (qErr ? '<p class="vm-note">' + esc(t('blocked')) + '</p>' : '') +
+        '<div class="vm-lang"><span>' + esc(t('textLang')) + '</span>' + ['en', 'de', 'es'].map(function (l) { return '<button class="pill' + (st.lang === l ? ' acc' : '') + '" data-vm="lang" data-l="' + l + '" aria-pressed="' + (st.lang === l) + '">' + l.toUpperCase() + '</button>'; }).join('') + '</div>' +
         '<div class="vm-acts"><button class="btn pri" data-vm="again"' + (busy ? ' disabled' : '') + '>' + esc(busy ? t('writing') : t('fill')) + '</button>' + saveBtn('') + '</div>' +
-        (nw.length ? '<h4 class="vm-h">' + esc(t('newH')) + ' · ' + nw.length + '</h4><div class="vm-grid">' + nw.map(function (x) { return tile(x[0], x[1], 'popen'); }).join('') + '</div>' : '') +
-        '<p class="note vm-ns">' + esc(t('noSound')) + '</p>' +
-        (us.length ? '<h4 class="vm-h">' + esc(t('usedH')) + ' · ' + us.length + '</h4><p class="note">' + esc(t('usedNote')) + '</p><div class="vm-grid">' + us.map(function (u) { var c = u.c;
-          return '<button class="vm-tile used" data-vm="uopen" data-u="' + st.used.indexOf(u) + '"><span class="vm-fr">' + (FRK[u.roll + ':' + c.start] ? '<img alt="" src="' + FRK[u.roll + ':' + c.start] + '">' : '') + '</span><span class="vm-tt" style="top:' + (c.y * 100) + '%;left:' + (c.x * 100) + '%;--fs:' + c.size + '">' + esc(c.text).replace(/\n/g, '<br>') + '</span><i>' + fmt(c.sec) + '</i><b class="vm-used">' + esc(t('usedOn', dShort(u.ts))) + '</b></button>'; }).join('') + '</div>' : '')
+        '<p class="note vm-fn">' + esc(t('fillNote')) + '</p>' +
+        (nw.length ? '<h4 class="vm-h">' + esc(t('newH')) + ' · ' + nw.length + '</h4><div class="vm-grid">' + nw.map(function (x) { return tile(x[0], x[1], 'popen'); }).join('') + '</div><p class="note vm-ns">' + esc(t('noSound')) + '</p>' : '') +
+        (us.length ? '<button class="vm-uh" data-vm="utog" aria-expanded="' + UOPEN + '"><span>' + esc(t('usedH')) + ' · ' + us.length + '</span><i aria-hidden="true">' + (UOPEN ? '▾' : '▸') + '</i></button>' +
+          (UOPEN ? '<p class="note">' + esc(t('usedTap')) + '</p>' + groups.map(function (g) { return '<h5 class="vm-day">' + esc(g[0]) + ' · ' + g[1].length + '</h5><div class="vm-grid">' + g[1].map(usedTile).join('') + '</div>'; }).join('') : '') : '')
         : '<p class="note">' + esc(t('noRolls')) + '</p>');
+    if (html === lastHTML && h.firstChild) { storeLine(); return; }   /* nothing changed: no redraw */
+    var sh0 = D.getElementById('vmShelfP'), sl = sh0 ? sh0.scrollLeft : -1, same = h.__sel === st.sel;
+    lastHTML = html; h.innerHTML = html; h.__sel = st.sel;
     var f = D.getElementById('vmFileP'); if (f) f.onchange = function () { addFiles(f.files); };
-    var sh = D.getElementById('vmShelfP'); if (sh) { sh.onscroll = function () { cdFocusIn(sh); }; setTimeout(function () { var on = sh.querySelector('.on'); if (on) on.scrollIntoView({inline: 'center', block: 'nearest'}); cdFocusIn(sh); }, 30); }
-    try { if (navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(function (e) { var x = D.getElementById('vmStore'); if (x && e && e.usage != null) x.textContent = t('storeN', rolls.length) + ' · ' + t('used', Math.round(e.usage / 1048576)); }); } catch (e) { }
+    var sh = D.getElementById('vmShelfP');
+    if (sh) { sh.onscroll = function () { cdFocusIn(sh); };
+      /* keep the shelf where it was; centre the chosen B-roll only when the choice changed (sideways only: the page never jumps) */
+      if (same && sl >= 0) sh.scrollLeft = sl; else { var on = sh.querySelector('.on'); if (on) sh.scrollLeft = Math.max(0, on.offsetLeft - (sh.clientWidth - on.offsetWidth) / 2); }
+      cdFocusIn(sh); }
+    storeLine();
     if (ss) { frames(true); setTimeout(queue, 300); }
   }
+  function storeLine() { try { if (navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(function (e) { if (!e || e.usage == null) return; var m = t('used', Math.round(e.usage / 1048576)); if (m === MB) return; MB = m; var x = D.getElementById('vmStore'); if (x) x.textContent = t('storeN', rolls.length) + ' · ' + MB; lastHTML = ''; }); } catch (e) { } }
   var FRK = {};   /* thumbnails by start second, for the Used folder */
   function dShort(ts) { try { return new Date(ts).toLocaleDateString(['en-GB', 'de-DE', 'es-ES'][I] || 'en-GB', {day: 'numeric', month: 'short'}); } catch (e) { return ''; } }
   function cdFocusIn(sh) { var mid = sh.getBoundingClientRect().left + sh.clientWidth / 2; sh.querySelectorAll('.vm-cd').forEach(function (c) { var r = c.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - mid); c.style.setProperty('--k', Math.max(0, 1 - d / (sh.clientWidth * 0.6)).toFixed(3)); }); }

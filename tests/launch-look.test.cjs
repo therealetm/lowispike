@@ -99,7 +99,8 @@ test('Home\'s look is read only while Home is on screen, never from the launch s
     assert.match(boot, /if \(!done \|\| document\.getElementById\("lwLaunch"\)\) return;/);
     assert.match(boot, /elementFromPoint/, 'a bubble covered by another page is not read');
     assert.match(boot, /if \(n < 6\) return;/, 'nothing half-read is saved');
-    assert.match(boot, /var look = \{v:1, t:Date\.now\(\), b:out\}; if \(g\.x > 0 && g\.y > 0 && g\.r > 40 && g\.d > 30\) look\.g = g;\s*localStorage\.setItem\("lowi\.launch\.look", JSON\.stringify\(look\)\)/);
+    /* changed 24 Nov 2026: the world's aura colours are saved with the look too (between the ring and the save) */
+    assert.match(boot, /var look = \{v:1, t:Date\.now\(\), b:out\}; if \(g\.x > 0 && g\.y > 0 && g\.r > 40 && g\.d > 30\) look\.g = g;[\s\S]{0,400}if \(\/\^#\[0-9a-f\]\{3,8\}\$\/i\.test\(aa\) && \/\^#\[0-9a-f\]\{3,8\}\$\/i\.test\(ab\)\) look\.au = \[aa, ab\];\s*localStorage\.setItem\("lowi\.launch\.look", JSON\.stringify\(look\)\)/);
     for (const v of ['--o8-cx', '--o8-cy', '--o8-r', '--o8-d']) assert.ok(boot.includes('hs.getPropertyValue("' + v + '")'), 'Home\'s ring kept: ' + v);
     assert.match(boot, /visibilitychange[\s\S]{0,80}hidden[\s\S]{0,20}lookSave/);
     assert.match(boot, /"lowi:boot-ready", function\(\)\{ setTimeout\(lookSave, 2500\); \}/);

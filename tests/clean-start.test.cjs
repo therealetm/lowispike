@@ -92,10 +92,12 @@ test('the app shows once the page and every companion file are in, after two fra
     B.reveal('again'); assert.strictEqual(d.win.__LOWI_BOOT_DONE, 'ready'); assert.strictEqual(d.events.length, 1);
 });
 
-test('a page that keeps changing still opens after the 0.7 s stillness cap', () => {
+/* changed 24 Nov 2026 (Emmanuel: "the fastest app opening in the world"): the stillness cap is 0.35 s now (it was 0.7 s; Home's
+   breathing bubbles meant every launch waited the full cap) */
+test('a page that keeps changing still opens after the 0.35 s stillness cap', () => {
     const d = boot({ readyState: 'complete', restless: true });
     d.win.LowiBoot.loaded();
-    for (let i = 0; i < 6; i++) { d.tick(60); d.runTimers(t => t.ms === 60); }
+    for (let i = 0; i < 3; i++) { d.tick(60); d.runTimers(t => t.ms === 60); }
     d.flushRaf(); assert.ok(d.cls.has('lw-boot'), 'still changing: keep waiting');
     for (let i = 0; i < 8; i++) { d.tick(60); d.runTimers(t => t.ms === 60); }
     d.flushRaf();

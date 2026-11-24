@@ -93,3 +93,6 @@ When adding a ticket, include:
 - Tour step for the For You tool row and Studio (part `new` in tutorial-steps.js, with recorded voice EN/DE/ES).
 - Compact For You header (+ / title / heart) that returns while scrolling up; today the floating "+ Post" stays.
 - Studio card text is German only; EN/ES translations if wanted.
+
+## LS-BOOT-SIZE — Faster cold start: index.html is 3.7 MB (24 Nov 2026)
+Emmanuel: "The goal is ... the fastest app opening in the world." The launch scene now hands over as soon as Home is ready, but the phone still reads and runs all of index.html (3.7 MB of inline data and scripts) before Home can be ready. Scope: measure on an iPhone where the time goes (parse, inline scripts, companion files, 3D world); move large inline data (food/recipe tables) into files loaded after Home shows, keeping the script order contract (AGENTS.md). One slice per release, each measured.

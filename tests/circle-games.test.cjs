@@ -43,3 +43,9 @@ test('the module boots without a DOM and exposes its API', () => {
   delete require.cache[require.resolve(path.join(ROOT, 'circle-games.js'))];
   assert.doesNotThrow(() => require(path.join(ROOT, 'circle-games.js')));
 });
+test('Shuffle and Swipe are gone from the Circle bar; Billiards, Challenge, Ranking stay (24 Nov 2026)', () => {
+  const s = require('fs').readFileSync(require('path').join(__dirname, '..', 'circle-games.js'), 'utf8');
+  assert.match(s, /view: 'shuffle', off: true \}/); assert.match(s, /view: 'swipe', off: true \}/);
+  assert.match(s, /return GAMES\.filter\(g => !g\.off\)\.map\(/);
+  assert.match(s, /let cur = 'billard'/, 'the choice is not remembered, so nobody lands on a removed game');
+});

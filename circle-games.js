@@ -19,8 +19,9 @@
   const L = (en, de, es) => [en, de, es][li()];
   const GAMES = [
     { id: 'billard', ic: '\uD83C\uDFB1', t: () => L('Billiards', 'Billard', 'Billar') },
-    { id: 'mischen', ic: '\uD83D\uDD00', t: () => L('Shuffle', 'Mischen', 'Mezclar'), view: 'shuffle' },
-    { id: 'swipen', ic: '\uD83C\uDCCF', t: () => L('Swipe', 'Swipen', 'Deslizar'), view: 'swipe' },
+    /* 24 Nov 2026 (Emmanuel: "nobody's using Shuffle the game, on Swipe the game. Not even me ... nuke it"): off: no longer in the bar */
+    { id: 'mischen', ic: '\uD83D\uDD00', t: () => L('Shuffle', 'Mischen', 'Mezclar'), view: 'shuffle', off: true },
+    { id: 'swipen', ic: '\uD83C\uDCCF', t: () => L('Swipe', 'Swipen', 'Deslizar'), view: 'swipe', off: true },
     /* Nov 8 2026 (Emmanuel: "vielleicht haben wir einfach einen Challenge-Raum ... Weekly Challenge, wo jeder mitmachen kann ... wie
        bei wo Mission und Shuffle ist, weil das ja fast auch wie ein Spiel ist"): the creator's week plan as this week's challenge.
        Which plan runs is picked by calendar week from CHALLENGES.
@@ -85,7 +86,7 @@
   }
 
   function barHTML() {
-    return GAMES.map(g => '<button type="button" class="csp-tab" role="tab" data-csp="' + g.id + '" aria-selected="' + (g.id === cur) + '"><span aria-hidden="true">' + g.ic + '</span><b>' + g.t() + '</b></button>').join('');
+    return GAMES.filter(g => !g.off).map(g => '<button type="button" class="csp-tab" role="tab" data-csp="' + g.id + '" aria-selected="' + (g.id === cur) + '"><span aria-hidden="true">' + g.ic + '</span><b>' + g.t() + '</b></button>').join('');
   }
   function ensureBar() {
     const pane = D.getElementById('cmPaneChat'); if (!pane) return null;

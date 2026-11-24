@@ -146,3 +146,53 @@ html.gr-open,html.gr-open body{overflow:hidden}
 .gr.gr .gr-rt{border-top-color:rgba(255,255,255,.25)}
 .gr.gr .gr-h,.gr.gr .gr-la,.gr.gr .gr-ht{color:#fff;text-shadow:0 0 14px rgba(185,139,255,.6)}
 .gr.gr .gr-li i{border-color:rgba(255,255,255,.3)}.gr.gr .gr-li.got i{background:var(--g-g);border-color:var(--g-g);color:#03170c;box-shadow:0 0 12px rgba(61,255,160,.7)}
+
+/* 24 Nov 2026, the whole journey: hub tiles, Quick find rows, My kitchen shelves, the pan and plates, today's menu (grocery-run.js) */
+.gr.gr .gr-title-s{margin:0 0 14px}.gr.gr .gr-title-s .gr-logo{width:76px;height:76px;font-size:40px}.gr.gr .gr-title-s h1{font-size:34px}
+.gr-tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gr.gr .gr-tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:132px;padding:14px;border-radius:24px;text-align:left;cursor:pointer;color:var(--g-ink);
+  background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,.04));border:1px solid var(--rim);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 10px 28px rgba(0,0,0,.45);transition:transform .12s}
+.gr.gr .gr-tile:active{transform:scale(.96)}
+.gr-tile i{font-style:normal;font-size:34px;line-height:1;margin-bottom:4px;filter:drop-shadow(0 0 10px var(--glow,rgba(255,216,74,.6)))}.gr-tile b{font-size:18px;font-weight:900}.gr-tile small{font-size:13px;color:var(--g-mut);line-height:1.3}
+.gr-tile em{position:absolute;top:10px;right:10px;min-width:26px;height:26px;padding:0 7px;border-radius:13px;font:900 13px/26px ui-rounded,system-ui;font-style:normal;text-align:center;background:var(--g-g);color:#03170c;box-shadow:0 0 12px rgba(61,255,160,.7)}
+.gr-tile-start{--glow:rgba(255,216,74,.8);border-color:rgba(255,216,74,.45)!important}.gr-tile-find{--glow:rgba(70,215,255,.8);border-color:rgba(70,215,255,.4)!important}
+.gr-tile-kitchen{--glow:rgba(61,255,160,.8);border-color:rgba(61,255,160,.4)!important}.gr-tile-cook{--glow:rgba(255,77,122,.8);border-color:rgba(255,77,122,.4)!important}
+.gr-tile-list,.gr-tile-menu{--glow:rgba(185,139,255,.8);border-color:rgba(185,139,255,.4)!important}
+.gr-rs{font-size:22px!important}
+/* quick find */
+.gr-frs{display:flex;flex-direction:column;gap:10px}
+.gr.gr .gr-fr{display:flex;align-items:center;gap:12px;width:100%;padding:10px;border-radius:18px;text-align:left;cursor:pointer;color:var(--g-ink);background:linear-gradient(180deg,var(--glass2),var(--glass));border:1px solid var(--rim);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 6px 18px rgba(0,0,0,.4)}
+.gr-fr>div{flex:1;min-width:0}.gr-fr b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gr-fr small{display:block;color:var(--g-mut);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gr-fr .gr-ri{width:64px;height:64px}.gr-fr .gr-pf{margin-top:4px}
+.gr-ck{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;font-style:normal;font-size:20px;font-weight:900;border:1.5px solid rgba(255,255,255,.3);color:var(--g-mut)}
+.gr.gr .gr-fr.on{border-color:rgba(61,255,160,.75);box-shadow:0 0 18px rgba(61,255,160,.3),inset 0 1px 0 rgba(255,255,255,.2)}.gr-fr.on .gr-ck{background:var(--g-g);border-color:var(--g-g);color:#03170c;box-shadow:0 0 12px rgba(61,255,160,.8)}
+.gr-foot .gr-big{flex:1;width:auto}.gr-foot .gr-mid{flex:none}
+/* kitchen shelves */
+.gr-shelf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:10px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--rim);box-shadow:inset 0 -6px 0 rgba(255,255,255,.05)}
+.gr.gr .gr-kt{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0;border:0;background:none;color:var(--g-ink);text-align:center;cursor:pointer}
+.gr-kt b{font-size:12px;line-height:1.2;max-height:2.4em;overflow:hidden}.gr-kt .gr-pi{width:100%}.gr-kt .gr-q button{width:34px;height:34px;font-size:18px}
+.gr.gr .gr-kt.on .gr-pi{box-shadow:0 0 0 3px var(--g-g),0 0 16px rgba(61,255,160,.6)}
+.gr-sharek{margin:14px 0 0;width:100%}
+/* the pan */
+.gr-pan{position:relative;margin:6px auto 12px;width:min(78vw,300px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 45%,#2a2d36 0 52%,#15171d 53% 64%,#0b0c10 65%);border:1px solid rgba(255,255,255,.12);box-shadow:0 0 34px rgba(255,77,122,.18),inset 0 0 30px rgba(0,0,0,.6)}
+.gr-pan.full{box-shadow:0 0 40px rgba(255,140,60,.4),inset 0 0 30px rgba(0,0,0,.6)}
+.gr-panin{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;width:62%}.gr-panin p{margin:0;color:var(--g-mut);font-size:14px;text-align:center}
+.gr-ing{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:#fff;overflow:hidden;font-size:28px;box-shadow:0 4px 10px rgba(0,0,0,.4);animation:grDrop .35s cubic-bezier(.2,1.6,.4,1)}
+.gr-ing img{width:100%;height:100%;object-fit:cover}@keyframes grDrop{from{transform:translateY(-40px) scale(.4);opacity:0}}
+.gr-pan.sizzle{animation:grSizzle .12s linear infinite}.gr-pan.sizzle::after{content:'💨 🔥 💨';position:absolute;top:-6px;font-size:26px;animation:grUp 1.2s ease-out infinite}
+@keyframes grSizzle{50%{transform:translate(1px,-1px) rotate(.6deg)}}
+/* plates */
+.gr-plate{margin:8px 0 12px;padding:16px;border-radius:24px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.04));border:1px solid var(--rim);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 28px rgba(0,0,0,.45)}
+.gr-plate.ok{border-color:rgba(61,255,160,.55);box-shadow:0 0 24px rgba(61,255,160,.2),inset 0 1px 0 rgba(255,255,255,.2)}.gr-plate.bad{border-color:rgba(255,77,122,.5)}
+.gr-dish{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:4px auto 10px;padding:16px;width:min(70vw,250px);aspect-ratio:1;align-content:center;border-radius:50%;background:radial-gradient(circle,#f6f7fb 0 58%,#dfe3ec 59% 66%,#c7ccd8 67%);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.gr-plate.sm .gr-dish{width:150px;padding:10px}.gr-plate.sm .gr-ing{width:40px;height:40px;font-size:20px}
+.gr-pn{display:block;font-size:19px;font-weight:900;margin:2px 0 6px}.gr-pv{display:inline-block;margin:3px 4px;padding:5px 10px;border-radius:10px;font-size:13.5px;font-weight:800;background:rgba(255,77,122,.14);color:var(--g-r)}
+.gr-plate.ok .gr-pv,.gr-pv.ok{background:rgba(61,255,160,.14);color:var(--g-g)}
+.gr-plate .gr-foot{position:static;background:none;padding:12px 0 0}
+.gr-meal{margin:0 0 10px}.gr-mh{display:flex;align-items:center;justify-content:space-between;margin:10px 2px 0}.gr-mh b{font-size:16px;color:#fff}
+.gr-mx{width:36px;height:36px;border-radius:50%;border:1px solid var(--rim);background:rgba(255,255,255,.06);color:var(--g-mut)}
+.gr-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 100px);transform:translateX(-50%);z-index:9;padding:10px 18px;border-radius:14px;background:rgba(20,22,30,.92);border:1px solid rgba(61,255,160,.5);color:var(--g-g);font-weight:800;box-shadow:0 0 18px rgba(61,255,160,.3)}
+.gr.gr .gr-foot .gr-big{font-size:18px;white-space:nowrap;min-height:58px}.gr.gr .gr-foot .gr-mid{font-size:15px;white-space:nowrap;padding:0 14px}
+.gr.gr .gr-ht{font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}

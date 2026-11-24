@@ -86,6 +86,8 @@
   }
 
   function barHTML() {
+    /* 24 Nov 2026 (Emmanuel: "we removed things but you didn't ... It looks weird"): the bar has as many equal columns as games (--csp-n) */
+    try { H.style.setProperty('--csp-n', String(GAMES.filter(g => !g.off).length)); } catch (e) { }
     return GAMES.filter(g => !g.off).map(g => '<button type="button" class="csp-tab" role="tab" data-csp="' + g.id + '" aria-selected="' + (g.id === cur) + '"><span aria-hidden="true">' + g.ic + '</span><b>' + g.t() + '</b></button>').join('');
   }
   function ensureBar() {

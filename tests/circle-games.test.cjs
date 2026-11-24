@@ -49,3 +49,7 @@ test('Shuffle and Swipe are gone from the Circle bar; Billiards, Challenge, Rank
   assert.match(s, /return GAMES\.filter\(g => !g\.off\)\.map\(/);
   assert.match(s, /let cur = 'billard'/, 'the choice is not remembered, so nobody lands on a removed game');
 });
+test('the Circle bar has as many equal columns as games (24 Nov 2026: three, no empty gap)', () => {
+  const fs2 = require('fs'), p2 = require('path'); const css = fs2.readFileSync(p2.join(__dirname, '..', 'circle-games.css'), 'utf8'), s = fs2.readFileSync(p2.join(__dirname, '..', 'circle-games.js'), 'utf8');
+  assert.match(css, /grid-template-columns:repeat\(var\(--csp-n,3\),1fr\)/); assert.match(s, /H\.style\.setProperty\('--csp-n', String\(GAMES\.filter\(g => !g\.off\)\.length\)\)/);
+});

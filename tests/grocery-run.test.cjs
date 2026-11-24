@@ -29,3 +29,12 @@ test('Grocery Run wears the app\'s look: dark space, glass cards, neon glow (24 
   assert.match(c, /\.gr\.gr\{--g-ink:#eef3ff;/); assert.match(c, /#05060c\}/);
   assert.match(c, /backdrop-filter:blur\(18px\) saturate\(160%\)/); assert.match(c, /box-shadow:0 0 22px rgba\(255,216,74,\.55\)/);
 });
+test('the whole journey: hub, resume where you left, restart, quick find, kitchen, cook, menu, share (24 Nov 2026)', () => {
+  for (const v of ["view === 'hub'", "view === 'find'", "view === 'kitchen'", "view === 'cook'", "view === 'menu'"]) assert.ok(js.includes(v), v);
+  assert.match(js, /view = st\.view && st\.view !== 'spin' \? st\.view : 'hub';/, 'reopens where you left it');
+  assert.match(js, /if \(k === 'restart'\) \{ if \(!confirm\(t\('restart'\)\)\) return;/);
+  assert.match(js, /good = all\.filter\(p => p\.ok\)\.sort\(\(a, b\) => \(b\.best - a\.best\)\), bad = all\.filter\(p => !p\.ok\)/, 'Quick find: best first, spikes last');
+  assert.match(js, /if \(k === 'donelist'\) \{ intoKitchen\(st\.list\.filter\(c => st\.got\[c\.id\]\)\);/, 'what you bought goes into My kitchen');
+  assert.match(js, /const url = base \+ 'list\/#' \+ enc\(/, 'the list rides in the link');
+  const page = R('list/index.html'); assert.match(page, /var safe = function \(p\) \{ return \/\^\[0-9\/\]\+/); assert.match(page, /Prices are estimates \(≈\)/); assert.doesNotMatch(page, /<script src=/, 'no scripts to load: opens at once');
+});

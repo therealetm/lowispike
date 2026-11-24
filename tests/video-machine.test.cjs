@@ -123,3 +123,10 @@ test('finished videos are kept on the phone (one per part) and survive closing t
   assert.match(js, /var i = inEdit\(\) && !got\(cur\) \? cur :/, 'the part open in the editor is made first');
   assert.match(js, /var MAXW = 2 \* Math\.min\(0\.5 - SAFE\.l, SAFE\.r - 0\.5\) \* 0\.97;/, 'opening a finished part does not nudge it (that made it again)');
 });
+/* 24 Nov 2026, night (Emmanuel: "You broke my app? Nothing is working after closing & opening", black screen) */
+test('nothing is made in the background before a tap in this visit; a visit that died while making a video does not start again by itself', () => {
+  assert.match(js, /try \{ CRASHED = !!localStorage\.getItem\(BUSY\); localStorage\.removeItem\(BUSY\); \} catch \(e\) \{ \}/);
+  assert.match(js, /if \(!TAPPED \|\| qRun \|\| qErr \|\| qHold \|\| !st\.sess \|\| !canMake\(\)\) return;/);
+  assert.match(js, /qErr = CRASHED \? 1 : 0,/); assert.match(js, /busyOn\(\); var done = function \(x\) \{ busyOff\(\); return x; \}/);
+  assert.match(js, /var cv = CV \|\| \(CV = D\.createElement\('canvas'\)\);/, 'one canvas for every video');
+});

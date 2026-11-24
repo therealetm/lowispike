@@ -44,7 +44,7 @@
     openTT: ['Open on TikTok ↗', 'Auf TikTok öffnen ↗', 'Abrir en TikTok ↗'], use: ['Use', 'Nehmen', 'Usar'], tr: ['Translate', 'Übersetzen', 'Traducir'], undo: ['↩ Back', '↩ Zurück', '↩ Atrás'],
     prep: ['🎬 Making your videos: {p} done', '🎬 Videos werden gemacht: {p} fertig', '🎬 Haciendo tus vídeos: {p} listos'],
     tapMake: ['▶ Tap to make the videos', '▶ Tippen, um die Videos zu machen', '▶ Toca para hacer los vídeos'],
-    blocked: ['Your phone paused making the videos (Low Power Mode or the app was in the background). Tap the button to go on.', 'Dein Handy hat das Machen der Videos pausiert (Stromsparmodus oder die App war im Hintergrund). Tipp auf den Knopf, um weiterzumachen.', 'Tu móvil pausó los vídeos (modo ahorro o la app estaba en segundo plano). Toca el botón para seguir.'],
+    blocked: ['Making the videos stopped (the phone needed its memory, Low Power Mode, or the app was in the background). Tap the button to go on.', 'Das Machen der Videos hat gestoppt (das Handy brauchte Speicher, Stromsparmodus oder die App war im Hintergrund). Tipp auf den Knopf, um weiterzumachen.', 'Los vídeos se detuvieron (el móvil necesitó memoria, modo ahorro o la app estaba en segundo plano). Toca el botón para seguir.'],
     newH: ['Not used yet', 'Noch nicht benutzt', 'Aún sin usar'], usedH: ['✓ Used', '✓ Benutzt', '✓ Usados'], usedOn: ['✓ Used {p}', '✓ Benutzt {p}', '✓ Usado {p}'],
     allUsed: ['✓ All used: tap ✨ Fill texts for new ones', '✓ Alle benutzt: tipp auf ✨ Texte füllen für neue', '✓ Todos usados: toca ✨ Rellenar textos'],
     saveNew: ['📲 Save {p} new', '📲 {p} neue speichern', '📲 Guardar {p} nuevos'],
@@ -274,20 +274,32 @@
   /* one video element draws every clip. iPhones only let a video play by itself once a finger has started it (and never in Low Power
      Mode), so the first tap anywhere in Studio starts it once; from then on the clips are made in the background (24 Nov 2026 bug:
      "it keeps saying 0 out of 5") */
+  /* 24 Nov 2026, night (Emmanuel: "You broke my app? Nothing is working after closing & opening", a black screen): making a video
+     next to a 4K B-roll can use more memory than iOS allows; it then kills the app, and the app reopened straight into Studio and
+     started again. Now nothing is made in the background until a finger touches Studio in this visit, and if the last visit died while
+     making a video (the flag below is still there), it waits for the "Tap to make the videos" button. */
+  var BUSY = 'lowi.vm.busy', CRASHED = false, TAPPED = false;
+  try { CRASHED = !!localStorage.getItem(BUSY); localStorage.removeItem(BUSY); } catch (e) { }
+  function busyOn() { try { localStorage.setItem(BUSY, String(Date.now())); } catch (e) { } }
+  function busyOff() { try { localStorage.removeItem(BUSY); } catch (e) { } }
   var RV = null;
   function rv() { if (!RV) { RV = D.createElement('video'); RV.playsInline = true; RV.setAttribute('playsinline', ''); RV.preload = 'auto'; RV.muted = true; RV.setAttribute('muted', ''); } return RV; }
-  function unlock() { var v = rv(); if (v.__ok) return; try { if (!v.getAttribute('src') && st.sess && roll(st.sess.id)) v.src = url(roll(st.sess.id)); var pr = v.play(); if (pr && pr.then) pr.then(function () { v.__ok = 1; if (!qRun) v.pause(); if (qErr) { qErr = 0; refresh(); setTimeout(queue, 50); } }, function () { }); } catch (e) { } }
+  function unlock() { if (!TAPPED) { TAPPED = true; if (!CRASHED) setTimeout(queue, 400); } var v = rv(); if (v.__ok) return; try { if (!v.getAttribute('src') && st.sess && roll(st.sess.id)) v.src = url(roll(st.sess.id)); var pr = v.play(); if (pr && pr.then) pr.then(function () { v.__ok = 1; if (!qRun) v.pause(); if (qErr) { qErr = 0; refresh(); setTimeout(queue, 50); } }, function () { }); } catch (e) { } }
   if (D.addEventListener) { D.addEventListener('touchend', unlock, true); D.addEventListener('click', unlock, true); }   /* the taps iPhones count as a real tap */
   /* 24 Nov 2026, night (Emmanuel: "the video ... stopping every like 2 seconds ... moving, stopping ... like a video with a bad
      connection"): recording the screen in real time (MediaRecorder) froze whenever the phone hiccuped. Where the phone can (WebCodecs:
      iPhone iOS 16.4+, Chrome), every frame is now built on its own exact 1/30 s timestamp and written into the MP4 (vendor mp4-muxer),
      so a slow moment only makes saving slower, never the video choppy. Older phones keep the old recorder. */
-  var FPS = 30;
+  var FPS = 30, CV = null;   /* one canvas for every video, not a new 8 MB one each time */
   function wcOK() { return !!(W.VideoEncoder && W.VideoFrame && W.HTMLVideoElement && 'requestVideoFrameCallback' in W.HTMLVideoElement.prototype); }
   function canMake() { return wcOK() || !!mime(); }
   var muxP = null;
   function loadMux() { if (W.Mp4Muxer) return Promise.resolve(); return muxP || (muxP = new Promise(function (res, rej) { var sc = D.createElement('script'); sc.src = '../vendor/mp4-muxer-5.1.3.js'; sc.onload = res; sc.onerror = function () { muxP = null; rej(new Error('mux')); }; D.head.appendChild(sc); })); }
   function render(c, onP) {
+    busyOn(); var done = function (x) { busyOff(); return x; }, bad = function (e) { busyOff(); throw e; };
+    return render0(c, onP).then(done, bad);
+  }
+  function render0(c, onP) {
     if (!wcOK()) return renderRec(c, onP);
     return renderWC(c, onP).catch(function (e) { if (e && (e.name === 'NotAllowedError' || e.message === 'video')) throw e; return mime() ? renderRec(c, onP) : Promise.reject(e); });
   }
@@ -301,7 +313,7 @@
         var M = W.Mp4Muxer, tgt = new M.ArrayBufferTarget(), mux = new M.Muxer({target: tgt, video: {codec: 'avc', width: W0, height: H0, frameRate: FPS}, fastStart: 'in-memory'});
         var dead = false, fail = function (e) { if (dead) return; dead = true; try { v.pause(); } catch (x) { } try { enc.close(); } catch (x) { } rej(e); };
         var enc = new W.VideoEncoder({output: function (ch, meta) { mux.addVideoChunk(ch, meta); }, error: fail}); enc.configure(cfg);
-        var cv = D.createElement('canvas'); cv.width = W0; cv.height = H0; var ctx = cv.getContext('2d');
+        var cv = CV || (CV = D.createElement('canvas')); cv.width = W0; cv.height = H0; var ctx = cv.getContext('2d');
         var dur = Math.max(0.2, c.end - c.start), total = Math.round(dur * FPS), k = 0, v = rv(), cb = 0;
         /* one frame per 1/30 s step of the B-roll's own time; a step the phone skipped repeats the picture before it */
         var put = function (upTo) {
@@ -341,7 +353,7 @@
     });
   }
   /* the clips are made one after the other in the background as soon as they exist (and again after an edit), so Save is one tap */
-  var fromProf = false, qHold = 0, qNow = -1, qPc = 0, qRun = false, qErr = 0, FR = [], HOST = null, rqT = 0;
+  var fromProf = false, qHold = 0, qNow = -1, qPc = 0, qRun = false, qErr = CRASHED ? 1 : 0, FR = [], HOST = null, rqT = 0;
   function requeue() { clearTimeout(rqT); rqT = setTimeout(function () { refresh0(); queue(); mkSync(); }, 700); }
   function inEdit() { return view === 'edit' && el && el.classList.contains('on'); }
   /* never redraw the editor from the background: it would drop the Save button and the text being typed */
@@ -349,7 +361,7 @@
   function mkSync() { var b = inEdit() && D.getElementById('vmMk'); if (b && !b.disabled) b.textContent = mkLabel(); }
   function refresh0() { if (HOST && HOST.isConnected) mountPaint(); }
   function queue() {
-    if (qRun || qErr || qHold || !st.sess || !canMake()) return; var i = inEdit() && !got(cur) ? cur : st.sess.clips.findIndex(function (c0, k) { return !got(k) && !isUsed(c0); });   /* the part open in the editor first */ if (i < 0) { soft(); return; }
+    if (!TAPPED || qRun || qErr || qHold || !st.sess || !canMake()) return; var i = inEdit() && !got(cur) ? cur : st.sess.clips.findIndex(function (c0, k) { return !got(k) && !isUsed(c0); });   /* the part open in the editor first */ if (i < 0) { soft(); return; }
     qRun = true; qNow = i; qPc = 0; var sid = st.sess, mm = made, snap0 = ckey(st.sess.clips[i]);
     render(st.sess.clips[i], function (pc) { qPc = pc; [el, HOST].forEach(function (w0) { var b = w0 && w0.querySelector('[data-pc]'); if (b) b.textContent = pc + '%'; }); mkSync(); })
       .then(function (blob) { mm[i] = {b: blob, k: snap0}; mPut(sid.id, i, mm[i]); }, function () { qErr = 1; })
@@ -358,7 +370,7 @@
   function toSave() { var a = st.sess.clips.map(function (_c, i) { return i; }), n = a.filter(function (i) { return !isUsed(st.sess.clips[i]); }); return n.length ? n : a; }
   function saveBtn(cls) { if (st.sess.clips.every(isUsed)) return '<button class="btn ' + cls + '" disabled>' + esc(t('allUsed')) + '</button>'; var ix = toSave(), ready = ix.filter(function (i) { return got(i); }).length, all = ix.length === st.sess.clips.length && !st.sess.clips.some(isUsed);
     if (ready === ix.length) return '<button class="btn ' + cls + '" data-vm="saveAll">' + esc(all ? t('saveAll') + ' (' + ready + ')' : t('saveNew', ready)) + '</button>';
-    if (qErr || !canMake()) return '<button class="btn ' + cls + '" data-vm="kick">' + esc(t('tapMake')) + '</button>';
+    if (qErr || !TAPPED || !canMake()) return '<button class="btn ' + cls + '" data-vm="kick">' + esc(t('tapMake')) + '</button>';
     return '<button class="btn ' + cls + '" disabled>' + esc(t('prep', ready + ' / ' + ix.length)) + '</button>'; }
   function tile(c, i, act) { var u = isUsed(c), m = got(i);
     return '<button class="vm-tile' + (u ? ' used' : '') + '" data-vm="' + act + '" data-i="' + i + '"><span class="vm-fr" data-fr="' + i + '">' + (FR[i] ? '<img alt="" src="' + FR[i] + '">' : '') + '</span><span class="vm-tt" style="top:' + (c.y * 100) + '%;left:' + (c.x * 100) + '%;--fs:' + c.size + '">' + esc(c.text).replace(/\n/g, '<br>') + '</span><i>' + fmt(c.sec) + '</i><em>' + esc(T.ST[c.style] ? T.ST[c.style][I] : c.style) + '</em>' +
@@ -406,7 +418,7 @@
     if (k === 'make') { var box = D.getElementById('vmOut'); var i0 = cur; if (got(i0)) return share([fileOf(got(i0), i0)]).then(function (ok) { if (ok) markUsed([i0]); });
       if (qRun && qNow === i0) return S.toast(t('making', qPc));   /* already being made: the button turns into Save by itself */ b.disabled = true; var lab = b.textContent; make([i0], b).then(function (f) { b.disabled = false; b.textContent = lab; readyBtn(box, f, [i0]); }, function () { b.disabled = false; b.textContent = lab; }); return; }
     if (k === 'saveAll') { var ix = toSave(); return share(ix.map(function (i) { return fileOf(got(i), i); })).then(function (ok) { if (ok) markUsed(ix); }); }
-    if (k === 'kick') { qErr = 0; unlock(); setTimeout(queue, 60); return refresh(); }
+    if (k === 'kick') { qErr = 0; CRASHED = false; TAPPED = true; unlock(); setTimeout(queue, 60); return refresh(); }
     if (k === 'uopen') { var u = st.used[+b.dataset.u]; if (!u || !st.sess) return; var j = st.sess.clips.findIndex(function (c5) { return c5.start === u.c.start && c5.end === u.c.end; }); if (j < 0) return; Object.assign(st.sess.clips[j], JSON.parse(JSON.stringify(u.c))); keep(); cur = j; fromProf = true; page(); el.classList.add('on'); D.body.style.overflow = 'hidden'; view = 'edit'; paint(); return; }   /* ready in the background: straight to the share sheet, inside the tap */
     if (k === 'share') { var holder = b.parentNode; return share(holder._files || []).then(function (ok) { if (ok && holder._idx) markUsed(holder._idx); }); }
   }

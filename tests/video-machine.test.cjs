@@ -49,3 +49,23 @@ test('each clip: its own AI text, a text from the Swipe file library (with the c
   assert.match(f, /return out\(req, why === "busy" \? 429 : 502, \{ error: why === "busy" \? "busy" : "ai_failed", detail: clip\(why, 300\) \}\);/);
   assert.match(R('studio/index.html'), /er\.detail = j && j\.detail \|\| '';/);
 });
+/* 24 Nov 2026, evening (Emmanuel: "switch from inspo to storage ... B-rolls at the top ... below that, I see the cut version. So it
+   doesn't have to always cut my B-rolls again ... click on the button, they're all filled ... save") */
+test('Profile has Inspo | B-rolls: the shelf on top, the chosen B-roll\'s parts below, Fill texts and Save all', () => {
+  const a = R('studio/accounts.js');
+  assert.match(a, /data-acc="pt" data-v="broll"/); assert.match(a, /if \(k === 'pt'\) \{ PT = b\.dataset\.v === 'broll' \? 'broll' : 'inspo';/);
+  assert.match(a, /StudioVM\.mount\(document\.getElementById\('vmProf'\)\)/);
+  assert.match(js, /W\.StudioVM = \{open: open, close: close, mount: mount,/);
+  assert.match(js, /'<div class="vm-acts"><button class="btn pri" data-vm="again"/, 'one button fills every text, each tap again');
+  for (const l of ['Fill texts', 'Texte füllen', 'Rellenar textos']) assert.ok(js.includes(l), l);
+});
+test('a B-roll is cut once, when it is added; its parts (texts, positions) are kept and never cut again', () => {
+  assert.match(js, /if \(!st\.cuts\[id\] \|\| !st\.cuts\[id\]\.length\) st\.cuts\[id\] = plan\(r\.dur\)/);
+  assert.match(js, /return bPut\(o\)\.then\(function \(\) \{ useRoll\(o\.id\); \}\);/);
+  assert.match(js, /cuts: st\.cuts\}\)\)/, 'the parts are saved');
+  const go = /function go\(\) \{[\s\S]*?\n  \}/.exec(js)[0]; assert.doesNotMatch(go, /plan\(/, 'Fill texts does not re-cut');
+});
+test('only B-rolls use space: made videos are not stored; the profile says how much is used', () => {
+  assert.match(js, /navigator\.storage\.estimate\(\)/); assert.doesNotMatch(js, /bPut\(\{[^}]*blob/i);
+  assert.match(js, /storeN: \['B-rolls on this phone: \{p\}'/);
+});

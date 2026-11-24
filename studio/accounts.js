@@ -25,7 +25,7 @@
     plink: ['Profile link (TikTok or Instagram, optional)', 'Profil-Link (TikTok oder Instagram, optional)', 'Enlace del perfil (TikTok o Instagram, opcional)'], getP: ['Get profile', 'Profil holen', 'Obtener perfil'], getting: ['Getting…', 'Hole…', 'Obteniendo…'],
     gotP: ['Profile filled in. Check it and save.', 'Profil ausgefüllt. Prüf es und speichere.', 'Perfil rellenado. Revísalo y guarda.'], noP: ['Could not read that profile. Type the name yourself.', 'Profil nicht lesbar. Tipp den Namen selbst ein.', 'No se pudo leer el perfil. Escribe el nombre.'],
     name: ['Name (what this account is for)', 'Name (wofür der Account ist)', 'Nombre (para qué es la cuenta)'], handle: ['@handle', '@Handle', '@usuario'], bio: ['Bio', 'Bio', 'Bio'], needName: ['Give the account a name or @handle.', 'Gib dem Account einen Namen oder @Handle.', 'Pon un nombre o @usuario.'],
-    inspo: ['Inspo', 'Inspo', 'Inspo'], followers: ['Followers', 'Follower', 'Seguidores'], likes: ['Likes', 'Likes', 'Me gusta'], addInspo: ['+ Add inspo', '+ Inspo hinzufügen', '+ Añadir inspo'],
+    inspo: ['Inspo', 'Inspo', 'Inspo'], brolls: ['B-rolls', 'B-Rolls', 'B-rolls'], followers: ['Followers', 'Follower', 'Seguidores'], likes: ['Likes', 'Likes', 'Me gusta'], addInspo: ['+ Add inspo', '+ Inspo hinzufügen', '+ Añadir inspo'],
     remove: ['Remove', 'Entfernen', 'Quitar'], done: ['Done', 'Fertig', 'Listo'], openOn: ['Open profile', 'Profil öffnen', 'Abrir perfil'],
     pickT: ['Pick videos to copy for {h}', 'Videos für {h} auswählen', 'Elige vídeos para {h}'], saveN: ['Save ({n})', 'Speichern ({n})', 'Guardar ({n})'], search: ['Search the Swipe file', 'Swipe-Datei durchsuchen', 'Buscar en el archivo'],
     emptyT: ['Your accounts', 'Deine Accounts', 'Tus cuentas'], emptyP: ['Add each account you run. Then pick the videos from the Swipe file you want to copy for it, so every account has its own plan.', 'Füg jeden Account hinzu, den du führst. Dann wähl aus der Swipe-Datei die Videos, die du dafür nachmachen willst. So hat jeder Account seinen eigenen Plan.', 'Añade cada cuenta que llevas. Luego elige del archivo de swipe los vídeos que quieres copiar para ella.'],
@@ -38,7 +38,7 @@
   };
   var t = function (k, v) { var r = W[k], s = r ? r[L === 'de' ? 1 : L === 'es' ? 2 : 0] : S.t(k); if (v) for (var q in v) s = s.replace('{' + q + '}', v[q]); return s; };
   var DV = false, IDEA = null, recog = null;
-  var A = {t: 0, cur: '', list: []}, SB = null, UID = '', RM = false, PICK = null, saveT = 0, signed = false;
+  var A = {t: 0, cur: '', list: []}, SB = null, UID = '', RM = false, PT = 'inspo', PICK = null, saveT = 0, signed = false;
   try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw && Array.isArray(raw.list)) A = raw; } catch (e) {}
   try { signed = !!localStorage.getItem('lowi.auth'); } catch (e) {}
 
@@ -75,7 +75,11 @@
       (window.StudioVM ? '<button class="btn pri ap-vw" data-acc="vm">' + esc(StudioVM.label()) + '</button>' : '') +   /* 24 Nov 2026: video-machine.js */
       (window.StudioWords ? '<button class="btn ap-vw" data-acc="words">' + esc(StudioWords.label()) + '</button>' : '') +   /* 23 Nov 2026: video-words.js */
       (a.bio ? '<p class="ap-bio">' + esc(a.bio) + '</p>' : '') +
-      (list.length ? '<div class="ap-gh"><span>' + esc(t('inspo')) + '</span><button class="pill' + (RM ? ' acc' : '') + '" data-acc="rm">' + esc(RM ? t('done') : t('remove')) + '</button></div>' : '') + '</div>';
+      /* 24 Nov 2026 (Emmanuel: "a button where I can switch from inspo to storage"): Inspo | B-rolls. B-rolls shows the video machine's
+         shelf, the chosen B-roll's parts, Fill texts and Save all (video-machine.js mount). */
+      (window.StudioVM && StudioVM.mount ? '<div class="ap-seg" role="tablist"><button role="tab" aria-selected="' + (PT === 'inspo') + '" data-acc="pt" data-v="inspo">' + esc(t('inspo')) + '</button><button role="tab" aria-selected="' + (PT === 'broll') + '" data-acc="pt" data-v="broll">🎬 ' + esc(t('brolls')) + '</button></div>' : '') +
+      (PT !== 'broll' && list.length ? '<div class="ap-gh"><span>' + esc(t('inspo')) + '</span><button class="pill' + (RM ? ' acc' : '') + '" data-acc="rm">' + esc(RM ? t('done') : t('remove')) + '</button></div>' : '') + '</div>';
+    if (PT === 'broll' && window.StudioVM && StudioVM.mount) { main.innerHTML = h + '<div id="vmProf" class="vm-prof"></div>'; StudioVM.mount(document.getElementById('vmProf')); return; }
     /* 23 Nov 2026 (Emmanuel: "quickly note down my content ideas ... speak ... it writes it ... click on draft ... like TikTok has
        the drafts on the left ... in the form of that text on screen thingy"): the first tile is Drafts (like TikTok); it opens this
        account's drafts as text-on-screen tiles. "+ Idea" (and the + tile in Drafts) opens a page to type or speak an idea. */
@@ -254,6 +258,7 @@
     if (k === 'dback') { DV = false; return S.render(); }
     if (k === 'idea') return ideaPage(null);
     if (k === 'words') return window.StudioWords && StudioWords.open();
+    if (k === 'pt') { PT = b.dataset.v === 'broll' ? 'broll' : 'inspo'; RM = false; DV = false; return S.render(); }
     if (k === 'vm') return window.StudioVM && StudioVM.open();
     if (k === 'itr') return ideaTr(b.dataset.l, b);
     if (k === 'itrany') return ideaTr(($('#ideaAny') || {}).value, b);

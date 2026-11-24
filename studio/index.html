@@ -152,7 +152,10 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .vm-style{display:block;width:100%;min-height:150px;margin:10px 0;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.05);color:var(--ink);font:inherit;font-size:16px;line-height:1.45;padding:12px;resize:vertical}
 .vm-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}.vm-row .btn{flex:1}.vm-wide{width:100%}.vm-l{color:var(--muted);font-size:14px}.vm-row input[type=range]{flex:1;min-width:100px}
 .ap-seg{display:flex;gap:4px;width:100%;margin:14px auto 4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid var(--line2);max-width:340px}.ap-seg button{flex:1;min-height:40px;border:0;border-radius:11px;background:none;color:inherit;font:inherit;font-weight:800;white-space:nowrap;cursor:pointer;opacity:.7}.ap-seg button[aria-selected="true"]{background:rgba(255,255,255,.16);opacity:1}
-.vm-prof{padding:0 0 30px}.vm-store{margin:6px 16px 0;text-align:center;font-size:13px;opacity:.7}.vm-prof .vm-acts{display:flex;gap:8px;padding:6px 12px}.vm-prof .vm-acts .btn{flex:1}.vm-prof .vm-grid{margin:6px 0 0}
+.vm-prof{padding:0 0 30px}.vm-h{margin:16px 14px 6px;font-size:15px}.vm-prof .note{margin:6px 14px}
+.vm-used{position:absolute;top:6px;right:6px;padding:3px 7px;border-radius:9px;background:#2fd27a;color:#04210f;font-size:11.5px;font-weight:900}.vm-tile.used{opacity:.82}
+.vm-cdn{position:absolute;left:6px;top:6px;padding:2px 6px;border-radius:8px;background:#2fd27a;color:#04210f;font-size:11px;font-weight:900}
+.vm-ok{color:#2fd27a}.vm-store{margin:6px 16px 0;text-align:center;font-size:13px;opacity:.7}.vm-prof .vm-acts{display:flex;gap:8px;padding:6px 12px}.vm-prof .vm-acts .btn{flex:1}.vm-prof .vm-grid{margin:6px 0 0}
 .vm-shelf{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px calc(50% - 60px);scrollbar-width:none;perspective:600px}.vm-shelf::-webkit-scrollbar{display:none}
 .vm-cd{--k:0;position:relative;flex:none;width:120px;aspect-ratio:9/16;border-radius:16px;overflow:hidden;scroll-snap-align:center;border:1px solid var(--line2);background:#111;padding:0;cursor:pointer;
   transform:scale(calc(.82 + var(--k) * .18)) rotateY(calc((1 - var(--k)) * 8deg));opacity:calc(.55 + var(--k) * .45);transition:transform .12s,opacity .12s,box-shadow .2s}
@@ -168,7 +171,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .vm-tile i{position:absolute;left:6px;bottom:6px;font-style:normal;font-size:12px;font-weight:800;text-shadow:0 1px 3px #000}.vm-tile em{position:absolute;right:6px;bottom:6px;font-style:normal;font-size:10.5px;font-weight:800;padding:2px 6px;border-radius:8px;background:rgba(0,0,0,.55)}
 .vm-ok{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--ok);color:#03170c;display:grid;place-items:center;font-size:13px}
 .vm-eb{display:flex;flex-direction:column;align-items:center}
-.vm-stage{position:relative;width:min(100%,calc((100dvh - 330px) * 9 / 16));aspect-ratio:9/16;border-radius:16px;overflow:hidden;background:#000;container-type:inline-size;touch-action:none}
+.vm-stage{position:relative;flex:none;width:min(100%,calc((100dvh - 330px) * 9 / 16));aspect-ratio:9/16;border-radius:16px;overflow:hidden;background:#000;container-type:inline-size;touch-action:none}
 .vm-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .vm-safe{position:absolute;left:8%;right:16%;top:14%;bottom:32%;border:1.5px dashed rgba(255,255,255,.55);border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none}.vm-stage.drag .vm-safe{opacity:1}
 .vm-gx,.vm-gy{position:absolute;pointer-events:none;opacity:0;background:#ffd84a;box-shadow:0 0 8px #ffd84a}.vm-gx{left:50%;top:0;bottom:0;width:1.5px}.vm-gy{top:50%;left:0;right:0;height:1.5px}.vm-stage.gx .vm-gx,.vm-stage.gy .vm-gy{opacity:1}
@@ -634,6 +637,6 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 <script src="accounts.js?v=6"></script>
 <script src="video-words.js?v=1"></script>
 <script src="ai-use.js?v=1"></script>
-<script src="video-machine.js?v=3"></script>
+<script src="video-machine.js?v=4"></script>
 </body>
 </html>

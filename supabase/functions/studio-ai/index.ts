@@ -10,6 +10,11 @@
 //   POST {action:"profile", link}  anyone (30 a day per connection): a TikTok / Instagram profile -> {name, handle, bio, avatar, followers}
 //   POST {action:"translate", text, to}  anyone on the app's origin: translates text (max 6000 chars) into en / de / es, or (since
 //        23 Nov 2026) into any language named in `to` ("Italian", "Türkçe", "Brazilian Portuguese").
+//   POST {action:"captions", bio, examples:[{hook,text}], clips:[{sec, style}], lang}  owner only (24 Nov 2026, Emmanuel: "upload that
+//        60-second video and it will automatically be cut ... every chopped up version has a text on screen that's been generated
+//        automatically ... based on the text on screen details that I want ... one is in I form, one is in U form ... one is teaching"):
+//        one text-on-screen line per clip, in the creator's own voice (bio), learning the style from the playlist examples, sized so it
+//        can be read in the clip's seconds. Returns {texts:[...]} in the same order.
 //   POST {action:"words", link}  owner only (23 Nov 2026, Emmanuel: "I send a link of a video that I'm about to copy, and it then gives
 //        me the transcript, if there is a transcript, or the text on the screen ... and the bio. And then I can translate it"):
 //        a TikTok video -> {caption, author, transcript (spoken words), onscreen (text shown on screen), transcribed}. When the video
@@ -100,6 +105,7 @@ async function profile(link: string) {
 }
 const FILL = { type: "OBJECT", properties: { transcript: { type: "STRING" }, hook: { type: "STRING" }, strategy: { type: "ARRAY", items: { type: "STRING" } }, why: { type: "STRING" } }, required: ["hook", "strategy", "why"] };
 const TRANS = { type: "OBJECT", properties: { text: { type: "STRING" } }, required: ["text"] };
+const CAPS = { type: "OBJECT", properties: { texts: { type: "ARRAY", items: { type: "STRING" } } }, required: ["texts"] };
 const WORDS = { type: "OBJECT", properties: { transcript: { type: "STRING" }, onscreen: { type: "STRING" } }, required: ["transcript", "onscreen"] };
 /* any language a person names, kept to letters, spaces and a few marks so it cannot carry an instruction */
 const anyLang = (v: unknown) => { const x = clip(v, 40); return /^[\p{L}][\p{L} ()'-]{1,39}$/u.test(x) ? x : ""; };
@@ -125,6 +131,26 @@ Deno.serve(async (req) => {
       if ((await take(sub, "profile", 30)) !== "ok") return out(req, 429, { error: "limit" });
       const p = await profile(link); if (!p) return out(req, 400, { error: "bad_link" });
       return out(req, 200, { ok: true, profile: p });
+    }
+    if (body.action === "captions") {
+      if (!(await isOwner(req))) return out(req, 403, { error: "owner_only" });
+      const clips = (Array.isArray(body.clips) ? body.clips : []).slice(0, 12).map((c: Record<string, unknown>) => ({ sec: Math.max(3, Math.min(60, Math.round(Number(c && c.sec) || 8))), style: clip(c && c.style, 40) || "general" }));
+      if (!clips.length) return out(req, 400, { error: "bad_request" });
+      if ((await take("owner", "captions", 80)) !== "ok") return out(req, 429, { error: "limit" });
+      const ex = (Array.isArray(body.examples) ? body.examples : []).slice(0, 14).map((e: Record<string, unknown>, i: number) => (i + 1) + ". " + clip(e && e.hook, 200) + (e && e.text ? " | " + clip(e.text, 260) : "")).join("\n");
+      const r = await gemini([{ text: [
+        "You write the text on screen for short vertical videos (TikTok / Reels): one short text over a calm B-roll clip, like viral 'text tweet' posts.",
+        "The creator, in their own words (their voice, topics, audience and pillars; use it, never quote it as a whole):\n" + clip(body.bio, 3000),
+        ex ? "Viral examples of the style to learn from (hooks and words; learn the rhythm and tone, never copy them):\n" + ex : "",
+        "Write one text per clip, in this order. Each clip has its length in seconds and a style:",
+        clips.map((c, i) => (i + 1) + ". " + c.sec + " s, style: " + c.style).join("\n"),
+        "Styles: 'I' = first person, a confession or realisation; 'you' = speaks to the viewer; 'general' = a universal truth; 'teaching' = one useful tip; 'relatable' = a feeling people share; 'funny' = light and witty.",
+        "Length: it must be readable in the clip's seconds, about 2.5 words per second minus 1 second (5 s about 10 words, 8 s about 18, 13 s about 30, 21 s about 48). Use line breaks between thoughts. Lowercase is fine. No hashtags, no emojis unless they add meaning, no quotes around it.",
+        "No medical claims, no diagnoses, no promises about blood sugar numbers.",
+        "Write in " + (LANG[lang] || "English") + ". Return JSON {texts}.",
+      ].filter(Boolean).join("\n\n") }], CAPS, 4096);
+      const texts = (Array.isArray(r.texts) ? r.texts : []).map((x: unknown) => clip(x, 600));
+      return out(req, 200, { ok: true, texts: clips.map((_c, i) => texts[i] || "") });
     }
     if (body.action === "words") {
       if (!(await isOwner(req))) return out(req, 403, { error: "owner_only" });

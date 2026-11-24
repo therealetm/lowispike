@@ -18,7 +18,7 @@ test('the Studio page: paste, Get the words, Copy each part, translate (EN/DE/ES
   for (const k of ['go', 'copy', 'lang', 'any', 'orig', 'save', 'close']) assert.ok(w.includes("k === '" + k + "'"), k);
   assert.match(w, /S\.ai\(\{action: 'words', link: link\}\)/); assert.match(w, /S\.ai\(\{action: 'translate', text: x\.slice\(0, 6000\), to: to\}\)/);
   for (const k of Object.keys(require('vm').runInNewContext('(' + /var T = (\{[\s\S]*?\n  \});/.exec(w)[1] + ')'))) assert.ok(true, k);
-  assert.match(a, /data-acc="words"/); assert.match(a, /if \(k === 'words'\) return W\.StudioWords && StudioWords\.open\(\);/); assert.match(a, /addDraft: addDraft/);
+  assert.match(a, /data-acc="words"/); assert.match(a, /if \(k === 'words'\) return window\.StudioWords && StudioWords\.open\(\);/); /* 24 Nov 2026: window, not W (the word list) */ assert.match(a, /addDraft: addDraft/);
   assert.match(h, /<script src="video-words\.js\?v=1"><\/script>\n<script src="ai-use\.js\?v=1"><\/script>/);
 });
 test('AI use: owner only on the server and in Studio; photo checks kept apart from the 400 a day; profile autofill is not AI', () => {

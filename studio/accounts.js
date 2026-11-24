@@ -72,7 +72,8 @@
       avatar(a, 96) + (a.handle ? '<div class="ap-h">' + esc(a.handle) + '</div>' : '') +
       '<div class="ap-st">' + stats.map(function (s) { return '<span><b>' + esc(String(s[0])) + '</b>' + esc(s[1]) + '</span>'; }).join('') + '</div>' +
       '<div class="ap-bt"><button class="btn pri" data-acc="pick">' + esc(t('addInspo')) + '</button><button class="btn" data-acc="idea">＋ ' + esc(t('idea')) + '</button><button class="btn" data-acc="edit">' + esc(t('editAcc')) + '</button>' + (a.link ? '<a class="btn ap-ln" href="' + esc(a.link) + '" target="_blank" rel="noopener noreferrer" aria-label="' + esc(t('openOn')) + '">↗</a>' : '') + '</div>' +
-      (W.StudioWords ? '<button class="btn ap-vw" data-acc="words">' + esc(StudioWords.label()) + '</button>' : '') +   /* 23 Nov 2026: video-words.js */
+      (window.StudioVM ? '<button class="btn pri ap-vw" data-acc="vm">' + esc(StudioVM.label()) + '</button>' : '') +   /* 24 Nov 2026: video-machine.js */
+      (window.StudioWords ? '<button class="btn ap-vw" data-acc="words">' + esc(StudioWords.label()) + '</button>' : '') +   /* 23 Nov 2026: video-words.js */
       (a.bio ? '<p class="ap-bio">' + esc(a.bio) + '</p>' : '') +
       (list.length ? '<div class="ap-gh"><span>' + esc(t('inspo')) + '</span><button class="pill' + (RM ? ' acc' : '') + '" data-acc="rm">' + esc(RM ? t('done') : t('remove')) + '</button></div>' : '') + '</div>';
     /* 23 Nov 2026 (Emmanuel: "quickly note down my content ideas ... speak ... it writes it ... click on draft ... like TikTok has
@@ -96,7 +97,7 @@
   function dayTxt(ts) { try { return new Date(ts).toLocaleDateString(L === 'de' ? 'de-DE' : L === 'es' ? 'es-ES' : 'en-GB', {day: 'numeric', month: 'short'}); } catch (e) { return ''; } }
   /* the idea page: a big box to type in, and a big mic that writes what you say (the phone's own speech recognition; where the browser
      has none, the keyboard's mic works in the box). Save draft keeps it on this account. */
-  var SR = W.SpeechRecognition || W.webkitSpeechRecognition;
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   /* 24 Nov 2026 (Emmanuel: "when I add an English text, and I translate it to German, I should be able to still see the English text and
      the German text, and any other text I translate it to ... the interface here looks very inconvenient and scattered"): the original
      stays in the box; every translation is its own card under it (language, the text, Copy, ✕) and is kept with the draft. One row of
@@ -252,7 +253,8 @@
     if (k === 'drafts') { DV = true; return S.render(); }
     if (k === 'dback') { DV = false; return S.render(); }
     if (k === 'idea') return ideaPage(null);
-    if (k === 'words') return W.StudioWords && StudioWords.open();
+    if (k === 'words') return window.StudioWords && StudioWords.open();
+    if (k === 'vm') return window.StudioVM && StudioVM.open();
     if (k === 'itr') return ideaTr(b.dataset.l, b);
     if (k === 'itrany') return ideaTr(($('#ideaAny') || {}).value, b);
     if (k === 'icopy') return ideaCopy(b);
@@ -269,7 +271,9 @@
   }, true);
 
   /* 23 Nov 2026: Video link -> words (video-words.js) keeps its result as a draft on the current account */
+  /* 24 Nov 2026: the Video machine's "Your style" text (the AI's memory) lives on the account, synced like the rest */
+  function style(v) { var a = cur(); if (!a) return ''; if (v === undefined) return a.style || ''; a.style = String(v).slice(0, 4000); persist(); return a.style; }
   function addDraft(txt) { var a = cur(); txt = String(txt || '').trim(); if (!a || !txt) return false; a.drafts = a.drafts || []; a.drafts.unshift({id: 'd' + Date.now().toString(36), text: txt.slice(0, 4000), ts: Date.now()}); persist(); DV = true; S.render(); return true; }
-  window.StudioAcc = {render: render, items: items, addBtn: addBtn, addTo: addTo, cloud: cloud, addDraft: addDraft};
+  window.StudioAcc = {render: render, items: items, addBtn: addBtn, addTo: addTo, cloud: cloud, addDraft: addDraft, style: style};
   if (S.tab() === 'profile') S.render();
 })();

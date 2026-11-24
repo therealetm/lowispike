@@ -145,6 +145,36 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .fb .in{width:100%;max-height:80dvh;display:flex;flex-direction:column;gap:10px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));background:#0a1224;border-top:1px solid var(--line);border-radius:20px 20px 0 0}
 .fb textarea{flex:1;min-height:200px;width:100%;border-radius:12px;border:1px solid var(--line2);background:#050912;color:var(--ink);font:inherit;font-size:16px;padding:10px}
 :focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+/* 24 Nov 2026: Video machine (video-machine.js) */
+.vm .vbody{padding-bottom:24px}.vm-card{margin:4px 0 14px;padding:12px 14px;border-radius:18px;border:1px solid var(--line2);background:rgba(255,255,255,.04)}
+.vm-ch{display:flex;align-items:center;justify-content:space-between;gap:8px}.vm-ch b{font-size:16px}.vm-h{margin:16px 0 8px}.vm-h small{color:var(--muted);font-size:12.5px}
+.vm-styletx{margin:8px 0 0;color:var(--ink);font-size:15px;line-height:1.45;white-space:pre-wrap}.vm-styletx.empty{color:var(--muted)}
+.vm-style{display:block;width:100%;min-height:150px;margin:10px 0;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.05);color:var(--ink);font:inherit;font-size:16px;line-height:1.45;padding:12px;resize:vertical}
+.vm-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}.vm-row .btn{flex:1}.vm-wide{width:100%}.vm-l{color:var(--muted);font-size:14px}.vm-row input[type=range]{flex:1;min-width:100px}
+.vm-shelf{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px calc(50% - 60px);scrollbar-width:none;perspective:600px}.vm-shelf::-webkit-scrollbar{display:none}
+.vm-cd{--k:0;position:relative;flex:none;width:120px;aspect-ratio:9/16;border-radius:16px;overflow:hidden;scroll-snap-align:center;border:1px solid var(--line2);background:#111;padding:0;cursor:pointer;
+  transform:scale(calc(.82 + var(--k) * .18)) rotateY(calc((1 - var(--k)) * 8deg));opacity:calc(.55 + var(--k) * .45);transition:transform .12s,opacity .12s,box-shadow .2s}
+.vm-cd img{width:100%;height:100%;object-fit:cover}.vm-cd.on{box-shadow:0 0 0 3px var(--acc),0 0 24px rgba(124,196,255,.5)}
+.vm-cd i{position:absolute;left:8px;bottom:8px;font-style:normal;font-size:12px;font-weight:800;color:#fff;text-shadow:0 1px 4px #000}
+.vm-cd em{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.55);color:#fff;font-style:normal;font-size:12px}
+.vm-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--acc2);border-style:dashed;background:rgba(124,196,255,.06)}.vm-add span{font-size:34px;line-height:1}.vm-add b{font-size:13px;text-align:center;padding:0 6px}
+.vm-chips{display:flex;gap:8px;flex-wrap:wrap}
+.vm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin:0 -18px}
+.vm-tile{position:relative;aspect-ratio:9/16;overflow:hidden;border:0;padding:0;background:#111;color:#fff;cursor:pointer;container-type:inline-size}
+.vm-fr,.vm-fr canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.vm-tt{position:absolute;transform:translate(-50%,-50%);width:max-content;max-width:72%;text-align:center;font-weight:700;font-size:calc(var(--fs,24) * 100cqw / 390);line-height:1.25;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+.vm-tile i{position:absolute;left:6px;bottom:6px;font-style:normal;font-size:12px;font-weight:800;text-shadow:0 1px 3px #000}.vm-tile em{position:absolute;right:6px;bottom:6px;font-style:normal;font-size:10.5px;font-weight:800;padding:2px 6px;border-radius:8px;background:rgba(0,0,0,.55)}
+.vm-ok{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--ok);color:#03170c;display:grid;place-items:center;font-size:13px}
+.vm-eb{display:flex;flex-direction:column;align-items:center}
+.vm-stage{position:relative;width:min(100%,calc((100dvh - 330px) * 9 / 16));aspect-ratio:9/16;border-radius:16px;overflow:hidden;background:#000;container-type:inline-size;touch-action:none}
+.vm-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vm-safe{position:absolute;left:8%;right:16%;top:14%;bottom:32%;border:1.5px dashed rgba(255,255,255,.55);border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none}.vm-stage.drag .vm-safe{opacity:1}
+.vm-gx,.vm-gy{position:absolute;pointer-events:none;opacity:0;background:#ffd84a;box-shadow:0 0 8px #ffd84a}.vm-gx{left:50%;top:0;bottom:0;width:1.5px}.vm-gy{top:50%;left:0;right:0;height:1.5px}.vm-stage.gx .vm-gx,.vm-stage.gy .vm-gy{opacity:1}
+.vm-text{position:absolute;transform:translate(-50%,-50%);width:max-content;max-width:72%;text-align:center;color:#fff;font:700 calc(var(--fs) * 100cqw / 390)/1.25 -apple-system,"SF Pro Display","Helvetica Neue",system-ui,sans-serif;
+  text-shadow:0 0 calc(var(--fs) * 30cqw / 3900) rgba(0,0,0,.6);-webkit-text-stroke:calc(var(--fs) * 6cqw / 3900) rgba(0,0,0,.45);paint-order:stroke fill;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none}
+.vm-text.box{color:#000;-webkit-text-stroke:0;text-shadow:none;background:#fff;padding:.1em .35em;border-radius:.25em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.vm-safen{margin:8px 0 4px;text-align:center}.vm-tx{display:block;width:100%;min-height:84px;margin:6px 0;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.05);color:var(--ink);font:inherit;font-size:16px;padding:10px 12px;resize:vertical}
+#vmOut{width:100%;margin-top:6px}
 /* 24 Nov 2026: draft page: the original and each translation as cards (accounts.js) */
 .idea-card{margin:0 0 12px;padding:12px 14px 14px;border-radius:18px;border:1px solid var(--line2);background:rgba(255,255,255,.04)}
 .idea-ch{display:flex;align-items:center;gap:8px;margin-bottom:8px}.idea-ch b{flex:1;font-size:15px;color:var(--acc2)}.idea-x{width:36px;height:36px;font-size:15px}
@@ -585,15 +615,16 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
   $('#back').addEventListener('click', function (e) { try { if (D.referrer && new URL(D.referrer).origin === location.origin && history.length > 1) { e.preventDefault(); history.back(); } } catch (x) {} });
   D.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if ($('#dlg').classList.contains('on')) dlgClose(); else if (OPEN) close(); } else if (OPEN && e.key === 'ArrowRight') step(1); else if (OPEN && e.key === 'ArrowLeft') step(-1); });
   /* 22 Nov 2026: Studio > Profile (studio/accounts.js) uses these */
-  window.STUDIO = {t: t, L: L, esc: esc, $: $, cover: cover, fmtViews: fmtViews, hue: hue, EYE: EYE, toast: toast, dlg: dlg, dlgClose: dlgClose, ai: ai, render: render, sw: function () { return SW; }, tab: function () { return TAB; }, setTab: function (k) { TAB = k; render(); }, sb: function () { return SB; }};
+  window.STUDIO = {lists: lists, t: t, L: L, esc: esc, $: $, cover: cover, fmtViews: fmtViews, hue: hue, EYE: EYE, toast: toast, dlg: dlg, dlgClose: dlgClose, ai: ai, render: render, sw: function () { return SW; }, tab: function () { return TAB; }, setTab: function (k) { TAB = k; render(); }, sb: function () { return SB; }};
   function fromHash() { var id = decodeURIComponent((location.hash || '').slice(1)); if (!id) { if (OPEN) close(true); return; } var inS = SW.some(function (x) { return x.id === id; }), inA = AG.some(function (x) { return x.id === id; }); if (!inS && !inA) return; if (TAB !== 'profile' || !inS) TAB = inS ? 'swipe' : 'agent'; render(); open(id, true); }
   window.addEventListener('popstate', fromHash);
   Promise.all([fetch('cards.json', {cache: 'no-cache'}).then(function (r) { return r.json(); }), loadDoc()]).then(function (x) { DATA = x[0]; rebuild(); render(); fromHash(); checkOwner(); })
     .catch(function () { $('#main').innerHTML = '<div class="empty">' + esc(t('none')) + '</div>'; });
 })();
 </script>
-<script src="accounts.js?v=4"></script>
+<script src="accounts.js?v=5"></script>
 <script src="video-words.js?v=1"></script>
 <script src="ai-use.js?v=1"></script>
+<script src="video-machine.js?v=1"></script>
 </body>
 </html>

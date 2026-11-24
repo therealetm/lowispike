@@ -104,3 +104,11 @@ test('videos are built frame by frame on exact 1/30 s timestamps (WebCodecs + MP
   const v = R('vendor/mp4-muxer-5.1.3.js'); assert.match(v, /^\/\*! mp4-muxer 5\.1\.3/); assert.match(v, /var Mp4Muxer = \(\(\) => \{/);
   assert.ok(fs.existsSync(path.join(__dirname, '..', 'vendor', 'mp4-muxer-5.1.3.LICENSE.txt')));
 });
+/* 24 Nov 2026, night (Emmanuel: "I changed the text size, and the one that it saved or generated is not the one that I chose"): the
+   editor drew the text with CSS, the video with a canvas, in another font, so lines broke differently. Checked in Chromium: editor and
+   a frame of the saved file are the same, line for line. */
+test('the editor shows the text drawn by the same drawText() and font as the saved video', () => {
+  assert.match(js, /<canvas class="vm-pv" id="vmC"/); assert.match(js, /x\.clearRect\(0, 0, cw, ch\); drawText\(x, c, cw, ch\);/);
+  assert.match(js, /ctx\.font = '700 ' \+ fs \+ 'px ' \+ FONT;/); assert.match(js, /class="vm-text ghost" id="vmT"/);
+  assert.match(R('studio/index.html'), /\.vm-text\.ghost,\.vm-text\.ghost\.box\{color:transparent;/);
+});

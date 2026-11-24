@@ -3,7 +3,7 @@
    - While the app is open and visible, a signed-in person's profiles.last_seen is set to now (RPC touch_seen, at most every 3 min,
      the server ignores more often than every 2 min). Nothing else is sent.
    - LowiLastSeen.get(uid) gives that time (ms) from one small read of profiles (id, last_seen), refreshed at most every minute.
-   - LowiLastSeen.label(ms, lang) says it short with the clock time: "Online now", "5 min ago", "Today, 18:42", "Yesterday, 21:03", "Mon 17 Nov, 09:12".
+   - LowiLastSeen.label(ms, lang) says it short with the clock time: "Online now", "5 min ago", "Today, 18:42", "Yesterday, 21:03", "17 Nov, 09:12" (24 Nov 2026: no weekday, one format).
    people-directory.js shows it under each name. */
 (function (W, D) {
   'use strict';
@@ -26,8 +26,16 @@
       /* 23 Nov 2026 (Emmanuel: "the online timestamp didn't work for all of the accounts"): people_seen() takes the latest trace an open
          app leaves (session refresh, cloud save of the app state incl. games, messages, reactions, posts, likes, last_seen); plain
          profiles.last_seen is the fallback */
-      try { let r = await c.rpc('people_seen'), key = 'seen';
-        if (!r || r.error) { r = await c.from('profiles').select('id,last_seen').not('last_seen', 'is', null).limit(5000); key = 'last_seen'; }
+      /* 24 Nov 2026 (Emmanuel: "the ones that have none of them should have some of them"): the server sends at most 1000 rows a
+         request and there are more profiles than that, so the people after row 1000 had no time. Read it page by page. */
+      try { let r = null, key = 'seen', all = [];
+        for (let from = 0; from < 20000; from += 1000) {
+          r = await c.rpc('people_seen').range(from, from + 999);
+          if (!r || r.error || !Array.isArray(r.data)) break;
+          all = all.concat(r.data); if (r.data.length < 1000) break;
+        }
+        if (all.length) r = { data: all, error: null };
+        else { r = await c.from('profiles').select('id,last_seen').not('last_seen', 'is', null).limit(5000); key = 'last_seen'; }
         if (r && !r.error && Array.isArray(r.data)) { const m = {}; r.data.forEach(x => { const t = Date.parse(x[key]); if (x.id && t) m[String(x.id)] = t; }); map = m; loadedAt = Date.now();
           try { D.dispatchEvent(new CustomEvent('lowi:lastseen')); } catch (e) { } } } catch (e) { }
       return map;
@@ -48,7 +56,8 @@
     const day0 = new Date(); day0.setHours(0, 0, 0, 0);
     if (ms >= day0.getTime()) return L.today.replace('{t}', t);
     if (ms >= day0.getTime() - 864e5) return L.y.replace('{t}', t);
-    try { return d.toLocaleDateString(loc, { weekday: s < 6 * 86400 ? 'short' : undefined, day: 'numeric', month: 'short' }) + ', ' + t; } catch (e) { return t; }
+    /* 24 Nov 2026 (Emmanuel: "Why are they all not in the same format"): one format for every older day, no weekday: "20 Nov, 07:16" */
+    try { return d.toLocaleDateString(loc, { day: 'numeric', month: 'short', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' }) + ', ' + t; } catch (e) { return t; }
   }
   D.addEventListener('visibilitychange', () => { if (D.visibilityState === 'visible') touch(true); });
   setInterval(() => touch(false), 60e3);

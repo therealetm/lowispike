@@ -14,8 +14,10 @@ language sql stable security definer set search_path = public, auth as $$
     coalesce((select max(x.created_at) from public.posts x where x.user_id = p.id), 'epoch'),
     coalesce((select max(l.created_at) from public.post_likes l where l.user_id = p.id), 'epoch'),
     coalesce((select max(b.updated_at) from public.companion_rest b where b.moved_by = p.id), 'epoch'),
-    coalesce((select u.last_sign_in_at from auth.users u where u.id = p.id), 'epoch')), 'epoch'::timestamptz)
-  from public.profiles p;
+    coalesce((select u.last_sign_in_at from auth.users u where u.id = p.id), 'epoch')), 'epoch'::timestamptz) as seen
+  from public.profiles p
+  -- 24 Nov 2026: a fixed order (newest first), so the app can read it page by page (the server sends at most 1000 rows a request)
+  order by 2 desc nulls last, 1;
 $$;
 revoke all on function public.people_seen() from public, anon;
 grant execute on function public.people_seen() to authenticated;

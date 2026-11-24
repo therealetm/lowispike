@@ -143,8 +143,8 @@
     } else if (view === 'edit') {
       var c = st.sess.clips[cur];
       p.innerHTML = top((cur + 1) + ' / ' + st.sess.clips.length, fromProf ? 'close' : 'clips') + '<div class="vbody vm-eb"><div class="vm-stage" id="vmStage"><video id="vmV" playsinline muted loop autoplay src="' + esc(url(roll(st.sess.id))) + '"></video>' +
-        '<div class="vm-safe" aria-hidden="true"></div><i class="vm-gx" aria-hidden="true"></i><i class="vm-gy" aria-hidden="true"></i>' +
-        '<div class="vm-text ' + (c.look === 'box' ? 'box' : '') + '" id="vmT" style="left:' + (c.x * 100) + '%;top:' + (c.y * 100) + '%;--fs:' + c.size + '">' + lines(c.text) + '</div></div>' +
+        '<canvas class="vm-pv" id="vmC" aria-hidden="true"></canvas><div class="vm-safe" aria-hidden="true"></div><i class="vm-gx" aria-hidden="true"></i><i class="vm-gy" aria-hidden="true"></i>' +
+        '<div class="vm-text ghost" id="vmT" style="left:' + (c.x * 100) + '%;top:' + (c.y * 100) + '%;--fs:' + c.size + '">' + lines(c.text) + '</div></div>' +
         '<p class="note vm-safen">' + esc(t('safe')) + '</p>' +
         '<textarea id="vmTx" class="vm-tx" placeholder="' + esc(t('textPh')) + '">' + esc(c.text) + '</textarea>' +
         '<div class="vm-row"><span class="vm-l">' + esc(t('size')) + '</span><input type="range" id="vmSz" min="16" max="40" step="1" value="' + c.size + '"><button class="pill' + (c.look !== 'box' ? ' acc' : '') + '" data-vm="look" data-l="plain">' + esc(t('plain')) + '</button><button class="pill' + (c.look === 'box' ? ' acc' : '') + '" data-vm="look" data-l="box">' + esc(t('box')) + '</button></div>' +
@@ -206,11 +206,20 @@
 
   /* ---------- editor: loop, drag with magnets, safe zone ---------- */
   function wireEditor() {
-    var c = st.sess.clips[cur], v = D.getElementById('vmV'), tEl = D.getElementById('vmT'), stage = D.getElementById('vmStage');
+    var c = st.sess.clips[cur], v = D.getElementById('vmV'), tEl = D.getElementById('vmT'), stage = D.getElementById('vmStage'), cvp = D.getElementById('vmC');
+    /* 24 Nov 2026, night (Emmanuel: "I changed the text size, and the one that it saved ... is not the one that I chose"): the text in
+       the editor is drawn by the same drawText() that makes the video, on a canvas over the B-roll, so font, size and line breaks are
+       exactly what gets saved. The element on top only catches the finger (same lines, invisible). */
+    function pv() {
+      var r = stage.getBoundingClientRect(); if (!r.width) return; var dpr = Math.min(3, W.devicePixelRatio || 1), cw = Math.round(r.width * dpr), ch = Math.round(r.height * dpr);
+      if (cvp.width !== cw || cvp.height !== ch) { cvp.width = cw; cvp.height = ch; }
+      var x = cvp.getContext('2d'); x.clearRect(0, 0, cw, ch); drawText(x, c, cw, ch);
+      x.font = '700 ' + (c.size * cw / 390) + 'px ' + FONT; tEl.innerHTML = wrap(x, c.text, cw * (SAFE.r - SAFE.l) * 0.96).map(esc).join('<br>') || '&nbsp;';
+    }
     v.addEventListener('loadedmetadata', function () { v.currentTime = c.start; v.play().catch(function () { }); });
     v.addEventListener('timeupdate', function () { if (v.currentTime >= c.end || v.currentTime < c.start - 0.3) v.currentTime = c.start; });
-    D.getElementById('vmTx').addEventListener('input', function (e) { c.text = e.target.value; tEl.innerHTML = lines(c.text); clampText(); keep(); requeue(); });
-    D.getElementById('vmSz').addEventListener('input', function (e) { c.size = +e.target.value; tEl.style.setProperty('--fs', c.size); clampText(); keep(); requeue(); });
+    D.getElementById('vmTx').addEventListener('input', function (e) { c.text = e.target.value; pv(); clampText(); keep(); requeue(); });
+    D.getElementById('vmSz').addEventListener('input', function (e) { c.size = +e.target.value; tEl.style.setProperty('--fs', c.size); pv(); clampText(); keep(); requeue(); });
     var drag = null;
     tEl.addEventListener('pointerdown', function (e) { e.preventDefault(); tEl.setPointerCapture(e.pointerId); var r = stage.getBoundingClientRect(); drag = {ox: e.clientX - c.x * r.width, oy: e.clientY - c.y * r.height}; stage.classList.add('drag'); });
     tEl.addEventListener('pointermove', function (e) {
@@ -221,13 +230,13 @@
     });
     var end = function () { if (!drag) return; drag = null; stage.classList.remove('drag', 'gx', 'gy'); keep(); requeue(); };
     tEl.addEventListener('pointerup', end); tEl.addEventListener('pointercancel', end);
-    function place() { tEl.style.left = (c.x * 100) + '%'; tEl.style.top = (c.y * 100) + '%'; }
+    function place() { tEl.style.left = (c.x * 100) + '%'; tEl.style.top = (c.y * 100) + '%'; pv(); }
     function clampText() {
       var r = stage.getBoundingClientRect(), b = tEl.getBoundingClientRect(), hw = b.width / 2 / r.width, hh = b.height / 2 / r.height;
       var x = Math.min(SAFE.r - hw, Math.max(SAFE.l + hw, c.x)), y = Math.min(SAFE.b - hh, Math.max(SAFE.t + hh, c.y));
       if (hw * 2 > SAFE.r - SAFE.l) x = (SAFE.l + SAFE.r) / 2; c.x = Math.round(x * 1000) / 1000; c.y = Math.round(y * 1000) / 1000; place();
     }
-    setTimeout(clampText, 50);
+    pv(); setTimeout(clampText, 50); try { if (D.fonts && D.fonts.ready) D.fonts.ready.then(pv); } catch (e) { }
   }
 
   /* ---------- making the video on the phone ---------- */
@@ -237,8 +246,10 @@
       words.forEach(function (w) { var test = line ? line + ' ' + w : w; if (ctx.measureText(test).width > max && line) { out.push(line); line = w; } else line = test; }); out.push(line);
     }); return out;
   }
+  /* the same font for the editor and the saved video (iPhone canvases know system-ui; -apple-system alone could fall back to another font) */
+  var FONT = 'system-ui, -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif';
   function drawText(ctx, c, w, h) {
-    var fs = c.size * w / 390 * 1.0, lh = fs * 1.25; ctx.font = '700 ' + fs + 'px -apple-system, "SF Pro Display", "Helvetica Neue", system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    var fs = c.size * w / 390 * 1.0, lh = fs * 1.25; ctx.font = '700 ' + fs + 'px ' + FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     var ls = wrap(ctx, c.text, w * (SAFE.r - SAFE.l) * 0.96), cx = c.x * w, y0 = c.y * h - (ls.length - 1) * lh / 2;
     ls.forEach(function (l, i) {
       var y = y0 + i * lh;

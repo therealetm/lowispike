@@ -21,3 +21,8 @@ test('a plain chat photo is drawn as the same photo post: name, caption on the p
   assert.match(c, /:'<div class="cs-meal cs-meal-plain" aria-hidden="true"><\/div>'\)/);
   assert.match(R('chat-meal-post.css'), /\.cm-bub\.cm-pbub>\.cs-meal\.cs-meal-plain\{display:none!important\}/);
 });
+test('the bubble no longer speaks up by itself (fast, water, meal nudges over the app) (24 Nov 2026)', () => {
+  const h = R('index.html');
+  assert.match(h, /const N1_OFF = true;/);
+  assert.match(h, /if \(!opts\.force && N1_OFF\) return null;/);
+});

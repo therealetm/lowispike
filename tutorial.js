@@ -78,6 +78,8 @@
         'gap-view': { stage: '#gvSheet', go: () => { if (W.LowiGapView) W.LowiGapView.open(); }, back: () => { if (W.LowiGapView) W.LowiGapView.close(); } },
         /* Oct 28 2026 food plan: the old Fuel bubble is Einkaufen, its demo opens Shop read-only */
         'home-shop': { stage: '.stp-card', go: () => { const P = W.LowiStorePicks; if (P && !P.isOpen()) P.open('tour'); }, back: () => { try { if (W.LowiStorePicks && LowiStorePicks.isOpen()) LowiStorePicks.close(); } catch (e) { } } },
+        /* 24 Nov 2026: Shopping is the Grocery Run game (grocery-run.js); the demo opens its start screen and closes it again */
+        'grocery-run': { stage: '.gr', go: () => { if (W.LowiGroceryRun && !W.LowiGroceryRun.isOpen()) W.LowiGroceryRun.open(); }, back: () => { if (W.LowiGroceryRun) W.LowiGroceryRun.close(); } },
         'fuel-bloom': bloom('fuel'), 'gap-bloom': bloom('gap') /* Oct 28 2026, 22:54: Gap blooms Letzte / Erste Mahlzeit */, 'water-bloom': bloom('water'), 'move-bloom': bloom('move'), 'sleep-bloom': bloom('sleep'),
         'community-tab': { stage: '', go: () => { if (typeof W.goTab === 'function') W.goTab('foryou'); }, back: goHome },
         /* Nov 5 2026: the Mirror card's demo opens the real Move page (what holding Move does), then back Home */

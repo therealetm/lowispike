@@ -24,16 +24,15 @@ test('Scan covers a meal photo and a packaged product, and what comes after the 
     const sc = read('shop-scan.js'); assert.match(sc, /Log as eaten|Als gegessen|Eintragen/i); assert.match(sc, /cart|Korb/i);
 });
 
+/* changed 24 Nov 2026 (Emmanuel: "Nuke [the supermarket] completely ... a game"): Shopping is the Grocery Run game now (grocery-run.js) */
 test('Shopping names its three doors by their purpose, and Supermarket names Plan my week and the cart', () => {
     const f = card('fuel'), w = card('shop-week');
-    /* Nov 6 2026 (test changed, why): design review point 7, Help out / Hilf mit is called Baskets / Körbe / Cestas now */
-    assert.match(f.text.en, /In the Supermarket, you shop and plan\. Seller Zone has ready snacks\. And in Baskets, you can pay/);
-    assert.match(f.text.de, /Im Supermarkt kaufst du ein und planst\. In der Seller Zone gibt es fertige Snacks\. Und unter Körbe kannst du jemandem das Essen mitbezahlen/);
-    assert.match(f.text.es, /Y en Cestas puedes pagar la comida de otra persona/);
-    assert.strictEqual(f.demo.open, 'fuel-bloom');
-    assert.strictEqual(w.demo.open, 'supermarket', 'the Supermarket card opens Shop read-only');
-    assert.match(w.text.en, /Plan my week/); assert.match(w.text.de, /Meine Woche planen/); assert.match(w.text.es, /Planear mi semana/);
-    const sp = read('store-picks.js'); for (const word of ['Seller Zone', "T('Baskets', 'Körbe', 'Cestas')", 'Meine Woche planen']) assert.ok(sp.includes(word), 'store-picks.js really has ' + word);
+    assert.match(f.text.en, /Tap Shopping to play Grocery Run\. Spin a budget or type your own/);
+    assert.match(f.text.de, /spiel den Einkaufs-Run\. Dreh ein Budget oder gib dein eigenes ein/);
+    assert.match(f.text.es, /juega a la Carrera del súper/);
+    assert.match(w.text.en, /tap a product and it flies into your cart\. Stay in budget for three stars/);
+    assert.strictEqual(f.demo.open, 'grocery-run'); assert.strictEqual(w.demo.open, 'grocery-run', 'both cards open the game read-only');
+    assert.match(read('tutorial.js'), /'grocery-run': \{ stage: '\.gr', go: \(\) => \{ if \(W\.LowiGroceryRun && !W\.LowiGroceryRun\.isOpen\(\)\) W\.LowiGroceryRun\.open\(\); \}/);
 });
 
 test('a tour left on an old card continues on the card that took it over, never from the start', () => {

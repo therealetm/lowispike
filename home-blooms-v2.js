@@ -684,6 +684,7 @@
     function open(kind, src, pick) {
         /* Oct 28 2026: a bubble that opens a page opens that page, whoever asks (companion sheet, tutorial, deep link, old code) */
         const tg = ringTarget(kind);
+        if (kind === 'fuel' && fn(W.LowiGroceryRun, 'open')) return shop();   /* 24 Nov 2026: the cart bubble is the Grocery Run game, no bloom of the old shop doors */
         if (tg === 'shop') return shop();
         if (tg === 'hub') return hub(kind);
         if (tg !== 'bloom') return false;
@@ -884,6 +885,8 @@
         return false;
     }
     function shop() {
+        /* 24 Nov 2026 (Emmanuel: "I absolutely hate our supermarket ... Nuke it completely ... When people click on supermarket, a game"): Grocery Run */
+        if (fn(W.LowiGroceryRun, 'open')) { close(true); buzz(8); W.LowiGroceryRun.open(); return true; }
         if (fn(W.LowiStorePicks, 'open')) { close(true); buzz(8); W.LowiStorePicks.open('home-shop'); return true; }
         if (fn(W.LowiGapView, 'open')) { close(true); buzz(8); W.LowiGapView.open({ from: 'fuel' }); return true; }
         return false;

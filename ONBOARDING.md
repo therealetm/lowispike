@@ -31,6 +31,7 @@ Profile > About you > Grocery shopping (`shop-plan.js` card), never forced.
   are the frequency). No default, no guess. The glow timing (`every`) is derived (1x = 7 days, 2x = 4, 3x = 3, More = 2, days =
   longest gap, It varies = none); old typed numbers migrate on read to a bubble that is never stricter, and 8 to 60 days stay
   as they were under It varies. Missing a shop never means someone ate badly. Stored in `lowispike.shopplan.v1`; read it through `LowiShopPlan` / `LowiShopPlanCore` only.
+- **Grocery Run** (`grocery-run.js`, 24 Nov 2026): the cart bubble on Home opens a game instead of the old Supermarket / Seller Zone / Baskets panel. Spin a budget or type your own, pick the shop, fill the cart from real products of that chain (estimated prices, shown with ≈), three missions (in budget, 80% insulin-friendly, veggies + protein), a receipt with stars and a score, then "Take this list to the shop" turns the cart into a shopping list to tick off. Kept on the phone (`lowi.grun.v1`).
 - **Shopping glow + hunt** (`grocery-hunt-core.js`, `grocery-hunt.js`): two different products caught on one day (barcode
   in the shopping scanner or a fresh product photo) is a shopping check-in. The worlds glow brighter for the rhythm plus a day,
   then fade over one rhythm back to the normal look, never below it. Pause and "couldn't scan" exist. The hunt reads the

@@ -45,7 +45,7 @@ test('Emmanuel\'s examples: repeated titles are gone, titles that add something 
     assert.strictEqual(sp('gap').t, -1, '"Gap" + "Tap Gap to see..." says it once');
     assert.strictEqual(sp('scan').t, -1, '"Scan" + "Tap Scan and point..." says it once');
     assert.strictEqual(sp('day', 'de').t, -1, '"Wasser, Bewegung, Schlaf" + "Wasser, Bewegung und Schlaf gehen gleich..." says it once');
-    assert.strictEqual(sp('shop-week').t, -1, '"Supermarket" + "In Supermarket, + puts..." says it once');
+    assert.strictEqual(sp('shop-week').t, -1, '"Grocery Run" + "In Grocery Run, tap..." says it once (24 Nov 2026: was Supermarket)');
     for (const l of LANGS) assert.ok(sp('hello', l).t > 0, 'hello/' + l + ': "Hi, I\'m Misty" adds the greeting and the name');
     /* Nov 5 2026: the Settings card's text now says "In Settings, ..." itself, so its title is not said; the end card's title adds something */
     assert.strictEqual(sp('settings').t, -1, '"Settings" + "... In Settings, you change ..." says it once');

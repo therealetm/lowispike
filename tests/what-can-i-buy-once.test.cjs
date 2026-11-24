@@ -19,7 +19,8 @@ test('the panel is opened from exactly one place in the app: Home\'s Fuel bubble
     /* Oct 28 2026 (same ring everywhere): the kept Fuel-bloom Shop orb is gone, so shop() is the one caller left */
     assert.deepEqual(calls, ['home-blooms-v2.js'], 'LowiStorePicks.open( callers: ' + calls.join(', '));
     const hb = code.find(x => x.f === 'home-blooms-v2.js').s;
-    assert.match(hb, /function shop\(\) \{\s*if \(fn\(W\.LowiStorePicks, 'open'\)\)[^\n]*LowiStorePicks\.open\('home-shop'\)/, 'the Einkaufen bubble opens it');
+    /* changed 24 Nov 2026: the Einkaufen bubble opens the Grocery Run game; the old panel stays the fallback without it */
+    assert.match(hb, /function shop\(\) \{[\s\S]{0,400}?if \(fn\(W\.LowiStorePicks, 'open'\)\)[^\n]*LowiStorePicks\.open\('home-shop'\)/, 'the Einkaufen bubble falls back to it');
 });
 
 test('no injected "What can I buy here?" card anywhere, Cook included', () => {

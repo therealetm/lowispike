@@ -148,6 +148,7 @@ test('the static Home layout (no ring) asks the same map first', () => {
     assert.match(read('sym-home.js'), /B\.open\('fuel'\)\) return; if \(B && typeof B\.shop === 'function' && B\.shop\(\)\) return;/);
 });
 
+/* changed 24 Nov 2026 (Emmanuel: the supermarket is a game now): the tour's Einkaufen card opens Grocery Run, not the old bloom or panel */
 test('the tour\'s Einkaufen card shows the bloom (fuel-bloom), not the panel', () => {
-    assert.match(read('tutorial-steps.js'), /id: 'fuel', area: '(?:home|shop)', target: \['#whHud \.wh-meals'\], demo: \{ g: 'tap', open: 'fuel-bloom' \}/);
+    assert.match(read('tutorial-steps.js'), /id: 'fuel', area: '(?:home|shop)', target: \['#whHud \.wh-meals'\], demo: \{ g: 'tap', open: 'grocery-run' \}/);
 });

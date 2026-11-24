@@ -53,7 +53,8 @@ test('food plan (Oct 28): Essenspause is the eating hub, the meal bubble is Eink
     /* Oct 28 2026, 23:00: one tap opens Einkaufen's own bloom (Supermarkt, Zu Hause, Seller Zone, Hilf mit); shop() is the fallback */
     assert.match(hb, /fuel: 'bloom'/, 'one tap opens the Einkaufen bloom');
     assert.match(hb, /if \(kind === 'fuel' && !actionsFor\('fuel'\)\.length\) return shop\(\);/, 'without the doors it still opens Einkaufen');
-    assert.match(hb, /function shop\(\) \{\s*if \(fn\(W\.LowiStorePicks, 'open'\)\) \{[^}]*LowiStorePicks\.open\('home-shop'\)/, 'Einkaufen = the Shop panel');
+    /* changed 24 Nov 2026: Einkaufen = the Grocery Run game first; the old Shop panel only if the game file is missing */
+    assert.match(hb, /function shop\(\) \{[\s\S]{0,200}?if \(fn\(W\.LowiGroceryRun, 'open'\)\) \{[^}]*W\.LowiGroceryRun\.open\(\); return true; \}\s*if \(fn\(W\.LowiStorePicks, 'open'\)\) \{[^}]*LowiStorePicks\.open\('home-shop'\)/, 'Einkaufen = the game');
     /* Oct 28 2026 (Emmanuel: a long press on the timer shows only the body phases): Move and Essenspause keep a hold, nothing else */
     assert.match(hb, /if \(kind !== 'move' && kind !== 'gap'\) return;/, 'only Move and Essenspause keep a hold');
 });

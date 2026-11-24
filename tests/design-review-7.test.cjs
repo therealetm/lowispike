@@ -84,6 +84,7 @@ test('Baskets / Körbe / Cestas everywhere, with the tabs Pay a basket and Share
     assert.match(read('tutorial-show.js'), /help: 'Baskets'[\s\S]*help: 'Körbe'[\s\S]*help: 'Cestas'/);
     global.window = undefined;
     const V = require('../tutorial-voice-data.js');
-    for (const l of ['en', 'de', 'es']) for (const k of ['fuel', 'new-give-hand', 'new-cart-swipe', 'new-cart-ask'])
+    /* changed 24 Nov 2026: the fuel card describes the Grocery Run game now (Baskets is gone from Home), so only the What's New cards keep the name */
+    for (const l of ['en', 'de', 'es']) for (const k of ['new-give-hand', 'new-cart-swipe', 'new-cart-ask'])
         assert.match(V.clips[l][k].s, l === 'en' ? /Baskets/ : l === 'de' ? /Körbe/ : /Cestas/, l + ' ' + k + ' is said with the new name');
 });

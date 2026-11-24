@@ -158,6 +158,10 @@ Open Move → choose accessible format and duration → complete timer/session �
 
 Community → New Post → video/photo/link/text → validate/preview → publish through cloud when signed in or local fallback where supported → refresh feed → post quest completion once.
 
+### Grocery Run (cart bubble on Home)
+
+One tap on the cart bubble opens the Grocery Run game (`grocery-run.js`): start (spin a budget or type one, pick the chain), shop (aisles, budget bar, three missions, cart), receipt (stars, score), and the shopping list to tick off in the real shop. ✕ closes it back to Home. The old Supermarket panel is no longer reachable from Home.
+
 ### First visit in a browser (store page and install replay)
 
 A new visitor who opens lowispike.com in a phone browser sees the store page (`store-page.js`, `#lspStore`) above the sign-in screen, once per session; not in the installed app, not for someone who already uses it, not on a deep link. Get on an iPhone plays the Add to Home Screen replay (`install-replay.js`): Safari's own screens, tapped by themselves, step by step, then "Your turn" with an arrow at the real browser button, Watch again, My phone looks different, Continue in the browser. On Android Get opens the browser's own install window when it offers one, else the replay. Instagram/TikTok browsers get Open in Safari + Copy link. Continue in the browser closes the page and goes to sign-up (skipping the old A1 install guide).

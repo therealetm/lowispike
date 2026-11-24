@@ -49,3 +49,6 @@ test('drafts: translate (EN/DE/ES or any language), Copy text, Back to original;
   assert.match(a, /if \(!failSaid\) \{ failSaid = true; S\.toast\(t\('cloudLater'\)\); \} clearTimeout\(retryT\); retryT = setTimeout\(push, 60000\);/);
   assert.match(R('supabase/proposals/studio_accounts_size_20261123.sql'), /check \(pg_column_size\(doc\) <= 3000000\)/);
 });
+test('the owner can edit a video (and its playlists) from its page without turning on Edit first (24 Nov 2026)', () => {
+  assert.match(R('studio/index.html'), /\(OWNER && !EDIT \? '<button class="btn" data-a="edit">✎ ' \+ esc\(t\('edit'\)\) \+ '<\/button>' : ''\)/);
+});

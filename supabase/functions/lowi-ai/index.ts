@@ -78,32 +78,61 @@ async function tiktokVideo(link: string): Promise<{ b64: string; mime: string } 
     return { b64: btoa(s), mime: (r.headers.get("content-type") || "video/mp4").split(";")[0] };
   } catch (_e) { return null; }
 }
-/* the community's knowledge, read once every 10 minutes */
-type KItem = { k: string; t: string; id?: string; url?: string; plat?: string; label?: string; kind?: string };
-let KN: { at: number; items: KItem[] } = { at: 0, items: [] };
+/* The community's knowledge, read once every 10 minutes.
+   25 Nov 2026, later (Emmanuel: "Why is it suggesting me stuff based on the recipe book? I don't want that. I want things that were shared
+   by real people ... the YouTube videos, the TikTok videos, the Instagram videos ... With a preview ... like WhatsApp ... Of course it can
+   recommend it sometimes, use it as knowledge, but we're tired of it"):
+   - share: what a real person posted on For You (their own meal photos, TikTok / YouTube / Instagram links) or in the public chat (a meal or a
+     photo). Only these get a tag, so only these become link cards, each with its picture. These are exactly what For You and the chat
+     show (people only since 11 Nov 2026), so a card always opens something.
+   - book: Nibblo's recipe posts (the recipe book) and other bot accounts' posts: background knowledge only, no tag and no card. */
+type KItem = { k: string; t: string; id?: string; url?: string; plat?: string; label?: string; kind?: string; img?: string; vid?: boolean };
+const NIBBLO = "59bb3615-b344-4c45-ab0f-0a5de5cd8df3";
+const IMG_OK = /^https:\/\/(vnfwmifmsfecascwaody\.supabase\.co\/storage\/v1\/object\/public\/|i\.ytimg\.com\/|[a-z0-9-]+\.(tiktokcdn|tiktokcdn-[a-z]+|cdninstagram)\.com\/)/i;
+const img = (u: unknown) => { const v = String(u || "").split("#")[0]; return IMG_OK.test(v) ? clip(v, 400) : ""; };
+let KN: { at: number; share: KItem[]; book: KItem[] } = { at: 0, share: [], book: [] };
 async function knowledge() {
-  if (Date.now() - KN.at < 600_000 && KN.items.length) return KN.items;
-  const items: KItem[] = [];
+  if (Date.now() - KN.at < 600_000 && KN.share.length) return KN;
+  const share: KItem[] = [], book: KItem[] = [], bots = new Set<string>([NIBBLO]);
+  try { const r = await sb("profiles?select=id&bot=is.true&limit=1000"); for (const x of (r.ok ? await r.json() : [])) bots.add(String(x.id)); } catch (_e) { /* no bot list */ }
   try {
-    const r = await sb("posts?select=id,url,cap,meta,plat,created_at&order=created_at.desc&limit=200"); const rows = r.ok ? await r.json() : [];
+    const r = await sb("posts?select=id,user_id,url,cap,meta,plat,photo_url,poster,created_at&order=created_at.desc&limit=300"); const rows = r.ok ? await r.json() : [];
     for (const p of rows) {
-      const m = p.meta || {}, ai = m.ai || {};
+      const m = p.meta || {}, ai = m.ai || {}, plat = String(p.plat || "").toLowerCase(), vid = /^(tiktok|youtube|instagram)$/.test(plat);
       const t = [m.dish ? "dish: " + clip(m.dish, 80) : "", m.spike ? "spike: " + clip(m.spike, 10) : "", clip(m.title || "", 160), clip(p.cap, 240), ai.sum ? "summary: " + clip(ai.sum, 400) : "", ai.onscreen ? "on screen: " + clip(ai.onscreen, 200) : ""].filter(Boolean).join(" | ");
-      if (t) items.push({ k: "For You" + (p.plat ? " (" + p.plat + ")" : ""), t, id: String(p.id || ""), url: /^https:\/\//.test(String(p.url || "")) ? clip(p.url, 400) : "", plat: clip(p.plat, 20), label: clip(m.dish || m.title || p.cap, 60), kind: "fy" });
+      if (!t) continue;
+      if (bots.has(String(p.user_id || "")) || m.nb) { book.push({ k: "recipe book", t }); continue; }
+      share.push({ k: vid ? "video on " + plat : "a member's For You post", t, id: String(p.id || ""), url: vid && /^https:\/\//.test(String(p.url || "")) ? clip(p.url, 400) : "", plat: clip(plat, 20), label: clip(m.title || m.dish || p.cap || (vid ? plat : ""), 90), kind: "fy", img: img(m.thumb || p.photo_url || p.poster), vid });
     }
   } catch (_e) { /* no posts */ }
   try {
-    const r = await sb("messages?select=meal&room=eq.all&meal=not.is.null&order=created_at.desc&limit=80"); const rows = r.ok ? await r.json() : [];
-    for (const x of rows) { const m = x.meal || {}; const t = [clip(m.name, 160), m.lvl ? "spike: " + clip(m.lvl, 10) : "", m.note ? clip(m.note, 160) : ""].filter(Boolean).join(" | "); if (t) items.push({ k: "Chat meal", t, label: clip(m.name, 60), kind: "chat" }); }
-  } catch (_e) { /* no meals */ }
-  KN = { at: Date.now(), items }; return items;
+    const r = await sb("messages?select=id,user_id,meal,body&room=eq.all&meal=not.is.null&order=created_at.desc&limit=150"); const rows = r.ok ? await r.json() : [];
+    for (const x of rows) {
+      if (bots.has(String(x.user_id || ""))) continue;
+      const body = String(x.body || ""), u = (/https:\/\/\S+/.exec(body) || [""])[0], m = x.meal || {}, pic = img(u);
+      if (/\/meal-nb-/.test(u)) continue; /* a recipe-book meal re-posted in the chat: the book already knows it */
+      /* the message's words never reach the AI (only the meal card and the picture's address); user_id only leaves out bots */
+      const t = [clip(m.name, 160), m.lvl ? "spike: " + clip(m.lvl, 10) : "", m.note ? clip(m.note, 160) : ""].filter(Boolean).join(" | ");
+      if (t) share.push({ k: "a meal a member shared in the community chat", t, label: clip(m.name, 90), kind: "chat", img: pic, id: String(x.id || "") });
+    }
+  } catch (_e) { /* no chat */ }
+  KN = { at: Date.now(), share, book }; return KN;
 }
-/* the notes most related to the question (shared words), else the newest few */
+const wordsOf = (q: string) => Array.from(new Set(q.toLowerCase().normalize("NFKD").replace(/[^\p{L}\p{N} ]/gu, " ").split(/\s+/).filter((w) => w.length > 3)));
+const hitsOf = (it: KItem, words: string[]) => { const t = it.t.toLowerCase().normalize("NFKD"); let s = 0; for (const w of words) if (t.includes(w)) s += 1; return s; };
+const shuffle = <T,>(l: T[]) => l.map((it) => ({ it, r: Math.random() })).sort((a, b) => a.r - b.r).map((x) => x.it);
+/* the shares most related to the question (videos first among equals), topped up with a random mix of videos and chat shares so the
+   companion always has real things to show and does not repeat itself */
 function pick(items: KItem[], q: string, n = 10) {
-  const words = Array.from(new Set(q.toLowerCase().normalize("NFKD").replace(/[^\p{L}\p{N} ]/gu, " ").split(/\s+/).filter((w) => w.length > 3)));
-  const scored = items.map((it, i) => { const t = it.t.toLowerCase().normalize("NFKD"); let s = 0; for (const w of words) if (t.includes(w)) s += 1; return { it, s, i }; });
-  const hits = scored.filter((x) => x.s > 0).sort((a, b) => b.s - a.s || a.i - b.i).slice(0, n).map((x) => x.it);
-  return hits.length ? hits : items.slice(0, 5);
+  const words = wordsOf(q);
+  const hits = shuffle(items).map((it) => ({ it, s: hitsOf(it, words) + (it.vid ? 0.5 : 0) })).filter((x) => x.s >= 1).sort((a, b) => b.s - a.s).map((x) => x.it);
+  const res: KItem[] = [];
+  for (const it of hits.slice(0, n).concat(shuffle(items.filter((x) => x.vid)).slice(0, 4), shuffle(items.filter((x) => x.kind === "chat")).slice(0, 2), shuffle(items).slice(0, 2))) { if (res.length < n && !res.includes(it)) res.push(it); }
+  return res;
+}
+/* the recipe book's entries that share words with the question (none when nothing matches) */
+function pickBook(items: KItem[], q: string, n = 3) {
+  const words = wordsOf(q); return items.map((it) => ({ it, s: hitsOf(it, words) })).filter((x) => x.s >= 2).sort((a, b) => b.s - a.s).slice(0, n).map((x) => x.it);
 }
 function mistyRules(name: string, sign: string, lang: string) {
   return [
@@ -197,12 +226,14 @@ Deno.serve(async (req) => {
        video"): every note has a tag [r1]...; the companion puts the tag after something it recommends from the notes, and the answer
        carries those as links (the For You post, its TikTok / YouTube, or the public chat) */
     let notes = "", ks: KItem[] = [];
-    try { const last = String(msgs[msgs.length - 1].parts.map((p: { text?: string }) => p.text || "").join(" ")) + " " + ctx; ks = pick(await knowledge(), last);
-      if (ks.length) notes = "\n\nWhat LOWiSPIKE people shared (For You page and the public chat; anonymous notes, use them when they help, say \"someone in the community shared ...\", never invent more than they say, never name anyone). When you recommend one of them, put its tag right after it, like [r2]; at most 2 tags:\n" + ks.map((x, i) => "- [r" + (i + 1) + "] [" + x.k + "] " + x.t).join("\n"); } catch (_e) { notes = ""; }
+    /* the last few turns, so "link me" or "the TikTok" finds what was just talked about */
+    try { const last = msgs.slice(-3).map((m: { parts: { text?: string }[] }) => m.parts.map((p) => p.text || "").join(" ")).join(" ") + " " + ctx; const K = await knowledge(); ks = pick(K.share, last); const bk = pickBook(K.book, last);
+      if (ks.length) notes = "\n\nWhat real LOWiSPIKE members shared (their For You posts, the TikTok / YouTube / Instagram videos they posted, and meals or photos from the community chat; anonymous notes, say \"someone in the community shared ...\", never invent more than a note says, never name anyone). Recommend these first, videos above all. When you recommend one, put its tag right after it, like [r2]; at most 2 tags. The app turns each tag into a card with the video's or photo's picture that opens it, so you CAN link: when the person asks for a link, the video, the TikTok, the post or where to find it, give the matching tag (never say you cannot link; if no note matches, say you have no link for that one and offer the closest note with its tag):\n" + ks.map((x, i) => "- [r" + (i + 1) + "] [" + x.k + "] " + x.t).join("\n");
+      if (bk.length) notes += "\n\nBackground from the app's recipe book (everyone has seen these, so use them only as knowledge; name one only when nothing members shared fits, and never give these a tag):\n" + bk.map((x) => "- " + x.t).join("\n"); } catch (_e) { notes = ""; }
     const r = await gemini({ systemInstruction: { parts: [{ text: mistyRules(clip(b.name, 40), clip(b.sign, 20), lang) + notes }] }, contents: msgs, generationConfig: { temperature: 0.6, maxOutputTokens: 700 } });
     const used: KItem[] = [], seen = new Set<number>();
     let text = clip(r, 4000).replace(/\s*\[r(\d{1,2})\]/g, (_m, d) => { const i = Number(d) - 1; if (ks[i] && !seen.has(i) && used.length < 3) { seen.add(i); used.push(ks[i]); } return ""; });
-    const links = used.map((x) => ({ kind: x.kind || "fy", id: x.id || "", url: x.url || "", plat: x.plat || "", label: x.label || "" }));
+    const links = used.map((x) => ({ kind: x.kind || "fy", id: x.id || "", url: x.url || "", plat: x.plat || "", label: x.label || "", img: x.img || "", vid: !!x.vid }));
     return out(req, 200, { ok: true, text, links });
   } catch (e) {
     const m = String((e as Error).message || e);

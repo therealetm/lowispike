@@ -1831,3 +1831,13 @@ Emmanuel: "I hope you understand that Misty is the name of my specific companion
 ## 2026-11-25 — "Misty" is the owner's companion only
 
 Emmanuel: "Misty is just my specific companion name. It has nothing to do with anything and anybody else ... the Misty's a name nobody else should be seeing apart from me." Overrides the "Misty ... as the fallback" vocabulary note. Every fallback name now comes from `companion-name.js` `LowiDefaultName()`: "Misty" only on a device marked as the owner's (`lowispike.mine.misty`, set by `LowiMarkMine()` when owner-admin.js confirms the owner, and then also saved as his typed name), otherwise the companion's star-sign name, else "Lumi". Pisces suggests "Coral" instead of "Misty". The stand-in look (`C.MISTY`) stays; only the name changed. Not changed: the recorded tutorial voice clips (they say "Misty"). The word "companion" stays for now ("Tamagotchi" is a brand); a better word is open. Guarded by `tests/companion-name-default.test.cjs`.
+
+## 2026-11-25 — The companion links what real people shared, as picture previews
+
+Emmanuel: "Why is it suggesting me stuff based on the recipe book? I don't want that. I want things that were shared by real people ... the YouTube videos, the TikTok videos, the Instagram videos ... With a preview ... like WhatsApp ... Same with the chat room. It should show us the picture." In Talk to {companion} (lowi-ask.js + lowi-ai "ask"):
+- Only real members' shares can be linked (For You posts, the TikTok / YouTube / Instagram videos they posted, meals from the public chat), videos first. These are what For You and the chat show (people only since 11 Nov), so a card always opens something; the old cards pointed at Nibblo posts that For You no longer shows, so a tap did nothing.
+- Nibblo's recipe book (and other bot accounts) stays as background knowledge only: no tag, no card, mentioned only when nothing people shared fits.
+- Each card is a link preview: the picture full width (a play button on videos), the title, where it opens. Cards never get wider than the screen.
+- "Link me" works: the notes are picked from the last three turns, and the prompt says the companion can link.
+- Privacy as before: no names, and chat message words never reach the AI (only the meal card and the picture's address).
+Guarded by `tests/misty-link-previews.test.cjs` and `tests/misty-knowledge.test.cjs`.

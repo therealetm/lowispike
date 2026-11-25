@@ -19,9 +19,14 @@ test('For You video posts get ✨ Words: written down once, kept on the post for
 });
 test('the companion reads the community: related For You posts and public chat meals, anonymous, never who said it', () => {
   const fn = R('supabase/functions/lowi-ai/index.ts');
-  assert.match(fn, /sb\("messages\?select=meal&room=eq\.all&meal=not\.is\.null/, 'only the public room, only the meal');
-  assert.doesNotMatch(fn.slice(fn.indexOf('async function knowledge'), fn.indexOf('function pick')), /who|user_id|body/, 'no names, no ids, no message text');
-  assert.match(fn, /never invent more than they say, never name anyone/);
+  /* changed 25 Nov 2026: the public room's meals now carry their picture (read from the body's link) and user_id only leaves out bots;
+     still no names, and the message's words never reach the AI */
+  assert.match(fn, /sb\("messages\?select=id,user_id,meal,body&room=eq\.all&meal=not\.is\.null/, 'only the public room, only meals');
+  const kn = fn.slice(fn.indexOf('async function knowledge'), fn.indexOf('const wordsOf'));
+  assert.doesNotMatch(kn, /\bwho\b/, 'no names');
+  assert.doesNotMatch(kn, /const t = \[[^\n]*body/, 'no message text in a note');
+  assert.match(kn, /pic = img\(u\)/);
+  assert.match(fn, /never invent more than a note says, never name anyone/); /* changed 25 Nov 2026 (wording) */
   assert.match(fn, /systemInstruction: \{ parts: \[\{ text: mistyRules\(clip\(b\.name, 40\), clip\(b\.sign, 20\), lang\) \+ notes \}\] \}/);
 });
 /* 25 Nov 2026 (Emmanuel: "uploading a picture in here doesn't work ... I take a picture of a TikTok video and I want to ask my AI ... if I can
@@ -89,8 +94,8 @@ test('Talk to Misty: the note and quick questions show only on a fresh chat, sma
    with two community links shows "▶ Nori Smash Burger Stack · Watch on TikTok" (opens the TikTok) and "✨ … · Open it in For You" (opens the post). */
 test('the companion links what it recommends from the community: the TikTok / YouTube, the For You post or the chat; sharing sends only the link', () => {
   const a = R('lowi-ask.js'), fn = R('supabase/functions/lowi-ai/index.ts'), h = R('index.html');
-  assert.match(fn, /When you recommend one of them, put its tag right after it, like \[r2\]; at most 2 tags/);
-  assert.match(fn, /return out\(req, 200, \{ ok: true, text, links \}\);/); assert.match(fn, /kind: "chat" \}\); \}/);
+  assert.match(fn, /When you recommend one, put its tag right after it, like \[r2\]; at most 2 tags/); /* changed 25 Nov 2026 (wording) */
+  assert.match(fn, /return out\(req, 200, \{ ok: true, text, links \}\);/); assert.match(fn, /kind: "chat", img: pic, id: String\(x\.id \|\| ""\) \}\);/); /* changed 25 Nov 2026: chat shares carry their picture */
   assert.match(a, /function cardsHTML\(l\)/); assert.match(a, /if \(x\.url\) \{ try \{ W\.open\(x\.url, '_blank', 'noopener'\);/);
   assert.match(a, /else if \(W\.LowiOpenPost\) W\.LowiOpenPost\(x\.id\);/); assert.match(h, /window\.LowiOpenPost = id => openPost\(id\); window\.LowiOpenChat = /);
   assert.match(a, /navigator\.share\(\{ url: u \}\)/); assert.doesNotMatch(a, /navigator\.share\(\{ title: t\('shareT'\)/);

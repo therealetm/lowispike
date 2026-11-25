@@ -12,6 +12,10 @@
 (function (W, D) {
     'use strict';
     if (!W || !D || W.LowiAsk) return;
+    /* 25 Nov 2026: a shared chat's id from the link, read the moment this file runs (the app may change the address afterwards) */
+    const SHARED_ID = (() => { try { const m = /[?&]chat=([A-Za-z0-9_-]{6,16})/.exec(location.search); return m ? m[1] : ''; } catch (e) { return ''; } })();
+    const SHARED_HASH = (() => { try { return location.hash; } catch (e) { return ''; } })();
+    const RPC = 'https://vnfwmifmsfecascwaody.supabase.co/rest/v1/rpc/';
     const FN = 'https://vnfwmifmsfecascwaody.supabase.co/functions/v1/lowi-ai', PUBKEY = 'sb_publishable_iVA3wCYxzfWu2q8SSgieWw_adXbx4Qd', KEY = 'lowi.ask.v1';
     const L = () => { let l = ''; try { l = (W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || localStorage.getItem('lowispike.lang') || D.documentElement.lang || 'en'; } catch (e) { l = 'en'; } l = String(l).slice(0, 2); return l === 'de' || l === 'es' ? l : 'en'; };
     const W3 = { title: ['Talk to {n}', 'Mit {n} reden', 'Habla con {n}'], ph: ['Ask {n}…', 'Frag {n}…', 'Pregunta a {n}…'], back: ['Back', 'Zurück', 'Atrás'],
@@ -71,7 +75,7 @@
     }
     function css() {
         if (D.getElementById('lwAskCss')) return; const s = D.createElement('style'); s.id = 'lwAskCss';
-        s.textContent = '#lwAsk{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;background:#05070c;color:#f3f6fb;font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}' +
+        s.textContent = '#lwAsk{position:fixed;inset:0;z-index:2147483100;display:flex;flex-direction:column;background:#05070c;color:#f3f6fb;font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}' +
             '#lwAsk .ak-h{flex:none;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px;border-bottom:1px solid rgba(255,255,255,.08)}' +
             '#lwAsk .ak-b{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 12px 0 6px;border-radius:999px;border:0;background:rgba(255,255,255,.08);color:#fff;font:inherit;font-weight:600;cursor:pointer}' +
             '#lwAsk .ak-b svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}' +
@@ -183,26 +187,41 @@
             if (live) { const c = live.cloneNode(true); c.removeAttribute('id'); c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id')); c.setAttribute('aria-hidden', 'true'); return c.outerHTML; } } catch (e) {}
         return '<i class="ak-orb" aria-hidden="true"></i>';
     }
-    function shareUrl() {
-        const d = { v: 1, n: name(), m: msgs.filter(x => !x.wait).slice(-8).map(x => [x.role === 'user' ? 'u' : 'a', String(x.text || '').slice(0, 600), x.img ? 1 : 0]) };
-        let h = b64u(JSON.stringify(d)); while (h.length > 6000 && d.m.length > 1) { d.m.shift(); h = b64u(JSON.stringify(d)); }
-        return 'https://lowispike.com/?misty=1#misty=' + h;
+    /* 25 Nov 2026 (Emmanuel: "why is my companion name in the link? I wanted it to be a link that shares the chat, just like a ChatGPT
+       link"): the conversation is kept on the server (public.share_chat: signed in, 40 a day) and the link is only its short id,
+       lowispike.com/?chat=ID. No name in it; photos go along as their small previews. */
+    function shareData() { let n = 0; return { v: 2, m: msgs.filter(x => !x.wait).slice(-12).map(x => { const o = [x.role === 'user' ? 'u' : 'a', String(x.text || '').slice(0, 1200), 0]; if (x.img && n < 4 && String(x.img).length < 60000) { o[2] = 1; o[3] = x.img; n++; } return o; }) }; }
+    async function shareUrl() {
+        const tk = await token(); if (!tk) throw Object.assign(new Error('sign_in'), { code: 'sign_in' });
+        const r = await fetch(RPC + 'share_chat', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: PUBKEY, Authorization: 'Bearer ' + tk }, body: JSON.stringify({ p_data: shareData() }) });
+        const id = r.ok ? await r.json() : ''; if (!id || typeof id !== 'string') throw Object.assign(new Error('fail'), { code: 'fail' });
+        return 'https://lowispike.com/?chat=' + id;
     }
-    function shareChat(b) {
-        const u = shareUrl(), ok = () => { const o = b.innerHTML; b.textContent = t('copied'); setTimeout(() => { b.innerHTML = o; }, 1600); };
-        if (navigator.share) { navigator.share({ title: t('shareT'), text: t('shareTx'), url: u }).catch(() => {}); return; }
+    async function shareChat(b) {
+        if (!msgs.filter(x => !x.wait).length) return;
+        const keepHtml = b.innerHTML; b.disabled = true;
+        let u = ''; try { u = await shareUrl(); } catch (e) { b.disabled = false; msgs.push({ role: 'model', text: e.code === 'sign_in' ? t('signin') : t('fail') }); paint(); return; }
+        b.disabled = false;
+        if (navigator.share) { navigator.share({ title: t('shareT'), url: u }).catch(() => {}); return; }
+        const ok = () => { b.textContent = '✓'; setTimeout(() => { b.innerHTML = keepHtml; }, 1600); };
         try { navigator.clipboard.writeText(u).then(ok, ok); } catch (e) { ok(); }
     }
     let GUEST = false;
     const signedIn = () => { try { const j = JSON.parse(localStorage.getItem('lowi.auth') || 'null'), u = j && j.user; return !!(u && !u.is_anonymous && u.email); } catch (e) { return false; } };
-    function sharedIn() {
-        let d = null; try { const m = /#misty=([A-Za-z0-9_-]+)/.exec(location.hash); if (m) d = JSON.parse(unb64u(m[1])); } catch (e) { d = null; }
+    function toMsgs(d) {
         if (!d || !Array.isArray(d.m)) return null;
-        try { history.replaceState(null, '', location.pathname + location.search.replace(/([?&])misty=1&?/, '$1').replace(/[?&]$/, '')); } catch (e) {}
-        return d.m.slice(-8).map(x => ({ role: x[0] === 'u' ? 'user' : 'model', text: (x[2] ? t('shotPh') + (x[1] ? ' · ' : '') : '') + String(x[1] || '').slice(0, 600) })).filter(x => x.text);
+        return d.m.slice(-12).map(x => { const o = { role: x[0] === 'u' ? 'user' : 'model', text: String(x[1] || '').slice(0, 1200) }; if (x[2] && typeof x[3] === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(x[3])) o.img = x[3]; else if (x[2]) o.text = t('shotPh') + (o.text ? ' · ' + o.text : ''); return o; }).filter(x => x.text || x.img);
     }
-    function boot() {
-        const sh = sharedIn();
+    async function sharedIn() {
+        let d = null;
+        if (SHARED_ID) { try { const r = await fetch(RPC + 'get_shared_chat', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: PUBKEY, Authorization: 'Bearer ' + PUBKEY }, body: JSON.stringify({ p_id: SHARED_ID }) }); if (r.ok) d = await r.json(); } catch (e) { d = null; } }
+        else { try { const m = /#misty=([A-Za-z0-9_-]+)/.exec(SHARED_HASH); if (m) d = JSON.parse(unb64u(m[1])); } catch (e) { d = null; } }   /* links shared before (the chat in the link) */
+        const out = toMsgs(d); if (!out) return null;
+        try { history.replaceState(null, '', location.pathname + location.search.replace(/([?&])(chat=[A-Za-z0-9_-]+|misty=1)&?/g, '$1').replace(/[?&]$/, '') + (/^#misty=/.test(location.hash) ? '' : location.hash)); } catch (e) {}
+        return out;
+    }
+    async function boot() {
+        const sh = await sharedIn();
         if (sh) {
             if (signedIn()) { fresh(''); msgs = sh; keep(); open({}); return; }
             GUEST = true; msgs = sh; open({}); return;
@@ -258,6 +277,6 @@
         open({ context: c, ask: c ? t('analyze') : '' });
     }, true);
     D.addEventListener('keydown', e => { if (e.key === 'Escape' && el) close(); });
-    W.LowiAsk = { open, close, call, shareUrl };
+    W.LowiAsk = { open, close, call, shareUrl, _shareData: shareData };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', () => setTimeout(boot, 600)); else setTimeout(boot, 600);
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

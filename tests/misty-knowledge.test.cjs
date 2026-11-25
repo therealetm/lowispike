@@ -40,7 +40,8 @@ test('Talk to Misty: the photo picker sits in the page; the photo waits with ✕
    and opens the store page; someone signed in gets the chat as their own new chat. */
 test('Talk to Misty: Share sends the chat in a link; a guest sees it and is sent to the store page on send; a member gets it as their chat', () => {
   const a = R('lowi-ask.js');
-  assert.match(a, /data-ak="share"/); assert.match(a, /return 'https:\/\/lowispike\.com\/\?misty=1#misty=' \+ h;/);
+  /* changed 25 Nov 2026 ("why is my companion name in the link? ... just like a ChatGPT link"): the chat is kept on the server, the link is its short id */
+  assert.match(a, /data-ak="share"/); assert.match(a, /return 'https:\/\/lowispike\.com\/\?chat=' \+ id;/);
   assert.match(a, /if \(signedIn\(\)\) \{ fresh\(''\); msgs = sh; keep\(\); open\(\{\}\); return; \}/);
   assert.match(a, /GUEST = true; msgs = sh; open\(\{\}\); return;/); assert.match(a, /if \(GUEST\) return guestSend\(v, p\);/);
   assert.match(a, /localStorage\.setItem\('lowi\.ask\.after'/); assert.match(a, /W\.LowiStorePage\.open\(\)/);
@@ -57,4 +58,17 @@ test('Talk to Misty looks like LOWiSPIKE: the world blurred behind, one back but
   assert.match(a, /grid-template-columns:1fr auto 1fr/); assert.match(a, /'<span class="ak-hav">' \+ avatar\(\) \+ '<\/span><em>' \+ esc\(name\(\)\) \+ '<\/em>'/);
   assert.match(a, /'<div class="ak-row ak-think"><span class="ak-av">' \+ av \+ '<\/span><div class="ak-m a"><span class="ak-dots"/);
   assert.match(a, /'<div class="ak-m u ph"><img alt="" src="'/); assert.match(a, /@keyframes akBob/); assert.match(a, /prefers-reduced-motion:reduce\)\{#lwAsk \.ak-think \.ak-av/);
+});
+/* 25 Nov 2026 (Emmanuel: "I use the link and this is what opens [the welcome screen]. And also, why is my companion name in the link? I wanted
+   it to be a link that shares the chat, just like a ChatGPT link"). Checked: share_chat needs sign-in (anon refused), get_shared_chat reads
+   one by id, the table cannot be listed; in the real app a guest opening ?chat=ID sees the chat above the sign-in screen (on top, not
+   inert), sending keeps the question and opens the store page. */
+test('shared Misty chats live on the server; the link is a short id with no name; a guest sees the chat above the sign-in screen', () => {
+  const a = R('lowi-ask.js'), q = R('supabase/proposals/shared_chats_20261125.sql'), h = R('index.html');
+  assert.match(q, /revoke all on public\.shared_chats from public, anon, authenticated;/); assert.match(q, /if auth\.uid\(\) is null then raise exception 'sign_in'; end if;/);
+  assert.match(q, /grant execute on function public\.get_shared_chat\(text\) to anon, authenticated;/);
+  assert.match(a, /const SHARED_ID = \(\(\) => \{ try \{ const m = \/\[\?&\]chat=/); assert.doesNotMatch(a.slice(a.indexOf('function shareData'), a.indexOf('async function shareUrl')), /name\(\)/, 'no companion name');
+  assert.match(h, /:not\(\.lis-full\):not\(#lwAsk\)\{visibility:hidden!important\}/); assert.match(h, /el\.id === "lwAsk" \/\* 25 Nov 2026: a shared Misty chat stays usable before sign-in \*\//);
+  assert.match(R('store-page.js'), /\[\?&\]\(ref\|post\|p\|s\|c\|code\|invite\|app\|chat\)=/);
+  assert.match(a, /#lwAsk\{position:fixed;inset:0;z-index:2147483100;/);
 });

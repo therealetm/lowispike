@@ -46,3 +46,15 @@ test('Talk to Misty: Share sends the chat in a link; a guest sees it and is sent
   assert.match(a, /localStorage\.setItem\('lowi\.ask\.after'/); assert.match(a, /W\.LowiStorePage\.open\(\)/);
   assert.match(a, /if \(q && signedIn\(\)\) \{ try \{ localStorage\.removeItem\('lowi\.ask\.after'\); \} catch \(e\) \{\} setTimeout\(\(\) => open\(\{ ask: q \}\), 2500\); \}/, 'their question is answered after signing in');
 });
+/* 25 Nov 2026 (Emmanuel: "make it our Galaxy interface, but blur it just like Apple iOS ... the back button is covered by another back button
+   ... Talk to Misty is not even in the middle ... a picture ... like in the community ... see our companion ... when it's thinking or typing,
+   it's moving"). Checked in Chromium: one back arrow, the companion and its name centred, three round icons, the photo as a card, the
+   companion glowing next to the typing dots. */
+test('Talk to Misty looks like LOWiSPIKE: the world blurred behind, one back button, the companion centred and beside its answers', () => {
+  const a = R('lowi-ask.js');
+  assert.match(a, /-webkit-backdrop-filter:blur\(30px\) saturate\(1\.6\);backdrop-filter:blur\(30px\) saturate\(1\.6\)/);
+  assert.match(a, /data-ak="close" data-no-bx aria-label="Back"/, 'the round bottom-close button no longer stands in on top of it');
+  assert.match(a, /grid-template-columns:1fr auto 1fr/); assert.match(a, /'<span class="ak-hav">' \+ avatar\(\) \+ '<\/span><em>' \+ esc\(name\(\)\) \+ '<\/em>'/);
+  assert.match(a, /'<div class="ak-row ak-think"><span class="ak-av">' \+ av \+ '<\/span><div class="ak-m a"><span class="ak-dots"/);
+  assert.match(a, /'<div class="ak-m u ph"><img alt="" src="'/); assert.match(a, /@keyframes akBob/); assert.match(a, /prefers-reduced-motion:reduce\)\{#lwAsk \.ak-think \.ak-av/);
+});

@@ -94,19 +94,46 @@
             '#lwAsk .ak-new[data-v=chats]{color:#fff;background:rgba(255,255,255,.08)}#lwAsk.ak-list .ak-c,#lwAsk.ak-list .ak-f,#lwAsk.ak-list .ak-n{display:none}' +
             '#lwAsk .ak-r{display:flex;align-items:stretch;gap:6px}#lwAsk .ak-ro{flex:1;min-width:0;min-height:56px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;padding:10px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:#fff;font:inherit;text-align:left;cursor:pointer}' +
             '#lwAsk .ak-ro b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}#lwAsk .ak-ro small{color:rgba(255,255,255,.55);font-size:13px}' +
-            '#lwAsk .ak-rd{flex:none;width:48px;border-radius:16px;border:0;background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);font-size:16px;cursor:pointer}#lwAsk .ak-e{margin:24px 8px;color:rgba(255,255,255,.6);text-align:center}';
+            '#lwAsk .ak-rd{flex:none;width:48px;border-radius:16px;border:0;background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);font-size:16px;cursor:pointer}#lwAsk .ak-e{margin:24px 8px;color:rgba(255,255,255,.6);text-align:center}' +
+            /* 25 Nov 2026 (Emmanuel: "make it our Galaxy interface, but blur it just like Apple iOS would ... the back button is covered by
+               another back button ... Talk to Misty is not even in the middle ... not sleek ... a picture ... like in the community ... see our
+               companion ... when it's thinking or typing, it's moving"): the world shows through, blurred; one back arrow; the companion and
+               its name in the middle; three round icons; glass bubbles; a photo as a post card; the companion beside its answers, moving
+               while it thinks. */
+            '#lwAsk{background:radial-gradient(120% 55% at 50% -5%,rgba(120,95,255,.26),transparent 60%),radial-gradient(90% 50% at 85% 105%,rgba(40,170,255,.2),transparent 62%),rgba(6,8,18,.58);-webkit-backdrop-filter:blur(30px) saturate(1.6);backdrop-filter:blur(30px) saturate(1.6)}' +
+            '#lwAsk .ak-h{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;border-bottom:0;background:linear-gradient(rgba(6,8,18,.55),rgba(6,8,18,0))}' +
+            '#lwAsk .ak-b{width:44px;height:44px;padding:0;justify-content:center;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}#lwAsk .ak-b span{display:none}' +
+            '#lwAsk .ak-t{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-width:0}#lwAsk .ak-t .ak-hav{display:grid;place-items:center;width:34px;height:34px}#lwAsk .ak-b{justify-self:start}#lwAsk .ak-ic{justify-self:end}#lwAsk .ak-t em{font-style:normal;font-weight:700;font-size:16px;line-height:1.2}' +
+            '#lwAsk .ak-ic{display:flex;gap:6px}#lwAsk .ak-new{width:40px;height:40px;min-height:0;padding:0;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.1)!important;color:#fff}' +
+            '#lwAsk .ak-new svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}#lwAsk .ak-new.on{background:rgba(159,216,255,.3)!important}' +
+            '#lwAsk .ak-av{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;overflow:visible}#lwAsk .ak-av svg,#lwAsk .ak-hav svg{width:100%;height:100%;overflow:visible}' +
+            '#lwAsk .ak-orb{width:70%;height:70%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#9fe0ff 35%,#4a7dff 75%);box-shadow:0 0 14px rgba(120,190,255,.8)}' +
+            '#lwAsk .ak-row{display:flex;align-items:flex-end;gap:8px;max-width:90%}#lwAsk .ak-row .ak-m{max-width:none}' +
+            '#lwAsk .ak-m.a{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}' +
+            '#lwAsk .ak-m.u{background:linear-gradient(160deg,#5b7cff,#7a4dff);box-shadow:0 6px 20px rgba(90,90,255,.3)}' +
+            '#lwAsk .ak-m.ph{padding:6px;max-width:72%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.35)}#lwAsk .ak-m.ph img{max-width:100%;width:260px;max-height:340px;border-radius:17px;margin:0}#lwAsk .ak-m.ph span{display:block;padding:8px 8px 4px}' +
+            '#lwAsk .ak-think .ak-av{animation:akBob 1.1s ease-in-out infinite}#lwAsk .ak-dots{display:inline-flex;gap:5px;padding:4px 2px}#lwAsk .ak-dots i{width:7px;height:7px;border-radius:50%;background:#cfe9ff;animation:akDot 1.2s infinite ease-in-out}#lwAsk .ak-dots i:nth-child(2){animation-delay:.15s}#lwAsk .ak-dots i:nth-child(3){animation-delay:.3s}' +
+            '@keyframes akBob{0%,100%{transform:translateY(0) scale(1);filter:drop-shadow(0 0 4px rgba(140,200,255,.5))}50%{transform:translateY(-4px) scale(1.06);filter:drop-shadow(0 0 12px rgba(140,200,255,.95))}}@keyframes akDot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}' +
+            '@media (prefers-reduced-motion:reduce){#lwAsk .ak-think .ak-av,#lwAsk .ak-dots i{animation:none}}' +
+            '#lwAsk .ak-f{border-top:0;background:linear-gradient(rgba(6,8,18,0),rgba(6,8,18,.6))}#lwAsk .ak-f textarea{background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}#lwAsk .ak-i{background:rgba(255,255,255,.1)}' +
+            '#lwAsk .ak-c button{background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}';
         D.head.appendChild(s);
     }
     const IC = { back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>', cam: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>', send: '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>' };
     function paint() {
         if (!el) return; const l = el.querySelector('.ak-l');
-        el.classList.toggle('ak-list', view === 'list');
+        el.classList.toggle('ak-list', view === 'list'); const cbn = el.querySelector('[data-ak=chats]'); if (cbn) cbn.classList.toggle('on', view === 'list');
         if (view === 'list') {
             l.innerHTML = book.list.length ? book.list.map(c => '<div class="ak-r"><button type="button" class="ak-ro" data-ak="pick" data-id="' + esc(c.id) + '"><b>' + esc(titleOf(c)) + '</b><small>' + esc(when(c.at)) + '</small></button><button type="button" class="ak-rd" data-ak="del" data-id="' + esc(c.id) + '" aria-label="' + esc(t('del')) + '">✕</button></div>').join('') : '<p class="ak-e">' + esc(t('none')) + '</p>';
             l.scrollTop = 0; return;
         }
         const all = [{ role: 'model', text: t('hello') }].concat(msgs);
-        l.innerHTML = all.map(m => '<div class="ak-m ' + (m.role === 'user' ? 'u' : 'a') + (m.wait ? ' w' : '') + '">' + (m.img ? '<img alt="" src="' + esc(m.img) + '">' : '') + esc(m.text) + '</div>').join('');
+        const av = avatar(), lastA = all.map(m => m.role).lastIndexOf('model');
+        l.innerHTML = all.map((m, i) => {
+            if (m.role === 'user') return m.img ? '<div class="ak-m u ph"><img alt="" src="' + esc(m.img) + '"><span>' + esc(m.text) + '</span></div>' : '<div class="ak-m u">' + esc(m.text) + '</div>';
+            if (m.wait) return '<div class="ak-row ak-think"><span class="ak-av">' + av + '</span><div class="ak-m a"><span class="ak-dots" aria-label="' + esc(m.text) + '"><i></i><i></i><i></i></span></div></div>';
+            return '<div class="ak-row"><span class="ak-av">' + (i === lastA ? av : '') + '</span><div class="ak-m a">' + esc(m.text) + '</div></div>';
+        }).join('');
         l.scrollTop = l.scrollHeight;
     }
     function when(ms) { try { const d = new Date(ms), loc = { en: 'en-GB', de: 'de-DE', es: 'es-ES' }[L()] || 'en-GB'; return d.toLocaleDateString(loc, { day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
@@ -150,6 +177,12 @@
        sending keeps their question, opens the store page to get LOWiSPIKE, and after signing in the companion answers it. */
     const b64u = x => btoa(unescape(encodeURIComponent(x))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     const unb64u = x => decodeURIComponent(escape(atob(String(x).replace(/-/g, '+').replace(/_/g, '/'))));
+    /* the companion as Home shows it (its own drawing), else a glowing orb */
+    function avatar() {
+        try { const live = D.querySelector('#spBubble .sp-home-herb svg.tmg-plant') || D.querySelector('#spBubble svg.tmg-plant');
+            if (live) { const c = live.cloneNode(true); c.removeAttribute('id'); c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id')); c.setAttribute('aria-hidden', 'true'); return c.outerHTML; } } catch (e) {}
+        return '<i class="ak-orb" aria-hidden="true"></i>';
+    }
     function shareUrl() {
         const d = { v: 1, n: name(), m: msgs.filter(x => !x.wait).slice(-8).map(x => [x.role === 'user' ? 'u' : 'a', String(x.text || '').slice(0, 600), x.img ? 1 : 0]) };
         let h = b64u(JSON.stringify(d)); while (h.length > 6000 && d.m.length > 1) { d.m.shift(); h = b64u(JSON.stringify(d)); }
@@ -190,7 +223,7 @@
         view = 'chat';
         if (!el) {
             el = D.createElement('div'); el.id = 'lwAsk'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
-            el.innerHTML = '<div class="ak-h"><button type="button" class="ak-b" data-ak="close">' + IC.back + '<span></span></button><b class="ak-t"></b><button type="button" class="ak-new ak-sh" data-ak="share" aria-label="Share"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v6h14v-6"/></svg></button><button type="button" class="ak-new" data-ak="chats" data-v="chats"></button><button type="button" class="ak-new" data-ak="new"></button></div><div class="ak-l" aria-live="polite"></div>' +
+            el.innerHTML = '<div class="ak-h"><button type="button" class="ak-b" data-ak="close" data-no-bx aria-label="Back">' + IC.back + '<span></span></button><b class="ak-t"></b><div class="ak-ic"><button type="button" class="ak-new ak-sh" data-ak="share" aria-label="Share"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v6h14v-6"/></svg></button><button type="button" class="ak-new" data-ak="chats" data-v="chats"></button><button type="button" class="ak-new" data-ak="new"></button></div></div><div class="ak-l" aria-live="polite"></div>' +
                 '<div class="ak-c"><button type="button" data-ak="chip" data-c="c1"></button><button type="button" data-ak="chip" data-c="c2"></button><button type="button" data-ak="chip" data-c="c3"></button></div><p class="ak-n"></p>' +
                 '<div class="ak-pv" hidden></div><div class="ak-f"><button type="button" class="ak-i" data-ak="photo" aria-label="Photo">' + IC.cam + '</button><textarea rows="1" enterkeyhint="send"></textarea><button type="button" class="ak-i s" data-ak="send" aria-label="Send">' + IC.send + '</button></div>';
             el.addEventListener('click', e => { const b = e.target.closest('[data-ak]'); if (!b) return; const k = b.dataset.ak, ta = el.querySelector('textarea');
@@ -206,7 +239,11 @@
             el.querySelector('textarea').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const ta = e.target, v = ta.value; ta.value = ''; sendNow(v); } });
             D.body.appendChild(el);
         }
-        el.querySelector('.ak-b span').textContent = t('back'); el.querySelector('.ak-t').textContent = t('title'); el.querySelector('[data-ak=new]').textContent = t('clear'); el.querySelector('[data-ak=chats]').textContent = t('chats');
+        el.querySelector('.ak-b span').textContent = t('back'); el.querySelector('.ak-t').innerHTML = '<span class="ak-hav">' + avatar() + '</span><em>' + esc(name()) + '</em>';
+        const nb = el.querySelector('[data-ak=new]'), cb = el.querySelector('[data-ak=chats]'), sb = el.querySelector('[data-ak=share]');
+        nb.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>'; nb.setAttribute('aria-label', t('clear'));
+        cb.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>'; cb.setAttribute('aria-label', t('chats'));
+        if (sb) sb.setAttribute('aria-label', t('share'));
         el.querySelector('textarea').placeholder = t('ph'); el.querySelector('.ak-n').textContent = t('note');
         el.querySelectorAll('[data-c]').forEach(b => { b.textContent = t(b.dataset.c); });
         el.hidden = false; paint();

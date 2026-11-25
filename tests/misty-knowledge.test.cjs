@@ -34,3 +34,15 @@ test('Talk to Misty: the photo picker sits in the page; the photo waits with ✕
   assert.match(a, /send\(String\(v \|\| ''\)\.trim\(\) \|\| \(p \? t\('photo2'\) : ''\), p \|\| undefined\)/);
   assert.match(R('supabase/functions/lowi-ai/index.ts'), /A photo can be a meal, a food label, a product, or a screenshot of a video or post \(TikTok, Instagram, a recipe\)/);
 });
+/* 25 Nov 2026 (Emmanuel: "I want a share button for the chat ... people who aren't signed in yet, they see the chat ... they can type and
+   everything. But the moment they send a message ... our app store ... to sign in. The people who already have an account, it will be
+   their version ... and their Tamagotchi"). Checked in Chromium: link 131 characters; a guest sees the chat, sending keeps the question
+   and opens the store page; someone signed in gets the chat as their own new chat. */
+test('Talk to Misty: Share sends the chat in a link; a guest sees it and is sent to the store page on send; a member gets it as their chat', () => {
+  const a = R('lowi-ask.js');
+  assert.match(a, /data-ak="share"/); assert.match(a, /return 'https:\/\/lowispike\.com\/\?misty=1#misty=' \+ h;/);
+  assert.match(a, /if \(signedIn\(\)\) \{ fresh\(''\); msgs = sh; keep\(\); open\(\{\}\); return; \}/);
+  assert.match(a, /GUEST = true; msgs = sh; open\(\{\}\); return;/); assert.match(a, /if \(GUEST\) return guestSend\(v, p\);/);
+  assert.match(a, /localStorage\.setItem\('lowi\.ask\.after'/); assert.match(a, /W\.LowiStorePage\.open\(\)/);
+  assert.match(a, /if \(q && signedIn\(\)\) \{ try \{ localStorage\.removeItem\('lowi\.ask\.after'\); \} catch \(e\) \{\} setTimeout\(\(\) => open\(\{ ask: q \}\), 2500\); \}/, 'their question is answered after signing in');
+});

@@ -22,6 +22,7 @@
         limit: ['{n} is resting for today. Back tomorrow!', '{n} ruht sich für heute aus. Morgen wieder!', '{n} descansa por hoy. ¡Mañana vuelve!'], fail: ['I could not answer just now. Check your connection and try again.', 'Ich konnte gerade nicht antworten. Prüf deine Verbindung und versuch es nochmal.', 'No pude responder ahora. Inténtalo de nuevo.'],
         signin: ['Sign in to talk to {n}.', 'Melde dich an, um mit {n} zu reden.', 'Inicia sesión para hablar con {n}.'], note: ['Answers come from Google’s free AI. Please don’t share private health details. Not medical advice.', 'Antworten kommen von Googles kostenloser KI. Bitte teile keine privaten Gesundheitsdaten. Keine medizinische Beratung.', 'Las respuestas vienen de la IA gratuita de Google. No compartas datos privados de salud. No es consejo médico.'],
         photo2: ['Can I eat this? Is it insulin-friendly?', 'Kann ich das essen? Ist es insulinfreundlich?', '¿Puedo comer esto? ¿Es apto para la insulina?'], pvHint: ['Ask about this photo, then send', 'Frag etwas zu diesem Foto und sende', 'Pregunta sobre esta foto y envía'], photoFail: ['I could not open that photo. Try another one or take a screenshot of it.', 'Ich konnte das Foto nicht öffnen. Probier ein anderes oder mach einen Screenshot davon.', 'No pude abrir esa foto. Prueba otra o haz una captura.'],
+        share: ['Share', 'Teilen', 'Compartir'], shareT: ['Talk to {n} on LOWiSPIKE', 'Mit {n} reden auf LOWiSPIKE', 'Habla con {n} en LOWiSPIKE'], shareTx: ['Look what {n} told me about my food:', 'Schau, was mir {n} zu meinem Essen gesagt hat:', 'Mira lo que {n} me dijo sobre mi comida:'], copied: ['Link copied', 'Link kopiert', 'Enlace copiado'], shotPh: ['📷 Photo', '📷 Foto', '📷 Foto'], sharedH: ['Shared chat', 'Geteilter Chat', 'Chat compartido'],
         thinking: ['{n} is thinking…', '{n} denkt nach…', '{n} está pensando…'], clear: ['New chat', 'Neuer Chat', 'Nuevo chat'],
         chats: ['Chats', 'Chats', 'Chats'], none: ['No chats yet. Your conversations with {n} stay here.', 'Noch keine Chats. Deine Gespräche mit {n} bleiben hier.', 'Aún no hay chats. Tus conversaciones con {n} se quedan aquí.'],
         untitled: ['Chat with {n}', 'Chat mit {n}', 'Chat con {n}'], del: ['Delete chat', 'Chat löschen', 'Borrar chat'] };
@@ -140,14 +141,56 @@
             im.src = u; };
         i.click();
     }
-    function sendNow(v) { const p = PEND; if (!String(v || '').trim() && !p) return; pend(null); send(String(v || '').trim() || (p ? t('photo2') : ''), p || undefined); }
+    function sendNow(v) { const p = PEND; if (!String(v || '').trim() && !p) return; pend(null); if (GUEST) return guestSend(v, p); send(String(v || '').trim() || (p ? t('photo2') : ''), p || undefined); }
+    /* 25 Nov 2026 (Emmanuel: "I want a share button for the chat ... people who aren't signed in yet, they see the chat ... they can type
+       and everything. But the moment they send a message ... they go to our app store ... to sign in. The people who already have an
+       account, it will be their version ... and their Tamagotchi"): Share sends a link with the conversation in it (texts only, the last
+       8 messages; photos show as "📷 Photo"; nothing is stored on a server). Opened by someone signed in: the conversation becomes a new
+       chat of theirs, with their own companion, to go on with. Opened by someone without an account: the chat shows and they can type;
+       sending keeps their question, opens the store page to get LOWiSPIKE, and after signing in the companion answers it. */
+    const b64u = x => btoa(unescape(encodeURIComponent(x))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const unb64u = x => decodeURIComponent(escape(atob(String(x).replace(/-/g, '+').replace(/_/g, '/'))));
+    function shareUrl() {
+        const d = { v: 1, n: name(), m: msgs.filter(x => !x.wait).slice(-8).map(x => [x.role === 'user' ? 'u' : 'a', String(x.text || '').slice(0, 600), x.img ? 1 : 0]) };
+        let h = b64u(JSON.stringify(d)); while (h.length > 6000 && d.m.length > 1) { d.m.shift(); h = b64u(JSON.stringify(d)); }
+        return 'https://lowispike.com/?misty=1#misty=' + h;
+    }
+    function shareChat(b) {
+        const u = shareUrl(), ok = () => { const o = b.innerHTML; b.textContent = t('copied'); setTimeout(() => { b.innerHTML = o; }, 1600); };
+        if (navigator.share) { navigator.share({ title: t('shareT'), text: t('shareTx'), url: u }).catch(() => {}); return; }
+        try { navigator.clipboard.writeText(u).then(ok, ok); } catch (e) { ok(); }
+    }
+    let GUEST = false;
+    const signedIn = () => { try { const j = JSON.parse(localStorage.getItem('lowi.auth') || 'null'), u = j && j.user; return !!(u && !u.is_anonymous && u.email); } catch (e) { return false; } };
+    function sharedIn() {
+        let d = null; try { const m = /#misty=([A-Za-z0-9_-]+)/.exec(location.hash); if (m) d = JSON.parse(unb64u(m[1])); } catch (e) { d = null; }
+        if (!d || !Array.isArray(d.m)) return null;
+        try { history.replaceState(null, '', location.pathname + location.search.replace(/([?&])misty=1&?/, '$1').replace(/[?&]$/, '')); } catch (e) {}
+        return d.m.slice(-8).map(x => ({ role: x[0] === 'u' ? 'user' : 'model', text: (x[2] ? t('shotPh') + (x[1] ? ' · ' : '') : '') + String(x[1] || '').slice(0, 600) })).filter(x => x.text);
+    }
+    function boot() {
+        const sh = sharedIn();
+        if (sh) {
+            if (signedIn()) { fresh(''); msgs = sh; keep(); open({}); return; }
+            GUEST = true; msgs = sh; open({}); return;
+        }
+        /* a question asked before signing in, from a shared chat */
+        let q = ''; try { q = localStorage.getItem('lowi.ask.after') || ''; } catch (e) {}
+        if (q && signedIn()) { try { localStorage.removeItem('lowi.ask.after'); } catch (e) {} setTimeout(() => open({ ask: q }), 2500); }
+    }
+    function guestSend(v, p) {
+        try { if (String(v || '').trim() || p) localStorage.setItem('lowi.ask.after', String(v || '').trim() || t('photo2')); } catch (e) {}
+        close();
+        try { if (W.LowiStorePage && W.LowiStorePage.open) { W.LowiStorePage.open(); return; } } catch (e) {}
+        location.href = '/';
+    }
     function open(o) {
         o = o || {}; css();
         if (o.context != null && o.context !== ctx) fresh(String(o.context || '').slice(0, 3000));
         view = 'chat';
         if (!el) {
             el = D.createElement('div'); el.id = 'lwAsk'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
-            el.innerHTML = '<div class="ak-h"><button type="button" class="ak-b" data-ak="close">' + IC.back + '<span></span></button><b class="ak-t"></b><button type="button" class="ak-new" data-ak="chats" data-v="chats"></button><button type="button" class="ak-new" data-ak="new"></button></div><div class="ak-l" aria-live="polite"></div>' +
+            el.innerHTML = '<div class="ak-h"><button type="button" class="ak-b" data-ak="close">' + IC.back + '<span></span></button><b class="ak-t"></b><button type="button" class="ak-new ak-sh" data-ak="share" aria-label="Share"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v6h14v-6"/></svg></button><button type="button" class="ak-new" data-ak="chats" data-v="chats"></button><button type="button" class="ak-new" data-ak="new"></button></div><div class="ak-l" aria-live="polite"></div>' +
                 '<div class="ak-c"><button type="button" data-ak="chip" data-c="c1"></button><button type="button" data-ak="chip" data-c="c2"></button><button type="button" data-ak="chip" data-c="c3"></button></div><p class="ak-n"></p>' +
                 '<div class="ak-pv" hidden></div><div class="ak-f"><button type="button" class="ak-i" data-ak="photo" aria-label="Photo">' + IC.cam + '</button><textarea rows="1" enterkeyhint="send"></textarea><button type="button" class="ak-i s" data-ak="send" aria-label="Send">' + IC.send + '</button></div>';
             el.addEventListener('click', e => { const b = e.target.closest('[data-ak]'); if (!b) return; const k = b.dataset.ak, ta = el.querySelector('textarea');
@@ -158,7 +201,8 @@
                 else if (k === 'del') { book.list = book.list.filter(x => x.id !== b.dataset.id); if (cur === b.dataset.id) { msgs = []; ctx = ''; cur = ''; book.cur = ''; } save(); paint(); }
                 else if (k === 'photo') pickPhoto();
                 else if (k === 'unpend') pend(null);
-                else if (k === 'send') { const v = ta.value; ta.value = ''; sendNow(v); } else if (k === 'chip') send(t(b.dataset.c)); });
+                else if (k === 'share') shareChat(b);
+                else if (k === 'send') { const v = ta.value; ta.value = ''; sendNow(v); } else if (k === 'chip') { if (GUEST) guestSend(t(b.dataset.c)); else send(t(b.dataset.c)); } });
             el.querySelector('textarea').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const ta = e.target, v = ta.value; ta.value = ''; sendNow(v); } });
             D.body.appendChild(el);
         }
@@ -177,5 +221,6 @@
         open({ context: c, ask: c ? t('analyze') : '' });
     }, true);
     D.addEventListener('keydown', e => { if (e.key === 'Escape' && el) close(); });
-    W.LowiAsk = { open, close, call };
+    W.LowiAsk = { open, close, call, shareUrl };
+    if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', () => setTimeout(boot, 600)); else setTimeout(boot, 600);
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

@@ -72,3 +72,11 @@ test('shared Misty chats live on the server; the link is a short id with no name
   assert.match(R('store-page.js'), /\[\?&\]\(ref\|post\|p\|s\|c\|code\|invite\|app\|chat\)=/);
   assert.match(a, /#lwAsk\{position:fixed;inset:0;z-index:2147483100;/);
 });
+/* 25 Nov 2026 (Emmanuel: "the disclaimer looks very unaesthetic ... ChatGPT doesn't do that ... If I share a screenshot"). Checked in Chromium:
+   a fresh chat shows the note and the quick questions; once you talk both are gone. */
+test('Talk to Misty: the note and quick questions show only on a fresh chat, small; the conversation screen stays clean', () => {
+  const a = R('lowi-ask.js');
+  assert.match(a, /el\.classList\.toggle\('ak-empty', !msgs\.length\);/);
+  assert.match(a, /#lwAsk:not\(\.ak-empty\) \.ak-n,#lwAsk:not\(\.ak-empty\) \.ak-c\{display:none\}#lwAsk \.ak-n\{font-size:11px;/);
+  assert.match(a, /note: \['Answers come from Google/, 'the note itself stays (not medical advice, no private health details)');
+});

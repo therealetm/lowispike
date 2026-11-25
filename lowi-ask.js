@@ -120,13 +120,16 @@
             '@keyframes akBob{0%,100%{transform:translateY(0) scale(1);filter:drop-shadow(0 0 4px rgba(140,200,255,.5))}50%{transform:translateY(-4px) scale(1.06);filter:drop-shadow(0 0 12px rgba(140,200,255,.95))}}@keyframes akDot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}' +
             '@media (prefers-reduced-motion:reduce){#lwAsk .ak-think .ak-av,#lwAsk .ak-dots i{animation:none}}' +
             '#lwAsk .ak-f{border-top:0;background:linear-gradient(rgba(6,8,18,0),rgba(6,8,18,.6))}#lwAsk .ak-f textarea{background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}#lwAsk .ak-i{background:rgba(255,255,255,.1)}' +
+            /* 25 Nov 2026 (Emmanuel: "the disclaimer looks very unaesthetic ... ChatGPT doesn't do that ... If I share a screenshot"): the note and the
+               quick questions show only on a fresh chat, small and quiet; once you talk, the screen is just the conversation */
+            '#lwAsk:not(.ak-empty) .ak-n,#lwAsk:not(.ak-empty) .ak-c{display:none}#lwAsk .ak-n{font-size:11px;color:rgba(255,255,255,.38);padding:0 24px 4px}' +
             '#lwAsk .ak-c button{background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}';
         D.head.appendChild(s);
     }
     const IC = { back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>', cam: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>', send: '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>' };
     function paint() {
         if (!el) return; const l = el.querySelector('.ak-l');
-        el.classList.toggle('ak-list', view === 'list'); const cbn = el.querySelector('[data-ak=chats]'); if (cbn) cbn.classList.toggle('on', view === 'list');
+        el.classList.toggle('ak-list', view === 'list'); el.classList.toggle('ak-empty', !msgs.length); const cbn = el.querySelector('[data-ak=chats]'); if (cbn) cbn.classList.toggle('on', view === 'list');
         if (view === 'list') {
             l.innerHTML = book.list.length ? book.list.map(c => '<div class="ak-r"><button type="button" class="ak-ro" data-ak="pick" data-id="' + esc(c.id) + '"><b>' + esc(titleOf(c)) + '</b><small>' + esc(when(c.at)) + '</small></button><button type="button" class="ak-rd" data-ak="del" data-id="' + esc(c.id) + '" aria-label="' + esc(t('del')) + '">✕</button></div>').join('') : '<p class="ak-e">' + esc(t('none')) + '</p>';
             l.scrollTop = 0; return;

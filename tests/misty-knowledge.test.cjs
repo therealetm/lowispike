@@ -80,3 +80,14 @@ test('Talk to Misty: the note and quick questions show only on a fresh chat, sma
   assert.match(a, /#lwAsk:not\(\.ak-empty\) \.ak-n,#lwAsk:not\(\.ak-empty\) \.ak-c\{display:none\}#lwAsk \.ak-n\{font-size:11px;/);
   assert.match(a, /note: \['Answers come from Google/, 'the note itself stays (not medical advice, no private health details)');
 });
+/* 25 Nov 2026 (Emmanuel: "if it's suggesting the user to try that, then it should also link them ... click here to check it out ... link us
+   directly to the TikTok video"; "why is it still having my name ... it should just share the chat link"). Checked in Chromium: an answer
+   with two community links shows "▶ Nori Smash Burger Stack · Watch on TikTok" (opens the TikTok) and "✨ … · Open it in For You" (opens the post). */
+test('the companion links what it recommends from the community: the TikTok / YouTube, the For You post or the chat; sharing sends only the link', () => {
+  const a = R('lowi-ask.js'), fn = R('supabase/functions/lowi-ai/index.ts'), h = R('index.html');
+  assert.match(fn, /When you recommend one of them, put its tag right after it, like \[r2\]; at most 2 tags/);
+  assert.match(fn, /return out\(req, 200, \{ ok: true, text, links \}\);/); assert.match(fn, /kind: "chat" \}\); \}/);
+  assert.match(a, /function cardsHTML\(l\)/); assert.match(a, /if \(x\.url\) \{ try \{ W\.open\(x\.url, '_blank', 'noopener'\);/);
+  assert.match(a, /else if \(W\.LowiOpenPost\) W\.LowiOpenPost\(x\.id\);/); assert.match(h, /window\.LowiOpenPost = id => openPost\(id\); window\.LowiOpenChat = /);
+  assert.match(a, /navigator\.share\(\{ url: u \}\)/); assert.doesNotMatch(a, /navigator\.share\(\{ title: t\('shareT'\)/);
+});

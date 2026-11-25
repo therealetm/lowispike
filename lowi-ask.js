@@ -27,6 +27,7 @@
         signin: ['Sign in to talk to {n}.', 'Melde dich an, um mit {n} zu reden.', 'Inicia sesión para hablar con {n}.'], note: ['Answers come from Google’s free AI. Please don’t share private health details. Not medical advice.', 'Antworten kommen von Googles kostenloser KI. Bitte teile keine privaten Gesundheitsdaten. Keine medizinische Beratung.', 'Las respuestas vienen de la IA gratuita de Google. No compartas datos privados de salud. No es consejo médico.'],
         photo2: ['Can I eat this? Is it insulin-friendly?', 'Kann ich das essen? Ist es insulinfreundlich?', '¿Puedo comer esto? ¿Es apto para la insulina?'], pvHint: ['Ask about this photo, then send', 'Frag etwas zu diesem Foto und sende', 'Pregunta sobre esta foto y envía'], photoFail: ['I could not open that photo. Try another one or take a screenshot of it.', 'Ich konnte das Foto nicht öffnen. Probier ein anderes oder mach einen Screenshot davon.', 'No pude abrir esa foto. Prueba otra o haz una captura.'],
         share: ['Share', 'Teilen', 'Compartir'], shareT: ['Talk to {n} on LOWiSPIKE', 'Mit {n} reden auf LOWiSPIKE', 'Habla con {n} en LOWiSPIKE'], shareTx: ['Look what {n} told me about my food:', 'Schau, was mir {n} zu meinem Essen gesagt hat:', 'Mira lo que {n} me dijo sobre mi comida:'], copied: ['Link copied', 'Link kopiert', 'Enlace copiado'], shotPh: ['📷 Photo', '📷 Foto', '📷 Foto'], sharedH: ['Shared chat', 'Geteilter Chat', 'Chat compartido'],
+        seeIt: ['Check it out', 'Schau es dir an', 'Míralo'], watchOn: ['Watch on {p}', 'Auf {p} ansehen', 'Ver en {p}'], inFy: ['Open it in For You', 'In For You öffnen', 'Abrir en Para ti'], inChat: ['Open the chat', 'Den Chat öffnen', 'Abrir el chat'],
         thinking: ['{n} is thinking…', '{n} denkt nach…', '{n} está pensando…'], clear: ['New chat', 'Neuer Chat', 'Nuevo chat'],
         chats: ['Chats', 'Chats', 'Chats'], none: ['No chats yet. Your conversations with {n} stay here.', 'Noch keine Chats. Deine Gespräche mit {n} bleiben hier.', 'Aún no hay chats. Tus conversaciones con {n} se quedan aquí.'],
         untitled: ['Chat with {n}', 'Chat mit {n}', 'Chat con {n}'], del: ['Delete chat', 'Chat löschen', 'Borrar chat'] };
@@ -123,6 +124,8 @@
             /* 25 Nov 2026 (Emmanuel: "the disclaimer looks very unaesthetic ... ChatGPT doesn't do that ... If I share a screenshot"): the note and the
                quick questions show only on a fresh chat, small and quiet; once you talk, the screen is just the conversation */
             '#lwAsk:not(.ak-empty) .ak-n,#lwAsk:not(.ak-empty) .ak-c{display:none}#lwAsk .ak-n{font-size:11px;color:rgba(255,255,255,.38);padding:0 24px 4px}' +
+            '#lwAsk .ak-cards{display:flex;flex-direction:column;gap:6px;margin-top:10px}#lwAsk .ak-card{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 10px;border-radius:14px;border:1px solid rgba(159,216,255,.28);background:rgba(120,170,255,.12);color:#fff;font:inherit;text-align:left;cursor:pointer}' +
+            '#lwAsk .ak-ci{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.14);font-size:14px}#lwAsk .ak-ct{flex:1;min-width:0;display:flex;flex-direction:column}#lwAsk .ak-ct b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#lwAsk .ak-ct small{font-size:12.5px;color:#bfe6ff}#lwAsk .ak-cg{font-size:22px;opacity:.6}' +
             '#lwAsk .ak-c button{background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}';
         D.head.appendChild(s);
     }
@@ -139,7 +142,7 @@
         l.innerHTML = all.map((m, i) => {
             if (m.role === 'user') return m.img ? '<div class="ak-m u ph"><img alt="" src="' + esc(m.img) + '"><span>' + esc(m.text) + '</span></div>' : '<div class="ak-m u">' + esc(m.text) + '</div>';
             if (m.wait) return '<div class="ak-row ak-think"><span class="ak-av">' + av + '</span><div class="ak-m a"><span class="ak-dots" aria-label="' + esc(m.text) + '"><i></i><i></i><i></i></span></div></div>';
-            return '<div class="ak-row"><span class="ak-av">' + (i === lastA ? av : '') + '</span><div class="ak-m a">' + esc(m.text) + '</div></div>';
+            return '<div class="ak-row"><span class="ak-av">' + (i === lastA ? av : '') + '</span><div class="ak-m a">' + esc(m.text) + (m.links && m.links.length ? '<div class="ak-cards" data-mi="' + (i - 1) + '">' + cardsHTML(m.links) + '</div>' : '') + '</div></div>';
         }).join('');
         l.scrollTop = l.scrollHeight;
     }
@@ -151,7 +154,7 @@
         msgs.push({ role: 'model', text: t('thinking'), wait: true }); paint();
         try {
             const j = await call({ action: 'ask', lang: L(), name: name(), sign: sign(), context: ctx, image: img ? img.b64 : undefined, messages: msgs.filter(m => !m.wait).slice(-12).map(m => ({ role: m.role, text: m.text })) });
-            msgs.pop(); msgs.push({ role: 'model', text: j.text || '…' });
+            msgs.pop(); const am = { role: 'model', text: j.text || '…' }; const lk = cleanLinks(j.links); if (lk.length) am.links = lk; msgs.push(am);
         } catch (e) { msgs.pop(); msgs.push({ role: 'model', text: e.code === 'limit' ? t('limit') : e.code === 'sign_in' ? t('signin') : t('fail') }); }
         busy = false; keep(); paint(); if (f) f.querySelectorAll('button,textarea').forEach(x => { x.disabled = false; });
     }
@@ -193,7 +196,17 @@
     /* 25 Nov 2026 (Emmanuel: "why is my companion name in the link? I wanted it to be a link that shares the chat, just like a ChatGPT
        link"): the conversation is kept on the server (public.share_chat: signed in, 40 a day) and the link is only its short id,
        lowispike.com/?chat=ID. No name in it; photos go along as their small previews. */
-    function shareData() { let n = 0; return { v: 2, m: msgs.filter(x => !x.wait).slice(-12).map(x => { const o = [x.role === 'user' ? 'u' : 'a', String(x.text || '').slice(0, 1200), 0]; if (x.img && n < 4 && String(x.img).length < 60000) { o[2] = 1; o[3] = x.img; n++; } return o; }) }; }
+    /* 25 Nov 2026 (Emmanuel: "if it's suggesting the user to try that, then it should also link them ... click here to check it out ... directly
+       to the TikTok video"): what the companion recommends from the community comes with cards: ▶ Watch on TikTok / YouTube (the original
+       video), or open the post in For You, or the public chat */
+    function cleanLinks(l) { return (Array.isArray(l) ? l : []).slice(0, 3).map(x => ({ kind: x && x.kind === 'chat' ? 'chat' : 'fy', id: String(x && x.id || '').slice(0, 80), url: /^https:\/\/([a-z0-9-]+\.)*(tiktok\.com|youtube\.com|youtu\.be|instagram\.com)\//i.test(String(x && x.url || '')) ? String(x.url).slice(0, 400) : '', plat: String(x && x.plat || '').slice(0, 20), label: String(x && x.label || '').slice(0, 60) })).filter(x => x.url || x.id || x.kind === 'chat'); }
+    function cardsHTML(l) { return (l || []).map((x, i) => { const ext = x.url, where = /youtu/i.test(x.url) ? 'YouTube' : /instagram/i.test(x.url) ? 'Instagram' : 'TikTok';
+        return '<button type="button" class="ak-card" data-ak="go" data-i="' + i + '"><span class="ak-ci" aria-hidden="true">' + (ext ? '▶' : x.kind === 'chat' ? '💬' : '✨') + '</span><span class="ak-ct"><b>' + esc(x.label || t('seeIt')) + '</b><small>' + esc(ext ? t('watchOn').replace('{p}', where) : x.kind === 'chat' ? t('inChat') : t('inFy')) + '</small></span><span class="ak-cg" aria-hidden="true">›</span></button>'; }).join(''); }
+    function goLink(x) { if (!x) return;
+        if (x.url) { try { W.open(x.url, '_blank', 'noopener'); } catch (e) { location.href = x.url; } return; }
+        if (GUEST) return guestSend('');
+        close(); setTimeout(() => { try { if (x.kind === 'chat') { if (W.LowiOpenChat) W.LowiOpenChat(); } else if (W.LowiOpenPost) W.LowiOpenPost(x.id); } catch (e) {} }, 300); }
+    function shareData() { let n = 0; return { v: 2, m: msgs.filter(x => !x.wait).slice(-12).map(x => { const o = [x.role === 'user' ? 'u' : 'a', String(x.text || '').slice(0, 1200), 0]; if (x.img && n < 4 && String(x.img).length < 60000) { o[2] = 1; o[3] = x.img; n++; } if (x.links && x.links.length) { while (o.length < 4) o.push(''); o[4] = x.links; } return o; }) }; }
     async function shareUrl() {
         const tk = await token(); if (!tk) throw Object.assign(new Error('sign_in'), { code: 'sign_in' });
         const r = await fetch(RPC + 'share_chat', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: PUBKEY, Authorization: 'Bearer ' + tk }, body: JSON.stringify({ p_data: shareData() }) });
@@ -205,7 +218,7 @@
         const keepHtml = b.innerHTML; b.disabled = true;
         let u = ''; try { u = await shareUrl(); } catch (e) { b.disabled = false; msgs.push({ role: 'model', text: e.code === 'sign_in' ? t('signin') : t('fail') }); paint(); return; }
         b.disabled = false;
-        if (navigator.share) { navigator.share({ title: t('shareT'), url: u }).catch(() => {}); return; }
+        if (navigator.share) { navigator.share({ url: u }).catch(() => {}); return; }   /* only the link: no name, no text */
         const ok = () => { b.textContent = '✓'; setTimeout(() => { b.innerHTML = keepHtml; }, 1600); };
         try { navigator.clipboard.writeText(u).then(ok, ok); } catch (e) { ok(); }
     }
@@ -213,7 +226,7 @@
     const signedIn = () => { try { const j = JSON.parse(localStorage.getItem('lowi.auth') || 'null'), u = j && j.user; return !!(u && !u.is_anonymous && u.email); } catch (e) { return false; } };
     function toMsgs(d) {
         if (!d || !Array.isArray(d.m)) return null;
-        return d.m.slice(-12).map(x => { const o = { role: x[0] === 'u' ? 'user' : 'model', text: String(x[1] || '').slice(0, 1200) }; if (x[2] && typeof x[3] === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(x[3])) o.img = x[3]; else if (x[2]) o.text = t('shotPh') + (o.text ? ' · ' + o.text : ''); return o; }).filter(x => x.text || x.img);
+        return d.m.slice(-12).map(x => { const o = { role: x[0] === 'u' ? 'user' : 'model', text: String(x[1] || '').slice(0, 1200) }; const lk = cleanLinks(x[4]); if (lk.length) o.links = lk; if (x[2] && typeof x[3] === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(x[3])) o.img = x[3]; else if (x[2]) o.text = t('shotPh') + (o.text ? ' · ' + o.text : ''); return o; }).filter(x => x.text || x.img);
     }
     async function sharedIn() {
         let d = null;
@@ -257,6 +270,7 @@
                 else if (k === 'photo') pickPhoto();
                 else if (k === 'unpend') pend(null);
                 else if (k === 'share') shareChat(b);
+                else if (k === 'go') { const box = b.closest('[data-mi]'), mm = box && msgs[+box.dataset.mi]; goLink(mm && mm.links && mm.links[+b.dataset.i]); }
                 else if (k === 'send') { const v = ta.value; ta.value = ''; sendNow(v); } else if (k === 'chip') { if (GUEST) guestSend(t(b.dataset.c)); else send(t(b.dataset.c)); } });
             el.querySelector('textarea').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const ta = e.target, v = ta.value; ta.value = ''; sendNow(v); } });
             D.body.appendChild(el);

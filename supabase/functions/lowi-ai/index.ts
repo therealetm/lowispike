@@ -36,10 +36,19 @@ async function userId(req: Request): Promise<string> {
   if (!/^Bearer\s+\S+/.test(auth) || !url || !anon) return "";
   try { const r = await fetch(url + "/auth/v1/user", { headers: { apikey: anon, Authorization: auth } }); if (!r.ok) return ""; const u = await r.json(); return typeof u?.id === "string" ? u.id : ""; } catch (_e) { return ""; }
 }
-async function take(subject: string, feature: string): Promise<string> {
+/* 25 Nov 2026 (Emmanuel: "you are capping me, the admin. Don't do that. As an admin, I should be able to have as many go with the AI use as
+   I need, because I'm testing things"): the owner (public.is_app_owner() for this session) is never stopped by a limit. */
+async function isOwner(req: Request): Promise<boolean> {
+  const auth = req.headers.get("authorization") || "", url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!/^Bearer\s+\S+/.test(auth) || !url || !anon) return false;
+  try { const r = await fetch(url + "/rest/v1/rpc/is_app_owner", { method: "POST", headers: { apikey: anon, Authorization: auth, "Content-Type": "application/json" }, body: "{}" }); return r.ok && (await r.json()) === true; } catch (_e) { return false; }
+}
+const NO_CAP = 1_000_000_000;
+/* the owner's use is still counted (AI usage overview) but neither his own nor the whole-app cap stops him */
+async function take(subject: string, feature: string, owner = false): Promise<string> {
   const url = Deno.env.get("SUPABASE_URL"), key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   try {
-    const r = await fetch(url + "/rest/v1/rpc/ai_take", { method: "POST", headers: { apikey: key!, Authorization: "Bearer " + key, "Content-Type": "application/json" }, body: JSON.stringify({ p_subject: subject, p_feature: feature, p_user_max: LIMITS[feature] || 10, p_global_max: GLOBAL }) });
+    const r = await fetch(url + "/rest/v1/rpc/ai_take", { method: "POST", headers: { apikey: key!, Authorization: "Bearer " + key, "Content-Type": "application/json" }, body: JSON.stringify({ p_subject: subject, p_feature: feature, p_user_max: owner ? NO_CAP : LIMITS[feature] || 10, p_global_max: owner ? NO_CAP : GLOBAL }) });
     return r.ok ? String(await r.json()) : "error";
   } catch (_e) { return "error"; }
 }
@@ -156,7 +165,7 @@ Deno.serve(async (req) => {
   const subject = uid || "ip:" + clip((req.headers.get("x-forwarded-for") || "").split(",")[0], 60);
   const lang = LANG[String(b.lang || b.to || "en")] ? String(b.lang || b.to) : "en";
   try {
-    const t = await take(subject, action);
+    const t = await take(subject, action, !!uid && await isOwner(req));
     if (t !== "ok") return out(req, 429, { error: "limit", scope: t });
     if (action === "fyfill") {
       const id = clip(b.id, 80); if (!id) return out(req, 400, { error: "bad_request" });

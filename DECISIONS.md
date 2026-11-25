@@ -1853,3 +1853,7 @@ Emmanuel: "update our App Store ... where the images go ... the community, the s
 ## 2026-11-25 — Studio AI is for everyone, not only the owner
 
 Emmanuel: "Why would I be owner only? I'm doing this so people can also use this exact thing like me." studio-ai `captions` (the video machine's texts on screen) and `words` (a video link's spoken words and text on screen) now work for every signed-in person, each with their own daily limit in `public.ai_usage`: 20 text rounds and 10 links a day (the owner keeps 80 and 60); the whole app still shares the global daily cap. `fill` (adding to the shared Swipe file) stays the owner's, since that library is his curation. Someone not signed in is asked to sign in (no more "owner only" in Studio). Guarded by `tests/studio-ai-for-everyone.test.cjs`.
+
+## 2026-11-25 — No AI caps for the owner
+
+Emmanuel: "you are capping me, the admin. Don't do that. As an admin, I should be able to have as many go with the AI use as I need, because I'm testing things." For the owner (`public.is_app_owner()` for the session): lowi-ai and studio-ai still count his calls in `public.ai_usage` (so the AI usage overview shows them) but call `ai_take` with no personal and no whole-app cap; food-photo skips the daily photo count and the burst limits and answers `left: 10` (owner: true). Everyone else keeps their limits. His calls still count toward the shared whole-app total that other people's calls are checked against, and all calls share one Google free quota. Guarded by `tests/owner-no-ai-cap.test.cjs`.

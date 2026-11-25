@@ -91,6 +91,13 @@ export function tally(stamps: number[], now: number, tz: string) {
   return { recent, used: Math.min(DAY_MAX, used), left: ok ? DAY_MAX - used : 0, ok };
 }
 
+/* 25 Nov 2026 (Emmanuel: "you are capping me, the admin. Don't do that. As an admin, I should be able to have as many go with the AI use as
+   I need, because I'm testing things"): the owner (public.is_app_owner() for this session) is never stopped by a limit. */
+async function isOwner(req: Request): Promise<boolean> {
+  const auth = req.headers.get("authorization") || "", url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!/^Bearer\s+\S+/.test(auth) || !url || !anon) return false;
+  try { const r = await fetch(url + "/rest/v1/rpc/is_app_owner", { method: "POST", headers: { apikey: anon, Authorization: auth, "Content-Type": "application/json" }, body: "{}" }); return r.ok && (await r.json()) === true; } catch (_e) { return false; }
+}
 async function store(uid: string, stamps: number[]): Promise<boolean> {
   const url = Deno.env.get("SUPABASE_URL"), svc = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !svc) return false;
@@ -324,6 +331,7 @@ Deno.serve(async (req) => {
     const u = await who(req);
     if (!u) return out(req, 200, base);
     const tz = zone(new URL(req.url).searchParams.get("tz"));
+    if (await isOwner(req)) return out(req, 200, { ...base, used: 0, left: DAY_MAX, owner: true });
     const c = tally(u.stamps, Date.now(), tz);
     return out(req, 200, { ...base, used: c.used, left: c.left });
   }
@@ -333,12 +341,13 @@ Deno.serve(async (req) => {
   if (!key) return out(req, 503, { error: "not_configured" });
   const u = await who(req);
   if (!u) return out(req, 401, { error: "sign_in" });
+  const boss = await isOwner(req);
   let body: { image?: string; mime?: string; lang?: string; tz?: string; text?: string; translate?: { names?: unknown; portions?: unknown } };
   try { body = await req.json(); } catch (_e) { return out(req, 400, { error: "bad_request" }); }
   if (body.translate && !body.image) {
     const names = trList(body.translate.names), portions = trList(body.translate.portions);
     if (!names.length || names.some((n) => n.length < 1)) return out(req, 400, { error: "bad_request", mode: "translate" });
-    if (!nameBurst(u.id)) return out(req, 429, { error: "busy", mode: "translate" });
+    if (!boss && !nameBurst(u.id)) return out(req, 429, { error: "busy", mode: "translate" });
     try {
       const r = await translate(key, names, portions);
       return out(req, r.status, r.body);
@@ -350,7 +359,7 @@ Deno.serve(async (req) => {
   if (body.text != null && !body.image) {
     const name = nameText(body.text), nl = ["en", "de", "es"].includes(String(body.lang)) ? String(body.lang) : "en";
     if (name.length < 2) return out(req, 400, { error: "bad_name" });
-    if (!nameBurst(u.id)) return out(req, 429, { error: "busy" });
+    if (!boss && !nameBurst(u.id)) return out(req, 429, { error: "busy" });
     try {
       const r = await gemini(key, "", "", nl, name);
       return out(req, r.status, { ...r.body, mode: "name" });
@@ -364,6 +373,11 @@ Deno.serve(async (req) => {
   const lang = ["en", "de", "es"].includes(String(body.lang)) ? String(body.lang) : "en";
   if (!image || image.length > MAX_B64 || !/^[A-Za-z0-9+/=]+$/.test(image)) return out(req, 400, { error: "bad_image" });
   const tz = zone(body.tz), now = Date.now();
+  /* the owner: no daily count, no burst limit (his photo checks are not stored as stamps) */
+  if (boss) {
+    try { const r = await gemini(key, image, mime, lang); return out(req, r.status, { ...r.body, limit: DAY_MAX, left: DAY_MAX, owner: true }); }
+    catch (_e) { console.error("food-photo: request failed"); return out(req, 502, { error: "ai_failed", limit: DAY_MAX, left: DAY_MAX }); }
+  }
   const c = tally(u.stamps, now, tz);
   if (!c.ok) return out(req, 429, { error: "limit", limit: DAY_MAX, left: 0 });
   // Count it before Google is asked (a second phone cannot slip in between), hand it back if the read fails.

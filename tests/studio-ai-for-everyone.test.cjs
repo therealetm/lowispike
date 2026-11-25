@@ -5,7 +5,8 @@ const test = require('node:test'), assert = require('node:assert'), fs = require
 const R = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const fn = R('supabase/functions/studio-ai/index.ts');
 test('captions and words: any signed-in person, each with their own limit', () => {
-  assert.match(fn, /const PER = \{ captions: \[80, 20\], words: \[60, 10\] \}/);
+  /* changed 25 Nov 2026, later (Emmanuel: "you are capping me, the admin. Don't do that"): the owner's slot is 0 = no cap (see take) */
+  assert.match(fn, /const PER = \{ captions: \[0, 20\], words: \[0, 10\] \}/);
   assert.match(fn, /if \(await isOwner\(req\)\) return \{ sub: "owner", max: PER\[feature\]\[0\] \};/);
   assert.match(fn, /const uid = await userId\(req\); return uid \? \{ sub: uid, max: PER\[feature\]\[1\] \} : \{ sub: "", max: 0 \};/);
   assert.match(fn, /take\(w\.sub, "captions", w\.max\)/); assert.match(fn, /take\(w\.sub, "words", w\.max\)/);

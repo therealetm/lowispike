@@ -10,12 +10,12 @@
 //   POST {action:"profile", link}  anyone (30 a day per connection): a TikTok / Instagram profile -> {name, handle, bio, avatar, followers}
 //   POST {action:"translate", text, to}  anyone on the app's origin: translates text (max 6000 chars) into en / de / es, or (since
 //        23 Nov 2026) into any language named in `to` ("Italian", "Türkçe", "Brazilian Portuguese").
-//   POST {action:"captions", bio, examples:[{hook,text}], clips:[{sec, style}], lang}  every signed-in person, 20 a day (owner 80) (24 Nov 2026, Emmanuel: "upload that
+//   POST {action:"captions", bio, examples:[{hook,text}], clips:[{sec, style}], lang}  every signed-in person, 20 a day (owner: no cap) (24 Nov 2026, Emmanuel: "upload that
 //        60-second video and it will automatically be cut ... every chopped up version has a text on screen that's been generated
 //        automatically ... based on the text on screen details that I want ... one is in I form, one is in U form ... one is teaching"):
 //        one text-on-screen line per clip, in the creator's own voice (bio), learning the style from the playlist examples, sized so it
 //        can be read in the clip's seconds. Returns {texts:[...]} in the same order.
-//   POST {action:"words", link}  every signed-in person, 10 a day (owner 60) (23 Nov 2026, Emmanuel: "I send a link of a video that I'm about to copy, and it then gives
+//   POST {action:"words", link}  every signed-in person, 10 a day (owner: no cap) (23 Nov 2026, Emmanuel: "I send a link of a video that I'm about to copy, and it then gives
 //        me the transcript, if there is a transcript, or the text on the screen ... and the bio. And then I can translate it"):
 //        a TikTok video -> {caption, author, transcript (spoken words), onscreen (text shown on screen), transcribed}. When the video
 //        file cannot be fetched (Instagram, or TikTok refuses), only the caption comes back and transcribed=false.
@@ -48,14 +48,16 @@ async function userId(req: Request): Promise<string> {
    texts (captions) and a video's words from a link (words) are for every signed-in person, each with their own daily limit; the owner
    keeps his bigger one. Adding to the shared Swipe file (fill) stays the owner's. Returns the limit subject, or "" (then: sign_in). */
 async function who(req: Request, feature: string): Promise<{ sub: string; max: number }> {
-  const PER = { captions: [80, 20], words: [60, 10] } as Record<string, number[]>;
+  const PER = { captions: [0, 20], words: [0, 10] } as Record<string, number[]>;   /* [owner (no cap, see take), everyone else] */
   if (await isOwner(req)) return { sub: "owner", max: PER[feature][0] };
   const uid = await userId(req); return uid ? { sub: uid, max: PER[feature][1] } : { sub: "", max: 0 };
 }
 /* 22 Nov 2026: Studio shares the app's AI limits (public.ai_usage): translate 20 a day per person, fill 100 a day for the owner */
+/* the owner (subject "owner") is counted but never stopped (25 Nov 2026, Emmanuel: "you are capping me, the admin. Don't do that") */
 async function take(subject: string, feature: string, max: number): Promise<string> {
+  const free = subject === "owner", NO_CAP = 1_000_000_000;
   const url = Deno.env.get("SUPABASE_URL"), key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  try { const r = await fetch(url + "/rest/v1/rpc/ai_take", { method: "POST", headers: { apikey: key!, Authorization: "Bearer " + key, "Content-Type": "application/json" }, body: JSON.stringify({ p_subject: subject, p_feature: feature, p_user_max: max, p_global_max: 400 }) }); return r.ok ? String(await r.json()) : "error"; } catch (_e) { return "error"; }
+  try { const r = await fetch(url + "/rest/v1/rpc/ai_take", { method: "POST", headers: { apikey: key!, Authorization: "Bearer " + key, "Content-Type": "application/json" }, body: JSON.stringify({ p_subject: subject, p_feature: feature, p_user_max: free ? NO_CAP : max, p_global_max: free ? NO_CAP : 400 }) }); return r.ok ? String(await r.json()) : "error"; } catch (_e) { return "error"; }
 }
 async function gemini(parts: unknown[], schema: unknown, maxTokens = 2048, plain = false) {
   const key = Deno.env.get("GEMINI_API_KEY") || ""; if (!key) throw new Error("not_configured");

@@ -185,7 +185,7 @@ test('🎬 Make only for the ticked parts, then 📲 Save; saved parts show ✓ 
   assert.match(js, /howMake: \['🎬 Make puts the text on the video/);
 });
 test('one size and one joystick for all texts, kept in the safe zone and remembered for new parts', () => {
-  assert.match(js, /<input type="range" id="vmAsz"/); assert.match(js, /data-vm="amv" data-dx="0" data-dy="-1"/); assert.match(js, /data-vm="amv" data-c="1"/);
+  /* changed 25 Nov 2026: A− / A+ buttons instead of the slider */ assert.match(js, /data-vm="asz" data-d="2"/); assert.match(js, /data-vm="amv" data-dx="0" data-dy="-1"/); assert.match(js, /data-vm="amv" data-c="1"/);
   assert.match(js, /function allSet\(fn\) \{ if \(!st\.sess\) return; st\.sess\.clips\.forEach\(function \(c\) \{ fn\(c\); clampClip\(c\); \}\);/);
   assert.match(js, /x: st\.pref\.x, y: st\.pref\.y, size: st\.pref\.size, look: st\.pref\.look/);
   assert.match(js, /function clampClip\(c\)/);
@@ -221,4 +221,14 @@ test('a failed AI call in Studio tries again by itself twice, except for answers
   const h = R('studio/index.html');
   assert.match(h, /function ai\(payload, n\) \{/); assert.match(h, /again = n < 2 && !\/\^\(limit\|bad_link\|bad_request\|owner_only\|too_long\)\$\/\.test\(m\);/);
   assert.match(h, /setTimeout\(r, n \? 4000 : 1500\)/);
+});
+/* 25 Nov 2026 (Emmanuel: "it said saved ... But now it tells me there's no place where I could click save all videos ... Now I had to click
+   on make videos again, and now I feel like it's restarting"). Checked in Chromium: after Save -> "📲 Save 3 again" at once (3 files
+   again), chips "✓ Saved · 📲"; A+ -> Size 24 -> 26 and the bar says Make (the texts changed). */
+test('when every part is saved, all are ticked and the button says "Save N again"; nothing needs making again', () => {
+  assert.match(js, /function selIdx0\(\) \{[^\n]*return n\.length \? n : w; \}/);
+  assert.match(js, /t\('saveAgain', n\) : t\('saveN', n\)/); assert.match(js, /saveAgain: \['📲 Save \{p\} again'/);
+});
+test('all texts are resized with A− / A+ buttons, not a slider a scroll could move by accident', () => {
+  assert.doesNotMatch(js, /id="vmAsz"/); assert.match(js, /data-vm="asz" data-d="-2"/); assert.match(js, /if \(k === 'asz'\) \{ var nz = Math\.max\(14, Math\.min\(40,/);
 });

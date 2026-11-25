@@ -57,6 +57,7 @@
     makeN: ['🎬 Make {p} videos', '🎬 {p} Videos machen', '🎬 Hacer {p} vídeos'], make1: ['🎬 Make 1 video', '🎬 1 Video machen', '🎬 Hacer 1 vídeo'], saveN: ['📲 Save {p}', '📲 {p} speichern', '📲 Guardar {p}'],
     makingN: ['🎬 Making video {p}', '🎬 Video {p} wird gemacht', '🎬 Haciendo vídeo {p}'], goOn: ['▶ Tap to go on', '▶ Tippen, um weiterzumachen', '▶ Toca para seguir'], pickParts: ['Tick the parts you want', 'Hak die Teile an, die du willst', 'Marca las partes que quieres'],
     howMake: ['🎬 Make puts the text on the video (about as long as the clip, keep the app open). 📲 Save sends it to your phone and ticks it ✓.', '🎬 Machen legt den Text aufs Video (etwa so lang wie der Clip, App offen lassen). 📲 Speichern schickt es aufs Handy und hakt es ✓ ab.', '🎬 Hacer pone el texto en el vídeo (dura lo que el clip, deja la app abierta). 📲 Guardar lo envía al móvil y lo marca ✓.'],
+    saveAgain: ['📲 Save {p} again', '📲 {p} nochmal speichern', '📲 Guardar {p} otra vez'], sizeN: ['Size {p}', 'Größe {p}', 'Tamaño {p}'],
     saved: ['✓ Saved', '✓ Gespeichert', '✓ Guardado'], made: ['🎬 Made', '🎬 Gemacht', '🎬 Hecho'], noText: ['No text yet', 'Noch kein Text', 'Sin texto aún'], adding: ['Adding…', 'Wird hinzugefügt…', 'Añadiendo…'],
     reOne: ['New text for this part', 'Neuer Text für diesen Teil', 'Texto nuevo para esta parte'], tick: ['Use this part', 'Diesen Teil nehmen', 'Usar esta parte'],
     daysAgo: ['{p} d ago', 'vor {p} T.', 'hace {p} d'], firstTexts: ['Pick a playlist, then tap ✨ New texts.', 'Wähl eine Playlist und tipp dann auf ✨ Neue Texte.', 'Elige una playlist y toca ✨ Textos nuevos.'],
@@ -459,6 +460,8 @@
     if (k === 'makeSel') { var mi = selIdx().filter(function (i) { return !got(i) && st.sess.clips[i].text; }); if (!mi.length) return; if (!canMake()) return S.toast(t('noRec')); WANT = mi; qErr = 0; CRASHED = false; TAPPED = true; unlock(); setTimeout(queue, 60); return refresh(); }
     if (k === 'saveSel') { var si = selIdx().filter(function (i) { return got(i); }); return share(si.map(function (i) { return fileOf(got(i), i); })).then(function (ok) { if (ok) { WANT = []; markUsed(si); } }); }
     if (k === 'amv') { var dx = +b.dataset.dx || 0, dy = +b.dataset.dy || 0, cen = b.dataset.c === '1'; allSet(function (c) { if (cen) { c.x = 0.5; c.y = (SAFE.t + SAFE.b) / 2; } else { c.x += dx * 0.03; c.y += dy * 0.025; } }); keep(); drawTiles(); return refresh(); }
+    /* 25 Nov 2026: the size of all texts in steps of 2, with buttons (a slider got moved by accident while scrolling) */
+    if (k === 'asz') { var nz = Math.max(14, Math.min(40, ((st.sess.clips[0] && st.sess.clips[0].size) || st.pref.size) + (+b.dataset.d || 0))); allSet(function (c) { c.size = nz; }); st.pref.size = nz; keep(); drawTiles(); return refresh(); }
     if (k === 'alook') { var lk = st.sess.clips[0] && st.sess.clips[0].look === 'box' ? 'plain' : 'box'; allSet(function (c) { c.look = lk; }); st.pref.look = lk; keep(); return refresh(); }
     if (k === 'lang') { st.lang = b.dataset.l; keep(); return refresh(); }
     if (k === 'go') return go();
@@ -521,12 +524,14 @@
       if (c.text) drawText(x, c, w, h);
     });
   }
-  function selIdx0() { return st.sess ? st.sess.clips.map(function (_c, i) { return i; }).filter(function (i) { return st.sess.clips[i].text && !isUsed(st.sess.clips[i]); }) : []; }
-  function selIdx() { if (!st.sess) return []; var all = st.sess.clips.map(function (_c, i) { return i; }); if (SELSET) return all.filter(function (i) { return SELSET[i]; }); return all.filter(function (i) { return st.sess.clips[i].text && !isUsed(st.sess.clips[i]); }); }
+  /* 25 Nov 2026 (Emmanuel: "it's saved ... But now ... there's no place where I could click save all videos"): ticked by default are the
+     parts not saved yet; when every part is saved, all of them, so "📲 Save all again" is one tap */
+  function selIdx0() { if (!st.sess) return []; var w = st.sess.clips.map(function (_c, i) { return i; }).filter(function (i) { return st.sess.clips[i].text; }), n = w.filter(function (i) { return !isUsed(st.sess.clips[i]); }); return n.length ? n : w; }
+  function selIdx() { if (!st.sess) return []; var all = st.sess.clips.map(function (_c, i) { return i; }); if (SELSET) return all.filter(function (i) { return SELSET[i]; }); return selIdx0(); }
   function tile2(c, i, on) { var u = isUsed(c), m = got(i), mk = qRun && qNow === i;
     return '<div class="vm-t2' + (on ? ' on' : '') + (u ? ' used' : '') + '"><button class="vm-tile vm-tc" data-vm="popen" data-i="' + i + '" aria-label="' + esc(fmt(c.sec) + ' ' + (c.text || t('noText'))) + '"><canvas data-tc="' + i + '" width="270" height="480"></canvas>' +
       '<i>' + fmt(c.sec) + '</i><em>' + esc(T.ST[c.style] ? T.ST[c.style][I] : c.style) + '</em>' +
-      (mk ? '<b class="vm-pc" data-pc>' + qPc + '%</b>' : u ? '<b class="vm-used">' + esc(t('saved')) + '</b>' : m ? '<b class="vm-ok vm-okp">' + esc(t('made')) + '</b>' : !c.text ? '<b class="vm-nt">' + esc(t('noText')) + '</b>' : '') + '</button>' +
+      (mk ? '<b class="vm-pc" data-pc>' + qPc + '%</b>' : u ? '<b class="vm-used">' + esc(t('saved')) + (m ? ' · 📲' : '') + '</b>' : m ? '<b class="vm-ok vm-okp">' + esc(t('made')) + '</b>' : !c.text ? '<b class="vm-nt">' + esc(t('noText')) + '</b>' : '') + '</button>' +
       '<div class="vm-tb"><button class="vm-sel" data-vm="tsel" data-i="' + i + '" aria-pressed="' + !!on + '" aria-label="' + esc(t('tick')) + '"><span>' + (on ? '✓' : '') + '</span></button>' +
       '<button class="vm-re" data-vm="reone" data-i="' + i + '" aria-label="' + esc(t('reOne')) + '"' + (busy ? ' disabled' : '') + '>↻</button></div></div>'; }
   function bar() {
@@ -534,7 +539,7 @@
     var a = '<button class="btn pri" data-vm="newT"' + (busy ? ' disabled' : '') + '>' + esc(busy ? t('writing') : t('newT')) + (n && n < st.sess.clips.length && !busy ? ' (' + n + ')' : '') + '</button>';
     var b;
     if (!n) b = '<button class="btn" disabled>' + esc(t('pickParts')) + '</button>';
-    else if (ready === n) b = '<button class="btn pri" data-vm="saveSel">' + esc(t('saveN', n)) + '</button>';
+    else if (ready === n) b = '<button class="btn pri" data-vm="saveSel">' + esc(sel.every(function (i) { return isUsed(st.sess.clips[i]); }) ? t('saveAgain', n) : t('saveN', n)) + '</button>';
     else if (qErr) b = '<button class="btn" data-vm="kick">' + esc(t('goOn')) + '</button>';
     else if (wantLeft) b = '<button class="btn" disabled>' + esc(t('makingN', (WANT.length - wantLeft + 1) + ' / ' + WANT.length)) + (qRun ? ' · <span data-pc2>' + qPc + '</span>%' : '') + '</button>';
     else b = '<button class="btn" data-vm="makeSel">' + esc(n - ready === 1 ? t('make1') : t('makeN', n - ready)) + '</button>';
@@ -564,7 +569,7 @@
         ('<div class="vm-chips vm-plc"><button class="pill' + (!st.pl ? ' acc' : '') + '" data-vm="pl" data-id="" aria-pressed="' + !st.pl + '">' + esc(t('inspoDef')) + ' <small>' + esc(t('plN', inspoIds().length)) + '</small></button>' + pls.map(function (q) { var n = (q.items || []).length; return '<button class="pill' + (st.pl === q.id ? ' acc' : '') + '" data-vm="pl" data-id="' + esc(q.id) + '" aria-pressed="' + (st.pl === q.id) + '">' + esc(q.name) + ' <small>' + esc(t('plN', n)) + '</small></button>'; }).join('') + '</div>') +
         '<div class="vm-lang"><span>' + esc(t('textLang')) + '</span>' + ['en', 'de', 'es'].map(function (l) { return '<button class="pill' + (st.lang === l ? ' acc' : '') + '" data-vm="lang" data-l="' + l + '" aria-pressed="' + (st.lang === l) + '">' + l.toUpperCase() + '</button>'; }).join('') + '</div>' +
         bar() + '<p class="note vm-fn">' + esc(t('howMake')) + '</p>' +
-        '<div class="vm-all"><span class="vm-l2">' + esc(t('allT')) + '</span><label class="vm-asz"><span>' + esc(t('sizeAll')) + '</span><input type="range" id="vmAsz" min="14" max="40" step="1" value="' + (ss.clips[0] ? ss.clips[0].size : st.pref.size) + '"></label>' +
+        '<div class="vm-all"><span class="vm-l2">' + esc(t('allT')) + '</span><div class="vm-asz"><button class="pill" data-vm="asz" data-d="-2" aria-label="' + esc(t('sizeAll')) + ' −">A−</button><span>' + esc(t('sizeN', ss.clips[0] ? ss.clips[0].size : st.pref.size)) + '</span><button class="pill" data-vm="asz" data-d="2" aria-label="' + esc(t('sizeAll')) + ' +">A+</button></div>' +
           '<div class="vm-joy" role="group" aria-label="' + esc(t('allT')) + '"><button data-vm="amv" data-dx="0" data-dy="-1" aria-label="↑">↑</button><button data-vm="amv" data-dx="-1" data-dy="0" aria-label="←">←</button><button data-vm="amv" data-c="1" aria-label="●">●</button><button data-vm="amv" data-dx="1" data-dy="0" aria-label="→">→</button><button data-vm="amv" data-dx="0" data-dy="1" aria-label="↓">↓</button></div>' +
           '<button class="pill" data-vm="alook">' + esc(ss.clips[0] && ss.clips[0].look === 'box' ? t('box') : t('plain')) + '</button></div>' +
         (anyText ? '' : '<p class="note vm-first">' + esc(t('firstTexts')) + '</p>') +
@@ -579,7 +584,6 @@
       /* keep the shelf where it was; centre the chosen B-roll only when the choice changed (sideways only: the page never jumps) */
       if (same && sl >= 0) sh.scrollLeft = sl; else { var onc = sh.querySelector('.on'); if (onc) sh.scrollLeft = Math.max(0, onc.offsetLeft - (sh.clientWidth - onc.offsetWidth) / 2); }
       cdFocusIn(sh); }
-    var sz = D.getElementById('vmAsz'); if (sz) { sz.oninput = function () { allSet(function (c) { c.size = +sz.value; }); st.pref.size = +sz.value; drawTiles(); }; sz.onchange = function () { keep(); refresh(); }; }
     drawTiles(); storeLine();
     if (ss) { frames(true); if (WANT.length) setTimeout(queue, 300); }
   }

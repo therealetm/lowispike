@@ -21,6 +21,7 @@
         photo: ['What do you see, and is it insulin-friendly?', 'Was siehst du, und ist es insulinfreundlich?', '¿Qué ves y es apto para la insulina?'],
         limit: ['{n} is resting for today. Back tomorrow!', '{n} ruht sich für heute aus. Morgen wieder!', '{n} descansa por hoy. ¡Mañana vuelve!'], fail: ['I could not answer just now. Check your connection and try again.', 'Ich konnte gerade nicht antworten. Prüf deine Verbindung und versuch es nochmal.', 'No pude responder ahora. Inténtalo de nuevo.'],
         signin: ['Sign in to talk to {n}.', 'Melde dich an, um mit {n} zu reden.', 'Inicia sesión para hablar con {n}.'], note: ['Answers come from Google’s free AI. Please don’t share private health details. Not medical advice.', 'Antworten kommen von Googles kostenloser KI. Bitte teile keine privaten Gesundheitsdaten. Keine medizinische Beratung.', 'Las respuestas vienen de la IA gratuita de Google. No compartas datos privados de salud. No es consejo médico.'],
+        photo2: ['Can I eat this? Is it insulin-friendly?', 'Kann ich das essen? Ist es insulinfreundlich?', '¿Puedo comer esto? ¿Es apto para la insulina?'], pvHint: ['Ask about this photo, then send', 'Frag etwas zu diesem Foto und sende', 'Pregunta sobre esta foto y envía'], photoFail: ['I could not open that photo. Try another one or take a screenshot of it.', 'Ich konnte das Foto nicht öffnen. Probier ein anderes oder mach einen Screenshot davon.', 'No pude abrir esa foto. Prueba otra o haz una captura.'],
         thinking: ['{n} is thinking…', '{n} denkt nach…', '{n} está pensando…'], clear: ['New chat', 'Neuer Chat', 'Nuevo chat'],
         chats: ['Chats', 'Chats', 'Chats'], none: ['No chats yet. Your conversations with {n} stay here.', 'Noch keine Chats. Deine Gespräche mit {n} bleiben hier.', 'Aún no hay chats. Tus conversaciones con {n} se quedan aquí.'],
         untitled: ['Chat with {n}', 'Chat mit {n}', 'Chat con {n}'], del: ['Delete chat', 'Chat löschen', 'Borrar chat'] };
@@ -83,6 +84,7 @@
             '#lwAsk .ak-m.w{opacity:.7;font-style:italic}' +
             '#lwAsk .ak-c{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:6px 14px}#lwAsk .ak-c::-webkit-scrollbar{display:none}' +
             '#lwAsk .ak-c button{flex:none;min-height:38px;padding:0 14px;border-radius:999px;border:1px solid rgba(159,216,255,.35);background:rgba(159,216,255,.08);color:#bfe6ff;font:inherit;font-size:14px;font-weight:600;cursor:pointer}' +
+            '#lwAsk .ak-pv{flex:none;display:flex;align-items:center;gap:10px;margin:0 12px;padding:8px;border-radius:14px;background:rgba(255,255,255,.07)}#lwAsk .ak-pv[hidden]{display:none}#lwAsk .ak-pv img{width:56px;height:56px;object-fit:cover;border-radius:10px}#lwAsk .ak-pv span{flex:1;font-size:14px;opacity:.8}#lwAsk .ak-pv button{width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:16px}' +
             '#lwAsk .ak-f{flex:none;display:flex;gap:8px;align-items:flex-end;padding:8px 12px calc(env(safe-area-inset-bottom,0px) + 10px);border-top:1px solid rgba(255,255,255,.08)}' +
             '#lwAsk .ak-f textarea{flex:1;min-width:0;min-height:46px;max-height:120px;resize:none;border-radius:22px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:16px;padding:11px 16px}' +
             '#lwAsk .ak-i{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;display:grid;place-items:center;cursor:pointer}' +
@@ -118,17 +120,27 @@
         } catch (e) { msgs.pop(); msgs.push({ role: 'model', text: e.code === 'limit' ? t('limit') : e.code === 'sign_in' ? t('signin') : t('fail') }); }
         busy = false; keep(); paint(); if (f) f.querySelectorAll('button,textarea').forEach(x => { x.disabled = false; });
     }
-    /* a picked photo: shrunk to 1024 px JPEG before it leaves the phone */
+    /* a picked photo: shrunk to 1024 px JPEG before it leaves the phone.
+       25 Nov 2026 (Emmanuel: "uploading a picture in here doesn't work ... I take a picture of a TikTok video and I want to ask my AI if
+       this fits, if I can eat it"): the file picker is put in the page while it is open (a picker left outside the page is dropped by
+       iPhones before the photo comes back, so nothing happened); the photo waits above the text box with ✕ until you send, so you can
+       ask your own question with it (with no question it asks "Can I eat this?"); a photo that cannot be read says so. */
+    let PEND = null;
+    function pend(p) { PEND = p; const v = el && el.querySelector('.ak-pv'); if (!v) return; v.hidden = !p; v.innerHTML = p ? '<img alt="" src="' + esc(p.url) + '"><span>' + esc(t('pvHint')) + '</span><button type="button" data-ak="unpend" aria-label="✕">✕</button>' : ''; if (p) { const ta = el.querySelector('textarea'); if (ta) ta.focus(); } }
     function pickPhoto() {
-        const i = D.createElement('input'); i.type = 'file'; i.accept = 'image/*';
-        i.onchange = () => { const f = i.files && i.files[0]; if (!f) return; const u = URL.createObjectURL(f), im = new Image();
-            im.onload = () => { const s = Math.min(1, 1024 / Math.max(im.width, im.height)), c = D.createElement('canvas'); c.width = Math.round(im.width * s); c.height = Math.round(im.height * s); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        const i = D.createElement('input'); i.type = 'file'; i.accept = 'image/*'; i.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0'; D.body.appendChild(i);
+        const gone = () => { setTimeout(() => { try { i.remove(); } catch (e) {} }, 1000); };
+        i.addEventListener('cancel', gone);
+        i.onchange = () => { const f = i.files && i.files[0]; gone(); if (!f) return; const u = URL.createObjectURL(f), im = new Image();
+            im.onerror = () => { URL.revokeObjectURL(u); msgs.push({ role: 'model', text: t('photoFail') }); paint(); };
+            im.onload = () => { try { const s = Math.min(1, 1024 / Math.max(im.width, im.height)), c = D.createElement('canvas'); c.width = Math.round(im.width * s); c.height = Math.round(im.height * s); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
                 const d = c.toDataURL('image/jpeg', 0.82); URL.revokeObjectURL(u);
                 const k = Math.min(1, 240 / Math.max(im.width, im.height)), tc = D.createElement('canvas'); tc.width = Math.round(im.width * k); tc.height = Math.round(im.height * k); tc.getContext('2d').drawImage(im, 0, 0, tc.width, tc.height);
-                send('', { url: tc.toDataURL('image/jpeg', 0.7), b64: d.split(',')[1] }); };
+                pend({ url: tc.toDataURL('image/jpeg', 0.7), b64: d.split(',')[1] }); } catch (e) { msgs.push({ role: 'model', text: t('photoFail') }); paint(); } };
             im.src = u; };
         i.click();
     }
+    function sendNow(v) { const p = PEND; if (!String(v || '').trim() && !p) return; pend(null); send(String(v || '').trim() || (p ? t('photo2') : ''), p || undefined); }
     function open(o) {
         o = o || {}; css();
         if (o.context != null && o.context !== ctx) fresh(String(o.context || '').slice(0, 3000));
@@ -137,7 +149,7 @@
             el = D.createElement('div'); el.id = 'lwAsk'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
             el.innerHTML = '<div class="ak-h"><button type="button" class="ak-b" data-ak="close">' + IC.back + '<span></span></button><b class="ak-t"></b><button type="button" class="ak-new" data-ak="chats" data-v="chats"></button><button type="button" class="ak-new" data-ak="new"></button></div><div class="ak-l" aria-live="polite"></div>' +
                 '<div class="ak-c"><button type="button" data-ak="chip" data-c="c1"></button><button type="button" data-ak="chip" data-c="c2"></button><button type="button" data-ak="chip" data-c="c3"></button></div><p class="ak-n"></p>' +
-                '<div class="ak-f"><button type="button" class="ak-i" data-ak="photo" aria-label="Photo">' + IC.cam + '</button><textarea rows="1" enterkeyhint="send"></textarea><button type="button" class="ak-i s" data-ak="send" aria-label="Send">' + IC.send + '</button></div>';
+                '<div class="ak-pv" hidden></div><div class="ak-f"><button type="button" class="ak-i" data-ak="photo" aria-label="Photo">' + IC.cam + '</button><textarea rows="1" enterkeyhint="send"></textarea><button type="button" class="ak-i s" data-ak="send" aria-label="Send">' + IC.send + '</button></div>';
             el.addEventListener('click', e => { const b = e.target.closest('[data-ak]'); if (!b) return; const k = b.dataset.ak, ta = el.querySelector('textarea');
                 if (k === 'close') { if (view === 'list') { view = 'chat'; paint(); } else close(); }
                 else if (k === 'new') { if (!busy) { fresh(''); view = 'chat'; paint(); } }
@@ -145,8 +157,9 @@
                 else if (k === 'pick') { const c = book.list.find(x => x.id === b.dataset.id); if (c && !busy) { cur = c.id; msgs = c.m.slice(); ctx = c.c || ''; book.cur = cur; save(); view = 'chat'; paint(); } }
                 else if (k === 'del') { book.list = book.list.filter(x => x.id !== b.dataset.id); if (cur === b.dataset.id) { msgs = []; ctx = ''; cur = ''; book.cur = ''; } save(); paint(); }
                 else if (k === 'photo') pickPhoto();
-                else if (k === 'send') { const v = ta.value; ta.value = ''; send(v); } else if (k === 'chip') send(t(b.dataset.c)); });
-            el.querySelector('textarea').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const ta = e.target, v = ta.value; ta.value = ''; send(v); } });
+                else if (k === 'unpend') pend(null);
+                else if (k === 'send') { const v = ta.value; ta.value = ''; sendNow(v); } else if (k === 'chip') send(t(b.dataset.c)); });
+            el.querySelector('textarea').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const ta = e.target, v = ta.value; ta.value = ''; sendNow(v); } });
             D.body.appendChild(el);
         }
         el.querySelector('.ak-b span').textContent = t('back'); el.querySelector('.ak-t').textContent = t('title'); el.querySelector('[data-ak=new]').textContent = t('clear'); el.querySelector('[data-ak=chats]').textContent = t('chats');

@@ -24,3 +24,13 @@ test('the companion reads the community: related For You posts and public chat m
   assert.match(fn, /never invent more than they say, never name anyone/);
   assert.match(fn, /systemInstruction: \{ parts: \[\{ text: mistyRules\(clip\(b\.name, 40\), clip\(b\.sign, 20\), lang\) \+ notes \}\] \}/);
 });
+/* 25 Nov 2026 (Emmanuel: "uploading a picture in here doesn't work ... I take a picture of a TikTok video and I want to ask my AI ... if I can
+   eat it"). Checked in Chromium: pick a photo -> it waits above the text box; "Kann ich das essen?" + send -> one message with the photo
+   and the question, the preview clears. */
+test('Talk to Misty: the photo picker sits in the page; the photo waits with ✕ until you send it with your question', () => {
+  const a = R('lowi-ask.js');
+  assert.match(a, /i\.style\.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0'; D\.body\.appendChild\(i\);/);
+  assert.match(a, /im\.onerror = \(\) => \{[^\n]*t\('photoFail'\)/); assert.match(a, /function sendNow\(v\) \{ const p = PEND;/);
+  assert.match(a, /send\(String\(v \|\| ''\)\.trim\(\) \|\| \(p \? t\('photo2'\) : ''\), p \|\| undefined\)/);
+  assert.match(R('supabase/functions/lowi-ai/index.ts'), /A photo can be a meal, a food label, a product, or a screenshot of a video or post \(TikTok, Instagram, a recipe\)/);
+});

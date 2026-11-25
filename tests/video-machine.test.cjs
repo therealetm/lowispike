@@ -251,7 +251,8 @@ test('the editor is never redrawn from the background; typing shrinks the video 
   /* changed 25 Nov 2026 (Emmanuel: "you made an extra box for it ... on Instagram ... I can edit the text on the B-roll"): the box under the
      video is gone; the text is typed right on the video */
   assert.match(js, /name="vm-onscreen-text" autocomplete="off"/);
-  assert.match(js, /function startInline\(\) \{\s*if \(inl\) return; inl = true; fit\(\); el\.classList\.add\('vm-typing'\);/);
+  /* changed 25 Nov 2026 ("With Instagram, we get a full screen ... it's fixed"): typing opens the fixed full-screen layer instead of shrinking the editor */
+  assert.match(js, /function startInline\(\) \{\s*if \(inl\) return; inl = true; if \(!fs\) fsBuild\(\);/);
   const h = R('studio/index.html'); assert.match(h, /\.vm\.vm-typing \.vm-stage\{width:min\(100%,calc\(\(var\(--vvh,420px\) - 190px\) \* 9 \/ 16\)\)!important\}/);
   assert.match(h, /\.vm\.vm-typing \.vm-safen,\.vm\.vm-typing \.vnav/);
 });

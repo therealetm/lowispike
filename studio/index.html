@@ -195,6 +195,10 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .vm-tile i{position:absolute;left:6px;bottom:6px;font-style:normal;font-size:12px;font-weight:800;text-shadow:0 1px 3px #000}.vm-tile em{position:absolute;right:6px;bottom:6px;font-style:normal;font-size:10.5px;font-weight:800;padding:2px 6px;border-radius:8px;background:rgba(0,0,0,.55)}
 .vm-ok{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--ok);color:#03170c;display:grid;place-items:center;font-size:13px}
 .vm-eb{display:flex;flex-direction:column;align-items:center}
+/* 25 Nov 2026: typing the text: the video shrinks to fit above the keyboard with the text box right under it; notes and the bottom bar step aside */
+.vm.vm-typing .vm-stage{width:min(100%,calc((var(--vvh,420px) - 190px) * 9 / 16))!important}
+.vm.vm-typing .vm-safen,.vm.vm-typing .vnav,.vm.vm-typing .vm-row,.vm.vm-typing #vmOut{display:none!important}
+.vm.vm-typing .vm-tx{min-height:64px;max-height:96px}
 .vm-stage{position:relative;flex:none;width:min(100%,calc((100dvh - 330px) * 9 / 16));aspect-ratio:9/16;border-radius:16px;overflow:hidden;background:#000;container-type:inline-size;touch-action:none}
 .vm-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .vm-safe{position:absolute;left:8%;right:16%;top:14%;bottom:32%;border:1.5px dashed rgba(255,255,255,.55);border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none}.vm-stage.drag .vm-safe{opacity:1}
@@ -675,6 +679,6 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 <script src="accounts.js?v=7"></script>
 <script src="video-words.js?v=1"></script>
 <script src="ai-use.js?v=1"></script>
-<script src="video-machine.js?v=13"></script>
+<script src="video-machine.js?v=14"></script>
 </body>
 </html>

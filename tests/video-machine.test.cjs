@@ -242,3 +242,13 @@ test('one queue for every B-roll: jobs carry their B-roll, making goes on while 
   assert.match(js, /var r = roll\(rid \|\| st\.sess\.id\); if \(!r\) return rej\(new Error\('norec'\)\);/);
   assert.match(js, /<b class="vm-cdq">🎬 ' \+ jobsLeft\(r\.id\)\.length/); assert.match(js, /<p class="vm-now" role="status">/);
 });
+/* 25 Nov 2026 (Emmanuel: "I'm trying to change the text manually ... it's buggy ... I can't even see my video or where the text is ...
+   Keep snapping back or snapping out"). Checked in Chromium: typing for 8 s while a video was being made -> the same text box, still
+   focused, every word kept; typing mode on, bottom bar hidden. */
+test('the editor is never redrawn from the background; typing shrinks the video above the keyboard; no AutoFill on the text box', () => {
+  assert.match(js, /function refresh\(\) \{ if \(inEdit\(\)\) \{ mkSync\(\); if \(HOST && HOST\.isConnected\) mountPaint\(\); return; \}/);
+  assert.match(js, /name="vm-onscreen-text" autocomplete="off"/);
+  assert.match(js, /tx\.addEventListener\('focus', function \(\) \{ fit\(\); el\.classList\.add\('vm-typing'\);/);
+  const h = R('studio/index.html'); assert.match(h, /\.vm\.vm-typing \.vm-stage\{width:min\(100%,calc\(\(var\(--vvh,420px\) - 190px\) \* 9 \/ 16\)\)!important\}/);
+  assert.match(h, /\.vm\.vm-typing \.vm-safen,\.vm\.vm-typing \.vnav/);
+});

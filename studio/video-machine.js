@@ -138,7 +138,10 @@
     if (st.sel !== id) SELSET = null;
     st.sel = id; if (!st.sess || st.sess.id !== id || st.sess.clips !== st.cuts[id]) st.sess = {id: id, clips: st.cuts[id]}; made = MADE[id] = MADE[id] || {}; keep(); return true;
   }
-  function refresh() { if (el && el.classList.contains('on')) paint(); if (HOST && HOST.isConnected) mountPaint(); }
+  /* 25 Nov 2026 (Emmanuel: "I'm trying to change the text manually ... it's buggy ... keep snapping back or snapping out"): the editor is
+     never drawn again from the background (a video being made, a save): that rebuilt the text box under the finger and closed the
+     keyboard. Only its button follows; the editor's own buttons still redraw it. */
+  function refresh() { if (inEdit()) { mkSync(); if (HOST && HOST.isConnected) mountPaint(); return; } if (el && el.classList.contains('on')) paint(); if (HOST && HOST.isConnected) mountPaint(); }
   var url = function (r) { if (!r) return ''; if (!urls[r.id]) urls[r.id] = URL.createObjectURL(r.blob); return urls[r.id]; };
   var roll = function (id) { return rolls.filter(function (r) { return r.id === id; })[0] || null; };
   var styleText = function () { return W.StudioAcc && StudioAcc.style ? StudioAcc.style() : ''; };
@@ -178,7 +181,7 @@
         '<canvas class="vm-pv" id="vmC" aria-hidden="true"></canvas><div class="vm-safe" aria-hidden="true"></div><i class="vm-gx" aria-hidden="true"></i><i class="vm-gy" aria-hidden="true"></i>' +
         '<div class="vm-text ghost" id="vmT" style="left:' + (c.x * 100) + '%;top:' + (c.y * 100) + '%;--fs:' + c.size + '">' + lines(c.text) + '</div></div>' +
         '<p class="note vm-safen">' + esc(t('safe')) + '</p>' +
-        '<textarea id="vmTx" class="vm-tx" placeholder="' + esc(t('textPh')) + '">' + esc(c.text) + '</textarea>' +
+        '<textarea id="vmTx" class="vm-tx" name="vm-onscreen-text" autocomplete="off" autocorrect="on" autocapitalize="off" spellcheck="true" enterkeyhint="done" data-form-type="other" placeholder="' + esc(t('textPh')) + '">' + esc(c.text) + '</textarea>' +
         '<div class="vm-row"><span class="vm-l">' + esc(t('size')) + '</span><input type="range" id="vmSz" min="16" max="40" step="1" value="' + c.size + '"><button class="pill' + (c.look !== 'box' ? ' acc' : '') + '" data-vm="look" data-l="plain">' + esc(t('plain')) + '</button><button class="pill' + (c.look === 'box' ? ' acc' : '') + '" data-vm="look" data-l="box">' + esc(t('box')) + '</button></div>' +
         '<div class="vm-row"><button class="pill" data-vm="aione">' + esc(t('aiOne')) + '</button><button class="pill" data-vm="lib">' + esc(t('lib')) + '</button>' + ['en', 'de', 'es'].map(function (l) { return '<button class="pill" data-vm="trc" data-l="' + l + '">' + esc(t('tr')) + ' ' + l.toUpperCase() + '</button>'; }).join('') + (c.orig != null ? '<button class="pill" data-vm="trundo">' + esc(t('undo')) + '</button>' : '') + '</div>' +
         '<div id="vmOut"></div></div>' +
@@ -268,6 +271,11 @@
     }
     v.addEventListener('loadedmetadata', function () { v.currentTime = c.start; v.play().catch(function () { }); });
     v.addEventListener('timeupdate', function () { if (v.currentTime >= c.end || v.currentTime < c.start - 0.3) v.currentTime = c.start; });
+    var tx = D.getElementById('vmTx'), vv = W.visualViewport;
+    var fit = function () { if (el) el.style.setProperty('--vvh', Math.round(vv ? vv.height : W.innerHeight) + 'px'); };
+    tx.addEventListener('focus', function () { fit(); el.classList.add('vm-typing'); var bd = el.querySelector('.vbody'); if (bd) bd.scrollTop = 0; setTimeout(function () { fit(); tx.scrollIntoView({block: 'nearest'}); }, 350); });
+    tx.addEventListener('blur', function () { el.classList.remove('vm-typing'); });
+    if (vv && !el.__vv) { el.__vv = 1; vv.addEventListener('resize', fit); }
     D.getElementById('vmTx').addEventListener('input', function (e) { c.text = e.target.value; pv(); clampText(); keep(); mkSync(); });
     D.getElementById('vmSz').addEventListener('input', function (e) { c.size = +e.target.value; tEl.style.setProperty('--fs', c.size); pv(); clampText(); keep(); mkSync(); });
     var drag = null;

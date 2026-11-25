@@ -6,7 +6,8 @@ const S = require('../tutorial-steps.js');
 const card = id => S.STEPS.find(s => s.id === id);
 
 test('the new tour follows a day: Misty, Scan, Gap, Water/Move/Sleep, Shopping, Supermarket, Community, Settings, flying', () => {
-    assert.deepStrictEqual(S.plan({}).map(s => s.id), ['hello', 'scan', 'gap', 'day', 'mirror', 'fuel', 'shop-week', 'community', 'settings', 'done']);
+    /* changed 25 Nov 2026: the Studio card after Community (Emmanuel: "update the tutorial ... understand the full app now") */
+    assert.deepStrictEqual(S.plan({}).map(s => s.id), ['hello', 'scan', 'gap', 'day', 'mirror', 'fuel', 'shop-week', 'community', 'studio', 'settings', 'done']);
     assert.ok(S.VERSION >= 38, 'the tour version moved on, so What\'s new knows the tour changed');
     for (const s of S.plan({})) for (const l of ['en', 'de', 'es']) {
         assert.ok(s.text[l] && s.title[l], s.id + ' has ' + l);
@@ -47,7 +48,8 @@ test('the Settings card holds the Community bubble; leaving Shop does not hide t
     assert.deepStrictEqual(st.demo, { g: 'hold', open: 'settings-sheet' });
     assert.match(js, /'settings-sheet': \{ stage: '\.cme-ov'/);
     assert.match(js, /el\.closest\('\.stp-ov\.out'\)/, 'Shop closing does not hide the next card');
-    assert.ok(js.includes("if (opened === 'community-tab' || opened === 'supermarket' || opened === 'move-page') where = 'bottom';"), 'the Supermarket card leaves Shop\'s header and tabs readable, the Mirror card the Mirror mode card (Nov 5 2026)');
+    /* changed 25 Nov 2026: the Studio card's For You page (foryou-feed) keeps the card at the bottom too */
+    assert.ok(js.includes("if (opened === 'community-tab' || opened === 'foryou-feed' || opened === 'supermarket' || opened === 'move-page') where = 'bottom';"), 'the Supermarket card leaves Shop\'s header and tabs readable, the Mirror card the Mirror mode card (Nov 5 2026)');
 });
 
 test('every user can start the tour from Settings; the tour changes no entries', () => {

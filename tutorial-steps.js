@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 46;  /* 46: Nov 24 2026, fuel + shop-week describe the Grocery Run game. 45: Nov 5 2026, new-misty-tabs (Misty's card: Today / History / {name}) and the hello card names the card's new content. 44: Nov 5 2026, every card's words rewritten as whole spoken sentences in EN/DE/ES (owner: the voice read fragments and
+    const VERSION = 47;  /* 47: Nov 25 2026, hello names the talk button, community names the billiards and the cross-platform For You, new base card studio, new-humans updated. 46: Nov 24 2026, fuel + shop-week describe the Grocery Run game. 45: Nov 5 2026, new-misty-tabs (Misty's card: Today / History / {name}) and the hello card names the card's new content. 44: Nov 5 2026, every card's words rewritten as whole spoken sentences in EN/DE/ES (owner: the voice read fragments and
        sounded broken, as if words were missing), voice re-recorded; plus the Mirror mode card from the Move lane */
     /* 43: Nov 5 2026, new-people points at Ranking (Members, the round button there, opens People; the Community heading is gone, the round profile button at the end of the tabs opens Settings); 42: Nov 5 2026, new-look-weather in part 'new' (App theme lives inside Look, time of day & weather; Dark for everyone) and the settings card names the look row; 41: Nov 5 2026, new-cart-total in part 'new' (Cart: real quantities and the whole total, I'll buy it / Someone else pays, Give a hand asks for the cart total, never €5; Plan my week says plainly when the budget is too small); 40: Nov 5 2026, new-my-day in part 'new' (My day: a Today card and short lists; a photo with no food offers Retake photo); 39: Nov 5 2026, new-still-galaxy in part 'new' (Settings > Still galaxy); 38: Nov 5 2026, the complete new tutorial (Emmanuel: "a complete new one that is up to date with our version"): Scan with photo, barcode, Log as eaten and Add to cart; Water / Move / Sleep in one card; Shopping with its three doors and Supermarkt with Plan my week; Settings from the Community name (the hold on the bubble does nothing since Oct 29); flying out into the galaxy on the last card. Old step ids water / move / sleep land on day (MOVED). 37: Oct 28 2026, 22:54, Gap blooms Letzte / Erste Mahlzeit (the old Essenspause window is not what a tap opens); 36: Oct 28 2026, new-humans now says the chat is people only too (bot posts live in For You); 35: Oct 27 2026, new-day-recap in part 'new' (Day recap from the companion card and My day: the day read back, care sent, one journal line; shows after the evening catch-up Save); 34: Oct 26 2026, new-evening-catchup in part 'new' (Catch up on today: the evening bubble checklist, first row in Settings); 33: Oct 26 2026, new-quick-tour in part 'new' (the 45-second video tour, Settings row after Tutorial); 32: Oct 26 2026, new-cart-ask in part 'new' (Someone else pays: the whole Cart as a Give a hand basket); 31: Oct 26 2026, new-mic-dictation in part 'new' (a small mic in text fields: speak instead of typing; Home Screen app on iPhone uses the keyboard's mic); 30: Oct 26 2026, new-cook-tabs (Cook opens on Kitchen, the first tab; hold a Cook tab to move it) and new-kitchen no longer says next to Swipe; 29: Oct 26 2026, new-scan-why in part 'new' (the scanner card's curve, How often and Why?); 28: Oct 26 2026, new-kitchen rewritten (Kitchen is a game in Cook next to Shuffle and Swipe) and new-give-hand opens Shop on Seller Zone (Kitchen left Shop); 27: Oct 25 2026, new-give-hand in part 'new' (Give a hand is its own Shop tab next to Kitchen); 26: Oct 25 2026, the short base tour (11 cards, auto demo, What's New never in the base tour); 25: Oct 24 2026, new-meal-curve in part 'new' (Gap: After your meal, five phases and how to lower the spike); 24: Oct 24 2026, Circles removed (new-rooms step gone, cm-name says People; Emmanuel: "nuke Circle ... we just have one chat"); 23: Oct 24 2026, Water card names Size (the bottle size picker), cup is a glass in English; 22: Oct 24 2026, new-kitchen in part 'new' (Shop > Kitchen: at home + shopping cart); 21: Oct 24 2026, new-voice-speed in part 'new' (the 1× / 1.5× / 2× speed pill next to Pause); 20: Oct 24 2026, Hold Scan card (every bubble at once) replaces the Two fingers card, plus new-scan-hold in part 'new'; 19: Oct 23 2026, part 'new' (the newest features, the What's New mini tour plays these); 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'shop', 'play', 'companion', 'together', 'settings', 'extras', 'new', 'end'];
@@ -71,9 +71,11 @@
             teaches: ['misty-hold'],
             title: { en: 'Hi, I’m {name}', de: 'Hi, ich bin {name}', es: 'Hola, soy {name}' },
             text: {
-                en: 'I’m your companion. Hold me, and my card opens. It shows your day, my level and the world.',
-                de: 'Ich bin dein Begleiter. Halt mich gedrückt, dann öffnet sich meine Karte. Dort siehst du deinen Tag, mein Level und die Welt.',
-                es: 'Soy tu compañero. Mantenme pulsado y se abre mi tarjeta. Ahí ves tu día, mi nivel y el mundo.'
+                /* Nov 25 2026: the card's top button opens the chat with the companion (lowi-ask.js); no {name} in the words, so the
+                   recorded voice never says another person's companion name */
+                en: 'I’m your companion. Hold me, and my card opens. Tap the talk button at the top to ask me anything about food. The card also shows your day, my level and the world.',
+                de: 'Ich bin dein Begleiter. Halt mich gedrückt, dann öffnet sich meine Karte. Tipp oben auf den Knopf zum Reden und frag mich alles übers Essen. Die Karte zeigt auch deinen Tag, mein Level und die Welt.',
+                es: 'Soy tu compañero. Mantenme pulsado y se abre mi tarjeta. Toca el botón de hablar de arriba y pregúntame lo que quieras sobre comida. La tarjeta también muestra tu día, mi nivel y el mundo.'
             }
         },
         {
@@ -155,9 +157,24 @@
             teaches: ['community-tap', 'cm-tabs'],
             title: { en: 'Community', de: 'Community', es: 'Comunidad' },
             text: {
-                en: 'Tap Community to play and chat with everyone else and their companions. You also find For You and the Ranking there.',
-                de: 'Tipp auf Community, um mit allen anderen und ihren Begleitern zu spielen und zu chatten. Dort findest du auch Für dich und die Rangliste.',
-                es: 'Toca Comunidad para jugar y chatear con todos los demás y sus compañeros. Ahí también están Para ti y el Ranking.'
+                /* Nov 25 2026: the billiards table (Circle tab; the word stays off cards, tests/one-chat-no-circles.test.cjs) and the cross-platform For You */
+                en: 'Tap Community to chat with everyone and play billiards with their companions. For You shows food videos from TikTok, YouTube and Instagram, and people’s meals.',
+                de: 'Tipp auf Community, um mit allen zu chatten und mit ihren Begleitern Billard zu spielen. Für dich zeigt Essensvideos von TikTok, YouTube und Instagram und die Mahlzeiten der anderen.',
+                es: 'Toca Comunidad para chatear con todos y jugar al billar con sus compañeros. Para ti muestra vídeos de comida de TikTok, YouTube e Instagram y las comidas de la gente.'
+            }
+        },
+        {
+            /* Nov 25 2026 (Emmanuel: "update the tutorial ... so everyone can ... understand the full app now"): the Studio, opened from
+               For You's Create circle (index.html fyToolsHTML, studio/); its video machine cuts a clip into short videos and writes their
+               text on screen (studio-ai captions, every signed-in person since Nov 25 2026). The finger shows the tap on For You's Create
+               circle (the demo never clicks); the tour never opens the Studio itself. */
+            id: 'studio', area: 'together', target: ['.fy-tool[href="studio/"]'], demo: { g: 'tap', open: 'foryou-feed' },
+            covers: ['studio', 'video-machine', 'video-words'], teaches: ['fy-create'],
+            title: { en: 'Studio', de: 'Studio', es: 'Studio' },
+            text: {
+                en: 'In For You, tap Create to open the Studio. Drop in a clip, and it becomes short videos with text on screen, ready to save and post anywhere.',
+                de: 'Tipp in Für dich auf Erstellen, dann öffnet sich das Studio. Lad einen Clip hoch, und daraus werden kurze Videos mit Text, fertig zum Speichern und Posten.',
+                es: 'En Para ti, toca Crear para abrir el Studio. Sube un clip y se convierte en vídeos cortos con texto, listos para guardar y publicar donde quieras.'
             }
         },
         {
@@ -435,9 +452,10 @@
             id: 'new-humans', area: 'new', where: 'community', target: null, covers: ['humans-only-ranking'],
             title: { en: 'Only real people', de: 'Nur echte Menschen', es: 'Solo personas reales' },
             text: {
-                en: 'The Ranking, Add a friend and the chat show only real people. Bot posts, like Nibblo’s meals, are in For You.',
-                de: 'Das Ranking, Freund hinzufügen und der Chat zeigen nur echte Menschen. Bot-Posts, wie Nibblos Mahlzeiten, findest du in Für dich.',
-                es: 'El Ranking, Añadir un amigo y el chat muestran solo personas reales. Los posts de bots, como las comidas de Nibblo, están en Para ti.'
+                /* Nov 25 2026: For You is people only since Nov 11 2026; Nibblo's ideas arrive as a notification (nibblo-idea.js) */
+                en: 'The Ranking, Add a friend, the chat and For You show only real people. Nibblo’s meal ideas come as a notification.',
+                de: 'Das Ranking, Freund hinzufügen, der Chat und Für dich zeigen nur echte Menschen. Nibblos Essensideen kommen als Benachrichtigung.',
+                es: 'El Ranking, Añadir un amigo, el chat y Para ti muestran solo personas reales. Las ideas de comida de Nibblo llegan como notificación.'
             }
         },
         {
@@ -522,6 +540,7 @@
         G('back-swipe', 'any', 'swipe', ['back-swipe.js', 'section-nav.js', 'companion.js'], 'swipe in from the left edge: back'),
         G('sheet-drag', 'any', 'drag', ['apple-ui.js', 'gap-view.js', 'people-directory.js', 'store-picks.js', 'companion.js'], 'drag a sheet\'s top bar down: close it'),
         G('cm-tabs', 'community', 'tap', ['community-rooms-ui.js'], 'tap Circle, Chat, For You, Ranking'),
+        G('fy-create', 'community', 'tap', ['index.html'], 'tap Create at the top of For You: the Studio opens (Nov 25 2026, card studio)'),
         G('cm-tab-order', 'community', 'hold', ['community-tab-order.js', 'bar-order.js'], 'hold a Community tab until it wiggles, slide it: new tab order (25 Nov 2026: the same hold works in the other tab bars, bar-order.js)'),
         G('cm-name', 'community', 'tap', ['community-rooms-ui.js', 'community-me.js'], 'tap the Community name / your picture: rooms, profile, invite'),
         G('cm-pan', 'community', 'drag', ['community-chat.js'], 'drag the galaxy: move around'),
@@ -575,15 +594,15 @@
     }
 
     const UI = {
-        en: { next: 'Next', back: 'Back', skip: 'Skip', skipAll: 'Skip all', of: '{i} of {n}', label: 'Tutorial', newsLabel: 'New', newsSkip: 'Skip', newsDone: 'Got it', newsTitle: 'New in this update', guide: 'Your companion', tryIt: 'Try it now', nice: 'Nice, that’s it.', pause: 'Pause', play: 'Play',
+        en: { next: 'Next', back: 'Back', skip: 'Skip', skipAll: 'Skip all', of: '{i} of {n}', label: 'Tutorial', newsLabel: 'New', newsSkip: 'Skip', newsDone: 'Got it', newsFull: 'Take the full tour', newsTitle: 'New in this update', guide: 'Your companion', tryIt: 'Try it now', nice: 'Nice, that’s it.', pause: 'Pause', play: 'Play',
             practice: 'Practise here. Nothing in your app changes.', laterTag: 'After the tour', how: { tap: 'Tap', hold: 'Hold', touch: 'Touch', double: 'Tap twice', drag: 'Drag', swipe: 'Swipe', pinch: 'Pinch' }, looks: { ring: 'Bubbles', water: 'Water · 3', world: 'World', fade: 'Buttons', companion: 'Companion', mic: 'Mic', joystick: 'Joystick', galaxy: 'Galaxy', sun: 'Day', sheet: 'Window', edge: 'Page', cards: 'Cards' }, done: { water: 'Water · 0', sun: 'Night', fade: 'Back again', mic: 'Sent', sheet: 'Closed', edge: 'Home', ring: 'Stopped' },
             peek: { title: 'Scan a barcode', aim: 'Hold the barcode inside the frame', field: 'Barcode number', barcode: 'Barcode', deep: 'Deep analyze', deepS: 'Opens the LOWiSPIKE GPT in ChatGPT', note: 'A look inside. The camera stays off.' },
             areas: { you: 'Me', home: 'Your day', food: 'Scan', shop: 'Shopping', play: 'Flying', companion: 'My card', together: 'Community', settings: 'Settings', extras: 'Good to know', new: 'New', end: 'Done' } },
-        de: { next: 'Weiter', back: 'Zurück', skip: 'Überspringen', skipAll: 'Alles überspringen', of: '{i} von {n}', label: 'Tutorial', newsLabel: 'Neu', newsSkip: 'Überspringen', newsDone: 'Alles klar', newsTitle: 'Neu in diesem Update', guide: 'Dein Begleiter', tryIt: 'Probier’s jetzt', nice: 'Super, genau so.', pause: 'Pause', play: 'Abspielen',
+        de: { next: 'Weiter', back: 'Zurück', skip: 'Überspringen', skipAll: 'Alles überspringen', of: '{i} von {n}', label: 'Tutorial', newsLabel: 'Neu', newsSkip: 'Überspringen', newsDone: 'Alles klar', newsFull: 'Ganze Tour ansehen', newsTitle: 'Neu in diesem Update', guide: 'Dein Begleiter', tryIt: 'Probier’s jetzt', nice: 'Super, genau so.', pause: 'Pause', play: 'Abspielen',
             practice: 'Hier üben. In deiner App ändert sich nichts.', laterTag: 'Nach der Tour', how: { tap: 'Tippen', hold: 'Halten', touch: 'Berühren', double: 'Zweimal tippen', drag: 'Ziehen', swipe: 'Wischen', pinch: 'Zwei Finger' }, looks: { ring: 'Blasen', water: 'Wasser · 3', world: 'Welt', fade: 'Knöpfe', companion: 'Begleiter', mic: 'Mikro', joystick: 'Joystick', galaxy: 'Galaxie', sun: 'Tag', sheet: 'Fenster', edge: 'Seite', cards: 'Karten' }, done: { water: 'Wasser · 0', sun: 'Nacht', fade: 'Wieder da', mic: 'Gesendet', sheet: 'Zu', edge: 'Home', ring: 'Steht' },
             peek: { title: 'Barcode scannen', aim: 'Halte den Barcode in den Rahmen', field: 'Barcode-Nummer', barcode: 'Barcode', deep: 'Deep analyze', deepS: 'Öffnet den LOWiSPIKE GPT in ChatGPT', note: 'Ein Blick hinein. Die Kamera bleibt aus.' },
             areas: { you: 'Ich', home: 'Dein Tag', food: 'Scan', shop: 'Einkaufen', play: 'Fliegen', companion: 'Meine Karte', together: 'Community', settings: 'Einstellungen', extras: 'Gut zu wissen', new: 'Neu', end: 'Fertig' } },
-        es: { next: 'Siguiente', back: 'Atrás', skip: 'Saltar', skipAll: 'Saltar todo', of: '{i} de {n}', label: 'Tutorial', newsLabel: 'Nuevo', newsSkip: 'Saltar', newsDone: 'Entendido', newsTitle: 'Novedades de esta versión', guide: 'Tu compañero', tryIt: 'Pruébalo ahora', nice: 'Bien, así es.', pause: 'Pausa', play: 'Reproducir',
+        es: { next: 'Siguiente', back: 'Atrás', skip: 'Saltar', skipAll: 'Saltar todo', of: '{i} de {n}', label: 'Tutorial', newsLabel: 'Nuevo', newsSkip: 'Saltar', newsDone: 'Entendido', newsFull: 'Ver el tour completo', newsTitle: 'Novedades de esta versión', guide: 'Tu compañero', tryIt: 'Pruébalo ahora', nice: 'Bien, así es.', pause: 'Pausa', play: 'Reproducir',
             practice: 'Practica aquí. En tu app no cambia nada.', laterTag: 'Después del recorrido', how: { tap: 'Toca', hold: 'Mantén', touch: 'Toca', double: 'Toca dos veces', drag: 'Arrastra', swipe: 'Desliza', pinch: 'Pellizca' }, looks: { ring: 'Burbujas', water: 'Agua · 3', world: 'Mundo', fade: 'Botones', companion: 'Compañero', mic: 'Micro', joystick: 'Joystick', galaxy: 'Galaxia', sun: 'Día', sheet: 'Ventana', edge: 'Página', cards: 'Tarjetas' }, done: { water: 'Agua · 0', sun: 'Noche', fade: 'Ya están', mic: 'Enviado', sheet: 'Cerrada', edge: 'Inicio', ring: 'Parado' },
             peek: { title: 'Escanear código', aim: 'Pon el código dentro del marco', field: 'Número del código', barcode: 'Código', deep: 'Deep analyze', deepS: 'Abre el GPT de LOWiSPIKE en ChatGPT', note: 'Un vistazo dentro. La cámara sigue apagada.' },
             areas: { you: 'Yo', home: 'Tu día', food: 'Scan', shop: 'Compras', play: 'Volar', companion: 'Mi tarjeta', together: 'Comunidad', settings: 'Ajustes', extras: 'Bueno saber', new: 'Nuevo', end: 'Listo' } }

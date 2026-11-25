@@ -40,7 +40,12 @@ async def record(voice, text, path):
     for attempt in range(5):
         try:
             audio = bytearray()
-            async for ch in edge_tts.Communicate(text, voice).stream():
+            com = edge_tts.Communicate(text, voice)
+            # Nov 25 2026: like tools/tutorial-voice/build.py, a cloud session reaches the voices only through its HTTPS proxy
+            px = os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
+            if px:
+                com.proxy = px
+            async for ch in com.stream():
                 if ch['type'] == 'audio':
                     audio.extend(ch['data'])
             if not audio:

@@ -1857,3 +1857,14 @@ Emmanuel: "Why would I be owner only? I'm doing this so people can also use this
 ## 2026-11-25 — No AI caps for the owner
 
 Emmanuel: "you are capping me, the admin. Don't do that. As an admin, I should be able to have as many go with the AI use as I need, because I'm testing things." For the owner (`public.is_app_owner()` for the session): lowi-ai and studio-ai still count his calls in `public.ai_usage` (so the AI usage overview shows them) but call `ai_take` with no personal and no whole-app cap; food-photo skips the daily photo count and the burst limits and answers `left: 10` (owner: true). Everyone else keeps their limits. His calls still count toward the shared whole-app total that other people's calls are checked against, and all calls share one Google free quota. Guarded by `tests/owner-no-ai-cap.test.cjs`.
+
+## 2026-11-25 — The tour covers the whole app again, and the update card offers it
+
+Emmanuel: "Update the tutorial & send out a new notification so everyone can choose to go thru the new tutorial to understand the full app now." Tour VERSION 47 (11 cards, 12 with the claim card, still within MAX_BASE):
+- `hello`: names the talk button on the companion's card (ask about food).
+- `community`: names the billiards and the cross-platform For You (TikTok, YouTube, Instagram, people's meals); the word "Circle" stays off cards (`tests/one-chat-no-circles.test.cjs`).
+- New `studio` card after Community: For You > Create opens the Studio (the finger shows the tap; the tour never opens the Studio).
+- `new-humans`: For You is people only.
+- No card says a companion name in its recorded words.
+
+What's New (release `full-tour`, tour hello / community / studio) shows one card with a new "Take the full tour" button (`tutorial.js` `data-lt="full"`, UI `newsFull` EN/DE/ES) next to "Got it"; it starts the whole tour from the beginning. As always it shows once per person, inside the app, and is skippable. There is no push and no "Update loaded" (every release stays silent since 26 Oct 2026). `tools/app-voice/build.py` now reaches the voices through the HTTPS proxy like the tutorial tool.

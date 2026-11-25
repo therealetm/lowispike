@@ -27,6 +27,10 @@ Emmanuel, 19 Oct 2026: "There should be a tutorial button where you can click on
 through everything from the beginning, as if you were new. Obviously, you can skip if you already know this. So, with every new
 update, the tutorial also needs to be updated."
 
+**25 Nov 2026, VERSION 47 (Emmanuel: "understand the full app now"):** hello names the talk button, community names the billiards and the
+cross-platform For You, a new `studio` card follows Community (finger on For You's Create, route `foryou-feed`), and What's New's card
+has a "Take the full tour" button (`data-lt="full"`) that starts this tour from the beginning.
+
 ## Files
 - `tutorial-steps.js`: the ONE data file. Steps in order, each with `id`, `area`, `target` (CSS selectors of the real Home control to
   spotlight, first visible one wins; `null` = centred card), optional `when` / `action`, `covers` (feature ids) and `title` / `text` /

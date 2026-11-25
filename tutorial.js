@@ -82,6 +82,8 @@
         'grocery-run': { stage: '.gr', go: () => { if (W.LowiGroceryRun && !W.LowiGroceryRun.isOpen()) W.LowiGroceryRun.open(); }, back: () => { if (W.LowiGroceryRun) W.LowiGroceryRun.close(); } },
         'fuel-bloom': bloom('fuel'), 'gap-bloom': bloom('gap') /* Oct 28 2026, 22:54: Gap blooms Letzte / Erste Mahlzeit */, 'water-bloom': bloom('water'), 'move-bloom': bloom('move'), 'sleep-bloom': bloom('sleep'),
         'community-tab': { stage: '', go: () => { if (typeof W.goTab === 'function') W.goTab('foryou'); }, back: goHome },
+        /* Nov 25 2026: the Studio card's demo shows For You's feed, where the Create circle sits (index.html fyToolsHTML) */
+        'foryou-feed': { stage: '', go: () => { if (typeof W.goTab === 'function') W.goTab('foryou'); setTimeout(() => { try { if (typeof W.cmSeg === 'function') W.cmSeg('feed'); } catch (e) { } }, 120); }, back: goHome },
         /* Nov 5 2026: the Mirror card's demo opens the real Move page (what holding Move does), then back Home */
         'move-page': { stage: '', go: () => { if (W.LowiMoveBubble && W.LowiMoveBubble.page) W.LowiMoveBubble.page(); }, back: goHome },
         'settings-sheet': { stage: '.cme-ov', go: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.open(); }, back: () => { if (W.LowiCommunityMe) W.LowiCommunityMe.close(); } },
@@ -153,6 +155,9 @@
             (i > 0 ? '<button type="button" class="lt-btn lt-ghost" data-lt="back">' + esc(U.back) + '</button>' : '') +
             '<button type="button" class="lt-btn lt-ghost lt-pause" data-lt="pause" aria-pressed="' + paused + '" aria-label="' + esc(paused ? (U.play || 'Play') : (U.pause || 'Pause')) + '">' + (paused ? PLAY_SVG : PAUSE_SVG) + '</button></span>' +
             '<span class="lt-right">' + (last || news ? '' : '<button type="button" class="lt-btn lt-ghost" data-lt="skip">' + esc(U.skip) + '</button>') +
+            /* Nov 25 2026 (Emmanuel: "send out a new notification so everyone can choose to go thru the new tutorial"): the update card
+               offers the whole tour from the start; Got it just closes */
+            (news && last && U.newsFull ? '<button type="button" class="lt-btn lt-ghost lt-full" data-lt="full">' + esc(U.newsFull) + '</button>' : '') +
             '<button type="button" class="lt-btn lt-go" data-lt="' + (s.action === 'claim' ? 'claim' : 'next') + '">' + esc(cta) + '</button></span></div>';
         /* Bug hunt 56 (P-VIEW-SWAP): the card is swapped in place, so fresh-scrim saw no new overlay. A double tap on Next moved
            two steps (live WebKit iPhone 13: hello -> fuel, 169 ms apart), and a double tap on Back went back two. mark() gives the new
@@ -357,7 +362,7 @@
             /* nothing of the page is visible yet (a bloom still at opacity 0 in its bubble, a slow phone): the card stays hidden instead
                of fading in at the top and sitting on bubbles that then fan up under it (WebKit, Oct 25 2026: Fuel covered 100% for 2.6 s).
                tick() and the settle timers place again; after 2.5 s it shows at the top anyway */
-            const waiting = opened !== 'community-tab' && opened !== 'move-page' && !sheet && !boxes.length && Date.now() - (roomWaitAt || (roomWaitAt = Date.now())) < 2500;
+            const waiting = opened !== 'community-tab' && opened !== 'foryou-feed' && opened !== 'move-page' && !sheet && !boxes.length && Date.now() - (roomWaitAt || (roomWaitAt = Date.now())) < 2500;
             card.classList.toggle('lt-roomwait', waiting);
             if ((sheet || boxes.length) && !stageSeenAt) stageSeenAt = Date.now();
             if (!waiting && (sheet || boxes.length)) roomWaitAt = 0;
@@ -365,7 +370,7 @@
                Supermarkt / Meine Woche planen tabs in DE / ES (98 %); like Community, the card goes to the bottom and the top stays readable */
             /* Nov 5 2026 (tutorial sentences): the Move page's Mirror mode card sits at the top (measured 50 to 289 px on a 390 x 844 phone),
                and the tour card at the top covered 88 % of it while saying "Mirror mode is the first card there": the card goes to the bottom */
-            if (opened === 'community-tab' || opened === 'supermarket' || opened === 'move-page') where = 'bottom';
+            if (opened === 'community-tab' || opened === 'foryou-feed' || opened === 'supermarket' || opened === 'move-page') where = 'bottom';
             else if (sheet) {
                 /* the sheet shrinks until it starts below the card: measured, not guessed (the You sheet is centred, Misty's card sits
                    24 px above the bottom), so each placement takes off what still overlaps; a centred sheet loses it twice */
@@ -477,6 +482,7 @@
         else if (a === 'back') go(i - 1, 'back');
         else if (a === 'skip') go(S.skipIndex(list, i), 'skip');
         else if (a === 'skipall') stop('skipped');
+        else if (a === 'full') { stop('news-full'); setTimeout(() => { try { start({ from: 'news' }); } catch (x) { } }, 250); }
         else if (a === 'claim') claim();
         else if (a === 'pause') setPaused(!paused);
     }

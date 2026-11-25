@@ -200,10 +200,20 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .vm.vm-typing .vm-safen,.vm.vm-typing .vnav,.vm.vm-typing .vm-row,.vm.vm-typing #vmOut{display:none!important}
 .vm.vm-typing .vm-tapn{display:none!important}
 /* 25 Nov 2026: typing right on the video (the text box sits where the text is, in its size and look) */
-.vm-inl{position:absolute;z-index:3;transform:translate(-50%,-50%);width:68%;margin:0;padding:0;border:0;outline:none;resize:none;overflow:hidden;background:transparent;text-align:center;color:#fff;caret-color:#fff;
+.vm-inl{position:absolute;z-index:3;transform:translate(-50%,-50%);width:65.96%;margin:0;padding:0;border:0;outline:none;resize:none;overflow:hidden;background:transparent!important;text-align:center;color:transparent!important;-webkit-text-fill-color:transparent;caret-color:#fff;
   font:700 calc(var(--fs,24) * 100cqw / 390)/1.25 system-ui,-apple-system,"SF Pro Display","Helvetica Neue",sans-serif;-webkit-text-stroke:calc(var(--fs,24) * 6cqw / 3900) rgba(0,0,0,.45);paint-order:stroke fill;text-shadow:0 0 calc(var(--fs,24) * 30cqw / 3900) rgba(0,0,0,.6)}
-.vm-inl.box{color:#000;caret-color:#000;background:#fff;border-radius:.25em;padding:.1em .35em;-webkit-text-stroke:0;text-shadow:none}
+.vm-inl.box{padding:0;-webkit-text-stroke:0;text-shadow:none}
+.vm-inl{-webkit-text-stroke:0!important;text-shadow:none!important}
 .vm-stage.inl video{filter:brightness(.6)}
+/* 25 Nov 2026: Instagram-style toolbar above the keyboard and size slider on the left edge */
+.vm-tbar{position:fixed;left:8px;right:8px;top:calc(var(--kbtop,100vh) - 64px);z-index:30;display:flex;justify-content:space-around;align-items:center;height:56px;padding:0 6px;border-radius:16px;background:rgba(40,40,46,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.vm-tbar[hidden]{display:none}.vm-tbar button{flex:1;height:44px;margin:0 3px;border:0;border-radius:12px;background:transparent;color:#fff;font-size:21px;font-weight:700;cursor:pointer;display:grid;place-items:center}
+.vm-tbar .vm-dot{display:block;width:26px;height:26px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.4)}
+.vm-boxi{display:grid;place-items:center;width:28px;height:28px;border:2px solid #fff;border-radius:6px;font-size:15px}.vm-boxi.on{background:#fff;color:#000}
+.vm-vsz{position:absolute;left:-2px;top:18%;height:46%;width:30px;z-index:4;touch-action:none;cursor:ns-resize}
+.vm-vsz[hidden]{display:none}.vm-vsz::before{content:"";position:absolute;left:11px;top:0;bottom:0;width:8px;border-radius:0 8px 8px 0;background:linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.25));clip-path:polygon(0 0,100% 0,40% 100%,0 100%)}
+.vm-vsz i{position:absolute;left:3px;top:calc((1 - var(--k,.3)) * 100% - 12px);width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.vm.vm-typing .vm-stage{width:min(100%,calc((var(--vvh,420px) - 150px) * 9 / 16))!important}
 .vm-done{position:absolute;top:10px;right:10px;z-index:4;min-height:38px;padding:6px 16px;border:0;border-radius:999px;background:#fff;color:#000;font:inherit;font-weight:800;cursor:pointer}
 .vm-text.ghost.empty{color:rgba(255,255,255,.9)!important;-webkit-text-stroke:0;text-shadow:0 1px 6px #000;font-size:16px!important;white-space:nowrap}
 .vm-tapn{margin:4px 0 0!important;text-align:center}
@@ -687,6 +697,6 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 <script src="accounts.js?v=7"></script>
 <script src="video-words.js?v=1"></script>
 <script src="ai-use.js?v=1"></script>
-<script src="video-machine.js?v=15"></script>
+<script src="video-machine.js?v=16"></script>
 </body>
 </html>

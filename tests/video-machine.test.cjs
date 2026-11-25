@@ -76,7 +76,8 @@ test('only B-rolls use space: made videos are not stored; the profile says how m
    something, that should be in a different folder ... repurpose them on different platforms ... it keeps saying it's still generating 0
    out of 5. I don't know what that means") */
 test('a made video counts only while it matches the part exactly as it is now: a changed size, text or place makes it again', () => {
-  assert.match(js, /function ckey\(c\) \{ return JSON\.stringify\(\[c\.start, c\.end, c\.text, c\.x, c\.y, c\.size, c\.look\]\); \}/);
+  /* changed 25 Nov 2026: + font, colour and alignment, only when set (older finished videos keep their key) */
+  assert.match(js, /function ckey\(c\) \{ var k = \[c\.start, c\.end, c\.text, c\.x, c\.y, c\.size, c\.look\]; if \(c\.font \|\| c\.color \|\| c\.align\) k\.push\(c\.font \|\| '', c\.color \|\| '', c\.align \|\| ''\); return JSON\.stringify\(k\); \}/);
   assert.match(js, /function got\(i\) \{ var c = st\.sess && st\.sess\.clips\[i\], m = made\[i\]; return c && m && m\.k === ckey\(c\) \? m\.b : null; \}/);
   assert.doesNotMatch(js, /share\(\[fileOf\(made\[/); assert.doesNotMatch(js, /fileOf\(made\[i\]/);
   assert.match(js, /var i0 = cur; if \(got\(i0\)\) return share/);
@@ -111,7 +112,7 @@ test('videos are built frame by frame on exact 1/30 s timestamps (WebCodecs + MP
    a frame of the saved file are the same, line for line. */
 test('the editor shows the text drawn by the same drawText() and font as the saved video', () => {
   assert.match(js, /<canvas class="vm-pv" id="vmC"/); assert.match(js, /x\.clearRect\(0, 0, cw, ch\); drawText\(x, c, cw, ch\);/);
-  assert.match(js, /ctx\.font = '700 ' \+ fs \+ 'px ' \+ FONT;/); assert.match(js, /class="vm-text ghost" id="vmT"/);
+  /* changed 25 Nov 2026: the part's own font (Instagram-style toolbar) */ assert.match(js, /ctx\.font = fontOf\(c, fs\);/); assert.match(js, /class="vm-text ghost" id="vmT"/);
   assert.match(R('studio/index.html'), /\.vm-text\.ghost,\.vm-text\.ghost\.box\{color:transparent;/);
 });
 /* 24 Nov 2026, night (Emmanuel: "why is it that a done video, I have to always click on make video? This is already done ... isn't
@@ -264,4 +265,19 @@ test('typing happens on the video: a tap types, a move drags, Done ends; no box 
   assert.match(js, /if \(Math\.abs\(e\.clientX - drag\.sx\) < 6 && Math\.abs\(e\.clientY - drag\.sy\) < 6\) return; drag\.moved = true;/);
   assert.match(R('studio/index.html'), /\.vm-inl\{position:absolute;z-index:3;transform:translate\(-50%,-50%\);/);
   for (const l of ['Tap the text to type on the video', 'Tipp auf den Text, um im Video zu schreiben', 'Toca el texto para escribir en el vídeo']) assert.ok(js.includes(l), l);
+});
+/* 25 Nov 2026 (Emmanuel, showing Instagram's story text editor: "This is exactly how it should feel when editing a text manually or moving
+   it"). Checked in Chromium: tap the text -> toolbar and size slider show, the keyboard stays; Aa -> serif, box on, colour x3 -> pink,
+   slide up -> size 40, a new paragraph gets its own box; Done keeps it all and remembers it for new parts. */
+test('Instagram-style text editing: toolbar above the keyboard (font, colour, alignment, box) and a size slider on the left edge', () => {
+  assert.match(js, /<div class="vm-tbar" id="vmTbar" hidden role="toolbar">/); assert.match(js, /<div class="vm-vsz" id="vmVsz" hidden role="slider"/);
+  assert.match(js, /tb\.addEventListener\('pointerdown', function \(e\) \{ e\.preventDefault\(\); \}\);   \/\* the keyboard stays open \*\//);
+  assert.match(js, /var FORDER = \['sf', 'serif', 'round', 'mono', 'cond'\], COLORS = \['#ffffff', '#000000',/);
+  assert.match(js, /c\.size = Math\.round\(14 \+ k \* 34\)/);
+  assert.match(js, /function styled\(\) \{ st\.pref\.font = c\.font \|\| ''; st\.pref\.color = c\.color \|\| '';/, 'remembered for new parts');
+});
+test('the video draws what the editor shows: the part\'s font, colour, alignment and one box per paragraph; while typing the drawing is the preview', () => {
+  assert.match(js, /if \(c\.look === 'box'\) \{\s*var px = fs \* 0\.35, fg = isLight\(col\) \? '#000' : '#fff', i = 0;/);
+  assert.match(js, /while \(j < ls\.length && ls\[j\]\.p === ls\[i\]\.p\)/, 'a box per paragraph');
+  assert.match(R('studio/index.html'), /color:transparent!important;-webkit-text-fill-color:transparent;caret-color:#fff;/, 'the text box on top shows only its cursor');
 });

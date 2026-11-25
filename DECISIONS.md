@@ -1791,3 +1791,6 @@ Emmanuel: "I went to a different B-roll ... is it now still showing me that it's
 
 ## 2026-11-25 — Video editor: typing the text works
 Emmanuel: "I'm trying to change the text manually ... it's buggy ... I can't even see my video or where the text is positioned ... Keep snapping back or snapping out." The editor is never redrawn from the background any more (a video being made used to rebuild the text box under the finger); only its button follows. While typing, the video shrinks to fit above the keyboard (visualViewport height) with the text box right under it, and the notes, the tool rows and the bottom bar step aside until the keyboard closes. The text box is marked as plain text (no AutoFill Contact).
+
+## 2026-11-25 — Video editor: type on the video, like a story
+Emmanuel: "you made an extra box for it ... on Instagram or on TikTok, I can edit the text on the B-roll ... you know how that Instagram, when you're about to post a story, works." The text box under the video is gone. Tap the text on the video and type right there, in its place, size and look (Plain or Box), the video dimmed and kept above the keyboard; Done or tapping outside ends it. A move of more than 6 px drags the text instead (magnets and safe zone as before). An empty part shows "＋ Tap to add text" on the video.

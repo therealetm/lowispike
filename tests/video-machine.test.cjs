@@ -247,8 +247,21 @@ test('one queue for every B-roll: jobs carry their B-roll, making goes on while 
    focused, every word kept; typing mode on, bottom bar hidden. */
 test('the editor is never redrawn from the background; typing shrinks the video above the keyboard; no AutoFill on the text box', () => {
   assert.match(js, /function refresh\(\) \{ if \(inEdit\(\)\) \{ mkSync\(\); if \(HOST && HOST\.isConnected\) mountPaint\(\); return; \}/);
+  /* changed 25 Nov 2026 (Emmanuel: "you made an extra box for it ... on Instagram ... I can edit the text on the B-roll"): the box under the
+     video is gone; the text is typed right on the video */
   assert.match(js, /name="vm-onscreen-text" autocomplete="off"/);
-  assert.match(js, /tx\.addEventListener\('focus', function \(\) \{ fit\(\); el\.classList\.add\('vm-typing'\);/);
+  assert.match(js, /function startInline\(\) \{\s*if \(inl\) return; inl = true; fit\(\); el\.classList\.add\('vm-typing'\);/);
   const h = R('studio/index.html'); assert.match(h, /\.vm\.vm-typing \.vm-stage\{width:min\(100%,calc\(\(var\(--vvh,420px\) - 190px\) \* 9 \/ 16\)\)!important\}/);
   assert.match(h, /\.vm\.vm-typing \.vm-safen,\.vm\.vm-typing \.vnav/);
+});
+/* 25 Nov 2026 (Emmanuel: "you made an extra box for it ... on Instagram or on TikTok, I can edit the text on the B-roll ... when you're about
+   to post a story"). Checked in Chromium: a tap on the text opens typing on the video (focused, its words in it), typed words are kept
+   after Done, a drag of 60 px moves the text (y 0.42 -> 0.54) without opening typing. */
+test('typing happens on the video: a tap types, a move drags, Done ends; no box under the video', () => {
+  assert.doesNotMatch(js, /id="vmTx"/);
+  assert.match(js, /<textarea id="vmIn" class="vm-inl/); assert.match(js, /<button type="button" class="vm-done" id="vmDone" hidden>/);
+  assert.match(js, /var tap = !drag\.moved && e && e\.type === 'pointerup';[^\n]*if \(tap\) startInline\(\);/);
+  assert.match(js, /if \(Math\.abs\(e\.clientX - drag\.sx\) < 6 && Math\.abs\(e\.clientY - drag\.sy\) < 6\) return; drag\.moved = true;/);
+  assert.match(R('studio/index.html'), /\.vm-inl\{position:absolute;z-index:3;transform:translate\(-50%,-50%\);/);
+  for (const l of ['Tap the text to type on the video', 'Tipp auf den Text, um im Video zu schreiben', 'Toca el texto para escribir en el vídeo']) assert.ok(js.includes(l), l);
 });

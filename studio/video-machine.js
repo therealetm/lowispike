@@ -58,6 +58,7 @@
     makingN: ['🎬 Making video {p}', '🎬 Video {p} wird gemacht', '🎬 Haciendo vídeo {p}'], goOn: ['▶ Tap to go on', '▶ Tippen, um weiterzumachen', '▶ Toca para seguir'], pickParts: ['Tick the parts you want', 'Hak die Teile an, die du willst', 'Marca las partes que quieres'],
     howMake: ['🎬 Make puts the text on the video (about as long as the clip, keep the app open). 📲 Save sends it to your phone and ticks it ✓.', '🎬 Machen legt den Text aufs Video (etwa so lang wie der Clip, App offen lassen). 📲 Speichern schickt es aufs Handy und hakt es ✓ ab.', '🎬 Hacer pone el texto en el vídeo (dura lo que el clip, deja la app abierta). 📲 Guardar lo envía al móvil y lo marca ✓.'],
     leftN: ['🎬 {p} left to make', '🎬 Noch {p} zu machen', '🎬 Faltan {p}'], nowMaking: ['🎬 Making a video for the {p} B-roll', '🎬 Video für die {p}-B-Roll wird gemacht', '🎬 Haciendo un vídeo del B-roll de {p}'],
+    tapEdit: ['Tap the text to type on the video · drag it to move it', 'Tipp auf den Text, um im Video zu schreiben · zieh ihn, um ihn zu verschieben', 'Toca el texto para escribir en el vídeo · arrástralo para moverlo'], done: ['Done', 'Fertig', 'Listo'], addText: ['＋ Tap to add text', '＋ Tippen für Text', '＋ Toca para añadir texto'],
     saveAgain: ['📲 Save {p} again', '📲 {p} nochmal speichern', '📲 Guardar {p} otra vez'], sizeN: ['Size {p}', 'Größe {p}', 'Tamaño {p}'],
     saved: ['✓ Saved', '✓ Gespeichert', '✓ Guardado'], made: ['🎬 Made', '🎬 Gemacht', '🎬 Hecho'], noText: ['No text yet', 'Noch kein Text', 'Sin texto aún'], adding: ['Adding…', 'Wird hinzugefügt…', 'Añadiendo…'],
     reOne: ['New text for this part', 'Neuer Text für diesen Teil', 'Texto nuevo para esta parte'], tick: ['Use this part', 'Diesen Teil nehmen', 'Usar esta parte'],
@@ -179,9 +180,12 @@
       var c = st.sess.clips[cur];
       p.innerHTML = top((cur + 1) + ' / ' + st.sess.clips.length, fromProf ? 'close' : 'clips') + '<div class="vbody vm-eb"><div class="vm-stage" id="vmStage"><video id="vmV" playsinline muted loop autoplay src="' + esc(url(roll(st.sess.id))) + '"></video>' +
         '<canvas class="vm-pv" id="vmC" aria-hidden="true"></canvas><div class="vm-safe" aria-hidden="true"></div><i class="vm-gx" aria-hidden="true"></i><i class="vm-gy" aria-hidden="true"></i>' +
-        '<div class="vm-text ghost" id="vmT" style="left:' + (c.x * 100) + '%;top:' + (c.y * 100) + '%;--fs:' + c.size + '">' + lines(c.text) + '</div></div>' +
+        '<div class="vm-text ghost" id="vmT" style="left:' + (c.x * 100) + '%;top:' + (c.y * 100) + '%;--fs:' + c.size + '">' + lines(c.text) + '</div>' +
+        '<textarea id="vmIn" class="vm-inl' + (c.look === 'box' ? ' box' : '') + '" hidden rows="1" name="vm-onscreen-text" autocomplete="off" autocorrect="on" autocapitalize="off" spellcheck="true" data-form-type="other" aria-label="' + esc(t('textPh')) + '"></textarea>' +
+        '<button type="button" class="vm-done" id="vmDone" hidden>' + esc(t('done')) + '</button></div>' +
+        '<p class="note vm-tapn">' + esc(t('tapEdit')) + '</p>' +
         '<p class="note vm-safen">' + esc(t('safe')) + '</p>' +
-        '<textarea id="vmTx" class="vm-tx" name="vm-onscreen-text" autocomplete="off" autocorrect="on" autocapitalize="off" spellcheck="true" enterkeyhint="done" data-form-type="other" placeholder="' + esc(t('textPh')) + '">' + esc(c.text) + '</textarea>' +
+
         '<div class="vm-row"><span class="vm-l">' + esc(t('size')) + '</span><input type="range" id="vmSz" min="16" max="40" step="1" value="' + c.size + '"><button class="pill' + (c.look !== 'box' ? ' acc' : '') + '" data-vm="look" data-l="plain">' + esc(t('plain')) + '</button><button class="pill' + (c.look === 'box' ? ' acc' : '') + '" data-vm="look" data-l="box">' + esc(t('box')) + '</button></div>' +
         '<div class="vm-row"><button class="pill" data-vm="aione">' + esc(t('aiOne')) + '</button><button class="pill" data-vm="lib">' + esc(t('lib')) + '</button>' + ['en', 'de', 'es'].map(function (l) { return '<button class="pill" data-vm="trc" data-l="' + l + '">' + esc(t('tr')) + ' ' + l.toUpperCase() + '</button>'; }).join('') + (c.orig != null ? '<button class="pill" data-vm="trundo">' + esc(t('undo')) + '</button>' : '') + '</div>' +
         '<div id="vmOut"></div></div>' +
@@ -267,26 +271,43 @@
       var r = stage.getBoundingClientRect(); if (!r.width) return; var dpr = Math.min(3, W.devicePixelRatio || 1), cw = Math.round(r.width * dpr), ch = Math.round(r.height * dpr);
       if (cvp.width !== cw || cvp.height !== ch) { cvp.width = cw; cvp.height = ch; }
       var x = cvp.getContext('2d'); x.clearRect(0, 0, cw, ch); drawText(x, c, cw, ch);
-      x.font = '700 ' + (c.size * cw / 390) + 'px ' + FONT; tEl.innerHTML = wrap(x, c.text, cw * MAXW).map(esc).join('<br>') || '&nbsp;';
+      x.font = '700 ' + (c.size * cw / 390) + 'px ' + FONT; tEl.innerHTML = wrap(x, c.text, cw * MAXW).map(esc).join('<br>') || esc(t('addText')); tEl.classList.toggle('empty', !String(c.text || '').trim());
     }
     v.addEventListener('loadedmetadata', function () { v.currentTime = c.start; v.play().catch(function () { }); });
     v.addEventListener('timeupdate', function () { if (v.currentTime >= c.end || v.currentTime < c.start - 0.3) v.currentTime = c.start; });
-    var tx = D.getElementById('vmTx'), vv = W.visualViewport;
+    /* 25 Nov 2026 (Emmanuel: "you made an extra box for it ... on Instagram or on TikTok, I can edit the text on the B-roll ... you know
+       how that Instagram, when you're about to post a story, works"): tap the text on the video and type right there, in its own place,
+       size and look (the video dims a little and shrinks to stay above the keyboard); Done or a tap outside ends it. Dragging still moves it. */
+    var ta = D.getElementById('vmIn'), done = D.getElementById('vmDone'), vv = W.visualViewport, inl = false;
     var fit = function () { if (el) el.style.setProperty('--vvh', Math.round(vv ? vv.height : W.innerHeight) + 'px'); };
-    tx.addEventListener('focus', function () { fit(); el.classList.add('vm-typing'); var bd = el.querySelector('.vbody'); if (bd) bd.scrollTop = 0; setTimeout(function () { fit(); tx.scrollIntoView({block: 'nearest'}); }, 350); });
-    tx.addEventListener('blur', function () { el.classList.remove('vm-typing'); });
     if (vv && !el.__vv) { el.__vv = 1; vv.addEventListener('resize', fit); }
-    D.getElementById('vmTx').addEventListener('input', function (e) { c.text = e.target.value; pv(); clampText(); keep(); mkSync(); });
+    var grow = function () { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+    function startInline() {
+      if (inl) return; inl = true; fit(); el.classList.add('vm-typing'); stage.classList.add('inl');
+      ta.style.left = (c.x * 100) + '%'; ta.style.top = (c.y * 100) + '%'; ta.style.setProperty('--fs', c.size); ta.classList.toggle('box', c.look === 'box');
+      ta.value = c.text || ''; ta.hidden = false; done.hidden = false; tEl.style.visibility = 'hidden'; cvp.style.visibility = 'hidden'; grow();
+      ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) { }
+      var bd = el.querySelector('.vbody'); if (bd) bd.scrollTop = 0; setTimeout(fit, 350);
+    }
+    function endInline() {
+      if (!inl) return; inl = false; c.text = ta.value.replace(/\s+$/, ''); delete c.orig;
+      ta.hidden = true; done.hidden = true; tEl.style.visibility = ''; cvp.style.visibility = ''; stage.classList.remove('inl'); el.classList.remove('vm-typing');
+      pv(); clampText(); keep(); mkSync();
+    }
+    ta.addEventListener('input', function () { c.text = ta.value; grow(); keep(); mkSync(); });
+    ta.addEventListener('blur', function () { setTimeout(endInline, 0); });
+    done.addEventListener('pointerdown', function (e) { e.preventDefault(); }); done.addEventListener('click', function () { ta.blur(); endInline(); });
     D.getElementById('vmSz').addEventListener('input', function (e) { c.size = +e.target.value; tEl.style.setProperty('--fs', c.size); pv(); clampText(); keep(); mkSync(); });
     var drag = null;
-    tEl.addEventListener('pointerdown', function (e) { e.preventDefault(); tEl.setPointerCapture(e.pointerId); var r = stage.getBoundingClientRect(); drag = {ox: e.clientX - c.x * r.width, oy: e.clientY - c.y * r.height}; stage.classList.add('drag'); });
+    tEl.addEventListener('pointerdown', function (e) { e.preventDefault(); tEl.setPointerCapture(e.pointerId); var r = stage.getBoundingClientRect(); drag = {ox: e.clientX - c.x * r.width, oy: e.clientY - c.y * r.height, sx: e.clientX, sy: e.clientY, moved: false}; });
     tEl.addEventListener('pointermove', function (e) {
-      if (!drag) return; var r = stage.getBoundingClientRect(), x = (e.clientX - drag.ox) / r.width, y = (e.clientY - drag.oy) / r.height;
+      if (!drag) return; if (!drag.moved) { if (Math.abs(e.clientX - drag.sx) < 6 && Math.abs(e.clientY - drag.sy) < 6) return; drag.moved = true; stage.classList.add('drag'); }
+      var r = stage.getBoundingClientRect(), x = (e.clientX - drag.ox) / r.width, y = (e.clientY - drag.oy) / r.height;
       var sx = snap(x, 0.5, 0.035), sy = snap(y, 0.5, 0.03); stage.classList.toggle('gx', sx === 0.5); stage.classList.toggle('gy', sy === 0.5);
       if ((sx === 0.5 && x !== c.x && c.x !== 0.5) || (sy === 0.5 && y !== c.y && c.y !== 0.5)) { try { if (navigator.vibrate) navigator.vibrate(6); } catch (x2) { } }
       c.x = sx; c.y = sy; place(); clampText();
     });
-    var end = function () { if (!drag) return; drag = null; stage.classList.remove('drag', 'gx', 'gy'); keep(); mkSync(); };
+    var end = function (e) { if (!drag) return; var tap = !drag.moved && e && e.type === 'pointerup'; drag = null; stage.classList.remove('drag', 'gx', 'gy'); keep(); mkSync(); if (tap) startInline(); };   /* a tap (no move) types, a move drags */
     tEl.addEventListener('pointerup', end); tEl.addEventListener('pointercancel', end);
     function place() { tEl.style.left = (c.x * 100) + '%'; tEl.style.top = (c.y * 100) + '%'; pv(); }
     function clampText() {

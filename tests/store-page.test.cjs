@@ -11,7 +11,8 @@ test('no invented numbers: ratings only from real reviews, no chart rank or down
 test('Get starts the install flow; Impressum and Privacy in the footer; three languages', () => {
   assert.match(js, /if \(b\.dataset\.lsp === 'get'\) get\(\);/); assert.match(js, /const IMPRINT = 'impressum\.html';/); /* 23 Nov 2026: own Impressum page */ assert.match(js, /href="privacy\.html"/);
   for (const l of ['en', 'de', 'es']) assert.ok(js.includes(l + ': { sub:'), l);
-  for (const i of [1, 2, 3]) assert.ok(fs.existsSync(path.join(__dirname, '..', 'store', 'shot-' + i + '.webp')));
+  /* changed 25 Nov 2026: shot-2 / shot-3 were replaced by named real screens (tests/store-shots.test.cjs checks all seven) */
+  for (const i of ['1', 'chat', 'foryou', 'circle', 'studio', 'mirror', 'home']) assert.ok(fs.existsSync(path.join(__dirname, '..', 'store', 'shot-' + i + '.webp')));
 });
 test('it shows above the boot screen and the gate waits behind it', () => { assert.match(css, /#lspStore#lspStore\.lsp\.lsp\.lsp\.lsp\{visibility:visible!important\}/); assert.match(css, /html\.lsp-open #r2gate/); assert.match(R('index.html'), /<script src="store-page\.js\?v=/); });
 test('store sections: What’s New, App Privacy (matches privacy.html), Accessibility, Information, slim top bar (23 Nov 2026)', () => {

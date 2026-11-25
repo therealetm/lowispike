@@ -194,3 +194,18 @@ test('previews are drawn by the video\'s own drawText(); an upload shows a spinn
   assert.match(js, /new Array\(ADDING \+ 1\)\.join\('<div class="vm-cd vm-adding" role="status">/);
   assert.match(js, /if \(Date\.now\(\) - lastT > 12000\) \{ clearInterval\(wd\); fail\(new Error\('stall'\)\); \}/);
 });
+/* 25 Nov 2026 (Emmanuel: "I want to be able to edit my core up here, my style ... select a new style or type in a new style, and the old
+   style is then unselected ... different styles for my different accounts. And don't make things ... longer to scroll ... swipe right to
+   see the rest of the playlist names"). Checked in Chromium: playlists in one row; + New style "Second account" becomes ✓ and is the
+   bio sent to the AI; tapping "My style" switches back. */
+test('styles: several per account, one picked (✓), tap again to edit, ＋ to add; the picked one is what the AI writes with', () => {
+  const a = R('studio/accounts.js');
+  assert.match(a, /function styleList\(a\) \{ a = a \|\| cur\(\); if \(!a\) return \[\]; if \(!Array\.isArray\(a\.styles\)\) \{ a\.styles = a\.style \? \[\{id: 's1', name: 'My style', text: a\.style\}\] : \[\];/, 'the old single style becomes the first');
+  assert.match(a, /styles: styles, styleUse: styleUse, styleSave: styleSave, styleDel: styleDel\};/);
+  assert.match(js, /if \(!sid\) return styleDlg\(null\); if \(sid === A2\.sel\) return styleDlg\(sx\); StudioAcc\.styleUse\(sid\);/);
+  assert.match(js, /styleRow\(\) \+\s*'<div class="vm-row2"><span class="vm-l2">' \+ esc\(t\('learn'\)\)/);
+});
+test('the style and playlist rows swipe sideways instead of stacking (the page stays short)', () => {
+  assert.match(R('studio/index.html'), /\.vm-plc\{display:flex;flex-wrap:nowrap!important;gap:8px;overflow-x:auto;/);
+  assert.match(js, /<div class="vm-chips vm-plc">' \+\s*A\.list\.map/); assert.match(js, /'<div class="vm-chips vm-plc">' \+ pls\.map/);
+});

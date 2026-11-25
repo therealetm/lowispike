@@ -47,6 +47,9 @@
     blocked: ['Making the videos stopped (the phone needed its memory, Low Power Mode, or the app was in the background). Tap the button to go on.', 'Das Machen der Videos hat gestoppt (das Handy brauchte Speicher, Stromsparmodus oder die App war im Hintergrund). Tipp auf den Knopf, um weiterzumachen.', 'Los vídeos se detuvieron (el móvil necesitó memoria, modo ahorro o la app estaba en segundo plano). Toca el botón para seguir.'],
     newH: ['Not used yet', 'Noch nicht benutzt', 'Aún sin usar'], usedH: ['✓ Used', '✓ Benutzt', '✓ Usados'], usedOn: ['✓ Used {p}', '✓ Benutzt {p}', '✓ Usado {p}'],
     allUsed: ['✓ All used: tap ✨ Fill texts for new ones', '✓ Alle benutzt: tipp auf ✨ Texte füllen für neue', '✓ Todos usados: toca ✨ Rellenar textos'],
+    stylePh: ['Who you are, your message, who you talk to, how you sound. E.g. “I lost 57 kg eating insulin-friendly food. I talk to people who are tired of diets. Short, honest, a bit funny.”', 'Wer du bist, deine Botschaft, mit wem du sprichst, wie du klingst. Z. B. „Ich habe 57 kg mit insulinfreundlichem Essen verloren. Ich spreche mit Leuten, die Diäten satt haben. Kurz, ehrlich, ein bisschen witzig.“', 'Quién eres, tu mensaje, a quién hablas, cómo suenas.'],
+    myStyle: ['My style', 'Mein Stil', 'Mi estilo'], newStyle: ['＋ New style', '＋ Neuer Stil', '＋ Nuevo estilo'], styleName: ['Name (e.g. the account)', 'Name (z. B. der Account)', 'Nombre (p. ej. la cuenta)'],
+    styleTip: ['Tap a style to use it; tap it again to change it.', 'Tipp einen Stil an, um ihn zu nehmen; nochmal tippen, um ihn zu ändern.', 'Toca un estilo para usarlo; tócalo otra vez para cambiarlo.'], delStyle: ['Delete style', 'Stil löschen', 'Eliminar estilo'], saveStyle: ['Save', 'Speichern', 'Guardar'],
     noPl: ['No playlists yet: put viral videos into a playlist in the Swipe file.', 'Noch keine Playlists: Leg virale Videos in der Swipe-Datei in eine Playlist.', 'Aún no hay playlists: pon vídeos virales en una playlist del Swipe file.'],
     pickPl: ['Pick a playlist first, so the AI learns from its texts.', 'Wähl zuerst eine Playlist, damit die KI von ihren Texten lernt.', 'Elige primero una playlist para que la IA aprenda de sus textos.'],
     plN: ['{p} videos', '{p} Videos', '{p} vídeos'], newT: ['✨ New texts', '✨ Neue Texte', '✨ Textos nuevos'], allT: ['All texts', 'Alle Texte', 'Todos los textos'], sizeAll: ['Size', 'Größe', 'Tamaño'],
@@ -441,6 +444,8 @@
     if (k === 'rm') { e.stopPropagation(); if (!confirm(t('del'))) return; var id = b.dataset.id; rolls = rolls.filter(function (r) { return r.id !== id; }); if (st.sel === id) st.sel = ''; if (st.sess && st.sess.id === id) st.sess = null; keep(); bDel(id).then(paint, paint); return; }
     if (k === 'sel') { useRoll(b.dataset.id); FR = []; refresh(); return; }
     if (k === 'pl') { st.pl = st.pl === b.dataset.id && HOST && HOST.contains(b) ? '' : b.dataset.id; keep(); return refresh(); }
+    if (k === 'sty') { var A2 = StudioAcc.styles(), sid = b.dataset.id, sx = A2.list.filter(function (x) { return x.id === sid; })[0];
+      if (!sid) return styleDlg(null); if (sid === A2.sel) return styleDlg(sx); StudioAcc.styleUse(sid); return refresh(); }
     if (k === 'tsel') { var ti = +b.dataset.i; if (!SELSET) { SELSET = {}; selIdx0().forEach(function (x) { SELSET[x] = 1; }); } if (SELSET[ti]) delete SELSET[ti]; else SELSET[ti] = 1; return refresh(); }
     /* ✨ New texts: the ticked parts; with nothing ticked by hand, every part you have not saved yet (all of them once all are saved) */
     if (k === 'newT') { if (busy) return; if (!st.pl && S.lists && S.lists().length) return S.toast(t('pickPl'));
@@ -550,6 +555,7 @@
       rolls.map(function (r) { var us = usedOf(r.id), last = us.reduce(function (m, u) { return Math.max(m, u.ts || 0); }, 0);
         return '<button class="vm-cd' + (r.id === st.sel ? ' on' : '') + '" data-vm="sel" data-id="' + esc(r.id) + '">' + (r.thumb ? '<img alt="" src="' + esc(r.thumb) + '">' : '') + '<i>' + fmt(r.dur) + '</i>' + (us.length ? '<b class="vm-cdn">✓ ' + us.length + '</b><small class="vm-cdd">' + esc(agoTxt(last)) + '</small>' : '') + '<em data-vm="rm" data-id="' + esc(r.id) + '" aria-label="✕">✕</em></button>'; }).join('') + '</div>' +
       (ss ? (st.aiNote ? '<p class="vm-note">' + esc(st.aiNote) + '</p>' : '') + (qErr ? '<p class="vm-note">' + esc(t('blocked')) + '</p>' : '') +
+        styleRow() +
         '<div class="vm-row2"><span class="vm-l2">' + esc(t('learn')) + '</span></div>' +
         (pls.length ? '<div class="vm-chips vm-plc">' + pls.map(function (q) { var n = (q.items || []).length; return '<button class="pill' + (st.pl === q.id ? ' acc' : '') + '" data-vm="pl" data-id="' + esc(q.id) + '" aria-pressed="' + (st.pl === q.id) + '">' + esc(q.name) + ' <small>' + esc(t('plN', n)) + '</small></button>'; }).join('') + '</div>' : '<p class="note vm-fn">' + esc(t('noPl')) + '</p>') +
         '<div class="vm-lang"><span>' + esc(t('textLang')) + '</span>' + ['en', 'de', 'es'].map(function (l) { return '<button class="pill' + (st.lang === l ? ' acc' : '') + '" data-vm="lang" data-l="' + l + '" aria-pressed="' + (st.lang === l) + '">' + l.toUpperCase() + '</button>'; }).join('') + '</div>' +
@@ -574,6 +580,24 @@
     if (ss) { frames(true); if (WANT.length) setTimeout(queue, 300); }
   }
   /* one change for every part of this B-roll (size, place, look), kept inside the safe zone and remembered for new parts */
+  /* 25 Nov 2026: your style (core message) as one row you swipe sideways: tap one to use it, tap it again to change it, ＋ to add one.
+     Styles belong to the account you are on, so each account writes in its own voice. */
+  function styleRow() {
+    var A = W.StudioAcc && StudioAcc.styles ? StudioAcc.styles() : null; if (!A) return '';
+    return '<div class="vm-row2"><span class="vm-l2">' + esc(t('myStyle')) + '</span></div><div class="vm-chips vm-plc">' +
+      A.list.map(function (x) { return '<button class="pill' + (x.id === A.sel ? ' acc' : '') + '" data-vm="sty" data-id="' + esc(x.id) + '" aria-pressed="' + (x.id === A.sel) + '" title="' + esc(x.text.slice(0, 200)) + '">' + (x.id === A.sel ? '✓ ' : '') + esc(x.name) + '</button>'; }).join('') +
+      '<button class="pill" data-vm="sty" data-id="">' + esc(t('newStyle')) + '</button></div>';
+  }
+  function styleDlg(x) {
+    if (!S.dlg) return; x = x || {id: '', name: '', text: ''};
+    S.dlg('<h2>' + esc(t('myStyle')) + '</h2><input id="vmStN" class="vm-tx" style="min-height:0" maxlength="40" placeholder="' + esc(t('styleName')) + '" value="' + esc(x.name) + '">' +
+      '<textarea id="vmStT" class="vm-tx" rows="7" placeholder="' + esc(t('stylePh')) + '">' + esc(x.text) + '</textarea>' +
+      '<div class="vm-acts"><button class="btn pri" id="vmStS">' + esc(t('saveStyle')) + '</button>' + (x.id ? '<button class="btn" id="vmStD">' + esc(t('delStyle')) + '</button>' : '') + '</div>');
+    var g = function (id) { return D.getElementById(id); };
+    if (g('vmStS')) g('vmStS').onclick = function () { StudioAcc.styleSave({id: x.id, name: g('vmStN').value, text: g('vmStT').value}); S.dlgClose(); S.toast('✓'); refresh(); };
+    if (g('vmStD')) g('vmStD').onclick = function () { if (!confirm(t('delStyle') + '?')) return; StudioAcc.styleDel(x.id); S.dlgClose(); refresh(); };
+    setTimeout(function () { var e = g(x.id ? 'vmStT' : 'vmStN'); if (e) e.focus(); }, 60);
+  }
   function allSet(fn) { if (!st.sess) return; st.sess.clips.forEach(function (c) { fn(c); clampClip(c); }); var n = st.sess.clips.length || 1;
     st.pref.x = Math.round(st.sess.clips.reduce(function (m, c) { return m + c.x; }, 0) / n * 1000) / 1000; st.pref.y = Math.round(st.sess.clips.reduce(function (m, c) { return m + c.y; }, 0) / n * 1000) / 1000; }
   function storeLine() { try { if (navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(function (e) { if (!e || e.usage == null) return; var m = t('used', Math.round(e.usage / 1048576)); if (m === MB) return; MB = m; var x = D.getElementById('vmStore'); if (x) x.textContent = t('storeN', rolls.length) + ' · ' + MB; lastHTML = ''; }); } catch (e) { } }

@@ -277,8 +277,23 @@
 
   /* 23 Nov 2026: Video link -> words (video-words.js) keeps its result as a draft on the current account */
   /* 24 Nov 2026: the Video machine's "Your style" text (the AI's memory) lives on the account, synced like the rest */
-  function style(v) { var a = cur(); if (!a) return ''; if (v === undefined) return a.style || ''; a.style = String(v).slice(0, 4000); persist(); return a.style; }
+  /* 25 Nov 2026 (Emmanuel: "I want to be able to edit my core, my style ... select a new style or type in a new style, and the old style
+     is then unselected ... I have different accounts, so I want different styles for my different accounts"): each account keeps
+     several named styles; one is picked (a.styleId) and is what the video machine writes with. The first version's single a.style
+     becomes the first of them. */
+  function styleList(a) { a = a || cur(); if (!a) return []; if (!Array.isArray(a.styles)) { a.styles = a.style ? [{id: 's1', name: 'My style', text: a.style}] : []; if (a.styles.length) a.styleId = 's1'; } return a.styles; }
+  function styleCur(a) { a = a || cur(); var l = styleList(a); return l.filter(function (x) { return x.id === a.styleId; })[0] || l[0] || null; }
+  function style(v) { var a = cur(); if (!a) return ''; var c = styleCur(a);
+    if (v === undefined) return c ? c.text : (a.style || '');
+    if (!c) { c = {id: 's' + Date.now().toString(36), name: 'My style', text: ''}; styleList(a).push(c); a.styleId = c.id; }
+    c.text = String(v).slice(0, 4000); a.style = c.text; persist(); return c.text; }
+  function styles() { var a = cur(); return a ? {list: styleList(a).map(function (x) { return {id: x.id, name: x.name, text: x.text}; }), sel: (styleCur(a) || {}).id || ''} : {list: [], sel: ''}; }
+  function styleUse(id) { var a = cur(); if (!a) return; if (styleList(a).some(function (x) { return x.id === id; })) { a.styleId = id; a.style = styleCur(a).text; persist(); } }
+  function styleSave(o) { var a = cur(); if (!a || !o) return ''; var l = styleList(a), x = o.id && l.filter(function (y) { return y.id === o.id; })[0];
+    if (!x) { x = {id: 's' + Date.now().toString(36)}; l.push(x); }
+    x.name = String(o.name || '').trim().slice(0, 40) || ('Style ' + l.length); x.text = String(o.text || '').slice(0, 4000); a.styleId = x.id; a.style = x.text; persist(); return x.id; }
+  function styleDel(id) { var a = cur(); if (!a) return; a.styles = styleList(a).filter(function (x) { return x.id !== id; }); if (a.styleId === id) a.styleId = a.styles[0] ? a.styles[0].id : ''; a.style = (styleCur(a) || {}).text || ''; persist(); }
   function addDraft(txt) { var a = cur(); txt = String(txt || '').trim(); if (!a || !txt) return false; a.drafts = a.drafts || []; a.drafts.unshift({id: 'd' + Date.now().toString(36), text: txt.slice(0, 4000), ts: Date.now()}); persist(); DV = true; S.render(); return true; }
-  window.StudioAcc = {render: render, items: items, addBtn: addBtn, addTo: addTo, cloud: cloud, addDraft: addDraft, style: style};
+  window.StudioAcc = {render: render, items: items, addBtn: addBtn, addTo: addTo, cloud: cloud, addDraft: addDraft, style: style, styles: styles, styleUse: styleUse, styleSave: styleSave, styleDel: styleDel};
   if (S.tab() === 'profile') S.render();
 })();

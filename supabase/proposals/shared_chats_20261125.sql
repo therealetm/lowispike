@@ -25,3 +25,28 @@ revoke all on function public.share_chat(jsonb) from public, anon;
 grant execute on function public.share_chat(jsonb) to authenticated;
 revoke all on function public.get_shared_chat(text) from public;
 grant execute on function public.get_shared_chat(text) to anon, authenticated;
+
+-- 25 Nov 2026, later (Emmanuel: "I clicked on sharing ... didn't work. It gets stuck"): iPhones open the share sheet only right after a tap,
+-- so the app makes the short id itself, opens the share sheet at once and stores the chat while the sheet is up. share_chat takes that id
+-- (10 letters, digits, - or _; refused when taken) and still makes one when it is not given.
+drop function if exists public.share_chat(jsonb);
+create or replace function public.share_chat(p_data jsonb, p_id text default null) returns text language plpgsql security definer set search_path = public as $$
+declare v text;
+begin
+  if auth.uid() is null then raise exception 'sign_in'; end if;
+  if octet_length(p_data::text) > 300000 then raise exception 'too_big'; end if;
+  if (select count(*) from public.shared_chats where by = auth.uid() and created_at > now() - interval '1 day') >= 40 then raise exception 'limit'; end if;
+  if p_id is not null then
+    if p_id !~ '^[A-Za-z0-9_-]{10}$' then raise exception 'bad_id'; end if;
+    insert into public.shared_chats (id, data, by) values (p_id, p_data, auth.uid());
+    return p_id;
+  end if;
+  loop
+    v := substr(translate(encode(decode(md5(random()::text || clock_timestamp()::text || auth.uid()::text), 'hex'), 'base64'), '+/=', '-_'), 1, 10);
+    exit when not exists (select 1 from public.shared_chats where id = v);
+  end loop;
+  insert into public.shared_chats (id, data, by) values (v, p_data, auth.uid());
+  return v;
+end $$;
+revoke all on function public.share_chat(jsonb, text) from public, anon;
+grant execute on function public.share_chat(jsonb, text) to authenticated;

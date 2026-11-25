@@ -28,6 +28,7 @@
         photo2: ['Can I eat this? Is it insulin-friendly?', 'Kann ich das essen? Ist es insulinfreundlich?', '¿Puedo comer esto? ¿Es apto para la insulina?'], pvHint: ['Ask about this photo, then send', 'Frag etwas zu diesem Foto und sende', 'Pregunta sobre esta foto y envía'], photoFail: ['I could not open that photo. Try another one or take a screenshot of it.', 'Ich konnte das Foto nicht öffnen. Probier ein anderes oder mach einen Screenshot davon.', 'No pude abrir esa foto. Prueba otra o haz una captura.'],
         share: ['Share', 'Teilen', 'Compartir'], shareT: ['Talk to {n} on LOWiSPIKE', 'Mit {n} reden auf LOWiSPIKE', 'Habla con {n} en LOWiSPIKE'], shareTx: ['Look what {n} told me about my food:', 'Schau, was mir {n} zu meinem Essen gesagt hat:', 'Mira lo que {n} me dijo sobre mi comida:'], copied: ['Link copied', 'Link kopiert', 'Enlace copiado'], shotPh: ['📷 Photo', '📷 Foto', '📷 Foto'], sharedH: ['Shared chat', 'Geteilter Chat', 'Chat compartido'],
         seeIt: ['Check it out', 'Schau es dir an', 'Míralo'], watchOn: ['Watch on {p}', 'Auf {p} ansehen', 'Ver en {p}'], inFy: ['Open it in For You', 'In For You öffnen', 'Abrir en Para ti'], inChat: ['Open the chat', 'Den Chat öffnen', 'Abrir el chat'],
+        nothing: ['Ask something first, then share the chat.', 'Frag zuerst etwas, dann teil den Chat.', 'Pregunta algo primero y luego comparte el chat.'], shareFail: ['The share link could not be saved. Check your connection and tap share again.', 'Der Link konnte nicht gespeichert werden. Prüf deine Verbindung und tipp nochmal auf Teilen.', 'No se pudo guardar el enlace. Revisa tu conexión y vuelve a compartir.'],
         thinking: ['{n} is thinking…', '{n} denkt nach…', '{n} está pensando…'], clear: ['New chat', 'Neuer Chat', 'Nuevo chat'],
         chats: ['Chats', 'Chats', 'Chats'], none: ['No chats yet. Your conversations with {n} stay here.', 'Noch keine Chats. Deine Gespräche mit {n} bleiben hier.', 'Aún no hay chats. Tus conversaciones con {n} se quedan aquí.'],
         untitled: ['Chat with {n}', 'Chat mit {n}', 'Chat con {n}'], del: ['Delete chat', 'Chat löschen', 'Borrar chat'] };
@@ -62,8 +63,10 @@
     };
     /* a fresh conversation; the one before stays in Chats */
     function fresh(context) { msgs = []; ctx = String(context || ''); cur = ''; book.cur = ''; save(); }
+    /* 25 Nov 2026: never waits more than 2.5 s for the sign-in library (it can hang on iPhones); then the saved sign-in is used */
+    const within = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
     async function token() {
-        try { const x = W.LowiR2 && W.LowiR2.X && W.LowiR2.X(); const sb = x && await x.client(); const r = sb && await sb.auth.getSession(); const s = r && r.data && r.data.session; if (s && s.access_token) return s.access_token; } catch (e) {}
+        try { const x = W.LowiR2 && W.LowiR2.X && W.LowiR2.X(); const sb = x && await within(x.client(), 2500); const r = sb && await within(sb.auth.getSession(), 2500); const s = r && r.data && r.data.session; if (s && s.access_token) return s.access_token; } catch (e) {}
         try { const a = JSON.parse(localStorage.getItem('lowi.auth') || 'null'); if (a && a.access_token) return a.access_token; } catch (e) {}
         return '';
     }
@@ -123,7 +126,10 @@
             '#lwAsk .ak-f{border-top:0;background:linear-gradient(rgba(6,8,18,0),rgba(6,8,18,.6))}#lwAsk .ak-f textarea{background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}#lwAsk .ak-i{background:rgba(255,255,255,.1)}' +
             /* 25 Nov 2026 (Emmanuel: "the disclaimer looks very unaesthetic ... ChatGPT doesn't do that ... If I share a screenshot"): the note and the
                quick questions show only on a fresh chat, small and quiet; once you talk, the screen is just the conversation */
-            '#lwAsk:not(.ak-empty) .ak-n,#lwAsk:not(.ak-empty) .ak-c{display:none}#lwAsk .ak-n{font-size:11px;color:rgba(255,255,255,.38);padding:0 24px 4px}' +
+            /* 25 Nov 2026, later (Emmanuel: "that annoying disclaimer is still there"): the note is not on the chat screen at all any more; it sits
+               at the bottom of the Chats list (where your chats are), and the quick questions show only on a fresh chat */
+            '#lwAsk .ak-n{display:none}#lwAsk:not(.ak-empty) .ak-c{display:none}#lwAsk .ak-lnote{margin:18px 8px 4px;font-size:11.5px;color:rgba(255,255,255,.4);text-align:center}' +
+            '#lwAsk .ak-toast{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translate(-50%,-8px);padding:10px 16px;border-radius:999px;background:rgba(20,24,36,.92);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:5;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#lwAsk .ak-toast.on{opacity:1;transform:translate(-50%,0)}' +
             '#lwAsk .ak-cards{display:flex;flex-direction:column;gap:6px;margin-top:10px}#lwAsk .ak-card{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 10px;border-radius:14px;border:1px solid rgba(159,216,255,.28);background:rgba(120,170,255,.12);color:#fff;font:inherit;text-align:left;cursor:pointer}' +
             '#lwAsk .ak-ci{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.14);font-size:14px}#lwAsk .ak-ct{flex:1;min-width:0;display:flex;flex-direction:column}#lwAsk .ak-ct b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#lwAsk .ak-ct small{font-size:12.5px;color:#bfe6ff}#lwAsk .ak-cg{font-size:22px;opacity:.6}' +
             '#lwAsk .ak-c button{background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}';
@@ -135,6 +141,7 @@
         el.classList.toggle('ak-list', view === 'list'); el.classList.toggle('ak-empty', !msgs.length); const cbn = el.querySelector('[data-ak=chats]'); if (cbn) cbn.classList.toggle('on', view === 'list');
         if (view === 'list') {
             l.innerHTML = book.list.length ? book.list.map(c => '<div class="ak-r"><button type="button" class="ak-ro" data-ak="pick" data-id="' + esc(c.id) + '"><b>' + esc(titleOf(c)) + '</b><small>' + esc(when(c.at)) + '</small></button><button type="button" class="ak-rd" data-ak="del" data-id="' + esc(c.id) + '" aria-label="' + esc(t('del')) + '">✕</button></div>').join('') : '<p class="ak-e">' + esc(t('none')) + '</p>';
+            l.insertAdjacentHTML('beforeend', '<p class="ak-lnote">' + esc(t('note')) + '</p>');   /* the note lives here (25 Nov 2026) */
             l.scrollTop = 0; return;
         }
         const all = [{ role: 'model', text: t('hello') }].concat(msgs);
@@ -207,21 +214,28 @@
         if (GUEST) return guestSend('');
         close(); setTimeout(() => { try { if (x.kind === 'chat') { if (W.LowiOpenChat) W.LowiOpenChat(); } else if (W.LowiOpenPost) W.LowiOpenPost(x.id); } catch (e) {} }, 300); }
     function shareData() { let n = 0; return { v: 2, m: msgs.filter(x => !x.wait).slice(-12).map(x => { const o = [x.role === 'user' ? 'u' : 'a', String(x.text || '').slice(0, 1200), 0]; if (x.img && n < 4 && String(x.img).length < 60000) { o[2] = 1; o[3] = x.img; n++; } if (x.links && x.links.length) { while (o.length < 4) o.push(''); o[4] = x.links; } return o; }) }; }
-    async function shareUrl() {
+    /* 25 Nov 2026, later (Emmanuel: "I clicked on sharing so that it creates a link. Didn't happen ... It gets stuck"): iPhones open the share
+       sheet only right after a tap, and the link used to be fetched from the server first. Now the short id is made here, the share sheet
+       (or "Link copied") comes at once inside the tap, and the chat is stored meanwhile; nothing is disabled or waited on. If storing
+       fails, the chat says so and the link is not handed out again. */
+    function newId() { const a = new Uint8Array(10), c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'; try { crypto.getRandomValues(a); } catch (e) { for (let i = 0; i < 10; i++) a[i] = Math.random() * 256; } return Array.from(a, x => c[x & 63]).join(''); }
+    async function store(id, data) {
         const tk = await token(); if (!tk) throw Object.assign(new Error('sign_in'), { code: 'sign_in' });
-        const r = await fetch(RPC + 'share_chat', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: PUBKEY, Authorization: 'Bearer ' + tk }, body: JSON.stringify({ p_data: shareData() }) });
-        const id = r.ok ? await r.json() : ''; if (!id || typeof id !== 'string') throw Object.assign(new Error('fail'), { code: 'fail' });
-        return 'https://lowispike.com/?chat=' + id;
+        const r = await within(fetch(RPC + 'share_chat', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: PUBKEY, Authorization: 'Bearer ' + tk }, body: JSON.stringify({ p_data: data, p_id: id }) }), 15000);
+        if (!r || !r.ok) throw Object.assign(new Error('fail'), { code: r && r.status === 401 ? 'sign_in' : 'fail' });
+        return id;
     }
-    async function shareChat(b) {
-        if (!msgs.filter(x => !x.wait).length) return;
-        const keepHtml = b.innerHTML; b.disabled = true;
-        let u = ''; try { u = await shareUrl(); } catch (e) { b.disabled = false; msgs.push({ role: 'model', text: e.code === 'sign_in' ? t('signin') : t('fail') }); paint(); return; }
-        b.disabled = false;
-        if (navigator.share) { navigator.share({ url: u }).catch(() => {}); return; }   /* only the link: no name, no text */
-        const ok = () => { b.textContent = '✓'; setTimeout(() => { b.innerHTML = keepHtml; }, 1600); };
-        try { navigator.clipboard.writeText(u).then(ok, ok); } catch (e) { ok(); }
+    function toast(msg) { if (!el) return; let x = el.querySelector('.ak-toast'); if (!x) { x = D.createElement('div'); x.className = 'ak-toast'; x.setAttribute('role', 'status'); el.appendChild(x); } x.textContent = msg; x.classList.add('on'); clearTimeout(x.__t); x.__t = setTimeout(() => x.classList.remove('on'), 1800); }
+    function shareChat() {
+        if (!msgs.filter(x => !x.wait).length) return toast(t('nothing'));
+        if (!signedIn()) { toast(t('signin')); return; }
+        const id = newId(), u = 'https://lowispike.com/?chat=' + id;
+        store(id, shareData()).catch(e => { msgs.push({ role: 'model', text: e.code === 'sign_in' ? t('signin') : t('shareFail') }); paint(); });
+        const copy = () => { try { navigator.clipboard.writeText(u).then(() => toast(t('copied')), () => toast(u)); } catch (e) { toast(u); } };
+        try { if (navigator.share) { navigator.share({ url: u }).catch(err => { if (!err || err.name !== 'AbortError') copy(); }); return; } } catch (e) { }
+        copy();
     }
+    async function shareUrl() { const id = newId(); await store(id, shareData()); return 'https://lowispike.com/?chat=' + id; }
     let GUEST = false;
     const signedIn = () => { try { const j = JSON.parse(localStorage.getItem('lowi.auth') || 'null'), u = j && j.user; return !!(u && !u.is_anonymous && u.email); } catch (e) { return false; } };
     function toMsgs(d) {
@@ -269,7 +283,7 @@
                 else if (k === 'del') { book.list = book.list.filter(x => x.id !== b.dataset.id); if (cur === b.dataset.id) { msgs = []; ctx = ''; cur = ''; book.cur = ''; } save(); paint(); }
                 else if (k === 'photo') pickPhoto();
                 else if (k === 'unpend') pend(null);
-                else if (k === 'share') shareChat(b);
+                else if (k === 'share') shareChat();
                 else if (k === 'go') { const box = b.closest('[data-mi]'), mm = box && msgs[+box.dataset.mi]; goLink(mm && mm.links && mm.links[+b.dataset.i]); }
                 else if (k === 'send') { const v = ta.value; ta.value = ''; sendNow(v); } else if (k === 'chip') { if (GUEST) guestSend(t(b.dataset.c)); else send(t(b.dataset.c)); } });
             el.querySelector('textarea').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const ta = e.target, v = ta.value; ta.value = ''; sendNow(v); } });

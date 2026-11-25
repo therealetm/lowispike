@@ -41,7 +41,8 @@ test('Talk to Misty: the photo picker sits in the page; the photo waits with ✕
 test('Talk to Misty: Share sends the chat in a link; a guest sees it and is sent to the store page on send; a member gets it as their chat', () => {
   const a = R('lowi-ask.js');
   /* changed 25 Nov 2026 ("why is my companion name in the link? ... just like a ChatGPT link"): the chat is kept on the server, the link is its short id */
-  assert.match(a, /data-ak="share"/); assert.match(a, /return 'https:\/\/lowispike\.com\/\?chat=' \+ id;/);
+  /* changed 25 Nov 2026, later: the id is made in the app and the sheet opens inside the tap */
+  assert.match(a, /data-ak="share"/); assert.match(a, /const id = newId\(\), u = 'https:\/\/lowispike\.com\/\?chat=' \+ id;/);
   assert.match(a, /if \(signedIn\(\)\) \{ fresh\(''\); msgs = sh; keep\(\); open\(\{\}\); return; \}/);
   assert.match(a, /GUEST = true; msgs = sh; open\(\{\}\); return;/); assert.match(a, /if \(GUEST\) return guestSend\(v, p\);/);
   assert.match(a, /localStorage\.setItem\('lowi\.ask\.after'/); assert.match(a, /W\.LowiStorePage\.open\(\)/);
@@ -77,7 +78,8 @@ test('shared Misty chats live on the server; the link is a short id with no name
 test('Talk to Misty: the note and quick questions show only on a fresh chat, small; the conversation screen stays clean', () => {
   const a = R('lowi-ask.js');
   assert.match(a, /el\.classList\.toggle\('ak-empty', !msgs\.length\);/);
-  assert.match(a, /#lwAsk:not\(\.ak-empty\) \.ak-n,#lwAsk:not\(\.ak-empty\) \.ak-c\{display:none\}#lwAsk \.ak-n\{font-size:11px;/);
+  /* changed 25 Nov 2026, later ("that annoying disclaimer is still there"): the note left the chat screen; it sits at the bottom of the Chats list */
+  assert.match(a, /'#lwAsk \.ak-n\{display:none\}#lwAsk:not\(\.ak-empty\) \.ak-c\{display:none\}/); assert.match(a, /'<p class="ak-lnote">' \+ esc\(t\('note'\)\) \+ '<\/p>'/);
   assert.match(a, /note: \['Answers come from Google/, 'the note itself stays (not medical advice, no private health details)');
 });
 /* 25 Nov 2026 (Emmanuel: "if it's suggesting the user to try that, then it should also link them ... click here to check it out ... link us
@@ -90,4 +92,14 @@ test('the companion links what it recommends from the community: the TikTok / Yo
   assert.match(a, /function cardsHTML\(l\)/); assert.match(a, /if \(x\.url\) \{ try \{ W\.open\(x\.url, '_blank', 'noopener'\);/);
   assert.match(a, /else if \(W\.LowiOpenPost\) W\.LowiOpenPost\(x\.id\);/); assert.match(h, /window\.LowiOpenPost = id => openPost\(id\); window\.LowiOpenChat = /);
   assert.match(a, /navigator\.share\(\{ url: u \}\)/); assert.doesNotMatch(a, /navigator\.share\(\{ title: t\('shareT'\)/);
+});
+/* 25 Nov 2026, later (Emmanuel: "I clicked on sharing so that it creates a link. Didn't happen ... It gets stuck. Even the back button doesn't
+   work"). Checked in Chromium: the share sheet opens 16 ms after the tap with only the link while the chat is stored (3 s), Back closes the
+   chat right after; the note is in the Chats list, not on the chat. */
+test('share opens the share sheet inside the tap (id made in the app, chat stored meanwhile); nothing waits without a limit', () => {
+  const a = R('lowi-ask.js'), q = R('supabase/proposals/shared_chats_20261125.sql');
+  assert.match(a, /store\(id, shareData\(\)\)\.catch\(/); assert.match(a, /if \(navigator\.share\) \{ navigator\.share\(\{ url: u \}\)/);
+  assert.match(a, /const within = \(p, ms\) => Promise\.race/); assert.match(a, /await within\(sb\.auth\.getSession\(\), 2500\)/);
+  assert.doesNotMatch(a.slice(a.indexOf('function shareChat'), a.indexOf('async function shareUrl')), /disabled/, 'no button is disabled while sharing');
+  assert.match(q, /if p_id !~ '\^\[A-Za-z0-9_-\]\{10\}\$' then raise exception 'bad_id'; end if;/);
 });

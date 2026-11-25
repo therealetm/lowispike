@@ -287,19 +287,42 @@
     var fit = function () { if (!el) return; el.style.setProperty('--vvh', Math.round(vv ? vv.height : W.innerHeight) + 'px'); el.style.setProperty('--kbtop', Math.round(vv ? vv.offsetTop + vv.height : W.innerHeight) + 'px'); };
     if (vv && !el.__vv) { el.__vv = 1; vv.addEventListener('resize', fit); }
     var grow = function () { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+    /* 25 Nov 2026 (Emmanuel: "this still feels wonky and wiggly ... when I open it, the whole thing just disappears. With Instagram, we
+       get a full screen ... it's fixed"): typing opens a full-screen layer, fixed to what you see: the video's picture fills the width
+       behind it (dimmed) and never moves; the iPhone's own scrolling is cancelled (the layer follows the visible area), nothing shrinks
+       or zooms. While you type, the text sits in the middle of the space above the keyboard; Done puts it back in its place. */
+    var fs = null, fbg = null, ftx = null, ffr = null;
+    function fsBuild() {
+      D.querySelectorAll('.vm-fs').forEach(function (o) { o.remove(); });   /* a layer from the part opened before */
+      fs = D.createElement('div'); fs.className = 'vm-fs'; fs.innerHTML = '<div class="fs-frame"><canvas class="fs-bg"></canvas><canvas class="fs-tx"></canvas></div>';
+      D.body.appendChild(fs); ffr = fs.firstChild; fbg = ffr.children[0]; ftx = ffr.children[1];
+      ffr.appendChild(ta); fs.appendChild(done); fs.appendChild(vsz); fs.appendChild(tb);
+      fs.addEventListener('pointerdown', function (e) { if (e.target === fs || e.target === ffr || e.target === ftx || e.target === fbg) { e.preventDefault(); ta.blur(); } });
+    }
+    function fsTyY() { var fh = ffr.clientHeight || 1, room = (vv ? vv.height : W.innerHeight) - 72; return Math.max(0.12, Math.min(c.y, room / 2 / fh)); }
+    function fsDraw() {
+      if (!fs) return; var w = ffr.clientWidth, h = ffr.clientHeight, dpr = Math.min(3, W.devicePixelRatio || 1), cw = Math.round(w * dpr), ch = Math.round(h * dpr);
+      if (ftx.width !== cw || ftx.height !== ch) { ftx.width = cw; ftx.height = ch; }
+      var x = ftx.getContext('2d'); x.clearRect(0, 0, cw, ch); drawText(x, Object.assign({}, c, {y: fsTyY()}), cw, ch);
+      ta.style.left = (c.x * 100) + '%'; ta.style.top = (fsTyY() * 100) + '%';
+    }
+    function fsPin() { if (!fs) return; var off = vv ? vv.offsetTop : 0, hh = vv ? vv.height : W.innerHeight; fs.style.transform = 'translateY(' + off + 'px)'; fs.style.setProperty('--fsh', hh + 'px'); fsDraw(); }
     function startInline() {
-      if (inl) return; inl = true; fit(); el.classList.add('vm-typing'); stage.classList.add('inl');
-      ta.style.left = (c.x * 100) + '%'; ta.style.top = (c.y * 100) + '%'; ta.style.setProperty('--fs', c.size); ta.classList.toggle('box', c.look === 'box');
-      ta.value = c.text || ''; ta.hidden = false; done.hidden = false; tb.hidden = false; vsz.hidden = false; tEl.style.visibility = 'hidden'; syncTa(); grow();
-      ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) { }
-      var bd = el.querySelector('.vbody'); if (bd) bd.scrollTop = 0; setTimeout(fit, 350);
+      if (inl) return; inl = true; if (!fs) fsBuild();
+      var w = W.innerWidth, h = Math.round(w * 16 / 9); fbg.width = Math.round(w * Math.min(2, W.devicePixelRatio || 1)); fbg.height = Math.round(h * Math.min(2, W.devicePixelRatio || 1));
+      try { cover(fbg.getContext('2d'), v, fbg.width, fbg.height); } catch (e) { }
+      D.documentElement.classList.add('vm-fs-on'); fs.classList.add('on');
+      ta.style.setProperty('--fs', c.size); ta.value = c.text || ''; ta.hidden = false; done.hidden = false; tb.hidden = false; vsz.hidden = false; syncTa(); grow(); fsPin();
+      ta.focus({preventScroll: true}); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) { }
+      [60, 250, 500, 800].forEach(function (ms) { setTimeout(function () { if (!inl) return; try { W.scrollTo(0, 0); } catch (e) { } fsPin(); }, ms); });
     }
     function endInline() {
       if (!inl) return; inl = false; c.text = ta.value.replace(/\s+$/, ''); delete c.orig;
-      ta.hidden = true; done.hidden = true; tb.hidden = true; vsz.hidden = true; tEl.style.visibility = ''; stage.classList.remove('inl'); el.classList.remove('vm-typing');
+      ta.hidden = true; done.hidden = true; tb.hidden = true; vsz.hidden = true; fs.classList.remove('on'); D.documentElement.classList.remove('vm-fs-on');
       pv(); clampText(); keep(); mkSync();
     }
-    ta.addEventListener('input', function () { c.text = ta.value; grow(); pv(); keep(); mkSync(); });
+    PIN = fsPin; if (vv && !el.__vvs) { el.__vvs = 1; vv.addEventListener('scroll', function () { PIN && PIN(); }); vv.addEventListener('resize', function () { PIN && PIN(); }); }
+    ta.addEventListener('input', function () { c.text = ta.value; grow(); pv(); fsDraw(); keep(); mkSync(); });
     var tb = D.getElementById('vmTbar'), vsz = D.getElementById('vmVsz');
     /* the see-through text box takes the part's font, size and alignment, so the cursor sits on the drawn words */
     function syncTa() { ta.style.setProperty('--fs', c.size); ta.style.fontFamily = fontFam(c); ta.style.fontWeight = (FONTS[c.font] || FONTS.sf)[0]; ta.style.textAlign = c.align || 'center';
@@ -308,7 +331,7 @@
       var al = tb.querySelector('.al'); if (al) al.setAttribute('d', c.align === 'left' ? 'M4 6h16M4 12h10M4 18h14' : c.align === 'right' ? 'M4 6h16M10 12h10M6 18h14' : 'M4 6h16M7 12h10M5 18h14');
       tb.querySelector('[data-tb=font]').style.fontFamily = fontFam(c);
       var k = (c.size - 14) / 34; vsz.style.setProperty('--k', Math.max(0, Math.min(1, k))); vsz.setAttribute('aria-valuenow', c.size); }
-    function styled() { st.pref.font = c.font || ''; st.pref.color = c.color || ''; st.pref.align = c.align || ''; st.pref.look = c.look; st.pref.size = c.size; syncTa(); grow(); pv(); keep(); mkSync(); }
+    function styled() { st.pref.font = c.font || ''; st.pref.color = c.color || ''; st.pref.align = c.align || ''; st.pref.look = c.look; st.pref.size = c.size; syncTa(); grow(); pv(); fsDraw(); keep(); mkSync(); }
     tb.addEventListener('pointerdown', function (e) { e.preventDefault(); });   /* the keyboard stays open */
     tb.addEventListener('click', function (e) { var b = e.target.closest('[data-tb]'); if (!b) return; var k = b.dataset.tb;
       if (k === 'font') c.font = FORDER[(FORDER.indexOf(c.font || 'sf') + 1) % FORDER.length];
@@ -322,7 +345,7 @@
     vsz.addEventListener('pointerdown', function (e) { e.preventDefault(); vsz.setPointerCapture(e.pointerId); vs = 1; size(e); });
     vsz.addEventListener('pointermove', function (e) { if (vs) size(e); });
     vsz.addEventListener('pointerup', function () { vs = null; styled(); ta.focus(); }); vsz.addEventListener('pointercancel', function () { vs = null; });
-    function size(e) { var r = vsz.getBoundingClientRect(), k = 1 - Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)); c.size = Math.round(14 + k * 34); syncTa(); grow(); pv(); }
+    function size(e) { var r = vsz.getBoundingClientRect(), k = 1 - Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)); c.size = Math.round(14 + k * 34); syncTa(); grow(); pv(); fsDraw(); }
     ta.addEventListener('blur', function () { setTimeout(endInline, 0); });
     done.addEventListener('pointerdown', function (e) { e.preventDefault(); }); done.addEventListener('click', function () { ta.blur(); endInline(); });
     D.getElementById('vmSz').addEventListener('input', function (e) { c.size = +e.target.value; tEl.style.setProperty('--fs', c.size); pv(); clampText(); keep(); mkSync(); });
@@ -409,7 +432,7 @@
      connection"): recording the screen in real time (MediaRecorder) froze whenever the phone hiccuped. Where the phone can (WebCodecs:
      iPhone iOS 16.4+, Chrome), every frame is now built on its own exact 1/30 s timestamp and written into the MP4 (vendor mp4-muxer),
      so a slow moment only makes saving slower, never the video choppy. Older phones keep the old recorder. */
-  var FPS = 30, CV = null;   /* one canvas for every video, not a new 8 MB one each time */
+  var FPS = 30, CV = null, PIN = null;   /* one canvas for every video, not a new 8 MB one each time */
   function wcOK() { return !!(W.VideoEncoder && W.VideoFrame && W.HTMLVideoElement && 'requestVideoFrameCallback' in W.HTMLVideoElement.prototype); }
   function canMake() { return wcOK() || !!mime(); }
   var muxP = null;

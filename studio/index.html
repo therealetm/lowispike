@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#050912">
 <meta name="color-scheme" content="dark">
 <meta name="robots" content="noindex">
@@ -205,6 +205,15 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .vm-inl.box{padding:0;-webkit-text-stroke:0;text-shadow:none}
 .vm-inl{-webkit-text-stroke:0!important;text-shadow:none!important}
 .vm-stage.inl video{filter:brightness(.6)}
+/* 25 Nov 2026: the full-screen text editor (fixed; follows the visible area; nothing shrinks, scrolls or zooms) */
+html.vm-fs-on,html.vm-fs-on body{overflow:hidden!important;overscroll-behavior:none}
+.vm-fs{position:fixed;left:0;top:0;width:100%;height:100lvh;z-index:2147480000;display:none;background:#000;touch-action:none}
+.vm-fs.on{display:block}
+.vm-fs .fs-frame{position:absolute;left:0;top:0;width:100%;aspect-ratio:9/16;container-type:inline-size;overflow:hidden}
+.vm-fs .fs-bg,.vm-fs .fs-tx{position:absolute;inset:0;width:100%;height:100%}.vm-fs .fs-bg{filter:brightness(.55)}
+.vm-fs .vm-done{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px}
+.vm-fs .vm-vsz{position:absolute;left:0;top:calc(env(safe-area-inset-top,0px) + 70px);height:calc(var(--fsh,60vh) * .42)}
+.vm-fs .vm-tbar{position:absolute;top:calc(var(--fsh,100vh) - 64px)}
 /* 25 Nov 2026: Instagram-style toolbar above the keyboard and size slider on the left edge */
 .vm-tbar{position:fixed;left:8px;right:8px;top:calc(var(--kbtop,100vh) - 64px);z-index:30;display:flex;justify-content:space-around;align-items:center;height:56px;padding:0 6px;border-radius:16px;background:rgba(40,40,46,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .vm-tbar[hidden]{display:none}.vm-tbar button{flex:1;height:44px;margin:0 3px;border:0;border-radius:12px;background:transparent;color:#fff;font-size:21px;font-weight:700;cursor:pointer;display:grid;place-items:center}
@@ -697,6 +706,6 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 <script src="accounts.js?v=7"></script>
 <script src="video-words.js?v=1"></script>
 <script src="ai-use.js?v=1"></script>
-<script src="video-machine.js?v=16"></script>
+<script src="video-machine.js?v=17"></script>
 </body>
 </html>

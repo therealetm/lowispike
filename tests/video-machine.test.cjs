@@ -281,3 +281,13 @@ test('the video draws what the editor shows: the part\'s font, colour, alignment
   assert.match(js, /while \(j < ls\.length && ls\[j\]\.p === ls\[i\]\.p\)/, 'a box per paragraph');
   assert.match(R('studio/index.html'), /color:transparent!important;-webkit-text-fill-color:transparent;caret-color:#fff;/, 'the text box on top shows only its cursor');
 });
+/* 25 Nov 2026 (Emmanuel: "this still feels wonky and wiggly ... when I open it, the whole thing just disappears. With Instagram, we get a full
+   screen ... it's fixed"). Checked in Chromium: typing opens a layer at top 0, full height, page scroll 0, text box inside it. */
+test('typing opens a fixed full-screen layer that follows the visible area; no zoom; text above the keyboard while typing', () => {
+  assert.match(js, /fs = D\.createElement\('div'\); fs\.className = 'vm-fs';/);
+  assert.match(js, /fs\.style\.transform = 'translateY\(' \+ off \+ 'px\)'/, 'pinned to the visible area while iOS scrolls for the keyboard');
+  assert.match(js, /function fsTyY\(\) \{[^\n]*return Math\.max\(0\.12, Math\.min\(c\.y, room \/ 2 \/ fh\)\); \}/);
+  assert.match(js, /ta\.focus\(\{preventScroll: true\}\)/);
+  const h = R('studio/index.html'); assert.match(h, /maximum-scale=1/); assert.match(h, /html\.vm-fs-on,html\.vm-fs-on body\{overflow:hidden!important;/);
+  assert.match(h, /\.vm-fs\{position:fixed;left:0;top:0;width:100%;height:100lvh;/);
+});

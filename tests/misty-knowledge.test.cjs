@@ -42,7 +42,8 @@ test('Talk to Misty: Share sends the chat in a link; a guest sees it and is sent
   const a = R('lowi-ask.js');
   /* changed 25 Nov 2026 ("why is my companion name in the link? ... just like a ChatGPT link"): the chat is kept on the server, the link is its short id */
   /* changed 25 Nov 2026, later: the id is made in the app and the sheet opens inside the tap */
-  assert.match(a, /data-ak="share"/); assert.match(a, /const id = newId\(\), u = 'https:\/\/lowispike\.com\/\?chat=' \+ id;/);
+  /* changed 25 Nov 2026, later (Emmanuel: "I should be able to share the app's AI ... I don't want to send my chat history or my own Tamagotchi"): Share sends the link to the app's AI; links to shared chats made before still open */
+  assert.match(a, /data-ak="share"/); assert.match(a, /const u = 'https:\/\/lowispike\.com\/\?ai=1';/);
   assert.match(a, /if \(signedIn\(\)\) \{ fresh\(''\); msgs = sh; keep\(\); open\(\{\}\); return; \}/);
   assert.match(a, /GUEST = true; msgs = sh; open\(\{\}\); return;/); assert.match(a, /if \(GUEST\) return guestSend\(v, p\);/);
   assert.match(a, /localStorage\.setItem\('lowi\.ask\.after'/); assert.match(a, /W\.LowiStorePage\.open\(\)/);
@@ -68,9 +69,10 @@ test('shared Misty chats live on the server; the link is a short id with no name
   const a = R('lowi-ask.js'), q = R('supabase/proposals/shared_chats_20261125.sql'), h = R('index.html');
   assert.match(q, /revoke all on public\.shared_chats from public, anon, authenticated;/); assert.match(q, /if auth\.uid\(\) is null then raise exception 'sign_in'; end if;/);
   assert.match(q, /grant execute on function public\.get_shared_chat\(text\) to anon, authenticated;/);
-  assert.match(a, /const SHARED_ID = \(\(\) => \{ try \{ const m = \/\[\?&\]chat=/); assert.doesNotMatch(a.slice(a.indexOf('function shareData'), a.indexOf('async function shareUrl')), /name\(\)/, 'no companion name');
+  /* changed 25 Nov 2026, later (Emmanuel: "I should be able to share the app's AI ... I don't want to send my chat history or my own Tamagotchi"): Share sends the link to the app's AI; links to shared chats made before still open */
+  assert.match(a, /const SHARED_ID = \(\(\) => \{ try \{ const m = \/\[\?&\]chat=/);
   assert.match(h, /:not\(\.lis-full\):not\(#lwAsk\)\{visibility:hidden!important\}/); assert.match(h, /el\.id === "lwAsk" \/\* 25 Nov 2026: a shared Misty chat stays usable before sign-in \*\//);
-  assert.match(R('store-page.js'), /\[\?&\]\(ref\|post\|p\|s\|c\|code\|invite\|app\|chat\)=/);
+  assert.match(R('store-page.js'), /\[\?&\]\(ref\|post\|p\|s\|c\|code\|invite\|app\|chat\|ai\)=/);   /* + ai (25 Nov 2026, later) */
   assert.match(a, /#lwAsk\{position:fixed;inset:0;z-index:2147483100;/);
 });
 /* 25 Nov 2026 (Emmanuel: "the disclaimer looks very unaesthetic ... ChatGPT doesn't do that ... If I share a screenshot"). Checked in Chromium:
@@ -98,8 +100,18 @@ test('the companion links what it recommends from the community: the TikTok / Yo
    chat right after; the note is in the Chats list, not on the chat. */
 test('share opens the share sheet inside the tap (id made in the app, chat stored meanwhile); nothing waits without a limit', () => {
   const a = R('lowi-ask.js'), q = R('supabase/proposals/shared_chats_20261125.sql');
-  assert.match(a, /store\(id, shareData\(\)\)\.catch\(/); assert.match(a, /if \(navigator\.share\) \{ navigator\.share\(\{ url: u \}\)/);
+  /* changed 25 Nov 2026, later (Emmanuel: "I should be able to share the app's AI ... I don't want to send my chat history or my own Tamagotchi"): Share sends the link to the app's AI; links to shared chats made before still open */
+  assert.match(a, /if \(navigator\.share\) \{ navigator\.share\(\{ url: u \}\)/);
   assert.match(a, /const within = \(p, ms\) => Promise\.race/); assert.match(a, /await within\(sb\.auth\.getSession\(\), 2500\)/);
   assert.doesNotMatch(a.slice(a.indexOf('function shareChat'), a.indexOf('async function shareUrl')), /disabled/, 'no button is disabled while sharing');
   assert.match(q, /if p_id !~ '\^\[A-Za-z0-9_-\]\{10\}\$' then raise exception 'bad_id'; end if;/);
+});
+/* 25 Nov 2026, later (Emmanuel: "I should be able to share the app's AI, not just the chat room. I don't want to send my chat history or my own
+   Tamagotchi ... I want to send this chat, this lowispike chat"). Checked in Chromium: Share (also from the Chats list, with a private chat in
+   the history) sends only https://lowispike.com/?ai=1; a guest gets a fresh chat and the store page on send; a member gets a fresh chat. */
+test('Share sends the link to the app\'s AI (?ai=1), never a conversation or the companion; it opens a fresh chat for everyone', () => {
+  const a = R('lowi-ask.js'), sh = a.slice(a.indexOf('function shareChat'), a.indexOf('async function shareUrl'));
+  assert.doesNotMatch(sh, /msgs|shareData|name\(\)|store\(/, 'nothing of the chats goes with it');
+  assert.match(a, /const AI_LINK = \(\(\) => \{ try \{ return \/\[\?&\]ai=1\\b\/\.test\(location\.search\);/);
+  assert.match(a, /if \(signedIn\(\)\) \{ fresh\(''\); view = 'chat'; open\(\{\}\); return; \}\s*GUEST = true; msgs = \[\]; open\(\{\}\); return;/);
 });

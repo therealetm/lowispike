@@ -20,7 +20,7 @@
      browser before: nobody can install or stay signed in there, so Get leads them out to Safari / Chrome. */
   function want() {
     if (standalone() || ss.get(SEEN) === '1') return false;
-    if ((location.hash && location.hash.length > 1) || /[?&](ref|post|p|s|c|code|invite|app|chat)=/.test(location.search)) return false;
+    if ((location.hash && location.hash.length > 1) || /[?&](ref|post|p|s|c|code|invite|app|chat|ai)=/.test(location.search)) return false;
     if (/Instagram|FBAN|FBAV|FB_IAB|FBIOS|TikTok|musical_ly|Bytedance|BytedanceWebview|trill_|Snapchat|LinkedInApp|Pinterest|Line\//i.test(UA)) return true;
     return !uses();
   }

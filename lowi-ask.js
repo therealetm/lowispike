@@ -14,6 +14,7 @@
     if (!W || !D || W.LowiAsk) return;
     /* 25 Nov 2026: a shared chat's id from the link, read the moment this file runs (the app may change the address afterwards) */
     const SHARED_ID = (() => { try { const m = /[?&]chat=([A-Za-z0-9_-]{6,16})/.exec(location.search); return m ? m[1] : ''; } catch (e) { return ''; } })();
+    const AI_LINK = (() => { try { return /[?&]ai=1\b/.test(location.search); } catch (e) { return false; } })();
     const SHARED_HASH = (() => { try { return location.hash; } catch (e) { return ''; } })();
     const RPC = 'https://vnfwmifmsfecascwaody.supabase.co/rest/v1/rpc/';
     const FN = 'https://vnfwmifmsfecascwaody.supabase.co/functions/v1/lowi-ai', PUBKEY = 'sb_publishable_iVA3wCYxzfWu2q8SSgieWw_adXbx4Qd', KEY = 'lowi.ask.v1';
@@ -226,11 +227,12 @@
         return id;
     }
     function toast(msg) { if (!el) return; let x = el.querySelector('.ak-toast'); if (!x) { x = D.createElement('div'); x.className = 'ak-toast'; x.setAttribute('role', 'status'); el.appendChild(x); } x.textContent = msg; x.classList.add('on'); clearTimeout(x.__t); x.__t = setTimeout(() => x.classList.remove('on'), 1800); }
+    /* 25 Nov 2026, later (Emmanuel: "I should be able to share the app's AI, not just the chat room ... I don't want to send my chat history or
+       my own Tamagotchi ... I want to send this chat, this lowispike chat. That's the whole point"): Share sends the link to the app's AI,
+       lowispike.com/?ai=1, from any screen of the chat. Whoever opens it gets a fresh chat: with their own companion when they have an
+       account, else they can type and sending takes them to the store page. Nothing of your chats goes with it. */
     function shareChat() {
-        if (!msgs.filter(x => !x.wait).length) return toast(t('nothing'));
-        if (!signedIn()) { toast(t('signin')); return; }
-        const id = newId(), u = 'https://lowispike.com/?chat=' + id;
-        store(id, shareData()).catch(e => { msgs.push({ role: 'model', text: e.code === 'sign_in' ? t('signin') : t('shareFail') }); paint(); });
+        const u = 'https://lowispike.com/?ai=1';
         const copy = () => { try { navigator.clipboard.writeText(u).then(() => toast(t('copied')), () => toast(u)); } catch (e) { toast(u); } };
         try { if (navigator.share) { navigator.share({ url: u }).catch(err => { if (!err || err.name !== 'AbortError') copy(); }); return; } } catch (e) { }
         copy();
@@ -255,6 +257,11 @@
         if (sh) {
             if (signedIn()) { fresh(''); msgs = sh; keep(); open({}); return; }
             GUEST = true; msgs = sh; open({}); return;
+        }
+        if (AI_LINK) {   /* a shared link to the app's AI: a fresh chat */
+            try { history.replaceState(null, '', location.pathname + location.search.replace(/([?&])ai=1&?/, '$1').replace(/[?&]$/, '') + location.hash); } catch (e) {}
+            if (signedIn()) { fresh(''); view = 'chat'; open({}); return; }
+            GUEST = true; msgs = []; open({}); return;
         }
         /* a question asked before signing in, from a shared chat */
         let q = ''; try { q = localStorage.getItem('lowi.ask.after') || ''; } catch (e) {}

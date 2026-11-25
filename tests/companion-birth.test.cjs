@@ -92,7 +92,8 @@ test('wiring: shared API, onboarding reveal after the birthday, optional birth t
   assert.ok(/window\.LowiBirthCompanion=\{KEY,(SALT_KEY,)?get:getCompanion,getCompanion,has,save,personality,svg/.test(page));
   assert.ok(page.includes('window.getCompanion=getCompanion;'));
   assert.ok(page.includes("KEY='lowispike.companion.v1'") && page.includes("'lowi:companion'"));
-  assert.ok(/Object\.assign\(\{\},C\.MISTY\)/.test(page), 'Misty stays the fallback for existing users');
+  /* changed 25 Nov 2026 (Emmanuel: "Misty's a name nobody else should be seeing apart from me"): the stand-in keeps Misty's look but takes the person's own default name (companion-name.js) */
+  assert.ok(/Object\.assign\(\{\},C\.MISTY,\{name:\(typeof window !== 'undefined' && window\.LowiDefaultName \? window\.LowiDefaultName\(\) : 'Misty'\)\}\)/.test(page), 'the stand-in companion keeps Misty\'s look with the person\'s own name');
   assert.ok(page.includes('LowiHerbIdentity.setCustomName(rec.name)'), 'the name reaches every place that shows the companion name');
   const html = read('index.html');
   assert.ok(html.includes('<input id="r2obT" type="time"'));

@@ -11,7 +11,7 @@ const SIGN_LABEL={
  de:{Aries:'Widder',Taurus:'Stier',Gemini:'Zwillinge',Cancer:'Krebs',Leo:'Löwe',Virgo:'Jungfrau',Libra:'Waage',Scorpio:'Skorpion',Sagittarius:'Schütze',Capricorn:'Steinbock',Aquarius:'Wassermann',Pisces:'Fische'},
  es:{Aries:'Aries',Taurus:'Tauro',Gemini:'Géminis',Cancer:'Cáncer',Leo:'Leo',Virgo:'Virgo',Libra:'Libra',Scorpio:'Escorpio',Sagittarius:'Sagitario',Capricorn:'Capricornio',Aquarius:'Acuario',Pisces:'Piscis'}};
 /* first word: star sign (kept from the earlier names, so a Pisces herb stays Misty) */
-const FIRST={Aries:'Ember',Taurus:'Clover',Gemini:'Pip',Cancer:'Pearl',Leo:'Sunny',Virgo:'Sage',Libra:'Lumi',Scorpio:'Nyx',Sagittarius:'Nova',Capricorn:'Moss',Aquarius:'Orbit',Pisces:'Misty'};
+const FIRST={Aries:'Ember',Taurus:'Clover',Gemini:'Pip',Cancer:'Pearl',Leo:'Sunny',Virgo:'Sage',Libra:'Lumi',Scorpio:'Nyx',Sagittarius:'Nova',Capricorn:'Moss',Aquarius:'Orbit',Pisces:'Coral'};/* 25 Nov 2026: was Misty, which is the owner's companion only */
 /* second word: the full type, one word each (the old two-letter words stay with one type of their family) */
 const SECOND={INFP:'Moon',INFJ:'Dusk',INTJ:'Comet',INTP:'Quill',ENFP:'Star',ENFJ:'Glow',ENTJ:'Blaze',ENTP:'Spark',ISFJ:'Dew',ISFP:'Petal',ISTJ:'Root',ISTP:'Pebble',ESFP:'Ray',ESFJ:'Honey',ESTJ:'Oak',ESTP:'Zip'};
 const TYPES=Object.keys(SECOND);

@@ -87,6 +87,7 @@
     function setOwner(v) {
         if (ST.owner === !!v) return;
         ST.owner = !!v; ST.rows = null;
+        if (ST.owner) { try { if (window.LowiMarkMine) window.LowiMarkMine(); } catch (e) { } }   /* 25 Nov 2026: "Misty" is the owner's companion only (companion-name.js) */
         if (ST.owner) ST.kicks.history = [];
         paintSlot();
     }

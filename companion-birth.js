@@ -44,8 +44,8 @@ function accountSalt(){const s=stored(),own=s&&C.validSalt(s.salt);if(own)return
  let k='';try{k=C.validSalt(localStorage.getItem(SALT_KEY));}catch(e){}if(k)return k;
  k=C.newSalt();try{localStorage.setItem(SALT_KEY,k);}catch(e){}return k;}
 let cache=null,cacheSig='';
-function getCompanion(){const s=stored();if(!s)return Object.assign({},C.MISTY);const sig=JSON.stringify(s);if(cache&&sig===cacheSig)return cache;
- cache=C.generate({bday:s.bday,btime:s.btime,n:s.n,name:s.name,salt:s.salt});cacheSig=sig;return cache||Object.assign({},C.MISTY);}
+function getCompanion(){const s=stored();if(!s)return Object.assign({},C.MISTY,{name:(typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty')});/* 25 Nov 2026: the stand-in keeps Misty's look, not her name (companion-name.js) */const sig=JSON.stringify(s);if(cache&&sig===cacheSig)return cache;
+ cache=C.generate({bday:s.bday,btime:s.btime,n:s.n,name:s.name,salt:s.salt});cacheSig=sig;return cache||Object.assign({},C.MISTY,{name:(typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty')});}
 function has(){return !!stored();}
 function save(c){if(!c||!c.bday)return;const rec={v:1,bday:c.bday,btime:c.btime||'',n:c.n|0,name:C.cleanName(c.name)||c.autoName,created:(stored()||{}).created||Date.now()};
  const salt=C.validSalt(c.salt);if(salt)rec.salt=salt;
@@ -64,7 +64,7 @@ function rename(v){const chk=C.renameCheck(v);if(!chk.ok)return{ok:false,why:chk
   const rec=Object.assign({},s,{name:C.cleanName(nm)});try{localStorage.setItem(KEY,JSON.stringify(rec));}catch(e){return{ok:false,why:'save'};}
   try{if(window.LowiHerbIdentity&&LowiHerbIdentity.setCustomName)LowiHerbIdentity.setCustomName(rec.name);}catch(e){}}
  else{try{if(!(window.LowiHerbIdentity&&LowiHerbIdentity.setCustomName))return{ok:false,why:'save'};LowiHerbIdentity.setCustomName(chk.name);}catch(e){return{ok:false,why:'save'};}}
- cache=null;const c=getCompanion();const name=s?c.name:(chk.name||'Misty');
+ cache=null;const c=getCompanion();const name=s?c.name:(chk.name||(typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'));
  try{window.dispatchEvent(new CustomEvent('lowi:companion',{detail:Object.assign({},c,{renamed:true,displayName:name})}));}catch(e){}
  setTimeout(mountProfile,0);return{ok:true,name,reset:!!chk.reset};}
 /* Oct 19 (aura-rename task): the name to show for the user's companion anywhere (same chain as world-home companionName():
@@ -72,7 +72,7 @@ function rename(v){const chk=C.renameCheck(v);if(!chk.ok)return{ok:false,why:chk
 function displayName(){const pick=v=>{v=v==null?'':String(v).trim();return v?v.slice(0,24):'';};let auto='';try{auto=pick(window.LowiHerbIdentity&&LowiHerbIdentity.autoName&&LowiHerbIdentity.autoName());}catch(e){}
  const typed=v=>{v=pick(v);return v&&v!==auto?v:'';};let n='';try{if(has())n=pick(getCompanion().name);}catch(e){}
  if(!n)try{const t=window.LowiHerbTamagotchi,pr=t&&t.readPrefs&&t.readPrefs();n=typed(pr&&pr.name);}catch(e){}
- if(!n)try{const R=window.LowiR2,st=R&&R.S&&R.S();n=typed(st&&st.herb&&st.herb.name);}catch(e){}return n||'Misty';}
+ if(!n)try{const R=window.LowiR2,st=R&&R.S&&R.S();n=typed(st&&st.herb&&st.herb.name);}catch(e){}return n||(typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty');}
 function withName(str){const n=displayName();return n==='Misty'?String(str):String(str).replace(/\bMisty(s?)\b/g,(m,s)=>n+(s?(/[sxz\u00df]$/i.test(n)?'\u2019':'s'):''));}
 function personality(c,l){return C.personality(c||getCompanion(),l||lang());}
 function svg(c,o){return C.svg(c||getCompanion(),o);}

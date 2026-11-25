@@ -9,7 +9,7 @@ test('six thresholds remain exact and a large XP jump retains only the highest f
 test('all twelve signs have distinct palettes, constellation shapes and name ideas',()=>{
  const ps=T.ZODIAC.map(s=>T.profile({}, {starSign:s[0]}));
  assert.equal(new Set(ps.map(p=>p.palette.a+p.palette.b)).size,12);assert.equal(new Set(ps.map(p=>JSON.stringify(p.constellation))).size,12);
- assert.deepEqual(T.profile({}, {starSign:'Pisces'}).names,['Misty','Bubbles','Nori']);
+ /* changed 25 Nov 2026: Misty is the owner's companion only, so Pisces suggests Coral instead */ assert.deepEqual(T.profile({}, {starSign:'Pisces'}).names,['Coral','Bubbles','Nori']);
 });
 test('night, sunrise, midday and cozy evening change mood and voice',()=>{
  const m=h=>T.model(fresh(95),{createdAt:now-1000},new Date(2026,9,14,h).getTime());

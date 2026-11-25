@@ -11,7 +11,7 @@ const LOOKS={
  Leo:['#ffde83','#ffa874','Sunny','Miso','Sol'],Virgo:['#9fe1b6','#d7e9a6','Sage','Basil','Bean'],
  Libra:['#ffd1e5','#b6d4ff','Peach','Petal','Lumi'],Scorpio:['#b1a7ff','#fa93cb','Plum','Nyx','Inky'],
  Sagittarius:['#c4abff','#ffcf83','Nova','Zippy','Comet'],Capricorn:['#94d7bf','#dfc18c','Moss','Pebble','Chai'],
- Aquarius:['#90e8ff','#aeb4ff','Pixel','Orbit','Zuzu'],Pisces:['#80e5d8','#b8b0ff','Misty','Bubbles','Nori']
+ Aquarius:['#90e8ff','#aeb4ff','Pixel','Orbit','Zuzu'],Pisces:['#80e5d8','#b8b0ff','Coral','Bubbles','Nori']
 };
 const CONSTELLATIONS={
  Aries:[[34,80],[76,58],[120,73],[149,98]],Taurus:[[27,98],[70,65],[118,107],[168,68],[214,34],[167,68],[219,111]],

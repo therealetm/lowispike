@@ -24,7 +24,7 @@
     const ownCompanion = () => { try { const B = BC(); return !!(B && B.has && B.has()); } catch (e) { return true; } };
     /* HOOK: the claim step is only offered once the own-companion task ships LowiBirthCompanion.claim(opts) */
     const claimReady = () => { try { const B = BC(); return !!(B && typeof B.claim === 'function'); } catch (e) { return false; } };
-    const companionName = () => { try { const B = BC(), c = B && B.get && B.get(); return (c && c.name) || 'Misty'; } catch (e) { return 'Misty'; } };
+    const companionName = () => { try { const B = BC(), c = B && B.get && B.get(); return (c && c.name) || (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'); } catch (e) { return (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'); } };
     const companionArt = () => { try { const B = BC(); if (B && B.svg) return B.svg(null, { size: 64 }); } catch (e) { } return ''; };
     const store = { get() { try { return (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch (e) { return {}; } }, set(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) { } } };
 

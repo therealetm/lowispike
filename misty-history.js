@@ -63,7 +63,7 @@
         else if (a === 'newer') st.back = Math.max(0, st.back - 1);
         else return;
         const body = D.querySelector('#mistyHub .mh-body'); if (!body) return;
-        const nm = (D.querySelector('#mistyHub .mh-name h2') || {}).textContent || 'Misty';
+        const nm = (D.querySelector('#mistyHub .mh-name h2') || {}).textContent || (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty');
         body.innerHTML = html(nm);
         const f = body.querySelector(a === 'kind' ? '.mh-seg2 .mh-tab.on' : '[data-mhh="' + a + '"]:not([disabled])') || body.querySelector('.mh-hrange');
         try { f && f.focus({ preventScroll: true }); } catch (x) { }

@@ -102,7 +102,7 @@
     /* a short date that ends in a dot ("19. Okt.") followed by the sentence's own dot gave "19. Okt.." in German: one dot */
     function tr(k, v) { let s = (T[k] || [k])[lang()] || T[k][0]; for (const x in v || {}) s = s.split('{' + x + '}').join(String(v[x])); return v ? s.replace(/(^|[^.])\.\.(?!\.)/g, '$1.') : s; }
     /* BH-006 name chain (same helper as companion.js / misty-hub.js): own companion > a typed name > Misty */
-    function companionName() { const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(W.LowiHerbIdentity && W.LowiHerbIdentity.autoName && W.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = W.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = W.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || 'Misty'; }
+    function companionName() { const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(W.LowiHerbIdentity && W.LowiHerbIdentity.autoName && W.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = W.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = W.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'); }
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     /* 28 Oct 2026 (Emmanuel: "When I open Rangliste ... I would like it to open at week because it always opens at Gesamt. Barely
        anyone cares about Gesamt. They care about month, but they more care about this week ... that's just where it opens."):
@@ -148,7 +148,7 @@
                never the old herb auto name ("Sunny Leaf" for a Leo) */
             try { const B = W.LowiBirthCompanion; if (B && B.displayName) name = B.displayName(); } catch (e) { }
             if (!name) name = companionName();
-            return { g, name: name || 'Misty', form: g ? C.formName(g.st, g.el, L) : '', named: true, me: true };
+            return { g, name: name || (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'), form: g ? C.formName(g.st, g.el, L) : '', named: true, me: true };
         }
         const code = K.lookFor(p, allLooks()), g = code ? C.decode(code) : null;
         if (!g) return null;
@@ -240,10 +240,10 @@
         const ring = '<span class="rk-lvr" style="--p:' + (L ? L.prog : 0).toFixed(3) + '" aria-hidden="true"><b class="num">' + lv + '</b></span>';
         const sub = !x ? '<small class="rk-own"><span class="rk-ownr">' + sunHTML(esc(per === 'all' ? tr('notYetA') : tr('notYetW'))) + '</span></small>' :
             '<small class="rk-own"><span class="rk-lv num">' + esc(tr('lv', { n: lv })) + '</span>' + (shared() ? (myName(self) ? '<span class="rk-ownr">' + esc(myName(self)) + '</span>' : '') : '<span class="rk-ownr">' + ico('eye', '', 'rk-eye', '') + esc(tr('hiddenMe')) + '</span>') + '</small>';
-        return '<button type="button" class="rk-me' + (x ? '' : ' off') + '" data-rk="ladder" data-me="1" data-key="_me" aria-haspopup="dialog" aria-label="' + esc(tr('yourPlace') + ', ' + (x ? '#' + x.rank + ', ' + score(x) + ' ' + unitLong() : tr('notYet')) + ', ' + (c ? c.name : 'Misty') + ', ' + tr('lv', { n: lv }) + (d ? ', ' + tr(d > 0 ? 'up' : 'down', { n: Math.abs(d) }) : '') + ', ' + tr('levels')) + '" data-who="' + esc(self.n || '') + '">' +
+        return '<button type="button" class="rk-me' + (x ? '' : ' off') + '" data-rk="ladder" data-me="1" data-key="_me" aria-haspopup="dialog" aria-label="' + esc(tr('yourPlace') + ', ' + (x ? '#' + x.rank + ', ' + score(x) + ' ' + unitLong() : tr('notYet')) + ', ' + (c ? c.name : (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty')) + ', ' + tr('lv', { n: lv }) + (d ? ', ' + tr(d > 0 ? 'up' : 'down', { n: Math.abs(d) }) : '') + ', ' + tr('levels')) + '" data-who="' + esc(self.n || '') + '">' +
             '<span class="rk-me-rk"><b class="num">' + (x ? '#' + x.rank : '\u2013') + '</b>' + mvHTML(d) + '</span>' +
             '<span class="rk-me-art">' + art(c, 'rkme', false) + ring + '</span>' +
-            '<span class="rk-who"><b class="rk-cn">' + esc(c ? c.name : 'Misty') + '</b>' + sub + '</span>' +
+            '<span class="rk-who"><b class="rk-cn">' + esc(c ? c.name : (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty')) + '</b>' + sub + '</span>' +
             (x ? ptsHTML(x) : '') + '<span class="rk-me-go" aria-hidden="true">' + ico('chevron', '', 'rk-chev', '\u203a') + '</span></button>';
     }
     function html() {
@@ -299,7 +299,7 @@
             '<p class="rk-lad-next">' + esc(tr('ladNext', { x: K.fmt(d.toNext, lang()), n: d.my + 1 })) + '</p>';
         const lo = d.my > 1 ? d.steps[d.my - 1].xp : 0, prog = d.next == null ? 1 : Math.max(0, Math.min(1, (d.xp - lo) / Math.max(1, d.next - lo)));
         let h = '<div class="rk-lad-h">' + art(c, 'rklad', true) +
-            '<div class="rk-lad-hw"><b class="rk-lad-cn">' + esc(c ? c.name : 'Misty') + '</b><span class="rk-lad-lv">' + esc(tr('ladLv', { n: d.my })) + '</span>' + next +
+            '<div class="rk-lad-hw"><b class="rk-lad-cn">' + esc(c ? c.name : (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty')) + '</b><span class="rk-lad-lv">' + esc(tr('ladLv', { n: d.my })) + '</span>' + next +
             '<span class="rk-lad-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(prog * 100) + '"><i style="width:' + (prog * 100).toFixed(1) + '%"></i></span></div>' +
             '<button type="button" class="rk-lad-x" data-lad="close" aria-label="' + esc(tr('close')) + '">\u00d7</button></div>';
         h += '<ol class="rk-lad-l">' + d.steps.map(st => {

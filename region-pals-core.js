@@ -295,7 +295,7 @@
     const HUNT = { clean: 3, level: 3, sense: 2, found: 2, entered: 2, full: 2, auto: 2, real: 1, warm: 1, dir: 1, behind: 1 };
     function huntLine(key, li, v) {
         v = v || {}; if (!(key in HUNT)) return null;
-        let k = key; const n = v.n || 'Misty';
+        let k = key; const n = v.n || (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty');
         if (key === 'found' && +v.left === 1) k = 'found1';
         const num = key === 'level' ? v.L : key === 'found' ? v.left : v.k;
         return { key: k, prio: HUNT[key], text: guide(k, li, { n, k: num, d: v.d }) };

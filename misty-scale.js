@@ -133,7 +133,7 @@
     }
     /* the card: pure string so it can be tested; p = plan(), pw = power(), opts {name, lang, E} */
     function cardHTML(p, pw, opts) {
-        const l = opts.lang, E = opts.E, n = opts.name || 'Misty', v = Math.max(0, Math.min(1, p.value));
+        const l = opts.lang, E = opts.E, n = opts.name || (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'), v = Math.max(0, Math.min(1, p.value));
         const tName = tr(p.tier, l), boost = Math.min(v, p.boost || 0);
         const zone = (a, b, k, cls) => '<span class="ms-z ' + cls + '" style="left:' + (a * 100).toFixed(1) + '%;width:' + ((b - a) * 100).toFixed(1) + '%"><em>' + esc(tr(k, l)) + '</em></span>';
         let h = '<section class="mh-card ms-card" data-ms-tier="' + p.tier + '" aria-label="' + esc(tr('title', l, { n })) + '">' +
@@ -167,7 +167,7 @@
     const H = D.documentElement;
     const lang = () => { try { return ((W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || H.lang || 'de').slice(0, 2); } catch (e) { return 'de'; } };
     /* BH-006: the companion's name = own companion's name, else a name the user typed, else Misty; never the old herb auto name ("Moss Leaf") */
-    function companionName() { const w = typeof window !== 'undefined' ? window : globalThis; const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(w.LowiHerbIdentity && w.LowiHerbIdentity.autoName && w.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = w.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = w.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = w.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || 'Misty'; }
+    function companionName() { const w = typeof window !== 'undefined' ? window : globalThis; const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(w.LowiHerbIdentity && w.LowiHerbIdentity.autoName && w.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = w.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = w.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = w.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'); }
     const name = () => companionName();
     const state = () => { try { return W.LowiVitalsBridge.state() || {}; } catch (e) { return {}; } };
     function waterToday(now) { try { const f = (o => o && typeof o === "object" ? o : {})(JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')); return +((f.water || {})[dayKey(now)]) || 0; } catch (e) { return 0; } }

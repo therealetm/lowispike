@@ -359,7 +359,7 @@
     /* her name in the guide's lines (Oct 19, 2026; E-man: the guide must call her Misty): the user's companion from the shared
        companion API (LowiBirthCompanion: Misty, unless the user brought their own companion to life and named it), never the old
        herb identity name from the star sign ("Steer Moss Leaf ..."). */
-    function mistyName() { try { const B = W.LowiBirthCompanion, c = B && B.get ? B.get() : null; const n = c && c.name ? String(c.name).trim() : ''; return n ? n.slice(0, 24) : 'Misty'; } catch (e) { return 'Misty'; } }
+    function mistyName() { try { const B = W.LowiBirthCompanion, c = B && B.get ? B.get() : null; const n = c && c.name ? String(c.name).trim() : ''; return n ? n.slice(0, 24) : (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'); } catch (e) { return (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'); } }
     /* keeps teaching while you're in a world, without chatter: only after a quiet spell, only something new, a few per visit.
        While you steer and crumbs are left: a nudge towards the nearest one. Otherwise: the next fact it hasn't told you yet. */
     function teach() {

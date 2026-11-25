@@ -26,7 +26,7 @@
     const ledger = () => { try { const st = B() && B().state(); return (st && Array.isArray(st.ledger)) ? st.ledger : []; } catch (e) { return []; } };
     function name() {
         try { const b = W.LowiBirthCompanion; if (b && b.has && b.has()) { const c = b.get(), n = c && String(c.name || '').trim(); if (n) return n.slice(0, 24); } } catch (e) { }
-        return 'Misty';
+        return (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty');
     }
     function load() { try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && v.id && +v.ts ? v : null; } catch (e) { return null; } }
     function save() { try { if (P) localStorage.setItem(KEY, JSON.stringify(P)); else localStorage.removeItem(KEY); } catch (e) { } }

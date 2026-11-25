@@ -10,7 +10,7 @@
     const W = window, D = document, HC = W.LowiHingeCore;
     if (!HC) return;
     const rm = () => { try { return W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
-    const compName = () => { try { const c = W.LowiBirthCompanion && W.LowiBirthCompanion.get && W.LowiBirthCompanion.get(); return (c && c.name) || 'Misty'; } catch (e) { return 'Misty'; } };
+    const compName = () => { try { const c = W.LowiBirthCompanion && W.LowiBirthCompanion.get && W.LowiBirthCompanion.get(); return (c && c.name) || (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'); } catch (e) { return (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'); } };
 
     function placeArt(T, esc) {
         /* phone low on the floor, you side-on, 2.5 m away, hinging */

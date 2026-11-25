@@ -42,7 +42,7 @@
                 alt: L('Sealed card, Form ' + n + ' of 10. Unlocks at ' + nf(f.xp, lang) + ' XP.', 'Versiegelte Karte, Form ' + n + ' von 10. Freigeschaltet ab ' + nf(f.xp, lang) + ' XP.', 'Carta sellada, forma ' + n + ' de 10. Se desbloquea con ' + nf(f.xp, lang) + ' XP.')
             };
         }
-        const owner = String(d.owner || 'Misty').slice(0, 24), fam = String(d.fam || '');
+        const owner = String(d.owner || (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty')).slice(0, 24), fam = String(d.fam || '');
         return {
             locked: false, no, title: String(f.name || ''), sub: owner + (fam ? ' · ' + fam : ''),
             phase: ph.l[li(lang)], stars: ph.stars, power: n,

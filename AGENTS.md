@@ -26,7 +26,7 @@ Then inspect the current remote `main` SHA, working-tree status, owning source m
 
 ## Non-negotiable product rules
 
-Vocabulary note (18 Oct 2026): these rules were written when the companion was a potted herb. Read *herb* as *the companion*: the one glass bubble creature (Misty for the owner and as the fallback; other names come from the star sign). Code still says `herb` in many places. The rules themselves still hold unless a later `DECISIONS.md` entry overrides them; the specific places they changed are marked below and in `SUCCESSOR_HANDOFF.md` section 5.
+Vocabulary note (18 Oct 2026): these rules were written when the companion was a potted herb. Read *herb* as *the companion*: the one glass bubble creature (Misty only for the owner since 25 Nov 2026, see DECISIONS.md; everyone else gets their own name from the star sign). Code still says `herb` in many places. The rules themselves still hold unless a later `DECISIONS.md` entry overrides them; the specific places they changed are marked below and in `SUCCESSOR_HANDOFF.md` section 5.
 
 - The herb is **the** companion. Never render a second companion. The floating bubble above Scan is the herb's compact form; tapping it opens the herb room.
 - Companion speech is event-driven. It may speak after a deliberate herb tap, care action, evolution, or permitted reminder. It must not speak on navigation, every click, or page load.

@@ -137,7 +137,7 @@ function questionText(q,lang){lang=L(lang);return{id:q.id,over:q.over[lang],q:q.
 function frictionText(key,lang){const q=FRICTION[key];return q?questionText(Object.assign({id:key},q),lang):null;}
 
 /* --- herb-first: name suggestions from the shipped herb identity pool --- */
-function namePool(core){const F=core&&core.FIRST?Object.values(core.FIRST):['Misty','Nova','Sage','Pip','Lumi','Moss'];
+function namePool(core){const F=core&&core.FIRST?Object.values(core.FIRST):['Coral','Nova','Sage','Pip','Lumi','Moss'];
  const S=core&&core.SECOND?Object.values(core.SECOND):['Moon','Star','Leaf','Spark','Dew','Glow'];
  const out=[];for(const f of F)for(const s of S)if(out.indexOf(f+' '+s)<0)out.push(f+' '+s);return out;}
 function suggestName(core,seed,avoid){const pool=namePool(core);if(!pool.length)return 'Minti Leaf';

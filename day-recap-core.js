@@ -223,7 +223,7 @@
     /* view(summary, {lang, name, rnd, last}) -> everything the panel shows, already in the right language */
     function view(s, o) {
         o = o || {}; s = s || summarize({});
-        const lang = L(o.lang), name = String(o.name || '').trim() || 'Misty', rnd = o.rnd, vars = { name };
+        const lang = L(o.lang), name = String(o.name || '').trim() || (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'), rnd = o.rnd, vars = { name };
         const c = s.counts || { low: 0, medium: 0, high: 0, unknown: 0 }, total = (s.meals || []).length, judged = c.low + c.medium + c.high;
         const mood = s.empty ? 'hello_quiet' : (c.high > 0 && c.high >= c.low) ? 'hello_mixed' : (judged || s.moveMin || s.gapH >= 12 || s.xp) ? 'hello_good' : 'hello_mixed';
         const pool = POOLS[mood][lang], helloIdx = pickIdx(pool.length, rnd, o.last);

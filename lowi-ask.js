@@ -46,7 +46,7 @@
         let n = ''; try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pk(c && c.name); } } catch (e) {}
         if (!n) try { const tg = W.LowiHerbTamagotchi, p = tg && tg.readPrefs && tg.readPrefs(); n = typed(p && p.name); } catch (e) {}
         if (!n) try { const R = W.LowiR2, st = R && R.S && R.S(); n = typed(st && st.herb && st.herb.name); } catch (e) {}
-        return n || 'Misty';
+        return n || (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty');
     }
     function sign() { try { const B = W.LowiBirthCompanion, c = B && B.has && B.has() ? B.get() : null; return String((c && (c.sign || c.zodiac)) || '').slice(0, 20); } catch (e) { return ''; } }
     let msgs = [], ctx = '', el = null, busy = false, cur = '', view = 'chat';

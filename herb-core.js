@@ -11,7 +11,7 @@
     return {index,current,next,xp,left:next?Math.max(0,next.xp-xp):0,progress:next?Math.max(0,Math.min(1,(xp-current.xp)/(next.xp-current.xp))):1};
   }
   const signs=[['Capricorn','♑','earth',1,19],['Aquarius','♒','air',2,18],['Pisces','♓','water',3,20],['Aries','♈','fire',4,19],['Taurus','♉','earth',5,20],['Gemini','♊','air',6,20],['Cancer','♋','water',7,22],['Leo','♌','fire',8,22],['Virgo','♍','earth',9,22],['Libra','♎','air',10,22],['Scorpio','♏','water',11,21],['Sagittarius','♐','fire',12,21],['Capricorn','♑','earth',13,0]];
-  const palettes={earth:{a:'#8bcfa4',b:'#dfc886',suggestion:'Sage'},water:{a:'#78d6da',b:'#aca2ed',suggestion:'Misty'},fire:{a:'#edbc73',b:'#d698bd',suggestion:'Ember'},air:{a:'#a4cce9',b:'#c6a4e4',suggestion:'Zephyr'},neutral:{a:'#8dcfbc',b:'#c4b1eb',suggestion:'Minti'}};
+  const palettes={earth:{a:'#8bcfa4',b:'#dfc886',suggestion:'Sage'},water:{a:'#78d6da',b:'#aca2ed',suggestion:'Coral'},fire:{a:'#edbc73',b:'#d698bd',suggestion:'Ember'},air:{a:'#a4cce9',b:'#c6a4e4',suggestion:'Zephyr'},neutral:{a:'#8dcfbc',b:'#c4b1eb',suggestion:'Minti'}};
   function zodiac(date){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date||''))return null;
     const [y,m,d]=date.split('-').map(Number),v=new Date(y,m-1,d);

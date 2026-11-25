@@ -186,7 +186,7 @@
     function cardHTML(p, opts) {
         if (!p) return '';
         opts = opts || {};
-        const l = opts.lang || 'en', n = opts.name || 'Misty';
+        const l = opts.lang || 'en', n = opts.name || (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty');
         const sub = p.peak ? tr('peakSub', l, { n }) : (p.missing === 1 ? tr('left1', l) : tr('leftN', l, { x: p.missing }));
         const order = p.rows.filter(r => !r.done).concat(p.rows.filter(r => r.done));
         let h = '<section class="mh-card mp-card" id="mistyPeak" data-peak="' + (p.peak ? 1 : 0) + '" aria-label="' + esc(tr('bar', l)) + '">' +
@@ -237,7 +237,7 @@
         return p;
     }
     function html() { try { const p = now(); return p ? cardHTML(p, { lang: lang(), name: name() }) : ''; } catch (e) { return ''; } }
-    function name() { try { const t = D.querySelector('#spBubble .sp-bubble-name'); const n = t && t.textContent.trim(); if (n) return n.split('\u00a0')[0].split(' \u00b7')[0]; } catch (e) { } return 'Misty'; }
+    function name() { try { const t = D.querySelector('#spBubble .sp-bubble-name'); const n = t && t.textContent.trim(); if (n) return n.split('\u00a0')[0].split(' \u00b7')[0]; } catch (e) { } return (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'); }
 
     /* Home look: html[data-peak="1"] = big smile, brightest world, a small glow; data-peak-held = something holds her back */
     let lastSig = '';

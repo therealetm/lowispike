@@ -145,7 +145,7 @@
 
     /* ---------- the stats sheet ---------- */
     let ov = null, view = 'stats';
-    const companionName = () => { try { const B = W.LowiBirthCompanion, c = B && B.get && B.get(); if (c && c.name) return c.name; } catch (e) { } return 'Misty'; };
+    const companionName = () => { try { const B = W.LowiBirthCompanion, c = B && B.get && B.get(); if (c && c.name) return c.name; } catch (e) { } return (typeof window !== 'undefined' && window.LowiDefaultName ? window.LowiDefaultName() : 'Misty'); };
     const level = () => { try { return W.LowiHost && LowiHost.level ? LowiHost.level() : null; } catch (e) { return null; } };
     function plugins() { return (W.LowiStatsPlugins || []).filter(x => x && typeof x.render === 'function').slice().sort((a, b) => (+a.order || 50) - (+b.order || 50)); }
     function moodLine(m) {

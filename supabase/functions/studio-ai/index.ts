@@ -138,14 +138,20 @@ Deno.serve(async (req) => {
       const clips = (Array.isArray(body.clips) ? body.clips : []).slice(0, 12).map((c: Record<string, unknown>) => ({ sec: Math.max(3, Math.min(60, Math.round(Number(c && c.sec) || 8))), style: clip(c && c.style, 40) || "general" }));
       if (!clips.length) return out(req, 400, { error: "bad_request" });
       if ((await take("owner", "captions", 80)) !== "ok") return out(req, 429, { error: "limit" });
-      const ex = (Array.isArray(body.examples) ? body.examples : []).slice(0, 14).map((e: Record<string, unknown>, i: number) => (i + 1) + ". " + clip(e && e.hook, 200) + (e && e.text ? " | " + clip(e.text, 260) : "")).join("\n");
+      /* 25 Nov 2026 (Emmanuel: "how does it learn from the viral text in the playlists and actually utilizes it? ... I don't want this to
+         become a guessing game"): each example now carries its text on screen (for B-roll posts that is the viral text itself), then
+         its hook and what is said; before, only the hook and the spoken words were sent. */
+      const ex = (Array.isArray(body.examples) ? body.examples : []).slice(0, 20).map((e: Record<string, unknown>, i: number) => {
+        const scr = clip(e && e.screen, 500), hk = clip(e && e.hook, 200), sp = clip(e && e.text, 260);
+        return (i + 1) + "." + (scr ? "\n   on screen: " + scr.replace(/\n+/g, " / ") : "") + (hk ? "\n   hook: " + hk : "") + (sp ? "\n   said: " + sp : "");
+      }).join("\n");
       /* 24 Nov 2026 (Emmanuel: "it did not generate me the texts"): never an empty answer without a reason. The JSON answer first
          (with room to think); when it fails or comes back short, once more as plain text, one block per clip between --- lines.
          The reason goes to the owner (who is the only one calling this) and to the function log. */
       const prompt = [
         "You write the text on screen for short vertical videos (TikTok / Reels): one short text over a calm B-roll clip, like viral 'text tweet' posts.",
         "The creator, in their own words (their voice, topics, audience and pillars; use it, never quote it as a whole):\n" + clip(body.bio, 3000),
-        ex ? "Viral examples of the style to learn from (hooks and words; learn the rhythm and tone, never copy them):\n" + ex : "",
+        ex ? "Viral videos the creator picked to learn from (their text on screen, hook and spoken words):\n" + ex + "\n\nStudy them before you write: how the first line stops the scroll, how long each line is, where the line breaks fall, the point of view, the emotional turn near the end, the plain everyday words. Write NEW texts about the creator's own message (above) with those same patterns. Never copy or lightly reword an example." : "",
         "Write one text per clip, in this order. Each clip has its length in seconds and a style:",
         clips.map((c, i) => (i + 1) + ". " + c.sec + " s, style: " + c.style).join("\n"),
         "Styles: 'I' = first person, a confession or realisation; 'you' = speaks to the viewer; 'general' = a universal truth; 'teaching' = one useful tip; 'relatable' = a feeling people share; 'funny' = light and witty.",

@@ -58,13 +58,14 @@ test('Profile has Inspo | B-rolls: the shelf on top, the chosen B-roll\'s parts 
   assert.match(a, /data-acc="pt" data-v="broll"/); assert.match(a, /if \(k === 'pt'\) \{ PT = b\.dataset\.v === 'broll' \? 'broll' : 'inspo';/);
   assert.match(a, /StudioVM\.mount\(document\.getElementById\('vmProf'\)\)/);
   assert.match(js, /W\.StudioVM = \{open: open, close: close, mount: mount,/);
-  assert.match(js, /'<div class="vm-acts"><button class="btn pri" data-vm="again"/, 'one button fills every text, each tap again');
-  for (const l of ['Fill texts', 'Texte füllen', 'Rellenar textos']) assert.ok(js.includes(l), l);
+  /* changed 25 Nov 2026 (Emmanuel: "it shouldn't just start generating ... pick one by one which one I want to save ... resize them all ... a check mark"): ✨ New texts, then 🎬 Make → 📲 Save for the ticked parts */
+  assert.match(js, /var a = '<button class="btn pri" data-vm="newT"/, 'one button writes the texts, each tap again');
+  for (const l of ['✨ New texts', '✨ Neue Texte', '✨ Textos nuevos']) assert.ok(js.includes(l), l);
 });
 test('a B-roll is cut once, when it is added; its parts (texts, positions) are kept and never cut again', () => {
   assert.match(js, /if \(!st\.cuts\[id\] \|\| !st\.cuts\[id\]\.length\) st\.cuts\[id\] = plan\(r\.dur\)/);
   assert.match(js, /return bPut\(o\)\.then\(function \(\) \{ useRoll\(o\.id\); \}\);/);
-  assert.match(js, /cuts: st\.cuts, used: st\.used\}\)\)/, 'the parts are saved');   /* changed 24 Nov 2026, evening: + the Used folder */
+  assert.match(js, /cuts: st\.cuts, used: st\.used, pref: st\.pref\}\)\)/, 'the parts are saved');   /* changed 24 Nov 2026, evening: + the Used folder; 25 Nov: + your size/place */
   const go = /function go\(\) \{[\s\S]*?\n  \}/.exec(js)[0]; assert.doesNotMatch(go, /plan\(/, 'Fill texts does not re-cut');
 });
 test('only B-rolls use space: made videos are not stored; the profile says how much is used', () => {
@@ -81,8 +82,9 @@ test('a made video counts only while it matches the part exactly as it is now: a
   assert.match(js, /var i0 = cur; if \(got\(i0\)\) return share/);
 });
 test('saved videos go to the Used folder (a recipe, not a file) and can be saved again; Fill texts makes new ones', () => {
-  assert.match(js, /function markUsed\(idxs\)/); assert.match(js, /st\.used\.unshift\(\{roll: st\.sess\.id, k: k, ts: now, c: JSON\.parse\(JSON\.stringify\(c\)\)\}\)/);
-  assert.match(js, /data-vm="uopen"/); for (const l of ['Not used yet', 'Noch nicht benutzt', 'Aún sin usar', '✓ Used {p}']) assert.ok(js.includes(l), l);
+  /* changed 25 Nov 2026 (Emmanuel: "it shouldn't just start generating ... pick one by one which one I want to save ... resize them all ... a check mark"): no separate Used folder; a saved part shows ✓ Saved, and the log stays a small recipe list */
+  assert.match(js, /function markUsed\(idxs\)/); assert.match(js, /st\.used\.unshift\(\{roll: st\.sess\.id, k: k, t: tk, ts: now, c: JSON\.parse\(JSON\.stringify\(c\)\)\}\)/);
+  assert.doesNotMatch(js, /data-vm="uopen"/); for (const l of ['✓ Saved', '✓ Gespeichert', '✓ Guardado']) assert.ok(js.includes(l), l);
   assert.doesNotMatch(js, /bPut\([^)]*made/, 'made videos are never stored');
 });
 test('making videos never hangs silently: when the phone blocks it, a clear button asks for one tap; the status says "x / y done"', () => {
@@ -120,7 +122,9 @@ test('finished videos are kept on the phone (one per part) and survive closing t
   assert.match(js, /mm\[i\] = \{b: blob, k: snap0\}; mPut\(sid\.id, i, mm\[i\]\);/); assert.match(js, /function loadRolls\(\) \{ return loadMade\(\)\.then\(bAll\)/);
   assert.match(js, /var bDel = function \(id\) \{[^\n]*mDelRoll\(id\)/, 'deleting a B-roll deletes its videos');
   assert.match(js, /function mkLabel\(\) \{ return got\(cur\) \? t\('toPhone'\) : \(qRun && qNow === cur \? t\('making', qPc\) : t\('make'\)\); \}/);
-  assert.match(js, /var i = inEdit\(\) && !got\(cur\) \? cur :/, 'the part open in the editor is made first');
+  /* changed 25 Nov 2026 (Emmanuel: "it shouldn't just start generating ... pick one by one which one I want to save ... resize them all ... a check mark"): nothing is made by itself: only the parts you tapped 🎬 Make for */
+  assert.match(js, /var i = -1; for \(var w0 = 0; w0 < WANT\.length; w0\+\+\) if \(!got\(WANT\[w0\]\) && st\.sess\.clips\[WANT\[w0\]\]\) \{ i = WANT\[w0\]; break; \}/);
+  assert.doesNotMatch(js, /requeue\(/, 'moving or resizing never starts making a video');
   assert.match(js, /var MAXW = 2 \* Math\.min\(0\.5 - SAFE\.l, SAFE\.r - 0\.5\) \* 0\.97;/, 'opening a finished part does not nudge it (that made it again)');
 });
 /* 24 Nov 2026, night (Emmanuel: "You broke my app? Nothing is working after closing & opening", black screen) */
@@ -136,23 +140,57 @@ test('nothing is made in the background before a tap in this visit; a visit that
    Save -> parts to "✓ Used · 3" (folded); Fill again -> 3 new parts, Used stays 3; a used video is made again and saved on its own. */
 test('the B-rolls panel never redraws in a loop and never moves the page', () => {
   assert.match(js, /if \(i < 0\) return;   \/\* 24 Nov 2026 bug/);
-  assert.match(js, /if \(html === lastHTML && h\.firstChild\) \{ storeLine\(\); return; \}/);
+  assert.match(js, /if \(html === lastHTML && h\.firstChild\) \{ drawTiles\(\); storeLine\(\); return; \}/);   /* changed 25 Nov 2026: the previews are canvases, redrawn without a redraw of the panel */
   assert.doesNotMatch(js.slice(js.indexOf('function mountPaint')), /scrollIntoView/);
   assert.match(js, /if \(same && sl >= 0\) sh\.scrollLeft = sl;/);
   assert.match(js, /if \(FR\.id === st\.sess\.id \+ ':' \+ st\.sess\.clips\.length && st\.sess\.clips\.every\(function \(_c, k\) \{ return FR\[k\]; \}\)\) return;/);
 });
 test('workflow: a new B-roll gets its texts by itself; text language on the panel; each part says Ready', () => {
-  assert.match(js, /\.then\(function \(\) \{ keep\(\); refresh\(\); autoFill\(\); \}/); assert.match(js, /if \(k === 'sel'\) \{ useRoll\(b\.dataset\.id\); FR = \[\]; refresh\(\); autoFill\(\); return; \}/);
-  assert.match(js, /<div class="vm-lang"><span>' \+ esc\(t\('textLang'\)\)/); assert.match(js, /'<b class="vm-ok vm-okp">✓ ' \+ esc\(t\('ready'\)\) \+ '<\/b>'/);
-  for (const l of ['Text language', 'Textsprache', 'Idioma del texto', 'Videos you saved stay in ✓ Used below.']) assert.ok(js.includes(l), l);
+  /* changed 25 Nov 2026 (Emmanuel: "it shouldn't just start generating ... pick one by one which one I want to save ... resize them all ... a check mark"): no texts by themselves any more: a new B-roll shows a spinner, is cut, and waits for ✨ New texts */
+  assert.doesNotMatch(js, /autoFill\(/); assert.match(js, /if \(k === 'sel'\) \{ useRoll\(b\.dataset\.id\); FR = \[\]; refresh\(\); return; \}/);
+  assert.match(js, /<div class="vm-lang"><span>' \+ esc\(t\('textLang'\)\)/); assert.match(js, /'<b class="vm-ok vm-okp">' \+ esc\(t\('made'\)\) \+ '<\/b>'/);
+  for (const l of ['Text language', 'Textsprache', 'Idioma del texto', 'Pick a playlist, then tap ✨ New texts.']) assert.ok(js.includes(l), l);
 });
 test('used videos are folded under "✓ Used · n", grouped by day, and made again on their own without touching the new parts', () => {
-  assert.match(js, /data-vm="utog" aria-expanded="' \+ UOPEN \+ '"/); assert.match(js, /localStorage\.setItem\('lowi\.vm\.usedOpen'/);
-  assert.match(js, /function dayOf\(ts\)/); assert.match(js, /<h5 class="vm-day">/);
+  /* changed 25 Nov 2026 (Emmanuel: "it shouldn't just start generating ... pick one by one which one I want to save ... resize them all ... a check mark"): the Used folder and its day groups are gone ("I don't know if the today and yesterday thing is smart"); each B-roll cover says how many you saved and when */
+  assert.doesNotMatch(js, /data-vm="utog"/); assert.doesNotMatch(js, /<h5 class="vm-day">/);
+  assert.match(js, /'<b class="vm-cdn">✓ ' \+ us\.length \+ '<\/b><small class="vm-cdd">' \+ esc\(agoTxt\(last\)\) \+ '<\/small>'/);
   const uo = js.slice(js.indexOf("if (k === 'uopen')"), js.indexOf("if (k === 'uopen')") + 1200);
-  assert.doesNotMatch(uo, /Object\.assign\(st\.sess\.clips/, 'never written over a new part');
-  assert.match(uo, /render\(JSON\.parse\(JSON\.stringify\(u\.c\)\)/); assert.match(uo, /if \(UM\[ky\]\) return share/);
+  assert.doesNotMatch(js, /Object\.assign\(st\.sess\.clips\[j\]/, 'a saved recipe is never written over a part');
 });
 test('the B-roll cover is replaced by the first part\'s picture (the upload cover is often black on iPhones)', () => {
   assert.match(js, /if \(i === 0 && !r\.tf\) \{ r\.thumb = FR\[0\]; r\.tf = 1; bPut\(r\)/);
+});
+/* 25 Nov 2026 (Emmanuel: "I can click on the playlist that I want the knowledge to go from ... pick one by one which one I want to save
+   ... resize them all ... a joystick ... it also saves my size and my positioning preference ... I don't see any loading ... how does it
+   learn from the viral text in the playlists ... I don't want this to become a guessing game"). Checked in Chromium: upload -> spinner,
+   no AI call; New texts without a playlist -> asks for one; with it -> the playlist's text on screen goes to the AI; nothing is made by
+   itself; untick one -> "Make 2 videos" -> "Save 2" -> 2 files, both ✓ Saved, cover "✓ 2 · Today"; size 30 + ↓ moves all three and is
+   remembered, the ✓ stays; ↻ asks for one text. */
+test('the AI learns from the playlist\'s text on screen (the viral text itself), not only hooks and spoken words', () => {
+  assert.match(js, /return \{screen: String\(x\.onscreen \|\| ''\)\.slice\(0, 500\), hook: x\.hook \|\| '',/);
+  const f = R('supabase/functions/studio-ai/index.ts');
+  assert.match(f, /const scr = clip\(e && e\.screen, 500\)/); assert.match(f, /"\\n   on screen: "/);
+  assert.match(f, /Study them before you write: how the first line stops the scroll/); assert.match(f, /Never copy or lightly reword an example\./);
+});
+test('texts are written only on a tap, for the ticked parts or one part (↻); a playlist is picked first', () => {
+  assert.match(js, /if \(k === 'newT'\) \{ if \(busy\) return; if \(!st\.pl && S\.lists && S\.lists\(\)\.length\) return S\.toast\(t\('pickPl'\)\);/);
+  assert.match(js, /if \(k === 'reone'\) \{[^\n]*return write\(\[st\.sess\.clips\[ri\]\]\); \}/);
+  assert.match(js, /data-vm="tsel"/); assert.match(js, /function selIdx0\(\)/);
+});
+test('🎬 Make only for the ticked parts, then 📲 Save; saved parts show ✓ Saved and keep it when moved or resized', () => {
+  assert.match(js, /if \(k === 'makeSel'\) \{ var mi = selIdx\(\)\.filter/); assert.match(js, /if \(k === 'saveSel'\) \{[^\n]*markUsed\(si\)/);
+  assert.match(js, /function tkey\(c\) \{ return JSON\.stringify\(\[c\.start, c\.end, String\(c\.text \|\| ''\)\.trim\(\)\]\); \}/);
+  assert.match(js, /howMake: \['🎬 Make puts the text on the video/);
+});
+test('one size and one joystick for all texts, kept in the safe zone and remembered for new parts', () => {
+  assert.match(js, /<input type="range" id="vmAsz"/); assert.match(js, /data-vm="amv" data-dx="0" data-dy="-1"/); assert.match(js, /data-vm="amv" data-c="1"/);
+  assert.match(js, /function allSet\(fn\) \{ if \(!st\.sess\) return; st\.sess\.clips\.forEach\(function \(c\) \{ fn\(c\); clampClip\(c\); \}\);/);
+  assert.match(js, /x: st\.pref\.x, y: st\.pref\.y, size: st\.pref\.size, look: st\.pref\.look/);
+  assert.match(js, /function clampClip\(c\)/);
+});
+test('previews are drawn by the video\'s own drawText(); an upload shows a spinner; making never hangs silently', () => {
+  assert.match(js, /if \(c\.text\) drawText\(x, c, w, h\);/); assert.match(js, /<canvas data-tc="' \+ i \+ '" width="270" height="480">/);
+  assert.match(js, /new Array\(ADDING \+ 1\)\.join\('<div class="vm-cd vm-adding" role="status">/);
+  assert.match(js, /if \(Date\.now\(\) - lastT > 12000\) \{ clearInterval\(wd\); fail\(new Error\('stall'\)\); \}/);
 });

@@ -153,6 +153,23 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 .vm-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}.vm-row .btn{flex:1}.vm-wide{width:100%}.vm-l{color:var(--muted);font-size:14px}.vm-row input[type=range]{flex:1;min-width:100px}
 .ap-seg{display:flex;gap:4px;width:100%;margin:14px auto 4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid var(--line2);max-width:340px}.ap-seg button{flex:1;min-height:40px;border:0;border-radius:11px;background:none;color:inherit;font:inherit;font-weight:800;white-space:nowrap;cursor:pointer;opacity:.7}.ap-seg button[aria-selected="true"]{background:rgba(255,255,255,.16);opacity:1}
 .vm-prof{padding:0 0 30px}
+.vm-adding{display:grid;place-items:center;align-content:center;gap:8px;border-style:dashed}.vm-adding b{font-size:12px;opacity:.8}
+.vm-spin{position:static!important;width:26px;height:26px;border-radius:50%;border:3px solid rgba(255,255,255,.2);border-top-color:var(--acc);animation:vmSpin .8s linear infinite}
+@keyframes vmSpin{to{transform:rotate(360deg)}}
+.vm-cdd{position:absolute;left:6px;top:30px;padding:1px 6px;border-radius:7px;background:rgba(0,0,0,.6);color:#fff;font-size:10.5px;font-weight:700}
+.vm-row2{padding:10px 14px 0}.vm-l2{font-size:13px;opacity:.75;font-weight:700}
+.vm-plc{display:flex;gap:8px;overflow-x:auto;padding:6px 14px 4px;scrollbar-width:none}.vm-plc::-webkit-scrollbar{display:none}.vm-plc .pill{flex:none;white-space:nowrap}.vm-plc small{opacity:.65;font-weight:600}
+.vm-all{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px 12px 4px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line2)}
+.vm-all>.vm-l2{width:100%}.vm-asz{display:flex;align-items:center;gap:8px;flex:1;min-width:140px;font-size:13px}.vm-asz input{flex:1}
+.vm-joy{display:grid;grid-template-columns:repeat(3,38px);grid-template-rows:repeat(3,34px);gap:3px}
+.vm-joy button{border:1px solid var(--line2);border-radius:10px;background:rgba(255,255,255,.08);color:inherit;font:inherit;font-weight:800;cursor:pointer;min-height:34px}
+.vm-joy button:nth-child(1){grid-column:2;grid-row:1}.vm-joy button:nth-child(2){grid-column:1;grid-row:2}.vm-joy button:nth-child(3){grid-column:2;grid-row:2;font-size:11px}.vm-joy button:nth-child(4){grid-column:3;grid-row:2}.vm-joy button:nth-child(5){grid-column:2;grid-row:3}
+.vm-first{margin:8px 16px!important;text-align:center;font-weight:700}
+.vm-g2{gap:6px;padding:0 8px;margin:8px 0 0!important}.vm-t2{display:flex;flex-direction:column;gap:4px}
+.vm-tc canvas{position:absolute;inset:0;width:100%;height:100%;display:block}.vm-t2.on .vm-tile{box-shadow:0 0 0 2.5px var(--acc)}.vm-t2.used:not(.on) .vm-tile{opacity:.72}
+.vm-tb{display:flex;gap:4px}.vm-tb button{flex:1;min-height:40px;border-radius:10px;border:1px solid var(--line2);background:rgba(255,255,255,.06);color:inherit;font:inherit;font-weight:800;cursor:pointer}
+.vm-sel span{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;border:2px solid rgba(255,255,255,.55);font-size:14px}.vm-sel[aria-pressed="true"] span{background:var(--acc);border-color:var(--acc);color:#03111f}
+.vm-nt{position:absolute;top:6px;right:6px;padding:3px 7px;border-radius:9px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:800}
 .vm-lang{display:flex;align-items:center;gap:8px;padding:4px 14px 2px}.vm-lang span{font-size:13px;opacity:.75;margin-right:auto}.vm-lang .pill{min-width:46px}
 .vm-fn{margin:2px 16px 4px!important;font-size:12.5px;opacity:.7;text-align:center}
 .vm-uh{display:flex;align-items:center;justify-content:space-between;width:calc(100% - 24px);margin:18px 12px 6px;padding:14px 16px;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.06);color:inherit;font:inherit;font-size:15px;font-weight:800;cursor:pointer}
@@ -644,6 +661,6 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
 <script src="accounts.js?v=6"></script>
 <script src="video-words.js?v=1"></script>
 <script src="ai-use.js?v=1"></script>
-<script src="video-machine.js?v=9"></script>
+<script src="video-machine.js?v=10"></script>
 </body>
 </html>

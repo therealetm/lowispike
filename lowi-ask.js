@@ -35,7 +35,19 @@
         untitled: ['Chat with {n}', 'Chat mit {n}', 'Chat con {n}'], del: ['Delete chat', 'Chat löschen', 'Borrar chat'] };
     const t = (k, n) => W3[k][['en', 'de', 'es'].indexOf(L())].replace(/\{n\}/g, n || name());
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    function name() { try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); if (c && c.name) return String(c.name).slice(0, 24); } } catch (e) {} return 'Misty'; }
+    /* the companion's name exactly as the rest of the app shows it (misty-hub.js companionName: its birth name, a name you typed, the saved
+       herb name, then the app's default); 25 Nov 2026 (Emmanuel: "Misty is the name of my specific companion, not the universal one.
+       Everyone has their own companion name"): someone without an account (a visitor from a shared link) talks to LOWiSPIKE AI, never Misty */
+    function name() {
+        const pk = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; };
+        if (!signedIn()) { try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); if (c && c.name) return pk(c.name); } } catch (e) {} return 'LOWiSPIKE AI'; }
+        let auto = ''; try { auto = pk(W.LowiHerbIdentity && W.LowiHerbIdentity.autoName && W.LowiHerbIdentity.autoName()); } catch (e) {}
+        const typed = v => { v = pk(v); return v && v !== auto ? v : ''; };
+        let n = ''; try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pk(c && c.name); } } catch (e) {}
+        if (!n) try { const tg = W.LowiHerbTamagotchi, p = tg && tg.readPrefs && tg.readPrefs(); n = typed(p && p.name); } catch (e) {}
+        if (!n) try { const R = W.LowiR2, st = R && R.S && R.S(); n = typed(st && st.herb && st.herb.name); } catch (e) {}
+        return n || 'Misty';
+    }
     function sign() { try { const B = W.LowiBirthCompanion, c = B && B.has && B.has() ? B.get() : null; return String((c && (c.sign || c.zodiac)) || '').slice(0, 20); } catch (e) { return ''; } }
     let msgs = [], ctx = '', el = null, busy = false, cur = '', view = 'chat';
     const HK = 'lowi.ask.chats.v1', MAXC = 40, MAXM = 60;

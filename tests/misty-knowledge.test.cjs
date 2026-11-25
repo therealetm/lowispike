@@ -115,3 +115,11 @@ test('Share sends the link to the app\'s AI (?ai=1), never a conversation or the
   assert.match(a, /const AI_LINK = \(\(\) => \{ try \{ return \/\[\?&\]ai=1\\b\/\.test\(location\.search\);/);
   assert.match(a, /if \(signedIn\(\)\) \{ fresh\(''\); view = 'chat'; open\(\{\}\); return; \}\s*GUEST = true; msgs = \[\]; open\(\{\}\); return;/);
 });
+/* 25 Nov 2026 (Emmanuel: "Misty is the name of my specific companion, not the universal one. Everyone has their own companion name").
+   Checked in Chromium: a visitor from ?ai=1 sees "LOWiSPIKE AI"; a member's chat shows and sends their companion's name ("Kiko"). */
+test('the chat uses each person\'s own companion name (as the rest of the app shows it); a visitor without an account talks to LOWiSPIKE AI', () => {
+  const a = R('lowi-ask.js'), fn = R('supabase/functions/lowi-ai/index.ts');
+  assert.match(a, /if \(!signedIn\(\)\) \{[^\n]*return 'LOWiSPIKE AI'; \}/);
+  assert.match(a, /if \(!n\) try \{ const tg = W\.LowiHerbTamagotchi, p = tg && tg\.readPrefs && tg\.readPrefs\(\); n = typed\(p && p\.name\); \}/);
+  assert.match(fn, /"You are LOWiSPIKE AI, the assistant inside the LOWiSPIKE app \(each person there has their own companion with its own name; do not call yourself Misty\)\."/);
+});

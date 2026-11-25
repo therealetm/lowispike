@@ -522,7 +522,7 @@
         G('back-swipe', 'any', 'swipe', ['back-swipe.js', 'section-nav.js', 'companion.js'], 'swipe in from the left edge: back'),
         G('sheet-drag', 'any', 'drag', ['apple-ui.js', 'gap-view.js', 'people-directory.js', 'store-picks.js', 'companion.js'], 'drag a sheet\'s top bar down: close it'),
         G('cm-tabs', 'community', 'tap', ['community-rooms-ui.js'], 'tap Circle, Chat, For You, Ranking'),
-        G('cm-tab-order', 'community', 'hold', ['community-tab-order.js'], 'hold a Community tab until it wiggles, slide it: new tab order'),
+        G('cm-tab-order', 'community', 'hold', ['community-tab-order.js', 'bar-order.js'], 'hold a Community tab until it wiggles, slide it: new tab order (25 Nov 2026: the same hold works in the other tab bars, bar-order.js)'),
         G('cm-name', 'community', 'tap', ['community-rooms-ui.js', 'community-me.js'], 'tap the Community name / your picture: rooms, profile, invite'),
         G('cm-pan', 'community', 'drag', ['community-chat.js'], 'drag the galaxy: move around'),
         G('cm-zoom', 'community', 'pinch', ['community-chat.js'], 'pinch or double-tap the galaxy: zoom'),

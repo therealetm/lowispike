@@ -173,8 +173,9 @@ test('the AI learns from the playlist\'s text on screen (the viral text itself),
   assert.match(f, /const scr = clip\(e && e\.screen, 500\)/); assert.match(f, /"\\n   on screen: "/);
   assert.match(f, /Study them before you write: how the first line stops the scroll/); assert.match(f, /Never copy or lightly reword an example\./);
 });
-test('texts are written only on a tap, for the ticked parts or one part (↻); a playlist is picked first', () => {
-  assert.match(js, /if \(k === 'newT'\) \{ if \(busy\) return; if \(!st\.pl && S\.lists && S\.lists\(\)\.length\) return S\.toast\(t\('pickPl'\)\);/);
+/* changed 25 Nov 2026 (Emmanuel: "inspo as default knowledge"): no playlist is needed any more; with none picked the AI learns from Inspo */
+test('texts are written only on a tap, for the ticked parts or one part (↻); Inspo is the default knowledge', () => {
+  assert.match(js, /if \(k === 'newT'\) \{ if \(busy\) return;\s*var all = /);
   assert.match(js, /if \(k === 'reone'\) \{[^\n]*return write\(\[st\.sess\.clips\[ri\]\]\); \}/);
   assert.match(js, /data-vm="tsel"/); assert.match(js, /function selIdx0\(\)/);
 });
@@ -207,5 +208,17 @@ test('styles: several per account, one picked (✓), tap again to edit, ＋ to a
 });
 test('the style and playlist rows swipe sideways instead of stacking (the page stays short)', () => {
   assert.match(R('studio/index.html'), /\.vm-plc\{display:flex;flex-wrap:nowrap!important;gap:8px;overflow-x:auto;/);
-  assert.match(js, /<div class="vm-chips vm-plc">' \+\s*A\.list\.map/); assert.match(js, /'<div class="vm-chips vm-plc">' \+ pls\.map/);
+  assert.match(js, /<div class="vm-chips vm-plc">' \+\s*A\.list\.map/); assert.match(js, /\('<div class="vm-chips vm-plc"><button class="pill' \+ \(!st\.pl \? ' acc' : ''\)/);   /* changed 25 Nov 2026: ⭐ Inspo first in the playlist row */
+});
+/* 25 Nov 2026 (Emmanuel: "wouldn't it make sense to have the default just be the AI learning from the inspo ... inspo as default knowledge
+   and the playlist as selective ones"; "sometimes it doesn't work. I have to click on it 3 times or 4 times") */
+test('the AI learns from the account\'s Inspo by default (⭐ Inspo first in the row); a playlist is the specific choice', () => {
+  assert.match(js, /if \(!st\.pl\) inspoIds\(\)\.forEach\(function \(i\) \{ ids\[i\] = 1; \}\);/);
+  assert.match(js, /data-vm="pl" data-id="" aria-pressed="' \+ !st\.pl \+ '">' \+ esc\(t\('inspoDef'\)\)/);
+  assert.doesNotMatch(js, /return S\.toast\(t\('pickPl'\)\)/, 'no playlist needed any more');
+});
+test('a failed AI call in Studio tries again by itself twice, except for answers that cannot change', () => {
+  const h = R('studio/index.html');
+  assert.match(h, /function ai\(payload, n\) \{/); assert.match(h, /again = n < 2 && !\/\^\(limit\|bad_link\|bad_request\|owner_only\|too_long\)\$\/\.test\(m\);/);
+  assert.match(h, /setTimeout\(r, n \? 4000 : 1500\)/);
 });

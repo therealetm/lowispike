@@ -343,7 +343,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     confirmDel: ['Delete this for good?', 'Wirklich löschen?', '¿Eliminar definitivamente?']
   };
   var t = function (k) { var r = W[k]; return r ? r[L === 'de' ? 1 : L === 'es' ? 2 : 0] : k; };
-  var PLOPEN = false, TAB = 'swipe', Q = '', SORT = 'views', OWNER = false, EDIT = false, SEL = {}, PL = '', PLSEL = null, SB = null, DOC = {}, DATA = null, SW = [], AG = [], OPEN = null, TR = {};
+  var PLOPEN = false, TAB = (function () { try { var f = JSON.parse(localStorage.getItem('lowispike.bar.studio') || 'null'); return f && ['swipe', 'agent', 'profile'].indexOf(f[0]) >= 0 ? f[0] : 'swipe'; } catch (e) { return 'swipe'; } })(), Q = ''   /* 25 Nov 2026: opens on the first tab of your order (bar-order.js) */, SORT = 'views', OWNER = false, EDIT = false, SEL = {}, PL = '', PLSEL = null, SB = null, DOC = {}, DATA = null, SW = [], AG = [], OPEN = null, TR = {};
 
   /* copy that reports success only when it worked */
   function copy(text) {
@@ -501,7 +501,18 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     if (tr.why || x.why) lines.push('', t('why') + ': ' + (tr.why || x.why));
     return lines.join('\n');
   }
-  function ai(payload) {
+  /* 25 Nov 2026 (Emmanuel: "sometimes it doesn't work. I have to click on it 3 times or 4 times, sometimes 5 times"): a failed AI call
+     tries again by itself, twice (after 1.5 s and 4 s), when the reason can pass (the AI busy or failing, no connection); a limit,
+     a bad link or owner-only answers at once. */
+  function ai(payload, n) {
+    n = n || 0;
+    return ai1(payload).catch(function (e) {
+      var m = String(e && e.message || ''), again = n < 2 && !/^(limit|bad_link|bad_request|owner_only|too_long)$/.test(m);
+      if (!again) throw e;
+      return new Promise(function (r) { setTimeout(r, n ? 4000 : 1500); }).then(function () { return ai(payload, n + 1); });
+    });
+  }
+  function ai1(payload) {
     var h = {'Content-Type': 'application/json', apikey: PUBKEY}, p = SB ? SB.auth.getSession().then(function (r) { var s = r && r.data && r.data.session; h.Authorization = 'Bearer ' + (s ? s.access_token : PUBKEY); }) : Promise.resolve(h.Authorization = 'Bearer ' + PUBKEY);
     return p.then(function () { return fetch(SBURL + '/functions/v1/studio-ai', {method: 'POST', headers: h, body: JSON.stringify(payload)}); }).then(function (r) { return r.json().then(function (j) { if (!r.ok || !j.ok) { var er = new Error(j && j.error || 'ai'); er.detail = j && j.detail || ''; er.status = r.status; throw er; } return j; }); });
   }
@@ -658,6 +669,7 @@ h3{margin:16px 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercas
     .catch(function () { $('#main').innerHTML = '<div class="empty">' + esc(t('none')) + '</div>'; });
 })();
 </script>
+<script src="../bar-order.js?v=1"></script>
 <script src="accounts.js?v=7"></script>
 <script src="video-words.js?v=1"></script>
 <script src="ai-use.js?v=1"></script>

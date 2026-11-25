@@ -50,6 +50,7 @@
     stylePh: ['Who you are, your message, who you talk to, how you sound. E.g. “I lost 57 kg eating insulin-friendly food. I talk to people who are tired of diets. Short, honest, a bit funny.”', 'Wer du bist, deine Botschaft, mit wem du sprichst, wie du klingst. Z. B. „Ich habe 57 kg mit insulinfreundlichem Essen verloren. Ich spreche mit Leuten, die Diäten satt haben. Kurz, ehrlich, ein bisschen witzig.“', 'Quién eres, tu mensaje, a quién hablas, cómo suenas.'],
     myStyle: ['My style', 'Mein Stil', 'Mi estilo'], newStyle: ['＋ New style', '＋ Neuer Stil', '＋ Nuevo estilo'], styleName: ['Name (e.g. the account)', 'Name (z. B. der Account)', 'Nombre (p. ej. la cuenta)'],
     styleTip: ['Tap a style to use it; tap it again to change it.', 'Tipp einen Stil an, um ihn zu nehmen; nochmal tippen, um ihn zu ändern.', 'Toca un estilo para usarlo; tócalo otra vez para cambiarlo.'], delStyle: ['Delete style', 'Stil löschen', 'Eliminar estilo'], saveStyle: ['Save', 'Speichern', 'Guardar'],
+    inspoDef: ['⭐ Inspo', '⭐ Inspo', '⭐ Inspo'],
     noPl: ['No playlists yet: put viral videos into a playlist in the Swipe file.', 'Noch keine Playlists: Leg virale Videos in der Swipe-Datei in eine Playlist.', 'Aún no hay playlists: pon vídeos virales en una playlist del Swipe file.'],
     pickPl: ['Pick a playlist first, so the AI learns from its texts.', 'Wähl zuerst eine Playlist, damit die KI von ihren Texten lernt.', 'Elige primero una playlist para que la IA aprenda de sus textos.'],
     plN: ['{p} videos', '{p} Videos', '{p} vídeos'], newT: ['✨ New texts', '✨ Neue Texte', '✨ Textos nuevos'], allT: ['All texts', 'Alle Texte', 'Todos los textos'], sizeAll: ['Size', 'Größe', 'Tamaño'],
@@ -208,10 +209,13 @@
   }
 
   /* ---------- AI ---------- */
+  /* 25 Nov 2026 (Emmanuel: "wouldn't it make sense to have the default just be the AI learning from the inspo ... inspo as default
+     knowledge and the playlist as selective ones"): with no playlist picked, the AI learns from the account's Inspo */
+  function inspoIds() { var l = W.StudioAcc && StudioAcc.items ? StudioAcc.items(S.sw() || []) : []; return l.map(function (x) { return x.id; }); }
   function examples() {
-    if (!st.pl || !S.lists) return [];
-    var q = S.lists().filter(function (z) { return z.id === st.pl; })[0]; if (!q) return [];
-    var ids = {}; (q.items || []).forEach(function (i) { ids[i] = 1; });
+    var ids = {};
+    if (!st.pl) inspoIds().forEach(function (i) { ids[i] = 1; });
+    else { var q = S.lists ? S.lists().filter(function (z) { return z.id === st.pl; })[0] : null; if (!q) return []; (q.items || []).forEach(function (i) { ids[i] = 1; }); }
     /* 25 Nov 2026 (Emmanuel: "how does it learn from the viral text in the playlists ... I don't want this to become a guessing game"):
        each playlist video gives the AI its text on screen first (for B-roll posts that IS the viral text), then its hook and what is
        said. Before, the text on screen was not sent at all. */
@@ -443,15 +447,15 @@
     if (k === 'mic') return mic();
     if (k === 'rm') { e.stopPropagation(); if (!confirm(t('del'))) return; var id = b.dataset.id; rolls = rolls.filter(function (r) { return r.id !== id; }); if (st.sel === id) st.sel = ''; if (st.sess && st.sess.id === id) st.sess = null; keep(); bDel(id).then(paint, paint); return; }
     if (k === 'sel') { useRoll(b.dataset.id); FR = []; refresh(); return; }
-    if (k === 'pl') { st.pl = st.pl === b.dataset.id && HOST && HOST.contains(b) ? '' : b.dataset.id; keep(); return refresh(); }
+    if (k === 'pl') { st.pl = b.dataset.id; keep(); return refresh(); }
     if (k === 'sty') { var A2 = StudioAcc.styles(), sid = b.dataset.id, sx = A2.list.filter(function (x) { return x.id === sid; })[0];
       if (!sid) return styleDlg(null); if (sid === A2.sel) return styleDlg(sx); StudioAcc.styleUse(sid); return refresh(); }
     if (k === 'tsel') { var ti = +b.dataset.i; if (!SELSET) { SELSET = {}; selIdx0().forEach(function (x) { SELSET[x] = 1; }); } if (SELSET[ti]) delete SELSET[ti]; else SELSET[ti] = 1; return refresh(); }
     /* ✨ New texts: the ticked parts; with nothing ticked by hand, every part you have not saved yet (all of them once all are saved) */
-    if (k === 'newT') { if (busy) return; if (!st.pl && S.lists && S.lists().length) return S.toast(t('pickPl'));
+    if (k === 'newT') { if (busy) return;
       var all = st.sess.clips.map(function (_c, i) { return i; }), ix = SELSET ? selIdx() : all.filter(function (i) { return !isUsed(st.sess.clips[i]); }); if (!ix.length) ix = all;
       WANT = WANT.filter(function (i) { return ix.indexOf(i) < 0; }); return write(ix.map(function (i) { return st.sess.clips[i]; })); }
-    if (k === 'reone') { if (busy) return; if (!st.pl && S.lists && S.lists().length) return S.toast(t('pickPl')); var ri = +b.dataset.i; WANT = WANT.filter(function (i) { return i !== ri; }); return write([st.sess.clips[ri]]); }
+    if (k === 'reone') { if (busy) return; var ri = +b.dataset.i; WANT = WANT.filter(function (i) { return i !== ri; }); return write([st.sess.clips[ri]]); }
     if (k === 'makeSel') { var mi = selIdx().filter(function (i) { return !got(i) && st.sess.clips[i].text; }); if (!mi.length) return; if (!canMake()) return S.toast(t('noRec')); WANT = mi; qErr = 0; CRASHED = false; TAPPED = true; unlock(); setTimeout(queue, 60); return refresh(); }
     if (k === 'saveSel') { var si = selIdx().filter(function (i) { return got(i); }); return share(si.map(function (i) { return fileOf(got(i), i); })).then(function (ok) { if (ok) { WANT = []; markUsed(si); } }); }
     if (k === 'amv') { var dx = +b.dataset.dx || 0, dy = +b.dataset.dy || 0, cen = b.dataset.c === '1'; allSet(function (c) { if (cen) { c.x = 0.5; c.y = (SAFE.t + SAFE.b) / 2; } else { c.x += dx * 0.03; c.y += dy * 0.025; } }); keep(); drawTiles(); return refresh(); }
@@ -557,7 +561,7 @@
       (ss ? (st.aiNote ? '<p class="vm-note">' + esc(st.aiNote) + '</p>' : '') + (qErr ? '<p class="vm-note">' + esc(t('blocked')) + '</p>' : '') +
         styleRow() +
         '<div class="vm-row2"><span class="vm-l2">' + esc(t('learn')) + '</span></div>' +
-        (pls.length ? '<div class="vm-chips vm-plc">' + pls.map(function (q) { var n = (q.items || []).length; return '<button class="pill' + (st.pl === q.id ? ' acc' : '') + '" data-vm="pl" data-id="' + esc(q.id) + '" aria-pressed="' + (st.pl === q.id) + '">' + esc(q.name) + ' <small>' + esc(t('plN', n)) + '</small></button>'; }).join('') + '</div>' : '<p class="note vm-fn">' + esc(t('noPl')) + '</p>') +
+        ('<div class="vm-chips vm-plc"><button class="pill' + (!st.pl ? ' acc' : '') + '" data-vm="pl" data-id="" aria-pressed="' + !st.pl + '">' + esc(t('inspoDef')) + ' <small>' + esc(t('plN', inspoIds().length)) + '</small></button>' + pls.map(function (q) { var n = (q.items || []).length; return '<button class="pill' + (st.pl === q.id ? ' acc' : '') + '" data-vm="pl" data-id="' + esc(q.id) + '" aria-pressed="' + (st.pl === q.id) + '">' + esc(q.name) + ' <small>' + esc(t('plN', n)) + '</small></button>'; }).join('') + '</div>') +
         '<div class="vm-lang"><span>' + esc(t('textLang')) + '</span>' + ['en', 'de', 'es'].map(function (l) { return '<button class="pill' + (st.lang === l ? ' acc' : '') + '" data-vm="lang" data-l="' + l + '" aria-pressed="' + (st.lang === l) + '">' + l.toUpperCase() + '</button>'; }).join('') + '</div>' +
         bar() + '<p class="note vm-fn">' + esc(t('howMake')) + '</p>' +
         '<div class="vm-all"><span class="vm-l2">' + esc(t('allT')) + '</span><label class="vm-asz"><span>' + esc(t('sizeAll')) + '</span><input type="range" id="vmAsz" min="14" max="40" step="1" value="' + (ss.clips[0] ? ss.clips[0].size : st.pref.size) + '"></label>' +

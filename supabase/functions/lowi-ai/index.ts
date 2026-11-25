@@ -10,12 +10,18 @@
 //        wrong: the person says (voice or typed) how they made it; returns corrected dishes {ok, dishes, note}
 //   POST {action:"transcribe", audio: base64, mime}  a review's voice note (max ~2 MB) -> {ok, text} word for word, its own language
 //   POST {action:"linkcheck", title, caption, url}  is a For You link about insulin-friendly food / health? {ok, fits, why}
+//   POST {action:"fyfill", id}  a For You post: write down its video's words (TikTok, YouTube) and a short summary once, kept on the
+//        post (posts.meta.ai), so it is read by everyone and by the companion (25 Nov 2026). {ok, ai:{transcript, onscreen, sum}}
+//   "ask" also reads the community's knowledge (25 Nov 2026, Emmanuel: "the videos that we post into our For You page actually becomes
+//   a knowledge space ... same with what people post into the chat room ... the AI has access to that"): the For You posts most related
+//   to the question (caption, title, dish, its AI summary) and meals shared in the public chat (dish and verdict only, never who or
+//   their words), as anonymous notes the companion may use.
 // Deploy: supabase functions deploy lowi-ai --no-verify-jwt
 const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^https:\/\/(www\.)?lowispike\.com$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, /^capacitor:\/\/localhost$/];
 const MODELS = (Deno.env.get("GEMINI_MODEL") || "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite").split(",").map((s) => s.trim()).filter(Boolean);
 const LANG: Record<string, string> = { en: "English", de: "German", es: "Spanish" };
 /* the daily limits (per person per feature) and the whole-app cap */
-export const LIMITS: Record<string, number> = { ask: 15, translate: 20, linkcheck: 10, mealfix: 15, transcribe: 5 };
+export const LIMITS: Record<string, number> = { ask: 15, translate: 20, linkcheck: 10, mealfix: 15, transcribe: 5, fyfill: 8 };
 export const GLOBAL = 400;
 
 function cors(req: Request): Record<string, string> {
@@ -49,6 +55,55 @@ async function gemini(body: Record<string, unknown>) {
   }
   throw new Error("no_model");
 }
+const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15";
+const MAX_VIDEO = 18 * 1024 * 1024;
+function sb(path: string, init: RequestInit = {}) {
+  const url = Deno.env.get("SUPABASE_URL"), key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  return fetch(url + "/rest/v1/" + path, { ...init, headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json", ...(init.headers || {}) } });
+}
+/* a public TikTok's video file (same way as studio-ai) */
+async function tiktokVideo(link: string): Promise<{ b64: string; mime: string } | null> {
+  try {
+    let r = await fetch(link, { headers: { "User-Agent": UA, "Accept-Language": "en" }, redirect: "follow" });
+    if (!r.ok) return null;
+    const cookies = (r.headers.get("set-cookie") || "").split(/,(?=\s*[A-Za-z0-9_-]+=)/).map((c) => c.split(";")[0].trim()).filter(Boolean).join("; ");
+    const h = await r.text(), m = /<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"[^>]*>([\s\S]*?)<\/script>/.exec(h);
+    const it = m ? JSON.parse(m[1])?.__DEFAULT_SCOPE__?.["webapp.video-detail"]?.itemInfo?.itemStruct : null;
+    const src = it?.video?.playAddr || it?.video?.downloadAddr || "";
+    if (!/^https:\/\//.test(src)) return null;
+    r = await fetch(src, { headers: { "User-Agent": UA, Referer: "https://www.tiktok.com/", Cookie: cookies, Range: "bytes=0-" } });
+    if (!r.ok && r.status !== 206) return null;
+    const b = new Uint8Array(await r.arrayBuffer()); if (!b.length || b.length > MAX_VIDEO) return null;
+    let s = ""; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode(...b.subarray(i, i + 0x8000));
+    return { b64: btoa(s), mime: (r.headers.get("content-type") || "video/mp4").split(";")[0] };
+  } catch (_e) { return null; }
+}
+/* the community's knowledge, read once every 10 minutes */
+let KN: { at: number; items: { k: string; t: string }[] } = { at: 0, items: [] };
+async function knowledge() {
+  if (Date.now() - KN.at < 600_000 && KN.items.length) return KN.items;
+  const items: { k: string; t: string }[] = [];
+  try {
+    const r = await sb("posts?select=cap,meta,plat,created_at&order=created_at.desc&limit=200"); const rows = r.ok ? await r.json() : [];
+    for (const p of rows) {
+      const m = p.meta || {}, ai = m.ai || {};
+      const t = [m.dish ? "dish: " + clip(m.dish, 80) : "", m.spike ? "spike: " + clip(m.spike, 10) : "", clip(m.title || "", 160), clip(p.cap, 240), ai.sum ? "summary: " + clip(ai.sum, 400) : "", ai.onscreen ? "on screen: " + clip(ai.onscreen, 200) : ""].filter(Boolean).join(" | ");
+      if (t) items.push({ k: "For You" + (p.plat ? " (" + p.plat + ")" : ""), t });
+    }
+  } catch (_e) { /* no posts */ }
+  try {
+    const r = await sb("messages?select=meal&room=eq.all&meal=not.is.null&order=created_at.desc&limit=80"); const rows = r.ok ? await r.json() : [];
+    for (const x of rows) { const m = x.meal || {}; const t = [clip(m.name, 160), m.lvl ? "spike: " + clip(m.lvl, 10) : "", m.note ? clip(m.note, 160) : ""].filter(Boolean).join(" | "); if (t) items.push({ k: "Chat meal", t }); }
+  } catch (_e) { /* no meals */ }
+  KN = { at: Date.now(), items }; return items;
+}
+/* the notes most related to the question (shared words), else the newest few */
+function pick(items: { k: string; t: string }[], q: string, n = 10) {
+  const words = Array.from(new Set(q.toLowerCase().normalize("NFKD").replace(/[^\p{L}\p{N} ]/gu, " ").split(/\s+/).filter((w) => w.length > 3)));
+  const scored = items.map((it, i) => { const t = it.t.toLowerCase().normalize("NFKD"); let s = 0; for (const w of words) if (t.includes(w)) s += 1; return { it, s, i }; });
+  const hits = scored.filter((x) => x.s > 0).sort((a, b) => b.s - a.s || a.i - b.i).slice(0, n).map((x) => x.it);
+  return hits.length ? hits : items.slice(0, 5);
+}
 function mistyRules(name: string, sign: string, lang: string) {
   return [
     "You are " + (name || "Misty") + ", the glass-bubble companion inside the LOWiSPIKE app. LOWiSPIKE helps people eat in an insulin-friendly way (fewer blood sugar spikes) with simple, tasty food." + (sign ? " Your personality follows the star sign " + sign + "." : ""),
@@ -72,6 +127,28 @@ Deno.serve(async (req) => {
   try {
     const t = await take(subject, action);
     if (t !== "ok") return out(req, 429, { error: "limit", scope: t });
+    if (action === "fyfill") {
+      const id = clip(b.id, 80); if (!id) return out(req, 400, { error: "bad_request" });
+      const r0 = await sb("posts?select=id,url,plat,cap,meta&id=eq." + encodeURIComponent(id)); const row = r0.ok ? (await r0.json())[0] : null;
+      if (!row) return out(req, 404, { error: "not_found" });
+      const meta0 = row.meta || {}; if (meta0.ai && (meta0.ai.sum || meta0.ai.transcript)) return out(req, 200, { ok: true, ai: meta0.ai, cached: true });
+      const url = clip(row.url, 400), parts: unknown[] = [];
+      if (/^https:\/\/([a-z0-9-]+\.)*tiktok\.com\//i.test(url)) { const v = await tiktokVideo(url); if (v) parts.push({ inlineData: { mimeType: v.mime, data: v.b64 } }); }
+      else if (/^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//i.test(url)) parts.push({ fileData: { fileUri: url } });
+      parts.push({ text: [
+        "This is a post on LOWiSPIKE's For You page (insulin-friendly eating). Caption: " + clip(row.cap, 600) + ". Title: " + clip(meta0.title, 300) + ".",
+        parts.length ? "Write down the video's spoken words (`transcript`, its own language) and its text on screen (`onscreen`, one line per piece)." : "There is no video to watch: leave `transcript` and `onscreen` empty.",
+        "Then `sum`: 2 to 4 short sentences in English with what someone can learn or cook from it for insulin-friendly eating (foods, swaps, steps). No numbers for blood sugar, no medical claims. Return JSON.",
+      ].join("\n") });
+      const schema = { type: "OBJECT", properties: { transcript: { type: "STRING" }, onscreen: { type: "STRING" }, sum: { type: "STRING" } }, required: ["sum"] };
+      const txt = await gemini({ contents: [{ role: "user", parts }], generationConfig: { temperature: 0.2, maxOutputTokens: 3000, responseMimeType: "application/json", responseSchema: schema } });
+      let j: Record<string, unknown> = {}; try { j = JSON.parse(txt); } catch (_e) { return out(req, 502, { error: "ai_failed" }); }
+      const ai = { transcript: clip(j.transcript, 6000), onscreen: clip(j.onscreen, 2000), sum: clip(j.sum, 800), video: parts.length > 1, t: Date.now() };
+      if (!ai.sum && !ai.transcript) return out(req, 502, { error: "ai_failed" });
+      await sb("posts?id=eq." + encodeURIComponent(id), { method: "PATCH", body: JSON.stringify({ meta: { ...meta0, ai } }), headers: { Prefer: "return=minimal" } });
+      KN.at = 0;
+      return out(req, 200, { ok: true, ai });
+    }
     if (action === "translate") {
       const text = clip(b.text, 4000); if (!text) return out(req, 400, { error: "bad_request" });
       const r = await gemini({ contents: [{ role: "user", parts: [{ text: "Translate into " + LANG[lang] + ". Keep emojis, names, @handles and numbers. Reply with the translation only.\n\n" + text }] }], generationConfig: { temperature: 0, maxOutputTokens: 2048 } });
@@ -114,7 +191,8 @@ Deno.serve(async (req) => {
     if (ctx) msgs[msgs.length - 1].parts.unshift({ text: "Context from the app (what the person is looking at):\n" + ctx });
     const img = typeof b.image === "string" && /^[A-Za-z0-9+/=]+$/.test(b.image) && b.image.length < 3_000_000 ? b.image : "";
     if (img) msgs[msgs.length - 1].parts.unshift({ inlineData: { mimeType: "image/jpeg", data: img } });
-    const r = await gemini({ systemInstruction: { parts: [{ text: mistyRules(clip(b.name, 40), clip(b.sign, 20), lang) }] }, contents: msgs, generationConfig: { temperature: 0.6, maxOutputTokens: 700 } });
+    let notes = ""; try { const last = String(msgs[msgs.length - 1].parts.map((p: { text?: string }) => p.text || "").join(" ")) + " " + ctx; const ks = pick(await knowledge(), last); if (ks.length) notes = "\n\nWhat LOWiSPIKE people shared (For You page and the public chat; anonymous notes, use them when they help, say \"someone in the community shared ...\", never invent more than they say, never name anyone):\n" + ks.map((x) => "- [" + x.k + "] " + x.t).join("\n"); } catch (_e) { notes = ""; }
+    const r = await gemini({ systemInstruction: { parts: [{ text: mistyRules(clip(b.name, 40), clip(b.sign, 20), lang) + notes }] }, contents: msgs, generationConfig: { temperature: 0.6, maxOutputTokens: 700 } });
     return out(req, 200, { ok: true, text: clip(r, 4000) });
   } catch (e) {
     const m = String((e as Error).message || e);

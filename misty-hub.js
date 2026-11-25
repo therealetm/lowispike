@@ -123,7 +123,7 @@
     }
     function todayTab(xp, s) {
         const M = W.LowiMistySheet;
-        const world = talkRow() + peakHtml() + worldRows() + goodnightHtml();
+        const world = peakHtml() + worldRows() + goodnightHtml();
         if (!M) return world + xpCardHtml(xp, s);
         return M.todayHTML(name(), world, xpCardHtml(xp, s));
     }
@@ -132,11 +132,15 @@
         return '<section class="cme-sec ms-sec"><div class="cme-list"><div class="cme-row ms-row ms-empty"><span class="cme-tx"><b>' + esc(T('History is on its way', 'Der Verlauf kommt gleich', 'El historial llega pronto')) + '</b><small>' + esc(T('Yesterday, week, month and year, from what this phone keeps.', 'Gestern, Woche, Monat und Jahr, aus dem, was dieses Handy speichert.', 'Ayer, semana, mes y a\u00f1o, con lo que guarda este m\u00f3vil.')) + '</small></span></div></div></section>';
     }
     /* 22 Nov 2026: talk to your companion (lowi-ask.js, the app's free AI) */
+    /* 25 Nov 2026 (Emmanuel: "when I long click on it, it opens this section ... what I would love there to be is talk to Misty ... so it
+       almost feels like you're asking your buddy"): Talk to {name} was a row inside the folded "More: world, goal, XP"; it is now the
+       one big button under the speech line, on every tab, with the companion's own name */
+    function talkBtn() { return W.LowiAsk ? '<button type="button" class="mh-talk" data-mh="talk"><span aria-hidden="true">💬</span><b>' + esc(T('Talk to ' + name(), 'Mit ' + name() + ' reden', 'Habla con ' + name())) + '</b></button>' : ''; }
     function talkRow() { return W.LowiAsk ? '<section class="cme-sec ms-sec"><div class="cme-list"><button type="button" class="cme-row ms-row" data-mh="talk"><span class="cme-ico">💬</span><span class="cme-tx"><b>' + esc(T('Talk to ' + name(), 'Mit ' + name() + ' reden', 'Hablar con ' + name())) + '</b><small>' + esc(T('Ask about food, swaps or a meal photo', 'Frag nach Essen, Tausch-Ideen oder einem Essensfoto', 'Pregunta sobre comida, cambios o una foto')) + '</small></span></button></div></section>' : ''; }
     function companionTab() {
         /* Nov 5 2026 (Misty sheet plan phase 5, one daily goal): the energy scale card is gone from the sheet; World glow (Today tab,
            with its "what's missing" list) is the one daily reading, XP and level the long-term one */
-        return talkRow() + doorsHtml() + secHtml() + cycleHtml() + advHtml() +
+        return doorsHtml() + secHtml() + cycleHtml() + advHtml() +
             '<section class="cme-sec ms-sec"><div class="cme-list"><button type="button" class="cme-row ms-row" data-mh="rename"><span class="cme-ico">' + ICO.pen + '</span><span class="cme-tx"><b>' + esc(T('Rename ' + name(), name() + ' umbenennen', 'Cambiar el nombre de ' + name())) + '</b></span><svg class="cme-chev" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div></section>';
     }
     function html(sayOverride) {
@@ -154,7 +158,7 @@
                 rankHtml() +
             '</header>' +
             (say ? '<p class="mh-say" role="status" aria-live="polite">' + esc(say) + '</p>' : '<p class="mh-say" role="status" aria-live="polite" hidden></p>') +
-            tabsHtml() +
+            talkBtn() + tabsHtml() +
             '<div class="mh-body" role="tabpanel">' + body + '</div>' +
         '</div>';
     }

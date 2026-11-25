@@ -216,3 +216,6 @@ Home reads canonical XP, companion and fasting state through the existing bridge
 - `mealDup()`: the same food in a different slot today is not a duplicate; a log without a slot matches any slot.
 - `lowi:meal-logged` event detail carries `slot` ("" when none).
 - Snacks to buy: `localStorage["lowi.snackBuy.v1"]` = `[{id, n, at, got}]` (got = 0 while still to buy, else the time it was ticked). Device only.
+
+## posts.meta.ai (25 Nov 2026)
+Written by lowi-ai `fyfill` (service role) the first time anyone taps ✨ Words on a For You TikTok/YouTube post: `{transcript, onscreen, sum, video, t}` (transcript/onscreen in the video's language, `sum` 2–4 English sentences, `video` false when only the caption could be read). Read by fy-ai.js (shows it) and by lowi-ai `ask` (anonymous community notes for the companion, with public-room chat meals: `messages.meal` where `room = 'all'`, dish and verdict only).

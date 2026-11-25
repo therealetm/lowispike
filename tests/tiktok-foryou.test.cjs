@@ -138,7 +138,9 @@ test('a creator\'s video has no save or Swipe in the rail; only ··· stays; ot
      Knopf geben"): the Chat button joined Save inside the gate, so a creator's video still keeps only ··· (new-post-tiktok-1108) */
   /* test changed 8 Nov 2026: the Chat button became Teilen (a WhatsApp-ready link, post-share-link.test.cjs) */
   assert.ok(gated.includes('data-tr="share-link"'), 'Teilen only for non-creator posts');
-  assert.ok(/\)\) \+\n      '<button class="$/.test(gated.trimEnd()), 'the ··· button sits outside the gate');
+  /* test changed 25 Nov 2026: ✨ Words (fy-ai.js) sits outside the gate too, right before ···, so a creator's TikTok/YouTube video has
+     ✨ Words and ··· (the words of someone else's video are what the companion learns from) */
+  assert.ok(/\)\) \+\n      \/\* 25 Nov 2026: ✨ Words[^\n]*\n      \(window\.LowiFyAI \? LowiFyAI\.btn\(p\) : ''\) \+\n      '<button class="$/.test(gated.trimEnd()), 'the ··· button sits outside the gate');
 });
 
 test('server: oEmbed with a page fallback, the picture copied into our storage, the stable link written on the post', () => {

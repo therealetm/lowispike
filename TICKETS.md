@@ -96,3 +96,6 @@ When adding a ticket, include:
 
 ## LS-BOOT-SIZE — Faster cold start: index.html is 3.7 MB (24 Nov 2026)
 Emmanuel: "The goal is ... the fastest app opening in the world." The launch scene now hands over as soon as Home is ready, but the phone still reads and runs all of index.html (3.7 MB of inline data and scripts) before Home can be ready. Scope: measure on an iPhone where the time goes (parse, inline scripts, companion files, 3D world); move large inline data (food/recipe tables) into files loaded after Home shows, keeping the script order contract (AGENTS.md). One slice per release, each measured.
+
+## LS-MISTY-CARD — Clean up Misty's card (25 Nov 2026)
+Emmanuel: "this section, which we're going to have to clean up because I feel like there's a lot of things in there that's maybe unnecessary or overwhelming." Talk to {name} is now on top. Next: list every row on Today / History / {name}, mark what people use (or what the owner wants), fold or remove the rest; one slice per release, screenshots before and after.

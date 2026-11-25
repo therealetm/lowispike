@@ -27,7 +27,9 @@ test('B-rolls stay on the phone; the video is made on the phone and saved throug
 test('the AI writes from the creator\'s style and the picked playlist; owner only on the server', () => {
   assert.match(js, /S\.ai\(\{action: 'captions', bio: styleText\(\), examples: examples\(\)/);
   const f = R('supabase/functions/studio-ai/index.ts');
-  assert.match(f, /if \(body\.action === "captions"\) \{\n\s+if \(!\(await isOwner\(req\)\)\) return out\(req, 403, \{ error: "owner_only" \}\);/);
+  /* changed 25 Nov 2026 (Emmanuel: "Why would I be owner only? I'm doing this so people can also use this exact thing like me"): every
+     signed-in person, with their own daily limit */
+  assert.match(f, /if \(body\.action === "captions"\) \{\n\s+const w = await who\(req, "captions"\); if \(!w\.sub\) return out\(req, 401, \{ error: "sign_in" \}\);/);
   assert.match(f, /No medical claims, no diagnoses, no promises about blood sugar numbers\./);
   const a = R('studio/accounts.js'); assert.match(a, /function style\(v\) \{/); assert.match(a, /window\.StudioVM \? '<button class="btn pri ap-vw" data-acc="vm">'/);
 });

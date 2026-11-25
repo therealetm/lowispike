@@ -1,7 +1,7 @@
 /* LOWiSPIKE Studio · video to words (23 Nov 2026, Emmanuel: "another function inside of every profile, which is that I send a link
    of a video that I'm about to copy, and it then gives me the transcript, if there is a transcript, or the text on the screen, if
    there's a text on the screen, and the bio. And then I can translate it in any language I want to. For example, German or Spanish.")
-   A full page (like the idea page): paste the link, "Get the words". studio-ai action "words" (owner only) returns the spoken words,
+   A full page (like the idea page): paste the link, "Get the words". studio-ai action "words" (every signed-in person since 25 Nov 2026, 10 a day) returns the spoken words,
    the text on screen and the caption; each has Copy. Translate into English, German, Spanish or any language typed in the box
    (studio-ai "translate"); "Show original" goes back. "Save as idea" keeps it as a draft on the current account. TikTok videos give
    the spoken words; for Instagram (or when TikTok refuses the file) only the caption comes back, and the page says so. */
@@ -22,7 +22,7 @@
     trWait: ['Translating…', 'Übersetze…', 'Traduciendo…'], orig: ['Show original', 'Original zeigen', 'Ver original'], save: ['Save as idea', 'Als Idee speichern', 'Guardar como idea'], saved: ['Saved in Drafts', 'In Entwürfen gespeichert', 'Guardado en borradores'],
     back: ['Back', 'Zurück', 'Atrás'], bad: ['Paste a TikTok or Instagram video link.', 'Füg einen TikTok- oder Instagram-Videolink ein.', 'Pega un enlace de vídeo de TikTok o Instagram.'],
     limit: ['That is enough for today. Try again tomorrow.', 'Für heute ist genug. Morgen wieder.', 'Por hoy es suficiente. Mañana otra vez.'], fail: ['That did not work. Try again in a moment.', 'Das hat nicht geklappt. Versuch es gleich nochmal.', 'No funcionó. Inténtalo de nuevo en un momento.'],
-    owner: ['Only the Studio owner can do this.', 'Das kann nur der Studio-Besitzer.', 'Solo el dueño del Studio puede hacerlo.']
+    owner: ['Sign in to LOWiSPIKE first, then try again.', 'Melde dich zuerst bei LOWiSPIKE an und versuch es dann nochmal.', 'Inicia sesión en LOWiSPIKE primero y vuelve a intentarlo.']
   };
   var t = function (k) { return T[k][I]; }, esc = S.esc;
   var R = null, SHOW = null, busy = false;   /* R: the original words; SHOW: what is on screen now (original or a translation) */
@@ -51,7 +51,7 @@
       '<button type="button" class="btn pri" data-vw="go"' + (busy ? ' disabled' : '') + '>' + esc(t('go')) + '</button></div>' + (status ? '<p class="vw-st" role="status">' + esc(status) + '</p>' : '') + res + '</div>' +
       '<div class="vnav"><button class="btn" data-vw="close">' + esc(t('back')) + '</button>' + (SHOW && W.StudioAcc && StudioAcc.addDraft ? '<button class="btn pri" data-vw="save">' + esc(t('save')) + '</button>' : '') + '</div>';
   }
-  function err(e) { var m = String(e && e.message || ''); return m === 'limit' ? t('limit') : m === 'bad_link' ? t('bad') : m === 'owner_only' ? t('owner') : t('fail'); }
+  function err(e) { var m = String(e && e.message || ''); return m === 'limit' ? t('limit') : m === 'bad_link' ? t('bad') : (m === 'owner_only' || m === 'sign_in') ? t('owner') : t('fail'); }
   function go() {
     var link = String((D.getElementById('vwLink') || {}).value || '').trim();
     if (!/^https:\/\/([a-z0-9-]+\.)*(tiktok\.com|instagram\.com)\//i.test(link)) return paint(t('bad'));

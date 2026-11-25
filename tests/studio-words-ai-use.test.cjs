@@ -4,7 +4,9 @@ const test = require('node:test'), assert = require('node:assert'), fs = require
 const R = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 test('studio-ai "words": owner only, TikTok video -> spoken words + text on screen + caption; caption only when the video cannot be read', () => {
   const f = R('supabase/functions/studio-ai/index.ts');
-  assert.match(f, /if \(body\.action === "words"\) \{\n\s+if \(!\(await isOwner\(req\)\)\) return out\(req, 403, \{ error: "owner_only" \}\);/);
+  /* changed 25 Nov 2026 (Emmanuel: "Why would I be owner only? I'm doing this so people can also use this exact thing like me"): every
+     signed-in person, with their own daily limit */
+  assert.match(f, /if \(body\.action === "words"\) \{\n\s+const w = await who\(req, "words"\); if \(!w\.sub\) return out\(req, 401, \{ error: "sign_in" \}\);/);
   assert.match(f, /if \(!v\) return out\(req, 200, \{ ok: true, caption: [^\n]*transcribed: false \}\);/);
   assert.match(f, /`onscreen`: every piece of text shown on screen/);
 });

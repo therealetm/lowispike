@@ -69,7 +69,7 @@
     usedTap: ['Tap a video to make it again and save it for another platform.', 'Tipp ein Video an, um es nochmal zu machen und für eine andere Plattform zu speichern.', 'Toca un vídeo para hacerlo otra vez y guardarlo para otra plataforma.'],
     saveNew: ['📲 Save {p} new', '📲 {p} neue speichern', '📲 Guardar {p} nuevos'],
     usedNote: ['Saved videos move here, so you can post them again on another platform. Tap one to save it again.', 'Gespeicherte Videos landen hier, damit du sie auf einer anderen Plattform nochmal posten kannst. Tipp eins an, um es nochmal zu speichern.', 'Los vídeos guardados vienen aquí para publicarlos en otra plataforma. Toca uno para guardarlo otra vez.'], aiWhy: ['The AI did not answer: {p}. Tap ↻ to try again, or type your own.', 'Die KI hat nicht geantwortet: {p}. Tipp auf ↻ für einen neuen Versuch oder schreib selbst.', 'La IA no respondió: {p}. Toca ↻ para reintentar o escribe tú.'],
-    busy: ['too many requests right now', 'gerade zu viele Anfragen', 'demasiadas solicitudes ahora'], limit: ['daily limit reached', 'Tageslimit erreicht', 'límite diario alcanzado'], owner: ['sign in as the owner', 'als Besitzer anmelden', 'inicia sesión como dueño'], net: ['no connection', 'keine Verbindung', 'sin conexión'],
+    busy: ['too many requests right now', 'gerade zu viele Anfragen', 'demasiadas solicitudes ahora'], limit: ['daily limit reached', 'Tageslimit erreicht', 'límite diario alcanzado'], owner: ['sign in to LOWiSPIKE first', 'melde dich zuerst bei LOWiSPIKE an', 'inicia sesión en LOWiSPIKE primero'], net: ['no connection', 'keine Verbindung', 'sin conexión'],
     noSound: ['Clips are saved without the B-roll’s own sound: add your sound on TikTok.', 'Clips werden ohne den Ton der B-Roll gespeichert: Füg deinen Sound auf TikTok hinzu.', 'Los clips se guardan sin el sonido del B-roll: añade tu sonido en TikTok.'],
     ST: {I: ['I', 'Ich', 'Yo'], you: ['You', 'Du', 'Tú'], general: ['General', 'Allgemein', 'General'], teaching: ['Teaching', 'Lehrreich', 'Enseña'], relatable: ['Relatable', 'Nachfühlbar', 'Identificable'], funny: ['Funny', 'Lustig', 'Gracioso']}
   };
@@ -242,7 +242,7 @@
       .then(function (j) { st.aiNote = ''; (j.texts || []).forEach(function (x, i) { if (clips[i] && x) { clips[i].text = x; delete clips[i].orig; clampClip(clips[i]); delete made[st.sess.clips.indexOf(clips[i])]; } }); }, function (e) { st.aiNote = t('aiWhy', whyOf(e)); S.toast(st.aiNote); })
       .then(function () { busy = false; keep(); refresh(); });
   }
-  function whyOf(e) { var m = String(e && e.message || ''); return m === 'busy' ? t('busy') : m === 'limit' ? t('limit') : m === 'owner_only' ? t('owner') : /fetch|network|load/i.test(m) ? t('net') : (e && e.detail ? String(e.detail).slice(0, 120) : m || 'error'); }
+  function whyOf(e) { var m = String(e && e.message || ''); return m === 'busy' ? t('busy') : m === 'limit' ? t('limit') : (m === 'owner_only' || m === 'sign_in') ? t('owner') : /fetch|network|load/i.test(m) ? t('net') : (e && e.detail ? String(e.detail).slice(0, 120) : m || 'error'); }
   function go() {
     if (!useRoll(st.sel)) return S.toast(t('pick'));
     write(st.sess.clips).then(function () { view = 'clips'; paint(); });

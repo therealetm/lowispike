@@ -10,12 +10,12 @@
 //   POST {action:"profile", link}  anyone (30 a day per connection): a TikTok / Instagram profile -> {name, handle, bio, avatar, followers}
 //   POST {action:"translate", text, to}  anyone on the app's origin: translates text (max 6000 chars) into en / de / es, or (since
 //        23 Nov 2026) into any language named in `to` ("Italian", "Türkçe", "Brazilian Portuguese").
-//   POST {action:"captions", bio, examples:[{hook,text}], clips:[{sec, style}], lang}  owner only (24 Nov 2026, Emmanuel: "upload that
+//   POST {action:"captions", bio, examples:[{hook,text}], clips:[{sec, style}], lang}  every signed-in person, 20 a day (owner 80) (24 Nov 2026, Emmanuel: "upload that
 //        60-second video and it will automatically be cut ... every chopped up version has a text on screen that's been generated
 //        automatically ... based on the text on screen details that I want ... one is in I form, one is in U form ... one is teaching"):
 //        one text-on-screen line per clip, in the creator's own voice (bio), learning the style from the playlist examples, sized so it
 //        can be read in the clip's seconds. Returns {texts:[...]} in the same order.
-//   POST {action:"words", link}  owner only (23 Nov 2026, Emmanuel: "I send a link of a video that I'm about to copy, and it then gives
+//   POST {action:"words", link}  every signed-in person, 10 a day (owner 60) (23 Nov 2026, Emmanuel: "I send a link of a video that I'm about to copy, and it then gives
 //        me the transcript, if there is a transcript, or the text on the screen ... and the bio. And then I can translate it"):
 //        a TikTok video -> {caption, author, transcript (spoken words), onscreen (text shown on screen), transcribed}. When the video
 //        file cannot be fetched (Instagram, or TikTok refuses), only the caption comes back and transcribed=false.
@@ -37,6 +37,20 @@ async function isOwner(req: Request): Promise<boolean> {
   const auth = req.headers.get("authorization") || "", url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY");
   if (!/^Bearer\s+\S+/.test(auth) || !url || !anon) return false;
   try { const r = await fetch(url + "/rest/v1/rpc/is_app_owner", { method: "POST", headers: { apikey: anon, Authorization: auth, "Content-Type": "application/json" }, body: "{}" }); return r.ok && (await r.json()) === true; } catch (_e) { return false; }
+}
+/* the signed-in person's id (their session token), "" when not signed in */
+async function userId(req: Request): Promise<string> {
+  const auth = req.headers.get("authorization") || "", url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!/^Bearer\s+\S+/.test(auth) || !url || !anon) return "";
+  try { const r = await fetch(url + "/auth/v1/user", { headers: { apikey: anon, Authorization: auth } }); if (!r.ok) return ""; const u = await r.json(); return typeof u?.id === "string" ? u.id : ""; } catch (_e) { return ""; }
+}
+/* 25 Nov 2026 (Emmanuel: "Why would I be owner only? I'm doing this so people can also use this exact thing like me"): the video machine's
+   texts (captions) and a video's words from a link (words) are for every signed-in person, each with their own daily limit; the owner
+   keeps his bigger one. Adding to the shared Swipe file (fill) stays the owner's. Returns the limit subject, or "" (then: sign_in). */
+async function who(req: Request, feature: string): Promise<{ sub: string; max: number }> {
+  const PER = { captions: [80, 20], words: [60, 10] } as Record<string, number[]>;
+  if (await isOwner(req)) return { sub: "owner", max: PER[feature][0] };
+  const uid = await userId(req); return uid ? { sub: uid, max: PER[feature][1] } : { sub: "", max: 0 };
 }
 /* 22 Nov 2026: Studio shares the app's AI limits (public.ai_usage): translate 20 a day per person, fill 100 a day for the owner */
 async function take(subject: string, feature: string, max: number): Promise<string> {
@@ -134,10 +148,10 @@ Deno.serve(async (req) => {
       return out(req, 200, { ok: true, profile: p });
     }
     if (body.action === "captions") {
-      if (!(await isOwner(req))) return out(req, 403, { error: "owner_only" });
+      const w = await who(req, "captions"); if (!w.sub) return out(req, 401, { error: "sign_in" });
       const clips = (Array.isArray(body.clips) ? body.clips : []).slice(0, 12).map((c: Record<string, unknown>) => ({ sec: Math.max(3, Math.min(60, Math.round(Number(c && c.sec) || 8))), style: clip(c && c.style, 40) || "general" }));
       if (!clips.length) return out(req, 400, { error: "bad_request" });
-      if ((await take("owner", "captions", 80)) !== "ok") return out(req, 429, { error: "limit" });
+      if ((await take(w.sub, "captions", w.max)) !== "ok") return out(req, 429, { error: "limit" });
       /* 25 Nov 2026 (Emmanuel: "how does it learn from the viral text in the playlists and actually utilizes it? ... I don't want this to
          become a guessing game"): each example now carries its text on screen (for B-roll posts that is the viral text itself), then
          its hook and what is said; before, only the hook and the spoken words were sent. */
@@ -147,7 +161,7 @@ Deno.serve(async (req) => {
       }).join("\n");
       /* 24 Nov 2026 (Emmanuel: "it did not generate me the texts"): never an empty answer without a reason. The JSON answer first
          (with room to think); when it fails or comes back short, once more as plain text, one block per clip between --- lines.
-         The reason goes to the owner (who is the only one calling this) and to the function log. */
+         The reason goes to the caller and to the function log. */
       const prompt = [
         "You write the text on screen for short vertical videos (TikTok / Reels): one short text over a calm B-roll clip, like viral 'text tweet' posts.",
         "The creator, in their own words (their voice, topics, audience and pillars; use it, never quote it as a whole):\n" + clip(body.bio, 3000),
@@ -175,9 +189,9 @@ Deno.serve(async (req) => {
       return out(req, 200, { ok: true, texts: clips.map((_c, i) => texts[i] || "") });
     }
     if (body.action === "words") {
-      if (!(await isOwner(req))) return out(req, 403, { error: "owner_only" });
+      const w = await who(req, "words"); if (!w.sub) return out(req, 401, { error: "sign_in" });
       const link = clip(body.link, 400); if (!/^https:\/\/([a-z0-9-]+\.)*(tiktok\.com|instagram\.com)\//i.test(link)) return out(req, 400, { error: "bad_link" });
-      if ((await take("owner", "words", 60)) !== "ok") return out(req, 429, { error: "limit" });
+      if ((await take(w.sub, "words", w.max)) !== "ok") return out(req, 429, { error: "limit" });
       const m = await meta(link), v = /tiktok\.com/i.test(link) ? await tiktokVideo(link) : null;
       if (!v) return out(req, 200, { ok: true, caption: clip(m.title, 2200), author: clip(m.author || m.handle, 80), thumb: m.thumb || "", transcript: "", onscreen: "", transcribed: false });
       const r = await gemini([{ inlineData: { mimeType: v.mime, data: v.b64 } }, { text: [

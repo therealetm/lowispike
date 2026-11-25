@@ -151,11 +151,18 @@
             '#lwAsk .ak-play{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1.5px solid rgba(255,255,255,.7)}#lwAsk .ak-play::after{content:"";position:absolute;left:23px;top:18px;border-style:solid;border-width:11px 0 11px 17px;border-color:transparent transparent transparent #fff}' +
             '#lwAsk .ak-pt{display:flex;flex-direction:column;gap:3px;padding:10px 12px 11px;min-width:0}#lwAsk .ak-pt b{font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal}#lwAsk .ak-pt small{font-size:12.5px;color:#bfe6ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#lwAsk .ak-pt em{font-style:normal;opacity:.75}' +
             '#lwAsk .ak-cards{gap:8px}' +
+            /* the composer (25 Nov 2026): one rounded card like Claude's, the text on top, the buttons in a row under it */
+            '#lwAsk .ak-f{display:block;padding:6px 10px calc(env(safe-area-inset-bottom,0px) + 8px);background:linear-gradient(rgba(6,8,18,0),rgba(6,8,18,.75) 40%)}#lwAsk.ak-kb .ak-f{padding-bottom:8px}' +
+            '#lwAsk .ak-box{display:flex;flex-direction:column;border-radius:26px;background:rgba(38,40,54,.82);border:1px solid rgba(255,255,255,.13);box-shadow:0 10px 34px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4)}' +
+            '#lwAsk .ak-f .ak-box textarea{flex:none;display:block;width:100%;box-sizing:border-box;min-height:44px;max-height:168px;padding:14px 16px 4px;margin:0;border:0;border-radius:26px 26px 0 0;background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;color:#fff;font:inherit;font-size:16.5px;line-height:1.4;resize:none;outline:none;overflow-y:auto}#lwAsk .ak-box textarea::placeholder{color:rgba(255,255,255,.5)}' +
+            '#lwAsk .ak-bar{display:flex;align-items:center;gap:8px;padding:4px 8px 8px}#lwAsk .ak-bar [hidden]{display:none}#lwAsk .ak-sp{flex:1}' +
+            '#lwAsk .ak-bar .ak-i{width:38px;height:38px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06)}#lwAsk .ak-bar .ak-i svg{width:20px;height:20px}#lwAsk .ak-bar .ak-i.m.on{background:#ff5a5f;border-color:#ff5a5f}' +
+            '#lwAsk .ak-bar .ak-i.s{border:0;background:rgba(255,255,255,.22);color:rgba(5,7,12,.7)}#lwAsk.ak-has .ak-bar .ak-i.s{background:linear-gradient(180deg,#bfe6ff,#7cc4ff);color:#05070c}' +
             '#lwAsk .ak-c button{background:rgba(255,255,255,.08);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}';
         D.head.appendChild(s);
         D.addEventListener('error', e => { const im = e.target; if (im && im.tagName === 'IMG' && im.parentNode && im.parentNode.classList && im.parentNode.classList.contains('ak-pic')) im.parentNode.classList.add('bad'); }, true);
     }
-    const IC = { back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>', cam: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>', send: '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>' };
+    const IC = { back: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>', cam: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>', send: '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>', mic: '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>' };
     function paint() {
         if (!el) return; const l = el.querySelector('.ak-l');
         el.classList.toggle('ak-list', view === 'list'); el.classList.toggle('ak-empty', !msgs.length); const cbn = el.querySelector('[data-ak=chats]'); if (cbn) cbn.classList.toggle('on', view === 'list');
@@ -191,7 +198,7 @@
        iPhones before the photo comes back, so nothing happened); the photo waits above the text box with ✕ until you send, so you can
        ask your own question with it (with no question it asks "Can I eat this?"); a photo that cannot be read says so. */
     let PEND = null;
-    function pend(p) { PEND = p; const v = el && el.querySelector('.ak-pv'); if (!v) return; v.hidden = !p; v.innerHTML = p ? '<img alt="" src="' + esc(p.url) + '"><span>' + esc(t('pvHint')) + '</span><button type="button" data-ak="unpend" aria-label="✕">✕</button>' : ''; if (p) { const ta = el.querySelector('textarea'); if (ta) ta.focus(); } }
+    function pend(p) { PEND = p; if (el && el.__grow) el.__grow(); const v = el && el.querySelector('.ak-pv'); if (!v) return; v.hidden = !p; v.innerHTML = p ? '<img alt="" src="' + esc(p.url) + '"><span>' + esc(t('pvHint')) + '</span><button type="button" data-ak="unpend" aria-label="✕">✕</button>' : ''; if (p) { const ta = el.querySelector('textarea'); if (ta) ta.focus(); } }
     function pickPhoto() {
         const i = D.createElement('input'); i.type = 'file'; i.accept = 'image/*'; i.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0'; D.body.appendChild(i);
         const gone = () => { setTimeout(() => { try { i.remove(); } catch (e) {} }, 1000); };
@@ -311,7 +318,7 @@
             el = D.createElement('div'); el.id = 'lwAsk'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
             el.innerHTML = '<div class="ak-h"><button type="button" class="ak-b" data-ak="close" data-no-bx aria-label="Back">' + IC.back + '<span></span></button><b class="ak-t"></b><div class="ak-ic"><button type="button" class="ak-new ak-sh" data-ak="share" aria-label="Share"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v6h14v-6"/></svg></button><button type="button" class="ak-new" data-ak="chats" data-v="chats"></button><button type="button" class="ak-new" data-ak="new"></button></div></div><div class="ak-l" aria-live="polite"></div>' +
                 '<div class="ak-c"><button type="button" data-ak="chip" data-c="c1"></button><button type="button" data-ak="chip" data-c="c2"></button><button type="button" data-ak="chip" data-c="c3"></button></div><p class="ak-n"></p>' +
-                '<div class="ak-pv" hidden></div><div class="ak-f"><button type="button" class="ak-i" data-ak="photo" aria-label="Photo">' + IC.cam + '</button><textarea rows="1" enterkeyhint="send"></textarea><button type="button" class="ak-i s" data-ak="send" aria-label="Send">' + IC.send + '</button></div>';
+                '<div class="ak-pv" hidden></div><div class="ak-f"><div class="ak-box"><textarea rows="1" enterkeyhint="send" data-mic="off"></textarea><div class="ak-bar"><button type="button" class="ak-i" data-ak="photo" aria-label="Photo">' + IC.cam + '</button><span class="ak-sp"></span><button type="button" class="ak-i m" data-ak="mic" aria-label="Speak" hidden>' + IC.mic + '</button><button type="button" class="ak-i s" data-ak="send" aria-label="Send">' + IC.send + '</button></div></div></div>';
             el.addEventListener('click', e => { const b = e.target.closest('[data-ak]'); if (!b) return; const k = b.dataset.ak, ta = el.querySelector('textarea');
                 if (k === 'close') { if (view === 'list') { view = 'chat'; paint(); } else close(); }
                 else if (k === 'new') { if (!busy) { fresh(''); view = 'chat'; paint(); } }
@@ -319,13 +326,18 @@
                 else if (k === 'pick') { const c = book.list.find(x => x.id === b.dataset.id); if (c && !busy) { cur = c.id; msgs = c.m.slice(); ctx = c.c || ''; book.cur = cur; save(); view = 'chat'; paint(); } }
                 else if (k === 'del') { book.list = book.list.filter(x => x.id !== b.dataset.id); if (cur === b.dataset.id) { msgs = []; ctx = ''; cur = ''; book.cur = ''; } save(); paint(); }
                 else if (k === 'photo') pickPhoto();
+                else if (k === 'mic') { try { if (W.LowiMic && W.LowiMic.dictate) W.LowiMic.dictate(ta, st => { b.classList.toggle('on', st === 'listen'); }); } catch (x) { } }
                 else if (k === 'unpend') pend(null);
                 else if (k === 'share') shareChat();
                 else if (k === 'go') { const box = b.closest('[data-mi]'), mm = box && msgs[+box.dataset.mi]; goLink(mm && mm.links && mm.links[+b.dataset.i]); }
-                else if (k === 'send') { const v = ta.value; ta.value = ''; sendNow(v); } else if (k === 'chip') { if (GUEST) guestSend(t(b.dataset.c)); else send(t(b.dataset.c)); } });
-            el.querySelector('textarea').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const ta = e.target, v = ta.value; ta.value = ''; sendNow(v); } });
-            D.body.appendChild(el);
+                else if (k === 'send') { const v = ta.value; ta.value = ''; if (el.__grow) el.__grow(); sendNow(v); } else if (k === 'chip') { if (GUEST) guestSend(t(b.dataset.c)); else send(t(b.dataset.c)); } });
+            /* the box grows with the text (up to about 6 lines); Send lights up when there is something to send */
+            const grow = () => { const ta = el && el.querySelector('textarea'); if (!ta) return; ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 168) + 'px'; el.classList.toggle('ak-has', !!ta.value.trim() || !!PEND); };
+            el.querySelector('textarea').addEventListener('input', grow); el.__grow = grow;
+            el.querySelector('textarea').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const ta = e.target, v = ta.value; ta.value = ''; if (el && el.__grow) el.__grow(); sendNow(v); } });
+            D.body.appendChild(el); kbOn();
         }
+        try { const mb = el.querySelector('[data-ak=mic]'); if (mb) mb.hidden = !(W.LowiMic && W.LowiMic.engine && W.LowiMic.engine() !== 'none'); } catch (x) { }
         el.querySelector('.ak-b span').textContent = t('back'); el.querySelector('.ak-t').innerHTML = '<span class="ak-hav">' + avatar() + '</span><em>' + esc(name()) + '</em>';
         const nb = el.querySelector('[data-ak=new]'), cb = el.querySelector('[data-ak=chats]'), sb = el.querySelector('[data-ak=share]');
         nb.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>'; nb.setAttribute('aria-label', t('clear'));
@@ -336,7 +348,18 @@
         el.hidden = false; paint();
         if (o.ask && !busy) send(o.ask);
     }
-    function close() { if (el) { el.remove(); el = null; } }
+    function close() { kbOff(); if (el) { el.remove(); el = null; } }
+    /* 25 Nov 2026 (Emmanuel: "When I'm trying to type in there ... I can't even see the text bubble ... It should be fixed like ChatGPT or
+       Claude"): on iPhone the keyboard covers the bottom of a fixed page and the page slides up behind it. While the chat is open it
+       follows the visible area (visualViewport): its top and height match what is left above the keyboard, so the text box sits right on
+       the keyboard and the header stays at the top; the newest message stays in view. */
+    let kbFn = null;
+    function kbOn() { const v = W.visualViewport; if (!v || kbFn) return;
+        kbFn = () => { if (!el) return; const l = el.querySelector('.ak-l'), near = l && l.scrollHeight - l.scrollTop - l.clientHeight < 80;
+            el.style.top = Math.max(0, v.offsetTop) + 'px'; el.style.height = v.height + 'px'; el.style.bottom = 'auto';
+            el.classList.toggle('ak-kb', W.innerHeight - v.height > 120); if (near && l) l.scrollTop = l.scrollHeight; };
+        v.addEventListener('resize', kbFn); v.addEventListener('scroll', kbFn); kbFn(); }
+    function kbOff() { const v = W.visualViewport; if (v && kbFn) { v.removeEventListener('resize', kbFn); v.removeEventListener('scroll', kbFn); } kbFn = null; }
     /* every link to the old Custom GPT opens this chat instead (window capture: before gpt-open.js) */
     W.addEventListener('click', e => {
         const a = e.target && e.target.closest ? e.target.closest('a[href*="chatgpt.com/g/"], a[href*="chat.openai.com/g/"]') : null; if (!a) return;

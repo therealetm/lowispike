@@ -1841,3 +1841,7 @@ Emmanuel: "Why is it suggesting me stuff based on the recipe book? I don't want 
 - "Link me" works: the notes are picked from the last three turns, and the prompt says the companion can link.
 - Privacy as before: no names, and chat message words never reach the AI (only the meal card and the picture's address).
 Guarded by `tests/misty-link-previews.test.cjs` and `tests/misty-knowledge.test.cjs`.
+
+## 2026-11-25 — Talk to {companion}: Claude-style composer that stays above the keyboard
+
+Emmanuel: "When I'm trying to type in there ... I can't even see the text bubble ... It should be fixed like ChatGPT or Claude." The composer is one rounded card (text on top, growing to about 6 lines; photo on the left, mic and Send on the right under it; Send lights up when there is something to send). While the chat is open it follows `visualViewport`, so on iPhone the card sits right on the keyboard and the header stays at the top. Guarded by `tests/misty-chat-composer.test.cjs`.

@@ -57,6 +57,7 @@
     makeN: ['🎬 Make {p} videos', '🎬 {p} Videos machen', '🎬 Hacer {p} vídeos'], make1: ['🎬 Make 1 video', '🎬 1 Video machen', '🎬 Hacer 1 vídeo'], saveN: ['📲 Save {p}', '📲 {p} speichern', '📲 Guardar {p}'],
     makingN: ['🎬 Making video {p}', '🎬 Video {p} wird gemacht', '🎬 Haciendo vídeo {p}'], goOn: ['▶ Tap to go on', '▶ Tippen, um weiterzumachen', '▶ Toca para seguir'], pickParts: ['Tick the parts you want', 'Hak die Teile an, die du willst', 'Marca las partes que quieres'],
     howMake: ['🎬 Make puts the text on the video (about as long as the clip, keep the app open). 📲 Save sends it to your phone and ticks it ✓.', '🎬 Machen legt den Text aufs Video (etwa so lang wie der Clip, App offen lassen). 📲 Speichern schickt es aufs Handy und hakt es ✓ ab.', '🎬 Hacer pone el texto en el vídeo (dura lo que el clip, deja la app abierta). 📲 Guardar lo envía al móvil y lo marca ✓.'],
+    leftN: ['🎬 {p} left to make', '🎬 Noch {p} zu machen', '🎬 Faltan {p}'], nowMaking: ['🎬 Making a video for the {p} B-roll', '🎬 Video für die {p}-B-Roll wird gemacht', '🎬 Haciendo un vídeo del B-roll de {p}'],
     saveAgain: ['📲 Save {p} again', '📲 {p} nochmal speichern', '📲 Guardar {p} otra vez'], sizeN: ['Size {p}', 'Größe {p}', 'Tamaño {p}'],
     saved: ['✓ Saved', '✓ Gespeichert', '✓ Guardado'], made: ['🎬 Made', '🎬 Gemacht', '🎬 Hecho'], noText: ['No text yet', 'Noch kein Text', 'Sin texto aún'], adding: ['Adding…', 'Wird hinzugefügt…', 'Añadiendo…'],
     reOne: ['New text for this part', 'Neuer Text für diesen Teil', 'Texto nuevo para esta parte'], tick: ['Use this part', 'Diesen Teil nehmen', 'Usar esta parte'],
@@ -335,21 +336,21 @@
   function canMake() { return wcOK() || !!mime(); }
   var muxP = null;
   function loadMux() { if (W.Mp4Muxer) return Promise.resolve(); return muxP || (muxP = new Promise(function (res, rej) { var sc = D.createElement('script'); sc.src = '../vendor/mp4-muxer-5.1.3.js'; sc.onload = res; sc.onerror = function () { muxP = null; rej(new Error('mux')); }; D.head.appendChild(sc); })); }
-  function render(c, onP) {
+  function render(c, onP, rid) {
     busyOn(); var done = function (x) { busyOff(); return x; }, bad = function (e) { busyOff(); throw e; };
-    return render0(c, onP).then(done, bad);
+    return render0(c, onP, rid).then(done, bad);
   }
-  function render0(c, onP) {
-    if (!wcOK()) return renderRec(c, onP);
-    return renderWC(c, onP).catch(function (e) { if (e && (e.name === 'NotAllowedError' || e.message === 'video')) throw e; return mime() ? renderRec(c, onP) : Promise.reject(e); });
+  function render0(c, onP, rid) {
+    if (!wcOK()) return renderRec(c, onP, rid);
+    return renderWC(c, onP, rid).catch(function (e) { if (e && (e.name === 'NotAllowedError' || e.message === 'video')) throw e; return mime() ? renderRec(c, onP, rid) : Promise.reject(e); });
   }
-  function renderWC(c, onP) {
+  function renderWC(c, onP, rid) {
     var W0 = 1080, H0 = 1920, cfg = {codec: 'avc1.640028', width: W0, height: H0, bitrate: 10e6, framerate: FPS, avc: {format: 'avc'}};
     return loadMux().then(function () { return W.VideoEncoder.isConfigSupported(cfg); }).then(function (sup) {
       if (!sup || !sup.supported) { cfg.codec = 'avc1.42002a'; return W.VideoEncoder.isConfigSupported(cfg); } return sup; }).then(function (sup) {
       if (!sup || !sup.supported) throw new Error('nocodec');
       return new Promise(function (res, rej) {
-        var r = roll(st.sess.id); if (!r) return rej(new Error('norec'));
+        var r = roll(rid || st.sess.id); if (!r) return rej(new Error('norec'));
         var M = W.Mp4Muxer, tgt = new M.ArrayBufferTarget(), mux = new M.Muxer({target: tgt, video: {codec: 'avc', width: W0, height: H0, frameRate: FPS}, fastStart: 'in-memory'});
         var dead = false, fail = function (e) { if (dead) return; dead = true; try { v.pause(); } catch (x) { } try { enc.close(); } catch (x) { } rej(e); };
         var enc = new W.VideoEncoder({output: function (ch, meta) { mux.addVideoChunk(ch, meta); }, error: fail}); enc.configure(cfg);
@@ -379,9 +380,9 @@
       });
     });
   }
-  function renderRec(c, onP) {
+  function renderRec(c, onP, rid) {
     return new Promise(function (res, rej) {
-      var mt = mime(), r = roll(st.sess.id); if (!mt || !r) return rej(new Error('norec'));
+      var mt = mime(), r = roll(rid || st.sess.id); if (!mt || !r) return rej(new Error('norec'));
       var W0 = 1080, H0 = 1920, cv = D.createElement('canvas'); cv.width = W0; cv.height = H0; var ctx = cv.getContext('2d');
       /* 24 Nov 2026 (Emmanuel: "it's not saving the videos"): iPhones refuse to play a video with sound unless a finger just
          tapped, so clips are drawn muted (they are made in the background now) and posted with a sound added on TikTok */
@@ -397,21 +398,29 @@
     });
   }
   /* the clips are made one after the other in the background as soon as they exist (and again after an edit), so Save is one tap */
-  var WANT = [], SELSET = null, ADDING = 0, fromProf = false, qHold = 0, qNow = -1, qPc = 0, qRun = false, qErr = CRASHED ? 1 : 0, FR = [], HOST = null, rqT = 0;
+  var JOBS = [], qRoll = '', SELSET = null, ADDING = 0, fromProf = false, qHold = 0, qNow = -1, qPc = 0, qRun = false, qErr = CRASHED ? 1 : 0, FR = [], HOST = null, rqT = 0;
   function inEdit() { return view === 'edit' && el && el.classList.contains('on'); }
   /* never redraw the editor from the background: it would drop the Save button and the text being typed */
   function soft() { if (inEdit()) { refresh0(); mkSync(); } else refresh(); }
   function mkSync() { var b = inEdit() && D.getElementById('vmMk'); if (b && !b.disabled) b.textContent = mkLabel(); }
   function refresh0() { if (HOST && HOST.isConnected) mountPaint(); }
+  /* 25 Nov 2026 (Emmanuel: "I went to a different B-roll to save those ... is it now still showing me that it's saving the older stuff on
+     the other B-roll? ... I should be able to multi-work, on all B-rolls ... move around the app without being stuck on just one thing"):
+     one queue for every B-roll (JOBS: B-roll + part). It keeps making while you pick another B-roll or work elsewhere in Studio; each
+     B-roll's cover says how many are left, and a line on top says which one is being made. Before, the list held only part numbers,
+     so after switching B-roll they pointed at the other B-roll's parts. */
+  function madeOf(rid, i) { var c = st.cuts[rid] && st.cuts[rid][i], m = MADE[rid] && MADE[rid][i]; return c && m && m.k === ckey(c) ? m.b : null; }
+  function jobsLeft(rid) { return JOBS.filter(function (j) { return (!rid || j.r === rid) && st.cuts[j.r] && st.cuts[j.r][j.i] && st.cuts[j.r][j.i].text && roll(j.r) && !madeOf(j.r, j.i); }); }
+  function wantCur() { return st.sess ? JOBS.filter(function (j) { return j.r === st.sess.id; }).map(function (j) { return j.i; }) : []; }
   function queue() {
-    if (!TAPPED || qRun || qErr || qHold || !st.sess || !canMake()) return; /* 25 Nov 2026 (Emmanuel: "every time I move something, it just automatically starts generating ... only when I click on the
-       buttons"): only the parts you tapped 🎬 Make for (WANT), in order; nothing is made by itself any more */
-    var i = -1; for (var w0 = 0; w0 < WANT.length; w0++) if (!got(WANT[w0]) && st.sess.clips[WANT[w0]]) { i = WANT[w0]; break; }
-    if (i < 0) return;   /* 24 Nov 2026 bug ("it keeps flickering"): this used to redraw the panel, whose redraw called queue() again 0.3 s later, forever */
-    qRun = true; qNow = i; qPc = 0; var sid = st.sess, mm = made, snap0 = ckey(st.sess.clips[i]);
-    render(st.sess.clips[i], function (pc) { qPc = pc; [el, HOST].forEach(function (w0) { var b = w0 && w0.querySelector('[data-pc]'); if (b) b.textContent = pc + '%'; var b2 = w0 && w0.querySelector('[data-pc2]'); if (b2) b2.textContent = pc; }); mkSync(); })
-      .then(function (blob) { mm[i] = {b: blob, k: snap0}; mPut(sid.id, i, mm[i]); }, function () { qErr = 1; })
-      .then(function () { qRun = false; qNow = -1; soft(); if (st.sess && st.sess.id === sid.id) setTimeout(queue, 50); });
+    if (!TAPPED || qRun || qErr || qHold || !canMake()) return;
+    JOBS = jobsLeft();   /* finished ones leave the list */
+    var j = JOBS[0]; if (!j) return;
+    var rid = j.r, i = j.i, c = st.cuts[rid][i], snap0 = ckey(c), mm = MADE[rid] = MADE[rid] || {};
+    qRun = true; qNow = i; qRoll = rid; qPc = 0; refresh();
+    render(c, function (pc) { qPc = pc; [el, HOST].forEach(function (w0) { if (!w0) return; w0.querySelectorAll('[data-pc]').forEach(function (b) { b.textContent = pc + '%'; }); w0.querySelectorAll('[data-pc2]').forEach(function (b) { b.textContent = pc; }); }); mkSync(); }, rid)
+      .then(function (blob) { mm[i] = {b: blob, k: snap0}; mPut(rid, i, mm[i]); }, function () { qErr = 1; })
+      .then(function () { qRun = false; qNow = -1; qRoll = ''; soft(); setTimeout(queue, 50); });
   }
   function toSave() { var a = st.sess.clips.map(function (_c, i) { return i; }), n = a.filter(function (i) { return !isUsed(st.sess.clips[i]); }); return n.length ? n : a; }
   function saveBtn(cls) { if (st.sess.clips.every(isUsed)) return '<button class="btn ' + cls + '" disabled>' + esc(t('allUsed')) + '</button>'; var ix = toSave(), ready = ix.filter(function (i) { return got(i); }).length, all = ix.length === st.sess.clips.length && !st.sess.clips.some(isUsed);
@@ -455,10 +464,10 @@
     /* ✨ New texts: the ticked parts; with nothing ticked by hand, every part you have not saved yet (all of them once all are saved) */
     if (k === 'newT') { if (busy) return;
       var all = st.sess.clips.map(function (_c, i) { return i; }), ix = SELSET ? selIdx() : all.filter(function (i) { return !isUsed(st.sess.clips[i]); }); if (!ix.length) ix = all;
-      WANT = WANT.filter(function (i) { return ix.indexOf(i) < 0; }); return write(ix.map(function (i) { return st.sess.clips[i]; })); }
-    if (k === 'reone') { if (busy) return; var ri = +b.dataset.i; WANT = WANT.filter(function (i) { return i !== ri; }); return write([st.sess.clips[ri]]); }
-    if (k === 'makeSel') { var mi = selIdx().filter(function (i) { return !got(i) && st.sess.clips[i].text; }); if (!mi.length) return; if (!canMake()) return S.toast(t('noRec')); WANT = mi; qErr = 0; CRASHED = false; TAPPED = true; unlock(); setTimeout(queue, 60); return refresh(); }
-    if (k === 'saveSel') { var si = selIdx().filter(function (i) { return got(i); }); return share(si.map(function (i) { return fileOf(got(i), i); })).then(function (ok) { if (ok) { WANT = []; markUsed(si); } }); }
+      var sid0 = st.sess.id; JOBS = JOBS.filter(function (j) { return !(j.r === sid0 && ix.indexOf(j.i) >= 0); }); return write(ix.map(function (i) { return st.sess.clips[i]; })); }
+    if (k === 'reone') { if (busy) return; var ri = +b.dataset.i, sid1 = st.sess.id; JOBS = JOBS.filter(function (j) { return !(j.r === sid1 && j.i === ri); }); return write([st.sess.clips[ri]]); }
+    if (k === 'makeSel') { var mi = selIdx().filter(function (i) { return !got(i) && st.sess.clips[i].text; }); if (!mi.length) return; if (!canMake()) return S.toast(t('noRec')); mi.forEach(function (i) { if (!JOBS.some(function (j) { return j.r === st.sess.id && j.i === i; })) JOBS.push({r: st.sess.id, i: i}); }); qErr = 0; CRASHED = false; TAPPED = true; unlock(); setTimeout(queue, 60); return refresh(); }
+    if (k === 'saveSel') { var si = selIdx().filter(function (i) { return got(i); }); return share(si.map(function (i) { return fileOf(got(i), i); })).then(function (ok) { if (ok) { var sid2 = st.sess.id; JOBS = JOBS.filter(function (j) { return j.r !== sid2 || si.indexOf(j.i) < 0; }); markUsed(si); } }); }
     if (k === 'amv') { var dx = +b.dataset.dx || 0, dy = +b.dataset.dy || 0, cen = b.dataset.c === '1'; allSet(function (c) { if (cen) { c.x = 0.5; c.y = (SAFE.t + SAFE.b) / 2; } else { c.x += dx * 0.03; c.y += dy * 0.025; } }); keep(); drawTiles(); return refresh(); }
     /* 25 Nov 2026: the size of all texts in steps of 2, with buttons (a slider got moved by accident while scrolling) */
     if (k === 'asz') { var nz = Math.max(14, Math.min(40, ((st.sess.clips[0] && st.sess.clips[0].size) || st.pref.size) + (+b.dataset.d || 0))); allSet(function (c) { c.size = nz; }); st.pref.size = nz; keep(); drawTiles(); return refresh(); }
@@ -528,20 +537,20 @@
      parts not saved yet; when every part is saved, all of them, so "📲 Save all again" is one tap */
   function selIdx0() { if (!st.sess) return []; var w = st.sess.clips.map(function (_c, i) { return i; }).filter(function (i) { return st.sess.clips[i].text; }), n = w.filter(function (i) { return !isUsed(st.sess.clips[i]); }); return n.length ? n : w; }
   function selIdx() { if (!st.sess) return []; var all = st.sess.clips.map(function (_c, i) { return i; }); if (SELSET) return all.filter(function (i) { return SELSET[i]; }); return selIdx0(); }
-  function tile2(c, i, on) { var u = isUsed(c), m = got(i), mk = qRun && qNow === i;
+  function tile2(c, i, on) { var u = isUsed(c), m = got(i), mk = qRun && qNow === i && qRoll === (st.sess && st.sess.id);
     return '<div class="vm-t2' + (on ? ' on' : '') + (u ? ' used' : '') + '"><button class="vm-tile vm-tc" data-vm="popen" data-i="' + i + '" aria-label="' + esc(fmt(c.sec) + ' ' + (c.text || t('noText'))) + '"><canvas data-tc="' + i + '" width="270" height="480"></canvas>' +
       '<i>' + fmt(c.sec) + '</i><em>' + esc(T.ST[c.style] ? T.ST[c.style][I] : c.style) + '</em>' +
       (mk ? '<b class="vm-pc" data-pc>' + qPc + '%</b>' : u ? '<b class="vm-used">' + esc(t('saved')) + (m ? ' · 📲' : '') + '</b>' : m ? '<b class="vm-ok vm-okp">' + esc(t('made')) + '</b>' : !c.text ? '<b class="vm-nt">' + esc(t('noText')) + '</b>' : '') + '</button>' +
       '<div class="vm-tb"><button class="vm-sel" data-vm="tsel" data-i="' + i + '" aria-pressed="' + !!on + '" aria-label="' + esc(t('tick')) + '"><span>' + (on ? '✓' : '') + '</span></button>' +
       '<button class="vm-re" data-vm="reone" data-i="' + i + '" aria-label="' + esc(t('reOne')) + '"' + (busy ? ' disabled' : '') + '>↻</button></div></div>'; }
   function bar() {
-    var sel = selIdx(), n = sel.length, ready = sel.filter(function (i) { return got(i); }).length, wantLeft = WANT.filter(function (i) { return !got(i); }).length;
+    var sel = selIdx(), n = sel.length, ready = sel.filter(function (i) { return got(i); }).length, wantLeft = jobsLeft(st.sess.id).length, here = qRun && qRoll === st.sess.id;
     var a = '<button class="btn pri" data-vm="newT"' + (busy ? ' disabled' : '') + '>' + esc(busy ? t('writing') : t('newT')) + (n && n < st.sess.clips.length && !busy ? ' (' + n + ')' : '') + '</button>';
     var b;
     if (!n) b = '<button class="btn" disabled>' + esc(t('pickParts')) + '</button>';
     else if (ready === n) b = '<button class="btn pri" data-vm="saveSel">' + esc(sel.every(function (i) { return isUsed(st.sess.clips[i]); }) ? t('saveAgain', n) : t('saveN', n)) + '</button>';
     else if (qErr) b = '<button class="btn" data-vm="kick">' + esc(t('goOn')) + '</button>';
-    else if (wantLeft) b = '<button class="btn" disabled>' + esc(t('makingN', (WANT.length - wantLeft + 1) + ' / ' + WANT.length)) + (qRun ? ' · <span data-pc2>' + qPc + '</span>%' : '') + '</button>';
+    else if (wantLeft) b = '<button class="btn" disabled>' + esc(t('leftN', wantLeft)) + (here ? ' · <span data-pc2>' + qPc + '</span>%' : '') + '</button>';
     else b = '<button class="btn" data-vm="makeSel">' + esc(n - ready === 1 ? t('make1') : t('makeN', n - ready)) + '</button>';
     return '<div class="vm-acts">' + a + b + '</div>';
   }
@@ -558,11 +567,11 @@
     var h = HOST; if (!h) return; var ss = st.sess && roll(st.sess.id) ? st.sess : null, pls = S.lists ? S.lists() : [];
     var sel = ss ? selIdx() : [], on = {}; sel.forEach(function (i) { on[i] = 1; });
     var anyText = ss && ss.clips.some(function (c) { return c.text; });
-    var html = '<p class="vm-store" id="vmStore">' + esc(t('storeN', rolls.length) + (MB ? ' · ' + MB : '')) + '</p>' +
+    var html = (qRun && roll(qRoll) ? '<p class="vm-now" role="status">' + esc(t('nowMaking', fmt(roll(qRoll).dur))) + ' · <span data-pc2>' + qPc + '</span>% · ' + esc(t('leftN', jobsLeft().length)) + '</p>' : '') + '<p class="vm-store" id="vmStore">' + esc(t('storeN', rolls.length) + (MB ? ' · ' + MB : '')) + '</p>' +
       '<div class="vm-shelf" id="vmShelfP"><label class="vm-cd vm-add"><input type="file" accept="video/*" multiple hidden id="vmFileP"><span>＋</span><b>' + esc(t('add')) + '</b></label>' +
       new Array(ADDING + 1).join('<div class="vm-cd vm-adding" role="status"><span class="vm-spin" aria-hidden="true"></span><b>' + esc(t('adding')) + '</b></div>') +
       rolls.map(function (r) { var us = usedOf(r.id), last = us.reduce(function (m, u) { return Math.max(m, u.ts || 0); }, 0);
-        return '<button class="vm-cd' + (r.id === st.sel ? ' on' : '') + '" data-vm="sel" data-id="' + esc(r.id) + '">' + (r.thumb ? '<img alt="" src="' + esc(r.thumb) + '">' : '') + '<i>' + fmt(r.dur) + '</i>' + (us.length ? '<b class="vm-cdn">✓ ' + us.length + '</b><small class="vm-cdd">' + esc(agoTxt(last)) + '</small>' : '') + '<em data-vm="rm" data-id="' + esc(r.id) + '" aria-label="✕">✕</em></button>'; }).join('') + '</div>' +
+        return '<button class="vm-cd' + (r.id === st.sel ? ' on' : '') + '" data-vm="sel" data-id="' + esc(r.id) + '">' + (r.thumb ? '<img alt="" src="' + esc(r.thumb) + '">' : '') + '<i>' + fmt(r.dur) + '</i>' + (us.length ? '<b class="vm-cdn">✓ ' + us.length + '</b><small class="vm-cdd">' + esc(agoTxt(last)) + '</small>' : '') + (jobsLeft(r.id).length ? '<b class="vm-cdq">🎬 ' + jobsLeft(r.id).length + (qRun && qRoll === r.id ? ' · <span data-pc2>' + qPc + '</span>%' : '') + '</b>' : '') + '<em data-vm="rm" data-id="' + esc(r.id) + '" aria-label="✕">✕</em></button>'; }).join('') + '</div>' +
       (ss ? (st.aiNote ? '<p class="vm-note">' + esc(st.aiNote) + '</p>' : '') + (qErr ? '<p class="vm-note">' + esc(t('blocked')) + '</p>' : '') +
         styleRow() +
         '<div class="vm-row2"><span class="vm-l2">' + esc(t('learn')) + '</span></div>' +
@@ -585,7 +594,7 @@
       if (same && sl >= 0) sh.scrollLeft = sl; else { var onc = sh.querySelector('.on'); if (onc) sh.scrollLeft = Math.max(0, onc.offsetLeft - (sh.clientWidth - onc.offsetWidth) / 2); }
       cdFocusIn(sh); }
     drawTiles(); storeLine();
-    if (ss) { frames(true); if (WANT.length) setTimeout(queue, 300); }
+    if (ss) frames(true); if (JOBS.length) setTimeout(queue, 300);
   }
   /* one change for every part of this B-roll (size, place, look), kept inside the safe zone and remembered for new parts */
   /* 25 Nov 2026: your style (core message) as one row you swipe sideways: tap one to use it, tap it again to change it, ＋ to add one.

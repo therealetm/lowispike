@@ -99,7 +99,7 @@ test('making videos never hangs silently: when the phone blocks it, a clear butt
    exactly 1/30 s, all 390 frames different (ffprobe + framemd5). */
 test('videos are built frame by frame on exact 1/30 s timestamps (WebCodecs + MP4), not screen-recorded in real time', () => {
   assert.match(js, /function wcOK\(\) \{ return !!\(W\.VideoEncoder && W\.VideoFrame/);
-  assert.match(js, /if \(!wcOK\(\)\) return renderRec\(c, onP\);/, 'older phones keep the recorder');
+  /* changed 25 Nov 2026: + the B-roll (rid) */ assert.match(js, /if \(!wcOK\(\)\) return renderRec\(c, onP, rid\);/, 'older phones keep the recorder');
   assert.match(js, /new W\.VideoFrame\(cv, \{timestamp: Math\.round\(k \* 1e6 \/ FPS\), duration: Math\.round\(1e6 \/ FPS\)\}\)/);
   assert.match(js, /v\.requestVideoFrameCallback\(tick\)/); assert.match(js, /if \(enc\.encodeQueueSize > 6\) \{ v\.pause\(\);/, 'waits for the encoder instead of dropping frames');
   assert.match(js, /sc\.src = '\.\.\/vendor\/mp4-muxer-5\.1\.3\.js'/);
@@ -119,18 +119,18 @@ test('the editor shows the text drawn by the same drawText() and font as the sav
 test('finished videos are kept on the phone (one per part) and survive closing the app; the editor button shows the live state', () => {
   assert.match(js, /W\.indexedDB\.open\('lowi-studio', 2\)/); assert.match(js, /if \(!d\.objectStoreNames\.contains\('made'\)\) d\.createObjectStore\('made', \{keyPath: 'id'\}\);/);
   assert.match(js, /st = x\.objectStore\(store \|\| 'broll'\)/, 'the made videos go into their own store');
-  assert.match(js, /mm\[i\] = \{b: blob, k: snap0\}; mPut\(sid\.id, i, mm\[i\]\);/); assert.match(js, /function loadRolls\(\) \{ return loadMade\(\)\.then\(bAll\)/);
+  /* changed 25 Nov 2026 (one queue for every B-roll): */ assert.match(js, /mm\[i\] = \{b: blob, k: snap0\}; mPut\(rid, i, mm\[i\]\);/); assert.match(js, /function loadRolls\(\) \{ return loadMade\(\)\.then\(bAll\)/);
   assert.match(js, /var bDel = function \(id\) \{[^\n]*mDelRoll\(id\)/, 'deleting a B-roll deletes its videos');
   assert.match(js, /function mkLabel\(\) \{ return got\(cur\) \? t\('toPhone'\) : \(qRun && qNow === cur \? t\('making', qPc\) : t\('make'\)\); \}/);
   /* changed 25 Nov 2026 (Emmanuel: "it shouldn't just start generating ... pick one by one which one I want to save ... resize them all ... a check mark"): nothing is made by itself: only the parts you tapped 🎬 Make for */
-  assert.match(js, /var i = -1; for \(var w0 = 0; w0 < WANT\.length; w0\+\+\) if \(!got\(WANT\[w0\]\) && st\.sess\.clips\[WANT\[w0\]\]\) \{ i = WANT\[w0\]; break; \}/);
+  /* changed 25 Nov 2026 (one queue for every B-roll): */ assert.match(js, /JOBS = jobsLeft\(\);   \/\* finished ones leave the list \*\//);
   assert.doesNotMatch(js, /requeue\(/, 'moving or resizing never starts making a video');
   assert.match(js, /var MAXW = 2 \* Math\.min\(0\.5 - SAFE\.l, SAFE\.r - 0\.5\) \* 0\.97;/, 'opening a finished part does not nudge it (that made it again)');
 });
 /* 24 Nov 2026, night (Emmanuel: "You broke my app? Nothing is working after closing & opening", black screen) */
 test('nothing is made in the background before a tap in this visit; a visit that died while making a video does not start again by itself', () => {
   assert.match(js, /try \{ CRASHED = !!localStorage\.getItem\(BUSY\); localStorage\.removeItem\(BUSY\); \} catch \(e\) \{ \}/);
-  assert.match(js, /if \(!TAPPED \|\| qRun \|\| qErr \|\| qHold \|\| !st\.sess \|\| !canMake\(\)\) return;/);
+  /* changed 25 Nov 2026 (one queue for every B-roll): */ assert.match(js, /if \(!TAPPED \|\| qRun \|\| qErr \|\| qHold \|\| !canMake\(\)\) return;/);
   assert.match(js, /qErr = CRASHED \? 1 : 0,/); assert.match(js, /busyOn\(\); var done = function \(x\) \{ busyOff\(\); return x; \}/);
   assert.match(js, /var cv = CV \|\| \(CV = D\.createElement\('canvas'\)\);/, 'one canvas for every video');
 });
@@ -139,7 +139,7 @@ test('nothing is made in the background before a tap in this visit; a visit that
    conveniency is the most important thing"). Checked in Chromium: upload -> texts by themselves; 4 s idle -> 0 redraws, no page jump;
    Save -> parts to "✓ Used · 3" (folded); Fill again -> 3 new parts, Used stays 3; a used video is made again and saved on its own. */
 test('the B-rolls panel never redraws in a loop and never moves the page', () => {
-  assert.match(js, /if \(i < 0\) return;   \/\* 24 Nov 2026 bug/);
+  /* changed 25 Nov 2026 (one queue for every B-roll): */ assert.match(js, /var j = JOBS\[0\]; if \(!j\) return;/, 'nothing left: no redraw, no new round');
   assert.match(js, /if \(html === lastHTML && h\.firstChild\) \{ drawTiles\(\); storeLine\(\); return; \}/);   /* changed 25 Nov 2026: the previews are canvases, redrawn without a redraw of the panel */
   assert.doesNotMatch(js.slice(js.indexOf('function mountPaint')), /scrollIntoView/);
   assert.match(js, /if \(same && sl >= 0\) sh\.scrollLeft = sl;/);
@@ -231,4 +231,14 @@ test('when every part is saved, all are ticked and the button says "Save N again
 });
 test('all texts are resized with A− / A+ buttons, not a slider a scroll could move by accident', () => {
   assert.doesNotMatch(js, /id="vmAsz"/); assert.match(js, /data-vm="asz" data-d="-2"/); assert.match(js, /if \(k === 'asz'\) \{ var nz = Math\.max\(14, Math\.min\(40,/);
+});
+/* 25 Nov 2026 (Emmanuel: "I went to a different B-roll to save those ... is it now still showing me that it's saving the older stuff on the
+   other B-roll? ... I should be able to multi-work, on all B-rolls"). Checked in Chromium with two B-rolls: Make on the first, switch,
+   Make on the second -> one line "Making a video for the 0:30 B-roll · 40% · 6 left", the first cover "🎬 3 · 18%"; both end on "📲 Save 3". */
+test('one queue for every B-roll: jobs carry their B-roll, making goes on while you switch, covers and a top line say what is left', () => {
+  assert.doesNotMatch(js, /\bWANT\b/, 'the old list held only part numbers');
+  assert.match(js, /function madeOf\(rid, i\)/); assert.match(js, /JOBS\.push\(\{r: st\.sess\.id, i: i\}\)/);
+  assert.match(js, /render\(c, function \(pc\) \{[\s\S]{0,400}\}, rid\)/, 'made from its own B-roll');
+  assert.match(js, /var r = roll\(rid \|\| st\.sess\.id\); if \(!r\) return rej\(new Error\('norec'\)\);/);
+  assert.match(js, /<b class="vm-cdq">🎬 ' \+ jobsLeft\(r\.id\)\.length/); assert.match(js, /<p class="vm-now" role="status">/);
 });
